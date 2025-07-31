@@ -1074,7 +1074,7 @@
                 const categoryPath = `${gender}_${mainCategory}_${subCategory}`;
                 const snapshot = await db.collection('hairstyles')
                     .where('categoryPath', '==', categoryPath)
-                    .orderBy('createdAt', 'desc')
+                    // orderBy 임시 제거로 인덱스 오류 해결
                     .get();
 
                 if (snapshot.empty) {
