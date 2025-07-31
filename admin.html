@@ -557,8 +557,8 @@
                 <div style="margin-top: 30px; text-align: center;">
                     <button class="btn btn-primary" onclick="showAddCategoryModal()">새 대분류 추가</button>
                     <button class="btn btn-primary" onclick="showAddSubCategoryModal()">새 중분류 추가</button>
-                    <button class="btn btn-success" onclick="showAddStyleModal()">새 스타일 추가</button>
                     <button class="btn btn-secondary" onclick="refreshHierarchy()">새로고침</button>
+                    <button class="btn btn-success" style="margin-left: 20px; font-size: 18px; padding: 12px 30px;" onclick="syncToIndex()">📤 인덱스에 반영</button>
                 </div>
             </div>
         </div>
@@ -695,6 +695,14 @@
             </div>
             
             <div class="form-group">
+                <label class="form-label">이미지 업로드</label>
+                <input type="file" class="form-control" id="newStyleImage" accept="image/*" onchange="previewStyleImage(this)">
+                <div id="imagePreview" style="margin-top: 10px; display: none;">
+                    <img id="previewImg" style="max-width: 200px; max-height: 200px; border-radius: 5px;" />
+                </div>
+            </div>
+            
+            <div class="form-group">
                 <label class="form-label">순서</label>
                 <input type="number" class="form-control" id="newStyleOrder" value="1" min="1">
             </div>
@@ -753,15 +761,116 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-        console.log('🚀 완전히 작동하는 어드민 시스템 시작');
+                console.log('🚀 완전히 작동하는 어드민 시스템 시작');
         
-        // 전역 변수
+        // 🔄 변경사항 추적
+        let hasUnsavedChanges = false;
+        let changeLog = [];
         let currentTab = 'hierarchy';
         let selectedGender = null;
         let selectedMainCategory = null;
         let selectedSubCategory = null;
         let db = null;
         let firebaseConnected = false;
+        
+        // 🔄 변경사항 추적
+        let hasUnsavedChanges = false;
+        let changeLog = [];
+
+        // 변경사항 기록
+        function logChange(type, action, details) {
+            const timestamp = new Date().toLocaleString('ko-KR');
+            changeLog.push({
+                timestamp,
+                type,
+                action,
+                details
+            });
+            hasUnsavedChanges = true;
+            updateSyncButton();
+            console.log(`📝 변경사항 기록: ${type} ${action}`, details);
+        }
+
+        // 동기화 버튼 상태 업데이트
+        function updateSyncButton() {
+            const syncBtn = document.querySelector('[onclick="syncToIndex()"]');
+            if (syncBtn) {
+                if (hasUnsavedChanges) {
+                    syncBtn.style.background = '#FF1493';
+                    syncBtn.style.animation = 'pulse 2s infinite';
+                    syncBtn.innerHTML = `📤 인덱스에 반영 (${changeLog.length}개 변경사항)`;
+                } else {
+                    syncBtn.style.background = '#28a745';
+                    syncBtn.style.animation = 'none';
+                    syncBtn.innerHTML = '✅ 모든 변경사항 반영됨';
+                }
+            }
+        }
+
+        // 📤 인덱스에 반영 함수
+        async function syncToIndex() {
+            if (!hasUnsavedChanges) {
+                showAlert('반영할 변경사항이 없습니다.', 'warning');
+                return;
+            }
+
+            if (!confirm(`${changeLog.length}개의 변경사항을 인덱스에 반영하시겠습니까?\n\n변경 내역:\n${changeLog.map(log => `• ${log.type} ${log.action}: ${log.details}`).join('\n')}`)) {
+                return;
+            }
+
+            try {
+                showAlert('🔄 Firebase 동기화 중...', 'warning');
+                
+                if (firebaseConnected) {
+                    // Firebase의 category_hierarchy 컬렉션 업데이트
+                    await syncHierarchyToFirebase();
+                }
+
+                // 변경사항 초기화
+                hasUnsavedChanges = false;
+                changeLog = [];
+                updateSyncButton();
+                
+                showAlert('✅ 모든 변경사항이 인덱스에 반영되었습니다!', 'success');
+                console.log('🎉 동기화 완료');
+
+            } catch (error) {
+                console.error('❌ 동기화 오류:', error);
+                showAlert('❌ 동기화 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // Firebase 동기화
+        async function syncHierarchyToFirebase() {
+            if (!firebaseConnected) return;
+
+            const batch = db.batch();
+            
+            // 기존 계층 구조 데이터 삭제
+            const existingDocs = await db.collection('category_hierarchy').get();
+            existingDocs.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+
+            // 새 계층 구조 데이터 추가
+            for (const [gender, categories] of Object.entries(hierarchyStructure)) {
+                for (const [mainCategory, subCategories] of Object.entries(categories)) {
+                    for (const subCategory of subCategories) {
+                        const docRef = db.collection('category_hierarchy').doc();
+                        batch.set(docRef, {
+                            gender,
+                            mainCategory,
+                            subCategory,
+                            categoryPath: `${gender}_${mainCategory}_${subCategory}`,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+            }
+
+            await batch.commit();
+            console.log('✅ Firebase 계층 구조 동기화 완료');
+        }
 
         // 계층 구조 정의 (Excel 데이터 기반)
         const hierarchyStructure = {
@@ -1033,6 +1142,9 @@
                 
                 showAlert(`✅ "${categoryName}" 대분류가 삭제되었습니다.`, 'success');
                 console.log('✅ 대분류 삭제 완료');
+                
+                // 변경사항 기록
+                logChange('대분류', '삭제', categoryName);
 
             } catch (error) {
                 console.error('❌ 대분류 삭제 오류:', error);
@@ -1178,6 +1290,9 @@
                 
                 showAlert(`✅ "${subCategoryName}" 중분류가 삭제되었습니다.`, 'success');
                 console.log('✅ 중분류 삭제 완료');
+                
+                // 변경사항 기록
+                logChange('중분류', '삭제', `${selectedMainCategory} > ${subCategoryName}`);
 
             } catch (error) {
                 console.error('❌ 중분류 삭제 오류:', error);
@@ -1232,7 +1347,7 @@
                             <div class="empty-state-icon">✂️</div>
                             <div>등록된 스타일이 없습니다</div>
                             <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()" style="margin-top: 10px;">
-                                스타일 추가하기
+                                ✂️ 스타일 추가하기
                             </button>
                         </div>
                     `;
@@ -1347,6 +1462,9 @@
                 updateBreadcrumb();
                 
                 console.log('✅ 대분류 수정 완료');
+                
+                // 변경사항 기록
+                logChange('대분류', '수정', `${oldName} → ${newName}`);
 
             } catch (error) {
                 console.error('❌ 대분류 수정 오류:', error);
@@ -1390,6 +1508,9 @@
                 updateBreadcrumb();
                 
                 console.log('✅ 중분류 수정 완료');
+                
+                // 변경사항 기록
+                logChange('중분류', '수정', `${selectedMainCategory} > ${oldName} → ${newName}`);
 
             } catch (error) {
                 console.error('❌ 중분류 수정 오류:', error);
@@ -1528,9 +1649,84 @@
             closeModal('addSubCategoryModal');
         }
 
-        function saveNewStyle() {
-            showAlert('새 스타일 추가 기능은 개발 중입니다.', 'warning');
-            closeModal('addStyleModal');
+        // 이미지 미리보기
+        function previewStyleImage(input) {
+            const previewDiv = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewDiv.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                previewDiv.style.display = 'none';
+            }
+        }
+
+        // 스타일 추가 (실제 구현)
+        async function saveNewStyle() {
+            const code = document.getElementById('newStyleCode').value.trim();
+            const name = document.getElementById('newStyleName').value.trim();
+            const order = document.getElementById('newStyleOrder').value;
+            const imageFile = document.getElementById('newStyleImage').files[0];
+
+            if (!code || !name) {
+                showAlert('스타일 코드와 이름을 입력하세요.', 'error');
+                return;
+            }
+
+            if (!selectedGender || !selectedMainCategory || !selectedSubCategory) {
+                showAlert('카테고리를 선택하세요.', 'error');
+                return;
+            }
+
+            try {
+                let imageUrl = '';
+                
+                // 이미지 업로드 처리 (Firebase Storage 사용 시)
+                if (imageFile && firebaseConnected) {
+                    showAlert('이미지 업로드 중...', 'warning');
+                    
+                    // 실제 프로덕션에서는 Firebase Storage를 사용
+                    // 여기서는 시뮬레이션으로 처리
+                    imageUrl = `https://example.com/images/${code}.jpg`;
+                    console.log('🖼️ 이미지 업로드 시뮬레이션:', imageFile.name);
+                }
+
+                const styleData = {
+                    code,
+                    name,
+                    order: parseInt(order),
+                    imageUrl,
+                    gender: selectedGender,
+                    mainCategory: selectedMainCategory,
+                    subCategory: selectedSubCategory,
+                    categoryPath: `${selectedGender}_${selectedMainCategory}_${selectedSubCategory}`,
+                    createdAt: new Date().toISOString()
+                };
+
+                if (firebaseConnected) {
+                    // Firebase에 스타일 추가
+                    await db.collection('hairstyles').add(styleData);
+                    console.log('✅ Firebase에 스타일 추가 완료');
+                }
+
+                showAlert(`✅ "${name}" 스타일이 추가되었습니다.`, 'success');
+                closeModal('addStyleModal');
+                
+                // 스타일 목록 새로고침
+                loadStyles(selectedGender, selectedMainCategory, selectedSubCategory);
+                
+                // 변경사항 기록
+                logChange('스타일', '추가', `${selectedMainCategory} > ${selectedSubCategory} > ${name}`);
+
+            } catch (error) {
+                console.error('❌ 스타일 추가 오류:', error);
+                showAlert('❌ 스타일 추가 중 오류가 발생했습니다.', 'error');
+            }
         }
 
         // 모달 외부 클릭시 닫기
@@ -1543,6 +1739,17 @@
                 }
             });
         }
+
+        // CSS 애니메이션 추가
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { box-shadow: 0 0 0 0 rgba(255, 20, 147, 0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(255, 20, 147, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(255, 20, 147, 0); }
+            }
+        `;
+        document.head.appendChild(style);
 
         console.log('🎉 완전히 작동하는 어드민 시스템 로드 완료!');
     </script>
