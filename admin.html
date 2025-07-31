@@ -425,8 +425,8 @@
                 <div class="logo-text">HAIRGATOR</div>
             </div>
             <div>
-                <span class="admin-badge">관리자 모드</span>
-                <button class="logout-btn" onclick="logout()">로그아웃</button>
+                <span class="admin-badge">관리자 모드 (인증 비활성화)</span>
+                <button class="logout-btn" onclick="logout()">메인으로</button>
             </div>
         </div>
 
@@ -645,29 +645,28 @@
 
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
+            // 인증 체크 비활성화 - 주석 처리
+            // checkAuth();
             initializeTabs();
             initializeForms();
             loadDashboard();
             loadCategories();
         });
 
-        // 인증 체크
+        // 인증 체크 함수 비활성화
+        /*
         function checkAuth() {
             auth.onAuthStateChanged((user) => {
                 if (!user) {
-                    // 상대 경로로 수정
                     window.location.href = 'admin-login.html';
                 }
             });
         }
+        */
 
-        // 로그아웃
+        // 로그아웃 → 메인으로 이동으로 변경
         function logout() {
-            auth.signOut().then(() => {
-                // 상대 경로로 수정
-                window.location.href = 'admin-login.html';
-            });
+            window.location.href = 'index.html';
         }
 
         // 탭 초기화
