@@ -434,6 +434,33 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* 동기화 상태 표시 */
+        .sync-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 200;
+            display: none;
+        }
+
+        .sync-status.connected {
+            background-color: rgba(40, 167, 69, 0.8);
+        }
+
+        .sync-status.disconnected {
+            background-color: rgba(220, 53, 69, 0.8);
+        }
+
+        .sync-status.updating {
+            background-color: rgba(255, 193, 7, 0.8);
+            color: #000;
+        }
+
         /* 반응형 */
         @media screen and (max-width: 1200px) {
             .hairstyle-grid {
@@ -529,11 +556,16 @@
         </div>
     </div>
 
+    <!-- 동기화 상태 표시 -->
+    <div class="sync-status" id="syncStatus">Firebase 연결 중...</div>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
+        console.log('🚀 어드민 동기화된 HAIRGATOR 시작');
+        
         // Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
@@ -552,42 +584,43 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
             firebaseConnected = true;
-            console.log('Firebase 연결 성공');
+            console.log('✅ Firebase 연결 성공');
+            updateSyncStatus('connected', 'Firebase 연결됨');
         } catch (error) {
-            console.log('Firebase 초기화 오류:', error);
-            // Firebase 없이도 테스트 가능하도록 처리
+            console.error('❌ Firebase 초기화 오류:', error);
+            updateSyncStatus('disconnected', 'Firebase 연결 실패');
+            firebaseConnected = false;
         }
 
         // 전역 변수
         let currentGender = null;
         let currentCategory = null;
+        let hierarchyStructure = {}; // 동적으로 로드됨
 
-        // 계층 구조 정의 (Excel 데이터 기반으로 수정)
-        const hierarchyStructure = {
-            male: {
-                'SIDE_FRINGE': ['Fore Head', 'Eye Brow'],
-                'SIDE_PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'], 
-                'FRINGE_UP': ['None', 'Fore Head'],
-                'PUSHED_BACK': ['None'],
-                'BUZZ': ['None'],
-                'CROP': ['None'],
-                'MOHICAN': ['None']
-            },
-            female: {
-                'LONG': ['A Length', 'Fore Head', 'Eye Brow'],
-                'MEDIUM': ['None', 'Fore Head', 'Eye Brow'],
-                'SHORT': ['None', 'Fore Head']
-            }
-        };
+        // 🔄 동기화 상태 업데이트
+        function updateSyncStatus(status, message) {
+            const syncStatus = document.getElementById('syncStatus');
+            syncStatus.className = `sync-status ${status}`;
+            syncStatus.textContent = message;
+            syncStatus.style.display = 'block';
+            
+            // 3초 후 자동 숨김
+            setTimeout(() => {
+                syncStatus.style.display = 'none';
+            }, 3000);
+        }
 
-        // 성별 선택
+        // 🎯 성별 선택 (어드민과 동일한 구조)
         function selectGender(gender) {
+            console.log(`🎯 성별 선택: ${gender}`);
             currentGender = gender;
             document.getElementById('genderSelection').classList.add('hidden');
             document.getElementById('mainContainer').classList.add('active');
             
+            updateSyncStatus('updating', '카테고리 로드 중...');
+            
             // 성별에 따른 카테고리 로드
-            loadMainCategories(gender);
+            loadMainCategoriesFromAdmin(gender);
         }
 
         // 성별 선택 화면으로 돌아가기
@@ -596,96 +629,139 @@
             document.getElementById('mainContainer').classList.remove('active');
             currentGender = null;
             currentCategory = null;
+            hierarchyStructure = {};
         }
 
-        // 대분류 카테고리 로드
-        async function loadMainCategories(gender) {
+        // 🔧 어드민과 동일한 방식으로 대분류 로드 (실시간 동기화)
+        async function loadMainCategoriesFromAdmin(gender) {
+            console.log(`=== 어드민 동기화 대분류 로드: ${gender} ===`);
+            
             const navTabs = document.getElementById('navTabs');
             navTabs.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
             
             try {
                 if (firebaseConnected) {
-                    // Firebase에서 계층 구조 로드 - 쿼리 수정
+                    // 🔥 어드민과 100% 동일한 쿼리 (캐시 무효화)
+                    console.log('어드민 동기화된 계층 구조 로드...');
+                    
+                    // 캐시 무효화를 위한 타임스탬프 추가
                     const hierarchySnapshot = await db.collection('category_hierarchy')
                         .where('gender', '==', gender)
+                        .orderBy('updatedAt', 'desc')  // 최신 순으로 정렬
                         .get();
                     
-                    // 대분류별로 그룹화
+                    console.log(`📊 실시간 쿼리 결과: ${hierarchySnapshot.size}개 문서`);
+                    
+                    if (hierarchySnapshot.empty) {
+                        console.log('⚠️ 어드민에서 아직 동기화되지 않음, 기본 구조 사용');
+                        updateSyncStatus('disconnected', '어드민 동기화 대기 중');
+                        useDefaultStructure(gender);
+                        return;
+                    }
+                    
+                    // 대분류별로 그룹화 (어드민과 동일한 로직)
                     const mainCategories = {};
+                    let lastUpdateTime = null;
+                    
                     hierarchySnapshot.forEach(doc => {
                         const data = doc.data();
+                        console.log('📄 동기화된 문서:', data);
+                        
                         if (!mainCategories[data.mainCategory]) {
                             mainCategories[data.mainCategory] = [];
                         }
                         if (!mainCategories[data.mainCategory].includes(data.subCategory)) {
                             mainCategories[data.mainCategory].push(data.subCategory);
                         }
+                        
+                        // 최신 업데이트 시간 추적
+                        if (data.updatedAt && (!lastUpdateTime || data.updatedAt.toDate() > lastUpdateTime)) {
+                            lastUpdateTime = data.updatedAt.toDate();
+                        }
                     });
                     
-                    if (Object.keys(mainCategories).length === 0) {
-                        displayTestCategories(gender);
-                        return;
-                    }
+                    console.log('📁 동기화된 대분류 구조:', mainCategories);
                     
-                    // hierarchyStructure 업데이트
+                    // hierarchyStructure 업데이트 (어드민과 동일)
                     hierarchyStructure[gender] = mainCategories;
                     
-                    navTabs.innerHTML = '';
-                    let firstCategory = null;
+                    renderMainCategoryTabs(mainCategories);
                     
-                    Object.keys(mainCategories).forEach((mainCategory, index) => {
-                        const tab = document.createElement('div');
-                        tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
-                        tab.dataset.category = mainCategory;
-                        tab.textContent = mainCategory;
-                        tab.onclick = () => switchCategory(mainCategory);
-                        navTabs.appendChild(tab);
-                        
-                        if (index === 0) firstCategory = mainCategory;
-                    });
+                    // 동기화 상태 표시
+                    const timeStr = lastUpdateTime ? lastUpdateTime.toLocaleString('ko-KR') : '방금전';
+                    updateSyncStatus('connected', `어드민 동기화 완료 (${timeStr})`);
                     
-                    if (firstCategory) {
-                        loadHairstylesFromHierarchy(firstCategory);
-                    }
                 } else {
-                    // Firebase가 없을 때 테스트 데이터
-                    displayTestCategories(gender);
+                    console.log('❌ Firebase 연결 없음, 기본 구조 사용');
+                    useDefaultStructure(gender);
                 }
                 
             } catch (error) {
-                console.error('카테고리 로드 오류:', error);
-                displayTestCategories(gender);
+                console.error('❌ 동기화 로드 오류:', error);
+                updateSyncStatus('disconnected', '동기화 실패, 기본 구조 사용');
+                useDefaultStructure(gender);
             }
         }
 
-        // 테스트용 카테고리 표시
-        function displayTestCategories(gender) {
+        // 📋 대분류 탭 렌더링
+        function renderMainCategoryTabs(mainCategories) {
             const navTabs = document.getElementById('navTabs');
-            const categories = Object.keys(hierarchyStructure[gender] || {});
-            
-            if (categories.length === 0) {
-                navTabs.innerHTML = '<div style="color: #999; padding: 20px;">카테고리를 불러올 수 없습니다.</div>';
-                return;
-            }
-            
             navTabs.innerHTML = '';
-            categories.forEach((cat, index) => {
+            
+            let firstCategory = null;
+            Object.keys(mainCategories).forEach((mainCategory, index) => {
                 const tab = document.createElement('div');
                 tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
-                tab.dataset.category = cat;
-                tab.textContent = cat;
-                tab.onclick = () => switchCategory(cat);
+                tab.dataset.category = mainCategory;
+                tab.textContent = mainCategory;
+                tab.onclick = () => switchCategory(mainCategory);
                 navTabs.appendChild(tab);
+                
+                if (index === 0) firstCategory = mainCategory;
             });
             
-            // 첫 번째 카테고리 로드
-            currentCategory = categories[0];
-            renderTestData(currentCategory);
+            // 첫 번째 카테고리 자동 로드
+            if (firstCategory) {
+                currentCategory = firstCategory;
+                loadHairstylesFromHierarchy(firstCategory);
+            }
         }
 
-        // 카테고리 전환
+        // 🔄 기본 구조 사용 (fallback)
+        function useDefaultStructure(gender) {
+            const defaultStructure = {
+                male: {
+                    'SIDE_FRINGE': ['Fore Head', 'Eye Brow'],
+                    'SIDE_PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'], 
+                    'FRINGE_UP': ['None', 'Fore Head'],
+                    'PUSHED_BACK': ['None'],
+                    'BUZZ': ['None'],
+                    'CROP': ['None'],
+                    'MOHICAN': ['None']
+                },
+                female: {
+                    'LONG': ['A Length', 'Fore Head', 'Eye Brow'],
+                    'MEDIUM': ['None', 'Fore Head', 'Eye Brow'],
+                    'SHORT': ['None', 'Fore Head']
+                }
+            };
+            
+            hierarchyStructure = defaultStructure;
+            
+            if (defaultStructure[gender]) {
+                renderMainCategoryTabs(defaultStructure[gender]);
+                updateSyncStatus('disconnected', '기본 구조 사용 중');
+            } else {
+                document.getElementById('navTabs').innerHTML = 
+                    '<div style="color: #999; padding: 20px;">카테고리를 불러올 수 없습니다.</div>';
+            }
+        }
+
+        // 🔄 카테고리 전환
         function switchCategory(categoryId) {
             if (categoryId === currentCategory) return;
+            
+            console.log(`🔄 카테고리 전환: ${categoryId}`);
             
             // 활성 탭 변경
             document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -696,98 +772,160 @@
             });
             
             currentCategory = categoryId;
-            
-            if (firebaseConnected) {
-                loadHairstylesFromHierarchy(categoryId);
-            } else {
-                renderTestData(categoryId);
-            }
+            loadHairstylesFromHierarchy(categoryId);
         }
 
-        // Firebase에서 계층형 헤어스타일 로드 - 수정된 함수
+        // 🎨 헤어스타일 로드 (다중 쿼리 방식)
         async function loadHairstylesFromHierarchy(mainCategory) {
+            console.log(`=== 헤어스타일 로드: ${currentGender}, ${mainCategory} ===`);
+            
             const content = document.getElementById('content');
             content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
             
             try {
-                // hairstyles 컬렉션에서 직접 조회 (categoryPath 대신 개별 필드 사용)
-                const stylesSnapshot = await db.collection('hairstyles')
-                    .where('gender', '==', currentGender)
-                    .where('mainCategory', '==', mainCategory)
-                    .get();
+                if (!firebaseConnected) {
+                    console.log('❌ Firebase 연결 없음, 테스트 데이터 사용');
+                    renderTestData(mainCategory);
+                    return;
+                }
+
+                // 🔍 다중 쿼리 시도 (어드민과 동일한 방식)
+                let allStyles = {};
+                let foundData = false;
                 
-                // 만약 mainCategory 필드가 없다면 기존 방식으로 시도
-                if (stylesSnapshot.empty) {
-                    console.log('mainCategory 필드로 조회 실패, categoryPath로 재시도');
+                // 방법 1: mainCategory 필드로 직접 조회
+                console.log('📊 방법 1: mainCategory 필드로 조회');
+                try {
+                    const stylesSnapshot = await db.collection('hairstyles')
+                        .where('gender', '==', currentGender)
+                        .where('mainCategory', '==', mainCategory)
+                        .get();
                     
-                    // categoryPath로 조회 시도
-                    const categoryPaths = hierarchyStructure[currentGender][mainCategory] || ['None'];
-                    const allStyles = {};
+                    console.log(`📄 mainCategory 쿼리 결과: ${stylesSnapshot.size}개`);
                     
-                    for (const subCategory of categoryPaths) {
+                    if (!stylesSnapshot.empty) {
+                        // 중분류별로 그룹화
+                        stylesSnapshot.forEach(doc => {
+                            const style = doc.data();
+                            const subCategory = style.subCategory || style.foreheadLength || 'None';
+                            
+                            if (!allStyles[subCategory]) {
+                                allStyles[subCategory] = [];
+                            }
+                            allStyles[subCategory].push({
+                                ...style,
+                                id: doc.id
+                            });
+                        });
+                        foundData = true;
+                        console.log('✅ mainCategory 방식으로 데이터 로드 성공');
+                    }
+                } catch (error) {
+                    console.log('⚠️ mainCategory 쿼리 실패:', error.message);
+                }
+                
+                // 방법 2: categoryPath로 조회 (기존 방식)
+                if (!foundData && hierarchyStructure[currentGender] && hierarchyStructure[currentGender][mainCategory]) {
+                    console.log('📊 방법 2: categoryPath로 조회');
+                    
+                    const subCategories = hierarchyStructure[currentGender][mainCategory];
+                    
+                    for (const subCategory of subCategories) {
                         const categoryPath = `${currentGender}_${mainCategory}_${subCategory}`;
-                        const pathSnapshot = await db.collection('hairstyles')
-                            .where('categoryPath', '==', categoryPath)
+                        console.log(`🔍 categoryPath 조회: ${categoryPath}`);
+                        
+                        try {
+                            const pathSnapshot = await db.collection('hairstyles')
+                                .where('categoryPath', '==', categoryPath)
+                                .get();
+                            
+                            if (!pathSnapshot.empty) {
+                                allStyles[subCategory] = [];
+                                pathSnapshot.forEach(doc => {
+                                    const style = doc.data();
+                                    allStyles[subCategory].push({
+                                        ...style,
+                                        id: doc.id
+                                    });
+                                });
+                                foundData = true;
+                            }
+                        } catch (error) {
+                            console.log(`⚠️ categoryPath 쿼리 실패 (${categoryPath}):`, error.message);
+                        }
+                    }
+                    
+                    if (foundData) {
+                        console.log('✅ categoryPath 방식으로 데이터 로드 성공');
+                    }
+                }
+                
+                // 방법 3: 기존 방식 (foreheadLength 필드)
+                if (!foundData) {
+                    console.log('📊 방법 3: 기존 방식으로 조회');
+                    
+                    try {
+                        const legacySnapshot = await db.collection('hairstyles')
+                            .where('gender', '==', currentGender)
                             .get();
                         
-                        if (!pathSnapshot.empty) {
-                            allStyles[subCategory] = [];
-                            pathSnapshot.forEach(doc => {
-                                const style = doc.data();
+                        console.log(`📄 기존 방식 쿼리 결과: ${legacySnapshot.size}개`);
+                        
+                        legacySnapshot.forEach(doc => {
+                            const style = doc.data();
+                            // 카테고리 매칭 로직 (기존 방식)
+                            if (style.categoryId || style.foreheadLength) {
+                                const subCategory = style.foreheadLength || 'None';
+                                
+                                if (!allStyles[subCategory]) {
+                                    allStyles[subCategory] = [];
+                                }
                                 allStyles[subCategory].push({
                                     ...style,
                                     id: doc.id
                                 });
-                            });
-                        }
-                    }
-                    
-                    if (Object.keys(allStyles).length > 0) {
-                        renderCategory({
-                            description: getMainCategoryDescription(mainCategory),
-                            styles: allStyles
+                                foundData = true;
+                            }
                         });
-                        return;
+                        
+                        if (foundData) {
+                            console.log('✅ 기존 방식으로 데이터 로드 성공');
+                        }
+                    } catch (error) {
+                        console.log('⚠️ 기존 방식 쿼리 실패:', error.message);
                     }
                 }
                 
-                // 중분류별로 스타일 그룹화
-                const stylesBySubCategory = {};
-                stylesSnapshot.forEach(doc => {
-                    const style = doc.data();
-                    // subCategory 또는 foreheadLength 필드 사용
-                    const subCategory = style.subCategory || style.foreheadLength || 'None';
-                    
-                    if (!stylesBySubCategory[subCategory]) {
-                        stylesBySubCategory[subCategory] = [];
-                    }
-                    stylesBySubCategory[subCategory].push({
-                        ...style,
-                        id: doc.id
+                // 결과 렌더링
+                if (foundData && Object.keys(allStyles).length > 0) {
+                    console.log('🎨 스타일 데이터 렌더링:', allStyles);
+                    renderCategory({
+                        description: getMainCategoryDescription(mainCategory),
+                        styles: allStyles
                     });
-                });
-                
-                renderCategory({
-                    description: getMainCategoryDescription(mainCategory),
-                    styles: stylesBySubCategory
-                });
+                    updateSyncStatus('connected', '스타일 로드 완료');
+                } else {
+                    console.log('❌ 모든 방법 실패, 테스트 데이터 사용');
+                    renderTestData(mainCategory);
+                    updateSyncStatus('disconnected', '테스트 데이터 사용');
+                }
                 
             } catch (error) {
-                console.error('헤어스타일 로드 오류:', error);
-                // 오류 발생 시 테스트 데이터로 대체
+                console.error('❌ 헤어스타일 로드 전체 오류:', error);
                 renderTestData(mainCategory);
+                updateSyncStatus('disconnected', '데이터 로드 실패');
             }
         }
 
-        // 대분류 설명 가져오기
+        // 📝 대분류 설명 가져오기 (어드민과 동일)
         function getMainCategoryDescription(mainCategory) {
             const descriptions = {
-                'SIDE_FRINGE': '사이드프린지는 살짝 볼륨이 있으면서 앞으로 떨어지는 스타일과 앞머리 숱을 줄여 소프트한 시스루 느낌을 다양하게 표현할 수 있습니다.',
-                'SIDE_PART': '사이드 파트는 클래식함과 모던함의 대명사로 스타일링에 따라 원하는 이미지를 자유롭게 표현할 수 있습니다.',
-                'FRINGE_UP': '프린지 업은 흔히 아이비리그 컷이라고 하여, 이마를 적극적으로 드러내어 남성적인 이미지를 어필하기 유리한 스타일입니다.',
-                'PUSHED_BACK': '푸시드 백은 앞머리 볼륨의 볼륨감을 강조한 스타일로써, 뒷부분으로 넘기면서 뒤로 갈수록 볼륨이 적어지는 것이 특징인 스타일입니다.',
-                'BUZZ': '버즈컷은 흔히 반삭이라고하여 클리퍼의 길이와 헤어 스타일에 따라 다양한 스타일을 연출할 수 있습니다.',
-                'CROP': '크롭컷은 매우 짧은 라운드 형태로 깔끔하면서도 세련된 남성미를 강조한 스타일입니다.',
+                'SIDE_FRINGE': '사이드프린지는 살짝 볼륨이 있으면서 앞으로 떨어지는 스타일과 앞머리 숱을 줄여 소프트한 시스루 느낌을 다양하게 표현할 수 있습니다. M자 이마와 넓은 이마를 커버하면서 볼륨과 플랫, 웨이브와 스트레이트의 구성 요소를 디테일하게 표현하는 것이 스타일링의 핵심 포인트 입니다. 스타일을 강조하고 유지하기 위해서는 옆머리와 뒷머리를 다운펌을 통해 단정하게 정리하여 관리를 쉽도록 만드는 것을 추천 드립니다.',
+                'SIDE_PART': '사이드 파트는 클래식함과 모던함의 대명사로 스타일링에 따라 원하는 이미지를 자유롭게 표현할 수 있습니다. 가르마를 기준으로 단순히 넘어 가는 스타일을 넘어 개인의 특성과 트렌드에 맞춰 고급한 헤드스스를 표현하는 것이 매우 중요합니다. 특히, 이마와 두상의 특징에 따라 포마드, 젤, 또는 왁스와 같은 제품을 사용하여 강조하고 보완하는 것이 스타일링 포인트입니다.',
+                'FRINGE_UP': '프린지 업은 흔히 아이비리그 컷이라고 하여, 이마를 적극적으로 드러내어 남성적인 이미지를 어필하기 유리한 스타일입니다. 다운펌을 통해 뒷머리와 앞머리를 정리하는 것이 스타일링의 특성상 트렌드에 얽매이지 말고 나름의 포인트와 특색으로 관리를 주안점으로 받아진 스타일입니다. 헤어 스프레이와 왁스를 활용하여 간조하며 볼륨감을 강조하여 포인트를 유지 및 관리할 수 있습니다.',
+                'PUSHED_BACK': '푸시드 백은 앞머리 부분의 볼륨감을 강조한 스타일로써, 뒷부분으로 넘기면서 뒤로 갈수록 볼륨이 적어지는 것이 특징인 스타일입니다. 모발의 길이가 중간 정도 이상인 분들에게 가장 적합하며, 진도작이고 성세한 길이 조절을 통해 본인의 헤어스타일를 분위기에서 인기가 늘으며, 스타일링이 쉽도록 가능하면 고급머리드라고 칭찬한 이미지를 유지하기 위해서는 선발과 이이와 참조하여 보편하는 것이 매우 중요합니다.',
+                'BUZZ': '버즈컷은 흔히 반삭이라고하여 클리퍼의 길이와 헤어 스타일에 따라 다양한 스타일을 연출할 수 있습니다. 정교하고 섬세한 길이 조절이 가장 중요하지만 강함이 아닌 곡적이 주이 특성인 개성원 강점원 수 있습니다. 스타일링이라고 할게 없서 먼나기도 간단하고 포마드를 활용하여 색차하면 얹나와 장조정을 강점훨 수 있습니다.',
+                'CROP': '크롭컷은 매우 짧은 라운드 형태로 깔끔하면서도 세련된 남성미를 강조한 스타일입니다. 영머리를 짧머리로 하여이스터간 다투어, 양쪽과 두상의 이미지를 두정하게 강조하여 모발의 길이와 절대에 따라 컬머의 이미지를 유지하기 위해서는 자숙적인 커트가 필요한 스타일힙니다. 점고 깔끔한 헤어스타일은 개인의 탸지잡 같은 역할으로 관리를 쉽도록 만느는 것을 추천합니다.',
                 'MOHICAN': '모히칸은 옆머리를 짧게 하고 윗머리에 앞머리에서 뒷머리로 이어지는 라인을 표현하여, 둥근 얼굴형을 보완할 수 있는 개성이 남다른 스타일입니다.',
                 'LONG': '롱 헤어는 여성스러움과 우아함을 동시에 표현할 수 있는 대표적인 스타일입니다.',
                 'MEDIUM': '미디엄 헤어는 관리의 편의성과 스타일링의 다양성을 모두 갖춘 실용적인 길이입니다.',
@@ -797,7 +935,7 @@
             return descriptions[mainCategory] || `${mainCategory} 스타일에 대한 설명입니다.`;
         }
 
-        // 테스트 데이터 렌더링
+        // 🧪 테스트 데이터 렌더링
         function renderTestData(mainCategory) {
             const subCategories = hierarchyStructure[currentGender]?.[mainCategory] || ['None'];
             
@@ -818,7 +956,7 @@
             });
         }
 
-        // 카테고리 렌더링
+        // 🎨 카테고리 렌더링 (기존과 동일)
         function renderCategory(categoryData) {
             const content = document.getElementById('content');
             
@@ -936,10 +1074,19 @@
             modal.style.display = 'block';
         }
 
-        // 초기화
+        // 🚀 초기화
         document.addEventListener('DOMContentLoaded', function() {
             initializeModal();
-            console.log('HAIRGATOR 메뉴판 로드 완료 (수정된 계층형 시스템)');
+            console.log('🎉 어드민 동기화된 HAIRGATOR 메뉴판 로드 완료!');
+            
+            // 개발 도구에서 테스트할 수 있는 함수들 노출
+            window.testFunctions = {
+                loadMainCategoriesFromAdmin,
+                loadHairstylesFromHierarchy,
+                hierarchyStructure,
+                currentGender,
+                currentCategory
+            };
         });
     </script>
 </body>
