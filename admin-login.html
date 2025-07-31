@@ -317,8 +317,8 @@
         function checkAuthState() {
             auth.onAuthStateChanged((user) => {
                 if (user && adminEmails.includes(user.email)) {
-                    // 이미 로그인된 관리자
-                    window.location.href = '/admin.html';
+                    // 이미 로그인된 관리자 - 상대 경로로 수정
+                    window.location.href = 'admin.html';
                 }
             });
         }
@@ -350,7 +350,8 @@
                 if (adminEmails.includes(userCredential.user.email)) {
                     showSuccess('로그인 성공! 잠시 후 관리자 페이지로 이동합니다.');
                     setTimeout(() => {
-                        window.location.href = '/admin.html';
+                        // 상대 경로로 수정
+                        window.location.href = 'admin.html';
                     }, 1000);
                 } else {
                     await auth.signOut();
