@@ -94,7 +94,39 @@
             }
         }
 
-        /* 성별 선택 화면 - 세로 긴 직사각형 카드 */
+        /* 닫기 버튼 */
+        .close-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #FF1493;
+            color: #FF1493;
+            transform: scale(1.1);
+        }
+
+        .close-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 성별 선택 화면 - 세로로 긴 직사각형 카드 */
         .gender-selection {
             display: flex;
             align-items: center;
@@ -110,7 +142,7 @@
             display: none;
         }
 
-        /* 핸드폰용 반응형 (768px 미만) */
+        /* 핸드폰용 반응형 (768px 미만) - 세로로 긴 직사각형 */
         @media screen and (max-width: 768px) {
             .device-notice {
                 background: rgba(255, 20, 147, 0.9);
@@ -126,9 +158,9 @@
 
             .gender-card {
                 width: 100%;
-                max-width: 250px;
-                height: 140px; /* 세로로 긴 직사각형 */
-                padding: 25px 20px;
+                max-width: 180px; /* 세로로 긴 직사각형: 가로 짧게 */
+                height: 220px;    /* 세로로 긴 직사각형: 세로 길게 */
+                padding: 30px 20px;
                 background: rgba(255, 255, 255, 0.08);
                 border: 2px solid rgba(255, 255, 255, 0.3);
                 border-radius: 20px;
@@ -144,13 +176,13 @@
             }
 
             .gender-icon {
-                width: 60px;
-                height: 60px;
-                margin-bottom: 15px;
+                width: 70px;
+                height: 70px;
+                margin-bottom: 20px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 30px;
+                font-size: 35px;
                 background: linear-gradient(135deg, #FF1493, #FF69B4);
                 border-radius: 50%;
                 flex-shrink: 0;
@@ -161,20 +193,20 @@
             }
 
             .gender-title {
-                font-size: 18px;
+                font-size: 20px;
                 font-weight: bold;
-                margin-bottom: 5px;
+                margin-bottom: 8px;
                 color: #fff;
             }
 
             .gender-subtitle {
                 color: #aaa;
-                font-size: 11px;
+                font-size: 12px;
                 font-weight: 400;
             }
         }
 
-        /* 태블릿용 반응형 (769px 이상) */
+        /* 태블릿용 반응형 (769px 이상) - 세로로 긴 직사각형 */
         @media screen and (min-width: 769px) {
             .device-notice {
                 background: rgba(0, 150, 255, 0.9);
@@ -190,9 +222,9 @@
 
             .gender-card {
                 flex: 1;
-                max-width: 280px;
-                height: 180px; /* 세로로 긴 직사각형 */
-                padding: 35px 25px;
+                max-width: 200px; /* 세로로 긴 직사각형: 가로 짧게 */
+                height: 250px;    /* 세로로 긴 직사각형: 세로 길게 */
+                padding: 40px 25px;
                 background: rgba(255, 255, 255, 0.05);
                 border: 2px solid rgba(255, 255, 255, 0.25);
                 border-radius: 25px;
@@ -208,13 +240,13 @@
             }
 
             .gender-icon {
-                width: 80px;
-                height: 80px;
-                margin-bottom: 20px;
+                width: 90px;
+                height: 90px;
+                margin-bottom: 25px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 40px;
+                font-size: 45px;
                 background: linear-gradient(135deg, #FF1493, #FF69B4);
                 border-radius: 50%;
                 flex-shrink: 0;
@@ -225,15 +257,15 @@
             }
 
             .gender-title {
-                font-size: 22px;
+                font-size: 24px;
                 font-weight: bold;
-                margin-bottom: 8px;
+                margin-bottom: 10px;
                 color: #fff;
             }
 
             .gender-subtitle {
                 color: #aaa;
-                font-size: 13px;
+                font-size: 14px;
                 font-weight: 400;
             }
         }
@@ -812,12 +844,15 @@
     </style>
 </head>
 <body>
+    <!-- 닫기 버튼 -->
+    <button class="close-btn" onclick="closeApp()" title="닫기">×</button>
+
     <!-- 기기별 최적화 안내 -->
     <div class="device-notice" id="deviceNotice">
         📱 태블릿에서 최적의 경험을 제공합니다
     </div>
 
-    <!-- 성별 선택 화면 - 세로 긴 직사각형 -->
+    <!-- 성별 선택 화면 - 세로로 긴 직사각형 -->
     <div class="gender-selection" id="genderSelection">
         <div class="gender-card male" onclick="selectGender('male')">
             <div class="gender-icon">♂</div>
@@ -905,6 +940,17 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
+        // 닫기 기능 - 뒤로가기로 앱 돌아가기
+        function closeApp() {
+            // 브라우저 뒤로가기로 네이티브 앱으로 돌아가기
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                // 뒤로갈 곳이 없으면 창 닫기 시도
+                window.close();
+            }
+        }
+
         // 네이티브앱처럼 보이게 하는 JavaScript 추가
         
         // PWA 서비스 워커 등록
