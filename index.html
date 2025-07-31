@@ -12,6 +12,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#000000">
     
+    <!-- PWA Manifest 연결 -->
+    <link rel="manifest" href="/manifest.json">
+    
     <!-- iOS 상태바 숨기기 + 전체화면 -->
     <meta name="apple-touch-fullscreen" content="yes">
     <meta name="format-detection" content="telephone=no">
@@ -19,6 +22,9 @@
     <!-- 주소창 숨기기 -->
     <meta name="msapplication-tap-highlight" content="no">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- PWA 아이콘 (iOS용) -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23FF1493;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FF69B4;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='192' height='192' fill='url(%23grad)' rx='20'/%3E%3Ctext x='96' y='120' font-family='Arial,sans-serif' font-size='60' font-weight='bold' text-anchor='middle' fill='white'%3EH%3C/text%3E%3C/svg%3E">
     
     <style>
         /* 모바일/태블릿 전용 - PC 고려 안함 */
@@ -54,121 +60,267 @@
             -webkit-overscroll-behavior: none;
         }
 
-        /* 팝업 형태 반응형 성별 선택 */
+        /* 기기별 최적화 안내 */
+        .device-notice {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 20, 147, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            text-align: center;
+            max-width: 90%;
+            box-sizing: border-box;
+        }
+
+        .device-notice.show {
+            opacity: 1;
+        }
+
+        @keyframes slideDown {
+            from { 
+                opacity: 0; 
+                transform: translateX(-50%) translateY(-20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(-50%) translateY(0); 
+            }
+        }
+
+        /* 성별 선택 화면 - 세로 긴 직사각형 카드 */
         .gender-selection {
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
             background-color: #000;
-            padding: 30px 20px;
+            padding: 40px 20px;
             box-sizing: border-box;
+            gap: 30px;
         }
 
         .gender-selection.hidden {
             display: none;
         }
 
-        /* 세로 모드 (핸드폰) - 세로 배치 */
-        @media screen and (orientation: portrait) {
+        /* 핸드폰용 반응형 (768px 미만) */
+        @media screen and (max-width: 768px) {
+            .device-notice {
+                background: rgba(255, 20, 147, 0.9);
+                font-size: 12px;
+                padding: 8px 15px;
+            }
+
             .gender-selection {
                 flex-direction: column;
-                gap: 30px;
-                padding: 40px 30px;
+                gap: 25px;
+                padding: 30px 20px;
             }
-            
+
             .gender-card {
                 width: 100%;
-                max-width: 280px;
-                padding: 30px;
+                max-width: 250px;
+                height: 140px; /* 세로로 긴 직사각형 */
+                padding: 25px 20px;
+                background: rgba(255, 255, 255, 0.08);
+                border: 2px solid rgba(255, 255, 255, 0.3);
                 border-radius: 20px;
-                background-color: rgba(255, 255, 255, 0.08);
-                border: 2px solid rgba(255, 255, 255, 0.4);
                 text-align: center;
                 cursor: pointer;
                 transition: all 0.3s ease;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                overflow: hidden;
             }
-            
+
             .gender-icon {
-                width: 100px;
-                height: 100px;
-                margin: 0 auto 20px;
+                width: 60px;
+                height: 60px;
+                margin-bottom: 15px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 50px;
+                font-size: 30px;
                 background: linear-gradient(135deg, #FF1493, #FF69B4);
                 border-radius: 50%;
+                flex-shrink: 0;
             }
-            
+
             .gender-card.male .gender-icon {
                 background: linear-gradient(135deg, #4169E1, #1E90FF);
             }
-            
+
             .gender-title {
-                font-size: 24px;
+                font-size: 18px;
                 font-weight: bold;
-                margin-bottom: 8px;
+                margin-bottom: 5px;
+                color: #fff;
             }
-            
+
             .gender-subtitle {
-                color: #999;
-                font-size: 14px;
+                color: #aaa;
+                font-size: 11px;
+                font-weight: 400;
             }
         }
 
-        /* 가로 모드 (태블릿/큰 화면) - 가로 배치 */
-        @media screen and (orientation: landscape) {
+        /* 태블릿용 반응형 (769px 이상) */
+        @media screen and (min-width: 769px) {
+            .device-notice {
+                background: rgba(0, 150, 255, 0.9);
+                font-size: 14px;
+                padding: 10px 20px;
+            }
+
             .gender-selection {
                 flex-direction: row;
-                gap: 40px;
-                padding: 30px;
+                gap: 50px;
+                padding: 40px;
             }
-            
+
             .gender-card {
                 flex: 1;
-                max-width: 200px;
-                padding: 40px 30px;
-                border-radius: 20px;
-                background-color: rgba(255, 255, 255, 0.08);
-                border: 2px solid rgba(255, 255, 255, 0.4);
+                max-width: 280px;
+                height: 180px; /* 세로로 긴 직사각형 */
+                padding: 35px 25px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 2px solid rgba(255, 255, 255, 0.25);
+                border-radius: 25px;
                 text-align: center;
                 cursor: pointer;
                 transition: all 0.3s ease;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                overflow: hidden;
             }
-            
+
             .gender-icon {
-                width: 120px;
-                height: 120px;
-                margin: 0 auto 20px;
+                width: 80px;
+                height: 80px;
+                margin-bottom: 20px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 60px;
+                font-size: 40px;
                 background: linear-gradient(135deg, #FF1493, #FF69B4);
                 border-radius: 50%;
+                flex-shrink: 0;
             }
-            
+
             .gender-card.male .gender-icon {
                 background: linear-gradient(135deg, #4169E1, #1E90FF);
             }
-            
+
             .gender-title {
-                font-size: 20px;
+                font-size: 22px;
                 font-weight: bold;
-                margin-bottom: 10px;
+                margin-bottom: 8px;
+                color: #fff;
             }
-            
+
             .gender-subtitle {
-                color: #999;
-                font-size: 12px;
+                color: #aaa;
+                font-size: 13px;
+                font-weight: 400;
             }
         }
 
+        /* 터치 효과 - 세로 직사각형 최적화 */
         .gender-card:active {
-            transform: scale(0.95);
-            background-color: rgba(255, 255, 255, 0.15);
+            transform: scale(0.96);
+            background: rgba(255, 255, 255, 0.15);
             border-color: #FF1493;
+        }
+
+        .gender-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #FF69B4;
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.2);
+        }
+
+        /* PWA 설치 모달 */
+        .pwa-install-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .install-content {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #FF1493;
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .install-content h2 {
+            color: #FF1493;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .install-content p {
+            color: #fff;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .install-btn {
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .install-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 20, 147, 0.3);
+        }
+
+        .skip-btn {
+            background: #333;
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .skip-btn:hover {
+            background: #555;
         }
 
         /* 메인 컨테이너 */
@@ -416,14 +568,14 @@
         }
 
         /* 세로 모드 - 작은 카드 */
-        @media screen and (orientation: portrait) {
+        @media screen and (max-width: 768px) {
             .hairstyle-card {
                 width: 140px;
             }
         }
 
         /* 가로 모드 - 큰 카드 */
-        @media screen and (orientation: landscape) {
+        @media screen and (min-width: 769px) {
             .hairstyle-card {
                 width: 180px;
             }
@@ -657,12 +809,15 @@
             line-height: 1.5;
             color: #666;
         }
-
-        /* 방향별 반응형 - 팝업에 최적화 */
     </style>
 </head>
 <body>
-    <!-- 성별 선택 화면 -->
+    <!-- 기기별 최적화 안내 -->
+    <div class="device-notice" id="deviceNotice">
+        📱 태블릿에서 최적의 경험을 제공합니다
+    </div>
+
+    <!-- 성별 선택 화면 - 세로 긴 직사각형 -->
     <div class="gender-selection" id="genderSelection">
         <div class="gender-card male" onclick="selectGender('male')">
             <div class="gender-icon">♂</div>
@@ -752,18 +907,147 @@
     <script>
         // 네이티브앱처럼 보이게 하는 JavaScript 추가
         
+        // PWA 서비스 워커 등록
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then(function(registration) {
+                            console.log('🎉 PWA 서비스 워커 등록 성공:', registration.scope);
+                            
+                            // 업데이트 감지
+                            registration.addEventListener('updatefound', () => {
+                                const newWorker = registration.installing;
+                                newWorker.addEventListener('statechange', () => {
+                                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                        console.log('🔄 PWA 업데이트 사용 가능');
+                                        // 필요시 사용자에게 업데이트 알림
+                                    }
+                                });
+                            });
+                        })
+                        .catch(function(error) {
+                            console.log('❌ PWA 서비스 워커 등록 실패:', error);
+                        });
+                });
+            }
+        }
+
+        // PWA 설치 프롬프트 처리
+        let deferredPrompt;
+        let installButton = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('📱 PWA 설치 프롬프트 준비됨');
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // URL 파라미터로 설치 모드인지 확인
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('install') === 'true') {
+                showPWAInstallDialog();
+            }
+        });
+
+        // 기기별 최적화 안내 표시
+        function showDeviceOptimizationNotice() {
+            const notice = document.getElementById('deviceNotice');
+            const screenWidth = window.innerWidth;
+            
+            if (screenWidth < 768) {
+                // 핸드폰: 태블릿 권장 안내
+                notice.innerHTML = '📱 태블릿에서 최적의 경험을 제공합니다';
+                notice.className = 'device-notice show';
+                
+                // 5초 후 자동 숨김
+                setTimeout(() => {
+                    notice.classList.remove('show');
+                }, 5000);
+                
+            } else if (screenWidth >= 768) {
+                // 태블릿: 최적화 완료 안내
+                notice.innerHTML = '🎉 태블릿 최적화 모드로 실행 중입니다';
+                notice.className = 'device-notice show';
+                
+                // 3초 후 자동 숨김
+                setTimeout(() => {
+                    notice.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // PWA 설치 다이얼로그 표시 (기기별 맞춤)
+        function showPWAInstallDialog() {
+            const screenWidth = window.innerWidth;
+            let dialogTitle, dialogMessage;
+            
+            if (screenWidth < 768) {
+                // 핸드폰용 메시지
+                dialogTitle = '📱 HAIRGATOR 앱 설치';
+                dialogMessage = '핸드폰에서도 사용 가능하지만<br><strong>태블릿에서 최적의 경험</strong>을 제공합니다!';
+            } else {
+                // 태블릿용 메시지  
+                dialogTitle = '🎉 HAIRGATOR 앱 설치';
+                dialogMessage = '태블릿 전체화면에서 완벽한<br><strong>헤어스타일 경험</strong>을 즐기세요!';
+            }
+
+            // 설치 안내 모달 생성
+            const installModal = document.createElement('div');
+            installModal.className = 'pwa-install-modal';
+            installModal.innerHTML = `
+                <div class="install-content">
+                    <h2>${dialogTitle}</h2>
+                    <p>${dialogMessage}</p>
+                    <button class="install-btn" onclick="installPWA()">📱 홈 화면에 추가</button>
+                    <button class="skip-btn" onclick="this.closest('.pwa-install-modal').remove()">나중에</button>
+                </div>
+            `;
+            
+            document.body.appendChild(installModal);
+        }
+
+        // PWA 설치 실행
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((result) => {
+                    if (result.outcome === 'accepted') {
+                        console.log('🎉 PWA 설치 완료');
+                        document.querySelector('.pwa-install-modal')?.remove();
+                    } else {
+                        console.log('❌ PWA 설치 취소');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                // iOS Safari인 경우 수동 설치 안내
+                alert('📱 Safari에서 "공유" 버튼 → "홈 화면에 추가"를 선택하세요!');
+                document.querySelector('.pwa-install-modal')?.remove();
+            }
+        }
+
         // 팝업 형태 반응형 처리
         function initializeMobileApp() {
+            // PWA 서비스 워커 등록
+            registerServiceWorker();
+            
+            // 기기별 최적화 안내 표시
+            showDeviceOptimizationNotice();
+            
             // 현재 화면 방향과 크기 확인
             const isPortrait = window.innerHeight > window.innerWidth;
+            const screenWidth = window.innerWidth;
+            const deviceType = screenWidth >= 768 ? 'tablet' : 'phone';
+            
             const screenInfo = {
                 width: window.innerWidth,
                 height: window.innerHeight,
                 orientation: isPortrait ? 'portrait' : 'landscape',
-                ratio: window.innerWidth / window.innerHeight
+                deviceType: deviceType,
+                optimized: deviceType === 'tablet'
             };
             
-            console.log('📱 팝업 반응형 모드:', screenInfo);
+            console.log('📱 PWA 반응형 모드:', screenInfo);
             
             // 방향 변화 감지
             window.addEventListener('orientationchange', function() {
@@ -771,6 +1055,9 @@
                     const newIsPortrait = window.innerHeight > window.innerWidth;
                     console.log('🔄 방향 변경:', newIsPortrait ? 'portrait' : 'landscape');
                     hideAddressBar();
+                    
+                    // 방향 변경 시 기기별 안내 다시 표시
+                    setTimeout(showDeviceOptimizationNotice, 500);
                 }, 100);
             });
             
@@ -779,7 +1066,7 @@
                 // 터치 시작 처리
             }, { passive: true });
             
-            console.log('📱 팝업 형태 반응형 시스템 활성화');
+            console.log(`📱 PWA 시스템 활성화 완료 (${deviceType} 모드)`);
         }
         
         // iOS Safari 주소창 숨기기
@@ -793,7 +1080,7 @@
         window.addEventListener('load', function() {
             initializeMobileApp();
             hideAddressBar();
-            console.log('🚀 팝업 반응형 웹앱 로드 완료');
+            console.log('🚀 HAIRGATOR PWA 로드 완료');
         });
         
         // 확대/축소 완전 방지
@@ -832,19 +1119,6 @@
                 e.preventDefault();
             }
         }, { passive: false });
-        
-        // iOS에서 주소창 숨기기
-        function hideAddressBar() {
-            if (window.innerHeight < screen.height) {
-                setTimeout(function() {
-                    window.scrollTo(0, 1);
-                }, 0);
-            }
-        }
-        
-        // 페이지 로드 시 주소창 숨기기
-        window.addEventListener('load', hideAddressBar);
-        window.addEventListener('orientationchange', hideAddressBar);
         
         console.log('🚀 HAIRGATOR 실시간 동기화 인덱스 시작');
         
