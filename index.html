@@ -562,19 +562,19 @@
         let currentGender = null;
         let currentCategory = null;
 
-        // 계층 구조 정의 (테스트용)
+        // 계층 구조 정의 (Excel 데이터 기반으로 수정)
         const hierarchyStructure = {
             male: {
-                'SIDE_FRINGE': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
-                'SIDE_PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
+                'SIDE_FRINGE': ['Fore Head', 'Eye Brow'],
+                'SIDE_PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'], 
                 'FRINGE_UP': ['None', 'Fore Head'],
                 'PUSHED_BACK': ['None'],
                 'BUZZ': ['None'],
                 'CROP': ['None'],
-                'MOHICAN': ['Fore Head', 'Eye Brow']
+                'MOHICAN': ['None']
             },
             female: {
-                'LONG': ['None', 'Fore Head', 'Eye Brow'],
+                'LONG': ['A Length', 'Fore Head', 'Eye Brow'],
                 'MEDIUM': ['None', 'Fore Head', 'Eye Brow'],
                 'SHORT': ['None', 'Fore Head']
             }
@@ -605,7 +605,7 @@
             
             try {
                 if (firebaseConnected) {
-                    // Firebase에서 계층 구조 로드
+                    // Firebase에서 계층 구조 로드 - 쿼리 수정
                     const hierarchySnapshot = await db.collection('category_hierarchy')
                         .where('gender', '==', gender)
                         .get();
@@ -617,13 +617,18 @@
                         if (!mainCategories[data.mainCategory]) {
                             mainCategories[data.mainCategory] = [];
                         }
-                        mainCategories[data.mainCategory].push(data.subCategory);
+                        if (!mainCategories[data.mainCategory].includes(data.subCategory)) {
+                            mainCategories[data.mainCategory].push(data.subCategory);
+                        }
                     });
                     
                     if (Object.keys(mainCategories).length === 0) {
                         displayTestCategories(gender);
                         return;
                     }
+                    
+                    // hierarchyStructure 업데이트
+                    hierarchyStructure[gender] = mainCategories;
                     
                     navTabs.innerHTML = '';
                     let firstCategory = null;
@@ -699,29 +704,67 @@
             }
         }
 
-        // Firebase에서 계층형 헤어스타일 로드
+        // Firebase에서 계층형 헤어스타일 로드 - 수정된 함수
         async function loadHairstylesFromHierarchy(mainCategory) {
             const content = document.getElementById('content');
             content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
             
             try {
-                // 해당 대분류의 모든 중분류와 스타일 로드
+                // hairstyles 컬렉션에서 직접 조회 (categoryPath 대신 개별 필드 사용)
                 const stylesSnapshot = await db.collection('hairstyles')
                     .where('gender', '==', currentGender)
                     .where('mainCategory', '==', mainCategory)
-                    .orderBy('order')
                     .get();
+                
+                // 만약 mainCategory 필드가 없다면 기존 방식으로 시도
+                if (stylesSnapshot.empty) {
+                    console.log('mainCategory 필드로 조회 실패, categoryPath로 재시도');
+                    
+                    // categoryPath로 조회 시도
+                    const categoryPaths = hierarchyStructure[currentGender][mainCategory] || ['None'];
+                    const allStyles = {};
+                    
+                    for (const subCategory of categoryPaths) {
+                        const categoryPath = `${currentGender}_${mainCategory}_${subCategory}`;
+                        const pathSnapshot = await db.collection('hairstyles')
+                            .where('categoryPath', '==', categoryPath)
+                            .get();
+                        
+                        if (!pathSnapshot.empty) {
+                            allStyles[subCategory] = [];
+                            pathSnapshot.forEach(doc => {
+                                const style = doc.data();
+                                allStyles[subCategory].push({
+                                    ...style,
+                                    id: doc.id
+                                });
+                            });
+                        }
+                    }
+                    
+                    if (Object.keys(allStyles).length > 0) {
+                        renderCategory({
+                            description: getMainCategoryDescription(mainCategory),
+                            styles: allStyles
+                        });
+                        return;
+                    }
+                }
                 
                 // 중분류별로 스타일 그룹화
                 const stylesBySubCategory = {};
                 stylesSnapshot.forEach(doc => {
                     const style = doc.data();
-                    const subCategory = style.subCategory || 'None';
+                    // subCategory 또는 foreheadLength 필드 사용
+                    const subCategory = style.subCategory || style.foreheadLength || 'None';
                     
                     if (!stylesBySubCategory[subCategory]) {
                         stylesBySubCategory[subCategory] = [];
                     }
-                    stylesBySubCategory[subCategory].push(style);
+                    stylesBySubCategory[subCategory].push({
+                        ...style,
+                        id: doc.id
+                    });
                 });
                 
                 renderCategory({
@@ -731,6 +774,7 @@
                 
             } catch (error) {
                 console.error('헤어스타일 로드 오류:', error);
+                // 오류 발생 시 테스트 데이터로 대체
                 renderTestData(mainCategory);
             }
         }
@@ -895,7 +939,7 @@
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
             initializeModal();
-            console.log('HAIRGATOR 메뉴판 로드 완료 (계층형 시스템)');
+            console.log('HAIRGATOR 메뉴판 로드 완료 (수정된 계층형 시스템)');
         });
     </script>
 </body>
