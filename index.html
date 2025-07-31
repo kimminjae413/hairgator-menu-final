@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>HAIRGATOR - 헤어스타일 메뉴판</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAIRGATOR - 어드민</title>
     
     <style>
         * {
@@ -13,370 +13,275 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #000;
-            color: #fff;
-            overflow-x: auto;
-            overflow-y: hidden;
-            height: 100vh;
-            position: relative;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 20px;
         }
 
-        /* 강제 가로모드 */
-        @media screen and (orientation: portrait) {
-            body {
-                transform: rotate(90deg);
-                transform-origin: left top;
-                width: 100vh;
-                height: 100vw;
-                position: absolute;
-                top: 100%;
-                left: 0;
-            }
-        }
-
-        /* 성별 선택 화면 */
-        .gender-selection {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #000;
-            gap: 40px;
-        }
-
-        .gender-selection.hidden {
-            display: none;
-        }
-
-        .gender-card {
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 40px;
-            border-radius: 20px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 2px solid transparent;
-        }
-
-        .gender-card:hover {
-            transform: translateY(-10px);
-            border-color: #FF1493;
-            box-shadow: 0 10px 40px rgba(255, 20, 147, 0.3);
-        }
-
-        .gender-icon {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 60px;
-            background: linear-gradient(135deg, #FF1493, #FF69B4);
-            border-radius: 50%;
-        }
-
-        .gender-card.male .gender-icon {
-            background: linear-gradient(135deg, #4169E1, #1E90FF);
-        }
-
-        .gender-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .gender-subtitle {
-            color: #999;
-            font-size: 14px;
-        }
-
-        /* 메인 컨테이너 */
-        .main-container {
-            display: none;
-        }
-
-        .main-container.active {
-            display: block;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         /* 헤더 */
         .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: #000;
-            z-index: 100;
-            border-bottom: 1px solid #333;
-        }
-
-        .logo-section {
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .logo-img {
-            height: 24px;
-            width: auto;
-            opacity: 0.9;
-        }
-
-        /* 뒤로가기 버튼 */
-        .back-btn {
-            background: none;
-            border: none;
-            color: #999;
-            cursor: pointer;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-            transition: color 0.3s ease;
-        }
-
-        .back-btn:hover {
-            color: #FF1493;
-        }
-
-        /* AI 상담 버튼 */
-        .ai-chat-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 48px;
-            height: 48px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            padding: 0;
-        }
-
-        .ai-chat-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .ai-chat-btn:hover .face-scan-icon {
-            filter: drop-shadow(0 0 10px rgba(255, 20, 147, 0.6));
-        }
-
-        .face-scan-icon {
-            width: 100%;
-            height: 100%;
-            transition: all 0.3s ease;
-        }
-
-        /* 네비게이션 탭 */
-        .nav-tabs {
-            display: flex;
-            background-color: #000;
-            overflow-x: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            padding: 0 20px;
-        }
-
-        .nav-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .nav-tab {
-            padding: 15px 25px;
-            cursor: pointer;
-            white-space: nowrap;
-            color: #888;
-            transition: all 0.3s ease;
-            position: relative;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-
-        .nav-tab.active {
-            color: #fff;
-        }
-
-        .nav-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #FF1493, #FF69B4);
-        }
-
-        .nav-tab:hover {
-            color: #FF69B4;
-        }
-
-        /* 콘텐츠 영역 */
-        .content {
-            margin-top: 100px;
+            background-color: #fff;
             padding: 20px;
-            min-height: calc(100vh - 100px);
-            overflow-x: auto; /* 가로 스크롤 허용 */
-            overflow-y: auto; /* 세로 스크롤도 허용 */
-        }
-
-        .category-section {
-            display: none;
-        }
-
-        .category-section.active {
-            display: block;
-        }
-
-        .category-description {
-            margin-bottom: 20px;
-            padding: 20px;
-            background-color: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            line-height: 1.6;
-            color: #ccc;
-        }
-
-        /* 앞머리 길이 탭 (가운데 정렬) */
-        .length-tabs {
-            display: flex;
-            justify-content: center; /* 가운데 정렬 */
-            align-items: center;
-            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 30px;
-            padding: 20px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .length-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .length-tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            white-space: nowrap;
-            color: #888;
-            transition: all 0.3s ease;
-            position: relative;
-            font-weight: 500;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            font-size: 14px;
-        }
-
-        .length-tab.active {
-            color: #fff;
-            background-color: #FF1493;
-        }
-
-        .length-tab:hover {
-            color: #fff;
-            background-color: rgba(255, 20, 147, 0.7);
-        }
-
-        /* 헤어스타일 그리드 */
-        .hairstyle-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-            min-width: 100%;
-            overflow-x: auto; /* 가로 스크롤 허용 */
-            -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
-            scrollbar-width: thin; /* Firefox 얇은 스크롤바 */
-        }
-
-        /* 스크롤바 스타일링 */
-        .hairstyle-grid::-webkit-scrollbar {
-            height: 6px;
-        }
-
-        .hairstyle-grid::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-        }
-
-        .hairstyle-grid::-webkit-scrollbar-thumb {
-            background: #FF1493;
-            border-radius: 3px;
-        }
-
-        .hairstyle-grid::-webkit-scrollbar-thumb:hover {
-            background: #FF69B4;
-        }
-
-        .hairstyle-card {
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            min-width: 200px; /* 최소 너비 보장 */
-            flex-shrink: 0; /* 축소 방지 */
-        }
-
-        .hairstyle-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
-        }
-
-        /* 터치 디바이스 최적화 */
-        @media (hover: none) {
-            .hairstyle-card:active {
-                transform: scale(0.95);
-                transition: transform 0.1s ease;
-            }
-        }
-
-        .hairstyle-image {
-            width: 100%;
-            aspect-ratio: 3/4;
-            object-fit: cover;
-            background-color: #222;
-        }
-
-        .hairstyle-info {
-            padding: 15px;
             text-align: center;
         }
 
-        .hairstyle-code {
-            font-size: 12px;
-            color: #FF69B4;
-            margin-bottom: 5px;
-            font-weight: 600;
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FF1493;
         }
 
-        .hairstyle-name {
-            font-size: 14px;
-            color: #fff;
+        /* 카드 */
+        .card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* 계층 구조 그리드 */
+        .hierarchy-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .hierarchy-column {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .hierarchy-title {
+            font-weight: bold;
+            color: #FF1493;
+            margin-bottom: 15px;
+            text-align: center;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+        }
+
+        /* 선택 가능한 아이템 */
+        .selectable-item {
+            background-color: #fff;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .selectable-item:hover {
+            background-color: #fff0f5;
+            border-color: #FF69B4;
+        }
+
+        .selectable-item.selected {
+            background-color: #FF1493;
+            color: white;
+            border-color: #FF1493;
+        }
+
+        .item-text {
+            flex: 1;
+        }
+
+        .item-actions {
+            display: none;
+            gap: 3px;
+        }
+
+        .selectable-item:hover .item-actions {
+            display: flex;
+        }
+
+        .selectable-item.selected .item-actions {
+            display: flex;
+        }
+
+        .action-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: inherit;
+            padding: 3px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .action-btn:hover {
+            background: rgba(255,255,255,0.4);
+        }
+
+        /* 버튼 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
             font-weight: 500;
+            margin: 5px;
         }
 
-        /* 앞머리 길이 섹션 */
-        .length-section {
+        .btn-primary {
+            background-color: #FF1493;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #FF69B4;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        /* 알림 */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
             display: none;
         }
 
-        .length-section.active {
-            display: block;
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
 
-        /* 이미지 모달 - 터치 최적화 */
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* 경로 표시 */
+        .breadcrumb {
+            background-color: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .breadcrumb-item {
+            display: inline;
+            color: #6c757d;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: " → ";
+            color: #6c757d;
+        }
+
+        .breadcrumb-item.active {
+            color: #FF1493;
+            font-weight: bold;
+        }
+
+        /* 빈 상태 */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* 스타일 목록 */
+        .style-item {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .style-code {
+            font-weight: bold;
+            color: #FF1493;
+            margin-bottom: 5px;
+        }
+
+        .style-name {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .style-actions {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        /* 모달 */
         .modal {
             display: none;
             position: fixed;
@@ -385,331 +290,276 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            animation: fadeIn 0.3s ease;
-            -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            background-color: rgba(0,0,0,0.5);
         }
 
         .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
             position: relative;
-            margin: auto;
-            padding: 20px;
-            width: 95%; /* 모바일에서 더 넓게 */
-            max-width: 800px;
-            height: 100%;
+        }
+
+        .modal-header {
             display: flex;
-            flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
         }
 
         .close {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            color: #fff;
-            font-size: 40px;
+            font-size: 28px;
             font-weight: bold;
+            color: #aaa;
             cursor: pointer;
-            z-index: 1001;
-            padding: 10px; /* 터치 영역 확대 */
         }
 
         .close:hover {
-            color: #FF69B4;
-        }
-
-        .modal-image {
-            max-width: 100%;
-            max-height: 70vh;
-            object-fit: contain;
-            border-radius: 10px;
-            touch-action: pinch-zoom; /* 핀치 줌 허용 */
-        }
-
-        .modal-info {
-            margin-top: 20px;
-            text-align: center;
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .modal-info h3 {
-            color: #FF69B4;
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
-
-        .modal-info p {
-            font-size: 18px;
-            color: #fff;
-        }
-
-        /* 모바일 모달 최적화 */
-        @media screen and (max-width: 600px) {
-            .close {
-                font-size: 35px;
-                top: 5px;
-                right: 15px;
-                padding: 15px;
-            }
-            
-            .modal-image {
-                max-height: 60vh;
-            }
-            
-            .modal-info {
-                padding: 15px;
-                margin-top: 15px;
-            }
-            
-            .modal-info h3 {
-                font-size: 20px;
-            }
-            
-            .modal-info p {
-                font-size: 16px;
-            }
-        }
-
-        /* 로딩 스피너 */
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-        }
-
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top: 3px solid #FF1493;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* 동기화 상태 표시 */
-        .sync-status {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            z-index: 200;
-            display: none;
-            max-width: 300px;
-            text-align: center;
-        }
-
-        .sync-status.connected {
-            background-color: rgba(40, 167, 69, 0.9);
-        }
-
-        .sync-status.disconnected {
-            background-color: rgba(220, 53, 69, 0.9);
-        }
-
-        .sync-status.updating {
-            background-color: rgba(255, 193, 7, 0.9);
             color: #000;
         }
 
-        /* 빈 상태 메시지 */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
+        /* 폼 */
+        .form-group {
             margin-bottom: 20px;
-            opacity: 0.5;
         }
 
-        .empty-state-title {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #999;
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
         }
 
-        .empty-state-message {
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #FF1493;
+        }
+
+        /* 동기화 상태 */
+        .sync-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        .sync-indicator.connected {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .sync-indicator.disconnected {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .sync-indicator.changes {
+            background-color: #FF1493;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        /* 진행 상황 표시 */
+        .progress-container {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
             font-size: 14px;
-            line-height: 1.5;
-            color: #666;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
-        /* 반응형 - 태블릿과 모바일 최적화 */
-        @media screen and (max-width: 1200px) {
-            .hairstyle-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 15px;
-            }
-            
-            .hairstyle-card {
-                min-width: 180px;
-            }
+        .progress-line {
+            margin: 5px 0;
+            padding: 2px 0;
         }
 
-        @media screen and (max-width: 900px) {
-            .hairstyle-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 12px;
-            }
-            
-            .hairstyle-card {
-                min-width: 160px;
-            }
-            
-            .content {
-                padding: 15px;
-            }
+        .progress-line.success {
+            color: #28a745;
         }
 
-        @media screen and (max-width: 600px) {
-            .hairstyle-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-            
-            .hairstyle-card {
-                min-width: 140px;
-            }
-            
-            .content {
-                padding: 10px;
-            }
-            
-            .nav-tab {
-                padding: 12px 20px;
-                font-size: 14px;
-            }
-            
-            .length-tab {
-                padding: 8px 16px;
-                font-size: 13px;
-            }
+        .progress-line.error {
+            color: #dc3545;
         }
 
-        /* 20개 이상 스타일이 있을 때 가로 스크롤 처리 */
-        @media screen and (min-width: 1201px) {
-            .hairstyle-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                max-width: none;
-            }
+        .progress-line.info {
+            color: #007bff;
         }
     </style>
 </head>
 <body>
-    <!-- 성별 선택 화면 -->
-    <div class="gender-selection" id="genderSelection">
-        <div class="gender-card male" onclick="selectGender('male')">
-            <div class="gender-icon">♂</div>
-            <div class="gender-title">남성</div>
-            <div class="gender-subtitle">Men's Hairstyle</div>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <div class="logo">HAIRGATOR 어드민</div>
         </div>
-        
-        <div class="gender-card female" onclick="selectGender('female')">
-            <div class="gender-icon">♀</div>
-            <div class="gender-title">여성</div>
-            <div class="gender-subtitle">Women's Hairstyle</div>
+
+        <!-- 알림 -->
+        <div id="alert" class="alert"></div>
+
+        <!-- 동기화 상태 -->
+        <div id="syncIndicator" class="sync-indicator disconnected">Firebase 연결 중...</div>
+
+        <!-- 초기화 카드 -->
+        <div class="card">
+            <h2 class="card-title">🚀 시스템 초기화</h2>
+            <p style="margin-bottom: 20px; color: #666;">
+                Excel 데이터를 기반으로 Firebase 구조를 초기화합니다.<br>
+                최초 1회 실행 후 모든 기능을 사용할 수 있습니다.
+            </p>
+            
+            <div style="text-align: center;">
+                <button class="btn btn-warning" onclick="initializeFirebaseWithExcelData()">
+                    🚀 Excel 데이터로 Firebase 초기화
+                </button>
+                <button class="btn btn-secondary" onclick="checkCurrentStructure()">
+                    📊 현재 구조 확인
+                </button>
+            </div>
+
+            <!-- 진행 상황 표시 -->
+            <div id="initProgress" class="progress-container" style="display: none;">
+                <div style="font-weight: bold; margin-bottom: 10px;">📋 초기화 진행 상황:</div>
+                <div id="progressLog"></div>
+            </div>
+        </div>
+
+        <!-- 메인 카드 -->
+        <div class="card">
+            <h2 class="card-title">🏗️ 계층형 카테고리 관리</h2>
+            
+            <!-- 현재 경로 -->
+            <div class="breadcrumb" id="breadcrumb">
+                <span class="breadcrumb-item">성별을 선택하세요</span>
+            </div>
+
+            <!-- 계층 구조 그리드 -->
+            <div class="hierarchy-grid">
+                <!-- 1단계: 성별 -->
+                <div class="hierarchy-column">
+                    <div class="hierarchy-title">1. 성별</div>
+                    <div id="genderList">
+                        <div class="selectable-item" onclick="selectGender('male')">
+                            👨 남성
+                        </div>
+                        <div class="selectable-item" onclick="selectGender('female')">
+                            👩 여성
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2단계: 대분류 -->
+                <div class="hierarchy-column">
+                    <div class="hierarchy-title">2. 대분류</div>
+                    <div id="mainCategoryList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📁</div>
+                            <div>성별을 선택하세요</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3단계: 중분류 -->
+                <div class="hierarchy-column">
+                    <div class="hierarchy-title">3. 중분류 (앞머리 길이)</div>
+                    <div id="subCategoryList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📂</div>
+                            <div>대분류를 선택하세요</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4단계: 스타일 -->
+                <div class="hierarchy-column">
+                    <div class="hierarchy-title">4. 스타일</div>
+                    <div id="stylesList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">✂️</div>
+                            <div>중분류를 선택하세요</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 관리 버튼들 -->
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn btn-secondary" onclick="refreshUI()">🔄 새로고침</button>
+                <button class="btn btn-success" id="syncBtn" onclick="syncToFirebase()">📤 인덱스에 반영</button>
+            </div>
         </div>
     </div>
 
-    <!-- 메인 컨테이너 -->
-    <div class="main-container" id="mainContainer">
-        <!-- 헤더 -->
-        <header class="header">
-            <div class="logo-section">
-                <button class="back-btn" onclick="backToGenderSelection()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span>뒤로</span>
-                </button>
-                
-                <div class="logo">
-                    <span style="color: #FF1493; font-size: 18px; font-weight: 700; letter-spacing: -0.5px;">HAIRGATOR</span>
-                </div>
-                
-                <button class="ai-chat-btn" onclick="window.open('https://hairgator-face.web.app', '_blank')" title="AI 얼굴 분석">
-                    <svg class="face-scan-icon" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- 얼굴 윤곽 -->
-                        <path d="M18 4 C10 4, 6 10, 6 18 C6 26, 10 32, 18 32 C26 32, 30 26, 30 18 C30 10, 26 4, 18 4" 
-                              stroke="#FF1493" stroke-width="2" fill="none"/>
-                        
-                        <!-- 스캔 라인들 -->
-                        <path d="M8 12h20M8 18h20M8 24h20" stroke="#FF69B4" stroke-width="1" opacity="0.5"/>
-                        
-                        <!-- 눈 -->
-                        <circle cx="13" cy="15" r="1.5" fill="#FF1493"/>
-                        <circle cx="23" cy="15" r="1.5" fill="#FF1493"/>
-                        
-                        <!-- 코 -->
-                        <circle cx="18" cy="20" r="1" fill="#FF69B4"/>
-                        
-                        <!-- 입 -->
-                        <path d="M14 24 Q18 26 22 24" stroke="#FF1493" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        
-                        <!-- 코너 브래킷 -->
-                        <path d="M2 2h6v6M28 2h6v6M2 28v6h6M28 28v6h6" stroke="#FF1493" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
-                    </svg>
-                </button>
+    <!-- 스타일 추가 모달 -->
+    <div id="addStyleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">새 스타일 추가</h3>
+                <span class="close" onclick="closeModal('addStyleModal')">&times;</span>
             </div>
             
-            <!-- 네비게이션 탭 -->
-            <nav class="nav-tabs" id="navTabs">
-                <!-- 동적으로 생성됩니다 -->
-            </nav>
-        </header>
-
-        <!-- 콘텐츠 영역 -->
-        <main class="content" id="content">
-            <!-- 카테고리별 섹션들이 동적으로 추가됩니다 -->
-        </main>
-    </div>
-
-    <!-- 이미지 모달 -->
-    <div id="imageModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <img class="modal-image" id="modalImage" src="" alt="">
-            <div class="modal-info">
-                <h3 id="modalCode"></h3>
-                <p id="modalName"></p>
+            <div class="form-group">
+                <label class="form-label">스타일 코드</label>
+                <input type="text" class="form-control" id="newStyleCode" placeholder="예: MSF1001">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">스타일명</label>
+                <input type="text" class="form-control" id="newStyleName" placeholder="예: 슬릭 다운펌">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">이미지 업로드 (필수)</label>
+                <input type="file" class="form-control" id="newStyleImage" accept="image/*" onchange="previewImage()" required>
+                <div id="imagePreview" style="margin-top: 10px; text-align: center;"></div>
+            </div>
+            
+            <div style="text-align: right;">
+                <button class="btn btn-secondary" onclick="closeModal('addStyleModal')">취소</button>
+                <button class="btn btn-primary" onclick="saveNewStyle()">추가</button>
             </div>
         </div>
     </div>
-
-    <!-- 동기화 상태 표시 -->
-    <div class="sync-status" id="syncStatus">Firebase 연결 중...</div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <script>
-        console.log('🚀 HAIRGATOR 실시간 동기화 인덱스 시작');
+        console.log('🚀 HAIRGATOR 이미지 업로드 어드민 시작');
         
-        // Firebase 설정 (어드민과 동일)
+        // Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
             authDomain: "hairgatormenu-4a43e.firebaseapp.com",
@@ -719,557 +569,951 @@
             appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
         };
 
-        // Firebase 초기화
-        let db;
+        // 전역 변수
+        let db = null;
+        let storage = null; // ✅ Firebase Storage 추가
         let firebaseConnected = false;
-        
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-            firebaseConnected = true;
-            console.log('✅ Firebase 연결 성공');
-            updateSyncStatus('connected', '✅ Firebase 연결됨');
-        } catch (error) {
-            console.error('❌ Firebase 초기화 오류:', error);
-            updateSyncStatus('disconnected', '❌ Firebase 연결 실패');
-            firebaseConnected = false;
+        let selectedGender = null;
+        let selectedMainCategory = null;
+        let selectedSubCategory = null;
+        let hierarchyStructure = {};
+        let hasChanges = false;
+        let changeLog = [];
+
+        // Excel 기반 완벽한 구조 (실제 Excel 데이터 정확 매핑)
+        const PERFECT_STRUCTURE = {
+            male: {
+                'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
+                'SIDE PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
+                'FRINGE UP': ['None', 'Fore Head'],
+                'PUSHED BACK': ['None'],
+                'BUZZ': ['None'],
+                'CROP': ['None'],
+                'MOHICAN': ['None']
+            },
+            female: {
+                'LONG': ['A Length', 'B Length'],
+                'SEMI LONG': ['C Length'],
+                'MEDIUM': ['D Length', 'E Length'],
+                'BOB': ['F Length', 'G Length'],
+                'SHORT': ['H Length']
+            }
+        };
+
+        // 로그 추가 함수
+        function addProgressLog(message, type = 'info') {
+            const progressLog = document.getElementById('progressLog');
+            const logLine = document.createElement('div');
+            logLine.className = `progress-line ${type}`;
+            logLine.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            progressLog.appendChild(logLine);
+            progressLog.scrollTop = progressLog.scrollHeight;
+            console.log(`📋 ${message}`);
         }
 
-        // 전역 변수
-        let currentGender = null;
-        let currentCategory = null;
-        let hierarchyStructure = {}; // 어드민과 100% 동일한 구조
-
-        // 🔄 동기화 상태 업데이트
-        function updateSyncStatus(status, message) {
-            const syncStatus = document.getElementById('syncStatus');
-            syncStatus.className = `sync-status ${status}`;
-            syncStatus.textContent = message;
-            syncStatus.style.display = 'block';
-            
-            // 5초 후 자동 숨김 (연결됨 상태가 아닌 경우만)
-            if (status !== 'connected') {
-                setTimeout(() => {
-                    syncStatus.style.display = 'none';
-                }, 5000);
+        // Firebase 초기화
+        function initializeFirebase() {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                storage = firebase.storage(); // ✅ Firebase Storage 초기화
+                firebaseConnected = true;
+                
+                updateSyncIndicator('connected', '✅ Firebase 연결됨 (Storage 포함)');
+                console.log('✅ Firebase 연결 성공 (Storage 포함)');
+                
+                // 자동으로 구조 로드 시도
+                loadHierarchyFromFirebase();
+                
+            } catch (error) {
+                console.error('❌ Firebase 초기화 오류:', error);
+                updateSyncIndicator('disconnected', '❌ Firebase 연결 실패');
+                firebaseConnected = false;
             }
         }
 
-        // 🎯 성별 선택 (실시간 동기화)
-        function selectGender(gender) {
-            console.log(`🎯 성별 선택: ${gender}`);
-            currentGender = gender;
-            document.getElementById('genderSelection').classList.add('hidden');
-            document.getElementById('mainContainer').classList.add('active');
-            
-            updateSyncStatus('updating', '📊 어드민 실시간 동기화 중...');
-            
-            // 🔥 무조건 Firebase에서만 데이터 로드 (기본 구조 사용 금지)
-            loadHierarchyFromFirebaseOnly(gender);
-        }
-
-        // 성별 선택 화면으로 돌아가기
-        function backToGenderSelection() {
-            document.getElementById('genderSelection').classList.remove('hidden');
-            document.getElementById('mainContainer').classList.remove('active');
-            currentGender = null;
-            currentCategory = null;
-            hierarchyStructure = {};
-        }
-
-        // 🔥 Firebase에서만 계층 구조 로드 (실시간 동기화 보장)
-        async function loadHierarchyFromFirebaseOnly(gender) {
-            console.log(`=== 🔥 Firebase 실시간 동기화: ${gender} ===`);
-            
-            const navTabs = document.getElementById('navTabs');
-            navTabs.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-            
+        // 🚀 Excel 데이터로 Firebase 초기화
+        async function initializeFirebaseWithExcelData() {
             if (!firebaseConnected) {
-                console.log('❌ Firebase 연결 실패');
-                showAdminInitializationRequired('Firebase 연결이 필요합니다. 페이지를 새로고침해주세요.');
-                updateSyncStatus('disconnected', '❌ Firebase 연결 실패');
+                showAlert('Firebase 연결이 필요합니다. 페이지를 새로고침해주세요.', 'error');
+                return;
+            }
+
+            const confirmMsg = `Excel 데이터를 기반으로 Firebase를 초기화하시겠습니까?
+
+📊 생성될 구조 (실제 Excel 분석 결과):
+남성: SIDE FRINGE, SIDE PART, FRINGE UP, PUSHED BACK, BUZZ, CROP, MOHICAN
+여성: LONG, SEMI LONG, MEDIUM, BOB, SHORT
+
+📋 중분류 매핑 예시:
+- BOB → [F Length, G Length]
+- LONG → [A Length, B Length]  
+- MEDIUM → [D Length, E Length]
+
+⚠️ 기존 category_hierarchy 데이터는 모두 삭제됩니다.`;
+
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                // 진행 상황 표시 시작
+                document.getElementById('initProgress').style.display = 'block';
+                document.getElementById('progressLog').innerHTML = '';
+                
+                const btn = document.querySelector('button[onclick="initializeFirebaseWithExcelData()"]');
+                btn.disabled = true;
+                btn.textContent = '초기화 중...';
+
+                addProgressLog('🚀 Excel 데이터 기반 Firebase 초기화 시작', 'info');
+                showAlert('Excel 데이터를 기반으로 Firebase를 초기화하고 있습니다...', 'info');
+
+                // 1. 기존 데이터 삭제
+                addProgressLog('🗑️ 기존 category_hierarchy 데이터 확인 중...', 'info');
+                const existingDocs = await db.collection('category_hierarchy').get();
+                
+                if (!existingDocs.empty) {
+                    addProgressLog(`📄 기존 문서 ${existingDocs.size}개 발견`, 'info');
+                    const deleteBatch = db.batch();
+                    existingDocs.forEach(doc => {
+                        deleteBatch.delete(doc.ref);
+                    });
+                    await deleteBatch.commit();
+                    addProgressLog(`✅ ${existingDocs.size}개 기존 문서 삭제 완료`, 'success');
+                } else {
+                    addProgressLog('📄 기존 문서 없음', 'info');
+                }
+
+                // 2. 완벽한 구조로 새 데이터 생성
+                addProgressLog('📝 Excel 기반 새 구조 생성 중...', 'info');
+                const createBatch = db.batch();
+                let totalDocs = 0;
+
+                Object.keys(PERFECT_STRUCTURE).forEach(gender => {
+                    addProgressLog(`👤 ${gender === 'male' ? '남성' : '여성'} 카테고리 생성 중...`, 'info');
+                    
+                    Object.keys(PERFECT_STRUCTURE[gender]).forEach(mainCategory => {
+                        PERFECT_STRUCTURE[gender][mainCategory].forEach(subCategory => {
+                            const docRef = db.collection('category_hierarchy').doc();
+                            createBatch.set(docRef, {
+                                gender,
+                                mainCategory,
+                                subCategory,
+                                categoryPath: `${gender}_${mainCategory}_${subCategory}`,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            totalDocs++;
+                        });
+                        
+                        addProgressLog(`  📁 ${mainCategory}: ${PERFECT_STRUCTURE[gender][mainCategory].length}개 중분류`, 'success');
+                    });
+                });
+
+                addProgressLog(`💾 Firebase에 ${totalDocs}개 문서 저장 중...`, 'info');
+                await createBatch.commit();
+                addProgressLog(`✅ ${totalDocs}개 문서 저장 완료`, 'success');
+
+                // 3. 메모리에 구조 저장
+                hierarchyStructure = JSON.parse(JSON.stringify(PERFECT_STRUCTURE));
+                addProgressLog('🧠 메모리 구조 업데이트 완료', 'success');
+
+                // 4. 완료
+                addProgressLog(`🎉 Excel 데이터 기반 Firebase 초기화 완료!`, 'success');
+                addProgressLog(`📊 총 ${totalDocs}개 문서 생성: ${Object.keys(PERFECT_STRUCTURE.male).length + Object.keys(PERFECT_STRUCTURE.female).length}개 카테고리`, 'success');
+                
+                showAlert(`🎉 Excel 데이터 기반 초기화 완료! (${totalDocs}개 문서 생성)`, 'success');
+                updateSyncIndicator('connected', '✅ 초기화 완료');
+
+                // 버튼 복원
+                btn.disabled = false;
+                btn.textContent = '🚀 Excel 데이터로 Firebase 초기화';
+
+            } catch (error) {
+                console.error('❌ 초기화 오류:', error);
+                addProgressLog(`❌ 오류: ${error.message}`, 'error');
+                showAlert(`초기화 중 오류가 발생했습니다: ${error.message}`, 'error');
+                
+                const btn = document.querySelector('button[onclick="initializeFirebaseWithExcelData()"]');
+                btn.disabled = false;
+                btn.textContent = '🚀 Excel 데이터로 Firebase 초기화';
+            }
+        }
+
+        // 📊 현재 구조 확인
+        async function checkCurrentStructure() {
+            if (!firebaseConnected) {
+                showAlert('Firebase 연결이 필요합니다.', 'error');
                 return;
             }
 
             try {
-                // 🔥 어드민과 100% 동일한 실시간 쿼리
-                console.log('📊 어드민과 동일한 category_hierarchy 실시간 쿼리...');
+                showAlert('현재 Firebase 구조를 확인하고 있습니다...', 'info');
                 
-                const hierarchySnapshot = await db.collection('category_hierarchy')
-                    .where('gender', '==', gender)
-                    // .orderBy('updatedAt', 'desc')  // 인덱스 오류 방지를 위해 제거
-                    .get();
+                // 진행 상황 표시
+                document.getElementById('initProgress').style.display = 'block';
+                document.getElementById('progressLog').innerHTML = '';
                 
-                console.log(`📋 실시간 쿼리 결과: ${hierarchySnapshot.size}개 문서`);
+                addProgressLog('📊 현재 Firebase 구조 확인 중...', 'info');
+
+                // category_hierarchy 확인
+                const hierarchySnapshot = await db.collection('category_hierarchy').get();
+                addProgressLog(`📄 category_hierarchy: ${hierarchySnapshot.size}개 문서`, hierarchySnapshot.empty ? 'error' : 'success');
+
+                if (!hierarchySnapshot.empty) {
+                    const structure = { male: {}, female: {} };
+                    hierarchySnapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (!structure[data.gender]) structure[data.gender] = {};
+                        if (!structure[data.gender][data.mainCategory]) structure[data.gender][data.mainCategory] = [];
+                        if (!structure[data.gender][data.mainCategory].includes(data.subCategory)) {
+                            structure[data.gender][data.mainCategory].push(data.subCategory);
+                        }
+                    });
+
+                    // 구조 출력
+                    Object.keys(structure).forEach(gender => {
+                        addProgressLog(`👤 ${gender === 'male' ? '남성' : '여성'}:`, 'info');
+                        Object.keys(structure[gender]).forEach(mainCat => {
+                            addProgressLog(`  📁 ${mainCat}: [${structure[gender][mainCat].join(', ')}]`, 'success');
+                        });
+                    });
+                }
+
+                // categories 확인  
+                const categoriesSnapshot = await db.collection('categories').get();
+                addProgressLog(`📄 categories (구 버전): ${categoriesSnapshot.size}개 문서`, 'info');
+
+                // hairstyles 확인
+                const stylesSnapshot = await db.collection('hairstyles').get();
+                addProgressLog(`✂️ hairstyles: ${stylesSnapshot.size}개 문서`, 'info');
+
+                addProgressLog('📋 구조 확인 완료', 'success');
+                showAlert('현재 구조 확인이 완료되었습니다.', 'success');
+
+            } catch (error) {
+                console.error('❌ 구조 확인 오류:', error);
+                addProgressLog(`❌ 오류: ${error.message}`, 'error');
+                showAlert('구조 확인 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // Firebase에서 계층 구조 로드
+        async function loadHierarchyFromFirebase() {
+            if (!firebaseConnected) return;
+
+            try {
+                const snapshot = await db.collection('category_hierarchy').get();
                 
-                if (hierarchySnapshot.empty) {
-                    console.log('⚠️ category_hierarchy가 비어있음 - 어드민 초기화 필요');
-                    showAdminInitializationRequired('어드민에서 "Excel 데이터로 Firebase 초기화" 버튼을 먼저 클릭해주세요.');
-                    updateSyncStatus('disconnected', '⚠️ 어드민 초기화 필요');
+                if (snapshot.empty) {
+                    console.log('📄 category_hierarchy가 비어있음');
+                    hierarchyStructure = { male: {}, female: {} };
                     return;
                 }
-                
-                // 🏗️ 어드민과 100% 동일한 구조 생성
-                const mainCategories = {};
-                let lastUpdateTime = null;
-                let totalDocs = 0;
-                
-                hierarchySnapshot.forEach(doc => {
+
+                hierarchyStructure = { male: {}, female: {} };
+
+                snapshot.forEach(doc => {
                     const data = doc.data();
-                    console.log('📄 실시간 동기화된 문서:', data);
-                    
+                    const gender = data.gender;
                     const mainCat = data.mainCategory;
                     const subCat = data.subCategory;
-                    
-                    if (!mainCategories[mainCat]) {
-                        mainCategories[mainCat] = [];
+
+                    if (!hierarchyStructure[gender]) {
+                        hierarchyStructure[gender] = {};
                     }
-                    if (!mainCategories[mainCat].includes(subCat)) {
-                        mainCategories[mainCat].push(subCat);
+                    if (!hierarchyStructure[gender][mainCat]) {
+                        hierarchyStructure[gender][mainCat] = [];
                     }
-                    
-                    // 최신 업데이트 시간 추적
-                    if (data.updatedAt && (!lastUpdateTime || data.updatedAt.toDate() > lastUpdateTime)) {
-                        lastUpdateTime = data.updatedAt.toDate();
+                    if (!hierarchyStructure[gender][mainCat].includes(subCat)) {
+                        hierarchyStructure[gender][mainCat].push(subCat);
                     }
-                    
-                    totalDocs++;
                 });
-                
-                console.log('✅ 어드민과 100% 동일한 실시간 구조 생성:', mainCategories);
-                
-                // hierarchyStructure 업데이트 (어드민과 동일)
-                hierarchyStructure[gender] = mainCategories;
-                
-                // 대분류 탭 렌더링
-                renderMainCategoryTabs(Object.keys(mainCategories));
-                
-                // 첫 번째 카테고리 자동 로드
-                const firstCategory = Object.keys(mainCategories)[0];
-                if (firstCategory) {
-                    currentCategory = firstCategory;
-                    loadStylesFromHierarchyRealtime(firstCategory);
-                }
-                
-                // 실시간 동기화 완료 상태 표시
-                const timeStr = lastUpdateTime ? lastUpdateTime.toLocaleString('ko-KR') : '방금전';
-                updateSyncStatus('connected', `✅ 실시간 동기화 완료 (${timeStr}) - ${totalDocs}개 문서`);
+
+                console.log('✅ 계층 구조 로드 완료:', hierarchyStructure);
                 
             } catch (error) {
-                console.error('❌ 실시간 동기화 오류:', error);
-                
-                if (error.code === 'failed-precondition') {
-                    showAdminInitializationRequired('Firebase 인덱스가 생성 중입니다. 잠시 후 다시 시도해주세요.');
-                    updateSyncStatus('updating', '🔄 Firebase 인덱스 생성 중...');
-                } else {
-                    showAdminInitializationRequired(`실시간 동기화 실패: ${error.message}`);
-                    updateSyncStatus('disconnected', '❌ 실시간 동기화 실패');
-                }
+                console.error('❌ 계층 구조 로드 오류:', error);
             }
         }
 
-        // 📋 어드민 초기화 필요 메시지 표시
-        function showAdminInitializationRequired(message) {
-            const navTabs = document.getElementById('navTabs');
-            const content = document.getElementById('content');
-            
-            navTabs.innerHTML = `
-                <div style="color: #FF69B4; padding: 15px 25px; text-align: center; width: 100%;">
-                    ⚠️ 어드민 초기화 필요
-                </div>
-            `;
-            
-            content.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">🔧</div>
-                    <div class="empty-state-title">어드민 초기화가 필요합니다</div>
-                    <div class="empty-state-message">
-                        ${message}<br><br>
-                        <strong>해결 방법:</strong><br>
-                        1. 어드민 페이지로 이동<br>
-                        2. "🚀 Excel 데이터로 Firebase 초기화" 버튼 클릭<br>
-                        3. 이 페이지 새로고침
-                    </div>
-                </div>
-            `;
+        // 변경사항 기록
+        function logChange(type, action, details) {
+            changeLog.push({
+                timestamp: new Date().toLocaleString('ko-KR'),
+                type: type,
+                action: action,
+                details: details
+            });
+            hasChanges = true;
+            updateSyncButton();
+            console.log(`📝 변경사항: ${type} ${action} - ${details}`);
         }
 
-        // 📋 대분류 탭 렌더링 (어드민 순서 고정)
-        function renderMainCategoryTabs(mainCategories) {
-            const navTabs = document.getElementById('navTabs');
-            navTabs.innerHTML = '';
-            
-            if (!mainCategories || mainCategories.length === 0) {
-                navTabs.innerHTML = '<div style="color: #666; padding: 20px;">카테고리를 불러올 수 없습니다.</div>';
+        // 동기화 버튼 상태 업데이트
+        function updateSyncButton() {
+            const syncBtn = document.getElementById('syncBtn');
+            if (hasChanges) {
+                syncBtn.textContent = `📤 인덱스에 반영 (${changeLog.length}개 변경사항)`;
+                syncBtn.className = 'btn btn-success sync-indicator changes';
+            } else {
+                syncBtn.textContent = '✅ 모든 변경사항 반영됨';
+                syncBtn.className = 'btn btn-secondary';
+            }
+        }
+
+        // 동기화 상태 업데이트  
+        function updateSyncIndicator(status, message) {
+            const indicator = document.getElementById('syncIndicator');
+            indicator.className = `sync-indicator ${status}`;
+            indicator.textContent = message;
+        }
+
+        // 📤 인덱스에 반영
+        async function syncToFirebase() {
+            if (!hasChanges) {
+                showAlert('반영할 변경사항이 없습니다.', 'warning');
                 return;
             }
-            
-            // 🎯 고정된 순서 정의 (어드민과 동일)
-            const categoryOrder = {
-                male: ['SIDE FRINGE', 'SIDE FART', 'FRINDGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN'],
-                female: ['LONG', 'SEMI LONG', 'MEDIUM', 'BOB', 'SHORT']
-            };
-            
-            // 현재 성별에 맞는 순서대로 정렬
-            const orderedCategories = categoryOrder[currentGender] || mainCategories;
-            
-            orderedCategories.forEach((mainCategory, index) => {
-                if (mainCategories.includes(mainCategory)) {
-                    const tab = document.createElement('div');
-                    tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
-                    tab.dataset.category = mainCategory;
-                    tab.textContent = mainCategory;
-                    tab.onclick = () => switchCategory(mainCategory);
-                    navTabs.appendChild(tab);
-                }
-            });
-        }
 
-        // 🔄 카테고리 전환 (실시간 동기화)
-        function switchCategory(categoryId) {
-            if (categoryId === currentCategory) return;
-            
-            console.log(`🔄 카테고리 전환: ${categoryId}`);
-            
-            // 활성 탭 변경
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-                if (tab.dataset.category === categoryId) {
-                    tab.classList.add('active');
-                }
-            });
-            
-            currentCategory = categoryId;
-            loadStylesFromHierarchyRealtime(categoryId);
-        }
-
-        // 🎨 헤어스타일 실시간 로드 (어드민 구조 기반)
-        async function loadStylesFromHierarchyRealtime(mainCategory) {
-            console.log(`=== 🎨 헤어스타일 실시간 로드: ${currentGender}, ${mainCategory} ===`);
-            
-            const content = document.getElementById('content');
-            content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-            
             if (!firebaseConnected) {
-                console.log('❌ Firebase 연결 없음');
-                showEmptyState('Firebase 연결이 필요합니다');
-                updateSyncStatus('disconnected', '❌ Firebase 연결 필요');
+                showAlert('Firebase 연결이 필요합니다.', 'error');
+                return;
+            }
+
+            const changeList = changeLog.map(log => `• ${log.type} ${log.action}: ${log.details}`).join('\n');
+            
+            if (!confirm(`${changeLog.length}개의 변경사항을 인덱스에 반영하시겠습니까?\n\n${changeList}`)) {
                 return;
             }
 
             try {
-                // 🎯 실시간 어드민 구조 기반 스타일 로드
-                const subCategories = hierarchyStructure[currentGender]?.[mainCategory] || [];
-                console.log(`📂 실시간 중분류 목록: ${subCategories.join(', ')}`);
-                
-                if (subCategories.length === 0) {
-                    console.log('⚠️ 중분류가 없음');
-                    showEmptyState('중분류가 설정되지 않았습니다. 어드민에서 확인해주세요.');
-                    updateSyncStatus('disconnected', '⚠️ 중분류 없음');
-                    return;
+                showAlert('🔄 Firebase 동기화 중...', 'warning');
+
+                // 기존 category_hierarchy 삭제
+                const existingDocs = await db.collection('category_hierarchy').get();
+                const deleteBatch = db.batch();
+                existingDocs.forEach(doc => {
+                    deleteBatch.delete(doc.ref);
+                });
+                if (!existingDocs.empty) {
+                    await deleteBatch.commit();
                 }
 
-                // 🔍 실시간 다중 쿼리 방식 (어드민과 동일)
-                let allStyles = {};
-                let foundData = false;
-                let totalStyles = 0;
-                
-                console.log('📊 실시간 스타일 데이터 로드 중...');
-                
-                // 실시간 쿼리: categoryPath 방식 (어드민과 동일)
-                for (const subCategory of subCategories) {
-                    const categoryPath = `${currentGender}_${mainCategory}_${subCategory}`;
-                    console.log(`🔍 실시간 categoryPath 조회: ${categoryPath}`);
-                    
-                    try {
-                        // 🔥 orderBy 제거하여 인덱스 오류 방지 (어드민과 동일)
-                        const pathSnapshot = await db.collection('hairstyles')
-                            .where('categoryPath', '==', categoryPath)
-                            .get();
-                        
-                        if (!pathSnapshot.empty) {
-                            allStyles[subCategory] = [];
-                            pathSnapshot.forEach(doc => {
-                                const style = doc.data();
-                                allStyles[subCategory].push({
-                                    ...style,
-                                    id: doc.id
-                                });
-                                totalStyles++;
+                // 새 category_hierarchy 생성
+                const createBatch = db.batch();
+                let totalDocs = 0;
+
+                for (const [gender, categories] of Object.entries(hierarchyStructure)) {
+                    for (const [mainCategory, subCategories] of Object.entries(categories)) {
+                        for (const subCategory of subCategories) {
+                            const docRef = db.collection('category_hierarchy').doc();
+                            createBatch.set(docRef, {
+                                gender: gender,
+                                mainCategory: mainCategory,
+                                subCategory: subCategory,
+                                categoryPath: `${gender}_${mainCategory}_${subCategory}`,
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                             });
-                            foundData = true;
-                            console.log(`✅ ${subCategory}: ${pathSnapshot.size}개 스타일 발견`);
-                        } else {
-                            console.log(`📄 ${subCategory}: 스타일 없음`);
+                            totalDocs++;
                         }
-                    } catch (error) {
-                        console.log(`⚠️ categoryPath 쿼리 실패 (${categoryPath}):`, error.message);
                     }
                 }
-                
-                // 결과 렌더링
-                if (foundData && Object.keys(allStyles).length > 0) {
-                    console.log('🎨 실시간 스타일 데이터 렌더링:', allStyles);
-                    renderCategoryRealtime({
-                        description: getMainCategoryDescription(mainCategory),
-                        styles: allStyles
-                    });
-                    updateSyncStatus('connected', `✅ ${totalStyles}개 스타일 실시간 로드 완료`);
-                } else {
-                    console.log('📄 실시간 스타일 데이터 없음');
-                    renderEmptyStylesRealtime(mainCategory, subCategories);
-                    updateSyncStatus('connected', '📄 등록된 스타일이 없습니다 (실시간 확인 완료)');
-                }
-                
+
+                await createBatch.commit();
+
+                // 변경사항 초기화
+                hasChanges = false;
+                changeLog = [];
+                updateSyncButton();
+
+                showAlert(`✅ ${totalDocs}개 문서가 인덱스에 반영되었습니다!`, 'success');
+                updateSyncIndicator('connected', '✅ 동기화 완료');
+
             } catch (error) {
-                console.error('❌ 실시간 헤어스타일 로드 오류:', error);
-                showEmptyState('실시간 스타일 데이터를 불러올 수 없습니다');
-                updateSyncStatus('disconnected', '❌ 실시간 로드 실패: ' + error.message);
+                console.error('❌ 동기화 오류:', error);
+                showAlert('동기화 중 오류가 발생했습니다: ' + error.message, 'error');
             }
         }
 
-        // 📝 대분류 설명 가져오기 (어드민과 동일)
-        function getMainCategoryDescription(mainCategory) {
-            const descriptions = {
-                'SIDE FRINGE': '사이드프린지는 살짝 볼륨이 있으면서 앞으로 떨어지는 스타일과 앞머리 숱을 줄여 소프트한 시스루 느낌을 다양하게 표현할 수 있습니다. M자 이마와 넓은 이마를 커버하면서 볼륨과 플랫, 웨이브와 스트레이트의 구성 요소를 디테일하게 표현하는 것이 스타일링의 핵심 포인트입니다.',
-                'SIDE FART': '사이드 파트는 클래식함과 모던함의 대명사로 스타일링에 따라 원하는 이미지를 자유롭게 표현할 수 있습니다. 가르마를 기준으로 단순히 넘어가는 스타일을 넘어 개인의 특성과 트렌드에 맞춰 고급한 헤어스타일을 표현하는 것이 매우 중요합니다.',
-                'FRINDGE UP': '프린지 업은 흔히 아이비리그 컷이라고 하여, 이마를 적극적으로 드러내어 남성적인 이미지를 어필하기 유리한 스타일입니다. 다운펌을 통해 뒷머리와 앞머리를 정리하는 것이 스타일링의 특성상 트렌드에 얽매이지 말고 나름의 포인트와 특색으로 관리하는 것이 중요합니다.',
-                'PUSHED BACK': '푸시드 백은 앞머리 부분의 볼륨감을 강조한 스타일로써, 뒷부분으로 넘기면서 뒤로 갈수록 볼륨이 적어지는 것이 특징인 스타일입니다. 모발의 길이가 중간 정도 이상인 분들에게 가장 적합하며, 정교하고 섬세한 길이 조절을 통해 고급스러운 이미지를 유지할 수 있습니다.',
-                'BUZZ': '버즈컷은 흔히 반삭이라고 하여 클리퍼의 길이와 헤어 스타일에 따라 다양한 스타일을 연출할 수 있습니다. 정교하고 섬세한 길이 조절이 가장 중요하지만 강함이 아닌 곡선미가 주는 특성인 개성을 강점으로 할 수 있습니다.',
-                'CROP': '크롭컷은 매우 짧은 라운드 형태로 깔끔하면서도 세련된 남성미를 강조한 스타일입니다. 앞머리를 짧게 하여 깔끔한 인상을 주며, 양쪽과 뒷머리의 이미지를 단정하게 강조하여 모발의 길이와 절단에 따라 다양한 이미지를 연출할 수 있습니다.',
-                'MOHICAN': '모히칸은 옆머리를 짧게 하고 윗머리에 앞머리에서 뒷머리로 이어지는 라인을 표현하여, 둥근 얼굴형을 보완할 수 있는 개성이 남다른 스타일입니다.',
-                'LONG': '롱 헤어는 여성스러움과 우아함을 동시에 표현할 수 있는 대표적인 스타일입니다. 다양한 연출이 가능하며 개인의 취향에 따라 웨이브나 스트레이트 등으로 변화를 줄 수 있습니다.',
-                'SEMI LONG': '세미 롱 헤어는 롱과 미디엄의 중간 길이로, 여성스러움을 유지하면서도 관리가 용이한 실용적인 스타일입니다.',
-                'MEDIUM': '미디엄 헤어는 관리의 편의성과 스타일링의 다양성을 모두 갖춘 실용적인 길이입니다. 직장인부터 학생까지 다양한 연령대에 적합합니다.',
-                'BOB': '밥 헤어는 턱선 근처의 깔끔한 라인이 특징으로, 모던하고 세련된 느낌을 연출할 수 있는 클래식한 스타일입니다.',
-                'SHORT': '숏 헤어는 세련되고 시크한 분위기를 연출하며, 얼굴형을 또렷하게 부각시키는 스타일입니다. 관리가 쉽고 활동적인 이미지를 표현할 수 있습니다.'
-            };
+        // 성별 선택
+        function selectGender(gender) {
+            console.log(`🎯 성별 선택: ${gender}`);
             
-            return descriptions[mainCategory] || `${mainCategory} 스타일에 대한 설명입니다.`;
+            selectedGender = gender;
+            selectedMainCategory = null;
+            selectedSubCategory = null;
+
+            // UI 업데이트
+            document.querySelectorAll('#genderList .selectable-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+
+            // 대분류 로드
+            loadMainCategories(gender);
+            clearSubCategories();
+            clearStyles();
+            updateBreadcrumb();
         }
 
-        // 🎨 카테고리 실시간 렌더링 (중분류 탭 항상 표시 + 가운데 정렬)
-        function renderCategoryRealtime(categoryData) {
-            const content = document.getElementById('content');
+        // 대분류 로드
+        function loadMainCategories(gender) {
+            console.log(`📁 대분류 로드: ${gender}`);
             
-            if (!categoryData || !categoryData.styles) {
-                showEmptyState('실시간 카테고리 데이터를 불러올 수 없습니다');
+            const mainCategoryList = document.getElementById('mainCategoryList');
+            
+            if (!hierarchyStructure[gender] || Object.keys(hierarchyStructure[gender]).length === 0) {
+                mainCategoryList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <div>먼저 초기화를 실행하세요</div>
+                    </div>
+                `;
                 return;
             }
 
-            const lengthTypes = Object.keys(categoryData.styles);
+            let html = '';
+            const categories = Object.keys(hierarchyStructure[gender]);
             
-            if (lengthTypes.length === 0) {
-                showEmptyState('등록된 스타일이 없습니다 (실시간 확인 완료)');
-                return;
-            }
-            
-            let html = `
-                <div class="category-section active">
-                    <div class="category-description">${categoryData.description}</div>
-                    
-                    <!-- 중분류 탭 (항상 표시, 가운데 정렬) -->
-                    <div class="length-tabs">
-            `;
-
-            // 중분류 탭 생성 (어드민 순서 고정)
-            const orderedLengthTypes = hierarchyStructure[currentGender]?.[currentCategory] || lengthTypes;
-            orderedLengthTypes.forEach((lengthType, index) => {
-                if (lengthTypes.includes(lengthType)) {
-                    const isActive = index === 0 ? 'active' : '';
-                    html += `<div class="length-tab ${isActive}" data-length="${lengthType}" onclick="switchLengthTab('${lengthType}')">${lengthType}</div>`;
-                }
-            });
-
-            html += `</div>`;
-
-            // 각 앞머리 길이별 섹션 (어드민 순서대로)
-            const orderedLengthList = hierarchyStructure[currentGender]?.[currentCategory] || Object.keys(categoryData.styles);
-            const primaryLengthType = orderedLengthList[0];
-            
-            for (const lengthType of orderedLengthList) {
-                if (!categoryData.styles[lengthType]) continue;
-                
-                const styles = categoryData.styles[lengthType];
-                const isActive = lengthType === primaryLengthType ? 'active' : '';
-                
-                html += `<div class="length-section ${isActive}" data-length="${lengthType}">`;
-
-                if (!styles || styles.length === 0) {
-                    html += `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">✂️</div>
-                            <div class="empty-state-title">${lengthType}</div>
-                            <div class="empty-state-message">해당 앞머리 길이에 대한 스타일이 없습니다.<br>어드민에서 스타일을 추가해주세요.</div>
-                        </div>
-                    `;
-                } else {
-                    html += `<div class="hairstyle-grid">`;
-                    
-                    // 🎯 스타일을 code 순서대로 정렬
-                    const sortedStyles = styles.sort((a, b) => {
-                        const codeA = a.code || '';
-                        const codeB = b.code || '';
-                        return codeA.localeCompare(codeB);
-                    });
-                    
-                    sortedStyles.forEach(style => {
-                        const imageUrl = style.imageUrl || generatePlaceholderImage(style.name);
-                        
-                        html += `
-                            <div class="hairstyle-card" onclick="openModal('${style.code || '코드없음'}', '${style.name || '이름없음'}', '${style.imageUrl || ''}')">
-                                <img class="hairstyle-image" src="${imageUrl}" alt="${style.name || '이름없음'}" 
-                                     onerror="this.src='${generatePlaceholderImage(style.name || '이름없음')}'">
-                                <div class="hairstyle-info">
-                                    <div class="hairstyle-code">${style.code || '코드없음'}</div>
-                                    <div class="hairstyle-name">${style.name || '이름없음'}</div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    html += `</div>`;
-                }
-
-                html += `</div>`;
-            }
-
-            html += '</div>';
-            content.innerHTML = html;
-        }
-
-        // 🎨 빈 스타일 실시간 렌더링 (중분류 탭 항상 표시)
-        function renderEmptyStylesRealtime(mainCategory, subCategories) {
-            const content = document.getElementById('content');
-            
-            let html = `
-                <div class="category-section active">
-                    <div class="category-description">${getMainCategoryDescription(mainCategory)}</div>
-                    
-                    <!-- 중분류 탭 (항상 표시, 가운데 정렬) -->
-                    <div class="length-tabs">
-            `;
-
-            // 중분류 탭 생성 (어드민 순서 고정)
-            const orderedSubCategories = hierarchyStructure[currentGender]?.[mainCategory] || subCategories;
-            orderedSubCategories.forEach((subCategory, index) => {
-                const isActive = index === 0 ? 'active' : '';
-                html += `<div class="length-tab ${isActive}" data-length="${subCategory}" onclick="switchLengthTab('${subCategory}')">${subCategory}</div>`;
-            });
-            
-            html += `</div>`;
-
-            // 중분류별 빈 상태 섹션 (어드민 순서대로)
-            const orderedEmptyCategories = hierarchyStructure[currentGender]?.[mainCategory] || subCategories;
-            orderedEmptyCategories.forEach((subCategory, index) => {
-                const isActive = index === 0 ? 'active' : '';
+            categories.forEach(category => {
                 html += `
-                    <div class="length-section ${isActive}" data-length="${subCategory}">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">✂️</div>
-                            <div class="empty-state-title">${subCategory}</div>
-                            <div class="empty-state-message">등록된 스타일이 없습니다.<br>어드민에서 스타일을 추가해주세요.</div>
+                    <div class="selectable-item" onclick="selectMainCategory('${category}')">
+                        <div class="item-text">📁 ${category}</div>
+                        <div class="item-actions">
+                            <button class="action-btn" onclick="editCategory('${category}', event)" title="수정">✏️</button>
+                            <button class="action-btn" onclick="deleteCategory('${category}', event)" title="삭제">🗑️</button>
                         </div>
                     </div>
                 `;
             });
 
-            html += '</div>';
-            content.innerHTML = html;
+            mainCategoryList.innerHTML = html;
         }
 
-        // 📄 빈 상태 표시
-        function showEmptyState(message) {
-            const content = document.getElementById('content');
-            content.innerHTML = `
+        // 대분류 선택
+        function selectMainCategory(category) {
+            console.log(`📁 대분류 선택: ${category}`);
+            
+            selectedMainCategory = category;
+            selectedSubCategory = null;
+
+            // UI 업데이트
+            document.querySelectorAll('#mainCategoryList .selectable-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+
+            loadSubCategories(selectedGender, category);
+            clearStyles();
+            updateBreadcrumb();
+        }
+
+        // 중분류 로드
+        function loadSubCategories(gender, mainCategory) {
+            console.log(`📂 중분류 로드: ${gender}, ${mainCategory}`);
+            
+            const subCategoryList = document.getElementById('subCategoryList');
+            
+            if (!hierarchyStructure[gender] || !hierarchyStructure[gender][mainCategory]) {
+                subCategoryList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📂</div>
+                        <div>중분류가 없습니다</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            const subCategories = hierarchyStructure[gender][mainCategory];
+            
+            subCategories.forEach(subCategory => {
+                html += `
+                    <div class="selectable-item" onclick="selectSubCategory('${subCategory}')">
+                        <div class="item-text">📏 ${subCategory}</div>
+                        <div class="item-actions">
+                            <button class="action-btn" onclick="editSubCategory('${subCategory}', event)" title="수정">✏️</button>
+                            <button class="action-btn" onclick="deleteSubCategory('${subCategory}', event)" title="삭제">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            subCategoryList.innerHTML = html;
+        }
+
+        // 중분류 선택
+        function selectSubCategory(subCategory) {
+            console.log(`📂 중분류 선택: ${subCategory}`);
+            
+            selectedSubCategory = subCategory;
+
+            // UI 업데이트
+            document.querySelectorAll('#subCategoryList .selectable-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+
+            loadStyles(selectedGender, selectedMainCategory, subCategory);
+            updateBreadcrumb();
+        }
+
+        // 스타일 로드
+        async function loadStyles(gender, mainCategory, subCategory) {
+            console.log(`✂️ 스타일 로드: ${gender}, ${mainCategory}, ${subCategory}`);
+            
+            const stylesList = document.getElementById('stylesList');
+            
+            if (!firebaseConnected) {
+                stylesList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔌</div>
+                        <div>Firebase 연결 필요</div>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const categoryPath = `${gender}_${mainCategory}_${subCategory}`;
+                const snapshot = await db.collection('hairstyles')
+                    .where('categoryPath', '==', categoryPath)
+                    .get();
+
+                if (snapshot.empty) {
+                    stylesList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">✂️</div>
+                            <div>등록된 스타일이 없습니다</div>
+                            <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()" style="margin-top: 15px;">
+                                ✂️ 스타일 추가하기
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `
+                    <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()" style="margin-bottom: 15px; width: 100%;">
+                        ➕ 스타일 추가
+                    </button>
+                `;
+                
+                snapshot.forEach(doc => {
+                    const style = doc.data();
+                    const createdDate = style.createdAt ? style.createdAt.toDate().toLocaleDateString('ko-KR') : '날짜없음';
+                    
+                    html += `
+                        <div class="style-item">
+                            <div class="style-code">${style.code || '코드없음'}</div>
+                            <div class="style-name">${style.name || '이름없음'}</div>
+                            ${style.imageUrl ? `<div style="margin: 10px 0;"><img src="${style.imageUrl}" style="max-width: 100px; max-height: 100px; object-fit: cover; border-radius: 5px;"></div>` : '<div style="color: #999; font-size: 12px;">이미지 없음</div>'}
+                            <div style="font-size: 11px; color: #999; margin-bottom: 10px;">
+                                생성일: ${createdDate}
+                            </div>
+                            <div class="style-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="editStyle('${doc.id}', '${style.name}')">✏️ 수정</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteStyle('${doc.id}', '${style.name}')">🗑️ 삭제</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                stylesList.innerHTML = html;
+
+            } catch (error) {
+                console.error('❌ 스타일 로드 오류:', error);
+                stylesList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <div>스타일 로드 실패: ${error.message}</div>
+                        <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()" style="margin-top: 15px;">
+                            ✂️ 스타일 추가하기
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // ✅ Firebase Storage에 이미지 업로드 함수
+        async function uploadImageToStorage(file, styleCode) {
+            try {
+                console.log(`📤 이미지 업로드 시작: ${styleCode}`);
+                
+                // 파일 확장자 추출
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                
+                if (!allowedExtensions.includes(fileExtension)) {
+                    throw new Error('지원하지 않는 파일 형식입니다. JPG, PNG, WebP, GIF만 업로드 가능합니다.');
+                }
+
+                // Firebase Storage 참조 생성
+                const storageRef = storage.ref(`styles/${styleCode}.${fileExtension}`);
+                
+                // 파일 업로드
+                const uploadTask = await storageRef.put(file);
+                console.log('📤 업로드 완료:', uploadTask);
+                
+                // 다운로드 URL 가져오기
+                const downloadURL = await uploadTask.ref.getDownloadURL();
+                console.log('🔗 다운로드 URL:', downloadURL);
+                
+                return downloadURL;
+                
+            } catch (error) {
+                console.error('❌ 이미지 업로드 오류:', error);
+                throw error;
+            }
+        }
+
+        // 스타일 수정
+        async function editStyle(styleId, styleName) {
+            const newName = prompt(`"${styleName}" 스타일의 새 이름을 입력하세요:`, styleName);
+            
+            if (!newName || newName.trim() === '' || newName.trim() === styleName) {
+                return;
+            }
+
+            try {
+                await db.collection('hairstyles').doc(styleId).update({
+                    name: newName.trim(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showAlert(`"${styleName}"이 "${newName.trim()}"로 수정되었습니다.`, 'success');
+                loadStyles(selectedGender, selectedMainCategory, selectedSubCategory);
+
+            } catch (error) {
+                console.error('❌ 스타일 수정 오류:', error);
+                showAlert('스타일 수정 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 스타일 삭제
+        async function deleteStyle(styleId, styleName) {
+            if (!confirm(`"${styleName}" 스타일을 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            try {
+                await db.collection('hairstyles').doc(styleId).delete();
+                showAlert(`"${styleName}" 스타일이 삭제되었습니다.`, 'success');
+                loadStyles(selectedGender, selectedMainCategory, selectedSubCategory);
+
+            } catch (error) {
+                console.error('❌ 스타일 삭제 오류:', error);
+                showAlert('스타일 삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 하위 단계 초기화
+        function clearSubCategories() {
+            document.getElementById('subCategoryList').innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-state-icon">⚠️</div>
-                    <div class="empty-state-title">데이터가 없습니다</div>
-                    <div class="empty-state-message">${message}</div>
+                    <div class="empty-state-icon">📂</div>
+                    <div>대분류를 선택하세요</div>
                 </div>
             `;
         }
 
-        // 🖼️ 플레이스홀더 이미지 생성
-        function generatePlaceholderImage(text) {
-            const encodedText = encodeURIComponent(text || '이미지 준비중');
-            return `data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="267" viewBox="0 0 200 267"%3E%3Crect width="200" height="267" fill="%23222"%3E%3C/rect%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23666" font-family="Arial" font-size="12"%3E${encodedText}%3C/text%3E%3C/svg%3E`;
+        function clearStyles() {
+            document.getElementById('stylesList').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">✂️</div>
+                    <div>중분류를 선택하세요</div>
+                </div>
+            `;
         }
 
-        // 앞머리 길이 탭 전환
-        function switchLengthTab(lengthType) {
-            // 활성 탭 변경
-            document.querySelectorAll('.length-tab').forEach(tab => {
-                tab.classList.remove('active');
-                if (tab.dataset.length === lengthType) {
-                    tab.classList.add('active');
-                }
-            });
+        // 경로 업데이트
+        function updateBreadcrumb() {
+            const breadcrumb = document.getElementById('breadcrumb');
+            let path = [];
 
-            // 활성 섹션 변경
-            document.querySelectorAll('.length-section').forEach(section => {
-                section.classList.remove('active');
-                if (section.dataset.length === lengthType) {
-                    section.classList.add('active');
-                }
-            });
-        }
-
-        // 모달 초기화
-        function initializeModal() {
-            const modal = document.getElementById('imageModal');
-            const span = document.getElementsByClassName('close')[0];
-
-            span.onclick = function() {
-                modal.style.display = 'none';
+            if (selectedGender) {
+                path.push(`<span class="breadcrumb-item">${selectedGender === 'male' ? '남성' : '여성'}</span>`);
+            }
+            if (selectedMainCategory) {
+                path.push(`<span class="breadcrumb-item">${selectedMainCategory}</span>`);
+            }
+            if (selectedSubCategory) {
+                path.push(`<span class="breadcrumb-item active">${selectedSubCategory}</span>`);
             }
 
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = 'none';
-                }
+            if (path.length === 0) {
+                breadcrumb.innerHTML = '<span class="breadcrumb-item">성별을 선택하세요</span>';
+            } else {
+                breadcrumb.innerHTML = path.join('');
             }
         }
 
-        // 모달 열기
-        function openModal(code, name, imageUrl) {
-            const modal = document.getElementById('imageModal');
-            const modalImage = document.getElementById('modalImage');
-            const modalCode = document.getElementById('modalCode');
-            const modalName = document.getElementById('modalName');
+        // UI 새로고침
+        function refreshUI() {
+            selectedGender = null;
+            selectedMainCategory = null;
+            selectedSubCategory = null;
 
-            const finalImageUrl = imageUrl || generatePlaceholderImage(name);
+            document.querySelectorAll('.selectable-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            document.getElementById('mainCategoryList').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📁</div>
+                    <div>성별을 선택하세요</div>
+                </div>
+            `;
             
-            modalImage.src = finalImageUrl;
-            modalCode.textContent = code;
-            modalName.textContent = name;
-            modal.style.display = 'block';
+            clearSubCategories();
+            clearStyles();
+            updateBreadcrumb();
+
+            showAlert('UI가 새로고침되었습니다.', 'success');
         }
 
-        // 🚀 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeModal();
-            console.log('🎉 HAIRGATOR 실시간 동기화 인덱스 로드 완료!');
+        // 스타일 추가 모달 표시
+        function showAddStyleModal() {
+            if (!selectedGender || !selectedMainCategory || !selectedSubCategory) {
+                showAlert('먼저 중분류까지 선택하세요.', 'error');
+                return;
+            }
+            document.getElementById('addStyleModal').style.display = 'block';
+        }
+
+        // 이미지 미리보기
+        function previewImage() {
+            const fileInput = document.getElementById('newStyleImage');
+            const preview = document.getElementById('imagePreview');
             
-            // 개발자를 위한 디버그 함수들
-            window.debugHairGator = {
-                hierarchyStructure,
-                currentGender,
-                currentCategory,
-                firebaseConnected,
-                loadHierarchyFromFirebaseOnly,
-                loadStylesFromHierarchyRealtime,
-                testConnection: () => {
-                    if (firebaseConnected) {
-                        console.log('✅ Firebase 연결 상태 양호');
-                        return true;
-                    } else {
-                        console.log('❌ Firebase 연결 실패');
-                        return false;
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 5px; object-fit: cover;">`;
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                preview.innerHTML = '';
+            }
+        }
+
+        // 모달 닫기
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            
+            // 입력 필드 초기화
+            const inputs = document.querySelectorAll(`#${modalId} input`);
+            inputs.forEach(input => {
+                input.value = '';
+            });
+            
+            // 이미지 미리보기 초기화
+            if (modalId === 'addStyleModal') {
+                document.getElementById('imagePreview').innerHTML = '';
+            }
+        }
+
+        // ✅ 새 스타일 저장 (이미지 업로드 포함)
+        async function saveNewStyle() {
+            const code = document.getElementById('newStyleCode').value.trim();
+            const name = document.getElementById('newStyleName').value.trim();
+            const imageFile = document.getElementById('newStyleImage').files[0];
+
+            if (!code || !name || !imageFile) {
+                showAlert('모든 필드를 입력하고 이미지를 선택하세요.', 'error');
+                return;
+            }
+
+            try {
+                showAlert('🔄 이미지 업로드 중...', 'info');
+                
+                // 1. Firebase Storage에 이미지 업로드
+                const imageUrl = await uploadImageToStorage(imageFile, code);
+                console.log('✅ 이미지 업로드 완료:', imageUrl);
+
+                // 2. Firestore에 스타일 데이터 저장
+                const styleData = {
+                    code: code,
+                    name: name,
+                    gender: selectedGender,
+                    mainCategory: selectedMainCategory,
+                    subCategory: selectedSubCategory,
+                    categoryPath: `${selectedGender}_${selectedMainCategory}_${selectedSubCategory}`,
+                    imageUrl: imageUrl, // ✅ 실제 업로드된 이미지 URL
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                await db.collection('hairstyles').add(styleData);
+                
+                showAlert(`✅ "${name}" 스타일이 이미지와 함께 추가되었습니다!`, 'success');
+                closeModal('addStyleModal');
+                
+                // 스타일 목록 새로고침
+                loadStyles(selectedGender, selectedMainCategory, selectedSubCategory);
+
+            } catch (error) {
+                console.error('❌ 스타일 추가 오류:', error);
+                showAlert('스타일 추가 중 오류가 발생했습니다: ' + error.message, 'error');
+            }
+        }
+
+        // 알림 표시
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // 카테고리 수정 (실제 구현)
+        function editCategory(category, event) {
+            event.stopPropagation();
+            
+            const newName = prompt(`"${category}" 카테고리의 새 이름을 입력하세요:`, category);
+            
+            if (!newName || newName.trim() === '' || newName.trim() === category) {
+                return;
+            }
+
+            const newNameTrimmed = newName.trim().toUpperCase();
+
+            // 메모리에서 업데이트
+            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][category]) {
+                hierarchyStructure[selectedGender][newNameTrimmed] = hierarchyStructure[selectedGender][category];
+                delete hierarchyStructure[selectedGender][category];
+                
+                // 선택 상태 업데이트
+                if (selectedMainCategory === category) {
+                    selectedMainCategory = newNameTrimmed;
+                }
+
+                logChange('대분류', '수정', `${category} → ${newNameTrimmed}`);
+                showAlert(`"${category}"가 "${newNameTrimmed}"로 수정되었습니다.`, 'success');
+                
+                // UI 새로고침
+                loadMainCategories(selectedGender);
+                if (selectedMainCategory === newNameTrimmed) {
+                    loadSubCategories(selectedGender, newNameTrimmed);
+                }
+                updateBreadcrumb();
+            }
+        }
+
+        // 카테고리 삭제 (실제 구현)
+        function deleteCategory(category, event) {
+            event.stopPropagation();
+            
+            if (!confirm(`"${category}" 대분류를 삭제하시겠습니까?\n\n⚠️ 주의: 이 대분류의 모든 중분류와 스타일도 함께 삭제됩니다.`)) {
+                return;
+            }
+
+            // 메모리에서 삭제
+            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][category]) {
+                delete hierarchyStructure[selectedGender][category];
+                
+                // 선택 상태 초기화
+                if (selectedMainCategory === category) {
+                    selectedMainCategory = null;
+                    selectedSubCategory = null;
+                    clearSubCategories();
+                    clearStyles();
+                }
+
+                logChange('대분류', '삭제', category);
+                showAlert(`"${category}" 대분류가 삭제되었습니다.`, 'success');
+                
+                // UI 새로고침
+                loadMainCategories(selectedGender);
+                updateBreadcrumb();
+            }
+        }
+
+        // 중분류 수정 (실제 구현)
+        function editSubCategory(subCategory, event) {
+            event.stopPropagation();
+            
+            const newName = prompt(`"${subCategory}" 중분류의 새 이름을 입력하세요:`, subCategory);
+            
+            if (!newName || newName.trim() === '' || newName.trim() === subCategory) {
+                return;
+            }
+
+            const newNameTrimmed = newName.trim();
+
+            // 메모리에서 업데이트
+            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][selectedMainCategory]) {
+                const subCategories = hierarchyStructure[selectedGender][selectedMainCategory];
+                const index = subCategories.indexOf(subCategory);
+                if (index > -1) {
+                    subCategories[index] = newNameTrimmed;
+                    
+                    // 선택 상태 업데이트
+                    if (selectedSubCategory === subCategory) {
+                        selectedSubCategory = newNameTrimmed;
                     }
+
+                    logChange('중분류', '수정', `${selectedMainCategory} > ${subCategory} → ${newNameTrimmed}`);
+                    showAlert(`"${subCategory}"가 "${newNameTrimmed}"로 수정되었습니다.`, 'success');
+                    
+                    // UI 새로고침
+                    loadSubCategories(selectedGender, selectedMainCategory);
+                    updateBreadcrumb();
                 }
-            };
+            }
+        }
+
+        // 중분류 삭제 (실제 구현)
+        function deleteSubCategory(subCategory, event) {
+            event.stopPropagation();
+            
+            if (!confirm(`"${subCategory}" 중분류를 삭제하시겠습니까?\n\n⚠️ 주의: 이 중분류의 모든 스타일도 함께 삭제됩니다.`)) {
+                return;
+            }
+
+            // 메모리에서 삭제
+            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][selectedMainCategory]) {
+                const subCategories = hierarchyStructure[selectedGender][selectedMainCategory];
+                const index = subCategories.indexOf(subCategory);
+                if (index > -1) {
+                    subCategories.splice(index, 1);
+                    
+                    // 선택 상태 초기화
+                    if (selectedSubCategory === subCategory) {
+                        selectedSubCategory = null;
+                        clearStyles();
+                    }
+
+                    logChange('중분류', '삭제', `${selectedMainCategory} > ${subCategory}`);
+                    showAlert(`"${subCategory}" 중분류가 삭제되었습니다.`, 'success');
+                    
+                    // UI 새로고침
+                    loadSubCategories(selectedGender, selectedMainCategory);
+                    updateBreadcrumb();
+                }
+            }
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFirebase();
+            updateSyncButton();
+            console.log('🎉 HAIRGATOR 이미지 업로드 어드민 로드 완료');
         });
+
+        // 모달 외부 클릭시 닫기
+        window.onclick = function(event) {
+            const modals = ['addStyleModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    closeModal(modalId);
+                }
+            });
+        }
     </script>
 </body>
 </html>
