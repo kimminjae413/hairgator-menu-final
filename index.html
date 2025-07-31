@@ -21,19 +21,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <style>
-        /* 전체 요소 확대/축소 방지 */
-        *, *::before, *::after {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation; /* 더블탭 줌 방지 */
-        }
-        
-        /* 네이티브앱 느낌의 전체화면 */
+        /* 모바일/태블릿 전용 - PC 고려 안함 */
         html {
             height: 100vh;
             overflow: hidden;
-            -webkit-text-size-adjust: none; /* iOS 텍스트 크기 자동 조정 방지 */
+            -webkit-text-size-adjust: none;
             -ms-text-size-adjust: none;
             text-size-adjust: none;
         }
@@ -42,12 +34,10 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background-color: #000;
             color: #fff;
-            overflow-x: auto;
-            overflow-y: hidden;
-            height: 100vh;
-            position: relative;
+            margin: 0;
+            padding: 0;
             
-            /* 네이티브앱에서 실행될 때 90도 회전 */
+            /* 네이티브앱 웹뷰용 90도 회전 */
             transform: rotate(90deg);
             transform-origin: center center;
             width: 100vh;
@@ -58,28 +48,17 @@
             margin-top: -50vw;
             margin-left: -50vh;
             
-            /* 네이티브앱처럼 보이게 하는 CSS */
-            -webkit-touch-callout: none; /* iOS 링크 길게 누르기 방지 */
-            -webkit-user-select: none; /* 텍스트 선택 방지 */
-            -webkit-tap-highlight-color: transparent; /* 탭 하이라이트 제거 */
-            -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
-            
-            /* 확대/축소 완전 방지 */
-            touch-action: pan-x pan-y; /* 확대/축소 방지, 스크롤만 허용 */
-            
-            /* 새로고침 방지 */
-            overscroll-behavior: none; /* 스크롤 바운스 방지 */
+            /* 모바일 최적화 */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-overflow-scrolling: touch;
+            touch-action: manipulation;
+            overscroll-behavior: none;
             -webkit-overscroll-behavior: none;
         }
 
-        /* 강제 가로모드 제거 - 앱에서는 항상 90도 회전 상태 */
-        .gender-selection,
-        .main-container {
-            width: 100vh;
-            height: 100vw;
-        }
-
-        /* 성별 선택 화면 - 태블릿 최적화 */
+        /* 모바일/태블릿 전용 성별 선택 */
         .gender-selection {
             display: flex;
             align-items: center;
@@ -97,41 +76,26 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            padding: 40px;
+            padding: 30px;
             border-radius: 20px;
             background-color: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.4);
         }
 
-        /* 태블릿에서 배경 투명하게 */
-        @media screen and (min-width: 768px) {
-            .gender-card {
-                background-color: rgba(255, 255, 255, 0.05);
-                border: 2px solid rgba(255, 255, 255, 0.4);
-            }
-            
-            .gender-card:hover {
-                background-color: rgba(255, 255, 255, 0.1);
-                border-color: #FF1493;
-                box-shadow: 0 10px 40px rgba(255, 20, 147, 0.3);
-            }
-        }
-
-        .gender-card:hover {
-            transform: translateY(-10px);
+        .gender-card:active {
+            transform: scale(0.95);
+            background-color: rgba(255, 255, 255, 0.15);
             border-color: #FF1493;
-            box-shadow: 0 10px 40px rgba(255, 20, 147, 0.3);
-            background-color: rgba(255, 255, 255, 0.1);
         }
 
         .gender-icon {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 20px;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 60px;
+            font-size: 50px;
             background: linear-gradient(135deg, #FF1493, #FF69B4);
             border-radius: 50%;
         }
@@ -141,14 +105,14 @@
         }
 
         .gender-title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .gender-subtitle {
             color: #999;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         /* 메인 컨테이너 */
@@ -624,24 +588,8 @@
             color: #666;
         }
 
-        /* 반응형 - 태블릿과 모바일 최적화 */
-        @media screen and (max-width: 1200px) {
-            .hairstyle-card {
-                width: 180px;
-            }
-        }
-
-        @media screen and (max-width: 900px) {
-            .hairstyle-card {
-                width: 160px;
-            }
-            
-            .content {
-                padding: 15px;
-            }
-        }
-
-        @media screen and (max-width: 600px) {
+        /* 반응형 - 모바일/태블릿만 고려 */
+        @media screen and (max-width: 500px) {
             .hairstyle-card {
                 width: 140px;
             }
@@ -658,6 +606,41 @@
             .length-tab {
                 padding: 8px 16px;
                 font-size: 13px;
+            }
+            
+            .gender-card {
+                padding: 25px;
+            }
+            
+            .gender-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 40px;
+                margin-bottom: 12px;
+            }
+            
+            .gender-title {
+                font-size: 18px;
+            }
+            
+            .gender-subtitle {
+                font-size: 11px;
+            }
+        }
+
+        @media screen and (min-width: 501px) and (max-width: 800px) {
+            .hairstyle-card {
+                width: 160px;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+        }
+
+        @media screen and (min-width: 801px) {
+            .hairstyle-card {
+                width: 180px;
             }
         }
     </style>
@@ -753,44 +736,29 @@
     <script>
         // 네이티브앱처럼 보이게 하는 JavaScript 추가
         
-        // 네이티브앱에서 웹뷰 실행 시 90도 회전 적용
-        function initializeAppRotation() {
-            // 웹앱을 90도 회전시켜서 앱에서 정상으로 보이게
-            document.body.style.transform = 'rotate(90deg)';
-            document.body.style.transformOrigin = 'center center';
-            document.body.style.width = '100vh';
-            document.body.style.height = '100vw';
-            document.body.style.position = 'fixed';
-            document.body.style.top = '50%';
-            document.body.style.left = '50%';
-            document.body.style.marginTop = '-50vw';
-            document.body.style.marginLeft = '-50vh';
+        // 모바일 네이티브앱 전용 초기화
+        function initializeMobileApp() {
+            // 90도 회전 이미 CSS에서 적용됨
+            // 모바일 터치 최적화만 추가
+            document.addEventListener('touchstart', function(e) {
+                // 터치 시작 처리
+            }, { passive: true });
             
-            console.log('🔄 네이티브앱용 90도 회전 적용 완료');
+            console.log('📱 모바일 네이티브앱 전용 초기화 완료');
         }
         
-        // 화면 회전 완전 방지 (앱 내에서는 필요없음)
-        function preventRotation() {
-            // 앱에서는 고정된 90도 회전 상태 유지
-            console.log('📱 네이티브앱 모드: 회전 방지 활성화');
+        // iOS Safari 주소창 숨기기 (웹뷰에서는 필요없지만 혹시 모를 경우)
+        function hideAddressBar() {
+            setTimeout(function() {
+                window.scrollTo(0, 1);
+            }, 0);
         }
         
-        // 화면 회전 감지 및 최적화 (앱에서는 간소화)
-        function handleOrientationChange() {
-            // 앱에서는 회전 변화 무시
-            console.log('📱 앱 모드: 방향 변화 무시');
-            hideAddressBar();
-        }
-        
-        window.addEventListener('orientationchange', handleOrientationChange);
-        window.addEventListener('resize', handleOrientationChange);
-        
-        // 페이지 로드 시 앱용 회전 적용
+        // 페이지 로드 시 모바일 앱 초기화
         window.addEventListener('load', function() {
-            initializeAppRotation();
-            preventRotation();
+            initializeMobileApp();
             hideAddressBar();
-            console.log('🚀 네이티브앱용 웹뷰 초기화 완료');
+            console.log('🚀 모바일 전용 웹뷰 로드 완료');
         });
         
         // 확대/축소 완전 방지
