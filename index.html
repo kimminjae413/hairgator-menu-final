@@ -37,7 +37,7 @@
             margin: 0;
             padding: 0;
             
-            /* 기본 상태 - 회전 없음 */
+            /* 기본 상태 - 회전 없음, 반응형 크기 */
             width: 100vw;
             height: 100vh;
             position: fixed;
@@ -54,43 +54,14 @@
             -webkit-overscroll-behavior: none;
         }
 
-        /* 세로 모드일 때만 90도 회전 */
-        @media screen and (orientation: portrait) {
-            body {
-                transform: rotate(90deg);
-                transform-origin: center center;
-                width: 100vh;
-                height: 100vw;
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                margin-top: -50vw;
-                margin-left: -50vh;
-            }
-        }
-
-        /* 가로 모드일 때는 회전 없음 */
-        @media screen and (orientation: landscape) {
-            body {
-                transform: none;
-                width: 100vw;
-                height: 100vh;
-                position: fixed;
-                top: 0;
-                left: 0;
-                margin: 0;
-            }
-        }
-
-        /* 모바일/태블릿 전용 성별 선택 */
+        /* 팝업 형태 반응형 성별 선택 */
         .gender-selection {
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
             background-color: #000;
-            gap: 20px;
-            padding: 20px;
+            padding: 30px 20px;
             box-sizing: border-box;
         }
 
@@ -98,49 +69,106 @@
             display: none;
         }
 
-        .gender-card {
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 20px;
-            border-radius: 15px;
-            background-color: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            flex: 1;
-            max-width: 150px;
+        /* 세로 모드 (핸드폰) - 세로 배치 */
+        @media screen and (orientation: portrait) {
+            .gender-selection {
+                flex-direction: column;
+                gap: 30px;
+                padding: 40px 30px;
+            }
+            
+            .gender-card {
+                width: 100%;
+                max-width: 280px;
+                padding: 30px;
+                border-radius: 20px;
+                background-color: rgba(255, 255, 255, 0.08);
+                border: 2px solid rgba(255, 255, 255, 0.4);
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .gender-icon {
+                width: 100px;
+                height: 100px;
+                margin: 0 auto 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 50px;
+                background: linear-gradient(135deg, #FF1493, #FF69B4);
+                border-radius: 50%;
+            }
+            
+            .gender-card.male .gender-icon {
+                background: linear-gradient(135deg, #4169E1, #1E90FF);
+            }
+            
+            .gender-title {
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 8px;
+            }
+            
+            .gender-subtitle {
+                color: #999;
+                font-size: 14px;
+            }
+        }
+
+        /* 가로 모드 (태블릿/큰 화면) - 가로 배치 */
+        @media screen and (orientation: landscape) {
+            .gender-selection {
+                flex-direction: row;
+                gap: 40px;
+                padding: 30px;
+            }
+            
+            .gender-card {
+                flex: 1;
+                max-width: 200px;
+                padding: 40px 30px;
+                border-radius: 20px;
+                background-color: rgba(255, 255, 255, 0.08);
+                border: 2px solid rgba(255, 255, 255, 0.4);
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .gender-icon {
+                width: 120px;
+                height: 120px;
+                margin: 0 auto 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 60px;
+                background: linear-gradient(135deg, #FF1493, #FF69B4);
+                border-radius: 50%;
+            }
+            
+            .gender-card.male .gender-icon {
+                background: linear-gradient(135deg, #4169E1, #1E90FF);
+            }
+            
+            .gender-title {
+                font-size: 20px;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            
+            .gender-subtitle {
+                color: #999;
+                font-size: 12px;
+            }
         }
 
         .gender-card:active {
             transform: scale(0.95);
             background-color: rgba(255, 255, 255, 0.15);
             border-color: #FF1493;
-        }
-
-        .gender-icon {
-            width: 70px;
-            height: 70px;
-            margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 35px;
-            background: linear-gradient(135deg, #FF1493, #FF69B4);
-            border-radius: 50%;
-        }
-
-        .gender-card.male .gender-icon {
-            background: linear-gradient(135deg, #4169E1, #1E90FF);
-        }
-
-        .gender-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .gender-subtitle {
-            color: #999;
-            font-size: 10px;
         }
 
         /* 메인 컨테이너 */
@@ -376,6 +404,7 @@
             background: #FF69B4;
         }
 
+        /* 헤어스타일 카드 반응형 */
         .hairstyle-card {
             background-color: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
@@ -383,8 +412,21 @@
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
-            width: 200px;
             flex-shrink: 0;
+        }
+
+        /* 세로 모드 - 작은 카드 */
+        @media screen and (orientation: portrait) {
+            .hairstyle-card {
+                width: 140px;
+            }
+        }
+
+        /* 가로 모드 - 큰 카드 */
+        @media screen and (orientation: landscape) {
+            .hairstyle-card {
+                width: 180px;
+            }
         }
 
         .hairstyle-card:hover {
@@ -616,151 +658,7 @@
             color: #666;
         }
 
-        /* 방향별 반응형 - 더 정확하게 */
-        
-        /* 세로 모드 (회전된 상태) - 실제 가로 공간 기준 */
-        @media screen and (orientation: portrait) and (max-width: 500px) {
-            .gender-selection {
-                gap: 15px;
-                padding: 15px;
-            }
-            
-            .gender-card {
-                padding: 15px;
-                max-width: 120px;
-            }
-            
-            .gender-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 30px;
-                margin-bottom: 8px;
-            }
-            
-            .gender-title {
-                font-size: 14px;
-                margin-bottom: 4px;
-            }
-            
-            .gender-subtitle {
-                font-size: 9px;
-            }
-        }
-
-        @media screen and (orientation: portrait) and (min-width: 501px) and (max-width: 800px) {
-            .gender-selection {
-                gap: 20px;
-                padding: 20px;
-            }
-            
-            .gender-card {
-                padding: 18px;
-                max-width: 130px;
-            }
-            
-            .gender-icon {
-                width: 65px;
-                height: 65px;
-                font-size: 32px;
-                margin-bottom: 9px;
-            }
-            
-            .gender-title {
-                font-size: 15px;
-                margin-bottom: 4px;
-            }
-            
-            .gender-subtitle {
-                font-size: 9px;
-            }
-        }
-
-        @media screen and (orientation: portrait) and (min-width: 801px) {
-            .gender-selection {
-                gap: 25px;
-                padding: 25px;
-            }
-            
-            .gender-card {
-                padding: 20px;
-                max-width: 140px;
-            }
-            
-            .gender-icon {
-                width: 70px;
-                height: 70px;
-                font-size: 35px;
-                margin-bottom: 10px;
-            }
-            
-            .gender-title {
-                font-size: 16px;
-                margin-bottom: 5px;
-            }
-            
-            .gender-subtitle {
-                font-size: 10px;
-            }
-        }
-
-        /* 가로 모드 (회전 안된 상태) - 실제 가로 공간 기준 */
-        @media screen and (orientation: landscape) and (max-height: 500px) {
-            .gender-selection {
-                gap: 15px;
-                padding: 15px;
-                flex-direction: row;
-            }
-            
-            .gender-card {
-                padding: 15px;
-                max-width: 120px;
-            }
-            
-            .gender-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 30px;
-                margin-bottom: 8px;
-            }
-            
-            .gender-title {
-                font-size: 14px;
-                margin-bottom: 4px;
-            }
-            
-            .gender-subtitle {
-                font-size: 9px;
-            }
-        }
-
-        @media screen and (orientation: landscape) and (min-height: 501px) {
-            .gender-selection {
-                gap: 30px;
-                padding: 30px;
-                flex-direction: row;
-            }
-            
-            .gender-card {
-                padding: 25px;
-                max-width: 160px;
-            }
-            
-            .gender-icon {
-                width: 80px;
-                height: 80px;
-                font-size: 40px;
-                margin-bottom: 12px;
-            }
-            
-            .gender-title {
-                font-size: 18px;
-                margin-bottom: 6px;
-            }
-            
-            .gender-subtitle {
-                font-size: 11px;
-            }
-        }
+        /* 방향별 반응형 - 팝업에 최적화 */
     </style>
 </head>
 <body>
@@ -854,37 +752,34 @@
     <script>
         // 네이티브앱처럼 보이게 하는 JavaScript 추가
         
-        // 기기 방향에 따른 동적 회전 처리
-        function handleDeviceOrientation() {
-            const orientation = screen.orientation || screen.mozOrientation || screen.msOrientation;
-            const angle = orientation ? orientation.angle : window.orientation;
-            
-            console.log('📱 기기 방향 감지:', {
-                orientation: window.orientation,
-                angle: angle,
-                innerWidth: window.innerWidth,
-                innerHeight: window.innerHeight
-            });
-            
-            // CSS 미디어 쿼리가 자동으로 처리하므로 JavaScript에서는 로깅만
-        }
-        
-        // 모바일 네이티브앱 전용 초기화
+        // 팝업 형태 반응형 처리
         function initializeMobileApp() {
+            // 현재 화면 방향과 크기 확인
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const screenInfo = {
+                width: window.innerWidth,
+                height: window.innerHeight,
+                orientation: isPortrait ? 'portrait' : 'landscape',
+                ratio: window.innerWidth / window.innerHeight
+            };
+            
+            console.log('📱 팝업 반응형 모드:', screenInfo);
+            
             // 방향 변화 감지
             window.addEventListener('orientationchange', function() {
-                setTimeout(handleDeviceOrientation, 100);
+                setTimeout(function() {
+                    const newIsPortrait = window.innerHeight > window.innerWidth;
+                    console.log('🔄 방향 변경:', newIsPortrait ? 'portrait' : 'landscape');
+                    hideAddressBar();
+                }, 100);
             });
-            
-            // 초기 방향 확인
-            handleDeviceOrientation();
             
             // 터치 최적화
             document.addEventListener('touchstart', function(e) {
                 // 터치 시작 처리
             }, { passive: true });
             
-            console.log('📱 스마트 방향 감지 시스템 활성화');
+            console.log('📱 팝업 형태 반응형 시스템 활성화');
         }
         
         // iOS Safari 주소창 숨기기
@@ -898,7 +793,7 @@
         window.addEventListener('load', function() {
             initializeMobileApp();
             hideAddressBar();
-            console.log('🚀 스마트 회전 대응 웹뷰 로드 완료');
+            console.log('🚀 팝업 반응형 웹앱 로드 완료');
         });
         
         // 확대/축소 완전 방지
