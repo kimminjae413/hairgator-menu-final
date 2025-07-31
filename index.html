@@ -904,9 +904,14 @@
                 return;
             }
             
-            // 🎯 어드민과 동일한 순서로 고정
-            const orderedCategories = hierarchyStructure[currentGender] ? 
-                Object.keys(hierarchyStructure[currentGender]) : mainCategories;
+            // 🎯 고정된 순서 정의 (어드민과 동일)
+            const categoryOrder = {
+                male: ['SIDE FRINGE', 'SIDE FART', 'FRINDGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN'],
+                female: ['LONG', 'SEMI LONG', 'MEDIUM', 'BOB', 'SHORT']
+            };
+            
+            // 현재 성별에 맞는 순서대로 정렬
+            const orderedCategories = categoryOrder[currentGender] || mainCategories;
             
             orderedCategories.forEach((mainCategory, index) => {
                 if (mainCategories.includes(mainCategory)) {
