@@ -949,16 +949,25 @@
                     <div class="length-tabs">
             `;
 
-            // 중분류 탭 생성 (항상 표시)
-            lengthTypes.forEach((lengthType, index) => {
-                const isActive = index === 0 ? 'active' : '';
-                html += `<div class="length-tab ${isActive}" data-length="${lengthType}" onclick="switchLengthTab('${lengthType}')">${lengthType}</div>`;
+            // 중분류 탭 생성 (어드민 순서 고정)
+            const orderedSubCategories = hierarchyStructure[currentGender]?.[currentCategory] || lengthTypes;
+            orderedSubCategories.forEach((lengthType, index) => {
+                if (lengthTypes.includes(lengthType)) {
+                    const isActive = index === 0 ? 'active' : '';
+                    html += `<div class="length-tab ${isActive}" data-length="${lengthType}" onclick="switchLengthTab('${lengthType}')">${lengthType}</div>`;
+                }
             });
 
             html += `</div>`;
 
-            // 각 앞머리 길이별 섹션
-            for (const [lengthType, styles] of Object.entries(categoryData.styles)) {
+            // 각 앞머리 길이별 섹션 (어드민 순서대로)
+            const orderedSubCategories = hierarchyStructure[currentGender]?.[currentCategory] || Object.keys(categoryData.styles);
+            const firstLengthType = orderedSubCategories[0];
+            
+            for (const lengthType of orderedSubCategories) {
+                if (!categoryData.styles[lengthType]) continue;
+                
+                const styles = categoryData.styles[lengthType];
                 const isActive = lengthType === firstLengthType ? 'active' : '';
                 
                 html += `<div class="length-section ${isActive}" data-length="${lengthType}">`;
@@ -1011,16 +1020,18 @@
                     <div class="length-tabs">
             `;
 
-            // 중분류 탭 생성 (항상 표시)
-            subCategories.forEach((subCategory, index) => {
+            // 중분류 탭 생성 (어드민 순서 고정)
+            const orderedSubCategories = hierarchyStructure[currentGender]?.[mainCategory] || subCategories;
+            orderedSubCategories.forEach((subCategory, index) => {
                 const isActive = index === 0 ? 'active' : '';
                 html += `<div class="length-tab ${isActive}" data-length="${subCategory}" onclick="switchLengthTab('${subCategory}')">${subCategory}</div>`;
             });
             
             html += `</div>`;
 
-            // 중분류별 빈 상태 섹션
-            subCategories.forEach((subCategory, index) => {
+            // 중분류별 빈 상태 섹션 (어드민 순서대로)
+            const orderedSubCategories = hierarchyStructure[currentGender]?.[mainCategory] || subCategories;
+            orderedSubCategories.forEach((subCategory, index) => {
                 const isActive = index === 0 ? 'active' : '';
                 html += `
                     <div class="length-section ${isActive}" data-length="${subCategory}">
