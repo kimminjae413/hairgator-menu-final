@@ -71,7 +71,7 @@
             -webkit-overscroll-behavior: none;
         }
 
-        /* 강제 가로모드 - 개선된 버전 */
+        /* 강제 가로모드 - 완전 고정 */
         @media screen and (orientation: portrait) {
             body {
                 transform: rotate(90deg);
@@ -92,7 +92,7 @@
             }
         }
 
-        /* 가로 모드에서는 정상 표시 */
+        /* 가로 모드에서도 동일하게 처리 - 회전 방지 */
         @media screen and (orientation: landscape) {
             body {
                 transform: none;
@@ -102,6 +102,14 @@
                 top: 0;
                 left: 0;
             }
+        }
+        
+        /* 모든 방향에서 회전 방지 */
+        html, body {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
 
         /* 성별 선택 화면 - 태블릿 최적화 */
@@ -777,8 +785,20 @@
     <script>
         // 네이티브앱처럼 보이게 하는 JavaScript 추가
         
+        // 화면 회전 완전 방지
+        function preventRotation() {
+            // 화면이 회전되어도 콘텐츠는 고정
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            document.body.style.height = '100%';
+            document.body.style.overflow = 'hidden';
+        }
+        
         // 화면 회전 감지 및 최적화
         function handleOrientationChange() {
+            // 회전 방지 유지
+            preventRotation();
+            
             // 세로 모드에서 가로 모드로 콘텐츠 회전 시 최적화
             setTimeout(function() {
                 window.scrollTo(0, 0);
@@ -788,6 +808,12 @@
         
         window.addEventListener('orientationchange', handleOrientationChange);
         window.addEventListener('resize', handleOrientationChange);
+        
+        // 페이지 로드 시 회전 방지 적용
+        window.addEventListener('load', function() {
+            preventRotation();
+            hideAddressBar();
+        });
         
         // 확대/축소 완전 방지
         document.addEventListener('gesturestart', function(e) {
