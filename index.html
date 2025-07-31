@@ -683,7 +683,7 @@
                 
                 const hierarchySnapshot = await db.collection('category_hierarchy')
                     .where('gender', '==', gender)
-                    .orderBy('updatedAt', 'desc')  // 최신 어드민 변경사항 우선
+                    // .orderBy('updatedAt', 'desc')  // 인덱스 오류 방지를 위해 제거
                     .get();
                 
                 console.log(`📋 실시간 쿼리 결과: ${hierarchySnapshot.size}개 문서`);
