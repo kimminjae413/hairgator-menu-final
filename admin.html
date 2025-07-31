@@ -457,7 +457,7 @@
             <div style="text-align: center; margin-top: 30px;">
                 <button class="btn btn-warning" onclick="migrateFromCategories()">🔄 Firebase 마이그레이션</button>
                 <button class="btn btn-secondary" onclick="refreshUI()">🔄 새로고침</button>
-                <button class="btn btn-success" id="syncBtn" onclick="syncToFirebase()" style="display: none;">📤 Firebase에 저장</button>
+                <button class="btn btn-success" id="syncBtn" onclick="syncToFirebase()">📤 인덱스에 반영</button>
             </div>
         </div>
 
@@ -525,6 +525,7 @@
         let selectedSubCategory = null;
         let hierarchyStructure = {};
         let hasChanges = false;
+        let changeLog = [];
 
         // Firebase 초기화
         function initializeFirebase() {
@@ -543,23 +544,103 @@
             }
         }
 
-        // 동기화 상태 업데이트
+        // 변경사항 기록
+        function logChange(type, action, details) {
+            changeLog.push({
+                timestamp: new Date().toLocaleString('ko-KR'),
+                type: type,
+                action: action,
+                details: details
+            });
+            hasChanges = true;
+            updateSyncButton();
+            console.log(`📝 변경사항: ${type} ${action} - ${details}`);
+        }
+
+        // 동기화 버튼 상태 업데이트
+        function updateSyncButton() {
+            const syncBtn = document.getElementById('syncBtn');
+            if (hasChanges) {
+                syncBtn.textContent = `📤 인덱스에 반영 (${changeLog.length}개 변경사항)`;
+                syncBtn.className = 'btn btn-success sync-indicator changes';
+            } else {
+                syncBtn.textContent = '✅ 모든 변경사항 반영됨';
+                syncBtn.className = 'btn btn-secondary';
+            }
+        }
+
+        // 동기화 상태 업데이트  
         function updateSyncIndicator(status, message) {
             const indicator = document.getElementById('syncIndicator');
             indicator.className = `sync-indicator ${status}`;
             indicator.textContent = message;
         }
 
-        // 알림 표시
-        function showAlert(message, type = 'success') {
-            const alert = document.getElementById('alert');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            alert.style.display = 'block';
+        // 📤 인덱스에 반영
+        async function syncToFirebase() {
+            if (!hasChanges) {
+                showAlert('반영할 변경사항이 없습니다.', 'warning');
+                return;
+            }
+
+            if (!firebaseConnected) {
+                showAlert('Firebase 연결이 필요합니다.', 'error');
+                return;
+            }
+
+            const changeList = changeLog.map(log => `• ${log.type} ${log.action}: ${log.details}`).join('\n');
             
-            setTimeout(() => {
-                alert.style.display = 'none';
-            }, 4000);
+            if (!confirm(`${changeLog.length}개의 변경사항을 인덱스에 반영하시겠습니까?\n\n${changeList}`)) {
+                return;
+            }
+
+            try {
+                showAlert('🔄 Firebase 동기화 중...', 'warning');
+
+                // 기존 category_hierarchy 삭제
+                const existingDocs = await db.collection('category_hierarchy').get();
+                const deleteBatch = db.batch();
+                existingDocs.forEach(doc => {
+                    deleteBatch.delete(doc.ref);
+                });
+                if (!existingDocs.empty) {
+                    await deleteBatch.commit();
+                }
+
+                // 새 category_hierarchy 생성
+                const createBatch = db.batch();
+                let totalDocs = 0;
+
+                for (const [gender, categories] of Object.entries(hierarchyStructure)) {
+                    for (const [mainCategory, subCategories] of Object.entries(categories)) {
+                        for (const subCategory of subCategories) {
+                            const docRef = db.collection('category_hierarchy').doc();
+                            createBatch.set(docRef, {
+                                gender: gender,
+                                mainCategory: mainCategory,
+                                subCategory: subCategory,
+                                categoryPath: `${gender}_${mainCategory}_${subCategory}`,
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            totalDocs++;
+                        }
+                    }
+                }
+
+                await createBatch.commit();
+
+                // 변경사항 초기화
+                hasChanges = false;
+                changeLog = [];
+                updateSyncButton();
+
+                showAlert(`✅ ${totalDocs}개 문서가 인덱스에 반영되었습니다!`, 'success');
+                updateSyncIndicator('connected', '✅ 동기화 완료');
+
+            } catch (error) {
+                console.error('❌ 동기화 오류:', error);
+                showAlert('동기화 중 오류가 발생했습니다: ' + error.message, 'error');
+            }
         }
 
         // 🔄 Firebase 마이그레이션
@@ -1003,37 +1084,144 @@
             }
         }
 
-        // 임시 함수들
+        // 알림 표시
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 4000);
+        }
+
+        // 카테고리 수정 (실제 구현)
         function editCategory(category, event) {
             event.stopPropagation();
-            showAlert('카테고리 수정 기능은 개발 중입니다.', 'warning');
+            
+            const newName = prompt(`"${category}" 카테고리의 새 이름을 입력하세요:`, category);
+            
+            if (!newName || newName.trim() === '' || newName.trim() === category) {
+                return;
+            }
+
+            const newNameTrimmed = newName.trim().toUpperCase();
+
+            // 메모리에서 업데이트
+            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][category]) {
+                hierarchyStructure[selectedGender][newNameTrimmed] = hierarchyStructure[selectedGender][category];
+                delete hierarchyStructure[selectedGender][category];
+                
+                // 선택 상태 업데이트
+                if (selectedMainCategory === category) {
+                    selectedMainCategory = newNameTrimmed;
+                }
+
+                logChange('대분류', '수정', `${category} → ${newNameTrimmed}`);
+                showAlert(`"${category}"가 "${newNameTrimmed}"로 수정되었습니다.`, 'success');
+                
+                // UI 새로고침
+                loadMainCategories(selectedGender);
+                if (selectedMainCategory === newNameTrimmed) {
+                    loadSubCategories(selectedGender, newNameTrimmed);
+                }
+                updateBreadcrumb();
+            }
         }
 
+        // 카테고리 삭제 (실제 구현)
         function deleteCategory(category, event) {
             event.stopPropagation();
-            showAlert('카테고리 삭제 기능은 개발 중입니다.', 'warning');
+            
+            if (!confirm(`"${category}" 대분류를 삭제하시겠습니까?\n\n⚠️ 주의: 이 대분류의 모든 중분류와 스타일도 함께 삭제됩니다.`)) {
+                return;
+            }
+
+            // 메모리에서 삭제
+            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][category]) {
+                delete hierarchyStructure[selectedGender][category];
+                
+                // 선택 상태 초기화
+                if (selectedMainCategory === category) {
+                    selectedMainCategory = null;
+                    selectedSubCategory = null;
+                    clearSubCategories();
+                    clearStyles();
+                }
+
+                logChange('대분류', '삭제', category);
+                showAlert(`"${category}" 대분류가 삭제되었습니다.`, 'success');
+                
+                // UI 새로고침
+                loadMainCategories(selectedGender);
+                updateBreadcrumb();
+            }
         }
 
+        // 중분류 수정 (실제 구현)
         function editSubCategory(subCategory, event) {
             event.stopPropagation();
-            showAlert('중분류 수정 기능은 개발 중입니다.', 'warning');
+            
+            const newName = prompt(`"${subCategory}" 중분류의 새 이름을 입력하세요:`, subCategory);
+            
+            if (!newName || newName.trim() === '' || newName.trim() === subCategory) {
+                return;
+            }
+
+            const newNameTrimmed = newName.trim();
+
+            // 메모리에서 업데이트
+            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][selectedMainCategory]) {
+                const subCategories = hierarchyStructure[selectedGender][selectedMainCategory];
+                const index = subCategories.indexOf(subCategory);
+                if (index > -1) {
+                    subCategories[index] = newNameTrimmed;
+                    
+                    // 선택 상태 업데이트
+                    if (selectedSubCategory === subCategory) {
+                        selectedSubCategory = newNameTrimmed;
+                    }
+
+                    logChange('중분류', '수정', `${selectedMainCategory} > ${subCategory} → ${newNameTrimmed}`);
+                    showAlert(`"${subCategory}"가 "${newNameTrimmed}"로 수정되었습니다.`, 'success');
+                    
+                    // UI 새로고침
+                    loadSubCategories(selectedGender, selectedMainCategory);
+                    updateBreadcrumb();
+                }
+            }
         }
 
+        // 중분류 삭제 (실제 구현)
         function deleteSubCategory(subCategory, event) {
             event.stopPropagation();
-            showAlert('중분류 삭제 기능은 개발 중입니다.', 'warning');
-        }
+            
+            if (!confirm(`"${subCategory}" 중분류를 삭제하시겠습니까?\n\n⚠️ 주의: 이 중분류의 모든 스타일도 함께 삭제됩니다.`)) {
+                return;
+            }
 
-        function editStyle(styleId) {
-            showAlert('스타일 수정 기능은 개발 중입니다.', 'warning');
-        }
+            // 메모리에서 삭제
+            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][selectedMainCategory]) {
+                const subCategories = hierarchyStructure[selectedGender][selectedMainCategory];
+                const index = subCategories.indexOf(subCategory);
+                if (index > -1) {
+                    subCategories.splice(index, 1);
+                    
+                    // 선택 상태 초기화
+                    if (selectedSubCategory === subCategory) {
+                        selectedSubCategory = null;
+                        clearStyles();
+                    }
 
-        function deleteStyle(styleId, styleName) {
-            showAlert('스타일 삭제 기능은 개발 중입니다.', 'warning');
-        }
-
-        function syncToFirebase() {
-            showAlert('Firebase 동기화 기능은 개발 중입니다.', 'warning');
+                    logChange('중분류', '삭제', `${selectedMainCategory} > ${subCategory}`);
+                    showAlert(`"${subCategory}" 중분류가 삭제되었습니다.`, 'success');
+                    
+                    // UI 새로고침
+                    loadSubCategories(selectedGender, selectedMainCategory);
+                    updateBreadcrumb();
+                }
+            }
         }
 
         // 초기화
