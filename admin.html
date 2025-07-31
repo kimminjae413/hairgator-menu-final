@@ -622,6 +622,20 @@
             </div>
             
             <div class="form-group">
+                <label class="form-label">성별</label>
+                <select class="form-control" id="newMainCategoryGender">
+                    <option value="">성별을 선택하세요</option>
+                    <option value="male">남성</option>
+                    <option value="female">여성</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">대분류 이름</label>
+                <input type="text" class="form-control" id="newMainCategoryName" placeholder="예: WAVE, PERM">
+            </div>
+            
+            <div class="form-group">
                 <label class="form-label">기본 중분류 (쉼표로 구분)</label>
                 <input type="text" class="form-control" id="newMainCategorySubCategories" placeholder="예: None, Fore Head, Eye Brow">
             </div>
@@ -832,6 +846,8 @@
 
         // 1단계: 성별 선택
         function selectGender(gender) {
+            console.log(`성별 선택: ${gender}`);
+            
             // 이전 선택 초기화
             selectedGender = gender;
             selectedMainCategory = null;
@@ -854,8 +870,9 @@
             updateBreadcrumb();
         }
 
-        // 2단계: 대분류 로드
+        // 2단계: 대분류 로드 (수정/삭제 버튼 추가)
         async function loadMainCategories(gender) {
+            console.log(`대분류 로드: ${gender}`);
             const mainCategoryList = document.getElementById('mainCategoryList');
             
             if (!firebaseConnected) {
@@ -872,16 +889,22 @@
 
                 let html = '';
                 const categories = Object.keys(hierarchyStructure[gender]);
+                console.log(`기본 카테고리: ${categories.join(', ')}`);
                 
                 categories.forEach(category => {
                     html += `
                         <div class="selectable-item" onclick="selectMainCategory('${category}')">
                             <div class="item-text">📁 ${category}</div>
+                            <div class="item-actions">
+                                <button class="action-btn" onclick="editMainCategoryClick('${category}', event)" title="수정">✏️</button>
+                                <button class="action-btn" onclick="deleteMainCategoryClick('${category}', event)" title="삭제">🗑️</button>
+                            </div>
                         </div>
                     `;
                 });
 
                 mainCategoryList.innerHTML = html;
+                console.log('기본 대분류 로드 완료');
                 return;
             }
 
@@ -923,8 +946,8 @@
                             <div class="selectable-item" onclick="selectMainCategory('${category}')">
                                 <div class="item-text">📁 ${category}</div>
                                 <div class="item-actions">
-                                    <button class="action-btn" onclick="editMainCategory('${category}', event)" title="수정">✏️</button>
-                                    <button class="action-btn" onclick="deleteMainCategory('${category}', event)" title="삭제">🗑️</button>
+                                    <button class="action-btn" onclick="editMainCategoryClick('${category}', event)" title="수정">✏️</button>
+                                    <button class="action-btn" onclick="deleteMainCategoryClick('${category}', event)" title="삭제">🗑️</button>
                                 </div>
                             </div>
                         `;
@@ -943,14 +966,15 @@
                         <div class="selectable-item" onclick="selectMainCategory('${category}')">
                             <div class="item-text">📁 ${category}</div>
                             <div class="item-actions">
-                                <button class="action-btn" onclick="editMainCategory('${category}', event)" title="수정">✏️</button>
-                                <button class="action-btn" onclick="deleteMainCategory('${category}', event)" title="삭제">🗑️</button>
+                                <button class="action-btn" onclick="editMainCategoryClick('${category}', event)" title="수정">✏️</button>
+                                <button class="action-btn" onclick="deleteMainCategoryClick('${category}', event)" title="삭제">🗑️</button>
                             </div>
                         </div>
                     `;
                 });
 
                 mainCategoryList.innerHTML = html;
+                console.log('Firebase 대분류 로드 완료');
 
             } catch (error) {
                 console.error('대분류 로드 오류:', error);
@@ -965,6 +989,10 @@
                         html += `
                             <div class="selectable-item" onclick="selectMainCategory('${category}')">
                                 <div class="item-text">📁 ${category}</div>
+                                <div class="item-actions">
+                                    <button class="action-btn" onclick="editMainCategoryClick('${category}', event)" title="수정">✏️</button>
+                                    <button class="action-btn" onclick="deleteMainCategoryClick('${category}', event)" title="삭제">🗑️</button>
+                                </div>
                             </div>
                         `;
                     });
@@ -974,8 +1002,48 @@
             }
         }
 
+        // 대분류 수정 버튼 클릭 (새로운 함수명)
+        function editMainCategoryClick(categoryName, event) {
+            event.stopPropagation();
+            console.log(`대분류 수정 클릭: ${categoryName}`);
+            
+            document.getElementById('editMainCategoryName').value = categoryName;
+            document.getElementById('editMainCategoryOldName').value = categoryName;
+            document.getElementById('editMainCategoryModal').style.display = 'block';
+        }
+
+        // 대분류 삭제 버튼 클릭 (새로운 함수명)
+        function deleteMainCategoryClick(categoryName, event) {
+            event.stopPropagation();
+            console.log(`대분류 삭제 클릭: ${categoryName}`);
+            
+            if (!confirm(`"${categoryName}" 대분류를 삭제하시겠습니까?\n\n주의: 이 대분류의 모든 중분류와 스타일도 함께 삭제됩니다.`)) {
+                return;
+            }
+
+            // 일단 메모리에서 삭제 (Firebase가 연결되어 있으면 Firebase에서도 삭제)
+            if (hierarchyStructure[selectedGender]) {
+                delete hierarchyStructure[selectedGender][categoryName];
+            }
+
+            showAlert(`"${categoryName}" 대분류가 삭제되었습니다.`, 'success');
+            
+            // 선택 상태 초기화
+            if (selectedMainCategory === categoryName) {
+                selectedMainCategory = null;
+                selectedSubCategory = null;
+                clearSubCategories();
+                clearStyles();
+            }
+            
+            // UI 새로고침
+            loadMainCategories(selectedGender);
+            updateBreadcrumb();
+        }
+
         // 2단계: 대분류 선택
         function selectMainCategory(category) {
+            console.log(`대분류 선택: ${category}`);
             selectedMainCategory = category;
             selectedSubCategory = null;
 
@@ -995,8 +1063,9 @@
             updateBreadcrumb();
         }
 
-        // 3단계: 중분류 로드
+        // 3단계: 중분류 로드 (수정/삭제 버튼 추가)
         function loadSubCategories(gender, mainCategory) {
+            console.log(`중분류 로드: ${gender}, ${mainCategory}`);
             const subCategoryList = document.getElementById('subCategoryList');
             
             if (!gender || !mainCategory || !hierarchyStructure[gender] || !hierarchyStructure[gender][mainCategory]) {
@@ -1011,24 +1080,67 @@
 
             let html = '';
             const subCategories = hierarchyStructure[gender][mainCategory];
+            console.log(`중분류 목록: ${subCategories.join(', ')}`);
             
             subCategories.forEach(subCategory => {
                 html += `
                     <div class="selectable-item" onclick="selectSubCategory('${subCategory}')">
                         <div class="item-text">📂 ${subCategory}</div>
                         <div class="item-actions">
-                            <button class="action-btn" onclick="editSubCategory('${subCategory}', event)" title="수정">✏️</button>
-                            <button class="action-btn" onclick="deleteSubCategory('${subCategory}', event)" title="삭제">🗑️</button>
+                            <button class="action-btn" onclick="editSubCategoryClick('${subCategory}', event)" title="수정">✏️</button>
+                            <button class="action-btn" onclick="deleteSubCategoryClick('${subCategory}', event)" title="삭제">🗑️</button>
                         </div>
                     </div>
                 `;
             });
 
             subCategoryList.innerHTML = html;
+            console.log('중분류 로드 완료');
+        }
+
+        // 중분류 수정 버튼 클릭 (새로운 함수명)
+        function editSubCategoryClick(subCategoryName, event) {
+            event.stopPropagation();
+            console.log(`중분류 수정 클릭: ${subCategoryName}`);
+            
+            document.getElementById('editSubCategoryName').value = subCategoryName;
+            document.getElementById('editSubCategoryOldName').value = subCategoryName;
+            document.getElementById('editSubCategoryModal').style.display = 'block';
+        }
+
+        // 중분류 삭제 버튼 클릭 (새로운 함수명)
+        function deleteSubCategoryClick(subCategoryName, event) {
+            event.stopPropagation();
+            console.log(`중분류 삭제 클릭: ${subCategoryName}`);
+            
+            if (!confirm(`"${subCategoryName}" 중분류를 삭제하시겠습니까?\n\n주의: 이 중분류의 모든 스타일도 함께 삭제됩니다.`)) {
+                return;
+            }
+
+            // 메모리에서 삭제
+            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][selectedMainCategory]) {
+                const index = hierarchyStructure[selectedGender][selectedMainCategory].indexOf(subCategoryName);
+                if (index > -1) {
+                    hierarchyStructure[selectedGender][selectedMainCategory].splice(index, 1);
+                }
+            }
+
+            showAlert(`"${subCategoryName}" 중분류가 삭제되었습니다.`, 'success');
+            
+            // 선택 상태 초기화
+            if (selectedSubCategory === subCategoryName) {
+                selectedSubCategory = null;
+                clearStyles();
+            }
+            
+            // UI 새로고침
+            loadSubCategories(selectedGender, selectedMainCategory);
+            updateBreadcrumb();
         }
 
         // 3단계: 중분류 선택
         function selectSubCategory(subCategory) {
+            console.log(`중분류 선택: ${subCategory}`);
             selectedSubCategory = subCategory;
 
             // UI 업데이트
@@ -1044,8 +1156,9 @@
             updateBreadcrumb();
         }
 
-        // 4단계: 스타일 로드 (수정된 함수)
+        // 4단계: 스타일 로드 (기존 함수 유지)
         async function loadStyles(gender, mainCategory, subCategory) {
+            console.log(`스타일 로드: ${gender}, ${mainCategory}, ${subCategory}`);
             const stylesList = document.getElementById('stylesList');
             
             if (!firebaseConnected) {
@@ -1061,8 +1174,6 @@
             stylesList.innerHTML = '<div class="loading">스타일 로딩 중...</div>';
 
             try {
-                console.log(`스타일 로드 시도: ${gender}, ${mainCategory}, ${subCategory}`);
-                
                 // 여러 가지 방법으로 스타일 조회 시도
                 let snapshot = null;
                 
@@ -1074,7 +1185,7 @@
                 
                 console.log(`categoryPath 조회 결과: ${snapshot.size}개`);
                 
-                // 방법 2: 개별 필드로 조회 (categoryPath가 없는 경우)
+                // 방법 2: 개별 필드로 조회
                 if (snapshot.empty) {
                     console.log('개별 필드로 재시도...');
                     snapshot = await db.collection('hairstyles')
@@ -1084,36 +1195,6 @@
                         .get();
                     
                     console.log(`개별 필드 조회 결과: ${snapshot.size}개`);
-                }
-                
-                // 방법 3: foreheadLength 필드로 조회 (기존 데이터 호환성)
-                if (snapshot.empty) {
-                    console.log('foreheadLength 필드로 재시도...');
-                    let query = db.collection('hairstyles')
-                        .where('gender', '==', gender);
-                    
-                    // categoryId로 대분류 매칭 시도
-                    const categoryMap = {
-                        'SIDE_FRINGE': 'SIDE_FRINGE',
-                        'SIDE_PART': 'SIDE_PART', 
-                        'FRINGE_UP': 'FRINGE_UP',
-                        'PUSHED_BACK': 'PUSHED_BACK',
-                        'BUZZ': 'BUZZ',
-                        'CROP': 'CROP',
-                        'MOHICAN': 'MOHICAN'
-                    };
-                    
-                    if (categoryMap[mainCategory]) {
-                        query = query.where('categoryId', '==', categoryMap[mainCategory]);
-                    }
-                    
-                    // foreheadLength로 중분류 매칭
-                    if (subCategory !== 'None') {
-                        query = query.where('foreheadLength', '==', subCategory);
-                    }
-                    
-                    snapshot = await query.get();
-                    console.log(`foreheadLength 조회 결과: ${snapshot.size}개`);
                 }
 
                 if (snapshot.empty) {
@@ -1150,15 +1231,12 @@
             } catch (error) {
                 console.error('스타일 로드 오류:', error);
                 stylesList.innerHTML = `
-                    <div style="color: red; text-align: center; padding: 20px;">
-                        <div>스타일 로드 중 오류가 발생했습니다</div>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <div>스타일 로드 실패</div>
                         <div style="font-size: 12px; margin-top: 10px;">${error.message}</div>
-                        <button class="btn btn-primary btn-sm" onclick="loadStyles('${gender}', '${mainCategory}', '${subCategory}')" style="margin-top: 10px;">
-                            다시 시도
-                        </button>
                     </div>
                 `;
-                showAlert(`스타일 로드 오류: ${error.message}`, 'error');
             }
         }
 
@@ -1203,7 +1281,70 @@
             }
         }
 
-        // 나머지 함수들 (모달, 수정, 삭제 등)
+        // 수정 모달 저장 함수들
+        function saveEditMainCategory() {
+            const oldName = document.getElementById('editMainCategoryOldName').value;
+            const newName = document.getElementById('editMainCategoryName').value.trim().toUpperCase();
+
+            if (!newName || newName === oldName) {
+                closeModal('editMainCategoryModal');
+                return;
+            }
+
+            // 메모리에서 업데이트
+            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][oldName]) {
+                hierarchyStructure[selectedGender][newName] = hierarchyStructure[selectedGender][oldName];
+                delete hierarchyStructure[selectedGender][oldName];
+            }
+
+            // 선택 상태 업데이트
+            if (selectedMainCategory === oldName) {
+                selectedMainCategory = newName;
+            }
+
+            showAlert(`대분류가 "${newName}"으로 수정되었습니다.`, 'success');
+            closeModal('editMainCategoryModal');
+            
+            // UI 새로고침
+            loadMainCategories(selectedGender);
+            if (selectedMainCategory === newName) {
+                loadSubCategories(selectedGender, newName);
+            }
+            updateBreadcrumb();
+        }
+
+        function saveEditSubCategory() {
+            const oldName = document.getElementById('editSubCategoryOldName').value;
+            const newName = document.getElementById('editSubCategoryName').value.trim();
+
+            if (!newName || newName === oldName) {
+                closeModal('editSubCategoryModal');
+                return;
+            }
+
+            // 메모리에서 업데이트
+            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][selectedMainCategory]) {
+                const subCategories = hierarchyStructure[selectedGender][selectedMainCategory];
+                const index = subCategories.indexOf(oldName);
+                if (index > -1) {
+                    subCategories[index] = newName;
+                }
+            }
+
+            // 선택 상태 업데이트
+            if (selectedSubCategory === oldName) {
+                selectedSubCategory = newName;
+            }
+
+            showAlert(`중분류가 "${newName}"으로 수정되었습니다.`, 'success');
+            closeModal('editSubCategoryModal');
+            
+            // UI 새로고침
+            loadSubCategories(selectedGender, selectedMainCategory);
+            updateBreadcrumb();
+        }
+
+        // 나머지 함수들 (기존 유지)
         function showAddCategoryModal() {
             document.getElementById('addMainCategoryModal').style.display = 'block';
             if (selectedGender) {
@@ -1246,27 +1387,6 @@
             selects.forEach(select => {
                 select.selectedIndex = 0;
             });
-        }
-
-        // 기타 필요한 함수들
-        function editMainCategory(categoryName, event) {
-            event.stopPropagation();
-            showAlert('대분류 수정 기능은 개발 중입니다.', 'warning');
-        }
-
-        function deleteMainCategory(categoryName, event) {
-            event.stopPropagation();
-            showAlert('대분류 삭제 기능은 개발 중입니다.', 'warning');
-        }
-
-        function editSubCategory(subCategoryName, event) {
-            event.stopPropagation();
-            showAlert('중분류 수정 기능은 개발 중입니다.', 'warning');
-        }
-
-        function deleteSubCategory(subCategoryName, event) {
-            event.stopPropagation();
-            showAlert('중분류 삭제 기능은 개발 중입니다.', 'warning');
         }
 
         function editStyle(styleId) {
@@ -1332,7 +1452,7 @@
             }, 4000);
         }
 
-        // 초기화 함수들 (기본 구현)
+        // 임시 구현 함수들
         function initMaleCategories() {
             showAlert('남성 카테고리 초기화 기능은 개발 중입니다.', 'warning');
         }
@@ -1345,7 +1465,6 @@
             showAlert('전체 시스템 초기화 기능은 개발 중입니다.', 'warning');
         }
 
-        // 저장 함수들 (기본 구현)
         function saveNewMainCategory() {
             showAlert('새 대분류 추가 기능은 개발 중입니다.', 'warning');
             closeModal('addMainCategoryModal');
@@ -1359,16 +1478,6 @@
         function saveNewStyle() {
             showAlert('새 스타일 추가 기능은 개발 중입니다.', 'warning');
             closeModal('addStyleModal');
-        }
-
-        function saveEditMainCategory() {
-            showAlert('대분류 수정 기능은 개발 중입니다.', 'warning');
-            closeModal('editMainCategoryModal');
-        }
-
-        function saveEditSubCategory() {
-            showAlert('중분류 수정 기능은 개발 중입니다.', 'warning');
-            closeModal('editSubCategoryModal');
         }
 
         // 모달 외부 클릭시 닫기
@@ -1385,18 +1494,4 @@
         console.log('계층형 카테고리 시스템 로드 완료');
     </script>
 </body>
-</html>label">성별</label>
-                <select class="form-control" id="newMainCategoryGender">
-                    <option value="">성별을 선택하세요</option>
-                    <option value="male">남성</option>
-                    <option value="female">여성</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">대분류 이름</label>
-                <input type="text" class="form-control" id="newMainCategoryName" placeholder="예: WAVE, PERM">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-
+</html>
