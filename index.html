@@ -532,7 +532,6 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <script>
         // Firebase 설정
@@ -546,12 +545,14 @@
         };
 
         // Firebase 초기화
-        let db, storage;
+        let db;
+        let firebaseConnected = false;
         
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
-            storage = firebase.storage();
+            firebaseConnected = true;
+            console.log('Firebase 연결 성공');
         } catch (error) {
             console.log('Firebase 초기화 오류:', error);
             // Firebase 없이도 테스트 가능하도록 처리
@@ -560,7 +561,24 @@
         // 전역 변수
         let currentGender = null;
         let currentCategory = null;
-        let hairstylesData = {};
+
+        // 계층 구조 정의 (테스트용)
+        const hierarchyStructure = {
+            male: {
+                'SIDE_FRINGE': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
+                'SIDE_PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
+                'FRINGE_UP': ['None', 'Fore Head'],
+                'PUSHED_BACK': ['None'],
+                'BUZZ': ['None'],
+                'CROP': ['None'],
+                'MOHICAN': ['Fore Head', 'Eye Brow']
+            },
+            female: {
+                'LONG': ['None', 'Fore Head', 'Eye Brow'],
+                'MEDIUM': ['None', 'Fore Head', 'Eye Brow'],
+                'SHORT': ['None', 'Fore Head']
+            }
+        };
 
         // 성별 선택
         function selectGender(gender) {
@@ -569,7 +587,7 @@
             document.getElementById('mainContainer').classList.add('active');
             
             // 성별에 따른 카테고리 로드
-            loadCategories(gender);
+            loadMainCategories(gender);
         }
 
         // 성별 선택 화면으로 돌아가기
@@ -580,21 +598,29 @@
             currentCategory = null;
         }
 
-        // 카테고리 로드
-        async function loadCategories(gender) {
+        // 대분류 카테고리 로드
+        async function loadMainCategories(gender) {
             const navTabs = document.getElementById('navTabs');
             navTabs.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
             
             try {
-                if (db) {
-                    // Firebase가 있을 때
-                    const categoriesQuery = gender === 'male' 
-                        ? db.collection('categories').where('gender', '==', 'male').orderBy('order')
-                        : db.collection('categories').where('gender', '==', 'female').orderBy('order');
+                if (firebaseConnected) {
+                    // Firebase에서 계층 구조 로드
+                    const hierarchySnapshot = await db.collection('category_hierarchy')
+                        .where('gender', '==', gender)
+                        .get();
                     
-                    const snapshot = await categoriesQuery.get();
+                    // 대분류별로 그룹화
+                    const mainCategories = {};
+                    hierarchySnapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (!mainCategories[data.mainCategory]) {
+                            mainCategories[data.mainCategory] = [];
+                        }
+                        mainCategories[data.mainCategory].push(data.subCategory);
+                    });
                     
-                    if (snapshot.empty) {
+                    if (Object.keys(mainCategories).length === 0) {
                         displayTestCategories(gender);
                         return;
                     }
@@ -602,23 +628,22 @@
                     navTabs.innerHTML = '';
                     let firstCategory = null;
                     
-                    snapshot.forEach((doc, index) => {
-                        const category = doc.data();
+                    Object.keys(mainCategories).forEach((mainCategory, index) => {
                         const tab = document.createElement('div');
                         tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
-                        tab.dataset.category = doc.id;
-                        tab.textContent = category.name;
-                        tab.onclick = () => switchCategory(doc.id);
+                        tab.dataset.category = mainCategory;
+                        tab.textContent = mainCategory;
+                        tab.onclick = () => switchCategory(mainCategory);
                         navTabs.appendChild(tab);
                         
-                        if (index === 0) firstCategory = doc.id;
+                        if (index === 0) firstCategory = mainCategory;
                     });
                     
                     if (firstCategory) {
-                        loadHairstylesFromFirebase(firstCategory);
+                        loadHairstylesFromHierarchy(firstCategory);
                     }
                 } else {
-                    // Firebase가 없을 때
+                    // Firebase가 없을 때 테스트 데이터
                     displayTestCategories(gender);
                 }
                 
@@ -631,22 +656,25 @@
         // 테스트용 카테고리 표시
         function displayTestCategories(gender) {
             const navTabs = document.getElementById('navTabs');
-            const categories = gender === 'male' 
-                ? ['SIDE FRINGE', 'SIDE PART', 'FRINGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN']
-                : ['LONG WAVE', 'BOB CUT', 'PIXIE CUT', 'LAYERED', 'PERM', 'STRAIGHT'];
+            const categories = Object.keys(hierarchyStructure[gender] || {});
+            
+            if (categories.length === 0) {
+                navTabs.innerHTML = '<div style="color: #999; padding: 20px;">카테고리를 불러올 수 없습니다.</div>';
+                return;
+            }
             
             navTabs.innerHTML = '';
             categories.forEach((cat, index) => {
                 const tab = document.createElement('div');
                 tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
-                tab.dataset.category = cat.replace(' ', '_');
+                tab.dataset.category = cat;
                 tab.textContent = cat;
-                tab.onclick = () => switchCategory(cat.replace(' ', '_'));
+                tab.onclick = () => switchCategory(cat);
                 navTabs.appendChild(tab);
             });
             
             // 첫 번째 카테고리 로드
-            currentCategory = categories[0].replace(' ', '_');
+            currentCategory = categories[0];
             renderTestData(currentCategory);
         }
 
@@ -663,83 +691,99 @@
             });
             
             currentCategory = categoryId;
-            loadHairstylesFromFirebase(categoryId);
-        }
-
-        // Firebase에서 헤어스타일 로드
-        async function loadHairstylesFromFirebase(categoryId) {
-            const content = document.getElementById('content');
-            content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
             
-            try {
-                if (db) {
-                    // Firebase가 있을 때
-                    const categoryDoc = await db.collection('categories').doc(categoryId).get();
-                    const categoryData = categoryDoc.exists ? categoryDoc.data() : { description: '' };
-                    
-                    const hairstylesSnapshot = await db.collection('hairstyles')
-                        .where('categoryId', '==', categoryId)
-                        .orderBy('order')
-                        .get();
-                    
-                    const styles = {};
-                    hairstylesSnapshot.forEach(doc => {
-                        const style = doc.data();
-                        if (!styles[style.foreheadLength]) {
-                            styles[style.foreheadLength] = [];
-                        }
-                        styles[style.foreheadLength].push(style);
-                    });
-                    
-                    renderCategory({
-                        description: categoryData.description,
-                        styles: styles
-                    });
-                } else {
-                    // Firebase가 없을 때
-                    renderTestData(categoryId);
-                }
-                
-            } catch (error) {
-                console.error('헤어스타일 로드 오류:', error);
+            if (firebaseConnected) {
+                loadHairstylesFromHierarchy(categoryId);
+            } else {
                 renderTestData(categoryId);
             }
         }
 
-        // 테스트 데이터 렌더링
-        function renderTestData(categoryId) {
-            const testData = {
-                SIDE_FRINGE: {
-                    description: "사이드프린지는 살짝 볼륨이 있으면서 앞으로 떨어지는 스타일입니다.",
-                    styles: {
-                        "None": [
-                            { code: "MSF0001", name: "베이직 사이드프린지", imageUrl: "" }
-                        ],
-                        "Fore Head": [
-                            { code: "MSF1001", name: "슬릭펌 다운펌", imageUrl: "" }
-                        ]
+        // Firebase에서 계층형 헤어스타일 로드
+        async function loadHairstylesFromHierarchy(mainCategory) {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            try {
+                // 해당 대분류의 모든 중분류와 스타일 로드
+                const stylesSnapshot = await db.collection('hairstyles')
+                    .where('gender', '==', currentGender)
+                    .where('mainCategory', '==', mainCategory)
+                    .orderBy('order')
+                    .get();
+                
+                // 중분류별로 스타일 그룹화
+                const stylesBySubCategory = {};
+                stylesSnapshot.forEach(doc => {
+                    const style = doc.data();
+                    const subCategory = style.subCategory || 'None';
+                    
+                    if (!stylesBySubCategory[subCategory]) {
+                        stylesBySubCategory[subCategory] = [];
                     }
-                }
+                    stylesBySubCategory[subCategory].push(style);
+                });
+                
+                renderCategory({
+                    description: getMainCategoryDescription(mainCategory),
+                    styles: stylesBySubCategory
+                });
+                
+            } catch (error) {
+                console.error('헤어스타일 로드 오류:', error);
+                renderTestData(mainCategory);
+            }
+        }
+
+        // 대분류 설명 가져오기
+        function getMainCategoryDescription(mainCategory) {
+            const descriptions = {
+                'SIDE_FRINGE': '사이드프린지는 살짝 볼륨이 있으면서 앞으로 떨어지는 스타일과 앞머리 숱을 줄여 소프트한 시스루 느낌을 다양하게 표현할 수 있습니다.',
+                'SIDE_PART': '사이드 파트는 클래식함과 모던함의 대명사로 스타일링에 따라 원하는 이미지를 자유롭게 표현할 수 있습니다.',
+                'FRINGE_UP': '프린지 업은 흔히 아이비리그 컷이라고 하여, 이마를 적극적으로 드러내어 남성적인 이미지를 어필하기 유리한 스타일입니다.',
+                'PUSHED_BACK': '푸시드 백은 앞머리 볼륨의 볼륨감을 강조한 스타일로써, 뒷부분으로 넘기면서 뒤로 갈수록 볼륨이 적어지는 것이 특징인 스타일입니다.',
+                'BUZZ': '버즈컷은 흔히 반삭이라고하여 클리퍼의 길이와 헤어 스타일에 따라 다양한 스타일을 연출할 수 있습니다.',
+                'CROP': '크롭컷은 매우 짧은 라운드 형태로 깔끔하면서도 세련된 남성미를 강조한 스타일입니다.',
+                'MOHICAN': '모히칸은 옆머리를 짧게 하고 윗머리에 앞머리에서 뒷머리로 이어지는 라인을 표현하여, 둥근 얼굴형을 보완할 수 있는 개성이 남다른 스타일입니다.',
+                'LONG': '롱 헤어는 여성스러움과 우아함을 동시에 표현할 수 있는 대표적인 스타일입니다.',
+                'MEDIUM': '미디엄 헤어는 관리의 편의성과 스타일링의 다양성을 모두 갖춘 실용적인 길이입니다.',
+                'SHORT': '숏 헤어는 세련되고 시크한 분위기를 연출하며, 얼굴형을 또렷하게 부각시키는 스타일입니다.'
             };
             
-            const data = testData[categoryId] || {
-                description: "헤어스타일 설명",
-                styles: { "None": [{ code: "TEST001", name: "테스트 스타일", imageUrl: "" }] }
-            };
+            return descriptions[mainCategory] || `${mainCategory} 스타일에 대한 설명입니다.`;
+        }
+
+        // 테스트 데이터 렌더링
+        function renderTestData(mainCategory) {
+            const subCategories = hierarchyStructure[currentGender]?.[mainCategory] || ['None'];
             
-            renderCategory(data);
+            const testStyles = {};
+            subCategories.forEach(subCategory => {
+                testStyles[subCategory] = [
+                    { 
+                        code: `${mainCategory.substring(0, 3)}${subCategory.substring(0, 1)}001`, 
+                        name: `테스트 ${mainCategory} ${subCategory}`, 
+                        imageUrl: "" 
+                    }
+                ];
+            });
+            
+            renderCategory({
+                description: getMainCategoryDescription(mainCategory),
+                styles: testStyles
+            });
         }
 
         // 카테고리 렌더링
         function renderCategory(categoryData) {
             const content = document.getElementById('content');
             
-            if (!categoryData) {
+            if (!categoryData || !categoryData.styles) {
                 content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
                 return;
             }
 
-            // 앞머리 길이 종류 추출
+            // 중분류(앞머리 길이) 종류 추출
             const lengthTypes = Object.keys(categoryData.styles);
             const firstLengthType = lengthTypes[0] || 'None';
 
@@ -767,7 +811,7 @@
                     <div class="length-section ${isActive}" data-length="${lengthType}">
                 `;
 
-                if (styles.length === 0) {
+                if (!styles || styles.length === 0) {
                     html += `
                         <div style="text-align: center; padding: 40px; color: #666;">
                             <p>해당 앞머리 길이에 대한 스타일이 없습니다.</p>
@@ -780,7 +824,7 @@
                         const imageUrl = style.imageUrl || `data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="267" viewBox="0 0 200 267"%3E%3Crect width="200" height="267" fill="%23222"%3E%3C/rect%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23666" font-family="Arial" font-size="14"%3E이미지 준비중%3C/text%3E%3C/svg%3E`;
                         
                         html += `
-                            <div class="hairstyle-card" onclick="openModal('${style.code}', '${style.name}', '${style.imageUrl}')">
+                            <div class="hairstyle-card" onclick="openModal('${style.code}', '${style.name}', '${style.imageUrl || ''}')">
                                 <img class="hairstyle-image" src="${imageUrl}" alt="${style.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"267\" viewBox=\"0 0 200 267\"%3E%3Crect width=\"200\" height=\"267\" fill=\"%23222\"%3E%3C/rect%3E%3Ctext x=\"50%25\" y=\"50%25\" dominant-baseline=\"middle\" text-anchor=\"middle\" fill=\"%23666\" font-family=\"Arial\" font-size=\"14\"%3E이미지 준비중%3C/text%3E%3C/svg%3E'">
                                 <div class="hairstyle-info">
                                     <div class="hairstyle-code">${style.code}</div>
@@ -851,6 +895,7 @@
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
             initializeModal();
+            console.log('HAIRGATOR 메뉴판 로드 완료 (계층형 시스템)');
         });
     </script>
 </body>
