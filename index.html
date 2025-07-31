@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>HAIRGATOR - 헤어스타일 메뉴판</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            overflow-x: auto;
+            overflow-y: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* 강제 가로모드 */
+        @media screen and (orientation: portrait) {
+            body {
+                transform: rotate(90deg);
+                transform-origin: left top;
+                width: 100vh;
+                height: 100vw;
+                position: absolute;
+                top: 100%;
+                left: 0;
+            }
+        }
+
+        /* 성별 선택 화면 */
+        .gender-selection {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #000;
+            gap: 40px;
+        }
+
+        .gender-selection.hidden {
+            display: none;
+        }
+
+        .gender-card {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 40px;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+        }
+
+        .gender-card:hover {
+            transform: translateY(-10px);
+            border-color: #FF1493;
+            box-shadow: 0 10px 40px rgba(255, 20, 147, 0.3);
+        }
+
+        .gender-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            border-radius: 50%;
+        }
+
+        .gender-card.male .gender-icon {
+            background: linear-gradient(135deg, #4169E1, #1E90FF);
+        }
+
+        .gender-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .gender-subtitle {
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* 메인 컨테이너 */
+        .main-container {
+            display: none;
+        }
+
+        .main-container.active {
+            display: block;
+        }
+
+        /* 헤더 */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #000;
+            z-index: 100;
+            border-bottom: 1px solid #333;
+        }
+
+        .logo-section {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-img {
+            height: 24px;
+            width: auto;
+            opacity: 0.9;
+        }
+
+        /* 뒤로가기 버튼 */
+        .back-btn {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .back-btn:hover {
+            color: #FF1493;
+        }
+
+        /* AI 상담 버튼 */
+        .ai-chat-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0;
+        }
+
+        .ai-chat-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .ai-chat-btn:hover .face-scan-icon {
+            filter: drop-shadow(0 0 10px rgba(255, 20, 147, 0.6));
+        }
+
+        .face-scan-icon {
+            width: 100%;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+
+        /* 네비게이션 탭 */
+        .nav-tabs {
+            display: flex;
+            background-color: #000;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 0 20px;
+        }
+
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            white-space: nowrap;
+            color: #888;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-tab.active {
+            color: #fff;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #FF1493, #FF69B4);
+        }
+
+        .nav-tab:hover {
+            color: #FF69B4;
+        }
+
+        /* 콘텐츠 영역 */
+        .content {
+            margin-top: 100px;
+            padding: 20px;
+            min-height: calc(100vh - 100px);
+        }
+
+        .category-section {
+            display: none;
+        }
+
+        .category-section.active {
+            display: block;
+        }
+
+        .category-description {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        /* 앞머리 길이 탭 */
+        .length-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .length-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .length-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            color: #888;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .length-tab.active {
+            color: #fff;
+            background-color: #FF1493;
+        }
+
+        .length-tab:hover {
+            color: #fff;
+            background-color: rgba(255, 20, 147, 0.7);
+        }
+
+        /* 헤어스타일 그리드 */
+        .hairstyle-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .hairstyle-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .hairstyle-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+        }
+
+        .hairstyle-image {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            background-color: #222;
+        }
+
+        .hairstyle-info {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .hairstyle-code {
+            font-size: 12px;
+            color: #FF69B4;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .hairstyle-name {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        /* 앞머리 길이 섹션 */
+        .length-section {
+            display: none;
+        }
+
+        .length-section.active {
+            display: block;
+        }
+
+        /* 이미지 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            position: relative;
+            margin: auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .close:hover {
+            color: #FF69B4;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .modal-info {
+            margin-top: 20px;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-info h3 {
+            color: #FF69B4;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .modal-info p {
+            font-size: 18px;
+            color: #fff;
+        }
+
+        /* 로딩 스피너 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid #FF1493;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 반응형 */
+        @media screen and (max-width: 1200px) {
+            .hairstyle-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media screen and (max-width: 900px) {
+            .hairstyle-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 성별 선택 화면 -->
+    <div class="gender-selection" id="genderSelection">
+        <div class="gender-card male" onclick="selectGender('male')">
+            <div class="gender-icon">♂</div>
+            <div class="gender-title">남성</div>
+            <div class="gender-subtitle">Men's Hairstyle</div>
+        </div>
+        
+        <div class="gender-card female" onclick="selectGender('female')">
+            <div class="gender-icon">♀</div>
+            <div class="gender-title">여성</div>
+            <div class="gender-subtitle">Women's Hairstyle</div>
+        </div>
+    </div>
+
+    <!-- 메인 컨테이너 -->
+    <div class="main-container" id="mainContainer">
+        <!-- 헤더 -->
+        <header class="header">
+            <div class="logo-section">
+                <button class="back-btn" onclick="backToGenderSelection()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>뒤로</span>
+                </button>
+                
+                <div class="logo">
+                    <span style="color: #FF1493; font-size: 18px; font-weight: 700; letter-spacing: -0.5px;">HAIRGATOR</span>
+                </div>
+                
+                <button class="ai-chat-btn" onclick="window.open('https://hairgator-face.web.app', '_blank')" title="AI 얼굴 분석">
+                    <svg class="face-scan-icon" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 얼굴 윤곽 -->
+                        <path d="M18 4 C10 4, 6 10, 6 18 C6 26, 10 32, 18 32 C26 32, 30 26, 30 18 C30 10, 26 4, 18 4" 
+                              stroke="#FF1493" stroke-width="2" fill="none"/>
+                        
+                        <!-- 스캔 라인들 -->
+                        <path d="M8 12h20M8 18h20M8 24h20" stroke="#FF69B4" stroke-width="1" opacity="0.5"/>
+                        
+                        <!-- 눈 -->
+                        <circle cx="13" cy="15" r="1.5" fill="#FF1493"/>
+                        <circle cx="23" cy="15" r="1.5" fill="#FF1493"/>
+                        
+                        <!-- 코 -->
+                        <circle cx="18" cy="20" r="1" fill="#FF69B4"/>
+                        
+                        <!-- 입 -->
+                        <path d="M14 24 Q18 26 22 24" stroke="#FF1493" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                        
+                        <!-- 코너 브래킷 -->
+                        <path d="M2 2h6v6M28 2h6v6M2 28v6h6M28 28v6h6" stroke="#FF1493" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- 네비게이션 탭 -->
+            <nav class="nav-tabs" id="navTabs">
+                <!-- 동적으로 생성됩니다 -->
+            </nav>
+        </header>
+
+        <!-- 콘텐츠 영역 -->
+        <main class="content" id="content">
+            <!-- 카테고리별 섹션들이 동적으로 추가됩니다 -->
+        </main>
+    </div>
+
+    <!-- 이미지 모달 -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img class="modal-image" id="modalImage" src="" alt="">
+            <div class="modal-info">
+                <h3 id="modalCode"></h3>
+                <p id="modalName"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <script>
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            projectId: "hairgatormenu-4a43e",
+            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
+            messagingSenderId: "800038006875",
+            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        };
+
+        // Firebase 초기화
+        let db, storage;
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            storage = firebase.storage();
+        } catch (error) {
+            console.log('Firebase 초기화 오류:', error);
+            // Firebase 없이도 테스트 가능하도록 처리
+        }
+
+        // 전역 변수
+        let currentGender = null;
+        let currentCategory = null;
+        let hairstylesData = {};
+
+        // 성별 선택
+        function selectGender(gender) {
+            currentGender = gender;
+            document.getElementById('genderSelection').classList.add('hidden');
+            document.getElementById('mainContainer').classList.add('active');
+            
+            // 성별에 따른 카테고리 로드
+            loadCategories(gender);
+        }
+
+        // 성별 선택 화면으로 돌아가기
+        function backToGenderSelection() {
+            document.getElementById('genderSelection').classList.remove('hidden');
+            document.getElementById('mainContainer').classList.remove('active');
+            currentGender = null;
+            currentCategory = null;
+        }
+
+        // 카테고리 로드
+        async function loadCategories(gender) {
+            const navTabs = document.getElementById('navTabs');
+            navTabs.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            try {
+                if (db) {
+                    // Firebase가 있을 때
+                    const categoriesQuery = gender === 'male' 
+                        ? db.collection('categories').where('gender', '==', 'male').orderBy('order')
+                        : db.collection('categories').where('gender', '==', 'female').orderBy('order');
+                    
+                    const snapshot = await categoriesQuery.get();
+                    
+                    if (snapshot.empty) {
+                        displayTestCategories(gender);
+                        return;
+                    }
+                    
+                    navTabs.innerHTML = '';
+                    let firstCategory = null;
+                    
+                    snapshot.forEach((doc, index) => {
+                        const category = doc.data();
+                        const tab = document.createElement('div');
+                        tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
+                        tab.dataset.category = doc.id;
+                        tab.textContent = category.name;
+                        tab.onclick = () => switchCategory(doc.id);
+                        navTabs.appendChild(tab);
+                        
+                        if (index === 0) firstCategory = doc.id;
+                    });
+                    
+                    if (firstCategory) {
+                        loadHairstylesFromFirebase(firstCategory);
+                    }
+                } else {
+                    // Firebase가 없을 때
+                    displayTestCategories(gender);
+                }
+                
+            } catch (error) {
+                console.error('카테고리 로드 오류:', error);
+                displayTestCategories(gender);
+            }
+        }
+
+        // 테스트용 카테고리 표시
+        function displayTestCategories(gender) {
+            const navTabs = document.getElementById('navTabs');
+            const categories = gender === 'male' 
+                ? ['SIDE FRINGE', 'SIDE PART', 'FRINGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN']
+                : ['LONG WAVE', 'BOB CUT', 'PIXIE CUT', 'LAYERED', 'PERM', 'STRAIGHT'];
+            
+            navTabs.innerHTML = '';
+            categories.forEach((cat, index) => {
+                const tab = document.createElement('div');
+                tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
+                tab.dataset.category = cat.replace(' ', '_');
+                tab.textContent = cat;
+                tab.onclick = () => switchCategory(cat.replace(' ', '_'));
+                navTabs.appendChild(tab);
+            });
+            
+            // 첫 번째 카테고리 로드
+            currentCategory = categories[0].replace(' ', '_');
+            renderTestData(currentCategory);
+        }
+
+        // 카테고리 전환
+        function switchCategory(categoryId) {
+            if (categoryId === currentCategory) return;
+            
+            // 활성 탭 변경
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.category === categoryId) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            currentCategory = categoryId;
+            loadHairstylesFromFirebase(categoryId);
+        }
+
+        // Firebase에서 헤어스타일 로드
+        async function loadHairstylesFromFirebase(categoryId) {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            try {
+                if (db) {
+                    // Firebase가 있을 때
+                    const categoryDoc = await db.collection('categories').doc(categoryId).get();
+                    const categoryData = categoryDoc.exists ? categoryDoc.data() : { description: '' };
+                    
+                    const hairstylesSnapshot = await db.collection('hairstyles')
+                        .where('categoryId', '==', categoryId)
+                        .orderBy('order')
+                        .get();
+                    
+                    const styles = {};
+                    hairstylesSnapshot.forEach(doc => {
+                        const style = doc.data();
+                        if (!styles[style.foreheadLength]) {
+                            styles[style.foreheadLength] = [];
+                        }
+                        styles[style.foreheadLength].push(style);
+                    });
+                    
+                    renderCategory({
+                        description: categoryData.description,
+                        styles: styles
+                    });
+                } else {
+                    // Firebase가 없을 때
+                    renderTestData(categoryId);
+                }
+                
+            } catch (error) {
+                console.error('헤어스타일 로드 오류:', error);
+                renderTestData(categoryId);
+            }
+        }
+
+        // 테스트 데이터 렌더링
+        function renderTestData(categoryId) {
+            const testData = {
+                SIDE_FRINGE: {
+                    description: "사이드프린지는 살짝 볼륨이 있으면서 앞으로 떨어지는 스타일입니다.",
+                    styles: {
+                        "None": [
+                            { code: "MSF0001", name: "베이직 사이드프린지", imageUrl: "" }
+                        ],
+                        "Fore Head": [
+                            { code: "MSF1001", name: "슬릭펌 다운펌", imageUrl: "" }
+                        ]
+                    }
+                }
+            };
+            
+            const data = testData[categoryId] || {
+                description: "헤어스타일 설명",
+                styles: { "None": [{ code: "TEST001", name: "테스트 스타일", imageUrl: "" }] }
+            };
+            
+            renderCategory(data);
+        }
+
+        // 카테고리 렌더링
+        function renderCategory(categoryData) {
+            const content = document.getElementById('content');
+            
+            if (!categoryData) {
+                content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+                return;
+            }
+
+            // 앞머리 길이 종류 추출
+            const lengthTypes = Object.keys(categoryData.styles);
+            const firstLengthType = lengthTypes[0] || 'None';
+
+            let html = `
+                <div class="category-section active">
+                    <div class="category-description">${categoryData.description}</div>
+                    
+                    <!-- 앞머리 길이 탭 -->
+                    <div class="length-tabs">
+            `;
+
+            // 앞머리 길이 탭 생성
+            lengthTypes.forEach((lengthType, index) => {
+                const isActive = index === 0 ? 'active' : '';
+                html += `<div class="length-tab ${isActive}" data-length="${lengthType}" onclick="switchLengthTab('${lengthType}')">${lengthType}</div>`;
+            });
+
+            html += `</div>`;
+
+            // 각 앞머리 길이별 섹션
+            for (const [lengthType, styles] of Object.entries(categoryData.styles)) {
+                const isActive = lengthType === firstLengthType ? 'active' : '';
+                
+                html += `
+                    <div class="length-section ${isActive}" data-length="${lengthType}">
+                `;
+
+                if (styles.length === 0) {
+                    html += `
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            <p>해당 앞머리 길이에 대한 스타일이 없습니다.</p>
+                        </div>
+                    `;
+                } else {
+                    html += `<div class="hairstyle-grid">`;
+                    
+                    styles.forEach(style => {
+                        const imageUrl = style.imageUrl || `data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="267" viewBox="0 0 200 267"%3E%3Crect width="200" height="267" fill="%23222"%3E%3C/rect%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23666" font-family="Arial" font-size="14"%3E이미지 준비중%3C/text%3E%3C/svg%3E`;
+                        
+                        html += `
+                            <div class="hairstyle-card" onclick="openModal('${style.code}', '${style.name}', '${style.imageUrl}')">
+                                <img class="hairstyle-image" src="${imageUrl}" alt="${style.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"267\" viewBox=\"0 0 200 267\"%3E%3Crect width=\"200\" height=\"267\" fill=\"%23222\"%3E%3C/rect%3E%3Ctext x=\"50%25\" y=\"50%25\" dominant-baseline=\"middle\" text-anchor=\"middle\" fill=\"%23666\" font-family=\"Arial\" font-size=\"14\"%3E이미지 준비중%3C/text%3E%3C/svg%3E'">
+                                <div class="hairstyle-info">
+                                    <div class="hairstyle-code">${style.code}</div>
+                                    <div class="hairstyle-name">${style.name}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div>`;
+                }
+
+                html += `</div>`;
+            }
+
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        // 앞머리 길이 탭 전환
+        function switchLengthTab(lengthType) {
+            // 활성 탭 변경
+            document.querySelectorAll('.length-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.length === lengthType) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // 활성 섹션 변경
+            document.querySelectorAll('.length-section').forEach(section => {
+                section.classList.remove('active');
+                if (section.dataset.length === lengthType) {
+                    section.classList.add('active');
+                }
+            });
+        }
+
+        // 모달 초기화
+        function initializeModal() {
+            const modal = document.getElementById('imageModal');
+            const span = document.getElementsByClassName('close')[0];
+
+            span.onclick = function() {
+                modal.style.display = 'none';
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+
+        // 모달 열기
+        function openModal(code, name, imageUrl) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalCode = document.getElementById('modalCode');
+            const modalName = document.getElementById('modalName');
+
+            modalImage.src = imageUrl || `data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="267" viewBox="0 0 200 267"%3E%3Crect width="200" height="267" fill="%23222"%3E%3C/rect%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23666" font-family="Arial" font-size="14"%3E이미지 준비중%3C/text%3E%3C/svg%3E`;
+            modalCode.textContent = code;
+            modalName.textContent = name;
+            modal.style.display = 'block';
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeModal();
+        });
+    </script>
+</body>
+</html>

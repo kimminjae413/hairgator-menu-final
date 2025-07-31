@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAIRGATOR - 관리자 페이지</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 헤더 */
+        .header {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .admin-badge {
+            background-color: #FF1493;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        /* 탭 메뉴 */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .tab.active {
+            background-color: #FF1493;
+            color: white;
+        }
+
+        .tab:hover {
+            background-color: #FF69B4;
+            color: white;
+        }
+
+        /* 콘텐츠 카드 */
+        .card {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* 폼 스타일 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #FF1493;
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* 버튼 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: #FF1493;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #FF69B4;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        /* 파일 업로드 */
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .file-upload input[type=file] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 10px 15px;
+            border: 2px dashed #FF1493;
+            border-radius: 5px;
+            text-align: center;
+            color: #FF1493;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover .file-upload-label {
+            background-color: #fff0f5;
+        }
+
+        /* 이미지 프리뷰 */
+        .image-preview {
+            margin-top: 15px;
+            max-width: 300px;
+        }
+
+        .image-preview img {
+            width: 100%;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 스타일 리스트 */
+        .style-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .style-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        .style-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .style-info {
+            flex: 1;
+        }
+
+        .style-code {
+            font-weight: bold;
+            color: #FF1493;
+            font-size: 14px;
+        }
+
+        .style-name {
+            margin-top: 5px;
+            color: #666;
+        }
+
+        .style-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        /* 로딩 스피너 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 알림 메시지 */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* 카테고리별 통계 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FF1493;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* 성별 선택 */
+        .gender-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .gender-btn {
+            padding: 8px 16px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gender-btn.active {
+            background-color: #FF1493;
+            color: white;
+            border-color: #FF1493;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">H</div>
+                <div class="logo-text">HAIRGATOR</div>
+            </div>
+            <div>
+                <span class="admin-badge">관리자 모드</span>
+                <button class="logout-btn" onclick="logout()">로그아웃</button>
+            </div>
+        </div>
+
+        <!-- 알림 메시지 -->
+        <div id="alert" class="alert"></div>
+
+        <!-- 탭 메뉴 -->
+        <div class="tabs">
+            <div class="tab active" data-tab="dashboard">대시보드</div>
+            <div class="tab" data-tab="add-style">스타일 추가</div>
+            <div class="tab" data-tab="manage-styles">스타일 관리</div>
+            <div class="tab" data-tab="categories">카테고리 관리</div>
+        </div>
+
+        <!-- 대시보드 -->
+        <div id="dashboard" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">헤어스타일 통계</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <!-- 통계가 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 스타일 추가 -->
+        <div id="add-style" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2 class="card-title">새 헤어스타일 추가</h2>
+                
+                <div class="gender-selector">
+                    <button class="gender-btn active" onclick="selectGender('male')">남성</button>
+                    <button class="gender-btn" onclick="selectGender('female')">여성</button>
+                </div>
+                
+                <form id="addStyleForm">
+                    <input type="hidden" id="styleGender" value="male">
+                    
+                    <div class="form-group">
+                        <label class="form-label">카테고리</label>
+                        <select class="form-control" id="categorySelect" required>
+                            <option value="">카테고리를 선택하세요</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">스타일 코드</label>
+                        <input type="text" class="form-control" id="styleCode" placeholder="예: MSF1001" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">스타일명</label>
+                        <input type="text" class="form-control" id="styleName" placeholder="예: 슬릭펌 다운펌" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">앞머리 길이</label>
+                        <select class="form-control" id="foreheadLength" required>
+                            <option value="">선택하세요</option>
+                            <option value="None">None</option>
+                            <option value="Fore Head">Fore Head</option>
+                            <option value="Eye Brow">Eye Brow</option>
+                            <option value="Eye">Eye</option>
+                            <option value="Cheekbone">Cheekbone</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">순서</label>
+                        <input type="number" class="form-control" id="styleOrder" value="1" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">이미지 업로드</label>
+                        <div class="file-upload">
+                            <input type="file" id="styleImage" accept="image/*" required>
+                            <label class="file-upload-label" for="styleImage">
+                                클릭하여 이미지를 선택하세요
+                            </label>
+                        </div>
+                        <div class="image-preview" id="imagePreview"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <span id="submitBtnText">스타일 추가</span>
+                        <span id="submitBtnLoading" class="loading" style="display: none;"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 스타일 관리 -->
+        <div id="manage-styles" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2 class="card-title">헤어스타일 목록</h2>
+                
+                <div class="gender-selector">
+                    <button class="gender-btn active" onclick="filterByGender('male')">남성</button>
+                    <button class="gender-btn" onclick="filterByGender('female')">여성</button>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">카테고리 필터</label>
+                    <select class="form-control" id="categoryFilter">
+                        <option value="">전체 카테고리</option>
+                    </select>
+                </div>
+
+                <div class="style-list" id="styleList">
+                    <!-- 스타일 목록이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 카테고리 관리 -->
+        <div id="categories" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2 class="card-title">카테고리 관리</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">새 카테고리 추가</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" class="form-control" id="newCategoryName" placeholder="카테고리 이름" style="flex: 1;">
+                        <select class="form-control" id="newCategoryGender" style="width: 150px;">
+                            <option value="male">남성</option>
+                            <option value="female">여성</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="addCategory()">추가</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">카테고리 설명 수정</label>
+                    <select class="form-control" id="categoryDescSelect">
+                        <option value="">카테고리를 선택하세요</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">설명</label>
+                    <textarea class="form-control" id="categoryDescription" rows="4" placeholder="카테고리 설명을 입력하세요"></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="updateCategoryDescription()">설명 업데이트</button>
+            </div>
+        </div>
+
+        <!-- 수정 모달 -->
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">스타일 수정</h3>
+                    <span class="close" onclick="closeEditModal()">&times;</span>
+                </div>
+                <form id="editStyleForm">
+                    <input type="hidden" id="editStyleId">
+                    
+                    <div class="form-group">
+                        <label class="form-label">스타일 코드</label>
+                        <input type="text" class="form-control" id="editStyleCode" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">스타일명</label>
+                        <input type="text" class="form-control" id="editStyleName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">앞머리 길이</label>
+                        <select class="form-control" id="editForeheadLength" required>
+                            <option value="None">None</option>
+                            <option value="Fore Head">Fore Head</option>
+                            <option value="Eye Brow">Eye Brow</option>
+                            <option value="Eye">Eye</option>
+                            <option value="Cheekbone">Cheekbone</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">순서</label>
+                        <input type="number" class="form-control" id="editStyleOrder" min="1" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">수정 완료</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            projectId: "hairgatormenu-4a43e",
+            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
+            messagingSenderId: "800038006875",
+            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        };
+
+        // Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const auth = firebase.auth();
+
+        // 전역 변수
+        let currentTab = 'dashboard';
+        let currentGender = 'male';
+        let currentFilterGender = 'male';
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            initializeTabs();
+            initializeForms();
+            loadDashboard();
+            loadCategories();
+        });
+
+        // 인증 체크
+        function checkAuth() {
+            auth.onAuthStateChanged((user) => {
+                if (!user) {
+                    window.location.href = '/admin-login.html';
+                }
+            });
+        }
+
+        // 로그아웃
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = '/admin-login.html';
+            });
+        }
+
+        // 탭 초기화
+        function initializeTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.dataset.tab;
+                    if (tabName !== currentTab) {
+                        // 활성 탭 변경
+                        document.querySelector('.tab.active').classList.remove('active');
+                        this.classList.add('active');
+                        
+                        // 콘텐츠 변경
+                        document.querySelectorAll('.tab-content').forEach(content => {
+                            content.style.display = 'none';
+                        });
+                        document.getElementById(tabName).style.display = 'block';
+                        
+                        currentTab = tabName;
+                        
+                        // 스타일 관리 탭일 때 목록 로드
+                        if (tabName === 'manage-styles') {
+                            loadCategoriesForFilter();
+                            loadStyles();
+                        }
+                    }
+                });
+            });
+        }
+
+        // 폼 초기화
+        function initializeForms() {
+            document.getElementById('addStyleForm').addEventListener('submit', handleAddStyle);
+            document.getElementById('categoryFilter').addEventListener('change', filterStyles);
+            document.getElementById('styleImage').addEventListener('change', handleImagePreview);
+            document.getElementById('editStyleForm').addEventListener('submit', handleEditStyle);
+            document.getElementById('categoryDescSelect').addEventListener('change', loadCategoryDescription);
+        }
+
+        // 성별 선택
+        function selectGender(gender) {
+            currentGender = gender;
+            document.getElementById('styleGender').value = gender;
+            
+            // 버튼 스타일 변경
+            document.querySelectorAll('.gender-selector .gender-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 카테고리 다시 로드
+            loadCategories();
+        }
+
+        // 성별로 필터
+        function filterByGender(gender) {
+            currentFilterGender = gender;
+            
+            // 버튼 스타일 변경
+            document.querySelectorAll('#manage-styles .gender-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 카테고리 필터 업데이트
+            loadCategoriesForFilter();
+            
+            // 스타일 목록 다시 로드
+            loadStyles();
+        }
+
+        // 대시보드 로드
+        async function loadDashboard() {
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = '<div class="loading">통계 로딩 중...</div>';
+            
+            try {
+                const categoriesSnapshot = await db.collection('categories').get();
+                const categories = {};
+                
+                categoriesSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    categories[doc.id] = { name: data.name, gender: data.gender, count: 0 };
+                });
+                
+                const stylesSnapshot = await db.collection('hairstyles').get();
+                let totalStyles = 0;
+                
+                stylesSnapshot.forEach(doc => {
+                    const style = doc.data();
+                    if (categories[style.categoryId]) {
+                        categories[style.categoryId].count++;
+                        totalStyles++;
+                    }
+                });
+                
+                statsGrid.innerHTML = '';
+                
+                // 카테고리별 통계
+                for (const [id, data] of Object.entries(categories)) {
+                    statsGrid.innerHTML += `
+                        <div class="stat-card">
+                            <div class="stat-number">${data.count}</div>
+                            <div class="stat-label">${data.name}</div>
+                            <div class="stat-label" style="font-size: 12px; color: #999;">${data.gender === 'male' ? '남성' : '여성'}</div>
+                        </div>
+                    `;
+                }
+                
+                // 전체 통계
+                statsGrid.innerHTML += `
+                    <div class="stat-card">
+                        <div class="stat-number">${totalStyles}</div>
+                        <div class="stat-label">전체 스타일</div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('대시보드 로드 오류:', error);
+                statsGrid.innerHTML = '<p>통계를 불러올 수 없습니다.</p>';
+            }
+        }
+
+        // 카테고리 로드
+        async function loadCategories() {
+            try {
+                const snapshot = await db.collection('categories')
+                    .where('gender', '==', currentGender)
+                    .orderBy('order')
+                    .get();
+                
+                const categorySelect = document.getElementById('categorySelect');
+                const categoryDescSelect = document.getElementById('categoryDescSelect');
+                
+                categorySelect.innerHTML = '<option value="">카테고리를 선택하세요</option>';
+                categoryDescSelect.innerHTML = '<option value="">카테고리를 선택하세요</option>';
+                
+                snapshot.forEach(doc => {
+                    const category = doc.data();
+                    categorySelect.innerHTML += `<option value="${doc.id}">${category.name}</option>`;
+                    categoryDescSelect.innerHTML += `<option value="${doc.id}">${category.name} (${category.gender === 'male' ? '남성' : '여성'})</option>`;
+                });
+                
+            } catch (error) {
+                console.error('카테고리 로드 오류:', error);
+            }
+        }
+
+        // 필터용 카테고리 로드
+        async function loadCategoriesForFilter() {
+            try {
+                const snapshot = await db.collection('categories')
+                    .where('gender', '==', currentFilterGender)
+                    .orderBy('order')
+                    .get();
+                
+                const categoryFilter = document.getElementById('categoryFilter');
+                categoryFilter.innerHTML = '<option value="">전체 카테고리</option>';
+                
+                snapshot.forEach(doc => {
+                    const category = doc.data();
+                    categoryFilter.innerHTML += `<option value="${doc.id}">${category.name}</option>`;
+                });
+                
+            } catch (error) {
+                console.error('카테고리 필터 로드 오류:', error);
+            }
+        }
+
+        // 스타일 목록 로드
+        async function loadStyles(filter = '') {
+            const styleList = document.getElementById('styleList');
+            styleList.innerHTML = '<div class="loading">스타일 로딩 중...</div>';
+            
+            try {
+                let query = db.collection('hairstyles');
+                
+                // 카테고리 필터 적용
+                if (filter) {
+                    query = query.where('categoryId', '==', filter);
+                }
+                
+                const snapshot = await query.orderBy('categoryId').orderBy('order').get();
+                
+                // 성별에 맞는 카테고리만 필터링
+                const categories = {};
+                const catSnapshot = await db.collection('categories').where('gender', '==', currentFilterGender).get();
+                catSnapshot.forEach(doc => {
+                    categories[doc.id] = doc.data().name;
+                });
+                
+                styleList.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const style = doc.data();
+                    
+                    // 해당 성별의 카테고리에 속한 스타일만 표시
+                    if (!categories[style.categoryId]) return;
+                    
+                    const imageUrl = style.imageUrl || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect width="80" height="80" fill="%23ddd"/%3E%3C/svg%3E';
+                    
+                    styleList.innerHTML += `
+                        <div class="style-item">
+                            <img class="style-image" src="${imageUrl}" alt="${style.name}">
+                            <div class="style-info">
+                                <div class="style-code">${style.code}</div>
+                                <div class="style-name">${style.name}</div>
+                                <div style="font-size: 12px; color: #999;">${categories[style.categoryId]} | ${style.foreheadLength}</div>
+                            </div>
+                            <div class="style-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="openEditModal('${doc.id}')">수정</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteStyle('${doc.id}')">삭제</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                if (styleList.innerHTML === '') {
+                    styleList.innerHTML = '<p style="text-align: center; color: #999;">등록된 스타일이 없습니다.</p>';
+                }
+                
+            } catch (error) {
+                console.error('스타일 로드 오류:', error);
+                styleList.innerHTML = '<p>스타일을 불러올 수 없습니다.</p>';
+            }
+        }
+
+        // 스타일 필터
+        function filterStyles() {
+            const filter = document.getElementById('categoryFilter').value;
+            loadStyles(filter);
+        }
+
+        // 이미지 프리뷰
+        function handleImagePreview(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 스타일 추가
+        async function handleAddStyle(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtnText');
+            const loading = document.getElementById('submitBtnLoading');
+            
+            submitBtn.style.display = 'none';
+            loading.style.display = 'inline-block';
+            
+            try {
+                const category = document.getElementById('categorySelect').value;
+                const code = document.getElementById('styleCode').value;
+                const name = document.getElementById('styleName').value;
+                const foreheadLength = document.getElementById('foreheadLength').value;
+                const order = parseInt(document.getElementById('styleOrder').value);
+                const imageFile = document.getElementById('styleImage').files[0];
+                
+                let imageUrl = '';
+                
+                // 이미지 업로드
+                if (imageFile) {
+                    const storageRef = storage.ref(`hairstyles/${code}.jpg`);
+                    const snapshot = await storageRef.put(imageFile);
+                    imageUrl = await snapshot.ref.getDownloadURL();
+                }
+                
+                // Firestore에 저장
+                await db.collection('hairstyles').add({
+                    categoryId: category,
+                    code: code,
+                    name: name,
+                    foreheadLength: foreheadLength,
+                    order: order,
+                    imageUrl: imageUrl,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showAlert('스타일이 성공적으로 추가되었습니다!', 'success');
+                e.target.reset();
+                document.getElementById('imagePreview').innerHTML = '';
+                loadDashboard();
+                
+            } catch (error) {
+                console.error('스타일 추가 오류:', error);
+                showAlert('스타일 추가 중 오류가 발생했습니다.', 'error');
+            } finally {
+                submitBtn.style.display = 'inline';
+                loading.style.display = 'none';
+            }
+        }
+
+        // 스타일 수정 모달 열기
+        async function openEditModal(styleId) {
+            try {
+                const doc = await db.collection('hairstyles').doc(styleId).get();
+                if (doc.exists) {
+                    const style = doc.data();
+                    document.getElementById('editStyleId').value = styleId;
+                    document.getElementById('editStyleCode').value = style.code;
+                    document.getElementById('editStyleName').value = style.name;
+                    document.getElementById('editForeheadLength').value = style.foreheadLength;
+                    document.getElementById('editStyleOrder').value = style.order || 1;
+                    
+                    document.getElementById('editModal').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('스타일 정보 로드 오류:', error);
+                showAlert('스타일 정보를 불러올 수 없습니다.', 'error');
+            }
+        }
+
+        // 수정 모달 닫기
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // 스타일 수정
+        async function handleEditStyle(e) {
+            e.preventDefault();
+            
+            const styleId = document.getElementById('editStyleId').value;
+            
+            try {
+                await db.collection('hairstyles').doc(styleId).update({
+                    code: document.getElementById('editStyleCode').value,
+                    name: document.getElementById('editStyleName').value,
+                    foreheadLength: document.getElementById('editForeheadLength').value,
+                    order: parseInt(document.getElementById('editStyleOrder').value),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showAlert('스타일이 성공적으로 수정되었습니다!', 'success');
+                closeEditModal();
+                loadStyles();
+                
+            } catch (error) {
+                console.error('스타일 수정 오류:', error);
+                showAlert('스타일 수정 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 스타일 삭제
+        async function deleteStyle(styleId) {
+            if (!confirm('정말로 이 스타일을 삭제하시겠습니까?')) {
+                return;
+            }
+            
+            try {
+                // 스타일 정보 가져오기
+                const doc = await db.collection('hairstyles').doc(styleId).get();
+                const style = doc.data();
+                
+                // Storage에서 이미지 삭제
+                if (style.imageUrl) {
+                    try {
+                        const imageRef = storage.refFromURL(style.imageUrl);
+                        await imageRef.delete();
+                    } catch (error) {
+                        console.error('이미지 삭제 오류:', error);
+                    }
+                }
+                
+                // Firestore에서 문서 삭제
+                await db.collection('hairstyles').doc(styleId).delete();
+                
+                showAlert('스타일이 삭제되었습니다.', 'success');
+                loadStyles();
+                loadDashboard();
+                
+            } catch (error) {
+                console.error('스타일 삭제 오류:', error);
+                showAlert('스타일 삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 카테고리 추가
+        async function addCategory() {
+            const name = document.getElementById('newCategoryName').value.trim();
+            const gender = document.getElementById('newCategoryGender').value;
+            
+            if (!name) {
+                showAlert('카테고리 이름을 입력해주세요.', 'error');
+                return;
+            }
+            
+            try {
+                // 기존 카테고리 수 확인
+                const snapshot = await db.collection('categories').where('gender', '==', gender).get();
+                const order = snapshot.size + 1;
+                
+                // 카테고리 ID 생성 (공백을 언더스코어로 변경)
+                const categoryId = name.toUpperCase().replace(/\s+/g, '_');
+                
+                // 카테고리 추가
+                await db.collection('categories').doc(categoryId).set({
+                    name: name,
+                    gender: gender,
+                    order: order,
+                    description: '',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showAlert('카테고리가 추가되었습니다.', 'success');
+                document.getElementById('newCategoryName').value = '';
+                loadCategories();
+                loadDashboard();
+                
+            } catch (error) {
+                console.error('카테고리 추가 오류:', error);
+                showAlert('카테고리 추가 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 카테고리 설명 로드
+        async function loadCategoryDescription() {
+            const categoryId = document.getElementById('categoryDescSelect').value;
+            if (!categoryId) {
+                document.getElementById('categoryDescription').value = '';
+                return;
+            }
+            
+            try {
+                const doc = await db.collection('categories').doc(categoryId).get();
+                if (doc.exists) {
+                    const category = doc.data();
+                    document.getElementById('categoryDescription').value = category.description || '';
+                }
+            } catch (error) {
+                console.error('카테고리 설명 로드 오류:', error);
+            }
+        }
+
+        // 카테고리 설명 업데이트
+        async function updateCategoryDescription() {
+            const categoryId = document.getElementById('categoryDescSelect').value;
+            const description = document.getElementById('categoryDescription').value;
+            
+            if (!categoryId) {
+                showAlert('카테고리를 선택해주세요.', 'error');
+                return;
+            }
+            
+            try {
+                await db.collection('categories').doc(categoryId).update({
+                    description: description,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showAlert('카테고리 설명이 업데이트되었습니다!', 'success');
+                
+            } catch (error) {
+                console.error('카테고리 설명 업데이트 오류:', error);
+                showAlert('업데이트 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 알림 메시지 표시
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 3000);
+        }
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

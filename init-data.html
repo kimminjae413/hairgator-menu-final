@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAIRGATOR - 초기 데이터 설정</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #FF1493;
+            margin-bottom: 30px;
+        }
+
+        .status {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .log {
+            background-color: #000;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+        }
+
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        .warning { color: #ffc107; }
+
+        button {
+            background-color: #FF1493;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #FF69B4;
+        }
+
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #FF1493;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1>HAIRGATOR 초기 데이터 설정</h1>
+
+    <div class="status">
+        <h2>작업 상태</h2>
+        <p id="currentTask">대기 중...</p>
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <div>
+        <button onclick="initializeCategories()">1. 카테고리 초기화</button>
+        <button onclick="initializeHairstyles()">2. 헤어스타일 데이터 입력</button>
+        <button onclick="uploadSampleImages()">3. 샘플 이미지 업로드</button>
+        <button onclick="clearAllData()" style="background-color: #dc3545;">전체 데이터 삭제</button>
+    </div>
+
+    <div class="log" id="logContainer"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            projectId: "hairgatormenu-4a43e",
+            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
+            messagingSenderId: "800038006875",
+            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        };
+
+        // Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // 로그 함수
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // 진행률 업데이트
+        function updateProgress(percent) {
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+
+        // 작업 상태 업데이트
+        function updateStatus(message) {
+            document.getElementById('currentTask').textContent = message;
+        }
+
+        // 카테고리 데이터
+        const categoriesData = [
+            // 남성 카테고리
+            {
+                id: "SIDE_FRINGE",
+                name: "SIDE FRINGE",
+                gender: "male",
+                description: "사이드프린지는 살짝 볼륨이 있으면서 앞으로 떨어지는 스타일과 앞머리 숱을 줄여 소프트한 시스루 느낌을 다양하게 표현할 수 있습니다. M자 이마와 넓은 이마를 커버하면서 볼륨과 플랫, 웨이브와 스트레이트의 구성 요소를 디테일하게 표현하는 것이 스타일링의 핵심 포인트입니다.",
+                order: 1
+            },
+            {
+                id: "SIDE_PART",
+                name: "SIDE PART",
+                gender: "male",
+                description: "사이드 파트는 클래식함과 모던함의 대명사로 스타일링에 따라 원하는 이미지를 자유롭게 표현할 수 있습니다. 가르마를 기준으로 단순히 볼으로 가르는 스타일을 넘어 개인의 특성과 트렌드에 맞춰 고유한 헤어스타일을 표현하는 것이 매우 중요합니다.",
+                order: 2
+            },
+            {
+                id: "FRINGE_UP",
+                name: "FRINGE UP",
+                gender: "male",
+                description: "프린지 업은 흔히 아이비리그 컷이라고 하여, 이마를 적극적으로 드러내어 남성적인 이미지를 어필하기 유리한 스타일입니다. 다운펌을 통해 옆머리와 앞머리의 볼륨을 축소하는것이 스타일링 포인트이며, 웨이브 펌을 부드러운 이미지도 표현할 수 있습니다.",
+                order: 3
+            },
+            {
+                id: "PUSHED_BACK",
+                name: "PUSHED BACK",
+                gender: "male",
+                description: "푸시드 백은 앞머리 볼륨의 볼륨감을 강조한 스타일로써, 뒷부분으로 넘기면서 뒤로 갈수록 볼륨이 적어지는 것이 특징인 스타일입니다. 모발의 길이가 충분 정도 이상인 분들께 가장 잘 어울리며, 전문적이고 세련된 이미지가 돋보이기 때문에 비즈니스 환경에서 인기가 높습니다.",
+                order: 4
+            },
+            {
+                id: "BUZZ",
+                name: "BUZZ",
+                gender: "male",
+                description: "버즈컷은 흔히 반삭이라고하여 클리퍼의 길이와 헤어 스타일에 따라 다양한 스타일을 연출할 수 있습니다. 정교하고 섬세한 길이 조절로 단정하면서도 남성적인 이미지를 표현하고 스크래치를 주어 독특한 개성을 강조할 수 있습니다.",
+                order: 5
+            },
+            {
+                id: "CROP",
+                name: "CROP",
+                gender: "male",
+                description: "크롭컷은 매우 짧은 라운드 형태로 깔끔하면서도 세련된 남성미를 강조한 스타일입니다. 옆머리와 뒷머리를 페이드컷으로 다듬어, 얼굴과 두상의 이미지를 뚜렷하게 강조하며 모발의 길이와 정도에 따라 질감과 텍스처 효과를 다양하게 표현할 수 있습니다.",
+                order: 6
+            },
+            {
+                id: "MOHICAN",
+                name: "MOHICAN",
+                gender: "male",
+                description: "모히칸은 옆머리를 짧게 하고 윗머리에 앞머리에서 뒷머리로 이어지는 라인을 표현하여, 둥근 얼굴형을 보완할 수 있는 개성이 남다른 스타일입니다. 옆머리를 완전히 밀어내리는 클래식 모히칸에서부터 개인의 선호에 따라 길이를 조절하고, 헤어 스타일링에 따라서 다양한 형태로 만드는 것이 스타일링 포인트입니다.",
+                order: 7
+            },
+            // 여성 카테고리
+            {
+                id: "LONG_WAVE",
+                name: "LONG WAVE",
+                gender: "female",
+                description: "롱 웨이브는 여성스러움과 우아함을 동시에 표현할 수 있는 대표적인 스타일입니다. 자연스러운 웨이브부터 글래머러스한 컬까지 다양한 연출이 가능하며, 얼굴형을 부드럽게 감싸주어 어떤 얼굴형에도 잘 어울립니다.",
+                order: 1
+            },
+            {
+                id: "BOB_CUT",
+                name: "BOB CUT",
+                gender: "female",
+                description: "보브컷은 클래식하면서도 모던한 느낌을 주는 스타일로, 길이와 레이어링에 따라 다양한 분위기 연출이 가능합니다. 턱선 정리와 목선을 깔끔하게 보여주어 세련된 이미지를 만들 수 있습니다.",
+                order: 2
+            },
+            {
+                id: "PIXIE_CUT",
+                name: "PIXIE CUT",
+                gender: "female",
+                description: "픽시컷은 짧지만 여성스러운 매력을 잃지 않는 스타일입니다. 얼굴형이 또렷하게 드러나므로 이목구비가 강조되며, 관리가 편하면서도 시크한 분위기를 연출할 수 있습니다.",
+                order: 3
+            },
+            {
+                id: "LAYERED",
+                name: "LAYERED",
+                gender: "female",
+                description: "레이어드컷은 층을 내어 볼륨감과 움직임을 주는 스타일입니다. 무거운 느낌을 덜어주고 가벼운 질감을 만들어주어 답답함 없이 스타일리시한 연출이 가능합니다.",
+                order: 4
+            },
+            {
+                id: "PERM",
+                name: "PERM",
+                gender: "female",
+                description: "펌 스타일은 직모에 변화를 주어 다양한 분위기를 연출할 수 있습니다. 내추럴한 웨이브부터 볼륨감 있는 컬까지, 개인의 취향과 얼굴형에 맞춰 선택할 수 있습니다.",
+                order: 5
+            },
+            {
+                id: "STRAIGHT",
+                name: "STRAIGHT",
+                gender: "female",
+                description: "스트레이트 스타일은 깔끔하고 단정한 이미지를 주는 기본적인 스타일입니다. 윤기 있고 찰랑거리는 직모는 청순하면서도 도시적인 느낌을 동시에 표현할 수 있습니다.",
+                order: 6
+            }
+        ];
+
+        // 헤어스타일 샘플 데이터
+        const hairstylesData = [
+            // 남성 - SIDE FRINGE
+            { categoryId: "SIDE_FRINGE", code: "MSF0001", name: "베이직 사이드프린지", foreheadLength: "None", order: 1 },
+            { categoryId: "SIDE_FRINGE", code: "MSF0002", name: "내추럴 사이드프린지", foreheadLength: "None", order: 2 },
+            { categoryId: "SIDE_FRINGE", code: "MSF0003", name: "볼륨 사이드프린지", foreheadLength: "None", order: 3 },
+            { categoryId: "SIDE_FRINGE", code: "MSF1001", name: "슬릭펌 다운펌", foreheadLength: "Fore Head", order: 1 },
+            { categoryId: "SIDE_FRINGE", code: "MSF1002", name: "시스루 쉐도우펌 다운펌", foreheadLength: "Fore Head", order: 2 },
+            { categoryId: "SIDE_FRINGE", code: "MSF1004", name: "시스루 쉐도우펌 다운펌", foreheadLength: "Fore Head", order: 3 },
+            { categoryId: "SIDE_FRINGE", code: "MSF1011", name: "볼륨매직 시스루펌 다운펌", foreheadLength: "Fore Head", order: 4 },
+            { categoryId: "SIDE_FRINGE", code: "MSF1013", name: "댄디 쉐도우펌 다운펌", foreheadLength: "Fore Head", order: 5 },
+            
+            // 남성 - SIDE PART
+            { categoryId: "SIDE_PART", code: "MSP1002", name: "시스루 가일펌 다운펌", foreheadLength: "None", order: 1 },
+            { categoryId: "SIDE_PART", code: "MSP1003", name: "드롭컷 다운펌", foreheadLength: "None", order: 2 },
+            { categoryId: "SIDE_PART", code: "MSP1004", name: "가일펌 다운펌", foreheadLength: "None", order: 3 },
+            { categoryId: "SIDE_PART", code: "MSP2002", name: "시스루 가르마펌 다운펌", foreheadLength: "Eye Brow", order: 1 },
+            { categoryId: "SIDE_PART", code: "MSP2003", name: "시스루 애즈펌 다운펌", foreheadLength: "Eye Brow", order: 2 },
+            
+            // 남성 - FRINGE UP
+            { categoryId: "FRINGE_UP", code: "MFU0001", name: "아이비리그컷 다운펌", foreheadLength: "None", order: 1 },
+            { categoryId: "FRINGE_UP", code: "MFU0002", name: "아이비리그컷 다운펌", foreheadLength: "None", order: 2 },
+            { categoryId: "FRINGE_UP", code: "MFU1001", name: "플랫컷 다운펌", foreheadLength: "Fore Head", order: 1 },
+            { categoryId: "FRINGE_UP", code: "MFU1002", name: "플랫컷 다운펌", foreheadLength: "Fore Head", order: 2 },
+            
+            // 남성 - PUSHED BACK
+            { categoryId: "PUSHED_BACK", code: "MPB0001", name: "폼파도르 스킨페이드컷", foreheadLength: "None", order: 1 },
+            { categoryId: "PUSHED_BACK", code: "MPB0002", name: "슬릭백 멀리컷", foreheadLength: "None", order: 2 },
+            { categoryId: "PUSHED_BACK", code: "MPB0003", name: "슬릭백 언더컷", foreheadLength: "None", order: 3 },
+            
+            // 남성 - BUZZ
+            { categoryId: "BUZZ", code: "MBZ0001", name: "버즈컷", foreheadLength: "None", order: 1 },
+            { categoryId: "BUZZ", code: "MBZ0002", name: "버즈컷", foreheadLength: "None", order: 2 },
+            { categoryId: "BUZZ", code: "MBZ0003", name: "버즈컷 다운펌", foreheadLength: "None", order: 3 },
+            
+            // 남성 - CROP
+            { categoryId: "CROP", code: "MCP0001", name: "크롭컷 다운펌", foreheadLength: "None", order: 1 },
+            { categoryId: "CROP", code: "MCP0002", name: "크롭컷 다운펌", foreheadLength: "None", order: 2 },
+            
+            // 남성 - MOHICAN
+            { categoryId: "MOHICAN", code: "MMC0001", name: "모히칸 페이드컷", foreheadLength: "None", order: 1 },
+            { categoryId: "MOHICAN", code: "MMC0002", name: "모히칸 페이드컷", foreheadLength: "None", order: 2 },
+            { categoryId: "MOHICAN", code: "MMC0003", name: "모히칸 쉐도우펌 다운펌", foreheadLength: "None", order: 3 },
+            
+            // 여성 - LONG WAVE
+            { categoryId: "LONG_WAVE", code: "WLW0001", name: "내추럴 웨이브", foreheadLength: "None", order: 1 },
+            { categoryId: "LONG_WAVE", code: "WLW0002", name: "글래머 웨이브", foreheadLength: "None", order: 2 },
+            { categoryId: "LONG_WAVE", code: "WLW0003", name: "비치 웨이브", foreheadLength: "None", order: 3 },
+            
+            // 여성 - BOB CUT
+            { categoryId: "BOB_CUT", code: "WBC0001", name: "클래식 보브", foreheadLength: "None", order: 1 },
+            { categoryId: "BOB_CUT", code: "WBC0002", name: "레이어드 보브", foreheadLength: "None", order: 2 },
+            { categoryId: "BOB_CUT", code: "WBC0003", name: "A라인 보브", foreheadLength: "None", order: 3 },
+            
+            // 여성 - PIXIE CUT
+            { categoryId: "PIXIE_CUT", code: "WPC0001", name: "클래식 픽시", foreheadLength: "None", order: 1 },
+            { categoryId: "PIXIE_CUT", code: "WPC0002", name: "텍스처드 픽시", foreheadLength: "None", order: 2 },
+            
+            // 여성 - LAYERED
+            { categoryId: "LAYERED", code: "WLY0001", name: "롱 레이어드", foreheadLength: "None", order: 1 },
+            { categoryId: "LAYERED", code: "WLY0002", name: "미디엄 레이어드", foreheadLength: "None", order: 2 },
+            
+            // 여성 - PERM
+            { categoryId: "PERM", code: "WPM0001", name: "디지털 펌", foreheadLength: "None", order: 1 },
+            { categoryId: "PERM", code: "WPM0002", name: "바디 펌", foreheadLength: "None", order: 2 },
+            
+            // 여성 - STRAIGHT
+            { categoryId: "STRAIGHT", code: "WST0001", name: "매직 스트레이트", foreheadLength: "None", order: 1 },
+            { categoryId: "STRAIGHT", code: "WST0002", name: "볼륨 매직", foreheadLength: "None", order: 2 }
+        ];
+
+        // 1. 카테고리 초기화
+        async function initializeCategories() {
+            updateStatus('카테고리 초기화 중...');
+            updateProgress(0);
+            
+            try {
+                addLog('카테고리 초기화 시작', 'info');
+                
+                for (let i = 0; i < categoriesData.length; i++) {
+                    const category = categoriesData[i];
+                    await db.collection('categories').doc(category.id).set({
+                        ...category,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    addLog(`카테고리 추가됨: ${category.name} (${category.gender})`, 'success');
+                    updateProgress(((i + 1) / categoriesData.length) * 100);
+                }
+                
+                addLog('모든 카테고리가 성공적으로 추가되었습니다!', 'success');
+                updateStatus('카테고리 초기화 완료');
+                
+            } catch (error) {
+                addLog(`오류 발생: ${error.message}`, 'error');
+                updateStatus('오류 발생');
+            }
+        }
+
+        // 2. 헤어스타일 초기화
+        async function initializeHairstyles() {
+            updateStatus('헤어스타일 데이터 입력 중...');
+            updateProgress(0);
+            
+            try {
+                addLog('헤어스타일 데이터 입력 시작', 'info');
+                
+                for (let i = 0; i < hairstylesData.length; i++) {
+                    const style = hairstylesData[i];
+                    
+                    // 샘플 이미지 URL (실제 이미지로 교체 필요)
+                    const imageUrl = `https://via.placeholder.com/300x400/FF1493/FFFFFF?text=${style.code}`;
+                    
+                    await db.collection('hairstyles').add({
+                        ...style,
+                        imageUrl: imageUrl,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    addLog(`헤어스타일 추가됨: ${style.code} - ${style.name}`, 'success');
+                    updateProgress(((i + 1) / hairstylesData.length) * 100);
+                }
+                
+                addLog('모든 헤어스타일이 성공적으로 추가되었습니다!', 'success');
+                updateStatus('헤어스타일 데이터 입력 완료');
+                
+            } catch (error) {
+                addLog(`오류 발생: ${error.message}`, 'error');
+                updateStatus('오류 발생');
+            }
+        }
+
+        // 3. 샘플 이미지 업로드
+        async function uploadSampleImages() {
+            updateStatus('샘플 이미지 생성 중...');
+            updateProgress(0);
+            
+            try {
+                addLog('샘플 이미지 업로드는 실제 이미지가 필요합니다.', 'warning');
+                addLog('images/ 폴더에 실제 헤어스타일 이미지를 준비해주세요.', 'info');
+                addLog('이미지 파일명 형식: [스타일코드].jpg (예: MSF1001.jpg)', 'info');
+                addLog('', 'info');
+                addLog('Storage에 이미지를 업로드하려면:', 'info');
+                addLog('1. Firebase Console > Storage 에서 직접 업로드', 'info');
+                addLog('2. 또는 관리자 페이지에서 스타일 추가 시 이미지 업로드', 'info');
+                
+                updateStatus('샘플 이미지 업로드 안내 완료');
+                updateProgress(100);
+                
+            } catch (error) {
+                addLog(`오류 발생: ${error.message}`, 'error');
+                updateStatus('오류 발생');
+            }
+        }
+
+        // 4. 전체 데이터 삭제
+        async function clearAllData() {
+            if (!confirm('정말로 모든 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                return;
+            }
+            
+            updateStatus('전체 데이터 삭제 중...');
+            updateProgress(0);
+            
+            try {
+                addLog('전체 데이터 삭제 시작', 'warning');
+                
+                // 카테고리 삭제
+                const categories = await db.collection('categories').get();
+                let deleteCount = 0;
+                const totalCount = categories.size + (await db.collection('hairstyles').get()).size;
+                
+                for (const doc of categories.docs) {
+                    await doc.ref.delete();
+                    deleteCount++;
+                    updateProgress((deleteCount / totalCount) * 100);
+                }
+                addLog('카테고리 삭제 완료', 'success');
+                
+                // 헤어스타일 삭제
+                const hairstyles = await db.collection('hairstyles').get();
+                for (const doc of hairstyles.docs) {
+                    await doc.ref.delete();
+                    deleteCount++;
+                    updateProgress((deleteCount / totalCount) * 100);
+                }
+                addLog('헤어스타일 삭제 완료', 'success');
+                
+                addLog('모든 데이터가 삭제되었습니다.', 'success');
+                updateStatus('전체 데이터 삭제 완료');
+                
+            } catch (error) {
+                addLog(`오류 발생: ${error.message}`, 'error');
+                updateStatus('오류 발생');
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        window.onload = function() {
+            addLog('HAIRGATOR 초기 데이터 설정 도구 준비 완료', 'info');
+            addLog('Firebase 프로젝트가 올바르게 설정되었는지 확인하세요.', 'info');
+            addLog('', 'info');
+            addLog('순서대로 실행하세요:', 'info');
+            addLog('1. 카테고리 초기화 - 남녀 헤어스타일 카테고리 생성', 'info');
+            addLog('2. 헤어스타일 데이터 입력 - 샘플 스타일 데이터 입력', 'info');
+            addLog('3. 이미지는 관리자 페이지에서 개별 업로드', 'info');
+        };
+    </script>
+</body>
+</html>
