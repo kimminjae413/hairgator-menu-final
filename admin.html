@@ -455,7 +455,8 @@
 
             <!-- 관리 버튼들 -->
             <div style="text-align: center; margin-top: 30px;">
-                <button class="btn btn-warning" onclick="migrateFromCategories()">🔄 Firebase 마이그레이션</button>
+                <button class="btn btn-warning" onclick="createFirebaseFromAdmin()">🚀 어드민 구조로 Firebase 생성</button>
+                <button class="btn btn-secondary" onclick="migrateFromCategories()" style="font-size: 12px;">🔄 (구) Firebase 마이그레이션</button>
                 <button class="btn btn-secondary" onclick="refreshUI()">🔄 새로고침</button>
                 <button class="btn btn-success" id="syncBtn" onclick="syncToFirebase()">📤 인덱스에 반영</button>
             </div>
@@ -643,7 +644,7 @@
             }
         }
 
-        // 🔄 Firebase 마이그레이션
+        // 🔄 기존 categories 마이그레이션 (참고용)
         async function migrateFromCategories() {
             if (!firebaseConnected) {
                 showAlert('Firebase 연결이 필요합니다.', 'error');
@@ -736,6 +737,10 @@
                 showAlert(`🎉 마이그레이션 성공! ${totalDocs}개 문서가 생성되었습니다.`, 'success');
                 
                 updateSyncIndicator('connected', '✅ 마이그레이션 완료');
+
+                // 변경사항 초기화
+                changeLog = [];
+                updateSyncButton();
 
             } catch (error) {
                 console.error('❌ 마이그레이션 오류:', error);
@@ -899,7 +904,7 @@
             updateBreadcrumb();
         }
 
-        // 스타일 로드
+        // 스타일 로드 (개선된 버전)
         async function loadStyles(gender, mainCategory, subCategory) {
             console.log(`✂️ 스타일 로드: ${gender}, ${mainCategory}, ${subCategory}`);
             
@@ -915,35 +920,68 @@
                 return;
             }
 
+            // 로딩 표시
+            stylesList.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">📋 스타일 목록 로드 중...</div>';
+
             try {
                 const categoryPath = `${gender}_${mainCategory}_${subCategory}`;
+                
+                // Firebase에서 스타일 조회 (최신순 정렬)
                 const snapshot = await db.collection('hairstyles')
                     .where('categoryPath', '==', categoryPath)
+                    .orderBy('createdAt', 'desc')
                     .get();
+
+                console.log(`📊 스타일 조회 결과: ${snapshot.size}개`);
 
                 if (snapshot.empty) {
                     stylesList.innerHTML = `
                         <div class="empty-state">
                             <div class="empty-state-icon">✂️</div>
                             <div>등록된 스타일이 없습니다</div>
-                            <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()" style="margin-top: 10px;">
-                                ✂️ 스타일 추가하기
+                            <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()" style="margin-top: 15px;">
+                                ➕ 첫 번째 스타일 추가하기
                             </button>
                         </div>
                     `;
                     return;
                 }
 
-                let html = '';
+                // 스타일 목록 생성
+                let html = `
+                    <div style="text-align: right; margin-bottom: 15px;">
+                        <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()">
+                            ➕ 스타일 추가
+                        </button>
+                    </div>
+                `;
+
                 snapshot.forEach(doc => {
                     const style = doc.data();
+                    const createdDate = style.createdAt ? 
+                        style.createdAt.toDate().toLocaleDateString('ko-KR') : '날짜없음';
+                    
                     html += `
                         <div class="style-item">
                             <div class="style-code">${style.code || '코드없음'}</div>
                             <div class="style-name">${style.name || '이름없음'}</div>
+                            <div style="font-size: 11px; color: #999; margin: 5px 0;">
+                                생성일: ${createdDate}
+                            </div>
+                            ${style.imageUrl ? `
+                                <div style="margin: 10px 0;">
+                                    <img src="${style.imageUrl}" alt="${style.name}" 
+                                         style="max-width: 100px; max-height: 100px; border-radius: 5px;"
+                                         onerror="this.style.display='none'">
+                                </div>
+                            ` : ''}
                             <div class="style-actions">
-                                <button class="btn btn-secondary btn-sm" onclick="editStyle('${doc.id}')">수정</button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteStyle('${doc.id}', '${style.name}')">삭제</button>
+                                <button class="btn btn-secondary btn-sm" onclick="editStyle('${doc.id}')">
+                                    ✏️ 수정
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteStyle('${doc.id}', '${style.name || '이름없음'}')">
+                                    🗑️ 삭제
+                                </button>
                             </div>
                         </div>
                     `;
@@ -951,12 +989,21 @@
 
                 stylesList.innerHTML = html;
 
+                // 개수 표시
+                console.log(`✅ ${snapshot.size}개 스타일 로드 완료`);
+
             } catch (error) {
                 console.error('❌ 스타일 로드 오류:', error);
                 stylesList.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">❌</div>
                         <div>스타일 로드 실패</div>
+                        <div style="font-size: 12px; margin-top: 10px; color: #666;">
+                            ${error.message}
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="loadStyles('${gender}', '${mainCategory}', '${subCategory}')" style="margin-top: 10px;">
+                            🔄 다시 시도
+                        </button>
                     </div>
                 `;
             }
