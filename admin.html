@@ -210,6 +210,12 @@
             border: 1px solid #ffeaa7;
         }
 
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
         /* 경로 표시 */
         .breadcrumb {
             background-color: #e9ecef;
@@ -380,6 +386,35 @@
             50% { opacity: 0.7; }
             100% { opacity: 1; }
         }
+
+        /* 진행 상황 표시 */
+        .progress-container {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .progress-line {
+            margin: 5px 0;
+            padding: 2px 0;
+        }
+
+        .progress-line.success {
+            color: #28a745;
+        }
+
+        .progress-line.error {
+            color: #dc3545;
+        }
+
+        .progress-line.info {
+            color: #007bff;
+        }
     </style>
 </head>
 <body>
@@ -394,6 +429,30 @@
 
         <!-- 동기화 상태 -->
         <div id="syncIndicator" class="sync-indicator disconnected">Firebase 연결 중...</div>
+
+        <!-- 초기화 카드 -->
+        <div class="card">
+            <h2 class="card-title">🚀 시스템 초기화</h2>
+            <p style="margin-bottom: 20px; color: #666;">
+                Excel 데이터를 기반으로 Firebase 구조를 초기화합니다.<br>
+                최초 1회 실행 후 모든 기능을 사용할 수 있습니다.
+            </p>
+            
+            <div style="text-align: center;">
+                <button class="btn btn-warning" onclick="initializeFirebaseWithExcelData()">
+                    🚀 Excel 데이터로 Firebase 초기화
+                </button>
+                <button class="btn btn-secondary" onclick="checkCurrentStructure()">
+                    📊 현재 구조 확인
+                </button>
+            </div>
+
+            <!-- 진행 상황 표시 -->
+            <div id="initProgress" class="progress-container" style="display: none;">
+                <div style="font-weight: bold; margin-bottom: 10px;">📋 초기화 진행 상황:</div>
+                <div id="progressLog"></div>
+            </div>
+        </div>
 
         <!-- 메인 카드 -->
         <div class="card">
@@ -432,7 +491,7 @@
 
                 <!-- 3단계: 중분류 -->
                 <div class="hierarchy-column">
-                    <div class="hierarchy-title">3. 중분류</div>
+                    <div class="hierarchy-title">3. 중분류 (앞머리 길이)</div>
                     <div id="subCategoryList">
                         <div class="empty-state">
                             <div class="empty-state-icon">📂</div>
@@ -455,18 +514,8 @@
 
             <!-- 관리 버튼들 -->
             <div style="text-align: center; margin-top: 30px;">
-                <button class="btn btn-warning" onclick="createFirebaseFromAdmin()">🚀 어드민 구조로 Firebase 생성</button>
-                <button class="btn btn-secondary" onclick="migrateFromCategories()" style="font-size: 12px;">🔄 (구) Firebase 마이그레이션</button>
                 <button class="btn btn-secondary" onclick="refreshUI()">🔄 새로고침</button>
                 <button class="btn btn-success" id="syncBtn" onclick="syncToFirebase()">📤 인덱스에 반영</button>
-            </div>
-        </div>
-
-        <!-- 마이그레이션 진행 상황 -->
-        <div class="card" id="migrationCard" style="display: none;">
-            <h3>🔄 마이그레이션 진행 상황</h3>
-            <div id="migrationStatus" style="padding: 20px; background-color: #f8f9fa; border-radius: 5px; margin-top: 10px;">
-                대기 중...
             </div>
         </div>
     </div>
@@ -491,7 +540,8 @@
             
             <div class="form-group">
                 <label class="form-label">이미지 업로드</label>
-                <input type="file" class="form-control" id="newStyleImage" accept="image/*">
+                <input type="file" class="form-control" id="newStyleImage" accept="image/*" onchange="previewImage()">
+                <div id="imagePreview" style="margin-top: 10px; text-align: center;"></div>
             </div>
             
             <div style="text-align: right;">
@@ -506,7 +556,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-        console.log('🚀 HAIRGATOR 어드민 시작');
+        console.log('🚀 HAIRGATOR 최종 어드민 시작');
         
         // Firebase 설정
         const firebaseConfig = {
@@ -528,6 +578,37 @@
         let hasChanges = false;
         let changeLog = [];
 
+        // Excel 기반 완벽한 구조 (분석된 데이터)
+        const PERFECT_STRUCTURE = {
+            male: {
+                'SIDE_FRINGE': ['Fore Head', 'Eye Brow'],
+                'SIDE_FART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheek bone'], // Excel에서 SIDE_FART로 되어있음
+                'FRINDGE_UP': ['None', 'Fore Head'], // Excel에서 FRINDGE_UP로 되어있음
+                'PUSHED_BACK': ['None'],
+                'BUZZ': ['None'],
+                'CROP': ['None'],
+                'MOHICAN': ['None']
+            },
+            female: {
+                'LONG': ['A Length', 'B Length', 'C Length'],
+                'SEMI_LONG': ['D Length', 'E Length'],
+                'MEDIUM': ['F Length', 'G Length'],
+                'BOB': ['H Length', 'A Length'],
+                'SHORT': ['A Length', 'B Length']
+            }
+        };
+
+        // 로그 추가 함수
+        function addProgressLog(message, type = 'info') {
+            const progressLog = document.getElementById('progressLog');
+            const logLine = document.createElement('div');
+            logLine.className = `progress-line ${type}`;
+            logLine.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            progressLog.appendChild(logLine);
+            progressLog.scrollTop = progressLog.scrollHeight;
+            console.log(`📋 ${message}`);
+        }
+
         // Firebase 초기화
         function initializeFirebase() {
             try {
@@ -538,10 +619,211 @@
                 updateSyncIndicator('connected', '✅ Firebase 연결됨');
                 console.log('✅ Firebase 연결 성공');
                 
+                // 자동으로 구조 로드 시도
+                loadHierarchyFromFirebase();
+                
             } catch (error) {
                 console.error('❌ Firebase 초기화 오류:', error);
                 updateSyncIndicator('disconnected', '❌ Firebase 연결 실패');
                 firebaseConnected = false;
+            }
+        }
+
+        // 🚀 Excel 데이터로 Firebase 초기화
+        async function initializeFirebaseWithExcelData() {
+            if (!firebaseConnected) {
+                showAlert('Firebase 연결이 필요합니다. 페이지를 새로고침해주세요.', 'error');
+                return;
+            }
+
+            const confirmMsg = `Excel 데이터를 기반으로 Firebase를 초기화하시겠습니까?
+
+📊 생성될 구조:
+남성: SIDE_FRINGE, SIDE_FART, FRINDGE_UP, PUSHED_BACK, BUZZ, CROP, MOHICAN
+여성: LONG, SEMI_LONG, MEDIUM, BOB, SHORT
+
+⚠️ 기존 category_hierarchy 데이터는 모두 삭제됩니다.`;
+
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                // 진행 상황 표시 시작
+                document.getElementById('initProgress').style.display = 'block';
+                document.getElementById('progressLog').innerHTML = '';
+                
+                const btn = document.querySelector('button[onclick="initializeFirebaseWithExcelData()"]');
+                btn.disabled = true;
+                btn.textContent = '초기화 중...';
+
+                addProgressLog('🚀 Excel 데이터 기반 Firebase 초기화 시작', 'info');
+                showAlert('Excel 데이터를 기반으로 Firebase를 초기화하고 있습니다...', 'info');
+
+                // 1. 기존 데이터 삭제
+                addProgressLog('🗑️ 기존 category_hierarchy 데이터 확인 중...', 'info');
+                const existingDocs = await db.collection('category_hierarchy').get();
+                
+                if (!existingDocs.empty) {
+                    addProgressLog(`📄 기존 문서 ${existingDocs.size}개 발견`, 'info');
+                    const deleteBatch = db.batch();
+                    existingDocs.forEach(doc => {
+                        deleteBatch.delete(doc.ref);
+                    });
+                    await deleteBatch.commit();
+                    addProgressLog(`✅ ${existingDocs.size}개 기존 문서 삭제 완료`, 'success');
+                } else {
+                    addProgressLog('📄 기존 문서 없음', 'info');
+                }
+
+                // 2. 완벽한 구조로 새 데이터 생성
+                addProgressLog('📝 Excel 기반 새 구조 생성 중...', 'info');
+                const createBatch = db.batch();
+                let totalDocs = 0;
+
+                Object.keys(PERFECT_STRUCTURE).forEach(gender => {
+                    addProgressLog(`👤 ${gender === 'male' ? '남성' : '여성'} 카테고리 생성 중...`, 'info');
+                    
+                    Object.keys(PERFECT_STRUCTURE[gender]).forEach(mainCategory => {
+                        PERFECT_STRUCTURE[gender][mainCategory].forEach(subCategory => {
+                            const docRef = db.collection('category_hierarchy').doc();
+                            createBatch.set(docRef, {
+                                gender,
+                                mainCategory,
+                                subCategory,
+                                categoryPath: `${gender}_${mainCategory}_${subCategory}`,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            totalDocs++;
+                        });
+                        
+                        addProgressLog(`  📁 ${mainCategory}: ${PERFECT_STRUCTURE[gender][mainCategory].length}개 중분류`, 'success');
+                    });
+                });
+
+                addProgressLog(`💾 Firebase에 ${totalDocs}개 문서 저장 중...`, 'info');
+                await createBatch.commit();
+                addProgressLog(`✅ ${totalDocs}개 문서 저장 완료`, 'success');
+
+                // 3. 메모리에 구조 저장
+                hierarchyStructure = JSON.parse(JSON.stringify(PERFECT_STRUCTURE));
+                addProgressLog('🧠 메모리 구조 업데이트 완료', 'success');
+
+                // 4. 완료
+                addProgressLog(`🎉 Excel 데이터 기반 Firebase 초기화 완료!`, 'success');
+                addProgressLog(`📊 총 ${totalDocs}개 문서 생성: ${Object.keys(PERFECT_STRUCTURE.male).length + Object.keys(PERFECT_STRUCTURE.female).length}개 카테고리`, 'success');
+                
+                showAlert(`🎉 Excel 데이터 기반 초기화 완료! (${totalDocs}개 문서 생성)`, 'success');
+                updateSyncIndicator('connected', '✅ 초기화 완료');
+
+                // 버튼 복원
+                btn.disabled = false;
+                btn.textContent = '🚀 Excel 데이터로 Firebase 초기화';
+
+            } catch (error) {
+                console.error('❌ 초기화 오류:', error);
+                addProgressLog(`❌ 오류: ${error.message}`, 'error');
+                showAlert(`초기화 중 오류가 발생했습니다: ${error.message}`, 'error');
+                
+                const btn = document.querySelector('button[onclick="initializeFirebaseWithExcelData()"]');
+                btn.disabled = false;
+                btn.textContent = '🚀 Excel 데이터로 Firebase 초기화';
+            }
+        }
+
+        // 📊 현재 구조 확인
+        async function checkCurrentStructure() {
+            if (!firebaseConnected) {
+                showAlert('Firebase 연결이 필요합니다.', 'error');
+                return;
+            }
+
+            try {
+                showAlert('현재 Firebase 구조를 확인하고 있습니다...', 'info');
+                
+                // 진행 상황 표시
+                document.getElementById('initProgress').style.display = 'block';
+                document.getElementById('progressLog').innerHTML = '';
+                
+                addProgressLog('📊 현재 Firebase 구조 확인 중...', 'info');
+
+                // category_hierarchy 확인
+                const hierarchySnapshot = await db.collection('category_hierarchy').get();
+                addProgressLog(`📄 category_hierarchy: ${hierarchySnapshot.size}개 문서`, hierarchySnapshot.empty ? 'error' : 'success');
+
+                if (!hierarchySnapshot.empty) {
+                    const structure = { male: {}, female: {} };
+                    hierarchySnapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (!structure[data.gender]) structure[data.gender] = {};
+                        if (!structure[data.gender][data.mainCategory]) structure[data.gender][data.mainCategory] = [];
+                        if (!structure[data.gender][data.mainCategory].includes(data.subCategory)) {
+                            structure[data.gender][data.mainCategory].push(data.subCategory);
+                        }
+                    });
+
+                    // 구조 출력
+                    Object.keys(structure).forEach(gender => {
+                        addProgressLog(`👤 ${gender === 'male' ? '남성' : '여성'}:`, 'info');
+                        Object.keys(structure[gender]).forEach(mainCat => {
+                            addProgressLog(`  📁 ${mainCat}: [${structure[gender][mainCat].join(', ')}]`, 'success');
+                        });
+                    });
+                }
+
+                // categories 확인  
+                const categoriesSnapshot = await db.collection('categories').get();
+                addProgressLog(`📄 categories (구 버전): ${categoriesSnapshot.size}개 문서`, 'info');
+
+                // hairstyles 확인
+                const stylesSnapshot = await db.collection('hairstyles').get();
+                addProgressLog(`✂️ hairstyles: ${stylesSnapshot.size}개 문서`, 'info');
+
+                addProgressLog('📋 구조 확인 완료', 'success');
+                showAlert('현재 구조 확인이 완료되었습니다.', 'success');
+
+            } catch (error) {
+                console.error('❌ 구조 확인 오류:', error);
+                addProgressLog(`❌ 오류: ${error.message}`, 'error');
+                showAlert('구조 확인 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // Firebase에서 계층 구조 로드
+        async function loadHierarchyFromFirebase() {
+            if (!firebaseConnected) return;
+
+            try {
+                const snapshot = await db.collection('category_hierarchy').get();
+                
+                if (snapshot.empty) {
+                    console.log('📄 category_hierarchy가 비어있음');
+                    hierarchyStructure = { male: {}, female: {} };
+                    return;
+                }
+
+                hierarchyStructure = { male: {}, female: {} };
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const gender = data.gender;
+                    const mainCat = data.mainCategory;
+                    const subCat = data.subCategory;
+
+                    if (!hierarchyStructure[gender]) {
+                        hierarchyStructure[gender] = {};
+                    }
+                    if (!hierarchyStructure[gender][mainCat]) {
+                        hierarchyStructure[gender][mainCat] = [];
+                    }
+                    if (!hierarchyStructure[gender][mainCat].includes(subCat)) {
+                        hierarchyStructure[gender][mainCat].push(subCat);
+                    }
+                });
+
+                console.log('✅ 계층 구조 로드 완료:', hierarchyStructure);
+                
+            } catch (error) {
+                console.error('❌ 계층 구조 로드 오류:', error);
             }
         }
 
@@ -644,143 +926,6 @@
             }
         }
 
-        // 🔄 기존 categories 마이그레이션 (참고용)
-        async function migrateFromCategories() {
-            if (!firebaseConnected) {
-                showAlert('Firebase 연결이 필요합니다.', 'error');
-                return;
-            }
-
-            if (!confirm('기존 categories 데이터를 category_hierarchy 구조로 변환하시겠습니까?')) {
-                return;
-            }
-
-            try {
-                const migrationCard = document.getElementById('migrationCard');
-                const migrationStatus = document.getElementById('migrationStatus');
-                
-                migrationCard.style.display = 'block';
-                migrationStatus.textContent = '🔍 기존 categories 데이터 확인 중...';
-
-                // 1. 기존 categories 확인
-                const categoriesSnapshot = await db.collection('categories').get();
-                console.log(`📊 기존 categories: ${categoriesSnapshot.size}개`);
-
-                if (categoriesSnapshot.empty) {
-                    migrationStatus.textContent = '❌ 기존 categories 데이터가 없습니다.';
-                    showAlert('기존 categories 데이터가 없습니다.', 'warning');
-                    return;
-                }
-
-                // 2. 카테고리별 중분류 매핑
-                const subCategoryMap = {
-                    'SIDE_FRINGE': ['Fore Head', 'Eye Brow'],
-                    'SIDE_PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
-                    'FRINGE_UP': ['None', 'Fore Head'],
-                    'PUSHED_BACK': ['None'],
-                    'BUZZ': ['None'],
-                    'CROP': ['None'],
-                    'MOHICAN': ['None'],
-                    'BOB_CUT': ['A Length', 'Fore Head', 'Eye Brow'],
-                    'PIXIE_CUT': ['None', 'Fore Head'],
-                    'LAYERED': ['A Length', 'Fore Head', 'Eye Brow'],
-                    'LONG_WAVE': ['A Length', 'Fore Head', 'Eye Brow'],
-                    'STRAIGHT': ['A Length', 'Fore Head', 'Eye Brow'],
-                    'PERM': ['None', 'Fore Head', 'Eye Brow']
-                };
-
-                // 3. 기존 category_hierarchy 삭제
-                migrationStatus.textContent = '🗑️ 기존 category_hierarchy 삭제 중...';
-                const existingHierarchy = await db.collection('category_hierarchy').get();
-                const deleteBatch = db.batch();
-                
-                existingHierarchy.forEach(doc => {
-                    deleteBatch.delete(doc.ref);
-                });
-                
-                if (!existingHierarchy.empty) {
-                    await deleteBatch.commit();
-                }
-
-                // 4. 새 category_hierarchy 생성
-                migrationStatus.textContent = '📝 새 category_hierarchy 생성 중...';
-                const createBatch = db.batch();
-                let totalDocs = 0;
-
-                categoriesSnapshot.forEach(doc => {
-                    const category = doc.data();
-                    const categoryId = category.id || doc.id;
-                    const gender = category.gender || 'male';
-                    const subCategories = subCategoryMap[categoryId] || ['None'];
-
-                    subCategories.forEach(subCategory => {
-                        const newDoc = db.collection('category_hierarchy').doc();
-                        createBatch.set(newDoc, {
-                            gender: gender,
-                            mainCategory: categoryId,
-                            subCategory: subCategory,
-                            categoryPath: `${gender}_${categoryId}_${subCategory}`,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                        totalDocs++;
-                    });
-                });
-
-                await createBatch.commit();
-
-                // 5. 메모리 구조 업데이트
-                migrationStatus.textContent = '🔄 어드민 구조 업데이트 중...';
-                await loadHierarchyFromFirebase();
-
-                migrationStatus.textContent = `✅ 마이그레이션 완료! ${totalDocs}개 문서 생성됨`;
-                showAlert(`🎉 마이그레이션 성공! ${totalDocs}개 문서가 생성되었습니다.`, 'success');
-                
-                updateSyncIndicator('connected', '✅ 마이그레이션 완료');
-
-                // 변경사항 초기화
-                changeLog = [];
-                updateSyncButton();
-
-            } catch (error) {
-                console.error('❌ 마이그레이션 오류:', error);
-                document.getElementById('migrationStatus').textContent = `❌ 오류: ${error.message}`;
-                showAlert('마이그레이션 중 오류가 발생했습니다.', 'error');
-            }
-        }
-
-        // Firebase에서 계층 구조 로드
-        async function loadHierarchyFromFirebase() {
-            if (!firebaseConnected) return;
-
-            try {
-                const snapshot = await db.collection('category_hierarchy').get();
-                hierarchyStructure = { male: {}, female: {} };
-
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const gender = data.gender;
-                    const mainCat = data.mainCategory;
-                    const subCat = data.subCategory;
-
-                    if (!hierarchyStructure[gender]) {
-                        hierarchyStructure[gender] = {};
-                    }
-                    if (!hierarchyStructure[gender][mainCat]) {
-                        hierarchyStructure[gender][mainCat] = [];
-                    }
-                    if (!hierarchyStructure[gender][mainCat].includes(subCat)) {
-                        hierarchyStructure[gender][mainCat].push(subCat);
-                    }
-                });
-
-                console.log('✅ 계층 구조 로드 완료:', hierarchyStructure);
-                
-            } catch (error) {
-                console.error('❌ 계층 구조 로드 오류:', error);
-            }
-        }
-
         // 성별 선택
         function selectGender(gender) {
             console.log(`🎯 성별 선택: ${gender}`);
@@ -812,7 +957,7 @@
                 mainCategoryList.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">⚠️</div>
-                        <div>마이그레이션을 먼저 실행하세요</div>
+                        <div>먼저 초기화를 실행하세요</div>
                     </div>
                 `;
                 return;
@@ -876,7 +1021,7 @@
             subCategories.forEach(subCategory => {
                 html += `
                     <div class="selectable-item" onclick="selectSubCategory('${subCategory}')">
-                        <div class="item-text">📂 ${subCategory}</div>
+                        <div class="item-text">📏 ${subCategory}</div>
                         <div class="item-actions">
                             <button class="action-btn" onclick="editSubCategory('${subCategory}', event)" title="수정">✏️</button>
                             <button class="action-btn" onclick="deleteSubCategory('${subCategory}', event)" title="삭제">🗑️</button>
@@ -904,7 +1049,7 @@
             updateBreadcrumb();
         }
 
-        // 스타일 로드 (개선된 버전)
+        // 스타일 로드
         async function loadStyles(gender, mainCategory, subCategory) {
             console.log(`✂️ 스타일 로드: ${gender}, ${mainCategory}, ${subCategory}`);
             
@@ -920,19 +1065,12 @@
                 return;
             }
 
-            // 로딩 표시
-            stylesList.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">📋 스타일 목록 로드 중...</div>';
-
             try {
                 const categoryPath = `${gender}_${mainCategory}_${subCategory}`;
-                
-                // Firebase에서 스타일 조회 (최신순 정렬)
                 const snapshot = await db.collection('hairstyles')
                     .where('categoryPath', '==', categoryPath)
                     .orderBy('createdAt', 'desc')
                     .get();
-
-                console.log(`📊 스타일 조회 결과: ${snapshot.size}개`);
 
                 if (snapshot.empty) {
                     stylesList.innerHTML = `
@@ -940,48 +1078,33 @@
                             <div class="empty-state-icon">✂️</div>
                             <div>등록된 스타일이 없습니다</div>
                             <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()" style="margin-top: 15px;">
-                                ➕ 첫 번째 스타일 추가하기
+                                ✂️ 스타일 추가하기
                             </button>
                         </div>
                     `;
                     return;
                 }
 
-                // 스타일 목록 생성
                 let html = `
-                    <div style="text-align: right; margin-bottom: 15px;">
-                        <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()">
-                            ➕ 스타일 추가
-                        </button>
-                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()" style="margin-bottom: 15px; width: 100%;">
+                        ➕ 스타일 추가
+                    </button>
                 `;
-
+                
                 snapshot.forEach(doc => {
                     const style = doc.data();
-                    const createdDate = style.createdAt ? 
-                        style.createdAt.toDate().toLocaleDateString('ko-KR') : '날짜없음';
+                    const createdDate = style.createdAt ? style.createdAt.toDate().toLocaleDateString('ko-KR') : '날짜없음';
                     
                     html += `
                         <div class="style-item">
                             <div class="style-code">${style.code || '코드없음'}</div>
                             <div class="style-name">${style.name || '이름없음'}</div>
-                            <div style="font-size: 11px; color: #999; margin: 5px 0;">
+                            <div style="font-size: 11px; color: #999; margin-bottom: 10px;">
                                 생성일: ${createdDate}
                             </div>
-                            ${style.imageUrl ? `
-                                <div style="margin: 10px 0;">
-                                    <img src="${style.imageUrl}" alt="${style.name}" 
-                                         style="max-width: 100px; max-height: 100px; border-radius: 5px;"
-                                         onerror="this.style.display='none'">
-                                </div>
-                            ` : ''}
                             <div class="style-actions">
-                                <button class="btn btn-secondary btn-sm" onclick="editStyle('${doc.id}')">
-                                    ✏️ 수정
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteStyle('${doc.id}', '${style.name || '이름없음'}')">
-                                    🗑️ 삭제
-                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="editStyle('${doc.id}', '${style.name}')">✏️ 수정</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteStyle('${doc.id}', '${style.name}')">🗑️ 삭제</button>
                             </div>
                         </div>
                     `;
@@ -989,23 +1112,57 @@
 
                 stylesList.innerHTML = html;
 
-                // 개수 표시
-                console.log(`✅ ${snapshot.size}개 스타일 로드 완료`);
-
             } catch (error) {
                 console.error('❌ 스타일 로드 오류:', error);
                 stylesList.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">❌</div>
-                        <div>스타일 로드 실패</div>
-                        <div style="font-size: 12px; margin-top: 10px; color: #666;">
-                            ${error.message}
-                        </div>
-                        <button class="btn btn-secondary btn-sm" onclick="loadStyles('${gender}', '${mainCategory}', '${subCategory}')" style="margin-top: 10px;">
-                            🔄 다시 시도
+                        <div>스타일 로드 실패: ${error.message}</div>
+                        <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()" style="margin-top: 15px;">
+                            ✂️ 스타일 추가하기
                         </button>
                     </div>
                 `;
+            }
+        }
+
+        // 스타일 수정
+        async function editStyle(styleId, styleName) {
+            const newName = prompt(`"${styleName}" 스타일의 새 이름을 입력하세요:`, styleName);
+            
+            if (!newName || newName.trim() === '' || newName.trim() === styleName) {
+                return;
+            }
+
+            try {
+                await db.collection('hairstyles').doc(styleId).update({
+                    name: newName.trim(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showAlert(`"${styleName}"이 "${newName.trim()}"로 수정되었습니다.`, 'success');
+                loadStyles(selectedGender, selectedMainCategory, selectedSubCategory);
+
+            } catch (error) {
+                console.error('❌ 스타일 수정 오류:', error);
+                showAlert('스타일 수정 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 스타일 삭제
+        async function deleteStyle(styleId, styleName) {
+            if (!confirm(`"${styleName}" 스타일을 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            try {
+                await db.collection('hairstyles').doc(styleId).delete();
+                showAlert(`"${styleName}" 스타일이 삭제되었습니다.`, 'success');
+                loadStyles(selectedGender, selectedMainCategory, selectedSubCategory);
+
+            } catch (error) {
+                console.error('❌ 스타일 삭제 오류:', error);
+                showAlert('스타일 삭제 중 오류가 발생했습니다.', 'error');
             }
         }
 
@@ -1083,6 +1240,22 @@
             document.getElementById('addStyleModal').style.display = 'block';
         }
 
+        // 이미지 미리보기
+        function previewImage() {
+            const fileInput = document.getElementById('newStyleImage');
+            const preview = document.getElementById('imagePreview');
+            
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 5px;">`;
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                preview.innerHTML = '';
+            }
+        }
+
         // 모달 닫기
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
@@ -1092,6 +1265,11 @@
             inputs.forEach(input => {
                 input.value = '';
             });
+            
+            // 이미지 미리보기 초기화
+            if (modalId === 'addStyleModal') {
+                document.getElementById('imagePreview').innerHTML = '';
+            }
         }
 
         // 새 스타일 저장
@@ -1113,8 +1291,9 @@
                     mainCategory: selectedMainCategory,
                     subCategory: selectedSubCategory,
                     categoryPath: `${selectedGender}_${selectedMainCategory}_${selectedSubCategory}`,
-                    imageUrl: '', // 이미지 업로드 기능은 나중에 구현
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    imageUrl: '', // 이미지 업로드 기능은 Firebase Storage 연동 시 구현
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
                 await db.collection('hairstyles').add(styleData);
@@ -1127,7 +1306,7 @@
 
             } catch (error) {
                 console.error('❌ 스타일 추가 오류:', error);
-                showAlert('스타일 추가 중 오류가 발생했습니다.', 'error');
+                showAlert('스타일 추가 중 오류가 발생했습니다: ' + error.message, 'error');
             }
         }
 
@@ -1140,7 +1319,7 @@
             
             setTimeout(() => {
                 alert.style.display = 'none';
-            }, 4000);
+            }, 5000);
         }
 
         // 카테고리 수정 (실제 구현)
@@ -1274,7 +1453,8 @@
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
             initializeFirebase();
-            console.log('🎉 HAIRGATOR 어드민 로드 완료');
+            updateSyncButton();
+            console.log('🎉 HAIRGATOR 최종 어드민 로드 완료');
         });
 
         // 모달 외부 클릭시 닫기
