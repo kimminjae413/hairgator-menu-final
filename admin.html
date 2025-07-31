@@ -539,8 +539,8 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label">이미지 업로드</label>
-                <input type="file" class="form-control" id="newStyleImage" accept="image/*" onchange="previewImage()">
+                <label class="form-label">이미지 업로드 (필수)</label>
+                <input type="file" class="form-control" id="newStyleImage" accept="image/*" onchange="previewImage()" required>
                 <div id="imagePreview" style="margin-top: 10px; text-align: center;"></div>
             </div>
             
@@ -554,9 +554,10 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <script>
-        console.log('🚀 HAIRGATOR 최종 어드민 시작');
+        console.log('🚀 HAIRGATOR 이미지 업로드 어드민 시작');
         
         // Firebase 설정
         const firebaseConfig = {
@@ -570,6 +571,7 @@
 
         // 전역 변수
         let db = null;
+        let storage = null; // ✅ Firebase Storage 추가
         let firebaseConnected = false;
         let selectedGender = null;
         let selectedMainCategory = null;
@@ -582,8 +584,8 @@
         const PERFECT_STRUCTURE = {
             male: {
                 'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
-                'SIDE FART': ['None', 'Fore Head', 'Eye Brow', 'Eye ', 'Cheek bone'],
-                'FRINDGE UP': ['None ', ' Fore Head'],
+                'SIDE PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
+                'FRINGE UP': ['None', 'Fore Head'],
                 'PUSHED BACK': ['None'],
                 'BUZZ': ['None'],
                 'CROP': ['None'],
@@ -614,10 +616,11 @@
             try {
                 firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
+                storage = firebase.storage(); // ✅ Firebase Storage 초기화
                 firebaseConnected = true;
                 
-                updateSyncIndicator('connected', '✅ Firebase 연결됨');
-                console.log('✅ Firebase 연결 성공');
+                updateSyncIndicator('connected', '✅ Firebase 연결됨 (Storage 포함)');
+                console.log('✅ Firebase 연결 성공 (Storage 포함)');
                 
                 // 자동으로 구조 로드 시도
                 loadHierarchyFromFirebase();
@@ -639,7 +642,7 @@
             const confirmMsg = `Excel 데이터를 기반으로 Firebase를 초기화하시겠습니까?
 
 📊 생성될 구조 (실제 Excel 분석 결과):
-남성: SIDE FRINGE, SIDE FART, FRINDGE UP, PUSHED BACK, BUZZ, CROP, MOHICAN
+남성: SIDE FRINGE, SIDE PART, FRINGE UP, PUSHED BACK, BUZZ, CROP, MOHICAN
 여성: LONG, SEMI LONG, MEDIUM, BOB, SHORT
 
 📋 중분류 매핑 예시:
@@ -1074,7 +1077,6 @@
                 const categoryPath = `${gender}_${mainCategory}_${subCategory}`;
                 const snapshot = await db.collection('hairstyles')
                     .where('categoryPath', '==', categoryPath)
-                    // orderBy 임시 제거로 인덱스 오류 해결
                     .get();
 
                 if (snapshot.empty) {
@@ -1104,6 +1106,7 @@
                         <div class="style-item">
                             <div class="style-code">${style.code || '코드없음'}</div>
                             <div class="style-name">${style.name || '이름없음'}</div>
+                            ${style.imageUrl ? `<div style="margin: 10px 0;"><img src="${style.imageUrl}" style="max-width: 100px; max-height: 100px; object-fit: cover; border-radius: 5px;"></div>` : '<div style="color: #999; font-size: 12px;">이미지 없음</div>'}
                             <div style="font-size: 11px; color: #999; margin-bottom: 10px;">
                                 생성일: ${createdDate}
                             </div>
@@ -1128,6 +1131,38 @@
                         </button>
                     </div>
                 `;
+            }
+        }
+
+        // ✅ Firebase Storage에 이미지 업로드 함수
+        async function uploadImageToStorage(file, styleCode) {
+            try {
+                console.log(`📤 이미지 업로드 시작: ${styleCode}`);
+                
+                // 파일 확장자 추출
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                
+                if (!allowedExtensions.includes(fileExtension)) {
+                    throw new Error('지원하지 않는 파일 형식입니다. JPG, PNG, WebP, GIF만 업로드 가능합니다.');
+                }
+
+                // Firebase Storage 참조 생성
+                const storageRef = storage.ref(`styles/${styleCode}.${fileExtension}`);
+                
+                // 파일 업로드
+                const uploadTask = await storageRef.put(file);
+                console.log('📤 업로드 완료:', uploadTask);
+                
+                // 다운로드 URL 가져오기
+                const downloadURL = await uploadTask.ref.getDownloadURL();
+                console.log('🔗 다운로드 URL:', downloadURL);
+                
+                return downloadURL;
+                
+            } catch (error) {
+                console.error('❌ 이미지 업로드 오류:', error);
+                throw error;
             }
         }
 
@@ -1253,7 +1288,7 @@
             if (fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    preview.innerHTML = `<img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 5px;">`;
+                    preview.innerHTML = `<img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 5px; object-fit: cover;">`;
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
@@ -1277,18 +1312,25 @@
             }
         }
 
-        // 새 스타일 저장
+        // ✅ 새 스타일 저장 (이미지 업로드 포함)
         async function saveNewStyle() {
             const code = document.getElementById('newStyleCode').value.trim();
             const name = document.getElementById('newStyleName').value.trim();
             const imageFile = document.getElementById('newStyleImage').files[0];
 
-            if (!code || !name) {
-                showAlert('스타일 코드와 이름을 입력하세요.', 'error');
+            if (!code || !name || !imageFile) {
+                showAlert('모든 필드를 입력하고 이미지를 선택하세요.', 'error');
                 return;
             }
 
             try {
+                showAlert('🔄 이미지 업로드 중...', 'info');
+                
+                // 1. Firebase Storage에 이미지 업로드
+                const imageUrl = await uploadImageToStorage(imageFile, code);
+                console.log('✅ 이미지 업로드 완료:', imageUrl);
+
+                // 2. Firestore에 스타일 데이터 저장
                 const styleData = {
                     code: code,
                     name: name,
@@ -1296,14 +1338,14 @@
                     mainCategory: selectedMainCategory,
                     subCategory: selectedSubCategory,
                     categoryPath: `${selectedGender}_${selectedMainCategory}_${selectedSubCategory}`,
-                    imageUrl: '', // 이미지 업로드 기능은 Firebase Storage 연동 시 구현
+                    imageUrl: imageUrl, // ✅ 실제 업로드된 이미지 URL
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
                 await db.collection('hairstyles').add(styleData);
                 
-                showAlert(`✅ "${name}" 스타일이 추가되었습니다.`, 'success');
+                showAlert(`✅ "${name}" 스타일이 이미지와 함께 추가되었습니다!`, 'success');
                 closeModal('addStyleModal');
                 
                 // 스타일 목록 새로고침
@@ -1459,7 +1501,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeFirebase();
             updateSyncButton();
-            console.log('🎉 HAIRGATOR 최종 어드민 로드 완료');
+            console.log('🎉 HAIRGATOR 이미지 업로드 어드민 로드 완료');
         });
 
         // 모달 외부 클릭시 닫기
