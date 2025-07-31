@@ -226,6 +226,8 @@
             margin-top: 100px;
             padding: 20px;
             min-height: calc(100vh - 100px);
+            overflow-x: auto; /* 가로 스크롤 허용 */
+            overflow-y: auto; /* 세로 스크롤도 허용 */
         }
 
         .category-section {
@@ -291,6 +293,29 @@
             grid-template-columns: repeat(5, 1fr);
             gap: 20px;
             margin-bottom: 30px;
+            min-width: 100%;
+            overflow-x: auto; /* 가로 스크롤 허용 */
+            -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+            scrollbar-width: thin; /* Firefox 얇은 스크롤바 */
+        }
+
+        /* 스크롤바 스타일링 */
+        .hairstyle-grid::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .hairstyle-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .hairstyle-grid::-webkit-scrollbar-thumb {
+            background: #FF1493;
+            border-radius: 3px;
+        }
+
+        .hairstyle-grid::-webkit-scrollbar-thumb:hover {
+            background: #FF69B4;
         }
 
         .hairstyle-card {
@@ -300,11 +325,21 @@
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
+            min-width: 200px; /* 최소 너비 보장 */
+            flex-shrink: 0; /* 축소 방지 */
         }
 
         .hairstyle-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+        }
+
+        /* 터치 디바이스 최적화 */
+        @media (hover: none) {
+            .hairstyle-card:active {
+                transform: scale(0.95);
+                transition: transform 0.1s ease;
+            }
         }
 
         .hairstyle-image {
@@ -341,7 +376,7 @@
             display: block;
         }
 
-        /* 이미지 모달 */
+        /* 이미지 모달 - 터치 최적화 */
         .modal {
             display: none;
             position: fixed;
@@ -352,6 +387,7 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.95);
             animation: fadeIn 0.3s ease;
+            -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
         }
 
         @keyframes fadeIn {
@@ -363,7 +399,7 @@
             position: relative;
             margin: auto;
             padding: 20px;
-            width: 90%;
+            width: 95%; /* 모바일에서 더 넓게 */
             max-width: 800px;
             height: 100%;
             display: flex;
@@ -374,13 +410,14 @@
 
         .close {
             position: absolute;
-            top: 20px;
-            right: 35px;
+            top: 10px;
+            right: 20px;
             color: #fff;
             font-size: 40px;
             font-weight: bold;
             cursor: pointer;
             z-index: 1001;
+            padding: 10px; /* 터치 영역 확대 */
         }
 
         .close:hover {
@@ -392,6 +429,7 @@
             max-height: 70vh;
             object-fit: contain;
             border-radius: 10px;
+            touch-action: pinch-zoom; /* 핀치 줌 허용 */
         }
 
         .modal-info {
@@ -401,6 +439,8 @@
             padding: 20px;
             border-radius: 10px;
             backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 400px;
         }
 
         .modal-info h3 {
@@ -412,6 +452,33 @@
         .modal-info p {
             font-size: 18px;
             color: #fff;
+        }
+
+        /* 모바일 모달 최적화 */
+        @media screen and (max-width: 600px) {
+            .close {
+                font-size: 35px;
+                top: 5px;
+                right: 15px;
+                padding: 15px;
+            }
+            
+            .modal-image {
+                max-height: 60vh;
+            }
+            
+            .modal-info {
+                padding: 15px;
+                margin-top: 15px;
+            }
+            
+            .modal-info h3 {
+                font-size: 20px;
+            }
+            
+            .modal-info p {
+                font-size: 16px;
+            }
         }
 
         /* 로딩 스피너 */
@@ -490,16 +557,63 @@
             color: #666;
         }
 
-        /* 반응형 */
+        /* 반응형 - 태블릿과 모바일 최적화 */
         @media screen and (max-width: 1200px) {
             .hairstyle-grid {
                 grid-template-columns: repeat(4, 1fr);
+                gap: 15px;
+            }
+            
+            .hairstyle-card {
+                min-width: 180px;
             }
         }
 
         @media screen and (max-width: 900px) {
             .hairstyle-grid {
                 grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+            
+            .hairstyle-card {
+                min-width: 160px;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+        }
+
+        @media screen and (max-width: 600px) {
+            .hairstyle-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .hairstyle-card {
+                min-width: 140px;
+            }
+            
+            .content {
+                padding: 10px;
+            }
+            
+            .nav-tab {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            
+            .length-tab {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+        }
+
+        /* 20개 이상 스타일이 있을 때 가로 스크롤 처리 */
+        @media screen and (min-width: 1201px) {
+            .hairstyle-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                max-width: none;
             }
         }
     </style>
@@ -780,7 +894,7 @@
             `;
         }
 
-        // 📋 대분류 탭 렌더링 (어드민과 동일한 UI 패턴)
+        // 📋 대분류 탭 렌더링 (어드민 순서 고정)
         function renderMainCategoryTabs(mainCategories) {
             const navTabs = document.getElementById('navTabs');
             navTabs.innerHTML = '';
@@ -790,13 +904,19 @@
                 return;
             }
             
-            mainCategories.forEach((mainCategory, index) => {
-                const tab = document.createElement('div');
-                tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
-                tab.dataset.category = mainCategory;
-                tab.textContent = mainCategory;
-                tab.onclick = () => switchCategory(mainCategory);
-                navTabs.appendChild(tab);
+            // 🎯 어드민과 동일한 순서로 고정
+            const orderedCategories = hierarchyStructure[currentGender] ? 
+                Object.keys(hierarchyStructure[currentGender]) : mainCategories;
+            
+            orderedCategories.forEach((mainCategory, index) => {
+                if (mainCategories.includes(mainCategory)) {
+                    const tab = document.createElement('div');
+                    tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
+                    tab.dataset.category = mainCategory;
+                    tab.textContent = mainCategory;
+                    tab.onclick = () => switchCategory(mainCategory);
+                    navTabs.appendChild(tab);
+                }
             });
         }
 
@@ -981,7 +1101,14 @@
                 } else {
                     html += `<div class="hairstyle-grid">`;
                     
-                    styles.forEach(style => {
+                    // 🎯 스타일을 code 순서대로 정렬
+                    const sortedStyles = styles.sort((a, b) => {
+                        const codeA = a.code || '';
+                        const codeB = b.code || '';
+                        return codeA.localeCompare(codeB);
+                    });
+                    
+                    sortedStyles.forEach(style => {
                         const imageUrl = style.imageUrl || generatePlaceholderImage(style.name);
                         
                         html += `
