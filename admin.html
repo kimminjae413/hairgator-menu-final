@@ -578,23 +578,23 @@
         let hasChanges = false;
         let changeLog = [];
 
-        // Excel 기반 완벽한 구조 (분석된 데이터)
+        // Excel 기반 완벽한 구조 (실제 Excel 데이터 정확 매핑)
         const PERFECT_STRUCTURE = {
             male: {
-                'SIDE_FRINGE': ['Fore Head', 'Eye Brow'],
-                'SIDE_FART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheek bone'], // Excel에서 SIDE_FART로 되어있음
-                'FRINDGE_UP': ['None', 'Fore Head'], // Excel에서 FRINDGE_UP로 되어있음
-                'PUSHED_BACK': ['None'],
+                'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
+                'SIDE FART': ['None', 'Fore Head', 'Eye Brow', 'Eye ', 'Cheek bone'],
+                'FRINDGE UP': ['None ', ' Fore Head'],
+                'PUSHED BACK': ['None'],
                 'BUZZ': ['None'],
                 'CROP': ['None'],
                 'MOHICAN': ['None']
             },
             female: {
-                'LONG': ['A Length', 'B Length', 'C Length'],
-                'SEMI_LONG': ['D Length', 'E Length'],
-                'MEDIUM': ['F Length', 'G Length'],
-                'BOB': ['H Length', 'A Length'],
-                'SHORT': ['A Length', 'B Length']
+                'LONG': ['A Length', 'B Length'],
+                'SEMI LONG': ['C Length'],
+                'MEDIUM': ['D Length', 'E Length'],
+                'BOB': ['F Length', 'G Length'],
+                'SHORT': ['H Length']
             }
         };
 
@@ -638,9 +638,14 @@
 
             const confirmMsg = `Excel 데이터를 기반으로 Firebase를 초기화하시겠습니까?
 
-📊 생성될 구조:
-남성: SIDE_FRINGE, SIDE_FART, FRINDGE_UP, PUSHED_BACK, BUZZ, CROP, MOHICAN
-여성: LONG, SEMI_LONG, MEDIUM, BOB, SHORT
+📊 생성될 구조 (실제 Excel 분석 결과):
+남성: SIDE FRINGE, SIDE FART, FRINDGE UP, PUSHED BACK, BUZZ, CROP, MOHICAN
+여성: LONG, SEMI LONG, MEDIUM, BOB, SHORT
+
+📋 중분류 매핑 예시:
+- BOB → [F Length, G Length]
+- LONG → [A Length, B Length]  
+- MEDIUM → [D Length, E Length]
 
 ⚠️ 기존 category_hierarchy 데이터는 모두 삭제됩니다.`;
 
