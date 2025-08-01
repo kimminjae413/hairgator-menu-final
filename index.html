@@ -94,37 +94,7 @@
             }
         }
 
-        /* 닫기 버튼 */
-        .close-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: #fff;
-            font-size: 24px;
-            font-weight: bold;
-            z-index: 1001;
-            transition: all 0.3s ease;
-        }
-
-        .close-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: #FF1493;
-            color: #FF1493;
-            transform: scale(1.1);
-        }
-
-        .close-btn:active {
-            transform: scale(0.95);
-        }
+        /* 닫기 버튼 - 제거됨 */
 
         /* 디자이너 로그인 화면 */
         .designer-login {
@@ -1334,8 +1304,7 @@
     </style>
 </head>
 <body>
-    <!-- 닫기 버튼 -->
-    <button class="close-btn" onclick="closeApp()" title="닫기">×</button>
+
 
     <!-- 기기별 최적화 안내 -->
     <div class="device-notice" id="deviceNotice">
@@ -1454,6 +1423,14 @@
                     <div class="menu-text">
                         <strong>AI 얼굴 분석</strong>
                         <small>얼굴형 맞춤 추천</small>
+                    </div>
+                </div>
+                
+                <div class="menu-item" onclick="closeApp()">
+                    <div class="menu-icon">❌</div>
+                    <div class="menu-text">
+                        <strong>앱 닫기</strong>
+                        <small>네이티브 앱으로 돌아가기</small>
                     </div>
                 </div>
             </div>
