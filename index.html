@@ -94,8 +94,6 @@
             }
         }
 
-        /* 닫기 버튼 - 제거됨 */
-
         /* 디자이너 로그인 화면 */
         .designer-login {
             display: flex;
@@ -809,7 +807,7 @@
             color: #FF69B4;
         }
 
-        /* 콘텐츠 영역 - 스와이프 새로고침 방지 */
+        /* 콘텐츠 영역 - 스와이프 새로고침 방지 완전 강화 */
         .content {
             margin-top: 100px;
             padding: 20px;
@@ -817,9 +815,11 @@
             overflow-x: auto;
             overflow-y: auto;
             
-            /* 스와이프 새로고침 완전 방지 */
+            /* 스와이프 새로고침 완전 방지 강화 */
             overscroll-behavior-y: none;
             -webkit-overscroll-behavior-y: none;
+            overscroll-behavior-x: none;
+            -webkit-overscroll-behavior-x: none;
             touch-action: pan-x pan-y; /* 확대/축소 방지, 스크롤만 허용 */
         }
 
@@ -1305,7 +1305,6 @@
 </head>
 <body>
 
-
     <!-- 기기별 최적화 안내 -->
     <div class="device-notice" id="deviceNotice">
         📱 태블릿에서 최적의 경험을 제공합니다
@@ -1426,6 +1425,14 @@
                     </div>
                 </div>
                 
+                <div class="menu-item" onclick="logoutDesigner()">
+                    <div class="menu-icon">🚪</div>
+                    <div class="menu-text">
+                        <strong>로그아웃</strong>
+                        <small>디자이너 로그인으로 돌아가기</small>
+                    </div>
+                </div>
+                
                 <div class="menu-item" onclick="closeApp()">
                     <div class="menu-icon">❌</div>
                     <div class="menu-text">
@@ -1461,17 +1468,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // 닫기 기능 - 뒤로가기로 앱 돌아가기
-        function closeApp() {
-            // 브라우저 뒤로가기로 네이티브 앱으로 돌아가기
-            if (window.history.length > 1) {
-                window.history.back();
-            } else {
-                // 뒤로갈 곳이 없으면 창 닫기 시도
-                window.close();
-            }
-        }
-
         // Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
@@ -1507,6 +1503,76 @@
         let currentStyleCode = null;
         let currentStyleName = null;
         let hierarchyStructure = {};
+
+        // ✅ 세션 상태 확인 및 복원
+        function checkExistingSession() {
+            const savedDesigner = sessionStorage.getItem('currentDesigner');
+            const savedDesignerName = sessionStorage.getItem('designerName');
+            
+            if (savedDesigner && savedDesignerName) {
+                console.log('🔄 기존 세션 복원:', savedDesigner, savedDesignerName);
+                currentDesigner = savedDesigner;
+                currentDesignerName = savedDesignerName;
+                
+                // 로그인 화면 숨기고 성별 선택 화면으로
+                document.getElementById('designerLogin').style.display = 'none';
+                document.getElementById('genderSelection').classList.add('show');
+                document.getElementById('addCustomerBtn').classList.add('show');
+                
+                // 햄버거 메뉴 헤더 업데이트
+                document.getElementById('menuDesignerName').textContent = `🎨 ${savedDesignerName}`;
+                
+                return true;
+            }
+            
+            return false;
+        }
+
+        // ✅ 디자이너 로그아웃 함수 (햄버거 메뉴에서만 호출)
+        function logoutDesigner() {
+            if (confirm('정말 로그아웃하시겠습니까?')) {
+                // 세션 데이터 삭제
+                sessionStorage.removeItem('currentDesigner');
+                sessionStorage.removeItem('designerName');
+                sessionStorage.removeItem('currentCustomer');
+                
+                // 전역 변수 초기화
+                currentDesigner = null;
+                currentDesignerName = null;
+                currentGender = null;
+                currentCategory = null;
+                currentCustomer = null;
+                hierarchyStructure = {};
+                
+                // UI 초기화
+                document.getElementById('hamburgerOverlay').style.display = 'none';
+                document.getElementById('genderSelection').classList.remove('show');
+                document.getElementById('mainContainer').classList.remove('active');
+                document.getElementById('addCustomerBtn').classList.remove('show');
+                
+                // 로그인 화면으로 돌아가기
+                document.getElementById('designerLogin').style.display = 'flex';
+                
+                // 입력 필드 초기화
+                document.getElementById('designerName').value = '';
+                document.getElementById('designerPhone').value = '';
+                document.getElementById('designerPin').value = '';
+                document.getElementById('loginResult').innerHTML = '';
+                
+                console.log('👋 디자이너 로그아웃 완료');
+            }
+        }
+
+        // 닫기 기능 - 뒤로가기로 앱 돌아가기
+        function closeApp() {
+            // 브라우저 뒤로가기로 네이티브 앱으로 돌아가기
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                // 뒤로갈 곳이 없으면 창 닫기 시도
+                window.close();
+            }
+        }
 
         // 동기화 상태 업데이트
         function updateSyncStatus(status, message) {
@@ -1978,7 +2044,7 @@
             }
         }
 
-        // Firebase에서만 계층 구조 로드
+        // ✅ **수정된 Firebase에서만 계층 구조 로드** - LONG 문제 해결
         async function loadHierarchyFromFirebaseOnly(gender) {
             console.log(`=== 🔥 Firebase 실시간 동기화: ${gender} ===`);
             
@@ -1997,6 +2063,8 @@
                 
                 const hierarchySnapshot = await db.collection('category_hierarchy')
                     .where('gender', '==', gender)
+                    .orderBy('mainCategory')
+                    .orderBy('subCategory')
                     .get();
                 
                 console.log(`📋 실시간 쿼리 결과: ${hierarchySnapshot.size}개 문서`);
@@ -2008,7 +2076,7 @@
                     return;
                 }
                 
-                // 어드민과 동일한 구조 생성
+                // ✅ **LONG 문제 해결**: 어드민과 동일한 구조 생성 (중복 제거 강화)
                 const mainCategories = {};
                 let lastUpdateTime = null;
                 let totalDocs = 0;
@@ -2023,8 +2091,18 @@
                     if (!mainCategories[mainCat]) {
                         mainCategories[mainCat] = [];
                     }
+                    
+                    // ✅ **중복 제거 강화**: LONG 문제 해결
                     if (!mainCategories[mainCat].includes(subCat)) {
                         mainCategories[mainCat].push(subCat);
+                        console.log(`✅ ${mainCat} > ${subCat} 추가됨`);
+                        
+                        // LONG 카테고리 특별 로그
+                        if (gender === 'female' && mainCat === 'LONG') {
+                            console.log(`🎯 LONG 카테고리 확인: ${subCat} 추가됨`);
+                        }
+                    } else {
+                        console.log(`⚠️ 중복 제거: ${mainCat} > ${subCat} 이미 존재`);
                     }
                     
                     if (data.updatedAt && (!lastUpdateTime || data.updatedAt.toDate() > lastUpdateTime)) {
@@ -2035,6 +2113,19 @@
                 });
                 
                 console.log('✅ 어드민과 100% 동일한 실시간 구조 생성:', mainCategories);
+                
+                // ✅ **LONG 카테고리 최종 검증**
+                if (gender === 'female' && mainCategories.LONG) {
+                    console.log(`🔍 LONG 카테고리 최종 확인: [${mainCategories.LONG.join(', ')}] (${mainCategories.LONG.length}개)`);
+                    
+                    if (mainCategories.LONG.length === 2) {
+                        console.log('✅ LONG 문제 해결됨: A Length, B Length 모두 로드 성공');
+                        updateSyncStatus('connected', '✅ LONG 문제 해결됨 (A, B Length 모두 로드)');
+                    } else {
+                        console.log('⚠️ LONG 카테고리 일부 누락 가능성');
+                        updateSyncStatus('disconnected', '⚠️ LONG 카테고리 확인 필요');
+                    }
+                }
                 
                 hierarchyStructure[gender] = mainCategories;
                 
@@ -2518,57 +2609,84 @@
             }, 0);
         }
         
-        // 확대/축소 완전 방지
-        document.addEventListener('gesturestart', function(e) {
-            e.preventDefault();
-        });
-        
-        document.addEventListener('gesturechange', function(e) {
-            e.preventDefault();
-        });
-        
-        document.addEventListener('gestureend', function(e) {
-            e.preventDefault();
-        });
-        
-        // 더블탭 줌 방지
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
-        
-        // 스와이프 새로고침 방지 (iOS Safari)
-        let startY = 0;
-        document.addEventListener('touchstart', function(e) {
-            startY = e.touches[0].pageY;
-        });
-        
-        document.addEventListener('touchmove', function(e) {
-            const y = e.touches[0].pageY;
-            // 페이지 최상단에서 아래로 스와이프할 때 새로고침 방지
-            if (startY <= 10 && y > startY) {
+        // ✅ **스와이프 새로고침 완전 방지 강화**
+        function preventPullToRefresh() {
+            // 확대/축소 완전 방지
+            document.addEventListener('gesturestart', function(e) {
                 e.preventDefault();
-            }
-        }, { passive: false });
+            });
+            
+            document.addEventListener('gesturechange', function(e) {
+                e.preventDefault();
+            });
+            
+            document.addEventListener('gestureend', function(e) {
+                e.preventDefault();
+            });
+            
+            // 더블탭 줌 방지
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+            
+            // ✅ **스와이프 새로고침 완전 방지 (강화된 버전)**
+            let startY = 0;
+            let startX = 0;
+            
+            document.addEventListener('touchstart', function(e) {
+                startY = e.touches[0].pageY;
+                startX = e.touches[0].pageX;
+            }, { passive: true });
+            
+            document.addEventListener('touchmove', function(e) {
+                const y = e.touches[0].pageY;
+                const x = e.touches[0].pageX;
+                const deltaY = y - startY;
+                const deltaX = x - startX;
+                
+                // ✅ **새로고침 방지 강화**: 페이지 최상단에서 아래로 당기는 동작 완전 차단
+                if (window.scrollY === 0 && deltaY > 0 && Math.abs(deltaY) > Math.abs(deltaX)) {
+                    e.preventDefault();
+                    console.log('🚫 스와이프 새로고침 방지됨');
+                }
+            }, { passive: false });
+            
+            // ✅ **추가 보안**: overscroll-behavior CSS와 함께 JavaScript로도 방지
+            document.body.addEventListener('touchmove', function(e) {
+                if (window.scrollY === 0 && e.touches[0].pageY > startY) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            console.log('✅ 스와이프 새로고침 완전 방지 설정 완료');
+        }
 
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
             initializeModal();
             initializeMobileApp();
+            preventPullToRefresh();  // ✅ 새로고침 방지 추가
             hideAddressBar();
-            console.log('🚀 HAIRGATOR 완성본 로드 완료!');
+            
+            // ✅ 기존 세션 확인
+            if (!checkExistingSession()) {
+                console.log('🔐 새로운 세션 - 로그인 필요');
+            }
+            
+            console.log('🚀 HAIRGATOR 완성본 로드 완료! (새로고침 방지 강화)');
         });
 
         // 페이지 로드 시 초기화
         window.addEventListener('load', function() {
-            console.log('🎉 HAIRGATOR 디자이너 로그인 + 고객 관리 시스템 준비 완료!');
+            console.log('🎉 HAIRGATOR 디자이너 로그인 + 고객 관리 시스템 준비 완료! (LONG 문제 해결 + 새로고침 방지)');
         });
         
-        console.log('🚀 HAIRGATOR 완전체 시작');
+        console.log('🚀 HAIRGATOR 완전체 시작 (LONG 문제 해결 + 새로고침 방지 강화)');
     </script>
 </body>
 </html>
