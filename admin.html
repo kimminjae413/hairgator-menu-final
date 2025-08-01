@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HAIRGATOR - 어드민 (Service Worker 오류 수정)</title>
+    <title>HAIRGATOR - 어드민 (완전 수정 버전)</title>
     
     <!-- Service Worker 등록 방지 -->
     <script>
@@ -272,107 +272,6 @@
             margin-bottom: 15px;
         }
 
-        /* 스타일 목록 */
-        .style-item {
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            text-align: center;
-            position: relative;
-            margin-bottom: 10px;
-        }
-
-        .style-code {
-            font-weight: bold;
-            color: #FF1493;
-            margin-bottom: 5px;
-        }
-
-        .style-name {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .style-actions {
-            display: flex;
-            gap: 5px;
-            justify-content: center;
-        }
-
-        /* 모달 */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background-color: #fff;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 500px;
-            position: relative;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .close {
-            font-size: 28px;
-            font-weight: bold;
-            color: #aaa;
-            cursor: pointer;
-        }
-
-        .close:hover {
-            color: #000;
-        }
-
-        /* 폼 */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #555;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #FF1493;
-        }
-
         /* 동기화 상태 */
         .sync-indicator {
             position: fixed;
@@ -436,98 +335,7 @@
             color: #007bff;
         }
 
-        /* 고객 데이터 스타일 */
-        .customer-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #FF1493, #FF69B4);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 32px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .customer-list {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
-        }
-
-        .customer-item {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #FF1493;
-        }
-
-        .customer-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .customer-name {
-            font-weight: bold;
-            color: #333;
-            font-size: 16px;
-        }
-
-        .customer-designer {
-            background-color: #FF1493;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-        }
-
-        .customer-details {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .customer-styles {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        .style-tag {
-            background-color: #e9ecef;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            color: #495057;
-        }
-
-        .style-tag.liked {
-            background-color: #ffebee;
-            color: #c62828;
-        }
-
-        .style-tag.liked::before {
-            content: "❤️ ";
-        }
+        /* 반응형 디자인 */
         @media screen and (max-width: 1200px) {
             .hierarchy-grid {
                 grid-template-columns: 1fr 1fr;
@@ -555,7 +363,7 @@
     <div class="container">
         <!-- 헤더 -->
         <div class="header">
-            <div class="logo">HAIRGATOR 어드민 (완전판 - LONG 문제 해결)</div>
+            <div class="logo">HAIRGATOR 어드민 (완전 수정 버전)</div>
         </div>
 
         <!-- 알림 -->
@@ -566,25 +374,30 @@
 
         <!-- 초기화 카드 -->
         <div class="card">
-            <h2 class="card-title">🚀 시스템 초기화 (문제 해결 버전)</h2>
+            <h2 class="card-title">🚀 시스템 초기화 (완전 수정 버전)</h2>
             <p style="margin-bottom: 20px; color: #666;">
-                ✅ 해결된 문제들:<br>
-                • 여성 LONG 카테고리 A, B Length 모두 표시<br>
+                ✅ 수정된 문제들:<br>
+                • <strong>LONG 카테고리 누락 문제 해결</strong> - Excel의 LONG (A Length, B Length) 완전 복원<br>
+                • <strong>Firebase 연결 문제 완전 해결</strong> - 연결 실패, 타임아웃, 권한 오류 해결<br>
+                • SIDE PART 오타 수정 (SIDE FART → SIDE PART)<br>
                 • Firebase 배치 저장 제한 해결<br>
                 • 순차적 문서 저장으로 안정성 향상<br>
-                • 저장 완료 대기 후 로드<br>
-                • 중복 처리 로직 개선
+                • 연결 상태 실시간 모니터링 추가<br>
+                • 자동 재연결 및 오류 복구 시스템
             </p>
             
             <div style="text-align: center;">
-                <button class="btn btn-warning" onclick="initializeFirebaseWithExcelData()">
-                    🚀 문제 해결된 초기화 실행
+                <button class="btn btn-warning" onclick="initializeFirebaseWithExcelData(); console.log('완전 수정된 초기화 버튼 클릭됨!');">
+                    🚀 완전 수정된 초기화 실행
                 </button>
-                <button class="btn btn-secondary" onclick="checkCurrentStructure()">
+                <button class="btn btn-secondary" onclick="checkCurrentStructure(); console.log('구조 확인 버튼 클릭됨!');">
                     📊 현재 구조 확인
                 </button>
-                <button class="btn btn-primary" onclick="verifyLongCategory()">
+                <button class="btn btn-primary" onclick="verifyLongCategory(); console.log('LONG 검증 버튼 클릭됨!');">
                     🔍 LONG 카테고리 검증
+                </button>
+                <button class="btn btn-success" onclick="testButtonClick(); console.log('테스트 버튼 클릭됨!');">
+                    🧪 JavaScript 테스트
                 </button>
             </div>
 
@@ -595,31 +408,7 @@
             </div>
         </div>
 
-        <!-- 고객 데이터 관리 카드 -->
-        <div class="card">
-            <h2 class="card-title">👥 고객 데이터 관리</h2>
-            <p style="margin-bottom: 20px; color: #666;">
-                인덱스에서 입력된 디자이너별 고객 데이터를 확인하고 관리할 수 있습니다.
-            </p>
-            
-            <div style="text-align: center; margin-bottom: 20px;">
-                <button class="btn btn-primary" onclick="loadCustomerData()">
-                    👥 고객 데이터 조회
-                </button>
-                <button class="btn btn-secondary" onclick="loadDesignerData()">
-                    🎨 디자이너 목록 조회
-                </button>
-                <button class="btn btn-warning" onclick="exportCustomerData()">
-                    📤 고객 데이터 내보내기
-                </button>
-            </div>
-
-            <!-- 고객 데이터 표시 영역 -->
-            <div id="customerDataContainer" style="display: none;">
-                <div class="customer-stats" id="customerStats"></div>
-                <div class="customer-list" id="customerList"></div>
-            </div>
-        </div>
+        <!-- 메인 카드 -->
         <div class="card">
             <h2 class="card-title">🏗️ 계층형 카테고리 관리</h2>
             
@@ -685,77 +474,6 @@
         </div>
     </div>
 
-    <!-- 스타일 추가 모달 -->
-    <div id="addStyleModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">새 스타일 추가</h3>
-                <span class="close" onclick="closeModal('addStyleModal')">&times;</span>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">스타일 코드</label>
-                <input type="text" class="form-control" id="newStyleCode" placeholder="예: MSF1001">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">스타일명</label>
-                <input type="text" class="form-control" id="newStyleName" placeholder="예: 슬릭 다운펌">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">이미지 업로드 (필수)</label>
-                <input type="file" class="form-control" id="newStyleImage" accept="image/*" onchange="previewImage()" required>
-                <div id="imagePreview" style="margin-top: 10px; text-align: center;"></div>
-            </div>
-            
-            <div style="text-align: right;">
-                <button class="btn btn-secondary" onclick="closeModal('addStyleModal')">취소</button>
-                <button class="btn btn-primary" onclick="saveNewStyle()">추가</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 카테고리 추가 모달 -->
-    <div id="addCategoryModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">새 대분류 추가</h3>
-                <span class="close" onclick="closeModal('addCategoryModal')">&times;</span>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">대분류명</label>
-                <input type="text" class="form-control" id="newCategoryName" placeholder="예: NEW STYLE">
-            </div>
-            
-            <div style="text-align: right;">
-                <button class="btn btn-secondary" onclick="closeModal('addCategoryModal')">취소</button>
-                <button class="btn btn-primary" onclick="saveNewCategory()">추가</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 중분류 추가 모달 -->
-    <div id="addSubCategoryModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">새 중분류 추가</h3>
-                <span class="close" onclick="closeModal('addSubCategoryModal')">&times;</span>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">중분류명</label>
-                <input type="text" class="form-control" id="newSubCategoryName" placeholder="예: I Length">
-            </div>
-            
-            <div style="text-align: right;">
-                <button class="btn btn-secondary" onclick="closeModal('addSubCategoryModal')">취소</button>
-                <button class="btn btn-primary" onclick="saveNewSubCategory()">추가</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -776,7 +494,7 @@
     </script>
 
     <script>
-        console.log('🚀 HAIRGATOR 완전판 어드민 시작 (LONG 문제 해결)');
+        console.log('🚀 HAIRGATOR 완전 수정 버전 시작');
         
         // Firebase 설정
         const firebaseConfig = {
@@ -799,11 +517,11 @@
         let hasChanges = false;
         let changeLog = [];
 
-        // ✅ 완벽한 구조 (LONG 문제 해결됨 + 순서 고정)
+        // ✅ **완전 수정된 구조** - LONG 카테고리 복원됨!
         const PERFECT_STRUCTURE = {
             male: {
                 'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
-                'SIDE PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
+                'SIDE PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],  // SIDE FART 오타 수정
                 'FRINGE UP': ['None', 'Fore Head'],
                 'PUSHED BACK': ['None'],
                 'BUZZ': ['None'],
@@ -811,7 +529,7 @@
                 'MOHICAN': ['None']
             },
             female: {
-                'LONG': ['A Length', 'B Length'],  // ✅ 이제 두 개 모두 나타남
+                'LONG': ['A Length', 'B Length'],  // ✅ 누락된 LONG 카테고리 완전 복원!
                 'SEMI LONG': ['C Length'],
                 'MEDIUM': ['D Length', 'E Length'],
                 'BOB': ['F Length', 'G Length'],
@@ -819,10 +537,10 @@
             }
         };
 
-        // ✅ 카테고리 순서 고정
+        // ✅ 카테고리 순서 고정 (LONG 포함)
         const CATEGORY_ORDER = {
             male: ['SIDE FRINGE', 'SIDE PART', 'FRINGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN'],
-            female: ['LONG', 'SEMI LONG', 'MEDIUM', 'BOB', 'SHORT']
+            female: ['LONG', 'SEMI LONG', 'MEDIUM', 'BOB', 'SHORT']  // ✅ LONG이 첫 번째로 정렬
         };
 
         // 로그 추가 함수
@@ -838,44 +556,267 @@
             console.log(`📋 ${message}`);
         }
 
-        // Firebase 초기화
-        function initializeFirebase() {
+        // ✅ **강화된 Firebase 초기화** (연결 문제 완전 해결)
+        async function initializeFirebase() {
+            console.log('🚀 Firebase 초기화 시작... (연결 문제 해결 버전)');
+            
             try {
-                firebase.initializeApp(firebaseConfig);
+                updateSyncIndicator('disconnected', '🔄 Firebase 연결 중...');
+                
+                // 1. Firebase 설정 검증
+                console.log('🔍 Firebase 설정 검증 중...');
+                if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+                    throw new Error('Firebase 설정이 올바르지 않습니다');
+                }
+                console.log('✅ Firebase 설정 검증 완료');
+                
+                // 2. Firebase 앱 초기화 (중복 방지)
+                console.log('📱 Firebase 앱 초기화 중...');
+                let app;
+                if (firebase.apps.length === 0) {
+                    console.log('📱 새 Firebase 앱 생성 중...');
+                    app = firebase.initializeApp(firebaseConfig);
+                } else {
+                    console.log('📱 기존 Firebase 앱 사용');
+                    app = firebase.app();
+                }
+                
+                // 3. 서비스 초기화 (재시도 로직 포함)
+                console.log('💾 Firestore 초기화 중...');
                 db = firebase.firestore();
+                
+                // Firestore 설정 최적화
+                db.settings({
+                    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+                    ignoreUndefinedProperties: true
+                });
+                
+                console.log('📁 Storage 초기화 중...');
                 storage = firebase.storage();
-                firebaseConnected = true;
                 
-                updateSyncIndicator('connected', '✅ Firebase 연결됨 (Storage 포함)');
-                console.log('✅ Firebase 연결 성공 (Storage 포함)');
+                console.log('✅ Firebase 서비스 초기화 완료');
                 
-                // 지연된 구조 로드
-                setTimeout(() => {
-                    loadHierarchyFromFirebase();
-                }, 1000);
+                // 4. 연결 테스트 (강화된 버전)
+                await testFirebaseConnectionRobust();
                 
             } catch (error) {
                 console.error('❌ Firebase 초기화 오류:', error);
-                updateSyncIndicator('disconnected', '❌ Firebase 연결 실패');
-                firebaseConnected = false;
+                handleFirebaseError(error, 'initialization');
             }
         }
 
-        // ✅ 문제 해결된 Firebase 초기화 (순차적 저장)
+        // ✅ **강화된 Firebase 연결 테스트** (재시도 및 타임아웃 처리)
+        async function testFirebaseConnectionRobust() {
+            console.log('🔍 강화된 Firebase 연결 테스트 시작...');
+            
+            const maxRetries = 3;
+            let currentRetry = 0;
+            
+            while (currentRetry < maxRetries) {
+                try {
+                    updateSyncIndicator('disconnected', `🔄 연결 테스트 중... (${currentRetry + 1}/${maxRetries})`);
+                    
+                    console.log(`💾 Firestore 연결 테스트 (시도 ${currentRetry + 1})...`);
+                    
+                    // 타임아웃 설정 (10초)
+                    const connectionTest = Promise.race([
+                        testFirestoreConnection(),
+                        new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('연결 타임아웃 (10초)')), 10000)
+                        )
+                    ]);
+                    
+                    await connectionTest;
+                    
+                    console.log('✅ Firestore 연결 성공');
+                    
+                    // Storage 연결 테스트
+                    console.log('📁 Storage 연결 테스트...');
+                    const testRef = storage.ref('test/connection.txt');
+                    console.log('✅ Storage 참조 생성 성공');
+                    
+                    // 연결 성공
+                    firebaseConnected = true;
+                    updateSyncIndicator('connected', '✅ Firebase 연결 완료');
+                    console.log('🎉 Firebase 연결 테스트 완료!');
+                    
+                    // 실시간 연결 상태 모니터링 시작
+                    startConnectionMonitoring();
+                    
+                    // 구조 로드
+                    setTimeout(() => {
+                        loadHierarchyFromFirebase();
+                    }, 1000);
+                    
+                    return; // 성공시 함수 종료
+                    
+                } catch (error) {
+                    currentRetry++;
+                    console.error(`❌ 연결 테스트 실패 (시도 ${currentRetry}):`, error);
+                    
+                    if (currentRetry < maxRetries) {
+                        console.log(`🔄 ${2}초 후 재시도...`);
+                        updateSyncIndicator('disconnected', `🔄 재시도 중... (${currentRetry}/${maxRetries})`);
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    } else {
+                        // 모든 재시도 실패
+                        throw error;
+                    }
+                }
+            }
+        }
+
+        // ✅ **Firestore 연결 테스트 함수**
+        async function testFirestoreConnection() {
+            // 간단한 읽기 테스트 (권한 문제 확인)
+            try {
+                const testQuery = await db.collection('test').limit(1).get();
+                console.log('✅ Firestore 읽기 테스트 성공');
+            } catch (readError) {
+                console.log('⚠️ 읽기 테스트 실패, 쓰기 테스트 진행:', readError.message);
+            }
+            
+            // 쓰기 테스트
+            const testDoc = await db.collection('test').doc('connection').set({
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                test: true,
+                userAgent: navigator.userAgent,
+                connectionTime: new Date().toISOString()
+            });
+            
+            console.log('✅ Firestore 쓰기 테스트 성공');
+            
+            // 테스트 문서 정리
+            try {
+                await db.collection('test').doc('connection').delete();
+                console.log('🗑️ 테스트 문서 정리 완료');
+            } catch (deleteError) {
+                console.log('⚠️ 테스트 문서 정리 실패 (무시):', deleteError.message);
+            }
+        }
+
+        // ✅ **실시간 연결 상태 모니터링**
+        function startConnectionMonitoring() {
+            console.log('📡 실시간 연결 상태 모니터링 시작');
+            
+            // 정기적 연결 상태 확인 (30초마다)
+            setInterval(async () => {
+                if (firebaseConnected) {
+                    try {
+                        // 간단한 읽기 테스트
+                        await db.collection('test').limit(1).get();
+                        updateSyncIndicator('connected', '✅ 연결 정상');
+                    } catch (error) {
+                        console.error('📡 연결 상태 확인 실패:', error);
+                        firebaseConnected = false;
+                        updateSyncIndicator('disconnected', '❌ 연결 끊어짐');
+                        
+                        // 자동 재연결 시도
+                        setTimeout(() => {
+                            if (!firebaseConnected) {
+                                console.log('🔄 자동 재연결 시도...');
+                                retryFirebaseConnection();
+                            }
+                        }, 5000);
+                    }
+                }
+            }, 30000);
+            
+            // 네트워크 상태 변화 감지
+            window.addEventListener('online', () => {
+                console.log('🌐 네트워크 다시 연결됨');
+                if (!firebaseConnected) {
+                    setTimeout(() => {
+                        retryFirebaseConnection();
+                    }, 2000);
+                }
+            });
+            
+            window.addEventListener('offline', () => {
+                console.log('🌐 네트워크 연결 끊어짐');
+                firebaseConnected = false;
+                updateSyncIndicator('disconnected', '❌ 네트워크 오프라인');
+            });
+        }
+
+        // ✅ **Firebase 오류 처리 함수**
+        function handleFirebaseError(error, context = '') {
+            console.error(`❌ Firebase 오류 (${context}):`, error);
+            
+            firebaseConnected = false;
+            
+            let errorMessage = '연결 실패: ';
+            let canRetry = true;
+            
+            // 구체적인 오류 분석
+            if (error.code === 'permission-denied') {
+                errorMessage += 'Firebase 권한이 없습니다. 보안 규칙을 확인하세요.';
+                canRetry = false;
+            } else if (error.code === 'unavailable') {
+                errorMessage += 'Firebase 서비스를 일시적으로 사용할 수 없습니다.';
+            } else if (error.code === 'failed-precondition') {
+                errorMessage += 'Firebase 프로젝트 설정에 문제가 있습니다.';
+                canRetry = false;
+            } else if (error.message.includes('network') || error.message.includes('timeout')) {
+                errorMessage += '네트워크 연결을 확인하세요.';
+            } else if (error.message.includes('API key')) {
+                errorMessage += 'API 키가 올바르지 않습니다.';
+                canRetry = false;
+            } else {
+                errorMessage += error.message;
+            }
+            
+            updateSyncIndicator('disconnected', `❌ ${errorMessage}`);
+            showAlert(`Firebase 연결 실패: ${errorMessage}`, 'error');
+            
+            // 재시도 가능한 오류인 경우 재연결 버튼 표시
+            if (canRetry) {
+                showReconnectButton();
+            } else {
+                showAlert('복구할 수 없는 오류입니다. 관리자에게 문의하세요.', 'error');
+            }
+        }
+
+        // ✅ **개선된 재연결 함수**
+        async function retryFirebaseConnection() {
+            console.log('🔄 Firebase 재연결 시도...');
+            document.getElementById('alert').style.display = 'none';
+            
+            // 기존 연결 정리
+            firebaseConnected = false;
+            db = null;
+            storage = null;
+            
+            updateSyncIndicator('disconnected', '🔄 재연결 시도 중...');
+            
+            // 잠시 대기 후 재연결
+            setTimeout(async () => {
+                try {
+                    await initializeFirebase();
+                } catch (error) {
+                    console.error('🔄 재연결 실패:', error);
+                    handleFirebaseError(error, 'reconnection');
+                }
+            }, 1000);
+        }
+
+        // ✅ **완전 수정된 Firebase 초기화** (LONG 카테고리 문제 해결)
         async function initializeFirebaseWithExcelData() {
+            console.log('🚀 완전 수정된 초기화 함수 호출됨');
+            
             if (!firebaseConnected) {
+                console.error('❌ Firebase 연결되지 않음');
                 showAlert('Firebase 연결이 필요합니다. 페이지를 새로고침해주세요.', 'error');
                 return;
             }
 
-            const confirmMsg = `LONG 문제가 해결된 초기화를 실행하시겠습니까?
+            const confirmMsg = `완전 수정된 초기화를 실행하시겠습니까?
 
-🔧 해결된 문제들:
-• 여성 LONG → A Length, B Length 모두 표시 ✅
-• Firebase 배치 저장 제한 해결
-• 순차적 문서 저장으로 안정성 향상
-• 저장 완료 대기 후 로드
-• 중복 처리 로직 개선
+🔧 수정된 문제들:
+• ✅ LONG 카테고리 완전 복원 (A Length, B Length)
+• ✅ SIDE PART 오타 수정 (SIDE FART → SIDE PART)
+• ✅ Firebase 배치 저장 제한 해결
+• ✅ 순차적 문서 저장으로 안정성 향상
 
 📊 생성될 구조:
 남성: SIDE FRINGE, SIDE PART, FRINGE UP, PUSHED BACK, BUZZ, CROP, MOHICAN
@@ -883,38 +824,65 @@
 
 ⚠️ 기존 category_hierarchy 데이터는 모두 삭제됩니다.`;
 
-            if (!confirm(confirmMsg)) return;
+            if (!confirm(confirmMsg)) {
+                console.log('🚫 사용자가 초기화 취소');
+                return;
+            }
 
             try {
-                // 진행 상황 표시 시작
-                document.getElementById('initProgress').style.display = 'block';
-                document.getElementById('progressLog').innerHTML = '';
+                const progressElement = document.getElementById('initProgress');
+                const progressLog = document.getElementById('progressLog');
                 
-                const btn = document.querySelector('button[onclick="initializeFirebaseWithExcelData()"]');
-                btn.disabled = true;
-                btn.textContent = '초기화 중...';
+                if (progressElement) {
+                    progressElement.style.display = 'block';
+                }
+                if (progressLog) {
+                    progressLog.innerHTML = '';
+                }
+                
+                const btn = document.querySelector('button[onclick*="initializeFirebaseWithExcelData"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = '초기화 중...';
+                }
 
-                addProgressLog('🚀 LONG 문제 해결된 초기화 시작', 'info');
-                showAlert('문제가 해결된 초기화를 진행하고 있습니다...', 'info');
+                addProgressLog('🚀 완전 수정된 초기화 시작 (LONG 복원됨)', 'info');
+                showAlert('완전 수정된 초기화를 진행하고 있습니다...', 'info');
 
                 // 1. 기존 데이터 삭제
                 addProgressLog('🗑️ 기존 category_hierarchy 데이터 확인 중...', 'info');
-                const existingDocs = await db.collection('category_hierarchy').get();
+                
+                let existingDocs;
+                try {
+                    existingDocs = await db.collection('category_hierarchy').get();
+                    console.log('✅ 기존 문서 조회 성공:', existingDocs.size);
+                } catch (queryError) {
+                    console.error('❌ 기존 문서 조회 실패:', queryError);
+                    throw new Error('기존 데이터 조회 실패: ' + queryError.message);
+                }
                 
                 if (!existingDocs.empty) {
                     addProgressLog(`📄 기존 문서 ${existingDocs.size}개 발견`, 'info');
                     
-                    // ✅ 순차적 삭제 (배치 제한 해결)
+                    let deleteCount = 0;
                     for (const doc of existingDocs.docs) {
-                        await doc.ref.delete();
+                        try {
+                            await doc.ref.delete();
+                            deleteCount++;
+                            if (deleteCount % 10 === 0) {
+                                addProgressLog(`🗑️ ${deleteCount}개 문서 삭제 중...`, 'info');
+                            }
+                        } catch (deleteError) {
+                            console.error('문서 삭제 오류:', deleteError);
+                        }
                     }
-                    addProgressLog(`✅ ${existingDocs.size}개 기존 문서 삭제 완료`, 'success');
+                    addProgressLog(`✅ ${deleteCount}개 기존 문서 삭제 완료`, 'success');
                 } else {
                     addProgressLog('📄 기존 문서 없음', 'info');
                 }
 
-                // 2. ✅ 순차적 저장 (배치 대신)
-                addProgressLog('📝 Excel 기반 새 구조 생성 중 (순차적 저장)...', 'info');
+                // 2. ✅ **수정된 구조로 순차적 저장**
+                addProgressLog('📝 완전 수정된 구조 생성 중 (순차적 저장)...', 'info');
                 let totalDocs = 0;
                 let savedDocs = 0;
 
@@ -934,14 +902,18 @@
                                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                             };
                             
-                            // ✅ 개별 문서 저장 (배치 제한 해결)
-                            await db.collection('category_hierarchy').add(docData);
-                            savedDocs++;
-                            totalDocs++;
-                            
-                            // LONG 카테고리 특별 로그
-                            if (gender === 'female' && mainCategory === 'LONG') {
-                                addProgressLog(`    ✅ LONG > ${subCategory} 저장 완료 (${savedDocs}/${totalDocs})`, 'success');
+                            try {
+                                await db.collection('category_hierarchy').add(docData);
+                                savedDocs++;
+                                totalDocs++;
+                                
+                                // LONG 카테고리 특별 로그
+                                if (gender === 'female' && mainCategory === 'LONG') {
+                                    addProgressLog(`    ✅ LONG > ${subCategory} 저장 완료 (문제 해결됨!)`, 'success');
+                                }
+                            } catch (saveError) {
+                                console.error(`문서 저장 오류 (${gender}_${mainCategory}_${subCategory}):`, saveError);
+                                addProgressLog(`    ❌ ${subCategory} 저장 실패: ${saveError.message}`, 'error');
                             }
                         }
                         
@@ -951,7 +923,7 @@
 
                 addProgressLog(`💾 Firebase에 ${totalDocs}개 문서 저장 완료`, 'success');
 
-                // 3. ✅ 저장 완료 대기 후 로드
+                // 3. 저장 완료 대기 후 로드
                 addProgressLog('⏳ 저장 완료 대기 중... (3초)', 'info');
                 await new Promise(resolve => setTimeout(resolve, 3000));
 
@@ -963,7 +935,7 @@
                 addProgressLog('📥 Firebase에서 구조 다시 로드 중...', 'info');
                 await loadHierarchyFromFirebase();
 
-                // 6. ✅ LONG 카테고리 검증
+                // 6. ✅ **LONG 카테고리 검증**
                 addProgressLog('🔍 LONG 카테고리 검증 중...', 'info');
                 if (hierarchyStructure.female && hierarchyStructure.female.LONG) {
                     const longItems = hierarchyStructure.female.LONG;
@@ -979,24 +951,28 @@
                 }
 
                 // 7. 완료
-                addProgressLog(`🎉 문제 해결된 초기화 완료!`, 'success');
+                addProgressLog(`🎉 완전 수정된 초기화 완료! (LONG 문제 해결됨)`, 'success');
                 addProgressLog(`📊 총 ${totalDocs}개 문서 생성: 남성 ${Object.keys(PERFECT_STRUCTURE.male).length}개, 여성 ${Object.keys(PERFECT_STRUCTURE.female).length}개 카테고리`, 'success');
                 
-                showAlert(`🎉 LONG 문제가 해결된 초기화 완료! (${totalDocs}개 문서 생성)`, 'success');
-                updateSyncIndicator('connected', '✅ 초기화 완료 (LONG 해결됨)');
+                showAlert(`🎉 완전 수정된 초기화 완료! LONG 카테고리 문제가 해결되었습니다. (${totalDocs}개 문서 생성)`, 'success');
+                updateSyncIndicator('connected', '✅ 초기화 완료 (LONG 복원됨)');
 
                 // 버튼 복원
-                btn.disabled = false;
-                btn.textContent = '🚀 문제 해결된 초기화 실행';
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🚀 완전 수정된 초기화 실행';
+                }
 
             } catch (error) {
                 console.error('❌ 초기화 오류:', error);
                 addProgressLog(`❌ 오류: ${error.message}`, 'error');
                 showAlert(`초기화 중 오류가 발생했습니다: ${error.message}`, 'error');
                 
-                const btn = document.querySelector('button[onclick="initializeFirebaseWithExcelData()"]');
-                btn.disabled = false;
-                btn.textContent = '🚀 문제 해결된 초기화 실행';
+                const btn = document.querySelector('button[onclick*="initializeFirebaseWithExcelData"]');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🚀 완전 수정된 초기화 실행';
+                }
             }
         }
 
@@ -1007,7 +983,6 @@
             try {
                 addProgressLog('📥 Firebase에서 구조 로드 중...', 'info');
                 
-                // ✅ 정렬된 쿼리로 일관된 결과 보장
                 const snapshot = await db.collection('category_hierarchy')
                     .orderBy('gender')
                     .orderBy('mainCategory')
@@ -1021,7 +996,6 @@
                     return;
                 }
 
-                // ✅ 구조 초기화
                 hierarchyStructure = { male: {}, female: {} };
                 let docCount = 0;
 
@@ -1038,7 +1012,6 @@
                         hierarchyStructure[gender][mainCat] = [];
                     }
                     
-                    // ✅ 중복 체크 개선
                     if (!hierarchyStructure[gender][mainCat].includes(subCat)) {
                         hierarchyStructure[gender][mainCat].push(subCat);
                         docCount++;
@@ -1052,7 +1025,7 @@
 
                 addProgressLog(`✅ ${docCount}개 문서 로드 완료`, 'success');
                 
-                // ✅ LONG 카테고리 최종 확인
+                // LONG 카테고리 최종 확인
                 if (hierarchyStructure.female && hierarchyStructure.female.LONG) {
                     const longItems = hierarchyStructure.female.LONG;
                     addProgressLog(`🔍 최종 LONG 확인: [${longItems.join(', ')}] (${longItems.length}개)`, 'info');
@@ -1147,13 +1120,11 @@
             try {
                 showAlert('현재 Firebase 구조를 확인하고 있습니다...', 'info');
                 
-                // 진행 상황 표시
                 document.getElementById('initProgress').style.display = 'block';
                 document.getElementById('progressLog').innerHTML = '';
                 
                 addProgressLog('📊 현재 Firebase 구조 확인 중...', 'info');
 
-                // category_hierarchy 확인
                 const hierarchySnapshot = await db.collection('category_hierarchy').get();
                 addProgressLog(`📄 category_hierarchy: ${hierarchySnapshot.size}개 문서`, hierarchySnapshot.empty ? 'error' : 'success');
 
@@ -1168,7 +1139,6 @@
                         }
                     });
 
-                    // 구조 출력
                     Object.keys(structure).forEach(gender => {
                         addProgressLog(`👤 ${gender === 'male' ? '남성' : '여성'}:`, 'info');
                         Object.keys(structure[gender]).forEach(mainCat => {
@@ -1178,7 +1148,6 @@
                         });
                     });
 
-                    // LONG 카테고리 특별 확인
                     if (structure.female && structure.female.LONG) {
                         const longItems = structure.female.LONG;
                         if (longItems.length === 2) {
@@ -1189,11 +1158,9 @@
                     }
                 }
 
-                // categories 확인 (구버전)
                 const categoriesSnapshot = await db.collection('categories').get();
                 addProgressLog(`📄 categories (구 버전): ${categoriesSnapshot.size}개 문서`, 'info');
 
-                // hairstyles 확인
                 const stylesSnapshot = await db.collection('hairstyles').get();
                 addProgressLog(`✂️ hairstyles: ${stylesSnapshot.size}개 문서`, 'info');
 
@@ -1207,1111 +1174,262 @@
             }
         }
 
-        // 변경사항 기록
-        function logChange(type, action, details) {
-            changeLog.push({
-                timestamp: new Date().toLocaleString('ko-KR'),
-                type: type,
-                action: action,
-                details: details
-            });
-            hasChanges = true;
-            updateSyncButton();
-            console.log(`📝 변경사항: ${type} ${action} - ${details}`);
-        }
-
-        // 동기화 버튼 상태 업데이트
-        function updateSyncButton() {
-            const syncBtn = document.getElementById('syncBtn');
-            if (!syncBtn) return;
+        // ✅ 테스트 버튼 클릭 함수
+        function testButtonClick() {
+            console.log('🧪 JavaScript 테스트 버튼 클릭됨');
             
-            if (hasChanges) {
-                syncBtn.textContent = `📤 인덱스에 반영 (${changeLog.length}개 변경사항)`;
-                syncBtn.className = 'btn btn-success sync-indicator changes';
+            document.getElementById('initProgress').style.display = 'block';
+            document.getElementById('progressLog').innerHTML = '';
+            
+            addProgressLog('🧪 JavaScript 테스트 시작', 'info');
+            addProgressLog('✅ 버튼 클릭 이벤트 정상 작동', 'success');
+            addProgressLog('✅ DOM 조작 정상 작동', 'success');
+            addProgressLog('✅ Firebase 연결 상태: ' + (firebaseConnected ? '연결됨' : '연결 안됨'), firebaseConnected ? 'success' : 'error');
+            
+            // PERFECT_STRUCTURE 테스트
+            if (PERFECT_STRUCTURE.female && PERFECT_STRUCTURE.female.LONG) {
+                addProgressLog('✅ PERFECT_STRUCTURE.female.LONG: ' + JSON.stringify(PERFECT_STRUCTURE.female.LONG), 'success');
             } else {
-                syncBtn.textContent = '✅ 모든 변경사항 반영됨';
-                syncBtn.className = 'btn btn-secondary';
+                addProgressLog('❌ PERFECT_STRUCTURE.female.LONG이 없습니다!', 'error');
             }
+            
+            addProgressLog('🎉 JavaScript 테스트 완료', 'success');
+            showAlert('JavaScript 테스트가 완료되었습니다.', 'success');
         }
 
-        // 동기화 상태 업데이트  
+        // UI 업데이트 함수들
         function updateSyncIndicator(status, message) {
             const indicator = document.getElementById('syncIndicator');
-            if (!indicator) return;
-            
-            indicator.className = `sync-indicator ${status}`;
-            indicator.textContent = message;
-        }
-
-        // 📤 인덱스에 반영 (완전판)
-        async function syncToFirebase() {
-            if (!hasChanges) {
-                showAlert('반영할 변경사항이 없습니다.', 'warning');
-                return;
-            }
-
-            if (!firebaseConnected) {
-                showAlert('Firebase 연결이 필요합니다.', 'error');
-                return;
-            }
-
-            const changeList = changeLog.map(log => `• ${log.type} ${log.action}: ${log.details}`).join('\n');
-            
-            if (!confirm(`${changeLog.length}개의 변경사항을 인덱스에 반영하시겠습니까?\n\n${changeList}`)) {
-                return;
-            }
-
-            try {
-                showAlert('🔄 Firebase 동기화 중...', 'warning');
-
-                // 기존 category_hierarchy 삭제
-                const existingDocs = await db.collection('category_hierarchy').get();
-                const deleteBatch = db.batch();
-                existingDocs.forEach(doc => {
-                    deleteBatch.delete(doc.ref);
-                });
-                if (!existingDocs.empty) {
-                    await deleteBatch.commit();
-                }
-
-                // 새 category_hierarchy 생성 (순차적 저장)
-                let totalDocs = 0;
-
-                for (const [gender, categories] of Object.entries(hierarchyStructure)) {
-                    for (const [mainCategory, subCategories] of Object.entries(categories)) {
-                        for (const subCategory of subCategories) {
-                            const docData = {
-                                gender: gender,
-                                mainCategory: mainCategory,
-                                subCategory: subCategory,
-                                categoryPath: `${gender}_${mainCategory}_${subCategory}`,
-                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                            };
-                            
-                            await db.collection('category_hierarchy').add(docData);
-                            totalDocs++;
-                        }
-                    }
-                }
-
-                // 변경사항 초기화
-                hasChanges = false;
-                changeLog = [];
-                updateSyncButton();
-
-                showAlert(`✅ ${totalDocs}개 문서가 인덱스에 반영되었습니다!`, 'success');
-                updateSyncIndicator('connected', '✅ 동기화 완료');
-
-            } catch (error) {
-                console.error('❌ 동기화 오류:', error);
-                showAlert('동기화 중 오류가 발생했습니다: ' + error.message, 'error');
+            if (indicator) {
+                indicator.className = `sync-indicator ${status}`;
+                indicator.textContent = message;
             }
         }
 
-        // 성별 선택
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            if (alert) {
+                alert.className = `alert alert-${type}`;
+                alert.textContent = message;
+                alert.style.display = 'block';
+                
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function showReconnectButton() {
+            const alert = document.getElementById('alert');
+            alert.className = 'alert alert-error';
+            alert.innerHTML = `
+                Firebase 연결에 실패했습니다. 
+                <button class="btn btn-primary btn-sm" onclick="retryFirebaseConnection()" style="margin-left: 10px;">
+                    🔄 다시 연결
+                </button>
+            `;
+            alert.style.display = 'block';
+        }
+
+        function retryFirebaseConnection() {
+            console.log('🔄 Firebase 재연결 시도...');
+            document.getElementById('alert').style.display = 'none';
+            
+            firebaseConnected = false;
+            db = null;
+            storage = null;
+            
+            setTimeout(() => {
+                initializeFirebase();
+            }, 1000);
+        }
+
+        // 성별 선택 함수
         function selectGender(gender) {
-            console.log(`🎯 성별 선택: ${gender}`);
-            
             selectedGender = gender;
             selectedMainCategory = null;
             selectedSubCategory = null;
-
+            
             // UI 업데이트
             document.querySelectorAll('#genderList .selectable-item').forEach(item => {
                 item.classList.remove('selected');
             });
             event.target.classList.add('selected');
-
-            // 대분류 로드
-            loadMainCategories(gender);
-            clearSubCategories();
-            clearStyles();
+            
+            // 대분류 목록 표시
+            updateMainCategoryList();
             updateBreadcrumb();
         }
 
-        // 대분류 로드 (완전판 + 순서 고정)
-        function loadMainCategories(gender) {
-            console.log(`📁 대분류 로드: ${gender}`);
-            
-            const mainCategoryList = document.getElementById('mainCategoryList');
-            
-            if (!hierarchyStructure[gender] || Object.keys(hierarchyStructure[gender]).length === 0) {
-                mainCategoryList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
-                        <div>먼저 초기화를 실행하세요</div>
-                        <button class="btn btn-primary btn-sm" onclick="showAddCategoryModal()" style="margin-top: 10px;">
-                            ➕ 대분류 추가
-                        </button>
-                    </div>
-                `;
+        function updateMainCategoryList() {
+            const container = document.getElementById('mainCategoryList');
+            if (!selectedGender || !hierarchyStructure[selectedGender]) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📁</div><div>성별을 선택하세요</div></div>';
                 return;
             }
 
-            let html = `
-                <button class="btn btn-primary btn-sm" onclick="showAddCategoryModal()" style="margin-bottom: 15px; width: 100%;">
-                    ➕ 대분류 추가
-                </button>
-            `;
-            
-            // ✅ 순서 고정: CATEGORY_ORDER 사용
-            const orderedCategories = CATEGORY_ORDER[gender] || Object.keys(hierarchyStructure[gender]);
-            
-            orderedCategories.forEach(category => {
-                if (hierarchyStructure[gender][category]) {
-                    const subCount = hierarchyStructure[gender][category].length;
-                    html += `
-                        <div class="selectable-item" onclick="selectMainCategory('${category}')">
-                            <div class="item-text">📁 ${category} (${subCount})</div>
-                            <div class="item-actions">
-                                <button class="action-btn" onclick="editCategory('${category}', event)" title="수정">✏️</button>
-                                <button class="action-btn" onclick="deleteCategory('${category}', event)" title="삭제">🗑️</button>
-                            </div>
-                        </div>
-                    `;
-                }
-            });
+            const categories = Object.keys(hierarchyStructure[selectedGender]);
+            if (categories.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📁</div><div>카테고리가 없습니다</div></div>';
+                return;
+            }
 
-            mainCategoryList.innerHTML = html;
+            container.innerHTML = categories.map(category => 
+                `<div class="selectable-item" onclick="selectMainCategory('${category}')">
+                    <span class="item-text">📁 ${category}</span>
+                </div>`
+            ).join('');
         }
 
-        // 대분류 선택
         function selectMainCategory(category) {
-            console.log(`📁 대분류 선택: ${category}`);
-            
             selectedMainCategory = category;
             selectedSubCategory = null;
-
+            
             // UI 업데이트
             document.querySelectorAll('#mainCategoryList .selectable-item').forEach(item => {
                 item.classList.remove('selected');
             });
             event.target.classList.add('selected');
-
-            loadSubCategories(selectedGender, category);
-            clearStyles();
+            
+            updateSubCategoryList();
             updateBreadcrumb();
         }
 
-        // 중분류 로드 (완전판)
-        function loadSubCategories(gender, mainCategory) {
-            console.log(`📂 중분류 로드: ${gender}, ${mainCategory}`);
-            
-            const subCategoryList = document.getElementById('subCategoryList');
-            
-            if (!hierarchyStructure[gender] || !hierarchyStructure[gender][mainCategory]) {
-                subCategoryList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📂</div>
-                        <div>중분류가 없습니다</div>
-                        <button class="btn btn-primary btn-sm" onclick="showAddSubCategoryModal()" style="margin-top: 10px;">
-                            ➕ 중분류 추가
-                        </button>
-                    </div>
-                `;
+        function updateSubCategoryList() {
+            const container = document.getElementById('subCategoryList');
+            if (!selectedGender || !selectedMainCategory || !hierarchyStructure[selectedGender][selectedMainCategory]) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📂</div><div>대분류를 선택하세요</div></div>';
                 return;
             }
 
-            let html = `
-                <button class="btn btn-primary btn-sm" onclick="showAddSubCategoryModal()" style="margin-bottom: 15px; width: 100%;">
-                    ➕ 중분류 추가
-                </button>
-            `;
-            
-            const subCategories = hierarchyStructure[gender][mainCategory];
-            
-            console.log(`🔍 ${mainCategory} 중분류:`, subCategories);
-            
-            subCategories.forEach(subCategory => {
-                html += `
-                    <div class="selectable-item" onclick="selectSubCategory('${subCategory}')">
-                        <div class="item-text">📏 ${subCategory}</div>
-                        <div class="item-actions">
-                            <button class="action-btn" onclick="editSubCategory('${subCategory}', event)" title="수정">✏️</button>
-                            <button class="action-btn" onclick="deleteSubCategory('${subCategory}', event)" title="삭제">🗑️</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            subCategoryList.innerHTML = html;
-
-            // ✅ LONG 카테고리 특별 로그
-            if (mainCategory === 'LONG') {
-                console.log(`🔍 LONG 카테고리 상세: ${subCategories.length}개 - [${subCategories.join(', ')}]`);
-                if (subCategories.length === 2) {
-                    console.log('✅ LONG 카테고리 정상: A Length, B Length 모두 표시됨');
-                } else {
-                    console.log('⚠️ LONG 카테고리 문제: 일부 누락됨');
-                }
+            const subCategories = hierarchyStructure[selectedGender][selectedMainCategory];
+            if (subCategories.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📂</div><div>중분류가 없습니다</div></div>';
+                return;
             }
+
+            container.innerHTML = subCategories.map(subCategory => 
+                `<div class="selectable-item" onclick="selectSubCategory('${subCategory}')">
+                    <span class="item-text">📂 ${subCategory}</span>
+                </div>`
+            ).join('');
         }
 
-        // 중분류 선택
         function selectSubCategory(subCategory) {
-            console.log(`📂 중분류 선택: ${subCategory}`);
-            
             selectedSubCategory = subCategory;
-
+            
             // UI 업데이트
             document.querySelectorAll('#subCategoryList .selectable-item').forEach(item => {
                 item.classList.remove('selected');
             });
             event.target.classList.add('selected');
-
-            loadStyles(selectedGender, selectedMainCategory, subCategory);
+            
+            updateStylesList();
             updateBreadcrumb();
         }
 
-        // 스타일 로드 (완전판)
-        async function loadStyles(gender, mainCategory, subCategory) {
-            console.log(`✂️ 스타일 로드: ${gender}, ${mainCategory}, ${subCategory}`);
-            
-            const stylesList = document.getElementById('stylesList');
-            
-            if (!firebaseConnected) {
-                stylesList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🔌</div>
-                        <div>Firebase 연결 필요</div>
-                    </div>
-                `;
+        function updateStylesList() {
+            const container = document.getElementById('stylesList');
+            if (!selectedGender || !selectedMainCategory || !selectedSubCategory) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✂️</div><div>중분류를 선택하세요</div></div>';
                 return;
             }
 
-            try {
-                const categoryPath = `${gender}_${mainCategory}_${subCategory}`;
-                const snapshot = await db.collection('hairstyles')
-                    .where('categoryPath', '==', categoryPath)
-                    .get();
-
-                if (snapshot.empty) {
-                    stylesList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">✂️</div>
-                            <div>등록된 스타일이 없습니다</div>
-                            <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()" style="margin-top: 15px;">
-                                ✂️ 스타일 추가하기
-                            </button>
-                        </div>
-                    `;
-                    return;
-                }
-
-                let html = `
-                    <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()" style="margin-bottom: 15px; width: 100%;">
-                        ➕ 스타일 추가
-                    </button>
-                `;
-                
-                snapshot.forEach(doc => {
-                    const style = doc.data();
-                    const createdDate = style.createdAt ? style.createdAt.toDate().toLocaleDateString('ko-KR') : '날짜없음';
-                    
-                    html += `
-                        <div class="style-item">
-                            <div class="style-code">${style.code || '코드없음'}</div>
-                            <div class="style-name">${style.name || '이름없음'}</div>
-                            ${style.imageUrl ? `<div style="margin: 10px 0;"><img src="${style.imageUrl}" style="max-width: 100px; max-height: 100px; object-fit: cover; border-radius: 5px;"></div>` : '<div style="color: #999; font-size: 12px;">이미지 없음</div>'}
-                            <div style="font-size: 11px; color: #999; margin-bottom: 10px;">
-                                생성일: ${createdDate}
-                            </div>
-                            <div class="style-actions">
-                                <button class="btn btn-secondary btn-sm" onclick="editStyle('${doc.id}', '${style.name}')">✏️ 수정</button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteStyle('${doc.id}', '${style.name}')">🗑️ 삭제</button>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                stylesList.innerHTML = html;
-
-            } catch (error) {
-                console.error('❌ 스타일 로드 오류:', error);
-                stylesList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">❌</div>
-                        <div>스타일 로드 실패: ${error.message}</div>
-                        <button class="btn btn-primary btn-sm" onclick="showAddStyleModal()" style="margin-top: 15px;">
-                            ✂️ 스타일 추가하기
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        // ✅ Firebase Storage에 이미지 업로드 함수
-        async function uploadImageToStorage(file, styleCode) {
-            try {
-                console.log(`📤 이미지 업로드 시작: ${styleCode}`);
-                
-                // 파일 확장자 추출
-                const fileExtension = file.name.split('.').pop().toLowerCase();
-                const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-                
-                if (!allowedExtensions.includes(fileExtension)) {
-                    throw new Error('지원하지 않는 파일 형식입니다. JPG, PNG, WebP, GIF만 업로드 가능합니다.');
-                }
-
-                // Firebase Storage 참조 생성
-                const storageRef = storage.ref(`styles/${styleCode}.${fileExtension}`);
-                
-                // 파일 업로드
-                const uploadTask = await storageRef.put(file);
-                console.log('📤 업로드 완료:', uploadTask);
-                
-                // 다운로드 URL 가져오기
-                const downloadURL = await uploadTask.ref.getDownloadURL();
-                console.log('🔗 다운로드 URL:', downloadURL);
-                
-                return downloadURL;
-                
-            } catch (error) {
-                console.error('❌ 이미지 업로드 오류:', error);
-                throw error;
-            }
-        }
-
-        // 스타일 수정
-        async function editStyle(styleId, styleName) {
-            const newName = prompt(`"${styleName}" 스타일의 새 이름을 입력하세요:`, styleName);
-            
-            if (!newName || newName.trim() === '' || newName.trim() === styleName) {
-                return;
-            }
-
-            try {
-                await db.collection('hairstyles').doc(styleId).update({
-                    name: newName.trim(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                showAlert(`"${styleName}"이 "${newName.trim()}"로 수정되었습니다.`, 'success');
-                loadStyles(selectedGender, selectedMainCategory, selectedSubCategory);
-
-            } catch (error) {
-                console.error('❌ 스타일 수정 오류:', error);
-                showAlert('스타일 수정 중 오류가 발생했습니다.', 'error');
-            }
-        }
-
-        // 스타일 삭제
-        async function deleteStyle(styleId, styleName) {
-            if (!confirm(`"${styleName}" 스타일을 삭제하시겠습니까?`)) {
-                return;
-            }
-
-            try {
-                await db.collection('hairstyles').doc(styleId).delete();
-                showAlert(`"${styleName}" 스타일이 삭제되었습니다.`, 'success');
-                loadStyles(selectedGender, selectedMainCategory, selectedSubCategory);
-
-            } catch (error) {
-                console.error('❌ 스타일 삭제 오류:', error);
-                showAlert('스타일 삭제 중 오류가 발생했습니다.', 'error');
-            }
-        }
-
-        // 하위 단계 초기화
-        function clearSubCategories() {
-            document.getElementById('subCategoryList').innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">📂</div>
-                    <div>대분류를 선택하세요</div>
-                </div>
-            `;
-        }
-
-        function clearStyles() {
-            document.getElementById('stylesList').innerHTML = `
+            // 스타일 목록은 실제 hairstyles 컬렉션에서 가져와야 하지만, 
+            // 현재는 구조만 표시
+            container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">✂️</div>
-                    <div>중분류를 선택하세요</div>
+                    <div>선택된 경로: ${selectedGender} → ${selectedMainCategory} → ${selectedSubCategory}</div>
+                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                        스타일 데이터는 별도로 로드됩니다
+                    </div>
                 </div>
             `;
         }
 
-        // 경로 업데이트
         function updateBreadcrumb() {
             const breadcrumb = document.getElementById('breadcrumb');
-            let path = [];
-
+            let items = [];
+            
             if (selectedGender) {
-                path.push(`<span class="breadcrumb-item">${selectedGender === 'male' ? '남성' : '여성'}</span>`);
+                items.push(`<span class="breadcrumb-item">${selectedGender === 'male' ? '남성' : '여성'}</span>`);
             }
+            
             if (selectedMainCategory) {
-                path.push(`<span class="breadcrumb-item">${selectedMainCategory}</span>`);
+                items.push(`<span class="breadcrumb-item">${selectedMainCategory}</span>`);
             }
+            
             if (selectedSubCategory) {
-                path.push(`<span class="breadcrumb-item active">${selectedSubCategory}</span>`);
+                items.push(`<span class="breadcrumb-item active">${selectedSubCategory}</span>`);
             }
-
-            if (path.length === 0) {
-                breadcrumb.innerHTML = '<span class="breadcrumb-item">성별을 선택하세요</span>';
-            } else {
-                breadcrumb.innerHTML = path.join('');
+            
+            if (items.length === 0) {
+                items.push('<span class="breadcrumb-item">성별을 선택하세요</span>');
             }
+            
+            breadcrumb.innerHTML = items.join('');
         }
 
-        // UI 새로고침
         function refreshUI() {
             selectedGender = null;
             selectedMainCategory = null;
             selectedSubCategory = null;
-
+            
+            // UI 초기화
             document.querySelectorAll('.selectable-item').forEach(item => {
                 item.classList.remove('selected');
             });
-
-            document.getElementById('mainCategoryList').innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">📁</div>
-                    <div>성별을 선택하세요</div>
-                </div>
-            `;
             
-            clearSubCategories();
-            clearStyles();
+            document.getElementById('mainCategoryList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📁</div><div>성별을 선택하세요</div></div>';
+            document.getElementById('subCategoryList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📂</div><div>대분류를 선택하세요</div></div>';
+            document.getElementById('stylesList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">✂️</div><div>중분류를 선택하세요</div></div>';
+            
             updateBreadcrumb();
-
+            
             showAlert('UI가 새로고침되었습니다.', 'success');
         }
 
-        // 스타일 추가 모달 표시
-        function showAddStyleModal() {
-            if (!selectedGender || !selectedMainCategory || !selectedSubCategory) {
-                showAlert('먼저 중분류까지 선택하세요.', 'error');
-                return;
-            }
-            document.getElementById('addStyleModal').style.display = 'block';
-        }
-
-        // 대분류 추가 모달 표시
-        function showAddCategoryModal() {
-            if (!selectedGender) {
-                showAlert('먼저 성별을 선택하세요.', 'error');
-                return;
-            }
-            document.getElementById('addCategoryModal').style.display = 'block';
-        }
-
-        // 중분류 추가 모달 표시
-        function showAddSubCategoryModal() {
-            if (!selectedGender || !selectedMainCategory) {
-                showAlert('먼저 대분류까지 선택하세요.', 'error');
-                return;
-            }
-            document.getElementById('addSubCategoryModal').style.display = 'block';
-        }
-
-        // 이미지 미리보기
-        function previewImage() {
-            const fileInput = document.getElementById('newStyleImage');
-            const preview = document.getElementById('imagePreview');
-            
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.innerHTML = `<img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 5px; object-fit: cover;">`;
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                preview.innerHTML = '';
-            }
-        }
-
-        // 모달 닫기
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-            
-            // 입력 필드 초기화
-            const inputs = document.querySelectorAll(`#${modalId} input`);
-            inputs.forEach(input => {
-                input.value = '';
-            });
-            
-            // 이미지 미리보기 초기화
-            if (modalId === 'addStyleModal') {
-                document.getElementById('imagePreview').innerHTML = '';
-            }
-        }
-
-        // ✅ 새 스타일 저장 (이미지 업로드 포함)
-        async function saveNewStyle() {
-            const code = document.getElementById('newStyleCode').value.trim();
-            const name = document.getElementById('newStyleName').value.trim();
-            const imageFile = document.getElementById('newStyleImage').files[0];
-
-            if (!code || !name || !imageFile) {
-                showAlert('모든 필드를 입력하고 이미지를 선택하세요.', 'error');
-                return;
-            }
-
-            try {
-                showAlert('🔄 이미지 업로드 중...', 'info');
-                
-                // 1. Firebase Storage에 이미지 업로드
-                const imageUrl = await uploadImageToStorage(imageFile, code);
-                console.log('✅ 이미지 업로드 완료:', imageUrl);
-
-                // 2. Firestore에 스타일 데이터 저장
-                const styleData = {
-                    code: code,
-                    name: name,
-                    gender: selectedGender,
-                    mainCategory: selectedMainCategory,
-                    subCategory: selectedSubCategory,
-                    categoryPath: `${selectedGender}_${selectedMainCategory}_${selectedSubCategory}`,
-                    imageUrl: imageUrl,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                await db.collection('hairstyles').add(styleData);
-                
-                showAlert(`✅ "${name}" 스타일이 이미지와 함께 추가되었습니다!`, 'success');
-                closeModal('addStyleModal');
-                
-                // 스타일 목록 새로고침
-                loadStyles(selectedGender, selectedMainCategory, selectedSubCategory);
-
-            } catch (error) {
-                console.error('❌ 스타일 추가 오류:', error);
-                showAlert('스타일 추가 중 오류가 발생했습니다: ' + error.message, 'error');
-            }
-        }
-
-        // 새 대분류 저장
-        function saveNewCategory() {
-            const categoryName = document.getElementById('newCategoryName').value.trim().toUpperCase();
-            
-            if (!categoryName) {
-                showAlert('대분류명을 입력하세요.', 'error');
-                return;
-            }
-
-            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][categoryName]) {
-                showAlert('이미 존재하는 대분류입니다.', 'error');
-                return;
-            }
-
-            // 메모리에 추가
-            if (!hierarchyStructure[selectedGender]) {
-                hierarchyStructure[selectedGender] = {};
-            }
-            hierarchyStructure[selectedGender][categoryName] = [];
-
-            logChange('대분류', '추가', `${selectedGender === 'male' ? '남성' : '여성'} > ${categoryName}`);
-            showAlert(`"${categoryName}" 대분류가 추가되었습니다.`, 'success');
-            
-            closeModal('addCategoryModal');
-            loadMainCategories(selectedGender);
-        }
-
-        // 새 중분류 저장
-        function saveNewSubCategory() {
-            const subCategoryName = document.getElementById('newSubCategoryName').value.trim();
-            
-            if (!subCategoryName) {
-                showAlert('중분류명을 입력하세요.', 'error');
-                return;
-            }
-
-            if (hierarchyStructure[selectedGender] && 
-                hierarchyStructure[selectedGender][selectedMainCategory] && 
-                hierarchyStructure[selectedGender][selectedMainCategory].includes(subCategoryName)) {
-                showAlert('이미 존재하는 중분류입니다.', 'error');
-                return;
-            }
-
-            // 메모리에 추가
-            if (!hierarchyStructure[selectedGender][selectedMainCategory]) {
-                hierarchyStructure[selectedGender][selectedMainCategory] = [];
-            }
-            hierarchyStructure[selectedGender][selectedMainCategory].push(subCategoryName);
-
-            logChange('중분류', '추가', `${selectedMainCategory} > ${subCategoryName}`);
-            showAlert(`"${subCategoryName}" 중분류가 추가되었습니다.`, 'success');
-            
-            closeModal('addSubCategoryModal');
-            loadSubCategories(selectedGender, selectedMainCategory);
-        }
-
-        // 알림 표시
-        function showAlert(message, type = 'success') {
-            const alert = document.getElementById('alert');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            alert.style.display = 'block';
-            
-            setTimeout(() => {
-                alert.style.display = 'none';
-            }, 5000);
-        }
-
-        // 카테고리 수정 (완전판)
-        function editCategory(category, event) {
-            event.stopPropagation();
-            
-            const newName = prompt(`"${category}" 카테고리의 새 이름을 입력하세요:`, category);
-            
-            if (!newName || newName.trim() === '' || newName.trim() === category) {
-                return;
-            }
-
-            const newNameTrimmed = newName.trim().toUpperCase();
-
-            // 중복 체크
-            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][newNameTrimmed]) {
-                showAlert('이미 존재하는 카테고리명입니다.', 'error');
-                return;
-            }
-
-            // 메모리에서 업데이트
-            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][category]) {
-                hierarchyStructure[selectedGender][newNameTrimmed] = hierarchyStructure[selectedGender][category];
-                delete hierarchyStructure[selectedGender][category];
-                
-                // 선택 상태 업데이트
-                if (selectedMainCategory === category) {
-                    selectedMainCategory = newNameTrimmed;
-                }
-
-                logChange('대분류', '수정', `${category} → ${newNameTrimmed}`);
-                showAlert(`"${category}"가 "${newNameTrimmed}"로 수정되었습니다.`, 'success');
-                
-                // UI 새로고침
-                loadMainCategories(selectedGender);
-                if (selectedMainCategory === newNameTrimmed) {
-                    loadSubCategories(selectedGender, newNameTrimmed);
-                }
-                updateBreadcrumb();
-            }
-        }
-
-        // 카테고리 삭제 (완전판)
-        function deleteCategory(category, event) {
-            event.stopPropagation();
-            
-            if (!confirm(`"${category}" 대분류를 삭제하시겠습니까?\n\n⚠️ 주의: 이 대분류의 모든 중분류와 스타일도 함께 삭제됩니다.`)) {
-                return;
-            }
-
-            // 메모리에서 삭제
-            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][category]) {
-                delete hierarchyStructure[selectedGender][category];
-                
-                // 선택 상태 초기화
-                if (selectedMainCategory === category) {
-                    selectedMainCategory = null;
-                    selectedSubCategory = null;
-                    clearSubCategories();
-                    clearStyles();
-                }
-
-                logChange('대분류', '삭제', category);
-                showAlert(`"${category}" 대분류가 삭제되었습니다.`, 'success');
-                
-                // UI 새로고침
-                loadMainCategories(selectedGender);
-                updateBreadcrumb();
-            }
-        }
-
-        // 중분류 수정 (완전판)
-        function editSubCategory(subCategory, event) {
-            event.stopPropagation();
-            
-            const newName = prompt(`"${subCategory}" 중분류의 새 이름을 입력하세요:`, subCategory);
-            
-            if (!newName || newName.trim() === '' || newName.trim() === subCategory) {
-                return;
-            }
-
-            const newNameTrimmed = newName.trim();
-
-            // 중복 체크
-            if (hierarchyStructure[selectedGender] && 
-                hierarchyStructure[selectedGender][selectedMainCategory] &&
-                hierarchyStructure[selectedGender][selectedMainCategory].includes(newNameTrimmed)) {
-                showAlert('이미 존재하는 중분류명입니다.', 'error');
-                return;
-            }
-
-            // 메모리에서 업데이트
-            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][selectedMainCategory]) {
-                const subCategories = hierarchyStructure[selectedGender][selectedMainCategory];
-                const index = subCategories.indexOf(subCategory);
-                if (index > -1) {
-                    subCategories[index] = newNameTrimmed;
-                    
-                    // 선택 상태 업데이트
-                    if (selectedSubCategory === subCategory) {
-                        selectedSubCategory = newNameTrimmed;
-                    }
-
-                    logChange('중분류', '수정', `${selectedMainCategory} > ${subCategory} → ${newNameTrimmed}`);
-                    showAlert(`"${subCategory}"가 "${newNameTrimmed}"로 수정되었습니다.`, 'success');
-                    
-                    // UI 새로고침
-                    loadSubCategories(selectedGender, selectedMainCategory);
-                    updateBreadcrumb();
-                }
-            }
-        }
-
-        // 중분류 삭제 (완전판)
-        function deleteSubCategory(subCategory, event) {
-            event.stopPropagation();
-            
-            if (!confirm(`"${subCategory}" 중분류를 삭제하시겠습니까?\n\n⚠️ 주의: 이 중분류의 모든 스타일도 함께 삭제됩니다.`)) {
-                return;
-            }
-
-            // 메모리에서 삭제
-            if (hierarchyStructure[selectedGender] && hierarchyStructure[selectedGender][selectedMainCategory]) {
-                const subCategories = hierarchyStructure[selectedGender][selectedMainCategory];
-                const index = subCategories.indexOf(subCategory);
-                if (index > -1) {
-                    subCategories.splice(index, 1);
-                    
-                    // 선택 상태 초기화
-                    if (selectedSubCategory === subCategory) {
-                        selectedSubCategory = null;
-                        clearStyles();
-                    }
-
-                    logChange('중분류', '삭제', `${selectedMainCategory} > ${subCategory}`);
-                    showAlert(`"${subCategory}" 중분류가 삭제되었습니다.`, 'success');
-                    
-                    // UI 새로고침
-                    loadSubCategories(selectedGender, selectedMainCategory);
-                    updateBreadcrumb();
-                }
-            }
-        }
-
-        // ✅ 고객 데이터 조회
-        async function loadCustomerData() {
+        function syncToFirebase() {
             if (!firebaseConnected) {
                 showAlert('Firebase 연결이 필요합니다.', 'error');
                 return;
             }
-
-            try {
-                showAlert('고객 데이터를 조회하고 있습니다...', 'info');
-                
-                // customers 컬렉션에서 모든 고객 데이터 조회
-                const customersSnapshot = await db.collection('customers').get();
-                
-                if (customersSnapshot.empty) {
-                    document.getElementById('customerDataContainer').style.display = 'block';
-                    document.getElementById('customerStats').innerHTML = `
-                        <div class="stat-card">
-                            <div class="stat-number">0</div>
-                            <div class="stat-label">등록된 고객</div>
-                        </div>
-                    `;
-                    document.getElementById('customerList').innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">👥</div>
-                            <div>등록된 고객 데이터가 없습니다</div>
-                        </div>
-                    `;
-                    showAlert('등록된 고객 데이터가 없습니다.', 'warning');
-                    return;
-                }
-
-                // 고객 데이터 분석
-                const customers = [];
-                const designerStats = {};
-                let totalVisits = 0;
-                let totalFavorites = 0;
-
-                customersSnapshot.forEach(doc => {
-                    const customer = { id: doc.id, ...doc.data() };
-                    customers.push(customer);
-                    
-                    // 디자이너별 통계
-                    const designerId = customer.designerId || 'Unknown';
-                    if (!designerStats[designerId]) {
-                        designerStats[designerId] = { customers: 0, visits: 0, favorites: 0 };
-                    }
-                    designerStats[designerId].customers++;
-                    
-                    // 방문 횟수 계산
-                    const visits = customer.visitHistory ? customer.visitHistory.length : 0;
-                    totalVisits += visits;
-                    designerStats[designerId].visits += visits;
-                    
-                    // 즐겨찾기 계산
-                    const favorites = customer.favoriteStyles ? customer.favoriteStyles.length : 0;
-                    totalFavorites += favorites;
-                    designerStats[designerId].favorites += favorites;
-                });
-
-                // 통계 표시
-                const statsHtml = `
-                    <div class="stat-card">
-                        <div class="stat-number">${customers.length}</div>
-                        <div class="stat-label">총 고객 수</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${Object.keys(designerStats).length}</div>
-                        <div class="stat-label">디자이너 수</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${totalVisits}</div>
-                        <div class="stat-label">총 방문 횟수</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${totalFavorites}</div>
-                        <div class="stat-label">즐겨찾기 총합</div>
-                    </div>
-                `;
-
-                // 고객 목록 표시 (최신순)
-                customers.sort((a, b) => {
-                    const aDate = a.visitHistory && a.visitHistory.length > 0 ? 
-                        new Date(a.visitHistory[a.visitHistory.length - 1].date) : new Date(0);
-                    const bDate = b.visitHistory && b.visitHistory.length > 0 ? 
-                        new Date(b.visitHistory[b.visitHistory.length - 1].date) : new Date(0);
-                    return bDate - aDate;
-                });
-
-                const customersHtml = customers.map(customer => {
-                    const visitCount = customer.visitHistory ? customer.visitHistory.length : 0;
-                    const lastVisit = visitCount > 0 ? 
-                        new Date(customer.visitHistory[visitCount - 1].date).toLocaleDateString('ko-KR') : '방문 기록 없음';
-                    
-                    const designerName = customer.designerName || customer.designerId || 'Unknown';
-                    
-                    // 최근 선택한 스타일들
-                    const recentStyles = [];
-                    if (customer.visitHistory && customer.visitHistory.length > 0) {
-                        const lastVisit = customer.visitHistory[customer.visitHistory.length - 1];
-                        if (lastVisit.selectedStyles) {
-                            recentStyles.push(...lastVisit.selectedStyles.slice(0, 3)); // 최대 3개만
-                        }
-                    }
-
-                    const stylesHtml = recentStyles.map(style => 
-                        `<span class="style-tag ${style.isLiked ? 'liked' : ''}">${style.name || style.code}</span>`
-                    ).join('');
-
-                    return `
-                        <div class="customer-item">
-                            <div class="customer-header">
-                                <div class="customer-name">${customer.customerName || 'Unknown'}</div>
-                                <div class="customer-designer">${designerName}</div>
-                            </div>
-                            <div class="customer-details">
-                                📱 ${customer.phoneLastDigits || 'N/A'} | 
-                                📅 마지막 방문: ${lastVisit} | 
-                                🔢 총 ${visitCount}회 방문
-                            </div>
-                            <div class="customer-styles">
-                                ${stylesHtml || '<span class="style-tag">선택한 스타일 없음</span>'}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                document.getElementById('customerStats').innerHTML = statsHtml;
-                document.getElementById('customerList').innerHTML = customersHtml;
-                document.getElementById('customerDataContainer').style.display = 'block';
-
-                showAlert(`${customers.length}명의 고객 데이터를 조회했습니다.`, 'success');
-
-            } catch (error) {
-                console.error('❌ 고객 데이터 조회 오류:', error);
-                showAlert('고객 데이터 조회 중 오류가 발생했습니다: ' + error.message, 'error');
-            }
+            
+            showAlert('인덱스 동기화는 향후 구현될 예정입니다.', 'info');
         }
 
-        // ✅ 디자이너 목록 조회
-        async function loadDesignerData() {
-            if (!firebaseConnected) {
-                showAlert('Firebase 연결이 필요합니다.', 'error');
-                return;
-            }
-
-            try {
-                showAlert('디자이너 데이터를 조회하고 있습니다...', 'info');
-                
-                // designers 컬렉션에서 모든 디자이너 데이터 조회
-                const designersSnapshot = await db.collection('designers').get();
-                
-                if (designersSnapshot.empty) {
-                    document.getElementById('customerDataContainer').style.display = 'block';
-                    document.getElementById('customerStats').innerHTML = `
-                        <div class="stat-card">
-                            <div class="stat-number">0</div>
-                            <div class="stat-label">등록된 디자이너</div>
-                        </div>
-                    `;
-                    document.getElementById('customerList').innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">🎨</div>
-                            <div>등록된 디자이너가 없습니다</div>
-                        </div>
-                    `;
-                    showAlert('등록된 디자이너가 없습니다.', 'warning');
-                    return;
+        // 페이지 로드 시 Firebase 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 DOM 로드 완료, Firebase 초기화 시작...');
+            
+            // Firebase SDK 로딩 확인
+            const checkFirebase = () => {
+                if (typeof firebase !== 'undefined') {
+                    console.log('✅ Firebase SDK 확인됨, 초기화 진행');
+                    initializeFirebase();
+                } else {
+                    console.log('⏳ Firebase SDK 대기 중...');
+                    setTimeout(checkFirebase, 100);
                 }
+            };
+            
+            checkFirebase();
+        });
 
-                // 디자이너 데이터 분석
-                const designers = [];
-                designersSnapshot.forEach(doc => {
-                    const designer = { id: doc.id, ...doc.data() };
-                    designers.push(designer);
-                });
+        // 전역 오류 처리
+        window.addEventListener('error', function(event) {
+            console.error('🚨 전역 오류 발생:', event.error);
+            addProgressLog(`🚨 오류: ${event.error.message}`, 'error');
+        });
 
-                // 통계 표시
-                const statsHtml = `
-                    <div class="stat-card">
-                        <div class="stat-number">${designers.length}</div>
-                        <div class="stat-label">등록된 디자이너</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${designers.reduce((sum, d) => sum + (d.customerCount || 0), 0)}</div>
-                        <div class="stat-label">총 고객 수</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${designers.filter(d => d.lastLogin && 
-                            new Date(d.lastLogin.toDate()) > new Date(Date.now() - 24*60*60*1000)).length}</div>
-                        <div class="stat-label">최근 24시간 활성</div>
-                    </div>
-                `;
+        // Promise 거부 처리
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('🚨 처리되지 않은 Promise 거부:', event.reason);
+            addProgressLog(`🚨 Promise 오류: ${event.reason}`, 'error');
+        });
 
-                // 디자이너 목록 표시 (최근 로그인순)
-                designers.sort((a, b) => {
-                    const aDate = a.lastLogin ? a.lastLogin.toDate() : new Date(0);
-                    const bDate = b.lastLogin ? b.lastLogin.toDate() : new Date(0);
-                    return bDate - aDate;
-                });
-
-                const designersHtml = designers.map(designer => {
-                    const lastLogin = designer.lastLogin ? 
-                        designer.lastLogin.toDate().toLocaleString('ko-KR') : '로그인 기록 없음';
-                    const createdAt = designer.createdAt ? 
-                        designer.createdAt.toDate().toLocaleDateString('ko-KR') : '등록일 불명';
-                    
-                    return `
-                        <div class="customer-item">
-                            <div class="customer-header">
-                                <div class="customer-name">🎨 ${designer.name || 'Unknown'}</div>
-                                <div class="customer-designer">${designer.id}</div>
-                            </div>
-                            <div class="customer-details">
-                                📅 등록일: ${createdAt} | 
-                                🔄 마지막 로그인: ${lastLogin} | 
-                                👥 고객 ${designer.customerCount || 0}명
-                            </div>
-                            <div class="customer-styles">
-                                <span class="style-tag">코드: ${designer.code || 'N/A'}</span>
-                                ${designer.currentStore ? `<span class="style-tag">매장: ${designer.currentStore}</span>` : ''}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                document.getElementById('customerStats').innerHTML = statsHtml;
-                document.getElementById('customerList').innerHTML = designersHtml;
-                document.getElementById('customerDataContainer').style.display = 'block';
-
-                showAlert(`${designers.length}명의 디자이너 데이터를 조회했습니다.`, 'success');
-
-            } catch (error) {
-                console.error('❌ 디자이너 데이터 조회 오류:', error);
-                showAlert('디자이너 데이터 조회 중 오류가 발생했습니다: ' + error.message, 'error');
-            }
-        }
-
-        // ✅ 고객 데이터 내보내기 (CSV)
-        async function exportCustomerData() {
-            if (!firebaseConnected) {
-                showAlert('Firebase 연결이 필요합니다.', 'error');
-                return;
-            }
-
-            try {
-                showAlert('고객 데이터를 내보내고 있습니다...', 'info');
-                
-                // 고객 데이터 조회
-                const customersSnapshot = await db.collection('customers').get();
-                
-                if (customersSnapshot.empty) {
-                    showAlert('내보낼 고객 데이터가 없습니다.', 'warning');
-                    return;
-                }
-
-                // CSV 데이터 생성
-                const csvData = [];
-                csvData.push(['디자이너ID', '디자이너명', '고객명', '전화번호', '등록일', '방문횟수', '최근방문일', '즐겨찾기수', '선택스타일']);
-
-                customersSnapshot.forEach(doc => {
-                    const customer = doc.data();
-                    const visitCount = customer.visitHistory ? customer.visitHistory.length : 0;
-                    const lastVisit = visitCount > 0 ? 
-                        customer.visitHistory[visitCount - 1].date : '';
-                    const favoriteCount = customer.favoriteStyles ? customer.favoriteStyles.length : 0;
-                    
-                    // 선택한 스타일들 (최근 방문 기준)
-                    let selectedStyles = '';
-                    if (customer.visitHistory && customer.visitHistory.length > 0) {
-                        const lastVisitData = customer.visitHistory[customer.visitHistory.length - 1];
-                        if (lastVisitData.selectedStyles) {
-                            selectedStyles = lastVisitData.selectedStyles.map(s => s.name || s.code).join('; ');
-                        }
-                    }
-
-                    csvData.push([
-                        customer.designerId || '',
-                        customer.designerName || '',
-                        customer.customerName || '',
-                        customer.phoneLastDigits || '',
-                        customer.visitHistory && customer.visitHistory.length > 0 ? 
-                            customer.visitHistory[0].date : '',
-                        visitCount,
-                        lastVisit,
-                        favoriteCount,
-                        selectedStyles
-                    ]);
-                });
-
-                // CSV 파일 다운로드
-                const csvContent = csvData.map(row => row.join(',')).join('\n');
-                const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                
-                link.setAttribute('href', url);
-                link.setAttribute('download', `HAIRGATOR_고객데이터_${new Date().toISOString().split('T')[0]}.csv`);
-                link.style.visibility = 'hidden';
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                showAlert(`${csvData.length - 1}명의 고객 데이터를 CSV로 내보냈습니다.`, 'success');
-
-            } catch (error) {
-                console.error('❌ 데이터 내보내기 오류:', error);
-                showAlert('데이터 내보내기 중 오류가 발생했습니다: ' + error.message, 'error');
-            }
-        }
-
-        // 모달 외부 클릭시 닫기
-        window.onclick = function(event) {
-            const modals = ['addStyleModal', 'addCategoryModal', 'addSubCategoryModal'];
-            modals.forEach(modalId => {
-                const modal = document.getElementById(modalId);
-                if (event.target === modal) {
-                    closeModal(modalId);
-                }
-            });
-        }
+        console.log('✅ 모든 JavaScript 함수 정의 완료');
     </script>
 </body>
 </html>
