@@ -3,7 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HAIRGATOR - 어드민 (완전판)</title>
+    <title>HAIRGATOR - 어드민 (Service Worker 오류 수정)</title>
+    
+    <!-- Service Worker 등록 방지 -->
+    <script>
+        // Service Worker 관련 오류 방지
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+        
+        // PWA 관련 이벤트 방지
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        console.log('🔧 Service Worker 오류 방지 코드 실행됨');
+    </script>
     
     <style>
         * {
