@@ -761,6 +761,20 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
+    <!-- 즉시 실행 테스트 스크립트 -->
+    <script>
+        console.log('🔍 페이지 로드됨 - 즉시 테스트');
+        console.log('Firebase 체크:', typeof firebase);
+        
+        // Firebase 로딩 확인
+        if (typeof firebase === 'undefined') {
+            console.error('❌ Firebase SDK가 로드되지 않았습니다!');
+            alert('Firebase SDK 로딩 실패! 네트워크 연결을 확인하세요.');
+        } else {
+            console.log('✅ Firebase SDK 로드 완료');
+        }
+    </script>
+
     <script>
         console.log('🚀 HAIRGATOR 완전판 어드민 시작 (LONG 문제 해결)');
         
