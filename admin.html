@@ -843,15 +843,39 @@
 
         async function testFirebaseConnection() {
             try {
+                // 권한 테스트를 위한 간단한 읽기 시도
+                const testQuery = await db.collection('test').limit(1).get();
+                console.log('✅ Firestore 읽기 테스트 성공');
+                
+                // 쓰기 권한 테스트
                 await db.collection('test').doc('connection').set({
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    test: true
+                    test: true,
+                    userAgent: navigator.userAgent
                 });
+                console.log('✅ Firestore 쓰기 테스트 성공');
                 
-                await db.collection('test').doc('connection').delete();
-                console.log('✅ Firebase 연결 테스트 성공');
+                // 테스트 문서 정리
+                try {
+                    await db.collection('test').doc('connection').delete();
+                    console.log('🗑️ 테스트 문서 정리 완료');
+                } catch (deleteError) {
+                    console.log('⚠️ 테스트 문서 정리 실패 (무시):', deleteError.message);
+                }
+                
             } catch (error) {
-                throw error;
+                console.error('❌ Firebase 연결 테스트 실패:', error);
+                
+                // 구체적인 오류 메시지 제공
+                if (error.code === 'permission-denied') {
+                    throw new Error('Firebase Security Rules에서 읽기/쓰기 권한이 거부되었습니다. Security Rules를 확인하세요.');
+                } else if (error.code === 'failed-precondition') {
+                    throw new Error('Firebase 프로젝트 설정에 문제가 있습니다.');
+                } else if (error.message.includes('400')) {
+                    throw new Error('Firebase 요청 형식이 올바르지 않습니다. Security Rules나 API 키를 확인하세요.');
+                } else {
+                    throw error;
+                }
             }
         }
 
@@ -1088,20 +1112,31 @@
                 // 로딩 표시
                 container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔄</div><div>스타일 목록을 불러오는 중...</div></div>';
 
-                // Firebase에서 스타일 조회
+                // Firebase에서 스타일 조회 (인덱스 문제 해결)
                 const stylesSnapshot = await db.collection('hairstyles')
                     .where('gender', '==', selectedGender)
                     .where('mainCategory', '==', selectedMainCategory)
                     .where('subCategory', '==', selectedSubCategory)
-                    .orderBy('createdAt', 'desc')
                     .get();
 
                 if (stylesSnapshot.empty) {
                     container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✂️</div><div>등록된 스타일이 없습니다</div></div>';
                 } else {
-                    let stylesHtml = '';
+                    // 데이터를 배열로 변환 후 날짜순 정렬
+                    const styles = [];
                     stylesSnapshot.forEach(doc => {
-                        const style = { id: doc.id, ...doc.data() };
+                        styles.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    // 클라이언트 사이드에서 정렬
+                    styles.sort((a, b) => {
+                        const aTime = a.createdAt ? a.createdAt.toDate() : new Date(0);
+                        const bTime = b.createdAt ? b.createdAt.toDate() : new Date(0);
+                        return bTime - aTime; // 최신순
+                    });
+
+                    let stylesHtml = '';
+                    styles.forEach(style => {
                         stylesHtml += `
                             <div class="style-item">
                                 ${style.imageUrl ? `<img src="${style.imageUrl}" alt="${style.name}" class="style-image">` : '<div class="style-image" style="background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">이미지 없음</div>'}
@@ -1378,7 +1413,7 @@
                 const uploadTask = await imageRef.put(imageFile);
                 const imageUrl = await uploadTask.ref.getDownloadURL();
 
-                // 2. Firestore에 스타일 데이터 저장
+                // 2. Firestore에 스타일 데이터 저장 (권한 오류 처리 강화)
                 const styleData = {
                     code: code,
                     name: name,
@@ -1393,7 +1428,28 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
-                await db.collection('hairstyles').add(styleData);
+                console.log('Firestore에 스타일 데이터 저장 시도:', styleData);
+                
+                try {
+                    await db.collection('hairstyles').add(styleData);
+                    console.log('✅ 스타일 데이터 저장 완료');
+                } catch (firestoreError) {
+                    console.error('❌ Firestore 저장 오류:', firestoreError);
+                    
+                    // 이미지는 업로드되었지만 Firestore 저장 실패 시 이미지 삭제
+                    try {
+                        await storage.ref(imagePath).delete();
+                        console.log('🗑️ 업로드된 이미지 정리 완료');
+                    } catch (cleanupError) {
+                        console.log('⚠️ 이미지 정리 실패:', cleanupError);
+                    }
+                    
+                    if (firestoreError.code === 'permission-denied') {
+                        throw new Error('Firebase Security Rules에서 쓰기 권한이 거부되었습니다.\n\nFirebase 콘솔 → Firestore Database → 규칙에서 다음을 설정하세요:\n\nallow read, write: if true;');
+                    } else {
+                        throw firestoreError;
+                    }
+                }
 
                 closeStyleModal();
                 updateStylesList();
