@@ -126,9 +126,112 @@
             transform: scale(0.95);
         }
 
+        /* 디자이너 로그인 화면 */
+        .designer-login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #000;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(255, 20, 147, 0.1);
+        }
+
+        .login-card h2 {
+            color: #FF1493;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        .info-notice {
+            background: rgba(255, 20, 147, 0.1);
+            border: 1px solid rgba(255, 20, 147, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 30px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #ccc;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #fff;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #FF1493;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .input-group input::placeholder {
+            color: #aaa;
+        }
+
+        .input-group small {
+            display: block;
+            margin-top: 5px;
+            color: #999;
+            font-size: 11px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 20, 147, 0.3);
+        }
+
+        .check-result {
+            margin-top: 20px;
+        }
+
         /* 성별 선택 화면 - 세로로 긴 직사각형 카드 */
         .gender-selection {
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             height: 100vh;
@@ -138,8 +241,8 @@
             gap: 30px;
         }
 
-        .gender-selection.hidden {
-            display: none;
+        .gender-selection.show {
+            display: flex;
         }
 
         /* 핸드폰용 반응형 (768px 미만) - 세로로 긴 직사각형 */
@@ -283,78 +386,6 @@
             box-shadow: 0 8px 25px rgba(255, 20, 147, 0.2);
         }
 
-        /* PWA 설치 모달 */
-        .pwa-install-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .install-content {
-            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
-            border: 2px solid #FF1493;
-            border-radius: 25px;
-            padding: 40px;
-            text-align: center;
-            max-width: 90%;
-            width: 400px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-        }
-
-        .install-content h2 {
-            color: #FF1493;
-            margin-bottom: 20px;
-            font-size: 20px;
-        }
-
-        .install-content p {
-            color: #fff;
-            margin-bottom: 30px;
-            line-height: 1.6;
-            font-size: 14px;
-        }
-
-        .install-btn {
-            background: linear-gradient(135deg, #FF1493, #FF69B4);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 15px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-right: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .install-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 20, 147, 0.3);
-        }
-
-        .skip-btn {
-            background: #333;
-            color: #fff;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 15px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .skip-btn:hover {
-            background: #555;
-        }
-
         /* 메인 컨테이너 */
         .main-container {
             display: none;
@@ -412,33 +443,357 @@
             color: #FF1493;
         }
 
-        /* AI 상담 버튼 */
-        .ai-chat-btn {
+        /* 햄버거 버튼 */
+        .hamburger-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 48px;
-            height: 48px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            padding: 0;
         }
 
-        .ai-chat-btn:hover {
+        .hamburger-btn:hover {
             transform: scale(1.1);
         }
 
-        .ai-chat-btn:hover .face-scan-icon {
-            filter: drop-shadow(0 0 10px rgba(255, 20, 147, 0.6));
+        .hamburger-icon {
+            width: 24px;
+            height: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        .face-scan-icon {
+        .hamburger-icon span {
+            display: block;
+            width: 100%;
+            height: 2px;
+            background: #fff;
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+
+        /* 햄버거 메뉴 */
+        .hamburger-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            display: none;
+        }
+
+        .hamburger-menu {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 320px;
+            max-width: 90vw;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            color: white;
+            padding: 0;
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+            animation: slideInRight 0.3s ease;
+            overflow-y: auto;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .menu-header {
+            padding: 30px 25px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-header h3 {
+            margin: 0;
+            color: #FF1493;
+            font-size: 18px;
+        }
+
+        .close-menu {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .close-menu:hover {
+            color: #fff;
+        }
+
+        .menu-items {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 20px 25px;
+            margin: 0;
+            cursor: pointer;
             transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 20, 147, 0.1);
+        }
+
+        .menu-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            width: 40px;
+            text-align: center;
+        }
+
+        .menu-text {
+            flex: 1;
+        }
+
+        .menu-text strong {
+            display: block;
+            color: #fff;
+            margin-bottom: 3px;
+            font-size: 16px;
+        }
+
+        .menu-text small {
+            color: #aaa;
+            font-size: 12px;
+        }
+
+        /* 고객 검색 모달 */
+        .customer-search-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .search-container {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #FF1493;
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 90%;
+            width: 450px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .search-container h3 {
+            color: #FF1493;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .search-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input input {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .search-input input:focus {
+            outline: none;
+            border-color: #FF1493;
+        }
+
+        .search-input button {
+            padding: 12px 15px;
+            background: #FF1493;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .customer-result {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .customer-result:hover {
+            background: rgba(255, 20, 147, 0.2);
+        }
+
+        .customer-info strong {
+            color: #fff;
+            margin-right: 10px;
+        }
+
+        .customer-info .phone {
+            color: #aaa;
+            font-size: 12px;
+        }
+
+        .visit-count {
+            color: #FF69B4;
+            font-size: 12px;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+
+        .close-search {
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        /* 고객 상세 모달 */
+        .customer-detail-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .detail-container {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #FF1493;
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 90%;
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .customer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .customer-header h3 {
+            color: #FF1493;
+            margin: 0;
+        }
+
+        .customer-header button {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .visit-history h4,
+        .favorite-styles h4 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .visit-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .visit-date {
+            color: #FF69B4;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .style-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+        }
+
+        .style-item.liked {
+            color: #FF69B4;
+        }
+
+        .style-code {
+            font-weight: bold;
+            min-width: 60px;
+        }
+
+        .style-name {
+            flex: 1;
+        }
+
+        .heart {
+            color: #FF1493;
+        }
+
+        .visit-notes {
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(255, 20, 147, 0.1);
+            border-radius: 5px;
+            font-style: italic;
+            color: #ccc;
+            font-size: 12px;
+        }
+
+        .no-history {
+            text-align: center;
+            color: #666;
+            padding: 20px;
         }
 
         /* 네비게이션 탭 */
@@ -739,6 +1094,28 @@
             color: #fff;
         }
 
+        /* 좋아요 버튼 */
+        .like-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .like-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+
+        .like-btn.liked {
+            background: linear-gradient(135deg, #e91e63, #f48fb1);
+        }
+
         /* 모바일 모달 최적화 */
         @media screen and (max-width: 600px) {
             .close {
@@ -841,6 +1218,119 @@
             line-height: 1.5;
             color: #666;
         }
+
+        /* 새 고객 추가 버튼 */
+        .add-customer-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+            transition: all 0.3s ease;
+            z-index: 500;
+            display: none;
+        }
+
+        .add-customer-btn.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-customer-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+        }
+
+        /* 새 고객 등록 모달 */
+        .new-customer-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .new-customer-container {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #FF1493;
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 90%;
+            width: 400px;
+        }
+
+        .new-customer-container h3 {
+            color: #FF1493;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .customer-input-group {
+            margin-bottom: 15px;
+        }
+
+        .customer-input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .customer-input-group input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .customer-input-group input:focus {
+            outline: none;
+            border-color: #FF1493;
+        }
+
+        .customer-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .customer-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .save-customer-btn {
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            color: white;
+        }
+
+        .cancel-customer-btn {
+            background: #333;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -850,6 +1340,44 @@
     <!-- 기기별 최적화 안내 -->
     <div class="device-notice" id="deviceNotice">
         📱 태블릿에서 최적의 경험을 제공합니다
+    </div>
+
+    <!-- 디자이너 로그인 화면 -->
+    <div class="designer-login" id="designerLogin">
+        <div class="login-card">
+            <h2>🎨 디자이너 로그인</h2>
+            
+            <div class="info-notice">
+                💡 <strong>중요 안내</strong><br>
+                • 이 정보는 고객 관리용 <strong>고유 ID</strong>가 됩니다<br>
+                • 핸드폰, 태블릿에서 <strong>동일하게 입력</strong>해주세요<br>
+                • 한번 정하면 계속 사용하니 <strong>꼭 기억</strong>해주세요!
+            </div>
+            
+            <div class="input-group">
+                <label>👤 이름 (실명)</label>
+                <input type="text" id="designerName" placeholder="김민수">
+                <small>* 정확한 이름을 입력해주세요</small>
+            </div>
+            
+            <div class="input-group">
+                <label>📱 휴대폰 끝 4자리</label>
+                <input type="number" id="designerPhone" placeholder="2709" maxlength="4">
+                <small>* 개인 식별용 - 다른 사람과 겹치지 않도록</small>
+            </div>
+            
+            <div class="input-group">
+                <label>🔒 개인 비밀번호 (4자리)</label>
+                <input type="password" id="designerPin" placeholder="••••" maxlength="4">
+                <small>* 본인만 아는 4자리 숫자</small>
+            </div>
+            
+            <button class="login-btn" onclick="checkDesignerLogin()">
+                🔍 확인 후 로그인
+            </button>
+            
+            <div id="loginResult" class="check-result"></div>
+        </div>
     </div>
 
     <!-- 성별 선택 화면 - 세로로 긴 직사각형 -->
@@ -883,28 +1411,12 @@
                     <span style="color: #FF1493; font-size: 18px; font-weight: 700; letter-spacing: -0.5px;">HAIRGATOR</span>
                 </div>
                 
-                <button class="ai-chat-btn" onclick="window.open('https://hairgator-face.web.app', '_blank')" title="AI 얼굴 분석">
-                    <svg class="face-scan-icon" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- 얼굴 윤곽 -->
-                        <path d="M18 4 C10 4, 6 10, 6 18 C6 26, 10 32, 18 32 C26 32, 30 26, 30 18 C30 10, 26 4, 18 4" 
-                              stroke="#FF1493" stroke-width="2" fill="none"/>
-                        
-                        <!-- 스캔 라인들 -->
-                        <path d="M8 12h20M8 18h20M8 24h20" stroke="#FF69B4" stroke-width="1" opacity="0.5"/>
-                        
-                        <!-- 눈 -->
-                        <circle cx="13" cy="15" r="1.5" fill="#FF1493"/>
-                        <circle cx="23" cy="15" r="1.5" fill="#FF1493"/>
-                        
-                        <!-- 코 -->
-                        <circle cx="18" cy="20" r="1" fill="#FF69B4"/>
-                        
-                        <!-- 입 -->
-                        <path d="M14 24 Q18 26 22 24" stroke="#FF1493" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                        
-                        <!-- 코너 브래킷 -->
-                        <path d="M2 2h6v6M28 2h6v6M2 28v6h6M28 28v6h6" stroke="#FF1493" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
-                    </svg>
+                <button class="hamburger-btn" onclick="toggleHamburgerMenu()" title="메뉴">
+                    <div class="hamburger-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                 </button>
             </div>
             
@@ -920,6 +1432,37 @@
         </main>
     </div>
 
+    <!-- 햄버거 메뉴 -->
+    <div class="hamburger-overlay" id="hamburgerOverlay" onclick="closeHamburgerMenu()">
+        <div class="hamburger-menu" onclick="event.stopPropagation()">
+            <div class="menu-header">
+                <h3 id="menuDesignerName">🎨 디자이너</h3>
+                <button class="close-menu" onclick="closeHamburgerMenu()">×</button>
+            </div>
+            
+            <div class="menu-items">
+                <div class="menu-item" onclick="showCustomerSearch()">
+                    <div class="menu-icon">👤</div>
+                    <div class="menu-text">
+                        <strong>고객 조회</strong>
+                        <small>이전 방문 기록 확인</small>
+                    </div>
+                </div>
+                
+                <div class="menu-item" onclick="openAIFaceAnalysis()">
+                    <div class="menu-icon">🔍</div>
+                    <div class="menu-text">
+                        <strong>AI 얼굴 분석</strong>
+                        <small>얼굴형 맞춤 추천</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 새 고객 추가 버튼 -->
+    <button class="add-customer-btn" id="addCustomerBtn" onclick="showNewCustomerModal()">+</button>
+
     <!-- 이미지 모달 -->
     <div id="imageModal" class="modal">
         <div class="modal-content">
@@ -928,6 +1471,7 @@
             <div class="modal-info">
                 <h3 id="modalCode"></h3>
                 <p id="modalName"></p>
+                <button class="like-btn" id="likeBtn" onclick="toggleStyleLike()">❤️ 좋아요</button>
             </div>
         </div>
     </div>
@@ -951,223 +1495,6 @@
             }
         }
 
-        // 네이티브앱처럼 보이게 하는 JavaScript 추가
-        
-        // PWA 서비스 워커 등록
-        function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                    navigator.serviceWorker.register('/service-worker.js')
-                        .then(function(registration) {
-                            console.log('🎉 PWA 서비스 워커 등록 성공:', registration.scope);
-                            
-                            // 업데이트 감지
-                            registration.addEventListener('updatefound', () => {
-                                const newWorker = registration.installing;
-                                newWorker.addEventListener('statechange', () => {
-                                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                        console.log('🔄 PWA 업데이트 사용 가능');
-                                        // 필요시 사용자에게 업데이트 알림
-                                    }
-                                });
-                            });
-                        })
-                        .catch(function(error) {
-                            console.log('❌ PWA 서비스 워커 등록 실패:', error);
-                        });
-                });
-            }
-        }
-
-        // PWA 설치 프롬프트 처리
-        let deferredPrompt;
-        let installButton = null;
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('📱 PWA 설치 프롬프트 준비됨');
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            // URL 파라미터로 설치 모드인지 확인
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('install') === 'true') {
-                showPWAInstallDialog();
-            }
-        });
-
-        // 기기별 최적화 안내 표시
-        function showDeviceOptimizationNotice() {
-            const notice = document.getElementById('deviceNotice');
-            const screenWidth = window.innerWidth;
-            
-            if (screenWidth < 768) {
-                // 핸드폰: 태블릿 권장 안내
-                notice.innerHTML = '📱 태블릿에서 최적의 경험을 제공합니다';
-                notice.className = 'device-notice show';
-                
-                // 5초 후 자동 숨김
-                setTimeout(() => {
-                    notice.classList.remove('show');
-                }, 5000);
-                
-            } else if (screenWidth >= 768) {
-                // 태블릿: 최적화 완료 안내
-                notice.innerHTML = '🎉 태블릿 최적화 모드로 실행 중입니다';
-                notice.className = 'device-notice show';
-                
-                // 3초 후 자동 숨김
-                setTimeout(() => {
-                    notice.classList.remove('show');
-                }, 3000);
-            }
-        }
-
-        // PWA 설치 다이얼로그 표시 (기기별 맞춤)
-        function showPWAInstallDialog() {
-            const screenWidth = window.innerWidth;
-            let dialogTitle, dialogMessage;
-            
-            if (screenWidth < 768) {
-                // 핸드폰용 메시지
-                dialogTitle = '📱 HAIRGATOR 앱 설치';
-                dialogMessage = '핸드폰에서도 사용 가능하지만<br><strong>태블릿에서 최적의 경험</strong>을 제공합니다!';
-            } else {
-                // 태블릿용 메시지  
-                dialogTitle = '🎉 HAIRGATOR 앱 설치';
-                dialogMessage = '태블릿 전체화면에서 완벽한<br><strong>헤어스타일 경험</strong>을 즐기세요!';
-            }
-
-            // 설치 안내 모달 생성
-            const installModal = document.createElement('div');
-            installModal.className = 'pwa-install-modal';
-            installModal.innerHTML = `
-                <div class="install-content">
-                    <h2>${dialogTitle}</h2>
-                    <p>${dialogMessage}</p>
-                    <button class="install-btn" onclick="installPWA()">📱 홈 화면에 추가</button>
-                    <button class="skip-btn" onclick="this.closest('.pwa-install-modal').remove()">나중에</button>
-                </div>
-            `;
-            
-            document.body.appendChild(installModal);
-        }
-
-        // PWA 설치 실행
-        function installPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((result) => {
-                    if (result.outcome === 'accepted') {
-                        console.log('🎉 PWA 설치 완료');
-                        document.querySelector('.pwa-install-modal')?.remove();
-                    } else {
-                        console.log('❌ PWA 설치 취소');
-                    }
-                    deferredPrompt = null;
-                });
-            } else {
-                // iOS Safari인 경우 수동 설치 안내
-                alert('📱 Safari에서 "공유" 버튼 → "홈 화면에 추가"를 선택하세요!');
-                document.querySelector('.pwa-install-modal')?.remove();
-            }
-        }
-
-        // 팝업 형태 반응형 처리
-        function initializeMobileApp() {
-            // PWA 서비스 워커 등록
-            registerServiceWorker();
-            
-            // 기기별 최적화 안내 표시
-            showDeviceOptimizationNotice();
-            
-            // 현재 화면 방향과 크기 확인
-            const isPortrait = window.innerHeight > window.innerWidth;
-            const screenWidth = window.innerWidth;
-            const deviceType = screenWidth >= 768 ? 'tablet' : 'phone';
-            
-            const screenInfo = {
-                width: window.innerWidth,
-                height: window.innerHeight,
-                orientation: isPortrait ? 'portrait' : 'landscape',
-                deviceType: deviceType,
-                optimized: deviceType === 'tablet'
-            };
-            
-            console.log('📱 PWA 반응형 모드:', screenInfo);
-            
-            // 방향 변화 감지
-            window.addEventListener('orientationchange', function() {
-                setTimeout(function() {
-                    const newIsPortrait = window.innerHeight > window.innerWidth;
-                    console.log('🔄 방향 변경:', newIsPortrait ? 'portrait' : 'landscape');
-                    hideAddressBar();
-                    
-                    // 방향 변경 시 기기별 안내 다시 표시
-                    setTimeout(showDeviceOptimizationNotice, 500);
-                }, 100);
-            });
-            
-            // 터치 최적화
-            document.addEventListener('touchstart', function(e) {
-                // 터치 시작 처리
-            }, { passive: true });
-            
-            console.log(`📱 PWA 시스템 활성화 완료 (${deviceType} 모드)`);
-        }
-        
-        // iOS Safari 주소창 숨기기
-        function hideAddressBar() {
-            setTimeout(function() {
-                window.scrollTo(0, 1);
-            }, 0);
-        }
-        
-        // 페이지 로드 시 초기화
-        window.addEventListener('load', function() {
-            initializeMobileApp();
-            hideAddressBar();
-            console.log('🚀 HAIRGATOR PWA 로드 완료');
-        });
-        
-        // 확대/축소 완전 방지
-        document.addEventListener('gesturestart', function(e) {
-            e.preventDefault();
-        });
-        
-        document.addEventListener('gesturechange', function(e) {
-            e.preventDefault();
-        });
-        
-        document.addEventListener('gestureend', function(e) {
-            e.preventDefault();
-        });
-        
-        // 더블탭 줌 방지
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
-        
-        // 스와이프 새로고침 방지 (iOS Safari)
-        let startY = 0;
-        document.addEventListener('touchstart', function(e) {
-            startY = e.touches[0].pageY;
-        });
-        
-        document.addEventListener('touchmove', function(e) {
-            const y = e.touches[0].pageY;
-            // 페이지 최상단에서 아래로 스와이프할 때 새로고침 방지
-            if (startY <= 10 && y > startY) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-        
-        console.log('🚀 HAIRGATOR 실시간 동기화 인덱스 시작');
-        
         // Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
@@ -1195,8 +1522,13 @@
         }
 
         // 전역 변수
+        let currentDesigner = null;
+        let currentDesignerName = null;
         let currentGender = null;
         let currentCategory = null;
+        let currentCustomer = null;
+        let currentStyleCode = null;
+        let currentStyleName = null;
         let hierarchyStructure = {};
 
         // 동기화 상태 업데이트
@@ -1213,11 +1545,122 @@
             }
         }
 
+        // 결과 표시 함수
+        function showLoginResult(type, message) {
+            const resultDiv = document.getElementById('loginResult');
+            const colors = {
+                success: '#28a745',
+                warning: '#ffc107', 
+                error: '#dc3545'
+            };
+            
+            resultDiv.innerHTML = `
+                <div style="
+                    background: ${colors[type]}22; 
+                    border: 2px solid ${colors[type]}; 
+                    border-radius: 10px; 
+                    padding: 15px; 
+                    margin-top: 20px;
+                    text-align: center;
+                ">
+                    ${message}
+                </div>
+            `;
+        }
+
+        // 디자이너 로그인 확인
+        async function checkDesignerLogin() {
+            const name = document.getElementById('designerName').value.trim();
+            const phone = document.getElementById('designerPhone').value.trim();
+            const pin = document.getElementById('designerPin').value.trim();
+            
+            if (!name || phone.length !== 4 || pin.length !== 4) {
+                showLoginResult('error', '모든 정보를 정확히 입력해주세요<br>전화번호 4자리, 비밀번호 4자리');
+                return;
+            }
+            
+            const designerId = `${name}_${phone}`;
+            
+            try {
+                const designerDoc = await db.collection('designers').doc(designerId).get();
+                
+                if (designerDoc.exists) {
+                    const data = designerDoc.data();
+                    
+                    // 비밀번호 확인
+                    if (data.pin === pin) {
+                        // 로그인 성공
+                        await db.collection('designers').doc(designerId).update({
+                            lastLogin: new Date()
+                        });
+                        
+                        startDesignerSession(designerId, name);
+                    } else {
+                        // 비밀번호 틀림
+                        showLoginResult('error', '❌ 비밀번호가 틀렸습니다!');
+                    }
+                } else {
+                    // 신규 등록
+                    showLoginResult('warning', `
+                        🆕 신규 디자이너 등록<br>
+                        📝 ID: <strong>${designerId}</strong><br>
+                        🔒 비밀번호: <strong>••••</strong> (설정됨)<br>
+                        ⚠️ <strong>비밀번호를 잊어버리면 복구 불가능합니다!</strong><br>
+                        <button onclick="confirmRegistration('${designerId}', '${name}', '${pin}')" 
+                                style="background: #FF1493; color: white; border: none; padding: 10px 20px; border-radius: 10px; margin-top: 10px; cursor: pointer;">
+                            ✅ 등록하고 시작
+                        </button>
+                    `);
+                }
+            } catch (error) {
+                console.error('로그인 확인 오류:', error);
+                showLoginResult('error', '로그인 확인 중 오류가 발생했습니다');
+            }
+        }
+
+        // 신규 디자이너 등록 확인
+        async function confirmRegistration(designerId, name, pin) {
+            try {
+                await db.collection('designers').doc(designerId).set({
+                    name: name,
+                    pin: pin,
+                    createdAt: new Date(),
+                    customerCount: 0,
+                    lastLogin: new Date()
+                });
+                
+                startDesignerSession(designerId, name);
+            } catch (error) {
+                console.error('등록 실패:', error);
+                showLoginResult('error', '등록에 실패했습니다. 다시 시도해주세요.');
+            }
+        }
+
+        // 디자이너 세션 시작
+        function startDesignerSession(designerId, name) {
+            currentDesigner = designerId;
+            currentDesignerName = name;
+            
+            sessionStorage.setItem('currentDesigner', designerId);
+            sessionStorage.setItem('designerName', name);
+            
+            showLoginResult('success', `🎉 ${name} 디자이너님 환영합니다!`);
+            
+            setTimeout(() => {
+                document.getElementById('designerLogin').style.display = 'none';
+                document.getElementById('genderSelection').classList.add('show');
+                document.getElementById('addCustomerBtn').classList.add('show');
+                
+                // 햄버거 메뉴 헤더 업데이트
+                document.getElementById('menuDesignerName').textContent = `🎨 ${name}`;
+            }, 2000);
+        }
+
         // 성별 선택
         function selectGender(gender) {
             console.log(`🎯 성별 선택: ${gender}`);
             currentGender = gender;
-            document.getElementById('genderSelection').classList.add('hidden');
+            document.getElementById('genderSelection').classList.remove('show');
             document.getElementById('mainContainer').classList.add('active');
             
             updateSyncStatus('updating', '📊 어드민 실시간 동기화 중...');
@@ -1226,11 +1669,336 @@
 
         // 성별 선택 화면으로 돌아가기
         function backToGenderSelection() {
-            document.getElementById('genderSelection').classList.remove('hidden');
+            document.getElementById('genderSelection').classList.add('show');
             document.getElementById('mainContainer').classList.remove('active');
             currentGender = null;
             currentCategory = null;
             hierarchyStructure = {};
+        }
+
+        // 햄버거 메뉴 토글
+        function toggleHamburgerMenu() {
+            const overlay = document.getElementById('hamburgerOverlay');
+            overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function closeHamburgerMenu() {
+            document.getElementById('hamburgerOverlay').style.display = 'none';
+        }
+
+        // AI 얼굴 분석 열기
+        function openAIFaceAnalysis() {
+            window.open('https://hairgator-face.web.app', '_blank');
+            closeHamburgerMenu();
+        }
+
+        // 고객 검색 모달 표시
+        function showCustomerSearch() {
+            const modalHTML = `
+                <div class="customer-search-modal" id="customerSearchModal">
+                    <div class="search-container">
+                        <h3>👤 고객 조회</h3>
+                        
+                        <div class="search-input">
+                            <input type="text" id="customerSearchInput" 
+                                   placeholder="이름 또는 전화번호 끝자리로 검색">
+                            <button onclick="searchCustomers()">🔍</button>
+                        </div>
+                        
+                        <div id="customerSearchResults"></div>
+                        
+                        <button class="close-search" onclick="closeCustomerSearch()">닫기</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            closeHamburgerMenu();
+        }
+
+        // 고객 검색
+        async function searchCustomers() {
+            const searchTerm = document.getElementById('customerSearchInput').value.trim();
+            
+            if (!searchTerm || !currentDesigner) return;
+            
+            try {
+                const customersSnapshot = await db.collection('customers')
+                    .where('designerId', '==', currentDesigner)
+                    .get();
+                
+                const matchedCustomers = [];
+                customersSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.customerName.includes(searchTerm) || 
+                        data.phoneLastDigits.includes(searchTerm)) {
+                        matchedCustomers.push({id: doc.id, ...data});
+                    }
+                });
+                
+                showSearchResults(matchedCustomers);
+            } catch (error) {
+                console.error('고객 검색 오류:', error);
+            }
+        }
+
+        // 검색 결과 표시
+        function showSearchResults(customers) {
+            const resultsDiv = document.getElementById('customerSearchResults');
+            
+            if (customers.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
+                return;
+            }
+            
+            const resultsHTML = customers.map(customer => `
+                <div class="customer-result" onclick="showCustomerDetail('${customer.id}')">
+                    <div class="customer-info">
+                        <strong>${customer.customerName}</strong>
+                        <span class="phone">(${customer.phoneLastDigits})</span>
+                    </div>
+                    <div class="visit-count">${customer.visitHistory?.length || 0}회 방문</div>
+                </div>
+            `).join('');
+            
+            resultsDiv.innerHTML = resultsHTML;
+        }
+
+        // 고객 상세 정보 표시
+        async function showCustomerDetail(customerId) {
+            try {
+                const customerDoc = await db.collection('customers').doc(customerId).get();
+                const customerData = customerDoc.data();
+                
+                const detailHTML = `
+                    <div class="customer-detail-modal" id="customerDetailModal">
+                        <div class="detail-container">
+                            <div class="customer-header">
+                                <h3>${customerData.customerName} (${customerData.phoneLastDigits})</h3>
+                                <button onclick="closeCustomerDetail()">×</button>
+                            </div>
+                            
+                            <div class="visit-history">
+                                <h4>📅 방문 기록</h4>
+                                ${renderVisitHistory(customerData.visitHistory || [])}
+                            </div>
+                            
+                            <div class="favorite-styles">
+                                <h4>❤️ 좋아하는 스타일</h4>
+                                ${renderFavoriteStyles(customerData.favoriteStyles || [])}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', detailHTML);
+            } catch (error) {
+                console.error('고객 상세 조회 오류:', error);
+            }
+        }
+
+        // 방문 기록 렌더링
+        function renderVisitHistory(visitHistory) {
+            if (visitHistory.length === 0) {
+                return '<div class="no-history">방문 기록이 없습니다</div>';
+            }
+            
+            return visitHistory.map(visit => `
+                <div class="visit-item">
+                    <div class="visit-date">${formatDate(visit.date)}</div>
+                    <div class="visit-styles">
+                        ${visit.selectedStyles.map(style => `
+                            <div class="style-item ${style.isLiked ? 'liked' : ''}">
+                                <span class="style-code">${style.code}</span>
+                                <span class="style-name">${style.name}</span>
+                                ${style.isLiked ? '<span class="heart">❤️</span>' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${visit.notes ? `<div class="visit-notes">"${visit.notes}"</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // 즐겨찾는 스타일 렌더링
+        function renderFavoriteStyles(favoriteStyles) {
+            if (favoriteStyles.length === 0) {
+                return '<div class="no-history">좋아하는 스타일이 없습니다</div>';
+            }
+            
+            return favoriteStyles.map(style => `
+                <div class="style-item liked">
+                    <span class="style-code">${style.code}</span>
+                    <span class="style-name">${style.name}</span>
+                    <span class="heart">❤️</span>
+                </div>
+            `).join('');
+        }
+
+        // 날짜 포맷팅
+        function formatDate(dateValue) {
+            if (!dateValue) return '날짜 정보 없음';
+            
+            let date;
+            if (dateValue.toDate) {
+                date = dateValue.toDate(); // Firebase Timestamp
+            } else {
+                date = new Date(dateValue);
+            }
+            
+            return date.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // 고객 검색 모달 닫기
+        function closeCustomerSearch() {
+            const modal = document.getElementById('customerSearchModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // 고객 상세 모달 닫기
+        function closeCustomerDetail() {
+            const modal = document.getElementById('customerDetailModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // 새 고객 모달 표시
+        function showNewCustomerModal() {
+            const modalHTML = `
+                <div class="new-customer-modal" id="newCustomerModal">
+                    <div class="new-customer-container">
+                        <h3>✨ 새 고객 등록</h3>
+                        
+                        <div class="customer-input-group">
+                            <label>👤 고객 이름</label>
+                            <input type="text" id="newCustomerName" placeholder="홍길동">
+                        </div>
+                        
+                        <div class="customer-input-group">
+                            <label>📱 연락처 끝 4자리</label>
+                            <input type="number" id="newCustomerPhone" placeholder="5678" maxlength="4">
+                        </div>
+                        
+                        <div class="customer-buttons">
+                            <button class="save-customer-btn" onclick="saveNewCustomer()">💾 저장</button>
+                            <button class="cancel-customer-btn" onclick="closeNewCustomerModal()">취소</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        // 새 고객 저장
+        async function saveNewCustomer() {
+            const name = document.getElementById('newCustomerName').value.trim();
+            const phone = document.getElementById('newCustomerPhone').value.trim();
+            
+            if (!name || phone.length !== 4) {
+                alert('이름과 전화번호 끝 4자리를 정확히 입력해주세요');
+                return;
+            }
+            
+            const customerId = `${currentDesigner}_${name}_${phone}`;
+            
+            try {
+                // 중복 체크
+                const existingCustomer = await db.collection('customers').doc(customerId).get();
+                
+                if (existingCustomer.exists) {
+                    alert('이미 등록된 고객입니다');
+                    return;
+                }
+                
+                // 새 고객 등록
+                await db.collection('customers').doc(customerId).set({
+                    designerId: currentDesigner,
+                    designerName: currentDesignerName,
+                    customerName: name,
+                    phoneLastDigits: phone,
+                    createdAt: new Date(),
+                    visitHistory: [],
+                    favoriteStyles: []
+                });
+                
+                // 현재 고객 설정
+                currentCustomer = {
+                    id: customerId,
+                    name: name,
+                    phone: phone
+                };
+                
+                sessionStorage.setItem('currentCustomer', JSON.stringify(currentCustomer));
+                
+                alert(`✅ ${name}(${phone}) 고객이 등록되었습니다!`);
+                closeNewCustomerModal();
+                
+                // 디자이너 고객 수 업데이트
+                await db.collection('designers').doc(currentDesigner).update({
+                    customerCount: firebase.firestore.FieldValue.increment(1)
+                });
+                
+            } catch (error) {
+                console.error('고객 등록 오류:', error);
+                alert('고객 등록에 실패했습니다');
+            }
+        }
+
+        // 새 고객 모달 닫기
+        function closeNewCustomerModal() {
+            const modal = document.getElementById('newCustomerModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // 스타일 좋아요 토글
+        async function toggleStyleLike() {
+            if (!currentCustomer || !currentStyleCode) {
+                alert('먼저 고객을 선택해주세요');
+                return;
+            }
+            
+            try {
+                const today = new Date();
+                const visitData = {
+                    date: today,
+                    selectedStyles: [{
+                        code: currentStyleCode,
+                        name: currentStyleName,
+                        isLiked: true,
+                        timestamp: today
+                    }]
+                };
+                
+                // 고객 방문 기록에 추가
+                await db.collection('customers').doc(currentCustomer.id).update({
+                    visitHistory: firebase.firestore.FieldValue.arrayUnion(visitData),
+                    favoriteStyles: firebase.firestore.FieldValue.arrayUnion({
+                        code: currentStyleCode,
+                        name: currentStyleName
+                    })
+                });
+                
+                // 좋아요 버튼 업데이트
+                const likeBtn = document.getElementById('likeBtn');
+                likeBtn.classList.add('liked');
+                likeBtn.textContent = '💖 좋아요 완료!';
+                
+                alert('❤️ 스타일이 저장되었습니다!');
+                
+            } catch (error) {
+                console.error('좋아요 저장 오류:', error);
+                alert('저장에 실패했습니다');
+            }
         }
 
         // Firebase에서만 계층 구조 로드
@@ -1672,38 +2440,158 @@
             const modalImage = document.getElementById('modalImage');
             const modalCode = document.getElementById('modalCode');
             const modalName = document.getElementById('modalName');
+            const likeBtn = document.getElementById('likeBtn');
 
             const finalImageUrl = imageUrl || generatePlaceholderImage(name);
             
             modalImage.src = finalImageUrl;
             modalCode.textContent = code;
             modalName.textContent = name;
+            
+            // 현재 스타일 정보 저장
+            currentStyleCode = code;
+            currentStyleName = name;
+            
+            // 좋아요 버튼 초기화
+            likeBtn.classList.remove('liked');
+            likeBtn.textContent = '❤️ 좋아요';
+            
             modal.style.display = 'block';
         }
+
+        // 기기별 최적화 안내 표시
+        function showDeviceOptimizationNotice() {
+            const notice = document.getElementById('deviceNotice');
+            const screenWidth = window.innerWidth;
+            
+            if (screenWidth < 768) {
+                // 핸드폰: 태블릿 권장 안내
+                notice.innerHTML = '📱 태블릿에서 최적의 경험을 제공합니다';
+                notice.className = 'device-notice show';
+                
+                // 5초 후 자동 숨김
+                setTimeout(() => {
+                    notice.classList.remove('show');
+                }, 5000);
+                
+            } else if (screenWidth >= 768) {
+                // 태블릿: 최적화 완료 안내
+                notice.innerHTML = '🎉 태블릿 최적화 모드로 실행 중입니다';
+                notice.className = 'device-notice show';
+                
+                // 3초 후 자동 숨김
+                setTimeout(() => {
+                    notice.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // PWA 서비스 워커 등록
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then(function(registration) {
+                            console.log('🎉 PWA 서비스 워커 등록 성공:', registration.scope);
+                        })
+                        .catch(function(error) {
+                            console.log('❌ PWA 서비스 워커 등록 실패:', error);
+                        });
+                });
+            }
+        }
+
+        // 팝업 형태 반응형 처리
+        function initializeMobileApp() {
+            // PWA 서비스 워커 등록
+            registerServiceWorker();
+            
+            // 기기별 최적화 안내 표시
+            showDeviceOptimizationNotice();
+            
+            // 현재 화면 방향과 크기 확인
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const screenWidth = window.innerWidth;
+            const deviceType = screenWidth >= 768 ? 'tablet' : 'phone';
+            
+            console.log('📱 PWA 반응형 모드:', {
+                width: window.innerWidth,
+                height: window.innerHeight,
+                orientation: isPortrait ? 'portrait' : 'landscape',
+                deviceType: deviceType
+            });
+            
+            // 방향 변화 감지
+            window.addEventListener('orientationchange', function() {
+                setTimeout(function() {
+                    const newIsPortrait = window.innerHeight > window.innerWidth;
+                    console.log('🔄 방향 변경:', newIsPortrait ? 'portrait' : 'landscape');
+                    hideAddressBar();
+                    
+                    // 방향 변경 시 기기별 안내 다시 표시
+                    setTimeout(showDeviceOptimizationNotice, 500);
+                }, 100);
+            });
+        }
+        
+        // iOS Safari 주소창 숨기기
+        function hideAddressBar() {
+            setTimeout(function() {
+                window.scrollTo(0, 1);
+            }, 0);
+        }
+        
+        // 확대/축소 완전 방지
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gesturechange', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gestureend', function(e) {
+            e.preventDefault();
+        });
+        
+        // 더블탭 줌 방지
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // 스와이프 새로고침 방지 (iOS Safari)
+        let startY = 0;
+        document.addEventListener('touchstart', function(e) {
+            startY = e.touches[0].pageY;
+        });
+        
+        document.addEventListener('touchmove', function(e) {
+            const y = e.touches[0].pageY;
+            // 페이지 최상단에서 아래로 스와이프할 때 새로고침 방지
+            if (startY <= 10 && y > startY) {
+                e.preventDefault();
+            }
+        }, { passive: false });
 
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
             initializeModal();
-            console.log('🎉 HAIRGATOR 실시간 동기화 인덱스 로드 완료!');
-            
-            window.debugHairGator = {
-                hierarchyStructure,
-                currentGender,
-                currentCategory,
-                firebaseConnected,
-                loadHierarchyFromFirebaseOnly,
-                loadStylesFromHierarchyRealtime,
-                testConnection: () => {
-                    if (firebaseConnected) {
-                        console.log('✅ Firebase 연결 상태 양호');
-                        return true;
-                    } else {
-                        console.log('❌ Firebase 연결 실패');
-                        return false;
-                    }
-                }
-            };
+            initializeMobileApp();
+            hideAddressBar();
+            console.log('🚀 HAIRGATOR 완성본 로드 완료!');
         });
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', function() {
+            console.log('🎉 HAIRGATOR 디자이너 로그인 + 고객 관리 시스템 준비 완료!');
+        });
+        
+        console.log('🚀 HAIRGATOR 완전체 시작');
     </script>
 </body>
 </html>
