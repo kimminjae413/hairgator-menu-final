@@ -851,7 +851,7 @@
             background-color: rgba(255, 20, 147, 0.7);
         }
 
-        /* 헤어스타일 그리드 - 가운데 정렬 */
+        /* 헤어스타일 그리드 - 모든 기기에서 한 줄 스와이프 */
         .hairstyle-grid {
             display: flex;
             gap: 20px;
@@ -860,32 +860,11 @@
             -webkit-overflow-scrolling: touch;
             scrollbar-width: thin;
             padding-bottom: 10px;
-            padding: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
+            padding: 0 20px 10px;
+            justify-content: flex-start;
+            flex-wrap: nowrap;
             
             touch-action: pan-x;
-        }
-
-        /* 작은 화면에서는 스크롤, 큰 화면에서는 그리드 */
-        @media screen and (max-width: 768px) {
-            .hairstyle-grid {
-                justify-content: flex-start;
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                padding: 0 20px 10px;
-            }
-        }
-
-        @media screen and (min-width: 769px) {
-            .hairstyle-grid {
-                justify-content: center;
-                flex-wrap: wrap;
-                overflow-x: visible;
-                padding: 20px;
-                max-width: 1200px;
-                margin: 0 auto 30px;
-            }
         }
 
         .hairstyle-grid::-webkit-scrollbar {
@@ -914,12 +893,7 @@
             transition: all 0.3s ease;
             position: relative;
             flex-shrink: 0;
-        }
-
-        @media screen and (max-width: 768px) {
-            .hairstyle-card {
-                width: 140px;
-            }
+            width: 140px;
         }
 
         @media screen and (min-width: 769px) {
@@ -1355,7 +1329,7 @@
 
     <!-- 기기별 최적화 안내 -->
     <div class="device-notice" id="deviceNotice">
-        📱 태블릿에서 최적의 경험을 제공합니다
+        📱 모든 기기에서 가로 스와이프로 스타일을 확인하세요
     </div>
 
     <!-- 디자이너 로그인 화면 -->
@@ -1517,7 +1491,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-        console.log('🔧 HAIRGATOR 인덱스 시작 - Firebase 인덱스 오류 완전 해결 버전 (3000줄+)');
+        console.log('🔧 HAIRGATOR 최종본 시작 - 모든 기기 한 줄 스와이프 방식');
         
         // ✅ Firebase 설정 - 어드민과 완전히 동일
         const firebaseConfig = {
@@ -1799,7 +1773,7 @@
             closeHamburgerMenu();
         }
 
-        // 고객 검색 모달 표시 - 완전 구현
+        // 고객 검색 모달 표시
         function showCustomerSearch() {
             const modalHTML = `
                 <div class="customer-search-modal" id="customerSearchModal">
@@ -2800,7 +2774,6 @@
         // 기기별 최적화 안내 표시
         function showDeviceOptimizationNotice(customMessage = null) {
             const notice = document.getElementById('deviceNotice');
-            const screenWidth = window.innerWidth;
             
             if (customMessage) {
                 notice.innerHTML = customMessage;
@@ -2811,22 +2784,12 @@
                 return;
             }
             
-            if (screenWidth < 768) {
-                notice.innerHTML = '📱 태블릿에서 최적의 경험을 제공합니다';
-                notice.className = 'device-notice show';
-                
-                setTimeout(() => {
-                    notice.classList.remove('show');
-                }, 5000);
-                
-            } else if (screenWidth >= 768) {
-                notice.innerHTML = '🎉 태블릿 최적화 모드로 실행 중입니다';
-                notice.className = 'device-notice show';
-                
-                setTimeout(() => {
-                    notice.classList.remove('show');
-                }, 3000);
-            }
+            notice.innerHTML = '📱 모든 기기에서 가로 스와이프로 스타일을 확인하세요';
+            notice.className = 'device-notice show';
+            
+            setTimeout(() => {
+                notice.classList.remove('show');
+            }, 5000);
         }
 
         // iOS Safari 주소창 숨기기
@@ -2899,12 +2862,12 @@
                 console.log('🔐 새로운 세션 - 로그인 필요');
             }
             
-            console.log('🚀 HAIRGATOR 완성본 로드 완료! (PWA + 가운데 정렬 적용 + 3000줄+)');
+            console.log('🚀 HAIRGATOR 최종본 로드 완료! (모든 기기 한 줄 스와이프)');
         });
 
         // 페이지 로드 시 초기화
         window.addEventListener('load', function() {
-            console.log('🎉 HAIRGATOR PWA 모드 완료! (Firebase 인덱스 오류 해결 + 가운데 정렬 + 완전 기능)');
+            console.log('🎉 HAIRGATOR 최종본 완료! (모든 기기 한 줄 스와이프 + 완전 기능)');
             
             if (window.matchMedia('(display-mode: standalone)').matches) {
                 console.log('📱 PWA 독립 실행 모드');
