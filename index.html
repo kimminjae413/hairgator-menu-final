@@ -851,6 +851,99 @@
             background-color: rgba(255, 20, 147, 0.7);
         }
 
+        /* 길이 가이드 도움말 버튼 */
+        .length-guide-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 20, 147, 0.2);
+            border: 1px solid #FF1493;
+            color: #FF1493;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .length-guide-btn:hover {
+            background: #FF1493;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* 길이 가이드 모달 */
+        .length-guide-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10003;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .length-guide-container {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #FF1493;
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90%;
+            width: 500px;
+            text-align: center;
+            position: relative;
+        }
+
+        .length-guide-container h3 {
+            color: #FF1493;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .length-guide-image {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+        }
+
+        .length-guide-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .length-guide-close:hover {
+            color: #fff;
+        }
+
+        @media screen and (max-width: 600px) {
+            .length-guide-container {
+                padding: 20px;
+                width: 95%;
+            }
+            
+            .length-guide-container h3 {
+                font-size: 18px;
+            }
+        }
+
         /* 헤어스타일 그리드 - 모든 기기에서 한 줄 스와이프 + 가운데 정렬 */
         .hairstyle-grid {
             display: flex;
@@ -2024,9 +2117,16 @@
                 return;
             }
             
+            if (!firebaseConnected) {
+                alert('Firebase 연결이 필요합니다. 페이지를 새로고침해주세요.');
+                return;
+            }
+            
             const customerId = `${currentDesigner}_${name}_${phone}`;
             
             try {
+                console.log('🔄 신규 고객 등록 시작:', customerId);
+                
                 const existingCustomer = await db.collection('customers').doc(customerId).get();
                 
                 if (existingCustomer.exists) {
@@ -2052,16 +2152,35 @@
                 
                 sessionStorage.setItem('currentCustomer', JSON.stringify(currentCustomer));
                 
+                console.log('✅ 신규 고객 등록 완료');
                 alert(`✅ ${name}(${phone}) 고객이 등록되었습니다!`);
                 closeNewCustomerModal();
                 
-                await db.collection('designers').doc(currentDesigner).update({
-                    customerCount: firebase.firestore.FieldValue.increment(1)
-                });
+                // 디자이너 고객 수 증가 (실패해도 무시)
+                try {
+                    await db.collection('designers').doc(currentDesigner).update({
+                        customerCount: firebase.firestore.FieldValue.increment(1)
+                    });
+                } catch (updateError) {
+                    console.log('⚠️ 디자이너 고객 수 업데이트 실패 (무시)', updateError);
+                }
                 
             } catch (error) {
-                console.error('고객 등록 오류:', error);
-                alert('고객 등록에 실패했습니다');
+                console.error('❌ 신규 고객 등록 오류:', error);
+                
+                let errorMessage = '고객 등록에 실패했습니다.';
+                
+                if (error.code === 'permission-denied') {
+                    errorMessage = 'Firebase 권한 오류입니다. 관리자에게 문의하세요.';
+                } else if (error.code === 'unavailable') {
+                    errorMessage = 'Firebase 서비스를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.';
+                } else if (error.code === 'network-request-failed') {
+                    errorMessage = '네트워크 연결을 확인하고 다시 시도해주세요.';
+                } else {
+                    errorMessage = `등록 실패: ${error.message || '알 수 없는 오류'}`;
+                }
+                
+                alert(errorMessage);
             }
         }
 
@@ -2126,11 +2245,18 @@
                 return;
             }
             
+            if (!firebaseConnected) {
+                alert('Firebase 연결이 필요합니다. 페이지를 새로고침해주세요.');
+                return;
+            }
+            
             const customerId = `${currentDesigner}_${name}_${phone}`;
             
             try {
+                console.log('🔄 고객 등록 시작:', customerId);
+                
                 const visitData = {
-                    date: firebase.firestore.FieldValue.serverTimestamp(),
+                    date: new Date(),
                     gender: currentGender,
                     mainCategory: currentCategory,
                     subCategory: getCurrentSubCategory(),
@@ -2140,37 +2266,60 @@
                     designerName: currentDesignerName
                 };
 
+                console.log('📄 방문 데이터:', visitData);
+
                 const existingCustomer = await db.collection('customers').doc(customerId).get();
                 
                 if (existingCustomer.exists) {
+                    console.log('✅ 기존 고객 - 방문 기록 추가');
                     await db.collection('customers').doc(customerId).update({
                         visitHistory: firebase.firestore.FieldValue.arrayUnion(visitData)
                     });
                     
                     alert(`✅ ${name}(${phone}) 고객의 방문 기록이 추가되었습니다!`);
                 } else {
+                    console.log('🆕 신규 고객 - 새로 등록');
                     await db.collection('customers').doc(customerId).set({
                         designerId: currentDesigner,
                         designerName: currentDesignerName,
                         customerName: name,
                         phoneLastDigits: phone,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        createdAt: new Date(),
                         visitHistory: [visitData],
                         favoriteStyles: []
                     });
                     
-                    await db.collection('designers').doc(currentDesigner).update({
-                        customerCount: firebase.firestore.FieldValue.increment(1)
-                    });
+                    // 디자이너 고객 수 증가
+                    try {
+                        await db.collection('designers').doc(currentDesigner).update({
+                            customerCount: firebase.firestore.FieldValue.increment(1)
+                        });
+                    } catch (updateError) {
+                        console.log('⚠️ 디자이너 고객 수 업데이트 실패 (무시)', updateError);
+                    }
                     
                     alert(`✅ ${name}(${phone}) 신규 고객이 등록되었습니다!`);
                 }
                 
+                console.log('✅ 고객 등록 완료');
                 closeCustomerRegisterModal();
                 
             } catch (error) {
-                console.error('고객 등록 오류:', error);
-                alert('고객 등록에 실패했습니다');
+                console.error('❌ 고객 등록 오류:', error);
+                
+                let errorMessage = '고객 등록에 실패했습니다.';
+                
+                if (error.code === 'permission-denied') {
+                    errorMessage = 'Firebase 권한 오류입니다. 관리자에게 문의하세요.';
+                } else if (error.code === 'unavailable') {
+                    errorMessage = 'Firebase 서비스를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.';
+                } else if (error.code === 'network-request-failed') {
+                    errorMessage = '네트워크 연결을 확인하고 다시 시도해주세요.';
+                } else {
+                    errorMessage = `등록 실패: ${error.message || '알 수 없는 오류'}`;
+                }
+                
+                alert(errorMessage);
             }
         }
 
@@ -2254,9 +2403,27 @@
             document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
 
-        // 빠른 고객 선택 모달 닫기
-        function closeQuickCustomerModal() {
-            const modal = document.getElementById('quickCustomerModal');
+        // 길이 가이드 모달 표시
+        function showLengthGuide() {
+            const modalHTML = `
+                <div class="length-guide-modal" id="lengthGuideModal">
+                    <div class="length-guide-container">
+                        <button class="length-guide-close" onclick="closeLengthGuide()">×</button>
+                        <h3>✂️ 여성 헤어 길이 가이드</h3>
+                        <img class="length-guide-image" 
+                             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 600'%3E%3Crect width='400' height='600' fill='%23f0f0f0'/%3E%3C!-- 실루엣 --%3E%3Cellipse cx='200' cy='120' rx='80' ry='100' fill='%23ddd'/%3E%3Cellipse cx='200' cy='160' rx='60' ry='80' fill='%23ccc'/%3E%3Crect x='140' y='240' width='120' height='300' fill='%23ddd'/%3E%3C!-- H Length --%3E%3Ccircle cx='320' cy='80' r='4' fill='%23ff6b35'/%3E%3Cline x1='280' y1='80' x2='320' y2='80' stroke='%23ff6b35' stroke-width='2'/%3E%3Ctext x='330' y='85' font-family='Arial' font-size='14' fill='%23ff6b35'%3EH Length%3C/text%3E%3C!-- Short --%3E%3Ctext x='120' y='200' font-family='Arial' font-size='18' font-weight='bold' fill='%23333'%3EShort%3C/text%3E%3C!-- G Length --%3E%3Ccircle cx='320' cy='220' r='4' fill='%23ffd23f'/%3E%3Cline x1='280' y1='220' x2='320' y2='220' stroke='%23ffd23f' stroke-width='2'/%3E%3Ctext x='330' y='225' font-family='Arial' font-size='14' fill='%23ffd23f'%3EG Length%3C/text%3E%3C!-- Bob --%3E%3Ctext x='85' y='260' font-family='Arial' font-size='18' font-weight='bold' fill='%23333'%3EBob%3C/text%3E%3C!-- F Length --%3E%3Ccircle cx='320' cy='280' r='4' fill='%2368b643'/%3E%3Cline x1='280' y1='280' x2='320' y2='280' stroke='%2368b643' stroke-width='2'/%3E%3Ctext x='330' y='285' font-family='Arial' font-size='14' fill='%2368b643'%3EF Length%3C/text%3E%3C!-- E Length --%3E%3Ccircle cx='320' cy='320' r='4' fill='%2317c3b2'/%3E%3Cline x1='280' y1='320' x2='320' y2='320' stroke='%2317c3b2' stroke-width='2'/%3E%3Ctext x='330' y='325' font-family='Arial' font-size='14' fill='%2317c3b2'%3EE Length%3C/text%3E%3C!-- Medium --%3E%3Ctext x='70' y='350' font-family='Arial' font-size='18' font-weight='bold' fill='%23333'%3EMedium%3C/text%3E%3C!-- D Length --%3E%3Ccircle cx='320' cy='380' r='4' fill='%23227c9d'/%3E%3Cline x1='280' y1='380' x2='320' y2='380' stroke='%23227c9d' stroke-width='2'/%3E%3Ctext x='330' y='385' font-family='Arial' font-size='14' fill='%23227c9d'%3ED Length%3C/text%3E%3C!-- Semi Long --%3E%3Ctext x='50' y='420' font-family='Arial' font-size='18' font-weight='bold' fill='%23333'%3ESemi Long%3C/text%3E%3C!-- C Length --%3E%3Ccircle cx='320' cy='440' r='4' fill='%235a4fcf'/%3E%3Cline x1='280' y1='440' x2='320' y2='440' stroke='%235a4fcf' stroke-width='2'/%3E%3Ctext x='330' y='445' font-family='Arial' font-size='14' fill='%235a4fcf'%3EC Length%3C/text%3E%3C!-- B Length --%3E%3Ccircle cx='320' cy='500' r='4' fill='%239b59b6'/%3E%3Cline x1='280' y1='500' x2='320' y2='500' stroke='%239b59b6' stroke-width='2'/%3E%3Ctext x='330' y='505' font-family='Arial' font-size='14' fill='%239b59b6'%3EB Length%3C/text%3E%3C!-- Long --%3E%3Ctext x='90' y='530' font-family='Arial' font-size='18' font-weight='bold' fill='%23333'%3ELong%3C/text%3E%3C!-- A Length --%3E%3Ccircle cx='320' cy='560' r='4' fill='%23e91e63'/%3E%3Cline x1='280' y1='560' x2='320' y2='560' stroke='%23e91e63' stroke-width='2'/%3E%3Ctext x='330' y='565' font-family='Arial' font-size='14' fill='%23e91e63'%3EA Length%3C/text%3E%3C/svg%3E" 
+                             alt="여성 헤어 길이 가이드"
+                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 400 300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'200\' y=\'150\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'16\' fill=\'%23666\'%3E여성 헤어 길이 가이드%3C/text%3E%3C/svg%3E'">
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        // 길이 가이드 모달 닫기
+        function closeLengthGuide() {
+            const modal = document.getElementById('lengthGuideModal');
             if (modal) {
                 modal.remove();
             }
