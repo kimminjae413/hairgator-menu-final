@@ -19,6 +19,19 @@
         console.log('🔧 Service Worker 오류 방지 코드 실행됨');
     </script>
     
+    <!-- Firebase 설정을 전역으로 선언 -->
+    <script>
+        // Firebase 설정을 전역 변수로 선언
+        window.firebaseConfig = {
+            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            projectId: "hairgatormenu-4a43e",
+            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
+            messagingSenderId: "800038006875",
+            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        };
+    </script>
+    
     <!-- 외부 CSS 파일 -->
     <link rel="stylesheet" href="css/admin-styles.css">
 </head>
@@ -236,5 +249,38 @@
 
     <!-- JavaScript 파일 -->
     <script src="js/admin-main.js"></script>
+    
+    <!-- Firebase 초기화 백업 -->
+    <script>
+        // admin-main.js가 로드된 후 Firebase 초기화 확인
+        window.addEventListener('load', () => {
+            console.log('🔧 Admin 페이지 로드 완료');
+            
+            // Firebase가 초기화되지 않았다면 수동 초기화
+            setTimeout(() => {
+                if (!window.db || !firebase.apps.length) {
+                    console.warn('⚠️ Firebase 초기화 시도...');
+                    try {
+                        if (!firebase.apps.length) {
+                            firebase.initializeApp(firebaseConfig);
+                        }
+                        window.db = firebase.firestore();
+                        window.storage = firebase.storage();
+                        
+                        // 동기화 상태 업데이트
+                        const syncIndicator = document.getElementById('syncIndicator');
+                        if (syncIndicator) {
+                            syncIndicator.textContent = '✅ Firebase 연결됨';
+                            syncIndicator.className = 'sync-indicator connected';
+                        }
+                        
+                        console.log('✅ Firebase 수동 초기화 완료');
+                    } catch (error) {
+                        console.error('❌ Firebase 초기화 실패:', error);
+                    }
+                }
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
