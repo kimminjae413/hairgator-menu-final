@@ -204,19 +204,7 @@
     <script src="js/index-stats.js"></script>
     <script src="js/index-main.js"></script>
 
-    <!-- Service Worker 등록 -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('✅ Service Worker 등록 성공:', registration);
-                    })
-                    .catch(err => {
-                        console.log('❌ Service Worker 등록 실패:', err);
-                    });
-            });
-        }
-    </script>
+  
 </body>
+
 </html>
