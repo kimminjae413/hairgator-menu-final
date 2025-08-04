@@ -1829,3 +1829,182 @@ function selectGender(gender) {
     
     // 기존 코드 계속...
 }
+
+/* ===========================
+   남성 메뉴판 파란색 테마 CSS
+   =========================== */
+
+/* 남성 선택 시 적용되는 스타일 */
+body[data-gender="male"] {
+    /* 헤더 로고 색상 */
+    --primary-color: #4169E1;  /* Royal Blue */
+    --secondary-color: #1E90FF; /* Dodger Blue */
+}
+
+/* 남성 메뉴판 - 로고 색상 */
+body[data-gender="male"] .logo span {
+    color: #4169E1 !important;
+}
+
+/* 남성 메뉴판 - 네비게이션 탭 */
+body[data-gender="male"] .nav-tab.active::after {
+    background: linear-gradient(90deg, #4169E1, #1E90FF) !important;
+}
+
+body[data-gender="male"] .nav-tab:hover {
+    color: #1E90FF !important;
+}
+
+/* 남성 메뉴판 - 카테고리 설명 배경 */
+body[data-gender="male"] .category-description {
+    background-color: rgba(65, 105, 225, 0.05) !important;
+    border: 1px solid rgba(65, 105, 225, 0.2) !important;
+}
+
+/* 남성 메뉴판 - 헤어스타일 카드 호버 */
+body[data-gender="male"] .hairstyle-card:hover {
+    box-shadow: 0 10px 30px rgba(65, 105, 225, 0.3) !important;
+}
+
+/* 남성 메뉴판 - 스타일 코드 색상 */
+body[data-gender="male"] .hairstyle-code {
+    color: #4169E1 !important;
+}
+
+/* 남성 메뉴판 - 길이 탭 */
+body[data-gender="male"] .length-tab.active {
+    background-color: #4169E1 !important;
+}
+
+body[data-gender="male"] .length-tab:hover {
+    background-color: rgba(65, 105, 225, 0.7) !important;
+}
+
+/* 남성 메뉴판 - 길이 가이드 버튼 */
+body[data-gender="male"] .length-guide-btn {
+    background: rgba(65, 105, 225, 0.2) !important;
+    border-color: #4169E1 !important;
+    color: #4169E1 !important;
+}
+
+body[data-gender="male"] .length-guide-btn:hover {
+    background: #4169E1 !important;
+    color: white !important;
+}
+
+/* 남성 메뉴판 - 스크롤바 */
+body[data-gender="male"] .hairstyle-grid::-webkit-scrollbar-thumb {
+    background: #4169E1 !important;
+}
+
+body[data-gender="male"] .hairstyle-grid::-webkit-scrollbar-thumb:hover {
+    background: #1E90FF !important;
+}
+
+/* 남성 메뉴판 - 모달 정보 */
+body[data-gender="male"] .modal-info h3 {
+    color: #4169E1 !important;
+}
+
+/* 남성 메뉴판 - 좋아요 버튼 */
+body[data-gender="male"] .like-btn {
+    background: linear-gradient(135deg, #4169E1, #1E90FF) !important;
+}
+
+body[data-gender="male"] .like-btn:hover {
+    box-shadow: 0 5px 15px rgba(65, 105, 225, 0.3) !important;
+}
+
+body[data-gender="male"] .like-btn.liked {
+    background: linear-gradient(135deg, #1E90FF, #87CEEB) !important;
+}
+
+/* 남성 메뉴판 - 고객 등록 버튼은 그대로 유지 */
+body[data-gender="male"] .customer-register-btn {
+    background: linear-gradient(135deg, #4169E1, #1E90FF) !important;
+}
+
+/* 남성 메뉴판 - 새 고객 추가 버튼 */
+body[data-gender="male"] .add-customer-btn {
+    background: linear-gradient(135deg, #4169E1, #1E90FF) !important;
+}
+
+body[data-gender="male"] .add-customer-btn:hover {
+    box-shadow: 0 8px 25px rgba(65, 105, 225, 0.4) !important;
+}
+
+/* 남성 메뉴판 - 햄버거 메뉴 호버 */
+body[data-gender="male"] .menu-item:hover {
+    background: rgba(65, 105, 225, 0.1) !important;
+}
+
+/* 남성 메뉴판 - 메뉴 헤더 */
+body[data-gender="male"] .menu-header h3 {
+    color: #4169E1 !important;
+}
+
+/* 남성 메뉴판 - 뒤로 버튼 호버 */
+body[data-gender="male"] .back-btn:hover {
+    color: #4169E1 !important;
+}
+
+/* 남성 메뉴판 - 빈 상태 아이콘 */
+body[data-gender="male"] .empty-state-icon {
+    color: #4169E1 !important;
+    opacity: 0.3 !important;
+}
+
+/* 남성 메뉴판 - 로딩 스피너 */
+body[data-gender="male"] .spinner {
+    border-top-color: #4169E1 !important;
+}
+
+/* 남성 메뉴판 - 동기화 상태 (연결됨) */
+body[data-gender="male"] .sync-status.connected {
+    background-color: rgba(65, 105, 225, 0.9) !important;
+}
+
+/* 남성 메뉴판 - 섹션 제목 하단 보더 (선택사항) */
+body[data-gender="male"] .category-section h3 {
+    border-bottom: 2px solid #4169E1 !important;
+    padding-bottom: 10px !important;
+}
+
+/* 남성 메뉴판 - 고객 관련 모달 */
+body[data-gender="male"] .search-container,
+body[data-gender="male"] .detail-container,
+body[data-gender="male"] .new-customer-container,
+body[data-gender="male"] .register-container {
+    border-color: #4169E1 !important;
+}
+
+body[data-gender="male"] .search-container h3,
+body[data-gender="male"] .detail-container h3,
+body[data-gender="male"] .new-customer-container h3,
+body[data-gender="male"] .register-container h3 {
+    color: #4169E1 !important;
+}
+
+body[data-gender="male"] .search-input button {
+    background: #4169E1 !important;
+}
+
+body[data-gender="male"] .search-input input:focus {
+    border-color: #4169E1 !important;
+}
+
+body[data-gender="male"] .customer-result:hover {
+    background: rgba(65, 105, 225, 0.2) !important;
+}
+
+body[data-gender="male"] .visit-count {
+    color: #4169E1 !important;
+}
+
+body[data-gender="male"] .visit-date {
+    color: #4169E1 !important;
+}
+
+body[data-gender="male"] .save-customer-btn {
+    background: linear-gradient(135deg, #4169E1, #1E90FF) !important;
+}
