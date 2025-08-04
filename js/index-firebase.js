@@ -64,19 +64,19 @@ async function initializeFirebase() {
         firebaseConnected = true;
         updateSyncStatus('connected', '✅ Firebase 연결됨');
         
-        // 실시간 연결 상태 모니터링
-        const connectedRef = firebase.database().ref('.info/connected');
-        connectedRef.on('value', (snapshot) => {
-            if (snapshot.val() === true) {
-                console.log('✅ Firebase 실시간 연결 확인');
+        // Firestore 연결 상태 모니터링 (Realtime Database 대신)
+        db.collection('_health').doc('check').get()
+            .then(() => {
+                console.log('✅ Firestore 연결 확인');
                 firebaseConnected = true;
                 updateSyncStatus('connected', '✅ Firebase 연결됨');
-            } else {
-                console.log('❌ Firebase 연결 끊김');
-                firebaseConnected = false;
-                updateSyncStatus('disconnected', '❌ Firebase 연결 끊김');
-            }
-        });
+            })
+            .catch((error) => {
+                console.log('⚠️ Firestore 연결 확인 실패:', error);
+                // 오류가 있어도 계속 진행
+                firebaseConnected = true;
+                updateSyncStatus('connected', '✅ Firebase 연결됨 (오프라인 모드)');
+            });
         
         // 전역 변수로 설정 (다른 스크립트에서 사용 가능)
         window.db = db;
