@@ -1,5 +1,5 @@
-// Firebase 설정
-const firebaseConfig = {
+// Firebase 설정 - 전역 변수로 선언
+window.firebaseConfig = {
     apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
     authDomain: "hairgatormenu-4a43e.firebaseapp.com",
     projectId: "hairgatormenu-4a43e",
@@ -10,7 +10,6 @@ const firebaseConfig = {
 
 // Firebase 초기화
 console.log('🔥 Firebase 초기화 시작...');
-
 let db = null;
 let storage = null;
 let firebaseConnected = false;
@@ -38,7 +37,7 @@ async function initializeFirebase() {
         
         // Firebase 앱 초기화
         if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+            firebase.initializeApp(window.firebaseConfig);
             console.log('✅ Firebase 앱 초기화 완료');
         } else {
             console.log('✅ Firebase 앱 이미 초기화됨');
@@ -60,33 +59,31 @@ async function initializeFirebase() {
             }
         }
         
+        // 간단한 연결 테스트 (실제 존재하는 컬렉션으로)
+        try {
+            await db.collection('category_hierarchy').doc('test').get();
+            console.log('✅ Firestore 연결 테스트 성공');
+        } catch (error) {
+            // 에러가 나도 괜찮음 (권한 문제일 수 있음)
+            console.log('⚠️ Firestore 테스트:', error.code);
+        }
+        
         // 연결 상태 확인
         firebaseConnected = true;
         updateSyncStatus('connected', '✅ Firebase 연결됨');
         
-        // Firestore 연결 상태 모니터링 (Realtime Database 대신)
-        db.collection('_health').doc('check').get()
-            .then(() => {
-                console.log('✅ Firestore 연결 확인');
-                firebaseConnected = true;
-                updateSyncStatus('connected', '✅ Firebase 연결됨');
-            })
-            .catch((error) => {
-                console.log('⚠️ Firestore 연결 확인 실패:', error);
-                // 오류가 있어도 계속 진행
-                firebaseConnected = true;
-                updateSyncStatus('connected', '✅ Firebase 연결됨 (오프라인 모드)');
-            });
-        
         // 전역 변수로 설정 (다른 스크립트에서 사용 가능)
         window.db = db;
         window.storage = storage;
-        window.firebaseConnected = firebaseConnected;
+        window.firebaseConnected = true;
         
     } catch (error) {
         console.error('❌ Firebase 초기화 실패:', error);
         firebaseConnected = false;
         updateSyncStatus('disconnected', '❌ Firebase 초기화 실패: ' + error.message);
+        
+        // 실패해도 전역 변수는 설정
+        window.firebaseConnected = false;
     }
 }
 
