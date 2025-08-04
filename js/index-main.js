@@ -158,22 +158,96 @@ async function loadCategoryData() {
     try {
         console.log('📂 카테고리 데이터 로드 중...');
         
-        // category_hierarchy에서 데이터 로드
-        const categoryRef = db.collection('category_hierarchy').doc(selectedGender);
-        const doc = await categoryRef.get();
+        // category_hierarchy에서 해당 성별 데이터 로드
+        const snapshot = await db.collection('category_hierarchy')
+            .where('gender', '==', selectedGender)
+            .get();
         
-        if (doc.exists) {
-            categoryData = doc.data();
-            console.log('✅ 카테고리 데이터 로드 완료:', categoryData);
-            displayCategories();
-        } else {
+        if (snapshot.empty) {
             console.log('⚠️ 카테고리 데이터가 없습니다.');
-            showEmptyState();
+            showEmptyState('어드민에서 초기화가 필요합니다.');
+            return;
         }
+        
+        // 데이터 구조 재구성
+        categoryData = { categories: {} };
+        
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const mainCat = data.mainCategory;
+            const subCat = data.subCategory;
+            
+            // 대분류가 없으면 생성
+            if (!categoryData.categories[mainCat]) {
+                categoryData.categories[mainCat] = {
+                    name: mainCat,
+                    description: getCategoryDescription(selectedGender, mainCat),
+                    subcategories: {}
+                };
+            }
+            
+            // 중분류 추가
+            if (!categoryData.categories[mainCat].subcategories[subCat]) {
+                categoryData.categories[mainCat].subcategories[subCat] = {
+                    name: subCat,
+                    description: getSubCategoryDescription(selectedGender, mainCat, subCat)
+                };
+            }
+        });
+        
+        console.log('✅ 카테고리 데이터 로드 완료:', categoryData);
+        displayCategories();
+        
     } catch (error) {
         console.error('❌ 카테고리 로드 오류:', error);
-        showEmptyState();
+        showEmptyState('카테고리 로드 중 오류가 발생했습니다.');
     }
+}
+
+// 카테고리 설명 가져오기
+function getCategoryDescription(gender, category) {
+    const descriptions = {
+        male: {
+            'SIDE FRINGE': '사이드 프린지는 삼칠 볼륨이 있으면서 앞으로 떨어지는 스타일입니다.',
+            'SIDE PART': '사이드 파트는 클래식함과 모던함의 대명사로 스타일링에 따라 원하는 이미지를 자유롭게 표현할 수 있습니다.',
+            'FRINGE UP': '프린지 업은 훈하 아이비리그 헤어라고도 하며 짧고 자연스럽게 프린지를 올려놓은 짧은 머리 스타일입니다.',
+            'PUSHED BACK': '푸시드 백은 앞머리 부분의 볼륨감을 강조한 스타일로써, 밀부분으로 남기면서 뒤로 길수록 볼륨이 작아지는 것이 특징인 스타일입니다.',
+            'BUZZ': '버즈컷은 훈하 반삭이라고하여 클리퍼의 길이와 밀머리 스타일에 따라 다양한 스타일을 연출할 수 있습니다.',
+            'CROP': '크롭컷은 매우 짧은 라운드 형태로 깔끔하면서도 세련된 남성미를 강조한 스타일입니다.',
+            'MOHICAN': '모히칸은 얼머리를 짧게 하고 윗머리에 엣지(EDGE)감을 표현하여, 동근 얼굴형을 보완 할 수 있는 개성이 넘치는 스타일입니다.'
+        },
+        female: {
+            'LONG': '롱헤어는 여성스러움과 우아함을 동시에 표현할 수 있는 스타일입니다.',
+            'SEMI LONG': '세미롱은 관리하기 쉬우면서도 다양한 스타일링이 가능한 길이입니다.',
+            'MEDIUM': '미디엄 헤어는 활동적이면서도 여성스러운 매력을 표현할 수 있습니다.',
+            'BOB': '보브컷은 클래식하면서도 모던한 느낌을 주는 대표적인 여성 헤어스타일입니다.',
+            'SHORT': '숏헤어는 시크하고 세련된 이미지를 연출하는 스타일입니다.'
+        }
+    };
+    
+    return descriptions[gender]?.[category] || '';
+}
+
+// 서브카테고리 설명 가져오기
+function getSubCategoryDescription(gender, mainCategory, subCategory) {
+    // 필요시 서브카테고리별 설명 추가
+    return '';
+}
+
+// 빈 상태 표시 수정
+function showEmptyState(message = '카테고리가 없습니다') {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+        <div class="empty-state">
+            <div class="empty-state-icon">📂</div>
+            <div class="empty-state-title">${message}</div>
+            <div class="empty-state-message">
+                <a href="/admin.html" target="_blank" style="color: #FF1493;">
+                    관리자 페이지에서 초기화를 실행해주세요
+                </a>
+            </div>
+        </div>
+    `;
 }
 
 // ========== 카테고리 표시 ==========
@@ -514,3 +588,4 @@ function showEmptyState() {
 }
 
 console.log('✅ index-main.js 로드 완료');
+
