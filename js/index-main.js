@@ -541,14 +541,14 @@ function getMainCategoryDescription(mainCategory) {
         'LONG': '롱 헤어는 여성스러움과 우아함을 동시에 표현할 수 있는 대표적인 스타일입니다. 다양한 연출이 가능하며 개인의 취향에 따라 웨이브나 스트레이트 등으로 변화를 줄 수 있습니다.',
         'SEMI LONG': '세미 롱 헤어는 롱과 미디엄의 중간 길이로, 여성스러움을 유지하면서도 관리가 용이한 실용적인 스타일입니다.',
         'MEDIUM': '미디엄 헤어는 관리의 편의성과 스타일링의 다양성을 모두 갖춘 실용적인 길이입니다. 직장인부터 학생까지 다양한 연령대에 적합합니다.',
-        'BOB': '밥 헤어는 턱선 근처의 깔끔한 라인이 특징으로, 모던하고 세련된 느낌을 연출할 수 있는 클래식한 스타일입니다.',
+        'BOB': '보브 헤어는 턱선 근처의 깔끔한 라인이 특징으로, 모던하고 세련된 느낌을 연출할 수 있는 클래식한 스타일입니다.',
         'SHORT': '숏 헤어는 세련되고 시크한 분위기를 연출하며, 얼굴형을 또렷하게 부각시키는 스타일입니다. 관리가 쉽고 활동적인 이미지를 표현할 수 있습니다.'
     };
     
     return descriptions[mainCategory] || `${mainCategory} 스타일에 대한 설명입니다.`;
 }
 
-// 카테고리 실시간 렌더링
+// 카테고리 실시간 렌더링 (수정된 버전)
 function renderCategoryRealtime(categoryData) {
     const content = document.getElementById('content');
     
@@ -577,9 +577,12 @@ function renderCategoryRealtime(categoryData) {
     }
 
     const orderedLengthTypes = hierarchyStructure[currentGender]?.[currentCategory] || lengthTypes;
-    orderedLengthTypes.forEach((lengthType, index) => {
+    let firstValidTab = null;  // 첫 번째 유효한 탭 저장
+    
+    orderedLengthTypes.forEach((lengthType) => {
         if (lengthTypes.includes(lengthType)) {
-            const isActive = index === 0 ? 'active' : '';
+            if (!firstValidTab) firstValidTab = lengthType;  // 첫 번째 유효한 탭 기억
+            const isActive = lengthType === firstValidTab ? 'active' : '';  // 첫 번째 유효한 탭에만 active
             html += `<div class="length-tab ${isActive}" data-length="${lengthType}" onclick="switchLengthTab('${lengthType}')">${lengthType}</div>`;
         }
     });
@@ -587,13 +590,13 @@ function renderCategoryRealtime(categoryData) {
     html += `</div>`;
 
     const orderedLengthList = hierarchyStructure[currentGender]?.[currentCategory] || Object.keys(categoryData.styles);
-    const primaryLengthType = orderedLengthList[0];
+    const primaryLengthType = firstValidTab || orderedLengthList[0];  // firstValidTab 사용
     
     for (const lengthType of orderedLengthList) {
         if (!categoryData.styles[lengthType]) continue;
         
         const styles = categoryData.styles[lengthType];
-        const isActive = lengthType === primaryLengthType ? 'active' : '';
+        const isActive = lengthType === primaryLengthType ? 'active' : '';  // 수정된 부분
         
         html += `<div class="length-section ${isActive}" data-length="${lengthType}">`;
 
@@ -639,7 +642,7 @@ function renderCategoryRealtime(categoryData) {
     content.innerHTML = html;
 }
 
-// 빈 스타일 실시간 렌더링
+// 빈 스타일 실시간 렌더링 (수정된 버전)
 function renderEmptyStylesRealtime(mainCategory, subCategories) {
     const content = document.getElementById('content');
     
@@ -656,16 +659,19 @@ function renderEmptyStylesRealtime(mainCategory, subCategories) {
     }
 
     const orderedSubCategories = hierarchyStructure[currentGender]?.[mainCategory] || subCategories;
-    orderedSubCategories.forEach((subCategory, index) => {
-        const isActive = index === 0 ? 'active' : '';
+    let firstValidTab = null;  // 첫 번째 유효한 탭 저장
+    
+    orderedSubCategories.forEach((subCategory) => {
+        if (!firstValidTab) firstValidTab = subCategory;  // 첫 번째 탭 기억
+        const isActive = subCategory === firstValidTab ? 'active' : '';  // 첫 번째 탭에만 active
         html += `<div class="length-tab ${isActive}" data-length="${subCategory}" onclick="switchLengthTab('${subCategory}')">${subCategory}</div>`;
     });
     
     html += `</div>`;
 
     const orderedEmptyCategories = hierarchyStructure[currentGender]?.[mainCategory] || subCategories;
-    orderedEmptyCategories.forEach((subCategory, index) => {
-        const isActive = index === 0 ? 'active' : '';
+    orderedEmptyCategories.forEach((subCategory) => {
+        const isActive = subCategory === firstValidTab ? 'active' : '';  // 수정된 부분
         html += `
             <div class="length-section ${isActive}" data-length="${subCategory}">
                 <div class="empty-state">
@@ -724,9 +730,9 @@ function showLengthGuide() {
                 <button class="length-guide-close" onclick="closeLengthGuide()">×</button>
                 <h3>✂️ 여성 헤어 길이 가이드</h3>
                 <img class="length-guide-image" 
-                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 600'%3E%3Crect width='400' height='600' fill='%23f0f0f0'/%3E%3C!-- 실루엣 --%3E%3Cellipse cx='200' cy='120' rx='80' ry='100' fill='%23ddd'/%3E%3Cellipse cx='200' cy='160' rx='60' ry='80' fill='%23ccc'/%3E%3Crect x='140' y='240' width='120' height='300' fill='%23ddd'/%3E%3C!-- H Length --%3E%3Ccircle cx='320' cy='80' r='4' fill='%23ff6b35'/%3E%3Cline x1='280' y1='80' x2='320' y2='80' stroke='%23ff6b35' stroke-width='2'/%3E%3Ctext x='330' y='85' font-family='Arial' font-size='14' fill='%23ff6b35'%3EH Length%3C/text%3E%3C!-- Short --%3E%3Ctext x='120' y='200' font-family='Arial' font-size='18' font-weight='bold' fill='%23333'%3EShort%3C/text%3E%3C!-- G Length --%3E%3Ccircle cx='320' cy='220' r='4' fill='%23ffd23f'/%3E%3Cline x1='280' y1='220' x2='320' y2='220' stroke='%23ffd23f' stroke-width='2'/%3E%3Ctext x='330' y='225' font-family='Arial' font-size='14' fill='%23ffd23f'%3EG Length%3C/text%3E%3C!-- Bob --%3E%3Ctext x='85' y='260' font-family='Arial' font-size='18' font-weight='bold' fill='%23333'%3EBob%3C/text%3E%3C!-- F Length --%3E%3Ccircle cx='320' cy='280' r='4' fill='%2368b643'/%3E%3Cline x1='280' y1='280' x2='320' y2='280' stroke='%2368b643' stroke-width='2'/%3E%3Ctext x='330' y='285' font-family='Arial' font-size='14' fill='%2368b643'%3EF Length%3C/text%3E%3C!-- E Length --%3E%3Ccircle cx='320' cy='320' r='4' fill='%2317c3b2'/%3E%3Cline x1='280' y1='320' x2='320' y2='320' stroke='%2317c3b2' stroke-width='2'/%3E%3Ctext x='330' y='325' font-family='Arial' font-size='14' fill='%2317c3b2'%3EE Length%3C/text%3E%3C!-- Medium --%3E%3Ctext x='70' y='350' font-family='Arial' font-size='18' font-weight='bold' fill='%23333'%3EMedium%3C/text%3E%3C!-- D Length --%3E%3Ccircle cx='320' cy='380' r='4' fill='%23227c9d'/%3E%3Cline x1='280' y1='380' x2='320' y2='380' stroke='%23227c9d' stroke-width='2'/%3E%3Ctext x='330' y='385' font-family='Arial' font-size='14' fill='%23227c9d'%3ED Length%3C/text%3E%3C!-- Semi Long --%3E%3Ctext x='50' y='420' font-family='Arial' font-size='18' font-weight='bold' fill='%23333'%3ESemi Long%3C/text%3E%3C!-- C Length --%3E%3Ccircle cx='320' cy='440' r='4' fill='%235a4fcf'/%3E%3Cline x1='280' y1='440' x2='320' y2='440' stroke='%235a4fcf' stroke-width='2'/%3E%3Ctext x='330' y='445' font-family='Arial' font-size='14' fill='%235a4fcf'%3EC Length%3C/text%3E%3C!-- B Length --%3E%3Ccircle cx='320' cy='500' r='4' fill='%239b59b6'/%3E%3Cline x1='280' y1='500' x2='320' y2='500' stroke='%239b59b6' stroke-width='2'/%3E%3Ctext x='330' y='505' font-family='Arial' font-size='14' fill='%239b59b6'%3EB Length%3C/text%3E%3C!-- Long --%3E%3Ctext x='90' y='530' font-family='Arial' font-size='18' font-weight='bold' fill='%23333'%3ELong%3C/text%3E%3C!-- A Length --%3E%3Ccircle cx='320' cy='560' r='4' fill='%23e91e63'/%3E%3Cline x1='280' y1='560' x2='320' y2='560' stroke='%23e91e63' stroke-width='2'/%3E%3Ctext x='330' y='565' font-family='Arial' font-size='14' fill='%23e91e63'%3EA Length%3C/text%3E%3C/svg%3E" 
+                     src="https://lh3.googleusercontent.com/d/15OgT9k5jCC6TjcJSImuQXcznS_HtFBVf=s1600" 
                      alt="여성 헤어 길이 가이드"
-                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 400 300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'200\' y=\'150\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'16\' fill=\'%23666\'%3E여성 헤어 길이 가이드%3C/text%3E%3C/svg%3E'">
+                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 400 300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'200\' y=\'150\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'16\' fill=\'%23666\'%3E이미지를 불러올 수 없습니다%3C/text%3E%3C/svg%3E'">
             </div>
         </div>
     `;
