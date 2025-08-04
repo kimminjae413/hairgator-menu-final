@@ -605,3 +605,26 @@ function updateSyncStatus(message) {
 }
 
 console.log('✅ index-main.js 로드 완료');
+
+// ========== 전역 함수 등록 ==========
+// HTML에서 접근 가능하도록 window 객체에 등록
+window.checkDesignerLogin = checkDesignerLogin;
+window.selectGender = selectGender;
+window.backToGenderSelection = backToGenderSelection;
+window.toggleHamburgerMenu = toggleHamburgerMenu;
+window.closeHamburgerMenu = closeHamburgerMenu;
+window.showCustomerSearch = showCustomerSearch;
+window.showPopularityStats = showPopularityStats;
+window.openAIFaceAnalysis = openAIFaceAnalysis;
+window.logoutDesigner = logoutDesigner;
+window.closeApp = closeApp;
+window.showNewCustomerModal = showNewCustomerModal;
+window.toggleStyleLike = toggleStyleLike;
+window.showCustomerRegisterModal = showCustomerRegisterModal;
+window.selectCategory = selectCategory;
+window.openImageModal = openImageModal;
+window.closeModal = function() {
+    document.getElementById('imageModal').style.display = 'none';
+};
+
+console.log('✅ 전역 함수 등록 완료');
