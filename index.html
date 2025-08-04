@@ -31,6 +31,19 @@
             });
         }
     </script>
+    
+    <!-- Firebase 설정을 전역으로 선언 -->
+    <script>
+        // Firebase 설정을 전역 변수로 선언
+        window.firebaseConfig = {
+            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            projectId: "hairgatormenu-4a43e",
+            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
+            messagingSenderId: "800038006875",
+            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        };
+    </script>
 </head>
 <body>
 
@@ -215,7 +228,7 @@
     <script src="js/index-stats.js"></script>
     <script src="js/index-main.js"></script>
     
-    <!-- 로딩 완료 확인 -->
+    <!-- 로딩 완료 확인 및 Firebase 백업 초기화 -->
     <script>
         console.log('📱 HAIRGATOR 앱 시작...');
         
@@ -223,14 +236,33 @@
         window.addEventListener('load', () => {
             console.log('✅ 모든 리소스 로드 완료');
             
-            // Firebase 연결 상태 확인
+            // Firebase 연결 타임아웃 - 5초 후에도 연결 안되면 강제 설정
             setTimeout(() => {
-                if (typeof firebase !== 'undefined') {
-                    console.log('✅ Firebase SDK 로드 확인');
-                } else {
-                    console.error('❌ Firebase SDK 로드 실패');
+                if (!window.firebaseConnected) {
+                    console.warn('⚠️ Firebase 연결 타임아웃, 오프라인 모드로 전환');
+                    window.firebaseConnected = true;
+                    
+                    // 로그인 버튼 활성화
+                    const loginBtn = document.querySelector('.login-btn');
+                    if (loginBtn && loginBtn.disabled) {
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = '🔍 확인 후 로그인';
+                        
+                        // 경고 메시지 제거
+                        const loginResult = document.getElementById('loginResult');
+                        if (loginResult) {
+                            loginResult.textContent = '';
+                        }
+                    }
+                    
+                    // 동기화 상태 업데이트
+                    const syncStatus = document.getElementById('syncStatus');
+                    if (syncStatus) {
+                        syncStatus.textContent = '⚠️ 오프라인 모드';
+                        syncStatus.className = 'sync-status offline';
+                    }
                 }
-            }, 1000);
+            }, 5000); // 5초 대기
         });
         
         // 개발자 도구 안내
