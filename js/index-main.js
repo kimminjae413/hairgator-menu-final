@@ -217,6 +217,10 @@ function selectGender(gender) {
     document.getElementById('genderSelection').classList.remove('show');
     document.getElementById('mainContainer').classList.add('active');
     
+    // 성별에 따른 테마 클래스 추가
+    document.getElementById('mainContainer').classList.remove('male', 'female');
+    document.getElementById('mainContainer').classList.add(gender);
+    
     updateSyncStatus('updating', '📊 어드민과 실시간 동기화 중...');
     loadHierarchyFromFirebaseOnly(gender);
 }
