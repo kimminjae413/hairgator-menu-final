@@ -38,9 +38,14 @@ async function initializeFirebase() {
     try {
         updateSyncIndicator('disconnected', '🔄 Firebase 연결 중...');
         
+        // window.firebaseConfig 사용
+        if (!window.firebaseConfig) {
+            throw new Error('Firebase 설정이 없습니다.');
+        }
+        
         let app;
         if (firebase.apps.length === 0) {
-            app = firebase.initializeApp(firebaseConfig);
+            app = firebase.initializeApp(window.firebaseConfig);
         } else {
             app = firebase.app();
         }
@@ -62,7 +67,6 @@ async function initializeFirebase() {
         handleFirebaseError(error);
     }
 }
-
 async function testFirebaseConnection() {
     try {
         // 권한 테스트를 위한 간단한 읽기 시도
@@ -1383,5 +1387,6 @@ window.addEventListener('error', function(event) {
     console.error('🚨 전역 오류:', event.error);
     addProgressLog(`🚨 오류: ${event.error.message}`, 'error');
 });
+
 
 console.log('✅ 모든 JavaScript 함수 정의 완료');
