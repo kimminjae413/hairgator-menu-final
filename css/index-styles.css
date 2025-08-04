@@ -1821,3 +1821,11 @@ body {
         line-height: 1.7 !important;
     }
 }
+function selectGender(gender) {
+    selectedGender = gender;
+    
+    // body에 성별 속성 추가
+    document.body.setAttribute('data-gender', gender);
+    
+    // 기존 코드 계속...
+}
