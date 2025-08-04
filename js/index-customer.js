@@ -1,798 +1,448 @@
-// ========== 고객 관리 기능 ==========
+// HAIRGATOR 고객 관리 시스템
 
-// 고객 검색 모달 표시
+// ========== 전화번호 유효성 검사 함수 ==========
+function validatePhoneNumber(phone) {
+    // 한국 휴대폰 번호 형식: 010-1234-5678
+    const phoneRegex = /^01[0-9]-[0-9]{3,4}-[0-9]{4}$/;
+    return phoneRegex.test(phone);
+}
+
+// ========== 전화번호 포맷팅 함수 ==========
+function formatPhoneNumber(input) {
+    // 숫자만 추출
+    const numbers = input.value.replace(/[^\d]/g, '');
+    
+    // 포맷팅
+    let formatted = '';
+    if (numbers.length <= 3) {
+        formatted = numbers;
+    } else if (numbers.length <= 7) {
+        formatted = numbers.substr(0, 3) + '-' + numbers.substr(3);
+    } else if (numbers.length <= 11) {
+        formatted = numbers.substr(0, 3) + '-' + numbers.substr(3, 4) + '-' + numbers.substr(7);
+    } else {
+        formatted = numbers.substr(0, 3) + '-' + numbers.substr(3, 4) + '-' + numbers.substr(7, 4);
+    }
+    
+    input.value = formatted;
+}
+
+// ========== 고객 검색 모달 표시 ==========
 function showCustomerSearch() {
-    const modalHTML = `
-        <div class="customer-search-modal" id="customerSearchModal">
-            <div class="search-container">
-                <h3>👤 고객 조회</h3>
-                
-                <div class="search-input">
-                    <input type="text" id="customerSearchInput" 
-                           placeholder="이름 또는 전화번호 끝자리로 검색">
-                    <button onclick="searchCustomers()">🔍</button>
-                </div>
-                
-                <div id="customerSearchResults"></div>
-                
-                <button class="close-search" onclick="closeCustomerSearch()">닫기</button>
+    closeHamburgerMenu();
+    
+    const modal = document.createElement('div');
+    modal.className = 'customer-search-modal';
+    modal.innerHTML = `
+        <div class="search-container">
+            <h3>🔍 고객 조회</h3>
+            <div class="search-input">
+                <input type="text" id="searchInput" placeholder="이름 또는 전화번호로 검색">
+                <button onclick="searchCustomers()">검색</button>
             </div>
+            <div id="searchResults"></div>
+            <button class="close-search" onclick="closeCustomerSearch()">닫기</button>
         </div>
     `;
     
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    closeHamburgerMenu();
+    document.body.appendChild(modal);
+    
+    // 엔터키로 검색
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            searchCustomers();
+        }
+    });
 }
 
-// 고객 검색 실행
+// ========== 고객 검색 ==========
 async function searchCustomers() {
-    const searchTerm = document.getElementById('customerSearchInput').value.trim();
+    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
     
-    if (!searchTerm || !currentDesigner) {
-        document.getElementById('customerSearchResults').innerHTML = 
-            '<div class="no-results">검색어를 입력해주세요</div>';
+    if (!searchTerm) {
+        alert('검색어를 입력해주세요.');
         return;
     }
     
     try {
-        const customersSnapshot = await db.collection('customers')
-            .where('designerId', '==', currentDesigner)
-            .get();
+        const designerInfo = JSON.parse(localStorage.getItem('designerInfo'));
+        const customersRef = db.collection('customers')
+            .where('designerId', '==', designerInfo.designerId);
         
-        const matchedCustomers = [];
-        customersSnapshot.forEach(doc => {
+        const snapshot = await customersRef.get();
+        let results = [];
+        
+        snapshot.forEach(doc => {
             const data = doc.data();
-            if (data.customerName.includes(searchTerm) || 
-                data.phoneLastDigits.includes(searchTerm)) {
-                matchedCustomers.push({id: doc.id, ...data});
+            const customer = { id: doc.id, ...data };
+            
+            // 이름 또는 전화번호 전체로 검색
+            if (customer.name.toLowerCase().includes(searchTerm) || 
+                customer.phone.includes(searchTerm)) {
+                results.push(customer);
             }
         });
         
-        showSearchResults(matchedCustomers);
+        displaySearchResults(results);
     } catch (error) {
         console.error('고객 검색 오류:', error);
-        document.getElementById('customerSearchResults').innerHTML = 
-            '<div class="no-results">검색 중 오류가 발생했습니다</div>';
+        alert('검색 중 오류가 발생했습니다.');
     }
 }
 
-// 검색 결과 표시
-function showSearchResults(customers) {
-    const resultsDiv = document.getElementById('customerSearchResults');
+// ========== 검색 결과 표시 ==========
+function displaySearchResults(results) {
+    const resultsDiv = document.getElementById('searchResults');
     
-    if (customers.length === 0) {
-        resultsDiv.innerHTML = '<div class="no-results">검색 결과가 없습니다</div>';
+    if (results.length === 0) {
+        resultsDiv.innerHTML = '<div class="no-results">검색 결과가 없습니다.</div>';
         return;
     }
     
-    const resultsHTML = customers.map(customer => `
+    resultsDiv.innerHTML = results.map(customer => `
         <div class="customer-result" onclick="showCustomerDetail('${customer.id}')">
             <div class="customer-info">
-                <strong>${customer.customerName}</strong>
-                <span class="phone">(${customer.phoneLastDigits})</span>
+                <strong>${customer.name}</strong>
+                <span class="phone">${customer.phone}</span>
             </div>
             <div class="visit-count">${customer.visitHistory?.length || 0}회 방문</div>
         </div>
     `).join('');
-    
-    resultsDiv.innerHTML = resultsHTML;
 }
 
-// 고객 상세 정보 표시
+// ========== 고객 상세 정보 표시 ==========
 async function showCustomerDetail(customerId) {
     try {
-        const customerDoc = await db.collection('customers').doc(customerId).get();
-        const customerData = customerDoc.data();
+        const doc = await db.collection('customers').doc(customerId).get();
+        if (!doc.exists) {
+            alert('고객 정보를 찾을 수 없습니다.');
+            return;
+        }
         
-        const detailHTML = `
-            <div class="customer-detail-modal" id="customerDetailModal">
-                <div class="detail-container">
-                    <div class="customer-header">
-                        <h3>${customerData.customerName} (${customerData.phoneLastDigits})</h3>
-                        <button onclick="closeCustomerDetail()">×</button>
-                    </div>
-                    
-                    <div class="visit-history">
-                        <h4>📅 방문 기록</h4>
-                        ${renderVisitHistory(customerData.visitHistory || [])}
-                    </div>
-                    
-                    <div class="favorite-styles">
-                        <h4>❤️ 좋아하는 스타일</h4>
-                        ${renderFavoriteStyles(customerData.favoriteStyles || [])}
-                    </div>
+        const customer = { id: doc.id, ...doc.data() };
+        
+        const modal = document.createElement('div');
+        modal.className = 'customer-detail-modal';
+        modal.innerHTML = `
+            <div class="detail-container">
+                <div class="customer-header">
+                    <h3>${customer.name} 고객님</h3>
+                    <button onclick="closeCustomerDetail()">×</button>
+                </div>
+                <div class="customer-details">
+                    <p>📱 ${customer.phone}</p>
+                    <p>📅 총 ${customer.visitHistory?.length || 0}회 방문</p>
+                </div>
+                <div class="visit-history">
+                    <h4>방문 기록</h4>
+                    ${customer.visitHistory && customer.visitHistory.length > 0 ? 
+                        customer.visitHistory.map(visit => `
+                            <div class="visit-item">
+                                <div class="visit-date">${new Date(visit.date).toLocaleDateString('ko-KR')}</div>
+                                ${visit.styles.map(style => `
+                                    <div class="style-item ${style.liked ? 'liked' : ''}">
+                                        <span class="style-code">${style.styleCode}</span>
+                                        <span class="style-name">${style.styleName}</span>
+                                        ${style.liked ? '<span class="heart">❤️</span>' : ''}
+                                    </div>
+                                `).join('')}
+                                ${visit.notes ? `<div class="visit-notes">메모: ${visit.notes}</div>` : ''}
+                            </div>
+                        `).join('') : 
+                        '<div class="no-history">방문 기록이 없습니다.</div>'
+                    }
+                </div>
+                <div class="favorite-styles">
+                    <h4>관심 스타일</h4>
+                    ${customer.favoriteStyles && customer.favoriteStyles.length > 0 ?
+                        customer.favoriteStyles.map(style => `
+                            <div class="style-item liked">
+                                <span class="style-code">${style.styleCode}</span>
+                                <span class="style-name">${style.styleName}</span>
+                                <span class="heart">❤️</span>
+                            </div>
+                        `).join('') :
+                        '<div class="no-history">관심 스타일이 없습니다.</div>'
+                    }
                 </div>
             </div>
         `;
         
-        document.body.insertAdjacentHTML('beforeend', detailHTML);
+        document.body.appendChild(modal);
     } catch (error) {
-        console.error('고객 상세 조회 오류:', error);
-        alert('고객 정보를 불러올 수 없습니다.');
+        console.error('고객 상세 정보 조회 오류:', error);
+        alert('고객 정보를 불러오는 중 오류가 발생했습니다.');
     }
 }
 
-// 방문 기록 렌더링
-function renderVisitHistory(visitHistory) {
-    if (visitHistory.length === 0) {
-        return '<div class="no-history">방문 기록이 없습니다</div>';
-    }
-    
-    return visitHistory.map(visit => `
-        <div class="visit-item">
-            <div class="visit-date">${formatDate(visit.date)}</div>
-            <div class="visit-styles">
-                ${visit.selectedStyles ? visit.selectedStyles.map(style => `
-                    <div class="style-item ${style.isLiked ? 'liked' : ''}">
-                        <span class="style-code">${style.code}</span>
-                        <span class="style-name">${style.name}</span>
-                        ${style.isLiked ? '<span class="heart">❤️</span>' : ''}
-                    </div>
-                `).join('') : `
-                    <div class="style-item">
-                        <span class="style-code">${visit.styleCode || 'N/A'}</span>
-                        <span class="style-name">${visit.styleName || 'N/A'}</span>
-                    </div>
-                `}
-            </div>
-            ${visit.notes ? `<div class="visit-notes">"${visit.notes}"</div>` : ''}
-        </div>
-    `).join('');
-}
-
-// 즐겨찾는 스타일 렌더링
-function renderFavoriteStyles(favoriteStyles) {
-    if (favoriteStyles.length === 0) {
-        return '<div class="no-history">좋아하는 스타일이 없습니다</div>';
-    }
-    
-    return favoriteStyles.map(style => `
-        <div class="style-item liked">
-            <span class="style-code">${style.code}</span>
-            <span class="style-name">${style.name}</span>
-            <span class="heart">❤️</span>
-        </div>
-    `).join('');
-}
-
-// 날짜 포맷팅
-function formatDate(dateValue) {
-    if (!dateValue) return '날짜 정보 없음';
-    
-    let date;
-    if (dateValue.toDate) {
-        date = dateValue.toDate();
-    } else {
-        date = new Date(dateValue);
-    }
-    
-    return date.toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-}
-
-// 고객 검색 모달 닫기
-function closeCustomerSearch() {
-    const modal = document.getElementById('customerSearchModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-// 고객 상세 모달 닫기
-function closeCustomerDetail() {
-    const modal = document.getElementById('customerDetailModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-// 새 고객 모달 표시 (단계별)
+// ========== 새 고객 추가 모달 ==========
 function showNewCustomerModal() {
-    const modalHTML = `
-        <div class="new-customer-modal" id="newCustomerModal">
-            <div class="new-customer-container">
-                <h3>✨ 새 고객 등록</h3>
-                
-                <!-- 단계 1: 기본 정보 -->
-                <div id="customerStep1" class="customer-step active">
-                    <div class="step-indicator">
-                        <span class="step-number active">1</span>
-                        <span class="step-text">기본 정보</span>
-                    </div>
-                    
-                    <div class="customer-input-group">
-                        <label>👤 고객 이름</label>
-                        <input type="text" id="newCustomerName" placeholder="홍길동">
-                    </div>
-                    
-                    <div class="customer-input-group">
-                        <label>📱 연락처 끝 4자리</label>
-                        <input type="number" id="newCustomerPhone" placeholder="5678" maxlength="4">
-                    </div>
-                    
-                    <div class="customer-buttons">
-                        <button class="save-customer-btn" onclick="goToCustomerStep2()">다음 단계 →</button>
-                        <button class="cancel-customer-btn" onclick="closeNewCustomerModal()">취소</button>
-                    </div>
+    const modal = document.createElement('div');
+    modal.className = 'new-customer-modal';
+    modal.innerHTML = `
+        <div class="new-customer-container">
+            <h3>👤 새 고객 등록</h3>
+            <form onsubmit="saveNewCustomer(event); return false;">
+                <div class="customer-input-group">
+                    <label>👤 이름</label>
+                    <input type="text" id="newCustomerName" placeholder="김민수" required>
                 </div>
-                
-                <!-- 단계 2: 성별 선택 -->
-                <div id="customerStep2" class="customer-step">
-                    <div class="step-indicator">
-                        <span class="step-number active">2</span>
-                        <span class="step-text">성별 선택</span>
-                    </div>
-                    
-                    <div class="gender-selection-mini">
-                        <div class="gender-card-mini male" onclick="selectCustomerGender('male')">
-                            <div class="gender-icon-mini">♂</div>
-                            <div class="gender-title-mini">남성</div>
-                        </div>
-                        <div class="gender-card-mini female" onclick="selectCustomerGender('female')">
-                            <div class="gender-icon-mini">♀</div>
-                            <div class="gender-title-mini">여성</div>
-                        </div>
-                    </div>
-                    
-                    <div class="customer-buttons">
-                        <button class="cancel-customer-btn" onclick="goToCustomerStep1()">← 이전</button>
-                        <button class="save-customer-btn" id="genderNextBtn" onclick="goToCustomerStep3()" disabled>다음 단계 →</button>
-                    </div>
+                <div class="customer-input-group">
+                    <label>📱 전화번호</label>
+                    <input type="tel" id="newCustomerPhone" placeholder="010-1234-5678" required>
+                    <small>* 하이픈(-) 포함하여 입력해주세요</small>
                 </div>
-                
-                <!-- 단계 3: 카테고리 선택 -->
-                <div id="customerStep3" class="customer-step">
-                    <div class="step-indicator">
-                        <span class="step-number active">3</span>
-                        <span class="step-text">카테고리 선택</span>
-                    </div>
-                    
-                    <div id="categorySelection" class="category-selection-mini">
-                        <!-- 동적으로 생성 -->
-                    </div>
-                    
-                    <div class="customer-buttons">
-                        <button class="cancel-customer-btn" onclick="goToCustomerStep2()">← 이전</button>
-                        <button class="save-customer-btn" id="categoryNextBtn" onclick="goToCustomerStep4()" disabled>다음 단계 →</button>
-                    </div>
+                <div class="customer-buttons">
+                    <button type="submit" class="save-customer-btn">저장</button>
+                    <button type="button" class="cancel-customer-btn" onclick="closeNewCustomerModal()">취소</button>
                 </div>
-                
-                <!-- 단계 4: 스타일 선택 -->
-                <div id="customerStep4" class="customer-step">
-                    <div class="step-indicator">
-                        <span class="step-number active">4</span>
-                        <span class="step-text">스타일 선택</span>
-                    </div>
-                    
-                    <div id="styleSelection" class="style-selection-mini">
-                        <!-- 동적으로 생성 -->
-                    </div>
-                    
-                    <div class="customer-buttons">
-                        <button class="cancel-customer-btn" onclick="goToCustomerStep3()">← 이전</button>
-                        <button class="save-customer-btn" id="saveCompleteBtn" onclick="saveNewCustomerComplete()" disabled>💾 완료</button>
-                    </div>
-                </div>
-            </div>
+            </form>
         </div>
     `;
     
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.body.appendChild(modal);
+    
+    // 전화번호 자동 포맷팅
+    document.getElementById('newCustomerPhone').addEventListener('input', function() {
+        formatPhoneNumber(this);
+    });
 }
 
-// 새 고객 데이터 초기화
-let newCustomerData = {
-    name: '',
-    phone: '',
-    gender: '',
-    category: '',
-    style: null
-};
-
-// 단계 2로 이동
-function goToCustomerStep2() {
+// ========== 새 고객 저장 ==========
+async function saveNewCustomer(event) {
+    event.preventDefault();
+    
     const name = document.getElementById('newCustomerName').value.trim();
     const phone = document.getElementById('newCustomerPhone').value.trim();
     
-    if (!name || phone.length !== 4) {
-        alert('이름과 전화번호 끝 4자리를 정확히 입력해주세요');
+    if (!name || !phone) {
+        alert('이름과 전화번호를 모두 입력해주세요.');
         return;
     }
     
-    newCustomerData.name = name;
-    newCustomerData.phone = phone;
-    
-    document.getElementById('customerStep1').classList.remove('active');
-    document.getElementById('customerStep2').classList.add('active');
-}
-
-// 단계 1로 돌아가기
-function goToCustomerStep1() {
-    document.getElementById('customerStep2').classList.remove('active');
-    document.getElementById('customerStep1').classList.add('active');
-}
-
-// 고객 성별 선택
-function selectCustomerGender(gender) {
-    newCustomerData.gender = gender;
-    
-    document.querySelectorAll('.gender-card-mini').forEach(card => {
-        card.classList.remove('selected');
-    });
-    
-    document.querySelector(`.gender-card-mini.${gender}`).classList.add('selected');
-    document.getElementById('genderNextBtn').disabled = false;
-}
-
-// 단계 3로 이동 (카테고리 선택)
-function goToCustomerStep3() {
-    if (!newCustomerData.gender) {
-        alert('성별을 선택해주세요');
+    // 전화번호 유효성 검사
+    if (!validatePhoneNumber(phone)) {
+        alert('올바른 전화번호 형식이 아닙니다.\n예: 010-1234-5678');
         return;
     }
-    
-    document.getElementById('customerStep2').classList.remove('active');
-    document.getElementById('customerStep3').classList.add('active');
-    
-    loadCustomerCategories();
-}
-
-// 단계 2로 돌아가기
-function goToCustomerStep2() {
-    document.getElementById('customerStep3').classList.remove('active');
-    document.getElementById('customerStep2').classList.add('active');
-}
-
-// 고객 등록용 카테고리 로드
-function loadCustomerCategories() {
-    const categorySelection = document.getElementById('categorySelection');
-    const categories = Object.keys(hierarchyStructure[newCustomerData.gender] || {});
-    
-    if (categories.length === 0) {
-        categorySelection.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">카테고리를 불러올 수 없습니다</div>';
-        return;
-    }
-    
-    const categoryOrder = {
-        male: ['SIDE FRINGE', 'SIDE PART', 'FRINGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN'],
-        female: ['LONG', 'SEMI LONG', 'MEDIUM', 'BOB', 'SHORT']
-    };
-    
-    const orderedCategories = categoryOrder[newCustomerData.gender] || categories;
-    
-    let html = '';
-    orderedCategories.forEach(category => {
-        if (categories.includes(category)) {
-            html += `
-                <div class="category-card-mini" onclick="selectCustomerCategory('${category}')">
-                    ${category}
-                </div>
-            `;
-        }
-    });
-    
-    categorySelection.innerHTML = html;
-}
-
-// 고객 카테고리 선택
-function selectCustomerCategory(category) {
-    newCustomerData.category = category;
-    
-    document.querySelectorAll('.category-card-mini').forEach(card => {
-        card.classList.remove('selected');
-    });
-    
-    event.target.classList.add('selected');
-    document.getElementById('categoryNextBtn').disabled = false;
-}
-
-// 단계 4로 이동 (스타일 선택)
-async function goToCustomerStep4() {
-    if (!newCustomerData.category) {
-        alert('카테고리를 선택해주세요');
-        return;
-    }
-    
-    document.getElementById('customerStep3').classList.remove('active');
-    document.getElementById('customerStep4').classList.add('active');
-    
-    await loadCustomerStyles();
-}
-
-// 단계 3로 돌아가기
-function goToCustomerStep3() {
-    document.getElementById('customerStep4').classList.remove('active');
-    document.getElementById('customerStep3').classList.add('active');
-}
-
-// 고객 등록용 스타일 로드
-async function loadCustomerStyles() {
-    const styleSelection = document.getElementById('styleSelection');
-    styleSelection.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div></div>';
     
     try {
-        const allStylesSnapshot = await db.collection('hairstyles').get();
-        const styles = [];
+        const designerInfo = JSON.parse(localStorage.getItem('designerInfo'));
         
-        allStylesSnapshot.forEach(doc => {
-            const style = doc.data();
-            if (style.gender === newCustomerData.gender && 
-                style.mainCategory === newCustomerData.category) {
-                styles.push({
-                    ...style,
-                    id: doc.id
-                });
-            }
-        });
+        // 중복 확인
+        const existing = await db.collection('customers')
+            .where('phone', '==', phone)
+            .where('designerId', '==', designerInfo.designerId)
+            .get();
         
-        if (styles.length === 0) {
-            styleSelection.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">등록된 스타일이 없습니다</div>';
+        if (!existing.empty) {
+            alert('이미 등록된 고객입니다.');
             return;
         }
         
-        let html = '';
-        styles.forEach(style => {
-            const imageUrl = style.imageUrl || generatePlaceholderImage(style.name);
-            html += `
-                <div class="style-card-mini" onclick="selectCustomerStyle('${style.code}', '${style.name}', '${style.imageUrl || ''}')">
-                    <img class="style-image-mini" src="${imageUrl}" alt="${style.name}"
-                         onerror="this.src='${generatePlaceholderImage(style.name)}'">
-                    <div class="style-info-mini">
-                        <div class="style-code-mini">${style.code}</div>
-                        <div class="style-name-mini">${style.name}</div>
-                    </div>
-                </div>
-            `;
+        // 새 고객 저장
+        await db.collection('customers').add({
+            name: name,
+            phone: phone,
+            designerId: designerInfo.designerId,
+            designerName: designerInfo.name,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            visitHistory: [],
+            favoriteStyles: []
         });
         
-        styleSelection.innerHTML = html;
-        
-    } catch (error) {
-        console.error('스타일 로드 오류:', error);
-        styleSelection.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">스타일을 불러올 수 없습니다</div>';
-    }
-}
-
-// 고객 스타일 선택
-function selectCustomerStyle(code, name, imageUrl) {
-    newCustomerData.style = {
-        code: code,
-        name: name,
-        imageUrl: imageUrl
-    };
-    
-    document.querySelectorAll('.style-card-mini').forEach(card => {
-        card.classList.remove('selected');
-    });
-    
-    event.target.closest('.style-card-mini').classList.add('selected');
-    document.getElementById('saveCompleteBtn').disabled = false;
-}
-
-// 새 고객 완전 저장
-async function saveNewCustomerComplete() {
-    if (!newCustomerData.name || !newCustomerData.phone || !newCustomerData.gender || 
-        !newCustomerData.category || !newCustomerData.style) {
-        alert('모든 정보를 선택해주세요');
-        return;
-    }
-    
-    if (!firebaseConnected) {
-        alert('Firebase 연결이 필요합니다. 페이지를 새로고침해주세요.');
-        return;
-    }
-    
-    const customerId = `${currentDesigner}_${newCustomerData.name}_${newCustomerData.phone}`;
-    
-    try {
-        console.log('🔄 완전한 고객 등록 시작:', newCustomerData);
-        
-        const existingCustomer = await db.collection('customers').doc(customerId).get();
-        
-        if (existingCustomer.exists) {
-            alert('이미 등록된 고객입니다');
-            return;
-        }
-        
-        const visitData = {
-            date: new Date(),
-            gender: newCustomerData.gender,
-            mainCategory: newCustomerData.category,
-            subCategory: '', // 중분류는 나중에 선택 가능
-            styleCode: newCustomerData.style.code,
-            styleName: newCustomerData.style.name,
-            imageUrl: newCustomerData.style.imageUrl,
-            designerName: currentDesignerName
-        };
-        
-        await db.collection('customers').doc(customerId).set({
-            designerId: currentDesigner,
-            designerName: currentDesignerName,
-            customerName: newCustomerData.name,
-            phoneLastDigits: newCustomerData.phone,
-            createdAt: new Date(),
-            visitHistory: [visitData],
-            favoriteStyles: [{
-                code: newCustomerData.style.code,
-                name: newCustomerData.style.name
-            }]
-        });
-        
-        console.log('✅ 완전한 고객 등록 완료');
-        alert(`✅ ${newCustomerData.name}(${newCustomerData.phone}) 고객이 스타일과 함께 등록되었습니다!`);
+        alert('고객이 등록되었습니다.');
         closeNewCustomerModal();
         
-        // 디자이너 고객 수 증가
-        try {
-            await db.collection('designers').doc(currentDesigner).update({
-                customerCount: firebase.firestore.FieldValue.increment(1)
-            });
-        } catch (updateError) {
-            console.log('⚠️ 디자이너 고객 수 업데이트 실패 (무시)', updateError);
-        }
-        
-        // 새 고객 데이터 초기화
-        newCustomerData = {
-            name: '',
-            phone: '',
-            gender: '',
-            category: '',
-            style: null
-        };
-        
     } catch (error) {
-        console.error('❌ 완전한 고객 등록 오류:', error);
-        
-        let errorMessage = '고객 등록에 실패했습니다.';
-        
-        if (error.code === 'permission-denied') {
-            errorMessage = 'Firebase 권한 오류입니다. 관리자에게 문의하세요.';
-        } else if (error.code === 'unavailable') {
-            errorMessage = 'Firebase 서비스를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.';
-        } else if (error.code === 'network-request-failed') {
-            errorMessage = '네트워크 연결을 확인하고 다시 시도해주세요.';
-        } else {
-            errorMessage = `등록 실패: ${error.message || '알 수 없는 오류'}`;
-        }
-        
-        alert(errorMessage);
+        console.error('고객 저장 오류:', error);
+        alert('고객 저장 중 오류가 발생했습니다.');
     }
 }
 
-// 새 고객 모달 닫기
-function closeNewCustomerModal() {
-    const modal = document.getElementById('newCustomerModal');
-    if (modal) {
-        modal.remove();
-    }
-    
-    // 데이터 초기화
-    newCustomerData = {
-        name: '',
-        phone: '',
-        gender: '',
-        category: '',
-        style: null
-    };
-}
-
-// 고객 등록 모달 표시 (스타일 선택 후)
+// ========== 고객 등록 모달 (스타일 선택 시) ==========
 function showCustomerRegisterModal() {
-    if (!currentStyleCode || !currentStyleName) {
-        alert('스타일을 먼저 선택해주세요');
-        return;
-    }
-
-    const modalHTML = `
-        <div class="customer-register-modal" id="customerRegisterModal">
-            <div class="register-container">
-                <h3>👤 고객 등록</h3>
-                
-                <div class="selected-style-info">
-                    <h4>선택된 스타일</h4>
-                    <p><strong>성별:</strong> ${currentGender === 'male' ? '남성' : '여성'}</p>
-                    <p><strong>대분류:</strong> ${currentCategory}</p>
-                    <p><strong>스타일 코드:</strong> ${currentStyleCode}</p>
-                    <p><strong>스타일명:</strong> ${currentStyleName}</p>
-                </div>
-                
-                <div class="customer-input-group">
-                    <label>👤 고객 이름</label>
-                    <input type="text" id="registerCustomerName" placeholder="홍길동">
-                </div>
-                
-                <div class="customer-input-group">
-                    <label>📱 연락처 끝 4자리</label>
-                    <input type="number" id="registerCustomerPhone" placeholder="5678" maxlength="4">
-                </div>
-                
-                <div class="customer-buttons">
-                    <button class="save-customer-btn" onclick="registerCustomerWithStyle()">💾 등록</button>
-                    <button class="cancel-customer-btn" onclick="closeCustomerRegisterModal()">취소</button>
-                </div>
+    const modal = document.createElement('div');
+    modal.className = 'customer-register-modal';
+    modal.innerHTML = `
+        <div class="register-container">
+            <h3>👤 고객 등록</h3>
+            <div class="selected-style-info">
+                <h4>선택한 스타일</h4>
+                <p>코드: ${window.currentStyle.code}</p>
+                <p>이름: ${window.currentStyle.name}</p>
             </div>
+            <form onsubmit="registerCustomerWithStyle(event); return false;">
+                <div class="customer-input-group">
+                    <label>👤 이름</label>
+                    <input type="text" id="registerCustomerName" placeholder="김민수" required>
+                </div>
+                <div class="customer-input-group">
+                    <label>📱 전화번호</label>
+                    <input type="tel" id="registerCustomerPhone" placeholder="010-1234-5678" required>
+                    <small>* 하이픈(-) 포함하여 입력해주세요</small>
+                </div>
+                <div class="customer-input-group">
+                    <label>📝 메모</label>
+                    <textarea id="registerCustomerNotes" placeholder="고객 특이사항 등"></textarea>
+                </div>
+                <div class="customer-buttons">
+                    <button type="submit" class="save-customer-btn">등록</button>
+                    <button type="button" class="cancel-customer-btn" onclick="closeCustomerRegisterModal()">취소</button>
+                </div>
+            </form>
         </div>
     `;
     
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.body.appendChild(modal);
     
-    document.getElementById('imageModal').style.display = 'none';
+    // 전화번호 자동 포맷팅
+    document.getElementById('registerCustomerPhone').addEventListener('input', function() {
+        formatPhoneNumber(this);
+    });
 }
 
-// 스타일과 함께 고객 등록
-async function registerCustomerWithStyle() {
+// ========== 스타일과 함께 고객 등록 ==========
+async function registerCustomerWithStyle(event) {
+    event.preventDefault();
+    
     const name = document.getElementById('registerCustomerName').value.trim();
     const phone = document.getElementById('registerCustomerPhone').value.trim();
+    const notes = document.getElementById('registerCustomerNotes').value.trim();
     
-    if (!name || phone.length !== 4) {
-        alert('이름과 전화번호 끝 4자리를 정확히 입력해주세요');
+    if (!name || !phone) {
+        alert('이름과 전화번호를 모두 입력해주세요.');
         return;
     }
     
-    if (!firebaseConnected) {
-        alert('Firebase 연결이 필요합니다. 페이지를 새로고침해주세요.');
+    // 전화번호 유효성 검사
+    if (!validatePhoneNumber(phone)) {
+        alert('올바른 전화번호 형식이 아닙니다.\n예: 010-1234-5678');
         return;
     }
-    
-    const customerId = `${currentDesigner}_${name}_${phone}`;
     
     try {
-        console.log('🔄 고객 등록 시작:', customerId);
+        const designerInfo = JSON.parse(localStorage.getItem('designerInfo'));
         
-        const visitData = {
-            date: new Date(),
-            gender: currentGender,
-            mainCategory: currentCategory,
-            subCategory: getCurrentSubCategory(),
-            styleCode: currentStyleCode,
-            styleName: currentStyleName,
-            imageUrl: currentStyleImage || '',
-            designerName: currentDesignerName
-        };
-
-        console.log('📄 방문 데이터:', visitData);
-
-        const existingCustomer = await db.collection('customers').doc(customerId).get();
+        // 기존 고객 확인
+        const customerQuery = await db.collection('customers')
+            .where('phone', '==', phone)
+            .where('designerId', '==', designerInfo.designerId)
+            .get();
         
-        if (existingCustomer.exists) {
-            console.log('✅ 기존 고객 - 방문 기록 추가');
-            await db.collection('customers').doc(customerId).update({
-                visitHistory: firebase.firestore.FieldValue.arrayUnion(visitData)
-            });
-            
-            alert(`✅ ${name}(${phone}) 고객의 방문 기록이 추가되었습니다!`);
-        } else {
-            console.log('🆕 신규 고객 - 새로 등록');
-            await db.collection('customers').doc(customerId).set({
-                designerId: currentDesigner,
-                designerName: currentDesignerName,
-                customerName: name,
-                phoneLastDigits: phone,
-                createdAt: new Date(),
-                visitHistory: [visitData],
+        let customerId;
+        
+        if (customerQuery.empty) {
+            // 새 고객 생성
+            const newCustomer = await db.collection('customers').add({
+                name: name,
+                phone: phone,
+                designerId: designerInfo.designerId,
+                designerName: designerInfo.name,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                visitHistory: [],
                 favoriteStyles: []
             });
-            
-            // 디자이너 고객 수 증가
-            try {
-                await db.collection('designers').doc(currentDesigner).update({
-                    customerCount: firebase.firestore.FieldValue.increment(1)
-                });
-            } catch (updateError) {
-                console.log('⚠️ 디자이너 고객 수 업데이트 실패 (무시)', updateError);
-            }
-            
-            alert(`✅ ${name}(${phone}) 신규 고객이 등록되었습니다!`);
-        }
-        
-        console.log('✅ 고객 등록 완료');
-        closeCustomerRegisterModal();
-        
-    } catch (error) {
-        console.error('❌ 고객 등록 오류:', error);
-        
-        let errorMessage = '고객 등록에 실패했습니다.';
-        
-        if (error.code === 'permission-denied') {
-            errorMessage = 'Firebase 권한 오류입니다. 관리자에게 문의하세요.';
-        } else if (error.code === 'unavailable') {
-            errorMessage = 'Firebase 서비스를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.';
-        } else if (error.code === 'network-request-failed') {
-            errorMessage = '네트워크 연결을 확인하고 다시 시도해주세요.';
+            customerId = newCustomer.id;
         } else {
-            errorMessage = `등록 실패: ${error.message || '알 수 없는 오류'}`;
+            // 기존 고객
+            customerId = customerQuery.docs[0].id;
         }
         
-        alert(errorMessage);
-    }
-}
-
-// 현재 중분류 가져오기
-function getCurrentSubCategory() {
-    const activeTab = document.querySelector('.length-tab.active');
-    return activeTab ? activeTab.dataset.length : '';
-}
-
-// 고객 등록 모달 닫기
-function closeCustomerRegisterModal() {
-    const modal = document.getElementById('customerRegisterModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-// 스타일 좋아요 토글
-async function toggleStyleLike() {
-    if (!currentCustomer || !currentStyleCode) {
-        showQuickCustomerSelectModal();
-        return;
-    }
-    
-    try {
-        const today = new Date();
-        const visitData = {
-            date: today,
-            selectedStyles: [{
-                code: currentStyleCode,
-                name: currentStyleName,
-                isLiked: true,
-                timestamp: today
-            }]
+        // 방문 기록 추가
+        const visitRecord = {
+            date: new Date().toISOString(),
+            styles: [{
+                styleCode: window.currentStyle.code,
+                styleName: window.currentStyle.name,
+                liked: window.currentStyle.liked || false
+            }],
+            notes: notes
         };
         
-        await db.collection('customers').doc(currentCustomer.id).update({
-            visitHistory: firebase.firestore.FieldValue.arrayUnion(visitData),
-            favoriteStyles: firebase.firestore.FieldValue.arrayUnion({
-                code: currentStyleCode,
-                name: currentStyleName
-            })
+        await db.collection('customers').doc(customerId).update({
+            visitHistory: firebase.firestore.FieldValue.arrayUnion(visitRecord)
         });
         
-        const likeBtn = document.getElementById('likeBtn');
-        likeBtn.classList.add('liked');
-        likeBtn.textContent = '💖 좋아요 완료!';
+        // 좋아요한 스타일이면 관심 스타일에도 추가
+        if (window.currentStyle.liked) {
+            await db.collection('customers').doc(customerId).update({
+                favoriteStyles: firebase.firestore.FieldValue.arrayUnion({
+                    styleCode: window.currentStyle.code,
+                    styleName: window.currentStyle.name,
+                    addedAt: new Date().toISOString()
+                })
+            });
+        }
         
-        alert('❤️ 스타일이 저장되었습니다!');
+        alert('고객 등록이 완료되었습니다.');
+        closeCustomerRegisterModal();
+        closeModal();
         
     } catch (error) {
-        console.error('좋아요 저장 오류:', error);
-        alert('저장에 실패했습니다');
+        console.error('고객 등록 오류:', error);
+        alert('고객 등록 중 오류가 발생했습니다.');
     }
 }
 
-// 빠른 고객 선택 모달
-function showQuickCustomerSelectModal() {
-    const modalHTML = `
-        <div class="customer-search-modal" id="quickCustomerModal">
-            <div class="search-container">
-                <h3>👤 고객 선택</h3>
-                <p style="color: #ccc; margin-bottom: 20px;">좋아요를 저장하려면 먼저 고객을 선택해주세요.</p>
-                
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button onclick="showCustomerSearch(); closeQuickCustomerModal();" 
-                            style="flex: 1; padding: 12px; background: linear-gradient(135deg, #4169E1, #1E90FF); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 14px;">
-                        🔍 기존 고객
-                    </button>
-                    <button onclick="showNewCustomerModal(); closeQuickCustomerModal();" 
-                            style="flex: 1; padding: 12px; background: linear-gradient(135deg, #FF1493, #FF69B4); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 14px;">
-                        ➕ 새 고객
-                    </button>
-                </div>
-                
-                <button class="close-search" onclick="closeQuickCustomerModal()">취소</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
+// ========== 모달 닫기 함수들 ==========
+function closeCustomerSearch() {
+    const modal = document.querySelector('.customer-search-modal');
+    if (modal) modal.remove();
 }
 
-function closeQuickCustomerModal() {
-    const modal = document.getElementById('quickCustomerModal');
-    if (modal) {
-        modal.remove();
+function closeCustomerDetail() {
+    const modal = document.querySelector('.customer-detail-modal');
+    if (modal) modal.remove();
+}
+
+function closeNewCustomerModal() {
+    const modal = document.querySelector('.new-customer-modal');
+    if (modal) modal.remove();
+}
+
+function closeCustomerRegisterModal() {
+    const modal = document.querySelector('.customer-register-modal');
+    if (modal) modal.remove();
+}
+
+// ========== 고객 데이터 내보내기 ==========
+async function exportCustomerData() {
+    try {
+        const designerInfo = JSON.parse(localStorage.getItem('designerInfo'));
+        const customersRef = db.collection('customers')
+            .where('designerId', '==', designerInfo.designerId);
+        
+        const snapshot = await customersRef.get();
+        const customers = [];
+        
+        snapshot.forEach(doc => {
+            customers.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // CSV 형식으로 변환
+        let csv = '이름,전화번호,총방문횟수,마지막방문일,관심스타일\n';
+        
+        customers.forEach(customer => {
+            const visitCount = customer.visitHistory?.length || 0;
+            const lastVisit = customer.visitHistory && customer.visitHistory.length > 0 ?
+                new Date(customer.visitHistory[customer.visitHistory.length - 1].date).toLocaleDateString('ko-KR') : '-';
+            const favoriteStyles = customer.favoriteStyles?.map(s => s.styleName).join(', ') || '-';
+            
+            csv += `"${customer.name}","${customer.phone}",${visitCount},"${lastVisit}","${favoriteStyles}"\n`;
+        });
+        
+        // 파일 다운로드
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `고객데이터_${designerInfo.name}_${new Date().toLocaleDateString('ko-KR')}.csv`;
+        link.click();
+        
+    } catch (error) {
+        console.error('데이터 내보내기 오류:', error);
+        alert('데이터 내보내기 중 오류가 발생했습니다.');
     }
 }
+
+console.log('✅ index-customer.js 로드 완료');
