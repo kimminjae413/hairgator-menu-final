@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+    <title>HAIRGATOR - 헤어스타일 메뉴판</title>
+    
+    <!-- PWA 메타 태그 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HAIRGATOR">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- PWA Manifest 연결 -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- iOS PWA 아이콘 -->
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    
+    <!-- 외부 CSS 파일 -->
+    <link rel="stylesheet" href="css/index-styles.css">
+</head>
+<body>
+
+    <!-- 기기별 최적화 안내 -->
+    <div class="device-notice" id="deviceNotice">
+        📱 모든 기기에서 가로 스와이프로 스타일을 확인하세요
+    </div>
+
+    <!-- 디자이너 로그인 화면 -->
+    <div class="designer-login" id="designerLogin">
+        <div class="login-card">
+            <h2>🎨 디자이너 로그인</h2>
+            
+            <div class="info-notice">
+                💡 <strong>중요 안내</strong><br>
+                • 이 정보는 고객 관리용 <strong>고유 ID</strong>가 됩니다<br>
+                • 핸드폰, 태블릿에서 <strong>동일하게 입력</strong>해주세요<br>
+                • 한번 정하면 계속 사용하니 <strong>꼭 기억</strong>해주세요!
+            </div>
+            
+            <div class="input-group">
+                <label>👤 이름 (실명)</label>
+                <input type="text" id="designerName" placeholder="김민수">
+                <small>* 정확한 이름을 입력해주세요</small>
+            </div>
+            
+            <div class="input-group">
+                <label>📱 휴대폰 끝 4자리</label>
+                <input type="number" id="designerPhone" placeholder="2709" maxlength="4">
+                <small>* 개인 식별용 - 다른 사람과 겹치지 않도록</small>
+            </div>
+            
+            <div class="input-group">
+                <label>🔒 개인 비밀번호 (4자리)</label>
+                <input type="password" id="designerPin" placeholder="••••" maxlength="4">
+                <small>* 본인만 아는 4자리 숫자</small>
+            </div>
+            
+            <button class="login-btn" onclick="checkDesignerLogin()">
+                🔍 확인 후 로그인
+            </button>
+            
+            <div id="loginResult" class="check-result"></div>
+        </div>
+    </div>
+
+    <!-- 성별 선택 화면 -->
+    <div class="gender-selection" id="genderSelection">
+        <div class="gender-card male" onclick="selectGender('male')">
+            <div class="gender-icon">♂</div>
+            <div class="gender-title">남성</div>
+            <div class="gender-subtitle">Men's Hairstyle</div>
+        </div>
+        
+        <div class="gender-card female" onclick="selectGender('female')">
+            <div class="gender-icon">♀</div>
+            <div class="gender-title">여성</div>
+            <div class="gender-subtitle">Women's Hairstyle</div>
+        </div>
+    </div>
+
+    <!-- 메인 컨테이너 -->
+    <div class="main-container" id="mainContainer">
+        <!-- 헤더 -->
+        <header class="header">
+            <div class="logo-section">
+                <button class="back-btn" onclick="backToGenderSelection()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>뒤로</span>
+                </button>
+                
+                <div class="logo">
+                    <span style="color: #FF1493; font-size: 18px; font-weight: 700; letter-spacing: -0.5px;">HAIRGATOR</span>
+                </div>
+                
+                <button class="hamburger-btn" onclick="toggleHamburgerMenu()" title="메뉴">
+                    <div class="hamburger-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </button>
+            </div>
+            
+            <!-- 네비게이션 탭 -->
+            <nav class="nav-tabs" id="navTabs">
+                <!-- 동적으로 생성됩니다 -->
+            </nav>
+        </header>
+
+        <!-- 콘텐츠 영역 -->
+        <main class="content" id="content">
+            <!-- 카테고리별 섹션들이 동적으로 추가됩니다 -->
+        </main>
+    </div>
+
+    <!-- 햄버거 메뉴 -->
+    <div class="hamburger-overlay" id="hamburgerOverlay" onclick="closeHamburgerMenu()">
+        <div class="hamburger-menu" onclick="event.stopPropagation()">
+            <div class="menu-header">
+                <h3 id="menuDesignerName">🎨 디자이너</h3>
+                <button class="close-menu" onclick="closeHamburgerMenu()">×</button>
+            </div>
+            
+            <div class="menu-items">
+                <div class="menu-item" onclick="showCustomerSearch()">
+                    <div class="menu-icon">👤</div>
+                    <div class="menu-text">
+                        <strong>고객 조회</strong>
+                        <small>이전 방문 기록 확인</small>
+                    </div>
+                </div>
+                
+                <div class="menu-item" onclick="showPopularityStats()">
+                    <div class="menu-icon">📊</div>
+                    <div class="menu-text">
+                        <strong>인기 스타일 통계</strong>
+                        <small>전체 디자이너 통합 데이터</small>
+                    </div>
+                </div>
+                
+                <div class="menu-item" onclick="openAIFaceAnalysis()">
+                    <div class="menu-icon">🔍</div>
+                    <div class="menu-text">
+                        <strong>AI 얼굴 분석</strong>
+                        <small>얼굴형 맞춤 추천</small>
+                    </div>
+                </div>
+                
+                <div class="menu-item" onclick="logoutDesigner()">
+                    <div class="menu-icon">🚪</div>
+                    <div class="menu-text">
+                        <strong>로그아웃</strong>
+                        <small>디자이너 로그인으로 돌아가기</small>
+                    </div>
+                </div>
+                
+                <div class="menu-item" onclick="closeApp()">
+                    <div class="menu-icon">❌</div>
+                    <div class="menu-text">
+                        <strong>앱 닫기</strong>
+                        <small>네이티브 앱으로 돌아가기</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 새 고객 추가 버튼 -->
+    <button class="add-customer-btn" id="addCustomerBtn" onclick="showNewCustomerModal()">+</button>
+
+    <!-- 이미지 모달 -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img class="modal-image" id="modalImage" src="" alt="">
+            <div class="modal-info">
+                <h3 id="modalCode"></h3>
+                <p id="modalName"></p>
+                <button class="like-btn" id="likeBtn" onclick="toggleStyleLike()">❤️ 좋아요</button>
+                <button class="customer-register-btn" id="customerRegisterBtn" onclick="showCustomerRegisterModal()">👤 고객 등록</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 동기화 상태 표시 -->
+    <div class="sync-status" id="syncStatus">Firebase 연결 중...</div>
+
+    <!-- 모달들은 JavaScript로 동적 생성 -->
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <!-- JavaScript 파일들 (올바른 순서) -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/index-firebase.js"></script>
+    <script src="js/index-customer.js"></script>
+    <script src="js/index-stats.js"></script>
+    <script src="js/index-main.js"></script>
+
+    <!-- Service Worker 등록 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker 등록 성공:', registration);
+                    })
+                    .catch(err => {
+                        console.log('❌ Service Worker 등록 실패:', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
