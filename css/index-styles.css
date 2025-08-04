@@ -1,5 +1,16 @@
 /* HAIRGATOR 메인 페이지 스타일 - 최종 완전 수정본 */
 
+/* ========== 성별 테마 색상 변수 ========== */
+:root {
+    --male-primary: #1E3A8A;      /* 진한 파란색 (무게감 있는) */
+    --male-secondary: #2563EB;    /* 보조 파란색 */
+    --male-gradient: linear-gradient(135deg, #1E3A8A, #2563EB);
+    
+    --female-primary: #FF1493;    /* 핑크색 */
+    --female-secondary: #FF69B4;  /* 보조 핑크색 */
+    --female-gradient: linear-gradient(135deg, #FF1493, #FF69B4);
+}
+
 /* ========== 기본 설정 ========== */
 html {
     height: 100vh;
@@ -619,7 +630,7 @@ select {
     font-size: 12px;
 }
 
-/* ========== 네비게이션 탭 ========== */
+/* ========== 네비게이션 탭 (성별 테마 적용) ========== */
 .nav-tabs {
     display: flex;
     background-color: #000;
@@ -648,18 +659,34 @@ select {
     color: #fff;
 }
 
-.nav-tab.active::after {
+/* 남성 테마 */
+.main-container.male .nav-tab.active::after {
     content: '';
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #FF1493, #FF69B4);
+    background: var(--male-gradient);
 }
 
-.nav-tab:hover {
-    color: #FF69B4;
+.main-container.male .nav-tab:hover {
+    color: var(--male-secondary);
+}
+
+/* 여성 테마 */
+.main-container.female .nav-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--female-gradient);
+}
+
+.main-container.female .nav-tab:hover {
+    color: var(--female-secondary);
 }
 
 /* ========== 콘텐츠 영역 (Safe Area 적용) ========== */
@@ -695,7 +722,7 @@ select {
     color: #ccc;
 }
 
-/* ========== 앞머리 길이 탭 ========== */
+/* ========== 앞머리 길이 탭 (성별 테마 적용) ========== */
 .length-tabs {
     display: flex;
     justify-content: center;
@@ -725,24 +752,36 @@ select {
     font-size: 14px;
 }
 
-.length-tab.active {
+/* 남성 테마 */
+.main-container.male .length-tab.active {
     color: #fff;
-    background-color: #FF1493;
+    background-color: var(--male-primary);
 }
 
-.length-tab:hover {
+.main-container.male .length-tab:hover {
+    color: #fff;
+    background-color: rgba(30, 58, 138, 0.7);
+}
+
+/* 여성 테마 */
+.main-container.female .length-tab.active {
+    color: #fff;
+    background-color: var(--female-primary);
+}
+
+.main-container.female .length-tab:hover {
     color: #fff;
     background-color: rgba(255, 20, 147, 0.7);
 }
 
-/* ========== 길이 가이드 도움말 버튼 ========== */
+/* ========== 길이 가이드 도움말 버튼 (여성 전용) ========== */
 .length-guide-btn {
     width: 24px;
     height: 24px;
     border-radius: 50%;
     background: rgba(255, 20, 147, 0.2);
-    border: 1px solid #FF1493;
-    color: #FF1493;
+    border: 1px solid var(--female-primary);
+    color: var(--female-primary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -754,12 +793,12 @@ select {
 }
 
 .length-guide-btn:hover {
-    background: #FF1493;
+    background: var(--female-primary);
     color: white;
     transform: scale(1.1);
 }
 
-/* ========== 헤어스타일 그리드 ========== */
+/* ========== 헤어스타일 그리드 (성별 테마 적용) ========== */
 .hairstyle-grid {
     display: flex;
     gap: 20px;
@@ -788,13 +827,24 @@ select {
     border-radius: 3px;
 }
 
-.hairstyle-grid::-webkit-scrollbar-thumb {
-    background: #FF1493;
+/* 남성 테마 스크롤바 */
+.main-container.male .hairstyle-grid::-webkit-scrollbar-thumb {
+    background: var(--male-primary);
     border-radius: 3px;
 }
 
-.hairstyle-grid::-webkit-scrollbar-thumb:hover {
-    background: #FF69B4;
+.main-container.male .hairstyle-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--male-secondary);
+}
+
+/* 여성 테마 스크롤바 */
+.main-container.female .hairstyle-grid::-webkit-scrollbar-thumb {
+    background: var(--female-primary);
+    border-radius: 3px;
+}
+
+.main-container.female .hairstyle-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--female-secondary);
 }
 
 .hairstyle-card {
@@ -819,7 +869,14 @@ select {
     }
 }
 
-.hairstyle-card:hover {
+/* 남성 테마 호버 효과 */
+.main-container.male .hairstyle-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+}
+
+/* 여성 테마 호버 효과 */
+.main-container.female .hairstyle-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
 }
@@ -843,9 +900,18 @@ select {
     text-align: center;
 }
 
-.hairstyle-code {
+/* 남성 테마 스타일 코드 */
+.main-container.male .hairstyle-code {
     font-size: 12px;
-    color: #FF69B4;
+    color: var(--male-secondary);
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+/* 여성 테마 스타일 코드 */
+.main-container.female .hairstyle-code {
+    font-size: 12px;
+    color: var(--female-secondary);
     margin-bottom: 5px;
     font-weight: 600;
 }
