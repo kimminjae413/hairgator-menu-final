@@ -389,4 +389,11 @@ function closePopularityStats() {
     if (modal) {
         modal.remove();
     }
+
 }
+// ========== 전역 함수 등록 ==========
+window.showPopularityStats = showPopularityStats;
+window.closePopularityStats = closePopularityStats;
+window.switchStatsTab = switchStatsTab;
+
+console.log('✅ index-stats.js 전역 함수 등록 완료');
