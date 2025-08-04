@@ -446,3 +446,16 @@ async function exportCustomerData() {
 }
 
 console.log('✅ index-customer.js 로드 완료');
+
+// ========== 전역 함수 등록 ==========
+window.searchCustomers = searchCustomers;
+window.showCustomerDetail = showCustomerDetail;
+window.saveNewCustomer = saveNewCustomer;
+window.registerCustomerWithStyle = registerCustomerWithStyle;
+window.closeCustomerSearch = closeCustomerSearch;
+window.closeCustomerDetail = closeCustomerDetail;
+window.closeNewCustomerModal = closeNewCustomerModal;
+window.closeCustomerRegisterModal = closeCustomerRegisterModal;
+window.formatPhoneNumber = formatPhoneNumber;
+
+console.log('✅ index-customer.js 전역 함수 등록 완료');
