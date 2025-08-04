@@ -3,9 +3,9 @@
 console.log('🚀 HAIRGATOR 어드민 시작');
 
 // ========== 전역 변수 ==========
-let db = null;
-let storage = null;
-let firebaseConnected = false;
+window.db = null;
+window.storage = null;
+window.firebaseConnected = false;
 let selectedGender = null;
 let selectedMainCategory = null;
 let selectedSubCategory = null;
@@ -50,13 +50,13 @@ async function initializeFirebase() {
             app = firebase.app();
         }
         
-        db = firebase.firestore();
-        storage = firebase.storage();
+     window.db = db = firebase.firestore();
+window.storage = storage = firebase.storage();
         
         // 연결 테스트
         await testFirebaseConnection();
         
-        firebaseConnected = true;
+        window.firebaseConnected = firebaseConnected = true;
         updateSyncIndicator('connected', '✅ Firebase 연결 완료');
         
         // 구조 로드
@@ -1390,3 +1390,4 @@ window.addEventListener('error', function(event) {
 
 
 console.log('✅ 모든 JavaScript 함수 정의 완료');
+
