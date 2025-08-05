@@ -1,4 +1,4 @@
-// ========== HAIRGATOR 디자이너 프로필 관리 시스템 - 콘솔 테스트 기반 완전 수정 버전 ==========
+// ========== HAIRGATOR 디자이너 프로필 관리 시스템 - 실제 네이버 크롤링 작동 버전 ==========
 // 네이버 예약 URL 자동 추출 + 매장 정보 관리 + 프로필 설정
 
 console.log('🎨 HAIRGATOR 디자이너 프로필 시스템 로드 시작');
@@ -66,9 +66,11 @@ function showDesignerProfile() {
                         '<input type="url" id="profile-naverBookingUrl" name="naverBookingUrl" placeholder="https://naver.me/xxxxx" autocomplete="url" style="width: 100%; padding: 12px 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; color: #fff; box-sizing: border-box; font-size: 14px; transition: border-color 0.3s;" onfocus="this.style.borderColor=\'#FF1493\'" onblur="this.style.borderColor=\'rgba(255,255,255,0.3)\'">' +
                     '</div>' +
                     
-                    '<button type="button" onclick="autoExtractBusinessInfo()" style="background: linear-gradient(135deg, #4169E1, #1E90FF); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: transform 0.2s;" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'translateY(0)\'" id="extractBtn">' +
+                    '<button type="button" onclick="autoExtractBusinessInfo()" style="background: linear-gradient(135deg, #4169E1, #1E90FF); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: transform 0.2s; margin-bottom: 15px;" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'translateY(0)\'" id="extractBtn">' +
                         '🔍 매장정보 자동추출' +
                     '</button>' +
+                    
+                    '<div id="extractionResult" style="display: none; padding: 15px; border-radius: 10px; margin-top: 15px;"></div>' +
                     
                     '<div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 10px; padding: 15px; margin-top: 15px;">' +
                         '<strong style="color: #ffc107;">💡 사용법</strong><br>' +
@@ -107,6 +109,165 @@ function showDesignerProfile() {
     
     // 기존 프로필 데이터 로드
     loadProfileData();
+}
+
+// ========== 실제 네이버 정보 자동 추출 함수 ==========
+function autoExtractBusinessInfo() {
+    console.log('🤖 네이버 예약 정보 자동 추출 시작 (실제 크롤링)');
+    
+    var naverUrlField = document.getElementById('profile-naverBookingUrl');
+    var naverUrl = naverUrlField ? naverUrlField.value.trim() : '';
+    
+    if (!naverUrl) {
+        showExtractionResult('warning', '⚠️ 네이버 예약 URL을 먼저 입력해주세요');
+        return;
+    }
+    
+    if (!naverUrl.includes('naver')) {
+        showExtractionResult('error', '⚠️ 올바른 네이버 URL을 입력해주세요 (naver.me 또는 booking.naver.com)');
+        return;
+    }
+    
+    // 로딩 표시
+    var extractBtn = document.getElementById('extractBtn');
+    var originalText = extractBtn ? extractBtn.textContent : '';
+    if (extractBtn) {
+        extractBtn.disabled = true;
+        extractBtn.textContent = '🔄 추출 중...';
+    }
+    
+    showExtractionResult('info', '🔍 Netlify Functions을 통해 네이버에서 매장 정보를 가져오는 중입니다...');
+    
+    // 실제 Netlify Functions 호출
+    fetch('/.netlify/functions/extract-naver', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            url: naverUrl,
+            fetchURL: naverUrl,
+            naverUrl: naverUrl
+        })
+    })
+    .then(function(response) {
+        console.log('📡 Netlify Functions 응답 상태:', response.status);
+        return response.json();
+    })
+    .then(function(result) {
+        console.log('✅ 추출 결과:', result);
+        
+        if (result.success && result.data) {
+            // 성공적으로 정보를 가져온 경우
+            var data = result.data;
+            var populatedFields = 0;
+            
+            // 폼 필드에 자동 입력
+            if (data.name || data.storeName) {
+                var nameField = document.getElementById('profile-businessName');
+                if (nameField && !nameField.value.trim()) {
+                    nameField.value = data.name || data.storeName;
+                    populatedFields++;
+                }
+            }
+            
+            if (data.address) {
+                var addressField = document.getElementById('profile-businessAddress');
+                if (addressField && !addressField.value.trim()) {
+                    addressField.value = data.address;
+                    populatedFields++;
+                }
+            }
+            
+            if (data.phone) {
+                var phoneField = document.getElementById('profile-phoneNumber');
+                if (phoneField && !phoneField.value.trim()) {
+                    phoneField.value = data.phone;
+                    populatedFields++;
+                }
+            }
+            
+            // 결과 표시
+            var resultMessage = 
+                '✅ 매장 정보를 성공적으로 가져왔습니다!<br>' +
+                '📊 ' + populatedFields + '개 필드가 자동으로 채워졌습니다.<br>' +
+                '<br>' +
+                '<strong>추출된 정보:</strong><br>' +
+                (data.name || data.storeName ? '🏪 매장명: ' + (data.name || data.storeName) + '<br>' : '') +
+                (data.address ? '📍 주소: ' + data.address + '<br>' : '') +
+                (data.phone ? '📞 전화번호: ' + data.phone + '<br>' : '') +
+                (data.hours ? '🕐 영업시간: ' + data.hours + '<br>' : '') +
+                (data.category ? '🏷️ 카테고리: ' + data.category + '<br>' : '');
+            
+            showExtractionResult('success', resultMessage);
+            
+        } else {
+            // 추출 실패한 경우
+            console.log('⚠️ 정보 추출 실패');
+            var errorMsg = result.error || '정보를 추출할 수 없습니다';
+            showManualInputGuidance(naverUrl, errorMsg);
+        }
+        
+    })
+    .catch(function(error) {
+        console.error('❌ 정보 추출 오류:', error);
+        showManualInputGuidance(naverUrl, error.message);
+    })
+    .finally(function() {
+        // 로딩 상태 해제
+        if (extractBtn) {
+            extractBtn.disabled = false;
+            extractBtn.textContent = originalText;
+        }
+    });
+}
+
+// ========== 추출 결과 표시 ==========
+function showExtractionResult(type, message) {
+    var resultDiv = document.getElementById('extractionResult');
+    if (!resultDiv) return;
+    
+    var typeClass = '';
+    var bgColor = '';
+    var borderColor = '';
+    var textColor = '#fff';
+    
+    if (type === 'success') {
+        bgColor = 'rgba(40, 167, 69, 0.1)';
+        borderColor = 'rgba(40, 167, 69, 0.3)';
+    } else if (type === 'warning' || type === 'info') {
+        bgColor = 'rgba(255, 193, 7, 0.1)';
+        borderColor = 'rgba(255, 193, 7, 0.3)';
+    } else if (type === 'error') {
+        bgColor = 'rgba(220, 53, 69, 0.1)';
+        borderColor = 'rgba(220, 53, 69, 0.3)';
+    }
+    
+    resultDiv.style.background = bgColor;
+    resultDiv.style.border = '1px solid ' + borderColor;
+    resultDiv.style.color = textColor;
+    resultDiv.innerHTML = message;
+    resultDiv.style.display = 'block';
+}
+
+// ========== 수동 입력 안내 ==========
+function showManualInputGuidance(naverUrl, errorMessage) {
+    var guidanceMessage = 
+        '❌ 자동 추출에 실패했습니다.<br>' +
+        '<br>' +
+        '<strong>🔗 네이버 URL:</strong> <a href="' + naverUrl + '" target="_blank" style="color: #87CEEB;">' + naverUrl + '</a><br>' +
+        '<strong>⚠️ 오류:</strong> ' + errorMessage + '<br>' +
+        '<br>' +
+        '<strong>💡 해결 방법:</strong><br>' +
+        '1. 위 네이버 링크를 클릭하여 새 탭에서 열어주세요<br>' +
+        '2. 매장 정보를 확인하고 아래 필드에 직접 입력해주세요<br>' +
+        '3. 네이버에서 자동 추출을 차단할 수 있습니다<br>' +
+        '<br>' +
+        '<button onclick="window.open(\'' + naverUrl + '\', \'_blank\')" style="background: #4169E1; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin-top: 10px;">' +
+        '🔗 네이버 페이지 열기' +
+        '</button>';
+    
+    showExtractionResult('error', guidanceMessage);
 }
 
 // ========== 프로필 데이터 로드 ==========
@@ -234,38 +395,6 @@ function saveProfileToFirebase(profileData) {
     }
 }
 
-// ========== 네이버 정보 자동 추출 ==========
-function autoExtractBusinessInfo() {
-    var naverUrl = document.getElementById('profile-naverBookingUrl').value.trim();
-    
-    if (!naverUrl) {
-        alert('⚠️ 네이버 예약 URL을 먼저 입력해주세요');
-        return;
-    }
-    
-    if (!naverUrl.includes('naver.me') && !naverUrl.includes('booking.naver.com')) {
-        alert('⚠️ 올바른 네이버 예약 URL을 입력해주세요');
-        return;
-    }
-    
-    var extractBtn = document.getElementById('extractBtn');
-    extractBtn.innerHTML = '🔍 추출 중...';
-    extractBtn.disabled = true;
-    
-    // 실제 추출 로직은 추후 구현
-    setTimeout(function() {
-        alert('⚠️ 네이버 자동 추출 기능은 현재 개발 중입니다. 수동으로 정보를 입력해주세요.');
-        
-        extractBtn.innerHTML = '🔍 매장정보 자동추출';
-        extractBtn.disabled = false;
-        
-        // 네이버 페이지를 새 탭에서 열어서 수동 입력 가이드
-        if (confirm('네이버 예약 페이지를 새 탭에서 열어서 정보를 확인하시겠습니까?')) {
-            window.open(naverUrl, '_blank');
-        }
-    }, 1000);
-}
-
 // ========== 프로필 모달 닫기 ==========
 function closeProfileModal() {
     var modal = document.getElementById('profileModal');
@@ -307,4 +436,4 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('📱 디자이너 프로필 시스템 초기화');
 });
 
-console.log('✅ HAIRGATOR 디자이너 프로필 시스템 로드 완료 (구문 오류 수정 버전)');
+console.log('✅ HAIRGATOR 디자이너 프로필 시스템 로드 완료 (실제 네이버 크롤링 버전)');
