@@ -384,7 +384,7 @@ function injectProfileStyles() {
 }
 
 // ========== 디자이너 프로필 모달 표시 ==========
-function showMyProfile() {
+function showDesignerProfile() {
     console.log('👤 디자이너 프로필 모달 표시');
     
     injectProfileStyles();
@@ -619,10 +619,10 @@ async function autoExtractBusinessInfo() {
             let populatedFields = 0;
             
             // 폼 필드에 자동 입력
-            if (data.storeName) {
+            if (data.name || data.storeName) {
                 const nameField = document.getElementById('businessName');
                 if (nameField && !nameField.value.trim()) {
-                    nameField.value = data.storeName;
+                    nameField.value = data.name || data.storeName;
                     populatedFields++;
                 }
             }
@@ -665,7 +665,7 @@ async function autoExtractBusinessInfo() {
                 📊 ${populatedFields}개 필드가 자동으로 채워졌습니다.<br>
                 <br>
                 <strong>추출된 정보:</strong><br>
-                ${data.storeName ? `🏪 매장명: ${data.storeName}<br>` : ''}
+                ${data.name || data.storeName ? `🏪 매장명: ${data.name || data.storeName}<br>` : ''}
                 ${data.address ? `📍 주소: ${data.address}<br>` : ''}
                 ${data.phone ? `📞 전화번호: ${data.phone}<br>` : ''}
                 ${data.hours ? `🕐 영업시간: ${data.hours}<br>` : ''}
@@ -744,7 +744,7 @@ function loadProfileData() {
     }
     
     // 현재 디자이너 정보 설정
-    if (currentDesignerName) {
+    if (typeof currentDesignerName !== 'undefined' && currentDesignerName) {
         const nameField = document.getElementById('designerName');
         if (nameField && !nameField.value) {
             nameField.value = currentDesignerName;
@@ -831,6 +831,17 @@ function saveProfile() {
         profileData = formData;
         
         alert('✅ 프로필이 성공적으로 저장되었습니다!');
+        
+        // 프로모션 접근 권한 재확인
+        if (typeof checkPromotionAccess === 'function') {
+            checkPromotionAccess();
+        }
+        
+        // 전역 이벤트 발생
+        if (typeof window.onProfileSaved === 'function') {
+            window.onProfileSaved();
+        }
+        
         closeProfileModal();
         
     } catch (error) {
@@ -915,7 +926,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ========== 전역 함수 등록 ==========
-window.showMyProfile = showMyProfile;
+window.showDesignerProfile = showDesignerProfile;
+window.showMyProfile = showDesignerProfile; // 호환성을 위한 별칭
 window.closeProfileModal = closeProfileModal;
 window.switchProfileTab = switchProfileTab;
 window.autoExtractBusinessInfo = autoExtractBusinessInfo;
