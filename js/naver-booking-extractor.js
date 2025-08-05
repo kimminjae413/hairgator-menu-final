@@ -848,7 +848,8 @@ document.addEventListener('DOMContentLoaded', function() {
     addAnimationStyles();
     
     // 전역 함수 등록
-    window.enhancedExtractStoreInfo = enhancedExtractStoreInfo;
+    window.extractStoreInfo = enhancedExtractStoreInfo;  // 이름 변경
+    window.enhancedExtractStoreInfo = enhancedExtractStoreInfo;  // 호환성 유지
     window.closeAdvancedManualModal = closeAdvancedManualModal;
     window.switchInputMethod = switchInputMethod;
     window.enableSmartPasting = enableSmartPasting;
