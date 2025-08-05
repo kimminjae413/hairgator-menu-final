@@ -49,7 +49,9 @@ function checkExistingSession() {
         document.getElementById('menuDesignerName').textContent = `🎨 ${savedDesignerName}`;
         
         // 프로모션 접근 권한 확인
-        setTimeout(checkPromotionAccess, 1000);
+        if (typeof checkPromotionAccessAfterLogin === 'function') {
+            checkPromotionAccessAfterLogin();
+        }
         
         return true;
     }
@@ -167,7 +169,9 @@ function startDesignerSession(designerId, name) {
         document.getElementById('menuDesignerName').textContent = `🎨 ${name}`;
         
         // 프로모션 접근 권한 확인
-        checkPromotionAccess();
+        if (typeof checkPromotionAccessAfterLogin === 'function') {
+            checkPromotionAccessAfterLogin();
+        }
     }, 2000);
 }
 
@@ -271,34 +275,11 @@ function showMyProfile() {
     closeHamburgerMenu();
 }
 
-// 프로모션 관리 표시 (권한 확인 포함)
+// 프로모션 관리 표시 (권한 확인 포함) - 사용 안함 (HTML에서 직접 처리)
 function showPromotionManager() {
-    // 프로필 등록 확인
-    const savedProfile = localStorage.getItem('hairgator_profile');
-    let hasProfile = false;
-    
-    if (savedProfile) {
-        try {
-            const profileData = JSON.parse(savedProfile);
-            hasProfile = profileData.businessName || profileData.naverBookingUrl || profileData.designerName;
-        } catch (error) {
-            console.error('프로필 데이터 확인 오류:', error);
-        }
-    }
-    
-    if (!hasProfile) {
-        alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
-        closeHamburgerMenu();
-        showMyProfile();
-        return;
-    }
-    
-    if (typeof showPromotionManagement === 'function') {
-        showPromotionManagement();
-    } else {
-        alert('프로모션 기능을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
-    }
-    closeHamburgerMenu();
+    // 이 함수는 더 이상 사용하지 않음
+    // HTML의 handlePromotionClick()에서 직접 처리
+    console.log('⚠️ showPromotionManager() 호출됨 - handlePromotionClick() 사용 권장');
 }
 
 // AI 얼굴 분석 열기
@@ -316,37 +297,8 @@ function closeApp() {
     }
 }
 
-// ========== 프로모션 접근 권한 확인 ==========
-function checkPromotionAccess() {
-    const promotionMenuItem = document.getElementById('promotionMenuItem');
-    if (!promotionMenuItem) return;
-    
-    // 로컬 스토리지에서 프로필 정보 확인
-    const savedProfile = localStorage.getItem('hairgator_profile');
-    let hasProfile = false;
-    
-    if (savedProfile) {
-        try {
-            const profileData = JSON.parse(savedProfile);
-            // 기본 프로필 정보가 있는지 확인
-            hasProfile = profileData.businessName || profileData.naverBookingUrl || profileData.designerName;
-        } catch (error) {
-            console.error('프로필 데이터 파싱 오류:', error);
-        }
-    }
-    
-    if (!hasProfile) {
-        promotionMenuItem.classList.add('disabled');
-        promotionMenuItem.onclick = function() {
-            alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
-            closeHamburgerMenu();
-            showMyProfile();
-        };
-    } else {
-        promotionMenuItem.classList.remove('disabled');
-        promotionMenuItem.onclick = showPromotionManager;
-    }
-}
+// ========== 프로모션 접근 권한 확인 (제거됨 - HTML에서 직접 처리) ==========
+// 이 섹션의 함수들은 HTML 인라인 스크립트로 이동됨
 
 // ========== Firebase에서 계층 구조 로드 ==========
 async function loadHierarchyFromFirebaseOnly(gender) {
