@@ -410,7 +410,18 @@ function saveProfile() {
                   '- 네이버에서 자동 추출되지 않은 경우 직접 입력해주세요');
             
             if (focusField) {
-                document.getElementById(focusField).focus();
+                // 포커스 이동 + 스크롤 처리
+                setTimeout(function() {
+                    var targetField = document.getElementById(focusField);
+                    if (targetField) {
+                        targetField.focus();
+                        // 모달 내부에서 스크롤
+                        targetField.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }
+                }, 100);
             }
             return;
         }
@@ -431,6 +442,25 @@ function saveProfile() {
                 
                 if (missingFields.length > 0) {
                     alert('⚠️ 프로모션 기능 활성화를 위해 ' + missingFields.join(', ') + '을(를) 입력해주세요.');
+                    
+                    // 첫 번째 누락 필드로 포커스 + 스크롤
+                    var firstMissingField = null;
+                    if (!businessName) firstMissingField = 'profile-businessName';
+                    else if (!phoneNumber) firstMissingField = 'profile-phoneNumber';
+                    else if (!naverUrl) firstMissingField = 'profile-naverBookingUrl';
+                    
+                    if (firstMissingField) {
+                        setTimeout(function() {
+                            var targetField = document.getElementById(firstMissingField);
+                            if (targetField) {
+                                targetField.focus();
+                                targetField.scrollIntoView({ 
+                                    behavior: 'smooth', 
+                                    block: 'center' 
+                                });
+                            }
+                        }, 100);
+                    }
                     return;
                 }
             }
