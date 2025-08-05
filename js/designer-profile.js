@@ -529,7 +529,7 @@ function switchProfileTab(tabName) {
 async function autoExtractBusinessInfo() {
     console.log('🤖 네이버 예약 정보 자동 추출 시작');
     
-    const naverUrlField = document.getElementById('naverBookingUrl');
+    const naverUrlField = document.getElementById('profile-naverBookingUrl');
     const naverUrl = naverUrlField ? naverUrlField.value.trim() : '';
     
     if (!naverUrl) {
