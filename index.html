@@ -41,20 +41,20 @@
             </div>
             
             <div class="input-group">
-                <label>👤 이름 (실명)</label>
-                <input type="text" id="designerName" placeholder="김민수">
+                <label for="designerName">👤 이름 (실명)</label>
+                <input type="text" id="designerName" name="designerName" placeholder="김민수" autocomplete="name">
                 <small>* 정확한 이름을 입력해주세요</small>
             </div>
             
             <div class="input-group">
-                <label>📱 휴대폰 끝 4자리</label>
-                <input type="number" id="designerPhone" placeholder="2709" maxlength="4">
+                <label for="designerPhone">📱 휴대폰 끝 4자리</label>
+                <input type="number" id="designerPhone" name="designerPhone" placeholder="2709" maxlength="4" autocomplete="tel-extension">
                 <small>* 개인 식별용 - 다른 사람과 겹치지 않도록</small>
             </div>
             
             <div class="input-group">
-                <label>🔒 개인 비밀번호 (4자리)</label>
-                <input type="password" id="designerPin" placeholder="••••" maxlength="4">
+                <label for="designerPin">🔒 개인 비밀번호 (4자리)</label>
+                <input type="password" id="designerPin" name="designerPin" placeholder="••••" maxlength="4" autocomplete="current-password">
                 <small>* 본인만 아는 4자리 숫자</small>
             </div>
             
@@ -127,7 +127,7 @@
             </div>
             
             <div class="menu-items">
-                <div class="menu-item" onclick="setTimeout(() => { if (typeof showDesignerProfile === 'function') showDesignerProfile(); else alert('프로필 기능을 불러오는 중입니다.'); }, 100)">
+                <div class="menu-item" onclick="showDesignerProfile()">
                     <div class="menu-icon">👤</div>
                     <div class="menu-text">
                         <strong>내 프로필</strong>
@@ -368,4 +368,3 @@
 
 </body>
 </html>
-
