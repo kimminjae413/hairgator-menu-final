@@ -118,7 +118,7 @@
         </main>
     </div>
 
-    <!-- 햄버거 메뉴 (업데이트됨) -->
+    <!-- 햄버거 메뉴 (수정됨 - 인기스타일 통계 제거, 프로모션 권한 제어) -->
     <div class="hamburger-overlay" id="hamburgerOverlay" onclick="closeHamburgerMenu()">
         <div class="hamburger-menu" onclick="event.stopPropagation()">
             <div class="menu-header">
@@ -135,7 +135,7 @@
                     </div>
                 </div>
                 
-                <div class="menu-item" onclick="showPromotionManager()">
+                <div class="menu-item" id="promotionMenuItem" onclick="showPromotionManager()">
                     <div class="menu-icon">🎯</div>
                     <div class="menu-text">
                         <strong>프로모션 관리</strong>
@@ -151,13 +151,7 @@
                     </div>
                 </div>
                 
-                <div class="menu-item" onclick="showPopularityStats()">
-                    <div class="menu-icon">📊</div>
-                    <div class="menu-text">
-                        <strong>인기 스타일 통계</strong>
-                        <small>전체 디자이너 통합 데이터</small>
-                    </div>
-                </div>
+                <!-- 인기 스타일 통계 제거됨 -->
                 
                 <div class="menu-item" onclick="openAIFaceAnalysis()">
                     <div class="menu-icon">🔍</div>
@@ -227,6 +221,83 @@
     
     <!-- 메인 스크립트 (마지막에 로드) -->
     <script src="js/index-main.js"></script>
+
+    <style>
+        /* 비활성화된 메뉴 아이템 스타일 */
+        .menu-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            position: relative;
+        }
+        
+        .menu-item.disabled .menu-text strong {
+            color: #666;
+        }
+        
+        .menu-item.disabled .menu-text small {
+            color: #444;
+        }
+        
+        .menu-item.disabled::after {
+            content: "🔒";
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            opacity: 0.7;
+        }
+    </style>
+    
+    <script>
+        // 페이지 로드 시 프로필 상태 확인 및 프로모션 메뉴 제어
+        document.addEventListener('DOMContentLoaded', function() {
+            // 약간의 지연 후 프로모션 접근 권한 확인
+            setTimeout(checkPromotionAccess, 1000);
+        });
+        
+        // 프로모션 접근 권한 확인
+        function checkPromotionAccess() {
+            const promotionMenuItem = document.getElementById('promotionMenuItem');
+            if (!promotionMenuItem) return;
+            
+            // 로컬 스토리지에서 프로필 정보 확인
+            const savedProfile = localStorage.getItem('hairgator_profile');
+            let hasProfile = false;
+            
+            if (savedProfile) {
+                try {
+                    const profileData = JSON.parse(savedProfile);
+                    // 기본 프로필 정보가 있는지 확인
+                    hasProfile = profileData.businessName || profileData.naverBookingUrl || profileData.designerName;
+                } catch (error) {
+                    console.error('프로필 데이터 파싱 오류:', error);
+                }
+            }
+            
+            if (!hasProfile) {
+                promotionMenuItem.classList.add('disabled');
+                promotionMenuItem.onclick = function() {
+                    alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
+                    closeHamburgerMenu();
+                    showMyProfile();
+                };
+            } else {
+                promotionMenuItem.classList.remove('disabled');
+                promotionMenuItem.onclick = showPromotionManager;
+            }
+        }
+        
+        // 프로필 저장 시 프로모션 접근 권한 재확인
+        function onProfileSaved() {
+            checkPromotionAccess();
+        }
+        
+        // 전역 함수로 등록
+        window.onProfileSaved = onProfileSaved;
+        window.checkPromotionAccess = checkPromotionAccess;
+    </script>
 
 </body>
 </html>
