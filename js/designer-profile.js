@@ -1,7 +1,8 @@
-// ========== HAIRGATOR 디자이너 프로필 관리 시스템 - 실제 네이버 크롤링 작동 버전 ==========
+// ========== HAIRGATOR 디자이너 프로필 관리 시스템 - 최종 완성 버전 ==========
 // 네이버 예약 URL 자동 추출 + 매장 정보 관리 + 프로필 설정
+// 프로모션 관리 기능을 위한 완전한 매장 정보 수집 시스템
 
-console.log('🎨 HAIRGATOR 디자이너 프로필 시스템 로드 시작');
+console.log('🎨 HAIRGATOR 디자이너 프로필 시스템 로드 시작 - 최종 완성 버전');
 
 // ========== 전역 변수 ==========
 var profileEditMode = false;
@@ -53,12 +54,17 @@ function showDesignerProfile() {
                         '<label style="display: block; color: #fff; font-weight: bold; margin-bottom: 8px;">매장 주소</label>' +
                         '<input type="text" id="profile-businessAddress" name="businessAddress" placeholder="서울시 강남구..." autocomplete="street-address" style="width: 100%; padding: 12px 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; color: #fff; box-sizing: border-box; font-size: 14px; transition: border-color 0.3s;" onfocus="this.style.borderColor=\'#FF1493\'" onblur="this.style.borderColor=\'rgba(255,255,255,0.3)\'">' +
                     '</div>' +
+                    
+                    '<div style="margin-bottom: 20px;">' +
+                        '<label style="display: block; color: #fff; font-weight: bold; margin-bottom: 8px;">영업시간</label>' +
+                        '<input type="text" id="profile-businessHours" name="businessHours" placeholder="평일 10:00-20:00" style="width: 100%; padding: 12px 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; color: #fff; box-sizing: border-box; font-size: 14px; transition: border-color 0.3s;" onfocus="this.style.borderColor=\'#FF1493\'" onblur="this.style.borderColor=\'rgba(255,255,255,0.3)\'">' +
+                    '</div>' +
                 '</div>' +
                 
                 '<!-- 네이버 예약 섹션 -->' +
                 '<div style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 25px; margin-bottom: 20px;">' +
                     '<h4 style="color: #FF69B4; margin: 0 0 20px; font-size: 18px; display: flex; align-items: center; gap: 10px;">' +
-                        '🔗 네이버 예약 URL' +
+                        '🔗 네이버 예약 URL (프로모션용)' +
                     '</h4>' +
                     
                     '<div style="margin-bottom: 15px;">' +
@@ -73,23 +79,23 @@ function showDesignerProfile() {
                     '<div id="extractionResult" style="display: none; padding: 15px; border-radius: 10px; margin-top: 15px;"></div>' +
                     
                     '<div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 10px; padding: 15px; margin-top: 15px;">' +
-                        '<strong style="color: #ffc107;">💡 사용법</strong><br>' +
-                        '<span style="color: #fff; font-size: 14px;">네이버 예약 URL을 입력하고 \'매장정보 자동추출\' 버튼을 클릭하면 매장명, 주소, 전화번호 등이 자동으로 입력됩니다.</span>' +
+                        '<strong style="color: #ffc107;">💡 프로모션 활용 안내</strong><br>' +
+                        '<span style="color: #fff; font-size: 14px;">네이버 예약 URL을 입력하고 자동추출하면 매장명, 주소, 전화번호, 가격 등 프로모션 제작에 필요한 모든 정보가 자동으로 입력됩니다. 이 정보들은 카카오톡 프로모션 메시지와 예약 연결에 활용됩니다.</span>' +
                     '</div>' +
                 '</div>' +
                 
-                '<!-- 설정 섹션 -->' +
+                '<!-- 프로모션 설정 섹션 -->' +
                 '<div style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 25px; margin-bottom: 20px;">' +
-                    '<h4 style="color: #FF69B4; margin: 0 0 20px; font-size: 18px;">⚙️ 설정</h4>' +
+                    '<h4 style="color: #FF69B4; margin: 0 0 20px; font-size: 18px;">⚙️ 프로모션 설정</h4>' +
                     
                     '<div style="display: flex; align-items: center; margin-bottom: 15px;">' +
                         '<input type="checkbox" id="profile-enableNotifications" name="enableNotifications" style="margin-right: 10px;">' +
-                        '<label for="profile-enableNotifications" style="color: #fff; cursor: pointer;">알림 받기</label>' +
+                        '<label for="profile-enableNotifications" style="color: #fff; cursor: pointer;">카카오톡 알림 발송 허용</label>' +
                     '</div>' +
                     
                     '<div style="display: flex; align-items: center; margin-bottom: 15px;">' +
                         '<input type="checkbox" id="profile-enablePromotions" name="enablePromotions" style="margin-right: 10px;">' +
-                        '<label for="profile-enablePromotions" style="color: #fff; cursor: pointer;">프로모션 관리 사용</label>' +
+                        '<label for="profile-enablePromotions" style="color: #fff; cursor: pointer;">프로모션 관리 기능 사용</label>' +
                     '</div>' +
                 '</div>' +
                 
@@ -111,9 +117,9 @@ function showDesignerProfile() {
     loadProfileData();
 }
 
-// ========== 실제 네이버 정보 자동 추출 함수 ==========
+// ========== 실제 네이버 정보 자동 추출 함수 (최종 완성 버전) ==========
 function autoExtractBusinessInfo() {
-    console.log('🤖 네이버 예약 정보 자동 추출 시작 (실제 크롤링)');
+    console.log('🤖 네이버 예약 정보 자동 추출 시작 - 프로모션용 완전한 정보 수집');
     
     var naverUrlField = document.getElementById('profile-naverBookingUrl');
     var naverUrl = naverUrlField ? naverUrlField.value.trim() : '';
@@ -136,7 +142,7 @@ function autoExtractBusinessInfo() {
         extractBtn.textContent = '🔄 추출 중...';
     }
     
-    showExtractionResult('info', '🔍 Netlify Functions을 통해 네이버에서 매장 정보를 가져오는 중입니다...');
+    showExtractionResult('info', '🔍 Netlify Functions을 통해 네이버에서 프로모션용 매장 정보를 가져오는 중입니다...');
     
     // 실제 Netlify Functions 호출
     fetch('/.netlify/functions/extract-naver', {
@@ -161,43 +167,79 @@ function autoExtractBusinessInfo() {
             // 성공적으로 정보를 가져온 경우
             var data = result.data;
             var populatedFields = 0;
+            var extractedInfo = [];
             
-            // 폼 필드에 자동 입력
+            // 폼 필드에 자동 입력 (정확한 ID 사용)
             if (data.name || data.storeName) {
                 var nameField = document.getElementById('profile-businessName');
-                if (nameField && !nameField.value.trim()) {
+                if (nameField) {
                     nameField.value = data.name || data.storeName;
                     populatedFields++;
+                    extractedInfo.push('🏪 매장명: ' + (data.name || data.storeName));
+                    console.log('✅ 매장명 자동 입력 완료:', data.name || data.storeName);
                 }
             }
             
             if (data.address) {
                 var addressField = document.getElementById('profile-businessAddress');
-                if (addressField && !addressField.value.trim()) {
+                if (addressField) {
                     addressField.value = data.address;
                     populatedFields++;
+                    extractedInfo.push('📍 주소: ' + data.address);
+                    console.log('✅ 주소 자동 입력 완료:', data.address);
                 }
             }
             
             if (data.phone) {
                 var phoneField = document.getElementById('profile-phoneNumber');
-                if (phoneField && !phoneField.value.trim()) {
+                if (phoneField) {
                     phoneField.value = data.phone;
                     populatedFields++;
+                    extractedInfo.push('📞 전화번호: ' + data.phone);
+                    console.log('✅ 전화번호 자동 입력 완료:', data.phone);
                 }
             }
             
-            // 결과 표시
+            if (data.hours || data.businessHours) {
+                var hoursField = document.getElementById('profile-businessHours');
+                if (hoursField) {
+                    hoursField.value = data.hours || data.businessHours;
+                    populatedFields++;
+                    extractedInfo.push('🕐 영업시간: ' + (data.hours || data.businessHours));
+                    console.log('✅ 영업시간 자동 입력 완료:', data.hours || data.businessHours);
+                }
+            }
+            
+            // 추가 프로모션용 정보 수집
+            var promotionInfo = [];
+            if (data.category) promotionInfo.push('🏷️ 카테고리: ' + data.category);
+            if (data.price) promotionInfo.push('💰 가격: ' + data.price);
+            if (data.description) promotionInfo.push('📝 설명: ' + data.description);
+            
+            // 성공 결과 표시
             var resultMessage = 
                 '✅ 매장 정보를 성공적으로 가져왔습니다!<br>' +
-                '📊 ' + populatedFields + '개 필드가 자동으로 채워졌습니다.<br>' +
+                '📊 <strong>' + populatedFields + '개 필드가 자동으로 채워졌습니다.</strong><br>' +
                 '<br>' +
-                '<strong>추출된 정보:</strong><br>' +
-                (data.name || data.storeName ? '🏪 매장명: ' + (data.name || data.storeName) + '<br>' : '') +
-                (data.address ? '📍 주소: ' + data.address + '<br>' : '') +
-                (data.phone ? '📞 전화번호: ' + data.phone + '<br>' : '') +
-                (data.hours ? '🕐 영업시간: ' + data.hours + '<br>' : '') +
-                (data.category ? '🏷️ 카테고리: ' + data.category + '<br>' : '');
+                '<div style="background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3); border-radius: 8px; padding: 15px; margin: 10px 0;">' +
+                    '<strong>📋 자동 입력된 정보:</strong><br>' +
+                    extractedInfo.join('<br>') +
+                '</div>';
+            
+            if (promotionInfo.length > 0) {
+                resultMessage += 
+                    '<div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 8px; padding: 15px; margin: 10px 0;">' +
+                        '<strong>🎯 프로모션용 추가 정보:</strong><br>' +
+                        promotionInfo.join('<br>') +
+                    '</div>';
+            }
+            
+            resultMessage += 
+                '<div style="background: rgba(0, 123, 255, 0.1); border: 1px solid rgba(0, 123, 255, 0.3); border-radius: 8px; padding: 15px; margin: 10px 0;">' +
+                    '<strong>🔗 예약 연결:</strong><br>' +
+                    '네이버 예약 URL: <a href="' + naverUrl + '" target="_blank" style="color: #87CEEB;">' + naverUrl + '</a><br>' +
+                    '이 링크가 카카오톡 프로모션 메시지의 "예약하기" 버튼으로 사용됩니다.' +
+                '</div>';
             
             showExtractionResult('success', resultMessage);
             
@@ -227,7 +269,6 @@ function showExtractionResult(type, message) {
     var resultDiv = document.getElementById('extractionResult');
     if (!resultDiv) return;
     
-    var typeClass = '';
     var bgColor = '';
     var borderColor = '';
     var textColor = '#fff';
@@ -255,14 +296,17 @@ function showManualInputGuidance(naverUrl, errorMessage) {
     var guidanceMessage = 
         '❌ 자동 추출에 실패했습니다.<br>' +
         '<br>' +
-        '<strong>🔗 네이버 URL:</strong> <a href="' + naverUrl + '" target="_blank" style="color: #87CEEB;">' + naverUrl + '</a><br>' +
-        '<strong>⚠️ 오류:</strong> ' + errorMessage + '<br>' +
-        '<br>' +
-        '<strong>💡 해결 방법:</strong><br>' +
-        '1. 위 네이버 링크를 클릭하여 새 탭에서 열어주세요<br>' +
-        '2. 매장 정보를 확인하고 아래 필드에 직접 입력해주세요<br>' +
-        '3. 네이버에서 자동 추출을 차단할 수 있습니다<br>' +
-        '<br>' +
+        '<div style="background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 8px; padding: 15px; margin: 10px 0;">' +
+            '<strong>🔗 네이버 URL:</strong> <a href="' + naverUrl + '" target="_blank" style="color: #87CEEB;">' + naverUrl + '</a><br>' +
+            '<strong>⚠️ 오류:</strong> ' + errorMessage +
+        '</div>' +
+        '<div style="background: rgba(0, 123, 255, 0.1); border: 1px solid rgba(0, 123, 255, 0.3); border-radius: 8px; padding: 15px; margin: 10px 0;">' +
+            '<strong>💡 해결 방법:</strong><br>' +
+            '1. 위 네이버 링크를 클릭하여 새 탭에서 열어주세요<br>' +
+            '2. 매장 정보를 확인하고 아래 필드에 직접 입력해주세요<br>' +
+            '3. 네이버에서 자동 추출을 차단할 수 있습니다<br>' +
+            '4. 수동 입력 후에도 프로모션 기능은 정상 작동합니다' +
+        '</div>' +
         '<button onclick="window.open(\'' + naverUrl + '\', \'_blank\')" style="background: #4169E1; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin-top: 10px;">' +
         '🔗 네이버 페이지 열기' +
         '</button>';
@@ -283,6 +327,7 @@ function loadProfileData() {
             var businessField = document.getElementById('profile-businessName');
             var phoneField = document.getElementById('profile-phoneNumber');
             var addressField = document.getElementById('profile-businessAddress');
+            var hoursField = document.getElementById('profile-businessHours');
             var naverField = document.getElementById('profile-naverBookingUrl');
             var notificationField = document.getElementById('profile-enableNotifications');
             var promotionField = document.getElementById('profile-enablePromotions');
@@ -291,6 +336,7 @@ function loadProfileData() {
             if (businessField && profileData.businessName) businessField.value = profileData.businessName;
             if (phoneField && profileData.phoneNumber) phoneField.value = profileData.phoneNumber;
             if (addressField && profileData.businessAddress) addressField.value = profileData.businessAddress;
+            if (hoursField && profileData.businessHours) hoursField.value = profileData.businessHours;
             if (naverField && profileData.naverBookingUrl) naverField.value = profileData.naverBookingUrl;
             if (notificationField && profileData.enableNotifications) notificationField.checked = profileData.enableNotifications;
             if (promotionField && profileData.enablePromotions) promotionField.checked = profileData.enablePromotions;
@@ -313,12 +359,13 @@ function loadProfileData() {
 
 // ========== 프로필 저장 ==========
 function saveProfile() {
-    console.log('💾 프로필 저장 시작');
+    console.log('💾 프로필 저장 시작 - 프로모션용 완전한 정보 저장');
     
     var designerName = document.getElementById('profile-designerName').value.trim();
     var businessName = document.getElementById('profile-businessName').value.trim();
     var phoneNumber = document.getElementById('profile-phoneNumber').value.trim();
     var businessAddress = document.getElementById('profile-businessAddress').value.trim();
+    var businessHours = document.getElementById('profile-businessHours').value.trim();
     var naverUrl = document.getElementById('profile-naverBookingUrl').value.trim();
     var enableNotifications = document.getElementById('profile-enableNotifications').checked;
     var enablePromotions = document.getElementById('profile-enablePromotions').checked;
@@ -334,10 +381,15 @@ function saveProfile() {
         businessName: businessName,
         phoneNumber: phoneNumber,
         businessAddress: businessAddress,
+        businessHours: businessHours,
         naverBookingUrl: naverUrl,
         enableNotifications: enableNotifications,
         enablePromotions: enablePromotions,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        
+        // 프로모션 관리용 메타데이터
+        profileComplete: !!(businessName && phoneNumber && businessAddress && naverUrl),
+        canUsePromotions: enablePromotions && !!(businessName && naverUrl)
     };
     
     try {
@@ -348,7 +400,15 @@ function saveProfile() {
             saveProfileToFirebase(profileData);
         }
         
-        alert('✅ 프로필이 성공적으로 저장되었습니다!');
+        var completionMsg = '✅ 프로필이 성공적으로 저장되었습니다!';
+        
+        if (profileData.canUsePromotions) {
+            completionMsg += '\n\n🎯 프로모션 관리 기능을 사용할 수 있습니다!';
+        } else if (!profileData.profileComplete) {
+            completionMsg += '\n\n⚠️ 프로모션 기능을 완전히 사용하려면 매장명, 전화번호, 주소, 네이버 예약 URL을 모두 입력해주세요.';
+        }
+        
+        alert(completionMsg);
         closeProfileModal();
         
         // 프로모션 권한 업데이트
@@ -359,7 +419,7 @@ function saveProfile() {
             window.onProfileSaved();
         }
         
-        console.log('✅ 프로필 저장 완료:', profileData);
+        console.log('✅ 프로필 저장 완료 (프로모션 지원):', profileData);
         
     } catch (error) {
         console.error('❌ 프로필 저장 오류:', error);
@@ -380,9 +440,12 @@ function saveProfileToFirebase(profileData) {
             businessName: profileData.businessName,
             phoneNumber: profileData.phoneNumber,
             businessAddress: profileData.businessAddress,
+            businessHours: profileData.businessHours,
             naverBookingUrl: profileData.naverBookingUrl,
             enableNotifications: profileData.enableNotifications,
             enablePromotions: profileData.enablePromotions,
+            profileComplete: profileData.profileComplete,
+            canUsePromotions: profileData.canUsePromotions,
             designerId: currentDesigner,
             lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true }).then(function() {
@@ -423,17 +486,24 @@ function getProfileData() {
     return {};
 }
 
-// ========== 전역 함수 등록 (수정) ==========
-window.showDesignerProfile = showDesignerProfile;  // ← 이 줄 추가!
+// ========== 프로모션 사용 가능 여부 확인 ==========
+function canUsePromotions() {
+    var profile = getProfileData();
+    return profile.canUsePromotions || false;
+}
+
+// ========== 전역 함수 등록 (최종 완성) ==========
+window.showDesignerProfile = showDesignerProfile;  // ← 핵심! 이 줄이 있어야 함
 window.showMyProfile = showDesignerProfile; // 호환성을 위한 별칭
 window.closeProfileModal = closeProfileModal;
 window.autoExtractBusinessInfo = autoExtractBusinessInfo;
 window.saveProfile = saveProfile;
 window.getProfileData = getProfileData;
+window.canUsePromotions = canUsePromotions;
 
 // ========== 초기화 ==========
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📱 디자이너 프로필 시스템 초기화');
+    console.log('📱 디자이너 프로필 시스템 초기화 완료');
 });
 
-console.log('✅ HAIRGATOR 디자이너 프로필 시스템 로드 완료 (실제 네이버 크롤링 버전)');
+console.log('✅ HAIRGATOR 디자이너 프로필 시스템 로드 완료 - 프로모션 연동 최종 버전');
