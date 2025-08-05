@@ -118,7 +118,7 @@
         </main>
     </div>
 
-    <!-- 햄버거 메뉴 -->
+    <!-- 햄버거 메뉴 (업데이트됨) -->
     <div class="hamburger-overlay" id="hamburgerOverlay" onclick="closeHamburgerMenu()">
         <div class="hamburger-menu" onclick="event.stopPropagation()">
             <div class="menu-header">
@@ -127,8 +127,24 @@
             </div>
             
             <div class="menu-items">
-                <div class="menu-item" onclick="showCustomerSearch()">
+                <div class="menu-item" onclick="showMyProfile()">
                     <div class="menu-icon">👤</div>
+                    <div class="menu-text">
+                        <strong>내 프로필</strong>
+                        <small>네이버 예약 URL, 사업장 정보</small>
+                    </div>
+                </div>
+                
+                <div class="menu-item" onclick="showPromotionManager()">
+                    <div class="menu-icon">🎯</div>
+                    <div class="menu-text">
+                        <strong>프로모션 관리</strong>
+                        <small>할인 이벤트, 자동 알림 발송</small>
+                    </div>
+                </div>
+                
+                <div class="menu-item" onclick="showCustomerSearch()">
+                    <div class="menu-icon">🔍</div>
                     <div class="menu-text">
                         <strong>고객 조회</strong>
                         <small>이전 방문 기록 확인</small>
@@ -202,9 +218,13 @@
     <script src="js/index-firebase.js"></script>
     <script src="js/index-customer.js"></script>
     <script src="js/index-stats.js"></script>
+    
+    <!-- 🆕 새로운 기능 스크립트들 -->
+    <script src="js/designer-profile.js"></script>
+    <script src="js/promotion-manager.js"></script>
+    <script src="js/kakao-notification.js"></script>
+    
+    <!-- 메인 스크립트 (마지막에 로드) -->
     <script src="js/index-main.js"></script>
-
-  
 </body>
-
 </html>
