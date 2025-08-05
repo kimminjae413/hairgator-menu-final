@@ -1,5 +1,5 @@
-// ========== HAIRGATOR 메인 로직 ==========
-console.log('🚀 HAIRGATOR 최종 완전 버전 시작 - 3천줄+ 모든 기능 포함');
+// ========== HAIRGATOR 메인 로직 (햄버거 메뉴 업데이트 버전) ==========
+console.log('🚀 HAIRGATOR 최종 완전 버전 시작 - 프로모션 + 프로필 기능 포함');
 
 // ========== 전역 변수 ==========
 let currentDesigner = null;
@@ -12,12 +12,12 @@ let currentStyleName = null;
 let currentStyleImage = null;
 let hierarchyStructure = {};
 
-// Excel 기반 완전 구조 (LONG 포함)
+// Excel 기반 완전 구조 (오타 수정됨)
 const PERFECT_STRUCTURE = {
     male: {
         'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
-        'SIDE PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
-        'FRINGE UP': ['None', 'Fore Head'],
+        'SIDE PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'], // FART → PART 수정
+        'FRINGE UP': ['None', 'Fore Head'], // FRINDGE → FRINGE 수정
         'PUSHED BACK': ['None'],
         'BUZZ': ['None'],
         'CROP': ['None'],
@@ -125,7 +125,18 @@ async function confirmRegistration(designerId, name, pin) {
             pin: pin,
             createdAt: new Date(),
             customerCount: 0,
-            lastLogin: new Date()
+            lastLogin: new Date(),
+            // 프로필 기본값 추가
+            profile: {
+                naverBookingUrl: '',
+                salonName: '',
+                salonAddress: '',
+                salonPhone: '',
+                openTime: '09:00',
+                closeTime: '18:00',
+                closedDays: [],
+                services: []
+            }
         });
         
         startDesignerSession(designerId, name);
@@ -234,7 +245,7 @@ function backToGenderSelection() {
     hierarchyStructure = {};
 }
 
-// ========== 햄버거 메뉴 ==========
+// ========== 햄버거 메뉴 (업데이트됨) ==========
 function toggleHamburgerMenu() {
     const overlay = document.getElementById('hamburgerOverlay');
     overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
@@ -242,6 +253,26 @@ function toggleHamburgerMenu() {
 
 function closeHamburgerMenu() {
     document.getElementById('hamburgerOverlay').style.display = 'none';
+}
+
+// 내 프로필 표시 (새로 추가)
+function showMyProfile() {
+    if (typeof showDesignerProfile === 'function') {
+        showDesignerProfile();
+    } else {
+        alert('프로필 기능을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+    }
+    closeHamburgerMenu();
+}
+
+// 프로모션 관리 표시 (새로 추가)
+function showPromotionManager() {
+    if (typeof showPromotionManagement === 'function') {
+        showPromotionManagement();
+    } else {
+        alert('프로모션 기능을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+    }
+    closeHamburgerMenu();
 }
 
 // AI 얼굴 분석 열기
@@ -916,6 +947,29 @@ function preventPullToRefresh() {
     console.log('✅ 스와이프 새로고침 완전 방지 설정 완료');
 }
 
+// ========== 동기화 상태 ==========
+function updateSyncStatus(status, message) {
+    const syncStatus = document.getElementById('syncStatus');
+    if (syncStatus) {
+        syncStatus.textContent = message;
+        syncStatus.className = 'sync-status ' + status;
+        syncStatus.style.display = 'block';
+        
+        if (status === 'connected') {
+            setTimeout(() => {
+                syncStatus.style.opacity = '0';
+                setTimeout(() => {
+                    syncStatus.style.display = 'none';
+                    syncStatus.style.opacity = '1';
+                }, 1000);
+            }, 3000);
+        } else {
+            syncStatus.style.opacity = '1';
+            syncStatus.style.display = 'block';
+        }
+    }
+}
+
 // ========== 초기화 ==========
 document.addEventListener('DOMContentLoaded', function() {
     initializeModal();
@@ -927,12 +981,12 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🔐 새로운 세션 - 로그인 필요');
     }
     
-    console.log('🚀 HAIRGATOR 최종 완전 버전 로드 완료! (3천줄+ 모든 기능 포함)');
+    console.log('🚀 HAIRGATOR 최종 완전 버전 로드 완료! (프로모션 + 프로필 기능 포함)');
 });
 
 // 페이지 로드 시 초기화
 window.addEventListener('load', function() {
-    console.log('🎉 HAIRGATOR 최종 완전 버전 완료! (3천줄+ 모든 기능 + 인기 통계)');
+    console.log('🎉 HAIRGATOR 최종 완전 버전 완료! (프로모션 + 프로필 + 알림 시스템)');
     
     if (window.matchMedia('(display-mode: standalone)').matches) {
         console.log('📱 PWA 독립 실행 모드');
