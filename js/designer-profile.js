@@ -423,8 +423,8 @@ function getProfileData() {
     return {};
 }
 
-// ========== 전역 함수 등록 ==========
-window.showDesignerProfile = showDesignerProfile;
+// ========== 전역 함수 등록 (수정) ==========
+window.showDesignerProfile = showDesignerProfile;  // ← 이 줄 추가!
 window.showMyProfile = showDesignerProfile; // 호환성을 위한 별칭
 window.closeProfileModal = closeProfileModal;
 window.autoExtractBusinessInfo = autoExtractBusinessInfo;
