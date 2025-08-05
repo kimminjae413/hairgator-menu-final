@@ -46,8 +46,9 @@ function showDesignerProfile() {
                     '</div>' +
                     
                     '<div style="margin-bottom: 20px;">' +
-                        '<label style="display: block; color: #fff; font-weight: bold; margin-bottom: 8px;">전화번호</label>' +
+                        '<label style="display: block; color: #fff; font-weight: bold; margin-bottom: 8px;">전화번호 (카카오톡 문의처용) *</label>' +
                         '<input type="tel" id="profile-phoneNumber" name="phoneNumber" placeholder="010-1234-5678" autocomplete="tel" style="width: 100%; padding: 12px 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; color: #fff; box-sizing: border-box; font-size: 14px; transition: border-color 0.3s;" onfocus="this.style.borderColor=\'#FF1493\'" onblur="this.style.borderColor=\'rgba(255,255,255,0.3)\'">' +
+                        '<small style="color: #aaa; font-size: 12px; display: block; margin-top: 5px;">💡 고객이 카카오톡 프로모션 메시지를 받을 때 문의처로 표시됩니다</small>' +
                     '</div>' +
                     
                     '<div style="margin-bottom: 20px;">' +
@@ -79,8 +80,14 @@ function showDesignerProfile() {
                     '<div id="extractionResult" style="display: none; padding: 15px; border-radius: 10px; margin-top: 15px;"></div>' +
                     
                     '<div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 10px; padding: 15px; margin-top: 15px;">' +
-                        '<strong style="color: #ffc107;">💡 프로모션 활용 안내</strong><br>' +
-                        '<span style="color: #fff; font-size: 14px;">네이버 예약 URL을 입력하고 자동추출하면 매장명, 주소, 전화번호, 가격 등 프로모션 제작에 필요한 모든 정보가 자동으로 입력됩니다. 이 정보들은 카카오톡 프로모션 메시지와 예약 연결에 활용됩니다.</span>' +
+                        '<strong style="color: #ffc107;">💡 카카오톡 프로모션 시스템</strong><br>' +
+                        '<span style="color: #fff; font-size: 14px;">네이버 예약 URL 자동추출로 다음 정보를 수집합니다:<br>' +
+                        '• 매장명 → 프로모션 제목<br>' +
+                        '• 주소 → 위치 안내<br>' +
+                        '• 가격 → 할인 기준가<br>' +
+                        '• 영업시간 → 방문 안내<br>' +
+                        '• 예약링크 → "예약하기" 버튼<br>' +
+                        '• 전화번호 → "문의하기" 연락처 (수동입력 필요)</span>' +
                     '</div>' +
                 '</div>' +
                 
@@ -370,10 +377,64 @@ function saveProfile() {
     var enableNotifications = document.getElementById('profile-enableNotifications').checked;
     var enablePromotions = document.getElementById('profile-enablePromotions').checked;
     
+    // 기본 필수 항목 검증
     if (!designerName) {
         alert('⚠️ 디자이너 이름은 필수 입력 항목입니다');
         document.getElementById('profile-designerName').focus();
         return;
+    }
+    
+    // 프로모션 기능 사용 시 필수 항목 검증
+    if (enablePromotions) {
+        var missingFields = [];
+        var focusField = null;
+        
+        if (!businessName) {
+            missingFields.push('• 매장명 (프로모션 제목용)');
+            if (!focusField) focusField = 'profile-businessName';
+        }
+        if (!phoneNumber) {
+            missingFields.push('• 전화번호 (카카오톡 메시지 문의처용)');
+            if (!focusField) focusField = 'profile-phoneNumber';
+        }
+        if (!naverUrl) {
+            missingFields.push('• 네이버 예약 URL (예약하기 버튼용)');
+            if (!focusField) focusField = 'profile-naverBookingUrl';
+        }
+        
+        if (missingFields.length > 0) {
+            alert('🎯 프로모션 기능을 사용하려면 다음 항목들이 필수입니다:\n\n' + 
+                  missingFields.join('\n') + 
+                  '\n\n💡 참고:\n' +
+                  '- 전화번호는 고객이 카카오톡으로 문의할 때 연락처로 표시됩니다\n' +
+                  '- 네이버에서 자동 추출되지 않은 경우 직접 입력해주세요');
+            
+            if (focusField) {
+                document.getElementById(focusField).focus();
+            }
+            return;
+        }
+    } else {
+        // 프로모션 기능을 사용하지 않는 경우 안내
+        if (businessName || phoneNumber || naverUrl) {
+            var shouldEnable = confirm('💡 매장 정보가 입력되어 있습니다.\n\n프로모션 관리 기능을 활성화하시겠습니까?\n\n✅ 활성화하면:\n- 카카오톡으로 고객에게 할인 메시지 발송 가능\n- 네이버 예약 연결로 즉시 예약 유도 가능\n- 고객 관리 및 재방문 유도 가능');
+            
+            if (shouldEnable) {
+                document.getElementById('profile-enablePromotions').checked = true;
+                enablePromotions = true;
+                
+                // 활성화 후 다시 필수 항목 검증
+                var missingFields = [];
+                if (!businessName) missingFields.push('매장명');
+                if (!phoneNumber) missingFields.push('전화번호');
+                if (!naverUrl) missingFields.push('네이버 예약 URL');
+                
+                if (missingFields.length > 0) {
+                    alert('⚠️ 프로모션 기능 활성화를 위해 ' + missingFields.join(', ') + '을(를) 입력해주세요.');
+                    return;
+                }
+            }
+        }
     }
     
     var profileData = {
