@@ -1,4 +1,4 @@
-// ========== HAIRGATOR 디자이너 프로필 관리 시스템 - 완전한 최종 버전 ==========
+// ========== HAIRGATOR 디자이너 프로필 관리 시스템 - 최종 오류 수정 버전 ==========
 // 네이버 예약 URL 자동 추출 + 매장 정보 관리 + 프로필 설정
 
 console.log('🎨 HAIRGATOR 디자이너 프로필 시스템 로드 시작');
@@ -547,16 +547,21 @@ function showDesignerProfile() {
 // ========== 프로필 탭 전환 ==========
 function switchProfileTab(tabName) {
     // 모든 탭 비활성화
-    document.querySelectorAll('.profile-tab').forEach(tab => {
+    document.querySelectorAll('.profile-tab').forEach(function(tab) {
         tab.classList.remove('active');
     });
-    document.querySelectorAll('.tab-content').forEach(content => {
+    document.querySelectorAll('.tab-content').forEach(function(content) {
         content.classList.remove('active');
     });
     
     // 선택된 탭 활성화
-    event.target.classList.add('active');
-    document.getElementById(`${tabName}-tab`).classList.add('active');
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
+    const targetTab = document.getElementById(tabName + '-tab');
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
 }
 
 // ========== 네이버 예약 정보 자동 추출 (Netlify Functions 전용) ==========
@@ -607,7 +612,7 @@ async function autoExtractBusinessInfo() {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('❌ 서버 오류 응답:', errorText);
-            throw new Error(`서버 오류 (${response.status}): ${response.statusText}`);
+            throw new Error('서버 오류 (' + response.status + '): ' + response.statusText);
         }
         
         const result = await response.json();
@@ -660,17 +665,15 @@ async function autoExtractBusinessInfo() {
             }
             
             // 결과 표시
-            const resultMessage = `
-                ✅ 매장 정보를 성공적으로 가져왔습니다!<br>
-                📊 ${populatedFields}개 필드가 자동으로 채워졌습니다.<br>
-                <br>
-                <strong>추출된 정보:</strong><br>
-                ${data.name || data.storeName ? `🏪 매장명: ${data.name || data.storeName}<br>` : ''}
-                ${data.address ? `📍 주소: ${data.address}<br>` : ''}
-                ${data.phone ? `📞 전화번호: ${data.phone}<br>` : ''}
-                ${data.hours ? `🕐 영업시간: ${data.hours}<br>` : ''}
-                ${data.categories && data.categories.length > 0 ? `🏷️ 카테고리: ${data.categories.join(', ')}<br>` : ''}
-            `;
+            const resultMessage = '✅ 매장 정보를 성공적으로 가져왔습니다!<br>' +
+                '📊 ' + populatedFields + '개 필드가 자동으로 채워졌습니다.<br>' +
+                '<br>' +
+                '<strong>추출된 정보:</strong><br>' +
+                (data.name || data.storeName ? '🏪 매장명: ' + (data.name || data.storeName) + '<br>' : '') +
+                (data.address ? '📍 주소: ' + data.address + '<br>' : '') +
+                (data.phone ? '📞 전화번호: ' + data.phone + '<br>' : '') +
+                (data.hours ? '🕐 영업시간: ' + data.hours + '<br>' : '') +
+                (data.categories && data.categories.length > 0 ? '🏷️ 카테고리: ' + data.categories.join(', ') + '<br>' : '');
             
             showExtractionResult('success', resultMessage);
             
@@ -709,21 +712,19 @@ function showExtractionResult(type, message) {
 
 // ========== 수동 입력 안내 ==========
 function showManualInputGuidance(naverUrl, errorMessage) {
-    const guidanceMessage = `
-        ❌ 자동 추출에 실패했습니다.<br>
-        <br>
-        <strong>🔗 네이버 URL:</strong> <a href="${naverUrl}" target="_blank" style="color: #87CEEB;">${naverUrl}</a><br>
-        <strong>⚠️ 오류:</strong> ${errorMessage}<br>
-        <br>
-        <strong>💡 해결 방법:</strong><br>
-        1. 위 네이버 링크를 클릭하여 새 탭에서 열어주세요<br>
-        2. 매장 정보를 확인하고 아래 필드에 직접 입력해주세요<br>
-        3. 네이버에서 자동 추출을 차단할 수 있습니다<br>
-        <br>
-        <button onclick="window.open('${naverUrl}', '_blank')" style="background: #4169E1; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin-top: 10px;">
-            🔗 네이버 페이지 열기
-        </button>
-    `;
+    const guidanceMessage = '❌ 자동 추출에 실패했습니다.<br>' +
+        '<br>' +
+        '<strong>🔗 네이버 URL:</strong> <a href="' + naverUrl + '" target="_blank" style="color: #87CEEB;">' + naverUrl + '</a><br>' +
+        '<strong>⚠️ 오류:</strong> ' + errorMessage + '<br>' +
+        '<br>' +
+        '<strong>💡 해결 방법:</strong><br>' +
+        '1. 위 네이버 링크를 클릭하여 새 탭에서 열어주세요<br>' +
+        '2. 매장 정보를 확인하고 아래 필드에 직접 입력해주세요<br>' +
+        '3. 네이버에서 자동 추출을 차단할 수 있습니다<br>' +
+        '<br>' +
+        '<button onclick="window.open(\'' + naverUrl + '\', \'_blank\')" style="background: #4169E1; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin-top: 10px;">' +
+        '🔗 네이버 페이지 열기' +
+        '</button>';
     
     showExtractionResult('error', guidanceMessage);
 }
@@ -772,7 +773,7 @@ function populateProfileForm(data) {
         preferredTheme: 'preferredTheme'
     };
     
-    Object.keys(fieldMappings).forEach(dataKey => {
+    Object.keys(fieldMappings).forEach(function(dataKey) {
         const fieldId = fieldMappings[dataKey];
         const field = document.getElementById(fieldId);
         const value = data[dataKey];
@@ -793,21 +794,21 @@ function saveProfile() {
     
     // 폼 데이터 수집
     const formData = {
-        designerName: document.getElementById('designerName')?.value || '',
-        phoneNumber: document.getElementById('phoneNumber')?.value || '',
-        introduction: document.getElementById('introduction')?.value || '',
-        experience: document.getElementById('experience')?.value || '',
-        specialty: document.getElementById('specialty')?.value || '',
-        certifications: document.getElementById('certifications')?.value || '',
-        businessName: document.getElementById('businessName')?.value || '',
-        businessPhone: document.getElementById('businessPhone')?.value || '',
-        businessAddress: document.getElementById('businessAddress')?.value || '',
-        businessHours: document.getElementById('businessHours')?.value || '',
-        businessDescription: document.getElementById('businessDescription')?.value || '',
-        naverBookingUrl: document.getElementById('naverBookingUrl')?.value || '',
-        enableNotifications: document.getElementById('enableNotifications')?.checked || false,
-        enablePromotions: document.getElementById('enablePromotions')?.checked || false,
-        preferredTheme: document.getElementById('preferredTheme')?.value || 'default',
+        designerName: document.getElementById('designerName') ? document.getElementById('designerName').value : '',
+        phoneNumber: document.getElementById('phoneNumber') ? document.getElementById('phoneNumber').value : '',
+        introduction: document.getElementById('introduction') ? document.getElementById('introduction').value : '',
+        experience: document.getElementById('experience') ? document.getElementById('experience').value : '',
+        specialty: document.getElementById('specialty') ? document.getElementById('specialty').value : '',
+        certifications: document.getElementById('certifications') ? document.getElementById('certifications').value : '',
+        businessName: document.getElementById('businessName') ? document.getElementById('businessName').value : '',
+        businessPhone: document.getElementById('businessPhone') ? document.getElementById('businessPhone').value : '',
+        businessAddress: document.getElementById('businessAddress') ? document.getElementById('businessAddress').value : '',
+        businessHours: document.getElementById('businessHours') ? document.getElementById('businessHours').value : '',
+        businessDescription: document.getElementById('businessDescription') ? document.getElementById('businessDescription').value : '',
+        naverBookingUrl: document.getElementById('naverBookingUrl') ? document.getElementById('naverBookingUrl').value : '',
+        enableNotifications: document.getElementById('enableNotifications') ? document.getElementById('enableNotifications').checked : false,
+        enablePromotions: document.getElementById('enablePromotions') ? document.getElementById('enablePromotions').checked : false,
+        preferredTheme: document.getElementById('preferredTheme') ? document.getElementById('preferredTheme').value : 'default',
         updatedAt: new Date().toISOString()
     };
     
@@ -815,7 +816,8 @@ function saveProfile() {
     if (!formData.designerName.trim()) {
         alert('⚠️ 디자이너 이름은 필수 입력 항목입니다');
         switchProfileTab('basic');
-        document.getElementById('designerName')?.focus();
+        const nameField = document.getElementById('designerName');
+        if (nameField) nameField.focus();
         return;
     }
     
@@ -854,8 +856,23 @@ function saveProfile() {
 async function saveProfileToFirebase(profileData) {
     try {
         await db.collection('designer_profiles').doc(currentDesigner).set({
-            ...profileData,
             designerId: currentDesigner,
+            designerName: profileData.designerName,
+            phoneNumber: profileData.phoneNumber,
+            introduction: profileData.introduction,
+            experience: profileData.experience,
+            specialty: profileData.specialty,
+            certifications: profileData.certifications,
+            businessName: profileData.businessName,
+            businessPhone: profileData.businessPhone,
+            businessAddress: profileData.businessAddress,
+            businessHours: profileData.businessHours,
+            businessDescription: profileData.businessDescription,
+            naverBookingUrl: profileData.naverBookingUrl,
+            enableNotifications: profileData.enableNotifications,
+            enablePromotions: profileData.enablePromotions,
+            preferredTheme: profileData.preferredTheme,
+            updatedAt: profileData.updatedAt,
             lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
         
@@ -880,40 +897,44 @@ function getProfileData() {
 }
 
 // ========== 빠른 알림 함수 ==========
-function showQuickAlert(message, type = 'info') {
+function showQuickAlert(message, type) {
+    type = type || 'info';
+    
     // 기존 알림 제거
     const existing = document.querySelector('.quick-alert');
     if (existing) existing.remove();
     
-    const alertHTML = `
-        <div class="quick-alert ${type}" style="
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: ${type === 'success' ? 'linear-gradient(135deg, #28a745, #20c997)' : 
-                       type === 'warning' ? 'linear-gradient(135deg, #ffc107, #fd7e14)' :
-                       type === 'error' ? 'linear-gradient(135deg, #dc3545, #e83e8c)' :
-                       'linear-gradient(135deg, #FF1493, #FF69B4)'};
-            color: ${type === 'warning' ? '#000' : '#fff'};
-            padding: 20px 30px;
-            border-radius: 15px;
-            z-index: 10001;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            animation: alertPop 0.3s ease;
-            max-width: 90%;
-        ">
-            ${message}
-        </div>
-    `;
+    const bgColor = type === 'success' ? 'linear-gradient(135deg, #28a745, #20c997)' : 
+                   type === 'warning' ? 'linear-gradient(135deg, #ffc107, #fd7e14)' :
+                   type === 'error' ? 'linear-gradient(135deg, #dc3545, #e83e8c)' :
+                   'linear-gradient(135deg, #FF1493, #FF69B4)';
+    
+    const textColor = type === 'warning' ? '#000' : '#fff';
+    
+    const alertHTML = '<div class="quick-alert ' + type + '" style="' +
+        'position: fixed;' +
+        'top: 50%;' +
+        'left: 50%;' +
+        'transform: translate(-50%, -50%);' +
+        'background: ' + bgColor + ';' +
+        'color: ' + textColor + ';' +
+        'padding: 20px 30px;' +
+        'border-radius: 15px;' +
+        'z-index: 10001;' +
+        'font-size: 16px;' +
+        'font-weight: bold;' +
+        'text-align: center;' +
+        'box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);' +
+        'animation: alertPop 0.3s ease;' +
+        'max-width: 90%;' +
+        '">' +
+        message +
+        '</div>';
     
     document.body.insertAdjacentHTML('beforeend', alertHTML);
     
     const duration = type === 'error' ? 5000 : 3000;
-    setTimeout(() => {
+    setTimeout(function() {
         const alert = document.querySelector('.quick-alert');
         if (alert) alert.remove();
     }, duration);
@@ -934,4 +955,4 @@ window.autoExtractBusinessInfo = autoExtractBusinessInfo;
 window.saveProfile = saveProfile;
 window.getProfileData = getProfileData;
 
-console.log('✅ HAIRGATOR 디자이너 프로필 시스템 로드 완료 (Netlify Functions 전용, CORS 프록시 제거)');
+console.log('✅ HAIRGATOR 디자이너 프로필 시스템 로드 완료 (최종 오류 수정 버전)');
