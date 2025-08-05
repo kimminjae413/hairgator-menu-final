@@ -1,873 +1,1038 @@
-// ========== 네이버 예약 자동 정보 추출 시스템 - 최종 완성 버전 ==========
+// ========== 네이버 예약 자동 정보 추출 시스템 - 진짜 최종 완전 버전 ==========
 // HAIRGATOR - 네이버 매장 정보 자동 추출 및 수동 입력 지원
-// Netlify Functions + 스마트 수동 입력 하이브리드 시스템
+// Netlify Functions + 스마트 수동 입력 하이브리드 시스템 (모든 기능 포함)
 
-console.log('🚀 HAIRGATOR 네이버 정보 추출 시스템 (최종 버전) 로드 시작');
+console.log('🚀 HAIRGATOR 네이버 정보 추출 시스템 (진짜 최종 완전 버전) 로드 시작');
 
 // ========== 전역 변수 ==========
 let extractionInProgress = false;
 let fallbackData = {
-    url: '',
-    attempts: [],
-    lastError: ''
+    urls: [
+        'https://api.allorigins.win/get?url=',
+        'https://cors-anywhere.herokuapp.com/',
+        'https://thingproxy.freeboard.io/fetch/'
+    ],
+    currentUrlIndex: 0
 };
 
-// ========== URL 유효성 검사 (강화된 버전) ==========
-function validateNaverUrl(url) {
-    if (!url || typeof url !== 'string') {
-        return { valid: false, error: 'URL을 입력해주세요' };
-    }
+// ========== CSS 스타일 자동 삽입 ==========
+function injectExtractorStyles() {
+    if (document.getElementById('extractorStyles')) return;
     
-    const trimmedUrl = url.trim();
-    
-    // 네이버 관련 URL 패턴들 (모든 가능한 형태 지원)
-    const naverPatterns = [
-        // 단축 URL
-        /^https?:\/\/naver\.me\/[a-zA-Z0-9]+$/,
-        // 네이버 예약
-        /^https?:\/\/booking\.naver\.com\/booking\/(\d+|[a-zA-Z0-9]+)/,
-        /^https?:\/\/booking\.naver\.com\/store\/\d+/,
-        // 네이버 지도
-        /^https?:\/\/map\.naver\.com\/.*place\/\d+/,
-        /^https?:\/\/map\.naver\.com\/p\/[a-zA-Z0-9]+/,
-        // 네이버 스마트스토어
-        /^https?:\/\/smartstore\.naver\.com\/[^\/]+/,
-        // 네이버 스토어 (레스토랑)
-        /^https?:\/\/store\.naver\.com\/restaurants\/detail/,
-        // 모바일 네이버
-        /^https?:\/\/m\.map\.naver\.com\/.*place\/\d+/,
-        // 네이버 플레이스 (일반)
-        /^https?:\/\/.*\.naver\.com.*place.*\d+/
-    ];
-    
-    const isValid = naverPatterns.some(pattern => pattern.test(trimmedUrl));
-    
-    if (!isValid) {
-        return { 
-            valid: false, 
-            error: '올바른 네이버 URL을 입력해주세요\n지원 형태: naver.me, booking.naver.com, map.naver.com, smartstore.naver.com' 
-        };
-    }
-    
-    return { valid: true, url: trimmedUrl };
-}
-
-// ========== Netlify Functions를 통한 자동 추출 ==========
-async function extractNaverStoreInfo(naverUrl) {
-    console.log('🚀 Netlify Functions를 통한 네이버 정보 추출 시작:', naverUrl);
-    
-    const startTime = Date.now();
-    
-    try {
-        // Netlify Function 호출
-        const response = await fetch('/.netlify/functions/extract-naver', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'User-Agent': 'HAIRGATOR/1.0'
-            },
-            body: JSON.stringify({ url: naverUrl }),
-            timeout: 25000 // 25초 타임아웃
-        });
-        
-        const result = await response.json();
-        const processingTime = Date.now() - startTime;
-        
-        console.log(`⏱️ 처리 시간: ${processingTime}ms`);
-        
-        if (!response.ok) {
-            throw new Error(result.error || `HTTP ${response.status}: ${response.statusText}`);
+    const style = document.createElement('style');
+    style.id = 'extractorStyles';
+    style.textContent = `
+        /* ========== 네이버 정보 추출 모달 스타일 ========== */
+        .extraction-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
         }
-        
-        if (result.success && result.data) {
-            console.log('✅ 네이버 정보 추출 성공:', result.data);
-            
-            // 추출 통계 업데이트
-            updateExtractionStats(true, processingTime);
-            
-            return {
-                success: true,
-                data: result.data,
-                method: 'netlify_functions',
-                processingTime: processingTime
-            };
-        } else {
-            throw new Error(result.error || '정보 추출에 실패했습니다');
+
+        .progress-container {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #FF1493;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
         }
-        
-    } catch (error) {
-        console.error('❌ Netlify Functions 추출 실패:', error);
-        
-        // 추출 통계 업데이트
-        updateExtractionStats(false, Date.now() - startTime, error.message);
-        
-        return {
-            success: false,
-            error: error.message,
-            fallbackRequired: true,
-            processingTime: Date.now() - startTime
-        };
-    }
-}
 
-// ========== 추출 통계 업데이트 ==========
-function updateExtractionStats(success, processingTime, errorMessage = '') {
-    const stats = JSON.parse(localStorage.getItem('naverExtractionStats') || '{}');
-    
-    stats.totalAttempts = (stats.totalAttempts || 0) + 1;
-    stats.successCount = (stats.successCount || 0) + (success ? 1 : 0);
-    stats.averageTime = stats.averageTime || 0;
-    stats.lastAttempt = new Date().toISOString();
-    
-    // 평균 시간 계산
-    stats.averageTime = ((stats.averageTime * (stats.totalAttempts - 1)) + processingTime) / stats.totalAttempts;
-    
-    if (!success) {
-        stats.lastError = errorMessage;
-        stats.errorCount = (stats.errorCount || 0) + 1;
-    }
-    
-    localStorage.setItem('naverExtractionStats', JSON.stringify(stats));
-}
-
-// ========== 프로필 폼에 자동 입력 ==========
-function populateProfileForm(storeData) {
-    console.log('📝 프로필 폼에 정보 자동 입력:', storeData);
-    
-    const inputMappings = [
-        { id: 'storeName', value: storeData.storeName, label: '매장명' },
-        { id: 'storeAddress', value: storeData.address, label: '주소' },
-        { id: 'storePhone', value: storeData.phone, label: '전화번호' },
-        { id: 'businessHours', value: storeData.businessHours, label: '영업시간' },
-        { id: 'storeCategory', value: storeData.category, label: '카테고리' }
-    ];
-    
-    let filledCount = 0;
-    
-    inputMappings.forEach(mapping => {
-        const input = document.getElementById(mapping.id);
-        if (input && mapping.value) {
-            input.value = mapping.value;
-            input.style.borderColor = '#4CAF50';
-            input.style.backgroundColor = '#f0fff0';
-            input.style.transition = 'all 0.3s ease';
-            filledCount++;
-            
-            // 입력 완료 애니메이션
-            setTimeout(() => {
-                input.style.transform = 'scale(1.02)';
-                setTimeout(() => {
-                    input.style.transform = 'scale(1)';
-                }, 200);
-            }, 100);
+        .progress-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 20, 147, 0.3);
+            border-top: 4px solid #FF1493;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
         }
-    });
-    
-    // 서비스 정보 자동 추가
-    if (storeData.services && storeData.services.length > 0) {
-        populateServices(storeData.services);
-        filledCount += storeData.services.length;
-    }
-    
-    // 성공 메시지 표시
-    showSuccessNotification(
-        `✅ ${filledCount}개 항목이 자동으로 입력되었습니다!`,
-        storeData.extractionMethod || 'auto'
-    );
-    
-    // 사업장 정보 탭으로 자동 전환 (부드러운 전환)
-    setTimeout(() => {
-        const businessTab = document.querySelector('[data-tab="business"]');
-        if (businessTab) {
-            businessTab.click();
-            businessTab.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
-            businessTab.style.color = 'white';
-            
-            setTimeout(() => {
-                businessTab.style.background = '';
-                businessTab.style.color = '';
-            }, 2000);
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-    }, 500);
-    
-    // 입력 완료 이벤트 발생
-    window.dispatchEvent(new CustomEvent('naverDataPopulated', { 
-        detail: { storeData, filledCount } 
-    }));
-}
 
-// ========== 서비스 정보 자동 추가 ==========
-function populateServices(services) {
-    console.log('🛠️ 서비스 정보 자동 추가:', services);
-    
-    const servicesContainer = document.getElementById('servicesContainer');
-    if (!servicesContainer) {
-        console.warn('⚠️ 서비스 컨테이너를 찾을 수 없습니다');
-        return;
-    }
-    
-    // 기존 서비스 항목 확인
-    const existingServices = servicesContainer.querySelectorAll('.service-item');
-    const existingCount = existingServices.length;
-    
-    services.forEach((service, index) => {
-        setTimeout(() => {
-            addServiceToForm(service.name, service.price, index);
-        }, (index + 1) * 200); // 순차적으로 추가 (애니메이션 효과)
-    });
-}
-
-// ========== 개별 서비스 추가 ==========
-function addServiceToForm(serviceName, price, animationDelay = 0) {
-    const servicesContainer = document.getElementById('servicesContainer');
-    if (!servicesContainer) return;
-    
-    const serviceDiv = document.createElement('div');
-    serviceDiv.className = 'service-item auto-added';
-    serviceDiv.style.opacity = '0';
-    serviceDiv.style.transform = 'translateY(-10px)';
-    serviceDiv.style.transition = 'all 0.3s ease';
-    
-    serviceDiv.innerHTML = `
-        <div class="service-inputs">
-            <input type="text" value="${serviceName}" placeholder="서비스명" 
-                   class="auto-filled" style="border-color: #4CAF50; background-color: #f0fff0;">
-            <input type="number" value="${price}" placeholder="가격" 
-                   class="auto-filled" style="border-color: #4CAF50; background-color: #f0fff0;">
-            <button type="button" onclick="removeService(this)" class="remove-service-btn">
-                🗑️ 삭제
-            </button>
-        </div>
-        <div class="service-badge">자동 추가됨</div>
-    `;
-    
-    servicesContainer.appendChild(serviceDiv);
-    
-    // 애니메이션 효과
-    setTimeout(() => {
-        serviceDiv.style.opacity = '1';
-        serviceDiv.style.transform = 'translateY(0)';
-    }, 50);
-}
-
-// ========== 메인 추출 함수 (사용자 인터페이스) ==========
-async function enhancedExtractStoreInfo() {
-    if (extractionInProgress) {
-        console.log('⚠️ 이미 추출이 진행 중입니다');
-        return;
-    }
-    
-    const urlInput = document.getElementById('naverUrl');
-    if (!urlInput) {
-        alert('❌ URL 입력 필드를 찾을 수 없습니다');
-        return;
-    }
-    
-    const naverUrl = urlInput.value.trim();
-    
-    // URL 유효성 검사
-    const validation = validateNaverUrl(naverUrl);
-    if (!validation.valid) {
-        showErrorAlert(validation.error);
-        urlInput.focus();
-        return;
-    }
-    
-    extractionInProgress = true;
-    fallbackData.url = validation.url;
-    
-    // UI 상태 업데이트
-    const extractBtn = document.querySelector('.naver-extract-btn');
-    const originalText = extractBtn ? extractBtn.textContent : '';
-    
-    updateButtonState(extractBtn, 'loading');
-    showExtractionProgress('🔍 네이버 페이지 분석 중...');
-    
-    try {
-        // 1단계: Netlify Functions를 통한 자동 추출 시도
-        showExtractionProgress('🚀 서버에서 정보 추출 중...');
-        const result = await extractNaverStoreInfo(validation.url);
-        
-        if (result.success) {
-            // 성공: 폼에 자동 입력
-            showExtractionProgress('✅ 정보 추출 완료! 폼에 입력 중...');
-            
-            setTimeout(() => {
-                populateProfileForm(result.data);
-                urlInput.value = ''; // URL 입력창 클리어
-                hideExtractionProgress();
-            }, 500);
-            
-        } else {
-            // 실패: 수동 입력 모달 표시
-            showExtractionProgress('⚠️ 자동 추출 실패, 수동 입력 모드로 전환...');
-            
-            setTimeout(() => {
-                hideExtractionProgress();
-                showAdvancedManualInputModal(validation.url, result.error);
-            }, 1000);
+        .progress-message {
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
         }
-        
-    } catch (error) {
-        console.error('❌ 전체 프로세스 오류:', error);
-        hideExtractionProgress();
-        showAdvancedManualInputModal(validation.url, error.message);
-        
-    } finally {
-        extractionInProgress = false;
-        updateButtonState(extractBtn, 'normal', originalText);
-    }
-}
 
-// ========== 버튼 상태 관리 ==========
-function updateButtonState(button, state, originalText = '') {
-    if (!button) return;
-    
-    const states = {
-        loading: {
-            text: '🔄 정보 추출 중...',
-            disabled: true,
-            style: { background: '#666', cursor: 'not-allowed' }
-        },
-        normal: {
-            text: originalText || '🔗 매장 정보 자동 가져오기',
-            disabled: false,
-            style: { background: '', cursor: 'pointer' }
-        },
-        success: {
-            text: '✅ 추출 완료!',
-            disabled: false,
-            style: { background: '#4CAF50', cursor: 'pointer' }
+        .progress-submessage {
+            color: #ccc;
+            font-size: 14px;
         }
-    };
-    
-    const config = states[state];
-    if (config) {
-        button.textContent = config.text;
-        button.disabled = config.disabled;
-        Object.assign(button.style, config.style);
-    }
-}
 
-// ========== 추출 진행 상황 표시 ==========
-function showExtractionProgress(message) {
-    let progressDiv = document.getElementById('extractionProgress');
-    
-    if (!progressDiv) {
-        progressDiv = document.createElement('div');
-        progressDiv.id = 'extractionProgress';
-        progressDiv.style.cssText = `
+        /* ========== 스마트 수동 입력 모달 ========== */
+        .smart-manual-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .smart-modal-container {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #FF1493;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .smart-modal-header {
+            padding: 25px 30px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .smart-modal-header h3 {
+            color: #FF1493;
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .smart-modal-close {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .smart-modal-close:hover {
+            color: #fff;
+        }
+
+        .smart-modal-content {
+            padding: 0 30px 30px;
+        }
+
+        .error-info {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .error-info p {
+            margin: 5px 0;
+        }
+
+        .error-info strong {
+            color: #FF69B4;
+        }
+
+        .error-info a {
+            color: #87CEEB;
+            text-decoration: none;
+        }
+
+        .error-info a:hover {
+            text-decoration: underline;
+        }
+
+        .instruction-box {
+            background: rgba(255, 20, 147, 0.1);
+            border: 1px solid rgba(255, 20, 147, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .instruction-box h4 {
+            color: #FF1493;
+            margin: 0 0 15px;
+            font-size: 16px;
+        }
+
+        .instruction-box ol {
+            margin: 0;
+            padding-left: 20px;
+            color: #ccc;
+        }
+
+        .instruction-box li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .smart-manual-form {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #fff;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #FF1493;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #aaa;
+        }
+
+        .smart-modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .smart-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .smart-btn-cancel {
+            background: #333;
+            color: #fff;
+        }
+
+        .smart-btn-cancel:hover {
+            background: #555;
+        }
+
+        .smart-btn-save {
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            color: white;
+        }
+
+        .smart-btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+
+        /* ========== 빠른 알림 ========== */
+        .quick-alert {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
             color: white;
             padding: 20px 30px;
             border-radius: 15px;
-            z-index: 10000;
-            text-align: center;
+            z-index: 10001;
             font-size: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-        `;
-        document.body.appendChild(progressDiv);
-    }
-    
-    progressDiv.innerHTML = `
-        <div class="progress-content">
-            <div class="progress-spinner" style="
-                width: 30px;
-                height: 30px;
-                border: 3px solid rgba(255, 255, 255, 0.3);
-                border-top: 3px solid #4CAF50;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin: 0 auto 15px;
-            "></div>
-            <div>${message}</div>
-        </div>
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+            animation: alertPop 0.3s ease;
+            max-width: 90%;
+        }
+
+        @keyframes alertPop {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ========== 추출 버튼 스타일 ========== */
+        .extract-btn {
+            background: linear-gradient(135deg, #4169E1, #1E90FF);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .extract-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(65, 105, 225, 0.3);
+        }
+
+        .extract-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
     `;
+    
+    document.head.appendChild(style);
+    console.log('✅ 네이버 추출기 스타일 삽입 완료');
 }
 
-function hideExtractionProgress() {
-    const progressDiv = document.getElementById('extractionProgress');
-    if (progressDiv) {
-        progressDiv.style.opacity = '0';
-        setTimeout(() => {
-            if (progressDiv.parentNode) {
-                progressDiv.remove();
+// ========== Netlify Functions를 통한 정보 추출 ==========
+async function extractNaverStoreInfo(naverUrl) {
+    console.log('🔗 Netlify Functions를 통한 네이버 정보 추출 시작:', naverUrl);
+    
+    try {
+        // 요청 데이터 준비 (여러 키 형태로 전송)
+        const requestData = {
+            url: naverUrl,           // 주요 키
+            fetchURL: naverUrl,      // 백업 키 (오류에서 요구한 키)
+            naverUrl: naverUrl,      // 추가 키
+            link: naverUrl,          // 예비 키
+            storeUrl: naverUrl       // 폼 필드명
+        };
+        
+        console.log('📤 요청 데이터:', requestData);
+        
+        const response = await fetch('/.netlify/functions/extract-naver', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        console.log('📡 Netlify Functions 응답 상태:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Netlify Functions 오류 응답:', errorText);
+            
+            try {
+                const errorData = JSON.parse(errorText);
+                throw new Error(`Netlify Functions 오류: ${errorData.error || errorData.message || 'Unknown error'}`);
+            } catch (e) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-        }, 300);
+        }
+
+        const result = await response.json();
+        console.log('✅ Netlify Functions 응답:', result);
+
+        if (result.success && result.data) {
+            console.log('🎉 정보 추출 성공!');
+            return {
+                success: true,
+                data: result.data
+            };
+        } else {
+            console.log('⚠️ 추출 실패 또는 데이터 없음');
+            return {
+                success: false,
+                error: result.error || '정보를 추출할 수 없습니다'
+            };
+        }
+
+    } catch (error) {
+        console.error('❌ Netlify Functions 요청 실패:', error);
+        return {
+            success: false,
+            error: error.message
+        };
     }
 }
 
-// ========== 고급 수동 입력 모달 ==========
-function showAdvancedManualInputModal(naverUrl, errorMessage = '') {
-    console.log('📝 고급 수동 입력 모달 표시:', naverUrl);
+// ========== 백업 CORS 프록시를 통한 추출 (Netlify Functions 실패 시) ==========
+async function extractWithCorsProxy(naverUrl) {
+    console.log('🔄 CORS 프록시를 통한 백업 추출 시도');
     
-    const stats = JSON.parse(localStorage.getItem('naverExtractionStats') || '{}');
-    const successRate = stats.totalAttempts ? 
-        Math.round((stats.successCount / stats.totalAttempts) * 100) : 0;
+    const proxyUrls = [
+        'https://api.allorigins.win/get?url=',
+        'https://cors-anywhere.herokuapp.com/',
+        'https://thingproxy.freeboard.io/fetch/'
+    ];
     
+    for (let i = 0; i < proxyUrls.length; i++) {
+        try {
+            const proxyUrl = proxyUrls[i];
+            console.log(`📡 프록시 ${i + 1} 시도: ${proxyUrl}`);
+            
+            let fullUrl;
+            if (proxyUrl.includes('allorigins')) {
+                fullUrl = `${proxyUrl}${encodeURIComponent(naverUrl)}`;
+            } else {
+                fullUrl = `${proxyUrl}${naverUrl}`;
+            }
+            
+            const response = await fetch(fullUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json, text/html, */*',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                },
+                timeout: 15000
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            let html;
+            if (proxyUrl.includes('allorigins')) {
+                const jsonData = await response.json();
+                html = jsonData.contents;
+            } else {
+                html = await response.text();
+            }
+            
+            console.log(`✅ 프록시 ${i + 1} 성공, HTML 길이:`, html.length);
+            
+            // HTML 파싱
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            return parseNaverStoreInfo(doc);
+            
+        } catch (error) {
+            console.error(`❌ 프록시 ${i + 1} 실패:`, error.message);
+            continue;
+        }
+    }
+    
+    throw new Error('모든 프록시 서비스 실패');
+}
+
+// ========== HTML 파싱을 통한 매장 정보 추출 ==========
+function parseNaverStoreInfo(doc) {
+    console.log('🔍 HTML에서 매장 정보 파싱 시작');
+    
+    const storeInfo = {
+        storeName: '',
+        address: '',
+        phone: '',
+        hours: '',
+        description: '',
+        categories: []
+    };
+    
+    // 다양한 선택자로 정보 추출 시도
+    const selectors = {
+        storeName: [
+            'h1.GHAhO',
+            '.place_section_content h1',
+            '.business_name',
+            'h1',
+            '.store-name',
+            '[data-nclicks*="storename"]',
+            '.shop_name',
+            '.place_name'
+        ],
+        address: [
+            '.LDgIH',
+            '.place_section_content .address',
+            '.address_info',
+            '.store-address',
+            '[data-nclicks*="address"]',
+            '.location_detail',
+            '.addr'
+        ],
+        phone: [
+            '.xlx7Q',
+            '.place_section_content .phone',
+            '.phone_info',
+            '.store-phone',
+            '[data-nclicks*="phone"]',
+            '.tel',
+            '.contact_num'
+        ],
+        hours: [
+            '.A_cdD',
+            '.place_section_content .hours',
+            '.hours_info',
+            '.business-hours',
+            '[data-nclicks*="hours"]',
+            '.time_info',
+            '.operating_time'
+        ]
+    };
+    
+    // 각 필드별로 추출 시도
+    Object.keys(selectors).forEach(field => {
+        for (const selector of selectors[field]) {
+            const element = doc.querySelector(selector);
+            if (element && element.textContent.trim()) {
+                storeInfo[field] = element.textContent.trim();
+                console.log(`✅ ${field}: ${storeInfo[field]}`);
+                break;
+            }
+        }
+    });
+    
+    // 카테고리 정보 추출
+    const categorySelectors = [
+        '.category_name',
+        '.category_item', 
+        '.business-category',
+        '.category',
+        '.biz_category'
+    ];
+    
+    categorySelectors.forEach(selector => {
+        const elements = doc.querySelectorAll(selector);
+        elements.forEach(el => {
+            const category = el.textContent.trim();
+            if (category && !storeInfo.categories.includes(category)) {
+                storeInfo.categories.push(category);
+            }
+        });
+    });
+    
+    // 설명 정보 추출
+    const descSelectors = [
+        '.place_section_content .description',
+        '.business_description',
+        '.intro',
+        '.summary'
+    ];
+    
+    for (const selector of descSelectors) {
+        const element = doc.querySelector(selector);
+        if (element && element.textContent.trim()) {
+            storeInfo.description = element.textContent.trim();
+            break;
+        }
+    }
+    
+    console.log('🎉 파싱 완료:', storeInfo);
+    
+    // 성공 여부 판단 (최소한 매장명은 있어야 함)
+    const isSuccess = storeInfo.storeName.length > 0;
+    
+    return {
+        success: isSuccess,
+        data: storeInfo
+    };
+}
+
+// ========== URL 필드 자동 감지 및 추출 ==========
+function getNaverUrlFromForm() {
+    // 다양한 가능한 필드 ID들을 시도
+    const possibleIds = [
+        'storeUrl',           // 기본 예상 ID
+        'naverUrl',           // 네이버 URL 필드
+        'naverBookingUrl',    // 네이버 예약 URL
+        'bookingUrl',         // 예약 URL
+        'url',                // 일반 URL
+        'website',            // 웹사이트
+        'link',               // 링크
+        'naverLink',          // 네이버 링크
+        'reservationUrl'      // 예약 URL
+    ];
+    
+    for (const id of possibleIds) {
+        const field = document.getElementById(id);
+        if (field && field.value && field.value.trim()) {
+            console.log(`✅ URL 필드 발견: ${id} = ${field.value}`);
+            return field.value.trim();
+        }
+    }
+    
+    // 필드를 찾지 못한 경우 모든 input 필드 검사
+    const allInputs = document.querySelectorAll('input[type="text"], input[type="url"]');
+    for (const input of allInputs) {
+        const value = input.value.trim();
+        if (value && (value.includes('naver.me') || value.includes('booking.naver.com'))) {
+            console.log(`✅ 네이버 URL 자동 감지: ${input.id || input.name} = ${value}`);
+            return value;
+        }
+    }
+    
+    console.log('❌ 네이버 URL 필드를 찾을 수 없음');
+    return null;
+}
+
+// ========== 향상된 정보 추출 함수 ==========
+async function enhancedExtractStoreInfo() {
+    console.log('🎯 정보 추출 시작...');
+    
+    // 스타일 주입
+    injectExtractorStyles();
+    
+    // URL 자동 감지
+    const naverUrl = getNaverUrlFromForm();
+
+    if (!naverUrl) {
+        // 사용자에게 직접 URL 입력 요청
+        const userUrl = prompt('🔗 네이버 예약 URL을 입력해주세요:\n\n예시: https://naver.me/xxxxx\n또는: https://booking.naver.com/booking/xxxxx');
+        if (!userUrl || !userUrl.trim()) {
+            showQuickAlert('⚠️ 네이버 예약 URL이 필요합니다');
+            return;
+        }
+        
+        // 입력받은 URL로 진행
+        return await processUrlExtraction(userUrl.trim());
+    }
+
+    return await processUrlExtraction(naverUrl);
+}
+
+// ========== URL 처리 및 추출 ==========
+async function processUrlExtraction(naverUrl) {
+    // URL 형식 검증
+    if (!naverUrl.includes('naver')) {
+        showQuickAlert('⚠️ 올바른 네이버 URL을 입력해주세요');
+        return;
+    }
+
+    if (extractionInProgress) {
+        console.log('⏳ 이미 추출 진행 중...');
+        return;
+    }
+
+    extractionInProgress = true;
+    showExtractionProgress('🔍 네이버에서 매장 정보를 자동으로 가져오는 중...');
+
+    try {
+        console.log('🎯 URL 처리 시작:', naverUrl);
+
+        // 1단계: Netlify Functions 시도
+        updateExtractionProgress('🚀 서버에서 정보 추출 중...');
+        const netlifyResult = await extractNaverStoreInfo(naverUrl);
+
+        if (netlifyResult.success) {
+            console.log('✅ Netlify Functions 성공!');
+            hideExtractionProgress();
+            
+            // 추출된 정보를 폼에 자동 입력
+            const success = populateFormWithData(netlifyResult.data);
+            
+            if (success) {
+                showQuickAlert('✅ 매장 정보를 성공적으로 가져왔습니다!');
+                
+                // 성공한 URL을 해당 필드에 저장
+                saveUrlToForm(naverUrl);
+            } else {
+                showQuickAlert('⚠️ 일부 정보만 가져올 수 있었습니다');
+            }
+            return;
+        }
+
+        console.log('⚠️ Netlify Functions 실패, CORS 프록시 시도...');
+        
+        // 2단계: CORS 프록시 백업 시도
+        updateExtractionProgress('🔄 백업 서버를 통해 정보 추출 중...');
+        
+        try {
+            const proxyResult = await extractWithCorsProxy(naverUrl);
+            
+            if (proxyResult.success) {
+                console.log('✅ CORS 프록시 성공!');
+                hideExtractionProgress();
+                
+                const success = populateFormWithData(proxyResult.data);
+                
+                if (success) {
+                    showQuickAlert('✅ 백업 서버를 통해 매장 정보를 가져왔습니다!');
+                    saveUrlToForm(naverUrl);
+                } else {
+                    showQuickAlert('⚠️ 일부 정보만 가져올 수 있었습니다');
+                }
+                return;
+            }
+        } catch (proxyError) {
+            console.log('⚠️ CORS 프록시도 실패:', proxyError.message);
+        }
+
+        console.log('⚠️ 모든 자동 추출 실패, 수동 입력 모달 표시');
+        
+        // 3단계: 실패 시 스마트 수동 입력 모달 표시
+        hideExtractionProgress();
+        showSmartManualInputModal(naverUrl, netlifyResult.error);
+
+    } catch (error) {
+        console.error('❌ 전체 추출 프로세스 실패:', error);
+        hideExtractionProgress();
+        showSmartManualInputModal(naverUrl, error.message);
+    } finally {
+        extractionInProgress = false;
+    }
+}
+
+// ========== 폼 데이터 채우기 (개선된 버전) ==========
+function populateFormWithData(data) {
+    console.log('📝 폼에 데이터 채우기:', data);
+    
+    let fieldsPopulated = 0;
+
+    // 필드 매핑 (더 많은 가능성 추가)
+    const fieldMappings = {
+        storeName: [
+            'designerName', 'salonName', 'businessName', 'storeName', 'shopName',
+            'companyName', 'name', 'title', 'brandName'
+        ],
+        address: [
+            'address', 'location', 'businessAddress', 'storeAddress', 'shopAddress',
+            'fullAddress', 'addr', 'place'
+        ],
+        phone: [
+            'phone', 'phoneNumber', 'contact', 'tel', 'telephone', 'contactNumber',
+            'businessPhone', 'storePhone', 'mobile'
+        ],
+        hours: [
+            'hours', 'businessHours', 'openingHours', 'workingHours', 'operatingHours',
+            'schedule', 'time', 'availability'
+        ],
+        description: [
+            'description', 'about', 'introduction', 'info', 'details', 'summary',
+            'content', 'note', 'memo', 'comment'
+        ]
+    };
+
+    // 각 데이터 필드에 대해 폼 필드 찾아서 채우기
+    Object.keys(fieldMappings).forEach(dataKey => {
+        const value = data[dataKey];
+        if (value && value.trim()) {
+            const targetFields = fieldMappings[dataKey];
+            
+            for (const fieldId of targetFields) {
+                const field = document.getElementById(fieldId);
+                if (field && (!field.value || field.value.trim() === '')) {
+                    field.value = value.trim();
+                    console.log(`✅ ${fieldId} = ${value}`);
+                    fieldsPopulated++;
+                    
+                    // 입력 이벤트 트리거 (유효성 검사 등을 위해)
+                    field.dispatchEvent(new Event('input', { bubbles: true }));
+                    field.dispatchEvent(new Event('change', { bubbles: true }));
+                    break;
+                }
+            }
+        }
+    });
+
+    // 카테고리 정보 처리
+    if (data.categories && data.categories.length > 0) {
+        const categoryFields = ['category', 'businessCategory', 'serviceType', 'type'];
+        for (const fieldId of categoryFields) {
+            const field = document.getElementById(fieldId);
+            if (field && (!field.value || field.value.trim() === '')) {
+                field.value = data.categories.join(', ');
+                console.log(`✅ ${fieldId} = ${data.categories.join(', ')}`);
+                fieldsPopulated++;
+                
+                field.dispatchEvent(new Event('input', { bubbles: true }));
+                field.dispatchEvent(new Event('change', { bubbles: true }));
+                break;
+            }
+        }
+    }
+
+    console.log(`📊 총 ${fieldsPopulated}개 필드에 데이터 입력 완료`);
+    return fieldsPopulated > 0;
+}
+
+// ========== URL을 폼에 저장 ==========
+function saveUrlToForm(naverUrl) {
+    const urlFields = [
+        'storeUrl', 'naverUrl', 'naverBookingUrl', 'bookingUrl', 'url', 'website', 'link'
+    ];
+    
+    for (const fieldId of urlFields) {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.value = naverUrl;
+            console.log(`✅ URL 저장: ${fieldId} = ${naverUrl}`);
+            
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            break;
+        }
+    }
+}
+
+// ========== 스마트 수동 입력 모달 ==========
+function showSmartManualInputModal(naverUrl, errorMessage) {
+    console.log('🎨 스마트 수동 입력 모달 표시');
+
     const modalHTML = `
-        <div class="advanced-manual-modal" id="advancedManualModal">
-            <div class="modal-backdrop" onclick="closeAdvancedManualModal()"></div>
-            <div class="advanced-modal-content">
-                <div class="modal-header">
-                    <h3>🛠️ 스마트 매장 정보 입력</h3>
-                    <button class="modal-close" onclick="closeAdvancedManualModal()">×</button>
+        <div class="smart-manual-modal" id="smartManualModal">
+            <div class="smart-modal-container">
+                <div class="smart-modal-header">
+                    <h3>✋ 수동 입력이 필요합니다</h3>
+                    <button class="smart-modal-close" onclick="closeSmartManualModal()">×</button>
                 </div>
                 
-                <div class="extraction-status">
-                    <div class="status-card error">
-                        <div class="status-icon">⚠️</div>
-                        <div class="status-content">
-                            <h4>자동 추출 실패</h4>
-                            <p>${errorMessage || '네이버 보안 정책으로 인해 자동 추출이 제한됩니다'}</p>
-                        </div>
+                <div class="smart-modal-content">
+                    <div class="error-info">
+                        <p><strong>📱 네이버 URL:</strong> <a href="${naverUrl}" target="_blank" rel="noopener">${naverUrl}</a></p>
+                        <p><strong>❌ 실패 이유:</strong> ${errorMessage}</p>
                     </div>
                     
-                    <div class="stats-info">
-                        <small>전체 성공률: ${successRate}% (${stats.successCount || 0}/${stats.totalAttempts || 0})</small>
-                    </div>
-                </div>
-                
-                <div class="input-methods">
-                    <div class="method-tabs">
-                        <div class="method-tab active" data-method="quick" onclick="switchInputMethod('quick')">
-                            ⚡ 빠른 입력
-                        </div>
-                        <div class="method-tab" data-method="guided" onclick="switchInputMethod('guided')">
-                            📋 단계별 가이드
-                        </div>
-                        <div class="method-tab" data-method="paste" onclick="switchInputMethod('paste')">
-                            📄 텍스트 붙여넣기
-                        </div>
+                    <div class="instruction-box">
+                        <h4>📋 수동 입력 방법:</h4>
+                        <ol>
+                            <li>위의 네이버 링크를 클릭하여 새 탭에서 열기</li>
+                            <li>매장 정보를 확인하고 아래 폼에 직접 입력</li>
+                            <li>입력 완료 후 "저장" 버튼 클릭</li>
+                        </ol>
                     </div>
                     
-                    <!-- 빠른 입력 -->
-                    <div class="method-content active" id="quickMethod">
-                        <div class="quick-actions">
-                            <button class="primary-action-btn" onclick="window.open('${naverUrl}', '_blank')">
-                                🔗 네이버 페이지 열기
-                            </button>
-                            <button class="secondary-action-btn" onclick="enableSmartPasting()">
-                                📋 스마트 붙여넣기 활성화
-                            </button>
-                        </div>
-                        
-                        <div class="input-tips">
-                            <h4>💡 빠른 입력 팁:</h4>
-                            <ul>
-                                <li>네이버 페이지를 열고 정보를 복사하세요</li>
-                                <li>아래 프로필 폼에 직접 붙여넣으면 자동 정리됩니다</li>
-                                <li>전화번호는 하이픈(-) 포함해서 입력하세요</li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <!-- 단계별 가이드 -->
-                    <div class="method-content" id="guidedMethod">
-                        <div class="guided-steps">
-                            <div class="step-item">
-                                <div class="step-number">1</div>
-                                <div class="step-content">
-                                    <h4>매장명 복사</h4>
-                                    <p>네이버 페이지 상단의 큰 제목을 복사하세요</p>
-                                </div>
+                    <form class="smart-manual-form" id="smartManualForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>🏪 매장명 *</label>
+                                <input type="text" id="manualStoreName" placeholder="매장 이름을 입력하세요" required>
                             </div>
-                            
-                            <div class="step-item">
-                                <div class="step-number">2</div>
-                                <div class="step-content">
-                                    <h4>주소 정보</h4>
-                                    <p>"위치" 또는 "주소" 섹션의 전체 주소를 복사하세요</p>
-                                </div>
-                            </div>
-                            
-                            <div class="step-item">
-                                <div class="step-number">3</div>
-                                <div class="step-content">
-                                    <h4>연락처</h4>
-                                    <p>"전화번호" 정보를 하이픈(-) 포함해서 복사하세요</p>
-                                </div>
-                            </div>
-                            
-                            <div class="step-item">
-                                <div class="step-number">4</div>
-                                <div class="step-content">
-                                    <h4>영업시간</h4>
-                                    <p>"영업시간" 또는 "운영시간" 정보를 복사하세요</p>
-                                </div>
+                            <div class="form-group">
+                                <label>📞 전화번호</label>
+                                <input type="tel" id="manualPhone" placeholder="010-1234-5678">
                             </div>
                         </div>
                         
-                        <button class="primary-action-btn" onclick="window.open('${naverUrl}', '_blank')">
-                            🔗 네이버 페이지 열어서 시작하기
-                        </button>
-                    </div>
-                    
-                    <!-- 텍스트 붙여넣기 -->
-                    <div class="method-content" id="pasteMethod">
-                        <div class="paste-area">
-                            <textarea id="pasteTextarea" placeholder="네이버 페이지의 매장 정보를 전체 복사해서 여기에 붙여넣으세요...&#10;&#10;예시:&#10;매장명: 헤어갤러리&#10;주소: 서울시 강남구 테헤란로...&#10;전화: 02-1234-5678&#10;영업시간: 10:00 - 20:00" 
-                                    style="width: 100%; height: 200px; padding: 15px; border: 2px dashed #ddd; border-radius: 10px; resize: vertical;"></textarea>
+                        <div class="form-group">
+                            <label>📍 주소</label>
+                            <input type="text" id="manualAddress" placeholder="매장 주소를 입력하세요">
                         </div>
                         
-                        <div class="paste-actions">
-                            <button class="primary-action-btn" onclick="processPastedText()">
-                                🔍 텍스트 분석 및 자동 입력
-                            </button>
-                            <button class="secondary-action-btn" onclick="clearPasteArea()">
-                                🗑️ 지우기
-                            </button>
+                        <div class="form-group">
+                            <label>🕐 영업시간</label>
+                            <input type="text" id="manualHours" placeholder="예: 월-금 10:00-20:00, 토-일 10:00-18:00">
                         </div>
-                    </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button class="close-btn" onclick="closeAdvancedManualModal()">
-                        완료
-                    </button>
+                        
+                        <div class="form-group">
+                            <label>🏷️ 카테고리</label>
+                            <input type="text" id="manualCategory" placeholder="예: 헤어살롱, 미용실, 네일샵">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>📝 매장 소개</label>
+                            <textarea id="manualDescription" rows="3" placeholder="매장에 대한 간단한 소개를 입력하세요"></textarea>
+                        </div>
+                        
+                        <div class="smart-modal-buttons">
+                            <button type="button" class="smart-btn smart-btn-cancel" onclick="closeSmartManualModal()">취소</button>
+                            <button type="submit" class="smart-btn smart-btn-save">💾 저장</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     `;
-    
+
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    // 모달 애니메이션
-    setTimeout(() => {
-        const modal = document.getElementById('advancedManualModal');
-        if (modal) {
-            modal.style.opacity = '1';
-            modal.querySelector('.advanced-modal-content').style.transform = 'translate(-50%, -50%) scale(1)';
-        }
-    }, 10);
-}
 
-// ========== 입력 방법 전환 ==========
-function switchInputMethod(method) {
-    const tabs = document.querySelectorAll('.method-tab');
-    const contents = document.querySelectorAll('.method-content');
-    
-    tabs.forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.method === method);
-    });
-    
-    contents.forEach(content => {
-        content.classList.toggle('active', content.id === method + 'Method');
+    // 폼 제출 이벤트
+    document.getElementById('smartManualForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveManualInput();
     });
 }
 
-// ========== 스마트 붙여넣기 활성화 ==========
-function enableSmartPasting() {
-    const inputs = document.querySelectorAll('#storeName, #storeAddress, #storePhone, #businessHours');
-    
-    inputs.forEach(input => {
-        // 기존 이벤트 리스너 제거
-        input.removeEventListener('paste', handleSmartPaste);
-        // 새 이벤트 리스너 추가
-        input.addEventListener('paste', handleSmartPaste);
-        
-        // 시각적 표시
-        input.style.borderColor = '#4CAF50';
-        input.style.boxShadow = '0 0 5px rgba(76, 175, 80, 0.3)';
-        input.placeholder = '여기에 붙여넣으세요 (자동 정리됨)';
-    });
-    
-    showSuccessNotification('📋 스마트 붙여넣기가 활성화되었습니다!', 'smart_paste');
-    closeAdvancedManualModal();
-}
-
-// ========== 스마트 붙여넣기 처리 ==========
-function handleSmartPaste(event) {
-    const pastedText = event.clipboardData.getData('text');
-    const input = event.target;
-    
-    let cleanedText = pastedText.trim();
-    
-    // 입력 필드별 자동 정리
-    if (input.id === 'storePhone') {
-        // 전화번호 정리: 숫자와 하이픈만 남기기
-        cleanedText = cleanedText.replace(/[^\d\-]/g, '');
-        // 하이픈이 없으면 자동 추가
-        if (!cleanedText.includes('-') && cleanedText.length >= 10) {
-            cleanedText = cleanedText.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
-        }
-    } else if (input.id === 'storeAddress') {
-        // 주소 정리: 앞뒤 불필요한 텍스트 제거
-        cleanedText = cleanedText.replace(/^(주소|위치):\s*/, '');
-        cleanedText = cleanedText.replace(/\s+/g, ' ');
-    } else if (input.id === 'businessHours') {
-        // 영업시간 정리
-        cleanedText = cleanedText.replace(/^(영업시간|운영시간):\s*/, '');
-    }
-    
-    // 정리된 텍스트 설정
-    event.preventDefault();
-    input.value = cleanedText;
-    
-    // 시각적 피드백
-    input.style.backgroundColor = '#f0fff0';
-    input.style.borderColor = '#4CAF50';
-    
-    setTimeout(() => {
-        input.style.backgroundColor = '';
-        input.style.borderColor = '';
-        input.style.boxShadow = '';
-        input.placeholder = '';
-    }, 2000);
-}
-
-// ========== 붙여넣기 텍스트 분석 ==========
-function processPastedText() {
-    const textarea = document.getElementById('pasteTextarea');
-    if (!textarea || !textarea.value.trim()) {
-        alert('분석할 텍스트를 입력해주세요');
-        return;
-    }
-    
-    const text = textarea.value.trim();
-    const extractedInfo = parseTextForStoreInfo(text);
-    
-    if (Object.keys(extractedInfo).length === 0) {
-        alert('매장 정보를 찾을 수 없습니다. 다른 방법을 시도해보세요.');
-        return;
-    }
-    
-    // 추출된 정보로 폼 채우기
-    populateProfileForm(extractedInfo);
-    closeAdvancedManualModal();
-}
-
-// ========== 텍스트에서 매장 정보 추출 ==========
-function parseTextForStoreInfo(text) {
-    const info = {};
-    
-    // 전화번호 패턴
-    const phonePattern = /(\d{2,3}-\d{3,4}-\d{4})/;
-    const phoneMatch = text.match(phonePattern);
-    if (phoneMatch) info.phone = phoneMatch[1];
-    
-    // 주소 패턴 (시/구/동 포함)
-    const addressPattern = /([가-힣]+시\s+[가-힣]+구\s+[가-힣\s\d-]+)/;
-    const addressMatch = text.match(addressPattern);
-    if (addressMatch) info.address = addressMatch[1];
-    
-    // 영업시간 패턴
-    const hoursPattern = /(\d{1,2}:\d{2}\s*[-~]\s*\d{1,2}:\d{2})/;
-    const hoursMatch = text.match(hoursPattern);
-    if (hoursMatch) info.businessHours = hoursMatch[1];
-    
-    // 매장명 추출 (첫 번째 줄 또는 특정 패턴)
-    const lines = text.split('\n');
-    const firstLine = lines[0]?.trim();
-    if (firstLine && firstLine.length > 0 && firstLine.length < 50) {
-        info.storeName = firstLine;
-    }
-    
-    return info;
-}
-
-// ========== 성공 알림 표시 (향상된 버전) ==========
-function showSuccessNotification(message, type = 'success') {
-    // 기존 알림 제거
-    const existingNotification = document.querySelector('.success-notification');
-    if (existingNotification) {
-        existingNotification.remove();
-    }
-    
-    const colors = {
-        success: { bg: 'linear-gradient(135deg, #4CAF50, #45a049)', icon: '✅' },
-        smart_paste: { bg: 'linear-gradient(135deg, #2196F3, #1976D2)', icon: '📋' },
-        auto: { bg: 'linear-gradient(135deg, #FF9800, #F57C00)', icon: '🤖' }
+// ========== 수동 입력 저장 ==========
+function saveManualInput() {
+    const manualData = {
+        storeName: document.getElementById('manualStoreName').value.trim(),
+        phone: document.getElementById('manualPhone').value.trim(),
+        address: document.getElementById('manualAddress').value.trim(),
+        hours: document.getElementById('manualHours').value.trim(),
+        description: document.getElementById('manualDescription').value.trim(),
+        categories: document.getElementById('manualCategory').value.trim() ? 
+                   [document.getElementById('manualCategory').value.trim()] : []
     };
+
+    // 필수 필드 검증
+    if (!manualData.storeName) {
+        showQuickAlert('⚠️ 매장명은 필수 입력 항목입니다');
+        return;
+    }
+
+    console.log('💾 수동 입력 데이터 저장:', manualData);
     
-    const color = colors[type] || colors.success;
+    // 메인 폼에 데이터 채우기
+    const success = populateFormWithData(manualData);
     
-    // 새 알림 생성
-    const notification = document.createElement('div');
-    notification.className = 'success-notification';
-    notification.innerHTML = `
-        <div style="
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${color.bg};
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            z-index: 10001;
-            animation: slideInRight 0.3s ease;
-            max-width: 300px;
-            font-size: 14px;
-            line-height: 1.4;
-        ">
-            ${color.icon} ${message}
+    closeSmartManualModal();
+    
+    if (success) {
+        showQuickAlert('✅ 매장 정보가 성공적으로 입력되었습니다!');
+    } else {
+        showQuickAlert('⚠️ 일부 정보만 입력되었습니다. 필드명을 확인해주세요.');
+    }
+}
+
+// ========== 모달 관리 ==========
+function closeSmartManualModal() {
+    const modal = document.getElementById('smartManualModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// ========== 진행 상황 표시 ==========
+function showExtractionProgress(message) {
+    const progressHTML = `
+        <div class="extraction-progress" id="extractionProgress">
+            <div class="progress-container">
+                <div class="progress-spinner"></div>
+                <div class="progress-message">${message}</div>
+                <div class="progress-submessage">잠시만 기다려주세요...</div>
+            </div>
         </div>
     `;
     
-    document.body.appendChild(notification);
-    
-    // 자동 제거
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.remove();
-                }
-            }, 300);
-        }
-    }, 4000);
+    document.body.insertAdjacentHTML('beforeend', progressHTML);
 }
 
-// ========== 오류 알림 표시 ==========
-function showErrorAlert(message) {
-    const alert = document.createElement('div');
-    alert.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #f44336, #d32f2f);
-        color: white;
-        padding: 15px 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
-        z-index: 10001;
-        animation: slideInRight 0.3s ease;
-        max-width: 300px;
-        font-size: 14px;
-        line-height: 1.4;
+function updateExtractionProgress(message) {
+    const progressMessage = document.querySelector('.progress-message');
+    if (progressMessage) {
+        progressMessage.textContent = message;
+    }
+}
+
+function hideExtractionProgress() {
+    const progress = document.getElementById('extractionProgress');
+    if (progress) {
+        progress.remove();
+    }
+}
+
+// ========== 빠른 알림 ==========
+function showQuickAlert(message) {
+    const alertHTML = `
+        <div class="quick-alert" id="quickAlert">
+            <div class="alert-content">${message}</div>
+        </div>
     `;
-    alert.innerHTML = `❌ ${message}`;
     
-    document.body.appendChild(alert);
+    // 기존 알림 제거
+    const existing = document.getElementById('quickAlert');
+    if (existing) existing.remove();
     
+    document.body.insertAdjacentHTML('beforeend', alertHTML);
+    
+    // 3초 후 자동 제거
     setTimeout(() => {
-        if (alert.parentNode) {
-            alert.remove();
-        }
-    }, 5000);
+        const alert = document.getElementById('quickAlert');
+        if (alert) alert.remove();
+    }, 3000);
 }
 
-// ========== 모달 닫기 함수들 ==========
-function closeAdvancedManualModal() {
-    const modal = document.getElementById('advancedManualModal');
-    if (modal) {
-        modal.style.opacity = '0';
-        modal.querySelector('.advanced-modal-content').style.transform = 'translate(-50%, -50%) scale(0.95)';
+// ========== 추출 버튼 자동 추가 기능 ==========
+function addExtractButtonToUrlFields() {
+    const urlFields = document.querySelectorAll('input[type="text"], input[type="url"]');
+    
+    urlFields.forEach(field => {
+        // URL 필드로 추정되는 경우에만 버튼 추가
+        const fieldId = field.id || field.name || '';
+        const placeholder = field.placeholder || '';
         
-        setTimeout(() => {
-            if (modal.parentNode) {
-                modal.remove();
+        if (fieldId.toLowerCase().includes('url') || 
+            fieldId.toLowerCase().includes('link') || 
+            fieldId.toLowerCase().includes('naver') ||
+            placeholder.toLowerCase().includes('url') ||
+            placeholder.toLowerCase().includes('naver')) {
+            
+            // 이미 버튼이 있는지 확인
+            if (field.nextElementSibling && field.nextElementSibling.classList.contains('extract-btn')) {
+                return;
             }
-        }, 300);
-    }
+            
+            // 추출 버튼 생성
+            const extractBtn = document.createElement('button');
+            extractBtn.type = 'button';
+            extractBtn.className = 'extract-btn';
+            extractBtn.innerHTML = '🔗 자동 가져오기';
+            extractBtn.onclick = enhancedExtractStoreInfo;
+            
+            // 버튼 삽입
+            field.parentNode.insertBefore(extractBtn, field.nextSibling);
+            
+            console.log(`✅ 추출 버튼 추가: ${fieldId}`);
+        }
+    });
 }
 
-function clearPasteArea() {
-    const textarea = document.getElementById('pasteTextarea');
-    if (textarea) {
-        textarea.value = '';
-        textarea.focus();
-    }
-}
-
-// ========== 통계 조회 함수 (디버깅용) ==========
-function getExtractionStats() {
-    const stats = JSON.parse(localStorage.getItem('naverExtractionStats') || '{}');
-    console.log('📊 네이버 추출 통계:', stats);
-    return stats;
-}
-
-// ========== 애니메이션 CSS 추가 ==========
-function addAnimationStyles() {
-    const styles = `
-        <style>
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes slideOutRight {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .advanced-manual-modal {
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .advanced-modal-content {
-            transform: translate(-50%, -50%) scale(0.95);
-            transition: transform 0.3s ease;
-        }
-        
-        .method-tab {
-            transition: all 0.3s ease;
-        }
-        
-        .method-tab:hover {
-            background-color: rgba(255, 20, 147, 0.1);
-        }
-        
-        .service-item.auto-added {
-            border-left: 4px solid #4CAF50;
-        }
-        
-        .auto-filled {
-            animation: highlight 0.5s ease;
-        }
-        
-        @keyframes highlight {
-            0% { background-color: #ffffff; }
-            50% { background-color: #f0fff0; }
-            100% { background-color: #f0fff0; }
-        }
-        </style>
-    `;
-    
-    document.head.insertAdjacentHTML('beforeend', styles);
-}
-
-// ========== 초기화 ==========
+// ========== 초기화 및 전역 함수 등록 ==========
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎯 네이버 추출 시스템 초기화 중...');
+    console.log('📱 DOM 로드 완료, 네이버 추출기 초기화');
     
-    // 애니메이션 스타일 추가
-    addAnimationStyles();
+    // 스타일 주입
+    injectExtractorStyles();
     
-    // 전역 함수 등록
-    window.extractStoreInfo = enhancedExtractStoreInfo;  // 이름 변경
-    window.enhancedExtractStoreInfo = enhancedExtractStoreInfo;  // 호환성 유지
-    window.closeAdvancedManualModal = closeAdvancedManualModal;
-    window.switchInputMethod = switchInputMethod;
-    window.enableSmartPasting = enableSmartPasting;
-    window.processPastedText = processPastedText;
-    window.clearPasteArea = clearPasteArea;
-    window.getExtractionStats = getExtractionStats;
-    
-    console.log('✅ 네이버 예약 자동 정보 추출 시스템 (최종 버전) 로드 완료!');
+    // URL 필드에 자동으로 추출 버튼 추가
+    setTimeout(addExtractButtonToUrlFields, 1000);
 });
 
-// ========== 모듈 내보내기 (선택사항) ==========
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        validateNaverUrl,
-        extractNaverStoreInfo,
-        enhancedExtractStoreInfo,
-        getExtractionStats
-    };
-}
+// ========== 전역 함수 등록 ==========
+window.extractStoreInfo = enhancedExtractStoreInfo;  // ✅ HTML에서 호출되는 함수명
+window.enhancedExtractStoreInfo = enhancedExtractStoreInfo;
+window.closeSmartManualModal = closeSmartManualModal;
 
-console.log('🎉 HAIRGATOR 네이버 정보 추출 시스템 (최종 완성 버전) 준비 완료!');
+console.log('✅ 진짜 최종 완전 버전 네이버 정보 추출 시스템 로드 완료 (모든 기능 + 스타일 + 백업 시스템)');
