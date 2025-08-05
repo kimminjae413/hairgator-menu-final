@@ -1,0 +1,16 @@
+{
+  "name": "hairgator-netlify-functions",
+  "version": "1.0.0",
+  "description": "Netlify Functions for HAIRGATOR",
+  "main": "index.js",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "netlify build"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+}
