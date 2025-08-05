@@ -10,8 +10,8 @@
     "test": "node test/test-extract.js"
   },
   "dependencies": {
-    "cheerio": "^1.0.0-rc.12",
-    "node-fetch": "^2.7.0"
+    "puppeteer-core": "^21.0.0",
+    "@sparticuz/chromium": "^119.0.0"
   },
   "devDependencies": {
     "netlify-cli": "^17.0.0"
@@ -21,12 +21,13 @@
     "naver-crawling",
     "hairgator",
     "beauty-salon",
-    "web-scraping"
+    "web-scraping",
+    "puppeteer"
   ],
   "author": "HAIRGATOR Team",
   "license": "Private",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",
