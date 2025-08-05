@@ -1,4 +1,4 @@
-// ========== HAIRGATOR 메인 로직 (햄버거 메뉴 업데이트 버전) ==========
+// ========== HAIRGATOR 메인 로직 (최종 안정화 버전 - 프로모션 권한 제어 포함) ==========
 console.log('🚀 HAIRGATOR 최종 완전 버전 시작 - 프로모션 + 프로필 기능 포함');
 
 // ========== 전역 변수 ==========
@@ -47,6 +47,9 @@ function checkExistingSession() {
         document.getElementById('addCustomerBtn').classList.add('show');
         
         document.getElementById('menuDesignerName').textContent = `🎨 ${savedDesignerName}`;
+        
+        // 프로모션 접근 권한 확인
+        setTimeout(checkPromotionAccess, 1000);
         
         return true;
     }
@@ -162,6 +165,9 @@ function startDesignerSession(designerId, name) {
         document.getElementById('addCustomerBtn').classList.add('show');
         
         document.getElementById('menuDesignerName').textContent = `🎨 ${name}`;
+        
+        // 프로모션 접근 권한 확인
+        checkPromotionAccess();
     }, 2000);
 }
 
@@ -245,7 +251,7 @@ function backToGenderSelection() {
     hierarchyStructure = {};
 }
 
-// ========== 햄버거 메뉴 (업데이트됨) ==========
+// ========== 햄버거 메뉴 ==========
 function toggleHamburgerMenu() {
     const overlay = document.getElementById('hamburgerOverlay');
     overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
@@ -255,7 +261,7 @@ function closeHamburgerMenu() {
     document.getElementById('hamburgerOverlay').style.display = 'none';
 }
 
-// 내 프로필 표시 (새로 추가)
+// 내 프로필 표시
 function showMyProfile() {
     if (typeof showDesignerProfile === 'function') {
         showDesignerProfile();
@@ -265,8 +271,28 @@ function showMyProfile() {
     closeHamburgerMenu();
 }
 
-// 프로모션 관리 표시 (새로 추가)
+// 프로모션 관리 표시 (권한 확인 포함)
 function showPromotionManager() {
+    // 프로필 등록 확인
+    const savedProfile = localStorage.getItem('hairgator_profile');
+    let hasProfile = false;
+    
+    if (savedProfile) {
+        try {
+            const profileData = JSON.parse(savedProfile);
+            hasProfile = profileData.businessName || profileData.naverBookingUrl || profileData.designerName;
+        } catch (error) {
+            console.error('프로필 데이터 확인 오류:', error);
+        }
+    }
+    
+    if (!hasProfile) {
+        alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
+        closeHamburgerMenu();
+        showMyProfile();
+        return;
+    }
+    
     if (typeof showPromotionManagement === 'function') {
         showPromotionManagement();
     } else {
@@ -287,6 +313,38 @@ function closeApp() {
         window.history.back();
     } else {
         window.close();
+    }
+}
+
+// ========== 프로모션 접근 권한 확인 ==========
+function checkPromotionAccess() {
+    const promotionMenuItem = document.getElementById('promotionMenuItem');
+    if (!promotionMenuItem) return;
+    
+    // 로컬 스토리지에서 프로필 정보 확인
+    const savedProfile = localStorage.getItem('hairgator_profile');
+    let hasProfile = false;
+    
+    if (savedProfile) {
+        try {
+            const profileData = JSON.parse(savedProfile);
+            // 기본 프로필 정보가 있는지 확인
+            hasProfile = profileData.businessName || profileData.naverBookingUrl || profileData.designerName;
+        } catch (error) {
+            console.error('프로필 데이터 파싱 오류:', error);
+        }
+    }
+    
+    if (!hasProfile) {
+        promotionMenuItem.classList.add('disabled');
+        promotionMenuItem.onclick = function() {
+            alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
+            closeHamburgerMenu();
+            showMyProfile();
+        };
+    } else {
+        promotionMenuItem.classList.remove('disabled');
+        promotionMenuItem.onclick = showPromotionManager;
     }
 }
 
@@ -693,7 +751,7 @@ function renderEmptyStylesRealtime(mainCategory, subCategories) {
         html += `<div class="length-guide-btn" onclick="showLengthGuide()" title="헤어 길이 가이드">?</div>`;
     }
 
-    const orderedSubCategories = hierarchyStructure[currentGender]?.[mainCategory] || subCategories;
+    const orderedSubCategories = hierarchyStructure[currentGender]?.[currentCategory] || subCategories;
     let firstValidTab = null;  // 첫 번째 유효한 탭 저장
     
     orderedSubCategories.forEach((subCategory) => {
@@ -704,7 +762,7 @@ function renderEmptyStylesRealtime(mainCategory, subCategories) {
     
     html += `</div>`;
 
-    const orderedEmptyCategories = hierarchyStructure[currentGender]?.[mainCategory] || subCategories;
+    const orderedEmptyCategories = hierarchyStructure[currentGender]?.[currentCategory] || subCategories;
     orderedEmptyCategories.forEach((subCategory) => {
         const isActive = subCategory === firstValidTab ? 'active' : '';  // 수정된 부분
         html += `
