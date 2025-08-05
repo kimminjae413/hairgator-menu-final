@@ -1,4 +1,4 @@
-// Netlify Function - 네이버 정보 추출 (정규식 문법 수정 버전)
+// Netlify Function - 네이버 정보 추출 (리다이렉트 추적 버전)
 // 파일 위치: netlify/functions/extract-naver.js
 
 const fetch = require('node-fetch');
@@ -33,7 +33,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    console.log('🚀 네이버 크롤링 함수 시작 (정규식 문법 수정)');
+    console.log('🚀 네이버 크롤링 함수 시작 (리다이렉트 추적 버전)');
     
     const { url, naverUrl, fetchURL } = JSON.parse(event.body);
     const targetUrl = url || naverUrl || fetchURL;
@@ -49,34 +49,45 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log('🔍 네이버 URL:', targetUrl);
+    console.log('🔍 입력 URL:', targetUrl);
 
-    // 1단계: URL에서 Place ID 추출
-    const placeId = extractPlaceId(targetUrl);
-    console.log('📍 Place ID:', placeId);
-
-    // 2단계: 여러 방법으로 정보 추출 시도
-    let storeInfo = null;
-
-    // 방법 1: 네이버 API 직접 호출 시도
-    if (placeId) {
-      console.log('🔍 방법 1: 네이버 API 시도...');
-      storeInfo = await tryNaverAPI(placeId);
-      if (storeInfo && storeInfo.storeName) {
-        console.log('✅ 네이버 API 성공!');
-      }
+    // 1단계: 단축 URL이면 실제 URL로 리다이렉트 추적
+    let finalUrl = targetUrl;
+    if (targetUrl.includes('naver.me/')) {
+      console.log('🔗 단축 URL 감지 - 리다이렉트 추적 시작');
+      finalUrl = await followRedirects(targetUrl);
+      console.log('🎯 최종 URL:', finalUrl);
     }
 
-    // 방법 2: HTML에서 JSON 데이터 추출
-    if (!storeInfo || !storeInfo.storeName) {
-      console.log('🔍 방법 2: HTML JSON 데이터 추출...');
-      storeInfo = await extractFromHTML(targetUrl);
+    // 2단계: 최종 URL에서 Place ID 추출
+    const placeId = extractPlaceId(finalUrl);
+    console.log('📍 Place ID:', placeId);
+
+    // 3단계: 여러 방법으로 정보 추출 시도
+    let storeInfo = null;
+
+    // 방법 1: 최종 URL에서 HTML 정보 추출
+    console.log('🔍 방법 1: 최종 URL HTML 추출...');
+    storeInfo = await extractFromHTML(finalUrl);
+    
+    if (storeInfo && storeInfo.storeName) {
+      console.log('✅ HTML 추출 성공!');
+    } else {
+      // 방법 2: 네이버 API 직접 호출 시도
+      if (placeId) {
+        console.log('🔍 방법 2: 네이버 API 시도...');
+        const apiResult = await tryNaverAPI(placeId);
+        if (apiResult && apiResult.storeName) {
+          storeInfo = apiResult;
+          console.log('✅ 네이버 API 성공!');
+        }
+      }
     }
 
     // 방법 3: 메타 태그 정보 추출
     if (!storeInfo || !storeInfo.storeName) {
       console.log('🔍 방법 3: 메타 태그 추출...');
-      const metaInfo = await extractFromMetaTags(targetUrl);
+      const metaInfo = await extractFromMetaTags(finalUrl);
       if (metaInfo && metaInfo.storeName) {
         storeInfo = metaInfo;
       }
@@ -88,9 +99,7 @@ exports.handler = async (event, context) => {
     const isValidData = storeInfo && (storeInfo.storeName || storeInfo.address || storeInfo.phone);
     
     if (!isValidData) {
-      // 방법 4: 제한적 성공이라도 시도 (부분 정보)
-      console.log('🔍 방법 4: 부분 정보 추출...');
-      storeInfo = tryPartialExtraction(targetUrl);
+      throw new Error(`정보 추출 실패. 최종 URL: ${finalUrl}, PlaceID: ${placeId}`);
     }
 
     return {
@@ -99,19 +108,21 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({
         success: true,
         data: {
-          name: (storeInfo && storeInfo.storeName) || '',
-          storeName: (storeInfo && storeInfo.storeName) || '',
-          address: (storeInfo && storeInfo.address) || '',
-          phone: (storeInfo && storeInfo.phone) || '',
-          hours: (storeInfo && storeInfo.businessHours) || '',
-          category: (storeInfo && storeInfo.category) || '',
-          description: (storeInfo && storeInfo.description) || '',
-          extractionMethod: (storeInfo && storeInfo.method) || 'regex_extraction',
-          sourceUrl: targetUrl,
+          name: storeInfo.storeName || '',
+          storeName: storeInfo.storeName || '',
+          address: storeInfo.address || '',
+          phone: storeInfo.phone || '',
+          hours: storeInfo.businessHours || '',
+          category: storeInfo.category || '',
+          description: storeInfo.description || '',
+          extractionMethod: storeInfo.method || 'redirect_follow',
+          sourceUrl: finalUrl,
+          originalUrl: targetUrl,
           extractedAt: new Date().toISOString(),
           debugInfo: {
             placeId: placeId,
-            extractionDetails: (storeInfo && storeInfo.debugInfo) || {}
+            redirectPath: targetUrl !== finalUrl ? `${targetUrl} → ${finalUrl}` : 'no redirect',
+            extractionDetails: storeInfo.debugInfo || {}
           }
         }
       })
@@ -133,6 +144,66 @@ exports.handler = async (event, context) => {
     };
   }
 };
+
+// 리다이렉트 추적 함수
+async function followRedirects(url, maxRedirects = 5) {
+  console.log('🔗 리다이렉트 추적 시작:', url);
+  
+  let currentUrl = url;
+  let redirectCount = 0;
+  
+  while (redirectCount < maxRedirects) {
+    try {
+      console.log(`🔗 리다이렉트 ${redirectCount + 1}/${maxRedirects}: ${currentUrl}`);
+      
+      const response = await fetch(currentUrl, {
+        method: 'HEAD',
+        redirect: 'manual', // 수동으로 리다이렉트 처리
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'ko-KR,ko;q=0.9',
+        },
+        timeout: 10000
+      });
+      
+      console.log(`📡 응답 상태: ${response.status}`);
+      
+      // 리다이렉트 상태 코드 확인
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get('location');
+        if (location) {
+          // 상대 URL인 경우 절대 URL로 변환
+          if (location.startsWith('/')) {
+            const urlObj = new URL(currentUrl);
+            currentUrl = `${urlObj.protocol}//${urlObj.host}${location}`;
+          } else if (location.startsWith('http')) {
+            currentUrl = location;
+          } else {
+            // 상대 경로 처리
+            const urlObj = new URL(currentUrl);
+            currentUrl = new URL(location, urlObj.href).href;
+          }
+          
+          console.log(`➡️ 리다이렉트 대상: ${currentUrl}`);
+          redirectCount++;
+          continue;
+        }
+      }
+      
+      // 리다이렉트가 더 이상 없으면 현재 URL 반환
+      console.log(`✅ 최종 URL 확정: ${currentUrl}`);
+      return currentUrl;
+      
+    } catch (error) {
+      console.log(`⚠️ 리다이렉트 추적 오류: ${error.message}`);
+      break;
+    }
+  }
+  
+  console.log(`⚠️ 최대 리다이렉트 횟수 초과 또는 오류. 마지막 URL: ${currentUrl}`);
+  return currentUrl;
+}
 
 // Place ID 추출
 function extractPlaceId(url) {
@@ -160,6 +231,13 @@ function extractPlaceId(url) {
       return match[1];
     }
     
+    // p/숫자 패턴 (모바일)
+    match = url.match(/\/p\/(\d+)/);
+    if (match) {
+      console.log('✅ /p/ 패턴으로 Place ID 발견:', match[1]);
+      return match[1];
+    }
+    
   } catch (error) {
     console.log('⚠️ Place ID 추출 중 오류:', error.message);
   }
@@ -176,8 +254,8 @@ async function tryNaverAPI(placeId) {
     // 네이버 지도 API 엔드포인트들 시도
     const apiUrls = [
       `https://map.naver.com/v5/api/sites/summary/${placeId}`,
-      `https://map.naver.com/p/api/place/summary/${placeId}`,
-      `https://m.place.naver.com/place/${placeId}/home`
+      `https://m.place.naver.com/place/${placeId}/home`,
+      `https://map.naver.com/p/api/place/summary/${placeId}`
     ];
     
     for (const apiUrl of apiUrls) {
@@ -194,24 +272,26 @@ async function tryNaverAPI(placeId) {
           timeout: 10000
         });
         
+        console.log(`📡 API 응답 상태: ${response.status}`);
+        
         if (response.ok) {
           const contentType = response.headers.get('content-type');
           if (contentType && contentType.includes('application/json')) {
             const data = await response.json();
-            console.log('📊 API 응답 성공:', Object.keys(data));
+            console.log('📊 API 응답 키들:', Object.keys(data));
             
             // API 응답에서 정보 추출
-            if (data.name || data.title) {
-              result.storeName = data.name || data.title;
+            if (data.name || data.title || data.displayName) {
+              result.storeName = data.name || data.title || data.displayName;
+              console.log('✅ API에서 매장명 추출:', result.storeName);
             }
-            if (data.address || data.roadAddress) {
-              result.address = data.address || data.roadAddress;
+            if (data.address || data.roadAddress || data.fullAddress) {
+              result.address = data.address || data.roadAddress || data.fullAddress;
+              console.log('✅ API에서 주소 추출:', result.address);
             }
-            if (data.phone || data.tel) {
-              result.phone = data.phone || data.tel;
-            }
-            if (data.businessHours || data.openHour) {
-              result.businessHours = data.businessHours || data.openHour;
+            if (data.phone || data.tel || data.phoneNumber) {
+              result.phone = data.phone || data.tel || data.phoneNumber;
+              console.log('✅ API에서 전화번호 추출:', result.phone);
             }
             
             if (result.storeName) {
@@ -232,9 +312,9 @@ async function tryNaverAPI(placeId) {
   return result;
 }
 
-// HTML에서 JSON 데이터 추출
+// HTML에서 정보 추출
 async function extractFromHTML(url) {
-  const result = { method: 'html_json_extraction' };
+  const result = { method: 'html_extraction' };
   
   try {
     console.log('📄 HTML 페이지 요청:', url);
@@ -254,90 +334,55 @@ async function extractFromHTML(url) {
     
     const html = await response.text();
     console.log('📄 HTML 길이:', html.length);
-    console.log('📄 HTML 샘플 (처음 200자):', html.substring(0, 200));
     
-    // 정규식으로 JSON 데이터 찾기 (수정된 버전)
-    try {
-      // window.__INITIAL_STATE__ 찾기
-      let match = html.match(/window\.__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\});/);
-      if (match) {
-        console.log('🔍 __INITIAL_STATE__ 발견');
+    // HTML이 충분히 크면 (실제 페이지) 정보 추출 시도
+    if (html.length > 5000) {
+      console.log('📄 충분한 HTML 컨텐츠 감지 - 정보 추출 시도');
+      
+      // JSON 데이터 찾기
+      const jsonMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\});/);
+      if (jsonMatch) {
         try {
-          const jsonData = JSON.parse(match[1]);
-          console.log('✅ __INITIAL_STATE__ JSON 파싱 성공');
+          const jsonData = JSON.parse(jsonMatch[1]);
+          console.log('✅ __INITIAL_STATE__ 파싱 성공');
           
-          result.storeName = extractFromObject(jsonData, ['name', 'title', 'placeName', 'businessName']);
+          result.storeName = extractFromObject(jsonData, ['name', 'title', 'placeName', 'businessName', 'displayName']);
           result.address = extractFromObject(jsonData, ['address', 'roadAddress', 'fullAddress']);
           result.phone = extractFromObject(jsonData, ['phone', 'tel', 'phoneNumber']);
           
           if (result.storeName) {
-            console.log('✅ __INITIAL_STATE__에서 정보 추출 성공');
+            console.log('✅ JSON에서 정보 추출 성공');
             return result;
           }
         } catch (parseError) {
-          console.log('⚠️ __INITIAL_STATE__ JSON 파싱 실패:', parseError.message);
+          console.log('⚠️ JSON 파싱 실패:', parseError.message);
         }
       }
       
-      // 다른 패턴들도 시도
-      match = html.match(/window\.__PLACE_STATE__\s*=\s*(\{[\s\S]*?\});/);
-      if (match) {
-        console.log('🔍 __PLACE_STATE__ 발견');
-        try {
-          const jsonData = JSON.parse(match[1]);
-          result.storeName = extractFromObject(jsonData, ['name', 'title']);
-          result.address = extractFromObject(jsonData, ['address', 'roadAddress']);
-          
-          if (result.storeName) {
-            console.log('✅ __PLACE_STATE__에서 정보 추출 성공');
-            return result;
-          }
-        } catch (parseError) {
-          console.log('⚠️ __PLACE_STATE__ JSON 파싱 실패');
-        }
-      }
-      
-    } catch (regexError) {
-      console.log('⚠️ 정규식 처리 오류:', regexError.message);
-    }
-    
-    // 간단한 문자열 검색으로 정보 찾기
-    if (html.includes('place') || html.includes('business')) {
-      console.log('🔍 간단한 문자열 검색 시도...');
-      
-      // 매장명 찾기
-      const namePatterns = [
-        /"name"\s*:\s*"([^"]+)"/,
-        /"title"\s*:\s*"([^"]+)"/,
-        /"placeName"\s*:\s*"([^"]+)"/
+      // 간단한 문자열 검색
+      const patterns = [
+        { key: 'storeName', patterns: ['placeName', 'name', 'title', 'businessName'] },
+        { key: 'address', patterns: ['address', 'roadAddress', 'fullAddress'] },
+        { key: 'phone', patterns: ['phone', 'tel', 'phoneNumber'] }
       ];
       
-      for (const pattern of namePatterns) {
-        const match = html.match(pattern);
-        if (match && match[1] && !match[1].includes('네이버') && !match[1].includes('지도')) {
-          result.storeName = match[1];
-          console.log('✅ 간단한 검색으로 매장명 발견:', match[1]);
-          break;
+      for (const { key, patterns: searchPatterns } of patterns) {
+        for (const pattern of searchPatterns) {
+          const regex = new RegExp(`"${pattern}"\\s*:\\s*"([^"]+)"`, 'i');
+          const match = html.match(regex);
+          if (match && match[1] && !match[1].includes('네이버') && !match[1].includes('지도')) {
+            result[key] = match[1];
+            console.log(`✅ 문자열 검색으로 ${key} 발견:`, match[1]);
+            break;
+          }
         }
       }
-      
-      // 주소 찾기
-      const addressMatch = html.match(/"address"\s*:\s*"([^"]+)"/);
-      if (addressMatch) {
-        result.address = addressMatch[1];
-        console.log('✅ 간단한 검색으로 주소 발견:', addressMatch[1]);
-      }
-      
-      // 전화번호 찾기
-      const phoneMatch = html.match(/"phone"\s*:\s*"([^"]+)"/);
-      if (phoneMatch) {
-        result.phone = phoneMatch[1];
-        console.log('✅ 간단한 검색으로 전화번호 발견:', phoneMatch[1]);
-      }
+    } else {
+      console.log('📄 HTML이 너무 짧음 (리다이렉트 페이지일 가능성)');
     }
     
   } catch (error) {
-    console.log('⚠️ HTML JSON 추출 실패:', error.message);
+    console.log('⚠️ HTML 추출 실패:', error.message);
   }
   
   return result;
@@ -350,7 +395,7 @@ async function extractFromMetaTags(url) {
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2)',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
       timeout: 10000
     });
@@ -359,20 +404,20 @@ async function extractFromMetaTags(url) {
     
     // 메타 태그 정보 추출
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
-    const ogDescMatch = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+    const ogTitleMatch = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i);
+    const ogDescMatch = html.match(/<meta[^>]*property="og:description"[^>]*content="([^"]+)"/i);
     
     if (titleMatch) {
       const title = titleMatch[1].trim();
-      if (!title.includes('네이버') && !title.includes('지도')) {
-        result.storeName = title.split('|')[0].split('-')[0].trim();
+      if (!title.includes('네이버') && !title.includes('지도') && title.length > 2) {
+        result.storeName = title.split('|')[0].split('-')[0].split('::')[0].trim();
         console.log('✅ title 태그에서 매장명 추출:', result.storeName);
       }
     }
     
     if (ogTitleMatch) {
       const ogTitle = ogTitleMatch[1].trim();
-      if (!result.storeName && !ogTitle.includes('네이버')) {
+      if (!result.storeName && !ogTitle.includes('네이버') && ogTitle.length > 2) {
         result.storeName = ogTitle;
         console.log('✅ og:title에서 매장명 추출:', result.storeName);
       }
@@ -386,14 +431,14 @@ async function extractFromMetaTags(url) {
       const addressMatch = desc.match(/([가-힣]+[시군구]\s+[가-힣\s\d-]+)/);
       if (addressMatch) {
         result.address = addressMatch[1];
-        console.log('✅ og:description에서 주소 추출:', result.address);
+        console.log('✅ 주소 추출:', result.address);
       }
       
       // 전화번호 패턴 찾기
       const phoneMatch = desc.match(/(\d{2,3}[-\s]?\d{3,4}[-\s]?\d{4})/);
       if (phoneMatch) {
         result.phone = phoneMatch[1];
-        console.log('✅ og:description에서 전화번호 추출:', result.phone);
+        console.log('✅ 전화번호 추출:', result.phone);
       }
     }
     
@@ -404,52 +449,19 @@ async function extractFromMetaTags(url) {
   return result;
 }
 
-// 부분 정보라도 추출 시도
-function tryPartialExtraction(url) {
-  console.log('🔍 부분 정보 추출 시도...');
-  
-  const result = { method: 'partial_extraction' };
-  
-  try {
-    // URL 경로에서 정보 추출
-    const pathMatch = url.match(/\/([^\/\?]+)(?:\?|$)/);
-    if (pathMatch) {
-      const pathPart = decodeURIComponent(pathMatch[1]);
-      if (pathPart.length > 2 && pathPart.length < 50) {
-        result.storeName = pathPart.replace(/[^가-힣a-zA-Z0-9\s]/g, '');
-        console.log('✅ URL 경로에서 추출:', result.storeName);
-      }
-    }
-    
-    // 최소한의 정보라도 제공
-    if (!result.storeName) {
-      result.storeName = 'URL에서 추출 실패';
-    }
-    
-    result.debugInfo = { 
-      message: '부분 정보만 추출됨',
-      extractedFrom: 'url_path'
-    };
-    
-  } catch (error) {
-    console.log('⚠️ 부분 추출도 실패:', error.message);
-    result.storeName = '추출 실패';
-  }
-  
-  return result;
-}
-
 // 객체에서 키 리스트로 값 찾기
 function extractFromObject(obj, keys) {
   if (!obj || typeof obj !== 'object') return null;
   
   for (const key of keys) {
-    if (obj[key]) return obj[key];
+    if (obj[key] && typeof obj[key] === 'string' && obj[key].length > 0) {
+      return obj[key];
+    }
   }
   
   // 중첩 객체 검색
   for (const value of Object.values(obj)) {
-    if (typeof value === 'object' && value !== null) {
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       const result = extractFromObject(value, keys);
       if (result) return result;
     }
