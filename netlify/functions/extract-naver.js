@@ -1,7 +1,8 @@
-// Netlify Function - 네이버 정보 추출 (최종 안정화 버전)
+// Netlify Function - 네이버 정보 추출 (의존성 수정 버전)
 // 파일 위치: netlify/functions/extract-naver.js
 
 const cheerio = require('cheerio');
+const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
   // CORS 헤더 설정
@@ -33,6 +34,9 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    console.log('🚀 네이버 크롤링 함수 시작');
+    console.log('📥 요청 데이터:', event.body);
+    
     const { url, naverUrl, fetchURL } = JSON.parse(event.body);
     const targetUrl = url || naverUrl || fetchURL;
     
