@@ -1,4 +1,4 @@
-// ========== 고객 관리 기능 ==========
+// ========== 고객 관리 기능 (전화번호 전체 입력 버전) ==========
 
 // 고객 검색 모달 표시
 function showCustomerSearch() {
@@ -9,7 +9,7 @@ function showCustomerSearch() {
                 
                 <div class="search-input">
                     <input type="text" id="customerSearchInput" 
-                           placeholder="이름 또는 전화번호 끝자리로 검색">
+                           placeholder="이름 또는 전화번호로 검색 (예: 010-1234-5678)">
                     <button onclick="searchCustomers()">🔍</button>
                 </div>
                 
@@ -42,8 +42,10 @@ async function searchCustomers() {
         const matchedCustomers = [];
         customersSnapshot.forEach(doc => {
             const data = doc.data();
+            // 이름 또는 전화번호로 검색 (전체 번호 지원)
             if (data.customerName.includes(searchTerm) || 
-                data.phoneLastDigits.includes(searchTerm)) {
+                data.phoneNumber.includes(searchTerm) ||
+                data.phoneNumber.replace(/-/g, '').includes(searchTerm.replace(/-/g, ''))) {
                 matchedCustomers.push({id: doc.id, ...data});
             }
         });
@@ -69,7 +71,7 @@ function showSearchResults(customers) {
         <div class="customer-result" onclick="showCustomerDetail('${customer.id}')">
             <div class="customer-info">
                 <strong>${customer.customerName}</strong>
-                <span class="phone">(${customer.phoneLastDigits})</span>
+                <span class="phone">(${customer.phoneNumber})</span>
             </div>
             <div class="visit-count">${customer.visitHistory?.length || 0}회 방문</div>
         </div>
@@ -88,7 +90,7 @@ async function showCustomerDetail(customerId) {
             <div class="customer-detail-modal" id="customerDetailModal">
                 <div class="detail-container">
                     <div class="customer-header">
-                        <h3>${customerData.customerName} (${customerData.phoneLastDigits})</h3>
+                        <h3>${customerData.customerName} (${customerData.phoneNumber})</h3>
                         <button onclick="closeCustomerDetail()">×</button>
                     </div>
                     
@@ -209,8 +211,9 @@ function showNewCustomerModal() {
                     </div>
                     
                     <div class="customer-input-group">
-                        <label>📱 연락처 끝 4자리</label>
-                        <input type="number" id="newCustomerPhone" placeholder="5678" maxlength="4">
+                        <label>📱 전화번호</label>
+                        <input type="tel" id="newCustomerPhone" placeholder="010-1234-5678" maxlength="13">
+                        <small>하이픈(-)을 포함하여 입력해주세요</small>
                     </div>
                     
                     <div class="customer-buttons">
@@ -281,6 +284,29 @@ function showNewCustomerModal() {
     `;
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // 전화번호 자동 포맷팅
+    const phoneInput = document.getElementById('newCustomerPhone');
+    phoneInput.addEventListener('input', formatPhoneNumber);
+}
+
+// 전화번호 자동 포맷팅 함수
+function formatPhoneNumber(event) {
+    let value = event.target.value.replace(/[^0-9]/g, '');
+    if (value.length <= 11) {
+        if (value.length > 3 && value.length <= 7) {
+            value = value.substring(0, 3) + '-' + value.substring(3);
+        } else if (value.length > 7) {
+            value = value.substring(0, 3) + '-' + value.substring(3, 7) + '-' + value.substring(7);
+        }
+    }
+    event.target.value = value;
+}
+
+// 전화번호 유효성 검사
+function validatePhoneNumber(phone) {
+    const phoneRegex = /^010-[0-9]{4}-[0-9]{4}$/;
+    return phoneRegex.test(phone);
 }
 
 // 새 고객 데이터 초기화
@@ -297,8 +323,8 @@ function goToCustomerStep2() {
     const name = document.getElementById('newCustomerName').value.trim();
     const phone = document.getElementById('newCustomerPhone').value.trim();
     
-    if (!name || phone.length !== 4) {
-        alert('이름과 전화번호 끝 4자리를 정확히 입력해주세요');
+    if (!name || !validatePhoneNumber(phone)) {
+        alert('이름과 전화번호를 정확히 입력해주세요\n전화번호 형식: 010-1234-5678');
         return;
     }
     
@@ -485,7 +511,8 @@ async function saveNewCustomerComplete() {
         return;
     }
     
-    const customerId = `${currentDesigner}_${newCustomerData.name}_${newCustomerData.phone}`;
+    // 전화번호 기반 고유 ID 생성
+    const customerId = `${currentDesigner}_${newCustomerData.name}_${newCustomerData.phone.replace(/-/g, '')}`;
     
     try {
         console.log('🔄 완전한 고객 등록 시작:', newCustomerData);
@@ -512,7 +539,7 @@ async function saveNewCustomerComplete() {
             designerId: currentDesigner,
             designerName: currentDesignerName,
             customerName: newCustomerData.name,
-            phoneLastDigits: newCustomerData.phone,
+            phoneNumber: newCustomerData.phone, // 전체 전화번호 저장
             createdAt: new Date(),
             visitHistory: [visitData],
             favoriteStyles: [{
@@ -605,8 +632,9 @@ function showCustomerRegisterModal() {
                 </div>
                 
                 <div class="customer-input-group">
-                    <label>📱 연락처 끝 4자리</label>
-                    <input type="number" id="registerCustomerPhone" placeholder="5678" maxlength="4">
+                    <label>📱 전화번호</label>
+                    <input type="tel" id="registerCustomerPhone" placeholder="010-1234-5678" maxlength="13">
+                    <small>하이픈(-)을 포함하여 입력해주세요</small>
                 </div>
                 
                 <div class="customer-buttons">
@@ -619,6 +647,10 @@ function showCustomerRegisterModal() {
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
     
+    // 전화번호 자동 포맷팅
+    const phoneInput = document.getElementById('registerCustomerPhone');
+    phoneInput.addEventListener('input', formatPhoneNumber);
+    
     document.getElementById('imageModal').style.display = 'none';
 }
 
@@ -627,8 +659,8 @@ async function registerCustomerWithStyle() {
     const name = document.getElementById('registerCustomerName').value.trim();
     const phone = document.getElementById('registerCustomerPhone').value.trim();
     
-    if (!name || phone.length !== 4) {
-        alert('이름과 전화번호 끝 4자리를 정확히 입력해주세요');
+    if (!name || !validatePhoneNumber(phone)) {
+        alert('이름과 전화번호를 정확히 입력해주세요\n전화번호 형식: 010-1234-5678');
         return;
     }
     
@@ -637,7 +669,7 @@ async function registerCustomerWithStyle() {
         return;
     }
     
-    const customerId = `${currentDesigner}_${name}_${phone}`;
+    const customerId = `${currentDesigner}_${name}_${phone.replace(/-/g, '')}`;
     
     try {
         console.log('🔄 고객 등록 시작:', customerId);
@@ -670,7 +702,7 @@ async function registerCustomerWithStyle() {
                 designerId: currentDesigner,
                 designerName: currentDesignerName,
                 customerName: name,
-                phoneLastDigits: phone,
+                phoneNumber: phone, // 전체 전화번호 저장
                 createdAt: new Date(),
                 visitHistory: [visitData],
                 favoriteStyles: []
