@@ -373,17 +373,17 @@ function showDesignerProfile() {
                             '<h4>👤 개인 정보</h4>' +
                             '<div class="form-row">' +
                                 '<div class="form-group">' +
-                                    '<label>디자이너 이름 *</label>' +
-                                    '<input type="text" id="designerName" placeholder="홍길동">' +
+                                    '<label for="profile-designerName">디자이너 이름 *</label>' +
+                                    '<input type="text" id="profile-designerName" name="designerName" placeholder="홍길동" autocomplete="name">' +
                                 '</div>' +
                                 '<div class="form-group">' +
-                                    '<label>전화번호</label>' +
-                                    '<input type="tel" id="phoneNumber" placeholder="010-1234-5678">' +
+                                    '<label for="profile-phoneNumber">전화번호</label>' +
+                                    '<input type="tel" id="profile-phoneNumber" name="phoneNumber" placeholder="010-1234-5678" autocomplete="tel">' +
                                 '</div>' +
                             '</div>' +
                             '<div class="form-group">' +
-                                '<label>자기소개</label>' +
-                                '<textarea id="introduction" rows="4" placeholder="고객에게 보여질 간단한 자기소개를 작성해주세요"></textarea>' +
+                                '<label for="profile-introduction">자기소개</label>' +
+                                '<textarea id="profile-introduction" name="introduction" rows="4" placeholder="고객에게 보여질 간단한 자기소개를 작성해주세요"></textarea>' +
                             '</div>' +
                         '</div>' +
                         
@@ -391,17 +391,17 @@ function showDesignerProfile() {
                             '<h4>💼 경력 정보</h4>' +
                             '<div class="form-row">' +
                                 '<div class="form-group">' +
-                                    '<label>경력 (년)</label>' +
-                                    '<input type="number" id="experience" placeholder="5" min="0">' +
+                                    '<label for="profile-experience">경력 (년)</label>' +
+                                    '<input type="number" id="profile-experience" name="experience" placeholder="5" min="0">' +
                                 '</div>' +
                                 '<div class="form-group">' +
-                                    '<label>전문 분야</label>' +
-                                    '<input type="text" id="specialty" placeholder="예: 펌, 염색, 커트">' +
+                                    '<label for="profile-specialty">전문 분야</label>' +
+                                    '<input type="text" id="profile-specialty" name="specialty" placeholder="예: 펌, 염색, 커트">' +
                                 '</div>' +
                             '</div>' +
                             '<div class="form-group">' +
-                                '<label>자격증/수상내역</label>' +
-                                '<textarea id="certifications" rows="3" placeholder="보유 자격증이나 수상 내역을 입력해주세요"></textarea>' +
+                                '<label for="profile-certifications">자격증/수상내역</label>' +
+                                '<textarea id="profile-certifications" name="certifications" rows="3" placeholder="보유 자격증이나 수상 내역을 입력해주세요"></textarea>' +
                             '</div>' +
                         '</div>' +
                     '</div>' +
@@ -412,25 +412,25 @@ function showDesignerProfile() {
                             '<h4>🏪 매장 기본 정보</h4>' +
                             '<div class="form-row">' +
                                 '<div class="form-group">' +
-                                    '<label>매장명 *</label>' +
-                                    '<input type="text" id="businessName" placeholder="헤어살롱 이름">' +
+                                    '<label for="profile-businessName">매장명 *</label>' +
+                                    '<input type="text" id="profile-businessName" name="businessName" placeholder="헤어살롱 이름" autocomplete="organization">' +
                                 '</div>' +
                                 '<div class="form-group">' +
-                                    '<label>대표 전화번호</label>' +
-                                    '<input type="tel" id="businessPhone" placeholder="02-123-4567">' +
+                                    '<label for="profile-businessPhone">대표 전화번호</label>' +
+                                    '<input type="tel" id="profile-businessPhone" name="businessPhone" placeholder="02-123-4567" autocomplete="tel-area-code">' +
                                 '</div>' +
                             '</div>' +
                             '<div class="form-group">' +
-                                '<label>매장 주소</label>' +
-                                '<input type="text" id="businessAddress" placeholder="서울시 강남구 테헤란로 123">' +
+                                '<label for="profile-businessAddress">매장 주소</label>' +
+                                '<input type="text" id="profile-businessAddress" name="businessAddress" placeholder="서울시 강남구 테헤란로 123" autocomplete="street-address">' +
                             '</div>' +
                             '<div class="form-group">' +
-                                '<label>영업시간</label>' +
-                                '<input type="text" id="businessHours" placeholder="월-금 10:00-20:00, 토-일 10:00-18:00">' +
+                                '<label for="profile-businessHours">영업시간</label>' +
+                                '<input type="text" id="profile-businessHours" name="businessHours" placeholder="월-금 10:00-20:00, 토-일 10:00-18:00">' +
                             '</div>' +
                             '<div class="form-group">' +
-                                '<label>매장 소개</label>' +
-                                '<textarea id="businessDescription" rows="4" placeholder="매장에 대한 소개를 작성해주세요"></textarea>' +
+                                '<label for="profile-businessDescription">매장 소개</label>' +
+                                '<textarea id="profile-businessDescription" name="businessDescription" rows="4" placeholder="매장에 대한 소개를 작성해주세요"></textarea>' +
                             '</div>' +
                         '</div>' +
                     '</div>' +
@@ -446,9 +446,9 @@ function showDesignerProfile() {
                         '<div class="form-section">' +
                             '<h4>🔗 네이버 예약 정보</h4>' +
                             '<div class="form-group">' +
-                                '<label>네이버 예약 URL</label>' +
+                                '<label for="profile-naverBookingUrl">네이버 예약 URL</label>' +
                                 '<div class="url-input-group">' +
-                                    '<input type="url" id="naverBookingUrl" placeholder="https://naver.me/xxxxx 또는 https://booking.naver.com/booking/xxxxx">' +
+                                    '<input type="url" id="profile-naverBookingUrl" name="naverBookingUrl" placeholder="https://naver.me/xxxxx 또는 https://booking.naver.com/booking/xxxxx" autocomplete="url">' +
                                     '<button class="extract-btn" onclick="autoExtractBusinessInfo()">🔗 매장 정보 자동 가져오기</button>' +
                                 '</div>' +
                                 '<small style="color: #aaa; font-size: 12px; margin-top: 5px; display: block;">' +
@@ -465,14 +465,14 @@ function showDesignerProfile() {
                         '<div class="form-section">' +
                             '<h4>⚙️ 알림 설정</h4>' +
                             '<div class="form-group">' +
-                                '<label>' +
-                                    '<input type="checkbox" id="enableNotifications" style="margin-right: 8px;">' +
+                                '<label for="profile-enableNotifications">' +
+                                    '<input type="checkbox" id="profile-enableNotifications" name="enableNotifications" style="margin-right: 8px;">' +
                                     '예약 알림 받기' +
                                 '</label>' +
                             '</div>' +
                             '<div class="form-group">' +
-                                '<label>' +
-                                    '<input type="checkbox" id="enablePromotions" style="margin-right: 8px;">' +
+                                '<label for="profile-enablePromotions">' +
+                                    '<input type="checkbox" id="profile-enablePromotions" name="enablePromotions" style="margin-right: 8px;">' +
                                     '프로모션 소식 받기' +
                                 '</label>' +
                             '</div>' +
@@ -481,8 +481,8 @@ function showDesignerProfile() {
                         '<div class="form-section">' +
                             '<h4>🎨 개인화 설정</h4>' +
                             '<div class="form-group">' +
-                                '<label>선호하는 테마</label>' +
-                                '<select id="preferredTheme">' +
+                                '<label for="profile-preferredTheme">선호하는 테마</label>' +
+                                '<select id="profile-preferredTheme" name="preferredTheme">' +
                                     '<option value="default">기본 테마</option>' +
                                     '<option value="dark">다크 테마</option>' +
                                     '<option value="colorful">컬러풀 테마</option>' +
@@ -586,7 +586,7 @@ async function autoExtractBusinessInfo() {
             
             // 폼 필드에 자동 입력
             if (data.name || data.storeName) {
-                const nameField = document.getElementById('businessName');
+                const nameField = document.getElementById('profile-businessName');
                 if (nameField && !nameField.value.trim()) {
                     nameField.value = data.name || data.storeName;
                     populatedFields++;
@@ -594,7 +594,7 @@ async function autoExtractBusinessInfo() {
             }
             
             if (data.address) {
-                const addressField = document.getElementById('businessAddress');
+                const addressField = document.getElementById('profile-businessAddress');
                 if (addressField && !addressField.value.trim()) {
                     addressField.value = data.address;
                     populatedFields++;
@@ -602,7 +602,7 @@ async function autoExtractBusinessInfo() {
             }
             
             if (data.phone) {
-                const phoneField = document.getElementById('businessPhone');
+                const phoneField = document.getElementById('profile-businessPhone');
                 if (phoneField && !phoneField.value.trim()) {
                     phoneField.value = data.phone;
                     populatedFields++;
@@ -610,7 +610,7 @@ async function autoExtractBusinessInfo() {
             }
             
             if (data.hours) {
-                const hoursField = document.getElementById('businessHours');
+                const hoursField = document.getElementById('profile-businessHours');
                 if (hoursField && !hoursField.value.trim()) {
                     hoursField.value = data.hours;
                     populatedFields++;
@@ -618,7 +618,7 @@ async function autoExtractBusinessInfo() {
             }
             
             if (data.description) {
-                const descField = document.getElementById('businessDescription');
+                const descField = document.getElementById('profile-businessDescription');
                 if (descField && !descField.value.trim()) {
                     descField.value = data.description;
                     populatedFields++;
@@ -709,7 +709,7 @@ function loadProfileData() {
     
     // 현재 디자이너 정보 설정
     if (typeof currentDesignerName !== 'undefined' && currentDesignerName) {
-        const nameField = document.getElementById('designerName');
+        const nameField = document.getElementById('profile-designerName');
         if (nameField && !nameField.value) {
             nameField.value = currentDesignerName;
         }
@@ -719,21 +719,21 @@ function loadProfileData() {
 // ========== 프로필 폼에 데이터 채우기 ==========
 function populateProfileForm(data) {
     const fieldMappings = {
-        designerName: 'designerName',
-        phoneNumber: 'phoneNumber',
-        introduction: 'introduction',
-        experience: 'experience',
-        specialty: 'specialty',
-        certifications: 'certifications',
-        businessName: 'businessName',
-        businessPhone: 'businessPhone',
-        businessAddress: 'businessAddress',
-        businessHours: 'businessHours',
-        businessDescription: 'businessDescription',
-        naverBookingUrl: 'naverBookingUrl',
-        enableNotifications: 'enableNotifications',
-        enablePromotions: 'enablePromotions',
-        preferredTheme: 'preferredTheme'
+        designerName: 'profile-designerName',
+        phoneNumber: 'profile-phoneNumber',
+        introduction: 'profile-introduction',
+        experience: 'profile-experience',
+        specialty: 'profile-specialty',
+        certifications: 'profile-certifications',
+        businessName: 'profile-businessName',
+        businessPhone: 'profile-businessPhone',
+        businessAddress: 'profile-businessAddress',
+        businessHours: 'profile-businessHours',
+        businessDescription: 'profile-businessDescription',
+        naverBookingUrl: 'profile-naverBookingUrl',
+        enableNotifications: 'profile-enableNotifications',
+        enablePromotions: 'profile-enablePromotions',
+        preferredTheme: 'profile-preferredTheme'
     };
     
     Object.keys(fieldMappings).forEach(function(dataKey) {
@@ -757,21 +757,21 @@ function saveProfile() {
     
     // 폼 데이터 수집
     const formData = {
-        designerName: document.getElementById('designerName') ? document.getElementById('designerName').value : '',
-        phoneNumber: document.getElementById('phoneNumber') ? document.getElementById('phoneNumber').value : '',
-        introduction: document.getElementById('introduction') ? document.getElementById('introduction').value : '',
-        experience: document.getElementById('experience') ? document.getElementById('experience').value : '',
-        specialty: document.getElementById('specialty') ? document.getElementById('specialty').value : '',
-        certifications: document.getElementById('certifications') ? document.getElementById('certifications').value : '',
-        businessName: document.getElementById('businessName') ? document.getElementById('businessName').value : '',
-        businessPhone: document.getElementById('businessPhone') ? document.getElementById('businessPhone').value : '',
-        businessAddress: document.getElementById('businessAddress') ? document.getElementById('businessAddress').value : '',
-        businessHours: document.getElementById('businessHours') ? document.getElementById('businessHours').value : '',
-        businessDescription: document.getElementById('businessDescription') ? document.getElementById('businessDescription').value : '',
-        naverBookingUrl: document.getElementById('naverBookingUrl') ? document.getElementById('naverBookingUrl').value : '',
-        enableNotifications: document.getElementById('enableNotifications') ? document.getElementById('enableNotifications').checked : false,
-        enablePromotions: document.getElementById('enablePromotions') ? document.getElementById('enablePromotions').checked : false,
-        preferredTheme: document.getElementById('preferredTheme') ? document.getElementById('preferredTheme').value : 'default',
+        designerName: document.getElementById('profile-designerName') ? document.getElementById('profile-designerName').value : '',
+        phoneNumber: document.getElementById('profile-phoneNumber') ? document.getElementById('profile-phoneNumber').value : '',
+        introduction: document.getElementById('profile-introduction') ? document.getElementById('profile-introduction').value : '',
+        experience: document.getElementById('profile-experience') ? document.getElementById('profile-experience').value : '',
+        specialty: document.getElementById('profile-specialty') ? document.getElementById('profile-specialty').value : '',
+        certifications: document.getElementById('profile-certifications') ? document.getElementById('profile-certifications').value : '',
+        businessName: document.getElementById('profile-businessName') ? document.getElementById('profile-businessName').value : '',
+        businessPhone: document.getElementById('profile-businessPhone') ? document.getElementById('profile-businessPhone').value : '',
+        businessAddress: document.getElementById('profile-businessAddress') ? document.getElementById('profile-businessAddress').value : '',
+        businessHours: document.getElementById('profile-businessHours') ? document.getElementById('profile-businessHours').value : '',
+        businessDescription: document.getElementById('profile-businessDescription') ? document.getElementById('profile-businessDescription').value : '',
+        naverBookingUrl: document.getElementById('profile-naverBookingUrl') ? document.getElementById('profile-naverBookingUrl').value : '',
+        enableNotifications: document.getElementById('profile-enableNotifications') ? document.getElementById('profile-enableNotifications').checked : false,
+        enablePromotions: document.getElementById('profile-enablePromotions') ? document.getElementById('profile-enablePromotions').checked : false,
+        preferredTheme: document.getElementById('profile-preferredTheme') ? document.getElementById('profile-preferredTheme').value : 'default',
         updatedAt: new Date().toISOString()
     };
     
@@ -779,7 +779,7 @@ function saveProfile() {
     if (!formData.designerName.trim()) {
         alert('⚠️ 디자이너 이름은 필수 입력 항목입니다');
         switchProfileTab('basic');
-        const nameField = document.getElementById('designerName');
+        const nameField = document.getElementById('profile-designerName');
         if (nameField) nameField.focus();
         return;
     }
