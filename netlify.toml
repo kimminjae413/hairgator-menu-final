@@ -1,37 +1,13 @@
-# Netlify 설정 파일
-
 [build]
-  # 빌드 명령어 (필요시)
-  command = "echo 'No build command needed'"
-  
-  # 퍼블리시할 폴더
   publish = "."
-  
-  # Functions 폴더 설정
   functions = "netlify/functions"
 
 [functions]
-  # 함수 타임아웃 설정 (초)
-  timeout = 30
-  
-  # 메모리 설정 (MB)
-  memory = 1024
+  node_bundler = "esbuild"
 
-# Functions별 개별 설정
-[[functions]]
-  function = "extract-naver"
-  timeout = 30
-
-# 리다이렉트 설정 (선택사항)
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-# 헤더 설정
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
     Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
+    Access-Control-Allow-Methods = "POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type"
