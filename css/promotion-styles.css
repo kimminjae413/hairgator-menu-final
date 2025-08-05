@@ -724,32 +724,155 @@
 }
 
 .naver-url-input {
-    display: flex;
-    gap: 10px;
     margin-bottom: 15px;
 }
 
 .naver-url-input input {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.naver-url-input input:focus {
+    outline: none;
+    border-color: #1A8BFF;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.naver-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.naver-buttons button {
     flex: 1;
+    min-width: 160px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.naver-buttons .btn-primary {
+    background: linear-gradient(135deg, #1A8BFF, #42A5F5);
+    border: none;
+    color: white;
+}
+
+.naver-buttons .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(26, 139, 255, 0.3);
+}
+
+.naver-buttons .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #ccc;
+}
+
+.naver-buttons .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 .naver-status {
-    padding: 10px 15px;
+    padding: 12px 15px;
     border-radius: 10px;
     font-size: 14px;
-    margin-bottom: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
 .naver-status.connected {
     background: rgba(76, 175, 80, 0.2);
     color: #4CAF50;
-    border: 1px solid rgba(76, 175, 80, 0.5);
+    border: 2px solid rgba(76, 175, 80, 0.5);
 }
 
 .naver-status.disconnected {
-    background: rgba(244, 67, 54, 0.2);
-    color: #F44336;
-    border: 1px solid rgba(244, 67, 54, 0.5);
+    background: rgba(108, 117, 125, 0.2);
+    color: #6C757D;
+    border: 2px solid rgba(108, 117, 125, 0.3);
+}
+
+.naver-status.connecting {
+    background: rgba(255, 152, 0, 0.2);
+    color: #FF9800;
+    border: 2px solid rgba(255, 152, 0, 0.5);
+    position: relative;
+}
+
+.naver-status.connecting::before {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #FF9800;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+}
+
+/* ========== 자동 입력 성공 메시지 ========== */
+.auto-fill-success {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20000;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 25px 35px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+    animation: successSlideIn 0.5s ease;
+    text-align: center;
+    min-width: 300px;
+}
+
+@keyframes successSlideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.success-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.success-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.success-text {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.success-detail {
+    font-size: 14px;
+    opacity: 0.9;
+    line-height: 1.4;
 }
 
 .store-info-grid {
