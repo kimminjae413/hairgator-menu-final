@@ -127,7 +127,7 @@
             </div>
             
             <div class="menu-items">
-                <div class="menu-item" onclick="showDesignerProfile()">
+                <div class="menu-item" onclick="setTimeout(() => { if (typeof showDesignerProfile === 'function') showDesignerProfile(); else alert('프로필 기능을 불러오는 중입니다.'); }, 100)">
                     <div class="menu-icon">👤</div>
                     <div class="menu-text">
                         <strong>내 프로필</strong>
@@ -368,3 +368,4 @@
 
 </body>
 </html>
+
