@@ -562,8 +562,18 @@ function validateNaverBookingUrl(url) {
         return { valid: false, error: 'URL을 입력해주세요' };
     }
     
-    if (!url.includes('booking.naver.com')) {
-        return { valid: false, error: '네이버 예약 URL이 아닙니다' };
+    // 네이버 관련 URL 패턴들 확인
+    const naverPatterns = [
+        'booking.naver.com',
+        'naver.me',
+        'smartstore.naver.com',
+        'map.naver.com'
+    ];
+    
+    const isNaverUrl = naverPatterns.some(pattern => url.includes(pattern));
+    
+    if (!isNaverUrl) {
+        return { valid: false, error: '네이버 관련 URL이 아닙니다' };
     }
     
     try {
