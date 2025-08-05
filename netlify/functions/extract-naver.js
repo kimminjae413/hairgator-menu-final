@@ -291,8 +291,9 @@ async function tryNaverAPI(placeId) {
             // 다양한 필드명으로 정보 추출 시도
             const nameFields = ['name', 'title', 'displayName', 'placeName', 'businessName', 'storeName'];
             const addressFields = ['address', 'roadAddress', 'fullAddress', 'addr', 'location'];
-            const phoneFields = ['phone', 'tel', 'phoneNumber', 'contact', 'telephone'];
+            const phoneFields = ['phone', 'tel', 'phoneNumber', 'contact', 'telephone', 'contactNumber'];
             
+            // 기본 레벨에서 추출
             for (const field of nameFields) {
               if (targetData[field] && typeof targetData[field] === 'string') {
                 result.storeName = targetData[field];
@@ -301,28 +302,71 @@ async function tryNaverAPI(placeId) {
               }
             }
             
-            for (const field of addressFields) {
-              if (targetData[field] && typeof targetData[field] === 'string') {
-                result.address = targetData[field];
-                console.log(`✅ API에서 주소 추출 (${field}):`, result.address);
-                break;
+            // 주소는 address 객체 우선 확인
+            if (targetData.address) {
+              if (targetData.address.roadAddress) {
+                result.address = targetData.address.roadAddress;
+                console.log('✅ 도로명 주소 추출:', result.address);
+              } else if (targetData.address.address) {
+                result.address = targetData.address.address;
+                console.log('✅ 지번 주소 추출:', result.address);
               }
             }
             
-            for (const field of phoneFields) {
-              if (targetData[field] && typeof targetData[field] === 'string') {
-                result.phone = targetData[field];
-                console.log(`✅ API에서 전화번호 추출 (${field}):`, result.phone);
-                break;
+            // 전화번호 추출 (여러 위치에서 시도)
+            if (targetData.phone) {
+              result.phone = targetData.phone;
+              console.log('✅ 전화번호 추출:', result.phone);
+            } else if (targetData.contact && targetData.contact.phone) {
+              result.phone = targetData.contact.phone;
+              console.log('✅ contact.phone 추출:', result.phone);
+            }
+            
+            // 영업시간 추출
+            if (targetData.businessHours && targetData.businessHours.description) {
+              result.businessHours = targetData.businessHours.description;
+              console.log('✅ 영업시간 추출:', result.businessHours);
+            }
+            
+            // 카테고리 추출
+            if (targetData.category && targetData.category.category) {
+              result.category = targetData.category.category;
+              console.log('✅ 카테고리 추출:', result.category);
+            }
+            
+            // 가격 정보 추출
+            if (targetData.reprPrice && targetData.reprPrice.displayText) {
+              result.description = targetData.reprPrice.displayText;
+              console.log('✅ 가격 정보 추출:', result.description);
+            }
+            
+            // 일반 필드 추출이 실패한 경우에만 깊은 탐색
+            if (!result.address) {
+              for (const field of addressFields) {
+                if (targetData[field] && typeof targetData[field] === 'string') {
+                  result.address = targetData[field];
+                  console.log(`✅ API에서 주소 추출 (${field}):`, result.address);
+                  break;
+                }
               }
             }
             
-            // 더 깊은 중첩 구조 탐색
-            if (!result.storeName && targetData) {
+            if (!result.phone) {
+              for (const field of phoneFields) {
+                if (targetData[field] && typeof targetData[field] === 'string') {
+                  result.phone = targetData[field];
+                  console.log(`✅ API에서 전화번호 추출 (${field}):`, result.phone);
+                  break;
+                }
+              }
+            }
+            
+            // 더 깊은 중첩 구조 탐색 (필요한 경우에만)
+            if ((!result.storeName || !result.address || !result.phone) && targetData) {
               console.log('🔍 깊은 구조 탐색 시작...');
-              result.storeName = extractFromNestedObject(targetData, nameFields);
-              result.address = extractFromNestedObject(targetData, addressFields);
-              result.phone = extractFromNestedObject(targetData, phoneFields);
+              if (!result.storeName) result.storeName = extractFromNestedObject(targetData, nameFields);
+              if (!result.address) result.address = extractFromNestedObject(targetData, addressFields);
+              if (!result.phone) result.phone = extractFromNestedObject(targetData, phoneFields);
             }
             
             if (result.storeName || result.address || result.phone) {
