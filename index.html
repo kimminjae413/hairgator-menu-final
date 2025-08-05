@@ -118,7 +118,7 @@
         </main>
     </div>
 
-    <!-- 햄버거 메뉴 (수정됨 - 인기스타일 통계 제거, 프로모션 권한 제어) -->
+    <!-- 햄버거 메뉴 (최종 수정됨) -->
     <div class="hamburger-overlay" id="hamburgerOverlay" onclick="closeHamburgerMenu()">
         <div class="hamburger-menu" onclick="event.stopPropagation()">
             <div class="menu-header">
@@ -127,7 +127,7 @@
             </div>
             
             <div class="menu-items">
-                <div class="menu-item" onclick="showMyProfile()">
+                <div class="menu-item" onclick="showDesignerProfile()">
                     <div class="menu-icon">👤</div>
                     <div class="menu-text">
                         <strong>내 프로필</strong>
@@ -135,7 +135,7 @@
                     </div>
                 </div>
                 
-                <div class="menu-item" id="promotionMenuItem" onclick="showPromotionManager()">
+                <div class="menu-item" id="promotionMenuItem" onclick="handlePromotionClick()">
                     <div class="menu-icon">🎯</div>
                     <div class="menu-text">
                         <strong>프로모션 관리</strong>
@@ -150,8 +150,6 @@
                         <small>이전 방문 기록 확인</small>
                     </div>
                 </div>
-                
-                <!-- 인기 스타일 통계 제거됨 -->
                 
                 <div class="menu-item" onclick="openAIFaceAnalysis()">
                     <div class="menu-icon">🔍</div>
@@ -207,17 +205,19 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
-    <!-- JavaScript 파일들 (올바른 순서) -->
+    <!-- JavaScript 파일들 (올바른 순서로 수정) -->
     <script src="js/firebase-config.js"></script>
     <script src="js/index-firebase.js"></script>
+    
+    <!-- 🆕 프로필 관련 스크립트를 먼저 로드 -->
+    <script src="js/designer-profile.js"></script>
+    <script src="js/naver-booking-extractor.js"></script>
+    
+    <!-- 기존 기능 스크립트들 -->
     <script src="js/index-customer.js"></script>
     <script src="js/index-stats.js"></script>
-    
-    <!-- 🆕 새로운 기능 스크립트들 -->
-    <script src="js/designer-profile.js"></script>
     <script src="js/promotion-manager.js"></script>
     <script src="js/kakao-notification.js"></script>
-    <script src="js/naver-booking-extractor.js"></script>  <!-- ✅ 핵심 추가! -->
     
     <!-- 메인 스크립트 (마지막에 로드) -->
     <script src="js/index-main.js"></script>
@@ -227,7 +227,6 @@
         .menu-item.disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            pointer-events: none;
             position: relative;
         }
         
@@ -248,55 +247,123 @@
             font-size: 14px;
             opacity: 0.7;
         }
+        
+        .menu-item.disabled:hover {
+            background: none;
+        }
     </style>
     
     <script>
-        // 페이지 로드 시 프로필 상태 확인 및 프로모션 메뉴 제어
-        document.addEventListener('DOMContentLoaded', function() {
-            // 약간의 지연 후 프로모션 접근 권한 확인
-            setTimeout(checkPromotionAccess, 1000);
-        });
+        // ========== 프로모션 접근 제어 시스템 ==========
         
-        // 프로모션 접근 권한 확인
-        function checkPromotionAccess() {
-            const promotionMenuItem = document.getElementById('promotionMenuItem');
-            if (!promotionMenuItem) return;
+        // 프로모션 클릭 핸들러 (통합)
+        function handlePromotionClick() {
+            console.log('🎯 프로모션 메뉴 클릭');
             
-            // 로컬 스토리지에서 프로필 정보 확인
-            const savedProfile = localStorage.getItem('hairgator_profile');
-            let hasProfile = false;
-            
-            if (savedProfile) {
-                try {
-                    const profileData = JSON.parse(savedProfile);
-                    // 기본 프로필 정보가 있는지 확인
-                    hasProfile = profileData.businessName || profileData.naverBookingUrl || profileData.designerName;
-                } catch (error) {
-                    console.error('프로필 데이터 파싱 오류:', error);
+            if (isPromotionAccessible()) {
+                // 접근 가능한 경우
+                if (typeof showPromotionManagement === 'function') {
+                    showPromotionManagement();
+                } else {
+                    alert('프로모션 기능을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
                 }
-            }
-            
-            if (!hasProfile) {
-                promotionMenuItem.classList.add('disabled');
-                promotionMenuItem.onclick = function() {
-                    alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
-                    closeHamburgerMenu();
-                    showMyProfile();
-                };
             } else {
-                promotionMenuItem.classList.remove('disabled');
-                promotionMenuItem.onclick = showPromotionManager;
+                // 접근 불가능한 경우
+                alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
+                closeHamburgerMenu();
+                // 0.5초 후 프로필 모달 표시 (햄버거 메뉴가 닫힌 후)
+                setTimeout(() => {
+                    showDesignerProfile();
+                }, 500);
             }
         }
         
-        // 프로필 저장 시 프로모션 접근 권한 재확인
+        // 프로모션 접근 가능 여부 확인
+        function isPromotionAccessible() {
+            try {
+                const savedProfile = localStorage.getItem('hairgator_profile');
+                if (!savedProfile) {
+                    console.log('❌ 저장된 프로필 없음');
+                    return false;
+                }
+                
+                const profileData = JSON.parse(savedProfile);
+                console.log('📋 프로필 데이터 확인:', profileData);
+                
+                // 기본 프로필 정보가 있는지 확인 (더 엄격한 검사)
+                const hasBasicInfo = profileData.designerName && profileData.designerName.trim().length > 0;
+                const hasBusinessInfo = profileData.businessName && profileData.businessName.trim().length > 0;
+                const hasNaverUrl = profileData.naverBookingUrl && profileData.naverBookingUrl.trim().length > 0;
+                
+                const isAccessible = hasBasicInfo && (hasBusinessInfo || hasNaverUrl);
+                
+                console.log(`🔍 접근 권한 확인: ${isAccessible ? '✅ 허용' : '❌ 거부'}`, {
+                    hasBasicInfo,
+                    hasBusinessInfo, 
+                    hasNaverUrl
+                });
+                
+                return isAccessible;
+                
+            } catch (error) {
+                console.error('❌ 프로필 데이터 파싱 오류:', error);
+                return false;
+            }
+        }
+        
+        // 프로모션 메뉴 UI 업데이트
+        function updatePromotionMenuUI() {
+            const promotionMenuItem = document.getElementById('promotionMenuItem');
+            if (!promotionMenuItem) {
+                console.log('⚠️ 프로모션 메뉴 아이템을 찾을 수 없음');
+                return;
+            }
+            
+            const isAccessible = isPromotionAccessible();
+            
+            if (isAccessible) {
+                // 접근 가능 - 활성화
+                promotionMenuItem.classList.remove('disabled');
+                console.log('✅ 프로모션 메뉴 활성화');
+            } else {
+                // 접근 불가능 - 비활성화
+                promotionMenuItem.classList.add('disabled');
+                console.log('🔒 프로모션 메뉴 비활성화');
+            }
+        }
+        
+        // 프로필 저장 시 호출되는 콜백
         function onProfileSaved() {
-            checkPromotionAccess();
+            console.log('💾 프로필 저장 완료, 권한 재확인');
+            setTimeout(() => {
+                updatePromotionMenuUI();
+            }, 100);
+        }
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📱 페이지 로드 완료, 프로모션 권한 확인');
+            
+            // 잠시 후 권한 확인 (다른 스크립트들이 로드된 후)
+            setTimeout(() => {
+                updatePromotionMenuUI();
+            }, 1000);
+        });
+        
+        // 로그인 후 권한 확인
+        function checkPromotionAccessAfterLogin() {
+            console.log('🔑 로그인 후 프로모션 권한 확인');
+            setTimeout(() => {
+                updatePromotionMenuUI();
+            }, 500);
         }
         
         // 전역 함수로 등록
         window.onProfileSaved = onProfileSaved;
-        window.checkPromotionAccess = checkPromotionAccess;
+        window.checkPromotionAccess = updatePromotionMenuUI;
+        window.checkPromotionAccessAfterLogin = checkPromotionAccessAfterLogin;
+        
+        console.log('✅ 프로모션 접근 제어 시스템 초기화 완료');
     </script>
 
 </body>
