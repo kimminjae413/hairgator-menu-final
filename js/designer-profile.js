@@ -449,7 +449,7 @@ function showDesignerProfile() {
                                 '<label for="profile-naverBookingUrl">네이버 예약 URL</label>' +
                                 '<div class="url-input-group">' +
                                     '<input type="url" id="profile-naverBookingUrl" name="naverBookingUrl" placeholder="https://naver.me/xxxxx 또는 https://booking.naver.com/booking/xxxxx" autocomplete="url">' +
-                                    '<button class="extract-btn" onclick="autoExtractBusinessInfo()">🔗 매장 정보 자동 가져오기</button>' +
+                                    '<button type="button" class="extract-btn" onclick="autoExtractBusinessInfo()">🔗 매장 정보 자동 가져오기</button>' +
                                 '</div>' +
                                 '<small style="color: #aaa; font-size: 12px; margin-top: 5px; display: block;">' +
                                     '* 네이버에서 자동 추출을 차단할 수 있습니다. 실패 시 수동으로 입력해주세요.' +
@@ -492,8 +492,8 @@ function showDesignerProfile() {
                     '</div>' +
                     
                     '<div class="profile-buttons">' +
-                        '<button class="profile-btn profile-btn-cancel" onclick="closeProfileModal()">취소</button>' +
-                        '<button class="profile-btn profile-btn-save" onclick="saveProfile()">💾 저장</button>' +
+                        '<button type="button" class="profile-btn profile-btn-cancel" onclick="closeProfileModal()">취소</button>' +
+                        '<button type="button" class="profile-btn profile-btn-save" onclick="saveProfile()">💾 저장</button>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
