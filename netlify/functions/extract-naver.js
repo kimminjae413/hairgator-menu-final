@@ -279,22 +279,53 @@ async function tryNaverAPI(placeId) {
           if (contentType && contentType.includes('application/json')) {
             const data = await response.json();
             console.log('📊 API 응답 키들:', Object.keys(data));
+            console.log('📊 API 전체 응답:', JSON.stringify(data, null, 2));
             
-            // API 응답에서 정보 추출
-            if (data.name || data.title || data.displayName) {
-              result.storeName = data.name || data.title || data.displayName;
-              console.log('✅ API에서 매장명 추출:', result.storeName);
-            }
-            if (data.address || data.roadAddress || data.fullAddress) {
-              result.address = data.address || data.roadAddress || data.fullAddress;
-              console.log('✅ API에서 주소 추출:', result.address);
-            }
-            if (data.phone || data.tel || data.phoneNumber) {
-              result.phone = data.phone || data.tel || data.phoneNumber;
-              console.log('✅ API에서 전화번호 추출:', result.phone);
+            // 중첩된 data 객체 확인
+            let targetData = data;
+            if (data.data && typeof data.data === 'object') {
+              targetData = data.data;
+              console.log('📊 중첩 data 키들:', Object.keys(targetData));
             }
             
-            if (result.storeName) {
+            // 다양한 필드명으로 정보 추출 시도
+            const nameFields = ['name', 'title', 'displayName', 'placeName', 'businessName', 'storeName'];
+            const addressFields = ['address', 'roadAddress', 'fullAddress', 'addr', 'location'];
+            const phoneFields = ['phone', 'tel', 'phoneNumber', 'contact', 'telephone'];
+            
+            for (const field of nameFields) {
+              if (targetData[field] && typeof targetData[field] === 'string') {
+                result.storeName = targetData[field];
+                console.log(`✅ API에서 매장명 추출 (${field}):`, result.storeName);
+                break;
+              }
+            }
+            
+            for (const field of addressFields) {
+              if (targetData[field] && typeof targetData[field] === 'string') {
+                result.address = targetData[field];
+                console.log(`✅ API에서 주소 추출 (${field}):`, result.address);
+                break;
+              }
+            }
+            
+            for (const field of phoneFields) {
+              if (targetData[field] && typeof targetData[field] === 'string') {
+                result.phone = targetData[field];
+                console.log(`✅ API에서 전화번호 추출 (${field}):`, result.phone);
+                break;
+              }
+            }
+            
+            // 더 깊은 중첩 구조 탐색
+            if (!result.storeName && targetData) {
+              console.log('🔍 깊은 구조 탐색 시작...');
+              result.storeName = extractFromNestedObject(targetData, nameFields);
+              result.address = extractFromNestedObject(targetData, addressFields);
+              result.phone = extractFromNestedObject(targetData, phoneFields);
+            }
+            
+            if (result.storeName || result.address || result.phone) {
               console.log('✅ API에서 정보 추출 성공');
               return result;
             }
@@ -447,6 +478,29 @@ async function extractFromMetaTags(url) {
   }
   
   return result;
+}
+
+// 중첩 객체에서 깊은 탐색
+function extractFromNestedObject(obj, targetFields, maxDepth = 3, currentDepth = 0) {
+  if (!obj || typeof obj !== 'object' || currentDepth >= maxDepth) return null;
+  
+  // 현재 레벨에서 찾기
+  for (const field of targetFields) {
+    if (obj[field] && typeof obj[field] === 'string' && obj[field].length > 0) {
+      console.log(`✅ 중첩 탐색에서 발견 (depth ${currentDepth}):`, field, '=', obj[field]);
+      return obj[field];
+    }
+  }
+  
+  // 하위 객체에서 재귀 탐색
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      const result = extractFromNestedObject(value, targetFields, maxDepth, currentDepth + 1);
+      if (result) return result;
+    }
+  }
+  
+  return null;
 }
 
 // 객체에서 키 리스트로 값 찾기
