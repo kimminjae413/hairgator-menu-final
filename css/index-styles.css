@@ -471,13 +471,22 @@ select {
     justify-content: space-between;
 }
 
+/* HAIRGATOR 로고 텍스트 흰색 강제 적용 */
+.logo,
+.logo *,
+.logo-section .logo,
+.logo-section .logo *,
+.header .logo,
+.header .logo * {
+    color: #fff !important;
+    font-size: 20px !important;
+    font-weight: bold !important;
+}
+
 .logo {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #fff !important;
-    font-size: 20px;
-    font-weight: bold;
 }
 
 .back-btn {
