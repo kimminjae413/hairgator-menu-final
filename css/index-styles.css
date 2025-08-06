@@ -5,9 +5,9 @@
 
 /* ========== 성별 테마 색상 변수 ========== */
 :root {
-    --male-primary: #1E3A8A;      /* 진한 파란색 (무게감 있는) */
-    --male-secondary: #2563EB;    /* 보조 파란색 */
-    --male-gradient: linear-gradient(135deg, #1E3A8A, #2563EB);
+    --male-primary: #2563EB;      /* 밝은 파란색으로 변경 */
+    --male-secondary: #3B82F6;    /* 보조 파란색도 약간 밝게 */
+    --male-gradient: linear-gradient(135deg, #2563EB, #3B82F6);
     
     --female-primary: #FF1493;    /* 핑크색 */
     --female-secondary: #FF69B4;  /* 보조 핑크색 */
@@ -483,7 +483,7 @@ select {
 .header .logo * {
     color: #fff !important;
     font-size: 22px !important;
-    font-weight: bold !important;
+    font-weight: 700 !important;
     font-family: 'Noto Sans KR', sans-serif !important;
 }
 
@@ -667,7 +667,7 @@ select {
     color: #888;
     transition: all 0.3s ease;
     position: relative;
-    font-weight: 500;
+    font-weight: 700;
     letter-spacing: 0.5px;
     font-size: 16px;
     font-family: 'Noto Sans KR', sans-serif;
