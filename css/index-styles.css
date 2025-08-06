@@ -673,6 +673,28 @@ select {
     font-family: 'Noto Sans KR', sans-serif;
 }
 
+/* 대분류 NEW 알림 점 */
+.nav-tab.has-new::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 6px;
+    height: 6px;
+    background: #FF4444;
+    border-radius: 50%;
+    border: 1px solid #fff;
+    box-shadow: 0 0 6px rgba(255, 68, 68, 0.8);
+    animation: newPulse 2s infinite;
+    z-index: 10;
+}
+
+@keyframes newPulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
 .nav-tab.active {
     color: #fff;
 }
@@ -886,6 +908,40 @@ select {
     -webkit-tap-highlight-color: transparent;
 }
 
+/* 스타일 카드 NEW 알림 점 */
+.hairstyle-card.has-new::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background: #FF4444;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.9);
+    animation: newPulse 2s infinite;
+    z-index: 20;
+}
+
+/* NEW 배지 (선택적 사용) */
+.hairstyle-card.has-new::before {
+    content: 'NEW';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: linear-gradient(135deg, #FF4444, #FF6666);
+    color: #fff;
+    font-size: 8px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 8px;
+    border: 1px solid #fff;
+    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.6);
+    z-index: 21;
+    display: none; /* 기본적으로 숨김, 필요시 block으로 변경 */
+}
+
 /* 남성 테마 호버 효과 */
 .main-container.male .hairstyle-card:hover {
     transform: translateY(-5px);
@@ -910,16 +966,24 @@ select {
     aspect-ratio: 3/4;
     object-fit: cover;
     background-color: #222;
-    border-radius: 10px 10px 0 0;
+    border-radius: 10px; /* 이미지만 보일 때는 전체 카드 라운드 */
 }
 
 .hairstyle-info {
     padding: 15px;
     text-align: center;
     border-radius: 0 0 10px 10px;
+    display: none; /* 사용자용에서는 코드번호와 스타일명 숨김 */
 }
 
-/* 남성 테마 스타일 코드 */
+/* ========== 어드민용 스타일 정보 표시 ========== */
+.admin-mode .hairstyle-info {
+    display: block; /* 어드민에서는 코드번호와 스타일명 표시 */
+}
+
+.admin-mode .hairstyle-image {
+    border-radius: 10px 10px 0 0; /* 어드민에서는 위쪽만 라운드 */
+}
 .main-container.male .hairstyle-code {
     font-size: 12px;
     color: var(--male-secondary);
@@ -1192,15 +1256,32 @@ select {
     display: none;
 }
 
+/* 남성 테마 플러스 버튼 */
+.main-container.male .add-customer-btn {
+    background: var(--male-gradient);
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+}
+
+.main-container.male .add-customer-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+}
+
+/* 여성 테마 플러스 버튼 */
+.main-container.female .add-customer-btn {
+    background: var(--female-gradient);
+    box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+}
+
+.main-container.female .add-customer-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+}
+
 .add-customer-btn.show {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.add-customer-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
 }
 
 /* ========== 고객 관련 모달 스타일 ========== */
