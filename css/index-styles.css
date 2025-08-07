@@ -152,59 +152,121 @@
     --female-gradient: linear-gradient(135deg, #EC4899, #F472B6);
 }
 
-/* 🚫 라이트/베이지 테마 텍스트 강제 검정색 적용 */
-.theme-light,
-.theme-light *,
-body.theme-light,
-body.theme-light *,
-.theme-warm-beige,
-.theme-warm-beige *,
-body.theme-warm-beige,
-body.theme-warm-beige *,
-.theme-soybean,
-.theme-soybean *,
-body.theme-soybean,
-body.theme-soybean * {
-    color: #000000 !important;
+/* 🚫 테마별 텍스트 색상 강제 적용 (최고 우선순위) */
+
+/* 블랙/다크 테마 - 흰색 텍스트 */
+body:not([class*="theme-"]),
+body:not([class*="theme-"]) *,
+html body:not([class*="theme-"]),
+html body:not([class*="theme-"]) *,
+body.theme-dark,
+body.theme-dark *,
+html body.theme-dark,
+html body.theme-dark *,
+.theme-dark,
+.theme-dark *,
+.theme-dark .category-description,
+.theme-dark .category-description * {
+    color: #ffffff !important;
 }
 
-/* 그레이 테마 텍스트 강제 검정색 적용 */
+/* 그레이 테마 - 진한 회색 텍스트 */
+body.theme-gray,
+body.theme-gray *,
+html body.theme-gray,
+html body.theme-gray *,
 .theme-gray,
 .theme-gray *,
-body.theme-gray,
-body.theme-gray * {
+.theme-gray .category-description,
+.theme-gray .category-description * {
     color: #2C2C2C !important;
 }
 
-/* 밝은 테마에서 특별히 흰색이어야 하는 요소들만 예외 */
-.theme-light .login-btn,
-.theme-light .mobile-theme-apply,
-.theme-light .add-customer-btn,
-.theme-light .like-btn,
-.theme-light .customer-register-btn,
-.theme-light .length-tab.active,
-.theme-light button[style*="gradient"],
-.theme-light .save-customer-btn,
-.theme-light .gender-icon,
-.theme-warm-beige .login-btn,
-.theme-warm-beige .mobile-theme-apply,
-.theme-warm-beige .add-customer-btn,
-.theme-warm-beige .like-btn,
-.theme-warm-beige .customer-register-btn,
-.theme-warm-beige .length-tab.active,
-.theme-warm-beige button[style*="gradient"],
-.theme-warm-beige .save-customer-btn,
-.theme-warm-beige .gender-icon,
-.theme-soybean .login-btn,
-.theme-soybean .mobile-theme-apply,
-.theme-soybean .add-customer-btn,
-.theme-soybean .like-btn,
-.theme-soybean .customer-register-btn,
-.theme-soybean .length-tab.active,
-.theme-soybean button[style*="gradient"],
-.theme-soybean .save-customer-btn,
-.theme-soybean .gender-icon,
-.theme-gray .gender-icon {
+/* 라이트/베이지 테마 - 검정색 텍스트 */
+body.theme-light,
+body.theme-light *,
+html body.theme-light,
+html body.theme-light *,
+.theme-light,
+.theme-light *,
+.theme-light .category-description,
+.theme-light .category-description *,
+body.theme-warm-beige,
+body.theme-warm-beige *,
+html body.theme-warm-beige,
+html body.theme-warm-beige *,
+.theme-warm-beige,
+.theme-warm-beige *,
+.theme-warm-beige .category-description,
+.theme-warm-beige .category-description *,
+body.theme-soybean,
+body.theme-soybean *,
+html body.theme-soybean,
+html body.theme-soybean *,
+.theme-soybean,
+.theme-soybean *,
+.theme-soybean .category-description,
+.theme-soybean .category-description * {
+    color: #000000 !important;
+}
+
+/* 밝은 테마에서 특별히 흰색이어야 하는 요소들만 예외 (최고 우선순위) */
+body.theme-light .login-btn,
+body.theme-light .login-btn *,
+body.theme-light .mobile-theme-apply,
+body.theme-light .mobile-theme-apply *,
+body.theme-light .add-customer-btn,
+body.theme-light .add-customer-btn *,
+body.theme-light .like-btn,
+body.theme-light .like-btn *,
+body.theme-light .customer-register-btn,
+body.theme-light .customer-register-btn *,
+body.theme-light .length-tab.active,
+body.theme-light .length-tab.active *,
+body.theme-light button[style*="gradient"],
+body.theme-light button[style*="gradient"] *,
+body.theme-light .save-customer-btn,
+body.theme-light .save-customer-btn *,
+body.theme-light .gender-icon,
+body.theme-light .gender-icon *,
+body.theme-warm-beige .login-btn,
+body.theme-warm-beige .login-btn *,
+body.theme-warm-beige .mobile-theme-apply,
+body.theme-warm-beige .mobile-theme-apply *,
+body.theme-warm-beige .add-customer-btn,
+body.theme-warm-beige .add-customer-btn *,
+body.theme-warm-beige .like-btn,
+body.theme-warm-beige .like-btn *,
+body.theme-warm-beige .customer-register-btn,
+body.theme-warm-beige .customer-register-btn *,
+body.theme-warm-beige .length-tab.active,
+body.theme-warm-beige .length-tab.active *,
+body.theme-warm-beige button[style*="gradient"],
+body.theme-warm-beige button[style*="gradient"] *,
+body.theme-warm-beige .save-customer-btn,
+body.theme-warm-beige .save-customer-btn *,
+body.theme-warm-beige .gender-icon,
+body.theme-warm-beige .gender-icon *,
+body.theme-soybean .login-btn,
+body.theme-soybean .login-btn *,
+body.theme-soybean .mobile-theme-apply,
+body.theme-soybean .mobile-theme-apply *,
+body.theme-soybean .add-customer-btn,
+body.theme-soybean .add-customer-btn *,
+body.theme-soybean .like-btn,
+body.theme-soybean .like-btn *,
+body.theme-soybean .customer-register-btn,
+body.theme-soybean .customer-register-btn *,
+body.theme-soybean .length-tab.active,
+body.theme-soybean .length-tab.active *,
+body.theme-soybean button[style*="gradient"],
+body.theme-soybean button[style*="gradient"] *,
+body.theme-soybean .save-customer-btn,
+body.theme-soybean .save-customer-btn *,
+body.theme-soybean .gender-icon,
+body.theme-soybean .gender-icon *,
+body.theme-gray .gender-icon,
+body.theme-gray .gender-icon * {
     color: #ffffff !important;
 }
 
@@ -1287,7 +1349,6 @@ body:not([class*="theme-"]) .logo * {
     background-color: var(--card-bg);
     border-radius: 10px;
     line-height: 1.5;
-    color: var(--text-secondary);
     transition: background-color 0.3s ease;
     border: 1px solid var(--border-color);
     font-size: 14px;
@@ -1297,6 +1358,44 @@ body:not([class*="theme-"]) .logo * {
     max-width: none;
     box-sizing: border-box;
     clear: both;
+}
+
+/* 테마별 스타일 설명 문구 색상 강제 적용 */
+
+/* 블랙/다크 테마 - 흰색 */
+body:not([class*="theme-"]) .category-description,
+body:not([class*="theme-"]) .category-description *,
+html body:not([class*="theme-"]) .category-description,
+html body:not([class*="theme-"]) .category-description *,
+body.theme-dark .category-description,
+body.theme-dark .category-description *,
+html body.theme-dark .category-description,
+html body.theme-dark .category-description * {
+    color: #cccccc !important;
+}
+
+/* 그레이 테마 - 진한 회색 */
+body.theme-gray .category-description,
+body.theme-gray .category-description *,
+html body.theme-gray .category-description,
+html body.theme-gray .category-description * {
+    color: #2C2C2C !important;
+}
+
+/* 라이트/베이지 테마 - 검정색 */
+body.theme-light .category-description,
+body.theme-light .category-description *,
+html body.theme-light .category-description,
+html body.theme-light .category-description *,
+body.theme-warm-beige .category-description,
+body.theme-warm-beige .category-description *,
+html body.theme-warm-beige .category-description,
+html body.theme-warm-beige .category-description *,
+body.theme-soybean .category-description,
+body.theme-soybean .category-description *,
+html body.theme-soybean .category-description,
+html body.theme-soybean .category-description * {
+    color: #000000 !important;
 }
 
 /* ========== 앞머리 길이 탭 (테마 적용) ========== */
