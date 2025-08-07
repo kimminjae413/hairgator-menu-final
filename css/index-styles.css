@@ -1,4 +1,36 @@
-/* HAIRGATOR 메인 페이지 스타일 - 프로모션+프로필 기능 포함 최종 버전 + 완전한 테마 시스템 + 모바일 테마 모달 */
+/* 그레이 테마 - 로고 진한 검정색 (더 강력하게) */
+.theme-gray .logo,
+.theme-gray .logo *,
+body.theme-gray .logo,
+body.theme-gray .logo *,
+html body.theme-gray .logo,
+html body.theme-gray .logo * {
+    color: #000000 !important;
+    font-weight: 900 !important;
+}
+
+/* 라이트/밝은 테마 - 로고 진한 검정색 (더 강력하게) */
+.theme-light .logo,
+.theme-light .logo *,
+body.theme-light .logo,
+body.theme-light .logo *,
+html body.theme-light .logo,
+html body.theme-light .logo *,
+.theme-warm-beige .logo,
+.theme-warm-beige .logo *,
+body.theme-warm-beige .logo,
+body.theme-warm-beige .logo *,
+html body.theme-warm-beige .logo,
+html body.theme-warm-beige .logo *,
+.theme-soybean .logo,
+.theme-soybean .logo *,
+body.theme-soybean .logo,
+body.theme-soybean .logo *,
+html body.theme-soybean .logo,
+html body.theme-soybean .logo * {
+    color: #000000 !important;
+    font-weight: 900 !important;
+}/* HAIRGATOR 메인 페이지 스타일 - 프로모션+프로필 기능 포함 최종 버전 + 완전한 테마 시스템 + 모바일 테마 모달 */
 
 /* ========== Google Fonts 추가 ========== */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
@@ -1033,19 +1065,27 @@ body:not([class*="theme-"]) .logo * {
     color: #ffffff !important;
 }
 
-/* 그레이 테마 - 로고 검정색 */
+/* 그레이 테마 - 로고 진한 검정색 */
 .theme-gray .logo,
-.theme-gray .logo * {
+.theme-gray .logo *,
+body.theme-gray .logo,
+body.theme-gray .logo * {
     color: #000000 !important;
 }
 
-/* 라이트/밝은 테마 - 로고 검정색 */
+/* 라이트/밝은 테마 - 로고 진한 검정색 */
 .theme-light .logo,
 .theme-light .logo *,
+body.theme-light .logo,
+body.theme-light .logo *,
 .theme-warm-beige .logo,
 .theme-warm-beige .logo *,
+body.theme-warm-beige .logo,
+body.theme-warm-beige .logo *,
 .theme-soybean .logo,
-.theme-soybean .logo * {
+.theme-soybean .logo *,
+body.theme-soybean .logo,
+body.theme-soybean .logo * {
     color: #000000 !important;
 }
 
@@ -1371,18 +1411,19 @@ body.theme-dark .category-description,
 body.theme-dark .category-description *,
 html body.theme-dark .category-description,
 html body.theme-dark .category-description * {
-    color: #cccccc !important;
+    color: #ffffff !important;
 }
 
-/* 그레이 테마 - 진한 회색 */
+/* 그레이 테마 - 진한 검정색 */
 body.theme-gray .category-description,
 body.theme-gray .category-description *,
 html body.theme-gray .category-description,
 html body.theme-gray .category-description * {
-    color: #2C2C2C !important;
+    color: #000000 !important;
+    font-weight: 600 !important;
 }
 
-/* 라이트/베이지 테마 - 검정색 */
+/* 라이트/베이지 테마 - 진한 검정색 */
 body.theme-light .category-description,
 body.theme-light .category-description *,
 html body.theme-light .category-description,
@@ -1396,6 +1437,7 @@ body.theme-soybean .category-description *,
 html body.theme-soybean .category-description,
 html body.theme-soybean .category-description * {
     color: #000000 !important;
+    font-weight: 600 !important;
 }
 
 /* ========== 앞머리 길이 탭 (테마 적용) ========== */
