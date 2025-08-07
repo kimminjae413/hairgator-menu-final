@@ -1,5 +1,5 @@
-// ========== HAIRGATOR 메인 로직 (최종 안정화 버전 - 프로모션 권한 제어 포함) ==========
-console.log('🚀 HAIRGATOR 최종 완전 버전 시작 - 프로모션 + 프로필 기능 포함');
+// ========== HAIRGATOR 메인 로직 (최종 안정화 버전 - 프로모션 권한 제어 + 테마 시스템 포함) ==========
+console.log('🚀 HAIRGATOR 최종 완전 버전 시작 - 프로모션 + 프로필 + 테마 시스템 포함');
 
 // ========== 전역 변수 ==========
 let currentDesigner = null;
@@ -11,6 +11,9 @@ let currentStyleCode = null;
 let currentStyleName = null;
 let currentStyleImage = null;
 let hierarchyStructure = {};
+
+// 🎨 테마 관련 전역 변수
+let currentTheme = 'dark';
 
 // Excel 기반 완전 구조 (오타 수정됨)
 const PERFECT_STRUCTURE = {
@@ -31,6 +34,96 @@ const PERFECT_STRUCTURE = {
         'SHORT': ['H Length']
     }
 };
+
+// ========== 🎨 테마 시스템 초기화 ==========
+function initializeThemeSystem() {
+    console.log('🎨 테마 시스템 초기화 시작');
+    
+    // 저장된 테마 로드
+    const savedTheme = localStorage.getItem('hairgator_theme');
+    if (savedTheme && window.THEME_CONFIGS && window.THEME_CONFIGS[savedTheme]) {
+        currentTheme = savedTheme;
+        console.log(`📂 저장된 테마 로드: ${savedTheme}`);
+    } else {
+        console.log('📂 저장된 테마 없음, 기본 테마(dark) 사용');
+        currentTheme = 'dark';
+    }
+    
+    // 초기 테마 적용
+    applyThemeToInterface(currentTheme);
+    
+    console.log('✅ 테마 시스템 초기화 완료');
+}
+
+// 🎨 인터페이스에 테마 적용
+function applyThemeToInterface(themeName) {
+    if (!window.THEME_CONFIGS || !window.THEME_CONFIGS[themeName]) {
+        console.warn(`⚠️ 테마 설정을 찾을 수 없음: ${themeName}`);
+        return;
+    }
+    
+    const config = window.THEME_CONFIGS[themeName];
+    const root = document.documentElement;
+    const body = document.body;
+    
+    // CSS 변수 업데이트
+    root.style.setProperty('--bg-color', config.backgroundColor);
+    root.style.setProperty('--text-color', config.textColor);
+    root.style.setProperty('--male-accent', config.maleAccent);
+    root.style.setProperty('--female-accent', config.femaleAccent);
+    
+    // body 배경색 직접 적용
+    body.style.backgroundColor = config.backgroundColor;
+    body.style.color = config.textColor;
+    
+    // 테마 클래스 추가/제거
+    body.className = body.className.replace(/theme-\w+/g, '');
+    body.classList.add(`theme-${themeName}`);
+    
+    // PWA 테마 색상 업데이트
+    updatePWAThemeColor(config.backgroundColor);
+    
+    console.log(`🎨 테마 적용됨: ${config.name}`);
+}
+
+// PWA 테마 색상 업데이트
+function updatePWAThemeColor(color) {
+    let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (!themeColorMeta) {
+        themeColorMeta = document.createElement('meta');
+        themeColorMeta.name = 'theme-color';
+        document.head.appendChild(themeColorMeta);
+    }
+    themeColorMeta.content = color;
+}
+
+// 🎨 테마 변경 함수 (HTML에서 호출)
+function changeTheme(themeName) {
+    if (!window.THEME_CONFIGS || !window.THEME_CONFIGS[themeName]) {
+        console.error(`❌ 존재하지 않는 테마: ${themeName}`);
+        return;
+    }
+    
+    console.log(`🎨 테마 변경: ${currentTheme} → ${themeName}`);
+    
+    currentTheme = themeName;
+    
+    // 테마 적용
+    applyThemeToInterface(themeName);
+    
+    // 로컬스토리지에 저장
+    localStorage.setItem('hairgator_theme', themeName);
+    
+    console.log(`✅ 테마 변경 완료: ${window.THEME_CONFIGS[themeName].name}`);
+}
+
+// 🎨 현재 테마 정보 반환
+function getCurrentThemeInfo() {
+    return {
+        name: currentTheme,
+        config: window.THEME_CONFIGS ? window.THEME_CONFIGS[currentTheme] : null
+    };
+}
 
 // ========== 세션 관리 ==========
 function checkExistingSession() {
@@ -241,6 +334,9 @@ function selectGender(gender) {
     // 성별에 따른 테마 클래스 추가
     document.getElementById('mainContainer').classList.remove('male', 'female');
     document.getElementById('mainContainer').classList.add(gender);
+    
+    // 🎨 선택된 테마 적용 (성별 변경 시에도 유지)
+    applyThemeToInterface(currentTheme);
     
     updateSyncStatus('updating', '📊 어드민과 실시간 동기화 중...');
     loadHierarchyFromFirebaseOnly(gender);
@@ -980,8 +1076,19 @@ function updateSyncStatus(status, message) {
     }
 }
 
+// ========== 🎨 전역 함수 등록 (HTML에서 사용) ==========
+// HTML에서 호출할 수 있도록 전역 스코프에 등록
+window.changeTheme = changeTheme;
+window.getCurrentThemeInfo = getCurrentThemeInfo;
+window.applyThemeToInterface = applyThemeToInterface;
+
 // ========== 초기화 ==========
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('📱 DOMContentLoaded 이벤트 발생');
+    
+    // 🎨 테마 시스템 초기화 (가장 먼저)
+    initializeThemeSystem();
+    
     initializeModal();
     initializePWA();
     preventPullToRefresh();
@@ -991,12 +1098,17 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🔐 새로운 세션 - 로그인 필요');
     }
     
-    console.log('🚀 HAIRGATOR 최종 완전 버전 로드 완료! (프로모션 + 프로필 기능 포함)');
+    console.log('🚀 HAIRGATOR 최종 완전 버전 로드 완료! (프로모션 + 프로필 + 테마 시스템 포함)');
 });
 
 // 페이지 로드 시 초기화
 window.addEventListener('load', function() {
-    console.log('🎉 HAIRGATOR 최종 완전 버전 완료! (프로모션 + 프로필 + 알림 시스템)');
+    console.log('🎉 HAIRGATOR 최종 완전 버전 완료! (프로모션 + 프로필 + 알림 + 테마 시스템)');
+    
+    // 🎨 테마 재적용 (안전장치)
+    setTimeout(() => {
+        applyThemeToInterface(currentTheme);
+    }, 500);
     
     if (window.matchMedia('(display-mode: standalone)').matches) {
         console.log('📱 PWA 독립 실행 모드');
