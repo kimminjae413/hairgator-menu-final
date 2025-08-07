@@ -476,14 +476,197 @@
             document.getElementById('mainContainer').classList.remove('male', 'female');
             document.getElementById('mainContainer').classList.add(gender);
             
-            // 카테고리 로드 시도
-            if (typeof window.loadHierarchyFromFirebaseOnly === 'function') {
-                window.loadHierarchyFromFirebaseOnly(gender);
+            // Firebase에서 실시간 데이터 로드 시도
+            loadRealTimeCategories(gender);
+        };
+    }
+
+    // 실시간 카테고리 로드 함수
+    async function loadRealTimeCategories(gender) {
+        console.log(`🔥 실시간 Firebase 데이터 로드: ${gender}`);
+        
+        const navTabs = document.getElementById('navTabs');
+        const content = document.getElementById('content');
+        
+        navTabs.innerHTML = '<div style="color: #FF69B4; padding: 15px; text-align: center;">📡 실시간 데이터 로드 중...</div>';
+        
+        if (!window.firebaseConnected || !window.db) {
+            console.log('❌ Firebase 연결 안됨, 재연결 시도...');
+            
+            // Firebase 재연결 시도
+            setTimeout(() => {
+                if (window.firebaseConnected) {
+                    loadRealTimeCategories(gender);
+                } else {
+                    console.log('⚠️ Firebase 연결 실패, 백업 데이터 사용');
+                    loadBasicCategories(gender);
+                }
+            }, 2000);
+            return;
+        }
+        
+        try {
+            console.log('📊 category_hierarchy 실시간 쿼리 실행...');
+            
+            // 실시간 데이터 가져오기
+            const hierarchySnapshot = await window.db.collection('category_hierarchy')
+                .where('gender', '==', gender)
+                .get();
+            
+            console.log(`📋 쿼리 결과: ${hierarchySnapshot.size}개 문서 (${gender})`);
+            
+            if (hierarchySnapshot.empty) {
+                console.log('⚠️ Firebase에 데이터 없음 - 어드민 초기화 필요');
+                showAdminInitializationMessage();
+                return;
+            }
+            
+            // 실시간 데이터 파싱
+            const mainCategories = {};
+            let latestUpdate = null;
+            
+            hierarchySnapshot.forEach(doc => {
+                const data = doc.data();
+                console.log('📄 실시간 문서:', data);
+                
+                const mainCat = data.mainCategory;
+                const subCat = data.subCategory;
+                
+                if (!mainCategories[mainCat]) {
+                    mainCategories[mainCat] = [];
+                }
+                
+                if (!mainCategories[mainCat].includes(subCat)) {
+                    mainCategories[mainCat].push(subCat);
+                }
+                
+                if (data.updatedAt) {
+                    const updateTime = data.updatedAt.toDate();
+                    if (!latestUpdate || updateTime > latestUpdate) {
+                        latestUpdate = updateTime;
+                    }
+                }
+            });
+            
+            // 카테고리 정렬
+            Object.keys(mainCategories).forEach(mainCat => {
+                mainCategories[mainCat].sort();
+            });
+            
+            console.log('✅ 실시간 데이터 파싱 완료:', mainCategories);
+            
+            if (Object.keys(mainCategories).length === 0) {
+                showAdminInitializationMessage();
+                return;
+            }
+            
+            // UI 렌더링
+            renderRealTimeCategories(mainCategories);
+            
+            // 상태 업데이트
+            const timeStr = latestUpdate ? latestUpdate.toLocaleString('ko-KR') : '방금전';
+            console.log(`✅ 실시간 동기화 완료 (${timeStr})`);
+            
+        } catch (error) {
+            console.error('❌ 실시간 데이터 로드 오류:', error);
+            
+            if (error.code === 'permission-denied') {
+                showAdminInitializationMessage('Firebase 권한 오류입니다. Security Rules를 확인해주세요.');
             } else {
-                // 대체 카테고리 로드 로직
+                console.log('⚠️ Firebase 오류, 백업 데이터 사용');
                 loadBasicCategories(gender);
             }
-        };
+        }
+    }
+
+    // 실시간 카테고리 렌더링
+    function renderRealTimeCategories(mainCategories) {
+        const navTabs = document.getElementById('navTabs');
+        const content = document.getElementById('content');
+        
+        navTabs.innerHTML = '';
+        
+        const categoryNames = Object.keys(mainCategories);
+        
+        // 대분류 탭 생성
+        categoryNames.forEach((category, index) => {
+            const tab = document.createElement('div');
+            tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
+            tab.textContent = category;
+            tab.dataset.category = category;
+            tab.onclick = () => showRealTimeCategory(category, mainCategories[category]);
+            navTabs.appendChild(tab);
+        });
+        
+        // 첫 번째 카테고리 표시
+        if (categoryNames.length > 0) {
+            showRealTimeCategory(categoryNames[0], mainCategories[categoryNames[0]]);
+        }
+    }
+
+    // 실시간 카테고리 표시 함수
+    function showRealTimeCategory(categoryName, subCategories) {
+        console.log(`📋 실시간 카테고리 표시: ${categoryName}`, subCategories);
+        
+        const content = document.getElementById('content');
+        
+        // 활성 탭 업데이트
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.textContent === categoryName) {
+                tab.classList.add('active');
+            }
+        });
+        
+        // 서브카테고리 탭 생성
+        let html = `<div class="length-tabs">`;
+        subCategories.forEach((subCat, index) => {
+            const isActive = index === 0 ? 'active' : '';
+            html += `<div class="length-tab ${isActive}" onclick="showSubCategory('${subCat}')">${subCat}</div>`;
+        });
+        html += `</div>`;
+        
+        // 빈 상태 표시 (실제 스타일 데이터는 별도 로드)
+        subCategories.forEach((subCat, index) => {
+            const isActive = index === 0 ? 'active' : '';
+            html += `
+                <div class="length-section ${isActive}" data-length="${subCat}">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✂️</div>
+                        <div class="empty-state-title">${subCat}</div>
+                        <div class="empty-state-message">📡 실시간 스타일 로드 중...<br>잠시만 기다려주세요.</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        content.innerHTML = html;
+    }
+
+    // 어드민 초기화 메시지
+    function showAdminInitializationMessage(message = '어드민에서 데이터 초기화가 필요합니다.') {
+        const navTabs = document.getElementById('navTabs');
+        const content = document.getElementById('content');
+        
+        navTabs.innerHTML = `
+            <div style="color: #FF69B4; padding: 15px; text-align: center;">
+                ⚠️ 어드민 초기화 필요
+            </div>
+        `;
+        
+        content.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🔧</div>
+                <div class="empty-state-title">어드민 초기화가 필요합니다</div>
+                <div class="empty-state-message">
+                    ${message}<br><br>
+                    <strong>해결 방법:</strong><br>
+                    1. 어드민 페이지로 이동<br>
+                    2. "🚀 시스템 초기화" 버튼 클릭<br>
+                    3. 이 페이지 새로고침
+                </div>
+            </div>
+        `;
     }
 
     // 기본 카테고리 구조 (백업용)
@@ -592,8 +775,97 @@
         });
     }
 
-    // 전역 함수 등록
-    window.showSubCategory = showSubCategory;
+    // 뒤로가기 함수 추가
+    if (typeof window.backToGenderSelection === 'undefined') {
+        window.backToGenderSelection = function() {
+            console.log('🔙 성별 선택으로 돌아가기');
+            
+            document.getElementById('mainContainer').classList.remove('active');
+            document.getElementById('genderSelection').classList.add('show');
+            
+            // 상태 초기화
+            window.currentGender = null;
+            window.currentCategory = null;
+            
+            // UI 초기화
+            const navTabs = document.getElementById('navTabs');
+            const content = document.getElementById('content');
+            if (navTabs) navTabs.innerHTML = '';
+            if (content) content.innerHTML = '';
+        };
+    }
+
+    // 햄버거 메뉴 함수들 추가
+    if (typeof window.toggleHamburgerMenu === 'undefined') {
+        window.toggleHamburgerMenu = function() {
+            const overlay = document.getElementById('hamburgerOverlay');
+            if (overlay) {
+                overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
+            }
+        };
+    }
+
+    if (typeof window.closeHamburgerMenu === 'undefined') {
+        window.closeHamburgerMenu = function() {
+            const overlay = document.getElementById('hamburgerOverlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        };
+    }
+
+    // 기타 필수 함수들
+    if (typeof window.showDesignerProfile === 'undefined') {
+        window.showDesignerProfile = function() {
+            alert('프로필 기능을 준비 중입니다.');
+            window.closeHamburgerMenu();
+        };
+    }
+
+    if (typeof window.showPopularityStats === 'undefined') {
+        window.showPopularityStats = function() {
+            alert('통계 기능을 준비 중입니다.');
+            window.closeHamburgerMenu();
+        };
+    }
+
+    if (typeof window.showCustomerSearch === 'undefined') {
+        window.showCustomerSearch = function() {
+            alert('고객 조회 기능을 준비 중입니다.');
+            window.closeHamburgerMenu();
+        };
+    }
+
+    if (typeof window.logoutDesigner === 'undefined') {
+        window.logoutDesigner = function() {
+            if (confirm('정말 로그아웃하시겠습니까?')) {
+                sessionStorage.removeItem('currentDesigner');
+                sessionStorage.removeItem('designerName');
+                
+                window.currentDesigner = null;
+                window.currentDesignerName = null;
+                window.currentGender = null;
+                
+                document.getElementById('hamburgerOverlay').style.display = 'none';
+                document.getElementById('genderSelection').classList.remove('show');
+                document.getElementById('mainContainer').classList.remove('active');
+                document.getElementById('designerLogin').style.display = 'flex';
+                
+                console.log('👋 디자이너 로그아웃 완료');
+            }
+        };
+    }
+
+    if (typeof window.closeApp === 'undefined') {
+        window.closeApp = function() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.close();
+            }
+            window.closeHamburgerMenu();
+        };
+    }
 
     // 기존 세션 복원 함수
     function checkExistingSession() {
