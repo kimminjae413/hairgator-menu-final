@@ -2,14 +2,14 @@
 .main-menu {
     display: none;
     min-height: 100vh;
-    background: var(--bg-primary);
+    background: #000;
 }
 
 .main-menu.active {
     display: block;
 }
 
-/* ========== 헤더 ========== */
+/* ========== 헤더 - 로고 중앙, 흰색 ========== */
 .header {
     background: #000;
     padding: 15px 20px;
@@ -35,12 +35,13 @@
     font-size: 24px;
 }
 
-/* 로고 중앙 정렬 + 흰색 */
+/* 로고 - 중앙 정렬, 흰색 */
 .logo {
-    color: #fff;
+    color: #fff !important;  /* 강제 흰색 */
     font-size: 24px;
     font-weight: bold;
     letter-spacing: 3px;
+    text-align: center;
 }
 
 .header-actions {
@@ -51,7 +52,6 @@
     align-items: center;
 }
 
-/* 테마 버튼 */
 .theme-btn {
     background: none;
     border: none;
@@ -65,7 +65,6 @@
     font-size: 20px;
 }
 
-/* 햄버거 메뉴 - 세련된 디자인 */
 .menu-btn {
     background: none;
     border: none;
@@ -77,26 +76,17 @@
     justify-content: center;
     cursor: pointer;
     gap: 5px;
-    position: relative;
 }
 
 .menu-btn span {
     width: 24px;
     height: 2px;
     background: #fff;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s;
     border-radius: 2px;
 }
 
-.menu-btn:hover span:nth-child(1) {
-    transform: translateY(-2px);
-}
-
-.menu-btn:hover span:nth-child(3) {
-    transform: translateY(2px);
-}
-
-/* ========== 대분류 탭 - 진한색으로 통일 ========== */
+/* ========== 대분류 탭 - 진한색 ========== */
 .main-tabs {
     background: #000;
     padding: 15px 10px;
@@ -121,24 +111,29 @@
     transition: all 0.3s;
     font-size: 14px;
     font-weight: 600;
-    letter-spacing: 0.5px;
 }
 
 .main-tab:hover {
     background: #2a2a2a;
-    border-color: #FF1493;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 20, 147, 0.2);
 }
 
-.main-tab.active {
+/* 남성 선택시 파란색, 여성 선택시 핑크색 */
+body.gender-male .main-tab.active {
+    background: #4A90E2;
+    color: #fff;
+    border-color: #4A90E2;
+    box-shadow: 0 5px 20px rgba(74, 144, 226, 0.4);
+}
+
+body.gender-female .main-tab.active {
     background: #FF1493;
     color: #fff;
     border-color: #FF1493;
     box-shadow: 0 5px 20px rgba(255, 20, 147, 0.4);
 }
 
-/* ========== 중분류 탭 - 진한색으로 통일 ========== */
+/* ========== 중분류 탭 - 성별에 따른 색상 ========== */
 .sub-tabs {
     background: #0a0a0a;
     padding: 15px;
@@ -150,7 +145,6 @@
 }
 
 .sub-tab {
-    background: #FF1493;
     color: #fff;
     border: none;
     padding: 10px 20px;
@@ -159,22 +153,104 @@
     transition: all 0.3s;
     font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.5px;
 }
 
-.sub-tab:hover {
+/* 남성일 때 파란색 */
+body.gender-male .sub-tab {
+    background: #4A90E2;
+}
+
+body.gender-male .sub-tab:hover {
+    background: #6BA3E5;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+}
+
+body.gender-male .sub-tab.active {
+    background: #fff;
+    color: #4A90E2;
+}
+
+/* 여성일 때 핑크색 */
+body.gender-female .sub-tab {
+    background: #FF1493;
+}
+
+body.gender-female .sub-tab:hover {
     background: #FF69B4;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
 }
 
-.sub-tab.active {
+body.gender-female .sub-tab.active {
     background: #fff;
     color: #FF1493;
-    box-shadow: 0 5px 20px rgba(255, 255, 255, 0.2);
 }
 
-/* ========== 사이드 메뉴 - 세련된 디자인 ========== */
+/* ========== 스타일 그리드 ========== */
+.styles-container {
+    padding: 20px;
+    min-height: calc(100vh - 200px);
+}
+
+.styles-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+}
+
+@media (max-width: 768px) {
+    .styles-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
+.style-card {
+    background: #1a1a1a;
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid #333;
+}
+
+.style-card:hover {
+    transform: translateY(-5px);
+    border-color: #FF1493;
+    box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+}
+
+body.gender-male .style-card:hover {
+    border-color: #4A90E2;
+    box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
+}
+
+.style-image {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    background: #2a2a2a;
+}
+
+.style-info {
+    padding: 12px;
+    text-align: center;
+}
+
+.style-code {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 4px;
+}
+
+.style-name {
+    font-size: 13px;
+    color: #fff;
+    font-weight: 500;
+}
+
+/* ========== 사이드 메뉴 ========== */
 .side-menu {
     position: fixed;
     top: 0;
@@ -197,7 +273,6 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
 }
 
 .side-menu-content {
@@ -210,16 +285,6 @@
     box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
-    animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-    }
-    to {
-        transform: translateX(0);
-    }
 }
 
 .side-menu-header {
@@ -231,11 +296,19 @@
     border-bottom: 2px solid #FF1493;
 }
 
+body.gender-male .side-menu-header {
+    border-bottom-color: #4A90E2;
+}
+
 .side-menu-header h2 {
     color: #FF1493;
     font-size: 22px;
     letter-spacing: 2px;
     font-weight: bold;
+}
+
+body.gender-male .side-menu-header h2 {
+    color: #4A90E2;
 }
 
 .close-btn {
@@ -252,11 +325,6 @@
     transition: all 0.3s;
 }
 
-.close-btn:hover {
-    background: rgba(255, 20, 147, 0.2);
-    transform: rotate(90deg);
-}
-
 .side-menu-nav {
     flex: 1;
     padding: 30px 0;
@@ -270,32 +338,15 @@
     text-decoration: none;
     transition: all 0.3s;
     position: relative;
-    overflow: hidden;
-}
-
-.menu-item::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 0;
-    background: linear-gradient(90deg, #FF1493, #FF69B4);
-    transition: width 0.3s;
-    z-index: -1;
-}
-
-.menu-item:hover::before {
-    width: 100%;
 }
 
 .menu-item:hover {
+    background: rgba(255, 20, 147, 0.1);
     padding-left: 35px;
 }
 
-.menu-item:hover .menu-arrow {
-    transform: translateX(10px);
-    color: #fff;
+body.gender-male .menu-item:hover {
+    background: rgba(74, 144, 226, 0.1);
 }
 
 .menu-icon {
@@ -307,12 +358,10 @@
     flex: 1;
     font-size: 16px;
     font-weight: 500;
-    letter-spacing: 0.5px;
 }
 
 .menu-arrow {
     color: #666;
-    transition: all 0.3s;
     font-size: 18px;
 }
 
@@ -320,15 +369,6 @@
     height: 1px;
     background: linear-gradient(90deg, transparent, #333, transparent);
     margin: 20px 25px;
-}
-
-.menu-item.logout {
-    color: #FF4444;
-}
-
-.menu-item.logout:hover {
-    color: #fff;
-    background: rgba(255, 68, 68, 0.1);
 }
 
 .side-menu-footer {
@@ -349,21 +389,35 @@
     font-size: 16px;
 }
 
-/* ========== 라이트 테마 오버라이드 ========== */
+body.gender-male #designerNameDisplay {
+    color: #4A90E2;
+}
+
+/* ========== 라이트 테마 ========== */
+body.light-theme {
+    background: #fff;
+}
+
+body.light-theme .main-menu {
+    background: #fff;
+}
+
 body.light-theme .header {
     background: #fff;
     border-bottom-color: #ddd;
 }
 
 body.light-theme .logo {
-    color: #000;
+    color: #000 !important;  /* 라이트 테마에서는 검은색 */
 }
 
 body.light-theme .back-btn,
-body.light-theme .theme-btn,
-body.light-theme .menu-btn span {
+body.light-theme .theme-btn {
     color: #000;
-    background-color: #000;
+}
+
+body.light-theme .menu-btn span {
+    background: #000;
 }
 
 body.light-theme .main-tabs {
@@ -376,27 +430,44 @@ body.light-theme .main-tab {
     border-color: #ddd;
 }
 
-body.light-theme .main-tab:hover {
-    background: #f0f0f0;
-}
-
 body.light-theme .sub-tabs {
     background: #fff;
     border-bottom-color: #eee;
 }
 
-body.light-theme .side-menu-content {
-    background: linear-gradient(135deg, #fff 0%, #f5f5f5 100%);
+body.light-theme .styles-container {
+    background: #f9f9f9;
 }
 
-body.light-theme .side-menu-header {
+body.light-theme .style-card {
     background: #fff;
+    border-color: #ddd;
 }
 
-body.light-theme .menu-item {
+body.light-theme .style-name {
     color: #000;
 }
 
-body.light-theme .close-btn {
-    color: #000;
+/* ========== 빈 상태 ========== */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    grid-column: 1 / -1;
+    color: #666;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.empty-title {
+    font-size: 20px;
+    color: #999;
+    margin-bottom: 10px;
+}
+
+.empty-message {
+    font-size: 14px;
+    color: #666;
 }
