@@ -1,4 +1,4 @@
-/* HAIRGATOR 메인 페이지 스타일 - 프로모션+프로필 기능 포함 최종 버전 + 완전한 테마 시스템 */
+/* HAIRGATOR 메인 페이지 스타일 - 프로모션+프로필 기능 포함 최종 버전 + 완전한 테마 시스템 + 모바일 테마 모달 */
 
 /* ========== Google Fonts 추가 ========== */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
@@ -639,6 +639,225 @@ select:focus {
     box-shadow: 0 8px 25px rgba(65, 105, 225, 0.2);
 }
 
+/* ========== 🎨 모바일 테마 선택 트리거 버튼 ========== */
+.mobile-theme-trigger {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;
+    font-weight: 500;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-theme-trigger:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #FF1493;
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 20, 147, 0.3);
+}
+
+.theme-trigger-icon {
+    font-size: 18px;
+}
+
+.theme-trigger-text {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+/* ========== 🎨 모바일 테마 선택 모달 (하단 슬라이드업) ========== */
+.mobile-theme-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-theme-modal-overlay.show {
+    display: flex;
+    opacity: 1;
+    align-items: flex-end;
+}
+
+.mobile-theme-modal {
+    width: 100%;
+    background: var(--bg-color);
+    border-radius: 25px 25px 0 0;
+    padding: 0 0 calc(20px + env(safe-area-inset-bottom)) 0;
+    transform: translateY(100%);
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.mobile-theme-modal-overlay.show .mobile-theme-modal {
+    transform: translateY(0);
+}
+
+.mobile-theme-header {
+    padding: 20px 25px 15px;
+    text-align: center;
+    position: relative;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--text-muted);
+    border-radius: 2px;
+    margin: 0 auto 15px;
+}
+
+.mobile-theme-header h3 {
+    color: var(--text-color);
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.mobile-theme-colors {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 25px;
+}
+
+.mobile-color-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 15px 10px;
+    border-radius: 15px;
+    position: relative;
+}
+
+.mobile-color-option:hover {
+    background: var(--card-hover);
+    transform: translateY(-2px);
+}
+
+.mobile-color-option.selected {
+    background: rgba(255, 20, 147, 0.2);
+    border: 2px solid #FF1493;
+}
+
+.mobile-color-option.selected::after {
+    content: "✓";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    color: #FF1493;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.mobile-color-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 3px solid var(--border-color);
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-color-option:hover .mobile-color-circle {
+    transform: scale(1.1);
+    border-color: var(--text-color);
+}
+
+.mobile-color-option.selected .mobile-color-circle {
+    border-color: #FF1493;
+    box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+}
+
+.mobile-color-name {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-align: center;
+}
+
+.mobile-color-option.selected .mobile-color-name {
+    color: #FF1493;
+    font-weight: 600;
+}
+
+.mobile-theme-description {
+    padding: 15px 25px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    background: var(--card-bg);
+    margin: 0 25px;
+    border-radius: 10px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+}
+
+.mobile-theme-actions {
+    display: flex;
+    gap: 15px;
+    padding: 20px 25px 0;
+}
+
+.mobile-theme-cancel,
+.mobile-theme-apply {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mobile-theme-cancel {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.mobile-theme-cancel:hover {
+    background: var(--card-hover);
+}
+
+.mobile-theme-apply {
+    background: linear-gradient(135deg, #FF1493, #FF69B4);
+    color: #fff;
+}
+
+.mobile-theme-apply:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+}
+
 /* ========== 메인 컨테이너 (테마 적용) ========== */
 .main-container {
     display: none;
@@ -957,10 +1176,10 @@ select:focus {
 
 /* ========== 콘텐츠 영역 (테마 적용) ========== */
 .content {
-    margin-top: calc(100px + env(safe-area-inset-top));
+    margin-top: calc(120px + env(safe-area-inset-top));
     padding: 20px;
     padding-bottom: calc(20px + env(safe-area-inset-bottom));
-    min-height: calc(100vh - 100px - env(safe-area-inset-top));
+    min-height: calc(100vh - 120px - env(safe-area-inset-top));
     overflow-x: auto;
     overflow-y: auto;
     
@@ -980,14 +1199,21 @@ select:focus {
 }
 
 .category-description {
-    margin-bottom: 20px;
-    padding: 20px;
+    margin: 0 0 20px 0;
+    padding: 15px 20px;
     background-color: var(--card-bg);
     border-radius: 10px;
-    line-height: 1.6;
+    line-height: 1.5;
     color: var(--text-secondary);
     transition: background-color 0.3s ease;
     border: 1px solid var(--border-color);
+    font-size: 14px;
+    position: relative;
+    z-index: 1;
+    width: calc(100% - 40px);
+    max-width: none;
+    box-sizing: border-box;
+    clear: both;
 }
 
 /* ========== 앞머리 길이 탭 (테마 적용) ========== */
@@ -1095,6 +1321,36 @@ select:focus {
         grid-template-columns: repeat(3, 1fr);
         gap: 10px;
         padding: 0 10px;
+    }
+    
+    .mobile-theme-trigger {
+        bottom: 60px;
+        padding: 12px 20px;
+    }
+    
+    .theme-trigger-text {
+        font-size: 13px;
+    }
+    
+    .mobile-theme-colors {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        padding: 20px;
+    }
+    
+    .mobile-color-circle {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .mobile-theme-actions {
+        padding: 15px 20px 0;
+    }
+    
+    .category-description {
+        margin: 0 0 15px 0;
+        padding: 12px 15px;
+        font-size: 13px;
     }
 }
 
@@ -1522,6 +1778,17 @@ select:focus {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* ========== 플러스 버튼 숨김 (성별 선택 화면) ========== */
+.gender-selection.show ~ .add-customer-btn,
+.designer-login ~ .add-customer-btn {
+    display: none !important;
+}
+
+/* 메인 컨테이너가 활성화된 경우에만 플러스 버튼 표시 */
+.main-container.active ~ .add-customer-btn.show {
+    display: flex !important;
 }
 
 /* ========== 고객 관련 모달 스타일 (테마 적용) ========== */
@@ -2638,4 +2905,103 @@ select:focus {
         gap: 20px;
         overflow: visible;
     }
+}
+
+/* ========== 🔄 24시간 자동 로그인 체크박스 스타일 ========== */
+.auto-login-group {
+    margin-bottom: 20px;
+}
+
+.auto-login-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    padding: 15px;
+    background: rgba(255, 20, 147, 0.05);
+    border: 1px solid rgba(255, 20, 147, 0.2);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.auto-login-checkbox:hover {
+    background: rgba(255, 20, 147, 0.1);
+    border-color: rgba(255, 20, 147, 0.4);
+}
+
+.auto-login-checkbox input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.auto-login-checkbox input[type="checkbox"]:checked + .checkmark {
+    background: linear-gradient(135deg, #FF1493, #FF69B4);
+    border-color: #FF1493;
+}
+
+.auto-login-checkbox input[type="checkbox"]:checked + .checkmark::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.auto-login-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.auto-login-text strong {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.auto-login-text small {
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+/* 테마별 체크박스 색상 조정 */
+.theme-light-beige .auto-login-group,
+.theme-warm-beige .auto-login-group,
+.theme-soybean .auto-login-group {
+    background: rgba(255, 20, 147, 0.08);
+}
+
+.theme-light-beige .checkmark,
+.theme-warm-beige .checkmark,
+.theme-soybean .checkmark {
+    border-color: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* 터치 친화적 설정 */
+.auto-login-checkbox,
+.mobile-theme-trigger,
+.mobile-color-option {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
