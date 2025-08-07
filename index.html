@@ -79,6 +79,50 @@
             <div class="gender-title">여성</div>
             <div class="gender-subtitle">Women's Hairstyle</div>
         </div>
+        
+        <!-- 🎨 색상 테마 선택 UI 추가 -->
+        <div class="theme-selection-section">
+            <div class="theme-title">
+                <span class="theme-icon">🎨</span>
+                <span>테마 색상 선택</span>
+            </div>
+            
+            <div class="theme-colors">
+                <div class="color-option" data-theme="dark" onclick="selectTheme('dark')" title="다크 모드 (기본)">
+                    <div class="color-circle" style="background: #000000;"></div>
+                    <span class="color-name">다크</span>
+                </div>
+                
+                <div class="color-option" data-theme="ultimate-gray" onclick="selectTheme('ultimate-gray')" title="얼티밋 그레이">
+                    <div class="color-circle" style="background: #939597;"></div>
+                    <span class="color-name">그레이</span>
+                </div>
+                
+                <div class="color-option" data-theme="light-beige" onclick="selectTheme('light-beige')" title="라이트 베이지">
+                    <div class="color-circle" style="background: #E6DCD3;"></div>
+                    <span class="color-name">라이트</span>
+                </div>
+                
+                <div class="color-option" data-theme="warm-beige" onclick="selectTheme('warm-beige')" title="웜 베이지">
+                    <div class="color-circle" style="background: #DEC9A1;"></div>
+                    <span class="color-name">웜</span>
+                </div>
+                
+                <div class="color-option" data-theme="soybean" onclick="selectTheme('soybean')" title="소이빈">
+                    <div class="color-circle" style="background: #D2C29D;"></div>
+                    <span class="color-name">소이빈</span>
+                </div>
+                
+                <div class="color-option" data-theme="dark-beige" onclick="selectTheme('dark-beige')" title="다크 베이지">
+                    <div class="color-circle" style="background: #7A7363;"></div>
+                    <span class="color-name">다크</span>
+                </div>
+            </div>
+            
+            <div class="theme-description" id="themeDescription">
+                다크 모드: 눈의 피로를 줄이고 전문적인 분위기 연출
+            </div>
+        </div>
     </div>
 
     <!-- 메인 컨테이너 -->
@@ -251,9 +295,330 @@
         .menu-item.disabled:hover {
             background: none;
         }
+        
+        /* ========== 🎨 테마 선택 UI 스타일 ========== */
+        .theme-selection-section {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .theme-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .theme-icon {
+            font-size: 18px;
+        }
+        
+        .theme-colors {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .color-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 10px 5px;
+            border-radius: 12px;
+            position: relative;
+        }
+        
+        .color-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .color-option.selected {
+            background: rgba(255, 20, 147, 0.2);
+            border: 2px solid #FF1493;
+        }
+        
+        .color-option.selected::after {
+            content: "✓";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            color: #FF1493;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .color-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .color-option:hover .color-circle {
+            transform: scale(1.1);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .color-option.selected .color-circle {
+            border-color: #FF1493;
+            box-shadow: 0 4px 12px rgba(255, 20, 147, 0.4);
+        }
+        
+        .color-name {
+            font-size: 11px;
+            color: #ccc;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.2;
+        }
+        
+        .color-option.selected .color-name {
+            color: #FF1493;
+            font-weight: 600;
+        }
+        
+        .theme-description {
+            text-align: center;
+            font-size: 12px;
+            color: #aaa;
+            line-height: 1.4;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 모바일 대응 */
+        @media (max-width: 480px) {
+            .theme-selection-section {
+                bottom: 40px;
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .theme-colors {
+                gap: 10px;
+            }
+            
+            .color-circle {
+                width: 30px;
+                height: 30px;
+            }
+            
+            .color-name {
+                font-size: 10px;
+            }
+            
+            .theme-description {
+                font-size: 11px;
+            }
+        }
     </style>
     
     <script>
+        // ========== 🎨 테마 선택 시스템 ==========
+        
+        // 테마 설정 객체
+        const THEME_CONFIGS = {
+            'dark': {
+                name: '다크 모드',
+                description: '눈의 피로를 줄이고 전문적인 분위기 연출',
+                backgroundColor: '#000000',
+                textColor: '#ffffff',
+                maleAccent: '#4169E1',
+                femaleAccent: '#FF1493',
+                isDark: true
+            },
+            'ultimate-gray': {
+                name: '얼티밋 그레이',
+                description: '중성적이고 고급스러운 느낌, 팬톤 2021 올해의 색상',
+                backgroundColor: '#939597',
+                textColor: '#ffffff',
+                maleAccent: '#1E3A8A',
+                femaleAccent: '#DC2626',
+                isDark: true
+            },
+            'light-beige': {
+                name: '라이트 베이지',
+                description: '밝고 깔끔한 분위기, 모던하고 개방적인 느낌',
+                backgroundColor: '#E6DCD3',
+                textColor: '#333333',
+                maleAccent: '#1E40AF',
+                femaleAccent: '#BE185D',
+                isDark: false
+            },
+            'warm-beige': {
+                name: '웜 베이지',
+                description: '따뜻하고 친근한 분위기, 편안하고 아늑한 느낌',
+                backgroundColor: '#DEC9A1',
+                textColor: '#333333',
+                maleAccent: '#1E3A8A',
+                femaleAccent: '#C2185B',
+                isDark: false
+            },
+            'soybean': {
+                name: '소이빈',
+                description: '자연스럽고 차분한 분위기, 편안하고 안정적인 느낌',
+                backgroundColor: '#D2C29D',
+                textColor: '#333333',
+                maleAccent: '#374151',
+                femaleAccent: '#BE185D',
+                isDark: false
+            },
+            'dark-beige': {
+                name: '다크 베이지',
+                description: '세련되고 차분한 분위기, 고급스럽고 모던한 느낌',
+                backgroundColor: '#7A7363',
+                textColor: '#ffffff',
+                maleAccent: '#3B82F6',
+                femaleAccent: '#EC4899',
+                isDark: true
+            }
+        };
+        
+        // 현재 선택된 테마
+        let currentTheme = 'dark';
+        
+        // 테마 선택 함수
+        function selectTheme(themeName) {
+            console.log(`🎨 테마 선택: ${themeName}`);
+            
+            if (!THEME_CONFIGS[themeName]) {
+                console.error('❌ 존재하지 않는 테마:', themeName);
+                return;
+            }
+            
+            currentTheme = themeName;
+            
+            // UI 업데이트
+            updateThemeUI();
+            updateThemeDescription();
+            
+            // 로컬스토리지에 저장
+            localStorage.setItem('hairgator_theme', themeName);
+            
+            console.log(`✅ 테마 적용 완료: ${THEME_CONFIGS[themeName].name}`);
+        }
+        
+        // 테마 UI 업데이트
+        function updateThemeUI() {
+            // 모든 색상 옵션에서 selected 클래스 제거
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // 현재 선택된 테마에 selected 클래스 추가
+            const selectedOption = document.querySelector(`[data-theme="${currentTheme}"]`);
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+            }
+        }
+        
+        // 테마 설명 업데이트
+        function updateThemeDescription() {
+            const descriptionElement = document.getElementById('themeDescription');
+            if (descriptionElement && THEME_CONFIGS[currentTheme]) {
+                const config = THEME_CONFIGS[currentTheme];
+                descriptionElement.textContent = `${config.name}: ${config.description}`;
+            }
+        }
+        
+        // 테마 적용 함수 (메인 화면에서 사용)
+        function applyTheme(themeName = currentTheme) {
+            const config = THEME_CONFIGS[themeName];
+            if (!config) return;
+            
+            const root = document.documentElement;
+            const body = document.body;
+            
+            // CSS 변수 업데이트
+            root.style.setProperty('--bg-color', config.backgroundColor);
+            root.style.setProperty('--text-color', config.textColor);
+            root.style.setProperty('--male-accent', config.maleAccent);
+            root.style.setProperty('--female-accent', config.femaleAccent);
+            
+            // body 배경색 직접 적용
+            body.style.backgroundColor = config.backgroundColor;
+            body.style.color = config.textColor;
+            
+            // 테마 클래스 추가/제거
+            body.className = body.className.replace(/theme-\w+/g, '');
+            body.classList.add(`theme-${themeName}`);
+            
+            console.log(`🎨 테마 적용됨: ${config.name}`);
+        }
+        
+        // 저장된 테마 로드
+        function loadSavedTheme() {
+            const savedTheme = localStorage.getItem('hairgator_theme');
+            if (savedTheme && THEME_CONFIGS[savedTheme]) {
+                currentTheme = savedTheme;
+                console.log(`📂 저장된 테마 로드: ${THEME_CONFIGS[savedTheme].name}`);
+            } else {
+                console.log('📂 저장된 테마 없음, 기본 테마(다크) 사용');
+            }
+            
+            updateThemeUI();
+            updateThemeDescription();
+        }
+        
+        // 테마 초기화
+        function initializeTheme() {
+            console.log('🎨 테마 시스템 초기화');
+            loadSavedTheme();
+            
+            // 약간의 지연 후 테마 적용 (DOM이 완전히 로드된 후)
+            setTimeout(() => {
+                applyTheme();
+            }, 100);
+        }
+        
+        // 현재 테마 정보 반환 (다른 스크립트에서 사용)
+        function getCurrentTheme() {
+            return {
+                name: currentTheme,
+                config: THEME_CONFIGS[currentTheme]
+            };
+        }
+        
+        // 전역 함수로 등록
+        window.selectTheme = selectTheme;
+        window.applyTheme = applyTheme;
+        window.getCurrentTheme = getCurrentTheme;
+        window.THEME_CONFIGS = THEME_CONFIGS;
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📱 페이지 로드, 테마 시스템 초기화');
+            initializeTheme();
+        });
+        
+        console.log('✅ 테마 선택 시스템 초기화 완료');
+        
         // ========== 프로모션 접근 제어 시스템 ==========
         
         // 프로모션 클릭 핸들러 (통합)
@@ -339,16 +704,6 @@
                 updatePromotionMenuUI();
             }, 100);
         }
-        
-        // 페이지 로드 시 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📱 페이지 로드 완료, 프로모션 권한 확인');
-            
-            // 잠시 후 권한 확인 (다른 스크립트들이 로드된 후)
-            setTimeout(() => {
-                updatePromotionMenuUI();
-            }, 1000);
-        });
         
         // 로그인 후 권한 확인
         function checkPromotionAccessAfterLogin() {
