@@ -58,7 +58,7 @@
                 <small>* 본인만 아는 4자리 숫자</small>
             </div>
             
-            <!-- 🔄 24시간 자동 로그인 체크박스 -->
+            <!-- 24시간 자동 로그인 체크박스 -->
             <div class="auto-login-group">
                 <label class="auto-login-checkbox">
                     <input type="checkbox" id="autoLoginCheckbox" checked>
@@ -92,14 +92,14 @@
             <div class="gender-subtitle">Women's Hairstyle</div>
         </div>
         
-        <!-- 🎨 모바일 테마 선택 버튼 -->
+        <!-- 테마 선택 버튼 -->
         <div class="mobile-theme-trigger" onclick="showThemeModal()">
             <span class="theme-trigger-icon">🎨</span>
             <span class="theme-trigger-text">테마 색상 선택</span>
         </div>
     </div>
 
-    <!-- 🎨 모바일 테마 선택 모달 (하단에서 올라오는 방식) -->
+    <!-- 테마 선택 모달 -->
     <div class="mobile-theme-modal-overlay" id="themeModalOverlay" onclick="hideThemeModal()">
         <div class="mobile-theme-modal" onclick="event.stopPropagation()">
             <div class="mobile-theme-header">
@@ -119,7 +119,7 @@
                 </div>
                 
                 <div class="mobile-color-option" data-theme="light" onclick="selectTheme('light')">
-                    <div class="mobile-color-circle" style="background: #F8F8F8; border: 2px solid #ddd;"></div>
+                    <div class="mobile-color-circle" style="background: #E6DCD3; border: 2px solid #ddd;"></div>
                     <span class="mobile-color-name">라이트</span>
                 </div>
             </div>
@@ -148,7 +148,7 @@
                 </button>
                 
                 <div class="logo">
-                    <span style="color: #FF1493; font-size: 18px; font-weight: 700; letter-spacing: -0.5px;">HAIRGATOR</span>
+                    <span>HAIRGATOR</span>
                 </div>
                 
                 <button class="hamburger-btn" onclick="toggleHamburgerMenu()" title="메뉴">
@@ -172,7 +172,7 @@
         </main>
     </div>
 
-    <!-- 햄버거 메뉴 (최종 수정됨) -->
+    <!-- 햄버거 메뉴 -->
     <div class="hamburger-overlay" id="hamburgerOverlay" onclick="closeHamburgerMenu()">
         <div class="hamburger-menu" onclick="event.stopPropagation()">
             <div class="menu-header">
@@ -189,11 +189,13 @@
                     </div>
                 </div>
                 
-                <div class="menu-item" id="promotionMenuItem" onclick="handlePromotionClick()">
-                    <div class="menu-icon">🎯</div>
+                <!-- ❌ 프로모션 관리 메뉴 완전 삭제 -->
+                
+                <div class="menu-item" onclick="showPopularityStats()">
+                    <div class="menu-icon">📊</div>
                     <div class="menu-text">
-                        <strong>프로모션 관리</strong>
-                        <small>할인 이벤트, 자동 알림 발송</small>
+                        <strong>인기 통계</strong>
+                        <small>전체 베스트 스타일 랭킹</small>
                     </div>
                 </div>
                 
@@ -205,13 +207,16 @@
                     </div>
                 </div>
                 
-                <div class="menu-item" onclick="openAIFaceAnalysis()">
-                    <div class="menu-icon">🔍</div>
+                <!-- 👻 AI 얼굴 분석 - 숨김 처리 (나중에 다시 활성화 가능) -->
+                <!-- 
+                <div class="menu-item disabled" onclick="openAIFaceAnalysis()">
+                    <div class="menu-icon">🤖</div>
                     <div class="menu-text">
                         <strong>AI 얼굴 분석</strong>
-                        <small>얼굴형 맞춤 추천</small>
+                        <small>얼굴형 맞춤 추천 (준비중)</small>
                     </div>
                 </div>
+                -->
                 
                 <div class="menu-item" onclick="logoutDesigner()">
                     <div class="menu-icon">🚪</div>
@@ -232,7 +237,7 @@
         </div>
     </div>
 
-    <!-- 새 고객 추가 버튼 (성별 선택 화면에서는 숨김) -->
+    <!-- 새 고객 추가 버튼 -->
     <button class="add-customer-btn" id="addCustomerBtn" onclick="showNewCustomerModal()">+</button>
 
     <!-- 이미지 모달 -->
@@ -257,27 +262,30 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
-    <!-- JavaScript 파일들 (올바른 순서로 수정) -->
+    <!-- JavaScript 파일들 (최적화된 순서) -->
     <script src="js/firebase-config.js"></script>
     <script src="js/index-firebase.js"></script>
     
-    <!-- 🆕 프로필 관련 스크립트를 먼저 로드 -->
+    <!-- 프로필 관련 스크립트 (유지) -->
     <script src="js/designer-profile.js"></script>
-    <script src="js/naver-booking-extractor.js"></script>
     
-    <!-- 기존 기능 스크립트들 -->
+    <!-- 👻 네이버 예약 기능 - 숨김 처리 (나중에 활성화 가능) -->
+    <!-- <script src="js/naver-booking-extractor.js"></script> -->
+    
+    <!-- 기존 기능 스크립트들 (유지) -->
     <script src="js/index-customer.js"></script>
     <script src="js/index-stats.js"></script>
-    <script src="js/promotion-manager.js"></script>
-    <script src="js/kakao-notification.js"></script>
+    
+    <!-- ❌ 프로모션 및 카카오 알림 관련 스크립트 완전 삭제 -->
+    <!-- <script src="js/promotion-manager.js"></script> -->
+    <!-- <script src="js/kakao-notification.js"></script> -->
     
     <!-- 메인 스크립트 (마지막에 로드) -->
     <script src="js/index-main.js"></script>
 
     <style>
-        /* 🚫 CSS 핑크색 강제 적용 제거 및 테마 시스템으로 완전 변경 */
+        /* 핵심 테마 스타일만 유지 - 불필요한 CSS 제거 */
         
-        /* ========== 🎨 모바일 테마 선택 트리거 버튼 ========== */
         .mobile-theme-trigger {
             position: absolute;
             bottom: 80px;
@@ -308,20 +316,6 @@
             box-shadow: 0 8px 25px rgba(255, 20, 147, 0.3);
         }
         
-        .mobile-theme-trigger:active {
-            transform: translateX(-50%) scale(0.95);
-        }
-        
-        .theme-trigger-icon {
-            font-size: 18px;
-        }
-        
-        .theme-trigger-text {
-            font-size: 14px;
-            white-space: nowrap;
-        }
-        
-        /* ========== 🎨 모바일 테마 선택 모달 (하단 슬라이드업) ========== */
         .mobile-theme-modal-overlay {
             position: fixed;
             top: 0;
@@ -501,7 +495,6 @@
             box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
         }
         
-        /* ========== 🔄 24시간 자동 로그인 체크박스 스타일 ========== */
         .auto-login-group {
             margin-bottom: 20px;
         }
@@ -574,53 +567,31 @@
             line-height: 1.3;
         }
         
-        /* ========== 플러스 버튼 숨김 (성별 선택 화면) ========== */
-        .add-customer-btn {
-            display: none !important; /* 기본적으로 숨김 */
+        /* 비활성화된 메뉴 아이템 스타일 */
+        .menu-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .menu-item.disabled .menu-text strong {
+            color: var(--text-muted);
+        }
+
+        .menu-item.disabled::after {
+            content: "🔒";
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .menu-item.disabled:hover {
+            background: none;
         }
         
-        .main-container.active .add-customer-btn.show {
-            display: flex !important; /* 메인 컨테이너 활성화 시에만 표시 */
-        }
-        
-        /* ========== 중분류 탭 슬림 디자인 ========== */
-        .length-tab {
-            padding: 8px 16px !important;
-            font-size: 14px !important;
-            line-height: 1.2 !important;
-            min-height: 32px !important;
-            height: auto !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            white-space: nowrap !important;
-            border-radius: 6px !important;
-            margin: 0 4px 8px 0 !important;
-            transition: all 0.3s ease !important;
-        }
-        
-        .length-tab.active {
-            font-weight: 600 !important;
-        }
-        
-        .category-description {
-            margin: 0 0 20px 0 !important;
-            padding: 15px 20px !important;
-            background-color: rgba(255, 255, 255, 0.05) !important;
-            border-radius: 10px !important;
-            line-height: 1.5 !important;
-            color: rgba(255, 255, 255, 0.8) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            font-size: 14px !important;
-            position: relative !important;
-            z-index: 1 !important;
-            width: calc(100% - 40px) !important;
-            max-width: none !important;
-            box-sizing: border-box !important;
-            clear: both !important;
-        }
-        
-        /* 모바일 대응 */
         @media (max-width: 480px) {
             .mobile-theme-trigger {
                 bottom: 60px;
@@ -645,36 +616,11 @@
             .mobile-theme-actions {
                 padding: 15px 20px 0;
             }
-            
-            .auto-login-checkbox {
-                padding: 12px;
-                gap: 10px;
-            }
-            
-            .checkmark {
-                width: 20px;
-                height: 20px;
-            }
-            
-            .auto-login-text strong {
-                font-size: 13px;
-            }
-            
-            .auto-login-text small {
-                font-size: 10px;
-            }
-            
-            .category-description {
-                margin: 0 0 15px 0 !important;
-                padding: 12px 15px !important;
-                font-size: 13px !important;
-            }
         }
 
-        /* 터치 친화적 설정 */
-        .auto-login-checkbox,
         .mobile-theme-trigger,
-        .mobile-color-option {
+        .mobile-color-option,
+        .auto-login-checkbox {
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
@@ -685,60 +631,47 @@
     </style>
     
     <script>
-        // ========== 🎨 완전 수정된 3가지 심플 테마 시스템 ==========
-        
+        // 🎯 최적화된 테마 시스템
         const HAIRGATOR_THEME_CONFIGS = {
             'dark': {
                 name: '블랙',
                 description: '눈의 피로를 줄이고 전문적인 분위기 연출',
-                backgroundColor: '#000000',        // 베이스: 순수 검정
-                textColor: '#FFFFFF',              // 텍스트: 순수 흰색 (최대 대비)
-                primaryAccent: '#FF6B9D',          // 액센트: 소프트 핑크 (검정과 조화)
-                secondaryAccent: '#FF8FAB',        
+                backgroundColor: '#000000',
+                textColor: '#FFFFFF',
+                primaryAccent: '#FF6B9D',
+                secondaryAccent: '#FF8FAB',
                 buttonGradient: 'linear-gradient(135deg, #FF6B9D, #FF8FAB)',
                 isDark: true
             },
             'gray': {
                 name: '그레이',
                 description: '중성적이고 균형잡힌 느낌, 모던하고 세련된 분위기',
-                backgroundColor: '#939597',        // 베이스: 얼티밋 그레이
-                textColor: '#2C2C2C',              // 텍스트: 진한 회색 (가독성 최적화)
-                primaryAccent: '#000000',          // 액센트: 순수 검정 (6.99:1 최고 대비)
-                secondaryAccent: '#333333',        
+                backgroundColor: '#939597',
+                textColor: '#2C2C2C',
+                primaryAccent: '#000000',
+                secondaryAccent: '#333333',
                 buttonGradient: 'linear-gradient(135deg, #000000, #333333)',
-                isDark: false  // 중간 명도이므로 어두운 텍스트 사용
+                isDark: false
             },
             'light': {
                 name: '라이트',
                 description: '밝고 깔끔한 분위기, 자연스럽고 편안한 느낌',
-                backgroundColor: '#E6DCD3',        // 베이스: 라이트 베이지
-                textColor: '#2C1810',              // 텍스트: 진한 브라운 (조화로운 대비)
-                primaryAccent: '#362414',          // 액센트: 다크 초콜릿 (10.95:1 최고 대비 + 조화)
-                secondaryAccent: '#654321',        
+                backgroundColor: '#E6DCD3',
+                textColor: '#2C1810',
+                primaryAccent: '#362414',
+                secondaryAccent: '#654321',
                 buttonGradient: 'linear-gradient(135deg, #362414, #654321)',
                 isDark: false
             }
         };
         
-        // 🎨 과학적 설계 원칙:
-        // 1. 얼티밋 그레이: 순수 검정 액센트 (6.99:1 대비) → 가장 뚜렷
-        // 2. 라이트 베이지: 다크 초콜릿 액센트 (10.95:1 대비) → 베이지와 조화 + 뚜렷
-        // 3. 각 테마별 WCAG AA 기준 충족으로 완벽한 가독성 보장
-        
-        // 테마 상태 변수 (충돌 방지)
         let hairgatorCurrentTheme = 'dark';
         let hairgatorSelectedTheme = 'dark';
         let hairgatorThemeModalOpen = false;
         
-        // 🎨 테마 모달 표시
         function showThemeModal() {
-            console.log('🎨 테마 모달 표시');
-            
             const overlay = document.getElementById('themeModalOverlay');
-            if (!overlay) {
-                console.error('❌ 테마 모달 오버레이를 찾을 수 없음');
-                return;
-            }
+            if (!overlay) return;
             
             hairgatorSelectedTheme = hairgatorCurrentTheme;
             updateThemeSelection();
@@ -756,86 +689,55 @@
             document.body.style.overflow = 'hidden';
         }
         
-        // 🎨 테마 모달 숨김
         function hideThemeModal() {
-            console.log('🎨 테마 모달 숨김');
-            
             const overlay = document.getElementById('themeModalOverlay');
             if (overlay) {
-                // 애니메이션으로 숨김
                 overlay.classList.remove('show');
                 overlay.style.opacity = '0';
                 
-                // 애니메이션 완료 후 완전히 숨김
                 setTimeout(() => {
                     overlay.style.display = 'none';
                 }, 300);
                 
                 hairgatorThemeModalOpen = false;
                 document.body.style.overflow = '';
-                console.log('✅ 테마 모달 숨김 완료');
             }
         }
         
-        // 🎨 테마 선택
         function selectTheme(themeName) {
-            console.log(`🎨 테마 선택: ${themeName}`);
-            
-            if (!HAIRGATOR_THEME_CONFIGS[themeName]) {
-                console.error(`❌ 알 수 없는 테마: ${themeName}`);
-                return;
-            }
+            if (!HAIRGATOR_THEME_CONFIGS[themeName]) return;
             
             hairgatorSelectedTheme = themeName;
             updateThemeSelection();
             updateThemeDescription();
         }
         
-        // 🎨 테마 적용
         function applyTheme() {
-            console.log(`🎨 테마 적용: ${hairgatorSelectedTheme}`);
-            
             hairgatorCurrentTheme = hairgatorSelectedTheme;
             const config = HAIRGATOR_THEME_CONFIGS[hairgatorCurrentTheme];
             
             if (config) {
                 applyThemeStyles(config);
                 localStorage.setItem('hairgator_theme', hairgatorCurrentTheme);
-                console.log(`✅ 테마 저장 완료: ${config.name}`);
             }
             
-            // 모달 강제 숨김
             hideThemeModal();
-            
-            // 추가 안전 장치
-            setTimeout(() => {
-                const overlay = document.getElementById('themeModalOverlay');
-                if (overlay) {
-                    overlay.style.display = 'none';
-                    overlay.classList.remove('show');
-                    document.body.style.overflow = '';
-                }
-            }, 100);
         }
         
-        // 🎨 완전한 테마 스타일 적용 (CSS 핑크색 강제 설정 무시)
         function applyThemeStyles(config) {
             console.log(`🎨 테마 적용: ${config.name}`);
-            console.log(`   배경: ${config.backgroundColor}`);
-            console.log(`   텍스트: ${config.textColor}`);
-            console.log(`   액센트: ${config.primaryAccent}`);
             
-            // 🔥 STEP 1: 기본 설정 (최우선 적용)
+            // 기본 설정
             document.body.style.setProperty('background-color', config.backgroundColor, 'important');
             document.body.style.setProperty('color', config.textColor, 'important');
             
-            // 🔥 STEP 2: CSS 변수로 전역 설정 (기존 CSS 무시)
+            // CSS 변수 설정
             document.documentElement.style.setProperty('--theme-bg', config.backgroundColor);
             document.documentElement.style.setProperty('--theme-text', config.textColor);
             document.documentElement.style.setProperty('--theme-accent', config.primaryAccent);
             document.documentElement.style.setProperty('--theme-gradient', config.buttonGradient);
             
-            // 🔥 STEP 3: 모든 컨테이너 강제 적용
+            // 컨테이너 적용
             const containers = [
                 '#genderSelection', '#designerLogin', '#mainContainer', 
                 '.mobile-theme-modal', '.header', '.nav-tabs', '.content'
@@ -848,197 +750,15 @@
                 });
             });
             
-            // 🔥 STEP 4: 로고 색상 (핑크색 무시하고 테마 액센트로)
-            setTimeout(() => {
-                document.querySelectorAll('.logo, .logo span, h1, h2').forEach(logo => {
-                    if (logo.textContent && logo.textContent.includes('HAIRGATOR')) {
-                        logo.style.setProperty('color', config.primaryAccent, 'important');
-                        logo.style.setProperty('font-weight', '700', 'important');
-                    }
-                });
-            }, 50);
-            
-            // 🔥 STEP 5: 네비게이션 탭 (핑크색 밑줄 → 테마 액센트로)
-            setTimeout(() => {
-                document.querySelectorAll('.nav-tab').forEach(tab => {
-                    if (tab.classList.contains('active')) {
-                        tab.style.setProperty('color', config.primaryAccent, 'important');
-                        tab.style.setProperty('border-bottom-color', config.primaryAccent, 'important');
-                        tab.style.setProperty('border-bottom-width', '3px', 'important');
-                        tab.style.setProperty('border-bottom-style', 'solid', 'important');
-                    } else {
-                        const inactiveColor = config.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
-                        tab.style.setProperty('color', inactiveColor, 'important');
-                        tab.style.setProperty('border-bottom-color', 'transparent', 'important');
-                    }
-                });
-            }, 100);
-            
-            // 🔥 STEP 6: 중분류 버튼 (핑크색 → 테마 액센트로)
-            setTimeout(() => {
-                document.querySelectorAll('.length-tab').forEach(tab => {
-                    // 슬림 스타일 적용
-                    tab.style.setProperty('padding', '8px 16px', 'important');
-                    tab.style.setProperty('font-size', '14px', 'important');
-                    tab.style.setProperty('line-height', '1.2', 'important');
-                    tab.style.setProperty('min-height', '32px', 'important');
-                    tab.style.setProperty('height', 'auto', 'important');
-                    tab.style.setProperty('border-radius', '6px', 'important');
-                    tab.style.setProperty('margin', '0 4px 8px 0', 'important');
-                    tab.style.setProperty('display', 'inline-flex', 'important');
-                    tab.style.setProperty('align-items', 'center', 'important');
-                    tab.style.setProperty('justify-content', 'center', 'important');
-                    
-                    if (tab.classList.contains('active')) {
-                        tab.style.setProperty('background', config.buttonGradient, 'important');
-                        tab.style.setProperty('color', '#ffffff', 'important');
-                        tab.style.setProperty('font-weight', '600', 'important');
-                    } else {
-                        const inactiveBg = config.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-                        tab.style.setProperty('background', inactiveBg, 'important');
-                        tab.style.setProperty('color', config.textColor, 'important');
-                        tab.style.setProperty('font-weight', '500', 'important');
-                    }
-                });
-            }, 150);
-            
-            // 🔥 STEP 7: 동적 CSS로 이미지 호버 효과 (핑크색 → 테마 액센트로)
-            setTimeout(() => {
-                const existingStyle = document.getElementById('dynamic-hover-style');
-                if (existingStyle) {
-                    existingStyle.remove();
-                }
-                
-                const hoverStyle = document.createElement('style');
-                hoverStyle.id = 'dynamic-hover-style';
-                hoverStyle.textContent = `
-                    .hairstyle-card:hover {
-                        transform: translateY(-5px) !important;
-                        box-shadow: 0 10px 30px ${config.primaryAccent}40 !important;
-                        border: 2px solid ${config.primaryAccent} !important;
-                    }
-                    
-                    .hairstyle-card:hover .hairstyle-image {
-                        border: 2px solid ${config.primaryAccent} !important;
-                    }
-                    
-                    .gender-card:hover {
-                        border-color: ${config.primaryAccent} !important;
-                        box-shadow: 0 5px 15px ${config.primaryAccent}30 !important;
-                    }
-                    
-                    .mobile-theme-trigger:hover {
-                        border-color: ${config.primaryAccent} !important;
-                    }
-                    
-                    .nav-tab:hover {
-                        color: ${config.primaryAccent} !important;
-                    }
-                    
-                    .length-tab:hover:not(.active) {
-                        background: ${config.primaryAccent}20 !important;
-                        color: ${config.textColor} !important;
-                    }
-                    
-                    /* 🚫 기존 CSS 핑크색 강제 설정 완전 무시 */
-                    .main-container.male .nav-tab.active::after,
-                    .main-container.female .nav-tab.active::after {
-                        background: ${config.buttonGradient} !important;
-                    }
-                    
-                    .main-container.male .length-tab.active,
-                    .main-container.female .length-tab.active {
-                        background: ${config.buttonGradient} !important;
-                        color: #ffffff !important;
-                    }
-                    
-                    .main-container.male .hairstyle-code,
-                    .main-container.female .hairstyle-code {
-                        color: ${config.primaryAccent} !important;
-                    }
-                    
-                    .length-guide-btn {
-                        background: ${config.primaryAccent}20 !important;
-                        border-color: ${config.primaryAccent} !important;
-                        color: ${config.primaryAccent} !important;
-                    }
-                    
-                    .length-guide-btn:hover {
-                        background: ${config.primaryAccent} !important;
-                        color: white !important;
-                    }
-                `;
-                
-                document.head.appendChild(hoverStyle);
-                console.log(`✅ 이미지 호버 효과 색상 변경: ${config.primaryAccent}`);
-            }, 200);
-            
-            // 🔥 STEP 8: 물음표/도움말 버튼 (핑크색 → 테마 액센트로)
-            setTimeout(() => {
-                document.querySelectorAll('*').forEach(el => {
-                    if (el.textContent && (el.textContent.includes('?') || el.textContent.includes('❓'))) {
-                        if (el.tagName === 'BUTTON' || el.classList.contains('btn') || el.onclick) {
-                            el.style.setProperty('color', config.primaryAccent, 'important');
-                            el.style.setProperty('background-color', `${config.primaryAccent}20`, 'important');
-                            el.style.setProperty('border-color', config.primaryAccent, 'important');
-                        }
-                    }
-                });
-            }, 250);
-            
-            // 🔥 STEP 9: 성별 선택 화면
-            setTimeout(() => {
-                // 성별 텍스트
-                document.querySelectorAll('.gender-title, .gender-subtitle, .theme-trigger-text').forEach(text => {
-                    text.style.setProperty('color', config.textColor, 'important');
-                });
-                
-                // 성별 카드
-                document.querySelectorAll('.gender-card').forEach(card => {
-                    const cardBg = config.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-                    const borderColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
-                    
-                    card.style.setProperty('background', cardBg, 'important');
-                    card.style.setProperty('border-color', borderColor, 'important');
-                    card.style.setProperty('color', config.textColor, 'important');
-                    
-                    // 성별 아이콘
-                    const icon = card.querySelector('.gender-icon');
-                    if (icon) {
-                        icon.style.setProperty('color', config.primaryAccent, 'important');
-                    }
-                });
-            }, 300);
-            
-            // 🔥 STEP 10: 모든 액션 버튼 (핑크색 → 테마 액센트로)
-            setTimeout(() => {
-                const actionButtons = [
-                    '.add-customer-btn', '.login-btn', '.mobile-theme-apply',
-                    '.like-btn', '.customer-register-btn'
-                ];
-                
-                actionButtons.forEach(selector => {
-                    document.querySelectorAll(selector).forEach(btn => {
-                        btn.style.setProperty('background', config.buttonGradient, 'important');
-                        btn.style.setProperty('color', '#ffffff', 'important');
-                        btn.style.setProperty('border', 'none', 'important');
-                        btn.style.setProperty('box-shadow', `0 5px 15px ${config.primaryAccent}30`, 'important');
-                    });
-                });
-            }, 350);
-            
             // PWA 테마 색상
             const metaTheme = document.getElementById('metaThemeColor');
             if (metaTheme) {
                 metaTheme.setAttribute('content', config.backgroundColor);
             }
             
-            console.log(`✅ 완전한 테마 적용 완료: ${config.name}`);
-            console.log(`   - 모든 핑크색 → ${config.primaryAccent} 변경`);
-            console.log(`   - 이미지 호버, 버튼, 네비게이션 모두 테마 통일`);
+            console.log(`✅ 테마 적용 완료: ${config.name}`);
         }
         
-        // 테마 선택 UI 업데이트
         function updateThemeSelection() {
             document.querySelectorAll('.mobile-color-option').forEach(option => {
                 option.classList.remove('selected');
@@ -1048,7 +768,6 @@
             });
         }
         
-        // 테마 설명 업데이트
         function updateThemeDescription() {
             const description = document.getElementById('themeDescription');
             const config = HAIRGATOR_THEME_CONFIGS[hairgatorSelectedTheme];
@@ -1058,93 +777,25 @@
             }
         }
         
-        // 저장된 테마 로드
         function loadSavedTheme() {
             const saved = localStorage.getItem('hairgator_theme');
             if (saved && HAIRGATOR_THEME_CONFIGS[saved]) {
                 hairgatorCurrentTheme = saved;
                 hairgatorSelectedTheme = saved;
-                console.log(`📂 저장된 테마 로드: ${HAIRGATOR_THEME_CONFIGS[saved].name}`);
             }
             
-            // 즉시 테마 적용
             const config = HAIRGATOR_THEME_CONFIGS[hairgatorCurrentTheme];
             if (config) {
                 applyThemeStyles(config);
             }
         }
         
-        // 플러스 버튼 상태 관리
-        function updatePlusButton() {
-            const btn = document.getElementById('addCustomerBtn');
-            const genderDiv = document.getElementById('genderSelection');
-            const mainDiv = document.getElementById('mainContainer');
-            
-            if (!btn) return;
-            
-            const genderActive = genderDiv && genderDiv.classList.contains('show');
-            const mainActive = mainDiv && mainDiv.classList.contains('active');
-            
-            if (genderActive || !mainActive) {
-                btn.style.display = 'none';
-            } else {
-                btn.style.display = 'flex';
-            }
-        }
-        
-        // 프로모션 접근 제어
-        function handlePromotionClick() {
-            console.log('🎯 프로모션 클릭');
-            
-            try {
-                const profile = localStorage.getItem('hairgator_profile');
-                if (!profile) {
-                    alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
-                    closeHamburgerMenu();
-                    setTimeout(() => {
-                        if (typeof showDesignerProfile === 'function') {
-                            showDesignerProfile();
-                        }
-                    }, 500);
-                    return;
-                }
-                
-                const data = JSON.parse(profile);
-                const hasBasic = data.designerName && data.designerName.trim();
-                const hasBusiness = data.businessName && data.businessName.trim();
-                const hasNaver = data.naverBookingUrl && data.naverBookingUrl.trim();
-                
-                if (hasBasic && (hasBusiness || hasNaver)) {
-                    if (typeof showPromotionManagement === 'function') {
-                        showPromotionManagement();
-                    } else {
-                        alert('프로모션 기능을 불러오는 중입니다.');
-                    }
-                } else {
-                    alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
-                    closeHamburgerMenu();
-                    setTimeout(() => {
-                        if (typeof showDesignerProfile === 'function') {
-                            showDesignerProfile();
-                        }
-                    }, 500);
-                }
-            } catch (error) {
-                console.error('프로모션 접근 확인 오류:', error);
-                alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
-            }
-        }
-        
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎨 HAIRGATOR 3가지 심플 테마 시스템 초기화');
+            console.log('🎨 HAIRGATOR 최적화된 테마 시스템 초기화');
             loadSavedTheme();
-            
-            // 플러스 버튼 초기 설정
-            setTimeout(updatePlusButton, 500);
         });
         
-        // 즉시 실행
         if (document.readyState !== 'loading') {
             loadSavedTheme();
         }
@@ -1154,13 +805,6 @@
         window.hideThemeModal = hideThemeModal;
         window.selectTheme = selectTheme;
         window.applyTheme = applyTheme;
-        window.handlePromotionClick = handlePromotionClick;
-        window.updatePlusButton = updatePlusButton;
-        
-        console.log('✅ 핑크색 강제 적용 문제 해결 완료!');
-        console.log('🎨 3가지 과학적 테마: 블랙, 그레이, 라이트');
-        console.log('   - 그레이: 순수 검정 액센트 (6.99:1 대비)');
-        console.log('   - 라이트: 다크 초콜릿 액센트 (10.95:1 대비)');
     </script>
 
 </body>
