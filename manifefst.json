@@ -1,12 +1,12 @@
 {
-  "name": "HAIRGATOR - Premium Hair Style Menu",
+  "name": "HAIRGATOR Professional Menu",
   "short_name": "HAIRGATOR",
-  "description": "프리미엄 헤어스타일 메뉴 시스템",
+  "description": "Professional Hair Style Menu System",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "landscape",
+  "orientation": "any",
   "background_color": "#000000",
-  "theme_color": "#FF1493",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "/icons/icon-72.png",
@@ -47,10 +47,14 @@
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
+  "prefer_related_applications": false,
+  "related_applications": [],
   "categories": ["business", "lifestyle"],
+  "screenshots": [],
   "lang": "ko-KR",
   "dir": "ltr"
 }
