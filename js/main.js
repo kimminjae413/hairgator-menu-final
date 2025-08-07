@@ -7,101 +7,220 @@ document.addEventListener('DOMContentLoaded', function() {
     let menuData = {};
 
     // Elements
-    const menuToggle = document.getElementById('menuToggle');
+    const backBtn = document.getElementById('backBtn');
+    const menuBtn = document.getElementById('menuBtn');
     const sidebar = document.getElementById('sidebar');
+    const sidebarClose = document.getElementById('sidebarClose');
     const themeToggle = document.getElementById('themeToggle');
+    const themeToggleBottom = document.getElementById('themeToggleBottom');
+    const themeStatus = document.getElementById('themeStatus');
     const logoutBtn = document.getElementById('logoutBtn');
     const genderSelection = document.getElementById('genderSelection');
     const menuContainer = document.getElementById('menuContainer');
     const categoryTabs = document.getElementById('categoryTabs');
+    const categoryDescription = document.getElementById('categoryDescription');
     const subcategoryTabs = document.getElementById('subcategoryTabs');
     const menuGrid = document.getElementById('menuGrid');
     const loadingOverlay = document.getElementById('loadingOverlay');
 
-    // Initialize theme
-    initializeTheme();
+    // Menu Data Structure
+    const MENU_DATA = {
+        male: {
+            categories: [
+                { 
+                    id: 'side-fringe', 
+                    name: 'SIDE FRINGE',
+                    description: '사이드 프린지는 클래식함과 모던함의 대명사로 스타일링이 따라 원하는 이미지를 자유롭게 표현할 수 있습니다. 가르마를 기준으로 단순히 넘어가는 스타일을 넘어 개인의 특성과 트렌드에 맞춰 고급 테이퍼링을 표현하는 것이 매우 중요합니다.'
+                },
+                { 
+                    id: 'side-part', 
+                    name: 'SIDE PART',
+                    description: '사이드 파트는 정갈하고 단정한 스타일로 비즈니스맨들에게 인기가 많습니다.'
+                },
+                { 
+                    id: 'fringe-up', 
+                    name: 'FRINGE UP',
+                    description: '프린지 업은 앞머리를 올려 이마를 드러내는 시원한 스타일입니다.'
+                },
+                { 
+                    id: 'pushed-back', 
+                    name: 'PUSHED BACK',
+                    description: '푸시백은 머리를 뒤로 넘긴 댄디한 스타일입니다.'
+                },
+                { 
+                    id: 'buzz', 
+                    name: 'BUZZ',
+                    description: '버즈컷은 짧고 깔끔한 스타일로 관리가 편합니다.'
+                },
+                { 
+                    id: 'crop', 
+                    name: 'CROP',
+                    description: '크롭 스타일은 짧으면서도 스타일리시한 느낌을 줍니다.'
+                },
+                { 
+                    id: 'mohican', 
+                    name: 'MOHICAN',
+                    description: '모히칸 스타일은 개성 있고 강한 인상을 줍니다.'
+                }
+            ],
+            subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
+        },
+        female: {
+            categories: [
+                { 
+                    id: 'long', 
+                    name: 'LONG',
+                    description: '롱 헤어는 여성스러움과 우아함을 동시에 표현할 수 있는 대표적인 스타일입니다. 다양한 연출이 가능하며 개인의 취향에 따라 웨이브나 스트레이트 등으로 변화를 줄 수 있습니다.'
+                },
+                { 
+                    id: 'semi-long', 
+                    name: 'SEMI LONG',
+                    description: '세미 롱은 관리하기 편하면서도 여성스러움을 유지할 수 있습니다.'
+                },
+                { 
+                    id: 'medium', 
+                    name: 'MEDIUM',
+                    description: '미디엄 길이는 가장 실용적이고 다양한 스타일링이 가능합니다.'
+                },
+                { 
+                    id: 'bob', 
+                    name: 'BOB',
+                    description: '보브 스타일은 단정하고 세련된 느낌을 줍니다.'
+                },
+                { 
+                    id: 'short', 
+                    name: 'SHORT',
+                    description: '숏 헤어는 시원하고 개성 있는 스타일입니다.'
+                }
+            ],
+            subcategories: ['A Length', 'B Length', 'C Length', 'D Length', 'E Length', 'F Length', 'G Length', 'H Length']
+        }
+    };
+
+    // Initialize
+    init();
+
+    function init() {
+        setupEventListeners();
+        loadTheme();
+        checkAuthStatus();
+    }
 
     // Event Listeners
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            toggleSidebar();
+    function setupEventListeners() {
+        // Back button
+        if (backBtn) {
+            backBtn.addEventListener('click', handleBack);
+        }
+
+        // Menu button
+        if (menuBtn) {
+            menuBtn.addEventListener('click', openSidebar);
+        }
+
+        // Sidebar close
+        if (sidebarClose) {
+            sidebarClose.addEventListener('click', closeSidebar);
+        }
+
+        // Theme toggle
+        if (themeToggle) {
+            themeToggle.addEventListener('click', toggleTheme);
+        }
+
+        // Bottom theme toggle
+        if (themeToggleBottom) {
+            themeToggleBottom.addEventListener('click', toggleTheme);
+        }
+
+        // Logout
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', handleLogout);
+        }
+
+        // Gender buttons
+        document.querySelectorAll('.gender-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                selectGender(this.dataset.gender);
+            });
         });
-    }
 
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-    }
-
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
-
-    // Gender selection buttons
-    const genderButtons = document.querySelectorAll('.gender-btn');
-    genderButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const gender = this.dataset.gender;
-            selectGender(gender);
-        });
-    });
-
-    // Close sidebar when clicking outside
-    document.addEventListener('click', function(e) {
-        if (sidebar && sidebar.classList.contains('active')) {
-            if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-                closeSidebar();
+        // Click outside sidebar to close
+        document.addEventListener('click', function(e) {
+            if (sidebar && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+                    closeSidebar();
+                }
             }
-        }
-    });
-
-    // Prevent sidebar close when clicking inside
-    if (sidebar) {
-        sidebar.addEventListener('click', function(e) {
-            e.stopPropagation();
         });
     }
 
-    // Toggle Sidebar
-    function toggleSidebar() {
-        if (sidebar.classList.contains('active')) {
-            closeSidebar();
-        } else {
-            openSidebar();
+    // Navigation
+    function handleBack() {
+        if (menuContainer.classList.contains('active')) {
+            menuContainer.classList.remove('active');
+            genderSelection.style.display = 'flex';
+            backBtn.style.display = 'none';
+            
+            // Show theme toggle button again
+            if (themeToggleBottom) {
+                themeToggleBottom.style.display = 'flex';
+            }
+            
+            currentGender = null;
+            currentCategory = null;
         }
     }
 
+    // Sidebar
     function openSidebar() {
         sidebar.classList.add('active');
-        menuToggle.classList.add('active');
     }
 
     function closeSidebar() {
         sidebar.classList.remove('active');
-        menuToggle.classList.remove('active');
     }
 
-    // Theme Management
-    function initializeTheme() {
+    // Theme
+    function loadTheme() {
         const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
         if (savedTheme === 'light') {
             document.body.classList.add('light-theme');
+            themeStatus.textContent = 'OFF';
         }
     }
 
     function toggleTheme() {
         document.body.classList.toggle('light-theme');
         const isLight = document.body.classList.contains('light-theme');
+        
+        // Update sidebar theme status if exists
+        if (themeStatus) {
+            themeStatus.textContent = isLight ? 'OFF' : 'ON';
+        }
+        
+        // Save theme preference
         localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
     }
 
-    // Handle Logout
+    // Auth
+    function checkAuthStatus() {
+        // Check if user is logged in
+        const designerInfo = document.getElementById('designerInfo');
+        if (window.auth && window.auth.currentUser) {
+            designerInfo.style.display = 'block';
+            document.getElementById('designerName').textContent = 
+                window.auth.currentUser.displayName || window.auth.currentUser.email;
+        }
+    }
+
     async function handleLogout() {
         if (confirm('로그아웃 하시겠습니까?')) {
             try {
                 if (window.authManager) {
                     await window.authManager.signOut();
                 }
+                location.reload();
             } catch (error) {
                 console.error('Logout error:', error);
             }
@@ -112,13 +231,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function selectGender(gender) {
         currentGender = gender;
         
-        // Hide gender selection
+        // Update UI
         genderSelection.style.display = 'none';
-        
-        // Show menu container
         menuContainer.classList.add('active');
+        backBtn.style.display = 'block';
         
-        // Load menu data
+        // Hide theme toggle button when menu is shown
+        if (themeToggleBottom) {
+            themeToggleBottom.style.display = 'none';
+        }
+        
+        // Load menu
         loadMenuData(gender);
         
         // Save selection
@@ -129,93 +252,35 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadMenuData(gender) {
         showLoading(true);
         
-        // Sample menu data structure
-        const sampleData = {
-            male: {
-                categories: [
-                    { id: 'side-fringe', name: 'SIDE FRINGE', description: '사이드프린지 스타일' },
-                    { id: 'side-part', name: 'SIDE PART', description: '사이드파트 스타일' },
-                    { id: 'dandy', name: 'DANDY', description: '댄디 스타일' },
-                    { id: 'pomade', name: 'POMADE', description: '포마드 스타일' },
-                    { id: 'regent', name: 'REGENT', description: '리젠트 스타일' },
-                    { id: 'natural', name: 'NATURAL', description: '내추럴 스타일' },
-                    { id: 'special', name: 'SPECIAL', description: '스페셜 스타일' }
-                ],
-                subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
-                styles: generateSampleStyles('male', 7)
-            },
-            female: {
-                categories: [
-                    { id: 'a-length', name: 'A Length', description: '턱선 길이' },
-                    { id: 'b-length', name: 'B Length', description: '어깨 위 길이' },
-                    { id: 'c-length', name: 'C Length', description: '어깨선 길이' },
-                    { id: 'd-length', name: 'D Length', description: '어깨 아래 길이' },
-                    { id: 'e-length', name: 'E Length', description: '가슴선 길이' },
-                    { id: 'f-length', name: 'F Length', description: '가슴 아래 길이' },
-                    { id: 'g-length', name: 'G Length', description: '허리선 길이' },
-                    { id: 'h-length', name: 'H Length', description: '허리 아래 길이' }
-                ],
-                subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
-                styles: generateSampleStyles('female', 8)
-            }
-        };
-
-        menuData = sampleData[gender];
+        menuData = MENU_DATA[gender];
         
         // Render categories
         renderCategories(gender);
         
         // Select first category
         if (menuData.categories.length > 0) {
-            selectCategory(menuData.categories[0].id, gender);
+            selectCategory(menuData.categories[0], gender);
         }
         
-        showLoading(false);
-    }
-
-    // Generate sample styles
-    function generateSampleStyles(gender, categoryCount) {
-        const styles = {};
-        const styleNames = {
-            male: ['슬릭 펌', '시스루 펌', '볼륨 매직', '댄디 컷', '애즈 펌', '쉐도우 펌', '다운 펌'],
-            female: ['레이어드 컷', '보브 컷', '웨이브 펌', '매직 스트레이트', 'C컬 펌', 'S컬 펌', '디지털 펌']
-        };
-        
-        for (let i = 0; i < categoryCount; i++) {
-            const categoryId = gender === 'male' 
-                ? ['side-fringe', 'side-part', 'dandy', 'pomade', 'regent', 'natural', 'special'][i]
-                : ['a-length', 'b-length', 'c-length', 'd-length', 'e-length', 'f-length', 'g-length', 'h-length'][i];
-            
-            styles[categoryId] = {};
-            
-            ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'].forEach(sub => {
-                styles[categoryId][sub] = [];
-                for (let j = 0; j < 5; j++) {
-                    styles[categoryId][sub].push({
-                        id: `${categoryId}-${sub}-${j}`,
-                        name: styleNames[gender][j % styleNames[gender].length],
-                        price: `₩${(50000 + j * 10000).toLocaleString()}`,
-                        image: `https://via.placeholder.com/300x300/333/fff?text=${styleNames[gender][j % styleNames[gender].length]}`
-                    });
-                }
-            });
-        }
-        
-        return styles;
+        setTimeout(() => showLoading(false), 300);
     }
 
     // Render Categories
     function renderCategories(gender) {
         categoryTabs.innerHTML = '';
         
-        menuData.categories.forEach(category => {
+        menuData.categories.forEach((category, index) => {
             const tab = document.createElement('button');
             tab.className = 'category-tab';
             tab.textContent = category.name;
             tab.dataset.categoryId = category.id;
             
+            if (index === 0) {
+                tab.classList.add('active', gender);
+            }
+            
             tab.addEventListener('click', function() {
-                selectCategory(category.id, gender);
+                selectCategory(category, gender);
             });
             
             categoryTabs.appendChild(tab);
@@ -223,36 +288,44 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Select Category
-    function selectCategory(categoryId, gender) {
-        currentCategory = categoryId;
+    function selectCategory(category, gender) {
+        currentCategory = category.id;
         
-        // Update active tab
+        // Update tabs
         document.querySelectorAll('.category-tab').forEach(tab => {
             tab.classList.remove('active', 'male', 'female');
-            if (tab.dataset.categoryId === categoryId) {
+            if (tab.dataset.categoryId === category.id) {
                 tab.classList.add('active', gender);
             }
         });
         
+        // Update description
+        categoryDescription.textContent = category.description;
+        
         // Render subcategories
         renderSubcategories(gender);
         
-        // Load styles for selected category and subcategory
-        loadStyles(categoryId, currentSubcategory, gender);
+        // Load styles
+        loadStyles(category.id, currentSubcategory, gender);
     }
 
     // Render Subcategories
     function renderSubcategories(gender) {
         subcategoryTabs.innerHTML = '';
         
-        menuData.subcategories.forEach(sub => {
+        // For female, show A-H Length buttons
+        // For male, show None, Fore Head, Eye Brow, etc
+        const subcategories = menuData.subcategories;
+        
+        subcategories.forEach((sub, index) => {
             const tab = document.createElement('button');
             tab.className = 'subcategory-tab';
             tab.textContent = sub;
             tab.dataset.subcategory = sub;
             
-            if (sub === currentSubcategory) {
+            if (index === 0 || (gender === 'female' && sub === 'A Length')) {
                 tab.classList.add('active', gender);
+                currentSubcategory = sub;
             }
             
             tab.addEventListener('click', function() {
@@ -267,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function selectSubcategory(subcategory, gender) {
         currentSubcategory = subcategory;
         
-        // Update active tab
+        // Update tabs
         document.querySelectorAll('.subcategory-tab').forEach(tab => {
             tab.classList.remove('active', 'male', 'female');
             if (tab.dataset.subcategory === subcategory) {
@@ -275,74 +348,68 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Load styles for selected category and subcategory
+        // Load styles
         loadStyles(currentCategory, subcategory, gender);
     }
 
-    // Load Styles
+    // Load Styles (Sample Data)
     function loadStyles(categoryId, subcategory, gender) {
         menuGrid.innerHTML = '';
         
-        const styles = menuData.styles[categoryId]?.[subcategory] || [];
+        // Generate sample styles
+        const styleCount = gender === 'male' ? 3 : 5;
+        const styleNames = {
+            male: ['사이드프린지캠퍼', '사이드파트노탈리안', '사이드파트노밀리안'],
+            female: ['윈엑스', '전지현스타일', '전지현스타일', '전지현스타일', '전지현스타일']
+        };
         
-        if (styles.length === 0) {
-            menuGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">스타일이 없습니다.</div>';
-            return;
-        }
-        
-        styles.forEach(style => {
+        for (let i = 0; i < styleCount; i++) {
             const item = document.createElement('div');
-            item.className = 'menu-item';
+            item.className = `menu-item ${gender}`;
+            
+            const code = gender === 'male' 
+                ? `M${categoryId.substring(0, 1).toUpperCase()}0${i + 1}`
+                : `FAL${i + 1}00${i + 1}`;
+            
             item.innerHTML = `
-                <img src="${style.image}" alt="${style.name}" class="menu-item-image" onerror="this.src='https://via.placeholder.com/300x300/333/fff?text=No+Image'">
+                <img src="https://via.placeholder.com/300x400/1a1a1a/666?text=Style+${i+1}" 
+                     alt="Style" class="menu-item-image">
                 <div class="menu-item-info">
-                    <div class="menu-item-name">${style.name}</div>
-                    <div class="menu-item-price">${style.price}</div>
+                    <div class="menu-item-code">${code}</div>
+                    <div class="menu-item-name">${styleNames[gender][i]}</div>
                 </div>
             `;
             
             item.addEventListener('click', function() {
-                showStyleDetail(style);
+                showStyleDetail(code, styleNames[gender][i]);
             });
             
             menuGrid.appendChild(item);
-        });
+        }
     }
 
     // Show Style Detail
-    function showStyleDetail(style) {
-        alert(`${style.name}\n가격: ${style.price}\n\n상세 정보 페이지는 준비 중입니다.`);
+    function showStyleDetail(code, name) {
+        alert(`스타일 코드: ${code}\n스타일명: ${name}\n\n상세 페이지는 준비 중입니다.`);
     }
 
-    // Show/Hide Loading
+    // Loading
     function showLoading(show) {
         if (loadingOverlay) {
             loadingOverlay.classList.toggle('active', show);
         }
     }
 
-    // Check for saved gender selection
+    // Check saved gender
     const savedGender = localStorage.getItem('hairgator_gender');
-    if (savedGender && (savedGender === 'male' || savedGender === 'female')) {
-        // Auto-select saved gender after a short delay
-        setTimeout(() => {
-            selectGender(savedGender);
-        }, 100);
+    if (savedGender && !genderSelection.style.display) {
+        // Auto-select if previously selected
+        // Uncomment to enable auto-selection
+        // setTimeout(() => selectGender(savedGender), 100);
     }
-
-    // Handle back button
-    window.addEventListener('popstate', function(e) {
-        if (menuContainer.classList.contains('active')) {
-            menuContainer.classList.remove('active');
-            genderSelection.style.display = 'block';
-            currentGender = null;
-            currentCategory = null;
-            currentSubcategory = 'None';
-        }
-    });
 });
 
-// Initialize on load
+// Initialize
 window.addEventListener('load', function() {
-    console.log('HAIRGATOR App Loaded Successfully');
+    console.log('HAIRGATOR App Loaded');
 });
