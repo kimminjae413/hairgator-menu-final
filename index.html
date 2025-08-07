@@ -21,7 +21,7 @@
     <!-- 외부 CSS 파일 -->
     <link rel="stylesheet" href="css/index-styles.css">
 </head>
-<body>
+<body class="theme-dark">
 
     <!-- 기기별 최적화 안내 -->
     <div class="device-notice" id="deviceNotice">
@@ -567,7 +567,7 @@
     </style>
     
     <script>
-        // ========== 🎨 테마 선택 시스템 (수정된 버전) ==========
+        // ========== 🎨 테마 선택 시스템 (완전 수정 버전) ==========
         
         // 테마 설정 객체
         const THEME_CONFIGS = {
@@ -630,7 +630,7 @@
         // 현재 선택된 테마
         let currentTheme = 'dark';
         
-        // 테마 선택 함수 (수정됨)
+        // 🔥 테마 선택 함수 (완전 수정)
         function selectTheme(themeName) {
             console.log(`🎨 테마 선택: ${themeName}`);
             
@@ -645,13 +645,43 @@
             updateThemeUI();
             updateThemeDescription();
             
-            // 🔥 즉시 테마 적용
-            applyTheme(themeName);
+            // 🔥 즉시 테마 적용 (핵심 수정)
+            applyThemeImmediately(themeName);
             
             // 로컬스토리지에 저장
             localStorage.setItem('hairgator_theme', themeName);
             
             console.log(`✅ 테마 적용 완료: ${THEME_CONFIGS[themeName].name}`);
+        }
+        
+        // 🔥 즉시 테마 적용 함수 (새로 추가)
+        function applyThemeImmediately(themeName) {
+            const config = THEME_CONFIGS[themeName];
+            if (!config) {
+                console.error('❌ 테마 설정을 찾을 수 없음:', themeName);
+                return;
+            }
+            
+            const body = document.body;
+            
+            console.log(`🎨 테마 즉시 적용: ${config.name}`, config);
+            
+            // 1. body 클래스 업데이트 (가장 중요!)
+            body.className = body.className.replace(/theme-\w+/g, '');
+            body.classList.add(`theme-${themeName}`);
+            
+            // 2. PWA 테마 색상 업데이트
+            const metaThemeColor = document.getElementById('metaThemeColor');
+            if (metaThemeColor) {
+                metaThemeColor.setAttribute('content', config.backgroundColor);
+            }
+            
+            // 3. 강제 리렌더링 트리거
+            body.style.display = 'none';
+            body.offsetHeight; // 강제 리플로우
+            body.style.display = '';
+            
+            console.log(`✅ 테마 클래스 적용: theme-${themeName}`);
         }
         
         // 테마 UI 업데이트
@@ -668,46 +698,22 @@
             }
         }
         
-        // 테마 설명 업데이트 (수정됨)
+        // 🔥 테마 설명 업데이트 (수정됨)
         function updateThemeDescription() {
             const descriptionElement = document.getElementById('themeDescription');
             if (descriptionElement && THEME_CONFIGS[currentTheme]) {
                 const config = THEME_CONFIGS[currentTheme];
                 descriptionElement.textContent = `${config.name}: ${config.description}`;
+                
+                // 설명 박스도 테마에 맞게 색상 조정
+                if (config.isDark) {
+                    descriptionElement.style.color = '#aaa';
+                    descriptionElement.style.background = 'rgba(0, 0, 0, 0.2)';
+                } else {
+                    descriptionElement.style.color = '#666';
+                    descriptionElement.style.background = 'rgba(255, 255, 255, 0.3)';
+                }
             }
-        }
-        
-        // 테마 적용 함수 (수정됨)
-        function applyTheme(themeName = currentTheme) {
-            const config = THEME_CONFIGS[themeName];
-            if (!config) {
-                console.error('❌ 테마 설정을 찾을 수 없음:', themeName);
-                return;
-            }
-            
-            const root = document.documentElement;
-            const body = document.body;
-            
-            console.log(`🎨 테마 적용 중: ${config.name}`, config);
-            
-            // CSS 변수 업데이트
-            root.style.setProperty('--bg-color', config.backgroundColor);
-            root.style.setProperty('--text-color', config.textColor);
-            root.style.setProperty('--male-primary', config.maleAccent);
-            root.style.setProperty('--female-primary', config.femaleAccent);
-            root.style.setProperty('--theme-color', config.backgroundColor);
-            
-            // body 클래스 업데이트
-            body.className = body.className.replace(/theme-\w+/g, '');
-            body.classList.add(`theme-${themeName}`);
-            
-            // PWA 테마 색상 업데이트
-            const metaThemeColor = document.getElementById('metaThemeColor');
-            if (metaThemeColor) {
-                metaThemeColor.setAttribute('content', config.backgroundColor);
-            }
-            
-            console.log(`✅ 테마 적용 완료: ${config.name}`);
         }
         
         // 저장된 테마 로드
@@ -722,7 +728,7 @@
             
             updateThemeUI();
             updateThemeDescription();
-            applyTheme(); // 즉시 적용
+            applyThemeImmediately(currentTheme); // 🔥 즉시 적용
         }
         
         // 테마 초기화
@@ -741,17 +747,24 @@
         
         // 전역 함수로 등록
         window.selectTheme = selectTheme;
-        window.applyTheme = applyTheme;
+        window.applyThemeImmediately = applyThemeImmediately;
         window.getCurrentTheme = getCurrentTheme;
         window.THEME_CONFIGS = THEME_CONFIGS;
         
-        // 페이지 로드 시 초기화
+        // 페이지 로드 시 초기화 (즉시 실행)
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('📱 페이지 로드, 테마 시스템 초기화');
+            console.log('📱 페이지 로드, 테마 시스템 즉시 초기화');
             initializeTheme();
         });
         
-        console.log('✅ 테마 선택 시스템 초기화 완료');
+        // 🔥 즉시 실행 (DOM 로드 전에도)
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeTheme);
+        } else {
+            initializeTheme();
+        }
+        
+        console.log('✅ 테마 선택 시스템 완전 초기화 완료');
         
         // ========== 프로모션 접근 제어 시스템 ==========
         
