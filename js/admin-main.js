@@ -13,7 +13,7 @@ let hierarchyStructure = {};
 let currentModalType = '';
 let editingItem = null;
 
-// Excel 기반 완전 구조 (LONG 포함)
+// Excel 기반 완전 구조 (여성 구조 변경됨)
 const PERFECT_STRUCTURE = {
     male: {
         'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
@@ -25,11 +25,14 @@ const PERFECT_STRUCTURE = {
         'MOHICAN': ['None']
     },
     female: {
-        'LONG': ['A Length', 'B Length'],
-        'SEMI LONG': ['C Length'],
-        'MEDIUM': ['D Length', 'E Length'],
-        'BOB': ['F Length', 'G Length'],
-        'SHORT': ['H Length']
+        'A Length': ['Forehead', 'Eyebrow', 'Eye', 'Cheekbone', 'None'],
+        'B Length': ['Forehead', 'Eyebrow', 'Eye', 'Cheekbone', 'None'],
+        'C Length': ['Forehead', 'Eyebrow', 'Eye', 'Cheekbone', 'None'],
+        'D Length': ['Forehead', 'Eyebrow', 'Eye', 'Cheekbone', 'None'],
+        'E Length': ['Forehead', 'Eyebrow', 'Eye', 'Cheekbone', 'None'],
+        'F Length': ['Forehead', 'Eyebrow', 'Eye', 'Cheekbone', 'None'],
+        'G Length': ['Forehead', 'Eyebrow', 'Eye', 'Cheekbone', 'None'],
+        'H Length': ['Forehead', 'Eyebrow', 'Eye', 'Cheekbone', 'None']
     }
 };
 
@@ -1144,3 +1147,4 @@ window.addEventListener('error', function(event) {
 });
 
 console.log('✅ HAIRGATOR 어드민 모든 함수 정의 완료 - 950줄 완전한 버전');
+
