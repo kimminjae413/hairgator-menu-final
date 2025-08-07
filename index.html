@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="HAIRGATOR">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#000000" id="metaThemeColor">
     
     <!-- PWA Manifest 연결 -->
     <link rel="manifest" href="/manifest.json">
@@ -100,7 +100,7 @@
             </div>
             
             <div class="theme-colors">
-                <div class="color-option" data-theme="dark" onclick="selectTheme('dark')" title="다크 모드 (기본)">
+                <div class="color-option selected" data-theme="dark" onclick="selectTheme('dark')" title="다크 모드 (기본)">
                     <div class="color-circle" style="background: #000000;"></div>
                     <span class="color-name">다크</span>
                 </div>
@@ -567,7 +567,7 @@
     </style>
     
     <script>
-        // ========== 🎨 테마 선택 시스템 ==========
+        // ========== 🎨 테마 선택 시스템 (수정된 버전) ==========
         
         // 테마 설정 객체
         const THEME_CONFIGS = {
@@ -585,7 +585,7 @@
                 description: '중성적이고 고급스러운 느낌, 팬톤 2021 올해의 색상',
                 backgroundColor: '#939597',
                 textColor: '#ffffff',
-                maleAccent: '#1E3A8A',
+                maleAccent: '#1E40AF',
                 femaleAccent: '#DC2626',
                 isDark: true
             },
@@ -630,7 +630,7 @@
         // 현재 선택된 테마
         let currentTheme = 'dark';
         
-        // 테마 선택 함수
+        // 테마 선택 함수 (수정됨)
         function selectTheme(themeName) {
             console.log(`🎨 테마 선택: ${themeName}`);
             
@@ -644,6 +644,9 @@
             // UI 업데이트
             updateThemeUI();
             updateThemeDescription();
+            
+            // 🔥 즉시 테마 적용
+            applyTheme(themeName);
             
             // 로컬스토리지에 저장
             localStorage.setItem('hairgator_theme', themeName);
@@ -665,7 +668,7 @@
             }
         }
         
-        // 테마 설명 업데이트
+        // 테마 설명 업데이트 (수정됨)
         function updateThemeDescription() {
             const descriptionElement = document.getElementById('themeDescription');
             if (descriptionElement && THEME_CONFIGS[currentTheme]) {
@@ -674,29 +677,37 @@
             }
         }
         
-        // 테마 적용 함수 (메인 화면에서 사용)
+        // 테마 적용 함수 (수정됨)
         function applyTheme(themeName = currentTheme) {
             const config = THEME_CONFIGS[themeName];
-            if (!config) return;
+            if (!config) {
+                console.error('❌ 테마 설정을 찾을 수 없음:', themeName);
+                return;
+            }
             
             const root = document.documentElement;
             const body = document.body;
             
+            console.log(`🎨 테마 적용 중: ${config.name}`, config);
+            
             // CSS 변수 업데이트
             root.style.setProperty('--bg-color', config.backgroundColor);
             root.style.setProperty('--text-color', config.textColor);
-            root.style.setProperty('--male-accent', config.maleAccent);
-            root.style.setProperty('--female-accent', config.femaleAccent);
+            root.style.setProperty('--male-primary', config.maleAccent);
+            root.style.setProperty('--female-primary', config.femaleAccent);
+            root.style.setProperty('--theme-color', config.backgroundColor);
             
-            // body 배경색 직접 적용
-            body.style.backgroundColor = config.backgroundColor;
-            body.style.color = config.textColor;
-            
-            // 테마 클래스 추가/제거
+            // body 클래스 업데이트
             body.className = body.className.replace(/theme-\w+/g, '');
             body.classList.add(`theme-${themeName}`);
             
-            console.log(`🎨 테마 적용됨: ${config.name}`);
+            // PWA 테마 색상 업데이트
+            const metaThemeColor = document.getElementById('metaThemeColor');
+            if (metaThemeColor) {
+                metaThemeColor.setAttribute('content', config.backgroundColor);
+            }
+            
+            console.log(`✅ 테마 적용 완료: ${config.name}`);
         }
         
         // 저장된 테마 로드
@@ -711,17 +722,13 @@
             
             updateThemeUI();
             updateThemeDescription();
+            applyTheme(); // 즉시 적용
         }
         
         // 테마 초기화
         function initializeTheme() {
             console.log('🎨 테마 시스템 초기화');
             loadSavedTheme();
-            
-            // 약간의 지연 후 테마 적용 (DOM이 완전히 로드된 후)
-            setTimeout(() => {
-                applyTheme();
-            }, 100);
         }
         
         // 현재 테마 정보 반환 (다른 스크립트에서 사용)
