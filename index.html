@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="theme-color" content="#FF1493">
+    <meta name="theme-color" content="#000000">
     <title>HAIRGATOR - Premium Hair Style Menu</title>
     
     <!-- PWA -->
@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/menu.css">
 </head>
-<body>
+<body class="dark-theme">
     <!-- 로그인 화면 -->
     <div id="loginScreen" class="login-screen active">
         <div class="login-container">
@@ -79,13 +79,30 @@
     <div id="mainMenu" class="main-menu">
         <!-- 헤더 -->
         <header class="header">
-            <div class="header-left">
-                <button class="back-btn" onclick="goBack()">←</button>
-                <h1 class="logo">HAIRGATOR</h1>
-            </div>
-            <div class="header-right">
-                <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
-                <button class="menu-btn" onclick="openSideMenu()">☰</button>
+            <button class="back-btn" onclick="goBack()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            
+            <h1 class="logo">HAIRGATOR</h1>
+            
+            <div class="header-actions">
+                <button class="theme-btn" onclick="toggleTheme()">
+                    <svg class="theme-icon-dark" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="5" fill="currentColor"/>
+                        <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <svg class="theme-icon-light" width="20" height="20" viewBox="0 0 24 24" fill="none" style="display:none;">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" fill="currentColor"/>
+                    </svg>
+                </button>
+                
+                <button class="menu-btn" onclick="openSideMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
         </header>
         
@@ -97,28 +114,74 @@
         
         <!-- 스타일 그리드 -->
         <div class="styles-container">
-            <div class="styles-grid" id="stylesGrid"></div>
+            <div class="styles-grid" id="stylesGrid">
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <div class="empty-title">오류 발생</div>
+                    <div class="empty-message">스타일을 불러올 수 없습니다</div>
+                </div>
+            </div>
         </div>
     </div>
     
     <!-- 사이드 메뉴 -->
     <div id="sideMenu" class="side-menu">
-        <div class="side-menu-header">
-            <h2>메뉴</h2>
-            <button onclick="closeSideMenu()">×</button>
-        </div>
+        <div class="side-menu-overlay" onclick="closeSideMenu()"></div>
         <div class="side-menu-content">
-            <a href="#" onclick="showCustomerForm()">👥 고객 관리</a>
-            <a href="#" onclick="showStats()">📊 통계</a>
-            <a href="/admin.html">⚙️ 관리자</a>
-            <a href="#" onclick="logout()">🚪 로그아웃</a>
+            <div class="side-menu-header">
+                <h2>MENU</h2>
+                <button class="close-btn" onclick="closeSideMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <nav class="side-menu-nav">
+                <a href="#" onclick="showCustomerForm()" class="menu-item">
+                    <span class="menu-icon">👥</span>
+                    <span class="menu-text">고객 관리</span>
+                    <span class="menu-arrow">→</span>
+                </a>
+                
+                <a href="#" onclick="showStats()" class="menu-item">
+                    <span class="menu-icon">📊</span>
+                    <span class="menu-text">통계</span>
+                    <span class="menu-arrow">→</span>
+                </a>
+                
+                <a href="/admin.html" class="menu-item">
+                    <span class="menu-icon">⚙️</span>
+                    <span class="menu-text">관리자</span>
+                    <span class="menu-arrow">→</span>
+                </a>
+                
+                <div class="menu-divider"></div>
+                
+                <a href="#" onclick="logout()" class="menu-item logout">
+                    <span class="menu-icon">🚪</span>
+                    <span class="menu-text">로그아웃</span>
+                    <span class="menu-arrow">→</span>
+                </a>
+            </nav>
+            
+            <div class="side-menu-footer">
+                <div class="designer-info">
+                    <span id="designerNameDisplay">홍길동</span> 디자이너
+                </div>
+            </div>
         </div>
     </div>
     
     <!-- 스타일 상세 모달 -->
     <div id="styleModal" class="modal">
+        <div class="modal-overlay" onclick="closeStyleModal()"></div>
         <div class="modal-content">
-            <span class="modal-close" onclick="closeStyleModal()">&times;</span>
+            <button class="modal-close" onclick="closeStyleModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
             <img id="modalImage" src="" alt="">
             <div class="modal-info">
                 <h3 id="modalTitle"></h3>
