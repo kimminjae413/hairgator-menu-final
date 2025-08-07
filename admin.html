@@ -175,6 +175,9 @@
             overflow: hidden;
             position: relative;
             transition: all 0.3s;
+            aspect-ratio: 3/4;
+            display: flex;
+            flex-direction: column;
         }
         
         .style-card:hover {
@@ -182,16 +185,32 @@
             transform: translateY(-5px);
         }
         
+        .style-image-container {
+            width: 100%;
+            flex: 1;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
         .style-image {
             width: 100%;
-            aspect-ratio: 3/4;
+            height: 100%;
             object-fit: cover;
-            background: #222;
+        }
+        
+        .no-image-text {
+            color: white;
+            font-size: 14px;
+            text-align: center;
         }
         
         .style-info {
             padding: 10px;
             text-align: center;
+            background: #000;
         }
         
         .style-code {
@@ -211,6 +230,7 @@
             right: 10px;
             display: flex;
             gap: 5px;
+            z-index: 10;
         }
         
         .action-btn {
@@ -243,6 +263,8 @@
             padding: 40px;
             text-align: center;
             margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
         }
         
         .upload-area.dragover {
@@ -261,12 +283,11 @@
         
         .upload-preview {
             margin-top: 20px;
-            max-width: 200px;
-            margin: 20px auto 0;
+            display: none;
         }
         
         .upload-preview img {
-            width: 100%;
+            max-width: 200px;
             border-radius: 10px;
         }
         
@@ -421,7 +442,7 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* ========== 알림 ========== */
+        /* ========== 토스트 알림 ========== */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -433,6 +454,7 @@
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
             display: none;
             animation: slideUp 0.3s ease;
+            z-index: 2000;
         }
         
         .toast.show {
@@ -450,6 +472,7 @@
             }
         }
         
+        /* ========== 반응형 ========== */
         @media (max-width: 768px) {
             .selection-area {
                 grid-template-columns: 1fr;
@@ -516,9 +539,7 @@
             <div class="section">
                 <h2 class="section-title">📸 등록된 스타일</h2>
                 <div id="stylesGrid" class="styles-grid">
-                    <div class="loading">
-                        <p>카테고리를 선택하세요</p>
-                    </div>
+                    <!-- 동적 생성 -->
                 </div>
             </div>
         </div>
@@ -532,16 +553,14 @@
                         <tr>
                             <th>이름</th>
                             <th>전화번호</th>
+                            <th>스타일</th>
                             <th>디자이너</th>
-                            <th>마지막 방문</th>
-                            <th>방문 횟수</th>
+                            <th>등록일</th>
                             <th>작업</th>
                         </tr>
                     </thead>
                     <tbody id="customersTable">
-                        <tr>
-                            <td colspan="6" style="text-align: center; color: #999;">고객 데이터가 없습니다</td>
-                        </tr>
+                        <!-- 동적 생성 -->
                     </tbody>
                 </table>
             </div>
@@ -561,12 +580,12 @@
                         <div class="stat-label">전체 고객</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="totalCategories">0</div>
-                        <div class="stat-label">카테고리</div>
+                        <div class="stat-number" id="totalMale">0</div>
+                        <div class="stat-label">남성 스타일</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="totalViews">0</div>
-                        <div class="stat-label">총 조회수</div>
+                        <div class="stat-number" id="totalFemale">0</div>
+                        <div class="stat-label">여성 스타일</div>
                     </div>
                 </div>
             </div>
@@ -578,7 +597,6 @@
                 <h2 class="section-title">⚙️ 시스템 설정</h2>
                 <button class="btn btn-danger" onclick="clearAllData()">🗑️ 모든 데이터 삭제</button>
                 <button class="btn" onclick="exportData()">💾 데이터 내보내기</button>
-                <button class="btn" onclick="importData()">📥 데이터 가져오기</button>
             </div>
         </div>
     </div>
@@ -593,28 +611,28 @@
             
             <div class="form-group">
                 <label>스타일 코드</label>
-                <input type="text" id="styleCode" placeholder="예: FAE001" style="background: #000; color: #fff;">
+                <input type="text" id="styleCode" placeholder="예: FAE001 (필수)" style="text-transform: uppercase;">
             </div>
             
             <div class="form-group">
                 <label>스타일 이름</label>
-                <input type="text" id="styleName" placeholder="예: 슬릭 다운펌">
+                <input type="text" id="styleName" placeholder="예: 글램웨이브 (필수)">
             </div>
             
             <div class="form-group">
                 <label>이미지 업로드</label>
                 <div class="upload-area" id="uploadArea">
                     <input type="file" id="styleImage" class="upload-input" accept="image/*" onchange="previewImage(event)">
-                    <label for="styleImage" class="upload-label" id="uploadLabel">
+                    <label for="styleImage" class="upload-label">
                         📷 클릭하거나 드래그하여 이미지 업로드
                     </label>
-                    <div class="upload-preview" id="imagePreview" style="display: none;">
-                        <img id="previewImg" src="" alt="Preview" style="max-width: 100%;">
-                    </div>
+                </div>
+                <div class="upload-preview" id="uploadPreview">
+                    <img id="previewImg" src="" alt="Preview">
                 </div>
             </div>
             
-            <button class="btn" onclick="saveStyle()">저장</button>
+            <button class="btn" onclick="saveStyle()" id="saveBtn">저장</button>
         </div>
     </div>
     
@@ -630,10 +648,27 @@
         let currentSubcategory = null;
         let selectedFile = null;
         
-        // 수정된 카테고리 구조 - index.html과 동일
+        // 카테고리 구조 - 메인과 동일하게
         const CATEGORIES = {
-            male: ['SIDE FRINGE', 'SIDE PART', 'FRINGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN'],
-            female: ['A Length', 'B Length', 'C Length', 'D Length', 'E Length', 'F Length', 'G Length', 'H Length']
+            male: [
+                'SIDE FRINGE', 
+                'SIDE PART', 
+                'FRINGE UP', 
+                'PUSHED BACK', 
+                'BUZZ', 
+                'CROP', 
+                'MOHICAN'
+            ],
+            female: [
+                'A Length',
+                'B Length',
+                'C Length',
+                'D Length',
+                'E Length',
+                'F Length',
+                'G Length',
+                'H Length'
+            ]
         };
         
         const SUBCATEGORIES = ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'];
@@ -658,11 +693,7 @@
         // ========== 카테고리 로드 ==========
         function loadCategories() {
             const gender = document.getElementById('genderSelect').value;
-            if (!gender) {
-                document.getElementById('categorySelect').innerHTML = '<option value="">대분류 선택</option>';
-                document.getElementById('subcategorySelect').innerHTML = '<option value="">중분류 선택</option>';
-                return;
-            }
+            if (!gender) return;
             
             currentGender = gender;
             const categories = CATEGORIES[gender];
@@ -673,16 +704,14 @@
                 select.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
             
-            // 중분류도 리셋
+            // 초기화
             document.getElementById('subcategorySelect').innerHTML = '<option value="">중분류 선택</option>';
+            document.getElementById('stylesGrid').innerHTML = '';
         }
         
         function loadSubcategories() {
             const category = document.getElementById('categorySelect').value;
-            if (!category) {
-                document.getElementById('subcategorySelect').innerHTML = '<option value="">중분류 선택</option>';
-                return;
-            }
+            if (!category) return;
             
             currentCategory = category;
             const select = document.getElementById('subcategorySelect');
@@ -691,6 +720,8 @@
             SUBCATEGORIES.forEach(sub => {
                 select.innerHTML += `<option value="${sub}">${sub}</option>`;
             });
+            
+            document.getElementById('stylesGrid').innerHTML = '';
         }
         
         // ========== 스타일 로드 ==========
@@ -701,7 +732,7 @@
             currentSubcategory = subcategory;
             const grid = document.getElementById('stylesGrid');
             
-            grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>로딩 중...</p></div>';
+            grid.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
             
             try {
                 const query = db.collection('hairstyles')
@@ -720,28 +751,33 @@
                                 <button class="action-btn" onclick="editStyle('${doc.id}')">✏️</button>
                                 <button class="action-btn delete" onclick="deleteStyle('${doc.id}')">🗑️</button>
                             </div>
-                            <img class="style-image" src="${data.imageUrl || 'https://via.placeholder.com/300x400/222/666?text=No+Image'}" 
-                                 alt="${data.name}" onerror="this.src='https://via.placeholder.com/300x400/222/666?text=Error'">
+                            <div class="style-image-container">
+                                ${data.imageUrl 
+                                    ? `<img class="style-image" src="${data.imageUrl}" alt="${data.name}" 
+                                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'no-image-text\\'>No Image</div>'">`
+                                    : '<div class="no-image-text">No Image</div>'
+                                }
+                            </div>
                             <div class="style-info">
-                                <div class="style-code">${data.code}</div>
-                                <div class="style-name">${data.name}</div>
+                                <div class="style-code">${data.code || 'NO CODE'}</div>
+                                <div class="style-name">${data.name || '이름 없음'}</div>
                             </div>
                         </div>
                     `;
                 });
                 
-                grid.innerHTML = html || '<div style="text-align: center; color: #999; padding: 40px;">이 카테고리에 등록된 스타일이 없습니다</div>';
+                grid.innerHTML = html || '<div style="text-align: center; color: #999;">스타일이 없습니다</div>';
                 
             } catch (error) {
                 console.error('Load styles error:', error);
-                grid.innerHTML = '<div style="text-align: center; color: #ff6b6b; padding: 40px;">스타일 로드 실패: ' + error.message + '</div>';
+                showToast('스타일 로드 실패');
             }
         }
         
         // ========== 스타일 추가 모달 ==========
         function openAddStyleModal() {
             if (!currentGender || !currentCategory || !currentSubcategory) {
-                showToast('먼저 카테고리를 모두 선택하세요');
+                showToast('먼저 카테고리를 선택하세요');
                 return;
             }
             
@@ -749,59 +785,35 @@
             document.getElementById('styleCode').value = '';
             document.getElementById('styleName').value = '';
             document.getElementById('styleImage').value = '';
-            document.getElementById('imagePreview').style.display = 'none';
-            document.getElementById('uploadLabel').style.display = 'block';
+            document.getElementById('uploadPreview').style.display = 'none';
             selectedFile = null;
             
-            // 모달 열기
             document.getElementById('addStyleModal').classList.add('active');
         }
         
-        function generateStyleCode() {
-            // 코드 생성 로직 - index.html과 동일
-            let code;
-            const timestamp = Date.now().toString().slice(-3);
-            
-            if (currentGender === 'male') {
-                const catInitial = currentCategory.substring(0, 2).replace(' ', '');
-                const subInitial = currentSubcategory.substring(0, 1);
-                code = `M${catInitial}${subInitial}${timestamp}`;
-            } else {
-                const lengthCode = currentCategory.split(' ')[0];
-                const subInitial = currentSubcategory.substring(0, 1);
-                code = `F${lengthCode}${subInitial}${timestamp}`;
-            }
-            
-            return code.toUpperCase();
+        function closeModal() {
+            document.getElementById('addStyleModal').classList.remove('active');
         }
         
         // ========== 이미지 미리보기 ==========
         function previewImage(event) {
             const file = event.target.files[0];
-            if (file) {
-                // 파일 크기 체크 (5MB 제한)
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast('❌ 이미지 크기는 5MB 이하여야 합니다');
-                    event.target.value = '';
-                    return;
-                }
-                
-                // 파일 타입 체크
-                if (!file.type.startsWith('image/')) {
-                    showToast('❌ 이미지 파일만 업로드 가능합니다');
-                    event.target.value = '';
-                    return;
-                }
-                
-                selectedFile = file;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('previewImg').src = e.target.result;
-                    document.getElementById('imagePreview').style.display = 'block';
-                    document.getElementById('uploadLabel').style.display = 'none';
-                };
-                reader.readAsDataURL(file);
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('파일 크기는 5MB 이하여야 합니다');
+                event.target.value = '';
+                return;
             }
+            
+            selectedFile = file;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('uploadPreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
         }
         
         // ========== 스타일 저장 ==========
@@ -809,56 +821,40 @@
             const code = document.getElementById('styleCode').value.trim().toUpperCase();
             const name = document.getElementById('styleName').value.trim();
             
-            if (!code) {
-                showToast('❌ 스타일 코드를 입력하세요');
+            if (!code || !name) {
+                showToast('코드와 이름을 입력하세요');
                 return;
             }
             
-            if (!name) {
-                showToast('❌ 스타일 이름을 입력하세요');
-                return;
-            }
-            
-            if (!selectedFile) {
-                showToast('❌ 이미지를 선택하세요');
-                return;
-            }
-            
-            // 저장 버튼 비활성화
-            const saveBtn = event.target;
+            const saveBtn = document.getElementById('saveBtn');
             saveBtn.disabled = true;
             saveBtn.textContent = '저장 중...';
             
-            showToast('📤 이미지 업로드 중...');
-            
             try {
-                // 중복 코드 체크
-                const duplicateCheck = await db.collection('hairstyles')
+                // 중복 체크
+                const existing = await db.collection('hairstyles')
                     .where('code', '==', code)
                     .get();
                 
-                if (!duplicateCheck.empty) {
-                    showToast('❌ 이미 존재하는 스타일 코드입니다');
+                if (!existing.empty) {
+                    showToast('이미 존재하는 코드입니다');
                     saveBtn.disabled = false;
                     saveBtn.textContent = '저장';
                     return;
                 }
                 
-                // 이미지 리사이징 (선택사항)
-                const resizedBlob = await resizeImage(selectedFile, 800, 1067); // 3:4 비율
+                let imageUrl = '';
                 
-                // Storage에 이미지 업로드
-                const timestamp = Date.now();
-                const fileName = `${code}_${timestamp}.jpg`;
-                const storageRef = storage.ref();
-                const imageRef = storageRef.child(`hairstyles/${currentGender}/${fileName}`);
+                // 이미지 업로드
+                if (selectedFile) {
+                    const storageRef = storage.ref();
+                    const fileRef = storageRef.child(`hairstyles/${currentGender}/${code}_${Date.now()}.jpg`);
+                    
+                    const snapshot = await fileRef.put(selectedFile);
+                    imageUrl = await snapshot.ref.getDownloadURL();
+                }
                 
-                const snapshot = await imageRef.put(resizedBlob || selectedFile);
-                const imageUrl = await snapshot.ref.getDownloadURL();
-                
-                showToast('💾 데이터 저장 중...');
-                
-                // Firestore에 데이터 저장
+                // Firestore에 저장
                 await db.collection('hairstyles').add({
                     code: code,
                     name: name,
@@ -866,74 +862,73 @@
                     mainCategory: currentCategory,
                     subCategory: currentSubcategory,
                     imageUrl: imageUrl,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    views: 0,
-                    likes: 0
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    likes: 0,
+                    views: 0
                 });
                 
-                showToast('✅ 스타일이 저장되었습니다');
+                showToast('✅ 스타일 추가 완료!');
                 closeModal();
-                loadStyles(); // 목록 새로고침
+                loadStyles();
                 
             } catch (error) {
-                console.error('Save style error:', error);
+                console.error('Save error:', error);
                 showToast('❌ 저장 실패: ' + error.message);
             } finally {
-                // 버튼 다시 활성화
                 saveBtn.disabled = false;
                 saveBtn.textContent = '저장';
             }
         }
         
-        // ========== 이미지 리사이징 (선택사항) ==========
-        function resizeImage(file, maxWidth, maxHeight) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        
-                        // 비율 유지하며 리사이징
-                        if (width > height) {
-                            if (width > maxWidth) {
-                                height *= maxWidth / width;
-                                width = maxWidth;
-                            }
-                        } else {
-                            if (height > maxHeight) {
-                                width *= maxHeight / height;
-                                height = maxHeight;
-                            }
-                        }
-                        
-                        canvas.width = width;
-                        canvas.height = height;
-                        
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        canvas.toBlob((blob) => {
-                            resolve(blob);
-                        }, 'image/jpeg', 0.85);
-                    };
-                    img.onerror = reject;
-                    img.src = e.target.result;
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
+        // ========== 스타일 수정 ==========
+        async function editStyle(docId) {
+            try {
+                const doc = await db.collection('hairstyles').doc(docId).get();
+                const data = doc.data();
+                
+                const newName = prompt('새 스타일 이름:', data.name);
+                if (!newName) return;
+                
+                const newCode = prompt('새 스타일 코드:', data.code);
+                if (!newCode) return;
+                
+                await db.collection('hairstyles').doc(docId).update({
+                    name: newName,
+                    code: newCode.toUpperCase(),
+                    updatedAt: new Date()
+                });
+                
+                showToast('✅ 수정 완료!');
+                loadStyles();
+            } catch (error) {
+                console.error('Edit error:', error);
+                showToast('❌ 수정 실패');
+            }
         }
         
         // ========== 스타일 삭제 ==========
-        async function deleteStyle(id) {
+        async function deleteStyle(docId) {
             if (!confirm('정말 삭제하시겠습니까?')) return;
             
             try {
-                await db.collection('hairstyles').doc(id).delete();
-                showToast('✅ 삭제되었습니다');
+                const doc = await db.collection('hairstyles').doc(docId).get();
+                const data = doc.data();
+                
+                // Storage에서 이미지 삭제
+                if (data.imageUrl) {
+                    try {
+                        const imageRef = storage.refFromURL(data.imageUrl);
+                        await imageRef.delete();
+                    } catch (error) {
+                        console.error('Image delete error:', error);
+                    }
+                }
+                
+                // Firestore에서 삭제
+                await db.collection('hairstyles').doc(docId).delete();
+                
+                showToast('✅ 삭제 완료!');
                 loadStyles();
             } catch (error) {
                 console.error('Delete error:', error);
@@ -941,116 +936,95 @@
             }
         }
         
-        // ========== 스타일 수정 ==========
-        async function editStyle(id) {
+        // ========== 고객 로드 ==========
+        async function loadCustomers() {
+            const table = document.getElementById('customersTable');
+            table.innerHTML = '<tr><td colspan="6" style="text-align: center;">로딩 중...</td></tr>';
+            
             try {
-                const doc = await db.collection('hairstyles').doc(id).get();
-                if (!doc.exists) {
-                    showToast('스타일을 찾을 수 없습니다');
-                    return;
-                }
+                const snapshot = await db.collection('customers')
+                    .orderBy('registeredAt', 'desc')
+                    .limit(50)
+                    .get();
                 
-                const data = doc.data();
-                
-                // 새 이름 입력받기
-                const newName = prompt('새 스타일 이름을 입력하세요:', data.name);
-                if (!newName || newName.trim() === '') {
-                    return;
-                }
-                
-                // 새 코드 입력받기
-                const newCode = prompt('새 스타일 코드를 입력하세요:', data.code);
-                if (!newCode || newCode.trim() === '') {
-                    return;
-                }
-                
-                // 업데이트
-                await db.collection('hairstyles').doc(id).update({
-                    name: newName.trim(),
-                    code: newCode.trim().toUpperCase(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.registeredAt ? new Date(data.registeredAt.toDate()).toLocaleDateString() : '-';
+                    
+                    html += `
+                        <tr>
+                            <td>${data.name || '-'}</td>
+                            <td>${data.phone || '-'}</td>
+                            <td>${data.styleName || '-'}</td>
+                            <td>${data.designer || '-'}</td>
+                            <td>${date}</td>
+                            <td>
+                                <button class="btn btn-danger" onclick="deleteCustomer('${doc.id}')" style="padding: 5px 10px; font-size: 12px;">삭제</button>
+                            </td>
+                        </tr>
+                    `;
                 });
                 
-                showToast('✅ 수정되었습니다');
-                loadStyles();
+                table.innerHTML = html || '<tr><td colspan="6" style="text-align: center; color: #999;">등록된 고객이 없습니다</td></tr>';
                 
             } catch (error) {
-                console.error('Edit error:', error);
-                showToast('❌ 수정 실패: ' + error.message);
+                console.error('Load customers error:', error);
+                table.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ff4444;">로드 실패</td></tr>';
+            }
+        }
+        
+        // ========== 고객 삭제 ==========
+        async function deleteCustomer(docId) {
+            if (!confirm('고객 정보를 삭제하시겠습니까?')) return;
+            
+            try {
+                await db.collection('customers').doc(docId).delete();
+                showToast('✅ 고객 삭제 완료!');
+                loadCustomers();
+            } catch (error) {
+                console.error('Delete customer error:', error);
+                showToast('❌ 삭제 실패');
             }
         }
         
         // ========== 통계 로드 ==========
         async function loadStats() {
             try {
-                // 전체 스타일 수
+                // 전체 스타일
                 const stylesSnapshot = await db.collection('hairstyles').get();
                 document.getElementById('totalStyles').textContent = stylesSnapshot.size;
                 
-                // 전체 고객 수
+                // 성별 분류
+                let maleCount = 0;
+                let femaleCount = 0;
+                
+                stylesSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.gender === 'male') maleCount++;
+                    if (data.gender === 'female') femaleCount++;
+                });
+                
+                document.getElementById('totalMale').textContent = maleCount;
+                document.getElementById('totalFemale').textContent = femaleCount;
+                
+                // 전체 고객
                 const customersSnapshot = await db.collection('customers').get();
                 document.getElementById('totalCustomers').textContent = customersSnapshot.size;
-                
-                // 카테고리 수
-                const totalCategories = Object.keys(CATEGORIES.male).length + Object.keys(CATEGORIES.female).length;
-                document.getElementById('totalCategories').textContent = totalCategories;
-                
-                // 총 조회수 (모든 스타일의 views 합계)
-                let totalViews = 0;
-                stylesSnapshot.forEach(doc => {
-                    totalViews += doc.data().views || 0;
-                });
-                document.getElementById('totalViews').textContent = totalViews;
                 
             } catch (error) {
                 console.error('Load stats error:', error);
             }
         }
         
-        // ========== 고객 로드 ==========
-        async function loadCustomers() {
-            try {
-                const snapshot = await db.collection('customers').get();
-                const tbody = document.getElementById('customersTable');
-                
-                if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">고객 데이터가 없습니다</td></tr>';
-                    return;
-                }
-                
-                let html = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    html += `
-                        <tr>
-                            <td>${data.name || '-'}</td>
-                            <td>${data.phone || '-'}</td>
-                            <td>${data.designer || '-'}</td>
-                            <td>${data.lastVisit ? new Date(data.lastVisit.toDate()).toLocaleDateString() : '-'}</td>
-                            <td>${data.visitCount || 0}</td>
-                            <td>
-                                <button class="action-btn" onclick="viewCustomer('${doc.id}')">👁️</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                
-                tbody.innerHTML = html;
-                
-            } catch (error) {
-                console.error('Load customers error:', error);
-                showToast('고객 데이터 로드 실패');
-            }
-        }
-        
         // ========== 데이터 초기화 ==========
         async function initializeData() {
-            if (!confirm('카테고리 구조를 초기화하시겠습니까?\n(기존 스타일 데이터는 유지됩니다)')) return;
+            if (!confirm('카테고리 구조를 초기화하시겠습니까?\n(기존 스타일은 유지됩니다)')) return;
             
             showToast('초기화 중...');
             
             try {
-                // 카테고리 메타데이터 저장
+                // 메타데이터 저장
                 await db.collection('metadata').doc('categories').set({
                     male: CATEGORIES.male,
                     female: CATEGORIES.female,
@@ -1058,40 +1032,112 @@
                     updatedAt: new Date()
                 });
                 
-                showToast('✅ 카테고리 구조가 초기화되었습니다');
+                showToast('✅ 초기화 완료!');
                 
             } catch (error) {
                 console.error('Initialize error:', error);
-                showToast('❌ 초기화 실패: ' + error.message);
+                showToast('❌ 초기화 실패');
             }
         }
         
-        // ========== 데이터 관리 ==========
+        // ========== 모든 데이터 삭제 ==========
         async function clearAllData() {
-            if (!confirm('⚠️ 정말로 모든 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다!')) return;
-            if (!confirm('⚠️ 마지막 확인: 정말 삭제하시겠습니까?')) return;
+            if (!confirm('⚠️ 정말 모든 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다!')) return;
+            if (!confirm('⚠️ 한번 더 확인합니다.\n정말로 삭제하시겠습니까?')) return;
             
             showToast('삭제 중...');
             
             try {
-                // 모든 컬렉션 삭제는 보안상 Cloud Functions에서 처리하는 것이 좋음
-                showToast('⚠️ 대량 삭제는 콘솔에서 직접 수행하세요');
+                // 스타일 삭제
+                const styles = await db.collection('hairstyles').get();
+                const batch1 = db.batch();
+                styles.forEach(doc => {
+                    batch1.delete(doc.ref);
+                });
+                await batch1.commit();
+                
+                // 고객 삭제
+                const customers = await db.collection('customers').get();
+                const batch2 = db.batch();
+                customers.forEach(doc => {
+                    batch2.delete(doc.ref);
+                });
+                await batch2.commit();
+                
+                showToast('✅ 모든 데이터 삭제 완료!');
+                
+                // 화면 초기화
+                document.getElementById('stylesGrid').innerHTML = '';
+                loadStats();
+                
             } catch (error) {
                 console.error('Clear data error:', error);
                 showToast('❌ 삭제 실패');
             }
         }
         
-        function exportData() {
-            showToast('내보내기 기능은 준비 중입니다');
+        // ========== 데이터 내보내기 ==========
+        async function exportData() {
+            showToast('데이터 준비 중...');
+            
+            try {
+                const styles = await db.collection('hairstyles').get();
+                const customers = await db.collection('customers').get();
+                
+                const data = {
+                    exportDate: new Date().toISOString(),
+                    styles: [],
+                    customers: []
+                };
+                
+                styles.forEach(doc => {
+                    data.styles.push({ id: doc.id, ...doc.data() });
+                });
+                
+                customers.forEach(doc => {
+                    data.customers.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // JSON 파일 다운로드
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `hairgator_backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                
+                showToast('✅ 데이터 내보내기 완료!');
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                showToast('❌ 내보내기 실패');
+            }
         }
         
-        function importData() {
-            showToast('가져오기 기능은 준비 중입니다');
-        }
+        // ========== 드래그 앤 드롭 ==========
+        const uploadArea = document.getElementById('uploadArea');
         
-        function viewCustomer(id) {
-            showToast('고객 상세 보기는 준비 중입니다');
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const fileInput = document.getElementById('styleImage');
+                    fileInput.files = files;
+                    previewImage({ target: fileInput });
+                }
+            });
         }
         
         // ========== 유틸리티 ==========
@@ -1105,68 +1151,12 @@
             }, 3000);
         }
         
-        function closeModal() {
-            document.getElementById('addStyleModal').classList.remove('active');
-            // 폼 초기화
-            document.getElementById('styleCode').value = '';
-            document.getElementById('styleName').value = '';
-            document.getElementById('styleImage').value = '';
-            document.getElementById('imagePreview').style.display = 'none';
-            document.getElementById('uploadLabel').style.display = 'block';
-            selectedFile = null;
-        }
-        
-        // ========== 드래그 앤 드롭 ==========
+        // ========== 초기화 ==========
         document.addEventListener('DOMContentLoaded', function() {
-            const uploadArea = document.getElementById('uploadArea');
-            
-            if (uploadArea) {
-                uploadArea.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    uploadArea.classList.add('dragover');
-                });
-                
-                uploadArea.addEventListener('dragleave', () => {
-                    uploadArea.classList.remove('dragover');
-                });
-                
-                uploadArea.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    uploadArea.classList.remove('dragover');
-                    
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0) {
-                        const file = files[0];
-                        
-                        // 파일 크기 체크
-                        if (file.size > 5 * 1024 * 1024) {
-                            showToast('❌ 이미지 크기는 5MB 이하여야 합니다');
-                            return;
-                        }
-                        
-                        if (file.type.startsWith('image/')) {
-                            selectedFile = file;
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                document.getElementById('previewImg').src = e.target.result;
-                                document.getElementById('imagePreview').style.display = 'block';
-                                document.getElementById('uploadLabel').style.display = 'none';
-                                
-                                // 파일 input에도 설정
-                                const dataTransfer = new DataTransfer();
-                                dataTransfer.items.add(file);
-                                document.getElementById('styleImage').files = dataTransfer.files;
-                            };
-                            reader.readAsDataURL(file);
-                        } else {
-                            showToast('❌ 이미지 파일만 업로드 가능합니다');
-                        }
-                    }
-                });
-            }
-            
             console.log('🚀 Admin page loaded');
-            console.log('📱 Firebase connected:', typeof db !== 'undefined');
+            
+            // 통계 로드
+            loadStats();
         });
     </script>
 </body>
