@@ -3,14 +3,7 @@ const CACHE_NAME = 'hairgator-v1.0.0';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/admin.html',
-  '/manifest.json',
-  '/js/firebase-config.js',
-  '/js/auth.js',
-  '/js/menu.js',
-  '/js/main.js',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/manifest.json'
 ];
 
 // Install Service Worker
@@ -45,111 +38,46 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch Event - Network First, Cache Fallback
+// Fetch Event - Fixed version
 self.addEventListener('fetch', event => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') {
     return;
   }
 
-  // Skip Firebase and external URLs
-  if (event.request.url.includes('firebase') || 
-      event.request.url.includes('googleapis') ||
-      event.request.url.includes('gstatic')) {
+  // Skip cross-origin requests
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.origin !== location.origin) {
     return;
   }
 
   event.respondWith(
-    fetch(event.request)
+    caches.match(event.request)
       .then(response => {
-        // Check if valid response
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
-        }
+        // Return cached version or fetch new
+        return response || fetch(event.request).then(fetchResponse => {
+          // Check if valid response
+          if (!fetchResponse || fetchResponse.status !== 200) {
+            return fetchResponse;
+          }
 
-        // Clone the response
-        const responseToCache = response.clone();
+          // Clone the response
+          const responseToCache = fetchResponse.clone();
 
-        caches.open(CACHE_NAME)
-          .then(cache => {
-            cache.put(event.request, responseToCache);
-          });
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              cache.put(event.request, responseToCache);
+            });
 
-        return response;
+          return fetchResponse;
+        });
       })
       .catch(() => {
-        // Network failed, try cache
-        return caches.match(event.request)
-          .then(response => {
-            if (response) {
-              return response;
-            }
-            
-            // Return offline page if available
-            if (event.request.destination === 'document') {
-              return caches.match('/index.html');
-            }
-          });
+        // Return offline page if available
+        if (event.request.destination === 'document') {
+          return caches.match('/index.html');
+        }
+        return new Response('Offline');
       })
   );
 });
-
-// Background Sync for offline actions
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-menu-data') {
-    event.waitUntil(syncMenuData());
-  }
-});
-
-// Sync menu data when online
-async function syncMenuData() {
-  try {
-    // Implement sync logic here
-    console.log('Syncing menu data...');
-  } catch (error) {
-    console.error('Sync failed:', error);
-  }
-}
-
-// Push Notifications (if needed)
-self.addEventListener('push', event => {
-  const options = {
-    body: event.data ? event.data.text() : 'New update available',
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-72.png',
-    vibrate: [200, 100, 200],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
-    },
-    actions: [
-      {
-        action: 'explore',
-        title: 'Open App',
-        icon: '/icons/icon-72.png'
-      },
-      {
-        action: 'close',
-        title: 'Close',
-        icon: '/icons/icon-72.png'
-      }
-    ]
-  };
-
-  event.waitUntil(
-    self.registration.showNotification('HAIRGATOR', options)
-  );
-});
-
-// Notification Click
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-
-  if (event.action === 'explore') {
-    event.waitUntil(
-      clients.openWindow('/')
-    );
-  }
-});
-
-console.log('Service Worker loaded successfully');
