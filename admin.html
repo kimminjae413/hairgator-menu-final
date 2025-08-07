@@ -592,8 +592,8 @@
             </div>
             
             <div class="form-group">
-                <label>스타일 코드 (자동 생성)</label>
-                <input type="text" id="styleCode" readonly style="background: #222;">
+                <label>스타일 코드</label>
+                <input type="text" id="styleCode" placeholder="예: FAE001" style="background: #000; color: #fff;">
             </div>
             
             <div class="form-group">
@@ -745,9 +745,13 @@
                 return;
             }
             
-            // 스타일 코드 자동 생성
-            const code = generateStyleCode();
-            document.getElementById('styleCode').value = code;
+            // 폼 초기화
+            document.getElementById('styleCode').value = '';
+            document.getElementById('styleName').value = '';
+            document.getElementById('styleImage').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('uploadLabel').style.display = 'block';
+            selectedFile = null;
             
             // 모달 열기
             document.getElementById('addStyleModal').classList.add('active');
@@ -802,8 +806,13 @@
         
         // ========== 스타일 저장 ==========
         async function saveStyle() {
-            const code = document.getElementById('styleCode').value;
+            const code = document.getElementById('styleCode').value.trim().toUpperCase();
             const name = document.getElementById('styleName').value.trim();
+            
+            if (!code) {
+                showToast('❌ 스타일 코드를 입력하세요');
+                return;
+            }
             
             if (!name) {
                 showToast('❌ 스타일 이름을 입력하세요');
@@ -823,6 +832,18 @@
             showToast('📤 이미지 업로드 중...');
             
             try {
+                // 중복 코드 체크
+                const duplicateCheck = await db.collection('hairstyles')
+                    .where('code', '==', code)
+                    .get();
+                
+                if (!duplicateCheck.empty) {
+                    showToast('❌ 이미 존재하는 스타일 코드입니다');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = '저장';
+                    return;
+                }
+                
                 // 이미지 리사이징 (선택사항)
                 const resizedBlob = await resizeImage(selectedFile, 800, 1067); // 3:4 비율
                 
@@ -921,8 +942,42 @@
         }
         
         // ========== 스타일 수정 ==========
-        function editStyle(id) {
-            showToast('수정 기능은 준비 중입니다');
+        async function editStyle(id) {
+            try {
+                const doc = await db.collection('hairstyles').doc(id).get();
+                if (!doc.exists) {
+                    showToast('스타일을 찾을 수 없습니다');
+                    return;
+                }
+                
+                const data = doc.data();
+                
+                // 새 이름 입력받기
+                const newName = prompt('새 스타일 이름을 입력하세요:', data.name);
+                if (!newName || newName.trim() === '') {
+                    return;
+                }
+                
+                // 새 코드 입력받기
+                const newCode = prompt('새 스타일 코드를 입력하세요:', data.code);
+                if (!newCode || newCode.trim() === '') {
+                    return;
+                }
+                
+                // 업데이트
+                await db.collection('hairstyles').doc(id).update({
+                    name: newName.trim(),
+                    code: newCode.trim().toUpperCase(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('✅ 수정되었습니다');
+                loadStyles();
+                
+            } catch (error) {
+                console.error('Edit error:', error);
+                showToast('❌ 수정 실패: ' + error.message);
+            }
         }
         
         // ========== 통계 로드 ==========
@@ -1053,6 +1108,7 @@
         function closeModal() {
             document.getElementById('addStyleModal').classList.remove('active');
             // 폼 초기화
+            document.getElementById('styleCode').value = '';
             document.getElementById('styleName').value = '';
             document.getElementById('styleImage').value = '';
             document.getElementById('imagePreview').style.display = 'none';
