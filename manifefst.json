@@ -5,9 +5,9 @@
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
+  "scope": "/",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "scope": "/",
   "icons": [
     {
       "src": "/icons/icon-72.png",
@@ -53,15 +53,7 @@
     }
   ],
   "prefer_related_applications": false,
-  "related_applications": [],
   "categories": ["business", "lifestyle"],
-  "screenshots": [],
   "lang": "ko-KR",
-  "dir": "ltr",
-  "launch_handler": {
-    "client_mode": "navigate-new"
-  },
-  "edge_side_panel": {
-    "preferred_width": 400
-  }
+  "dir": "ltr"
 }
