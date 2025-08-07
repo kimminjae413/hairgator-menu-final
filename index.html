@@ -93,14 +93,14 @@
         </div>
         
         <!-- 🎨 모바일 테마 선택 버튼 -->
-        <div class="mobile-theme-trigger" onclick="showMobileThemeModal()">
+        <div class="mobile-theme-trigger" onclick="showThemeModal()">
             <span class="theme-trigger-icon">🎨</span>
             <span class="theme-trigger-text">테마 색상 선택</span>
         </div>
     </div>
 
     <!-- 🎨 모바일 테마 선택 모달 (하단에서 올라오는 방식) -->
-    <div class="mobile-theme-modal-overlay" id="mobileThemeModalOverlay" onclick="hideMobileThemeModal()">
+    <div class="mobile-theme-modal-overlay" id="themeModalOverlay" onclick="hideThemeModal()">
         <div class="mobile-theme-modal" onclick="event.stopPropagation()">
             <div class="mobile-theme-header">
                 <div class="modal-handle"></div>
@@ -108,44 +108,44 @@
             </div>
             
             <div class="mobile-theme-colors">
-                <div class="mobile-color-option selected" data-theme="dark" onclick="selectThemeFromModal('dark')">
+                <div class="mobile-color-option selected" data-theme="dark" onclick="selectTheme('dark')">
                     <div class="mobile-color-circle" style="background: #000000;"></div>
                     <span class="mobile-color-name">블랙</span>
                 </div>
                 
-                <div class="mobile-color-option" data-theme="ultimate-gray" onclick="selectThemeFromModal('ultimate-gray')">
+                <div class="mobile-color-option" data-theme="ultimate-gray" onclick="selectTheme('ultimate-gray')">
                     <div class="mobile-color-circle" style="background: #939597;"></div>
                     <span class="mobile-color-name">그레이</span>
                 </div>
                 
-                <div class="mobile-color-option" data-theme="light-beige" onclick="selectThemeFromModal('light-beige')">
+                <div class="mobile-color-option" data-theme="light-beige" onclick="selectTheme('light-beige')">
                     <div class="mobile-color-circle" style="background: #E6DCD3;"></div>
                     <span class="mobile-color-name">라이트</span>
                 </div>
                 
-                <div class="mobile-color-option" data-theme="warm-beige" onclick="selectThemeFromModal('warm-beige')">
+                <div class="mobile-color-option" data-theme="warm-beige" onclick="selectTheme('warm-beige')">
                     <div class="mobile-color-circle" style="background: #DEC9A1;"></div>
                     <span class="mobile-color-name">웜</span>
                 </div>
                 
-                <div class="mobile-color-option" data-theme="soybean" onclick="selectThemeFromModal('soybean')">
+                <div class="mobile-color-option" data-theme="soybean" onclick="selectTheme('soybean')">
                     <div class="mobile-color-circle" style="background: #D2C29D;"></div>
                     <span class="mobile-color-name">소이빈</span>
                 </div>
                 
-                <div class="mobile-color-option" data-theme="dark-beige" onclick="selectThemeFromModal('dark-beige')">
+                <div class="mobile-color-option" data-theme="dark-beige" onclick="selectTheme('dark-beige')">
                     <div class="mobile-color-circle" style="background: #7A7363;"></div>
                     <span class="mobile-color-name">베이지</span>
                 </div>
             </div>
             
-            <div class="mobile-theme-description" id="mobileThemeDescription">
+            <div class="mobile-theme-description" id="themeDescription">
                 블랙 모드: 눈의 피로를 줄이고 전문적인 분위기 연출
             </div>
             
             <div class="mobile-theme-actions">
-                <button class="mobile-theme-cancel" onclick="hideMobileThemeModal()">취소</button>
-                <button class="mobile-theme-apply" onclick="applySelectedTheme()">적용</button>
+                <button class="mobile-theme-cancel" onclick="hideThemeModal()">취소</button>
+                <button class="mobile-theme-apply" onclick="applyTheme()">적용</button>
             </div>
         </div>
     </div>
@@ -266,8 +266,6 @@
 
     <!-- 동기화 상태 표시 -->
     <div class="sync-status" id="syncStatus">Firebase 연결 중...</div>
-
-    <!-- 모달들은 JavaScript로 동적 생성 -->
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -618,20 +616,6 @@
             font-size: 11px;
             line-height: 1.3;
         }
-
-        /* 테마별 체크박스 색상 조정 */
-        .theme-light-beige .auto-login-group,
-        .theme-warm-beige .auto-login-group,
-        .theme-soybean .auto-login-group {
-            background: rgba(255, 20, 147, 0.08);
-        }
-
-        .theme-light-beige .checkmark,
-        .theme-warm-beige .checkmark,
-        .theme-soybean .checkmark {
-            border-color: rgba(0, 0, 0, 0.3);
-            background: rgba(0, 0, 0, 0.05);
-        }
         
         /* ========== 플러스 버튼 숨김 (성별 선택 화면) ========== */
         .add-customer-btn {
@@ -640,12 +624,6 @@
         
         .main-container.active .add-customer-btn.show {
             display: flex !important; /* 메인 컨테이너 활성화 시에만 표시 */
-        }
-        
-        /* 성별 선택 화면에서는 완전히 숨김 */
-        .gender-selection.show ~ .add-customer-btn,
-        body:not(.main-active) .add-customer-btn {
-            display: none !important;
         }
         
         /* ========== 카테고리 설명 박스 수정 ========== */
@@ -664,11 +642,6 @@
             max-width: none !important;
             box-sizing: border-box !important;
             clear: both !important;
-        }
-        
-        /* 네비게이션 탭과 겹치지 않도록 여백 조정 */
-        .content {
-            margin-top: calc(120px + env(safe-area-inset-top)) !important;
         }
         
         /* 모바일 대응 */
@@ -736,17 +709,15 @@
     </style>
     
     <script>
-        // ========== 🎨 모바일 테마 선택 시스템 ==========
+        // ========== 🎨 충돌 방지 테마 시스템 (새로운 변수명 사용) ==========
         
-        // 테마 설정 객체 (이름 수정)
-        const THEME_CONFIGS = {
+        // 테마 설정 객체
+        const HAIRGATOR_THEME_CONFIGS = {
             'dark': {
                 name: '블랙 모드',
                 description: '눈의 피로를 줄이고 전문적인 분위기 연출',
                 backgroundColor: '#000000',
                 textColor: '#ffffff',
-                maleAccent: '#4169E1',
-                femaleAccent: '#FF1493',
                 isDark: true
             },
             'ultimate-gray': {
@@ -754,8 +725,6 @@
                 description: '중성적이고 고급스러운 느낌, 팬톤 2021 올해의 색상',
                 backgroundColor: '#939597',
                 textColor: '#ffffff',
-                maleAccent: '#1E40AF',
-                femaleAccent: '#DC2626',
                 isDark: true
             },
             'light-beige': {
@@ -763,8 +732,6 @@
                 description: '밝고 깔끔한 분위기, 모던하고 개방적인 느낌',
                 backgroundColor: '#E6DCD3',
                 textColor: '#333333',
-                maleAccent: '#1E40AF',
-                femaleAccent: '#BE185D',
                 isDark: false
             },
             'warm-beige': {
@@ -772,8 +739,6 @@
                 description: '따뜻하고 친근한 분위기, 편안하고 아늑한 느낌',
                 backgroundColor: '#DEC9A1',
                 textColor: '#333333',
-                maleAccent: '#1E3A8A',
-                femaleAccent: '#C2185B',
                 isDark: false
             },
             'soybean': {
@@ -781,8 +746,6 @@
                 description: '자연스럽고 차분한 분위기, 편안하고 안정적인 느낌',
                 backgroundColor: '#D2C29D',
                 textColor: '#333333',
-                maleAccent: '#374151',
-                femaleAccent: '#BE185D',
                 isDark: false
             },
             'dark-beige': {
@@ -790,168 +753,118 @@
                 description: '세련되고 차분한 분위기, 고급스럽고 모던한 느낌',
                 backgroundColor: '#7A7363',
                 textColor: '#ffffff',
-                maleAccent: '#3B82F6',
-                femaleAccent: '#EC4899',
                 isDark: true
             }
         };
         
-        // 현재 선택된 테마
-        let currentTheme = 'dark';
-        let selectedThemeInModal = 'dark';
+        // 테마 상태 변수 (충돌 방지)
+        let hairgatorCurrentTheme = 'dark';
+        let hairgatorSelectedTheme = 'dark';
+        let hairgatorThemeModalOpen = false;
         
-        // ========== 🔧 selectTheme 함수 완전 수정 (기존 오류 해결) ==========
-        function selectTheme(themeName) {
-            console.log(`🎯 selectTheme 함수 호출: ${themeName}`);
+        // 🎨 테마 모달 표시 (새로운 함수명)
+        function showThemeModal() {
+            console.log('🎨 테마 모달 표시');
             
-            // selectThemeFromModal과 동일하게 처리
-            if (typeof selectThemeFromModal === 'function') {
-                selectThemeFromModal(themeName);
-            } else {
-                console.warn('⚠️ selectThemeFromModal 함수를 찾을 수 없음, 직접 처리');
-                
-                // 직접 테마 변경 처리
-                if (THEME_CONFIGS && THEME_CONFIGS[themeName]) {
-                    selectedThemeInModal = themeName;
-                    currentTheme = themeName;
-                    
-                    // 즉시 테마 적용
-                    applyThemeToAllElements(THEME_CONFIGS[themeName]);
-                    localStorage.setItem('hairgator_theme', themeName);
-                    
-                    console.log(`✅ 테마 직접 적용 완료: ${THEME_CONFIGS[themeName].name}`);
-                } else {
-                    console.error(`❌ 알 수 없는 테마: ${themeName}`);
-                }
-            }
-        }
-        
-        // 🎨 모바일 테마 모달 표시
-        function showMobileThemeModal() {
-            console.log('📱 모바일 테마 모달 표시 시작');
-            
-            const overlay = document.getElementById('mobileThemeModalOverlay');
-            console.log('🔍 모달 오버레이 요소:', overlay);
-            
+            const overlay = document.getElementById('themeModalOverlay');
             if (!overlay) {
-                console.error('❌ mobileThemeModalOverlay 요소를 찾을 수 없음');
-                console.log('📋 현재 DOM의 모든 ID 요소들:');
-                document.querySelectorAll('[id]').forEach(el => {
-                    console.log(`  - ${el.id}: ${el.tagName}`);
-                });
+                console.error('❌ 테마 모달 오버레이를 찾을 수 없음');
                 return;
             }
             
-            selectedThemeInModal = currentTheme; // 현재 테마를 임시 선택으로 설정
-            updateMobileThemeUI();
-            updateMobileThemeDescription();
+            hairgatorSelectedTheme = hairgatorCurrentTheme;
+            updateThemeSelection();
+            updateThemeDescription();
             
-            // 강제로 표시
             overlay.style.display = 'flex';
             overlay.style.opacity = '0';
             
-            // 애니메이션을 위한 지연
             setTimeout(() => {
                 overlay.classList.add('show');
                 overlay.style.opacity = '1';
+                hairgatorThemeModalOpen = true;
             }, 10);
             
-            document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
-            console.log('✅ 모바일 테마 모달 표시 완료');
+            document.body.style.overflow = 'hidden';
         }
         
-        // 🎨 모바일 테마 모달 숨김
-        function hideMobileThemeModal() {
-            console.log('📱 모바일 테마 모달 숨김');
-            const overlay = document.getElementById('mobileThemeModalOverlay');
+        // 🎨 테마 모달 숨김
+        function hideThemeModal() {
+            console.log('🎨 테마 모달 숨김');
+            
+            const overlay = document.getElementById('themeModalOverlay');
             if (overlay) {
                 overlay.classList.remove('show');
-                document.body.style.overflow = ''; // 배경 스크롤 복원
+                hairgatorThemeModalOpen = false;
+                document.body.style.overflow = '';
             }
         }
         
-        // 🎨 모달에서 테마 선택 (미리보기)
-        function selectThemeFromModal(themeName) {
-            console.log(`📱 모달에서 테마 선택: ${themeName}`);
-            selectedThemeInModal = themeName;
-            updateMobileThemeUI();
-            updateMobileThemeDescription();
-        }
-        
-        // 🎨 선택된 테마 적용
-        function applySelectedTheme() {
-            console.log(`📱 테마 적용: ${selectedThemeInModal}`);
-            currentTheme = selectedThemeInModal;
-            applyThemeToAllElements(THEME_CONFIGS[currentTheme]);
-            localStorage.setItem('hairgator_theme', currentTheme);
-            hideMobileThemeModal();
-        }
-        
-        // 🎨 모바일 테마 UI 업데이트
-        function updateMobileThemeUI() {
-            // 모든 색상 옵션에서 selected 클래스 제거
-            document.querySelectorAll('.mobile-color-option').forEach(option => {
-                option.classList.remove('selected');
-            });
+        // 🎨 테마 선택 (충돌 방지 함수명)
+        function selectTheme(themeName) {
+            console.log(`🎨 테마 선택: ${themeName}`);
             
-            // 현재 선택된 테마에 selected 클래스 추가
-            const selectedOption = document.querySelector(`[data-theme="${selectedThemeInModal}"]`);
-            if (selectedOption) {
-                selectedOption.classList.add('selected');
-            }
-        }
-        
-        // 🎨 모바일 테마 설명 업데이트
-        function updateMobileThemeDescription() {
-            const descriptionElement = document.getElementById('mobileThemeDescription');
-            if (descriptionElement && THEME_CONFIGS[selectedThemeInModal]) {
-                const config = THEME_CONFIGS[selectedThemeInModal];
-                descriptionElement.textContent = `${config.name}: ${config.description}`;
-            }
-        }
-        
-        // 🔥 모든 요소에 테마 적용 (기존 함수 개선)
-        function applyThemeToAllElements(config) {
-            if (!config) {
-                console.error('❌ 테마 설정이 없습니다');
+            if (!HAIRGATOR_THEME_CONFIGS[themeName]) {
+                console.error(`❌ 알 수 없는 테마: ${themeName}`);
                 return;
             }
             
-            console.log(`🎨 강화된 테마 적용: ${config.name}`, config);
+            hairgatorSelectedTheme = themeName;
+            updateThemeSelection();
+            updateThemeDescription();
+        }
+        
+        // 🎨 테마 적용
+        function applyTheme() {
+            console.log(`🎨 테마 적용: ${hairgatorSelectedTheme}`);
             
-            // 기본 요소들 테마 적용
-            const elementsToUpdate = [
-                { selector: 'body', style: { backgroundColor: config.backgroundColor, color: config.textColor } },
-                { selector: '#genderSelection', style: { backgroundColor: config.backgroundColor, color: config.textColor } },
-                { selector: '#designerLogin', style: { backgroundColor: config.backgroundColor, color: config.textColor } },
-                { selector: '#mainContainer', style: { backgroundColor: config.backgroundColor, color: config.textColor } },
-                { selector: '.header', style: { backgroundColor: config.backgroundColor, borderBottomColor: config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' } },
-                { selector: '.mobile-theme-modal', style: { backgroundColor: config.backgroundColor, color: config.textColor } }
+            hairgatorCurrentTheme = hairgatorSelectedTheme;
+            const config = HAIRGATOR_THEME_CONFIGS[hairgatorCurrentTheme];
+            
+            if (config) {
+                applyThemeStyles(config);
+                localStorage.setItem('hairgator_theme', hairgatorCurrentTheme);
+            }
+            
+            hideThemeModal();
+        }
+        
+        // 🎨 테마 스타일 적용
+        function applyThemeStyles(config) {
+            console.log(`🎨 스타일 적용: ${config.name}`);
+            
+            // 기본 요소들
+            document.body.style.backgroundColor = config.backgroundColor;
+            document.body.style.color = config.textColor;
+            
+            // 주요 화면들
+            const elements = [
+                '#genderSelection',
+                '#designerLogin', 
+                '#mainContainer',
+                '.mobile-theme-modal'
             ];
             
-            elementsToUpdate.forEach(({ selector, style }) => {
+            elements.forEach(selector => {
                 const element = document.querySelector(selector);
                 if (element) {
-                    Object.assign(element.style, style);
-                    console.log(`✅ ${selector} 테마 적용 완료`);
-                } else {
-                    console.log(`⚠️ ${selector} 요소를 찾을 수 없음`);
+                    element.style.backgroundColor = config.backgroundColor;
+                    element.style.color = config.textColor;
                 }
             });
             
-            // 카드 스타일 업데이트
-            updateCardStyles(config);
-            
-            // PWA 테마 색상 업데이트
-            const metaThemeColor = document.getElementById('metaThemeColor');
-            if (metaThemeColor) {
-                metaThemeColor.setAttribute('content', config.backgroundColor);
-                console.log(`✅ PWA 테마 색상 업데이트: ${config.backgroundColor}`);
+            // PWA 테마 색상
+            const metaTheme = document.getElementById('metaThemeColor');
+            if (metaTheme) {
+                metaTheme.setAttribute('content', config.backgroundColor);
             }
+            
+            // 카드 스타일 업데이트
+            updateAllCardStyles(config);
         }
         
         // 카드 스타일 업데이트
-        function updateCardStyles(config) {
+        function updateAllCardStyles(config) {
             const cardBg = config.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
             const borderColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
             
@@ -963,293 +876,140 @@
             }
             
             // 성별 카드
-            const genderCards = document.querySelectorAll('.gender-card');
-            genderCards.forEach(card => {
+            document.querySelectorAll('.gender-card').forEach(card => {
                 card.style.background = cardBg;
                 card.style.borderColor = borderColor;
                 card.style.color = config.textColor;
             });
             
             // 입력 필드
-            const inputs = document.querySelectorAll('input, textarea');
-            inputs.forEach(input => {
+            document.querySelectorAll('input, textarea').forEach(input => {
                 input.style.background = cardBg;
                 input.style.borderColor = borderColor;
                 input.style.color = config.textColor;
             });
+        }
+        
+        // 테마 선택 UI 업데이트
+        function updateThemeSelection() {
+            document.querySelectorAll('.mobile-color-option').forEach(option => {
+                option.classList.remove('selected');
+                if (option.dataset.theme === hairgatorSelectedTheme) {
+                    option.classList.add('selected');
+                }
+            });
+        }
+        
+        // 테마 설명 업데이트
+        function updateThemeDescription() {
+            const description = document.getElementById('themeDescription');
+            const config = HAIRGATOR_THEME_CONFIGS[hairgatorSelectedTheme];
             
-            // 카테고리 설명 박스
-            const categoryDesc = document.querySelector('.category-description');
-            if (categoryDesc) {
-                categoryDesc.style.background = cardBg;
-                categoryDesc.style.borderColor = borderColor;
-                categoryDesc.style.color = config.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
+            if (description && config) {
+                description.textContent = `${config.name}: ${config.description}`;
             }
         }
         
         // 저장된 테마 로드
         function loadSavedTheme() {
-            const savedTheme = localStorage.getItem('hairgator_theme');
-            if (savedTheme && THEME_CONFIGS[savedTheme]) {
-                currentTheme = savedTheme;
-                selectedThemeInModal = savedTheme;
-                console.log(`📂 저장된 테마 로드: ${THEME_CONFIGS[savedTheme].name}`);
-            } else {
-                console.log('📂 저장된 테마 없음, 기본 테마(블랙) 사용');
+            const saved = localStorage.getItem('hairgator_theme');
+            if (saved && HAIRGATOR_THEME_CONFIGS[saved]) {
+                hairgatorCurrentTheme = saved;
+                hairgatorSelectedTheme = saved;
+                console.log(`📂 저장된 테마 로드: ${HAIRGATOR_THEME_CONFIGS[saved].name}`);
             }
             
             // 즉시 테마 적용
-            applyThemeToAllElements(THEME_CONFIGS[currentTheme]);
+            const config = HAIRGATOR_THEME_CONFIGS[hairgatorCurrentTheme];
+            if (config) {
+                applyThemeStyles(config);
+            }
         }
         
-        // 플러스 버튼 상태 업데이트 함수
-        function updatePlusButtonVisibility() {
-            const addCustomerBtn = document.getElementById('addCustomerBtn');
-            const genderSelection = document.getElementById('genderSelection');
-            const mainContainer = document.getElementById('mainContainer');
+        // 플러스 버튼 상태 관리
+        function updatePlusButton() {
+            const btn = document.getElementById('addCustomerBtn');
+            const genderDiv = document.getElementById('genderSelection');
+            const mainDiv = document.getElementById('mainContainer');
             
-            if (!addCustomerBtn) {
-                console.log('⚠️ 플러스 버튼을 찾을 수 없음');
-                return;
-            }
+            if (!btn) return;
             
-            // 성별 선택 화면이 활성화되어 있으면 플러스 버튼 숨김
-            const genderActive = genderSelection && genderSelection.classList.contains('show');
-            const mainActive = mainContainer && mainContainer.classList.contains('active');
+            const genderActive = genderDiv && genderDiv.classList.contains('show');
+            const mainActive = mainDiv && mainDiv.classList.contains('active');
             
             if (genderActive || !mainActive) {
-                addCustomerBtn.style.display = 'none';
-                console.log('➖ 플러스 버튼 숨김 (성별 선택 화면)');
+                btn.style.display = 'none';
             } else {
-                addCustomerBtn.style.display = 'flex';
-                console.log('➕ 플러스 버튼 표시 (메인 화면)');
+                btn.style.display = 'flex';
             }
         }
         
-        // DOM 변경 감지하여 카테고리 설명 박스 스타일 자동 수정
-        function fixCategoryDescriptionLayout() {
-            const categoryDesc = document.querySelector('.category-description');
-            if (categoryDesc) {
-                // 강제 스타일 적용
-                const fixes = {
-                    margin: '0 0 20px 0',
-                    padding: '15px 20px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    borderRadius: '10px',
-                    lineHeight: '1.5',
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    fontSize: '14px',
-                    position: 'relative',
-                    zIndex: '1',
-                    width: 'calc(100% - 40px)',
-                    maxWidth: 'none',
-                    boxSizing: 'border-box',
-                    clear: 'both'
-                };
-                
-                Object.assign(categoryDesc.style, fixes);
-                console.log('🔧 카테고리 설명 박스 레이아웃 수정 완료');
-            }
-        }
-        
-        // 성별 선택 함수 개선 (플러스 버튼 제어 추가)
-        const originalSelectGender = window.selectGender;
-        window.selectGender = function(gender) {
-            console.log(`🎯 성별 선택: ${gender}`);
-            
-            // 기존 함수 실행
-            if (originalSelectGender) {
-                originalSelectGender(gender);
-            }
-            
-            // 플러스 버튼 상태 업데이트
-            setTimeout(() => {
-                updatePlusButtonVisibility();
-            }, 100);
-        };
-        
-        // 뒤로가기 함수 개선 (플러스 버튼 제어 추가)
-        const originalBackToGenderSelection = window.backToGenderSelection;
-        window.backToGenderSelection = function() {
-            console.log('🔙 성별 선택 화면으로 돌아가기');
-            
-            // 기존 함수 실행
-            if (originalBackToGenderSelection) {
-                originalBackToGenderSelection();
-            }
-            
-            // 플러스 버튼 상태 업데이트
-            setTimeout(() => {
-                updatePlusButtonVisibility();
-            }, 100);
-        };
-        
-        // MutationObserver로 DOM 변경 감지
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'childList') {
-                    // 카테고리 설명 박스가 추가되면 스타일 수정
-                    const addedNodes = Array.from(mutation.addedNodes);
-                    addedNodes.forEach(node => {
-                        if (node.nodeType === 1) { // Element 노드만
-                            if (node.classList && node.classList.contains('category-description')) {
-                                setTimeout(fixCategoryDescriptionLayout, 10);
-                            } else if (node.querySelector && node.querySelector('.category-description')) {
-                                setTimeout(fixCategoryDescriptionLayout, 10);
-                            }
-                        }
-                    });
-                }
-            });
-        });
-        
-        // DOM 감시 시작
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-        
-        // 현재 테마 정보 반환 (다른 스크립트에서 사용)
-        function getCurrentTheme() {
-            return {
-                name: currentTheme,
-                config: THEME_CONFIGS[currentTheme]
-            };
-        }
-        
-        // ========== 프로모션 접근 제어 시스템 ==========
-        
-        // 프로모션 클릭 핸들러 (통합)
+        // 프로모션 접근 제어
         function handlePromotionClick() {
-            console.log('🎯 프로모션 메뉴 클릭');
+            console.log('🎯 프로모션 클릭');
             
-            if (isPromotionAccessible()) {
-                // 접근 가능한 경우
-                if (typeof showPromotionManagement === 'function') {
-                    showPromotionManagement();
-                } else {
-                    alert('프로모션 기능을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
-                }
-            } else {
-                // 접근 불가능한 경우
-                alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
-                closeHamburgerMenu();
-                // 0.5초 후 프로필 모달 표시 (햄버거 메뉴가 닫힌 후)
-                setTimeout(() => {
-                    showDesignerProfile();
-                }, 500);
-            }
-        }
-        
-        // 프로모션 접근 가능 여부 확인
-        function isPromotionAccessible() {
             try {
-                const savedProfile = localStorage.getItem('hairgator_profile');
-                if (!savedProfile) {
-                    console.log('❌ 저장된 프로필 없음');
-                    return false;
+                const profile = localStorage.getItem('hairgator_profile');
+                if (!profile) {
+                    alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
+                    closeHamburgerMenu();
+                    setTimeout(() => {
+                        if (typeof showDesignerProfile === 'function') {
+                            showDesignerProfile();
+                        }
+                    }, 500);
+                    return;
                 }
                 
-                const profileData = JSON.parse(savedProfile);
-                console.log('📋 프로필 데이터 확인:', profileData);
+                const data = JSON.parse(profile);
+                const hasBasic = data.designerName && data.designerName.trim();
+                const hasBusiness = data.businessName && data.businessName.trim();
+                const hasNaver = data.naverBookingUrl && data.naverBookingUrl.trim();
                 
-                // 기본 프로필 정보가 있는지 확인 (더 엄격한 검사)
-                const hasBasicInfo = profileData.designerName && profileData.designerName.trim().length > 0;
-                const hasBusinessInfo = profileData.businessName && profileData.businessName.trim().length > 0;
-                const hasNaverUrl = profileData.naverBookingUrl && profileData.naverBookingUrl.trim().length > 0;
-                
-                const isAccessible = hasBasicInfo && (hasBusinessInfo || hasNaverUrl);
-                
-                console.log(`🔍 접근 권한 확인: ${isAccessible ? '✅ 허용' : '❌ 거부'}`, {
-                    hasBasicInfo,
-                    hasBusinessInfo, 
-                    hasNaverUrl
-                });
-                
-                return isAccessible;
-                
+                if (hasBasic && (hasBusiness || hasNaver)) {
+                    if (typeof showPromotionManagement === 'function') {
+                        showPromotionManagement();
+                    } else {
+                        alert('프로모션 기능을 불러오는 중입니다.');
+                    }
+                } else {
+                    alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
+                    closeHamburgerMenu();
+                    setTimeout(() => {
+                        if (typeof showDesignerProfile === 'function') {
+                            showDesignerProfile();
+                        }
+                    }, 500);
+                }
             } catch (error) {
-                console.error('❌ 프로필 데이터 파싱 오류:', error);
-                return false;
+                console.error('프로모션 접근 확인 오류:', error);
+                alert('프로모션 관리를 사용하려면 먼저 내 프로필을 등록해주세요.');
             }
         }
         
-        // 프로모션 메뉴 UI 업데이트
-        function updatePromotionMenuUI() {
-            const promotionMenuItem = document.getElementById('promotionMenuItem');
-            if (!promotionMenuItem) {
-                console.log('⚠️ 프로모션 메뉴 아이템을 찾을 수 없음');
-                return;
-            }
-            
-            const isAccessible = isPromotionAccessible();
-            
-            if (isAccessible) {
-                // 접근 가능 - 활성화
-                promotionMenuItem.classList.remove('disabled');
-                console.log('✅ 프로모션 메뉴 활성화');
-            } else {
-                // 접근 불가능 - 비활성화
-                promotionMenuItem.classList.add('disabled');
-                console.log('🔒 프로모션 메뉴 비활성화');
-            }
-        }
-        
-        // 프로필 저장 시 호출되는 콜백
-        function onProfileSaved() {
-            console.log('💾 프로필 저장 완료, 권한 재확인');
-            setTimeout(() => {
-                updatePromotionMenuUI();
-            }, 100);
-        }
-        
-        // 로그인 후 권한 확인
-        function checkPromotionAccessAfterLogin() {
-            console.log('🔑 로그인 후 프로모션 권한 확인');
-            setTimeout(() => {
-                updatePromotionMenuUI();
-            }, 500);
-        }
-        
-        // ========== 초기화 및 이벤트 리스너 ==========
-        
-        // DOM 로드 완료 후 초기화
+        // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔧 모바일 테마 시스템 초기화');
+            console.log('🎨 HAIRGATOR 테마 시스템 초기화');
             loadSavedTheme();
             
-            // 플러스 버튼 초기 상태 설정
-            setTimeout(() => {
-                updatePlusButtonVisibility();
-            }, 500);
-            
-            // 카테고리 설명 박스 초기 수정
-            setTimeout(() => {
-                fixCategoryDescriptionLayout();
-            }, 1000);
+            // 플러스 버튼 초기 설정
+            setTimeout(updatePlusButton, 500);
         });
         
-        // 즉시 실행 (DOM 로드 전에도)
+        // 즉시 실행
         if (document.readyState !== 'loading') {
             loadSavedTheme();
         }
         
-        // 전역 함수로 등록
-        window.showMobileThemeModal = showMobileThemeModal;
-        window.hideMobileThemeModal = hideMobileThemeModal;
-        window.selectThemeFromModal = selectThemeFromModal;
-        window.applySelectedTheme = applySelectedTheme;
-        window.getCurrentTheme = getCurrentTheme;
-        window.THEME_CONFIGS = THEME_CONFIGS;
+        // 전역 함수 등록 (오류 방지)
+        window.showThemeModal = showThemeModal;
+        window.hideThemeModal = hideThemeModal;
         window.selectTheme = selectTheme;
-        window.updatePlusButtonVisibility = updatePlusButtonVisibility;
-        window.fixCategoryDescriptionLayout = fixCategoryDescriptionLayout;
-        window.onProfileSaved = onProfileSaved;
-        window.checkPromotionAccess = updatePromotionMenuUI;
-        window.checkPromotionAccessAfterLogin = checkPromotionAccessAfterLogin;
+        window.applyTheme = applyTheme;
+        window.handlePromotionClick = handlePromotionClick;
+        window.updatePlusButton = updatePlusButton;
         
-        console.log('✅ 완전한 최종 버전 모바일 테마 시스템 로드 완료');
+        console.log('✅ 오류 수정된 HAIRGATOR 테마 시스템 로드 완료');
     </script>
 
 </body>
