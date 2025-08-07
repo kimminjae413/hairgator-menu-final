@@ -730,9 +730,9 @@
         
         if (!navTabs || !content) return;
         
-        // 여성 A~H 순서 보장
+        // 여성 A~H Length 순서 보장
         const categoryOrder = window.currentGender === 'female' 
-            ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+            ? ['A Length', 'B Length', 'C Length', 'D Length', 'E Length', 'F Length', 'G Length', 'H Length']
             : ['SIDE FRINGE', 'SIDE PART', 'FRINGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN'];
         
         const availableCategories = categoryOrder.filter(cat => firebaseCategories[cat] && firebaseCategories[cat].length > 0);
