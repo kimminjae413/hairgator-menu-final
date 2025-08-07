@@ -586,10 +586,19 @@
         
         navTabs.innerHTML = '';
         
-        const categoryNames = Object.keys(mainCategories);
+        // 올바른 순서로 카테고리 정렬
+        const categoryOrder = {
+            male: ['SIDE FRINGE', 'SIDE PART', 'FRINGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN'],
+            female: ['LONG', 'SEMI LONG', 'MEDIUM', 'BOB', 'SHORT']
+        };
         
-        // 대분류 탭 생성
-        categoryNames.forEach((category, index) => {
+        const orderedCategories = categoryOrder[window.currentGender] || Object.keys(mainCategories);
+        const availableCategories = orderedCategories.filter(cat => mainCategories[cat] && mainCategories[cat].length > 0);
+        
+        console.log(`📋 정렬된 카테고리 순서 (${window.currentGender}):`, availableCategories);
+        
+        // 대분류 탭 생성 (올바른 순서로)
+        availableCategories.forEach((category, index) => {
             const tab = document.createElement('div');
             tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
             tab.textContent = category;
@@ -599,8 +608,8 @@
         });
         
         // 첫 번째 카테고리 표시
-        if (categoryNames.length > 0) {
-            showRealTimeCategory(categoryNames[0], mainCategories[categoryNames[0]]);
+        if (availableCategories.length > 0) {
+            showRealTimeCategory(availableCategories[0], mainCategories[availableCategories[0]]);
         }
     }
 
@@ -618,22 +627,45 @@
             }
         });
         
-        // 서브카테고리 탭 생성
+        // 중분류별 올바른 순서 정렬
+        const subCategoryOrder = {
+            // 여성 Length 순서 (A → H)
+            'LONG': ['A Length', 'B Length'],
+            'SEMI LONG': ['C Length'],
+            'MEDIUM': ['D Length', 'E Length'],
+            'BOB': ['F Length', 'G Length'],
+            'SHORT': ['H Length'],
+            // 남성 순서
+            'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
+            'SIDE PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
+            'FRINGE UP': ['None', 'Fore Head'],
+            'PUSHED BACK': ['None'],
+            'BUZZ': ['None'],
+            'CROP': ['None'],
+            'MOHICAN': ['None']
+        };
+        
+        const orderedSubCategories = subCategoryOrder[categoryName] || subCategories.sort();
+        const availableSubCategories = orderedSubCategories.filter(sub => subCategories.includes(sub));
+        
+        console.log(`📂 정렬된 중분류 (${categoryName}):`, availableSubCategories);
+        
+        // 서브카테고리 탭 생성 (한줄 두께, 볼드 처리)
         let html = `<div class="length-tabs">`;
-        subCategories.forEach((subCat, index) => {
+        availableSubCategories.forEach((subCat, index) => {
             const isActive = index === 0 ? 'active' : '';
             html += `<div class="length-tab ${isActive}" onclick="showSubCategory('${subCat}')">${subCat}</div>`;
         });
         html += `</div>`;
         
-        // 빈 상태 표시 (실제 스타일 데이터는 별도 로드)
-        subCategories.forEach((subCat, index) => {
+        // 빈 상태 표시
+        availableSubCategories.forEach((subCat, index) => {
             const isActive = index === 0 ? 'active' : '';
             html += `
                 <div class="length-section ${isActive}" data-length="${subCat}">
                     <div class="empty-state">
                         <div class="empty-state-icon">✂️</div>
-                        <div class="empty-state-title">${subCat}</div>
+                        <div class="empty-state-title"><strong>${subCat}</strong></div>
                         <div class="empty-state-message">📡 실시간 스타일 로드 중...<br>잠시만 기다려주세요.</div>
                     </div>
                 </div>
@@ -1256,15 +1288,96 @@
             }
         }
 
-        .mobile-theme-trigger,
-        .mobile-color-option,
-        .auto-login-checkbox {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+        /* 중분류 탭 스타일 개선 */
+        .length-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .length-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .length-tab {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: #ccc;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-height: 34px;
+            display: flex;
+            align-items: center;
+            line-height: 1;
+        }
+        
+        .length-tab:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .length-tab.active {
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            color: #fff;
+            border-color: #FF1493;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(255, 20, 147, 0.3);
+        }
+        
+        /* 대분류 탭 볼드 처리 */
+        .nav-tab {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 25px;
+            color: #ccc;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            color: #fff;
+        }
+        
+        .nav-tab.active {
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            color: #fff;
+            font-weight: 700;
+            border-color: #FF1493;
+            box-shadow: 0 4px 15px rgba(255, 20, 147, 0.3);
+        }
+        
+        /* 빈 상태 제목 볼드 처리 */
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .empty-state-message {
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.5;
         }
     </style>
     
