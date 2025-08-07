@@ -168,7 +168,7 @@
     
     <script src="js/firebase-config.js"></script>
     <script>
-        let backupData = null;
+        let backupDataStore = null;
         let oldDataList = [];
         
         // 기존 구조와 새 구조 매핑
@@ -263,17 +263,17 @@
             
             try {
                 const snapshot = await db.collection('hairstyles').get();
-                backupData = [];
+                backupDataStore = [];
                 
                 snapshot.forEach(doc => {
-                    backupData.push({
+                    backupDataStore.push({
                         id: doc.id,
                         data: doc.data()
                     });
                 });
                 
                 // JSON 파일로 다운로드
-                const dataStr = JSON.stringify(backupData, null, 2);
+                const dataStr = JSON.stringify(backupDataStore, null, 2);
                 const dataBlob = new Blob([dataStr], { type: 'application/json' });
                 const url = URL.createObjectURL(dataBlob);
                 const link = document.createElement('a');
@@ -281,7 +281,7 @@
                 link.download = `hairgator_backup_${new Date().getTime()}.json`;
                 link.click();
                 
-                addLog(logId, `✅ ${backupData.length}개 데이터 백업 완료`, 'success');
+                addLog(logId, `✅ ${backupDataStore.length}개 데이터 백업 완료`, 'success');
                 addLog(logId, '백업 파일이 다운로드되었습니다.', 'success');
                 
             } catch (error) {
