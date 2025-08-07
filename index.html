@@ -307,6 +307,7 @@
             cursor: pointer;
             transition: all 0.3s;
             aspect-ratio: 3/4;
+            background: #1a1a1a;
         }
 
         .menu-item:hover {
@@ -484,6 +485,24 @@
             display: block;
         }
 
+        /* Loading */
+        .loading {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            border-top-color: var(--female-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
         /* Responsive */
         @media (min-width: 768px) {
             .menu-grid {
@@ -509,7 +528,7 @@
             }
         }
 
-        /* Loading */
+        /* Loading Overlay */
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -529,15 +548,6 @@
         .loading-overlay.active {
             opacity: 1;
             visibility: visible;
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #333;
-            border-top-color: var(--female-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
@@ -751,7 +761,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnRegister = document.getElementById('btnRegister');
     const btnLike = document.getElementById('btnLike');
 
-    // Menu Data Structure - 수정된 구조
+    // Menu Data Structure
     const MENU_DATA = {
         male: {
             categories: [
@@ -1039,7 +1049,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Select Category
     function selectCategory(category, gender) {
-        currentCategory = category;  // 전체 category 객체 저장
+        currentCategory = category;
         
         document.querySelectorAll('.category-tab').forEach(tab => {
             tab.classList.remove('active', 'male', 'female');
@@ -1055,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadStyles(category.id, currentSubcategory, gender);
     }
 
-    // Render Subcategories - 남녀 모두 동일한 중분류
+    // Render Subcategories
     function renderSubcategories(gender) {
         subcategoryTabs.innerHTML = '';
         
@@ -1094,42 +1104,78 @@ document.addEventListener('DOMContentLoaded', function() {
         loadStyles(currentCategory.id, subcategory, gender);
     }
 
-    // Load Styles
-    function loadStyles(categoryId, subcategory, gender) {
-        menuGrid.innerHTML = '';
+    // Load Styles from Firebase
+    async function loadStyles(categoryId, subcategory, gender) {
+        menuGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
         
-        const styleCount = gender === 'male' ? 6 : 8;
-        const styleNames = {
-            male: ['사이드프린지캠퍼', '사이드파트노탈리안', '댄디컷', '리젠트펌', '애즈펌', '슬릭백'],
-            female: ['글램웨이브', '에어리밥', '레이어드컷', '허쉬컷', 'C컬펌', 'S컬펌', '히피펌', '글램펌']
-        };
-        
-        for (let i = 0; i < styleCount; i++) {
-            const item = document.createElement('div');
-            item.className = `menu-item ${gender}`;
-            
-            // 코드 생성
-            let code;
-            if (gender === 'male') {
-                const catInitial = categoryId.substring(0, 2).toUpperCase();
-                const subInitial = subcategory.substring(0, 1);
-                code = `M${catInitial}${subInitial}${String(i + 1).padStart(3, '0')}`;
-            } else {
-                const lengthCode = categoryId.split('-')[0].toUpperCase();
-                const subInitial = subcategory.substring(0, 1);
-                code = `F${lengthCode}${subInitial}${String(i + 1).padStart(3, '0')}`;
+        try {
+            // Firebase 초기화 확인
+            if (typeof db === 'undefined') {
+                console.error('Firebase not initialized');
+                menuGrid.innerHTML = '<div style="color: #999; text-align: center; padding: 40px;">Firebase 연결 중...</div>';
+                return;
             }
             
-            item.innerHTML = `
-                <img src="https://via.placeholder.com/300x400/1a1a1a/666?text=Style+${i+1}" 
-                     alt="Style" class="menu-item-image">
-            `;
+            // 현재 카테고리 이름 찾기
+            const categoryName = currentCategory.name;
+            console.log('Loading styles:', { gender, categoryName, subcategory });
             
-            item.addEventListener('click', function() {
-                showStyleDetail(code, styleNames[gender][i] || `스타일 ${i+1}`, gender, `https://via.placeholder.com/300x400/1a1a1a/666?text=Style+${i+1}`);
+            // Firebase에서 데이터 가져오기
+            const query = db.collection('hairstyles')
+                .where('gender', '==', gender)
+                .where('mainCategory', '==', categoryName)
+                .where('subCategory', '==', subcategory);
+            
+            const snapshot = await query.get();
+            
+            menuGrid.innerHTML = '';
+            
+            if (snapshot.empty) {
+                menuGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">📭</div>
+                        <div>등록된 스타일이 없습니다</div>
+                        <div style="font-size: 12px; margin-top: 10px;">
+                            ${categoryName} - ${subcategory}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 스타일 카드 생성
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const item = document.createElement('div');
+                item.className = `menu-item ${gender}`;
+                
+                // 실제 이미지 표시
+                item.innerHTML = `
+                    <img src="${data.imageUrl || ''}" 
+                         alt="${data.name || 'Style'}" 
+                         class="menu-item-image"
+                         onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); padding: 10px; text-align: center;">
+                        <div style="font-size: 11px; color: #999;">${data.code || ''}</div>
+                        <div style="font-size: 13px; color: white; margin-top: 3px;">${data.name || ''}</div>
+                    </div>
+                `;
+                
+                item.addEventListener('click', function() {
+                    showStyleDetail(data.code, data.name, gender, data.imageUrl, doc.id);
+                });
+                
+                menuGrid.appendChild(item);
             });
             
-            menuGrid.appendChild(item);
+        } catch (error) {
+            console.error('Load styles error:', error);
+            menuGrid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ff4444;">
+                    <div>데이터 로드 실패</div>
+                    <div style="font-size: 12px; margin-top: 10px;">${error.message}</div>
+                </div>
+            `;
         }
     }
 
@@ -1141,10 +1187,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Show Style Detail Modal
-    function showStyleDetail(code, name, gender, imageSrc) {
+    function showStyleDetail(code, name, gender, imageSrc, docId) {
         if (!styleModal) return;
         
-        modalImage.src = imageSrc;
+        modalImage.src = imageSrc || '';
+        modalImage.onerror = function() {
+            this.style.display = 'none';
+            this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        };
         modalCode.textContent = code;
         modalName.textContent = name;
         
@@ -1160,16 +1210,54 @@ document.addEventListener('DOMContentLoaded', function() {
         
         styleModal.classList.add('active');
         
-        btnRegister.onclick = function() {
-            alert(`고객 등록: ${code} - ${name}`);
-            closeModal();
+        // 고객 등록 버튼
+        btnRegister.onclick = async function() {
+            const customerName = prompt('고객 이름을 입력하세요:');
+            if (!customerName) return;
+            
+            const customerPhone = prompt('전화번호를 입력하세요:');
+            if (!customerPhone) return;
+            
+            try {
+                await db.collection('customers').add({
+                    name: customerName,
+                    phone: customerPhone,
+                    styleCode: code,
+                    styleName: name,
+                    styleId: docId,
+                    gender: gender,
+                    designer: localStorage.getItem('designerName') || 'Unknown',
+                    registeredAt: new Date(),
+                    lastVisit: new Date()
+                });
+                
+                alert('고객 등록 완료!');
+                closeModal();
+            } catch (error) {
+                console.error('Customer registration error:', error);
+                alert('등록 실패: ' + error.message);
+            }
         };
         
-        btnLike.onclick = function() {
+        // 좋아요 버튼
+        btnLike.onclick = async function() {
             this.classList.toggle('active');
             const heart = this.querySelector('span:first-child');
             if (heart) {
-                heart.textContent = this.classList.contains('active') ? '♥' : '♡';
+                const isLiked = this.classList.contains('active');
+                heart.textContent = isLiked ? '♥' : '♡';
+                
+                // Firebase에 좋아요 업데이트
+                if (docId) {
+                    try {
+                        const docRef = db.collection('hairstyles').doc(docId);
+                        await docRef.update({
+                            likes: firebase.firestore.FieldValue.increment(isLiked ? 1 : -1)
+                        });
+                    } catch (error) {
+                        console.error('Like update error:', error);
+                    }
+                }
             }
         };
     }
@@ -1194,7 +1282,7 @@ window.addEventListener('load', function() {
     </script>
     
     <script>
-        // PWA Service Worker - 반드시 먼저 등록
+        // PWA Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('service-worker.js')
@@ -1219,7 +1307,6 @@ window.addEventListener('load', function() {
             e.preventDefault();
             deferredPrompt = e;
             console.log('PWA 설치 가능');
-            // 필요시 설치 버튼 표시 가능
         });
         
         // PWA 설치 감지
