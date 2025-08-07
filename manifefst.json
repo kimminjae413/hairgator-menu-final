@@ -4,9 +4,10 @@
   "description": "Professional Hair Style Menu System",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#000000",
+  "scope": "/",
   "icons": [
     {
       "src": "/icons/icon-72.png",
@@ -56,5 +57,11 @@
   "categories": ["business", "lifestyle"],
   "screenshots": [],
   "lang": "ko-KR",
-  "dir": "ltr"
+  "dir": "ltr",
+  "launch_handler": {
+    "client_mode": "navigate-new"
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }
