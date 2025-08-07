@@ -53,43 +53,43 @@
 }
 
 /* 얼티밋 그레이 테마 */
-.theme-ultimate-gray {
+.theme-gray {
     --bg-color: #939597;
-    --text-color: #ffffff;
-    --text-secondary: #f0f0f0;
-    --text-muted: #d0d0d0;
-    --border-color: rgba(255, 255, 255, 0.4);
+    --text-color: #2C2C2C;
+    --text-secondary: #444444;
+    --text-muted: #666666;
+    --border-color: rgba(0, 0, 0, 0.2);
     --card-bg: rgba(255, 255, 255, 0.1);
     --card-hover: rgba(255, 255, 255, 0.15);
     --theme-color: #939597;
     
-    --male-primary: #1E3A8A;
-    --male-secondary: #3B82F6;
-    --male-gradient: linear-gradient(135deg, #1E3A8A, #3B82F6);
+    --male-primary: #000000;
+    --male-secondary: #333333;
+    --male-gradient: linear-gradient(135deg, #000000, #333333);
     
-    --female-primary: #DC2626;
-    --female-secondary: #EF4444;
-    --female-gradient: linear-gradient(135deg, #DC2626, #EF4444);
+    --female-primary: #000000;
+    --female-secondary: #333333;
+    --female-gradient: linear-gradient(135deg, #000000, #333333);
 }
 
-/* 라이트 베이지 테마 */
-.theme-light-beige {
-    --bg-color: #E6DCD3;
-    --text-color: #333333;
-    --text-secondary: #555555;
-    --text-muted: #777777;
-    --border-color: rgba(0, 0, 0, 0.2);
-    --card-bg: rgba(255, 255, 255, 0.6);
-    --card-hover: rgba(255, 255, 255, 0.8);
-    --theme-color: #E6DCD3;
+/* 라이트 테마 (거의 흰색, 최대 대비 최적화) */
+.theme-light {
+    --bg-color: #F8F8F8;
+    --text-color: #000000;
+    --text-secondary: #202020;
+    --text-muted: #404040;
+    --border-color: rgba(0, 0, 0, 0.15);
+    --card-bg: rgba(255, 255, 255, 0.8);
+    --card-hover: rgba(255, 255, 255, 1.0);
+    --theme-color: #F8F8F8;
     
-    --male-primary: #1E40AF;
-    --male-secondary: #3B82F6;
-    --male-gradient: linear-gradient(135deg, #1E40AF, #3B82F6);
+    --male-primary: #000000;
+    --male-secondary: #202020;
+    --male-gradient: linear-gradient(135deg, #000000, #202020);
     
-    --female-primary: #BE185D;
-    --female-secondary: #EC4899;
-    --female-gradient: linear-gradient(135deg, #BE185D, #EC4899);
+    --female-primary: #000000;
+    --female-secondary: #202020;
+    --female-gradient: linear-gradient(135deg, #000000, #202020);
 }
 
 /* 웜 베이지 테마 */
@@ -150,6 +150,50 @@
     --female-primary: #EC4899;
     --female-secondary: #F472B6;
     --female-gradient: linear-gradient(135deg, #EC4899, #F472B6);
+}
+
+/* 🚫 라이트/베이지 테마 텍스트 강제 검정색 적용 */
+.theme-light,
+.theme-light *,
+body.theme-light,
+body.theme-light *,
+.theme-warm-beige,
+.theme-warm-beige *,
+body.theme-warm-beige,
+body.theme-warm-beige *,
+.theme-soybean,
+.theme-soybean *,
+body.theme-soybean,
+body.theme-soybean * {
+    color: #000000 !important;
+}
+
+/* 밝은 테마에서 특별히 흰색이어야 하는 요소들만 예외 */
+.theme-light .login-btn,
+.theme-light .mobile-theme-apply,
+.theme-light .add-customer-btn,
+.theme-light .like-btn,
+.theme-light .customer-register-btn,
+.theme-light .length-tab.active,
+.theme-light button[style*="gradient"],
+.theme-light .save-customer-btn,
+.theme-warm-beige .login-btn,
+.theme-warm-beige .mobile-theme-apply,
+.theme-warm-beige .add-customer-btn,
+.theme-warm-beige .like-btn,
+.theme-warm-beige .customer-register-btn,
+.theme-warm-beige .length-tab.active,
+.theme-warm-beige button[style*="gradient"],
+.theme-warm-beige .save-customer-btn,
+.theme-soybean .login-btn,
+.theme-soybean .mobile-theme-apply,
+.theme-soybean .add-customer-btn,
+.theme-soybean .like-btn,
+.theme-soybean .customer-register-btn,
+.theme-soybean .length-tab.active,
+.theme-soybean button[style*="gradient"],
+.theme-soybean .save-customer-btn {
+    color: #ffffff !important;
 }
 
 /* ========== 기본 설정 (테마 변수 적용) ========== */
@@ -656,7 +700,7 @@ select:focus {
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    color: #fff;
+    color: var(--text-color);
     font-weight: 500;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
@@ -1250,26 +1294,26 @@ select:focus {
 
 /* 남성 테마 */
 .main-container.male .length-tab.active {
-    color: #fff;
+    color: white;
     background-color: var(--male-primary);
     border-color: var(--male-primary);
 }
 
 .main-container.male .length-tab:hover {
-    color: #fff;
+    color: white;
     background-color: var(--male-secondary);
     border-color: var(--male-secondary);
 }
 
 /* 여성 테마 */
 .main-container.female .length-tab.active {
-    color: #fff;
+    color: white;
     background-color: var(--female-primary);
     border-color: var(--female-primary);
 }
 
 .main-container.female .length-tab:hover {
-    color: #fff;
+    color: white;
     background-color: var(--female-secondary);
     border-color: var(--female-secondary);
 }
@@ -1421,7 +1465,7 @@ select:focus {
     top: -2px;
     right: -2px;
     background: linear-gradient(135deg, #FF4444, #FF6666);
-    color: #fff;
+    color: white;
     font-size: 8px;
     font-weight: bold;
     padding: 2px 6px;
@@ -1547,7 +1591,7 @@ select:focus {
     position: absolute;
     top: calc(10px + env(safe-area-inset-top));
     right: 20px;
-    color: #fff;
+    color: white;
     font-size: 40px;
     font-weight: bold;
     cursor: pointer;
@@ -1684,7 +1728,7 @@ select:focus {
     bottom: calc(20px + env(safe-area-inset-bottom));
     right: 20px;
     background-color: rgba(0, 0, 0, 0.8);
-    color: #fff;
+    color: white;
     padding: 8px 16px;
     border-radius: 20px;
     font-size: 12px;
@@ -1758,7 +1802,6 @@ select:focus {
     box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
 }
 
-.main-container.male .add-customer-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
 }
@@ -2632,8 +2675,8 @@ select:focus {
     top: 10px;
     right: 10px;
     background: rgba(0, 0, 0, 0.7);
-    border: 2px solid #fff;
-    color: #fff;
+    border: 2px solid white;
+    color: white;
     font-size: 24px;
     cursor: pointer;
     padding: 5px 10px;
