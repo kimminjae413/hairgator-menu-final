@@ -14,14 +14,18 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-// 오프라인 지원 활성화
-db.enablePersistence()
-    .catch((err) => {
-        if (err.code === 'failed-precondition') {
-            console.log('Multiple tabs open');
-        } else if (err.code === 'unimplemented') {
-            console.log('Browser doesn\'t support offline');
-        }
-    });
+// 오프라인 지원 활성화 - 수정된 버전
+if (!window.firestorePersistenceEnabled) {
+    window.firestorePersistenceEnabled = true;
+    
+    db.enablePersistence({ synchronizeTabs: true })
+        .catch((err) => {
+            if (err.code === 'failed-precondition') {
+                console.log('Multiple tabs open - 오프라인 모드는 하나의 탭에서만 활성화됩니다');
+            } else if (err.code === 'unimplemented') {
+                console.log('Browser doesn\'t support offline');
+            }
+        });
+}
 
 console.log('✅ Firebase initialized');
