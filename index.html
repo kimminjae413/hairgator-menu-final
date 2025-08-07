@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="theme-color" content="#000000">
+    <title>HAIRGATOR - Premium Hair Style Menu</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/menu.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <!-- 로그인 화면 -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <h1 class="login-title">🎨 디자이너 로그인</h1>
+            
+            <div class="info-box">
+                <div class="info-header">💡 중요 안내</div>
+                <ul class="info-list">
+                    <li>이 정보는 고객 관리용 고유 ID가 됩니다</li>
+                    <li>핸드폰, 태블릿에서 동일하게 입력해주세요</li>
+                    <li>한번 정하면 계속 사용하니 꼭 기억해주세요!</li>
+                </ul>
+            </div>
+            
+            <div class="input-group">
+                <label>👤 이름 (실명)</label>
+                <input type="text" id="designerName" placeholder="김민수" autocomplete="off">
+                <small>* 정확한 이름을 입력해주세요</small>
+            </div>
+            
+            <div class="input-group">
+                <label>📱 휴대폰 끝 4자리</label>
+                <input type="tel" id="designerPhone" placeholder="2709" maxlength="4" pattern="[0-9]*" autocomplete="off">
+                <small>* 개인 식별용 - 다른 사람과 겹치지 않도록</small>
+            </div>
+            
+            <div class="input-group">
+                <label>🔒 개인 비밀번호 (4자리)</label>
+                <input type="password" id="designerPin" placeholder="••••" maxlength="4" pattern="[0-9]*" autocomplete="off">
+                <small>* 본인만 아는 4자리 숫자</small>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="autoLogin">
+                <label for="autoLogin">24시간 자동 로그인</label>
+            </div>
+            
+            <button class="login-btn" onclick="handleLogin()">
+                🔍 확인 후 로그인
+            </button>
+        </div>
+    </div>
+    
+    <!-- 성별 선택 화면 -->
+    <div id="genderScreen" class="gender-screen">
+        <div class="gender-container">
+            <h2 class="gender-title">고객 성별을 선택하세요</h2>
+            <div class="gender-buttons">
+                <button class="gender-btn male" onclick="selectGender('male')">
+                    <div class="gender-icon">👨</div>
+                    <div class="gender-text">남성</div>
+                    <div class="gender-subtitle">Men's Style</div>
+                </button>
+                <button class="gender-btn female" onclick="selectGender('female')">
+                    <div class="gender-icon">👩</div>
+                    <div class="gender-text">여성</div>
+                    <div class="gender-subtitle">Women's Style</div>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 메인 메뉴판 화면 -->
+    <div id="mainScreen" class="main-screen">
+        <!-- 헤더 -->
+        <header class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="goBack()">←</button>
+                <h1 class="header-title">HAIRGATOR</h1>
+            </div>
+            <div class="header-right">
+                <span class="designer-name" id="headerDesigner"></span>
+                <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+                <button class="menu-btn" onclick="toggleMenu()">☰</button>
+            </div>
+        </header>
+        
+        <!-- 대분류 탭 -->
+        <div class="category-tabs" id="categoryTabs">
+            <!-- 동적 생성 -->
+        </div>
+        
+        <!-- 중분류 탭 (앞머리 길이) -->
+        <div class="subcategory-tabs" id="subcategoryTabs">
+            <!-- 동적 생성 -->
+        </div>
+        
+        <!-- 스타일 그리드 -->
+        <div class="styles-container">
+            <div class="styles-grid" id="stylesGrid">
+                <!-- 동적 생성 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 슬라이드 메뉴 -->
+    <div class="slide-menu" id="slideMenu">
+        <div class="menu-header">
+            <h3>메뉴</h3>
+            <button class="menu-close" onclick="toggleMenu()">✕</button>
+        </div>
+        <div class="menu-designer-info">
+            <div class="designer-avatar">👤</div>
+            <div class="designer-name" id="menuDesigner">디자이너</div>
+        </div>
+        <div class="menu-items">
+            <button class="menu-item" onclick="openCustomerModal()">
+                <span class="menu-icon">👥</span>
+                <span>고객 관리</span>
+            </button>
+            <button class="menu-item" onclick="openStatsModal()">
+                <span class="menu-icon">📊</span>
+                <span>통계</span>
+            </button>
+            <button class="menu-item" onclick="changeGender()">
+                <span class="menu-icon">🔄</span>
+                <span>성별 변경</span>
+            </button>
+            <button class="menu-item" onclick="logout()">
+                <span class="menu-icon">🚪</span>
+                <span>로그아웃</span>
+            </button>
+        </div>
+    </div>
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+    
+    <!-- 스타일 상세 모달 -->
+    <div class="modal" id="styleModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeStyleModal()">✕</span>
+            <img class="modal-image" id="modalImage" src="">
+            <div class="modal-info">
+                <h3 id="modalCode"></h3>
+                <p id="modalName"></p>
+                <button class="modal-btn" onclick="addCustomer()">고객 등록</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 로딩 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>로딩 중...</p>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/main.js"></script>
+    
+    <!-- PWA 등록 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(reg => console.log('SW registered'))
+                .catch(err => console.log('SW registration failed'));
+        }
+    </script>
+</body>
+</html>
