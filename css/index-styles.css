@@ -30,7 +30,157 @@ html body.theme-soybean .logo,
 html body.theme-soybean .logo * {
     color: #000000 !important;
     font-weight: 900 !important;
-}/* HAIRGATOR 메인 페이지 스타일 - 프로모션+프로필 기능 포함 최종 버전 + 완전한 테마 시스템 + 모바일 테마 모달 */
+}
+
+/* 🚫 모든 하드코딩된 흰색 텍스트 강제 덮어쓰기 (최고 우선순위) */
+
+/* 그레이 테마 - 모든 텍스트 진한 검정색으로 강제 */
+body.theme-gray,
+body.theme-gray *,
+html body.theme-gray,
+html body.theme-gray *,
+.theme-gray,
+.theme-gray *,
+body.theme-gray .form-label,
+body.theme-gray .form-input,
+body.theme-gray .form-select,
+body.theme-gray .form-textarea,
+body.theme-gray .menu-text strong,
+body.theme-gray .nav-tab.active,
+body.theme-gray .category-description,
+body.theme-gray .length-tab.active,
+body.theme-gray .style-name-mini,
+body.theme-gray .customer-input-group label,
+body.theme-gray .customer-input-group input,
+body.theme-gray .input-group label,
+body.theme-gray .promotion-details,
+body.theme-gray .promotion-title,
+.theme-gray .form-label,
+.theme-gray .form-input,
+.theme-gray .form-select,
+.theme-gray .form-textarea,
+.theme-gray .menu-text strong,
+.theme-gray .nav-tab.active,
+.theme-gray .category-description,
+.theme-gray .length-tab.active,
+.theme-gray .style-name-mini,
+.theme-gray .customer-input-group label,
+.theme-gray .customer-input-group input,
+.theme-gray .input-group label,
+.theme-gray .promotion-details,
+.theme-gray .promotion-title {
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+/* 라이트/베이지 테마 - 모든 텍스트 검정색으로 강제 */
+body.theme-light,
+body.theme-light *,
+html body.theme-light,
+html body.theme-light *,
+.theme-light,
+.theme-light *,
+body.theme-warm-beige,
+body.theme-warm-beige *,
+html body.theme-warm-beige,
+html body.theme-warm-beige *,
+.theme-warm-beige,
+.theme-warm-beige *,
+body.theme-soybean,
+body.theme-soybean *,
+html body.theme-soybean,
+html body.theme-soybean *,
+.theme-soybean,
+.theme-soybean *,
+body.theme-light .form-label,
+body.theme-light .form-input,
+body.theme-light .form-select,
+body.theme-light .form-textarea,
+body.theme-light .menu-text strong,
+body.theme-light .nav-tab.active,
+body.theme-light .category-description,
+body.theme-light .length-tab.active,
+body.theme-light .style-name-mini,
+body.theme-light .customer-input-group label,
+body.theme-light .customer-input-group input,
+body.theme-light .input-group label,
+body.theme-light .promotion-details,
+body.theme-light .promotion-title,
+body.theme-warm-beige .form-label,
+body.theme-warm-beige .form-input,
+body.theme-warm-beige .form-select,
+body.theme-warm-beige .form-textarea,
+body.theme-warm-beige .menu-text strong,
+body.theme-warm-beige .nav-tab.active,
+body.theme-warm-beige .category-description,
+body.theme-warm-beige .length-tab.active,
+body.theme-warm-beige .style-name-mini,
+body.theme-warm-beige .customer-input-group label,
+body.theme-warm-beige .customer-input-group input,
+body.theme-warm-beige .input-group label,
+body.theme-warm-beige .promotion-details,
+body.theme-warm-beige .promotion-title,
+body.theme-soybean .form-label,
+body.theme-soybean .form-input,
+body.theme-soybean .form-select,
+body.theme-soybean .form-textarea,
+body.theme-soybean .menu-text strong,
+body.theme-soybean .nav-tab.active,
+body.theme-soybean .category-description,
+body.theme-soybean .length-tab.active,
+body.theme-soybean .style-name-mini,
+body.theme-soybean .customer-input-group label,
+body.theme-soybean .customer-input-group input,
+body.theme-soybean .input-group label,
+body.theme-soybean .promotion-details,
+body.theme-soybean .promotion-title,
+.theme-light .form-label,
+.theme-light .form-input,
+.theme-light .form-select,
+.theme-light .form-textarea,
+.theme-light .menu-text strong,
+.theme-light .nav-tab.active,
+.theme-light .category-description,
+.theme-light .length-tab.active,
+.theme-light .style-name-mini,
+.theme-light .customer-input-group label,
+.theme-light .customer-input-group input,
+.theme-light .input-group label,
+.theme-light .promotion-details,
+.theme-light .promotion-title,
+.theme-warm-beige .form-label,
+.theme-warm-beige .form-input,
+.theme-warm-beige .form-select,
+.theme-warm-beige .form-textarea,
+.theme-warm-beige .menu-text strong,
+.theme-warm-beige .nav-tab.active,
+.theme-warm-beige .category-description,
+.theme-warm-beige .length-tab.active,
+.theme-warm-beige .style-name-mini,
+.theme-warm-beige .customer-input-group label,
+.theme-warm-beige .customer-input-group input,
+.theme-warm-beige .input-group label,
+.theme-warm-beige .promotion-details,
+.theme-warm-beige .promotion-title,
+.theme-soybean .form-label,
+.theme-soybean .form-input,
+.theme-soybean .form-select,
+.theme-soybean .form-textarea,
+.theme-soybean .menu-text strong,
+.theme-soybean .nav-tab.active,
+.theme-soybean .category-description,
+.theme-soybean .length-tab.active,
+.theme-soybean .style-name-mini,
+.theme-soybean .customer-input-group label,
+.theme-soybean .customer-input-group input,
+.theme-soybean .input-group label,
+.theme-soybean .promotion-details,
+.theme-soybean .promotion-title {
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+/* HAIRGATOR 메인 페이지 스타일 - 프로모션+프로필 기능 포함 최종 버전 + 완전한 테마 시스템 + 모바일 테마 모달 */
 
 /* ========== Google Fonts 추가 ========== */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
@@ -182,124 +332,6 @@ html body.theme-soybean .logo * {
     --female-primary: #EC4899;
     --female-secondary: #F472B6;
     --female-gradient: linear-gradient(135deg, #EC4899, #F472B6);
-}
-
-/* 🚫 테마별 텍스트 색상 강제 적용 (최고 우선순위) */
-
-/* 블랙/다크 테마 - 흰색 텍스트 */
-body:not([class*="theme-"]),
-body:not([class*="theme-"]) *,
-html body:not([class*="theme-"]),
-html body:not([class*="theme-"]) *,
-body.theme-dark,
-body.theme-dark *,
-html body.theme-dark,
-html body.theme-dark *,
-.theme-dark,
-.theme-dark *,
-.theme-dark .category-description,
-.theme-dark .category-description * {
-    color: #ffffff !important;
-}
-
-/* 그레이 테마 - 진한 회색 텍스트 */
-body.theme-gray,
-body.theme-gray *,
-html body.theme-gray,
-html body.theme-gray *,
-.theme-gray,
-.theme-gray *,
-.theme-gray .category-description,
-.theme-gray .category-description * {
-    color: #2C2C2C !important;
-}
-
-/* 라이트/베이지 테마 - 검정색 텍스트 */
-body.theme-light,
-body.theme-light *,
-html body.theme-light,
-html body.theme-light *,
-.theme-light,
-.theme-light *,
-.theme-light .category-description,
-.theme-light .category-description *,
-body.theme-warm-beige,
-body.theme-warm-beige *,
-html body.theme-warm-beige,
-html body.theme-warm-beige *,
-.theme-warm-beige,
-.theme-warm-beige *,
-.theme-warm-beige .category-description,
-.theme-warm-beige .category-description *,
-body.theme-soybean,
-body.theme-soybean *,
-html body.theme-soybean,
-html body.theme-soybean *,
-.theme-soybean,
-.theme-soybean *,
-.theme-soybean .category-description,
-.theme-soybean .category-description * {
-    color: #000000 !important;
-}
-
-/* 밝은 테마에서 특별히 흰색이어야 하는 요소들만 예외 (최고 우선순위) */
-body.theme-light .login-btn,
-body.theme-light .login-btn *,
-body.theme-light .mobile-theme-apply,
-body.theme-light .mobile-theme-apply *,
-body.theme-light .add-customer-btn,
-body.theme-light .add-customer-btn *,
-body.theme-light .like-btn,
-body.theme-light .like-btn *,
-body.theme-light .customer-register-btn,
-body.theme-light .customer-register-btn *,
-body.theme-light .length-tab.active,
-body.theme-light .length-tab.active *,
-body.theme-light button[style*="gradient"],
-body.theme-light button[style*="gradient"] *,
-body.theme-light .save-customer-btn,
-body.theme-light .save-customer-btn *,
-body.theme-light .gender-icon,
-body.theme-light .gender-icon *,
-body.theme-warm-beige .login-btn,
-body.theme-warm-beige .login-btn *,
-body.theme-warm-beige .mobile-theme-apply,
-body.theme-warm-beige .mobile-theme-apply *,
-body.theme-warm-beige .add-customer-btn,
-body.theme-warm-beige .add-customer-btn *,
-body.theme-warm-beige .like-btn,
-body.theme-warm-beige .like-btn *,
-body.theme-warm-beige .customer-register-btn,
-body.theme-warm-beige .customer-register-btn *,
-body.theme-warm-beige .length-tab.active,
-body.theme-warm-beige .length-tab.active *,
-body.theme-warm-beige button[style*="gradient"],
-body.theme-warm-beige button[style*="gradient"] *,
-body.theme-warm-beige .save-customer-btn,
-body.theme-warm-beige .save-customer-btn *,
-body.theme-warm-beige .gender-icon,
-body.theme-warm-beige .gender-icon *,
-body.theme-soybean .login-btn,
-body.theme-soybean .login-btn *,
-body.theme-soybean .mobile-theme-apply,
-body.theme-soybean .mobile-theme-apply *,
-body.theme-soybean .add-customer-btn,
-body.theme-soybean .add-customer-btn *,
-body.theme-soybean .like-btn,
-body.theme-soybean .like-btn *,
-body.theme-soybean .customer-register-btn,
-body.theme-soybean .customer-register-btn *,
-body.theme-soybean .length-tab.active,
-body.theme-soybean .length-tab.active *,
-body.theme-soybean button[style*="gradient"],
-body.theme-soybean button[style*="gradient"] *,
-body.theme-soybean .save-customer-btn,
-body.theme-soybean .save-customer-btn *,
-body.theme-soybean .gender-icon,
-body.theme-soybean .gender-icon *,
-body.theme-gray .gender-icon,
-body.theme-gray .gender-icon * {
-    color: #ffffff !important;
 }
 
 /* ========== 기본 설정 (테마 변수 적용) ========== */
@@ -1065,30 +1097,6 @@ body:not([class*="theme-"]) .logo * {
     color: #ffffff !important;
 }
 
-/* 그레이 테마 - 로고 진한 검정색 */
-.theme-gray .logo,
-.theme-gray .logo *,
-body.theme-gray .logo,
-body.theme-gray .logo * {
-    color: #000000 !important;
-}
-
-/* 라이트/밝은 테마 - 로고 진한 검정색 */
-.theme-light .logo,
-.theme-light .logo *,
-body.theme-light .logo,
-body.theme-light .logo *,
-.theme-warm-beige .logo,
-.theme-warm-beige .logo *,
-body.theme-warm-beige .logo,
-body.theme-warm-beige .logo *,
-.theme-soybean .logo,
-.theme-soybean .logo *,
-body.theme-soybean .logo,
-body.theme-soybean .logo * {
-    color: #000000 !important;
-}
-
 .logo {
     display: flex;
     align-items: center;
@@ -1398,46 +1406,7 @@ body.theme-soybean .logo * {
     max-width: none;
     box-sizing: border-box;
     clear: both;
-}
-
-/* 테마별 스타일 설명 문구 색상 강제 적용 */
-
-/* 블랙/다크 테마 - 흰색 */
-body:not([class*="theme-"]) .category-description,
-body:not([class*="theme-"]) .category-description *,
-html body:not([class*="theme-"]) .category-description,
-html body:not([class*="theme-"]) .category-description *,
-body.theme-dark .category-description,
-body.theme-dark .category-description *,
-html body.theme-dark .category-description,
-html body.theme-dark .category-description * {
-    color: #ffffff !important;
-}
-
-/* 그레이 테마 - 진한 검정색 */
-body.theme-gray .category-description,
-body.theme-gray .category-description *,
-html body.theme-gray .category-description,
-html body.theme-gray .category-description * {
-    color: #000000 !important;
-    font-weight: 600 !important;
-}
-
-/* 라이트/베이지 테마 - 진한 검정색 */
-body.theme-light .category-description,
-body.theme-light .category-description *,
-html body.theme-light .category-description,
-html body.theme-light .category-description *,
-body.theme-warm-beige .category-description,
-body.theme-warm-beige .category-description *,
-html body.theme-warm-beige .category-description,
-html body.theme-warm-beige .category-description *,
-body.theme-soybean .category-description,
-body.theme-soybean .category-description *,
-html body.theme-soybean .category-description,
-html body.theme-soybean .category-description * {
-    color: #000000 !important;
-    font-weight: 600 !important;
+    color: var(--text-color);
 }
 
 /* ========== 앞머리 길이 탭 (테마 적용) ========== */
@@ -1458,7 +1427,7 @@ html body.theme-soybean .category-description * {
 }
 
 .length-tab {
-    padding: 10px 20px;
+    padding: 8px 16px;
     cursor: pointer;
     white-space: nowrap;
     color: var(--text-muted);
@@ -1470,6 +1439,8 @@ html body.theme-soybean .category-description * {
     font-size: 14px;
     font-family: 'Noto Sans KR', sans-serif;
     border: 1px solid var(--border-color);
+    min-height: 32px;
+    line-height: 1.2;
 }
 
 /* 남성 테마 */
@@ -1734,6 +1705,7 @@ html body.theme-soybean .category-description * {
 }
 
 /* ========== 이미지 모달 (테마 적용) ========== */
+/* ========== 이미지 모달 (테마 적용) ========== */
 .modal {
     display: none;
     position: fixed;
@@ -1982,6 +1954,7 @@ html body.theme-soybean .category-description * {
     box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
 }
 
+.main-container.male .add-customer-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
 }
@@ -2912,6 +2885,105 @@ html body.theme-soybean .category-description * {
     letter-spacing: 0.5px;
 }
 
+/* ========== 🔄 24시간 자동 로그인 체크박스 스타일 ========== */
+.auto-login-group {
+    margin-bottom: 20px;
+}
+
+.auto-login-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    padding: 15px;
+    background: rgba(255, 20, 147, 0.05);
+    border: 1px solid rgba(255, 20, 147, 0.2);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.auto-login-checkbox:hover {
+    background: rgba(255, 20, 147, 0.1);
+    border-color: rgba(255, 20, 147, 0.4);
+}
+
+.auto-login-checkbox input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.auto-login-checkbox input[type="checkbox"]:checked + .checkmark {
+    background: linear-gradient(135deg, #FF1493, #FF69B4);
+    border-color: #FF1493;
+}
+
+.auto-login-checkbox input[type="checkbox"]:checked + .checkmark::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.auto-login-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.auto-login-text strong {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.auto-login-text small {
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+/* 테마별 체크박스 색상 조정 */
+.theme-light .auto-login-group,
+.theme-warm-beige .auto-login-group,
+.theme-soybean .auto-login-group {
+    background: rgba(255, 20, 147, 0.08);
+}
+
+.theme-light .checkmark,
+.theme-warm-beige .checkmark,
+.theme-soybean .checkmark {
+    border-color: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* 터치 친화적 설정 */
+.auto-login-checkbox,
+.mobile-theme-trigger,
+.mobile-color-option {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
 /* ========== 🎨 테마 전환 애니메이션 (강화) ========== */
 * {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
@@ -3128,103 +3200,4 @@ html body.theme-soybean .category-description * {
         gap: 20px;
         overflow: visible;
     }
-}
-
-/* ========== 🔄 24시간 자동 로그인 체크박스 스타일 ========== */
-.auto-login-group {
-    margin-bottom: 20px;
-}
-
-.auto-login-checkbox {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    cursor: pointer;
-    padding: 15px;
-    background: rgba(255, 20, 147, 0.05);
-    border: 1px solid rgba(255, 20, 147, 0.2);
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.auto-login-checkbox:hover {
-    background: rgba(255, 20, 147, 0.1);
-    border-color: rgba(255, 20, 147, 0.4);
-}
-
-.auto-login-checkbox input[type="checkbox"] {
-    display: none;
-}
-
-.checkmark {
-    width: 22px;
-    height: 22px;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-radius: 6px;
-    position: relative;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.auto-login-checkbox input[type="checkbox"]:checked + .checkmark {
-    background: linear-gradient(135deg, #FF1493, #FF69B4);
-    border-color: #FF1493;
-}
-
-.auto-login-checkbox input[type="checkbox"]:checked + .checkmark::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.auto-login-text {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.auto-login-text strong {
-    color: var(--text-color);
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.auto-login-text small {
-    color: var(--text-muted);
-    font-size: 11px;
-    line-height: 1.3;
-}
-
-/* 테마별 체크박스 색상 조정 */
-.theme-light-beige .auto-login-group,
-.theme-warm-beige .auto-login-group,
-.theme-soybean .auto-login-group {
-    background: rgba(255, 20, 147, 0.08);
-}
-
-.theme-light-beige .checkmark,
-.theme-warm-beige .checkmark,
-.theme-soybean .checkmark {
-    border-color: rgba(0, 0, 0, 0.3);
-    background: rgba(0, 0, 0, 0.05);
-}
-
-/* 터치 친화적 설정 */
-.auto-login-checkbox,
-.mobile-theme-trigger,
-.mobile-color-option {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
 }
