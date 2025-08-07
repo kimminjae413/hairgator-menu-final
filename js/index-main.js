@@ -1,5 +1,5 @@
-// ========== HAIRGATOR 메인 로직 (최종 안정화 버전 - 프로모션 권한 제어 + 테마 시스템 포함) ==========
-console.log('🚀 HAIRGATOR 최종 완전 버전 시작 - 프로모션 + 프로필 + 테마 시스템 포함');
+// ========== HAIRGATOR 메인 로직 (24시간 자동 로그인 시스템 포함) ==========
+console.log('🚀 HAIRGATOR 최종 완전 버전 시작 - 24시간 자동 로그인 + 테마 시스템 포함');
 
 // ========== 전역 변수 ==========
 let currentDesigner = null;
@@ -14,6 +14,9 @@ let hierarchyStructure = {};
 
 // 🎨 테마 관련 전역 변수
 let currentTheme = 'dark';
+
+// 🔄 자동 로그인 관련 변수
+const AUTO_LOGIN_DURATION = 24 * 60 * 60 * 1000; // 24시간 (밀리초)
 
 // Excel 기반 완전 구조 (오타 수정됨)
 const PERFECT_STRUCTURE = {
@@ -34,6 +37,92 @@ const PERFECT_STRUCTURE = {
         'SHORT': ['H Length']
     }
 };
+
+// ========== 🔄 24시간 자동 로그인 시스템 ==========
+
+// 자동 로그인 정보 저장
+function saveAutoLogin(designerId, designerName) {
+    const autoLoginData = {
+        designerId: designerId,
+        designerName: designerName,
+        timestamp: Date.now(),
+        expiresAt: Date.now() + AUTO_LOGIN_DURATION
+    };
+    
+    localStorage.setItem('hairgator_auto_login', JSON.stringify(autoLoginData));
+    console.log(`💾 자동 로그인 저장: ${designerName} (24시간 유효)`);
+}
+
+// 자동 로그인 정보 확인
+function checkAutoLogin() {
+    try {
+        const savedData = localStorage.getItem('hairgator_auto_login');
+        if (!savedData) {
+            console.log('🔍 저장된 자동 로그인 정보 없음');
+            return null;
+        }
+        
+        const autoLoginData = JSON.parse(savedData);
+        const now = Date.now();
+        
+        // 만료 시간 확인
+        if (now > autoLoginData.expiresAt) {
+            console.log('⏰ 자동 로그인 기간 만료 (24시간 초과)');
+            localStorage.removeItem('hairgator_auto_login');
+            return null;
+        }
+        
+        // 남은 시간 계산
+        const remainingTime = autoLoginData.expiresAt - now;
+        const remainingHours = Math.floor(remainingTime / (60 * 60 * 1000));
+        const remainingMinutes = Math.floor((remainingTime % (60 * 60 * 1000)) / (60 * 1000));
+        
+        console.log(`✅ 자동 로그인 유효: ${autoLoginData.designerName} (남은 시간: ${remainingHours}시간 ${remainingMinutes}분)`);
+        
+        return autoLoginData;
+        
+    } catch (error) {
+        console.error('❌ 자동 로그인 확인 오류:', error);
+        localStorage.removeItem('hairgator_auto_login');
+        return null;
+    }
+}
+
+// 자동 로그인 삭제
+function clearAutoLogin() {
+    localStorage.removeItem('hairgator_auto_login');
+    console.log('🗑️ 자동 로그인 정보 삭제');
+}
+
+// 자동 로그인으로 세션 시작
+function startAutoLoginSession(autoLoginData) {
+    currentDesigner = autoLoginData.designerId;
+    currentDesignerName = autoLoginData.designerName;
+    
+    // 세션 스토리지에도 저장 (기존 로직 호환성)
+    sessionStorage.setItem('currentDesigner', autoLoginData.designerId);
+    sessionStorage.setItem('designerName', autoLoginData.designerName);
+    
+    // UI 업데이트
+    document.getElementById('designerLogin').style.display = 'none';
+    document.getElementById('genderSelection').classList.add('show');
+    document.getElementById('addCustomerBtn').classList.add('show');
+    
+    document.getElementById('menuDesignerName').textContent = `🎨 ${autoLoginData.designerName}`;
+    
+    // 자동 로그인 알림 표시
+    const remainingTime = autoLoginData.expiresAt - Date.now();
+    const remainingHours = Math.floor(remainingTime / (60 * 60 * 1000));
+    showDeviceOptimizationNotice(`🔄 자동 로그인: ${autoLoginData.designerName} (${remainingHours}시간 남음)`);
+    
+    // 프로모션 접근 권한 확인
+    if (typeof checkPromotionAccessAfterLogin === 'function') {
+        checkPromotionAccessAfterLogin();
+    }
+    
+    console.log(`🎉 자동 로그인 성공: ${autoLoginData.designerName}`);
+    return true;
+}
 
 // ========== 🎨 테마 시스템 초기화 ==========
 function initializeThemeSystem() {
@@ -125,8 +214,15 @@ function getCurrentThemeInfo() {
     };
 }
 
-// ========== 세션 관리 ==========
+// ========== 세션 관리 (자동 로그인 우선 확인) ==========
 function checkExistingSession() {
+    // 🔄 1. 먼저 자동 로그인 확인
+    const autoLoginData = checkAutoLogin();
+    if (autoLoginData) {
+        return startAutoLoginSession(autoLoginData);
+    }
+    
+    // 🔍 2. 기존 세션 스토리지 확인 (호환성)
     const savedDesigner = sessionStorage.getItem('currentDesigner');
     const savedDesignerName = sessionStorage.getItem('designerName');
     
@@ -152,7 +248,7 @@ function checkExistingSession() {
     return false;
 }
 
-// ========== 디자이너 로그인 ==========
+// ========== 디자이너 로그인 (자동 로그인 체크박스 추가) ==========
 async function checkDesignerLogin() {
     const name = document.getElementById('designerName').value.trim();
     const phone = document.getElementById('designerPhone').value.trim();
@@ -244,15 +340,25 @@ async function confirmRegistration(designerId, name, pin) {
     }
 }
 
-// 디자이너 세션 시작
+// 디자이너 세션 시작 (자동 로그인 저장 포함)
 function startDesignerSession(designerId, name) {
     currentDesigner = designerId;
     currentDesignerName = name;
     
+    // 기존 세션 스토리지 저장 (호환성)
     sessionStorage.setItem('currentDesigner', designerId);
     sessionStorage.setItem('designerName', name);
     
-    showLoginResult('success', `🎉 ${name} 디자이너님 환영합니다!`);
+    // 🔄 자동 로그인 체크박스 확인
+    const autoLoginCheckbox = document.getElementById('autoLoginCheckbox');
+    const shouldSaveAutoLogin = autoLoginCheckbox ? autoLoginCheckbox.checked : true; // 기본값: true
+    
+    if (shouldSaveAutoLogin) {
+        saveAutoLogin(designerId, name);
+        showLoginResult('success', `🎉 ${name} 디자이너님 환영합니다!<br>🔄 24시간 자동 로그인이 설정되었습니다.`);
+    } else {
+        showLoginResult('success', `🎉 ${name} 디자이너님 환영합니다!`);
+    }
     
     setTimeout(() => {
         document.getElementById('designerLogin').style.display = 'none';
@@ -291,13 +397,18 @@ function showLoginResult(type, message) {
     `;
 }
 
-// 디자이너 로그아웃
+// 디자이너 로그아웃 (자동 로그인 정보도 삭제)
 function logoutDesigner() {
-    if (confirm('정말 로그아웃하시겠습니까?')) {
+    if (confirm('정말 로그아웃하시겠습니까?\n(24시간 자동 로그인도 해제됩니다)')) {
+        // 기존 데이터 삭제
         sessionStorage.removeItem('currentDesigner');
         sessionStorage.removeItem('designerName');
         sessionStorage.removeItem('currentCustomer');
         
+        // 🔄 자동 로그인 정보 삭제
+        clearAutoLogin();
+        
+        // 전역 변수 초기화
         currentDesigner = null;
         currentDesignerName = null;
         currentGender = null;
@@ -308,6 +419,7 @@ function logoutDesigner() {
         currentStyleImage = null;
         hierarchyStructure = {};
         
+        // UI 초기화
         document.getElementById('hamburgerOverlay').style.display = 'none';
         document.getElementById('genderSelection').classList.remove('show');
         document.getElementById('mainContainer').classList.remove('active');
@@ -315,12 +427,20 @@ function logoutDesigner() {
         
         document.getElementById('designerLogin').style.display = 'flex';
         
+        // 입력 필드 초기화
         document.getElementById('designerName').value = '';
         document.getElementById('designerPhone').value = '';
         document.getElementById('designerPin').value = '';
         document.getElementById('loginResult').innerHTML = '';
         
-        console.log('👋 디자이너 로그아웃 완료');
+        // 자동 로그인 체크박스 초기화
+        const autoLoginCheckbox = document.getElementById('autoLoginCheckbox');
+        if (autoLoginCheckbox) {
+            autoLoginCheckbox.checked = true; // 기본값으로 리셋
+        }
+        
+        console.log('👋 디자이너 로그아웃 완료 (자동 로그인 해제)');
+        showDeviceOptimizationNotice('👋 로그아웃 완료');
     }
 }
 
@@ -392,9 +512,6 @@ function closeApp() {
         window.close();
     }
 }
-
-// ========== 프로모션 접근 권한 확인 (제거됨 - HTML에서 직접 처리) ==========
-// 이 섹션의 함수들은 HTML 인라인 스크립트로 이동됨
 
 // ========== Firebase에서 계층 구조 로드 ==========
 async function loadHierarchyFromFirebaseOnly(gender) {
@@ -1098,20 +1215,16 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🔐 새로운 세션 - 로그인 필요');
     }
     
-    console.log('🚀 HAIRGATOR 최종 완전 버전 로드 완료! (프로모션 + 프로필 + 테마 시스템 포함)');
+    console.log('🚀 HAIRGATOR 최종 완전 버전 로드 완료! (24시간 자동 로그인 + 테마 시스템 포함)');
 });
 
 // 페이지 로드 시 초기화
 window.addEventListener('load', function() {
-    console.log('🎉 HAIRGATOR 최종 완전 버전 완료! (프로모션 + 프로필 + 알림 + 테마 시스템)');
+    console.log('🎉 HAIRGATOR 최종 완전 버전 완료! (24시간 자동 로그인 + 테마 시스템)');
     
     // 🎨 테마 재적용 (안전장치)
     setTimeout(() => {
         applyThemeToInterface(currentTheme);
     }, 500);
     
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-        console.log('📱 PWA 독립 실행 모드');
-        showDeviceOptimizationNotice('📱 PWA 앱 모드로 실행 중');
-    }
 });
