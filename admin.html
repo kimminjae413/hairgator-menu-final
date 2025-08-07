@@ -605,11 +605,11 @@
                 <label>이미지 업로드</label>
                 <div class="upload-area" id="uploadArea">
                     <input type="file" id="styleImage" class="upload-input" accept="image/*" onchange="previewImage(event)">
-                    <label for="styleImage" class="upload-label">
+                    <label for="styleImage" class="upload-label" id="uploadLabel">
                         📷 클릭하거나 드래그하여 이미지 업로드
                     </label>
                     <div class="upload-preview" id="imagePreview" style="display: none;">
-                        <img id="previewImg" src="" alt="Preview">
+                        <img id="previewImg" src="" alt="Preview" style="max-width: 100%;">
                     </div>
                 </div>
             </div>
@@ -775,11 +775,26 @@
         function previewImage(event) {
             const file = event.target.files[0];
             if (file) {
+                // 파일 크기 체크 (5MB 제한)
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('❌ 이미지 크기는 5MB 이하여야 합니다');
+                    event.target.value = '';
+                    return;
+                }
+                
+                // 파일 타입 체크
+                if (!file.type.startsWith('image/')) {
+                    showToast('❌ 이미지 파일만 업로드 가능합니다');
+                    event.target.value = '';
+                    return;
+                }
+                
                 selectedFile = file;
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('previewImg').src = e.target.result;
                     document.getElementById('imagePreview').style.display = 'block';
+                    document.getElementById('uploadLabel').style.display = 'none';
                 };
                 reader.readAsDataURL(file);
             }
@@ -788,26 +803,39 @@
         // ========== 스타일 저장 ==========
         async function saveStyle() {
             const code = document.getElementById('styleCode').value;
-            const name = document.getElementById('styleName').value;
+            const name = document.getElementById('styleName').value.trim();
             
             if (!name) {
-                showToast('스타일 이름을 입력하세요');
+                showToast('❌ 스타일 이름을 입력하세요');
                 return;
             }
             
             if (!selectedFile) {
-                showToast('이미지를 선택하세요');
+                showToast('❌ 이미지를 선택하세요');
                 return;
             }
             
-            showToast('저장 중...');
+            // 저장 버튼 비활성화
+            const saveBtn = event.target;
+            saveBtn.disabled = true;
+            saveBtn.textContent = '저장 중...';
+            
+            showToast('📤 이미지 업로드 중...');
             
             try {
+                // 이미지 리사이징 (선택사항)
+                const resizedBlob = await resizeImage(selectedFile, 800, 1067); // 3:4 비율
+                
                 // Storage에 이미지 업로드
+                const timestamp = Date.now();
+                const fileName = `${code}_${timestamp}.jpg`;
                 const storageRef = storage.ref();
-                const imageRef = storageRef.child(`hairstyles/${code}_${Date.now()}.jpg`);
-                const snapshot = await imageRef.put(selectedFile);
+                const imageRef = storageRef.child(`hairstyles/${currentGender}/${fileName}`);
+                
+                const snapshot = await imageRef.put(resizedBlob || selectedFile);
                 const imageUrl = await snapshot.ref.getDownloadURL();
+                
+                showToast('💾 데이터 저장 중...');
                 
                 // Firestore에 데이터 저장
                 await db.collection('hairstyles').add({
@@ -817,7 +845,7 @@
                     mainCategory: currentCategory,
                     subCategory: currentSubcategory,
                     imageUrl: imageUrl,
-                    createdAt: new Date(),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     views: 0,
                     likes: 0
                 });
@@ -829,7 +857,53 @@
             } catch (error) {
                 console.error('Save style error:', error);
                 showToast('❌ 저장 실패: ' + error.message);
+            } finally {
+                // 버튼 다시 활성화
+                saveBtn.disabled = false;
+                saveBtn.textContent = '저장';
             }
+        }
+        
+        // ========== 이미지 리사이징 (선택사항) ==========
+        function resizeImage(file, maxWidth, maxHeight) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        // 비율 유지하며 리사이징
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height *= maxWidth / width;
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width *= maxHeight / height;
+                                height = maxHeight;
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        canvas.toBlob((blob) => {
+                            resolve(blob);
+                        }, 'image/jpeg', 0.85);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
         }
         
         // ========== 스타일 삭제 ==========
@@ -982,44 +1056,59 @@
             document.getElementById('styleName').value = '';
             document.getElementById('styleImage').value = '';
             document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('uploadLabel').style.display = 'block';
             selectedFile = null;
         }
         
         // ========== 드래그 앤 드롭 ==========
-        const uploadArea = document.getElementById('uploadArea');
-        
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-        
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-        
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                const file = files[0];
-                if (file.type.startsWith('image/')) {
-                    selectedFile = file;
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.getElementById('previewImg').src = e.target.result;
-                        document.getElementById('imagePreview').style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    showToast('이미지 파일만 업로드 가능합니다');
-                }
-            }
-        });
-        
-        // ========== 초기화 ==========
         document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('uploadArea');
+            
+            if (uploadArea) {
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.add('dragover');
+                });
+                
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.classList.remove('dragover');
+                });
+                
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                    
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        const file = files[0];
+                        
+                        // 파일 크기 체크
+                        if (file.size > 5 * 1024 * 1024) {
+                            showToast('❌ 이미지 크기는 5MB 이하여야 합니다');
+                            return;
+                        }
+                        
+                        if (file.type.startsWith('image/')) {
+                            selectedFile = file;
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                document.getElementById('previewImg').src = e.target.result;
+                                document.getElementById('imagePreview').style.display = 'block';
+                                document.getElementById('uploadLabel').style.display = 'none';
+                                
+                                // 파일 input에도 설정
+                                const dataTransfer = new DataTransfer();
+                                dataTransfer.items.add(file);
+                                document.getElementById('styleImage').files = dataTransfer.files;
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
+                            showToast('❌ 이미지 파일만 업로드 가능합니다');
+                        }
+                    }
+                });
+            }
+            
             console.log('🚀 Admin page loaded');
             console.log('📱 Firebase connected:', typeof db !== 'undefined');
         });
