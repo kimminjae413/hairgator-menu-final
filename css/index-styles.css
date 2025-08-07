@@ -168,6 +168,14 @@ body.theme-soybean * {
     color: #000000 !important;
 }
 
+/* 그레이 테마 텍스트 강제 검정색 적용 */
+.theme-gray,
+.theme-gray *,
+body.theme-gray,
+body.theme-gray * {
+    color: #2C2C2C !important;
+}
+
 /* 밝은 테마에서 특별히 흰색이어야 하는 요소들만 예외 */
 .theme-light .login-btn,
 .theme-light .mobile-theme-apply,
@@ -177,6 +185,7 @@ body.theme-soybean * {
 .theme-light .length-tab.active,
 .theme-light button[style*="gradient"],
 .theme-light .save-customer-btn,
+.theme-light .gender-icon,
 .theme-warm-beige .login-btn,
 .theme-warm-beige .mobile-theme-apply,
 .theme-warm-beige .add-customer-btn,
@@ -185,6 +194,7 @@ body.theme-soybean * {
 .theme-warm-beige .length-tab.active,
 .theme-warm-beige button[style*="gradient"],
 .theme-warm-beige .save-customer-btn,
+.theme-warm-beige .gender-icon,
 .theme-soybean .login-btn,
 .theme-soybean .mobile-theme-apply,
 .theme-soybean .add-customer-btn,
@@ -192,7 +202,9 @@ body.theme-soybean * {
 .theme-soybean .customer-register-btn,
 .theme-soybean .length-tab.active,
 .theme-soybean button[style*="gradient"],
-.theme-soybean .save-customer-btn {
+.theme-soybean .save-customer-btn,
+.theme-soybean .gender-icon,
+.theme-gray .gender-icon {
     color: #ffffff !important;
 }
 
@@ -587,10 +599,12 @@ select:focus {
         background: linear-gradient(135deg, #FF1493, #FF69B4);
         border-radius: 50%;
         flex-shrink: 0;
+        color: #ffffff !important; /* 아이콘 색상 강제 흰색 */
     }
 
     .gender-card.male .gender-icon {
         background: linear-gradient(135deg, #4169E1, #1E90FF);
+        color: #ffffff !important; /* 남성 아이콘도 흰색 */
     }
 
     .gender-title {
@@ -646,10 +660,12 @@ select:focus {
         background: linear-gradient(135deg, #FF1493, #FF69B4);
         border-radius: 50%;
         flex-shrink: 0;
+        color: #ffffff !important; /* 아이콘 색상 강제 흰색 */
     }
 
     .gender-card.male .gender-icon {
         background: linear-gradient(135deg, #4169E1, #1E90FF);
+        color: #ffffff !important; /* 남성 아이콘도 흰색 */
     }
 
     .gender-title {
@@ -934,18 +950,41 @@ select:focus {
     justify-content: space-between;
 }
 
-/* HAIRGATOR 로고 텍스트 테마 적용 */
+/* HAIRGATOR 로고 텍스트 테마별 색상 적용 */
 .logo,
 .logo *,
 .logo-section .logo,
 .logo-section .logo *,
 .header .logo,
 .header .logo * {
-    color: var(--text-color) !important;
     font-size: 22px !important;
     font-weight: 700 !important;
     font-family: 'Noto Sans KR', sans-serif !important;
     transition: color 0.3s ease !important;
+}
+
+/* 블랙/다크 테마 - 로고 흰색 */
+.theme-dark .logo,
+.theme-dark .logo *,
+body:not([class*="theme-"]) .logo,
+body:not([class*="theme-"]) .logo * {
+    color: #ffffff !important;
+}
+
+/* 그레이 테마 - 로고 검정색 */
+.theme-gray .logo,
+.theme-gray .logo * {
+    color: #000000 !important;
+}
+
+/* 라이트/밝은 테마 - 로고 검정색 */
+.theme-light .logo,
+.theme-light .logo *,
+.theme-warm-beige .logo,
+.theme-warm-beige .logo *,
+.theme-soybean .logo,
+.theme-soybean .logo * {
+    color: #000000 !important;
 }
 
 .logo {
