@@ -637,28 +637,248 @@
         console.log(`✅ ${categoryName} 내용 표시 완료`);
     }
 
-    // 백그라운드 Firebase 데이터 로드
+    // 백그라운드 Firebase 데이터 로드 - 개선된 버전
     function loadFirebaseDataInBackground(gender) {
-        console.log(`🔥 백그라운드 Firebase 로드: ${gender}`);
+        console.log(`🔥 실시간 Firebase 데이터 로드 시도: ${gender}`);
         
         if (!window.firebaseConnected || !window.db) {
-            console.log('⚠️ Firebase 연결 안됨, 기본 데이터 유지');
+            console.log('⚠️ Firebase 연결 안됨');
             return;
         }
         
-        // Firebase 데이터 로드 시도 (비동기)
+        // 실시간 Firebase 데이터 조회
         window.db.collection('category_hierarchy')
             .where('gender', '==', gender)
             .get()
             .then(snapshot => {
-                if (!snapshot.empty) {
-                    console.log(`🔄 Firebase 데이터 발견 (${snapshot.size}개), 업데이트 시도...`);
-                    // 여기서 실제 데이터로 업데이트할 수 있음
+                console.log(`📊 Firebase 쿼리 결과: ${snapshot.size}개 문서`);
+                
+                if (snapshot.empty) {
+                    console.log('⚠️ Firebase category_hierarchy 비어있음 - 어드민 초기화 필요');
+                    showFirebaseEmptyMessage();
+                    return;
+                }
+                
+                // 실시간 데이터 파싱
+                const firebaseCategories = {};
+                let hasData = false;
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    console.log('📄 Firebase 실시간 문서:', data);
+                    
+                    const mainCat = data.mainCategory;
+                    const subCat = data.subCategory;
+                    
+                    if (mainCat && subCat) {
+                        if (!firebaseCategories[mainCat]) {
+                            firebaseCategories[mainCat] = [];
+                        }
+                        
+                        if (!firebaseCategories[mainCat].includes(subCat)) {
+                            firebaseCategories[mainCat].push(subCat);
+                            hasData = true;
+                        }
+                    }
+                });
+                
+                if (hasData && Object.keys(firebaseCategories).length > 0) {
+                    console.log('✅ Firebase 실시간 데이터 발견, UI 업데이트');
+                    
+                    // 카테고리 정렬
+                    Object.keys(firebaseCategories).forEach(mainCat => {
+                        firebaseCategories[mainCat].sort();
+                    });
+                    
+                    // 실시간으로 UI 업데이트
+                    updateCategoriesFromFirebase(firebaseCategories);
+                } else {
+                    console.log('⚠️ Firebase 데이터 형식 오류');
+                    showFirebaseEmptyMessage();
                 }
             })
             .catch(error => {
-                console.log('⚠️ Firebase 백그라운드 로드 실패:', error.message);
+                console.log('⚠️ Firebase 실시간 로드 실패:', error.message);
+                // Firebase 실패해도 기본 데이터는 이미 표시됨
             });
+    }
+
+    // Firebase 데이터로 실시간 UI 업데이트
+    function updateCategoriesFromFirebase(firebaseCategories) {
+        console.log('🔄 Firebase 데이터로 UI 실시간 업데이트:', firebaseCategories);
+        
+        // 순서 보장
+        const categoryOrder = window.currentGender === 'female' 
+            ? ['LONG', 'SEMI LONG', 'MEDIUM', 'BOB', 'SHORT']
+            : ['SIDE FRINGE', 'SIDE PART', 'FRINGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN'];
+        
+        const navTabs = document.getElementById('navTabs');
+        const content = document.getElementById('content');
+        
+        if (!navTabs || !content) return;
+        
+        // 기존 탭 제거
+        navTabs.innerHTML = '';
+        
+        const availableCategories = categoryOrder.filter(cat => firebaseCategories[cat] && firebaseCategories[cat].length > 0);
+        
+        // Firebase 데이터로 탭 재생성
+        availableCategories.forEach((category, index) => {
+            const tab = document.createElement('div');
+            tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
+            tab.textContent = category;
+            tab.onclick = () => showFirebaseCategory(category, firebaseCategories[category]);
+            navTabs.appendChild(tab);
+        });
+        
+        // 첫 번째 카테고리 표시
+        if (availableCategories.length > 0) {
+            showFirebaseCategory(availableCategories[0], firebaseCategories[availableCategories[0]]);
+        }
+        
+        // 상태 업데이트
+        setTimeout(() => {
+            const statusDiv = document.querySelector('[style*="color: #FF69B4"]');
+            if (statusDiv) {
+                statusDiv.innerHTML = '✅ Firebase 실시간 동기화 완료';
+                statusDiv.style.color = '#28a745';
+            }
+        }, 500);
+    }
+
+    // Firebase 카테고리 표시
+    function showFirebaseCategory(categoryName, subCategories) {
+        const content = document.getElementById('content');
+        
+        // 활성 탭 업데이트
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.textContent === categoryName) {
+                tab.classList.add('active');
+            }
+        });
+        
+        // 서브카테고리 정렬
+        const subCategoryOrder = {
+            'LONG': ['A Length', 'B Length'],
+            'SEMI LONG': ['C Length'],  
+            'MEDIUM': ['D Length', 'E Length'],
+            'BOB': ['F Length', 'G Length'],
+            'SHORT': ['H Length'],
+            'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
+            'SIDE PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
+            'FRINGE UP': ['None', 'Fore Head'],
+            'PUSHED BACK': ['None'],
+            'BUZZ': ['None'],
+            'CROP': ['None'],
+            'MOHICAN': ['None']
+        };
+        
+        const orderedSubCategories = subCategoryOrder[categoryName] || subCategories.sort();
+        
+        // HTML 생성
+        let html = '<div class="length-tabs">';
+        orderedSubCategories.forEach((subCat, index) => {
+            const active = index === 0 ? 'active' : '';
+            html += `<div class="length-tab ${active}" onclick="showSubCategory('${subCat}')">${subCat}</div>`;
+        });
+        html += '</div>';
+        
+        // 실제 스타일 로드 시도
+        orderedSubCategories.forEach((subCat, index) => {
+            const active = index === 0 ? 'active' : '';
+            html += `
+                <div class="length-section ${active}" data-length="${subCat}">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔥</div>
+                        <div class="empty-state-title"><strong>${subCat}</strong></div>
+                        <div class="empty-state-message">📡 Firebase 실시간 스타일 로드 중...<br>어드민에서 스타일을 추가하면 즉시 표시됩니다.</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        content.innerHTML = html;
+        
+        // 실제 스타일 데이터 로드 시도
+        setTimeout(() => loadRealStyles(categoryName, orderedSubCategories[0]), 1000);
+    }
+
+    // 실제 스타일 데이터 로드
+    function loadRealStyles(mainCategory, subCategory) {
+        if (!window.firebaseConnected || !window.db) return;
+        
+        console.log(`🎨 실제 스타일 로드 시도: ${window.currentGender}, ${mainCategory}, ${subCategory}`);
+        
+        const gender = window.currentGender;
+        
+        window.db.collection('hairstyles')
+            .where('gender', '==', gender)
+            .where('mainCategory', '==', mainCategory)
+            .where('subCategory', '==', subCategory)
+            .get()
+            .then(snapshot => {
+                console.log(`🖼️ 스타일 쿼리 결과: ${snapshot.size}개`);
+                
+                if (!snapshot.empty) {
+                    const styles = [];
+                    snapshot.forEach(doc => {
+                        styles.push(doc.data());
+                    });
+                    
+                    console.log(`✅ 실제 스타일 로드됨: ${styles.length}개`);
+                    displayRealStyles(subCategory, styles);
+                }
+            })
+            .catch(error => {
+                console.log('⚠️ 스타일 로드 실패:', error.message);
+            });
+    }
+
+    // 실제 스타일 표시
+    function displayRealStyles(subCategory, styles) {
+        const section = document.querySelector(`[data-length="${subCategory}"]`);
+        if (!section || !styles.length) return;
+        
+        let html = '<div class="styles-grid">';
+        styles.forEach(style => {
+            html += `
+                <div class="style-item" onclick="openStyleModal('${style.code}', '${style.name}', '${style.imageUrl}')">
+                    <img src="${style.imageUrl}" alt="${style.name}" loading="lazy">
+                    <div class="style-info">
+                        <div class="style-code">${style.code}</div>
+                        <div class="style-name">${style.name}</div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        
+        section.innerHTML = html;
+        console.log(`✅ ${subCategory}에 ${styles.length}개 스타일 표시 완료`);
+    }
+
+    // Firebase 비어있음 메시지
+    function showFirebaseEmptyMessage() {
+        const content = document.getElementById('content');
+        if (!content) return;
+        
+        content.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🔧</div>
+                <div class="empty-state-title">어드민 초기화 필요</div>
+                <div class="empty-state-message">
+                    Firebase category_hierarchy가 비어있습니다.<br><br>
+                    <strong>해결 방법:</strong><br>
+                    1. <a href="/admin.html" target="_blank" style="color: #FF1493;">어드민 페이지</a>로 이동<br>
+                    2. "🚀 초기화 실행" 버튼 클릭<br>
+                    3. 이 페이지 새로고침<br><br>
+                    <button onclick="window.location.reload()" style="background: #FF1493; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
+                        🔄 새로고침
+                    </button>
+                </div>
+            </div>
+        `;
     }
 
     // 오류 상태 표시
