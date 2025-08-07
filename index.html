@@ -14,7 +14,7 @@
     
     <!-- 파비콘 -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
     
     <!-- CSS 파일들 -->
     <link rel="stylesheet" href="css/index-styles.css">
@@ -26,83 +26,91 @@
     <link rel="stylesheet" href="css/kakao-notification.css">
     
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 </head>
 <body>
     <!-- 동기화 상태 표시 -->
-    <div id="syncStatus" class="sync-status">동기화 대기 중...</div>
+    <div id="syncStatus" class="sync-status">Firebase 연결 중...</div>
     
     <!-- 디바이스 최적화 안내 -->
     <div id="deviceNotice" class="device-notice"></div>
     
     <!-- 디자이너 로그인 화면 -->
     <div id="designerLogin" class="designer-login">
-        <div class="login-container">
-            <div class="login-header">
-                <div class="logo-icon">💈</div>
-                <h1>HAIRGATOR</h1>
-                <p>Premium Hair Style Menu System</p>
+        <div class="login-card">
+            <h2>💇 HAIRGATOR 로그인</h2>
+            
+            <div class="info-notice">
+                ⚡ <strong>최초 접속시 디자이너 정보 등록</strong><br>
+                처음 사용하시는 디자이너님은 아래 정보를 입력하면<br>
+                자동으로 등록됩니다. (어드민 등록 불필요)
             </div>
             
-            <div class="login-form">
-                <div class="form-group">
-                    <label>디자이너 이름</label>
-                    <input type="text" id="designerName" placeholder="이름을 입력하세요" maxlength="10">
-                </div>
-                
-                <div class="form-group">
-                    <label>전화번호 (뒤 4자리)</label>
-                    <input type="tel" id="designerPhone" placeholder="0000" maxlength="4" pattern="[0-9]*">
-                </div>
-                
-                <div class="form-group">
-                    <label>비밀번호 (4자리)</label>
-                    <input type="password" id="designerPin" placeholder="****" maxlength="4" pattern="[0-9]*">
-                </div>
-                
-                <button class="login-btn" onclick="checkDesignerLogin()">로그인</button>
-                
-                <div id="loginResult" class="login-result"></div>
+            <div class="input-group">
+                <label>👤 이름 (실명)</label>
+                <input type="text" id="designerName" placeholder="김민수">
+                <small>* 정확한 이름을 입력해주세요</small>
             </div>
             
-            <div class="login-footer">
-                <p>© 2024 HAIRGATOR - All rights reserved</p>
+            <div class="input-group">
+                <label>📱 휴대폰 끝 4자리</label>
+                <input type="number" id="designerPhone" placeholder="2709" maxlength="4">
+                <small>* 개인 식별용 - 다른 사람과 겹치지 않도록</small>
             </div>
+            
+            <div class="input-group">
+                <label>🔒 개인 비밀번호 (4자리)</label>
+                <input type="password" id="designerPin" placeholder="••••" maxlength="4">
+                <small>* 본인만 아는 4자리 숫자</small>
+            </div>
+            
+            <button class="login-btn" onclick="checkDesignerLogin()">
+                🔍 확인 후 로그인
+            </button>
+            
+            <div id="loginResult" class="check-result"></div>
         </div>
     </div>
     
     <!-- 성별 선택 화면 -->
     <div id="genderSelection" class="gender-selection">
-        <div class="gender-container">
-            <h2>성별을 선택하세요</h2>
-            <div class="gender-buttons">
-                <button class="gender-btn male" onclick="selectGender('male')">
-                    <span class="gender-icon">👨</span>
-                    <span class="gender-text">남성</span>
-                </button>
-                <button class="gender-btn female" onclick="selectGender('female')">
-                    <span class="gender-icon">👩</span>
-                    <span class="gender-text">여성</span>
-                </button>
-            </div>
+        <div class="gender-card male" onclick="selectGender('male')">
+            <div class="gender-icon">♂</div>
+            <div class="gender-title">남성</div>
+            <div class="gender-subtitle">Men's Hairstyle</div>
+        </div>
+        
+        <div class="gender-card female" onclick="selectGender('female')">
+            <div class="gender-icon">♀</div>
+            <div class="gender-title">여성</div>
+            <div class="gender-subtitle">Women's Hairstyle</div>
         </div>
     </div>
     
-    <!-- 메인 콘텐츠 -->
-    <div id="mainContent" class="main-content">
+    <!-- 메인 컨테이너 -->
+    <div id="mainContainer" class="main-container">
         <!-- 헤더 -->
-        <div class="header">
-            <button class="menu-btn" onclick="toggleMenu()">☰</button>
-            <h1 id="headerTitle">HAIRGATOR</h1>
-            <button id="addCustomerBtn" class="add-customer-btn" onclick="openAddCustomerModal()">
-                <span>+</span>
+        <header class="header">
+            <div class="logo-section">
+                <button class="back-btn" onclick="backToGenderSelection()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M12 16L6 10L12 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <h1 class="logo-text">HAIRGATOR</h1>
+            </div>
+            
+            <button class="menu-btn" onclick="toggleSlideMenu()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
             </button>
-        </div>
+        </header>
         
-        <!-- 대분류 탭 -->
-        <div id="navTabs" class="nav-tabs"></div>
+        <!-- 네비게이션 탭 -->
+        <nav id="navTabs" class="nav-tabs"></nav>
         
         <!-- 콘텐츠 영역 -->
         <div id="content" class="content"></div>
@@ -110,156 +118,156 @@
     
     <!-- 슬라이드 메뉴 -->
     <div id="slideMenu" class="slide-menu">
-        <div class="menu-header">
-            <button class="close-menu-btn" onclick="toggleMenu()">✕</button>
+        <div class="slide-menu-header">
+            <h3>메뉴</h3>
+            <button class="close-btn" onclick="toggleSlideMenu()">✕</button>
         </div>
-        <div class="menu-content">
-            <div class="menu-designer-info">
-                <div class="designer-icon">🎨</div>
-                <div id="menuDesignerName" class="designer-name">디자이너</div>
-            </div>
-            <div class="menu-items">
-                <button class="menu-item" onclick="changeGender()">
-                    <span class="menu-icon">🔄</span>
-                    <span>성별 변경</span>
-                </button>
-                <button class="menu-item" onclick="openCustomerListModal()">
-                    <span class="menu-icon">👥</span>
-                    <span>고객 조회</span>
-                </button>
-                <button class="menu-item" onclick="openStatsModal()">
-                    <span class="menu-icon">📊</span>
-                    <span>인기 통계</span>
-                </button>
-                <button class="menu-item" onclick="openPromotionModal()">
-                    <span class="menu-icon">🎯</span>
-                    <span>프로모션 관리</span>
-                </button>
-                <button class="menu-item" onclick="openDesignerProfileModal()">
-                    <span class="menu-icon">👤</span>
-                    <span>프로필 설정</span>
-                </button>
-                <button class="menu-item" onclick="openKakaoNotificationModal()">
-                    <span class="menu-icon">💬</span>
-                    <span>카카오톡 알림</span>
-                </button>
-                <button class="menu-item" onclick="logout()">
-                    <span class="menu-icon">🚪</span>
-                    <span>로그아웃</span>
-                </button>
+        
+        <div class="menu-designer-info">
+            <div class="designer-avatar">👤</div>
+            <div id="menuDesignerName" class="designer-name">디자이너</div>
+        </div>
+        
+        <div class="menu-items">
+            <button class="menu-item" onclick="openCustomerListModal()">
+                <span class="menu-icon">👥</span>
+                <span>고객 조회</span>
+            </button>
+            <button class="menu-item" onclick="openStatsModal()">
+                <span class="menu-icon">📊</span>
+                <span>인기 통계</span>
+            </button>
+            <button class="menu-item" onclick="openPromotionModal()">
+                <span class="menu-icon">🎯</span>
+                <span>프로모션 관리</span>
+            </button>
+            <button class="menu-item" onclick="openDesignerProfileModal()">
+                <span class="menu-icon">👤</span>
+                <span>프로필 설정</span>
+            </button>
+            <button class="menu-item" onclick="openKakaoNotificationModal()">
+                <span class="menu-icon">💬</span>
+                <span>카카오톡 알림</span>
+            </button>
+            <button class="menu-item" onclick="openNaverExtractorModal()">
+                <span class="menu-icon">📱</span>
+                <span>네이버 예약 연동</span>
+            </button>
+            <button class="menu-item logout" onclick="logoutDesigner()">
+                <span class="menu-icon">🚪</span>
+                <span>로그아웃</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- 슬라이드 메뉴 오버레이 -->
+    <div id="menuOverlay" class="menu-overlay" onclick="toggleSlideMenu()"></div>
+    
+    <!-- 새 고객 추가 버튼 -->
+    <button class="add-customer-btn" id="addCustomerBtn" onclick="showNewCustomerModal()">+</button>
+    
+    <!-- 이미지 모달 -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img class="modal-image" id="modalImage" src="" alt="">
+            <div class="modal-info">
+                <h3 id="modalCode"></h3>
+                <p id="modalName"></p>
+                <button class="like-btn" id="likeBtn" onclick="toggleStyleLike()">❤️ 좋아요</button>
+                <button class="customer-register-btn" id="customerRegisterBtn" onclick="showCustomerRegisterModal()">👤 고객 등록</button>
             </div>
         </div>
     </div>
     
-    <!-- 오버레이 -->
-    <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
-    
-    <!-- 새 고객 추가 모달 -->
-    <div id="addCustomerModal" class="modal">
+    <!-- 고객 등록 모달 -->
+    <div id="customerRegisterModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>새 고객 등록</h2>
-                <button class="modal-close" onclick="closeAddCustomerModal()">✕</button>
+                <h2>👤 고객 등록</h2>
+                <button class="modal-close" onclick="closeCustomerRegisterModal()">✕</button>
             </div>
             
-            <!-- 단계 표시 -->
-            <div class="step-indicator">
-                <div class="step active" id="step1">1. 기본정보</div>
-                <div class="step" id="step2">2. 스타일선택</div>
-                <div class="step" id="step3">3. 추가정보</div>
-                <div class="step" id="step4">4. 확인</div>
-            </div>
-            
-            <!-- Step 1: 기본 정보 -->
-            <div class="modal-step" id="modalStep1">
-                <div class="form-group">
-                    <label>고객 이름 <span class="required">*</span></label>
-                    <input type="text" id="customerName" placeholder="이름을 입력하세요">
+            <div class="modal-body">
+                <div class="style-preview">
+                    <img id="registerStyleImage" src="">
+                    <div class="style-info">
+                        <div id="registerStyleCode"></div>
+                        <div id="registerStyleName"></div>
+                    </div>
                 </div>
                 
                 <div class="form-group">
-                    <label>전화번호 (뒤 4자리) <span class="required">*</span></label>
-                    <input type="tel" id="customerPhone" placeholder="0000" maxlength="4" pattern="[0-9]*">
+                    <label>고객 이름 <span class="required">*</span></label>
+                    <input type="text" id="registerCustomerName" placeholder="이름을 입력하세요">
+                </div>
+                
+                <div class="form-group">
+                    <label>전화번호 <span class="required">*</span></label>
+                    <input type="tel" id="registerCustomerPhone" placeholder="010-1234-5678">
+                </div>
+                
+                <div class="form-group">
+                    <label>메모</label>
+                    <textarea id="registerCustomerMemo" rows="3" placeholder="특별 요청사항이나 메모"></textarea>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeCustomerRegisterModal()">취소</button>
+                <button class="btn-primary" onclick="saveCustomerWithStyle()">등록</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 새 고객 추가 모달 -->
+    <div id="newCustomerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➕ 새 고객 추가</h2>
+                <button class="modal-close" onclick="closeNewCustomerModal()">✕</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>고객 이름 <span class="required">*</span></label>
+                    <input type="text" id="newCustomerName" placeholder="이름을 입력하세요">
+                </div>
+                
+                <div class="form-group">
+                    <label>전화번호 <span class="required">*</span></label>
+                    <input type="tel" id="newCustomerPhone" placeholder="010-1234-5678">
                 </div>
                 
                 <div class="form-group">
                     <label>성별</label>
-                    <div class="gender-select">
+                    <div class="radio-group">
                         <label class="radio-label">
-                            <input type="radio" name="customerGender" value="male" checked>
+                            <input type="radio" name="newCustomerGender" value="male" checked>
                             <span>남성</span>
                         </label>
                         <label class="radio-label">
-                            <input type="radio" name="customerGender" value="female">
+                            <input type="radio" name="newCustomerGender" value="female">
                             <span>여성</span>
                         </label>
                     </div>
                 </div>
                 
-                <button class="modal-btn next-btn" onclick="nextStep()">다음</button>
-            </div>
-            
-            <!-- Step 2: 스타일 선택 -->
-            <div class="modal-step" id="modalStep2" style="display: none;">
                 <div class="form-group">
-                    <label>헤어스타일 <span class="required">*</span></label>
-                    <input type="text" id="selectedStyleDisplay" readonly placeholder="메인 화면에서 선택한 스타일">
-                    <input type="hidden" id="selectedStyleCode">
-                    <input type="hidden" id="selectedStyleName">
-                    <input type="hidden" id="selectedStyleImage">
-                </div>
-                
-                <div class="modal-buttons">
-                    <button class="modal-btn prev-btn" onclick="prevStep()">이전</button>
-                    <button class="modal-btn next-btn" onclick="nextStep()">다음</button>
-                </div>
-            </div>
-            
-            <!-- Step 3: 추가 정보 -->
-            <div class="modal-step" id="modalStep3" style="display: none;">
-                <div class="form-group">
-                    <label>예약 날짜</label>
-                    <input type="date" id="reservationDate">
-                </div>
-                
-                <div class="form-group">
-                    <label>예약 시간</label>
-                    <input type="time" id="reservationTime">
+                    <label>첫 방문 스타일</label>
+                    <input type="text" id="newCustomerStyle" placeholder="스타일 선택 (선택사항)" readonly>
                 </div>
                 
                 <div class="form-group">
                     <label>메모</label>
-                    <textarea id="customerMemo" rows="3" placeholder="특별 요청사항이나 메모를 입력하세요"></textarea>
-                </div>
-                
-                <div class="modal-buttons">
-                    <button class="modal-btn prev-btn" onclick="prevStep()">이전</button>
-                    <button class="modal-btn next-btn" onclick="nextStep()">다음</button>
+                    <textarea id="newCustomerMemo" rows="3" placeholder="특별 요청사항이나 메모"></textarea>
                 </div>
             </div>
             
-            <!-- Step 4: 확인 -->
-            <div class="modal-step" id="modalStep4" style="display: none;">
-                <div class="confirmation-summary">
-                    <h3>등록 정보 확인</h3>
-                    <div id="confirmationDetails"></div>
-                </div>
-                
-                <div class="modal-buttons">
-                    <button class="modal-btn prev-btn" onclick="prevStep()">이전</button>
-                    <button class="modal-btn save-btn" onclick="saveCustomer()">등록 완료</button>
-                </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeNewCustomerModal()">취소</button>
+                <button class="btn-primary" onclick="saveNewCustomer()">저장</button>
             </div>
-        </div>
-    </div>
-    
-    <!-- 고객 등록 완료 모달 -->
-    <div id="customerSavedModal" class="modal">
-        <div class="modal-content small">
-            <div class="success-icon">✅</div>
-            <h2>고객 등록 완료!</h2>
-            <p id="savedCustomerInfo"></p>
-            <button class="modal-btn" onclick="closeCustomerSavedModal()">확인</button>
         </div>
     </div>
     
@@ -267,7 +275,7 @@
     <div id="customerListModal" class="modal">
         <div class="modal-content large">
             <div class="modal-header">
-                <h2>고객 조회</h2>
+                <h2>👥 고객 조회</h2>
                 <button class="modal-close" onclick="closeCustomerListModal()">✕</button>
             </div>
             
@@ -285,7 +293,7 @@
     <div id="statsModal" class="modal">
         <div class="modal-content large">
             <div class="modal-header">
-                <h2>인기 스타일 통계</h2>
+                <h2>📊 인기 스타일 통계</h2>
                 <button class="modal-close" onclick="closeStatsModal()">✕</button>
             </div>
             
@@ -340,6 +348,19 @@
         </div>
     </div>
     
+    <!-- 네이버 예약 추출 모달 -->
+    <div id="naverExtractorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📱 네이버 예약 연동</h2>
+                <button class="modal-close" onclick="closeNaverExtractorModal()">✕</button>
+            </div>
+            <div id="naverExtractorContent" class="naver-extractor-content">
+                <!-- 네이버 예약 추출 내용이 동적으로 로드됩니다 -->
+            </div>
+        </div>
+    </div>
+    
     <!-- 알림 토스트 -->
     <div id="notificationToast" class="notification-toast"></div>
     
@@ -348,81 +369,17 @@
         <div class="loading-spinner"></div>
     </div>
     
-    <!-- JavaScript 파일들 -->
+    <!-- JavaScript 파일들 (올바른 순서) -->
     <script src="js/firebase-config.js"></script>
     <script src="js/index-firebase.js"></script>
+    <script src="js/index-customer.js"></script>
+    <script src="js/index-stats.js"></script>
     <script src="js/designer-profile.js"></script>
     <script src="js/promotion-manager.js"></script>
     <script src="js/kakao-notification.js"></script>
     <script src="js/naver-booking-extractor.js"></script>
-    <script src="js/index-customer.js"></script>
-    <script src="js/index-stats.js"></script>
+    
+    <!-- 메인 스크립트 (마지막에 로드) -->
     <script src="js/index-main.js"></script>
-    
-    <!-- 여성 A~H Length 구조 패치 -->
-    <script>
-    console.log('🔧 여성 A~H Length 구조 패치 로드');
-    
-    // 기존 시스템이 완전히 로드된 후에 패치 적용
-    window.addEventListener('load', function() {
-        console.log('📋 기존 시스템 로드 대기 중...');
-        
-        // 3초 대기 후 패치 적용 (모든 스크립트가 완전히 로드되도록)
-        setTimeout(function() {
-            console.log('🔄 여성 구조 수정 패치 적용 시작');
-            
-            // PERFECT_STRUCTURE가 존재하는지 확인
-            if (typeof PERFECT_STRUCTURE !== 'undefined') {
-                // 여성 구조만 A~H Length로 변경
-                PERFECT_STRUCTURE.female = {
-                    'LONG': ['A Length', 'B Length'],
-                    'SEMI LONG': ['C Length'],
-                    'MEDIUM': ['D Length', 'E Length'],
-                    'BOB': ['F Length', 'G Length'],
-                    'SHORT': ['H Length']
-                };
-                
-                // hierarchyStructure도 함께 업데이트
-                if (typeof hierarchyStructure !== 'undefined') {
-                    hierarchyStructure.female = {
-                        'LONG': ['A Length', 'B Length'],
-                        'SEMI LONG': ['C Length'],
-                        'MEDIUM': ['D Length', 'E Length'],
-                        'BOB': ['F Length', 'G Length'],
-                        'SHORT': ['H Length']
-                    };
-                }
-                
-                // 여성 카테고리 설명 추가/업데이트
-                if (typeof getCategoryDescription === 'function') {
-                    const originalGetCategoryDescription = getCategoryDescription;
-                    window.getCategoryDescription = function(mainCategory) {
-                        const femaleDescriptions = {
-                            'A Length': '가슴 아래까지 내려오는 매우 긴 길이입니다.',
-                            'B Length': '가슴선 정도의 긴 길이입니다.',
-                            'C Length': '어깨 아래 10cm 정도의 세미롱 길이입니다.',
-                            'D Length': '어깨선 정도의 미디엄 길이입니다.',
-                            'E Length': '어깨 위 5cm 정도의 미디엄 길이입니다.',
-                            'F Length': '턱선 정도의 보브 길이입니다.',
-                            'G Length': '턱 위 5cm 정도의 짧은 보브 길이입니다.',
-                            'H Length': '귀 정도의 매우 짧은 길이입니다.'
-                        };
-                        
-                        if (femaleDescriptions[mainCategory]) {
-                            return femaleDescriptions[mainCategory];
-                        }
-                        
-                        return originalGetCategoryDescription(mainCategory);
-                    };
-                }
-                
-                console.log('✅ 여성 A~H Length 구조 패치 적용 완료');
-            } else {
-                console.log('⚠️ PERFECT_STRUCTURE를 찾을 수 없음 - 1초 후 재시도');
-                setTimeout(arguments.callee, 1000);
-            }
-        }, 3000);
-    });
-    </script>
 </body>
 </html>
