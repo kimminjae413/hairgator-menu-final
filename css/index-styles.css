@@ -1,9 +1,9 @@
-/* HAIRGATOR 메인 페이지 스타일 - 프로모션+프로필 기능 포함 최종 버전 + 테마 시스템 */
+/* HAIRGATOR 메인 페이지 스타일 - 프로모션+프로필 기능 포함 최종 버전 + 완전한 테마 시스템 */
 
 /* ========== Google Fonts 추가 ========== */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
 
-/* ========== 🎨 테마 시스템 - CSS 변수 ========== */
+/* ========== 🎨 테마 시스템 - CSS 변수 (실시간 적용 강화) ========== */
 :root {
     /* 기본 테마 (다크) */
     --bg-color: #000000;
@@ -22,9 +22,15 @@
     --female-primary: #FF1493;
     --female-secondary: #FF69B4;
     --female-gradient: linear-gradient(135deg, #FF1493, #FF69B4);
+    
+    /* PWA 테마 색상 */
+    --theme-color: #000000;
+    
+    /* 부드러운 전환 */
+    transition: all 0.3s ease;
 }
 
-/* ========== 🎨 테마별 색상 설정 ========== */
+/* ========== 🎨 테마별 색상 설정 (실시간 적용) ========== */
 
 /* 다크 테마 (기본) */
 .theme-dark {
@@ -35,6 +41,7 @@
     --border-color: rgba(255, 255, 255, 0.3);
     --card-bg: rgba(255, 255, 255, 0.05);
     --card-hover: rgba(255, 255, 255, 0.1);
+    --theme-color: #000000;
     
     --male-primary: #2563EB;
     --male-secondary: #3B82F6;
@@ -54,6 +61,7 @@
     --border-color: rgba(255, 255, 255, 0.4);
     --card-bg: rgba(255, 255, 255, 0.1);
     --card-hover: rgba(255, 255, 255, 0.15);
+    --theme-color: #939597;
     
     --male-primary: #1E3A8A;
     --male-secondary: #3B82F6;
@@ -73,6 +81,7 @@
     --border-color: rgba(0, 0, 0, 0.2);
     --card-bg: rgba(255, 255, 255, 0.6);
     --card-hover: rgba(255, 255, 255, 0.8);
+    --theme-color: #E6DCD3;
     
     --male-primary: #1E40AF;
     --male-secondary: #3B82F6;
@@ -92,6 +101,7 @@
     --border-color: rgba(0, 0, 0, 0.2);
     --card-bg: rgba(255, 255, 255, 0.5);
     --card-hover: rgba(255, 255, 255, 0.7);
+    --theme-color: #DEC9A1;
     
     --male-primary: #1E3A8A;
     --male-secondary: #3B82F6;
@@ -111,6 +121,7 @@
     --border-color: rgba(0, 0, 0, 0.2);
     --card-bg: rgba(255, 255, 255, 0.5);
     --card-hover: rgba(255, 255, 255, 0.7);
+    --theme-color: #D2C29D;
     
     --male-primary: #374151;
     --male-secondary: #6B7280;
@@ -130,6 +141,7 @@
     --border-color: rgba(255, 255, 255, 0.3);
     --card-bg: rgba(255, 255, 255, 0.08);
     --card-hover: rgba(255, 255, 255, 0.12);
+    --theme-color: #7A7363;
     
     --male-primary: #3B82F6;
     --male-secondary: #60A5FA;
@@ -168,10 +180,11 @@ body {
     overscroll-behavior: none;
     -webkit-overscroll-behavior: none;
     
+    /* 🎨 테마 전환 부드러운 애니메이션 */
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* ========== 입력 필드 터치 완전 활성화 ========== */
+/* ========== 입력 필드 터치 완전 활성화 (테마 적용) ========== */
 input[type="text"],
 input[type="number"],
 input[type="password"],
@@ -191,6 +204,20 @@ select {
     visibility: visible !important;
     position: relative !important;
     z-index: 999 !important;
+    
+    /* 🎨 테마 색상 적용 */
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--female-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1);
 }
 
 /* 모바일 전용 입력 필드 설정 */
@@ -277,6 +304,7 @@ select {
     z-index: 10;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
 }
 
 /* 태블릿 전용 스타일 추가 */
@@ -349,6 +377,7 @@ select {
     font-size: 12px;
     line-height: 1.5;
     color: var(--text-secondary);
+    transition: all 0.3s ease;
 }
 
 .input-group {
@@ -429,6 +458,28 @@ select {
 
 .check-result {
     margin-top: 20px;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 14px;
+    text-align: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.check-result.show {
+    opacity: 1;
+}
+
+.check-result.success {
+    background: rgba(40, 167, 69, 0.2);
+    border: 1px solid rgba(40, 167, 69, 0.5);
+    color: #28a745;
+}
+
+.check-result.error {
+    background: rgba(220, 53, 69, 0.2);
+    border: 1px solid rgba(220, 53, 69, 0.5);
+    color: #dc3545;
 }
 
 /* ========== 성별 선택 화면 (테마 적용) ========== */
@@ -583,9 +634,17 @@ select {
     box-shadow: 0 8px 25px rgba(255, 20, 147, 0.2);
 }
 
-/* ========== 메인 컨테이너 ========== */
+.gender-card.male:hover {
+    border-color: var(--male-primary);
+    box-shadow: 0 8px 25px rgba(65, 105, 225, 0.2);
+}
+
+/* ========== 메인 컨테이너 (테마 적용) ========== */
 .main-container {
     display: none;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
 }
 
 .main-container.active {
@@ -681,7 +740,7 @@ select {
     transition: all 0.3s ease;
 }
 
-/* ========== 햄버거 메뉴 ========== */
+/* ========== 햄버거 메뉴 (테마 적용) ========== */
 .hamburger-overlay {
     position: fixed;
     top: 0;
@@ -700,14 +759,16 @@ select {
     width: 320px;
     max-width: 90vw;
     height: 100%;
-    background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
-    color: white;
+    background: var(--bg-color);
+    color: var(--text-color);
     padding: 0;
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
     animation: slideInRight 0.3s ease;
     overflow-y: auto;
+    border-left: 1px solid var(--border-color);
+    transition: all 0.3s ease;
 }
 
 @keyframes slideInRight {
@@ -717,7 +778,7 @@ select {
 
 .menu-header {
     padding: 30px 25px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -732,7 +793,7 @@ select {
 .close-menu {
     background: none;
     border: none;
-    color: #999;
+    color: var(--text-muted);
     font-size: 24px;
     cursor: pointer;
     padding: 5px;
@@ -740,7 +801,7 @@ select {
 }
 
 .close-menu:hover {
-    color: #fff;
+    color: var(--text-color);
 }
 
 .menu-items {
@@ -754,11 +815,11 @@ select {
     margin: 0;
     cursor: pointer;
     transition: all 0.3s ease;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .menu-item:hover {
-    background: rgba(255, 20, 147, 0.1);
+    background: var(--card-hover);
 }
 
 .menu-icon {
@@ -766,6 +827,7 @@ select {
     margin-right: 15px;
     width: 40px;
     text-align: center;
+    color: var(--text-color);
 }
 
 .menu-text {
@@ -774,14 +836,39 @@ select {
 
 .menu-text strong {
     display: block;
-    color: #fff;
+    color: var(--text-color);
     margin-bottom: 3px;
     font-size: 16px;
 }
 
 .menu-text small {
-    color: #aaa;
+    color: var(--text-muted);
     font-size: 12px;
+}
+
+/* 비활성화된 메뉴 아이템 */
+.menu-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    position: relative;
+}
+
+.menu-item.disabled .menu-text strong {
+    color: var(--text-muted);
+}
+
+.menu-item.disabled::after {
+    content: "🔒";
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.menu-item.disabled:hover {
+    background: none;
 }
 
 /* ========== 네비게이션 탭 (테마 적용) ========== */
@@ -900,6 +987,7 @@ select {
     line-height: 1.6;
     color: var(--text-secondary);
     transition: background-color 0.3s ease;
+    border: 1px solid var(--border-color);
 }
 
 /* ========== 앞머리 길이 탭 (테마 적용) ========== */
@@ -931,28 +1019,33 @@ select {
     border-radius: 20px;
     font-size: 14px;
     font-family: 'Noto Sans KR', sans-serif;
+    border: 1px solid var(--border-color);
 }
 
 /* 남성 테마 */
 .main-container.male .length-tab.active {
     color: #fff;
     background-color: var(--male-primary);
+    border-color: var(--male-primary);
 }
 
 .main-container.male .length-tab:hover {
     color: #fff;
     background-color: var(--male-secondary);
+    border-color: var(--male-secondary);
 }
 
 /* 여성 테마 */
 .main-container.female .length-tab.active {
     color: #fff;
     background-color: var(--female-primary);
+    border-color: var(--female-primary);
 }
 
 .main-container.female .length-tab:hover {
     color: #fff;
     background-color: var(--female-secondary);
+    border-color: var(--female-secondary);
 }
 
 /* ========== 길이 가이드 도움말 버튼 (여성 전용) ========== */
@@ -1040,6 +1133,7 @@ select {
     
     /* 그리드에 맞게 조정 */
     width: 100%;
+    border: 1px solid var(--border-color);
     
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
@@ -1086,12 +1180,14 @@ select {
 .main-container.male .hairstyle-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+    border-color: var(--male-primary);
 }
 
 /* 여성 테마 호버 효과 */
 .main-container.female .hairstyle-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+    border-color: var(--female-primary);
 }
 
 @media (hover: none) {
@@ -1105,7 +1201,7 @@ select {
     width: 100%;
     aspect-ratio: 3/4;
     object-fit: cover;
-    background-color: #222;
+    background-color: var(--card-bg);
     border-radius: 10px; /* 이미지만 보일 때는 전체 카드 라운드 */
 }
 
@@ -1157,7 +1253,7 @@ select {
     display: block;
 }
 
-/* ========== 이미지 모달 ========== */
+/* ========== 이미지 모달 (테마 적용) ========== */
 .modal {
     display: none;
     position: fixed;
@@ -1201,10 +1297,11 @@ select {
     cursor: pointer;
     z-index: 1001;
     padding: 10px;
+    transition: color 0.3s ease;
 }
 
 .close:hover {
-    color: #FF69B4;
+    color: var(--female-primary);
 }
 
 .modal-image {
@@ -1225,10 +1322,11 @@ select {
     backdrop-filter: blur(10px);
     width: 100%;
     max-width: 400px;
+    transition: all 0.3s ease;
 }
 
 .modal-info h3 {
-    color: #FF69B4;
+    color: var(--female-primary);
     margin-bottom: 10px;
     font-size: 24px;
 }
@@ -1241,7 +1339,7 @@ select {
 .like-btn {
     margin-top: 15px;
     padding: 10px 20px;
-    background: linear-gradient(135deg, #FF1493, #FF69B4);
+    background: linear-gradient(135deg, var(--female-primary), var(--female-secondary));
     border: none;
     border-radius: 10px;
     color: white;
@@ -1262,7 +1360,7 @@ select {
 .customer-register-btn {
     margin-top: 10px;
     padding: 10px 20px;
-    background: linear-gradient(135deg, #4169E1, #1E90FF);
+    background: linear-gradient(135deg, var(--male-primary), var(--male-secondary));
     border: none;
     border-radius: 10px;
     color: white;
@@ -1302,7 +1400,7 @@ select {
     }
 }
 
-/* ========== 로딩 스피너 ========== */
+/* ========== 로딩 스피너 (테마 적용) ========== */
 .loading {
     display: flex;
     justify-content: center;
@@ -1338,6 +1436,7 @@ select {
     display: none;
     max-width: 300px;
     text-align: center;
+    transition: all 0.3s ease;
 }
 
 .sync-status.connected {
@@ -1353,7 +1452,7 @@ select {
     color: #000;
 }
 
-/* ========== 빈 상태 메시지 ========== */
+/* ========== 빈 상태 메시지 (테마 적용) ========== */
 .empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -1457,14 +1556,15 @@ select {
 .stats-container,
 .profile-container,
 .promotion-container {
-    background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
-    border: 2px solid #FF1493;
+    background: var(--bg-color);
+    border: 2px solid var(--female-primary);
     border-radius: 25px;
     padding: 30px;
     max-width: 90%;
     width: 450px;
     max-height: 80vh;
     overflow-y: auto;
+    transition: all 0.3s ease;
 }
 
 /* 프로모션과 프로필 모달은 더 큰 크기 */
@@ -1472,10 +1572,10 @@ select {
 .profile-container,
 .promotion-container {
     width: 900px;
-    border-color: #4169E1;
+    border-color: var(--male-primary);
 }
 
-/* 모달 내부 입력 필드도 터치 활성화 */
+/* 모달 내부 입력 필드도 터치 활성화 (테마 적용) */
 .search-container input,
 .new-customer-container input,
 .register-container input,
@@ -1489,6 +1589,23 @@ select {
     -webkit-appearance: none !important;
     font-size: 16px !important;
     min-height: 45px;
+    
+    /* 테마 색상 적용 */
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.search-container input:focus,
+.new-customer-container input:focus,
+.register-container input:focus,
+.profile-container input:focus,
+.promotion-container input:focus,
+.customer-input-group input:focus {
+    border-color: var(--female-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1);
 }
 
 .search-container h3,
@@ -1499,14 +1616,14 @@ select {
 .stats-container h3,
 .profile-container h3,
 .promotion-container h3 {
-    color: #FF1493;
+    color: var(--female-primary);
     margin-bottom: 20px;
     text-align: center;
 }
 
 .profile-container h3,
 .promotion-container h3 {
-    color: #4169E1;
+    color: var(--male-primary);
 }
 
 /* ========== 고객 검색 스타일 (테마 적용) ========== */
@@ -1528,12 +1645,12 @@ select {
 
 .search-input input:focus {
     outline: none;
-    border-color: #FF1493;
+    border-color: var(--female-primary);
 }
 
 .search-input button {
     padding: 12px 15px;
-    background: #FF1493;
+    background: var(--female-primary);
     border: none;
     border-radius: 10px;
     color: white;
@@ -1551,10 +1668,12 @@ select {
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
 }
 
 .customer-result:hover {
-    background: rgba(255, 20, 147, 0.2);
+    background: var(--card-hover);
+    border-color: var(--female-primary);
 }
 
 .customer-info strong {
@@ -1568,7 +1687,7 @@ select {
 }
 
 .visit-count {
-    color: #FF69B4;
+    color: var(--female-secondary);
     font-size: 12px;
 }
 
@@ -1581,12 +1700,17 @@ select {
 .close-search {
     width: 100%;
     padding: 12px;
-    background: #333;
-    border: none;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 10px;
-    color: #fff;
+    color: var(--text-color);
     cursor: pointer;
     margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.close-search:hover {
+    background: var(--card-hover);
 }
 
 /* ========== 고객 상세 정보 스타일 (테마 적용) ========== */
@@ -1600,7 +1724,7 @@ select {
 }
 
 .customer-header h3 {
-    color: #FF1493;
+    color: var(--female-primary);
     margin: 0;
 }
 
@@ -1610,6 +1734,11 @@ select {
     color: var(--text-muted);
     font-size: 24px;
     cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.customer-header button:hover {
+    color: var(--text-color);
 }
 
 .visit-history h4,
@@ -1624,10 +1753,12 @@ select {
     border-radius: 10px;
     padding: 15px;
     margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
 }
 
 .visit-date {
-    color: #FF69B4;
+    color: var(--female-secondary);
     font-size: 12px;
     margin-bottom: 10px;
 }
@@ -1640,20 +1771,22 @@ select {
 }
 
 .style-item.liked {
-    color: #FF69B4;
+    color: var(--female-secondary);
 }
 
 .style-code {
     font-weight: bold;
     min-width: 60px;
+    color: var(--text-secondary);
 }
 
 .style-name {
     flex: 1;
+    color: var(--text-color);
 }
 
 .heart {
-    color: #FF1493;
+    color: var(--female-primary);
 }
 
 .visit-notes {
@@ -1664,6 +1797,7 @@ select {
     font-style: italic;
     color: var(--text-secondary);
     font-size: 12px;
+    border: 1px solid rgba(255, 20, 147, 0.3);
 }
 
 .no-history {
@@ -1694,19 +1828,20 @@ select {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: #333;
+    background: var(--card-bg);
     color: var(--text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    border: 2px solid #333;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
 }
 
 .step-number.active {
-    background: #FF1493;
+    background: var(--female-primary);
     color: white;
-    border-color: #FF1493;
+    border-color: var(--female-primary);
 }
 
 .step-text {
@@ -1734,27 +1869,27 @@ select {
 
 .gender-card-mini:hover {
     background: var(--card-hover);
-    border-color: #FF1493;
+    border-color: var(--female-primary);
 }
 
 .gender-card-mini.selected {
-    border-color: #FF1493;
+    border-color: var(--female-primary);
     background: rgba(255, 20, 147, 0.2);
 }
 
 .gender-card-mini.male.selected {
-    border-color: #4169E1;
+    border-color: var(--male-primary);
     background: rgba(65, 105, 225, 0.2);
 }
 
 .gender-icon-mini {
     font-size: 30px;
     margin-bottom: 10px;
-    color: #FF1493;
+    color: var(--female-primary);
 }
 
 .gender-card-mini.male .gender-icon-mini {
-    color: #4169E1;
+    color: var(--male-primary);
 }
 
 .gender-title-mini {
@@ -1782,12 +1917,12 @@ select {
 }
 
 .category-card-mini:hover {
-    border-color: #FF1493;
+    border-color: var(--female-primary);
     color: var(--text-color);
 }
 
 .category-card-mini.selected {
-    border-color: #FF1493;
+    border-color: var(--female-primary);
     background: rgba(255, 20, 147, 0.2);
     color: var(--text-color);
 }
@@ -1811,11 +1946,11 @@ select {
 }
 
 .style-card-mini:hover {
-    border-color: #FF1493;
+    border-color: var(--female-primary);
 }
 
 .style-card-mini.selected {
-    border-color: #FF1493;
+    border-color: var(--female-primary);
     background: rgba(255, 20, 147, 0.2);
 }
 
@@ -1823,7 +1958,7 @@ select {
     width: 100%;
     aspect-ratio: 3/4;
     object-fit: cover;
-    background: #222;
+    background: var(--card-bg);
 }
 
 .style-info-mini {
@@ -1833,7 +1968,7 @@ select {
 
 .style-code-mini {
     font-size: 10px;
-    color: #FF69B4;
+    color: var(--female-secondary);
     margin-bottom: 3px;
 }
 
@@ -1864,11 +1999,12 @@ select {
     font-size: 16px !important;
     box-sizing: border-box;
     -webkit-appearance: none;
+    transition: all 0.3s ease;
 }
 
 .customer-input-group input:focus {
     outline: none;
-    border-color: #FF1493;
+    border-color: var(--female-primary);
 }
 
 .customer-buttons {
@@ -1893,13 +2029,14 @@ select {
 }
 
 .save-customer-btn {
-    background: linear-gradient(135deg, #FF1493, #FF69B4);
+    background: linear-gradient(135deg, var(--female-primary), var(--female-secondary));
     color: white;
 }
 
 .cancel-customer-btn {
-    background: #333;
-    color: #fff;
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
 }
 
 /* ========== 고객 등록 입력 모달 (테마 적용) ========== */
@@ -1911,10 +2048,11 @@ select {
     margin-bottom: 20px;
     color: var(--text-secondary);
     font-size: 14px;
+    transition: all 0.3s ease;
 }
 
 .selected-style-info h4 {
-    color: #4169E1;
+    color: var(--male-primary);
     margin-bottom: 10px;
 }
 
@@ -1941,13 +2079,13 @@ select {
 
 .promotion-tab.active,
 .profile-tab.active {
-    color: #4169E1;
-    border-bottom-color: #4169E1;
+    color: var(--male-primary);
+    border-bottom-color: var(--male-primary);
 }
 
 .promotion-tab:hover,
 .profile-tab:hover {
-    color: #6495ED;
+    color: var(--male-secondary);
 }
 
 .promotion-content,
@@ -1966,6 +2104,8 @@ select {
     border-radius: 15px;
     padding: 20px;
     margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
 }
 
 .calendar-header {
@@ -1978,7 +2118,7 @@ select {
 .calendar-nav {
     background: none;
     border: none;
-    color: #4169E1;
+    color: var(--male-primary);
     font-size: 18px;
     cursor: pointer;
     padding: 5px 10px;
@@ -2023,20 +2163,20 @@ select {
 }
 
 .calendar-day.today {
-    background: #4169E1;
+    background: var(--male-primary);
     color: white;
     font-weight: bold;
 }
 
 .calendar-day.has-promotion {
-    background: linear-gradient(135deg, #FF1493, #FF69B4);
+    background: linear-gradient(135deg, var(--female-primary), var(--female-secondary));
     color: white;
 }
 
 .calendar-day.selected {
-    background: #4169E1;
+    background: var(--male-primary);
     color: white;
-    border: 2px solid #6495ED;
+    border: 2px solid var(--male-secondary);
 }
 
 /* ========== 프로모션 폼 스타일 (테마 적용) ========== */
@@ -2045,6 +2185,8 @@ select {
     border-radius: 15px;
     padding: 25px;
     margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
 }
 
 .form-row {
@@ -2084,7 +2226,7 @@ select {
 .form-select:focus,
 .form-textarea:focus {
     outline: none;
-    border-color: #4169E1;
+    border-color: var(--male-primary);
     background: var(--card-hover);
 }
 
@@ -2105,7 +2247,7 @@ select {
 }
 
 .promotion-card:hover {
-    border-color: #4169E1;
+    border-color: var(--male-primary);
     background: rgba(65, 105, 225, 0.1);
 }
 
@@ -2117,7 +2259,7 @@ select {
 }
 
 .promotion-title {
-    color: #4169E1;
+    color: var(--male-primary);
     font-size: 18px;
     font-weight: 600;
     margin: 0;
@@ -2168,12 +2310,12 @@ select {
 }
 
 .btn-primary {
-    background: #4169E1;
+    background: var(--male-primary);
     color: white;
 }
 
 .btn-primary:hover {
-    background: #6495ED;
+    background: var(--male-secondary);
 }
 
 .btn-success {
@@ -2240,8 +2382,62 @@ select {
 }
 
 .length-guide-close:hover {
-    background: #FF1493;
+    background: var(--female-primary);
     transform: scale(1.1);
+}
+
+/* ========== 통계 관련 스타일 (테마 적용) ========== */
+.stats-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stats-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    border-color: var(--female-primary);
+    transform: translateY(-2px);
+}
+
+.stats-card-number {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--female-primary);
+    margin-bottom: 8px;
+}
+
+.stats-card-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ========== 🎨 테마 전환 애니메이션 (강화) ========== */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* 특정 요소들의 애니메이션 제외 */
+.spinner,
+.hamburger-icon span,
+.close,
+.modal,
+.gender-card,
+.hairstyle-card,
+.calendar-day,
+.promotion-card,
+.stats-card {
+    transition: all 0.3s ease !important;
 }
 
 /* ========== 반응형 디자인 ========== */
@@ -2292,21 +2488,50 @@ select {
     .length-guide-container h3 {
         font-size: 18px;
     }
+    
+    .stats-summary {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .customer-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .customer-stats {
+        gap: 15px;
+    }
 }
 
-/* ========== 🎨 테마 전환 애니메이션 ========== */
-* {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+/* ========== PWA 최적화 ========== */
+@media (display-mode: standalone) {
+    .header {
+        padding-top: calc(env(safe-area-inset-top) + 10px);
+    }
 }
 
-/* 특정 요소들의 애니메이션 제외 */
-.spinner,
-.hamburger-icon span,
-.close,
-.modal,
-.gender-card,
-.hairstyle-card {
-    transition: all 0.3s ease !important;
+/* ========== 터치 최적화 ========== */
+@media (pointer: coarse) {
+    .nav-tab,
+    .length-tab,
+    .hairstyle-card,
+    .menu-item,
+    .customer-card,
+    .filter-btn,
+    .calendar-day,
+    .promotion-card {
+        min-height: 44px;
+    }
+    
+    .hamburger-btn,
+    .back-btn,
+    .close,
+    .length-guide-close {
+        min-width: 44px;
+        min-height: 44px;
+    }
 }
 
 /* ========== iOS 특별 처리 ========== */
@@ -2342,5 +2567,75 @@ select {
     textarea:focus,
     select:focus {
         font-size: 16px !important;
+    }
+}
+
+/* ========== 스크롤바 전역 스타일 (테마 적용) ========== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--card-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* ========== 고해상도 디스플레이 최적화 ========== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .hairstyle-image,
+    .style-image-mini {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* ========== 접근성 개선 ========== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========== 다크 모드 자동 감지 (기본 테마 미설정 시) ========== */
+@media (prefers-color-scheme: light) {
+    :root:not([class*="theme-"]) {
+        --bg-color: #ffffff;
+        --text-color: #333333;
+        --text-muted: #666666;
+        --card-bg: rgba(0, 0, 0, 0.05);
+        --border-color: rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* ========== 인쇄 최적화 ========== */
+@media print {
+    .header,
+    .hamburger-overlay,
+    .add-customer-btn,
+    .sync-status {
+        display: none !important;
+    }
+    
+    .content {
+        margin-top: 0;
+        padding: 20px;
+    }
+    
+    .hairstyle-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+        overflow: visible;
     }
 }
