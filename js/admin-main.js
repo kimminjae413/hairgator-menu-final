@@ -380,3 +380,254 @@ window.addEventListener('error', function(event) {
 });
 
 console.log('✅ 모든 JavaScript 함수 정의 완료');
+// 어드민에서 데이터가 제대로 생성되었는지 확인하는 디버그 코드
+
+// 1. 브라우저 콘솔에서 실행할 디버그 함수들
+window.debugData = {
+    // Firebase 연결 상태 확인
+    checkConnection: async function() {
+        console.log('🔍 Firebase 연결 상태 확인...');
+        console.log('firebaseConnected:', firebaseConnected);
+        console.log('db 인스턴스:', db);
+        
+        if (!db) {
+            console.error('❌ db 인스턴스가 없습니다');
+            return;
+        }
+        
+        try {
+            const testDoc = await db.collection('test').doc('debug').set({
+                timestamp: new Date(),
+                test: true
+            });
+            console.log('✅ Firebase 쓰기 테스트 성공');
+            
+            await db.collection('test').doc('debug').delete();
+            console.log('✅ Firebase 삭제 테스트 성공');
+        } catch (error) {
+            console.error('❌ Firebase 테스트 실패:', error);
+        }
+    },
+    
+    // category_hierarchy 데이터 확인
+    checkHierarchy: async function() {
+        console.log('📊 category_hierarchy 데이터 확인...');
+        
+        if (!db) {
+            console.error('❌ Firebase가 연결되지 않았습니다');
+            return;
+        }
+        
+        try {
+            const snapshot = await db.collection('category_hierarchy').get();
+            console.log(`📂 총 ${snapshot.size}개 문서 발견`);
+            
+            if (snapshot.empty) {
+                console.error('❌ category_hierarchy가 비어있습니다!');
+                return;
+            }
+            
+            // 성별별로 분류
+            const data = {};
+            snapshot.forEach(doc => {
+                const docData = doc.data();
+                console.log('📄 문서:', docData);
+                
+                if (!data[docData.gender]) {
+                    data[docData.gender] = {};
+                }
+                if (!data[docData.gender][docData.mainCategory]) {
+                    data[docData.gender][docData.mainCategory] = [];
+                }
+                if (!data[docData.gender][docData.mainCategory].includes(docData.subCategory)) {
+                    data[docData.gender][docData.mainCategory].push(docData.subCategory);
+                }
+            });
+            
+            console.log('📊 정리된 데이터:', data);
+            
+            // 남성 데이터 확인
+            if (data.male) {
+                console.log('👨 남성 데이터:');
+                for (const [main, subs] of Object.entries(data.male)) {
+                    console.log(`  📂 ${main}: [${subs.join(', ')}]`);
+                }
+            } else {
+                console.error('❌ 남성 데이터가 없습니다!');
+            }
+            
+            // 여성 데이터 확인
+            if (data.female) {
+                console.log('👩 여성 데이터:');
+                for (const [main, subs] of Object.entries(data.female)) {
+                    console.log(`  📂 ${main}: [${subs.join(', ')}]`);
+                }
+            } else {
+                console.error('❌ 여성 데이터가 없습니다!');
+            }
+            
+            return data;
+            
+        } catch (error) {
+            console.error('❌ 데이터 조회 실패:', error);
+        }
+    },
+    
+    // hairstyles 데이터 확인
+    checkStyles: async function() {
+        console.log('✂️ hairstyles 데이터 확인...');
+        
+        if (!db) {
+            console.error('❌ Firebase가 연결되지 않았습니다');
+            return;
+        }
+        
+        try {
+            const snapshot = await db.collection('hairstyles').get();
+            console.log(`✂️ 총 ${snapshot.size}개 스타일 발견`);
+            
+            if (snapshot.empty) {
+                console.log('⚠️ hairstyles가 비어있습니다');
+                return;
+            }
+            
+            // 성별별 통계
+            const stats = {};
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const key = `${data.gender}-${data.mainCategory}-${data.subCategory}`;
+                if (!stats[key]) {
+                    stats[key] = 0;
+                }
+                stats[key]++;
+            });
+            
+            console.log('📊 스타일 통계:', stats);
+            return stats;
+            
+        } catch (error) {
+            console.error('❌ 스타일 조회 실패:', error);
+        }
+    },
+    
+    // 전체 진단
+    fullDiagnosis: async function() {
+        console.log('🏥 HAIRGATOR 전체 진단 시작...');
+        console.log('=====================================');
+        
+        await this.checkConnection();
+        console.log('-------------------------------------');
+        
+        const hierarchyData = await this.checkHierarchy();
+        console.log('-------------------------------------');
+        
+        await this.checkStyles();
+        console.log('=====================================');
+        
+        // 메인 페이지용 권장사항
+        console.log('💡 메인 페이지 수정 권장사항:');
+        
+        if (hierarchyData && hierarchyData.male && Object.keys(hierarchyData.male).length > 0) {
+            console.log('✅ 남성 데이터 존재 - 메인 페이지에서 로딩 로직 확인 필요');
+            console.log('🔧 메인 페이지에서 loadHierarchyFromFirebase(\'male\') 함수 확인');
+        }
+        
+        if (hierarchyData && hierarchyData.female && Object.keys(hierarchyData.female).length > 0) {
+            console.log('✅ 여성 데이터 존재 - 메인 페이지에서 로딩 로직 확인 필요');
+            console.log('🔧 메인 페이지에서 loadHierarchyFromFirebase(\'female\') 함수 확인');
+        }
+        
+        console.log('=====================================');
+    }
+};
+
+// 2. 자동 진단 실행 (어드민 페이지 로드 후 5초 후)
+setTimeout(() => {
+    console.log('🔍 자동 진단 시작...');
+    window.debugData.fullDiagnosis();
+}, 5000);
+
+// 3. 강제 데이터 재생성 함수 (필요시 사용)
+window.forceRecreateData = async function() {
+    console.log('🔨 데이터 강제 재생성 시작...');
+    
+    if (!confirm('기존 category_hierarchy를 삭제하고 다시 생성하시겠습니까?')) {
+        return;
+    }
+    
+    try {
+        // 1. 기존 데이터 삭제
+        const batch = db.batch();
+        const snapshot = await db.collection('category_hierarchy').get();
+        
+        snapshot.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+        
+        if (!snapshot.empty) {
+            await batch.commit();
+            console.log(`🗑️ ${snapshot.size}개 기존 문서 삭제`);
+        }
+        
+        // 2. 새 데이터 생성
+        const PERFECT_STRUCTURE = {
+            male: {
+                'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
+                'SIDE PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
+                'FRINGE UP': ['None', 'Fore Head'],
+                'PUSHED BACK': ['None'],
+                'BUZZ': ['None'],
+                'CROP': ['None'],
+                'MOHICAN': ['None']
+            },
+            female: {
+                'LONG': ['A Length', 'B Length'],
+                'SEMI LONG': ['C Length'],
+                'MEDIUM': ['D Length', 'E Length'],
+                'BOB': ['F Length', 'G Length'],
+                'SHORT': ['H Length']
+            }
+        };
+        
+        const newBatch = db.batch();
+        let createCount = 0;
+        
+        for (const [gender, categories] of Object.entries(PERFECT_STRUCTURE)) {
+            for (const [mainCategory, subCategories] of Object.entries(categories)) {
+                for (const subCategory of subCategories) {
+                    const docRef = db.collection('category_hierarchy').doc();
+                    newBatch.set(docRef, {
+                        gender: gender,
+                        mainCategory: mainCategory,
+                        subCategory: subCategory,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        debugRecreate: true,
+                        timestamp: new Date().toISOString()
+                    });
+                    createCount++;
+                }
+            }
+        }
+        
+        await newBatch.commit();
+        console.log(`✅ ${createCount}개 새 문서 생성 완료`);
+        
+        // 3. 검증
+        setTimeout(async () => {
+            console.log('🔍 생성 결과 검증...');
+            await window.debugData.checkHierarchy();
+        }, 2000);
+        
+    } catch (error) {
+        console.error('❌ 강제 재생성 실패:', error);
+    }
+};
+
+console.log('🛠️ 어드민 디버그 도구 로드 완료');
+console.log('📋 사용 가능한 명령어:');
+console.log('  debugData.checkConnection() - Firebase 연결 확인');
+console.log('  debugData.checkHierarchy() - category_hierarchy 확인');
+console.log('  debugData.checkStyles() - hairstyles 확인'); 
+console.log('  debugData.fullDiagnosis() - 전체 진단');
+console.log('  forceRecreateData() - 데이터 강제 재생성');
