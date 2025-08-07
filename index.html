@@ -522,30 +522,11 @@
         };
     }
 
-    // 즉시 기본 카테고리 표시 함수
+    // 즉시 기본 카테고리 표시 함수 - 수정
     function showImmediateCategories(gender) {
         console.log(`⚡ 즉시 카테고리 표시: ${gender}`);
         
-        const basicCategories = {
-            male: {
-                'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
-                'SIDE PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
-                'FRINGE UP': ['None', 'Fore Head'],
-                'PUSHED BACK': ['None'],
-                'BUZZ': ['None'],
-                'CROP': ['None'],
-                'MOHICAN': ['None']
-            },
-            female: {
-                'LONG': ['A Length', 'B Length'],
-                'SEMI LONG': ['C Length'],
-                'MEDIUM': ['D Length', 'E Length'],
-                'BOB': ['F Length', 'G Length'],
-                'SHORT': ['H Length']
-            }
-        };
-        
-        const categories = basicCategories[gender];
+        const categories = BASIC_STRUCTURE[gender];
         if (!categories) {
             console.error('❌ 카테고리 데이터 없음:', gender);
             showErrorState('카테고리 데이터를 찾을 수 없습니다.');
@@ -822,7 +803,15 @@
         `;
     }
 
-    // 기본 카테고리 구조 (백업용)
+    // 기본 카테고리 로드 함수 (백업용) - 함수명 수정
+    function loadBasicCategories(gender) {
+        console.log(`📂 기본 카테고리 구조 로드: ${gender}`);
+        
+        const categories = BASIC_STRUCTURE[gender] || {};
+        renderCategoriesImmediately(categories);
+    }
+
+    // 기본 카테고리 구조 (백업용) - 위치 이동
     const BASIC_STRUCTURE = {
         male: {
             'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
@@ -841,75 +830,6 @@
             'SHORT': ['H Length']
         }
     };
-
-    // 기본 카테고리 로드 함수 (백업용)
-    function loadBasicCategories(gender) {
-        console.log(`📂 기본 카테고리 구조 로드: ${gender}`);
-        
-        const categories = BASIC_STRUCTURE[gender] || {};
-        const navTabs = document.getElementById('navTabs');
-        const content = document.getElementById('content');
-        
-        // 탭 생성
-        navTabs.innerHTML = '';
-        const categoryNames = Object.keys(categories);
-        
-        if (categoryNames.length === 0) {
-            navTabs.innerHTML = '<div style="color: #666; padding: 20px;">카테고리가 없습니다</div>';
-            content.innerHTML = '<div style="color: #666; padding: 20px; text-align: center;">데이터를 로드할 수 없습니다</div>';
-            return;
-        }
-        
-        categoryNames.forEach((category, index) => {
-            const tab = document.createElement('div');
-            tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
-            tab.textContent = category;
-            tab.onclick = () => showBasicCategory(category, categories[category]);
-            navTabs.appendChild(tab);
-        });
-        
-        // 첫 번째 카테고리 표시
-        showBasicCategory(categoryNames[0], categories[categoryNames[0]]);
-    }
-
-    // 기본 카테고리 표시 함수
-    function showBasicCategory(categoryName, subCategories) {
-        console.log(`📋 카테고리 표시: ${categoryName}`, subCategories);
-        
-        const content = document.getElementById('content');
-        
-        // 활성 탭 업데이트
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.classList.remove('active');
-            if (tab.textContent === categoryName) {
-                tab.classList.add('active');
-            }
-        });
-        
-        // 서브카테고리 탭 생성
-        let html = `<div class="length-tabs">`;
-        subCategories.forEach((subCat, index) => {
-            const isActive = index === 0 ? 'active' : '';
-            html += `<div class="length-tab ${isActive}" onclick="showSubCategory('${subCat}')">${subCat}</div>`;
-        });
-        html += `</div>`;
-        
-        // 빈 상태 표시
-        subCategories.forEach((subCat, index) => {
-            const isActive = index === 0 ? 'active' : '';
-            html += `
-                <div class="length-section ${isActive}" data-length="${subCat}">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">✂️</div>
-                        <div class="empty-state-title">${subCat}</div>
-                        <div class="empty-state-message">등록된 스타일이 없습니다.<br>어드민에서 스타일을 추가해주세요.</div>
-                    </div>
-                </div>
-            `;
-        });
-        
-        content.innerHTML = html;
-    }
 
     // 서브카테고리 표시 함수
     function showSubCategory(subCatName) {
