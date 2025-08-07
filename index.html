@@ -38,7 +38,7 @@
             --primary-dark: #000000;
             --primary-light: #ffffff;
             --male-color: #4A90E2;
-            --female-color: #E91E63;  /* 진한 핑크색으로 변경 */
+            --female-color: #E91E63;
             --text-primary: #ffffff;
             --text-secondary: #999999;
             --border-color: #222222;
@@ -117,19 +117,19 @@
             min-height: calc(100vh - 50px);
         }
 
-        /* Gender Selection - 세로 직사각형 스타일 */
+        /* Gender Selection */
         .gender-selection {
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: calc(100vh - 50px);
             padding: 20px;
-            gap: 80px;  /* 간격 늘림 */
+            gap: 80px;
         }
 
         .gender-btn {
             width: 160px;
-            height: 240px;  /* 세로로 긴 직사각형 */
+            height: 240px;
             border: 2px solid #333;
             border-radius: 20px;
             background: #111;
@@ -187,7 +187,7 @@
             display: block;
         }
 
-        /* Category Tabs - 스크린샷 스타일 */
+        /* Category Tabs */
         .category-tabs-wrapper {
             background: var(--primary-dark);
             border-bottom: 1px solid #333;
@@ -218,7 +218,7 @@
             cursor: pointer;
             transition: all 0.3s;
             font-size: 14px;
-            font-weight: 700;  /* 볼드 처리 */
+            font-weight: 700;
             text-transform: uppercase;
             white-space: nowrap;
         }
@@ -266,7 +266,7 @@
             cursor: pointer;
             transition: all 0.3s;
             font-size: 13px;
-            font-weight: 600;  /* 볼드 처리 */
+            font-weight: 600;
         }
 
         .subcategory-tab.active.male {
@@ -281,7 +281,7 @@
             color: white;
         }
 
-        /* Menu Grid - 이미지만 표시 */
+        /* Menu Grid */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -311,7 +311,7 @@
             object-fit: cover;
         }
 
-        /* 스타일 상세 모달 */
+        /* Style Modal */
         .style-modal {
             position: fixed;
             top: 0;
@@ -416,7 +416,7 @@
             cursor: pointer;
         }
 
-        /* Theme Toggle Button - 하단 중앙 */
+        /* Theme Toggle Button */
         .theme-toggle-bottom {
             position: fixed;
             bottom: 30px;
@@ -457,7 +457,6 @@
             color: #ff8c00;
         }
 
-        /* 라이트 모드일 때 */
         body.light-theme .theme-toggle-bottom {
             background: rgba(0, 0, 0, 0.05);
             border-color: rgba(0, 0, 0, 0.1);
@@ -622,13 +621,11 @@
         </button>
     </header>
 
-    <!-- Theme Toggle Button (하단 중앙) -->
+    <!-- Theme Toggle Button -->
     <button class="theme-toggle-bottom" id="themeToggleBottom" title="다크/라이트 모드">
-        <!-- 달 아이콘 (다크모드) -->
         <svg class="moon-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
-        <!-- 해 아이콘 (라이트모드) -->
         <svg class="sun-icon" style="display:none;" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="5"/>
             <line x1="12" y1="1" x2="12" y2="3"/>
@@ -710,8 +707,482 @@
 
     <!-- Scripts -->
     <script src="js/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/main.js"></script>
+    <script>
+// Main Application Logic
+document.addEventListener('DOMContentLoaded', function() {
+    // Global variables
+    let currentGender = null;
+    let currentCategory = null;
+    let currentSubcategory = 'None';
+    let menuData = {};
+
+    // Elements
+    const backBtn = document.getElementById('backBtn');
+    const menuBtn = document.getElementById('menuBtn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleBottom = document.getElementById('themeToggleBottom');
+    const themeStatus = document.getElementById('themeStatus');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const genderSelection = document.getElementById('genderSelection');
+    const menuContainer = document.getElementById('menuContainer');
+    const categoryTabs = document.getElementById('categoryTabs');
+    const categoryDescription = document.getElementById('categoryDescription');
+    const subcategoryTabs = document.getElementById('subcategoryTabs');
+    const menuGrid = document.getElementById('menuGrid');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    
+    // Modal elements
+    const styleModal = document.getElementById('styleModal');
+    const modalClose = document.getElementById('modalClose');
+    const modalImage = document.getElementById('modalImage');
+    const modalCode = document.getElementById('modalCode');
+    const modalName = document.getElementById('modalName');
+    const btnRegister = document.getElementById('btnRegister');
+    const btnLike = document.getElementById('btnLike');
+
+    // Menu Data Structure - 수정된 구조
+    const MENU_DATA = {
+        male: {
+            categories: [
+                { 
+                    id: 'side-fringe', 
+                    name: 'SIDE FRINGE',
+                    description: '사이드 프린지는 클래식함과 모던함의 대명사로 스타일링이 따라 원하는 이미지를 자유롭게 표현할 수 있습니다.'
+                },
+                { 
+                    id: 'side-part', 
+                    name: 'SIDE PART',
+                    description: '사이드 파트는 정갈하고 단정한 스타일로 비즈니스맨들에게 인기가 많습니다.'
+                },
+                { 
+                    id: 'fringe-up', 
+                    name: 'FRINGE UP',
+                    description: '프린지 업은 앞머리를 올려 이마를 드러내는 시원한 스타일입니다.'
+                },
+                { 
+                    id: 'pushed-back', 
+                    name: 'PUSHED BACK',
+                    description: '푸시백은 머리를 뒤로 넘긴 댄디한 스타일입니다.'
+                },
+                { 
+                    id: 'buzz', 
+                    name: 'BUZZ',
+                    description: '버즈컷은 짧고 깔끔한 스타일로 관리가 편합니다.'
+                },
+                { 
+                    id: 'crop', 
+                    name: 'CROP',
+                    description: '크롭 스타일은 짧으면서도 스타일리시한 느낌을 줍니다.'
+                },
+                { 
+                    id: 'mohican', 
+                    name: 'MOHICAN',
+                    description: '모히칸 스타일은 개성 있고 강한 인상을 줍니다.'
+                }
+            ],
+            subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
+        },
+        female: {
+            categories: [
+                { 
+                    id: 'a-length', 
+                    name: 'A Length',
+                    description: 'A Length는 가장 긴 롱 헤어로 허리까지 내려오는 길이입니다. 우아하고 여성스러운 느낌을 극대화합니다.'
+                },
+                { 
+                    id: 'b-length', 
+                    name: 'B Length',
+                    description: 'B Length는 가슴 아래까지 오는 긴 머리로 다양한 스타일링이 가능합니다.'
+                },
+                { 
+                    id: 'c-length', 
+                    name: 'C Length',
+                    description: 'C Length는 가슴 중간 정도의 세미롱 스타일입니다.'
+                },
+                { 
+                    id: 'd-length', 
+                    name: 'D Length',
+                    description: 'D Length는 어깨 아래에서 가슴 위까지의 중간 길이입니다.'
+                },
+                { 
+                    id: 'e-length', 
+                    name: 'E Length',
+                    description: 'E Length는 어깨선 정도의 미디엄 길이로 실용적입니다.'
+                },
+                { 
+                    id: 'f-length', 
+                    name: 'F Length',
+                    description: 'F Length는 턱선에서 어깨 위까지의 보브 스타일입니다.'
+                },
+                { 
+                    id: 'g-length', 
+                    name: 'G Length',
+                    description: 'G Length는 턱선 정도의 짧은 단발 스타일입니다.'
+                },
+                { 
+                    id: 'h-length', 
+                    name: 'H Length',
+                    description: 'H Length는 가장 짧은 숏 헤어로 귀 주변 길이입니다.'
+                }
+            ],
+            subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
+        }
+    };
+
+    // Initialize
+    init();
+
+    function init() {
+        setupEventListeners();
+        loadTheme();
+        checkAuthStatus();
+        
+        if (backBtn) {
+            backBtn.style.display = 'none';
+        }
+    }
+
+    // Event Listeners
+    function setupEventListeners() {
+        if (backBtn) {
+            backBtn.addEventListener('click', handleBack);
+        }
+
+        if (menuBtn) {
+            menuBtn.addEventListener('click', openSidebar);
+        }
+
+        if (sidebarClose) {
+            sidebarClose.addEventListener('click', closeSidebar);
+        }
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', toggleTheme);
+        }
+
+        if (themeToggleBottom) {
+            themeToggleBottom.addEventListener('click', toggleTheme);
+        }
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', handleLogout);
+        }
+
+        document.querySelectorAll('.gender-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                selectGender(this.dataset.gender);
+            });
+        });
+
+        if (modalClose) {
+            modalClose.addEventListener('click', closeModal);
+        }
+
+        if (styleModal) {
+            styleModal.addEventListener('click', function(e) {
+                if (e.target === styleModal) {
+                    closeModal();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && styleModal && styleModal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (sidebar && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+                    closeSidebar();
+                }
+            }
+        });
+    }
+
+    // Navigation
+    function handleBack() {
+        if (menuContainer.classList.contains('active')) {
+            menuContainer.classList.remove('active');
+            genderSelection.style.display = 'flex';
+            backBtn.style.display = 'none';
+            
+            if (themeToggleBottom) {
+                themeToggleBottom.style.display = 'flex';
+            }
+            
+            currentGender = null;
+            currentCategory = null;
+        }
+    }
+
+    // Sidebar
+    function openSidebar() {
+        sidebar.classList.add('active');
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('active');
+    }
+
+    // Theme
+    function loadTheme() {
+        const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            themeStatus.textContent = 'OFF';
+        }
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('light-theme');
+        const isLight = document.body.classList.contains('light-theme');
+        
+        if (themeStatus) {
+            themeStatus.textContent = isLight ? 'OFF' : 'ON';
+        }
+        
+        localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
+    }
+
+    // Auth
+    function checkAuthStatus() {
+        const designerInfo = document.getElementById('designerInfo');
+        if (window.auth && window.auth.currentUser) {
+            designerInfo.style.display = 'block';
+            document.getElementById('designerName').textContent = 
+                window.auth.currentUser.displayName || window.auth.currentUser.email;
+        }
+    }
+
+    async function handleLogout() {
+        if (confirm('로그아웃 하시겠습니까?')) {
+            try {
+                if (window.authManager) {
+                    await window.authManager.signOut();
+                }
+                location.reload();
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+    }
+
+    // Gender Selection
+    function selectGender(gender) {
+        currentGender = gender;
+        
+        genderSelection.style.display = 'none';
+        menuContainer.classList.add('active');
+        
+        if (backBtn) {
+            backBtn.style.display = 'flex';
+        }
+        
+        if (themeToggleBottom) {
+            themeToggleBottom.style.display = 'none';
+        }
+        
+        loadMenuData(gender);
+        
+        localStorage.setItem('hairgator_gender', gender);
+    }
+
+    // Load Menu Data
+    function loadMenuData(gender) {
+        showLoading(true);
+        
+        menuData = MENU_DATA[gender];
+        
+        renderCategories(gender);
+        
+        if (menuData.categories.length > 0) {
+            selectCategory(menuData.categories[0], gender);
+        }
+        
+        setTimeout(() => showLoading(false), 300);
+    }
+
+    // Render Categories
+    function renderCategories(gender) {
+        categoryTabs.innerHTML = '';
+        
+        menuData.categories.forEach((category, index) => {
+            const tab = document.createElement('button');
+            tab.className = 'category-tab';
+            tab.textContent = category.name;
+            tab.dataset.categoryId = category.id;
+            
+            if (index === 0) {
+                tab.classList.add('active', gender);
+            }
+            
+            tab.addEventListener('click', function() {
+                selectCategory(category, gender);
+            });
+            
+            categoryTabs.appendChild(tab);
+        });
+    }
+
+    // Select Category
+    function selectCategory(category, gender) {
+        currentCategory = category.id;
+        
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.classList.remove('active', 'male', 'female');
+            if (tab.dataset.categoryId === category.id) {
+                tab.classList.add('active', gender);
+            }
+        });
+        
+        categoryDescription.textContent = category.description;
+        
+        renderSubcategories(gender);
+        
+        loadStyles(category.id, currentSubcategory, gender);
+    }
+
+    // Render Subcategories - 남녀 모두 동일한 중분류
+    function renderSubcategories(gender) {
+        subcategoryTabs.innerHTML = '';
+        
+        const subcategories = menuData.subcategories;
+        
+        subcategories.forEach((sub, index) => {
+            const tab = document.createElement('button');
+            tab.className = 'subcategory-tab';
+            tab.textContent = sub;
+            tab.dataset.subcategory = sub;
+            
+            if (index === 0) {
+                tab.classList.add('active', gender);
+                currentSubcategory = sub;
+            }
+            
+            tab.addEventListener('click', function() {
+                selectSubcategory(sub, gender);
+            });
+            
+            subcategoryTabs.appendChild(tab);
+        });
+    }
+
+    // Select Subcategory
+    function selectSubcategory(subcategory, gender) {
+        currentSubcategory = subcategory;
+        
+        document.querySelectorAll('.subcategory-tab').forEach(tab => {
+            tab.classList.remove('active', 'male', 'female');
+            if (tab.dataset.subcategory === subcategory) {
+                tab.classList.add('active', gender);
+            }
+        });
+        
+        loadStyles(currentCategory, subcategory, gender);
+    }
+
+    // Load Styles
+    function loadStyles(categoryId, subcategory, gender) {
+        menuGrid.innerHTML = '';
+        
+        const styleCount = gender === 'male' ? 6 : 8;
+        const styleNames = {
+            male: ['사이드프린지캠퍼', '사이드파트노탈리안', '댄디컷', '리젠트펌', '애즈펌', '슬릭백'],
+            female: ['글램웨이브', '에어리밥', '레이어드컷', '허쉬컷', 'C컬펌', 'S컬펌', '히피펌', '글램펌']
+        };
+        
+        for (let i = 0; i < styleCount; i++) {
+            const item = document.createElement('div');
+            item.className = `menu-item ${gender}`;
+            
+            // 코드 생성
+            let code;
+            if (gender === 'male') {
+                const catInitial = categoryId.substring(0, 2).toUpperCase();
+                const subInitial = subcategory.substring(0, 1);
+                code = `M${catInitial}${subInitial}${String(i + 1).padStart(3, '0')}`;
+            } else {
+                const lengthCode = categoryId.split('-')[0].toUpperCase();
+                const subInitial = subcategory.substring(0, 1);
+                code = `F${lengthCode}${subInitial}${String(i + 1).padStart(3, '0')}`;
+            }
+            
+            item.innerHTML = `
+                <img src="https://via.placeholder.com/300x400/1a1a1a/666?text=Style+${i+1}" 
+                     alt="Style" class="menu-item-image">
+            `;
+            
+            item.addEventListener('click', function() {
+                showStyleDetail(code, styleNames[gender][i] || `스타일 ${i+1}`, gender, `https://via.placeholder.com/300x400/1a1a1a/666?text=Style+${i+1}`);
+            });
+            
+            menuGrid.appendChild(item);
+        }
+    }
+
+    // Close Modal
+    function closeModal() {
+        if (styleModal) {
+            styleModal.classList.remove('active');
+        }
+    }
+
+    // Show Style Detail Modal
+    function showStyleDetail(code, name, gender, imageSrc) {
+        if (!styleModal) return;
+        
+        modalImage.src = imageSrc;
+        modalCode.textContent = code;
+        modalName.textContent = name;
+        
+        if (gender === 'female') {
+            btnRegister.classList.add('female');
+        } else {
+            btnRegister.classList.remove('female');
+        }
+        
+        btnLike.classList.remove('active');
+        const heart = btnLike.querySelector('span:first-child');
+        if (heart) heart.textContent = '♡';
+        
+        styleModal.classList.add('active');
+        
+        btnRegister.onclick = function() {
+            alert(`고객 등록: ${code} - ${name}`);
+            closeModal();
+        };
+        
+        btnLike.onclick = function() {
+            this.classList.toggle('active');
+            const heart = this.querySelector('span:first-child');
+            if (heart) {
+                heart.textContent = this.classList.contains('active') ? '♥' : '♡';
+            }
+        };
+    }
+
+    // Loading
+    function showLoading(show) {
+        if (loadingOverlay) {
+            loadingOverlay.classList.toggle('active', show);
+        }
+    }
+
+    const savedGender = localStorage.getItem('hairgator_gender');
+    if (savedGender && !genderSelection.style.display) {
+        // Auto-select if previously selected
+        // setTimeout(() => selectGender(savedGender), 100);
+    }
+});
+
+window.addEventListener('load', function() {
+    console.log('HAIRGATOR App Loaded');
+});
+    </script>
     
     <script>
         // PWA Service Worker
