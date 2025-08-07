@@ -1039,7 +1039,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Select Category
     function selectCategory(category, gender) {
-        currentCategory = category.id;
+        currentCategory = category;  // 전체 category 객체 저장
         
         document.querySelectorAll('.category-tab').forEach(tab => {
             tab.classList.remove('active', 'male', 'female');
@@ -1091,7 +1091,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        loadStyles(currentCategory, subcategory, gender);
+        loadStyles(currentCategory.id, subcategory, gender);
     }
 
     // Load Styles
