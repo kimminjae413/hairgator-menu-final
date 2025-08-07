@@ -11,21 +11,32 @@ const firebaseConfig = {
 
 // Firebase 초기화
 firebase.initializeApp(firebaseConfig);
+
+// Firestore 초기화 - 새로운 방식
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-// 오프라인 지원 활성화 - 수정된 버전
-if (!window.firestorePersistenceEnabled) {
-    window.firestorePersistenceEnabled = true;
-    
+// 새로운 캐시 설정 방식 (권장)
+db.settings({
+    cache: {
+        kind: 'persistent',
+        tabManager: {
+            kind: 'multi-tab'
+        }
+    }
+});
+
+// 구버전 브라우저를 위한 폴백
+if (!db.settings.cache) {
+    // 구버전 방식 (경고는 나지만 작동함)
     db.enablePersistence({ synchronizeTabs: true })
         .catch((err) => {
             if (err.code === 'failed-precondition') {
-                console.log('Multiple tabs open - 오프라인 모드는 하나의 탭에서만 활성화됩니다');
+                console.log('Multiple tabs open, persistence disabled');
             } else if (err.code === 'unimplemented') {
-                console.log('Browser doesn\'t support offline');
+                console.log('Browser doesn\'t support offline persistence');
             }
         });
 }
 
-console.log('✅ Firebase initialized');
+console.log('✅ Firebase initialized with optimized cache settings');
