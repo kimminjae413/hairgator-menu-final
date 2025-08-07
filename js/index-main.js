@@ -1,8 +1,8 @@
-// ========== HAIRGATOR 최종 완성 버전 ========== 
-// 🚀 모든 최적화와 버그 수정이 통합된 완전한 최종 버전
-console.log('🚀 HAIRGATOR 최종 완성 버전 시작 - 모든 기능 통합');
+// ========== HAIRGATOR 메인 페이지 완전 수정 버전 ========== 
+// 🚀 로그인, Firebase 연결, 데이터 로딩 모든 문제 해결
+console.log('🚀 HAIRGATOR 메인 페이지 완전 수정 버전 시작');
 
-// ========== 전역 변수 ========== 
+// ========== 전역 변수 ==========
 let db = null;
 let storage = null;
 let firebaseConnected = false;
@@ -108,10 +108,13 @@ async function loadHierarchyFromFirebase(gender) {
     
     if (!firebaseConnected) {
         console.log('❌ Firebase 연결 없음');
+        showEmptyState('Firebase 연결이 필요합니다');
         return;
     }
 
     try {
+        updateSyncStatus('loading', `🔄 ${gender} 데이터 로드 중...`);
+        
         const query = db.collection('category_hierarchy')
                        .where('gender', '==', gender);
         
@@ -183,7 +186,9 @@ async function loadStylesFromHierarchy(mainCategory) {
     console.log(`=== 🎨 헤어스타일 로드: ${currentGender}, ${mainCategory} ===`);
     
     const content = document.getElementById('content');
-    content.innerHTML = '<div class="loading-spinner">🔄 로딩 중...</div>';
+    if (content) {
+        content.innerHTML = '<div class="loading-spinner">🔄 로딩 중...</div>';
+    }
     
     if (!firebaseConnected) {
         console.log('❌ Firebase 연결 없음');
@@ -214,21 +219,26 @@ async function loadStylesFromHierarchy(mainCategory) {
                 .orderBy('createdAt', 'desc')
                 .limit(50);
 
-            const stylesSnapshot = await stylesQuery.get();
-            
-            if (!stylesSnapshot.empty) {
-                const styles = [];
-                stylesSnapshot.forEach(doc => {
-                    styles.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
-                });
+            try {
+                const stylesSnapshot = await stylesQuery.get();
                 
-                allStyles[subCategory] = styles;
-                console.log(`✅ ${subCategory}: ${styles.length}개 스타일 로드됨`);
-            } else {
-                console.log(`⚠️ ${subCategory}: 스타일 없음`);
+                if (!stylesSnapshot.empty) {
+                    const styles = [];
+                    stylesSnapshot.forEach(doc => {
+                        styles.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    
+                    allStyles[subCategory] = styles;
+                    console.log(`✅ ${subCategory}: ${styles.length}개 스타일 로드됨`);
+                } else {
+                    console.log(`⚠️ ${subCategory}: 스타일 없음`);
+                    allStyles[subCategory] = [];
+                }
+            } catch (styleError) {
+                console.log(`⚠️ ${subCategory} 스타일 조회 오류:`, styleError);
                 allStyles[subCategory] = [];
             }
         }
@@ -280,6 +290,7 @@ function renderMainCategoryTabs(mainCategories) {
 
 function renderCategoryContent(mainCategory, subCategories, allStyles) {
     const content = document.getElementById('content');
+    if (!content) return;
     
     let html = `
         <div class="category-description">
@@ -379,8 +390,10 @@ function switchLengthTab(subCategory, mainCategory) {
     
     // 해당 길이의 스타일 표시
     const container = document.getElementById('stylesContainer');
-    const styles = window.currentAllStyles?.[subCategory] || [];
-    container.innerHTML = renderStyleGrid(styles);
+    if (container) {
+        const styles = window.currentAllStyles?.[subCategory] || [];
+        container.innerHTML = renderStyleGrid(styles);
+    }
 }
 
 // ========== 24시간 자동 로그인 시스템 ========== 
@@ -431,39 +444,6 @@ function saveAutoLogin(designer, name) {
     console.log('💾 자동 로그인 설정 저장됨');
 }
 
-// ========== 페이지 초기화 ========== 
-document.addEventListener('DOMContentLoaded', async function() {
-    console.log('📱 DOM 로드 완료, HAIRGATOR 최종 버전 초기화 시작');
-    
-    try {
-        // Firebase 초기화 먼저
-        await initializeFirebase();
-        
-        // 자동 로그인 확인
-        if (checkAutoLogin()) {
-            return; // 자동 로그인 성공 시 더 이상 진행하지 않음
-        }
-        
-        // 일반 로그인 화면 표시
-        showDesignerLogin();
-        
-        // 테마 시스템 초기화
-        initializeThemeSystem();
-        
-        // 디바이스 감지 및 안내
-        detectDeviceAndShowNotice();
-        
-        // 이벤트 리스너 등록
-        setupEventListeners();
-        
-        console.log('✅ HAIRGATOR 최종 버전 초기화 완료');
-        
-    } catch (error) {
-        console.error('❌ 초기화 실패:', error);
-        updateSyncStatus('disconnected', '❌ 초기화 실패');
-    }
-});
-
 // ========== 디자이너 로그인 ==========
 async function handleDesignerLogin() {
     const designerInput = document.getElementById('designerName');
@@ -486,6 +466,13 @@ async function handleDesignerLogin() {
     try {
         console.log('🔐 디자이너 로그인 시도:', designer);
         
+        // 로그인 버튼 비활성화
+        const loginBtn = document.querySelector('button[type="submit"]');
+        if (loginBtn) {
+            loginBtn.disabled = true;
+            loginBtn.textContent = '로그인 중...';
+        }
+        
         currentDesigner = designer.toLowerCase().replace(/\s+/g, '');
         currentDesignerName = designer;
         
@@ -504,10 +491,18 @@ async function handleDesignerLogin() {
         // 폼 초기화
         designerInput.value = '';
         passwordInput.value = '';
+        if (autoLoginCheckbox) autoLoginCheckbox.checked = false;
         
     } catch (error) {
         console.error('로그인 오류:', error);
         alert('로그인 처리 중 오류가 발생했습니다');
+    } finally {
+        // 로그인 버튼 복원
+        const loginBtn = document.querySelector('button[type="submit"]');
+        if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.textContent = '로그인';
+        }
     }
 }
 
@@ -523,9 +518,11 @@ function selectGender(gender) {
     document.getElementById('genderSelection').style.display = 'none';
     
     const mainContainer = document.querySelector('.main-container');
-    mainContainer.classList.add('active');
-    mainContainer.classList.remove('male', 'female');
-    mainContainer.classList.add(gender);
+    if (mainContainer) {
+        mainContainer.classList.add('active');
+        mainContainer.classList.remove('male', 'female');
+        mainContainer.classList.add(gender);
+    }
     
     // 성별별 색상 테마 적용
     applyGenderTheme(gender);
@@ -682,8 +679,10 @@ function closeHamburgerMenu() {
 
 // ========== 뒤로가기 ==========
 function goBack() {
-    if (document.querySelector('.main-container').classList.contains('active')) {
-        document.querySelector('.main-container').classList.remove('active');
+    const mainContainer = document.querySelector('.main-container');
+    
+    if (mainContainer && mainContainer.classList.contains('active')) {
+        mainContainer.classList.remove('active');
         showGenderSelection();
     } else if (document.getElementById('genderSelection').style.display === 'flex') {
         showDesignerLogin();
@@ -699,18 +698,27 @@ function goBack() {
 
 // ========== 유틸리티 함수 ==========
 function showDesignerLogin() {
-    document.getElementById('designerLogin').style.display = 'flex';
-    document.getElementById('genderSelection').style.display = 'none';
-    document.querySelector('.main-container').classList.remove('active');
+    const loginElement = document.getElementById('designerLogin');
+    const genderElement = document.getElementById('genderSelection');
+    const mainContainer = document.querySelector('.main-container');
+    
+    if (loginElement) loginElement.style.display = 'flex';
+    if (genderElement) genderElement.style.display = 'none';
+    if (mainContainer) mainContainer.classList.remove('active');
 }
 
 function hideDesignerLogin() {
-    document.getElementById('designerLogin').style.display = 'none';
+    const loginElement = document.getElementById('designerLogin');
+    if (loginElement) loginElement.style.display = 'none';
 }
 
 function showGenderSelection() {
-    document.getElementById('genderSelection').style.display = 'flex';
-    document.querySelector('.main-container').classList.remove('active');
+    const genderElement = document.getElementById('genderSelection');
+    const mainContainer = document.querySelector('.main-container');
+    
+    if (genderElement) genderElement.style.display = 'flex';
+    if (mainContainer) mainContainer.classList.remove('active');
+    
     showDeviceOptimizationNotice('👥 고객의 성별을 선택해주세요');
 }
 
@@ -756,7 +764,7 @@ function showAdminRequiredMessage() {
                 <div class="empty-state-message">
                     <strong>해결 방법:</strong><br><br>
                     1. <a href="/admin.html" target="_blank" style="color: #FF1493;">어드민 페이지</a>로 이동<br>
-                    2. "🚀 정리된 데이터로 초기화" 버튼 클릭<br>
+                    2. "🚀 초기화 실행" 버튼 클릭<br>
                     3. 이 페이지 새로고침<br><br>
                 </div>
             </div>
@@ -822,23 +830,6 @@ function detectDeviceAndShowNotice() {
         window.navigator.standalone === true) {
         console.log('📱 PWA 모드로 실행 중');
         showDeviceOptimizationNotice('📱 PWA 모드로 실행 중입니다');
-    } else {
-        console.log('🌐 브라우저 모드로 실행 중');
-        setTimeout(() => {
-            showInstallPrompt();
-        }, 3000);
-    }
-}
-
-function showInstallPrompt() {
-    const notice = document.getElementById('deviceNotice');
-    if (notice) {
-        notice.innerHTML = '📱 홈 화면에 추가하여 앱처럼 사용하세요!';
-        notice.className = 'device-notice show';
-        
-        setTimeout(() => {
-            notice.classList.remove('show');
-        }, 10000);
     }
 }
 
@@ -907,7 +898,6 @@ function preventPullToRefresh() {
         
         if (window.scrollY === 0 && deltaY > 0 && Math.abs(deltaY) > Math.abs(deltaX)) {
             e.preventDefault();
-            console.log('🚫 스와이프 새로고침 방지됨');
         }
     }, { passive: false });
     
@@ -966,6 +956,40 @@ function setupEventListeners() {
     });
 }
 
+// ========== 페이지 초기화 ========== 
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('📱 DOM 로드 완료, HAIRGATOR 메인 페이지 초기화 시작');
+    
+    try {
+        // Firebase 초기화 먼저
+        await initializeFirebase();
+        
+        // 자동 로그인 확인
+        if (checkAutoLogin()) {
+            return; // 자동 로그인 성공 시 더 이상 진행하지 않음
+        }
+        
+        // 일반 로그인 화면 표시
+        showDesignerLogin();
+        
+        // 테마 시스템 초기화
+        initializeThemeSystem();
+        
+        // 디바이스 감지 및 안내
+        detectDeviceAndShowNotice();
+        
+        // 이벤트 리스너 등록
+        setupEventListeners();
+        
+        console.log('✅ HAIRGATOR 메인 페이지 초기화 완료');
+        
+    } catch (error) {
+        console.error('❌ 메인 페이지 초기화 실패:', error);
+        updateSyncStatus('disconnected', '❌ 초기화 실패');
+        showEmptyState('시스템 초기화에 실패했습니다. 페이지를 새로고침해주세요.');
+    }
+});
+
 // ========== 전역 함수 등록 ==========
 window.handleDesignerLogin = handleDesignerLogin;
 window.selectGender = selectGender;
@@ -987,4 +1011,26 @@ window.forceInitializeDataStructure = () => {
     }
 };
 
-console.log('🎯 HAIRGATOR 최종 완성 버전 로드 완료 - 모든 기능 통합 완료!');
+window.debugMainPage = {
+    checkFirebase: () => {
+        console.log('Firebase 연결 상태:', firebaseConnected);
+        console.log('DB 인스턴스:', db);
+        console.log('Storage 인스턴스:', storage);
+    },
+    
+    showData: () => {
+        console.log('현재 계층구조:', hierarchyStructure);
+        console.log('네비게이션 데이터:', navigationData);
+    },
+    
+    getCurrentState: () => {
+        console.log('현재 상태:', {
+            designer: currentDesigner,
+            gender: currentGender,
+            category: currentCategory,
+            firebaseConnected: firebaseConnected
+        });
+    }
+};
+
+console.log('🎯 HAIRGATOR 메인 페이지 완전 수정 버전 로드 완료!');
