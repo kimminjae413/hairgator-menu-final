@@ -22,6 +22,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const subcategoryTabs = document.getElementById('subcategoryTabs');
     const menuGrid = document.getElementById('menuGrid');
     const loadingOverlay = document.getElementById('loadingOverlay');
+    
+    // Modal elements
+    const styleModal = document.getElementById('styleModal');
+    const modalClose = document.getElementById('modalClose');
+    const modalImage = document.getElementById('modalImage');
+    const modalCode = document.getElementById('modalCode');
+    const modalName = document.getElementById('modalName');
+    const btnRegister = document.getElementById('btnRegister');
+    const btnLike = document.getElementById('btnLike');
 
     // Menu Data Structure
     const MENU_DATA = {
@@ -145,7 +154,25 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Click outside sidebar to close
+        // Modal event listeners
+        if (modalClose) {
+            modalClose.addEventListener('click', closeModal);
+        }
+
+        if (styleModal) {
+            styleModal.addEventListener('click', function(e) {
+                if (e.target === styleModal) {
+                    closeModal();
+                }
+            });
+        }
+
+        // ESC key to close modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && styleModal && styleModal.classList.contains('active')) {
+                closeModal();
+            }
+        });
         document.addEventListener('click', function(e) {
             if (sidebar && sidebar.classList.contains('active')) {
                 if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
@@ -357,10 +384,10 @@ document.addEventListener('DOMContentLoaded', function() {
         menuGrid.innerHTML = '';
         
         // Generate sample styles
-        const styleCount = gender === 'male' ? 3 : 5;
+        const styleCount = gender === 'male' ? 6 : 8;
         const styleNames = {
-            male: ['사이드프린지캠퍼', '사이드파트노탈리안', '사이드파트노밀리안'],
-            female: ['윈엑스', '전지현스타일', '전지현스타일', '전지현스타일', '전지현스타일']
+            male: ['사이드프린지캠퍼', '사이드파트노탈리안', '사이드파트노밀리안', '댄디컷', '리젠트펌', '애즈펌'],
+            female: ['레이어드컷', '보브컷', '웨이브펌', '매직스트레이트', 'C컬펌', 'S컬펌', '히피펌', '글램펌']
         };
         
         for (let i = 0; i < styleCount; i++) {
@@ -371,26 +398,65 @@ document.addEventListener('DOMContentLoaded', function() {
                 ? `M${categoryId.substring(0, 1).toUpperCase()}0${i + 1}`
                 : `FAL${i + 1}00${i + 1}`;
             
+            // 이미지만 표시
             item.innerHTML = `
                 <img src="https://via.placeholder.com/300x400/1a1a1a/666?text=Style+${i+1}" 
                      alt="Style" class="menu-item-image">
-                <div class="menu-item-info">
-                    <div class="menu-item-code">${code}</div>
-                    <div class="menu-item-name">${styleNames[gender][i]}</div>
-                </div>
             `;
             
             item.addEventListener('click', function() {
-                showStyleDetail(code, styleNames[gender][i]);
+                showStyleDetail(code, styleNames[gender][i], gender, `https://via.placeholder.com/300x400/1a1a1a/666?text=Style+${i+1}`);
             });
             
             menuGrid.appendChild(item);
         }
     }
 
-    // Show Style Detail
-    function showStyleDetail(code, name) {
-        alert(`스타일 코드: ${code}\n스타일명: ${name}\n\n상세 페이지는 준비 중입니다.`);
+    // Close Modal
+    function closeModal() {
+        if (styleModal) {
+            styleModal.classList.remove('active');
+        }
+    }
+
+    // Show Style Detail Modal - 개선된 버전
+    function showStyleDetail(code, name, gender, imageSrc) {
+        if (!styleModal) return;
+        
+        // Set modal content
+        modalImage.src = imageSrc;
+        modalCode.textContent = code;
+        modalName.textContent = name;
+        
+        // Set button color based on gender
+        if (gender === 'female') {
+            btnRegister.classList.add('female');
+        } else {
+            btnRegister.classList.remove('female');
+        }
+        
+        // Reset like button
+        btnLike.classList.remove('active');
+        const heart = btnLike.querySelector('span:first-child');
+        if (heart) heart.textContent = '♡';
+        
+        // Show modal
+        styleModal.classList.add('active');
+        
+        // Handle register button
+        btnRegister.onclick = function() {
+            alert(`고객 등록: ${code} - ${name}`);
+            closeModal();
+        };
+        
+        // Handle like button
+        btnLike.onclick = function() {
+            this.classList.toggle('active');
+            const heart = this.querySelector('span:first-child');
+            if (heart) {
+                heart.textContent = this.classList.contains('active') ? '♥' : '♡';
+            }
+        };
     }
 
     // Loading
