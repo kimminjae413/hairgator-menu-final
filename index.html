@@ -113,29 +113,14 @@
                     <span class="mobile-color-name">블랙</span>
                 </div>
                 
-                <div class="mobile-color-option" data-theme="ultimate-gray" onclick="selectTheme('ultimate-gray')">
+                <div class="mobile-color-option" data-theme="gray" onclick="selectTheme('gray')">
                     <div class="mobile-color-circle" style="background: #939597;"></div>
                     <span class="mobile-color-name">그레이</span>
                 </div>
                 
-                <div class="mobile-color-option" data-theme="light-beige" onclick="selectTheme('light-beige')">
-                    <div class="mobile-color-circle" style="background: #E6DCD3;"></div>
+                <div class="mobile-color-option" data-theme="light" onclick="selectTheme('light')">
+                    <div class="mobile-color-circle" style="background: #F8F8F8; border: 2px solid #ddd;"></div>
                     <span class="mobile-color-name">라이트</span>
-                </div>
-                
-                <div class="mobile-color-option" data-theme="warm-beige" onclick="selectTheme('warm-beige')">
-                    <div class="mobile-color-circle" style="background: #DEC9A1;"></div>
-                    <span class="mobile-color-name">웜</span>
-                </div>
-                
-                <div class="mobile-color-option" data-theme="soybean" onclick="selectTheme('soybean')">
-                    <div class="mobile-color-circle" style="background: #D2C29D;"></div>
-                    <span class="mobile-color-name">소이빈</span>
-                </div>
-                
-                <div class="mobile-color-option" data-theme="dark-beige" onclick="selectTheme('dark-beige')">
-                    <div class="mobile-color-circle" style="background: #7A7363;"></div>
-                    <span class="mobile-color-name">베이지</span>
                 </div>
             </div>
             
@@ -290,34 +275,7 @@
     <script src="js/index-main.js"></script>
 
     <style>
-        /* 비활성화된 메뉴 아이템 스타일 */
-        .menu-item.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            position: relative;
-        }
-        
-        .menu-item.disabled .menu-text strong {
-            color: #666;
-        }
-        
-        .menu-item.disabled .menu-text small {
-            color: #444;
-        }
-        
-        .menu-item.disabled::after {
-            content: "🔒";
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px;
-            opacity: 0.7;
-        }
-        
-        .menu-item.disabled:hover {
-            background: none;
-        }
+        /* 🚫 CSS 핑크색 강제 적용 제거 및 테마 시스템으로 완전 변경 */
         
         /* ========== 🎨 모바일 테마 선택 트리거 버튼 ========== */
         .mobile-theme-trigger {
@@ -346,7 +304,6 @@
         
         .mobile-theme-trigger:hover {
             background: rgba(255, 255, 255, 0.15);
-            border-color: #FF1493;
             transform: translateX(-50%) translateY(-2px);
             box-shadow: 0 8px 25px rgba(255, 20, 147, 0.3);
         }
@@ -645,6 +602,7 @@
         .length-tab.active {
             font-weight: 600 !important;
         }
+        
         .category-description {
             margin: 0 0 20px 0 !important;
             padding: 15px 20px !important;
@@ -727,14 +685,11 @@
     </style>
     
     <script>
-        // ========== 🎨 충돌 방지 테마 시스템 (새로운 변수명 사용) ==========
-        
-        // ========== 🎨 과학적 색상 설계 기반 테마 시스템 ==========
-        // 각 베이스 색상에 최적화된 텍스트색/액센트색 도출
+        // ========== 🎨 완전 수정된 3가지 심플 테마 시스템 ==========
         
         const HAIRGATOR_THEME_CONFIGS = {
             'dark': {
-                name: '블랙 모드',
+                name: '블랙',
                 description: '눈의 피로를 줄이고 전문적인 분위기 연출',
                 backgroundColor: '#000000',        // 베이스: 순수 검정
                 textColor: '#FFFFFF',              // 텍스트: 순수 흰색 (최대 대비)
@@ -743,70 +698,39 @@
                 buttonGradient: 'linear-gradient(135deg, #FF6B9D, #FF8FAB)',
                 isDark: true
             },
-            'ultimate-gray': {
-                name: '얼티밋 그레이',
-                description: '중성적이고 고급스러운 느낌, 팬톤 2021 올해의 색상',
-                backgroundColor: '#939597',        // 베이스: 중간 회색
-                textColor: '#FFFFFF',              // 텍스트: 흰색 (회색과 충분한 대비)
-                primaryAccent: '#00CED1',          // 액센트: 다크 터콰이즈 (회색과 보색 관계)
-                secondaryAccent: '#20B2AA',        
-                buttonGradient: 'linear-gradient(135deg, #00CED1, #20B2AA)',
-                isDark: true
+            'gray': {
+                name: '그레이',
+                description: '중성적이고 균형잡힌 느낌, 모던하고 세련된 분위기',
+                backgroundColor: '#939597',        // 베이스: 얼티밋 그레이
+                textColor: '#2C2C2C',              // 텍스트: 진한 회색 (가독성 최적화)
+                primaryAccent: '#000000',          // 액센트: 순수 검정 (6.99:1 최고 대비)
+                secondaryAccent: '#333333',        
+                buttonGradient: 'linear-gradient(135deg, #000000, #333333)',
+                isDark: false  // 중간 명도이므로 어두운 텍스트 사용
             },
-            'light-beige': {
-                name: '라이트 베이지',
-                description: '밝고 깔끔한 분위기, 모던하고 개방적인 느낌',
-                backgroundColor: '#E6DCD3',        // 베이스: 밝은 베이지
-                textColor: '#2C1810',              // 텍스트: 진한 브라운 (베이지와 조화)
-                primaryAccent: '#A0522D',          // 액센트: 시에나 브라운 (베이지 톤 맞춤)
-                secondaryAccent: '#CD853F',        
-                buttonGradient: 'linear-gradient(135deg, #A0522D, #CD853F)',
+            'light': {
+                name: '라이트',
+                description: '밝고 깔끔한 분위기, 자연스럽고 편안한 느낌',
+                backgroundColor: '#E6DCD3',        // 베이스: 라이트 베이지
+                textColor: '#2C1810',              // 텍스트: 진한 브라운 (조화로운 대비)
+                primaryAccent: '#362414',          // 액센트: 다크 초콜릿 (10.95:1 최고 대비 + 조화)
+                secondaryAccent: '#654321',        
+                buttonGradient: 'linear-gradient(135deg, #362414, #654321)',
                 isDark: false
-            },
-            'warm-beige': {
-                name: '웜 베이지',
-                description: '따뜻하고 친근한 분위기, 편안하고 아늑한 느낌',
-                backgroundColor: '#DEC9A1',        // 베이스: 따뜻한 베이지
-                textColor: '#3D2F1F',              // 텍스트: 깊은 브라운 (따뜻함 유지)
-                primaryAccent: '#D2691E',          // 액센트: 초콜릿 오렌지 (따뜻한 톤)
-                secondaryAccent: '#FF7F50',        
-                buttonGradient: 'linear-gradient(135deg, #D2691E, #FF7F50)',
-                isDark: false
-            },
-            'soybean': {
-                name: '소이빈',
-                description: '자연스럽고 차분한 분위기, 편안하고 안정적인 느낌',
-                backgroundColor: '#D2C29D',        // 베이스: 소이빈 색상
-                textColor: '#2F2D1A',              // 텍스트: 올리브 다크 (자연 톤)
-                primaryAccent: '#8FBC8F',          // 액센트: 다크 시 그린 (자연스러운 조화)
-                secondaryAccent: '#9ACD32',        
-                buttonGradient: 'linear-gradient(135deg, #8FBC8F, #9ACD32)',
-                isDark: false
-            },
-            'dark-beige': {
-                name: '다크 베이지',
-                description: '세련되고 차분한 분위기, 고급스럽고 모던한 느낌',
-                backgroundColor: '#7A7363',        // 베이스: 어두운 베이지
-                textColor: '#F5F5DC',              // 텍스트: 베이지 화이트 (베이지 톤 유지)
-                primaryAccent: '#DAA520',          // 액센트: 골든로드 (고급스러운 금색)
-                secondaryAccent: '#FFD700',        
-                buttonGradient: 'linear-gradient(135deg, #DAA520, #FFD700)',
-                isDark: true
             }
         };
         
-        // 🎨 색상 조화 이론 기반 설계 원칙:
-        // 1. 베이스 색상의 명도값에 따른 텍스트 색상 결정
-        // 2. 색상환에서 조화로운 관계 (보색, 유사색, 삼각형) 활용
-        // 3. 각 테마의 감정적 메시지와 일치하는 액센트 색상 선택
-        // 4. WCAG 접근성 가이드라인 준수 (4.5:1 이상 대비율)
+        // 🎨 과학적 설계 원칙:
+        // 1. 얼티밋 그레이: 순수 검정 액센트 (6.99:1 대비) → 가장 뚜렷
+        // 2. 라이트 베이지: 다크 초콜릿 액센트 (10.95:1 대비) → 베이지와 조화 + 뚜렷
+        // 3. 각 테마별 WCAG AA 기준 충족으로 완벽한 가독성 보장
         
         // 테마 상태 변수 (충돌 방지)
         let hairgatorCurrentTheme = 'dark';
         let hairgatorSelectedTheme = 'dark';
         let hairgatorThemeModalOpen = false;
         
-        // 🎨 테마 모달 표시 (새로운 함수명)
+        // 🎨 테마 모달 표시
         function showThemeModal() {
             console.log('🎨 테마 모달 표시');
             
@@ -853,7 +777,7 @@
             }
         }
         
-        // 🎨 테마 선택 (충돌 방지 함수명)
+        // 🎨 테마 선택
         function selectTheme(themeName) {
             console.log(`🎨 테마 선택: ${themeName}`);
             
@@ -883,7 +807,7 @@
             // 모달 강제 숨김
             hideThemeModal();
             
-            // 추가 안전 장치 - 직접 숨김 처리
+            // 추가 안전 장치
             setTimeout(() => {
                 const overlay = document.getElementById('themeModalOverlay');
                 if (overlay) {
@@ -894,40 +818,24 @@
             }, 100);
         }
         
-        // 🎨 테마 스타일 적용 (완전 재구성)
+        // 🎨 완전한 테마 스타일 적용 (CSS 핑크색 강제 설정 무시)
         function applyThemeStyles(config) {
-            console.log(`🎨 완전한 테마 적용: ${config.name}`);
+            console.log(`🎨 테마 적용: ${config.name}`);
+            console.log(`   배경: ${config.backgroundColor}`);
+            console.log(`   텍스트: ${config.textColor}`);
+            console.log(`   액센트: ${config.primaryAccent}`);
             
-            // 🔧 모든 색상을 한번에 강제 적용
-            forceApplyAllColors(config);
-            
-            // PWA 테마 색상
-            const metaTheme = document.getElementById('metaThemeColor');
-            if (metaTheme) {
-                metaTheme.setAttribute('content', config.backgroundColor);
-            }
-            
-            console.log(`✅ 완전한 테마 적용 완료: ${config.name}`);
-        }
-        
-        // 🔧 모든 색상 강제 적용 (6개 테마 전체 + 이미지 호버 효과)
-        function forceApplyAllColors(config) {
-            console.log(`🚨 전체 테마 통일 적용: ${config.name}`);
-            console.log(`   배경: ${config.backgroundColor}, 텍스트: ${config.textColor}, 액센트: ${config.primaryAccent}`);
-            
-            // 🔥 STEP 1: 기본 배경과 텍스트 (모든 요소)
+            // 🔥 STEP 1: 기본 설정 (최우선 적용)
             document.body.style.setProperty('background-color', config.backgroundColor, 'important');
             document.body.style.setProperty('color', config.textColor, 'important');
             
-            // 모든 요소에 기본 텍스트 색상 강제 적용
-            const allElements = document.querySelectorAll('*');
-            allElements.forEach(el => {
-                if (el.tagName && !['IMG', 'SVG', 'CANVAS', 'VIDEO'].includes(el.tagName)) {
-                    el.style.setProperty('color', config.textColor, 'important');
-                }
-            });
+            // 🔥 STEP 2: CSS 변수로 전역 설정 (기존 CSS 무시)
+            document.documentElement.style.setProperty('--theme-bg', config.backgroundColor);
+            document.documentElement.style.setProperty('--theme-text', config.textColor);
+            document.documentElement.style.setProperty('--theme-accent', config.primaryAccent);
+            document.documentElement.style.setProperty('--theme-gradient', config.buttonGradient);
             
-            // 🔥 STEP 2: 컨테이너들 (모든 화면)
+            // 🔥 STEP 3: 모든 컨테이너 강제 적용
             const containers = [
                 '#genderSelection', '#designerLogin', '#mainContainer', 
                 '.mobile-theme-modal', '.header', '.nav-tabs', '.content'
@@ -940,7 +848,7 @@
                 });
             });
             
-            // 🔥 STEP 3: 로고 색상 (모든 테마)
+            // 🔥 STEP 4: 로고 색상 (핑크색 무시하고 테마 액센트로)
             setTimeout(() => {
                 document.querySelectorAll('.logo, .logo span, h1, h2').forEach(logo => {
                     if (logo.textContent && logo.textContent.includes('HAIRGATOR')) {
@@ -950,7 +858,7 @@
                 });
             }, 50);
             
-            // 🔥 STEP 4: 대분류 네비게이션 (모든 테마)
+            // 🔥 STEP 5: 네비게이션 탭 (핑크색 밑줄 → 테마 액센트로)
             setTimeout(() => {
                 document.querySelectorAll('.nav-tab').forEach(tab => {
                     if (tab.classList.contains('active')) {
@@ -966,10 +874,10 @@
                 });
             }, 100);
             
-            // 🔥 STEP 5: 중분류 버튼 (모든 테마)
+            // 🔥 STEP 6: 중분류 버튼 (핑크색 → 테마 액센트로)
             setTimeout(() => {
                 document.querySelectorAll('.length-tab').forEach(tab => {
-                    // 슬림 스타일
+                    // 슬림 스타일 적용
                     tab.style.setProperty('padding', '8px 16px', 'important');
                     tab.style.setProperty('font-size', '14px', 'important');
                     tab.style.setProperty('line-height', '1.2', 'important');
@@ -994,9 +902,8 @@
                 });
             }, 150);
             
-            // 🔥 STEP 6: 이미지 호버 효과 (핑크 → 테마 액센트 색상)
+            // 🔥 STEP 7: 동적 CSS로 이미지 호버 효과 (핑크색 → 테마 액센트로)
             setTimeout(() => {
-                // CSS로 이미지 호버 효과 다시 정의
                 const existingStyle = document.getElementById('dynamic-hover-style');
                 if (existingStyle) {
                     existingStyle.remove();
@@ -1021,7 +928,6 @@
                     }
                     
                     .mobile-theme-trigger:hover {
-                        background: ${config.primaryAccent}20 !important;
                         border-color: ${config.primaryAccent} !important;
                     }
                     
@@ -1033,73 +939,54 @@
                         background: ${config.primaryAccent}20 !important;
                         color: ${config.textColor} !important;
                     }
+                    
+                    /* 🚫 기존 CSS 핑크색 강제 설정 완전 무시 */
+                    .main-container.male .nav-tab.active::after,
+                    .main-container.female .nav-tab.active::after {
+                        background: ${config.buttonGradient} !important;
+                    }
+                    
+                    .main-container.male .length-tab.active,
+                    .main-container.female .length-tab.active {
+                        background: ${config.buttonGradient} !important;
+                        color: #ffffff !important;
+                    }
+                    
+                    .main-container.male .hairstyle-code,
+                    .main-container.female .hairstyle-code {
+                        color: ${config.primaryAccent} !important;
+                    }
+                    
+                    .length-guide-btn {
+                        background: ${config.primaryAccent}20 !important;
+                        border-color: ${config.primaryAccent} !important;
+                        color: ${config.primaryAccent} !important;
+                    }
+                    
+                    .length-guide-btn:hover {
+                        background: ${config.primaryAccent} !important;
+                        color: white !important;
+                    }
                 `;
                 
                 document.head.appendChild(hoverStyle);
                 console.log(`✅ 이미지 호버 효과 색상 변경: ${config.primaryAccent}`);
             }, 200);
             
-            // 🔥 STEP 7: 물음표/도움말 버튼 (모든 테마)
+            // 🔥 STEP 8: 물음표/도움말 버튼 (핑크색 → 테마 액센트로)
             setTimeout(() => {
-                const helpSelectors = [
-                    '[title*="도움"]', '[class*="help"]', '[class*="info"]',
-                    '.help-btn', '.info-btn', 'button[onclick*="help"]',
-                    '[data-tooltip]', '.tooltip-trigger'
-                ];
-                
-                helpSelectors.forEach(selector => {
-                    document.querySelectorAll(selector).forEach(btn => {
-                        btn.style.setProperty('color', config.primaryAccent, 'important');
-                        btn.style.setProperty('background-color', `${config.primaryAccent}20`, 'important');
-                        btn.style.setProperty('border-color', config.primaryAccent, 'important');
-                    });
-                });
-                
-                // 물음표 아이콘 직접 찾기
                 document.querySelectorAll('*').forEach(el => {
                     if (el.textContent && (el.textContent.includes('?') || el.textContent.includes('❓'))) {
                         if (el.tagName === 'BUTTON' || el.classList.contains('btn') || el.onclick) {
                             el.style.setProperty('color', config.primaryAccent, 'important');
                             el.style.setProperty('background-color', `${config.primaryAccent}20`, 'important');
+                            el.style.setProperty('border-color', config.primaryAccent, 'important');
                         }
                     }
                 });
             }, 250);
             
-            // 🔥 STEP 8: 카테고리 설명 텍스트 (모든 테마)
-            setTimeout(() => {
-                const categoryDesc = document.querySelector('.category-description');
-                if (categoryDesc) {
-                    const cardBg = config.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-                    const borderColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
-                    const descColor = config.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)';
-                    
-                    categoryDesc.style.setProperty('background', cardBg, 'important');
-                    categoryDesc.style.setProperty('border-color', borderColor, 'important');
-                    categoryDesc.style.setProperty('color', descColor, 'important');
-                    categoryDesc.style.setProperty('font-weight', '500', 'important');
-                }
-            }, 300);
-            
-            // 🔥 STEP 9: 모든 액션 버튼 (모든 테마)
-            setTimeout(() => {
-                const actionButtons = [
-                    '.add-customer-btn', '.login-btn', '.mobile-theme-apply',
-                    '.like-btn', '.customer-register-btn', 
-                    'button:not(.mobile-theme-cancel):not(.back-btn):not(.hamburger-btn):not(.close-menu):not(.nav-tab):not(.length-tab)'
-                ];
-                
-                actionButtons.forEach(selector => {
-                    document.querySelectorAll(selector).forEach(btn => {
-                        btn.style.setProperty('background', config.buttonGradient, 'important');
-                        btn.style.setProperty('color', '#ffffff', 'important');
-                        btn.style.setProperty('border', 'none', 'important');
-                        btn.style.setProperty('box-shadow', `0 5px 15px ${config.primaryAccent}30`, 'important');
-                    });
-                });
-            }, 350);
-            
-            // 🔥 STEP 10: 성별 선택 화면 (모든 테마)
+            // 🔥 STEP 9: 성별 선택 화면
             setTimeout(() => {
                 // 성별 텍스트
                 document.querySelectorAll('.gender-title, .gender-subtitle, .theme-trigger-text').forEach(text => {
@@ -1121,240 +1008,34 @@
                         icon.style.setProperty('color', config.primaryAccent, 'important');
                     }
                 });
-                
-                // 테마 트리거 버튼
-                const themeBtn = document.querySelector('.mobile-theme-trigger');
-                if (themeBtn) {
-                    themeBtn.style.setProperty('border-color', config.primaryAccent, 'important');
-                    themeBtn.style.setProperty('color', config.textColor, 'important');
-                    
-                    const triggerBg = config.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-                    themeBtn.style.setProperty('background', triggerBg, 'important');
-                }
-            }, 400);
+            }, 300);
             
-            // 🔥 STEP 11: 네비게이션 버튼들 (모든 테마)
+            // 🔥 STEP 10: 모든 액션 버튼 (핑크색 → 테마 액센트로)
             setTimeout(() => {
-                document.querySelectorAll('.hamburger-btn, .back-btn, .close-menu').forEach(btn => {
-                    btn.style.setProperty('color', config.textColor, 'important');
+                const actionButtons = [
+                    '.add-customer-btn', '.login-btn', '.mobile-theme-apply',
+                    '.like-btn', '.customer-register-btn'
+                ];
+                
+                actionButtons.forEach(selector => {
+                    document.querySelectorAll(selector).forEach(btn => {
+                        btn.style.setProperty('background', config.buttonGradient, 'important');
+                        btn.style.setProperty('color', '#ffffff', 'important');
+                        btn.style.setProperty('border', 'none', 'important');
+                        btn.style.setProperty('box-shadow', `0 5px 15px ${config.primaryAccent}30`, 'important');
+                    });
                 });
-                
-                // 햄버거 아이콘 라인들
-                document.querySelectorAll('.hamburger-icon span').forEach(span => {
-                    span.style.setProperty('background-color', config.textColor, 'important');
-                });
-            }, 450);
+            }, 350);
             
-            // 🔥 STEP 12: 입력 필드들 (모든 테마)
-            setTimeout(() => {
-                const cardBg = config.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-                const borderColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
-                
-                document.querySelectorAll('input, textarea, select').forEach(input => {
-                    input.style.setProperty('background', cardBg, 'important');
-                    input.style.setProperty('border-color', borderColor, 'important');
-                    input.style.setProperty('color', config.textColor, 'important');
-                });
-            }, 500);
-            
-            console.log(`✅ 전체 6개 테마 통일 적용 완료: ${config.name}`);
-            console.log(`   - 이미지 호버 효과: ${config.primaryAccent}`);
-            console.log(`   - 모든 액센트 요소: ${config.primaryAccent}`);
-        }
-        
-        // 🎨 전역 색상 적용
-        function applyGlobalColors(config) {
-            // Body 및 기본 컨테이너들
-            document.body.style.backgroundColor = config.backgroundColor;
-            document.body.style.color = config.textColor;
-            
-            const containers = ['#genderSelection', '#designerLogin', '#mainContainer', '.mobile-theme-modal'];
-            containers.forEach(selector => {
-                const element = document.querySelector(selector);
-                if (element) {
-                    element.style.backgroundColor = config.backgroundColor;
-                    element.style.color = config.textColor;
-                }
-            });
-        }
-        
-        // 🎨 헤더 색상 적용
-        function applyHeaderColors(config) {
-            const header = document.querySelector('.header');
-            if (header) {
-                header.style.backgroundColor = config.backgroundColor;
-                header.style.color = config.textColor;
-                header.style.borderBottomColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
+            // PWA 테마 색상
+            const metaTheme = document.getElementById('metaThemeColor');
+            if (metaTheme) {
+                metaTheme.setAttribute('content', config.backgroundColor);
             }
             
-            // 로고 색상
-            const logo = document.querySelector('.logo span');
-            if (logo) {
-                logo.style.color = config.primaryAccent;
-            }
-            
-            // 뒤로가기 버튼
-            const backBtn = document.querySelector('.back-btn');
-            if (backBtn) {
-                backBtn.style.color = config.textColor;
-            }
-            
-            // 햄버거 버튼
-            const hamburgerBtn = document.querySelector('.hamburger-btn');
-            if (hamburgerBtn) {
-                hamburgerBtn.style.color = config.textColor;
-                // 햄버거 아이콘 라인들
-                hamburgerBtn.querySelectorAll('.hamburger-icon span').forEach(span => {
-                    span.style.backgroundColor = config.textColor;
-                });
-            }
-        }
-        
-        // 🎨 네비게이션 색상 적용
-        function applyNavigationColors(config) {
-            const navTabs = document.querySelector('.nav-tabs');
-            if (navTabs) {
-                navTabs.style.backgroundColor = config.backgroundColor;
-            }
-            
-            // 대분류 탭들
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.style.color = config.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
-                
-                if (tab.classList.contains('active')) {
-                    tab.style.color = config.primaryAccent;
-                    tab.style.borderBottomColor = config.primaryAccent;
-                }
-            });
-            
-            // 중분류 버튼들 (슬림하게!)
-            document.querySelectorAll('.length-tab').forEach(tab => {
-                tab.style.padding = '8px 16px';
-                tab.style.fontSize = '14px';
-                tab.style.lineHeight = '1.2';
-                tab.style.minHeight = '32px';
-                tab.style.height = 'auto';
-                tab.style.display = 'inline-flex';
-                tab.style.alignItems = 'center';
-                tab.style.justifyContent = 'center';
-                
-                if (tab.classList.contains('active')) {
-                    tab.style.background = config.buttonGradient;
-                    tab.style.color = '#ffffff';
-                    tab.style.fontWeight = '600';
-                } else {
-                    tab.style.background = config.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-                    tab.style.color = config.textColor;
-                    tab.style.fontWeight = '500';
-                }
-            });
-        }
-        
-        // 🎨 카드 색상 적용
-        function applyCardColors(config) {
-            const cardBg = config.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-            const borderColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
-            
-            // 로그인 카드
-            const loginCard = document.querySelector('.login-card');
-            if (loginCard) {
-                loginCard.style.background = cardBg;
-                loginCard.style.borderColor = borderColor;
-                loginCard.style.color = config.textColor;
-            }
-            
-            // 성별 카드
-            document.querySelectorAll('.gender-card').forEach(card => {
-                card.style.background = cardBg;
-                card.style.borderColor = borderColor;
-                card.style.color = config.textColor;
-            });
-            
-            // 입력 필드들
-            document.querySelectorAll('input, textarea').forEach(input => {
-                input.style.background = cardBg;
-                input.style.borderColor = borderColor;
-                input.style.color = config.textColor;
-                
-                // placeholder 색상
-                const placeholderColor = config.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
-                input.style.setProperty('--placeholder-color', placeholderColor);
-            });
-            
-            // 카테고리 설명 박스
-            const categoryDesc = document.querySelector('.category-description');
-            if (categoryDesc) {
-                categoryDesc.style.background = cardBg;
-                categoryDesc.style.borderColor = borderColor;
-                categoryDesc.style.color = config.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
-            }
-        }
-        
-        // 🎨 버튼 색상 적용
-        function applyButtonColors(config) {
-            // 플러스 버튼
-            const plusBtn = document.getElementById('addCustomerBtn');
-            if (plusBtn) {
-                plusBtn.style.background = config.buttonGradient;
-                plusBtn.style.boxShadow = `0 5px 15px ${config.primaryAccent}30`;
-                plusBtn.style.color = '#ffffff';
-            }
-            
-            // 로그인 버튼
-            const loginBtn = document.querySelector('.login-btn');
-            if (loginBtn) {
-                loginBtn.style.background = config.buttonGradient;
-                loginBtn.style.color = '#ffffff';
-            }
-            
-            // 테마 적용 버튼
-            const applyBtn = document.querySelector('.mobile-theme-apply');
-            if (applyBtn) {
-                applyBtn.style.background = config.buttonGradient;
-                applyBtn.style.color = '#ffffff';
-            }
-            
-            // 테마 트리거 버튼
-            const themeBtn = document.querySelector('.mobile-theme-trigger');
-            if (themeBtn) {
-                themeBtn.style.borderColor = config.primaryAccent;
-                themeBtn.style.color = config.textColor;
-                
-                // 호버 효과 재설정
-                themeBtn.onmouseenter = () => {
-                    themeBtn.style.background = `${config.primaryAccent}20`;
-                    themeBtn.style.borderColor = config.primaryAccent;
-                };
-                themeBtn.onmouseleave = () => {
-                    themeBtn.style.background = config.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-                    themeBtn.style.borderColor = config.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
-                };
-            }
-            
-            // 체크박스
-            const checkmark = document.querySelector('.checkmark');
-            if (checkmark) {
-                checkmark.style.borderColor = config.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
-                checkmark.style.background = config.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-            }
-        }
-        
-        // 🎨 액센트 색상 업데이트 (간소화)
-        function updateAccentColors(config) {
-            console.log(`🎨 액센트 색상 적용: ${config.primaryAccent}`);
-            
-            // CSS 변수로 액센트 색상 설정
-            document.documentElement.style.setProperty('--accent-primary', config.primaryAccent);
-            document.documentElement.style.setProperty('--accent-secondary', config.secondaryAccent);
-            document.documentElement.style.setProperty('--button-gradient', config.buttonGradient);
-            document.documentElement.style.setProperty('--text-color', config.textColor);
-            document.documentElement.style.setProperty('--bg-color', config.backgroundColor);
-        }
-        
-        // 카드 스타일 업데이트 (함수 제거, 위에서 통합 처리됨)
-        function updateAllCardStyles(config) {
-            // 이 함수는 applyCardColors에서 처리되므로 비움
-            console.log('📝 카드 스타일은 applyCardColors에서 처리됨');
+            console.log(`✅ 완전한 테마 적용 완료: ${config.name}`);
+            console.log(`   - 모든 핑크색 → ${config.primaryAccent} 변경`);
+            console.log(`   - 이미지 호버, 버튼, 네비게이션 모두 테마 통일`);
         }
         
         // 테마 선택 UI 업데이트
@@ -1456,7 +1137,7 @@
         
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎨 HAIRGATOR 테마 시스템 초기화');
+            console.log('🎨 HAIRGATOR 3가지 심플 테마 시스템 초기화');
             loadSavedTheme();
             
             // 플러스 버튼 초기 설정
@@ -1468,7 +1149,7 @@
             loadSavedTheme();
         }
         
-        // 전역 함수 등록 (오류 방지)
+        // 전역 함수 등록
         window.showThemeModal = showThemeModal;
         window.hideThemeModal = hideThemeModal;
         window.selectTheme = selectTheme;
@@ -1476,7 +1157,10 @@
         window.handlePromotionClick = handlePromotionClick;
         window.updatePlusButton = updatePlusButton;
         
-        console.log('✅ 오류 수정된 HAIRGATOR 테마 시스템 로드 완료');
+        console.log('✅ 핑크색 강제 적용 문제 해결 완료!');
+        console.log('🎨 3가지 과학적 테마: 블랙, 그레이, 라이트');
+        console.log('   - 그레이: 순수 검정 액센트 (6.99:1 대비)');
+        console.log('   - 라이트: 다크 초콜릿 액센트 (10.95:1 대비)');
     </script>
 
 </body>
