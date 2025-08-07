@@ -113,6 +113,11 @@ document.addEventListener('DOMContentLoaded', function() {
         setupEventListeners();
         loadTheme();
         checkAuthStatus();
+        
+        // Initially hide back button
+        if (backBtn) {
+            backBtn.style.display = 'none';
+        }
     }
 
     // Event Listeners
@@ -261,7 +266,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update UI
         genderSelection.style.display = 'none';
         menuContainer.classList.add('active');
-        backBtn.style.display = 'block';
+        
+        // Show back button
+        if (backBtn) {
+            backBtn.style.display = 'flex';
+        }
         
         // Hide theme toggle button when menu is shown
         if (themeToggleBottom) {
