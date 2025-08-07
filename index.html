@@ -283,6 +283,253 @@
     <!-- 메인 스크립트 (마지막에 로드) -->
     <script src="js/index-main.js"></script>
 
+    <!-- ========== 긴급 패치: JavaScript 오류 수정 ========== -->
+    <script>
+    console.log('🔧 HAIRGATOR 긴급 패치 적용 중...');
+
+    // 전역 변수 선언 (중복 방지)
+    if (typeof window.db === 'undefined') window.db = null;
+    if (typeof window.firebaseConnected === 'undefined') window.firebaseConnected = false;
+    if (typeof window.currentDesigner === 'undefined') window.currentDesigner = null;
+    if (typeof window.currentDesignerName === 'undefined') window.currentDesignerName = null;
+    if (typeof window.currentGender === 'undefined') window.currentGender = null;
+
+    // Firebase 초기화 함수 (기존 것이 없을 경우)
+    if (typeof window.initializeFirebase === 'undefined') {
+        window.initializeFirebase = function() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyCOe8b1qMxhlB8PNMOdm7nVOPZe-v4GEKo",
+                authDomain: "hairgator.firebaseapp.com",
+                projectId: "hairgator",
+                storageBucket: "hairgator.firebasestorage.app",
+                messagingSenderId: "158114302103",
+                appId: "1:158114302103:web:81a0bb584da6c2fa0b4b0d"
+            };
+            
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                window.db = firebase.firestore();
+                window.firebaseConnected = true;
+                console.log('✅ Firebase 패치 초기화 성공');
+            } catch (error) {
+                console.error('❌ Firebase 패치 초기화 실패:', error);
+                window.firebaseConnected = false;
+            }
+        };
+    }
+
+    // checkDesignerLogin 함수 (핵심 수정)
+    if (typeof window.checkDesignerLogin === 'undefined') {
+        console.log('🔄 checkDesignerLogin 함수 생성 중...');
+        
+        window.checkDesignerLogin = async function() {
+            const name = document.getElementById('designerName').value.trim();
+            const phone = document.getElementById('designerPhone').value.trim();
+            const pin = document.getElementById('designerPin').value.trim();
+            
+            if (!name || phone.length !== 4 || pin.length !== 4) {
+                showLoginResult('error', '모든 정보를 정확히 입력해주세요<br>전화번호 4자리, 비밀번호 4자리');
+                return;
+            }
+            
+            // Firebase 연결 대기
+            if (!window.firebaseConnected) {
+                showLoginResult('warning', 'Firebase 연결 중... 잠시만 기다려주세요.');
+                
+                // 3초 후 재시도
+                setTimeout(() => {
+                    if (window.firebaseConnected) {
+                        window.checkDesignerLogin();
+                    } else {
+                        showLoginResult('error', 'Firebase 연결에 실패했습니다. 페이지를 새로고침해주세요.');
+                    }
+                }, 3000);
+                return;
+            }
+            
+            const designerId = `${name}_${phone}`;
+            
+            try {
+                showLoginResult('warning', '로그인 확인 중...');
+                
+                const designerDoc = await window.db.collection('designers').doc(designerId).get();
+                
+                if (designerDoc.exists) {
+                    const data = designerDoc.data();
+                    
+                    if (data.pin === pin) {
+                        await window.db.collection('designers').doc(designerId).update({
+                            lastLogin: new Date()
+                        });
+                        
+                        startDesignerSession(designerId, name);
+                    } else {
+                        showLoginResult('error', '❌ 비밀번호가 틀렸습니다!');
+                    }
+                } else {
+                    showLoginResult('warning', `
+                        🆕 신규 디자이너 등록<br>
+                        📝 ID: <strong>${designerId}</strong><br>
+                        🔒 비밀번호: <strong>••••</strong> (설정됨)<br>
+                        ⚠️ <strong>비밀번호를 잊어버리면 복구 불가능합니다!</strong><br>
+                        <button onclick="confirmRegistration('${designerId}', '${name}', '${pin}')" 
+                                style="background: #FF1493; color: white; border: none; padding: 10px 20px; border-radius: 10px; margin-top: 10px; cursor: pointer;">
+                            ✅ 등록하고 시작
+                        </button>
+                    `);
+                }
+            } catch (error) {
+                console.error('❌ 로그인 확인 오류:', error);
+                showLoginResult('error', '로그인 확인 중 오류가 발생했습니다. 네트워크 연결을 확인해주세요.');
+            }
+        };
+    }
+
+    // 필수 보조 함수들
+    if (typeof window.confirmRegistration === 'undefined') {
+        window.confirmRegistration = async function(designerId, name, pin) {
+            try {
+                await window.db.collection('designers').doc(designerId).set({
+                    name: name,
+                    pin: pin,
+                    createdAt: new Date(),
+                    customerCount: 0,
+                    lastLogin: new Date(),
+                    profile: {
+                        naverBookingUrl: '',
+                        salonName: '',
+                        salonAddress: '',
+                        salonPhone: '',
+                        openTime: '09:00',
+                        closeTime: '18:00',
+                        closedDays: [],
+                        services: []
+                    }
+                });
+                
+                startDesignerSession(designerId, name);
+            } catch (error) {
+                console.error('등록 실패:', error);
+                showLoginResult('error', '등록에 실패했습니다. 다시 시도해주세요.');
+            }
+        };
+    }
+
+    if (typeof window.startDesignerSession === 'undefined') {
+        window.startDesignerSession = function(designerId, name) {
+            window.currentDesigner = designerId;
+            window.currentDesignerName = name;
+            
+            sessionStorage.setItem('currentDesigner', designerId);
+            sessionStorage.setItem('designerName', name);
+            
+            showLoginResult('success', `🎉 ${name} 디자이너님 환영합니다!`);
+            
+            setTimeout(() => {
+                document.getElementById('designerLogin').style.display = 'none';
+                document.getElementById('genderSelection').classList.add('show');
+                
+                // 햄버거 메뉴 이름 업데이트
+                const menuName = document.getElementById('menuDesignerName');
+                if (menuName) {
+                    menuName.textContent = `🎨 ${name}`;
+                }
+            }, 2000);
+        };
+    }
+
+    if (typeof window.showLoginResult === 'undefined') {
+        window.showLoginResult = function(type, message) {
+            const resultDiv = document.getElementById('loginResult');
+            const colors = {
+                success: '#28a745',
+                warning: '#ffc107', 
+                error: '#dc3545'
+            };
+            
+            resultDiv.innerHTML = `
+                <div style="
+                    background: ${colors[type]}22; 
+                    border: 2px solid ${colors[type]}; 
+                    border-radius: 10px; 
+                    padding: 15px; 
+                    margin-top: 20px;
+                    text-align: center;
+                ">
+                    ${message}
+                </div>
+            `;
+        };
+    }
+
+    // selectGender 함수 (성별 선택용)
+    if (typeof window.selectGender === 'undefined') {
+        window.selectGender = function(gender) {
+            console.log(`🎯 성별 선택: ${gender}`);
+            window.currentGender = gender;
+            document.getElementById('genderSelection').classList.remove('show');
+            document.getElementById('mainContainer').classList.add('active');
+            
+            // 여기서 실제 메뉴판 데이터를 로드해야 함 (index-main.js에서 처리)
+        };
+    }
+
+    // 기존 세션 복원 함수
+    function checkExistingSession() {
+        const savedDesigner = sessionStorage.getItem('currentDesigner');
+        const savedDesignerName = sessionStorage.getItem('designerName');
+        
+        if (savedDesigner && savedDesignerName) {
+            console.log('🔄 기존 세션 복원:', savedDesigner, savedDesignerName);
+            window.currentDesigner = savedDesigner;
+            window.currentDesignerName = savedDesignerName;
+            
+            document.getElementById('designerLogin').style.display = 'none';
+            document.getElementById('genderSelection').classList.add('show');
+            
+            const menuName = document.getElementById('menuDesignerName');
+            if (menuName) {
+                menuName.textContent = `🎨 ${savedDesignerName}`;
+            }
+            
+            return true;
+        }
+        
+        return false;
+    }
+
+    // DOM 로드 후 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔧 긴급 패치 초기화 중...');
+        
+        // Firebase 초기화 (1초 후)
+        setTimeout(() => {
+            if (typeof firebase !== 'undefined' && !window.firebaseConnected) {
+                window.initializeFirebase();
+            }
+        }, 1000);
+        
+        // 기존 세션 복원 시도
+        if (!checkExistingSession()) {
+            console.log('📝 새 로그인 필요');
+        }
+        
+        // Enter 키 지원
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                const loginScreen = document.getElementById('designerLogin');
+                if (loginScreen.style.display !== 'none') {
+                    window.checkDesignerLogin();
+                }
+            }
+        });
+    });
+
+    console.log('✅ HAIRGATOR 긴급 패치 적용 완료');
+    </script>
+
     <style>
         /* 핵심 테마 스타일만 유지 - 불필요한 CSS 제거 */
         
