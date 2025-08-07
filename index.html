@@ -794,9 +794,18 @@
             
             const overlay = document.getElementById('themeModalOverlay');
             if (overlay) {
+                // 애니메이션으로 숨김
                 overlay.classList.remove('show');
+                overlay.style.opacity = '0';
+                
+                // 애니메이션 완료 후 완전히 숨김
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 300);
+                
                 hairgatorThemeModalOpen = false;
                 document.body.style.overflow = '';
+                console.log('✅ 테마 모달 숨김 완료');
             }
         }
         
@@ -824,9 +833,21 @@
             if (config) {
                 applyThemeStyles(config);
                 localStorage.setItem('hairgator_theme', hairgatorCurrentTheme);
+                console.log(`✅ 테마 저장 완료: ${config.name}`);
             }
             
+            // 모달 강제 숨김
             hideThemeModal();
+            
+            // 추가 안전 장치 - 직접 숨김 처리
+            setTimeout(() => {
+                const overlay = document.getElementById('themeModalOverlay');
+                if (overlay) {
+                    overlay.style.display = 'none';
+                    overlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            }, 100);
         }
         
         // 🎨 테마 스타일 적용
