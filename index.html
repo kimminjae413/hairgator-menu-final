@@ -626,7 +626,25 @@
             display: flex !important; /* 메인 컨테이너 활성화 시에만 표시 */
         }
         
-        /* ========== 카테고리 설명 박스 수정 ========== */
+        /* ========== 중분류 탭 슬림 디자인 ========== */
+        .length-tab {
+            padding: 8px 16px !important;
+            font-size: 14px !important;
+            line-height: 1.2 !important;
+            min-height: 32px !important;
+            height: auto !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            white-space: nowrap !important;
+            border-radius: 6px !important;
+            margin: 0 4px 8px 0 !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .length-tab.active {
+            font-weight: 600 !important;
+        }
         .category-description {
             margin: 0 0 20px 0 !important;
             padding: 15px 20px !important;
@@ -718,6 +736,9 @@
                 description: '눈의 피로를 줄이고 전문적인 분위기 연출',
                 backgroundColor: '#000000',
                 textColor: '#ffffff',
+                primaryAccent: '#FF1493',    // 핑크
+                secondaryAccent: '#FF69B4',
+                buttonGradient: 'linear-gradient(135deg, #FF1493, #FF69B4)',
                 isDark: true
             },
             'ultimate-gray': {
@@ -725,6 +746,9 @@
                 description: '중성적이고 고급스러운 느낌, 팬톤 2021 올해의 색상',
                 backgroundColor: '#939597',
                 textColor: '#ffffff',
+                primaryAccent: '#00D4FF',    // 시안 블루
+                secondaryAccent: '#0099CC',
+                buttonGradient: 'linear-gradient(135deg, #00D4FF, #0099CC)',
                 isDark: true
             },
             'light-beige': {
@@ -732,6 +756,9 @@
                 description: '밝고 깔끔한 분위기, 모던하고 개방적인 느낌',
                 backgroundColor: '#E6DCD3',
                 textColor: '#333333',
+                primaryAccent: '#8B4513',    // 다크 브라운
+                secondaryAccent: '#A0522D',
+                buttonGradient: 'linear-gradient(135deg, #8B4513, #A0522D)',
                 isDark: false
             },
             'warm-beige': {
@@ -739,6 +766,9 @@
                 description: '따뜻하고 친근한 분위기, 편안하고 아늑한 느낌',
                 backgroundColor: '#DEC9A1',
                 textColor: '#333333',
+                primaryAccent: '#D2691E',    // 초콜릿 오렌지
+                secondaryAccent: '#CD853F',
+                buttonGradient: 'linear-gradient(135deg, #D2691E, #CD853F)',
                 isDark: false
             },
             'soybean': {
@@ -746,6 +776,9 @@
                 description: '자연스럽고 차분한 분위기, 편안하고 안정적인 느낌',
                 backgroundColor: '#D2C29D',
                 textColor: '#333333',
+                primaryAccent: '#6B8E23',    // 올리브 그린
+                secondaryAccent: '#9ACD32',
+                buttonGradient: 'linear-gradient(135deg, #6B8E23, #9ACD32)',
                 isDark: false
             },
             'dark-beige': {
@@ -753,6 +786,9 @@
                 description: '세련되고 차분한 분위기, 고급스럽고 모던한 느낌',
                 backgroundColor: '#7A7363',
                 textColor: '#ffffff',
+                primaryAccent: '#DAA520',    // 골든로드
+                secondaryAccent: '#B8860B',
+                buttonGradient: 'linear-gradient(135deg, #DAA520, #B8860B)',
                 isDark: true
             }
         };
@@ -854,25 +890,12 @@
         function applyThemeStyles(config) {
             console.log(`🎨 스타일 적용: ${config.name}`);
             
-            // 기본 요소들
-            document.body.style.backgroundColor = config.backgroundColor;
-            document.body.style.color = config.textColor;
-            
-            // 주요 화면들
-            const elements = [
-                '#genderSelection',
-                '#designerLogin', 
-                '#mainContainer',
-                '.mobile-theme-modal'
-            ];
-            
-            elements.forEach(selector => {
-                const element = document.querySelector(selector);
-                if (element) {
-                    element.style.backgroundColor = config.backgroundColor;
-                    element.style.color = config.textColor;
-                }
-            });
+            // 🔧 전체적인 색상 시스템 적용
+            applyGlobalColors(config);
+            applyHeaderColors(config);
+            applyNavigationColors(config);
+            applyCardColors(config);
+            applyButtonColors(config);
             
             // PWA 테마 색상
             const metaTheme = document.getElementById('metaThemeColor');
@@ -880,12 +903,99 @@
                 metaTheme.setAttribute('content', config.backgroundColor);
             }
             
-            // 카드 스타일 업데이트
-            updateAllCardStyles(config);
+            console.log(`✅ 테마 적용 완료: ${config.name} (대비: ${config.isDark ? '어두움' : '밝음'})`);
         }
         
-        // 카드 스타일 업데이트
-        function updateAllCardStyles(config) {
+        // 🎨 전역 색상 적용
+        function applyGlobalColors(config) {
+            // Body 및 기본 컨테이너들
+            document.body.style.backgroundColor = config.backgroundColor;
+            document.body.style.color = config.textColor;
+            
+            const containers = ['#genderSelection', '#designerLogin', '#mainContainer', '.mobile-theme-modal'];
+            containers.forEach(selector => {
+                const element = document.querySelector(selector);
+                if (element) {
+                    element.style.backgroundColor = config.backgroundColor;
+                    element.style.color = config.textColor;
+                }
+            });
+        }
+        
+        // 🎨 헤더 색상 적용
+        function applyHeaderColors(config) {
+            const header = document.querySelector('.header');
+            if (header) {
+                header.style.backgroundColor = config.backgroundColor;
+                header.style.color = config.textColor;
+                header.style.borderBottomColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
+            }
+            
+            // 로고 색상
+            const logo = document.querySelector('.logo span');
+            if (logo) {
+                logo.style.color = config.primaryAccent;
+            }
+            
+            // 뒤로가기 버튼
+            const backBtn = document.querySelector('.back-btn');
+            if (backBtn) {
+                backBtn.style.color = config.textColor;
+            }
+            
+            // 햄버거 버튼
+            const hamburgerBtn = document.querySelector('.hamburger-btn');
+            if (hamburgerBtn) {
+                hamburgerBtn.style.color = config.textColor;
+                // 햄버거 아이콘 라인들
+                hamburgerBtn.querySelectorAll('.hamburger-icon span').forEach(span => {
+                    span.style.backgroundColor = config.textColor;
+                });
+            }
+        }
+        
+        // 🎨 네비게이션 색상 적용
+        function applyNavigationColors(config) {
+            const navTabs = document.querySelector('.nav-tabs');
+            if (navTabs) {
+                navTabs.style.backgroundColor = config.backgroundColor;
+            }
+            
+            // 대분류 탭들
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.style.color = config.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
+                
+                if (tab.classList.contains('active')) {
+                    tab.style.color = config.primaryAccent;
+                    tab.style.borderBottomColor = config.primaryAccent;
+                }
+            });
+            
+            // 중분류 버튼들 (슬림하게!)
+            document.querySelectorAll('.length-tab').forEach(tab => {
+                tab.style.padding = '8px 16px';
+                tab.style.fontSize = '14px';
+                tab.style.lineHeight = '1.2';
+                tab.style.minHeight = '32px';
+                tab.style.height = 'auto';
+                tab.style.display = 'inline-flex';
+                tab.style.alignItems = 'center';
+                tab.style.justifyContent = 'center';
+                
+                if (tab.classList.contains('active')) {
+                    tab.style.background = config.buttonGradient;
+                    tab.style.color = '#ffffff';
+                    tab.style.fontWeight = '600';
+                } else {
+                    tab.style.background = config.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                    tab.style.color = config.textColor;
+                    tab.style.fontWeight = '500';
+                }
+            });
+        }
+        
+        // 🎨 카드 색상 적용
+        function applyCardColors(config) {
             const cardBg = config.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
             const borderColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
             
@@ -894,6 +1004,7 @@
             if (loginCard) {
                 loginCard.style.background = cardBg;
                 loginCard.style.borderColor = borderColor;
+                loginCard.style.color = config.textColor;
             }
             
             // 성별 카드
@@ -903,12 +1014,91 @@
                 card.style.color = config.textColor;
             });
             
-            // 입력 필드
+            // 입력 필드들
             document.querySelectorAll('input, textarea').forEach(input => {
                 input.style.background = cardBg;
                 input.style.borderColor = borderColor;
                 input.style.color = config.textColor;
+                
+                // placeholder 색상
+                const placeholderColor = config.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+                input.style.setProperty('--placeholder-color', placeholderColor);
             });
+            
+            // 카테고리 설명 박스
+            const categoryDesc = document.querySelector('.category-description');
+            if (categoryDesc) {
+                categoryDesc.style.background = cardBg;
+                categoryDesc.style.borderColor = borderColor;
+                categoryDesc.style.color = config.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
+            }
+        }
+        
+        // 🎨 버튼 색상 적용
+        function applyButtonColors(config) {
+            // 플러스 버튼
+            const plusBtn = document.getElementById('addCustomerBtn');
+            if (plusBtn) {
+                plusBtn.style.background = config.buttonGradient;
+                plusBtn.style.boxShadow = `0 5px 15px ${config.primaryAccent}30`;
+                plusBtn.style.color = '#ffffff';
+            }
+            
+            // 로그인 버튼
+            const loginBtn = document.querySelector('.login-btn');
+            if (loginBtn) {
+                loginBtn.style.background = config.buttonGradient;
+                loginBtn.style.color = '#ffffff';
+            }
+            
+            // 테마 적용 버튼
+            const applyBtn = document.querySelector('.mobile-theme-apply');
+            if (applyBtn) {
+                applyBtn.style.background = config.buttonGradient;
+                applyBtn.style.color = '#ffffff';
+            }
+            
+            // 테마 트리거 버튼
+            const themeBtn = document.querySelector('.mobile-theme-trigger');
+            if (themeBtn) {
+                themeBtn.style.borderColor = config.primaryAccent;
+                themeBtn.style.color = config.textColor;
+                
+                // 호버 효과 재설정
+                themeBtn.onmouseenter = () => {
+                    themeBtn.style.background = `${config.primaryAccent}20`;
+                    themeBtn.style.borderColor = config.primaryAccent;
+                };
+                themeBtn.onmouseleave = () => {
+                    themeBtn.style.background = config.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                    themeBtn.style.borderColor = config.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+                };
+            }
+            
+            // 체크박스
+            const checkmark = document.querySelector('.checkmark');
+            if (checkmark) {
+                checkmark.style.borderColor = config.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+                checkmark.style.background = config.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+            }
+        }
+        
+        // 🎨 액센트 색상 업데이트 (간소화)
+        function updateAccentColors(config) {
+            console.log(`🎨 액센트 색상 적용: ${config.primaryAccent}`);
+            
+            // CSS 변수로 액센트 색상 설정
+            document.documentElement.style.setProperty('--accent-primary', config.primaryAccent);
+            document.documentElement.style.setProperty('--accent-secondary', config.secondaryAccent);
+            document.documentElement.style.setProperty('--button-gradient', config.buttonGradient);
+            document.documentElement.style.setProperty('--text-color', config.textColor);
+            document.documentElement.style.setProperty('--bg-color', config.backgroundColor);
+        }
+        
+        // 카드 스타일 업데이트 (함수 제거, 위에서 통합 처리됨)
+        function updateAllCardStyles(config) {
+            // 이 함수는 applyCardColors에서 처리되므로 비움
+            console.log('📝 카드 스타일은 applyCardColors에서 처리됨');
         }
         
         // 테마 선택 UI 업데이트
