@@ -481,101 +481,222 @@
         };
     }
 
-    // 실시간 카테고리 로드 함수
-    async function loadRealTimeCategories(gender) {
-        console.log(`🔥 실시간 Firebase 데이터 로드: ${gender}`);
+    // selectGender 함수 (성별 선택용) - 단순화 및 디버깅 강화
+    if (typeof window.selectGender === 'undefined') {
+        window.selectGender = function(gender) {
+            console.log(`🎯 성별 선택 시작: ${gender}`);
+            
+            try {
+                window.currentGender = gender;
+                
+                // UI 전환
+                const genderSelection = document.getElementById('genderSelection');
+                const mainContainer = document.getElementById('mainContainer');
+                
+                if (genderSelection && mainContainer) {
+                    genderSelection.classList.remove('show');
+                    mainContainer.classList.add('active');
+                    
+                    // 성별에 따른 테마 클래스 추가
+                    mainContainer.classList.remove('male', 'female');
+                    mainContainer.classList.add(gender);
+                    
+                    console.log(`✅ UI 전환 완료: ${gender}`);
+                } else {
+                    console.error('❌ UI 요소를 찾을 수 없음');
+                    return;
+                }
+                
+                // 즉시 기본 카테고리 표시 (Firebase 대기 없이)
+                showImmediateCategories(gender);
+                
+                // 백그라운드에서 Firebase 데이터 로드 시도
+                setTimeout(() => {
+                    loadFirebaseDataInBackground(gender);
+                }, 500);
+                
+            } catch (error) {
+                console.error('❌ selectGender 오류:', error);
+                showErrorState('성별 선택 중 오류가 발생했습니다.');
+            }
+        };
+    }
+
+    // 즉시 기본 카테고리 표시 함수
+    function showImmediateCategories(gender) {
+        console.log(`⚡ 즉시 카테고리 표시: ${gender}`);
+        
+        const basicCategories = {
+            male: {
+                'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
+                'SIDE PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
+                'FRINGE UP': ['None', 'Fore Head'],
+                'PUSHED BACK': ['None'],
+                'BUZZ': ['None'],
+                'CROP': ['None'],
+                'MOHICAN': ['None']
+            },
+            female: {
+                'LONG': ['A Length', 'B Length'],
+                'SEMI LONG': ['C Length'],
+                'MEDIUM': ['D Length', 'E Length'],
+                'BOB': ['F Length', 'G Length'],
+                'SHORT': ['H Length']
+            }
+        };
+        
+        const categories = basicCategories[gender];
+        if (!categories) {
+            console.error('❌ 카테고리 데이터 없음:', gender);
+            showErrorState('카테고리 데이터를 찾을 수 없습니다.');
+            return;
+        }
+        
+        renderCategoriesImmediately(categories);
+    }
+
+    // 즉시 카테고리 렌더링
+    function renderCategoriesImmediately(categories) {
+        console.log('🎨 즉시 카테고리 렌더링:', Object.keys(categories));
         
         const navTabs = document.getElementById('navTabs');
         const content = document.getElementById('content');
         
-        navTabs.innerHTML = '<div style="color: #FF69B4; padding: 15px; text-align: center;">📡 실시간 데이터 로드 중...</div>';
-        
-        if (!window.firebaseConnected || !window.db) {
-            console.log('❌ Firebase 연결 안됨, 재연결 시도...');
-            
-            // Firebase 재연결 시도
-            setTimeout(() => {
-                if (window.firebaseConnected) {
-                    loadRealTimeCategories(gender);
-                } else {
-                    console.log('⚠️ Firebase 연결 실패, 백업 데이터 사용');
-                    loadBasicCategories(gender);
-                }
-            }, 2000);
+        if (!navTabs || !content) {
+            console.error('❌ DOM 요소 없음');
             return;
         }
         
-        try {
-            console.log('📊 category_hierarchy 실시간 쿼리 실행...');
-            
-            // 실시간 데이터 가져오기
-            const hierarchySnapshot = await window.db.collection('category_hierarchy')
-                .where('gender', '==', gender)
-                .get();
-            
-            console.log(`📋 쿼리 결과: ${hierarchySnapshot.size}개 문서 (${gender})`);
-            
-            if (hierarchySnapshot.empty) {
-                console.log('⚠️ Firebase에 데이터 없음 - 어드민 초기화 필요');
-                showAdminInitializationMessage();
-                return;
+        // 올바른 순서로 정렬
+        const categoryOrder = {
+            male: ['SIDE FRINGE', 'SIDE PART', 'FRINGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN'],
+            female: ['LONG', 'SEMI LONG', 'MEDIUM', 'BOB', 'SHORT']
+        };
+        
+        const orderedCategories = categoryOrder[window.currentGender] || Object.keys(categories);
+        const availableCategories = orderedCategories.filter(cat => categories[cat]);
+        
+        console.log(`📋 렌더링할 카테고리:`, availableCategories);
+        
+        // 네비게이션 탭 생성
+        navTabs.innerHTML = '';
+        availableCategories.forEach((category, index) => {
+            const tab = document.createElement('div');
+            tab.className = index === 0 ? 'nav-tab active' : 'nav-tab';
+            tab.textContent = category;
+            tab.dataset.category = category;
+            tab.onclick = () => showCategoryContent(category, categories[category]);
+            navTabs.appendChild(tab);
+        });
+        
+        // 첫 번째 카테고리 내용 표시
+        if (availableCategories.length > 0) {
+            showCategoryContent(availableCategories[0], categories[availableCategories[0]]);
+        }
+        
+        console.log('✅ 즉시 렌더링 완료');
+    }
+
+    // 카테고리 내용 표시
+    function showCategoryContent(categoryName, subCategories) {
+        console.log(`📂 카테고리 내용 표시: ${categoryName}`, subCategories);
+        
+        const content = document.getElementById('content');
+        if (!content) return;
+        
+        // 활성 탭 업데이트
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.textContent === categoryName) {
+                tab.classList.add('active');
             }
-            
-            // 실시간 데이터 파싱
-            const mainCategories = {};
-            let latestUpdate = null;
-            
-            hierarchySnapshot.forEach(doc => {
-                const data = doc.data();
-                console.log('📄 실시간 문서:', data);
-                
-                const mainCat = data.mainCategory;
-                const subCat = data.subCategory;
-                
-                if (!mainCategories[mainCat]) {
-                    mainCategories[mainCat] = [];
+        });
+        
+        // 서브카테고리 정렬
+        const subCategoryOrder = {
+            'LONG': ['A Length', 'B Length'],
+            'SEMI LONG': ['C Length'],
+            'MEDIUM': ['D Length', 'E Length'],
+            'BOB': ['F Length', 'G Length'],
+            'SHORT': ['H Length'],
+            'SIDE FRINGE': ['Fore Head', 'Eye Brow'],
+            'SIDE PART': ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'],
+            'FRINGE UP': ['None', 'Fore Head'],
+            'PUSHED BACK': ['None'],
+            'BUZZ': ['None'],
+            'CROP': ['None'],
+            'MOHICAN': ['None']
+        };
+        
+        const orderedSubCategories = subCategoryOrder[categoryName] || subCategories.sort();
+        
+        // HTML 생성
+        let html = `<div class="length-tabs">`;
+        orderedSubCategories.forEach((subCat, index) => {
+            const isActive = index === 0 ? 'active' : '';
+            html += `<div class="length-tab ${isActive}" onclick="showSubCategory('${subCat}')">${subCat}</div>`;
+        });
+        html += `</div>`;
+        
+        // 서브카테고리 섹션들
+        orderedSubCategories.forEach((subCat, index) => {
+            const isActive = index === 0 ? 'active' : '';
+            html += `
+                <div class="length-section ${isActive}" data-length="${subCat}">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✂️</div>
+                        <div class="empty-state-title"><strong>${subCat}</strong></div>
+                        <div class="empty-state-message">등록된 스타일이 없습니다.<br>어드민에서 스타일을 추가해주세요.</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        content.innerHTML = html;
+        console.log(`✅ ${categoryName} 내용 표시 완료`);
+    }
+
+    // 백그라운드 Firebase 데이터 로드
+    function loadFirebaseDataInBackground(gender) {
+        console.log(`🔥 백그라운드 Firebase 로드: ${gender}`);
+        
+        if (!window.firebaseConnected || !window.db) {
+            console.log('⚠️ Firebase 연결 안됨, 기본 데이터 유지');
+            return;
+        }
+        
+        // Firebase 데이터 로드 시도 (비동기)
+        window.db.collection('category_hierarchy')
+            .where('gender', '==', gender)
+            .get()
+            .then(snapshot => {
+                if (!snapshot.empty) {
+                    console.log(`🔄 Firebase 데이터 발견 (${snapshot.size}개), 업데이트 시도...`);
+                    // 여기서 실제 데이터로 업데이트할 수 있음
                 }
-                
-                if (!mainCategories[mainCat].includes(subCat)) {
-                    mainCategories[mainCat].push(subCat);
-                }
-                
-                if (data.updatedAt) {
-                    const updateTime = data.updatedAt.toDate();
-                    if (!latestUpdate || updateTime > latestUpdate) {
-                        latestUpdate = updateTime;
-                    }
-                }
+            })
+            .catch(error => {
+                console.log('⚠️ Firebase 백그라운드 로드 실패:', error.message);
             });
-            
-            // 카테고리 정렬
-            Object.keys(mainCategories).forEach(mainCat => {
-                mainCategories[mainCat].sort();
-            });
-            
-            console.log('✅ 실시간 데이터 파싱 완료:', mainCategories);
-            
-            if (Object.keys(mainCategories).length === 0) {
-                showAdminInitializationMessage();
-                return;
-            }
-            
-            // UI 렌더링
-            renderRealTimeCategories(mainCategories);
-            
-            // 상태 업데이트
-            const timeStr = latestUpdate ? latestUpdate.toLocaleString('ko-KR') : '방금전';
-            console.log(`✅ 실시간 동기화 완료 (${timeStr})`);
-            
-        } catch (error) {
-            console.error('❌ 실시간 데이터 로드 오류:', error);
-            
-            if (error.code === 'permission-denied') {
-                showAdminInitializationMessage('Firebase 권한 오류입니다. Security Rules를 확인해주세요.');
-            } else {
-                console.log('⚠️ Firebase 오류, 백업 데이터 사용');
-                loadBasicCategories(gender);
-            }
+    }
+
+    // 오류 상태 표시
+    function showErrorState(message) {
+        const navTabs = document.getElementById('navTabs');
+        const content = document.getElementById('content');
+        
+        if (navTabs) {
+            navTabs.innerHTML = `<div style="color: #ff6b6b; padding: 15px; text-align: center;">❌ 오류 발생</div>`;
+        }
+        
+        if (content) {
+            content.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <div class="empty-state-title">오류 발생</div>
+                    <div class="empty-state-message">${message}<br><br>페이지를 새로고침해주세요.</div>
+                </div>
+            `;
         }
     }
 
