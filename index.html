@@ -2,181 +2,613 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HAIRGATOR - Professional Hair Style Menu</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="theme-color" content="#000000">
-    <title>HAIRGATOR - Premium Hair Style Menu</title>
+    <link rel="manifest" href="manifest.json">
     
-    <!-- PWA -->
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icons/icon-192.png">
-    <link rel="icon" type="image/png" href="/icons/icon-192.png">
-    
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/login.css">
-    <link rel="stylesheet" href="css/menu.css">
-</head>
-<body class="dark-theme">
-    <!-- 로그인 화면 -->
-    <div id="loginScreen" class="login-screen active">
-        <div class="login-container">
-            <h1 class="login-title">🎨 디자이너 로그인</h1>
-            
-            <div class="info-box">
-                <p>💡 <strong>중요 안내</strong></p>
-                <p>디자이너 본인만 로그인 가능합니다</p>
-            </div>
-            
-            <form id="loginForm" class="login-form">
-                <div class="form-group">
-                    <label>👤 이름 (실명)</label>
-                    <input type="text" id="designerName" placeholder="홍길동" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>📱 휴대폰 끝 4자리</label>
-                    <input type="tel" id="phoneNumber" placeholder="1234" maxlength="4" pattern="[0-9]{4}" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>🔒 개인 비밀번호 (4자리)</label>
-                    <input type="password" id="password" placeholder="****" maxlength="4" pattern="[0-9]{4}" required>
-                </div>
-                
-                <button type="submit" class="login-btn">
-                    🔍 확인 후 로그인
-                </button>
-            </form>
-        </div>
-    </div>
-    
-    <!-- 성별 선택 화면 -->
-    <div id="genderSelection" class="gender-selection">
-        <div class="gender-container">
-            <!-- 남성 -->
-            <div class="gender-option male" onclick="selectGender('male')">
-                <div class="gender-icon">♂</div>
-                <div class="gender-text">
-                    <div class="ko">남성</div>
-                    <div class="en">Men's Hairstyle</div>
-                </div>
-            </div>
-            
-            <!-- 여성 -->
-            <div class="gender-option female" onclick="selectGender('female')">
-                <div class="gender-icon">♀</div>
-                <div class="gender-text">
-                    <div class="ko">여성</div>
-                    <div class="en">Women's Hairstyle</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 메인 메뉴 화면 -->
-    <div id="mainMenu" class="main-menu">
-        <!-- 헤더 -->
-        <header class="header">
-            <button class="back-btn" onclick="goBack()">←</button>
-            <h1 class="logo">HAIRGATOR</h1>
-            <div class="header-actions">
-                <button class="theme-btn" onclick="toggleTheme()">🌓</button>
-                <button class="menu-btn" onclick="openSideMenu()">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </header>
-        
-        <!-- 대분류 탭 -->
-        <div class="main-tabs" id="mainTabs"></div>
-        
-        <!-- 중분류 탭 -->
-        <div class="sub-tabs" id="subTabs"></div>
-        
-        <!-- 스타일 그리드 -->
-        <div class="styles-container">
-            <div class="styles-grid" id="stylesGrid">
-                <div class="empty-state">
-                    <div class="empty-icon">⚠️</div>
-                    <div class="empty-title">오류 발생</div>
-                    <div class="empty-message">스타일을 불러올 수 없습니다</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 사이드 메뉴 -->
-    <div id="sideMenu" class="side-menu">
-        <div class="side-menu-overlay" onclick="closeSideMenu()"></div>
-        <div class="side-menu-content">
-            <div class="side-menu-header">
-                <h2>MENU</h2>
-                <button class="close-btn" onclick="closeSideMenu()">×</button>
-            </div>
-            
-            <nav class="side-menu-nav">
-                <a href="#" onclick="showCustomerForm()" class="menu-item">
-                    <span class="menu-icon">👥</span>
-                    <span class="menu-text">고객 관리</span>
-                    <span class="menu-arrow">→</span>
-                </a>
-                
-                <a href="#" onclick="showStats()" class="menu-item">
-                    <span class="menu-icon">📊</span>
-                    <span class="menu-text">통계</span>
-                    <span class="menu-arrow">→</span>
-                </a>
-                
-                <a href="/admin.html" class="menu-item">
-                    <span class="menu-icon">⚙️</span>
-                    <span class="menu-text">관리자</span>
-                    <span class="menu-arrow">→</span>
-                </a>
-                
-                <div class="menu-divider"></div>
-                
-                <a href="#" onclick="logout()" class="menu-item logout">
-                    <span class="menu-icon">🚪</span>
-                    <span class="menu-text">로그아웃</span>
-                    <span class="menu-arrow">→</span>
-                </a>
-            </nav>
-            
-            <div class="side-menu-footer">
-                <div class="designer-info">
-                    <span id="designerNameDisplay">홍길동</span> 디자이너
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 스타일 상세 모달 -->
-    <div id="styleModal" class="modal">
-        <div class="modal-overlay" onclick="closeStyleModal()"></div>
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeStyleModal()">×</button>
-            <img id="modalImage" src="" alt="">
-            <div class="modal-info">
-                <h3 id="modalTitle"></h3>
-                <p id="modalCode"></p>
-                <p id="modalDescription"></p>
-            </div>
-        </div>
-    </div>
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
-    <!-- JavaScript -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary-dark: #000000;
+            --primary-light: #ffffff;
+            --male-color: #4A90E2;
+            --female-color: #E91E63;  /* 진한 핑크색으로 변경 */
+            --text-primary: #ffffff;
+            --text-secondary: #999999;
+            --border-color: #222222;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--primary-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            z-index: 1000;
+        }
+
+        .back-btn {
+            width: 30px;
+            height: 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 24px;
+        }
+
+        .logo {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #ffffff;  /* 항상 흰색 */
+        }
+
+        .menu-btn {
+            width: 30px;
+            height: 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .menu-btn span {
+            width: 20px;
+            height: 2px;
+            background: var(--text-primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 50px;
+            min-height: calc(100vh - 50px);
+        }
+
+        /* Gender Selection - 세로 직사각형 스타일 */
+        .gender-selection {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 50px);
+            padding: 20px;
+            gap: 40px;
+        }
+
+        .gender-btn {
+            width: 160px;
+            height: 240px;  /* 세로로 긴 직사각형 */
+            border: 2px solid #333;
+            border-radius: 20px;
+            background: #111;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            transition: all 0.3s;
+        }
+
+        .gender-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .gender-btn.male {
+            border-color: var(--male-color);
+        }
+
+        .gender-btn.female {
+            border-color: var(--female-color);
+        }
+
+        .gender-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+        }
+
+        .gender-btn.male .gender-icon {
+            background: var(--male-color);
+        }
+
+        .gender-btn.female .gender-icon {
+            background: var(--female-color);
+        }
+
+        .gender-label {
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        /* Menu Container */
+        .menu-container {
+            display: none;
+        }
+
+        .menu-container.active {
+            display: block;
+        }
+
+        /* Category Tabs - 스크린샷 스타일 */
+        .category-tabs-wrapper {
+            background: var(--primary-dark);
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 50px;
+            z-index: 100;
+        }
+
+        .category-tabs {
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding: 0;
+        }
+
+        .category-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-tab {
+            flex: 0 0 auto;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .category-tab.active {
+            color: var(--text-primary);
+        }
+
+        .category-tab.active.male {
+            border-bottom-color: var(--male-color);
+        }
+
+        .category-tab.active.female {
+            border-bottom-color: var(--female-color);
+        }
+
+        /* Description */
+        .category-description {
+            padding: 20px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            background: #0a0a0a;
+        }
+
+        /* Subcategory Pills */
+        .subcategory-wrapper {
+            padding: 20px;
+            background: var(--primary-dark);
+        }
+
+        .subcategory-tabs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .subcategory-tab {
+            padding: 8px 20px;
+            background: transparent;
+            border: 1px solid #333;
+            border-radius: 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .subcategory-tab.active.male {
+            background: var(--male-color);
+            border-color: var(--male-color);
+            color: white;
+        }
+
+        .subcategory-tab.active.female {
+            background: var(--female-color);
+            border-color: var(--female-color);
+            color: white;
+        }
+
+        /* Menu Grid - 스크린샷 스타일 */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .menu-item {
+            background: #111;
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #222;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            border-color: #444;
+        }
+
+        .menu-item-image {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            background: #222;
+        }
+
+        .menu-item-info {
+            padding: 12px;
+            text-align: center;
+        }
+
+        .menu-item-code {
+            font-size: 11px;
+            color: var(--male-color);
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .menu-item.female .menu-item-code {
+            color: var(--female-color);
+        }
+
+        .menu-item-name {
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Theme Toggle Button - 하단 중앙 */
+        .theme-toggle-bottom {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            color: #ffd700;  /* 달 아이콘 색상 */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .theme-toggle-bottom:hover {
+            background: #2a2a2a;
+            border-color: #555;
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        .theme-toggle-bottom svg {
+            transition: all 0.3s;
+        }
+
+        .moon-icon {
+            display: block;
+        }
+
+        .sun-icon {
+            display: none;
+        }
+
+        /* 라이트 모드일 때 */
+        body.light-theme .theme-toggle-bottom {
+            background: #ffffff;
+            border-color: #ddd;
+            color: #ff8c00;  /* 해 아이콘 색상 */
+        }
+
+        body.light-theme .theme-toggle-bottom:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+
+        body.light-theme .moon-icon {
+            display: none;
+        }
+
+        body.light-theme .sun-icon {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .menu-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        @media (max-width: 767px) {
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                padding: 15px;
+            }
+            
+            .category-tab {
+                font-size: 12px;
+                padding: 12px 15px;
+            }
+
+            .gender-selection {
+                flex-direction: column;
+                gap: 30px;
+            }
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            border-top-color: var(--female-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100vh;
+            background: #111;
+            transition: right 0.3s;
+            z-index: 1001;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.5);
+        }
+
+        .sidebar.active {
+            right: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .sidebar-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .sidebar-content {
+            padding: 20px;
+        }
+
+        .theme-toggle-wrapper {
+            margin-bottom: 20px;
+        }
+
+        .theme-toggle {
+            width: 100%;
+            padding: 12px;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <button class="back-btn" id="backBtn" style="display: none;">
+            ←
+        </button>
+        <div class="logo">HAIRGATOR</div>
+        <button class="menu-btn" id="menuBtn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <!-- Theme Toggle Button (하단 중앙) -->
+    <button class="theme-toggle-bottom" id="themeToggleBottom" title="다크/라이트 모드">
+        <!-- 달 아이콘 (다크모드) -->
+        <svg class="moon-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <!-- 해 아이콘 (라이트모드) -->
+        <svg class="sun-icon" style="display:none;" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+    </button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="sidebar-close" id="sidebarClose">×</button>
+            <h3>설정</h3>
+        </div>
+        <div class="sidebar-content">
+            <div class="theme-toggle-wrapper">
+                <button class="theme-toggle" id="themeToggle">
+                    <span>다크 모드</span>
+                    <span id="themeStatus">ON</span>
+                </button>
+            </div>
+            <div id="designerInfo" style="display: none;">
+                <p style="color: #666; margin-bottom: 10px;">로그인: <span id="designerName">Designer</span></p>
+                <button class="logout-btn" id="logoutBtn">로그아웃</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Gender Selection -->
+        <div class="gender-selection" id="genderSelection">
+            <button class="gender-btn male" data-gender="male">
+                <div class="gender-icon">♂</div>
+                <div class="gender-label">남성</div>
+            </button>
+            <button class="gender-btn female" data-gender="female">
+                <div class="gender-icon">♀</div>
+                <div class="gender-label">여성</div>
+            </button>
+        </div>
+
+        <!-- Menu Container -->
+        <div class="menu-container" id="menuContainer">
+            <div class="category-tabs-wrapper">
+                <div class="category-tabs" id="categoryTabs"></div>
+            </div>
+            <div class="category-description" id="categoryDescription"></div>
+            <div class="subcategory-wrapper">
+                <div class="subcategory-tabs" id="subcategoryTabs"></div>
+            </div>
+            <div class="menu-grid" id="menuGrid"></div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
-    <script src="js/menu.js"></script>
     <script src="js/main.js"></script>
+    
+    <script>
+        // PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js').catch(err => console.log(err));
+        }
+    </script>
 </body>
 </html>
