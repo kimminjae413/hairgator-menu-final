@@ -910,199 +910,256 @@
             console.log(`✅ 완전한 테마 적용 완료: ${config.name}`);
         }
         
-        // 🔧 모든 색상 강제 적용 (6개 테마 + 성별 선택 화면 포함)
+        // 🔧 모든 색상 강제 적용 (6개 테마 전체 + 이미지 호버 효과)
         function forceApplyAllColors(config) {
-            console.log(`🎨 전체 색상 통일 적용: ${config.name} (배경: ${config.backgroundColor}, 텍스트: ${config.textColor}, 액센트: ${config.primaryAccent})`);
+            console.log(`🚨 전체 테마 통일 적용: ${config.name}`);
+            console.log(`   배경: ${config.backgroundColor}, 텍스트: ${config.textColor}, 액센트: ${config.primaryAccent}`);
             
-            // 1. 🔧 기본 배경 및 텍스트 (모든 화면)
+            // 🔥 STEP 1: 기본 배경과 텍스트 (모든 요소)
             document.body.style.setProperty('background-color', config.backgroundColor, 'important');
             document.body.style.setProperty('color', config.textColor, 'important');
             
-            // 2. 🔧 모든 주요 컨테이너 (성별 선택 화면 포함!)
+            // 모든 요소에 기본 텍스트 색상 강제 적용
+            const allElements = document.querySelectorAll('*');
+            allElements.forEach(el => {
+                if (el.tagName && !['IMG', 'SVG', 'CANVAS', 'VIDEO'].includes(el.tagName)) {
+                    el.style.setProperty('color', config.textColor, 'important');
+                }
+            });
+            
+            // 🔥 STEP 2: 컨테이너들 (모든 화면)
             const containers = [
-                '#genderSelection', 
-                '#designerLogin', 
-                '#mainContainer', 
-                '.mobile-theme-modal', 
-                '.header', 
-                '.nav-tabs',
-                '.gender-container'  // 성별 선택 컨테이너 추가
+                '#genderSelection', '#designerLogin', '#mainContainer', 
+                '.mobile-theme-modal', '.header', '.nav-tabs', '.content'
             ];
             
             containers.forEach(selector => {
-                const elements = document.querySelectorAll(selector);
-                elements.forEach(element => {
-                    if (element) {
-                        element.style.setProperty('background-color', config.backgroundColor, 'important');
-                        element.style.setProperty('color', config.textColor, 'important');
-                    }
+                document.querySelectorAll(selector).forEach(element => {
+                    element.style.setProperty('background-color', config.backgroundColor, 'important');
+                    element.style.setProperty('color', config.textColor, 'important');
                 });
             });
             
-            // 3. 🔧 성별 선택 화면 텍스트들 (흰색 → 올바른 색상)
-            const genderTexts = [
-                '.gender-title',        // "남성", "여성" 
-                '.gender-subtitle',     // "Men's Hairstyle", "Women's Hairstyle"
-                '.theme-trigger-text',  // "테마 색상 선택"
-                '.gender-card h2',
-                '.gender-card p'
-            ];
-            
-            genderTexts.forEach(selector => {
-                const elements = document.querySelectorAll(selector);
-                elements.forEach(element => {
-                    if (element) {
-                        element.style.setProperty('color', config.textColor, 'important');
+            // 🔥 STEP 3: 로고 색상 (모든 테마)
+            setTimeout(() => {
+                document.querySelectorAll('.logo, .logo span, h1, h2').forEach(logo => {
+                    if (logo.textContent && logo.textContent.includes('HAIRGATOR')) {
+                        logo.style.setProperty('color', config.primaryAccent, 'important');
+                        logo.style.setProperty('font-weight', '700', 'important');
                     }
                 });
-            });
+            }, 50);
             
-            // 4. 🔧 로고 색상 (모든 테마에서 액센트 색상으로)
-            const logos = document.querySelectorAll('.logo span, .logo, h1, h2');
-            logos.forEach(logo => {
-                if (logo && logo.textContent && logo.textContent.includes('HAIRGATOR')) {
-                    logo.style.setProperty('color', config.primaryAccent, 'important');
+            // 🔥 STEP 4: 대분류 네비게이션 (모든 테마)
+            setTimeout(() => {
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    if (tab.classList.contains('active')) {
+                        tab.style.setProperty('color', config.primaryAccent, 'important');
+                        tab.style.setProperty('border-bottom-color', config.primaryAccent, 'important');
+                        tab.style.setProperty('border-bottom-width', '3px', 'important');
+                        tab.style.setProperty('border-bottom-style', 'solid', 'important');
+                    } else {
+                        const inactiveColor = config.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
+                        tab.style.setProperty('color', inactiveColor, 'important');
+                        tab.style.setProperty('border-bottom-color', 'transparent', 'important');
+                    }
+                });
+            }, 100);
+            
+            // 🔥 STEP 5: 중분류 버튼 (모든 테마)
+            setTimeout(() => {
+                document.querySelectorAll('.length-tab').forEach(tab => {
+                    // 슬림 스타일
+                    tab.style.setProperty('padding', '8px 16px', 'important');
+                    tab.style.setProperty('font-size', '14px', 'important');
+                    tab.style.setProperty('line-height', '1.2', 'important');
+                    tab.style.setProperty('min-height', '32px', 'important');
+                    tab.style.setProperty('height', 'auto', 'important');
+                    tab.style.setProperty('border-radius', '6px', 'important');
+                    tab.style.setProperty('margin', '0 4px 8px 0', 'important');
+                    tab.style.setProperty('display', 'inline-flex', 'important');
+                    tab.style.setProperty('align-items', 'center', 'important');
+                    tab.style.setProperty('justify-content', 'center', 'important');
+                    
+                    if (tab.classList.contains('active')) {
+                        tab.style.setProperty('background', config.buttonGradient, 'important');
+                        tab.style.setProperty('color', '#ffffff', 'important');
+                        tab.style.setProperty('font-weight', '600', 'important');
+                    } else {
+                        const inactiveBg = config.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                        tab.style.setProperty('background', inactiveBg, 'important');
+                        tab.style.setProperty('color', config.textColor, 'important');
+                        tab.style.setProperty('font-weight', '500', 'important');
+                    }
+                });
+            }, 150);
+            
+            // 🔥 STEP 6: 이미지 호버 효과 (핑크 → 테마 액센트 색상)
+            setTimeout(() => {
+                // CSS로 이미지 호버 효과 다시 정의
+                const existingStyle = document.getElementById('dynamic-hover-style');
+                if (existingStyle) {
+                    existingStyle.remove();
                 }
-            });
-            
-            // 5. 🔧 모든 테마의 대분류 탭 (활성 탭 액센트 색상)
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                if (tab.classList.contains('active')) {
-                    tab.style.setProperty('color', config.primaryAccent, 'important');
-                    tab.style.setProperty('border-bottom-color', config.primaryAccent, 'important');
-                    tab.style.setProperty('border-bottom-width', '3px', 'important');
-                } else {
-                    const inactiveColor = config.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
-                    tab.style.setProperty('color', inactiveColor, 'important');
-                    tab.style.setProperty('border-bottom-color', 'transparent', 'important');
-                }
-            });
-            
-            // 6. 🔧 모든 테마의 중분류 버튼 (슬림 + 액센트 색상)
-            document.querySelectorAll('.length-tab').forEach(tab => {
-                // 슬림 스타일
-                tab.style.setProperty('padding', '8px 16px', 'important');
-                tab.style.setProperty('font-size', '14px', 'important');
-                tab.style.setProperty('line-height', '1.2', 'important');
-                tab.style.setProperty('min-height', '32px', 'important');
-                tab.style.setProperty('height', 'auto', 'important');
-                tab.style.setProperty('border-radius', '6px', 'important');
-                tab.style.setProperty('margin', '0 4px 8px 0', 'important');
-                tab.style.setProperty('display', 'inline-flex', 'important');
-                tab.style.setProperty('align-items', 'center', 'important');
-                tab.style.setProperty('justify-content', 'center', 'important');
                 
-                if (tab.classList.contains('active')) {
-                    tab.style.setProperty('background', config.buttonGradient, 'important');
-                    tab.style.setProperty('color', '#ffffff', 'important');
-                    tab.style.setProperty('font-weight', '600', 'important');
-                } else {
-                    const inactiveBg = config.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-                    tab.style.setProperty('background', inactiveBg, 'important');
-                    tab.style.setProperty('color', config.textColor, 'important');
-                    tab.style.setProperty('font-weight', '500', 'important');
-                }
-            });
-            
-            // 7. 🔧 카테고리 설명 텍스트 (모든 테마에서 올바른 색상)
-            const categoryDesc = document.querySelector('.category-description');
-            if (categoryDesc) {
-                const cardBg = config.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-                const borderColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
-                const descColor = config.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
+                const hoverStyle = document.createElement('style');
+                hoverStyle.id = 'dynamic-hover-style';
+                hoverStyle.textContent = `
+                    .hairstyle-card:hover {
+                        transform: translateY(-5px) !important;
+                        box-shadow: 0 10px 30px ${config.primaryAccent}40 !important;
+                        border: 2px solid ${config.primaryAccent} !important;
+                    }
+                    
+                    .hairstyle-card:hover .hairstyle-image {
+                        border: 2px solid ${config.primaryAccent} !important;
+                    }
+                    
+                    .gender-card:hover {
+                        border-color: ${config.primaryAccent} !important;
+                        box-shadow: 0 5px 15px ${config.primaryAccent}30 !important;
+                    }
+                    
+                    .mobile-theme-trigger:hover {
+                        background: ${config.primaryAccent}20 !important;
+                        border-color: ${config.primaryAccent} !important;
+                    }
+                    
+                    .nav-tab:hover {
+                        color: ${config.primaryAccent} !important;
+                    }
+                    
+                    .length-tab:hover:not(.active) {
+                        background: ${config.primaryAccent}20 !important;
+                        color: ${config.textColor} !important;
+                    }
+                `;
                 
-                categoryDesc.style.setProperty('background', cardBg, 'important');
-                categoryDesc.style.setProperty('border-color', borderColor, 'important');
-                categoryDesc.style.setProperty('color', descColor, 'important');
-            }
+                document.head.appendChild(hoverStyle);
+                console.log(`✅ 이미지 호버 효과 색상 변경: ${config.primaryAccent}`);
+            }, 200);
             
-            // 8. 🔧 모든 액션 버튼들 (6개 테마 모두 각자의 액센트 색상)
-            const actionButtons = [
-                '.add-customer-btn',
-                '.login-btn', 
-                '.mobile-theme-apply',
-                '.like-btn',
-                '.customer-register-btn',
-                '.gender-btn',  // 성별 선택 버튼 추가
-                'button[onclick*="selectGender"]'
-            ];
+            // 🔥 STEP 7: 물음표/도움말 버튼 (모든 테마)
+            setTimeout(() => {
+                const helpSelectors = [
+                    '[title*="도움"]', '[class*="help"]', '[class*="info"]',
+                    '.help-btn', '.info-btn', 'button[onclick*="help"]',
+                    '[data-tooltip]', '.tooltip-trigger'
+                ];
+                
+                helpSelectors.forEach(selector => {
+                    document.querySelectorAll(selector).forEach(btn => {
+                        btn.style.setProperty('color', config.primaryAccent, 'important');
+                        btn.style.setProperty('background-color', `${config.primaryAccent}20`, 'important');
+                        btn.style.setProperty('border-color', config.primaryAccent, 'important');
+                    });
+                });
+                
+                // 물음표 아이콘 직접 찾기
+                document.querySelectorAll('*').forEach(el => {
+                    if (el.textContent && (el.textContent.includes('?') || el.textContent.includes('❓'))) {
+                        if (el.tagName === 'BUTTON' || el.classList.contains('btn') || el.onclick) {
+                            el.style.setProperty('color', config.primaryAccent, 'important');
+                            el.style.setProperty('background-color', `${config.primaryAccent}20`, 'important');
+                        }
+                    }
+                });
+            }, 250);
             
-            actionButtons.forEach(selector => {
-                const elements = document.querySelectorAll(selector);
-                elements.forEach(btn => {
-                    if (btn && !btn.classList.contains('mobile-theme-cancel') && !btn.classList.contains('back-btn')) {
+            // 🔥 STEP 8: 카테고리 설명 텍스트 (모든 테마)
+            setTimeout(() => {
+                const categoryDesc = document.querySelector('.category-description');
+                if (categoryDesc) {
+                    const cardBg = config.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                    const borderColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
+                    const descColor = config.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)';
+                    
+                    categoryDesc.style.setProperty('background', cardBg, 'important');
+                    categoryDesc.style.setProperty('border-color', borderColor, 'important');
+                    categoryDesc.style.setProperty('color', descColor, 'important');
+                    categoryDesc.style.setProperty('font-weight', '500', 'important');
+                }
+            }, 300);
+            
+            // 🔥 STEP 9: 모든 액션 버튼 (모든 테마)
+            setTimeout(() => {
+                const actionButtons = [
+                    '.add-customer-btn', '.login-btn', '.mobile-theme-apply',
+                    '.like-btn', '.customer-register-btn', 
+                    'button:not(.mobile-theme-cancel):not(.back-btn):not(.hamburger-btn):not(.close-menu):not(.nav-tab):not(.length-tab)'
+                ];
+                
+                actionButtons.forEach(selector => {
+                    document.querySelectorAll(selector).forEach(btn => {
                         btn.style.setProperty('background', config.buttonGradient, 'important');
                         btn.style.setProperty('color', '#ffffff', 'important');
+                        btn.style.setProperty('border', 'none', 'important');
                         btn.style.setProperty('box-shadow', `0 5px 15px ${config.primaryAccent}30`, 'important');
+                    });
+                });
+            }, 350);
+            
+            // 🔥 STEP 10: 성별 선택 화면 (모든 테마)
+            setTimeout(() => {
+                // 성별 텍스트
+                document.querySelectorAll('.gender-title, .gender-subtitle, .theme-trigger-text').forEach(text => {
+                    text.style.setProperty('color', config.textColor, 'important');
+                });
+                
+                // 성별 카드
+                document.querySelectorAll('.gender-card').forEach(card => {
+                    const cardBg = config.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                    const borderColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
+                    
+                    card.style.setProperty('background', cardBg, 'important');
+                    card.style.setProperty('border-color', borderColor, 'important');
+                    card.style.setProperty('color', config.textColor, 'important');
+                    
+                    // 성별 아이콘
+                    const icon = card.querySelector('.gender-icon');
+                    if (icon) {
+                        icon.style.setProperty('color', config.primaryAccent, 'important');
                     }
                 });
-            });
+                
+                // 테마 트리거 버튼
+                const themeBtn = document.querySelector('.mobile-theme-trigger');
+                if (themeBtn) {
+                    themeBtn.style.setProperty('border-color', config.primaryAccent, 'important');
+                    themeBtn.style.setProperty('color', config.textColor, 'important');
+                    
+                    const triggerBg = config.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                    themeBtn.style.setProperty('background', triggerBg, 'important');
+                }
+            }, 400);
             
-            // 9. 🔧 성별 선택 카드들
-            document.querySelectorAll('.gender-card').forEach(card => {
+            // 🔥 STEP 11: 네비게이션 버튼들 (모든 테마)
+            setTimeout(() => {
+                document.querySelectorAll('.hamburger-btn, .back-btn, .close-menu').forEach(btn => {
+                    btn.style.setProperty('color', config.textColor, 'important');
+                });
+                
+                // 햄버거 아이콘 라인들
+                document.querySelectorAll('.hamburger-icon span').forEach(span => {
+                    span.style.setProperty('background-color', config.textColor, 'important');
+                });
+            }, 450);
+            
+            // 🔥 STEP 12: 입력 필드들 (모든 테마)
+            setTimeout(() => {
                 const cardBg = config.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
                 const borderColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
                 
-                card.style.setProperty('background', cardBg, 'important');
-                card.style.setProperty('border-color', borderColor, 'important');
-                card.style.setProperty('color', config.textColor, 'important');
-                
-                // 아이콘도 색상 변경
-                const icon = card.querySelector('.gender-icon');
-                if (icon) {
-                    icon.style.setProperty('color', config.primaryAccent, 'important');
-                }
-            });
+                document.querySelectorAll('input, textarea, select').forEach(input => {
+                    input.style.setProperty('background', cardBg, 'important');
+                    input.style.setProperty('border-color', borderColor, 'important');
+                    input.style.setProperty('color', config.textColor, 'important');
+                });
+            }, 500);
             
-            // 10. 🔧 테마 트리거 버튼 (성별 선택 화면)
-            const themeBtn = document.querySelector('.mobile-theme-trigger');
-            if (themeBtn) {
-                themeBtn.style.setProperty('border-color', config.primaryAccent, 'important');
-                themeBtn.style.setProperty('color', config.textColor, 'important');
-                
-                const triggerBg = config.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-                themeBtn.style.setProperty('background', triggerBg, 'important');
-                
-                // 테마 트리거 아이콘
-                const triggerIcon = themeBtn.querySelector('.theme-trigger-icon');
-                if (triggerIcon) {
-                    triggerIcon.style.setProperty('color', config.primaryAccent, 'important');
-                }
-            }
-            
-            // 11. 🔧 모든 물음표, 도움말 버튼들
-            const helpButtons = document.querySelectorAll('[title*="도움"], [class*="help"], [class*="info"], .help-btn, .info-btn');
-            helpButtons.forEach(btn => {
-                btn.style.setProperty('color', config.primaryAccent, 'important');
-                btn.style.setProperty('background-color', `${config.primaryAccent}20`, 'important');
-            });
-            
-            // 12. 🔧 입력 필드들
-            const cardBg = config.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-            const borderColor = config.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
-            
-            document.querySelectorAll('input, textarea, select').forEach(input => {
-                input.style.setProperty('background', cardBg, 'important');
-                input.style.setProperty('border-color', borderColor, 'important');
-                input.style.setProperty('color', config.textColor, 'important');
-            });
-            
-            // 13. 🔧 햄버거 버튼 및 네비게이션 버튼들
-            const navButtons = document.querySelectorAll('.hamburger-btn, .back-btn, .close-menu');
-            navButtons.forEach(btn => {
-                btn.style.setProperty('color', config.textColor, 'important');
-            });
-            
-            // 햄버거 아이콘 라인들
-            document.querySelectorAll('.hamburger-icon span').forEach(span => {
-                span.style.setProperty('background-color', config.textColor, 'important');
-            });
-            
-            console.log(`✅ 전체 통일 색상 적용 완료: ${config.name}`);
-            console.log(`   - 배경: ${config.backgroundColor}`);
-            console.log(`   - 텍스트: ${config.textColor}`); 
-            console.log(`   - 액센트: ${config.primaryAccent}`);
-            console.log(`   - 어두운 테마: ${config.isDark ? '예' : '아니오'}`);
+            console.log(`✅ 전체 6개 테마 통일 적용 완료: ${config.name}`);
+            console.log(`   - 이미지 호버 효과: ${config.primaryAccent}`);
+            console.log(`   - 모든 액센트 요소: ${config.primaryAccent}`);
         }
         
         // 🎨 전역 색상 적용
