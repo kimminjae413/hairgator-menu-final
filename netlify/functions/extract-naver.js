@@ -1,569 +1,335 @@
-// Netlify Function - 네이버 정보 추출 (리다이렉트 추적 버전)
-// 파일 위치: netlify/functions/extract-naver.js
+// ========== HAIRGATOR 네이버 예약 추출 시스템 (현재 비활성화) ========== 
+console.log('🔗 네이버 예약 추출 시스템 (현재 비활성화 - 나중에 활성화 가능)');
 
-const fetch = require('node-fetch');
+// ========== 설정 ========== 
+const EXTRACTION_ENABLED = false; // 🔒 기능 비활성화 플래그 (true로 변경하면 다시 활성화)
+let extractionInProgress = false;
 
-exports.handler = async (event, context) => {
-  // CORS 헤더 설정
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
-
-  // OPTIONS 요청 처리 (CORS preflight)
-  if (event.httpMethod === 'OPTIONS') {
-    return { 
-      statusCode: 200, 
-      headers, 
-      body: '' 
-    };
-  }
-
-  // POST 요청만 허용
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers,
-      body: JSON.stringify({ 
-        success: false,
-        error: 'Method not allowed' 
-      })
-    };
-  }
-
-  try {
-    console.log('🚀 네이버 크롤링 함수 시작 (리다이렉트 추적 버전)');
-    
-    const { url, naverUrl, fetchURL } = JSON.parse(event.body);
-    const targetUrl = url || naverUrl || fetchURL;
-    
-    if (!targetUrl) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ 
-          success: false,
-          error: 'URL이 필요합니다' 
-        })
-      };
-    }
-
-    console.log('🔍 입력 URL:', targetUrl);
-
-    // 1단계: 단축 URL이면 실제 URL로 리다이렉트 추적
-    let finalUrl = targetUrl;
-    if (targetUrl.includes('naver.me/')) {
-      console.log('🔗 단축 URL 감지 - 리다이렉트 추적 시작');
-      finalUrl = await followRedirects(targetUrl);
-      console.log('🎯 최종 URL:', finalUrl);
-    }
-
-    // 2단계: 최종 URL에서 Place ID 추출
-    const placeId = extractPlaceId(finalUrl);
-    console.log('📍 Place ID:', placeId);
-
-    // 3단계: 여러 방법으로 정보 추출 시도
-    let storeInfo = null;
-
-    // 방법 1: 최종 URL에서 HTML 정보 추출
-    console.log('🔍 방법 1: 최종 URL HTML 추출...');
-    storeInfo = await extractFromHTML(finalUrl);
-    
-    if (storeInfo && storeInfo.storeName) {
-      console.log('✅ HTML 추출 성공!');
+// ========== 비활성화 상태 알림 ========== 
+function showExtractionDisabledMessage() {
+    const notice = document.getElementById('deviceNotice');
+    if (notice) {
+        notice.innerHTML = '🔗 네이버 자동 추출 기능은 현재 준비 중입니다';
+        notice.className = 'device-notice show';
+        setTimeout(() => {
+            notice.classList.remove('show');
+        }, 3000);
     } else {
-      // 방법 2: 네이버 API 직접 호출 시도
-      if (placeId) {
-        console.log('🔍 방법 2: 네이버 API 시도...');
-        const apiResult = await tryNaverAPI(placeId);
-        if (apiResult && apiResult.storeName) {
-          storeInfo = apiResult;
-          console.log('✅ 네이버 API 성공!');
-        }
-      }
+        alert('🔗 네이버 자동 추출 기능은 현재 준비 중입니다');
     }
+}
 
-    // 방법 3: 메타 태그 정보 추출
-    if (!storeInfo || !storeInfo.storeName) {
-      console.log('🔍 방법 3: 메타 태그 추출...');
-      const metaInfo = await extractFromMetaTags(finalUrl);
-      if (metaInfo && metaInfo.storeName) {
-        storeInfo = metaInfo;
-      }
-    }
-
-    console.log('✅ 최종 추출 결과:', storeInfo);
-
-    // 결과 검증
-    const isValidData = storeInfo && (storeInfo.storeName || storeInfo.address || storeInfo.phone);
+// ========== 메인 추출 함수 (비활성화됨) ========== 
+async function enhancedExtractStoreInfo() {
+    console.log('🚫 네이버 추출 기능 호출됨 (현재 비활성화)');
     
-    if (!isValidData) {
-      throw new Error(`정보 추출 실패. 최종 URL: ${finalUrl}, PlaceID: ${placeId}`);
+    if (!EXTRACTION_ENABLED) {
+        showExtractionDisabledMessage();
+        return;
+    }
+    
+    // 📝 실제 추출 코드는 여기에 있었지만 현재 비활성화됨
+    // 나중에 EXTRACTION_ENABLED를 true로 변경하면 아래 코드가 실행됩니다
+    
+    /*
+    // === 원본 추출 로직 (비활성화됨) ===
+    
+    if (extractionInProgress) {
+        console.log('⏳ 이미 추출 진행 중...');
+        return;
     }
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        data: {
-          name: storeInfo.storeName || '',
-          storeName: storeInfo.storeName || '',
-          address: storeInfo.address || '',
-          phone: storeInfo.phone || '',
-          hours: storeInfo.businessHours || '',
-          category: storeInfo.category || '',
-          description: storeInfo.description || '',
-          extractionMethod: storeInfo.method || 'redirect_follow',
-          sourceUrl: finalUrl,
-          originalUrl: targetUrl,
-          extractedAt: new Date().toISOString(),
-          debugInfo: {
-            placeId: placeId,
-            redirectPath: targetUrl !== finalUrl ? `${targetUrl} → ${finalUrl}` : 'no redirect',
-            extractionDetails: storeInfo.debugInfo || {}
-          }
-        }
-      })
-    };
+    extractionInProgress = true;
+    showExtractionProgress('🔍 네이버에서 매장 정보를 자동으로 가져오는 중...');
 
-  } catch (error) {
-    console.error('❌ 추출 실패:', error);
-    console.error('❌ 스택 트레이스:', error.stack);
-    
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ 
-        success: false,
-        error: error.message || '정보 추출에 실패했습니다',
-        fallback: '수동 입력을 권장합니다',
-        timestamp: new Date().toISOString()
-      })
-    };
-  }
-};
-
-// 리다이렉트 추적 함수
-async function followRedirects(url, maxRedirects = 5) {
-  console.log('🔗 리다이렉트 추적 시작:', url);
-  
-  let currentUrl = url;
-  let redirectCount = 0;
-  
-  while (redirectCount < maxRedirects) {
     try {
-      console.log(`🔗 리다이렉트 ${redirectCount + 1}/${maxRedirects}: ${currentUrl}`);
-      
-      const response = await fetch(currentUrl, {
-        method: 'HEAD',
-        redirect: 'manual', // 수동으로 리다이렉트 처리
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'ko-KR,ko;q=0.9',
-        },
-        timeout: 10000
-      });
-      
-      console.log(`📡 응답 상태: ${response.status}`);
-      
-      // 리다이렉트 상태 코드 확인
-      if (response.status >= 300 && response.status < 400) {
-        const location = response.headers.get('location');
-        if (location) {
-          // 상대 URL인 경우 절대 URL로 변환
-          if (location.startsWith('/')) {
-            const urlObj = new URL(currentUrl);
-            currentUrl = `${urlObj.protocol}//${urlObj.host}${location}`;
-          } else if (location.startsWith('http')) {
-            currentUrl = location;
-          } else {
-            // 상대 경로 처리
-            const urlObj = new URL(currentUrl);
-            currentUrl = new URL(location, urlObj.href).href;
-          }
-          
-          console.log(`➡️ 리다이렉트 대상: ${currentUrl}`);
-          redirectCount++;
-          continue;
+        const naverUrl = getNaverUrlFromForm();
+        if (!naverUrl) {
+            const userUrl = prompt('🔗 네이버 예약 URL을 입력해주세요:\n\n예시: https://naver.me/xxxxx');
+            if (!userUrl || !userUrl.trim()) {
+                showQuickAlert('⚠️ 네이버 예약 URL이 필요합니다');
+                return;
+            }
+            return await processUrlExtraction(userUrl.trim());
         }
-      }
-      
-      // 리다이렉트가 더 이상 없으면 현재 URL 반환
-      console.log(`✅ 최종 URL 확정: ${currentUrl}`);
-      return currentUrl;
-      
+        return await processUrlExtraction(naverUrl);
     } catch (error) {
-      console.log(`⚠️ 리다이렉트 추적 오류: ${error.message}`);
-      break;
+        console.error('네이버 추출 오류:', error);
+        showQuickAlert('❌ 추출 중 오류가 발생했습니다');
+    } finally {
+        extractionInProgress = false;
+        hideExtractionProgress();
     }
-  }
-  
-  console.log(`⚠️ 최대 리다이렉트 횟수 초과 또는 오류. 마지막 URL: ${currentUrl}`);
-  return currentUrl;
+    */
 }
 
-// Place ID 추출
-function extractPlaceId(url) {
-  console.log('🔍 Place ID 추출:', url);
-  
-  try {
-    // place/숫자 패턴
-    let match = url.match(/place\/(\d+)/);
-    if (match) {
-      console.log('✅ place/ 패턴으로 Place ID 발견:', match[1]);
-      return match[1];
+// ========== Netlify Functions 호출 (비활성화됨) ========== 
+async function extractNaverStoreInfo(naverUrl) {
+    console.log('🚫 Netlify Functions 호출 시도 (현재 비활성화)');
+    
+    if (!EXTRACTION_ENABLED) {
+        return {
+            success: false,
+            error: '기능이 비활성화되어 있습니다'
+        };
     }
     
-    // entry/place/숫자 패턴
-    match = url.match(/entry\/place\/(\d+)/);
-    if (match) {
-      console.log('✅ entry/place/ 패턴으로 Place ID 발견:', match[1]);
-      return match[1];
-    }
+    /*
+    // === 원본 Netlify Functions 호출 로직 (비활성화됨) ===
     
-    // placeId=숫자 패턴
-    match = url.match(/placeId[=:](\d+)/);
-    if (match) {
-      console.log('✅ placeId= 패턴으로 Place ID 발견:', match[1]);
-      return match[1];
+    try {
+        console.log('🚀 Netlify Functions를 통한 네이버 정보 추출:', naverUrl);
+        
+        const requestData = {
+            url: naverUrl,
+            fetchURL: naverUrl,
+            naverUrl: naverUrl,
+            link: naverUrl,
+            storeUrl: naverUrl
+        };
+        
+        const response = await fetch('/.netlify/functions/extract-naver', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        return result;
+        
+    } catch (error) {
+        console.error('❌ Netlify Functions 오류:', error);
+        return {
+            success: false,
+            error: error.message
+        };
     }
+    */
     
-    // p/숫자 패턴 (모바일)
-    match = url.match(/\/p\/(\d+)/);
-    if (match) {
-      console.log('✅ /p/ 패턴으로 Place ID 발견:', match[1]);
-      return match[1];
-    }
-    
-  } catch (error) {
-    console.log('⚠️ Place ID 추출 중 오류:', error.message);
-  }
-  
-  console.log('⚠️ Place ID 추출 실패');
-  return null;
+    return {
+        success: false,
+        error: '기능이 비활성화되어 있습니다'
+    };
 }
 
-// 네이버 API 직접 호출 시도
-async function tryNaverAPI(placeId) {
-  const result = { method: 'naver_api' };
-  
-  try {
-    // 네이버 지도 API 엔드포인트들 시도
-    const apiUrls = [
-      `https://map.naver.com/v5/api/sites/summary/${placeId}`,
-      `https://m.place.naver.com/place/${placeId}/home`,
-      `https://map.naver.com/p/api/place/summary/${placeId}`
+// ========== UI 관련 함수들 (비활성화 메시지용) ========== 
+
+function showQuickAlert(message) {
+    const alertHTML = `
+        <div class="quick-alert" id="quickAlert" style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #FF1493;
+            z-index: 10000;
+            text-align: center;
+            max-width: 300px;
+        ">
+            <div class="alert-content">${message}</div>
+        </div>
+    `;
+    
+    const existing = document.getElementById('quickAlert');
+    if (existing) existing.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', alertHTML);
+    
+    setTimeout(() => {
+        const alert = document.getElementById('quickAlert');
+        if (alert) alert.remove();
+    }, 3000);
+}
+
+function getNaverUrlFromForm() {
+    const possibleIds = [
+        'naverBookingUrl',
+        'naverUrl', 
+        'storeUrl',
+        'bookingUrl',
+        'url',
+        'website',
+        'link'
     ];
     
-    for (const apiUrl of apiUrls) {
-      console.log('📡 API 요청:', apiUrl);
-      
-      try {
-        const response = await fetch(apiUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'application/json, text/plain, */*',
-            'Accept-Language': 'ko-KR,ko;q=0.9',
-            'Referer': 'https://map.naver.com/',
-          },
-          timeout: 10000
-        });
+    for (const id of possibleIds) {
+        const field = document.getElementById(id);
+        if (field && field.value && field.value.trim().includes('naver')) {
+            return field.value.trim();
+        }
+    }
+    
+    return null;
+}
+
+// ========== 폼 데이터 채우기 (수동 입력 가이드) ========== 
+function populateFormWithData(data) {
+    console.log('📝 폼 데이터 채우기:', data);
+    
+    const fieldMappings = {
+        'profile-businessName': data.storeName || data.name,
+        'businessName': data.storeName || data.name,
+        'profile-businessAddress': data.address,
+        'businessAddress': data.address,
+        'profile-phoneNumber': data.phone,
+        'phoneNumber': data.phone,
+        'profile-businessHours': data.hours || data.businessHours,
+        'businessHours': data.hours || data.businessHours
+    };
+    
+    let filledCount = 0;
+    
+    for (const [fieldId, value] of Object.entries(fieldMappings)) {
+        if (value) {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.value = value;
+                filledCount++;
+                console.log(`✅ ${fieldId} 필드 채움:`, value);
+            }
+        }
+    }
+    
+    return filledCount > 0;
+}
+
+// ========== 수동 입력 안내 모달 ========== 
+function showManualInputGuidance(naverUrl, errorMessage) {
+    const modalHTML = `
+        <div class="manual-input-modal" id="manualInputModal" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        ">
+            <div class="manual-input-container" style="
+                background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+                border: 2px solid #FF1493;
+                border-radius: 20px;
+                max-width: 500px;
+                width: 100%;
+                padding: 30px;
+                color: white;
+            ">
+                <h3 style="color: #FF1493; margin-bottom: 20px; text-align: center;">
+                    🔗 수동 입력 안내
+                </h3>
+                
+                <div style="background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                    <strong>🔗 네이버 URL:</strong><br>
+                    <a href="${naverUrl}" target="_blank" style="color: #87CEEB; word-break: break-all;">${naverUrl}</a><br><br>
+                    <strong>⚠️ 상태:</strong> 자동 추출 기능이 현재 준비 중입니다
+                </div>
+                
+                <div style="background: rgba(0, 123, 255, 0.1); border: 1px solid rgba(0, 123, 255, 0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                    <strong>💡 수동 입력 방법:</strong><br>
+                    1. 위 네이버 링크를 클릭하여 새 탭에서 열어주세요<br>
+                    2. 네이버 페이지에서 매장 정보를 확인하세요<br>
+                    3. 매장명, 주소, 전화번호, 영업시간을 직접 입력해주세요<br><br>
+                    <strong>✨ 참고:</strong> 수동 입력해도 모든 기능이 정상 작동합니다!
+                </div>
+                
+                <div style="text-align: center;">
+                    <button onclick="window.open('${naverUrl}', '_blank')" style="
+                        background: #4169E1;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        margin-right: 10px;
+                        font-weight: bold;
+                    ">
+                        🔗 네이버 페이지 열기
+                    </button>
+                    <button onclick="closeManualInputModal()" style="
+                        background: rgba(255,255,255,0.1);
+                        color: white;
+                        border: 1px solid rgba(255,255,255,0.3);
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: bold;
+                    ">
+                        확인
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function closeManualInputModal() {
+    const modal = document.getElementById('manualInputModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// ========== 활성화 가이드 함수 (개발자용) ========== 
+function enableExtractionFeature() {
+    console.log(`
+        🔧 네이버 추출 기능 활성화 방법:
         
-        console.log(`📡 API 응답 상태: ${response.status}`);
+        1. 이 파일의 상단에서 EXTRACTION_ENABLED를 true로 변경
+        2. 원본 코드 주석을 해제
+        3. Netlify Functions가 배포되어 있는지 확인
         
-        if (response.ok) {
-          const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
-            const data = await response.json();
-            console.log('📊 API 응답 키들:', Object.keys(data));
-            console.log('📊 API 전체 응답:', JSON.stringify(data, null, 2));
-            
-            // 중첩된 data 객체 확인
-            let targetData = data;
-            if (data.data && typeof data.data === 'object') {
-              targetData = data.data;
-              console.log('📊 중첩 data 키들:', Object.keys(targetData));
-            }
-            
-            // 다양한 필드명으로 정보 추출 시도
-            const nameFields = ['name', 'title', 'displayName', 'placeName', 'businessName', 'storeName'];
-            const addressFields = ['address', 'roadAddress', 'fullAddress', 'addr', 'location'];
-            const phoneFields = ['phone', 'tel', 'phoneNumber', 'contact', 'telephone', 'contactNumber'];
-            
-            // 기본 레벨에서 추출
-            for (const field of nameFields) {
-              if (targetData[field] && typeof targetData[field] === 'string') {
-                result.storeName = targetData[field];
-                console.log(`✅ API에서 매장명 추출 (${field}):`, result.storeName);
-                break;
-              }
-            }
-            
-            // 주소는 address 객체 우선 확인
-            if (targetData.address) {
-              if (targetData.address.roadAddress) {
-                result.address = targetData.address.roadAddress;
-                console.log('✅ 도로명 주소 추출:', result.address);
-              } else if (targetData.address.address) {
-                result.address = targetData.address.address;
-                console.log('✅ 지번 주소 추출:', result.address);
-              }
-            }
-            
-            // 전화번호 추출 (여러 위치에서 시도)
-            if (targetData.phone) {
-              result.phone = targetData.phone;
-              console.log('✅ 전화번호 추출:', result.phone);
-            } else if (targetData.contact && targetData.contact.phone) {
-              result.phone = targetData.contact.phone;
-              console.log('✅ contact.phone 추출:', result.phone);
-            }
-            
-            // 영업시간 추출
-            if (targetData.businessHours && targetData.businessHours.description) {
-              result.businessHours = targetData.businessHours.description;
-              console.log('✅ 영업시간 추출:', result.businessHours);
-            }
-            
-            // 카테고리 추출
-            if (targetData.category && targetData.category.category) {
-              result.category = targetData.category.category;
-              console.log('✅ 카테고리 추출:', result.category);
-            }
-            
-            // 가격 정보 추출
-            if (targetData.reprPrice && targetData.reprPrice.displayText) {
-              result.description = targetData.reprPrice.displayText;
-              console.log('✅ 가격 정보 추출:', result.description);
-            }
-            
-            // 일반 필드 추출이 실패한 경우에만 깊은 탐색
-            if (!result.address) {
-              for (const field of addressFields) {
-                if (targetData[field] && typeof targetData[field] === 'string') {
-                  result.address = targetData[field];
-                  console.log(`✅ API에서 주소 추출 (${field}):`, result.address);
-                  break;
-                }
-              }
-            }
-            
-            if (!result.phone) {
-              for (const field of phoneFields) {
-                if (targetData[field] && typeof targetData[field] === 'string') {
-                  result.phone = targetData[field];
-                  console.log(`✅ API에서 전화번호 추출 (${field}):`, result.phone);
-                  break;
-                }
-              }
-            }
-            
-            // 더 깊은 중첩 구조 탐색 (필요한 경우에만)
-            if ((!result.storeName || !result.address || !result.phone) && targetData) {
-              console.log('🔍 깊은 구조 탐색 시작...');
-              if (!result.storeName) result.storeName = extractFromNestedObject(targetData, nameFields);
-              if (!result.address) result.address = extractFromNestedObject(targetData, addressFields);
-              if (!result.phone) result.phone = extractFromNestedObject(targetData, phoneFields);
-            }
-            
-            if (result.storeName || result.address || result.phone) {
-              console.log('✅ API에서 정보 추출 성공');
-              return result;
-            }
-          }
-        }
-      } catch (apiError) {
-        console.log('⚠️ API 요청 실패:', apiError.message);
-      }
-    }
-    
-  } catch (error) {
-    console.log('⚠️ 네이버 API 전체 실패:', error.message);
-  }
-  
-  return result;
+        현재 상태: ${EXTRACTION_ENABLED ? '활성화됨' : '비활성화됨'}
+        
+        Netlify Functions 경로: /.netlify/functions/extract-naver
+    `);
 }
 
-// HTML에서 정보 추출
-async function extractFromHTML(url) {
-  const result = { method: 'html_extraction' };
-  
-  try {
-    console.log('📄 HTML 페이지 요청:', url);
-    
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
-      },
-      timeout: 15000
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const html = await response.text();
-    console.log('📄 HTML 길이:', html.length);
-    
-    // HTML이 충분히 크면 (실제 페이지) 정보 추출 시도
-    if (html.length > 5000) {
-      console.log('📄 충분한 HTML 컨텐츠 감지 - 정보 추출 시도');
-      
-      // JSON 데이터 찾기
-      const jsonMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\});/);
-      if (jsonMatch) {
-        try {
-          const jsonData = JSON.parse(jsonMatch[1]);
-          console.log('✅ __INITIAL_STATE__ 파싱 성공');
-          
-          result.storeName = extractFromObject(jsonData, ['name', 'title', 'placeName', 'businessName', 'displayName']);
-          result.address = extractFromObject(jsonData, ['address', 'roadAddress', 'fullAddress']);
-          result.phone = extractFromObject(jsonData, ['phone', 'tel', 'phoneNumber']);
-          
-          if (result.storeName) {
-            console.log('✅ JSON에서 정보 추출 성공');
-            return result;
-          }
-        } catch (parseError) {
-          console.log('⚠️ JSON 파싱 실패:', parseError.message);
-        }
-      }
-      
-      // 간단한 문자열 검색
-      const patterns = [
-        { key: 'storeName', patterns: ['placeName', 'name', 'title', 'businessName'] },
-        { key: 'address', patterns: ['address', 'roadAddress', 'fullAddress'] },
-        { key: 'phone', patterns: ['phone', 'tel', 'phoneNumber'] }
-      ];
-      
-      for (const { key, patterns: searchPatterns } of patterns) {
-        for (const pattern of searchPatterns) {
-          const regex = new RegExp(`"${pattern}"\\s*:\\s*"([^"]+)"`, 'i');
-          const match = html.match(regex);
-          if (match && match[1] && !match[1].includes('네이버') && !match[1].includes('지도')) {
-            result[key] = match[1];
-            console.log(`✅ 문자열 검색으로 ${key} 발견:`, match[1]);
-            break;
-          }
-        }
-      }
-    } else {
-      console.log('📄 HTML이 너무 짧음 (리다이렉트 페이지일 가능성)');
-    }
-    
-  } catch (error) {
-    console.log('⚠️ HTML 추출 실패:', error.message);
-  }
-  
-  return result;
-}
+// ========== 전역 함수 등록 ========== 
+window.extractStoreInfo = enhancedExtractStoreInfo;
+window.enhancedExtractStoreInfo = enhancedExtractStoreInfo;
+window.extractNaverStoreInfo = extractNaverStoreInfo;
+window.populateFormWithData = populateFormWithData;
+window.showManualInputGuidance = showManualInputGuidance;
+window.closeManualInputModal = closeManualInputModal;
 
-// 메타 태그에서 정보 추출
-async function extractFromMetaTags(url) {
-  const result = { method: 'meta_tags' };
-  
-  try {
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-      timeout: 10000
-    });
-    
-    const html = await response.text();
-    
-    // 메타 태그 정보 추출
-    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const ogTitleMatch = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i);
-    const ogDescMatch = html.match(/<meta[^>]*property="og:description"[^>]*content="([^"]+)"/i);
-    
-    if (titleMatch) {
-      const title = titleMatch[1].trim();
-      if (!title.includes('네이버') && !title.includes('지도') && title.length > 2) {
-        result.storeName = title.split('|')[0].split('-')[0].split('::')[0].trim();
-        console.log('✅ title 태그에서 매장명 추출:', result.storeName);
-      }
-    }
-    
-    if (ogTitleMatch) {
-      const ogTitle = ogTitleMatch[1].trim();
-      if (!result.storeName && !ogTitle.includes('네이버') && ogTitle.length > 2) {
-        result.storeName = ogTitle;
-        console.log('✅ og:title에서 매장명 추출:', result.storeName);
-      }
-    }
-    
-    if (ogDescMatch) {
-      const desc = ogDescMatch[1];
-      console.log('📋 og:description:', desc);
-      
-      // 주소 패턴 찾기
-      const addressMatch = desc.match(/([가-힣]+[시군구]\s+[가-힣\s\d-]+)/);
-      if (addressMatch) {
-        result.address = addressMatch[1];
-        console.log('✅ 주소 추출:', result.address);
-      }
-      
-      // 전화번호 패턴 찾기
-      const phoneMatch = desc.match(/(\d{2,3}[-\s]?\d{3,4}[-\s]?\d{4})/);
-      if (phoneMatch) {
-        result.phone = phoneMatch[1];
-        console.log('✅ 전화번호 추출:', result.phone);
-      }
-    }
-    
-  } catch (error) {
-    console.log('⚠️ 메타 태그 추출 실패:', error.message);
-  }
-  
-  return result;
-}
+// 개발자용 함수
+window.enableExtractionFeature = enableExtractionFeature;
 
-// 중첩 객체에서 깊은 탐색
-function extractFromNestedObject(obj, targetFields, maxDepth = 3, currentDepth = 0) {
-  if (!obj || typeof obj !== 'object' || currentDepth >= maxDepth) return null;
-  
-  // 현재 레벨에서 찾기
-  for (const field of targetFields) {
-    if (obj[field] && typeof obj[field] === 'string' && obj[field].length > 0) {
-      console.log(`✅ 중첩 탐색에서 발견 (depth ${currentDepth}):`, field, '=', obj[field]);
-      return obj[field];
+// ========== 초기화 ========== 
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📱 네이버 추출 시스템 (비활성화 상태) 초기화 완료');
+    
+    // 개발 모드에서 활성화 가이드 표시
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.log('🛠️ 개발 모드: window.enableExtractionFeature() 로 활성화 가이드 확인');
     }
-  }
-  
-  // 하위 객체에서 재귀 탐색
-  for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      const result = extractFromNestedObject(value, targetFields, maxDepth, currentDepth + 1);
-      if (result) return result;
-    }
-  }
-  
-  return null;
-}
+});
 
-// 객체에서 키 리스트로 값 찾기
-function extractFromObject(obj, keys) {
-  if (!obj || typeof obj !== 'object') return null;
-  
-  for (const key of keys) {
-    if (obj[key] && typeof obj[key] === 'string' && obj[key].length > 0) {
-      return obj[key];
-    }
-  }
-  
-  // 중첩 객체 검색
-  for (const value of Object.values(obj)) {
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      const result = extractFromObject(value, keys);
-      if (result) return result;
-    }
-  }
-  
-  return null;
-}
+console.log(`
+✅ 네이버 예약 추출 시스템 로드 완료 (현재 비활성화)
+
+🔧 나중에 활성화하려면:
+   1. EXTRACTION_ENABLED = true 로 변경
+   2. 주석 처리된 코드들을 해제
+   3. Netlify Functions: /.netlify/functions/extract-naver 확인
+
+💡 현재는 수동 입력 가이드만 제공됩니다
+`);
