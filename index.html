@@ -793,12 +793,28 @@
         function showMobileThemeModal() {
             console.log('📱 모바일 테마 모달 표시');
             const overlay = document.getElementById('mobileThemeModalOverlay');
+            
+            if (!overlay) {
+                console.error('❌ 모바일 테마 모달 요소를 찾을 수 없음');
+                return;
+            }
+            
             selectedThemeInModal = currentTheme; // 현재 테마를 임시 선택으로 설정
             updateMobileThemeUI();
             updateMobileThemeDescription();
             
-            overlay.classList.add('show');
+            // 강제로 표시
+            overlay.style.display = 'flex';
+            overlay.style.opacity = '0';
+            
+            // 애니메이션을 위한 지연
+            setTimeout(() => {
+                overlay.classList.add('show');
+                overlay.style.opacity = '1';
+            }, 10);
+            
             document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+            console.log('✅ 모바일 테마 모달 표시 완료');
         }
         
         // 🎨 모바일 테마 모달 숨김
