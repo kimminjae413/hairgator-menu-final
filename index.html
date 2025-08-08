@@ -62,10 +62,10 @@
             -webkit-user-select: none;
         }
 
-        /* Header */
+        /* Header - 아래로 내림 */
         .header {
             position: fixed;
-            top: 0;
+            top: 15px;
             left: 0;
             right: 0;
             height: 50px;
@@ -120,10 +120,10 @@
             background: var(--text-primary);
         }
 
-        /* Main Content */
+        /* Main Content - 헤더 높이 조정 */
         .main-content {
-            margin-top: 50px;
-            min-height: calc(100vh - 50px);
+            margin-top: 65px;
+            min-height: calc(100vh - 65px);
         }
 
         /* Gender Selection */
@@ -131,7 +131,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: calc(100vh - 50px);
+            min-height: calc(100vh - 65px);
             padding: 20px;
             gap: 80px;
         }
@@ -196,12 +196,12 @@
             display: block;
         }
 
-        /* Category Tabs */
+        /* Category Tabs - 헤더 위치 조정 */
         .category-tabs-wrapper {
             background: var(--primary-dark);
             border-bottom: 1px solid #333;
             position: sticky;
-            top: 50px;
+            top: 65px;
             z-index: 100;
         }
 
@@ -426,10 +426,10 @@
             cursor: pointer;
         }
 
-        /* Theme Toggle Button */
+        /* Theme Toggle Button - 성별 선택 화면에서 많이 올리기 */
         .theme-toggle-bottom {
             position: fixed;
-            bottom: 30px;
+            bottom: 150px;
             left: 50%;
             transform: translateX(-50%);
             width: 50px;
@@ -465,6 +465,134 @@
         .sun-icon {
             display: none;
             color: #ff8c00;
+        }
+
+        /* 라이트 테마 */
+        body.light-theme {
+            background: var(--primary-light);
+            color: #000000;
+        }
+
+        body.light-theme .header {
+            background: var(--primary-light);
+        }
+
+        body.light-theme .logo,
+        body.light-theme .back-btn {
+            color: #000;
+        }
+
+        /* 라이트 모드에서 햄버거 버튼 색상 수정 */
+        body.light-theme .menu-btn span {
+            background: #000;
+        }
+
+        body.light-theme .gender-btn {
+            background: #f8f8f8;
+            border-color: #ddd;
+        }
+
+        body.light-theme .gender-btn.male,
+        body.light-theme .gender-btn.female {
+            border-color: #ddd;
+        }
+
+        body.light-theme .gender-icon {
+            background: transparent;
+        }
+
+        /* 라이트 모드에서 얼굴 이모지로 교체 */
+        body.light-theme .gender-btn.male .gender-icon {
+            font-size: 0;
+        }
+
+        body.light-theme .gender-btn.male .gender-icon:after {
+            content: '👨';
+            font-size: 80px;
+            color: initial;
+        }
+
+        body.light-theme .gender-btn.female .gender-icon {
+            font-size: 0;
+        }
+
+        body.light-theme .gender-btn.female .gender-icon:after {
+            content: '👩';
+            font-size: 80px;
+            color: initial;
+        }
+
+        /* 라이트 모드에서 텍스트 색상 - 파스텔 톤 */
+        body.light-theme .gender-btn.male .gender-label {
+            color: #6495ED;
+        }
+
+        body.light-theme .gender-btn.female .gender-label {
+            color: #FF69B4;
+        }
+
+        /* 라이트 테마에서 카테고리 탭 배경색 변경 */
+        body.light-theme .category-tabs-wrapper {
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+
+        body.light-theme .category-tab {
+            color: #666;
+        }
+
+        body.light-theme .category-tab.active {
+            color: #000;
+        }
+
+        body.light-theme .category-tab.active.male {
+            border-bottom-color: #87CEEB;
+        }
+
+        body.light-theme .category-tab.active.female {
+            border-bottom-color: #FFB6C1;
+        }
+
+        /* 카테고리 설명 라이트 테마 */
+        body.light-theme .category-description {
+            background: #f9f9f9;
+            color: #666;
+        }
+
+        /* 중분류 탭 라이트 테마 */
+        body.light-theme .subcategory-wrapper {
+            background: #fff;
+        }
+
+        body.light-theme .subcategory-tab {
+            color: #666;
+            border-color: #ddd;
+        }
+
+        /* 라이트 모드에서 중분류 탭 파스텔 색상 */
+        body.light-theme .subcategory-tab.active.male {
+            background: #87CEEB;
+            border-color: #87CEEB;
+            color: #000;
+        }
+
+        body.light-theme .subcategory-tab.active.female {
+            background: #FFB6C1;
+            border-color: #FFB6C1;
+            color: #000;
+        }
+
+        body.light-theme .menu-item {
+            background: #f5f5f5;
+        }
+
+        body.light-theme .modal-content {
+            background: var(--primary-light);
+            color: #000000;
+        }
+
+        body.light-theme .modal-name {
+            color: #000000;
         }
 
         body.light-theme .theme-toggle-bottom {
@@ -618,6 +746,28 @@
             cursor: pointer;
             font-size: 14px;
             margin-top: 20px;
+        }
+
+        /* 라이트 테마 사이드바 */
+        body.light-theme .sidebar {
+            background: #f5f5f5;
+        }
+
+        body.light-theme .sidebar-header {
+            border-bottom-color: #ddd;
+        }
+
+        body.light-theme .sidebar-close {
+            color: #000;
+        }
+
+        body.light-theme .sidebar-content {
+            color: #000;
+        }
+
+        body.light-theme .theme-toggle {
+            background: #e0e0e0;
+            color: #000;
         }
     </style>
 </head>
