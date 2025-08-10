@@ -430,8 +430,7 @@
         .theme-toggle-bottom {
             position: fixed;
             bottom: 50px; /* 150px에서 50px로 변경 */
-            left: 50%;
-            transform: translateX(-50%);
+            right: 20px; /* 오른쪽으로 이동 */
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -450,7 +449,7 @@
         .theme-toggle-bottom:hover {
             background: rgba(255, 255, 255, 0.2);
             border-color: rgba(255, 255, 255, 0.3);
-            transform: translateX(-50%) scale(1.1);
+            transform: scale(1.1);
         }
 
         .theme-toggle-bottom svg {
@@ -641,9 +640,20 @@
                 grid-template-columns: repeat(5, 1fr);
             }
 
-            /* 태블릿 이상에서는 원래 위치로 */
+            /* 태블릿 이상에서는 중앙 위치로 */
             .theme-toggle-bottom {
                 bottom: 150px;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+            }
+
+            .theme-toggle-bottom:hover {
+                transform: translateX(-50%) scale(1.1);
+            }
+
+            body.light-theme .theme-toggle-bottom:hover {
+                transform: translateX(-50%) scale(1.1);
             }
         }
 
@@ -664,9 +674,16 @@
                 gap: 30px;
             }
 
-            /* 핸드폰에서만 하단으로 이동 */
+            /* 핸드폰에서만 우측 하단으로 이동 */
             .theme-toggle-bottom {
                 bottom: 50px !important;
+                right: 20px !important;
+                left: auto !important;
+                transform: none !important;
+            }
+
+            .theme-toggle-bottom:hover {
+                transform: scale(1.1) !important;
             }
         }
 
@@ -990,42 +1007,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 { 
                     id: 'a-length', 
                     name: 'A Length',
-                    description: 'A Length는 가장 긴 롱 헤어로 허리까지 내려오는 길이입니다. 우아하고 여성스러운 느낌을 극대화합니다.'
+                    description: 'A 길이는 가슴선 아래로 내려오는 롱헤어로, 원랭스·레이어드 롱·굵은 S컬이 잘 맞아 우아하고 드라마틱한 분위기를 냅니다.'
                 },
                 { 
                     id: 'b-length', 
                     name: 'B Length',
-                    description: 'B Length는 가슴 아래까지 오는 긴 머리로 다양한 스타일링이 가능합니다.'
+                    description: 'B 길이는 가슴 아래(A)와 쇄골 아래(C) 사이의 미디엄-롱으로, 레이어드 미디엄롱·바디펌이 어울려 부드럽고 실용적인 인상을 줍니다.'
                 },
                 { 
                     id: 'c-length', 
                     name: 'C Length',
-                    description: 'C Length는 가슴 중간 정도의 세미롱 스타일입니다.'
+                    description: 'C 길이는 쇄골 라인 아래의 세미 롱으로, 레이어드 C/S컬·에어리펌과 잘 맞아 단정하고 세련된 오피스 무드를 냅니다.'
                 },
                 { 
                     id: 'd-length', 
                     name: 'D Length',
-                    description: 'D Length는 어깨 아래에서 가슴 위까지의 중간 길이입니다.'
+                    description: 'D 길이는 어깨에 정확히 닿는 길이로, LOB·숄더 C컬·빌드펌이 어울려 트렌디하고 깔끔한 느낌을 줍니다.'
                 },
                 { 
                     id: 'e-length', 
                     name: 'E Length',
-                    description: 'E Length는 어깨선 정도의 미디엄 길이로 실용적입니다.'
+                    description: 'E 길이는 어깨 바로 위의 단발로, 클래식 보브·A라인 보브·내/외 C컬이 잘 맞아 경쾌하고 모던한 인상을 만듭니다.'
                 },
                 { 
                     id: 'f-length', 
                     name: 'F Length',
-                    description: 'F Length는 턱선에서 어깨 위까지의 보브 스타일입니다.'
+                    description: 'F 길이는 턱선 바로 밑 보브 길이로, 프렌치 보브·일자 단발·텍스처 보브가 어울려 시크하고 도회적인 분위기를 연출합니다.'
                 },
                 { 
                     id: 'g-length', 
                     name: 'G Length',
-                    description: 'G Length는 턱선 정도의 짧은 단발 스타일입니다.'
+                    description: 'G 길이는 턱선과 같은 높이의 미니 보브로, 클래식 턱선 보브·미니 레이어 보브가 잘 맞아 또렷하고 미니멀한 무드를 줍니다.'
                 },
                 { 
                     id: 'h-length', 
                     name: 'H Length',
-                    description: 'H Length는 가장 짧은 숏 헤어로 귀 주변 길이입니다.'
+                    description: 'H 길이는 귀선~베리숏 구간의 숏헤어로, 픽시·샤그 숏·허쉬 숏 등이 어울려 활동적이고 개성 있는 스타일을 완성합니다.'
                 }
             ],
             subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
