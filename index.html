@@ -244,6 +244,25 @@
             border-bottom-color: var(--female-color);
         }
 
+        /* 물음표 도움말 버튼 스타일 */
+        .help-tab {
+            background: #FF1493 !important;
+            color: white !important;
+            border: 2px solid #FF1493 !important;
+            font-weight: bold;
+            font-size: 18px;
+            min-width: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+            text-transform: none !important;
+        }
+
+        .help-tab:hover {
+            background: #FF69B4 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+        }
+
         /* Description */
         .category-description {
             padding: 20px;
@@ -551,6 +570,17 @@
 
         body.light-theme .category-tab.active.female {
             border-bottom-color: #FFB6C1;
+        }
+
+        /* 라이트 모드에서 물음표 버튼 */
+        body.light-theme .help-tab {
+            background: #FF1493 !important;
+            color: white !important;
+            border-color: #FF1493 !important;
+        }
+
+        body.light-theme .help-tab:hover {
+            background: #FF69B4 !important;
         }
 
         /* 카테고리 설명 라이트 테마 */
@@ -967,7 +997,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { 
                     id: 'side-fringe', 
                     name: 'SIDE FRINGE',
-                    description: '사이드 프린지는 클래식함과 모던함의 대명사로 스타일링이 따라 원하는 이미지를 자유롭게 표현할 수 있습니다.'
+                    description: '사이드 프린지는 클래식함과 모던함의 대명사로 스타일링이 따라 원하는 이미지를 자유롭게 표현할 수 있습니다. 가르마를 기준으로 단순히 넘어가는 스타일을 넘어 개인의 특성과 트렌드에 맞춰 고급 테이퍼링을 표현하는 것이 매우 중요합니다.'
                 },
                 { 
                     id: 'side-part', 
@@ -1224,9 +1254,20 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => showLoading(false), 300);
     }
 
-    // Render Categories
+    // Render Categories - 여성일 때 물음표 버튼 추가
     function renderCategories(gender) {
         categoryTabs.innerHTML = '';
+        
+        // 여성인 경우 맨 앞에 물음표 버튼 추가
+        if (gender === 'female') {
+            const helpTab = document.createElement('button');
+            helpTab.className = 'category-tab help-tab';
+            helpTab.innerHTML = '?';
+            helpTab.addEventListener('click', function() {
+                window.open('https://drive.google.com/file/d/15OgT9k5jCC6TjcJSImuQXcznS_HtFBVf/view?usp=sharing', '_blank');
+            });
+            categoryTabs.appendChild(helpTab);
+        }
         
         menuData.categories.forEach((category, index) => {
             const tab = document.createElement('button');
@@ -1251,6 +1292,7 @@ document.addEventListener('DOMContentLoaded', function() {
         currentCategory = category;
         
         document.querySelectorAll('.category-tab').forEach(tab => {
+            if (tab.classList.contains('help-tab')) return; // 물음표 버튼은 제외
             tab.classList.remove('active', 'male', 'female');
             if (tab.dataset.categoryId === category.id) {
                 tab.classList.add('active', gender);
