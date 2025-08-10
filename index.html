@@ -426,10 +426,10 @@
             cursor: pointer;
         }
 
-        /* Theme Toggle Button - 성별 선택 화면에서 많이 올리기 */
+        /* Theme Toggle Button - 핸드폰 모드에서만 위치 수정 */
         .theme-toggle-bottom {
             position: fixed;
-            bottom: 150px;
+            bottom: 50px; /* 150px에서 50px로 변경 */
             left: 50%;
             transform: translateX(-50%);
             width: 50px;
@@ -457,6 +457,7 @@
             transition: all 0.3s;
         }
 
+        /* 다크 모드 아이콘 */
         .moon-icon {
             display: block;
             color: #ffd700;
@@ -595,22 +596,25 @@
             color: #000000;
         }
 
+        /* 라이트 모드에서 테마 버튼 스타일 수정 */
         body.light-theme .theme-toggle-bottom {
-            background: rgba(0, 0, 0, 0.05);
-            border-color: rgba(0, 0, 0, 0.1);
-        }
-
-        body.light-theme .theme-toggle-bottom:hover {
             background: rgba(0, 0, 0, 0.1);
             border-color: rgba(0, 0, 0, 0.2);
         }
 
+        body.light-theme .theme-toggle-bottom:hover {
+            background: rgba(0, 0, 0, 0.2);
+            border-color: rgba(0, 0, 0, 0.3);
+        }
+
+        /* 라이트 모드에서 아이콘 변경 */
         body.light-theme .moon-icon {
             display: none;
         }
 
         body.light-theme .sun-icon {
             display: block;
+            color: #ff8c00;
         }
 
         /* Loading */
@@ -636,6 +640,11 @@
             .menu-grid {
                 grid-template-columns: repeat(5, 1fr);
             }
+
+            /* 태블릿 이상에서는 원래 위치로 */
+            .theme-toggle-bottom {
+                bottom: 150px;
+            }
         }
 
         @media (max-width: 767px) {
@@ -653,6 +662,11 @@
             .gender-selection {
                 flex-direction: column;
                 gap: 30px;
+            }
+
+            /* 핸드폰에서만 하단으로 이동 */
+            .theme-toggle-bottom {
+                bottom: 50px !important;
             }
         }
 
@@ -795,7 +809,7 @@
         <svg class="moon-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
-        <svg class="sun-icon" style="display:none;" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="sun-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="5"/>
             <line x1="12" y1="1" x2="12" y2="3"/>
             <line x1="12" y1="21" x2="12" y2="23"/>
