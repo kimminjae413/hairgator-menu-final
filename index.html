@@ -366,6 +366,7 @@
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
+            position: relative;
         }
 
         .modal-image {
@@ -433,6 +434,20 @@
             color: white;
         }
 
+        /* 🆕 AI 체험 버튼 스타일 */
+        .btn-ai-experience {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            border: none !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-ai-experience:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
         .modal-close {
             position: absolute;
             top: 15px;
@@ -450,8 +465,8 @@
         /* Theme Toggle Button - 핸드폰 모드에서만 위치 수정 */
         .theme-toggle-bottom {
             position: fixed;
-            bottom: 50px; /* 150px에서 50px로 변경 */
-            right: 20px; /* 오른쪽으로 이동 */
+            bottom: 50px;
+            right: 20px;
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -965,6 +980,8 @@
     <script>
 // Main Application Logic
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 HAIRGATOR 앱 시작');
+
     // Global variables
     let currentGender = null;
     let currentCategory = null;
@@ -1085,6 +1102,9 @@ document.addEventListener('DOMContentLoaded', function() {
             subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
         }
     };
+
+    // 🆕 전역으로 showStyleDetail 함수를 노출 (AKOOL 통합을 위해)
+    window.showStyleDetail = showStyleDetail;
 
     // Initialize
     init();
@@ -1359,14 +1379,14 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Firebase 초기화 확인
             if (typeof db === 'undefined') {
-                console.error('Firebase not initialized');
+                console.error('❌ Firebase가 초기화되지 않음');
                 menuGrid.innerHTML = '<div style="color: #999; text-align: center; padding: 40px;">Firebase 연결 중...</div>';
                 return;
             }
             
             // 현재 카테고리 이름 찾기
             const categoryName = currentCategory.name;
-            console.log('Loading styles:', { gender, categoryName, subcategory });
+            console.log('🔍 스타일 로딩:', { gender, categoryName, subcategory });
             
             // Firebase에서 데이터 가져오기
             const query = db.collection('hairstyles')
@@ -1391,6 +1411,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            console.log(`✅ ${snapshot.size}개 스타일 발견`);
+            
             // 스타일 카드 생성
             snapshot.forEach(doc => {
                 const data = doc.data();
@@ -1410,6 +1432,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 
                 item.addEventListener('click', function() {
+                    console.log('🖱️ 스타일 카드 클릭:', { code: data.code, name: data.name });
                     showStyleDetail(data.code, data.name, gender, data.imageUrl, doc.id);
                 });
                 
@@ -1417,7 +1440,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
         } catch (error) {
-            console.error('Load styles error:', error);
+            console.error('❌ 스타일 로딩 오류:', error);
             menuGrid.innerHTML = `
                 <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ff4444;">
                     <div>데이터 로드 실패</div>
@@ -1434,19 +1457,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Show Style Detail Modal
+    // 🎯 Show Style Detail Modal (AKOOL 통합 준비 완료)
     function showStyleDetail(code, name, gender, imageSrc, docId) {
         console.log('🎨 스타일 모달 열기:', { code, name, gender, imageSrc, docId });
         
-        if (!styleModal) return;
+        if (!styleModal) {
+            console.error('❌ styleModal이 없습니다!');
+            return;
+        }
         
         modalImage.src = imageSrc || '';
         modalImage.onerror = function() {
             this.style.display = 'none';
             this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
         };
-        modalCode.textContent = code;
-        modalName.textContent = name;
+        modalCode.textContent = code || 'NO CODE';
+        modalName.textContent = name || '이름 없음';
         
         if (gender === 'female') {
             btnRegister.classList.add('female');
@@ -1459,6 +1485,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (heart) heart.textContent = '♡';
         
         styleModal.classList.add('active');
+        console.log('✅ 모달 열기 완료');
         
         // 고객 등록 버튼
         btnRegister.onclick = async function() {
@@ -1527,7 +1554,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 window.addEventListener('load', function() {
-    console.log('HAIRGATOR App Loaded');
+    console.log('🎉 HAIRGATOR App Loaded');
 });
     </script>
     
