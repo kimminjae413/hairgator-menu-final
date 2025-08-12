@@ -1747,4 +1747,410 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.style.boxShadow = 'none';
             });
             
-            // 🎯 AI 체험 버튼 클릭 시
+            // 🎯 AI 체험 버튼 클릭 시 AKOOL 모달 열기
+            aiBtn.addEventListener('click', function() {
+                openAIExperienceModal(imageSrc, name, code);
+            });
+            
+            modalActions.appendChild(aiBtn);
+            console.log('🎨 AI 체험 버튼 자동 추가 완료!');
+        }
+        
+        styleModal.classList.add('active');
+        console.log('✅ 모달 열기 완료');
+        
+        // 고객 등록 버튼
+        btnRegister.onclick = async function() {
+            const customerName = prompt('고객 이름을 입력하세요:');
+            if (!customerName) return;
+            
+            const customerPhone = prompt('전화번호를 입력하세요:');
+            if (!customerPhone) return;
+            
+            try {
+                await db.collection('customers').add({
+                    name: customerName,
+                    phone: customerPhone,
+                    styleCode: code,
+                    styleName: name,
+                    styleId: docId,
+                    gender: gender,
+                    designer: localStorage.getItem('designerName') || 'Unknown',
+                    registeredAt: new Date(),
+                    lastVisit: new Date()
+                });
+                
+                alert('고객 등록 완료!');
+                closeModal();
+            } catch (error) {
+                console.error('Customer registration error:', error);
+                alert('등록 실패: ' + error.message);
+            }
+        };
+        
+        // 좋아요 버튼
+        btnLike.onclick = async function() {
+            this.classList.toggle('active');
+            const heart = this.querySelector('span:first-child');
+            if (heart) {
+                const isLiked = this.classList.contains('active');
+                heart.textContent = isLiked ? '♥' : '♡';
+                
+                // Firebase에 좋아요 업데이트
+                if (docId) {
+                    try {
+                        const docRef = db.collection('hairstyles').doc(docId);
+                        await docRef.update({
+                            likes: firebase.firestore.FieldValue.increment(isLiked ? 1 : -1)
+                        });
+                    } catch (error) {
+                        console.error('Like update error:', error);
+                    }
+                }
+            }
+        };
+    }
+
+    // 🆕 AKOOL AI 체험 모달 생성 함수
+    function openAIExperienceModal(styleImageUrl, styleName, styleCode) {
+        console.log('🤖 AKOOL AI 체험 모달 열기:', { styleImageUrl, styleName, styleCode });
+        
+        // AI 체험 모달 생성
+        const aiModal = document.createElement('div');
+        aiModal.className = 'ai-experience-modal';
+        aiModal.innerHTML = `
+            <div class="ai-modal-overlay"></div>
+            <div class="ai-modal-content">
+                <div class="ai-modal-header">
+                    <h3>✨ AI 헤어스타일 체험</h3>
+                    <button class="ai-modal-close">×</button>
+                </div>
+                
+                <div class="ai-modal-body">
+                    <div class="ai-upload-section">
+                        <div class="ai-upload-area" id="aiUploadArea">
+                            <input type="file" id="aiFileInput" accept="image/*" style="display: none;">
+                            <div class="ai-upload-content">
+                                <div class="ai-upload-icon">📷</div>
+                                <div class="ai-upload-text">
+                                    <div class="ai-upload-title">얼굴 사진을 선택하세요</div>
+                                    <div class="ai-upload-desc">JPG, PNG 파일 (최대 10MB)</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-preview-section" id="aiPreviewSection" style="display: none;">
+                            <div class="ai-preview-item">
+                                <h4>선택한 사진</h4>
+                                <img id="aiPreviewUser" src="" alt="사용자 사진">
+                            </div>
+                            <div class="ai-preview-arrow">→</div>
+                            <div class="ai-preview-item">
+                                <h4>적용할 스타일</h4>
+                                <img id="aiPreviewStyle" src="${styleImageUrl}" alt="${styleName}">
+                                <p style="color: #667eea; margin-top: 8px; font-size: 12px;">${styleName}</p>
+                                <p style="color: #999; font-size: 11px;">${styleCode}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-progress-section" id="aiProgressSection" style="display: none;">
+                        <div class="ai-progress-bar">
+                            <div class="ai-progress-fill" id="aiProgressFill"></div>
+                        </div>
+                        <div class="ai-progress-text" id="aiProgressText">처리 중...</div>
+                        <div style="margin-top: 15px; font-size: 12px; color: #666;">
+                            AI가 당신의 얼굴에 ${styleName} 스타일을 적용하고 있습니다...
+                        </div>
+                    </div>
+                    
+                    <div class="ai-result-section" id="aiResultSection" style="display: none;">
+                        <div class="ai-result-image">
+                            <img id="aiResultImage" src="" alt="결과 이미지">
+                        </div>
+                        <div class="ai-result-actions">
+                            <button class="ai-download-btn" id="aiDownloadBtn">💾 다운로드</button>
+                            <button class="ai-retry-btn" id="aiRetryBtn">🔄 다시 시도</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ai-modal-footer">
+                    <button class="ai-process-btn" id="aiProcessBtn" disabled>
+                        ✨ AI 처리 시작
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(aiModal);
+        
+        // 모달 이벤트 설정
+        setupAIModalEvents(aiModal, styleImageUrl, styleName, styleCode);
+        
+        // 모달 표시 애니메이션
+        requestAnimationFrame(() => {
+            aiModal.classList.add('active');
+        });
+    }
+    
+    // 🎮 AI 모달 이벤트 설정
+    function setupAIModalEvents(modal, styleImageUrl, styleName, styleCode) {
+        const overlay = modal.querySelector('.ai-modal-overlay');
+        const closeBtn = modal.querySelector('.ai-modal-close');
+        const uploadArea = modal.querySelector('#aiUploadArea');
+        const fileInput = modal.querySelector('#aiFileInput');
+        const processBtn = modal.querySelector('#aiProcessBtn');
+        const previewSection = modal.querySelector('#aiPreviewSection');
+        const userPreview = modal.querySelector('#aiPreviewUser');
+        const progressSection = modal.querySelector('#aiProgressSection');
+        const progressFill = modal.querySelector('#aiProgressFill');
+        const progressText = modal.querySelector('#aiProgressText');
+        const resultSection = modal.querySelector('#aiResultSection');
+        const downloadBtn = modal.querySelector('#aiDownloadBtn');
+        const retryBtn = modal.querySelector('#aiRetryBtn');
+        
+        let selectedFile = null;
+        
+        // 모달 닫기
+        function closeAIModal() {
+            modal.classList.remove('active');
+            setTimeout(() => {
+                if (document.body.contains(modal)) {
+                    document.body.removeChild(modal);
+                }
+            }, 300);
+        }
+        
+        overlay.addEventListener('click', closeAIModal);
+        closeBtn.addEventListener('click', closeAIModal);
+        
+        // ESC 키로 모달 닫기
+        function handleEscKey(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeAIModal();
+                document.removeEventListener('keydown', handleEscKey);
+            }
+        }
+        document.addEventListener('keydown', handleEscKey);
+        
+        // 파일 업로드 영역 클릭
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // 드래그 앤 드롭 지원
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#764ba2';
+            uploadArea.style.background = 'rgba(102, 126, 234, 0.15)';
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.background = 'rgba(102, 126, 234, 0.05)';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.background = 'rgba(102, 126, 234, 0.05)';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+        
+        // 파일 선택
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+        
+        // 파일 처리
+        function handleFileSelect(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('❌ 이미지 파일만 선택할 수 있습니다');
+                return;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) {
+                alert('❌ 파일 크기는 10MB 이하여야 합니다');
+                return;
+            }
+            
+            selectedFile = file;
+            showPreview(file);
+            processBtn.disabled = false;
+            processBtn.textContent = `✨ ${styleName} 스타일 적용하기`;
+            console.log('📁 파일 선택됨:', file.name);
+        }
+        
+        // 미리보기 표시
+        function showPreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                userPreview.src = e.target.result;
+                uploadArea.style.display = 'none';
+                previewSection.style.display = 'grid';
+                console.log('👁️ 미리보기 표시 완료');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // AI 처리 시작 (데모 버전)
+        processBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            
+            console.log('🤖 AI 처리 시작:', { file: selectedFile.name, style: styleName });
+            
+            // UI 전환
+            modal.querySelector('.ai-modal-body .ai-upload-section').style.display = 'none';
+            modal.querySelector('.ai-modal-footer').style.display = 'none';
+            progressSection.style.display = 'block';
+            
+            // 진행률 시뮬레이션
+            const steps = [
+                { progress: 15, text: '이미지 업로드 중...', delay: 800 },
+                { progress: 35, text: '얼굴 인식 중...', delay: 1200 },
+                { progress: 55, text: 'AI 분석 중...', delay: 1500 },
+                { progress: 75, text: `${styleName} 적용 중...`, delay: 1800 },
+                { progress: 90, text: '최종 처리 중...', delay: 1000 },
+                { progress: 100, text: '완료!', delay: 500 }
+            ];
+            
+            for (let i = 0; i < steps.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, steps[i].delay));
+                progressFill.style.width = steps[i].progress + '%';
+                progressText.textContent = steps[i].text;
+                console.log(`🔄 진행률: ${steps[i].progress}% - ${steps[i].text}`);
+            }
+            
+            // 결과 표시 (데모)
+            setTimeout(() => {
+                showDemoResult();
+            }, 800);
+        });
+        
+        // 데모 결과 표시
+        function showDemoResult() {
+            progressSection.style.display = 'none';
+            resultSection.style.display = 'block';
+            
+            // 데모 결과 이미지 (실제로는 AKOOL API 결과)
+            const resultImg = modal.querySelector('#aiResultImage');
+            resultImg.src = styleImageUrl; // 데모에서는 원본 스타일 이미지 사용
+            
+            console.log('🎉 AI 처리 완료 (데모)');
+            
+            // 완료 메시지
+            const completeMsg = document.createElement('div');
+            completeMsg.style.cssText = `
+                text-align: center;
+                padding: 20px;
+                color: #667eea;
+                font-size: 16px;
+                font-weight: 600;
+                background: rgba(102, 126, 234, 0.1);
+                border-radius: 10px;
+                margin-bottom: 20px;
+            `;
+            completeMsg.innerHTML = `
+                🎉 AI 처리 완료!<br>
+                <small style="color: #999; font-size: 12px;">
+                    실제 AKOOL API 연동 시 당신의 얼굴에 ${styleName} 스타일이 적용됩니다
+                </small>
+            `;
+            
+            resultSection.insertBefore(completeMsg, resultSection.querySelector('.ai-result-actions'));
+        }
+        
+        // 다운로드 버튼
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', () => {
+                alert('💾 다운로드 기능\n\n실제 AKOOL API 연동 후 처리된 이미지를 다운로드할 수 있습니다!');
+            });
+        }
+        
+        // 다시 시도 버튼
+        if (retryBtn) {
+            retryBtn.addEventListener('click', () => {
+                // 초기 상태로 리셋
+                resultSection.style.display = 'none';
+                modal.querySelector('.ai-modal-body .ai-upload-section').style.display = 'block';
+                modal.querySelector('.ai-modal-footer').style.display = 'block';
+                uploadArea.style.display = 'block';
+                previewSection.style.display = 'none';
+                processBtn.disabled = true;
+                processBtn.textContent = '✨ AI 처리 시작';
+                progressFill.style.width = '0%';
+                selectedFile = null;
+                fileInput.value = '';
+                console.log('🔄 AI 모달 리셋 완료');
+            });
+        }
+    }
+
+    // Loading
+    function showLoading(show) {
+        if (loadingOverlay) {
+            loadingOverlay.classList.toggle('active', show);
+        }
+    }
+
+    // 🆕 전역으로 함수 노출 (AKOOL 통합을 위해)
+    window.showStyleDetail = showStyleDetail;
+    window.openAIExperienceModal = openAIExperienceModal;
+
+    console.log('✅ HAIRGATOR + AKOOL 통합 완료!');
+});
+
+window.addEventListener('load', function() {
+    console.log('🎉 HAIRGATOR + AKOOL App Loaded');
+});
+    </script>
+    
+    <script>
+        // PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+        
+        // iOS Standalone 모드 체크
+        if (window.navigator.standalone === true) {
+            console.log('Running in standalone mode');
+            document.body.classList.add('standalone-mode');
+        }
+        
+        // Android PWA 설치 프롬프트
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('PWA 설치 가능');
+        });
+        
+        // PWA 설치 감지
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('PWA가 설치되었습니다');
+        });
+        
+        // 전체화면 모드 감지
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('PWA 전체화면 모드로 실행 중');
+            document.body.classList.add('pwa-mode');
+        }
+    </script>
+</body>
+</html>
