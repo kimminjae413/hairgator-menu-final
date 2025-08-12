@@ -1,4 +1,4 @@
-# netlify.toml - Netlify 배포 설정 + AKOOL Functions
+# netlify.toml - 완전한 HAIRGATOR + AKOOL 설정
 [build]
   command = ""
   publish = "."
