@@ -28,9 +28,11 @@ exports.handler = async (event, context) => {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Token이 필요합니다' })
+        body: JSON.stringify({ success: false, error: 'Token이 필요합니다' })
       };
     }
+
+    console.log(`🔄 AKOOL 처리 단계: ${step}`);
 
     // 얼굴 감지 단계
     if (step === 'detect_user' || step === 'detect_hairstyle') {
@@ -40,7 +42,7 @@ exports.handler = async (event, context) => {
         return {
           statusCode: 400,
           headers,
-          body: JSON.stringify({ error: '이미지가 필요합니다' })
+          body: JSON.stringify({ success: false, error: '이미지가 필요합니다' })
         };
       }
 
@@ -58,7 +60,11 @@ exports.handler = async (event, context) => {
         return {
           statusCode: 400,
           headers,
-          body: JSON.stringify({ error: '필요한 데이터가 부족합니다' })
+          body: JSON.stringify({ 
+            success: false, 
+            error: '필요한 데이터가 부족합니다',
+            required: ['userImage', 'hairstyleImage', 'userLandmarks', 'hairstyleLandmarks']
+          })
         };
       }
 
@@ -73,10 +79,11 @@ exports.handler = async (event, context) => {
     return {
       statusCode: 400,
       headers,
-      body: JSON.stringify({ error: '알 수 없는 단계입니다' })
+      body: JSON.stringify({ success: false, error: '알 수 없는 처리 단계입니다' })
     };
 
   } catch (error) {
+    console.error('❌ Face Swap 함수 오류:', error);
     return {
       statusCode: 500,
       headers,
@@ -89,12 +96,17 @@ exports.handler = async (event, context) => {
   }
 };
 
-// 얼굴 감지 함수
+// 얼굴 감지 함수 - AKOOL detect API 사용
 async function detectFace(token, imageData) {
   try {
+    console.log('🔍 얼굴 감지 시작...');
+
+    // Base64 이미지인지 URL인지 확인
+    const isBase64 = imageData.startsWith('data:image/');
+    
     const requestData = JSON.stringify({
       single_face: true,
-      img: imageData
+      ...(isBase64 ? { img: imageData } : { image_url: imageData })
     });
 
     const options = {
@@ -126,42 +138,63 @@ async function detectFace(token, imageData) {
       req.end();
     });
 
+    console.log('📡 얼굴 감지 API 응답:', response.statusCode, response.data?.error_code);
+
     if (response.statusCode === 200 && response.data.error_code === 0) {
+      const landmarks = response.data.landmarks_str?.[0];
+      
+      if (!landmarks) {
+        return {
+          success: false,
+          error: '얼굴을 감지할 수 없습니다',
+          message: '사진에서 명확한 얼굴을 찾을 수 없습니다. 정면을 향한 얼굴이 잘 보이는 사진을 사용해주세요.'
+        };
+      }
+
+      console.log('✅ 얼굴 감지 성공:', landmarks);
       return {
         success: true,
-        landmarks: response.data.landmarks_str?.[0] || null,
+        landmarks: landmarks,
         message: '얼굴 감지 성공'
       };
     } else {
+      console.error('❌ 얼굴 감지 실패:', response.data);
       return {
         success: false,
         error: '얼굴 감지 실패',
-        message: '얼굴이 명확히 보이는 사진을 사용해주세요'
+        message: response.data.error_msg || '얼굴을 명확히 인식할 수 없습니다. 정면을 향한 고화질 사진을 사용해주세요.',
+        code: response.data.error_code
       };
     }
   } catch (error) {
+    console.error('❌ 얼굴 감지 네트워크 오류:', error);
     return {
       success: false,
       error: '얼굴 감지 오류',
-      message: error.message
+      message: '네트워크 오류가 발생했습니다: ' + error.message
     };
   }
 }
 
-// Face Swap 실행 함수
+// Face Swap 실행 함수 - AKOOL highquality API 사용
 async function performFaceSwap(token, userImage, hairstyleImage, userLandmarks, hairstyleLandmarks) {
   try {
+    console.log('🎨 Face Swap 시작...');
+    console.log('👤 사용자 랜드마크:', userLandmarks);
+    console.log('💇 헤어스타일 랜드마크:', hairstyleLandmarks);
+
+    // AKOOL API 스펙에 맞춘 데이터 구성
     const requestData = JSON.stringify({
       sourceImage: [{
-        path: userImage,
-        opts: userLandmarks
+        path: userImage, // 사용자 이미지 (Base64 또는 URL)
+        opts: userLandmarks // 사용자 얼굴 랜드마크
       }],
       targetImage: [{
-        path: hairstyleImage,
-        opts: hairstyleLandmarks
+        path: hairstyleImage, // 헤어스타일 이미지 URL
+        opts: hairstyleLandmarks // 헤어스타일 랜드마크
       }],
-      face_enhance: 1,
-      modifyImage: hairstyleImage
+      face_enhance: 1, // 얼굴 향상 활성화
+      modifyImage: hairstyleImage // 수정할 베이스 이미지
     });
 
     const options = {
@@ -193,26 +226,32 @@ async function performFaceSwap(token, userImage, hairstyleImage, userLandmarks, 
       req.end();
     });
 
+    console.log('📡 Face Swap API 응답:', response.statusCode, response.data?.code);
+
     if (response.statusCode === 200 && response.data.code === 1000) {
+      console.log('✅ Face Swap 요청 성공:', response.data.data);
       return {
         success: true,
         jobId: response.data.data.job_id,
         resultId: response.data.data._id,
         url: response.data.data.url,
-        message: 'Face Swap 시작됨'
+        message: response.data.msg || 'Face Swap 처리 시작됨'
       };
     } else {
+      console.error('❌ Face Swap 실패:', response.data);
       return {
         success: false,
         error: 'Face Swap 실패',
-        message: response.data.message || '처리 중 오류가 발생했습니다'
+        message: response.data.msg || '얼굴 교체 처리에 실패했습니다',
+        code: response.data.code
       };
     }
   } catch (error) {
+    console.error('❌ Face Swap 네트워크 오류:', error);
     return {
       success: false,
       error: 'Face Swap 오류',
-      message: error.message
+      message: '네트워크 오류가 발생했습니다: ' + error.message
     };
   }
 }
