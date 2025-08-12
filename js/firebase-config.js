@@ -1,4 +1,4 @@
-// Firebase 설정
+// Firebase 설정 - 최적화된 버전
 const firebaseConfig = {
     apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
     authDomain: "hairgatormenu-4a43e.firebaseapp.com",
@@ -9,34 +9,28 @@ const firebaseConfig = {
     appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
 };
 
-// Firebase 초기화
-firebase.initializeApp(firebaseConfig);
+// Firebase 초기화 (중복 방지)
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 
-// Firestore 초기화 - 새로운 방식
+// Firestore 및 Storage 초기화
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-// 새로운 캐시 설정 방식 (권장)
-db.settings({
-    cache: {
-        kind: 'persistent',
-        tabManager: {
-            kind: 'multi-tab'
+// 캐시 설정 간소화 (경고 제거)
+db.enablePersistence({ synchronizeTabs: true })
+    .then(() => {
+        console.log('✅ Firebase persistence enabled');
+    })
+    .catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.log('⚠️ Multiple tabs open, persistence disabled');
+        } else if (err.code === 'unimplemented') {
+            console.log('⚠️ Browser doesn\'t support offline persistence');
+        } else {
+            console.log('⚠️ Persistence failed:', err.code);
         }
-    }
-});
+    });
 
-// 구버전 브라우저를 위한 폴백
-if (!db.settings.cache) {
-    // 구버전 방식 (경고는 나지만 작동함)
-    db.enablePersistence({ synchronizeTabs: true })
-        .catch((err) => {
-            if (err.code === 'failed-precondition') {
-                console.log('Multiple tabs open, persistence disabled');
-            } else if (err.code === 'unimplemented') {
-                console.log('Browser doesn\'t support offline persistence');
-            }
-        });
-}
-
-console.log('✅ Firebase initialized with optimized cache settings');
+console.log('✅ Firebase initialized successfully');
