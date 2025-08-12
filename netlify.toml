@@ -1,15 +1,32 @@
-# netlify.toml - Netlify 배포 설정
-
+# netlify.toml - Netlify 배포 설정 + AKOOL Functions
 [build]
-  publish = "/"
+  command = ""
+  publish = "."
+
+# 🆕 AKOOL Functions 설정
+[functions]
+  directory = "netlify/functions"
 
 # SPA 라우팅을 위한 리다이렉트
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  conditions = {Role = ["admin", "user"]}
   force = false
+
+# Admin 페이지 리다이렉트
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
+
+# 🆕 API Functions CORS 설정 (AKOOL 필수)
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
 
 # 보안 헤더
 [[headers]]
@@ -47,6 +64,12 @@
   for = "/*.css"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# 🆕 AKOOL JavaScript 파일 캐싱
+[[headers]]
+  for = "/akool/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
 
 # 아이콘 파일
 [[headers]]
