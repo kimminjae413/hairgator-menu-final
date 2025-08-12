@@ -1,5 +1,5 @@
 // akool/js/akool-integration.js
-// HAIRGATOR에 AKOOL Face Swap 기능 통합
+// HAIRGATOR에 AKOOL Face Swap 기능 통합 - 최종 수정 버전
 
 document.addEventListener('DOMContentLoaded', function() {
   const akoolAPI = new AkoolAPI();
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // AI 체험 모달 열기
   function openAIExperienceModal() {
     if (!currentStyleImage) {
-      alert('헤어스타일 이미지를 불러올 수 없습니다');
+      showAlert('헤어스타일 이미지를 불러올 수 없습니다', 'error');
       return;
     }
 
@@ -64,6 +64,51 @@ document.addEventListener('DOMContentLoaded', function() {
     requestAnimationFrame(() => {
       modal.classList.add('active');
     });
+  }
+
+  // 알림 표시 함수
+  function showAlert(message, type = 'info') {
+    // 기존 알림 제거
+    const existingAlert = document.querySelector('.ai-alert');
+    if (existingAlert) {
+      existingAlert.remove();
+    }
+
+    const alert = document.createElement('div');
+    alert.className = `ai-alert ai-alert-${type}`;
+    alert.textContent = message;
+    alert.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 10px;
+      color: white;
+      font-weight: 600;
+      z-index: 4000;
+      min-width: 300px;
+      text-align: center;
+      animation: slideInRight 0.3s ease;
+    `;
+
+    // 타입별 색상
+    const colors = {
+      'info': 'background: #667eea;',
+      'success': 'background: #28a745;',
+      'error': 'background: #dc3545;',
+      'warning': 'background: #ffc107; color: #000;'
+    };
+    
+    alert.style.cssText += colors[type] || colors.info;
+
+    document.body.appendChild(alert);
+
+    // 3초 후 자동 제거
+    setTimeout(() => {
+      if (alert.parentElement) {
+        alert.remove();
+      }
+    }, 3000);
   }
 
   // AI 체험 모달 생성
@@ -87,6 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="ai-upload-text">
                   <div class="ai-upload-title">얼굴 사진을 선택하세요</div>
                   <div class="ai-upload-desc">JPG, PNG 파일 (최대 10MB)</div>
+                  <div class="ai-upload-tips">💡 정면을 향한 선명한 얼굴 사진이 좋습니다</div>
                 </div>
               </div>
             </div>
@@ -110,16 +156,27 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="ai-progress-fill" id="aiProgressFill"></div>
             </div>
             <div class="ai-progress-text" id="aiProgressText">처리 중...</div>
+            <div class="ai-progress-details" id="aiProgressDetails">AI가 이미지를 분석하고 있습니다...</div>
           </div>
           
           <div class="ai-result-section" id="aiResultSection" style="display: none;">
             <div class="ai-result-image">
               <img id="aiResultImage" src="" alt="결과 이미지">
             </div>
+            <div class="ai-result-message" id="aiResultMessage">
+              🎉 헤어스타일이 성공적으로 적용되었습니다!
+            </div>
             <div class="ai-result-actions">
               <button class="btn ai-download-btn" id="aiDownloadBtn">💾 다운로드</button>
               <button class="btn ai-retry-btn" id="aiRetryBtn">🔄 다시 시도</button>
             </div>
+          </div>
+          
+          <div class="ai-error-section" id="aiErrorSection" style="display: none;">
+            <div class="ai-error-icon">⚠️</div>
+            <div class="ai-error-title" id="aiErrorTitle">처리 실패</div>
+            <div class="ai-error-message" id="aiErrorMessage">오류가 발생했습니다</div>
+            <button class="btn ai-retry-btn" id="aiErrorRetryBtn">🔄 다시 시도</button>
           </div>
         </div>
         
@@ -144,6 +201,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const styles = document.createElement('style');
     styles.id = 'ai-modal-styles';
     styles.textContent = `
+      @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+
       .ai-experience-modal {
         position: fixed;
         top: 0;
@@ -259,6 +321,13 @@ document.addEventListener('DOMContentLoaded', function() {
       .ai-upload-desc {
         font-size: 14px;
         color: #999;
+        margin-bottom: 8px;
+      }
+      
+      .ai-upload-tips {
+        font-size: 12px;
+        color: #667eea;
+        margin-top: 10px;
       }
       
       .ai-preview-section {
@@ -325,6 +394,13 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       .ai-progress-text {
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      
+      .ai-progress-details {
         color: #999;
         font-size: 14px;
       }
@@ -345,10 +421,41 @@ document.addEventListener('DOMContentLoaded', function() {
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       }
       
+      .ai-result-message {
+        color: #28a745;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 20px;
+      }
+      
       .ai-result-actions {
         display: flex;
         gap: 10px;
         justify-content: center;
+      }
+      
+      .ai-error-section {
+        text-align: center;
+        padding: 30px 20px;
+      }
+      
+      .ai-error-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+      }
+      
+      .ai-error-title {
+        color: #dc3545;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+      
+      .ai-error-message {
+        color: #999;
+        font-size: 14px;
+        margin-bottom: 20px;
+        line-height: 1.5;
       }
       
       .ai-modal-footer {
@@ -411,7 +518,8 @@ document.addEventListener('DOMContentLoaded', function() {
         color: #000;
       }
       
-      body.light-theme .ai-upload-title {
+      body.light-theme .ai-upload-title,
+      body.light-theme .ai-progress-text {
         color: #000;
       }
       
@@ -474,6 +582,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const processBtn = modal.querySelector('#aiProcessBtn');
     const downloadBtn = modal.querySelector('#aiDownloadBtn');
     const retryBtn = modal.querySelector('#aiRetryBtn');
+    const errorRetryBtn = modal.querySelector('#aiErrorRetryBtn');
 
     let selectedFile = null;
 
@@ -481,7 +590,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function closeModal() {
       modal.classList.remove('active');
       setTimeout(() => {
-        document.body.removeChild(modal);
+        if (modal.parentElement) {
+          document.body.removeChild(modal);
+        }
       }, 300);
     }
 
@@ -523,12 +634,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // 파일 처리
     function handleFileSelect(file) {
       if (!file.type.startsWith('image/')) {
-        alert('이미지 파일만 선택할 수 있습니다');
+        showAlert('이미지 파일만 선택할 수 있습니다', 'error');
         return;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        alert('파일 크기는 10MB 이하여야 합니다');
+        showAlert('파일 크기는 10MB 이하여야 합니다', 'error');
         return;
       }
 
@@ -552,6 +663,20 @@ document.addEventListener('DOMContentLoaded', function() {
       reader.readAsDataURL(file);
     }
 
+    // 초기 상태로 리셋
+    function resetToInitialState() {
+      modal.querySelector('.ai-modal-body').style.display = 'block';
+      modal.querySelector('.ai-modal-footer').style.display = 'block';
+      modal.querySelector('#aiProgressSection').style.display = 'none';
+      modal.querySelector('#aiResultSection').style.display = 'none';
+      modal.querySelector('#aiErrorSection').style.display = 'none';
+      modal.querySelector('#aiPreviewSection').style.display = 'none';
+      modal.querySelector('.ai-upload-section').style.display = 'block';
+      selectedFile = null;
+      processBtn.disabled = true;
+      fileInput.value = '';
+    }
+
     // AI 처리 시작
     processBtn.addEventListener('click', async () => {
       if (!selectedFile) return;
@@ -559,8 +684,11 @@ document.addEventListener('DOMContentLoaded', function() {
       const progressSection = modal.querySelector('#aiProgressSection');
       const progressFill = modal.querySelector('#aiProgressFill');
       const progressText = modal.querySelector('#aiProgressText');
+      const progressDetails = modal.querySelector('#aiProgressDetails');
       const resultSection = modal.querySelector('#aiResultSection');
+      const errorSection = modal.querySelector('#aiErrorSection');
       
+      // 진행 상태로 전환
       modal.querySelector('.ai-modal-body').style.display = 'none';
       modal.querySelector('.ai-modal-footer').style.display = 'none';
       progressSection.style.display = 'block';
@@ -571,58 +699,66 @@ document.addEventListener('DOMContentLoaded', function() {
           currentStyleImage,
           (progress, message) => {
             progressFill.style.width = progress + '%';
-            progressText.textContent = message;
+            progressText.textContent = `${progress}% 완료`;
+            progressDetails.textContent = message;
           }
         );
 
         if (result.success) {
+          // 성공 상태로 전환
           const resultImage = modal.querySelector('#aiResultImage');
+          const resultMessage = modal.querySelector('#aiResultMessage');
+          
           resultImage.src = result.resultUrl;
+          resultMessage.textContent = result.message || '🎉 헤어스타일이 성공적으로 적용되었습니다!';
           
           progressSection.style.display = 'none';
           resultSection.style.display = 'block';
 
+          // 다운로드 버튼 이벤트
           downloadBtn.onclick = () => {
-            const a = document.createElement('a');
-            a.href = result.resultUrl;
-            a.download = `hairgator_ai_${currentStyleName}_${Date.now()}.jpg`;
-            a.click();
-          };
-
-          retryBtn.onclick = () => {
-            resultSection.style.display = 'none';
-            modal.querySelector('.ai-modal-body').style.display = 'block';
-            modal.querySelector('.ai-modal-footer').style.display = 'block';
-            modal.querySelector('#aiPreviewSection').style.display = 'none';
-            modal.querySelector('.ai-upload-section').style.display = 'block';
-            selectedFile = null;
-            processBtn.disabled = true;
-            fileInput.value = '';
+            try {
+              const a = document.createElement('a');
+              a.href = result.resultUrl;
+              a.download = `hairgator_ai_${currentStyleName}_${Date.now()}.jpg`;
+              a.click();
+              showAlert('이미지 다운로드를 시작합니다', 'success');
+            } catch (error) {
+              console.error('다운로드 오류:', error);
+              showAlert('다운로드 중 오류가 발생했습니다', 'error');
+            }
           };
 
         } else {
-          progressText.textContent = result.error || '처리에 실패했습니다';
-          progressText.style.color = '#ff4444';
+          // 오류 상태로 전환
+          const errorTitle = modal.querySelector('#aiErrorTitle');
+          const errorMessage = modal.querySelector('#aiErrorMessage');
           
-          setTimeout(() => {
-            progressSection.style.display = 'none';
-            modal.querySelector('.ai-modal-body').style.display = 'block';
-            modal.querySelector('.ai-modal-footer').style.display = 'block';
-          }, 3000);
+          errorTitle.textContent = '처리 실패';
+          errorMessage.textContent = result.message || result.error || '알 수 없는 오류가 발생했습니다';
+          
+          progressSection.style.display = 'none';
+          errorSection.style.display = 'block';
         }
 
       } catch (error) {
-        console.error('❌ AI 처리 오류:', error);
-        progressText.textContent = '처리 중 오류가 발생했습니다';
-        progressText.style.color = '#ff4444';
+        console.error('❌ AI 처리 예외 오류:', error);
         
-        setTimeout(() => {
-          progressSection.style.display = 'none';
-          modal.querySelector('.ai-modal-body').style.display = 'block';
-          modal.querySelector('.ai-modal-footer').style.display = 'block';
-        }, 3000);
+        // 오류 상태로 전환
+        const errorTitle = modal.querySelector('#aiErrorTitle');
+        const errorMessage = modal.querySelector('#aiErrorMessage');
+        
+        errorTitle.textContent = '시스템 오류';
+        errorMessage.textContent = '네트워크 연결을 확인하고 다시 시도해주세요';
+        
+        progressSection.style.display = 'none';
+        errorSection.style.display = 'block';
       }
     });
+
+    // 다시 시도 버튼들
+    retryBtn.addEventListener('click', resetToInitialState);
+    errorRetryBtn.addEventListener('click', resetToInitialState);
   }
 
   console.log('✅ AKOOL Face Swap 통합 완료');
