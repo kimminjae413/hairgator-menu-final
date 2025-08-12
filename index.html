@@ -393,6 +393,7 @@
         .modal-actions {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .modal-btn {
@@ -404,6 +405,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            min-width: 120px;
         }
 
         .btn-register {
@@ -955,6 +957,11 @@
 
     <!-- Scripts -->
     <script src="js/firebase-config.js"></script>
+    
+    <!-- 🆕 AKOOL Face Swap Scripts -->
+    <script src="akool/js/akool-api.js"></script>
+    <script src="akool/js/akool-integration.js"></script>
+    
     <script>
 // Main Application Logic
 document.addEventListener('DOMContentLoaded', function() {
@@ -1429,6 +1436,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Show Style Detail Modal
     function showStyleDetail(code, name, gender, imageSrc, docId) {
+        console.log('🎨 스타일 모달 열기:', { code, name, gender, imageSrc, docId });
+        
         if (!styleModal) return;
         
         modalImage.src = imageSrc || '';
