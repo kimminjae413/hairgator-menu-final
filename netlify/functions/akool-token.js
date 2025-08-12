@@ -22,24 +22,10 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const CLIENT_ID = process.env.AKOOL_CLIENT_ID;
-    const CLIENT_SECRET = process.env.AKOOL_CLIENT_SECRET;
+    // 환경변수에서 API 키 가져오기 (우선순위: 환경변수 > 하드코딩)
+    const API_KEY = process.env.AKOOL_API_KEY || 'OzV4vUnCxCnhXt447x8oxQOcV3l0Jpqh';
 
-    if (!CLIENT_ID || !CLIENT_SECRET) {
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ 
-          error: '서버 설정 오류',
-          message: 'API 키가 설정되지 않았습니다'
-        })
-      };
-    }
-
-    const requestData = JSON.stringify({
-      clientId: CLIENT_ID,
-      clientSecret: CLIENT_SECRET
-    });
+    console.log('🔑 AKOOL 토큰 발급 시작...');
 
     const options = {
       hostname: 'openapi.akool.com',
@@ -47,8 +33,8 @@ exports.handler = async (event, context) => {
       path: '/api/open/v3/getToken',
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(requestData)
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
       }
     };
 
@@ -64,34 +50,41 @@ exports.handler = async (event, context) => {
           }
         });
       });
+      
       req.on('error', reject);
-      req.write(requestData);
       req.end();
     });
 
+    console.log('📡 AKOOL API 응답:', response.statusCode, response.data);
+
     if (response.statusCode === 200 && response.data.code === 1000) {
+      console.log('✅ 토큰 발급 성공');
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify({
           success: true,
-          token: response.data.token,
+          token: response.data.data.token,
+          expiresAt: response.data.data.expired_at || Date.now() + (3600 * 1000),
           message: '토큰 발급 성공'
         })
       };
     } else {
+      console.error('❌ 토큰 발급 실패:', response.data);
       return {
         statusCode: 400,
         headers,
         body: JSON.stringify({
           success: false,
           error: 'AKOOL API 오류',
-          message: response.data.message || '토큰 발급 실패'
+          message: response.data.msg || '토큰 발급 실패',
+          code: response.data.code
         })
       };
     }
 
   } catch (error) {
+    console.error('❌ 토큰 발급 서버 오류:', error);
     return {
       statusCode: 500,
       headers,
