@@ -1103,9 +1103,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // 🆕 전역으로 showStyleDetail 함수를 노출 (AKOOL 통합을 위해)
-    window.showStyleDetail = showStyleDetail;
-
     // Initialize
     init();
 
@@ -1538,6 +1535,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
     }
+
+    // 🆕 AKOOL 통합을 위해 전역으로 노출 (함수 정의 후 즉시 노출)
+    window.showStyleDetail = showStyleDetail;
 
     // Loading
     function showLoading(show) {
