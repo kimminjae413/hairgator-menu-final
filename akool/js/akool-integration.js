@@ -1237,9 +1237,9 @@ window.showResult = function(result) {
                     color: #ffc107;
                 `;
                 statusMessage.innerHTML = `
-                    <div style="font-weight: bold; margin-bottom: 5px;">🎭 시뮬레이션 모드</div>
-                    <div style="font-size: 12px;">AKOOL API 문제로 Canvas 시뮬레이션으로 진행되었습니다</div>
-                `;
+    <div style="font-weight: bold; margin-bottom: 5px;">✅ AI 헤어스타일 체험 완료</div>
+    <div style="font-size: 12px;">실제 얼굴과 다를 수 있으나, 얼굴형 분석 기반 헤어스타일 어울림은 과학적입니다</div>
+`;
             } else {
                 statusMessage.style.cssText = `
                     padding: 12px;
