@@ -2527,20 +2527,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 progressFill.style.width = '30%';
                 progressText.textContent = 'Face Swap 요청 중...';
                 
-                const faceSwapResponse = await fetch('/.netlify/functions/akool-faceswap', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        userImage: userImageDataUrl,
-                        targetImage: styleImageUrl,
-                        styleName: styleName,
-                        styleCode: styleCode
-                    })
-                });
-                
+               const faceSwapResponse = await fetch('/.netlify/functions/akool-faceswap', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+        // Authorization 헤더 제거!
+    },
+    body: JSON.stringify({
+        token: token,  // ✅ body에 토큰 추가!
+        userImage: userImageDataUrl,
+        targetImage: styleImageUrl,
+        styleName: styleName,
+        styleCode: styleCode
+    })
+});
                 const faceSwapResult = await faceSwapResponse.json();
                 console.log('🔍 Face Swap 응답:', faceSwapResult);
                 
@@ -2568,13 +2568,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     try {
                         const statusResponse = await fetch('/.netlify/functions/akool-status', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ jobId })
-                        });
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+        // Authorization 헤더 제거!
+    },
+    body: JSON.stringify({ 
+        token: token,  // ✅ body에 토큰 추가!
+        jobId: jobId 
+    })
+});
                         
                         const statusResult = await statusResponse.json();
                         console.log(`🔍 상태 확인 (${attempts}회):`, statusResult);
@@ -2776,3 +2779,4 @@ window.addEventListener('load', function() {
     </script>
 </body>
 </html>
+
