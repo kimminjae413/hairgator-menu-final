@@ -269,7 +269,7 @@ async function performFaceSwap(token, userImage, hairstyleImage, userLandmarks, 
         path: hairstyleImage,
         opts: validStyleLandmarks
       }],
-      face_enhance: 1,
+      face_enhance: 0,
       modifyImage: hairstyleImage
     });
 
