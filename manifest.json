@@ -1,13 +1,13 @@
 {
   "name": "HAIRGATOR Professional Menu",
   "short_name": "HAIRGATOR",
-  "description": "Professional Hair Style Menu System",
+  "description": "Professional Hair Style Menu System with AI",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
   "background_color": "#000000",
-  "theme_color": "#000000",
+  "theme_color": "#FF1493",
   "icons": [
     {
       "src": "/icons/icon-72.png",
