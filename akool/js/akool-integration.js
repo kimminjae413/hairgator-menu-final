@@ -1,11 +1,11 @@
 // ========== AKOOL Face Swap HAIRGATOR 최종 완성 버전 ==========
-// 콘솔 성공 버전 + 이전 모든 기능 통합 + 이미지 오차 문제 완전 해결
+// 콘솔 성공 버전 + 이전 모든 기능 통합 + 이미지 오차 문제 완전 해결 + 결과 표시 개선
 
 console.log('🎨 AKOOL Face Swap 최종 버전 로딩 중...');
 
 // 전역 변수
 window.akoolConfig = {
-    clientId: 'fYVSk4yOatzThxIV3LlDMrRUNbGGQF6g',
+    clientId: 'kdwRwzqnGf4zfAFvWCjFKQ==',  // ✅ 올바른 Client ID
     clientSecret: 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g',
     token: null,
     userImageData: null
@@ -275,7 +275,7 @@ window.openAkoolFaceSwapModal = function(styleData) {
                 background: #1a1a1a;
                 border: 2px solid #FF1493;
                 border-radius: 20px;
-                max-width: 600px;
+                max-width: 700px;
                 width: 100%;
                 max-height: 90vh;
                 overflow-y: auto;
@@ -395,28 +395,108 @@ window.openAkoolFaceSwapModal = function(styleData) {
                         </div>
                     </div>
                     
+                    <!-- ✨ 새로운 결과 표시 섹션 ✨ -->
                     <div id="resultSection" style="display: none;">
-                        <h4 style="color: #FF1493; margin-bottom: 15px;">✨ AI 체험 결과</h4>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <h4 style="color: #FF1493; margin-bottom: 20px; text-align: center;">✨ AI 체험 결과</h4>
+                        
+                        <!-- 이미지 그리드 -->
+                        <div style="
+                            display: grid;
+                            grid-template-columns: 1fr 1fr 1fr;
+                            gap: 15px;
+                            margin-bottom: 20px;
+                            padding: 20px;
+                            background: rgba(255, 20, 147, 0.05);
+                            border-radius: 15px;
+                            border: 1px solid rgba(255, 20, 147, 0.2);
+                        ">
+                            <!-- 사용자 이미지 -->
                             <div style="text-align: center;">
-                                <h5 style="color: #FF1493; margin-bottom: 10px;">원본</h5>
-                                <img id="originalImage" style="width: 100%; border-radius: 10px; border: 1px solid #333;">
+                                <div style="color: #FF1493; font-size: 12px; font-weight: bold; margin-bottom: 8px;">
+                                    👤 사용자 얼굴
+                                </div>
+                                <img id="originalUserImage" style="
+                                    width: 100px;
+                                    height: 100px;
+                                    object-fit: cover;
+                                    border-radius: 12px;
+                                    border: 2px solid rgba(255, 20, 147, 0.5);
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                                ">
                             </div>
+                            
+                            <!-- 헤어스타일 이미지 -->
                             <div style="text-align: center;">
-                                <h5 style="color: #FF1493; margin-bottom: 10px;">AI 결과</h5>
-                                <img id="resultImage" style="width: 100%; border-radius: 10px; border: 1px solid #333;">
+                                <div style="color: #FF1493; font-size: 12px; font-weight: bold; margin-bottom: 8px;">
+                                    💇 헤어스타일
+                                </div>
+                                <img id="originalStyleImage" style="
+                                    width: 100px;
+                                    height: 100px;
+                                    object-fit: cover;
+                                    border-radius: 12px;
+                                    border: 2px solid rgba(255, 20, 147, 0.5);
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                                ">
+                            </div>
+                            
+                            <!-- 결과 이미지 -->
+                            <div style="text-align: center;">
+                                <div style="color: #FF1493; font-size: 12px; font-weight: bold; margin-bottom: 8px;">
+                                    🎨 AI 결과
+                                </div>
+                                <img id="finalResultImage" style="
+                                    width: 100px;
+                                    height: 100px;
+                                    object-fit: cover;
+                                    border-radius: 12px;
+                                    border: 2px solid #FF1493;
+                                    box-shadow: 0 4px 12px rgba(255, 20, 147, 0.4);
+                                ">
                             </div>
                         </div>
-                        <div style="text-align: center;">
+                        
+                        <!-- 큰 결과 이미지 -->
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <div style="color: #FF1493; font-size: 16px; font-weight: bold; margin-bottom: 10px;">
+                                🎉 최종 결과
+                            </div>
+                            <img id="largeResultImage" style="
+                                max-width: 300px;
+                                max-height: 300px;
+                                object-fit: cover;
+                                border-radius: 15px;
+                                border: 3px solid #FF1493;
+                                box-shadow: 0 8px 24px rgba(255, 20, 147, 0.3);
+                                margin: 0 auto;
+                                display: block;
+                            ">
+                        </div>
+                        
+                        <!-- 상태 메시지 -->
+                        <div id="statusMessage" style="
+                            padding: 12px;
+                            border-radius: 10px;
+                            text-align: center;
+                            margin-bottom: 20px;
+                            font-size: 14px;
+                        "></div>
+                        
+                        <!-- 액션 버튼들 -->
+                        <div style="
+                            display: flex;
+                            gap: 10px;
+                            justify-content: center;
+                        ">
                             <button onclick="window.downloadResult()" style="
                                 background: #28a745;
                                 color: white;
                                 border: none;
                                 padding: 12px 24px;
                                 border-radius: 10px;
-                                margin-right: 10px;
                                 cursor: pointer;
                                 font-weight: 600;
+                                transition: all 0.3s ease;
                             ">💾 결과 다운로드</button>
                             <button onclick="window.shareResult()" style="
                                 background: #007bff;
@@ -426,7 +506,18 @@ window.openAkoolFaceSwapModal = function(styleData) {
                                 border-radius: 10px;
                                 cursor: pointer;
                                 font-weight: 600;
+                                transition: all 0.3s ease;
                             ">📤 공유하기</button>
+                            <button onclick="window.resetAkoolModal()" style="
+                                background: #ff9800;
+                                color: white;
+                                border: none;
+                                padding: 12px 24px;
+                                border-radius: 10px;
+                                cursor: pointer;
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                            ">🔄 다시 시도</button>
                         </div>
                     </div>
                     
@@ -637,7 +728,9 @@ window.startAkoolProcess = async function(styleImageUrl) {
                 window.showResult({
                     success: true,
                     url: finalResult.resultUrl,
-                    method: 'akool'
+                    method: 'akool',
+                    userImageUrl: userImageUrl,
+                    styleImageUrl: finalStyleImageUrl
                 });
             }, 1000);
         } else {
@@ -665,12 +758,120 @@ window.startAkoolProcess = async function(styleImageUrl) {
                 success: true,
                 url: canvasResult.url,
                 method: 'canvas',
-                isSimulation: true
+                isSimulation: true,
+                userImageUrl: window.akoolConfig.userImageData,
+                styleImageUrl: styleImageUrl
             });
         }, 1000);
         
     } finally {
         faceSwapInProgress = false;
+    }
+};
+
+// ========== ✨ 새로운 결과 표시 함수 ✨ ==========
+window.showResult = function(result) {
+    console.log('🎨 결과 표시 시작:', result);
+    
+    // UI 전환
+    document.getElementById('processingSection').style.display = 'none';
+    document.getElementById('resultSection').style.display = 'block';
+    
+    // 시뮬레이션 여부 확인
+    const isSimulation = result.isSimulation || result.method === 'canvas' || 
+                        (result.token && result.token.startsWith('SIMULATION_TOKEN'));
+    
+    try {
+        // 이미지들 설정
+        const originalUserImage = document.getElementById('originalUserImage');
+        const originalStyleImage = document.getElementById('originalStyleImage');
+        const finalResultImage = document.getElementById('finalResultImage');
+        const largeResultImage = document.getElementById('largeResultImage');
+        
+        // 사용자 이미지 설정
+        if (originalUserImage) {
+            originalUserImage.src = result.userImageUrl || window.akoolConfig.userImageData || '/images/default-user.jpg';
+            originalUserImage.onerror = function() {
+                this.src = '/images/default-user.jpg';
+            };
+        }
+        
+        // 스타일 이미지 설정
+        if (originalStyleImage) {
+            originalStyleImage.src = result.styleImageUrl || currentStyleImage || '/images/default-style.jpg';
+            originalStyleImage.onerror = function() {
+                this.src = '/images/default-style.jpg';
+            };
+        }
+        
+        // 결과 이미지 설정
+        const resultImageUrl = result.url || result.resultUrl;
+        if (finalResultImage && resultImageUrl) {
+            finalResultImage.src = resultImageUrl;
+            finalResultImage.onerror = function() {
+                this.src = '/images/default-result.jpg';
+            };
+        }
+        
+        if (largeResultImage && resultImageUrl) {
+            largeResultImage.src = resultImageUrl;
+            largeResultImage.onerror = function() {
+                this.src = '/images/default-result.jpg';
+            };
+        }
+        
+        // 상태 메시지 설정
+        const statusMessage = document.getElementById('statusMessage');
+        if (statusMessage) {
+            if (isSimulation) {
+                statusMessage.style.cssText = `
+                    padding: 12px;
+                    border-radius: 10px;
+                    text-align: center;
+                    margin-bottom: 20px;
+                    font-size: 14px;
+                    background: rgba(255, 193, 7, 0.1);
+                    border: 1px solid #ffc107;
+                    color: #ffc107;
+                `;
+                statusMessage.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 5px;">🎭 시뮬레이션 모드</div>
+                    <div style="font-size: 12px;">AKOOL API 문제로 Canvas 시뮬레이션으로 진행되었습니다</div>
+                `;
+            } else {
+                statusMessage.style.cssText = `
+                    padding: 12px;
+                    border-radius: 10px;
+                    text-align: center;
+                    margin-bottom: 20px;
+                    font-size: 14px;
+                    background: rgba(76, 175, 80, 0.1);
+                    border: 1px solid #4caf50;
+                    color: #4caf50;
+                `;
+                statusMessage.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 5px;">✅ 실제 AI 처리 완료</div>
+                    <div style="font-size: 12px;">AKOOL Face Swap AI로 생성된 결과입니다</div>
+                `;
+            }
+        }
+        
+        // 애니메이션 효과
+        const resultSection = document.getElementById('resultSection');
+        if (resultSection) {
+            resultSection.style.opacity = '0';
+            resultSection.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                resultSection.style.transition = 'all 0.5s ease';
+                resultSection.style.opacity = '1';
+                resultSection.style.transform = 'translateY(0)';
+            }, 100);
+        }
+        
+        console.log('✅ 결과 표시 완료:', result.method);
+        
+    } catch (error) {
+        console.error('❌ 결과 표시 오류:', error);
     }
 };
 
@@ -1149,34 +1350,6 @@ window.updateProgress = function(percent, text, details = '') {
     if (progressDetails) progressDetails.textContent = details;
 };
 
-window.showResult = function(result) {
-    document.getElementById('processingSection').style.display = 'none';
-    document.getElementById('resultSection').style.display = 'block';
-    
-    document.getElementById('originalImage').src = window.akoolConfig.userImageData;
-    document.getElementById('resultImage').src = result.url;
-    
-    // 시뮬레이션인 경우 표시
-    if (result.isSimulation) {
-        const resultSection = document.getElementById('resultSection');
-        const simulationNotice = document.createElement('div');
-        simulationNotice.style.cssText = `
-            background: rgba(255, 193, 7, 0.1);
-            border: 1px solid #ffc107;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 15px;
-            color: #ffc107;
-            text-align: center;
-            font-size: 12px;
-        `;
-        simulationNotice.textContent = '⚠️ AKOOL API 처리 실패로 시뮬레이션 결과를 표시합니다';
-        resultSection.insertBefore(simulationNotice, resultSection.firstChild.nextSibling);
-    }
-    
-    console.log('✅ 결과 표시 완료:', result.method);
-};
-
 window.removeImage = function() {
     document.getElementById('uploadSection').style.display = 'block';
     document.getElementById('imagePreview').style.display = 'none';
@@ -1197,6 +1370,7 @@ window.closeAkoolModal = function() {
 
 window.resetAkoolModal = function() {
     document.getElementById('errorSection').style.display = 'none';
+    document.getElementById('resultSection').style.display = 'none';
     document.getElementById('uploadSection').style.display = 'block';
     document.getElementById('startProcessBtn').style.display = 'block';
     window.removeImage();
@@ -1204,7 +1378,7 @@ window.resetAkoolModal = function() {
 };
 
 window.downloadResult = function() {
-    const resultImg = document.getElementById('resultImage');
+    const resultImg = document.getElementById('largeResultImage');
     if (resultImg && resultImg.src) {
         const link = document.createElement('a');
         link.download = `hairgator_ai_${currentStyleName || 'result'}_${Date.now()}.jpg`;
@@ -1216,7 +1390,7 @@ window.downloadResult = function() {
 };
 
 window.shareResult = function() {
-    const resultImg = document.getElementById('resultImage');
+    const resultImg = document.getElementById('largeResultImage');
     if (resultImg && resultImg.src && navigator.share) {
         // Web Share API 사용 (모바일)
         fetch(resultImg.src)
@@ -1293,15 +1467,17 @@ if (!window.advancedCanvasSimulation) {
     window.advancedCanvasSimulation = generateCanvasSimulation;
 }
 
-// 디버그 정보 출력
+// ========== 10. 초기화 완료 메시지 ==========
 console.log(`
 🎨 AKOOL Face Swap 최종 완성 버전 로드 완료!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📋 주요 기능:
+✅ 올바른 Client ID (kdwRwzqnGf4zfAFvWCjFKQ==)
 ✅ Netlify Functions 토큰 발급
 ✅ 얼굴형 핑크색 AI 체험 버튼
 ✅ 실제 AKOOL API 워크플로우
+✅ 완전한 결과 이미지 표시 시스템
 ✅ Canvas 시뮬레이션 폴백
 ✅ Firebase Storage 연동
 ✅ 올바른 API 엔드포인트 사용
@@ -1320,6 +1496,13 @@ console.log(`
 ✅ Face Swap: /faceswap/highquality/specifyimage
 ✅ Result Check: /faceswap/result/listbyids
 ✅ Token: Netlify Functions 사용
+
+✨ 새로운 결과 표시 시스템:
+✅ 사용자 이미지, 헤어스타일, 결과 이미지 3개 표시
+✅ 큰 결과 이미지로 별도 표시
+✅ 시뮬레이션/실제 AI 상태 구분 표시
+✅ 다운로드, 공유, 다시시도 버튼
+✅ 애니메이션 효과 및 에러 처리
 
 🚀 준비 완료! 헤어스타일 모달에서 AI 체험 버튼을 사용하세요!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
