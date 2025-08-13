@@ -36,8 +36,9 @@ exports.handler = async (event, context) => {
     console.log('📅 요청 시간:', new Date().toISOString());
     
     // 🔑 환경변수 확인 (강화된 체크)
-    const CLIENT_ID = process.env.AKOOL_CLIENT_ID;
-    const CLIENT_SECRET = process.env.AKOOL_CLIENT_SECRET;
+    // 수정 (실제 값 사용)
+const CLIENT_ID = 'fYVSk4yOatzThxIV3LlDMrRUNbGGQF6g';
+const CLIENT_SECRET = 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g';
     
     console.log('🔍 환경변수 체크:');
     console.log('  - AKOOL_CLIENT_ID 존재:', !!CLIENT_ID);
