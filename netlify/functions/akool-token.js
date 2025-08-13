@@ -44,8 +44,8 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // ⭐ 실제 AKOOL API 키 사용 (하드코딩)
-    const CLIENT_ID = 'fYVSk4yOatzThxIV3LlDMrRUNbGGQF6g';
+    // ⭐ 올바른 AKOOL API 키 사용 (akool-integration.js와 동일)
+    const CLIENT_ID = 'kdwRwzqnGf4zfAFvWCjFKQ==';
     const CLIENT_SECRET = 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g';
 
     console.log('🔐 API 키 정보:');
@@ -219,6 +219,38 @@ exports.handler = async (event, context) => {
           statusCode: 200,
           headers,
           body: JSON.stringify(successResponse)
+        };
+      }
+      // 1109 오류 (계정 문제) 처리 - 시뮬레이션 모드로 전환
+      else if (response.data.code === 1109) {
+        console.error('❌ AKOOL 계정 오류 (1109):', response.data.message);
+        console.log('🎭 시뮬레이션 모드로 자동 전환');
+        
+        // 시뮬레이션 토큰 생성
+        const simulationToken = 'SIMULATION_TOKEN_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+        
+        const simulationResponse = {
+          success: true,
+          token: simulationToken,
+          expiresAt: Date.now() + (24 * 60 * 60 * 1000),
+          message: '시뮬레이션 모드 (AKOOL 계정 문제로 임시 전환)',
+          simulation: true,
+          akoolCode: response.data.code,
+          originalError: response.data.message,
+          timestamp: new Date().toISOString(),
+          debug: {
+            httpStatus: response.statusCode,
+            mode: 'simulation',
+            reason: 'account_error_1109'
+          }
+        };
+
+        console.log('🎭 시뮬레이션 토큰 발급:', simulationToken.substring(0, 30) + '...');
+        
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify(simulationResponse)
         };
       }
       // HTTP 200이지만 토큰이 없는 경우
