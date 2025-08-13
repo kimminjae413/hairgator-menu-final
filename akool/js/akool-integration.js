@@ -5,7 +5,7 @@ console.log('🎨 AKOOL Face Swap 최종 버전 로딩 중...');
 
 // 전역 변수
 window.akoolConfig = {
-    clientId: 'kdwRwzqnGf4zfAFvWCjFKQ==',
+    clientId: 'fYVSk4yOatzThxIV3LlDMrRUNbGGQF6g',
     clientSecret: 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g',
     token: null,
     userImageData: null
@@ -66,7 +66,7 @@ window.activateAkoolNow = async function() {
     
     console.log('✅ 인증 정보 저장 완료');
     
-    // 토큰 발급
+    // 토큰 발급 (Netlify Functions 사용)
     const token = await window.getAkoolTokenNow();
     if (token) {
         // UI 버튼 추가 시스템 활성화
@@ -77,24 +77,20 @@ window.activateAkoolNow = async function() {
     return token;
 };
 
-// ========== 2. 토큰 발급 ==========
+// ========== 2. 토큰 발급 (Netlify Functions 사용) ==========
 window.getAkoolTokenNow = async function() {
     try {
-        console.log('🔑 AKOOL 토큰 발급 중...');
+        console.log('🔑 AKOOL 토큰 발급 중... (Netlify Functions 사용)');
         
-        const response = await fetch('https://openapi.akool.com/api/open/v3/getToken', {
+        const response = await fetch('/.netlify/functions/akool-token', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                clientId: window.akoolConfig.clientId,
-                clientSecret: window.akoolConfig.clientSecret
-            })
+            headers: { 'Content-Type': 'application/json' }
         });
         
         const result = await response.json();
         console.log('📡 AKOOL API 응답:', result);
         
-        if (result.code === 1000 && result.token) {
+        if (result.success && result.token) {
             window.akoolConfig.token = result.token;
             localStorage.setItem('akool_token', result.token);
             localStorage.setItem('akool_token_issued', Date.now());
@@ -104,7 +100,7 @@ window.getAkoolTokenNow = async function() {
             
             return result.token;
         } else {
-            throw new Error(`토큰 발급 실패: ${result.message || result.code}`);
+            throw new Error(`토큰 발급 실패: ${result.error || result.message}`);
         }
     } catch (error) {
         console.error('❌ 토큰 발급 실패:', error);
@@ -654,15 +650,15 @@ window.startAkoolProcess = async function(styleImageUrl) {
         // Canvas 시뮬레이션으로 폴백
         console.log('📝 Canvas 시뮬레이션으로 폴백...');
         
-        window.updateProgress(50, '시뮬레이션 모드로 전환...', 'AKOOL 실패, Canvas 시뮬레이션 사용');
+        updateProgress(50, '시뮬레이션 모드로 전환...', 'AKOOL 실패, Canvas 시뮬레이션 사용');
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        window.updateProgress(80, 'Canvas 합성 중...', '시뮬레이션 이미지 생성');
+        updateProgress(80, 'Canvas 합성 중...', '시뮬레이션 이미지 생성');
         await new Promise(resolve => setTimeout(resolve, 3000));
         
         const canvasResult = await generateCanvasSimulation(window.akoolConfig.userImageData, styleImageUrl);
         
-        window.updateProgress(100, '시뮬레이션 완료!', 'Canvas 시뮬레이션 결과');
+        updateProgress(100, '시뮬레이션 완료!', 'Canvas 시뮬레이션 결과');
         
         setTimeout(() => {
             window.showResult({
@@ -801,7 +797,7 @@ async function compressImage(blob, quality = 0.8) {
     });
 }
 
-// AKOOL 얼굴 감지 (개선된 버전)
+// AKOOL 얼굴 감지 (올바른 URL 사용)
 async function detectFaceWithAkool(imageUrl, token, type = 'unknown') {
     try {
         console.log(`🔍 AKOOL ${type} 얼굴 감지:`, imageUrl);
@@ -811,6 +807,7 @@ async function detectFaceWithAkool(imageUrl, token, type = 'unknown') {
             throw new Error('유효하지 않은 이미지 URL입니다');
         }
         
+        // ⭐ 올바른 Face Detection URL 사용
         const response = await fetch('https://sg3.akool.com/detect', {
             method: 'POST',
             headers: {
@@ -819,10 +816,10 @@ async function detectFaceWithAkool(imageUrl, token, type = 'unknown') {
                 'User-Agent': 'HAIRGATOR/1.0'
             },
             body: JSON.stringify({
-                single_face: true,
+                single_face: false,                // 공식 문서 권장값
                 image_url: imageUrl,
-                face_quality_threshold: 0.5,  // 얼굴 품질 임계값 추가
-                min_face_size: 50              // 최소 얼굴 크기 설정
+                face_quality_threshold: 0.5,
+                min_face_size: 50
             })
         });
         
@@ -833,27 +830,23 @@ async function detectFaceWithAkool(imageUrl, token, type = 'unknown') {
         const data = await response.json();
         console.log(`Face detection ${type} response:`, data);
         
-        if (data.code === 1000 && data.data && data.data.length > 0) {
-            const faceData = data.data[0];
-            
-            // 얼굴 데이터 유효성 검사
-            if (!faceData.crop_image_url || !faceData.landmarks_str) {
-                throw new Error('얼굴 데이터가 불완전합니다');
-            }
+        // ⭐ error_code === 0이 성공 조건
+        if (data.error_code === 0 && data.landmarks_str && data.landmarks_str.length > 0) {
+            const landmarks = data.landmarks_str[0]; // 첫 번째 얼굴의 landmarks_str 사용
             
             console.log(`✅ ${type} 얼굴 감지 성공:`, {
-                cropUrl: faceData.crop_image_url,
-                landmarksLength: faceData.landmarks_str?.length || 0,
-                confidence: faceData.confidence || 'N/A'
+                landmarks: landmarks,
+                landmarksArray: data.landmarks?.[0],
+                region: data.region?.[0]
             });
             
             return {
                 success: true,
                 data: {
-                    cropUrl: faceData.crop_image_url,
-                    landmarks: faceData.landmarks_str,
-                    boundingBox: faceData.bounding_box,
-                    confidence: faceData.confidence || 1.0,
+                    cropUrl: imageUrl, // crop_image_url 대신 원본 URL 사용
+                    landmarks: landmarks, // landmarks_str 그대로 사용
+                    boundingBox: data.region?.[0],
+                    confidence: 1.0,
                     originalUrl: imageUrl
                 }
             };
@@ -861,8 +854,8 @@ async function detectFaceWithAkool(imageUrl, token, type = 'unknown') {
             console.error(`❌ ${type} 얼굴 감지 실패:`, data);
             return {
                 success: false,
-                error: data.msg || '얼굴을 감지할 수 없습니다',
-                code: data.code,
+                error: data.error_msg || '얼굴을 감지할 수 없습니다',
+                code: data.error_code,
                 details: `${type} 이미지에서 명확한 얼굴을 찾을 수 없습니다. 정면을 보고 있는 선명한 사진을 사용해주세요.`
             };
         }
@@ -877,7 +870,7 @@ async function detectFaceWithAkool(imageUrl, token, type = 'unknown') {
     }
 }
 
-// AKOOL Face Swap 생성 (개선된 버전)
+// AKOOL Face Swap 생성 (올바른 엔드포인트 사용)
 async function createFaceSwapWithAkool(userFaceData, styleFaceData, token) {
     try {
         console.log('🔄 AKOOL Face Swap 생성...');
@@ -895,28 +888,25 @@ async function createFaceSwapWithAkool(userFaceData, styleFaceData, token) {
         const payload = {
             sourceImage: [{
                 path: userFaceData.cropUrl,    // 바꿀 얼굴 (사용자)
-                opts: userFaceData.landmarks
+                opts: userFaceData.landmarks   // landmarks_str 그대로 사용
             }],
             targetImage: [{
                 path: styleFaceData.cropUrl,   // 대상 이미지 (헤어스타일)  
-                opts: styleFaceData.landmarks
+                opts: styleFaceData.landmarks  // landmarks_str 그대로 사용
             }],
             face_enhance: 1,
-            hd: true,                          // 고해상도 옵션
-            auto_rotate: false,                // 자동 회전 비활성화
-            blend_ratio: 0.85                  // 블렌딩 비율 최적화
+            modifyImage: styleFaceData.cropUrl // 수정할 원본 이미지
         };
         
-        console.log('⭐ 최적화된 Face Swap 요청 데이터:', {
+        console.log('⭐ Face Swap 요청 데이터:', {
             sourceImageUrl: userFaceData.cropUrl,
             targetImageUrl: styleFaceData.cropUrl,
-            userLandmarksLength: userFaceData.landmarks?.length || 0,
-            styleLandmarksLength: styleFaceData.landmarks?.length || 0,
-            userConfidence: userFaceData.confidence || 'N/A',
-            styleConfidence: styleFaceData.confidence || 'N/A'
+            userLandmarks: userFaceData.landmarks,
+            styleLandmarks: styleFaceData.landmarks
         });
         
-        const response = await fetch('https://openapi.akool.com/api/open/v3/faceswap/highquality/specifyimage' {
+        // ⭐ 올바른 Face Swap 엔드포인트 사용
+        const response = await fetch('https://openapi.akool.com/api/open/v3/faceswap/highquality/specifyimage', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -961,7 +951,7 @@ async function createFaceSwapWithAkool(userFaceData, styleFaceData, token) {
     }
 }
 
-// Face Swap 결과 대기
+// Face Swap 결과 대기 (올바른 엔드포인트 사용)
 async function waitForFaceSwapResult(taskId, token, progressCallback) {
     console.log('⏰ Face Swap 결과 대기:', taskId);
     
@@ -984,7 +974,8 @@ async function waitForFaceSwapResult(taskId, token, progressCallback) {
             }
             
             try {
-                const response = await fetch(`https://openapi.akool.com/api/open/v3/faceswap/highquality/${taskId}`, {
+                // ⭐ 올바른 결과 확인 엔드포인트 사용
+                const response = await fetch(`https://openapi.akool.com/api/open/v3/faceswap/result/listbyids?_ids=${taskId}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -995,40 +986,79 @@ async function waitForFaceSwapResult(taskId, token, progressCallback) {
                 const data = await response.json();
                 console.log('Status check response:', data);
                 
-                if (data.status === 'completed' && data.result_url) {
-                    console.log('🎉 Face Swap 완료!');
-                    resolve({
-                        success: true,
-                        resultUrl: data.result_url
+                if (data.code === 1000 && data.data?.result?.[0]) {
+                    const faceswapResult = data.data.result[0];
+                    const status = faceswapResult.faceswap_status;
+                    
+                    console.log('📋 현재 상태:', {
+                        status: status,
+                        statusText: getStatusText(status),
+                        url: faceswapResult.url
                     });
-                } else if (data.status === 'failed') {
-                    resolve({
-                        success: false,
-                        error: '처리 중 오류가 발생했습니다'
-                    });
-                } else {
-                    // 계속 진행 중
+                    
+                    // ⭐ 상태별 처리 (공식 문서 기준)
+                    switch (status) {
+                        case 1: // In Queue
+                            console.log('📝 대기 중...');
+                            break;
+                        case 2: // Processing  
+                            console.log('⚙️ 처리 중...');
+                            break;
+                        case 3: // Success
+                            console.log('🎉 완료!');
+                            resolve({
+                                success: true,
+                                resultUrl: faceswapResult.url,
+                                taskId: taskId,
+                                processingTime: Date.now() - startTime
+                            });
+                            return;
+                        case 4: // Failed
+                            console.log('❌ 실패!');
+                            resolve({
+                                success: false,
+                                error: '처리 중 오류가 발생했습니다',
+                                taskId: taskId
+                            });
+                            return;
+                    }
+                    
+                    // 계속 대기
                     const currentProgress = Math.min(95, lastProgress + 1);
                     lastProgress = currentProgress;
                     
                     if (progressCallback) {
-                        progressCallback(currentProgress, 'AI 처리 중...', `상태: ${data.status}`);
+                        progressCallback(currentProgress, 'AI 처리 중...', `상태: ${getStatusText(status)}`);
                     }
                     
                     setTimeout(checkResult, pollInterval);
+                } else {
+                    throw new Error('결과 조회 실패');
                 }
                 
             } catch (error) {
                 console.error('❌ 상태 확인 오류:', error);
                 resolve({
                     success: false,
-                    error: '상태 확인 실패: ' + error.message
+                    error: '상태 확인 실패: ' + error.message,
+                    taskId: taskId
                 });
             }
         };
         
         checkResult();
     });
+}
+
+// 상태 텍스트 변환
+function getStatusText(status) {
+    const statusMap = {
+        1: 'In Queue',
+        2: 'Processing', 
+        3: 'Success',
+        4: 'Failed'
+    };
+    return statusMap[status] || 'Unknown';
 }
 
 // Canvas 시뮬레이션
@@ -1269,27 +1299,27 @@ console.log(`
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📋 주요 기능:
-✅ 자동 토큰 발급 및 갱신
+✅ Netlify Functions 토큰 발급
 ✅ 얼굴형 핑크색 AI 체험 버튼
 ✅ 실제 AKOOL API 워크플로우
 ✅ Canvas 시뮬레이션 폴백
 ✅ Firebase Storage 연동
-✅ 이미지 오차 문제 완전 해결
+✅ 올바른 API 엔드포인트 사용
 ✅ 완전한 에러 처리
 ✅ 진행률 표시 및 결과 공유
 
-🎯 API 워크플로우:
-1. 토큰 발급 → 2. 이미지 업로드 & 압축 → 3. 얼굴 감지 (품질 검증)
-→ 4. Face Swap (최적화된 파라미터) → 5. 결과 확인
+🎯 올바른 API 워크플로우:
+1. Netlify Functions 토큰 발급
+2. 이미지 업로드 & 압축 → Firebase Storage
+3. 얼굴 감지 → sg3.akool.com/detect
+4. Face Swap → /v3/faceswap/highquality/specifyimage
+5. 결과 확인 → /v3/faceswap/result/listbyids
 
-🔧 이미지 오차 해결:
-✅ 자동 압축 (2MB 이상)
-✅ 최대 크기 제한 (1024x1024)
-✅ 얼굴 품질 임계값 (0.5)
-✅ 최소 얼굴 크기 (50px)
-✅ 고해상도 출력 (hd: true)
-✅ 최적 블렌딩 비율 (0.85)
-✅ 헤어스타일 얼굴 감지 실패 대체 처리
+🔧 수정된 엔드포인트들:
+✅ Face Detection: sg3.akool.com/detect
+✅ Face Swap: /faceswap/highquality/specifyimage
+✅ Result Check: /faceswap/result/listbyids
+✅ Token: Netlify Functions 사용
 
 🚀 준비 완료! 헤어스타일 모달에서 AI 체험 버튼을 사용하세요!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
