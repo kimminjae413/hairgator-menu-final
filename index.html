@@ -1490,19 +1490,26 @@ document.addEventListener('DOMContentLoaded', function() {
         setupModalButtonEvents(code, name, docId, gender);
     }
 
-    // ✅ AI 버튼 이벤트 수정 함수 (기존 AKOOL 버튼 활용!)
+    // ✅ AI 버튼 이벤트 수정 함수 (AKOOL 버튼은 유지하고 이벤트만 교체!)
     function ensureAIButton() {
-        // 기존 AKOOL이 생성한 AI 버튼을 찾아서 이벤트만 수정
-        setTimeout(() => {
+        // AKOOL이 생성한 AI 버튼을 기다린 후 이벤트만 교체
+        let attempts = 0;
+        const maxAttempts = 20; // 4초간 시도
+        
+        const findAndFixButton = () => {
+            attempts++;
             const existingAIBtn = document.querySelector('#akoolAIBtn');
+            
             if (existingAIBtn) {
-                console.log('🔧 기존 AKOOL AI 버튼 발견, 이벤트 수정 중...');
+                console.log('🔧 AKOOL AI 버튼 발견, 이벤트 교체 중...');
                 
-                // 기존 이벤트 제거하고 새 이벤트 연결
+                // 기존 onclick 이벤트를 새로운 올바른 이벤트로 교체
+                const originalOnClick = existingAIBtn.onclick;
+                
                 existingAIBtn.onclick = function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('🎨 AKOOL Face Swap 모달 열기...');
+                    console.log('🎨 실제 AKOOL Face Swap 모달 열기...');
                     
                     if (currentStyleData && typeof window.openAkoolFaceSwapModal === 'function') {
                         // ✅ 실제 AKOOL 모달 열기!
@@ -1513,15 +1520,28 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                     } else {
                         console.error('❌ AKOOL 함수가 없습니다!');
-                        alert('AI 기능을 로드하는 중입니다. 잠시 후 다시 시도해주세요.');
+                        // 폴백: 원래 이벤트 실행
+                        if (typeof originalOnClick === 'function') {
+                            originalOnClick.call(this, e);
+                        }
                     }
                 };
                 
-                console.log('✅ AKOOL AI 버튼 이벤트 수정 완료!');
+                console.log('✅ AKOOL AI 버튼 이벤트 교체 완료!');
+                return true;
+            } else if (attempts < maxAttempts) {
+                // 아직 버튼이 생성되지 않았으면 다시 시도
+                setTimeout(findAndFixButton, 200);
+                console.log(`⏳ AKOOL AI 버튼 대기 중... (${attempts}/${maxAttempts})`);
+                return false;
             } else {
-                console.log('⏳ AKOOL AI 버튼 아직 생성되지 않음, 재시도...');
+                console.error('❌ AKOOL AI 버튼을 찾을 수 없습니다.');
+                return false;
             }
-        }, 200);
+        };
+        
+        // 즉시 시도
+        findAndFixButton();
     }
 
     // 모달 버튼 이벤트 설정 - 기존과 동일
