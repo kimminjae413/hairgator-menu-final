@@ -2531,10 +2531,10 @@ document.addEventListener('DOMContentLoaded', function() {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json'
-        // Authorization 헤더 제거!
     },
     body: JSON.stringify({
-        token: token,  // ✅ body에 토큰 추가!
+        stage: 'faceswap',  // ✅ 처리 단계 추가!
+        token: token,
         userImage: userImageDataUrl,
         targetImage: styleImageUrl,
         styleName: styleName,
@@ -2779,4 +2779,5 @@ window.addEventListener('load', function() {
     </script>
 </body>
 </html>
+
 
