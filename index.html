@@ -1506,15 +1506,19 @@ document.addEventListener('DOMContentLoaded', function() {
         aiBtn.innerHTML = 'AI 체험';
         aiBtn.title = '✨ AI로 헤어스타일 미리보기';
         
-        // ✅ 클릭 이벤트 - 실제 AKOOL 호출!
+        // ✅ 클릭 이벤트 - 실제 AKOOL 모달 열기!
         aiBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('🎨 AKOOL Face Swap 처리 시작...');
+            console.log('🎨 AKOOL Face Swap 모달 열기...');
             
-            if (currentStyleData && typeof window.startAkoolProcess === 'function') {
-                // ✅ 실제 AKOOL 함수 호출!
-                window.startAkoolProcess(currentStyleData.imageSrc);
+            if (currentStyleData && typeof window.openAkoolFaceSwapModal === 'function') {
+                // ✅ 실제 AKOOL 모달 열기!
+                window.openAkoolFaceSwapModal({
+                    imageUrl: currentStyleData.imageSrc,
+                    styleCode: currentStyleData.code,
+                    styleName: currentStyleData.name
+                });
             } else {
                 console.error('❌ AKOOL 함수가 없습니다!');
                 alert('AI 기능을 로드하는 중입니다. 잠시 후 다시 시도해주세요.');
