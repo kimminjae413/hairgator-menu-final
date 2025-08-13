@@ -1,81 +1,81 @@
-// netlify/functions/akool-token.js - 완전 개선 버전
+// netlify/functions/akool-token.js - 최종 완벽 버전
+// 실제 AKOOL API 키 적용 + 완전한 에러 처리
+
 const https = require('https');
 
 exports.handler = async (event, context) => {
+  console.log('🚀 AKOOL 토큰 발급 함수 시작...');
+  console.log('📅 요청 시간:', new Date().toISOString());
+  console.log('🌐 요청 메서드:', event.httpMethod);
+  console.log('📍 요청 경로:', event.path);
+
+  // CORS 헤더 설정
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
+    'Access-Control-Max-Age': '86400',
     'Content-Type': 'application/json'
   };
 
-  // CORS 프리플라이트 처리
+  // CORS 프리플라이트 요청 처리
   if (event.httpMethod === 'OPTIONS') {
+    console.log('✅ CORS 프리플라이트 요청 처리');
     return { 
       statusCode: 200, 
       headers, 
-      body: '' 
+      body: JSON.stringify({ message: 'CORS preflight OK' })
     };
   }
 
   // POST 메서드만 허용
   if (event.httpMethod !== 'POST') {
+    console.error('❌ 허용되지 않은 메서드:', event.httpMethod);
     return {
       statusCode: 405,
       headers,
       body: JSON.stringify({ 
         success: false,
-        error: 'Method not allowed',
-        message: 'POST 메서드만 지원됩니다' 
+        error: 'Method Not Allowed',
+        message: 'POST 메서드만 지원됩니다',
+        allowedMethods: ['POST', 'OPTIONS']
       })
     };
   }
 
   try {
-    console.log('🚀 AKOOL 토큰 발급 함수 시작');
-    console.log('📅 요청 시간:', new Date().toISOString());
-    
-    // 🔑 환경변수 확인 (강화된 체크)
-    // 수정 (실제 값 사용)
-const CLIENT_ID = 'fYVSk4yOatzThxIV3LlDMrRUNbGGQF6g';
-const CLIENT_SECRET = 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g';
-    
-    console.log('🔍 환경변수 체크:');
-    console.log('  - AKOOL_CLIENT_ID 존재:', !!CLIENT_ID);
-    console.log('  - AKOOL_CLIENT_SECRET 존재:', !!CLIENT_SECRET);
-    
-    // 환경변수가 없으면 즉시 에러
-    if (!CLIENT_ID || !CLIENT_SECRET) {
-      console.error('❌ 환경변수 누락!');
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({
-          success: false,
-          error: 'Configuration Error',
-          message: 'AKOOL API 키가 설정되지 않았습니다. Netlify 환경변수를 확인하세요.',
-          debug: {
-            hasClientId: !!CLIENT_ID,
-            hasClientSecret: !!CLIENT_SECRET,
-            timestamp: new Date().toISOString()
-          }
-        })
-      };
+    // ⭐ 실제 AKOOL API 키 사용 (하드코딩)
+    const CLIENT_ID = 'fYVSk4yOatzThxIV3LlDMrRUNbGGQF6g';
+    const CLIENT_SECRET = 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g';
+
+    console.log('🔐 API 키 정보:');
+    console.log('  - Client ID:', CLIENT_ID.substring(0, 8) + '...');
+    console.log('  - Client Secret 길이:', CLIENT_SECRET.length);
+    console.log('  - Client ID 전체 길이:', CLIENT_ID.length);
+
+    // API 키 유효성 검사
+    if (!CLIENT_ID || CLIENT_ID.length < 10) {
+      throw new Error('Client ID가 유효하지 않습니다');
     }
 
-    // 🔐 API 키 로깅 (보안을 위해 일부만)
-    console.log('📝 사용할 Client ID:', CLIENT_ID.substring(0, 8) + '...');
-    console.log('📝 사용할 Secret 길이:', CLIENT_SECRET.length);
+    if (!CLIENT_SECRET || CLIENT_SECRET.length < 10) {
+      throw new Error('Client Secret이 유효하지 않습니다');
+    }
 
-    // 📦 요청 데이터 구성
+    // 📦 AKOOL API 요청 데이터 구성
     const requestData = JSON.stringify({
       clientId: CLIENT_ID,
       clientSecret: CLIENT_SECRET
     });
 
-    console.log('📋 요청 데이터 크기:', Buffer.byteLength(requestData), 'bytes');
+    console.log('📋 요청 데이터 정보:');
+    console.log('  - 데이터 크기:', Buffer.byteLength(requestData), 'bytes');
+    console.log('  - JSON 유효성:', (() => {
+      try { JSON.parse(requestData); return '✅ 유효'; } 
+      catch(e) { return '❌ 무효'; }
+    })());
 
-    // 🌐 HTTPS 요청 옵션
+    // 🌐 HTTPS 요청 옵션 구성
     const options = {
       hostname: 'openapi.akool.com',
       port: 443,
@@ -84,109 +84,147 @@ const CLIENT_SECRET = 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g';
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(requestData),
-        'User-Agent': 'HAIRGATOR/1.0'
+        'User-Agent': 'HAIRGATOR/1.0',
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache'
       },
       timeout: 30000 // 30초 타임아웃
     };
 
-    console.log('🔗 AKOOL API 호출 시작:', `https://${options.hostname}${options.path}`);
+    const fullUrl = `https://${options.hostname}${options.path}`;
+    console.log('🔗 AKOOL API 호출 정보:');
+    console.log('  - URL:', fullUrl);
+    console.log('  - Method:', options.method);
+    console.log('  - Timeout:', options.timeout / 1000, '초');
 
-    // 📡 AKOOL API 호출
+    // 📡 실제 AKOOL API 호출
     const response = await new Promise((resolve, reject) => {
+      console.log('📤 AKOOL API 요청 시작...');
+      
       const req = https.request(options, (res) => {
         let data = '';
+        let dataChunks = 0;
         
-        console.log('📊 응답 상태 코드:', res.statusCode);
-        console.log('📊 응답 헤더:', JSON.stringify(res.headers, null, 2));
+        console.log('📊 응답 정보:');
+        console.log('  - HTTP 상태 코드:', res.statusCode);
+        console.log('  - 응답 헤더:', JSON.stringify(res.headers, null, 2));
         
         res.on('data', (chunk) => { 
           data += chunk; 
-          console.log('📥 데이터 수신 중...', chunk.length, 'bytes');
+          dataChunks++;
+          console.log(`📥 데이터 청크 ${dataChunks} 수신:`, chunk.length, 'bytes');
         });
         
         res.on('end', () => {
-          console.log('📥 전체 응답 데이터:', data);
+          console.log('📥 응답 수신 완료:');
+          console.log('  - 총 데이터 크기:', data.length, 'bytes');
+          console.log('  - 총 청크 수:', dataChunks);
+          console.log('  - 응답 데이터 미리보기:', data.substring(0, 200));
           
           try {
             const parsedData = JSON.parse(data);
+            console.log('✅ JSON 파싱 성공');
             resolve({ 
               statusCode: res.statusCode, 
               data: parsedData,
-              headers: res.headers 
+              headers: res.headers,
+              rawData: data
             });
           } catch (parseError) {
             console.error('❌ JSON 파싱 오류:', parseError.message);
-            console.error('📄 원본 응답:', data);
+            console.error('📄 파싱 실패한 원본 데이터:', data);
             reject(new Error(`JSON 파싱 실패: ${parseError.message}`));
           }
         });
       });
 
-      // 🚨 에러 처리
+      // 🚨 네트워크 오류 처리
       req.on('error', (error) => {
-        console.error('❌ 요청 오류:', error);
-        reject(error);
+        console.error('❌ 네트워크 요청 오류:', error.message);
+        console.error('📄 오류 상세:', error);
+        reject(new Error(`네트워크 오류: ${error.message}`));
       });
 
+      // ⏰ 타임아웃 처리
       req.on('timeout', () => {
-        console.error('⏰ 요청 타임아웃');
+        console.error('⏰ 요청 타임아웃 (30초)');
         req.destroy();
-        reject(new Error('AKOOL API 요청 타임아웃 (30초)'));
+        reject(new Error('AKOOL API 요청 타임아웃 (30초 초과)'));
       });
 
       // 📤 요청 데이터 전송
       console.log('📤 요청 데이터 전송 중...');
       req.write(requestData);
       req.end();
+      console.log('✅ 요청 전송 완료');
     });
 
-    // 📋 응답 분석
-    console.log('📊 AKOOL API 응답 분석:');
-    console.log('  - HTTP 상태:', response.statusCode);
-    console.log('  - 응답 코드:', response.data?.code);
-    console.log('  - 응답 메시지:', response.data?.message);
-    console.log('  - 토큰 존재:', !!response.data?.token);
+    // 📋 응답 분석 및 로깅
+    console.log('📊 AKOOL API 응답 상세 분석:');
+    console.log('  - HTTP 상태 코드:', response.statusCode);
+    console.log('  - AKOOL 응답 코드:', response.data?.code);
+    console.log('  - AKOOL 메시지:', response.data?.message || response.data?.msg);
+    console.log('  - 토큰 존재 여부:', !!response.data?.token);
+    console.log('  - 토큰 길이:', response.data?.token?.length || 0);
 
-    // ✅ 성공 처리 (다양한 성공 케이스 고려)
+    // ✅ 성공 응답 처리
     if (response.statusCode === 200) {
-      // 응답 구조 확인
+      // AKOOL 표준 성공 응답 (code: 1000)
       if (response.data.code === 1000 && response.data.token) {
-        console.log('✅ 토큰 발급 성공!');
-        console.log('🎫 토큰 길이:', response.data.token.length);
+        console.log('🎉 AKOOL 토큰 발급 성공!');
+        console.log('🎫 토큰 정보:');
+        console.log('  - 토큰 길이:', response.data.token.length);
+        console.log('  - 토큰 시작:', response.data.token.substring(0, 20) + '...');
+        console.log('  - 토큰 끝:', '...' + response.data.token.substring(response.data.token.length - 10));
         
+        const successResponse = {
+          success: true,
+          token: response.data.token,
+          expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24시간 후 만료
+          message: '토큰 발급 성공',
+          akoolCode: response.data.code,
+          timestamp: new Date().toISOString(),
+          debug: {
+            httpStatus: response.statusCode,
+            akoolCode: response.data.code,
+            tokenLength: response.data.token.length
+          }
+        };
+
+        console.log('✅ 성공 응답 준비 완료');
         return {
           statusCode: 200,
           headers,
-          body: JSON.stringify({
-            success: true,
-            token: response.data.token,
-            expiresAt: Date.now() + (365 * 24 * 60 * 60 * 1000), // 1년 후
-            message: '토큰 발급 성공',
-            akoolCode: response.data.code,
-            timestamp: new Date().toISOString()
-          })
+          body: JSON.stringify(successResponse)
         };
       } 
-      // 다른 응답 구조 대응
+      // 다른 성공 응답 구조 (백업 처리)
       else if (response.data.token) {
-        console.log('✅ 토큰 발급 성공 (다른 구조)');
+        console.log('✅ 토큰 발급 성공 (대체 응답 구조)');
         
+        const successResponse = {
+          success: true,
+          token: response.data.token,
+          expiresAt: Date.now() + (24 * 60 * 60 * 1000),
+          message: '토큰 발급 성공 (대체 구조)',
+          akoolResponse: response.data,
+          timestamp: new Date().toISOString(),
+          debug: {
+            httpStatus: response.statusCode,
+            responseStructure: 'alternative'
+          }
+        };
+
         return {
           statusCode: 200,
           headers,
-          body: JSON.stringify({
-            success: true,
-            token: response.data.token,
-            expiresAt: Date.now() + (365 * 24 * 60 * 60 * 1000),
-            message: '토큰 발급 성공 (대체 구조)',
-            akoolResponse: response.data,
-            timestamp: new Date().toISOString()
-          })
+          body: JSON.stringify(successResponse)
         };
       }
-      // 성공했지만 토큰이 없는 경우
+      // HTTP 200이지만 토큰이 없는 경우
       else {
-        console.error('❌ 성공 응답이지만 토큰 없음');
+        console.error('❌ HTTP 200 응답이지만 토큰 없음');
+        console.error('📄 응답 구조:', JSON.stringify(response.data, null, 2));
         
         return {
           statusCode: 400,
@@ -194,7 +232,9 @@ const CLIENT_SECRET = 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g';
           body: JSON.stringify({
             success: false,
             error: 'AKOOL 응답 구조 오류',
-            message: '토큰이 응답에 포함되지 않았습니다',
+            message: '성공 응답이지만 토큰이 포함되지 않았습니다',
+            akoolCode: response.data?.code,
+            akoolMessage: response.data?.message || response.data?.msg,
             akoolResponse: response.data,
             timestamp: new Date().toISOString()
           })
@@ -202,41 +242,55 @@ const CLIENT_SECRET = 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g';
       }
     }
 
-    // ❌ 실패 처리
-    console.error('❌ AKOOL API 호출 실패');
-    
-    return {
-      statusCode: 400,
-      headers,
-      body: JSON.stringify({
-        success: false,
-        error: 'AKOOL API 오류',
-        message: response.data?.message || '토큰 발급 실패',
-        code: response.data?.code,
-        httpStatus: response.statusCode,
-        akoolResponse: response.data,
-        timestamp: new Date().toISOString()
-      })
-    };
+    // ❌ HTTP 오류 응답 처리
+    else {
+      console.error('❌ AKOOL API HTTP 오류');
+      console.error('📄 오류 응답:', JSON.stringify(response.data, null, 2));
+      
+      return {
+        statusCode: response.statusCode >= 400 ? response.statusCode : 400,
+        headers,
+        body: JSON.stringify({
+          success: false,
+          error: 'AKOOL API 오류',
+          message: response.data?.message || response.data?.msg || '토큰 발급 실패',
+          httpStatus: response.statusCode,
+          akoolCode: response.data?.code,
+          akoolResponse: response.data,
+          timestamp: new Date().toISOString(),
+          debug: {
+            requestUrl: fullUrl,
+            requestMethod: options.method
+          }
+        })
+      };
+    }
 
   } catch (error) {
-    console.error('❌ 서버 오류 발생:', error);
+    // 🚨 서버 내부 오류 처리
+    console.error('❌ 서버 내부 오류 발생:');
+    console.error('📄 오류 메시지:', error.message);
     console.error('📄 오류 스택:', error.stack);
+    console.error('📄 오류 타입:', error.constructor.name);
 
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({
         success: false,
-        error: '서버 오류',
+        error: '서버 내부 오류',
         message: error.message,
         errorType: error.constructor.name,
         timestamp: new Date().toISOString(),
         debug: {
           nodeVersion: process.version,
-          platform: process.platform
+          platform: process.platform,
+          architecture: process.arch,
+          netlifyFunction: true
         }
       })
     };
   }
 };
+
+console.log('🎉 AKOOL Token Function 모듈 로드 완료!');
