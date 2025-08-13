@@ -435,7 +435,7 @@
             color: white;
         }
 
-        /* 🆕 AI 체험 버튼 (항상 표시되도록 안정화) */
+        /* 🆕 AI 체험 버튼 (실제 버전) */
         .btn-ai-experience {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             color: white !important;
@@ -666,7 +666,7 @@
             color: #ff8c00;
         }
 
-        /* 🆕 AI 체험 모달 스타일 (완전히 새로 작성) */
+        /* 🆕 실제 AI 체험 모달 스타일 */
         .ai-experience-modal {
             position: fixed;
             top: 0;
@@ -1432,7 +1432,7 @@
                         <span>♡</span>
                         <span>좋아요</span>
                     </button>
-                    <!-- 🆕 AI 체험 버튼은 JavaScript에서 동적으로 추가 -->
+                    <!-- AI 체험 버튼은 JavaScript에서 동적으로 추가 -->
                 </div>
             </div>
         </div>
@@ -1442,16 +1442,17 @@
     <script src="js/firebase-config.js"></script>
     
     <script>
-// 🚀 HAIRGATOR 최종 완성 버전 - AI 버튼 안정화 + AKOOL 완전 통합
+// 🚀 HAIRGATOR 최종 실제 버전 - 진짜 AKOOL API 연동!
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 HAIRGATOR 최종 버전 시작');
+    console.log('🚀 HAIRGATOR 실제 AKOOL 버전 시작');
 
     // Global variables
     let currentGender = null;
     let currentCategory = null;
     let currentSubcategory = 'None';
     let menuData = {};
-    let currentStyleData = null; // 🆕 현재 선택된 스타일 데이터 저장
+    let currentStyleData = null;
+    let akoolToken = null; // 🆕 AKOOL 토큰 저장
 
     // Elements
     const backBtn = document.getElementById('backBtn');
@@ -1569,6 +1570,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // 🔑 AKOOL 토큰 관리 클래스
+    class AkoolTokenManager {
+        constructor() {
+            this.token = null;
+            this.expiresAt = null;
+        }
+
+        async getValidToken() {
+            if (this.token && this.expiresAt && Date.now() < this.expiresAt) {
+                console.log('✅ 기존 토큰 사용');
+                return this.token;
+            }
+
+            console.log('🔄 새로운 토큰 발급 시작...');
+            return await this.fetchNewToken();
+        }
+
+        async fetchNewToken() {
+            try {
+                const response = await fetch('/.netlify/functions/akool-token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.token) {
+                    this.token = data.token;
+                    this.expiresAt = data.expiresAt || (Date.now() + 365 * 24 * 60 * 60 * 1000); // 1년
+                    
+                    console.log('✅ AKOOL 토큰 발급 성공');
+                    console.log('🎫 토큰:', this.token.substring(0, 20) + '...');
+                    
+                    return this.token;
+                } else {
+                    throw new Error(data.error || 'Token fetch failed');
+                }
+            } catch (error) {
+                console.error('❌ AKOOL 토큰 발급 실패:', error);
+                throw error;
+            }
+        }
+    }
+
+    const akoolTokenManager = new AkoolTokenManager();
+
     // Initialize
     init();
 
@@ -1580,6 +1627,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (backBtn) {
             backBtn.style.display = 'none';
         }
+
+        // 🔑 앱 시작 시 토큰 미리 발급
+        akoolTokenManager.getValidToken().catch(err => {
+            console.warn('⚠️ 초기 토큰 발급 실패 (나중에 재시도):', err.message);
+        });
     }
 
     // Event Listeners
@@ -1920,7 +1972,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 🎯 Show Style Detail Modal (완전 안정화된 AI 버튼!)
+    // Show Style Detail Modal (AI 버튼 포함)
     function showStyleDetail(code, name, gender, imageSrc, docId) {
         console.log('🎨 스타일 모달 열기:', { code, name, gender, imageSrc, docId });
         
@@ -1929,7 +1981,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // 🆕 현재 스타일 데이터 저장
+        // 현재 스타일 데이터 저장
         currentStyleData = { code, name, gender, imageSrc, docId };
         
         modalImage.src = imageSrc || '';
@@ -1950,7 +2002,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const heart = btnLike.querySelector('span:first-child');
         if (heart) heart.textContent = '♡';
         
-        // 🆕 AI 체험 버튼 완전 안정화! (항상 동일한 위치에 추가)
+        // AI 체험 버튼 안정화
         ensureAIButton();
         
         styleModal.classList.add('active');
@@ -1960,7 +2012,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setupModalButtonEvents(code, name, docId, gender);
     }
 
-    // 🆕 AI 버튼 완전 안정화 함수 (중복 방지 + 항상 표시)
+    // AI 버튼 완전 안정화 함수
     function ensureAIButton() {
         if (!modalActions) return;
         
@@ -1971,7 +2023,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('🗑️ 기존 AI 버튼 제거');
         }
         
-        // 2. 새로운 AI 버튼 생성 (항상 일관된 방식으로)
+        // 2. 새로운 AI 버튼 생성
         const aiBtn = document.createElement('button');
         aiBtn.className = 'modal-btn btn-ai-experience';
         aiBtn.innerHTML = 'AI 체험';
@@ -1988,14 +2040,14 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.boxShadow = 'none';
         });
         
-        // 4. 클릭 이벤트 (한 번만 추가)
+        // 4. 클릭 이벤트 (실제 AKOOL 처리)
         aiBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             console.log('🤖 AI 체험 버튼 클릭!');
             
             if (currentStyleData) {
-                openAIExperienceModal(
+                openRealAIExperienceModal(
                     currentStyleData.imageSrc, 
                     currentStyleData.name, 
                     currentStyleData.code
@@ -2003,12 +2055,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // 5. 버튼 추가 (맨 마지막에 추가해서 일관된 위치 보장)
+        // 5. 버튼 추가
         modalActions.appendChild(aiBtn);
-        console.log('✅ AI 체험 버튼 완전 안정화 완료!');
+        console.log('✅ 실제 AI 체험 버튼 생성 완료!');
     }
 
-    // 🆕 모달 버튼 이벤트 설정 (분리해서 관리)
+    // 모달 버튼 이벤트 설정
     function setupModalButtonEvents(code, name, docId, gender) {
         // 고객 등록 버튼
         btnRegister.onclick = async function() {
@@ -2062,9 +2114,9 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // 🆕 AKOOL AI 체험 모달 (완전히 새로 작성된 버전)
-    function openAIExperienceModal(styleImageUrl, styleName, styleCode) {
-        console.log('🤖 AKOOL AI 체험 모달 열기:', { styleImageUrl, styleName, styleCode });
+    // 🆕 실제 AKOOL AI 체험 모달 (진짜 API 호출!)
+    function openRealAIExperienceModal(styleImageUrl, styleName, styleCode) {
+        console.log('🤖 실제 AKOOL AI 체험 모달 열기:', { styleImageUrl, styleName, styleCode });
         
         // 기존 AI 모달이 있으면 제거
         const existingModal = document.querySelector('.ai-experience-modal');
@@ -2078,13 +2130,13 @@ document.addEventListener('DOMContentLoaded', function() {
         aiModal.innerHTML = `
             <div class="ai-modal-content">
                 <div class="ai-modal-header">
-                    <h3>✨ AI 헤어스타일 체험</h3>
+                    <h3>✨ 실제 AI 헤어스타일 체험</h3>
                     <button class="ai-modal-close">×</button>
                 </div>
                 
                 <div class="ai-modal-body">
                     <div class="ai-upload-section">
-                        <!-- 📱📷 업로드 방식 선택 탭 -->
+                        <!-- 업로드 방식 선택 탭 -->
                         <div class="upload-method-tabs">
                             <button class="upload-tab active" data-method="gallery">
                                 📱 갤러리
@@ -2108,7 +2160,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
                         
-                        <!-- 📷 카메라 촬영 영역 -->
+                        <!-- 카메라 촬영 영역 -->
                         <div class="upload-method-content" id="cameraCapture" style="display: none;">
                             <div class="camera-container">
                                 <video id="cameraVideo" autoplay playsinline></video>
@@ -2160,7 +2212,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div class="ai-progress-text" id="aiProgressText">처리 중...</div>
                         <div style="margin-top: 15px; font-size: 12px; color: #666;">
-                            AI가 당신의 얼굴에 ${styleName} 스타일을 적용하고 있습니다...
+                            실제 AKOOL AI가 당신의 얼굴에 ${styleName} 스타일을 적용하고 있습니다...
                         </div>
                     </div>
                     
@@ -2177,7 +2229,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 <div class="ai-modal-footer">
                     <button class="ai-process-btn" id="aiProcessBtn" disabled>
-                        ✨ AI 처리 시작
+                        ✨ 실제 AI 처리 시작
                     </button>
                 </div>
             </div>
@@ -2185,8 +2237,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.body.appendChild(aiModal);
         
-        // 모달 이벤트 설정
-        setupAIModalEvents(aiModal, styleImageUrl, styleName, styleCode);
+        // 모달 이벤트 설정 (실제 AKOOL API 호출 포함!)
+        setupRealAIModalEvents(aiModal, styleImageUrl, styleName, styleCode);
         
         // 모달 표시 애니메이션
         requestAnimationFrame(() => {
@@ -2194,8 +2246,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 🎮 AI 모달 이벤트 설정 (완전 새로 작성)
-    function setupAIModalEvents(modal, styleImageUrl, styleName, styleCode) {
+    // 🎮 실제 AI 모달 이벤트 설정 (진짜 AKOOL API!)
+    function setupRealAIModalEvents(modal, styleImageUrl, styleName, styleCode) {
         const closeBtn = modal.querySelector('.ai-modal-close');
         const uploadTabs = modal.querySelectorAll('.upload-tab');
         const galleryUpload = modal.querySelector('#galleryUpload');
@@ -2213,7 +2265,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const retryBtn = modal.querySelector('#aiRetryBtn');
         const retakeBtn = modal.querySelector('#retakeBtn');
         
-        // 📷 카메라 관련 요소들
+        // 카메라 관련 요소들
         const switchCameraBtn = modal.querySelector('#switchCameraBtn');
         const captureBtn = modal.querySelector('#captureBtn');
         const closeCameraBtn = modal.querySelector('#closeCameraBtn');
@@ -2222,8 +2274,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let selectedFile = null;
         let currentUploadMethod = 'gallery';
+        let userImageDataUrl = null; // 🆕 사용자 이미지 저장
         
-        // 📷 카메라 매니저 클래스 (간소화 버전)
+        // 📷 카메라 매니저 클래스
         class CameraManager {
             constructor() {
                 this.stream = null;
@@ -2317,7 +2370,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         document.addEventListener('keydown', handleEscKey);
         
-        // 📱📷 업로드 방식 전환
+        // 업로드 방식 전환
         uploadTabs.forEach(tab => {
             tab.addEventListener('click', async function() {
                 const method = this.dataset.method;
@@ -2343,7 +2396,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // 📷 카메라 버튼 이벤트들
+        // 카메라 버튼 이벤트들
         if (switchCameraBtn) {
             switchCameraBtn.addEventListener('click', async () => {
                 await cameraManager.switchCamera();
@@ -2359,6 +2412,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         captureBtn.style.transform = 'scale(1)';
                     }, 100);
                     
+                    userImageDataUrl = dataUrl;
                     showCameraPreview(dataUrl);
                 }
             });
@@ -2371,7 +2425,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // 📸 카메라 촬영 미리보기
+        // 카메라 촬영 미리보기
         function showCameraPreview(dataUrl) {
             if (userPreview && previewSection) {
                 userPreview.src = dataUrl;
@@ -2381,12 +2435,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (processBtn) {
                     processBtn.disabled = false;
-                    processBtn.textContent = `✨ ${styleName} 적용하기`;
+                    processBtn.textContent = `✨ ${styleName} 실제 적용하기`;
                 }
             }
         }
         
-        // 🔄 다시 찍기/선택하기
+        // 다시 찍기/선택하기
         if (retakeBtn) {
             retakeBtn.addEventListener('click', () => {
                 previewSection.style.display = 'none';
@@ -2400,10 +2454,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (processBtn) {
                     processBtn.disabled = true;
-                    processBtn.textContent = '✨ AI 처리 시작';
+                    processBtn.textContent = '✨ 실제 AI 처리 시작';
                 }
                 
                 selectedFile = null;
+                userImageDataUrl = null;
             });
         }
         
@@ -2432,12 +2487,13 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedFile = file;
             showGalleryPreview(file);
             processBtn.disabled = false;
-            processBtn.textContent = `✨ ${styleName} 적용하기`;
+            processBtn.textContent = `✨ ${styleName} 실제 적용하기`;
         }
         
         function showGalleryPreview(file) {
             const reader = new FileReader();
             reader.onload = (e) => {
+                userImageDataUrl = e.target.result;
                 userPreview.src = e.target.result;
                 galleryUpload.style.display = 'none';
                 previewSection.style.display = 'grid';
@@ -2445,45 +2501,147 @@ document.addEventListener('DOMContentLoaded', function() {
             reader.readAsDataURL(file);
         }
         
-        // 🤖 AI 처리 시작 (데모 버전)
+        // 🤖 실제 AI 처리 시작 (진짜 AKOOL API!)
         processBtn.addEventListener('click', async () => {
-            if (!selectedFile && currentUploadMethod === 'gallery') return;
-            if (!userPreview.src && currentUploadMethod === 'camera') return;
+            if (!userImageDataUrl) {
+                alert('❌ 먼저 사진을 선택하거나 촬영해주세요!');
+                return;
+            }
             
-            console.log('🤖 AI 처리 시작 (데모)');
+            console.log('🤖 실제 AKOOL AI 처리 시작!');
             
+            // UI 전환
             modal.querySelector('.ai-modal-body .ai-upload-section').style.display = 'none';
             modal.querySelector('.ai-modal-footer').style.display = 'none';
             progressSection.style.display = 'block';
             
-            // 진행률 시뮬레이션
-            const steps = [
-                { progress: 15, text: '이미지 업로드 중...', delay: 800 },
-                { progress: 35, text: '얼굴 인식 중...', delay: 1200 },
-                { progress: 55, text: 'AI 분석 중...', delay: 1500 },
-                { progress: 75, text: `${styleName} 적용 중...`, delay: 1800 },
-                { progress: 90, text: '최종 처리 중...', delay: 1000 },
-                { progress: 100, text: '완료!', delay: 500 }
-            ];
-            
-            for (let i = 0; i < steps.length; i++) {
-                await new Promise(resolve => setTimeout(resolve, steps[i].delay));
-                progressFill.style.width = steps[i].progress + '%';
-                progressText.textContent = steps[i].text;
+            try {
+                // 1. 토큰 확인/발급
+                progressFill.style.width = '10%';
+                progressText.textContent = 'AKOOL 인증 중...';
+                
+                const token = await akoolTokenManager.getValidToken();
+                console.log('✅ AKOOL 토큰 확보:', token.substring(0, 20) + '...');
+                
+                // 2. Face Swap 요청
+                progressFill.style.width = '30%';
+                progressText.textContent = 'Face Swap 요청 중...';
+                
+                const faceSwapResponse = await fetch('/.netlify/functions/akool-faceswap', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        userImage: userImageDataUrl,
+                        targetImage: styleImageUrl,
+                        styleName: styleName,
+                        styleCode: styleCode
+                    })
+                });
+                
+                const faceSwapResult = await faceSwapResponse.json();
+                console.log('🔍 Face Swap 응답:', faceSwapResult);
+                
+                if (!faceSwapResult.success) {
+                    throw new Error(faceSwapResult.error || 'Face Swap 실패');
+                }
+                
+                const jobId = faceSwapResult.jobId;
+                console.log('✅ Face Swap 작업 ID:', jobId);
+                
+                // 3. 결과 대기 (폴링)
+                progressFill.style.width = '50%';
+                progressText.textContent = 'AI 처리 중... (결과 대기)';
+                
+                let attempts = 0;
+                const maxAttempts = 60; // 최대 5분 대기
+                
+                while (attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 5000)); // 5초 대기
+                    attempts++;
+                    
+                    const progress = Math.min(50 + (attempts / maxAttempts) * 40, 90);
+                    progressFill.style.width = progress + '%';
+                    progressText.textContent = `AI 처리 중... (${attempts * 5}초 경과)`;
+                    
+                    try {
+                        const statusResponse = await fetch('/.netlify/functions/akool-status', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ jobId })
+                        });
+                        
+                        const statusResult = await statusResponse.json();
+                        console.log(`🔍 상태 확인 (${attempts}회):`, statusResult);
+                        
+                        if (statusResult.success && statusResult.status === 'completed') {
+                            console.log('🎉 AI 처리 완료!');
+                            
+                            progressFill.style.width = '100%';
+                            progressText.textContent = '처리 완료!';
+                            
+                            // 결과 표시
+                            setTimeout(() => {
+                                showRealAIResult(statusResult.resultUrl);
+                            }, 1000);
+                            return;
+                        } else if (statusResult.success && statusResult.status === 'failed') {
+                            throw new Error('AI 처리 실패: ' + (statusResult.error || '알 수 없는 오류'));
+                        }
+                        
+                        // 아직 처리 중이면 계속 대기
+                        console.log(`⏳ 아직 처리 중... (${attempts}/${maxAttempts})`);
+                        
+                    } catch (statusError) {
+                        console.error('❌ 상태 확인 오류:', statusError);
+                        // 상태 확인 실패는 무시하고 계속 시도
+                    }
+                }
+                
+                throw new Error('AI 처리 시간 초과 (5분)');
+                
+            } catch (error) {
+                console.error('❌ 실제 AI 처리 오류:', error);
+                
+                // 오류 표시
+                progressSection.style.display = 'none';
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = `
+                    text-align: center;
+                    padding: 40px 20px;
+                    color: #ff4444;
+                `;
+                errorDiv.innerHTML = `
+                    <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
+                    <div style="font-size: 18px; margin-bottom: 10px;">AI 처리 실패</div>
+                    <div style="font-size: 14px; color: #999; margin-bottom: 20px;">${error.message}</div>
+                    <button onclick="location.reload()" style="
+                        padding: 10px 20px; 
+                        background: #667eea; 
+                        color: white; 
+                        border: none; 
+                        border-radius: 10px; 
+                        cursor: pointer;
+                    ">다시 시도</button>
+                `;
+                
+                modal.querySelector('.ai-modal-body').appendChild(errorDiv);
             }
-            
-            setTimeout(() => {
-                showDemoResult();
-            }, 800);
         });
         
-        // 데모 결과 표시
-        function showDemoResult() {
+        // 🎉 실제 AI 결과 표시
+        function showRealAIResult(resultImageUrl) {
             progressSection.style.display = 'none';
             resultSection.style.display = 'block';
             
             const resultImg = modal.querySelector('#aiResultImage');
-            resultImg.src = styleImageUrl;
+            resultImg.src = resultImageUrl;
             
             const completeMsg = document.createElement('div');
             completeMsg.style.cssText = `
@@ -2497,9 +2655,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 margin-bottom: 20px;
             `;
             completeMsg.innerHTML = `
-                🎉 AI 처리 완료!<br>
+                🎉 실제 AKOOL AI 처리 완료!<br>
                 <small style="color: #999; font-size: 12px;">
-                    실제 AKOOL API 연동 시 당신의 얼굴에 ${styleName} 스타일이 적용됩니다
+                    당신의 얼굴에 ${styleName} 스타일이 실제로 적용되었습니다
                 </small>
             `;
             
@@ -2509,12 +2667,25 @@ document.addEventListener('DOMContentLoaded', function() {
         // 다운로드 & 재시도 버튼
         if (downloadBtn) {
             downloadBtn.addEventListener('click', () => {
-                alert('💾 다운로드 기능\n\n실제 AKOOL API 연동 후 처리된 이미지를 다운로드할 수 있습니다!');
+                const resultImg = modal.querySelector('#aiResultImage');
+                if (resultImg && resultImg.src) {
+                    const link = document.createElement('a');
+                    link.href = resultImg.src;
+                    link.download = `HAIRGATOR_${styleCode}_${Date.now()}.jpg`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    console.log('💾 실제 AI 결과 다운로드 완료!');
+                } else {
+                    alert('다운로드할 이미지가 없습니다.');
+                }
             });
         }
         
         if (retryBtn) {
             retryBtn.addEventListener('click', () => {
+                // 처음부터 다시 시작
                 resultSection.style.display = 'none';
                 modal.querySelector('.ai-modal-body .ai-upload-section').style.display = 'block';
                 modal.querySelector('.ai-modal-footer').style.display = 'block';
@@ -2530,10 +2701,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 previewSection.style.display = 'none';
                 processBtn.disabled = true;
-                processBtn.textContent = '✨ AI 처리 시작';
+                processBtn.textContent = '✨ 실제 AI 처리 시작';
                 progressFill.style.width = '0%';
                 selectedFile = null;
+                userImageDataUrl = null;
                 fileInput.value = '';
+                
+                // 기존 오류 메시지 제거
+                const errorDiv = modal.querySelector('.ai-modal-body > div:last-child');
+                if (errorDiv && errorDiv.innerHTML.includes('AI 처리 실패')) {
+                    errorDiv.remove();
+                }
             });
         }
     }
@@ -2545,15 +2723,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 🆕 전역으로 함수 노출
+    // 전역으로 함수 노출
     window.showStyleDetail = showStyleDetail;
-    window.openAIExperienceModal = openAIExperienceModal;
+    window.openRealAIExperienceModal = openRealAIExperienceModal;
 
-    console.log('✅ HAIRGATOR 최종 완성 버전 로드 완료!');
+    console.log('✅ HAIRGATOR 실제 AKOOL 버전 로드 완료!');
 });
 
 window.addEventListener('load', function() {
-    console.log('🎉 HAIRGATOR + AKOOL 최종 완성!');
+    console.log('🎉 HAIRGATOR + 실제 AKOOL API 최종 완성!');
 });
     </script>
     
