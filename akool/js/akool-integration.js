@@ -1,38 +1,48 @@
 // akool/js/akool-integration.js
-// HAIRGATOR에 AKOOL Face Swap 기능 통합 - 기존 코드 100% 호환 최종 버전
+// AKOOL 완전 통합 최종 버전 - 올바른 API 워크플로우 + 완전한 UI Integration
 
 document.addEventListener('DOMContentLoaded', function() {
   let currentStyleImage = null;
   let currentStyleName = null;
   let faceSwapInProgress = false;
 
-  console.log('🚀 AKOOL Face Swap 실제 API 통합 시작');
+  console.log('🚀 AKOOL Face Swap 완전 통합 최종 버전 시작');
 
   // ==========================================
-  // 1. 실제 AKOOL API 클래스 정의 (기존 로직 유지)
+  // 1. AKOOL API 클래스 (올바른 워크플로우 적용) ✅
   // ==========================================
   
   class AkoolAPI {
     constructor() {
       this.token = null;
-      this.baseUrl = '/.netlify/functions';
+      this.tokenExpiration = null;
+      this.baseURL = '/.netlify/functions';
+      this.akoolBaseUrl = 'https://openapi.akool.com/api/open/v3';
+      this.detectUrl = 'https://sg3.akool.com/detect';
     }
 
-    // 토큰 발급 (기존 로직)
+    // ⭐ 1. 토큰 발급 ✅
     async getToken() {
-      if (this.token) return this.token;
+      // 토큰이 유효한지 확인 (만료 1분 전에 갱신)
+      if (this.token && this.tokenExpiration && Date.now() < this.tokenExpiration - 60000) {
+        return { success: true, token: this.token };
+      }
 
       try {
-        const response = await fetch(`${this.baseUrl}/akool-token`, {
+        console.log('🔑 AKOOL 토큰 발급 중...');
+
+        const response = await fetch(`${this.baseURL}/akool-token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
-        
+
         const data = await response.json();
-        if (data.success) {
+
+        if (data.success && data.token) {
           this.token = data.token;
-          console.log('✅ AKOOL 토큰 발급 성공');
-          return this.token;
+          this.tokenExpiration = Date.now() + (24 * 60 * 60 * 1000);
+          console.log('✅ 토큰 발급 성공');
+          return { success: true, token: this.token };
         } else {
           throw new Error(data.error || '토큰 발급 실패');
         }
@@ -42,115 +52,338 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // 실제 Face Swap 처리 (기존 로직과 동일)
+    // ⭐ 2. 이미지 임시 업로드 (새로 추가) ✅
+    async uploadTempImage(imageData, filename = null) {
+      try {
+        if (!filename) {
+          filename = `temp/faceswap_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`;
+        }
+
+        // Base64를 Blob으로 변환
+        const response = await fetch(imageData);
+        const blob = await response.blob();
+        
+        // Firebase Storage에 업로드
+        const storageRef = firebase.storage().ref();
+        const fileRef = storageRef.child(filename);
+        
+        console.log('📤 Firebase에 이미지 업로드:', filename);
+        const snapshot = await fileRef.put(blob);
+        
+        // 공개 URL 반환
+        const downloadURL = await snapshot.ref.getDownloadURL();
+        console.log('✅ 업로드 완료:', downloadURL);
+        
+        return downloadURL;
+      } catch (error) {
+        console.error('❌ 업로드 실패:', error);
+        throw new Error('이미지 업로드 실패: ' + error.message);
+      }
+    }
+
+    // ⭐ 3. 얼굴 감지 API (새로 추가) ✅
+    async detectFace(imageUrl, type = 'user') {
+      try {
+        const tokenResult = await this.getToken();
+        if (!tokenResult.success) {
+          return tokenResult;
+        }
+
+        console.log(`🔍 ${type === 'user' ? '사용자' : '헤어스타일'} 얼굴 감지 중...`);
+
+        // AKOOL detect API 직접 호출
+        const response = await fetch(this.detectUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            single_face: true,
+            image_url: imageUrl
+          })
+        });
+
+        const data = await response.json();
+        console.log('Face detection response:', data);
+
+        if (data.code === 1000 && data.data && data.data.length > 0) {
+          const faceData = data.data[0];
+          console.log(`✅ ${type === 'user' ? '사용자' : '헤어스타일'} 얼굴 감지 성공`);
+          
+          return { 
+            success: true, 
+            cropUrl: faceData.crop_image_url,
+            landmarks: faceData.landmarks_str,
+            boundingBox: faceData.bounding_box
+          };
+        } else {
+          console.error(`❌ ${type === 'user' ? '사용자' : '헤어스타일'} 얼굴 감지 실패:`, data);
+          return { 
+            success: false, 
+            error: data.msg || '얼굴을 감지할 수 없습니다',
+            message: '사진에서 명확한 얼굴을 찾을 수 없습니다. 정면을 보고 있는 선명한 사진을 사용해주세요.'
+          };
+        }
+
+      } catch (error) {
+        console.error('❌ 얼굴 감지 네트워크 오류:', error);
+        return { success: false, error: '네트워크 오류가 발생했습니다' };
+      }
+    }
+
+    // ⭐ 4. Face Swap API (파라미터 순서 수정) ✅
+    async createFaceSwap(userFaceData, styleFaceData) {
+      try {
+        const tokenResult = await this.getToken();
+        if (!tokenResult.success) {
+          return tokenResult;
+        }
+
+        console.log('🔄 Face Swap 요청 생성 중...');
+
+        // ⭐ 파라미터 순서 수정: sourceImage = 사용자 얼굴, targetImage = 헤어스타일
+        const payload = {
+          sourceImage: [{ // 바꿀 대상 (사용자 얼굴)
+            path: userFaceData.cropUrl,
+            opts: userFaceData.landmarks
+          }],
+          targetImage: [{ // 원본 이미지 (헤어스타일)
+            path: styleFaceData.cropUrl,
+            opts: styleFaceData.landmarks
+          }],
+          face_enhance: 1
+        };
+
+        console.log('⭐ 올바른 Face swap payload:', JSON.stringify(payload, null, 2));
+
+        // AKOOL Face Swap API 직접 호출
+        const response = await fetch(`${this.akoolBaseUrl}/faceswap/highquality/create`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        console.log('Face swap creation response:', data);
+
+        if (data.code === 1000 && data._id) {
+          console.log('✅ Face Swap 작업 생성 성공');
+          return {
+            success: true,
+            taskId: data._id,
+            message: 'Face swap 작업이 생성되었습니다'
+          };
+        } else {
+          console.error('❌ Face Swap 작업 생성 실패:', data);
+          return { 
+            success: false, 
+            error: data.msg || 'Face Swap 작업 생성에 실패했습니다',
+            code: data.code
+          };
+        }
+
+      } catch (error) {
+        console.error('❌ Face Swap 생성 네트워크 오류:', error);
+        return { success: false, error: '네트워크 오류가 발생했습니다' };
+      }
+    }
+
+    // ⭐ 5. 상태 확인 API ✅
+    async checkFaceSwapStatus(taskId) {
+      try {
+        const tokenResult = await this.getToken();
+        if (!tokenResult.success) {
+          return tokenResult;
+        }
+
+        const response = await fetch(`${this.akoolBaseUrl}/faceswap/highquality/${taskId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${this.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+        console.log('Status check response:', data);
+
+        if (response.ok) {
+          return {
+            success: true,
+            status: data.status,
+            progress: data.progress || 0,
+            resultUrl: data.result_url,
+            isComplete: data.status === 'completed' || data.status === 'failed',
+            message: data.message || this.getStatusMessage(data.status)
+          };
+        } else {
+          return { 
+            success: false, 
+            error: data.msg || '상태 확인에 실패했습니다' 
+          };
+        }
+
+      } catch (error) {
+        console.error('❌ 상태 확인 네트워크 오류:', error);
+        return { success: false, error: '네트워크 오류가 발생했습니다' };
+      }
+    }
+
+    getStatusMessage(status) {
+      const statusMessages = {
+        'pending': '대기 중...',
+        'processing': '처리 중...',
+        'completed': '완료됨',
+        'failed': '실패함'
+      };
+      return statusMessages[status] || status;
+    }
+
+    // 결과 대기 - 폴링 방식
+    async waitForResult(taskId, progressCallback, maxWaitTime = 180000) {
+      const startTime = Date.now();
+      const pollInterval = 3000;
+      let lastProgress = 60;
+
+      return new Promise((resolve) => {
+        const checkResult = async () => {
+          const elapsed = Date.now() - startTime;
+
+          if (elapsed > maxWaitTime) {
+            console.log('⏰ 처리 시간 초과');
+            resolve({ 
+              success: false, 
+              error: '처리 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.' 
+            });
+            return;
+          }
+
+          const status = await this.checkFaceSwapStatus(taskId);
+
+          if (!status.success) {
+            resolve(status);
+            return;
+          }
+
+          // 진행률 업데이트
+          if (progressCallback) {
+            const currentProgress = Math.max(lastProgress, status.progress || 60);
+            lastProgress = currentProgress;
+            progressCallback(currentProgress, status.message);
+          }
+
+          console.log(`📊 처리 상태: ${status.message} (${status.progress}%)`);
+
+          if (status.isComplete) {
+            if (status.status === 'completed' && status.resultUrl) {
+              console.log('🎉 Face Swap 완료!');
+              resolve({
+                success: true,
+                resultUrl: status.resultUrl,
+                message: '✨ 헤어스타일 적용이 완료되었습니다!'
+              });
+            } else {
+              console.log('💥 Face Swap 실패');
+              resolve({
+                success: false,
+                error: '처리 중 오류가 발생했습니다',
+                message: status.message || '이미지 처리에 실패했습니다'
+              });
+            }
+          } else {
+            // 계속 상태 확인
+            setTimeout(checkResult, pollInterval);
+          }
+        };
+
+        checkResult();
+      });
+    }
+
+    // ⭐ 완전한 올바른 워크플로우 ✅
     async processFaceSwap(userFile, styleImageUrl, progressCallback) {
       try {
-        console.log('🤖 실제 AKOOL Face Swap 시작');
+        console.log('🤖 올바른 AKOOL Face Swap 워크플로우 시작');
         
-        // 1. 토큰 확보
-        progressCallback(10, 'AKOOL 인증 중...');
+        // ⭐ 1. 토큰 발급 ✅
+        progressCallback(5, 'AKOOL 인증 중...');
         const token = await this.getToken();
 
-        // 2. 사용자 이미지를 Base64로 변환
-        progressCallback(20, '사용자 이미지 처리 중...');
+        // ⭐ 2. 이미지 임시 업로드 ✅
+        progressCallback(10, '이미지 업로드 중...');
         const userImageBase64 = await this.fileToBase64(userFile);
-
-        // 3. 사용자 얼굴 감지
-        progressCallback(30, '사용자 얼굴 감지 중...');
-        const userDetectResult = await fetch(`${this.baseUrl}/akool-faceswap`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            token: token,
-            step: 'detect_user',
-            userImage: userImageBase64
-          })
-        });
-
-        const userDetectData = await userDetectResult.json();
-        if (!userDetectData.success) {
-          throw new Error('사용자 얼굴 감지 실패: ' + userDetectData.message);
-        }
-
-        // 4. 헤어스타일 얼굴 감지
-        progressCallback(50, '헤어스타일 분석 중...');
-        const styleDetectResult = await fetch(`${this.baseUrl}/akool-faceswap`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            token: token,
-            step: 'detect_hairstyle',
-            hairstyleImage: styleImageUrl
-          })
-        });
-
-        const styleDetectData = await styleDetectResult.json();
-        if (!styleDetectData.success) {
-          throw new Error('헤어스타일 얼굴 감지 실패: ' + styleDetectData.message);
-        }
-
-        // 5. Face Swap 실행
-        progressCallback(70, 'Face Swap 처리 중...');
-        const faceSwapResult = await fetch(`${this.baseUrl}/akool-faceswap`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            token: token,
-            step: 'faceswap',
-            userImage: userImageBase64,
-            hairstyleImage: styleImageUrl,
-            userLandmarks: userDetectData.landmarks,
-            hairstyleLandmarks: styleDetectData.landmarks
-          })
-        });
-
-        const faceSwapData = await faceSwapResult.json();
-        if (!faceSwapData.success) {
-          throw new Error('Face Swap 실패: ' + faceSwapData.message);
-        }
-
-        // 6. 상태 확인 폴링
-        progressCallback(80, '결과 생성 중...');
-        const jobId = faceSwapData.jobId;
+        const userImageUrl = await this.uploadTempImage(userImageBase64, `temp/user_${Date.now()}.jpg`);
         
-        for (let i = 0; i < 20; i++) {
-          await this.delay(5000); // 5초 대기
+        // 헤어스타일 이미지도 Firebase로 업로드
+        let styleImageUrlFinal = styleImageUrl;
+        if (!styleImageUrl.includes('firebasestorage.googleapis.com')) {
+          progressCallback(15, '헤어스타일 이미지 업로드 중...');
           
-          const statusResult = await fetch(`${this.baseUrl}/akool-status`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              token: token,
-              jobId: jobId
-            })
-          });
-
-          const statusData = await statusResult.json();
-          console.log(`🔍 상태 확인 ${i+1}회:`, statusData);
-
-          if (statusData.success && statusData.status === 'completed') {
-            progressCallback(100, '완료!');
-            return {
-              success: true,
-              resultUrl: statusData.resultUrl,
-              message: '🎉 헤어스타일이 성공적으로 적용되었습니다!',
-              method: 'akool'
+          const styleResponse = await fetch(styleImageUrl);
+          const styleBlob = await styleResponse.blob();
+          const styleCanvas = document.createElement('canvas');
+          const styleCtx = styleCanvas.getContext('2d');
+          const styleImg = new Image();
+          
+          await new Promise((resolve) => {
+            styleImg.onload = () => {
+              styleCanvas.width = styleImg.width;
+              styleCanvas.height = styleImg.height;
+              styleCtx.drawImage(styleImg, 0, 0);
+              resolve();
             };
-          }
-
-          if (statusData.success && statusData.status === 'failed') {
-            throw new Error('AI 처리 실패: ' + statusData.error);
-          }
-
-          progressCallback(80 + (i * 1), `결과 생성 중... (${i+1}/20)`);
+            styleImg.src = URL.createObjectURL(styleBlob);
+          });
+          
+          const styleBase64 = styleCanvas.toDataURL('image/jpeg', 0.9);
+          styleImageUrlFinal = await this.uploadTempImage(styleBase64, `temp/style_${Date.now()}.jpg`);
         }
 
-        throw new Error('AI 처리 시간 초과 (5분)');
+        // ⭐ 3. 얼굴 감지 API ✅
+        progressCallback(25, '사용자 얼굴 분석 중...');
+        const userDetectResult = await this.detectFace(userImageUrl, 'user');
+        if (!userDetectResult.success) {
+          throw new Error('사용자 얼굴 감지 실패: ' + userDetectResult.message);
+        }
+
+        progressCallback(40, '헤어스타일 분석 중...');
+        const hairstyleDetectResult = await this.detectFace(styleImageUrlFinal, 'hairstyle');
+        if (!hairstyleDetectResult.success) {
+          throw new Error('헤어스타일 얼굴 감지 실패: ' + hairstyleDetectResult.message);
+        }
+
+        // ⭐ 4. Face Swap API ✅
+        progressCallback(55, 'AI 처리 요청 중...');
+        const faceswapResult = await this.createFaceSwap(userDetectResult, hairstyleDetectResult);
+
+        if (!faceswapResult.success) {
+          throw new Error('Face swap 요청 실패: ' + faceswapResult.error);
+        }
+
+        // ⭐ 5. 상태 확인 API ✅
+        progressCallback(60, '처리 대기 중...');
+        const finalResult = await this.waitForResult(faceswapResult.taskId, progressCallback);
+
+        if (finalResult.success) {
+          progressCallback(100, '완료!');
+          return {
+            success: true,
+            resultUrl: finalResult.resultUrl,
+            message: '🎉 헤어스타일이 성공적으로 적용되었습니다!',
+            method: 'akool'
+          };
+        } else {
+          throw new Error('Face swap 처리 실패: ' + finalResult.error);
+        }
 
       } catch (error) {
         console.error('❌ AKOOL Face Swap 오류:', error);
         
-        // 실패시 Canvas 시뮬레이션으로 폴백 (기존 로직)
+        // 실패시 Canvas 시뮬레이션으로 폴백
         console.log('📝 Canvas 시뮬레이션으로 폴백...');
         if (window.advancedCanvasSimulation) {
           const userImageData = userFile instanceof File ? 
@@ -166,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // 파일을 Base64로 변환 (기존 로직)
+    // 파일을 Base64로 변환
     fileToBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -176,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // 지연 함수 (기존 로직)
+    // 지연 함수
     delay(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -186,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const akoolAPI = new AkoolAPI();
 
   // ==========================================
-  // 2. 기존 showStyleDetail 함수 래핑 (동일)
+  // 2. 기존 showStyleDetail 함수 래핑 ✅
   // ==========================================
   
   const originalShowStyleDetail = window.showStyleDetail || function() {};
@@ -201,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   // ==========================================
-  // 3. AI 체험 버튼 추가 (기존 로직 완전 동일)
+  // 3. AI 체험 버튼 추가 ✅
   // ==========================================
   
   function addAIExperienceButton() {
@@ -215,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const aiButton = document.createElement('button');
     aiButton.className = 'modal-btn btn-ai-experience';
-    aiButton.innerHTML = '🤖 AI 체험';  // 기존과 동일
+    aiButton.innerHTML = '🤖 AI 체험';
     aiButton.style.cssText = `
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
@@ -233,16 +466,16 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      console.log('🚀 실제 AKOOL AI 체험 시작!');
+      console.log('🚀 올바른 AKOOL AI 워크플로우 시작!');
       openAIExperienceModal();
     });
 
     modalActions.appendChild(aiButton);
-    console.log('✅ 실제 AI 체험 버튼 추가 완료');
+    console.log('✅ AI 체험 버튼 추가 완료 (올바른 워크플로우)');
   }
 
   // ==========================================
-  // 4. AI 체험 모달 열기 (기존 로직)
+  // 4. AI 체험 모달 열기 ✅
   // ==========================================
   
   function openAIExperienceModal() {
@@ -251,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    console.log('🎨 실제 AKOOL AI 모달 열기:', {
+    console.log('🎨 올바른 AKOOL AI 모달 열기:', {
       styleName: currentStyleName,
       styleImage: currentStyleImage
     });
@@ -265,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ==========================================
-  // 5. 알림 표시 함수 (기존 로직)
+  // 5. 알림 표시 함수 ✅
   // ==========================================
   
   function showAlert(message, type = 'info') {
@@ -309,7 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ==========================================
-  // 6. AI 체험 모달 생성 (기존 HTML 구조 완전 동일)
+  // 6. AI 체험 모달 생성 ✅
   // ==========================================
   
   function createAIExperienceModal() {
@@ -319,7 +552,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="ai-modal-overlay"></div>
       <div class="ai-modal-content">
         <div class="ai-modal-header">
-          <h3>🤖 AI 헤어스타일 체험 (실제 버전)</h3>
+          <h3>🤖 AI 헤어스타일 체험 (올바른 워크플로우)</h3>
           <button class="ai-modal-close">×</button>
         </div>
         
@@ -356,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="ai-progress-fill" id="aiProgressFill"></div>
             </div>
             <div class="ai-progress-text" id="aiProgressText">처리 중...</div>
-            <div class="ai-progress-details" id="aiProgressDetails">실제 AKOOL AI가 이미지를 분석하고 있습니다...</div>
+            <div class="ai-progress-details" id="aiProgressDetails">올바른 AKOOL 워크플로우로 처리 중...</div>
           </div>
           
           <div class="ai-result-section" id="aiResultSection" style="display: none;">
@@ -382,7 +615,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <div class="ai-modal-footer">
           <button class="btn ai-process-btn" id="aiProcessBtn" disabled>
-            🚀 실제 AI 처리 시작
+            🚀 올바른 워크플로우로 AI 처리
           </button>
         </div>
       </div>
@@ -394,7 +627,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ==========================================
-  // 7. AI 모달 스타일 추가 (기존 CSS 완전 동일)
+  // 7. AI 모달 스타일 추가 ✅
   // ==========================================
   
   function addAIModalStyles() {
@@ -776,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ==========================================
-  // 8. AI 모달 이벤트 설정 (기존 로직 완전 동일)
+  // 8. AI 모달 이벤트 설정 ✅
   // ==========================================
   
   function setupAIModalEvents(modal) {
@@ -884,15 +1117,12 @@ document.addEventListener('DOMContentLoaded', function() {
       faceSwapInProgress = false;
     }
 
-    // ==========================================
-    // 🚀 실제 AI 처리 시작 (기존 로직 + 상태 관리 추가)
-    // ==========================================
-    
+    // ⭐ 올바른 워크플로우로 AI 처리 시작 ✅
     processBtn.addEventListener('click', async () => {
       if (!selectedFile || faceSwapInProgress) return;
 
       faceSwapInProgress = true;
-      console.log('🚀 실제 AKOOL AI 처리 시작!');
+      console.log('🚀 올바른 AKOOL 워크플로우로 AI 처리 시작!');
 
       const progressSection = modal.querySelector('#aiProgressSection');
       const progressFill = modal.querySelector('#aiProgressFill');
@@ -914,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', function() {
             progressFill.style.width = progress + '%';
             progressText.textContent = `${progress}% 완료`;
             progressDetails.textContent = message;
-            console.log(`📊 진행률: ${progress}% - ${message}`);
+            console.log(`📊 올바른 워크플로우 진행률: ${progress}% - ${message}`);
           }
         );
 
@@ -929,7 +1159,7 @@ document.addEventListener('DOMContentLoaded', function() {
           progressSection.style.display = 'none';
           resultSection.style.display = 'block';
 
-          console.log('🎉 실제 AKOOL AI 처리 성공!', result.resultUrl);
+          console.log('🎉 올바른 AKOOL 워크플로우 처리 성공!', result.resultUrl);
 
           // 다운로드 버튼 이벤트
           downloadBtn.onclick = () => {
@@ -956,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', function() {
           progressSection.style.display = 'none';
           errorSection.style.display = 'block';
 
-          console.error('❌ 실제 AKOOL AI 처리 실패:', result);
+          console.error('❌ 올바른 AKOOL 워크플로우 처리 실패:', result);
         }
 
       } catch (error) {
@@ -990,7 +1220,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ==========================================
-  // 9. 전역 함수 생성 (기존 인터페이스 호환성)
+  // 9. 전역 함수 생성 ✅
   // ==========================================
   
   // 전역 AKOOL API 인스턴스
@@ -1025,14 +1255,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
-  console.log('✅ AKOOL Face Swap 실제 API 통합 완료');
+  console.log('✅ AKOOL 완전 통합 최종 버전 완료');
+  console.log('🎯 올바른 워크플로우: 토큰 → 업로드 → 감지 → Face Swap → 상태확인');
 });
 
 // ==========================================
-// 10. Canvas 시뮬레이션 폴백 함수 (기존 코드 보존)
+// 10. Canvas 시뮬레이션 폴백 함수 ✅
 // ==========================================
 
-// 기존 advancedCanvasSimulation 함수가 없는 경우를 위한 기본 구현
+// Canvas 시뮬레이션 함수 (기존 코드 보존)
 if (!window.advancedCanvasSimulation) {
   window.advancedCanvasSimulation = async function(userImageData, styleImageData) {
     return new Promise((resolve) => {
@@ -1050,7 +1281,7 @@ if (!window.advancedCanvasSimulation) {
         function checkAllLoaded() {
           loadedImages++;
           if (loadedImages === 2) {
-            // Canvas 합성 로직 (기존과 동일)
+            // Canvas 합성 로직
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
