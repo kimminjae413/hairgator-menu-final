@@ -1490,43 +1490,38 @@ document.addEventListener('DOMContentLoaded', function() {
         setupModalButtonEvents(code, name, docId, gender);
     }
 
-    // ✅ AI 버튼 생성 함수 (실제 AKOOL 연동!)
+    // ✅ AI 버튼 이벤트 수정 함수 (기존 AKOOL 버튼 활용!)
     function ensureAIButton() {
-        if (!modalActions) return;
-        
-        // 기존 AI 버튼 제거
-        const existingAiBtn = modalActions.querySelector('.btn-ai-experience');
-        if (existingAiBtn) {
-            existingAiBtn.remove();
-        }
-        
-        // 새로운 AI 버튼 생성
-        const aiBtn = document.createElement('button');
-        aiBtn.className = 'modal-btn btn-ai-experience';
-        aiBtn.innerHTML = 'AI 체험';
-        aiBtn.title = '✨ AI로 헤어스타일 미리보기';
-        
-        // ✅ 클릭 이벤트 - 실제 AKOOL 모달 열기!
-        aiBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('🎨 AKOOL Face Swap 모달 열기...');
-            
-            if (currentStyleData && typeof window.openAkoolFaceSwapModal === 'function') {
-                // ✅ 실제 AKOOL 모달 열기!
-                window.openAkoolFaceSwapModal({
-                    imageUrl: currentStyleData.imageSrc,
-                    styleCode: currentStyleData.code,
-                    styleName: currentStyleData.name
-                });
+        // 기존 AKOOL이 생성한 AI 버튼을 찾아서 이벤트만 수정
+        setTimeout(() => {
+            const existingAIBtn = document.querySelector('#akoolAIBtn');
+            if (existingAIBtn) {
+                console.log('🔧 기존 AKOOL AI 버튼 발견, 이벤트 수정 중...');
+                
+                // 기존 이벤트 제거하고 새 이벤트 연결
+                existingAIBtn.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🎨 AKOOL Face Swap 모달 열기...');
+                    
+                    if (currentStyleData && typeof window.openAkoolFaceSwapModal === 'function') {
+                        // ✅ 실제 AKOOL 모달 열기!
+                        window.openAkoolFaceSwapModal({
+                            imageUrl: currentStyleData.imageSrc,
+                            styleCode: currentStyleData.code,
+                            styleName: currentStyleData.name
+                        });
+                    } else {
+                        console.error('❌ AKOOL 함수가 없습니다!');
+                        alert('AI 기능을 로드하는 중입니다. 잠시 후 다시 시도해주세요.');
+                    }
+                };
+                
+                console.log('✅ AKOOL AI 버튼 이벤트 수정 완료!');
             } else {
-                console.error('❌ AKOOL 함수가 없습니다!');
-                alert('AI 기능을 로드하는 중입니다. 잠시 후 다시 시도해주세요.');
+                console.log('⏳ AKOOL AI 버튼 아직 생성되지 않음, 재시도...');
             }
-        });
-        
-        modalActions.appendChild(aiBtn);
-        console.log('✅ 실제 AKOOL AI 체험 버튼 생성 완료!');
+        }, 200);
     }
 
     // 모달 버튼 이벤트 설정 - 기존과 동일
