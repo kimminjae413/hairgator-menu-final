@@ -1,7 +1,7 @@
-// 🚀 HAIRGATOR PWA Service Worker - AKOOL API 완전 호환 버전
-const CACHE_NAME = 'hairgator-v1.2.0';
-const STATIC_CACHE = 'hairgator-static-v1.2.0';
-const DYNAMIC_CACHE = 'hairgator-dynamic-v1.2.0';
+// 🚀 HAIRGATOR PWA Service Worker - AKOOL API 완전 호환 버전 (수정)
+const CACHE_NAME = 'hairgator-v1.2.1';  // 버전 업데이트
+const STATIC_CACHE = 'hairgator-static-v1.2.1';
+const DYNAMIC_CACHE = 'hairgator-dynamic-v1.2.1';
 
 // 🎯 캐시할 핵심 파일들
 const urlsToCache = [
@@ -86,24 +86,41 @@ self.addEventListener('activate', event => {
   console.log('✅ Service Worker 활성화 완료');
 });
 
-// 🌐 네트워크 요청 처리 (AKOOL 호환)
+// 🌐 네트워크 요청 처리 (AKOOL 호환) - ✨ 단일 리스너로 통합
 self.addEventListener('fetch', event => {
-  // GET 요청만 처리
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
   const requestUrl = new URL(event.request.url);
+  
+  // 📊 디버깅을 위한 요청 로깅
+  if (isAkoolRelated(requestUrl)) {
+    console.log('🤖 AKOOL 요청 감지:', {
+      url: requestUrl.href,
+      method: event.request.method,
+      destination: event.request.destination
+    });
+  }
+  
+  if (isNetlifyFunction(requestUrl)) {
+    console.log('⚡ Netlify Functions 요청:', {
+      path: requestUrl.pathname,
+      method: event.request.method
+    });
+  }
+  
+  // 🚨 중요: POST 요청은 Service Worker가 절대 개입하지 않음!
+  if (event.request.method !== 'GET') {
+    console.log('🚫 Non-GET 요청 통과:', event.request.method, requestUrl.href);
+    return; // Service Worker 완전 우회
+  }
   
   // 🎯 AKOOL API 관련 요청은 항상 통과! (캐시 안함)
   if (isAkoolRelated(requestUrl)) {
-    console.log('🤖 AKOOL 관련 요청 통과:', requestUrl.href);
+    console.log('🤖 AKOOL GET 요청 통과:', requestUrl.href);
     return; // 서비스워커 개입 없이 직접 통과
   }
   
-  // 🚫 Netlify Functions도 항상 통과! (캐시 안함)
+  // 🚫 Netlify Functions GET 요청도 항상 통과! (캐시 안함)
   if (isNetlifyFunction(requestUrl)) {
-    console.log('⚡ Netlify Functions 요청 통과:', requestUrl.pathname);
+    console.log('⚡ Netlify Functions GET 요청 통과:', requestUrl.pathname);
     return; // 서비스워커 개입 없이 직접 통과
   }
   
@@ -117,7 +134,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // 🎯 일반 요청 캐시 전략 적용
+  // 🎯 일반 GET 요청만 캐시 전략 적용
   event.respondWith(handleRequest(event.request));
 });
 
@@ -151,7 +168,7 @@ function shouldNotCache(request) {
   );
 }
 
-// 📋 요청 처리 함수
+// 📋 요청 처리 함수 (GET 요청만)
 async function handleRequest(request) {
   const requestUrl = new URL(request.url);
   
@@ -289,28 +306,6 @@ self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     console.log('🔄 강제 업데이트 실행');
     self.skipWaiting();
-  }
-});
-
-// 📊 디버깅을 위한 요청 로깅
-self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-  
-  // AKOOL 관련 요청 로깅
-  if (isAkoolRelated(url)) {
-    console.log('🤖 AKOOL 요청 감지:', {
-      url: url.href,
-      method: event.request.method,
-      destination: event.request.destination
-    });
-  }
-  
-  // Netlify Functions 요청 로깅
-  if (isNetlifyFunction(url)) {
-    console.log('⚡ Netlify Functions 요청:', {
-      path: url.pathname,
-      method: event.request.method
-    });
   }
 });
 
