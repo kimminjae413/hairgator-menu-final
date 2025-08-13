@@ -22,10 +22,18 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // 환경변수에서 API 키 가져오기 (우선순위: 환경변수 > 하드코딩)
-    const API_KEY = process.env.AKOOL_API_KEY || 'OzV4vUnCxCnhXt447x8oxQOcV3l0Jpqh';
-
+    // 환경변수에서 API 키 가져오기
+    const CLIENT_ID = process.env.AKOOL_CLIENT_ID || '+r5yrpKQ62HUoyUdYoBvDg==';
+    const CLIENT_SECRET = process.env.AKOOL_CLIENT_SECRET || 'OzV4vUnCxCnhXt447x8oxQOcV3l0Jpqh';
+    
     console.log('🔑 AKOOL 토큰 발급 시작...');
+    console.log('📝 Client ID:', CLIENT_ID.substring(0, 10) + '...');
+
+    // 올바른 요청 데이터 구성
+    const requestData = JSON.stringify({
+      clientId: CLIENT_ID,
+      clientSecret: CLIENT_SECRET
+    });
 
     const options = {
       hostname: 'openapi.akool.com',
@@ -33,8 +41,8 @@ exports.handler = async (event, context) => {
       path: '/api/open/v3/getToken',
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(requestData)
       }
     };
 
@@ -52,10 +60,11 @@ exports.handler = async (event, context) => {
       });
       
       req.on('error', reject);
+      req.write(requestData);  // 이 부분이 중요!
       req.end();
     });
 
-    console.log('📡 AKOOL API 응답:', response.statusCode, response.data);
+    console.log('📡 AKOOL API 응답:', response.statusCode, response.data?.code);
 
     if (response.statusCode === 200 && response.data.code === 1000) {
       console.log('✅ 토큰 발급 성공');
@@ -64,8 +73,8 @@ exports.handler = async (event, context) => {
         headers,
         body: JSON.stringify({
           success: true,
-          token: response.data.data.token,
-          expiresAt: response.data.data.expired_at || Date.now() + (3600 * 1000),
+          token: response.data.token,
+          expiresAt: Date.now() + (365 * 24 * 60 * 60 * 1000), // 1년
           message: '토큰 발급 성공'
         })
       };
@@ -77,7 +86,7 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({
           success: false,
           error: 'AKOOL API 오류',
-          message: response.data.msg || '토큰 발급 실패',
+          message: response.data.message || '토큰 발급 실패',
           code: response.data.code
         })
       };
