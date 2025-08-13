@@ -1,12 +1,175 @@
 // akool/js/akool-integration.js
-// HAIRGATOR에 AKOOL Face Swap 기능 통합 - 최종 수정 버전
+// HAIRGATOR에 AKOOL Face Swap 기능 통합 - 실제 API 버전
 
 document.addEventListener('DOMContentLoaded', function() {
-  const akoolAPI = new AkoolAPI();
   let currentStyleImage = null;
   let currentStyleName = null;
 
-  console.log('🎨 AKOOL Face Swap 통합 시작');
+  console.log('🚀 AKOOL Face Swap 실제 API 통합 시작');
+
+  // 🔥 실제 AKOOL API 클래스 정의
+  class AkoolAPI {
+    constructor() {
+      this.token = null;
+      this.baseUrl = '/.netlify/functions';
+    }
+
+    // 토큰 발급
+    async getToken() {
+      if (this.token) return this.token;
+
+      try {
+        const response = await fetch(`${this.baseUrl}/akool-token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          this.token = data.token;
+          console.log('✅ AKOOL 토큰 발급 성공');
+          return this.token;
+        } else {
+          throw new Error(data.error || '토큰 발급 실패');
+        }
+      } catch (error) {
+        console.error('❌ 토큰 발급 오류:', error);
+        throw error;
+      }
+    }
+
+    // 실제 Face Swap 처리
+    async processFaceSwap(userFile, styleImageUrl, progressCallback) {
+      try {
+        console.log('🤖 실제 AKOOL Face Swap 시작');
+        
+        // 1. 토큰 확보
+        progressCallback(10, 'AKOOL 인증 중...');
+        const token = await this.getToken();
+
+        // 2. 사용자 이미지를 Base64로 변환
+        progressCallback(20, '사용자 이미지 처리 중...');
+        const userImageBase64 = await this.fileToBase64(userFile);
+
+        // 3. 사용자 얼굴 감지
+        progressCallback(30, '사용자 얼굴 감지 중...');
+        const userDetectResult = await fetch(`${this.baseUrl}/akool-faceswap`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: token,
+            step: 'detect_user',
+            userImage: userImageBase64
+          })
+        });
+
+        const userDetectData = await userDetectResult.json();
+        if (!userDetectData.success) {
+          throw new Error('사용자 얼굴 감지 실패: ' + userDetectData.message);
+        }
+
+        // 4. 헤어스타일 얼굴 감지
+        progressCallback(50, '헤어스타일 분석 중...');
+        const styleDetectResult = await fetch(`${this.baseUrl}/akool-faceswap`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: token,
+            step: 'detect_hairstyle',
+            hairstyleImage: styleImageUrl
+          })
+        });
+
+        const styleDetectData = await styleDetectResult.json();
+        if (!styleDetectData.success) {
+          throw new Error('헤어스타일 얼굴 감지 실패: ' + styleDetectData.message);
+        }
+
+        // 5. Face Swap 실행
+        progressCallback(70, 'Face Swap 처리 중...');
+        const faceSwapResult = await fetch(`${this.baseUrl}/akool-faceswap`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: token,
+            step: 'faceswap',
+            userImage: userImageBase64,
+            hairstyleImage: styleImageUrl,
+            userLandmarks: userDetectData.landmarks,
+            hairstyleLandmarks: styleDetectData.landmarks
+          })
+        });
+
+        const faceSwapData = await faceSwapResult.json();
+        if (!faceSwapData.success) {
+          throw new Error('Face Swap 실패: ' + faceSwapData.message);
+        }
+
+        // 6. 상태 확인 폴링
+        progressCallback(80, '결과 생성 중...');
+        const jobId = faceSwapData.jobId;
+        
+        for (let i = 0; i < 20; i++) {
+          await this.delay(5000); // 5초 대기
+          
+          const statusResult = await fetch(`${this.baseUrl}/akool-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              token: token,
+              jobId: jobId
+            })
+          });
+
+          const statusData = await statusResult.json();
+          console.log(`🔍 상태 확인 ${i+1}회:`, statusData);
+
+          if (statusData.success && statusData.status === 'completed') {
+            progressCallback(100, '완료!');
+            return {
+              success: true,
+              resultUrl: statusData.resultUrl,
+              message: '🎉 헤어스타일이 성공적으로 적용되었습니다!'
+            };
+          }
+
+          if (statusData.success && statusData.status === 'failed') {
+            throw new Error('AI 처리 실패: ' + statusData.error);
+          }
+
+          progressCallback(80 + (i * 1), `결과 생성 중... (${i+1}/20)`);
+        }
+
+        throw new Error('AI 처리 시간 초과 (5분)');
+
+      } catch (error) {
+        console.error('❌ AKOOL Face Swap 오류:', error);
+        return {
+          success: false,
+          error: error.message,
+          message: error.message
+        };
+      }
+    }
+
+    // 파일을 Base64로 변환
+    fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 지연 함수
+    delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+  }
+
+  // AKOOL API 인스턴스 생성
+  const akoolAPI = new AkoolAPI();
 
   // 스타일 모달이 열릴 때 AI 체험 버튼 추가
   const originalShowStyleDetail = window.showStyleDetail || function() {};
@@ -32,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const aiButton = document.createElement('button');
     aiButton.className = 'modal-btn btn-ai-experience';
-    aiButton.innerHTML = '✨ AI 체험';
+    aiButton.innerHTML = '🤖 AI 체험';  // 이모지 변경으로 실제 버전임을 표시
     aiButton.style.cssText = `
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
@@ -45,10 +208,12 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
 
     aiButton.addEventListener('click', function() {
+      console.log('🚀 실제 AKOOL AI 체험 시작!');
       openAIExperienceModal();
     });
 
     modalActions.appendChild(aiButton);
+    console.log('✅ 실제 AI 체험 버튼 추가 완료');
   }
 
   // AI 체험 모달 열기
@@ -57,6 +222,11 @@ document.addEventListener('DOMContentLoaded', function() {
       showAlert('헤어스타일 이미지를 불러올 수 없습니다', 'error');
       return;
     }
+
+    console.log('🎨 실제 AKOOL AI 모달 열기:', {
+      styleName: currentStyleName,
+      styleImage: currentStyleImage
+    });
 
     const modal = createAIExperienceModal();
     document.body.appendChild(modal);
@@ -68,7 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 알림 표시 함수
   function showAlert(message, type = 'info') {
-    // 기존 알림 제거
     const existingAlert = document.querySelector('.ai-alert');
     if (existingAlert) {
       existingAlert.remove();
@@ -91,7 +260,6 @@ document.addEventListener('DOMContentLoaded', function() {
       animation: slideInRight 0.3s ease;
     `;
 
-    // 타입별 색상
     const colors = {
       'info': 'background: #667eea;',
       'success': 'background: #28a745;',
@@ -100,10 +268,8 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     alert.style.cssText += colors[type] || colors.info;
-
     document.body.appendChild(alert);
 
-    // 3초 후 자동 제거
     setTimeout(() => {
       if (alert.parentElement) {
         alert.remove();
@@ -119,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="ai-modal-overlay"></div>
       <div class="ai-modal-content">
         <div class="ai-modal-header">
-          <h3>✨ AI 헤어스타일 체험</h3>
+          <h3>🤖 AI 헤어스타일 체험 (실제 버전)</h3>
           <button class="ai-modal-close">×</button>
         </div>
         
@@ -156,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="ai-progress-fill" id="aiProgressFill"></div>
             </div>
             <div class="ai-progress-text" id="aiProgressText">처리 중...</div>
-            <div class="ai-progress-details" id="aiProgressDetails">AI가 이미지를 분석하고 있습니다...</div>
+            <div class="ai-progress-details" id="aiProgressDetails">실제 AKOOL AI가 이미지를 분석하고 있습니다...</div>
           </div>
           
           <div class="ai-result-section" id="aiResultSection" style="display: none;">
@@ -182,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <div class="ai-modal-footer">
           <button class="btn ai-process-btn" id="aiProcessBtn" disabled>
-            ✨ AI 처리 시작
+            🚀 실제 AI 처리 시작
           </button>
         </div>
       </div>
@@ -190,10 +356,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     addAIModalStyles();
     setupAIModalEvents(modal);
-
     return modal;
   }
 
+  // [나머지 스타일 및 이벤트 함수들은 기존과 동일하게 유지...]
+  
   // AI 모달 스타일 추가
   function addAIModalStyles() {
     if (document.getElementById('ai-modal-styles')) return;
@@ -677,9 +844,11 @@ document.addEventListener('DOMContentLoaded', function() {
       fileInput.value = '';
     }
 
-    // AI 처리 시작
+    // 🚀 실제 AI 처리 시작
     processBtn.addEventListener('click', async () => {
       if (!selectedFile) return;
+
+      console.log('🚀 실제 AKOOL AI 처리 시작!');
 
       const progressSection = modal.querySelector('#aiProgressSection');
       const progressFill = modal.querySelector('#aiProgressFill');
@@ -701,6 +870,7 @@ document.addEventListener('DOMContentLoaded', function() {
             progressFill.style.width = progress + '%';
             progressText.textContent = `${progress}% 완료`;
             progressDetails.textContent = message;
+            console.log(`📊 진행률: ${progress}% - ${message}`);
           }
         );
 
@@ -714,6 +884,8 @@ document.addEventListener('DOMContentLoaded', function() {
           
           progressSection.style.display = 'none';
           resultSection.style.display = 'block';
+
+          console.log('🎉 실제 AKOOL AI 처리 성공!', result.resultUrl);
 
           // 다운로드 버튼 이벤트
           downloadBtn.onclick = () => {
@@ -739,6 +911,8 @@ document.addEventListener('DOMContentLoaded', function() {
           
           progressSection.style.display = 'none';
           errorSection.style.display = 'block';
+
+          console.error('❌ 실제 AKOOL AI 처리 실패:', result);
         }
 
       } catch (error) {
@@ -761,5 +935,5 @@ document.addEventListener('DOMContentLoaded', function() {
     errorRetryBtn.addEventListener('click', resetToInitialState);
   }
 
-  console.log('✅ AKOOL Face Swap 통합 완료');
+  console.log('✅ AKOOL Face Swap 실제 API 통합 완료');
 });
