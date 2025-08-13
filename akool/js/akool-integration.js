@@ -756,8 +756,12 @@ window.startAkoolProcess = async function(styleImageUrl) {
         
         updateProgress(90, 'AI 처리 완료 대기 중...', 'Face Swap 결과 확인');
         
+        // ✅ 올바른 taskId 사용 (resultId 또는 _id)
+        const taskId = faceSwapResult.resultId || faceSwapResult._id || faceSwapResult.jobId;
+        console.log('🆔 사용할 Task ID:', taskId);
+        
         // 결과 대기 (폴링)
-        const finalResult = await waitForFaceSwapResult(faceSwapResult._id, token, updateProgress);
+        const finalResult = await waitForFaceSwapResult(taskId, token, updateProgress);
         
         if (finalResult.success) {
             updateProgress(100, '✨ AI 체험 완료!', 'Face Swap 성공');
@@ -1029,7 +1033,7 @@ function getStatusText(status) {
     return statusMap[status] || 'Unknown';
 }
 
-// Canvas 시뮬레이션
+// Canvas 시뮬레이션 (CORS 문제 해결)
 async function generateCanvasSimulation(userImageData, styleImageData) {
     return new Promise((resolve) => {
         try {
@@ -1039,34 +1043,27 @@ async function generateCanvasSimulation(userImageData, styleImageData) {
             canvas.width = 800;
             canvas.height = 1000;
             
-            const userImg = new Image();
-            const styleImg = new Image();
-            let loadedImages = 0;
+            // 배경 먼저 그리기
+            ctx.fillStyle = '#f8f8f8';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            function checkAllLoaded() {
-                loadedImages++;
-                if (loadedImages === 2) {
-                    // 배경
-                    ctx.fillStyle = '#f8f8f8';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    // 스타일 이미지
-                    const styleRatio = Math.min(canvas.width / styleImg.width, canvas.height / styleImg.height);
-                    const styleW = styleImg.width * styleRatio;
-                    const styleH = styleImg.height * styleRatio;
-                    const styleX = (canvas.width - styleW) / 2;
-                    const styleY = (canvas.height - styleH) / 2;
-                    
-                    ctx.drawImage(styleImg, styleX, styleY, styleW, styleH);
-                    
-                    // 사용자 얼굴 오버레이
-                    ctx.globalAlpha = 0.6;
-                    const userSize = Math.min(canvas.width, canvas.height) * 0.25;
-                    const userX = canvas.width * 0.05;
-                    const userY = canvas.height * 0.05;
+            // ✅ CORS 오류 방지를 위한 대체 방법
+            if (typeof userImageData === 'string' && userImageData.startsWith('data:image/')) {
+                // Base64는 안전하게 사용 가능
+                const userImg = new Image();
+                userImg.onload = () => {
+                    // 사용자 얼굴 중앙에 그리기
+                    const userSize = Math.min(canvas.width, canvas.height) * 0.4;
+                    const userX = (canvas.width - userSize) / 2;
+                    const userY = (canvas.height - userSize) / 2;
                     
                     ctx.drawImage(userImg, userX, userY, userSize, userSize);
-                    ctx.globalAlpha = 1.0;
+                    
+                    // 헤어스타일 효과 시뮬레이션 (테두리)
+                    ctx.strokeStyle = '#FF1493';
+                    ctx.lineWidth = 8;
+                    ctx.setLineDash([20, 10]);
+                    ctx.strokeRect(userX - 20, userY - 20, userSize + 40, userSize + 40);
                     
                     // 워터마크
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
@@ -1087,21 +1084,90 @@ async function generateCanvasSimulation(userImageData, styleImageData) {
                         url: resultDataUrl,
                         method: 'canvas'
                     });
-                }
+                };
+                
+                userImg.onerror = () => {
+                    // 이미지 로드 실패시 기본 시뮬레이션
+                    createBasicSimulation();
+                };
+                
+                userImg.src = userImageData;
+            } else {
+                // 외부 URL인 경우 기본 시뮬레이션
+                createBasicSimulation();
             }
             
-            userImg.onload = checkAllLoaded;
-            userImg.onerror = () => resolve({ url: userImageData, method: 'fallback' });
-            
-            styleImg.onload = checkAllLoaded;
-            styleImg.onerror = () => resolve({ url: userImageData, method: 'fallback' });
-            
-            userImg.src = userImageData;
-            styleImg.src = styleImageData;
+            function createBasicSimulation() {
+                // 기본 얼굴 모양 그리기
+                ctx.fillStyle = '#FFE4B5';
+                ctx.beginPath();
+                ctx.ellipse(canvas.width / 2, canvas.height / 2, 150, 200, 0, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // 눈
+                ctx.fillStyle = '#333';
+                ctx.beginPath();
+                ctx.ellipse(canvas.width / 2 - 50, canvas.height / 2 - 30, 15, 20, 0, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.ellipse(canvas.width / 2 + 50, canvas.height / 2 - 30, 15, 20, 0, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // 입
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2 + 40, 30, 0, Math.PI);
+                ctx.stroke();
+                
+                // 헤어스타일 효과
+                ctx.fillStyle = '#8B4513';
+                ctx.beginPath();
+                ctx.ellipse(canvas.width / 2, canvas.height / 2 - 100, 180, 80, 0, 0, Math.PI);
+                ctx.fill();
+                
+                // 워터마크
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
+                
+                ctx.fillStyle = '#FF1493';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('HAIRGATOR AI 시뮬레이션', canvas.width / 2, canvas.height - 60);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '16px Arial';
+                ctx.fillText('실제 AI 결과와 다를 수 있습니다', canvas.width / 2, canvas.height - 30);
+                
+                const resultDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                
+                resolve({
+                    url: resultDataUrl,
+                    method: 'canvas'
+                });
+            }
             
         } catch (error) {
             console.error('Canvas simulation error:', error);
-            resolve({ url: userImageData, method: 'fallback' });
+            // 최종 폴백: 간단한 텍스트 이미지
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 400;
+            canvas.height = 300;
+            
+            ctx.fillStyle = '#FF1493';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('AI 체험 결과', canvas.width / 2, canvas.height / 2);
+            
+            resolve({ 
+                url: canvas.toDataURL('image/jpeg', 0.9), 
+                method: 'fallback' 
+            });
         }
     });
 }
