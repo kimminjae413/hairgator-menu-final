@@ -916,7 +916,7 @@ async function createFaceSwapWithAkool(userFaceData, styleFaceData, token) {
             styleConfidence: styleFaceData.confidence || 'N/A'
         });
         
-        const response = await fetch('https://openapi.akool.com/api/open/v3/faceswap/highquality/create', {
+        const response = await fetch('https://openapi.akool.com/api/open/v3/faceswap/highquality/specifyimage' {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
