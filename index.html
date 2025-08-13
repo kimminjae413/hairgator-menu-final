@@ -666,427 +666,6 @@
             color: #ff8c00;
         }
 
-        /* 🆕 실제 AI 체험 모달 스타일 */
-        .ai-experience-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 3000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
-        }
-        
-        .ai-experience-modal.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .ai-modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #1a1a1a;
-            border: 2px solid #667eea;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translate(-50%, -30%);
-                opacity: 0;
-            }
-            to {
-                transform: translate(-50%, -50%);
-                opacity: 1;
-            }
-        }
-        
-        .ai-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 25px;
-            border-bottom: 1px solid #333;
-        }
-        
-        .ai-modal-header h3 {
-            color: #667eea;
-            font-size: 20px;
-            margin: 0;
-        }
-        
-        .ai-modal-close {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 24px;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background 0.3s;
-        }
-        
-        .ai-modal-close:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .ai-modal-body {
-            padding: 25px;
-        }
-
-        /* 📷 업로드 방식 선택 탭 */
-        .upload-method-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            justify-content: center;
-        }
-
-        .upload-tab {
-            flex: 1;
-            max-width: 120px;
-            padding: 12px 20px;
-            background: #333;
-            color: #999;
-            border: 1px solid #444;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .upload-tab.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .upload-tab:hover:not(.active) {
-            background: #444;
-            color: white;
-        }
-        
-        .ai-upload-area {
-            border: 2px dashed #667eea;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: rgba(102, 126, 234, 0.05);
-        }
-        
-        .ai-upload-area:hover {
-            border-color: #764ba2;
-            background: rgba(102, 126, 234, 0.1);
-            transform: translateY(-2px);
-        }
-        
-        .ai-upload-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-        
-        .ai-upload-title {
-            font-size: 18px;
-            color: #fff;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        
-        .ai-upload-desc {
-            font-size: 14px;
-            color: #999;
-        }
-
-        /* 📷 카메라 촬영 스타일 */
-        .camera-container {
-            position: relative;
-            background: #000;
-            border-radius: 15px;
-            overflow: hidden;
-            aspect-ratio: 4/3;
-            max-width: 100%;
-        }
-
-        #cameraVideo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .camera-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-        }
-
-        .face-guide {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 200px;
-            height: 250px;
-            border: 3px solid #667eea;
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);
-        }
-
-        .guide-text {
-            position: absolute;
-            top: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: 14px;
-            font-weight: 600;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 8px 15px;
-            border-radius: 20px;
-            white-space: nowrap;
-        }
-
-        .camera-controls {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .camera-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .camera-btn:hover {
-            background: rgba(0, 0, 0, 0.9);
-            border-color: rgba(255, 255, 255, 0.6);
-            transform: scale(1.1);
-        }
-
-        .capture-btn {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: #667eea;
-            border: 4px solid white;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
-        }
-
-        .capture-btn:hover {
-            background: #764ba2;
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(102, 126, 234, 0.8);
-        }
-
-        .capture-btn:active {
-            transform: scale(0.95);
-        }
-
-        .camera-instructions {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
-        }
-
-        .camera-instructions p {
-            color: #667eea;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .camera-instructions ul {
-            color: #999;
-            font-size: 14px;
-            line-height: 1.6;
-            padding-left: 20px;
-        }
-
-        .camera-instructions li {
-            margin-bottom: 5px;
-        }
-        
-        .ai-preview-section {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 20px;
-            align-items: center;
-            margin-top: 20px;
-            padding: 20px;
-            background: #0a0a0a;
-            border-radius: 15px;
-        }
-        
-        .ai-preview-item {
-            text-align: center;
-        }
-        
-        .ai-preview-item h4 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        
-        .ai-preview-item img {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 10px;
-            border: 2px solid #333;
-        }
-
-        .retake-btn {
-            margin-top: 10px;
-            padding: 8px 15px;
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s;
-        }
-
-        .retake-btn:hover {
-            background: #555;
-            transform: translateY(-2px);
-        }
-        
-        .ai-preview-arrow {
-            font-size: 24px;
-            color: #667eea;
-            font-weight: bold;
-        }
-        
-        .ai-progress-section {
-            text-align: center;
-            padding: 30px 20px;
-        }
-        
-        .ai-progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #333;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-        
-        .ai-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 10px;
-            transition: width 0.5s ease;
-            width: 0%;
-        }
-        
-        .ai-progress-text {
-            color: #999;
-            font-size: 14px;
-        }
-        
-        .ai-result-section {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .ai-result-image img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-        
-        .ai-result-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .ai-modal-footer {
-            padding: 20px 25px;
-            border-top: 1px solid #333;
-            text-align: center;
-        }
-        
-        .ai-process-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-width: 200px;
-        }
-        
-        .ai-process-btn:enabled:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-        
-        .ai-process-btn:disabled {
-            background: #333;
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-        
-        .ai-download-btn, .ai-retry-btn {
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .ai-download-btn:hover, .ai-retry-btn:hover {
-            background: #555;
-            transform: translateY(-2px);
-        }
-
         /* Loading */
         .loading {
             grid-column: 1 / -1;
@@ -1153,51 +732,6 @@
 
             .theme-toggle-bottom:hover {
                 transform: scale(1.1) !important;
-            }
-
-            .ai-preview-section {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-            
-            .ai-preview-arrow {
-                transform: rotate(90deg);
-            }
-
-            .face-guide {
-                width: 150px;
-                height: 200px;
-            }
-            
-            .guide-text {
-                font-size: 12px;
-                padding: 6px 12px;
-            }
-            
-            .camera-controls {
-                bottom: 15px;
-                gap: 15px;
-            }
-            
-            .camera-btn {
-                width: 45px;
-                height: 45px;
-                font-size: 18px;
-            }
-            
-            .capture-btn {
-                width: 60px;
-                height: 60px;
-                font-size: 20px;
-            }
-            
-            .upload-method-tabs {
-                gap: 8px;
-            }
-            
-            .upload-tab {
-                font-size: 13px;
-                padding: 10px 15px;
             }
         }
 
@@ -1432,29 +966,29 @@
                         <span>♡</span>
                         <span>좋아요</span>
                     </button>
-                    <!-- AI 체험 버튼은 JavaScript에서 동적으로 추가 -->
+                    <!-- ✅ AI 체험 버튼은 JavaScript에서 동적으로 추가 -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- ✅ Scripts - 올바른 순서로 로드 -->
     <script src="js/firebase-config.js"></script>
+    <script src="akool/js/akool-integration.js"></script> <!-- ✅ AKOOL 스크립트 추가! -->
     
     <script>
-// 🚀 HAIRGATOR 최종 실제 버전 - 진짜 AKOOL API 연동!
+// ✅ 기존 UI/UX 완전 보존하면서 AKOOL만 연동!
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 HAIRGATOR 실제 AKOOL 버전 시작');
+    console.log('🚀 HAIRGATOR 기존 UI + AKOOL 실제 연동!');
 
-    // Global variables
+    // Global variables - 기존과 동일
     let currentGender = null;
     let currentCategory = null;
     let currentSubcategory = 'None';
     let menuData = {};
     let currentStyleData = null;
-    let akoolToken = null; // 🆕 AKOOL 토큰 저장
 
-    // Elements
+    // Elements - 기존과 동일
     const backBtn = document.getElementById('backBtn');
     const menuBtn = document.getElementById('menuBtn');
     const sidebar = document.getElementById('sidebar');
@@ -1471,7 +1005,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const menuGrid = document.getElementById('menuGrid');
     const loadingOverlay = document.getElementById('loadingOverlay');
     
-    // Modal elements
+    // Modal elements - 기존과 동일
     const styleModal = document.getElementById('styleModal');
     const modalClose = document.getElementById('modalClose');
     const modalImage = document.getElementById('modalImage');
@@ -1481,7 +1015,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnRegister = document.getElementById('btnRegister');
     const btnLike = document.getElementById('btnLike');
 
-    // Menu Data Structure
+    // Menu Data Structure - 기존과 동일
     const MENU_DATA = {
         male: {
             categories: [
@@ -1570,53 +1104,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // 🔑 AKOOL 토큰 관리 클래스
-    class AkoolTokenManager {
-        constructor() {
-            this.token = null;
-            this.expiresAt = null;
-        }
-
-        async getValidToken() {
-            if (this.token && this.expiresAt && Date.now() < this.expiresAt) {
-                console.log('✅ 기존 토큰 사용');
-                return this.token;
-            }
-
-            console.log('🔄 새로운 토큰 발급 시작...');
-            return await this.fetchNewToken();
-        }
-
-        async fetchNewToken() {
-            try {
-                const response = await fetch('/.netlify/functions/akool-token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                const data = await response.json();
-
-                if (data.success && data.token) {
-                    this.token = data.token;
-                    this.expiresAt = data.expiresAt || (Date.now() + 365 * 24 * 60 * 60 * 1000); // 1년
-                    
-                    console.log('✅ AKOOL 토큰 발급 성공');
-                    console.log('🎫 토큰:', this.token.substring(0, 20) + '...');
-                    
-                    return this.token;
-                } else {
-                    throw new Error(data.error || 'Token fetch failed');
-                }
-            } catch (error) {
-                console.error('❌ AKOOL 토큰 발급 실패:', error);
-                throw error;
-            }
-        }
-    }
-
-    const akoolTokenManager = new AkoolTokenManager();
-
-    // Initialize
+    // Initialize - 기존과 동일
     init();
 
     function init() {
@@ -1627,14 +1115,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (backBtn) {
             backBtn.style.display = 'none';
         }
-
-        // 🔑 앱 시작 시 토큰 미리 발급
-        akoolTokenManager.getValidToken().catch(err => {
-            console.warn('⚠️ 초기 토큰 발급 실패 (나중에 재시도):', err.message);
-        });
     }
 
-    // Event Listeners
+    // Event Listeners - 기존과 동일
     function setupEventListeners() {
         if (backBtn) {
             backBtn.addEventListener('click', handleBack);
@@ -1693,7 +1176,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Navigation
+    // Navigation - 기존과 동일
     function handleBack() {
         if (menuContainer.classList.contains('active')) {
             menuContainer.classList.remove('active');
@@ -1709,7 +1192,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Sidebar
+    // Sidebar - 기존과 동일
     function openSidebar() {
         sidebar.classList.add('active');
     }
@@ -1718,7 +1201,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sidebar.classList.remove('active');
     }
 
-    // Theme
+    // Theme - 기존과 동일
     function loadTheme() {
         const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
         if (savedTheme === 'light') {
@@ -1738,7 +1221,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
     }
 
-    // Auth
+    // Auth - 기존과 동일
     function checkAuthStatus() {
         const designerInfo = document.getElementById('designerInfo');
         if (window.auth && window.auth.currentUser) {
@@ -1761,7 +1244,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Gender Selection
+    // Gender Selection - 기존과 동일
     function selectGender(gender) {
         currentGender = gender;
         
@@ -1781,7 +1264,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('hairgator_gender', gender);
     }
 
-    // Load Menu Data
+    // Load Menu Data - 기존과 동일
     function loadMenuData(gender) {
         showLoading(true);
         
@@ -1796,7 +1279,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => showLoading(false), 300);
     }
 
-    // Render Categories - 여성일 때 물음표 버튼 추가
+    // Render Categories - 기존과 동일 (여성일 때 물음표 버튼 추가)
     function renderCategories(gender) {
         categoryTabs.innerHTML = '';
         
@@ -1829,12 +1312,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Select Category
+    // Select Category - 기존과 동일
     function selectCategory(category, gender) {
         currentCategory = category;
         
         document.querySelectorAll('.category-tab').forEach(tab => {
-            if (tab.classList.contains('help-tab')) return; // 물음표 버튼은 제외
+            if (tab.classList.contains('help-tab')) return;
             tab.classList.remove('active', 'male', 'female');
             if (tab.dataset.categoryId === category.id) {
                 tab.classList.add('active', gender);
@@ -1848,7 +1331,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadStyles(category.id, currentSubcategory, gender);
     }
 
-    // Render Subcategories
+    // Render Subcategories - 기존과 동일
     function renderSubcategories(gender) {
         subcategoryTabs.innerHTML = '';
         
@@ -1873,7 +1356,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Select Subcategory
+    // Select Subcategory - 기존과 동일
     function selectSubcategory(subcategory, gender) {
         currentSubcategory = subcategory;
         
@@ -1887,23 +1370,20 @@ document.addEventListener('DOMContentLoaded', function() {
         loadStyles(currentCategory.id, subcategory, gender);
     }
 
-    // Load Styles from Firebase
+    // Load Styles from Firebase - 기존과 동일
     async function loadStyles(categoryId, subcategory, gender) {
         menuGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
         
         try {
-            // Firebase 초기화 확인
             if (typeof db === 'undefined') {
                 console.error('❌ Firebase가 초기화되지 않음');
                 menuGrid.innerHTML = '<div style="color: #999; text-align: center; padding: 40px;">Firebase 연결 중...</div>';
                 return;
             }
             
-            // 현재 카테고리 이름 찾기
             const categoryName = currentCategory.name;
             console.log('🔍 스타일 로딩:', { gender, categoryName, subcategory });
             
-            // Firebase에서 데이터 가져오기
             const query = db.collection('hairstyles')
                 .where('gender', '==', gender)
                 .where('mainCategory', '==', categoryName)
@@ -1928,13 +1408,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log(`✅ ${snapshot.size}개 스타일 발견`);
             
-            // 스타일 카드 생성
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const item = document.createElement('div');
                 item.className = `menu-item ${gender}`;
                 
-                // 실제 이미지 표시
                 item.innerHTML = `
                     <img src="${data.imageUrl || ''}" 
                          alt="${data.name || 'Style'}" 
@@ -1965,14 +1443,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Close Modal
+    // Close Modal - 기존과 동일
     function closeModal() {
         if (styleModal) {
             styleModal.classList.remove('active');
         }
     }
 
-    // Show Style Detail Modal (AI 버튼 포함)
+    // ✅ Show Style Detail Modal (AKOOL 연동만 수정!)
     function showStyleDetail(code, name, gender, imageSrc, docId) {
         console.log('🎨 스타일 모달 열기:', { code, name, gender, imageSrc, docId });
         
@@ -2002,7 +1480,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const heart = btnLike.querySelector('span:first-child');
         if (heart) heart.textContent = '♡';
         
-        // AI 체험 버튼 안정화
+        // ✅ AI 체험 버튼 추가
         ensureAIButton();
         
         styleModal.classList.add('active');
@@ -2012,55 +1490,42 @@ document.addEventListener('DOMContentLoaded', function() {
         setupModalButtonEvents(code, name, docId, gender);
     }
 
-    // AI 버튼 완전 안정화 함수
+    // ✅ AI 버튼 생성 함수 (실제 AKOOL 연동!)
     function ensureAIButton() {
         if (!modalActions) return;
         
-        // 1. 기존 AI 버튼 완전 제거
+        // 기존 AI 버튼 제거
         const existingAiBtn = modalActions.querySelector('.btn-ai-experience');
         if (existingAiBtn) {
             existingAiBtn.remove();
-            console.log('🗑️ 기존 AI 버튼 제거');
         }
         
-        // 2. 새로운 AI 버튼 생성
+        // 새로운 AI 버튼 생성
         const aiBtn = document.createElement('button');
         aiBtn.className = 'modal-btn btn-ai-experience';
         aiBtn.innerHTML = 'AI 체험';
         aiBtn.title = '✨ AI로 헤어스타일 미리보기';
         
-        // 3. 호버 효과 추가
-        aiBtn.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 10px 25px rgba(102, 126, 234, 0.4)';
-        });
-        
-        aiBtn.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = 'none';
-        });
-        
-        // 4. 클릭 이벤트 (실제 AKOOL 처리)
+        // ✅ 클릭 이벤트 - 실제 AKOOL 호출!
         aiBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('🤖 AI 체험 버튼 클릭!');
+            console.log('🎨 AKOOL Face Swap 처리 시작...');
             
-            if (currentStyleData) {
-                openRealAIExperienceModal(
-                    currentStyleData.imageSrc, 
-                    currentStyleData.name, 
-                    currentStyleData.code
-                );
+            if (currentStyleData && typeof window.startAkoolProcess === 'function') {
+                // ✅ 실제 AKOOL 함수 호출!
+                window.startAkoolProcess(currentStyleData.imageSrc);
+            } else {
+                console.error('❌ AKOOL 함수가 없습니다!');
+                alert('AI 기능을 로드하는 중입니다. 잠시 후 다시 시도해주세요.');
             }
         });
         
-        // 5. 버튼 추가
         modalActions.appendChild(aiBtn);
-        console.log('✅ 실제 AI 체험 버튼 생성 완료!');
+        console.log('✅ 실제 AKOOL AI 체험 버튼 생성 완료!');
     }
 
-    // 모달 버튼 이벤트 설정
+    // 모달 버튼 이벤트 설정 - 기존과 동일
     function setupModalButtonEvents(code, name, docId, gender) {
         // 고객 등록 버튼
         btnRegister.onclick = async function() {
@@ -2099,7 +1564,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const isLiked = this.classList.contains('active');
                 heart.textContent = isLiked ? '♥' : '♡';
                 
-                // Firebase에 좋아요 업데이트
                 if (docId) {
                     try {
                         const docRef = db.collection('hairstyles').doc(docId);
@@ -2114,612 +1578,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // 🆕 실제 AKOOL AI 체험 모달 (진짜 API 호출!)
-    function openRealAIExperienceModal(styleImageUrl, styleName, styleCode) {
-        console.log('🤖 실제 AKOOL AI 체험 모달 열기:', { styleImageUrl, styleName, styleCode });
-        
-        // 기존 AI 모달이 있으면 제거
-        const existingModal = document.querySelector('.ai-experience-modal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-        
-        // AI 체험 모달 생성
-        const aiModal = document.createElement('div');
-        aiModal.className = 'ai-experience-modal';
-        aiModal.innerHTML = `
-            <div class="ai-modal-content">
-                <div class="ai-modal-header">
-                    <h3>✨ 실제 AI 헤어스타일 체험</h3>
-                    <button class="ai-modal-close">×</button>
-                </div>
-                
-                <div class="ai-modal-body">
-                    <div class="ai-upload-section">
-                        <!-- 업로드 방식 선택 탭 -->
-                        <div class="upload-method-tabs">
-                            <button class="upload-tab active" data-method="gallery">
-                                📱 갤러리
-                            </button>
-                            <button class="upload-tab" data-method="camera">
-                                📷 카메라
-                            </button>
-                        </div>
-                        
-                        <!-- 갤러리 업로드 영역 -->
-                        <div class="upload-method-content" id="galleryUpload">
-                            <div class="ai-upload-area" id="aiUploadArea">
-                                <input type="file" id="aiFileInput" accept="image/*" style="display: none;">
-                                <div class="ai-upload-content">
-                                    <div class="ai-upload-icon">📷</div>
-                                    <div class="ai-upload-text">
-                                        <div class="ai-upload-title">갤러리에서 사진 선택</div>
-                                        <div class="ai-upload-desc">JPG, PNG 파일 (최대 10MB)</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 카메라 촬영 영역 -->
-                        <div class="upload-method-content" id="cameraCapture" style="display: none;">
-                            <div class="camera-container">
-                                <video id="cameraVideo" autoplay playsinline></video>
-                                <canvas id="cameraCanvas" style="display: none;"></canvas>
-                                
-                                <div class="camera-overlay">
-                                    <div class="face-guide">
-                                        <div class="guide-text">얼굴을 가이드 안에 맞춰주세요</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="camera-controls">
-                                    <button class="camera-btn" id="switchCameraBtn" title="카메라 전환">🔄</button>
-                                    <button class="capture-btn" id="captureBtn" title="사진 촬영">📸</button>
-                                    <button class="camera-btn" id="closeCameraBtn" title="카메라 닫기">✕</button>
-                                </div>
-                            </div>
-                            
-                            <div class="camera-instructions">
-                                <p>💡 <strong>촬영 팁:</strong></p>
-                                <ul>
-                                    <li>밝은 곳에서 촬영하세요</li>
-                                    <li>얼굴이 정면으로 보이게 하세요</li>
-                                    <li>가이드 선 안에 얼굴을 맞춰주세요</li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <!-- 미리보기 섹션 -->
-                        <div class="ai-preview-section" id="aiPreviewSection" style="display: none;">
-                            <div class="ai-preview-item">
-                                <h4>선택한 사진</h4>
-                                <img id="aiPreviewUser" src="" alt="사용자 사진">
-                                <button class="retake-btn" id="retakeBtn">🔄 다시 찍기</button>
-                            </div>
-                            <div class="ai-preview-arrow">→</div>
-                            <div class="ai-preview-item">
-                                <h4>적용할 스타일</h4>
-                                <img id="aiPreviewStyle" src="${styleImageUrl}" alt="${styleName}">
-                                <p style="color: #667eea; margin-top: 8px; font-size: 12px;">${styleName}</p>
-                                <p style="color: #999; font-size: 11px;">${styleCode}</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="ai-progress-section" id="aiProgressSection" style="display: none;">
-                        <div class="ai-progress-bar">
-                            <div class="ai-progress-fill" id="aiProgressFill"></div>
-                        </div>
-                        <div class="ai-progress-text" id="aiProgressText">처리 중...</div>
-                        <div style="margin-top: 15px; font-size: 12px; color: #666;">
-                            실제 AKOOL AI가 당신의 얼굴에 ${styleName} 스타일을 적용하고 있습니다...
-                        </div>
-                    </div>
-                    
-                    <div class="ai-result-section" id="aiResultSection" style="display: none;">
-                        <div class="ai-result-image">
-                            <img id="aiResultImage" src="" alt="결과 이미지">
-                        </div>
-                        <div class="ai-result-actions">
-                            <button class="ai-download-btn" id="aiDownloadBtn">💾 다운로드</button>
-                            <button class="ai-retry-btn" id="aiRetryBtn">🔄 다시 시도</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="ai-modal-footer">
-                    <button class="ai-process-btn" id="aiProcessBtn" disabled>
-                        ✨ 실제 AI 처리 시작
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(aiModal);
-        
-        // 모달 이벤트 설정 (실제 AKOOL API 호출 포함!)
-        setupRealAIModalEvents(aiModal, styleImageUrl, styleName, styleCode);
-        
-        // 모달 표시 애니메이션
-        requestAnimationFrame(() => {
-            aiModal.classList.add('active');
-        });
-    }
-    
-    // 🎮 실제 AI 모달 이벤트 설정 (진짜 AKOOL API!)
-    function setupRealAIModalEvents(modal, styleImageUrl, styleName, styleCode) {
-        const closeBtn = modal.querySelector('.ai-modal-close');
-        const uploadTabs = modal.querySelectorAll('.upload-tab');
-        const galleryUpload = modal.querySelector('#galleryUpload');
-        const cameraCapture = modal.querySelector('#cameraCapture');
-        const uploadArea = modal.querySelector('#aiUploadArea');
-        const fileInput = modal.querySelector('#aiFileInput');
-        const processBtn = modal.querySelector('#aiProcessBtn');
-        const previewSection = modal.querySelector('#aiPreviewSection');
-        const userPreview = modal.querySelector('#aiPreviewUser');
-        const progressSection = modal.querySelector('#aiProgressSection');
-        const progressFill = modal.querySelector('#aiProgressFill');
-        const progressText = modal.querySelector('#aiProgressText');
-        const resultSection = modal.querySelector('#aiResultSection');
-        const downloadBtn = modal.querySelector('#aiDownloadBtn');
-        const retryBtn = modal.querySelector('#aiRetryBtn');
-        const retakeBtn = modal.querySelector('#retakeBtn');
-        
-        // 카메라 관련 요소들
-        const switchCameraBtn = modal.querySelector('#switchCameraBtn');
-        const captureBtn = modal.querySelector('#captureBtn');
-        const closeCameraBtn = modal.querySelector('#closeCameraBtn');
-        const cameraVideo = modal.querySelector('#cameraVideo');
-        const cameraCanvas = modal.querySelector('#cameraCanvas');
-        
-        let selectedFile = null;
-        let currentUploadMethod = 'gallery';
-        let userImageDataUrl = null; // 🆕 사용자 이미지 저장
-        
-        // 📷 카메라 매니저 클래스
-        class CameraManager {
-            constructor() {
-                this.stream = null;
-                this.currentCamera = 'user';
-            }
-            
-            async startCamera() {
-                try {
-                    if (this.stream) {
-                        this.stopCamera();
-                    }
-                    
-                    const constraints = {
-                        video: {
-                            facingMode: this.currentCamera,
-                            width: { ideal: 640 },
-                            height: { ideal: 480 }
-                        }
-                    };
-                    
-                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
-                    cameraVideo.srcObject = this.stream;
-                    
-                    console.log('📷 카메라 시작 성공');
-                    return true;
-                } catch (error) {
-                    console.error('카메라 시작 실패:', error);
-                    alert('📷 카메라 권한이 필요합니다.');
-                    return false;
-                }
-            }
-            
-            stopCamera() {
-                if (this.stream) {
-                    this.stream.getTracks().forEach(track => track.stop());
-                    this.stream = null;
-                }
-                
-                if (cameraVideo) {
-                    cameraVideo.srcObject = null;
-                }
-            }
-            
-            async switchCamera() {
-                this.currentCamera = this.currentCamera === 'user' ? 'environment' : 'user';
-                await this.startCamera();
-            }
-            
-            capturePhoto() {
-                if (!cameraVideo || !cameraCanvas) return null;
-                
-                const context = cameraCanvas.getContext('2d');
-                cameraCanvas.width = cameraVideo.videoWidth;
-                cameraCanvas.height = cameraVideo.videoHeight;
-                
-                if (this.currentCamera === 'user') {
-                    context.scale(-1, 1);
-                    context.drawImage(cameraVideo, -cameraCanvas.width, 0);
-                } else {
-                    context.drawImage(cameraVideo, 0, 0);
-                }
-                
-                return cameraCanvas.toDataURL('image/jpeg', 0.8);
-            }
-        }
-        
-        const cameraManager = new CameraManager();
-        
-        // 모달 닫기
-        function closeAIModal() {
-            cameraManager.stopCamera();
-            modal.classList.remove('active');
-            setTimeout(() => {
-                if (document.body.contains(modal)) {
-                    document.body.removeChild(modal);
-                }
-            }, 300);
-        }
-        
-        closeBtn.addEventListener('click', closeAIModal);
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) closeAIModal();
-        });
-        
-        // ESC 키로 모달 닫기
-        function handleEscKey(e) {
-            if (e.key === 'Escape' && modal.classList.contains('active')) {
-                closeAIModal();
-                document.removeEventListener('keydown', handleEscKey);
-            }
-        }
-        document.addEventListener('keydown', handleEscKey);
-        
-        // 업로드 방식 전환
-        uploadTabs.forEach(tab => {
-            tab.addEventListener('click', async function() {
-                const method = this.dataset.method;
-                
-                uploadTabs.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                
-                if (method === 'gallery') {
-                    galleryUpload.style.display = 'block';
-                    cameraCapture.style.display = 'none';
-                    cameraManager.stopCamera();
-                } else if (method === 'camera') {
-                    galleryUpload.style.display = 'none';
-                    cameraCapture.style.display = 'block';
-                    
-                    const success = await cameraManager.startCamera();
-                    if (!success) {
-                        uploadTabs[0].click();
-                    }
-                }
-                
-                currentUploadMethod = method;
-            });
-        });
-        
-        // 카메라 버튼 이벤트들
-        if (switchCameraBtn) {
-            switchCameraBtn.addEventListener('click', async () => {
-                await cameraManager.switchCamera();
-            });
-        }
-        
-        if (captureBtn) {
-            captureBtn.addEventListener('click', () => {
-                const dataUrl = cameraManager.capturePhoto();
-                if (dataUrl) {
-                    captureBtn.style.transform = 'scale(0.9)';
-                    setTimeout(() => {
-                        captureBtn.style.transform = 'scale(1)';
-                    }, 100);
-                    
-                    userImageDataUrl = dataUrl;
-                    showCameraPreview(dataUrl);
-                }
-            });
-        }
-        
-        if (closeCameraBtn) {
-            closeCameraBtn.addEventListener('click', () => {
-                cameraManager.stopCamera();
-                uploadTabs[0].click();
-            });
-        }
-        
-        // 카메라 촬영 미리보기
-        function showCameraPreview(dataUrl) {
-            if (userPreview && previewSection) {
-                userPreview.src = dataUrl;
-                
-                cameraCapture.style.display = 'none';
-                previewSection.style.display = 'grid';
-                
-                if (processBtn) {
-                    processBtn.disabled = false;
-                    processBtn.textContent = `✨ ${styleName} 실제 적용하기`;
-                }
-            }
-        }
-        
-        // 다시 찍기/선택하기
-        if (retakeBtn) {
-            retakeBtn.addEventListener('click', () => {
-                previewSection.style.display = 'none';
-                
-                if (currentUploadMethod === 'camera') {
-                    cameraCapture.style.display = 'block';
-                    cameraManager.startCamera();
-                } else {
-                    galleryUpload.style.display = 'block';
-                }
-                
-                if (processBtn) {
-                    processBtn.disabled = true;
-                    processBtn.textContent = '✨ 실제 AI 처리 시작';
-                }
-                
-                selectedFile = null;
-                userImageDataUrl = null;
-            });
-        }
-        
-        // 갤러리 파일 업로드
-        uploadArea.addEventListener('click', () => {
-            fileInput.click();
-        });
-        
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFileSelect(e.target.files[0]);
-            }
-        });
-        
-        function handleFileSelect(file) {
-            if (!file.type.startsWith('image/')) {
-                alert('❌ 이미지 파일만 선택할 수 있습니다');
-                return;
-            }
-            
-            if (file.size > 10 * 1024 * 1024) {
-                alert('❌ 파일 크기는 10MB 이하여야 합니다');
-                return;
-            }
-            
-            selectedFile = file;
-            showGalleryPreview(file);
-            processBtn.disabled = false;
-            processBtn.textContent = `✨ ${styleName} 실제 적용하기`;
-        }
-        
-        function showGalleryPreview(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                userImageDataUrl = e.target.result;
-                userPreview.src = e.target.result;
-                galleryUpload.style.display = 'none';
-                previewSection.style.display = 'grid';
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        // 🤖 실제 AI 처리 시작 (진짜 AKOOL API!)
-        processBtn.addEventListener('click', async () => {
-            if (!userImageDataUrl) {
-                alert('❌ 먼저 사진을 선택하거나 촬영해주세요!');
-                return;
-            }
-            
-            console.log('🤖 실제 AKOOL AI 처리 시작!');
-            
-            // UI 전환
-            modal.querySelector('.ai-modal-body .ai-upload-section').style.display = 'none';
-            modal.querySelector('.ai-modal-footer').style.display = 'none';
-            progressSection.style.display = 'block';
-            
-            try {
-                // 1. 토큰 확인/발급
-                progressFill.style.width = '10%';
-                progressText.textContent = 'AKOOL 인증 중...';
-                
-                const token = await akoolTokenManager.getValidToken();
-                console.log('✅ AKOOL 토큰 확보:', token.substring(0, 20) + '...');
-                
-                // 2. Face Swap 요청
-                progressFill.style.width = '30%';
-                progressText.textContent = 'Face Swap 요청 중...';
-                
-               const faceSwapResponse = await fetch('/.netlify/functions/akool-faceswap', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        stage: 'faceswap',  // ✅ 처리 단계 추가!
-        token: token,
-        userImage: userImageDataUrl,
-        targetImage: styleImageUrl,
-        styleName: styleName,
-        styleCode: styleCode
-    })
-});
-                const faceSwapResult = await faceSwapResponse.json();
-                console.log('🔍 Face Swap 응답:', faceSwapResult);
-                
-                if (!faceSwapResult.success) {
-                    throw new Error(faceSwapResult.error || 'Face Swap 실패');
-                }
-                
-                const jobId = faceSwapResult.jobId;
-                console.log('✅ Face Swap 작업 ID:', jobId);
-                
-                // 3. 결과 대기 (폴링)
-                progressFill.style.width = '50%';
-                progressText.textContent = 'AI 처리 중... (결과 대기)';
-                
-                let attempts = 0;
-                const maxAttempts = 60; // 최대 5분 대기
-                
-                while (attempts < maxAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, 5000)); // 5초 대기
-                    attempts++;
-                    
-                    const progress = Math.min(50 + (attempts / maxAttempts) * 40, 90);
-                    progressFill.style.width = progress + '%';
-                    progressText.textContent = `AI 처리 중... (${attempts * 5}초 경과)`;
-                    
-                    try {
-                        const statusResponse = await fetch('/.netlify/functions/akool-status', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-        // Authorization 헤더 제거!
-    },
-    body: JSON.stringify({ 
-        token: token,  // ✅ body에 토큰 추가!
-        jobId: jobId 
-    })
-});
-                        
-                        const statusResult = await statusResponse.json();
-                        console.log(`🔍 상태 확인 (${attempts}회):`, statusResult);
-                        
-                        if (statusResult.success && statusResult.status === 'completed') {
-                            console.log('🎉 AI 처리 완료!');
-                            
-                            progressFill.style.width = '100%';
-                            progressText.textContent = '처리 완료!';
-                            
-                            // 결과 표시
-                            setTimeout(() => {
-                                showRealAIResult(statusResult.resultUrl);
-                            }, 1000);
-                            return;
-                        } else if (statusResult.success && statusResult.status === 'failed') {
-                            throw new Error('AI 처리 실패: ' + (statusResult.error || '알 수 없는 오류'));
-                        }
-                        
-                        // 아직 처리 중이면 계속 대기
-                        console.log(`⏳ 아직 처리 중... (${attempts}/${maxAttempts})`);
-                        
-                    } catch (statusError) {
-                        console.error('❌ 상태 확인 오류:', statusError);
-                        // 상태 확인 실패는 무시하고 계속 시도
-                    }
-                }
-                
-                throw new Error('AI 처리 시간 초과 (5분)');
-                
-            } catch (error) {
-                console.error('❌ 실제 AI 처리 오류:', error);
-                
-                // 오류 표시
-                progressSection.style.display = 'none';
-                
-                const errorDiv = document.createElement('div');
-                errorDiv.style.cssText = `
-                    text-align: center;
-                    padding: 40px 20px;
-                    color: #ff4444;
-                `;
-                errorDiv.innerHTML = `
-                    <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
-                    <div style="font-size: 18px; margin-bottom: 10px;">AI 처리 실패</div>
-                    <div style="font-size: 14px; color: #999; margin-bottom: 20px;">${error.message}</div>
-                    <button onclick="location.reload()" style="
-                        padding: 10px 20px; 
-                        background: #667eea; 
-                        color: white; 
-                        border: none; 
-                        border-radius: 10px; 
-                        cursor: pointer;
-                    ">다시 시도</button>
-                `;
-                
-                modal.querySelector('.ai-modal-body').appendChild(errorDiv);
-            }
-        });
-        
-        // 🎉 실제 AI 결과 표시
-        function showRealAIResult(resultImageUrl) {
-            progressSection.style.display = 'none';
-            resultSection.style.display = 'block';
-            
-            const resultImg = modal.querySelector('#aiResultImage');
-            resultImg.src = resultImageUrl;
-            
-            const completeMsg = document.createElement('div');
-            completeMsg.style.cssText = `
-                text-align: center;
-                padding: 20px;
-                color: #667eea;
-                font-size: 16px;
-                font-weight: 600;
-                background: rgba(102, 126, 234, 0.1);
-                border-radius: 10px;
-                margin-bottom: 20px;
-            `;
-            completeMsg.innerHTML = `
-                🎉 실제 AKOOL AI 처리 완료!<br>
-                <small style="color: #999; font-size: 12px;">
-                    당신의 얼굴에 ${styleName} 스타일이 실제로 적용되었습니다
-                </small>
-            `;
-            
-            resultSection.insertBefore(completeMsg, resultSection.querySelector('.ai-result-actions'));
-        }
-        
-        // 다운로드 & 재시도 버튼
-        if (downloadBtn) {
-            downloadBtn.addEventListener('click', () => {
-                const resultImg = modal.querySelector('#aiResultImage');
-                if (resultImg && resultImg.src) {
-                    const link = document.createElement('a');
-                    link.href = resultImg.src;
-                    link.download = `HAIRGATOR_${styleCode}_${Date.now()}.jpg`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    
-                    console.log('💾 실제 AI 결과 다운로드 완료!');
-                } else {
-                    alert('다운로드할 이미지가 없습니다.');
-                }
-            });
-        }
-        
-        if (retryBtn) {
-            retryBtn.addEventListener('click', () => {
-                // 처음부터 다시 시작
-                resultSection.style.display = 'none';
-                modal.querySelector('.ai-modal-body .ai-upload-section').style.display = 'block';
-                modal.querySelector('.ai-modal-footer').style.display = 'block';
-                
-                if (currentUploadMethod === 'gallery') {
-                    galleryUpload.style.display = 'block';
-                    cameraCapture.style.display = 'none';
-                } else {
-                    galleryUpload.style.display = 'none';
-                    cameraCapture.style.display = 'block';
-                    cameraManager.startCamera();
-                }
-                
-                previewSection.style.display = 'none';
-                processBtn.disabled = true;
-                processBtn.textContent = '✨ 실제 AI 처리 시작';
-                progressFill.style.width = '0%';
-                selectedFile = null;
-                userImageDataUrl = null;
-                fileInput.value = '';
-                
-                // 기존 오류 메시지 제거
-                const errorDiv = modal.querySelector('.ai-modal-body > div:last-child');
-                if (errorDiv && errorDiv.innerHTML.includes('AI 처리 실패')) {
-                    errorDiv.remove();
-                }
-            });
-        }
-    }
-
-    // Loading
+    // Loading - 기존과 동일
     function showLoading(show) {
         if (loadingOverlay) {
             loadingOverlay.classList.toggle('active', show);
@@ -2728,56 +1587,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 전역으로 함수 노출
     window.showStyleDetail = showStyleDetail;
-    window.openRealAIExperienceModal = openRealAIExperienceModal;
 
-    console.log('✅ HAIRGATOR 실제 AKOOL 버전 로드 완료!');
+    console.log('✅ HAIRGATOR 기존 UI + AKOOL 실제 연동 완료!');
 });
+
+// PWA Service Worker - 기존과 동일
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('service-worker.js')
+            .then(function(registration) {
+                console.log('ServiceWorker registration successful');
+            })
+            .catch(function(err) {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+    });
+}
 
 window.addEventListener('load', function() {
-    console.log('🎉 HAIRGATOR + 실제 AKOOL API 최종 완성!');
+    console.log('🎉 HAIRGATOR + 실제 AKOOL API 로드 완료!');
 });
-    </script>
-    
-    <script>
-        // PWA Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker registration successful');
-                    })
-                    .catch(function(err) {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
-        
-        // iOS Standalone 모드 체크
-        if (window.navigator.standalone === true) {
-            console.log('Running in standalone mode');
-            document.body.classList.add('standalone-mode');
-        }
-        
-        // Android PWA 설치 프롬프트
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            console.log('PWA 설치 가능');
-        });
-        
-        // PWA 설치 감지
-        window.addEventListener('appinstalled', (evt) => {
-            console.log('PWA가 설치되었습니다');
-        });
-        
-        // 전체화면 모드 감지
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            console.log('PWA 전체화면 모드로 실행 중');
-            document.body.classList.add('pwa-mode');
-        }
     </script>
 </body>
 </html>
-
-
