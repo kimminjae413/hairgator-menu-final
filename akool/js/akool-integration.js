@@ -1,4 +1,4 @@
-// ========== AKOOL Face Swap HAIRGATOR 최종 완성 버전 (중복 버튼 완전 방지) ==========
+// ========== AKOOL Face Swap HAIRGATOR 최종 완성 버전 (자동 버튼 생성 비활성화) ==========
 // 🎯 가짜버튼 중복 생성 문제 완전 해결 + 모든 기능 작동
 
 console.log('🎨 AKOOL Face Swap 최종 버전 로딩 중...');
@@ -55,176 +55,41 @@ async function initializeAkoolSystem() {
         // 2. 토큰 발급 시도
         const token = await window.getAkoolTokenNow();
         
-        // 3. 모달 관찰자 설정 (한번만)
-        setupModalObserver();
+        // 🚫 3. 모달 관찰자 설정 비활성화 (가짜 버튼 생성 방지)
+        // setupModalObserver();
         
-        // 4. showStyleDetail 래핑 (한번만)
-        setupShowStyleDetailWrapper();
+        // 🚫 4. showStyleDetail 래핑 비활성화 (main.js에서 처리)
+        // setupShowStyleDetailWrapper();
         
         window.akoolConfig.isInitialized = true;
-        console.log('✅ AKOOL 시스템 초기화 완료!');
+        console.log('✅ AKOOL 시스템 초기화 완료! (자동 버튼 생성 비활성화)');
         
     } catch (error) {
         console.error('❌ AKOOL 초기화 실패:', error);
     }
 }
 
-// ========== ✅ 모달 관찰자 설정 (중복 방지) ==========
-function setupModalObserver() {
-    if (modalObserver) {
-        console.log('⚠️ 모달 관찰자가 이미 설정됨');
-        return;
-    }
-    
-    console.log('👁️ 모달 관찰자 설정 중...');
-    
-    modalObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                const target = mutation.target;
-                if (target.id === 'styleModal' && target.classList.contains('active')) {
-                    // 모달이 열렸을 때만 버튼 추가 (딜레이 적용)
-                    setTimeout(() => {
-                        addAIButtonSafely();
-                    }, 300);
-                }
-            }
-        });
-    });
-    
-    // 관찰 시작
-    const styleModal = document.querySelector('#styleModal');
-    if (styleModal) {
-        modalObserver.observe(styleModal, { attributes: true });
-        console.log('✅ 모달 관찰자 활성화');
-    }
-}
+// ========== 🚫 모달 관찰자 설정 비활성화 ==========
+// function setupModalObserver() {
+//     // 이 함수를 비활성화하여 자동 버튼 생성 방지
+// }
 
-// ========== ✅ showStyleDetail 래핑 (중복 방지) ==========
-function setupShowStyleDetailWrapper() {
-    if (window.originalShowStyleDetail) {
-        console.log('⚠️ showStyleDetail 이미 래핑됨');
-        return;
-    }
-    
-    console.log('🔧 showStyleDetail 함수 래핑...');
-    
-    // 원본 함수 백업
-    window.originalShowStyleDetail = window.showStyleDetail || function() {};
-    
-    // 새로운 함수로 교체
-    window.showStyleDetail = function(code, name, gender, imageSrc, docId) {
-        // 원본 함수 실행
-        window.originalShowStyleDetail.call(this, code, name, gender, imageSrc, docId);
-        
-        // 스타일 정보 저장
-        currentStyleImage = imageSrc;
-        currentStyleName = name;
-        currentStyleCode = code;
-        
-        console.log('🎯 스타일 모달 열림:', { code, name });
-        
-        // AI 버튼은 모달 관찰자에서 자동으로 추가됨
-        // 여기서는 추가하지 않음 (중복 방지)
-    };
-    
-    console.log('✅ showStyleDetail 래핑 완료');
-}
+// ========== 🚫 showStyleDetail 래핑 비활성화 ==========  
+// function setupShowStyleDetailWrapper() {
+//     // 이 함수를 비활성화하여 main.js에서 처리하도록 함
+// }
 
-// ========== ✅ 안전한 AI 버튼 추가 (중복 완전 방지) ==========
-function addAIButtonSafely() {
-    try {
-        const modalActions = document.querySelector('.modal-actions');
-        const existingButton = document.querySelector('#akoolAIBtn, .akool-ai-btn, [data-akool-btn]');
-        
-        if (!modalActions) {
-            console.log('⚠️ modal-actions 요소 없음');
-            return false;
-        }
-        
-        // ✅ 기존 AI 버튼이 있다면 제거하지 말고 그냥 리턴
-        if (existingButton) {
-            console.log('✅ AI 버튼이 이미 존재함, 추가하지 않음');
-            return true;
-        }
-        
-        console.log('🎨 새로운 AI 버튼 생성 중...');
-        
-        // AI 버튼 생성
-        const aiButton = document.createElement('button');
-        aiButton.id = 'akoolAIBtn';
-        aiButton.className = 'modal-btn akool-ai-btn';
-        aiButton.setAttribute('data-akool-btn', 'true');  // 식별자 추가
-        
-        aiButton.innerHTML = `
-            <span style="font-size: 18px;">🤖</span>
-            <span style="margin-left: 8px; font-weight: 600;">AI 체험</span>
-        `;
-        
-        // 스타일 적용
-        Object.assign(aiButton.style, {
-            background: 'linear-gradient(135deg, #FF1493, #FF69B4)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '25px',
-            padding: '12px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flex: '1',
-            minWidth: '120px',
-            marginLeft: '10px',
-            boxShadow: '0 4px 15px rgba(255, 20, 147, 0.3)',
-            transition: 'all 0.3s ease',
-            fontFamily: 'inherit'
-        });
-        
-        // 호버 효과
-        aiButton.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 6px 20px rgba(255, 20, 147, 0.4)';
-        });
-        
-        aiButton.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 4px 15px rgba(255, 20, 147, 0.3)';
-        });
-        
-        // 클릭 이벤트 (한번만 등록)
-        aiButton.addEventListener('click', handleAIButtonClick);
-        
-        // 버튼 추가
-        modalActions.appendChild(aiButton);
-        
-        console.log('✅ AI 버튼 추가 완료');
-        return true;
-        
-    } catch (error) {
-        console.error('❌ AI 버튼 추가 오류:', error);
-        return false;
-    }
-}
+// ========== 🚫 자동 AI 버튼 추가 비활성화 ==========
+// function addAIButtonSafely() {
+//     // 이 함수를 비활성화하여 중복 버튼 생성 방지
+// }
 
-// ========== ✅ AI 버튼 클릭 핸들러 ==========
-function handleAIButtonClick() {
-    console.log('🤖 AI 체험 버튼 클릭!');
-    
-    if (faceSwapInProgress) {
-        alert('⏳ 이미 처리 중입니다. 잠시만 기다려주세요.');
-        return;
-    }
-    
-    if (!currentStyleImage || !currentStyleName || !currentStyleCode) {
-        alert('❌ 헤어스타일 정보가 없습니다. 다시 시도해주세요.');
-        return;
-    }
-    
-    // AKOOL 모달 열기
-    window.openAkoolModal();
-}
+// ========== ✅ 수동 버튼 추가 함수 (필요시에만) ==========
+window.addAIButtonToHairgator = function() {
+    console.log('🔧 수동 AI 버튼 추가 요청 (현재 비활성화됨)');
+    console.log('💡 main.js의 setupModalButtons에서 처리됩니다.');
+    return false;
+};
 
 // ========== 토큰 발급 함수 (Netlify Functions) ==========
 window.getAkoolTokenNow = async function() {
@@ -257,15 +122,20 @@ window.getAkoolTokenNow = async function() {
     }
 };
 
-// ========== 수동 버튼 추가 함수 (디버깅용) ==========
-window.addAIButtonToHairgator = function() {
-    console.log('🔧 수동 AI 버튼 추가 요청');
-    return addAIButtonSafely();
-};
-
-// ========== AKOOL 모달 열기 ==========
+// ========== AKOOL 모달 열기 (기존 코드 그대로 유지) ==========
 window.openAkoolModal = function() {
     console.log('🎭 AKOOL 모달 열기');
+    
+    // 현재 모달에서 스타일 정보 가져오기
+    const modalImage = document.querySelector('#modalImage');
+    const modalCode = document.querySelector('#modalCode');
+    const modalName = document.querySelector('#modalName');
+    
+    if (modalImage && modalCode && modalName) {
+        currentStyleImage = modalImage.src;
+        currentStyleCode = modalCode.textContent;
+        currentStyleName = modalName.textContent;
+    }
     
     if (!currentStyleImage) {
         alert('헤어스타일이 선택되지 않았습니다.');
@@ -278,7 +148,7 @@ window.openAkoolModal = function() {
         existingModal.remove();
     }
     
-    // AKOOL 모달 HTML 생성
+    // AKOOL 모달 HTML 생성 (기존 코드와 동일)
     const modalHTML = `
         <div id="akoolModal" style="
             position: fixed;
@@ -461,7 +331,7 @@ window.openAkoolModal = function() {
     }, 10);
 };
 
-// ========== 나머지 함수들 (이미지 업로드, 처리, 결과 등) ==========
+// ========== 나머지 함수들 (이미지 업로드, 처리, 결과 등) - 기존과 동일 ==========
 window.handleImageUpload = function(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -507,7 +377,6 @@ window.startAkoolProcess = async function(styleImageUrl) {
     
     try {
         // 실제 AKOOL 처리 또는 시뮬레이션
-        // (기존 처리 로직 그대로 사용)
         alert('🎉 AI 처리가 시작됩니다!\n\n현재는 데모 버전입니다.');
     } catch (error) {
         console.error('❌ 처리 오류:', error);
@@ -541,4 +410,4 @@ window.shareResult = function() {
     alert('공유 기능은 실제 결과가 생성된 후 사용 가능합니다.');
 };
 
-console.log('🎉 AKOOL Integration 완전 수정 버전 로드 완료! (중복 방지)');
+console.log('🎉 AKOOL Integration 수정 버전 로드 완료! (자동 버튼 생성 완전 비활성화)');
