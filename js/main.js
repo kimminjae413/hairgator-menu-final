@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { 
                     id: 'b-length', 
                     name: 'B Length',
-                    description: 'B 길이는 가슴 아래(A)와 쇄골 아래(C) 사이의 미디엄-롱으로, 레이어드 미디엄롱·바디펌이 어울려 부드럽고 실용적인 인상을 줍니다.'
+                    description: 'B 길이는 가슴 아래(A)와 쇄골 아래(C) 사이의 미디언-롱으로, 레이어드 미디언롱·바디펌이 어울려 부드럽고 실용적인 인상을 줍니다.'
                 },
                 { 
                     id: 'c-length', 
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { 
                     id: 'h-length', 
                     name: 'H Length',
-                    description: 'H 길이는 귀선~베리숏 구간의 숏헤어로, 픽시·샤그 숏·허쉬 숏 등이 어울려 활동적이고 개성 있는 스타일을 완성합니다.'
+                    description: 'H 길이는 귀선~베리숏구간의 숏헤어로, 픽시·샤그 숏·허쉬 숏 등이 어울려 활동적이고 개성 있는 스타일을 완성합니다.'
                 }
             ],
             subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
@@ -277,7 +277,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         loadMenuData(gender);
-        
         localStorage.setItem('hairgator_gender', gender);
     }
 
@@ -286,9 +285,9 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoading(true);
         
         menuData = MENU_DATA[gender];
-        
         renderCategories(gender);
         
+        // ✅ 첫 번째 카테고리 자동 선택 및 스타일 로딩
         if (menuData.categories.length > 0) {
             selectCategory(menuData.categories[0], gender);
         }
@@ -342,10 +341,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         categoryDescription.textContent = category.description;
-        
         renderSubcategories(gender);
         
-        loadStyles(category.id, currentSubcategory, gender);
+        // ✅ 스타일 로딩 함수 호출
+        loadStyles(category.name, currentSubcategory, gender);
     }
 
     // Render Subcategories
@@ -384,165 +383,206 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        loadStyles(currentCategory.id, subcategory, gender);
+        // ✅ 서브카테고리 변경시에도 스타일 새로 로딩
+        if (currentCategory) {
+            loadStyles(currentCategory.name, subcategory, gender);
+        }
     }
 
-    // Load Styles from Firebase
-    async function loadStyles(categoryId, subcategory, gender) {
-        menuGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
+    // ✅ 핵심: Firebase에서 스타일 로딩하는 함수 추가
+    async function loadStyles(mainCategory, subCategory, gender) {
+        if (!db) {
+            console.error('❌ Firebase가 초기화되지 않음');
+            return;
+        }
+
+        console.log('📊 스타일 로딩:', { mainCategory, subCategory, gender });
         
         try {
-            // Firebase 초기화 확인
-            if (typeof db === 'undefined') {
-                console.error('Firebase not initialized');
-                menuGrid.innerHTML = '<div style="color: #999; text-align: center; padding: 40px;">Firebase 연결 중...</div>';
-                return;
-            }
+            showLoading(true);
             
-            // 현재 카테고리 이름 찾기
-            const categoryName = currentCategory.name;
-            console.log('Loading styles:', { gender, categoryName, subcategory });
-            
-            // Firebase에서 데이터 가져오기
+            // Firebase에서 조건에 맞는 스타일 조회
             const query = db.collection('hairstyles')
                 .where('gender', '==', gender)
-                .where('mainCategory', '==', categoryName)
-                .where('subCategory', '==', subcategory);
+                .where('mainCategory', '==', mainCategory)
+                .where('subCategory', '==', subCategory);
             
             const snapshot = await query.get();
             
-            menuGrid.innerHTML = '';
+            console.log(`🎯 ${mainCategory} > ${subCategory} 스타일 수:`, snapshot.size);
             
-            if (snapshot.empty) {
-                menuGrid.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
-                        <div style="font-size: 48px; margin-bottom: 20px;">📭</div>
-                        <div>등록된 스타일이 없습니다</div>
-                        <div style="font-size: 12px; margin-top: 10px;">
-                            ${categoryName} - ${subcategory}
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-            
-            // 스타일 카드 생성
+            const styles = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
-                const item = document.createElement('div');
-                item.className = `menu-item ${gender}`;
-                
-                // 실제 이미지 표시
-                item.innerHTML = `
-                    <img src="${data.imageUrl || ''}" 
-                         alt="${data.name || 'Style'}" 
-                         class="menu-item-image"
-                         onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); padding: 10px; text-align: center;">
-                        <div style="font-size: 11px; color: #999;">${data.code || ''}</div>
-                        <div style="font-size: 13px; color: white; margin-top: 3px;">${data.name || ''}</div>
-                    </div>
-                `;
-                
-                item.addEventListener('click', function() {
-                    showStyleDetail(data.code, data.name, gender, data.imageUrl, doc.id);
+                styles.push({
+                    id: doc.id,
+                    code: data.code || doc.id,
+                    name: data.name,
+                    imageUrl: data.imageUrl,
+                    ...data
                 });
-                
-                menuGrid.appendChild(item);
             });
             
+            // 그리드에 스타일 표시
+            displayStyles(styles, gender);
+            
         } catch (error) {
-            console.error('Load styles error:', error);
+            console.error('❌ 스타일 로딩 오류:', error);
+            
+            // 오류시 빈 상태 표시
             menuGrid.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ff4444;">
-                    <div>데이터 로드 실패</div>
-                    <div style="font-size: 12px; margin-top: 10px;">${error.message}</div>
+                <div style="
+                    grid-column: 1 / -1;
+                    text-align: center;
+                    padding: 60px 20px;
+                    color: #666;
+                ">
+                    <div style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;">📭</div>
+                    <div style="font-size: 18px; margin-bottom: 10px;">스타일을 불러올 수 없습니다</div>
+                    <div style="font-size: 14px;">Firebase 연결을 확인해주세요</div>
                 </div>
             `;
+        } finally {
+            showLoading(false);
         }
     }
 
-    // Close Modal
-    function closeModal() {
-        if (styleModal) {
-            styleModal.classList.remove('active');
+    // ✅ 스타일 표시 함수
+    function displayStyles(styles, gender) {
+        if (!menuGrid) {
+            console.error('❌ menuGrid 요소가 없음');
+            return;
         }
+
+        if (styles.length === 0) {
+            menuGrid.innerHTML = `
+                <div style="
+                    grid-column: 1 / -1;
+                    text-align: center;
+                    padding: 60px 20px;
+                    color: #666;
+                ">
+                    <div style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;">📋</div>
+                    <div style="font-size: 18px; margin-bottom: 10px;">등록된 스타일이 없습니다</div>
+                    <div style="font-size: 14px;">관리자에서 스타일을 추가해주세요</div>
+                </div>
+            `;
+            return;
+        }
+
+        const gridItems = styles.map(style => `
+            <div class="image-item" onclick="showStyleDetail('${style.code}', '${style.name}', '${gender}', '${style.imageUrl}', '${style.id}')" style="cursor: pointer;">
+                <div style="position: relative; width: 100%; height: 250px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease;">
+                    <img src="${style.imageUrl}" 
+                         style="width: 100%; height: 100%; object-fit: cover;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                         onload="console.log('✅ 이미지 로딩 성공: ${style.name}');">
+                    <div style="display: none; width: 100%; height: 100%; background: linear-gradient(135deg, ${gender === 'male' ? '#4A90E2, #667eea' : '#E91E63, #FF69B4'}); align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center;">
+                        ${style.name}<br><small>이미지 로딩 실패</small>
+                    </div>
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: white; padding: 8px; text-align: center; font-size: 12px;">
+                        ${style.name}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        menuGrid.innerHTML = gridItems;
+
+        // 호버 효과 추가
+        const imageItems = menuGrid.querySelectorAll('.image-item');
+        imageItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.firstElementChild.style.transform = 'scale(1.05)';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.firstElementChild.style.transform = 'scale(1)';
+            });
+        });
+
+        console.log(`✅ ${styles.length}개 스타일 표시 완료`);
     }
 
-    // Show Style Detail Modal
+    // Modal Functions
     function showStyleDetail(code, name, gender, imageSrc, docId) {
-        if (!styleModal) return;
+        console.log('🎨 스타일 모달 열기:', { code, name, gender, imageSrc, docId });
         
-        modalImage.src = imageSrc || '';
-        modalImage.onerror = function() {
-            this.style.display = 'none';
-            this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        };
+        if (!styleModal || !modalImage || !modalCode || !modalName) {
+            console.error('❌ 모달 요소들이 없음');
+            return;
+        }
+
+        modalImage.src = imageSrc;
         modalCode.textContent = code;
         modalName.textContent = name;
         
-        if (gender === 'female') {
-            btnRegister.classList.add('female');
-        } else {
-            btnRegister.classList.remove('female');
+        styleModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        console.log('✅ 모달 열기 완료');
+        
+        // 버튼 이벤트 설정
+        setupModalButtons(docId, code, name);
+    }
+
+    function closeModal() {
+        if (styleModal) {
+            styleModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+
+    function setupModalButtons(docId, styleCode, styleName) {
+        // 고객등록 버튼
+        if (btnRegister) {
+            btnRegister.onclick = async function() {
+                const customerName = prompt('고객 성함을 입력해주세요:');
+                if (!customerName) return;
+                
+                const customerPhone = prompt('연락처를 입력해주세요:');
+                if (!customerPhone) return;
+                
+                try {
+                    await db.collection('customers').add({
+                        name: customerName,
+                        phone: customerPhone,
+                        styleCode: styleCode,
+                        styleName: styleName,
+                        registeredAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    alert('고객 등록이 완료되었습니다!');
+                    closeModal();
+                } catch (error) {
+                    console.error('Customer registration error:', error);
+                    alert('등록 실패: ' + error.message);
+                }
+            };
         }
         
-        btnLike.classList.remove('active');
-        const heart = btnLike.querySelector('span:first-child');
-        if (heart) heart.textContent = '♡';
-        
-        styleModal.classList.add('active');
-        
-        // 고객 등록 버튼
-        btnRegister.onclick = async function() {
-            const customerName = prompt('고객 이름을 입력하세요:');
-            if (!customerName) return;
-            
-            const customerPhone = prompt('전화번호를 입력하세요:');
-            if (!customerPhone) return;
-            
-            try {
-                await db.collection('customers').add({
-                    name: customerName,
-                    phone: customerPhone,
-                    styleCode: code,
-                    styleName: name,
-                    styleId: docId,
-                    gender: gender,
-                    designer: localStorage.getItem('designerName') || 'Unknown',
-                    registeredAt: new Date(),
-                    lastVisit: new Date()
-                });
-                
-                alert('고객 등록 완료!');
-                closeModal();
-            } catch (error) {
-                console.error('Customer registration error:', error);
-                alert('등록 실패: ' + error.message);
-            }
-        };
-        
         // 좋아요 버튼
-        btnLike.onclick = async function() {
-            this.classList.toggle('active');
-            const heart = this.querySelector('span:first-child');
-            if (heart) {
-                const isLiked = this.classList.contains('active');
-                heart.textContent = isLiked ? '♥' : '♡';
-                
-                // Firebase에 좋아요 업데이트
-                if (docId) {
-                    try {
-                        const docRef = db.collection('hairstyles').doc(docId);
-                        await docRef.update({
-                            likes: firebase.firestore.FieldValue.increment(isLiked ? 1 : -1)
-                        });
-                    } catch (error) {
-                        console.error('Like update error:', error);
+        if (btnLike) {
+            btnLike.onclick = async function() {
+                this.classList.toggle('active');
+                const heart = this.querySelector('span:first-child');
+                if (heart) {
+                    const isLiked = this.classList.contains('active');
+                    heart.textContent = isLiked ? '♥' : '♡';
+                    
+                    // Firebase에 좋아요 업데이트
+                    if (docId) {
+                        try {
+                            const docRef = db.collection('hairstyles').doc(docId);
+                            await docRef.update({
+                                likes: firebase.firestore.FieldValue.increment(isLiked ? 1 : -1)
+                            });
+                        } catch (error) {
+                            console.error('Like update error:', error);
+                        }
                     }
                 }
-            }
-        };
+            };
+        }
     }
 
     // Loading
@@ -552,13 +592,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // 전역 함수로 내보내기 (다른 스크립트에서 사용할 수 있도록)
+    window.showStyleDetail = showStyleDetail;
+    window.selectGender = selectGender;
+    window.currentGender = currentGender;
+
+    // Auto-select saved gender (optional)
     const savedGender = localStorage.getItem('hairgator_gender');
-    if (savedGender && !genderSelection.style.display) {
-        // Auto-select if previously selected
+    if (savedGender && genderSelection && genderSelection.style.display !== 'none') {
         // setTimeout(() => selectGender(savedGender), 100);
     }
 });
 
 window.addEventListener('load', function() {
-    console.log('HAIRGATOR App Loaded');
+    console.log('✅ HAIRGATOR App Loaded');
 });
