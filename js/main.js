@@ -695,7 +695,67 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function setupModalButtons(docId, styleCode, styleName) {
-        // 고객등록 버튼
+        // 🛠️ 가짜 AI 버튼 제거 + 심플 디자인 적용
+        const modalActions = document.getElementById('modalActions');
+        if (modalActions) {
+            // 🗑️ 좋아요 버튼 제거
+            const buttons = modalActions.querySelectorAll('button');
+            buttons.forEach(btn => {
+                const btnText = btn.textContent?.trim();
+                if (btnText.includes('좋아요') || btnText.includes('♡') || btnText.includes('♥')) {
+                    btn.remove();
+                }
+            });
+            
+            // 🎨 심플한 컨테이너 스타일
+            modalActions.style.cssText = `
+                display: flex;
+                gap: 10px;
+                padding: 20px;
+                justify-content: center;
+                align-items: center;
+                flex-wrap: nowrap;
+            `;
+            
+            // 🎨 모든 버튼 심플 디자인 통일
+            const remainingButtons = modalActions.querySelectorAll('button');
+            remainingButtons.forEach(btn => {
+                btn.removeAttribute('style'); // 기존 스타일 제거
+                btn.style.cssText = `
+                    flex: 1 !important;
+                    max-width: 120px !important;
+                    height: 44px !important;
+                    border: 1px solid #666 !important;
+                    border-radius: 6px !important;
+                    background: transparent !important;
+                    color: #fff !important;
+                    font-size: 14px !important;
+                    font-weight: normal !important;
+                    cursor: pointer !important;
+                    transition: all 0.2s ease !important;
+                    white-space: nowrap !important;
+                    overflow: hidden !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                `;
+                
+                // 호버 효과
+                btn.onmouseenter = () => {
+                    btn.style.background = 'rgba(255, 255, 255, 0.1) !important';
+                    btn.style.borderColor = '#999 !important';
+                };
+                
+                btn.onmouseleave = () => {
+                    btn.style.background = 'transparent !important';
+                    btn.style.borderColor = '#666 !important';
+                };
+            });
+        }
+        
+        // 고객등록 버튼 (기존 로직 유지)
         if (btnRegister) {
             btnRegister.onclick = async function() {
                 const customerName = prompt('고객 성함을 입력해주세요:');
@@ -722,29 +782,25 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         }
         
-        // 좋아요 버튼
-        if (btnLike) {
-            btnLike.onclick = async function() {
-                this.classList.toggle('active');
-                const heart = this.querySelector('span:first-child');
-                if (heart) {
-                    const isLiked = this.classList.contains('active');
-                    heart.textContent = isLiked ? '♥' : '♡';
-                    
-                    // Firebase에 좋아요 업데이트
-                    if (docId) {
-                        try {
-                            const docRef = db.collection('hairstyles').doc(docId);
-                            await docRef.update({
-                                likes: firebase.firestore.FieldValue.increment(isLiked ? 1 : -1)
-                            });
-                        } catch (error) {
-                            console.error('Like update error:', error);
-                        }
-                    }
+        // AI 체험 버튼 - 단일 버튼만 유지
+        const aiButtons = modalActions.querySelectorAll('button');
+        let aiButtonExists = false;
+        aiButtons.forEach(btn => {
+            if (btn.textContent.includes('AI') || btn.textContent.includes('🤖') || btn.textContent.includes('체험')) {
+                if (!aiButtonExists) {
+                    // 첫 번째 AI 버튼은 유지하고 기능 부여
+                    btn.onclick = function() {
+                        console.log('🤖 AI 체험 클릭!');
+                        alert('🎉 AI 헤어스타일 체험!\n\n스타일: ' + styleName + '\n코드: ' + styleCode);
+                        // 실제 AKOOL 기능 추가 가능
+                    };
+                    aiButtonExists = true;
+                } else {
+                    // 중복 AI 버튼 제거
+                    btn.remove();
                 }
-            };
-        }
+            }
+        });
     }
 
     // Loading
@@ -769,3 +825,4 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('load', function() {
     console.log('✅ HAIRGATOR App Loaded');
 });
+
