@@ -1,0 +1,8 @@
+[build]
+  command = "echo '{\"buildTime\":\"'$(date +%s)'\",\"version\":\"'$(git rev-parse --short HEAD)'\"}' > api/build-info.json"
+  publish = "."
+
+[[headers]]
+  for = "/api/build-info.json"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
