@@ -414,29 +414,39 @@
             text-align: center;
         }
 
+        /* 🎨 업그레이드된 모달 버튼 스타일 */
         .btn-register {
-            background: var(--male-color);
-            color: white;
+            background: linear-gradient(145deg, #4ECDC4, #44A08D) !important;
+            color: white !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3) !important;
         }
 
         .btn-register.female {
-            background: var(--female-color);
+            background: linear-gradient(145deg, #FF6B6B, #FF8E8E) !important;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3) !important;
         }
 
         .btn-like {
-            background: transparent;
-            border: 2px solid #666;
-            color: #666;
+            background: linear-gradient(145deg, #667eea, #764ba2) !important;
+            border: none !important;
+            color: white !important;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 5px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+        }
+
+        .btn-like:hover,
+        .btn-register:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important;
         }
 
         .btn-like.active {
-            background: #ff4458;
-            border-color: #ff4458;
-            color: white;
+            background: linear-gradient(145deg, #ff4458, #ff6b6b) !important;
+            box-shadow: 0 4px 15px rgba(255, 68, 88, 0.4) !important;
         }
 
         .modal-close {
@@ -982,7 +992,7 @@
     <script>
 console.log('🚀 HAIRGATOR 최종 완성 버전 로딩...');
 
-// ✅ 전역 변수
+// ✅ 전역 변수 (AKOOL 접근 가능하도록 window 객체에)
 window.currentGender = null;
 window.currentCategory = null;
 window.currentSubcategory = 'None';
@@ -1211,8 +1221,8 @@ function handleBack() {
             themeToggleBottom.style.display = 'flex';
         }
         
-        currentGender = null;
-        currentCategory = null;
+        window.currentGender = null;
+        window.currentCategory = null;
     }
 }
 
@@ -1270,7 +1280,7 @@ async function handleLogout() {
 // ✅ 성별 선택 함수
 function selectGender(gender) {
     console.log('🚹🚺 성별 선택됨:', gender);
-    currentGender = gender;
+    window.currentGender = gender;
     
     genderSelection.style.display = 'none';
     menuContainer.classList.add('active');
@@ -1291,11 +1301,11 @@ function selectGender(gender) {
 function loadMenuData(gender) {
     showLoading(true);
     
-    menuData = MENU_DATA[gender];
+    window.menuData = MENU_DATA[gender];
     renderCategories(gender);
     
-    if (menuData.categories.length > 0) {
-        selectCategory(menuData.categories[0], gender);
+    if (window.menuData.categories.length > 0) {
+        selectCategory(window.menuData.categories[0], gender);
     }
     
     setTimeout(() => showLoading(false), 300);
@@ -1316,7 +1326,7 @@ function renderCategories(gender) {
         categoryTabs.appendChild(helpTab);
     }
     
-    menuData.categories.forEach((category, index) => {
+    window.menuData.categories.forEach((category, index) => {
         const tab = document.createElement('button');
         tab.className = 'category-tab';
         tab.textContent = category.name;
@@ -1336,7 +1346,7 @@ function renderCategories(gender) {
 
 // ✅ 카테고리 선택
 function selectCategory(category, gender) {
-    currentCategory = category;
+    window.currentCategory = category;
     
     document.querySelectorAll('.category-tab').forEach(tab => {
         if (tab.classList.contains('help-tab')) return;
@@ -1348,14 +1358,14 @@ function selectCategory(category, gender) {
     
     categoryDescription.textContent = category.description;
     renderSubcategories(gender);
-    loadStyles(category.id, currentSubcategory, gender);
+    loadStyles(category.id, window.currentSubcategory, gender);
 }
 
 // ✅ 서브카테고리 렌더링
 function renderSubcategories(gender) {
     subcategoryTabs.innerHTML = '';
     
-    const subcategories = menuData.subcategories;
+    const subcategories = window.menuData.subcategories;
     
     subcategories.forEach((sub, index) => {
         const tab = document.createElement('button');
@@ -1365,7 +1375,7 @@ function renderSubcategories(gender) {
         
         if (index === 0) {
             tab.classList.add('active', gender);
-            currentSubcategory = sub;
+            window.currentSubcategory = sub;
         }
         
         tab.addEventListener('click', function() {
@@ -1378,7 +1388,7 @@ function renderSubcategories(gender) {
 
 // ✅ 서브카테고리 선택
 function selectSubcategory(subcategory, gender) {
-    currentSubcategory = subcategory;
+    window.currentSubcategory = subcategory;
     
     document.querySelectorAll('.subcategory-tab').forEach(tab => {
         tab.classList.remove('active', 'male', 'female');
@@ -1387,7 +1397,7 @@ function selectSubcategory(subcategory, gender) {
         }
     });
     
-    loadStyles(currentCategory.id, subcategory, gender);
+    loadStyles(window.currentCategory.id, subcategory, gender);
 }
 
 // ✅ Firebase에서 스타일 로드 (성능 최적화 연동)
@@ -1396,7 +1406,7 @@ async function loadStyles(categoryId, subcategory, gender) {
     if (window.optimizedFirebaseLoader) {
         console.log('🚀 성능 최적화된 로딩 사용');
         try {
-            const categoryName = currentCategory.name;
+            const categoryName = window.currentCategory.name;
             const styles = await window.optimizedFirebaseLoader.loadStylesOptimized(
                 gender, categoryName, subcategory
             );
@@ -1426,7 +1436,7 @@ async function loadStylesBasic(categoryId, subcategory, gender) {
             return;
         }
         
-        const categoryName = currentCategory.name;
+        const categoryName = window.currentCategory.name;
         console.log('🔍 스타일 로딩:', { gender, categoryName, subcategory });
         
         const query = db.collection('hairstyles')
@@ -1465,8 +1475,9 @@ async function loadStylesBasic(categoryId, subcategory, gender) {
             `;
             
             item.addEventListener('click', function() {
-    window.showStyleDetail(data.code, data.name, gender, data.imageUrl, doc.id);  // ← window. 추가
-});
+                console.log('🖱️ 스타일 카드 클릭:', { code: data.code, name: data.name });
+                window.showStyleDetail(data.code, data.name, gender, data.imageUrl, doc.id);
+            });
             
             menuGrid.appendChild(item);
         });
@@ -1482,8 +1493,8 @@ async function loadStylesBasic(categoryId, subcategory, gender) {
     }
 }
 
-// ✅ 스타일 상세 모달 열기 (완전히 깔끔한 버전)
-function showStyleDetail(code, name, gender, imageSrc, docId) {
+// ✅ 스타일 상세 모달 열기 (AKOOL 완전 호환 버전)
+window.showStyleDetail = function(code, name, gender, imageSrc, docId) {
     console.log('🎨 스타일 모달 열기:', { code, name, gender, imageSrc, docId });
     
     if (!styleModal) {
@@ -1526,7 +1537,19 @@ function showStyleDetail(code, name, gender, imageSrc, docId) {
     setupModalButtonEvents(code, name, docId, gender);
     
     console.log('✅ 모달 열기 완료');
-}
+    
+    // ✅ AKOOL AI 버튼 자동 추가 (모달이 열린 후)
+    setTimeout(() => {
+        if (typeof window.addAIButtonToHairgator === 'function') {
+            console.log('🎯 AKOOL 발견 - AI 버튼 추가');
+            // 현재 스타일 정보를 전역으로 설정
+            window.currentStyleData = { code, name, imageSrc };
+            window.addAIButtonToHairgator();
+        } else {
+            console.log('⚠️ AKOOL integration이 없습니다');
+        }
+    }, 100);
+};
 
 // ✅ 모달 버튼 이벤트 설정
 function setupModalButtonEvents(code, name, docId, gender) {
@@ -1595,9 +1618,6 @@ function showLoading(show) {
     }
 }
 
-// ✅ 전역으로 함수 노출 (AKOOL에서 사용할 수 있도록)
-window.showStyleDetail = showStyleDetail;
-
 console.log('✅ HAIRGATOR 최종 완성 버전 로드 완료!');
     </script>
     
@@ -1645,6 +1665,63 @@ console.log('✅ HAIRGATOR 최종 완성 버전 로드 완료!');
         });
     </script>
     
+    <!-- 🔧 AKOOL 함수 로딩 확인 및 재시도 시스템 (핵심 해결책) -->
+    <script>
+        // AKOOL 함수 로딩 상태 확인 및 재시도
+        setTimeout(() => {
+            console.log('🔍 AKOOL 함수 로딩 상태 확인...');
+            
+            if (typeof window.addAIButtonToHairgator === 'undefined') {
+                console.log('⚠️ AKOOL 함수 미로드 감지, 스크립트 재로드 시도...');
+                
+                // 스크립트 재로드
+                const script = document.createElement('script');
+                script.src = 'akool/js/akool-integration.js';
+                script.onload = () => {
+                    console.log('✅ AKOOL 스크립트 재로드 완료');
+                    setTimeout(() => {
+                        if (typeof window.addAIButtonToHairgator === 'function') {
+                            console.log('🎉 AKOOL 함수 정상 로드됨!');
+                            
+                            // 기존 모달이 열려있다면 AI 버튼 추가
+                            const modal = document.getElementById('styleModal');
+                            if (modal && modal.classList.contains('active')) {
+                                console.log('🎯 모달이 열려있음, AI 버튼 즉시 추가');
+                                window.addAIButtonToHairgator();
+                            }
+                        } else {
+                            console.log('❌ AKOOL 함수 여전히 로드 안됨');
+                        }
+                    }, 1000);
+                };
+                script.onerror = () => {
+                    console.error('❌ AKOOL 스크립트 재로드 실패');
+                };
+                document.head.appendChild(script);
+            } else {
+                console.log('✅ AKOOL 함수 정상 로드됨!');
+            }
+        }, 3000);
+        
+        // 추가 보험: 모달이 열릴 때마다 AKOOL 확인
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.menu-item')) {
+                setTimeout(() => {
+                    if (typeof window.addAIButtonToHairgator === 'function') {
+                        const modal = document.getElementById('styleModal');
+                        if (modal && modal.classList.contains('active')) {
+                            // 기존 AI 버튼이 없으면 추가
+                            if (!document.querySelector('#akoolAIBtn') && !document.querySelector('.btn-ai-pink')) {
+                                console.log('🎯 모달 열림 감지, AI 버튼 추가');
+                                window.addAIButtonToHairgator();
+                            }
+                        }
+                    }
+                }, 500);
+            }
+        });
+    </script>
+    
     <!-- 🆕 태블릿 네이티브 모드 -->
     <script src="/js/tablet-native-mode.js"></script>
     <!-- 🆕 웹뷰 최적화 -->
@@ -1652,10 +1729,5 @@ console.log('✅ HAIRGATOR 최종 완성 버전 로드 완료!');
     <!-- 🆕 모바일 태블릿 가이드 -->
     <script src="/js/mobile-tablet-guide.js"></script>
     
-    <!-- 🚫 이 스크립트들을 완전히 제거 (문제 해결) -->
-    <!-- <script src="/js/enhanced-auth-system.js"></script> -->
-    <!-- <script src="/js/modal-integration.js"></script> -->
 </body>
 </html>
-
-
