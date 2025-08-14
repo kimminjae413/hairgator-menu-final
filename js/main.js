@@ -1,3 +1,6 @@
+// ========== HAIRGATOR 최종 완성 버전 main.js ==========
+// 🎯 Firebase 이미지 로딩 + NEW 뱃지 + 가짜버튼 제거 + 실시간 업데이트 최적화
+
 // Main Application Logic
 document.addEventListener('DOMContentLoaded', function() {
     // Global variables
@@ -204,6 +207,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 themeToggleBottom.style.display = 'flex';
             }
             
+            // 기존 Firebase 리스너 정리
+            if (window.currentStylesListener) {
+                window.currentStylesListener();
+                window.currentStylesListener = null;
+            }
+            
             currentGender = null;
             currentCategory = null;
         }
@@ -287,7 +296,6 @@ document.addEventListener('DOMContentLoaded', function() {
         menuData = MENU_DATA[gender];
         renderCategories(gender);
         
-        // ✅ 첫 번째 카테고리 자동 선택 및 스타일 로딩
         if (menuData.categories.length > 0) {
             selectCategory(menuData.categories[0], gender);
         }
@@ -299,7 +307,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderCategories(gender) {
         categoryTabs.innerHTML = '';
         
-        // 여성인 경우 맨 앞에 물음표 버튼 추가
         if (gender === 'female') {
             const helpTab = document.createElement('button');
             helpTab.className = 'category-tab help-tab';
@@ -333,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
         currentCategory = category;
         
         document.querySelectorAll('.category-tab').forEach(tab => {
-            if (tab.classList.contains('help-tab')) return; // 물음표 버튼은 제외
+            if (tab.classList.contains('help-tab')) return;
             tab.classList.remove('active', 'male', 'female');
             if (tab.dataset.categoryId === category.id) {
                 tab.classList.add('active', gender);
@@ -343,7 +350,6 @@ document.addEventListener('DOMContentLoaded', function() {
         categoryDescription.textContent = category.description;
         renderSubcategories(gender);
         
-        // ✅ 스타일 로딩 함수 호출
         loadStyles(category.name, currentSubcategory, gender);
     }
 
@@ -383,13 +389,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // ✅ 서브카테고리 변경시에도 스타일 새로 로딩
         if (currentCategory) {
             loadStyles(currentCategory.name, subcategory, gender);
         }
     }
 
-    // ✅ 핵심: Firebase에서 스타일 로딩하는 함수 추가
+    // ✅ 최적화된 실시간 Firebase 스타일 로딩 (깜빡임 방지)
     async function loadStyles(mainCategory, subCategory, gender) {
         if (!db) {
             console.error('❌ Firebase가 초기화되지 않음');
@@ -401,35 +406,67 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             showLoading(true);
             
-            // Firebase에서 조건에 맞는 스타일 조회
+            // 🔧 기존 리스너 정리 (중복 방지)
+            if (window.currentStylesListener) {
+                console.log('🔄 기존 리스너 정리');
+                window.currentStylesListener();
+                window.currentStylesListener = null;
+            }
+            
             const query = db.collection('hairstyles')
                 .where('gender', '==', gender)
                 .where('mainCategory', '==', mainCategory)
                 .where('subCategory', '==', subCategory);
             
-            const snapshot = await query.get();
-            
-            console.log(`🎯 ${mainCategory} > ${subCategory} 스타일 수:`, snapshot.size);
-            
-            const styles = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                styles.push({
-                    id: doc.id,
-                    code: data.code || doc.id,
-                    name: data.name,
-                    imageUrl: data.imageUrl,
-                    ...data
-                });
-            });
-            
-            // 그리드에 스타일 표시
-            displayStyles(styles, gender);
+            // ✅ 실시간 리스너 유지하되 최적화
+            window.currentStylesListener = query.onSnapshot(
+                (snapshot) => {
+                    console.log(`🎯 실시간 업데이트: ${mainCategory} > ${subCategory} 스타일 수:`, snapshot.size);
+                    
+                    // 🚀 변경 사항만 처리 (전체 다시 그리기 방지)
+                    if (!snapshot.metadata.fromCache && !snapshot.metadata.hasPendingWrites) {
+                        const styles = [];
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            styles.push({
+                                id: doc.id,
+                                code: data.code || doc.id,
+                                name: data.name,
+                                imageUrl: data.imageUrl,
+                                createdAt: data.createdAt,
+                                ...data
+                            });
+                        });
+                        
+                        // 🎨 부드러운 업데이트 (깜빡임 방지)
+                        displayStylesSmooth(styles, gender);
+                    }
+                },
+                (error) => {
+                    console.error('❌ 실시간 리스너 오류:', error);
+                    
+                    // 오류시 일회성 조회로 폴백
+                    query.get().then(snapshot => {
+                        const styles = [];
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            styles.push({
+                                id: doc.id,
+                                code: data.code || doc.id,
+                                name: data.name,
+                                imageUrl: data.imageUrl,
+                                createdAt: data.createdAt,
+                                ...data
+                            });
+                        });
+                        displayStylesSmooth(styles, gender);
+                    });
+                }
+            );
             
         } catch (error) {
             console.error('❌ 스타일 로딩 오류:', error);
             
-            // 오류시 빈 상태 표시
             menuGrid.innerHTML = `
                 <div style="
                     grid-column: 1 / -1;
@@ -447,31 +484,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ✅ 🔧 수정된 스타일 표시 함수 - 실제로 작동하는 버전 + NEW 뱃지
-    function displayStyles(styles, gender) {
-        console.log('🎨 displayStyles 함수 실행:', styles.length + '개');
-        
+    // 🎨 부드러운 스타일 업데이트 (깜빡임 방지 + NEW 뱃지)
+    function displayStylesSmooth(styles, gender) {
         if (!menuGrid) {
             console.error('❌ menuGrid 요소가 없음');
             return;
         }
 
-        // 🆕 NEW 뱃지 애니메이션 CSS 추가
+        console.log('🎨 부드러운 스타일 업데이트:', styles.length + '개');
+        
+        // NEW 뱃지 애니메이션 CSS 추가
         addNewBadgeCSS();
 
         if (styles.length === 0) {
-            menuGrid.innerHTML = `
-                <div style="
-                    grid-column: 1 / -1;
-                    text-align: center;
-                    padding: 60px 20px;
-                    color: #666;
-                ">
-                    <div style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;">📋</div>
-                    <div style="font-size: 18px; margin-bottom: 10px;">등록된 스타일이 없습니다</div>
-                    <div style="font-size: 14px;">관리자에서 스타일을 추가해주세요</div>
-                </div>
-            `;
+            menuGrid.style.opacity = '0.5';
+            setTimeout(() => {
+                menuGrid.innerHTML = `
+                    <div style="
+                        grid-column: 1 / -1;
+                        text-align: center;
+                        padding: 60px 20px;
+                        color: #666;
+                    ">
+                        <div style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;">📋</div>
+                        <div style="font-size: 18px; margin-bottom: 10px;">등록된 스타일이 없습니다</div>
+                        <div style="font-size: 14px;">관리자에서 스타일을 추가해주세요</div>
+                    </div>
+                `;
+                menuGrid.style.opacity = '1';
+            }, 150);
+            return;
+        }
+
+        // 🎯 기존 스타일과 비교해서 변경된 것만 업데이트
+        const existingIds = Array.from(menuGrid.children).map(card => card.dataset.styleId).filter(Boolean);
+        const newIds = styles.map(style => style.id);
+        
+        // 동일한 스타일들이면 업데이트 건너뛰기
+        if (existingIds.length === newIds.length && 
+            existingIds.every(id => newIds.includes(id))) {
+            console.log('✅ 스타일 변경 없음, 업데이트 건너뛰기');
             return;
         }
 
@@ -482,103 +534,72 @@ document.addEventListener('DOMContentLoaded', function() {
             gap: 15px;
             padding: 20px;
             overflow-y: auto;
+            transition: opacity 0.3s ease;
         `;
 
-        // 기존 내용 삭제
-        menuGrid.innerHTML = '';
+        // 🎨 부드러운 전환을 위한 페이드 효과
+        menuGrid.style.opacity = '0.7';
+        
+        setTimeout(() => {
+            menuGrid.innerHTML = '';
 
-        // 각 스타일 카드 생성
-        styles.forEach(style => {
-            const card = document.createElement('div');
-            card.className = 'menu-item visible';
-            card.style.cssText = `
-                cursor: pointer;
-                border-radius: 12px;
-                overflow: hidden;
-                background: #1a1a1a;
-                border: 1px solid #333;
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
-                position: relative;
-            `;
-            
-            // 🆕 NEW 뱃지 판단 로직
-            const isNewStyle = checkIfNewStyle(style);
-            
-            // 호버 효과
-            card.onmouseenter = () => {
-                card.style.transform = 'translateY(-5px)';
-                card.style.boxShadow = '0 8px 25px rgba(255, 20, 147, 0.15)';
-                card.style.borderColor = '#FF1493';
-            };
-            card.onmouseleave = () => {
-                card.style.transform = 'translateY(0)';
-                card.style.boxShadow = 'none';
-                card.style.borderColor = '#333';
-            };
-            
-            // 이미지만 표시 (텍스트 없음)
-            if (style.imageUrl) {
-                card.innerHTML = `
-                    <img src="${style.imageUrl}" 
-                         style="width: 100%; height: 250px; object-fit: cover; display: block;"
-                         alt="${style.name}"
-                         onload="console.log('✅ 이미지 로딩:', '${style.name}');"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div style="display: none; width: 100%; height: 250px; background: linear-gradient(135deg, ${gender === 'male' ? '#4A90E2, #667eea' : '#E91E63, #FF69B4'}); align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center;">
-                        ${style.name}<br><small style="opacity: 0.7;">이미지 로딩 실패</small>
-                    </div>
-                    ${isNewStyle ? `
-                        <!-- NEW 뱃지 -->
-                        <div style="
-                            position: absolute;
-                            top: 8px;
-                            right: 8px;
-                            background: linear-gradient(135deg, #FF1493, #FF69B4);
-                            color: white;
-                            padding: 4px 8px;
-                            border-radius: 12px;
-                            font-size: 10px;
-                            font-weight: bold;
-                            text-transform: uppercase;
-                            box-shadow: 0 2px 8px rgba(255, 20, 147, 0.4);
-                            z-index: 10;
-                            animation: newBadgePulse 2s infinite;
-                        ">NEW</div>
-                        <!-- 빨간 점 -->
-                        <div style="
-                            position: absolute;
-                            top: 5px;
-                            left: 8px;
-                            width: 8px;
-                            height: 8px;
-                            background: #FF0000;
-                            border-radius: 50%;
-                            box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
-                            z-index: 10;
-                            animation: redDotBlink 1.5s infinite;
-                        "></div>
-                    ` : ''}
+            // 각 스타일 카드 생성
+            styles.forEach(style => {
+                const card = document.createElement('div');
+                card.className = 'menu-item visible';
+                card.dataset.styleId = style.id;
+                card.style.cssText = `
+                    cursor: pointer;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    background: #1a1a1a;
+                    border: 1px solid #333;
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                    position: relative;
                 `;
-            } else {
-                card.innerHTML = `
-                    <div style="width: 100%; height: 250px; background: linear-gradient(135deg, ${gender === 'male' ? '#4A90E2, #667eea' : '#E91E63, #FF69B4'}); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center; position: relative;">
-                        ${style.name}<br><small style="opacity: 0.7;">이미지 없음</small>
+                
+                // 🆕 NEW 뱃지 판단
+                const isNewStyle = checkIfNewStyle(style);
+                
+                // 호버 효과
+                card.onmouseenter = () => {
+                    card.style.transform = 'translateY(-5px)';
+                    card.style.boxShadow = '0 8px 25px rgba(255, 20, 147, 0.15)';
+                    card.style.borderColor = '#FF1493';
+                };
+                card.onmouseleave = () => {
+                    card.style.transform = 'translateY(0)';
+                    card.style.boxShadow = 'none';
+                    card.style.borderColor = '#333';
+                };
+                
+                // 이미지만 표시 (텍스트 없음)
+                if (style.imageUrl) {
+                    card.innerHTML = `
+                        <img src="${style.imageUrl}" 
+                             style="width: 100%; height: 250px; object-fit: cover; display: block;"
+                             alt="${style.name}"
+                             onload="console.log('✅ 이미지 로딩:', '${style.name}');"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div style="display: none; width: 100%; height: 250px; background: linear-gradient(135deg, ${gender === 'male' ? '#4A90E2, #667eea' : '#E91E63, #FF69B4'}); align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center;">
+                            ${style.name}<br><small style="opacity: 0.7;">이미지 로딩 실패</small>
+                        </div>
                         ${isNewStyle ? `
-                            <!-- NEW 뱃지 (이미지 없는 경우) -->
                             <div style="
                                 position: absolute;
                                 top: 8px;
                                 right: 8px;
-                                background: rgba(255, 255, 255, 0.9);
-                                color: #FF1493;
+                                background: linear-gradient(135deg, #FF1493, #FF69B4);
+                                color: white;
                                 padding: 4px 8px;
                                 border-radius: 12px;
                                 font-size: 10px;
                                 font-weight: bold;
                                 text-transform: uppercase;
-                                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+                                box-shadow: 0 2px 8px rgba(255, 20, 147, 0.4);
+                                z-index: 10;
+                                animation: newBadgePulse 2s infinite;
                             ">NEW</div>
-                            <!-- 빨간 점 (이미지 없는 경우) -->
                             <div style="
                                 position: absolute;
                                 top: 5px;
@@ -587,44 +608,54 @@ document.addEventListener('DOMContentLoaded', function() {
                                 height: 8px;
                                 background: #FF0000;
                                 border-radius: 50%;
-                                box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+                                box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+                                z-index: 10;
+                                animation: redDotBlink 1.5s infinite;
                             "></div>
                         ` : ''}
-                    </div>
-                `;
-            }
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div style="width: 100%; height: 250px; background: linear-gradient(135deg, ${gender === 'male' ? '#4A90E2, #667eea' : '#E91E63, #FF69B4'}); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center; position: relative;">
+                            ${style.name}<br><small style="opacity: 0.7;">이미지 없음</small>
+                            ${isNewStyle ? `
+                                <div style="position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.9); color: #FF1493; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: bold;">NEW</div>
+                                <div style="position: absolute; top: 5px; left: 8px; width: 8px; height: 8px; background: #FF0000; border-radius: 50%;"></div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+                
+                // 클릭 이벤트
+                card.onclick = () => {
+                    console.log('🖱️ 스타일 클릭:', style.name);
+                    showStyleDetail(style.code, style.name, gender, style.imageUrl, style.id);
+                };
+                
+                menuGrid.appendChild(card);
+            });
             
-            // 클릭 이벤트
-            card.onclick = () => {
-                console.log('🖱️ 스타일 클릭:', style.name);
-                showStyleDetail(style.code, style.name, gender, style.imageUrl, style.id);
-            };
-            
-            menuGrid.appendChild(card);
-        });
-        
-        console.log(`✅ ${styles.length}개 스타일 카드 생성 완료!`);
+            // 페이드 인
+            menuGrid.style.opacity = '1';
+            console.log(`✅ ${styles.length}개 스타일 부드러운 업데이트 완료!`);
+        }, 100);
     }
 
     // 🆕 NEW 스타일 판단 함수
     function checkIfNewStyle(style) {
         if (!style.createdAt) {
-            // createdAt이 없으면 최근 추가된 것으로 간주 (기본값)
-            return true;
+            return true; // createdAt이 없으면 NEW로 간주
         }
         
-        // Firebase Timestamp를 Date로 변환
         let createdDate;
         if (style.createdAt && style.createdAt.toDate) {
             createdDate = style.createdAt.toDate();
         } else if (style.createdAt && style.createdAt.seconds) {
             createdDate = new Date(style.createdAt.seconds * 1000);
         } else {
-            // 다른 형태의 날짜면 최근으로 간주
             return true;
         }
         
-        // 현재 시간과 비교하여 7일 이내면 NEW
         const now = new Date();
         const diffTime = now - createdDate;
         const diffDays = diffTime / (1000 * 60 * 60 * 24);
@@ -634,32 +665,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 🆕 NEW 뱃지 애니메이션 CSS 추가
     function addNewBadgeCSS() {
-        // 이미 추가되었으면 건너뛰기
         if (document.getElementById('new-badge-styles')) return;
         
         const style = document.createElement('style');
         style.id = 'new-badge-styles';
         style.textContent = `
             @keyframes newBadgePulse {
-                0%, 100% { 
-                    transform: scale(1); 
-                    opacity: 1; 
-                }
-                50% { 
-                    transform: scale(1.1); 
-                    opacity: 0.8; 
-                }
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.1); opacity: 0.8; }
             }
             
             @keyframes redDotBlink {
-                0%, 100% { 
-                    opacity: 1; 
-                    transform: scale(1); 
-                }
-                50% { 
-                    opacity: 0.3; 
-                    transform: scale(1.2); 
-                }
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.3; transform: scale(1.2); }
             }
         `;
         document.head.appendChild(style);
@@ -683,7 +701,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('✅ 모달 열기 완료');
         
-        // 버튼 이벤트 설정
         setupModalButtons(docId, code, name);
     }
 
@@ -694,6 +711,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // ✅ 최종 완성 setupModalButtons - 가짜버튼 제거 + 심플 디자인
     function setupModalButtons(docId, styleCode, styleName) {
         // 🛠️ 가짜 AI 버튼 제거 + 심플 디자인 적용
         const modalActions = document.getElementById('modalActions');
@@ -720,7 +738,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // 🎨 모든 버튼 심플 디자인 통일
             const remainingButtons = modalActions.querySelectorAll('button');
             remainingButtons.forEach(btn => {
-                btn.removeAttribute('style'); // 기존 스타일 제거
+                btn.removeAttribute('style');
                 btn.style.cssText = `
                     flex: 1 !important;
                     max-width: 120px !important;
@@ -791,8 +809,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     // 첫 번째 AI 버튼은 유지하고 기능 부여
                     btn.onclick = function() {
                         console.log('🤖 AI 체험 클릭!');
-                        alert('🎉 AI 헤어스타일 체험!\n\n스타일: ' + styleName + '\n코드: ' + styleCode);
-                        // 실제 AKOOL 기능 추가 가능
+                        
+                        // AKOOL 모달 열기 (akool-integration.js에서 제공)
+                        if (window.openAkoolModal) {
+                            window.openAkoolModal();
+                        } else {
+                            alert('🎉 AI 헤어스타일 체험!\n\n스타일: ' + styleName + '\n코드: ' + styleCode);
+                        }
                     };
                     aiButtonExists = true;
                 } else {
@@ -810,7 +833,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 전역 함수로 내보내기 (다른 스크립트에서 사용할 수 있도록)
+    // 전역 함수로 내보내기
     window.showStyleDetail = showStyleDetail;
     window.selectGender = selectGender;
     window.currentGender = currentGender;
@@ -823,6 +846,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 window.addEventListener('load', function() {
-    console.log('✅ HAIRGATOR App Loaded');
+    console.log('✅ HAIRGATOR 최종 완성 버전 로드 완료!');
 });
-
