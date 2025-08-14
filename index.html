@@ -1465,9 +1465,8 @@ async function loadStylesBasic(categoryId, subcategory, gender) {
             `;
             
             item.addEventListener('click', function() {
-                console.log('🖱️ 스타일 카드 클릭:', { code: data.code, name: data.name });
-                showStyleDetail(data.code, data.name, gender, data.imageUrl, doc.id);
-            });
+    window.showStyleDetail(data.code, data.name, gender, data.imageUrl, doc.id);  // ← window. 추가
+});
             
             menuGrid.appendChild(item);
         });
@@ -1658,4 +1657,5 @@ console.log('✅ HAIRGATOR 최종 완성 버전 로드 완료!');
     <!-- <script src="/js/modal-integration.js"></script> -->
 </body>
 </html>
+
 
