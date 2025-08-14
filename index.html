@@ -32,6 +32,415 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- 🎯 GitHub-Netlify 업데이트 시스템 추가 -->
+    <script>
+    // ========== GitHub-Netlify 연동 자동 업데이트 알림 시스템 ==========
+    (function() {
+        console.log('🚀 GitHub-Netlify 업데이트 알림 시스템 로딩...');
+
+        // ========== 1. 업데이트 체크 시스템 ==========
+        class UpdateChecker {
+            constructor() {
+                this.checkInterval = 5 * 60 * 1000; // 5분마다 체크
+                this.lastBuildTime = localStorage.getItem('hairgator_last_build_time');
+                this.isChecking = false;
+                
+                this.init();
+            }
+            
+            async init() {
+                // 페이지 로드시 즉시 체크
+                await this.checkForUpdates();
+                
+                // 주기적 체크
+                setInterval(() => {
+                    this.checkForUpdates();
+                }, this.checkInterval);
+                
+                // 탭 포커스시 체크 (유저가 다시 돌아올 때)
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden) {
+                        setTimeout(() => this.checkForUpdates(), 1000);
+                    }
+                });
+                
+                console.log('✅ 업데이트 체커 초기화 완료');
+            }
+            
+            async checkForUpdates() {
+                if (this.isChecking) return;
+                this.isChecking = true;
+                
+                try {
+                    console.log('🔍 GitHub-Netlify 업데이트 체크 중...');
+                    
+                    // Netlify 빌드 정보 체크 (build timestamp 또는 commit hash)
+                    const response = await fetch('/api/build-info.json?t=' + Date.now(), {
+                        cache: 'no-cache',
+                        headers: {
+                            'Cache-Control': 'no-cache, no-store, must-revalidate'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const buildInfo = await response.json();
+                        console.log('📋 빌드 정보:', buildInfo);
+                        
+                        // 새로운 빌드 감지
+                        if (this.lastBuildTime && buildInfo.buildTime !== this.lastBuildTime) {
+                            console.log('🆕 새로운 업데이트 감지!');
+                            this.showUpdateNotification(buildInfo);
+                        }
+                        
+                        // 현재 빌드 시간 저장
+                        localStorage.setItem('hairgator_last_build_time', buildInfo.buildTime);
+                        this.lastBuildTime = buildInfo.buildTime;
+                    }
+                    
+                } catch (error) {
+                    console.warn('⚠️ 업데이트 체크 실패:', error);
+                    
+                    // 폴백: 단순 파일 변경 체크
+                    await this.fallbackUpdateCheck();
+                }
+                
+                this.isChecking = false;
+            }
+            
+            async fallbackUpdateCheck() {
+                try {
+                    // 주요 파일의 Last-Modified 헤더 체크
+                    const response = await fetch('/akool/js/akool-integration.js', {
+                        method: 'HEAD',
+                        cache: 'no-cache'
+                    });
+                    
+                    const lastModified = response.headers.get('Last-Modified');
+                    const storedModified = localStorage.getItem('hairgator_last_modified');
+                    
+                    if (storedModified && lastModified && lastModified !== storedModified) {
+                        console.log('🆕 파일 변경 감지!');
+                        this.showUpdateNotification({
+                            buildTime: Date.now(),
+                            type: 'file_change'
+                        });
+                    }
+                    
+                    if (lastModified) {
+                        localStorage.setItem('hairgator_last_modified', lastModified);
+                    }
+                    
+                } catch (error) {
+                    console.warn('폴백 체크 실패:', error);
+                }
+            }
+            
+            showUpdateNotification(buildInfo) {
+                // 기존 알림 제거
+                const existing = document.querySelector('.update-notification');
+                if (existing) existing.remove();
+                
+                const notification = document.createElement('div');
+                notification.className = 'update-notification';
+                notification.innerHTML = `
+                    <div class="update-banner">
+                        <div class="update-content">
+                            <div class="update-icon">🚀</div>
+                            <div class="update-text">
+                                <div class="update-title">새로운 업데이트가 있습니다!</div>
+                                <div class="update-desc">최신 기능과 개선사항을 확인하세요</div>
+                            </div>
+                            <div class="update-actions">
+                                <button class="update-btn primary" onclick="window.updateNotifier.applyUpdate()">
+                                    지금 업데이트
+                                </button>
+                                <button class="update-btn secondary" onclick="window.updateNotifier.dismissUpdate()">
+                                    나중에
+                                </button>
+                            </div>
+                        </div>
+                        <button class="update-close" onclick="window.updateNotifier.dismissUpdate()">×</button>
+                    </div>
+                `;
+                
+                // 애니메이션과 함께 상단에 표시
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    z-index: 10000;
+                    transform: translateY(-100%);
+                    transition: transform 0.4s ease-out;
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // 애니메이션 실행
+                setTimeout(() => {
+                    notification.style.transform = 'translateY(0)';
+                }, 100);
+                
+                // 자동 숨김 (30초 후, 중요한 업데이트가 아닌 경우)
+                if (!buildInfo.critical) {
+                    setTimeout(() => {
+                        this.dismissUpdate();
+                    }, 30000);
+                }
+                
+                console.log('✅ 업데이트 알림 표시됨');
+            }
+            
+            async applyUpdate() {
+                const notification = document.querySelector('.update-notification');
+                if (!notification) return;
+                
+                // 버튼 상태 변경
+                const updateBtn = notification.querySelector('.update-btn.primary');
+                if (updateBtn) {
+                    updateBtn.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="
+                                width: 16px; 
+                                height: 16px; 
+                                border: 2px solid white; 
+                                border-top: 2px solid transparent; 
+                                border-radius: 50%; 
+                                animation: spin 1s linear infinite;
+                            "></div>
+                            업데이트 중...
+                        </div>
+                    `;
+                    updateBtn.disabled = true;
+                }
+                
+                try {
+                    console.log('🔄 업데이트 적용 시작...');
+                    
+                    // 1. Service Worker 제거
+                    if ('serviceWorker' in navigator) {
+                        const registrations = await navigator.serviceWorker.getRegistrations();
+                        for (const registration of registrations) {
+                            await registration.unregister();
+                        }
+                    }
+                    
+                    // 2. 캐시 삭제
+                    if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        await Promise.all(cacheNames.map(name => caches.delete(name)));
+                    }
+                    
+                    // 3. 성공 알림
+                    this.showUpdateSuccess();
+                    
+                    // 4. 하드 리로드
+                    setTimeout(() => {
+                        window.location.reload(true);
+                    }, 1500);
+                    
+                } catch (error) {
+                    console.error('❌ 업데이트 실패:', error);
+                    window.location.reload(true); // 실패해도 리로드
+                }
+            }
+            
+            dismissUpdate() {
+                const notification = document.querySelector('.update-notification');
+                if (notification) {
+                    notification.style.transform = 'translateY(-100%)';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 400);
+                }
+                
+                // 1시간 후 다시 체크하도록 설정
+                setTimeout(() => {
+                    this.checkForUpdates();
+                }, 60 * 60 * 1000);
+            }
+            
+            showUpdateSuccess() {
+                const success = document.createElement('div');
+                success.innerHTML = `
+                    <div style="
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: linear-gradient(135deg, #4CAF50, #45a049);
+                        color: white;
+                        padding: 25px 35px;
+                        border-radius: 15px;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                        z-index: 10001;
+                        text-align: center;
+                        animation: fadeInScale 0.3s ease-out;
+                    ">
+                        <div style="font-size: 40px; margin-bottom: 15px;">✅</div>
+                        <div style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">
+                            업데이트 완료!
+                        </div>
+                        <div style="font-size: 14px; opacity: 0.9;">
+                            최신 버전을 불러오고 있습니다
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(success);
+            }
+        }
+
+        // ========== 2. 스타일 정의 ==========
+        function addStyles() {
+            const styles = document.createElement('style');
+            styles.textContent = `
+                .update-banner {
+                    background: linear-gradient(135deg, #FF1493, #FF69B4);
+                    color: white;
+                    padding: 15px 20px;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                    position: relative;
+                }
+                
+                .update-content {
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    max-width: 1200px;
+                    margin: 0 auto;
+                }
+                
+                .update-icon {
+                    font-size: 24px;
+                    animation: bounce 2s infinite;
+                }
+                
+                .update-text {
+                    flex: 1;
+                }
+                
+                .update-title {
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin-bottom: 4px;
+                }
+                
+                .update-desc {
+                    font-size: 14px;
+                    opacity: 0.9;
+                }
+                
+                .update-actions {
+                    display: flex;
+                    gap: 10px;
+                }
+                
+                .update-btn {
+                    padding: 10px 20px;
+                    border: 2px solid white;
+                    border-radius: 25px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    font-size: 14px;
+                }
+                
+                .update-btn.primary {
+                    background: white;
+                    color: #FF1493;
+                }
+                
+                .update-btn.primary:hover {
+                    background: #f0f0f0;
+                    transform: scale(1.05);
+                }
+                
+                .update-btn.secondary {
+                    background: transparent;
+                    color: white;
+                }
+                
+                .update-btn.secondary:hover {
+                    background: rgba(255,255,255,0.1);
+                }
+                
+                .update-close {
+                    position: absolute;
+                    top: 10px;
+                    right: 15px;
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 24px;
+                    cursor: pointer;
+                    opacity: 0.7;
+                    transition: opacity 0.2s;
+                }
+                
+                .update-close:hover {
+                    opacity: 1;
+                }
+                
+                @keyframes bounce {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-8px); }
+                }
+                
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                
+                @keyframes fadeInScale {
+                    from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                }
+                
+                /* 모바일 최적화 */
+                @media (max-width: 768px) {
+                    .update-content {
+                        flex-direction: column;
+                        text-align: center;
+                        gap: 12px;
+                    }
+                    
+                    .update-actions {
+                        justify-content: center;
+                    }
+                    
+                    .update-btn {
+                        padding: 12px 24px;
+                        font-size: 15px;
+                    }
+                }
+            `;
+            
+            document.head.appendChild(styles);
+        }
+
+        // ========== 3. 초기화 ==========
+        function init() {
+            addStyles();
+            
+            // UpdateChecker 인스턴스 생성
+            window.updateNotifier = new UpdateChecker();
+            
+            console.log('✅ GitHub-Netlify 업데이트 시스템 초기화 완료');
+        }
+        
+        // 즉시 초기화
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+        
+    })();
+    </script>
+    
     <style>
         * {
             margin: 0;
@@ -983,9 +1392,6 @@
     <!-- 🔥 AKOOL을 가장 먼저 로드 (최우선) -->
     <script src="akool/js/akool-integration.js"></script>
     
-    <!-- 🆕 캐시 관리 시스템 -->
-    <script src="/js/cache-update-system.js"></script>
-    
     <!-- 🆕 성능 최적화 시스템 -->
     <script src="/js/performance-optimization.js"></script>
     
@@ -1636,8 +2042,6 @@ function addPinkAIButton(code, name, imageSrc, gender) {
                   fill="none" stroke="#FF1493" stroke-width="2"/>
             <circle cx="22" cy="22" r="2" fill="#FF1493"/>
             <circle cx="38" cy="22" r="2" fill="#FF1493"/>
-            <path d="M30 28 L32 32 L30 34 L28 32 Z" fill="none" stroke="#FF1493" stroke-width="1.5"/>
-            <path d="M25 40 Q30 45 35 40" fill="none" stroke="#FF1493" stroke-width="2"/>
         </svg>
         <span>AI 체험</span>
     `;
@@ -1679,8 +2083,8 @@ function addPinkAIButton(code, name, imageSrc, gender) {
         // 스타일 데이터 준비
         const styleData = {
             imageUrl: imageSrc,
-            name: name,
-            code: code,
+            styleName: name,
+            styleCode: code,
             gender: gender || window.currentGender
         };
         
@@ -1712,7 +2116,6 @@ function showLoading(show) {
     }
 }
 
-console.log('✅ HAIRGATOR 최종 완성 버전 로드 완료!');
     </script>
     
     <!-- PWA Service Worker -->
