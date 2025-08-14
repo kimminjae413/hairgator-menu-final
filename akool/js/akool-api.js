@@ -207,11 +207,11 @@ class AkoolAPI {
 
       // AKOOL API 규격에 맞는 정확한 페이로드
       const payload = {
-  sourceImage: [{ // 헤어스타일 (가져올 스타일)
+  sourceImage: [{ // ← styleFaceData로 되돌리기
     path: styleFaceData.cropUrl,
     opts: styleFaceData.landmarks
   }],
-  targetImage: [{ // 사용자 얼굴 (적용될 대상)
+  targetImage: [{ // ← userFaceData로 되돌리기
     path: userFaceData.cropUrl,
     opts: userFaceData.landmarks
   }],
