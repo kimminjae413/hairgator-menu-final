@@ -447,12 +447,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ✅ 스타일 표시 함수
+    // ✅ 🔧 수정된 스타일 표시 함수 - 실제로 작동하는 버전 + NEW 뱃지
     function displayStyles(styles, gender) {
+        console.log('🎨 displayStyles 함수 실행:', styles.length + '개');
+        
         if (!menuGrid) {
             console.error('❌ menuGrid 요소가 없음');
             return;
         }
+
+        // 🆕 NEW 뱃지 애니메이션 CSS 추가
+        addNewBadgeCSS();
 
         if (styles.length === 0) {
             menuGrid.innerHTML = `
@@ -470,37 +475,194 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const gridItems = styles.map(style => `
-            <div class="image-item" onclick="showStyleDetail('${style.code}', '${style.name}', '${gender}', '${style.imageUrl}', '${style.id}')" style="cursor: pointer;">
-                <div style="position: relative; width: 100%; height: 250px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease;">
+        // 그리드 스타일 설정
+        menuGrid.style.cssText = `
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            overflow-y: auto;
+        `;
+
+        // 기존 내용 삭제
+        menuGrid.innerHTML = '';
+
+        // 각 스타일 카드 생성
+        styles.forEach(style => {
+            const card = document.createElement('div');
+            card.className = 'menu-item visible';
+            card.style.cssText = `
+                cursor: pointer;
+                border-radius: 12px;
+                overflow: hidden;
+                background: #1a1a1a;
+                border: 1px solid #333;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+                position: relative;
+            `;
+            
+            // 🆕 NEW 뱃지 판단 로직
+            const isNewStyle = checkIfNewStyle(style);
+            
+            // 호버 효과
+            card.onmouseenter = () => {
+                card.style.transform = 'translateY(-5px)';
+                card.style.boxShadow = '0 8px 25px rgba(255, 20, 147, 0.15)';
+                card.style.borderColor = '#FF1493';
+            };
+            card.onmouseleave = () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = 'none';
+                card.style.borderColor = '#333';
+            };
+            
+            // 이미지만 표시 (텍스트 없음)
+            if (style.imageUrl) {
+                card.innerHTML = `
                     <img src="${style.imageUrl}" 
-                         style="width: 100%; height: 100%; object-fit: cover;"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                         onload="console.log('✅ 이미지 로딩 성공: ${style.name}');">
-                    <div style="display: none; width: 100%; height: 100%; background: linear-gradient(135deg, ${gender === 'male' ? '#4A90E2, #667eea' : '#E91E63, #FF69B4'}); align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center;">
-                        ${style.name}<br><small>이미지 로딩 실패</small>
+                         style="width: 100%; height: 250px; object-fit: cover; display: block;"
+                         alt="${style.name}"
+                         onload="console.log('✅ 이미지 로딩:', '${style.name}');"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display: none; width: 100%; height: 250px; background: linear-gradient(135deg, ${gender === 'male' ? '#4A90E2, #667eea' : '#E91E63, #FF69B4'}); align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center;">
+                        ${style.name}<br><small style="opacity: 0.7;">이미지 로딩 실패</small>
                     </div>
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: white; padding: 8px; text-align: center; font-size: 12px;">
-                        ${style.name}
+                    ${isNewStyle ? `
+                        <!-- NEW 뱃지 -->
+                        <div style="
+                            position: absolute;
+                            top: 8px;
+                            right: 8px;
+                            background: linear-gradient(135deg, #FF1493, #FF69B4);
+                            color: white;
+                            padding: 4px 8px;
+                            border-radius: 12px;
+                            font-size: 10px;
+                            font-weight: bold;
+                            text-transform: uppercase;
+                            box-shadow: 0 2px 8px rgba(255, 20, 147, 0.4);
+                            z-index: 10;
+                            animation: newBadgePulse 2s infinite;
+                        ">NEW</div>
+                        <!-- 빨간 점 -->
+                        <div style="
+                            position: absolute;
+                            top: 5px;
+                            left: 8px;
+                            width: 8px;
+                            height: 8px;
+                            background: #FF0000;
+                            border-radius: 50%;
+                            box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+                            z-index: 10;
+                            animation: redDotBlink 1.5s infinite;
+                        "></div>
+                    ` : ''}
+                `;
+            } else {
+                card.innerHTML = `
+                    <div style="width: 100%; height: 250px; background: linear-gradient(135deg, ${gender === 'male' ? '#4A90E2, #667eea' : '#E91E63, #FF69B4'}); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center; position: relative;">
+                        ${style.name}<br><small style="opacity: 0.7;">이미지 없음</small>
+                        ${isNewStyle ? `
+                            <!-- NEW 뱃지 (이미지 없는 경우) -->
+                            <div style="
+                                position: absolute;
+                                top: 8px;
+                                right: 8px;
+                                background: rgba(255, 255, 255, 0.9);
+                                color: #FF1493;
+                                padding: 4px 8px;
+                                border-radius: 12px;
+                                font-size: 10px;
+                                font-weight: bold;
+                                text-transform: uppercase;
+                                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+                            ">NEW</div>
+                            <!-- 빨간 점 (이미지 없는 경우) -->
+                            <div style="
+                                position: absolute;
+                                top: 5px;
+                                left: 8px;
+                                width: 8px;
+                                height: 8px;
+                                background: #FF0000;
+                                border-radius: 50%;
+                                box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+                            "></div>
+                        ` : ''}
                     </div>
-                </div>
-            </div>
-        `).join('');
-
-        menuGrid.innerHTML = gridItems;
-
-        // 호버 효과 추가
-        const imageItems = menuGrid.querySelectorAll('.image-item');
-        imageItems.forEach(item => {
-            item.addEventListener('mouseenter', function() {
-                this.firstElementChild.style.transform = 'scale(1.05)';
-            });
-            item.addEventListener('mouseleave', function() {
-                this.firstElementChild.style.transform = 'scale(1)';
-            });
+                `;
+            }
+            
+            // 클릭 이벤트
+            card.onclick = () => {
+                console.log('🖱️ 스타일 클릭:', style.name);
+                showStyleDetail(style.code, style.name, gender, style.imageUrl, style.id);
+            };
+            
+            menuGrid.appendChild(card);
         });
+        
+        console.log(`✅ ${styles.length}개 스타일 카드 생성 완료!`);
+    }
 
-        console.log(`✅ ${styles.length}개 스타일 표시 완료`);
+    // 🆕 NEW 스타일 판단 함수
+    function checkIfNewStyle(style) {
+        if (!style.createdAt) {
+            // createdAt이 없으면 최근 추가된 것으로 간주 (기본값)
+            return true;
+        }
+        
+        // Firebase Timestamp를 Date로 변환
+        let createdDate;
+        if (style.createdAt && style.createdAt.toDate) {
+            createdDate = style.createdAt.toDate();
+        } else if (style.createdAt && style.createdAt.seconds) {
+            createdDate = new Date(style.createdAt.seconds * 1000);
+        } else {
+            // 다른 형태의 날짜면 최근으로 간주
+            return true;
+        }
+        
+        // 현재 시간과 비교하여 7일 이내면 NEW
+        const now = new Date();
+        const diffTime = now - createdDate;
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+        
+        return diffDays <= 7; // 7일 이내면 NEW
+    }
+
+    // 🆕 NEW 뱃지 애니메이션 CSS 추가
+    function addNewBadgeCSS() {
+        // 이미 추가되었으면 건너뛰기
+        if (document.getElementById('new-badge-styles')) return;
+        
+        const style = document.createElement('style');
+        style.id = 'new-badge-styles';
+        style.textContent = `
+            @keyframes newBadgePulse {
+                0%, 100% { 
+                    transform: scale(1); 
+                    opacity: 1; 
+                }
+                50% { 
+                    transform: scale(1.1); 
+                    opacity: 0.8; 
+                }
+            }
+            
+            @keyframes redDotBlink {
+                0%, 100% { 
+                    opacity: 1; 
+                    transform: scale(1); 
+                }
+                50% { 
+                    opacity: 0.3; 
+                    transform: scale(1.2); 
+                }
+            }
+        `;
+        document.head.appendChild(style);
     }
 
     // Modal Functions
