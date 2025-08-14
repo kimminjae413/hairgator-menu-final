@@ -1480,8 +1480,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const heart = btnLike.querySelector('span:first-child');
         if (heart) heart.textContent = '♡';
         
-        // ✅ AI 체험 버튼 추가
-        ensureAIButton();
+    
+    // ✅ AKOOL integration이 있으면 아무것도 하지 않음
+    if (typeof window.addAIButtonToHairgator === 'function') {
+        console.log('🎯 AKOOL integration 감지됨. 기본 AI 버튼 생성 스킵.');
+        return;
+    }
+    
+    // 기존 코드는 AKOOL이 없을 때만 실행
+    console.log('⚠️ AKOOL이 없음. 기본 AI 버튼 생성.');
+    // ... 기존 ensureAIButton 코드
+}
         
         styleModal.classList.add('active');
         console.log('✅ 모달 열기 완료');
@@ -1624,6 +1633,7 @@ window.addEventListener('load', function() {
     </script>
 </body>
 </html>
+
 
 
 
