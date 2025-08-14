@@ -454,34 +454,36 @@
             z-index: 10;
         }
 
-        /* Theme Toggle Button */
+        /* 🎨 업그레이드된 테마 토글 버튼 */
         .theme-toggle-bottom {
             position: fixed;
             bottom: 50px;
             right: 20px;
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             border: 2px solid rgba(255, 255, 255, 0.2);
             color: #ffd700;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .theme-toggle-bottom:hover {
             background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
 
         .theme-toggle-bottom svg {
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
 
         /* 다크 모드 아이콘 */
@@ -630,11 +632,13 @@
         body.light-theme .theme-toggle-bottom {
             background: rgba(0, 0, 0, 0.1);
             border-color: rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
 
         body.light-theme .theme-toggle-bottom:hover {
             background: rgba(0, 0, 0, 0.2);
             border-color: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
 
         body.light-theme .moon-icon {
@@ -678,11 +682,11 @@
             }
 
             .theme-toggle-bottom:hover {
-                transform: translateX(-50%) scale(1.1);
+                transform: translateX(-50%) scale(1.1) translateY(-2px);
             }
 
             body.light-theme .theme-toggle-bottom:hover {
-                transform: translateX(-50%) scale(1.1);
+                transform: translateX(-50%) scale(1.1) translateY(-2px);
             }
 
             .gender-selection {
@@ -715,7 +719,7 @@
             }
 
             .theme-toggle-bottom:hover {
-                transform: scale(1.1) !important;
+                transform: scale(1.1) translateY(-2px) !important;
             }
         }
 
@@ -853,7 +857,7 @@
         </button>
     </header>
 
-    <!-- Theme Toggle Button -->
+    <!-- 🎨 업그레이드된 테마 토글 버튼 -->
     <button class="theme-toggle-bottom" id="themeToggleBottom" title="다크/라이트 모드">
         <svg class="moon-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
