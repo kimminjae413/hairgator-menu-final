@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HAIRGATOR - Professional Hair Style Menu</title>
     
+    <!-- 🆕 성능 최적화 CSS 추가 -->
+    <link rel="stylesheet" href="/css/performance-optimization.css">
+    
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -28,12 +31,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
     <style>
         * {
@@ -952,12 +949,27 @@
         </div>
     </div>
 
-    <!-- ✅ Scripts - Firebase와 AKOOL만 로드 -->
+    <!-- ✅ Scripts 로딩 순서 중요! -->
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Config -->
     <script src="js/firebase-config.js"></script>
+    
+    <!-- 🆕 캐시 관리 시스템 (가장 먼저) -->
+    <script src="/js/cache-update-system.js"></script>
+    
+    <!-- 🆕 성능 최적화 시스템 -->
+    <script src="/js/performance-optimization.js"></script>
+    
+    <!-- AKOOL 연동 -->
     <script src="akool/js/akool-integration.js"></script>
     
     <script>
-console.log('🚀 HAIRGATOR 완전 깔끔 버전 로딩...');
+console.log('🚀 HAIRGATOR 최종 완성 버전 로딩...');
 
 // ✅ 전역 변수
 let currentGender = null;
@@ -1097,7 +1109,7 @@ function init() {
         backBtn.style.display = 'none';
     }
     
-    console.log('✅ 초기화 완료 - 모든 시뮬레이션 코드 제거됨');
+    console.log('✅ 초기화 완료');
 }
 
 // ✅ 이벤트 리스너 설정
@@ -1367,8 +1379,33 @@ function selectSubcategory(subcategory, gender) {
     loadStyles(currentCategory.id, subcategory, gender);
 }
 
-// ✅ Firebase에서 스타일 로드
+// ✅ Firebase에서 스타일 로드 (성능 최적화 연동)
 async function loadStyles(categoryId, subcategory, gender) {
+    // 성능 최적화 시스템이 있으면 사용, 없으면 기본 로직
+    if (window.optimizedFirebaseLoader) {
+        console.log('🚀 성능 최적화된 로딩 사용');
+        try {
+            const categoryName = currentCategory.name;
+            const styles = await window.optimizedFirebaseLoader.loadStylesOptimized(
+                gender, categoryName, subcategory
+            );
+            
+            if (window.virtualScroller && styles.length > 20) {
+                window.virtualScroller.setItems(styles);
+            } else {
+                window.renderStylesDirectly(styles, menuGrid);
+            }
+        } catch (error) {
+            console.error('최적화된 로딩 실패, 기본 로딩 사용:', error);
+            loadStylesBasic(categoryId, subcategory, gender);
+        }
+    } else {
+        loadStylesBasic(categoryId, subcategory, gender);
+    }
+}
+
+// ✅ 기본 스타일 로딩 (폴백)
+async function loadStylesBasic(categoryId, subcategory, gender) {
     menuGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
     
     try {
@@ -1413,6 +1450,7 @@ async function loadStyles(categoryId, subcategory, gender) {
                 <img src="${data.imageUrl || ''}" 
                      alt="${data.name || 'Style'}" 
                      class="menu-item-image"
+                     loading="lazy"
                      onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
                 <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); padding: 10px; text-align: center;">
                     <div style="font-size: 11px; color: #999;">${data.code || ''}</div>
@@ -1439,7 +1477,7 @@ async function loadStyles(categoryId, subcategory, gender) {
     }
 }
 
-// ✅ 스타일 상세 모달 열기 (완전 깔끔 버전!)
+// ✅ 스타일 상세 모달 열기 (성능 최적화 연동)
 function showStyleDetail(code, name, gender, imageSrc, docId) {
     console.log('🎨 스타일 모달 열기:', { code, name, gender, imageSrc, docId });
     
@@ -1448,7 +1486,14 @@ function showStyleDetail(code, name, gender, imageSrc, docId) {
         return;
     }
     
-    // 모달 이미지 및 정보 설정
+    // 성능 최적화된 모달이 있으면 사용
+    if (window.showStyleDetailOptimized) {
+        console.log('🚀 성능 최적화된 모달 사용');
+        window.showStyleDetailOptimized({ code, name, gender, imageUrl: imageSrc, docId });
+        return;
+    }
+    
+    // 기본 모달 로직
     modalImage.src = imageSrc || '';
     modalImage.onerror = function() {
         this.style.display = 'none';
@@ -1469,29 +1514,25 @@ function showStyleDetail(code, name, gender, imageSrc, docId) {
     const heart = btnLike.querySelector('span:first-child');
     if (heart) heart.textContent = '♡';
     
-    // ✅ 모달 열기
+    // 모달 열기
     styleModal.classList.add('active');
     
     // 기본 버튼 이벤트 설정
     setupModalButtonEvents(code, name, docId, gender);
     
-    // ✅ AKOOL 실제 얼굴 아이콘 버튼만 추가 (시뮬레이션 완전 제거)
+    // AKOOL 버튼 추가
     if (typeof window.addAIButtonToHairgator === 'function') {
-        console.log('🎯 AKOOL 발견 - 실제 얼굴 아이콘 AI 버튼 추가');
-        
-        // 현재 스타일 정보를 전역에 저장
+        console.log('🎯 AKOOL 발견 - AI 버튼 추가');
         window.currentStyleData = { code, name, imageSrc };
         
-        // 잠시 후 AKOOL 버튼 추가
         setTimeout(() => {
             window.addAIButtonToHairgator();
         }, 100);
-        
     } else {
-        console.log('⚠️ AKOOL integration이 없습니다 - AI 버튼 없이 진행');
+        console.log('⚠️ AKOOL integration이 없습니다');
     }
     
-    console.log('✅ 모달 열기 완료 (모든 시뮬레이션 제거됨)');
+    console.log('✅ 모달 열기 완료');
 }
 
 // ✅ 모달 버튼 이벤트 설정
@@ -1564,24 +1605,51 @@ function showLoading(show) {
 // ✅ 전역으로 함수 노출 (AKOOL에서 사용할 수 있도록)
 window.showStyleDetail = showStyleDetail;
 
-console.log('✅ HAIRGATOR 완전 깔끔 버전 로드 완료!');
-
-// ✅ PWA Service Worker
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-        navigator.serviceWorker.register('service-worker.js')
-            .then(function(registration) {
-                console.log('ServiceWorker registration successful');
-            })
-            .catch(function(err) {
-                console.log('ServiceWorker registration failed: ', err);
+console.log('✅ HAIRGATOR 최종 완성 버전 로드 완료!');
+    </script>
+    
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
             });
-    });
-}
-
-window.addEventListener('load', function() {
-    console.log('🎉 HAIRGATOR 완전 정리 완성!');
-});
+        }
+        
+        // iOS Standalone 모드 체크
+        if (window.navigator.standalone === true) {
+            console.log('Running in standalone mode');
+            document.body.classList.add('standalone-mode');
+        }
+        
+        // Android PWA 설치 프롬프트
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('PWA 설치 가능');
+        });
+        
+        // PWA 설치 감지
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('PWA가 설치되었습니다');
+        });
+        
+        // 전체화면 모드 감지
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('PWA 전체화면 모드로 실행 중');
+            document.body.classList.add('pwa-mode');
+        }
+        
+        window.addEventListener('load', function() {
+            console.log('🎉 HAIRGATOR 최종 완성 버전 로드 완료! 🚀');
+        });
     </script>
 </body>
 </html>
