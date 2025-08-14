@@ -207,16 +207,16 @@ class AkoolAPI {
 
       // AKOOL API 규격에 맞는 정확한 페이로드
       const payload = {
-        sourceImage: [{ // 바꿀 대상 (사용자 얼굴)
-          path: userFaceData.cropUrl,
-          opts: userFaceData.landmarks
-        }],
-        targetImage: [{ // 원본 이미지 (헤어스타일)
-          path: styleFaceData.cropUrl,
-          opts: styleFaceData.landmarks
-        }],
-        face_enhance: 0
-      };
+  sourceImage: [{ // 헤어스타일 (가져올 스타일)
+    path: styleFaceData.cropUrl,
+    opts: styleFaceData.landmarks
+  }],
+  targetImage: [{ // 사용자 얼굴 (적용될 대상)
+    path: userFaceData.cropUrl,
+    opts: userFaceData.landmarks
+  }],
+  face_enhance: 0
+};
 
       console.log('Face swap payload:', JSON.stringify(payload, null, 2));
 
