@@ -1522,18 +1522,6 @@ function showStyleDetail(code, name, gender, imageSrc, docId) {
     // 기본 버튼 이벤트 설정
     setupModalButtonEvents(code, name, docId, gender);
     
-    // AKOOL 버튼 추가
-    if (typeof window.addAIButtonToHairgator === 'function') {
-        console.log('🎯 AKOOL 발견 - AI 버튼 추가');
-        window.currentStyleData = { code, name, imageSrc };
-        
-        setTimeout(() => {
-            window.addAIButtonToHairgator();
-        }, 100);
-    } else {
-        console.log('⚠️ AKOOL integration이 없습니다');
-    }
-    
     console.log('✅ 모달 열기 완료');
 }
 
@@ -1664,6 +1652,7 @@ console.log('✅ HAIRGATOR 최종 완성 버전 로드 완료!');
 <!-- <script src="/js/modal-integration.js"></script> -->
 </body>
 </html>
+
 
 
 
