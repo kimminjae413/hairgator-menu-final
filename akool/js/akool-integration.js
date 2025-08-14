@@ -1253,7 +1253,7 @@ window.showResult = function(result) {
                 `;
                 statusMessage.innerHTML = `
                     <div style="font-weight: bold; margin-bottom: 5px;">✅ 실제 AI 처리 완료</div>
-                    <div style="font-size: 12px;">AKOOL Face Swap AI로 생성된 결과입니다</div>
+                    <div style="font-size: 12px;">결과물이 실제 얼굴과 다르게 나올 수 있으나, 얼굴형은 유지되므로 해당 헤어스타일이 본인에게 어울리는지 미리 느낌을 확인하실 수 있습니다</div>
                 `;
             }
         }
