@@ -957,7 +957,7 @@
     <script src="akool/js/akool-integration.js"></script>
     
     <script>
-console.log('🚀 HAIRGATOR 시뮬레이션 완전 제거 버전 로딩...');
+console.log('🚀 HAIRGATOR 완전 깔끔 버전 로딩...');
 
 // ✅ 전역 변수
 let currentGender = null;
@@ -1097,7 +1097,7 @@ function init() {
         backBtn.style.display = 'none';
     }
     
-    console.log('✅ 초기화 완료 - 시뮬레이션 코드 제거됨');
+    console.log('✅ 초기화 완료 - 모든 시뮬레이션 코드 제거됨');
 }
 
 // ✅ 이벤트 리스너 설정
@@ -1439,7 +1439,7 @@ async function loadStyles(categoryId, subcategory, gender) {
     }
 }
 
-// ✅ 스타일 상세 모달 열기 (시뮬레이션 코드 완전 제거!)
+// ✅ 스타일 상세 모달 열기 (완전 깔끔 버전!)
 function showStyleDetail(code, name, gender, imageSrc, docId) {
     console.log('🎨 스타일 모달 열기:', { code, name, gender, imageSrc, docId });
     
@@ -1475,7 +1475,7 @@ function showStyleDetail(code, name, gender, imageSrc, docId) {
     // 기본 버튼 이벤트 설정
     setupModalButtonEvents(code, name, docId, gender);
     
-    // ✅ AKOOL 실제 얼굴 아이콘 버튼만 추가 (시뮬레이션 제거)
+    // ✅ AKOOL 실제 얼굴 아이콘 버튼만 추가 (시뮬레이션 완전 제거)
     if (typeof window.addAIButtonToHairgator === 'function') {
         console.log('🎯 AKOOL 발견 - 실제 얼굴 아이콘 AI 버튼 추가');
         
@@ -1491,7 +1491,7 @@ function showStyleDetail(code, name, gender, imageSrc, docId) {
         console.log('⚠️ AKOOL integration이 없습니다 - AI 버튼 없이 진행');
     }
     
-    console.log('✅ 모달 열기 완료 (시뮬레이션 완전 제거됨)');
+    console.log('✅ 모달 열기 완료 (모든 시뮬레이션 제거됨)');
 }
 
 // ✅ 모달 버튼 이벤트 설정
@@ -1564,7 +1564,7 @@ function showLoading(show) {
 // ✅ 전역으로 함수 노출 (AKOOL에서 사용할 수 있도록)
 window.showStyleDetail = showStyleDetail;
 
-console.log('✅ HAIRGATOR 시뮬레이션 완전 제거 버전 로드 완료!');
+console.log('✅ HAIRGATOR 완전 깔끔 버전 로드 완료!');
 
 // ✅ PWA Service Worker
 if ('serviceWorker' in navigator) {
@@ -1580,7 +1580,7 @@ if ('serviceWorker' in navigator) {
 }
 
 window.addEventListener('load', function() {
-    console.log('🎉 HAIRGATOR 완전 정리 버전 로드 완료!');
+    console.log('🎉 HAIRGATOR 완전 정리 완성!');
 });
     </script>
 </body>
