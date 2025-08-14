@@ -332,9 +332,16 @@
         }
 
         .menu-item-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+    display: block;
+}
+
+.menu-item:hover .menu-item-image {
+    transform: scale(1.02);
         }
 
         /* Style Modal */
@@ -1447,16 +1454,11 @@ async function loadStylesBasic(categoryId, subcategory, gender) {
             item.className = `menu-item ${gender}`;
             
             item.innerHTML = `
-                <img src="${data.imageUrl || ''}" 
-                     alt="${data.name || 'Style'}" 
-                     class="menu-item-image"
-                     loading="lazy"
-                     onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
-                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); padding: 10px; text-align: center;">
-                    <div style="font-size: 11px; color: #999;">${data.code || ''}</div>
-                    <div style="font-size: 13px; color: white; margin-top: 3px;">${data.name || ''}</div>
-                </div>
-            `;
+    <img src="${data.imageUrl || ''}" 
+         alt="${data.name || 'Style'}" 
+         class="menu-item-image"
+         onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
+`;
             
             item.addEventListener('click', function() {
                 console.log('🖱️ 스타일 카드 클릭:', { code: data.code, name: data.name });
@@ -1663,6 +1665,7 @@ console.log('✅ HAIRGATOR 최종 완성 버전 로드 완료!');
     <script src="/js/modal-integration.js"></script>
 </body>
 </html>
+
 
 
 
