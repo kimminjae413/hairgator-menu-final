@@ -215,7 +215,7 @@ class AkoolAPI {
           path: styleFaceData.cropUrl,
           opts: styleFaceData.landmarks
         }],
-        face_enhance: 1
+        face_enhance: 0
       };
 
       console.log('Face swap payload:', JSON.stringify(payload, null, 2));
