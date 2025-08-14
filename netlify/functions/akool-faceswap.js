@@ -260,18 +260,18 @@ async function performFaceSwap(token, userImage, hairstyleImage, userLandmarks, 
     console.log('✅ 검증된 사용자 landmarks:', validUserLandmarks);
     console.log('✅ 검증된 스타일 landmarks:', validStyleLandmarks);
 
-    const requestData = JSON.stringify({
-      sourceImage: [{
-        path: userImage,
-        opts: validUserLandmarks
-      }],
-      targetImage: [{
-        path: hairstyleImage,
-        opts: validStyleLandmarks
-      }],
-      face_enhance: 0,
-      modifyImage: hairstyleImage
-    });
+   const requestData = JSON.stringify({
+  sourceImage: [{
+    path: hairstyleImage,        // ← 바뀜: 헤어스타일
+    opts: validStyleLandmarks    // ← 바뀜: 헤어스타일 랜드마크
+  }],
+  targetImage: [{
+    path: userImage,             // ← 바뀜: 사용자 얼굴
+    opts: validUserLandmarks     // ← 바뀜: 사용자 랜드마크
+  }],
+  face_enhance: 0,
+  modifyImage: userImage       // ← 바뀜: 사용자 이미지를 베이스로
+});
 
     const options = {
       hostname: 'openapi.akool.com',
