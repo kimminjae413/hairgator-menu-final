@@ -460,7 +460,7 @@ class MobileTabletModeGuide {
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0, 0, 0, 0.95);
+                background: rgba(0, 0, 0, 0.8);
                 z-index: 10000;
                 display: flex;
                 align-items: center;
@@ -471,7 +471,7 @@ class MobileTabletModeGuide {
             }
             
             .tablet-guide-modal {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: #ffffff;
                 border-radius: 20px;
                 padding: 40px 30px;
                 max-width: 600px;
@@ -479,10 +479,11 @@ class MobileTabletModeGuide {
                 max-height: 90vh;
                 overflow-y: auto;
                 text-align: center;
-                color: white;
+                color: #333333;
                 position: relative;
                 transform: scale(0.8);
                 animation: scaleIn 0.5s 0.2s forwards;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
             }
             
             .tablet-guide-header {
@@ -499,13 +500,14 @@ class MobileTabletModeGuide {
                 font-size: 26px;
                 font-weight: bold;
                 margin-bottom: 12px;
-                color: white;
+                color: #2c3e50;
             }
             
             .tablet-guide-subtitle {
                 font-size: 17px;
-                opacity: 0.9;
+                opacity: 0.7;
                 line-height: 1.5;
+                color: #5a6c7d;
             }
             
             .tablet-guide-steps {
@@ -513,19 +515,20 @@ class MobileTabletModeGuide {
             }
             
             .guide-step {
-                background: rgba(255, 255, 255, 0.1);
+                background: #f8f9fa;
                 border-radius: 15px;
                 padding: 20px;
                 margin-bottom: 15px;
                 display: flex;
                 align-items: center;
                 text-align: left;
-                border: 1px solid rgba(255, 255, 255, 0.2);
+                border: 1px solid #e9ecef;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             }
             
             .guide-step-number {
-                background: white;
-                color: #667eea;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
                 width: 35px;
                 height: 35px;
                 border-radius: 50%;
@@ -546,13 +549,14 @@ class MobileTabletModeGuide {
                 font-size: 17px;
                 font-weight: bold;
                 margin-bottom: 6px;
-                color: white;
+                color: #2c3e50;
             }
             
             .guide-step-desc {
                 font-size: 15px;
-                opacity: 0.85;
+                opacity: 0.8;
                 line-height: 1.5;
+                color: #5a6c7d;
             }
             
             .guide-step-icon {
@@ -561,18 +565,19 @@ class MobileTabletModeGuide {
             }
             
             .tablet-guide-benefits {
-                background: rgba(255, 255, 255, 0.1);
+                background: #f8f9fa;
                 border-radius: 15px;
                 padding: 20px;
                 margin: 30px 0;
-                border: 1px solid rgba(255, 255, 255, 0.2);
+                border: 1px solid #e9ecef;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             }
             
             .benefits-title {
                 font-size: 18px;
                 font-weight: bold;
                 margin-bottom: 20px;
-                color: #FFD700;
+                color: #e67e22;
             }
             
             .benefits-grid {
@@ -584,8 +589,10 @@ class MobileTabletModeGuide {
             .benefit-item {
                 text-align: center;
                 padding: 15px;
-                background: rgba(255, 255, 255, 0.05);
+                background: white;
                 border-radius: 10px;
+                border: 1px solid #e9ecef;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
             }
             
             .benefit-icon {
@@ -596,7 +603,7 @@ class MobileTabletModeGuide {
             .benefit-text {
                 font-size: 13px;
                 line-height: 1.4;
-                opacity: 0.9;
+                color: #5a6c7d;
             }
             
             .tablet-guide-buttons {
@@ -614,21 +621,24 @@ class MobileTabletModeGuide {
             }
             
             .guide-btn-primary {
-                background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
+                border: none;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
             }
             
             .guide-btn-primary:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
-                background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
             }
             
             .tablet-guide-footer {
                 margin-top: 20px;
                 font-size: 14px;
-                opacity: 0.8;
+                opacity: 0.7;
                 line-height: 1.5;
+                color: #5a6c7d;
             }
             
             @keyframes fadeIn {
