@@ -261,16 +261,15 @@ async function performFaceSwap(token, userImage, hairstyleImage, userLandmarks, 
     console.log('✅ 검증된 스타일 landmarks:', validStyleLandmarks);
 
    const requestData = JSON.stringify({
-  sourceImage: [{
-    path: hairstyleImage,        // ← 바뀜: 헤어스타일
-    opts: validStyleLandmarks    // ← 바뀜: 헤어스타일 랜드마크
-  }],
-  targetImage: [{
-    path: userImage,             // ← 바뀜: 사용자 얼굴
-    opts: validUserLandmarks     // ← 바뀜: 사용자 랜드마크
-  }],
-  face_enhance: 0,
-  modifyImage: userImage       // ← 바뀜: 사용자 이미지를 베이스로
+ sourceImage: [{
+  path: userImage,             // ← 원래대로
+  opts: validUserLandmarks
+}],
+targetImage: [{
+  path: hairstyleImage,        // ← 원래대로
+  opts: validStyleLandmarks
+}],
+modifyImage: hairstyleImage    // ← 원래대로
 });
 
     const options = {
