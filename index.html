@@ -1493,7 +1493,7 @@ async function loadStylesBasic(categoryId, subcategory, gender) {
     }
 }
 
-// ✅ 스타일 상세 모달 열기 (AKOOL 완전 호환 버전)
+// ✅ 스타일 상세 모달 열기 (AKOOL 완전 호환 버전 + 핑크 버튼 영구 추가)
 window.showStyleDetail = function(code, name, gender, imageSrc, docId) {
     console.log('🎨 스타일 모달 열기:', { code, name, gender, imageSrc, docId });
     
@@ -1538,17 +1538,10 @@ window.showStyleDetail = function(code, name, gender, imageSrc, docId) {
     
     console.log('✅ 모달 열기 완료');
     
-    // ✅ AKOOL AI 버튼 자동 추가 (모달이 열린 후)
+    // 🔥 핑크 AI 버튼 영구 추가 시스템
     setTimeout(() => {
-        if (typeof window.addAIButtonToHairgator === 'function') {
-            console.log('🎯 AKOOL 발견 - AI 버튼 추가');
-            // 현재 스타일 정보를 전역으로 설정
-            window.currentStyleData = { code, name, imageSrc };
-            window.addAIButtonToHairgator();
-        } else {
-            console.log('⚠️ AKOOL integration이 없습니다');
-        }
-    }, 100);
+        addPinkAIButton(code, name, imageSrc, gender);
+    }, 200);
 };
 
 // ✅ 모달 버튼 이벤트 설정
@@ -1608,7 +1601,108 @@ function setupModalButtonEvents(code, name, docId, gender) {
 function closeModal() {
     if (styleModal) {
         styleModal.classList.remove('active');
+        // 핑크 AI 버튼도 함께 제거
+        const pinkBtn = document.querySelector('.btn-ai-pink');
+        if (pinkBtn) {
+            pinkBtn.remove();
+        }
     }
+}
+
+// 🔥 핑크 AI 버튼 영구 추가 함수
+function addPinkAIButton(code, name, imageSrc, gender) {
+    console.log('🎨 핑크 AI 버튼 추가 시작...', { code, name, gender });
+    
+    const modalActions = document.getElementById('modalActions');
+    if (!modalActions) {
+        console.log('❌ modalActions를 찾을 수 없음');
+        return;
+    }
+    
+    // 기존 핑크 버튼이 있으면 제거
+    const existingPinkBtn = modalActions.querySelector('.btn-ai-pink');
+    if (existingPinkBtn) {
+        existingPinkBtn.remove();
+    }
+    
+    // 새 핑크 AI 버튼 생성
+    const pinkBtn = document.createElement('button');
+    pinkBtn.className = 'modal-btn btn-ai-pink';
+    pinkBtn.id = 'pinkAIBtn';
+    
+    pinkBtn.innerHTML = `
+        <svg viewBox="0 0 60 60" width="18" height="18" style="margin-right: 6px;">
+            <path d="M30 5 C40 5, 50 15, 50 25 C50 35, 45 45, 40 50 C35 55, 25 55, 20 50 C15 45, 10 35, 10 25 C10 15, 20 5, 30 5 Z" 
+                  fill="none" stroke="#FF1493" stroke-width="2"/>
+            <circle cx="22" cy="22" r="2" fill="#FF1493"/>
+            <circle cx="38" cy="22" r="2" fill="#FF1493"/>
+            <path d="M30 28 L32 32 L30 34 L28 32 Z" fill="none" stroke="#FF1493" stroke-width="1.5"/>
+            <path d="M25 40 Q30 45 35 40" fill="none" stroke="#FF1493" stroke-width="2"/>
+        </svg>
+        <span>AI 체험</span>
+    `;
+    
+    // 핑크 버튼 스타일
+    pinkBtn.style.cssText = `
+        background: transparent !important;
+        color: #FF1493 !important;
+        border: 2px solid #FF1493 !important;
+        border-radius: 25px !important;
+        padding: 12px 20px !important;
+        flex: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        min-width: 100px !important;
+    `;
+    
+    // 호버 효과
+    pinkBtn.onmouseenter = () => {
+        pinkBtn.style.background = 'rgba(255, 20, 147, 0.1) !important';
+        pinkBtn.style.transform = 'translateY(-2px) scale(1.02)';
+    };
+    
+    pinkBtn.onmouseleave = () => {
+        pinkBtn.style.background = 'transparent !important';
+        pinkBtn.style.transform = 'translateY(0) scale(1)';
+    };
+    
+    // 클릭 이벤트 - AKOOL과 연동
+    pinkBtn.onclick = () => {
+        console.log('🎨 핑크 AI 버튼 클릭됨!');
+        
+        // 스타일 데이터 준비
+        const styleData = {
+            imageUrl: imageSrc,
+            name: name,
+            code: code,
+            gender: gender || window.currentGender
+        };
+        
+        console.log('스타일 데이터:', styleData);
+        
+        // AKOOL 함수들 시도
+        if (typeof window.openAkoolFaceSwapModal === 'function') {
+            console.log('🚀 openAkoolFaceSwapModal 실행');
+            window.openAkoolFaceSwapModal(styleData);
+        } else if (typeof window.activateAkoolNow === 'function') {
+            console.log('🚀 activateAkoolNow 실행');
+            window.activateAkoolNow();
+        } else {
+            console.log('⚠️ AKOOL 함수 없음, 기본 메시지 표시');
+            alert('🎨 AI 체험 기능 준비 중입니다!\n곧 멋진 기능으로 찾아뵙겠습니다! 😊');
+        }
+    };
+    
+    // 모달 액션에 추가
+    modalActions.appendChild(pinkBtn);
+    
+    console.log('✅ 핑크 AI 버튼 추가 완료!');
 }
 
 // ✅ 로딩 표시
