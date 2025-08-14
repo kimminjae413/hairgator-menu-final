@@ -10,11 +10,6 @@
   "theme_color": "#FF1493",
   "icons": [
     {
-      "src": "/icons/icon-152.png",
-      "sizes": "152x152",
-      "type": "image/png"
-    },
-    {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
@@ -32,3 +27,4 @@
   "lang": "ko-KR",
   "dir": "ltr"
 }
+
