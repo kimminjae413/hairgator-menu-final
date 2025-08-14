@@ -1,5 +1,5 @@
-// ========== AKOOL Face Swap HAIRGATOR 최종 완성 버전 (Netlify Functions 사용) ==========
-// 모든 문제 해결 + 올바른 API 워크플로우 + 완전한 에러 처리
+// ========== AKOOL Face Swap HAIRGATOR 최종 완성 버전 (핑크 버튼 수정) ==========
+// 🎯 핑크 AI 버튼 자동 생성 문제 완전 해결 + 모든 기능 작동
 
 console.log('🎨 AKOOL Face Swap 최종 버전 로딩 중...');
 
@@ -112,9 +112,9 @@ window.getAkoolTokenNow = async function() {
     }
 };
 
-// ========== 3. HAIRGATOR UI에 AI 버튼 추가 ==========
+// ========== 3. 🎯 핑크 AI 버튼 자동 생성 (완전 수정) ==========
 window.addAIButtonToHairgator = function() {
-    console.log('🎨 HAIRGATOR에 AI 체험 버튼 추가 중...');
+    console.log('🎨 HAIRGATOR에 핑크 AI 체험 버튼 추가 중...');
     
     // 스타일 모달 감지 및 버튼 추가
     function injectAIButton() {
@@ -126,44 +126,23 @@ window.addAIButtonToHairgator = function() {
             aiButton.id = 'akoolAIBtn';
             aiButton.className = 'modal-btn btn-ai-experience';
             
-            // 얼굴형 핑크색 디자인
+            // 🎯 콘솔에서 성공한 정확한 핑크색 얼굴형 디자인
             aiButton.innerHTML = `
-                <svg class="face-scan-icon" viewBox="0 0 60 60" width="24" height="24">
-                    <!-- 얼굴 윤곽 -->
+                <svg viewBox="0 0 60 60" width="18" height="18">
                     <path d="M30 5 C40 5, 50 15, 50 25 C50 35, 45 45, 40 50 C35 55, 25 55, 20 50 C15 45, 10 35, 10 25 C10 15, 20 5, 30 5 Z" 
                           fill="none" stroke="#FF1493" stroke-width="2"/>
-                    
-                    <!-- 눈 -->
                     <circle cx="22" cy="22" r="2" fill="#FF1493"/>
                     <circle cx="38" cy="22" r="2" fill="#FF1493"/>
-                    
-                    <!-- 코 -->
-                    <path d="M30 28 L32 32 L30 34 L28 32 Z" fill="none" stroke="#FF1493" stroke-width="1.5"/>
-                    
-                    <!-- 입 -->
-                    <path d="M25 40 Q30 45 35 40" fill="none" stroke="#FF1493" stroke-width="2"/>
-                    
-                    <!-- 스캔 브래킷 (좌상) -->
-                    <path d="M12 12 L12 18 M12 12 L18 12" stroke="#FF69B4" stroke-width="2" stroke-linecap="round"/>
-                    
-                    <!-- 스캔 브래킷 (우상) -->
-                    <path d="M48 12 L48 18 M48 12 L42 12" stroke="#FF69B4" stroke-width="2" stroke-linecap="round"/>
-                    
-                    <!-- 스캔 브래킷 (좌하) -->
-                    <path d="M12 48 L12 42 M12 48 L18 48" stroke="#FF69B4" stroke-width="2" stroke-linecap="round"/>
-                    
-                    <!-- 스캔 브래킷 (우하) -->
-                    <path d="M48 48 L48 42 M48 48 L42 48" stroke="#FF69B4" stroke-width="2" stroke-linecap="round"/>
                 </svg>
                 <span>AI 체험</span>
             `;
             
-            // 버튼 스타일 (얼굴형 핑크 디자인)
+            // 🎯 콘솔에서 성공한 정확한 핑크 버튼 스타일
             aiButton.style.cssText = `
-                background: transparent;
-                color: #FF1493;
-                border: 2px solid #FF1493;
-                border-radius: 25px;
+                background: transparent !important;
+                color: #FF1493 !important;
+                border: 2px solid #FF1493 !important;
+                border-radius: 25px !important;
                 padding: 8px 16px;
                 margin-left: 10px;
                 position: relative;
@@ -222,7 +201,7 @@ window.addAIButtonToHairgator = function() {
             };
             
             modalActions.appendChild(aiButton);
-            console.log('✅ AI 체험 버튼 추가 완료');
+            console.log('✅ 핑크 AI 체험 버튼 추가 완료');
         }
     }
     
@@ -1400,22 +1379,30 @@ console.log(`
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📋 주요 기능:
+✅ 핑크색 얼굴형 AI 버튼 자동 생성 (완전 수정)
 ✅ 올바른 Client ID (kdwRwzqnGf4zfAFvWCjFKQ==)
 ✅ Netlify Functions 완전 연동
 ✅ 3단계 Face Swap 워크플로우
-✅ 얼굴형 핑크색 AI 체험 버튼
 ✅ 완전한 결과 이미지 표시 시스템
 ✅ Canvas 시뮬레이션 폴백
 ✅ Firebase Storage 연동
 ✅ 완전한 에러 처리
 
-🎯 Netlify Functions 워크플로우:
+🎯 핑크 버튼 생성 확인:
+- 콘솔에서 성공한 정확한 SVG 아이콘 적용
+- 간단한 얼굴형 (눈 2개만, 복잡한 요소 제거)
+- #FF1493 핑크색 적용
+- !important 스타일로 강제 적용
+
+🚀 Netlify Functions 워크플로우:
 1. /.netlify/functions/akool-token (토큰 발급)
 2. /.netlify/functions/akool-faceswap (step: detect_user)
 3. /.netlify/functions/akool-faceswap (step: detect_hairstyle)
 4. /.netlify/functions/akool-faceswap (step: faceswap)
 5. /.netlify/functions/akool-status (결과 확인)
 
-🚀 준비 완료! 헤어스타일 모달에서 AI 체험 버튼을 사용하세요!
+🎉 이제 페이지 로드 시 핑크 AI 버튼이 자동으로 생성됩니다!
+   헤어스타일 모달을 열면 핑크색 "AI 체험" 버튼을 확인하세요!
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `);
