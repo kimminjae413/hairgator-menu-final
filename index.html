@@ -1450,54 +1450,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ✅ Show Style Detail Modal (AKOOL 연동만 수정!)
-    function showStyleDetail(code, name, gender, imageSrc, docId) {
-        console.log('🎨 스타일 모달 열기:', { code, name, gender, imageSrc, docId });
-        
-        if (!styleModal) {
-            console.error('❌ styleModal이 없습니다!');
-            return;
-        }
-        
-        // 현재 스타일 데이터 저장
-        currentStyleData = { code, name, gender, imageSrc, docId };
-        
-        modalImage.src = imageSrc || '';
-        modalImage.onerror = function() {
-            this.style.display = 'none';
-            this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        };
-        modalCode.textContent = code || 'NO CODE';
-        modalName.textContent = name || '이름 없음';
-        
-        if (gender === 'female') {
-            btnRegister.classList.add('female');
-        } else {
-            btnRegister.classList.remove('female');
-        }
-        
-        btnLike.classList.remove('active');
-        const heart = btnLike.querySelector('span:first-child');
-        if (heart) heart.textContent = '♡';
-        
+  // ✅ Show Style Detail Modal (AKOOL 연동만 수정!)
+function showStyleDetail(code, name, gender, imageSrc, docId) {
+    console.log('🎨 스타일 모달 열기:', { code, name, gender, imageSrc, docId });
     
-    // ✅ AKOOL integration이 있으면 아무것도 하지 않음
-    if (typeof window.addAIButtonToHairgator === 'function') {
-        console.log('🎯 AKOOL integration 감지됨. 기본 AI 버튼 생성 스킵.');
+    if (!styleModal) {
+        console.error('❌ styleModal이 없습니다!');
         return;
     }
     
-    // 기존 코드는 AKOOL이 없을 때만 실행
-    console.log('⚠️ AKOOL이 없음. 기본 AI 버튼 생성.');
-    // ... 기존 ensureAIButton 코드
-}
-        
-        styleModal.classList.add('active');
-        console.log('✅ 모달 열기 완료');
-        
-        // 기본 버튼 이벤트 설정
-        setupModalButtonEvents(code, name, docId, gender);
+    // 현재 스타일 데이터 저장
+    currentStyleData = { code, name, gender, imageSrc, docId };
+    
+    modalImage.src = imageSrc || '';
+    modalImage.onerror = function() {
+        this.style.display = 'none';
+        this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    };
+    modalCode.textContent = code || 'NO CODE';
+    modalName.textContent = name || '이름 없음';
+    
+    if (gender === 'female') {
+        btnRegister.classList.add('female');
+    } else {
+        btnRegister.classList.remove('female');
     }
+    
+    btnLike.classList.remove('active');
+    const heart = btnLike.querySelector('span:first-child');
+    if (heart) heart.textContent = '♡';
+
+    // ✅ AKOOL integration이 있으면 기본 AI 버튼 생성 스킵
+    if (typeof window.addAIButtonToHairgator !== 'function') {
+        console.log('⚠️ AKOOL이 없음. 기본 AI 버튼 생성.');
+        // 기존 ensureAIButton 코드 (필요시)
+    } else {
+        console.log('🎯 AKOOL integration 감지됨. 기본 AI 버튼 생성 스킵.');
+    }
+    
+    styleModal.classList.add('active');
+    console.log('✅ 모달 열기 완료');
+    
+    // 기본 버튼 이벤트 설정
+    setupModalButtonEvents(code, name, docId, gender);
+}
 
     // ✅ AI 버튼 이벤트 수정 함수 (AKOOL 버튼은 유지하고 이벤트만 교체!)
     function ensureAIButton() {
@@ -1633,6 +1629,7 @@ window.addEventListener('load', function() {
     </script>
 </body>
 </html>
+
 
 
 
