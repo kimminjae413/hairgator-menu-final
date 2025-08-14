@@ -368,11 +368,6 @@
     contain: layout style paint;
 }
 
-/* 메모리 사용량 최적화 */
-.menu-item:not(.visible) {
-    visibility: hidden;
-    pointer-events: none;
-}
 
 /* 폰트 최적화 */
 .item-name,
