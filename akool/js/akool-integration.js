@@ -1,7 +1,7 @@
-// ========== AKOOL Face Swap HAIRGATOR 최종 완성 버전 (자동 버튼 생성 비활성화) ==========
-// 🎯 가짜버튼 중복 생성 문제 완전 해결 + 모든 기능 작동
+// ========== HAIRGATOR 최종 완성 AKOOL Integration ==========
+// 🎯 자동 버튼 생성 비활성화 + 모든 AKOOL 기능 유지
 
-console.log('🎨 AKOOL Face Swap 최종 버전 로딩 중...');
+console.log('🎨 AKOOL Face Swap 최종 버전 로딩 중... (자동 버튼 생성 비활성화)');
 
 // 전역 변수
 window.akoolConfig = {
@@ -9,14 +9,13 @@ window.akoolConfig = {
     clientSecret: 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g',
     token: null,
     userImageData: null,
-    isInitialized: false  // ✅ 초기화 중복 방지
+    isInitialized: false
 };
 
 let currentStyleImage = null;
 let currentStyleName = null;
 let currentStyleCode = null;
 let faceSwapInProgress = false;
-let modalObserver = null;  // ✅ Observer 중복 방지
 
 // ========== ✅ 중복 초기화 방지 시스템 ==========
 if (window.akoolSystemInitialized) {
@@ -24,7 +23,6 @@ if (window.akoolSystemInitialized) {
 } else {
     window.akoolSystemInitialized = true;
     
-    // DOMContentLoaded에서 한번만 실행
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initializeAkoolSystem);
     } else {
@@ -55,10 +53,10 @@ async function initializeAkoolSystem() {
         // 2. 토큰 발급 시도
         const token = await window.getAkoolTokenNow();
         
-        // 🚫 3. 모달 관찰자 설정 비활성화 (가짜 버튼 생성 방지)
+        // 🚫 자동 모달 관찰자 설정 비활성화 (가짜 버튼 생성 방지)
         // setupModalObserver();
         
-        // 🚫 4. showStyleDetail 래핑 비활성화 (main.js에서 처리)
+        // 🚫 자동 showStyleDetail 래핑 비활성화 (main.js에서 처리)
         // setupShowStyleDetailWrapper();
         
         window.akoolConfig.isInitialized = true;
@@ -69,12 +67,12 @@ async function initializeAkoolSystem() {
     }
 }
 
-// ========== 🚫 모달 관찰자 설정 비활성화 ==========
+// ========== 🚫 자동 모달 관찰자 비활성화 ==========
 // function setupModalObserver() {
 //     // 이 함수를 비활성화하여 자동 버튼 생성 방지
 // }
 
-// ========== 🚫 showStyleDetail 래핑 비활성화 ==========  
+// ========== 🚫 자동 showStyleDetail 래핑 비활성화 ==========  
 // function setupShowStyleDetailWrapper() {
 //     // 이 함수를 비활성화하여 main.js에서 처리하도록 함
 // }
@@ -122,7 +120,7 @@ window.getAkoolTokenNow = async function() {
     }
 };
 
-// ========== AKOOL 모달 열기 (기존 코드 그대로 유지) ==========
+// ========== AKOOL 모달 열기 (최적화된 버전) ==========
 window.openAkoolModal = function() {
     console.log('🎭 AKOOL 모달 열기');
     
@@ -148,7 +146,7 @@ window.openAkoolModal = function() {
         existingModal.remove();
     }
     
-    // AKOOL 모달 HTML 생성 (기존 코드와 동일)
+    // AKOOL 모달 HTML 생성
     const modalHTML = `
         <div id="akoolModal" style="
             position: fixed;
@@ -331,7 +329,7 @@ window.openAkoolModal = function() {
     }, 10);
 };
 
-// ========== 나머지 함수들 (이미지 업로드, 처리, 결과 등) - 기존과 동일 ==========
+// ========== 이미지 업로드, 처리, 결과 함수들 ==========
 window.handleImageUpload = function(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -376,8 +374,41 @@ window.startAkoolProcess = async function(styleImageUrl) {
     document.getElementById('startProcessBtn').style.display = 'none';
     
     try {
-        // 실제 AKOOL 처리 또는 시뮬레이션
-        alert('🎉 AI 처리가 시작됩니다!\n\n현재는 데모 버전입니다.');
+        // 🎯 현재는 데모 버전
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const progressDetails = document.getElementById('progressDetails');
+        
+        // 진행률 시뮬레이션
+        const progressSteps = [
+            { progress: 20, text: '사용자 이미지 분석 중...', detail: '얼굴 인식 및 특징점 추출' },
+            { progress: 40, text: '헤어스타일 이미지 처리 중...', detail: '스타일 벡터화 및 매핑' },
+            { progress: 60, text: 'AI 모델 적용 중...', detail: 'AKOOL Face Swap 알고리즘 실행' },
+            { progress: 80, text: '결과 이미지 생성 중...', detail: '고해상도 렌더링 및 후처리' },
+            { progress: 100, text: '완료!', detail: 'AI 헤어스타일 체험 결과 준비됨' }
+        ];
+        
+        for (let i = 0; i < progressSteps.length; i++) {
+            const step = progressSteps[i];
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            progressBar.style.width = step.progress + '%';
+            progressText.textContent = step.text;
+            progressDetails.textContent = step.detail;
+        }
+        
+        // 결과 표시
+        setTimeout(() => {
+            document.getElementById('processingSection').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'block';
+            
+            // 데모 결과 이미지 (실제 구현시 AKOOL API 결과 사용)
+            document.getElementById('resultImage').src = currentStyleImage;
+            
+            alert('🎉 AI 처리가 완료되었습니다!\n\n현재는 데모 버전입니다.');
+        }, 500);
+        
     } catch (error) {
         console.error('❌ 처리 오류:', error);
         alert('처리 중 오류가 발생했습니다: ' + error.message);
@@ -403,11 +434,13 @@ window.downloadResult = function() {
         link.download = `hairgator_ai_result_${Date.now()}.jpg`;
         link.href = window.akoolConfig.lastResult;
         link.click();
+    } else {
+        alert('아직 저장할 결과가 없습니다.');
     }
 };
 
 window.shareResult = function() {
-    alert('공유 기능은 실제 결과가 생성된 후 사용 가능합니다.');
+    alert('🔗 공유 기능은 실제 AI 결과가 생성된 후 사용 가능합니다.');
 };
 
-console.log('🎉 AKOOL Integration 수정 버전 로드 완료! (자동 버튼 생성 완전 비활성화)');
+console.log('🎉 AKOOL Integration 최종 완성 버전 로드 완료! (자동 버튼 생성 완전 비활성화)');
