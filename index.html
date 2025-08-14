@@ -332,16 +332,16 @@
         }
 
         .menu-item-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
-    transition: transform 0.3s ease;
-    display: block;
-}
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+            display: block;
+        }
 
-.menu-item:hover .menu-item-image {
-    transform: scale(1.02);
+        .menu-item:hover .menu-item-image {
+            transform: scale(1.02);
         }
 
         /* Style Modal */
@@ -956,7 +956,7 @@
         </div>
     </div>
 
-    <!-- ✅ Scripts 로딩 순서 중요! -->
+    <!-- ✅ Scripts 로딩 순서 최적화! -->
     <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -966,14 +966,14 @@
     <!-- Firebase Config -->
     <script src="js/firebase-config.js"></script>
     
-    <!-- 🆕 캐시 관리 시스템 (가장 먼저) -->
+    <!-- 🔥 AKOOL을 가장 먼저 로드 (최우선) -->
+    <script src="akool/js/akool-integration.js"></script>
+    
+    <!-- 🆕 캐시 관리 시스템 -->
     <script src="/js/cache-update-system.js"></script>
     
     <!-- 🆕 성능 최적화 시스템 -->
     <script src="/js/performance-optimization.js"></script>
-    
-    <!-- AKOOL 연동 -->
-    <script src="akool/js/akool-integration.js"></script>
     
     <script>
 console.log('🚀 HAIRGATOR 최종 완성 버전 로딩...');
@@ -1454,11 +1454,11 @@ async function loadStylesBasic(categoryId, subcategory, gender) {
             item.className = `menu-item ${gender}`;
             
             item.innerHTML = `
-    <img src="${data.imageUrl || ''}" 
-         alt="${data.name || 'Style'}" 
-         class="menu-item-image"
-         onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
-`;
+                <img src="${data.imageUrl || ''}" 
+                     alt="${data.name || 'Style'}" 
+                     class="menu-item-image"
+                     onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
+            `;
             
             item.addEventListener('click', function() {
                 console.log('🖱️ 스타일 카드 클릭:', { code: data.code, name: data.name });
@@ -1479,7 +1479,7 @@ async function loadStylesBasic(categoryId, subcategory, gender) {
     }
 }
 
-// ✅ 스타일 상세 모달 열기 (성능 최적화 연동)
+// ✅ 스타일 상세 모달 열기 (완전히 깔끔한 버전)
 function showStyleDetail(code, name, gender, imageSrc, docId) {
     console.log('🎨 스타일 모달 열기:', { code, name, gender, imageSrc, docId });
     
@@ -1641,21 +1641,16 @@ console.log('✅ HAIRGATOR 최종 완성 버전 로드 완료!');
             console.log('🎉 HAIRGATOR 최종 완성 버전 로드 완료! 🚀');
         });
     </script>
-     <!-- 🆕 태블릿 네이티브 모드 -->
+    
+    <!-- 🆕 태블릿 네이티브 모드 -->
     <script src="/js/tablet-native-mode.js"></script>
     <!-- 🆕 웹뷰 최적화 -->
     <script src="/js/webview-optimization.js"></script>
     <!-- 🆕 모바일 태블릿 가이드 -->
     <script src="/js/mobile-tablet-guide.js"></script>
- <!-- 🚫 이 스크립트들을 주석 처리 -->
-<!-- <script src="/js/enhanced-auth-system.js"></script> -->
-<!-- <script src="/js/modal-integration.js"></script> -->
+    
+    <!-- 🚫 이 스크립트들을 완전히 제거 (문제 해결) -->
+    <!-- <script src="/js/enhanced-auth-system.js"></script> -->
+    <!-- <script src="/js/modal-integration.js"></script> -->
 </body>
 </html>
-
-
-
-
-
-
-
