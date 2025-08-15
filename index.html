@@ -1544,294 +1544,94 @@
         });
     </script>
 
- <!-- 벚꽃 배경 시스템 - 내장 버전 -->
+<!-- 벚꽃 배경 시스템 - 간단 안정 버전 -->
     <script>
-        // 벚꽃 시스템 - 안정성 최우선 버전
-        (function() {
-            'use strict';
-            
-            let sakuraInitialized = false;
-            let sakuraActive = false;
-            
-            // 초기화 함수
-            function initSakuraSystem() {
-                if (sakuraInitialized) {
-                    console.log('🌸 벚꽃 시스템 이미 초기화됨');
-                    return;
-                }
-                
-                console.log('🌸 벚꽃 시스템 초기화 시작');
-                
-                // 사이드바 준비까지 대기
-                waitForSidebar();
-            }
+        // 벚꽃 시스템 - 단순하고 확실한 버전
+        function initSakuraSystem() {
+            console.log('🌸 벚꽃 시스템 시작');
             
             // 사이드바 대기
-            function waitForSidebar() {
-                let attempts = 0;
-                const maxAttempts = 50;
-                
-                const checkSidebar = setInterval(() => {
-                    attempts++;
-                    const sidebar = document.querySelector('.sidebar-content');
-                    
-                    if (sidebar) {
-                        clearInterval(checkSidebar);
-                        setTimeout(() => {
-                            addSakuraButton();
-                            sakuraInitialized = true;
-                            console.log('🌸 벚꽃 시스템 초기화 완료');
-                        }, 500); // 안정성을 위한 딜레이
-                        return;
-                    }
-                    
-                    if (attempts >= maxAttempts) {
-                        clearInterval(checkSidebar);
-                        console.log('🌸 사이드바 대기 타임아웃');
-                    }
-                }, 100);
-            }
-            
-            // 벚꽃 버튼 추가
             function addSakuraButton() {
-                const sidebar = document.querySelector('.sidebar-content');
-                if (!sidebar) {
-                    console.log('❌ 사이드바를 찾을 수 없습니다');
-                    return;
-                }
-                
-                if (document.getElementById('sakuraToggle')) {
-                    console.log('⚠️ 벚꽃 버튼이 이미 존재합니다');
+                var sidebar = document.querySelector('.sidebar-content');
+                if (!sidebar || document.getElementById('sakuraToggle')) {
                     return;
                 }
                 
                 // 벚꽃 섹션 생성
-                const sakuraSection = document.createElement('div');
-                sakuraSection.id = 'sakuraSection';
-                sakuraSection.style.cssText = 'margin: 20px 0; padding: 15px 0; border-top: 1px solid #333; background: rgba(255,20,147,0.1); border-radius: 10px;';
+                var sakuraDiv = document.createElement('div');
+                sakuraDiv.id = 'sakuraSection';
+                sakuraDiv.style.cssText = 'margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #FF1493, #FF69B4); border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(255,20,147,0.5);';
                 
-                // 화면 크기 체크
-                const isTablet = window.innerWidth >= 768;
-                const statusText = isTablet ? '태블릿 최적화' : `모든 화면 지원 (${window.innerWidth}px)`;
+                sakuraDiv.innerHTML = '<h4 style="color: white; margin-bottom: 15px; font-size: 18px; font-weight: bold;">🌸 벚꽃 배경 시스템</h4><button id="sakuraToggle" style="width: 100%; padding: 15px; background: rgba(255,255,255,0.2); color: white; border: 2px solid white; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold;">🌸 벚꽃 배경 ON/OFF</button><p style="color: rgba(255,255,255,0.8); font-size: 12px; margin-top: 10px;">화면: ' + window.innerWidth + 'px</p>';
                 
-                sakuraSection.innerHTML = `
-                    <h4 style="color: #FF1493; margin-bottom: 15px; font-size: 16px; text-align: center; font-weight: bold;">
-                        🌸 벚꽃 배경 시스템
-                    </h4>
-                    <button id="sakuraToggle" style="
-                        width: 100%; 
-                        padding: 15px; 
-                        background: linear-gradient(45deg, #FF1493, #FF69B4);
-                        color: white; 
-                        border: none; 
-                        border-radius: 10px; 
-                        cursor: pointer; 
-                        font-size: 16px; 
-                        font-weight: bold;
-                        display: flex; 
-                        align-items: center; 
-                        justify-content: center; 
-                        gap: 10px;
-                        transition: all 0.3s;
-                        box-shadow: 0 4px 15px rgba(255,20,147,0.4);
-                    ">
-                        <span style="font-size: 20px;">🌸</span>
-                        <span>벚꽃 배경</span>
-                    </button>
-                    <p style="color: #FF1493; font-size: 12px; margin-top: 10px; text-align: center; font-weight: bold;">
-                        ✅ ${statusText}
-                    </p>
-                `;
+                sidebar.appendChild(sakuraDiv);
                 
-                sidebar.appendChild(sakuraSection);
-                setupSakuraEvents();
-                
-                console.log('✅ 벚꽃 버튼 생성 완료!');
-            }
-            
-            // 이벤트 설정
-            function setupSakuraEvents() {
-                const button = document.getElementById('sakuraToggle');
-                if (!button) return;
-                
-                // 클릭 이벤트
-                button.addEventListener('click', toggleSakura);
+                // 버튼 이벤트
+                var button = document.getElementById('sakuraToggle');
+                button.onclick = function() {
+                    var isActive = document.body.classList.toggle('sakura-background');
+                    
+                    if (isActive) {
+                        this.style.background = 'rgba(0,255,0,0.3)';
+                        this.style.borderColor = '#00ff00';
+                        this.innerHTML = '✅ 벚꽃 활성화됨!';
+                        
+                        // CSS 로드
+                        if (!document.getElementById('sakura-css')) {
+                            var css = document.createElement('link');
+                            css.id = 'sakura-css';
+                            css.rel = 'stylesheet';
+                            css.href = 'backgrounds/sakura-dark.css';
+                            css.onload = function() { console.log('🌸 CSS 로드됨'); };
+                            css.onerror = function() { console.log('🌸 CSS 없음 (정상)'); };
+                            document.head.appendChild(css);
+                        }
+                        
+                        console.log('🌸 벚꽃 활성화');
+                    } else {
+                        this.style.background = 'rgba(255,255,255,0.2)';
+                        this.style.borderColor = 'white';
+                        this.innerHTML = '🌸 벚꽃 배경 ON/OFF';
+                        
+                        // CSS 제거
+                        var css = document.getElementById('sakura-css');
+                        if (css) css.remove();
+                        
+                        console.log('🌸 벚꽃 비활성화');
+                    }
+                };
                 
                 // 호버 효과
-                button.addEventListener('mouseenter', function() {
-                    if (!this.classList.contains('active')) {
-                        this.style.transform = 'scale(1.05)';
-                    }
-                });
+                button.onmouseenter = function() {
+                    this.style.transform = 'scale(1.05)';
+                };
+                button.onmouseleave = function() {
+                    this.style.transform = 'scale(1)';
+                };
                 
-                button.addEventListener('mouseleave', function() {
-                    if (!this.classList.contains('active')) {
-                        this.style.transform = 'scale(1)';
-                    }
-                });
-                
-                // 테마 변경 감지
-                setupThemeObserver();
+                console.log('✅ 벚꽃 버튼 생성 완료');
             }
             
-            // 벚꽃 토글
-            function toggleSakura() {
-                // 작은 화면에서는 경고
-                if (window.innerWidth < 768) {
-                    if (!confirm('화면이 작아 벚꽃 효과가 제한될 수 있습니다. 계속하시겠습니까?')) {
-                        return;
-                    }
-                }
-                
-                sakuraActive = !sakuraActive;
-                document.body.classList.toggle('sakura-background', sakuraActive);
-                
-                const button = document.getElementById('sakuraToggle');
-                if (!button) return;
-                
-                if (sakuraActive) {
-                    button.style.background = 'linear-gradient(45deg, #00ff00, #32cd32)';
-                    button.innerHTML = '<span style="font-size: 20px;">✅</span><span>벚꽃 활성화됨!</span>';
-                    button.classList.add('active');
-                    
-                    loadSakuraCSS();
-                    addLightModeElements();
-                    
-                    console.log('🌸 벚꽃 배경 활성화');
-                } else {
-                    button.style.background = 'linear-gradient(45deg, #FF1493, #FF69B4)';
-                    button.innerHTML = '<span style="font-size: 20px;">🌸</span><span>벚꽃 배경</span>';
-                    button.classList.remove('active');
-                    
-                    removeSakuraCSS();
-                    removeLightModeElements();
-                    
-                    console.log('🌸 벚꽃 배경 비활성화');
-                }
-            }
-            
-            // CSS 로드
-            function loadSakuraCSS() {
-                if (document.querySelector('#sakura-dark-css')) {
-                    console.log('🌸 CSS 이미 로드됨');
-                    return;
-                }
-                
-                // 다크 모드 CSS
-                const darkCSS = document.createElement('link');
-                darkCSS.id = 'sakura-dark-css';
-                darkCSS.rel = 'stylesheet';
-                darkCSS.href = 'backgrounds/sakura-dark.css';
-                darkCSS.onload = () => console.log('✅ 벚꽃 CSS 로드 성공');
-                darkCSS.onerror = () => console.log('⚠️ 벚꽃 CSS 파일 없음 (정상 - 배경만 사용)');
-                document.head.appendChild(darkCSS);
-                
-                // 라이트 모드 CSS
-                const lightCSS = document.createElement('link');
-                lightCSS.id = 'sakura-light-css';
-                lightCSS.rel = 'stylesheet';
-                lightCSS.href = 'backgrounds/sakura-light.css';
-                document.head.appendChild(lightCSS);
-            }
-            
-            function removeSakuraCSS() {
-                const darkCSS = document.querySelector('#sakura-dark-css');
-                const lightCSS = document.querySelector('#sakura-light-css');
-                
-                if (darkCSS) darkCSS.remove();
-                if (lightCSS) lightCSS.remove();
-                
-                console.log('🗑️ 벚꽃 CSS 제거 완료');
-            }
-            
-            // 라이트 모드 요소 관리
-            function addLightModeElements() {
-                if (!document.body.classList.contains('light-theme')) {
-                    return;
-                }
-                
-                if (document.getElementById('sakura-light-container')) {
-                    return;
-                }
-                
-                const container = document.createElement('div');
-                container.id = 'sakura-light-container';
-                container.className = 'background-sakura-light';
-                
-                // 햇살 효과
-                const sunlight = document.createElement('div');
-                sunlight.className = 'sunlight';
-                container.appendChild(sunlight);
-                
-                // 벚꽃 컨테이너
-                const sakuraContainer = document.createElement('div');
-                sakuraContainer.className = 'sakura-container-light';
-                
-                // 벚꽃 꽃잎들
-                for (let i = 1; i <= 8; i++) {
-                    const petal = document.createElement('div');
-                    petal.className = 'sakura-petal-light';
-                    sakuraContainer.appendChild(petal);
-                }
-                
-                container.appendChild(sakuraContainer);
-                document.body.appendChild(container);
-                
-                console.log('🌸 라이트 모드 벚꽃 요소 추가');
-            }
-            
-            function removeLightModeElements() {
-                const container = document.getElementById('sakura-light-container');
-                if (container) {
-                    container.remove();
-                    console.log('🗑️ 라이트 모드 벚꽃 요소 제거');
-                }
-            }
-            
-            // 테마 변경 감지
-            function setupThemeObserver() {
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                            if (sakuraActive) {
-                                console.log('🎨 테마 변경 감지');
-                                removeLightModeElements();
-                                setTimeout(addLightModeElements, 100);
-                            }
-                        }
-                    });
-                });
-                
-                observer.observe(document.body, {
-                    attributes: true,
-                    attributeFilter: ['class']
-                });
-            }
-            
-            // 다양한 타이밍에서 초기화
-            
-            // 1. DOM이 이미 준비된 경우
+            // 여러 타이밍에서 시도
             if (document.readyState !== 'loading') {
-                console.log('🌸 DOM 이미 준비됨');
-                setTimeout(initSakuraSystem, 100);
+                setTimeout(addSakuraButton, 100);
             }
             
-            // 2. DOMContentLoaded 이벤트
             document.addEventListener('DOMContentLoaded', function() {
-                console.log('🌸 DOMContentLoaded');
-                setTimeout(initSakuraSystem, 200);
+                setTimeout(addSakuraButton, 200);
             });
             
-            // 3. window.load 이벤트 (최종 백업)
             window.addEventListener('load', function() {
-                console.log('🌸 Window load');
-                setTimeout(initSakuraSystem, 300);
+                setTimeout(addSakuraButton, 300);
             });
-            
-            console.log('🌸 벚꽃 시스템 스크립트 준비 완료');
-            
-        })();
+        }
+        
+        // 즉시 실행
+        initSakuraSystem();
+        
+        console.log('🌸 벚꽃 시스템 로드 완료');
     </script>
 </body>
 </html>
+
 
