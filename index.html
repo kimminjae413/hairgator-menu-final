@@ -165,12 +165,32 @@
 
   <!-- 🔥 AKOOL (실제 플로우) -->
   <script src="/akool/js/akool-integration.js?v=20250815"></script>
-  <!-- (필요하다면 상태/토큰/페이스스왑 헬퍼도 추가)
+  <!-- (주의) 레거시/시뮬 파일은 사용 금지: 아래는 남겨두더라도 주석 유지
   <script src="/akool/js/akool-api.js?v=20250815"></script>
   <script src="/akool/js/akool-token.js?v=20250815"></script>
   <script src="/akool/js/akool-status.js?v=20250815"></script>
   <script src="/akool/js/akool-faceswap.js?v=20250815"></script>
   -->
+
+  <!-- 🧯 보강용: 혹시 이후 로드된 레거시가 버튼을 주입해도 즉시 차단 -->
+  <script>
+    (function(){
+      try{
+        const desc = Object.getOwnPropertyDescriptor(window, 'addAIButtonToHairgator');
+        if (!desc || desc.configurable) {
+          Object.defineProperty(window, 'addAIButtonToHairgator', {
+            configurable: false,
+            writable: false,
+            value: function(){ console.info('ℹ️ 레거시 addAIButtonToHairgator 차단'); return false; }
+          });
+        }
+        const KILL_SELECTORS = ['#akoolSimBtn', '.akool-sim-btn', '[data-sim-akool]', '#hairgator-ai-sim'];
+        const kill = () => KILL_SELECTORS.forEach(s => document.querySelectorAll(s).forEach(n => n.remove()));
+        kill();
+        new MutationObserver(kill).observe(document.documentElement, { childList:true, subtree:true });
+      }catch(e){ console.warn('레거시 차단 보강 실패(무시 가능):', e); }
+    })();
+  </script>
 
   <!-- 성능 최적화/가이드 -->
   <script src="/js/performance-optimization.js?v=20250815"></script>
