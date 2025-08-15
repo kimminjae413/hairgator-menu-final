@@ -3,11 +3,16 @@
   "short_name": "HAIRGATOR",
   "description": "Professional Hair Style Menu System",
   "start_url": "/",
-  "display": "standalone",
-  "orientation": "portrait",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
   "scope": "/",
   "background_color": "#000000",
   "theme_color": "#000000",
+  "lang": "ko-KR",
+  "dir": "ltr",
+  "categories": ["business", "lifestyle"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-72.png",
@@ -52,8 +57,39 @@
       "purpose": "any maskable"
     }
   ],
-  "prefer_related_applications": false,
-  "categories": ["business", "lifestyle"],
-  "lang": "ko-KR",
-  "dir": "ltr"
+  "shortcuts": [
+    {
+      "name": "남성 스타일",
+      "short_name": "남성",
+      "description": "남성 헤어스타일 보기",
+      "url": "/?gender=male",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "여성 스타일",
+      "short_name": "여성",
+      "description": "여성 헤어스타일 보기",
+      "url": "/?gender=female",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "HAIRGATOR 메인 화면"
+    }
+  ]
 }
