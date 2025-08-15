@@ -1,225 +1,543 @@
-// HAIRGATOR 배경 관리자 - 태블릿 전용
+/**
+ * 🌸 HAIRGATOR 배경 관리자 시스템
+ * 태블릿/데스크톱 전용 (768px 이상)
+ * 아름다운 벚꽃 배경 포함
+ */
+
 class BackgroundManager {
     constructor() {
-        this.isTabletMode = false;
         this.currentBackground = 'none';
-        this.availableBackgrounds = [
-            { id: 'none', name: '🌑 기본', darkCSS: null, lightCSS: null },
-            { id: 'sakura', name: '🌸 벚꽃', darkCSS: 'sakura-dark.css', lightCSS: 'sakura-light.css' }
-        ];
+        this.isTabletMode = window.innerWidth >= 768;
         
-        this.init();
+        if (this.isTabletMode) {
+            this.init();
+        }
+        
+        console.log('🎨 HAIRGATOR Background Manager initialized');
     }
     
     init() {
-        this.checkScreenSize();
-        this.setupResizeListener();
+        this.createBackgroundSelector();
         this.loadSavedBackground();
+        this.setupThemeChangeListener();
         
-        if (this.isTabletMode) {
-            this.addBackgroundUI();
-        }
-        
-        console.log('🎨 Background Manager initialized (Tablet only)');
-    }
-    
-    // 화면 크기 확인
-    checkScreenSize() {
-        this.isTabletMode = window.innerWidth >= 768;
-    }
-    
-    // 리사이즈 이벤트 리스너
-    setupResizeListener() {
-        window.addEventListener('resize', () => {
-            const wasTabletMode = this.isTabletMode;
-            this.checkScreenSize();
-            
-            if (wasTabletMode !== this.isTabletMode) {
-                if (this.isTabletMode) {
-                    this.addBackgroundUI();
-                    this.loadSavedBackground();
-                } else {
-                    this.removeBackgroundUI();
-                    this.removeActiveBackground();
-                }
+        // 리사이즈 감지
+        window.addEventListener('resize', this.debounce(() => {
+            this.isTabletMode = window.innerWidth >= 768;
+            if (!this.isTabletMode) {
+                this.removeExistingBackground();
+                this.removeBackgroundSelector();
+            } else if (!document.querySelector('.background-section')) {
+                this.createBackgroundSelector();
             }
-        });
+        }, 300));
     }
     
-    // 저장된 배경 로드
-    loadSavedBackground() {
+    createBackgroundSelector() {
         if (!this.isTabletMode) return;
         
-        const saved = localStorage.getItem('hairgator_background') || 'none';
-        this.setBackground(saved);
-    }
-    
-    // 사이드바에 배경 선택 UI 추가
-    addBackgroundUI() {
-        const sidebarContent = document.querySelector('.sidebar-content');
-        if (!sidebarContent || document.getElementById('backgroundSection')) return;
-        
-        const backgroundSection = document.createElement('div');
-        backgroundSection.id = 'backgroundSection';
-        backgroundSection.innerHTML = `
-            <div style="margin: 20px 0; padding: 20px 0; border-top: 1px solid #333; border-bottom: 1px solid #333;">
-                <h4 style="color: #FF1493; margin-bottom: 15px; text-align: center;">
-                    🎨 배경 모드 (태블릿 전용)
-                </h4>
-                <div id="backgroundOptions" style="display: flex; flex-direction: column; gap: 10px;">
-                    ${this.availableBackgrounds.map(bg => `
-                        <button 
-                            onclick="window.backgroundManager.setBackground('${bg.id}')"
-                            id="bg-${bg.id}"
-                            style="
-                                width: 100%; 
-                                padding: 12px; 
-                                background: #2a2a2a; 
-                                color: white; 
-                                border: 1px solid #444; 
-                                border-radius: 8px; 
-                                cursor: pointer; 
-                                font-size: 14px; 
-                                transition: all 0.3s;
-                                text-align: center;
-                            "
-                            onmouseover="this.style.background='#3a3a3a'; this.style.borderColor='#666'"
-                            onmouseout="this.style.background='#2a2a2a'; this.style.borderColor='#444'">
-                            ${bg.name}
-                        </button>
-                    `).join('')}
-                </div>
-                <p style="color: #666; font-size: 11px; margin-top: 10px; text-align: center;">
-                    모바일에서는 성능을 위해 비활성화됩니다
-                </p>
-            </div>
-        `;
-        
-        sidebarContent.appendChild(backgroundSection);
-        this.updateActiveButton();
-    }
-    
-    // 배경 UI 제거
-    removeBackgroundUI() {
-        const section = document.getElementById('backgroundSection');
-        if (section) {
-            section.remove();
-        }
-    }
-    
-    // 배경 설정
-    setBackground(backgroundId) {
-        if (!this.isTabletMode) {
-            console.log('🚫 Background disabled on mobile for performance');
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar) {
+            console.log('⚠️ 사이드바를 찾을 수 없습니다');
             return;
         }
         
-        const background = this.availableBackgrounds.find(bg => bg.id === backgroundId);
-        if (!background) return;
+        // 기존 배경 섹션 제거
+        this.removeBackgroundSelector();
         
-        // 기존 배경 제거
-        this.removeActiveBackground();
+        const backgroundSection = document.createElement('div');
+        backgroundSection.className = 'background-section';
+        backgroundSection.style.cssText = `
+            margin: 20px 0;
+            padding: 20px 0;
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+        `;
         
-        // 새 배경 적용
-        if (background.id !== 'none') {
-            this.loadBackgroundCSS(background);
+        backgroundSection.innerHTML = `
+            <h3 style="color: #FF1493; margin-bottom: 15px; font-size: 16px;">
+                🎨 배경 모드 (태블릿 전용)
+            </h3>
+            <div class="background-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button class="background-option" data-bg="none" style="
+                    padding: 10px 8px;
+                    background: #2a2a2a;
+                    border: 1px solid #444;
+                    border-radius: 8px;
+                    color: white;
+                    cursor: pointer;
+                    font-size: 12px;
+                    transition: all 0.3s;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 5px;
+                ">
+                    🌑 기본
+                </button>
+                <button class="background-option" data-bg="starry" style="
+                    padding: 10px 8px;
+                    background: #2a2a2a;
+                    border: 1px solid #444;
+                    border-radius: 8px;
+                    color: white;
+                    cursor: pointer;
+                    font-size: 12px;
+                    transition: all 0.3s;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 5px;
+                ">
+                    ✨ 별빛
+                </button>
+                <button class="background-option" data-bg="sakura" style="
+                    padding: 10px 8px;
+                    background: #2a2a2a;
+                    border: 1px solid #444;
+                    border-radius: 8px;
+                    color: white;
+                    cursor: pointer;
+                    font-size: 12px;
+                    transition: all 0.3s;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 5px;
+                ">
+                    🌸 벚꽃
+                </button>
+                <button class="background-option" data-bg="ocean" style="
+                    padding: 10px 8px;
+                    background: #2a2a2a;
+                    border: 1px solid #444;
+                    border-radius: 8px;
+                    color: white;
+                    cursor: pointer;
+                    font-size: 12px;
+                    transition: all 0.3s;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 5px;
+                ">
+                    🌊 바다
+                </button>
+                <button class="background-option" data-bg="particle" style="
+                    padding: 10px 8px;
+                    background: #2a2a2a;
+                    border: 1px solid #444;
+                    border-radius: 8px;
+                    color: white;
+                    cursor: pointer;
+                    font-size: 12px;
+                    transition: all 0.3s;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 5px;
+                ">
+                    🎆 파티클
+                </button>
+            </div>
+        `;
+        
+        // 사이드바 컨텐츠에 추가
+        const sidebarContent = sidebar.querySelector('.sidebar-content');
+        if (sidebarContent) {
+            sidebarContent.appendChild(backgroundSection);
+            this.setupBackgroundButtons();
+            console.log('✅ 배경 선택 UI 생성 완료');
         }
-        
-        this.currentBackground = backgroundId;
-        localStorage.setItem('hairgator_background', backgroundId);
-        this.updateActiveButton();
-        
-        console.log(`🎨 Background set to: ${background.name}`);
     }
     
-    // 배경 CSS 로드
-    loadBackgroundCSS(background) {
-        const isDarkTheme = !document.body.classList.contains('light-theme');
-        const cssFile = isDarkTheme ? background.darkCSS : background.lightCSS;
-        
-        if (!cssFile) return;
-        
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = `/backgrounds/${cssFile}`;
-        link.id = 'background-css';
-        link.onerror = () => {
-            console.error(`Failed to load background CSS: ${cssFile}`);
-            this.showBackgroundError();
-        };
-        
-        document.head.appendChild(link);
-        
-        // 배경 컨테이너 추가
-        setTimeout(() => {
-            if (!document.querySelector('.background-container')) {
-                const container = document.createElement('div');
-                container.className = `background-container background-${background.id}-${isDarkTheme ? 'dark' : 'light'}`;
-                document.body.prepend(container);
-            }
-        }, 100);
-    }
-    
-    // 활성 배경 제거
-    removeActiveBackground() {
-        // CSS 링크 제거
-        const existingCSS = document.getElementById('background-css');
-        if (existingCSS) {
-            existingCSS.remove();
-        }
-        
-        // 배경 컨테이너 제거
-        const container = document.querySelector('.background-container');
-        if (container) {
-            container.remove();
-        }
-    }
-    
-    // 활성 버튼 업데이트
-    updateActiveButton() {
-        this.availableBackgrounds.forEach(bg => {
-            const button = document.getElementById(`bg-${bg.id}`);
-            if (button) {
-                if (bg.id === this.currentBackground) {
-                    button.style.background = '#FF1493';
-                    button.style.borderColor = '#FF1493';
-                    button.style.color = 'white';
-                } else {
-                    button.style.background = '#2a2a2a';
-                    button.style.borderColor = '#444';
-                    button.style.color = 'white';
+    setupBackgroundButtons() {
+        document.querySelectorAll('.background-option').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const bgType = e.target.dataset.bg;
+                this.changeBackground(bgType);
+                console.log(`🎨 배경 선택: ${bgType}`);
+            });
+            
+            // 호버 효과
+            button.addEventListener('mouseenter', (e) => {
+                if (e.target.dataset.bg !== this.currentBackground) {
+                    e.target.style.background = '#3a3a3a';
+                    e.target.style.transform = 'translateY(-1px)';
                 }
+            });
+            
+            button.addEventListener('mouseleave', (e) => {
+                if (e.target.dataset.bg !== this.currentBackground) {
+                    e.target.style.background = '#2a2a2a';
+                    e.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+    }
+    
+    changeBackground(type) {
+        if (!this.isTabletMode) return;
+        
+        this.removeExistingBackground();
+        this.currentBackground = type;
+        
+        if (type === 'none') {
+            this.updateActiveButton('none');
+            localStorage.setItem('hairgator_background', 'none');
+            return;
+        }
+        
+        // 인라인 배경 생성 (CSS 파일 없이도 작동)
+        this.createInlineBackground(type);
+        this.updateActiveButton(type);
+        localStorage.setItem('hairgator_background', type);
+        
+        console.log(`✅ 배경 적용 완료: ${type}`);
+    }
+    
+    createInlineBackground(type) {
+        const isLightTheme = document.body.classList.contains('light-theme');
+        let backgroundCSS = '';
+        
+        if (type === 'sakura') {
+            if (isLightTheme) {
+                // 라이트 모드 - 따뜻한 봄날 벚꽃
+                backgroundCSS = `
+                    .hairgator-background {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(135deg, 
+                            #ffeef5 0%, 
+                            #ffe0e8 25%, 
+                            #ffd0dd 50%, 
+                            #ffb3c6 75%, 
+                            #ffa8cc 100%);
+                        z-index: -1;
+                        pointer-events: none;
+                        overflow: hidden;
+                    }
+                    
+                    .hairgator-background::before {
+                        content: '';
+                        position: absolute;
+                        top: -10%;
+                        left: -10%;
+                        width: 120%;
+                        height: 120%;
+                        background: 
+                            radial-gradient(6px 6px at 30px 40px, rgba(255, 182, 193, 0.8), transparent),
+                            radial-gradient(4px 4px at 80px 20px, rgba(255, 192, 203, 0.6), transparent),
+                            radial-gradient(8px 8px at 150px 90px, rgba(255, 160, 180, 0.7), transparent),
+                            radial-gradient(3px 3px at 200px 130px, rgba(255, 182, 193, 0.5), transparent),
+                            radial-gradient(5px 5px at 60px 180px, rgba(255, 192, 203, 0.8), transparent);
+                        background-repeat: repeat;
+                        background-size: 300px 200px;
+                        animation: sakuraLightFall 15s linear infinite;
+                    }
+                    
+                    .hairgator-background::after {
+                        content: '';
+                        position: absolute;
+                        top: -10%;
+                        left: -10%;
+                        width: 120%;
+                        height: 120%;
+                        background: 
+                            radial-gradient(4px 4px at 70px 60px, rgba(255, 105, 180, 0.6), transparent),
+                            radial-gradient(7px 7px at 130px 40px, rgba(255, 160, 180, 0.4), transparent),
+                            radial-gradient(2px 2px at 180px 100px, rgba(255, 182, 193, 0.7), transparent),
+                            radial-gradient(9px 9px at 20px 140px, rgba(255, 192, 203, 0.5), transparent);
+                        background-repeat: repeat;
+                        background-size: 250px 180px;
+                        animation: sakuraLightSwirl 12s linear infinite;
+                    }
+                    
+                    @keyframes sakuraLightFall {
+                        0% { 
+                            transform: translateY(-30px) rotate(0deg); 
+                            opacity: 0.9; 
+                        }
+                        50% { 
+                            transform: translateY(50vh) rotate(180deg); 
+                            opacity: 0.7; 
+                        }
+                        100% { 
+                            transform: translateY(100vh) rotate(360deg); 
+                            opacity: 0.3; 
+                        }
+                    }
+                    
+                    @keyframes sakuraLightSwirl {
+                        0% { 
+                            transform: translateY(-20px) translateX(0) rotate(0deg); 
+                            opacity: 0.8; 
+                        }
+                        25% { 
+                            transform: translateY(25vh) translateX(20px) rotate(90deg); 
+                            opacity: 0.6; 
+                        }
+                        75% { 
+                            transform: translateY(75vh) translateX(-15px) rotate(270deg); 
+                            opacity: 0.4; 
+                        }
+                        100% { 
+                            transform: translateY(100vh) translateX(10px) rotate(360deg); 
+                            opacity: 0.1; 
+                        }
+                    }
+                `;
+            } else {
+                // 다크 모드 - 신비로운 밤 벚꽃
+                backgroundCSS = `
+                    .hairgator-background {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(135deg, 
+                            #0c0c0c 0%, 
+                            #1a1a2e 25%, 
+                            #16213e 50%, 
+                            #0f3460 75%, 
+                            #0e4b5a 100%);
+                        z-index: -1;
+                        pointer-events: none;
+                        overflow: hidden;
+                    }
+                    
+                    .hairgator-background::before {
+                        content: '';
+                        position: absolute;
+                        top: -10%;
+                        left: -10%;
+                        width: 120%;
+                        height: 120%;
+                        background: 
+                            radial-gradient(5px 5px at 40px 50px, rgba(255, 107, 157, 0.9), transparent),
+                            radial-gradient(3px 3px at 90px 30px, rgba(255, 143, 171, 0.7), transparent),
+                            radial-gradient(7px 7px at 160px 80px, rgba(255, 168, 204, 0.8), transparent),
+                            radial-gradient(4px 4px at 210px 120px, rgba(255, 107, 157, 0.6), transparent),
+                            radial-gradient(6px 6px at 50px 170px, rgba(255, 143, 171, 0.9), transparent);
+                        background-repeat: repeat;
+                        background-size: 280px 180px;
+                        animation: sakuraDarkFall 13s linear infinite;
+                    }
+                    
+                    .hairgator-background::after {
+                        content: '';
+                        position: absolute;
+                        top: -10%;
+                        left: -10%;
+                        width: 120%;
+                        height: 120%;
+                        background: 
+                            radial-gradient(3px 3px at 80px 70px, rgba(255, 182, 193, 0.6), transparent),
+                            radial-gradient(8px 8px at 140px 50px, rgba(255, 107, 157, 0.5), transparent),
+                            radial-gradient(2px 2px at 190px 110px, rgba(255, 168, 204, 0.8), transparent),
+                            radial-gradient(5px 5px at 30px 150px, rgba(255, 143, 171, 0.7), transparent);
+                        background-repeat: repeat;
+                        background-size: 220px 160px;
+                        animation: sakuraDarkDrift 10s linear infinite;
+                    }
+                    
+                    @keyframes sakuraDarkFall {
+                        0% { 
+                            transform: translateY(-20px) rotate(0deg); 
+                            opacity: 1; 
+                        }
+                        30% { 
+                            transform: translateY(30vh) rotate(120deg); 
+                            opacity: 0.8; 
+                        }
+                        70% { 
+                            transform: translateY(70vh) rotate(240deg); 
+                            opacity: 0.6; 
+                        }
+                        100% { 
+                            transform: translateY(100vh) rotate(360deg); 
+                            opacity: 0.2; 
+                        }
+                    }
+                    
+                    @keyframes sakuraDarkDrift {
+                        0% { 
+                            transform: translateY(-15px) translateX(0) rotate(0deg); 
+                            opacity: 0.9; 
+                        }
+                        40% { 
+                            transform: translateY(40vh) translateX(30px) rotate(144deg); 
+                            opacity: 0.7; 
+                        }
+                        80% { 
+                            transform: translateY(80vh) translateX(-20px) rotate(288deg); 
+                            opacity: 0.5; 
+                        }
+                        100% { 
+                            transform: translateY(100vh) translateX(15px) rotate(360deg); 
+                            opacity: 0.1; 
+                        }
+                    }
+                `;
+            }
+        } else if (type === 'starry') {
+            // 별빛 배경
+            backgroundCSS = `
+                .hairgator-background {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: ${isLightTheme ? 
+                        'linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 50%, #80bfff 100%)' : 
+                        'linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%)'};
+                    z-index: -1;
+                    pointer-events: none;
+                }
+                
+                .hairgator-background::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: 
+                        radial-gradient(2px 2px at 20px 30px, ${isLightTheme ? '#ffeb3b' : '#fff'}, transparent),
+                        radial-gradient(1px 1px at 40px 70px, ${isLightTheme ? '#ff9800' : '#ffffcc'}, transparent),
+                        radial-gradient(3px 3px at 90px 40px, ${isLightTheme ? '#ffc107' : '#fff'}, transparent);
+                    background-repeat: repeat;
+                    background-size: 200px 100px;
+                    animation: ${isLightTheme ? 'starLight' : 'starTwinkle'} 3s linear infinite;
+                }
+                
+                @keyframes starTwinkle {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.3; }
+                }
+                
+                @keyframes starLight {
+                    0%, 100% { opacity: 0.8; }
+                    50% { opacity: 0.4; }
+                }
+            `;
+        }
+        
+        // CSS 적용
+        const existingStyle = document.getElementById('hairgator-background-style');
+        if (existingStyle) {
+            existingStyle.remove();
+        }
+        
+        const style = document.createElement('style');
+        style.id = 'hairgator-background-style';
+        style.textContent = backgroundCSS;
+        document.head.appendChild(style);
+        
+        // 배경 요소 생성
+        const bgElement = document.createElement('div');
+        bgElement.className = 'hairgator-background';
+        document.body.prepend(bgElement);
+    }
+    
+    removeExistingBackground() {
+        // 배경 스타일 제거
+        const existingStyle = document.getElementById('hairgator-background-style');
+        if (existingStyle) {
+            existingStyle.remove();
+        }
+        
+        // 배경 요소 제거
+        const existingBg = document.querySelector('.hairgator-background');
+        if (existingBg) {
+            existingBg.remove();
+        }
+    }
+    
+    removeBackgroundSelector() {
+        const backgroundSection = document.querySelector('.background-section');
+        if (backgroundSection) {
+            backgroundSection.remove();
+        }
+    }
+    
+    loadSavedBackground() {
+        const saved = localStorage.getItem('hairgator_background');
+        if (saved && saved !== 'none') {
+            this.changeBackground(saved);
+        }
+        this.updateActiveButton(saved || 'none');
+    }
+    
+    setupThemeChangeListener() {
+        const observer = new MutationObserver(() => {
+            if (this.currentBackground !== 'none') {
+                // 테마가 변경되면 현재 배경을 다시 로드
+                this.changeBackground(this.currentBackground);
+            }
+        });
+        
+        observer.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    }
+    
+    updateActiveButton(activeKey) {
+        if (!this.isTabletMode) return;
+        
+        document.querySelectorAll('.background-option').forEach(btn => {
+            if (btn.dataset.bg === activeKey) {
+                btn.style.background = 'linear-gradient(45deg, #FF1493, #FF69B4)';
+                btn.style.borderColor = '#FF1493';
+                btn.style.boxShadow = '0 0 15px rgba(255, 20, 147, 0.3)';
+                btn.style.transform = 'translateY(-2px)';
+            } else {
+                btn.style.background = '#2a2a2a';
+                btn.style.borderColor = '#444';
+                btn.style.boxShadow = 'none';
+                btn.style.transform = 'translateY(0)';
             }
         });
     }
     
-    // 배경 로드 에러 표시
-    showBackgroundError() {
-        if (typeof showToast === 'function') {
-            showToast('배경 파일을 찾을 수 없습니다');
-        } else {
-            console.error('Background files not found');
-        }
-    }
-    
-    // 테마 변경 시 배경 업데이트
-    onThemeChange() {
-        if (this.currentBackground !== 'none' && this.isTabletMode) {
-            this.setBackground(this.currentBackground);
-        }
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
     }
 }
 
-// 전역 인스턴스 생성
+// 🚀 자동 초기화
 document.addEventListener('DOMContentLoaded', () => {
-    window.backgroundManager = new BackgroundManager();
+    if (window.innerWidth >= 768) {
+        window.backgroundManager = new BackgroundManager();
+        console.log('🌸 HAIRGATOR Background Manager ready!');
+    }
 });
 
-// 테마 변경 감지
-const originalToggle = themeManager?.toggle;
-if (originalToggle) {
-    themeManager.toggle = function() {
-        originalToggle.call(this);
-        window.backgroundManager?.onThemeChange();
-    };
-}
+// 윈도우 리사이즈 감지
+window.addEventListener('resize', () => {
+    const isTabletMode = window.innerWidth >= 768;
+    
+    if (isTabletMode && !window.backgroundManager) {
+        window.backgroundManager = new BackgroundManager();
+    } else if (!isTabletMode && window.backgroundManager) {
+        window.backgroundManager.removeExistingBackground();
+        window.backgroundManager.removeBackgroundSelector();
+        window.backgroundManager = null;
+    }
+});
+
+console.log('📁 HAIRGATOR Background Manager 스크립트 로드 완료');
