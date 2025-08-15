@@ -8,15 +8,15 @@
   />
   <title>HAIRGATOR - Professional Hair Style Menu</title>
 
-  <!-- 캐시 힌트 (헤더가 더 강력하지만, HTML 메타도 보조적으로 둠) -->
+  <!-- 캐시 억제(헤더가 우선이지만 메타도 보조적으로 둠) -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <!-- 🆕 성능 최적화 CSS (버전 버스트) -->
+  <!-- 스타일 -->
   <link rel="stylesheet" href="/css/performance-optimization.css?v=20250815" />
 
-  <!-- PWA Meta Tags -->
+  <!-- PWA -->
   <meta name="theme-color" content="#000000" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -25,15 +25,13 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <link rel="manifest" href="/manifest.json?v=20250815" />
 
-  <!-- iOS Icons -->
+  <!-- Icons -->
   <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.png" />
   <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-192.png" />
-
-  <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
 
-  <!-- Google Fonts (preconnect 권장) -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -41,215 +39,121 @@
     rel="stylesheet"
   />
 
-  <!-- 🎯 GitHub-Netlify 업데이트 알림 시스템 (원본 유지) -->
-  <!-- (당신이 보낸 스크립트 그대로 두되, 하단 SW 로직과 함께 동작합니다) -->
-  <!-- ==== 생략: 기존 긴 UpdateChecker 스크립트 그대로 유지 ==== -->
-
   <style>
-    /* 기존 스타일 유지 + AI 버튼 스타일 */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    /* 기본 테마 (필요 최소한 유지) */
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
     :root {
-      --primary-dark: #000000;
-      --primary-light: #ffffff;
-      --male-color: #4a90e2;
-      --female-color: #e91e63;
-      --text-primary: #ffffff;
-      --text-secondary: #999999;
-      --border-color: #222222;
+      --primary-dark:#000; --primary-light:#fff; --text-primary:#fff; --text-secondary:#999; --border-color:#222;
+      --male-color:#4A90E2; --female-color:#E91E63;
     }
     body {
-      font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI",
-        Roboto, sans-serif;
-      background: var(--primary-dark);
-      color: var(--text-primary);
-      overflow-x: hidden;
-      user-select: none;
-      -webkit-user-select: none;
+      font-family:'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background:var(--primary-dark); color:var(--text-primary); overflow-x:hidden; user-select:none; -webkit-user-select:none;
     }
-    .btn-ai-pink {
-      background: transparent !important;
-      color: #ff1493 !important;
-      border: 2px solid #ff1493 !important;
-      border-radius: 25px !important;
-      padding: 12px 20px !important;
-      flex: 1 !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 8px !important;
-      transition: all 0.3s ease !important;
-      cursor: pointer !important;
-      font-weight: 600 !important;
-      font-size: 14px !important;
-      min-width: 100px !important;
+    .btn-ai-pink{
+      background:transparent!important;color:#FF1493!important;border:2px solid #FF1493!important;border-radius:25px!important;
+      padding:12px 20px!important;flex:1!important;display:flex!important;align-items:center!important;justify-content:center!important;
+      gap:8px!important;transition:all .3s ease!important;cursor:pointer!important;font-weight:600!important;font-size:14px!important;min-width:100px!important
     }
-    .btn-ai-pink:hover {
-      background: rgba(255, 20, 147, 0.1) !important;
-      transform: translateY(-2px) scale(1.02) !important;
-      box-shadow: 0 4px 15px rgba(255, 20, 147, 0.3) !important;
-    }
-    .btn-ai-pink:active {
-      transform: translateY(0) scale(0.98) !important;
-    }
+    .btn-ai-pink:hover{background:rgba(255,20,147,.1)!important;transform:translateY(-2px) scale(1.02)!important;box-shadow:0 4px 15px rgba(255,20,147,.3)!important}
+    .header{background:#000;padding:15px 20px;display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid #333}
+    .back-btn{position:absolute;left:20px;background:none;border:none;color:#fff;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px}
+    .logo{color:#fff!important;font-size:24px;font-weight:bold;letter-spacing:3px;text-align:center}
+    .menu-btn{background:none;border:none;width:40px;height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+    .menu-btn span{width:24px;height:2px;background:#fff;border-radius:2px}
+    .style-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);align-items:center;justify-content:center;z-index:1000}
+    .style-modal.active{display:flex}
+    .modal-content{background:#1a1a1a;border:1px solid #333;border-radius:16px;max-width:900px;width:92%;max-height:90vh;overflow:auto}
+    .modal-image{width:100%;max-height:60vh;object-fit:cover;background:#222}
+    .modal-info{padding:16px}
+    .modal-actions{display:flex;gap:10px;margin-top:12px}
+    .loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:2000}
+    .loading-overlay.active{display:flex}
+    .loading-spinner{width:40px;height:40px;border:4px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 
 <body>
   <!-- Loading -->
-  <div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-spinner"></div>
-  </div>
+  <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div></div>
 
   <!-- Header -->
   <header class="header">
     <button class="back-btn" id="backBtn">←</button>
     <div class="logo">HAIRGATOR</div>
-    <button class="menu-btn" id="menuBtn">
-      <span></span><span></span><span></span>
-    </button>
+    <button class="menu-btn" id="menuBtn"><span></span><span></span><span></span></button>
   </header>
 
-  <!-- 🎨 업그레이드된 테마 토글 버튼 -->
-  <button class="theme-toggle-bottom" id="themeToggleBottom" title="다크/라이트 모드">
-    <svg class="moon-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-      <path
-        d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
-      />
-    </svg>
-    <svg
-      class="sun-icon"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-    >
-      <circle cx="12" cy="12" r="5" />
-      <line x1="12" y1="1" x2="12" y2="3" />
-      <line x1="12" y1="21" x2="12" y2="23" />
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-      <line x1="1" y1="12" x2="3" y2="12" />
-      <line x1="21" y1="12" x2="23" y2="12" />
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-    </svg>
-  </button>
+  <!-- 하단 테마 토글(아이콘만 유지) -->
+  <button class="theme-toggle-bottom" id="themeToggleBottom" title="다크/라이트 모드" style="position:fixed;right:16px;bottom:16px;background:#111;border:1px solid #333;border-radius:999px;width:48px;height:48px;color:#fff;display:flex;align-items:center;justify-content:center;z-index:1000">☾</button>
 
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <button class="sidebar-close" id="sidebarClose">×</button>
-      <h3>설정</h3>
+  <!-- Sidebar (간략히) -->
+  <aside class="sidebar" id="sidebar" style="position:fixed;top:0;right:-100%;width:100%;height:100%;z-index:1000;transition:right .4s">
+    <div class="sidebar-header" style="padding:16px;background:#000;border-bottom:1px solid #333;display:flex;align-items:center;justify-content:space-between">
+      <h3 style="color:#fff;margin:0">설정</h3>
+      <button class="sidebar-close" id="sidebarClose" style="background:none;border:none;color:#fff;font-size:28px;cursor:pointer">×</button>
     </div>
-    <div class="sidebar-content">
-      <div class="theme-toggle-wrapper">
-        <button class="theme-toggle" id="themeToggle">
-          <span>다크 모드</span>
-          <span id="themeStatus">ON</span>
+    <div class="sidebar-content" style="padding:16px">
+      <div class="theme-toggle-wrapper" style="margin-bottom:20px">
+        <button class="theme-toggle" id="themeToggle" style="width:100%;padding:14px;background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+          <span>다크 모드</span><span id="themeStatus">ON</span>
         </button>
       </div>
-
-      <!-- 얼굴분석 버튼 -->
-      <div
-        style="
-          margin: 20px 0;
-          padding: 20px 0;
-          border-top: 1px solid #333;
-          border-bottom: 1px solid #333;
-        "
-      >
-        <button
-          onclick="window.open('https://hairgator-face.web.app/', '_blank')"
-          style="
-            width: 100%;
-            padding: 15px;
-            background: #2a2a2a;
-            color: white;
-            border: 1px solid #444;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-          "
-          onmouseover="this.style.background='#3a3a3a'; this.style.borderColor='#666'"
-          onmouseout="this.style.background='#2a2a2a'; this.style.borderColor='#444'"
-        >
-          <span style="font-size: 20px">👤</span>
-          <span>얼굴분석</span>
+      <div style="margin:20px 0;padding:20px 0;border-top:1px solid #333;border-bottom:1px solid #333;">
+        <button onclick="window.open('https://hairgator-face.web.app/','_blank')"
+          style="width:100%;padding:15px;background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:10px;cursor:pointer;font-size:16px;font-weight:600;transition:.3s;display:flex;align-items:center;justify-content:center;gap:10px"
+          onmouseover="this.style.background='#3a3a3a';this.style.borderColor='#666'"
+          onmouseout="this.style.background='#2a2a2a';this.style.borderColor='#444'">
+          <span style="font-size:20px">👤</span><span>얼굴분석</span>
         </button>
-        <p style="color: #666; font-size: 12px; margin-top: 10px; text-align: center">
-          AI가 당신에게 어울리는 헤어스타일을 추천해드립니다
-        </p>
+        <p style="color:#666;font-size:12px;margin-top:10px;text-align:center">AI가 당신에게 어울리는 헤어스타일을 추천해드립니다</p>
       </div>
-
-      <div id="designerInfo" style="display: none">
-        <p style="color: #666; margin-bottom: 10px">
-          로그인: <span id="designerName">Designer</span>
-        </p>
-        <button class="logout-btn" id="logoutBtn">로그아웃</button>
+      <div id="designerInfo" style="display:none">
+        <p style="color:#666;margin-bottom:10px">로그인: <span id="designerName">Designer</span></p>
+        <button class="logout-btn" id="logoutBtn" style="width:100%;padding:12px;background:#FF1493;border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer">로그아웃</button>
       </div>
     </div>
   </aside>
 
-  <!-- Main Content -->
-  <main class="main-content">
-    <!-- Gender Selection -->
-    <div class="gender-selection" id="genderSelection">
-      <button class="gender-btn male" data-gender="male">
-        <div class="gender-icon">♂</div>
-        <div class="gender-label">남성</div>
-      </button>
-      <button class="gender-btn female" data-gender="female">
-        <div class="gender-icon">♀</div>
-        <div class="gender-label">여성</div>
-      </button>
+  <!-- Main -->
+  <main class="main-content" style="padding:16px">
+    <div class="gender-selection" id="genderSelection" style="display:flex;gap:10px;justify-content:center;margin:24px 0">
+      <button class="gender-btn male" data-gender="male" style="padding:16px 24px;border-radius:30px;border:2px solid #4A90E2;background:transparent;color:#4A90E2;font-weight:700;cursor:pointer">남성</button>
+      <button class="gender-btn female" data-gender="female" style="padding:16px 24px;border-radius:30px;border:2px solid #FF1493;background:transparent;color:#FF1493;font-weight:700;cursor:pointer">여성</button>
     </div>
 
-    <!-- Menu Container -->
-    <div class="menu-container" id="menuContainer">
-      <div class="category-tabs-wrapper">
-        <div class="category-tabs" id="categoryTabs"></div>
+    <div class="menu-container" id="menuContainer" style="max-width:1100px;margin:0 auto">
+      <div class="category-tabs-wrapper" style="overflow:auto;white-space:nowrap;padding-bottom:8px;margin-bottom:12px;border-bottom:1px solid #222">
+        <div class="category-tabs" id="categoryTabs" style="display:inline-flex;gap:8px"></div>
       </div>
-      <div class="category-description" id="categoryDescription"></div>
-      <div class="subcategory-wrapper">
-        <div class="subcategory-tabs" id="subcategoryTabs"></div>
+      <div class="category-description" id="categoryDescription" style="color:#aaa;margin:8px 0 16px"></div>
+      <div class="subcategory-wrapper" style="margin-bottom:12px">
+        <div class="subcategory-tabs" id="subcategoryTabs" style="display:flex;gap:8px;flex-wrap:wrap"></div>
       </div>
-      <div class="menu-grid" id="menuGrid"></div>
+      <div class="menu-grid" id="menuGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px"></div>
     </div>
   </main>
 
   <!-- Style Modal -->
   <div class="style-modal" id="styleModal">
     <div class="modal-content">
-      <button class="modal-close" id="modalClose">×</button>
+      <button class="modal-close" id="modalClose" style="position:absolute;top:8px;right:10px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer">×</button>
       <img id="modalImage" src="" alt="" class="modal-image" />
       <div class="modal-info">
-        <div class="modal-code" id="modalCode">CODE</div>
-        <div class="modal-name" id="modalName">스타일명</div>
-        <div class="modal-actions" id="modalActions">
-          <button class="modal-btn btn-register" id="btnRegister">고객등록</button>
-          <button class="modal-btn btn-like" id="btnLike">
-            <span>♡</span><span>좋아요</span>
-          </button>
-          <!-- ✅ AKOOL AI 버튼이 동적으로 추가됨 -->
+        <div class="modal-code" id="modalCode" style="font-size:12px;color:#999">CODE</div>
+        <div class="modal-name" id="modalName" style="font-size:18px;font-weight:700;margin-top:4px">스타일명</div>
+        <div class="modal-actions" id="modalActions" style="margin-top:10px">
+          <button class="modal-btn btn-register" id="btnRegister" style="background:#444;color:#fff;border:none;padding:10px 16px;border-radius:10px;cursor:pointer">고객등록</button>
+          <button class="modal-btn btn-like" id="btnLike" style="background:#222;color:#fff;border:1px solid #444;padding:10px 16px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:6px"><span>♡</span><span>좋아요</span></button>
+          <!-- ✅ AKOOL AI 버튼은 JS로 주입 -->
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ✅ Scripts 로딩 순서 -->
+  <!-- ================= Scripts 순서 ================= -->
+
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -259,121 +163,216 @@
   <!-- Firebase Config -->
   <script src="/js/firebase-config.js?v=20250815"></script>
 
-  <!-- 🔥 AKOOL 먼저 로드 (버전 버스트) -->
+  <!-- 🔥 AKOOL (실제 플로우) -->
   <script src="/akool/js/akool-integration.js?v=20250815"></script>
+  <!-- (필요하다면 상태/토큰/페이스스왑 헬퍼도 추가)
+  <script src="/akool/js/akool-api.js?v=20250815"></script>
+  <script src="/akool/js/akool-token.js?v=20250815"></script>
+  <script src="/akool/js/akool-status.js?v=20250815"></script>
+  <script src="/akool/js/akool-faceswap.js?v=20250815"></script>
+  -->
 
-  <!-- 성능 최적화 시스템 -->
+  <!-- 성능 최적화/가이드 -->
   <script src="/js/performance-optimization.js?v=20250815"></script>
+  <script src="/js/tablet-native-mode.js?v=20250815"></script>
+  <script src="/js/webview-optimization.js?v=20250815"></script>
+  <script src="/js/mobile-tablet-guide.js?v=20250815"></script>
 
-  <!-- 앱 메인(당신이 넣은 스크립트들 포함) -->
+  <!-- 앱 메인 로직 (메뉴/모달/이벤트 등 기존 코드가 있다면 여기에) -->
   <script>
-    console.log("🚀 HAIRGATOR 최종 완성 버전 로딩...");
+    console.log('🚀 HAIRGATOR 앱 초기화');
 
-    // ... (당신이 올려준 앱 초기화/모달/메뉴 로직 그대로 유지)
-    // showStyleDetail / addAKOOLButtonToModal 등 기존 코드 유지
+    // 전역 상태
+    window.currentGender = null;
+    window.currentCategory = null;
+    window.currentSubcategory = 'None';
+    window.menuData = {};
+
+    const backBtn = document.getElementById('backBtn');
+    const menuBtn = document.getElementById('menuBtn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleBottom = document.getElementById('themeToggleBottom');
+    const themeStatus = document.getElementById('themeStatus');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const genderSelection = document.getElementById('genderSelection');
+    const categoryTabs = document.getElementById('categoryTabs');
+    const categoryDescription = document.getElementById('categoryDescription');
+    const subcategoryTabs = document.getElementById('subcategoryTabs');
+    const menuGrid = document.getElementById('menuGrid');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const styleModal = document.getElementById('styleModal');
+    const modalClose = document.getElementById('modalClose');
+    const modalImage = document.getElementById('modalImage');
+    const modalCode = document.getElementById('modalCode');
+    const modalName = document.getElementById('modalName');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      init();
+    });
+
+    function init() {
+      setupEventListeners();
+      loadTheme();
+      if (backBtn) backBtn.style.display = 'none';
+      console.log('✅ 초기화 완료');
+    }
+
+    function setupEventListeners() {
+      backBtn?.addEventListener('click', () => history.back());
+      menuBtn?.addEventListener('click', () => sidebar.style.right = '0');
+      sidebarClose?.addEventListener('click', () => sidebar.style.right = '-100%');
+      themeToggle?.addEventListener('click', toggleTheme);
+      themeToggleBottom?.addEventListener('click', toggleTheme);
+      logoutBtn?.addEventListener('click', () => { /* TODO: 로그아웃 로직 */ });
+
+      // 성별 선택(위임)
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.gender-btn');
+        if (!btn) return;
+        const gender = btn.dataset.gender;
+        selectGender(gender);
+      });
+
+      // 모달 닫기
+      modalClose?.addEventListener('click', closeModal);
+      styleModal?.addEventListener('click', (e) => { if (e.target === styleModal) closeModal(); });
+
+      // ESC로 모달 닫기
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && styleModal.classList.contains('active')) closeModal();
+      });
+
+      // 사이드바 바깥 클릭시 닫기
+      document.addEventListener('click', (e) => {
+        if (sidebar.style.right === '0' && !sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+          sidebar.style.right = '-100%';
+        }
+      });
+    }
+
+    function toggleTheme(){
+      const isLight = document.body.classList.toggle('light-theme');
+      themeStatus && (themeStatus.textContent = isLight ? 'OFF' : 'ON');
+    }
+    function loadTheme(){ /* 필요 시 테마 초기화 */ }
+    function selectGender(g){ window.currentGender = g; /* TODO: 메뉴 렌더링 */ }
+    function closeModal(){
+      styleModal?.classList.remove('active');
+      // AKOOL 모달도 열려있다면 닫기
+      if (typeof window.closeAkoolModal === 'function') window.closeAkoolModal();
+      // 남아있는 AI 버튼 청소
+      const ak = document.getElementById('akoolAIBtn'); if (ak) ak.remove();
+    }
+
+    // 🔎 스타일 상세 열기 (AI버튼 주입 위치)
+    window.showStyleDetail = function(code, name, gender, imageSrc, docId){
+      console.log('🎨 스타일 모달:', {code, name, gender, imageSrc, docId});
+      modalImage.src = imageSrc || '';
+      modalCode.textContent = code || 'NO CODE';
+      modalName.textContent = name || '이름 없음';
+      styleModal.classList.add('active');
+
+      // ✅ AI 체험 버튼은 항상 실제 AKOOL 플로우만 호출하게 강제
+      addAKOOLButtonToModal(code, name, imageSrc, gender);
+    };
+
+    function addAKOOLButtonToModal(code, name, imageSrc, gender){
+      const actions = document.getElementById('modalActions');
+      if (!actions) return;
+      const old = actions.querySelector('#akoolAIBtn'); if (old) old.remove();
+
+      const btn = document.createElement('button');
+      btn.id = 'akoolAIBtn';
+      btn.className = 'modal-btn btn-ai-pink';
+      btn.innerHTML = `
+        <svg viewBox="0 0 60 60" width="18" height="18" style="margin-right:6px">
+          <path d="M30 5 C40 5, 50 15, 50 25 C50 35, 45 45, 40 50 C35 55, 25 55, 20 50 C15 45, 10 35, 10 25 C10 15, 20 5, 30 5 Z"
+                fill="none" stroke="#FF1493" stroke-width="2"></path>
+          <circle cx="22" cy="22" r="2" fill="#FF1493"></circle>
+          <circle cx="38" cy="22" r="2" fill="#FF1493"></circle>
+        </svg>
+        <span>AI 체험</span>
+      `;
+      btn.onclick = () => {
+        if (typeof window.openAkoolFaceSwapModal === 'function') {
+          window.openAkoolFaceSwapModal({
+            imageUrl: imageSrc,
+            styleName: name,
+            styleCode: code,
+            gender
+          });
+        } else {
+          // 아직 로드 전이면 재로딩 후 즉시 재시도
+          const s = document.createElement('script');
+          s.src = '/akool/js/akool-integration.js?v=' + Date.now();
+          s.onload = () => (typeof window.openAkoolFaceSwapModal === 'function') && btn.click();
+          document.head.appendChild(s);
+        }
+      };
+      actions.appendChild(btn);
+    }
+
+    // 🧯 구버전 경로(시뮬레이션)로 빠지지 않게 방지용 리다이렉트
+    window.openAkoolModal = function(){
+      const code = document.querySelector('#modalCode')?.textContent || '';
+      const name = document.querySelector('#modalName')?.textContent || '';
+      const imageUrl = document.querySelector('#modalImage')?.src || '';
+      if (typeof window.openAkoolFaceSwapModal === 'function') {
+        return window.openAkoolFaceSwapModal({ imageUrl, styleName:name, styleCode:code });
+      }
+      const s = document.createElement('script');
+      s.src = '/akool/js/akool-integration.js?v=' + Date.now();
+      s.onload = () => (typeof window.openAkoolFaceSwapModal === 'function') && window.openAkoolModal();
+      document.head.appendChild(s);
+    };
+
+    // 로딩 표시
+    function showLoading(show){ loadingOverlay?.classList.toggle('active', !!show); }
   </script>
 
-  <!-- 🧠 서비스 워커 등록 + 즉시 업데이트/토큰정리 연동 -->
+  <!-- 🧠 서비스워커: 즉시 업데이트 + 토큰 정리 연동 -->
   <script>
-    (function () {
-      const SW_URL = "/service-worker.js?v=20250815";
+    (function(){
+      const SW_URL = '/service-worker.js?v=20250815';
       let hasRefreshed = false;
 
-      function sendSkipWaiting(reg) {
-        if (reg && reg.waiting) {
-          reg.waiting.postMessage({ type: "SKIP_WAITING" });
-        }
-      }
-
-      function onNewServiceWorker(reg) {
-        reg.addEventListener("updatefound", () => {
-          const newWorker = reg.installing;
-          if (!newWorker) return;
-          newWorker.addEventListener("statechange", () => {
-            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-              // 새 워커가 대기중 → 즉시 활성화 요청
-              sendSkipWaiting(reg);
-            }
+      function sendSkipWaiting(reg){ reg?.waiting?.postMessage({ type:'SKIP_WAITING' }); }
+      function onNewServiceWorker(reg){
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          nw && nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) sendSkipWaiting(reg);
           });
         });
       }
-
-      // 새 컨트롤러가 잡히면(=새 SW 활성화) 1회 자동 새로고침
-      navigator.serviceWorker && navigator.serviceWorker.addEventListener("controllerchange", () => {
-        if (hasRefreshed) return;
-        hasRefreshed = true;
-        location.reload();
+      navigator.serviceWorker && navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (hasRefreshed) return; hasRefreshed = true; location.reload();
       });
-
-      // SW 메시지 수신: APP_UPDATED → 로컬 토큰 등 정리
-      navigator.serviceWorker &&
-        navigator.serviceWorker.addEventListener("message", (e) => {
-          const msg = e.data || {};
-          if (msg.type === "APP_UPDATED") {
-            // 제안된 키들 정리 (예: akool_token)
-            (msg.suggestClearKeys || []).forEach((k) => localStorage.removeItem(k));
-            // 필요 시 즉시 새로고침을 원하면 아래를 주석 해제
-            // location.reload();
-          }
-        });
-
-      // 등록
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register(SW_URL)
-            .then((reg) => {
-              console.log("[SW] registered:", reg.scope);
-              onNewServiceWorker(reg);
-
-              // 이미 waiting 중인 SW가 있다면 바로 skipWaiting
-              if (reg.waiting) sendSkipWaiting(reg);
-
-              // 주기적으로 업데이트 체크
-              setInterval(() => reg.update(), 5 * 60 * 1000);
-            })
-            .catch((err) => {
-              console.warn("[SW] registration failed:", err);
-            });
+      navigator.serviceWorker && navigator.serviceWorker.addEventListener('message', (e) => {
+        const msg = e.data || {};
+        if (msg.type === 'APP_UPDATED') {
+          (msg.suggestClearKeys || ['akool_token','akool_token_issued']).forEach(k => localStorage.removeItem(k));
+          // 필요 시 즉시 리로드: location.reload();
+        }
+      });
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register(SW_URL).then(reg => {
+            console.log('[SW] registered:', reg.scope);
+            onNewServiceWorker(reg);
+            if (reg.waiting) sendSkipWaiting(reg);
+            setInterval(() => reg.update(), 5*60*1000);
+          }).catch(err => console.warn('[SW] registration failed:', err));
         });
       }
     })();
   </script>
 
-  <!-- 🔧 AKOOL 로딩 확인 및 재시도 (원본 유지, 버전 버스트만 반영) -->
   <script>
-    setTimeout(() => {
-      console.log("🔍 AKOOL 시스템 상태 확인...");
-      const akoolStatus = {
-        integration: typeof window.addAIButtonToHairgator,
-        modal: typeof window.openAkoolModal,
-        token: typeof window.getAkoolToken,
-        faceSwap: typeof window.akoolFaceSwap,
-        config: window.akoolConfig ? "로드됨" : "없음",
-      };
-      console.log("🤖 AKOOL 상태:", akoolStatus);
-
-      if (typeof window.openAkoolModal === "undefined") {
-        console.log("⚠️ AKOOL 메인 함수 미로드, 재로드 시도...");
-        const script = document.createElement("script");
-        script.src = "/akool/js/akool-integration.js?v=" + Date.now();
-        script.onload = () => console.log("✅ AKOOL 스크립트 재로드 완료");
-        script.onerror = () => console.error("❌ AKOOL 스크립트 재로드 실패");
-        document.head.appendChild(script);
-      } else {
-        console.log("✅ AKOOL 완전 시스템 정상 로드됨!");
-      }
-    }, 3000);
-  </script>
-
-  <!-- 태블릿/웹뷰/가이드 (버전 버스트) -->
-  <script src="/js/tablet-native-mode.js?v=20250815"></script>
-  <script src="/js/webview-optimization.js?v=20250815"></script>
-  <script src="/js/mobile-tablet-guide.js?v=20250815"></script>
-
-  <script>
-    window.addEventListener("load", function () {
-      console.log("🎉 HAIRGATOR 완전 업그레이드 버전 로드 완료! 🚀");
+    window.addEventListener('load', () => {
+      console.log('🎉 HAIRGATOR 최종 버전 로드 완료! 🚀');
     });
   </script>
 </body>
