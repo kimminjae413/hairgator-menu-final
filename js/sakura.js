@@ -1,16 +1,35 @@
 // ========== 벚꽃 배경 시스템 ========== 
 
-document.addEventListener('DOMContentLoaded', function() {
+// DOM 상태 확인 후 실행
+function initSakura() {
     // 태블릿에서만 실행
     if (window.innerWidth >= 768) {
         addSakuraButton();
     }
-});
+}
+
+// DOM 로드 상태에 따라 실행
+if (document.readyState === 'loading') {
+    // DOM이 아직 로드 중이면 이벤트 리스너 등록
+    document.addEventListener('DOMContentLoaded', initSakura);
+} else {
+    // DOM이 이미 로드되었으면 즉시 실행
+    initSakura();
+}
 
 // 벚꽃 버튼 추가
 function addSakuraButton() {
     const sidebarContent = document.querySelector('.sidebar-content');
-    if (!sidebarContent) return;
+    if (!sidebarContent) {
+        console.log('❌ .sidebar-content 요소를 찾을 수 없습니다');
+        return;
+    }
+    
+    // 이미 버튼이 있는지 확인
+    if (document.getElementById('sakuraToggle')) {
+        console.log('⚠️ 벚꽃 버튼이 이미 존재합니다');
+        return;
+    }
     
     // 벚꽃 섹션 생성
     const sakuraSection = document.createElement('div');
@@ -58,6 +77,8 @@ function addSakuraButton() {
             this.style.background = '#2a2a2a';
         }
     });
+    
+    console.log('🌸 벚꽃 버튼 추가 완료!');
 }
 
 // 벚꽃 토글
@@ -125,6 +146,11 @@ function loadSakuraCSS() {
 function addLightModeElements() {
     // 라이트 모드일 때만 실행
     if (!document.body.classList.contains('light-theme')) {
+        return;
+    }
+    
+    // 이미 있는지 확인
+    if (document.getElementById('sakura-light-container')) {
         return;
     }
     
@@ -198,8 +224,8 @@ function handleThemeChange() {
     }
 }
 
-// 기존 테마 토글 버튼에 이벤트 추가
-document.addEventListener('DOMContentLoaded', function() {
+// 기존 테마 토글 버튼에 이벤트 추가 (안전하게)
+setTimeout(() => {
     const themeToggle = document.getElementById('themeToggle');
     const themeToggleBottom = document.getElementById('themeToggleBottom');
     
@@ -210,4 +236,4 @@ document.addEventListener('DOMContentLoaded', function() {
     if (themeToggleBottom) {
         themeToggleBottom.addEventListener('click', handleThemeChange);
     }
-});
+}, 500);
