@@ -1,464 +1,349 @@
-// ========== HAIRGATOR 최종 AKOOL Integration (운영용, 시뮬 OFF) ==========
-// ✅ 실제 AKOOL API + 갤러리/카메라 + Netlify Functions 연동
-// ⚠️ 보안: clientId / clientSecret은 프런트에 두지 말 것(서버 함수에서만 사용)
-//    현재 토큰은 /.netlify/functions/akool-token 에서 발급받음.
+<script>
+// ========== HAIRGATOR x AKOOL 운영 최종 통합 ==========
+// - 버튼 자동주입 제거(중복 방지: index.html에서만 주입)
+// - Netlify 함수 계약 통일(step/필드명)
+// - 진행상태 폴링은 동일 함수(step:'status') 사용
+// - 토큰 재사용 + 대용량 이미지 압축
 
-/*
- * 이 파일은 '운영용 단일 진입점'입니다.
- * - 버튼 자동 주입 금지: index.html에서 버튼 1개만 만들고 바인딩하세요.
- * - 레거시(시뮬) 스크립트가 버튼을 재주입/재바인딩해도 즉시 제거하도록 방어 코드를 포함합니다.
- * - openAkoolFaceSwapModal(data) 만 공개 API로 사용하면 됩니다.
- */
+console.log('🎨 AKOOL Face Swap 운영 최종 통합 로딩');
 
-console.log('🎨 AKOOL Face Swap 운영 최종 버전 로딩...');
-
-const SIMULATION_FALLBACK = false;         // 운영: 시뮬레이션 금지
-const API_TIMEOUT_MS = 25000;              // 페치 타임아웃(25s)
-const NETLIFY_FN = {
-  token: '/.netlify/functions/akool-token',
-  faceswap: '/.netlify/functions/akool-faceswap',
-  status: '/.netlify/functions/akool-status'
+const NETLIFY = {
+  token:  '/.netlify/functions/akool-token',
+  swap:   '/.netlify/functions/akool-faceswap' // detect/status/faceswap 모두 여기에 step으로 호출
 };
 
-// 전역 상태
+const API_TIMEOUT = 25000;
+
 window.akoolConfig = window.akoolConfig || {
   token: null,
   token_issued_at: 0,
-  userImageData: null,          // dataURL
+  userImageData: null,
+  lastResult: null,
   isInitialized: false,
-  lastResult: null
 };
 
-let currentStyleImage = null;   // 스타일 이미지 URL
+let faceSwapInProgress = false;
+let currentStyleImage = null;
 let currentStyleName  = null;
 let currentStyleCode  = null;
-let faceSwapInProgress = false;
 
-// =============== 레거시 차단/청소 ===============
-(function installLegacyGuards() {
-  try {
-    // 1) 레거시 자동 주입 함수 무력화 (읽기전용, 항상 false 반환)
-    if (!Object.getOwnPropertyDescriptor(window, 'addAIButtonToHairgator')) {
-      Object.defineProperty(window, 'addAIButtonToHairgator', {
-        configurable: false,
-        writable: false,
-        value: function () { console.info('ℹ️ 레거시 addAIButtonToHairgator 호출 차단'); return false; }
-      });
-    }
-
-    // 2) 페이지에 이미 주입되어 있을 수 있는 레거시 버튼/노드 제거
-    const KILL_SELECTORS = ['#akoolSimBtn', '.akool-sim-btn', '[data-sim-akool]', '#hairgator-ai-sim'];
-    const killLegacy = () => KILL_SELECTORS.forEach(sel => document.querySelectorAll(sel).forEach(n => n.remove()));
-    killLegacy();
-
-    // 3) 동적 재주입도 즉시 제거
-    const mo = new MutationObserver(() => killLegacy());
-    mo.observe(document.documentElement, { childList: true, subtree: true });
-
-    // 4) 중복 주입 락
-    window.__HAIRGATOR_AI_BTN_LOCK__ = true;
-  } catch (e) {
-    console.warn('레거시 차단 실패(무시 가능):', e);
-  }
-})();
-
-// ================= 공통 유틸 =================
-function withTimeout(promise, ms = API_TIMEOUT_MS) {
-  return Promise.race([
-    promise,
-    new Promise((_, rej) => setTimeout(() => rej(new Error('요청 시간 초과')), ms))
-  ]);
+// ---- 공통 ----
+function withTimeout(p, ms = API_TIMEOUT){
+  return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error('요청 시간 초과')), ms))]);
 }
 
-async function safeFetch(url, options) {
-  const res = await withTimeout(fetch(url, options));
-  return res;
+async function safeFetch(url, opt){
+  const res = await withTimeout(fetch(url, opt));
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
-function dataURLSize(dataUrl) {
-  const head = 'base64,';
-  const i = dataUrl.indexOf(head);
-  if (i === -1) return 0;
-  const b64 = dataUrl.slice(i + head.length);
-  return Math.floor((b64.length * 3) / 4); // bytes
+function dataURLSizeBytes(dataUrl){
+  const i = dataUrl.indexOf('base64,');
+  if (i < 0) return 0;
+  const b64 = dataUrl.slice(i+7);
+  return Math.floor((b64.length * 3) / 4);
 }
 
-async function compressDataURL(srcDataUrl, maxW = 1024, maxH = 1024, quality = 0.82) {
-  return new Promise((resolve, reject) => {
+async function compressDataURL(src, maxW=1024, maxH=1024, quality=0.82){
+  return new Promise((resolve, reject)=>{
     const img = new Image();
-    img.onload = () => {
-      let { width, height } = img;
-      const ratio = Math.min(maxW / width, maxH / height, 1);
-      const cw = Math.round(width * ratio);
-      const ch = Math.round(height * ratio);
-
-      const canvas = document.createElement('canvas');
-      canvas.width = cw; canvas.height = ch;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, cw, ch);
-      try { resolve(canvas.toDataURL('image/jpeg', quality)); }
-      catch (err) { reject(err); }
+    img.onload = ()=>{
+      const ratio = Math.min(maxW/img.width, maxH/img.height, 1);
+      const w = Math.round(img.width * ratio);
+      const h = Math.round(img.height * ratio);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      try { resolve(c.toDataURL('image/jpeg', quality)); } catch(e){ reject(e); }
     };
     img.onerror = reject;
-    img.src = srcDataUrl;
+    img.src = src;
   });
 }
 
-// ================= 초기화 =================
-if (!window.akoolSystemInitialized) {
+// ---- 초기화 + 외부 진입점 ----
+if (!window.akoolSystemInitialized){
   window.akoolSystemInitialized = true;
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeAkoolSystem);
-  } else {
-    initializeAkoolSystem();
-  }
+    document.addEventListener('DOMContentLoaded', initAkool);
+  } else { initAkool(); }
 }
 
-async function initializeAkoolSystem() {
+function initAkool(){
   if (window.akoolConfig.isInitialized) return;
+  // 버튼 자동주입은 비활성: index.html이 주입함 (중복방지)
+  window.addAIButtonToHairgator = function(){ return false; }; // ← 중요
+  bindPublicAPIs();
+  window.akoolConfig.isInitialized = true;
+  console.log('✅ AKOOL 초기화 완료 (버튼 자동주입 비활성)');
+}
+
+function bindPublicAPIs(){
+  // index.html이 호출하는 진입점
+  window.openAkoolFaceSwapModal = function(data = {}){
+    currentStyleImage = data.imageUrl || document.querySelector('#modalImage')?.src || currentStyleImage;
+    currentStyleName  = data.styleName || document.querySelector('#modalName')?.textContent?.trim() || currentStyleName;
+    currentStyleCode  = data.styleCode || document.querySelector('#modalCode')?.textContent?.trim() || currentStyleCode;
+
+    if (!currentStyleImage || !currentStyleName){
+      alert('❌ 헤어스타일 정보를 찾을 수 없습니다.');
+      return;
+    }
+    // UI 생성
+    return openPickerModal();
+  };
+}
+
+// ---- 토큰 ----
+async function getAkoolToken(){
+  const now = Date.now();
+  if (window.akoolConfig.token && now - window.akoolConfig.token_issued_at < 5*60*1000){
+    return { success:true, token: window.akoolConfig.token, reused: true };
+  }
   try {
-    // 혹시 남아있는 레거시 실험용 버튼 제거(2차 방어)
-    ['#akoolSimBtn', '.akool-sim-btn', '[data-sim-akool]', '#hairgator-ai-sim']
-      .forEach(sel => document.querySelectorAll(sel).forEach(n => n.remove()));
-
-    setupAkoolFunctions();
-    window.akoolConfig.isInitialized = true;
-    console.log('✅ AKOOL 시스템 초기화 완료');
-  } catch (e) {
-    console.error('❌ AKOOL 초기화 실패:', e);
+    const data = await safeFetch(NETLIFY.token, { method:'POST', headers:{'Content-Type':'application/json'} });
+    if (data.success && data.token){
+      window.akoolConfig.token = data.token;
+      window.akoolConfig.token_issued_at = Date.now();
+      localStorage.setItem('akool_token', data.token);
+      localStorage.setItem('akool_token_issued', String(window.akoolConfig.token_issued_at));
+      return { success:true, token:data.token };
+    }
+    throw new Error(data.error || '토큰 발급 실패');
+  } catch(e){
+    console.error('토큰 오류:', e);
+    return { success:false, error:e.message };
   }
 }
 
-// ================= AKOOL API 바인딩 =================
-function setupAkoolFunctions() {
-  // 🔑 토큰(재)발급: 필요 시에만 갱신
-  window.getAkoolToken = async function getAkoolToken() {
-    const now = Date.now();
-    // 발급 후 5분 이내이면 캐시 사용(서버 만료에 맞춰 조정 가능)
-    if (window.akoolConfig.token && now - window.akoolConfig.token_issued_at < 5 * 60 * 1000) {
-      return { success: true, token: window.akoolConfig.token, reused: true };
-    }
-
-    try {
-      const res = await safeFetch(NETLIFY_FN.token, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-      const data = await res.json();
-      if (data.success && data.token) {
-        window.akoolConfig.token = data.token;
-        window.akoolConfig.token_issued_at = Date.now();
-        localStorage.setItem('akool_token', data.token);
-        localStorage.setItem('akool_token_issued', String(window.akoolConfig.token_issued_at));
-        console.log('✅ 토큰 발급/갱신 성공');
-        return data;
-      }
-      throw new Error(data.error || '토큰 발급 실패');
-    } catch (e) {
-      console.error('❌ 토큰 오류:', e);
-      return { success: false, error: e.message };
-    }
-  };
-
-  // 🎛️ 페이스스왑: detect_user → detect_style → faceswap
-  window.akoolFaceSwap = async function akoolFaceSwap(userImageData, styleImageUrl) {
-    console.log('🚀 AKOOL Face Swap 시작');
-
-    // 대용량 이미지 압축(>3.5MB 면 축소)
-    try {
-      if (dataURLSize(userImageData) > 3_500_000) {
-        userImageData = await compressDataURL(userImageData, 1024, 1024, 0.82);
-        console.log('🗜️ 사용자 이미지 압축 적용');
-      }
-    } catch (e) { console.warn('이미지 압축 실패(무시):', e); }
-
-    // 1) 사용자 얼굴 감지
-    const t1 = await window.getAkoolToken();
-    if (!t1.success) return { success: false, error: '토큰 발급 실패' };
-
-    const userRes = await safeFetch(NETLIFY_FN.faceswap, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ step: 'detect_user', token: t1.token, userImageUrl: userImageData })
-    }).then(r => r.json());
-
-    if (!userRes.success) return { success: false, error: userRes.error || '사용자 얼굴 감지 실패' };
-
-    // 2) 스타일 감지
-    const t2 = await window.getAkoolToken();
-    if (!t2.success) return { success: false, error: '토큰 발급 실패(2)' };
-
-    const styleRes = await safeFetch(NETLIFY_FN.faceswap, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ step: 'detect_style', token: t2.token, styleImageUrl })
-    }).then(r => r.json());
-
-    if (!styleRes.success) return { success: false, error: styleRes.error || '스타일 감지 실패' };
-
-    // 3) 스왑
-    const t3 = await window.getAkoolToken();
-    if (!t3.success) return { success: false, error: '토큰 발급 실패(3)' };
-
-    const swapRes = await safeFetch(NETLIFY_FN.faceswap, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ step: 'faceswap', token: t3.token, userData: userRes, styleData: styleRes })
-    }).then(r => r.json());
-
-    if (!swapRes.success) return { success: false, error: swapRes.error || 'Face Swap 실패' };
-
-    console.log('🎉 AKOOL Face Swap 성공');
-    return swapRes;
-  };
-
-  // 📊 상태 확인(필요 시)
-  window.akoolStatus = async function akoolStatus(jobId) {
-    try {
-      const data = await safeFetch(NETLIFY_FN.status, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobId })
-      }).then(r => r.json());
-      return data;
-    } catch (e) {
-      return { success: false, error: e.message };
-    }
-  };
-}
-
-// ========== 공개 API: 인덱스가 호출하는 진입점 ==========
-/** 인덱스와의 호환용: 항상 이 함수를 호출하면 됨 */
-window.openAkoolFaceSwapModal = function openAkoolFaceSwapModal(data = {}) {
-  // index에서 넘겨줄 수도 있고, 현재 모달에서 읽을 수도 있음
-  currentStyleImage = data.imageUrl || document.querySelector('#modalImage')?.src || currentStyleImage;
-  currentStyleName  = data.styleName || document.querySelector('#modalName')?.textContent?.trim() || currentStyleName;
-  currentStyleCode  = data.styleCode || document.querySelector('#modalCode')?.textContent?.trim() || currentStyleCode;
-
-  if (!currentStyleImage || !currentStyleName) {
-    alert('❌ 헤어스타일 정보를 찾을 수 없습니다.');
-    return;
-  }
-  return window.openAkoolModal(); // 아래 UI 열기
-};
-
-// ========== 갤러리/카메라 선택 모달 ==========
-// (기존 openAkoolModal을 실제 진입점으로 유지)
-window.openAkoolModal = function () {
-  // 현재 모달에서 스타일 정보 보완
-  const modal = document.getElementById('styleModal');
-  if (modal) {
-    const styleImage = modal.querySelector('img');
-    const styleName = modal.querySelector('.modal-name')?.textContent?.trim();
-    const styleCode = modal.querySelector('.modal-code')?.textContent?.trim();
-    if (styleImage && styleName) {
-      currentStyleImage = currentStyleImage || styleImage.src;
-      currentStyleName  = currentStyleName  || styleName;
-      currentStyleCode  = currentStyleCode  || styleCode;
-    }
-  }
-  if (!currentStyleImage || !currentStyleName) {
-    alert('❌ 헤어스타일 정보를 찾을 수 없습니다.');
-    return;
-  }
-
-  const existing = document.getElementById('akoolModal');
-  if (existing) existing.remove();
+// ---- UI (간단 업로드/카메라) ----
+function openPickerModal(){
+  const exist = document.getElementById('akoolModal');
+  if (exist) exist.remove();
 
   const html = `
-    <div id="akoolModal" style="position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;justify-content:center;align-items:center;z-index:999999;opacity:0;transition:opacity .3s">
-      <div style="background:#fff;border-radius:20px;padding:28px;max-width:520px;width:92%;max-height:90vh;overflow:auto;position:relative;box-shadow:0 25px 80px rgba(0,0,0,.4)">
-        <button onclick="window.closeAkoolModal()" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:26px;cursor:pointer;color:#999;width:40px;height:40px;border-radius:50%">×</button>
-        <div style="text-align:center;margin-bottom:18px">
-          <div style="font-size:46px;margin-bottom:6px">🤖</div>
-          <h2 style="margin:0 0 6px 0;font-size:24px;font-weight:800;background:linear-gradient(135deg,#FF1493,#FF69B4);-webkit-background-clip:text;-webkit-text-fill-color:transparent">AI 헤어스타일 체험</h2>
-          <div style="border:2px solid #FF1493;border-radius:14px;padding:10px">
-            <div style="color:#FF1493;font-weight:700">선택한 스타일: ${currentStyleName}</div>
-            <div style="color:#666;font-size:12px;margin-top:4px">코드: ${currentStyleCode || '-'} </div>
-          </div>
+  <div id="akoolModal" style="position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;justify-content:center;align-items:center;z-index:999999;opacity:0;transition:opacity .2s">
+    <div style="background:#fff;border-radius:18px;padding:24px;max-width:520px;width:92%;max-height:90vh;overflow:auto;position:relative">
+      <button onclick="window.closeAkoolModal()" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:26px;cursor:pointer;color:#999">×</button>
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="font-size:40px">🤖</div>
+        <h3 style="margin:6px 0 10px;font-size:20px;font-weight:800;color:#FF1493">AI 헤어스타일 체험</h3>
+        <div style="border:2px solid #FF1493;border-radius:12px;padding:10px">
+          <div style="color:#FF1493;font-weight:700">선택: ${currentStyleName}</div>
+          <div style="color:#666;font-size:12px;margin-top:4px">코드: ${currentStyleCode || '-'}</div>
         </div>
+      </div>
 
-        <div id="photoSelectionSection">
-          <h3 style="text-align:center;color:#333;margin:12px 0 16px;font-size:18px">📸 얼굴 사진을 선택해주세요</h3>
-          <div style="display:flex;gap:10px;margin-bottom:16px">
-            <button onclick="window.selectFromGallery()" style="flex:1;background:linear-gradient(135deg,#4A90E2,#357ABD);color:#fff;border:none;border-radius:16px;padding:16px;font-weight:700;cursor:pointer">📁 갤러리에서 선택</button>
-            <button onclick="window.openCamera()" style="flex:1;background:linear-gradient(135deg,#FF6B6B,#EE5A24);color:#fff;border:none;border-radius:16px;padding:16px;font-weight:700;cursor:pointer">📷 카메라로 촬영</button>
-          </div>
-          <input type="file" id="galleryInput" accept="image/*" style="display:none" onchange="window.handleGallerySelection(event)">
-          <div style="background:#f8f9fa;border-radius:12px;padding:12px;border-left:4px solid #FF1493;font-size:13px;color:#555">
-            <b>촬영 가이드</b><br>정면/밝은곳/얼굴 가림 주의/안경·모자 제거 권장
-          </div>
+      <div id="pickSec">
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <button id="btnPick" style="flex:1;background:linear-gradient(135deg,#4A90E2,#357ABD);color:#fff;border:none;border-radius:14px;padding:14px;font-weight:700;cursor:pointer">📁 갤러리</button>
+          <button id="btnCam"  style="flex:1;background:linear-gradient(135deg,#FF6B6B,#EE5A24);color:#fff;border:none;border-radius:14px;padding:14px;font-weight:700;cursor:pointer">📷 카메라</button>
         </div>
-
-        <div id="cameraSection" style="display:none;text-align:center;margin-top:10px">
-          <video id="cameraVideo" autoplay style="width:100%;max-width:320px;border-radius:12px;background:#000"></video>
-          <canvas id="cameraCanvas" style="display:none"></canvas>
-          <div style="margin-top:10px">
-            <button onclick="window.capturePhoto()" style="background:linear-gradient(135deg,#FF1493,#FF69B4);color:#fff;border:none;border-radius:16px;padding:12px 20px;font-weight:700;cursor:pointer;margin-right:8px">📸 촬영하기</button>
-            <button onclick="window.backToSelection()" style="background:#6c757d;color:#fff;border:none;border-radius:16px;padding:12px 20px;cursor:pointer">← 뒤로가기</button>
-          </div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none">
+        <div style="background:#f8f9fa;border-radius:10px;padding:10px;border-left:4px solid #FF1493;font-size:12px;color:#555">
+          <b>가이드</b> 정면/밝은곳/얼굴 가림 금지/안경·모자 제거 권장
         </div>
+      </div>
 
-        <div id="imagePreview" style="display:none;text-align:center;margin-top:12px">
-          <img id="previewImage" style="max-width:100%;max-height:260px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.15)">
-          <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-            <button onclick="window.startAkoolProcess()" style="background:linear-gradient(135deg,#FF1493,#FF69B4);color:#fff;border:none;border-radius:16px;padding:10px 18px;font-weight:700;cursor:pointer">🚀 AI 변환 시작</button>
-            <button onclick="window.backToSelection()" style="background:#6c757d;color:#fff;border:none;border-radius:16px;padding:10px 18px;cursor:pointer">다시 선택</button>
-          </div>
+      <div id="camSec" style="display:none;text-align:center;margin-top:8px">
+        <video id="camV" autoplay style="width:100%;max-width:320px;border-radius:12px;background:#000"></video>
+        <canvas id="camC" style="display:none"></canvas>
+        <div style="margin-top:10px">
+          <button id="btnShot" style="background:linear-gradient(135deg,#FF1493,#FF69B4);color:#fff;border:none;border-radius:14px;padding:10px 18px;font-weight:700;cursor:pointer;margin-right:8px">📸 촬영</button>
+          <button id="btnBack" style="background:#6c757d;color:#fff;border:none;border-radius:14px;padding:10px 18px;cursor:pointer">← 뒤로</button>
         </div>
+      </div>
 
-        <div id="processingSection" style="display:none;text-align:center;margin-top:10px">
-          <div style="font-size:42px;margin-bottom:8px">🎨</div>
-          <div id="progressText" style="font-weight:700;color:#FF1493">처리 시작...</div>
-          <div id="progressDetails" style="font-size:12px;color:#666;margin:6px 0 10px"></div>
-          <div style="background:#eee;border-radius:10px;height:10px;overflow:hidden"><div id="progressBar" style="background:linear-gradient(135deg,#FF1493,#FF69B4);height:100%;width:0%"></div></div>
+      <div id="prevSec" style="display:none;text-align:center;margin-top:10px">
+        <img id="prevImg" style="max-width:100%;max-height:260px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.15)">
+        <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <button id="btnStart" style="background:linear-gradient(135deg,#FF1493,#FF69B4);color:#fff;border:none;border-radius:14px;padding:10px 18px;font-weight:700;cursor:pointer">🚀 AI 변환 시작</button>
+          <button id="btnRe"    style="background:#6c757d;color:#fff;border:none;border-radius:14px;padding:10px 18px;cursor:pointer">다시 선택</button>
         </div>
+      </div>
 
-        <div id="resultSection" style="display:none;text-align:center;margin-top:10px">
-          <div style="font-size:42px;margin-bottom:8px">🎉</div>
-          <h3 style="color:#FF1493;margin:6px 0 10px">완성되었습니다!</h3>
-          <img id="resultImage" style="max-width:100%;max-height:300px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.2)">
-          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px">
-            <button onclick="window.downloadResult()" style="background:linear-gradient(135deg,#4A90E2,#357ABD);color:#fff;border:none;border-radius:14px;padding:10px 16px;font-weight:700;cursor:pointer">💾 저장</button>
-            <button onclick="window.shareResult()" style="background:linear-gradient(135deg,#32CD32,#28A745);color:#fff;border:none;border-radius:14px;padding:10px 16px;font-weight:700;cursor:pointer">📤 공유</button>
-            <button onclick="window.backToSelection()" style="background:linear-gradient(135deg,#FF6B6B,#EE5A24);color:#fff;border:none;border-radius:14px;padding:10px 16px;font-weight:700;cursor:pointer">🔄 다시 시도</button>
-          </div>
+      <div id="procSec" style="display:none;text-align:center;margin-top:8px">
+        <div style="font-size:38px;margin-bottom:6px">🎨</div>
+        <div id="progText" style="font-weight:700;color:#FF1493">처리 시작...</div>
+        <div id="progDet"  style="font-size:12px;color:#666;margin:6px 0 10px"></div>
+        <div style="background:#eee;border-radius:10px;height:10px;overflow:hidden"><div id="progBar" style="background:linear-gradient(135deg,#FF1493,#FF69B4);height:100%;width:0%"></div></div>
+      </div>
+
+      <div id="resSec" style="display:none;text-align:center;margin-top:8px">
+        <div style="font-size:38px;margin-bottom:6px">🎉</div>
+        <h3 style="color:#FF1493;margin:6px 0 10px">완성!</h3>
+        <img id="resImg" style="max-width:100%;max-height:300px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.2)">
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px">
+          <button id="btnSave" style="background:linear-gradient(135deg,#4A90E2,#357ABD);color:#fff;border:none;border-radius:14px;padding:10px 16px;font-weight:700;cursor:pointer">💾 저장</button>
+          <button id="btnShare"style="background:linear-gradient(135deg,#32CD32,#28A745);color:#fff;border:none;border-radius:14px;padding:10px 16px;font-weight:700;cursor:pointer">📤 공유</button>
+          <button id="btnAgain"style="background:linear-gradient(135deg,#FF6B6B,#EE5A24);color:#fff;border:none;border-radius:14px;padding:10px 16px;font-weight:700;cursor:pointer">🔄 다시</button>
         </div>
       </div>
     </div>
-  `;
+  </div>`;
   document.body.insertAdjacentHTML('beforeend', html);
-  setTimeout(() => document.getElementById('akoolModal').style.opacity = '1', 10);
-};
+  setTimeout(()=>document.getElementById('akoolModal').style.opacity='1',10);
 
-// ================== 갤러리/카메라 ==================
-window.selectFromGallery = () => document.getElementById('galleryInput').click();
+  // 이벤트
+  const $ = (id)=>document.getElementById(id);
+  $('#btnPick').onclick = ()=>$('#fileInput').click();
+  $('#fileInput').onchange = onPickFile;
+  $('#btnCam').onclick = openCam;
+  $('#btnBack').onclick = backToPick;
+  $('#btnShot').onclick = shotPhoto;
+  $('#btnStart').onclick = startProcess;
+  $('#btnRe').onclick = backToPick;
+  $('#btnSave').onclick = downloadResult;
+  $('#btnShare').onclick = shareResult;
+  $('#btnAgain').onclick = backToPick;
 
-window.handleGallerySelection = function (e) {
-  const file = e.target.files?.[0];
-  if (!file) return;
-  if (!file.type.startsWith('image/')) return alert('이미지 파일만 선택하세요.');
+  function onPickFile(e){
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!f.type.startsWith('image/')) return alert('이미지 파일만 선택하세요.');
+    const reader = new FileReader();
+    reader.onload = async (ev)=>{
+      let dataUrl = ev.target.result;
+      try { if (dataURLSizeBytes(dataUrl) > 3_500_000) dataUrl = await compressDataURL(dataUrl); } catch{}
+      window.akoolConfig.userImageData = dataUrl;
+      $('#pickSec').style.display='none'; $('#camSec').style.display='none';
+      $('#prevSec').style.display='block';
+      $('#prevImg').src = dataUrl;
+    };
+    reader.readAsDataURL(f);
+  }
 
-  const reader = new FileReader();
-  reader.onload = async (ev) => {
-    let dataUrl = ev.target.result;
-    // 큰 파일은 즉시 압축
-    try {
-      if (dataURLSize(dataUrl) > 3_500_000) {
-        dataUrl = await compressDataURL(dataUrl, 1024, 1024, 0.82);
-      }
-    } catch {}
+  async function openCam(){
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({ video:{ width:{ideal:640}, height:{ideal:480}, facingMode:'user'} });
+      $('#pickSec').style.display='none'; $('#camSec').style.display='block';
+      $('#camV').srcObject = stream;
+    }catch(e){ alert('카메라 권한을 확인해주세요.'); }
+  }
+
+  function shotPhoto(){
+    const v = document.getElementById('camV');
+    const c = document.getElementById('camC');
+    const ctx = c.getContext('2d');
+    c.width = v.videoWidth||640; c.height = v.videoHeight||480;
+    ctx.drawImage(v,0,0);
+    const dataUrl = c.toDataURL('image/jpeg',0.85);
+    const s = v.srcObject; if (s){ s.getTracks().forEach(t=>t.stop()); v.srcObject=null; }
     window.akoolConfig.userImageData = dataUrl;
-    showImagePreview(dataUrl);
-  };
-  reader.readAsDataURL(file);
-};
-
-window.openCamera = async function () {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
-    });
-    document.getElementById('photoSelectionSection').style.display = 'none';
-    document.getElementById('cameraSection').style.display = 'block';
-    document.getElementById('cameraVideo').srcObject = stream;
-  } catch (e) {
-    console.error('카메라 실패:', e);
-    alert('카메라 권한을 확인해주세요.');
+    $('#camSec').style.display='none'; $('#prevSec').style.display='block';
+    $('#prevImg').src = dataUrl;
   }
-};
 
-window.capturePhoto = function () {
-  const video = document.getElementById('cameraVideo');
-  const canvas = document.getElementById('cameraCanvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = video.videoWidth || 640;
-  canvas.height = video.videoHeight || 480;
-  ctx.drawImage(video, 0, 0);
-  const imageData = canvas.toDataURL('image/jpeg', 0.85);
+  function backToPick(){
+    const v = document.getElementById('camV'); const s = v?.srcObject; if (s){ s.getTracks().forEach(t=>t.stop()); v.srcObject=null; }
+    $('#pickSec').style.display='block'; $('#camSec').style.display='none'; $('#prevSec').style.display='none';
+    $('#procSec').style.display='none'; $('#resSec').style.display='none';
+    window.akoolConfig.userImageData = null;
+  }
 
-  const stream = video.srcObject;
-  if (stream) { stream.getTracks().forEach(t => t.stop()); video.srcObject = null; }
+  async function startProcess(){
+    if (faceSwapInProgress) return alert('이미 처리 중입니다.');
+    if (!window.akoolConfig.userImageData) return alert('사용자 이미지를 선택해주세요.');
 
-  window.akoolConfig.userImageData = imageData;
-  showImagePreview(imageData);
-};
+    faceSwapInProgress = true;
+    $('#prevSec').style.display='none';
+    $('#procSec').style.display='block';
 
-window.backToSelection = function () {
-  const v = document.getElementById('cameraVideo');
-  const s = v?.srcObject; if (s) { s.getTracks().forEach(t => t.stop()); v.srcObject = null; }
-  document.getElementById('photoSelectionSection').style.display = 'block';
-  document.getElementById('cameraSection').style.display = 'none';
-  document.getElementById('imagePreview').style.display = 'none';
-  document.getElementById('processingSection').style.display = 'none';
-  document.getElementById('resultSection').style.display = 'none';
-  window.akoolConfig.userImageData = null;
-};
+    const bar = $('#progBar'), txt=$('#progText'), det=$('#progDet');
+    const setP = (p,t,d='')=>{ bar.style.width=p+'%'; txt.textContent=t; det.textContent=d; };
 
-// ================== 미리보기/처리 ==================
-function showImagePreview(dataUrl) {
-  document.getElementById('photoSelectionSection').style.display = 'none';
-  document.getElementById('cameraSection').style.display = 'none';
-  document.getElementById('imagePreview').style.display = 'block';
-  document.getElementById('previewImage').src = dataUrl;
-}
+    try{
+      setP(10,'토큰 발급 중...','AKOOL 인증');
+      const t = await getAkoolToken(); if (!t.success) throw new Error('토큰 발급 실패'); const token = t.token;
 
-window.startAkoolProcess = async function () {
-  if (faceSwapInProgress) return alert('이미 처리 중입니다.');
-  if (!window.akoolConfig.userImageData) return alert('사용자 이미지를 선택해주세요.');
+      // (1) 사용자 얼굴 감지
+      setP(35,'사용자 얼굴 분석 중...','얼굴 감지/특징점');
+      const userData = await safeFetch(NETLIFY.swap,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ step:'detect_user', token, userImage: await ensureRemoteURL(window.akoolConfig.userImageData,'user') })
+      });
 
-  faceSwapInProgress = true;
-  document.getElementById('imagePreview').style.display = 'none';
-  document.getElementById('processingSection').style.display = 'block';
+      if (!userData.success) throw new Error(userData.error || '사용자 얼굴 감지 실패');
 
-  const progressBar = document.getElementById('progressBar');
-  const progressText = document.getElementById('progressText');
-  const progressDetails = document.getElementById('progressDetails');
+      // (2) 스타일 얼굴 감지
+      setP(55,'헤어스타일 분석 중...','얼굴 감지/특징점');
+      const styleData = await safeFetch(NETLIFY.swap,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ step:'detect_style', token, targetImage: await ensureRemoteURL(currentStyleImage,'style') })
+      });
 
-  const steps = [
-    { p: 20, t: '토큰 발급 중...', d: 'AKOOL API 인증' },
-    { p: 45, t: '사용자 얼굴 분석 중...', d: '얼굴 인식/특징점 추출' },
-    { p: 70, t: '헤어스타일 분석 중...', d: '스타일 특징 추출' },
-    { p: 90, t: 'AI Face Swap 처리 중...', d: 'AKOOL 알고리즘 실행' },
-    { p: 100, t: '완료!', d: '결과 이미지 생성 완료' }
-  ];
+      if (!styleData.success) throw new Error(styleData.error || '스타일 얼굴 감지 실패');
 
-  try {
-    for (let i = 0; i < steps.length; i++) {
-      const s = steps[i];
-      progressBar.style.width = s.p + '%';
-      progressText.textContent = s.t;
-      progressDetails.textContent = s.d;
+      // (3) 스왑 생성
+      setP(80,'AI Face Swap 처리 중...','작업 생성');
+      const swap = await safeFetch(NETLIFY.swap,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          step:'faceswap',
+          token,
+          userFaceData:  userData.faceData,  // ← 서버가 기대하는 키와 형식
+          styleFaceData: styleData.faceData
+        })
+      });
+      if (!swap.success) throw new Error(swap.error || 'Face Swap 생성 실패');
+      const jobId = swap.jobId;
 
-      if (i === steps.length - 1) {
-        const result = await window.akoolFaceSwap(window.akoolConfig.userImageData, currentStyleImage);
-        if (!result.success) throw new Error(result.error || 'Face Swap 실패');
-        // 서버가 반환하는 결과 키에 맞춰 설정하세요(예: processedImage/url)
-        const url = result.processedImage || result.url || currentStyleImage;
-        window.akoolConfig.lastResult = url;
-        showResult(url);
-      }
-      await new Promise(r => setTimeout(r, 400)); // UX용 진행감
-    }
-  } catch (e) {
-    console.error('❌ 처리 오류:', e);
-    if (SIMULATION_FALLBACK) {
-      alert('네트워크 불안정으로 시뮬레이션 결과를 표시합니다.');
-      window.akoolConfig.lastResult = currentStyleImage;
-      showResult(currentStyleImage);
-    } else {
+      // (4) 상태 폴링(step:'status' / jobId)
+      setP(90,'결과 대기 중...','상태 확인');
+      const resultUrl = await waitResult(token, jobId, (p,msg)=>setP(p,msg));
+
+      // 완료
+      setP(100,'완료!','결과 이미지 생성');
+      $('#procSec').style.display='none'; $('#resSec').style.display='block';
+      $('#resImg').src = resultUrl;
+      window.akoolConfig.lastResult = resultUrl;
+
+    }catch(e){
+      console.error('처리 오류:', e);
       alert(e.message || '처리에 실패했습니다. 네트워크 상태 확인 후 다시 시도해주세요.');
-      window.backToSelection();
+      backToPick();
+    }finally{
+      faceSwapInProgress = false;
     }
-  } finally {
-    faceSwapInProgress = false;
   }
-};
 
-function showResult(url) {
-  document.getElementById('processingSection').style.display = 'none';
-  document.getElementById('resultSection').style.display = 'block';
-  document.getElementById('resultImage').src = url;
+  async function waitResult(token, jobId, onp){
+    const started = Date.now();
+    let p = 90;
+    while(true){
+      const data = await safeFetch(NETLIFY.swap,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ step:'status', token, jobId })
+      });
+      if (!data.success) throw new Error(data.message || '상태 확인 실패');
+
+      // 서버쪽 status를 completed/failed 로 내려줌
+      if (data.isComplete){
+        if (data.status === 'completed' && data.resultUrl) return data.resultUrl;
+        throw new Error(data.message || '처리 실패');
+      }
+      p = Math.min(98, p+1);
+      onp && onp(p, data.message || '처리 중...');
+      await new Promise(r=>setTimeout(r, 3000));
+      if (Date.now()-started > 180000) throw new Error('처리 시간 초과');
+    }
+  }
+
+  async function ensureRemoteURL(image, type){
+    // dataURL → blob → 임시 업로드(필요 시). 여기서는 그대로 dataURL 전달해도
+    // 네트lify 함수가 openapi로 바로 던지므로, 원본이 URL이면 그대로 사용.
+    if (typeof image === 'string' && image.startsWith('data:image/')){
+      // 그대로 사용 (서버가 imageUrl를 받아서 외부로 보낼 수 있도록 구성되어 있음)
+      // 혹시 openapi가 외부 URL만 허용한다면, 여기서 Firebase 업로드 로직 연결 가능.
+      return image;
+    }
+    return image; // 이미 URL인 경우
+  }
 }
 
-// ================== 저장/공유/닫기 ==================
-window.downloadResult = function () {
+window.downloadResult = function(){
   if (!window.akoolConfig.lastResult) return alert('저장할 결과가 없습니다.');
   const a = document.createElement('a');
   a.download = `hairgator_ai_result_${currentStyleCode || 'style'}_${Date.now()}.jpg`;
@@ -466,29 +351,24 @@ window.downloadResult = function () {
   a.click();
 };
 
-window.shareResult = function () {
+window.shareResult = function(){
   if (!window.akoolConfig.lastResult) return alert('공유할 결과가 없습니다.');
-  if (navigator.share) {
-    fetch(window.akoolConfig.lastResult)
-      .then(r => r.blob())
-      .then(b => {
-        const f = new File([b], `hairgator_${currentStyleCode || 'style'}.jpg`, { type: 'image/jpeg' });
-        return navigator.share({ title: `HAIRGATOR - ${currentStyleName || ''}`, files: [f] });
-      })
-      .catch(() => alert('공유 중 문제가 발생했습니다.'));
-  } else {
+  if (navigator.share){
+    fetch(window.akoolConfig.lastResult).then(r=>r.blob()).then(b=>{
+      const f = new File([b], `hairgator_${currentStyleCode||'style'}.jpg`, {type:'image/jpeg'});
+      return navigator.share({ title:`HAIRGATOR - ${currentStyleName||''}`, files:[f] });
+    }).catch(()=>alert('공유 중 문제가 발생했습니다.'));
+  }else{
     alert('이 브라우저는 공유 기능을 지원하지 않습니다. 이미지를 저장하여 공유해주세요.');
   }
 };
 
-window.closeAkoolModal = function () {
+window.closeAkoolModal = function(){
   const el = document.getElementById('akoolModal');
   if (!el) return;
-  const v = document.getElementById('cameraVideo');
-  const s = v?.srcObject; if (s) { s.getTracks().forEach(t => t.stop()); v.srcObject = null; }
+  const v = document.getElementById('camV');
+  const s = v?.srcObject; if (s){ s.getTracks().forEach(t=>t.stop()); v.srcObject=null; }
   el.style.opacity = '0';
-  setTimeout(() => { el.remove(); faceSwapInProgress = false; window.akoolConfig.userImageData = null; }, 300);
-  console.log('❌ AKOOL 모달 닫기');
+  setTimeout(()=>{ el.remove(); faceSwapInProgress=false; window.akoolConfig.userImageData=null; }, 200);
 };
-
-console.log('✅ AKOOL Integration 운영 최종 버전 로드 완료');
+</script>
