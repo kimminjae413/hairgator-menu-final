@@ -1,4 +1,4 @@
-// Main Application Logic
+// Main Application Logic with Integrated Sakura Background System
 document.addEventListener('DOMContentLoaded', function() {
     // Global variables
     let currentGender = null;
@@ -121,6 +121,459 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // 🌸 Sakura Background Manager (Integrated)
+    class SakuraBackgroundManager {
+        constructor() {
+            this.currentBackground = 'none';
+            this.isTabletMode = window.innerWidth >= 768;
+            
+            if (this.isTabletMode) {
+                this.init();
+            }
+            
+            console.log('🌸 벚꽃 배경 매니저 초기화 완료');
+        }
+        
+        init() {
+            this.createBackgroundSelector();
+            this.loadSavedBackground();
+            this.setupThemeChangeListener();
+            
+            // 리사이즈 감지
+            window.addEventListener('resize', this.debounce(() => {
+                this.isTabletMode = window.innerWidth >= 768;
+                if (!this.isTabletMode) {
+                    this.removeExistingBackground();
+                    this.removeBackgroundSelector();
+                } else if (!document.querySelector('.background-section')) {
+                    this.createBackgroundSelector();
+                }
+            }, 300));
+        }
+        
+        createBackgroundSelector() {
+            if (!this.isTabletMode || !sidebar) return;
+            
+            // 기존 배경 섹션 제거
+            this.removeBackgroundSelector();
+            
+            const backgroundSection = document.createElement('div');
+            backgroundSection.className = 'background-section';
+            backgroundSection.style.cssText = `
+                margin: 20px 0;
+                padding: 20px 0;
+                border-top: 1px solid #333;
+                border-bottom: 1px solid #333;
+            `;
+            
+            backgroundSection.innerHTML = `
+                <h3 style="color: #FF1493; margin-bottom: 15px; font-size: 16px;">
+                    🌸 벚꽃 배경 (태블릿 전용)
+                </h3>
+                <div class="background-options" style="display: flex; gap: 10px;">
+                    <button class="background-option" data-bg="none" style="
+                        padding: 10px 15px;
+                        background: #2a2a2a;
+                        border: 1px solid #444;
+                        border-radius: 8px;
+                        color: white;
+                        cursor: pointer;
+                        font-size: 14px;
+                        transition: all 0.3s;
+                        flex: 1;
+                    ">
+                        🌑 기본
+                    </button>
+                    <button class="background-option" data-bg="sakura" style="
+                        padding: 10px 15px;
+                        background: #2a2a2a;
+                        border: 1px solid #444;
+                        border-radius: 8px;
+                        color: white;
+                        cursor: pointer;
+                        font-size: 14px;
+                        transition: all 0.3s;
+                        flex: 1;
+                    ">
+                        🌸 벚꽃
+                    </button>
+                </div>
+            `;
+            
+            // 사이드바 컨텐츠에 추가
+            const sidebarContent = sidebar.querySelector('.sidebar-content');
+            if (sidebarContent) {
+                sidebarContent.appendChild(backgroundSection);
+                this.setupBackgroundButtons();
+                console.log('✅ 벚꽃 배경 UI 생성 완료');
+            }
+        }
+        
+        setupBackgroundButtons() {
+            document.querySelectorAll('.background-option').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const bgType = e.target.dataset.bg;
+                    this.changeBackground(bgType);
+                    console.log(`🌸 배경 선택: ${bgType}`);
+                });
+                
+                // 호버 효과
+                button.addEventListener('mouseenter', (e) => {
+                    if (e.target.dataset.bg !== this.currentBackground) {
+                        e.target.style.background = '#3a3a3a';
+                        e.target.style.transform = 'translateY(-1px)';
+                    }
+                });
+                
+                button.addEventListener('mouseleave', (e) => {
+                    if (e.target.dataset.bg !== this.currentBackground) {
+                        e.target.style.background = '#2a2a2a';
+                        e.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+        }
+        
+        changeBackground(type) {
+            if (!this.isTabletMode) return;
+            
+            this.removeExistingBackground();
+            this.currentBackground = type;
+            
+            if (type === 'none') {
+                this.updateActiveButton('none');
+                localStorage.setItem('hairgator_background', 'none');
+                return;
+            }
+            
+            if (type === 'sakura') {
+                this.createSakuraBackground();
+                this.applyTransparentUI();
+            }
+            
+            this.updateActiveButton(type);
+            localStorage.setItem('hairgator_background', type);
+            
+            console.log(`✅ 벚꽃 배경 적용: ${type}`);
+        }
+        
+        createSakuraBackground() {
+            const isLightTheme = document.body.classList.contains('light-theme');
+            let backgroundCSS = '';
+            
+            if (isLightTheme) {
+                // 라이트 모드 - 따뜻한 봄날 벚꽃
+                backgroundCSS = `
+                    .hairgator-sakura-background {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(135deg, 
+                            #fef7f7 0%, 
+                            #fce4ec 25%, 
+                            #f8bbd9 50%, 
+                            #f48fb1 75%, 
+                            #f06292 100%);
+                        z-index: -1;
+                        pointer-events: none;
+                        overflow: hidden;
+                    }
+                    
+                    .hairgator-sakura-background::before {
+                        content: '';
+                        position: absolute;
+                        top: -10%;
+                        left: -10%;
+                        width: 120%;
+                        height: 120%;
+                        background: 
+                            radial-gradient(4px 4px at 30px 40px, rgba(233, 30, 99, 0.6), transparent),
+                            radial-gradient(6px 6px at 80px 20px, rgba(233, 30, 99, 0.4), transparent),
+                            radial-gradient(3px 3px at 150px 90px, rgba(233, 30, 99, 0.5), transparent),
+                            radial-gradient(5px 5px at 200px 130px, rgba(233, 30, 99, 0.3), transparent);
+                        background-repeat: repeat;
+                        background-size: 250px 180px;
+                        animation: sakuraLightFall 12s linear infinite;
+                    }
+                    
+                    @keyframes sakuraLightFall {
+                        0% { transform: translateY(-20px) rotate(0deg); opacity: 0.8; }
+                        50% { transform: translateY(50vh) rotate(180deg); opacity: 0.6; }
+                        100% { transform: translateY(100vh) rotate(360deg); opacity: 0.2; }
+                    }
+                `;
+            } else {
+                // 다크 모드 - 신비로운 밤 벚꽃
+                backgroundCSS = `
+                    .hairgator-sakura-background {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(135deg, 
+                            #0c0c0c 0%, 
+                            #1a1a2e 25%, 
+                            #16213e 50%, 
+                            #0f3460 75%, 
+                            #0e4b5a 100%);
+                        z-index: -1;
+                        pointer-events: none;
+                        overflow: hidden;
+                    }
+                    
+                    .hairgator-sakura-background::before {
+                        content: '';
+                        position: absolute;
+                        top: -10%;
+                        left: -10%;
+                        width: 120%;
+                        height: 120%;
+                        background: 
+                            radial-gradient(5px 5px at 40px 50px, rgba(255, 107, 157, 0.9), transparent),
+                            radial-gradient(3px 3px at 90px 30px, rgba(255, 143, 171, 0.7), transparent),
+                            radial-gradient(7px 7px at 160px 80px, rgba(255, 168, 204, 0.8), transparent),
+                            radial-gradient(4px 4px at 210px 120px, rgba(255, 107, 157, 0.6), transparent);
+                        background-repeat: repeat;
+                        background-size: 280px 180px;
+                        animation: sakuraDarkFall 13s linear infinite;
+                    }
+                    
+                    @keyframes sakuraDarkFall {
+                        0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+                        30% { transform: translateY(30vh) rotate(120deg); opacity: 0.8; }
+                        70% { transform: translateY(70vh) rotate(240deg); opacity: 0.6; }
+                        100% { transform: translateY(100vh) rotate(360deg); opacity: 0.2; }
+                    }
+                `;
+            }
+            
+            // CSS 적용
+            const existingStyle = document.getElementById('hairgator-sakura-style');
+            if (existingStyle) {
+                existingStyle.remove();
+            }
+            
+            const style = document.createElement('style');
+            style.id = 'hairgator-sakura-style';
+            style.textContent = backgroundCSS;
+            document.head.appendChild(style);
+            
+            // 배경 요소 생성
+            const bgElement = document.createElement('div');
+            bgElement.className = 'hairgator-sakura-background';
+            document.body.prepend(bgElement);
+        }
+        
+        applyTransparentUI() {
+            const isLightTheme = document.body.classList.contains('light-theme');
+            
+            if (isLightTheme) {
+                this.applyLightModeTransparency();
+                this.fixTabClickStyles();
+            }
+        }
+        
+        applyLightModeTransparency() {
+            // 헤더 투명화
+            const header = document.querySelector('.header');
+            if (header) {
+                header.style.cssText = `
+                    background: rgba(255, 255, 255, 0.15) !important;
+                    backdrop-filter: blur(20px) saturate(1.2) !important;
+                    border-bottom: none !important;
+                    box-shadow: none !important;
+                `;
+                
+                // 헤더 텍스트 강화
+                const logo = header.querySelector('.logo');
+                if (logo) {
+                    logo.style.cssText = `
+                        color: #000 !important;
+                        text-shadow: 0 2px 4px rgba(255,255,255,0.8) !important;
+                        font-weight: 900 !important;
+                    `;
+                }
+                
+                const backBtn = header.querySelector('.back-btn');
+                if (backBtn) {
+                    backBtn.style.cssText = `
+                        color: #000 !important;
+                        text-shadow: 0 2px 4px rgba(255,255,255,0.8) !important;
+                        font-weight: bold !important;
+                    `;
+                }
+                
+                const menuBtn = header.querySelector('.menu-btn');
+                if (menuBtn) {
+                    const spans = menuBtn.querySelectorAll('span');
+                    spans.forEach(span => {
+                        span.style.cssText = `
+                            background: #000 !important;
+                            box-shadow: 0 2px 4px rgba(255,255,255,0.8) !important;
+                        `;
+                    });
+                }
+            }
+            
+            // 카테고리 영역 투명화
+            const categoryTabsWrapper = document.querySelector('.category-tabs-wrapper');
+            if (categoryTabsWrapper) {
+                categoryTabsWrapper.style.cssText = `
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    backdrop-filter: blur(10px) !important;
+                    border-bottom: none !important;
+                `;
+            }
+            
+            // 설명 영역 투명화
+            if (categoryDescription) {
+                categoryDescription.style.cssText = `
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    color: #000 !important;
+                    text-shadow: 0 1px 3px rgba(255,255,255,0.8) !important;
+                    backdrop-filter: blur(8px) !important;
+                    border-bottom: none !important;
+                    font-weight: 600 !important;
+                `;
+            }
+            
+            // 서브카테고리 투명화
+            const subcategoryWrapper = document.querySelector('.subcategory-wrapper');
+            if (subcategoryWrapper) {
+                subcategoryWrapper.style.cssText = `
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    backdrop-filter: blur(5px) !important;
+                    border-bottom: none !important;
+                `;
+            }
+        }
+        
+        fixTabClickStyles() {
+            // 대분류 탭 스타일 적용
+            const categoryTabs = document.querySelectorAll('.category-tab:not(.help-tab)');
+            categoryTabs.forEach(tab => {
+                if (tab.classList.contains('active')) {
+                    tab.style.cssText = `
+                        background: rgba(74, 144, 226, 0.9) !important;
+                        color: white !important;
+                        border: 1px solid rgba(74, 144, 226, 1) !important;
+                        text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+                        font-weight: bold !important;
+                        box-shadow: 0 3px 12px rgba(74, 144, 226, 0.5) !important;
+                        transform: translateY(-1px) !important;
+                    `;
+                } else {
+                    tab.style.cssText = `
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        color: #000 !important;
+                        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                        text-shadow: 0 1px 3px rgba(255,255,255,0.8) !important;
+                        font-weight: bold !important;
+                    `;
+                }
+            });
+            
+            // 중분류 탭 스타일 적용
+            const subcategoryTabs = document.querySelectorAll('.subcategory-tab');
+            subcategoryTabs.forEach(tab => {
+                if (tab.classList.contains('active')) {
+                    tab.style.cssText = `
+                        background: rgba(74, 144, 226, 0.9) !important;
+                        color: white !important;
+                        border: 1px solid rgba(74, 144, 226, 1) !important;
+                        text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+                        font-weight: bold !important;
+                        box-shadow: 0 2px 8px rgba(74, 144, 226, 0.4) !important;
+                        transform: translateY(-1px) !important;
+                    `;
+                } else {
+                    tab.style.cssText = `
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        color: #000 !important;
+                        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                        text-shadow: 0 1px 2px rgba(255,255,255,0.8) !important;
+                        font-weight: bold !important;
+                    `;
+                }
+            });
+        }
+        
+        removeExistingBackground() {
+            const existingStyle = document.getElementById('hairgator-sakura-style');
+            if (existingStyle) {
+                existingStyle.remove();
+            }
+            
+            const existingBg = document.querySelector('.hairgator-sakura-background');
+            if (existingBg) {
+                existingBg.remove();
+            }
+        }
+        
+        removeBackgroundSelector() {
+            const backgroundSection = document.querySelector('.background-section');
+            if (backgroundSection) {
+                backgroundSection.remove();
+            }
+        }
+        
+        loadSavedBackground() {
+            const saved = localStorage.getItem('hairgator_background');
+            if (saved && saved !== 'none') {
+                this.changeBackground(saved);
+            }
+            this.updateActiveButton(saved || 'none');
+        }
+        
+        setupThemeChangeListener() {
+            const observer = new MutationObserver(() => {
+                if (this.currentBackground === 'sakura') {
+                    // 테마가 변경되면 벚꽃 배경을 다시 로드
+                    this.createSakuraBackground();
+                    this.applyTransparentUI();
+                }
+            });
+            
+            observer.observe(document.body, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
+        }
+        
+        updateActiveButton(activeKey) {
+            if (!this.isTabletMode) return;
+            
+            document.querySelectorAll('.background-option').forEach(btn => {
+                if (btn.dataset.bg === activeKey) {
+                    btn.style.background = 'linear-gradient(45deg, #FF1493, #FF69B4)';
+                    btn.style.borderColor = '#FF1493';
+                    btn.style.boxShadow = '0 0 15px rgba(255, 20, 147, 0.3)';
+                    btn.style.transform = 'translateY(-2px)';
+                } else {
+                    btn.style.background = '#2a2a2a';
+                    btn.style.borderColor = '#444';
+                    btn.style.boxShadow = 'none';
+                    btn.style.transform = 'translateY(0)';
+                }
+            });
+        }
+        
+        debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    }
+
     // Initialize
     init();
 
@@ -128,6 +581,11 @@ document.addEventListener('DOMContentLoaded', function() {
         setupEventListeners();
         loadTheme();
         checkAuthStatus();
+        
+        // 벚꽃 배경 매니저 초기화 (태블릿에서만)
+        if (window.innerWidth >= 768) {
+            window.sakuraManager = new SakuraBackgroundManager();
+        }
         
         if (backBtn) {
             backBtn.style.display = 'none';
@@ -191,6 +649,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+
+        // 윈도우 리사이즈 감지 (벚꽃 배경용)
+        window.addEventListener('resize', () => {
+            const isTabletMode = window.innerWidth >= 768;
+            
+            if (isTabletMode && !window.sakuraManager) {
+                window.sakuraManager = new SakuraBackgroundManager();
+            } else if (!isTabletMode && window.sakuraManager) {
+                window.sakuraManager.removeExistingBackground();
+                window.sakuraManager.removeBackgroundSelector();
+                window.sakuraManager = null;
+            }
+        });
     }
 
     // Navigation
@@ -223,7 +694,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
         if (savedTheme === 'light') {
             document.body.classList.add('light-theme');
-            themeStatus.textContent = 'OFF';
+            if (themeStatus) {
+                themeStatus.textContent = 'OFF';
+            }
         }
     }
 
@@ -242,9 +715,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkAuthStatus() {
         const designerInfo = document.getElementById('designerInfo');
         if (window.auth && window.auth.currentUser) {
-            designerInfo.style.display = 'block';
-            document.getElementById('designerName').textContent = 
-                window.auth.currentUser.displayName || window.auth.currentUser.email;
+            if (designerInfo) {
+                designerInfo.style.display = 'block';
+            }
+            const designerName = document.getElementById('designerName');
+            if (designerName) {
+                designerName.textContent = window.auth.currentUser.displayName || window.auth.currentUser.email;
+            }
         }
     }
 
@@ -298,6 +775,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Render Categories - 여성일 때 물음표 버튼 추가
     function renderCategories(gender) {
+        if (!categoryTabs) return;
+        
         categoryTabs.innerHTML = '';
         
         // 여성인 경우 맨 앞에 물음표 버튼 추가
@@ -341,15 +820,26 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        categoryDescription.textContent = category.description;
+        if (categoryDescription) {
+            categoryDescription.textContent = category.description;
+        }
         
         renderSubcategories(gender);
         
         loadStyles(category.id, currentSubcategory, gender);
+        
+        // 벚꽃 배경이 활성화된 라이트 모드에서 탭 스타일 재적용
+        if (window.sakuraManager && window.sakuraManager.currentBackground === 'sakura') {
+            setTimeout(() => {
+                window.sakuraManager.fixTabClickStyles();
+            }, 100);
+        }
     }
 
     // Render Subcategories
     function renderSubcategories(gender) {
+        if (!subcategoryTabs) return;
+        
         subcategoryTabs.innerHTML = '';
         
         const subcategories = menuData.subcategories;
@@ -385,10 +875,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         loadStyles(currentCategory.id, subcategory, gender);
+        
+        // 벚꽃 배경이 활성화된 라이트 모드에서 탭 스타일 재적용
+        if (window.sakuraManager && window.sakuraManager.currentBackground === 'sakura') {
+            setTimeout(() => {
+                window.sakuraManager.fixTabClickStyles();
+            }, 100);
+        }
     }
 
     // Load Styles from Firebase
     async function loadStyles(categoryId, subcategory, gender) {
+        if (!menuGrid) return;
+        
         menuGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
         
         try {
@@ -432,16 +931,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const item = document.createElement('div');
                 item.className = `menu-item ${gender}`;
                 
-                // 실제 이미지 표시
+                // 이미지만 표시 (하단 텍스트 제거)
                 item.innerHTML = `
                     <img src="${data.imageUrl || ''}" 
                          alt="${data.name || 'Style'}" 
                          class="menu-item-image"
+                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;"
                          onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); padding: 10px; text-align: center;">
-                        <div style="font-size: 11px; color: #999;">${data.code || ''}</div>
-                        <div style="font-size: 13px; color: white; margin-top: 3px;">${data.name || ''}</div>
-                    </div>
                 `;
                 
                 item.addEventListener('click', function() {
@@ -473,76 +969,94 @@ document.addEventListener('DOMContentLoaded', function() {
     function showStyleDetail(code, name, gender, imageSrc, docId) {
         if (!styleModal) return;
         
-        modalImage.src = imageSrc || '';
-        modalImage.onerror = function() {
-            this.style.display = 'none';
-            this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        };
-        modalCode.textContent = code;
-        modalName.textContent = name;
-        
-        if (gender === 'female') {
-            btnRegister.classList.add('female');
-        } else {
-            btnRegister.classList.remove('female');
+        if (modalImage) {
+            modalImage.src = imageSrc || '';
+            modalImage.onerror = function() {
+                this.style.display = 'none';
+                this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            };
         }
         
-        btnLike.classList.remove('active');
-        const heart = btnLike.querySelector('span:first-child');
-        if (heart) heart.textContent = '♡';
+        if (modalCode) modalCode.textContent = code;
+        if (modalName) modalName.textContent = name;
+        
+        if (btnRegister) {
+            if (gender === 'female') {
+                btnRegister.classList.add('female');
+            } else {
+                btnRegister.classList.remove('female');
+            }
+        }
+        
+        if (btnLike) {
+            btnLike.classList.remove('active');
+            const heart = btnLike.querySelector('span:first-child');
+            if (heart) heart.textContent = '♡';
+        }
         
         styleModal.classList.add('active');
         
         // 고객 등록 버튼
-        btnRegister.onclick = async function() {
-            const customerName = prompt('고객 이름을 입력하세요:');
-            if (!customerName) return;
-            
-            const customerPhone = prompt('전화번호를 입력하세요:');
-            if (!customerPhone) return;
-            
-            try {
-                await db.collection('customers').add({
-                    name: customerName,
-                    phone: customerPhone,
-                    styleCode: code,
-                    styleName: name,
-                    styleId: docId,
-                    gender: gender,
-                    designer: localStorage.getItem('designerName') || 'Unknown',
-                    registeredAt: new Date(),
-                    lastVisit: new Date()
-                });
+        if (btnRegister) {
+            btnRegister.onclick = async function() {
+                const customerName = prompt('고객 이름을 입력하세요:');
+                if (!customerName) return;
                 
-                alert('고객 등록 완료!');
-                closeModal();
-            } catch (error) {
-                console.error('Customer registration error:', error);
-                alert('등록 실패: ' + error.message);
-            }
-        };
+                const customerPhone = prompt('전화번호를 입력하세요 (예: 010-1234-5678):');
+                if (!customerPhone) return;
+                
+                // 전화번호 형식 검증
+                const phoneRegex = /^(010|011|016|017|018|019)-?\d{3,4}-?\d{4}$/;
+                if (!phoneRegex.test(customerPhone.replace(/-/g, ''))) {
+                    alert('올바른 전화번호 형식을 입력하세요 (예: 010-1234-5678)');
+                    return;
+                }
+                
+                try {
+                    await db.collection('customers').add({
+                        name: customerName,
+                        phone: customerPhone,
+                        styleCode: code,
+                        styleName: name,
+                        styleId: docId,
+                        gender: gender,
+                        designer: localStorage.getItem('designerName') || 'Unknown',
+                        registeredAt: new Date(),
+                        lastVisit: new Date()
+                    });
+                    
+                    alert('고객 등록 완료!');
+                    closeModal();
+                } catch (error) {
+                    console.error('Customer registration error:', error);
+                    alert('등록 실패: ' + error.message);
+                }
+            };
+        }
         
         // 좋아요 버튼
-        btnLike.onclick = async function() {
-            this.classList.toggle('active');
-            const heart = this.querySelector('span:first-child');
-            if (heart) {
-                const isLiked = this.classList.contains('active');
-                heart.textContent = isLiked ? '♥' : '♡';
-                
-                // Firebase에 좋아요 업데이트
-                if (docId) {
-                    try {
-                        const docRef = db.collection('hairstyles').doc(docId);
-                        await docRef.update({
-                            likes: firebase.firestore.FieldValue.increment(isLiked ? 1 : -1)
-                        });
-                    } catch (error) {
-                        console.error('Like update error:', error);
+        if (btnLike) {
+            btnLike.onclick = async function() {
+                this.classList.toggle('active');
+                const heart = this.querySelector('span:first-child');
+                if (heart) {
+                    const isLiked = this.classList.contains('active');
+                    heart.textContent = isLiked ? '♥' : '♡';
+                    
+                    // Firebase에 좋아요 업데이트
+                    if (docId) {
+                        try {
+                            const docRef = db.collection('hairstyles').doc(docId);
+                            await docRef.update({
+                                likes: firebase.firestore.FieldValue.increment(isLiked ? 1 : -1)
+                            });
+                        } catch (error) {
+                            console.error('Like update error:', error);
+                        }
                     }
                 }
-            }
-        };
+            };
+        }
     }
 
     // Loading
@@ -560,5 +1074,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 window.addEventListener('load', function() {
-    console.log('HAIRGATOR App Loaded');
+    console.log('🌸 HAIRGATOR App with Sakura Background Loaded');
 });
