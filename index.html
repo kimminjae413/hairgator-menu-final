@@ -697,37 +697,29 @@
             color: #000;
         }
 
-        /* ==========전체화면 PWA 모드 최적화========== */
-        
-        /* iOS Safari 전체화면 지원 */
+        /* PWA 최적화 */
         @supports (-webkit-touch-callout: none) {
             body {
-                /* iOS 상태바 영역 고려 */
                 padding-top: env(safe-area-inset-top);
                 padding-bottom: env(safe-area-inset-bottom);
                 padding-left: env(safe-area-inset-left);
                 padding-right: env(safe-area-inset-right);
             }
             
-            /* iOS에서 상태바 숨기기 */
             .header {
-                /* 상태바와 겹치지 않게 */
                 top: env(safe-area-inset-top, 0);
                 padding-top: calc(15px + env(safe-area-inset-top, 0));
             }
         }
 
-        /* PWA 설치 상태 감지 */
         @media all and (display-mode: fullscreen) {
             body {
-                /* 완전 전체화면 모드 */
                 margin: 0;
                 padding: 0;
                 overflow-x: hidden;
             }
             
             .header {
-                /* 전체화면에서 헤더 조정 */
                 position: fixed;
                 top: 0;
                 left: 0;
@@ -738,43 +730,35 @@
             }
             
             .main-content {
-                /* 헤더 높이만큼 마진 */
                 margin-top: 65px;
             }
         }
 
         @media all and (display-mode: standalone) {
             body {
-                /* 독립 앱 모드 */
                 margin: 0;
                 user-select: none;
                 -webkit-user-select: none;
                 -webkit-touch-callout: none;
             }
             
-            /* 스크롤 반동 효과 제거 (iOS) */
             body, html {
                 overscroll-behavior: none;
                 -webkit-overflow-scrolling: touch;
             }
         }
 
-        /* Android 전체화면 네비게이션 바 숨기기 */
         @media all and (display-mode: fullscreen) {
             html {
-                /* Android에서 네비게이션 바 숨기기 */
                 height: 100vh;
-                height: 100dvh; /* 동적 뷰포트 높이 */
+                height: 100dvh;
             }
             
             body {
                 min-height: 100vh;
                 min-height: 100dvh;
             }
-        }
-
-        /* 전체화면 모드에서 스크롤바 숨기기 */
-        @media all and (display-mode: fullscreen) {
+            
             ::-webkit-scrollbar {
                 display: none;
             }
@@ -785,7 +769,6 @@
             }
         }
 
-        /* 노치/Dynamic Island 대응 (iPhone X 이상) */
         @supports (padding: max(0px)) {
             .header {
                 padding-left: max(20px, env(safe-area-inset-left));
@@ -799,7 +782,6 @@
             }
         }
 
-        /* 가로 모드에서 노치 대응 */
         @media (orientation: landscape) {
             @supports (padding: max(0px)) {
                 body {
@@ -809,18 +791,15 @@
             }
         }
 
-        /* 전체화면 모드에서 터치 영역 최적화 */
         @media all and (display-mode: fullscreen) {
             .gender-btn,
             .category-tab,
             .subcategory-tab,
             .menu-item {
-                /* 터치하기 쉬운 최소 크기 보장 */
                 min-height: 44px;
                 min-width: 44px;
             }
             
-            /* 제스처 영역 확보 */
             .main-content {
                 padding-bottom: 20px;
             }
@@ -1146,10 +1125,8 @@
 
         // 전화번호 관련 함수들
         const phoneUtils = {
-            // 전화번호 실시간 포맷팅
             formatInput(input) {
                 let value = input.value.replace(/\D/g, '');
-                
                 if (value.length <= 3) {
                     input.value = value;
                 } else if (value.length <= 7) {
@@ -1159,7 +1136,6 @@
                 }
             },
             
-            // 전화번호 검증
             validate(phone) {
                 const numbersOnly = phone.replace(/\D/g, '');
                 const mobileRegex = /^01[0-9]{8,9}$/;
@@ -1167,38 +1143,31 @@
                 return mobileRegex.test(numbersOnly) || landlineRegex.test(numbersOnly);
             },
             
-            // 전화번호 포맷팅
             format(phone) {
                 const numbersOnly = phone.replace(/\D/g, '');
-                
                 if (numbersOnly.length === 11) {
                     return numbersOnly.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
                 } else if (numbersOnly.length === 10) {
                     return numbersOnly.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
                 }
-                
                 return phone;
             }
         };
 
         // 유틸리티 함수
         const utils = {
-            // 로컬 스토리지 관리
             setStorage: (key, value) => localStorage.setItem(CONFIG.CACHE_PREFIX + key, value),
             getStorage: (key) => localStorage.getItem(CONFIG.CACHE_PREFIX + key),
             
-            // 로딩 표시
             showLoading: (show) => {
                 elements.loadingOverlay?.classList.toggle('active', show);
             },
             
-            // 에러 처리
             handleError: (error, context = '') => {
                 console.error(`Error in ${context}:`, error);
                 alert(`오류가 발생했습니다: ${error.message}`);
             },
             
-            // 디바운스
             debounce: (func, wait) => {
                 let timeout;
                 return function executedFunction(...args) {
@@ -1290,7 +1259,6 @@
             renderCategories(gender) {
                 elements.categoryTabs.innerHTML = '';
                 
-                // 여성인 경우 도움말 버튼 추가
                 if (gender === 'female') {
                     const helpTab = document.createElement('button');
                     helpTab.className = 'category-tab help-tab';
@@ -1322,7 +1290,6 @@
             selectCategory(category, gender) {
                 currentCategory = category;
                 
-                // 탭 활성화 상태 업데이트
                 document.querySelectorAll('.category-tab').forEach(tab => {
                     if (tab.classList.contains('help-tab')) return;
                     tab.classList.remove('active', 'male', 'female');
@@ -1396,7 +1363,6 @@
                         return;
                     }
                     
-                    // 스타일 카드 생성 (이미지만 표시)
                     snapshot.forEach(doc => {
                         const data = doc.data();
                         const item = document.createElement('div');
@@ -1455,7 +1421,6 @@
             },
             
             setupModalActions(code, name, gender, docId) {
-                // 고객 등록 (전화번호 검증 추가)
                 elements.btnRegister.onclick = async () => {
                     const customerName = prompt('고객 이름을 입력하세요:');
                     if (!customerName) return;
@@ -1463,13 +1428,11 @@
                     let customerPhone = prompt('고객 전화번호를 입력하세요:\n(예: 010-1234-5678)');
                     if (!customerPhone) return;
                     
-                    // 전화번호 검증
                     if (!phoneUtils.validate(customerPhone)) {
                         alert('올바른 전화번호를 입력해주세요\n예: 010-1234-5678');
                         return;
                     }
                     
-                    // 전화번호 포맷팅
                     customerPhone = phoneUtils.format(customerPhone);
                     
                     try {
@@ -1492,7 +1455,6 @@
                     }
                 };
                 
-                // 좋아요
                 elements.btnLike.onclick = async () => {
                     elements.btnLike.classList.toggle('active');
                     const heart = elements.btnLike.querySelector('span:first-child');
@@ -1516,36 +1478,30 @@
 
         // 이벤트 리스너 설정
         function setupEventListeners() {
-            // 네비게이션
             elements.backBtn?.addEventListener('click', navigationManager.goBack);
             elements.menuBtn?.addEventListener('click', sidebarManager.open);
             elements.sidebarClose?.addEventListener('click', sidebarManager.close);
             
-            // 테마
             elements.themeToggle?.addEventListener('click', themeManager.toggle);
             elements.themeToggleBottom?.addEventListener('click', themeManager.toggle);
             
-            // 성별 선택
             document.querySelectorAll('.gender-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     navigationManager.selectGender(this.dataset.gender);
                 });
             });
             
-            // 모달
             elements.modalClose?.addEventListener('click', modalManager.hide);
             elements.styleModal?.addEventListener('click', function(e) {
                 if (e.target === this) modalManager.hide();
             });
             
-            // 키보드 이벤트
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && elements.styleModal?.classList.contains('active')) {
                     modalManager.hide();
                 }
             });
             
-            // 사이드바 외부 클릭
             document.addEventListener('click', function(e) {
                 if (elements.sidebar?.classList.contains('active')) {
                     if (!elements.sidebar.contains(e.target) && !elements.menuBtn.contains(e.target)) {
@@ -1572,14 +1528,12 @@
         
         // PWA 기능
         window.addEventListener('load', function() {
-            // Service Worker 등록
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('service-worker.js')
                     .then(registration => console.log('SW registered'))
                     .catch(err => console.log('SW registration failed'));
             }
             
-            // PWA 설치 프롬프트
             let deferredPrompt;
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
@@ -1590,26 +1544,7 @@
         });
     </script>
 
-    <!-- 배경 관리자 스크립트 (조건부 로드) -->
-    <script>
-        // 배경 관리자를 안전하게 로드
-        function loadBackgroundManager() {
-            const script = document.createElement('script');
-            script.src = 'js/background-manager.js';
-            script.onerror = function() {
-                console.log('⚠️ Background manager not available');
-            };
-            document.head.appendChild(script);
-        }
-        
-        // DOM 로드 완료 후 실행
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', loadBackgroundManager);
-        } else {
-            loadBackgroundManager();
-        }
-   <script src="js/sakura.js"></script>
+    <!-- 벚꽃 배경 시스템 -->
+    <script src="js/sakura.js"></script>
 </body>
 </html>
-
-
