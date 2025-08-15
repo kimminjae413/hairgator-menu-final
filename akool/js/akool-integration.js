@@ -3,6 +3,13 @@
 // ⚠️ 보안: clientId / clientSecret은 프런트에 두지 말 것(서버 함수에서만 사용)
 //    현재 토큰은 /.netlify/functions/akool-token 에서 발급받음.
 
+/*
+ * 이 파일은 '운영용 단일 진입점'입니다.
+ * - 버튼 자동 주입 금지: index.html에서 버튼 1개만 만들고 바인딩하세요.
+ * - 레거시(시뮬) 스크립트가 버튼을 재주입/재바인딩해도 즉시 제거하도록 방어 코드를 포함합니다.
+ * - openAkoolFaceSwapModal(data) 만 공개 API로 사용하면 됩니다.
+ */
+
 console.log('🎨 AKOOL Face Swap 운영 최종 버전 로딩...');
 
 const SIMULATION_FALLBACK = false;         // 운영: 시뮬레이션 금지
@@ -27,6 +34,34 @@ let currentStyleName  = null;
 let currentStyleCode  = null;
 let faceSwapInProgress = false;
 
+// =============== 레거시 차단/청소 ===============
+(function installLegacyGuards() {
+  try {
+    // 1) 레거시 자동 주입 함수 무력화 (읽기전용, 항상 false 반환)
+    if (!Object.getOwnPropertyDescriptor(window, 'addAIButtonToHairgator')) {
+      Object.defineProperty(window, 'addAIButtonToHairgator', {
+        configurable: false,
+        writable: false,
+        value: function () { console.info('ℹ️ 레거시 addAIButtonToHairgator 호출 차단'); return false; }
+      });
+    }
+
+    // 2) 페이지에 이미 주입되어 있을 수 있는 레거시 버튼/노드 제거
+    const KILL_SELECTORS = ['#akoolSimBtn', '.akool-sim-btn', '[data-sim-akool]', '#hairgator-ai-sim'];
+    const killLegacy = () => KILL_SELECTORS.forEach(sel => document.querySelectorAll(sel).forEach(n => n.remove()));
+    killLegacy();
+
+    // 3) 동적 재주입도 즉시 제거
+    const mo = new MutationObserver(() => killLegacy());
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+
+    // 4) 중복 주입 락
+    window.__HAIRGATOR_AI_BTN_LOCK__ = true;
+  } catch (e) {
+    console.warn('레거시 차단 실패(무시 가능):', e);
+  }
+})();
+
 // ================= 공통 유틸 =================
 function withTimeout(promise, ms = API_TIMEOUT_MS) {
   return Promise.race([
@@ -36,16 +71,11 @@ function withTimeout(promise, ms = API_TIMEOUT_MS) {
 }
 
 async function safeFetch(url, options) {
-  try {
-    const res = await withTimeout(fetch(url, options));
-    return res;
-  } catch (e) {
-    throw e;
-  }
+  const res = await withTimeout(fetch(url, options));
+  return res;
 }
 
 function dataURLSize(dataUrl) {
-  // 대략 용량 추정(B 슬라이스)
   const head = 'base64,';
   const i = dataUrl.indexOf(head);
   if (i === -1) return 0;
@@ -53,7 +83,7 @@ function dataURLSize(dataUrl) {
   return Math.floor((b64.length * 3) / 4); // bytes
 }
 
-async function compressDataURL(srcDataUrl, maxW = 800, maxH = 800, quality = 0.8) {
+async function compressDataURL(srcDataUrl, maxW = 1024, maxH = 1024, quality = 0.82) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -66,10 +96,8 @@ async function compressDataURL(srcDataUrl, maxW = 800, maxH = 800, quality = 0.8
       canvas.width = cw; canvas.height = ch;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, cw, ch);
-      try {
-        const out = canvas.toDataURL('image/jpeg', quality);
-        resolve(out);
-      } catch (err) { reject(err); }
+      try { resolve(canvas.toDataURL('image/jpeg', quality)); }
+      catch (err) { reject(err); }
     };
     img.onerror = reject;
     img.src = srcDataUrl;
@@ -89,6 +117,10 @@ if (!window.akoolSystemInitialized) {
 async function initializeAkoolSystem() {
   if (window.akoolConfig.isInitialized) return;
   try {
+    // 혹시 남아있는 레거시 실험용 버튼 제거(2차 방어)
+    ['#akoolSimBtn', '.akool-sim-btn', '[data-sim-akool]', '#hairgator-ai-sim']
+      .forEach(sel => document.querySelectorAll(sel).forEach(n => n.remove()));
+
     setupAkoolFunctions();
     window.akoolConfig.isInitialized = true;
     console.log('✅ AKOOL 시스템 초기화 완료');
@@ -102,7 +134,7 @@ function setupAkoolFunctions() {
   // 🔑 토큰(재)발급: 필요 시에만 갱신
   window.getAkoolToken = async function getAkoolToken() {
     const now = Date.now();
-    // 토큰을 재사용(발급 후 5분 이내면 그대로 사용; 필요 시 서버 만료 시간으로 로직 변경)
+    // 발급 후 5분 이내이면 캐시 사용(서버 만료에 맞춰 조정 가능)
     if (window.akoolConfig.token && now - window.akoolConfig.token_issued_at < 5 * 60 * 1000) {
       return { success: true, token: window.akoolConfig.token, reused: true };
     }
@@ -191,12 +223,6 @@ function setupAkoolFunctions() {
   };
 }
 
-// ========== 버튼 자동 주입은 비활성(인덱스에서 주입) ==========
-window.addAIButtonToHairgator = function () {
-  console.log('ℹ️ AI 버튼은 index.html에서 관리');
-  return false;
-};
-
 // ========== 공개 API: 인덱스가 호출하는 진입점 ==========
 /** 인덱스와의 호환용: 항상 이 함수를 호출하면 됨 */
 window.openAkoolFaceSwapModal = function openAkoolFaceSwapModal(data = {}) {
@@ -244,7 +270,7 @@ window.openAkoolModal = function () {
           <h2 style="margin:0 0 6px 0;font-size:24px;font-weight:800;background:linear-gradient(135deg,#FF1493,#FF69B4);-webkit-background-clip:text;-webkit-text-fill-color:transparent">AI 헤어스타일 체험</h2>
           <div style="border:2px solid #FF1493;border-radius:14px;padding:10px">
             <div style="color:#FF1493;font-weight:700">선택한 스타일: ${currentStyleName}</div>
-            <div style="color:#666;font-size:12px;margin-top:4px">코드: ${currentStyleCode || '-'}</div>
+            <div style="color:#666;font-size:12px;margin-top:4px">코드: ${currentStyleCode || '-'} </div>
           </div>
         </div>
 
@@ -413,12 +439,10 @@ window.startAkoolProcess = async function () {
   } catch (e) {
     console.error('❌ 처리 오류:', e);
     if (SIMULATION_FALLBACK) {
-      // (개발 전용) 시뮬 표시
       alert('네트워크 불안정으로 시뮬레이션 결과를 표시합니다.');
       window.akoolConfig.lastResult = currentStyleImage;
       showResult(currentStyleImage);
     } else {
-      // 운영: 에러 노출 후 선택 화면으로 복귀
       alert(e.message || '처리에 실패했습니다. 네트워크 상태 확인 후 다시 시도해주세요.');
       window.backToSelection();
     }
