@@ -1590,7 +1590,24 @@
         });
     </script>
 
-    <!-- 배경 관리자 스크립트 -->
-    <script src="js/background-manager.js"></script>
+    <!-- 배경 관리자 스크립트 (조건부 로드) -->
+    <script>
+        // 배경 관리자를 안전하게 로드
+        function loadBackgroundManager() {
+            const script = document.createElement('script');
+            script.src = 'js/background-manager.js';
+            script.onerror = function() {
+                console.log('⚠️ Background manager not available');
+            };
+            document.head.appendChild(script);
+        }
+        
+        // DOM 로드 완료 후 실행
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadBackgroundManager);
+        } else {
+            loadBackgroundManager();
+        }
+    </script>
 </body>
 </html>
