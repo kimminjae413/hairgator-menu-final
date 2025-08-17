@@ -1544,21 +1544,39 @@
         });
     </script>
 
-    <!-- 벚꽃 배경 시스템 - 수정된 최종 버전 -->
+    <!-- 🌸 벚꽃 배경 시스템 - 수정된 최종 안정 버전 -->
     <script>
         (function() {
             'use strict';
             
-            let sakuraActive = false;
+            // 중복 실행 방지
+            if (window.sakuraSystemInitialized) {
+                console.log('🌸 벚꽃 시스템 이미 초기화됨');
+                return;
+            }
+            window.sakuraSystemInitialized = true;
             
-            // 사이드바 대기 및 버튼 추가
+            let sakuraActive = false;
+            let initAttempts = 0;
+            
+            // 강화된 사이드바 대기 및 버튼 추가
             function addSakuraButton() {
                 const sidebar = document.querySelector('.sidebar-content');
-                if (!sidebar || document.getElementById('sakuraToggle')) {
+                if (!sidebar) {
+                    console.warn('🌸 사이드바를 찾을 수 없음 (시도:', ++initAttempts, ')');
+                    if (initAttempts < 50) { // 10초까지 대기
+                        setTimeout(addSakuraButton, 200);
+                    }
                     return;
                 }
                 
-                // 벚꽃 섹션 생성 - 깔끔한 한 줄 버전
+                // 중복 생성 방지
+                if (document.getElementById('sakuraToggle')) {
+                    console.log('🌸 벚꽃 버튼 이미 존재');
+                    return;
+                }
+                
+                // 벚꽃 섹션 생성
                 const sakuraSection = document.createElement('div');
                 sakuraSection.id = 'sakuraSection';
                 
@@ -1590,17 +1608,24 @@
                 sidebar.appendChild(sakuraSection);
                 setupSakuraEvents();
                 
-                console.log('✅ 벚꽃 버튼 생성 완료!');
+                console.log('✅ 벚꽃 버튼 생성 완료! (시도:', initAttempts, ')');
             }
             
-            // 이벤트 설정
+            // 이벤트 설정 - 강화된 버전
             function setupSakuraEvents() {
                 const button = document.getElementById('sakuraToggle');
                 const statusElement = document.getElementById('sakuraStatus');
-                if (!button || !statusElement) return;
+                
+                if (!button || !statusElement) {
+                    console.error('🌸 버튼 요소를 찾을 수 없음');
+                    return;
+                }
                 
                 // 클릭 이벤트
                 button.addEventListener('click', function() {
+                    console.log('🌸 벚꽃 버튼 클릭됨');
+                    
+                    // 화면 크기 경고 (선택사항)
                     if (window.innerWidth < 768) {
                         if (!confirm('화면이 작아 벚꽃 효과가 제한될 수 있습니다. 계속하시겠습니까?')) {
                             return;
@@ -1643,55 +1668,22 @@
                         this.style.borderColor = '#444';
                     }
                 });
+                
+                console.log('✅ 벚꽃 이벤트 설정 완료');
             }
             
-            // CSS 로드/제거 - 수정된 버전
+            // CSS 로드 - 즉시 인라인 적용 방식
             function loadSakuraCSS() {
-                if (document.querySelector('#sakura-css')) return;
+                console.log('🌸 벚꽃 CSS 로드 시작');
                 
-                // 여러 경로 시도
-                const possiblePaths = [
-                    './backgrounds/sakura-dark.css',
-                    'backgrounds/sakura-dark.css',
-                    '/backgrounds/sakura-dark.css'
-                ];
+                // 기존 CSS 제거
+                removeSakuraCSS();
                 
-                function tryLoadCSS(pathIndex = 0) {
-                    if (pathIndex >= possiblePaths.length) {
-                        console.warn('⚠️ 모든 경로에서 벚꽃 CSS 로드 실패 - 인라인 CSS 사용');
-                        loadInlineCSS();
-                        return;
-                    }
-                    
-                    const css = document.createElement('link');
-                    css.id = 'sakura-css';
-                    css.rel = 'stylesheet';
-                    css.href = possiblePaths[pathIndex];
-                    
-                    css.onload = () => {
-                        console.log('✅ 벚꽃 CSS 로드 성공:', possiblePaths[pathIndex]);
-                    };
-                    
-                    css.onerror = () => {
-                        console.warn('⚠️ CSS 로드 실패:', possiblePaths[pathIndex]);
-                        css.remove();
-                        tryLoadCSS(pathIndex + 1);
-                    };
-                    
-                    document.head.appendChild(css);
-                }
-                
-                tryLoadCSS();
-            }
-            
-            // 인라인 CSS 폴백
-            function loadInlineCSS() {
-                if (document.querySelector('#sakura-inline-css')) return;
-                
+                // 인라인 CSS 즉시 적용
                 const style = document.createElement('style');
                 style.id = 'sakura-inline-css';
                 style.textContent = `
-                    /* 🌸 벚꽃 배경 효과 - 우선순위 강화 버전 */
+                    /* 🌸 벚꽃 배경 효과 - 최고 우선순위 */
                     body.sakura-background::before {
                         content: '' !important;
                         position: fixed !important;
@@ -1709,6 +1701,7 @@
                         background: linear-gradient(135deg, #fef7f7 0%, #fce4ec 25%, #f8bbd9 50%, #f48fb1 75%, #f06292 100%) !important;
                     }
                     
+                    /* 벚꽃 꽃잎 애니메이션 */
                     body.sakura-background::after {
                         content: '' !important;
                         position: fixed !important;
@@ -1736,7 +1729,10 @@
                             radial-gradient(4px 4px at 30px 40px, rgba(233, 30, 99, 0.6), transparent),
                             radial-gradient(6px 6px at 80px 20px, rgba(233, 30, 99, 0.4), transparent),
                             radial-gradient(3px 3px at 150px 90px, rgba(233, 30, 99, 0.5), transparent),
-                            radial-gradient(5px 5px at 200px 130px, rgba(233, 30, 99, 0.3), transparent) !important;
+                            radial-gradient(5px 5px at 200px 130px, rgba(233, 30, 99, 0.3), transparent),
+                            radial-gradient(7px 7px at 250px 60px, rgba(255, 20, 147, 0.7), transparent) !important;
+                        background-size: 280px 180px !important;
+                        animation: sakuraFall 12s linear infinite !important;
                     }
                     
                     @keyframes sakuraFall {
@@ -1745,36 +1741,38 @@
                         100% { transform: translateY(100vh) rotate(360deg); opacity: 0.1; }
                     }
                     
-                    /* 🌸 벚꽃 UI 투명화 효과 */
+                    /* 🌸 벚꽃 UI 투명화 효과 - 최고 우선순위 */
                     body.sakura-background .header {
                         background: rgba(0, 0, 0, 0.2) !important;
                         backdrop-filter: blur(20px) !important;
                         border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3) !important;
                     }
                     
                     body.sakura-background.light-theme .header {
-                        background: rgba(255, 255, 255, 0.2) !important;
+                        background: rgba(255, 255, 255, 0.25) !important;
                         border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                        box-shadow: 0 2px 20px rgba(255, 255, 255, 0.3) !important;
                     }
                     
                     /* 헤더 텍스트 강화 */
                     body.sakura-background .header .logo,
                     body.sakura-background .header .back-btn {
                         color: white !important;
-                        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;
+                        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9) !important;
                         font-weight: bold !important;
                     }
                     
                     body.sakura-background.light-theme .header .logo,
                     body.sakura-background.light-theme .header .back-btn {
                         color: #000 !important;
-                        text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8) !important;
+                        text-shadow: 0 2px 8px rgba(255, 255, 255, 0.9) !important;
                     }
                     
                     /* 햄버거 메뉴 */
                     body.sakura-background .menu-btn span {
                         background: white !important;
-                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
                     }
                     
                     body.sakura-background.light-theme .menu-btn span {
@@ -1784,84 +1782,84 @@
                     
                     /* 대분류 탭 영역 */
                     body.sakura-background .category-tabs-wrapper {
-                        background: rgba(0, 0, 0, 0.2) !important;
+                        background: rgba(0, 0, 0, 0.25) !important;
                         backdrop-filter: blur(15px) !important;
                         border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
                     }
                     
                     body.sakura-background.light-theme .category-tabs-wrapper {
-                        background: rgba(255, 255, 255, 0.2) !important;
+                        background: rgba(255, 255, 255, 0.25) !important;
                         border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
                     }
                     
                     /* 대분류 탭 */
                     body.sakura-background .category-tab:not(.help-tab) {
-                        background: rgba(255, 255, 255, 0.1) !important;
-                        color: rgba(255, 255, 255, 0.9) !important;
+                        background: rgba(255, 255, 255, 0.15) !important;
+                        color: rgba(255, 255, 255, 0.95) !important;
                         border: 1px solid rgba(255, 255, 255, 0.2) !important;
-                        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8) !important;
+                        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9) !important;
                         font-weight: bold !important;
                         backdrop-filter: blur(10px) !important;
                     }
                     
                     body.sakura-background.light-theme .category-tab:not(.help-tab) {
-                        background: rgba(0, 0, 0, 0.1) !important;
-                        color: rgba(0, 0, 0, 0.9) !important;
+                        background: rgba(0, 0, 0, 0.15) !important;
+                        color: rgba(0, 0, 0, 0.95) !important;
                         border: 1px solid rgba(0, 0, 0, 0.2) !important;
-                        text-shadow: 0 1px 4px rgba(255, 255, 255, 0.8) !important;
+                        text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9) !important;
                     }
                     
                     /* 활성 대분류 탭 */
                     body.sakura-background .category-tab.active:not(.help-tab) {
-                        background: rgba(74, 144, 226, 0.8) !important;
+                        background: rgba(74, 144, 226, 0.9) !important;
                         color: white !important;
                         border-color: rgba(74, 144, 226, 1) !important;
-                        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8) !important;
-                        box-shadow: 0 4px 20px rgba(74, 144, 226, 0.4) !important;
+                        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9) !important;
+                        box-shadow: 0 4px 20px rgba(74, 144, 226, 0.5) !important;
                     }
                     
                     /* 카테고리 설명 */
                     body.sakura-background .category-description {
-                        background: rgba(0, 0, 0, 0.3) !important;
+                        background: rgba(0, 0, 0, 0.35) !important;
                         color: rgba(255, 255, 255, 0.95) !important;
-                        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8) !important;
+                        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9) !important;
                         backdrop-filter: blur(12px) !important;
                         font-weight: 500 !important;
                         border: 1px solid rgba(255, 255, 255, 0.1) !important;
                     }
                     
                     body.sakura-background.light-theme .category-description {
-                        background: rgba(255, 255, 255, 0.3) !important;
+                        background: rgba(255, 255, 255, 0.35) !important;
                         color: rgba(0, 0, 0, 0.9) !important;
-                        text-shadow: 0 1px 4px rgba(255, 255, 255, 0.8) !important;
+                        text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9) !important;
                         border: 1px solid rgba(0, 0, 0, 0.1) !important;
                     }
                     
                     /* 중분류 영역 */
                     body.sakura-background .subcategory-wrapper {
-                        background: rgba(0, 0, 0, 0.15) !important;
+                        background: rgba(0, 0, 0, 0.2) !important;
                         backdrop-filter: blur(10px) !important;
                     }
                     
                     body.sakura-background.light-theme .subcategory-wrapper {
-                        background: rgba(255, 255, 255, 0.15) !important;
+                        background: rgba(255, 255, 255, 0.2) !important;
                     }
                     
                     /* 중분류 탭 */
                     body.sakura-background .subcategory-tab {
-                        background: rgba(255, 255, 255, 0.15) !important;
-                        color: rgba(255, 255, 255, 0.9) !important;
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        color: rgba(255, 255, 255, 0.95) !important;
                         border: 1px solid rgba(255, 255, 255, 0.3) !important;
-                        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+                        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9) !important;
                         font-weight: 600 !important;
                         backdrop-filter: blur(8px) !important;
                     }
                     
                     body.sakura-background.light-theme .subcategory-tab {
-                        background: rgba(0, 0, 0, 0.15) !important;
-                        color: rgba(0, 0, 0, 0.9) !important;
+                        background: rgba(0, 0, 0, 0.2) !important;
+                        color: rgba(0, 0, 0, 0.95) !important;
                         border: 1px solid rgba(0, 0, 0, 0.3) !important;
-                        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8) !important;
+                        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9) !important;
                     }
                     
                     /* 활성 중분류 탭 */
@@ -1869,49 +1867,53 @@
                         background: rgba(74, 144, 226, 0.9) !important;
                         color: white !important;
                         border-color: rgba(74, 144, 226, 1) !important;
-                        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
-                        box-shadow: 0 3px 15px rgba(74, 144, 226, 0.5) !important;
+                        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9) !important;
+                        box-shadow: 0 3px 15px rgba(74, 144, 226, 0.6) !important;
                     }
                 `;
+                
                 document.head.appendChild(style);
-                console.log('✅ 인라인 벚꽃 CSS 적용 완료');
+                console.log('✅ 벚꽃 인라인 CSS 적용 완료');
             }
             
+            // CSS 제거
             function removeSakuraCSS() {
-                const css = document.querySelector('#sakura-css');
-                const inlineCSS = document.querySelector('#sakura-inline-css');
-                if (css) css.remove();
-                if (inlineCSS) inlineCSS.remove();
+                const existingCSS = document.querySelector('#sakura-inline-css');
+                if (existingCSS) {
+                    existingCSS.remove();
+                    console.log('🗑️ 기존 벚꽃 CSS 제거');
+                }
             }
             
-            // 초기화 - 여러 타이밍에서 시도
-            function init() {
-                let attempts = 0;
-                const maxAttempts = 20;
+            // 초기화 - 다중 시점 시도
+            function initSakuraSystem() {
+                console.log('🌸 벚꽃 시스템 초기화 시작');
                 
-                const tryAdd = () => {
-                    attempts++;
-                    if (document.querySelector('.sidebar-content') && !document.getElementById('sakuraToggle')) {
-                        addSakuraButton();
-                        return;
-                    }
-                    
-                    if (attempts < maxAttempts) {
-                        setTimeout(tryAdd, 200);
-                    }
-                };
+                // 즉시 시도
+                addSakuraButton();
                 
-                tryAdd();
+                // DOM이 준비되면 다시 시도
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        setTimeout(addSakuraButton, 100);
+                    });
+                }
+                
+                // 윈도우 로드 후에도 시도
+                window.addEventListener('load', () => {
+                    setTimeout(addSakuraButton, 200);
+                });
+                
+                // 추가 백업 타이머들
+                setTimeout(addSakuraButton, 500);
+                setTimeout(addSakuraButton, 1000);
+                setTimeout(addSakuraButton, 2000);
             }
             
-            // 실행
-            if (document.readyState !== 'loading') {
-                init();
-            } else {
-                document.addEventListener('DOMContentLoaded', init);
-            }
+            // 시스템 시작
+            initSakuraSystem();
             
-            console.log('🌸 벚꽃 시스템 로드됨');
+            console.log('🌸 벚꽃 시스템 스크립트 로드 완료');
         })();
     </script>
 </body>
