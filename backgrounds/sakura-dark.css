@@ -1,14 +1,6 @@
-/* ========== 벚꽃 배경 시스템 ========== */
+/* ========== 자연스러운 벚꽃 배경 시스템 (다크 모드 전용) ========== */
 
-/* 태블릿 전용 */
-@media (max-width: 767px) {
-    body.sakura-background::before,
-    body.sakura-background::after {
-        display: none !important;
-    }
-}
-
-/* 벚꽃 배경 그라데이션 */
+/* 벚꽃 컨테이너 생성 */
 body.sakura-background::before {
     content: '';
     position: fixed;
@@ -16,180 +8,149 @@ body.sakura-background::before {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -2;
     pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
 }
 
-/* 다크 모드 배경 */
-body.sakura-background:not(.light-theme)::before {
-    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #0e4b99 100%);
-}
-
-/* 라이트 모드 배경 */
-body.sakura-background.light-theme::before {
-    background: linear-gradient(135deg, #fef7f7 0%, #fce4ec 25%, #f8bbd9 50%, #f48fb1 75%, #f06292 100%);
-}
-
-/* 벚꽃 꽃잎 */
+/* 벚꽃 꽃잎들 - 다양한 위치와 애니메이션 */
 body.sakura-background::after {
-    content: '';
+    content: '🌸 🌸 🌸 🌸 🌸 🌸 🌸 🌸 🌸 🌸 🤍 🤍 🤍 🤍 🤍';
     position: fixed;
-    top: -10%;
-    left: -10%;
-    width: 120%;
-    height: 120%;
-    z-index: -1;
+    top: -50px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: transparent;
+    background: 
+        /* 핑크 꽃잎들 */
+        radial-gradient(circle 4px at 10% 20%, #ff69b4 50%, transparent 50%),
+        radial-gradient(circle 3px at 25% 10%, #ffb6c1 50%, transparent 50%),
+        radial-gradient(circle 5px at 40% 30%, #ff69b4 50%, transparent 50%),
+        radial-gradient(circle 3px at 55% 15%, #ffb6c1 50%, transparent 50%),
+        radial-gradient(circle 4px at 70% 25%, #ff69b4 50%, transparent 50%),
+        radial-gradient(circle 6px at 85% 5%, #ffb6c1 50%, transparent 50%),
+        
+        /* 흰 꽃잎들 */
+        radial-gradient(circle 3px at 15% 40%, #ffffff 50%, transparent 50%),
+        radial-gradient(circle 4px at 30% 35%, #f8f8f8 50%, transparent 50%),
+        radial-gradient(circle 5px at 45% 45%, #ffffff 50%, transparent 50%),
+        radial-gradient(circle 3px at 60% 38%, #f8f8f8 50%, transparent 50%),
+        radial-gradient(circle 4px at 75% 42%, #ffffff 50%, transparent 50%),
+        radial-gradient(circle 6px at 90% 35%, #f8f8f8 50%, transparent 50%);
+    
+    background-size: 100px 100px;
+    animation: naturalSakuraFall 12s linear infinite;
     pointer-events: none;
-    opacity: 0.9;
+    z-index: 1;
 }
 
-/* 다크 모드 꽃잎 */
-body.sakura-background:not(.light-theme)::after {
+/* 자연스러운 벚꽃 낙하 애니메이션 */
+@keyframes naturalSakuraFall {
+    0% {
+        transform: translateY(-100px) translateX(0px) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    90% {
+        opacity: 0.6;
+    }
+    100% {
+        transform: translateY(calc(100vh + 100px)) translateX(50px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* 추가 꽃잎 레이어 - 더 자연스러운 효과 */
+body.sakura-background .category-tabs-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: 
-        radial-gradient(5px 5px at 40px 50px, rgba(255, 107, 157, 0.9), transparent),
-        radial-gradient(3px 3px at 90px 30px, rgba(255, 143, 171, 0.7), transparent),
-        radial-gradient(7px 7px at 160px 80px, rgba(255, 168, 204, 0.8), transparent),
-        radial-gradient(4px 4px at 200px 120px, rgba(255, 182, 193, 0.6), transparent),
-        radial-gradient(6px 6px at 280px 90px, rgba(255, 105, 180, 0.9), transparent);
-    background-repeat: repeat;
-    background-size: 300px 200px;
-    animation: sakuraDarkFall 10s linear infinite;
+        radial-gradient(circle 3px at 20% 60%, rgba(255, 105, 180, 0.6) 50%, transparent 50%),
+        radial-gradient(circle 4px at 50% 70%, rgba(255, 255, 255, 0.5) 50%, transparent 50%),
+        radial-gradient(circle 5px at 80% 65%, rgba(255, 182, 193, 0.7) 50%, transparent 50%);
+    background-size: 150px 80px;
+    animation: slowSakuraFall 15s linear infinite;
+    pointer-events: none;
+    z-index: -1;
 }
 
-/* 라이트 모드 꽃잎 */
-body.sakura-background.light-theme::after {
+@keyframes slowSakuraFall {
+    0% {
+        transform: translateY(-50px) rotate(0deg);
+        opacity: 0;
+    }
+    15% {
+        opacity: 0.7;
+    }
+    85% {
+        opacity: 0.4;
+    }
+    100% {
+        transform: translateY(200px) rotate(180deg);
+        opacity: 0;
+    }
+}
+
+/* 메뉴 그리드 영역에도 꽃잎 */
+body.sakura-background .menu-grid::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: 
-        radial-gradient(4px 4px at 30px 40px, rgba(233, 30, 99, 0.6), transparent),
-        radial-gradient(6px 6px at 80px 20px, rgba(233, 30, 99, 0.4), transparent),
-        radial-gradient(3px 3px at 150px 90px, rgba(233, 30, 99, 0.5), transparent),
-        radial-gradient(5px 5px at 200px 130px, rgba(233, 30, 99, 0.3), transparent),
-        radial-gradient(7px 7px at 250px 60px, rgba(255, 20, 147, 0.7), transparent);
-    background-repeat: repeat;
-    background-size: 280px 180px;
-    animation: sakuraLightFall 12s linear infinite;
+        radial-gradient(circle 2px at 30% 20%, rgba(255, 255, 255, 0.8) 50%, transparent 50%),
+        radial-gradient(circle 3px at 60% 40%, rgba(255, 105, 180, 0.6) 50%, transparent 50%),
+        radial-gradient(circle 4px at 90% 30%, rgba(255, 182, 193, 0.5) 50%, transparent 50%);
+    background-size: 200px 120px;
+    animation: gentleSakuraFall 18s linear infinite;
+    pointer-events: none;
+    z-index: 0;
 }
 
-/* 애니메이션 */
-@keyframes sakuraDarkFall {
-    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-    50% { transform: translateY(50vh) rotate(180deg); opacity: 0.6; }
-    100% { transform: translateY(100vh) rotate(360deg); opacity: 0.1; }
+@keyframes gentleSakuraFall {
+    0% {
+        transform: translateY(-80px) translateX(-20px) rotate(0deg);
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.6;
+    }
+    80% {
+        opacity: 0.3;
+    }
+    100% {
+        transform: translateY(300px) translateX(30px) rotate(270deg);
+        opacity: 0;
+    }
 }
 
-@keyframes sakuraLightFall {
-    0% { transform: translateY(-20px) rotate(0deg); opacity: 0.8; }
-    50% { transform: translateY(60vh) rotate(240deg); opacity: 0.5; }
-    100% { transform: translateY(100vh) rotate(360deg); opacity: 0.1; }
+/* 꽃잎이 UI 요소 뒤로 가도록 z-index 조정 */
+body.sakura-background .header,
+body.sakura-background .category-tabs-wrapper,
+body.sakura-background .subcategory-wrapper,
+body.sakura-background .menu-grid {
+    position: relative;
+    z-index: 10;
 }
 
-/* ========== 투명 UI ========== */
-
-/* 헤더 */
-body.sakura-background .header {
-    background: rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(15px) !important;
-    border-bottom: none !important;
-}
-
-body.sakura-background.light-theme .header {
-    background: rgba(255, 255, 255, 0.15) !important;
-}
-
-/* 헤더 텍스트 */
-body.sakura-background .header .logo,
-body.sakura-background .header .back-btn {
-    color: white !important;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5) !important;
-    font-weight: bold !important;
-}
-
-body.sakura-background.light-theme .header .logo,
-body.sakura-background.light-theme .header .back-btn {
-    color: #000 !important;
-    text-shadow: 0 2px 4px rgba(255,255,255,0.8) !important;
-}
-
-/* 햄버거 메뉴 */
-body.sakura-background .menu-btn span {
-    background: white !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
-}
-
-body.sakura-background.light-theme .menu-btn span {
-    background: #000 !important;
-    box-shadow: 0 2px 4px rgba(255,255,255,0.8) !important;
-}
-
-/* 카테고리 탭 영역 */
-body.sakura-background .category-tabs-wrapper {
-    background: rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(10px) !important;
-    border-bottom: none !important;
-}
-
-/* 카테고리 탭 */
-body.sakura-background .category-tab:not(.help-tab) {
-    background: rgba(255, 255, 255, 0.2) !important;
-    color: rgba(255, 255, 255, 0.9) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
-    font-weight: bold !important;
-}
-
-body.sakura-background.light-theme .category-tab:not(.help-tab) {
-    color: #000 !important;
-    text-shadow: 0 1px 3px rgba(255,255,255,0.8) !important;
-}
-
-/* 활성 카테고리 탭 */
-body.sakura-background .category-tab.active:not(.help-tab) {
-    background: rgba(74, 144, 226, 0.9) !important;
-    color: white !important;
-    border-color: rgba(74, 144, 226, 1) !important;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
-    box-shadow: 0 3px 12px rgba(74, 144, 226, 0.5) !important;
-}
-
-/* 카테고리 설명 */
-body.sakura-background .category-description {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: rgba(255, 255, 255, 0.9) !important;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
-    backdrop-filter: blur(8px) !important;
-    font-weight: 600 !important;
-}
-
-body.sakura-background.light-theme .category-description {
-    color: #000 !important;
-    text-shadow: 0 1px 3px rgba(255,255,255,0.8) !important;
-}
-
-/* 서브카테고리 영역 */
-body.sakura-background .subcategory-wrapper {
-    background: rgba(255, 255, 255, 0.05) !important;
-    backdrop-filter: blur(8px) !important;
-    border-bottom: none !important;
-}
-
-/* 서브카테고리 탭 */
-body.sakura-background .subcategory-tab {
-    background: rgba(255, 255, 255, 0.2) !important;
-    color: rgba(255, 255, 255, 0.8) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
-    font-weight: bold !important;
-}
-
-body.sakura-background.light-theme .subcategory-tab {
-    color: #000 !important;
-    text-shadow: 0 1px 2px rgba(255,255,255,0.8) !important;
-}
-
-/* 활성 서브카테고리 탭 */
-body.sakura-background .subcategory-tab.active {
-    background: rgba(74, 144, 226, 0.9) !important;
-    color: white !important;
-    border-color: rgba(74, 144, 226, 1) !important;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
-    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.4) !important;
+/* 모바일에서는 꽃잎 수 줄이기 */
+@media (max-width: 767px) {
+    body.sakura-background::after {
+        background-size: 80px 80px;
+        animation-duration: 10s;
+    }
+    
+    body.sakura-background .category-tabs-wrapper::before,
+    body.sakura-background .menu-grid::before {
+        background-size: 120px 60px;
+    }
 }
