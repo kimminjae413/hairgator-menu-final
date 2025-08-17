@@ -1544,7 +1544,7 @@
         });
     </script>
 
-    <!-- 🌸 벚꽃 배경 시스템 - 수정된 최종 안정 버전 -->
+    <!-- 🌸 벚꽃 배경 시스템 - 테마별 CSS 파일 로드 방식 -->
     <script>
         (function() {
             'use strict';
@@ -1611,7 +1611,7 @@
                 console.log('✅ 벚꽃 버튼 생성 완료! (시도:', initAttempts, ')');
             }
             
-            // 이벤트 설정 - 강화된 버전
+            // 이벤트 설정 - 테마별 CSS 로드 방식
             function setupSakuraEvents() {
                 const button = document.getElementById('sakuraToggle');
                 const statusElement = document.getElementById('sakuraStatus');
@@ -1624,13 +1624,6 @@
                 // 클릭 이벤트
                 button.addEventListener('click', function() {
                     console.log('🌸 벚꽃 버튼 클릭됨');
-                    
-                    // 화면 크기 경고 (선택사항)
-                    if (window.innerWidth < 768) {
-                        if (!confirm('화면이 작아 벚꽃 효과가 제한될 수 있습니다. 계속하시겠습니까?')) {
-                            return;
-                        }
-                    }
                     
                     sakuraActive = !sakuraActive;
                     document.body.classList.toggle('sakura-background', sakuraActive);
@@ -1669,21 +1662,43 @@
                     }
                 });
                 
+                // 테마 변경 감지
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            if (sakuraActive) {
+                                console.log('🎨 테마 변경 감지 - CSS 재로드');
+                                removeSakuraCSS();
+                                setTimeout(loadSakuraCSS, 100);
+                            }
+                        }
+                    });
+                });
+                
+                observer.observe(document.body, {
+                    attributes: true,
+                    attributeFilter: ['class']
+                });
+                
                 console.log('✅ 벚꽃 이벤트 설정 완료');
             }
             
-            // CSS 파일 로드 (순수 CSS 파일 사용)
+            // 테마별 CSS 파일 로드
             function loadSakuraCSS() {
                 console.log('🌸 벚꽃 CSS 파일 로드 시작');
                 
                 // 기존 CSS 제거
                 removeSakuraCSS();
                 
+                // 현재 테마 확인
+                const isLightTheme = document.body.classList.contains('light-theme');
+                const cssFileName = isLightTheme ? 'sakura-light.css' : 'sakura-dark.css';
+                
                 // CSS 파일 경로들
                 const possiblePaths = [
-                    './backgrounds/sakura-dark.css',
-                    'backgrounds/sakura-dark.css',
-                    '/backgrounds/sakura-dark.css'
+                    `./backgrounds/${cssFileName}`,
+                    `backgrounds/${cssFileName}`,
+                    `/backgrounds/${cssFileName}`
                 ];
                 
                 function tryLoadCSS(pathIndex = 0) {
@@ -1713,7 +1728,7 @@
                 tryLoadCSS();
             }
             
-            // CSS 제거 (CSS 파일만 제거)
+            // CSS 제거
             function removeSakuraCSS() {
                 const existingCSS = document.querySelector('#sakura-css');
                 
