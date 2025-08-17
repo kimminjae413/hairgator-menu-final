@@ -1,6 +1,6 @@
-/* ========== 자연스러운 벚꽃 배경 시스템 (다크 모드 전용) ========== */
+/* ========== 검정 배경에 많은 벚꽃이 흩날리는 시스템 ========== */
 
-/* 메인 벚꽃 레이어 */
+/* 메인 벚꽃 레이어 - 더 많은 꽃잎 */
 body.sakura-background::before {
     content: '';
     position: fixed;
@@ -9,30 +9,41 @@ body.sakura-background::before {
     width: 100%;
     height: 100%;
     background: 
-        /* 첫 번째 웨이브 - 핑크 꽃잎들 */
-        radial-gradient(circle 4px at 0% 0%, #ff69b4 50%, transparent 50%),
-        radial-gradient(circle 3px at 20% 10%, #ffb6c1 50%, transparent 50%),
-        radial-gradient(circle 5px at 40% 20%, #ff69b4 50%, transparent 50%),
-        radial-gradient(circle 3px at 60% 30%, #ffb6c1 50%, transparent 50%),
-        radial-gradient(circle 4px at 80% 40%, #ff69b4 50%, transparent 50%),
-        radial-gradient(circle 6px at 100% 50%, #ffb6c1 50%, transparent 50%),
+        /* 첫 번째 줄 - 핑크 꽃잎들 */
+        radial-gradient(circle 4px at 5% 10%, #ff69b4 50%, transparent 50%),
+        radial-gradient(circle 3px at 15% 25%, #ffb6c1 50%, transparent 50%),
+        radial-gradient(circle 5px at 25% 40%, #ff69b4 50%, transparent 50%),
+        radial-gradient(circle 3px at 35% 55%, #ffb6c1 50%, transparent 50%),
+        radial-gradient(circle 4px at 45% 70%, #ff69b4 50%, transparent 50%),
+        radial-gradient(circle 6px at 55% 85%, #ffb6c1 50%, transparent 50%),
+        radial-gradient(circle 3px at 65% 15%, #ff69b4 50%, transparent 50%),
+        radial-gradient(circle 5px at 75% 30%, #ffb6c1 50%, transparent 50%),
+        radial-gradient(circle 4px at 85% 45%, #ff69b4 50%, transparent 50%),
+        radial-gradient(circle 3px at 95% 60%, #ffb6c1 50%, transparent 50%),
         
-        /* 두 번째 웨이브 - 흰 꽃잎들 */
-        radial-gradient(circle 3px at 10% 60%, #ffffff 50%, transparent 50%),
-        radial-gradient(circle 4px at 30% 70%, #f8f8f8 50%, transparent 50%),
-        radial-gradient(circle 5px at 50% 80%, #ffffff 50%, transparent 50%),
-        radial-gradient(circle 3px at 70% 90%, #f8f8f8 50%, transparent 50%),
-        radial-gradient(circle 4px at 90% 100%, #ffffff 50%, transparent 50%);
+        /* 두 번째 줄 - 흰 꽃잎들 */
+        radial-gradient(circle 3px at 10% 80%, #ffffff 50%, transparent 50%),
+        radial-gradient(circle 4px at 20% 5%, #f8f8f8 50%, transparent 50%),
+        radial-gradient(circle 5px at 30% 20%, #ffffff 50%, transparent 50%),
+        radial-gradient(circle 3px at 40% 35%, #f8f8f8 50%, transparent 50%),
+        radial-gradient(circle 4px at 50% 50%, #ffffff 50%, transparent 50%),
+        radial-gradient(circle 6px at 60% 65%, #f8f8f8 50%, transparent 50%),
+        radial-gradient(circle 3px at 70% 80%, #ffffff 50%, transparent 50%),
+        radial-gradient(circle 5px at 80% 95%, #f8f8f8 50%, transparent 50%),
+        radial-gradient(circle 4px at 90% 25%, #ffffff 50%, transparent 50%),
+        radial-gradient(circle 3px at 100% 40%, #f8f8f8 50%, transparent 50%);
     
-    background-size: 200px 200px, 180px 180px, 220px 220px, 160px 160px, 240px 240px, 200px 200px,
-                     190px 190px, 170px 170px, 210px 210px, 150px 150px, 230px 230px;
-    animation: sakuraFlow1 15s linear infinite;
+    background-size: 150px 150px, 130px 130px, 170px 170px, 120px 120px, 180px 180px, 
+                     140px 140px, 160px 160px, 110px 110px, 190px 190px, 125px 125px,
+                     135px 135px, 155px 155px, 115px 115px, 175px 175px, 145px 145px,
+                     165px 165px, 105px 105px, 185px 185px, 135px 135px, 125px 125px;
+    animation: sakuraFlow1 12s linear infinite;
     pointer-events: none;
     z-index: 1;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 
-/* 보조 벚꽃 레이어 */
+/* 보조 벚꽃 레이어 - 더 많은 꽃잎 */
 body.sakura-background::after {
     content: '';
     position: fixed;
@@ -41,24 +52,38 @@ body.sakura-background::after {
     width: 100%;
     height: 100%;
     background: 
-        /* 추가 핑크 꽃잎들 */
-        radial-gradient(circle 3px at 15% 25%, rgba(255, 105, 180, 0.9) 50%, transparent 50%),
-        radial-gradient(circle 4px at 35% 45%, rgba(255, 182, 193, 0.8) 50%, transparent 50%),
-        radial-gradient(circle 2px at 55% 65%, rgba(255, 105, 180, 0.9) 50%, transparent 50%),
-        radial-gradient(circle 5px at 75% 85%, rgba(255, 182, 193, 0.7) 50%, transparent 50%),
+        /* 세 번째 줄 - 더 많은 핑크 꽃잎들 */
+        radial-gradient(circle 3px at 7% 12%, rgba(255, 105, 180, 0.8) 50%, transparent 50%),
+        radial-gradient(circle 4px at 17% 28%, rgba(255, 182, 193, 0.9) 50%, transparent 50%),
+        radial-gradient(circle 2px at 27% 44%, rgba(255, 105, 180, 0.8) 50%, transparent 50%),
+        radial-gradient(circle 5px at 37% 60%, rgba(255, 182, 193, 0.7) 50%, transparent 50%),
+        radial-gradient(circle 3px at 47% 76%, rgba(255, 105, 180, 0.8) 50%, transparent 50%),
+        radial-gradient(circle 4px at 57% 92%, rgba(255, 182, 193, 0.9) 50%, transparent 50%),
+        radial-gradient(circle 6px at 67% 8%, rgba(255, 105, 180, 0.7) 50%, transparent 50%),
+        radial-gradient(circle 3px at 77% 24%, rgba(255, 182, 193, 0.8) 50%, transparent 50%),
+        radial-gradient(circle 5px at 87% 40%, rgba(255, 105, 180, 0.9) 50%, transparent 50%),
+        radial-gradient(circle 4px at 97% 56%, rgba(255, 182, 193, 0.8) 50%, transparent 50%),
         
-        /* 추가 흰 꽃잎들 */
-        radial-gradient(circle 3px at 25% 15%, rgba(255, 255, 255, 0.9) 50%, transparent 50%),
-        radial-gradient(circle 4px at 45% 35%, rgba(248, 248, 248, 0.8) 50%, transparent 50%),
-        radial-gradient(circle 6px at 65% 55%, rgba(255, 255, 255, 0.7) 50%, transparent 50%),
-        radial-gradient(circle 3px at 85% 75%, rgba(248, 248, 248, 0.8) 50%, transparent 50%);
+        /* 네 번째 줄 - 더 많은 흰 꽃잎들 */
+        radial-gradient(circle 3px at 12% 18%, rgba(255, 255, 255, 0.9) 50%, transparent 50%),
+        radial-gradient(circle 4px at 22% 34%, rgba(248, 248, 248, 0.8) 50%, transparent 50%),
+        radial-gradient(circle 6px at 32% 50%, rgba(255, 255, 255, 0.7) 50%, transparent 50%),
+        radial-gradient(circle 3px at 42% 66%, rgba(248, 248, 248, 0.8) 50%, transparent 50%),
+        radial-gradient(circle 5px at 52% 82%, rgba(255, 255, 255, 0.9) 50%, transparent 50%),
+        radial-gradient(circle 4px at 62% 98%, rgba(248, 248, 248, 0.8) 50%, transparent 50%),
+        radial-gradient(circle 3px at 72% 14%, rgba(255, 255, 255, 0.9) 50%, transparent 50%),
+        radial-gradient(circle 6px at 82% 30%, rgba(248, 248, 248, 0.7) 50%, transparent 50%),
+        radial-gradient(circle 4px at 92% 46%, rgba(255, 255, 255, 0.8) 50%, transparent 50%),
+        radial-gradient(circle 5px at 102% 62%, rgba(248, 248, 248, 0.9) 50%, transparent 50%);
     
-    background-size: 250px 180px, 180px 250px, 300px 200px, 160px 300px,
-                     220px 160px, 190px 280px, 280px 190px, 150px 250px;
-    animation: sakuraFlow2 18s linear infinite;
+    background-size: 140px 120px, 120px 140px, 160px 130px, 100px 160px, 150px 110px,
+                     130px 150px, 170px 120px, 110px 170px, 145px 125px, 125px 145px,
+                     135px 115px, 115px 135px, 155px 125px, 105px 155px, 165px 115px,
+                     125px 165px, 175px 105px, 95px 175px, 185px 125px, 115px 185px;
+    animation: sakuraFlow2 14s linear infinite;
     pointer-events: none;
     z-index: 2;
-    opacity: 0.6;
+    opacity: 0.7;
 }
 
 /* 첫 번째 애니메이션 - 대각선 낙하 */
@@ -68,7 +93,7 @@ body.sakura-background::after {
         opacity: 0;
     }
     10% {
-        opacity: 0.8;
+        opacity: 0.9;
     }
     90% {
         opacity: 0.4;
@@ -86,7 +111,7 @@ body.sakura-background::after {
         opacity: 0;
     }
     15% {
-        opacity: 0.6;
+        opacity: 0.7;
     }
     30% {
         transform: translateY(30vh) translateX(-20px) rotate(120deg);
@@ -122,14 +147,18 @@ body.sakura-background .theme-toggle-bottom {
 /* 모바일 최적화 - 꽃잎 밀도 조절 */
 @media (max-width: 767px) {
     body.sakura-background::before {
-        background-size: 150px 150px, 130px 130px, 170px 170px, 120px 120px, 180px 180px, 150px 150px,
-                         140px 140px, 120px 120px, 160px 160px, 110px 110px, 170px 170px;
-        animation-duration: 12s;
+        background-size: 120px 120px, 100px 100px, 140px 140px, 90px 90px, 150px 150px, 
+                         110px 110px, 130px 130px, 80px 80px, 160px 160px, 95px 95px,
+                         105px 105px, 125px 125px, 85px 85px, 145px 145px, 115px 115px,
+                         135px 135px, 75px 75px, 155px 155px, 105px 105px, 95px 95px;
+        animation-duration: 10s;
     }
     
     body.sakura-background::after {
-        background-size: 180px 130px, 130px 180px, 220px 150px, 120px 220px,
-                         160px 120px, 140px 200px, 200px 140px, 110px 180px;
-        animation-duration: 14s;
+        background-size: 110px 90px, 90px 110px, 130px 100px, 70px 130px, 120px 80px,
+                         100px 120px, 140px 90px, 80px 140px, 115px 95px, 95px 115px,
+                         105px 85px, 85px 105px, 125px 95px, 75px 125px, 135px 85px,
+                         95px 135px, 145px 75px, 65px 145px, 155px 95px, 85px 155px;
+        animation-duration: 12s;
     }
 }
