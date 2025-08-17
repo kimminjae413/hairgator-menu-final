@@ -189,3 +189,4 @@ self.addEventListener('unhandledrejection', event => {
 });
 
 console.log('🌸 HAIRGATOR Service Worker loaded - Sakura optimized!');
+
