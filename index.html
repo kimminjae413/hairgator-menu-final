@@ -880,9 +880,6 @@
                     <span style="font-size: 14px;">🌸</span>
                     <span>벚꽃 배경</span>
                 </button>
-                <p class="sidebar-description">
-                    진짜 petal.png 이미지로 만든 Canvas 벚꽃 효과
-                </p>
             </div>
         </div>
     </aside>
@@ -1289,7 +1286,11 @@
                     this.ctx.restore();
                 });
                 
-                this.animationId = requestAnimationFrame(this.animate.bind(this));
+                // 핵심 수정: bind 사용해서 this 바인딩 문제 해결
+                const self = this;
+                this.animationId = requestAnimationFrame(function() {
+                    self.animate();
+                });
             },
 
             stop() {
