@@ -1124,7 +1124,7 @@
             }
         };
 
-        // 🌸 벚꽃 시스템 (NaN 문제 완전 수정됨)
+        // 🌸 벚꽃 시스템 (petal.png 이미지가 떨어지는 최종 버전)
         const petalSakuraSystem = {
             active: false,
             canvas: null,
@@ -1134,15 +1134,15 @@
             petalImage: null,
 
             async init() {
-                console.log('🌸 벚꽃 시스템 초기화 (NaN 수정됨)');
+                console.log('🌸 petal.png 벚꽃 시스템 초기화');
                 
-                // petal.png 이미지 로드 시도
+                // petal.png 이미지 로드
                 await this.loadPetalImage();
                 
                 // Canvas 생성
                 this.createCanvas();
                 
-                // 꽃잎 생성 (NaN 방지)
+                // 꽃잎 생성
                 this.createPetals();
                 
                 this.active = true;
@@ -1150,7 +1150,7 @@
                 // 애니메이션 시작
                 this.startAnimation();
                 
-                console.log('✅ 벚꽃 시스템 시작!');
+                console.log('✅ petal.png 벚꽃 시스템 시작!');
             },
 
             async loadPetalImage() {
@@ -1211,69 +1211,34 @@
                 document.body.appendChild(this.canvas);
             },
 
-            // 🔧 NaN 문제 완전 수정된 꽃잎 생성
             createPetals() {
-                console.log('🌸 꽃잎 생성 중 (NaN 방지)');
+                console.log('🌸 꽃잎 생성 중');
                 this.petals = [];
                 
-                // 안전한 랜덤 함수
-                const safeRandom = () => {
-                    const val = Math.random();
-                    return isNaN(val) ? 0.5 : val;
-                };
+                const screenWidth = this.canvas.width;
+                const screenHeight = this.canvas.height;
                 
-                // 화면 크기 확인
-                const screenWidth = this.canvas ? this.canvas.width : (window.innerWidth || 1200);
-                const screenHeight = this.canvas ? this.canvas.height : (window.innerHeight || 800);
-                
-                console.log(`화면 크기: ${screenWidth} x ${screenHeight}`);
-                
-                // 꽃잎 30개 생성 (안전한 값들로)
+                // 꽃잎 30개 생성
                 for (let i = 0; i < 30; i++) {
                     const petal = {
-                        x: safeRandom() * screenWidth,
-                        y: safeRandom() * screenHeight - 200, // 화면 위쪽에서 시작
-                        size: safeRandom() * 0.8 + 0.4, // 0.4 ~ 1.2
-                        speedY: safeRandom() * 2 + 1, // 1 ~ 3
-                        speedX: safeRandom() * 1 - 0.5, // -0.5 ~ 0.5
-                        rotation: safeRandom() * 360, // 0 ~ 360도
-                        rotationSpeed: (safeRandom() - 0.5) * 4, // -2 ~ 2
-                        opacity: safeRandom() * 0.6 + 0.4, // 0.4 ~ 1.0
-                        swing: safeRandom() * 0.02 + 0.01 // 0.01 ~ 0.03
+                        x: Math.random() * screenWidth,
+                        y: Math.random() * screenHeight - 200,
+                        size: Math.random() * 0.8 + 0.4,
+                        speedY: Math.random() * 2 + 1,
+                        speedX: Math.random() * 1 - 0.5,
+                        rotation: Math.random() * 360,
+                        rotationSpeed: (Math.random() - 0.5) * 4,
+                        opacity: Math.random() * 0.6 + 0.4,
+                        swing: Math.random() * 0.02 + 0.01
                     };
-                    
-                    // NaN 검사
-                    const hasNaN = Object.values(petal).some(val => isNaN(val));
-                    
-                    if (hasNaN) {
-                        console.log(`❌ 꽃잎 ${i}에 NaN 발견, 기본값으로 대체`);
-                        // 기본값으로 대체
-                        petal.x = 100 + i * 40;
-                        petal.y = -100;
-                        petal.size = 0.8;
-                        petal.speedY = 2;
-                        petal.speedX = 0;
-                        petal.rotation = 0;
-                        petal.rotationSpeed = 1;
-                        petal.opacity = 0.8;
-                        petal.swing = 0.02;
-                    }
                     
                     this.petals.push(petal);
                 }
                 
                 console.log(`✅ 꽃잎 ${this.petals.length}개 생성 완료`);
-                
-                // 첫 번째 꽃잎 확인
-                const firstPetal = this.petals[0];
-                console.log('첫 번째 꽃잎 확인:', {
-                    x: firstPetal.x,
-                    y: firstPetal.y,
-                    hasNaN: Object.values(firstPetal).some(val => isNaN(val))
-                });
             },
 
-            // 🔧 애니메이션 시작 (NaN 방지)
+            // 🔧 핵심 수정: petal.png 이미지가 떨어지도록 완전 수정
             startAnimation() {
                 if (!this.active) return;
                 
@@ -1283,39 +1248,17 @@
                         return;
                     }
                     
-                    if (!this.ctx || !this.canvas) {
-                        console.warn('❌ Canvas 또는 Context 없음');
-                        return;
-                    }
+                    if (!this.ctx || !this.canvas) return;
                     
                     // 화면 지우기
                     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                     
                     // 각 꽃잎 처리
                     this.petals.forEach((petal, index) => {
-                        // NaN 검사
-                        if (isNaN(petal.x) || isNaN(petal.y)) {
-                            console.log(`❌ 꽃잎 ${index} NaN 발견, 재설정`);
-                            petal.x = Math.random() * this.canvas.width;
-                            petal.y = -100;
-                            petal.size = 0.8;
-                            petal.speedY = 2;
-                            petal.speedX = 0;
-                            petal.rotation = 0;
-                            petal.rotationSpeed = 1;
-                            petal.opacity = 0.8;
-                            petal.swing = 0.02;
-                        }
-                        
-                        // 위치 업데이트 (안전하게)
-                        const newY = petal.y + petal.speedY;
-                        const newX = petal.x + petal.speedX + Math.sin(newY * petal.swing) * 0.5;
-                        const newRotation = petal.rotation + petal.rotationSpeed;
-                        
-                        // NaN 체크 후 업데이트
-                        if (!isNaN(newY)) petal.y = newY;
-                        if (!isNaN(newX)) petal.x = newX;
-                        if (!isNaN(newRotation)) petal.rotation = newRotation;
+                        // 위치 업데이트
+                        petal.y += petal.speedY;
+                        petal.x += petal.speedX + Math.sin(petal.y * petal.swing) * 0.5;
+                        petal.rotation += petal.rotationSpeed;
                         
                         // 화면 밖으로 나가면 리셋
                         if (petal.y > this.canvas.height + 50) {
@@ -1326,39 +1269,26 @@
                         if (petal.x > this.canvas.width + 50) petal.x = -50;
                         if (petal.x < -50) petal.x = this.canvas.width + 50;
                         
-                        // 꽃잎 그리기
+                        // 🔧 petal.png 이미지 그리기 (최종 수정)
                         this.ctx.save();
                         this.ctx.translate(petal.x, petal.y);
                         this.ctx.rotate(petal.rotation * Math.PI / 180);
                         this.ctx.globalAlpha = petal.opacity;
                         
-                        if (this.petalImage && this.petalImage.complete) {
-                            // 진짜 petal.png 이미지 사용
-                            const size = 25 * petal.size;
+                        // petal.png 이미지가 있으면 사용, 없으면 분홍 원
+                        if (this.petalImage && this.petalImage.complete && this.petalImage.naturalWidth > 0) {
+                            // ✅ petal.png 이미지로 그리기
+                            const size = 30 * petal.size; // 크기 조정
                             this.ctx.drawImage(
                                 this.petalImage, 
                                 -size/2, -size/2, 
                                 size, size
                             );
                         } else {
-                            // petal.png가 없을 때 예쁜 꽃잎 모양
-                            const size = 10 * petal.size;
-                            this.ctx.fillStyle = '#ffb6c1';
-                            
-                            // 꽃잎 5개로 이루어진 벚꽃
-                            for (let i = 0; i < 5; i++) {
-                                this.ctx.save();
-                                this.ctx.rotate((i * 72) * Math.PI / 180);
-                                this.ctx.beginPath();
-                                this.ctx.ellipse(0, -size/3, size/4, size/2, 0, 0, Math.PI * 2);
-                                this.ctx.fill();
-                                this.ctx.restore();
-                            }
-                            
-                            // 중앙 원
+                            // 이미지 로드 실패시 분홍 원
                             this.ctx.fillStyle = '#ff69b4';
                             this.ctx.beginPath();
-                            this.ctx.arc(0, 0, size/6, 0, Math.PI * 2);
+                            this.ctx.arc(0, 0, 15, 0, Math.PI * 2);
                             this.ctx.fill();
                         }
                         
@@ -1371,7 +1301,7 @@
                 
                 // 애니메이션 시작
                 animate();
-                console.log('✅ 벚꽃 애니메이션 시작됨!');
+                console.log('✅ petal.png 애니메이션 시작됨!');
             },
 
             stop() {
@@ -1388,7 +1318,7 @@
                 }
                 
                 this.petals = [];
-                console.log('🌸 벚꽃 시스템 중지');
+                console.log('🌸 petal.png 벚꽃 시스템 중지');
             },
 
             handleResize() {
@@ -1703,18 +1633,16 @@
             elements.themeToggle?.addEventListener('click', themeManager.toggle);
             elements.themeToggleBottom?.addEventListener('click', themeManager.toggle);
             
-            // 🌸 벚꽃 버튼 이벤트 (완전 수정됨)
+            // 🌸 벚꽃 버튼 이벤트 (최종 완성)
             elements.petalSakuraBtn?.addEventListener('click', function() {
                 if (petalSakuraSystem.active) {
                     petalSakuraSystem.stop();
                     this.classList.remove('active');
                     this.querySelector('span:last-child').textContent = '벚꽃 배경';
-                    console.log('🌸 벚꽃 비활성화');
                 } else {
                     petalSakuraSystem.init();
                     this.classList.add('active');
                     this.querySelector('span:last-child').textContent = '배경 끄기';
-                    console.log('🌸 벚꽃 활성화');
                 }
             });
             
@@ -1751,170 +1679,3 @@
 
         // 초기화
         function init() {
-            setupEventListeners();
-            themeManager.init();
-            
-            if (elements.backBtn) {
-                elements.backBtn.style.display = 'none';
-            }
-            
-            console.log('🚀 HAIRGATOR App initialized (NaN 문제 완전 수정됨)');
-        }
-
-        // DOM 로드 완료 시 실행
-        document.addEventListener('DOMContentLoaded', init);
-        
-        // PWA 기능 + 자동 업데이트
-        window.addEventListener('load', function() {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(function(registration) {
-                        console.log('✅ Service Worker 등록 성공');
-                        
-                        // 업데이트 감지
-                        registration.addEventListener('updatefound', function() {
-                            const newWorker = registration.installing;
-                            console.log('🆕 새 버전 발견!');
-                            
-                            newWorker.addEventListener('statechange', function() {
-                                if (newWorker.state === 'installed') {
-                                    if (navigator.serviceWorker.controller) {
-                                        showUpdateNotification();
-                                    }
-                                }
-                            });
-                        });
-                    })
-                    .catch(err => console.log('SW registration failed'));
-            }
-            
-            // Controller 변경 감지
-            navigator.serviceWorker.addEventListener('controllerchange', function() {
-                if (window.updateNotificationShown) {
-                    window.location.reload();
-                }
-            });
-            
-            console.log('✅ HAIRGATOR App loaded successfully (NaN 문제 완전 수정됨)');
-        });
-
-        // 업데이트 알림 표시 함수
-        function showUpdateNotification() {
-            if (window.updateNotificationShown) return;
-            window.updateNotificationShown = true;
-            
-            const existingNotification = document.getElementById('updateNotification');
-            if (existingNotification) existingNotification.remove();
-            
-            const notification = document.createElement('div');
-            notification.id = 'updateNotification';
-            notification.innerHTML = `
-                <div style="
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: linear-gradient(135deg, #FF1493, #FF69B4);
-                    color: white;
-                    padding: 20px 25px;
-                    border-radius: 15px;
-                    box-shadow: 0 10px 40px rgba(255, 20, 147, 0.4);
-                    z-index: 10000;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    max-width: 320px;
-                    animation: slideInRight 0.5s ease;
-                ">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
-                        <span style="font-size: 24px;">🆕</span>
-                        <span style="font-weight: bold; font-size: 16px;">새 버전 업데이트</span>
-                    </div>
-                    <div style="font-size: 14px; margin-bottom: 15px; opacity: 0.9;">
-                        HAIRGATOR의 새로운 기능이 추가되었습니다!
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="updateApp()" style="
-                            background: white;
-                            color: #FF1493;
-                            border: none;
-                            padding: 8px 16px;
-                            border-radius: 8px;
-                            font-weight: bold;
-                            cursor: pointer;
-                            font-size: 14px;
-                            flex: 1;
-                        ">지금 업데이트</button>
-                        <button onclick="dismissUpdate()" style="
-                            background: rgba(255, 255, 255, 0.2);
-                            color: white;
-                            border: 1px solid rgba(255, 255, 255, 0.3);
-                            padding: 8px 16px;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-size: 14px;
-                        ">나중에</button>
-                    </div>
-                </div>
-                <style>
-                    @keyframes slideInRight {
-                        from { transform: translateX(100%); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
-                    }
-                </style>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(function() {
-                if (document.getElementById('updateNotification')) {
-                    dismissUpdate();
-                }
-            }, 30000);
-        }
-
-        // 앱 업데이트 함수
-        function updateApp() {
-            const notification = document.getElementById('updateNotification');
-            if (notification) {
-                notification.innerHTML = `
-                    <div style="
-                        position: fixed;
-                        top: 20px;
-                        right: 20px;
-                        background: linear-gradient(135deg, #28a745, #20c997);
-                        color: white;
-                        padding: 20px 25px;
-                        border-radius: 15px;
-                        box-shadow: 0 10px 40px rgba(40, 167, 69, 0.4);
-                        z-index: 10000;
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        text-align: center;
-                    ">
-                        <div style="font-size: 20px; margin-bottom: 10px;">⏳</div>
-                        <div style="font-weight: bold;">업데이트 중...</div>
-                    </div>
-                `;
-            }
-            
-            if (navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-            }
-            
-            setTimeout(function() {
-                window.location.reload();
-            }, 1000);
-        }
-
-        // 알림 닫기 함수
-        function dismissUpdate() {
-            const notification = document.getElementById('updateNotification');
-            if (notification) {
-                notification.style.animation = 'slideOutRight 0.3s ease';
-                setTimeout(function() {
-                    notification.remove();
-                }, 300);
-            }
-            window.updateNotificationShown = false;
-        }
-    </script>
-
-</body>
-</html>
