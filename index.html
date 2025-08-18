@@ -533,19 +533,19 @@
 
         .sidebar-button {
             width: 100%;
-            padding: 15px;
+            padding: 8px 12px;
             background: #2a2a2a;
             color: white;
             border: 1px solid #444;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .sidebar-button:hover {
@@ -874,11 +874,11 @@
             <!-- 벚꽃 배경 버튼 -->
             <div class="sidebar-section">
                 <h4 style="color: #FF1493; margin-bottom: 15px; text-align: center; font-size: 14px;">
-                    🌸 벚꽃 배경
+                    🎨 배경 모드
                 </h4>
                 <button class="sidebar-button" id="petalSakuraBtn">
-                    <span style="font-size: 16px;">🌸</span>
-                    <span>petal.png 벚꽃</span>
+                    <span style="font-size: 14px;">🌸</span>
+                    <span>벚꽃 배경</span>
                 </button>
                 <p class="sidebar-description">
                     진짜 petal.png 이미지로 만든 Canvas 벚꽃 효과
@@ -1626,11 +1626,11 @@
                 if (petalSakuraSystem.active) {
                     petalSakuraSystem.stop();
                     this.classList.remove('active');
-                    this.querySelector('span:last-child').textContent = 'petal.png 벚꽃';
+                    this.querySelector('span:last-child').textContent = '벚꽃 배경';
                 } else {
                     petalSakuraSystem.init();
                     this.classList.add('active');
-                    this.querySelector('span:last-child').textContent = '벚꽃 중지';
+                    this.querySelector('span:last-child').textContent = '배경 끄기';
                 }
             });
             
@@ -1694,4 +1694,3 @@
 
 </body>
 </html>
-
