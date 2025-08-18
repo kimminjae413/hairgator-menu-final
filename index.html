@@ -1089,6 +1089,194 @@
             btnLike: document.getElementById('btnLike')
         };
 
+        // ========== 벚꽃 시스템 (Canvas 기반) ==========
+        const sakuraCanvasSystem = {
+            active: false,
+            canvas: null,
+            animationId: null,
+
+            init() {
+                console.log('🌸 Canvas 벚꽃 시스템 초기화');
+                this.createButton();
+            },
+
+            createButton() {
+                const sidebar = document.querySelector('.sidebar-content');
+                if (!sidebar) {
+                    setTimeout(() => this.createButton(), 100);
+                    return;
+                }
+
+                // 기존 벚꽃 관련 요소들 모두 제거
+                sidebar.querySelectorAll('[id*="sakura"], [class*="sakura"]').forEach(el => el.remove());
+
+                // 새로운 벚꽃 버튼 생성
+                const sakuraDiv = document.createElement('div');
+                sakuraDiv.innerHTML = `
+                    <div style="margin: 20px 0; padding: 15px 0; border-top: 1px solid #333;">
+                        <h4 style="color: #FF1493; margin-bottom: 15px; font-size: 14px; text-align: center;">
+                            🌸 벚꽃 배경 모드
+                        </h4>
+                        <button id="canvasSakuraBtn" style="
+                            width: 100%; padding: 12px; 
+                            background: #2a2a2a; color: white; 
+                            border: 1px solid #444; border-radius: 8px; 
+                            cursor: pointer; font-size: 14px;
+                            display: flex; align-items: center; justify-content: space-between;
+                            transition: all 0.3s;
+                        ">
+                            <span style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 16px;">🌸</span>
+                                <span>벚꽃 배경</span>
+                            </span>
+                            <span id="canvasSakuraStatus" style="font-size: 12px; color: #999;">OFF</span>
+                        </button>
+                    </div>
+                `;
+
+                // 얼굴분석 버튼 위에 삽입
+                const faceButton = sidebar.querySelector('button[onclick*="hairgator-face"]');
+                if (faceButton && faceButton.parentElement) {
+                    sidebar.insertBefore(sakuraDiv, faceButton.parentElement);
+                } else {
+                    sidebar.insertBefore(sakuraDiv, sidebar.firstChild);
+                }
+
+                // 이벤트 연결
+                this.setupEvents();
+                console.log('✅ Canvas 벚꽃 버튼 생성 완료');
+            },
+
+            setupEvents() {
+                const btn = document.getElementById('canvasSakuraBtn');
+                if (!btn) return;
+
+                btn.addEventListener('click', () => {
+                    this.toggle();
+                });
+
+                // 호버 효과
+                btn.addEventListener('mouseenter', function() {
+                    if (!sakuraCanvasSystem.active) {
+                        this.style.background = '#3a3a3a';
+                    }
+                });
+
+                btn.addEventListener('mouseleave', function() {
+                    if (!sakuraCanvasSystem.active) {
+                        this.style.background = '#2a2a2a';
+                    }
+                });
+            },
+
+            toggle() {
+                this.active = !this.active;
+                const btn = document.getElementById('canvasSakuraBtn');
+                const status = document.getElementById('canvasSakuraStatus');
+
+                if (this.active) {
+                    // 벚꽃 ON
+                    btn.style.background = '#FF1493';
+                    status.textContent = 'ON';
+                    this.startPetals();
+                    console.log('🌸 Canvas 벚꽃 활성화');
+                } else {
+                    // 벚꽃 OFF
+                    btn.style.background = '#2a2a2a';
+                    status.textContent = 'OFF';
+                    this.stopPetals();
+                    console.log('🌸 Canvas 벚꽃 비활성화');
+                }
+            },
+
+            startPetals() {
+                // 기존 캔버스 제거
+                if (this.canvas) {
+                    this.canvas.remove();
+                    if (this.animationId) {
+                        cancelAnimationFrame(this.animationId);
+                    }
+                }
+
+                // 새 캔버스 생성
+                this.canvas = document.createElement('canvas');
+                this.canvas.style.cssText = `
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    pointer-events: none; z-index: 5; opacity: 0.8;
+                `;
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                document.body.appendChild(this.canvas);
+
+                const ctx = this.canvas.getContext('2d');
+                const petals = [];
+                const img = new Image();
+                img.src = './petal.png';
+
+                img.onload = () => {
+                    console.log('✅ petal.png 로드 성공!');
+
+                    // 꽃잎 생성
+                    for (let i = 0; i < 40; i++) {
+                        petals.push({
+                            x: Math.random() * this.canvas.width,
+                            y: Math.random() * this.canvas.height * -2,
+                            size: 15 + Math.random() * 20,
+                            speed: 0.3 + Math.random() * 0.5,
+                            rotation: Math.random() * Math.PI * 2,
+                            rotSpeed: 0.01 + Math.random() * 0.01,
+                            sway: Math.random() * 1 - 0.5
+                        });
+                    }
+
+                    // 애니메이션
+                    const animate = () => {
+                        if (!this.active || !this.canvas || !this.canvas.parentNode) {
+                            return;
+                        }
+
+                        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                        petals.forEach(p => {
+                            ctx.save();
+                            ctx.translate(p.x, p.y);
+                            ctx.rotate(p.rotation);
+                            ctx.drawImage(img, -p.size/2, -p.size/2, p.size, p.size);
+                            ctx.restore();
+
+                            p.y += p.speed;
+                            p.x += Math.sin(p.y * 0.01) * p.sway;
+                            p.rotation += p.rotSpeed;
+
+                            if (p.y > this.canvas.height + 50) {
+                                p.y = -50;
+                                p.x = Math.random() * this.canvas.width;
+                            }
+                        });
+
+                        this.animationId = requestAnimationFrame(animate);
+                    };
+
+                    animate();
+                };
+
+                img.onerror = () => {
+                    console.log('❌ petal.png 로드 실패 - 파일 경로 확인 필요');
+                };
+            },
+
+            stopPetals() {
+                if (this.canvas) {
+                    this.canvas.remove();
+                    this.canvas = null;
+                }
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+            }
+        };
+
         // ========== 전화번호 유틸리티 ==========
         const phoneUtils = {
             validate(phone) {
@@ -1802,7 +1990,6 @@
         });
     </script>
 
-    <!-- sakura-canvas.js 로드 -->
-    <script src="sakura-canvas.js"></script>
+    <!-- sakura-canvas.js는 제거 (HTML 내장 시스템 사용) -->
 </body>
 </html>
