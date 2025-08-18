@@ -1681,17 +1681,158 @@
         // DOM 로드 완료 시 실행
         document.addEventListener('DOMContentLoaded', init);
         
-        // PWA 기능
-        window.addEventListener('load', function() {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(registration => console.log('SW registered'))
-                    .catch(err => console.log('SW registration failed'));
+      // PWA 기능 + 자동 업데이트
+window.addEventListener('load', function() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js')
+            .then(function(registration) {
+                console.log('✅ Service Worker 등록 성공');
+                
+                // 업데이트 감지
+                registration.addEventListener('updatefound', function() {
+                    const newWorker = registration.installing;
+                    console.log('🆕 새 버전 발견!');
+                    
+                    newWorker.addEventListener('statechange', function() {
+                        if (newWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                showUpdateNotification();
+                            }
+                        }
+                    });
+                });
+            })
+            .catch(err => console.log('SW registration failed'));
+    }
+    
+    // Controller 변경 감지
+    navigator.serviceWorker.addEventListener('controllerchange', function() {
+        if (window.updateNotificationShown) {
+            window.location.reload();
+        }
+    });
+    
+    console.log('✅ HAIRGATOR App loaded successfully (Final Complete Version)');
+});
+
+// 업데이트 알림 표시 함수
+function showUpdateNotification() {
+    if (window.updateNotificationShown) return;
+    window.updateNotificationShown = true;
+    
+    const existingNotification = document.getElementById('updateNotification');
+    if (existingNotification) existingNotification.remove();
+    
+    const notification = document.createElement('div');
+    notification.id = 'updateNotification';
+    notification.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(255, 20, 147, 0.4);
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 320px;
+            animation: slideInRight 0.5s ease;
+        ">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                <span style="font-size: 24px;">🆕</span>
+                <span style="font-weight: bold; font-size: 16px;">새 버전 업데이트</span>
+            </div>
+            <div style="font-size: 14px; margin-bottom: 15px; opacity: 0.9;">
+                HAIRGATOR의 새로운 기능이 추가되었습니다!
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="updateApp()" style="
+                    background: white;
+                    color: #FF1493;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    font-size: 14px;
+                    flex: 1;
+                ">지금 업데이트</button>
+                <button onclick="dismissUpdate()" style="
+                    background: rgba(255, 255, 255, 0.2);
+                    color: white;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    padding: 8px 16px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 14px;
+                ">나중에</button>
+            </div>
+        </div>
+        <style>
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
             }
-            
-            console.log('✅ HAIRGATOR App loaded successfully (Final Complete Version)');
-        });
+        </style>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(function() {
+        if (document.getElementById('updateNotification')) {
+            dismissUpdate();
+        }
+    }, 30000);
+}
+
+// 앱 업데이트 함수
+function updateApp() {
+    const notification = document.getElementById('updateNotification');
+    if (notification) {
+        notification.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #28a745, #20c997);
+                color: white;
+                padding: 20px 25px;
+                border-radius: 15px;
+                box-shadow: 0 10px 40px rgba(40, 167, 69, 0.4);
+                z-index: 10000;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                text-align: center;
+            ">
+                <div style="font-size: 20px; margin-bottom: 10px;">⏳</div>
+                <div style="font-weight: bold;">업데이트 중...</div>
+            </div>
+        `;
+    }
+    
+    if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+    }
+    
+    setTimeout(function() {
+        window.location.reload();
+    }, 1000);
+}
+
+// 알림 닫기 함수
+function dismissUpdate() {
+    const notification = document.getElementById('updateNotification');
+    if (notification) {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(function() {
+            notification.remove();
+        }, 300);
+    }
+    window.updateNotificationShown = false;
+}
     </script>
 
 </body>
 </html>
+
