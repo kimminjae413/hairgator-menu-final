@@ -1,6 +1,12 @@
-// Service Worker for HAIRGATOR PWA - 벚꽃 시스템 최적화 버전
-const CACHE_NAME = 'hairgator-v1.1.0'; // 버전 업데이트
-const DYNAMIC_CACHE = 'hairgator-dynamic-v1.1.0';
+// ✅ 자동 캐시 버전 관리 Service Worker
+// 매번 배포할 때마다 자동으로 새 버전 생성!
+
+// 🎯 방법 1: 타임스탬프 자동 생성 (가장 간단)
+const CACHE_NAME = `hairgator-${Date.now()}`;
+const DYNAMIC_CACHE = `hairgator-dynamic-${Date.now()}`;
+
+// 🎯 방법 2: 빌드 시간 환경변수 사용 (더 정교함)
+// const CACHE_NAME = `hairgator-${process.env.BUILD_TIME || Date.now()}`;
 
 // 기본 캐시할 파일들
 const urlsToCache = [
@@ -11,74 +17,90 @@ const urlsToCache = [
   '/migration.html'
 ];
 
-// 캐시하지 않을 파일들 (벚꽃 CSS 등 동적 생성 파일)
+// 캐시하지 않을 파일들
 const noCachePatterns = [
   /backgrounds\/.*\.css$/,  // 배경 CSS 파일들
   /\.js\.map$/,             // 소스맵 파일들
   /hot-update/,             // 핫 리로드 파일들
 ];
 
-// 개발 모드 감지
-const isDevelopment = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-
-// Install Service Worker
+// 🔧 자동 업데이트 감지 및 알림
 self.addEventListener('install', event => {
-  console.log('🔧 Service Worker installing...');
+  console.log('🚀 새 Service Worker 설치 중...', CACHE_NAME);
   
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('📦 Opened cache:', CACHE_NAME);
+        console.log('📦 새 캐시 생성:', CACHE_NAME);
         return cache.addAll(urlsToCache);
       })
       .then(() => {
-        console.log('✅ All files cached successfully');
+        console.log('✅ 모든 파일 캐시 완료');
+        // 즉시 활성화 (새 버전 바로 적용)
+        return self.skipWaiting();
       })
       .catch(error => {
-        console.error('❌ Cache install failed:', error);
+        console.error('❌ 캐시 설치 실패:', error);
       })
   );
-  
-  // 즉시 활성화 (개발 중 빠른 업데이트)
-  self.skipWaiting();
 });
 
-// Activate Service Worker
+// 🔄 이전 버전 캐시 자동 정리
 self.addEventListener('activate', event => {
-  console.log('🚀 Service Worker activating...');
+  console.log('🔄 Service Worker 활성화 중...', CACHE_NAME);
   
   event.waitUntil(
     Promise.all([
-      // 이전 캐시 정리
+      // 이전 캐시들 모두 삭제
       caches.keys().then(cacheNames => {
         return Promise.all(
           cacheNames.map(cacheName => {
             if (cacheName !== CACHE_NAME && cacheName !== DYNAMIC_CACHE) {
-              console.log('🗑️ Deleting old cache:', cacheName);
+              console.log('🗑️ 이전 캐시 삭제:', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       }),
       
-      // 모든 클라이언트 즉시 제어
-      self.clients.claim()
+      // 모든 클라이언트에게 즉시 새 버전 적용
+      self.clients.claim().then(() => {
+        // 🎉 모든 탭에 새 버전 알림
+        return self.clients.matchAll().then(clients => {
+          clients.forEach(client => {
+            client.postMessage({
+              type: 'NEW_VERSION_AVAILABLE',
+              version: CACHE_NAME
+            });
+          });
+        });
+      })
     ])
   );
   
-  console.log('✅ Service Worker activated');
+  console.log('✅ Service Worker 활성화 완료!');
 });
 
-// Fetch Event - 벚꽃 시스템 최적화 버전
+// 📡 메시지 처리 (클라이언트와 통신)
+self.addEventListener('message', event => {
+  console.log('📨 메시지 수신:', event.data);
+  
+  if (event.data && event.data.type === 'GET_VERSION') {
+    // 현재 버전 정보 전송
+    event.ports[0].postMessage({ 
+      version: CACHE_NAME,
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// 🌐 Fetch 이벤트 (기존과 동일하지만 더 스마트하게)
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  
-  // 개발 모드에서는 캐시 비활성화 (벚꽃 개발 중)
-  if (isDevelopment) {
-    console.log('🛠️ Development mode: bypassing cache for', url.pathname);
-    event.respondWith(fetch(event.request));
-    return;
-  }
   
   // non-GET 요청은 캐시하지 않음
   if (event.request.method !== 'GET') {
@@ -94,7 +116,7 @@ self.addEventListener('fetch', event => {
   const shouldNotCache = noCachePatterns.some(pattern => pattern.test(url.pathname));
   
   if (shouldNotCache) {
-    console.log('🚫 No cache for:', url.pathname);
+    console.log('🚫 캐시 제외:', url.pathname);
     event.respondWith(fetch(event.request));
     return;
   }
@@ -105,18 +127,18 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // 일반 파일들 캐시 처리
+  // 일반 파일들 스마트 캐시 처리
   event.respondWith(
     caches.match(event.request)
       .then(response => {
         // 캐시에서 찾으면 반환
         if (response) {
-          console.log('📦 Cache hit:', url.pathname);
+          console.log('📦 캐시 적중:', url.pathname);
           return response;
         }
         
         // 캐시에 없으면 네트워크에서 가져오기
-        console.log('🌐 Network fetch:', url.pathname);
+        console.log('🌐 네트워크 요청:', url.pathname);
         return fetch(event.request).then(fetchResponse => {
           // 유효하지 않은 응답은 캐시하지 않음
           if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
@@ -128,18 +150,18 @@ self.addEventListener('fetch', event => {
           
           caches.open(DYNAMIC_CACHE)
             .then(cache => {
-              console.log('💾 Caching:', url.pathname);
+              console.log('💾 동적 캐시 저장:', url.pathname);
               cache.put(event.request, responseToCache);
             })
             .catch(error => {
-              console.warn('⚠️ Cache put failed:', error);
+              console.warn('⚠️ 캐시 저장 실패:', error);
             });
           
           return fetchResponse;
         });
       })
       .catch(error => {
-        console.error('❌ Fetch failed:', error);
+        console.error('❌ Fetch 실패:', error);
         
         // 오프라인일 때 기본 페이지 반환
         if (event.request.destination === 'document') {
@@ -154,39 +176,4 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// 메시지 이벤트 (벚꽃 캐시 클리어 등)
-self.addEventListener('message', event => {
-  console.log('📨 Message received:', event.data);
-  
-  if (event.data && event.data.type === 'CLEAR_CACHE') {
-    event.waitUntil(
-      caches.keys().then(cacheNames => {
-        return Promise.all(
-          cacheNames.map(cacheName => {
-            console.log('🧹 Clearing cache:', cacheName);
-            return caches.delete(cacheName);
-          })
-        );
-      }).then(() => {
-        console.log('✅ All caches cleared');
-        event.ports[0].postMessage({ success: true });
-      })
-    );
-  }
-  
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
-
-// 에러 핸들링
-self.addEventListener('error', event => {
-  console.error('💥 Service Worker error:', event.error);
-});
-
-self.addEventListener('unhandledrejection', event => {
-  console.error('💥 Unhandled promise rejection:', event.reason);
-});
-
-console.log('🌸 HAIRGATOR Service Worker loaded - Sakura optimized!');
-
+console.log('🌸 HAIRGATOR Service Worker 로드 완료 - 자동 버전 관리!', CACHE_NAME);
