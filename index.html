@@ -1289,7 +1289,7 @@
                     this.ctx.restore();
                 });
                 
-                this.animationId = requestAnimationFrame(() => this.animate());
+                this.animationId = requestAnimationFrame(this.animate.bind(this));
             },
 
             stop() {
@@ -1694,3 +1694,4 @@
 
 </body>
 </html>
+
