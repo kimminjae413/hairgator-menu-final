@@ -56,7 +56,9 @@
 
         body {
             font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--primary-dark);
+            background: var(--primary-dark) !important;
+            background-color: var(--primary-dark) !important;
+            background-image: none !important;
             color: var(--text-primary);
             overflow-x: hidden;
             user-select: none;
@@ -125,6 +127,8 @@
         .main-content {
             margin-top: var(--header-height);
             min-height: calc(100vh - var(--header-height));
+            position: relative;
+            z-index: 10;
         }
 
         /* 성별 선택 */
@@ -135,6 +139,8 @@
             min-height: calc(100vh - var(--header-height));
             padding: 20px;
             gap: 80px;
+            position: relative;
+            z-index: 10;
         }
 
         .gender-btn {
@@ -150,6 +156,8 @@
             justify-content: center;
             gap: 15px;
             transition: var(--transition);
+            position: relative;
+            z-index: 10;
         }
 
         .gender-btn:hover {
@@ -181,6 +189,8 @@
         /* 메뉴 컨테이너 */
         .menu-container {
             display: none;
+            position: relative;
+            z-index: 10;
         }
 
         .menu-container.active {
@@ -256,6 +266,8 @@
             color: var(--text-secondary);
             background: #0a0a0a;
             transition: background 0.3s ease;
+            position: relative;
+            z-index: 10;
         }
 
         /* 중분류 탭 */
@@ -263,6 +275,8 @@
             padding: 20px;
             background: var(--primary-dark);
             transition: background 0.3s ease;
+            position: relative;
+            z-index: 10;
         }
 
         .subcategory-tabs {
@@ -304,6 +318,8 @@
             padding: 20px;
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
+            z-index: 10;
         }
 
         .menu-item {
@@ -314,6 +330,7 @@
             transition: var(--transition);
             aspect-ratio: 3/4;
             background: #1a1a1a;
+            z-index: 10;
         }
 
         .menu-item:hover {
@@ -353,6 +370,7 @@
             overflow-y: auto;
             position: relative;
             transition: background 0.3s ease;
+            z-index: 2001;
         }
 
         .modal-image {
@@ -472,20 +490,24 @@
             color: #ff8c00;
         }
 
-        /* 사이드바 */
+        /* 사이드바 - 오른쪽 위치 강제 고정 */
         .sidebar {
-            position: fixed;
-            top: 0;
-            right: -280px;
-            width: 280px;
-            height: 100vh;
-            background: #111;
-            transition: right 0.3s ease, background 0.3s ease;
-            z-index: 1001;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.5);
+            position: fixed !important;
+            top: 0 !important;
+            right: -280px !important;
+            left: auto !important;
+            width: 280px !important;
+            height: 100vh !important;
+            background: #111 !important;
+            transition: right 0.3s ease, background 0.3s ease !important;
+            z-index: 1001 !important;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.5) !important;
         }
 
-        .sidebar.active { right: 0; }
+        .sidebar.active { 
+            right: 0 !important; 
+            left: auto !important;
+        }
 
         .sidebar-header {
             padding: 20px;
@@ -566,7 +588,8 @@
             --text-primary: #000000;
             --text-secondary: #666666;
             --border-color: #dddddd;
-            background: #ffffff;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
             color: #000000;
         }
 
@@ -670,7 +693,7 @@
         }
 
         body.light-theme .sidebar {
-            background: #f5f5f5;
+            background: #f5f5f5 !important;
         }
 
         body.light-theme .sidebar-header {
@@ -679,36 +702,6 @@
 
         body.light-theme .theme-toggle {
             background: #e0e0e0;
-        }
-
-        /* 벚꽃 버튼 스타일 */
-        .sakura-button {
-            width: 100%;
-            padding: 15px;
-            margin: 20px 0;
-            background: linear-gradient(135deg, #FF1493, #FF69B4);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 20, 147, 0.3);
-        }
-
-        .sakura-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 20, 147, 0.4);
-        }
-
-        .sakura-button.active {
-            background: linear-gradient(135deg, #00ff00, #00cc00);
-            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
         }
 
         /* PWA 최적화 */
@@ -816,12 +809,6 @@
             <h3>설정</h3>
         </div>
         <div class="sidebar-content">
-            <!-- 벚꽃 배경 버튼 (최상단 배치) -->
-            <button class="sakura-button" id="sakuraToggle">
-                <span style="font-size: 20px;">🌸</span>
-                <span>벚꽃 배경 ON/OFF</span>
-            </button>
-            
             <!-- 테마 토글 -->
             <button class="theme-toggle" id="themeToggle">
                 <span>다크 모드</span>
@@ -928,21 +915,18 @@
 
     <!-- 메인 애플리케이션 -->
     <script>
-        // ========== 전역 상태 관리 (localStorage 독립적) ==========
+        // ========== 전역 상태 관리 ==========
         window.HAIRGATOR_STATE = {
-            // 벚꽃 시스템 상태
             sakura: {
                 initialized: false,
                 active: false
             },
-            // 앱 상태
             app: {
                 theme: 'dark',
                 gender: null,
                 category: null,
                 subcategory: 'None'
             },
-            // 사용자 정보
             user: {
                 designerName: 'Unknown'
             }
@@ -956,7 +940,6 @@
                     return true;
                 } catch (error) {
                     console.log('localStorage not available, using memory storage');
-                    // 메모리에만 저장
                     const keys = key.split('.');
                     let current = window.HAIRGATOR_STATE;
                     for (let i = 0; i < keys.length - 1; i++) {
@@ -973,7 +956,6 @@
                     const value = localStorage.getItem('hairgator_' + key);
                     return value !== null ? value : defaultValue;
                 } catch (error) {
-                    // 메모리에서 읽기
                     const keys = key.split('.');
                     let current = window.HAIRGATOR_STATE;
                     for (const k of keys) {
@@ -1089,7 +1071,6 @@
             themeToggle: document.getElementById('themeToggle'),
             themeToggleBottom: document.getElementById('themeToggleBottom'),
             themeStatus: document.getElementById('themeStatus'),
-            sakuraToggle: document.getElementById('sakuraToggle'),
             genderSelection: document.getElementById('genderSelection'),
             menuContainer: document.getElementById('menuContainer'),
             categoryTabs: document.getElementById('categoryTabs'),
@@ -1138,79 +1119,6 @@
             }
         };
 
-        // ========== 벚꽃 시스템 (통합 버전) ==========
-        const sakuraSystem = {
-            init() {
-                if (window.HAIRGATOR_STATE.sakura.initialized) {
-                    console.log('🌸 벚꽃 시스템 이미 초기화됨');
-                    return;
-                }
-
-                this.setupEvents();
-                window.HAIRGATOR_STATE.sakura.initialized = true;
-                console.log('✅ 벚꽃 시스템 초기화 완료');
-            },
-
-            setupEvents() {
-                if (!elements.sakuraToggle) {
-                    console.log('❌ 벚꽃 버튼을 찾을 수 없음');
-                    return;
-                }
-
-                elements.sakuraToggle.addEventListener('click', () => {
-                    this.toggle();
-                });
-            },
-
-            toggle() {
-                window.HAIRGATOR_STATE.sakura.active = !window.HAIRGATOR_STATE.sakura.active;
-                const isActive = window.HAIRGATOR_STATE.sakura.active;
-                
-                // UI 업데이트
-                if (isActive) {
-                    elements.sakuraToggle.classList.add('active');
-                    elements.sakuraToggle.innerHTML = '<span>✅</span><span>벚꽃 활성화됨!</span>';
-                    document.body.classList.add('sakura-background');
-                    this.loadCSS();
-                } else {
-                    elements.sakuraToggle.classList.remove('active');
-                    elements.sakuraToggle.innerHTML = '<span style="font-size: 20px;">🌸</span><span>벚꽃 배경 ON/OFF</span>';
-                    document.body.classList.remove('sakura-background');
-                    this.removeCSS();
-                }
-
-                console.log('🌸 벚꽃 상태:', isActive ? '활성화' : '비활성화');
-            },
-
-            loadCSS() {
-                // 중복 로드 방지
-                if (document.querySelector('#sakura-css')) {
-                    return;
-                }
-
-                const isLightTheme = document.body.classList.contains('light-theme');
-                const cssFileName = isLightTheme ? 'sakura-light.css' : 'sakura-dark.css';
-                
-                const css = document.createElement('link');
-                css.id = 'sakura-css';
-                css.rel = 'stylesheet';
-                css.href = `./backgrounds/${cssFileName}`;
-                css.onerror = () => {
-                    // 대체 경로 시도
-                    css.href = `backgrounds/${cssFileName}`;
-                };
-                
-                document.head.appendChild(css);
-            },
-
-            removeCSS() {
-                const css = document.querySelector('#sakura-css');
-                if (css) {
-                    css.remove();
-                }
-            }
-        };
-
         // ========== 테마 관리 ==========
         const themeManager = {
             init() {
@@ -1230,12 +1138,6 @@
                 const newTheme = isLight ? 'light' : 'dark';
                 safeStorage.set('theme', newTheme);
                 window.HAIRGATOR_STATE.app.theme = newTheme;
-
-                // 벚꽃이 활성화되어 있으면 CSS 재로드
-                if (window.HAIRGATOR_STATE.sakura.active) {
-                    sakuraSystem.removeCSS();
-                    setTimeout(() => sakuraSystem.loadCSS(), 100);
-                }
             }
         };
 
@@ -1457,7 +1359,6 @@
             },
             
             setupModalActions(code, name, gender, docId) {
-                // 기존 이벤트 제거
                 elements.btnRegister.onclick = null;
                 elements.btnLike.onclick = null;
                 
@@ -1518,36 +1419,30 @@
 
         // ========== 이벤트 리스너 설정 ==========
         function setupEventListeners() {
-            // 기본 네비게이션
             elements.backBtn?.addEventListener('click', navigationManager.goBack);
             elements.menuBtn?.addEventListener('click', sidebarManager.open);
             elements.sidebarClose?.addEventListener('click', sidebarManager.close);
             
-            // 테마 토글
             elements.themeToggle?.addEventListener('click', themeManager.toggle);
             elements.themeToggleBottom?.addEventListener('click', themeManager.toggle);
             
-            // 성별 선택
             document.querySelectorAll('.gender-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     navigationManager.selectGender(this.dataset.gender);
                 });
             });
             
-            // 모달
             elements.modalClose?.addEventListener('click', modalManager.hide);
             elements.styleModal?.addEventListener('click', function(e) {
                 if (e.target === this) modalManager.hide();
             });
             
-            // 키보드 이벤트
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && elements.styleModal?.classList.contains('active')) {
                     modalManager.hide();
                 }
             });
             
-            // 사이드바 외부 클릭
             document.addEventListener('click', function(e) {
                 if (elements.sidebar?.classList.contains('active')) {
                     if (!elements.sidebar.contains(e.target) && !elements.menuBtn.contains(e.target)) {
@@ -1563,7 +1458,6 @@
             
             setupEventListeners();
             themeManager.init();
-            sakuraSystem.init();
             
             if (elements.backBtn) {
                 elements.backBtn.style.display = 'none';
@@ -1586,8 +1480,8 @@
             console.log('🌸 HAIRGATOR 최종 완성 버전 로드 완료!');
         });
     </script>
-      <!-- ✅ 여기에 추가하세요! -->
+
+    <!-- sakura-canvas.js 로드 -->
     <script src="sakura-canvas.js"></script>
 </body>
 </html>
-
