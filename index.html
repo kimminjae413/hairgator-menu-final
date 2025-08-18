@@ -1124,7 +1124,7 @@
             }
         };
 
-        // 🌸 벚꽃 시스템 (petal.png 이미지가 떨어지는 최종 버전)
+        // 🌸 벚꽃 시스템 (petal.png 이미지가 떨어지는 최종 수정 완성 버전)
         const petalSakuraSystem = {
             active: false,
             canvas: null,
@@ -1135,6 +1135,9 @@
 
             async init() {
                 console.log('🌸 petal.png 벚꽃 시스템 초기화');
+                
+                // 기존 canvas 제거
+                this.stop();
                 
                 // petal.png 이미지 로드
                 await this.loadPetalImage();
@@ -1147,8 +1150,8 @@
                 
                 this.active = true;
                 
-                // 애니메이션 시작
-                this.startAnimation();
+                // 🔧 애니메이션 시작 - 강제 실행
+                this.forceStartAnimation();
                 
                 console.log('✅ petal.png 벚꽃 시스템 시작!');
             },
@@ -1209,6 +1212,7 @@
                 this.ctx = this.canvas.getContext('2d');
                 
                 document.body.appendChild(this.canvas);
+                console.log('✅ Canvas 생성 완료');
             },
 
             createPetals() {
@@ -1218,8 +1222,8 @@
                 const screenWidth = this.canvas.width;
                 const screenHeight = this.canvas.height;
                 
-                // 꽃잎 30개 생성
-                for (let i = 0; i < 30; i++) {
+                // 꽃잎 25개 생성
+                for (let i = 0; i < 25; i++) {
                     const petal = {
                         x: Math.random() * screenWidth,
                         y: Math.random() * screenHeight - 200,
@@ -1238,23 +1242,26 @@
                 console.log(`✅ 꽃잎 ${this.petals.length}개 생성 완료`);
             },
 
-            // 🔧 핵심 수정: petal.png 이미지가 떨어지도록 완전 수정
-            startAnimation() {
-                if (!this.active) return;
+            // 🔧 애니메이션 강제 시작 (콘솔에서 작동한 것처럼)
+            forceStartAnimation() {
+                console.log('🌸 강제 애니메이션 시작');
+                
+                // 기존 애니메이션 중지
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
                 
                 const animate = () => {
-                    if (!this.active) {
+                    if (!this.active || !this.canvas || !this.ctx) {
                         this.animationId = null;
                         return;
                     }
-                    
-                    if (!this.ctx || !this.canvas) return;
                     
                     // 화면 지우기
                     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                     
                     // 각 꽃잎 처리
-                    this.petals.forEach((petal, index) => {
+                    this.petals.forEach((petal) => {
                         // 위치 업데이트
                         petal.y += petal.speedY;
                         petal.x += petal.speedX + Math.sin(petal.y * petal.swing) * 0.5;
@@ -1269,7 +1276,7 @@
                         if (petal.x > this.canvas.width + 50) petal.x = -50;
                         if (petal.x < -50) petal.x = this.canvas.width + 50;
                         
-                        // 🔧 petal.png 이미지 그리기 (최종 수정)
+                        // 🔧 petal.png 이미지 그리기
                         this.ctx.save();
                         this.ctx.translate(petal.x, petal.y);
                         this.ctx.rotate(petal.rotation * Math.PI / 180);
@@ -1301,10 +1308,11 @@
                 
                 // 애니메이션 시작
                 animate();
-                console.log('✅ petal.png 애니메이션 시작됨!');
+                console.log('✅ petal.png 애니메이션 강제 시작됨!');
             },
 
             stop() {
+                console.log('🌸 petal.png 벚꽃 시스템 중지');
                 this.active = false;
                 
                 if (this.animationId) {
@@ -1318,7 +1326,6 @@
                 }
                 
                 this.petals = [];
-                console.log('🌸 petal.png 벚꽃 시스템 중지');
             },
 
             handleResize() {
@@ -1635,14 +1642,18 @@
             
             // 🌸 벚꽃 버튼 이벤트 (최종 완성)
             elements.petalSakuraBtn?.addEventListener('click', function() {
+                console.log('🌸 벚꽃 버튼 클릭됨');
+                
                 if (petalSakuraSystem.active) {
                     petalSakuraSystem.stop();
                     this.classList.remove('active');
                     this.querySelector('span:last-child').textContent = '벚꽃 배경';
+                    console.log('🌸 벚꽃 시스템 중지됨');
                 } else {
                     petalSakuraSystem.init();
                     this.classList.add('active');
                     this.querySelector('span:last-child').textContent = '배경 끄기';
+                    console.log('🌸 벚꽃 시스템 시작됨');
                 }
             });
             
@@ -1679,3 +1690,79 @@
 
         // 초기화
         function init() {
+            setupEventListeners();
+            themeManager.init();
+            
+            if (elements.backBtn) {
+                elements.backBtn.style.display = 'none';
+            }
+            
+            console.log('🚀 HAIRGATOR App initialized (Final Complete Version)');
+        }
+
+        // DOM 로드 완료 시 실행
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // PWA 기능 - GitHub Service Worker와 완전 연동
+        window.addEventListener('load', function() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker 등록 성공');
+                        
+                        // 🎉 새 버전 감지 및 자동 업데이트
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            console.log('🔄 새 Service Worker 버전 발견!');
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('🎉 새 버전이 준비되었습니다!');
+                                    // 사용자에게 새로고침 알림 (선택사항)
+                                    if (confirm('새 버전이 있습니다. 지금 업데이트하시겠습니까?')) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch(err => {
+                        console.log('❌ SW registration failed:', err);
+                        console.log('📝 service-worker.js 파일이 루트 폴더에 있는지 확인하세요');
+                    });
+
+                // 📨 Service Worker 메시지 수신
+                navigator.serviceWorker.addEventListener('message', event => {
+                    console.log('📨 Service Worker 메시지:', event.data);
+                    
+                    if (event.data.type === 'NEW_VERSION_AVAILABLE') {
+                        console.log('🎉 새 버전 사용 가능:', event.data.version);
+                        // 새 버전 알림 UI 표시 (선택사항)
+                    }
+                });
+
+                // 🔍 현재 버전 정보 요청
+                if (navigator.serviceWorker.controller) {
+                    const messageChannel = new MessageChannel();
+                    messageChannel.port1.onmessage = event => {
+                        console.log('📊 현재 SW 버전:', event.data);
+                    };
+                    
+                    navigator.serviceWorker.controller.postMessage(
+                        { type: 'GET_VERSION' }, 
+                        [messageChannel.port2]
+                    );
+                }
+            }
+            
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+            });
+            
+            console.log('✅ HAIRGATOR App loaded successfully (Final Complete Version)');
+        });
+    </script>
+</body>
+</html>
