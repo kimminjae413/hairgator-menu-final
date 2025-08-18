@@ -1150,8 +1150,13 @@
                 
                 this.active = true;
                 
-                // 🔧 애니메이션 시작 - 강제 실행
-                this.forceStartAnimation();
+                // 🔧 애니메이션 시작 - 반드시 실행되도록 수정
+                await new Promise(resolve => {
+                    setTimeout(() => {
+                        this.forceStartAnimation();
+                        resolve();
+                    }, 100); // 약간의 지연 후 애니메이션 시작
+                });
                 
                 console.log('✅ petal.png 벚꽃 시스템 시작!');
             },
@@ -1640,20 +1645,27 @@
             elements.themeToggle?.addEventListener('click', themeManager.toggle);
             elements.themeToggleBottom?.addEventListener('click', themeManager.toggle);
             
-            // 🌸 벚꽃 버튼 이벤트 (최종 완성)
+            // 🌸 벚꽃 버튼 이벤트 (문제 해결 완성 버전)
             elements.petalSakuraBtn?.addEventListener('click', function() {
                 console.log('🌸 벚꽃 버튼 클릭됨');
                 
-                if (petalSakuraSystem.active) {
+                if (petalSakuraSystem.active && petalSakuraSystem.animationId) {
+                    // 애니메이션이 실제로 실행 중일 때만 중지
+                    console.log('🌸 벚꽃 시스템 중지 시도');
                     petalSakuraSystem.stop();
                     this.classList.remove('active');
                     this.querySelector('span:last-child').textContent = '벚꽃 배경';
                     console.log('🌸 벚꽃 시스템 중지됨');
                 } else {
-                    petalSakuraSystem.init();
-                    this.classList.add('active');
-                    this.querySelector('span:last-child').textContent = '배경 끄기';
-                    console.log('🌸 벚꽃 시스템 시작됨');
+                    // 시작 또는 재시작
+                    console.log('🌸 벚꽃 시스템 시작 시도');
+                    petalSakuraSystem.init().then(() => {
+                        this.classList.add('active');
+                        this.querySelector('span:last-child').textContent = '배경 끄기';
+                        console.log('🌸 벚꽃 시스템 시작 완료');
+                    }).catch(err => {
+                        console.error('🌸 벚꽃 시스템 시작 실패:', err);
+                    });
                 }
             });
             
