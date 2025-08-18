@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HAIRGATOR - Professional Hair Style Menu (v1.1)</title>
+    <title>HAIRGATOR - Professional Hair Style Menu (v1.3-AUTO)</title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000">
@@ -1247,23 +1247,39 @@
                 console.log(`✅ 꽃잎 ${this.petals.length}개 생성 완료`);
             },
 
-            // 🔧 애니메이션 강제 시작 (콘솔에서 작동한 것처럼)
+            // 🔧 애니메이션 강제 시작 (100% 확실한 버전)
             forceStartAnimation() {
                 console.log('🌸 강제 애니메이션 시작');
                 
                 // 기존 애니메이션 중지
                 if (this.animationId) {
                     cancelAnimationFrame(this.animationId);
+                    console.log('기존 애니메이션 중지');
+                }
+                
+                // Canvas 최상위로
+                if (this.canvas) {
+                    this.canvas.style.zIndex = '999999';
+                    console.log('Canvas z-index 최상위 설정');
                 }
                 
                 const animate = () => {
                     if (!this.active || !this.canvas || !this.ctx) {
+                        console.log('애니메이션 중지 조건:', {
+                            active: this.active,
+                            canvas: !!this.canvas,
+                            ctx: !!this.ctx
+                        });
                         this.animationId = null;
                         return;
                     }
                     
                     // 화면 지우기
                     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    
+                    // 테스트용 빨간 점 그리기 (애니메이션 작동 확인)
+                    this.ctx.fillStyle = 'red';
+                    this.ctx.fillRect(50, 50, 10, 10);
                     
                     // 각 꽃잎 처리
                     this.petals.forEach((petal) => {
@@ -1281,7 +1297,7 @@
                         if (petal.x > this.canvas.width + 50) petal.x = -50;
                         if (petal.x < -50) petal.x = this.canvas.width + 50;
                         
-                        // 🔧 petal.png 이미지 그리기
+                        // 꽃잎 그리기
                         this.ctx.save();
                         this.ctx.translate(petal.x, petal.y);
                         this.ctx.rotate(petal.rotation * Math.PI / 180);
@@ -1289,15 +1305,14 @@
                         
                         // petal.png 이미지가 있으면 사용, 없으면 분홍 원
                         if (this.petalImage && this.petalImage.complete && this.petalImage.naturalWidth > 0) {
-                            // ✅ petal.png 이미지로 그리기
-                            const size = 30 * petal.size; // 크기 조정
+                            const size = 30 * petal.size;
                             this.ctx.drawImage(
                                 this.petalImage, 
                                 -size/2, -size/2, 
                                 size, size
                             );
                         } else {
-                            // 이미지 로드 실패시 분홍 원
+                            // 분홍 원으로 대체
                             this.ctx.fillStyle = '#ff69b4';
                             this.ctx.beginPath();
                             this.ctx.arc(0, 0, 15, 0, Math.PI * 2);
@@ -1313,7 +1328,16 @@
                 
                 // 애니메이션 시작
                 animate();
-                console.log('✅ petal.png 애니메이션 강제 시작됨!');
+                console.log('✅ 애니메이션 루프 시작됨');
+                
+                // 3초 후 상태 체크
+                setTimeout(() => {
+                    console.log('3초 후 상태:', {
+                        animationId: this.animationId,
+                        active: this.active,
+                        petalsCount: this.petals.length
+                    });
+                }, 3000);
             },
 
             stop() {
@@ -1715,65 +1739,52 @@
         // DOM 로드 완료 시 실행
         document.addEventListener('DOMContentLoaded', init);
         
-        // PWA 기능 - GitHub Service Worker와 완전 연동
+        // PWA 기능 - 즉시 업데이트 적용 (유저 친화적)
         window.addEventListener('load', function() {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./service-worker.js')
                     .then(registration => {
                         console.log('✅ Service Worker 등록 성공');
                         
-                        // 🎉 새 버전 감지 및 자동 업데이트
+                        // 🚀 즉시 새 버전 적용 (유저가 기다리지 않도록)
                         registration.addEventListener('updatefound', () => {
                             const newWorker = registration.installing;
                             console.log('🔄 새 Service Worker 버전 발견!');
                             
                             newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('🎉 새 버전이 준비되었습니다!');
-                                    // 사용자에게 새로고침 알림 (선택사항)
-                                    if (confirm('새 버전이 있습니다. 지금 업데이트하시겠습니까?')) {
+                                if (newWorker.state === 'installed') {
+                                    if (navigator.serviceWorker.controller) {
+                                        // 🎉 새 버전 즉시 적용 (묻지 않고 바로)
+                                        console.log('🎉 새 버전 자동 적용!');
                                         window.location.reload();
+                                    } else {
+                                        // 첫 설치
+                                        console.log('✅ Service Worker 첫 설치 완료');
                                     }
                                 }
                             });
                         });
+                        
+                        // 🔄 1초마다 업데이트 확인 (적극적)
+                        setInterval(() => {
+                            registration.update();
+                        }, 1000);
                     })
                     .catch(err => {
                         console.log('❌ SW registration failed:', err);
-                        console.log('📝 service-worker.js 파일이 루트 폴더에 있는지 확인하세요');
                     });
 
                 // 📨 Service Worker 메시지 수신
                 navigator.serviceWorker.addEventListener('message', event => {
-                    console.log('📨 Service Worker 메시지:', event.data);
-                    
                     if (event.data.type === 'NEW_VERSION_AVAILABLE') {
-                        console.log('🎉 새 버전 사용 가능:', event.data.version);
-                        // 새 버전 알림 UI 표시 (선택사항)
+                        console.log('🎉 새 버전 즉시 적용:', event.data.version);
+                        // 자동으로 새로고침
+                        window.location.reload();
                     }
                 });
-
-                // 🔍 현재 버전 정보 요청
-                if (navigator.serviceWorker.controller) {
-                    const messageChannel = new MessageChannel();
-                    messageChannel.port1.onmessage = event => {
-                        console.log('📊 현재 SW 버전:', event.data);
-                    };
-                    
-                    navigator.serviceWorker.controller.postMessage(
-                        { type: 'GET_VERSION' }, 
-                        [messageChannel.port2]
-                    );
-                }
             }
             
-            let deferredPrompt;
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-            });
-            
-            console.log('✅ HAIRGATOR App loaded successfully (Final Complete Version)');
+            console.log('✅ HAIRGATOR App loaded successfully (User-Friendly Version)');
         });
     </script>
 </body>
