@@ -831,6 +831,8 @@
                     AI가 당신에게 어울리는 헤어스타일을 추천해드립니다
                 </p>
             </div>
+            
+            <!-- 벚꽃 버튼은 sakura-canvas.js에서 자동 생성됨 -->
         </div>
     </aside>
 
@@ -1452,18 +1454,337 @@
             });
         }
 
-        // ========== 초기화 ==========
-        function init() {
-            console.log('🚀 HAIRGATOR 최종 버전 초기화 시작');
+        // ========== 테마 관리 ==========
+        const themeManager = {
+            init() {
+                const savedTheme = safeStorage.get('theme', 'dark');
+                if (savedTheme === 'light') {
+                    document.body.classList.add('light-theme');
+                    elements.themeStatus.textContent = 'OFF';
+                }
+                window.HAIRGATOR_STATE.app.theme = savedTheme;
+            },
             
-            setupEventListeners();
-            themeManager.init();
-            
-            if (elements.backBtn) {
-                elements.backBtn.style.display = 'none';
+            toggle() {
+                document.body.classList.toggle('light-theme');
+                const isLight = document.body.classList.contains('light-theme');
+                elements.themeStatus.textContent = isLight ? 'OFF' : 'ON';
+                
+                const newTheme = isLight ? 'light' : 'dark';
+                safeStorage.set('theme', newTheme);
+                window.HAIRGATOR_STATE.app.theme = newTheme;
             }
+        };
+
+        // ========== 사이드바 관리 ==========
+        const sidebarManager = {
+            open() {
+                elements.sidebar.classList.add('active');
+            },
             
-            console.log('✅ HAIRGATOR 최종 버전 초기화 완료');
+            close() {
+                elements.sidebar.classList.remove('active');
+            }
+        };
+
+        // ========== 네비게이션 관리 ==========
+        const navigationManager = {
+            goBack() {
+                if (elements.menuContainer.classList.contains('active')) {
+                    elements.menuContainer.classList.remove('active');
+                    elements.genderSelection.style.display = 'flex';
+                    elements.backBtn.style.display = 'none';
+                    elements.themeToggleBottom.style.display = 'flex';
+                    
+                    window.HAIRGATOR_STATE.app.gender = null;
+                    window.HAIRGATOR_STATE.app.category = null;
+                }
+            },
+            
+            selectGender(gender) {
+                window.HAIRGATOR_STATE.app.gender = gender;
+                
+                elements.genderSelection.style.display = 'none';
+                elements.menuContainer.classList.add('active');
+                elements.backBtn.style.display = 'flex';
+                elements.themeToggleBottom.style.display = 'none';
+                
+                menuManager.loadData(gender);
+                safeStorage.set('gender', gender);
+            }
+        };
+
+        // ========== 메뉴 관리 ==========
+        const menuManager = {
+            loadData(gender) {
+                utils.showLoading(true);
+                const menuData = MENU_DATA[gender];
+                
+                this.renderCategories(gender, menuData);
+                
+                if (menuData.categories.length > 0) {
+                    this.selectCategory(menuData.categories[0], gender, menuData);
+                }
+                
+                setTimeout(() => utils.showLoading(false), CONFIG.ANIMATION_DURATION);
+            },
+            
+            renderCategories(gender, menuData) {
+                elements.categoryTabs.innerHTML = '';
+                
+                if (gender === 'female') {
+                    const helpTab = document.createElement('button');
+                    helpTab.className = 'category-tab help-tab';
+                    helpTab.innerHTML = '?';
+                    helpTab.addEventListener('click', () => {
+                        window.open('https://drive.google.com/file/d/15OgT9k5jCC6TjcJSImuQXcznS_HtFBVf/view?usp=sharing', '_blank');
+                    });
+                    elements.categoryTabs.appendChild(helpTab);
+                }
+                
+                menuData.categories.forEach((category, index) => {
+                    const tab = document.createElement('button');
+                    tab.className = 'category-tab';
+                    tab.textContent = category.name;
+                    tab.dataset.categoryId = category.id;
+                    
+                    if (index === 0) {
+                        tab.classList.add('active', gender);
+                    }
+                    
+                    tab.addEventListener('click', () => {
+                        this.selectCategory(category, gender, menuData);
+                    });
+                    
+                    elements.categoryTabs.appendChild(tab);
+                });
+            },
+            
+            selectCategory(category, gender, menuData) {
+                window.HAIRGATOR_STATE.app.category = category;
+                
+                document.querySelectorAll('.category-tab').forEach(tab => {
+                    if (tab.classList.contains('help-tab')) return;
+                    tab.classList.remove('active', 'male', 'female');
+                    if (tab.dataset.categoryId === category.id) {
+                        tab.classList.add('active', gender);
+                    }
+                });
+                
+                elements.categoryDescription.textContent = category.description;
+                this.renderSubcategories(gender, menuData);
+                this.loadStyles(category.id, window.HAIRGATOR_STATE.app.subcategory, gender);
+            },
+            
+            renderSubcategories(gender, menuData) {
+                elements.subcategoryTabs.innerHTML = '';
+                
+                menuData.subcategories.forEach((sub, index) => {
+                    const tab = document.createElement('button');
+                    tab.className = 'subcategory-tab';
+                    tab.textContent = sub;
+                    tab.dataset.subcategory = sub;
+                    
+                    if (index === 0) {
+                        tab.classList.add('active', gender);
+                        window.HAIRGATOR_STATE.app.subcategory = sub;
+                    }
+                    
+                    tab.addEventListener('click', () => {
+                        this.selectSubcategory(sub, gender);
+                    });
+                    
+                    elements.subcategoryTabs.appendChild(tab);
+                });
+            },
+            
+            selectSubcategory(subcategory, gender) {
+                window.HAIRGATOR_STATE.app.subcategory = subcategory;
+                
+                document.querySelectorAll('.subcategory-tab').forEach(tab => {
+                    tab.classList.remove('active', 'male', 'female');
+                    if (tab.dataset.subcategory === subcategory) {
+                        tab.classList.add('active', gender);
+                    }
+                });
+                
+                this.loadStyles(window.HAIRGATOR_STATE.app.category.id, subcategory, gender);
+            },
+            
+            async loadStyles(categoryId, subcategory, gender) {
+                elements.menuGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
+                
+                try {
+                    const categoryName = window.HAIRGATOR_STATE.app.category.name;
+                    
+                    const query = db.collection('hairstyles')
+                        .where('gender', '==', gender)
+                        .where('mainCategory', '==', categoryName)
+                        .where('subCategory', '==', subcategory);
+                    
+                    const snapshot = await query.get();
+                    elements.menuGrid.innerHTML = '';
+                    
+                    if (snapshot.empty) {
+                        elements.menuGrid.innerHTML = `
+                            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
+                                <div style="font-size: 48px; margin-bottom: 20px;">📭</div>
+                                <div>등록된 스타일이 없습니다</div>
+                                <div style="font-size: 12px; margin-top: 10px;">${categoryName} - ${subcategory}</div>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const item = document.createElement('div');
+                        item.className = `menu-item ${gender}`;
+                        
+                        item.innerHTML = `
+                            <img src="${data.imageUrl || ''}" 
+                                 alt="${data.name || 'Style'}" 
+                                 class="menu-item-image"
+                                 onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
+                        `;
+                        
+                        item.addEventListener('click', () => {
+                            modalManager.show(data.code, data.name, gender, data.imageUrl, doc.id);
+                        });
+                        
+                        elements.menuGrid.appendChild(item);
+                    });
+                    
+                } catch (error) {
+                    utils.handleError(error, 'loadStyles');
+                    elements.menuGrid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ff4444;">
+                            <div>데이터 로드 실패</div>
+                            <div style="font-size: 12px; margin-top: 10px;">${error.message}</div>
+                        </div>
+                    `;
+                }
+            }
+        };
+
+        // ========== 모달 관리 ==========
+        const modalManager = {
+            show(code, name, gender, imageSrc, docId) {
+                elements.modalImage.src = imageSrc || '';
+                elements.modalImage.onerror = function() {
+                    this.style.display = 'none';
+                    this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                };
+                elements.modalCode.textContent = code;
+                elements.modalName.textContent = name;
+                
+                elements.btnRegister.className = gender === 'female' ? 'modal-btn btn-register female' : 'modal-btn btn-register';
+                
+                elements.btnLike.classList.remove('active');
+                const heart = elements.btnLike.querySelector('span:first-child');
+                if (heart) heart.textContent = '♡';
+                
+                elements.styleModal.classList.add('active');
+                
+                this.setupModalActions(code, name, gender, docId);
+            },
+            
+            hide() {
+                elements.styleModal.classList.remove('active');
+            },
+            
+            setupModalActions(code, name, gender, docId) {
+                elements.btnRegister.onclick = null;
+                elements.btnLike.onclick = null;
+                
+                elements.btnRegister.onclick = async () => {
+                    const customerName = prompt('고객 이름을 입력하세요:');
+                    if (!customerName) return;
+                    
+                    let customerPhone = prompt('고객 전화번호를 입력하세요:\n(예: 010-1234-5678)');
+                    if (!customerPhone) return;
+                    
+                    if (!phoneUtils.validate(customerPhone)) {
+                        alert('올바른 전화번호를 입력해주세요\n예: 010-1234-5678');
+                        return;
+                    }
+                    
+                    customerPhone = phoneUtils.format(customerPhone);
+                    
+                    try {
+                        await db.collection('customers').add({
+                            name: customerName,
+                            phone: customerPhone,
+                            styleCode: code,
+                            styleName: name,
+                            styleId: docId,
+                            gender: gender,
+                            designer: window.HAIRGATOR_STATE.user.designerName,
+                            registeredAt: new Date(),
+                            lastVisit: new Date()
+                        });
+                        
+                        alert('고객 등록 완료!');
+                        this.hide();
+                    } catch (error) {
+                        utils.handleError(error, 'Customer registration');
+                    }
+                };
+                
+                elements.btnLike.onclick = async () => {
+                    elements.btnLike.classList.toggle('active');
+                    const heart = elements.btnLike.querySelector('span:first-child');
+                    if (heart) {
+                        const isLiked = elements.btnLike.classList.contains('active');
+                        heart.textContent = isLiked ? '♥' : '♡';
+                        
+                        if (docId) {
+                            try {
+                                await db.collection('hairstyles').doc(docId).update({
+                                    likes: firebase.firestore.FieldValue.increment(isLiked ? 1 : -1)
+                                });
+                            } catch (error) {
+                                console.error('Like update error:', error);
+                            }
+                        }
+                    }
+                };
+            }
+        };
+
+        // ========== 이벤트 리스너 설정 ==========
+        function setupEventListeners() {
+            elements.backBtn?.addEventListener('click', navigationManager.goBack);
+            elements.menuBtn?.addEventListener('click', sidebarManager.open);
+            elements.sidebarClose?.addEventListener('click', sidebarManager.close);
+            
+            elements.themeToggle?.addEventListener('click', themeManager.toggle);
+            elements.themeToggleBottom?.addEventListener('click', themeManager.toggle);
+            
+            document.querySelectorAll('.gender-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    navigationManager.selectGender(this.dataset.gender);
+                });
+            });
+            
+            elements.modalClose?.addEventListener('click', modalManager.hide);
+            elements.styleModal?.addEventListener('click', function(e) {
+                if (e.target === this) modalManager.hide();
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && elements.styleModal?.classList.contains('active')) {
+                    modalManager.hide();
+                }
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (elements.sidebar?.classList.contains('active')) {
+                    if (!elements.sidebar.contains(e.target) && !elements.menuBtn.contains(e.target)) {
+                        sidebarManager.close();
+                    }
+                }
+            });
         }
 
         // ========== DOM 로드 완료 시 실행 ==========
