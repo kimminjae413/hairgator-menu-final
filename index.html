@@ -524,6 +524,47 @@
             margin-bottom: 20px;
         }
 
+        /* 사이드바 섹션 스타일 */
+        .sidebar-section {
+            margin: 20px 0;
+            padding: 15px 0;
+            border-top: 1px solid #333;
+        }
+
+        .sidebar-button {
+            width: 100%;
+            padding: 15px;
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .sidebar-button:hover {
+            background: #3a3a3a;
+            border-color: #666;
+        }
+
+        .sidebar-button.active {
+            background: #FF1493;
+            border-color: #FF1493;
+        }
+
+        .sidebar-description {
+            color: #666;
+            font-size: 12px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
         /* 로딩 */
         .loading-overlay {
             position: fixed;
@@ -708,6 +749,21 @@
             color: #000;
         }
 
+        body.light-theme .sidebar-section {
+            border-top-color: #ddd;
+        }
+
+        body.light-theme .sidebar-button {
+            background: #e0e0e0;
+            color: #000;
+            border-color: #ccc;
+        }
+
+        body.light-theme .sidebar-button:hover {
+            background: #d0d0d0;
+            border-color: #aaa;
+        }
+
         /* 반응형 */
         @media (min-width: 768px) {
             .menu-grid {
@@ -798,25 +854,34 @@
             <h3>설정</h3>
         </div>
         <div class="sidebar-content">
+            <!-- 테마 토글 -->
             <button class="theme-toggle" id="themeToggle">
                 <span>다크 모드</span>
                 <span id="themeStatus">ON</span>
             </button>
             
             <!-- 얼굴분석 버튼 -->
-            <div style="margin: 20px 0; padding: 20px 0; border-top: 1px solid #333; border-bottom: 1px solid #333;">
-                <button onclick="window.open('https://hairgator-face.web.app/', '_blank')" 
-                        style="width: 100%; padding: 15px; background: #2a2a2a; 
-                               color: white; border: 1px solid #444; border-radius: 10px; cursor: pointer; 
-                               font-size: 16px; font-weight: 600; transition: all 0.3s;
-                               display: flex; align-items: center; justify-content: center; gap: 10px;"
-                        onmouseover="this.style.background='#3a3a3a'; this.style.borderColor='#666'"
-                        onmouseout="this.style.background='#2a2a2a'; this.style.borderColor='#444'">
+            <div class="sidebar-section">
+                <button class="sidebar-button" onclick="window.open('https://hairgator-face.web.app/', '_blank')">
                     <span style="font-size: 20px;">👤</span>
                     <span>얼굴분석</span>
                 </button>
-                <p style="color: #666; font-size: 12px; margin-top: 10px; text-align: center;">
+                <p class="sidebar-description">
                     AI가 당신에게 어울리는 헤어스타일을 추천해드립니다
+                </p>
+            </div>
+
+            <!-- 벚꽃 배경 버튼 -->
+            <div class="sidebar-section">
+                <h4 style="color: #FF1493; margin-bottom: 15px; text-align: center; font-size: 14px;">
+                    🌸 벚꽃 배경
+                </h4>
+                <button class="sidebar-button" id="petalSakuraBtn">
+                    <span style="font-size: 16px;">🌸</span>
+                    <span>petal.png 벚꽃</span>
+                </button>
+                <p class="sidebar-description">
+                    진짜 petal.png 이미지로 만든 Canvas 벚꽃 효과
                 </p>
             </div>
         </div>
@@ -1023,7 +1088,8 @@
             modalCode: document.getElementById('modalCode'),
             modalName: document.getElementById('modalName'),
             btnRegister: document.getElementById('btnRegister'),
-            btnLike: document.getElementById('btnLike')
+            btnLike: document.getElementById('btnLike'),
+            petalSakuraBtn: document.getElementById('petalSakuraBtn')
         };
 
         // 전화번호 관련 함수들
@@ -1058,6 +1124,196 @@
             handleError: (error, context = '') => {
                 console.error(`Error in ${context}:`, error);
                 alert(`오류가 발생했습니다: ${error.message}`);
+            }
+        };
+
+        // 벚꽃 시스템
+        const petalSakuraSystem = {
+            active: false,
+            canvas: null,
+            ctx: null,
+            petals: [],
+            animationId: null,
+            petalImage: null,
+
+            async init() {
+                console.log('🌸 petal.png 벚꽃 시스템 초기화');
+                
+                // petal.png 이미지 로드 시도
+                await this.loadPetalImage();
+                
+                // Canvas 생성
+                this.createCanvas();
+                
+                // 꽃잎 생성
+                this.createPetals();
+                
+                // 애니메이션 시작
+                this.animate();
+                
+                this.active = true;
+                console.log('✅ petal.png 벚꽃 시스템 시작!');
+            },
+
+            async loadPetalImage() {
+                return new Promise((resolve) => {
+                    this.petalImage = new Image();
+                    this.petalImage.crossOrigin = 'anonymous';
+                    
+                    const imagePaths = [
+                        './petal.png',
+                        '/petal.png', 
+                        './images/petal.png',
+                        '/images/petal.png',
+                        './assets/petal.png',
+                        '/assets/petal.png'
+                    ];
+                    
+                    let currentPathIndex = 0;
+                    
+                    const tryNextPath = () => {
+                        if (currentPathIndex >= imagePaths.length) {
+                            console.warn('⚠️ petal.png를 찾을 수 없어서 기본 꽃잎으로 대체');
+                            resolve(false);
+                            return;
+                        }
+                        
+                        this.petalImage.src = imagePaths[currentPathIndex];
+                        console.log(`🔍 petal.png 로드 시도: ${imagePaths[currentPathIndex]}`);
+                        currentPathIndex++;
+                    };
+                    
+                    this.petalImage.onload = () => {
+                        console.log('✅ petal.png 로드 성공!', this.petalImage.src);
+                        resolve(true);
+                    };
+                    
+                    this.petalImage.onerror = tryNextPath;
+                    tryNextPath();
+                });
+            },
+
+            createCanvas() {
+                this.canvas = document.createElement('canvas');
+                this.canvas.id = 'petalSakuraCanvas';
+                this.canvas.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    pointer-events: none;
+                    z-index: 5;
+                `;
+                
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.ctx = this.canvas.getContext('2d');
+                
+                document.body.appendChild(this.canvas);
+            },
+
+            createPetals() {
+                this.petals = [];
+                for (let i = 0; i < 30; i++) {
+                    this.petals.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * -this.canvas.height,
+                        size: Math.random() * 0.8 + 0.4,
+                        speedY: Math.random() * 2 + 1,
+                        speedX: Math.random() * 1 - 0.5,
+                        rotation: Math.random() * 360,
+                        rotationSpeed: Math.random() * 4 - 2,
+                        opacity: Math.random() * 0.6 + 0.4,
+                        swing: Math.random() * 0.02 + 0.01
+                    });
+                }
+            },
+
+            animate() {
+                if (!this.active) return;
+                
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.petals.forEach(petal => {
+                    // 위치 업데이트
+                    petal.y += petal.speedY;
+                    petal.x += petal.speedX + Math.sin(petal.y * petal.swing) * 0.5;
+                    petal.rotation += petal.rotationSpeed;
+                    
+                    // 화면 밖으로 나가면 리셋
+                    if (petal.y > this.canvas.height + 50) {
+                        petal.y = -50;
+                        petal.x = Math.random() * this.canvas.width;
+                    }
+                    
+                    if (petal.x > this.canvas.width + 50) petal.x = -50;
+                    if (petal.x < -50) petal.x = this.canvas.width + 50;
+                    
+                    // 꽃잎 그리기
+                    this.ctx.save();
+                    this.ctx.translate(petal.x, petal.y);
+                    this.ctx.rotate(petal.rotation * Math.PI / 180);
+                    this.ctx.globalAlpha = petal.opacity;
+                    
+                    if (this.petalImage && this.petalImage.complete) {
+                        // 진짜 petal.png 이미지 사용
+                        const size = 25 * petal.size;
+                        this.ctx.drawImage(
+                            this.petalImage, 
+                            -size/2, -size/2, 
+                            size, size
+                        );
+                    } else {
+                        // petal.png가 없을 때 예쁜 꽃잎 모양
+                        const size = 10 * petal.size;
+                        this.ctx.fillStyle = '#ffb6c1';
+                        
+                        // 꽃잎 5개로 이루어진 벚꽃
+                        for (let i = 0; i < 5; i++) {
+                            this.ctx.save();
+                            this.ctx.rotate((i * 72) * Math.PI / 180);
+                            this.ctx.beginPath();
+                            this.ctx.ellipse(0, -size/3, size/4, size/2, 0, 0, Math.PI * 2);
+                            this.ctx.fill();
+                            this.ctx.restore();
+                        }
+                        
+                        // 중앙 원
+                        this.ctx.fillStyle = '#ff69b4';
+                        this.ctx.beginPath();
+                        this.ctx.arc(0, 0, size/6, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                    
+                    this.ctx.restore();
+                });
+                
+                this.animationId = requestAnimationFrame(() => this.animate());
+            },
+
+            stop() {
+                this.active = false;
+                
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+                
+                if (this.canvas) {
+                    this.canvas.remove();
+                    this.canvas = null;
+                }
+                
+                this.petals = [];
+                console.log('🌸 petal.png 벚꽃 시스템 중지');
+            },
+
+            handleResize() {
+                if (this.canvas) {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                }
             }
         };
 
@@ -1365,6 +1621,19 @@
             elements.themeToggle?.addEventListener('click', themeManager.toggle);
             elements.themeToggleBottom?.addEventListener('click', themeManager.toggle);
             
+            // 벚꽃 버튼 이벤트
+            elements.petalSakuraBtn?.addEventListener('click', function() {
+                if (petalSakuraSystem.active) {
+                    petalSakuraSystem.stop();
+                    this.classList.remove('active');
+                    this.querySelector('span:last-child').textContent = 'petal.png 벚꽃';
+                } else {
+                    petalSakuraSystem.init();
+                    this.classList.add('active');
+                    this.querySelector('span:last-child').textContent = '벚꽃 중지';
+                }
+            });
+            
             document.querySelectorAll('.gender-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     navigationManager.selectGender(this.dataset.gender);
@@ -1389,6 +1658,11 @@
                     }
                 }
             });
+
+            // 화면 크기 변경 대응
+            window.addEventListener('resize', () => {
+                petalSakuraSystem.handleResize();
+            });
         }
 
         // 초기화
@@ -1400,7 +1674,7 @@
                 elements.backBtn.style.display = 'none';
             }
             
-            console.log('🚀 HAIRGATOR App initialized (Clean Version)');
+            console.log('🚀 HAIRGATOR App initialized (Final Complete Version)');
         }
 
         // DOM 로드 완료 시 실행
@@ -1414,7 +1688,7 @@
                     .catch(err => console.log('SW registration failed'));
             }
             
-            console.log('✅ HAIRGATOR App loaded successfully (Clean Version)');
+            console.log('✅ HAIRGATOR App loaded successfully (Final Complete Version)');
         });
     </script>
 
