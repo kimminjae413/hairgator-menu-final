@@ -989,33 +989,38 @@
         }
         
         // ========== 통계 로드 ==========
-        async function loadStats() {
-            try {
-                // 전체 스타일
-                const stylesSnapshot = await db.collection('hairstyles').get();
-                document.getElementById('totalStyles').textContent = stylesSnapshot.size;
-                
-                // 성별 분류
-                let maleCount = 0;
-                let femaleCount = 0;
-                
-                stylesSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data.gender === 'male') maleCount++;
-                    if (data.gender === 'female') femaleCount++;
-                });
-                
-                document.getElementById('totalMale').textContent = maleCount;
-                document.getElementById('totalFemale').textContent = femaleCount;
-                
-                // 전체 고객
-                const customersSnapshot = await db.collection('customers').get();
-                document.getElementById('totalCustomers').textContent = customersSnapshot.size;
-                
-            } catch (error) {
-                console.error('Load stats error:', error);
-            }
+async function loadStats() {
+    try {
+        // 전체 스타일
+        const stylesSnapshot = await db.collection('hairstyles').get();
+        document.getElementById('totalStyles').textContent = stylesSnapshot.size;
+        
+        // 성별 분류
+        let maleCount = 0;
+        let femaleCount = 0;
+        
+        stylesSnapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.gender === 'male') maleCount++;
+            if (data.gender === 'female') femaleCount++;
+        });
+        
+        document.getElementById('totalMale').textContent = maleCount;
+        document.getElementById('totalFemale').textContent = femaleCount;
+        
+        // 전체 고객 (권한 오류 대비 처리)
+        try {
+            const customersSnapshot = await db.collection('customers').get();
+            document.getElementById('totalCustomers').textContent = customersSnapshot.size;
+        } catch (error) {
+            console.log('고객 통계 권한 없음 (정상):', error.message);
+            document.getElementById('totalCustomers').textContent = '로그인필요';
         }
+        
+    } catch (error) {
+        console.error('통계 로드 실패:', error);
+    }
+}
         
         // ========== 데이터 초기화 ==========
         async function initializeData() {
@@ -1161,3 +1166,4 @@
     </script>
 </body>
 </html>
+
