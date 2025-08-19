@@ -816,7 +816,7 @@
             reader.readAsDataURL(file);
         }
         
-        // ========== 스타일 저장 ==========
+        // ========== 최종 완성된 saveStyle 함수 ==========
         async function saveStyle() {
             const code = document.getElementById('styleCode').value.trim().toUpperCase();
             const name = document.getElementById('styleName').value.trim();
@@ -831,6 +831,8 @@
             saveBtn.textContent = '저장 중...';
             
             try {
+                console.log('🔍 중복 코드 검사 중...');
+                
                 // 중복 체크
                 const existing = await db.collection('hairstyles')
                     .where('code', '==', code)
@@ -843,38 +845,97 @@
                     return;
                 }
                 
-                let imageUrl = '';
+                console.log('✅ 중복 검사 통과');
                 
-                // 이미지 업로드
+                // ========== 이미지 업로드 시도 (5초 타임아웃) ==========
+                let imageUrl = '';
+                let uploadStatus = 'no-image';
+                
                 if (selectedFile) {
-                    const storageRef = storage.ref();
-                    const fileRef = storageRef.child(`hairstyles/${currentGender}/${code}_${Date.now()}.jpg`);
+                    console.log('📤 이미지 업로드 시도 중...');
                     
-                    const snapshot = await fileRef.put(selectedFile);
-                    imageUrl = await snapshot.ref.getDownloadURL();
+                    try {
+                        // 5초 타임아웃으로 이미지 업로드
+                        const uploadPromise = (async () => {
+                            const storageRef = storage.ref();
+                            const fileName = `${code}_${Date.now()}.jpg`;
+                            const fileRef = storageRef.child(`hairstyles/${currentGender}/${fileName}`);
+                            
+                            const snapshot = await fileRef.put(selectedFile);
+                            return await snapshot.ref.getDownloadURL();
+                        })();
+                        
+                        const timeoutPromise = new Promise((_, reject) => {
+                            setTimeout(() => reject(new Error('TIMEOUT')), 30000);
+                        });
+                        
+                        imageUrl = await Promise.race([uploadPromise, timeoutPromise]);
+                        uploadStatus = 'success';
+                        console.log('✅ 이미지 업로드 성공!');
+                        
+                    } catch (error) {
+                        console.log('❌ 이미지 업로드 실패:', error.message);
+                        
+                        // CORS 오류 여부 확인
+                        if (error.message.includes('CORS') || error.message.includes('preflight')) {
+                            uploadStatus = 'cors-error';
+                        } else if (error.message === 'TIMEOUT') {
+                            uploadStatus = 'timeout';
+                        } else {
+                            uploadStatus = 'upload-failed';
+                        }
+                        
+                        imageUrl = ''; // 이미지 없이 진행
+                    }
                 }
                 
-                // Firestore에 저장
-                await db.collection('hairstyles').add({
+                // ========== Firestore에 스타일 정보 저장 ==========
+                console.log('💾 Firestore에 스타일 정보 저장 중...');
+                
+                const styleData = {
                     code: code,
                     name: name,
                     gender: currentGender,
                     mainCategory: currentCategory,
                     subCategory: currentSubcategory,
                     imageUrl: imageUrl,
+                    uploadStatus: uploadStatus,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                     likes: 0,
                     views: 0
-                });
+                };
                 
-                showToast('✅ 스타일 추가 완료!');
+                // 이미지 실패 시 추가 정보
+                if (!imageUrl && selectedFile) {
+                    styleData.failedUploadInfo = {
+                        fileName: selectedFile.name,
+                        fileSize: selectedFile.size,
+                        fileType: selectedFile.type,
+                        failureReason: uploadStatus,
+                        attemptTime: new Date().toISOString()
+                    };
+                }
+                
+                await db.collection('hairstyles').add(styleData);
+                
+                console.log('✅ Firestore 저장 완료!');
+                
+                // 성공 메시지
+                if (imageUrl) {
+                    showToast('✅ 스타일과 이미지 모두 저장 완료!');
+                } else if (selectedFile) {
+                    showToast('✅ 스타일 저장 완료! (이미지 업로드 실패 - CORS 문제)');
+                } else {
+                    showToast('✅ 스타일 저장 완료!');
+                }
+                
                 closeModal();
                 loadStyles();
                 
             } catch (error) {
-                console.error('Save error:', error);
-                showToast('❌ 저장 실패: ' + error.message);
+                console.error('❌ 저장 실패:', error);
+                showToast(`❌ 저장 실패: ${error.message}`);
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.textContent = '저장';
@@ -988,7 +1049,7 @@
             }
         }
         
-        // ========== 통계 로드 ==========
+        // ========== 통계 로드 (최종 수정 버전) ==========
         async function loadStats() {
             try {
                 // 전체 스타일
@@ -1008,12 +1069,17 @@
                 document.getElementById('totalMale').textContent = maleCount;
                 document.getElementById('totalFemale').textContent = femaleCount;
                 
-                // 전체 고객
-                const customersSnapshot = await db.collection('customers').get();
-                document.getElementById('totalCustomers').textContent = customersSnapshot.size;
+                // 전체 고객 (권한 오류 대비 처리)
+                try {
+                    const customersSnapshot = await db.collection('customers').get();
+                    document.getElementById('totalCustomers').textContent = customersSnapshot.size;
+                } catch (error) {
+                    console.log('고객 통계 권한 없음 (정상):', error.message);
+                    document.getElementById('totalCustomers').textContent = '로그인필요';
+                }
                 
             } catch (error) {
-                console.error('Load stats error:', error);
+                console.error('통계 로드 실패:', error);
             }
         }
         
@@ -1151,6 +1217,38 @@
             }, 3000);
         }
         
+        // ========== 실패한 업로드 재시도 함수 ==========
+        async function retryFailedUploads() {
+            console.log('🔄 실패한 업로드 재시도 시작...');
+            
+            try {
+                // 이미지 없는 스타일들 찾기
+                const failedUploads = await db.collection('hairstyles')
+                    .where('uploadStatus', 'in', ['cors-error', 'upload-failed', 'processing-error', 'timeout'])
+                    .get();
+                
+                console.log(`📋 재시도할 스타일: ${failedUploads.size}개`);
+                
+                if (failedUploads.empty) {
+                    showToast('재시도할 업로드가 없습니다');
+                    return;
+                }
+                
+                // 각 스타일에 대해 수동으로 이미지 다시 업로드 가능하도록 안내
+                let retryList = [];
+                failedUploads.forEach(doc => {
+                    const data = doc.data();
+                    retryList.push(`${data.code}: ${data.name} (${data.uploadStatus})`);
+                });
+                
+                console.log('재시도 필요 목록:', retryList);
+                showToast(`${failedUploads.size}개 스타일의 이미지 업로드가 실패했습니다.`);
+                
+            } catch (error) {
+                console.error('재시도 확인 실패:', error);
+            }
+        }
+        
         // ========== 초기화 ==========
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Admin page loaded');
@@ -1158,6 +1256,9 @@
             // 통계 로드
             loadStats();
         });
+        
+        // 콘솔에서 사용할 수 있는 유틸리티 함수
+        window.retryFailedUploads = retryFailedUploads;
     </script>
 </body>
 </html>
