@@ -816,7 +816,7 @@
             reader.readAsDataURL(file);
         }
         
-        // ========== CORS 오류 대응 스타일 저장 함수 ==========
+        // ========== 최종 완성된 saveStyle 함수 ==========
         async function saveStyle() {
             const code = document.getElementById('styleCode').value.trim().toUpperCase();
             const name = document.getElementById('styleName').value.trim();
@@ -831,6 +831,8 @@
             saveBtn.textContent = '저장 중...';
             
             try {
+                console.log('🔍 중복 코드 검사 중...');
+                
                 // 중복 체크
                 const existing = await db.collection('hairstyles')
                     .where('code', '==', code)
@@ -843,90 +845,53 @@
                     return;
                 }
                 
+                console.log('✅ 중복 검사 통과');
+                
+                // ========== 이미지 업로드 시도 (5초 타임아웃) ==========
                 let imageUrl = '';
                 let uploadStatus = 'no-image';
                 
-                // 이미지 업로드 시도 (CORS 오류 대응)
                 if (selectedFile) {
                     console.log('📤 이미지 업로드 시도 중...');
                     
                     try {
-                        // Storage 참조 생성
-                        const timestamp = Date.now();
-                        const fileExtension = selectedFile.name.split('.').pop() || 'jpg';
-                        const fileName = `${code}_${timestamp}.${fileExtension}`;
-                        const storageRef = firebase.storage().ref();
-                        const fileRef = storageRef.child(`hairstyles/${currentGender}/${fileName}`);
+                        // 5초 타임아웃으로 이미지 업로드
+                        const uploadPromise = (async () => {
+                            const storageRef = storage.ref();
+                            const fileName = `${code}_${Date.now()}.jpg`;
+                            const fileRef = storageRef.child(`hairstyles/${currentGender}/${fileName}`);
+                            
+                            const snapshot = await fileRef.put(selectedFile);
+                            return await snapshot.ref.getDownloadURL();
+                        })();
                         
-                        // 메타데이터 설정
-                        const metadata = {
-                            contentType: selectedFile.type,
-                            customMetadata: {
-                                'uploadedBy': 'admin',
-                                'styleCode': code,
-                                'uploadTime': new Date().toISOString()
-                            }
-                        };
+                        const timeoutPromise = new Promise((_, reject) => {
+                            setTimeout(() => reject(new Error('TIMEOUT')), 5000);
+                        });
                         
-                        // 업로드 시도 (3번 재시도)
-                        let uploadSuccess = false;
-                        let lastError = null;
+                        imageUrl = await Promise.race([uploadPromise, timeoutPromise]);
+                        uploadStatus = 'success';
+                        console.log('✅ 이미지 업로드 성공!');
                         
-                        for (let attempt = 1; attempt <= 3; attempt++) {
-                            try {
-                                console.log(`업로드 시도 ${attempt}/3...`);
-                                
-                                const uploadTask = await fileRef.put(selectedFile, metadata);
-                                imageUrl = await uploadTask.ref.getDownloadURL();
-                                uploadStatus = 'success';
-                                uploadSuccess = true;
-                                
-                                console.log('✅ 이미지 업로드 성공!');
-                                showToast('📸 이미지 업로드 성공!');
-                                break;
-                                
-                            } catch (uploadError) {
-                                lastError = uploadError;
-                                console.warn(`업로드 시도 ${attempt} 실패:`, uploadError.code, uploadError.message);
-                                
-                                // 잠시 대기 후 재시도
-                                if (attempt < 3) {
-                                    await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-                                }
-                            }
+                    } catch (error) {
+                        console.log('❌ 이미지 업로드 실패:', error.message);
+                        
+                        // CORS 오류 여부 확인
+                        if (error.message.includes('CORS') || error.message.includes('preflight')) {
+                            uploadStatus = 'cors-error';
+                        } else if (error.message === 'TIMEOUT') {
+                            uploadStatus = 'timeout';
+                        } else {
+                            uploadStatus = 'upload-failed';
                         }
                         
-                        // 모든 업로드 시도 실패
-                        if (!uploadSuccess) {
-                            console.error('❌ 모든 이미지 업로드 시도 실패:', lastError);
-                            
-                            // CORS 오류인지 확인
-                            if (lastError && (
-                                lastError.message.includes('CORS') || 
-                                lastError.code === 'storage/unauthorized' ||
-                                lastError.message.includes('preflight')
-                            )) {
-                                showToast('⚠️ 이미지 업로드 CORS 오류 - 텍스트만 저장합니다');
-                                uploadStatus = 'cors-error';
-                            } else {
-                                showToast('⚠️ 이미지 업로드 실패 - 텍스트만 저장합니다');
-                                uploadStatus = 'upload-failed';
-                            }
-                            
-                            imageUrl = ''; // 이미지 없이 진행
-                        }
-                        
-                    } catch (generalError) {
-                        console.error('❌ 이미지 처리 중 일반 오류:', generalError);
-                        showToast('⚠️ 이미지 처리 오류 - 텍스트만 저장합니다');
-                        uploadStatus = 'processing-error';
-                        imageUrl = '';
+                        imageUrl = ''; // 이미지 없이 진행
                     }
                 }
                 
-                console.log('💾 Firestore에 데이터 저장 중...');
+                // ========== Firestore에 스타일 정보 저장 ==========
+                console.log('💾 Firestore에 스타일 정보 저장 중...');
                 
-                // Firestore에 저장 (이미지 유무와 관계없이)
                 const styleData = {
                     code: code,
                     name: name,
@@ -934,54 +899,43 @@
                     mainCategory: currentCategory,
                     subCategory: currentSubcategory,
                     imageUrl: imageUrl,
-                    uploadStatus: uploadStatus, // 업로드 상태 기록
+                    uploadStatus: uploadStatus,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                     likes: 0,
                     views: 0
                 };
                 
-                // 이미지 없는 경우 추가 정보
+                // 이미지 실패 시 추가 정보
                 if (!imageUrl && selectedFile) {
-                    styleData.originalFileName = selectedFile.name;
                     styleData.failedUploadInfo = {
+                        fileName: selectedFile.name,
                         fileSize: selectedFile.size,
                         fileType: selectedFile.type,
-                        attemptTime: new Date().toISOString(),
-                        reason: uploadStatus
+                        failureReason: uploadStatus,
+                        attemptTime: new Date().toISOString()
                     };
                 }
                 
                 await db.collection('hairstyles').add(styleData);
                 
+                console.log('✅ Firestore 저장 완료!');
+                
                 // 성공 메시지
                 if (imageUrl) {
                     showToast('✅ 스타일과 이미지 모두 저장 완료!');
                 } else if (selectedFile) {
-                    showToast('✅ 스타일 저장 완료! (이미지는 나중에 다시 시도 가능)');
+                    showToast('✅ 스타일 저장 완료! (이미지 업로드 실패 - CORS 문제)');
                 } else {
                     showToast('✅ 스타일 저장 완료!');
                 }
-                
-                console.log('✅ Firestore 저장 완료');
                 
                 closeModal();
                 loadStyles();
                 
             } catch (error) {
-                console.error('❌ 전체 저장 과정 실패:', error);
-                
-                // 구체적인 오류 메시지
-                let errorMessage = '저장 실패';
-                if (error.code === 'permission-denied') {
-                    errorMessage = 'Firestore 권한이 부족합니다';
-                } else if (error.code === 'unavailable') {
-                    errorMessage = 'Firebase 서비스 일시 중단';
-                } else if (error.message.includes('network')) {
-                    errorMessage = '네트워크 연결 문제';
-                }
-                
-                showToast(`❌ ${errorMessage}: ${error.message}`);
+                console.error('❌ 저장 실패:', error);
+                showToast(`❌ 저장 실패: ${error.message}`);
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.textContent = '저장';
@@ -1263,14 +1217,14 @@
             }, 3000);
         }
         
-        // ========== 이미지 없는 스타일들을 나중에 다시 업로드하는 함수 ==========
+        // ========== 실패한 업로드 재시도 함수 ==========
         async function retryFailedUploads() {
             console.log('🔄 실패한 업로드 재시도 시작...');
             
             try {
                 // 이미지 없는 스타일들 찾기
                 const failedUploads = await db.collection('hairstyles')
-                    .where('uploadStatus', 'in', ['cors-error', 'upload-failed', 'processing-error'])
+                    .where('uploadStatus', 'in', ['cors-error', 'upload-failed', 'processing-error', 'timeout'])
                     .get();
                 
                 console.log(`📋 재시도할 스타일: ${failedUploads.size}개`);
@@ -1288,7 +1242,7 @@
                 });
                 
                 console.log('재시도 필요 목록:', retryList);
-                showToast(`${failedUploads.size}개 스타일의 이미지 업로드가 실패했습니다. 개별적으로 다시 시도해주세요.`);
+                showToast(`${failedUploads.size}개 스타일의 이미지 업로드가 실패했습니다.`);
                 
             } catch (error) {
                 console.error('재시도 확인 실패:', error);
