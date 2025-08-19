@@ -1,174 +1,125 @@
-// ✅ 자동 캐시 버전 관리 Service Worker
-// 매번 배포할 때마다 자동으로 새 버전 생성!
-
-// 🎯 방법 1: 타임스탬프 자동 생성 (가장 간단)
-const CACHE_NAME = `hairgator-${Date.now()}`;
-const DYNAMIC_CACHE = `hairgator-dynamic-${Date.now()}`;
-
-// 🎯 방법 2: 빌드 시간 환경변수 사용 (더 정교함)
-// const CACHE_NAME = `hairgator-${process.env.BUILD_TIME || Date.now()}`;
-
-// 기본 캐시할 파일들
+// Service Worker for HAIRGATOR PWA (Admin 캐시 제외 버전)
+const CACHE_NAME = 'hairgator-v1.1.0'; // 버전 업데이트
 const urlsToCache = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/admin.html',
-  '/migration.html'
+  '/manifest.json'
+  // admin.html은 의도적으로 제외
 ];
 
-// 캐시하지 않을 파일들
-const noCachePatterns = [
-  /backgrounds\/.*\.css$/,  // 배경 CSS 파일들
-  /\.js\.map$/,             // 소스맵 파일들
-  /hot-update/,             // 핫 리로드 파일들
+// 캐시하지 않을 파일들 (Admin 및 개발 파일)
+const NO_CACHE_PATTERNS = [
+  /\/admin\.html$/,           // admin.html
+  /\/migration\.html$/,       // migration.html  
+  /\/js\/firebase-config\.js$/, // firebase config
+  /\?.*admin/,                // admin 관련 쿼리
+  /\/admin\//                 // admin 폴더
 ];
 
-// 🔧 자동 업데이트 감지 및 알림
+// Install Service Worker
 self.addEventListener('install', event => {
-  console.log('🚀 새 Service Worker 설치 중...', CACHE_NAME);
-  
+  console.log('🔧 Service Worker 설치 중...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('📦 새 캐시 생성:', CACHE_NAME);
+        console.log('✅ 캐시 열기 성공');
         return cache.addAll(urlsToCache);
-      })
-      .then(() => {
-        console.log('✅ 모든 파일 캐시 완료');
-        // 즉시 활성화 (새 버전 바로 적용)
-        return self.skipWaiting();
       })
       .catch(error => {
         console.error('❌ 캐시 설치 실패:', error);
       })
   );
+  self.skipWaiting();
 });
 
-// 🔄 이전 버전 캐시 자동 정리
+// Activate Service Worker
 self.addEventListener('activate', event => {
-  console.log('🔄 Service Worker 활성화 중...', CACHE_NAME);
-  
+  console.log('🚀 Service Worker 활성화 중...');
   event.waitUntil(
-    Promise.all([
-      // 이전 캐시들 모두 삭제
-      caches.keys().then(cacheNames => {
-        return Promise.all(
-          cacheNames.map(cacheName => {
-            if (cacheName !== CACHE_NAME && cacheName !== DYNAMIC_CACHE) {
-              console.log('🗑️ 이전 캐시 삭제:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      }),
-      
-      // 모든 클라이언트에게 즉시 새 버전 적용
-      self.clients.claim().then(() => {
-        // 🎉 모든 탭에 새 버전 알림
-        return self.clients.matchAll().then(clients => {
-          clients.forEach(client => {
-            client.postMessage({
-              type: 'NEW_VERSION_AVAILABLE',
-              version: CACHE_NAME
-            });
-          });
-        });
-      })
-    ])
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('🗑️ 이전 캐시 삭제:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
-  
-  console.log('✅ Service Worker 활성화 완료!');
+  self.clients.claim();
 });
 
-// 📡 메시지 처리 (클라이언트와 통신)
-self.addEventListener('message', event => {
-  console.log('📨 메시지 수신:', event.data);
-  
-  if (event.data && event.data.type === 'GET_VERSION') {
-    // 현재 버전 정보 전송
-    event.ports[0].postMessage({ 
-      version: CACHE_NAME,
-      timestamp: new Date().toISOString()
-    });
-  }
-  
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
-
-// 🌐 Fetch 이벤트 (기존과 동일하지만 더 스마트하게)
+// Fetch Event - Admin 파일 캐시 제외
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-  
-  // non-GET 요청은 캐시하지 않음
+  // Skip non-GET requests
   if (event.request.method !== 'GET') {
     return;
   }
   
-  // 외부 요청은 캐시하지 않음
-  if (url.origin !== location.origin) {
+  // Skip cross-origin requests
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.origin !== location.origin) {
     return;
   }
   
-  // 캐시하지 않을 파일 패턴 확인
-  const shouldNotCache = noCachePatterns.some(pattern => pattern.test(url.pathname));
+  // Admin 파일들은 캐시하지 않음 (항상 최신 버전)
+  const shouldNotCache = NO_CACHE_PATTERNS.some(pattern => 
+    pattern.test(requestUrl.pathname)
+  );
   
   if (shouldNotCache) {
-    console.log('🚫 캐시 제외:', url.pathname);
-    event.respondWith(fetch(event.request));
+    console.log('🚫 캐시 제외:', requestUrl.pathname);
+    // Admin 파일은 항상 네트워크에서 가져오기
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => {
+          // 네트워크 실패 시에도 캐시 사용하지 않음
+          return new Response('Admin 파일 로드 실패', {
+            status: 503,
+            statusText: 'Service Unavailable'
+          });
+        })
+    );
     return;
   }
   
-  // Firebase 관련 요청은 캐시하지 않음
-  if (url.hostname.includes('firebase') || url.hostname.includes('firestore')) {
-    event.respondWith(fetch(event.request));
-    return;
-  }
-  
-  // 일반 파일들 스마트 캐시 처리
+  // 일반 파일들은 기존 캐시 전략 사용
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // 캐시에서 찾으면 반환
+        // 캐시된 버전이 있으면 반환, 없으면 네트워크에서 가져오기
         if (response) {
-          console.log('📦 캐시 적중:', url.pathname);
+          console.log('📦 캐시에서 로드:', requestUrl.pathname);
           return response;
         }
         
-        // 캐시에 없으면 네트워크에서 가져오기
-        console.log('🌐 네트워크 요청:', url.pathname);
+        console.log('🌐 네트워크에서 로드:', requestUrl.pathname);
         return fetch(event.request).then(fetchResponse => {
-          // 유효하지 않은 응답은 캐시하지 않음
+          // 유효한 응답인지 확인
           if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
             return fetchResponse;
           }
           
-          // 응답 복사해서 캐시에 저장
+          // 응답 복사 후 캐시에 저장
           const responseToCache = fetchResponse.clone();
-          
-          caches.open(DYNAMIC_CACHE)
+          caches.open(CACHE_NAME)
             .then(cache => {
-              console.log('💾 동적 캐시 저장:', url.pathname);
               cache.put(event.request, responseToCache);
-            })
-            .catch(error => {
-              console.warn('⚠️ 캐시 저장 실패:', error);
+              console.log('💾 캐시에 저장:', requestUrl.pathname);
             });
           
           return fetchResponse;
         });
       })
       .catch(error => {
-        console.error('❌ Fetch 실패:', error);
+        console.error('🌐 네트워크 오류:', error);
         
-        // 오프라인일 때 기본 페이지 반환
+        // 오프라인 시 기본 페이지 반환
         if (event.request.destination === 'document') {
           return caches.match('/index.html');
         }
-        
-        return new Response('Offline', {
+        return new Response('오프라인', {
           status: 503,
           statusText: 'Service Unavailable'
         });
@@ -176,4 +127,13 @@ self.addEventListener('fetch', event => {
   );
 });
 
-console.log('🌸 HAIRGATOR Service Worker 로드 완료 - 자동 버전 관리!', CACHE_NAME);
+// 메시지 리스너 (캐시 수동 삭제 등)
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'CLEAR_ADMIN_CACHE') {
+    console.log('🧹 Admin 캐시 수동 정리 요청');
+    // Admin 관련 캐시만 삭제하는 로직 추가 가능
+    event.ports[0].postMessage({success: true});
+  }
+});
+
+console.log('🌸 HAIRGATOR Service Worker 로드 완료 (Admin 캐시 제외 버전)');
