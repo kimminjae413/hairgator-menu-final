@@ -866,7 +866,7 @@
                         })();
                         
                         const timeoutPromise = new Promise((_, reject) => {
-                            setTimeout(() => reject(new Error('TIMEOUT')), 5000);
+                            setTimeout(() => reject(new Error('TIMEOUT')), 30000);
                         });
                         
                         imageUrl = await Promise.race([uploadPromise, timeoutPromise]);
@@ -1262,3 +1262,4 @@
     </script>
 </body>
 </html>
+
