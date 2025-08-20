@@ -1731,27 +1731,34 @@
             },
 
             checkAutoLogin() {
-                const loginTime = utils.getStorage('loginTime');
-                const now = new Date().getTime();
-                const hoursPassed = (now - parseInt(loginTime)) / (1000 * 60 * 60);
+                // 🚫 24시간 자동 로그인 기능 임시 비활성화 (디버깅용)
+                // const loginTime = utils.getStorage('loginTime');
+                // const now = new Date().getTime();
+                // const hoursPassed = (now - parseInt(loginTime)) / (1000 * 60 * 60);
 
-                if (loginTime && hoursPassed < 24) {
-                    // 24시간 이내면 자동 로그인
-                    const savedName = utils.getStorage('designerName');
-                    if (savedName) {
-                        this.completeLogin(savedName);
-                        return;
-                    }
-                }
+                // if (loginTime && hoursPassed < 24) {
+                //     // 24시간 이내면 자동 로그인
+                //     const savedName = utils.getStorage('designerName');
+                //     if (savedName) {
+                //         this.completeLogin(savedName);
+                //         return;
+                //     }
+                // }
 
-                // 로그인 화면 표시
+                console.log('🔐 로그인 화면 표시');
+                // 로그인 화면 강제 표시
                 elements.loginScreen.style.display = 'flex';
+                elements.loginScreen.classList.remove('hidden');
             },
 
             handleLogin() {
+                console.log('🔐 로그인 시도 시작');
+                
                 const name = elements.designerName.value.trim();
                 const phone = elements.phoneNumber.value.trim();
                 const password = elements.password.value.trim();
+
+                console.log('입력 데이터:', { name, phone: phone.slice(0, 8) + '****', password: '****' });
 
                 if (!name) {
                     alert('디자이너 이름을 입력해주세요.');
@@ -1771,25 +1778,21 @@
                     return;
                 }
 
+                console.log('✅ 유효성 검사 통과');
+
+                // 로그인 버튼 비활성화 (중복 클릭 방지)
+                elements.loginBtn.disabled = true;
+                elements.loginBtn.textContent = '로그인 중...';
+
                 // 로그인 정보 저장
                 utils.setStorage('designerName', name);
                 utils.setStorage('designerPhone', phone);
                 utils.setStorage('designerPassword', password);
                 utils.setStorage('loginTime', new Date().getTime().toString());
 
-                this.completeLogin(name);
-            },
+                console.log('💾 로그인 정보 저장 완료');
 
-            completeLogin(name) {
-                elements.loginScreen.classList.add('hidden');
-                elements.genderSelection.style.display = 'flex';
-                
-                if (elements.designerNameDisplay) {
-                    elements.designerNameDisplay.textContent = name;
-                }
-
-                console.log('로그인 완료:', name);
-            }
+                // 
         };
 
         // 테마 관리
