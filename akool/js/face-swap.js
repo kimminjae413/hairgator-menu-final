@@ -1,4 +1,4 @@
-// ========== HAIRGATOR 얼굴 바꾸기 메인 로직 ==========
+// ========== HAIRGATOR 얼굴 바꾸기 메인 로직 (카메라 기능 포함) ==========
 
 class HairgateFaceSwap {
     constructor() {
@@ -15,6 +15,9 @@ class HairgateFaceSwap {
         this.previewImg = null;
         this.resultContainer = null;
         
+        // 📸 카메라 관련
+        this.camera = null;
+        
         this.init();
     }
 
@@ -23,6 +26,7 @@ class HairgateFaceSwap {
         this.createAIButton();
         this.createFaceSwapModal();
         this.setupEventListeners();
+        this.initCamera(); // 📸 카메라 초기화 추가
         
         console.log('🎨 HAIRGATOR Face Swap 시스템 초기화 완료');
     }
@@ -88,19 +92,42 @@ class HairgateFaceSwap {
                             </div>
                         </div>
 
-                        <!-- 고객 사진 업로드 -->
+                        <!-- 📸 고객 사진 업로드/촬영 -->
                         <div class="customer-upload">
                             <h4>📸 고객 사진 업로드</h4>
-                            <div class="upload-area" id="customerUploadArea">
-                                <input type="file" id="customerImageInput" accept="image/*" style="display: none;">
-                                <div class="upload-prompt">
-                                    <div class="upload-icon">📷</div>
-                                    <div class="upload-text">
-                                        <div>사진을 선택하거나 여기에 드래그하세요</div>
-                                        <div class="upload-hint">얼굴이 선명한 정면 사진을 권장합니다</div>
-                                    </div>
+                            
+                            <!-- 업로드 방법 선택 -->
+                            <div class="upload-methods">
+                                <label for="customerImageInput" class="upload-btn file-upload">
+                                    <span class="upload-icon">📁</span>
+                                    <span>갤러리에서 선택</span>
+                                    <input type="file" id="customerImageInput" accept="image/*" style="display: none;">
+                                </label>
+                                
+                                <button class="upload-btn camera-capture" id="cameraBtn">
+                                    <span class="upload-icon">📸</span>
+                                    <span>카메라로 촬영</span>
+                                </button>
+                            </div>
+                            
+                            <!-- 📷 카메라 프리뷰 영역 -->
+                            <div id="cameraPreview" class="camera-preview" style="display: none;">
+                                <video id="cameraVideo" autoplay playsinline></video>
+                                <canvas id="captureCanvas" style="display: none;"></canvas>
+                                <div class="camera-controls">
+                                    <button id="captureBtn" class="capture-btn">📸 촬영하기</button>
+                                    <button id="closeCameraBtn" class="close-camera-btn">❌ 닫기</button>
                                 </div>
-                                <img id="customerPreview" class="customer-preview" style="display: none;">
+                                <div class="camera-hint">얼굴이 화면 중앙에 오도록 조정하세요</div>
+                            </div>
+                            
+                            <!-- 업로드된 이미지 미리보기 -->
+                            <div id="uploadPreview" class="upload-preview" style="display: none;">
+                                <img id="customerPreview" class="customer-preview">
+                                <div class="preview-info">
+                                    <span id="fileName">촬영한 사진</span>
+                                    <button id="removeImage" class="remove-btn">🗑️ 다시 선택</button>
+                                </div>
                             </div>
                         </div>
 
@@ -154,7 +181,219 @@ class HairgateFaceSwap {
         this.previewImg = document.getElementById('customerPreview');
         this.resultContainer = document.getElementById('resultContainer');
 
+        // 📸 카메라 CSS 스타일 추가
+        this.addCameraStyles();
+
         console.log('✅ 얼굴 바꾸기 모달 생성 완료');
+    }
+
+    // ========== 📸 카메라 CSS 스타일 추가 ==========
+    addCameraStyles() {
+        const cameraStyles = `
+            <style>
+            .upload-methods {
+                display: flex;
+                gap: 15px;
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+
+            .upload-btn {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;
+                border: 2px dashed #FF1493;
+                border-radius: 10px;
+                background: rgba(255, 20, 147, 0.1);
+                cursor: pointer;
+                transition: all 0.3s;
+                flex: 1;
+                max-width: 150px;
+                color: #FF1493;
+                text-decoration: none;
+            }
+
+            .upload-btn:hover {
+                background: rgba(255, 20, 147, 0.2);
+                transform: translateY(-2px);
+                border-color: #FF69B4;
+            }
+
+            .upload-icon {
+                font-size: 30px;
+                margin-bottom: 10px;
+            }
+
+            .upload-btn span:last-child {
+                font-weight: bold;
+                font-size: 14px;
+                text-align: center;
+            }
+
+            .camera-preview {
+                border: 2px solid #FF1493;
+                border-radius: 15px;
+                padding: 20px;
+                background: #000;
+                margin: 20px 0;
+                text-align: center;
+            }
+
+            #cameraVideo {
+                width: 100%;
+                max-width: 400px;
+                border-radius: 10px;
+                display: block;
+                margin: 0 auto;
+                background: #222;
+            }
+
+            .camera-controls {
+                display: flex;
+                gap: 15px;
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            .capture-btn, .close-camera-btn {
+                padding: 12px 24px;
+                border: none;
+                border-radius: 25px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s;
+                font-size: 14px;
+            }
+
+            .capture-btn {
+                background: #FF1493;
+                color: white;
+            }
+
+            .capture-btn:hover {
+                background: #FF69B4;
+                transform: scale(1.05);
+            }
+
+            .close-camera-btn {
+                background: #666;
+                color: white;
+            }
+
+            .close-camera-btn:hover {
+                background: #888;
+            }
+
+            .camera-hint {
+                color: #999;
+                font-size: 12px;
+                margin-top: 10px;
+                text-align: center;
+            }
+
+            .upload-preview {
+                text-align: center;
+                margin: 20px 0;
+                padding: 20px;
+                border: 2px solid #FF1493;
+                border-radius: 10px;
+                background: rgba(255, 20, 147, 0.05);
+            }
+
+            .customer-preview {
+                max-width: 200px;
+                max-height: 200px;
+                border-radius: 10px;
+                object-fit: cover;
+            }
+
+            .preview-info {
+                margin-top: 15px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+            }
+
+            #fileName {
+                color: #666;
+                font-size: 14px;
+            }
+
+            .remove-btn {
+                background: #ff4444;
+                color: white;
+                border: none;
+                padding: 8px 12px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 12px;
+            }
+
+            .remove-btn:hover {
+                background: #ff6666;
+            }
+
+            @media (max-width: 768px) {
+                .upload-methods {
+                    flex-direction: column;
+                }
+                
+                .upload-btn {
+                    max-width: none;
+                }
+                
+                .camera-controls {
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                
+                .capture-btn, .close-camera-btn {
+                    width: 100%;
+                }
+            }
+            </style>
+        `;
+        
+        document.head.insertAdjacentHTML('beforeend', cameraStyles);
+    }
+
+    // ========== 📸 카메라 기능 초기화 ==========
+    initCamera() {
+        this.camera = new CameraCapture();
+
+        // 📸 카메라 버튼 이벤트 (이벤트 위임 사용)
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'cameraBtn' || e.target.closest('#cameraBtn')) {
+                this.camera.startCamera();
+            }
+        });
+
+        // 📷 촬영 버튼 이벤트
+        document.addEventListener('click', async (e) => {
+            if (e.target.id === 'captureBtn') {
+                const photoFile = await this.camera.capturePhoto();
+                if (photoFile) {
+                    this.handleImageUpload(photoFile);
+                    this.camera.stopCamera();
+                }
+            }
+        });
+
+        // ❌ 카메라 닫기 버튼 이벤트
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'closeCameraBtn') {
+                this.camera.stopCamera();
+            }
+        });
+
+        // 🗑️ 이미지 제거 버튼 이벤트
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'removeImage') {
+                this.removeUploadedImage();
+            }
+        });
     }
 
     // ========== 3. 이벤트 리스너 설정 ==========
@@ -170,43 +409,10 @@ class HairgateFaceSwap {
             }
         });
 
-        // 파일 업로드 영역 클릭
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('#customerUploadArea')) {
-                document.getElementById('customerImageInput').click();
-            }
-        });
-
         // 파일 선택
         document.addEventListener('change', (e) => {
             if (e.target.id === 'customerImageInput') {
                 this.handleImageUpload(e.target.files[0]);
-            }
-        });
-
-        // 드래그 앤 드롭
-        document.addEventListener('dragover', (e) => {
-            if (e.target.closest('#customerUploadArea')) {
-                e.preventDefault();
-                e.target.closest('#customerUploadArea').classList.add('dragover');
-            }
-        });
-
-        document.addEventListener('dragleave', (e) => {
-            if (e.target.closest('#customerUploadArea')) {
-                e.target.closest('#customerUploadArea').classList.remove('dragover');
-            }
-        });
-
-        document.addEventListener('drop', (e) => {
-            if (e.target.closest('#customerUploadArea')) {
-                e.preventDefault();
-                e.target.closest('#customerUploadArea').classList.remove('dragover');
-                
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    this.handleImageUpload(files[0]);
-                }
             }
         });
 
@@ -264,6 +470,11 @@ class HairgateFaceSwap {
 
     // ========== 5. 모달 닫기 ==========
     closeFaceSwapModal() {
+        // 카메라 정지
+        if (this.camera) {
+            this.camera.stopCamera();
+        }
+        
         this.modal.classList.remove('active');
         this.resetModal();
     }
@@ -274,17 +485,14 @@ class HairgateFaceSwap {
         this.resultImageUrl = null;
         
         // UI 초기화
-        this.previewImg.style.display = 'none';
+        document.getElementById('uploadPreview').style.display = 'none';
         this.resultContainer.style.display = 'none';
         document.getElementById('processingStatus').style.display = 'none';
         document.getElementById('startFaceSwap').disabled = true;
         
-        // 업로드 영역 초기화
-        const uploadArea = document.getElementById('customerUploadArea');
-        uploadArea.classList.remove('has-image');
-        
-        const uploadPrompt = uploadArea.querySelector('.upload-prompt');
-        if (uploadPrompt) uploadPrompt.style.display = 'block';
+        // 파일 입력 초기화
+        const fileInput = document.getElementById('customerImageInput');
+        if (fileInput) fileInput.value = '';
     }
 
     // ========== 7. 이미지 업로드 처리 ==========
@@ -304,13 +512,16 @@ class HairgateFaceSwap {
         // 미리보기 표시
         const reader = new FileReader();
         reader.onload = (e) => {
-            this.previewImg.src = e.target.result;
-            this.previewImg.style.display = 'block';
+            const previewImg = document.getElementById('customerPreview');
+            previewImg.src = e.target.result;
             
-            // 업로드 영역 스타일 변경
-            const uploadArea = document.getElementById('customerUploadArea');
-            uploadArea.classList.add('has-image');
-            uploadArea.querySelector('.upload-prompt').style.display = 'none';
+            // 파일명 표시
+            const fileName = document.getElementById('fileName');
+            fileName.textContent = file.name.length > 20 ? 
+                file.name.substring(0, 20) + '...' : file.name;
+            
+            // 미리보기 영역 표시
+            document.getElementById('uploadPreview').style.display = 'block';
             
             // AI 체험 버튼 활성화
             document.getElementById('startFaceSwap').disabled = false;
@@ -318,6 +529,19 @@ class HairgateFaceSwap {
         reader.readAsDataURL(file);
 
         console.log('📸 고객 이미지 업로드됨:', file.name);
+    }
+
+    // ========== 📸 업로드된 이미지 제거 ==========
+    removeUploadedImage() {
+        this.customerImageFile = null;
+        document.getElementById('uploadPreview').style.display = 'none';
+        document.getElementById('startFaceSwap').disabled = true;
+        
+        // 파일 입력 초기화
+        const fileInput = document.getElementById('customerImageInput');
+        if (fileInput) fileInput.value = '';
+        
+        console.log('🗑️ 업로드된 이미지 제거됨');
     }
 
     // ========== 8. 얼굴 바꾸기 실행 ==========
@@ -339,12 +563,13 @@ class HairgateFaceSwap {
             this.showProcessingStatus(true);
             document.getElementById('startFaceSwap').disabled = true;
 
-            // 고객 이미지를 임시 URL로 변환 (실제로는 서버 업로드 필요)
-            const customerImageUrl = await this.uploadCustomerImage(this.customerImageFile);
+            console.log('🎨 얼굴 바꾸기 시작');
+            console.log('👤 고객 이미지 파일:', this.customerImageFile);
+            console.log('💇 헤어스타일 이미지:', this.currentStyleData.imageUrl);
 
-            // AKOOL API 호출
+            // AKOOL API 호출 (File 객체 직접 전달)
             const result = await window.akoolAPI.swapFace(
-                customerImageUrl,
+                this.customerImageFile, // File 객체 직접 전달
                 this.currentStyleData.imageUrl,
                 {
                     enhance: true // 얼굴 향상 기능 사용
@@ -353,7 +578,8 @@ class HairgateFaceSwap {
 
             if (result.success) {
                 // 성공: 결과 표시
-                this.showResult(customerImageUrl, result.resultUrl);
+                const originalUrl = URL.createObjectURL(this.customerImageFile);
+                this.showResult(originalUrl, result.resultUrl);
                 console.log('🎉 얼굴 바꾸기 성공!', result);
             } else {
                 throw new Error(result.error);
@@ -367,13 +593,6 @@ class HairgateFaceSwap {
         } finally {
             this.isProcessing = false;
         }
-    }
-
-    // ========== 9. 고객 이미지 업로드 (임시) ==========
-    async uploadCustomerImage(file) {
-        // 실제로는 서버에 업로드해야 하지만, 
-        // 임시로 ObjectURL 사용 (CORS 문제 있을 수 있음)
-        return URL.createObjectURL(file);
     }
 
     // ========== 10. 처리 중 상태 표시 ==========
@@ -410,7 +629,7 @@ class HairgateFaceSwap {
 
         const link = document.createElement('a');
         link.href = this.resultImageUrl;
-        link.download = `hairgate_ai_result_${Date.now()}.jpg`;
+        link.download = `hairgator_ai_result_${Date.now()}.jpg`;
         link.click();
 
         console.log('📥 결과 다운로드');
@@ -477,6 +696,113 @@ class HairgateFaceSwap {
     }
 }
 
+// ========== 📸 카메라 캡처 클래스 ==========
+class CameraCapture {
+    constructor() {
+        this.stream = null;
+        this.video = null;
+        this.canvas = null;
+        this.isActive = false;
+    }
+
+    // 📸 카메라 시작
+    async startCamera() {
+        try {
+            console.log('📸 카메라 시작...');
+            
+            // 카메라 권한 요청 및 스트림 가져오기
+            this.stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'user', // 전면 카메라 (셀카)
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                }
+            });
+
+            // 비디오 요소에 스트림 연결
+            this.video = document.getElementById('cameraVideo');
+            this.video.srcObject = this.stream;
+            
+            // 카메라 프리뷰 영역 표시
+            document.getElementById('cameraPreview').style.display = 'block';
+            
+            this.isActive = true;
+            console.log('✅ 카메라 시작 성공');
+
+        } catch (error) {
+            console.error('❌ 카메라 시작 실패:', error);
+            
+            let errorMessage = '카메라에 접근할 수 없습니다.';
+            if (error.name === 'NotAllowedError') {
+                errorMessage = '카메라 권한이 거부되었습니다. 브라우저 설정에서 카메라 권한을 허용해주세요.';
+            } else if (error.name === 'NotFoundError') {
+                errorMessage = '카메라가 발견되지 않았습니다.';
+            }
+            
+            alert(errorMessage);
+        }
+    }
+
+    // 📷 사진 촬영
+    async capturePhoto() {
+        if (!this.isActive || !this.video) return null;
+
+        try {
+            console.log('📷 사진 촬영 중...');
+
+            // Canvas 요소 가져오기
+            this.canvas = document.getElementById('captureCanvas');
+            const ctx = this.canvas.getContext('2d');
+
+            // 비디오 크기에 맞춰 캔버스 크기 설정
+            this.canvas.width = this.video.videoWidth;
+            this.canvas.height = this.video.videoHeight;
+
+            // 비디오 프레임을 캔버스에 그리기
+            ctx.drawImage(this.video, 0, 0);
+
+            // Canvas를 Blob으로 변환
+            return new Promise((resolve) => {
+                this.canvas.toBlob((blob) => {
+                    if (blob) {
+                        // Blob을 File 객체로 변환
+                        const file = new File([blob], `camera_${Date.now()}.jpg`, {
+                            type: 'image/jpeg'
+                        });
+                        
+                        console.log('✅ 사진 촬영 성공:', file.name);
+                        resolve(file);
+                    } else {
+                        console.error('❌ Blob 생성 실패');
+                        resolve(null);
+                    }
+                }, 'image/jpeg', 0.8);
+            });
+
+        } catch (error) {
+            console.error('❌ 사진 촬영 실패:', error);
+            return null;
+        }
+    }
+
+    // 📵 카메라 정지
+    stopCamera() {
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+            this.stream = null;
+        }
+
+        if (this.video) {
+            this.video.srcObject = null;
+        }
+
+        document.getElementById('cameraPreview').style.display = 'none';
+        this.isActive = false;
+        
+        console.log('📵 카메라 정지됨');
+    }
+}
+
 // ========== 초기화 ==========
 document.addEventListener('DOMContentLoaded', () => {
     // akool-api.js가 로드된 후에 실행
@@ -493,4 +819,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-console.log('🎨 HAIRGATOR Face Swap 메인 로직 로드 완료');
+console.log('🎨 HAIRGATOR Face Swap 메인 로직 (카메라 포함) 로드 완료');
