@@ -1,4 +1,4 @@
-// ========== HAIRGATOR 얼굴 바꾸기 메인 로직 (카메라 기능 포함) - 최종 수정 ==========
+// ========== HAIRGATOR 얼굴 바꾸기 메인 로직 (SUCCESS 에러 수정 완료) ==========
 
 class HairgateFaceSwap {
     constructor() {
@@ -26,14 +26,13 @@ class HairgateFaceSwap {
         this.createAIButton();
         this.createFaceSwapModal();
         this.setupEventListeners();
-        this.initCamera(); // 📸 카메라 초기화 추가
+        this.initCamera();
         
         console.log('🎨 HAIRGATOR Face Swap 시스템 초기화 완료');
     }
 
     // ========== 1. AI 헤어체험 버튼 추가 ==========
     createAIButton() {
-        // 기존 모달 액션 영역에 버튼 추가
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.type === 'childList') {
@@ -48,10 +47,8 @@ class HairgateFaceSwap {
                             <span>AI 헤어체험</span>
                         `;
                         
-                        // 고객등록 버튼 옆에 추가
                         modalActions.insertBefore(aiBtn, modalActions.firstChild);
                         
-                        // 이벤트 리스너 추가
                         aiBtn.addEventListener('click', () => {
                             this.openFaceSwapModal();
                         });
@@ -62,7 +59,6 @@ class HairgateFaceSwap {
             });
         });
 
-        // DOM 변화 감지 시작
         observer.observe(document.body, {
             childList: true,
             subtree: true
@@ -80,7 +76,6 @@ class HairgateFaceSwap {
                     </div>
                     
                     <div class="akool-modal-body">
-                        <!-- 선택된 헤어스타일 표시 -->
                         <div class="selected-style">
                             <h4>🎨 선택한 헤어스타일</h4>
                             <div class="style-preview">
@@ -92,11 +87,9 @@ class HairgateFaceSwap {
                             </div>
                         </div>
 
-                        <!-- 📸 고객 사진 업로드/촬영 -->
                         <div class="customer-upload">
                             <h4>📸 고객 사진 업로드</h4>
                             
-                            <!-- 업로드 방법 선택 -->
                             <div class="upload-methods">
                                 <label for="customerImageInput" class="upload-btn file-upload">
                                     <span class="upload-icon">📁</span>
@@ -110,7 +103,6 @@ class HairgateFaceSwap {
                                 </button>
                             </div>
                             
-                            <!-- 📷 카메라 프리뷰 영역 -->
                             <div id="cameraPreview" class="camera-preview" style="display: none;">
                                 <video id="cameraVideo" autoplay playsinline></video>
                                 <canvas id="captureCanvas" style="display: none;"></canvas>
@@ -121,7 +113,6 @@ class HairgateFaceSwap {
                                 <div class="camera-hint">얼굴이 화면 중앙에 오도록 조정하세요</div>
                             </div>
                             
-                            <!-- 업로드된 이미지 미리보기 -->
                             <div id="uploadPreview" class="upload-preview" style="display: none;">
                                 <img id="customerPreview" class="customer-preview">
                                 <div class="preview-info">
@@ -131,7 +122,6 @@ class HairgateFaceSwap {
                             </div>
                         </div>
 
-                        <!-- 처리 중 상태 -->
                         <div class="processing-status" id="processingStatus" style="display: none;">
                             <div class="processing-spinner"></div>
                             <div class="processing-text" id="processingText">AI가 헤어스타일을 적용하고 있습니다...</div>
@@ -144,7 +134,6 @@ class HairgateFaceSwap {
                             <div class="processing-hint">약 30초~2분 정도 소요됩니다</div>
                         </div>
 
-                        <!-- 결과 표시 -->
                         <div class="result-container" id="resultContainer" style="display: none;">
                             <h4>🎉 가상체험 결과</h4>
                             <div class="result-comparison">
@@ -167,7 +156,6 @@ class HairgateFaceSwap {
                             </div>
                         </div>
 
-                        <!-- 액션 버튼들 -->
                         <div class="akool-modal-actions">
                             <button class="akool-btn akool-btn-secondary" id="cancelFaceSwap">취소</button>
                             <button class="akool-btn akool-btn-primary" id="startFaceSwap" disabled>
@@ -181,22 +169,23 @@ class HairgateFaceSwap {
 
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         
-        // 모달 요소들 저장
         this.modal = document.getElementById('faceSwapModal');
         this.fileInput = document.getElementById('customerImageInput');
         this.previewImg = document.getElementById('customerPreview');
         this.resultContainer = document.getElementById('resultContainer');
 
-        // 📸 카메라 CSS 스타일 추가
-        this.addCameraStyles();
+        this.addModalStyles();
 
         console.log('✅ 얼굴 바꾸기 모달 생성 완료');
     }
 
-    // ========== 📸 카메라 CSS 스타일 추가 ==========
-    addCameraStyles() {
-        const cameraStyles = `
-            <style>
+    // ========== CSS 스타일 추가 ==========
+    addModalStyles() {
+        if (document.getElementById('akool-modal-styles')) return;
+
+        const styles = document.createElement('style');
+        styles.id = 'akool-modal-styles';
+        styles.textContent = `
             .akool-modal {
                 position: fixed;
                 top: 0;
@@ -629,6 +618,17 @@ class HairgateFaceSwap {
                 cursor: not-allowed;
             }
 
+            .btn-ai-experience {
+                background: linear-gradient(135deg, #FF1493, #FF69B4);
+                border: none;
+            }
+
+            .btn-ai-experience:hover {
+                background: linear-gradient(135deg, #FF69B4, #FF1493);
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+            }
+
             @media (max-width: 768px) {
                 .akool-modal-content {
                     margin: 10px;
@@ -669,24 +669,21 @@ class HairgateFaceSwap {
                     flex-direction: column;
                 }
             }
-            </style>
         `;
         
-        document.head.insertAdjacentHTML('beforeend', cameraStyles);
+        document.head.appendChild(styles);
     }
 
     // ========== 📸 카메라 기능 초기화 ==========
     initCamera() {
         this.camera = new CameraCapture();
 
-        // 📸 카메라 버튼 이벤트 (이벤트 위임 사용)
         document.addEventListener('click', (e) => {
             if (e.target.id === 'cameraBtn' || e.target.closest('#cameraBtn')) {
                 this.camera.startCamera();
             }
         });
 
-        // 📷 촬영 버튼 이벤트
         document.addEventListener('click', async (e) => {
             if (e.target.id === 'captureBtn') {
                 const photoFile = await this.camera.capturePhoto();
@@ -697,14 +694,12 @@ class HairgateFaceSwap {
             }
         });
 
-        // ❌ 카메라 닫기 버튼 이벤트
         document.addEventListener('click', (e) => {
             if (e.target.id === 'closeCameraBtn') {
                 this.camera.stopCamera();
             }
         });
 
-        // 🗑️ 이미지 제거 버튼 이벤트
         document.addEventListener('click', (e) => {
             if (e.target.id === 'removeImage') {
                 this.removeUploadedImage();
@@ -714,7 +709,6 @@ class HairgateFaceSwap {
 
     // ========== 3. 이벤트 리스너 설정 ==========
     setupEventListeners() {
-        // 모달 닫기
         document.addEventListener('click', (e) => {
             if (e.target.id === 'faceSwapClose' || e.target.id === 'cancelFaceSwap') {
                 this.closeFaceSwapModal();
@@ -725,21 +719,18 @@ class HairgateFaceSwap {
             }
         });
 
-        // 파일 선택
         document.addEventListener('change', (e) => {
             if (e.target.id === 'customerImageInput') {
                 this.handleImageUpload(e.target.files[0]);
             }
         });
 
-        // AI 체험 시작
         document.addEventListener('click', (e) => {
             if (e.target.id === 'startFaceSwap') {
                 this.performFaceSwap();
             }
         });
 
-        // 결과 액션들
         document.addEventListener('click', (e) => {
             if (e.target.id === 'downloadBtn') {
                 this.downloadResult();
@@ -753,7 +744,6 @@ class HairgateFaceSwap {
 
     // ========== 4. 모달 열기 ==========
     openFaceSwapModal() {
-        // 현재 선택된 스타일 정보 가져오기
         const modalImg = document.getElementById('modalImage');
         const modalCode = document.getElementById('modalCode');
         const modalName = document.getElementById('modalName');
@@ -763,22 +753,17 @@ class HairgateFaceSwap {
             return;
         }
 
-        // 스타일 데이터 저장
         this.currentStyleData = {
             imageUrl: modalImg.src,
             code: modalCode.textContent,
             name: modalName.textContent
         };
 
-        // 모달에 스타일 정보 표시
         document.getElementById('selectedStyleImg').src = this.currentStyleData.imageUrl;
         document.getElementById('selectedStyleCode').textContent = this.currentStyleData.code;
         document.getElementById('selectedStyleName').textContent = this.currentStyleData.name;
 
-        // 모달 표시
         this.modal.classList.add('active');
-        
-        // 초기화
         this.resetModal();
 
         console.log('🎨 얼굴 바꾸기 모달 열림:', this.currentStyleData);
@@ -786,7 +771,6 @@ class HairgateFaceSwap {
 
     // ========== 5. 모달 닫기 ==========
     closeFaceSwapModal() {
-        // 카메라 정지
         if (this.camera) {
             this.camera.stopCamera();
         }
@@ -800,13 +784,11 @@ class HairgateFaceSwap {
         this.customerImageFile = null;
         this.resultImageUrl = null;
         
-        // UI 초기화
         document.getElementById('uploadPreview').style.display = 'none';
         this.resultContainer.style.display = 'none';
         document.getElementById('processingStatus').style.display = 'none';
         document.getElementById('startFaceSwap').disabled = true;
         
-        // 파일 입력 초기화
         const fileInput = document.getElementById('customerImageInput');
         if (fileInput) fileInput.value = '';
     }
@@ -818,28 +800,23 @@ class HairgateFaceSwap {
             return;
         }
 
-        if (file.size > 10 * 1024 * 1024) { // 10MB 제한
+        if (file.size > 10 * 1024 * 1024) {
             alert('파일 크기는 10MB 이하로 해주세요.');
             return;
         }
 
         this.customerImageFile = file;
 
-        // 미리보기 표시
         const reader = new FileReader();
         reader.onload = (e) => {
             const previewImg = document.getElementById('customerPreview');
             previewImg.src = e.target.result;
             
-            // 파일명 표시
             const fileName = document.getElementById('fileName');
             fileName.textContent = file.name.length > 20 ? 
                 file.name.substring(0, 20) + '...' : file.name;
             
-            // 미리보기 영역 표시
             document.getElementById('uploadPreview').style.display = 'block';
-            
-            // AI 체험 버튼 활성화
             document.getElementById('startFaceSwap').disabled = false;
         };
         reader.readAsDataURL(file);
@@ -853,14 +830,13 @@ class HairgateFaceSwap {
         document.getElementById('uploadPreview').style.display = 'none';
         document.getElementById('startFaceSwap').disabled = true;
         
-        // 파일 입력 초기화
         const fileInput = document.getElementById('customerImageInput');
         if (fileInput) fileInput.value = '';
         
         console.log('🗑️ 업로드된 이미지 제거됨');
     }
 
-    // ========== 8. 얼굴 바꾸기 실행 (수정된 버전) ==========
+    // ========== 8. 🔧 SUCCESS 에러 수정된 얼굴 바꾸기 실행 ==========
     async performFaceSwap() {
         if (!this.customerImageFile || !this.currentStyleData) {
             alert('이미지를 먼저 업로드해주세요.');
@@ -875,7 +851,6 @@ class HairgateFaceSwap {
         this.isProcessing = true;
 
         try {
-            // 처리 중 UI 표시
             this.showProcessingStatus(true);
             document.getElementById('startFaceSwap').disabled = true;
 
@@ -883,24 +858,52 @@ class HairgateFaceSwap {
             console.log('👤 고객 이미지 파일:', this.customerImageFile);
             console.log('💇 헤어스타일 이미지:', this.currentStyleData.imageUrl);
 
-            // ✅ 새로운 API 함수 사용 (processFaceSwap)
+            // ✅ SUCCESS 에러 수정: 올바른 성공/실패 처리
             const result = await window.akoolAPI.processFaceSwap(
-                this.customerImageFile, // File 객체 직접 전달
+                this.customerImageFile,
                 this.currentStyleData.imageUrl,
                 (progress, message) => {
-                    // 프로그레스 콜백
                     this.updateProgress(progress, message);
                     console.log(`📊 진행률: ${progress}% - ${message}`);
                 }
             );
 
-            if (result.success) {
-                // 성공: 결과 표시
-                const originalUrl = URL.createObjectURL(this.customerImageFile);
-                this.showResult(originalUrl, result.resultUrl);
-                console.log('🎉 얼굴 바꾸기 성공!', result);
+            console.log('🔍 API 응답 전체:', result);
+
+            // 🔧 SUCCESS 에러 수정: 응답 구조에 따른 올바른 처리
+            if (result && (result.success === true || result.resultUrl)) {
+                // ✅ 성공 케이스 처리
+                const resultUrl = result.resultUrl || result.data?.resultUrl || result.url;
+                
+                if (resultUrl) {
+                    const originalUrl = URL.createObjectURL(this.customerImageFile);
+                    this.showResult(originalUrl, resultUrl);
+                    console.log('🎉 얼굴 바꾸기 성공!', resultUrl);
+                } else {
+                    throw new Error('결과 이미지 URL을 받지 못했습니다.');
+                }
+                
+            } else if (result && result.error) {
+                // ❌ 명확한 에러 케이스
+                throw new Error(result.error);
+                
+            } else if (result && result.message === 'SUCCESS') {
+                // 🔧 "SUCCESS" 메시지를 성공으로 처리 (에러가 아님!)
+                const resultUrl = result.data?.resultUrl || result.resultUrl || result.url;
+                
+                if (resultUrl) {
+                    const originalUrl = URL.createObjectURL(this.customerImageFile);
+                    this.showResult(originalUrl, resultUrl);
+                    console.log('🎉 SUCCESS 메시지로 성공 확인!', resultUrl);
+                } else {
+                    console.warn('⚠️ SUCCESS 응답이지만 결과 URL 없음:', result);
+                    throw new Error('SUCCESS 응답이지만 결과 이미지를 찾을 수 없습니다.');
+                }
+                
             } else {
-                throw new Error(result.error || '얼굴 바꾸기에 실패했습니다.');
+                // ❓ 예상치 못한 응답 구조
+                console.error('❓ 예상치 못한 API 응답:', result);
+                throw new Error('API 응답 형식이 예상과 다릅니다.');
             }
 
         } catch (error) {
@@ -938,7 +941,6 @@ class HairgateFaceSwap {
         if (show) {
             processingStatus.style.display = 'block';
             this.resultContainer.style.display = 'none';
-            // 프로그레스 초기화
             this.updateProgress(0, 'AI가 헤어스타일을 적용하고 있습니다...');
         } else {
             processingStatus.style.display = 'none';
@@ -949,14 +951,11 @@ class HairgateFaceSwap {
     showResult(originalUrl, resultUrl) {
         this.resultImageUrl = resultUrl;
         
-        // 처리 중 숨기기
         this.showProcessingStatus(false);
         
-        // 결과 이미지 설정
         document.getElementById('originalImg').src = originalUrl;
         document.getElementById('resultImg').src = resultUrl;
         
-        // 결과 컨테이너 표시
         this.resultContainer.style.display = 'block';
         
         console.log('✅ 결과 표시 완료');
@@ -989,7 +988,6 @@ class HairgateFaceSwap {
                 console.log('공유 취소됨');
             }
         } else {
-            // 클립보드에 URL 복사
             navigator.clipboard.writeText(this.resultImageUrl);
             alert('결과 이미지 URL이 클립보드에 복사되었습니다!');
         }
@@ -999,26 +997,22 @@ class HairgateFaceSwap {
 
     // ========== 14. 결과와 함께 고객 등록 ==========
     registerCustomerWithResult() {
-        // 기존 고객 등록 로직 실행하되, 
-        // 추가로 AI 결과 이미지도 포함
         const customerName = prompt('고객 이름을 입력하세요:');
         if (!customerName) return;
 
         const customerPhone = prompt('전화번호를 입력하세요:');
         if (!customerPhone) return;
 
-        // Firebase에 저장할 데이터에 AI 결과 추가
         const customerData = {
             name: customerName,
             phone: customerPhone,
             styleCode: this.currentStyleData.code,
             styleName: this.currentStyleData.name,
-            aiResultUrl: this.resultImageUrl, // AI 결과 이미지 추가
+            aiResultUrl: this.resultImageUrl,
             hasAIResult: true,
             registeredAt: new Date()
         };
 
-        // 기존 customers 컬렉션에 저장
         if (typeof db !== 'undefined') {
             db.collection('customers').add(customerData)
                 .then(() => {
@@ -1044,25 +1038,21 @@ class CameraCapture {
         this.isActive = false;
     }
 
-    // 📸 카메라 시작
     async startCamera() {
         try {
             console.log('📸 카메라 시작...');
             
-            // 카메라 권한 요청 및 스트림 가져오기
             this.stream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: 'user', // 전면 카메라 (셀카)
+                    facingMode: 'user',
                     width: { ideal: 640 },
                     height: { ideal: 480 }
                 }
             });
 
-            // 비디오 요소에 스트림 연결
             this.video = document.getElementById('cameraVideo');
             this.video.srcObject = this.stream;
             
-            // 카메라 프리뷰 영역 표시
             document.getElementById('cameraPreview').style.display = 'block';
             
             this.isActive = true;
@@ -1082,29 +1072,23 @@ class CameraCapture {
         }
     }
 
-    // 📷 사진 촬영
     async capturePhoto() {
         if (!this.isActive || !this.video) return null;
 
         try {
             console.log('📷 사진 촬영 중...');
 
-            // Canvas 요소 가져오기
             this.canvas = document.getElementById('captureCanvas');
             const ctx = this.canvas.getContext('2d');
 
-            // 비디오 크기에 맞춰 캔버스 크기 설정
             this.canvas.width = this.video.videoWidth;
             this.canvas.height = this.video.videoHeight;
 
-            // 비디오 프레임을 캔버스에 그리기
             ctx.drawImage(this.video, 0, 0);
 
-            // Canvas를 Blob으로 변환
             return new Promise((resolve) => {
                 this.canvas.toBlob((blob) => {
                     if (blob) {
-                        // Blob을 File 객체로 변환
                         const file = new File([blob], `camera_${Date.now()}.jpg`, {
                             type: 'image/jpeg'
                         });
@@ -1124,7 +1108,6 @@ class CameraCapture {
         }
     }
 
-    // 📵 카메라 정지
     stopCamera() {
         if (this.stream) {
             this.stream.getTracks().forEach(track => track.stop());
@@ -1144,11 +1127,9 @@ class CameraCapture {
 
 // ========== 초기화 ==========
 document.addEventListener('DOMContentLoaded', () => {
-    // akool-api.js가 로드된 후에 실행
     if (window.akoolAPI) {
         window.hairgateFaceSwap = new HairgateFaceSwap();
     } else {
-        // API 모듈 로드 대기
         const checkAPI = setInterval(() => {
             if (window.akoolAPI) {
                 clearInterval(checkAPI);
@@ -1156,7 +1137,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 100);
         
-        // 10초 후에도 로드되지 않으면 포기
         setTimeout(() => {
             if (!window.akoolAPI) {
                 clearInterval(checkAPI);
@@ -1166,4 +1146,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-console.log('🎨 HAIRGATOR Face Swap 메인 로직 (카메라 포함) - 최종 수정 완료');
+console.log('🎨 HAIRGATOR Face Swap (SUCCESS 에러 수정 완료) - 최종 버전');
