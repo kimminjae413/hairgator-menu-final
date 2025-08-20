@@ -2367,13 +2367,14 @@
         // DOM 로드 완료 시 실행
         document.addEventListener('DOMContentLoaded', init);
         
-        // PWA 기능
+        // PWA 기능 - 즉시 업데이트 보장
         window.addEventListener('load', function() {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./service-worker.js')
                     .then(function(registration) {
                         console.log('✅ Service Worker 등록 성공');
                         
+                        // 🔄 업데이트 감지 및 즉시 적용
                         registration.addEventListener('updatefound', function() {
                             var newWorker = registration.installing;
                             console.log('🔄 새 Service Worker 버전 발견!');
@@ -2382,6 +2383,7 @@
                                 if (newWorker.state === 'installed') {
                                     if (navigator.serviceWorker.controller) {
                                         console.log('🎉 새 버전 즉시 적용!');
+                                        // 즉시 새로고침 (사용자 확인 없이)
                                         window.location.reload();
                                     } else {
                                         console.log('✅ Service Worker 첫 설치 완료');
@@ -2390,23 +2392,54 @@
                             });
                         });
                         
+                        // 🔥 적극적 업데이트 체크 (5초마다)
                         setInterval(function() {
                             registration.update();
-                        }, 1000);
+                        }, 5000);
+                        
+                        // 🎯 페이지 포커스 시마다 업데이트 체크
+                        window.addEventListener('focus', function() {
+                            registration.update();
+                        });
+                        
                     })
                     .catch(function(err) {
                         console.log('❌ SW registration failed:', err);
                     });
 
+                // 🔄 Service Worker 메시지 리스너 (강제 새로고침)
                 navigator.serviceWorker.addEventListener('message', function(event) {
+                    console.log('📨 Service Worker 메시지:', event.data);
+                    
+                    if (event.data.type === 'FORCE_RELOAD') {
+                        console.log('🔄 강제 새로고침 실행:', event.data.version);
+                        window.location.reload();
+                    }
+                    
                     if (event.data.type === 'NEW_VERSION_AVAILABLE') {
                         console.log('🎉 새 버전 즉시 적용:', event.data.version);
                         window.location.reload();
                     }
                 });
+                
+                // 🧹 시작 시 오래된 캐시 정리
+                navigator.serviceWorker.ready.then(function(registration) {
+                    if (registration.active) {
+                        registration.active.postMessage({
+                            type: 'CLEAR_OLD_CACHE'
+                        });
+                    }
+                });
+                
+                // 🔄 온라인 상태 변경 시 업데이트 체크
+                window.addEventListener('online', function() {
+                    navigator.serviceWorker.ready.then(function(registration) {
+                        registration.update();
+                    });
+                });
             }
             
-            console.log('✅ HAIRGATOR App loaded successfully (원본 유지 + 문법오류 해결)');
+            console.log('✅ HAIRGATOR App loaded successfully (즉시 업데이트 보장)');
         });
     </script>
 </body>
