@@ -355,23 +355,26 @@
             z-index: 10;
         }
 
-        /* ❓ 물음표 버튼 크기 수정 (18px → 14px) */
+        /* ❓ 물음표 버튼 크기 및 위치 수정 */
         .help-tab {
             background: #FF1493 !important;
             color: white !important;
             border: 2px solid #FF1493 !important;
             font-weight: bold;
-            font-size: 14px !important; /* 18px → 14px로 축소 */
-            min-width: 35px !important;  /* 50px → 35px로 축소 */
-            width: 35px !important;
-            height: 35px !important;
+            font-size: 12px !important; /* 14px → 12px로 더 축소 */
+            min-width: 28px !important;  /* 35px → 28px로 축소 */
+            width: 28px !important;
+            height: 28px !important;
             border-radius: 50% !important;
-            margin-right: 10px !important;
+            margin-right: 15px !important; /* 10px → 15px로 간격 증가 */
+            margin-left: 8px !important;   /* 왼쪽 여백 추가로 중앙 배치 */
             text-transform: none !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             padding: 0 !important;
+            position: relative !important;
+            flex-shrink: 0 !important; /* 축소 방지 */
         }
 
         .help-tab:hover {
@@ -978,10 +981,12 @@
             }
             
             .help-tab {
-                font-size: 12px !important;
-                min-width: 30px !important;
-                width: 30px !important;
-                height: 30px !important;
+                font-size: 10px !important; /* 모바일에서 더 작게 */
+                min-width: 24px !important;
+                width: 24px !important;
+                height: 24px !important;
+                margin-right: 12px !important;
+                margin-left: 6px !important;
             }
         }
 
