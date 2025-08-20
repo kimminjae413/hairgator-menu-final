@@ -308,29 +308,47 @@
 
         /* NEW 표시 시스템 */
         .new-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff4444;
-            color: white;
-            font-size: 8px;
-            font-weight: bold;
-            padding: 2px 4px;
-            border-radius: 50%;
-            width: 12px;
-            height: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 20;
-            animation: newPulse 2s infinite;
-        }
+           /* New 표시 - 대분류 탭 */
+.category-tab.has-new::after {
+    content: '●';
+    position: absolute;
+    top: 2px;
+    right: -2px;
+    width: 10px;
+    height: 10px;
+    background: #ff0000;
+    color: #ff0000;
+    border-radius: 50%;
+    font-size: 10px;
+    line-height: 10px;
+    z-index: 25;
+    box-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
+    animation: pulse 2s infinite;
+}
 
-        @keyframes newPulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
-        }
+/* New 표시 - 중분류 탭 */
+.subcategory-tab.has-new::after {
+    content: '●';
+    position: absolute;
+    top: 0px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: #ff0000;
+    color: #ff0000;
+    border-radius: 50%;
+    font-size: 8px;
+    line-height: 8px;
+    z-index: 25;
+    box-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
 
         /* 메뉴 그리드 */
         .menu-grid {
@@ -1540,9 +1558,9 @@
                     
                     // New 표시 확인
                     const hasNew = await newStyleSystem.hasNewStylesInCategory(gender, category.name);
-                    if (hasNew) {
-                        tab.innerHTML += newStyleSystem.createNewBadge();
-                    }
+                   if (hasNew) {
+    tab.classList.add('has-new');
+}
                     
                     tab.addEventListener('click', () => {
                         this.selectCategory(category, gender);
@@ -1884,3 +1902,4 @@
     </script>
 </body>
 </html>
+
