@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HAIRGATOR - Professional Hair Style Menu (v1.3-AUTO)</title>
+    <title>HAIRGATOR - Professional Hair Style Menu (v1.4-FINAL)</title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000">
@@ -158,6 +158,7 @@
         .gender-btn.male { border-color: var(--male-color); }
         .gender-btn.female { border-color: var(--female-color); }
 
+        /* 성별 아이콘 (원래대로 복원) */
         .gender-icon {
             width: 100px;
             height: 100px;
@@ -169,8 +170,12 @@
             color: white;
         }
 
-        .gender-btn.male .gender-icon { background: var(--male-color); }
-        .gender-btn.female .gender-icon { background: var(--female-color); }
+        .gender-btn.male .gender-icon { 
+            background: var(--male-color);
+        }
+        .gender-btn.female .gender-icon { 
+            background: var(--female-color);
+        }
 
         .gender-label {
             font-size: 16px;
@@ -230,18 +235,18 @@
         .category-tab.active.male { border-bottom-color: var(--male-color); }
         .category-tab.active.female { border-bottom-color: var(--female-color); }
 
-        /* 도움말 버튼 */
+        /* 도움말 버튼 - 크기 축소 */
         .help-tab {
             background: #FF1493 !important;
             color: white !important;
-            border: 2px solid #FF1493 !important;
+            border: 1px solid #FF1493 !important;
             font-weight: bold;
-            font-size: 12px;
-            min-width: 30px;
-            width: 30px;
-            height: 30px;
+            font-size: 8px;
+            min-width: 18px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            margin-right: 8px;
+            margin-right: 6px;
             text-transform: none !important;
             padding: 0;
             display: flex;
@@ -251,8 +256,8 @@
 
         .help-tab:hover {
             background: #FF69B4 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(255, 20, 147, 0.4);
         }
 
         /* 카테고리 설명 */
@@ -306,49 +311,74 @@
             color: white;
         }
 
-        /* NEW 표시 시스템 */
+        /* NEW 표시 시스템 - 수정됨 */
         .new-badge {
-           /* New 표시 - 대분류 탭 */
-.category-tab.has-new::after {
-    content: '●';
-    position: absolute;
-    top: 2px;
-    right: -2px;
-    width: 10px;
-    height: 10px;
-    background: #ff0000;
-    color: #ff0000;
-    border-radius: 50%;
-    font-size: 10px;
-    line-height: 10px;
-    z-index: 25;
-    box-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
-    animation: pulse 2s infinite;
-}
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4444;
+            color: white;
+            font-size: 8px;
+            font-weight: bold;
+            padding: 2px 4px;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            animation: newPulse 2s infinite;
+            box-shadow: 0 0 3px rgba(255, 68, 68, 0.7);
+        }
 
-/* New 표시 - 중분류 탭 */
-.subcategory-tab.has-new::after {
-    content: '●';
-    position: absolute;
-    top: 0px;
-    right: -2px;
-    width: 8px;
-    height: 8px;
-    background: #ff0000;
-    color: #ff0000;
-    border-radius: 50%;
-    font-size: 8px;
-    line-height: 8px;
-    z-index: 25;
-    box-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
-    animation: pulse 2s infinite;
-}
+        @keyframes newPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
 
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.7; }
-    100% { transform: scale(1); opacity: 1; }
-}
+        /* New 표시 - 대분류 탭 */
+        .category-tab.has-new::after {
+            content: '●';
+            position: absolute;
+            top: 2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            background: #ff0000;
+            color: #ff0000;
+            border-radius: 50%;
+            font-size: 10px;
+            line-height: 10px;
+            z-index: 25;
+            box-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        /* New 표시 - 중분류 탭 */
+        .subcategory-tab.has-new::after {
+            content: '●';
+            position: absolute;
+            top: 0px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background: #ff0000;
+            color: #ff0000;
+            border-radius: 50%;
+            font-size: 8px;
+            line-height: 8px;
+            z-index: 25;
+            box-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
 
         /* 메뉴 그리드 */
         .menu-grid {
@@ -487,6 +517,63 @@
             font-size: 24px;
             cursor: pointer;
             transition: var(--transition);
+        }
+
+        /* 도움말 모달 */
+        .help-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2500;
+            padding: 20px;
+        }
+
+        .help-modal.active { display: flex; }
+
+        .help-modal-content {
+            background: #1a1a1a;
+            border: 2px solid #FF1493;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .help-modal-title {
+            color: #FF1493;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .help-length-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #000;
+            border-radius: 10px;
+            border-left: 4px solid #FF1493;
+        }
+
+        .help-length-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #FF1493;
+            margin-bottom: 5px;
+        }
+
+        .help-length-desc {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.4;
         }
 
         /* 테마 토글 버튼 */
@@ -677,12 +764,13 @@
         }
 
         body.light-theme .gender-icon {
-            background: transparent;
+            background: transparent !important;
         }
 
         /* 라이트 모드 이모지 */
         body.light-theme .gender-btn.male .gender-icon {
             font-size: 0;
+            background: transparent !important;
         }
 
         body.light-theme .gender-btn.male .gender-icon:after {
@@ -692,6 +780,7 @@
 
         body.light-theme .gender-btn.female .gender-icon {
             font-size: 0;
+            background: transparent !important;
         }
 
         body.light-theme .gender-btn.female .gender-icon:after {
@@ -765,6 +854,15 @@
 
         body.light-theme .modal-name {
             color: #000000;
+        }
+
+        body.light-theme .help-modal-content {
+            background: #f5f5f5;
+            color: #000;
+        }
+
+        body.light-theme .help-length-item {
+            background: #fff;
         }
 
         body.light-theme .theme-toggle-bottom {
@@ -982,6 +1080,54 @@
         </div>
     </div>
 
+    <!-- 도움말 모달 -->
+    <div class="help-modal" id="helpModal">
+        <div class="help-modal-content">
+            <button class="modal-close" onclick="closeHelpModal()">×</button>
+            <h3 class="help-modal-title">💇‍♀️ 여성 헤어 길이 가이드</h3>
+            
+            <div class="help-length-item">
+                <div class="help-length-name">A Length (가슴선 아래)</div>
+                <div class="help-length-desc">가장 긴 롱헤어로 우아하고 드라마틱한 분위기를 연출합니다.</div>
+            </div>
+
+            <div class="help-length-item">
+                <div class="help-length-name">B Length (가슴~쇄골 사이)</div>
+                <div class="help-length-desc">미디언-롱 길이로 부드럽고 실용적인 인상을 줍니다.</div>
+            </div>
+
+            <div class="help-length-item">
+                <div class="help-length-name">C Length (쇄골 아래)</div>
+                <div class="help-length-desc">세미 롱으로 단정하고 세련된 오피스 무드를 냅니다.</div>
+            </div>
+
+            <div class="help-length-item">
+                <div class="help-length-name">D Length (어깨 길이)</div>
+                <div class="help-length-desc">어깨에 정확히 닿는 길이로 트렌디하고 깔끔한 느낌을 줍니다.</div>
+            </div>
+
+            <div class="help-length-item">
+                <div class="help-length-name">E Length (어깨 위)</div>
+                <div class="help-length-desc">단발로 경쾌하고 모던한 인상을 만듭니다.</div>
+            </div>
+
+            <div class="help-length-item">
+                <div class="help-length-name">F Length (턱선 밑)</div>
+                <div class="help-length-desc">보브 길이로 시크하고 도회적인 분위기를 연출합니다.</div>
+            </div>
+
+            <div class="help-length-item">
+                <div class="help-length-name">G Length (턱선)</div>
+                <div class="help-length-desc">미니 보브로 또렷하고 미니멀한 무드를 줍니다.</div>
+            </div>
+
+            <div class="help-length-item">
+                <div class="help-length-name">H Length (귀선~베리숏)</div>
+                <div class="help-length-desc">숏헤어로 활동적이고 개성 있는 스타일을 완성합니다.</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase 설정 -->
     <script>
         // Firebase 설정
@@ -1139,8 +1285,18 @@
             modalName: document.getElementById('modalName'),
             btnRegister: document.getElementById('btnRegister'),
             btnLike: document.getElementById('btnLike'),
-            petalSakuraBtn: document.getElementById('petalSakuraBtn')
+            petalSakuraBtn: document.getElementById('petalSakuraBtn'),
+            helpModal: document.getElementById('helpModal')
         };
+
+        // 도움말 모달 함수
+        function openHelpModal() {
+            elements.helpModal.classList.add('active');
+        }
+
+        function closeHelpModal() {
+            elements.helpModal.classList.remove('active');
+        }
 
         // NEW 표시 시스템
         const newStyleSystem = {
@@ -1224,7 +1380,7 @@
             }
         };
 
-        // 🌸 벚꽃 시스템 (빨간 테스트 점 제거된 버전)
+        // 🌸 벚꽃 시스템 (빨간 테스트 점 완전 제거된 최종 버전)
         const petalSakuraSystem = {
             active: false,
             canvas: null,
@@ -1234,7 +1390,7 @@
             petalImage: null,
 
             async init() {
-                console.log('🌸 petal.png 벚꽃 시스템 초기화');
+                console.log('🌸 벚꽃 시스템 초기화');
                 
                 // 기존 canvas 제거
                 this.stop();
@@ -1258,7 +1414,7 @@
                     }, 100);
                 });
                 
-                console.log('✅ petal.png 벚꽃 시스템 시작!');
+                console.log('✅ 벚꽃 시스템 시작!');
             },
 
             async loadPetalImage() {
@@ -1347,7 +1503,7 @@
                 console.log(`✅ 꽃잎 ${this.petals.length}개 생성 완료`);
             },
 
-            // 애니메이션 시작 (빨간 테스트 점 제거됨)
+            // 애니메이션 시작 (빨간 테스트 점 완전 제거)
             forceStartAnimation() {
                 console.log('🌸 애니메이션 시작');
                 
@@ -1376,10 +1532,6 @@
                     
                     // 화면 지우기
                     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    
-                    // ❌ 빨간 테스트 점 제거됨!
-                    // this.ctx.fillStyle = 'red';
-                    // this.ctx.fillRect(50, 50, 10, 10);
                     
                     // 각 꽃잎 처리
                     this.petals.forEach((petal) => {
@@ -1432,7 +1584,7 @@
             },
 
             stop() {
-                console.log('🌸 petal.png 벚꽃 시스템 중지');
+                console.log('🌸 벚꽃 시스템 중지');
                 this.active = false;
                 
                 if (this.animationId) {
@@ -1538,9 +1690,7 @@
                     const helpTab = document.createElement('button');
                     helpTab.className = 'category-tab help-tab';
                     helpTab.innerHTML = '?';
-                    helpTab.addEventListener('click', () => {
-                        window.open('https://drive.google.com/file/d/15OgT9k5jCC6TjcJSImuQXcznS_HtFBVf/view?usp=sharing', '_blank');
-                    });
+                    helpTab.addEventListener('click', openHelpModal);
                     elements.categoryTabs.appendChild(helpTab);
                 }
                 
@@ -1558,9 +1708,9 @@
                     
                     // New 표시 확인
                     const hasNew = await newStyleSystem.hasNewStylesInCategory(gender, category.name);
-                   if (hasNew) {
-    tab.classList.add('has-new');
-}
+                    if (hasNew) {
+                        tab.classList.add('has-new');
+                    }
                     
                     tab.addEventListener('click', () => {
                         this.selectCategory(category, gender);
@@ -1605,7 +1755,7 @@
                     // New 표시 확인
                     const hasNew = await newStyleSystem.hasNewStylesInCategory(gender, currentCategory.name, sub);
                     if (hasNew) {
-                        tab.innerHTML += newStyleSystem.createNewBadge();
+                        tab.classList.add('has-new');
                     }
                     
                     tab.addEventListener('click', () => {
@@ -1818,8 +1968,13 @@
             });
             
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && elements.styleModal?.classList.contains('active')) {
-                    modalManager.hide();
+                if (e.key === 'Escape') {
+                    if (elements.styleModal?.classList.contains('active')) {
+                        modalManager.hide();
+                    }
+                    if (elements.helpModal?.classList.contains('active')) {
+                        closeHelpModal();
+                    }
                 }
             });
             
@@ -1846,7 +2001,7 @@
                 elements.backBtn.style.display = 'none';
             }
             
-            console.log('🚀 HAIRGATOR App initialized (Final Complete Version with New Badge System)');
+            console.log('🚀 HAIRGATOR App initialized (Final Complete Version v1.4)');
         }
 
         // DOM 로드 완료 시 실행
@@ -1897,9 +2052,8 @@
                 });
             }
             
-            console.log('✅ HAIRGATOR App loaded successfully (User-Friendly Version with New Badge System)');
+            console.log('✅ HAIRGATOR App loaded successfully (Final Complete Version v1.4)');
         });
     </script>
 </body>
 </html>
-
