@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HAIRGATOR - Professional Hair Style Menu (v1.4-FINAL)</title>
+    <title>HAIRGATOR - Professional Hair Style Menu (v1.5-FINAL)</title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000">
@@ -340,7 +340,7 @@
         .category-tab.active.male { border-bottom-color: var(--male-color); }
         .category-tab.active.female { border-bottom-color: var(--female-color); }
 
-        /* 🔴 대분류 탭 New 표시 수정 */
+        /* 🔴 대분류 탭 New 표시 */
         .category-tab.has-new::after {
             content: '';
             position: absolute;
@@ -355,26 +355,27 @@
             z-index: 10;
         }
 
-        /* ❓ 물음표 버튼 크기 및 위치 수정 */
+        /* ❓ 물음표 버튼 최종 위치 조정 */
         .help-tab {
             background: #FF1493 !important;
             color: white !important;
             border: 2px solid #FF1493 !important;
             font-weight: bold;
-            font-size: 12px !important; /* 14px → 12px로 더 축소 */
-            min-width: 28px !important;  /* 35px → 28px로 축소 */
-            width: 28px !important;
-            height: 28px !important;
+            font-size: 9px !important;
+            min-width: 22px !important;
+            width: 22px !important;
+            height: 22px !important;
             border-radius: 50% !important;
-            margin-right: 15px !important; /* 10px → 15px로 간격 증가 */
-            margin-left: 8px !important;   /* 왼쪽 여백 추가로 중앙 배치 */
+            margin-right: 8px !important;    /* A Length와 가까이 */
+            margin-left: 6px !important;     /* 왼쪽 여백 최소화 */
             text-transform: none !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             padding: 0 !important;
             position: relative !important;
-            flex-shrink: 0 !important; /* 축소 방지 */
+            flex-shrink: 0 !important;
+            vertical-align: middle !important;
         }
 
         .help-tab:hover {
@@ -422,7 +423,7 @@
             position: relative;
         }
 
-        /* 🔴 중분류 탭 New 표시 수정 */
+        /* 🔴 중분류 탭 New 표시 */
         .subcategory-tab.has-new::after {
             content: '';
             position: absolute;
@@ -483,7 +484,7 @@
             object-fit: cover;
         }
 
-        /* 🔴 스타일 이미지의 New 표시 - 짤림 방지 (이미 해결됨) */
+        /* 🔴 스타일 이미지의 New 표시 */
         .menu-item.has-new::after {
             content: '●';
             position: absolute;
@@ -964,7 +965,7 @@
             border-color: #aaa;
         }
 
-        /* 📱 모바일 반응형 New 표시 */
+        /* 📱 모바일 반응형 */
         @media (max-width: 768px) {
             .category-tab.has-new::after {
                 width: 6px;
@@ -981,12 +982,12 @@
             }
             
             .help-tab {
-                font-size: 10px !important; /* 모바일에서 더 작게 */
-                min-width: 24px !important;
-                width: 24px !important;
-                height: 24px !important;
-                margin-right: 12px !important;
-                margin-left: 6px !important;
+                font-size: 8px !important;
+                min-width: 20px !important;
+                width: 20px !important;
+                height: 20px !important;
+                margin-right: 6px !important;
+                margin-left: 4px !important;
             }
         }
 
@@ -1117,14 +1118,14 @@
                 <span id="themeStatus">ON</span>
             </button>
             
-            <!-- 얼굴분석 버튼 -->
-            <div class="sidebar-section">
-                <button class="sidebar-button" onclick="window.open('https://hairgator-face.web.app/', '_blank')">
+            <!-- 얼굴분석 버튼 - 비활성화 -->
+            <div class="sidebar-section" style="opacity: 0.5; pointer-events: none;">
+                <button class="sidebar-button" style="background: #666; border-color: #666; cursor: not-allowed;" disabled>
                     <span style="font-size: 20px;">👤</span>
-                    <span>얼굴분석</span>
+                    <span>얼굴분석 (준비중)</span>
                 </button>
                 <p class="sidebar-description">
-                    AI가 당신에게 어울리는 헤어스타일을 추천해드립니다
+                    서비스 준비 중입니다
                 </p>
             </div>
 
@@ -1230,7 +1231,7 @@
 
     <!-- New 표시 시스템 -->
     <script>
-        // 🔴 New 표시 시스템 (완전 수정)
+        // 🔴 New 표시 시스템
         const NewIndicatorSystem = {
             NEW_THRESHOLD_DAYS: 7,
             newStylesCache: new Map(),
@@ -2366,7 +2367,7 @@
                 elements.backBtn.style.display = 'none';
             }
             
-            console.log('🚀 HAIRGATOR App initialized (Firebase Ready)');
+            console.log('🚀 HAIRGATOR App initialized (Final Version)');
         }
 
         // DOM 로드 완료 시 실행
@@ -2444,7 +2445,7 @@
                 });
             }
             
-            console.log('✅ HAIRGATOR App loaded successfully (즉시 업데이트 보장)');
+            console.log('✅ HAIRGATOR App loaded successfully (Final Version)');
         });
     </script>
 </body>
