@@ -1,0 +1,441 @@
+/* ========== 토큰 시스템 전용 CSS ========== */
+
+/* 🪙 토큰 상태창 스타일 */
+.token-status {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    border: 2px solid #FFD700;
+    border-radius: 15px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.token-status:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+}
+
+.token-status::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.token-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.token-icon {
+    font-size: 18px;
+    color: #000;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.token-title {
+    color: #000;
+    font-size: 14px;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.token-amount {
+    font-size: 20px;
+    font-weight: bold;
+    color: #000;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    margin: 5px 0;
+}
+
+.token-amount.infinite {
+    font-size: 18px;
+    background: linear-gradient(45deg, #FF1493, #9400D3, #4169E1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: infiniteGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes infiniteGlow {
+    0% { filter: brightness(1) saturate(1); }
+    100% { filter: brightness(1.2) saturate(1.5); }
+}
+
+.token-description {
+    color: rgba(0, 0, 0, 0.7);
+    font-size: 10px;
+    margin-top: 5px;
+    line-height: 1.3;
+}
+
+/* 🔴 토큰 부족 상태 */
+.token-status.low {
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF4757 100%);
+    border-color: #FF4757;
+    animation: lowTokenPulse 2s infinite;
+}
+
+@keyframes lowTokenPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.token-status.low .token-amount,
+.token-status.low .token-title,
+.token-status.low .token-description {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* 🟢 무제한 토큰 상태 */
+.token-status.unlimited {
+    background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+    border-color: #27AE60;
+}
+
+.token-status.unlimited .token-amount,
+.token-status.unlimited .token-title,
+.token-status.unlimited .token-description {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* 토큰 에디터 모달 */
+.token-editor-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.token-editor-modal.active {
+    display: flex;
+}
+
+.token-editor-content {
+    background: var(--primary-dark, #000);
+    border: 2px solid #FFD700;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    animation: tokenModalSlideUp 0.3s ease;
+}
+
+@keyframes tokenModalSlideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.token-editor-title {
+    color: #FFD700;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.token-input-group {
+    margin: 20px 0;
+}
+
+.token-input-group label {
+    display: block;
+    color: #FFD700;
+    margin-bottom: 10px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.token-input {
+    width: 100%;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #FFD700;
+    border-radius: 10px;
+    color: #FFD700;
+    font-size: 18px;
+    text-align: center;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.token-input:focus {
+    outline: none;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    border-color: #FFA500;
+}
+
+.token-preset-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.token-preset-btn {
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid #FFD700;
+    border-radius: 8px;
+    color: #FFD700;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.token-preset-btn:hover {
+    background: rgba(255, 215, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+.token-preset-btn:active {
+    transform: translateY(0);
+}
+
+.token-editor-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.token-editor-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.token-save-btn {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+    box-shadow: 0 3px 10px rgba(255, 215, 0, 0.3);
+}
+
+.token-save-btn:hover {
+    background: linear-gradient(135deg, #FFA500, #FF8C00);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+}
+
+.token-cancel-btn {
+    background: #666;
+    color: white;
+}
+
+.token-cancel-btn:hover {
+    background: #777;
+    transform: translateY(-2px);
+}
+
+/* 토큰 비용 표시 */
+.token-cost {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid #FFD700;
+    border-radius: 15px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #FFD700;
+    margin-left: 8px;
+}
+
+.cost-icon {
+    font-size: 14px;
+}
+
+.cost-amount {
+    font-weight: bold;
+}
+
+/* 토큰 부족 알림 */
+.token-insufficient {
+    background: linear-gradient(135deg, #FF6B6B, #FF4757);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    margin: 10px 0;
+    text-align: center;
+    font-size: 14px;
+    animation: insufficientShake 0.5s ease-in-out;
+}
+
+@keyframes insufficientShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* 토큰 사용 성공 알림 */
+.token-used {
+    background: linear-gradient(135deg, #2ECC71, #27AE60);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    margin: 10px 0;
+    text-align: center;
+    font-size: 14px;
+    animation: usedSlideDown 0.3s ease;
+}
+
+@keyframes usedSlideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 라이트 테마 지원 */
+body.light-theme .token-editor-content {
+    background: var(--primary-light, #fff);
+    color: #000;
+}
+
+body.light-theme .token-input {
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .token-status {
+        padding: 10px 12px;
+    }
+    
+    .token-amount {
+        font-size: 18px;
+    }
+    
+    .token-description {
+        font-size: 9px;
+    }
+    
+    .token-editor-content {
+        padding: 20px;
+        margin: 10px;
+    }
+    
+    .token-preset-buttons {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .token-editor-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+/* 토큰 히스토리 */
+.token-history {
+    background: rgba(255, 215, 0, 0.05);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.token-history-title {
+    color: #FFD700;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.token-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    font-size: 12px;
+}
+
+.token-history-item:last-child {
+    border-bottom: none;
+}
+
+.token-history-action {
+    color: #ccc;
+}
+
+.token-history-amount {
+    color: #FFD700;
+    font-weight: bold;
+}
+
+.token-history-amount.negative {
+    color: #FF6B6B;
+}
+
+.token-history-amount.positive {
+    color: #2ECC71;
+}
+
+/* 로딩 상태 */
+.token-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-top: 2px solid #FFD700;
+    border-radius: 50%;
+    animation: tokenSpin 1s linear infinite;
+    margin-left: 10px;
+}
+
+@keyframes tokenSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
