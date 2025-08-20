@@ -340,78 +340,38 @@
         .category-tab.active.male { border-bottom-color: var(--male-color); }
         .category-tab.active.female { border-bottom-color: var(--female-color); }
 
-        /* NEW 표시 시스템 - 이미지 짤림 방지 */
-        .new-badge {
+        /* 🔴 대분류 탭 New 표시 수정 */
+        .category-tab.has-new::after {
+            content: '';
             position: absolute;
-            top: -3px;
-            right: -3px;
-            background: #ff4444;
-            color: white;
-            font-size: 8px;
-            font-weight: bold;
-            padding: 2px 4px;
-            border-radius: 50%;
-            width: 12px;
-            height: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 20;
-            animation: newPulse 2s infinite;
-            box-shadow: 0 0 3px rgba(255, 68, 68, 0.7);
-        }
-
-        /* 스타일 이미지의 New 표시 - 짤림 방지 */
-        .menu-item.has-new::after {
-            content: '●';
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 10px;
-            height: 10px;
+            top: 3px;
+            right: 3px;
+            width: 8px;
+            height: 8px;
             background: #ff0000;
-            color: #ff0000;
             border-radius: 50%;
-            font-size: 10px;
-            line-height: 10px;
-            z-index: 25;
-            box-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
-            animation: pulse 2s infinite;
+            border: 1px solid #fff;
+            animation: newPulse 2s infinite;
+            z-index: 10;
         }
 
-        @keyframes newPulse {
-            0%, 100% { 
-                opacity: 0.8; 
-                transform: scale(1); 
-            }
-            50% { 
-                opacity: 1; 
-                transform: scale(1.1); 
-            }
-        }
-
-        @keyframes pulse {
-            0%, 100% { 
-                opacity: 0.8; 
-                transform: scale(1); 
-            }
-            50% { 
-                opacity: 1; 
-                transform: scale(1.2); 
-            }
-        }
-
-        /* 도움말 버튼 */
+        /* ❓ 물음표 버튼 크기 수정 (18px → 14px) */
         .help-tab {
             background: #FF1493 !important;
             color: white !important;
             border: 2px solid #FF1493 !important;
             font-weight: bold;
-            font-size: 18px;
-            min-width: 50px;
-            border-radius: 50%;
-            margin-right: 10px;
+            font-size: 14px !important; /* 18px → 14px로 축소 */
+            min-width: 35px !important;  /* 50px → 35px로 축소 */
+            width: 35px !important;
+            height: 35px !important;
+            border-radius: 50% !important;
+            margin-right: 10px !important;
             text-transform: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
         }
 
         .help-tab:hover {
@@ -459,6 +419,21 @@
             position: relative;
         }
 
+        /* 🔴 중분류 탭 New 표시 수정 */
+        .subcategory-tab.has-new::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 6px;
+            height: 6px;
+            background: #ff0000;
+            border-radius: 50%;
+            border: 1px solid #fff;
+            animation: newPulse 2s infinite;
+            z-index: 10;
+        }
+
         .subcategory-tab.active.male {
             background: var(--male-color);
             border-color: var(--male-color);
@@ -503,6 +478,47 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        /* 🔴 스타일 이미지의 New 표시 - 짤림 방지 (이미 해결됨) */
+        .menu-item.has-new::after {
+            content: '●';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 10px;
+            height: 10px;
+            background: #ff0000;
+            color: #ff0000;
+            border-radius: 50%;
+            font-size: 10px;
+            line-height: 10px;
+            z-index: 25;
+            box-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        /* ✨ New 애니메이션 효과 */
+        @keyframes newPulse {
+            0%, 100% { 
+                opacity: 0.8; 
+                transform: scale(1); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.2); 
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 0.8; 
+                transform: scale(1); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.2); 
+            }
         }
 
         /* 스타일 모달 */
@@ -773,6 +789,14 @@
             to { transform: rotate(360deg); }
         }
 
+        /* 🔧 라이트 테마에서 New 표시 가시성 보장 */
+        body.light-theme .category-tab.has-new::after,
+        body.light-theme .subcategory-tab.has-new::after,
+        body.light-theme .menu-item.has-new::after {
+            background: #ff0000;
+            border-color: #000;
+        }
+
         /* 라이트 테마 */
         body.light-theme {
             background: var(--primary-light);
@@ -935,6 +959,30 @@
         body.light-theme .sidebar-button:hover {
             background: #d0d0d0;
             border-color: #aaa;
+        }
+
+        /* 📱 모바일 반응형 New 표시 */
+        @media (max-width: 768px) {
+            .category-tab.has-new::after {
+                width: 6px;
+                height: 6px;
+                top: 2px;
+                right: 2px;
+            }
+            
+            .subcategory-tab.has-new::after {
+                width: 5px;
+                height: 5px;
+                top: 1px;
+                right: 1px;
+            }
+            
+            .help-tab {
+                font-size: 12px !important;
+                min-width: 30px !important;
+                width: 30px !important;
+                height: 30px !important;
+            }
         }
 
         /* 반응형 */
@@ -1171,6 +1219,88 @@
         });
 
         console.log('✅ Firebase initialized');
+    </script>
+
+    <!-- New 표시 시스템 -->
+    <script>
+        // 🔴 New 표시 시스템 (완전 수정)
+        const NewIndicatorSystem = {
+            NEW_THRESHOLD_DAYS: 7,
+            newStylesCache: new Map(),
+            
+            async init() {
+                console.log('🔴 New 표시 시스템 초기화');
+                await this.loadNewStyles();
+            },
+            
+            async loadNewStyles() {
+                try {
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - this.NEW_THRESHOLD_DAYS);
+                    
+                    const snapshot = await db.collection('hairstyles')
+                        .where('createdAt', '>=', sevenDaysAgo)
+                        .get();
+                    
+                    this.newStylesCache.clear();
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const categoryKey = `${data.gender}-${data.mainCategory}`;
+                        const subcategoryKey = `${data.gender}-${data.mainCategory}-${data.subCategory}`;
+                        
+                        // 대분류 New 표시용
+                        if (!this.newStylesCache.has(categoryKey)) {
+                            this.newStylesCache.set(categoryKey, new Set());
+                        }
+                        this.newStylesCache.get(categoryKey).add(data.mainCategory);
+                        
+                        // 중분류 New 표시용
+                        if (!this.newStylesCache.has(subcategoryKey)) {
+                            this.newStylesCache.set(subcategoryKey, []);
+                        }
+                        this.newStylesCache.get(subcategoryKey).push(doc.id);
+                    });
+                    
+                    console.log('🔴 New 스타일 로드 완료:', this.newStylesCache.size, '개 카테고리');
+                    
+                } catch (error) {
+                    console.error('❌ New 스타일 로드 실패:', error);
+                }
+            },
+            
+            // 대분류 탭에 New 표시 추가
+            markNewCategories(gender) {
+                if (!gender) return;
+                
+                document.querySelectorAll('.category-tab').forEach(tab => {
+                    if (tab.classList.contains('help-tab')) return;
+                    
+                    const categoryName = tab.textContent.trim();
+                    const categoryKey = `${gender}-${categoryName}`;
+                    const hasNew = this.newStylesCache.has(categoryKey);
+                    
+                    tab.classList.toggle('has-new', hasNew);
+                });
+                
+                console.log('🔴 대분류 New 표시 업데이트 완료');
+            },
+            
+            // 중분류 탭에 New 표시 추가
+            markNewSubcategories(gender, category) {
+                if (!gender || !category) return;
+                
+                document.querySelectorAll('.subcategory-tab').forEach(tab => {
+                    const subcategoryName = tab.textContent.trim();
+                    const subcategoryKey = `${gender}-${category}-${subcategoryName}`;
+                    const hasNew = this.newStylesCache.has(subcategoryKey);
+                    
+                    tab.classList.toggle('has-new', hasNew);
+                });
+                
+                console.log('🔴 중분류 New 표시 업데이트 완료');
+            }
+        };
     </script>
 
     <!-- 메인 애플리케이션 -->
@@ -1766,6 +1896,9 @@
                     
                     elements.categoryTabs.appendChild(tab);
                 });
+
+                // 🔴 대분류 New 표시 추가
+                NewIndicatorSystem.markNewCategories(gender);
             },
             
             selectCategory(category, gender) {
@@ -1804,6 +1937,9 @@
                     
                     elements.subcategoryTabs.appendChild(tab);
                 });
+
+                // 🔴 중분류 New 표시 추가
+                NewIndicatorSystem.markNewSubcategories(gender, currentCategory.name);
             },
             
             selectSubcategory(subcategory, gender) {
@@ -2032,16 +2168,19 @@
         }
 
         // 초기화
-        function init() {
+        async function init() {
             setupEventListeners();
             themeManager.init();
             loginManager.init();
+            
+            // 🔴 New 표시 시스템 초기화
+            await NewIndicatorSystem.init();
             
             if (elements.backBtn) {
                 elements.backBtn.style.display = 'none';
             }
             
-            console.log('🚀 HAIRGATOR App initialized (Final Version)');
+            console.log('🚀 HAIRGATOR App initialized (Final Fixed Version)');
         }
 
         // DOM 로드 완료 시 실행
@@ -2086,7 +2225,7 @@
                 });
             }
             
-            console.log('✅ HAIRGATOR App loaded successfully (Final Version)');
+            console.log('✅ HAIRGATOR App loaded successfully (Final Fixed Version)');
         });
     </script>
 </body>
