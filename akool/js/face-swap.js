@@ -1,4 +1,4 @@
-// ========== HAIRGATOR 얼굴 바꾸기 메인 로직 (카메라 기능 포함) ==========
+// ========== HAIRGATOR 얼굴 바꾸기 메인 로직 (카메라 기능 포함) - 최종 수정 ==========
 
 class HairgateFaceSwap {
     constructor() {
@@ -134,7 +134,13 @@ class HairgateFaceSwap {
                         <!-- 처리 중 상태 -->
                         <div class="processing-status" id="processingStatus" style="display: none;">
                             <div class="processing-spinner"></div>
-                            <div class="processing-text">AI가 헤어스타일을 적용하고 있습니다...</div>
+                            <div class="processing-text" id="processingText">AI가 헤어스타일을 적용하고 있습니다...</div>
+                            <div class="processing-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                                </div>
+                                <div class="progress-text" id="progressText">0%</div>
+                            </div>
                             <div class="processing-hint">약 30초~2분 정도 소요됩니다</div>
                         </div>
 
@@ -191,6 +197,117 @@ class HairgateFaceSwap {
     addCameraStyles() {
         const cameraStyles = `
             <style>
+            .akool-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 3000;
+                padding: 20px;
+            }
+
+            .akool-modal.active {
+                display: flex;
+            }
+
+            .akool-modal-content {
+                background: #1a1a1a;
+                border: 2px solid #FF1493;
+                border-radius: 20px;
+                max-width: 600px;
+                width: 100%;
+                max-height: 90vh;
+                overflow-y: auto;
+                position: relative;
+            }
+
+            .akool-modal-header {
+                padding: 20px 25px;
+                border-bottom: 1px solid #333;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .akool-modal-title {
+                color: #FF1493;
+                font-size: 20px;
+                margin: 0;
+            }
+
+            .akool-modal-close {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 24px;
+                cursor: pointer;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .akool-modal-close:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .akool-modal-body {
+                padding: 25px;
+            }
+
+            .selected-style {
+                margin-bottom: 25px;
+                padding: 15px;
+                background: #000;
+                border-radius: 10px;
+            }
+
+            .selected-style h4 {
+                color: #FF1493;
+                margin-bottom: 15px;
+            }
+
+            .style-preview {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            #selectedStyleImg {
+                width: 80px;
+                height: 100px;
+                object-fit: cover;
+                border-radius: 8px;
+            }
+
+            .style-info {
+                flex: 1;
+            }
+
+            .style-code {
+                font-size: 12px;
+                color: #999;
+            }
+
+            .style-name {
+                font-size: 16px;
+                color: white;
+                font-weight: bold;
+                margin-top: 5px;
+            }
+
+            .customer-upload h4 {
+                color: #FF1493;
+                margin-bottom: 15px;
+            }
+
             .upload-methods {
                 display: flex;
                 gap: 15px;
@@ -335,7 +452,189 @@ class HairgateFaceSwap {
                 background: #ff6666;
             }
 
+            .processing-status {
+                text-align: center;
+                padding: 30px;
+                background: #000;
+                border-radius: 10px;
+                margin: 20px 0;
+            }
+
+            .processing-spinner {
+                width: 40px;
+                height: 40px;
+                border: 3px solid #333;
+                border-top-color: #FF1493;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+            }
+
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+
+            .processing-text {
+                color: #FF1493;
+                font-size: 16px;
+                font-weight: bold;
+                margin-bottom: 15px;
+            }
+
+            .processing-progress {
+                margin: 15px 0;
+            }
+
+            .progress-bar {
+                width: 100%;
+                height: 6px;
+                background: #333;
+                border-radius: 3px;
+                overflow: hidden;
+                margin-bottom: 8px;
+            }
+
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #FF1493, #FF69B4);
+                transition: width 0.3s ease;
+            }
+
+            .progress-text {
+                color: #999;
+                font-size: 14px;
+            }
+
+            .processing-hint {
+                color: #666;
+                font-size: 12px;
+                margin-top: 10px;
+            }
+
+            .result-container {
+                margin-top: 25px;
+                padding: 20px;
+                background: #000;
+                border-radius: 10px;
+            }
+
+            .result-container h4 {
+                color: #FF1493;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            .before-after {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+                margin-bottom: 20px;
+            }
+
+            .comparison-item {
+                text-align: center;
+                flex: 1;
+            }
+
+            .comparison-label {
+                color: #999;
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+
+            .comparison-img {
+                width: 120px;
+                height: 160px;
+                object-fit: cover;
+                border-radius: 8px;
+                border: 2px solid #333;
+            }
+
+            .comparison-arrow {
+                color: #FF1493;
+                font-size: 24px;
+                font-weight: bold;
+            }
+
+            .result-actions {
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .result-btn {
+                padding: 10px 15px;
+                border: 1px solid #666;
+                border-radius: 8px;
+                background: #222;
+                color: white;
+                cursor: pointer;
+                font-size: 12px;
+                transition: all 0.3s;
+            }
+
+            .result-btn:hover {
+                background: #333;
+            }
+
+            .result-btn.primary {
+                background: #FF1493;
+                border-color: #FF1493;
+            }
+
+            .result-btn.primary:hover {
+                background: #FF69B4;
+            }
+
+            .akool-modal-actions {
+                padding: 20px 25px;
+                border-top: 1px solid #333;
+                display: flex;
+                gap: 15px;
+                justify-content: flex-end;
+            }
+
+            .akool-btn {
+                padding: 12px 24px;
+                border: none;
+                border-radius: 8px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .akool-btn-secondary {
+                background: #666;
+                color: white;
+            }
+
+            .akool-btn-secondary:hover {
+                background: #777;
+            }
+
+            .akool-btn-primary {
+                background: #FF1493;
+                color: white;
+            }
+
+            .akool-btn-primary:hover:not(:disabled) {
+                background: #FF69B4;
+            }
+
+            .akool-btn-primary:disabled {
+                background: #444;
+                color: #666;
+                cursor: not-allowed;
+            }
+
             @media (max-width: 768px) {
+                .akool-modal-content {
+                    margin: 10px;
+                    max-height: calc(100vh - 20px);
+                }
+                
                 .upload-methods {
                     flex-direction: column;
                 }
@@ -351,6 +650,23 @@ class HairgateFaceSwap {
                 
                 .capture-btn, .close-camera-btn {
                     width: 100%;
+                }
+
+                .before-after {
+                    flex-direction: column;
+                    gap: 15px;
+                }
+
+                .comparison-arrow {
+                    transform: rotate(90deg);
+                }
+
+                .result-actions {
+                    flex-direction: column;
+                }
+
+                .akool-modal-actions {
+                    flex-direction: column;
                 }
             }
             </style>
@@ -544,7 +860,7 @@ class HairgateFaceSwap {
         console.log('🗑️ 업로드된 이미지 제거됨');
     }
 
-    // ========== 8. 얼굴 바꾸기 실행 ==========
+    // ========== 8. 얼굴 바꾸기 실행 (수정된 버전) ==========
     async performFaceSwap() {
         if (!this.customerImageFile || !this.currentStyleData) {
             alert('이미지를 먼저 업로드해주세요.');
@@ -567,12 +883,14 @@ class HairgateFaceSwap {
             console.log('👤 고객 이미지 파일:', this.customerImageFile);
             console.log('💇 헤어스타일 이미지:', this.currentStyleData.imageUrl);
 
-            // AKOOL API 호출 (File 객체 직접 전달)
-            const result = await window.akoolAPI.swapFace(
+            // ✅ 새로운 API 함수 사용 (processFaceSwap)
+            const result = await window.akoolAPI.processFaceSwap(
                 this.customerImageFile, // File 객체 직접 전달
                 this.currentStyleData.imageUrl,
-                {
-                    enhance: true // 얼굴 향상 기능 사용
+                (progress, message) => {
+                    // 프로그레스 콜백
+                    this.updateProgress(progress, message);
+                    console.log(`📊 진행률: ${progress}% - ${message}`);
                 }
             );
 
@@ -582,7 +900,7 @@ class HairgateFaceSwap {
                 this.showResult(originalUrl, result.resultUrl);
                 console.log('🎉 얼굴 바꾸기 성공!', result);
             } else {
-                throw new Error(result.error);
+                throw new Error(result.error || '얼굴 바꾸기에 실패했습니다.');
             }
 
         } catch (error) {
@@ -595,12 +913,33 @@ class HairgateFaceSwap {
         }
     }
 
+    // ========== 9. 프로그레스 업데이트 ==========
+    updateProgress(progress, message) {
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const processingText = document.getElementById('processingText');
+
+        if (progressFill) {
+            progressFill.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+        }
+
+        if (progressText) {
+            progressText.textContent = `${Math.round(progress)}%`;
+        }
+
+        if (processingText && message) {
+            processingText.textContent = message;
+        }
+    }
+
     // ========== 10. 처리 중 상태 표시 ==========
     showProcessingStatus(show) {
         const processingStatus = document.getElementById('processingStatus');
         if (show) {
             processingStatus.style.display = 'block';
             this.resultContainer.style.display = 'none';
+            // 프로그레스 초기화
+            this.updateProgress(0, 'AI가 헤어스타일을 적용하고 있습니다...');
         } else {
             processingStatus.style.display = 'none';
         }
@@ -816,7 +1155,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.hairgateFaceSwap = new HairgateFaceSwap();
             }
         }, 100);
+        
+        // 10초 후에도 로드되지 않으면 포기
+        setTimeout(() => {
+            if (!window.akoolAPI) {
+                clearInterval(checkAPI);
+                console.error('❌ AKOOL API 로드 실패 - 10초 타임아웃');
+            }
+        }, 10000);
     }
 });
 
-console.log('🎨 HAIRGATOR Face Swap 메인 로직 (카메라 포함) 로드 완료');
+console.log('🎨 HAIRGATOR Face Swap 메인 로직 (카메라 포함) - 최종 수정 완료');
