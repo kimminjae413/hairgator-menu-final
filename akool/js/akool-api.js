@@ -4,8 +4,8 @@
 class AkoolAPI {
     constructor() {
         // 네트리파이 환경변수에서 가져오기
-        this.apiKey = process.env.AKOOL_API_KEY || 'kdwRwzqnGf4zfAFvWCjFKQ==';
-        this.secret = process.env.AKOOL_SECRET || 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g';
+        this.apiKey = 'kdwRwzqnGf4zfAFvWCjFKQ==';
+this.secret = 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g';
         
         this.baseURL = 'https://openapi.akool.com/api/open/v3';
         this.detectURL = 'https://sg3.akool.com/detect';
