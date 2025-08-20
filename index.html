@@ -5,13 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HAIRGATOR - Professional Hair Style Menu (v1.5-FINAL)</title>
     
-    <!-- PWA Meta Tags -->
+    <!-- PWA Meta Tags - 전체화면 강화 -->
     <meta name="theme-color" content="#000000">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
+    
+    <!-- iOS PWA 전체화면 설정 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="HAIRGATOR">
-    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-touch-fullscreen" content="yes">
+    
+    <!-- Android PWA 전체화면 설정 -->
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="HAIRGATOR">
+    
+    <!-- 전체화면 모드 강제 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    
     <link rel="manifest" href="manifest.json">
     
     <!-- Icons -->
@@ -33,12 +46,33 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
     <style>
-        /* CSS 변수 및 기본 설정 */
+        /* 스크롤 터치 민감도 최대 향상 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            /* 터치 스크롤 민감도 최대 */
+            -webkit-overflow-scrolling: touch;
+            -webkit-scroll-behavior: smooth;
+            scroll-behavior: smooth;
+            overscroll-behavior: contain;
+        }
+
+        html, body {
+            /* 터치 스크롤 최적화 */
+            touch-action: manipulation;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: none;
+        }
+
+        /* 스크롤 가능한 모든 요소 터치 최적화 */
+        .category-tabs, .subcategory-tabs, .menu-grid, .sidebar-content {
+            -webkit-overflow-scrolling: touch;
+            -webkit-scroll-behavior: smooth;
+            scroll-behavior: smooth;
+            overscroll-behavior: auto;
+            touch-action: pan-x pan-y;
         }
 
         :root {
@@ -525,7 +559,105 @@
             }
         }
 
-        /* 스타일 모달 */
+        /* 헤어 길이 가이드 모달 */
+        .hair-guide-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2500;
+            padding: 20px;
+            -webkit-overflow-scrolling: touch;
+            overflow-y: auto;
+        }
+
+        .hair-guide-modal.active { 
+            display: flex; 
+        }
+
+        .hair-guide-content {
+            background: var(--primary-dark);
+            border: 2px solid #FF1493;
+            border-radius: 20px;
+            max-width: 90vw;
+            max-height: 90vh;
+            width: 100%;
+            overflow-y: auto;
+            position: relative;
+            -webkit-overflow-scrolling: touch;
+            animation: modalSlideUp 0.3s ease;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .hair-guide-header {
+            background: #FF1493;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .hair-guide-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .hair-guide-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .hair-guide-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .hair-guide-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: #f0f0f0;
+        }
+
+        .hair-guide-body {
+            padding: 20px;
+            color: white;
+            line-height: 1.6;
+        }
+
+        .hair-guide-description {
+            font-size: 14px;
+            color: #ccc;
+            margin-top: 15px;
+        }
         .style-modal {
             position: fixed;
             top: 0;
@@ -1178,6 +1310,33 @@
             <div class="menu-grid" id="menuGrid"></div>
         </div>
     </main>
+
+    <!-- 헤어 길이 가이드 모달 -->
+    <div class="hair-guide-modal" id="hairGuideModal">
+        <div class="hair-guide-content">
+            <div class="hair-guide-header">
+                <h3 class="hair-guide-title">💇‍♀️ 여성 헤어 길이 가이드</h3>
+                <button class="hair-guide-close" id="hairGuideClose">×</button>
+            </div>
+            <img src="https://drive.google.com/uc?export=view&id=15OgT9k5jCC6TjcJSImuQXcznS_HtFBVf" 
+                 alt="여성 헤어 길이 가이드" 
+                 class="hair-guide-image"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div style="display: none; padding: 40px; text-align: center; color: #999;">
+                <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
+                <div>헤어 길이 가이드를 불러올 수 없습니다</div>
+                <div style="font-size: 12px; margin-top: 10px;">잠시 후 다시 시도해주세요</div>
+            </div>
+            <div class="hair-guide-body">
+                <h4 style="color: #FF1493; margin-bottom: 15px;">📏 헤어 길이 분류 기준</h4>
+                <div class="hair-guide-description">
+                    <strong>A~H Length:</strong> 각 길이별로 어울리는 스타일과 관리법이 다릅니다.<br>
+                    <strong>앞머리 기준:</strong> None, Fore Head, Eye Brow, Eye, Cheekbone으로 세분화됩니다.<br><br>
+                    <em>💡 이 가이드를 참고하여 고객에게 맞는 최적의 헤어스타일을 추천해보세요!</em>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 스타일 모달 -->
     <div class="style-modal" id="styleModal">
@@ -1978,7 +2137,7 @@
                 helpTab.className = 'category-tab help-tab';
                 helpTab.innerHTML = '?';
                 helpTab.addEventListener('click', function() {
-                    window.open('https://drive.google.com/file/d/15OgT9k5jCC6TjcJSImuQXcznS_HtFBVf/view?usp=sharing', '_blank');
+                    showHairGuideModal(); // 내부 팝업으로 변경
                 });
                 elements.categoryTabs.appendChild(helpTab);
             }
@@ -2144,6 +2303,25 @@
             }
         }
 
+        // 헤어 길이 가이드 모달 관리
+        function showHairGuideModal() {
+            var modal = document.getElementById('hairGuideModal');
+            if (modal) {
+                modal.classList.add('active');
+                // 모달 표시 시 배경 스크롤 방지
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function hideHairGuideModal() {
+            var modal = document.getElementById('hairGuideModal');
+            if (modal) {
+                modal.classList.remove('active');
+                // 배경 스크롤 복구
+                document.body.style.overflow = '';
+            }
+        }
+
         // 모달 관리
         function showStyleModal(code, name, gender, imageSrc, docId) {
             if (!elements.styleModal) return;
@@ -2300,6 +2478,20 @@
                 });
             }
             
+            // 헤어 가이드 모달 이벤트
+            var hairGuideClose = document.getElementById('hairGuideClose');
+            var hairGuideModal = document.getElementById('hairGuideModal');
+            
+            if (hairGuideClose) {
+                hairGuideClose.addEventListener('click', hideHairGuideModal);
+            }
+            
+            if (hairGuideModal) {
+                hairGuideModal.addEventListener('click', function(e) {
+                    if (e.target === this) hideHairGuideModal();
+                });
+            }
+            
             if (elements.modalClose) {
                 elements.modalClose.addEventListener('click', hideStyleModal);
             }
@@ -2311,8 +2503,15 @@
             }
             
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && elements.styleModal && elements.styleModal.classList.contains('active')) {
-                    hideStyleModal();
+                if (e.key === 'Escape') {
+                    // 헤어 가이드 모달이 열려있으면 닫기
+                    if (document.getElementById('hairGuideModal').classList.contains('active')) {
+                        hideHairGuideModal();
+                    }
+                    // 스타일 모달이 열려있으면 닫기
+                    else if (elements.styleModal && elements.styleModal.classList.contains('active')) {
+                        hideStyleModal();
+                    }
                 }
             });
             
@@ -2373,8 +2572,106 @@
         // DOM 로드 완료 시 실행
         document.addEventListener('DOMContentLoaded', init);
         
-        // PWA 기능 - 즉시 업데이트 보장
+        // PWA 전체화면 모드 강화 및 설치 안내
         window.addEventListener('load', function() {
+            // PWA 설치 가능 여부 체크
+            let deferredPrompt;
+            
+            window.addEventListener('beforeinstallprompt', function(e) {
+                console.log('📱 PWA 설치 가능');
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // 설치 안내 표시 (처음 방문자에게만)
+                if (!utils.getStorage('pwa_install_prompted')) {
+                    setTimeout(function() {
+                        showInstallPrompt();
+                    }, 3000);
+                }
+            });
+            
+            // 전체화면 모드 감지
+            function detectDisplayMode() {
+                if (window.matchMedia('(display-mode: fullscreen)').matches) {
+                    console.log('🖥️ 전체화면 모드 실행 중');
+                    document.body.classList.add('pwa-fullscreen');
+                } else if (window.matchMedia('(display-mode: standalone)').matches) {
+                    console.log('📱 앱 모드 실행 중');
+                    document.body.classList.add('pwa-standalone');
+                } else {
+                    console.log('🌐 브라우저 모드 실행 중');
+                    document.body.classList.add('pwa-browser');
+                }
+            }
+            
+            // PWA 설치 안내 표시
+            function showInstallPrompt() {
+                if (!deferredPrompt) return;
+                
+                var installDiv = document.createElement('div');
+                installDiv.style.cssText = 
+                    'position: fixed; bottom: 20px; left: 20px; right: 20px; ' +
+                    'background: linear-gradient(135deg, #FF1493, #FF69B4); ' +
+                    'color: white; padding: 15px 20px; border-radius: 15px; ' +
+                    'box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4); ' +
+                    'z-index: 2000; display: flex; align-items: center; justify-content: space-between; ' +
+                    'animation: slideUp 0.3s ease;';
+                
+                installDiv.innerHTML = 
+                    '<div>' +
+                    '<div style="font-weight: bold; margin-bottom: 5px;">📱 HAIRGATOR 앱 설치</div>' +
+                    '<div style="font-size: 12px; opacity: 0.9;">전체화면 모드로 더 편리하게 사용하세요!</div>' +
+                    '</div>' +
+                    '<div style="display: flex; gap: 10px;">' +
+                    '<button onclick="installPWA()" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px;">설치</button>' +
+                    '<button onclick="dismissInstall()" style="background: none; border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 12px;">나중에</button>' +
+                    '</div>';
+                
+                document.body.appendChild(installDiv);
+                
+                // 자동 제거 (15초 후)
+                setTimeout(function() {
+                    if (installDiv && installDiv.parentNode) {
+                        installDiv.remove();
+                    }
+                }, 15000);
+            }
+            
+            // PWA 설치 실행
+            window.installPWA = function() {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then(function(choiceResult) {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('✅ PWA 설치 완료');
+                            utils.setStorage('pwa_installed', 'true');
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+                
+                var installDiv = document.querySelector('[onclick="installPWA()"]');
+                if (installDiv && installDiv.parentNode && installDiv.parentNode.parentNode) {
+                    installDiv.parentNode.parentNode.remove();
+                }
+            };
+            
+            // 설치 안내 닫기
+            window.dismissInstall = function() {
+                utils.setStorage('pwa_install_prompted', 'true');
+                var installDiv = document.querySelector('[onclick="dismissInstall()"]');
+                if (installDiv && installDiv.parentNode && installDiv.parentNode.parentNode) {
+                    installDiv.parentNode.parentNode.remove();
+                }
+            };
+            
+            // 디스플레이 모드 감지 실행
+            detectDisplayMode();
+            
+            // 디스플레이 모드 변경 감지
+            window.matchMedia('(display-mode: fullscreen)').addEventListener('change', detectDisplayMode);
+            window.matchMedia('(display-mode: standalone)').addEventListener('change', detectDisplayMode);
+            
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./service-worker.js')
                     .then(function(registration) {
