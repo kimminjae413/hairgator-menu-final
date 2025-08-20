@@ -235,7 +235,7 @@
         .category-tab.active.male { border-bottom-color: var(--male-color); }
         .category-tab.active.female { border-bottom-color: var(--female-color); }
 
-        /* 도움말 버튼 - 크기 축소 */
+        /* 도움말 버튼 - 가운데 정렬 */
         .help-tab {
             background: #FF1493 !important;
             color: white !important;
@@ -252,6 +252,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            align-self: center;
+            margin-top: 8px;
         }
 
         .help-tab:hover {
@@ -311,11 +313,11 @@
             color: white;
         }
 
-        /* NEW 표시 시스템 - 수정됨 */
+        /* NEW 표시 시스템 - 이미지 짤림 방지 */
         .new-badge {
             position: absolute;
-            top: -5px;
-            right: -5px;
+            top: -3px;
+            right: -3px;
             background: #ff4444;
             color: white;
             font-size: 8px;
@@ -338,11 +340,11 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* New 표시 - 대분류 탭 */
+        /* New 표시 - 대분류 탭 (아래로 조정) */
         .category-tab.has-new::after {
             content: '●';
             position: absolute;
-            top: 2px;
+            top: 5px;
             right: -2px;
             width: 10px;
             height: 10px;
@@ -356,11 +358,11 @@
             animation: pulse 2s infinite;
         }
 
-        /* New 표시 - 중분류 탭 */
+        /* New 표시 - 중분류 탭 (아래로 조정) */
         .subcategory-tab.has-new::after {
             content: '●';
             position: absolute;
-            top: 0px;
+            top: 2px;
             right: -2px;
             width: 8px;
             height: 8px;
