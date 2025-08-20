@@ -236,11 +236,17 @@
             color: white !important;
             border: 2px solid #FF1493 !important;
             font-weight: bold;
-            font-size: 18px;
-            min-width: 50px;
+            font-size: 12px;
+            min-width: 30px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            margin-right: 10px;
+            margin-right: 8px;
             text-transform: none !important;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .help-tab:hover {
@@ -1863,13 +1869,14 @@
                         console.log('❌ SW registration failed:', err);
                     });
 
-             // Service Worker 메시지 리스너 (강제 새로고침)
-navigator.serviceWorker.addEventListener('message', event => {
-    if (event.data.type === 'FORCE_RELOAD') {
-        console.log('🔄 새 버전 감지 - 자동 새로고침');
-        window.location.reload();
-    }
-});
+                // 📨 Service Worker 메시지 수신
+                navigator.serviceWorker.addEventListener('message', event => {
+                    if (event.data.type === 'NEW_VERSION_AVAILABLE') {
+                        console.log('🎉 새 버전 즉시 적용:', event.data.version);
+                        // 자동으로 새로고침
+                        window.location.reload();
+                    }
+                });
             }
             
             console.log('✅ HAIRGATOR App loaded successfully (User-Friendly Version with New Badge System)');
