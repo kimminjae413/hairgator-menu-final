@@ -1206,19 +1206,30 @@
         };
 
         // Firebase 초기화
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage();
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+            const storage = firebase.storage();
 
-        // 캐시 설정
-        db.settings({
-            cache: {
-                kind: 'persistent',
-                tabManager: { kind: 'multi-tab' }
+            // 캐시 설정 (안전하게)
+            try {
+                db.settings({
+                    cache: {
+                        kind: 'persistent',
+                        tabManager: { kind: 'multi-tab' }
+                    }
+                });
+            } catch (cacheError) {
+                console.log('⚠️ 캐시 설정 실패, 기본 설정 사용:', cacheError.message);
             }
-        });
 
-        console.log('✅ Firebase initialized');
+            console.log('✅ Firebase initialized successfully');
+            window.firebaseReady = true;
+        } catch (error) {
+            console.error('❌ Firebase 초기화 실패:', error);
+            window.firebaseReady = false;
+            alert('Firebase 연결에 실패했습니다. 네트워크를 확인해주세요.');
+        }
     </script>
 
     <!-- New 표시 시스템 -->
@@ -2174,16 +2185,32 @@
         async function init() {
             setupEventListeners();
             themeManager.init();
-            loginManager.init();
             
-            // 🔴 New 표시 시스템 초기화
-            await NewIndicatorSystem.init();
+            // Firebase 연결 대기
+            let retries = 0;
+            const maxRetries = 10;
+            
+            while (!window.firebaseReady && retries < maxRetries) {
+                console.log(`🔄 Firebase 연결 대기 중... (${retries + 1}/${maxRetries})`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                retries++;
+            }
+            
+            if (window.firebaseReady) {
+                console.log('✅ Firebase 연결 확인됨');
+                // New 표시 시스템 초기화
+                await NewIndicatorSystem.init();
+                loginManager.init();
+            } else {
+                console.error('❌ Firebase 연결 실패');
+                alert('Firebase 연결에 실패했습니다. 페이지를 새로고침해주세요.');
+            }
             
             if (elements.backBtn) {
                 elements.backBtn.style.display = 'none';
             }
             
-            console.log('🚀 HAIRGATOR App initialized (Final Fixed Version)');
+            console.log('🚀 HAIRGATOR App initialized (Firebase Ready)');
         }
 
         // DOM 로드 완료 시 실행
