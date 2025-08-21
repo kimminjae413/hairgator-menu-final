@@ -25,6 +25,149 @@
     transform: translateY(0) !important;
 }
 
+/* 업로드 방식 선택 버튼 */
+.upload-method-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #444;
+}
+
+.upload-method-btn {
+    flex: 1;
+    padding: 12px 16px;
+    background: #2a2a2a;
+    color: #999;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.upload-method-btn.active {
+    background: #FF1493;
+    color: white;
+}
+
+.upload-method-btn:hover:not(.active) {
+    background: #3a3a3a;
+    color: #ccc;
+}
+
+/* 카메라 영역 */
+.camera-area {
+    border: 2px dashed #FF1493;
+    border-radius: 10px;
+    padding: 20px;
+    background: #0a0a0a;
+    text-align: center;
+}
+
+.camera-preview {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+}
+
+.camera-preview video {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 8px;
+}
+
+.camera-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+}
+
+.capture-btn {
+    background: #FF1493;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(255, 20, 147, 0.4);
+}
+
+.capture-btn:hover {
+    background: #FF69B4;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 20, 147, 0.6);
+}
+
+.close-camera-btn {
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: 1px solid #666;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.close-camera-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.camera-placeholder {
+    padding: 40px 20px;
+}
+
+.start-camera-btn {
+    background: none;
+    border: none;
+    color: #FF1493;
+    cursor: pointer;
+    transition: all 0.3s;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.start-camera-btn:hover {
+    background: rgba(255, 20, 147, 0.1);
+    transform: translateY(-2px);
+}
+
+.start-camera-btn p {
+    margin: 10px 0 5px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.start-camera-btn small {
+    color: #999;
+    font-size: 12px;
+}
+
+/* 촬영된 이미지 미리보기 */
+.captured-image-preview {
+    text-align: center;
+    padding: 20px;
+}
+
+.captured-actions {
+    margin-top: 15px;
+}
+
+.captured-actions .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
 /* AI 체험 모달 */
 .ai-experience-overlay {
     position: fixed;
