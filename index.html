@@ -1357,8 +1357,8 @@
 
     <!-- 스타일 모달 -->
     <div class="style-modal" id="styleModal">
-        <div class="modal-content">
-            <button class="modal-close" id="modalClose">×</button>
+    <div class="modal-content">
+        <button class="modal-close" id="modalClose" onclick="hideStyleModal(); event.stopPropagation();">×</button>
             <img id="modalImage" src="" alt="" class="modal-image">
             <div class="modal-info">
                 <div class="modal-code" id="modalCode">CODE</div>
@@ -2844,4 +2844,5 @@
     </script>
 </body>
 </html>
+
 
