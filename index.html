@@ -210,18 +210,21 @@
 
         /* 헤더 */
         .header {
-            position: fixed;
-            top: 15px;
-            left: 0;
-            right: 0;
-            height: 50px;
-            background: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 15px;
-            z-index: 1000;
-        }
+    position: fixed;
+    top: 25px; /* 헤더 전체를 아래로 25px 이동 */
+    left: 0;
+    right: 0;
+    height: var(--header-height);
+    background: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    z-index: 1000;
+    border-bottom: 1px solid #333;
+    /* iOS 안전 영역 고려 */
+    margin-top: max(env(safe-area-inset-top, 0px), 5px);
+}
 
         .back-btn, .menu-btn {
             position: absolute;
@@ -238,15 +241,42 @@
         }
 
         .back-btn {
-            left: 15px;
-            font-size: 24px;
-        }
+    position: absolute;
+    left: 20px;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 24px;
+}
 
         .menu-btn {
-            right: 15px;
-            flex-direction: column;
-            gap: 3px;
-        }
+    position: absolute;
+    right: 20px;
+    top: 50%; /* 헤더 내에서 중앙 정렬 */
+    transform: translateY(-50%); /* 정확한 중앙 정렬 */
+    width: 48px; /* 터치 영역 확장 */
+    height: 48px; /* 터치 영역 확장 */
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    transition: var(--transition);
+    gap: 4px;
+    border-radius: 8px;
+    /* 터치 영역 패딩 */
+    padding: 12px;
+    margin: -12px;
+}
 
         .menu-btn span {
             width: 20px;
@@ -256,11 +286,13 @@
         }
 
         .logo {
-            font-size: 18px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: var(--text-primary);
-        }
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+    /* 로고는 헤더의 flex 중앙에 자동 위치 */
+    text-align: center;
+}
 
         /* 메인 콘텐츠 */
         .main-content {
@@ -1114,32 +1146,134 @@
             border-color: #aaa;
         }
 
-        /* 📱 모바일 반응형 */
-        @media (max-width: 768px) {
-            .category-tab.has-new::after {
-                width: 6px;
-                height: 6px;
-                top: 2px;
-                right: 2px;
-            }
-            
-            .subcategory-tab.has-new::after {
-                width: 5px;
-                height: 5px;
-                top: 1px;
-                right: 1px;
-            }
-            
-            .help-tab {
-                font-size: 8px !important;
-                min-width: 20px !important;
-                width: 20px !important;
-                height: 20px !important;
-                margin-right: 6px !important;
-                margin-left: 4px !important;
-            }
-        }
+      /* 📱 모바일 반응형 */
+@media (max-width: 768px) {
+    /* 🎯 헤더 전체를 아래로 이동 - 추가 */
+    .header {
+        top: 30px !important; /* 기존 25px에서 30px로 더 아래로 */
+        height: 65px;
+        padding: 0 25px;
+        /* iOS 안전 영역 고려 */
+        margin-top: max(env(safe-area-inset-top, 0px), 5px);
+    }
+    
+    /* 백버튼 모바일 최적화 - 추가 */
+    .back-btn {
+        left: 25px;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 26px;
+        padding: 15px;
+        margin: -15px;
+        border-radius: 8px;
+    }
+    
+    /* 햄버거 버튼 모바일 최적화 - 추가 */
+    .menu-btn {
+        right: 25px;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 50px !important;
+        height: 50px !important;
+        padding: 15px;
+        margin: -15px;
+        border-radius: 8px;
+    }
+    
+    .menu-btn span {
+        width: 26px !important;
+        height: 4px !important;
+    }
+    
+    /* 로고 모바일 최적화 - 추가 */
+    .logo {
+        font-size: 18px !important;
+        letter-spacing: 1.5px;
+    }
+    
+    /* 메인 콘텐츠 마진 조정 - 추가 */
+    .main-content {
+        margin-top: calc(var(--header-height) + 30px) !important;
+        min-height: calc(100vh - var(--header-height) - 30px);
+        padding-top: 10px;
+    }
+    
+    /* 카테고리 탭 위치 조정 - 추가 */
+    .category-tabs-wrapper {
+        position: sticky;
+        top: calc(var(--header-height) + 30px) !important;
+        z-index: 100;
+    }
 
+    /* 기존 코드들 유지 */
+    .category-tab.has-new::after {
+        width: 6px;
+        height: 6px;
+        top: 2px;
+        right: 2px;
+    }
+    
+    .subcategory-tab.has-new::after {
+        width: 5px;
+        height: 5px;
+        top: 1px;
+        right: 1px;
+    }
+    
+    .help-tab {
+        font-size: 8px !important;
+        min-width: 20px !important;
+        width: 20px !important;
+        height: 20px !important;
+        margin-right: 6px !important;
+        margin-left: 4px !important;
+    }
+}
+
+        /* 🎯 소형 모바일 (480px 이하) - 새로 추가 */
+@media (max-width: 480px) {
+    .header {
+        top: 35px !important; /* 소형 화면에서는 더욱 아래로 */
+        padding: 0 20px;
+    }
+    
+    .back-btn {
+        left: 20px;
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 28px;
+        padding: 16px;
+        margin: -16px;
+    }
+    
+    .menu-btn {
+        right: 20px;
+        width: 52px !important;
+        height: 52px !important;
+        padding: 16px;
+        margin: -16px;
+    }
+    
+    .menu-btn span {
+        width: 28px !important;
+        height: 5px !important;
+    }
+    
+    .logo {
+        font-size: 16px !important;
+        letter-spacing: 1px;
+    }
+    
+    .main-content {
+        margin-top: calc(var(--header-height) + 35px) !important;
+    }
+    
+    .category-tabs-wrapper {
+        top: calc(var(--header-height) + 35px) !important;
+    }
+}
         /* 반응형 */
         @media (min-width: 768px) {
             .menu-grid {
@@ -2877,6 +3011,7 @@ if (elements.modalClose) {
     </script>
 </body>
 </html>
+
 
 
 
