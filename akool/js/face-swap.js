@@ -421,7 +421,6 @@ class HairgateFaceSwap {
                             <div class="result-controls">
                                 <button class="btn btn-primary" onclick="window.hairgateFaceSwap.downloadResult()">
                                     📱 결과 저장
-                                    🔗 공유하기
                                 </button>
                                 <button class="btn btn-outline" onclick="window.hairgateFaceSwap.tryAnother()">
                                     🔄 다시 체험하기
