@@ -270,24 +270,156 @@
       }
     }
 
-    // ========== 5) FaceSwap 페이로드 구성 ==========
-    _buildSpecifyImagePayload(userDetect, styleDetect, modifyImageUrl) {
-      const payload = {
-        targetImage: [{ 
-          path: userDetect.cropUrl, 
-          opts: userDetect.landmarks 
-        }],
-        sourceImage: [{ 
-          path: styleDetect.cropUrl, 
-          opts: styleDetect.landmarks 
-        }],
-        face_enhance: 1,
-        modifyImage: modifyImageUrl
-      };
+  // ========== 5) FaceSwap 페이로드 구성 (수정 버전) ==========
+_buildSpecifyImagePayload(userDetect, styleDetect, modifyImageUrl) {
+  // 🎯 목표: 사용자 사진에 헤어스타일을 적용
+  // → 사용자 이미지를 베이스로, 사용자 얼굴을 헤어스타일 모델 얼굴로 교체
+  
+  const payload = {
+    targetImage: [{ 
+      path: userDetect.cropUrl,      // 바뀔 얼굴: 사용자 얼굴
+      opts: userDetect.landmarks 
+    }],
+    sourceImage: [{ 
+      path: styleDetect.cropUrl,     // 새로 들어갈 얼굴: 헤어스타일 모델 얼굴
+      opts: styleDetect.landmarks 
+    }],
+    face_enhance: 1,
+    modifyImage: userDetect.cropUrl  // 🔥 핵심 수정: 사용자 이미지를 베이스로 사용
+  };
 
-      console.log('📋 FaceSwap 페이로드:', payload);
-      return payload;
+  console.log('📋 수정된 FaceSwap 페이로드:', payload);
+  console.log('🎯 목표: 사용자 이미지에 헤어스타일 적용');
+  console.log('👤 사용자 cropUrl:', userDetect.cropUrl);
+  console.log('💇 헤어스타일 cropUrl:', styleDetect.cropUrl);
+  console.log('🖼️ modifyImage (베이스):', userDetect.cropUrl);
+  
+  return payload;
+}
+
+// ========== 메인 워크플로우 수정 ==========
+async processFaceSwap(userFileOrDataURL, hairstyleImageUrl, onProgress) {
+  try {
+    console.log('🎬 Face Swap 처리 시작');
+    onProgress && onProgress(0, '처리 시작...');
+
+    // (a) 사용자 이미지 준비
+    onProgress && onProgress(5, '이미지 최적화 중...');
+    let userDataUrl;
+    if (userFileOrDataURL instanceof File) {
+      userDataUrl = await new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = async (e) => {
+          try { 
+            resolve(await this.compressDataURL(e.target.result, 1024, 1024, 0.9)); 
+          }
+          catch(err) { 
+            reject(err); 
+          }
+        };
+        fr.onerror = () => reject(new Error('이미지 읽기 실패'));
+        fr.readAsDataURL(userFileOrDataURL);
+      });
+    } else {
+      userDataUrl = userFileOrDataURL;
+      if (this._dataURLSize(userDataUrl) > 5_000_000) {
+        userDataUrl = await this.compressDataURL(userDataUrl, 1024, 1024, 0.9);
+      }
     }
+
+    // (b) 업로드
+    onProgress && onProgress(10, '이미지 업로드 중...');
+    const userImageUrl = await this.uploadTemp(userDataUrl, `${UPLOAD_TARGET_PREFIX}user_${Date.now()}.jpg`);
+
+    // 스타일 원본을 Firebase로 복사(외부 URL이면)
+    let styleImageUrl = hairstyleImageUrl;
+    if (!/firebasestorage\.googleapis\.com/.test(hairstyleImageUrl || '')) {
+      try {
+        const blob = await (await safeFetch(hairstyleImageUrl)).blob();
+        const asDataUrl = await new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            const c = document.createElement('canvas');
+            c.width = img.width; 
+            c.height = img.height;
+            c.getContext('2d').drawImage(img, 0, 0);
+            resolve(c.toDataURL('image/jpeg', 0.9));
+          };
+          img.onerror = () => reject(new Error('스타일 이미지 로드 실패'));
+          img.src = URL.createObjectURL(blob);
+        });
+        styleImageUrl = await this.uploadTemp(asDataUrl, `${UPLOAD_TARGET_PREFIX}style_${Date.now()}.jpg`);
+      } catch(e) {
+        console.warn('스타일 이미지 복사 실패, 원본 URL 사용:', e.message);
+      }
+    }
+
+    // (c) Detect 2회
+    onProgress && onProgress(20, '사용자 얼굴 분석 중...');
+    const userDetect = await this.detectFace(userImageUrl, 'user');
+    if (!userDetect.success) return { success: false, error: userDetect.error, message: userDetect.message };
+
+    onProgress && onProgress(35, '헤어스타일 분석 중...');
+    const styleDetect = await this.detectFace(styleImageUrl, 'hairstyle');
+    if (!styleDetect.success) return { success: false, error: styleDetect.error, message: styleDetect.message };
+
+    // 🔍 중요한 디버깅 로그 추가
+    console.log('🔍 Face Swap 전 데이터 검증:');
+    console.log('👤 사용자 detect:', {
+      success: userDetect.success,
+      cropUrl: userDetect.cropUrl,
+      hasLandmarks: !!userDetect.landmarks,
+      landmarksType: typeof userDetect.landmarks
+    });
+    console.log('💇 스타일 detect:', {
+      success: styleDetect.success,
+      cropUrl: styleDetect.cropUrl,
+      hasLandmarks: !!styleDetect.landmarks,
+      landmarksType: typeof styleDetect.landmarks
+    });
+
+    // (d) Create - 🔥 수정된 부분: 사용자 이미지를 modifyImage로 사용
+    onProgress && onProgress(45, 'AI 처리 요청 중...');
+    const create = await this.createFaceSwap(userDetect, styleDetect, userImageUrl); // ← 핵심 변경
+    if (!create.success) return create;
+
+    // (e) Poll
+    onProgress && onProgress(55, '처리 대기 중...');
+    const final = await this.waitForResult(create.taskId, onProgress, MAX_WAIT_MS);
+    if (!final.success) return final;
+
+    onProgress && onProgress(100, '완료!');
+
+    // (선택) 결과 백업
+    try {
+      const blob = await (await safeFetch(final.resultUrl)).blob();
+      const asDataUrl = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = img.width; 
+          c.height = img.height;
+          c.getContext('2d').drawImage(img, 0, 0);
+          resolve(c.toDataURL('image/jpeg', 0.95));
+        };
+        img.onerror = () => reject(new Error('결과 이미지 로드 실패'));
+        img.src = URL.createObjectURL(blob);
+      });
+      const backupUrl = await this.uploadTemp(asDataUrl, `${UPLOAD_TARGET_PREFIX}result_${Date.now()}.jpg`);
+      
+      this.cleanupTempFiles().catch(() => {});
+      return { success: true, resultUrl: backupUrl, message: final.message || '완료', method: 'akool' };
+    } catch(e) {
+      console.warn('결과 백업 실패, 원본 URL 유지:', e.message);
+    }
+
+    this.cleanupTempFiles().catch(() => {});
+    return { success: true, resultUrl: final.resultUrl, message: final.message || '완료', method: 'akool' };
+  } catch(error) {
+    console.error('💥 Face Swap 처리 오류:', error);
+    return { success: false, error: error.message || 'Face Swap 처리 중 오류 발생' };
+  }
+}
 
     // ========== 6) FaceSwap 작업 생성 ==========
     async createFaceSwap(userDetect, styleDetect, modifyImageUrl) {
