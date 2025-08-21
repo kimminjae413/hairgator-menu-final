@@ -300,21 +300,62 @@ class HairgateFaceSwap {
         }
     }
 
-    // ✨ AI 체험 모달 닫기
-    closeAIExperienceModal() {
-        const modal = document.getElementById('aiExperienceModal');
-        if (modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = '';
-            
-            // 기존 스타일 모달 복원
-            const styleModal = document.getElementById('styleModal');
-            if (styleModal) {
-                styleModal.style.display = 'flex';
-            }
+   // ✨ AI 체험 모달 닫기 + 스타일 모달 X 버튼 문제 해결
+closeAIExperienceModal() {
+    const modal = document.getElementById('aiExperienceModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        
+        // 기존 스타일 모달 복원
+        const styleModal = document.getElementById('styleModal');
+        if (styleModal) {
+            styleModal.style.display = 'flex';
         }
     }
-
+    
+    // 🔧 스타일 모달 X 버튼 이벤트 재설정 (문제 해결)
+    setTimeout(() => {
+        const styleModal = document.getElementById('styleModal');
+        const modalClose = document.getElementById('modalClose');
+        
+        if (styleModal && modalClose) {
+            console.log('🔧 스타일 모달 X 버튼 이벤트 재설정 시작');
+            
+            // 기존 이벤트 완전히 제거
+            modalClose.onclick = null;
+            modalClose.removeEventListener('click', hideStyleModal);
+            
+            // 새로운 이벤트 추가
+            modalClose.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('✅ 수정된 모달 닫기 이벤트 실행');
+                
+                // 모달 닫기
+                styleModal.classList.remove('active');
+                styleModal.style.display = 'none';
+                document.body.style.overflow = '';
+                
+                console.log('✅ 스타일 모달 닫기 완료');
+            });
+            
+            // 모달 바깥 클릭으로도 닫기
+            styleModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    styleModal.classList.remove('active');
+                    styleModal.style.display = 'none';
+                    document.body.style.overflow = '';
+                    console.log('✅ 모달 바깥 클릭으로 닫기');
+                }
+            });
+            
+            console.log('🔧 스타일 모달 X 버튼 이벤트 재설정 완료');
+        }
+    }, 100);
+    
+    console.log('✅ AI 체험 모달 닫기 완료 + X 버튼 문제 해결');
+}
     setupEventListeners() {
         // 고객 이미지 업로드
         const customerUpload = document.getElementById('customerImageUpload');
