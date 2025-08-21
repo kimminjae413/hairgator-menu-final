@@ -2748,21 +2748,86 @@
             
             console.log('✅ HAIRGATOR App loaded successfully (Final Clean Version)');
         });
+   </script>
+    
+    <!-- 🆕 AKOOL Face Swap 시스템 -->
+    <link rel="stylesheet" href="akool/css/akool-styles.css">
+    <script src="akool/js/akool-api.js"></script>
+    <script src="akool/js/face-swap.js"></script>
+    
+    <!-- AKOOL API 초기화 보장 스크립트 -->
+    <script>
+        // AKOOL API 로딩 상태 확인 및 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔍 AKOOL API 상태 확인 중...');
+            
+            let checkAttempts = 0;
+            const maxAttempts = 20;
+            
+            function checkAkoolAPI() {
+                checkAttempts++;
+                
+                if (window.akoolAPI && typeof window.akoolAPI.processFaceSwap === 'function') {
+                    console.log('✅ AKOOL API 준비 완료!');
+                    
+                    // 헬스체크 실행
+                    window.akoolAPI.healthCheck().then(status => {
+                        console.log('🏥 AKOOL API 상태:', status);
+                    }).catch(error => {
+                        console.warn('⚠️ AKOOL API 헬스체크 실패:', error);
+                    });
+                    
+                    return;
+                }
+                
+                if (checkAttempts < maxAttempts) {
+                    console.log(`⏳ AKOOL API 로딩 대기 중... (${checkAttempts}/${maxAttempts})`);
+                    setTimeout(checkAkoolAPI, 500);
+                } else {
+                    console.error('❌ AKOOL API 로딩 실패 - 시간 초과');
+                    
+                    // 사용자에게 알림
+                    const notice = document.createElement('div');
+                    notice.style.cssText = `
+                        position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+                        background: #ff4444; color: white; padding: 10px 20px;
+                        border-radius: 8px; z-index: 9999; font-size: 14px;
+                    `;
+                    notice.textContent = '⚠️ AI 기능 로딩 실패. 페이지를 새로고침해주세요.';
+                    document.body.appendChild(notice);
+                    
+                    setTimeout(() => notice.remove(), 5000);
+                }
+            }
+            
+            // 1초 후 체크 시작
+            setTimeout(checkAkoolAPI, 1000);
+        });
+        
+        // 전역 에러 핸들러
+        window.addEventListener('error', function(event) {
+            if (event.message && event.message.includes('akoolAPI')) {
+                console.error('🚨 AKOOL API 관련 에러:', event.error);
+            }
+        });
+        
+        // Face Swap 시스템 추가 초기화
+        window.addEventListener('load', function() {
+            // Face Swap 버튼이 제대로 생성되는지 확인
+            setTimeout(function() {
+                if (window.hairgateFaceSwap) {
+                    console.log('✅ Face Swap 시스템 준비됨');
+                } else {
+                    console.warn('⚠️ Face Swap 시스템 초기화 실패');
+                    
+                    // 수동 초기화 시도
+                    if (typeof HairgateFaceSwap !== 'undefined') {
+                        window.hairgateFaceSwap = new HairgateFaceSwap();
+                        console.log('🔧 Face Swap 시스템 수동 초기화 완료');
+                    }
+                }
+            }, 2000);
+        });
     </script>
-    <!-- 🆕 AKOOL Face Swap 추가 (이 위치에!) -->
-<link rel="stylesheet" href="akool/css/akool-styles.css">
-<script src="akool/js/akool-api.js"></script>
-<script src="akool/js/face-swap.js"></script>
-
-<!-- AI체험하기 버튼 추가 스크립트 -->
-<script>
-    // 위에서 제공한 AI 버튼 시스템 코드 전체를 여기에 붙여넣기
-</script>
-
-<!-- AI 체험하기 버튼 스타일 -->
-<style>
-    // 위에서 제공한 CSS 스타일 코드를 여기에 붙여넣기
-</style>
 </body>
 </html>
-
