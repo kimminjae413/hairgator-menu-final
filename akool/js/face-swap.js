@@ -1,5 +1,5 @@
 // akool/js/face-swap.js
-// 얼굴 바꾸기 UI 컨트롤러 - AKOOL 에러 메시지 번역 포함 최종 완성본
+// 얼굴 바꾸기 UI 컨트롤러 - 모바일 다중 OS 카메라 최적화 최종 버전
 class HairgateFaceSwap {
     constructor() {
         this.customerImageFile = null;
@@ -21,94 +21,143 @@ class HairgateFaceSwap {
         this.cameraStream = null;
         this.cameraVideo = null;
         
+        // 🚀 디바이스 정보 감지
+        this.deviceInfo = this.detectDevice();
+        
         this.init();
     }
 
+    // 🔍 디바이스 감지 시스템
+    detectDevice() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const platform = navigator.platform.toLowerCase();
+        
+        // iOS 감지 (iPhone, iPad, iPod)
+        const isIOS = /iphone|ipad|ipod/.test(userAgent) || 
+                     (platform === 'macintel' && navigator.maxTouchPoints > 1);
+        
+        // Android 감지
+        const isAndroid = /android/.test(userAgent);
+        
+        // 태블릿 감지
+        const isTablet = /(tablet|ipad)/.test(userAgent) || 
+                        (isAndroid && !/mobile/.test(userAgent)) ||
+                        (isIOS && /ipad/.test(userAgent)) ||
+                        (platform === 'macintel' && navigator.maxTouchPoints > 1);
+        
+        // 모바일 감지 (태블릿 제외)
+        const isMobile = (/mobi|android|iphone|ipod/.test(userAgent) && !isTablet);
+        
+        // 카메라 지원 여부
+        const hasCamera = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        
+        // 화면 크기 기반 추가 감지
+        const screenWidth = window.screen.width;
+        const screenHeight = window.screen.height;
+        const isSmallScreen = Math.min(screenWidth, screenHeight) <= 480;
+        
+        const deviceInfo = {
+            isIOS,
+            isAndroid,
+            isTablet,
+            isMobile,
+            isSmallScreen,
+            hasCamera,
+            screenWidth,
+            screenHeight,
+            userAgent: userAgent.substring(0, 100), // 로그용
+            platform
+        };
+        
+        console.log('📱 디바이스 감지 결과:', deviceInfo);
+        return deviceInfo;
+    }
+
     init() {
-        console.log('🎨 HairgateFaceSwap 초기화');
+        console.log('🎨 HairgateFaceSwap 초기화 (모바일 최적화)');
         this.setupEventListeners();
         this.createProgressUI();
         this.createResultUI();
         this.createFullscreenControls();
         
-        // ✨ AI 버튼 생성 시스템 시작
+        // ✨ AI 버튼 생성 시스템 시작 - 영구 해결 버전
         this.initAIButtonSystem();
     }
 
     // ✨ AI 버튼 생성 시스템 초기화 - 영구 해결 버전
-initAIButtonSystem() {
-    console.log('🤖 AI 버튼 시스템 초기화 (영구 해결)');
-    
-    // 단순하고 안정적인 옵저버
-    const observer = new MutationObserver((mutations) => {
-        let shouldAddButton = false;
+    initAIButtonSystem() {
+        console.log('🤖 AI 버튼 시스템 초기화 (영구 해결)');
         
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && 
-                mutation.target.id === 'styleModal' && 
-                mutation.target.classList.contains('active')) {
-                shouldAddButton = true;
+        // 단순하고 안정적인 옵저버
+        const observer = new MutationObserver((mutations) => {
+            let shouldAddButton = false;
+            
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && 
+                    mutation.target.id === 'styleModal' && 
+                    mutation.target.classList.contains('active')) {
+                    shouldAddButton = true;
+                }
+            });
+            
+            if (shouldAddButton) {
+                setTimeout(() => {
+                    const existingBtn = document.getElementById('btnAIExperience');
+                    if (!existingBtn) {
+                        this.addAIButtonToModal();
+                    }
+                }, 150);
             }
         });
-        
-        if (shouldAddButton) {
-            setTimeout(() => {
-                const existingBtn = document.getElementById('btnAIExperience');
-                if (!existingBtn) {
-                    this.addAIButtonToModal();
-                }
-            }, 150);
-        }
-    });
 
-    observer.observe(document.body, {
-        attributes: true,
-        subtree: true,
-        attributeFilter: ['class']
-    });
-    
-    this.observer = observer;
-}
+        observer.observe(document.body, {
+            attributes: true,
+            subtree: true,
+            attributeFilter: ['class']
+        });
+        
+        this.observer = observer;
+    }
 
     // ✨ 모달에 AI 버튼 추가 - 영구 해결 버전
-addAIButtonToModal() {
-    const modalActions = document.querySelector('#styleModal .modal-actions');
-    
-    if (!modalActions) {
-        console.log('모달 액션 영역을 찾을 수 없음');
-        return;
+    addAIButtonToModal() {
+        const modalActions = document.querySelector('#styleModal .modal-actions');
+        
+        if (!modalActions) {
+            console.log('모달 액션 영역을 찾을 수 없음');
+            return;
+        }
+        
+        // 기존 AI 버튼이 있으면 제거 후 새로 생성
+        const existingBtns = modalActions.querySelectorAll('#btnAIExperience, .btn-ai-experience');
+        if (existingBtns.length > 0) {
+            existingBtns.forEach(btn => btn.remove());
+            console.log('🗑️ 기존 AI 버튼 제거됨');
+        }
+        
+        // 현재 스타일 정보 수집
+        this.collectCurrentStyleData();
+        
+        // AI체험하기 버튼 생성
+        const aiBtn = document.createElement('button');
+        aiBtn.id = 'btnAIExperience';
+        aiBtn.className = 'modal-btn btn-ai-experience';
+        aiBtn.innerHTML = `
+            <span style="margin-right: 8px;">✨</span>
+            <span>AI 헤어체험</span>
+        `;
+        
+        // 클릭 이벤트 추가
+        aiBtn.addEventListener('click', () => {
+            console.log('🤖 AI 체험 버튼 클릭됨');
+            this.openAIExperienceModal();
+        });
+        
+        // 맨 앞에 추가
+        modalActions.insertBefore(aiBtn, modalActions.firstChild);
+        
+        console.log('✅ AI체험하기 버튼 추가됨', this.currentStyleData);
     }
-    
-    // 기존 AI 버튼이 있으면 제거 후 새로 생성
-    const existingBtns = modalActions.querySelectorAll('#btnAIExperience, .btn-ai-experience');
-    if (existingBtns.length > 0) {
-        existingBtns.forEach(btn => btn.remove());
-        console.log('🗑️ 기존 AI 버튼 제거됨');
-    }
-    
-    // 현재 스타일 정보 수집
-    this.collectCurrentStyleData();
-    
-    // AI체험하기 버튼 생성
-    const aiBtn = document.createElement('button');
-    aiBtn.id = 'btnAIExperience';
-    aiBtn.className = 'modal-btn btn-ai-experience';
-    aiBtn.innerHTML = `
-        <span style="margin-right: 8px;">✨</span>
-        <span>AI 헤어체험</span>
-    `;
-    
-    // 클릭 이벤트 추가
-    aiBtn.addEventListener('click', () => {
-        console.log('🤖 AI 체험 버튼 클릭됨');
-        this.openAIExperienceModal();
-    });
-    
-    // 맨 앞에 추가
-    modalActions.insertBefore(aiBtn, modalActions.firstChild);
-    
-    console.log('✅ AI체험하기 버튼 추가됨', this.currentStyleData);
-}
 
     // ✨ 현재 스타일 데이터 수집
     collectCurrentStyleData() {
@@ -1178,16 +1227,12 @@ addAIButtonToModal() {
         try {
             console.log('📱 모바일/태블릿 호환 다운로드 시작');
             
-            // 모바일 기기 감지
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-            
             // 이미지 데이터 가져오기
             const response = await fetch(swappedResult.src);
             const blob = await response.blob();
             
-            // iOS 전용 처리
-            if (isIOS) {
+            // 🍎 iOS 전용 처리
+            if (this.deviceInfo.isIOS) {
                 console.log('🍎 iOS 디바이스 감지 - 전용 처리');
                 
                 // Canvas를 통한 이미지 처리
@@ -1244,8 +1289,8 @@ addAIButtonToModal() {
                 return;
             }
             
-            // Android 및 일반 모바일 처리
-            if (isMobile) {
+            // 🤖 Android 및 일반 모바일 처리
+            if (this.deviceInfo.isAndroid || this.deviceInfo.isMobile) {
                 console.log('🤖 Android/모바일 디바이스 감지');
                 
                 // Web Share API 시도
@@ -1305,7 +1350,31 @@ addAIButtonToModal() {
                 return;
             }
             
-            // PC/데스크톱 처리 (기존 방식)
+            // 📱 태블릿 처리
+            if (this.deviceInfo.isTablet) {
+                console.log('📱 태블릿 디바이스 감지');
+                
+                // 태블릿은 일반적으로 다운로드 지원이 더 좋음
+                try {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `hairgate_result_${Date.now()}.jpg`;
+                    link.style.display = 'none';
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    console.log('✅ 태블릿 다운로드 완료');
+                    return;
+                } catch (tabletError) {
+                    console.log('⚠️ 태블릿 다운로드 실패, 대안 사용');
+                }
+            }
+            
+            // 💻 PC/데스크톱 처리 (기존 방식)
             console.log('💻 데스크톱 디바이스 - 기존 다운로드 방식');
             const url = URL.createObjectURL(blob);
             
@@ -1438,52 +1507,248 @@ addAIButtonToModal() {
         console.log('📸 업로드 방식 변경:', method);
     }
     
-    // ✨ 카메라 시작
+    // 🚀 모바일 다중 OS 최적화 카메라 시작
     async startCamera() {
         try {
-            console.log('📸 카메라 시작...');
+            console.log('📸 카메라 시작... (모바일 최적화)', this.deviceInfo);
             
-            this.cameraStream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: 'user', // 전면 카메라
-                    width: { ideal: 640 },
-                    height: { ideal: 480 }
+            // 1️⃣ HTTPS 환경 체크
+            if (location.protocol !== 'https:' && !location.hostname.includes('localhost')) {
+                throw new Error(`🔒 카메라 기능은 보안 연결에서만 작동합니다.
+
+📱 해결 방법:
+• HTTPS 주소로 접속해주세요
+• 또는 파일 업로드를 사용해주세요
+
+현재 주소: ${location.protocol}//${location.hostname}`);
+            }
+            
+            // 2️⃣ 브라우저 지원 체크
+            if (!this.deviceInfo.hasCamera) {
+                throw new Error(`📷 이 브라우저는 카메라 기능을 지원하지 않습니다.
+
+📱 해결 방법:
+• Chrome, Safari, Firefox 최신 버전을 사용하세요
+• 파일 업로드 방식을 사용해주세요`);
+            }
+            
+            // 3️⃣ 권한 상태 확인 (가능한 경우)
+            if (navigator.permissions && navigator.permissions.query) {
+                try {
+                    const permission = await navigator.permissions.query({ name: 'camera' });
+                    console.log('📹 카메라 권한 상태:', permission.state);
+                    
+                    if (permission.state === 'denied') {
+                        throw new Error(`🚫 카메라 권한이 거부되었습니다.
+
+📱 권한 허용 방법:
+${this.deviceInfo.isIOS ? '• Safari: 설정 → 사파리 → 카메라 → 허용' : ''}
+${this.deviceInfo.isAndroid ? '• Chrome: 주소창 왼쪽 자물쇠 → 카메라 → 허용' : ''}
+• 브라우저 설정에서 카메라 권한을 허용해주세요
+• 페이지를 새로고침하고 다시 시도하세요`);
+                    }
+                } catch (permissionError) {
+                    console.log('권한 상태 확인 불가:', permissionError.message);
                 }
-            });
+            }
             
+            // 4️⃣ 디바이스별 최적화된 카메라 설정
+            let cameraConstraints = {
+                video: {
+                    facingMode: 'user', // 전면 카메라 우선
+                    width: { ideal: 640, max: 1280 },
+                    height: { ideal: 480, max: 720 }
+                }
+            };
+            
+            // iOS 최적화
+            if (this.deviceInfo.isIOS) {
+                cameraConstraints.video = {
+                    ...cameraConstraints.video,
+                    frameRate: { ideal: 30, max: 30 },
+                    aspectRatio: { ideal: 4/3 }
+                };
+                console.log('🍎 iOS 카메라 설정 적용');
+            }
+            
+            // Android 최적화
+            if (this.deviceInfo.isAndroid) {
+                cameraConstraints.video = {
+                    ...cameraConstraints.video,
+                    frameRate: { ideal: 24, max: 30 }
+                };
+                console.log('🤖 Android 카메라 설정 적용');
+            }
+            
+            // 태블릿 최적화 (더 높은 해상도)
+            if (this.deviceInfo.isTablet) {
+                cameraConstraints.video.width = { ideal: 800, max: 1920 };
+                cameraConstraints.video.height = { ideal: 600, max: 1080 };
+                console.log('📱 태블릿 고해상도 카메라 설정 적용');
+            }
+            
+            // 작은 화면 최적화
+            if (this.deviceInfo.isSmallScreen) {
+                cameraConstraints.video.width = { ideal: 480, max: 640 };
+                cameraConstraints.video.height = { ideal: 360, max: 480 };
+                console.log('📱 소형 화면 최적화 설정 적용');
+            }
+            
+            // 5️⃣ 카메라 스트림 요청
+            console.log('📹 카메라 스트림 요청:', cameraConstraints);
+            this.cameraStream = await navigator.mediaDevices.getUserMedia(cameraConstraints);
+            
+            // 6️⃣ 비디오 요소 설정
             this.cameraVideo = document.getElementById('cameraVideo');
             if (this.cameraVideo) {
                 this.cameraVideo.srcObject = this.cameraStream;
+                
+                // 디바이스별 비디오 최적화
+                if (this.deviceInfo.isIOS) {
+                    this.cameraVideo.setAttribute('playsinline', 'true');
+                    this.cameraVideo.setAttribute('webkit-playsinline', 'true');
+                }
+                
+                // 비디오 로드 대기
+                await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => reject(new Error('카메라 로딩 시간 초과')), 10000);
+                    
+                    this.cameraVideo.onloadedmetadata = () => {
+                        clearTimeout(timeout);
+                        console.log('📹 카메라 메타데이터 로드 완료');
+                        resolve();
+                    };
+                    
+                    this.cameraVideo.onerror = (error) => {
+                        clearTimeout(timeout);
+                        reject(error);
+                    };
+                });
             }
             
+            // 7️⃣ UI 업데이트
             const cameraPreview = document.getElementById('cameraPreview');
             const cameraPlaceholder = document.getElementById('cameraPlaceholder');
             
             if (cameraPreview) cameraPreview.style.display = 'block';
             if (cameraPlaceholder) cameraPlaceholder.style.display = 'none';
             
-            console.log('✅ 카메라 시작 성공');
+            console.log('✅ 카메라 시작 성공 (모바일 최적화)');
             
         } catch (error) {
             console.error('❌ 카메라 시작 실패:', error);
             
-            let errorMessage = '카메라에 접근할 수 없습니다.';
-            if (error.name === 'NotAllowedError') {
-                errorMessage = '카메라 권한이 거부되었습니다. 브라우저 설정에서 카메라 권한을 허용해주세요.';
-            } else if (error.name === 'NotFoundError') {
-                errorMessage = '카메라가 발견되지 않았습니다.';
-            } else if (error.name === 'NotReadableError') {
-                errorMessage = '카메라가 다른 앱에서 사용 중입니다.';
-            }
+            // 디바이스별 맞춤 에러 메시지
+            let errorMessage = this.getCameraErrorMessage(error);
             
             alert(errorMessage);
+            
+            // 실패시 파일 업로드 모드로 자동 전환
+            this.switchUploadMethod('file');
         }
+    }
+    
+    // 🎯 디바이스별 카메라 에러 메시지 생성
+    getCameraErrorMessage(error) {
+        const errorType = error.name || 'UnknownError';
+        const deviceType = this.deviceInfo.isIOS ? 'iOS' : 
+                         this.deviceInfo.isAndroid ? 'Android' : 
+                         this.deviceInfo.isTablet ? '태블릿' : '데스크톱';
+        
+        console.log('🔍 카메라 에러 분석:', { errorType, deviceType, message: error.message });
+        
+        if (errorType === 'NotAllowedError' || error.message.includes('Permission denied')) {
+            if (this.deviceInfo.isIOS) {
+                return `🍎 iOS 카메라 권한이 거부되었습니다.
+
+📱 권한 허용 방법:
+1. Safari 설정 → 사파리 → 카메라 → 허용
+2. 설정 → 개인정보 보호 → 카메라 → Safari 허용
+3. 브라우저를 완전히 종료 후 다시 실행
+4. 페이지를 새로고침하고 다시 시도
+
+💡 또는 파일 업로드를 사용해주세요!`;
+            } else if (this.deviceInfo.isAndroid) {
+                return `🤖 Android 카메라 권한이 거부되었습니다.
+
+📱 권한 허용 방법:
+1. 주소창 왼쪽의 🔒 아이콘 클릭
+2. "카메라" → "허용" 선택
+3. 설정 → 앱 → Chrome → 권한 → 카메라 허용
+4. 페이지를 새로고침하고 다시 시도
+
+💡 또는 파일 업로드를 사용해주세요!`;
+            } else {
+                return `🚫 카메라 권한이 거부되었습니다.
+
+📱 권한 허용 방법:
+1. 브라우저 주소창의 🔒 아이콘 클릭
+2. "카메라" 권한을 "허용"으로 변경
+3. 페이지를 새로고침하고 다시 시도
+
+💡 또는 파일 업로드를 사용해주세요!`;
+            }
+        }
+        
+        if (errorType === 'NotFoundError') {
+            return `📷 ${deviceType} 기기에서 카메라를 찾을 수 없습니다.
+
+📱 해결 방법:
+• 카메라가 기기에 연결되어 있는지 확인
+• 다른 앱에서 카메라를 사용 중인지 확인
+• 브라우저를 다시 시작해보세요
+• 파일 업로드 방식을 사용해주세요
+
+기기 정보: ${deviceType} (${this.deviceInfo.userAgent})`;
+        }
+        
+        if (errorType === 'NotReadableError') {
+            return `🔒 ${deviceType} 카메라가 다른 앱에서 사용 중입니다.
+
+📱 해결 방법:
+• 카메라를 사용하는 다른 앱을 종료하세요
+• 화상회의 앱 (줌, 스카이프 등) 종료
+• 브라우저의 다른 탭에서 카메라 사용 중단
+• 기기를 다시 시작해보세요
+• 파일 업로드 방식을 사용해주세요`;
+        }
+        
+        if (error.message.includes('HTTPS') || error.message.includes('보안')) {
+            return error.message;
+        }
+        
+        if (error.message.includes('시간 초과')) {
+            return `⏱️ ${deviceType} 카메라 로딩 시간이 초과되었습니다.
+
+📱 해결 방법:
+• 네트워크 연결을 확인하세요
+• 브라우저를 다시 시작해보세요
+• 기기를 다시 시작해보세요
+• 파일 업로드 방식을 사용해주세요`;
+        }
+        
+        // 기본 에러 메시지
+        return `❌ ${deviceType} 카메라 오류가 발생했습니다.
+
+📱 일반적인 해결 방법:
+• 브라우저를 최신 버전으로 업데이트
+• 기기를 다시 시작
+• 다른 브라우저로 시도
+• 파일 업로드 방식을 사용해주세요
+
+🔍 기술적 세부사항:
+• 에러 타입: ${errorType}
+• 기기: ${deviceType}
+• 메시지: ${error.message}`;
     }
     
     // ✨ 카메라 중지
     stopCamera() {
         if (this.cameraStream) {
-            this.cameraStream.getTracks().forEach(track => track.stop());
+            this.cameraStream.getTracks().forEach(track => {
+                track.stop();
+                console.log('📹 카메라 트랙 중지:', track.kind);
+            });
             this.cameraStream = null;
         }
         
@@ -1493,10 +1758,10 @@ addAIButtonToModal() {
         if (cameraPreview) cameraPreview.style.display = 'none';
         if (cameraPlaceholder) cameraPlaceholder.style.display = 'block';
         
-        console.log('📸 카메라 중지');
+        console.log('📸 카메라 중지 완료');
     }
     
-    // ✨ 사진 촬영
+    // 🚀 모바일 최적화 사진 촬영
     async capturePhoto() {
         if (!this.cameraVideo || !this.cameraStream) {
             alert('카메라가 준비되지 않았습니다.');
@@ -1504,79 +1769,179 @@ addAIButtonToModal() {
         }
         
         try {
+            console.log('📸 사진 촬영 시작 (모바일 최적화)');
+            
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
-            canvas.width = this.cameraVideo.videoWidth;
-            canvas.height = this.cameraVideo.videoHeight;
+            // 비디오 크기에 맞춰 캔버스 설정
+            const videoWidth = this.cameraVideo.videoWidth;
+            const videoHeight = this.cameraVideo.videoHeight;
+            
+            if (videoWidth === 0 || videoHeight === 0) {
+                throw new Error('카메라 영상이 준비되지 않았습니다. 잠시 후 다시 시도해주세요.');
+            }
+            
+            canvas.width = videoWidth;
+            canvas.height = videoHeight;
+            
+            console.log('📐 촬영 해상도:', { width: videoWidth, height: videoHeight });
+            
+            // 디바이스별 최적화 설정
+            let quality = 0.9;
+            if (this.deviceInfo.isIOS && this.deviceInfo.isSmallScreen) {
+                quality = 0.8; // iOS 소형 기기는 품질 조금 낮춤
+            } else if (this.deviceInfo.isTablet) {
+                quality = 0.95; // 태블릿은 고품질
+            }
             
             // 비디오 프레임을 캔버스에 그리기
-            ctx.drawImage(this.cameraVideo, 0, 0);
+            ctx.drawImage(this.cameraVideo, 0, 0, videoWidth, videoHeight);
+            
+            // 디바이스 정보 워터마크 (선택사항, 디버깅용)
+            if (console.log) { // 개발 환경에서만
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(5, 5, 200, 30);
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Arial';
+                ctx.fillText(`${this.deviceInfo.isIOS ? 'iOS' : this.deviceInfo.isAndroid ? 'Android' : 'Other'} ${videoWidth}x${videoHeight}`, 10, 25);
+            }
             
             // 캔버스를 Blob으로 변환
-            canvas.toBlob((blob) => {
-                if (blob) {
-                    // File 객체 생성
-                    const file = new File([blob], `camera_photo_${Date.now()}.jpg`, {
-                        type: 'image/jpeg'
-                    });
-                    
-                    this.customerImageFile = file;
-                    console.log('📸 사진 촬영 완료:', file.name);
-                    
-                    // 미리보기 업데이트
-                    this.updateCameraPreview(URL.createObjectURL(blob));
-                    this.updateStartButtonState();
-                    
-                    // 카메라 중지
-                    this.stopCamera();
+            const blob = await new Promise((resolve) => {
+                canvas.toBlob(resolve, 'image/jpeg', quality);
+            });
+            
+            if (!blob) {
+                throw new Error('사진 데이터 생성에 실패했습니다.');
+            }
+            
+            // File 객체 생성
+            const timestamp = Date.now();
+            const devicePrefix = this.deviceInfo.isIOS ? 'ios' : 
+                               this.deviceInfo.isAndroid ? 'android' : 
+                               this.deviceInfo.isTablet ? 'tablet' : 'camera';
+            
+            const file = new File([blob], `${devicePrefix}_photo_${timestamp}.jpg`, {
+                type: 'image/jpeg'
+            });
+            
+            this.customerImageFile = file;
+            console.log('📸 사진 촬영 완료:', {
+                fileName: file.name,
+                size: file.size,
+                device: devicePrefix,
+                resolution: `${videoWidth}x${videoHeight}`,
+                quality
+            });
+            
+            // 미리보기 업데이트
+            this.updateCameraPreview(URL.createObjectURL(blob));
+            this.updateStartButtonState();
+            
+            // 카메라 중지
+            this.stopCamera();
+            
+            // 성공 피드백 (디바이스별)
+            if (this.deviceInfo.isMobile || this.deviceInfo.isTablet) {
+                // 모바일/태블릿은 진동 피드백 (지원되는 경우)
+                if (navigator.vibrate) {
+                    navigator.vibrate(100);
                 }
-            }, 'image/jpeg', 0.9);
+            }
             
         } catch (error) {
             console.error('❌ 사진 촬영 실패:', error);
-            alert('사진 촬영 중 오류가 발생했습니다.');
+            
+            let errorMessage = `📸 사진 촬영 중 오류가 발생했습니다.
+
+📱 해결 방법:
+• 카메라가 안정화될 때까지 잠시 기다려주세요
+• 충분한 조명이 있는 곳에서 촬영하세요
+• 브라우저를 다시 시작해보세요
+• 파일 업로드 방식을 사용해주세요
+
+🔍 오류: ${error.message}`;
+            
+            alert(errorMessage);
         }
     }
     
-    // ✨ 카메라 미리보기 업데이트
+    // ✨ 카메라 미리보기 업데이트 (모바일 최적화)
     updateCameraPreview(imageUrl) {
         const cameraArea = document.getElementById('cameraArea');
         if (cameraArea) {
+            // 디바이스별 최적화된 미리보기 UI
+            const previewStyle = this.deviceInfo.isSmallScreen ? 
+                'max-width: 280px;' : 
+                this.deviceInfo.isTablet ? 'max-width: 400px;' : 'max-width: 300px;';
+            
             cameraArea.innerHTML = `
                 <div class="captured-image-preview">
-                    <img src="${imageUrl}" alt="촬영된 사진" style="width: 100%; max-width: 300px; border-radius: 10px;">
-                    <div class="captured-actions">
-                        <button class="btn btn-outline" onclick="window.hairgateFaceSwap.retakePhoto()">
+                    <img src="${imageUrl}" alt="촬영된 사진" style="width: 100%; ${previewStyle} border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                    <div class="captured-actions" style="margin-top: 15px; text-align: center;">
+                        <button class="btn btn-outline" onclick="window.hairgateFaceSwap.retakePhoto()" style="
+                            padding: ${this.deviceInfo.isSmallScreen ? '10px 20px' : '12px 24px'};
+                            font-size: ${this.deviceInfo.isSmallScreen ? '14px' : '16px'};
+                            border: 2px solid #FF1493;
+                            background: transparent;
+                            color: #FF1493;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='#FF1493'; this.style.color='white';" 
+                           onmouseout="this.style.background='transparent'; this.style.color='#FF1493';">
                             📸 다시 촬영
                         </button>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px; color: #888; font-size: 12px;">
+                        ✅ ${this.deviceInfo.isIOS ? 'iOS' : this.deviceInfo.isAndroid ? 'Android' : '기기'} 촬영 완료
                     </div>
                 </div>
             `;
         }
     }
     
-    // ✨ 다시 촬영
+    // ✨ 다시 촬영 (모바일 최적화)
     retakePhoto() {
         this.customerImageFile = null;
         this.updateStartButtonState();
         
+        console.log('🔄 다시 촬영 준비 (모바일 최적화)');
+        
         // 카메라 영역 초기화
         const cameraArea = document.getElementById('cameraArea');
         if (cameraArea) {
+            // 디바이스별 최적화된 UI
+            const buttonStyle = this.deviceInfo.isSmallScreen ? 
+                'padding: 15px; font-size: 14px;' : 'padding: 20px; font-size: 16px;';
+            
             cameraArea.innerHTML = `
                 <div id="cameraPreview" class="camera-preview" style="display: none;">
-                    <video id="cameraVideo" autoplay playsinline></video>
-                    <div class="camera-controls">
-                        <button id="captureBtn" class="capture-btn">📸 촬영</button>
-                        <button id="closeCameraBtn" class="close-camera-btn">❌ 닫기</button>
+                    <video id="cameraVideo" autoplay playsinline style="width: 100%; max-width: 100%; border-radius: 10px;"></video>
+                    <div class="camera-controls" style="margin-top: 15px; text-align: center; display: flex; gap: 10px; justify-content: center;">
+                        <button id="captureBtn" class="capture-btn" style="${buttonStyle} background: #FF1493; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            📸 촬영
+                        </button>
+                        <button id="closeCameraBtn" class="close-camera-btn" style="${buttonStyle} background: #666; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            ❌ 닫기
+                        </button>
                     </div>
                 </div>
-                <div id="cameraPlaceholder" class="camera-placeholder">
-                    <button id="startCameraBtn" class="start-camera-btn">
-                        <span style="font-size: 48px;">📷</span>
-                        <p>카메라 시작</p>
-                        <small>정면을 보고 촬영해주세요</small>
+                <div id="cameraPlaceholder" class="camera-placeholder" style="text-align: center; padding: 40px 20px;">
+                    <button id="startCameraBtn" class="start-camera-btn" style="
+                        background: linear-gradient(135deg, #FF1493, #FF69B4);
+                        color: white;
+                        border: none;
+                        border-radius: 15px;
+                        ${buttonStyle}
+                        cursor: pointer;
+                        box-shadow: 0 4px 15px rgba(255, 20, 147, 0.3);
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <span style="font-size: 48px; display: block; margin-bottom: 10px;">📷</span>
+                        <p style="margin: 0; font-size: 16px; font-weight: bold;">카메라 시작</p>
+                        <small style="display: block; margin-top: 5px; opacity: 0.9;">정면을 보고 촬영해주세요</small>
                     </button>
                 </div>
             `;
@@ -1598,7 +1963,7 @@ addAIButtonToModal() {
             }
         }
         
-        console.log('🔄 다시 촬영 준비');
+        console.log('🔄 다시 촬영 UI 준비 완료');
     }
 }
 
@@ -1607,7 +1972,7 @@ window.HairgateFaceSwap = HairgateFaceSwap;
 
 document.addEventListener('DOMContentLoaded', () => {
     window.hairgateFaceSwap = new HairgateFaceSwap();
-    console.log('✅ HairgateFaceSwap 초기화 완료');
+    console.log('✅ HairgateFaceSwap 초기화 완료 (모바일 다중 OS 카메라 최적화)');
 });
 
 // 전역 함수 등록 (레거시 호환)
