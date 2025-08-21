@@ -424,6 +424,45 @@
             border-color: #FF1493;
         }
         
+        /* ========== 필수/선택 라벨 ========== */
+        .label-required {
+            color: #FF1493;
+            font-weight: bold;
+        }
+        
+        .label-required::after {
+            content: ' *';
+            color: #ff4444;
+        }
+        
+        .label-optional {
+            color: #FF1493;
+            font-weight: bold;
+        }
+        
+        .label-optional::after {
+            content: ' (선택)';
+            color: #999;
+            font-size: 12px;
+            font-weight: normal;
+        }
+        
+        /* ========== 자동 생성 코드 표시 ========== */
+        .auto-code-info {
+            background: rgba(255, 20, 147, 0.1);
+            border: 1px solid #FF1493;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #FF69B4;
+            display: none;
+        }
+        
+        .auto-code-info.show {
+            display: block;
+        }
+        
         /* ========== 디자이너 관리 테이블 (화이트 톤) ========== */
         .designers-table {
             width: 100%;
@@ -865,17 +904,20 @@
             </div>
             
             <div class="form-group">
-                <label>스타일 코드</label>
-                <input type="text" id="styleCode" placeholder="예: FAE001 (필수)" style="text-transform: uppercase;">
+                <label class="label-optional">스타일 코드</label>
+                <input type="text" id="styleCode" placeholder="예: FAE001 (비워두면 자동생성)" style="text-transform: uppercase;">
+                <div class="auto-code-info" id="autoCodeInfo">
+                    💡 코드를 입력하지 않으면 자동으로 생성됩니다 (예: AUTO_001)
+                </div>
             </div>
             
             <div class="form-group">
-                <label>스타일 이름</label>
+                <label class="label-required">스타일 이름</label>
                 <input type="text" id="styleName" placeholder="예: 글램웨이브 (필수)">
             </div>
             
             <div class="form-group">
-                <label>이미지 업로드</label>
+                <label class="label-optional">이미지 업로드</label>
                 <div class="upload-area" id="uploadArea">
                     <input type="file" id="styleImage" class="upload-input" accept="image/*" onchange="previewImage(event)">
                     <label for="styleImage" class="upload-label">
@@ -963,6 +1005,64 @@
         };
         
         const SUBCATEGORIES = ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'];
+        
+        // ========== 자동 코드 생성 함수 ==========
+        async function generateAutoCode() {
+            try {
+                // 기존 AUTO_ 코드들 조회
+                const snapshot = await db.collection(COLLECTIONS.HAIRSTYLES)
+                    .where('code', '>=', 'AUTO_')
+                    .where('code', '<', 'AUTO_Z')
+                    .orderBy('code', 'desc')
+                    .limit(1)
+                    .get();
+                
+                let nextNumber = 1;
+                
+                if (!snapshot.empty) {
+                    const lastCode = snapshot.docs[0].data().code;
+                    const match = lastCode.match(/AUTO_(\d+)/);
+                    if (match) {
+                        nextNumber = parseInt(match[1]) + 1;
+                    }
+                }
+                
+                return `AUTO_${nextNumber.toString().padStart(3, '0')}`;
+                
+            } catch (error) {
+                console.error('자동 코드 생성 오류:', error);
+                return `AUTO_${Date.now().toString().slice(-6)}`;
+            }
+        }
+        
+        // ========== 코드 입력 필드 이벤트 ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            const styleCodeInput = document.getElementById('styleCode');
+            const autoCodeInfo = document.getElementById('autoCodeInfo');
+            
+            if (styleCodeInput && autoCodeInfo) {
+                // 입력 필드 포커스/블러 이벤트
+                styleCodeInput.addEventListener('focus', function() {
+                    if (!this.value.trim()) {
+                        autoCodeInfo.classList.add('show');
+                    }
+                });
+                
+                styleCodeInput.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        autoCodeInfo.classList.remove('show');
+                    } else {
+                        autoCodeInfo.classList.add('show');
+                    }
+                });
+                
+                styleCodeInput.addEventListener('blur', function() {
+                    setTimeout(() => {
+                        autoCodeInfo.classList.remove('show');
+                    }, 300);
+                });
+            }
+        });
         
         // ========== Firebase 연결 상태 확인 ==========
         async function checkFirebaseConnection() {
@@ -1326,6 +1426,7 @@
             document.getElementById('styleName').value = '';
             document.getElementById('styleImage').value = '';
             document.getElementById('uploadPreview').style.display = 'none';
+            document.getElementById('autoCodeInfo').classList.add('show');
             selectedFile = null;
             
             document.getElementById('addStyleModal').classList.add('active');
@@ -1356,13 +1457,14 @@
             reader.readAsDataURL(file);
         }
         
-        // ========== 스타일 저장 ==========
+        // ========== 스타일 저장 (수정된 버전) ==========
         async function saveStyle() {
-            const code = document.getElementById('styleCode').value.trim().toUpperCase();
+            let code = document.getElementById('styleCode').value.trim().toUpperCase();
             const name = document.getElementById('styleName').value.trim();
             
-            if (!code || !name) {
-                showToast('코드와 이름을 입력하세요');
+            // 이름은 필수
+            if (!name) {
+                showToast('❌ 스타일 이름을 입력하세요');
                 return;
             }
             
@@ -1371,21 +1473,29 @@
             saveBtn.textContent = '저장 중...';
             
             try {
-                console.log('🔍 중복 코드 검사 중...');
-                
-                // 중복 체크
-                const existing = await db.collection(COLLECTIONS.HAIRSTYLES)
-                    .where('code', '==', code)
-                    .get();
-                
-                if (!existing.empty) {
-                    showToast('이미 존재하는 코드입니다');
-                    saveBtn.disabled = false;
-                    saveBtn.textContent = '저장';
-                    return;
+                // 코드가 비어있으면 자동 생성
+                if (!code) {
+                    console.log('🔄 자동 코드 생성 중...');
+                    code = await generateAutoCode();
+                    console.log('✅ 자동 생성된 코드:', code);
+                    showToast(`💡 자동 생성된 코드: ${code}`);
+                } else {
+                    // 코드가 입력된 경우 중복 체크
+                    console.log('🔍 중복 코드 검사 중...');
+                    
+                    const existing = await db.collection(COLLECTIONS.HAIRSTYLES)
+                        .where('code', '==', code)
+                        .get();
+                    
+                    if (!existing.empty) {
+                        showToast('❌ 이미 존재하는 코드입니다');
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = '저장';
+                        return;
+                    }
+                    
+                    console.log('✅ 중복 검사 통과');
                 }
-                
-                console.log('✅ 중복 검사 통과');
                 
                 // 이미지 업로드
                 let imageUrl = '';
@@ -1425,7 +1535,8 @@
                     createdAt: new Date(),
                     updatedAt: new Date(),
                     likes: 0,
-                    views: 0
+                    views: 0,
+                    isAutoGenerated: !document.getElementById('styleCode').value.trim() // 자동생성 여부 기록
                 };
                 
                 await db.collection(COLLECTIONS.HAIRSTYLES).add(styleData);
@@ -1433,13 +1544,17 @@
                 console.log('✅ Firestore 저장 완료!');
                 
                 // 성공 메시지
-                if (imageUrl) {
-                    showToast('✅ 스타일과 이미지 모두 저장 완료!');
-                } else if (selectedFile) {
-                    showToast('✅ 스타일 저장 완료! (이미지 업로드 실패)');
-                } else {
-                    showToast('✅ 스타일 저장 완료!');
+                let successMessage = '✅ 스타일 저장 완료!';
+                if (styleData.isAutoGenerated) {
+                    successMessage += ` (코드: ${code})`;
                 }
+                if (imageUrl) {
+                    successMessage += ' 이미지도 업로드됨!';
+                } else if (selectedFile) {
+                    successMessage += ' (이미지 업로드는 실패)';
+                }
+                
+                showToast(successMessage);
                 
                 closeModal();
                 loadStyles();
@@ -1462,14 +1577,29 @@
                 const newName = prompt('새 스타일 이름:', data.name);
                 if (!newName) return;
                 
-                const newCode = prompt('새 스타일 코드:', data.code);
-                if (!newCode) return;
+                const newCode = prompt('새 스타일 코드 (비워두면 현재 코드 유지):', data.code);
                 
-                await db.collection(COLLECTIONS.HAIRSTYLES).doc(docId).update({
+                const updateData = {
                     name: newName,
-                    code: newCode.toUpperCase(),
                     updatedAt: new Date()
-                });
+                };
+                
+                // 코드가 입력되고 기존과 다른 경우에만 업데이트
+                if (newCode && newCode.toUpperCase() !== data.code) {
+                    // 중복 체크
+                    const existing = await db.collection(COLLECTIONS.HAIRSTYLES)
+                        .where('code', '==', newCode.toUpperCase())
+                        .get();
+                    
+                    if (!existing.empty) {
+                        showToast('❌ 이미 존재하는 코드입니다');
+                        return;
+                    }
+                    
+                    updateData.code = newCode.toUpperCase();
+                }
+                
+                await db.collection(COLLECTIONS.HAIRSTYLES).doc(docId).update(updateData);
                 
                 showToast('✅ 수정 완료!');
                 loadStyles();
