@@ -1583,57 +1583,57 @@ document.addEventListener('DOMContentLoaded', function() {
         const style = document.createElement('style');
         style.id = 'category-tabs-layout-fix';
         style.textContent = `
-            /* 🔧 대분류 영역 높이 최적화 - 강제 적용 */
+            /* 🔧 대분류 영역 위쪽 공간 최적화 */
             .category-tabs-wrapper {
-                margin-top: 15px !important;
-                padding: 8px 0 6px 0 !important;
+                margin-top: 5px !important;
+                padding: 6px 0 4px 0 !important;
                 min-height: auto !important;
             }
             
             .category-tabs {
-                min-height: 35px !important;
-                padding: 2px 20px !important;
+                min-height: 32px !important;
+                padding: 1px 20px !important;
             }
             
             .category-tab {
-                padding: 8px 14px !important;
-                min-height: 35px !important;
-                font-size: 13px !important;
+                padding: 6px 12px !important;
+                min-height: 32px !important;
+                font-size: 12px !important;
             }
             
             .category-description {
-                padding: 6px 20px 8px 20px !important;
-                line-height: 1.4 !important;
+                padding: 4px 20px 6px 20px !important;
+                line-height: 1.3 !important;
             }
             
             .subcategory-wrapper {
-                padding: 10px 20px 14px 20px !important;
+                padding: 8px 20px 12px 20px !important;
             }
             
             /* 🔧 모바일 최적화 */
             @media (max-width: 768px) {
                 .category-tabs-wrapper {
-                    margin-top: 8px !important;
-                    padding: 6px 0 4px 0 !important;
+                    margin-top: 3px !important;
+                    padding: 4px 0 3px 0 !important;
                 }
                 
                 .category-tabs {
-                    min-height: 30px !important;
-                    padding: 1px 15px !important;
+                    min-height: 28px !important;
+                    padding: 0px 15px !important;
                 }
                 
                 .category-tab {
-                    padding: 6px 12px !important;
-                    min-height: 30px !important;
-                    font-size: 12px !important;
+                    padding: 5px 10px !important;
+                    min-height: 28px !important;
+                    font-size: 11px !important;
                 }
                 
                 .category-description {
-                    padding: 5px 15px 6px 15px !important;
+                    padding: 3px 15px 4px 15px !important;
                 }
                 
                 .subcategory-wrapper {
-                    padding: 8px 15px 12px 15px !important;
+                    padding: 6px 15px 10px 15px !important;
                 }
             }
         `;
@@ -1645,7 +1645,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         document.head.appendChild(style);
-        console.log('✅ 대분류 레이아웃 최적화 적용됨');
+        console.log('✅ 대분류 상단 공간 최적화 적용됨');
     }
 
     // ========== 초기화 ==========
