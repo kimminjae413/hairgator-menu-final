@@ -361,41 +361,32 @@
             display: block;
         }
 
-        /* 🔧 카테고리 탭 - 기본 설정 */
+        /* 🔧 카테고리 탭 - 간단한 간격 조정만 */
         .category-tabs-wrapper {
             background: var(--primary-dark);
             border-bottom: 1px solid #333;
-            position: static !important;
-            top: auto !important;
-            margin-top: 40px !important;     /* 🔧 60px → 40px로 감소 */
-            padding: 15px 0 10px 0 !important; /* 🔧 25px 15px → 15px 10px 감소 */
-            z-index: 50 !important;
-            width: 100% !important;
-            display: block !important;
-            visibility: visible !important;
-            height: auto !important;
-            min-height: 65px !important;     /* 🔧 80px → 65px로 감소 */
-            overflow: visible !important;
+            margin-top: 40px;           /* 60px → 40px로 단순 변경 */
+            padding: 15px 0 10px 0;     /* 25px 15px → 15px 10px로 단순 변경 */
+            z-index: 50;
+            width: 100%;
         }
 
         .category-tabs {
-            display: flex !important;
+            display: flex;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
-            padding: 5px 20px !important;
-            width: 100% !important;
-            visibility: visible !important;
-            height: auto !important;
-            min-height: 45px !important;     /* 🔧 50px → 45px로 감소 */
-            align-items: center !important;
+            padding: 5px 20px;
+            width: 100%;
+            min-height: 45px;           /* 50px → 45px로 단순 변경 */
+            align-items: center;
         }
 
         .category-tabs::-webkit-scrollbar { display: none; }
 
         .category-tab {
             flex: 0 0 auto;
-            padding: 12px 18px !important;   /* 🔧 15px 20px → 12px 18px 감소 */
+            padding: 12px 18px;         /* 15px 20px → 12px 18px로 단순 변경 */
             background: none;
             border: none;
             border-bottom: 3px solid transparent;
@@ -407,16 +398,12 @@
             text-transform: uppercase;
             white-space: nowrap;
             position: relative;
-            /* 🔧 핵심 수정: flex 아이템으로 설정 */
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            height: auto !important;
-            min-height: 45px !important;     /* 🔧 50px → 45px 감소 */
-            flex-shrink: 0 !important;
-            line-height: 1 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 45px;           /* 50px → 45px로 단순 변경 */
+            flex-shrink: 0;
+            line-height: 1;
         }
 
         .category-tab.active {
@@ -470,21 +457,21 @@
             box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
         }
 
-        /* 🔧 카테고리 설명 - 간격 최적화 */
+        /* 🔧 카테고리 설명 - 간단한 간격 조정만 */
         .category-description {
-            padding: 8px 20px 12px 20px !important; /* 🔧 10px 20px 15px → 8px 20px 12px 감소 */
+            padding: 8px 20px 12px 20px;  /* 10px 20px 15px → 8px 20px 12px로 단순 변경 */
             font-size: 13px;
-            line-height: 1.5;                        /* 🔧 1.6 → 1.5로 감소 */
+            line-height: 1.5;              /* 1.6 → 1.5로 단순 변경 */
             color: var(--text-secondary);
             background: #0a0a0a;
             position: relative;
             z-index: 10;
-            margin-top: 0 !important;               /* 상단 마진 제거 */
+            margin-top: 0;
         }
 
-        /* 🔧 중분류 탭 - 간격 최적화 */
+        /* 🔧 중분류 탭 - 간단한 간격 조정만 */
         .subcategory-wrapper {
-            padding: 15px 20px 20px 20px;           /* 🔧 20px → 15px 20px 20px 상단 감소 */
+            padding: 15px 20px 20px 20px;  /* 20px → 15px 20px 20px로 단순 변경 */
             background: var(--primary-dark);
             position: relative;
             z-index: 10;
@@ -1330,18 +1317,10 @@
                 margin-top: -5px;
             }
             
-            /* 🔧 PC/태블릿에서 대분류 탭 간격 최적화 */
+            /* 🔧 PC/태블릿에서만 추가 간격 줄이기 */
             .category-tabs-wrapper {
-                position: static !important;
-                top: auto !important;
-                margin-top: 20px !important;    /* 🔧 30px → 20px로 더 감소 */
-                padding-top: 15px !important;   /* 🔧 25px → 15px로 감소 */
-                z-index: 50 !important;
-                width: 100% !important;
-                display: block !important;
-                visibility: visible !important;
-                height: auto !important;
-                overflow: visible !important;
+                margin-top: 20px;          /* PC에서 40px → 20px로 추가 감소 */
+                padding-top: 15px;         /* PC에서 추가 감소 */
             }
             
             .main-content {
