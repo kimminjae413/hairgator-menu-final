@@ -1583,49 +1583,47 @@ document.addEventListener('DOMContentLoaded', function() {
         const style = document.createElement('style');
         style.id = 'category-tabs-layout-fix';
         style.textContent = `
-            /* 🔧 PC/태블릿에서 헤더와 대분류 사이 공간 대폭 축소 */
+            /* 🔧 PC/태블릿에서 헤더와 대분류 사이 적당한 공간 */
             .main-content {
-                margin-top: 70px !important; /* 기본값에서 대폭 감소 */
+                margin-top: 85px !important; /* 적당한 공간으로 조정 */
                 padding-top: 0px !important;
             }
             
             .category-tabs-wrapper {
-                margin-top: 0px !important;
-                padding: 2px 0 2px 0 !important;
+                margin-top: 10px !important;
+                padding: 8px 0 6px 0 !important;
                 min-height: auto !important;
             }
             
             .category-tabs {
-                min-height: 28px !important;
-                padding: 0px 20px !important;
+                min-height: 36px !important;
+                padding: 2px 20px !important;
             }
             
             .category-tab {
-                padding: 4px 10px !important;
-                min-height: 28px !important;
-                font-size: 11px !important;
+                padding: 8px 14px !important;
+                min-height: 36px !important;
+                font-size: 13px !important;
             }
             
             .category-description {
-                padding: 2px 20px 4px 20px !important;
-                line-height: 1.2 !important;
+                padding: 8px 20px 10px 20px !important;
+                line-height: 1.4 !important;
             }
             
             .subcategory-wrapper {
-                padding: 6px 20px 10px 20px !important;
+                padding: 12px 20px 16px 20px !important;
             }
             
-            /* 🔧 PC/태블릿 전용 - 헤더 바로 아래 붙이기 */
+            /* 🔧 PC/태블릿 전용 - 적당한 여유 공간 */
             @media (min-width: 769px) {
                 .main-content {
-                    margin-top: 50px !important; /* PC에서 더욱 줄임 */
+                    margin-top: 80px !important; /* PC에서 적당한 공간 */
                 }
                 
                 .category-tabs-wrapper {
-                    position: relative !important;
-                    top: 0px !important;
-                    margin-top: 0px !important;
-                    padding-top: 5px !important;
+                    margin-top: 15px !important;
+                    padding-top: 10px !important;
                 }
             }
             
@@ -1636,27 +1634,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 .category-tabs-wrapper {
-                    margin-top: 0px !important;
-                    padding: 1px 0 1px 0 !important;
+                    margin-top: 8px !important;
+                    padding: 6px 0 4px 0 !important;
                 }
                 
                 .category-tabs {
-                    min-height: 24px !important;
-                    padding: 0px 15px !important;
+                    min-height: 32px !important;
+                    padding: 1px 15px !important;
                 }
                 
                 .category-tab {
-                    padding: 3px 8px !important;
-                    min-height: 24px !important;
-                    font-size: 10px !important;
+                    padding: 6px 12px !important;
+                    min-height: 32px !important;
+                    font-size: 12px !important;
                 }
                 
                 .category-description {
-                    padding: 1px 15px 2px 15px !important;
+                    padding: 6px 15px 8px 15px !important;
                 }
                 
                 .subcategory-wrapper {
-                    padding: 4px 15px 8px 15px !important;
+                    padding: 8px 15px 12px 15px !important;
                 }
             }
         `;
@@ -1668,7 +1666,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         document.head.appendChild(style);
-        console.log('✅ PC/태블릿 헤더-대분류 간격 대폭 축소 적용됨');
+        console.log('✅ PC/태블릿 헤더-대분류 적당한 간격으로 재조정');
     }
 
     // ========== 초기화 ==========
