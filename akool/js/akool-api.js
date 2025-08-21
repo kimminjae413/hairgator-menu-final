@@ -224,6 +224,7 @@
             landmarks = data.landmarks_str;
           }
           
+       // ========== 5) FaceSwap 페이로드 구성 (수정 버전) ==========
           console.log(`✅ ${kind} 얼굴 감지 성공!`, {
             landmarks: !!landmarks,
             region: !!data.region,
@@ -270,33 +271,23 @@
       }
     }
 
-  // ========== 5) FaceSwap 페이로드 구성 (수정 버전) ==========
+ // ✅ 올바른 설정
 _buildSpecifyImagePayload(userDetect, styleDetect, modifyImageUrl) {
-  // 🎯 목표: 사용자 사진에 헤어스타일을 적용
-  // → 사용자 이미지를 베이스로, 사용자 얼굴을 헤어스타일 모델 얼굴로 교체
-  
   const payload = {
     targetImage: [{ 
-      path: userDetect.cropUrl,      // 바뀔 얼굴: 사용자 얼굴
-      opts: userDetect.landmarks 
-    }],
-    sourceImage: [{ 
-      path: styleDetect.cropUrl,     // 새로 들어갈 얼굴: 헤어스타일 모델 얼굴
+      path: styleDetect.cropUrl,     // 바뀔 얼굴: 헤어스타일 모델 얼굴(A)
       opts: styleDetect.landmarks 
     }],
+    sourceImage: [{ 
+      path: userDetect.cropUrl,      // 새로 들어갈 얼굴: 유저 얼굴(B)
+      opts: userDetect.landmarks 
+    }],
     face_enhance: 1,
-    modifyImage: userDetect.cropUrl  // 🔥 핵심 수정: 사용자 이미지를 베이스로 사용
+    modifyImage: styleImageUrl       // 베이스: 헤어스타일 사진(A)
   };
-
-  console.log('📋 수정된 FaceSwap 페이로드:', payload);
-  console.log('🎯 목표: 사용자 이미지에 헤어스타일 적용');
-  console.log('👤 사용자 cropUrl:', userDetect.cropUrl);
-  console.log('💇 헤어스타일 cropUrl:', styleDetect.cropUrl);
-  console.log('🖼️ modifyImage (베이스):', userDetect.cropUrl);
   
   return payload;
 }
-
 // ========== 메인 워크플로우 수정 ==========
 async processFaceSwap(userFileOrDataURL, hairstyleImageUrl, onProgress) {
   try {
