@@ -171,3 +171,37 @@ function createStyleCard(style) {
     
     return card;
 }
+
+// 스타일 모달 열기 - AI 체험 후 닫기 문제 해결
+function openStyleModal(style) {
+    console.log('🔍 스타일 모달 열기:', style);
+    
+    // AI 체험 모달이 열려있다면 먼저 닫기
+    const aiModal = document.getElementById('aiExperienceModal');
+    if (aiModal) {
+        aiModal.style.display = 'none';
+    }
+    
+    // 기존 스타일 모달 표시 로직
+    if (typeof showStyleModal === 'function') {
+        showStyleModal(style.code, style.name, style.gender, style.imageUrl, style.id);
+    }
+    
+    // 모달 닫기 이벤트 재설정 (중복 방지)
+    setTimeout(() => {
+        const modalClose = document.getElementById('modalClose');
+        if (modalClose) {
+            // 기존 이벤트 제거 후 새로 설정
+            modalClose.onclick = null;
+            modalClose.removeEventListener('click', hideStyleModal);
+            
+            modalClose.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('✅ 새로운 모달 닫기 이벤트 실행');
+                hideStyleModal();
+            });
+        }
+    }, 100);
+}
+
