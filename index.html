@@ -2093,7 +2093,7 @@
 
     try {
         // 🔥 Firebase에서 기존 사용자 확인 (전체 기기에서)
-        if (window.firebaseReady && db) {
+        if (false && window.firebaseReady && db) {
             // Firebase에서 해당 전화번호로 로그인 기록 확인
             db.collection('designers').doc(phone.replace(/\D/g, '')).get()
                 .then(function(doc) {
@@ -3101,6 +3101,7 @@ if (elements.modalClose) {
     </script>
 </body>
 </html>
+
 
 
 
