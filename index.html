@@ -1146,14 +1146,13 @@
             border-color: #aaa;
         }
 
-      /* 📱 모바일 반응형 - 완전 수정 */
+      /* 📱 모바일 반응형 - 진짜 수정 */
 @media (max-width: 768px) {
     /* 🎯 헤더 전체를 아래로 이동 */
     .header {
-        top: 30px !important; /* 기존 25px에서 30px로 더 아래로 */
+        top: 30px !important;
         height: 65px;
         padding: 0 25px;
-        /* iOS 안전 영역 고려 */
         margin-top: max(env(safe-area-inset-top, 0px), 5px);
     }
     
@@ -1193,26 +1192,27 @@
         letter-spacing: 1.5px;
     }
     
-    /* ✅ 메인 콘텐츠 마진 조정 - 수정 */
+    /* ✅ 메인 콘텐츠 마진 대폭 증가 */
     .main-content {
-        margin-top: calc(var(--header-height) + 30px) !important;
-        min-height: calc(100vh - var(--header-height) - 30px);
-        padding-top: 10px;
+        margin-top: 120px !important; /* 헤더 높이 + 여유 공간 */
+        min-height: calc(100vh - 120px);
+        padding-top: 0px;
     }
     
-    /* ✅ 카테고리 탭 위치 완전 수정 - 핵심! */
+    /* ✅ 카테고리 탭 래퍼 완전 초기화 */
     .category-tabs-wrapper {
-        position: relative !important; /* sticky 해제 */
-        top: 0 !important; /* top 값 초기화 */
-        margin-top: 20px !important; /* 위쪽 여백 추가 */
-        z-index: 100;
+        position: static !important; /* sticky 완전 해제 */
+        top: auto !important;
+        margin-top: 0 !important;
+        padding-top: 20px !important; /* 내부 여백으로 조정 */
+        z-index: 50; /* 헤더보다 낮게 */
         background: var(--primary-dark);
         border-bottom: 1px solid #333;
     }
     
-    /* ✅ 카테고리 설명 박스도 아래로 내리기 */
+    /* ✅ 카테고리 설명 박스 */
     .category-description {
-        margin-top: 10px !important;
+        margin-top: 0 !important;
         padding: 20px !important;
     }
 
@@ -1241,10 +1241,10 @@
     }
 }
 
-        /* 🎯 소형 모바일 (480px 이하) - 완전 수정 */
+        /* 🎯 소형 모바일 (480px 이하) - 진짜 수정 */
 @media (max-width: 480px) {
     .header {
-        top: 35px !important; /* 소형 화면에서는 더욱 아래로 */
+        top: 35px !important;
         padding: 0 20px;
     }
     
@@ -1275,21 +1275,20 @@
         letter-spacing: 1px;
     }
     
-    /* ✅ 소형 모바일 메인 콘텐츠 마진 조정 */
+    /* ✅ 소형 모바일 메인 콘텐츠 마진 대폭 증가 */
     .main-content {
-        margin-top: calc(var(--header-height) + 35px) !important;
+        margin-top: 125px !important; /* 더 큰 여백 */
     }
     
-    /* ✅ 소형 모바일 카테고리 탭 위치 수정 */
+    /* ✅ 소형 모바일 카테고리 탭 래퍼 */
     .category-tabs-wrapper {
-        position: relative !important; /* sticky 해제 */
-        top: 0 !important; /* top 값 초기화 */
-        margin-top: 25px !important; /* 위쪽 여백 더 크게 */
+        position: static !important;
+        top: auto !important;
+        padding-top: 25px !important;
     }
     
     /* ✅ 소형 모바일 카테고리 설명 박스 */
     .category-description {
-        margin-top: 15px !important;
         padding: 15px !important;
     }
 }
@@ -2373,6 +2372,7 @@
 
         // 메뉴 관리
         function loadMenuData(gender) {
+            console.log('🔧 loadMenuData 실행:', gender);
             utils.showLoading(true);
             menuData = MENU_DATA[gender];
             
@@ -2388,25 +2388,58 @@
         }
         
         function renderCategories(gender) {
-            if (!elements.categoryTabs) return;
+            console.log('🔧 renderCategories 실행:', gender, elements.categoryTabs);
+            if (!elements.categoryTabs) {
+                console.error('❌ categoryTabs 요소를 찾을 수 없음!');
+                return;
+            }
             
             elements.categoryTabs.innerHTML = '';
             
+            // 🔴 여성일 때 도움말 버튼 먼저 추가
             if (gender === 'female') {
                 var helpTab = document.createElement('button');
                 helpTab.className = 'category-tab help-tab';
                 helpTab.innerHTML = '?';
                 helpTab.addEventListener('click', function() {
-                    showHairGuideModal(); // 내부 팝업으로 변경
+                    showHairGuideModal();
                 });
                 elements.categoryTabs.appendChild(helpTab);
+                console.log('✅ 도움말 버튼 추가됨');
             }
             
+            // 🔴 대분류 탭들 추가
+            console.log('📝 추가할 카테고리들:', menuData.categories);
             for (var i = 0; i < menuData.categories.length; i++) {
                 var category = menuData.categories[i];
                 var tab = document.createElement('button');
                 tab.className = 'category-tab';
                 tab.textContent = category.name;
+                tab.dataset.categoryId = category.id;
+                
+                console.log('➕ 카테고리 탭 생성:', category.name);
+                
+                if (i === 0) {
+                    tab.classList.add('active', gender);
+                    console.log('✅ 첫 번째 탭 활성화:', category.name);
+                }
+                
+                // 클로저를 사용하여 올바른 category를 전달
+                (function(cat, gen) {
+                    tab.addEventListener('click', function() {
+                        console.log('🖱️ 카테고리 클릭:', cat.name);
+                        selectCategory(cat, gen);
+                    });
+                })(category, gender);
+                
+                elements.categoryTabs.appendChild(tab);
+            }
+
+            console.log('📊 최종 렌더링된 탭 개수:', elements.categoryTabs.children.length);
+
+            // 🔴 대분류 New 표시 추가
+            NewIndicatorSystem.markNewCategories(gender);
+        };
                 tab.dataset.categoryId = category.id;
                 
                 if (i === 0) {
