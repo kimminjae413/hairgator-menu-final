@@ -1583,7 +1583,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const style = document.createElement('style');
         style.id = 'category-tabs-layout-fix';
         style.textContent = `
-            /* 🔧 대분류 영역 위쪽 공간 대폭 축소 */
+            /* 🔧 PC/태블릿에서 헤더와 대분류 사이 공간 대폭 축소 */
+            .main-content {
+                margin-top: 70px !important; /* 기본값에서 대폭 감소 */
+                padding-top: 0px !important;
+            }
+            
             .category-tabs-wrapper {
                 margin-top: 0px !important;
                 padding: 2px 0 2px 0 !important;
@@ -1610,8 +1615,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 padding: 6px 20px 10px 20px !important;
             }
             
-            /* 🔧 모바일 최적화 */
+            /* 🔧 PC/태블릿 전용 - 헤더 바로 아래 붙이기 */
+            @media (min-width: 769px) {
+                .main-content {
+                    margin-top: 50px !important; /* PC에서 더욱 줄임 */
+                }
+                
+                .category-tabs-wrapper {
+                    position: relative !important;
+                    top: 0px !important;
+                    margin-top: 0px !important;
+                    padding-top: 5px !important;
+                }
+            }
+            
+            /* 🔧 모바일은 기존대로 유지 */
             @media (max-width: 768px) {
+                .main-content {
+                    margin-top: 120px !important; /* 모바일은 기존 유지 */
+                }
+                
                 .category-tabs-wrapper {
                     margin-top: 0px !important;
                     padding: 1px 0 1px 0 !important;
@@ -1645,7 +1668,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         document.head.appendChild(style);
-        console.log('✅ 대분류 상단 공간 대폭 축소 적용됨');
+        console.log('✅ PC/태블릿 헤더-대분류 간격 대폭 축소 적용됨');
     }
 
     // ========== 초기화 ==========
