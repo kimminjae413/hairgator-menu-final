@@ -35,88 +35,80 @@ class HairgateFaceSwap {
         this.initAIButtonSystem();
     }
 
-    // ✨ AI 버튼 생성 시스템 초기화
-    initAIButtonSystem() {
-        console.log('🤖 AI 버튼 시스템 초기화');
+    // ✨ AI 버튼 생성 시스템 초기화 - 영구 해결 버전
+initAIButtonSystem() {
+    console.log('🤖 AI 버튼 시스템 초기화 (영구 해결)');
+    
+    // 단순하고 안정적인 옵저버
+    const observer = new MutationObserver((mutations) => {
+        let shouldAddButton = false;
         
-        // 모달 변화 감지를 위한 MutationObserver
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                // 스타일 모달이 활성화될 때
-                if (mutation.type === 'attributes' && 
-                    mutation.attributeName === 'class' && 
-                    mutation.target.id === 'styleModal') {
-                    
-                    if (mutation.target.classList.contains('active')) {
-                        setTimeout(() => this.addAIButtonToModal(), 100);
-                    }
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && 
+                mutation.target.id === 'styleModal' && 
+                mutation.target.classList.contains('active')) {
+                shouldAddButton = true;
+            }
+        });
+        
+        if (shouldAddButton) {
+            setTimeout(() => {
+                const existingBtn = document.getElementById('btnAIExperience');
+                if (!existingBtn) {
+                    this.addAIButtonToModal();
                 }
-                
-                // 새로운 모달 액션 영역이 추가될 때
-                if (mutation.type === 'childList') {
-                    mutation.addedNodes.forEach(node => {
-                        if (node.nodeType === 1) { // Element node
-                            const modalActions = node.querySelector?.('.modal-actions') || 
-                                                (node.classList?.contains('modal-actions') ? node : null);
-                            if (modalActions && !document.getElementById('btnAIExperience')) {
-                                setTimeout(() => this.addAIButtonToModal(), 50);
-                            }
-                        }
-                    });
-                }
-            });
-        });
-
-        // 전체 document 감시
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-            attributeFilter: ['class']
-        });
-
-        // 기존 모달에도 즉시 시도
-        setTimeout(() => this.addAIButtonToModal(), 500);
-    }
-
-    // ✨ 모달에 AI 버튼 추가 - 단순화 버전 (버튼 사라짐 문제 해결)
-    addAIButtonToModal() {
-        const modalActions = document.querySelector('#styleModal .modal-actions');
-        
-        if (!modalActions) {
-            console.log('모달 액션 영역을 찾을 수 없음');
-            return;
+            }, 150);
         }
-        
-        // 기존 AI 버튼 확인 (단순 체크)
-        const existingAIButton = document.getElementById('btnAIExperience');
-        if (existingAIButton) {
-            console.log('✅ AI 버튼이 이미 존재함');
-            return;
-        }
-        
-        // 현재 스타일 정보 수집
-        this.collectCurrentStyleData();
-        
-        // AI체험하기 버튼 생성
-        const aiBtn = document.createElement('button');
-        aiBtn.id = 'btnAIExperience';
-        aiBtn.className = 'modal-btn btn-ai-experience';
-        aiBtn.innerHTML = `
-            <span style="margin-right: 8px;">✨</span>
-            <span>AI 헤어체험</span>
-        `;
-        
-        // 맨 앞에 추가
-        modalActions.insertBefore(aiBtn, modalActions.firstChild);
-        
-        // 클릭 이벤트 추가
-        aiBtn.addEventListener('click', () => {
-            this.openAIExperienceModal();
-        });
-        
-        console.log('✅ AI체험하기 버튼 추가됨', this.currentStyleData);
+    });
+
+    observer.observe(document.body, {
+        attributes: true,
+        subtree: true,
+        attributeFilter: ['class']
+    });
+    
+    this.observer = observer;
+}
+
+    // ✨ 모달에 AI 버튼 추가 - 영구 해결 버전
+addAIButtonToModal() {
+    const modalActions = document.querySelector('#styleModal .modal-actions');
+    
+    if (!modalActions) {
+        console.log('모달 액션 영역을 찾을 수 없음');
+        return;
     }
+    
+    // 기존 AI 버튼이 있으면 제거 후 새로 생성
+    const existingBtns = modalActions.querySelectorAll('#btnAIExperience, .btn-ai-experience');
+    if (existingBtns.length > 0) {
+        existingBtns.forEach(btn => btn.remove());
+        console.log('🗑️ 기존 AI 버튼 제거됨');
+    }
+    
+    // 현재 스타일 정보 수집
+    this.collectCurrentStyleData();
+    
+    // AI체험하기 버튼 생성
+    const aiBtn = document.createElement('button');
+    aiBtn.id = 'btnAIExperience';
+    aiBtn.className = 'modal-btn btn-ai-experience';
+    aiBtn.innerHTML = `
+        <span style="margin-right: 8px;">✨</span>
+        <span>AI 헤어체험</span>
+    `;
+    
+    // 클릭 이벤트 추가
+    aiBtn.addEventListener('click', () => {
+        console.log('🤖 AI 체험 버튼 클릭됨');
+        this.openAIExperienceModal();
+    });
+    
+    // 맨 앞에 추가
+    modalActions.insertBefore(aiBtn, modalActions.firstChild);
+    
+    console.log('✅ AI체험하기 버튼 추가됨', this.currentStyleData);
+}
 
     // ✨ 현재 스타일 데이터 수집
     collectCurrentStyleData() {
