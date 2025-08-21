@@ -154,11 +154,24 @@ async function loadStyles() {
     }
 }
 
-// 스타일 카드 생성
+// 스타일 카드 생성 - 영구 해결 버전
 function createStyleCard(style) {
     const card = document.createElement('div');
     card.className = 'style-card';
-    card.onclick = () => openStyleModal(style);
+    
+    // 안정적인 클릭 이벤트 (onclick 대신 addEventListener 사용)
+    card.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🎨 스타일 카드 클릭됨:', style);
+        
+        // showStyleModal 함수 호출
+        if (typeof showStyleModal === 'function') {
+            showStyleModal(style.code, style.name, style.gender, style.imageUrl, style.id);
+        } else {
+            console.error('❌ showStyleModal 함수를 찾을 수 없음');
+        }
+    });
     
     card.innerHTML = `
         <img class="style-image" src="${style.imageUrl || ''}" alt="${style.name}" 
@@ -204,4 +217,5 @@ function openStyleModal(style) {
         }
     }, 100);
 }
+
 
