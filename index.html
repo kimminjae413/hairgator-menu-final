@@ -2339,39 +2339,66 @@
             }
         }
 
-        // 모달 관리
-        function showStyleModal(code, name, gender, imageSrc, docId) {
-            if (!elements.styleModal) return;
-            
-            if (elements.modalImage) {
-                elements.modalImage.src = imageSrc || '';
-                elements.modalImage.onerror = function() {
-                    this.style.display = 'none';
-                    this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                };
-            }
-            
-            if (elements.modalCode) elements.modalCode.textContent = code;
-            if (elements.modalName) elements.modalName.textContent = name;
-            
-            if (elements.btnRegister) {
-                if (gender === 'female') {
-                    elements.btnRegister.classList.add('female');
-                } else {
-                    elements.btnRegister.classList.remove('female');
-                }
-            }
-            
-            if (elements.btnLike) {
-                elements.btnLike.classList.remove('active');
-                var heart = elements.btnLike.querySelector('span:first-child');
-                if (heart) heart.textContent = '♡';
-            }
-            
-            elements.styleModal.classList.add('active');
-            
-            setupModalActions(code, name, gender, docId);
+       // 모달 관리 - 영구 해결 버전
+function showStyleModal(code, name, gender, imageSrc, docId) {
+    console.log('🔧 showStyleModal 실행:', { code, name, gender, imageSrc });
+    
+    if (!elements.styleModal) {
+        console.error('❌ styleModal 요소를 찾을 수 없음');
+        return;
+    }
+    
+    if (elements.modalImage) {
+        elements.modalImage.src = imageSrc || '';
+        elements.modalImage.onerror = function() {
+            this.style.display = 'none';
+            this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        };
+    }
+    
+    if (elements.modalCode) elements.modalCode.textContent = code || '';
+    if (elements.modalName) elements.modalName.textContent = name || '';
+    
+    if (elements.btnRegister) {
+        if (gender === 'female') {
+            elements.btnRegister.classList.add('female');
+        } else {
+            elements.btnRegister.classList.remove('female');
         }
+    }
+    
+    if (elements.btnLike) {
+        elements.btnLike.classList.remove('active');
+        var heart = elements.btnLike.querySelector('span:first-child');
+        if (heart) heart.textContent = '♡';
+    }
+    
+    elements.styleModal.classList.add('active');
+    elements.styleModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    console.log('✅ 스타일 모달 열기 완료');
+    
+    // AI 버튼 추가 (안전하게)
+    setTimeout(() => {
+        if (window.hairgateFaceSwap && typeof window.hairgateFaceSwap.addAIButtonToModal === 'function') {
+            window.hairgateFaceSwap.addAIButtonToModal();
+        }
+    }, 100);
+    
+    setupModalActions(code, name, gender, docId);
+}
+
+function hideStyleModal() {
+    console.log('🚪 hideStyleModal 실행');
+    
+    if (elements.styleModal) {
+        elements.styleModal.classList.remove('active');
+        elements.styleModal.style.display = 'none';
+        document.body.style.overflow = '';
+        console.log('✅ 스타일 모달 닫기 완료');
+    }
+}
         
         function hideStyleModal() {
             if (elements.styleModal) {
@@ -2509,12 +2536,8 @@
                 });
             }
             
-           if (elements.modalClose) {
-    // 기존 이벤트 리스너 제거 후 새로 추가
-    const newModalClose = elements.modalClose.cloneNode(true);
-    elements.modalClose.parentNode.replaceChild(newModalClose, elements.modalClose);
-    elements.modalClose = newModalClose;
-    
+          // 모달 닫기 버튼 이벤트 - 영구 해결 버전
+if (elements.modalClose) {
     elements.modalClose.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -2854,6 +2877,7 @@
     </script>
 </body>
 </html>
+
 
 
 
