@@ -296,7 +296,7 @@
 
         /* 메인 콘텐츠 */
         .main-content {
-            margin-top: var(--header-height);
+            margin-top: calc(var(--header-height) + 20px); /* 헤더 + 여백 */
             min-height: calc(100vh - var(--header-height));
             position: relative;
             z-index: 10;
@@ -1309,6 +1309,30 @@
 
             .theme-toggle-bottom:hover {
                 transform: translateX(-50%) scale(1.1);
+            }
+            
+            /* 🎯 태블릿/PC 전용 - 헤더와 로고 위로 올리기 */
+            .header {
+                top: 0px !important; /* 헤더를 화면 최상단으로 */
+                margin-top: 0 !important;
+            }
+            
+            .logo {
+                margin-top: -5px; /* 로고를 위로 5px 올리기 */
+            }
+            
+            /* 🔧 태블릿/PC 전용 - 카테고리 탭 위치 완전 고정 */
+            .category-tabs-wrapper {
+                position: static !important;
+                top: auto !important;
+                margin-top: 30px !important;
+                padding-top: 20px !important;
+                z-index: 50 !important;
+            }
+            
+            /* 🔧 태블릿/PC 전용 - 메인 콘텐츠 마진 조정 */
+            .main-content {
+                margin-top: 85px !important; /* 헤더 + 여백 */
             }
         }
 
