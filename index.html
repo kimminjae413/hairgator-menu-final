@@ -1146,9 +1146,9 @@
             border-color: #aaa;
         }
 
-      /* 📱 모바일 반응형 */
+      /* 📱 모바일 반응형 - 수정 완료 */
 @media (max-width: 768px) {
-    /* 🎯 헤더 전체를 아래로 이동 - 추가 */
+    /* 🎯 헤더 전체를 아래로 이동 */
     .header {
         top: 30px !important; /* 기존 25px에서 30px로 더 아래로 */
         height: 65px;
@@ -1157,7 +1157,7 @@
         margin-top: max(env(safe-area-inset-top, 0px), 5px);
     }
     
-    /* 백버튼 모바일 최적화 - 추가 */
+    /* 백버튼 모바일 최적화 */
     .back-btn {
         left: 25px;
         top: 50% !important;
@@ -1170,7 +1170,7 @@
         border-radius: 8px;
     }
     
-    /* 햄버거 버튼 모바일 최적화 - 추가 */
+    /* 햄버거 버튼 모바일 최적화 */
     .menu-btn {
         right: 25px;
         top: 50% !important;
@@ -1187,24 +1187,28 @@
         height: 4px !important;
     }
     
-    /* 로고 모바일 최적화 - 추가 */
+    /* 로고 모바일 최적화 */
     .logo {
         font-size: 18px !important;
         letter-spacing: 1.5px;
     }
     
-    /* 메인 콘텐츠 마진 조정 - 추가 */
+    /* ✅ 메인 콘텐츠 마진 조정 - 수정 */
     .main-content {
         margin-top: calc(var(--header-height) + 30px) !important;
         min-height: calc(100vh - var(--header-height) - 30px);
         padding-top: 10px;
     }
     
-    /* 카테고리 탭 위치 조정 - 추가 */
+    /* ✅ 카테고리 탭 위치 수정 - 핵심 수정 부분 */
     .category-tabs-wrapper {
         position: sticky;
         top: calc(var(--header-height) + 30px) !important;
         z-index: 100;
+        /* 추가 보정 - 더 안전하게 */
+        margin-top: 0;
+        background: var(--primary-dark);
+        border-bottom: 1px solid #333;
     }
 
     /* 기존 코드들 유지 */
@@ -1232,7 +1236,7 @@
     }
 }
 
-        /* 🎯 소형 모바일 (480px 이하) - 새로 추가 */
+        /* 🎯 소형 모바일 (480px 이하) - 수정 */
 @media (max-width: 480px) {
     .header {
         top: 35px !important; /* 소형 화면에서는 더욱 아래로 */
@@ -1266,10 +1270,12 @@
         letter-spacing: 1px;
     }
     
+    /* ✅ 소형 모바일 메인 콘텐츠 마진 조정 */
     .main-content {
         margin-top: calc(var(--header-height) + 35px) !important;
     }
     
+    /* ✅ 소형 모바일 카테고리 탭 위치 수정 */
     .category-tabs-wrapper {
         top: calc(var(--header-height) + 35px) !important;
     }
@@ -2624,12 +2630,6 @@ function hideStyleModal() {
     }
 }
         
-        function hideStyleModal() {
-            if (elements.styleModal) {
-                elements.styleModal.classList.remove('active');
-            }
-        }
-        
         function setupModalActions(code, name, gender, docId) {
             if (elements.btnRegister) {
                 elements.btnRegister.onclick = function() {
@@ -3101,10 +3101,3 @@ if (elements.modalClose) {
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
