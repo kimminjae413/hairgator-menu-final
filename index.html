@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HAIRGATOR - Professional Hair Style Menu (v1.7-FINAL)</title>
+    <title>HAIRGATOR - Professional Hair Style Menu (v1.7-FINAL-FIXED)</title>
     
     <!-- PWA Meta Tags - 전체화면 강화 -->
     <meta name="theme-color" content="#000000">
@@ -210,21 +210,20 @@
 
         /* 헤더 */
         .header {
-    position: fixed;
-    top: 25px; /* 헤더 전체를 아래로 25px 이동 */
-    left: 0;
-    right: 0;
-    height: var(--header-height);
-    background: var(--primary-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 20px;
-    z-index: 1000;
-    border-bottom: 1px solid #333;
-    /* iOS 안전 영역 고려 */
-    margin-top: max(env(safe-area-inset-top, 0px), 5px);
-}
+            position: fixed;
+            top: 25px;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            z-index: 1000;
+            border-bottom: 1px solid #333;
+            margin-top: max(env(safe-area-inset-top, 0px), 5px);
+        }
 
         .back-btn, .menu-btn {
             position: absolute;
@@ -241,42 +240,41 @@
         }
 
         .back-btn {
-    position: absolute;
-    left: 20px;
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 24px;
-}
+            position: absolute;
+            left: 20px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+        }
 
         .menu-btn {
-    position: absolute;
-    right: 20px;
-    top: 50%; /* 헤더 내에서 중앙 정렬 */
-    transform: translateY(-50%); /* 정확한 중앙 정렬 */
-    width: 48px; /* 터치 영역 확장 */
-    height: 48px; /* 터치 영역 확장 */
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-primary);
-    transition: var(--transition);
-    gap: 4px;
-    border-radius: 8px;
-    /* 터치 영역 패딩 */
-    padding: 12px;
-    margin: -12px;
-}
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 48px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            transition: var(--transition);
+            gap: 4px;
+            border-radius: 8px;
+            padding: 12px;
+            margin: -12px;
+        }
 
         .menu-btn span {
             width: 20px;
@@ -286,17 +284,16 @@
         }
 
         .logo {
-    font-size: 20px;
-    font-weight: bold;
-    letter-spacing: 2px;
-    color: var(--text-primary);
-    /* 로고는 헤더의 flex 중앙에 자동 위치 */
-    text-align: center;
-}
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: var(--text-primary);
+            text-align: center;
+        }
 
         /* 메인 콘텐츠 */
         .main-content {
-            margin-top: 95px !important; /* 콘솔에서 성공했던 값 */
+            margin-top: 95px;
             min-height: calc(100vh - var(--header-height));
             position: relative;
             z-index: 10;
@@ -364,15 +361,16 @@
             display: block;
         }
 
-        /* 카테고리 탭 */
+        /* 🔧 카테고리 탭 - 핵심 수정사항 */
         .category-tabs-wrapper {
             background: var(--primary-dark);
             border-bottom: 1px solid #333;
-            position: static !important; /* 완전히 static으로 고정 */
-            top: auto !important; /* top 완전 제거 */
-            margin-top: 20px !important; /* 위쪽 여백 */
-            padding-top: 15px !important; /* 내부 여백 */
-            z-index: 50 !important; /* 헤더보다 낮게 */
+            /* 모바일 기본값 */
+            position: static;
+            top: auto;
+            margin-top: 0;
+            padding-top: 20px;
+            z-index: 50;
         }
 
         .category-tabs {
@@ -434,8 +432,8 @@
             width: 22px !important;
             height: 22px !important;
             border-radius: 50% !important;
-            margin-right: 8px !important;    /* A Length와 가까이 */
-            margin-left: 6px !important;     /* 왼쪽 여백 최소화 */
+            margin-right: 8px !important;
+            margin-left: 6px !important;
             text-transform: none !important;
             display: flex !important;
             align-items: center !important;
@@ -783,32 +781,32 @@
         }
 
         .modal-close {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 40px;
-    height: 40px;
-    background: rgba(0, 0, 0, 0.8) !important;
-    color: #FF1493 !important;
-    border: 2px solid #FF1493 !important;
-    border-radius: 50%;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.8) !important;
+            color: #FF1493 !important;
+            border: 2px solid #FF1493 !important;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
 
-.modal-close:hover {
-    background: #FF1493 !important;
-    color: white !important;
-    transform: rotate(90deg) scale(1.1);
-    box-shadow: 0 4px 20px rgba(255, 20, 147, 0.5);
-}
+        .modal-close:hover {
+            background: #FF1493 !important;
+            color: white !important;
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 4px 20px rgba(255, 20, 147, 0.5);
+        }
 
         /* 테마 토글 버튼 */
         .theme-toggle-bottom {
@@ -1148,153 +1146,143 @@
             border-color: #aaa;
         }
 
-      /* 📱 모바일 반응형 - 진짜 수정 */
-@media (max-width: 768px) {
-    /* 🎯 헤더 전체를 아래로 이동 */
-    .header {
-        top: 30px !important;
-        height: 65px;
-        padding: 0 25px;
-        margin-top: max(env(safe-area-inset-top, 0px), 5px);
-    }
-    
-    /* 백버튼 모바일 최적화 */
-    .back-btn {
-        left: 25px;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-        width: 50px !important;
-        height: 50px !important;
-        font-size: 26px;
-        padding: 15px;
-        margin: -15px;
-        border-radius: 8px;
-    }
-    
-    /* 햄버거 버튼 모바일 최적화 */
-    .menu-btn {
-        right: 25px;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-        width: 50px !important;
-        height: 50px !important;
-        padding: 15px;
-        margin: -15px;
-        border-radius: 8px;
-    }
-    
-    .menu-btn span {
-        width: 26px !important;
-        height: 4px !important;
-    }
-    
-    /* 로고 모바일 최적화 */
-    .logo {
-        font-size: 18px !important;
-        letter-spacing: 1.5px;
-    }
-    
-    /* ✅ 메인 콘텐츠 마진 대폭 증가 */
-    .main-content {
-        margin-top: 120px !important; /* 헤더 높이 + 여유 공간 */
-        min-height: calc(100vh - 120px);
-        padding-top: 0px;
-    }
-    
-    /* ✅ 카테고리 탭 래퍼 완전 초기화 */
-    .category-tabs-wrapper {
-        position: static !important; /* sticky 완전 해제 */
-        top: auto !important;
-        margin-top: 0 !important;
-        padding-top: 20px !important; /* 내부 여백으로 조정 */
-        z-index: 50; /* 헤더보다 낮게 */
-        background: var(--primary-dark);
-        border-bottom: 1px solid #333;
-    }
-    
-    /* ✅ 카테고리 설명 박스 */
-    .category-description {
-        margin-top: 0 !important;
-        padding: 20px !important;
-    }
+        /* 📱 모바일 반응형 */
+        @media (max-width: 768px) {
+            .header {
+                top: 30px !important;
+                height: 65px;
+                padding: 0 25px;
+                margin-top: max(env(safe-area-inset-top, 0px), 5px);
+            }
+            
+            .back-btn {
+                left: 25px;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 26px;
+                padding: 15px;
+                margin: -15px;
+                border-radius: 8px;
+            }
+            
+            .menu-btn {
+                right: 25px;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                width: 50px !important;
+                height: 50px !important;
+                padding: 15px;
+                margin: -15px;
+                border-radius: 8px;
+            }
+            
+            .menu-btn span {
+                width: 26px !important;
+                height: 4px !important;
+            }
+            
+            .logo {
+                font-size: 18px !important;
+                letter-spacing: 1.5px;
+            }
+            
+            .main-content {
+                margin-top: 120px !important;
+                min-height: calc(100vh - 120px);
+                padding-top: 0px;
+            }
+            
+            .category-tabs-wrapper {
+                position: static !important;
+                top: auto !important;
+                margin-top: 0 !important;
+                padding-top: 20px !important;
+                z-index: 50;
+                background: var(--primary-dark);
+                border-bottom: 1px solid #333;
+            }
+            
+            .category-description {
+                margin-top: 0 !important;
+                padding: 20px !important;
+            }
 
-    /* 기존 코드들 유지 */
-    .category-tab.has-new::after {
-        width: 6px;
-        height: 6px;
-        top: 2px;
-        right: 2px;
-    }
-    
-    .subcategory-tab.has-new::after {
-        width: 5px;
-        height: 5px;
-        top: 1px;
-        right: 1px;
-    }
-    
-    .help-tab {
-        font-size: 8px !important;
-        min-width: 20px !important;
-        width: 20px !important;
-        height: 20px !important;
-        margin-right: 6px !important;
-        margin-left: 4px !important;
-    }
-}
+            .category-tab.has-new::after {
+                width: 6px;
+                height: 6px;
+                top: 2px;
+                right: 2px;
+            }
+            
+            .subcategory-tab.has-new::after {
+                width: 5px;
+                height: 5px;
+                top: 1px;
+                right: 1px;
+            }
+            
+            .help-tab {
+                font-size: 8px !important;
+                min-width: 20px !important;
+                width: 20px !important;
+                height: 20px !important;
+                margin-right: 6px !important;
+                margin-left: 4px !important;
+            }
+        }
 
-        /* 🎯 소형 모바일 (480px 이하) - 진짜 수정 */
-@media (max-width: 480px) {
-    .header {
-        top: 35px !important;
-        padding: 0 20px;
-    }
-    
-    .back-btn {
-        left: 20px;
-        width: 52px !important;
-        height: 52px !important;
-        font-size: 28px;
-        padding: 16px;
-        margin: -16px;
-    }
-    
-    .menu-btn {
-        right: 20px;
-        width: 52px !important;
-        height: 52px !important;
-        padding: 16px;
-        margin: -16px;
-    }
-    
-    .menu-btn span {
-        width: 28px !important;
-        height: 5px !important;
-    }
-    
-    .logo {
-        font-size: 16px !important;
-        letter-spacing: 1px;
-    }
-    
-    /* ✅ 소형 모바일 메인 콘텐츠 마진 대폭 증가 */
-    .main-content {
-        margin-top: 125px !important; /* 더 큰 여백 */
-    }
-    
-    /* ✅ 소형 모바일 카테고리 탭 래퍼 */
-    .category-tabs-wrapper {
-        position: static !important;
-        top: auto !important;
-        padding-top: 25px !important;
-    }
-    
-    /* ✅ 소형 모바일 카테고리 설명 박스 */
-    .category-description {
-        padding: 15px !important;
-    }
-}
-        /* 반응형 */
+        /* 🎯 소형 모바일 (480px 이하) */
+        @media (max-width: 480px) {
+            .header {
+                top: 35px !important;
+                padding: 0 20px;
+            }
+            
+            .back-btn {
+                left: 20px;
+                width: 52px !important;
+                height: 52px !important;
+                font-size: 28px;
+                padding: 16px;
+                margin: -16px;
+            }
+            
+            .menu-btn {
+                right: 20px;
+                width: 52px !important;
+                height: 52px !important;
+                padding: 16px;
+                margin: -16px;
+            }
+            
+            .menu-btn span {
+                width: 28px !important;
+                height: 5px !important;
+            }
+            
+            .logo {
+                font-size: 16px !important;
+                letter-spacing: 1px;
+            }
+            
+            .main-content {
+                margin-top: 125px !important;
+            }
+            
+            .category-tabs-wrapper {
+                position: static !important;
+                top: auto !important;
+                padding-top: 25px !important;
+            }
+            
+            .category-description {
+                padding: 15px !important;
+            }
+        }
+
+        /* 🔧 태블릿/PC 전용 - 대분류 탭 위치 수정 */
         @media (min-width: 768px) {
             .menu-grid {
                 grid-template-columns: repeat(5, 1fr);
@@ -1311,14 +1299,27 @@
                 transform: translateX(-50%) scale(1.1);
             }
             
-            /* 🎯 태블릿/PC 전용 - 헤더와 로고 위로 올리기 */
+            /* 🎯 헤더와 로고 위로 올리기 */
             .header {
-                top: 0px !important; /* 헤더를 화면 최상단으로 */
+                top: 0px !important;
                 margin-top: 0 !important;
             }
             
             .logo {
-                margin-top: -5px; /* 로고를 위로 5px 올리기 */
+                margin-top: -5px;
+            }
+            
+            /* 🔧 대분류 탭 위치 핵심 수정 */
+            .category-tabs-wrapper {
+                position: static !important;
+                top: auto !important;
+                margin-top: 30px !important;
+                padding-top: 20px !important;
+                z-index: 50 !important;
+            }
+            
+            .main-content {
+                margin-top: 95px !important;
             }
         }
 
@@ -1521,8 +1522,8 @@
 
     <!-- 스타일 모달 -->
     <div class="style-modal" id="styleModal">
-    <div class="modal-content">
-        <button class="modal-close" id="modalClose" onclick="hideStyleModal(); event.stopPropagation();">×</button>
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose" onclick="hideStyleModal(); event.stopPropagation();">×</button>
             <img id="modalImage" src="" alt="" class="modal-image">
             <div class="modal-info">
                 <div class="modal-code" id="modalCode">CODE</div>
@@ -2089,190 +2090,78 @@
         }
 
         function handleLogin() {
-    console.log('🔐 로그인 시도 시작');
-    
-    var name = elements.designerName.value.trim();
-    var phone = elements.phoneNumber.value.trim();
-    var password = elements.password.value.trim();
+            console.log('🔐 로그인 시도 시작');
+            
+            var name = elements.designerName.value.trim();
+            var phone = elements.phoneNumber.value.trim();
+            var password = elements.password.value.trim();
 
-    console.log('입력 데이터:', { name: name, phone: phone.slice(0, 8) + '****', password: '****' });
+            console.log('입력 데이터:', { name: name, phone: phone.slice(0, 8) + '****', password: '****' });
 
-    if (!name) {
-        alert('디자이너 이름을 입력해주세요.');
-        elements.designerName.focus();
-        return;
-    }
+            if (!name) {
+                alert('디자이너 이름을 입력해주세요.');
+                elements.designerName.focus();
+                return;
+            }
 
-    if (!phoneUtils.validate(phone)) {
-        alert('올바른 전화번호를 입력해주세요.\n예: 010-1234-5678');
-        elements.phoneNumber.focus();
-        return;
-    }
+            if (!phoneUtils.validate(phone)) {
+                alert('올바른 전화번호를 입력해주세요.\n예: 010-1234-5678');
+                elements.phoneNumber.focus();
+                return;
+            }
 
-    if (password.length !== 4) {
-        alert('비밀번호는 숫자 4자리를 입력해주세요.');
-        elements.password.focus();
-        return;
-    }
+            if (password.length !== 4) {
+                alert('비밀번호는 숫자 4자리를 입력해주세요.');
+                elements.password.focus();
+                return;
+            }
 
-    console.log('✅ 유효성 검사 통과');
+            console.log('✅ 유효성 검사 통과');
 
-    // 로그인 버튼 비활성화 (중복 클릭 방지)
-    elements.loginBtn.disabled = true;
-    elements.loginBtn.textContent = '로그인 중...';
+            // 로그인 버튼 비활성화 (중복 클릭 방지)
+            elements.loginBtn.disabled = true;
+            elements.loginBtn.textContent = '로그인 중...';
 
-    try {
-        // 🔥 Firebase에서 기존 사용자 확인 (전체 기기에서)
-        if (false && window.firebaseReady && db) {
-            // Firebase에서 해당 전화번호로 로그인 기록 확인
-            db.collection('designers').doc(phone.replace(/\D/g, '')).get()
-                .then(function(doc) {
-                    var isReturningUser = false;
-                    
-                    if (doc.exists) {
-                        var data = doc.data();
-                        isReturningUser = (data.name === name && data.phone === phone);
-                        console.log('🔍 Firebase에서 기존 사용자 확인:', isReturningUser);
-                    } else {
-                        console.log('🆕 Firebase에 신규 사용자 등록');
-                    }
-                    
-                    // Firebase에 로그인 기록 저장/업데이트
-                    var designerData = {
-                        name: name,
-                        phone: phone,
-                        lastLogin: new Date(),
-                        userAgent: navigator.userAgent,
-                        loginCount: firebase.firestore.FieldValue.increment(1)
-                    };
-                    
-                    if (!doc.exists) {
-                        designerData.firstLogin = new Date();
-                        designerData.loginCount = 1;
-                    }
-                    
-                    return db.collection('designers').doc(phone.replace(/\D/g, '')).set(designerData, { merge: true })
-                        .then(function() {
-                            return isReturningUser;
-                        });
-                })
-                .then(function(isReturningUser) {
-                    // 로컬 스토리지에도 저장
-                    utils.setStorage('designerName', name);
-                    utils.setStorage('designerPhone', phone);
-                    utils.setStorage('designerPassword', password);
-                    utils.setStorage('loginTime', new Date().getTime().toString());
-
-                    console.log('💾 로그인 정보 저장 완료 (Firebase + 로컬)');
-                    
-                    // 🎉 사용자 구분 메시지 표시
-                    var welcomeMessage = '';
-                    var messageColor = '';
-                    
-                    if (isReturningUser) {
-                        // 기존 사용자 (Firebase 기준)
-                        welcomeMessage = '👋 ' + name + ' 디자이너님 다시 오셨네요!';
-                        messageColor = '#4A90E2'; // 파란색
-                    } else {
-                        // 신규 사용자 (Firebase 기준)
-                        welcomeMessage = '🎉 처음 사용하시는군요! ' + name + ' 디자이너님 환영합니다';
-                        messageColor = '#4CAF50'; // 초록색
-                    }
-                    
-                    // 환영 메시지 표시
-                    showWelcomeMessage(welcomeMessage, messageColor);
-                    
-                    console.log('🚀 화면 전환 시작');
-
-                    // 2초 후 화면 전환
-                    setTimeout(function() {
-                        // 화면 전환 (확실하게)
-                        elements.loginScreen.style.display = 'none';
-                        elements.loginScreen.style.visibility = 'hidden';
-                        elements.loginScreen.classList.add('hidden');
-
-                        elements.genderSelection.style.display = 'flex';
-                        elements.genderSelection.style.visibility = 'visible';
-
-                        // 디자이너 이름 표시
-                        if (elements.designerNameDisplay) {
-                            elements.designerNameDisplay.textContent = name;
-                        }
-
-                        console.log('✅ 로그인 완료 및 화면 전환');
-                    }, 2000);
-                })
-                .catch(function(error) {
-                    console.error('❌ Firebase 로그인 기록 처리 실패:', error);
-                    
-                    // Firebase 실패해도 로컬로 처리
-                    var savedName = utils.getStorage('designerName');
-                    var savedPhone = utils.getStorage('designerPhone');
-                    var isReturningUser = (savedName === name && savedPhone === phone);
-                    
-                    utils.setStorage('designerName', name);
-                    utils.setStorage('designerPhone', phone);
-                    utils.setStorage('designerPassword', password);
-                    utils.setStorage('loginTime', new Date().getTime().toString());
-                    
-                    var welcomeMessage = isReturningUser ? 
-                        '👋 ' + name + ' 디자이너님 다시 오셨네요!' : 
-                        '🎉 처음 사용하시는군요! ' + name + ' 디자이너님 환영합니다';
-                    var messageColor = isReturningUser ? '#4A90E2' : '#4CAF50';
-                    
-                    showWelcomeMessage(welcomeMessage, messageColor);
-                    
-                    setTimeout(function() {
-                        elements.loginScreen.style.display = 'none';
-                        elements.loginScreen.classList.add('hidden');
-                        elements.genderSelection.style.display = 'flex';
-                        if (elements.designerNameDisplay) {
-                            elements.designerNameDisplay.textContent = name;
-                        }
-                    }, 2000);
-                });
+            try {
+                // 로컬 스토리지로 처리
+                console.log('⚠️ Firebase 미연결 - 로컬 스토리지로 처리');
                 
-        } else {
-            // Firebase 미연결 시 로컬 스토리지로만 처리
-            console.log('⚠️ Firebase 미연결 - 로컬 스토리지로 처리');
-            
-            var savedName = utils.getStorage('designerName');
-            var savedPhone = utils.getStorage('designerPhone');
-            var isReturningUser = (savedName === name && savedPhone === phone);
-            
-            utils.setStorage('designerName', name);
-            utils.setStorage('designerPhone', phone);
-            utils.setStorage('designerPassword', password);
-            utils.setStorage('loginTime', new Date().getTime().toString());
-            
-            var welcomeMessage = isReturningUser ? 
-                '👋 ' + name + ' 디자이너님 다시 오셨네요!' : 
-                '🎉 처음 사용하시는군요! ' + name + ' 디자이너님 환영합니다';
-            var messageColor = isReturningUser ? '#4A90E2' : '#4CAF50';
-            
-            showWelcomeMessage(welcomeMessage, messageColor);
-            
-            setTimeout(function() {
-                elements.loginScreen.style.display = 'none';
-                elements.loginScreen.classList.add('hidden');
-                elements.genderSelection.style.display = 'flex';
-                if (elements.designerNameDisplay) {
-                    elements.designerNameDisplay.textContent = name;
-                }
-            }, 2000);
-        }
+                var savedName = utils.getStorage('designerName');
+                var savedPhone = utils.getStorage('designerPhone');
+                var isReturningUser = (savedName === name && savedPhone === phone);
+                
+                utils.setStorage('designerName', name);
+                utils.setStorage('designerPhone', phone);
+                utils.setStorage('designerPassword', password);
+                utils.setStorage('loginTime', new Date().getTime().toString());
+                
+                var welcomeMessage = isReturningUser ? 
+                    '👋 ' + name + ' 디자이너님 다시 오셨네요!' : 
+                    '🎉 처음 사용하시는군요! ' + name + ' 디자이너님 환영합니다';
+                var messageColor = isReturningUser ? '#4A90E2' : '#4CAF50';
+                
+                showWelcomeMessage(welcomeMessage, messageColor);
+                
+                setTimeout(function() {
+                    elements.loginScreen.style.display = 'none';
+                    elements.loginScreen.classList.add('hidden');
+                    elements.genderSelection.style.display = 'flex';
+                    if (elements.designerNameDisplay) {
+                        elements.designerNameDisplay.textContent = name;
+                    }
+                }, 2000);
 
-    } catch (error) {
-        console.error('❌ 로그인 처리 중 오류:', error);
-        alert('로그인 중 오류가 발생했습니다: ' + error.message);
-    } finally {
-        // 로그인 버튼 복구 (2초 후)
-        setTimeout(function() {
-            elements.loginBtn.disabled = false;
-            elements.loginBtn.textContent = '로그인';
-        }, 2000);
-    }
-}
+            } catch (error) {
+                console.error('❌ 로그인 처리 중 오류:', error);
+                alert('로그인 중 오류가 발생했습니다: ' + error.message);
+            } finally {
+                // 로그인 버튼 복구 (2초 후)
+                setTimeout(function() {
+                    elements.loginBtn.disabled = false;
+                    elements.loginBtn.textContent = '로그인';
+                }, 2000);
+            }
+        }
 
         // 환영 메시지 표시 함수
         function showWelcomeMessage(message, color) {
@@ -2380,11 +2269,6 @@
             
             loadMenuData(gender);
             utils.setStorage('gender', gender);
-            
-            // 🔧 성별 선택 후 태블릿/PC 카테고리 탭 위치 재조정
-            setTimeout(function() {
-                fixCategoryTabsForDesktop();
-            }, 100);
         }
 
         // 메뉴 관리
@@ -2404,6 +2288,7 @@
             }, CONFIG.ANIMATION_DURATION);
         }
         
+        // 🔧 수정된 renderCategories 함수 (중복 제거)
         function renderCategories(gender) {
             console.log('🔧 renderCategories 실행:', gender, elements.categoryTabs);
             if (!elements.categoryTabs) {
@@ -2453,25 +2338,6 @@
             }
 
             console.log('📊 최종 렌더링된 탭 개수:', elements.categoryTabs.children.length);
-
-            // 🔴 대분류 New 표시 추가
-            NewIndicatorSystem.markNewCategories(gender);
-        };
-                tab.dataset.categoryId = category.id;
-                
-                if (i === 0) {
-                    tab.classList.add('active', gender);
-                }
-                
-                // 클로저를 사용하여 올바른 category를 전달
-                (function(cat, gen) {
-                    tab.addEventListener('click', function() {
-                        selectCategory(cat, gen);
-                    });
-                })(category, gender);
-                
-                elements.categoryTabs.appendChild(tab);
-            }
 
             // 🔴 대분류 New 표시 추가
             NewIndicatorSystem.markNewCategories(gender);
@@ -2632,66 +2498,59 @@
             }
         }
 
-       // 모달 관리 - 영구 해결 버전
-function showStyleModal(code, name, gender, imageSrc, docId) {
-    console.log('🔧 showStyleModal 실행:', { code, name, gender, imageSrc });
-    
-    if (!elements.styleModal) {
-        console.error('❌ styleModal 요소를 찾을 수 없음');
-        return;
-    }
-    
-    if (elements.modalImage) {
-        elements.modalImage.src = imageSrc || '';
-        elements.modalImage.onerror = function() {
-            this.style.display = 'none';
-            this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        };
-    }
-    
-    if (elements.modalCode) elements.modalCode.textContent = code || '';
-    if (elements.modalName) elements.modalName.textContent = name || '';
-    
-    if (elements.btnRegister) {
-        if (gender === 'female') {
-            elements.btnRegister.classList.add('female');
-        } else {
-            elements.btnRegister.classList.remove('female');
+        // 모달 관리
+        function showStyleModal(code, name, gender, imageSrc, docId) {
+            console.log('🔧 showStyleModal 실행:', { code, name, gender, imageSrc });
+            
+            if (!elements.styleModal) {
+                console.error('❌ styleModal 요소를 찾을 수 없음');
+                return;
+            }
+            
+            if (elements.modalImage) {
+                elements.modalImage.src = imageSrc || '';
+                elements.modalImage.onerror = function() {
+                    this.style.display = 'none';
+                    this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                };
+            }
+            
+            if (elements.modalCode) elements.modalCode.textContent = code || '';
+            if (elements.modalName) elements.modalName.textContent = name || '';
+            
+            if (elements.btnRegister) {
+                if (gender === 'female') {
+                    elements.btnRegister.classList.add('female');
+                } else {
+                    elements.btnRegister.classList.remove('female');
+                }
+            }
+            
+            if (elements.btnLike) {
+                elements.btnLike.classList.remove('active');
+                var heart = elements.btnLike.querySelector('span:first-child');
+                if (heart) heart.textContent = '♡';
+            }
+            
+            elements.styleModal.classList.add('active');
+            elements.styleModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            
+            console.log('✅ 스타일 모달 열기 완료');
+            
+            setupModalActions(code, name, gender, docId);
         }
-    }
-    
-    if (elements.btnLike) {
-        elements.btnLike.classList.remove('active');
-        var heart = elements.btnLike.querySelector('span:first-child');
-        if (heart) heart.textContent = '♡';
-    }
-    
-    elements.styleModal.classList.add('active');
-    elements.styleModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    
-    console.log('✅ 스타일 모달 열기 완료');
-    
-    // AI 버튼 추가 (안전하게)
-    setTimeout(() => {
-        if (window.hairgateFaceSwap && typeof window.hairgateFaceSwap.addAIButtonToModal === 'function') {
-            window.hairgateFaceSwap.addAIButtonToModal();
-        }
-    }, 100);
-    
-    setupModalActions(code, name, gender, docId);
-}
 
-function hideStyleModal() {
-    console.log('🚪 hideStyleModal 실행');
-    
-    if (elements.styleModal) {
-        elements.styleModal.classList.remove('active');
-        elements.styleModal.style.display = 'none';
-        document.body.style.overflow = '';
-        console.log('✅ 스타일 모달 닫기 완료');
-    }
-}
+        function hideStyleModal() {
+            console.log('🚪 hideStyleModal 실행');
+            
+            if (elements.styleModal) {
+                elements.styleModal.classList.remove('active');
+                elements.styleModal.style.display = 'none';
+                document.body.style.overflow = '';
+                console.log('✅ 스타일 모달 닫기 완료');
+            }
+        }
         
         function setupModalActions(code, name, gender, docId) {
             if (elements.btnRegister) {
@@ -2823,15 +2682,15 @@ function hideStyleModal() {
                 });
             }
             
-          // 모달 닫기 버튼 이벤트 - 영구 해결 버전
-if (elements.modalClose) {
-    elements.modalClose.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('🚪 모달 닫기 버튼 클릭됨');
-        hideStyleModal();
-    });
-}
+            // 모달 닫기 버튼 이벤트
+            if (elements.modalClose) {
+                elements.modalClose.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🚪 모달 닫기 버튼 클릭됨');
+                    hideStyleModal();
+                });
+            }
             
             if (elements.styleModal) {
                 elements.styleModal.addEventListener('click', function(e) {
@@ -2866,36 +2725,10 @@ if (elements.modalClose) {
             });
         }
 
-        // 🔧 태블릿/PC 카테고리 탭 위치 강제 수정 함수
-        function fixCategoryTabsForDesktop() {
-            // 768px 이상(태블릿/PC)에서만 실행
-            if (window.innerWidth >= 768) {
-                const categoryWrapper = document.querySelector('.category-tabs-wrapper');
-                const mainContent = document.querySelector('.main-content');
-                
-                if (categoryWrapper) {
-                    categoryWrapper.style.position = 'static';
-                    categoryWrapper.style.top = 'auto';
-                    categoryWrapper.style.marginTop = '20px';
-                    categoryWrapper.style.paddingTop = '15px';
-                    categoryWrapper.style.zIndex = '50';
-                    console.log('✅ 태블릿/PC 카테고리 래퍼 수정됨');
-                }
-                
-                if (mainContent) {
-                    mainContent.style.marginTop = '95px';
-                    console.log('✅ 태블릿/PC 메인 콘텐츠 마진 수정됨');
-                }
-            }
-        }
-
         // 초기화
         function init() {
             setupEventListeners();
             initTheme();
-            
-            // 🔧 태블릿/PC 카테고리 탭 위치 즉시 수정
-            fixCategoryTabsForDesktop();
             
             // Firebase 연결 대기
             var retries = 0;
@@ -2929,7 +2762,7 @@ if (elements.modalClose) {
                 elements.backBtn.style.display = 'none';
             }
             
-            console.log('🚀 HAIRGATOR App initialized (Final Clean Version)');
+            console.log('🚀 HAIRGATOR App initialized (FIXED VERSION)');
         }
 
         // DOM 로드 완료 시 실행
@@ -2952,20 +2785,6 @@ if (elements.modalClose) {
                     }, 3000);
                 }
             });
-            
-            // 전체화면 모드 감지
-            function detectDisplayMode() {
-                if (window.matchMedia('(display-mode: fullscreen)').matches) {
-                    console.log('🖥️ 전체화면 모드 실행 중');
-                    document.body.classList.add('pwa-fullscreen');
-                } else if (window.matchMedia('(display-mode: standalone)').matches) {
-                    console.log('📱 앱 모드 실행 중');
-                    document.body.classList.add('pwa-standalone');
-                } else {
-                    console.log('🌐 브라우저 모드 실행 중');
-                    document.body.classList.add('pwa-browser');
-                }
-            }
             
             // PWA 설치 안내 표시
             function showInstallPrompt() {
@@ -3027,13 +2846,6 @@ if (elements.modalClose) {
                     installDiv.parentNode.parentNode.remove();
                 }
             };
-            
-            // 디스플레이 모드 감지 실행
-            detectDisplayMode();
-            
-            // 디스플레이 모드 변경 감지
-            window.matchMedia('(display-mode: fullscreen)').addEventListener('change', detectDisplayMode);
-            window.matchMedia('(display-mode: standalone)').addEventListener('change', detectDisplayMode);
             
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./service-worker.js')
@@ -3105,87 +2917,7 @@ if (elements.modalClose) {
                 });
             }
             
-            console.log('✅ HAIRGATOR App loaded successfully (Final Clean Version)');
-        });
-   </script>
-    
-    <!-- 🆕 AKOOL Face Swap 시스템 -->
-    <link rel="stylesheet" href="akool/css/akool-styles.css">
-    <script src="akool/js/akool-api.js"></script>
-    <script src="akool/js/face-swap.js"></script>
-    
-    <!-- AKOOL API 초기화 보장 스크립트 -->
-    <script>
-        // AKOOL API 로딩 상태 확인 및 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔍 AKOOL API 상태 확인 중...');
-            
-            let checkAttempts = 0;
-            const maxAttempts = 20;
-            
-            function checkAkoolAPI() {
-                checkAttempts++;
-                
-                if (window.akoolAPI && typeof window.akoolAPI.processFaceSwap === 'function') {
-                    console.log('✅ AKOOL API 준비 완료!');
-                    
-                    // 헬스체크 실행
-                    window.akoolAPI.healthCheck().then(status => {
-                        console.log('🏥 AKOOL API 상태:', status);
-                    }).catch(error => {
-                        console.warn('⚠️ AKOOL API 헬스체크 실패:', error);
-                    });
-                    
-                    return;
-                }
-                
-                if (checkAttempts < maxAttempts) {
-                    console.log(`⏳ AKOOL API 로딩 대기 중... (${checkAttempts}/${maxAttempts})`);
-                    setTimeout(checkAkoolAPI, 500);
-                } else {
-                    console.error('❌ AKOOL API 로딩 실패 - 시간 초과');
-                    
-                    // 사용자에게 알림
-                    const notice = document.createElement('div');
-                    notice.style.cssText = `
-                        position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
-                        background: #ff4444; color: white; padding: 10px 20px;
-                        border-radius: 8px; z-index: 9999; font-size: 14px;
-                    `;
-                    notice.textContent = '⚠️ AI 기능 로딩 실패. 페이지를 새로고침해주세요.';
-                    document.body.appendChild(notice);
-                    
-                    setTimeout(() => notice.remove(), 5000);
-                }
-            }
-            
-            // 1초 후 체크 시작
-            setTimeout(checkAkoolAPI, 1000);
-        });
-        
-        // 전역 에러 핸들러
-        window.addEventListener('error', function(event) {
-            if (event.message && event.message.includes('akoolAPI')) {
-                console.error('🚨 AKOOL API 관련 에러:', event.error);
-            }
-        });
-        
-        // Face Swap 시스템 추가 초기화
-        window.addEventListener('load', function() {
-            // Face Swap 버튼이 제대로 생성되는지 확인
-            setTimeout(function() {
-                if (window.hairgateFaceSwap) {
-                    console.log('✅ Face Swap 시스템 준비됨');
-                } else {
-                    console.warn('⚠️ Face Swap 시스템 초기화 실패');
-                    
-                    // 수동 초기화 시도
-                    if (typeof HairgateFaceSwap !== 'undefined') {
-                        window.hairgateFaceSwap = new HairgateFaceSwap();
-                        console.log('🔧 Face Swap 시스템 수동 초기화 완료');
-                    }
-                }
-            }, 2000);
+            console.log('✅ HAIRGATOR App loaded successfully (FIXED VERSION)');
         });
     </script>
 </body>
