@@ -1023,6 +1023,284 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // ========== AKOOL 모달 동적 생성 ==========
+    function createAkoolModals() {
+        // 1. AKOOL 메인 모달 생성
+        if (!document.getElementById('akoolModal')) {
+            const akoolModal = document.createElement('div');
+            akoolModal.id = 'akoolModal';
+            akoolModal.className = 'akool-modal';
+            akoolModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            `;
+            
+            akoolModal.innerHTML = `
+                <div class="akool-content" style="
+                    background: #1a1a1a;
+                    border-radius: 15px;
+                    padding: 30px;
+                    max-width: 400px;
+                    width: 90%;
+                    text-align: center;
+                    color: white;
+                    position: relative;
+                ">
+                    <button id="akoolCloseBtn" style="
+                        position: absolute;
+                        top: 15px;
+                        right: 15px;
+                        background: none;
+                        border: none;
+                        color: #FF1493;
+                        font-size: 24px;
+                        cursor: pointer;
+                    ">×</button>
+                    
+                    <div style="font-size: 48px; margin-bottom: 20px;">🎭</div>
+                    <h2 style="color: #FF1493; margin-bottom: 15px;">AI 얼굴 바꾸기</h2>
+                    <p style="margin-bottom: 25px; color: #ccc;">
+                        선택하신 헤어스타일로 AI가 얼굴을 변환해드립니다!
+                    </p>
+                    
+                    <button id="akoolStartBtn" style="
+                        background: linear-gradient(135deg, #FF1493, #FF69B4);
+                        color: white;
+                        border: none;
+                        padding: 15px 30px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: bold;
+                        font-size: 16px;
+                        width: 100%;
+                    ">📸 사진 선택하기</button>
+                </div>
+            `;
+            
+            document.body.appendChild(akoolModal);
+            elements.akoolModal = akoolModal;
+            elements.akoolStartBtn = document.getElementById('akoolStartBtn');
+            elements.akoolCloseBtn = document.getElementById('akoolCloseBtn');
+            
+            // 닫기 버튼 이벤트
+            elements.akoolCloseBtn.addEventListener('click', hideAkoolModal);
+            akoolModal.addEventListener('click', function(e) {
+                if (e.target === akoolModal) hideAkoolModal();
+            });
+        }
+        
+        // 2. 로딩 모달 생성
+        if (!document.getElementById('loadingModal')) {
+            const loadingModal = document.createElement('div');
+            loadingModal.id = 'loadingModal';
+            loadingModal.className = 'loading-modal';
+            loadingModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 10001;
+            `;
+            
+            loadingModal.innerHTML = `
+                <div class="loading-content" style="
+                    background: #1a1a1a;
+                    border-radius: 15px;
+                    padding: 40px;
+                    text-align: center;
+                    color: white;
+                    max-width: 300px;
+                    width: 90%;
+                ">
+                    <div class="loading-spinner" style="
+                        width: 50px;
+                        height: 50px;
+                        border: 4px solid #333;
+                        border-top: 4px solid #FF1493;
+                        border-radius: 50%;
+                        animation: spin 1s linear infinite;
+                        margin: 0 auto 20px;
+                    "></div>
+                    <div class="loading-message" style="color: #FF1493; font-weight: bold;">
+                        AI 얼굴 바꾸기 처리 중...
+                    </div>
+                    <div style="color: #ccc; font-size: 12px; margin-top: 10px;">
+                        잠시만 기다려주세요
+                    </div>
+                </div>
+            `;
+            
+            // 스피너 애니메이션 CSS 추가
+            if (!document.getElementById('spinner-css')) {
+                const spinnerStyle = document.createElement('style');
+                spinnerStyle.id = 'spinner-css';
+                spinnerStyle.textContent = `
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `;
+                document.head.appendChild(spinnerStyle);
+            }
+            
+            document.body.appendChild(loadingModal);
+            elements.loadingModal = loadingModal;
+        }
+        
+        // 3. 결과 모달 생성
+        if (!document.getElementById('resultModal')) {
+            const resultModal = document.createElement('div');
+            resultModal.id = 'resultModal';
+            resultModal.className = 'result-modal';
+            resultModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            `;
+            
+            resultModal.innerHTML = `
+                <div class="result-content" style="
+                    background: #1a1a1a;
+                    border-radius: 15px;
+                    padding: 20px;
+                    max-width: 500px;
+                    width: 90%;
+                    text-align: center;
+                    color: white;
+                    position: relative;
+                ">
+                    <button id="resultCloseBtn" style="
+                        position: absolute;
+                        top: 15px;
+                        right: 15px;
+                        background: none;
+                        border: none;
+                        color: #FF1493;
+                        font-size: 24px;
+                        cursor: pointer;
+                    ">×</button>
+                    
+                    <h2 style="color: #FF1493; margin-bottom: 20px;">🎉 변환 완료!</h2>
+                    
+                    <img id="resultImage" style="
+                        max-width: 100%;
+                        max-height: 400px;
+                        border-radius: 10px;
+                        margin-bottom: 20px;
+                    " />
+                    
+                    <div class="result-actions" style="display: flex; gap: 10px; justify-content: center;">
+                        <button id="downloadBtn" style="
+                            background: linear-gradient(135deg, #FF1493, #FF69B4);
+                            color: white;
+                            border: none;
+                            padding: 12px 20px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: bold;
+                        ">💾 다운로드</button>
+                        
+                        <button id="retryBtn" style="
+                            background: linear-gradient(135deg, #666, #888);
+                            color: white;
+                            border: none;
+                            padding: 12px 20px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: bold;
+                        ">🔄 다시 시도</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(resultModal);
+            elements.resultModal = resultModal;
+            elements.resultImage = document.getElementById('resultImage');
+            elements.resultCloseBtn = document.getElementById('resultCloseBtn');
+            elements.downloadBtn = document.getElementById('downloadBtn');
+            elements.retryBtn = document.getElementById('retryBtn');
+            
+            // 이벤트 리스너 추가
+            elements.resultCloseBtn.addEventListener('click', hideResultModal);
+            resultModal.addEventListener('click', function(e) {
+                if (e.target === resultModal) hideResultModal();
+            });
+        }
+        
+        console.log('✅ AKOOL 모달들 동적 생성 완료');
+    }
+
+    // ========== AKOOL 모달 관리 ==========
+    function showAkoolModal() {
+        createAkoolModals(); // 모달이 없으면 생성
+        if (elements.akoolModal) {
+            elements.akoolModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            console.log('✅ AKOOL 모달 표시');
+        }
+    }
+    
+    function hideAkoolModal() {
+        if (elements.akoolModal) {
+            elements.akoolModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    function showLoadingModal(message) {
+        createAkoolModals(); // 모달이 없으면 생성
+        var modal = elements.loadingModal;
+        if (modal) {
+            var messageEl = modal.querySelector('.loading-message');
+            if (messageEl) messageEl.textContent = message || '처리 중...';
+            modal.style.display = 'flex';
+            console.log('✅ 로딩 모달 표시:', message);
+        }
+    }
+
+    function hideLoadingModal() {
+        if (elements.loadingModal) {
+            elements.loadingModal.style.display = 'none';
+        }
+    }
+
+    function showResultModal(imageUrl) {
+        createAkoolModals(); // 모달이 없으면 생성
+        if (elements.resultModal && elements.resultImage) {
+            elements.resultImage.src = imageUrl;
+            elements.resultModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            console.log('✅ 결과 모달 표시:', imageUrl);
+        }
+    }
+
+    function hideResultModal() {
+        if (elements.resultModal) {
+            elements.resultModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
     // ========== AKOOL 모달 관리 ==========
     function showAkoolModal() {
         if (elements.akoolModal) {
