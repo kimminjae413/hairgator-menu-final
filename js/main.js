@@ -1,14 +1,17 @@
-// ========== HAIRGATOR Main Application (v1.8-REFACTORED) ==========
-// 인라인 스크립트에서 이동, 기능 100% 동일
+// ============ HAIRGATOR Main Application (v1.8-COMPLETE-FINAL) ============
+// 인라인 스크립트에서 이동, 기능 100% 동일 + 모든 누락 기능 포함
 
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
+    
+    console.log('🚀 HAIRGATOR v1.8-COMPLETE-FINAL 로딩 시작');
     
     // ========== 상수 및 설정 ==========
     const CONFIG = {
         CACHE_PREFIX: 'hairgator_',
         ANIMATION_DURATION: 300,
-        MAX_RETRIES: 3
+        MAX_RETRIES: 3,
+        NEW_THRESHOLD_DAYS: 7
     };
 
     // ========== 메뉴 데이터 ==========
@@ -136,8 +139,20 @@ document.addEventListener('DOMContentLoaded', function() {
         modalName: document.getElementById('modalName'),
         btnRegister: document.getElementById('btnRegister'),
         btnLike: document.getElementById('btnLike'),
+        btnAkool: document.getElementById('btnAkool'),
         petalSakuraBtn: document.getElementById('petalSakuraBtn'),
-        designerNameDisplay: document.getElementById('designerNameDisplay')
+        designerNameDisplay: document.getElementById('designerNameDisplay'),
+        hairGuideModal: document.getElementById('hairGuideModal'),
+        hairGuideClose: document.getElementById('hairGuideClose'),
+        akoolModal: document.getElementById('akoolModal'),
+        akoolStartBtn: document.getElementById('akoolStartBtn'),
+        akoolCloseBtn: document.getElementById('akoolCloseBtn'),
+        loadingModal: document.getElementById('loadingModal'),
+        resultModal: document.getElementById('resultModal'),
+        resultImage: document.getElementById('resultImage'),
+        resultCloseBtn: document.getElementById('resultCloseBtn'),
+        downloadBtn: document.getElementById('downloadBtn'),
+        retryBtn: document.getElementById('retryBtn')
     };
 
     // ========== 전화번호 포맷팅 유틸리티 ==========
@@ -163,11 +178,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========== 유틸리티 함수 ==========
     const utils = {
         setStorage: function(key, value) {
-            localStorage.setItem(CONFIG.CACHE_PREFIX + key, value);
+            try {
+                localStorage.setItem(CONFIG.CACHE_PREFIX + key, value);
+            } catch(e) {
+                console.warn('Storage failed:', e);
+            }
         },
         
         getStorage: function(key) {
-            return localStorage.getItem(CONFIG.CACHE_PREFIX + key);
+            try {
+                return localStorage.getItem(CONFIG.CACHE_PREFIX + key);
+            } catch(e) {
+                console.warn('Storage retrieval failed:', e);
+                return null;
+            }
         },
         
         showLoading: function(show) {
@@ -180,6 +204,81 @@ document.addEventListener('DOMContentLoaded', function() {
             context = context || '';
             console.error('Error in ' + context + ':', error);
             alert('오류가 발생했습니다: ' + error.message);
+        }
+    };
+
+    // ========== New 표시 시스템 ==========
+    const NewIndicatorSystem = {
+        NEW_THRESHOLD_DAYS: CONFIG.NEW_THRESHOLD_DAYS,
+        newStylesCache: new Map(),
+        
+        async init() {
+            console.log('🔴 New 표시 시스템 초기화');
+            if (window.firebaseReady && typeof db !== 'undefined') {
+                await this.loadNewStyles();
+            }
+        },
+        
+        async loadNewStyles() {
+            try {
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - this.NEW_THRESHOLD_DAYS);
+                
+                const snapshot = await db.collection('hairstyles')
+                    .where('createdAt', '>=', sevenDaysAgo)
+                    .get();
+                
+                this.newStylesCache.clear();
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const categoryKey = `${data.gender}-${data.mainCategory}`;
+                    const subcategoryKey = `${data.gender}-${data.mainCategory}-${data.subCategory}`;
+                    
+                    if (!this.newStylesCache.has(categoryKey)) {
+                        this.newStylesCache.set(categoryKey, []);
+                    }
+                    if (!this.newStylesCache.has(subcategoryKey)) {
+                        this.newStylesCache.set(subcategoryKey, []);
+                    }
+                    
+                    this.newStylesCache.get(categoryKey).push(doc.id);
+                    this.newStylesCache.get(subcategoryKey).push(doc.id);
+                });
+                
+                console.log('✅ New 표시 데이터 로드 완료:', this.newStylesCache.size);
+                
+            } catch (error) {
+                console.error('❌ New 표시 데이터 로드 실패:', error);
+            }
+        },
+        
+        markNewCategories: function(gender) {
+            const categoryTabs = document.querySelectorAll('.category-tab:not(.help-tab)');
+            categoryTabs.forEach(tab => {
+                const categoryName = tab.textContent;
+                const categoryKey = `${gender}-${categoryName}`;
+                
+                if (this.newStylesCache.has(categoryKey) && this.newStylesCache.get(categoryKey).length > 0) {
+                    tab.classList.add('has-new');
+                } else {
+                    tab.classList.remove('has-new');
+                }
+            });
+        },
+        
+        markNewSubcategories: function(gender, mainCategory) {
+            const subcategoryTabs = document.querySelectorAll('.subcategory-tab');
+            subcategoryTabs.forEach(tab => {
+                const subCategory = tab.textContent;
+                const subcategoryKey = `${gender}-${mainCategory}-${subCategory}`;
+                
+                if (this.newStylesCache.has(subcategoryKey) && this.newStylesCache.get(subcategoryKey).length > 0) {
+                    tab.classList.add('has-new');
+                } else {
+                    tab.classList.remove('has-new');
+                }
+            });
         }
     };
 
@@ -368,6 +467,68 @@ document.addEventListener('DOMContentLoaded', function() {
             if (this.canvas) {
                 this.canvas.width = window.innerWidth;
                 this.canvas.height = window.innerHeight;
+            }
+        }
+    };
+
+    // ========== AKOOL API 시스템 ==========
+    const AkoolManager = {
+        async startFaceSwap(userImageFile, styleImageUrl) {
+            if (!userImageFile) {
+                throw new Error('사용자 이미지가 필요합니다');
+            }
+            
+            try {
+                console.log('🎭 AKOOL 얼굴 바꾸기 시작');
+                
+                // 사용자 이미지를 Firebase Storage에 업로드
+                const userImageUrl = await this.uploadToFirebase(userImageFile);
+                
+                // AKOOL API 호출
+                const response = await fetch('/.netlify/functions/akool-proxy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_image: userImageUrl,
+                        style_image: styleImageUrl
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('AKOOL API 호출 실패');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    return result;
+                } else {
+                    throw new Error(result.error || 'AKOOL 처리 실패');
+                }
+                
+            } catch (error) {
+                console.error('❌ AKOOL 얼굴 바꾸기 실패:', error);
+                throw error;
+            }
+        },
+        
+        async uploadToFirebase(file) {
+            try {
+                const timestamp = Date.now();
+                const filename = `temp/user_image_${timestamp}.jpg`;
+                const storageRef = firebase.storage().ref(filename);
+                
+                const snapshot = await storageRef.put(file);
+                const downloadURL = await snapshot.ref.getDownloadURL();
+                
+                console.log('✅ Firebase 업로드 완료:', downloadURL);
+                return downloadURL;
+                
+            } catch (error) {
+                console.error('❌ Firebase 업로드 실패:', error);
+                throw new Error('이미지 업로드 실패');
             }
         }
     };
@@ -623,6 +784,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function selectGender(gender) {
+        console.log('🎯 성별 선택:', gender);
         currentGender = gender;
         
         elements.genderSelection.style.display = 'none';
@@ -663,6 +825,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         elements.categoryTabs.innerHTML = '';
         
+        // 여성일 때 도움말 버튼 먼저 추가
         if (gender === 'female') {
             var helpTab = document.createElement('button');
             helpTab.className = 'category-tab help-tab';
@@ -674,6 +837,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ 도움말 버튼 추가됨');
         }
         
+        // 대분류 탭들 추가
         console.log('📝 추가할 카테고리들:', menuData.categories);
         for (var i = 0; i < menuData.categories.length; i++) {
             var category = menuData.categories[i];
@@ -689,6 +853,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('✅ 첫 번째 탭 활성화:', category.name);
             }
             
+            // 클로저를 사용하여 올바른 category를 전달
             (function(cat, gen) {
                 tab.addEventListener('click', function() {
                     console.log('🖱️ 카테고리 클릭:', cat.name);
@@ -701,13 +866,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         console.log('📊 최종 렌더링된 탭 개수:', elements.categoryTabs.children.length);
 
-        // New 표시 (전역 시스템이 있다면)
-        if (typeof NewIndicatorSystem !== 'undefined') {
-            NewIndicatorSystem.markNewCategories(gender);
-        }
+        // New 표시 추가
+        NewIndicatorSystem.markNewCategories(gender);
     }
     
     function selectCategory(category, gender) {
+        console.log('🎯 카테고리 선택:', category.name);
         currentCategory = category;
         
         var categoryTabs = document.querySelectorAll('.category-tab');
@@ -744,6 +908,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentSubcategory = sub;
             }
             
+            // 클로저를 사용하여 올바른 subcategory를 전달
             (function(subcat, gen) {
                 tab.addEventListener('click', function() {
                     selectSubcategory(subcat, gen);
@@ -753,9 +918,8 @@ document.addEventListener('DOMContentLoaded', function() {
             elements.subcategoryTabs.appendChild(tab);
         }
 
-        if (typeof NewIndicatorSystem !== 'undefined') {
-            NewIndicatorSystem.markNewSubcategories(gender, currentCategory.name);
-        }
+        // New 표시 추가
+        NewIndicatorSystem.markNewSubcategories(gender, currentCategory.name);
     }
     
     function selectSubcategory(subcategory, gender) {
@@ -810,7 +974,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     item.className = 'menu-item ' + gender;
                     
                     var createdAt = data.createdAt ? data.createdAt.toDate() : null;
-                    var isNew = createdAt && (new Date() - createdAt) < (7 * 24 * 60 * 60 * 1000);
+                    var isNew = createdAt && (new Date() - createdAt) < (CONFIG.NEW_THRESHOLD_DAYS * 24 * 60 * 60 * 1000);
                     if (isNew) {
                         item.classList.add('has-new');
                     }
@@ -859,7 +1023,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ========== 모달 관리 ==========
+    // ========== AKOOL 모달 관리 ==========
+    function showAkoolModal() {
+        if (elements.akoolModal) {
+            elements.akoolModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function hideAkoolModal() {
+        if (elements.akoolModal) {
+            elements.akoolModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    function showLoadingModal(message) {
+        var modal = elements.loadingModal;
+        if (modal) {
+            var messageEl = modal.querySelector('.loading-message');
+            if (messageEl) messageEl.textContent = message || '처리 중...';
+            modal.style.display = 'flex';
+        }
+    }
+
+    function hideLoadingModal() {
+        if (elements.loadingModal) {
+            elements.loadingModal.style.display = 'none';
+        }
+    }
+
+    function showResultModal(imageUrl) {
+        if (elements.resultModal && elements.resultImage) {
+            elements.resultImage.src = imageUrl;
+            elements.resultModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function hideResultModal() {
+        if (elements.resultModal) {
+            elements.resultModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    // ========== 스타일 모달 관리 ==========
     function showStyleModal(code, name, gender, imageSrc, docId) {
         console.log('🔧 showStyleModal 실행:', { code, name, gender, imageSrc });
         
@@ -899,7 +1108,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('✅ 스타일 모달 열기 완료');
         
-        setupModalActions(code, name, gender, docId);
+        setupModalActions(code, name, gender, docId, imageSrc);
     }
 
     function hideStyleModal() {
@@ -913,7 +1122,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function setupModalActions(code, name, gender, docId) {
+    function setupModalActions(code, name, gender, docId, imageSrc) {
+        // 고객 등록 버튼
         if (elements.btnRegister) {
             elements.btnRegister.onclick = function() {
                 var customerName = prompt('고객 이름을 입력하세요:');
@@ -950,6 +1160,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         }
         
+        // 좋아요 버튼
         if (elements.btnLike) {
             elements.btnLike.onclick = function() {
                 this.classList.toggle('active');
@@ -968,6 +1179,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             };
         }
+        
+        // AKOOL AI 체험 버튼
+        if (elements.btnAkool) {
+            elements.btnAkool.onclick = function() {
+                hideStyleModal();
+                showAkoolModal();
+                
+                // AKOOL 모달 내부 이벤트 설정
+                if (elements.akoolStartBtn) {
+                    elements.akoolStartBtn.onclick = async function() {
+                        var fileInput = document.createElement('input');
+                        fileInput.type = 'file';
+                        fileInput.accept = 'image/*';
+                        
+                        fileInput.onchange = async function(e) {
+                            var file = e.target.files[0];
+                            if (!file) return;
+                            
+                            hideAkoolModal();
+                            showLoadingModal('AI 얼굴 바꾸기 처리 중...');
+                            
+                            try {
+                                var result = await AkoolManager.startFaceSwap(file, imageSrc);
+                                
+                                hideLoadingModal();
+                                
+                                if (result.success && result.resultUrl) {
+                                    showResultModal(result.resultUrl);
+                                } else {
+                                    alert('AI 처리에 실패했습니다: ' + (result.error || '알 수 없는 오류'));
+                                }
+                                
+                            } catch (error) {
+                                hideLoadingModal();
+                                alert('AI 처리 중 오류가 발생했습니다: ' + error.message);
+                            }
+                        };
+                        
+                        fileInput.click();
+                    };
+                }
+            };
+        }
     }
 
     // ========== 로그아웃 ==========
@@ -983,6 +1237,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ========== 이벤트 리스너 설정 ==========
     function setupEventListeners() {
+        // 네비게이션 관련
         if (elements.backBtn) {
             elements.backBtn.addEventListener('click', goBack);
         }
@@ -995,6 +1250,7 @@ document.addEventListener('DOMContentLoaded', function() {
             elements.sidebarClose.addEventListener('click', closeSidebar);
         }
         
+        // 테마 관련
         if (elements.themeToggle) {
             elements.themeToggle.addEventListener('click', toggleTheme);
         }
@@ -1003,6 +1259,7 @@ document.addEventListener('DOMContentLoaded', function() {
             elements.themeToggleBottom.addEventListener('click', toggleTheme);
         }
         
+        // 벚꽃 배경 관련
         if (elements.petalSakuraBtn) {
             elements.petalSakuraBtn.addEventListener('click', function() {
                 if (petalSakuraSystem.active) {
@@ -1019,6 +1276,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        // 성별 선택 관련
         var genderBtns = document.querySelectorAll('.gender-btn');
         for (var i = 0; i < genderBtns.length; i++) {
             genderBtns[i].addEventListener('click', function() {
@@ -1026,6 +1284,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        // 헤어 가이드 모달 관련
         var hairGuideClose = document.getElementById('hairGuideClose');
         var hairGuideModal = document.getElementById('hairGuideModal');
         
@@ -1039,6 +1298,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        // 스타일 모달 관련
         if (elements.modalClose) {
             elements.modalClose.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -1053,7 +1313,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (e.target === this) hideStyleModal();
             });
         }
+
+        // AKOOL 모달 관련
+        if (elements.akoolCloseBtn) {
+            elements.akoolCloseBtn.addEventListener('click', hideAkoolModal);
+        }
+
+        if (elements.resultCloseBtn) {
+            elements.resultCloseBtn.addEventListener('click', hideResultModal);
+        }
+
+        if (elements.downloadBtn) {
+            elements.downloadBtn.addEventListener('click', function() {
+                if (elements.resultImage && elements.resultImage.src) {
+                    var link = document.createElement('a');
+                    link.href = elements.resultImage.src;
+                    link.download = 'akool_result_' + Date.now() + '.jpg';
+                    link.click();
+                }
+            });
+        }
+
+        if (elements.retryBtn) {
+            elements.retryBtn.addEventListener('click', function() {
+                hideResultModal();
+                showAkoolModal();
+            });
+        }
         
+        // 키보드 이벤트
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 if (document.getElementById('hairGuideModal').classList.contains('active')) {
@@ -1062,9 +1350,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 else if (elements.styleModal && elements.styleModal.classList.contains('active')) {
                     hideStyleModal();
                 }
+                else if (elements.akoolModal && elements.akoolModal.style.display === 'flex') {
+                    hideAkoolModal();
+                }
+                else if (elements.resultModal && elements.resultModal.style.display === 'flex') {
+                    hideResultModal();
+                }
             }
         });
         
+        // 사이드바 외부 클릭 시 닫기
         document.addEventListener('click', function(e) {
             if (elements.sidebar && elements.sidebar.classList.contains('active')) {
                 if (!elements.sidebar.contains(e.target) && !elements.menuBtn.contains(e.target)) {
@@ -1073,6 +1368,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        // 화면 크기 변경 대응
         window.addEventListener('resize', function() {
             petalSakuraSystem.handleResize();
         });
@@ -1080,9 +1376,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ========== 초기화 ==========
     function init() {
+        console.log('🔧 애플리케이션 초기화 시작');
+        
         setupEventListeners();
         initTheme();
         
+        // Firebase 연결 대기
         var retries = 0;
         var maxRetries = 10;
         
@@ -1090,15 +1389,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (window.firebaseReady || retries >= maxRetries) {
                 if (window.firebaseReady) {
                     console.log('✅ Firebase 연결 확인됨');
-                    if (typeof NewIndicatorSystem !== 'undefined') {
-                        NewIndicatorSystem.init().then(function() {
-                            initLogin();
-                        }).catch(function() {
-                            initLogin();
-                        });
-                    } else {
+                    // New 표시 시스템 초기화
+                    NewIndicatorSystem.init().then(function() {
                         initLogin();
-                    }
+                    }).catch(function() {
+                        initLogin();
+                    });
                 } else {
                     console.error('❌ Firebase 연결 실패');
                     alert('Firebase 연결에 실패했습니다. 페이지를 새로고침해주세요.');
@@ -1117,17 +1413,26 @@ document.addEventListener('DOMContentLoaded', function() {
             elements.backBtn.style.display = 'none';
         }
         
-        console.log('🚀 HAIRGATOR App initialized (REFACTORED VERSION)');
+        console.log('✅ HAIRGATOR App initialized (COMPLETE-FINAL VERSION)');
     }
 
     // ========== 전역 함수 등록 ==========
     window.selectGender = selectGender;
     window.logout = logout;
     window.showHairGuideModal = showHairGuideModal;
+    window.hideHairGuideModal = hideHairGuideModal;
+    window.showStyleModal = showStyleModal;
+    window.hideStyleModal = hideStyleModal;
+    window.showAkoolModal = showAkoolModal;
+    window.hideAkoolModal = hideAkoolModal;
+    window.goBack = goBack;
+    window.toggleSidebar = toggleSidebar;
+    window.closeSidebar = closeSidebar;
+    window.toggleTheme = toggleTheme;
 
     // ========== 앱 초기화 실행 ==========
     init();
     
-    console.log('🎉 HAIRGATOR 메인 애플리케이션 로드 완료 (REFACTORED)');
+    console.log('🎉 HAIRGATOR 메인 애플리케이션 로드 완료 (COMPLETE-FINAL)');
     
 });
