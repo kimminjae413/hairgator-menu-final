@@ -1184,23 +1184,174 @@ class HairgateFaceSwap {
         }
 
         try {
+            console.log('📱 모바일/태블릿 호환 다운로드 시작');
+            
+            // 모바일 기기 감지
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            
+            // 이미지 데이터 가져오기
             const response = await fetch(swappedResult.src);
             const blob = await response.blob();
+            
+            // iOS 전용 처리
+            if (isIOS) {
+                console.log('🍎 iOS 디바이스 감지 - 전용 처리');
+                
+                // Canvas를 통한 이미지 처리
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Canvas를 새 창에서 열기 (iOS에서 저장 가능)
+                    canvas.toBlob((canvasBlob) => {
+                        const dataUrl = URL.createObjectURL(canvasBlob);
+                        
+                        // 새 창에서 이미지 열기
+                        const newWindow = window.open();
+                        newWindow.document.write(`
+                            <html>
+                                <head>
+                                    <title>헤어게이트 결과</title>
+                                    <meta name="viewport" content="width=device-width, initial-scale=1">
+                                    <style>
+                                        body { margin: 0; padding: 20px; text-align: center; background: #000; }
+                                        img { max-width: 100%; height: auto; border-radius: 10px; }
+                                        .info { color: white; margin: 20px 0; font-family: Arial, sans-serif; }
+                                        .btn { 
+                                            background: #FF1493; color: white; border: none; 
+                                            padding: 15px 30px; border-radius: 10px; font-size: 16px;
+                                            margin: 10px; cursor: pointer; text-decoration: none; display: inline-block;
+                                        }
+                                    </style>
+                                </head>
+                                <body>
+                                    <div class="info">
+                                        <h2>🎉 헤어게이트 AI 결과</h2>
+                                        <p>이미지를 길게 눌러서 "사진 앱에 저장"을 선택하세요</p>
+                                    </div>
+                                    <img src="${dataUrl}" alt="헤어게이트 결과">
+                                    <div class="info">
+                                        <p>📱 저장 방법: 이미지 길게 터치 → "사진 앱에 저장"</p>
+                                        <a href="#" onclick="window.close()" class="btn">닫기</a>
+                                    </div>
+                                </body>
+                            </html>
+                        `);
+                        
+                        console.log('✅ iOS 새 창에서 이미지 열기 완료');
+                    }, 'image/jpeg', 0.9);
+                };
+                
+                img.src = swappedResult.src;
+                return;
+            }
+            
+            // Android 및 일반 모바일 처리
+            if (isMobile) {
+                console.log('🤖 Android/모바일 디바이스 감지');
+                
+                // Web Share API 시도
+                if (navigator.share && navigator.canShare) {
+                    try {
+                        const file = new File([blob], `hairgate_result_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                        
+                        if (navigator.canShare({ files: [file] })) {
+                            await navigator.share({
+                                files: [file],
+                                title: '헤어게이트 AI 결과',
+                                text: '헤어게이트에서 생성한 AI 헤어스타일 결과입니다.'
+                            });
+                            console.log('✅ Web Share API로 공유 완료');
+                            return;
+                        }
+                    } catch (shareError) {
+                        console.log('⚠️ Web Share API 실패:', shareError);
+                    }
+                }
+                
+                // 모바일용 대안: 새 창에서 이미지 표시
+                const dataUrl = URL.createObjectURL(blob);
+                const newWindow = window.open();
+                newWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>헤어게이트 결과</title>
+                            <meta name="viewport" content="width=device-width, initial-scale=1">
+                            <style>
+                                body { margin: 0; padding: 20px; text-align: center; background: #000; }
+                                img { max-width: 100%; height: auto; border-radius: 10px; }
+                                .info { color: white; margin: 20px 0; font-family: Arial, sans-serif; }
+                                .btn { 
+                                    background: #FF1493; color: white; border: none; 
+                                    padding: 15px 30px; border-radius: 10px; font-size: 16px;
+                                    margin: 10px; cursor: pointer; text-decoration: none; display: inline-block;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="info">
+                                <h2>🎉 헤어게이트 AI 결과</h2>
+                                <p>이미지를 길게 눌러서 저장하세요</p>
+                            </div>
+                            <img src="${dataUrl}" alt="헤어게이트 결과">
+                            <div class="info">
+                                <p>📱 저장 방법: 이미지 길게 터치 → "이미지 저장" 또는 "다운로드"</p>
+                                <a href="${dataUrl}" download="hairgate_result_${Date.now()}.jpg" class="btn">다운로드 시도</a>
+                                <a href="#" onclick="window.close()" class="btn">닫기</a>
+                            </div>
+                        </body>
+                    </html>
+                `);
+                
+                console.log('✅ 모바일용 새 창에서 이미지 열기 완료');
+                return;
+            }
+            
+            // PC/데스크톱 처리 (기존 방식)
+            console.log('💻 데스크톱 디바이스 - 기존 다운로드 방식');
             const url = URL.createObjectURL(blob);
             
             const link = document.createElement('a');
             link.href = url;
             link.download = `hairgate_result_${Date.now()}.jpg`;
+            link.style.display = 'none';
+            
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             
-            URL.revokeObjectURL(url);
+            // 메모리 정리
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            
             console.log('📱 결과 이미지 다운로드 완료');
             
         } catch (error) {
             console.error('다운로드 오류:', error);
-            alert('다운로드 중 오류가 발생했습니다.');
+            
+            // 최종 대안: 클립보드 복사 시도
+            try {
+                if (navigator.clipboard && navigator.clipboard.write) {
+                    const response = await fetch(swappedResult.src);
+                    const blob = await response.blob();
+                    
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/jpeg': blob })
+                    ]);
+                    
+                    alert('📋 이미지가 클립보드에 복사되었습니다!\n\n사진 앱을 열어서 "붙여넣기"를 하면 저장할 수 있습니다.');
+                } else {
+                    // 완전 실패시 안내
+                    alert(`❌ 다운로드 중 오류가 발생했습니다.\n\n📱 모바일 저장 방법:\n• 이미지를 길게 눌러서 "저장" 선택\n• 브라우저 메뉴에서 "페이지를 이미지로 저장"\n• 스크린샷 기능 사용\n\n오류: ${error.message}`);
+                }
+            } catch (clipboardError) {
+                alert(`❌ 저장 기능을 사용할 수 없습니다.\n\n📱 대안 방법:\n• 스크린샷을 찍어서 저장하세요\n• 이미지를 길게 눌러서 저장해보세요\n\n오류: ${error.message}`);
+            }
         }
     }
 
