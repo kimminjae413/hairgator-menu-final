@@ -566,7 +566,27 @@ class HairgateFaceSwap {
             // 미리보기 이미지 설정
             this.setupProgressPreviews();
 
-            // ✅ 수정된 API 호출 - SUCCESS 에러 해결
+            // ✅ AKOOL API 초기화 및 대기
+            let apiReady = false;
+            let attempts = 0;
+            const maxAttempts = 10;
+            
+            while (!apiReady && attempts < maxAttempts) {
+                if (window.akoolAPI && typeof window.akoolAPI.processFaceSwap === 'function') {
+                    apiReady = true;
+                    console.log('✅ AKOOL API 준비됨');
+                } else {
+                    attempts++;
+                    console.log(`⏳ AKOOL API 로딩 대기 중... (${attempts}/${maxAttempts})`);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+            
+            if (!apiReady) {
+                throw new Error('AKOOL API가 준비되지 않았습니다. 페이지를 새로고침하고 다시 시도해주세요.');
+            }
+
+            // ✅ API 호출
             const result = await window.akoolAPI.processFaceSwap(
                 this.customerImageFile,
                 this.selectedHairstyleUrl,
