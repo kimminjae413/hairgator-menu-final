@@ -1180,9 +1180,11 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         }
         
-        // AKOOL AI 체험 버튼
+        // AKOOL AI 체험 버튼 설정
         if (elements.btnAkool) {
+            elements.btnAkool.style.display = 'flex'; // 버튼 보이게 하기
             elements.btnAkool.onclick = function() {
+                console.log('🎭 AI 체험하기 버튼 클릭됨');
                 hideStyleModal();
                 showAkoolModal();
                 
@@ -1221,6 +1223,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                 }
             };
+            console.log('✅ AI 체험하기 버튼 복구 완료');
+        } else {
+            console.warn('⚠️ btnAkool 요소를 찾을 수 없음');
         }
     }
 
