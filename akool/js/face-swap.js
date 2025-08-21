@@ -88,11 +88,20 @@ class HairgateFaceSwap {
             return;
         }
         
-        // 이미 AI 버튼이 있는지 확인
-        if (document.getElementById('btnAIExperience')) {
-            console.log('AI 버튼이 이미 존재함');
-            return;
-        }
+      // 🔧 강화된 AI 버튼 중복 체크
+const existingAIButtons = document.querySelectorAll('#btnAIExperience, .btn-ai-experience');
+if (existingAIButtons.length > 0) {
+    console.log('AI 버튼이 이미 존재함 - 모든 중복 제거 후 새로 생성');
+    // 모든 기존 AI 버튼 제거
+    existingAIButtons.forEach(btn => btn.remove());
+}
+
+// 모달 액션 영역에서도 AI 버튼 제거
+const modalActions = document.querySelector('#styleModal .modal-actions');
+if (modalActions) {
+    const aiButtonsInModal = modalActions.querySelectorAll('.btn-ai-experience, [id*="AI"], [onclick*="AI"]');
+    aiButtonsInModal.forEach(btn => btn.remove());
+}
         
         // 현재 스타일 정보 수집
         this.collectCurrentStyleData();
