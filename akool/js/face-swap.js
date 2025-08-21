@@ -17,6 +17,10 @@ class HairgateFaceSwap {
             gender: ''
         };
         
+        // 📸 카메라 관련
+        this.cameraStream = null;
+        this.cameraVideo = null;
+        
         this.init();
     }
 
@@ -181,15 +185,45 @@ class HairgateFaceSwap {
                         <!-- 고객 이미지 업로드 -->
                         <div class="customer-image-section">
                             <h4>📸 고객 사진 업로드</h4>
-                            <div class="upload-area" onclick="document.getElementById('customerImageUpload').click()">
+                            
+                            <!-- 업로드 방식 선택 버튼 -->
+                            <div class="upload-method-buttons">
+                                <button class="upload-method-btn active" data-method="file">
+                                    📁 파일 선택
+                                </button>
+                                <button class="upload-method-btn" data-method="camera">
+                                    📷 카메라 촬영
+                                </button>
+                            </div>
+                            
+                            <!-- 파일 업로드 영역 -->
+                            <div id="fileUploadArea" class="upload-area" onclick="document.getElementById('customerImageUpload').click()">
                                 <div id="customerImagePreview" class="image-preview">
                                     <div class="upload-placeholder">
-                                        <span style="font-size: 48px;">📷</span>
+                                        <span style="font-size: 48px;">📁</span>
                                         <p>클릭하여 고객 사진 선택</p>
                                         <small>JPG, PNG 파일 (최대 10MB)</small>
                                     </div>
                                 </div>
                                 <input type="file" id="customerImageUpload" accept="image/*" style="display: none;">
+                            </div>
+                            
+                            <!-- 카메라 촬영 영역 -->
+                            <div id="cameraArea" class="camera-area" style="display: none;">
+                                <div id="cameraPreview" class="camera-preview" style="display: none;">
+                                    <video id="cameraVideo" autoplay playsinline></video>
+                                    <div class="camera-controls">
+                                        <button id="captureBtn" class="capture-btn">📸 촬영</button>
+                                        <button id="closeCameraBtn" class="close-camera-btn">❌ 닫기</button>
+                                    </div>
+                                </div>
+                                <div id="cameraPlaceholder" class="camera-placeholder">
+                                    <button id="startCameraBtn" class="start-camera-btn">
+                                        <span style="font-size: 48px;">📷</span>
+                                        <p>카메라 시작</p>
+                                        <small>정면을 보고 촬영해주세요</small>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         
@@ -226,6 +260,28 @@ class HairgateFaceSwap {
         const startButton = document.getElementById('startFaceSwap');
         if (startButton) {
             startButton.addEventListener('click', () => this.startFaceSwap());
+        }
+        
+        // 업로드 방식 선택 버튼들
+        const methodButtons = document.querySelectorAll('.upload-method-btn');
+        methodButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => this.switchUploadMethod(e.target.dataset.method));
+        });
+        
+        // 카메라 관련 버튼들
+        const startCameraBtn = document.getElementById('startCameraBtn');
+        if (startCameraBtn) {
+            startCameraBtn.addEventListener('click', () => this.startCamera());
+        }
+        
+        const captureBtn = document.getElementById('captureBtn');
+        if (captureBtn) {
+            captureBtn.addEventListener('click', () => this.capturePhoto());
+        }
+        
+        const closeCameraBtn = document.getElementById('closeCameraBtn');
+        if (closeCameraBtn) {
+            closeCameraBtn.addEventListener('click', () => this.stopCamera());
         }
     }
 
@@ -844,6 +900,192 @@ class HairgateFaceSwap {
         // 에러 표시
         alert(`❌ 오류 발생\n\n${message}\n\n• 정면 사진을 사용해주세요\n• 밝은 환경에서 촬영된 사진을 사용해주세요\n• 한 명만 나온 사진을 사용해주세요`);
         console.error('🚨 Face Swap 에러:', message);
+    }
+    
+    // ✨ 업로드 방식 전환
+    switchUploadMethod(method) {
+        const fileArea = document.getElementById('fileUploadArea');
+        const cameraArea = document.getElementById('cameraArea');
+        const methodButtons = document.querySelectorAll('.upload-method-btn');
+        
+        // 버튼 활성화 상태 변경
+        methodButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.method === method);
+        });
+        
+        if (method === 'file') {
+            fileArea.style.display = 'block';
+            cameraArea.style.display = 'none';
+            this.stopCamera(); // 카메라 중지
+        } else if (method === 'camera') {
+            fileArea.style.display = 'none';
+            cameraArea.style.display = 'block';
+        }
+        
+        console.log('📸 업로드 방식 변경:', method);
+    }
+    
+    // ✨ 카메라 시작
+    async startCamera() {
+        try {
+            console.log('📸 카메라 시작...');
+            
+            this.cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'user', // 전면 카메라
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                }
+            });
+            
+            this.cameraVideo = document.getElementById('cameraVideo');
+            if (this.cameraVideo) {
+                this.cameraVideo.srcObject = this.cameraStream;
+            }
+            
+            const cameraPreview = document.getElementById('cameraPreview');
+            const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+            
+            if (cameraPreview) cameraPreview.style.display = 'block';
+            if (cameraPlaceholder) cameraPlaceholder.style.display = 'none';
+            
+            console.log('✅ 카메라 시작 성공');
+            
+        } catch (error) {
+            console.error('❌ 카메라 시작 실패:', error);
+            
+            let errorMessage = '카메라에 접근할 수 없습니다.';
+            if (error.name === 'NotAllowedError') {
+                errorMessage = '카메라 권한이 거부되었습니다. 브라우저 설정에서 카메라 권한을 허용해주세요.';
+            } else if (error.name === 'NotFoundError') {
+                errorMessage = '카메라가 발견되지 않았습니다.';
+            } else if (error.name === 'NotReadableError') {
+                errorMessage = '카메라가 다른 앱에서 사용 중입니다.';
+            }
+            
+            alert(errorMessage);
+        }
+    }
+    
+    // ✨ 카메라 중지
+    stopCamera() {
+        if (this.cameraStream) {
+            this.cameraStream.getTracks().forEach(track => track.stop());
+            this.cameraStream = null;
+        }
+        
+        const cameraPreview = document.getElementById('cameraPreview');
+        const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+        
+        if (cameraPreview) cameraPreview.style.display = 'none';
+        if (cameraPlaceholder) cameraPlaceholder.style.display = 'block';
+        
+        console.log('📸 카메라 중지');
+    }
+    
+    // ✨ 사진 촬영
+    async capturePhoto() {
+        if (!this.cameraVideo || !this.cameraStream) {
+            alert('카메라가 준비되지 않았습니다.');
+            return;
+        }
+        
+        try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = this.cameraVideo.videoWidth;
+            canvas.height = this.cameraVideo.videoHeight;
+            
+            // 비디오 프레임을 캔버스에 그리기
+            ctx.drawImage(this.cameraVideo, 0, 0);
+            
+            // 캔버스를 Blob으로 변환
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    // File 객체 생성
+                    const file = new File([blob], `camera_photo_${Date.now()}.jpg`, {
+                        type: 'image/jpeg'
+                    });
+                    
+                    this.customerImageFile = file;
+                    console.log('📸 사진 촬영 완료:', file.name);
+                    
+                    // 미리보기 업데이트
+                    this.updateCameraPreview(URL.createObjectURL(blob));
+                    this.updateStartButtonState();
+                    
+                    // 카메라 중지
+                    this.stopCamera();
+                }
+            }, 'image/jpeg', 0.9);
+            
+        } catch (error) {
+            console.error('❌ 사진 촬영 실패:', error);
+            alert('사진 촬영 중 오류가 발생했습니다.');
+        }
+    }
+    
+    // ✨ 카메라 미리보기 업데이트
+    updateCameraPreview(imageUrl) {
+        const cameraArea = document.getElementById('cameraArea');
+        if (cameraArea) {
+            cameraArea.innerHTML = `
+                <div class="captured-image-preview">
+                    <img src="${imageUrl}" alt="촬영된 사진" style="width: 100%; max-width: 300px; border-radius: 10px;">
+                    <div class="captured-actions">
+                        <button class="btn btn-outline" onclick="window.hairgateFaceSwap.retakePhoto()">
+                            📸 다시 촬영
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    // ✨ 다시 촬영
+    retakePhoto() {
+        this.customerImageFile = null;
+        this.updateStartButtonState();
+        
+        // 카메라 영역 초기화
+        const cameraArea = document.getElementById('cameraArea');
+        if (cameraArea) {
+            cameraArea.innerHTML = `
+                <div id="cameraPreview" class="camera-preview" style="display: none;">
+                    <video id="cameraVideo" autoplay playsinline></video>
+                    <div class="camera-controls">
+                        <button id="captureBtn" class="capture-btn">📸 촬영</button>
+                        <button id="closeCameraBtn" class="close-camera-btn">❌ 닫기</button>
+                    </div>
+                </div>
+                <div id="cameraPlaceholder" class="camera-placeholder">
+                    <button id="startCameraBtn" class="start-camera-btn">
+                        <span style="font-size: 48px;">📷</span>
+                        <p>카메라 시작</p>
+                        <small>정면을 보고 촬영해주세요</small>
+                    </button>
+                </div>
+            `;
+            
+            // 이벤트 리스너 다시 연결
+            const startCameraBtn = document.getElementById('startCameraBtn');
+            if (startCameraBtn) {
+                startCameraBtn.addEventListener('click', () => this.startCamera());
+            }
+            
+            const captureBtn = document.getElementById('captureBtn');
+            if (captureBtn) {
+                captureBtn.addEventListener('click', () => this.capturePhoto());
+            }
+            
+            const closeCameraBtn = document.getElementById('closeCameraBtn');
+            if (closeCameraBtn) {
+                closeCameraBtn.addEventListener('click', () => this.stopCamera());
+            }
+        }
+        
+        console.log('🔄 다시 촬영 준비');
     }
 }
 
