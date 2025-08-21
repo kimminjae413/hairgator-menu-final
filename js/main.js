@@ -1374,9 +1374,82 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ========== 레이아웃 최적화 ==========
+    function fixCategoryTabsLayout() {
+        const style = document.createElement('style');
+        style.id = 'category-tabs-layout-fix';
+        style.textContent = `
+            /* 🔧 대분류 영역 높이 최적화 - 강제 적용 */
+            .category-tabs-wrapper {
+                margin-top: 15px !important;
+                padding: 8px 0 6px 0 !important;
+                min-height: auto !important;
+            }
+            
+            .category-tabs {
+                min-height: 35px !important;
+                padding: 2px 20px !important;
+            }
+            
+            .category-tab {
+                padding: 8px 14px !important;
+                min-height: 35px !important;
+                font-size: 13px !important;
+            }
+            
+            .category-description {
+                padding: 6px 20px 8px 20px !important;
+                line-height: 1.4 !important;
+            }
+            
+            .subcategory-wrapper {
+                padding: 10px 20px 14px 20px !important;
+            }
+            
+            /* 🔧 모바일 최적화 */
+            @media (max-width: 768px) {
+                .category-tabs-wrapper {
+                    margin-top: 8px !important;
+                    padding: 6px 0 4px 0 !important;
+                }
+                
+                .category-tabs {
+                    min-height: 30px !important;
+                    padding: 1px 15px !important;
+                }
+                
+                .category-tab {
+                    padding: 6px 12px !important;
+                    min-height: 30px !important;
+                    font-size: 12px !important;
+                }
+                
+                .category-description {
+                    padding: 5px 15px 6px 15px !important;
+                }
+                
+                .subcategory-wrapper {
+                    padding: 8px 15px 12px 15px !important;
+                }
+            }
+        `;
+        
+        // 기존 스타일이 있으면 제거
+        const existingStyle = document.getElementById('category-tabs-layout-fix');
+        if (existingStyle) {
+            existingStyle.remove();
+        }
+        
+        document.head.appendChild(style);
+        console.log('✅ 대분류 레이아웃 최적화 적용됨');
+    }
+
     // ========== 초기화 ==========
     function init() {
         console.log('🔧 애플리케이션 초기화 시작');
+        
+        // 🔧 레이아웃 문제 즉시 해결
+        fixCategoryTabsLayout();
         
         setupEventListeners();
         initTheme();
