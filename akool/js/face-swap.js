@@ -9,6 +9,14 @@ class HairgateFaceSwap {
         this.isProcessing = false;
         this.isFullscreen = false;
         
+        // ✨ 현재 스타일 데이터 저장용
+        this.currentStyleData = {
+            code: '',
+            name: '',
+            imageUrl: '',
+            gender: ''
+        };
+        
         this.init();
     }
 
@@ -18,6 +26,237 @@ class HairgateFaceSwap {
         this.createProgressUI();
         this.createResultUI();
         this.createFullscreenControls();
+        
+        // ✨ AI 버튼 생성 시스템 시작
+        this.initAIButtonSystem();
+    }
+
+    // ✨ AI 버튼 생성 시스템 초기화
+    initAIButtonSystem() {
+        console.log('🤖 AI 버튼 시스템 초기화');
+        
+        // 모달 변화 감지를 위한 MutationObserver
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                // 스타일 모달이 활성화될 때
+                if (mutation.type === 'attributes' && 
+                    mutation.attributeName === 'class' && 
+                    mutation.target.id === 'styleModal') {
+                    
+                    if (mutation.target.classList.contains('active')) {
+                        setTimeout(() => this.addAIButtonToModal(), 100);
+                    }
+                }
+                
+                // 새로운 모달 액션 영역이 추가될 때
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) { // Element node
+                            const modalActions = node.querySelector?.('.modal-actions') || 
+                                                (node.classList?.contains('modal-actions') ? node : null);
+                            if (modalActions && !document.getElementById('btnAIExperience')) {
+                                setTimeout(() => this.addAIButtonToModal(), 50);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+        // 전체 document 감시
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        // 기존 모달에도 즉시 시도
+        setTimeout(() => this.addAIButtonToModal(), 500);
+    }
+
+    // ✨ 모달에 AI 버튼 추가
+    addAIButtonToModal() {
+        const modalActions = document.querySelector('#styleModal .modal-actions');
+        
+        if (!modalActions) {
+            console.log('모달 액션 영역을 찾을 수 없음');
+            return;
+        }
+        
+        // 이미 AI 버튼이 있는지 확인
+        if (document.getElementById('btnAIExperience')) {
+            console.log('AI 버튼이 이미 존재함');
+            return;
+        }
+        
+        // 현재 스타일 정보 수집
+        this.collectCurrentStyleData();
+        
+        // AI체험하기 버튼 생성
+        const aiBtn = document.createElement('button');
+        aiBtn.id = 'btnAIExperience';
+        aiBtn.className = 'modal-btn btn-ai-experience';
+        aiBtn.innerHTML = `
+            <span style="margin-right: 8px;">✨</span>
+            <span>AI 헤어체험</span>
+        `;
+        
+        // 맨 앞에 추가
+        modalActions.insertBefore(aiBtn, modalActions.firstChild);
+        
+        // 클릭 이벤트 추가
+        aiBtn.addEventListener('click', () => {
+            this.openAIExperienceModal();
+        });
+        
+        console.log('✅ AI체험하기 버튼 추가됨', this.currentStyleData);
+    }
+
+    // ✨ 현재 스타일 데이터 수집
+    collectCurrentStyleData() {
+        const modalCode = document.getElementById('modalCode');
+        const modalName = document.getElementById('modalName');
+        const modalImage = document.getElementById('modalImage');
+        
+        if (modalCode && modalName && modalImage) {
+            this.currentStyleData = {
+                code: modalCode.textContent?.trim() || '',
+                name: modalName.textContent?.trim() || '',
+                imageUrl: modalImage.src || '',
+                gender: window.currentGender || 'unknown'
+            };
+            
+            // selectedHairstyleUrl도 업데이트
+            this.selectedHairstyleUrl = this.currentStyleData.imageUrl;
+        }
+    }
+
+    // ✨ AI 체험 모달 열기
+    openAIExperienceModal() {
+        // 현재 스타일 정보 다시 수집
+        this.collectCurrentStyleData();
+        
+        if (!this.currentStyleData.imageUrl) {
+            alert('헤어스타일 정보를 불러올 수 없습니다. 다시 시도해주세요.');
+            return;
+        }
+        
+        // AI 체험 전용 모달 생성 및 표시
+        this.createAIExperienceModal();
+        this.showAIExperienceModal();
+        
+        console.log('🤖 AI 체험 모달 열림:', this.currentStyleData);
+    }
+
+    // ✨ AI 체험 전용 모달 생성
+    createAIExperienceModal() {
+        // 기존 모달이 있으면 제거
+        const existingModal = document.getElementById('aiExperienceModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        const modalHTML = `
+            <div id="aiExperienceModal" class="ai-experience-overlay" style="display: none;">
+                <div class="ai-experience-modal">
+                    <div class="ai-experience-header">
+                        <h3>✨ AI 헤어스타일 체험</h3>
+                        <button class="close-btn" onclick="window.hairgateFaceSwap.closeAIExperienceModal()">✕</button>
+                    </div>
+                    
+                    <div class="ai-experience-content">
+                        <!-- 선택된 스타일 표시 -->
+                        <div class="selected-style-section">
+                            <h4>🎨 선택한 헤어스타일</h4>
+                            <div class="style-preview-card">
+                                <img src="${this.currentStyleData.imageUrl}" alt="${this.currentStyleData.name}" class="style-preview-image">
+                                <div class="style-preview-info">
+                                    <div class="style-code">${this.currentStyleData.code}</div>
+                                    <div class="style-name">${this.currentStyleData.name}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 고객 이미지 업로드 -->
+                        <div class="customer-image-section">
+                            <h4>📸 고객 사진 업로드</h4>
+                            <div class="upload-area" onclick="document.getElementById('customerImageUpload').click()">
+                                <div id="customerImagePreview" class="image-preview">
+                                    <div class="upload-placeholder">
+                                        <span style="font-size: 48px;">📷</span>
+                                        <p>클릭하여 고객 사진 선택</p>
+                                        <small>JPG, PNG 파일 (최대 10MB)</small>
+                                    </div>
+                                </div>
+                                <input type="file" id="customerImageUpload" accept="image/*" style="display: none;">
+                            </div>
+                        </div>
+                        
+                        <!-- 시작 버튼 -->
+                        <div class="ai-experience-actions">
+                            <button id="startFaceSwap" class="btn btn-primary btn-large" disabled>
+                                🎨 얼굴 바꾸기 시작
+                            </button>
+                        </div>
+                        
+                        <!-- 안내 사항 -->
+                        <div class="ai-experience-tips">
+                            <h5>💡 더 좋은 결과를 위한 팁</h5>
+                            <ul>
+                                <li>정면을 바라보는 사진을 사용하세요</li>
+                                <li>밝고 선명한 사진일수록 좋습니다</li>
+                                <li>한 명만 나온 사진을 선택하세요</li>
+                                <li>얼굴이 너무 작거나 큰 사진은 피하세요</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // 이벤트 리스너 추가
+        const uploadInput = document.getElementById('customerImageUpload');
+        if (uploadInput) {
+            uploadInput.addEventListener('change', (e) => this.handleCustomerImageUpload(e));
+        }
+        
+        const startButton = document.getElementById('startFaceSwap');
+        if (startButton) {
+            startButton.addEventListener('click', () => this.startFaceSwap());
+        }
+    }
+
+    // ✨ AI 체험 모달 표시
+    showAIExperienceModal() {
+        const modal = document.getElementById('aiExperienceModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            
+            // 기존 스타일 모달 숨기기
+            const styleModal = document.getElementById('styleModal');
+            if (styleModal) {
+                styleModal.style.display = 'none';
+            }
+        }
+    }
+
+    // ✨ AI 체험 모달 닫기
+    closeAIExperienceModal() {
+        const modal = document.getElementById('aiExperienceModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+            
+            // 기존 스타일 모달 복원
+            const styleModal = document.getElementById('styleModal');
+            if (styleModal) {
+                styleModal.style.display = 'flex';
+            }
+        }
     }
 
     setupEventListeners() {
@@ -37,6 +276,13 @@ class HairgateFaceSwap {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.isFullscreen) {
                 this.exitFullscreen();
+            }
+            // ESC 키로 AI 체험 모달 닫기
+            if (e.key === 'Escape') {
+                const aiModal = document.getElementById('aiExperienceModal');
+                if (aiModal && aiModal.style.display === 'flex') {
+                    this.closeAIExperienceModal();
+                }
             }
         });
 
@@ -254,6 +500,9 @@ class HairgateFaceSwap {
         console.log('💇 헤어스타일 이미지:', this.selectedHairstyleUrl);
 
         try {
+            // AI 체험 모달 숨기기
+            this.closeAIExperienceModal();
+            
             // 진행률 UI 표시
             this.showProgress();
             this.updateProgress(0, '처리 시작...');
@@ -573,7 +822,11 @@ class HairgateFaceSwap {
         });
         
         this.selectedHairstyleUrl = null;
+        this.customerImageFile = null;
         this.updateStartButtonState();
+        
+        // AI 체험 모달 다시 열기
+        this.openAIExperienceModal();
         
         console.log('🔄 새로운 스타일 시도');
     }
