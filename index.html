@@ -2380,6 +2380,11 @@
             
             loadMenuData(gender);
             utils.setStorage('gender', gender);
+            
+            // 🔧 성별 선택 후 태블릿/PC 카테고리 탭 위치 재조정
+            setTimeout(function() {
+                fixCategoryTabsForDesktop();
+            }, 100);
         }
 
         // 메뉴 관리
@@ -2861,10 +2866,36 @@ if (elements.modalClose) {
             });
         }
 
+        // 🔧 태블릿/PC 카테고리 탭 위치 강제 수정 함수
+        function fixCategoryTabsForDesktop() {
+            // 768px 이상(태블릿/PC)에서만 실행
+            if (window.innerWidth >= 768) {
+                const categoryWrapper = document.querySelector('.category-tabs-wrapper');
+                const mainContent = document.querySelector('.main-content');
+                
+                if (categoryWrapper) {
+                    categoryWrapper.style.position = 'static';
+                    categoryWrapper.style.top = 'auto';
+                    categoryWrapper.style.marginTop = '20px';
+                    categoryWrapper.style.paddingTop = '15px';
+                    categoryWrapper.style.zIndex = '50';
+                    console.log('✅ 태블릿/PC 카테고리 래퍼 수정됨');
+                }
+                
+                if (mainContent) {
+                    mainContent.style.marginTop = '95px';
+                    console.log('✅ 태블릿/PC 메인 콘텐츠 마진 수정됨');
+                }
+            }
+        }
+
         // 초기화
         function init() {
             setupEventListeners();
             initTheme();
+            
+            // 🔧 태블릿/PC 카테고리 탭 위치 즉시 수정
+            fixCategoryTabsForDesktop();
             
             // Firebase 연결 대기
             var retries = 0;
