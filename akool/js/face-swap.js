@@ -1,5 +1,5 @@
 // akool/js/face-swap.js
-// 얼굴 바꾸기 UI 컨트롤러 - SUCCESS 에러 수정 버전
+// 얼굴 바꾸기 UI 컨트롤러 - 최종 완성 버전
 class HairgateFaceSwap {
     constructor() {
         this.customerImageFile = null;
@@ -543,6 +543,7 @@ class HairgateFaceSwap {
         }
     }
 
+    // ✅ 최종 완성된 startFaceSwap 메서드
     async startFaceSwap() {
         if (!this.customerImageFile || !this.selectedHairstyleUrl || this.isProcessing) {
             return;
@@ -593,13 +594,32 @@ class HairgateFaceSwap {
                 (progress, message) => this.updateProgress(progress, message)
             );
 
-            console.log('🔍 API 응답 전체:', JSON.stringify(result || {}, null, 2));
-            
-            // ✅ 강화된 성공 판정 로직
+            // 🔍 API 응답 상세 디버깅
+            console.log('🔍 API 응답 전체:', result);
+            console.log('🔍 응답 타입:', typeof result);
+            console.log('🔍 응답 키들:', Object.keys(result || {}));
+
+            if (result) {
+                console.log('🔍 result.success:', result.success);
+                console.log('🔍 result.error:', result.error);
+                console.log('🔍 result.message:', result.message);
+                console.log('🔍 result.resultUrl:', result.resultUrl);
+                console.log('🔍 result.data:', result.data);
+                console.log('🔍 result.url:', result.url);
+                
+                // data 객체가 있다면 그 내용도 확인
+                if (result.data) {
+                    console.log('🔍 result.data 키들:', Object.keys(result.data));
+                    console.log('🔍 result.data.resultUrl:', result.data.resultUrl);
+                    console.log('🔍 result.data.url:', result.data.url);
+                }
+            }
+
+            // ✅ 모든 가능한 경로에서 resultUrl 추출
             let resultUrl = null;
             let isSuccess = false;
 
-            // 1️⃣ 명확한 성공 케이스
+            // 1️⃣ 명확한 성공 케이스들
             if (result && result.success === true) {
                 isSuccess = true;
                 resultUrl = result.resultUrl || result.data?.resultUrl || result.data?.url || result.url;
@@ -610,54 +630,33 @@ class HairgateFaceSwap {
                 resultUrl = result.resultUrl;
             }
             // 3️⃣ data 객체 안에 결과가 있는 경우
-            else if (result && result.data && (result.data.resultUrl || result.data.url || result.data.image || result.data.output)) {
+            else if (result && result.data && (result.data.resultUrl || result.data.url)) {
                 isSuccess = true;
-                resultUrl = result.data.resultUrl || result.data.url || result.data.image || result.data.output;
+                resultUrl = result.data.resultUrl || result.data.url;
             }
-            // 4️⃣ SUCCESS 메시지가 있지만 에러가 아닌 경우 (핵심 수정!)
-            else if (result && result.message && 
-                     (result.message.toString().toUpperCase().includes('SUCCESS') || 
-                      result.message.toString().includes('완료') ||
-                      result.message.toString().includes('성공')) && 
-                     !result.error) {
+            // 4️⃣ url 필드에 직접 있는 경우
+            else if (result && result.url && !result.error) {
                 isSuccess = true;
-                resultUrl = result.resultUrl || result.data?.resultUrl || result.data?.url || 
-                           result.url || result.data?.image || result.data?.output;
+                resultUrl = result.url;
             }
-            // 5️⃣ 에러가 명시되지 않고 어떤 URL이라도 있는 경우
-            else if (result && !result.error && 
-                     (result.url || (result.data && Object.values(result.data).some(v => 
-                         typeof v === 'string' && (v.includes('http') || v.includes('blob')))))) {
+            // 5️⃣ SUCCESS 메시지가 있지만 에러가 없는 경우
+            else if (result && result.message && result.message.toString().toUpperCase().includes('SUCCESS') && !result.error) {
                 isSuccess = true;
-                resultUrl = result.url || result.resultUrl || 
-                           result.data?.url || result.data?.resultUrl || 
-                           result.data?.image || result.data?.output ||
-                           (result.data && Object.values(result.data).find(v => 
-                               typeof v === 'string' && (v.includes('http') || v.includes('blob'))));
-            }
-            // 6️⃣ 특별한 경우: error가 "SUCCESS"인 경우 (API 버그 대응)
-            else if (result && result.error === 'SUCCESS') {
-                console.log('🔧 SUCCESS 에러 감지! 성공으로 처리합니다.');
-                isSuccess = true;
-                resultUrl = result.resultUrl || result.data?.resultUrl || result.data?.url || 
-                           result.url || result.data?.image || result.data?.output;
-                
-                // resultUrl이 없는 경우 재시도 안내
-                if (!resultUrl) {
-                    throw new Error('처리가 완료되었지만 결과 이미지를 받을 수 없습니다. 잠시 후 다시 시도해주세요.');
-                }
+                resultUrl = result.resultUrl || result.data?.resultUrl || result.data?.url || result.url;
             }
 
             console.log('🎯 판정 결과:', { isSuccess, resultUrl });
 
             if (isSuccess && resultUrl) {
                 // ✅ 성공 처리
+                this.updateProgress(100, '완료!');
+                
                 const originalUrl = URL.createObjectURL(this.customerImageFile);
                 this.showResult(originalUrl, resultUrl);
                 console.log('🎉 얼굴 바꾸기 성공!', resultUrl);
                 
-            } else if (result && result.error && result.error !== 'SUCCESS') {
-                // ❌ 명확한 에러 (SUCCESS는 제외)
+            } else if (result && result.error) {
+                // ❌ 명확한 에러
                 throw new Error(result.error);
                 
             } else {
@@ -750,17 +749,30 @@ class HairgateFaceSwap {
     showResult(originalUrl, resultUrl) {
         this.hideProgress();
 
+        // 🔍 showResult 디버깅 로그 추가
+        console.log('🔍 showResult 호출됨:');
+        console.log('  - originalUrl:', originalUrl);
+        console.log('  - resultUrl:', resultUrl);
+        console.log('  - 헤어스타일 원본:', this.currentStyleData.imageUrl);
+        
+        // URL이 같은지 확인
+        if (resultUrl === this.currentStyleData.imageUrl) {
+            console.log('❌ 문제 발견: resultUrl이 헤어스타일 원본과 동일함!');
+        }
+
         // 결과 이미지 설정
         const originalResult = document.getElementById('originalResult');
         const swappedResult = document.getElementById('swappedResult');
 
         if (originalResult) {
             originalResult.src = originalUrl;
+            console.log('🔍 설정된 원본 이미지:', originalUrl);
         }
 
         if (swappedResult) {
             swappedResult.src = resultUrl;
             swappedResult.setAttribute('data-result-url', resultUrl);
+            console.log('🔍 설정된 결과 이미지:', resultUrl);
         }
 
         // 결과 UI 표시
@@ -769,7 +781,7 @@ class HairgateFaceSwap {
             document.body.style.overflow = 'hidden';
         }
 
-        console.log('🎉 결과 표시 완료');
+        console.log('✅ 결과 표시 완료');
     }
 
     closeResult() {
