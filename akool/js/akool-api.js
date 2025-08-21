@@ -335,48 +335,80 @@
     }
 
     // ========== 7) 상태 조회 ==========
-    async checkFaceSwapStatus(taskId) {
-      try {
-        const tokenResult = await this.getToken();
-        if (!tokenResult.success) return tokenResult;
+    // akool-api.js의 checkFaceSwapStatus 메서드 - 최종 수정 버전
 
-        const url = `${AKOOL_API}/faceswap/result/listbyids?_ids=${encodeURIComponent(taskId)}`;
-        const response = await safeFetch(url, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+async checkFaceSwapStatus(taskId) {
+  try {
+    const tokenResult = await this.getToken();
+    if (!tokenResult.success) return tokenResult;
 
-        const data = await response.json();
-        console.log('📊 FaceSwap 상태 조회 응답:', data);
-
-        if (!(data && data.code === 1000 && data.data && Array.isArray(data.data.result))) {
-          return { success: false, error: data?.msg || '상태 조회 실패' };
-        }
-
-        const row = data.data.result[0] || {};
-        const statusMap = { 1: 'pending', 2: 'processing', 3: 'completed', 4: 'failed' };
-        const status = statusMap[row.faceswap_status] || 'processing';
-        const resultUrl = row.url || null;
-
-        return {
-          success: true,
-          status,
-          progress: (status === 'pending') ? 0 : (status === 'processing' ? 50 : 100),
-          resultUrl,
-          isComplete: status === 'completed' || status === 'failed',
-          message: this.getStatusMessage(status)
-        };
-      } catch (error) {
-        console.error('💥 상태 조회 오류:', error);
-        return {
-          success: false,
-          error: error.message || '상태 확인 네트워크 오류'
-        };
+    const url = `${AKOOL_API}/faceswap/result/listbyids?_ids=${encodeURIComponent(taskId)}`;
+    const response = await safeFetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${this.token}`,
+        'Content-Type': 'application/json'
       }
+    });
+
+    const data = await response.json();
+    console.log('📊 FaceSwap 상태 조회 응답:', data);
+
+    if (!(data && data.code === 1000 && data.data && Array.isArray(data.data.result))) {
+      return { success: false, error: data?.msg || '상태 조회 실패' };
     }
+
+    const row = data.data.result[0] || {};
+    const statusMap = { 1: 'pending', 2: 'processing', 3: 'completed', 4: 'failed' };
+    const status = statusMap[row.faceswap_status] || 'processing';
+    const resultUrl = row.url || null;
+
+    // ✅ 핵심 수정: resultUrl이 있으면 무조건 완료로 판정
+    let isComplete = false;
+    let finalStatus = status;
+    let finalProgress = 0;
+
+    if (resultUrl && resultUrl.trim() !== '') {
+      // URL이 있으면 완료
+      finalStatus = 'completed';
+      isComplete = true;
+      finalProgress = 100;
+      console.log('🎉 결과 URL 발견! 완료 처리:', resultUrl);
+    } else if (status === 'completed' || status === 'failed') {
+      // 명시적 완료/실패
+      isComplete = true;
+      finalProgress = 100;
+    } else if (status === 'processing') {
+      finalProgress = 50;
+    } else {
+      finalProgress = 0;
+    }
+
+    console.log('🔍 최종 판정:', {
+      원본_faceswap_status: row.faceswap_status,
+      매핑된_status: status,
+      최종_status: finalStatus,
+      resultUrl: resultUrl,
+      isComplete: isComplete,
+      progress: finalProgress
+    });
+
+    return {
+      success: true,
+      status: finalStatus,
+      progress: finalProgress,
+      resultUrl,
+      isComplete,
+      message: this.getStatusMessage(finalStatus)
+    };
+  } catch (error) {
+    console.error('💥 상태 조회 오류:', error);
+    return {
+      success: false,
+      error: error.message || '상태 확인 네트워크 오류'
+    };
+  }
+}
 
     // ========== 8) 상태 메시지 ==========
     getStatusMessage(status) {
