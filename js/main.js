@@ -1194,7 +1194,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnAkool.className = 'modal-btn btn-akool';
                 btnAkool.innerHTML = '<span>🎭</span><span>AI 체험하기</span>';
                 btnAkool.style.cssText = `
-                    background: linear-gradient(135deg, #FF6B6B, #FF8E53) !important;
+                    background: linear-gradient(135deg, #FF1493, #FF69B4) !important;
                     color: white !important;
                     border: none !important;
                     padding: 12px 20px !important;
@@ -1207,7 +1207,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     margin: 5px !important;
                     flex: 1 !important;
                     justify-content: center !important;
+                    transition: all 0.3s ease !important;
                 `;
+                
+                // 호버 효과 추가
+                btnAkool.addEventListener('mouseenter', function() {
+                    this.style.background = 'linear-gradient(135deg, #FF69B4, #FFB6C1)';
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 5px 15px rgba(255, 20, 147, 0.4)';
+                });
+                
+                btnAkool.addEventListener('mouseleave', function() {
+                    this.style.background = 'linear-gradient(135deg, #FF1493, #FF69B4)';
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = 'none';
+                });
                 
                 modalActions.appendChild(btnAkool);
                 console.log('✅ AI 버튼 강제 생성 완료');
@@ -1220,38 +1234,55 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('🎭 AI 체험하기 버튼 클릭됨');
                 hideStyleModal();
                 
-                // 간단한 테스트 먼저
-                alert('AI 체험하기 기능이 복구되었습니다!\n(실제 AKOOL 연동은 다음 단계에서 활성화)');
-                
-                // 실제 AKOOL 기능 (나중에 활성화)
-                /*
+                // 🔧 실제 AKOOL 기능 활성화
                 showAkoolModal();
                 
                 if (elements.akoolStartBtn) {
                     elements.akoolStartBtn.onclick = async function() {
+                        console.log('📁 파일 선택 시작');
+                        
                         var fileInput = document.createElement('input');
                         fileInput.type = 'file';
                         fileInput.accept = 'image/*';
                         
                         fileInput.onchange = async function(e) {
                             var file = e.target.files[0];
-                            if (!file) return;
+                            if (!file) {
+                                console.log('❌ 파일이 선택되지 않음');
+                                return;
+                            }
+                            
+                            console.log('📸 선택된 파일:', file.name, file.size);
+                            
+                            // 파일 크기 체크 (10MB 제한)
+                            if (file.size > 10 * 1024 * 1024) {
+                                alert('파일 크기가 너무 큽니다. 10MB 이하의 이미지를 선택해주세요.');
+                                return;
+                            }
                             
                             hideAkoolModal();
                             showLoadingModal('AI 얼굴 바꾸기 처리 중...');
                             
                             try {
+                                console.log('🚀 AKOOL 처리 시작');
+                                console.log('- 사용자 이미지:', file.name);
+                                console.log('- 스타일 이미지:', imageSrc);
+                                
                                 var result = await AkoolManager.startFaceSwap(file, imageSrc);
                                 
+                                console.log('✅ AKOOL 결과:', result);
                                 hideLoadingModal();
                                 
                                 if (result.success && result.resultUrl) {
+                                    console.log('🎉 성공! 결과 이미지:', result.resultUrl);
                                     showResultModal(result.resultUrl);
                                 } else {
+                                    console.error('❌ AKOOL 처리 실패:', result);
                                     alert('AI 처리에 실패했습니다: ' + (result.error || '알 수 없는 오류'));
                                 }
                                 
                             } catch (error) {
+                                console.error('❌ AKOOL 처리 중 오류:', error);
                                 hideLoadingModal();
                                 alert('AI 처리 중 오류가 발생했습니다: ' + error.message);
                             }
@@ -1259,10 +1290,40 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         fileInput.click();
                     };
+                } else {
+                    console.warn('⚠️ akoolStartBtn 요소를 찾을 수 없음');
+                    // 시작 버튼이 없으면 바로 파일 선택
+                    console.log('📁 바로 파일 선택 모드');
+                    
+                    var fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = 'image/*';
+                    
+                    fileInput.onchange = async function(e) {
+                        var file = e.target.files[0];
+                        if (!file) return;
+                        
+                        showLoadingModal('AI 얼굴 바꾸기 처리 중...');
+                        
+                        try {
+                            var result = await AkoolManager.startFaceSwap(file, imageSrc);
+                            hideLoadingModal();
+                            
+                            if (result.success && result.resultUrl) {
+                                showResultModal(result.resultUrl);
+                            } else {
+                                alert('AI 처리에 실패했습니다: ' + (result.error || '알 수 없는 오류'));
+                            }
+                        } catch (error) {
+                            hideLoadingModal();
+                            alert('AI 처리 중 오류가 발생했습니다: ' + error.message);
+                        }
+                    };
+                    
+                    fileInput.click();
                 }
-                */
             };
-            console.log('✅ AI 체험하기 버튼 이벤트 설정 완료');
+            console.log('✅ AI 체험하기 실제 AKOOL 연결 완료');
         } else {
             console.warn('⚠️ AI 버튼 생성 실패');
         }
