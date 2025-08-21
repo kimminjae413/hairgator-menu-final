@@ -296,7 +296,7 @@
 
         /* 메인 콘텐츠 */
         .main-content {
-            margin-top: calc(var(--header-height) + 20px); /* 헤더 + 여백 */
+            margin-top: 95px !important; /* 콘솔에서 성공했던 값 */
             min-height: calc(100vh - var(--header-height));
             position: relative;
             z-index: 10;
@@ -368,11 +368,11 @@
         .category-tabs-wrapper {
             background: var(--primary-dark);
             border-bottom: 1px solid #333;
-            position: static; /* sticky 해제 */
-            top: auto; /* top 값 제거 */
-            margin-top: 20px; /* 위쪽 여백 추가 */
-            padding-top: 10px; /* 내부 여백 */
-            z-index: 50; /* 헤더보다 낮게 */
+            position: static !important; /* 완전히 static으로 고정 */
+            top: auto !important; /* top 완전 제거 */
+            margin-top: 20px !important; /* 위쪽 여백 */
+            padding-top: 15px !important; /* 내부 여백 */
+            z-index: 50 !important; /* 헤더보다 낮게 */
         }
 
         .category-tabs {
@@ -1319,20 +1319,6 @@
             
             .logo {
                 margin-top: -5px; /* 로고를 위로 5px 올리기 */
-            }
-            
-            /* 🔧 태블릿/PC 전용 - 카테고리 탭 위치 완전 고정 */
-            .category-tabs-wrapper {
-                position: static !important;
-                top: auto !important;
-                margin-top: 30px !important;
-                padding-top: 20px !important;
-                z-index: 50 !important;
-            }
-            
-            /* 🔧 태블릿/PC 전용 - 메인 콘텐츠 마진 조정 */
-            .main-content {
-                margin-top: 85px !important; /* 헤더 + 여백 */
             }
         }
 
