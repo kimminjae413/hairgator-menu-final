@@ -1,5 +1,5 @@
 // akool/js/face-swap.js
-// 얼굴 바꾸기 UI 컨트롤러 - CloudFront 문제 해결 최종 버전
+// 얼굴 바꾸기 UI 컨트롤러 - AKOOL 에러 메시지 번역 포함 최종 완성본
 class HairgateFaceSwap {
     constructor() {
         this.customerImageFile = null;
@@ -79,7 +79,7 @@ class HairgateFaceSwap {
         setTimeout(() => this.addAIButtonToModal(), 500);
     }
 
-    // ✨ 모달에 AI 버튼 추가
+    // ✨ 모달에 AI 버튼 추가 - 단순화 버전 (버튼 사라짐 문제 해결)
     addAIButtonToModal() {
         const modalActions = document.querySelector('#styleModal .modal-actions');
         
@@ -88,20 +88,12 @@ class HairgateFaceSwap {
             return;
         }
         
-      // 🔧 강화된 AI 버튼 중복 체크
-const existingAIButtons = document.querySelectorAll('#btnAIExperience, .btn-ai-experience');
-if (existingAIButtons.length > 0) {
-    console.log('AI 버튼이 이미 존재함 - 모든 중복 제거 후 새로 생성');
-    // 모든 기존 AI 버튼 제거
-    existingAIButtons.forEach(btn => btn.remove());
-}
-
-// 모달 액션 영역에서도 AI 버튼 제거
-const modalActions = document.querySelector('#styleModal .modal-actions');
-if (modalActions) {
-    const aiButtonsInModal = modalActions.querySelectorAll('.btn-ai-experience, [id*="AI"], [onclick*="AI"]');
-    aiButtonsInModal.forEach(btn => btn.remove());
-}
+        // 기존 AI 버튼 확인 (단순 체크)
+        const existingAIButton = document.getElementById('btnAIExperience');
+        if (existingAIButton) {
+            console.log('✅ AI 버튼이 이미 존재함');
+            return;
+        }
         
         // 현재 스타일 정보 수집
         this.collectCurrentStyleData();
@@ -309,62 +301,63 @@ if (modalActions) {
         }
     }
 
-   // ✨ AI 체험 모달 닫기 + 스타일 모달 X 버튼 문제 해결
-closeAIExperienceModal() {
-    const modal = document.getElementById('aiExperienceModal');
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
-        
-        // 기존 스타일 모달 복원
-        const styleModal = document.getElementById('styleModal');
-        if (styleModal) {
-            styleModal.style.display = 'flex';
+    // ✨ AI 체험 모달 닫기 + 스타일 모달 X 버튼 문제 해결
+    closeAIExperienceModal() {
+        const modal = document.getElementById('aiExperienceModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+            
+            // 기존 스타일 모달 복원
+            const styleModal = document.getElementById('styleModal');
+            if (styleModal) {
+                styleModal.style.display = 'flex';
+            }
         }
-    }
-    
-    // 🔧 스타일 모달 X 버튼 이벤트 재설정 (문제 해결)
-    setTimeout(() => {
-        const styleModal = document.getElementById('styleModal');
-        const modalClose = document.getElementById('modalClose');
         
-        if (styleModal && modalClose) {
-            console.log('🔧 스타일 모달 X 버튼 이벤트 재설정 시작');
+        // 🔧 스타일 모달 X 버튼 이벤트 재설정 (문제 해결)
+        setTimeout(() => {
+            const styleModal = document.getElementById('styleModal');
+            const modalClose = document.getElementById('modalClose');
             
-            // 기존 이벤트 완전히 제거
-            modalClose.onclick = null;
-            modalClose.removeEventListener('click', hideStyleModal);
-            
-            // 새로운 이벤트 추가
-            modalClose.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('✅ 수정된 모달 닫기 이벤트 실행');
+            if (styleModal && modalClose) {
+                console.log('🔧 스타일 모달 X 버튼 이벤트 재설정 시작');
                 
-                // 모달 닫기
-                styleModal.classList.remove('active');
-                styleModal.style.display = 'none';
-                document.body.style.overflow = '';
+                // 기존 이벤트 완전히 제거
+                modalClose.onclick = null;
+                modalClose.removeEventListener('click', hideStyleModal);
                 
-                console.log('✅ 스타일 모달 닫기 완료');
-            });
-            
-            // 모달 바깥 클릭으로도 닫기
-            styleModal.addEventListener('click', function(e) {
-                if (e.target === this) {
+                // 새로운 이벤트 추가
+                modalClose.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('✅ 수정된 모달 닫기 이벤트 실행');
+                    
+                    // 모달 닫기
                     styleModal.classList.remove('active');
                     styleModal.style.display = 'none';
                     document.body.style.overflow = '';
-                    console.log('✅ 모달 바깥 클릭으로 닫기');
-                }
-            });
-            
-            console.log('🔧 스타일 모달 X 버튼 이벤트 재설정 완료');
-        }
-    }, 100);
-    
-    console.log('✅ AI 체험 모달 닫기 완료 + X 버튼 문제 해결');
-}
+                    
+                    console.log('✅ 스타일 모달 닫기 완료');
+                });
+                
+                // 모달 바깥 클릭으로도 닫기
+                styleModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        styleModal.classList.remove('active');
+                        styleModal.style.display = 'none';
+                        document.body.style.overflow = '';
+                        console.log('✅ 모달 바깥 클릭으로 닫기');
+                    }
+                });
+                
+                console.log('🔧 스타일 모달 X 버튼 이벤트 재설정 완료');
+            }
+        }, 100);
+        
+        console.log('✅ AI 체험 모달 닫기 완료 + X 버튼 문제 해결');
+    }
+
     setupEventListeners() {
         // 고객 이미지 업로드
         const customerUpload = document.getElementById('customerImageUpload');
@@ -696,8 +689,11 @@ closeAIExperienceModal() {
                 console.log('🎉 얼굴 바꾸기 성공!', resultUrl);
                 
             } else if (result && result.error) {
-                // ❌ 명확한 에러
-                throw new Error(result.error);
+                // ❌ AKOOL API 상세 에러 메시지 처리
+                console.log('🚨 AKOOL API 에러 상세:', result);
+                
+                let userFriendlyMessage = this.translateAkoolError(result.error);
+                throw new Error(userFriendlyMessage);
                 
             } else {
                 // ❓ 예상치 못한 상황 - 더 자세한 정보 제공
@@ -729,6 +725,116 @@ closeAIExperienceModal() {
             this.isProcessing = false;
             this.updateStartButtonState();
         }
+    }
+
+    // 🌐 AKOOL 에러 메시지 번역 및 개선
+    translateAkoolError(errorMessage) {
+        console.log('🔍 원본 AKOOL 에러:', errorMessage);
+        
+        const errorLower = errorMessage.toLowerCase();
+        
+        // 얼굴 감지 관련 에러들
+        if (errorLower.includes('no face') || errorLower.includes('face not found') || errorLower.includes('face not detected')) {
+            return `😔 얼굴을 찾을 수 없습니다
+
+📋 해결 방법:
+• 정면을 바라보는 사진을 사용하세요
+• 얼굴이 선명하게 보이는 사진을 선택하세요  
+• 머리카락이나 손으로 얼굴을 가리지 마세요
+• 밝은 곳에서 촬영된 사진을 사용하세요
+
+🔍 원본 메시지: ${errorMessage}`;
+        }
+        
+        if (errorLower.includes('multiple face') || errorLower.includes('more than one face')) {
+            return `👥 여러 명의 얼굴이 감지되었습니다
+
+📋 해결 방법:
+• 한 명만 나온 사진을 사용하세요
+• 배경에 다른 사람이 있다면 크롭해서 사용하세요
+• 거울이나 액자 속 얼굴이 있는지 확인하세요
+
+🔍 원본 메시지: ${errorMessage}`;
+        }
+        
+        if (errorLower.includes('face too small') || errorLower.includes('face size')) {
+            return `🔍 얼굴이 너무 작게 나왔습니다
+
+📋 해결 방법:
+• 얼굴이 더 크게 나온 사진을 사용하세요
+• 전신샷보다는 상반신이나 얼굴 위주 사진을 선택하세요
+• 고해상도 이미지를 사용하세요
+
+🔍 원본 메시지: ${errorMessage}`;
+        }
+        
+        if (errorLower.includes('image quality') || errorLower.includes('blurry') || errorLower.includes('blur')) {
+            return `📸 이미지 품질이 낮습니다
+
+📋 해결 방법:
+• 더 선명한 사진을 사용하세요
+• 흔들리지 않게 촬영된 사진을 선택하세요
+• 해상도가 높은 이미지를 업로드하세요
+• 압축률이 낮은 원본 이미지를 사용하세요
+
+🔍 원본 메시지: ${errorMessage}`;
+        }
+        
+        if (errorLower.includes('angle') || errorLower.includes('pose') || errorLower.includes('profile')) {
+            return `📐 얼굴 각도가 적절하지 않습니다
+
+📋 해결 방법:
+• 정면을 바라보는 사진을 사용하세요
+• 옆모습이나 아래에서 올려다본 사진은 피하세요
+• 고개를 너무 기울이지 않은 자연스러운 포즈의 사진을 선택하세요
+
+🔍 원본 메시지: ${errorMessage}`;
+        }
+        
+        if (errorLower.includes('format') || errorLower.includes('file type') || errorLower.includes('unsupported')) {
+            return `📁 지원하지 않는 파일 형식입니다
+
+📋 해결 방법:
+• JPG 또는 PNG 파일을 사용하세요
+• 파일 크기는 10MB 이하로 해주세요
+• 웹에서 다운로드한 이미지라면 다시 저장해보세요
+
+🔍 원본 메시지: ${errorMessage}`;
+        }
+        
+        if (errorLower.includes('server') || errorLower.includes('timeout') || errorLower.includes('network')) {
+            return `🌐 서버 연결 문제가 발생했습니다
+
+📋 해결 방법:
+• 잠시 후 다시 시도해주세요
+• 인터넷 연결을 확인하세요
+• 페이지를 새로고침하고 다시 시도하세요
+
+🔍 원본 메시지: ${errorMessage}`;
+        }
+        
+        if (errorLower.includes('quota') || errorLower.includes('limit') || errorLower.includes('credit')) {
+            return `📊 API 사용량이 초과되었습니다
+
+📋 안내:
+• 잠시 후 다시 시도해주세요
+• 관리자에게 문의하시면 더 빠른 도움을 받을 수 있습니다
+
+🔍 원본 메시지: ${errorMessage}`;
+        }
+        
+        // 기본 에러 (번역되지 않은 경우)
+        return `❌ 처리 중 오류가 발생했습니다
+
+📋 일반적인 해결 방법:
+• 정면을 바라보는 선명한 사진을 사용하세요
+• 한 명만 나온 사진을 선택하세요
+• 밝은 환경에서 촬영된 고품질 사진을 사용하세요
+• 파일 크기는 10MB 이하, JPG/PNG 형식을 사용하세요
+
+🔍 상세 메시지: ${errorMessage}
+
+💡 문제가 계속되면 다른 사진으로 시도하거나 관리자에게 문의하세요.`;
     }
 
     // 🚀 CloudFront 문제 해결이 포함된 스마트 결과 처리 시스템
@@ -783,7 +889,7 @@ closeAIExperienceModal() {
         }
     }
 
-    // 🔧 CloudFront 최적화 처리
+    // 🔧 CloudFront 최적화 처리 - 프록시 재시도 포함
     async optimizeCloudFrontResult(cloudFrontUrl, originalUrl, container) {
         console.log('🔧 CloudFront URL 최적화 처리');
         
@@ -795,10 +901,45 @@ closeAIExperienceModal() {
             return;
         }
 
-        // 방법 2: 고품질 Canvas 시뮬레이션
-        console.log('🎨 고품질 시뮬레이션 생성 중...');
-        const simulationResult = await this.createHighQualitySimulation(originalUrl);
-        this.showFinalResult(simulationResult, container);
+        // 방법 2: 프록시 재시도 (3회)
+        console.log('🔄 프록시 재시도 시작...');
+        let retrySuccess = false;
+        const maxRetries = 3;
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            console.log(`🔄 프록시 재시도 ${attempt}/${maxRetries}...`);
+            
+            try {
+                // Netlify Function 프록시 재시도
+                const proxyUrl = `/.netlify/functions/akool-proxy?url=${encodeURIComponent(cloudFrontUrl)}&retry=${attempt}&t=${Date.now()}`;
+                const proxyResponse = await fetch(proxyUrl);
+                
+                if (proxyResponse.ok) {
+                    const blob = await proxyResponse.blob();
+                    if (blob.size > 1000) { // 1KB 이상인 경우에만 유효한 이미지로 판단
+                        const retryUrl = URL.createObjectURL(blob);
+                        console.log(`✅ 프록시 재시도 ${attempt} 성공! (크기: ${blob.size} bytes)`);
+                        this.showFinalResult(retryUrl, container);
+                        retrySuccess = true;
+                        break;
+                    }
+                }
+            } catch (error) {
+                console.log(`⚠️ 프록시 재시도 ${attempt} 실패:`, error.message);
+            }
+            
+            // 재시도 간격 (1초씩 증가)
+            if (attempt < maxRetries) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            }
+        }
+
+        if (!retrySuccess) {
+            // 방법 3: 모든 시도 실패시 고품질 시뮬레이션
+            console.log('🎨 모든 프록시 시도 실패, 고품질 시뮬레이션 생성...');
+            const simulationResult = await this.createHighQualitySimulation(originalUrl);
+            this.showFinalResult(simulationResult, container);
+        }
     }
 
     // ⚡ 빠른 CloudFront 가져오기
@@ -1126,8 +1267,8 @@ closeAIExperienceModal() {
     }
 
     showError(message) {
-        // 에러 표시
-        alert(`❌ 오류 발생\n\n${message}\n\n• 정면 사진을 사용해주세요\n• 밝은 환경에서 촬영된 사진을 사용해주세요\n• 한 명만 나온 사진을 사용해주세요`);
+        // 에러 표시 - 이제 AKOOL 번역된 메시지가 표시됨
+        alert(message);
         console.error('🚨 Face Swap 에러:', message);
     }
     
