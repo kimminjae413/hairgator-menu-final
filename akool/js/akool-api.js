@@ -677,3 +677,90 @@ console.log('🔍 스크립트 로드 즉시 확인:', {
   hasAkoolAPI: typeof window.akoolAPI !== 'undefined',
   hasProcessFaceSwap: typeof window.akoolAPI?.processFaceSwap === 'function'
 });
+
+// ========== CloudFront 문제 진짜 해결 시스템 ==========
+window.fixAkoolCloudFront = async function() {
+    console.log('🔧 AKOOL CloudFront 문제 진짜 해결 시작');
+    
+    // 기존 processFaceSwap 함수 백업
+    const originalProcessFaceSwap = window.akoolAPI.processFaceSwap;
+    
+    // 수정된 processFaceSwap 함수로 교체
+    window.akoolAPI.processFaceSwap = async function(userFile, styleUrl, onProgress) {
+        console.log('🎨 수정된 Face Swap 시작 (프록시 포함)');
+        
+        // 원래 API 호출
+        const result = await originalProcessFaceSwap.call(this, userFile, styleUrl, onProgress);
+        
+        if (result && result.success && result.resultUrl) {
+            console.log('⚡ AKOOL 성공! CloudFront URL 즉시 캐시 시도:', result.resultUrl);
+            
+            // 방법 1: 서버 프록시를 통한 즉시 다운로드
+            try {
+                const proxyUrl = `/.netlify/functions/akool-proxy?url=${encodeURIComponent(result.resultUrl)}`;
+                console.log('🌐 서버 프록시 시도:', proxyUrl);
+                
+                const proxyResponse = await fetch(proxyUrl);
+                
+                if (proxyResponse.ok) {
+                    const blob = await proxyResponse.blob();
+                    const backupUrl = URL.createObjectURL(blob);
+                    
+                    console.log('✅ 서버 프록시를 통한 결과 저장 성공!');
+                    result.resultUrl = backupUrl;
+                    result.cached = true;
+                    result.method = 'proxy';
+                    
+                    return result;
+                }
+            } catch (error) {
+                console.log('⚠️ 서버 프록시 실패:', error.message);
+            }
+            
+            // 방법 2: 즉시 fetch 시도 (타이밍이 중요)
+            try {
+                console.log('⚡ CloudFront 즉시 fetch 시도...');
+                
+                const immediateResponse = await fetch(result.resultUrl, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+                
+                if (immediateResponse.ok) {
+                    const blob = await immediateResponse.blob();
+                    const immediateUrl = URL.createObjectURL(blob);
+                    
+                    console.log('✅ CloudFront 즉시 fetch 성공!');
+                    result.resultUrl = immediateUrl;
+                    result.cached = true;
+                    result.method = 'immediate';
+                    
+                    return result;
+                }
+            } catch (error) {
+                console.log('⚠️ 즉시 fetch 실패:', error.message);
+            }
+            
+            console.log('⚠️ 모든 방법 실패, 기존 URL 유지 (Canvas 시뮬레이션으로 전환될 예정)');
+        }
+        
+        return result;
+    };
+    
+    console.log('✅ AKOOL Face Swap 함수 수정 완료');
+};
+
+// 즉시 실행
+if (window.akoolAPI) {
+    fixAkoolCloudFront();
+} else {
+    // AKOOL API가 아직 로드되지 않은 경우 잠시 후 실행
+    setTimeout(() => {
+        if (window.akoolAPI) {
+            fixAkoolCloudFront();
+        }
+    }, 1000);
+}
+
+console.log('🚀 CloudFront 해결 시스템 로드됨');
