@@ -361,12 +361,12 @@
             display: block;
         }
 
-        /* 🔧 카테고리 탭 - 간단한 간격 조정만 */
+        /* 🔧 카테고리 탭 - 간격만 조정, 불필요한 속성 제거 */
         .category-tabs-wrapper {
             background: var(--primary-dark);
             border-bottom: 1px solid #333;
-            margin-top: 40px;           /* 60px → 40px로 단순 변경 */
-            padding: 15px 0 10px 0;     /* 25px 15px → 15px 10px로 단순 변경 */
+            margin-top: 40px;     /* 60px → 40px로 감소 */
+            padding: 15px 0 10px 0; /* 25px 0 15px 0 → 15px 0 10px 0 */
             z-index: 50;
             width: 100%;
         }
@@ -378,7 +378,7 @@
             scrollbar-width: none;
             padding: 5px 20px;
             width: 100%;
-            min-height: 45px;           /* 50px → 45px로 단순 변경 */
+            min-height: 45px;     /* 50px → 45px로 감소 */
             align-items: center;
         }
 
@@ -386,7 +386,7 @@
 
         .category-tab {
             flex: 0 0 auto;
-            padding: 12px 18px;         /* 15px 20px → 12px 18px로 단순 변경 */
+            padding: 12px 18px;   /* 15px 20px → 12px 18px로 감소 */
             background: none;
             border: none;
             border-bottom: 3px solid transparent;
@@ -401,7 +401,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 45px;           /* 50px → 45px로 단순 변경 */
+            min-height: 45px;     /* 50px → 45px로 감소 */
             flex-shrink: 0;
             line-height: 1;
         }
@@ -1163,81 +1163,25 @@
                 margin-top: max(env(safe-area-inset-top, 0px), 5px);
             }
             
-            .back-btn {
-                left: 25px;
-                top: 50% !important;
-                transform: translateY(-50%) !important;
-                width: 50px !important;
-                height: 50px !important;
-                font-size: 26px;
-                padding: 15px;
-                margin: -15px;
-                border-radius: 8px;
-            }
-            
-            .menu-btn {
-                right: 25px;
-                top: 50% !important;
-                transform: translateY(-50%) !important;
-                width: 50px !important;
-                height: 50px !important;
-                padding: 15px;
-                margin: -15px;
-                border-radius: 8px;
-            }
-            
-            .menu-btn span {
-                width: 26px !important;
-                height: 4px !important;
-            }
-            
-            .logo {
-                font-size: 18px !important;
-                letter-spacing: 1.5px;
-            }
-            
             .main-content {
-                margin-top: 120px !important;
+                margin-top: 120px !important;  /* 헤더가 내려간 만큼 더 증가 */
                 min-height: calc(100vh - 120px);
                 padding-top: 0px;
             }
             
+            /* 🔧 모바일에서 대분류 탭 위치 재조정 */
             .category-tabs-wrapper {
-                position: static !important;
-                top: auto !important;
-                margin-top: 0 !important;
-                padding-top: 20px !important;
-                z-index: 50;
+                margin-top: 10px !important;  /* 모바일에서는 거의 붙이기 */
+                padding-top: 15px !important;
                 background: var(--primary-dark);
                 border-bottom: 1px solid #333;
+                position: relative;
+                z-index: 50;
             }
             
             .category-description {
                 margin-top: 0 !important;
-                padding: 20px !important;
-            }
-
-            .category-tab.has-new::after {
-                width: 6px;
-                height: 6px;
-                top: 2px;
-                right: 2px;
-            }
-            
-            .subcategory-tab.has-new::after {
-                width: 5px;
-                height: 5px;
-                top: 1px;
-                right: 1px;
-            }
-            
-            .help-tab {
-                font-size: 8px !important;
-                min-width: 20px !important;
-                width: 20px !important;
-                height: 20px !important;
-                margin-right: 6px !important;
-                margin-left: 4px !important;
+                padding: 15px !important;  /* 모바일 패딩 조정 */
             }
         }
 
@@ -1317,10 +1261,66 @@
                 margin-top: -5px;
             }
             
-            /* 🔧 PC/태블릿에서만 추가 간격 줄이기 */
+            /* 🔧 PC/태블릿에서 추가 간격 줄이기 */
             .category-tabs-wrapper {
-                margin-top: 20px;          /* PC에서 40px → 20px로 추가 감소 */
-                padding-top: 15px;         /* PC에서 추가 감소 */
+                margin-top: 10px;          /* PC에서 20px → 10px로 더 감소 */
+                padding-top: 15px;
+            }
+            
+            .back-btn {
+                left: 25px;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 26px;
+                padding: 15px;
+                margin: -15px;
+                border-radius: 8px;
+            }
+            
+            .menu-btn {
+                right: 25px;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                width: 50px !important;
+                height: 50px !important;
+                padding: 15px;
+                margin: -15px;
+                border-radius: 8px;
+            }
+            
+            .menu-btn span {
+                width: 26px !important;
+                height: 4px !important;
+            }
+            
+            .logo {
+                font-size: 18px !important;
+                letter-spacing: 1.5px;
+            }
+
+            .category-tab.has-new::after {
+                width: 6px;
+                height: 6px;
+                top: 2px;
+                right: 2px;
+            }
+            
+            .subcategory-tab.has-new::after {
+                width: 5px;
+                height: 5px;
+                top: 1px;
+                right: 1px;
+            }
+            
+            .help-tab {
+                font-size: 8px !important;
+                min-width: 20px !important;
+                width: 20px !important;
+                height: 20px !important;
+                margin-right: 6px !important;
+                margin-left: 4px !important;
             }
             
             .main-content {
@@ -2073,14 +2073,30 @@
         }
 
         function loadSavedData() {
+            // 🔧 현재 사용자의 정보만 불러오기 (다른 사용자 정보 제외)
             var savedName = utils.getStorage('designerName');
             var savedPhone = utils.getStorage('designerPhone');
             
-            if (savedName && savedPhone && elements.designerName && elements.phoneNumber && elements.rememberInfo) {
-                elements.designerName.value = savedName;
-                elements.phoneNumber.value = savedPhone;
-                elements.rememberInfo.style.display = 'block';
-                elements.rememberInfo.innerHTML = '<span style="color: #4CAF50;">💾 저장된 정보로 간편 로그인 가능</span>';
+            // 🔧 저장된 정보가 있고, 유효한 경우에만 표시
+            if (savedName && savedPhone && 
+                savedName.trim() !== '' && savedPhone.trim() !== '' &&
+                elements.designerName && elements.phoneNumber && elements.rememberInfo) {
+                
+                // 🔧 현재 입력 필드가 비어있을 때만 저장된 정보 표시
+                if (elements.designerName.value === '' && elements.phoneNumber.value === '') {
+                    elements.designerName.value = savedName;
+                    elements.phoneNumber.value = savedPhone;
+                    elements.rememberInfo.style.display = 'block';
+                    elements.rememberInfo.innerHTML = '<span style="color: #4CAF50;">💾 저장된 정보로 간편 로그인 가능</span>';
+                    
+                    console.log('✅ 현재 사용자 정보 불러오기 완료:', savedName);
+                }
+            } else {
+                // 🔧 저장된 정보가 없거나 유효하지 않은 경우 안내 숨김
+                if (elements.rememberInfo) {
+                    elements.rememberInfo.style.display = 'none';
+                }
+                console.log('ℹ️ 저장된 사용자 정보 없음');
             }
         }
 
@@ -2128,17 +2144,28 @@
             elements.loginBtn.textContent = '로그인 중...';
 
             try {
-                // 로컬 스토리지로 처리
-                console.log('⚠️ Firebase 미연결 - 로컬 스토리지로 처리');
+                // 🔧 현재 사용자 정보만 저장 (기존 정보 덮어쓰기)
+                console.log('💾 현재 사용자 정보 저장 중...');
                 
                 var savedName = utils.getStorage('designerName');
                 var savedPhone = utils.getStorage('designerPhone');
                 var isReturningUser = (savedName === name && savedPhone === phone);
                 
+                // 🔧 현재 로그인하는 사용자의 정보만 저장
                 utils.setStorage('designerName', name);
                 utils.setStorage('designerPhone', phone);
                 utils.setStorage('designerPassword', password);
                 utils.setStorage('loginTime', new Date().getTime().toString());
+                
+                // 🔧 다른 사용자의 임시 데이터가 있다면 정리
+                var allKeys = Object.keys(localStorage);
+                allKeys.forEach(function(key) {
+                    if (key.startsWith(CONFIG.CACHE_PREFIX) && 
+                        !['designerName', 'designerPhone', 'designerPassword', 'loginTime', 'theme', 'gender'].includes(key.replace(CONFIG.CACHE_PREFIX, ''))) {
+                        console.log('🧹 불필요한 데이터 정리:', key);
+                        localStorage.removeItem(key);
+                    }
+                });
                 
                 var welcomeMessage = isReturningUser ? 
                     '👋 ' + name + ' 디자이너님 다시 오셨네요!' : 
@@ -2272,7 +2299,11 @@
             elements.backBtn.style.display = 'flex';
             elements.themeToggleBottom.style.display = 'none';
             
-            loadMenuData(gender);
+            // 🔧 메뉴 컨테이너가 표시된 후에 탭 렌더링
+            setTimeout(function() {
+                loadMenuData(gender);
+            }, 50); // DOM이 완전히 업데이트된 후 실행
+            
             utils.setStorage('gender', gender);
         }
 
