@@ -1146,7 +1146,7 @@
             border-color: #aaa;
         }
 
-      /* 📱 모바일 반응형 - 수정 완료 */
+      /* 📱 모바일 반응형 - 완전 수정 */
 @media (max-width: 768px) {
     /* 🎯 헤더 전체를 아래로 이동 */
     .header {
@@ -1200,15 +1200,20 @@
         padding-top: 10px;
     }
     
-    /* ✅ 카테고리 탭 위치 수정 - 핵심 수정 부분 */
+    /* ✅ 카테고리 탭 위치 완전 수정 - 핵심! */
     .category-tabs-wrapper {
-        position: sticky;
-        top: calc(var(--header-height) + 30px) !important;
+        position: relative !important; /* sticky 해제 */
+        top: 0 !important; /* top 값 초기화 */
+        margin-top: 20px !important; /* 위쪽 여백 추가 */
         z-index: 100;
-        /* 추가 보정 - 더 안전하게 */
-        margin-top: 0;
         background: var(--primary-dark);
         border-bottom: 1px solid #333;
+    }
+    
+    /* ✅ 카테고리 설명 박스도 아래로 내리기 */
+    .category-description {
+        margin-top: 10px !important;
+        padding: 20px !important;
     }
 
     /* 기존 코드들 유지 */
@@ -1236,7 +1241,7 @@
     }
 }
 
-        /* 🎯 소형 모바일 (480px 이하) - 수정 */
+        /* 🎯 소형 모바일 (480px 이하) - 완전 수정 */
 @media (max-width: 480px) {
     .header {
         top: 35px !important; /* 소형 화면에서는 더욱 아래로 */
@@ -1277,7 +1282,15 @@
     
     /* ✅ 소형 모바일 카테고리 탭 위치 수정 */
     .category-tabs-wrapper {
-        top: calc(var(--header-height) + 35px) !important;
+        position: relative !important; /* sticky 해제 */
+        top: 0 !important; /* top 값 초기화 */
+        margin-top: 25px !important; /* 위쪽 여백 더 크게 */
+    }
+    
+    /* ✅ 소형 모바일 카테고리 설명 박스 */
+    .category-description {
+        margin-top: 15px !important;
+        padding: 15px !important;
     }
 }
         /* 반응형 */
