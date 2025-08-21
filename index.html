@@ -368,9 +368,11 @@
         .category-tabs-wrapper {
             background: var(--primary-dark);
             border-bottom: 1px solid #333;
-            position: sticky;
-            top: var(--header-height);
-            z-index: 100;
+            position: static; /* sticky 해제 */
+            top: auto; /* top 값 제거 */
+            margin-top: 20px; /* 위쪽 여백 추가 */
+            padding-top: 10px; /* 내부 여백 */
+            z-index: 50; /* 헤더보다 낮게 */
         }
 
         .category-tabs {
