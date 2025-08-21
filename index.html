@@ -361,24 +361,30 @@
             display: block;
         }
 
-        /* 🔧 카테고리 탭 - 핵심 수정사항 */
+        /* 🔧 카테고리 탭 - 완전 해결 버전 */
         .category-tabs-wrapper {
             background: var(--primary-dark);
             border-bottom: 1px solid #333;
-            /* 모바일 기본값 */
-            position: static;
-            top: auto;
-            margin-top: 0;
-            padding-top: 20px;
-            z-index: 50;
+            /* 🔥 핵심 수정사항들 */
+            position: static !important;  /* sticky 완전 제거 */
+            top: auto !important;         /* top 완전 제거 */
+            margin-top: 0 !important;     /* 마진 초기화 */
+            padding-top: 20px !important; /* 내부 여백으로 조정 */
+            z-index: 50 !important;       /* 헤더(1000)보다 낮게 */
+            width: 100% !important;       /* 전체 너비 확보 */
+            display: block !important;    /* 표시 강제 */
+            visibility: visible !important; /* 가시성 강제 */
         }
 
         .category-tabs {
-            display: flex;
+            display: flex !important;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
             padding: 0;
+            width: 100% !important;
+            min-height: 60px !important; /* 최소 높이 보장 */
+            visibility: visible !important;
         }
 
         .category-tabs::-webkit-scrollbar { display: none; }
@@ -397,6 +403,10 @@
             text-transform: uppercase;
             white-space: nowrap;
             position: relative;
+            display: block !important;    /* 표시 강제 */
+            visibility: visible !important; /* 가시성 강제 */
+            min-width: auto !important;   /* 너비 자동 */
+            opacity: 1 !important;        /* 투명도 완전 불투명 */
         }
 
         .category-tab.active {
@@ -1309,13 +1319,16 @@
                 margin-top: -5px;
             }
             
-            /* 🔧 대분류 탭 위치 핵심 수정 */
+            /* 🔧 대분류 탭 위치 완전 해결 */
             .category-tabs-wrapper {
-                position: static !important;
-                top: auto !important;
-                margin-top: 30px !important;
-                padding-top: 20px !important;
-                z-index: 50 !important;
+                position: static !important;  /* sticky 완전 제거 */
+                top: auto !important;         /* top 완전 제거 */
+                margin-top: 30px !important;  /* 더 큰 여백 */
+                padding-top: 25px !important; /* 더 큰 내부 여백 */
+                z-index: 50 !important;       /* 헤더보다 낮게 */
+                width: 100% !important;       /* 전체 너비 확보 */
+                display: block !important;    /* 표시 강제 */
+                visibility: visible !important; /* 가시성 강제 */
             }
             
             .main-content {
