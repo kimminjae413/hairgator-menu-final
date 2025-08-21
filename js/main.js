@@ -1374,6 +1374,210 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ========== Service Worker 관리 시스템 ==========
+    const ServiceWorkerManager = {
+        registration: null,
+        updateCheckInterval: null,
+        
+        async init() {
+            if (!('serviceWorker' in navigator)) {
+                console.log('❌ Service Worker 미지원');
+                return;
+            }
+            
+            try {
+                console.log('🔧 Service Worker 등록 중...');
+                
+                this.registration = await navigator.serviceWorker.register('./service-worker.js', {
+                    scope: './',
+                    updateViaCache: 'none'
+                });
+                
+                console.log('✅ Service Worker 등록 성공');
+                this.setupEventListeners();
+                this.startUpdateCheck();
+                await this.checkForUpdates();
+                
+            } catch (error) {
+                console.error('❌ Service Worker 등록 실패:', error);
+            }
+        },
+        
+        setupEventListeners() {
+            if (this.registration) {
+                this.registration.addEventListener('updatefound', () => {
+                    console.log('🔄 새로운 Service Worker 발견');
+                    const newWorker = this.registration.installing;
+                    
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            this.handleUpdateAvailable();
+                        }
+                    });
+                });
+            }
+            
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                this.handleServiceWorkerMessage(event.data);
+            });
+            
+            window.addEventListener('online', () => {
+                console.log('🌐 온라인 상태 복구, 업데이트 확인');
+                this.checkForUpdates();
+            });
+            
+            window.addEventListener('focus', () => {
+                if (Math.random() < 0.1) {
+                    this.checkForUpdates();
+                }
+            });
+        },
+        
+        async checkForUpdates() {
+            if (!this.registration) return;
+            
+            try {
+                console.log('🔍 업데이트 확인 중...');
+                await this.registration.update();
+            } catch (error) {
+                console.warn('⚠️ 업데이트 확인 실패:', error);
+            }
+        },
+        
+        startUpdateCheck() {
+            this.updateCheckInterval = setInterval(() => {
+                this.checkForUpdates();
+            }, 60 * 60 * 1000); // 1시간
+        },
+        
+        handleUpdateAvailable() {
+            console.log('🎉 새 버전 사용 가능');
+            this.showUpdateNotification();
+        },
+        
+        showUpdateNotification() {
+            const existingNotification = document.getElementById('update-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.id = 'update-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-size: 14px;
+                max-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">🎉 새 버전 사용 가능!</div>
+                        <div style="font-size: 12px; opacity: 0.9;">더 나은 경험을 위해 업데이트하세요.</div>
+                    </div>
+                    <button onclick="ServiceWorkerManager.applyUpdate()" 
+                            style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); 
+                                   color: white; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                        업데이트
+                    </button>
+                    <button onclick="ServiceWorkerManager.dismissUpdate()" 
+                            style="background: transparent; border: none; color: white; cursor: pointer; font-size: 16px; padding: 5px;">
+                        ×
+                    </button>
+                </div>
+            `;
+            
+            if (!document.getElementById('update-notification-css')) {
+                const style = document.createElement('style');
+                style.id = 'update-notification-css';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideIn 0.3s ease-out reverse';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 30000);
+        },
+        
+        applyUpdate() {
+            console.log('🔄 업데이트 적용 중...');
+            
+            if (this.registration && this.registration.waiting) {
+                this.registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        },
+        
+        dismissUpdate() {
+            const notification = document.getElementById('update-notification');
+            if (notification) {
+                notification.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => notification.remove(), 300);
+            }
+        },
+        
+        handleServiceWorkerMessage(data) {
+            console.log('📨 Service Worker 메시지:', data);
+            
+            switch (data.type) {
+                case 'CACHE_UPDATED':
+                    console.log('✅ 캐시 업데이트 완료:', data.version);
+                    this.showCacheUpdateToast();
+                    break;
+                    
+                case 'CACHE_CLEARED':
+                    console.log('🧹 캐시 정리 완료');
+                    break;
+            }
+        },
+        
+        showCacheUpdateToast() {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 20px;
+                font-size: 12px;
+                z-index: 10000;
+                animation: fadeInOut 3s ease-in-out;
+            `;
+            toast.textContent = '✅ 캐시가 업데이트되었습니다';
+            
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    };
+
+    // 전역으로 노출
+    window.ServiceWorkerManager = ServiceWorkerManager;
+
     // ========== 레이아웃 최적화 ==========
     function fixCategoryTabsLayout() {
         const style = document.createElement('style');
@@ -1485,6 +1689,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (elements.backBtn) {
             elements.backBtn.style.display = 'none';
         }
+        
+        // Service Worker 초기화 (마지막에 추가)
+        ServiceWorkerManager.init();
         
         console.log('✅ HAIRGATOR App initialized (COMPLETE-FINAL VERSION)');
     }
