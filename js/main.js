@@ -1123,6 +1123,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function setupModalActions(code, name, gender, docId, imageSrc) {
+        console.log('🔧 setupModalActions 실행:', { code, name, gender });
+        
         // 고객 등록 버튼
         if (elements.btnRegister) {
             elements.btnRegister.onclick = function() {
@@ -1180,15 +1182,51 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         }
         
-        // AKOOL AI 체험 버튼 설정
-        if (elements.btnAkool) {
-            elements.btnAkool.style.display = 'flex'; // 버튼 보이게 하기
-            elements.btnAkool.onclick = function() {
+        // 🔧 AI 체험하기 버튼 - 없으면 강제 생성
+        let btnAkool = document.getElementById('btnAkool');
+        if (!btnAkool) {
+            console.log('🔧 AI 버튼이 없어서 강제 생성합니다');
+            
+            const modalActions = document.querySelector('.modal-actions');
+            if (modalActions) {
+                btnAkool = document.createElement('button');
+                btnAkool.id = 'btnAkool';
+                btnAkool.className = 'modal-btn btn-akool';
+                btnAkool.innerHTML = '<span>🎭</span><span>AI 체험하기</span>';
+                btnAkool.style.cssText = `
+                    background: linear-gradient(135deg, #FF6B6B, #FF8E53) !important;
+                    color: white !important;
+                    border: none !important;
+                    padding: 12px 20px !important;
+                    border-radius: 8px !important;
+                    cursor: pointer !important;
+                    font-weight: bold !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 8px !important;
+                    margin: 5px !important;
+                    flex: 1 !important;
+                    justify-content: center !important;
+                `;
+                
+                modalActions.appendChild(btnAkool);
+                console.log('✅ AI 버튼 강제 생성 완료');
+            }
+        }
+        
+        // AI 체험하기 버튼 이벤트 설정
+        if (btnAkool) {
+            btnAkool.onclick = function() {
                 console.log('🎭 AI 체험하기 버튼 클릭됨');
                 hideStyleModal();
+                
+                // 간단한 테스트 먼저
+                alert('AI 체험하기 기능이 복구되었습니다!\n(실제 AKOOL 연동은 다음 단계에서 활성화)');
+                
+                // 실제 AKOOL 기능 (나중에 활성화)
+                /*
                 showAkoolModal();
                 
-                // AKOOL 모달 내부 이벤트 설정
                 if (elements.akoolStartBtn) {
                     elements.akoolStartBtn.onclick = async function() {
                         var fileInput = document.createElement('input');
@@ -1222,10 +1260,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         fileInput.click();
                     };
                 }
+                */
             };
-            console.log('✅ AI 체험하기 버튼 복구 완료');
+            console.log('✅ AI 체험하기 버튼 이벤트 설정 완료');
         } else {
-            console.warn('⚠️ btnAkool 요소를 찾을 수 없음');
+            console.warn('⚠️ AI 버튼 생성 실패');
         }
     }
 
@@ -1722,7 +1761,132 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ HAIRGATOR App initialized (COMPLETE-FINAL VERSION)');
     }
 
-    // ========== 전역 함수 등록 ==========
+    // ========== 콘솔 디버깅 명령어 ==========
+    window.debugHairGator = {
+        // AI 버튼 상태 확인
+        checkAIButton: function() {
+            const btnAkool = document.getElementById('btnAkool');
+            console.log('🔍 AI 버튼 상태:');
+            console.log('- 요소 존재:', !!btnAkool);
+            console.log('- 요소 객체:', btnAkool);
+            if (btnAkool) {
+                console.log('- display 스타일:', btnAkool.style.display);
+                console.log('- computed display:', window.getComputedStyle(btnAkool).display);
+                console.log('- 클래스:', btnAkool.className);
+                console.log('- 부모 요소:', btnAkool.parentElement);
+            }
+            return btnAkool;
+        },
+        
+        // 모든 모달 버튼 확인
+        checkModalButtons: function() {
+            console.log('🔍 모달 버튼들 상태:');
+            const buttons = ['btnRegister', 'btnLike', 'btnAkool'];
+            buttons.forEach(id => {
+                const btn = document.getElementById(id);
+                console.log(`- ${id}:`, !!btn, btn);
+            });
+        },
+        
+        // 스타일 모달 HTML 구조 확인
+        checkModalHTML: function() {
+            const modal = document.getElementById('styleModal');
+            if (modal) {
+                console.log('🔍 스타일 모달 HTML 구조:');
+                console.log(modal.innerHTML);
+            } else {
+                console.log('❌ 스타일 모달을 찾을 수 없음');
+            }
+        },
+        
+        // AI 버튼 강제 생성
+        createAIButton: function() {
+            console.log('🔧 AI 버튼 강제 생성 시도...');
+            
+            const modalActions = document.querySelector('.modal-actions');
+            if (!modalActions) {
+                console.log('❌ .modal-actions 요소를 찾을 수 없음');
+                return false;
+            }
+            
+            // 기존 AI 버튼 제거
+            const existingBtn = document.getElementById('btnAkool');
+            if (existingBtn) {
+                existingBtn.remove();
+                console.log('🗑️ 기존 AI 버튼 제거됨');
+            }
+            
+            // 새 AI 버튼 생성
+            const aiButton = document.createElement('button');
+            aiButton.id = 'btnAkool';
+            aiButton.className = 'modal-btn btn-akool';
+            aiButton.innerHTML = '<span>🎭</span><span>AI 체험하기</span>';
+            aiButton.style.cssText = `
+                background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin: 5px;
+            `;
+            
+            // 클릭 이벤트 추가
+            aiButton.onclick = function() {
+                console.log('🎭 AI 버튼 클릭됨!');
+                alert('AI 체험하기 버튼이 작동합니다!');
+            };
+            
+            modalActions.appendChild(aiButton);
+            console.log('✅ AI 버튼 생성 완료');
+            return aiButton;
+        },
+        
+        // 현재 모달 상태 확인
+        checkModalState: function() {
+            const modal = document.getElementById('styleModal');
+            console.log('🔍 모달 상태:');
+            console.log('- 모달 존재:', !!modal);
+            if (modal) {
+                console.log('- display:', modal.style.display);
+                console.log('- 클래스:', modal.className);
+                console.log('- 활성화:', modal.classList.contains('active'));
+            }
+        },
+        
+        // 테스트 모달 열기
+        openTestModal: function() {
+            console.log('🧪 테스트 모달 열기...');
+            const modal = document.getElementById('styleModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                console.log('✅ 테스트 모달 열림');
+                
+                // AI 버튼 확인
+                setTimeout(() => {
+                    this.checkAIButton();
+                }, 100);
+            }
+        },
+        
+        // elements 객체 상태 확인
+        checkElements: function() {
+            console.log('🔍 elements 객체 상태:');
+            console.log('- btnAkool:', elements.btnAkool);
+            console.log('- styleModal:', elements.styleModal);
+            console.log('- modalClose:', elements.modalClose);
+            console.log('- btnRegister:', elements.btnRegister);
+            console.log('- btnLike:', elements.btnLike);
+        }
+    };
+
+    // 전역 함수 등록
     window.selectGender = selectGender;
     window.logout = logout;
     window.showHairGuideModal = showHairGuideModal;
