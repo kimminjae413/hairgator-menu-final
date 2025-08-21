@@ -361,19 +361,21 @@
             display: block;
         }
 
-        /* 🔧 카테고리 탭 - 완전 해결 버전 */
+        /* 🔧 카테고리 탭 - 기본 설정 */
         .category-tabs-wrapper {
             background: var(--primary-dark);
             border-bottom: 1px solid #333;
-            /* 🔥 핵심 수정사항들 */
-            position: static !important;  /* sticky 완전 제거 */
-            top: auto !important;         /* top 완전 제거 */
-            margin-top: 0 !important;     /* 마진 초기화 */
-            padding-top: 20px !important; /* 내부 여백으로 조정 */
-            z-index: 50 !important;       /* 헤더(1000)보다 낮게 */
-            width: 100% !important;       /* 전체 너비 확보 */
-            display: block !important;    /* 표시 강제 */
-            visibility: visible !important; /* 가시성 강제 */
+            position: static !important;
+            top: auto !important;
+            margin-top: 40px !important;     /* 🔧 60px → 40px로 감소 */
+            padding: 15px 0 10px 0 !important; /* 🔧 25px 15px → 15px 10px 감소 */
+            z-index: 50 !important;
+            width: 100% !important;
+            display: block !important;
+            visibility: visible !important;
+            height: auto !important;
+            min-height: 65px !important;     /* 🔧 80px → 65px로 감소 */
+            overflow: visible !important;
         }
 
         .category-tabs {
@@ -381,17 +383,19 @@
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
-            padding: 0;
+            padding: 5px 20px !important;
             width: 100% !important;
-            min-height: 60px !important; /* 최소 높이 보장 */
             visibility: visible !important;
+            height: auto !important;
+            min-height: 45px !important;     /* 🔧 50px → 45px로 감소 */
+            align-items: center !important;
         }
 
         .category-tabs::-webkit-scrollbar { display: none; }
 
         .category-tab {
             flex: 0 0 auto;
-            padding: 15px 20px;
+            padding: 12px 18px !important;   /* 🔧 15px 20px → 12px 18px 감소 */
             background: none;
             border: none;
             border-bottom: 3px solid transparent;
@@ -403,10 +407,16 @@
             text-transform: uppercase;
             white-space: nowrap;
             position: relative;
-            display: block !important;    /* 표시 강제 */
-            visibility: visible !important; /* 가시성 강제 */
-            min-width: auto !important;   /* 너비 자동 */
-            opacity: 1 !important;        /* 투명도 완전 불투명 */
+            /* 🔧 핵심 수정: flex 아이템으로 설정 */
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            height: auto !important;
+            min-height: 45px !important;     /* 🔧 50px → 45px 감소 */
+            flex-shrink: 0 !important;
+            line-height: 1 !important;
         }
 
         .category-tab.active {
@@ -460,20 +470,21 @@
             box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
         }
 
-        /* 카테고리 설명 */
+        /* 🔧 카테고리 설명 - 간격 최적화 */
         .category-description {
-            padding: 20px;
+            padding: 8px 20px 12px 20px !important; /* 🔧 10px 20px 15px → 8px 20px 12px 감소 */
             font-size: 13px;
-            line-height: 1.6;
+            line-height: 1.5;                        /* 🔧 1.6 → 1.5로 감소 */
             color: var(--text-secondary);
             background: #0a0a0a;
             position: relative;
             z-index: 10;
+            margin-top: 0 !important;               /* 상단 마진 제거 */
         }
 
-        /* 중분류 탭 */
+        /* 🔧 중분류 탭 - 간격 최적화 */
         .subcategory-wrapper {
-            padding: 20px;
+            padding: 15px 20px 20px 20px;           /* 🔧 20px → 15px 20px 20px 상단 감소 */
             background: var(--primary-dark);
             position: relative;
             z-index: 10;
@@ -1319,16 +1330,18 @@
                 margin-top: -5px;
             }
             
-            /* 🔧 대분류 탭 위치 완전 해결 */
+            /* 🔧 PC/태블릿에서 대분류 탭 간격 최적화 */
             .category-tabs-wrapper {
-                position: static !important;  /* sticky 완전 제거 */
-                top: auto !important;         /* top 완전 제거 */
-                margin-top: 30px !important;  /* 더 큰 여백 */
-                padding-top: 25px !important; /* 더 큰 내부 여백 */
-                z-index: 50 !important;       /* 헤더보다 낮게 */
-                width: 100% !important;       /* 전체 너비 확보 */
-                display: block !important;    /* 표시 강제 */
-                visibility: visible !important; /* 가시성 강제 */
+                position: static !important;
+                top: auto !important;
+                margin-top: 20px !important;    /* 🔧 30px → 20px로 더 감소 */
+                padding-top: 15px !important;   /* 🔧 25px → 15px로 감소 */
+                z-index: 50 !important;
+                width: 100% !important;
+                display: block !important;
+                visibility: visible !important;
+                height: auto !important;
+                overflow: visible !important;
             }
             
             .main-content {
@@ -2775,7 +2788,7 @@
                 elements.backBtn.style.display = 'none';
             }
             
-            console.log('🚀 HAIRGATOR App initialized (FIXED VERSION)');
+            console.log('🚀 HAIRGATOR App initialized (SPACING-FIXED VERSION)');
         }
 
         // DOM 로드 완료 시 실행
@@ -2930,7 +2943,7 @@
                 });
             }
             
-            console.log('✅ HAIRGATOR App loaded successfully (FIXED VERSION)');
+            console.log('✅ HAIRGATOR App loaded successfully (SPACING-FIXED VERSION)');
         });
     </script>
 </body>
