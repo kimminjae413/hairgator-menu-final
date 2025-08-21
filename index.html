@@ -2509,9 +2509,19 @@
                 });
             }
             
-            if (elements.modalClose) {
-                elements.modalClose.addEventListener('click', hideStyleModal);
-            }
+           if (elements.modalClose) {
+    // 기존 이벤트 리스너 제거 후 새로 추가
+    const newModalClose = elements.modalClose.cloneNode(true);
+    elements.modalClose.parentNode.replaceChild(newModalClose, elements.modalClose);
+    elements.modalClose = newModalClose;
+    
+    elements.modalClose.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🚪 모달 닫기 버튼 클릭됨');
+        hideStyleModal();
+    });
+}
             
             if (elements.styleModal) {
                 elements.styleModal.addEventListener('click', function(e) {
@@ -2844,5 +2854,6 @@
     </script>
 </body>
 </html>
+
 
 
