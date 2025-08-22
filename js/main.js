@@ -99,7 +99,10 @@ catch(e){console.error('Logout error:',e);}
 
 // 성별 선택
 document.querySelectorAll('.gender-btn').forEach(btn=>{
-btn.addEventListener('click',()=>selectGender(btn.dataset.gender));
+btn.addEventListener('click',function(){
+console.log('성별 버튼 클릭됨:', this.dataset.gender);
+selectGender(this.dataset.gender);
+});
 });
 
 // 모달
@@ -136,11 +139,27 @@ nameEl&&(nameEl.textContent=window.auth.currentUser.displayName||window.auth.cur
 
 // 성별 선택
 function selectGender(gender){
+console.log('📱 성별 선택 함수 실행:', gender);
+if(!gender){
+console.error('❌ 성별이 전달되지 않음');
+return;
+}
+
 currentGender=gender;
+console.log('✅ 현재 성별 설정됨:', currentGender);
+
+// DOM 요소 확인
+if(!el.genderSelection || !el.menuContainer){
+console.error('❌ 필수 DOM 요소를 찾을 수 없음');
+return;
+}
+
 el.genderSelection.style.display='none';
 el.menuContainer.classList.add('active');
 el.backBtn&&(el.backBtn.style.display='flex');
 el.themeToggleBottom&&(el.themeToggleBottom.style.display='none');
+
+console.log('📋 메뉴 데이터 로드 시작...');
 loadMenuData(gender);
 localStorage.setItem('hairgator_gender',gender);
 }
@@ -303,10 +322,32 @@ likes:firebase.firestore.FieldValue.increment(isLiked?1:-1)
 function showLoading(show){el.loadingOverlay?.classList.toggle('active',show);}
 
 // 초기화
+function init(){
+console.log('🚀 앱 초기화 시작');
 setupEvents();
 loadTheme();
 checkAuth();
 el.backBtn&&(el.backBtn.style.display='none');
+
+// 성별 버튼 재확인 및 이벤트 재등록
+setTimeout(()=>{
+const genderBtns=document.querySelectorAll('.gender-btn');
+console.log('성별 버튼 개수:', genderBtns.length);
+genderBtns.forEach((btn,index)=>{
+console.log(`성별 버튼 ${index}:`, btn.dataset.gender);
+if(!btn.hasAttribute('data-event-added')){
+btn.addEventListener('click',function(){
+console.log('성별 선택:', this.dataset.gender);
+selectGender(this.dataset.gender);
+});
+btn.setAttribute('data-event-added','true');
 }
+});
+},100);
+}
+}
+
+// 전역에서 함수 실행
+init();
 
 window.addEventListener('load',()=>console.log('HAIRGATOR App Loaded'));
