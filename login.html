@@ -440,10 +440,17 @@
                     console.log(`✅ 기존 사용자 로그인 완료`);
                 }
                 
-                // 로컬스토리지에 저장 (새 형식)
+                // 🔥 중요: index.html과 동일한 키 사용 (수정됨)
                 localStorage.setItem('hairgator_designer_name', name);
                 localStorage.setItem('hairgator_designer_phone', phoneOnly);
                 localStorage.setItem('hairgator_login_time', new Date().getTime().toString());
+                localStorage.setItem('hairgator_designer_id', existingQuery.empty ? 'new' : existingQuery.docs[0].id);
+                
+                console.log('✅ 로그인 정보 저장 완료:', {
+                    name: name,
+                    phone: phoneOnly,
+                    loginTime: new Date().getTime()
+                });
                 
                 // 환영 메시지 표시
                 showWelcomeMessage(name, isNewUser, tokensAwarded);
@@ -493,6 +500,8 @@
             } else {
                 nameInput.focus();
             }
+            
+            console.log('🎨 HAIRGATOR 로그인 페이지 로드 완료');
         });
         
         console.log('🎨 HAIRGATOR 디자이너 로그인 시스템 (Firebase 통합 + Admin 토큰 연동)');
