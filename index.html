@@ -43,6 +43,232 @@
     <script src="js/smart-cache-manager.js?v=2.1.0"></script>
     <script src="js/firebase-config.js?v=2.1.0"></script>
     <script src="js/main.js?v=2.1.0"></script>
+
+    <!-- 🎨 물음표 버튼 스타일 수정 -->
+    <style>
+        /* ========== 물음표 도움말 버튼 수정 (3배 작게 + 위치 조정) ========== */
+        .help-tab {
+            background: #FF1493 !important;
+            color: white !important;
+            border: 2px solid #FF1493 !important;
+            font-weight: bold;
+            font-size: 12px !important;        /* 18px → 12px (작게) */
+            min-width: 24px !important;        /* 50px → 24px (작게) */
+            height: 24px !important;           /* 자동 → 24px (작게) */
+            border-radius: 50% !important;
+            margin-right: 8px !important;      /* 10px → 8px (가깝게) */
+            text-transform: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;             /* 기존 패딩 제거 */
+            flex-shrink: 0 !important;         /* 크기 고정 */
+        }
+
+        .help-tab:hover {
+            background: #FF69B4 !important;
+            transform: translateY(-1px) !important;  /* -2px → -1px (작게) */
+            box-shadow: 0 3px 10px rgba(255, 20, 147, 0.4) !important;  /* 그림자 작게 */
+        }
+
+        /* 카테고리 탭 컨테이너 정렬 조정 */
+        .category-tabs {
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding: 0;
+            align-items: center;  /* 세로 가운데 정렬 */
+        }
+
+        /* 일반 카테고리 탭과의 간격 조정 */
+        .category-tab:first-of-type {
+            margin-left: 0 !important;  /* A LENGTH 탭의 왼쪽 여백 제거 */
+        }
+
+        /* 라이트 테마에서도 동일하게 적용 */
+        body.light-theme .help-tab {
+            background: #FF1493 !important;
+            color: white !important;
+            border-color: #FF1493 !important;
+            font-size: 12px !important;
+            min-width: 24px !important;
+            height: 24px !important;
+        }
+
+        body.light-theme .help-tab:hover {
+            background: #FF69B4 !important;
+        }
+
+        /* 얼굴분석 버튼 스타일 */
+        .face-analysis-section {
+            margin: 20px 0;
+            padding: 20px 0;
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+        }
+
+        .face-analysis-btn {
+            width: 100%;
+            padding: 15px;
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .face-analysis-btn:hover {
+            background: #3a3a3a;
+            border-color: #666;
+        }
+
+        .face-icon {
+            font-size: 20px;
+        }
+
+        .face-analysis-desc {
+            color: #666;
+            font-size: 12px;
+            margin-top: 10px;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        /* 라이트 테마 대응 */
+        body.light-theme .face-analysis-section {
+            border-color: #ddd;
+        }
+
+        body.light-theme .face-analysis-btn {
+            background: #e0e0e0;
+            color: #000;
+            border-color: #ccc;
+        }
+
+        body.light-theme .face-analysis-btn:hover {
+            background: #d0d0d0;
+            border-color: #bbb;
+        }
+
+        body.light-theme .face-analysis-desc {
+            color: #666;
+        }
+
+        /* ========== 헤어 길이 가이드 팝업 스타일 ========== */
+        .help-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .help-modal.active {
+            display: flex;
+        }
+
+        .help-modal-content {
+            background: #1a1a1a;
+            border: 2px solid #FF1493;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: helpModalSlideIn 0.3s ease;
+        }
+
+        @keyframes helpModalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .help-modal-header {
+            background: #FF1493;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .help-modal-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .help-modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .help-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .help-modal-body {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .help-modal-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 라이트 테마 대응 */
+        body.light-theme .help-modal-content {
+            background: #fff;
+            border-color: #FF1493;
+        }
+
+        /* 모바일 대응 */
+        @media (max-width: 768px) {
+            .help-modal-content {
+                width: 95%;
+                height: 85vh;
+            }
+            
+            .help-modal-header h3 {
+                font-size: 18px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Loading -->
@@ -155,8 +381,23 @@
         </div>
     </div>
 
+    <!-- 헤어 길이 가이드 팝업 -->
+    <div class="help-modal" id="helpModal">
+        <div class="help-modal-content">
+            <div class="help-modal-header">
+                <h3>💇‍♀️ 여성 헤어 길이 가이드</h3>
+                <button class="help-modal-close" id="helpModalClose">×</button>
+            </div>
+            <div class="help-modal-body">
+                <iframe 
+                    src="https://drive.google.com/file/d/15OgT9k5jCC6TjcJSImuQXcznS_HtFBVf/preview" 
+                    frameborder="0" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+    </div>
 
-    
     <!-- PWA Script -->
     <script>
         // PWA Service Worker
@@ -196,12 +437,62 @@
     </script>
     <script src="js/akool-service.js?v=2.1.0"></script>
     <script src="js/ai-integration.js?v=2.1.0"></script>
-       <!-- NEW 뱃지 시스템 -->
+    <!-- NEW 뱃지 시스템 -->
     <script src="js/new-badge-system.js"></script> 
     <!-- 벚꽃 배경 시스템 -->
     <script src="js/sakura-effect.js"></script>
+
+    <!-- 헬프 모달 스크립트 -->
+    <script>
+        // 헬프 모달 관련 함수들
+        function openHelpModal() {
+            const helpModal = document.getElementById('helpModal');
+            if (helpModal) {
+                helpModal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+            }
+        }
+
+        function closeHelpModal() {
+            const helpModal = document.getElementById('helpModal');
+            if (helpModal) {
+                helpModal.classList.remove('active');
+                document.body.style.overflow = 'auto'; // 스크롤 복원
+            }
+        }
+
+        // DOM 로드 후 이벤트 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            // 헬프 모달 닫기 버튼
+            const helpModalClose = document.getElementById('helpModalClose');
+            if (helpModalClose) {
+                helpModalClose.addEventListener('click', closeHelpModal);
+            }
+
+            // 모달 외부 클릭 시 닫기
+            const helpModal = document.getElementById('helpModal');
+            if (helpModal) {
+                helpModal.addEventListener('click', function(e) {
+                    if (e.target === helpModal) {
+                        closeHelpModal();
+                    }
+                });
+            }
+
+            // ESC 키로 모달 닫기
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const helpModal = document.getElementById('helpModal');
+                    if (helpModal && helpModal.classList.contains('active')) {
+                        closeHelpModal();
+                    }
+                }
+            });
+        });
+
+        // 전역 함수로 등록 (물음표 버튼에서 호출)
+        window.openHelpModal = openHelpModal;
+        window.closeHelpModal = closeHelpModal;
+    </script>
 </body>
 </html>
-
-
-
