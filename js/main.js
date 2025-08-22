@@ -1,5 +1,14 @@
 // Main Application Logic
 document.addEventListener('DOMContentLoaded', function() {
+    // Firebase 연결 대기
+    if (!window.firebaseInitialized) {
+        window.addEventListener('firebaseReady', initApp);
+    } else {
+        initApp();
+    }
+});
+
+function initApp() {
     // Global variables
     let currentGender = null;
     let currentCategory = null;
@@ -399,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             // Firebase 초기화 확인
-            if (typeof db === 'undefined') {
+            if (!window.db) {
                 console.error('Firebase not initialized');
                 menuGrid.innerHTML = '<div style="color: #999; text-align: center; padding: 40px;">Firebase 연결 중...</div>';
                 return;
@@ -410,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Loading styles:', { gender, categoryName, subcategory });
             
             // Firebase에서 데이터 가져오기
-            const query = db.collection('hairstyles')
+            const query = window.db.collection('hairstyles')
                 .where('gender', '==', gender)
                 .where('mainCategory', '==', categoryName)
                 .where('subCategory', '==', subcategory);
@@ -508,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!customerPhone) return;
             
             try {
-                await db.collection('customers').add({
+                await window.db.collection('customers').add({
                     name: customerName,
                     phone: customerPhone,
                     styleCode: code,
@@ -539,7 +548,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Firebase에 좋아요 업데이트
                 if (docId) {
                     try {
-                        const docRef = db.collection('hairstyles').doc(docId);
+                        const docRef = window.db.collection('hairstyles').doc(docId);
                         await docRef.update({
                             likes: firebase.firestore.FieldValue.increment(isLiked ? 1 : -1)
                         });
@@ -564,7 +573,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Auto-select if previously selected
         // setTimeout(() => selectGender(savedGender), 100);
     }
-});
+}
 
 window.addEventListener('load', function() {
     console.log('HAIRGATOR App Loaded');
