@@ -1,4 +1,4 @@
-// HAIRGATOR - 최종 성능 최적화 버전
+// HAIRGATOR - 최종 성능 최적화 버전 (고객등록 중복 제거)
 
 // ========== 전역 변수 및 캐시 시스템 ==========
 let currentGender = null;
@@ -454,7 +454,62 @@ function setNoImageState(modalImage) {
     `;
 }
 
-// 최적화된 모달 이벤트 설정
+// ========== 고객 등록 함수 (통합 및 정리) ==========
+async function handleCustomerRegistration(code, name, gender, docId) {
+    console.log('🆔 고객 등록 시작:', { code, name, gender, docId });
+    
+    const customerName = prompt('고객 이름을 입력하세요:');
+    if (!customerName || !customerName.trim()) {
+        alert('이름을 입력해주세요');
+        return;
+    }
+    
+    const customerPhoneInput = prompt('전화번호를 입력하세요 (01012345678):');
+    if (!customerPhoneInput || !customerPhoneInput.trim()) {
+        alert('전화번호를 입력해주세요');
+        return;
+    }
+    
+    // 전화번호 포맷팅
+    const phoneOnly = customerPhoneInput.replace(/[^0-9]/g, '');
+    if (phoneOnly.length !== 11 || !phoneOnly.startsWith('010')) {
+        alert('올바른 전화번호 형식이 아닙니다 (010으로 시작하는 11자리)');
+        return;
+    }
+    
+    const formattedPhone = phoneOnly.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+    
+    try {
+        const customerData = {
+            name: customerName.trim(),
+            phone: formattedPhone,
+            phoneRaw: phoneOnly,
+            styleCode: code,
+            styleName: name,
+            styleId: docId,
+            gender: gender,
+            designer: localStorage.getItem('hairgator_designer_name') || 'Unknown',
+            registeredAt: new Date(),
+            lastVisit: new Date()
+        };
+        
+        await window.db.collection('customers').add(customerData);
+        
+        showToast(`고객 등록 완료!\n이름: ${customerName}\n전화번호: ${formattedPhone}`, 'success');
+        closeModal();
+        
+    } catch (error) {
+        console.error('고객 등록 오류:', error);
+        showToast(`등록 실패: ${error.message}`, 'error');
+        
+        // 재시도 옵션
+        if (confirm('다시 시도하시겠습니까?')) {
+            return handleCustomerRegistration(code, name, gender, docId);
+        }
+    }
+}
+
+// 최적화된 모달 이벤트 설정 (고객등록 중복 제거)
 function setupModalEvents(elements, code, name, gender, docId) {
     // 기존 이벤트 리스너 제거 (메모리 누수 방지)
     const newBtnRegister = elements.btnRegister.cloneNode(true);
@@ -463,7 +518,7 @@ function setupModalEvents(elements, code, name, gender, docId) {
     elements.btnRegister.parentNode.replaceChild(newBtnRegister, elements.btnRegister);
     elements.btnLike.parentNode.replaceChild(newBtnLike, elements.btnLike);
     
-    // 고객 등록 버튼 - 최적화된 이벤트
+    // ✅ 고객 등록 버튼 - 통합된 함수 사용
     newBtnRegister.addEventListener('click', async function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -516,57 +571,6 @@ async function updateLikeInBackground(docId, isLiked) {
         // 오류 시 UI 롤백하지 않음 (사용자 경험 우선)
     }
 }
-
-// 고객 등록 버튼
-btnRegister.onclick = async function() {
-    const customerName = prompt('고객 이름을 입력하세요:');
-    if (!customerName || !customerName.trim()) {
-        alert('이름을 입력해주세요');
-        return;
-    }
-    
-    const customerPhoneInput = prompt('전화번호를 입력하세요 (01012345678):');
-    if (!customerPhoneInput || !customerPhoneInput.trim()) {
-        alert('전화번호를 입력해주세요');
-        return;
-    }
-    
-    // 전화번호 포맷팅
-    const phoneOnly = customerPhoneInput.replace(/[^0-9]/g, '');
-    if (phoneOnly.length !== 11 || !phoneOnly.startsWith('010')) {
-        alert('올바른 전화번호 형식이 아닙니다 (010으로 시작하는 11자리)');
-        return;
-    }
-    
-    const formattedPhone = phoneOnly.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
-    
-    try {
-        const customerData = {
-            name: customerName.trim(),
-            phone: formattedPhone,
-            phoneRaw: phoneOnly,
-            styleCode: code,
-            styleName: name,
-            styleId: docId,
-            gender: gender,
-            designer: localStorage.getItem('hairgator_designer_name') || 'Unknown',
-            registeredAt: new Date(),
-            lastVisit: new Date()
-        };
-        
-        await db.collection('customers').add(customerData);
-        
-        alert(`고객 등록 완료!\n이름: ${customerName}\n전화번호: ${formattedPhone}`);
-        closeModal();
-    } catch (error) {
-        console.error('Customer registration error:', error);
-        alert(`등록 실패: ${error.message}\n\n다시 시도하시겠습니까?`);
-        // 재시도 옵션
-        if (confirm('다시 시도하시겠습니까?')) {
-            btnRegister.onclick();
-        }
-    }
-};
 
 // ========== 유틸리티 함수들 ==========
 
@@ -818,4 +822,3 @@ function checkAuth() {
 
 // ========== 앱 로드 완료 ==========
 window.addEventListener('load', () => console.log('✅ HAIRGATOR App Loaded'));
-
