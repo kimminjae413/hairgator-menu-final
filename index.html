@@ -642,12 +642,12 @@
     <!-- Main Content -->
     <main class="main-content">
         <!-- Gender Selection -->
-        <div class="gender-selection" id="genderSelection">
-            <button class="gender-btn male" data-gender="male">
+        <div class="gender-selection" id="genderSelection" style="display: none;">
+            <button class="gender-btn male" onclick="selectGender('male')">
                 <div class="gender-icon">♂</div>
                 <div class="gender-label">남성</div>
             </button>
-            <button class="gender-btn female" data-gender="female">
+            <button class="gender-btn female" onclick="selectGender('female')">
                 <div class="gender-icon">♀</div>
                 <div class="gender-label">여성</div>
             </button>
@@ -751,21 +751,9 @@
         // ========== 로그인 상태 확인 ==========
         function checkLoginStatus() {
             const designerName = localStorage.getItem('hairgator_designer_name');
-            const loginTime = localStorage.getItem('hairgator_login_time');
-
-            if (!designerName || !loginTime) {
+            
+            if (!designerName) {
                 console.log('❌ 로그인 정보 없음 → 로그인 화면 표시');
-                showLoginScreen();
-                return;
-            }
-
-            const now = new Date().getTime();
-            const elapsed = now - parseInt(loginTime);
-            const twentyFourHours = 24 * 60 * 60 * 1000;
-
-            if (elapsed > twentyFourHours) {
-                console.log('⏰ 로그인 시간 만료 → 로그인 화면 표시');
-                clearLoginData();
                 showLoginScreen();
                 return;
             }
@@ -778,6 +766,8 @@
         // ========== 로그인 화면 표시/숨김 ==========
         function showLoginScreen() {
             loginScreen.classList.remove('hidden');
+            genderSelection.style.display = 'none';
+            menuContainer.style.display = 'none';
             
             // 저장된 정보 자동 입력
             const savedName = localStorage.getItem('hairgator_designer_name');
@@ -814,36 +804,18 @@
                 designerInfo.style.display = 'block';
             }
 
-            // 저장된 성별이 있으면 바로 메뉴로, 없으면 성별 선택
-            const savedGender = localStorage.getItem('hairgator_gender');
-            
-            if (savedGender) {
-                console.log('💾 저장된 성별 발견:', savedGender);
-                
-                // main.js의 selectGender 함수 호출 대기
-                const waitForMainJS = () => {
-                    if (typeof selectGender === 'function') {
-                        console.log('✅ main.js selectGender 함수 호출');
-                        selectGender(savedGender);
-                    } else {
-                        console.log('⏳ main.js 함수 로드 대기...');
-                        setTimeout(waitForMainJS, 100);
-                    }
-                };
-                setTimeout(waitForMainJS, 200);
-            } else {
-                console.log('👫 성별 선택 화면 표시');
-                genderSelection.style.display = 'flex';
-                menuContainer.style.display = 'none';
-            }
+            // 성별 선택 화면 표시 (항상 성별부터 선택)
+            console.log('👫 성별 선택 화면 표시');
+            genderSelection.style.display = 'flex';
+            menuContainer.style.display = 'none';
         }
 
         // ========== 로그인 데이터 정리 ==========
         function clearLoginData() {
-            localStorage.removeItem('hairgator_login_time');
             localStorage.removeItem('hairgator_designer_name');
             localStorage.removeItem('hairgator_designer_phone');
             localStorage.removeItem('hairgator_designer_id');
+            localStorage.removeItem('hairgator_gender'); // 성별도 초기화
         }
 
         // ========== 로그인 이벤트 설정 ==========
@@ -879,8 +851,12 @@
                 logoutBtn.addEventListener('click', function() {
                     if (confirm('정말 로그아웃 하시겠습니까?')) {
                         clearLoginData();
-                        localStorage.removeItem('hairgator_gender'); // 성별 선택도 초기화
-                        location.reload(); // 페이지 새로고침으로 초기 상태로
+                        // 디자이너 정보 숨기기
+                        const designerInfo = document.getElementById('designerInfo');
+                        if (designerInfo) {
+                            designerInfo.style.display = 'none';
+                        }
+                        showLoginScreen(); // 로그인 화면 표시
                     }
                 });
             }
@@ -1021,10 +997,9 @@
                     console.log(`✅ 기존 사용자 로그인 완료`);
                 }
                 
-                // 로그인 정보 저장
+                // 로그인 정보 저장 (24시간 로그인 제거)
                 localStorage.setItem('hairgator_designer_name', name);
                 localStorage.setItem('hairgator_designer_phone', phoneOnly);
-                localStorage.setItem('hairgator_login_time', new Date().getTime().toString());
                 localStorage.setItem('hairgator_designer_id', existingQuery.empty ? 'new' : existingQuery.docs[0].id);
                 
                 console.log('✅ 로그인 정보 저장 완료');
