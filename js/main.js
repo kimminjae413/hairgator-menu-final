@@ -175,14 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // ========== 상수 및 설정 (먼저 정의) ==========
-    const CONFIG = {
-        CACHE_PREFIX: 'hairgator_',
-        ANIMATION_DURATION: 300,
-        MAX_RETRIES: 3,
-        NEW_THRESHOLD_DAYS: 7
-    };
-
     // ========== 유틸리티 함수 (CONFIG 정의 후) ==========
     const utils = {
         setStorage: function(key, value) {
@@ -2670,6 +2662,7 @@ function fixCategoryTabsLayout() {
     console.log('🎉 HAIRGATOR 메인 애플리케이션 로드 완료 (COMPLETE-FINAL)');
     
 });
+
 
 
 
