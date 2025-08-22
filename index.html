@@ -44,7 +44,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    
+    <script src="akool/js/akool-api.js"></script>
+   
     <style>
         /* 스크롤 터치 민감도 최대 향상 */
         * {
@@ -208,89 +209,182 @@
             color: #FF69B4;
         }
 
-        /* 헤더 */
-        .header {
-            position: fixed;
-            top: 25px;
-            left: 0;
-            right: 0;
-            height: var(--header-height);
-            background: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 20px;
-            z-index: 1000;
-            border-bottom: 1px solid #333;
-            margin-top: max(env(safe-area-inset-top, 0px), 5px);
-        }
+       /* 헤더 기본 설정 */
+.header {
+    position: fixed;
+    top: max(env(safe-area-inset-top, 0px), 5px); /* ✅ PWA 안전 영역 고려 */
+    left: 0;
+    right: 0;
+    height: var(--header-height);
+    background: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    z-index: 1000;
+    border-bottom: 1px solid #333;
+}
 
-        .back-btn, .menu-btn {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-primary);
-            transition: var(--transition);
-        }
+/* 뒤로가기 버튼 */
+.back-btn {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 24px;
+    z-index: 1001; /* ✅ 클릭 가능하도록 z-index 추가 */
+}
 
-        .back-btn {
-            position: absolute;
-            left: 20px;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 24px;
-        }
+/* 메뉴 버튼 */
+.menu-btn {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    transition: var(--transition);
+    gap: 4px;
+    border-radius: 8px;
+    padding: 12px;
+    margin: -12px;
+    z-index: 1001; /* ✅ 클릭 가능하도록 z-index 추가 */
+}
 
-        .menu-btn {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 48px;
-            height: 48px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-primary);
-            transition: var(--transition);
-            gap: 4px;
-            border-radius: 8px;
-            padding: 12px;
-            margin: -12px;
-        }
+/* 메인 콘텐츠 */
+.main-content {
+    margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 5px) + 10px); /* ✅ 동적 계산 */
+    min-height: calc(100vh - var(--header-height));
+    position: relative;
+    z-index: 10;
+}
 
-        .menu-btn span {
-            width: 20px;
-            height: 2px;
-            background: var(--text-primary);
-            transition: var(--transition);
-        }
+/* ========== 모바일 전용 (768px 이하) ========== */
+@media (max-width: 768px) {
+    .header {
+        top: max(env(safe-area-inset-top, 0px), 15px); /* ✅ 모바일에서 충분한 여유 */
+        height: 65px;
+        padding: 0 25px;
+    }
+    
+    .main-content {
+        margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 15px) + 15px); /* ✅ 대분류 안 가림 */
+        min-height: calc(100vh - 65px);
+        padding-top: 0px;
+    }
+    
+    .category-tabs-wrapper {
+        margin-top: 5px; /* ✅ 헤더와 적당한 간격 */
+        padding-top: 15px;
+        background: var(--primary-dark);
+        border-bottom: 1px solid #333;
+        position: relative;
+        z-index: 50;
+    }
+    
+    .back-btn {
+        left: 20px;
+        width: 52px;
+        height: 52px;
+        font-size: 28px;
+        padding: 16px;
+        margin: -16px;
+    }
+    
+    .menu-btn {
+        right: 20px;
+        width: 52px;
+        height: 52px;
+        padding: 16px;
+        margin: -16px;
+    }
+    
+    .menu-btn span {
+        width: 28px;
+        height: 5px;
+    }
+}
 
-        .logo {
-            font-size: 20px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            color: var(--text-primary);
-            text-align: center;
-        }
+/* ========== PWA 전체화면 모드 전용 ========== */
+@media (display-mode: standalone) {
+    .header {
+        top: max(env(safe-area-inset-top, 0px), 8px); /* ✅ PWA에서 최적화 */
+    }
+    
+    .main-content {
+        margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 8px) + 8px);
+    }
+}
 
+/* ========== 태블릿/PC (769px 이상) ========== */
+@media (min-width: 769px) {
+    .header {
+        top: max(env(safe-area-inset-top, 0px), 0px); /* ✅ PC/태블릿에서 최상단 */
+    }
+    
+    .main-content {
+        margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 0px) + 10px);
+    }
+    
+    .back-btn {
+        left: 25px;
+        width: 50px;
+        height: 50px;
+        font-size: 26px;
+        padding: 15px;
+        margin: -15px;
+        border-radius: 8px;
+    }
+    
+    .menu-btn {
+        right: 25px;
+        width: 50px;
+        height: 50px;
+        padding: 15px;
+        margin: -15px;
+        border-radius: 8px;
+    }
+    
+    .menu-btn span {
+        width: 26px;
+        height: 4px;
+    }
+}
+
+/* ========== 태블릿 PWA 전용 (클릭 영역 강화) ========== */
+@media (min-width: 769px) and (display-mode: standalone) {
+    .header {
+        top: max(env(safe-area-inset-top, 0px), 10px); /* ✅ 태블릿 PWA에서 여유 */
+    }
+    
+    .back-btn, .menu-btn {
+        z-index: 1002; /* ✅ 최우선 클릭 */
+        background: rgba(0, 0, 0, 0.1); /* ✅ 클릭 영역 시각화 */
+        border-radius: 12px;
+    }
+    
+    .back-btn:hover, .menu-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-50%) scale(1.1);
+    }
+}
         /* 메인 콘텐츠 */
         .main-content {
             margin-top: 95px;
@@ -1842,4 +1936,5 @@ console.log('✅ HAIRGATOR App loaded successfully (REFACTORED VERSION)');
     </script>
 </body>
 </html>
+
 
