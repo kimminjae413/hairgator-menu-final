@@ -175,7 +175,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // ========== 유틸리티 함수 ==========
+    // ========== 상수 및 설정 (먼저 정의) ==========
+    const CONFIG = {
+        CACHE_PREFIX: 'hairgator_',
+        ANIMATION_DURATION: 300,
+        MAX_RETRIES: 3,
+        NEW_THRESHOLD_DAYS: 7
+    };
+
+    // ========== 유틸리티 함수 (CONFIG 정의 후) ==========
     const utils = {
         setStorage: function(key, value) {
             try {
@@ -206,7 +214,6 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('오류가 발생했습니다: ' + error.message);
         }
     };
-
     // ========== New 표시 시스템 ==========
     const NewIndicatorSystem = {
         NEW_THRESHOLD_DAYS: CONFIG.NEW_THRESHOLD_DAYS,
@@ -2663,6 +2670,7 @@ function fixCategoryTabsLayout() {
     console.log('🎉 HAIRGATOR 메인 애플리케이션 로드 완료 (COMPLETE-FINAL)');
     
 });
+
 
 
 
