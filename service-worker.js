@@ -5,19 +5,54 @@ const CACHE_VERSION = '4.0.0';
 const CACHE_NAME = `hairgator-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `hairgator-dynamic-v${CACHE_VERSION}`;
 
+// ========== Service Worker 캐시 정책 수정 ==========
+// 이 코드로 기존 NEVER_CACHE 배열을 교체하세요
+
 // 🚨 중요 파일들은 절대 캐시하지 않음 (항상 최신 버전)
 const NEVER_CACHE = [
-  /\.html$/,           // HTML 파일들 (index.html 포함)
-  /manifest\.json$/,   // PWA 설정
-  /service-worker\.js$/, // Service Worker 자체
-  /\/$/,               // 루트 경로
-  /js\/main\.js$/,     // 메인 JavaScript
+  /\.html$/,              // HTML 파일들 (index.html 포함)
+  /manifest\.json$/,      // PWA 설정
+  /service-worker\.js$/,  // Service Worker 자체
+  /\/$/,                  // 루트 경로
+  /js\/main\.js$/,        // 메인 JavaScript
+  /js\/akool-api\.js$/,   // ✅ AKOOL API 파일 추가
+  /akool\/js\/akool-api\.js$/, // ✅ AKOOL API 파일 (akool 폴더 버전)
   /firebase-config\.js$/, // Firebase 설정
-  /\.firebaseapp\.com/,
-  /firebasestorage\./,
-  /googleapis\.com/,
-  /netlify\/functions/
+  /auth\.js$/,            // 인증 스크립트
+  /menu\.js$/,            // 메뉴 스크립트
+  /sakura\.js$/,          // 벚꽃 스크립트
+  /token-manager\.js$/,   // 토큰 관리 스크립트
+  /\.firebaseapp\.com/,   // Firebase 관련
+  /firebasestorage\./,    // Firebase Storage
+  /googleapis\.com/,      // Google APIs
+  /netlify\/functions/,   // Netlify Functions
+  /akool\.com/,           // ✅ AKOOL API 도메인
+  /openapi\.akool\.com/,  // ✅ AKOOL OpenAPI
+  /sg3\.akool\.com/       // ✅ AKOOL 얼굴 감지 엔드포인트
 ];
+
+// ✅ 추가: shouldNeverCache 함수도 업데이트
+function shouldNeverCache(url) {
+  const urlString = url.toString();
+  
+  // NEVER_CACHE 패턴 확인
+  const neverCache = NEVER_CACHE.some(pattern => pattern.test(urlString));
+  if (neverCache) {
+    console.log('🚫 캐시 제외:', urlString);
+    return true;
+  }
+  
+  // AKOOL 관련 URL 추가 체크
+  if (urlString.includes('akool') || 
+      urlString.includes('AKOOL') || 
+      urlString.includes('faceswap') ||
+      urlString.includes('detect')) {
+    console.log('🚫 AKOOL 관련 캐시 제외:', urlString);
+    return true;
+  }
+  
+  return false;
+}
 
 // 📦 캐시해도 되는 정적 리소스만
 const CACHE_SAFE = [
@@ -179,17 +214,25 @@ async function networkFirst(request) {
   }
 }
 
-// 📨 메시지 처리 (간소화)
+// ========== Service Worker 메시지 처리 수정 ==========
+// 📨 메시지 처리 (AKOOL 지원 추가)
 self.addEventListener('message', event => {
   const { type } = event.data || {};
   
   switch (type) {
     case 'SKIP_WAITING':
+      console.log('⏭️ Service Worker 즉시 활성화');
       self.skipWaiting();
       break;
       
     case 'CLEAR_ALL_CACHE':
+      console.log('🧹 모든 캐시 삭제 요청');
       event.waitUntil(clearAllCaches());
+      break;
+      
+    case 'CLEAR_AKOOL_CACHE':
+      console.log('🎭 AKOOL 관련 캐시만 삭제');
+      event.waitUntil(clearAkoolCache());
       break;
       
     case 'GET_VERSION':
@@ -205,6 +248,60 @@ self.addEventListener('message', event => {
       console.log('📨 메시지:', type);
   }
 });
+
+// ✅ 새로운 함수: AKOOL 관련 캐시만 삭제
+async function clearAkoolCache() {
+  console.log('🎭 AKOOL 관련 캐시 삭제 중...');
+  
+  try {
+    const cacheNames = await caches.keys();
+    const akoolCaches = cacheNames.filter(name => 
+      name.includes('akool') || 
+      name.includes('AKOOL') || 
+      name.includes('faceswap')
+    );
+    
+    await Promise.all(akoolCaches.map(name => {
+      console.log('🗑️ AKOOL 캐시 삭제:', name);
+      return caches.delete(name);
+    }));
+    
+    // 모든 캐시에서 AKOOL 관련 항목 제거
+    for (const cacheName of cacheNames) {
+      try {
+        const cache = await caches.open(cacheName);
+        const requests = await cache.keys();
+        
+        for (const request of requests) {
+          const url = request.url;
+          if (url.includes('akool') || 
+              url.includes('AKOOL') || 
+              url.includes('faceswap') ||
+              url.includes('detect')) {
+            console.log('🗑️ AKOOL URL 삭제:', url);
+            await cache.delete(request);
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ 캐시 정리 중 오류:', error);
+      }
+    }
+    
+    // 클라이언트에게 완료 알림
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'AKOOL_CACHE_CLEARED',
+        version: CACHE_VERSION
+      });
+    });
+    
+    console.log('✅ AKOOL 캐시 삭제 완료');
+    
+  } catch (error) {
+    console.error('❌ AKOOL 캐시 삭제 실패:', error);
+  }
+}
 
 // 🧹 모든 캐시 삭제
 async function clearAllCaches() {
@@ -236,3 +333,4 @@ async function clearAllCaches() {
 
 console.log('🌸 HAIRGATOR Service Worker v' + CACHE_VERSION + ' 로드 완료');
 console.log('📋 캐시 정책: HTML/JS는 항상 최신, 이미지/CSS만 캐시');
+
