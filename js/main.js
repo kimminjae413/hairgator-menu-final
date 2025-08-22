@@ -2098,6 +2098,84 @@ function fixCategoryTabsLayout() {
             }
         }
         
+        /* ========== PWA 전체화면 모드 전용 ========== */
+        @media (display-mode: standalone) {
+            .header {
+                top: max(env(safe-area-inset-top, 0px), 8px) !important;
+            }
+            
+            .main-content {
+                margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 8px) + 8px) !important;
+            }
+            
+            .back-btn, .menu-btn {
+                z-index: 1002 !important;
+                background: rgba(255, 255, 255, 0.05) !important;
+                border-radius: 8px !important;
+                touch-action: manipulation !important;
+            }
+            
+            .back-btn:active, .menu-btn:active {
+                background: rgba(255, 255, 255, 0.15) !important;
+                transform: translateY(-50%) scale(0.95) !important;
+            }
+        }
+        
+        /* ========== 태블릿 PWA 전용 (버튼 클릭 안됨 해결) ========== */
+        @media (min-width: 769px) and (display-mode: standalone) {
+            .header {
+                top: max(env(safe-area-inset-top, 0px), 10px) !important;
+                height: 65px !important;
+            }
+            
+            .main-content {
+                margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 10px) + 10px) !important;
+            }
+            
+            .back-btn, .menu-btn {
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                width: 50px !important;
+                height: 50px !important;
+                z-index: 1002 !important;
+                background: rgba(255, 255, 255, 0.08) !important;
+                border-radius: 12px !important;
+                transition: all 0.2s ease !important;
+                touch-action: manipulation !important;
+            }
+            
+            .back-btn:hover, .menu-btn:hover {
+                background: rgba(255, 255, 255, 0.15) !important;
+                transform: translateY(-50%) scale(1.05) !important;
+            }
+            
+            .back-btn:active, .menu-btn:active {
+                background: rgba(255, 255, 255, 0.2) !important;
+                transform: translateY(-50%) scale(0.95) !important;
+            }
+            
+            .category-tabs-wrapper {
+                margin-top: 15px !important;
+                padding-top: 10px !important;
+            }
+        }
+        
+        /* ========== PC/데스크톱 전용 ========== */
+        @media (min-width: 769px) and (display-mode: browser) {
+            .header {
+                top: 0px !important;
+            }
+            
+            .main-content {
+                margin-top: 85px !important;
+            }
+            
+            .category-tabs-wrapper {
+                margin-top: 15px !important;
+                padding-top: 10px !important;
+            }
+        }
+        
         /* ========== 디버깅용 PWA 모드 표시 ========== */
         @media (display-mode: standalone) {
             body:before {
@@ -2321,5 +2399,6 @@ function fixCategoryTabsLayout() {
     console.log('🎉 HAIRGATOR 메인 애플리케이션 로드 완료 (COMPLETE-FINAL)');
     
 });
+
 
 
