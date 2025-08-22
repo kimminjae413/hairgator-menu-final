@@ -1,7 +1,7 @@
-// HAIRGATOR Service Worker - 성능 최적화 버전
-const CACHE_NAME = 'hairgator-v2.0.0'; // 버전 업그레이드
-const STATIC_CACHE = 'hairgator-static-v2';
-const DYNAMIC_CACHE = 'hairgator-dynamic-v2';
+// HAIRGATOR Service Worker - 캐시 버전 관리 강화
+const CACHE_VERSION = 'v2.1.0'; // 버전 업그레이드
+const STATIC_CACHE = `hairgator-static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE = `hairgator-dynamic-${CACHE_VERSION}`;
 
 // 정적 리소스 (강제 캐시)
 const STATIC_ASSETS = [
@@ -11,12 +11,21 @@ const STATIC_ASSETS = [
   '/css/main.css',
   '/js/firebase-config.js',
   '/js/main.js',
+  '/js/error-handler.js',
   '/icons/icon-72.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
 ];
 
-// 캐시하지 않을 파일들 (Admin 및 개발 파일)
+// 즉시 업데이트가 필요한 파일들 (항상 네트워크 우선)
+const NETWORK_FIRST_PATTERNS = [
+  /\/js\/main\.js$/,
+  /\/js\/firebase-config\.js$/,
+  /\/css\/main\.css$/,
+  /\/index\.html$/
+];
+
+// 캐시하지 않을 파일들
 const NO_CACHE_PATTERNS = [
   /\/admin\.html$/,
   /\/migration\.html$/,
@@ -61,7 +70,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch - 캐시 전략 (Cache First + Network Fallback)
+// Fetch - 개선된 캐시 전략
 self.addEventListener('fetch', event => {
   const { request } = event;
   const requestUrl = new URL(request.url);
@@ -90,8 +99,39 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // 정적 리소스 처리 (Cache First)
-  if (STATIC_ASSETS.includes(requestUrl.pathname) || requestUrl.pathname.startsWith('/css/') || requestUrl.pathname.startsWith('/js/')) {
+  // 🆕 중요 파일들은 네트워크 우선 (최신 버전 보장)
+  const shouldNetworkFirst = NETWORK_FIRST_PATTERNS.some(pattern => 
+    pattern.test(requestUrl.pathname)
+  );
+  
+  if (shouldNetworkFirst) {
+    console.log('🌐 네트워크 우선:', requestUrl.pathname);
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(STATIC_CACHE)
+              .then(cache => {
+                cache.put(request, responseToCache);
+                console.log('💾 네트워크 우선 파일 캐시 업데이트:', requestUrl.pathname);
+              });
+          }
+          return response;
+        })
+        .catch(() => {
+          console.log('📦 네트워크 실패, 캐시 사용:', requestUrl.pathname);
+          return caches.match(request)
+            .then(cachedResponse => {
+              return cachedResponse || new Response('파일 로드 실패', { status: 503 });
+            });
+        })
+    );
+    return;
+  }
+  
+  // 나머지 정적 리소스 (Cache First)
+  if (STATIC_ASSETS.includes(requestUrl.pathname) || requestUrl.pathname.startsWith('/icons/')) {
     event.respondWith(
       caches.match(request)
         .then(response => {
@@ -131,8 +171,7 @@ self.addEventListener('fetch', event => {
           caches.open(DYNAMIC_CACHE)
             .then(cache => {
               cache.put(request, responseToCache);
-              // 동적 캐시 크기 제한
-              limitCacheSize(DYNAMIC_CACHE, DYNAMIC_CACHE_LIMIT);
+              limitCacheSize(DYNAMIC_CACHE, 50);
             });
           
           console.log('🌐 동적 리소스 네트워크 + 캐시:', requestUrl.pathname);
