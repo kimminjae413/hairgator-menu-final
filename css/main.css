@@ -1,4 +1,31 @@
-/* HAIRGATOR - 최적화된 메인 스타일 */
+/* 사이드바 */
+.sidebar{position:fixed;top:0;right:-280px;width:280px;height:100vh;background:#111;transition:right .3s;z-index:1001;box-shadow:-2px 0 10px rgba(0,0,0,.5)}
+.sidebar.active{right:0}
+.sidebar-header{padding:20px;border-bottom:1px solid #333}
+.sidebar-close{position:absolute;top:15px;right:15px;background:none;border:none;color:var(--text-primary);font-size:24px;cursor:pointer}
+.sidebar-content{padding:20px}
+
+/* 🆕 캐시 업데이트 알림 */
+.cache-update-notice{
+background:linear-gradient(135deg,#FF1493,#FF69B4);
+color:#fff;
+padding:15px;
+border-radius:10px;
+margin-bottom:20px;
+box-shadow:0 4px 15px rgba(255,20,147,0.3);
+animation:slideInRight 0.5s ease;
+border:1px solid rgba(255,255,255,0.2);
+}
+@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* 🆕 캐시 업데이트 알림 */
+.cache-update-notice{
+background:linear-gradient(135deg,#FF1493,#FF69B4);
+color:#fff;
+padding:15px;
+border-radius:10px;
+margin-bottom:20px;
+text/* HAIRGATOR - 최적화된 메인 스타일 */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--primary-dark:#000;--primary-light:#fff;--male-color:#4A90E2;--female-color:#E91E63;--text-primary:#fff;--text-secondary:#999;--border-color:#222}
 body{font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--primary-dark);color:var(--text-primary);overflow-x:hidden;user-select:none;-webkit-user-select:none}
