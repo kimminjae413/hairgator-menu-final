@@ -751,22 +751,196 @@ document.addEventListener('DOMContentLoaded', function() {
         utils.setStorage('theme', isLight ? 'light' : 'dark');
     }
 
-    // ========== 사이드바 관리 ==========
-    function openSidebar() {
-        if (elements.sidebar) {
-            elements.sidebar.classList.add('active');
+    // ========== 사이드바 생성 및 관리 ==========
+    function createSidebar() {
+        // 기존 사이드바 제거
+        const existingSidebar = document.getElementById('sidebar');
+        if (existingSidebar) {
+            existingSidebar.remove();
+        }
+        
+        const sidebar = document.createElement('div');
+        sidebar.id = 'sidebar';
+        sidebar.className = 'sidebar';
+        
+        sidebar.style.cssText = `
+            position: fixed !important;
+            top: 0 !important;
+            right: -320px !important;
+            width: 300px !important;
+            height: 100vh !important;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+            z-index: 99998 !important;
+            transition: right 0.3s ease !important;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.5) !important;
+            overflow-y: auto !important;
+            border-left: 2px solid #FF1493 !important;
+        `;
+        
+        sidebar.innerHTML = `
+            <div style="padding: 20px; color: white;">
+                <button id="sidebarClose" style="
+                    position: absolute;
+                    top: 15px;
+                    right: 15px;
+                    background: none;
+                    border: none;
+                    color: #FF1493;
+                    font-size: 28px;
+                    cursor: pointer;
+                    width: 40px;
+                    height: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    transition: all 0.2s ease;
+                ">×</button>
+                
+                <div style="margin: 0 0 30px 0; padding-right: 50px;">
+                    <h2 style="color: #FF1493; margin: 0; font-size: 24px;">HAIRGATOR</h2>
+                    <p style="color: #ccc; margin: 5px 0 0 0; font-size: 14px;">헤어 스타일 메뉴</p>
+                </div>
+                
+                <nav style="margin: 20px 0;">
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin: 0 0 15px 0;">
+                            <a href="#" style="
+                                display: flex;
+                                align-items: center;
+                                padding: 12px;
+                                color: white;
+                                text-decoration: none;
+                                border-radius: 8px;
+                                transition: all 0.2s ease;
+                            " onmouseover="this.style.background='rgba(255,20,147,0.2)'" onmouseout="this.style.background='transparent'">
+                                <span style="margin-right: 10px; font-size: 18px;">🏠</span>
+                                <span>홈</span>
+                            </a>
+                        </li>
+                        <li style="margin: 0 0 15px 0;">
+                            <a href="#" style="
+                                display: flex;
+                                align-items: center;
+                                padding: 12px;
+                                color: white;
+                                text-decoration: none;
+                                border-radius: 8px;
+                                transition: all 0.2s ease;
+                            " onmouseover="this.style.background='rgba(255,20,147,0.2)'" onmouseout="this.style.background='transparent'">
+                                <span style="margin-right: 10px; font-size: 18px;">👤</span>
+                                <span>프로필</span>
+                            </a>
+                        </li>
+                        <li style="margin: 0 0 15px 0;">
+                            <a href="#" style="
+                                display: flex;
+                                align-items: center;
+                                padding: 12px;
+                                color: white;
+                                text-decoration: none;
+                                border-radius: 8px;
+                                transition: all 0.2s ease;
+                            " onmouseover="this.style.background='rgba(255,20,147,0.2)'" onmouseout="this.style.background='transparent'">
+                                <span style="margin-right: 10px; font-size: 18px;">⚙️</span>
+                                <span>설정</span>
+                            </a>
+                        </li>
+                        <li style="margin: 0 0 15px 0;">
+                            <a href="#" onclick="if(typeof logout === 'function') logout(); else alert('로그아웃 기능');" style="
+                                display: flex;
+                                align-items: center;
+                                padding: 12px;
+                                color: #ff6b6b;
+                                text-decoration: none;
+                                border-radius: 8px;
+                                transition: all 0.2s ease;
+                            " onmouseover="this.style.background='rgba(255,107,107,0.2)'" onmouseout="this.style.background='transparent'">
+                                <span style="margin-right: 10px; font-size: 18px;">🚪</span>
+                                <span>로그아웃</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <div style="position: absolute; bottom: 20px; left: 20px; right: 20px;">
+                    <div style="border-top: 1px solid #444; padding-top: 15px; font-size: 12px; color: #888;">
+                        <p style="margin: 0;">HAIRGATOR v1.8</p>
+                        <p style="margin: 5px 0 0 0;">Professional Hair Menu</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(sidebar);
+        
+        // 사이드바 닫기 버튼 이벤트
+        const closeBtn = sidebar.querySelector('#sidebarClose');
+        if (closeBtn) {
+            closeBtn.onclick = function(e) {
+                e.preventDefault();
+                sidebar.style.right = '-320px';
+                sidebar.classList.remove('active');
+            };
+            
+            closeBtn.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(255,20,147,0.2)';
+            });
+            closeBtn.addEventListener('mouseleave', function() {
+                this.style.background = 'transparent';
+            });
+        }
+        
+        console.log('✅ 사이드바 생성 완료');
+        return sidebar;
+    }
+
+    // ========== 다크모드 색상 변경 함수 ==========
+    function updateMenuButtonColor() {
+        const menuBtn = document.getElementById('menuBtn');
+        if (!menuBtn) return;
+        
+        const isDarkMode = !document.body.classList.contains('light-theme');
+        
+        if (isDarkMode) {
+            menuBtn.style.color = '#ffffff';
+        } else {
+            menuBtn.style.color = '#333333';
         }
     }
-    
-    function closeSidebar() {
-        if (elements.sidebar) {
-            elements.sidebar.classList.remove('active');
+
+    // ========== 벚꽃 배경 중복 방지 토글 ==========
+    function toggleSakuraBackground() {
+        // 기존 벚꽃 완전 정리
+        const existingCanvases = document.querySelectorAll('canvas[id*="sakura"], canvas[id*="petal"]');
+        existingCanvases.forEach(canvas => canvas.remove());
+        
+        // 애니메이션 프레임 정리
+        for (let i = 1; i < 10000; i++) {
+            cancelAnimationFrame(i);
         }
-    }
-    
-    function toggleSidebar() {
-        if (elements.sidebar) {
-            elements.sidebar.classList.toggle('active');
+        
+        const sakuraBtn = elements.petalSakuraBtn;
+        if (!sakuraBtn) return;
+        
+        const isActive = sakuraBtn.classList.contains('active');
+        
+        if (isActive) {
+            // 벚꽃 끄기
+            petalSakuraSystem.stop();
+            sakuraBtn.classList.remove('active');
+            const textSpan = sakuraBtn.querySelector('span:last-child');
+            if (textSpan) textSpan.textContent = '벚꽃 배경';
+            console.log('🌸 벚꽃 배경 비활성화');
+        } else {
+            // 벚꽃 켜기 (하나만)
+            setTimeout(() => {
+                petalSakuraSystem.init();
+                sakuraBtn.classList.add('active');
+                const textSpan = sakuraBtn.querySelector('span:last-child');
+                if (textSpan) textSpan.textContent = '배경 끄기';
+                console.log('🌸 벚꽃 배경 활성화');
+            }, 100);
         }
     }
 
@@ -1807,36 +1981,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (elements.menuBtn) {
-            elements.menuBtn.addEventListener('click', openSidebar);
+            elements.menuBtn.addEventListener('click', function() {
+                console.log('🍔 햄버거 버튼 클릭 - 사이드바 토글');
+                
+                // 사이드바가 없으면 생성
+                let sidebar = document.getElementById('sidebar');
+                if (!sidebar) {
+                    sidebar = createSidebar();
+                }
+                
+                // 사이드바 토글
+                const currentRight = getComputedStyle(sidebar).right;
+                if (currentRight.includes('-')) {
+                    sidebar.style.right = '0px';
+                    sidebar.classList.add('active');
+                    console.log('✅ 사이드바 열림');
+                } else {
+                    sidebar.style.right = '-320px';
+                    sidebar.classList.remove('active');
+                    console.log('❌ 사이드바 닫힘');
+                }
+            });
         }
         
         if (elements.sidebarClose) {
             elements.sidebarClose.addEventListener('click', closeSidebar);
         }
         
-        // 테마 관련
+        // 테마 관련 - 다크모드 색상 변경 포함
         if (elements.themeToggle) {
-            elements.themeToggle.addEventListener('click', toggleTheme);
+            elements.themeToggle.addEventListener('click', function() {
+                toggleTheme();
+                updateMenuButtonColor();
+            });
         }
         
         if (elements.themeToggleBottom) {
-            elements.themeToggleBottom.addEventListener('click', toggleTheme);
+            elements.themeToggleBottom.addEventListener('click', function() {
+                toggleTheme();
+                updateMenuButtonColor();
+            });
         }
         
-        // 벚꽃 배경 관련
+        // 벚꽃 배경 관련 - 중복 방지
         if (elements.petalSakuraBtn) {
             elements.petalSakuraBtn.addEventListener('click', function() {
-                if (petalSakuraSystem.active) {
-                    petalSakuraSystem.stop();
-                    this.classList.remove('active');
-                    var textSpan = this.querySelector('span:last-child');
-                    if (textSpan) textSpan.textContent = '벚꽃 배경';
-                } else {
-                    petalSakuraSystem.init();
-                    this.classList.add('active');
-                    var textSpan = this.querySelector('span:last-child');
-                    if (textSpan) textSpan.textContent = '배경 끄기';
-                }
+                toggleSakuraBackground();
             });
         }
         
@@ -1925,16 +2115,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 사이드바 외부 클릭 시 닫기
         document.addEventListener('click', function(e) {
-            if (elements.sidebar && elements.sidebar.classList.contains('active')) {
-                if (!elements.sidebar.contains(e.target) && !elements.menuBtn.contains(e.target)) {
-                    closeSidebar();
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(e.target) && !elements.menuBtn.contains(e.target)) {
+                    sidebar.style.right = '-320px';
+                    sidebar.classList.remove('active');
                 }
             }
         });
 
         // 화면 크기 변경 대응
         window.addEventListener('resize', function() {
-            petalSakuraSystem.handleResize();
+            if (petalSakuraSystem.handleResize) {
+                petalSakuraSystem.handleResize();
+            }
         });
     }
 
@@ -2153,6 +2347,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 z-index: 1000 !important;
             }
             
+            .header .logo {
+                font-weight: bold !important;
+                font-size: 20px !important;
+                letter-spacing: 1px !important;
+            }
+            
+            .back-btn, .menu-btn {
+                position: absolute !important;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                width: 44px !important;
+                height: 44px !important;
+                z-index: 1001 !important;
+                background: transparent !important;
+                border: none !important;
+                color: var(--text-color, #ffffff) !important;
+                cursor: pointer !important;
+                pointer-events: auto !important;
+                border-radius: 6px !important;
+                transition: all 0.2s ease !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 18px !important;
+            }
+            
+            .menu-btn {
+                right: 15px !important;
+            }
+            
+            .back-btn {
+                left: 15px !important;
+            }
+            
+            .back-btn:hover, .menu-btn:hover {
+                background: rgba(255, 20, 147, 0.2) !important;
+            }
+            
             .main-content {
                 margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 5px) + 10px) !important;
                 padding-top: 0px !important;
@@ -2228,14 +2460,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 /* 헤더 컴팩트하게 */
                 .header .logo {
-                    font-size: 16px !important;
+                    font-size: 18px !important;
+                    font-weight: bold !important;
+                    letter-spacing: 0.5px !important;
                 }
                 
                 .back-btn, .menu-btn {
-                    width: 45px !important;
-                    height: 45px !important;
+                    position: absolute !important;
+                    top: 50% !important;
+                    transform: translateY(-50%) !important;
+                    width: 42px !important;
+                    height: 42px !important;
                     z-index: 1001 !important;
+                    background: transparent !important;
+                    border: none !important;
+                    color: var(--text-color, #ffffff) !important;
+                    cursor: pointer !important;
+                    pointer-events: auto !important;
+                    border-radius: 6px !important;
+                    transition: all 0.2s ease !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    font-size: 16px !important;
                     touch-action: manipulation !important;
+                }
+                
+                .menu-btn {
+                    right: 12px !important;
+                }
+                
+                .back-btn {
+                    left: 12px !important;
+                }
+                
+                .back-btn:hover, .menu-btn:hover {
+                    background: rgba(255, 20, 147, 0.2) !important;
                 }
             }
             
@@ -2245,19 +2505,51 @@ document.addEventListener('DOMContentLoaded', function() {
                     top: max(env(safe-area-inset-top, 0px), 5px) !important;
                 }
                 
+                .header .logo {
+                    font-weight: bold !important;
+                    font-size: 19px !important;
+                    letter-spacing: 0.8px !important;
+                }
+                
                 .main-content {
                     margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 5px) + 5px) !important;
                 }
                 
                 .back-btn, .menu-btn {
+                    position: absolute !important;
+                    top: 50% !important;
+                    transform: translateY(-50%) !important;
+                    width: 44px !important;
+                    height: 44px !important;
                     z-index: 1002 !important;
-                    background: rgba(255, 255, 255, 0.05) !important;
+                    background: transparent !important;
+                    border: none !important;
+                    color: var(--text-color, #ffffff) !important;
+                    cursor: pointer !important;
+                    pointer-events: auto !important;
                     border-radius: 8px !important;
+                    transition: all 0.2s ease !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    font-size: 18px !important;
                     touch-action: manipulation !important;
                 }
                 
+                .menu-btn {
+                    right: 15px !important;
+                }
+                
+                .back-btn {
+                    left: 15px !important;
+                }
+                
+                .back-btn:hover, .menu-btn:hover {
+                    background: rgba(255, 20, 147, 0.2) !important;
+                }
+                
                 .back-btn:active, .menu-btn:active {
-                    background: rgba(255, 255, 255, 0.15) !important;
+                    background: rgba(255, 20, 147, 0.4) !important;
                     transform: translateY(-50%) scale(0.95) !important;
                 }
             }
@@ -2274,35 +2566,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 .back-btn, .menu-btn {
+                    position: absolute !important;
                     top: 50% !important;
                     transform: translateY(-50%) !important;
                     width: 48px !important;
                     height: 48px !important;
                     z-index: 1003 !important;
-                    background: rgba(255, 255, 255, 0.1) !important;
+                    background: transparent !important;
+                    border: none !important;
                     border-radius: 10px !important;
                     transition: all 0.2s ease !important;
                     touch-action: manipulation !important;
                     pointer-events: auto !important;
-                    position: absolute !important;
                 }
                 
                 .menu-btn {
                     right: 15px !important;
+                    color: var(--text-color, #ffffff) !important;
                 }
                 
                 .back-btn {
                     left: 15px !important;
+                    color: var(--text-color, #ffffff) !important;
                 }
                 
                 .back-btn:hover, .menu-btn:hover {
-                    background: rgba(255, 255, 255, 0.2) !important;
-                    transform: translateY(-50%) scale(1.1) !important;
+                    background: rgba(255, 20, 147, 0.2) !important;
                 }
                 
                 .back-btn:active, .menu-btn:active {
-                    background: rgba(255, 20, 147, 0.3) !important;
-                    transform: translateY(-50%) scale(0.9) !important;
+                    background: rgba(255, 20, 147, 0.4) !important;
+                    transform: translateY(-50%) scale(0.95) !important;
                 }
             }
             
@@ -2312,8 +2606,47 @@ document.addEventListener('DOMContentLoaded', function() {
                     top: 0px !important;
                 }
                 
+                .header .logo {
+                    font-weight: bold !important;
+                    font-size: 22px !important;
+                    letter-spacing: 1px !important;
+                }
+                
                 .main-content {
                     margin-top: 85px !important;
+                }
+                
+                .back-btn, .menu-btn {
+                    position: absolute !important;
+                    top: 50% !important;
+                    transform: translateY(-50%) !important;
+                    width: 46px !important;
+                    height: 46px !important;
+                    z-index: 1001 !important;
+                    background: transparent !important;
+                    border: none !important;
+                    color: var(--text-color, #ffffff) !important;
+                    cursor: pointer !important;
+                    pointer-events: auto !important;
+                    border-radius: 8px !important;
+                    transition: all 0.2s ease !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    font-size: 20px !important;
+                }
+                
+                .menu-btn {
+                    right: 20px !important;
+                }
+                
+                .back-btn {
+                    left: 20px !important;
+                }
+                
+                .back-btn:hover, .menu-btn:hover {
+                    background: rgba(255, 20, 147, 0.2) !important;
+                    transform: translateY(-50%) scale(1.05) !important;
                 }
             }
         `;
