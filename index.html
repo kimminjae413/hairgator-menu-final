@@ -142,6 +142,46 @@
             line-height: 1.4;
         }
 
+        /* 로그아웃 버튼 스타일 */
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        /* 디자이너 정보 표시 */
+        #designerInfo {
+            background: rgba(255, 20, 147, 0.1);
+            border: 1px solid rgba(255, 20, 147, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        #designerInfo p {
+            color: #fff;
+            margin: 0 0 15px 0;
+            font-size: 14px;
+        }
+
+        #designerName {
+            color: #FF1493;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
         /* 라이트 테마 대응 */
         body.light-theme .face-analysis-section {
             border-color: #ddd;
@@ -160,6 +200,19 @@
 
         body.light-theme .face-analysis-desc {
             color: #666;
+        }
+
+        body.light-theme #designerInfo {
+            background: rgba(255, 20, 147, 0.05);
+            border-color: rgba(255, 20, 147, 0.2);
+        }
+
+        body.light-theme #designerInfo p {
+            color: #333;
+        }
+
+        body.light-theme #designerName {
+            color: #FF1493;
         }
 
         /* ========== 헤어 길이 가이드 팝업 스타일 ========== */
@@ -328,9 +381,10 @@
                 <p class="face-analysis-desc">AI가 당신에게 어울리는 헤어스타일을 추천해드립니다</p>
             </div>
             
+            <!-- 디자이너 정보 (로그인 시 표시) -->
             <div id="designerInfo" style="display: none;">
-                <p>로그인: <span id="designerName">Designer</span></p>
-                <button class="logout-btn" id="logoutBtn">로그아웃</button>
+                <p>👤 <span id="designerName">Designer</span></p>
+                <button class="logout-btn" id="logoutBtn">🚪 로그아웃</button>
             </div>
         </div>
     </aside>
@@ -398,6 +452,78 @@
         </div>
     </div>
 
+    <!-- 메인 스크립트 -->
+    <script>
+        // ========== 디자이너 로그인 체크 시스템 ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            // 로그인 정보 확인
+            const designerName = localStorage.getItem('hairgator_designer_name');
+            const loginTime = localStorage.getItem('hairgator_login_time');
+            
+            console.log('🔍 로그인 체크:', { designerName, loginTime });
+            
+            // 로그인 정보가 없거나 24시간 지났으면 로그인 페이지로
+            if (!designerName || !loginTime) {
+                console.log('❌ 로그인 정보 없음 → login.html 이동');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const now = new Date().getTime();
+            const elapsed = now - parseInt(loginTime);
+            const twentyFourHours = 24 * 60 * 60 * 1000; // 24시간
+            
+            if (elapsed > twentyFourHours) {
+                console.log('⏰ 로그인 시간 만료 → login.html 이동');
+                localStorage.removeItem('hairgator_login_time');
+                localStorage.removeItem('hairgator_designer_name');
+                localStorage.removeItem('hairgator_designer_phone');
+                localStorage.removeItem('hairgator_designer_id');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            console.log('✅ 로그인 유효 → 앱 시작');
+            
+            // 사이드바에 디자이너 정보 표시
+            setTimeout(() => {
+                const designerInfo = document.getElementById('designerInfo');
+                const designerNameEl = document.getElementById('designerName');
+                if (designerInfo && designerNameEl) {
+                    designerNameEl.textContent = designerName;
+                    designerInfo.style.display = 'block';
+                    console.log('👤 디자이너 정보 표시:', designerName);
+                }
+                
+                // 로그아웃 버튼 이벤트
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', function() {
+                        if (confirm('정말 로그아웃 하시겠습니까?')) {
+                            // 로컬스토리지 정리
+                            localStorage.removeItem('hairgator_login_time');
+                            localStorage.removeItem('hairgator_designer_name');
+                            localStorage.removeItem('hairgator_designer_phone');
+                            localStorage.removeItem('hairgator_designer_id');
+                            
+                            // 로그인 페이지로 이동
+                            window.location.href = 'login.html';
+                        }
+                    });
+                }
+            }, 100);
+            
+            // 메인 애플리케이션 로직 시작
+            initMainApplication();
+        });
+        
+        // ========== 메인 애플리케이션 초기화 ==========
+        function initMainApplication() {
+            console.log('🚀 HAIRGATOR 메인 애플리케이션 시작');
+            // 여기서 기존 main.js의 로직이 실행됩니다
+        }
+    </script>
+
     <!-- PWA Script -->
     <script>
         // PWA Service Worker
@@ -435,6 +561,8 @@
             document.body.classList.add('pwa-mode');
         }
     </script>
+    
+    <!-- 추가 스크립트들 -->
     <script src="js/akool-service.js?v=2.1.0"></script>
     <script src="js/ai-integration.js?v=2.1.0"></script>
     
