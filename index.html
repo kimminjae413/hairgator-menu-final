@@ -38,7 +38,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
-    <!-- App Scripts (최적화됨) -->
+    <!-- App Scripts (핵심만) -->
     <script src="js/error-handler.js?v=2.1.1"></script>
     <script src="js/smart-cache-manager.js?v=2.1.1"></script>
     <script src="js/firebase-config.js?v=2.1.1"></script>
@@ -743,13 +743,31 @@
             designerName: null
         };
 
-        // ========== 로그인 시스템만 초기화 (main.js와 분리) ==========
+        // ========== 앱 초기화 ==========
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🔐 index.html - 로그인 시스템 초기화 시작');
+
+            // ========== 즉시 로딩 숨김 (Firebase 대기 안함) ==========
+            setTimeout(() => {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.classList.remove('active');
+                    loadingOverlay.style.display = 'none';
+                    console.log('🔧 강제 로딩 숨김');
+                }
+            }, 500); // 0.5초 후
 
             // Firebase 준비 대기
             if (!window.firebaseInitialized) {
                 window.addEventListener('firebaseReady', initLoginSystem);
+                
+                // Firebase 로드 실패 대비 (3초 후 강제 진행)
+                setTimeout(() => {
+                    if (!window.firebaseInitialized) {
+                        console.warn('⚠️ Firebase 로드 지연, 강제 진행');
+                        initLoginSystemFallback();
+                    }
+                }, 3000);
             } else {
                 initLoginSystem();
             }
@@ -758,6 +776,14 @@
         // ========== 로그인 시스템 초기화 ==========
         function initLoginSystem() {
             console.log('🔥 로그인 시스템 - Firebase 준비 완료');
+            
+            // ========== 즉시 로딩 오버레이 숨김 ==========
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.remove('active');
+                loadingOverlay.style.display = 'none';
+                console.log('🔧 로딩 오버레이 즉시 숨김');
+            }
             
             // DOM 요소들
             const loginScreen = document.getElementById('loginScreen');
@@ -770,6 +796,16 @@
             const loadingDiv = document.getElementById('loadingDiv');
             const welcomeMessage = document.getElementById('welcomeMessage');
             const welcomeText = document.getElementById('welcomeText');
+
+            // ========== 로딩 오버레이 강제 숨김 (추가) ==========
+            setTimeout(() => {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.classList.remove('active');
+                    loadingOverlay.style.display = 'none';
+                    console.log('🔧 로딩 오버레이 강제 숨김');
+                }
+            }, 2000); // 2초 후 강제 숨김
 
             // ========== 로그인 상태 확인 ==========
             function checkLoginStatus() {
@@ -1080,6 +1116,67 @@
             window.HAIRGATOR_STATE.isLoginSystemReady = true;
             console.log('✅ 로그인 시스템 초기화 완료');
         }
+
+        // ========== Firebase 없이도 작동하는 폴백 시스템 ==========
+        function initLoginSystemFallback() {
+            console.log('🔄 Firebase 폴백 모드로 초기화');
+            
+            // 로딩 오버레이 숨김
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.remove('active');
+                loadingOverlay.style.display = 'none';
+            }
+            
+            // 로그인 화면 표시
+            const loginScreen = document.getElementById('loginScreen');
+            if (loginScreen) {
+                loginScreen.classList.remove('hidden');
+                loginScreen.style.display = 'flex';
+            }
+            
+            // 기본 이벤트들만 설정
+            setupBasicLoginEvents();
+            
+            console.log('⚠️ Firebase 없이 기본 로그인 화면 표시됨');
+        }
+
+        // ========== 기본 로그인 이벤트 (Firebase 없어도 작동) ==========
+        function setupBasicLoginEvents() {
+            const phoneInput = document.getElementById('designerPhone');
+            const passwordInput = document.getElementById('designerPassword');
+            
+            // 전화번호 포맷팅
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function() {
+                    let value = this.value.replace(/[^0-9]/g, '');
+                    if (value.length >= 3) {
+                        value = value.replace(/(\d{3})(\d{0,4})(\d{0,4})/, function(match, p1, p2, p3) {
+                            if (p3) return `${p1}-${p2}-${p3}`;
+                            if (p2) return `${p1}-${p2}`;
+                            return p1;
+                        });
+                    }
+                    this.value = value;
+                });
+            }
+
+            // 비밀번호 숫자만
+            if (passwordInput) {
+                passwordInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+            }
+
+            // 폼 제출 (Firebase 없이)
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('Firebase 연결 중입니다. 잠시 후 다시 시도해주세요.');
+                });
+            }
+        }
     </script>
 
     <!-- ✅ PWA Script (Service Worker 제거됨) -->
@@ -1114,26 +1211,29 @@
         }
     </script>
     
-    <!-- ✅ 수정된 추가 스크립트들 (에러 처리 강화) -->
+    <!-- ✅ 문제있는 스크립트들 비활성화 -->
     <script>
-        // 추가 스크립트 로드 (에러 방지)
-        (function() {
-            const scripts = [
-                'js/akool-service.js?v=2.1.1',
-                'js/ai-integration.js?v=2.1.1',
-                'js/new-badge-system.js?v=2.1.1',
-                'js/sakura-effect.js?v=2.1.1'
-            ];
-
-            scripts.forEach(src => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.onerror = function() {
-                    console.warn(`⚠️ 스크립트 로드 실패 (선택적 기능): ${src}`);
-                };
-                document.head.appendChild(script);
-            });
-        })();
+        // 문제있는 스크립트들 임시 비활성화
+        console.log('📦 선택적 스크립트들 비활성화됨 (안정성 우선)');
+        
+        // NEW 뱃지와 벚꽃 효과는 나중에 별도로 로드
+        setTimeout(() => {
+            try {
+                // NEW 뱃지 시스템만 로드 (안전한 것만)
+                const newBadgeScript = document.createElement('script');
+                newBadgeScript.src = 'js/new-badge-system.js?v=2.1.1';
+                newBadgeScript.onerror = () => console.warn('NEW 뱃지 시스템 로드 실패');
+                document.head.appendChild(newBadgeScript);
+                
+                // 벚꽃 효과만 로드 (안전한 것만)
+                const sakuraScript = document.createElement('script');
+                sakuraScript.src = 'js/sakura-effect.js?v=2.1.1';
+                sakuraScript.onerror = () => console.warn('벚꽃 효과 로드 실패');
+                document.head.appendChild(sakuraScript);
+            } catch (e) {
+                console.warn('선택적 스크립트 로드 오류:', e);
+            }
+        }, 3000); // 3초 후 로드
     </script>
 
     <!-- 헬프 모달 스크립트 -->
