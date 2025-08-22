@@ -6,12 +6,44 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🚀 HAIRGATOR v1.8-COMPLETE-FINAL 로딩 시작');
     
-    // ========== 상수 및 설정 ==========
+    // ========== 상수 및 설정 (가장 먼저 정의) ==========
     const CONFIG = {
         CACHE_PREFIX: 'hairgator_',
         ANIMATION_DURATION: 300,
         MAX_RETRIES: 3,
         NEW_THRESHOLD_DAYS: 7
+    };
+
+    // ========== 유틸리티 함수 (CONFIG 정의 후 바로) ==========
+    const utils = {
+        setStorage: function(key, value) {
+            try {
+                localStorage.setItem(CONFIG.CACHE_PREFIX + key, value);
+            } catch(e) {
+                console.warn('Storage failed:', e);
+            }
+        },
+        
+        getStorage: function(key) {
+            try {
+                return localStorage.getItem(CONFIG.CACHE_PREFIX + key);
+            } catch(e) {
+                console.warn('Storage retrieval failed:', e);
+                return null;
+            }
+        },
+        
+        showLoading: function(show) {
+            if (elements.loadingOverlay) {
+                elements.loadingOverlay.classList.toggle('active', show);
+            }
+        },
+        
+        handleError: function(error, context) {
+            context = context || '';
+            console.error('Error in ' + context + ':', error);
+            alert('오류가 발생했습니다: ' + error.message);
+        }
     };
 
     // ========== 메뉴 데이터 ==========
@@ -175,37 +207,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // ========== 유틸리티 함수 (CONFIG 정의 후) ==========
-    const utils = {
-        setStorage: function(key, value) {
-            try {
-                localStorage.setItem(CONFIG.CACHE_PREFIX + key, value);
-            } catch(e) {
-                console.warn('Storage failed:', e);
-            }
-        },
-        
-        getStorage: function(key) {
-            try {
-                return localStorage.getItem(CONFIG.CACHE_PREFIX + key);
-            } catch(e) {
-                console.warn('Storage retrieval failed:', e);
-                return null;
-            }
-        },
-        
-        showLoading: function(show) {
-            if (elements.loadingOverlay) {
-                elements.loadingOverlay.classList.toggle('active', show);
-            }
-        },
-        
-        handleError: function(error, context) {
-            context = context || '';
-            console.error('Error in ' + context + ':', error);
-            alert('오류가 발생했습니다: ' + error.message);
-        }
-    };
     // ========== New 표시 시스템 ==========
     const NewIndicatorSystem = {
         NEW_THRESHOLD_DAYS: CONFIG.NEW_THRESHOLD_DAYS,
@@ -1022,7 +1023,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ========== AKOOL 모달 동적 생성 ==========
+    // ========== AKOOL 모달 동적 생성 및 관리 ==========
     function createAkoolModals() {
         // 1. AKOOL 메인 모달 생성
         if (!document.getElementById('akoolModal')) {
@@ -1249,7 +1250,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ AKOOL 모달들 동적 생성 완료');
     }
 
-    // ========== AKOOL 모달 관리 ==========
     function showAkoolModal() {
         createAkoolModals(); // 모달이 없으면 생성
         if (elements.akoolModal) {
@@ -1300,48 +1300,311 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ========== AKOOL 모달 관리 ==========
-    function showAkoolModal() {
-        if (elements.akoolModal) {
-            elements.akoolModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
+    // ========== AKOOL 모달 버튼들 설정 함수 ==========
+    function setupAkoolModalButtons(imageSrc) {
+        const akoolStartBtn = document.getElementById('akoolStartBtn');
+        const akoolCloseBtn = document.getElementById('akoolCloseBtn');
+        
+        // 닫기 버튼
+        if (akoolCloseBtn) {
+            akoolCloseBtn.onclick = function() {
+                hideAkoolModal();
+            };
         }
-    }
-    
-    function hideAkoolModal() {
-        if (elements.akoolModal) {
-            elements.akoolModal.style.display = 'none';
-            document.body.style.overflow = '';
+        
+        // 시작 버튼 - 사진첩/카메라 선택 제공
+        if (akoolStartBtn) {
+            akoolStartBtn.onclick = function() {
+                console.log('📸 AKOOL 시작 버튼 클릭');
+                showPhotoSelectionModal(imageSrc);
+            };
+        } else {
+            console.warn('⚠️ akoolStartBtn을 찾을 수 없음');
         }
     }
 
-    function showLoadingModal(message) {
-        var modal = elements.loadingModal;
+    // ========== 사진 선택 모달 생성 및 표시 ==========
+    function showPhotoSelectionModal(imageSrc) {
+        // 기존 사진 선택 모달 제거
+        const existingModal = document.getElementById('photoSelectionModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // 새 사진 선택 모달 생성
+        const photoModal = document.createElement('div');
+        photoModal.id = 'photoSelectionModal';
+        photoModal.className = 'photo-selection-modal';
+        photoModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10002;
+            padding: 20px;
+        `;
+        
+        photoModal.innerHTML = `
+            <div class="photo-selection-content" style="
+                background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+                border-radius: 20px;
+                padding: 30px;
+                max-width: 400px;
+                width: 100%;
+                text-align: center;
+                color: white;
+                position: relative;
+                animation: modalSlideUp 0.3s ease;
+            ">
+                <button class="photo-selection-close" onclick="hidePhotoSelectionModal()" style="
+                    position: absolute;
+                    top: 15px;
+                    right: 15px;
+                    background: none;
+                    border: none;
+                    color: #FF1493;
+                    font-size: 24px;
+                    cursor: pointer;
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">×</button>
+                
+                <div style="font-size: 48px; margin-bottom: 20px;">📸</div>
+                <h2 style="color: #FF1493; margin-bottom: 15px; font-size: 20px;">사진 선택</h2>
+                <p style="margin-bottom: 30px; color: #ccc; line-height: 1.5;">
+                    어떤 방법으로 사진을 선택하시겠어요?
+                </p>
+                
+                <div class="photo-options" style="display: flex; flex-direction: column; gap: 15px;">
+                    <button id="selectFromGallery" style="
+                        background: linear-gradient(135deg, #4A90E2, #357ABD);
+                        color: white;
+                        border: none;
+                        padding: 15px 20px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-weight: bold;
+                        font-size: 16px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                        transition: all 0.3s ease;
+                    ">
+                        <span style="font-size: 20px;">🖼️</span>
+                        <span>사진첩에서 선택</span>
+                    </button>
+                    
+                    <button id="takePhoto" style="
+                        background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+                        color: white;
+                        border: none;
+                        padding: 15px 20px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-weight: bold;
+                        font-size: 16px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                        transition: all 0.3s ease;
+                    ">
+                        <span style="font-size: 20px;">📷</span>
+                        <span>카메라로 촬영</span>
+                    </button>
+                </div>
+                
+                <p style="margin-top: 20px; font-size: 12px; color: #999; line-height: 1.4;">
+                    선택한 사진으로 AI가 헤어스타일을 적용해드립니다.<br>
+                    얼굴이 선명하게 나온 정면 사진을 사용해주세요.
+                </p>
+            </div>
+        `;
+        
+        document.body.appendChild(photoModal);
+        document.body.style.overflow = 'hidden';
+        
+        // 버튼 이벤트 설정
+        const galleryBtn = document.getElementById('selectFromGallery');
+        const cameraBtn = document.getElementById('takePhoto');
+        
+        if (galleryBtn) {
+            galleryBtn.onclick = function() {
+                selectPhoto('gallery', imageSrc);
+            };
+            
+            galleryBtn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 5px 15px rgba(74, 144, 226, 0.4)';
+            });
+            
+            galleryBtn.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+        }
+        
+        if (cameraBtn) {
+            cameraBtn.onclick = function() {
+                selectPhoto('camera', imageSrc);
+            };
+            
+            cameraBtn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 5px 15px rgba(255, 107, 107, 0.4)';
+            });
+            
+            cameraBtn.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+        }
+        
+        console.log('✅ 사진 선택 모달 표시 완료');
+    }
+
+    // ========== 사진 선택 실행 함수 ==========
+    function selectPhoto(source, imageSrc) {
+        console.log('📷 사진 선택:', source);
+        
+        hidePhotoSelectionModal();
+        
+        // 파일 선택 input 생성
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        
+        // 카메라 촬영인 경우 capture 속성 추가
+        if (source === 'camera') {
+            fileInput.capture = 'user'; // 전면 카메라
+            console.log('📷 카메라 모드 활성화');
+        } else {
+            console.log('🖼️ 갤러리 모드 활성화');
+        }
+        
+        fileInput.onchange = async function(e) {
+            const file = e.target.files[0];
+            if (!file) {
+                console.log('❌ 파일이 선택되지 않음');
+                showAkoolModal(); // 다시 AKOOL 모달 표시
+                return;
+            }
+            
+            console.log('📸 선택된 파일:', file.name, file.size);
+            
+            // 파일 크기 체크 (10MB 제한)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('파일 크기가 너무 큽니다. 10MB 이하의 이미지를 선택해주세요.');
+                showAkoolModal(); // 다시 AKOOL 모달 표시
+                return;
+            }
+            
+            // 진행 상황 표시
+            hideAkoolModal();
+            showLoadingModal('AI 얼굴 바꾸기 처리 중...');
+            
+            try {
+                console.log('🚀 AKOOL 처리 시작');
+                console.log('- 사용자 이미지:', file.name);
+                console.log('- 스타일 이미지:', imageSrc);
+                console.log('- 선택 방법:', source);
+                
+                // window.akoolAPI 사용 (akool-api.js에서 제공)
+                if (typeof window.akoolAPI !== 'undefined' && typeof window.akoolAPI.processFaceSwap === 'function') {
+                    const result = await window.akoolAPI.processFaceSwap(file, imageSrc, function(progress) {
+                        console.log('🔄 진행률:', progress + '%');
+                        // 로딩 모달에 진행률 표시
+                        updateLoadingProgress(progress);
+                    });
+                    
+                    console.log('✅ AKOOL 결과:', result);
+                    hideLoadingModal();
+                    
+                    if (result && result.success && result.resultUrl) {
+                        console.log('🎉 성공! 결과 이미지:', result.resultUrl);
+                        showResultModal(result.resultUrl);
+                    } else {
+                        console.error('❌ AKOOL 처리 실패:', result);
+                        alert('AI 처리에 실패했습니다: ' + (result.error || '알 수 없는 오류'));
+                    }
+                } else {
+                    throw new Error('AKOOL API가 로드되지 않았습니다. akool-api.js를 확인해주세요.');
+                }
+                
+            } catch (error) {
+                console.error('❌ AKOOL 처리 중 오류:', error);
+                hideLoadingModal();
+                alert('AI 처리 중 오류가 발생했습니다: ' + error.message);
+            }
+        };
+        
+        // 파일 선택 창 열기
+        fileInput.click();
+    }
+
+    // ========== 모달 제어 함수들 ==========
+    function hidePhotoSelectionModal() {
+        const modal = document.getElementById('photoSelectionModal');
         if (modal) {
-            var messageEl = modal.querySelector('.loading-message');
-            if (messageEl) messageEl.textContent = message || '처리 중...';
-            modal.style.display = 'flex';
-        }
-    }
-
-    function hideLoadingModal() {
-        if (elements.loadingModal) {
-            elements.loadingModal.style.display = 'none';
-        }
-    }
-
-    function showResultModal(imageUrl) {
-        if (elements.resultModal && elements.resultImage) {
-            elements.resultImage.src = imageUrl;
-            elements.resultModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-    }
-
-    function hideResultModal() {
-        if (elements.resultModal) {
-            elements.resultModal.style.display = 'none';
+            modal.remove();
             document.body.style.overflow = '';
+        }
+    }
+
+    function updateLoadingProgress(progress) {
+        const loadingModal = document.getElementById('loadingModal');
+        if (loadingModal) {
+            const messageEl = loadingModal.querySelector('.loading-message');
+            if (messageEl) {
+                messageEl.textContent = `AI 얼굴 바꾸기 처리 중... ${Math.round(progress)}%`;
+            }
+            
+            // 진행바 추가 (있으면)
+            let progressBar = loadingModal.querySelector('.progress-bar');
+            if (!progressBar) {
+                progressBar = document.createElement('div');
+                progressBar.className = 'progress-bar';
+                progressBar.style.cssText = `
+                    width: 100%;
+                    height: 4px;
+                    background: #333;
+                    border-radius: 2px;
+                    margin-top: 15px;
+                    overflow: hidden;
+                `;
+                
+                const progressFill = document.createElement('div');
+                progressFill.className = 'progress-fill';
+                progressFill.style.cssText = `
+                    height: 100%;
+                    background: linear-gradient(90deg, #FF1493, #FF69B4);
+                    width: 0%;
+                    transition: width 0.3s ease;
+                    border-radius: 2px;
+                `;
+                
+                progressBar.appendChild(progressFill);
+                
+                const loadingContent = loadingModal.querySelector('.loading-content');
+                if (loadingContent) {
+                    loadingContent.appendChild(progressBar);
+                }
+            }
+            
+            const progressFill = progressBar.querySelector('.progress-fill');
+            if (progressFill) {
+                progressFill.style.width = `${Math.min(progress, 100)}%`;
+            }
         }
     }
 
@@ -1506,342 +1769,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // ========== AKOOL 모달 플로우 복원 ==========
-// main.js의 setupModalActions 함수에서 AI 버튼 부분을 이 코드로 교체하세요
-
-// AI 체험하기 버튼 이벤트 설정
-if (btnAkool) {
-    btnAkool.onclick = function() {
-        console.log('🎭 AI 체험하기 버튼 클릭됨');
-        hideStyleModal();
-        
-        // 🔧 AKOOL 모달 먼저 표시 (즉시 파일 선택 X)
-        createAkoolModals(); // 모달이 없으면 생성
-        showAkoolModal();    // AKOOL 모달 표시
-        
-        // AKOOL 모달 내부 버튼들 설정
-        setupAkoolModalButtons(imageSrc);
-    };
-    console.log('✅ AI 체험하기 AKOOL 모달 플로우 연결 완료');
-} else {
-    console.warn('⚠️ AI 버튼 생성 실패');
-}
-
-// ========== AKOOL 모달 버튼들 설정 함수 ==========
-function setupAkoolModalButtons(imageSrc) {
-    const akoolStartBtn = document.getElementById('akoolStartBtn');
-    const akoolCloseBtn = document.getElementById('akoolCloseBtn');
-    
-    // 닫기 버튼
-    if (akoolCloseBtn) {
-        akoolCloseBtn.onclick = function() {
-            hideAkoolModal();
-        };
-    }
-    
-    // 시작 버튼 - 사진첩/카메라 선택 제공
-    if (akoolStartBtn) {
-        akoolStartBtn.onclick = function() {
-            console.log('📸 AKOOL 시작 버튼 클릭');
-            showPhotoSelectionModal(imageSrc);
-        };
-    } else {
-        console.warn('⚠️ akoolStartBtn을 찾을 수 없음');
-    }
-}
-
-// ========== 사진 선택 모달 생성 및 표시 ==========
-function showPhotoSelectionModal(imageSrc) {
-    // 기존 사진 선택 모달 제거
-    const existingModal = document.getElementById('photoSelectionModal');
-    if (existingModal) {
-        existingModal.remove();
-    }
-    
-    // 새 사진 선택 모달 생성
-    const photoModal = document.createElement('div');
-    photoModal.id = 'photoSelectionModal';
-    photoModal.className = 'photo-selection-modal';
-    photoModal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.9);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10002;
-        padding: 20px;
-    `;
-    
-    photoModal.innerHTML = `
-        <div class="photo-selection-content" style="
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            position: relative;
-            animation: modalSlideUp 0.3s ease;
-        ">
-            <button class="photo-selection-close" onclick="hidePhotoSelectionModal()" style="
-                position: absolute;
-                top: 15px;
-                right: 15px;
-                background: none;
-                border: none;
-                color: #FF1493;
-                font-size: 24px;
-                cursor: pointer;
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            ">×</button>
-            
-            <div style="font-size: 48px; margin-bottom: 20px;">📸</div>
-            <h2 style="color: #FF1493; margin-bottom: 15px; font-size: 20px;">사진 선택</h2>
-            <p style="margin-bottom: 30px; color: #ccc; line-height: 1.5;">
-                어떤 방법으로 사진을 선택하시겠어요?
-            </p>
-            
-            <div class="photo-options" style="display: flex; flex-direction: column; gap: 15px;">
-                <button id="selectFromGallery" style="
-                    background: linear-gradient(135deg, #4A90E2, #357ABD);
-                    color: white;
-                    border: none;
-                    padding: 15px 20px;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    font-size: 16px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                    transition: all 0.3s ease;
-                ">
-                    <span style="font-size: 20px;">🖼️</span>
-                    <span>사진첩에서 선택</span>
-                </button>
+        // AI 체험하기 버튼 이벤트 설정
+        if (btnAkool) {
+            btnAkool.onclick = function() {
+                console.log('🎭 AI 체험하기 버튼 클릭됨');
+                hideStyleModal();
                 
-                <button id="takePhoto" style="
-                    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
-                    color: white;
-                    border: none;
-                    padding: 15px 20px;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    font-size: 16px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                    transition: all 0.3s ease;
-                ">
-                    <span style="font-size: 20px;">📷</span>
-                    <span>카메라로 촬영</span>
-                </button>
-            </div>
-            
-            <p style="margin-top: 20px; font-size: 12px; color: #999; line-height: 1.4;">
-                선택한 사진으로 AI가 헤어스타일을 적용해드립니다.<br>
-                얼굴이 선명하게 나온 정면 사진을 사용해주세요.
-            </p>
-        </div>
-    `;
-    
-    document.body.appendChild(photoModal);
-    document.body.style.overflow = 'hidden';
-    
-    // 버튼 이벤트 설정
-    const galleryBtn = document.getElementById('selectFromGallery');
-    const cameraBtn = document.getElementById('takePhoto');
-    
-    if (galleryBtn) {
-        galleryBtn.onclick = function() {
-            selectPhoto('gallery', imageSrc);
-        };
-        
-        galleryBtn.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 5px 15px rgba(74, 144, 226, 0.4)';
-        });
-        
-        galleryBtn.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = 'none';
-        });
-    }
-    
-    if (cameraBtn) {
-        cameraBtn.onclick = function() {
-            selectPhoto('camera', imageSrc);
-        };
-        
-        cameraBtn.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 5px 15px rgba(255, 107, 107, 0.4)';
-        });
-        
-        cameraBtn.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = 'none';
-        });
-    }
-    
-    console.log('✅ 사진 선택 모달 표시 완료');
-}
-
-// ========== 사진 선택 실행 함수 ==========
-function selectPhoto(source, imageSrc) {
-    console.log('📷 사진 선택:', source);
-    
-    hidePhotoSelectionModal();
-    
-    // 파일 선택 input 생성
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    
-    // 카메라 촬영인 경우 capture 속성 추가
-    if (source === 'camera') {
-        fileInput.capture = 'user'; // 전면 카메라
-        console.log('📷 카메라 모드 활성화');
-    } else {
-        console.log('🖼️ 갤러리 모드 활성화');
-    }
-    
-    fileInput.onchange = async function(e) {
-        const file = e.target.files[0];
-        if (!file) {
-            console.log('❌ 파일이 선택되지 않음');
-            showAkoolModal(); // 다시 AKOOL 모달 표시
-            return;
-        }
-        
-        console.log('📸 선택된 파일:', file.name, file.size);
-        
-        // 파일 크기 체크 (10MB 제한)
-        if (file.size > 10 * 1024 * 1024) {
-            alert('파일 크기가 너무 큽니다. 10MB 이하의 이미지를 선택해주세요.');
-            showAkoolModal(); // 다시 AKOOL 모달 표시
-            return;
-        }
-        
-        // 진행 상황 표시
-        hideAkoolModal();
-        showLoadingModal('AI 얼굴 바꾸기 처리 중...');
-        
-        try {
-            console.log('🚀 AKOOL 처리 시작');
-            console.log('- 사용자 이미지:', file.name);
-            console.log('- 스타일 이미지:', imageSrc);
-            console.log('- 선택 방법:', source);
-            
-            // window.akoolAPI 사용 (akool-api.js에서 제공)
-            if (typeof window.akoolAPI !== 'undefined' && typeof window.akoolAPI.processFaceSwap === 'function') {
-                const result = await window.akoolAPI.processFaceSwap(file, imageSrc, function(progress) {
-                    console.log('🔄 진행률:', progress + '%');
-                    // 로딩 모달에 진행률 표시
-                    updateLoadingProgress(progress);
-                });
+                // 🔧 AKOOL 모달 먼저 표시 (즉시 파일 선택 X)
+                createAkoolModals(); // 모달이 없으면 생성
+                showAkoolModal();    // AKOOL 모달 표시
                 
-                console.log('✅ AKOOL 결과:', result);
-                hideLoadingModal();
-                
-                if (result && result.success && result.resultUrl) {
-                    console.log('🎉 성공! 결과 이미지:', result.resultUrl);
-                    showResultModal(result.resultUrl);
-                } else {
-                    console.error('❌ AKOOL 처리 실패:', result);
-                    alert('AI 처리에 실패했습니다: ' + (result.error || '알 수 없는 오류'));
-                }
-            } else {
-                throw new Error('AKOOL API가 로드되지 않았습니다. akool-api.js를 확인해주세요.');
-            }
-            
-        } catch (error) {
-            console.error('❌ AKOOL 처리 중 오류:', error);
-            hideLoadingModal();
-            alert('AI 처리 중 오류가 발생했습니다: ' + error.message);
-        }
-    };
-    
-    // 파일 선택 창 열기
-    fileInput.click();
-}
-
-// ========== 모달 제어 함수들 ==========
-function hidePhotoSelectionModal() {
-    const modal = document.getElementById('photoSelectionModal');
-    if (modal) {
-        modal.remove();
-        document.body.style.overflow = '';
-    }
-}
-
-function updateLoadingProgress(progress) {
-    const loadingModal = document.getElementById('loadingModal');
-    if (loadingModal) {
-        const messageEl = loadingModal.querySelector('.loading-message');
-        if (messageEl) {
-            messageEl.textContent = `AI 얼굴 바꾸기 처리 중... ${Math.round(progress)}%`;
-        }
-        
-        // 진행바 추가 (있으면)
-        let progressBar = loadingModal.querySelector('.progress-bar');
-        if (!progressBar) {
-            progressBar = document.createElement('div');
-            progressBar.className = 'progress-bar';
-            progressBar.style.cssText = `
-                width: 100%;
-                height: 4px;
-                background: #333;
-                border-radius: 2px;
-                margin-top: 15px;
-                overflow: hidden;
-            `;
-            
-            const progressFill = document.createElement('div');
-            progressFill.className = 'progress-fill';
-            progressFill.style.cssText = `
-                height: 100%;
-                background: linear-gradient(90deg, #FF1493, #FF69B4);
-                width: 0%;
-                transition: width 0.3s ease;
-                border-radius: 2px;
-            `;
-            
-            progressBar.appendChild(progressFill);
-            
-            const loadingContent = loadingModal.querySelector('.loading-content');
-            if (loadingContent) {
-                loadingContent.appendChild(progressBar);
-            }
-        }
-        
-        const progressFill = progressBar.querySelector('.progress-fill');
-        if (progressFill) {
-            progressFill.style.width = `${Math.min(progress, 100)}%`;
+                // AKOOL 모달 내부 버튼들 설정
+                setupAkoolModalButtons(imageSrc);
+            };
+            console.log('✅ AI 체험하기 AKOOL 모달 플로우 연결 완료');
+        } else {
+            console.warn('⚠️ AI 버튼 생성 실패');
         }
     }
-}
 
-// ========== 전역 함수 등록 ==========
-window.hidePhotoSelectionModal = hidePhotoSelectionModal;
-window.setupAkoolModalButtons = setupAkoolModalButtons;
-window.showPhotoSelectionModal = showPhotoSelectionModal;
     // ========== 로그아웃 ==========
     function logout() {
         if (confirm('로그아웃 하시겠습니까?')) {
-            ['designerName', 'designerPhone', 'designerPassword', 'loginTime', 'gender'].forEach(function(key) {
+            ['designerName', 'designerPhone', 'designerPassword', 'loginTime', 'theme', 'gender'].forEach(function(key) {
                 localStorage.removeItem(CONFIG.CACHE_PREFIX + key);
             });
             
@@ -2192,282 +2142,183 @@ window.showPhotoSelectionModal = showPhotoSelectionModal;
     // 전역으로 노출
     window.ServiceWorkerManager = ServiceWorkerManager;
 
- // ========== 레이아웃 최적화 (PWA 안전 영역 고려) ==========
-function fixCategoryTabsLayout() {
-    const style = document.createElement('style');
-    style.id = 'category-tabs-layout-fix';
-    style.textContent = `
-        /* ✅ PWA 안전 영역 고려한 레이아웃 오버라이드 */
-        .header {
-            top: max(env(safe-area-inset-top, 0px), 5px) !important;
-            z-index: 1000 !important;
-        }
-        
-        .main-content {
-            margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 5px) + 10px) !important;
-            padding-top: 0px !important;
-        }
-        
-        .category-tabs-wrapper {
-            margin-top: 10px !important;
-            padding: 8px 0 6px 0 !important;
-            min-height: auto !important;
-            position: relative !important;
-            z-index: 50 !important;
-        }
-        
-        .category-tabs {
-            min-height: 36px !important;
-            padding: 2px 20px !important;
-        }
-        
-        .category-tab {
-            padding: 8px 14px !important;
-            min-height: 36px !important;
-            font-size: 13px !important;
-        }
-        
-        .category-description {
-            padding: 8px 20px 10px 20px !important;
-            line-height: 1.4 !important;
-        }
-        
-        .subcategory-wrapper {
-            padding: 12px 20px 16px 20px !important;
-        }
-        
-        /* ========== 모바일 PWA 전용 (대분류 안보임 해결) ========== */
-        @media (max-width: 768px) {
+    // ========== 레이아웃 최적화 (PWA 안전 영역 고려) ==========
+    function fixCategoryTabsLayout() {
+        const style = document.createElement('style');
+        style.id = 'category-tabs-layout-fix';
+        style.textContent = `
+            /* ✅ PWA 안전 영역 고려한 레이아웃 */
             .header {
-                top: max(env(safe-area-inset-top, 0px), 15px) !important;
+                top: max(env(safe-area-inset-top, 0px), 5px) !important;
+                z-index: 1000 !important;
             }
             
             .main-content {
-                margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 15px) + 15px) !important;
+                margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 5px) + 10px) !important;
                 padding-top: 0px !important;
             }
             
             .category-tabs-wrapper {
-                margin-top: 5px !important;
-                padding: 10px 0 6px 0 !important;
-                background: var(--primary-dark) !important;
-                border-bottom: 1px solid #333 !important;
+                margin-top: 0px !important;
+                padding: 8px 0 6px 0 !important;
+                min-height: auto !important;
                 position: relative !important;
                 z-index: 50 !important;
+                border-bottom: 2px solid #FF1493 !important;
             }
             
             .category-tabs {
-                min-height: 32px !important;
-                padding: 1px 15px !important;
+                min-height: 36px !important;
+                padding: 2px 20px !important;
             }
             
             .category-tab {
-                padding: 6px 12px !important;
-                min-height: 32px !important;
-                font-size: 12px !important;
-            }
-            
-            .category-description {
-                padding: 8px 15px 10px 15px !important;
+                padding: 8px 14px !important;
+                min-height: 36px !important;
                 font-size: 13px !important;
             }
             
+            .category-description {
+                padding: 8px 20px 10px 20px !important;
+                line-height: 1.4 !important;
+            }
+            
             .subcategory-wrapper {
-                padding: 10px 15px 14px 15px !important;
+                padding: 12px 20px 16px 20px !important;
             }
             
-            /* 버튼 클릭 영역 강화 */
-            .back-btn, .menu-btn {
-                z-index: 1001 !important;
-                touch-action: manipulation !important;
+            /* ========== 모바일 PWA 전용 (핸드폰에서 대분류 처음부터 보이게) ========== */
+            @media (max-width: 768px) {
+                .header {
+                    top: max(env(safe-area-inset-top, 0px), 15px) !important;
+                    height: 55px !important;
+                }
+                
+                .main-content {
+                    margin-top: calc(55px + max(env(safe-area-inset-top, 0px), 15px) + 5px) !important;
+                    padding-top: 0px !important;
+                }
+                
+                .category-tabs-wrapper {
+                    margin-top: 0px !important;
+                    padding: 5px 0 !important;
+                    background: var(--primary-dark) !important;
+                    border-bottom: 2px solid #FF1493 !important;
+                    position: relative !important;
+                    z-index: 50 !important;
+                }
+                
+                .category-tabs {
+                    min-height: 32px !important;
+                    padding: 1px 15px !important;
+                }
+                
+                .category-tab {
+                    padding: 6px 12px !important;
+                    min-height: 32px !important;
+                    font-size: 12px !important;
+                }
+                
+                .category-description {
+                    padding: 8px 15px 10px 15px !important;
+                    font-size: 13px !important;
+                }
+                
+                .subcategory-wrapper {
+                    padding: 10px 15px 14px 15px !important;
+                }
+                
+                /* 헤더 컴팩트하게 */
+                .header .logo {
+                    font-size: 16px !important;
+                }
+                
+                .back-btn, .menu-btn {
+                    width: 45px !important;
+                    height: 45px !important;
+                    z-index: 1001 !important;
+                    touch-action: manipulation !important;
+                }
             }
+            
+            /* ========== PWA 전체화면 모드 전용 ========== */
+            @media (display-mode: standalone) {
+                .header {
+                    top: max(env(safe-area-inset-top, 0px), 5px) !important;
+                }
+                
+                .main-content {
+                    margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 5px) + 5px) !important;
+                }
+                
+                .back-btn, .menu-btn {
+                    z-index: 1002 !important;
+                    background: rgba(255, 255, 255, 0.05) !important;
+                    border-radius: 8px !important;
+                    touch-action: manipulation !important;
+                }
+                
+                .back-btn:active, .menu-btn:active {
+                    background: rgba(255, 255, 255, 0.15) !important;
+                    transform: translateY(-50%) scale(0.95) !important;
+                }
+            }
+            
+            /* ========== 태블릿 PWA 전용 (버튼 클릭 안됨 해결) ========== */
+            @media (min-width: 769px) and (display-mode: standalone) {
+                .header {
+                    top: max(env(safe-area-inset-top, 0px), 10px) !important;
+                    height: 65px !important;
+                }
+                
+                .main-content {
+                    margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 10px) + 10px) !important;
+                }
+                
+                .back-btn, .menu-btn {
+                    top: 50% !important;
+                    transform: translateY(-50%) !important;
+                    width: 56px !important;
+                    height: 56px !important;
+                    z-index: 1002 !important;
+                    background: rgba(255, 255, 255, 0.08) !important;
+                    border-radius: 12px !important;
+                    transition: all 0.2s ease !important;
+                    touch-action: manipulation !important;
+                }
+                
+                .back-btn:hover, .menu-btn:hover {
+                    background: rgba(255, 255, 255, 0.15) !important;
+                    transform: translateY(-50%) scale(1.05) !important;
+                }
+                
+                .back-btn:active, .menu-btn:active {
+                    background: rgba(255, 255, 255, 0.2) !important;
+                    transform: translateY(-50%) scale(0.95) !important;
+                }
+            }
+            
+            /* ========== PC/데스크톱 전용 ========== */
+            @media (min-width: 769px) and (display-mode: browser) {
+                .header {
+                    top: 0px !important;
+                }
+                
+                .main-content {
+                    margin-top: 85px !important;
+                }
+            }
+        `;
+        
+        // 기존 스타일 제거 후 새로 추가
+        const existingStyle = document.getElementById('category-tabs-layout-fix');
+        if (existingStyle) {
+            existingStyle.remove();
         }
         
-        /* ========== PWA 전체화면 모드 전용 ========== */
-        @media (display-mode: standalone) {
-            .header {
-                top: max(env(safe-area-inset-top, 0px), 8px) !important;
-            }
-            
-            .main-content {
-                margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 8px) + 8px) !important;
-            }
-            
-            .back-btn, .menu-btn {
-                z-index: 1002 !important;
-                background: rgba(255, 255, 255, 0.05) !important;
-                border-radius: 8px !important;
-                touch-action: manipulation !important;
-            }
-            
-            .back-btn:active, .menu-btn:active {
-                background: rgba(255, 255, 255, 0.15) !important;
-                transform: translateY(-50%) scale(0.95) !important;
-            }
-        }
-        
-        /* ========== 태블릿 PWA 전용 (버튼 클릭 안됨 해결) ========== */
-        @media (min-width: 769px) and (display-mode: standalone) {
-            .header {
-                top: max(env(safe-area-inset-top, 0px), 10px) !important;
-                height: 65px !important;
-            }
-            
-            .main-content {
-                margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 10px) + 10px) !important;
-            }
-            
-            .back-btn, .menu-btn {
-                top: 50% !important;
-                transform: translateY(-50%) !important;
-                width: 50px !important;
-                height: 50px !important;
-                z-index: 1002 !important;
-                background: rgba(255, 255, 255, 0.08) !important;
-                border-radius: 12px !important;
-                transition: all 0.2s ease !important;
-                touch-action: manipulation !important;
-            }
-            
-            .back-btn:hover, .menu-btn:hover {
-                background: rgba(255, 255, 255, 0.15) !important;
-                transform: translateY(-50%) scale(1.05) !important;
-            }
-            
-            .back-btn:active, .menu-btn:active {
-                background: rgba(255, 255, 255, 0.2) !important;
-                transform: translateY(-50%) scale(0.95) !important;
-            }
-            
-            .category-tabs-wrapper {
-                margin-top: 15px !important;
-                padding-top: 10px !important;
-            }
-        }
-        
-        /* ========== PC/데스크톱 전용 ========== */
-        @media (min-width: 769px) and (display-mode: browser) {
-            .header {
-                top: 0px !important;
-            }
-            
-            .main-content {
-                margin-top: 85px !important;
-            }
-            
-            .category-tabs-wrapper {
-                margin-top: 15px !important;
-                padding-top: 10px !important;
-            }
-        }
-        
-        /* ========== PWA 전체화면 모드 전용 ========== */
-        @media (display-mode: standalone) {
-            .header {
-                top: max(env(safe-area-inset-top, 0px), 8px) !important;
-            }
-            
-            .main-content {
-                margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 8px) + 8px) !important;
-            }
-            
-            .back-btn, .menu-btn {
-                z-index: 1002 !important;
-                background: rgba(255, 255, 255, 0.05) !important;
-                border-radius: 8px !important;
-                touch-action: manipulation !important;
-            }
-            
-            .back-btn:active, .menu-btn:active {
-                background: rgba(255, 255, 255, 0.15) !important;
-                transform: translateY(-50%) scale(0.95) !important;
-            }
-        }
-        
-        /* ========== 태블릿 PWA 전용 (버튼 클릭 안됨 해결) ========== */
-        @media (min-width: 769px) and (display-mode: standalone) {
-            .header {
-                top: max(env(safe-area-inset-top, 0px), 10px) !important;
-                height: 65px !important;
-            }
-            
-            .main-content {
-                margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 10px) + 10px) !important;
-            }
-            
-            .back-btn, .menu-btn {
-                top: 50% !important;
-                transform: translateY(-50%) !important;
-                width: 50px !important;
-                height: 50px !important;
-                z-index: 1002 !important;
-                background: rgba(255, 255, 255, 0.08) !important;
-                border-radius: 12px !important;
-                transition: all 0.2s ease !important;
-                touch-action: manipulation !important;
-            }
-            
-            .back-btn:hover, .menu-btn:hover {
-                background: rgba(255, 255, 255, 0.15) !important;
-                transform: translateY(-50%) scale(1.05) !important;
-            }
-            
-            .back-btn:active, .menu-btn:active {
-                background: rgba(255, 255, 255, 0.2) !important;
-                transform: translateY(-50%) scale(0.95) !important;
-            }
-            
-            .category-tabs-wrapper {
-                margin-top: 15px !important;
-                padding-top: 10px !important;
-            }
-        }
-        
-        /* ========== PC/데스크톱 전용 ========== */
-        @media (min-width: 769px) and (display-mode: browser) {
-            .header {
-                top: 0px !important;
-            }
-            
-            .main-content {
-                margin-top: 85px !important;
-            }
-            
-            .category-tabs-wrapper {
-                margin-top: 15px !important;
-                padding-top: 10px !important;
-            }
-        }
-        
-        /* ========== 디버깅용 PWA 모드 표시 ========== */
-        @media (display-mode: standalone) {
-            body:before {
-                content: "📱 PWA 모드";
-                position: fixed;
-                top: 5px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(255, 20, 147, 0.8);
-                color: white;
-                padding: 2px 8px;
-                border-radius: 4px;
-                font-size: 10px;
-                z-index: 10000;
-                pointer-events: none;
-                opacity: 0.7;
-            }
-        }
-    `;
-    
-    // 기존 스타일 제거 후 새로 추가
-    const existingStyle = document.getElementById('category-tabs-layout-fix');
-    if (existingStyle) {
-        existingStyle.remove();
+        document.head.appendChild(style);
+        console.log('✅ PWA 안전 영역 고려한 레이아웃 적용 (핸드폰 대분류 처음부터 보이게 + 태블릿 버튼 클릭 해결)');
     }
-    
-    document.head.appendChild(style);
-    console.log('✅ PWA 안전 영역 고려한 레이아웃 적용 (대분류 표시 + 버튼 클릭 해결)');
-}
 
     // ========== 초기화 ==========
     function init() {
@@ -2544,76 +2395,6 @@ function fixCategoryTabsLayout() {
             });
         },
         
-        // 스타일 모달 HTML 구조 확인
-        checkModalHTML: function() {
-            const modal = document.getElementById('styleModal');
-            if (modal) {
-                console.log('🔍 스타일 모달 HTML 구조:');
-                console.log(modal.innerHTML);
-            } else {
-                console.log('❌ 스타일 모달을 찾을 수 없음');
-            }
-        },
-        
-        // AI 버튼 강제 생성
-        createAIButton: function() {
-            console.log('🔧 AI 버튼 강제 생성 시도...');
-            
-            const modalActions = document.querySelector('.modal-actions');
-            if (!modalActions) {
-                console.log('❌ .modal-actions 요소를 찾을 수 없음');
-                return false;
-            }
-            
-            // 기존 AI 버튼 제거
-            const existingBtn = document.getElementById('btnAkool');
-            if (existingBtn) {
-                existingBtn.remove();
-                console.log('🗑️ 기존 AI 버튼 제거됨');
-            }
-            
-            // 새 AI 버튼 생성
-            const aiButton = document.createElement('button');
-            aiButton.id = 'btnAkool';
-            aiButton.className = 'modal-btn btn-akool';
-            aiButton.innerHTML = '<span>🎭</span><span>AI 체험하기</span>';
-            aiButton.style.cssText = `
-                background: linear-gradient(135deg, #FF6B6B, #FF8E53);
-                color: white;
-                border: none;
-                padding: 12px 20px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: bold;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                margin: 5px;
-            `;
-            
-            // 클릭 이벤트 추가
-            aiButton.onclick = function() {
-                console.log('🎭 AI 버튼 클릭됨!');
-                alert('AI 체험하기 버튼이 작동합니다!');
-            };
-            
-            modalActions.appendChild(aiButton);
-            console.log('✅ AI 버튼 생성 완료');
-            return aiButton;
-        },
-        
-        // 현재 모달 상태 확인
-        checkModalState: function() {
-            const modal = document.getElementById('styleModal');
-            console.log('🔍 모달 상태:');
-            console.log('- 모달 존재:', !!modal);
-            if (modal) {
-                console.log('- display:', modal.style.display);
-                console.log('- 클래스:', modal.className);
-                console.log('- 활성화:', modal.classList.contains('active'));
-            }
-        },
-        
         // 테스트 모달 열기
         openTestModal: function() {
             console.log('🧪 테스트 모달 열기...');
@@ -2629,20 +2410,10 @@ function fixCategoryTabsLayout() {
                     this.checkAIButton();
                 }, 100);
             }
-        },
-        
-        // elements 객체 상태 확인
-        checkElements: function() {
-            console.log('🔍 elements 객체 상태:');
-            console.log('- btnAkool:', elements.btnAkool);
-            console.log('- styleModal:', elements.styleModal);
-            console.log('- modalClose:', elements.modalClose);
-            console.log('- btnRegister:', elements.btnRegister);
-            console.log('- btnLike:', elements.btnLike);
         }
     };
 
-    // 전역 함수 등록
+    // ========== 전역 함수 등록 ==========
     window.selectGender = selectGender;
     window.logout = logout;
     window.showHairGuideModal = showHairGuideModal;
@@ -2655,6 +2426,9 @@ function fixCategoryTabsLayout() {
     window.toggleSidebar = toggleSidebar;
     window.closeSidebar = closeSidebar;
     window.toggleTheme = toggleTheme;
+    window.hidePhotoSelectionModal = hidePhotoSelectionModal;
+    window.setupAkoolModalButtons = setupAkoolModalButtons;
+    window.showPhotoSelectionModal = showPhotoSelectionModal;
 
     // ========== 앱 초기화 실행 ==========
     init();
@@ -2662,9 +2436,3 @@ function fixCategoryTabsLayout() {
     console.log('🎉 HAIRGATOR 메인 애플리케이션 로드 완료 (COMPLETE-FINAL)');
     
 });
-
-
-
-
-
-
