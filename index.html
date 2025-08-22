@@ -819,17 +819,18 @@
             
             if (savedGender) {
                 console.log('💾 저장된 성별 발견:', savedGender);
-                document.body.classList.add(`gender-${savedGender}`);
                 
                 // main.js의 selectGender 함수 호출 대기
-                const waitForSelectGender = () => {
+                const waitForMainJS = () => {
                     if (typeof selectGender === 'function') {
+                        console.log('✅ main.js selectGender 함수 호출');
                         selectGender(savedGender);
                     } else {
-                        setTimeout(waitForSelectGender, 100);
+                        console.log('⏳ main.js 함수 로드 대기...');
+                        setTimeout(waitForMainJS, 100);
                     }
                 };
-                setTimeout(waitForSelectGender, 100);
+                setTimeout(waitForMainJS, 200);
             } else {
                 console.log('👫 성별 선택 화면 표시');
                 genderSelection.style.display = 'flex';
