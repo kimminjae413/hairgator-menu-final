@@ -28,8 +28,20 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- 🎨 CSS 파일들 (분리됨) -->
+    <!-- 🎨 CSS 파일들 (최적화됨) -->
     <link rel="stylesheet" href="css/main.css">
+    
+    <!-- 🚀 Scripts (최적화됨) -->
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- App Scripts (최적화됨) -->
+    <script src="js/error-handler.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/main.js"></script>
 </head>
 <body>
     <!-- Loading -->
@@ -142,16 +154,7 @@
         </div>
     </div>
 
-    <!-- 🚀 Scripts (분리됨) -->
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    
-    <!-- App Scripts -->
-    <script src="js/firebase-config.js"></script>
-    <script src="js/main.js"></script>
+
     
     <!-- PWA Script -->
     <script>
