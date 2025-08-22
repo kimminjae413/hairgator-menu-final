@@ -1506,75 +1506,339 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // AI 체험하기 버튼 이벤트 설정
-       // AI 체험하기 버튼 이벤트 설정
-        if (btnAkool) {
-            btnAkool.onclick = function() {
-                console.log('🎭 AI 체험하기 버튼 클릭됨');
-                hideStyleModal();
+        // ========== AKOOL 모달 플로우 복원 ==========
+// main.js의 setupModalActions 함수에서 AI 버튼 부분을 이 코드로 교체하세요
+
+// AI 체험하기 버튼 이벤트 설정
+if (btnAkool) {
+    btnAkool.onclick = function() {
+        console.log('🎭 AI 체험하기 버튼 클릭됨');
+        hideStyleModal();
+        
+        // 🔧 AKOOL 모달 먼저 표시 (즉시 파일 선택 X)
+        createAkoolModals(); // 모달이 없으면 생성
+        showAkoolModal();    // AKOOL 모달 표시
+        
+        // AKOOL 모달 내부 버튼들 설정
+        setupAkoolModalButtons(imageSrc);
+    };
+    console.log('✅ AI 체험하기 AKOOL 모달 플로우 연결 완료');
+} else {
+    console.warn('⚠️ AI 버튼 생성 실패');
+}
+
+// ========== AKOOL 모달 버튼들 설정 함수 ==========
+function setupAkoolModalButtons(imageSrc) {
+    const akoolStartBtn = document.getElementById('akoolStartBtn');
+    const akoolCloseBtn = document.getElementById('akoolCloseBtn');
+    
+    // 닫기 버튼
+    if (akoolCloseBtn) {
+        akoolCloseBtn.onclick = function() {
+            hideAkoolModal();
+        };
+    }
+    
+    // 시작 버튼 - 사진첩/카메라 선택 제공
+    if (akoolStartBtn) {
+        akoolStartBtn.onclick = function() {
+            console.log('📸 AKOOL 시작 버튼 클릭');
+            showPhotoSelectionModal(imageSrc);
+        };
+    } else {
+        console.warn('⚠️ akoolStartBtn을 찾을 수 없음');
+    }
+}
+
+// ========== 사진 선택 모달 생성 및 표시 ==========
+function showPhotoSelectionModal(imageSrc) {
+    // 기존 사진 선택 모달 제거
+    const existingModal = document.getElementById('photoSelectionModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // 새 사진 선택 모달 생성
+    const photoModal = document.createElement('div');
+    photoModal.id = 'photoSelectionModal';
+    photoModal.className = 'photo-selection-modal';
+    photoModal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10002;
+        padding: 20px;
+    `;
+    
+    photoModal.innerHTML = `
+        <div class="photo-selection-content" style="
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            position: relative;
+            animation: modalSlideUp 0.3s ease;
+        ">
+            <button class="photo-selection-close" onclick="hidePhotoSelectionModal()" style="
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: none;
+                border: none;
+                color: #FF1493;
+                font-size: 24px;
+                cursor: pointer;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">×</button>
+            
+            <div style="font-size: 48px; margin-bottom: 20px;">📸</div>
+            <h2 style="color: #FF1493; margin-bottom: 15px; font-size: 20px;">사진 선택</h2>
+            <p style="margin-bottom: 30px; color: #ccc; line-height: 1.5;">
+                어떤 방법으로 사진을 선택하시겠어요?
+            </p>
+            
+            <div class="photo-options" style="display: flex; flex-direction: column; gap: 15px;">
+                <button id="selectFromGallery" style="
+                    background: linear-gradient(135deg, #4A90E2, #357ABD);
+                    color: white;
+                    border: none;
+                    padding: 15px 20px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    transition: all 0.3s ease;
+                ">
+                    <span style="font-size: 20px;">🖼️</span>
+                    <span>사진첩에서 선택</span>
+                </button>
                 
-                // 🔧 즉시 파일 선택 (akool-api.js 사용)
-                var fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.accept = 'image/*';
+                <button id="takePhoto" style="
+                    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+                    color: white;
+                    border: none;
+                    padding: 15px 20px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    transition: all 0.3s ease;
+                ">
+                    <span style="font-size: 20px;">📷</span>
+                    <span>카메라로 촬영</span>
+                </button>
+            </div>
+            
+            <p style="margin-top: 20px; font-size: 12px; color: #999; line-height: 1.4;">
+                선택한 사진으로 AI가 헤어스타일을 적용해드립니다.<br>
+                얼굴이 선명하게 나온 정면 사진을 사용해주세요.
+            </p>
+        </div>
+    `;
+    
+    document.body.appendChild(photoModal);
+    document.body.style.overflow = 'hidden';
+    
+    // 버튼 이벤트 설정
+    const galleryBtn = document.getElementById('selectFromGallery');
+    const cameraBtn = document.getElementById('takePhoto');
+    
+    if (galleryBtn) {
+        galleryBtn.onclick = function() {
+            selectPhoto('gallery', imageSrc);
+        };
+        
+        galleryBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 5px 15px rgba(74, 144, 226, 0.4)';
+        });
+        
+        galleryBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
+    }
+    
+    if (cameraBtn) {
+        cameraBtn.onclick = function() {
+            selectPhoto('camera', imageSrc);
+        };
+        
+        cameraBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 5px 15px rgba(255, 107, 107, 0.4)';
+        });
+        
+        cameraBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
+    }
+    
+    console.log('✅ 사진 선택 모달 표시 완료');
+}
+
+// ========== 사진 선택 실행 함수 ==========
+function selectPhoto(source, imageSrc) {
+    console.log('📷 사진 선택:', source);
+    
+    hidePhotoSelectionModal();
+    
+    // 파일 선택 input 생성
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    
+    // 카메라 촬영인 경우 capture 속성 추가
+    if (source === 'camera') {
+        fileInput.capture = 'user'; // 전면 카메라
+        console.log('📷 카메라 모드 활성화');
+    } else {
+        console.log('🖼️ 갤러리 모드 활성화');
+    }
+    
+    fileInput.onchange = async function(e) {
+        const file = e.target.files[0];
+        if (!file) {
+            console.log('❌ 파일이 선택되지 않음');
+            showAkoolModal(); // 다시 AKOOL 모달 표시
+            return;
+        }
+        
+        console.log('📸 선택된 파일:', file.name, file.size);
+        
+        // 파일 크기 체크 (10MB 제한)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('파일 크기가 너무 큽니다. 10MB 이하의 이미지를 선택해주세요.');
+            showAkoolModal(); // 다시 AKOOL 모달 표시
+            return;
+        }
+        
+        // 진행 상황 표시
+        hideAkoolModal();
+        showLoadingModal('AI 얼굴 바꾸기 처리 중...');
+        
+        try {
+            console.log('🚀 AKOOL 처리 시작');
+            console.log('- 사용자 이미지:', file.name);
+            console.log('- 스타일 이미지:', imageSrc);
+            console.log('- 선택 방법:', source);
+            
+            // window.akoolAPI 사용 (akool-api.js에서 제공)
+            if (typeof window.akoolAPI !== 'undefined' && typeof window.akoolAPI.processFaceSwap === 'function') {
+                const result = await window.akoolAPI.processFaceSwap(file, imageSrc, function(progress) {
+                    console.log('🔄 진행률:', progress + '%');
+                    // 로딩 모달에 진행률 표시
+                    updateLoadingProgress(progress);
+                });
                 
-                fileInput.onchange = async function(e) {
-                    var file = e.target.files[0];
-                    if (!file) {
-                        console.log('❌ 파일이 선택되지 않음');
-                        return;
-                    }
-                    
-                    console.log('📸 선택된 파일:', file.name, file.size);
-                    
-                    // 파일 크기 체크 (10MB 제한)
-                    if (file.size > 10 * 1024 * 1024) {
-                        alert('파일 크기가 너무 큽니다. 10MB 이하의 이미지를 선택해주세요.');
-                        return;
-                    }
-                    
-                    showLoadingModal('AI 얼굴 바꾸기 처리 중...');
-                    
-                    try {
-                        console.log('🚀 AKOOL 처리 시작 (akool-api.js 사용)');
-                        console.log('- 사용자 이미지:', file.name);
-                        console.log('- 스타일 이미지:', imageSrc);
-                        
-                        // window.akoolAPI 사용 (akool-api.js에서 제공)
-                        if (typeof window.akoolAPI !== 'undefined' && typeof window.akoolAPI.processFaceSwap === 'function') {
-                            var result = await window.akoolAPI.processFaceSwap(file, imageSrc, function(progress) {
-                                console.log('🔄 진행률:', progress + '%');
-                            });
-                            
-                            console.log('✅ AKOOL 결과:', result);
-                            hideLoadingModal();
-                            
-                            if (result && result.success && result.resultUrl) {
-                                console.log('🎉 성공! 결과 이미지:', result.resultUrl);
-                                showResultModal(result.resultUrl);
-                            } else {
-                                console.error('❌ AKOOL 처리 실패:', result);
-                                alert('AI 처리에 실패했습니다: ' + (result.error || '알 수 없는 오류'));
-                            }
-                        } else {
-                            throw new Error('AKOOL API가 로드되지 않았습니다. akool-api.js를 확인해주세요.');
-                        }
-                        
-                    } catch (error) {
-                        console.error('❌ AKOOL 처리 중 오류:', error);
-                        hideLoadingModal();
-                        alert('AI 처리 중 오류가 발생했습니다: ' + error.message);
-                    }
-                };
+                console.log('✅ AKOOL 결과:', result);
+                hideLoadingModal();
                 
-                fileInput.click();
-            };
-            console.log('✅ AI 체험하기 실제 AKOOL 연결 완료');
-        } else {
-            console.warn('⚠️ AI 버튼 생성 실패');
+                if (result && result.success && result.resultUrl) {
+                    console.log('🎉 성공! 결과 이미지:', result.resultUrl);
+                    showResultModal(result.resultUrl);
+                } else {
+                    console.error('❌ AKOOL 처리 실패:', result);
+                    alert('AI 처리에 실패했습니다: ' + (result.error || '알 수 없는 오류'));
+                }
+            } else {
+                throw new Error('AKOOL API가 로드되지 않았습니다. akool-api.js를 확인해주세요.');
+            }
+            
+        } catch (error) {
+            console.error('❌ AKOOL 처리 중 오류:', error);
+            hideLoadingModal();
+            alert('AI 처리 중 오류가 발생했습니다: ' + error.message);
+        }
+    };
+    
+    // 파일 선택 창 열기
+    fileInput.click();
+}
+
+// ========== 모달 제어 함수들 ==========
+function hidePhotoSelectionModal() {
+    const modal = document.getElementById('photoSelectionModal');
+    if (modal) {
+        modal.remove();
+        document.body.style.overflow = '';
+    }
+}
+
+function updateLoadingProgress(progress) {
+    const loadingModal = document.getElementById('loadingModal');
+    if (loadingModal) {
+        const messageEl = loadingModal.querySelector('.loading-message');
+        if (messageEl) {
+            messageEl.textContent = `AI 얼굴 바꾸기 처리 중... ${Math.round(progress)}%`;
+        }
+        
+        // 진행바 추가 (있으면)
+        let progressBar = loadingModal.querySelector('.progress-bar');
+        if (!progressBar) {
+            progressBar = document.createElement('div');
+            progressBar.className = 'progress-bar';
+            progressBar.style.cssText = `
+                width: 100%;
+                height: 4px;
+                background: #333;
+                border-radius: 2px;
+                margin-top: 15px;
+                overflow: hidden;
+            `;
+            
+            const progressFill = document.createElement('div');
+            progressFill.className = 'progress-fill';
+            progressFill.style.cssText = `
+                height: 100%;
+                background: linear-gradient(90deg, #FF1493, #FF69B4);
+                width: 0%;
+                transition: width 0.3s ease;
+                border-radius: 2px;
+            `;
+            
+            progressBar.appendChild(progressFill);
+            
+            const loadingContent = loadingModal.querySelector('.loading-content');
+            if (loadingContent) {
+                loadingContent.appendChild(progressBar);
+            }
+        }
+        
+        const progressFill = progressBar.querySelector('.progress-fill');
+        if (progressFill) {
+            progressFill.style.width = `${Math.min(progress, 100)}%`;
         }
     }
+}
 
+// ========== 전역 함수 등록 ==========
+window.hidePhotoSelectionModal = hidePhotoSelectionModal;
+window.setupAkoolModalButtons = setupAkoolModalButtons;
+window.showPhotoSelectionModal = showPhotoSelectionModal;
     // ========== 로그아웃 ==========
     function logout() {
         if (confirm('로그아웃 하시겠습니까?')) {
@@ -2399,6 +2663,7 @@ function fixCategoryTabsLayout() {
     console.log('🎉 HAIRGATOR 메인 애플리케이션 로드 완료 (COMPLETE-FINAL)');
     
 });
+
 
 
 
