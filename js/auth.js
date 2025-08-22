@@ -1,4 +1,35 @@
 // ========== 인증 시스템 ==========
+
+// 페이지 로드 시 저장된 로그인 정보 불러오기
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 저장된 로그인 정보 확인 중...');
+    
+    // 저장된 정보 불러오기
+    const savedName = localStorage.getItem('hairgator_designerName');
+    const savedPhone = localStorage.getItem('hairgator_designerPhone');
+    
+    if (savedName && savedPhone) {
+        const nameInput = document.getElementById('designerName');
+        const phoneInput = document.getElementById('phoneNumber');
+        const rememberInfo = document.getElementById('rememberInfo');
+        
+        if (nameInput && phoneInput) {
+            nameInput.value = savedName;
+            phoneInput.value = savedPhone;
+            
+            // 안내 메시지 표시
+            if (rememberInfo) {
+                rememberInfo.style.display = 'block';
+                rememberInfo.innerHTML = '<span style="color: #4CAF50;">💾 저장된 정보로 간편 로그인 가능</span>';
+            }
+            
+            console.log('✅ 저장된 로그인 정보 자동 복원:', savedName);
+        }
+    } else {
+        console.log('ℹ️ 저장된 로그인 정보 없음');
+    }
+});
+
 // 로그인 폼 처리
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
