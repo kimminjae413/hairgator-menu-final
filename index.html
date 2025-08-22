@@ -1082,21 +1082,10 @@
         }
     </script>
 
-    <!-- ✅ 수정된 PWA Script (에러 처리 강화) -->
+    <!-- ✅ PWA Script (Service Worker 제거됨) -->
     <script>
-        // PWA Service Worker (에러 처리 강화)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(function(registration) {
-                        console.log('✅ ServiceWorker 등록 성공');
-                    })
-                    .catch(function(err) {
-                        console.warn('⚠️ ServiceWorker 등록 실패 (정상 작동에는 영향 없음):', err.message);
-                        // 에러를 사용자에게 표시하지 않음 (백그라운드 기능)
-                    });
-            });
-        }
+        // PWA Service Worker 비활성화 (파일이 없으므로)
+        console.log('📱 PWA: Service Worker 비활성화됨');
         
         // PWA 관련 이벤트들 (에러 처리 추가)
         try {
