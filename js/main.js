@@ -2164,7 +2164,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 min-height: auto !important;
                 position: relative !important;
                 z-index: 50 !important;
-                border-bottom: 2px solid #FF1493 !important;
             }
             
             .category-tabs {
@@ -2203,7 +2202,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     margin-top: 0px !important;
                     padding: 5px 0 !important;
                     background: var(--primary-dark) !important;
-                    border-bottom: 2px solid #FF1493 !important;
                     position: relative !important;
                     z-index: 50 !important;
                 }
@@ -2278,23 +2276,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 .back-btn, .menu-btn {
                     top: 50% !important;
                     transform: translateY(-50%) !important;
-                    width: 56px !important;
-                    height: 56px !important;
-                    z-index: 1002 !important;
-                    background: rgba(255, 255, 255, 0.08) !important;
-                    border-radius: 12px !important;
+                    width: 48px !important;
+                    height: 48px !important;
+                    z-index: 1003 !important;
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    border-radius: 10px !important;
                     transition: all 0.2s ease !important;
                     touch-action: manipulation !important;
+                    pointer-events: auto !important;
+                    position: absolute !important;
+                }
+                
+                .menu-btn {
+                    right: 15px !important;
+                }
+                
+                .back-btn {
+                    left: 15px !important;
                 }
                 
                 .back-btn:hover, .menu-btn:hover {
-                    background: rgba(255, 255, 255, 0.15) !important;
-                    transform: translateY(-50%) scale(1.05) !important;
+                    background: rgba(255, 255, 255, 0.2) !important;
+                    transform: translateY(-50%) scale(1.1) !important;
                 }
                 
                 .back-btn:active, .menu-btn:active {
-                    background: rgba(255, 255, 255, 0.2) !important;
-                    transform: translateY(-50%) scale(0.95) !important;
+                    background: rgba(255, 20, 147, 0.3) !important;
+                    transform: translateY(-50%) scale(0.9) !important;
                 }
             }
             
