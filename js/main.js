@@ -223,7 +223,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
         if (savedTheme === 'light') {
             document.body.classList.add('light-theme');
-            themeStatus.textContent = 'OFF';
+            if (themeStatus) {
+                themeStatus.textContent = 'OFF';
+            }
         }
     }
 
@@ -242,9 +244,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkAuthStatus() {
         const designerInfo = document.getElementById('designerInfo');
         if (window.auth && window.auth.currentUser) {
-            designerInfo.style.display = 'block';
-            document.getElementById('designerName').textContent = 
-                window.auth.currentUser.displayName || window.auth.currentUser.email;
+            if (designerInfo) {
+                designerInfo.style.display = 'block';
+            }
+            const designerNameEl = document.getElementById('designerName');
+            if (designerNameEl) {
+                designerNameEl.textContent = window.auth.currentUser.displayName || window.auth.currentUser.email;
+            }
         }
     }
 
@@ -552,6 +558,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // 이전 성별 선택 복원 (선택사항)
     const savedGender = localStorage.getItem('hairgator_gender');
     if (savedGender && !genderSelection.style.display) {
         // Auto-select if previously selected
