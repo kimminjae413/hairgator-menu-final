@@ -1,4 +1,4 @@
-// HAIRGATOR - 최종 성능 최적화 버전 (고객등록 중복 제거)
+// HAIRGATOR - 최종 성능 최적화 버전 (성별 버튼 문제 해결)
 
 // ========== 전역 변수 및 캐시 시스템 ==========
 let currentGender = null;
@@ -140,14 +140,13 @@ function toggleTheme() {
     localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
 }
 
-// 카테고리 렌더링 - 전역 함수 (수정됨!)
+// 카테고리 렌더링 - 전역 함수
 function renderCategories(gender) {
     el.categoryTabs.innerHTML = '';
     if (gender === 'female') {
         const helpTab = document.createElement('button');
         helpTab.className = 'category-tab help-tab';
         helpTab.innerHTML = '?';
-        // ✅ 여기가 수정된 부분!
         helpTab.addEventListener('click', () => {
             if (window.openHelpModal) {
                 openHelpModal();
@@ -733,21 +732,66 @@ function initApp() {
     checkAuth();
     el.backBtn && (el.backBtn.style.display = 'none');
 
-    // 성별 버튼 이벤트 등록 (전역 함수 사용)
-    setTimeout(() => {
+    // ✅ 성별 버튼 이벤트 등록 (수정된 버전)
+    setupGenderButtons();
+}
+
+// ========== 성별 버튼 이벤트 설정 (새로운 함수 - 문제 해결) ==========
+function setupGenderButtons() {
+    console.log('🎯 성별 버튼 이벤트 설정 시작');
+    
+    // 여러 번 시도하여 DOM이 완전히 준비될 때까지 기다림
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    function trySetupGenderButtons() {
+        attempts++;
+        console.log(`🔄 성별 버튼 설정 시도 ${attempts}/${maxAttempts}`);
+        
         const genderBtns = document.querySelectorAll('.gender-btn');
-        console.log('🎯 성별 버튼 이벤트 등록:', genderBtns.length, '개');
+        console.log('📍 발견된 성별 버튼:', genderBtns.length, '개');
+        
+        if (genderBtns.length === 0) {
+            if (attempts < maxAttempts) {
+                console.log('⏳ 성별 버튼을 찾을 수 없음, 재시도...');
+                setTimeout(trySetupGenderButtons, 200);
+                return;
+            } else {
+                console.error('❌ 성별 버튼을 찾을 수 없습니다');
+                return;
+            }
+        }
+        
+        // 성별 버튼 이벤트 등록
         genderBtns.forEach((btn, index) => {
-            console.log(`버튼 ${index}:`, btn.dataset.gender);
-            if (!btn.hasAttribute('data-event-added')) {
-                btn.addEventListener('click', function() {
-                    console.log('🚀 성별 버튼 클릭:', this.dataset.gender);
-                    selectGender(this.dataset.gender); // 전역 함수 호출
+            const gender = btn.getAttribute('data-gender');
+            console.log(`🎯 버튼 ${index}: data-gender="${gender}"`);
+            
+            if (!gender) {
+                console.error(`❌ 버튼 ${index}에 data-gender 속성이 없습니다`);
+                return;
+            }
+            
+            // 중복 이벤트 방지
+            if (!btn.hasAttribute('data-event-registered')) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('🚀 성별 버튼 클릭됨:', gender);
+                    selectGender(gender);
                 });
-                btn.setAttribute('data-event-added', 'true');
+                
+                btn.setAttribute('data-event-registered', 'true');
+                console.log(`✅ 버튼 ${index} 이벤트 등록 완료`);
+            } else {
+                console.log(`⚡ 버튼 ${index} 이미 이벤트 등록됨`);
             }
         });
-    }, 100);
+        
+        console.log('🎉 성별 버튼 이벤트 설정 완료!');
+    }
+    
+    // 첫 번째 시도
+    trySetupGenderButtons();
 }
 
 // ========== 이벤트 리스너 설정 ==========
