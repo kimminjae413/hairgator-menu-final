@@ -1929,96 +1929,204 @@ document.addEventListener('DOMContentLoaded', function() {
     // 전역으로 노출
     window.ServiceWorkerManager = ServiceWorkerManager;
 
-    // ========== 레이아웃 최적화 ==========
-    function fixCategoryTabsLayout() {
-        const style = document.createElement('style');
-        style.id = 'category-tabs-layout-fix';
-        style.textContent = `
-            /* 🔧 PC/태블릿에서 헤더와 대분류 사이 적당한 공간 */
+ // ========== 레이아웃 최적화 (PWA 안전 영역 고려) ==========
+function fixCategoryTabsLayout() {
+    const style = document.createElement('style');
+    style.id = 'category-tabs-layout-fix';
+    style.textContent = `
+        /* ✅ PWA 안전 영역 고려한 레이아웃 오버라이드 */
+        .header {
+            top: max(env(safe-area-inset-top, 0px), 5px) !important;
+            z-index: 1000 !important;
+        }
+        
+        .main-content {
+            margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 5px) + 10px) !important;
+            padding-top: 0px !important;
+        }
+        
+        .category-tabs-wrapper {
+            margin-top: 10px !important;
+            padding: 8px 0 6px 0 !important;
+            min-height: auto !important;
+            position: relative !important;
+            z-index: 50 !important;
+        }
+        
+        .category-tabs {
+            min-height: 36px !important;
+            padding: 2px 20px !important;
+        }
+        
+        .category-tab {
+            padding: 8px 14px !important;
+            min-height: 36px !important;
+            font-size: 13px !important;
+        }
+        
+        .category-description {
+            padding: 8px 20px 10px 20px !important;
+            line-height: 1.4 !important;
+        }
+        
+        .subcategory-wrapper {
+            padding: 12px 20px 16px 20px !important;
+        }
+        
+        /* ========== 모바일 PWA 전용 (대분류 안보임 해결) ========== */
+        @media (max-width: 768px) {
+            .header {
+                top: max(env(safe-area-inset-top, 0px), 15px) !important;
+            }
+            
             .main-content {
-                margin-top: 85px !important; /* 적당한 공간으로 조정 */
+                margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 15px) + 15px) !important;
                 padding-top: 0px !important;
             }
             
             .category-tabs-wrapper {
-                margin-top: 10px !important;
-                padding: 8px 0 6px 0 !important;
-                min-height: auto !important;
+                margin-top: 5px !important;
+                padding: 10px 0 6px 0 !important;
+                background: var(--primary-dark) !important;
+                border-bottom: 1px solid #333 !important;
+                position: relative !important;
+                z-index: 50 !important;
             }
             
             .category-tabs {
-                min-height: 36px !important;
-                padding: 2px 20px !important;
+                min-height: 32px !important;
+                padding: 1px 15px !important;
             }
             
             .category-tab {
-                padding: 8px 14px !important;
-                min-height: 36px !important;
-                font-size: 13px !important;
+                padding: 6px 12px !important;
+                min-height: 32px !important;
+                font-size: 12px !important;
             }
             
             .category-description {
-                padding: 8px 20px 10px 20px !important;
-                line-height: 1.4 !important;
+                padding: 8px 15px 10px 15px !important;
+                font-size: 13px !important;
             }
             
             .subcategory-wrapper {
-                padding: 12px 20px 16px 20px !important;
+                padding: 10px 15px 14px 15px !important;
             }
             
-            /* 🔧 PC/태블릿 전용 - 적당한 여유 공간 */
-            @media (min-width: 769px) {
-                .main-content {
-                    margin-top: 80px !important; /* PC에서 적당한 공간 */
-                }
-                
-                .category-tabs-wrapper {
-                    margin-top: 15px !important;
-                    padding-top: 10px !important;
-                }
+            /* 버튼 클릭 영역 강화 */
+            .back-btn, .menu-btn {
+                z-index: 1001 !important;
+                touch-action: manipulation !important;
             }
-            
-            /* 🔧 모바일은 기존대로 유지 */
-            @media (max-width: 768px) {
-                .main-content {
-                    margin-top: 120px !important; /* 모바일은 기존 유지 */
-                }
-                
-                .category-tabs-wrapper {
-                    margin-top: 8px !important;
-                    padding: 6px 0 4px 0 !important;
-                }
-                
-                .category-tabs {
-                    min-height: 32px !important;
-                    padding: 1px 15px !important;
-                }
-                
-                .category-tab {
-                    padding: 6px 12px !important;
-                    min-height: 32px !important;
-                    font-size: 12px !important;
-                }
-                
-                .category-description {
-                    padding: 6px 15px 8px 15px !important;
-                }
-                
-                .subcategory-wrapper {
-                    padding: 8px 15px 12px 15px !important;
-                }
-            }
-        `;
-        
-        // 기존 스타일이 있으면 제거
-        const existingStyle = document.getElementById('category-tabs-layout-fix');
-        if (existingStyle) {
-            existingStyle.remove();
         }
         
-        document.head.appendChild(style);
-        console.log('✅ PC/태블릿 헤더-대분류 적당한 간격으로 재조정');
+        /* ========== PWA 전체화면 모드 전용 ========== */
+        @media (display-mode: standalone) {
+            .header {
+                top: max(env(safe-area-inset-top, 0px), 8px) !important;
+            }
+            
+            .main-content {
+                margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 8px) + 8px) !important;
+            }
+            
+            .back-btn, .menu-btn {
+                z-index: 1002 !important;
+                background: rgba(255, 255, 255, 0.05) !important;
+                border-radius: 8px !important;
+                touch-action: manipulation !important;
+            }
+            
+            .back-btn:active, .menu-btn:active {
+                background: rgba(255, 255, 255, 0.15) !important;
+                transform: translateY(-50%) scale(0.95) !important;
+            }
+        }
+        
+        /* ========== 태블릿 PWA 전용 (버튼 클릭 안됨 해결) ========== */
+        @media (min-width: 769px) and (display-mode: standalone) {
+            .header {
+                top: max(env(safe-area-inset-top, 0px), 10px) !important;
+                height: 65px !important;
+            }
+            
+            .main-content {
+                margin-top: calc(65px + max(env(safe-area-inset-top, 0px), 10px) + 10px) !important;
+            }
+            
+            .back-btn, .menu-btn {
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                width: 50px !important;
+                height: 50px !important;
+                z-index: 1002 !important;
+                background: rgba(255, 255, 255, 0.08) !important;
+                border-radius: 12px !important;
+                transition: all 0.2s ease !important;
+                touch-action: manipulation !important;
+            }
+            
+            .back-btn:hover, .menu-btn:hover {
+                background: rgba(255, 255, 255, 0.15) !important;
+                transform: translateY(-50%) scale(1.05) !important;
+            }
+            
+            .back-btn:active, .menu-btn:active {
+                background: rgba(255, 255, 255, 0.2) !important;
+                transform: translateY(-50%) scale(0.95) !important;
+            }
+            
+            .category-tabs-wrapper {
+                margin-top: 15px !important;
+                padding-top: 10px !important;
+            }
+        }
+        
+        /* ========== PC/데스크톱 전용 ========== */
+        @media (min-width: 769px) and (display-mode: browser) {
+            .header {
+                top: 0px !important;
+            }
+            
+            .main-content {
+                margin-top: 85px !important;
+            }
+            
+            .category-tabs-wrapper {
+                margin-top: 15px !important;
+                padding-top: 10px !important;
+            }
+        }
+        
+        /* ========== 디버깅용 PWA 모드 표시 ========== */
+        @media (display-mode: standalone) {
+            body:before {
+                content: "📱 PWA 모드";
+                position: fixed;
+                top: 5px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(255, 20, 147, 0.8);
+                color: white;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 10px;
+                z-index: 10000;
+                pointer-events: none;
+                opacity: 0.7;
+            }
+        }
+    `;
+    
+    // 기존 스타일 제거 후 새로 추가
+    const existingStyle = document.getElementById('category-tabs-layout-fix');
+    if (existingStyle) {
+        existingStyle.remove();
     }
+    
+    document.head.appendChild(style);
+    console.log('✅ PWA 안전 영역 고려한 레이아웃 적용 (대분류 표시 + 버튼 클릭 해결)');
+}
 
     // ========== 초기화 ==========
     function init() {
@@ -2213,4 +2321,5 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🎉 HAIRGATOR 메인 애플리케이션 로드 완료 (COMPLETE-FINAL)');
     
 });
+
 
