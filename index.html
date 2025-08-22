@@ -321,12 +321,262 @@
                 font-size: 18px;
             }
         }
+
+        /* ========== 로그인 화면 스타일 ========== */
+        .login-screen {
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .login-screen.hidden {
+            display: none;
+        }
+
+        .login-container {
+            background: #1a1a1a;
+            border: 2px solid #FF1493;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(255, 20, 147, 0.3);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo h1 {
+            color: #FF1493;
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .login-logo p {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #fff;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #333;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #000;
+            color: #fff;
+            autocomplete: off;
+        }
+
+        .form-group input[type="password"] {
+            autocomplete: new-password;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #FF1493;
+            box-shadow: 0 0 10px rgba(255, 20, 147, 0.3);
+        }
+
+        .form-group input::placeholder {
+            color: #666;
+        }
+
+        .phone-input {
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        .password-input {
+            font-family: monospace;
+            font-size: 20px;
+            text-align: center;
+            letter-spacing: 5px;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 20, 147, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 환영 메시지 */
+        .welcome-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #28a745;
+            color: white;
+            padding: 25px 35px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.4);
+            z-index: 1100;
+            display: none;
+            animation: slideIn 0.5s ease;
+            max-width: 90%;
+            white-space: nowrap;
+        }
+
+        .welcome-message.show {
+            display: block;
+        }
+
+        .welcome-message.new-user {
+            background: #17a2b8;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333;
+            border-top: 2px solid #FF1493;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 반응형 */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .login-logo h1 {
+                font-size: 28px;
+            }
+            
+            .welcome-message {
+                padding: 20px 25px;
+                font-size: 16px;
+                white-space: normal;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Loading -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 로그인 화면 -->
+    <div class="login-screen" id="loginScreen">
+        <!-- 환영 메시지 -->
+        <div id="welcomeMessage" class="welcome-message">
+            <div id="welcomeText"></div>
+        </div>
+        
+        <div class="login-container">
+            <div class="login-logo">
+                <h1>🎨 HAIRGATOR</h1>
+                <p>Professional Hair Style Menu</p>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="designerName">👤 디자이너 이름</label>
+                    <input type="text" id="designerName" placeholder="예: 김미용" required maxlength="10">
+                </div>
+                
+                <div class="form-group">
+                    <label for="designerPhone">📞 전화번호</label>
+                    <input type="tel" id="designerPhone" class="phone-input" 
+                           placeholder="010-1234-5678" required maxlength="13">
+                </div>
+                
+                <div class="form-group">
+                    <label for="designerPassword">🔐 비밀번호 (4자리)</label>
+                    <input type="password" id="designerPassword" class="password-input" 
+                           placeholder="••••" required maxlength="4" pattern="[0-9]{4}">
+                </div>
+                
+                <button type="submit" class="login-btn" id="loginBtn">
+                    🚀 로그인
+                </button>
+                
+                <div class="loading" id="loadingDiv">
+                    <div class="spinner"></div>
+                    계정 확인 중...
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Header -->
@@ -452,106 +702,340 @@
         </div>
     </div>
 
-    <!-- 🔥 중요: index.html 전용 스크립트 (main.js와 연동) -->
+    <!-- 로그인 + 앱 통합 스크립트 -->
     <script>
-        // ========== 디자이너 로그인 체크 시스템 ==========
+        // ========== 전역 변수 ==========
+        let loginScreen, genderSelection, menuContainer;
+        let nameInput, phoneInput, passwordInput, loginBtn, loadingDiv;
+        let welcomeMessage, welcomeText;
+
+        // ========== 초기화 ==========
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔍 index.html 로그인 체크 시작');
+            console.log('🚀 HAIRGATOR 통합 앱 시작');
+
+            // DOM 요소 가져오기
+            loginScreen = document.getElementById('loginScreen');
+            genderSelection = document.getElementById('genderSelection');
+            menuContainer = document.getElementById('menuContainer');
             
-            // 로그인 정보 확인
+            nameInput = document.getElementById('designerName');
+            phoneInput = document.getElementById('designerPhone');
+            passwordInput = document.getElementById('designerPassword');
+            loginBtn = document.getElementById('loginBtn');
+            loadingDiv = document.getElementById('loadingDiv');
+            welcomeMessage = document.getElementById('welcomeMessage');
+            welcomeText = document.getElementById('welcomeText');
+
+            // Firebase 준비 대기
+            if (!window.firebaseInitialized) {
+                window.addEventListener('firebaseReady', initializeApp);
+            } else {
+                initializeApp();
+            }
+        });
+
+        // ========== 앱 초기화 ==========
+        function initializeApp() {
+            console.log('🔥 Firebase 준비 완료, 앱 초기화');
+
+            // 로그인 상태 확인
+            checkLoginStatus();
+
+            // 로그인 폼 이벤트 설정
+            setupLoginEvents();
+
+            // 로그아웃 버튼 이벤트 설정
+            setupLogoutEvents();
+        }
+
+        // ========== 로그인 상태 확인 ==========
+        function checkLoginStatus() {
             const designerName = localStorage.getItem('hairgator_designer_name');
             const loginTime = localStorage.getItem('hairgator_login_time');
-            
-            console.log('🔍 로그인 체크:', { designerName, loginTime });
-            
-            // 로그인 정보가 없거나 24시간 지났으면 로그인 페이지로
+
             if (!designerName || !loginTime) {
-                console.log('❌ 로그인 정보 없음 → login.html 이동');
-                window.location.href = 'login.html';
+                console.log('❌ 로그인 정보 없음 → 로그인 화면 표시');
+                showLoginScreen();
                 return;
             }
-            
+
             const now = new Date().getTime();
             const elapsed = now - parseInt(loginTime);
-            const twentyFourHours = 24 * 60 * 60 * 1000; // 24시간
-            
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+
             if (elapsed > twentyFourHours) {
-                console.log('⏰ 로그인 시간 만료 → login.html 이동');
-                localStorage.removeItem('hairgator_login_time');
-                localStorage.removeItem('hairgator_designer_name');
-                localStorage.removeItem('hairgator_designer_phone');
-                localStorage.removeItem('hairgator_designer_id');
-                window.location.href = 'login.html';
+                console.log('⏰ 로그인 시간 만료 → 로그인 화면 표시');
+                clearLoginData();
+                showLoginScreen();
+                return;
+            }
+
+            console.log('✅ 로그인 유효 → 메인 앱 시작');
+            hideLoginScreen();
+            startMainApp(designerName);
+        }
+
+        // ========== 로그인 화면 표시/숨김 ==========
+        function showLoginScreen() {
+            loginScreen.classList.remove('hidden');
+            
+            // 저장된 정보 자동 입력
+            const savedName = localStorage.getItem('hairgator_designer_name');
+            const savedPhone = localStorage.getItem('hairgator_designer_phone');
+
+            if (savedName) {
+                nameInput.value = savedName;
+            }
+
+            if (savedPhone) {
+                const formatted = savedPhone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+                phoneInput.value = formatted;
+            }
+
+            // 포커스 설정
+            if (savedName && savedPhone) {
+                passwordInput.focus();
+            } else {
+                nameInput.focus();
+            }
+        }
+
+        function hideLoginScreen() {
+            loginScreen.classList.add('hidden');
+        }
+
+        // ========== 메인 앱 시작 ==========
+        function startMainApp(designerName) {
+            // 디자이너 정보 표시
+            const designerInfo = document.getElementById('designerInfo');
+            const designerNameEl = document.getElementById('designerName');
+            if (designerInfo && designerNameEl) {
+                designerNameEl.textContent = designerName;
+                designerInfo.style.display = 'block';
+            }
+
+            // 저장된 성별이 있으면 바로 메뉴로, 없으면 성별 선택
+            const savedGender = localStorage.getItem('hairgator_gender');
+            
+            if (savedGender) {
+                console.log('💾 저장된 성별 발견:', savedGender);
+                document.body.classList.add(`gender-${savedGender}`);
+                
+                // main.js의 selectGender 함수 호출 대기
+                const waitForSelectGender = () => {
+                    if (typeof selectGender === 'function') {
+                        selectGender(savedGender);
+                    } else {
+                        setTimeout(waitForSelectGender, 100);
+                    }
+                };
+                setTimeout(waitForSelectGender, 100);
+            } else {
+                console.log('👫 성별 선택 화면 표시');
+                genderSelection.style.display = 'flex';
+                menuContainer.style.display = 'none';
+            }
+        }
+
+        // ========== 로그인 데이터 정리 ==========
+        function clearLoginData() {
+            localStorage.removeItem('hairgator_login_time');
+            localStorage.removeItem('hairgator_designer_name');
+            localStorage.removeItem('hairgator_designer_phone');
+            localStorage.removeItem('hairgator_designer_id');
+        }
+
+        // ========== 로그인 이벤트 설정 ==========
+        function setupLoginEvents() {
+            // 전화번호 자동 포맷팅
+            phoneInput.addEventListener('input', function() {
+                let value = this.value.replace(/[^0-9]/g, '');
+                
+                if (value.length >= 3) {
+                    value = value.replace(/(\d{3})(\d{0,4})(\d{0,4})/, function(match, p1, p2, p3) {
+                        if (p3) return `${p1}-${p2}-${p3}`;
+                        if (p2) return `${p1}-${p2}`;
+                        return p1;
+                    });
+                }
+                
+                this.value = value;
+            });
+
+            // 비밀번호 숫자만 입력
+            passwordInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            // 로그인 폼 제출
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+        }
+
+        // ========== 로그아웃 이벤트 설정 ==========
+        function setupLogoutEvents() {
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function() {
+                    if (confirm('정말 로그아웃 하시겠습니까?')) {
+                        clearLoginData();
+                        localStorage.removeItem('hairgator_gender'); // 성별 선택도 초기화
+                        location.reload(); // 페이지 새로고침으로 초기 상태로
+                    }
+                });
+            }
+        }
+
+        // ========== Admin 토큰 설정 가져오기 ==========
+        async function getDefaultTokens() {
+            try {
+                const doc = await window.db.collection('metadata').doc('default_tokens').get();
+                if (doc.exists) {
+                    const amount = doc.data().amount || 100;
+                    console.log(`✅ Admin 토큰 설정: ${amount}개`);
+                    return amount;
+                } else {
+                    console.log('⚠️ Admin 토큰 설정이 없습니다. 100개로 기본 설정');
+                    return 100;
+                }
+            } catch (error) {
+                console.error('❌ Admin 토큰 설정 로드 실패:', error);
+                return 100;
+            }
+        }
+
+        // ========== 환영 메시지 표시 ==========
+        function showWelcomeMessage(name, isNewUser = false, tokens = 0) {
+            let message = '';
+            if (isNewUser) {
+                message = `🎉 ${name}님, 새로 가입하셨군요! (토큰 ${tokens}개)`;
+                welcomeMessage.classList.add('new-user');
+            } else {
+                message = `👋 ${name}님, 안녕하세요!`;
+                welcomeMessage.classList.remove('new-user');
+            }
+            
+            welcomeText.textContent = message;
+            welcomeMessage.classList.add('show');
+            
+            setTimeout(() => {
+                welcomeMessage.classList.remove('show');
+                setTimeout(() => {
+                    hideLoginScreen();
+                    startMainApp(name);
+                }, 500);
+            }, 2500);
+        }
+
+        // ========== 로그인 처리 ==========
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            // 입력 검증
+            if (!name || !phone || !password) {
+                alert('모든 정보를 입력해주세요');
                 return;
             }
             
-            console.log('✅ 로그인 유효 → 앱 시작');
+            if (password.length !== 4) {
+                alert('비밀번호는 4자리 숫자여야 합니다');
+                passwordInput.focus();
+                return;
+            }
             
-            // 사이드바에 디자이너 정보 표시
-            setTimeout(() => {
-                const designerInfo = document.getElementById('designerInfo');
-                const designerNameEl = document.getElementById('designerName');
-                if (designerInfo && designerNameEl) {
-                    designerNameEl.textContent = designerName;
-                    designerInfo.style.display = 'block';
-                    console.log('👤 디자이너 정보 표시:', designerName);
-                }
+            const phoneOnly = phone.replace(/[^0-9]/g, '');
+            if (phoneOnly.length !== 11 || !phoneOnly.startsWith('010')) {
+                alert('올바른 전화번호 형식이 아닙니다');
+                phoneInput.focus();
+                return;
+            }
+            
+            // 로딩 표시
+            loginBtn.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            
+            try {
+                // Firebase에서 기존 계정 확인
+                const existingQuery = await window.db.collection('designers')
+                    .where('phoneRaw', '==', phoneOnly)
+                    .get();
                 
-                // 로그아웃 버튼 이벤트
-                const logoutBtn = document.getElementById('logoutBtn');
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', function() {
-                        if (confirm('정말 로그아웃 하시겠습니까?')) {
-                            // 로컬스토리지 정리
-                            localStorage.removeItem('hairgator_login_time');
-                            localStorage.removeItem('hairgator_designer_name');
-                            localStorage.removeItem('hairgator_designer_phone');
-                            localStorage.removeItem('hairgator_designer_id');
-                            
-                            // 로그인 페이지로 이동
-                            window.location.href = 'login.html';
-                        }
-                    });
-                }
-            }, 100);
-            
-            // 메인 애플리케이션 로직 시작
-            initMainApplication();
-        });
-        
-        // ========== 메인 애플리케이션 초기화 ==========
-        function initMainApplication() {
-            console.log('🚀 HAIRGATOR 메인 애플리케이션 시작');
-            
-            // 저장된 성별이 있으면 바로 메뉴로, 없으면 성별 선택 화면 표시
-            const savedGender = localStorage.getItem('hairgator_gender');
-            const genderSelection = document.getElementById('genderSelection');
-            const menuContainer = document.getElementById('menuContainer');
-            
-            if (savedGender && genderSelection && menuContainer) {
-                console.log('💾 저장된 성별 발견:', savedGender);
+                let isNewUser = false;
+                let tokensAwarded = 0;
                 
-                // 성별 클래스 추가
-                document.body.classList.add(`gender-${savedGender}`);
-                
-                // main.js의 selectGender 함수가 로드될 때까지 대기
-                const waitForMainJS = () => {
-                    if (typeof selectGender === 'function') {
-                        console.log('✅ main.js selectGender 함수 발견, 호출');
-                        selectGender(savedGender);
-                    } else {
-                        console.log('⏳ main.js 로드 대기 중...');
-                        setTimeout(waitForMainJS, 100);
+                if (existingQuery.empty) {
+                    // 신규 가입
+                    isNewUser = true;
+                    tokensAwarded = await getDefaultTokens();
+                    
+                    const formattedPhone = phoneOnly.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+                    
+                    const newDesigner = {
+                        name: name,
+                        phone: formattedPhone,
+                        phoneRaw: phoneOnly,
+                        password: password,
+                        tokens: tokensAwarded,
+                        joinedAt: new Date(),
+                        lastLoginAt: new Date(),
+                        deviceHistory: [navigator.userAgent],
+                        isActive: true,
+                        createdBy: 'self'
+                    };
+                    
+                    await window.db.collection('designers').add(newDesigner);
+                    console.log(`✅ 신규 사용자 등록 완료 (토큰: ${tokensAwarded}개)`);
+                    
+                } else {
+                    // 기존 사용자
+                    const existingData = existingQuery.docs[0].data();
+                    const docId = existingQuery.docs[0].id;
+                    
+                    // 비밀번호 확인
+                    if (existingData.password !== password) {
+                        alert('비밀번호가 틀렸습니다');
+                        passwordInput.value = '';
+                        passwordInput.focus();
+                        loginBtn.style.display = 'block';
+                        loadingDiv.style.display = 'none';
+                        return;
                     }
-                };
+                    
+                    // 로그인 정보 업데이트
+                    const updateData = {
+                        lastLoginAt: new Date(),
+                        deviceHistory: firebase.firestore.FieldValue.arrayUnion(navigator.userAgent)
+                    };
+                    
+                    if (existingData.name !== name) {
+                        updateData.name = name;
+                    }
+                    
+                    await window.db.collection('designers').doc(docId).update(updateData);
+                    
+                    tokensAwarded = existingData.tokens || 0;
+                    console.log(`✅ 기존 사용자 로그인 완료`);
+                }
                 
-                // main.js 로드 대기
-                setTimeout(waitForMainJS, 100);
+                // 로그인 정보 저장
+                localStorage.setItem('hairgator_designer_name', name);
+                localStorage.setItem('hairgator_designer_phone', phoneOnly);
+                localStorage.setItem('hairgator_login_time', new Date().getTime().toString());
+                localStorage.setItem('hairgator_designer_id', existingQuery.empty ? 'new' : existingQuery.docs[0].id);
                 
-            } else {
-                console.log('👫 성별 선택 화면 표시');
-                if (genderSelection) genderSelection.style.display = 'flex';
-                if (menuContainer) menuContainer.style.display = 'none';
+                console.log('✅ 로그인 정보 저장 완료');
+                
+                // 환영 메시지 표시
+                showWelcomeMessage(name, isNewUser, tokensAwarded);
+                
+            } catch (error) {
+                console.error('로그인 오류:', error);
+                alert('로그인 중 오류가 발생했습니다: ' + error.message);
+                loginBtn.style.display = 'block';
+                loadingDiv.style.display = 'none';
             }
         }
     </script>
@@ -611,7 +1095,7 @@
             const helpModal = document.getElementById('helpModal');
             if (helpModal) {
                 helpModal.classList.add('active');
-                document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+                document.body.style.overflow = 'hidden';
             }
         }
 
@@ -619,7 +1103,7 @@
             const helpModal = document.getElementById('helpModal');
             if (helpModal) {
                 helpModal.classList.remove('active');
-                document.body.style.overflow = 'auto'; // 스크롤 복원
+                document.body.style.overflow = 'auto';
             }
         }
 
@@ -652,7 +1136,7 @@
             });
         });
 
-        // 전역 함수로 등록 (물음표 버튼에서 호출)
+        // 전역 함수로 등록
         window.openHelpModal = openHelpModal;
         window.closeHelpModal = closeHelpModal;
     </script>
