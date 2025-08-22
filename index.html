@@ -1736,77 +1736,110 @@
                 }
             };
             
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(function(registration) {
-                        console.log('✅ Service Worker 등록 성공');
-                        
-                        // 업데이트 감지 및 즉시 적용
-                        registration.addEventListener('updatefound', function() {
-                            const newWorker = registration.installing;
-                            console.log('🔄 새 Service Worker 버전 발견!');
-                            
-                            newWorker.addEventListener('statechange', function() {
-                                if (newWorker.state === 'installed') {
-                                    if (navigator.serviceWorker.controller) {
-                                        console.log('🎉 새 버전 즉시 적용!');
-                                        window.location.reload();
-                                    } else {
-                                        console.log('✅ Service Worker 첫 설치 완료');
-                                    }
-                                }
-                            });
-                        });
-                        
-                        // 적극적 업데이트 체크 (5초마다)
-                        setInterval(function() {
-                            registration.update();
-                        }, 5000);
-                        
-                        // 페이지 포커스 시마다 업데이트 체크
-                        window.addEventListener('focus', function() {
-                            registration.update();
-                        });
-                        
-                    })
-                    .catch(function(err) {
-                        console.log('❌ SW registration failed:', err);
-                    });
+            // index.html의 Service Worker 등록 부분을 이 코드로 교체하세요
 
-                // Service Worker 메시지 리스너 (강제 새로고침)
-                navigator.serviceWorker.addEventListener('message', function(event) {
-                    console.log('📨 Service Worker 메시지:', event.data);
-                    
-                    if (event.data.type === 'FORCE_RELOAD') {
-                        console.log('🔄 강제 새로고침 실행:', event.data.version);
-                        window.location.reload();
-                    }
-                    
-                    if (event.data.type === 'NEW_VERSION_AVAILABLE') {
-                        console.log('🎉 새 버전 즉시 적용:', event.data.version);
-                        window.location.reload();
-                    }
-                });
-                
-                // 시작 시 오래된 캐시 정리
-                navigator.serviceWorker.ready.then(function(registration) {
-                    if (registration.active) {
-                        registration.active.postMessage({
-                            type: 'CLEAR_OLD_CACHE'
-                        });
-                    }
-                });
-                
-                // 온라인 상태 변경 시 업데이트 체크
-                window.addEventListener('online', function() {
-                    navigator.serviceWorker.ready.then(function(registration) {
-                        registration.update();
-                    });
-                });
-            }
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js')
+        .then(function(registration) {
+            console.log('✅ Service Worker 등록 성공');
             
-            console.log('✅ HAIRGATOR App loaded successfully (REFACTORED VERSION)');
+            // 업데이트 감지
+            registration.addEventListener('updatefound', function() {
+                const newWorker = registration.installing;
+                console.log('🔄 새 Service Worker 발견');
+                
+                newWorker.addEventListener('statechange', function() {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        console.log('🎉 새 버전 사용 가능');
+                        showUpdateNotification();
+                    }
+                });
+            });
+            
+            // 1시간마다 업데이트 체크
+            setInterval(function() {
+                registration.update();
+            }, 60 * 60 * 1000);
+            
+            // 시작 시 캐시 정리 (메시지 타입 수정)
+            navigator.serviceWorker.ready.then(function(registration) {
+                if (registration.active) {
+                    registration.active.postMessage({
+                        type: 'CLEAR_ALL_CACHE' // ✅ 수정됨
+                    });
+                }
+            });
+            
+            // 온라인 상태 변경 시 업데이트 체크
+            window.addEventListener('online', function() {
+                registration.update();
+            });
+            
+        })
+        .catch(function(err) {
+            console.log('❌ SW registration failed:', err);
+        });
+
+    // Service Worker 메시지 리스너 (✅ if 블록 안으로 이동)
+    navigator.serviceWorker.addEventListener('message', function(event) {
+        console.log('📨 Service Worker 메시지:', event.data);
+        
+        if (event.data.type === 'CACHE_CLEARED') {
+            console.log('🧹 캐시 정리 완료');
+        }
+    });
+    
+    // ✅ 함수도 if 블록 안으로 이동
+    function showUpdateNotification() {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 10000;
+            font-size: 14px;
+            max-width: 300px;
+            animation: slideIn 0.3s ease-out;
+        `;
+        
+        notification.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 10px;">🎉 새 버전 사용 가능!</div>
+            <div style="font-size: 12px; margin-bottom: 15px; opacity: 0.9;">
+                더 나은 경험을 위해 새로고침하세요.
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="location.reload()" 
+                        style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); 
+                               color: white; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                    새로고침
+                </button>
+                <button onclick="this.parentElement.parentElement.remove()" 
+                        style="background: transparent; border: 1px solid rgba(255,255,255,0.3); 
+                               color: white; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                    나중에
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // 30초 후 자동 제거
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 30000);
+    }
+}
+
+console.log('✅ HAIRGATOR App loaded successfully (REFACTORED VERSION)');
         });
     </script>
 </body>
 </html>
+
