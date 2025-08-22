@@ -393,11 +393,11 @@
     <main class="main-content">
         <!-- Gender Selection -->
         <div class="gender-selection" id="genderSelection">
-            <button class="gender-btn male" data-gender="male" onclick="selectGender('male')">
+            <button class="gender-btn male" data-gender="male">
                 <div class="gender-icon">♂</div>
                 <div class="gender-label">남성</div>
             </button>
-            <button class="gender-btn female" data-gender="female" onclick="selectGender('female')">
+            <button class="gender-btn female" data-gender="female">
                 <div class="gender-icon">♀</div>
                 <div class="gender-label">여성</div>
             </button>
@@ -452,42 +452,12 @@
         </div>
     </div>
 
-    <!-- 메인 스크립트 -->
+    <!-- 🔥 중요: index.html 전용 스크립트 (main.js와 연동) -->
     <script>
-        // ========== 성별 선택 함수 추가 ==========
-        function selectGender(gender) {
-            console.log('👫 성별 선택:', gender);
-            
-            // 성별 저장
-            localStorage.setItem('hairgator_gender', gender);
-            
-            // body에 성별 클래스 추가
-            document.body.classList.remove('gender-male', 'gender-female');
-            document.body.classList.add(`gender-${gender}`);
-            
-            // 성별 선택 화면 숨기기
-            const genderSelection = document.getElementById('genderSelection');
-            const menuContainer = document.getElementById('menuContainer');
-            
-            if (genderSelection && menuContainer) {
-                genderSelection.style.display = 'none';
-                menuContainer.style.display = 'block';
-                
-                console.log('✅ 화면 전환 완료: 성별 선택 → 메인 메뉴');
-                
-                // 메뉴 로드 함수가 있다면 호출
-                if (typeof loadMenuForGender === 'function') {
-                    loadMenuForGender(gender);
-                } else {
-                    console.log('⚠️ loadMenuForGender 함수를 찾을 수 없습니다');
-                }
-            } else {
-                console.error('❌ 화면 요소를 찾을 수 없습니다');
-            }
-        }
-
         // ========== 디자이너 로그인 체크 시스템 ==========
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔍 index.html 로그인 체크 시작');
+            
             // 로그인 정보 확인
             const designerName = localStorage.getItem('hairgator_designer_name');
             const loginTime = localStorage.getItem('hairgator_login_time');
@@ -564,14 +534,20 @@
                 // 성별 클래스 추가
                 document.body.classList.add(`gender-${savedGender}`);
                 
-                // 바로 메인 메뉴로
-                genderSelection.style.display = 'none';
-                menuContainer.style.display = 'block';
+                // main.js의 selectGender 함수가 로드될 때까지 대기
+                const waitForMainJS = () => {
+                    if (typeof selectGender === 'function') {
+                        console.log('✅ main.js selectGender 함수 발견, 호출');
+                        selectGender(savedGender);
+                    } else {
+                        console.log('⏳ main.js 로드 대기 중...');
+                        setTimeout(waitForMainJS, 100);
+                    }
+                };
                 
-                // 메뉴 로드
-                if (typeof loadMenuForGender === 'function') {
-                    loadMenuForGender(savedGender);
-                }
+                // main.js 로드 대기
+                setTimeout(waitForMainJS, 100);
+                
             } else {
                 console.log('👫 성별 선택 화면 표시');
                 if (genderSelection) genderSelection.style.display = 'flex';
