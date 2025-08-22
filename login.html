@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAIRGATOR - 디자이너 로그인</title>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            color: #FF1493;
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .logo p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #FF1493;
+            box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1);
+        }
+        
+        .phone-input {
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        
+        .password-input {
+            font-family: monospace;
+            font-size: 20px;
+            text-align: center;
+            letter-spacing: 5px;
+        }
+        
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 20, 147, 0.3);
+        }
+        
+        .login-btn:active {
+            transform: translateY(0);
+        }
+        
+        .login-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* 환영 메시지 */
+        .welcome-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #28a745;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+        
+        .welcome-message.show {
+            display: block;
+        }
+        
+        .welcome-message.new-user {
+            background: #17a2b8;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        
+        .info-text {
+            background: rgba(255, 20, 147, 0.1);
+            border: 1px solid rgba(255, 20, 147, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #FF1493;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 반응형 */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .logo h1 {
+                font-size: 28px;
+            }
+            
+            .welcome-message {
+                width: 90%;
+                padding: 15px 20px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 환영 메시지 -->
+    <div id="welcomeMessage" class="welcome-message">
+        <div id="welcomeText"></div>
+    </div>
+    
+    <div class="login-container">
+        <div class="logo">
+            <h1>🎨 HAIRGATOR</h1>
+            <p>Professional Hair Style Menu</p>
+        </div>
+        
+        <div class="info-text">
+            💡 모든 기기에서 동일한 계정으로 접속 가능합니다<br>
+            📱 태블릿, 핸드폰 구분 없이 통합 관리됩니다
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="designerName">👤 디자이너 이름</label>
+                <input type="text" id="designerName" placeholder="예: 김미용" required maxlength="10">
+            </div>
+            
+            <div class="form-group">
+                <label for="designerPhone">📞 전화번호</label>
+                <input type="tel" id="designerPhone" class="phone-input" 
+                       placeholder="010-1234-5678" required maxlength="13">
+            </div>
+            
+            <div class="form-group">
+                <label for="designerPassword">🔐 비밀번호 (4자리)</label>
+                <input type="password" id="designerPassword" class="password-input" 
+                       placeholder="••••" required maxlength="4" pattern="[0-9]{4}">
+            </div>
+            
+            <button type="submit" class="login-btn" id="loginBtn">
+                🚀 로그인
+            </button>
+            
+            <div class="loading" id="loadingDiv">
+                <div class="spinner"></div>
+                계정 확인 중...
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        // Firebase 초기화
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            databaseURL: "https://hairgatormenu-4a43e-default-rtdb.firebaseio.com",
+            projectId: "hairgatormenu-4a43e",
+            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
+            messagingSenderId: "800038006875",
+            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // 엘리먼트
+        const loginForm = document.getElementById('loginForm');
+        const nameInput = document.getElementById('designerName');
+        const phoneInput = document.getElementById('designerPhone');
+        const passwordInput = document.getElementById('designerPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const loadingDiv = document.getElementById('loadingDiv');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const welcomeText = document.getElementById('welcomeText');
+        
+        // 전화번호 자동 포맷팅
+        phoneInput.addEventListener('input', function() {
+            let value = this.value.replace(/[^0-9]/g, '');
+            
+            if (value.length >= 3) {
+                value = value.replace(/(\d{3})(\d{0,4})(\d{0,4})/, function(match, p1, p2, p3) {
+                    if (p3) return `${p1}-${p2}-${p3}`;
+                    if (p2) return `${p1}-${p2}`;
+                    return p1;
+                });
+            }
+            
+            this.value = value;
+        });
+        
+        // 비밀번호 숫자만 입력
+        passwordInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+        
+        // 환영 메시지 표시
+        function showWelcomeMessage(text, isNewUser = false) {
+            welcomeText.textContent = text;
+            welcomeMessage.className = `welcome-message show ${isNewUser ? 'new-user' : ''}`;
+            
+            setTimeout(() => {
+                welcomeMessage.classList.remove('show');
+                // 메인 페이지로 이동
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
+            }, 2500);
+        }
+        
+        // 로그인 처리
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            // 입력 검증
+            if (!name || !phone || !password) {
+                alert('모든 정보를 입력해주세요');
+                return;
+            }
+            
+            if (password.length !== 4) {
+                alert('비밀번호는 4자리 숫자여야 합니다');
+                passwordInput.focus();
+                return;
+            }
+            
+            const phoneOnly = phone.replace(/[^0-9]/g, '');
+            if (phoneOnly.length !== 11 || !phoneOnly.startsWith('010')) {
+                alert('올바른 전화번호 형식이 아닙니다');
+                phoneInput.focus();
+                return;
+            }
+            
+            // 로딩 표시
+            loginBtn.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            
+            try {
+                // Firebase에서 기존 계정 확인
+                const existingQuery = await db.collection('designers')
+                    .where('phone', '==', phoneOnly)
+                    .get();
+                
+                let isNewUser = false;
+                let designerDoc = null;
+                
+                if (existingQuery.empty) {
+                    // 신규 가입
+                    isNewUser = true;
+                    
+                    const newDesigner = {
+                        name: name,
+                        phone: phoneOnly,
+                        phoneFormatted: phone,
+                        password: password, // 실제 서비스에서는 해시 처리 필요
+                        tokens: 100, // 기본 토큰
+                        joinedAt: new Date(),
+                        lastLoginAt: new Date(),
+                        deviceHistory: [navigator.userAgent],
+                        isActive: true,
+                        createdBy: 'self'
+                    };
+                    
+                    designerDoc = await db.collection('designers').add(newDesigner);
+                    
+                    // 로컬스토리지에 저장 (비밀번호 제외)
+                    localStorage.setItem('hairgator_designer_id', designerDoc.id);
+                    localStorage.setItem('hairgator_designer_name', name);
+                    localStorage.setItem('hairgator_designer_phone', phoneOnly);
+                    localStorage.setItem('hairgator_login_time', new Date().getTime().toString());
+                    
+                    // 환영 메시지
+                    showWelcomeMessage(`🎉 ${name}님, 새로 가입하셨군요!\n환영합니다! 기본 토큰 100개를 드렸어요`, true);
+                    
+                } else {
+                    // 기존 사용자
+                    const existingData = existingQuery.docs[0].data();
+                    const docId = existingQuery.docs[0].id;
+                    
+                    // 비밀번호 확인
+                    if (existingData.password !== password) {
+                        alert('비밀번호가 틀렸습니다');
+                        passwordInput.value = '';
+                        passwordInput.focus();
+                        loginBtn.style.display = 'block';
+                        loadingDiv.style.display = 'none';
+                        return;
+                    }
+                    
+                    // 이름이 다르면 업데이트
+                    if (existingData.name !== name) {
+                        await db.collection('designers').doc(docId).update({
+                            name: name,
+                            lastLoginAt: new Date(),
+                            deviceHistory: firebase.firestore.FieldValue.arrayUnion(navigator.userAgent)
+                        });
+                    } else {
+                        // 로그인 시간만 업데이트
+                        await db.collection('designers').doc(docId).update({
+                            lastLoginAt: new Date(),
+                            deviceHistory: firebase.firestore.FieldValue.arrayUnion(navigator.userAgent)
+                        });
+                    }
+                    
+                    // 로컬스토리지에 저장
+                    localStorage.setItem('hairgator_designer_id', docId);
+                    localStorage.setItem('hairgator_designer_name', name);
+                    localStorage.setItem('hairgator_designer_phone', phoneOnly);
+                    localStorage.setItem('hairgator_login_time', new Date().getTime().toString());
+                    
+                    // 환영 메시지
+                    const lastLogin = existingData.lastLoginAt ? 
+                        new Date(existingData.lastLoginAt.toDate()).toLocaleDateString() : '처음';
+                    
+                    showWelcomeMessage(`👋 ${name}님, 안녕하세요!\n다시 만나서 반가워요 (마지막 로그인: ${lastLogin})`);
+                }
+                
+            } catch (error) {
+                console.error('로그인 오류:', error);
+                alert('로그인 중 오류가 발생했습니다: ' + error.message);
+                loginBtn.style.display = 'block';
+                loadingDiv.style.display = 'none';
+            }
+        });
+        
+        // 페이지 로드 시 이전 정보 불러오기 (이름, 전화번호만)
+        window.addEventListener('load', function() {
+            const savedName = localStorage.getItem('hairgator_designer_name');
+            const savedPhone = localStorage.getItem('hairgator_designer_phone');
+            
+            if (savedName) {
+                nameInput.value = savedName;
+            }
+            
+            if (savedPhone) {
+                const formatted = savedPhone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+                phoneInput.value = formatted;
+            }
+            
+            // 비밀번호 입력란에 포커스
+            if (savedName && savedPhone) {
+                passwordInput.focus();
+            } else {
+                nameInput.focus();
+            }
+        });
+        
+        console.log('🎨 HAIRGATOR 디자이너 로그인 시스템 (Firebase 통합)');
+    </script>
+</body>
+</html>
