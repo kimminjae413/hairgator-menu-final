@@ -140,14 +140,21 @@ function toggleTheme() {
     localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
 }
 
-// 카테고리 렌더링 - 전역 함수
+// 카테고리 렌더링 - 전역 함수 (수정됨!)
 function renderCategories(gender) {
     el.categoryTabs.innerHTML = '';
     if (gender === 'female') {
         const helpTab = document.createElement('button');
         helpTab.className = 'category-tab help-tab';
         helpTab.innerHTML = '?';
-        helpTab.addEventListener('click', () => window.open('https://drive.google.com/file/d/15OgT9k5jCC6TjcJSImuQXcznS_HtFBVf/view?usp=sharing', '_blank'));
+        // ✅ 여기가 수정된 부분!
+        helpTab.addEventListener('click', () => {
+            if (window.openHelpModal) {
+                openHelpModal();
+            } else {
+                console.error('openHelpModal 함수를 찾을 수 없습니다');
+            }
+        });
         el.categoryTabs.appendChild(helpTab);
     }
     menuData.categories.forEach((cat, idx) => {
