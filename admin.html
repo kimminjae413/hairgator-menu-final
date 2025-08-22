@@ -721,7 +721,7 @@
         <h1>🎨 HAIRGATOR Admin</h1>
         <div class="header-buttons">
             <button class="btn btn-success" onclick="initializeData()">🚀 데이터 초기화</button>
-            <button class="btn" onclick="location.href='/'">📱 메인 페이지</button>
+            <button class="btn" onclick="goToMainPage()">📱 메인 페이지</button>
         </div>
     </div>
     
@@ -1006,6 +1006,34 @@
         
         const SUBCATEGORIES = ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'];
         
+        // ========== 메인 페이지 이동 (로그인 상태 체크) ==========
+        function goToMainPage() {
+            const designerName = localStorage.getItem('hairgator_designer_name');
+            const loginTime = localStorage.getItem('hairgator_login_time');
+            
+            if (!designerName || !loginTime) {
+                // 로그인 정보가 없으면 login.html로 이동
+                alert('메인 페이지 접근을 위해 로그인이 필요합니다');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // 24시간 체크
+            const now = new Date().getTime();
+            const elapsed = now - parseInt(loginTime);
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            
+            if (elapsed > twentyFourHours) {
+                alert('로그인 시간이 만료되었습니다. 다시 로그인해주세요');
+                localStorage.removeItem('hairgator_login_time');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // 로그인 상태가 유효하면 메인 페이지로 이동
+            window.location.href = 'index.html';
+        }
+        
         // ========== 자동 코드 생성 함수 ==========
         async function generateAutoCode() {
             try {
@@ -1153,21 +1181,28 @@
             }
         }
         
-        // 테스트 디자이너 추가 (Firebase)
+        // 테스트 디자이너 추가 (새 로그인 시스템과 호환)
         async function addTestDesigner() {
             const name = prompt('디자이너 이름을 입력하세요:');
             if (!name) return;
             
-            const phone = prompt('전화번호 뒷자리 4자리를 입력하세요:');
-            if (!phone || phone.length !== 4) {
-                alert('4자리 숫자를 입력하세요');
+            // 전체 전화번호 입력으로 변경 (새 로그인 시스템과 호환)
+            const phoneInput = prompt('전화번호를 입력하세요 (예: 01012345678):');
+            if (!phoneInput) return;
+            
+            // 전화번호 포맷팅
+            const phoneOnly = phoneInput.replace(/[^0-9]/g, '');
+            if (phoneOnly.length !== 11 || !phoneOnly.startsWith('010')) {
+                alert('올바른 전화번호 형식이 아닙니다 (010으로 시작하는 11자리)');
                 return;
             }
             
+            const formattedPhone = phoneOnly.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+            
             try {
-                // 중복 체크
+                // 중복 체크 (전체 전화번호로)
                 const existingQuery = await db.collection(COLLECTIONS.DESIGNERS)
-                    .where('phone', '==', phone)
+                    .where('phoneRaw', '==', phoneOnly)
                     .get();
                 
                 if (!existingQuery.empty) {
@@ -1186,14 +1221,19 @@
                     console.warn('기본 토큰 설정 로드 실패, 100개로 설정:', error);
                 }
                 
+                // 새 로그인 시스템과 호환되는 형식으로 저장
                 const newDesigner = {
                     name: name,
-                    phone: phone,
+                    phone: formattedPhone,
+                    phoneRaw: phoneOnly,
                     tokens: defaultTokens,
                     joinedAt: new Date(),
                     tokenUpdatedAt: new Date(),
                     createdBy: 'admin',
-                    isActive: true
+                    isActive: true,
+                    // 새 로그인 시스템 필드들
+                    lastLoginAt: null,
+                    deviceHistory: []
                 };
                 
                 await db.collection(COLLECTIONS.DESIGNERS).add(newDesigner);
@@ -1237,7 +1277,7 @@
             }
         }
         
-        // 디자이너 목록 새로고침 (Firebase)
+        // 디자이너 목록 새로고침 (Firebase - 새 형식 대응)
         async function refreshDesigners() {
             const table = document.getElementById('designersTable');
             table.innerHTML = '<tr><td colspan="6" style="text-align: center;">로딩 중...</td></tr>';
@@ -1264,9 +1304,22 @@
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     const row = document.createElement('tr');
+                    
+                    // 전화번호 표시 (새 형식 우선, 기존 형식 호환)
+                    let phoneDisplay = '';
+                    if (data.phone && data.phone.includes('-')) {
+                        // 새 형식: 010-1234-5678
+                        phoneDisplay = data.phone;
+                    } else if (data.phone) {
+                        // 기존 형식: 뒷자리 4자리
+                        phoneDisplay = `***-****-${data.phone}`;
+                    } else {
+                        phoneDisplay = '-';
+                    }
+                    
                     row.innerHTML = `
                         <td style="font-weight: 600;">${data.name}</td>
-                        <td>***-****-${data.phone}</td>
+                        <td>${phoneDisplay}</td>
                         <td><span class="token-display">${data.tokens || 0}🪙</span></td>
                         <td>
                             <input type="number" class="token-input" value="${data.tokens || 0}" 
@@ -1638,7 +1691,7 @@
             }
         }
         
-        // ========== 고객 로드 ==========
+        // ========== 고객 로드 (새 로그인 시스템 대응) ==========
         async function loadCustomers() {
             const table = document.getElementById('customersTable');
             table.innerHTML = '<tr><td colspan="6" style="text-align: center;">로딩 중...</td></tr>';
@@ -1654,12 +1707,20 @@
                     const data = doc.data();
                     const date = data.registeredAt ? new Date(data.registeredAt.toDate()).toLocaleDateString() : '-';
                     
+                    // 디자이너명 표시 (새 시스템 우선, 기존 호환)
+                    let designerName = '';
+                    if (data.designer) {
+                        designerName = data.designer;
+                    } else {
+                        designerName = '-';
+                    }
+                    
                     html += `
                         <tr>
                             <td>${data.name || '-'}</td>
                             <td>${data.phone || '-'}</td>
                             <td>${data.styleName || '-'}</td>
-                            <td>${data.designer || '-'}</td>
+                            <td>${designerName}</td>
                             <td>${date}</td>
                             <td>
                                 <button class="btn btn-danger" onclick="deleteCustomer('${doc.id}')" style="padding: 5px 10px; font-size: 12px;">삭제</button>
