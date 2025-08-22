@@ -240,7 +240,7 @@ snapshot.forEach(doc=>{
 const data=doc.data();
 const item=document.createElement('div');
 item.className=`menu-item ${gender}`;
-item.innerHTML=`<img src="${data.imageUrl||''}" alt="${data.name||'Style'}" class="menu-item-image" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#667eea 0%,#764ba2 100%)'"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);padding:10px;text-align:center"><div style="font-size:11px;color:#999">${data.code||''}</div><div style="font-size:13px;color:white;margin-top:3px">${data.name||''}</div></div>`;
+item.innerHTML=`<img src="${data.imageUrl||''}" alt="${data.name||'Style'}" class="menu-item-image" onerror="this.style.display='none';this.parentElement.style.background='linear-gradient(135deg,#667eea 0%,#764ba2 100%)'">`;
 item.addEventListener('click',()=>showStyleDetail(data.code,data.name,gender,data.imageUrl,doc.id));
 el.menuGrid.appendChild(item);
 });
