@@ -643,11 +643,11 @@
     <main class="main-content">
         <!-- Gender Selection -->
         <div class="gender-selection" id="genderSelection" style="display: none;">
-            <button class="gender-btn male" onclick="selectGender('male')">
+            <button class="gender-btn male" data-gender="male">
                 <div class="gender-icon">♂</div>
                 <div class="gender-label">남성</div>
             </button>
-            <button class="gender-btn female" onclick="selectGender('female')">
+            <button class="gender-btn female" data-gender="female">
                 <div class="gender-icon">♀</div>
                 <div class="gender-label">여성</div>
             </button>
@@ -725,6 +725,10 @@
             loadingDiv = document.getElementById('loadingDiv');
             welcomeMessage = document.getElementById('welcomeMessage');
             welcomeText = document.getElementById('welcomeText');
+
+            // 모든 화면 초기 숨김
+            if (genderSelection) genderSelection.style.display = 'none';
+            if (menuContainer) menuContainer.style.display = 'none';
 
             // Firebase 준비 대기
             if (!window.firebaseInitialized) {
@@ -808,6 +812,23 @@
             console.log('👫 성별 선택 화면 표시');
             genderSelection.style.display = 'flex';
             menuContainer.style.display = 'none';
+            
+            // 성별 버튼 이벤트 다시 설정 (main.js와 충돌 방지)
+            setTimeout(() => {
+                const genderBtns = document.querySelectorAll('.gender-btn');
+                genderBtns.forEach(btn => {
+                    if (!btn.hasAttribute('data-event-fixed')) {
+                        btn.addEventListener('click', function() {
+                            const gender = this.dataset.gender;
+                            console.log('🎯 성별 선택:', gender);
+                            if (gender && typeof selectGender === 'function') {
+                                selectGender(gender);
+                            }
+                        });
+                        btn.setAttribute('data-event-fixed', 'true');
+                    }
+                });
+            }, 300);
         }
 
         // ========== 로그인 데이터 정리 ==========
