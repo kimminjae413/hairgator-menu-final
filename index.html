@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HAIRGATOR - Professional Hair Style Menu</title>
+    <meta name="description" content="전문 헤어샵을 위한 디지털 메뉴 시스템">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000">
@@ -14,16 +15,14 @@
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
     
-    <!-- iOS 아이콘 설정 -->
+    <!-- Icons -->
     <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
     <link rel="apple-touch-icon" sizes="152x152" href="assets/icons/icon-192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon-192.png">
     <link rel="apple-touch-icon" sizes="167x167" href="assets/icons/icon-192.png">
-    
-    <!-- 파비콘 -->
     <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
     
-    <!-- 구글 폰트 -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -34,7 +33,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
-    <!-- CSS 파일들 -->
+    <!-- CSS Files -->
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/login.css">
     <link rel="stylesheet" href="styles/menu.css">
@@ -85,6 +84,15 @@
                 
                 <div class="login-help">
                     <p>처음 사용하시나요? 관리자에게 계정을 요청하세요.</p>
+                    <div class="help-links">
+                        <button type="button" class="help-link" onclick="showLoginHelp()">
+                            도움말
+                        </button>
+                        <span class="help-divider">|</span>
+                        <button type="button" class="help-link" onclick="contactAdmin()">
+                            관리자 연락
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -93,7 +101,13 @@
     <!-- 성별 선택 화면 -->
     <div id="genderSelection" class="screen">
         <div class="gender-container">
-            <h2>고객 성별을 선택하세요</h2>
+            <!-- 환영 메시지 -->
+            <div class="welcome-section">
+                <h2><span id="welcomeName">디자이너</span>님 환영합니다!</h2>
+                <p class="welcome-message">오늘도 좋은 하루 되세요.</p>
+            </div>
+            
+            <h3>고객 성별을 선택하세요</h3>
             <div class="gender-buttons">
                 <button class="gender-btn male" data-gender="male" aria-label="남성 고객 메뉴">
                     <span class="icon">👨</span>
@@ -153,20 +167,51 @@
             </div>
             
             <div class="sidebar-menu">
-                <div class="theme-toggle" id="themeToggle">
-                    <span>다크 모드</span>
-                    <span id="themeStatusSidebar">ON</span>
+                <!-- 일반 기능 -->
+                <div class="menu-section">
+                    <div class="menu-section-title">일반 기능</div>
+                    <button class="menu-item" onclick="showFeature('dashboard')">
+                        <span>대시보드</span>
+                    </button>
+                    <button class="menu-item" onclick="showFeature('favorites')">
+                        <span>즐겨찾기</span>
+                    </button>
+                    <button class="menu-item" onclick="showFeature('history')">
+                        <span>최근 기록</span>
+                    </button>
                 </div>
                 
-                <button class="sidebar-btn" id="logoutBtn">로그아웃</button>
+                <!-- 프리미엄 기능 (권한 있을 때만 표시) -->
+                <div class="menu-section" id="premiumSection" style="display: none;">
+                    <div class="menu-section-title">프리미엄 기능</div>
+                    <button class="menu-item premium" onclick="showFeature('ai-analysis')">
+                        <span>AI 분석</span>
+                        <span class="premium-badge">Premium</span>
+                    </button>
+                    <button class="menu-item premium" onclick="showFeature('advanced-reports')">
+                        <span>고급 리포트</span>
+                        <span class="premium-badge">Premium</span>
+                    </button>
+                </div>
                 
-                <!-- 관리자 링크 (개발용) -->
-                <div class="admin-section" id="adminSection" style="display: none;">
-                    <hr>
-                    <a href="pages/admin/dashboard.html" target="_blank" class="admin-link">
-                        🔧 관리자 페이지
+                <!-- 설정 -->
+                <div class="menu-section">
+                    <div class="menu-section-title">설정</div>
+                    <div class="menu-item theme-toggle" id="themeToggle">
+                        <span>다크 모드</span>
+                        <span id="themeStatusSidebar">ON</span>
+                    </div>
+                </div>
+                
+                <!-- 관리자 메뉴 (개발용) -->
+                <div class="menu-section admin-section" id="adminSection" style="display: none;">
+                    <div class="menu-section-title">관리자</div>
+                    <a href="pages/admin/dashboard.html" target="_blank" class="menu-item admin">
+                        <span>관리자 페이지</span>
                     </a>
                 </div>
+                
+                <button class="sidebar-btn logout-btn" id="logoutBtn">로그아웃</button>
             </div>
         </div>
     </div>
@@ -192,7 +237,6 @@
                 </div>
                 <div class="modal-actions">
                     <button class="modal-btn btn-register" id="btnRegister">
-                        <span>👤</span>
                         <span>고객 등록</span>
                     </button>
                     <button class="modal-btn btn-like" id="btnLike">
@@ -204,47 +248,130 @@
         </div>
     </div>
 
-    <!-- 에러 토스트 -->
+    <!-- 알림 토스트 -->
     <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
-    <!-- JavaScript 파일들 -->
+    <!-- JavaScript Files -->
+    <script src="scripts/utils/common.js"></script>
     <script src="scripts/core/firebase-config.js"></script>
     <script src="scripts/core/auth.js"></script>
     <script src="scripts/core/main.js"></script>
     <script src="scripts/ui/menu.js"></script>
 
-    <!-- 초기화 스크립트 -->
+    <!-- App Initialization -->
     <script>
         // 앱 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 HAIRGATOR 앱 시작');
+            console.log('HAIRGATOR 앱 시작');
             
             // 로딩 화면 표시
             const loadingScreen = document.getElementById('loadingScreen');
             const loginScreen = document.getElementById('loginScreen');
             
-            // 2초 후 로그인 화면으로 전환
-            setTimeout(() => {
-                loadingScreen.style.display = 'none';
-                loginScreen.classList.add('active');
-            }, 2000);
+            // Firebase 연결 확인 후 로그인 화면으로 전환
+            setTimeout(async () => {
+                try {
+                    // Firebase 연결 테스트
+                    if (window.db) {
+                        console.log('Firebase 연결 확인됨');
+                    }
+                    
+                    // 기존 세션 확인
+                    if (window.authManager && await window.authManager.checkExistingSession()) {
+                        // 기존 세션이 있으면 성별 선택으로 바로 이동
+                        loadingScreen.style.display = 'none';
+                        document.getElementById('genderSelection').classList.add('active');
+                    } else {
+                        // 로그인 화면으로 이동
+                        loadingScreen.style.display = 'none';
+                        loginScreen.classList.add('active');
+                        
+                        // 첫 번째 입력 필드에 포커스
+                        setTimeout(() => {
+                            const nameInput = document.getElementById('designerName');
+                            if (nameInput) nameInput.focus();
+                        }, 300);
+                    }
+                } catch (error) {
+                    console.error('초기화 오류:', error);
+                    loadingScreen.style.display = 'none';
+                    loginScreen.classList.add('active');
+                }
+            }, 1500);
         });
 
         // 전역 에러 핸들러
         window.addEventListener('error', function(event) {
             console.error('전역 에러:', event.error);
             if (window.ErrorHandler) {
-                window.ErrorHandler.logError(event.error, 'global', window.currentUser?.uid);
+                window.ErrorHandler.logError(event.error, 'global');
             }
         });
 
-        // Promise 에러 핸들러
         window.addEventListener('unhandledrejection', function(event) {
-            console.error('처리되지 않은 Promise 에러:', event.reason);
+            console.error('Promise 에러:', event.reason);
             if (window.ErrorHandler) {
-                window.ErrorHandler.logError(event.reason, 'promise', window.currentUser?.uid);
+                window.ErrorHandler.logError(event.reason, 'promise');
             }
         });
+
+        // 전역 헬퍼 함수들
+        window.showFeature = function(featureName) {
+            console.log('기능 선택:', featureName);
+            if (window.showToast) {
+                window.showToast(`${featureName} 기능은 준비 중입니다.`, 'info');
+            }
+        };
+
+        window.showLoginHelp = function() {
+            const helpMessage = `로그인 도움말:
+            
+- 디자이너명: 실제 이름을 입력하세요
+- 전화번호: 본인 번호의 뒤 4자리  
+- 비밀번호: 등록시 설정한 4자리 숫자
+
+계정이 없으시면 관리자에게 문의하세요.`;
+            
+            if (window.showToast) {
+                window.showToast(helpMessage, 'info', 8000);
+            } else {
+                alert(helpMessage);
+            }
+        };
+
+        window.contactAdmin = function() {
+            const contactMessage = `관리자 연락처:
+            
+계정 생성, 비밀번호 초기화, 권한 변경 등의
+문의사항이 있으시면 관리자에게 연락해주세요.`;
+            
+            if (window.showToast) {
+                window.showToast(contactMessage, 'info', 6000);
+            } else {
+                alert(contactMessage);
+            }
+        };
+
+        // Service Worker 등록
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('Service Worker 등록 성공');
+                })
+                .catch(error => {
+                    console.error('Service Worker 등록 실패:', error);
+                });
+        }
+
+        // 개발 모드 확인
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.log('개발 모드 활성화');
+            // 관리자 섹션 표시
+            const adminSection = document.getElementById('adminSection');
+            if (adminSection) {
+                adminSection.style.display = 'block';
+            }
+        }
     </script>
 </body>
 </html>
