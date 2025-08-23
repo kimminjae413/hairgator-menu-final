@@ -64,9 +64,10 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="phoneNumber">전화번호 (뒤 4자리)</label>
-                    <input type="tel" id="phoneNumber" placeholder="0000" maxlength="4" required 
-                           pattern="[0-9]{4}" autocomplete="tel">
+                    <label for="phoneNumber">전화번호</label>
+                    <input type="tel" id="phoneNumber" placeholder="010-1234-5678" maxlength="13" required 
+                           pattern="^010-[0-9]{4}-[0-9]{4}$" autocomplete="tel">
+                    <small class="input-hint">형식: 010-1234-5678</small>
                 </div>
                 
                 <div class="form-group">
@@ -109,11 +110,11 @@
             
             <h3>고객 성별을 선택하세요</h3>
             <div class="gender-buttons">
-                <button class="gender-btn male" data-gender="male" aria-label="남성 고객 메뉴">
+                <button class="gender-btn male" onclick="selectGender('male')" aria-label="남성 고객 메뉴">
                     <span class="icon">👨</span>
                     <span class="text">남성</span>
                 </button>
-                <button class="gender-btn female" data-gender="female" aria-label="여성 고객 메뉴">
+                <button class="gender-btn female" onclick="selectGender('female')" aria-label="여성 고객 메뉴">
                     <span class="icon">👩</span>
                     <span class="text">여성</span>
                 </button>
@@ -129,7 +130,7 @@
     <!-- 메인 메뉴 화면 -->
     <div id="menuContainer" class="menu-container">
         <header class="header">
-            <button class="back-btn" id="backBtn" aria-label="뒤로 가기">
+            <button class="back-btn" id="backBtn" onclick="goBack()" aria-label="뒤로 가기">
                 <span>←</span>
             </button>
             <h1 class="logo">HAIRGATOR</h1>
@@ -150,7 +151,14 @@
         <div class="subcategory-tabs" id="subcategoryTabs" role="tablist" aria-label="앞머리 길이"></div>
         
         <!-- 메뉴 그리드 -->
-        <div class="menu-grid" id="menuGrid" role="main" aria-label="헤어스타일 목록"></div>
+        <div class="menu-grid" id="menuGrid" role="main" aria-label="헤어스타일 목록">
+            <!-- 임시 데모 데이터 -->
+            <div class="empty-state">
+                <div class="empty-icon">🎨</div>
+                <div class="empty-title">헤어스타일 준비 중</div>
+                <div class="empty-message">곧 다양한 헤어스타일을 만나보실 수 있습니다.</div>
+            </div>
+        </div>
     </div>
 
     <!-- 사이드바 -->
@@ -260,7 +268,7 @@
 
     <!-- App Initialization -->
     <script>
-        // 앱 초기화
+        // 앱 초기화 - 간소화된 버전
         document.addEventListener('DOMContentLoaded', function() {
             console.log('HAIRGATOR 앱 시작');
             
@@ -268,51 +276,17 @@
             const loadingScreen = document.getElementById('loadingScreen');
             const loginScreen = document.getElementById('loginScreen');
             
-            // Firebase 연결 확인 후 로그인 화면으로 전환
-            setTimeout(async () => {
-                try {
-                    // Firebase 연결 테스트
-                    if (window.db) {
-                        console.log('Firebase 연결 확인됨');
-                    }
-                    
-                    // 기존 세션 확인
-                    if (window.authManager && await window.authManager.checkExistingSession()) {
-                        // 기존 세션이 있으면 성별 선택으로 바로 이동
-                        loadingScreen.style.display = 'none';
-                        document.getElementById('genderSelection').classList.add('active');
-                    } else {
-                        // 로그인 화면으로 이동
-                        loadingScreen.style.display = 'none';
-                        loginScreen.classList.add('active');
-                        
-                        // 첫 번째 입력 필드에 포커스
-                        setTimeout(() => {
-                            const nameInput = document.getElementById('designerName');
-                            if (nameInput) nameInput.focus();
-                        }, 300);
-                    }
-                } catch (error) {
-                    console.error('초기화 오류:', error);
-                    loadingScreen.style.display = 'none';
-                    loginScreen.classList.add('active');
-                }
+            // 간단한 초기화 (1.5초 후 로그인 화면)
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                loginScreen.classList.add('active');
+                
+                // 첫 번째 입력 필드에 포커스
+                setTimeout(() => {
+                    const nameInput = document.getElementById('designerName');
+                    if (nameInput) nameInput.focus();
+                }, 300);
             }, 1500);
-        });
-
-        // 전역 에러 핸들러
-        window.addEventListener('error', function(event) {
-            console.error('전역 에러:', event.error);
-            if (window.ErrorHandler) {
-                window.ErrorHandler.logError(event.error, 'global');
-            }
-        });
-
-        window.addEventListener('unhandledrejection', function(event) {
-            console.error('Promise 에러:', event.reason);
-            if (window.ErrorHandler) {
-                window.ErrorHandler.logError(event.reason, 'promise');
-            }
         });
 
         // 전역 헬퍼 함수들
@@ -327,7 +301,7 @@
             const helpMessage = `로그인 도움말:
             
 - 디자이너명: 실제 이름을 입력하세요
-- 전화번호: 본인 번호의 뒤 4자리  
+- 전화번호: 010-1234-5678 형식으로 입력  
 - 비밀번호: 등록시 설정한 4자리 숫자
 
 계정이 없으시면 관리자에게 문의하세요.`;
@@ -352,6 +326,21 @@
             }
         };
 
+        // 사이드바 토글
+        document.addEventListener('click', function(e) {
+            const menuBtn = document.getElementById('menuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarClose = document.getElementById('sidebarClose');
+            
+            if (e.target === menuBtn || menuBtn.contains(e.target)) {
+                sidebar.classList.toggle('active');
+            }
+            
+            if (e.target === sidebarClose || e.target === sidebar && !sidebar.querySelector('.sidebar-content').contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+
         // Service Worker 등록
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/service-worker.js')
@@ -366,7 +355,6 @@
         // 개발 모드 확인
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             console.log('개발 모드 활성화');
-            // 관리자 섹션 표시
             const adminSection = document.getElementById('adminSection');
             if (adminSection) {
                 adminSection.style.display = 'block';
