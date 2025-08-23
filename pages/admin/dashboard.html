@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAIRGATOR Admin - Firebase 토큰 시스템</title>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <style>
+        /* ========== 기본 스타일 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        /* ========== 헤더 ========== */
+        .header {
+            background: #1a1a1a;
+            border-bottom: 2px solid #FF1493;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #FF1493;
+            font-size: 28px;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            background: #FF1493;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #FF69B4;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        /* ========== 토큰 관련 버튼 (화이트 톤) ========== */
+        .btn-token {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            color: #495057;
+            border: 1px solid #dee2e6;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-token:hover {
+            background: linear-gradient(135deg, #e9ecef, #dee2e6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* ========== 컨테이너 ========== */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* ========== 탭 ========== */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        
+        .tab {
+            background: transparent;
+            color: #999;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: #1a1a1a;
+            color: #FF1493;
+            border-color: #FF1493;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        
+        /* ========== 섹션 ========== */
+        .section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            color: #FF1493;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        /* ========== 토큰 설정 카드 (화이트 톤) ========== */
+        .token-settings-card {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+        
+        .token-settings-title {
+            color: #495057;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .token-form-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .token-form-group label {
+            color: #495057;
+            font-weight: bold;
+            min-width: 150px;
+        }
+        
+        .token-form-group input {
+            flex: 1;
+            padding: 12px;
+            background: #fff;
+            color: #495057;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .token-form-group input:focus {
+            outline: none;
+            border-color: #6c757d;
+            box-shadow: 0 0 10px rgba(108, 117, 125, 0.3);
+        }
+        
+        /* ========== Firebase 연결 상태 ========== */
+        .firebase-status {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #155724;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .firebase-status.error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+        
+        .status-indicator.error {
+            background: #dc3545;
+        }
+        
+        /* ========== 선택 영역 ========== */
+        .selection-area {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .selection-group {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .selection-group label {
+            display: block;
+            color: #FF1493;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .selection-group select {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        /* ========== 스타일 그리드 ========== */
+        .styles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .style-card {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s;
+            aspect-ratio: 3/4;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .style-card:hover {
+            border-color: #FF1493;
+            transform: translateY(-5px);
+        }
+        
+        .style-image-container {
+            width: 100%;
+            flex: 1;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .style-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .no-image-text {
+            color: white;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .style-info {
+            padding: 10px;
+            text-align: center;
+            background: #000;
+        }
+        
+        .style-code {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .style-name {
+            font-size: 14px;
+            color: white;
+            margin-top: 5px;
+        }
+        
+        .style-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            z-index: 10;
+        }
+        
+        .action-btn {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: 1px solid #333;
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            background: #FF1493;
+        }
+        
+        .action-btn.delete:hover {
+            background: #dc3545;
+        }
+        
+        /* ========== 업로드 영역 ========== */
+        .upload-area {
+            background: #000;
+            border: 2px dashed #FF1493;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area.dragover {
+            background: rgba(255, 20, 147, 0.1);
+        }
+        
+        .upload-input {
+            display: none;
+        }
+        
+        .upload-label {
+            color: #FF1493;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .upload-preview {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .upload-preview img {
+            max-width: 200px;
+            border-radius: 10px;
+        }
+        
+        /* ========== 폼 ========== */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #FF1493;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: #000;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #FF1493;
+        }
+        
+        /* ========== 필수/선택 라벨 ========== */
+        .label-required {
+            color: #FF1493;
+            font-weight: bold;
+        }
+        
+        .label-required::after {
+            content: ' *';
+            color: #ff4444;
+        }
+        
+        .label-optional {
+            color: #FF1493;
+            font-weight: bold;
+        }
+        
+        .label-optional::after {
+            content: ' (선택)';
+            color: #999;
+            font-size: 12px;
+            font-weight: normal;
+        }
+        
+        /* ========== 자동 생성 코드 표시 ========== */
+        .auto-code-info {
+            background: rgba(255, 20, 147, 0.1);
+            border: 1px solid #FF1493;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #FF69B4;
+            display: none;
+        }
+        
+        .auto-code-info.show {
+            display: block;
+        }
+        
+        /* ========== 디자이너 관리 테이블 (화이트 톤) ========== */
+        .designers-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .designers-table th {
+            background: #f8f9fa;
+            color: #495057;
+            padding: 15px 12px;
+            text-align: left;
+            border-bottom: 2px solid #e9ecef;
+            font-weight: 700;
+        }
+        
+        .designers-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            color: #495057;
+        }
+        
+        .designers-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        /* ========== 토큰 입력 (화이트 톤) ========== */
+        .token-input {
+            width: 100px;
+            padding: 8px;
+            background: #fff;
+            color: #495057;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .token-input:focus {
+            outline: none;
+            border-color: #6c757d;
+        }
+        
+        .token-display {
+            color: #495057;
+            font-weight: bold;
+            font-size: 16px;
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 15px;
+            border: 1px solid #e9ecef;
+        }
+        
+        /* ========== 통계 ========== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            color: #FF1493;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            color: #999;
+            margin-top: 10px;
+        }
+        
+        /* ========== 데이터 테이블 ========== */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .data-table th {
+            background: #000;
+            color: #FF1493;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #FF1493;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .data-table tr:hover {
+            background: rgba(255, 20, 147, 0.05);
+        }
+        
+        /* ========== 모달 ========== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #1a1a1a;
+            border: 2px solid #FF1493;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            color: #FF1493;
+            font-size: 24px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        
+        /* ========== 로딩 ========== */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .spinner {
+            border: 3px solid #333;
+            border-top: 3px solid #FF1493;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* ========== 토스트 알림 ========== */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #FF1493;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            display: none;
+            animation: slideUp 0.3s ease;
+            z-index: 2000;
+        }
+        
+        .toast.show {
+            display: block;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* ========== 토큰 정보 박스 (화이트 톤) ========== */
+        .token-info-box {
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .token-info-box p {
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .token-info-box strong {
+            color: #495057;
+            font-weight: 700;
+        }
+        
+        /* ========== 반응형 ========== */
+        @media (max-width: 768px) {
+            .selection-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .styles-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .token-form-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .token-form-group label {
+                min-width: auto;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <div class="header">
+        <h1>🎨 HAIRGATOR Admin</h1>
+        <div class="header-buttons">
+            <button class="btn btn-success" onclick="initializeData()">🚀 데이터 초기화</button>
+            <button class="btn" onclick="location.href='/'">📱 메인 페이지</button>
+        </div>
+    </div>
+    
+    <!-- 컨테이너 -->
+    <div class="container">
+        <!-- Firebase 연결 상태 -->
+        <div class="firebase-status" id="firebaseStatus">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <span id="statusText">Firebase 연결 중...</span>
+        </div>
+        
+        <!-- 탭 -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('styles')">헤어스타일 관리</button>
+            <button class="tab" onclick="switchTab('designers')">🪙 디자이너 토큰 관리</button>
+            <button class="tab" onclick="switchTab('customers')">고객 관리</button>
+            <button class="tab" onclick="switchTab('stats')">통계</button>
+            <button class="tab" onclick="switchTab('settings')">설정</button>
+        </div>
+        
+        <!-- 스타일 관리 탭 -->
+        <div id="stylesTab" class="tab-content">
+            <!-- 선택 영역 -->
+            <div class="section">
+                <h2 class="section-title">🔍 카테고리 선택</h2>
+                <div class="selection-area">
+                    <div class="selection-group">
+                        <label>성별</label>
+                        <select id="genderSelect" onchange="loadCategories()">
+                            <option value="">성별 선택</option>
+                            <option value="male">남성</option>
+                            <option value="female">여성</option>
+                        </select>
+                    </div>
+                    <div class="selection-group">
+                        <label>대분류</label>
+                        <select id="categorySelect" onchange="loadSubcategories()">
+                            <option value="">대분류 선택</option>
+                        </select>
+                    </div>
+                    <div class="selection-group">
+                        <label>중분류 (앞머리 길이)</label>
+                        <select id="subcategorySelect" onchange="loadStyles()">
+                            <option value="">중분류 선택</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="openAddStyleModal()">➕ 새 스타일 추가</button>
+            </div>
+            
+            <!-- 스타일 목록 -->
+            <div class="section">
+                <h2 class="section-title">📸 등록된 스타일</h2>
+                <div id="stylesGrid" class="styles-grid">
+                    <!-- 동적 생성 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 디자이너 토큰 관리 탭 -->
+        <div id="designersTab" class="tab-content" style="display: none;">
+            <!-- 토큰 기본 설정 -->
+            <div class="token-settings-card">
+                <h2 class="token-settings-title">🪙 토큰 시스템 설정</h2>
+                
+                <div class="token-form-group">
+                    <label>신규 디자이너 기본 토큰:</label>
+                    <input type="number" id="defaultTokens" min="0" max="99999" value="100" placeholder="예: 100">
+                    <button class="btn btn-token" onclick="saveDefaultTokens()">💾 저장</button>
+                </div>
+                
+                <div class="token-info-box">
+                    <p><strong>💡 안내:</strong> 신규 가입하는 디자이너에게 자동으로 지급되는 기본 토큰 수량을 설정합니다.</p>
+                    <p><strong>🔐 보안:</strong> 토큰 수량은 관리자만 변경할 수 있으며, 디자이너는 확인만 가능합니다.</p>
+                    <p><strong>💰 사용:</strong> 고객등록(1토큰), AI분석(2토큰) 등의 기능에서 자동 차감됩니다.</p>
+                    <p><strong>☁️ Firebase:</strong> 모든 토큰 데이터는 실시간으로 Firebase에 동기화됩니다.</p>
+                </div>
+            </div>
+            
+            <!-- 디자이너 목록 및 토큰 관리 -->
+            <div class="section">
+                <h2 class="section-title">👥 디자이너 토큰 관리</h2>
+                
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-token" onclick="addTestDesigner()">👤 테스트 디자이너 추가</button>
+                    <button class="btn btn-warning" onclick="refreshDesigners()">🔄 목록 새로고침</button>
+                    <button class="btn btn-success" onclick="batchTokenUpdate()">💰 일괄 토큰 지급</button>
+                </div>
+                
+                <table class="designers-table">
+                    <thead>
+                        <tr>
+                            <th>디자이너명</th>
+                            <th>전화번호</th>
+                            <th>현재 토큰</th>
+                            <th>토큰 수정</th>
+                            <th>가입일</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="designersTable">
+                        <!-- 동적 생성 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 고객 관리 탭 -->
+        <div id="customersTab" class="tab-content" style="display: none;">
+            <div class="section">
+                <h2 class="section-title">👥 고객 목록</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>이름</th>
+                            <th>전화번호</th>
+                            <th>스타일</th>
+                            <th>디자이너</th>
+                            <th>등록일</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersTable">
+                        <!-- 동적 생성 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 통계 탭 -->
+        <div id="statsTab" class="tab-content" style="display: none;">
+            <div class="section">
+                <h2 class="section-title">📊 전체 통계</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalStyles">0</div>
+                        <div class="stat-label">전체 스타일</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalDesigners">0</div>
+                        <div class="stat-label">전체 디자이너</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalTokens">0</div>
+                        <div class="stat-label">총 발행 토큰</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCustomers">0</div>
+                        <div class="stat-label">전체 고객</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalMale">0</div>
+                        <div class="stat-label">남성 스타일</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalFemale">0</div>
+                        <div class="stat-label">여성 스타일</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 설정 탭 -->
+        <div id="settingsTab" class="tab-content" style="display: none;">
+            <div class="section">
+                <h2 class="section-title">⚙️ 시스템 설정</h2>
+                <button class="btn btn-danger" onclick="clearAllData()">🗑️ 모든 데이터 삭제</button>
+                <button class="btn" onclick="exportData()">💾 데이터 내보내기</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 스타일 추가 모달 -->
+    <div id="addStyleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">➕ 새 스타일 추가</h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="label-optional">스타일 코드</label>
+                <input type="text" id="styleCode" placeholder="예: FAE001 (비워두면 자동생성)" style="text-transform: uppercase;">
+                <div class="auto-code-info" id="autoCodeInfo">
+                    💡 코드를 입력하지 않으면 자동으로 생성됩니다 (예: AUTO_001)
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="label-required">스타일 이름</label>
+                <input type="text" id="styleName" placeholder="예: 글램웨이브 (필수)">
+            </div>
+            
+            <div class="form-group">
+                <label class="label-optional">이미지 업로드</label>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="styleImage" class="upload-input" accept="image/*" onchange="previewImage(event)">
+                    <label for="styleImage" class="upload-label">
+                        📷 클릭하거나 드래그하여 이미지 업로드
+                    </label>
+                </div>
+                <div class="upload-preview" id="uploadPreview">
+                    <img id="previewImg" src="" alt="Preview">
+                </div>
+            </div>
+            
+            <button class="btn" onclick="saveStyle()" id="saveBtn">저장</button>
+        </div>
+    </div>
+    
+    <!-- 토스트 알림 -->
+    <div id="toast" class="toast"></div>
+    
+    <!-- JavaScript -->
+    <script>
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            databaseURL: "https://hairgatormenu-4a43e-default-rtdb.firebaseio.com",
+            projectId: "hairgatormenu-4a43e",
+            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
+            messagingSenderId: "800038006875",
+            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        db.settings({
+            cache: {
+                kind: 'persistent',
+                tabManager: { kind: 'multi-tab' }
+            }
+        });
+
+        console.log('✅ Firebase initialized');
+        
+        // Firebase 연결 상태 확인
+        checkFirebaseConnection();
+    </script>
+    
+    <script>
+        // ========== 전역 변수 ==========
+        let currentGender = null;
+        let currentCategory = null;
+        let currentSubcategory = null;
+        let selectedFile = null;
+        
+        // Firebase 컬렉션 이름
+        const COLLECTIONS = {
+            DESIGNERS: 'designers',
+            HAIRSTYLES: 'hairstyles',
+            CUSTOMERS: 'customers',
+            METADATA: 'metadata'
+        };
+        
+        // 카테고리 구조 - 메인과 동일하게
+        const CATEGORIES = {
+            male: [
+                'SIDE FRINGE', 
+                'SIDE PART', 
+                'FRINGE UP', 
+                'PUSHED BACK', 
+                'BUZZ', 
+                'CROP', 
+                'MOHICAN'
+            ],
+            female: [
+                'A Length',
+                'B Length',
+                'C Length',
+                'D Length',
+                'E Length',
+                'F Length',
+                'G Length',
+                'H Length'
+            ]
+        };
+        
+        const SUBCATEGORIES = ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'];
+        
+        // ========== 자동 코드 생성 함수 ==========
+        async function generateAutoCode() {
+            try {
+                // 기존 AUTO_ 코드들 조회
+                const snapshot = await db.collection(COLLECTIONS.HAIRSTYLES)
+                    .where('code', '>=', 'AUTO_')
+                    .where('code', '<', 'AUTO_Z')
+                    .orderBy('code', 'desc')
+                    .limit(1)
+                    .get();
+                
+                let nextNumber = 1;
+                
+                if (!snapshot.empty) {
+                    const lastCode = snapshot.docs[0].data().code;
+                    const match = lastCode.match(/AUTO_(\d+)/);
+                    if (match) {
+                        nextNumber = parseInt(match[1]) + 1;
+                    }
+                }
+                
+                return `AUTO_${nextNumber.toString().padStart(3, '0')}`;
+                
+            } catch (error) {
+                console.error('자동 코드 생성 오류:', error);
+                return `AUTO_${Date.now().toString().slice(-6)}`;
+            }
+        }
+        
+        // ========== 코드 입력 필드 이벤트 ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            const styleCodeInput = document.getElementById('styleCode');
+            const autoCodeInfo = document.getElementById('autoCodeInfo');
+            
+            if (styleCodeInput && autoCodeInfo) {
+                // 입력 필드 포커스/블러 이벤트
+                styleCodeInput.addEventListener('focus', function() {
+                    if (!this.value.trim()) {
+                        autoCodeInfo.classList.add('show');
+                    }
+                });
+                
+                styleCodeInput.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        autoCodeInfo.classList.remove('show');
+                    } else {
+                        autoCodeInfo.classList.add('show');
+                    }
+                });
+                
+                styleCodeInput.addEventListener('blur', function() {
+                    setTimeout(() => {
+                        autoCodeInfo.classList.remove('show');
+                    }, 300);
+                });
+            }
+        });
+        
+        // ========== Firebase 연결 상태 확인 ==========
+        async function checkFirebaseConnection() {
+            const statusElement = document.getElementById('firebaseStatus');
+            const indicatorElement = document.getElementById('statusIndicator');
+            const textElement = document.getElementById('statusText');
+            
+            try {
+                // Firestore 연결 테스트
+                await db.collection('metadata').doc('connection_test').set({
+                    timestamp: new Date(),
+                    status: 'connected'
+                });
+                
+                // 연결 성공
+                statusElement.classList.remove('error');
+                indicatorElement.classList.remove('error');
+                textElement.textContent = '✅ Firebase 연결됨 (실시간 동기화 활성)';
+                console.log('✅ Firebase 연결 테스트 성공');
+                
+            } catch (error) {
+                // 연결 실패
+                statusElement.classList.add('error');
+                indicatorElement.classList.add('error');
+                textElement.textContent = '❌ Firebase 연결 실패: ' + error.message;
+                console.error('❌ Firebase 연결 실패:', error);
+            }
+        }
+        
+        // ========== 토큰 시스템 (Firebase 기반) ==========
+        
+        // 기본 토큰 수량 로드 (Firebase)
+        async function loadDefaultTokens() {
+            try {
+                const doc = await db.collection(COLLECTIONS.METADATA).doc('default_tokens').get();
+                if (doc.exists) {
+                    document.getElementById('defaultTokens').value = doc.data().amount || 100;
+                } else {
+                    document.getElementById('defaultTokens').value = 100;
+                }
+            } catch (error) {
+                console.error('기본 토큰 로드 실패:', error);
+                document.getElementById('defaultTokens').value = 100;
+            }
+        }
+        
+        // 기본 토큰 수량 저장 (Firebase)
+        async function saveDefaultTokens() {
+            const defaultTokens = document.getElementById('defaultTokens').value;
+            if (!defaultTokens || defaultTokens < 0) {
+                alert('올바른 토큰 수량을 입력하세요');
+                return;
+            }
+            
+            try {
+                await db.collection(COLLECTIONS.METADATA).doc('default_tokens').set({
+                    amount: parseInt(defaultTokens),
+                    updatedAt: new Date(),
+                    updatedBy: 'admin'
+                });
+                
+                showToast('✅ 기본 토큰 수량이 저장되었습니다!');
+            } catch (error) {
+                console.error('기본 토큰 저장 실패:', error);
+                showToast('❌ 저장 실패: ' + error.message);
+            }
+        }
+        
+        // 디자이너 토큰 업데이트 (Firebase)
+        async function updateDesignerTokens(designerId, newTokens) {
+            if (newTokens < 0 || newTokens > 99999) {
+                alert('토큰은 0~99999 사이의 값이어야 합니다');
+                return;
+            }
+            
+            try {
+                await db.collection(COLLECTIONS.DESIGNERS).doc(designerId).update({
+                    tokens: parseInt(newTokens),
+                    tokenUpdatedAt: new Date(),
+                    updatedBy: 'admin'
+                });
+                
+                showToast('✅ 토큰이 업데이트되었습니다!');
+                refreshDesigners();
+            } catch (error) {
+                console.error('토큰 업데이트 오류:', error);
+                alert('토큰 업데이트에 실패했습니다: ' + error.message);
+            }
+        }
+        
+        // 테스트 디자이너 추가 (Firebase)
+        async function addTestDesigner() {
+            const name = prompt('디자이너 이름을 입력하세요:');
+            if (!name) return;
+            
+            const phone = prompt('전화번호 뒷자리 4자리를 입력하세요:');
+            if (!phone || phone.length !== 4) {
+                alert('4자리 숫자를 입력하세요');
+                return;
+            }
+            
+            try {
+                // 중복 체크
+                const existingQuery = await db.collection(COLLECTIONS.DESIGNERS)
+                    .where('phone', '==', phone)
+                    .get();
+                
+                if (!existingQuery.empty) {
+                    alert('이미 등록된 전화번호입니다');
+                    return;
+                }
+                
+                // 기본 토큰 수량 가져오기
+                let defaultTokens = 100;
+                try {
+                    const defaultDoc = await db.collection(COLLECTIONS.METADATA).doc('default_tokens').get();
+                    if (defaultDoc.exists) {
+                        defaultTokens = defaultDoc.data().amount || 100;
+                    }
+                } catch (error) {
+                    console.warn('기본 토큰 설정 로드 실패, 100개로 설정:', error);
+                }
+                
+                const newDesigner = {
+                    name: name,
+                    phone: phone,
+                    tokens: defaultTokens,
+                    joinedAt: new Date(),
+                    tokenUpdatedAt: new Date(),
+                    createdBy: 'admin',
+                    isActive: true
+                };
+                
+                await db.collection(COLLECTIONS.DESIGNERS).add(newDesigner);
+                
+                showToast(`✅ ${name} 디자이너가 추가되었습니다 (토큰: ${defaultTokens}개)`);
+                refreshDesigners();
+            } catch (error) {
+                console.error('디자이너 추가 오류:', error);
+                alert('디자이너 추가에 실패했습니다: ' + error.message);
+            }
+        }
+        
+        // 일괄 토큰 지급 (Firebase)
+        async function batchTokenUpdate() {
+            const amount = prompt('모든 디자이너에게 지급할 토큰 수량을 입력하세요:');
+            if (!amount || amount <= 0) return;
+            
+            const tokens = parseInt(amount);
+            if (!confirm(`모든 디자이너에게 ${tokens}토큰을 일괄 지급하시겠습니까?`)) return;
+            
+            try {
+                const snapshot = await db.collection(COLLECTIONS.DESIGNERS).get();
+                const batch = db.batch();
+                
+                snapshot.forEach(doc => {
+                    const currentTokens = doc.data().tokens || 0;
+                    batch.update(doc.ref, {
+                        tokens: currentTokens + tokens,
+                        tokenUpdatedAt: new Date(),
+                        updatedBy: 'admin_batch'
+                    });
+                });
+                
+                await batch.commit();
+                
+                showToast(`✅ ${snapshot.size}명의 디자이너에게 ${tokens}토큰씩 지급완료!`);
+                refreshDesigners();
+            } catch (error) {
+                console.error('일괄 토큰 지급 오류:', error);
+                alert('일괄 토큰 지급에 실패했습니다: ' + error.message);
+            }
+        }
+        
+        // 디자이너 목록 새로고침 (Firebase)
+        async function refreshDesigners() {
+            const table = document.getElementById('designersTable');
+            table.innerHTML = '<tr><td colspan="6" style="text-align: center;">로딩 중...</td></tr>';
+            
+            try {
+                const snapshot = await db.collection(COLLECTIONS.DESIGNERS)
+                    .orderBy('joinedAt', 'desc')
+                    .get();
+                
+                table.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    table.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #999; padding: 40px;">
+                                등록된 디자이너가 없습니다<br>
+                                <small>테스트 디자이너를 추가해보세요</small>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td style="font-weight: 600;">${data.name}</td>
+                        <td>***-****-${data.phone}</td>
+                        <td><span class="token-display">${data.tokens || 0}🪙</span></td>
+                        <td>
+                            <input type="number" class="token-input" value="${data.tokens || 0}" 
+                                   min="0" max="99999" 
+                                   onchange="updateDesignerTokens('${doc.id}', this.value)">
+                        </td>
+                        <td style="font-size: 13px;">${data.joinedAt ? new Date(data.joinedAt.toDate()).toLocaleDateString() : '-'}</td>
+                        <td>
+                            <button class="btn btn-danger" onclick="deleteDesigner('${doc.id}')" 
+                                    style="padding: 5px 10px; font-size: 12px;">삭제</button>
+                        </td>
+                    `;
+                    table.appendChild(row);
+                });
+                
+            } catch (error) {
+                console.error('디자이너 목록 로드 오류:', error);
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #ff4444;">
+                            디자이너 목록 로드 실패: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        // 디자이너 삭제 (Firebase)
+        async function deleteDesigner(designerId) {
+            if (!confirm('정말 이 디자이너를 삭제하시겠습니까?')) return;
+            
+            try {
+                await db.collection(COLLECTIONS.DESIGNERS).doc(designerId).delete();
+                showToast('✅ 디자이너가 삭제되었습니다');
+                refreshDesigners();
+            } catch (error) {
+                console.error('디자이너 삭제 오류:', error);
+                alert('디자이너 삭제에 실패했습니다: ' + error.message);
+            }
+        }
+        
+        // ========== 탭 전환 ==========
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            document.getElementById(tab + 'Tab').style.display = 'block';
+            
+            document.querySelectorAll('.tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            if (tab === 'stats') loadStats();
+            if (tab === 'customers') loadCustomers();
+            if (tab === 'designers') {
+                loadDefaultTokens();
+                refreshDesigners();
+            }
+        }
+        
+        // ========== 카테고리 로드 ==========
+        function loadCategories() {
+            const gender = document.getElementById('genderSelect').value;
+            if (!gender) return;
+            
+            currentGender = gender;
+            const categories = CATEGORIES[gender];
+            const select = document.getElementById('categorySelect');
+            
+            select.innerHTML = '<option value="">대분류 선택</option>';
+            categories.forEach(cat => {
+                select.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+            
+            // 초기화
+            document.getElementById('subcategorySelect').innerHTML = '<option value="">중분류 선택</option>';
+            document.getElementById('stylesGrid').innerHTML = '';
+        }
+        
+        function loadSubcategories() {
+            const category = document.getElementById('categorySelect').value;
+            if (!category) return;
+            
+            currentCategory = category;
+            const select = document.getElementById('subcategorySelect');
+            
+            select.innerHTML = '<option value="">중분류 선택</option>';
+            SUBCATEGORIES.forEach(sub => {
+                select.innerHTML += `<option value="${sub}">${sub}</option>`;
+            });
+            
+            document.getElementById('stylesGrid').innerHTML = '';
+        }
+        
+        // ========== 스타일 로드 ==========
+        async function loadStyles() {
+            const subcategory = document.getElementById('subcategorySelect').value;
+            if (!subcategory) return;
+            
+            currentSubcategory = subcategory;
+            const grid = document.getElementById('stylesGrid');
+            
+            grid.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            try {
+                const query = db.collection(COLLECTIONS.HAIRSTYLES)
+                    .where('gender', '==', currentGender)
+                    .where('mainCategory', '==', currentCategory)
+                    .where('subCategory', '==', currentSubcategory);
+                
+                const snapshot = await query.get();
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    html += `
+                        <div class="style-card">
+                            <div class="style-actions">
+                                <button class="action-btn" onclick="editStyle('${doc.id}')">✏️</button>
+                                <button class="action-btn delete" onclick="deleteStyle('${doc.id}')">🗑️</button>
+                            </div>
+                            <div class="style-image-container">
+                                ${data.imageUrl 
+                                    ? `<img class="style-image" src="${data.imageUrl}" alt="${data.name}" 
+                                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'no-image-text\\'>No Image</div>'">`
+                                    : '<div class="no-image-text">No Image</div>'
+                                }
+                            </div>
+                            <div class="style-info">
+                                <div class="style-code">${data.code || 'NO CODE'}</div>
+                                <div class="style-name">${data.name || '이름 없음'}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                grid.innerHTML = html || '<div style="text-align: center; color: #999;">스타일이 없습니다</div>';
+                
+            } catch (error) {
+                console.error('Load styles error:', error);
+                showToast('스타일 로드 실패: ' + error.message);
+                grid.innerHTML = '<div style="text-align: center; color: #ff4444;">로드 실패</div>';
+            }
+        }
+        
+        // ========== 스타일 추가 모달 ==========
+        function openAddStyleModal() {
+            if (!currentGender || !currentCategory || !currentSubcategory) {
+                showToast('먼저 카테고리를 선택하세요');
+                return;
+            }
+            
+            // 폼 초기화
+            document.getElementById('styleCode').value = '';
+            document.getElementById('styleName').value = '';
+            document.getElementById('styleImage').value = '';
+            document.getElementById('uploadPreview').style.display = 'none';
+            document.getElementById('autoCodeInfo').classList.add('show');
+            selectedFile = null;
+            
+            document.getElementById('addStyleModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('addStyleModal').classList.remove('active');
+        }
+        
+        // ========== 이미지 미리보기 ==========
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('파일 크기는 5MB 이하여야 합니다');
+                event.target.value = '';
+                return;
+            }
+            
+            selectedFile = file;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('uploadPreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // ========== 스타일 저장 (수정된 버전) ==========
+        async function saveStyle() {
+            let code = document.getElementById('styleCode').value.trim().toUpperCase();
+            const name = document.getElementById('styleName').value.trim();
+            
+            // 이름은 필수
+            if (!name) {
+                showToast('❌ 스타일 이름을 입력하세요');
+                return;
+            }
+            
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = '저장 중...';
+            
+            try {
+                // 코드가 비어있으면 자동 생성
+                if (!code) {
+                    console.log('🔄 자동 코드 생성 중...');
+                    code = await generateAutoCode();
+                    console.log('✅ 자동 생성된 코드:', code);
+                    showToast(`💡 자동 생성된 코드: ${code}`);
+                } else {
+                    // 코드가 입력된 경우 중복 체크
+                    console.log('🔍 중복 코드 검사 중...');
+                    
+                    const existing = await db.collection(COLLECTIONS.HAIRSTYLES)
+                        .where('code', '==', code)
+                        .get();
+                    
+                    if (!existing.empty) {
+                        showToast('❌ 이미 존재하는 코드입니다');
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = '저장';
+                        return;
+                    }
+                    
+                    console.log('✅ 중복 검사 통과');
+                }
+                
+                // 이미지 업로드
+                let imageUrl = '';
+                let uploadStatus = 'no-image';
+                
+                if (selectedFile) {
+                    console.log('📤 이미지 업로드 시도 중...');
+                    
+                    try {
+                        const storageRef = storage.ref();
+                        const fileName = `${code}_${Date.now()}.jpg`;
+                        const fileRef = storageRef.child(`hairstyles/${currentGender}/${fileName}`);
+                        
+                        const snapshot = await fileRef.put(selectedFile);
+                        imageUrl = await snapshot.ref.getDownloadURL();
+                        uploadStatus = 'success';
+                        console.log('✅ 이미지 업로드 성공!');
+                        
+                    } catch (error) {
+                        console.log('❌ 이미지 업로드 실패:', error.message);
+                        uploadStatus = 'upload-failed';
+                        imageUrl = '';
+                    }
+                }
+                
+                // Firestore에 스타일 정보 저장
+                console.log('💾 Firestore에 스타일 정보 저장 중...');
+                
+                const styleData = {
+                    code: code,
+                    name: name,
+                    gender: currentGender,
+                    mainCategory: currentCategory,
+                    subCategory: currentSubcategory,
+                    imageUrl: imageUrl,
+                    uploadStatus: uploadStatus,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    likes: 0,
+                    views: 0,
+                    isAutoGenerated: !document.getElementById('styleCode').value.trim() // 자동생성 여부 기록
+                };
+                
+                await db.collection(COLLECTIONS.HAIRSTYLES).add(styleData);
+                
+                console.log('✅ Firestore 저장 완료!');
+                
+                // 성공 메시지
+                let successMessage = '✅ 스타일 저장 완료!';
+                if (styleData.isAutoGenerated) {
+                    successMessage += ` (코드: ${code})`;
+                }
+                if (imageUrl) {
+                    successMessage += ' 이미지도 업로드됨!';
+                } else if (selectedFile) {
+                    successMessage += ' (이미지 업로드는 실패)';
+                }
+                
+                showToast(successMessage);
+                
+                closeModal();
+                loadStyles();
+                
+            } catch (error) {
+                console.error('❌ 저장 실패:', error);
+                showToast(`❌ 저장 실패: ${error.message}`);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '저장';
+            }
+        }
+        
+        // ========== 스타일 수정 ==========
+        async function editStyle(docId) {
+            try {
+                const doc = await db.collection(COLLECTIONS.HAIRSTYLES).doc(docId).get();
+                const data = doc.data();
+                
+                const newName = prompt('새 스타일 이름:', data.name);
+                if (!newName) return;
+                
+                const newCode = prompt('새 스타일 코드 (비워두면 현재 코드 유지):', data.code);
+                
+                const updateData = {
+                    name: newName,
+                    updatedAt: new Date()
+                };
+                
+                // 코드가 입력되고 기존과 다른 경우에만 업데이트
+                if (newCode && newCode.toUpperCase() !== data.code) {
+                    // 중복 체크
+                    const existing = await db.collection(COLLECTIONS.HAIRSTYLES)
+                        .where('code', '==', newCode.toUpperCase())
+                        .get();
+                    
+                    if (!existing.empty) {
+                        showToast('❌ 이미 존재하는 코드입니다');
+                        return;
+                    }
+                    
+                    updateData.code = newCode.toUpperCase();
+                }
+                
+                await db.collection(COLLECTIONS.HAIRSTYLES).doc(docId).update(updateData);
+                
+                showToast('✅ 수정 완료!');
+                loadStyles();
+            } catch (error) {
+                console.error('Edit error:', error);
+                showToast('❌ 수정 실패: ' + error.message);
+            }
+        }
+        
+        // ========== 스타일 삭제 ==========
+        async function deleteStyle(docId) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+            
+            try {
+                const doc = await db.collection(COLLECTIONS.HAIRSTYLES).doc(docId).get();
+                const data = doc.data();
+                
+                // Storage에서 이미지 삭제
+                if (data.imageUrl) {
+                    try {
+                        const imageRef = storage.refFromURL(data.imageUrl);
+                        await imageRef.delete();
+                    } catch (error) {
+                        console.error('Image delete error:', error);
+                    }
+                }
+                
+                // Firestore에서 삭제
+                await db.collection(COLLECTIONS.HAIRSTYLES).doc(docId).delete();
+                
+                showToast('✅ 삭제 완료!');
+                loadStyles();
+            } catch (error) {
+                console.error('Delete error:', error);
+                showToast('❌ 삭제 실패: ' + error.message);
+            }
+        }
+        
+        // ========== 고객 로드 ==========
+        async function loadCustomers() {
+            const table = document.getElementById('customersTable');
+            table.innerHTML = '<tr><td colspan="6" style="text-align: center;">로딩 중...</td></tr>';
+            
+            try {
+                const snapshot = await db.collection(COLLECTIONS.CUSTOMERS)
+                    .orderBy('registeredAt', 'desc')
+                    .limit(50)
+                    .get();
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.registeredAt ? new Date(data.registeredAt.toDate()).toLocaleDateString() : '-';
+                    
+                    html += `
+                        <tr>
+                            <td>${data.name || '-'}</td>
+                            <td>${data.phone || '-'}</td>
+                            <td>${data.styleName || '-'}</td>
+                            <td>${data.designer || '-'}</td>
+                            <td>${date}</td>
+                            <td>
+                                <button class="btn btn-danger" onclick="deleteCustomer('${doc.id}')" style="padding: 5px 10px; font-size: 12px;">삭제</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                table.innerHTML = html || '<tr><td colspan="6" style="text-align: center; color: #999;">등록된 고객이 없습니다</td></tr>';
+                
+            } catch (error) {
+                console.error('Load customers error:', error);
+                table.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ff4444;">로드 실패: ' + error.message + '</td></tr>';
+            }
+        }
+        
+        // ========== 고객 삭제 ==========
+        async function deleteCustomer(docId) {
+            if (!confirm('고객 정보를 삭제하시겠습니까?')) return;
+            
+            try {
+                await db.collection(COLLECTIONS.CUSTOMERS).doc(docId).delete();
+                showToast('✅ 고객 삭제 완료!');
+                loadCustomers();
+            } catch (error) {
+                console.error('Delete customer error:', error);
+                showToast('❌ 삭제 실패: ' + error.message);
+            }
+        }
+        
+        // ========== 통계 로드 ==========
+        async function loadStats() {
+            try {
+                // 전체 스타일
+                const stylesSnapshot = await db.collection(COLLECTIONS.HAIRSTYLES).get();
+                document.getElementById('totalStyles').textContent = stylesSnapshot.size;
+                
+                // 성별 분류
+                let maleCount = 0;
+                let femaleCount = 0;
+                
+                stylesSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.gender === 'male') maleCount++;
+                    if (data.gender === 'female') femaleCount++;
+                });
+                
+                document.getElementById('totalMale').textContent = maleCount;
+                document.getElementById('totalFemale').textContent = femaleCount;
+                
+                // 디자이너 통계
+                const designersSnapshot = await db.collection(COLLECTIONS.DESIGNERS).get();
+                document.getElementById('totalDesigners').textContent = designersSnapshot.size;
+                
+                // 총 토큰 수
+                let totalTokens = 0;
+                designersSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    totalTokens += data.tokens || 0;
+                });
+                document.getElementById('totalTokens').textContent = totalTokens.toLocaleString();
+                
+                // 전체 고객
+                try {
+                    const customersSnapshot = await db.collection(COLLECTIONS.CUSTOMERS).get();
+                    document.getElementById('totalCustomers').textContent = customersSnapshot.size;
+                } catch (error) {
+                    console.log('고객 통계 권한 없음 (정상):', error.message);
+                    document.getElementById('totalCustomers').textContent = '권한필요';
+                }
+                
+            } catch (error) {
+                console.error('통계 로드 실패:', error);
+                showToast('❌ 통계 로드 실패: ' + error.message);
+            }
+        }
+        
+        // ========== 데이터 초기화 ==========
+        async function initializeData() {
+            if (!confirm('카테고리 구조를 초기화하시겠습니까?\n(기존 스타일은 유지됩니다)')) return;
+            
+            showToast('초기화 중...');
+            
+            try {
+                // 메타데이터 저장
+                await db.collection(COLLECTIONS.METADATA).doc('categories').set({
+                    male: CATEGORIES.male,
+                    female: CATEGORIES.female,
+                    subcategories: SUBCATEGORIES,
+                    updatedAt: new Date(),
+                    updatedBy: 'admin'
+                });
+                
+                showToast('✅ 초기화 완료!');
+                
+            } catch (error) {
+                console.error('Initialize error:', error);
+                showToast('❌ 초기화 실패: ' + error.message);
+            }
+        }
+        
+        // ========== 모든 데이터 삭제 ==========
+        async function clearAllData() {
+            if (!confirm('⚠️ 정말 모든 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다!')) return;
+            if (!confirm('⚠️ 한번 더 확인합니다.\n정말로 삭제하시겠습니까?')) return;
+            
+            showToast('삭제 중...');
+            
+            try {
+                // 스타일 삭제
+                const styles = await db.collection(COLLECTIONS.HAIRSTYLES).get();
+                const batch1 = db.batch();
+                styles.forEach(doc => {
+                    batch1.delete(doc.ref);
+                });
+                await batch1.commit();
+                
+                // 고객 삭제
+                const customers = await db.collection(COLLECTIONS.CUSTOMERS).get();
+                const batch2 = db.batch();
+                customers.forEach(doc => {
+                    batch2.delete(doc.ref);
+                });
+                await batch2.commit();
+                
+                // 디자이너 삭제
+                const designers = await db.collection(COLLECTIONS.DESIGNERS).get();
+                const batch3 = db.batch();
+                designers.forEach(doc => {
+                    batch3.delete(doc.ref);
+                });
+                await batch3.commit();
+                
+                showToast('✅ 모든 데이터 삭제 완료!');
+                
+                // 화면 초기화
+                document.getElementById('stylesGrid').innerHTML = '';
+                loadStats();
+                refreshDesigners();
+                
+            } catch (error) {
+                console.error('Clear data error:', error);
+                showToast('❌ 삭제 실패: ' + error.message);
+            }
+        }
+        
+        // ========== 데이터 내보내기 ==========
+        async function exportData() {
+            showToast('데이터 준비 중...');
+            
+            try {
+                const styles = await db.collection(COLLECTIONS.HAIRSTYLES).get();
+                const customers = await db.collection(COLLECTIONS.CUSTOMERS).get();
+                const designers = await db.collection(COLLECTIONS.DESIGNERS).get();
+                
+                const data = {
+                    exportDate: new Date().toISOString(),
+                    styles: [],
+                    customers: [],
+                    designers: [],
+                    metadata: {}
+                };
+                
+                styles.forEach(doc => {
+                    data.styles.push({ id: doc.id, ...doc.data() });
+                });
+                
+                customers.forEach(doc => {
+                    data.customers.push({ id: doc.id, ...doc.data() });
+                });
+                
+                designers.forEach(doc => {
+                    data.designers.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // 메타데이터 가져오기
+                try {
+                    const defaultTokensDoc = await db.collection(COLLECTIONS.METADATA).doc('default_tokens').get();
+                    if (defaultTokensDoc.exists) {
+                        data.metadata.defaultTokens = defaultTokensDoc.data();
+                    }
+                } catch (error) {
+                    console.warn('메타데이터 가져오기 실패:', error);
+                }
+                
+                // JSON 파일 다운로드
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `hairgator_firebase_backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                
+                showToast('✅ 데이터 내보내기 완료!');
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                showToast('❌ 내보내기 실패: ' + error.message);
+            }
+        }
+        
+        // ========== 유틸리티 ==========
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // ========== 초기화 ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Admin page loaded with Firebase');
+            
+            // 통계 로드
+            loadStats();
+            
+            // 기본 토큰 설정 로드
+            loadDefaultTokens();
+            
+            // Firebase 연결 상태 재확인
+            setTimeout(checkFirebaseConnection, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HAIRGATOR - Professional Hair Style Menu</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HAIRGATOR">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- iOS 아이콘 설정 -->
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="assets/icons/icon-192.png">
+    
+    <!-- 파비콘 -->
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+    
+    <!-- 구글 폰트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- CSS 파일들 -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/login.css">
+    <link rel="stylesheet" href="styles/menu.css">
+</head>
+<body>
+    <!-- 로딩 화면 -->
+    <div id="loadingScreen" class="screen loading-screen">
+        <div class="loading-content">
+            <div class="logo">HAIRGATOR</div>
+            <div class="loading-spinner"></div>
+            <div class="loading-text">시스템 준비 중...</div>
+        </div>
+    </div>
+
+    <!-- 로그인 화면 -->
+    <div id="loginScreen" class="screen">
+        <div class="login-container">
+            <div class="logo-section">
+                <h1 class="logo">HAIRGATOR</h1>
+                <p class="subtitle">Professional Hair Style Menu</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="designerName">디자이너명</label>
+                    <input type="text" id="designerName" placeholder="이름을 입력하세요" required 
+                           minlength="2" maxlength="50" autocomplete="name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phoneNumber">전화번호 (뒤 4자리)</label>
+                    <input type="tel" id="phoneNumber" placeholder="0000" maxlength="4" required 
+                           pattern="[0-9]{4}" autocomplete="tel">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">비밀번호 (4자리)</label>
+                    <input type="password" id="password" placeholder="****" maxlength="4" required 
+                           pattern="[0-9]{4}" autocomplete="current-password">
+                </div>
+                
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <span class="btn-text">로그인</span>
+                    <span class="btn-loading" style="display: none;">
+                        <span class="spinner"></span> 로그인 중...
+                    </span>
+                </button>
+                
+                <div class="login-help">
+                    <p>처음 사용하시나요? 관리자에게 계정을 요청하세요.</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 성별 선택 화면 -->
+    <div id="genderSelection" class="screen">
+        <div class="gender-container">
+            <h2>고객 성별을 선택하세요</h2>
+            <div class="gender-buttons">
+                <button class="gender-btn male" data-gender="male" aria-label="남성 고객 메뉴">
+                    <span class="icon">👨</span>
+                    <span class="text">남성</span>
+                </button>
+                <button class="gender-btn female" data-gender="female" aria-label="여성 고객 메뉴">
+                    <span class="icon">👩</span>
+                    <span class="text">여성</span>
+                </button>
+            </div>
+            
+            <div class="theme-toggle" id="themeToggleBottom">
+                <span>다크 모드</span>
+                <span id="themeStatus">ON</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 메뉴 화면 -->
+    <div id="menuContainer" class="menu-container">
+        <header class="header">
+            <button class="back-btn" id="backBtn" aria-label="뒤로 가기">
+                <span>←</span>
+            </button>
+            <h1 class="logo">HAIRGATOR</h1>
+            <button class="menu-btn" id="menuBtn" aria-label="메뉴 열기">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </header>
+
+        <!-- 카테고리 탭 -->
+        <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="헤어스타일 카테고리"></div>
+        
+        <!-- 카테고리 설명 -->
+        <div class="category-description" id="categoryDescription"></div>
+        
+        <!-- 서브카테고리 탭 -->
+        <div class="subcategory-tabs" id="subcategoryTabs" role="tablist" aria-label="앞머리 길이"></div>
+        
+        <!-- 메뉴 그리드 -->
+        <div class="menu-grid" id="menuGrid" role="main" aria-label="헤어스타일 목록"></div>
+    </div>
+
+    <!-- 사이드바 -->
+    <div class="sidebar" id="sidebar" role="dialog" aria-label="메뉴">
+        <div class="sidebar-header">
+            <h3>메뉴</h3>
+            <button class="sidebar-close" id="sidebarClose" aria-label="메뉴 닫기">×</button>
+        </div>
+        
+        <div class="sidebar-content">
+            <div class="designer-info" id="designerInfo" style="display: none;">
+                <h4 id="designerNameDisplay">디자이너명</h4>
+                <p class="designer-status">로그인됨</p>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="theme-toggle" id="themeToggle">
+                    <span>다크 모드</span>
+                    <span id="themeStatusSidebar">ON</span>
+                </div>
+                
+                <button class="sidebar-btn" id="logoutBtn">로그아웃</button>
+                
+                <!-- 관리자 링크 (개발용) -->
+                <div class="admin-section" id="adminSection" style="display: none;">
+                    <hr>
+                    <a href="pages/admin/dashboard.html" target="_blank" class="admin-link">
+                        🔧 관리자 페이지
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로딩 오버레이 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p id="loadingText">로딩 중...</p>
+        </div>
+    </div>
+
+    <!-- 스타일 상세 모달 -->
+    <div class="modal" id="styleModal" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose" aria-label="닫기">×</button>
+            <div class="modal-body">
+                <img id="modalImage" class="modal-image" alt="헤어스타일 이미지">
+                <div class="modal-info">
+                    <h3 id="modalCode" class="modal-code"></h3>
+                    <h4 id="modalName" class="modal-name"></h4>
+                    <p id="modalDescription" class="modal-description"></p>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn btn-register" id="btnRegister">
+                        <span>👤</span>
+                        <span>고객 등록</span>
+                    </button>
+                    <button class="modal-btn btn-like" id="btnLike">
+                        <span id="likeIcon">♡</span>
+                        <span>좋아요</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 에러 토스트 -->
+    <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+    <!-- JavaScript 파일들 -->
+    <script src="scripts/core/firebase-config.js"></script>
+    <script src="scripts/core/auth.js"></script>
+    <script src="scripts/core/main.js"></script>
+    <script src="scripts/ui/menu.js"></script>
+
+    <!-- 초기화 스크립트 -->
+    <script>
+        // 앱 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 HAIRGATOR 앱 시작');
+            
+            // 로딩 화면 표시
+            const loadingScreen = document.getElementById('loadingScreen');
+            const loginScreen = document.getElementById('loginScreen');
+            
+            // 2초 후 로그인 화면으로 전환
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                loginScreen.classList.add('active');
+            }, 2000);
+        });
+
+        // 전역 에러 핸들러
+        window.addEventListener('error', function(event) {
+            console.error('전역 에러:', event.error);
+            if (window.ErrorHandler) {
+                window.ErrorHandler.logError(event.error, 'global', window.currentUser?.uid);
+            }
+        });
+
+        // Promise 에러 핸들러
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('처리되지 않은 Promise 에러:', event.reason);
+            if (window.ErrorHandler) {
+                window.ErrorHandler.logError(event.reason, 'promise', window.currentUser?.uid);
+            }
+        });
+    </script>
+</body>
+</html>
