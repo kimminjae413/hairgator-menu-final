@@ -137,6 +137,20 @@
     box-shadow: 0 0 20px rgba(255, 20, 147, 0.3);
 }
 
+/* ========== 입력 힌트 스타일 ========== */
+.input-hint {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    margin-top: 4px;
+    display: block;
+}
+
+/* 전화번호 입력 자동 포맷팅을 위한 스타일 */
+#phoneNumber {
+    font-family: 'Courier New', Consolas, monospace;
+    letter-spacing: 0.5px;
+}
+
 /* ========== 로그인 버튼 ========== */
 .login-btn {
     background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
@@ -390,6 +404,32 @@
 .logout-btn:hover {
     background: #FF1493;
     color: white;
+}
+
+/* ========== Empty State (추가) ========== */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.empty-message {
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 /* ========== 애니메이션 ========== */
