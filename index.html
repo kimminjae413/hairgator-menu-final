@@ -971,6 +971,29 @@
             font-size: 12px;
         }
 
+        .ai-camera-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .ai-camera-btn {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .ai-camera-btn:hover {
+            background: #444;
+            transform: translateY(-1px);
+        }
+
         .ai-preview-area {
             display: none;
             margin-bottom: 20px;
@@ -1076,6 +1099,76 @@
                 opacity: 1;
                 transform: translateY(0) scale(1);
             }
+        }
+
+        /* 카메라 모달 */
+        .camera-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 7000;
+            padding: 20px;
+        }
+
+        .camera-modal.active {
+            display: flex;
+        }
+
+        .camera-modal-content {
+            background: #111;
+            border: 2px solid var(--ai-color);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .camera-video {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .camera-canvas {
+            display: none;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .camera-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .camera-btn.capture {
+            background: var(--ai-color);
+            color: white;
+        }
+
+        .camera-btn.cancel {
+            background: #666;
+            color: white;
+        }
+
+        .camera-btn:hover {
+            transform: translateY(-2px);
         }
 
         /* 반응형 - 태블릿 우선 최적화 */
@@ -1206,6 +1299,15 @@
 
             .ai-arrow {
                 transform: rotate(90deg);
+            }
+
+            .ai-camera-options {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .ai-camera-btn {
+                width: 100%;
             }
         }
         
@@ -1406,6 +1508,12 @@
                         <div class="ai-upload-text">얼굴 사진 업로드</div>
                         <div class="ai-upload-hint">JPG, PNG 파일 지원 (최대 10MB)</div>
                         <input type="file" id="aiFileInput" accept="image/*" style="display: none;">
+                        
+                        <!-- 카메라 및 갤러리 옵션 -->
+                        <div class="ai-camera-options">
+                            <button class="ai-camera-btn" id="cameraBtn">📷 카메라</button>
+                            <button class="ai-camera-btn" id="galleryBtn">🖼️ 갤러리</button>
+                        </div>
                     </div>
                     
                     <!-- 미리보기 영역 -->
@@ -1437,6 +1545,21 @@
                             AI 처리 시작 (5토큰)
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 카메라 모달 -->
+        <div class="camera-modal" id="cameraModal">
+            <div class="camera-modal-content">
+                <h3 style="color: white; margin-bottom: 20px;">📷 사진 촬영</h3>
+                
+                <video class="camera-video" id="cameraVideo" autoplay muted playsinline></video>
+                <canvas class="camera-canvas" id="cameraCanvas"></canvas>
+                
+                <div class="camera-controls">
+                    <button class="camera-btn capture" id="captureBtn">📸 촬영</button>
+                    <button class="camera-btn cancel" id="closeCameraBtn">취소</button>
                 </div>
             </div>
         </div>
@@ -1475,12 +1598,10 @@
         console.log('✅ Firebase 초기화 완료');
     </script>
 
-    <!-- 토큰 시스템 -->
-    <script src="token-system.js"></script>
-    <!-- AKOOL 서비스 -->
-    <script src="akool-service.js"></script>
-    <!-- 메뉴 시스템 -->
-    <script src="menu.js"></script>
+    <!-- 🔧 수정된 스크립트 경로들 -->
+    <script src="js/token-system.js"></script>
+    <script src="js/akool-service.js"></script>
+    <script src="js/menu.js"></script>
 
     <script>
         // 전역 변수
@@ -1491,6 +1612,12 @@
         let currentCategory = null;
         let currentSubcategory = 'None';
         let currentStyleData = null; // 현재 선택된 스타일 데이터
+        
+        // 카메라 관련 변수
+        let cameraStream = null;
+        let cameraVideo = null;
+        let cameraCanvas = null;
+        let cameraContext = null;
         
         // 스마트 필터링 & NEW 시스템
         let availableSubcategories = new Map();
@@ -1543,6 +1670,13 @@
         const stylePhoto = document.getElementById('stylePhoto');
         const aiProcessing = document.getElementById('aiProcessing');
         const processAIBtn = document.getElementById('processAIBtn');
+
+        // 카메라 관련 DOM 요소
+        const cameraModal = document.getElementById('cameraModal');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const galleryBtn = document.getElementById('galleryBtn');
+        const closeCameraBtn = document.getElementById('closeCameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
 
         // 🔥 스마트 필터링 & NEW 표시 시스템
         
@@ -1599,6 +1733,107 @@
             const indicator = document.createElement('div');
             indicator.className = 'new-indicator';
             return indicator;
+        }
+
+        // 🎥 카메라 기능들
+        
+        // 카메라 초기화
+        async function initCamera() {
+            try {
+                // 카메라 스트림 요청
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'user', // 전면 카메라 우선
+                        width: { ideal: 400 },
+                        height: { ideal: 300 }
+                    }
+                });
+
+                cameraVideo = document.getElementById('cameraVideo');
+                cameraCanvas = document.getElementById('cameraCanvas');
+                cameraContext = cameraCanvas.getContext('2d');
+
+                // 비디오에 스트림 연결
+                cameraVideo.srcObject = cameraStream;
+                
+                // 카메라 모달 표시
+                cameraModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+
+                console.log('✅ 카메라 초기화 성공');
+
+            } catch (error) {
+                console.error('❌ 카메라 초기화 실패:', error);
+                
+                let errorMessage = '카메라에 접근할 수 없습니다.';
+                if (error.name === 'NotAllowedError') {
+                    errorMessage = '카메라 권한이 거부되었습니다. 브라우저 설정에서 카메라 권한을 허용해주세요.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage = '카메라를 찾을 수 없습니다.';
+                } else if (error.name === 'NotSupportedError') {
+                    errorMessage = '이 브라우저는 카메라 기능을 지원하지 않습니다.';
+                }
+                
+                showToast(errorMessage, 'error');
+            }
+        }
+
+        // 카메라 종료
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            
+            if (cameraVideo) {
+                cameraVideo.srcObject = null;
+            }
+            
+            cameraModal.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            console.log('✅ 카메라 종료');
+        }
+
+        // 사진 촬영
+        function capturePhoto() {
+            if (!cameraVideo || !cameraCanvas || !cameraContext) {
+                showToast('카메라가 준비되지 않았습니다', 'error');
+                return;
+            }
+
+            try {
+                // 캔버스 크기를 비디오 크기에 맞춤
+                cameraCanvas.width = cameraVideo.videoWidth;
+                cameraCanvas.height = cameraVideo.videoHeight;
+
+                // 비디오 프레임을 캔버스에 그리기
+                cameraContext.drawImage(cameraVideo, 0, 0);
+
+                // 캔버스를 Blob으로 변환
+                cameraCanvas.toBlob(function(blob) {
+                    // File 객체 생성
+                    const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+                    
+                    // FileList 생성 (파일 입력과 동일한 형태)
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    aiFileInput.files = dataTransfer.files;
+                    
+                    // 파일 변경 이벤트 발생
+                    aiFileInput.dispatchEvent(new Event('change'));
+                    
+                    // 카메라 종료
+                    stopCamera();
+                    
+                    showToast('사진이 촬영되었습니다', 'success');
+                    
+                }, 'image/jpeg', 0.8);
+
+            } catch (error) {
+                console.error('사진 촬영 오류:', error);
+                showToast('사진 촬영에 실패했습니다', 'error');
+            }
         }
 
         // Firebase 인증 시스템
@@ -1972,7 +2207,24 @@
             input.setSelectionRange(cursorPos + diff, cursorPos + diff);
         });
 
-        // 파일 업로드 이벤트
+        // 카메라 및 파일 업로드 이벤트
+        cameraBtn.addEventListener('click', function() {
+            initCamera();
+        });
+
+        galleryBtn.addEventListener('click', function() {
+            aiFileInput.click();
+        });
+
+        closeCameraBtn.addEventListener('click', function() {
+            stopCamera();
+        });
+
+        captureBtn.addEventListener('click', function() {
+            capturePhoto();
+        });
+
+        // 기존 파일 업로드 이벤트 (갤러리용)
         aiUploadArea.addEventListener('click', () => {
             aiFileInput.click();
         });
@@ -2424,7 +2676,7 @@
 
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🦎 HAIRGATOR x AKOOL 시작 - AI 체험 기능 통합 완료');
+            console.log('🦎 HAIRGATOR x AKOOL 시작 - AI 체험 + 카메라 기능 통합 완료');
             
             loginScreen.style.display = 'flex';
             updateUserInfo();
@@ -2451,11 +2703,20 @@
                     closeAIExperience();
                 }
             });
+
+            // 카메라 모달 닫기 이벤트
+            cameraModal.addEventListener('click', function(e) {
+                if (e.target === cameraModal) {
+                    stopCamera();
+                }
+            });
             
             // ESC 키로 모달 닫기
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
-                    if (aiExperienceModal.classList.contains('active')) {
+                    if (cameraModal.classList.contains('active')) {
+                        stopCamera();
+                    } else if (aiExperienceModal.classList.contains('active')) {
                         closeAIExperience();
                     } else if (styleModal.classList.contains('active')) {
                         closeStyleModal();
