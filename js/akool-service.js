@@ -129,6 +129,9 @@ class AkoolFirebaseService {
             
             if (data.error_code === 0) {
                 console.log('얼굴 탐지 성공');
+                console.log('landmarks 타입:', typeof data.landmarks_str[0]);
+                console.log('landmarks 값:', data.landmarks_str[0]);
+                
                 return {
                     success: true,
                     landmarks: data.landmarks_str[0],
@@ -184,8 +187,38 @@ class AkoolFirebaseService {
 
             showToast('AI 합성 처리 중...', 'info');
             
-            // 4. Face Swap 실행
+            // 4. Face Swap 실행 - 여러 형식으로 시도
             const token = await this.getToken();
+            
+            // landmarks가 문자열인지 확인하고 적절히 처리
+            let customerOpts = customerFace.landmarks;
+            let styleOpts = styleFace.landmarks;
+            
+            // 문자열이면 JSON으로 파싱 시도
+            if (typeof customerOpts === 'string') {
+                try {
+                    customerOpts = JSON.parse(customerOpts);
+                } catch (e) {
+                    // 파싱 실패하면 문자열 그대로 사용
+                    console.log('customerOpts를 문자열로 사용');
+                }
+            }
+            
+            if (typeof styleOpts === 'string') {
+                try {
+                    styleOpts = JSON.parse(styleOpts);
+                } catch (e) {
+                    // 파싱 실패하면 문자열 그대로 사용
+                    console.log('styleOpts를 문자열로 사용');
+                }
+            }
+            
+            console.log('Face Swap 요청 데이터:', {
+                customerImageUrl,
+                styleImageUrl,
+                customerOptsType: typeof customerOpts,
+                styleOptsType: typeof styleOpts
+            });
             
             const response = await fetch(`${this.baseURL}/faceswap/highquality/specifyimage`, {
                 method: 'POST',
@@ -196,12 +229,11 @@ class AkoolFirebaseService {
                 body: JSON.stringify({
                     sourceImage: [{
                         path: customerImageUrl,
-                        opts: customerFace.landmarks
-                        opts: customerFace.landmarks
+                        opts: customerOpts
                     }],
                     targetImage: [{
                         path: styleImageUrl,
-                        opts: styleFace.landmarks
+                        opts: styleOpts
                     }],
                     face_enhance: 1, // 얼굴 향상 활성화
                     modifyImage: styleImageUrl,
@@ -210,12 +242,13 @@ class AkoolFirebaseService {
             });
 
             const data = await response.json();
+            console.log('Face Swap API 응답:', data);
             
             if (data.code === 1000) {
                 console.log('Face Swap 요청 성공:', data.data);
                 return await this.waitForResult(data.data._id, data.data.job_id);
             } else {
-                throw new Error(`Face Swap 실패: ${data.msg}`);
+                throw new Error(`Face Swap 실패: ${data.msg || data.message || '알 수 없는 오류'}`);
             }
         } catch (error) {
             console.error('Face Swap 오류:', error);
@@ -336,7 +369,6 @@ function createAIResultModal() {
 }
 
 // ========== Face Swap 기능 함수들 ==========
-// ❌ 중복 선언 제거: let currentStyleData = null;
 
 // AI 체험 시작
 function startAIExperience() {
