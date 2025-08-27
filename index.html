@@ -2050,7 +2050,8 @@
             const sessionStatus = document.getElementById('sessionStatusDisplay');
             const currentTokensDisplay = document.getElementById('currentTokens');
 
-            if (currentDesigner) {
+            // currentDesigner는 menu.js에서 전역변수로 선언됨
+            if (typeof currentDesigner !== 'undefined' && currentDesigner) {
                 userInfo.style.display = 'block';
                 guestMessage.style.display = 'none';
                 
@@ -2081,7 +2082,8 @@
 
         // AI 체험 기능들
         function startAIExperience() {
-            if (!currentDesigner) {
+            // currentDesigner는 menu.js에서 전역변수로 선언됨
+            if (typeof currentDesigner === 'undefined' || !currentDesigner) {
                 showToast('로그인이 필요합니다', 'error');
                 return;
             }
@@ -2091,7 +2093,8 @@
                 return;
             }
 
-            if (!currentStyleData) {
+            // currentStyleData도 menu.js에서 관리되는지 확인 필요
+            if (typeof currentStyleData === 'undefined' || !currentStyleData) {
                 showToast('스타일 정보를 불러올 수 없습니다', 'error');
                 return;
             }
@@ -2120,12 +2123,13 @@
         }
 
         async function processAI() {
-            if (!currentDesigner || currentDesigner.tokens < 5) {
+            // 변수 존재 여부 확인
+            if (typeof currentDesigner === 'undefined' || !currentDesigner || currentDesigner.tokens < 5) {
                 showToast('토큰이 부족합니다', 'error');
                 return;
             }
 
-            if (!aiFileInput.files[0] || !currentStyleData) {
+            if (!aiFileInput.files[0] || (typeof currentStyleData === 'undefined' || !currentStyleData)) {
                 showToast('필수 정보가 누락되었습니다', 'error');
                 return;
             }
