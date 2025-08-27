@@ -1300,23 +1300,20 @@
         }
 
         // 4. 즉시 메뉴 데이터 로드 (0ms 지연)
-        async function loadMenuData(gender) {
+        function loadMenuData(gender) {
             // UI 즉시 렌더링
             const menuData = MENU_DATA[gender];
-            await renderCategories(gender, menuData.categories);
+            renderCategories(gender, menuData.categories);
+            renderSubcategories(gender, menuData.subcategories);
             
-            // 첫 번째 카테고리의 사용 가능한 서브카테고리 확인
+            // 첫 번째 카테고리 즉시 로드
             if (menuData.categories.length > 0) {
                 const firstCategory = menuData.categories[0];
                 currentCategory = firstCategory;
+                currentSubcategory = 'None'; // 기본값으로 시작
                 
-                const subInfo = await checkAvailableSubcategories(gender, firstCategory.name);
-                await renderSubcategories(gender, menuData.subcategories, subInfo);
-                
-                // 첫 번째 사용 가능한 서브카테고리로 즉시 로드
-                const firstAvailableSub = subInfo.available[0] || 'None';
-                currentSubcategory = firstAvailableSub;
-                loadStylesInstant(firstCategory.name, firstAvailableSub, gender);
+                // 캐시된 데이터가 있으면 즉시 표시, 없으면 Firebase 조회
+                loadStylesInstant(firstCategory.name, 'None', gender);
             }
             
             // 백그라운드에서 전체 데이터 로딩 (사용자 경험에 영향 없음)
@@ -1492,70 +1489,53 @@
             `;
         }
 
-        // 카테고리 탭 렌더링 (NEW 표시 포함)
-        async function renderCategories(gender, categories) {
+        // 카테고리 탭 렌더링 (일단 기본 렌더링, NEW는 백그라운드에서 추가)
+        function renderCategories(gender, categories) {
             const categoryTabs = document.getElementById('categoryTabs');
             categoryTabs.innerHTML = '';
             
-            for (let i = 0; i < categories.length; i++) {
-                const category = categories[i];
+            categories.forEach((category, index) => {
                 const tab = document.createElement('button');
                 tab.className = 'category-tab';
                 tab.textContent = category.name;
                 tab.dataset.categoryId = category.id;
                 
-                // 해당 카테고리에 새 스타일이 있는지 확인
-                const subInfo = await checkAvailableSubcategories(gender, category.name);
-                const hasNewItems = Object.keys(subInfo.newCounts).length > 0;
-                
-                if (hasNewItems) {
-                    const newIndicator = document.createElement('div');
-                    newIndicator.className = 'new-indicator';
-                    tab.appendChild(newIndicator);
-                }
-                
-                if (i === 0) {
+                if (index === 0) {
                     tab.classList.add('active', gender);
                 }
                 
                 tab.addEventListener('click', () => selectCategory(category, gender));
                 categoryTabs.appendChild(tab);
-            }
+                
+                // 백그라운드에서 NEW 표시 추가
+                checkAvailableSubcategories(gender, category.name).then(subInfo => {
+                    const hasNewItems = Object.keys(subInfo.newCounts).length > 0;
+                    if (hasNewItems && !tab.querySelector('.new-indicator')) {
+                        const newIndicator = document.createElement('div');
+                        newIndicator.className = 'new-indicator';
+                        tab.appendChild(newIndicator);
+                    }
+                });
+            });
         }
 
-        // 서브카테고리 탭 렌더링 (스마트 필터링 + NEW 표시)
-        async function renderSubcategories(gender, allSubcategories, subInfo) {
+        // 서브카테고리 탭 렌더링 (기본 렌더링)
+        function renderSubcategories(gender, subcategories) {
             const subTabs = document.getElementById('subTabs');
             subTabs.innerHTML = '';
             
-            allSubcategories.forEach((subcategory, index) => {
+            subcategories.forEach((subcategory, index) => {
                 const tab = document.createElement('button');
                 tab.className = 'sub-tab';
                 tab.textContent = subcategory;
                 tab.dataset.subcategory = subcategory;
                 
-                // 사용 가능한 서브카테고리만 활성화
-                const isAvailable = subInfo.available.includes(subcategory);
-                
-                if (!isAvailable) {
-                    tab.classList.add('disabled');
-                } else {
-                    // NEW 표시 (해당 서브카테고리에 새 스타일이 있는 경우)
-                    if (subInfo.newCounts[subcategory] > 0) {
-                        const newIndicator = document.createElement('div');
-                        newIndicator.className = 'new-indicator';
-                        tab.appendChild(newIndicator);
-                    }
-                    
-                    // 첫 번째 사용 가능한 서브카테고리를 활성화
-                    if (subInfo.available[0] === subcategory) {
-                        tab.classList.add('active', gender);
-                        currentSubcategory = subcategory;
-                    }
-                    
-                    tab.addEventListener('click', () => selectSubcategory(subcategory, gender));
+                if (index === 0) {
+                    tab.classList.add('active', gender);
+                    currentSubcategory = subcategory;
                 }
                 
+                tab.addEventListener('click', () => selectSubcategory(subcategory, gender));
                 subTabs.appendChild(tab);
             });
         }
