@@ -914,17 +914,17 @@
                 <form class="login-form" id="loginForm">
                     <div class="form-group">
                         <label for="designerName">디자이너명</label>
-                        <input type="text" id="designerName" placeholder="이름을 입력하세요" required>
+                        <input type="text" id="designerName" name="name" placeholder="이름을 입력하세요" required>
                     </div>
                     
                     <div class="form-group">
                         <label for="phoneNumber">전화번호</label>
-                        <input type="tel" id="phoneNumber" placeholder="010-1234-5678" maxlength="13" required>
+                        <input type="tel" id="phoneNumber" name="phone" placeholder="010-1234-5678" maxlength="13" required>
                     </div>
                     
                     <div class="form-group">
                         <label for="password">비밀번호 (4자리)</label>
-                        <input type="password" id="password" placeholder="****" maxlength="4" required>
+                        <input type="password" id="password" name="password" placeholder="****" maxlength="4" required>
                     </div>
                     
                     <button type="submit" class="login-btn">로그인</button>
@@ -1181,7 +1181,16 @@
                     const phone = phoneInput.value ? phoneInput.value.trim() : '';
                     const password = passwordInput.value ? passwordInput.value.trim() : '';
                     
-                    console.log('입력값:', { 
+                    console.log('DOM 요소 값 확인:', {
+                        nameInputValue: nameInput.value,
+                        phoneInputValue: phoneInput.value, 
+                        passwordInputValue: passwordInput.value,
+                        nameInputHTML: nameInput.outerHTML,
+                        phoneInputHTML: phoneInput.outerHTML,
+                        passwordInputHTML: passwordInput.outerHTML
+                    });
+                    
+                    console.log('처리된 입력값:', { 
                         name: `"${name}"`, 
                         phone: `"${phone}"`, 
                         password: `"${password}"`,
@@ -1190,12 +1199,38 @@
                         passwordLength: password.length
                     });
                     
-                    // 기본 검증
-                    if (!name || phone.length < 10 || password.length !== 4) {
+                    // 디버깅을 위한 입력 필드 직접 확인
+                    console.log('폼 전체 데이터:', new FormData(loginForm));
+                    
+                    // 다른 방법으로 값 가져오기 시도
+                    const formData = new FormData(loginForm);
+                    const nameFromForm = formData.get('name') || '';
+                    const phoneFromForm = formData.get('phone') || '';
+                    const passwordFromForm = formData.get('password') || '';
+                    
+                    console.log('FormData에서 가져온 값:', {
+                        nameFromForm,
+                        phoneFromForm,
+                        passwordFromForm
+                    });
+                    
+                    // 최종 값 결정 (DOM 값 우선, FormData 백업)
+                    const finalName = name || nameFromForm || '';
+                    const finalPhone = phone || phoneFromForm || '';
+                    const finalPassword = password || passwordFromForm || '';
+                    
+                    console.log('최종 사용할 값:', {
+                        finalName,
+                        finalPhone, 
+                        finalPassword
+                    });
+                    
+                    // 기본 검증 (최종 값 사용)
+                    if (!finalName || finalPhone.length < 10 || finalPassword.length !== 4) {
                         let errorMsg = '';
-                        if (!name) errorMsg += '이름을 입력해주세요. ';
-                        if (phone.length < 10) errorMsg += '전화번호를 정확히 입력해주세요. ';
-                        if (password.length !== 4) errorMsg += '비밀번호는 4자리여야 합니다. ';
+                        if (!finalName) errorMsg += '이름을 입력해주세요. ';
+                        if (finalPhone.length < 10) errorMsg += '전화번호를 정확히 입력해주세요. ';
+                        if (finalPassword.length !== 4) errorMsg += '비밀번호는 4자리여야 합니다. ';
                         
                         console.log('검증 실패:', errorMsg);
                         showToast(errorMsg);
@@ -1213,8 +1248,8 @@
                     }
 
                     try {
-                        // 간단한 로그인 (Firebase 오류 무시)
-                        await handleSuccessfulLogin(name, phone, password, true);
+                        // 간단한 로그인 (최종 값 사용)
+                        await handleSuccessfulLogin(finalName, finalPhone, finalPassword, true);
                     } catch (error) {
                         console.error('로그인 오류:', error);
                         showToast('로그인 중 오류가 발생했습니다');
