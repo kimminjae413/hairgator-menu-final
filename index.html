@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HAIRGATOR - Professional Hair Style Menu</title>
-    <meta name="description" content="전문 헤어샵을 위한 디지털 메뉴 시스템">
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000">
@@ -16,239 +15,972 @@
     <link rel="manifest" href="manifest.json">
     
     <!-- Icons -->
-    <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="assets/icons/icon-192.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon-192.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="assets/icons/icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
-    <!-- CSS Files -->
-    <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/login.css">
-    <link rel="stylesheet" href="styles/menu.css">
+    <!-- CSS Styles -->
+    <style>
+        /* 🦎 HAIRGATOR - 완전한 CSS 스타일 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        :root {
+            --primary-dark: #000000;
+            --primary-light: #ffffff;
+            --male-color: #4A90E2;
+            --female-color: #E91E63;
+            --text-primary: #ffffff;
+            --text-secondary: #999999;
+            --border-color: #222222;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--primary-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            min-height: 100vh;
+        }
+
+        body.light-theme {
+            --primary-dark: #ffffff;
+            --primary-light: #000000;
+            --text-primary: #000000;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+        }
+
+        /* ========== 로딩 오버레이 ========== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #333;
+            border-top: 4px solid #E91E63;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ========== 로그인 화면 ========== */
+        .login-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .login-screen.active {
+            display: flex;
+        }
+
+        .login-container {
+            background: #1a1a1a;
+            border: 2px solid #FF1493;
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(255, 20, 147, 0.2);
+        }
+
+        .login-title {
+            color: #FF1493;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: rgba(255, 20, 147, 0.1);
+            border: 1px solid #FF1493;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .info-box strong {
+            color: #FF1493;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .form-group input {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 12px;
+            color: #fff;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #FF1493;
+        }
+
+        .login-btn {
+            background: #FF1493;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            background: #FF69B4;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 20, 147, 0.4);
+        }
+
+        /* ========== 성별 선택 (기존 디자인 복원) ========== */
+        .gender-selection {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .gender-selection.active {
+            display: flex;
+        }
+
+        /* 컨테이너 - 가로 배치 */
+        .gender-container {
+            display: flex;
+            gap: 100px;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* 성별 옵션 - 심플한 디자인 */
+        .gender-option {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .gender-option:hover {
+            transform: scale(1.1);
+        }
+
+        /* 성별 아이콘 - 원형 버튼 */
+        .gender-icon {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 70px;
+            color: white;
+            margin: 0 auto 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s;
+        }
+
+        .gender-option.male .gender-icon {
+            background: linear-gradient(135deg, #4A90E2, #357ABD);
+        }
+
+        .gender-option.female .gender-icon {
+            background: linear-gradient(135deg, #FF1493, #FF69B4);
+        }
+
+        .gender-option:hover .gender-icon {
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
+        }
+
+        /* 성별 텍스트 */
+        .gender-text .ko {
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .gender-text .en {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 1px;
+        }
+
+        /* 모바일 세로 모드 - 위아래 배치 */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .gender-container {
+                flex-direction: column;
+                gap: 60px;
+            // 전화번호 자동 하이픈 포맷팅 추가
+            const phoneInput = document.getElementById('phoneNumber');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/[^0-9]/g, '');
+                    
+                    if (value.length >= 3 && value.length <= 7) {
+                        value = value.replace(/(\d{3})(\d{1,4})/, '$1-$2');
+                    } else if (value.length >= 8) {
+                        value = value.replace(/(\d{3})(\d{4})(\d{1,4})/, '$1-$2-$3');
+                    }
+                    
+                    e.target.value = value;
+                });
+                
+                // 붙여넣기 시에도 포맷팅 적용
+                phoneInput.addEventListener('paste', function(e) {
+                    setTimeout(() => {
+                        let value = e.target.value.replace(/[^0-9]/g, '');
+                        if (value.length >= 8) {
+                            value = value.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+                        } else if (value.length >= 3) {
+                            value = value.replace(/(\d{3})(\d{1,4})/, '$1-$2');
+                        }
+                        e.target.value = value;
+                    }, 10);
+                });
+            }
+            
+            .gender-icon {
+                width: 130px;
+                height: 130px;
+                font-size: 55px;
+            }
+            
+            .gender-text .ko {
+                font-size: 26px;
+            }
+            
+            .gender-text .en {
+                font-size: 14px;
+            }
+        }
+
+        /* 태블릿 가로 모드 - 좌우 배치 유지 */
+        @media (min-width: 769px) and (orientation: landscape) {
+            .gender-container {
+                flex-direction: row;
+            }
+        }
+
+        /* 작은 화면 최적화 */
+        @media (max-height: 600px) {
+            .gender-icon {
+                width: 120px;
+                height: 120px;
+                font-size: 50px;
+                margin-bottom: 15px;
+            }
+            
+            .gender-text .ko {
+                font-size: 24px;
+            }
+        }
+
+        /* ========== 헤더 ========== */
+        .header {
+            position: fixed;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 15px;
+            z-index: 1000;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 15px;
+            width: 30px;
+            height: 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 24px;
+            transition: transform 0.2s ease;
+        }
+
+        .back-btn:active {
+            transform: scale(0.9);
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+        }
+
+        .menu-btn {
+            position: absolute;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .menu-btn span {
+            width: 20px;
+            height: 2px;
+            background: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        /* ========== 사이드바 ========== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background: #1a1a1a;
+            z-index: 2000;
+            transition: right 0.3s ease;
+            padding: 20px;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar.active {
+            right: 0;
+        }
+
+        .sidebar-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .sidebar-title {
+            color: #E91E63;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            margin-top: 50px;
+        }
+
+        .theme-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 10px;
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 10px 0;
+        }
+
+        .theme-toggle span {
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .theme-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: #444;
+            border-radius: 12px;
+            transition: background 0.3s;
+        }
+
+        .theme-switch::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        /* ========== 메인 콘텐츠 ========== */
+        .main-content {
+            padding-top: 80px;
+            min-height: 100vh;
+        }
+
+        /* ========== 메뉴 컨테이너 ========== */
+        .menu-container {
+            display: none;
+            padding: 0 15px;
+        }
+
+        .menu-container.active {
+            display: block;
+        }
+
+        /* 카테고리 탭 */
+        .category-tabs-wrapper {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 0 0 15px 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .category-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-tab {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .category-tab:hover {
+            border-color: #666;
+        }
+
+        .category-tab.active.male {
+            background: var(--male-color);
+            border-color: var(--male-color);
+            color: white;
+        }
+
+        .category-tab.active.female {
+            background: var(--female-color);
+            border-color: var(--female-color);
+            color: white;
+        }
+
+        .category-tab.help-tab {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #E91E63;
+            font-weight: bold;
+            min-width: 35px;
+        }
+
+        /* 카테고리 설명 */
+        .category-description {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border-left: 4px solid #E91E63;
+        }
+
+        /* 서브카테고리 */
+        .subcategory-wrapper {
+            margin-bottom: 20px;
+        }
+
+        .subcategory-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+        }
+
+        .subcategory-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .subcategory-tab {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .subcategory-tab.active.male {
+            background: var(--male-color);
+            border-color: var(--male-color);
+            color: white;
+        }
+
+        .subcategory-tab.active.female {
+            background: var(--female-color);
+            border-color: var(--female-color);
+            color: white;
+        }
+
+        /* 메뉴 그리드 */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 15px 0;
+        }
+
+        @media (min-width: 768px) {
+            .menu-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
+        }
+
+        .menu-item {
+            position: relative;
+            aspect-ratio: 3/4;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            background: #1a1a1a;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-item:active {
+            transform: translateY(-2px);
+        }
+
+        .menu-item-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* ========== 모달 ========== */
+        .style-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 20px;
+        }
+
+        .style-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 15px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .modal-info {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .modal-code {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .modal-name {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-register {
+            background: var(--male-color);
+            color: white;
+        }
+
+        .btn-register.female {
+            background: var(--female-color);
+        }
+
+        .btn-like {
+            background: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-like.active {
+            background: #e74c3c;
+        }
+
+        /* ========== 하단 테마 토글 ========== */
+        .theme-toggle-bottom {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            border-radius: 25px;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .theme-toggle-bottom span {
+            color: white;
+            font-size: 12px;
+        }
+
+        /* ========== 반응형 ========== */
+        @media (max-width: 768px) {
+            .gender-selection {
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            .gender-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 40px;
+            }
+
+            .gender-label {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .gender-icon {
+                width: 90px;
+                height: 90px;
+                font-size: 35px;
+                margin-bottom: 15px;
+            }
+        }
+
+        /* ========== 토스트 애니메이션 ========== */
+        @keyframes toastSlideIn {
+            from { 
+                transform: translateX(-50%) translateY(-20px); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateX(-50%) translateY(0); 
+                opacity: 1; 
+            }
+        }
+        
+        @keyframes toastSlideOut {
+            from { 
+                transform: translateX(-50%) translateY(0); 
+                opacity: 1; 
+            }
+            to { 
+                transform: translateX(-50%) translateY(-20px); 
+                opacity: 0; 
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <!-- 로딩 화면 -->
-    <div id="loadingScreen" class="screen loading-screen">
-        <div class="loading-content">
-            <div class="logo">HAIRGATOR</div>
-            <div class="loading-spinner"></div>
-            <div class="loading-text">시스템 준비 중...</div>
-        </div>
-    </div>
-
-    <!-- 로그인 화면 -->
-    <div id="loginScreen" class="screen">
-        <div class="login-container">
-            <div class="logo-section">
-                <h1 class="logo">HAIRGATOR</h1>
-                <p class="subtitle">Professional Hair Style Menu</p>
-            </div>
-            
-            <form id="loginForm" class="login-form">
-                <div class="form-group">
-                    <label for="designerName">디자이너명</label>
-                    <input type="text" id="designerName" placeholder="이름을 입력하세요" required 
-                           minlength="2" maxlength="50" autocomplete="name">
-                </div>
-                
-                <div class="form-group">
-                    <label for="phoneNumber">전화번호</label>
-                    <input type="tel" id="phoneNumber" placeholder="010-1234-5678" maxlength="13" required 
-                           pattern="^010-[0-9]{4}-[0-9]{4}$" autocomplete="tel">
-                    <small class="input-hint">형식: 010-1234-5678</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">비밀번호 (4자리)</label>
-                    <input type="password" id="password" placeholder="****" maxlength="4" required 
-                           pattern="[0-9]{4}" autocomplete="current-password">
-                </div>
-                
-                <button type="submit" class="login-btn" id="loginBtn">
-                    <span class="btn-text">로그인</span>
-                    <span class="btn-loading" style="display: none;">
-                        <span class="spinner"></span> 로그인 중...
-                    </span>
-                </button>
-                
-                <div class="login-help">
-                    <p>처음 사용하시나요? 관리자에게 계정을 요청하세요.</p>
-                    <div class="help-links">
-                        <button type="button" class="help-link" onclick="showLoginHelp()">
-                            도움말
-                        </button>
-                        <span class="help-divider">|</span>
-                        <button type="button" class="help-link" onclick="contactAdmin()">
-                            관리자 연락
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 성별 선택 화면 -->
-    <div id="genderSelection" class="screen">
-        <div class="gender-container">
-            <!-- 환영 메시지 -->
-            <div class="welcome-section">
-                <h2><span id="welcomeName">디자이너</span>님 환영합니다!</h2>
-                <p class="welcome-message">오늘도 좋은 하루 되세요.</p>
-            </div>
-            
-            <h3>고객 성별을 선택하세요</h3>
-            <div class="gender-buttons">
-                <button class="gender-btn male" onclick="selectGender('male')" aria-label="남성 고객 메뉴">
-                    <span class="icon">👨</span>
-                    <span class="text">남성</span>
-                </button>
-                <button class="gender-btn female" onclick="selectGender('female')" aria-label="여성 고객 메뉴">
-                    <span class="icon">👩</span>
-                    <span class="text">여성</span>
-                </button>
-            </div>
-            
-            <div class="theme-toggle" id="themeToggleBottom">
-                <span>다크 모드</span>
-                <span id="themeStatus">ON</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- 메인 메뉴 화면 -->
-    <div id="menuContainer" class="menu-container">
-        <header class="header">
-            <button class="back-btn" id="backBtn" onclick="goBack()" aria-label="뒤로 가기">
-                <span>←</span>
-            </button>
-            <h1 class="logo">HAIRGATOR</h1>
-            <button class="menu-btn" id="menuBtn" aria-label="메뉴 열기">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-        </header>
-
-        <!-- 카테고리 탭 -->
-        <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="헤어스타일 카테고리"></div>
-        
-        <!-- 카테고리 설명 -->
-        <div class="category-description" id="categoryDescription"></div>
-        
-        <!-- 서브카테고리 탭 -->
-        <div class="subcategory-tabs" id="subcategoryTabs" role="tablist" aria-label="앞머리 길이"></div>
-        
-        <!-- 메뉴 그리드 -->
-        <div class="menu-grid" id="menuGrid" role="main" aria-label="헤어스타일 목록">
-            <!-- 임시 데모 데이터 -->
-            <div class="empty-state">
-                <div class="empty-icon">🎨</div>
-                <div class="empty-title">헤어스타일 준비 중</div>
-                <div class="empty-message">곧 다양한 헤어스타일을 만나보실 수 있습니다.</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 사이드바 -->
-    <div class="sidebar" id="sidebar" role="dialog" aria-label="메뉴">
-        <div class="sidebar-header">
-            <h3>메뉴</h3>
-            <button class="sidebar-close" id="sidebarClose" aria-label="메뉴 닫기">×</button>
-        </div>
-        
-        <div class="sidebar-content">
-            <div class="designer-info" id="designerInfo" style="display: none;">
-                <h4 id="designerNameDisplay">디자이너명</h4>
-                <p class="designer-status">로그인됨</p>
-            </div>
-            
-            <div class="sidebar-menu">
-                <!-- 일반 기능 -->
-                <div class="menu-section">
-                    <div class="menu-section-title">일반 기능</div>
-                    <button class="menu-item" onclick="showFeature('dashboard')">
-                        <span>대시보드</span>
-                    </button>
-                    <button class="menu-item" onclick="showFeature('favorites')">
-                        <span>즐겨찾기</span>
-                    </button>
-                    <button class="menu-item" onclick="showFeature('history')">
-                        <span>최근 기록</span>
-                    </button>
-                </div>
-                
-                <!-- 프리미엄 기능 (권한 있을 때만 표시) -->
-                <div class="menu-section" id="premiumSection" style="display: none;">
-                    <div class="menu-section-title">프리미엄 기능</div>
-                    <button class="menu-item premium" onclick="showFeature('ai-analysis')">
-                        <span>AI 분석</span>
-                        <span class="premium-badge">Premium</span>
-                    </button>
-                    <button class="menu-item premium" onclick="showFeature('advanced-reports')">
-                        <span>고급 리포트</span>
-                        <span class="premium-badge">Premium</span>
-                    </button>
-                </div>
-                
-                <!-- 설정 -->
-                <div class="menu-section">
-                    <div class="menu-section-title">설정</div>
-                    <div class="menu-item theme-toggle" id="themeToggle">
-                        <span>다크 모드</span>
-                        <span id="themeStatusSidebar">ON</span>
-                    </div>
-                </div>
-                
-                <!-- 관리자 메뉴 (개발용) -->
-                <div class="menu-section admin-section" id="adminSection" style="display: none;">
-                    <div class="menu-section-title">관리자</div>
-                    <a href="pages/admin/dashboard.html" target="_blank" class="menu-item admin">
-                        <span>관리자 페이지</span>
-                    </a>
-                </div>
-                
-                <button class="sidebar-btn logout-btn" id="logoutBtn">로그아웃</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 로딩 오버레이 -->
+    <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <p id="loadingText">로딩 중...</p>
-        </div>
+        <div class="loading-spinner"></div>
     </div>
 
-    <!-- 스타일 상세 모달 -->
-    <div class="modal" id="styleModal" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
-        <div class="modal-content">
-            <button class="modal-close" id="modalClose" aria-label="닫기">×</button>
-            <div class="modal-body">
-                <img id="modalImage" class="modal-image" alt="헤어스타일 이미지">
-                <div class="modal-info">
-                    <h3 id="modalCode" class="modal-code"></h3>
-                    <h4 id="modalName" class="modal-name"></h4>
-                    <p id="modalDescription" class="modal-description"></p>
+    <!-- Header -->
+    <header class="header">
+        <button class="back-btn" id="backBtn">←</button>
+        <div class="logo">HAIRGATOR</div>
+        <button class="menu-btn" id="menuBtn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <button class="sidebar-close" id="sidebarClose">×</button>
+        <h2 class="sidebar-title">설정</h2>
+        
+        <div class="theme-section">
+            <div class="theme-toggle" id="themeToggle">
+                <span>다크모드 <span id="themeStatus">ON</span></span>
+                <div class="theme-switch"></div>
+            </div>
+        </div>
+
+        <div id="designerInfo" style="display: none;">
+            <p style="color: #666; margin-bottom: 15px; font-size: 14px;">
+                로그인: <span id="designerName">Designer</span>
+            </p>
+            <button class="logout-btn" id="logoutBtn">로그아웃</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Login Screen (수정된 로그인 화면) -->
+        <div class="login-screen active" id="loginScreen">
+            <div class="login-container">
+                <h1 class="login-title">HAIRGATOR</h1>
+                <p style="text-align: center; color: #999; margin-bottom: 30px; font-size: 14px;">Professional Hair Style Menu</p>
+                
+                <form class="login-form" id="loginForm">
+                    <div class="form-group">
+                        <label for="designerName">디자이너명</label>
+                        <input type="text" id="designerName" placeholder="이름을 입력하세요" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phoneNumber">전화번호</label>
+                        <input type="tel" id="phoneNumber" placeholder="010-1234-5678" maxlength="13" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">비밀번호 (4자리)</label>
+                        <input type="password" id="password" placeholder="****" maxlength="4" required>
+                    </div>
+                    
+                    <button type="submit" class="login-btn">로그인</button>
+                </form>
+                
+                <p style="text-align: center; color: #666; font-size: 12px; margin-top: 20px;">
+                    처음 사용하시나요? 정보를 입력하시면 자동으로 가입됩니다.
+                </p>
+            </div>
+        </div>
+
+        <!-- Gender Selection (기존 디자인 복원) -->
+        <div class="gender-selection" id="genderSelection">
+            <div class="gender-container">
+                <div class="gender-option male" data-gender="male">
+                    <div class="gender-icon">♂</div>
+                    <div class="gender-text">
+                        <div class="ko">남성</div>
+                        <div class="en">MALE</div>
+                    </div>
                 </div>
+                <div class="gender-option female" data-gender="female">
+                    <div class="gender-icon">♀</div>
+                    <div class="gender-text">
+                        <div class="ko">여성</div>
+                        <div class="en">FEMALE</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Container -->
+        <div class="menu-container" id="menuContainer">
+            <div class="category-tabs-wrapper">
+                <div class="category-tabs" id="categoryTabs"></div>
+            </div>
+            <div class="category-description" id="categoryDescription"></div>
+            <div class="subcategory-wrapper">
+                <div class="subcategory-tabs" id="subcategoryTabs"></div>
+            </div>
+            <div class="menu-grid" id="menuGrid"></div>
+        </div>
+    </main>
+
+    <!-- Style Modal -->
+    <div class="style-modal" id="styleModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">×</button>
+            <img id="modalImage" src="" alt="" class="modal-image">
+            <div class="modal-info">
+                <div class="modal-code" id="modalCode">CODE</div>
+                <div class="modal-name" id="modalName">스타일명</div>
                 <div class="modal-actions">
-                    <button class="modal-btn btn-register" id="btnRegister">
-                        <span>고객 등록</span>
-                    </button>
+                    <button class="modal-btn btn-register" id="btnRegister">고객등록</button>
                     <button class="modal-btn btn-like" id="btnLike">
-                        <span id="likeIcon">♡</span>
+                        <span>♡</span>
                         <span>좋아요</span>
                     </button>
                 </div>
@@ -256,110 +988,462 @@
         </div>
     </div>
 
-    <!-- 알림 토스트 -->
-    <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+    <!-- Bottom Theme Toggle -->
+    <div class="theme-toggle-bottom" id="themeToggleBottom">
+        <span>🌙</span>
+        <span>다크모드</span>
+    </div>
 
-    <!-- JavaScript Files -->
-    <script src="scripts/utils/common.js"></script>
-    <script src="scripts/core/firebase-config.js"></script>
-    <script src="scripts/core/auth.js"></script>
-    <script src="scripts/core/main.js"></script>
-    <script src="scripts/ui/menu.js"></script>
-
-    <!-- App Initialization -->
+    <!-- Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    
     <script>
-        // 앱 초기화 - 간소화된 버전
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('HAIRGATOR 앱 시작');
-            
-            // 로딩 화면 표시
-            const loadingScreen = document.getElementById('loadingScreen');
-            const loginScreen = document.getElementById('loginScreen');
-            
-            // 간단한 초기화 (1.5초 후 로그인 화면)
-            setTimeout(() => {
-                loadingScreen.style.display = 'none';
-                loginScreen.classList.add('active');
-                
-                // 첫 번째 입력 필드에 포커스
-                setTimeout(() => {
-                    const nameInput = document.getElementById('designerName');
-                    if (nameInput) nameInput.focus();
-                }, 300);
-            }, 1500);
+        // 🦎 HAIRGATOR 최종 완성 버전 Main Script
+        // Firebase 설정 및 main.js 통합 버전
+        
+        // Firebase 초기화 대기
+        function waitForFirebase() {
+            return new Promise((resolve) => {
+                if (window.db && window.auth) {
+                    resolve();
+                } else {
+                    setTimeout(() => waitForFirebase().then(resolve), 100);
+                }
+            });
+        }
+
+        // DOM 로드 후 초기화
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🦎 HAIRGATOR 초기화 시작...');
+
+            // Firebase 초기화 대기
+            await waitForFirebase();
+            console.log('✅ Firebase 연결 확인');
+
+            // 메인 스크립트 실행
+            await loadMainScript();
         });
 
-        // 전역 헬퍼 함수들
-        window.showFeature = function(featureName) {
-            console.log('기능 선택:', featureName);
-            if (window.showToast) {
-                window.showToast(`${featureName} 기능은 준비 중입니다.`, 'info');
-            }
-        };
-
-        window.showLoginHelp = function() {
-            const helpMessage = `로그인 도움말:
+        // 메인 스크립트 로드 함수
+        async function loadMainScript() {
+            // Main Script가 별도 파일로 있다면 로드
+            const script = document.createElement('script');
+            script.src = 'js/main.js';
+            script.onload = function() {
+                console.log('✅ Main.js 로드 완료');
+            };
+            script.onerror = function() {
+                console.log('❌ Main.js 로드 실패 - 인라인으로 실행');
+                initializeApp();
+            };
+            document.head.appendChild(script);
             
-- 디자이너명: 실제 이름을 입력하세요
-- 전화번호: 010-1234-5678 형식으로 입력  
-- 비밀번호: 등록시 설정한 4자리 숫자
+            // 백업용 인라인 초기화
+            setTimeout(() => {
+                if (!window.mainScriptLoaded) {
+                    console.log('🔄 백업 초기화 실행');
+                    initializeApp();
+                }
+            }, 2000);
+        }
 
-계정이 없으시면 관리자에게 문의하세요.`;
+        // 백업용 앱 초기화
+        function initializeApp() {
+            if (window.mainScriptLoaded) return;
+            window.mainScriptLoaded = true;
+
+            console.log('🚀 HAIRGATOR 앱 초기화');
             
-            if (window.showToast) {
-                window.showToast(helpMessage, 'info', 8000);
+            // 로그인 상태 확인
+            const savedLogin = checkSavedLogin();
+            if (savedLogin) {
+                // 이미 로그인된 상태면 성별 선택으로 이동
+                document.getElementById('loginScreen').classList.remove('active');
+                document.getElementById('genderSelection').classList.add('active');
+                showToast(`다시 오신 것을 환영합니다, ${savedLogin}님!`);
             } else {
-                alert(helpMessage);
+                // 로그인이 필요한 상태면 로그인 화면 표시
+                document.getElementById('loginScreen').classList.add('active');
             }
-        };
+            
+            // 기본 이벤트 리스너 설정
+            setupBasicEventListeners();
+            
+            // 인증 상태 확인
+            checkAuthStatus();
+            
+            // 테마 로드
+            loadTheme();
+            
+            console.log('✅ 기본 초기화 완료');
+        }
 
-        window.contactAdmin = function() {
-            const contactMessage = `관리자 연락처:
+        // 저장된 로그인 정보 확인
+        function checkSavedLogin() {
+            const designerName = localStorage.getItem('designerName');
+            const loginTime = localStorage.getItem('loginTime');
             
-계정 생성, 비밀번호 초기화, 권한 변경 등의
-문의사항이 있으시면 관리자에게 연락해주세요.`;
-            
-            if (window.showToast) {
-                window.showToast(contactMessage, 'info', 6000);
-            } else {
-                alert(contactMessage);
+            if (designerName && loginTime) {
+                // 24시간이 지났는지 확인
+                const now = new Date().getTime();
+                const savedTime = parseInt(loginTime);
+                const hoursElapsed = (now - savedTime) / (1000 * 60 * 60);
+                
+                if (hoursElapsed < 24) {
+                    return designerName;
+                } else {
+                    // 24시간이 지나면 로그인 정보 삭제
+                    localStorage.removeItem('designerName');
+                    localStorage.removeItem('designerPhone');
+                    localStorage.removeItem('designerPassword');
+                    localStorage.removeItem('loginTime');
+                }
             }
-        };
+            return null;
+        }
 
-        // 사이드바 토글
-        document.addEventListener('click', function(e) {
+        function setupBasicEventListeners() {
+            // 성별 선택 버튼 (기존 디자인용)
+            document.querySelectorAll('.gender-option').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const gender = this.dataset.gender;
+                    console.log(`🎯 성별 선택: ${gender}`);
+                    selectGender(gender);
+                });
+            });
+
+            // 로그인 폼 처리 (Firebase 연동)
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const name = document.getElementById('designerName').value.trim();
+                    const phone = document.getElementById('phoneNumber').value.trim();
+                    const password = document.getElementById('password').value.trim();
+                    
+                    // 기본 검증
+                    if (!name || phone.length < 10 || password.length !== 4) {
+                        let errorMsg = '❌ ';
+                        if (!name) errorMsg += '이름을 입력해주세요. ';
+                        if (phone.length < 10) errorMsg += '전화번호를 정확히 입력해주세요. ';
+                        if (password.length !== 4) errorMsg += '비밀번호는 4자리여야 합니다. ';
+                        showToast(errorMsg);
+                        return;
+                    }
+
+                    // 로딩 표시
+                    const loginBtn = document.querySelector('.login-btn');
+                    const originalText = loginBtn.textContent;
+                    loginBtn.textContent = '로그인 중...';
+                    loginBtn.disabled = true;
+
+                    try {
+                        // Firebase에서 기존 사용자 확인
+                        const isExistingUser = await checkExistingUser(phone);
+                        
+                        if (isExistingUser) {
+                            // 기존 사용자 - 비밀번호 확인
+                            const isValidPassword = await validateUser(phone, password);
+                            if (isValidPassword) {
+                                await handleSuccessfulLogin(name, phone, password, false);
+                            } else {
+                                showToast('❌ 비밀번호가 일치하지 않습니다.');
+                            }
+                        } else {
+                            // 신규 사용자 - 자동 가입
+                            await registerNewUser(name, phone, password);
+                            await handleSuccessfulLogin(name, phone, password, true);
+                        }
+                    } catch (error) {
+                        console.error('❌ 로그인 오류:', error);
+                        showToast('❌ 로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+                    } finally {
+                        // 로딩 해제
+                        loginBtn.textContent = originalText;
+                        loginBtn.disabled = false;
+                    }
+                });
+            }
+
+            // 기존 사용자 확인
+            async function checkExistingUser(phone) {
+                try {
+                    if (!window.db) return false;
+                    
+                    const querySnapshot = await window.db.collection('designers')
+                        .where('phone', '==', phone)
+                        .get();
+                    
+                    return !querySnapshot.empty;
+                } catch (error) {
+                    console.error('사용자 확인 오류:', error);
+                    return false;
+                }
+            }
+
+            // 사용자 비밀번호 검증
+            async function validateUser(phone, password) {
+                try {
+                    if (!window.db) return false;
+                    
+                    const querySnapshot = await window.db.collection('designers')
+                        .where('phone', '==', phone)
+                        .where('password', '==', password)
+                        .get();
+                    
+                    return !querySnapshot.empty;
+                } catch (error) {
+                    console.error('비밀번호 검증 오류:', error);
+                    return false;
+                }
+            }
+
+            // 신규 사용자 등록
+            async function registerNewUser(name, phone, password) {
+                try {
+                    if (!window.db) throw new Error('Firebase 연결 없음');
+                    
+                    const defaultTokens = 100; // 기본 토큰
+                    
+                    await window.db.collection('designers').add({
+                        name: name,
+                        phone: phone,
+                        password: password,
+                        tokens: defaultTokens,
+                        registeredAt: new Date(),
+                        lastLoginAt: new Date(),
+                        isActive: true
+                    });
+                    
+                    console.log('✅ 신규 사용자 등록 완료:', name);
+                } catch (error) {
+                    console.error('❌ 사용자 등록 오류:', error);
+                    throw error;
+                }
+            }
+
+            // 로그인 성공 처리
+            async function handleSuccessfulLogin(name, phone, password, isNewUser) {
+                // localStorage에 저장 (24시간 유지)
+                localStorage.setItem('designerName', name);
+                localStorage.setItem('designerPhone', phone);
+                localStorage.setItem('designerPassword', password);
+                localStorage.setItem('loginTime', new Date().getTime());
+                
+                // 마지막 로그인 시간 업데이트
+                try {
+                    if (window.db) {
+                        const querySnapshot = await window.db.collection('designers')
+                            .where('phone', '==', phone)
+                            .get();
+                        
+                        querySnapshot.forEach(doc => {
+                            doc.ref.update({
+                                lastLoginAt: new Date(),
+                                name: name // 이름 업데이트 (변경된 경우)
+                            });
+                        });
+                    }
+                } catch (error) {
+                    console.error('로그인 시간 업데이트 오류:', error);
+                }
+                
+                // 화면 전환
+                document.getElementById('loginScreen').classList.remove('active');
+                document.getElementById('genderSelection').classList.add('active');
+                
+                // 디자이너 이름 표시
+                const designerNameEl = document.getElementById('designerName');
+                if (designerNameEl) {
+                    designerNameEl.textContent = name;
+                }
+                
+                // 환영 메시지
+                const welcomeMessage = isNewUser 
+                    ? `🎉 처음이시네요! 환영합니다, ${name}님!`
+                    : `👋 어서오세요, ${name}님!`;
+                
+                console.log('✅ 로그인 성공:', name, phone, isNewUser ? '(신규)' : '(기존)');
+                showToast(welcomeMessage);
+            }
+
+            // 메뉴 버튼
             const menuBtn = document.getElementById('menuBtn');
             const sidebar = document.getElementById('sidebar');
+            if (menuBtn && sidebar) {
+                menuBtn.addEventListener('click', () => {
+                    sidebar.classList.add('active');
+                });
+            }
+
+            // 사이드바 닫기
             const sidebarClose = document.getElementById('sidebarClose');
+            if (sidebarClose && sidebar) {
+                sidebarClose.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                });
+            }
+
+            // 뒤로가기 버튼
+            const backBtn = document.getElementById('backBtn');
+            if (backBtn) {
+                backBtn.addEventListener('click', handleBack);
+            }
+
+            // 테마 토글
+            const themeToggle = document.getElementById('themeToggle');
+            const themeToggleBottom = document.getElementById('themeToggleBottom');
+            if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+            if (themeToggleBottom) themeToggleBottom.addEventListener('click', toggleTheme);
+
+            // 로그아웃 버튼
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async function() {
+                    if (confirm('로그아웃 하시겠습니까?')) {
+                        try {
+                            if (window.authManager) {
+                                await window.authManager.signOut();
+                            }
+                            location.reload();
+                        } catch (error) {
+                            console.error('❌ 로그아웃 오류:', error);
+                        }
+                    }
+                });
+            }
+        }
+
+        function selectGender(gender) {
+            const genderSelection = document.getElementById('genderSelection');
+            const menuContainer = document.getElementById('menuContainer');
+            const backBtn = document.getElementById('backBtn');
+            const themeToggleBottom = document.getElementById('themeToggleBottom');
+
+            if (genderSelection) genderSelection.style.display = 'none';
+            if (menuContainer) menuContainer.classList.add('active');
+            if (backBtn) backBtn.style.display = 'flex';
+            if (themeToggleBottom) themeToggleBottom.style.display = 'none';
+
+            localStorage.setItem('hairgator_gender', gender);
             
-            if (e.target === menuBtn || menuBtn.contains(e.target)) {
-                sidebar.classList.toggle('active');
+            // 메뉴 데이터 로드 시뮬레이션
+            showToast(`${gender === 'male' ? '남성' : '여성'} 메뉴를 준비 중입니다...`);
+            
+            console.log(`✅ 성별 선택 완료: ${gender}`);
+        }
+
+        function handleBack() {
+            const menuContainer = document.getElementById('menuContainer');
+            const genderSelection = document.getElementById('genderSelection');
+            const backBtn = document.getElementById('backBtn');
+            const themeToggleBottom = document.getElementById('themeToggleBottom');
+
+            if (menuContainer) menuContainer.classList.remove('active');
+            if (genderSelection) genderSelection.style.display = 'flex';
+            if (backBtn) backBtn.style.display = 'none';
+            if (themeToggleBottom) themeToggleBottom.style.display = 'flex';
+
+            console.log('🔙 성별 선택 화면으로 이동');
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
+            const themeStatus = document.getElementById('themeStatus');
+            
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                if (themeStatus) themeStatus.textContent = 'OFF';
             }
             
-            if (e.target === sidebarClose || e.target === sidebar && !sidebar.querySelector('.sidebar-content').contains(e.target)) {
-                sidebar.classList.remove('active');
+            console.log(`🎨 테마 로드: ${savedTheme}`);
+        }
+
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('light-theme');
+            const themeStatus = document.getElementById('themeStatus');
+            
+            if (themeStatus) {
+                themeStatus.textContent = isLight ? 'OFF' : 'ON';
             }
+            
+            localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
+            console.log(`🎨 테마 변경: ${isLight ? 'light' : 'dark'}`);
+        }
+
+        function checkAuthStatus() {
+            const designerInfo = document.getElementById('designerInfo');
+            if (window.auth && window.auth.currentUser) {
+                if (designerInfo) designerInfo.style.display = 'block';
+                const designerNameEl = document.getElementById('designerName');
+                if (designerNameEl) {
+                    designerNameEl.textContent = window.auth.currentUser.displayName || window.auth.currentUser.email;
+                }
+                console.log('✅ 사용자 인증 확인 완료');
+            }
+        }
+
+        function showToast(message) {
+            // 기존 토스트 제거
+            const existingToast = document.querySelector('.toast-message');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // 새 토스트 생성
+            const toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #333;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 10000;
+                font-size: 14px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                animation: toastSlideIn 0.3s ease-out;
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // 3초 후 자동 제거
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.style.animation = 'toastSlideOut 0.3s ease-in';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 3000);
+        }
+
+        // PWA 설치 프롬프트
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('📱 PWA 설치 가능');
         });
 
-        // Service Worker 등록
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(registration => {
-                    console.log('Service Worker 등록 성공');
-                })
-                .catch(error => {
-                    console.error('Service Worker 등록 실패:', error);
-                });
-        }
-
-        // 개발 모드 확인
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            console.log('개발 모드 활성화');
-            const adminSection = document.getElementById('adminSection');
-            if (adminSection) {
-                adminSection.style.display = 'block';
+        window.addEventListener('load', function() {
+            console.log('🦎 HAIRGATOR 앱 완전 로드 완료');
+            
+            // Service Worker 등록
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker 등록 성공');
+                    })
+                    .catch(error => {
+                        console.log('❌ Service Worker 등록 실패:', error);
+                    });
             }
-        }
+        });
     </script>
 </body>
 </html>
