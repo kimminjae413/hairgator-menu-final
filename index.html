@@ -2602,8 +2602,9 @@
 
         // 스타일 상세 모달 열기
         function openStyleModal(style, docId) {
-            // 현재 스타일 데이터 저장 (AI 체험용)
-            currentStyleData = style;
+            // 현재 스타일 데이터 저장 (AI 체험용) - window 객체에 저장
+            window.currentStyleData = style;
+            currentStyleData = window.currentStyleData;
             
             const modal = document.getElementById('styleModal');
             const modalImage = document.getElementById('styleModalImage');
@@ -2628,7 +2629,7 @@
             modalGender.textContent = style.gender === 'male' ? '남성' : style.gender === 'female' ? '여성' : '-';
             
             // AI 버튼 상태 업데이트
-            if (currentDesigner && currentDesigner.tokens >= 5) {
+            if (window.currentDesigner && window.currentDesigner.tokens >= 5) {
                 aiExperienceBtn.disabled = false;
                 aiExperienceBtn.style.opacity = '1';
             } else {
@@ -2644,7 +2645,8 @@
                 code: style.code, 
                 name: style.name,
                 category: style.mainCategory,
-                subcategory: style.subCategory 
+                subcategory: style.subCategory,
+                currentStyleData: window.currentStyleData
             });
         }
 
@@ -2655,6 +2657,7 @@
             document.body.style.overflow = '';
             
             // 현재 스타일 데이터 초기화
+            window.currentStyleData = null;
             currentStyleData = null;
         }
 
