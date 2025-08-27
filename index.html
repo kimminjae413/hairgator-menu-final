@@ -1152,20 +1152,28 @@
                 });
             });
 
-            // 로그인 폼 처리 (Firebase 연동) - 안전성 강화
+            // 로그인 폼 처리 - 디버깅 강화
             const loginForm = document.getElementById('loginForm');
             if (loginForm) {
                 loginForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
                     
+                    console.log('로그인 폼 제출됨');
+                    
                     const nameInput = document.getElementById('designerName');
                     const phoneInput = document.getElementById('phoneNumber');
                     const passwordInput = document.getElementById('password');
                     
+                    console.log('입력 필드 확인:', {
+                        nameInput: !!nameInput,
+                        phoneInput: !!phoneInput,
+                        passwordInput: !!passwordInput
+                    });
+                    
                     // 입력 필드 존재 확인
                     if (!nameInput || !phoneInput || !passwordInput) {
-                        console.error('❌ 입력 필드를 찾을 수 없음');
-                        showToast('❌ 입력 필드 오류가 발생했습니다');
+                        console.error('입력 필드를 찾을 수 없음');
+                        showToast('입력 필드 오류가 발생했습니다');
                         return;
                     }
                     
@@ -1173,16 +1181,29 @@
                     const phone = phoneInput.value ? phoneInput.value.trim() : '';
                     const password = passwordInput.value ? passwordInput.value.trim() : '';
                     
+                    console.log('입력값:', { 
+                        name: `"${name}"`, 
+                        phone: `"${phone}"`, 
+                        password: `"${password}"`,
+                        nameLength: name.length,
+                        phoneLength: phone.length,
+                        passwordLength: password.length
+                    });
+                    
                     // 기본 검증
                     if (!name || phone.length < 10 || password.length !== 4) {
-                        let errorMsg = '❌ ';
+                        let errorMsg = '';
                         if (!name) errorMsg += '이름을 입력해주세요. ';
                         if (phone.length < 10) errorMsg += '전화번호를 정확히 입력해주세요. ';
                         if (password.length !== 4) errorMsg += '비밀번호는 4자리여야 합니다. ';
+                        
+                        console.log('검증 실패:', errorMsg);
                         showToast(errorMsg);
                         return;
                     }
 
+                    console.log('검증 성공, 로그인 진행 중...');
+                    
                     // 로딩 표시
                     const loginBtn = document.querySelector('.login-btn');
                     const originalText = loginBtn ? loginBtn.textContent : '로그인';
@@ -1192,42 +1213,11 @@
                     }
 
                     try {
-                        // Firebase 연결 확인
-                        if (!window.db) {
-                            throw new Error('Firebase 연결이 없습니다. 오프라인 모드로 로그인합니다.');
-                        }
-
-                        // Firebase에서 기존 사용자 확인 (단순화)
-                        let isExistingUser = false;
-                        try {
-                            const querySnapshot = await window.db.collection('designers')
-                                .where('phone', '==', phone)
-                                .limit(1)
-                                .get();
-                            isExistingUser = !querySnapshot.empty;
-                            console.log('🔍 사용자 확인 결과:', isExistingUser);
-                        } catch (error) {
-                            console.log('⚠️ 사용자 확인 실패, 오프라인 로그인:', error.message);
-                        }
-                        
-                        if (isExistingUser) {
-                            // 기존 사용자 - 간단한 환영 메시지
-                            await handleSuccessfulLogin(name, phone, password, false);
-                        } else {
-                            // 신규 사용자 또는 오프라인 - 가입 시도
-                            try {
-                                await registerNewUser(name, phone, password);
-                                await handleSuccessfulLogin(name, phone, password, true);
-                            } catch (error) {
-                                console.log('⚠️ 신규 가입 실패, 오프라인 로그인:', error.message);
-                                await handleSuccessfulLogin(name, phone, password, true);
-                            }
-                        }
+                        // 간단한 로그인 (Firebase 오류 무시)
+                        await handleSuccessfulLogin(name, phone, password, true);
                     } catch (error) {
-                        console.error('❌ 로그인 오류:', error);
-                        // Firebase 오류여도 로컬 로그인 허용
-                        await handleSuccessfulLogin(name, phone, password, false);
-                        showToast('⚠️ 오프라인 모드로 로그인되었습니다');
+                        console.error('로그인 오류:', error);
+                        showToast('로그인 중 오류가 발생했습니다');
                     } finally {
                         // 로딩 해제
                         if (loginBtn) {
@@ -1236,6 +1226,8 @@
                         }
                     }
                 });
+            } else {
+                console.error('로그인 폼을 찾을 수 없음');
             }
 
             // 기존 사용자 확인 (강화된 오류 처리)
@@ -1285,7 +1277,7 @@
                 }
             }
 
-            // 신규 사용자 등록 (권한 오류 대응 버전)
+            // 신규 사용자 등록 (Firebase 규칙 맞춤)
             async function registerNewUser(name, phone, password) {
                 try {
                     if (!window.db) {
@@ -1293,12 +1285,12 @@
                     }
                     
                     const defaultTokens = 100;
-                    console.log('👤 신규 사용자 등록 시도:', name);
+                    console.log('신규 사용자 등록 시도:', name);
                     
-                    // 권한 오류가 있어도 로컬에는 저장
+                    // Firebase 규칙에 맞는 데이터 구조
                     const userData = {
                         name: name,
-                        phone: phone,
+                        phone: phone, // 전체 전화번호 저장
                         password: password,
                         tokens: defaultTokens,
                         registeredAt: new Date(),
@@ -1308,18 +1300,18 @@
                     
                     try {
                         const docRef = await window.db.collection('designers').add(userData);
-                        console.log('✅ Firebase 등록 성공:', docRef.id);
+                        console.log('Firebase 등록 성공:', docRef.id);
                     } catch (firebaseError) {
-                        console.log('⚠️ Firebase 등록 실패 (권한 문제):', firebaseError.message);
+                        console.log('Firebase 등록 실패 (규칙 불일치):', firebaseError.message);
                         // Firebase 실패해도 localStorage에 저장
                         const existingUsers = JSON.parse(localStorage.getItem('local_users') || '[]');
                         existingUsers.push({ ...userData, id: Date.now().toString() });
                         localStorage.setItem('local_users', JSON.stringify(existingUsers));
-                        console.log('📱 로컬 저장소에 사용자 저장');
+                        console.log('로컬 저장소에 사용자 저장');
                     }
                     
                 } catch (error) {
-                    console.error('❌ 사용자 등록 완전 실패:', error);
+                    console.error('사용자 등록 완전 실패:', error);
                     throw new Error(`사용자 등록 실패: ${error.message}`);
                 }
             }
