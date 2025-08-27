@@ -14,17 +14,11 @@
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
     
-    <!-- iOS 아이콘 명시적 선언 -->
+    <!-- 아이콘 -->
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-192.png">
-    
-    <!-- Icons -->
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
     
-    <!-- 구글 폰트 추가 -->
+    <!-- 구글 폰트 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -36,6 +30,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
     <style>
+        /* 초기화 및 기본 설정 */
         * {
             margin: 0;
             padding: 0;
@@ -60,9 +55,10 @@
             overflow-x: hidden;
             user-select: none;
             -webkit-user-select: none;
+            line-height: 1.4;
         }
 
-        /* Header - 아래로 내림 */
+        /* 헤더 */
         .header {
             position: fixed;
             top: 15px;
@@ -85,7 +81,7 @@
             background: none;
             border: none;
             cursor: pointer;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             color: var(--text-primary);
@@ -118,17 +114,100 @@
             width: 20px;
             height: 2px;
             background: var(--text-primary);
+            transition: all 0.3s ease;
         }
 
-        /* Main Content - 헤더 높이 조정 */
+        /* 메인 콘텐츠 */
         .main-content {
             margin-top: 65px;
             min-height: calc(100vh - 65px);
         }
 
-        /* Gender Selection */
-        .gender-selection {
+        /* 로그인 화면 */
+        .login-screen {
             display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 65px);
+            padding: 20px;
+        }
+
+        .login-modal {
+            background: #111;
+            border: 2px solid var(--female-color);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .login-modal h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .login-modal .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--female-color);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--female-color);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: var(--female-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: #d81b60;
+        }
+
+        .login-help {
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        /* 성별 선택 */
+        .gender-selection {
+            display: none;
             align-items: center;
             justify-content: center;
             min-height: calc(100vh - 65px);
@@ -148,7 +227,7 @@
             align-items: center;
             justify-content: center;
             gap: 15px;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
 
         .gender-btn:hover {
@@ -171,7 +250,8 @@
             align-items: center;
             justify-content: center;
             font-size: 48px;
-            color: white;
+            color: #fff;
+            transition: all 0.3s ease;
         }
 
         .gender-btn.male .gender-icon {
@@ -187,7 +267,7 @@
             color: var(--text-primary);
         }
 
-        /* Menu Container */
+        /* 메뉴 컨테이너 */
         .menu-container {
             display: none;
         }
@@ -196,564 +276,18 @@
             display: block;
         }
 
-        /* Category Tabs - 헤더 위치 조정 */
-        .category-tabs-wrapper {
-            background: var(--primary-dark);
-            border-bottom: 1px solid #333;
-            position: sticky;
-            top: 65px;
-            z-index: 100;
-        }
-
-        .category-tabs {
-            display: flex;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            padding: 0;
-        }
-
-        .category-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .category-tab {
-            flex: 0 0 auto;
-            padding: 15px 20px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            color: #666;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-            font-weight: 700;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
-        .category-tab.active {
-            color: var(--text-primary);
-        }
-
-        .category-tab.active.male {
-            border-bottom-color: var(--male-color);
-        }
-
-        .category-tab.active.female {
-            border-bottom-color: var(--female-color);
-        }
-
-        /* 물음표 도움말 버튼 스타일 */
-        .help-tab {
-            background: #FF1493 !important;
-            color: white !important;
-            border: 2px solid #FF1493 !important;
-            font-weight: bold;
-            font-size: 18px;
-            min-width: 50px;
-            border-radius: 50%;
-            margin-right: 10px;
-            text-transform: none !important;
-        }
-
-        .help-tab:hover {
-            background: #FF69B4 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
-        }
-
-        /* Description */
-        .category-description {
-            padding: 20px;
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text-secondary);
-            background: #0a0a0a;
-        }
-
-        /* Subcategory Pills */
-        .subcategory-wrapper {
-            padding: 20px;
-            background: var(--primary-dark);
-        }
-
-        .subcategory-tabs {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .subcategory-tab {
-            padding: 8px 20px;
-            background: transparent;
-            border: 1px solid #333;
-            border-radius: 20px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .subcategory-tab.active.male {
-            background: var(--male-color);
-            border-color: var(--male-color);
-            color: white;
-        }
-
-        .subcategory-tab.active.female {
-            background: var(--female-color);
-            border-color: var(--female-color);
-            color: white;
-        }
-
-        /* Menu Grid */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .menu-item {
-            position: relative;
-            border-radius: 10px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s;
-            aspect-ratio: 3/4;
-            background: #1a1a1a;
-        }
-
-        .menu-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-        }
-
-        .menu-item-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Style Modal */
-        .style-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 20px;
-        }
-
-        .style-modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--primary-dark);
-            border-radius: 20px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-image {
-            width: 100%;
-            aspect-ratio: 3/4;
-            object-fit: cover;
-        }
-
-        .modal-info {
-            padding: 20px;
-        }
-
-        .modal-code {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 5px;
-        }
-
-        .modal-name {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-register {
-            background: var(--male-color);
-            color: white;
-        }
-
-        .btn-register.female {
-            background: var(--female-color);
-        }
-
-        .btn-like {
-            background: transparent;
-            border: 2px solid #666;
-            color: #666;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .btn-like.active {
-            background: #ff4458;
-            border-color: #ff4458;
-            color: white;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            border-radius: 50%;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        /* Theme Toggle Button - 핸드폰 모드에서만 위치 수정 */
-        .theme-toggle-bottom {
-            position: fixed;
-            bottom: 50px; /* 150px에서 50px로 변경 */
-            right: 20px; /* 오른쪽으로 이동 */
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            color: #ffd700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            z-index: 100;
-        }
-
-        .theme-toggle-bottom:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
-        }
-
-        .theme-toggle-bottom svg {
-            transition: all 0.3s;
-        }
-
-        /* 다크 모드 아이콘 */
-        .moon-icon {
-            display: block;
-            color: #ffd700;
-        }
-
-        .sun-icon {
-            display: none;
-            color: #ff8c00;
-        }
-
-        /* 라이트 테마 */
-        body.light-theme {
-            background: var(--primary-light);
-            color: #000000;
-        }
-
-        body.light-theme .header {
-            background: var(--primary-light);
-        }
-
-        body.light-theme .logo,
-        body.light-theme .back-btn {
-            color: #000;
-        }
-
-        /* 라이트 모드에서 햄버거 버튼 색상 수정 */
-        body.light-theme .menu-btn span {
-            background: #000;
-        }
-
-        body.light-theme .gender-btn {
-            background: #f8f8f8;
-            border-color: #ddd;
-        }
-
-        body.light-theme .gender-btn.male,
-        body.light-theme .gender-btn.female {
-            border-color: #ddd;
-        }
-
-        body.light-theme .gender-icon {
-            background: transparent;
-        }
-
-        /* 라이트 모드에서 얼굴 이모지로 교체 */
-        body.light-theme .gender-btn.male .gender-icon {
-            font-size: 0;
-        }
-
-        body.light-theme .gender-btn.male .gender-icon:after {
-            content: '👨';
-            font-size: 80px;
-            color: initial;
-        }
-
-        body.light-theme .gender-btn.female .gender-icon {
-            font-size: 0;
-        }
-
-        body.light-theme .gender-btn.female .gender-icon:after {
-            content: '👩';
-            font-size: 80px;
-            color: initial;
-        }
-
-        /* 라이트 모드에서 텍스트 색상 - 파스텔 톤 */
-        body.light-theme .gender-btn.male .gender-label {
-            color: #6495ED;
-        }
-
-        body.light-theme .gender-btn.female .gender-label {
-            color: #FF69B4;
-        }
-
-        /* 라이트 테마에서 카테고리 탭 배경색 변경 */
-        body.light-theme .category-tabs-wrapper {
-            background: #fff;
-            border-bottom: 1px solid #ddd;
-        }
-
-        body.light-theme .category-tab {
-            color: #666;
-        }
-
-        body.light-theme .category-tab.active {
-            color: #000;
-        }
-
-        body.light-theme .category-tab.active.male {
-            border-bottom-color: #87CEEB;
-        }
-
-        body.light-theme .category-tab.active.female {
-            border-bottom-color: #FFB6C1;
-        }
-
-        /* 라이트 모드에서 물음표 버튼 */
-        body.light-theme .help-tab {
-            background: #FF1493 !important;
-            color: white !important;
-            border-color: #FF1493 !important;
-        }
-
-        body.light-theme .help-tab:hover {
-            background: #FF69B4 !important;
-        }
-
-        /* 카테고리 설명 라이트 테마 */
-        body.light-theme .category-description {
-            background: #f9f9f9;
-            color: #666;
-        }
-
-        /* 중분류 탭 라이트 테마 */
-        body.light-theme .subcategory-wrapper {
-            background: #fff;
-        }
-
-        body.light-theme .subcategory-tab {
-            color: #666;
-            border-color: #ddd;
-        }
-
-        /* 라이트 모드에서 중분류 탭 파스텔 색상 */
-        body.light-theme .subcategory-tab.active.male {
-            background: #87CEEB;
-            border-color: #87CEEB;
-            color: #000;
-        }
-
-        body.light-theme .subcategory-tab.active.female {
-            background: #FFB6C1;
-            border-color: #FFB6C1;
-            color: #000;
-        }
-
-        body.light-theme .menu-item {
-            background: #f5f5f5;
-        }
-
-        body.light-theme .modal-content {
-            background: var(--primary-light);
-            color: #000000;
-        }
-
-        body.light-theme .modal-name {
-            color: #000000;
-        }
-
-        /* 라이트 모드에서 테마 버튼 스타일 수정 */
-        body.light-theme .theme-toggle-bottom {
-            background: rgba(0, 0, 0, 0.1);
-            border-color: rgba(0, 0, 0, 0.2);
-        }
-
-        body.light-theme .theme-toggle-bottom:hover {
-            background: rgba(0, 0, 0, 0.2);
-            border-color: rgba(0, 0, 0, 0.3);
-        }
-
-        /* 라이트 모드에서 아이콘 변경 */
-        body.light-theme .moon-icon {
-            display: none;
-        }
-
-        body.light-theme .sun-icon {
-            display: block;
-            color: #ff8c00;
-        }
-
-        /* Loading */
-        .loading {
-            grid-column: 1 / -1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #333;
-            border-top-color: var(--female-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        /* Responsive */
-        @media (min-width: 768px) {
-            .menu-grid {
-                grid-template-columns: repeat(5, 1fr);
-            }
-
-            /* 태블릿 이상에서는 중앙 위치로 */
-            .theme-toggle-bottom {
-                bottom: 150px;
-                left: 50%;
-                right: auto;
-                transform: translateX(-50%);
-            }
-
-            .theme-toggle-bottom:hover {
-                transform: translateX(-50%) scale(1.1);
-            }
-
-            body.light-theme .theme-toggle-bottom:hover {
-                transform: translateX(-50%) scale(1.1);
-            }
-        }
-
-        @media (max-width: 767px) {
-            .menu-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-                padding: 15px;
-            }
-            
-            .category-tab {
-                font-size: 12px;
-                padding: 12px 15px;
-            }
-
-            .gender-selection {
-                flex-direction: column;
-                gap: 30px;
-            }
-
-            /* 핸드폰에서만 우측 하단으로 이동 */
-            .theme-toggle-bottom {
-                bottom: 50px !important;
-                right: 20px !important;
-                left: auto !important;
-                transform: none !important;
-            }
-
-            .theme-toggle-bottom:hover {
-                transform: scale(1.1) !important;
-            }
-        }
-
-        /* Loading Overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-
-        .loading-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Sidebar */
+        /* 사이드바 */
         .sidebar {
             position: fixed;
             top: 0;
-            right: -280px;
-            width: 280px;
+            right: -300px;
+            width: 300px;
             height: 100vh;
             background: #111;
-            transition: right 0.3s;
-            z-index: 1001;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.5);
+            border-left: 1px solid #333;
+            z-index: 2000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
         }
 
         .sidebar.active {
@@ -761,808 +295,319 @@
         }
 
         .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 20px;
             border-bottom: 1px solid #333;
         }
 
         .sidebar-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
             background: none;
             border: none;
-            color: var(--text-primary);
+            color: white;
             font-size: 24px;
             cursor: pointer;
         }
 
-        .sidebar-content {
-            padding: 20px;
-        }
-
-        .theme-toggle-wrapper {
-            margin-bottom: 20px;
-        }
-
-        .theme-toggle {
+        /* 로딩 오버레이 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 12px;
-            background: #222;
-            border: 1px solid #333;
-            border-radius: 8px;
-            color: var(--text-primary);
-            cursor: pointer;
-            display: flex;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
+            z-index: 9999;
         }
 
-        .logout-btn {
-            width: 100%;
-            padding: 12px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-top: 20px;
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #333;
+            border-top: 3px solid var(--female-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        /* 라이트 테마 사이드바 */
-        body.light-theme .sidebar {
-            background: #f5f5f5;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        body.light-theme .sidebar-header {
-            border-bottom-color: #ddd;
-        }
-
-        body.light-theme .sidebar-close {
-            color: #000;
-        }
-
-        body.light-theme .sidebar-content {
-            color: #000;
-        }
-
-        body.light-theme .theme-toggle {
-            background: #e0e0e0;
-            color: #000;
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .gender-selection {
+                flex-direction: column;
+                gap: 30px;
+            }
+            
+            .gender-btn {
+                width: 140px;
+                height: 200px;
+            }
+            
+            .login-modal {
+                margin: 0 10px;
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Loading -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-    </div>
-
-    <!-- Header -->
+    <!-- 헤더 -->
     <header class="header">
-        <button class="back-btn" id="backBtn">
-            ←
-        </button>
-        <div class="logo">HAIRGATOR</div>
-        <button class="menu-btn" id="menuBtn" style="position: absolute; right: 15px;">
+        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+        <h1 class="logo">HAIRGATOR</h1>
+        <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
             <span></span>
             <span></span>
             <span></span>
         </button>
     </header>
 
-    <!-- Theme Toggle Button -->
-    <button class="theme-toggle-bottom" id="themeToggleBottom" title="다크/라이트 모드">
-        <svg class="moon-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-        <svg class="sun-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/>
-            <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-        </svg>
-    </button>
-
-    <!-- Sidebar -->
+    <!-- 사이드바 -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <button class="sidebar-close" id="sidebarClose">×</button>
-            <h3>설정</h3>
+            <h3>메뉴</h3>
+            <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
         </div>
         <div class="sidebar-content">
-            <div class="theme-toggle-wrapper">
-                <button class="theme-toggle" id="themeToggle">
-                    <span>다크 모드</span>
-                    <span id="themeStatus">ON</span>
-                </button>
-            </div>
-            
-            <!-- 얼굴분석 버튼 추가 -->
-            <div style="margin: 20px 0; padding: 20px 0; border-top: 1px solid #333; border-bottom: 1px solid #333;">
-                <button onclick="window.open('https://hairgator-face.web.app/', '_blank')" 
-                        style="width: 100%; padding: 15px; background: #2a2a2a; 
-                               color: white; border: 1px solid #444; border-radius: 10px; cursor: pointer; 
-                               font-size: 16px; font-weight: 600; transition: all 0.3s;
-                               display: flex; align-items: center; justify-content: center; gap: 10px;"
-                        onmouseover="this.style.background='#3a3a3a'; this.style.borderColor='#666'"
-                        onmouseout="this.style.background='#2a2a2a'; this.style.borderColor='#444'">
-                    <span style="font-size: 20px;">👤</span>
-                    <span>얼굴분석</span>
-                </button>
-                <p style="color: #666; font-size: 12px; margin-top: 10px; text-align: center;">
-                    AI가 당신에게 어울리는 헤어스타일을 추천해드립니다
-                </p>
-            </div>
-            
-            <div id="designerInfo" style="display: none;">
-                <p style="color: #666; margin-bottom: 10px;">로그인: <span id="designerName">Designer</span></p>
-                <button class="logout-btn" id="logoutBtn">로그아웃</button>
-            </div>
+            <p style="padding: 20px; color: #666;">추가 기능이 곧 제공됩니다.</p>
         </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- 로딩 오버레이 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 메인 콘텐츠 -->
     <main class="main-content">
-        <!-- Gender Selection -->
+        <!-- 로그인 화면 -->
+        <div class="login-screen" id="loginScreen">
+            <div class="login-modal">
+                <h2>HAIRGATOR</h2>
+                <p class="subtitle">Professional Hair Style Menu</p>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="designerName">디자이너명</label>
+                        <input type="text" id="designerName" placeholder="이름을 입력하세요" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phoneNumber">전화번호 (뒤 4자리)</label>
+                        <input type="number" id="phoneNumber" placeholder="0000" maxlength="4" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">비밀번호 (4자리)</label>
+                        <input type="password" id="password" placeholder="****" maxlength="4" required>
+                    </div>
+                    
+                    <button type="submit" class="login-btn">로그인</button>
+                </form>
+                
+                <p class="login-help">처음 사용하시나요? 관리자에게 계정을 요청하세요.</p>
+            </div>
+        </div>
+
+        <!-- 성별 선택 화면 -->
         <div class="gender-selection" id="genderSelection">
-            <button class="gender-btn male" data-gender="male">
+            <button class="gender-btn male" onclick="selectGender('male')">
                 <div class="gender-icon">♂</div>
                 <div class="gender-label">남성</div>
             </button>
-            <button class="gender-btn female" data-gender="female">
+            <button class="gender-btn female" onclick="selectGender('female')">
                 <div class="gender-icon">♀</div>
                 <div class="gender-label">여성</div>
             </button>
         </div>
 
-        <!-- Menu Container -->
+        <!-- 메뉴 컨테이너 -->
         <div class="menu-container" id="menuContainer">
-            <div class="category-tabs-wrapper">
-                <div class="category-tabs" id="categoryTabs"></div>
-            </div>
-            <div class="category-description" id="categoryDescription"></div>
-            <div class="subcategory-wrapper">
-                <div class="subcategory-tabs" id="subcategoryTabs"></div>
-            </div>
-            <div class="menu-grid" id="menuGrid"></div>
+            <p style="text-align: center; padding: 50px; color: #666;">메뉴를 로드하는 중...</p>
         </div>
     </main>
 
-    <!-- Style Modal -->
-    <div class="style-modal" id="styleModal">
-        <div class="modal-content">
-            <button class="modal-close" id="modalClose">×</button>
-            <img id="modalImage" src="" alt="" class="modal-image">
-            <div class="modal-info">
-                <div class="modal-code" id="modalCode">CODE</div>
-                <div class="modal-name" id="modalName">스타일명</div>
-                <div class="modal-actions">
-                    <button class="modal-btn btn-register" id="btnRegister">고객등록</button>
-                    <button class="modal-btn btn-like" id="btnLike">
-                        <span>♡</span>
-                        <span>좋아요</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="js/firebase-config.js"></script>
+    <!-- Firebase 설정 -->
     <script>
-// Main Application Logic
-document.addEventListener('DOMContentLoaded', function() {
-    // Global variables
-    let currentGender = null;
-    let currentCategory = null;
-    let currentSubcategory = 'None';
-    let menuData = {};
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            databaseURL: "https://hairgatormenu-4a43e-default-rtdb.firebaseio.com",
+            projectId: "hairgatormenu-4a43e",
+            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
+            messagingSenderId: "800038006875",
+            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        };
 
-    // Elements
-    const backBtn = document.getElementById('backBtn');
-    const menuBtn = document.getElementById('menuBtn');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarClose = document.getElementById('sidebarClose');
-    const themeToggle = document.getElementById('themeToggle');
-    const themeToggleBottom = document.getElementById('themeToggleBottom');
-    const themeStatus = document.getElementById('themeStatus');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const genderSelection = document.getElementById('genderSelection');
-    const menuContainer = document.getElementById('menuContainer');
-    const categoryTabs = document.getElementById('categoryTabs');
-    const categoryDescription = document.getElementById('categoryDescription');
-    const subcategoryTabs = document.getElementById('subcategoryTabs');
-    const menuGrid = document.getElementById('menuGrid');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    
-    // Modal elements
-    const styleModal = document.getElementById('styleModal');
-    const modalClose = document.getElementById('modalClose');
-    const modalImage = document.getElementById('modalImage');
-    const modalCode = document.getElementById('modalCode');
-    const modalName = document.getElementById('modalName');
-    const btnRegister = document.getElementById('btnRegister');
-    const btnLike = document.getElementById('btnLike');
+        // Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
 
-    // Menu Data Structure
-    const MENU_DATA = {
-        male: {
-            categories: [
-                { 
-                    id: 'side-fringe', 
-                    name: 'SIDE FRINGE',
-                    description: '사이드 프린지는 클래식함과 모던함의 대명사로 스타일링이 따라 원하는 이미지를 자유롭게 표현할 수 있습니다. 가르마를 기준으로 단순히 넘어가는 스타일을 넘어 개인의 특성과 트렌드에 맞춰 고급 테이퍼링을 표현하는 것이 매우 중요합니다.'
-                },
-                { 
-                    id: 'side-part', 
-                    name: 'SIDE PART',
-                    description: '사이드 파트는 정갈하고 단정한 스타일로 비즈니스맨들에게 인기가 많습니다.'
-                },
-                { 
-                    id: 'fringe-up', 
-                    name: 'FRINGE UP',
-                    description: '프린지 업은 앞머리를 올려 이마를 드러내는 시원한 스타일입니다.'
-                },
-                { 
-                    id: 'pushed-back', 
-                    name: 'PUSHED BACK',
-                    description: '푸시백은 머리를 뒤로 넘긴 댄디한 스타일입니다.'
-                },
-                { 
-                    id: 'buzz', 
-                    name: 'BUZZ',
-                    description: '버즈컷은 짧고 깔끔한 스타일로 관리가 편합니다.'
-                },
-                { 
-                    id: 'crop', 
-                    name: 'CROP',
-                    description: '크롭 스타일은 짧으면서도 스타일리시한 느낌을 줍니다.'
-                },
-                { 
-                    id: 'mohican', 
-                    name: 'MOHICAN',
-                    description: '모히칸 스타일은 개성 있고 강한 인상을 줍니다.'
-                }
-            ],
-            subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
-        },
-        female: {
-            categories: [
-                { 
-                    id: 'a-length', 
-                    name: 'A Length',
-                    description: 'A 길이는 가슴선 아래로 내려오는 롱헤어로, 원랭스·레이어드 롱·굵은 S컬이 잘 맞아 우아하고 드라마틱한 분위기를 냅니다.'
-                },
-                { 
-                    id: 'b-length', 
-                    name: 'B Length',
-                    description: 'B 길이는 가슴 아래(A)와 쇄골 아래(C) 사이의 미디엄-롱으로, 레이어드 미디엄롱·바디펌이 어울려 부드럽고 실용적인 인상을 줍니다.'
-                },
-                { 
-                    id: 'c-length', 
-                    name: 'C Length',
-                    description: 'C 길이는 쇄골 라인 아래의 세미 롱으로, 레이어드 C/S컬·에어리펌과 잘 맞아 단정하고 세련된 오피스 무드를 냅니다.'
-                },
-                { 
-                    id: 'd-length', 
-                    name: 'D Length',
-                    description: 'D 길이는 어깨에 정확히 닿는 길이로, LOB·숄더 C컬·빌드펌이 어울려 트렌디하고 깔끔한 느낌을 줍니다.'
-                },
-                { 
-                    id: 'e-length', 
-                    name: 'E Length',
-                    description: 'E 길이는 어깨 바로 위의 단발로, 클래식 보브·A라인 보브·내/외 C컬이 잘 맞아 경쾌하고 모던한 인상을 만듭니다.'
-                },
-                { 
-                    id: 'f-length', 
-                    name: 'F Length',
-                    description: 'F 길이는 턱선 바로 밑 보브 길이로, 프렌치 보브·일자 단발·텍스처 보브가 어울려 시크하고 도회적인 분위기를 연출합니다.'
-                },
-                { 
-                    id: 'g-length', 
-                    name: 'G Length',
-                    description: 'G 길이는 턱선과 같은 높이의 미니 보브로, 클래식 턱선 보브·미니 레이어 보브가 잘 맞아 또렷하고 미니멀한 무드를 줍니다.'
-                },
-                { 
-                    id: 'h-length', 
-                    name: 'H Length',
-                    description: 'H 길이는 귀선~베리숏 구간의 숏헤어로, 픽시·샤그 숏·허쉬 숏 등이 어울려 활동적이고 개성 있는 스타일을 완성합니다.'
-                }
-            ],
-            subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
-        }
-    };
-
-    // Initialize
-    init();
-
-    function init() {
-        setupEventListeners();
-        loadTheme();
-        checkAuthStatus();
-        
-        if (backBtn) {
-            backBtn.style.display = 'none';
-        }
-    }
-
-    // Event Listeners
-    function setupEventListeners() {
-        if (backBtn) {
-            backBtn.addEventListener('click', handleBack);
-        }
-
-        if (menuBtn) {
-            menuBtn.addEventListener('click', openSidebar);
-        }
-
-        if (sidebarClose) {
-            sidebarClose.addEventListener('click', closeSidebar);
-        }
-
-        if (themeToggle) {
-            themeToggle.addEventListener('click', toggleTheme);
-        }
-
-        if (themeToggleBottom) {
-            themeToggleBottom.addEventListener('click', toggleTheme);
-        }
-
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', handleLogout);
-        }
-
-        document.querySelectorAll('.gender-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                selectGender(this.dataset.gender);
-            });
-        });
-
-        if (modalClose) {
-            modalClose.addEventListener('click', closeModal);
-        }
-
-        if (styleModal) {
-            styleModal.addEventListener('click', function(e) {
-                if (e.target === styleModal) {
-                    closeModal();
-                }
-            });
-        }
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && styleModal && styleModal.classList.contains('active')) {
-                closeModal();
-            }
-        });
-        
-        document.addEventListener('click', function(e) {
-            if (sidebar && sidebar.classList.contains('active')) {
-                if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
-                    closeSidebar();
-                }
-            }
-        });
-    }
-
-    // Navigation
-    function handleBack() {
-        if (menuContainer.classList.contains('active')) {
-            menuContainer.classList.remove('active');
-            genderSelection.style.display = 'flex';
-            backBtn.style.display = 'none';
-            
-            if (themeToggleBottom) {
-                themeToggleBottom.style.display = 'flex';
-            }
-            
-            currentGender = null;
-            currentCategory = null;
-        }
-    }
-
-    // Sidebar
-    function openSidebar() {
-        sidebar.classList.add('active');
-    }
-
-    function closeSidebar() {
-        sidebar.classList.remove('active');
-    }
-
-    // Theme
-    function loadTheme() {
-        const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
-        if (savedTheme === 'light') {
-            document.body.classList.add('light-theme');
-            themeStatus.textContent = 'OFF';
-        }
-    }
-
-    function toggleTheme() {
-        document.body.classList.toggle('light-theme');
-        const isLight = document.body.classList.contains('light-theme');
-        
-        if (themeStatus) {
-            themeStatus.textContent = isLight ? 'OFF' : 'ON';
-        }
-        
-        localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
-    }
-
-    // Auth
-    function checkAuthStatus() {
-        const designerInfo = document.getElementById('designerInfo');
-        if (window.auth && window.auth.currentUser) {
-            designerInfo.style.display = 'block';
-            document.getElementById('designerName').textContent = 
-                window.auth.currentUser.displayName || window.auth.currentUser.email;
-        }
-    }
-
-    async function handleLogout() {
-        if (confirm('로그아웃 하시겠습니까?')) {
-            try {
-                if (window.authManager) {
-                    await window.authManager.signOut();
-                }
-                location.reload();
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        }
-    }
-
-    // Gender Selection
-    function selectGender(gender) {
-        currentGender = gender;
-        
-        genderSelection.style.display = 'none';
-        menuContainer.classList.add('active');
-        
-        if (backBtn) {
-            backBtn.style.display = 'flex';
-        }
-        
-        if (themeToggleBottom) {
-            themeToggleBottom.style.display = 'none';
-        }
-        
-        loadMenuData(gender);
-        
-        localStorage.setItem('hairgator_gender', gender);
-    }
-
-    // Load Menu Data
-    function loadMenuData(gender) {
-        showLoading(true);
-        
-        menuData = MENU_DATA[gender];
-        
-        renderCategories(gender);
-        
-        if (menuData.categories.length > 0) {
-            selectCategory(menuData.categories[0], gender);
-        }
-        
-        setTimeout(() => showLoading(false), 300);
-    }
-
-    // Render Categories - 여성일 때 물음표 버튼 추가
-    function renderCategories(gender) {
-        categoryTabs.innerHTML = '';
-        
-        // 여성인 경우 맨 앞에 물음표 버튼 추가
-        if (gender === 'female') {
-            const helpTab = document.createElement('button');
-            helpTab.className = 'category-tab help-tab';
-            helpTab.innerHTML = '?';
-            helpTab.addEventListener('click', function() {
-                window.open('https://drive.google.com/file/d/15OgT9k5jCC6TjcJSImuQXcznS_HtFBVf/view?usp=sharing', '_blank');
-            });
-            categoryTabs.appendChild(helpTab);
-        }
-        
-        menuData.categories.forEach((category, index) => {
-            const tab = document.createElement('button');
-            tab.className = 'category-tab';
-            tab.textContent = category.name;
-            tab.dataset.categoryId = category.id;
-            
-            if (index === 0) {
-                tab.classList.add('active', gender);
-            }
-            
-            tab.addEventListener('click', function() {
-                selectCategory(category, gender);
-            });
-            
-            categoryTabs.appendChild(tab);
-        });
-    }
-
-    // Select Category
-    function selectCategory(category, gender) {
-        currentCategory = category;
-        
-        document.querySelectorAll('.category-tab').forEach(tab => {
-            if (tab.classList.contains('help-tab')) return; // 물음표 버튼은 제외
-            tab.classList.remove('active', 'male', 'female');
-            if (tab.dataset.categoryId === category.id) {
-                tab.classList.add('active', gender);
-            }
-        });
-        
-        categoryDescription.textContent = category.description;
-        
-        renderSubcategories(gender);
-        
-        loadStyles(category.id, currentSubcategory, gender);
-    }
-
-    // Render Subcategories
-    function renderSubcategories(gender) {
-        subcategoryTabs.innerHTML = '';
-        
-        const subcategories = menuData.subcategories;
-        
-        subcategories.forEach((sub, index) => {
-            const tab = document.createElement('button');
-            tab.className = 'subcategory-tab';
-            tab.textContent = sub;
-            tab.dataset.subcategory = sub;
-            
-            if (index === 0) {
-                tab.classList.add('active', gender);
-                currentSubcategory = sub;
-            }
-            
-            tab.addEventListener('click', function() {
-                selectSubcategory(sub, gender);
-            });
-            
-            subcategoryTabs.appendChild(tab);
-        });
-    }
-
-    // Select Subcategory
-    function selectSubcategory(subcategory, gender) {
-        currentSubcategory = subcategory;
-        
-        document.querySelectorAll('.subcategory-tab').forEach(tab => {
-            tab.classList.remove('active', 'male', 'female');
-            if (tab.dataset.subcategory === subcategory) {
-                tab.classList.add('active', gender);
-            }
-        });
-        
-        loadStyles(currentCategory.id, subcategory, gender);
-    }
-
-    // Load Styles from Firebase
-    async function loadStyles(categoryId, subcategory, gender) {
-        menuGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
-        
+        // 캐시 설정
         try {
-            // Firebase 초기화 확인
-            if (typeof db === 'undefined') {
-                console.error('Firebase not initialized');
-                menuGrid.innerHTML = '<div style="color: #999; text-align: center; padding: 40px;">Firebase 연결 중...</div>';
-                return;
-            }
-            
-            // 현재 카테고리 이름 찾기
-            const categoryName = currentCategory.name;
-            console.log('Loading styles:', { gender, categoryName, subcategory });
-            
-            // Firebase에서 데이터 가져오기
-            const query = db.collection('hairstyles')
-                .where('gender', '==', gender)
-                .where('mainCategory', '==', categoryName)
-                .where('subCategory', '==', subcategory);
-            
-            const snapshot = await query.get();
-            
-            menuGrid.innerHTML = '';
-            
-            if (snapshot.empty) {
-                menuGrid.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
-                        <div style="font-size: 48px; margin-bottom: 20px;">📭</div>
-                        <div>등록된 스타일이 없습니다</div>
-                        <div style="font-size: 12px; margin-top: 10px;">
-                            ${categoryName} - ${subcategory}
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-            
-            // 스타일 카드 생성
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const item = document.createElement('div');
-                item.className = `menu-item ${gender}`;
-                
-                // 실제 이미지 표시
-                item.innerHTML = `
-                    <img src="${data.imageUrl || ''}" 
-                         alt="${data.name || 'Style'}" 
-                         class="menu-item-image"
-                         onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); padding: 10px; text-align: center;">
-                        <div style="font-size: 11px; color: #999;">${data.code || ''}</div>
-                        <div style="font-size: 13px; color: white; margin-top: 3px;">${data.name || ''}</div>
-                    </div>
-                `;
-                
-                item.addEventListener('click', function() {
-                    showStyleDetail(data.code, data.name, gender, data.imageUrl, doc.id);
-                });
-                
-                menuGrid.appendChild(item);
-            });
-            
-        } catch (error) {
-            console.error('Load styles error:', error);
-            menuGrid.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ff4444;">
-                    <div>데이터 로드 실패</div>
-                    <div style="font-size: 12px; margin-top: 10px;">${error.message}</div>
-                </div>
-            `;
-        }
-    }
-
-    // Close Modal
-    function closeModal() {
-        if (styleModal) {
-            styleModal.classList.remove('active');
-        }
-    }
-
-    // Show Style Detail Modal
-    function showStyleDetail(code, name, gender, imageSrc, docId) {
-        if (!styleModal) return;
-        
-        modalImage.src = imageSrc || '';
-        modalImage.onerror = function() {
-            this.style.display = 'none';
-            this.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        };
-        modalCode.textContent = code;
-        modalName.textContent = name;
-        
-        if (gender === 'female') {
-            btnRegister.classList.add('female');
-        } else {
-            btnRegister.classList.remove('female');
-        }
-        
-        btnLike.classList.remove('active');
-        const heart = btnLike.querySelector('span:first-child');
-        if (heart) heart.textContent = '♡';
-        
-        styleModal.classList.add('active');
-        
-        // 고객 등록 버튼
-        btnRegister.onclick = async function() {
-            const customerName = prompt('고객 이름을 입력하세요:');
-            if (!customerName) return;
-            
-            const customerPhone = prompt('전화번호를 입력하세요:');
-            if (!customerPhone) return;
-            
-            try {
-                await db.collection('customers').add({
-                    name: customerName,
-                    phone: customerPhone,
-                    styleCode: code,
-                    styleName: name,
-                    styleId: docId,
-                    gender: gender,
-                    designer: localStorage.getItem('designerName') || 'Unknown',
-                    registeredAt: new Date(),
-                    lastVisit: new Date()
-                });
-                
-                alert('고객 등록 완료!');
-                closeModal();
-            } catch (error) {
-                console.error('Customer registration error:', error);
-                alert('등록 실패: ' + error.message);
-            }
-        };
-        
-        // 좋아요 버튼
-        btnLike.onclick = async function() {
-            this.classList.toggle('active');
-            const heart = this.querySelector('span:first-child');
-            if (heart) {
-                const isLiked = this.classList.contains('active');
-                heart.textContent = isLiked ? '♥' : '♡';
-                
-                // Firebase에 좋아요 업데이트
-                if (docId) {
-                    try {
-                        const docRef = db.collection('hairstyles').doc(docId);
-                        await docRef.update({
-                            likes: firebase.firestore.FieldValue.increment(isLiked ? 1 : -1)
-                        });
-                    } catch (error) {
-                        console.error('Like update error:', error);
-                    }
+            db.settings({
+                cache: {
+                    kind: 'persistent',
+                    tabManager: { kind: 'multi-tab' }
                 }
-            }
-        };
-    }
-
-    // Loading
-    function showLoading(show) {
-        if (loadingOverlay) {
-            loadingOverlay.classList.toggle('active', show);
-        }
-    }
-
-    const savedGender = localStorage.getItem('hairgator_gender');
-    if (savedGender && !genderSelection.style.display) {
-        // Auto-select if previously selected
-        // setTimeout(() => selectGender(savedGender), 100);
-    }
-});
-
-window.addEventListener('load', function() {
-    console.log('HAIRGATOR App Loaded');
-});
-    </script>
-    <!-- AKOOL AI 기능 추가 -->
-<script src="js/akool-service.js"></script>
-<script src="js/ai-integration.js"></script>
-    <script>
-        // PWA Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker registration successful');
-                    })
-                    .catch(function(err) {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
             });
+        } catch(e) {
+            console.log('Cache settings fallback');
         }
-        
-        // iOS Standalone 모드 체크
-        if (window.navigator.standalone === true) {
-            console.log('Running in standalone mode');
-            document.body.classList.add('standalone-mode');
+
+        console.log('✅ Firebase 초기화 완료');
+    </script>
+
+    <script>
+        // 전역 변수
+        let currentGender = null;
+        let currentDesigner = null;
+
+        // DOM 요소
+        const loginScreen = document.getElementById('loginScreen');
+        const genderSelection = document.getElementById('genderSelection');
+        const menuContainer = document.getElementById('menuContainer');
+        const backBtn = document.getElementById('backBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // 로딩 표시/숨김
+        function showLoading(show = true) {
+            loadingOverlay.style.display = show ? 'flex' : 'none';
         }
-        
-        // Android PWA 설치 프롬프트
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
+
+        // 사이드바 토글
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        // 뒤로가기
+        function goBack() {
+            if (menuContainer.classList.contains('active')) {
+                // 메뉴에서 성별 선택으로
+                menuContainer.classList.remove('active');
+                genderSelection.style.display = 'flex';
+                backBtn.style.display = 'none';
+            } else if (genderSelection.style.display === 'flex') {
+                // 성별 선택에서 로그인으로
+                genderSelection.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                backBtn.style.display = 'none';
+            }
+        }
+
+        // 로그인 처리
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            deferredPrompt = e;
-            console.log('PWA 설치 가능');
+            
+            const name = document.getElementById('designerName').value.trim();
+            const phone = document.getElementById('phoneNumber').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            // 기본 검증
+            if (!name || phone.length !== 4 || password.length !== 4) {
+                alert('모든 정보를 정확히 입력해주세요');
+                return;
+            }
+            
+            // 로그인 성공 처리 (실제로는 Firebase Authentication 사용)
+            currentDesigner = {
+                name: name,
+                phone: phone,
+                loginTime: new Date()
+            };
+            
+            // localStorage에 저장
+            localStorage.setItem('hairgator_designer', JSON.stringify(currentDesigner));
+            
+            // 화면 전환
+            loginScreen.style.display = 'none';
+            genderSelection.style.display = 'flex';
+            backBtn.style.display = 'flex';
+            
+            console.log('로그인 성공:', name);
         });
-        
-        // PWA 설치 감지
-        window.addEventListener('appinstalled', (evt) => {
-            console.log('PWA가 설치되었습니다');
-        });
-        
-        // 전체화면 모드 감지
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            console.log('PWA 전체화면 모드로 실행 중');
-            document.body.classList.add('pwa-mode');
+
+        // 성별 선택
+        function selectGender(gender) {
+            currentGender = gender;
+            
+            // 성별 저장
+            localStorage.setItem('hairgator_gender', gender);
+            
+            // 화면 전환
+            genderSelection.style.display = 'none';
+            menuContainer.classList.add('active');
+            
+            // 메뉴 로드
+            loadMenuData(gender);
         }
+
+        // 메뉴 데이터 로드
+        function loadMenuData(gender) {
+            showLoading(true);
+            
+            // Firebase에서 데이터 로드 시뮬레이션
+            setTimeout(() => {
+                const menuHTML = `
+                    <div style="padding: 20px; text-align: center;">
+                        <h2>${gender === 'male' ? '남성' : '여성'} 헤어스타일</h2>
+                        <p style="color: #666; margin-top: 10px;">카테고리를 준비하고 있습니다...</p>
+                    </div>
+                `;
+                
+                menuContainer.innerHTML = menuHTML;
+                showLoading(false);
+                
+                console.log(`${gender} 메뉴 로드 완료`);
+            }, 1000);
+        }
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            // 저장된 로그인 정보 확인
+            const savedDesigner = localStorage.getItem('hairgator_designer');
+            const savedGender = localStorage.getItem('hairgator_gender');
+            
+            if (savedDesigner) {
+                currentDesigner = JSON.parse(savedDesigner);
+                loginScreen.style.display = 'none';
+                
+                if (savedGender) {
+                    currentGender = savedGender;
+                    genderSelection.style.display = 'none';
+                    menuContainer.classList.add('active');
+                    backBtn.style.display = 'flex';
+                    loadMenuData(savedGender);
+                } else {
+                    genderSelection.style.display = 'flex';
+                    backBtn.style.display = 'flex';
+                }
+            } else {
+                loginScreen.style.display = 'flex';
+            }
+        });
+
+        // 클릭 이벤트 외부 영역에서 사이드바 닫기
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.getElementById('menuBtn');
+            
+            if (sidebar.classList.contains('active') && 
+                !sidebar.contains(e.target) && 
+                !menuBtn.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
     </script>
 </body>
 </html>
-
