@@ -335,22 +335,21 @@ function createAIResultModal() {
 }
 
 // ========== Face Swap 기능 함수들 ==========
-
-let currentStyleData = null;
+// ❌ 중복 선언 제거: let currentStyleData = null;
 
 // AI 체험 시작
 function startAIExperience() {
-    if (typeof currentDesigner === 'undefined' || !currentDesigner) {
+    if (typeof window.currentDesigner === 'undefined' || !window.currentDesigner) {
         showToast('로그인이 필요합니다', 'error');
         return;
     }
 
-    if (currentDesigner.tokens < 5) {
+    if (window.currentDesigner.tokens < 5) {
         showToast('토큰이 부족합니다. 충전 후 이용해주세요.', 'error');
         return;
     }
 
-    if (typeof currentStyleData === 'undefined' || !currentStyleData) {
+    if (typeof window.currentStyleData === 'undefined' || !window.currentStyleData) {
         showToast('스타일 정보를 불러올 수 없습니다', 'error');
         return;
     }
@@ -369,16 +368,16 @@ function startAIExperience() {
         // 스타일 이미지 미리 설정
         const stylePhoto = document.getElementById('stylePhoto');
         if (stylePhoto) {
-            stylePhoto.src = currentStyleData.imageUrl || '';
+            stylePhoto.src = window.currentStyleData.imageUrl || '';
         }
     }
     
-    console.log('AI 체험 시작:', currentStyleData.name);
+    console.log('AI 체험 시작:', window.currentStyleData.name);
 }
 
 // AI 처리 함수 (index.html의 processAI 함수와 연동)
 async function processAI() {
-    if (typeof currentDesigner === 'undefined' || !currentDesigner || currentDesigner.tokens < 5) {
+    if (typeof window.currentDesigner === 'undefined' || !window.currentDesigner || window.currentDesigner.tokens < 5) {
         showToast('토큰이 부족합니다', 'error');
         return;
     }
@@ -389,7 +388,7 @@ async function processAI() {
         return;
     }
 
-    if (!currentStyleData || !currentStyleData.imageUrl) {
+    if (!window.currentStyleData || !window.currentStyleData.imageUrl) {
         showToast('스타일 정보가 없습니다', 'error');
         return;
     }
@@ -405,10 +404,10 @@ async function processAI() {
         // 토큰 차감 및 Face Swap 처리
         const result = await executeWithTokens('AI_FACE_ANALYSIS', async () => {
             const userImageFile = aiFileInput.files[0];
-            const styleImageUrl = currentStyleData.imageUrl;
+            const styleImageUrl = window.currentStyleData.imageUrl;
             
             console.log('AKOOL Face Swap 시작:', {
-                styleName: currentStyleData.name,
+                styleName: window.currentStyleData.name,
                 styleUrl: styleImageUrl
             });
 
@@ -459,7 +458,7 @@ function showAIResult(resultImageUrl) {
             </div>
         </div>
         <div style="margin-top: 15px; color: #666; font-size: 14px;">
-            <strong style="color: #FF1493;">${currentStyleData.name}</strong> 스타일로 변신한 모습입니다!
+            <strong style="color: #FF1493;">${window.currentStyleData.name}</strong> 스타일로 변신한 모습입니다!
         </div>
     `;
     
@@ -488,7 +487,7 @@ function downloadAIResult() {
     
     try {
         const link = document.createElement('a');
-        link.download = `hairgator_ai_${currentStyleData.name}_${Date.now()}.jpg`;
+        link.download = `hairgator_ai_${window.currentStyleData.name}_${Date.now()}.jpg`;
         link.href = img.src;
         link.click();
         showToast('이미지가 저장되었습니다!', 'success');
@@ -509,7 +508,7 @@ function shareAIResult() {
     if (navigator.share) {
         navigator.share({
             title: 'HAIRGATOR AI 헤어스타일 체험',
-            text: `${currentStyleData.name} 스타일로 변신해봤어요!`,
+            text: `${window.currentStyleData.name} 스타일로 변신해봤어요!`,
             url: window.location.href
         }).then(() => {
             showToast('공유 완료!', 'success');
