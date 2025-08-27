@@ -756,6 +756,11 @@
         let heartbeatInterval = null;
         let currentCategory = null;
         let currentSubcategory = 'None';
+        
+        // 성능 최적화 변수
+        let styleCache = new Map(); // 스타일 캐시
+        let preloadedImages = new Set(); // 이미지 프리로드 추적
+        let isPreloading = false; // 프리로딩 상태
 
         // 메뉴 데이터 정의
         const MENU_DATA = {
@@ -1162,43 +1167,234 @@
             loadMenuData(gender);
         }
 
-        // 메뉴 데이터 로드 (네이티브앱처럼 빠른 로딩)
-        function loadMenuData(gender) {
+        // ⚡ 초고속 성능 최적화 시스템
+        
+        // 1. 전체 데이터 사전 로딩 (백그라운드)
+        async function preloadAllData() {
+            if (isPreloading) return;
+            isPreloading = true;
+            
+            console.log('🚀 전체 데이터 백그라운드 로딩 시작...');
+            
             try {
-                const menuData = MENU_DATA[gender];
-                if (!menuData) {
-                    throw new Error(`${gender} 데이터를 찾을 수 없습니다`);
-                }
+                // 모든 스타일 한 번에 가져오기 (성별별)
+                const promises = ['male', 'female'].map(async gender => {
+                    const snapshot = await db.collection('hairstyles')
+                        .where('gender', '==', gender)
+                        .get();
+                    
+                    // 성별별 데이터 캐시에 저장
+                    snapshot.forEach(doc => {
+                        const style = doc.data();
+                        const key = `${gender}-${style.mainCategory}-${style.subCategory}`;
+                        
+                        if (!styleCache.has(key)) {
+                            styleCache.set(key, []);
+                        }
+                        styleCache.get(key).push({ ...style, docId: doc.id });
+                        
+                        // 이미지 프리로딩
+                        if (style.imageUrl) {
+                            preloadImage(style.imageUrl);
+                        }
+                    });
+                });
                 
-                // UI 즉시 렌더링 (로딩 없이)
-                renderCategories(gender, menuData.categories);
-                renderSubcategories(gender, menuData.subcategories);
-                
-                // 첫 번째 카테고리 자동 선택 및 스켈레톤 표시
-                if (menuData.categories.length > 0) {
-                    showSkeletonCards(); // 스켈레톤 먼저 표시
-                    selectCategory(menuData.categories[0], gender);
-                }
-                
-                console.log(`${gender} 메뉴 시스템 즉시 로드 완료`);
+                await Promise.all(promises);
+                console.log(`✅ 전체 데이터 캐시 완료 (${styleCache.size}개 카테고리)`);
                 
             } catch (error) {
-                console.error('메뉴 로드 오류:', error);
-                showToast('메뉴 로드 중 오류가 발생했습니다', 'error');
+                console.error('백그라운드 로딩 오류:', error);
             }
         }
 
-        // 스켈레톤 카드 표시 (로딩 중)
-        function showSkeletonCards() {
-            const stylesGrid = document.getElementById('stylesGrid');
-            stylesGrid.innerHTML = '';
+        // 2. 이미지 프리로딩 (비동기)
+        function preloadImage(url) {
+            if (preloadedImages.has(url)) return;
             
-            // 15개의 스켈레톤 카드 생성 (시각적 즉시 피드백)
-            for (let i = 0; i < 15; i++) {
-                const skeleton = document.createElement('div');
-                skeleton.className = 'skeleton-card';
-                stylesGrid.appendChild(skeleton);
+            const img = new Image();
+            img.onload = () => preloadedImages.add(url);
+            img.onerror = () => console.warn('이미지 프리로드 실패:', url);
+            img.src = url;
+        }
+
+        // 3. 즉시 메뉴 데이터 로드 (0ms 지연)
+        function loadMenuData(gender) {
+            // UI 즉시 렌더링
+            const menuData = MENU_DATA[gender];
+            renderCategories(gender, menuData.categories);
+            renderSubcategories(gender, menuData.subcategories);
+            
+            // 첫 번째 카테고리 즉시 로드
+            if (menuData.categories.length > 0) {
+                const firstCategory = menuData.categories[0];
+                currentCategory = firstCategory;
+                
+                // 캐시된 데이터가 있으면 즉시 표시, 없으면 Firebase 조회
+                loadStylesInstant(firstCategory.name, 'None', gender);
             }
+            
+            // 백그라운드에서 전체 데이터 로딩 (사용자 경험에 영향 없음)
+            setTimeout(() => preloadAllData(), 100);
+            
+            console.log(`⚡ ${gender} 메뉴 즉시 로드 (0ms)`);
+        }
+
+        // 4. 즉시 스타일 로드 (캐시 우선)
+        async function loadStylesInstant(categoryName, subcategory, gender) {
+            const stylesGrid = document.getElementById('stylesGrid');
+            const cacheKey = `${gender}-${categoryName}-${subcategory}`;
+            
+            // 캐시된 데이터가 있으면 즉시 표시
+            if (styleCache.has(cacheKey)) {
+                console.log(`⚡ 캐시에서 즉시 로드: ${cacheKey}`);
+                displayCachedStyles(styleCache.get(cacheKey));
+                return;
+            }
+            
+            // 캐시가 없으면 스켈레톤 표시 후 Firebase 조회
+            showSkeletonCards();
+            
+            try {
+                const snapshot = await db.collection('hairstyles')
+                    .where('gender', '==', gender)
+                    .where('mainCategory', '==', categoryName)
+                    .where('subCategory', '==', subcategory)
+                    .get();
+                
+                const styles = [];
+                snapshot.forEach(doc => {
+                    const style = doc.data();
+                    styles.push({ ...style, docId: doc.id });
+                    
+                    // 이미지 프리로딩
+                    if (style.imageUrl) {
+                        preloadImage(style.imageUrl);
+                    }
+                });
+                
+                // 캐시에 저장
+                styleCache.set(cacheKey, styles);
+                
+                // 즉시 표시
+                displayCachedStyles(styles);
+                
+                console.log(`✅ Firebase → 캐시 저장 완료: ${cacheKey} (${styles.length}개)`);
+                
+            } catch (error) {
+                console.error('스타일 로드 오류:', error);
+                showErrorState(error.message);
+            }
+        }
+
+        // 5. 캐시된 스타일 즉시 표시
+        function displayCachedStyles(styles) {
+            const stylesGrid = document.getElementById('stylesGrid');
+            
+            if (styles.length === 0) {
+                stylesGrid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <div style="font-size: 18px;">등록된 스타일이 없습니다</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // DocumentFragment로 한 번에 DOM 조작
+            const fragment = document.createDocumentFragment();
+            
+            styles.forEach(style => {
+                const card = createOptimizedStyleCard(style);
+                fragment.appendChild(card);
+            });
+            
+            stylesGrid.innerHTML = '';
+            stylesGrid.appendChild(fragment);
+            
+            console.log(`⚡ ${styles.length}개 스타일 즉시 표시 완료`);
+        }
+
+        // 6. 최적화된 스타일 카드 생성
+        function createOptimizedStyleCard(style) {
+            const card = document.createElement('div');
+            card.className = 'style-card';
+            
+            const img = document.createElement('img');
+            img.className = 'style-image';
+            img.alt = style.name || 'Style';
+            img.loading = 'lazy';
+            
+            // 프리로딩된 이미지는 즉시 로드, 아니면 lazy loading
+            if (preloadedImages.has(style.imageUrl)) {
+                img.src = style.imageUrl;
+            } else {
+                img.dataset.src = style.imageUrl;
+                // Intersection Observer로 필요할 때만 로드
+                imageObserver.observe(img);
+            }
+            
+            // 에러 처리
+            img.onerror = () => {
+                img.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                img.style.display = 'block';
+            };
+            
+            card.appendChild(img);
+            
+            // 터치 최적화된 이벤트
+            card.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleStyleSelection(style, card);
+            }, { passive: false });
+            
+            return card;
+        }
+
+        // 7. Intersection Observer (이미지 지연 로딩)
+        const imageObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    if (img.dataset.src) {
+                        img.src = img.dataset.src;
+                        delete img.dataset.src;
+                        imageObserver.unobserve(img);
+                    }
+                }
+            });
+        }, { rootMargin: '50px' });
+
+        // 8. 스타일 선택 처리 최적화
+        function handleStyleSelection(style, cardElement) {
+            // 햅틱 피드백
+            if (navigator.vibrate) {
+                navigator.vibrate(30);
+            }
+            
+            // 시각적 피드백 (GPU 가속)
+            cardElement.style.transform = 'scale(0.95)';
+            cardElement.style.transition = 'transform 0.1s ease';
+            
+            setTimeout(() => {
+                cardElement.style.transform = '';
+            }, 100);
+            
+            showToast('스타일 선택됨', 'success');
+            console.log('⚡ 스타일 선택:', { code: style.code, name: style.name });
+        }
+
+        // 9. 에러 상태 표시
+        function showErrorState(message) {
+            const stylesGrid = document.getElementById('stylesGrid');
+            stylesGrid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <div style="font-size: 18px;">로드 실패</div>
+                    <div style="font-size: 14px; color: #666; margin-top: 10px;">${message}</div>
+                    <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: var(--female-color); color: white; border: none; border-radius: 5px; cursor: pointer;">새로고침</button>
+                </div>
+            `;
         }
 
         // 카테고리 탭 렌더링
@@ -1242,7 +1438,7 @@
             });
         }
 
-        // 카테고리 선택
+        // 카테고리 선택 (캐시 우선)
         function selectCategory(category, gender) {
             currentCategory = category;
             
@@ -1254,11 +1450,11 @@
                 }
             });
             
-            // 스타일 로드
-            loadStyles(category.name, currentSubcategory, gender);
+            // 즉시 스타일 로드 (캐시 우선)
+            loadStylesInstant(category.name, currentSubcategory, gender);
         }
 
-        // 서브카테고리 선택
+        // 서브카테고리 선택 (캐시 우선)
         function selectSubcategory(subcategory, gender) {
             currentSubcategory = subcategory;
             
@@ -1270,99 +1466,39 @@
                 }
             });
             
-            // 스타일 로드
+            // 즉시 스타일 로드 (캐시 우선)
             if (currentCategory) {
-                loadStyles(currentCategory.name, subcategory, gender);
+                loadStylesInstant(currentCategory.name, subcategory, gender);
             }
         }
 
-        // Firebase에서 스타일 로드 (최적화된 빠른 로딩)
-        async function loadStyles(categoryName, subcategory, gender) {
+        // 스켈레톤 카드 표시 (필요시에만)
+        function showSkeletonCards() {
             const stylesGrid = document.getElementById('stylesGrid');
+            stylesGrid.innerHTML = '';
             
-            try {
-                console.log('Firebase에서 스타일 조회:', { gender, categoryName, subcategory });
-                
-                // 캐시된 쿼리 사용으로 속도 향상
-                const snapshot = await db.collection('hairstyles')
-                    .where('gender', '==', gender)
-                    .where('mainCategory', '==', categoryName)
-                    .where('subCategory', '==', subcategory)
-                    .get();
-                
-                // 스켈레톤 즉시 제거하고 실제 컨텐츠 표시
-                stylesGrid.innerHTML = '';
-                
-                if (snapshot.empty) {
-                    stylesGrid.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">📭</div>
-                            <div style="font-size: 18px; margin-bottom: 10px;">등록된 스타일이 없습니다</div>
-                            <div style="font-size: 14px; color: #666;">${categoryName} - ${subcategory}</div>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // DocumentFragment 사용으로 DOM 조작 최적화
-                const fragment = document.createDocumentFragment();
-                
-                snapshot.forEach(doc => {
-                    const style = doc.data();
-                    const card = createStyleCard(style, doc.id);
-                    fragment.appendChild(card);
-                });
-                
-                stylesGrid.appendChild(fragment);
-                
-                console.log(`✅ ${snapshot.size}개 스타일 즉시 로드 완료`);
-                
-            } catch (error) {
-                console.error('스타일 로드 오류:', error);
-                stylesGrid.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">⚠️</div>
-                        <div style="font-size: 18px; margin-bottom: 10px;">로드 실패</div>
-                        <div style="font-size: 14px; color: #666;">${error.message}</div>
-                    </div>
-                `;
+            const fragment = document.createDocumentFragment();
+            
+            // 디바이스별 적절한 스켈레톤 수
+            const count = window.innerWidth <= 767 ? 8 : 15;
+            
+            for (let i = 0; i < count; i++) {
+                const skeleton = document.createElement('div');
+                skeleton.className = 'skeleton-card';
+                fragment.appendChild(skeleton);
             }
+            
+            stylesGrid.appendChild(fragment);
         }
 
-        // 스타일 카드 생성 (텍스트 정보 제거)
+        // Firebase에서 스타일 로드 (레거시 - 캐시 미스시에만 사용)
+        async function loadStyles(categoryName, subcategory, gender) {
+            return loadStylesInstant(categoryName, subcategory, gender);
+        }
+
+        // 스타일 카드 생성 (레거시 - 호환성 유지)
         function createStyleCard(style, docId) {
-            const card = document.createElement('div');
-            card.className = 'style-card';
-            
-            // 이미지만 표시, 텍스트 정보는 완전 제거
-            card.innerHTML = `
-                <img class="style-image" 
-                     src="${style.imageUrl || ''}" 
-                     alt="${style.name || 'Style'}"
-                     loading="lazy"
-                     onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.style.display='block';">
-            `;
-            
-            // 터치/클릭 최적화
-            card.addEventListener('click', (e) => {
-                e.preventDefault();
-                
-                // 햅틱 피드백 시뮬레이션 (모바일)
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-                
-                // 스타일 선택 피드백
-                card.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    card.style.transform = '';
-                }, 150);
-                
-                showToast(`스타일 선택됨`, 'success');
-                console.log('스타일 선택:', { code: style.code, name: style.name });
-            }, { passive: false });
-            
-            return card;
+            return createOptimizedStyleCard({ ...style, docId });
         }
 
         // 페이지 로드 시 실행
