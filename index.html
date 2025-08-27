@@ -348,6 +348,7 @@
             box-shadow: 0 0 6px rgba(255, 68, 68, 0.6);
             animation: pulse-red 2s infinite;
             z-index: 10;
+            pointer-events: none;
         }
 
         @keyframes pulse-red {
@@ -629,6 +630,160 @@
             opacity: 1;
         }
 
+        /* 스타일 상세 모달 */
+        .style-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            padding: 20px;
+        }
+
+        .style-modal.active {
+            display: flex;
+        }
+
+        .style-modal-content {
+            background: #111;
+            border: 2px solid var(--female-color);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideUp 0.3s ease-out;
+        }
+
+        .style-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .style-modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .style-modal-image {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            border-radius: 18px 18px 0 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .style-modal-info {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .style-modal-code {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .style-modal-name {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .style-modal-details {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .style-detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .style-detail-row:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+
+        .style-detail-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .style-detail-value {
+            color: white;
+            font-weight: 500;
+        }
+
+        .style-modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-action-btn {
+            flex: 1;
+            background: var(--female-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-action-btn:hover {
+            background: #d81b60;
+            transform: translateY(-2px);
+        }
+
+        .modal-action-btn.secondary {
+            background: #333;
+        }
+
+        .modal-action-btn.secondary:hover {
+            background: #444;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
         /* 반응형 */
         @media (max-width: 768px) {
             .gender-selection {
@@ -644,6 +799,22 @@
             .login-modal {
                 margin: 0 10px;
                 padding: 20px;
+            }
+
+            .style-modal-content {
+                max-width: 95%;
+            }
+
+            .style-modal-info {
+                padding: 20px;
+            }
+
+            .style-modal-name {
+                font-size: 20px;
+            }
+
+            .style-modal-actions {
+                flex-direction: column;
             }
         }
     </style>
@@ -745,6 +916,40 @@
             <div class="styles-container">
                 <div class="styles-grid" id="stylesGrid">
                     <!-- 동적 생성 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 스타일 상세 모달 -->
+        <div class="style-modal" id="styleModal">
+            <div class="style-modal-content">
+                <button class="style-modal-close" id="styleModalClose">×</button>
+                
+                <img class="style-modal-image" id="styleModalImage" alt="Style Image">
+                
+                <div class="style-modal-info">
+                    <div class="style-modal-code" id="styleModalCode">CODE</div>
+                    <div class="style-modal-name" id="styleModalName">Style Name</div>
+                    
+                    <div class="style-modal-details">
+                        <div class="style-detail-row">
+                            <span class="style-detail-label">카테고리</span>
+                            <span class="style-detail-value" id="styleModalCategory">-</span>
+                        </div>
+                        <div class="style-detail-row">
+                            <span class="style-detail-label">서브카테고리</span>
+                            <span class="style-detail-value" id="styleModalSubcategory">-</span>
+                        </div>
+                        <div class="style-detail-row">
+                            <span class="style-detail-label">성별</span>
+                            <span class="style-detail-value" id="styleModalGender">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="style-modal-actions">
+                        <button class="modal-action-btn secondary" onclick="closeStyleModal()">닫기</button>
+                        <button class="modal-action-btn">선택하기</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1408,14 +1613,7 @@
             const card = document.createElement('div');
             card.className = 'style-card';
             
-            // NEW 표시 (7일 이내 등록된 경우)
-            const createdAt = style.createdAt?.toDate?.() || new Date(0);
-            const isNew = createdAt.getTime() > newItemsTimestamp;
-            
-            if (isNew) {
-                card.appendChild(createNewIndicator());
-            }
-            
+            // 이미지 먼저 생성
             const img = document.createElement('img');
             img.className = 'style-image';
             img.src = style.imageUrl || '';
@@ -1429,13 +1627,85 @@
             
             card.appendChild(img);
             
-            // 클릭 이벤트
-            card.addEventListener('click', () => {
-                showToast(`${style.name || 'No Name'} 선택됨`, 'success');
-                console.log('스타일 선택:', { code: style.code, name: style.name });
-            });
+            // NEW 표시 (7일 이내 등록된 경우)
+            const createdAt = style.createdAt?.toDate?.() || new Date(0);
+            const isNew = createdAt.getTime() > newItemsTimestamp;
+            
+            if (isNew) {
+                const newIndicator = createNewIndicator();
+                card.appendChild(newIndicator);
+            }
+            
+            // 클릭 이벤트 - 모달 열기
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 시각적 피드백
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    card.style.transform = '';
+                }, 150);
+                
+                // 햅틱 피드백 (모바일)
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                
+                console.log('스타일 클릭됨:', { 
+                    code: style.code || 'NO_CODE', 
+                    name: style.name || 'NO_NAME',
+                    docId: docId 
+                });
+                
+                // 스타일 상세 모달 열기
+                openStyleModal(style, docId);
+                
+            }, { passive: false });
             
             return card;
+        }
+
+        // 스타일 상세 모달 열기
+        function openStyleModal(style, docId) {
+            const modal = document.getElementById('styleModal');
+            const modalImage = document.getElementById('styleModalImage');
+            const modalCode = document.getElementById('styleModalCode');
+            const modalName = document.getElementById('styleModalName');
+            const modalCategory = document.getElementById('styleModalCategory');
+            const modalSubcategory = document.getElementById('styleModalSubcategory');
+            const modalGender = document.getElementById('styleModalGender');
+            
+            // 모달 정보 설정
+            modalImage.src = style.imageUrl || '';
+            modalImage.onerror = function() {
+                this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                this.style.display = 'block';
+            };
+            
+            modalCode.textContent = style.code || 'NO CODE';
+            modalName.textContent = style.name || '이름 없음';
+            modalCategory.textContent = style.mainCategory || '-';
+            modalSubcategory.textContent = style.subCategory || '-';
+            modalGender.textContent = style.gender === 'male' ? '남성' : style.gender === 'female' ? '여성' : '-';
+            
+            // 모달 표시
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            console.log('스타일 모달 열림:', { 
+                code: style.code, 
+                name: style.name,
+                category: style.mainCategory,
+                subcategory: style.subCategory 
+            });
+        }
+
+        // 스타일 모달 닫기
+        function closeStyleModal() {
+            const modal = document.getElementById('styleModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
         }
 
         // 스켈레톤 카드 표시
@@ -1474,6 +1744,29 @@
             
             loginScreen.style.display = 'flex';
             updateUserInfo();
+
+            // 모달 닫기 이벤트 리스너 추가
+            const styleModalClose = document.getElementById('styleModalClose');
+            const styleModal = document.getElementById('styleModal');
+            
+            if (styleModalClose) {
+                styleModalClose.addEventListener('click', closeStyleModal);
+            }
+            
+            if (styleModal) {
+                styleModal.addEventListener('click', function(e) {
+                    if (e.target === styleModal) {
+                        closeStyleModal();
+                    }
+                });
+            }
+            
+            // ESC 키로 모달 닫기
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && styleModal.classList.contains('active')) {
+                    closeStyleModal();
+                }
+            });
         });
 
         // 클릭 이벤트 외부 영역에서 사이드바 닫기
