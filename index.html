@@ -994,22 +994,69 @@
         <span>다크모드</span>
     </div>
 
-    <!-- Scripts -->
-    <script src="js/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
+    <!-- Firebase 설정 인라인 -->
+    <script>
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            databaseURL: "https://hairgatormenu-4a43e-default-rtdb.firebaseio.com",
+            projectId: "hairgatormenu-4a43e",
+            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
+            messagingSenderId: "800038006875",
+            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        };
+
+        // Firebase 초기화
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log('🔥 Firebase 앱 초기화 성공');
+            
+            // Firestore 초기화
+            window.db = firebase.firestore();
+            window.auth = firebase.auth();
+            console.log('🔥 Firebase 서비스 초기화 성공');
+        } catch (error) {
+            console.error('❌ Firebase 초기화 실패:', error);
+        }
+    </script>
     
     <script>
         // 🦎 HAIRGATOR 최종 완성 버전 Main Script
         // Firebase 설정 및 main.js 통합 버전
         
-        // Firebase 초기화 대기
+        // Firebase 초기화 대기 및 디버깅 강화
         function waitForFirebase() {
             return new Promise((resolve) => {
-                if (window.db && window.auth) {
-                    resolve();
-                } else {
-                    setTimeout(() => waitForFirebase().then(resolve), 100);
-                }
+                let attempts = 0;
+                const maxAttempts = 50; // 5초 대기
+                
+                const checkFirebase = () => {
+                    attempts++;
+                    console.log(`🔄 Firebase 확인 시도 ${attempts}/${maxAttempts}`);
+                    
+                    if (window.firebase && window.firebase.firestore) {
+                        try {
+                            window.db = window.firebase.firestore();
+                            window.auth = window.firebase.auth();
+                            console.log('✅ Firebase 객체 초기화 성공');
+                            resolve(true);
+                            return;
+                        } catch (error) {
+                            console.error('❌ Firebase 객체 초기화 실패:', error);
+                        }
+                    }
+                    
+                    if (attempts >= maxAttempts) {
+                        console.error('❌ Firebase 초기화 시간 초과');
+                        resolve(false);
+                        return;
+                    }
+                    
+                    setTimeout(checkFirebase, 100);
+                };
+                
+                checkFirebase();
             });
         }
 
@@ -1017,9 +1064,26 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🦎 HAIRGATOR 초기화 시작...');
 
-            // Firebase 초기화 대기
-            await waitForFirebase();
-            console.log('✅ Firebase 연결 확인');
+            // Firebase 초기화 대기 (강화된 버전)
+            const firebaseReady = await waitForFirebase();
+            if (firebaseReady) {
+                console.log('✅ Firebase 연결 확인 완료');
+                
+                // Firebase 연결 테스트
+                try {
+                    await window.db.collection('test').doc('connection').set({
+                        timestamp: new Date(),
+                        status: 'connected'
+                    });
+                    console.log('🔥 Firebase 쓰기 테스트 성공');
+                } catch (error) {
+                    console.error('❌ Firebase 쓰기 테스트 실패:', error);
+                    showToast('Firebase 연결에 문제가 있습니다');
+                }
+            } else {
+                console.error('❌ Firebase 초기화 실패 - 오프라인 모드로 실행');
+                showToast('⚠️ Firebase 연결 실패 - 일부 기능이 제한됩니다');
+            }
 
             // 메인 스크립트 실행
             await loadMainScript();
@@ -1167,47 +1231,64 @@
                 });
             }
 
-            // 기존 사용자 확인
+            // 기존 사용자 확인 (강화된 오류 처리)
             async function checkExistingUser(phone) {
                 try {
-                    if (!window.db) return false;
+                    if (!window.db) {
+                        console.error('❌ Firebase DB 객체 없음');
+                        return false;
+                    }
                     
+                    console.log('🔍 사용자 검색 중:', phone);
                     const querySnapshot = await window.db.collection('designers')
                         .where('phone', '==', phone)
                         .get();
                     
-                    return !querySnapshot.empty;
+                    const exists = !querySnapshot.empty;
+                    console.log('🔍 사용자 존재 여부:', exists);
+                    return exists;
                 } catch (error) {
-                    console.error('사용자 확인 오류:', error);
+                    console.error('❌ 사용자 확인 오류:', error);
+                    showToast('❌ 사용자 확인 중 오류 발생');
                     return false;
                 }
             }
 
-            // 사용자 비밀번호 검증
+            // 사용자 비밀번호 검증 (강화된 오류 처리)
             async function validateUser(phone, password) {
                 try {
-                    if (!window.db) return false;
+                    if (!window.db) {
+                        console.error('❌ Firebase DB 객체 없음');
+                        return false;
+                    }
                     
+                    console.log('🔑 비밀번호 검증 중:', phone);
                     const querySnapshot = await window.db.collection('designers')
                         .where('phone', '==', phone)
                         .where('password', '==', password)
                         .get();
                     
-                    return !querySnapshot.empty;
+                    const isValid = !querySnapshot.empty;
+                    console.log('🔑 비밀번호 유효성:', isValid);
+                    return isValid;
                 } catch (error) {
-                    console.error('비밀번호 검증 오류:', error);
+                    console.error('❌ 비밀번호 검증 오류:', error);
+                    showToast('❌ 비밀번호 검증 중 오류 발생');
                     return false;
                 }
             }
 
-            // 신규 사용자 등록
+            // 신규 사용자 등록 (강화된 오류 처리)
             async function registerNewUser(name, phone, password) {
                 try {
-                    if (!window.db) throw new Error('Firebase 연결 없음');
+                    if (!window.db) {
+                        throw new Error('Firebase DB 연결 없음');
+                    }
                     
                     const defaultTokens = 100; // 기본 토큰
                     
-                    await window.db.collection('designers').add({
+                    console.log('👤 신규 사용자 등록 중:', name, phone);
+                    const docRef = await window.db.collection('designers').add({
                         name: name,
                         phone: phone,
                         password: password,
@@ -1217,10 +1298,10 @@
                         isActive: true
                     });
                     
-                    console.log('✅ 신규 사용자 등록 완료:', name);
+                    console.log('✅ 신규 사용자 등록 완료:', docRef.id);
                 } catch (error) {
                     console.error('❌ 사용자 등록 오류:', error);
-                    throw error;
+                    throw new Error(`사용자 등록 실패: ${error.message}`);
                 }
             }
 
