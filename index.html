@@ -1596,18 +1596,36 @@
         }
 
         console.log('✅ Firebase 초기화 완료');
+        
+        // ===== 전역 변수 선언 (window 객체에 할당하여 확실한 전역 접근 보장) =====
+        window.currentDesigner = null;           // 현재 로그인된 디자이너 정보
+        window.currentSessionId = null;          // 현재 세션 ID
+        window.currentStyleData = null;          // 현재 선택된 스타일 데이터
+        window.currentGender = null;             // 현재 선택된 성별
+        window.currentCategory = null;           // 현재 선택된 카테고리
+        window.currentSubcategory = null;        // 현재 선택된 서브카테고리
+        window.heartbeatInterval = null;         // 하트비트 인터벌
+        
+        // 캐시용 Map 객체들
+        window.availableSubcategories = new Map(); // 서브카테고리 캐시
+        
+        // 호환성을 위한 let 선언 (기존 코드 호환)
+        let currentDesigner = window.currentDesigner;
+        let currentSessionId = window.currentSessionId;
+        let currentStyleData = window.currentStyleData;
+        let currentGender = window.currentGender;
+        let currentCategory = window.currentCategory;
+        let currentSubcategory = window.currentSubcategory;
+        const availableSubcategories = window.availableSubcategories;
     </script>
 
-    <!-- 🔧 수정된 스크립트 경로들 -->
+    <!-- 외부 스크립트들 로드 -->
     <script src="js/token-system.js"></script>
     <script src="js/akool-service.js"></script>
     <script src="js/menu.js"></script>
 
     <script>
-        // index.html 전용 전역 변수 (중복 선언 제거)
-        let heartbeatInterval = null;
-        
-        // 카메라 관련 변수 (index.html 전용)
+        // index.html 전용 변수들 (window와 분리된 로컬 변수들)
         let cameraStream = null;
         let cameraVideo = null;
         let cameraCanvas = null;
@@ -1896,7 +1914,7 @@
                         currentSessionId: sessionId
                     });
 
-                    currentDesigner = {
+                    window.currentDesigner = {
                         id: designerDoc.id,
                         name: designerData.name,
                         phone: designerData.phone,
@@ -1904,7 +1922,9 @@
                         sessionId: sessionId
                     };
 
-                    currentSessionId = sessionId;
+                    window.currentSessionId = sessionId;
+                    currentDesigner = window.currentDesigner;
+                    currentSessionId = window.currentSessionId;
                     this.startHeartbeat();
 
                     console.log('✅ 로그인 성공:', currentDesigner.name);
@@ -1942,11 +1962,11 @@
             }
 
             startHeartbeat() {
-                if (heartbeatInterval) {
-                    clearInterval(heartbeatInterval);
+                if (window.heartbeatInterval) {
+                    clearInterval(window.heartbeatInterval);
                 }
 
-                heartbeatInterval = setInterval(async () => {
+                window.heartbeatInterval = setInterval(async () => {
                     try {
                         await this.updateLastActivity();
                     } catch (error) {
@@ -1957,9 +1977,9 @@
             }
 
             async updateLastActivity() {
-                if (!currentSessionId) return;
+                if (!window.currentSessionId) return;
 
-                await db.collection(this.sessionCollectionName).doc(currentSessionId).update({
+                await db.collection(this.sessionCollectionName).doc(window.currentSessionId).update({
                     lastActivity: new Date()
                 });
             }
@@ -1974,11 +1994,13 @@
                         });
                     }
 
-                    if (heartbeatInterval) {
-                        clearInterval(heartbeatInterval);
-                        heartbeatInterval = null;
+                    if (window.heartbeatInterval) {
+                        clearInterval(window.heartbeatInterval);
+                        window.heartbeatInterval = null;
                     }
 
+                    window.currentDesigner = null;
+                    window.currentSessionId = null;
                     currentDesigner = null;
                     currentSessionId = null;
 
@@ -2050,17 +2072,16 @@
             const sessionStatus = document.getElementById('sessionStatusDisplay');
             const currentTokensDisplay = document.getElementById('currentTokens');
 
-            // currentDesigner는 menu.js에서 전역변수로 선언됨
-            if (typeof currentDesigner !== 'undefined' && currentDesigner) {
+            if (window.currentDesigner) {
                 userInfo.style.display = 'block';
                 guestMessage.style.display = 'none';
                 
-                designerName.textContent = `이름: ${currentDesigner.name}`;
-                designerPhone.textContent = `전화: ${currentDesigner.phone}`;
-                sessionStatus.textContent = `토큰: ${currentDesigner.tokens || 0}개`;
+                designerName.textContent = `이름: ${window.currentDesigner.name}`;
+                designerPhone.textContent = `전화: ${window.currentDesigner.phone}`;
+                sessionStatus.textContent = `토큰: ${window.currentDesigner.tokens || 0}개`;
                 
                 if (currentTokensDisplay) {
-                    currentTokensDisplay.textContent = currentDesigner.tokens || 0;
+                    currentTokensDisplay.textContent = window.currentDesigner.tokens || 0;
                 }
             } else {
                 userInfo.style.display = 'none';
@@ -2082,30 +2103,28 @@
 
         // AI 체험 기능들
         function startAIExperience() {
-            // currentDesigner는 menu.js에서 전역변수로 선언됨
-            if (typeof currentDesigner === 'undefined' || !currentDesigner) {
+            if (!window.currentDesigner) {
                 showToast('로그인이 필요합니다', 'error');
                 return;
             }
 
-            if (currentDesigner.tokens < 5) {
+            if (window.currentDesigner.tokens < 5) {
                 showToast('토큰이 부족합니다. 충전 후 이용해주세요.', 'error');
                 return;
             }
 
-            // currentStyleData도 menu.js에서 관리되는지 확인 필요
-            if (typeof currentStyleData === 'undefined' || !currentStyleData) {
+            if (!window.currentStyleData) {
                 showToast('스타일 정보를 불러올 수 없습니다', 'error');
                 return;
             }
 
             // 스타일 이미지 미리 설정
-            stylePhoto.src = currentStyleData.imageUrl || '';
+            stylePhoto.src = window.currentStyleData.imageUrl || '';
             
             aiExperienceModal.classList.add('active');
             document.body.style.overflow = 'hidden';
             
-            console.log('AI 체험 모달 열림:', currentStyleData);
+            console.log('AI 체험 모달 열림:', window.currentStyleData);
         }
 
         function closeAIExperience() {
@@ -2123,13 +2142,12 @@
         }
 
         async function processAI() {
-            // 변수 존재 여부 확인
-            if (typeof currentDesigner === 'undefined' || !currentDesigner || currentDesigner.tokens < 5) {
+            if (!window.currentDesigner || window.currentDesigner.tokens < 5) {
                 showToast('토큰이 부족합니다', 'error');
                 return;
             }
 
-            if (!aiFileInput.files[0] || (typeof currentStyleData === 'undefined' || !currentStyleData)) {
+            if (!aiFileInput.files[0] || !window.currentStyleData) {
                 showToast('필수 정보가 누락되었습니다', 'error');
                 return;
             }
@@ -2143,11 +2161,11 @@
                 const result = await executeWithTokens('AI_FACE_ANALYSIS', async () => {
                     // AKOOL 서비스 호출
                     const userImageFile = aiFileInput.files[0];
-                    const styleImageUrl = currentStyleData.imageUrl;
+                    const styleImageUrl = window.currentStyleData.imageUrl;
                     
                     console.log('AKOOL AI 처리 시작:', {
                         styleUrl: styleImageUrl,
-                        styleName: currentStyleData.name
+                        styleName: window.currentStyleData.name
                     });
 
                     // akool-service.js의 함수 호출
@@ -2303,7 +2321,7 @@
                 backBtn.style.display = 'flex';
                 
                 updateUserInfo();
-                showToast(`환영합니다, ${currentDesigner.name}님!`, 'success');
+                showToast(`환영합니다, ${window.currentDesigner.name}님!`, 'success');
                 
             } catch (error) {
                 showToast(error.message, 'error');
@@ -2735,9 +2753,9 @@
 
         // 브라우저 종료 시 세션 정리
         window.addEventListener('beforeunload', function() {
-            if (currentSessionId) {
+            if (window.currentSessionId) {
                 navigator.sendBeacon('/api/logout', JSON.stringify({
-                    sessionId: currentSessionId,
+                    sessionId: window.currentSessionId,
                     reason: 'browser_close'
                 }));
             }
@@ -2746,12 +2764,12 @@
         // 페이지 숨김/표시 시 세션 관리
         document.addEventListener('visibilitychange', function() {
             if (document.hidden) {
-                if (heartbeatInterval) {
-                    clearInterval(heartbeatInterval);
+                if (window.heartbeatInterval) {
+                    clearInterval(window.heartbeatInterval);
                 }
             } else {
-                if (currentSessionId) {
-                    firebaseAuth.startHeartbeat();
+                if (window.currentSessionId && window.firebaseAuth) {
+                    window.firebaseAuth.startHeartbeat();
                 }
             }
         });
