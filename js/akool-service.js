@@ -129,12 +129,22 @@ class AkoolFirebaseService {
             
             if (data.error_code === 0) {
                 console.log('얼굴 탐지 성공');
-                console.log('landmarks 타입:', typeof data.landmarks_str[0]);
-                console.log('landmarks 값:', data.landmarks_str[0]);
+                console.log('전체 응답:', JSON.stringify(data, null, 2));
+                
+                // landmarks 배열에서 첫 4개 좌표를 콜론으로 구분한 문자열로 변환
+                let landmarksStr = '';
+                if (data.landmarks && data.landmarks[0] && Array.isArray(data.landmarks[0])) {
+                    const coords = data.landmarks[0].slice(0, 4); // 첫 4개 좌표만
+                    landmarksStr = coords.map(coord => `${coord[0]},${coord[1]}`).join(':');
+                    console.log('변환된 landmarks:', landmarksStr);
+                } else if (data.landmarks_str && data.landmarks_str[0]) {
+                    landmarksStr = data.landmarks_str[0];
+                    console.log('landmarks_str 사용:', landmarksStr);
+                }
                 
                 return {
                     success: true,
-                    landmarks: data.landmarks_str[0],
+                    landmarks: landmarksStr,
                     region: data.region[0]
                 };
             } else {
