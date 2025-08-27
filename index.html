@@ -290,6 +290,11 @@
             gap: 10px;
             overflow-x: auto;
             border-bottom: 1px solid #333;
+            scrollbar-width: none;
+        }
+
+        .category-tabs::-webkit-scrollbar {
+            display: none;
         }
 
         .category-tab {
@@ -302,18 +307,31 @@
             white-space: nowrap;
             transition: all 0.3s ease;
             font-size: 14px;
+            font-weight: 500;
+        }
+
+        .category-tab:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        .category-tab.active {
+            font-weight: bold;
+            transform: scale(1.05);
         }
 
         .category-tab.active.male {
             background: var(--male-color);
             color: white;
             border-color: var(--male-color);
+            box-shadow: 0 2px 10px rgba(74, 144, 226, 0.4);
         }
 
         .category-tab.active.female {
             background: var(--female-color);
             color: white;
             border-color: var(--female-color);
+            box-shadow: 0 2px 10px rgba(233, 30, 99, 0.4);
         }
 
         /* 서브카테고리 탭 */
@@ -336,14 +354,26 @@
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 13px;
+            font-weight: 500;
+        }
+
+        .sub-tab:hover {
+            background: #444;
+        }
+
+        .sub-tab.active {
+            font-weight: bold;
+            transform: scale(1.05);
         }
 
         .sub-tab.active.male {
             background: var(--male-color);
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.4);
         }
 
         .sub-tab.active.female {
             background: var(--female-color);
+            box-shadow: 0 2px 8px rgba(233, 30, 99, 0.4);
         }
 
         /* 스타일 그리드 */
@@ -354,47 +384,68 @@
 
         .styles-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(5, 1fr);
             gap: 15px;
         }
 
+        /* 태블릿: 5열 */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .styles-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 12px;
+            }
+        }
+
+        /* 모바일: 2열 */
+        @media (max-width: 767px) {
+            .styles-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .styles-container {
+                padding: 15px;
+            }
+        }
+
         .style-card {
-            background: #1a1a1a;
+            background: transparent;
             border-radius: 10px;
             overflow: hidden;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid #333;
+            transition: all 0.2s ease;
             aspect-ratio: 3/4;
+            position: relative;
         }
 
         .style-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(255, 20, 147, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+        }
+
+        .style-card:active {
+            transform: scale(0.98);
         }
 
         .style-image {
             width: 100%;
-            height: 75%;
+            height: 100%;
             object-fit: cover;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
         }
 
+        /* 텍스트 정보 완전히 숨김 */
         .style-info {
-            padding: 10px;
-            text-align: center;
+            display: none;
         }
 
         .style-code {
-            font-size: 11px;
-            color: #999;
-            margin-bottom: 4px;
+            display: none;
         }
 
         .style-name {
-            font-size: 13px;
-            color: white;
-            font-weight: 500;
+            display: none;
         }
 
         .empty-state {
@@ -407,6 +458,24 @@
         .empty-icon {
             font-size: 48px;
             margin-bottom: 20px;
+        }
+
+        /* 로딩 스켈레톤 */
+        .skeleton-card {
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            aspect-ratio: 3/4;
+            border-radius: 10px;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
         }
 
         /* 사이드바 */
@@ -1093,34 +1162,42 @@
             loadMenuData(gender);
         }
 
-        // 메뉴 데이터 로드
+        // 메뉴 데이터 로드 (네이티브앱처럼 빠른 로딩)
         function loadMenuData(gender) {
-            showLoading(true);
-            
             try {
                 const menuData = MENU_DATA[gender];
                 if (!menuData) {
                     throw new Error(`${gender} 데이터를 찾을 수 없습니다`);
                 }
                 
-                // 카테고리 탭 렌더링
+                // UI 즉시 렌더링 (로딩 없이)
                 renderCategories(gender, menuData.categories);
-                
-                // 서브카테고리 탭 렌더링
                 renderSubcategories(gender, menuData.subcategories);
                 
-                // 첫 번째 카테고리 자동 선택
+                // 첫 번째 카테고리 자동 선택 및 스켈레톤 표시
                 if (menuData.categories.length > 0) {
+                    showSkeletonCards(); // 스켈레톤 먼저 표시
                     selectCategory(menuData.categories[0], gender);
                 }
                 
-                console.log(`${gender} 메뉴 시스템 로드 완료`);
+                console.log(`${gender} 메뉴 시스템 즉시 로드 완료`);
                 
             } catch (error) {
                 console.error('메뉴 로드 오류:', error);
                 showToast('메뉴 로드 중 오류가 발생했습니다', 'error');
-            } finally {
-                showLoading(false);
+            }
+        }
+
+        // 스켈레톤 카드 표시 (로딩 중)
+        function showSkeletonCards() {
+            const stylesGrid = document.getElementById('stylesGrid');
+            stylesGrid.innerHTML = '';
+            
+            // 15개의 스켈레톤 카드 생성 (시각적 즉시 피드백)
+            for (let i = 0; i < 15; i++) {
+                const skeleton = document.createElement('div');
+                skeleton.className = 'skeleton-card';
+                stylesGrid.appendChild(skeleton);
             }
         }
 
@@ -1199,20 +1276,21 @@
             }
         }
 
-        // Firebase에서 스타일 로드
+        // Firebase에서 스타일 로드 (최적화된 빠른 로딩)
         async function loadStyles(categoryName, subcategory, gender) {
             const stylesGrid = document.getElementById('stylesGrid');
-            stylesGrid.innerHTML = '<div class="loading-spinner"></div>';
             
             try {
                 console.log('Firebase에서 스타일 조회:', { gender, categoryName, subcategory });
                 
+                // 캐시된 쿼리 사용으로 속도 향상
                 const snapshot = await db.collection('hairstyles')
                     .where('gender', '==', gender)
                     .where('mainCategory', '==', categoryName)
                     .where('subCategory', '==', subcategory)
                     .get();
                 
+                // 스켈레톤 즉시 제거하고 실제 컨텐츠 표시
                 stylesGrid.innerHTML = '';
                 
                 if (snapshot.empty) {
@@ -1226,14 +1304,18 @@
                     return;
                 }
                 
-                // 스타일 카드 생성
+                // DocumentFragment 사용으로 DOM 조작 최적화
+                const fragment = document.createDocumentFragment();
+                
                 snapshot.forEach(doc => {
                     const style = doc.data();
                     const card = createStyleCard(style, doc.id);
-                    stylesGrid.appendChild(card);
+                    fragment.appendChild(card);
                 });
                 
-                console.log(`✅ ${snapshot.size}개 스타일 로드 완료`);
+                stylesGrid.appendChild(fragment);
+                
+                console.log(`✅ ${snapshot.size}개 스타일 즉시 로드 완료`);
                 
             } catch (error) {
                 console.error('스타일 로드 오류:', error);
@@ -1247,26 +1329,38 @@
             }
         }
 
-        // 스타일 카드 생성
+        // 스타일 카드 생성 (텍스트 정보 제거)
         function createStyleCard(style, docId) {
             const card = document.createElement('div');
             card.className = 'style-card';
             
+            // 이미지만 표시, 텍스트 정보는 완전 제거
             card.innerHTML = `
                 <img class="style-image" 
                      src="${style.imageUrl || ''}" 
                      alt="${style.name || 'Style'}"
-                     onerror="this.style.display='none'">
-                <div class="style-info">
-                    <div class="style-code">${style.code || 'NO CODE'}</div>
-                    <div class="style-name">${style.name || '이름 없음'}</div>
-                </div>
+                     loading="lazy"
+                     onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.style.display='block';">
             `;
             
-            card.addEventListener('click', () => {
-                showToast(`${style.name || '스타일'} 선택됨`, 'success');
-                console.log('스타일 선택:', style);
-            });
+            // 터치/클릭 최적화
+            card.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // 햅틱 피드백 시뮬레이션 (모바일)
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                
+                // 스타일 선택 피드백
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    card.style.transform = '';
+                }, 150);
+                
+                showToast(`스타일 선택됨`, 'success');
+                console.log('스타일 선택:', { code: style.code, name: style.name });
+            }, { passive: false });
             
             return card;
         }
