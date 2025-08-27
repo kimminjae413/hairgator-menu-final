@@ -1062,22 +1062,19 @@
 
         // DOM 로드 후 초기화
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🦎 HAIRGATOR 초기화 시작...');
+            console.log('HAIRGATOR 초기화 시작...');
 
             // Firebase 초기화 대기
             const firebaseReady = await waitForFirebase();
             
-            // Firebase 연결 테스트 단순화 (권한 오류 방지)
             if (firebaseReady) {
                 console.log('Firebase 연결 확인 완료');
-                showToast('Firebase 연결 성공');
             } else {
                 console.error('Firebase 초기화 실패 - 오프라인 모드로 실행');
-                showToast('오프라인 모드로 실행 - 일부 기능이 제한됩니다');
             }
 
-            // 메인 스크립트 실행
-            await loadMainScript();
+            // 메인 스크립트 실행 (인라인)
+            initializeApp();
         });
 
         // 메인 스크립트 로드 함수 (404 오류 해결)
