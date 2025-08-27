@@ -469,8 +469,8 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="phoneNumber">전화번호 (뒤 4자리)</label>
-                        <input type="number" id="phoneNumber" placeholder="0000" maxlength="4" required>
+                        <label for="phoneNumber">전화번호</label>
+                        <input type="tel" id="phoneNumber" placeholder="01000000000 또는 010-0000-0000" maxlength="13" required>
                     </div>
                     
                     <div class="form-group">
@@ -804,7 +804,7 @@
                 guestMessage.style.display = 'none';
                 
                 designerName.textContent = `이름: ${currentDesigner.name}`;
-                designerPhone.textContent = `전화: ***-****-${currentDesigner.phone}`;
+                designerPhone.textContent = `전화: ${currentDesigner.phone}`;
                 sessionStatus.textContent = `토큰: ${currentDesigner.tokens || 0}개`;
             } else {
                 userInfo.style.display = 'none';
@@ -812,18 +812,59 @@
             }
         }
 
+        // 전화번호 자동 포맷팅 함수
+        function formatPhoneNumber(phone) {
+            // 숫자만 추출
+            const numbers = phone.replace(/[^\d]/g, '');
+            
+            // 11자리가 아니면 원본 반환
+            if (numbers.length !== 11) {
+                return phone;
+            }
+            
+            // 010-0000-0000 형식으로 포맷
+            return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+        }
+
+        // 전화번호 입력 시 실시간 포맷팅
+        document.getElementById('phoneNumber').addEventListener('input', function(e) {
+            const input = e.target;
+            const cursorPos = input.selectionStart;
+            const oldValue = input.value;
+            const oldLength = oldValue.length;
+            
+            // 포맷팅 적용
+            const formatted = formatPhoneNumber(input.value);
+            input.value = formatted;
+            
+            // 커서 위치 조정
+            const newLength = formatted.length;
+            const diff = newLength - oldLength;
+            input.setSelectionRange(cursorPos + diff, cursorPos + diff);
+        });
+
         // 로그인 처리
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const name = document.getElementById('designerName').value.trim();
-            const phone = document.getElementById('phoneNumber').value.trim();
+            let phone = document.getElementById('phoneNumber').value.trim();
             const password = document.getElementById('password').value.trim();
             const loginBtn = document.getElementById('loginBtn');
             
+            // 전화번호 자동 포맷팅
+            phone = formatPhoneNumber(phone);
+            
             // 기본 검증
-            if (!name || phone.length !== 4 || password.length !== 4) {
+            if (!name || !phone || password.length !== 4) {
                 showToast('모든 정보를 정확히 입력해주세요', 'error');
+                return;
+            }
+
+            // 전화번호 형식 검증
+            const phoneRegex = /^01[0-9]-\d{4}-\d{4}$/;
+            if (!phoneRegex.test(phone)) {
+                showToast('전화번호는 11자리 숫자로 입력해주세요 (예: 01000000000)', 'error');
                 return;
             }
             
