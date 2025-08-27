@@ -1,18 +1,174 @@
-// ========== AKOOL Face Swap API 서비스 ==========
+// ========== HAIRGATOR x AKOOL 데모 버전 통합 서비스 ==========
 
-class AkoolService {
+class AkoolServiceUpgraded {
     constructor() {
+        // Flask Backend URL 설정
+        this.backendURL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3008'
+            : 'https://your-ngrok-url.ngrok-free.app'; // ngrok URL로 변경 필요
+            
+        // 기존 직접 API 방식도 유지 (백엔드 연결 실패시 폴백)
         this.baseURL = 'https://openapi.akool.com/api/open/v3';
         this.detectURL = 'https://sg3.akool.com/detect';
         this.clientId = 'kdwRwzqnGf4zfAFvWCjFKQ==';
         this.clientSecret = 'suEeE2dZWXsDTJ+mlOqYFhqeLDvJQ42g';
         this.token = null;
         this.tokenExpiry = null;
+        
+        // WebSocket 관련
+        this.socket = null;
+        this.currentSessionId = null;
+        this.useBackendMode = true; // 데모 버전 우선 사용
+        
+        this.initializeSystem();
     }
-
-    // 토큰 발급 및 캐싱
+    
+    // 시스템 초기화
+    async initializeSystem() {
+        // 백엔드 연결 테스트
+        const backendAvailable = await this.testBackendConnection();
+        
+        if (backendAvailable && this.useBackendMode) {
+            console.log('✅ 데모 버전 모드 활성화 - 백엔드 연결됨');
+            this.initializeWebSocket();
+        } else {
+            console.log('⚠️ 기존 모드로 폴백 - 직접 API 호출');
+            this.useBackendMode = false;
+        }
+    }
+    
+    // 백엔드 연결 테스트
+    async testBackendConnection() {
+        try {
+            const response = await fetch(`${this.backendURL}/api/health`, {
+                method: 'GET',
+                timeout: 3000
+            });
+            return response.ok;
+        } catch (error) {
+            console.warn('❌ 백엔드 서버 연결 실패:', error);
+            return false;
+        }
+    }
+    
+    // WebSocket 연결 초기화 (데모 버전)
+    initializeWebSocket() {
+        try {
+            // Socket.IO 클라이언트 동적 로드
+            if (typeof io === 'undefined') {
+                this.loadSocketIOClient();
+                return;
+            }
+            
+            this.socket = io(this.backendURL, {
+                transports: ['websocket', 'polling'],
+                timeout: 5000,
+                forceNew: true
+            });
+            
+            this.setupSocketListeners();
+            
+        } catch (error) {
+            console.error('❌ WebSocket 초기화 오류:', error);
+            this.useBackendMode = false;
+        }
+    }
+    
+    // Socket.IO 클라이언트 동적 로드
+    loadSocketIOClient() {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.socket.io/4.7.2/socket.io.min.js';
+        script.onload = () => {
+            console.log('✅ Socket.IO 클라이언트 로드됨');
+            this.initializeWebSocket();
+        };
+        script.onerror = () => {
+            console.error('❌ Socket.IO 클라이언트 로드 실패');
+            this.useBackendMode = false;
+        };
+        document.head.appendChild(script);
+    }
+    
+    // 소켓 이벤트 리스너 설정
+    setupSocketListeners() {
+        this.socket.on('connect', () => {
+            console.log('✅ Flask 서버에 연결됨');
+        });
+        
+        this.socket.on('disconnect', () => {
+            console.log('❌ Flask 서버 연결 해제됨');
+            showToast('서버 연결이 끊어졌습니다', 'warning');
+        });
+        
+        this.socket.on('face_swap_start', (data) => {
+            this.updateProgress(data.message, 10);
+        });
+        
+        this.socket.on('face_swap_progress', (data) => {
+            const progress = data.progress || this.getProgressByStatus(data.status);
+            this.updateProgress(data.message, progress);
+        });
+        
+        this.socket.on('face_swap_complete', (data) => {
+            this.handleSwapComplete(data);
+        });
+        
+        this.socket.on('face_swap_error', (data) => {
+            this.handleSwapError(data.error);
+        });
+    }
+    
+    // 상태별 진행률 계산
+    getProgressByStatus(status) {
+        const progressMap = {
+            'detecting_faces': 20,
+            'detecting_customer_face': 30,
+            'detecting_style_face': 50,
+            'processing': 70,
+            'waiting': 90
+        };
+        return progressMap[status] || 0;
+    }
+    
+    // 진행상황 업데이트
+    updateProgress(message, progress) {
+        showToast(message, 'info');
+        
+        // 진행바가 있다면 업데이트
+        const progressBar = document.getElementById('aiProgressBar');
+        if (progressBar) {
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        const progressText = document.getElementById('aiProgressText');
+        if (progressText) {
+            progressText.textContent = message;
+        }
+    }
+    
+    // Face Swap 완료 처리
+    handleSwapComplete(data) {
+        console.log('✅ Face Swap 완료:', data);
+        showToast('AI 합성 완료!', 'success');
+        showAIResult(data.result_url);
+    }
+    
+    // Face Swap 오류 처리
+    handleSwapError(error) {
+        console.error('❌ Face Swap 오류:', error);
+        showToast(`AI 처리 실패: ${error}`, 'error');
+        
+        // 처리 버튼 복구
+        const processBtn = document.getElementById('processBtn');
+        if (processBtn) {
+            processBtn.disabled = false;
+            processBtn.textContent = 'AI 합성 시작';
+        }
+    }
+    
+    // ========== 토큰 관리 (기존 호환) ==========
+    
     async getToken() {
-        // 토큰이 유효하면 재사용
         if (this.token && this.tokenExpiry && Date.now() < this.tokenExpiry) {
             return this.token;
         }
@@ -20,9 +176,7 @@ class AkoolService {
         try {
             const response = await fetch(`${this.baseURL}/getToken`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     clientId: this.clientId,
                     clientSecret: this.clientSecret
@@ -33,7 +187,6 @@ class AkoolService {
             
             if (data.code === 1000) {
                 this.token = data.token;
-                // 토큰을 1년간 유효하다고 가정하고 11개월로 설정
                 this.tokenExpiry = Date.now() + (11 * 30 * 24 * 60 * 60 * 1000);
                 console.log('✅ AKOOL 토큰 발급 성공');
                 return this.token;
@@ -46,7 +199,138 @@ class AkoolService {
         }
     }
 
-    // 얼굴 탐지 API
+    // ========== Face Swap 메인 함수 ==========
+    
+    async faceSwap(customerImageUrl, styleImageUrl) {
+        // 토큰 시스템과 연동
+        return await executeWithTokens('AI_FACE_ANALYSIS', async () => {
+            
+            if (this.useBackendMode && this.socket) {
+                return await this.faceSwapBackend(customerImageUrl, styleImageUrl);
+            } else {
+                return await this.faceSwapDirect(customerImageUrl, styleImageUrl);
+            }
+        });
+    }
+    
+    // 데모 버전: 백엔드를 통한 Face Swap
+    async faceSwapBackend(customerImageUrl, styleImageUrl) {
+        try {
+            this.currentSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            
+            // 세션 참여
+            if (this.socket) {
+                this.socket.emit('join_session', { session_id: this.currentSessionId });
+            }
+            
+            // 백엔드에 Face Swap 요청
+            const response = await fetch(`${this.backendURL}/api/face-swap`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customer_image_url: customerImageUrl,
+                    style_image_url: styleImageUrl,
+                    session_id: this.currentSessionId,
+                    webhook_url: `${this.backendURL}/api/webhook`
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                console.log('🚀 백엔드 Face Swap 시작됨');
+                // WebSocket을 통해 결과 대기 (Promise는 소켓 이벤트에서 resolve)
+                return new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('처리 시간이 초과되었습니다'));
+                    }, 180000); // 3분 타임아웃
+                    
+                    // 완료 이벤트 대기
+                    this.socket.once('face_swap_complete', (result) => {
+                        clearTimeout(timeout);
+                        resolve({
+                            success: true,
+                            imageUrl: result.result_url,
+                            jobId: result.job_id
+                        });
+                    });
+                    
+                    // 오류 이벤트 대기
+                    this.socket.once('face_swap_error', (error) => {
+                        clearTimeout(timeout);
+                        reject(new Error(error.error || '알 수 없는 오류'));
+                    });
+                });
+            } else {
+                throw new Error(data.error || '백엔드 요청 실패');
+            }
+            
+        } catch (error) {
+            console.error('❌ 백엔드 Face Swap 오류:', error);
+            return { success: false, error: error.message };
+        }
+    }
+    
+    // 기존 버전: 직접 API 호출
+    async faceSwapDirect(customerImageUrl, styleImageUrl) {
+        try {
+            showToast('얼굴 분석 중...', 'info');
+            
+            // 1. 고객 얼굴 탐지
+            const customerFace = await this.detectFace(customerImageUrl, true);
+            if (!customerFace.success) {
+                throw new Error('고객 사진에서 얼굴을 찾을 수 없습니다');
+            }
+
+            showToast('헤어스타일 분석 중...', 'info');
+            
+            // 2. 스타일 이미지 얼굴 탐지
+            const styleFace = await this.detectFace(styleImageUrl, true);
+            if (!styleFace.success) {
+                throw new Error('헤어스타일 이미지에서 얼굴을 찾을 수 없습니다');
+            }
+
+            showToast('AI 합성 처리 중...', 'info');
+            
+            // 3. Face Swap 실행
+            const token = await this.getToken();
+            
+            const response = await fetch(`${this.baseURL}/faceswap/highquality/specifyimage`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sourceImage: [{
+                        path: customerImageUrl,
+                        opts: customerFace.landmarks
+                    }],
+                    targetImage: [{
+                        path: styleImageUrl,
+                        opts: styleFace.landmarks
+                    }],
+                    face_enhance: 1, // 얼굴 향상 활성화 (데모 버전 핵심!)
+                    modifyImage: styleImageUrl,
+                    webhookUrl: "" // 직접 모드에서는 폴링 방식 사용
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.code === 1000) {
+                console.log('✅ Face Swap 요청 성공:', data.data);
+                return await this.waitForResult(data.data._id, data.data.job_id);
+            } else {
+                throw new Error(`Face Swap 실패: ${data.msg}`);
+            }
+        } catch (error) {
+            console.error('❌ Face Swap 오류:', error);
+            return { success: false, error: error.message };
+        }
+    }
+    
+    // 얼굴 탐지 (기존 호환)
     async detectFace(imageUrl, isSingleFace = true) {
         try {
             const token = await this.getToken();
@@ -66,101 +350,30 @@ class AkoolService {
             const data = await response.json();
             
             if (data.error_code === 0) {
-                console.log('✅ 얼굴 탐지 성공:', data.landmarks_str);
                 return {
                     success: true,
-                    landmarks: data.landmarks_str[0], // 첫 번째 얼굴의 landmarks
-                    region: data.region[0] // 얼굴 영역
+                    landmarks: data.landmarks_str[0],
+                    region: data.region[0]
                 };
             } else {
                 throw new Error(`얼굴 탐지 실패: ${data.error_msg}`);
             }
         } catch (error) {
             console.error('❌ 얼굴 탐지 오류:', error);
-            return {
-                success: false,
-                error: error.message
-            };
+            return { success: false, error: error.message };
         }
     }
-
-    // Face Swap API (이미지)
-    async faceSwap(customerImageUrl, styleImageUrl) {
-        try {
-            showToast('🔍 얼굴 분석 중...', 'info');
-            
-            // 1. 고객 얼굴 탐지
-            const customerFace = await this.detectFace(customerImageUrl, true);
-            if (!customerFace.success) {
-                throw new Error('고객 사진에서 얼굴을 찾을 수 없습니다');
-            }
-
-            showToast('🎨 헤어스타일 분석 중...', 'info');
-            
-            // 2. 스타일 이미지 얼굴 탐지
-            const styleFace = await this.detectFace(styleImageUrl, true);
-            if (!styleFace.success) {
-                throw new Error('헤어스타일 이미지에서 얼굴을 찾을 수 없습니다');
-            }
-
-            showToast('🔄 AI 합성 처리 중...', 'info');
-            
-            // 3. Face Swap 실행
-            const token = await this.getToken();
-            
-            const response = await fetch(`${this.baseURL}/faceswap/highquality/specifyimage`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    sourceImage: [{ // 고객 얼굴 (바꿀 얼굴)
-                        path: customerImageUrl,
-                        opts: customerFace.landmarks
-                    }],
-                    targetImage: [{ // 스타일 이미지의 얼굴 (기준이 되는 얼굴)
-                        path: styleImageUrl,
-                        opts: styleFace.landmarks
-                    }],
-                    face_enhance: 1, // 얼굴 향상 활성화
-                    modifyImage: styleImageUrl, // 수정할 기본 이미지
-                    webhookUrl: "" // 콜백 URL (선택사항)
-                })
-            });
-
-            const data = await response.json();
-            
-            if (data.code === 1000) {
-                console.log('✅ Face Swap 요청 성공:', data.data);
-                
-                // 결과 확인 (최대 3분 대기)
-                return await this.waitForResult(data.data._id, data.data.job_id);
-            } else {
-                throw new Error(`Face Swap 실패: ${data.msg}`);
-            }
-        } catch (error) {
-            console.error('❌ Face Swap 오류:', error);
-            showToast(`❌ AI 합성 실패: ${error.message}`, 'error');
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-    }
-
-    // 결과 대기 및 확인
+    
+    // 결과 대기 (기존 폴링 방식)
     async waitForResult(resultId, jobId, maxAttempts = 30) {
         try {
             const token = await this.getToken();
             
             for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-                showToast(`🔄 AI 처리 중... (${attempt}/${maxAttempts})`, 'info');
+                showToast(`AI 처리 중... (${attempt}/${maxAttempts})`, 'info');
                 
                 const response = await fetch(`${this.baseURL}/faceswap/result/listbyids?_ids=${resultId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 const data = await response.json();
@@ -169,77 +382,69 @@ class AkoolService {
                     const result = data.data.result[0];
                     
                     switch (result.faceswap_status) {
-                        case 1: // In Queue
-                            showToast('⏳ 대기열에서 처리 중...', 'info');
+                        case 1:
+                            showToast('대기열에서 처리 중...', 'info');
                             break;
-                        case 2: // Processing
-                            showToast('🎨 AI가 열심히 작업 중...', 'info');
+                        case 2:
+                            showToast('AI가 열심히 작업 중...', 'info');
                             break;
-                        case 3: // Success
-                            showToast('✅ AI 합성 완료!', 'success');
+                        case 3:
+                            showToast('AI 합성 완료!', 'success');
                             return {
                                 success: true,
                                 imageUrl: result.url,
                                 jobId: jobId
                             };
-                        case 4: // Failed
+                        case 4:
                             throw new Error('AI 처리 중 오류가 발생했습니다');
                         default:
-                            showToast('🔄 처리 상태 확인 중...', 'info');
+                            showToast('처리 상태 확인 중...', 'info');
                     }
                 }
                 
-                // 6초 대기 후 재시도
                 await new Promise(resolve => setTimeout(resolve, 6000));
             }
             
             throw new Error('처리 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.');
         } catch (error) {
             console.error('❌ 결과 확인 오류:', error);
-            return {
-                success: false,
-                error: error.message
-            };
+            return { success: false, error: error.message };
         }
     }
-
+    
     // 크레딧 정보 확인
     async getCreditInfo() {
         try {
-            const token = await this.getToken();
-            
-            const response = await fetch(`${this.baseURL}/faceswap/quota/info`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            const data = await response.json();
-            
-            if (data.code === 1000) {
-                return {
-                    success: true,
-                    credit: data.data.credit
-                };
+            if (this.useBackendMode) {
+                const response = await fetch(`${this.backendURL}/api/credit-info`);
+                const data = await response.json();
+                return data;
             } else {
-                throw new Error('크레딧 정보 조회 실패');
+                const token = await this.getToken();
+                const response = await fetch(`${this.baseURL}/faceswap/quota/info`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (data.code === 1000) {
+                    return { success: true, credit: data.data.credit };
+                } else {
+                    throw new Error('크레딧 정보 조회 실패');
+                }
             }
         } catch (error) {
             console.error('❌ 크레딧 정보 조회 오류:', error);
-            return {
-                success: false,
-                error: error.message
-            };
+            return { success: false, error: error.message };
         }
     }
 }
 
-// 전역 AKOOL 서비스 인스턴스
-window.akoolService = new AkoolService();
+// 전역 AKOOL 서비스 인스턴스 (기존 호환성 유지)
+window.akoolService = new AkoolServiceUpgraded();
 
-// ========== Face Swap UI 컴포넌트 ==========
+// ========== UI 컴포넌트 (기존 + 진행바 추가) ==========
 
-// AI 체험하기 버튼 HTML
+// AI 체험하기 버튼 HTML (기존과 동일)
 function createAIExperienceButton() {
     return `
         <button class="modal-btn btn-ai-experience" id="btnAIExperience">
@@ -249,7 +454,7 @@ function createAIExperienceButton() {
     `;
 }
 
-// 고객 사진 업로드 모달 HTML
+// 고객 사진 업로드 모달 HTML (진행바 추가)
 function createPhotoUploadModal() {
     return `
         <div id="photoUploadModal" class="style-modal">
@@ -265,6 +470,14 @@ function createPhotoUploadModal() {
                         고객님의 사진을 업로드하면<br>
                         AI가 선택한 헤어스타일을 합성해드립니다
                     </p>
+                    
+                    <!-- 진행바 (데모 버전 전용) -->
+                    <div id="aiProgressContainer" style="display: none; margin-bottom: 20px;">
+                        <div style="background: #f0f0f0; border-radius: 10px; overflow: hidden;">
+                            <div id="aiProgressBar" style="height: 8px; background: linear-gradient(90deg, #FF1493, #FF69B4); width: 0%; transition: width 0.5s ease;"></div>
+                        </div>
+                        <div id="aiProgressText" style="margin-top: 10px; color: #FF1493; font-size: 14px;"></div>
+                    </div>
                     
                     <div class="photo-upload-area" id="photoUploadArea">
                         <input type="file" id="customerPhotoInput" accept="image/*" style="display: none;">
@@ -296,7 +509,7 @@ function createPhotoUploadModal() {
     `;
 }
 
-// AI 결과 표시 모달 HTML
+// AI 결과 표시 모달 HTML (기존과 동일)
 function createAIResultModal() {
     return `
         <div id="aiResultModal" class="style-modal">
@@ -332,7 +545,7 @@ function createAIResultModal() {
     `;
 }
 
-// ========== Face Swap 기능 함수들 ==========
+// ========== Face Swap 기능 함수들 (기존 호환) ==========
 
 let currentStyleImage = null;
 let currentStyleName = null;
@@ -343,53 +556,47 @@ function openAIExperience(styleImageUrl, styleName) {
     currentStyleImage = styleImageUrl;
     currentStyleName = styleName;
     
-    // 모달 HTML이 없으면 생성
     if (!document.getElementById('photoUploadModal')) {
         document.body.insertAdjacentHTML('beforeend', createPhotoUploadModal());
         document.body.insertAdjacentHTML('beforeend', createAIResultModal());
-        
-        // 파일 업로드 이벤트 리스너
         document.getElementById('customerPhotoInput').addEventListener('change', handlePhotoUpload);
     }
     
     openPhotoUploadModal();
 }
 
-// 사진 업로드 모달 열기
 function openPhotoUploadModal() {
     document.getElementById('photoUploadModal').classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
-// 사진 업로드 모달 닫기
 function closePhotoUploadModal() {
     document.getElementById('photoUploadModal').classList.remove('active');
     document.body.style.overflow = '';
     resetPhotoUpload();
+    
+    // 진행바 숨김
+    const progressContainer = document.getElementById('aiProgressContainer');
+    if (progressContainer) progressContainer.style.display = 'none';
 }
 
-// 사진 업로드 처리
 function handlePhotoUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
     
-    // 파일 크기 체크 (5MB 제한)
     if (file.size > 5 * 1024 * 1024) {
-        showToast('❌ 파일 크기는 5MB 이하여야 합니다', 'error');
+        showToast('파일 크기는 5MB 이하여야 합니다', 'error');
         return;
     }
     
-    // 이미지 파일 체크
     if (!file.type.startsWith('image/')) {
-        showToast('❌ 이미지 파일만 업로드 가능합니다', 'error');
+        showToast('이미지 파일만 업로드 가능합니다', 'error');
         return;
     }
     
     const reader = new FileReader();
     reader.onload = function(e) {
         uploadedCustomerPhoto = e.target.result;
-        
-        // 미리보기 표시
         document.getElementById('previewImage').src = uploadedCustomerPhoto;
         document.querySelector('.upload-placeholder').style.display = 'none';
         document.getElementById('photoPreview').style.display = 'block';
@@ -397,7 +604,6 @@ function handlePhotoUpload(event) {
     reader.readAsDataURL(file);
 }
 
-// 사진 업로드 리셋
 function resetPhotoUpload() {
     uploadedCustomerPhoto = null;
     document.getElementById('customerPhotoInput').value = '';
@@ -405,43 +611,46 @@ function resetPhotoUpload() {
     document.getElementById('photoPreview').style.display = 'none';
 }
 
-// AI Face Swap 처리
+// AI Face Swap 처리 (토큰 시스템 통합)
 async function processAIFaceSwap() {
     if (!uploadedCustomerPhoto || !currentStyleImage) {
-        showToast('❌ 사진을 먼저 선택해주세요', 'error');
+        showToast('사진을 먼저 선택해주세요', 'error');
         return;
     }
     
     const processBtn = document.getElementById('processBtn');
+    const progressContainer = document.getElementById('aiProgressContainer');
+    
     processBtn.disabled = true;
-    processBtn.textContent = '🎨 AI 처리 중...';
+    processBtn.textContent = 'AI 처리 중...';
+    
+    // 데모 버전에서는 진행바 표시
+    if (window.akoolService.useBackendMode) {
+        progressContainer.style.display = 'block';
+    }
     
     try {
-        // 고객 사진을 서버에 업로드 (실제 구현에서는 Firebase Storage 등 사용)
         const customerImageUrl = await uploadImageToStorage(uploadedCustomerPhoto);
-        
-        // AKOOL Face Swap 실행
         const result = await window.akoolService.faceSwap(customerImageUrl, currentStyleImage);
         
         if (result.success) {
-            // 결과 표시
             showAIResult(result.imageUrl);
         } else {
-            showToast(`❌ AI 처리 실패: ${result.error}`, 'error');
+            showToast(`AI 처리 실패: ${result.error}`, 'error');
         }
     } catch (error) {
         console.error('AI 처리 오류:', error);
-        showToast('❌ AI 처리 중 오류가 발생했습니다', 'error');
+        showToast('AI 처리 중 오류가 발생했습니다', 'error');
     } finally {
         processBtn.disabled = false;
         processBtn.textContent = '🎨 AI 합성 시작';
+        progressContainer.style.display = 'none';
     }
 }
 
-// 임시 이미지 업로드 함수 (실제로는 Firebase Storage 등을 사용해야 함)
+// 임시 이미지 업로드 (실제로는 Firebase Storage 등 사용)
 async function uploadImageToStorage(dataUrl) {
-    // 실제 구현에서는 Firebase Storage나 다른 클라우드 스토리지 사용
-    // 현재는 데모용으로 데이터 URL 반환
+    // TODO: 실제 구현에서는 Firebase Storage나 다른 클라우드 스토리지 사용
     return dataUrl;
 }
 
@@ -467,13 +676,11 @@ function showAIResult(resultImageUrl) {
     document.body.style.overflow = 'hidden';
 }
 
-// AI 결과 모달 닫기
 function closeAIResultModal() {
     document.getElementById('aiResultModal').classList.remove('active');
     document.body.style.overflow = '';
 }
 
-// 결과 다운로드
 function downloadAIResult() {
     const img = document.querySelector('#aiResultContainer img');
     if (img) {
@@ -481,12 +688,10 @@ function downloadAIResult() {
         link.download = `hairgator_ai_style_${Date.now()}.jpg`;
         link.href = img.src;
         link.click();
-        
-        showToast('💾 이미지가 저장되었습니다!', 'success');
+        showToast('이미지가 저장되었습니다!', 'success');
     }
 }
 
-// 결과 공유
 function shareAIResult() {
     const img = document.querySelector('#aiResultContainer img');
     if (img && navigator.share) {
@@ -495,12 +700,13 @@ function shareAIResult() {
             text: `${currentStyleName} 스타일로 변신해봤어요!`,
             url: img.src
         }).then(() => {
-            showToast('📱 공유 완료!', 'success');
+            showToast('공유 완료!', 'success');
         }).catch(console.error);
     } else {
-        // Web Share API 미지원 시 클립보드 복사
         navigator.clipboard.writeText(img.src).then(() => {
-            showToast('📋 이미지 링크가 복사되었습니다!', 'success');
+            showToast('이미지 링크가 복사되었습니다!', 'success');
         });
     }
 }
+
+console.log('✅ HAIRGATOR x AKOOL 데모 버전 통합 완료');
