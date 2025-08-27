@@ -1064,6 +1064,9 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🦎 HAIRGATOR 초기화 시작...');
 
+            // Firebase 초기화 대기
+            const firebaseReady = await waitForFirebase();
+            
             // Firebase 연결 테스트 단순화 (권한 오류 방지)
             if (firebaseReady) {
                 console.log('Firebase 연결 확인 완료');
