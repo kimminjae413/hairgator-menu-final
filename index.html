@@ -275,10 +275,138 @@
         /* 메뉴 컨테이너 */
         .menu-container {
             display: none;
+            padding: 0;
         }
 
         .menu-container.active {
             display: block;
+        }
+
+        /* 카테고리 탭 */
+        .category-tabs {
+            background: #111;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            border-bottom: 1px solid #333;
+        }
+
+        .category-tab {
+            background: #222;
+            color: #999;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .category-tab.active.male {
+            background: var(--male-color);
+            color: white;
+            border-color: var(--male-color);
+        }
+
+        .category-tab.active.female {
+            background: var(--female-color);
+            color: white;
+            border-color: var(--female-color);
+        }
+
+        /* 서브카테고리 탭 */
+        .sub-tabs {
+            background: #0a0a0a;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #222;
+        }
+
+        .sub-tab {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        .sub-tab.active.male {
+            background: var(--male-color);
+        }
+
+        .sub-tab.active.female {
+            background: var(--female-color);
+        }
+
+        /* 스타일 그리드 */
+        .styles-container {
+            padding: 20px;
+            min-height: 50vh;
+        }
+
+        .styles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .style-card {
+            background: #1a1a1a;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #333;
+            aspect-ratio: 3/4;
+        }
+
+        .style-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 20, 147, 0.3);
+        }
+
+        .style-image {
+            width: 100%;
+            height: 75%;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .style-info {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .style-code {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .style-name {
+            font-size: 13px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
         }
 
         /* 사이드바 */
@@ -499,7 +627,22 @@
 
         <!-- 메뉴 컨테이너 -->
         <div class="menu-container" id="menuContainer">
-            <p style="text-align: center; padding: 50px; color: #666;">메뉴를 로드하는 중...</p>
+            <!-- 카테고리 탭 -->
+            <div class="category-tabs" id="categoryTabs">
+                <!-- 동적 생성 -->
+            </div>
+            
+            <!-- 서브카테고리 탭 -->
+            <div class="sub-tabs" id="subTabs">
+                <!-- 동적 생성 -->
+            </div>
+            
+            <!-- 스타일 컨테이너 -->
+            <div class="styles-container">
+                <div class="styles-grid" id="stylesGrid">
+                    <!-- 동적 생성 -->
+                </div>
+            </div>
         </div>
     </main>
 
@@ -542,6 +685,37 @@
         let currentDesigner = null;
         let currentSessionId = null;
         let heartbeatInterval = null;
+        let currentCategory = null;
+        let currentSubcategory = 'None';
+
+        // 메뉴 데이터 정의
+        const MENU_DATA = {
+            male: {
+                categories: [
+                    { id: 'side-fringe', name: 'SIDE FRINGE' },
+                    { id: 'side-part', name: 'SIDE PART' },
+                    { id: 'fringe-up', name: 'FRINGE UP' },
+                    { id: 'pushed-back', name: 'PUSHED BACK' },
+                    { id: 'buzz', name: 'BUZZ' },
+                    { id: 'crop', name: 'CROP' },
+                    { id: 'mohican', name: 'MOHICAN' }
+                ],
+                subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
+            },
+            female: {
+                categories: [
+                    { id: 'a-length', name: 'A Length' },
+                    { id: 'b-length', name: 'B Length' },
+                    { id: 'c-length', name: 'C Length' },
+                    { id: 'd-length', name: 'D Length' },
+                    { id: 'e-length', name: 'E Length' },
+                    { id: 'f-length', name: 'F Length' },
+                    { id: 'g-length', name: 'G Length' },
+                    { id: 'h-length', name: 'H Length' }
+                ],
+                subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
+            }
+        };
 
         // DOM 요소
         const loginScreen = document.getElementById('loginScreen');
@@ -923,23 +1097,178 @@
         function loadMenuData(gender) {
             showLoading(true);
             
-            // 실제 Firebase에서 헤어스타일 데이터 로드
-            setTimeout(() => {
-                const menuHTML = `
-                    <div style="padding: 20px; text-align: center;">
-                        <h2>${gender === 'male' ? '남성' : '여성'} 헤어스타일</h2>
-                        <p style="color: #666; margin-top: 10px;">
-                            ${currentDesigner ? currentDesigner.name + '님의' : ''} 
-                            전용 메뉴를 준비하고 있습니다...
-                        </p>
+            try {
+                const menuData = MENU_DATA[gender];
+                if (!menuData) {
+                    throw new Error(`${gender} 데이터를 찾을 수 없습니다`);
+                }
+                
+                // 카테고리 탭 렌더링
+                renderCategories(gender, menuData.categories);
+                
+                // 서브카테고리 탭 렌더링
+                renderSubcategories(gender, menuData.subcategories);
+                
+                // 첫 번째 카테고리 자동 선택
+                if (menuData.categories.length > 0) {
+                    selectCategory(menuData.categories[0], gender);
+                }
+                
+                console.log(`${gender} 메뉴 시스템 로드 완료`);
+                
+            } catch (error) {
+                console.error('메뉴 로드 오류:', error);
+                showToast('메뉴 로드 중 오류가 발생했습니다', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 카테고리 탭 렌더링
+        function renderCategories(gender, categories) {
+            const categoryTabs = document.getElementById('categoryTabs');
+            categoryTabs.innerHTML = '';
+            
+            categories.forEach((category, index) => {
+                const tab = document.createElement('button');
+                tab.className = 'category-tab';
+                tab.textContent = category.name;
+                tab.dataset.categoryId = category.id;
+                
+                if (index === 0) {
+                    tab.classList.add('active', gender);
+                }
+                
+                tab.addEventListener('click', () => selectCategory(category, gender));
+                categoryTabs.appendChild(tab);
+            });
+        }
+
+        // 서브카테고리 탭 렌더링
+        function renderSubcategories(gender, subcategories) {
+            const subTabs = document.getElementById('subTabs');
+            subTabs.innerHTML = '';
+            
+            subcategories.forEach((subcategory, index) => {
+                const tab = document.createElement('button');
+                tab.className = 'sub-tab';
+                tab.textContent = subcategory;
+                tab.dataset.subcategory = subcategory;
+                
+                if (index === 0) {
+                    tab.classList.add('active', gender);
+                    currentSubcategory = subcategory;
+                }
+                
+                tab.addEventListener('click', () => selectSubcategory(subcategory, gender));
+                subTabs.appendChild(tab);
+            });
+        }
+
+        // 카테고리 선택
+        function selectCategory(category, gender) {
+            currentCategory = category;
+            
+            // 탭 활성화 상태 업데이트
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active', 'male', 'female');
+                if (tab.dataset.categoryId === category.id) {
+                    tab.classList.add('active', gender);
+                }
+            });
+            
+            // 스타일 로드
+            loadStyles(category.name, currentSubcategory, gender);
+        }
+
+        // 서브카테고리 선택
+        function selectSubcategory(subcategory, gender) {
+            currentSubcategory = subcategory;
+            
+            // 탭 활성화 상태 업데이트
+            document.querySelectorAll('.sub-tab').forEach(tab => {
+                tab.classList.remove('active', 'male', 'female');
+                if (tab.dataset.subcategory === subcategory) {
+                    tab.classList.add('active', gender);
+                }
+            });
+            
+            // 스타일 로드
+            if (currentCategory) {
+                loadStyles(currentCategory.name, subcategory, gender);
+            }
+        }
+
+        // Firebase에서 스타일 로드
+        async function loadStyles(categoryName, subcategory, gender) {
+            const stylesGrid = document.getElementById('stylesGrid');
+            stylesGrid.innerHTML = '<div class="loading-spinner"></div>';
+            
+            try {
+                console.log('Firebase에서 스타일 조회:', { gender, categoryName, subcategory });
+                
+                const snapshot = await db.collection('hairstyles')
+                    .where('gender', '==', gender)
+                    .where('mainCategory', '==', categoryName)
+                    .where('subCategory', '==', subcategory)
+                    .get();
+                
+                stylesGrid.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    stylesGrid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div style="font-size: 18px; margin-bottom: 10px;">등록된 스타일이 없습니다</div>
+                            <div style="font-size: 14px; color: #666;">${categoryName} - ${subcategory}</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 스타일 카드 생성
+                snapshot.forEach(doc => {
+                    const style = doc.data();
+                    const card = createStyleCard(style, doc.id);
+                    stylesGrid.appendChild(card);
+                });
+                
+                console.log(`✅ ${snapshot.size}개 스타일 로드 완료`);
+                
+            } catch (error) {
+                console.error('스타일 로드 오류:', error);
+                stylesGrid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div style="font-size: 18px; margin-bottom: 10px;">로드 실패</div>
+                        <div style="font-size: 14px; color: #666;">${error.message}</div>
                     </div>
                 `;
-                
-                menuContainer.innerHTML = menuHTML;
-                showLoading(false);
-                
-                console.log(`${gender} 메뉴 로드 완료`);
-            }, 1000);
+            }
+        }
+
+        // 스타일 카드 생성
+        function createStyleCard(style, docId) {
+            const card = document.createElement('div');
+            card.className = 'style-card';
+            
+            card.innerHTML = `
+                <img class="style-image" 
+                     src="${style.imageUrl || ''}" 
+                     alt="${style.name || 'Style'}"
+                     onerror="this.style.display='none'">
+                <div class="style-info">
+                    <div class="style-code">${style.code || 'NO CODE'}</div>
+                    <div class="style-name">${style.name || '이름 없음'}</div>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                showToast(`${style.name || '스타일'} 선택됨`, 'success');
+                console.log('스타일 선택:', style);
+            });
+            
+            return card;
         }
 
         // 페이지 로드 시 실행
