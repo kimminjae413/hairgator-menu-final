@@ -1604,24 +1604,16 @@
     <script src="js/menu.js"></script>
 
     <script>
-        // 전역 변수
-        let currentGender = null;
-        let currentDesigner = null;
-        let currentSessionId = null;
+        // index.html 전용 전역 변수 (중복 선언 제거)
         let heartbeatInterval = null;
-        let currentCategory = null;
-        let currentSubcategory = 'None';
-        let currentStyleData = null; // 현재 선택된 스타일 데이터
         
-        // 카메라 관련 변수
+        // 카메라 관련 변수 (index.html 전용)
         let cameraStream = null;
         let cameraVideo = null;
         let cameraCanvas = null;
         let cameraContext = null;
         
-        // 스마트 필터링 & NEW 시스템
-        let availableSubcategories = new Map();
-        let newItemsCache = new Map();
+        // NEW 시스템용 타임스탬프
         const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
 
         // 메뉴 데이터 정의
