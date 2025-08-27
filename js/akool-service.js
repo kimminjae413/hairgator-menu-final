@@ -196,11 +196,11 @@ class AkoolFirebaseService {
                 body: JSON.stringify({
                     sourceImage: [{
                         path: customerImageUrl,
-                        opts: customerFace.landmarks
+                        opts: JSON.parse(customerFace.landmarks)
                     }],
                     targetImage: [{
                         path: styleImageUrl,
-                        opts: styleFace.landmarks
+                        opts: JSON.parse(styleFace.landmarks)
                     }],
                     face_enhance: 1, // 얼굴 향상 활성화
                     modifyImage: styleImageUrl,
