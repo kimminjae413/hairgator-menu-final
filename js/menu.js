@@ -57,7 +57,7 @@ function loadMenuForGender(gender) {
 
 // 대분류 탭 선택
 function selectMainTab(category, index) {
-    currentMainTab = category;
+    window.currentMainTab = category;
     
     // 탭 활성화 상태 변경
     document.querySelectorAll('.main-tab').forEach((tab, i) => {
@@ -92,7 +92,7 @@ function loadSubTabs() {
 
 // 중분류 탭 선택
 function selectSubTab(subCategory, index) {
-    currentSubTab = subCategory;
+    window.currentSubTab = subCategory;
     
     // 탭 활성화 상태 변경
     document.querySelectorAll('.sub-tab').forEach((tab, i) => {
@@ -118,9 +118,9 @@ async function loadStyles() {
     try {
         // Firebase에서 스타일 가져오기
         const querySnapshot = await db.collection('hairstyles')
-            .where('gender', '==', currentGender)
-            .where('mainCategory', '==', currentMainTab)
-            .where('subCategory', '==', currentSubTab)
+            .where('gender', '==', window.currentGender)
+            .where('mainCategory', '==', window.currentMainTab)
+            .where('subCategory', '==', window.currentSubTab)
             .get();
         
         if (querySnapshot.empty) {
@@ -324,6 +324,9 @@ async function startAIExperienceWithTokens(style) {
         const result = await executeWithTokens('AI_FACE_ANALYSIS', async () => {
             console.log('AI 체험 권한 확인됨 - 5토큰 차감됨');
             
+            // window.currentStyleData 설정
+            window.currentStyleData = style;
+            
             // AI 체험 모달 열기 (기존 akool-service.js 함수 활용)
             openAIExperience(style.imageUrl, style.name);
             
@@ -340,9 +343,19 @@ async function startAIExperienceWithTokens(style) {
     }
 }
 
-// 전역 변수 (기존 호환성)
-let currentGender = 'male';
-let currentMainTab = '';
-let currentSubTab = '';
+// ❌ 중복 선언 제거된 전역 변수들 (window 객체를 통해 접근)
+// let currentGender = 'male';
+// let currentMainTab = '';
+// let currentSubTab = '';
 
-console.log('메뉴 시스템 로드 완료 - AI 체험 기능 통합됨');
+// 전역 변수들은 이제 window 객체를 통해 접근
+// window.currentGender
+// window.currentMainTab  
+// window.currentSubTab
+// window.currentStyleData
+// window.currentCategory
+// window.currentSubcategory
+// window.currentDesigner
+// window.currentSessionId
+
+console.log('메뉴 시스템 로드 완료 - AI 체험 기능 통합됨 (window 객체 전역 변수 사용)');
