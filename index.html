@@ -2168,7 +2168,7 @@
                         styleName: window.currentStyleData.name
                     });
 
-                 // ✅ 수정된 코드
+                 // AKOOL Face Swap 호출
 const swapResult = await window.akoolService.faceSwap(
     userImageFile, 
     styleImageUrl
@@ -2176,34 +2176,23 @@ const swapResult = await window.akoolService.faceSwap(
 
 // 결과 검증 및 처리
 if (swapResult && swapResult.success) {
-    const processedImageUrl = swapResult.imageUrl;
-    console.log('AKOOL AI 처리 완료:', processedImageUrl);
-    return processedImageUrl;
+    console.log('AKOOL AI 처리 완료:', swapResult.imageUrl);
+    return swapResult.imageUrl;
 } else {
     throw new Error(swapResult ? swapResult.error : 'Face Swap 처리 실패');
 }
-                    
-                    console.log('AKOOL AI 처리 완료:', processedImageUrl);
-                    return processedImageUrl;
-                });
 
                 if (result) {
-                    // 성공 - 결과 표시
-                    showToast('AI 처리가 완료되었습니다!', 'success');
-                    
-                    // 결과 이미지 표시 (여기서는 간단히 토스트로 표시)
-                    setTimeout(() => {
-                        showToast('결과를 확인해보세요', 'success');
-                    }, 1000);
-                    
-                    // 토큰 잔액 업데이트
-                    updateUserInfo();
-                    
-                    // 모달 닫기
-                    setTimeout(() => {
-                        closeAIExperience();
-                    }, 2000);
-                }
+    // 성공 - 결과 표시
+    showToast('AI 처리가 완료되었습니다!', 'success');
+    showAIResult(result); // ← 이 줄이 핵심!
+    
+    // 토큰 잔액 업데이트
+    updateUserInfo();
+    
+    // AI 체험 모달 닫기
+    closeAIExperience();
+}
 
             } catch (error) {
                 console.error('AI 처리 오류:', error);
@@ -2788,4 +2777,5 @@ if (swapResult && swapResult.success) {
     </script>
 </body>
 </html>
+
 
