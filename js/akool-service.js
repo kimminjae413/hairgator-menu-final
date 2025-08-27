@@ -190,28 +190,9 @@ class AkoolFirebaseService {
             // 4. Face Swap 실행 - 여러 형식으로 시도
             const token = await this.getToken();
             
-            // landmarks가 문자열인지 확인하고 적절히 처리
-            let customerOpts = customerFace.landmarks;
-            let styleOpts = styleFace.landmarks;
-            
-            // 문자열이면 JSON으로 파싱 시도
-            if (typeof customerOpts === 'string') {
-                try {
-                    customerOpts = JSON.parse(customerOpts);
-                } catch (e) {
-                    // 파싱 실패하면 문자열 그대로 사용
-                    console.log('customerOpts를 문자열로 사용');
-                }
-            }
-            
-            if (typeof styleOpts === 'string') {
-                try {
-                    styleOpts = JSON.parse(styleOpts);
-                } catch (e) {
-                    // 파싱 실패하면 문자열 그대로 사용
-                    console.log('styleOpts를 문자열로 사용');
-                }
-            }
+            // AKOOL API는 opts를 문자열로 요구함
+            let customerOpts = String(customerFace.landmarks);
+            let styleOpts = String(styleFace.landmarks);
             
             console.log('Face Swap 요청 데이터:', {
                 customerImageUrl,
