@@ -483,7 +483,7 @@ function createPersonalColorModal() {
                     src="personal-color/index.html"
                     style="width: 100%; height: 100%; border: none; background: #111;"
                     allow="camera *; microphone *; fullscreen *; geolocation *; autoplay *; encrypted-media *"
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-top-navigation allow-presentation allow-camera allow-microphone"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-presentation"
                     loading="lazy">
                 <p>퍼스널 컬러 진단을 로드할 수 없습니다.</p>
             </iframe>
@@ -922,5 +922,6 @@ window.updateSidebarButtons = updateSidebarButtons;
 window.checkLoginStatus = checkLoginStatus;
 
 console.log('메뉴 시스템 + 테마 시스템 + 퍼스널 컬러 (전체화면 iframe 모달) 로드 완료 - 최종 버전');
+
 
 
