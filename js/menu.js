@@ -450,7 +450,7 @@ function createPersonalColorModal() {
         transition: opacity 0.3s ease;
     `;
     
-    modal.innerHTML = `
+   modal.innerHTML = `
         <div class="personal-color-content" style="
             position: relative;
             width: 100vw;
@@ -477,6 +477,16 @@ function createPersonalColorModal() {
                 transition: all 0.3s ease;
                 backdrop-filter: blur(5px);
             " onmouseover="this.style.background='rgba(255,107,107,0.2)'" onmouseout="this.style.background='rgba(0,0,0,0.7)'">×</button>
+            
+            <!-- iframe에 카메라 권한 허용 속성 추가 -->
+            <iframe id="personalColorFrame" 
+                    src="personal-color/index.html"
+                    style="width: 100%; height: 100%; border: none; background: #111;"
+                    allow="camera *; microphone *; fullscreen *; geolocation *; autoplay *; encrypted-media *"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-top-navigation allow-presentation allow-camera allow-microphone"
+                    loading="lazy">
+                <p>퍼스널 컬러 진단을 로드할 수 없습니다.</p>
+            </iframe>
             
             <div class="personal-color-loading" style="
                 position: absolute;
@@ -539,37 +549,6 @@ function createPersonalColorModal() {
     // body 스크롤 방지
     document.body.style.overflow = 'hidden';
     
-    // HTML 직접 로드
-    const container = document.getElementById('personalColorContainer');
-    fetch('personal-color/index.html')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            return response.text();
-        })
-        .then(html => {
-            const loading = modal.querySelector('.personal-color-loading');
-            if (loading) loading.style.display = 'none';
-            
-            container.innerHTML = html;
-            container.style.display = 'block';
-            
-            console.log('퍼스널 컬러 HTML 직접 로드 완료');
-        })
-        .catch(error => {
-            const loading = modal.querySelector('.personal-color-loading');
-            if (loading) {
-                loading.innerHTML = `
-                    <div style="color: #ff6b6b; font-size: 48px; margin-bottom: 20px;">⚠️</div>
-                    <div style="font-size: 24px; margin-bottom: 15px;">퍼스널 컬러를 로드할 수 없습니다</div>
-                    <div style="font-size: 16px; color: #999; line-height: 1.5;">
-                        오류: ${error.message}
-                    </div>
-                `;
-            }
-            console.error('퍼스널 컬러 HTML 로드 실패:', error);
-        });
     
     // ESC 키로 모달 닫기
     document.addEventListener('keydown', handlePersonalColorEscape);
@@ -943,4 +922,5 @@ window.updateSidebarButtons = updateSidebarButtons;
 window.checkLoginStatus = checkLoginStatus;
 
 console.log('메뉴 시스템 + 테마 시스템 + 퍼스널 컬러 (전체화면 iframe 모달) 로드 완료 - 최종 버전');
+
 
