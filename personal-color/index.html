@@ -2870,7 +2870,8 @@ async function loadCsvProductDatabase() {
         
         const response = await fetch('./personal-color/hair_color_products_extended.csv');
         const csvText = await response.text();
-        
+        const lines = csvText.trim().split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
         csvProductDatabase = lines.slice(1).map(line => {
     // 따옴표 안의 쉼표는 무시하고 파싱
     const values = [];
