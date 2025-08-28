@@ -1310,6 +1310,7 @@ let faceDetection = null;
 let videoElement = null;
 let canvasElement = null;
 let canvasCtx = null;
+let mediaPipeInitialized = false;
 let camera = null;
 let isAnalyzing = false;
 let currentStep = 1;
@@ -1320,7 +1321,7 @@ let afterImage = null;
 let uploadedImage = null;
 let currentFaceBox = null;
 let skinRegions = [];
-let mediaPipeInitialized = false;
+
 
 // 전문가 노하우 데이터 (실제 반영)
 const ExpertKnowledge = {
