@@ -6,6 +6,16 @@
 <!-- 카메라 권한 문제 해결: Permissions Policy 메타 태그 추가 -->
 <meta http-equiv="Permissions-Policy" content="camera=*, microphone=*, geolocation=*">
 <meta http-equiv="Feature-Policy" content="camera '*'; microphone '*'">
+
+    <!-- 🚀 성능 최적화: DNS 프리페치 및 프리커넥트 -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link rel="dns-prefetch" href="//www.gstatic.com">
+    <link rel="dns-prefetch" href="//firebasestorage.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
+
 <title>HAIRGATOR - Professional Hair Style Menu</title>
     
     <!-- PWA Meta Tags -->
@@ -482,7 +492,7 @@
             pointer-events: none;
         }
 
-        /* 스타일 그리드 - 태블릿 우선 최적화 */
+        /* 🚀 스타일 그리드 - 태블릿 우선 최적화 + 이미지 로딩 최적화 */
         .styles-container {
             padding: 20px;
             min-height: 50vh;
@@ -559,12 +569,28 @@
             transform: scale(0.98);
         }
 
+        /* 🚀 이미지 로딩 최적화: 스켈레톤과 그라데이션 동시 적용 */
         .style-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 10px;
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            transition: all 0.3s ease;
+        }
+
+        /* 이미지가 로드되면 애니메이션 제거하고 그라데이션 적용 */
+        .style-image.loaded {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            animation: none;
+        }
+
+        /* 로딩 애니메이션 */
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
         /* 텍스트 정보 완전히 숨김 */
@@ -592,22 +618,13 @@
             margin-bottom: 20px;
         }
 
-        /* 로딩 스켈레톤 */
+        /* 🚀 로딩 스켈레톤 최적화 */
         .skeleton-card {
             background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
             background-size: 200% 100%;
             animation: loading 1.5s infinite;
             aspect-ratio: 3/4;
             border-radius: 10px;
-        }
-
-        @keyframes loading {
-            0% {
-                background-position: 200% 0;
-            }
-            100% {
-                background-position: -200% 0;
-            }
         }
 
         /* 사이드바 */
@@ -2334,220 +2351,61 @@
             return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
         }
 
-        // 퍼스널 컬러 모달 열기 (수정된 버전 - 대체 콘텐츠 타이머 제거)
-function openPersonalColorModal() {
-    console.log('=== 퍼스널 컬러 모달 디버깅 시작 ===');
-    
-    // 기존 모달이 있으면 먼저 제거
-    const existingModal = document.getElementById('personalColorModal');
-    if (existingModal && existingModal.parentNode) {
-        existingModal.parentNode.removeChild(existingModal);
-        console.log('기존 모달 제거됨');
-    }
-    
-    // HTML에서 퍼스널 컬러 모달 찾기 (HTML에 정의된 모달 사용)
-    let modal = document.getElementById('personalColorModal');
-    
-    // 모달이 없으면 (제거되었으면) 새로 생성
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'personalColorModal';
-        modal.className = 'personal-color-modal';
-        modal.innerHTML = `
-    <div class="personal-color-content">
-        <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
-        
-        <iframe 
-            id="personalColorFrame" 
-            src="./personal-color/index.html" 
-            style="width: 100%; height: 100%; border: none; background: #111;"
-            allow="camera; microphone"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
-        ></iframe>
-    </div>
-`;
-        document.body.appendChild(modal);
-        console.log('새 모달 생성됨');
-    }
-    
-    const loadingContent = modal.querySelector('.personal-color-loading');
-    const container = modal.querySelector('.personal-color-container');
-    console.log('2. 로딩 요소:', loadingContent ? '존재' : '없음');
-    console.log('3. 컨테이너 요소:', container ? '존재' : '없음');
-    
-    // 모달 표시
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    console.log('4. 모달 표시 완료');
-    
-    // 로딩 표시
-    if (loadingContent) {
-        loadingContent.style.display = 'block';
-        console.log('5. 로딩 표시됨');
-    }
-    if (container) {
-        container.style.display = 'none';
-        console.log('6. 컨테이너 숨김');
-    }
-    
-    console.log('7. 현재 위치:', window.location.href);
-    console.log('8. fetch 함수 존재:', typeof fetch);
-    
-    // 파일 로드 시도
-   // iframe 사용으로 직접 로드
-console.log('퍼스널 컬러 iframe 로드 완료');
-}
-        
-        // 🔥 퍼스널 컬러 로드 시도 함수 (성공 시 즉시 종료하도록 수정)
-        async function tryLoadPersonalColor(paths, currentIndex, loadingContent, container) {
-            console.log(`--- 경로 시도 ${currentIndex + 1}/${paths.length} ---`);
+        // 퍼스널 컬러 모달 열기
+        function openPersonalColorModal() {
+            console.log('=== 퍼스널 컬러 모달 디버깅 시작 ===');
             
-            if (currentIndex >= paths.length) {
-                console.log('모든 경로 실패 - 대체 콘텐츠 표시');
-                showPersonalColorFallback(loadingContent, container);
-                return;
+            // 기존 모달이 있으면 먼저 제거
+            const existingModal = document.getElementById('personalColorModal');
+            if (existingModal && existingModal.parentNode) {
+                existingModal.parentNode.removeChild(existingModal);
+                console.log('기존 모달 제거됨');
             }
             
-            const currentPath = paths[currentIndex];
-            console.log(`시도할 경로: ${currentPath}`);
-            console.log(`절대 URL: ${new URL(currentPath, window.location.href).href}`);
+            // HTML에서 퍼스널 컬러 모달 찾기 (HTML에 정의된 모달 사용)
+            let modal = document.getElementById('personalColorModal');
             
-            try {
-                console.log('fetch 요청 시작...');
-                const response = await fetch(currentPath);
-                console.log('fetch 응답 상태:', response.status, response.statusText);
-                console.log('응답 헤더:', response.headers);
+            // 모달이 없으면 (제거되었으면) 새로 생성
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'personalColorModal';
+                modal.className = 'personal-color-modal';
+                modal.innerHTML = `
+            <div class="personal-color-content">
+                <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
                 
-                if (response.ok) {
-                    console.log('응답 성공 - HTML 읽기 시작');
-                    const html = await response.text();
-                    console.log(`HTML 로드 성공: 길이 ${html.length}자`);
-                    console.log('HTML 일부 미리보기:', html.substring(0, 200));
-                    
-                    // 🔥 로딩 숨기고 컨테이너에 HTML 삽입
-                    if (loadingContent) {
-                        loadingContent.style.display = 'none';
-                        console.log('로딩 숨김');
+                <iframe 
+                    id="personalColorFrame" 
+                    src="./personal-color/index.html" 
+                    style="width: 100%; height: 100%; border: none; background: #111;"
+                    allow="camera; microphone"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
+                ></iframe>
+            </div>
+        `;
+                document.body.appendChild(modal);
+                console.log('새 모달 생성됨');
+            }
+            
+            // 모달 표시
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            console.log('퍼스널 컬러 iframe 로드 완료');
+        }
+               
+        // 퍼스널 컬러 모달 닫기
+        function closePersonalColorModal() {
+            const modal = document.getElementById('personalColorModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+                
+                // 모달 완전 제거하여 배경색 잔여 효과 방지
+                setTimeout(() => {
+                    if (modal.parentNode) {
+                        modal.parentNode.removeChild(modal);
                     }
-                    
-                   if (container) {
-    container.innerHTML = html;
-    container.style.display = 'block';
-    console.log('컨테이너에 HTML 삽입 완료');
-    
-    // 삽입된 HTML 내의 스크립트 실행 및 초기화
-    setTimeout(() => {
-        const scripts = container.querySelectorAll('script');
-        scripts.forEach(script => {
-            const newScript = document.createElement('script');
-            if (script.src) {
-                newScript.src = script.src;
-            } else {
-                newScript.textContent = script.textContent;
-            }
-            document.head.appendChild(newScript);
-        });
-        
-        // 초기화 완료 후 로딩 화면 숨기기
-        setTimeout(() => {
-            const loadingScreen = container.querySelector('#loading-screen');
-            const mainApp = container.querySelector('#main-app');
-            
-            if (loadingScreen) {
-                loadingScreen.style.display = 'none';
-            }
-            if (mainApp) {
-                mainApp.classList.add('loaded');
-            }
-            
-            console.log('퍼스널 컬러 앱 초기화 완료');
-        }, 1500); // 스크립트 로딩 시간 대기
-        
-    }, 100);
-}
-                    
-                    console.log('=== 퍼스널 컬러 로드 성공 ===');
-                    return; // 🔥 성공 시 여기서 종료하여 다음 시도 방지
-                    
-                } else {
-                    console.log(`HTTP ${response.status}: ${response.statusText} - 다음 경로 시도`);
-                    await tryLoadPersonalColor(paths, currentIndex + 1, loadingContent, container);
-                }
-                
-            } catch (error) {
-                console.error(`경로 ${currentPath} 실패:`, error);
-                
-                // 마지막 경로가 아니면 다음 시도
-                if (currentIndex < paths.length - 1) {
-                    await tryLoadPersonalColor(paths, currentIndex + 1, loadingContent, container);
-                } else {
-                    console.log('모든 경로 실패 - 대체 콘텐츠 표시');
-                    showPersonalColorFallback(loadingContent, container);
-                }
-            }
-        }
-        
-        // 퍼스널 컬러 대체 콘텐츠 표시 (디버깅 정보 포함)
-        function showPersonalColorFallback(loadingContent, container) {
-            console.log('대체 콘텐츠 표시 시작');
-            
-            if (loadingContent) {
-                loadingContent.style.display = 'none';
-                console.log('로딩 숨김');
-            }
-            if (container) {
-                console.log('대체 HTML 삽입 중');
-                container.innerHTML = `
-                    <div style="width: 100vw; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 40px;">
-                        <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 60px; max-width: 800px; margin: 20px;">
-                            <h1 style="font-size: 48px; margin-bottom: 30px; color: #fff;">🎨 퍼스널 컬러</h1>
-                            <h2 style="font-size: 24px; margin-bottom: 20px; color: #ffeb3b;">서비스 준비 중</h2>
-                            <p style="font-size: 16px; margin-bottom: 20px; line-height: 1.6; opacity: 0.9;">
-                                퍼스널 컬러 진단 서비스를 준비하고 있습니다.<br>
-                                빠른 시일 내에 서비스를 제공하겠습니다.
-                            </p>
-                            <button onclick="closePersonalColorModal(); console.log('퍼스널 컬러 모달 닫기 버튼 클릭됨');" style="
-                                margin: 20px 10px; 
-                                padding: 15px 30px; 
-                                background: rgba(255,255,255,0.2); 
-                                color: white; 
-                                border: 2px solid rgba(255,255,255,0.3); 
-                                border-radius: 50px; 
-                                cursor: pointer; 
-                                font-size: 16px; 
-                                font-weight: 600;
-                                transition: all 0.3s ease;
-                            ">닫기</button>
-                        </div>
-                    </div>
-                `;
-                container.style.display = 'block';
-                console.log('대체 HTML 삽입 완료');
-            }
-            console.log('=== 대체 콘텐츠 표시 완료 ===');
-        }
-
-       // 퍼스널 컬러 모달 닫기
-function closePersonalColorModal() {
-    const modal = document.getElementById('personalColorModal');
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-        
-        // 모달 완전 제거하여 배경색 잔여 효과 방지
-        setTimeout(() => {
-            if (modal.parentNode) {
-                modal.parentNode.removeChild(modal);
-            }
-        }, 300); // 애니메이션 시간 후 제거
-    }
-}
-
-        // ESC 키 핸들러 (퍼스널 컬러 모달용)
-        function handlePersonalColorEscape(event) {
-            if (event.key === 'Escape') {
-                closePersonalColorModal();
-                document.removeEventListener('keydown', handlePersonalColorEscape);
+                }, 300); // 애니메이션 시간 후 제거
             }
         }
 
@@ -3021,7 +2879,7 @@ function closePersonalColorModal() {
             console.log(`✅ 서브카테고리 선택: ${subcategory}`);
         }
 
-        // 스타일 로드 (NEW 표시 포함)
+        // 스타일 로드 (NEW 표시 포함) - 🚀 이미지 로딩 최적화 적용
         async function loadStyles(categoryName, subcategory, gender) {
             const stylesGrid = document.getElementById('stylesGrid');
             
@@ -3066,7 +2924,7 @@ function closePersonalColorModal() {
             }
         }
 
-        // 스타일 카드 생성 (NEW 표시 포함)
+        // 🚀 스타일 카드 생성 (NEW 표시 포함) + 이미지 로딩 최적화
         function createStyleCard(style, docId) {
             const card = document.createElement('div');
             card.className = 'style-card';
@@ -3074,14 +2932,24 @@ function closePersonalColorModal() {
             // 이미지 먼저 생성
             const img = document.createElement('img');
             img.className = 'style-image';
-            img.src = style.imageUrl || '';
             img.alt = style.name || 'Style';
             img.loading = 'lazy';
             
+            // 🚀 이미지 로딩 최적화: 로드 완료 시 클래스 추가
+            img.onload = function() {
+                this.classList.add('loaded');
+            };
+            
             img.onerror = function() {
+                this.classList.add('loaded');
                 this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                 this.style.display = 'block';
             };
+            
+            // 🚀 이미지 URL 설정 (지연 설정으로 성능 향상)
+            setTimeout(() => {
+                img.src = style.imageUrl || '';
+            }, Math.random() * 50); // 약간의 랜덤 지연으로 동시 요청 방지
             
             card.appendChild(img);
             
@@ -3217,7 +3085,7 @@ function closePersonalColorModal() {
 
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🦎 HAIRGATOR x AKOOL 시작 - AI 체험 + 카메라 + 퍼스널 컬러 기능 통합 완료');
+            console.log('🦎 HAIRGATOR x AKOOL 시작 - AI 체험 + 카메라 + 퍼스널 컬러 기능 통합 완료 + 이미지 로딩 최적화 적용');
             
             loginScreen.style.display = 'flex';
             updateUserInfo();
@@ -3315,11 +3183,3 @@ function closePersonalColorModal() {
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
