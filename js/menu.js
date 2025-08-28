@@ -682,7 +682,7 @@ function addSidebarButtons() {
     personalColorSection.className = 'personal-color-section';
     personalColorSection.style.marginBottom = '20px';
     personalColorSection.innerHTML = `
-        <button id="personalColorBtn" onclick="openPersonalColor()" 
+        <button id="personalColorBtn" onclick="openPersonalColorModal()" 
                 style="width: 100%; background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);">
             🎨 퍼스널 컬러
         </button>
@@ -943,3 +943,4 @@ window.updateSidebarButtons = updateSidebarButtons;
 window.checkLoginStatus = checkLoginStatus;
 
 console.log('메뉴 시스템 + 테마 시스템 + 퍼스널 컬러 (전체화면 iframe 모달) 로드 완료 - 최종 버전');
+
