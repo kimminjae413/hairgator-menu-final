@@ -2823,7 +2823,7 @@ function toggleDrapingPreview() {
 }
 
 // 즐겨찾기 색상 저장
-function saveFavoriteColor() {
+async function saveFavoriteColor() {
     if (!currentDrapingColor) {
         showToast('먼저 색상을 선택하세요', 'warning');
         return;
@@ -2837,7 +2837,7 @@ function saveFavoriteColor() {
     const adjustedRgb = adjustColor(baseRgb, lightness, saturation, warmth);
     const finalHex = rgbToHex(adjustedRgb.r, adjustedRgb.g, adjustedRgb.b);
     
-    const matchedProducts = findMatchingProducts(adjustedRgb);
+    const matchedProducts = await findMatchingProducts(adjustedRgb);
     
     const favoriteColor = {
         base: currentDrapingColor,
@@ -3050,7 +3050,17 @@ async function initializeDrapingSystem() {
 }
     
 function findMatchingProducts(targetRgb, allProducts) {
-    const productMatches = allProducts.map(product => {
+    casync function findMatchingProducts(targetRgb) {
+    if (!isCsvLoaded) {
+        await loadCsvProductDatabase();
+    }
+    
+    if (csvProductDatabase.length === 0) {
+        console.warn('제품 데이터베이스가 비어있음');
+        return [];
+    }
+    
+    const productMatches = csvProductDatabase.map(product => {
         const deltaE = calculateColorDistance(targetRgb, product.rgb);
         const similarity = Math.max(0, Math.min(100, 100 - deltaE * 2));
         
