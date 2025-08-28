@@ -2351,7 +2351,18 @@ function openPersonalColorModal() {
         modal.id = 'personalColorModal';
         modal.className = 'personal-color-modal';
         modal.innerHTML = `
-            `
+    <div class="personal-color-content">
+        <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
+        
+        <iframe 
+            id="personalColorFrame" 
+            src="./personal-color/index.html" 
+            style="width: 100%; height: 100%; border: none; background: #111;"
+            allow="camera; microphone"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
+        ></iframe>
+    </div>
+`;
     <div class="personal-color-content">
         <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
         
@@ -3313,6 +3324,7 @@ function closePersonalColorModal() {
     </script>
 </body>
 </html>
+
 
 
 
