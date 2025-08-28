@@ -86,7 +86,7 @@
             left: 0;
             right: 0;
             height: 60px;
-            background: var(--primary-dark);
+            background: var(--bg-primary);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -154,6 +154,7 @@
         .main-content {
             margin-top: 75px;
             min-height: calc(100vh - 75px);
+            background: var(--bg-primary);
         }
 
         /* 로그인 화면 - 태블릿 최적화 */
@@ -352,12 +353,12 @@
 
         /* 카테고리 탭 - 태블릿 최적화 */
         .category-tabs {
-            background: #111;
+            background: var(--bg-card);
             padding: 18px;
             display: flex;
             gap: 12px;
             overflow-x: auto;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border-main);
             scrollbar-width: none;
         }
 
@@ -366,9 +367,9 @@
         }
 
         .category-tab {
-            background: #222;
-            color: #999;
-            border: 1px solid #333;
+            background: var(--border-main);
+            color: var(--text-sub);
+            border: 1px solid var(--border-main);
             padding: 12px 24px;
             border-radius: 25px;
             cursor: pointer;
@@ -381,8 +382,8 @@
         }
 
         .category-tab:hover {
-            background: #333;
-            color: #fff;
+            background: var(--text-sub);
+            color: var(--text-main);
             transform: translateY(-1px);
         }
 
@@ -461,12 +462,14 @@
         .styles-container {
             padding: 20px;
             min-height: 50vh;
+            background: var(--bg-primary);
         }
 
         .styles-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 15px;
+            background: var(--bg-primary);
         }
 
         /* 태블릿 가로모드: 5열 */
