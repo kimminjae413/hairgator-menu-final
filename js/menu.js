@@ -618,17 +618,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // 라이트 테마 CSS 추가
     addLightThemeStyles();
     
-    // 사이드바 버튼 추가
-    setTimeout(() => {
-        addSidebarButtons();
-        // 테마 로드
-        loadTheme();
-    }, 500);
+    // 테마 로드
+    setTimeout(loadTheme, 100);
+    
+    // 로그인 상태 체크하여 사이드바 버튼 추가
+    const checkLoginAndAddButtons = () => {
+        if (window.currentDesigner && window.currentDesigner.id) {
+            addSidebarButtons();
+        }
+    };
+    
+    // 주기적으로 로그인 상태 확인 (5초마다)
+    const loginCheckInterval = setInterval(() => {
+        if (window.currentDesigner && window.currentDesigner.id) {
+            addSidebarButtons();
+            clearInterval(loginCheckInterval); // 로그인되면 체크 중단
+        }
+    }, 5000);
+    
+    // 즉시 체크도 수행
+    setTimeout(checkLoginAndAddButtons, 1000);
 });
 
 // 전역 함수로 등록
 window.toggleTheme = toggleTheme;
 window.loadTheme = loadTheme;
 window.openPersonalColor = openPersonalColor;
+window.updateSidebarButtons = updateSidebarButtons; // 로그인 후 버튼 업데이트용
 
 console.log('메뉴 시스템 + 테마 시스템 + PERSONAL COLOR PRO 로드 완료');
