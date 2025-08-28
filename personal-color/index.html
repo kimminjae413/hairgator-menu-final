@@ -3206,12 +3206,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     initializeApp();
     
     setTimeout(() => {
-        if (mediaPipeReady) {
-            showToast('AI 얼굴 추적 시스템이 준비되었습니다!', 'success');
-        } else {
-            showToast('MediaPipe 로드 실패. 기본 기능으로 동작합니다.', 'warning');
-        }
-    }, 2000);
+    showToast('시스템이 준비되었습니다. 카메라 시작을 눌러주세요.', 'info');
+}, 2000);
 });
 
 console.log('✅ Personal Color Pro - 120색 추천 시스템 최종 완성 버전!');
