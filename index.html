@@ -49,12 +49,30 @@
             --new-indicator: #ff4444;
             --ai-color: #9C27B0;
             --ai-gradient: linear-gradient(135deg, #9C27B0 0%, #673AB7 100%);
+            
+            /* 라이트 모드 변수 */
+            --bg-primary: #000000;
+            --bg-card: #111111;
+            --text-main: #ffffff;
+            --text-sub: #999999;
+            --border-main: #222222;
+        }
+
+        /* 라이트 모드 */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary: #ffffff;
+                --bg-card: #ffffff;
+                --text-main: #000000;
+                --text-sub: #666666;
+                --border-main: #e0e0e0;
+            }
         }
 
         body {
             font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--primary-dark);
-            color: var(--text-primary);
+            background: var(--bg-primary);
+            color: var(--text-main);
             overflow-x: hidden;
             user-select: none;
             -webkit-user-select: none;
@@ -270,9 +288,9 @@
         .gender-btn {
             width: 180px;
             height: 260px;
-            border: 3px solid #333;
+            border: 3px solid var(--border-main);
             border-radius: 25px;
-            background: #111;
+            background: var(--bg-card);
             cursor: pointer;
             display: flex;
             flex-direction: column;
@@ -280,11 +298,12 @@
             justify-content: center;
             gap: 20px;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .gender-btn:hover {
             transform: scale(1.08);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
         }
 
         .gender-btn.male {
@@ -317,7 +336,7 @@
 
         .gender-label {
             font-size: 18px;
-            color: var(--text-primary);
+            color: var(--text-main);
             font-weight: 600;
         }
 
@@ -1503,12 +1522,12 @@
         <!-- 성별 선택 화면 -->
         <div class="gender-selection" id="genderSelection">
             <button class="gender-btn male" onclick="selectGender('male')">
-                <div class="gender-icon">♂</div>
-                <div class="gender-label">남성</div>
+                <div class="gender-icon">🧑‍💼</div>
+                <div class="gender-label">MALE</div>
             </button>
             <button class="gender-btn female" onclick="selectGender('female')">
-                <div class="gender-icon">♀</div>
-                <div class="gender-label">여성</div>
+                <div class="gender-icon">👩‍💼</div>
+                <div class="gender-label">FEMALE</div>
             </button>
         </div>
 
