@@ -1370,7 +1370,13 @@
             <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
         </div>
         <div class="sidebar-content">
-            <div class="user-info" id="userInfo" style="display: none;">
+             <div class="theme-simple" style="margin-bottom: 20px;">
+        <button id="themeToggleBtn" onclick="toggleTheme()" 
+                style="width: 100%; background: var(--female-color); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">
+            <span id="themeButtonText">☀️ 라이트 모드로 변경</span>
+        </button>
+    </div>
+            <div class="user-info" id="userInfo" style="display: none;">   
                 <h4>디자이너 정보</h4>
                 <p id="designerNameDisplay"></p>
                 <p id="designerPhoneDisplay"></p>
@@ -2777,6 +2783,7 @@ if (swapResult && swapResult.success) {
     </script>
 </body>
 </html>
+
 
 
 
