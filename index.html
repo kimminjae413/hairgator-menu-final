@@ -2342,46 +2342,64 @@ function openPersonalColorModal() {
         console.log('기존 모달 제거됨');
     }
     
-    const modal = document.getElementById('personalColorModal');
-    console.log('1. 모달 요소 확인:', modal ? '존재' : '없음');
+    // HTML에서 퍼스널 컬러 모달 찾기 (HTML에 정의된 모달 사용)
+    let modal = document.getElementById('personalColorModal');
+    
+    // 모달이 없으면 (제거되었으면) 새로 생성
     if (!modal) {
-        console.error('모달 요소를 찾을 수 없습니다');
-        return;
+        modal = document.createElement('div');
+        modal.id = 'personalColorModal';
+        modal.className = 'personal-color-modal';
+        modal.innerHTML = `
+            <div class="personal-color-content">
+                <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
+                
+                <div class="personal-color-loading" id="personalColorLoading">
+                    <div class="loading-spinner"></div>
+                    <div>퍼스널 컬러를 로드하는 중...</div>
+                    <div style="font-size: 12px; color: #999; margin-top: 10px;">잠시만 기다려주세요</div>
+                </div>
+                
+                <div class="personal-color-container" id="personalColorContainer" style="display: none;">
+                    <!-- HTML 콘텐츠가 여기에 로드됨 -->
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        console.log('새 모달 생성됨');
     }
-            
-            const loadingContent = modal.querySelector('.personal-color-loading');
-            const container = modal.querySelector('.personal-color-container');
-            console.log('2. 로딩 요소:', loadingContent ? '존재' : '없음');
-            console.log('3. 컨테이너 요소:', container ? '존재' : '없음');
-            
-            // 모달 표시
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            console.log('4. 모달 표시 완료');
-            
-            // 로딩 표시
-            if (loadingContent) {
-                loadingContent.style.display = 'block';
-                console.log('5. 로딩 표시됨');
-            }
-            if (container) {
-                container.style.display = 'none';
-                console.log('6. 컨테이너 숨김');
-            }
-            
-            console.log('7. 현재 위치:', window.location.href);
-            console.log('8. fetch 함수 존재:', typeof fetch);
-            
-            // 🔥 대체 콘텐츠 타이머 제거 - 이제 파일 로드만 시도
-            
-            // 파일 로드 시도
-            tryLoadPersonalColor([
-                './personal-color/index.html',
-                '/personal-color/index.html', 
-                'personal-color/index.html',
-                './personal-color.html'
-            ], 0, loadingContent, container);
-        }
+    
+    const loadingContent = modal.querySelector('.personal-color-loading');
+    const container = modal.querySelector('.personal-color-container');
+    console.log('2. 로딩 요소:', loadingContent ? '존재' : '없음');
+    console.log('3. 컨테이너 요소:', container ? '존재' : '없음');
+    
+    // 모달 표시
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    console.log('4. 모달 표시 완료');
+    
+    // 로딩 표시
+    if (loadingContent) {
+        loadingContent.style.display = 'block';
+        console.log('5. 로딩 표시됨');
+    }
+    if (container) {
+        container.style.display = 'none';
+        console.log('6. 컨테이너 숨김');
+    }
+    
+    console.log('7. 현재 위치:', window.location.href);
+    console.log('8. fetch 함수 존재:', typeof fetch);
+    
+    // 파일 로드 시도
+    tryLoadPersonalColor([
+        './personal-color/index.html',
+        '/personal-color/index.html', 
+        'personal-color/index.html',
+        './personal-color.html'
+    ], 0, loadingContent, container);
+}
         
         // 🔥 퍼스널 컬러 로드 시도 함수 (성공 시 즉시 종료하도록 수정)
         async function tryLoadPersonalColor(paths, currentIndex, loadingContent, container) {
@@ -3270,4 +3288,5 @@ function closePersonalColorModal() {
     </script>
 </body>
 </html>
+
 
