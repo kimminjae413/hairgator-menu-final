@@ -3049,6 +3049,7 @@ async function initializeDrapingSystem() {
     }
 }
     
+function findMatchingProducts(targetRgb, allProducts) {
     const productMatches = allProducts.map(product => {
         const deltaE = calculateColorDistance(targetRgb, product.rgb);
         const similarity = Math.max(0, Math.min(100, 100 - deltaE * 2));
