@@ -1112,17 +1112,6 @@
             font-size: 12px;
         }
 
-        @keyframes modalSlideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
         /* 카메라 모달 */
         .camera-modal {
             position: fixed;
@@ -1268,6 +1257,83 @@
             display: flex;
             gap: 10px;
             justify-content: center;
+        }
+
+        /* 퍼스널 컬러 모달 스타일 */
+        .personal-color-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9000;
+        }
+
+        .personal-color-modal.active {
+            display: flex;
+        }
+
+        .personal-color-content {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #111;
+            overflow: hidden;
+        }
+
+        .personal-color-close {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #FF6B6B;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 10000;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .personal-color-close:hover {
+            background: rgba(255,107,107,0.2);
+        }
+
+        .personal-color-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 5;
+        }
+
+        .personal-color-container {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         /* 반응형 - 태블릿 우선 최적화 */
@@ -1662,6 +1728,23 @@
                 <div class="camera-controls">
                     <button class="camera-btn capture" id="captureBtn">📸 촬영</button>
                     <button class="camera-btn cancel" id="closeCameraBtn">취소</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 퍼스널 컬러 모달 -->
+        <div class="personal-color-modal" id="personalColorModal">
+            <div class="personal-color-content">
+                <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
+                
+                <div class="personal-color-loading">
+                    <div class="loading-spinner"></div>
+                    <div>퍼스널 컬러를 로드하는 중...</div>
+                    <div style="font-size: 12px; color: #999; margin-top: 10px;">잠시만 기다려주세요</div>
+                </div>
+                
+                <div class="personal-color-container" style="display: none;">
+                    <!-- HTML 콘텐츠가 여기에 로드됨 -->
                 </div>
             </div>
         </div>
@@ -2201,6 +2284,88 @@
                 return phone;
             }
             return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+        }
+
+        // 퍼스널 컬러 모달 열기 (최종 수정 버전)
+        function openPersonalColorModal() {
+            console.log('퍼스널 컬러 모달 열기 시작...');
+            
+            const modal = document.getElementById('personalColorModal');
+            if (!modal) {
+                console.error('퍼스널 컬러 모달을 찾을 수 없습니다');
+                return;
+            }
+            
+            const loadingContent = modal.querySelector('.personal-color-loading');
+            const container = modal.querySelector('.personal-color-container');
+            
+            // 모달 표시
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // 로딩 표시
+            if (loadingContent) loadingContent.style.display = 'block';
+            if (container) container.style.display = 'none';
+            
+            console.log('personal-color/index.html 파일 로드 시도...');
+            
+            // HTML 직접 로드
+            fetch('./personal-color/index.html')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: 파일을 찾을 수 없습니다`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    console.log('HTML 로드 성공, 길이:', html.length);
+                    
+                    if (loadingContent) loadingContent.style.display = 'none';
+                    if (container) {
+                        container.innerHTML = html;
+                        container.style.display = 'block';
+                    }
+                    
+                    console.log('퍼스널 컬러 모달 로드 완료');
+                })
+                .catch(error => {
+                    console.error('퍼스널 컬러 모달 로드 실패:', error);
+                    
+                    if (container) {
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 50px; color: #ff4444;">
+                                <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                                <div style="font-size: 18px; margin-bottom: 10px;">로드 실패</div>
+                                <div style="font-size: 14px; color: #999;">${error.message}</div>
+                                <button onclick="closePersonalColorModal()" 
+                                        style="margin-top: 20px; padding: 10px 20px; background: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                    닫기
+                                </button>
+                            </div>
+                        `;
+                        
+                        if (loadingContent) loadingContent.style.display = 'none';
+                        container.style.display = 'block';
+                    }
+                });
+        }
+
+        // 퍼스널 컬러 모달 닫기
+        function closePersonalColorModal() {
+            const modal = document.getElementById('personalColorModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // 공유 함수들
+        function fallbackShare(imageUrl) {
+            navigator.clipboard.writeText(imageUrl).then(() => {
+                showToast('이미지 URL이 클립보드에 복사되었습니다', 'success');
+            }).catch(() => {
+                showToast('공유 링크: ' + imageUrl, 'info');
+            });
         }
 
         // AI 체험 기능들
@@ -2860,7 +3025,7 @@
 
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🦎 HAIRGATOR x AKOOL 시작 - AI 체험 + 카메라 기능 통합 완료');
+            console.log('🦎 HAIRGATOR x AKOOL 시작 - AI 체험 + 카메라 + 퍼스널 컬러 기능 통합 완료');
             
             loginScreen.style.display = 'flex';
             updateUserInfo();
@@ -2894,6 +3059,16 @@
                     stopCamera();
                 }
             });
+
+            // 퍼스널 컬러 모달 닫기 이벤트
+            const personalColorModal = document.getElementById('personalColorModal');
+            if (personalColorModal) {
+                personalColorModal.addEventListener('click', function(e) {
+                    if (e.target === personalColorModal) {
+                        closePersonalColorModal();
+                    }
+                });
+            }
             
             // ESC 키로 모달 닫기
             document.addEventListener('keydown', function(e) {
@@ -2904,6 +3079,8 @@
                         closeAIExperience();
                     } else if (styleModal.classList.contains('active')) {
                         closeStyleModal();
+                    } else if (personalColorModal && personalColorModal.classList.contains('active')) {
+                        closePersonalColorModal();
                     }
                 }
             });
