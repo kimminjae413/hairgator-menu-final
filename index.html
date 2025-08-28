@@ -1171,6 +1171,83 @@
             transform: translateY(-2px);
         }
 
+        /* AI 결과 모달 스타일 추가 */
+        .ai-result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 8000;
+        }
+
+        .ai-result-content {
+            background: #111;
+            border: 2px solid var(--ai-color);
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .ai-result-header {
+            background: var(--ai-gradient);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 13px 13px 0 0;
+        }
+
+        .ai-result-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .ai-result-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .ai-result-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .ai-result-body {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .ai-result-image {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #333;
+        }
+
+        .ai-result-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
         /* 반응형 - 태블릿 우선 최적화 */
         
         /* 모바일 (스마트폰) */
@@ -1370,15 +1447,10 @@
             <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
         </div>
         <div class="sidebar-content">
-   <!-- 동적 버튼 컨테이너 (JavaScript에서 생성) -->
-        <div id="dynamicButtons"></div>
+            <!-- 동적 버튼 컨테이너 (JavaScript에서 생성) -->
+            <div id="dynamicButtons"></div>
 
-    <div class="user-info" id="userInfo" style="display: none;">
-        <!-- 기존 사용자 정보 -->
-    </div>
-    <p id="guestMessage">로그인 후 이용 가능합니다.</p>
-</div>
-            <div class="user-info" id="userInfo" style="display: none;">   
+            <div class="user-info" id="userInfo" style="display: none;">
                 <h4>디자이너 정보</h4>
                 <p id="designerNameDisplay"></p>
                 <p id="designerPhoneDisplay"></p>
@@ -2176,32 +2248,32 @@
                         styleName: window.currentStyleData.name
                     });
 
-                 // AKOOL Face Swap 호출
-const swapResult = await window.akoolService.faceSwap(
-    userImageFile, 
-    styleImageUrl
-);
+                    // AKOOL Face Swap 호출
+                    const swapResult = await window.akoolService.faceSwap(
+                        userImageFile, 
+                        styleImageUrl
+                    );
 
-// 결과 검증 및 처리
-if (swapResult && swapResult.success) {
-    console.log('AKOOL AI 처리 완료:', swapResult.imageUrl);
-    return swapResult.imageUrl;
-} else {
-    throw new Error(swapResult ? swapResult.error : 'Face Swap 처리 실패');
-}
+                    // 결과 검증 및 처리
+                    if (swapResult && swapResult.success) {
+                        console.log('AKOOL AI 처리 완료:', swapResult.imageUrl);
+                        return swapResult.imageUrl;
+                    } else {
+                        throw new Error(swapResult ? swapResult.error : 'Face Swap 처리 실패');
+                    }
+                });
 
                 if (result) {
-    // 성공 - 결과 표시
-    showToast('AI 처리가 완료되었습니다!', 'success');
-    showAIResult(result); // ← 이 줄이 핵심!
-    
-    // 토큰 잔액 업데이트
-    updateUserInfo();
-    
-    // AI 체험 모달 닫기
-    closeAIExperience();
-}
- });
+                    // 성공 - 결과 표시
+                    showToast('AI 처리가 완료되었습니다!', 'success');
+                    showAIResult(result);
+                    
+                    // 토큰 잔액 업데이트
+                    updateUserInfo();
+                    
+                    // AI 체험 모달 닫기
+                    closeAIExperience();
+                }
             } catch (error) {
                 console.error('AI 처리 오류:', error);
                 showToast(`AI 처리 실패: ${error.message}`, 'error');
@@ -2209,6 +2281,73 @@ if (swapResult && swapResult.success) {
             } finally {
                 aiProcessing.style.display = 'none';
                 processAIBtn.disabled = false;
+            }
+        }
+
+        // AI 결과 표시 함수
+        function showAIResult(resultImageUrl) {
+            // 결과 모달 생성
+            const resultModal = document.createElement('div');
+            resultModal.className = 'ai-result-modal';
+            resultModal.innerHTML = `
+                <div class="ai-result-content">
+                    <div class="ai-result-header">
+                        <h3>🎉 AI 스타일 체험 결과</h3>
+                        <button class="ai-result-close" onclick="this.closest('.ai-result-modal').remove()">×</button>
+                    </div>
+                    <div class="ai-result-body">
+                        <img src="${resultImageUrl}" alt="AI 결과" class="ai-result-image">
+                        <div class="ai-result-actions">
+                            <button class="ai-btn primary" onclick="downloadAIResult('${resultImageUrl}')">
+                                💾 다운로드
+                            </button>
+                            <button class="ai-btn secondary" onclick="shareAIResult('${resultImageUrl}')">
+                                📤 공유하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(resultModal);
+            document.body.style.overflow = 'hidden';
+            
+            console.log('AI 결과 모달 표시:', resultImageUrl);
+        }
+
+        // AI 결과 다운로드
+        function downloadAIResult(imageUrl) {
+            try {
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.download = `hairgator-ai-result-${Date.now()}.jpg`;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showToast('다운로드가 시작되었습니다', 'success');
+            } catch (error) {
+                console.error('다운로드 오류:', error);
+                showToast('다운로드에 실패했습니다', 'error');
+            }
+        }
+
+        // AI 결과 공유
+        function shareAIResult(imageUrl) {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'HAIRGATOR AI 스타일 체험 결과',
+                    text: 'AI로 체험해본 헤어스타일입니다!',
+                    url: imageUrl
+                }).then(() => {
+                    showToast('공유가 완료되었습니다', 'success');
+                }).catch((error) => {
+                    console.error('공유 오류:', error);
+                    fallbackShare(imageUrl);
+                });
+            } else {
+                fallbackShare(imageUrl);
             }
         }
 
@@ -2785,9 +2924,3 @@ if (swapResult && swapResult.success) {
     </script>
 </body>
 </html>
-
-
-
-
-
-
