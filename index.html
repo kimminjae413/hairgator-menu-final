@@ -353,8 +353,17 @@
 
         .gender-label {
             font-size: 18px;
-            color: var(--text-main);
+            color: var(--text-primary) !important;
             font-weight: 600;
+        }
+
+        /* 라이트 테마에서도 성별 텍스트 보이도록 강제 설정 */
+        body.light-theme .gender-label {
+            color: #000000 !important;
+        }
+
+        body:not(.light-theme) .gender-label {
+            color: #ffffff !important;
         }
 
         /* 메뉴 컨테이너 */
@@ -1624,14 +1633,14 @@
 
         <!-- 성별 선택 화면 -->
         <div class="gender-selection" id="genderSelection">
-            <button class="gender-btn male" onclick="selectGender('male')">
+            <button class="gender-btn male" data-gender="male" onclick="selectGender('male')">
                 <div class="gender-icon">
                     <span class="dark-mode-icon">♂</span>
                     <span class="light-mode-icon">🧑‍💼</span>
                 </div>
                 <div class="gender-label">MALE</div>
             </button>
-            <button class="gender-btn female" onclick="selectGender('female')">
+            <button class="gender-btn female" data-gender="female" onclick="selectGender('female')">
                 <div class="gender-icon">
                     <span class="dark-mode-icon">♀</span>
                     <span class="light-mode-icon">👩‍💼</span>
@@ -1777,13 +1786,13 @@
             <div class="personal-color-content">
                 <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
                 
-                <div class="personal-color-loading">
+                <div class="personal-color-loading" id="personalColorLoading">
                     <div class="loading-spinner"></div>
                     <div>퍼스널 컬러를 로드하는 중...</div>
                     <div style="font-size: 12px; color: #999; margin-top: 10px;">잠시만 기다려주세요</div>
                 </div>
                 
-                <div class="personal-color-container" style="display: none;">
+                <div class="personal-color-container" id="personalColorContainer" style="display: none;">
                     <!-- HTML 콘텐츠가 여기에 로드됨 -->
                 </div>
             </div>
@@ -2326,7 +2335,7 @@
             return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
         }
 
-        // 퍼스널 컬러 모달 열기 (디버깅 강화 버전)
+        // 🔥 퍼스널 컬러 모달 열기 (수정된 버전 - 대체 콘텐츠 타이머 제거)
         function openPersonalColorModal() {
             console.log('=== 퍼스널 컬러 모달 디버깅 시작 ===');
             
@@ -2360,11 +2369,7 @@
             console.log('7. 현재 위치:', window.location.href);
             console.log('8. fetch 함수 존재:', typeof fetch);
             
-            // 즉시 대체 콘텐츠 표시 (테스트용)
-            setTimeout(() => {
-                console.log('9. 3초 후 대체 콘텐츠 표시');
-                showPersonalColorFallback(loadingContent, container);
-            }, 3000);
+            // 🔥 대체 콘텐츠 타이머 제거 - 이제 파일 로드만 시도
             
             // 파일 로드 시도
             tryLoadPersonalColor([
@@ -2375,7 +2380,7 @@
             ], 0, loadingContent, container);
         }
         
-        // 퍼스널 컬러 로드 시도 함수 (디버깅 강화)
+        // 🔥 퍼스널 컬러 로드 시도 함수 (성공 시 즉시 종료하도록 수정)
         async function tryLoadPersonalColor(paths, currentIndex, loadingContent, container) {
             console.log(`--- 경로 시도 ${currentIndex + 1}/${paths.length} ---`);
             
@@ -2401,10 +2406,12 @@
                     console.log(`HTML 로드 성공: 길이 ${html.length}자`);
                     console.log('HTML 일부 미리보기:', html.substring(0, 200));
                     
+                    // 🔥 로딩 숨기고 컨테이너에 HTML 삽입
                     if (loadingContent) {
                         loadingContent.style.display = 'none';
                         console.log('로딩 숨김');
                     }
+                    
                     if (container) {
                         container.innerHTML = html;
                         container.style.display = 'block';
@@ -2412,24 +2419,24 @@
                     }
                     
                     console.log('=== 퍼스널 컬러 로드 성공 ===');
-                    return;
+                    return; // 🔥 성공 시 여기서 종료하여 다음 시도 방지
+                    
                 } else {
-                    console.log(`HTTP 오류: ${response.status} ${response.statusText}`);
+                    console.log(`HTTP ${response.status}: ${response.statusText} - 다음 경로 시도`);
+                    await tryLoadPersonalColor(paths, currentIndex + 1, loadingContent, container);
                 }
+                
             } catch (error) {
-                console.log(`경로 ${currentPath} 오류:`, error);
-                console.log('오류 유형:', error.name);
-                console.log('오류 메시지:', error.message);
-                if (error.stack) {
-                    console.log('스택 트레이스:', error.stack);
+                console.error(`경로 ${currentPath} 실패:`, error);
+                
+                // 마지막 경로가 아니면 다음 시도
+                if (currentIndex < paths.length - 1) {
+                    await tryLoadPersonalColor(paths, currentIndex + 1, loadingContent, container);
+                } else {
+                    console.log('모든 경로 실패 - 대체 콘텐츠 표시');
+                    showPersonalColorFallback(loadingContent, container);
                 }
             }
-            
-            // 다음 경로 시도
-            console.log(`1초 후 다음 경로 시도...`);
-            setTimeout(() => {
-                tryLoadPersonalColor(paths, currentIndex + 1, loadingContent, container);
-            }, 1000);
         }
         
         // 퍼스널 컬러 대체 콘텐츠 표시 (디버깅 정보 포함)
@@ -2446,21 +2453,10 @@
                     <div style="width: 100vw; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 40px;">
                         <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 60px; max-width: 800px; margin: 20px;">
                             <h1 style="font-size: 48px; margin-bottom: 30px; color: #fff;">🎨 퍼스널 컬러</h1>
-                            <h2 style="font-size: 24px; margin-bottom: 20px; color: #ffeb3b;">디버깅 모드</h2>
+                            <h2 style="font-size: 24px; margin-bottom: 20px; color: #ffeb3b;">서비스 준비 중</h2>
                             <p style="font-size: 16px; margin-bottom: 20px; line-height: 1.6; opacity: 0.9;">
-                                현재 위치: ${window.location.href}<br>
-                                시간: ${new Date().toLocaleString()}<br>
-                                퍼스널 컬러 파일을 찾을 수 없어 대체 화면을 표시합니다.
-                            </p>
-                            <div style="background: rgba(0,0,0,0.2); border-radius: 10px; padding: 20px; margin: 20px 0; font-family: monospace; text-align: left; font-size: 12px;">
-                                시도한 경로들:<br>
-                                • ./personal-color/index.html<br>
-                                • /personal-color/index.html<br>
-                                • personal-color/index.html<br>
-                                • ./personal-color.html
-                            </div>
-                            <p style="font-size: 14px; margin: 20px 0; opacity: 0.8;">
-                                개발자 도구 Console에서 자세한 디버깅 정보를 확인하세요.
+                                퍼스널 컬러 진단 서비스를 준비하고 있습니다.<br>
+                                빠른 시일 내에 서비스를 제공하겠습니다.
                             </p>
                             <button onclick="closePersonalColorModal(); console.log('퍼스널 컬러 모달 닫기 버튼 클릭됨');" style="
                                 margin: 20px 10px; 
@@ -2474,18 +2470,6 @@
                                 font-weight: 600;
                                 transition: all 0.3s ease;
                             ">닫기</button>
-                            <button onclick="openPersonalColorModal(); console.log('퍼스널 컬러 재시도 버튼 클릭됨');" style="
-                                margin: 20px 10px; 
-                                padding: 15px 30px; 
-                                background: rgba(76,175,80,0.3); 
-                                color: white; 
-                                border: 2px solid rgba(76,175,80,0.5); 
-                                border-radius: 50px; 
-                                cursor: pointer; 
-                                font-size: 16px; 
-                                font-weight: 600;
-                                transition: all 0.3s ease;
-                            ">다시 시도</button>
                         </div>
                     </div>
                 `;
@@ -2501,6 +2485,14 @@
             if (modal) {
                 modal.classList.remove('active');
                 document.body.style.overflow = '';
+            }
+        }
+
+        // ESC 키 핸들러 (퍼스널 컬러 모달용)
+        function handlePersonalColorEscape(event) {
+            if (event.key === 'Escape') {
+                closePersonalColorModal();
+                document.removeEventListener('keydown', handlePersonalColorEscape);
             }
         }
 
