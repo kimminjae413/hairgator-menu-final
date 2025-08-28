@@ -1,4 +1,4 @@
-# netlify.toml - Netlify 배포 설정
+# netlify.toml - Netlify 배포 설정 (X-Frame-Options 수정)
 
 [build]
   publish = "/"
@@ -11,15 +11,21 @@
   conditions = {Role = ["admin", "user"]}
   force = false
 
-# 보안 헤더
+# 보안 헤더 (X-Frame-Options 수정)
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
+    X-Frame-Options = "SAMEORIGIN"  # DENY → SAMEORIGIN으로 변경
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "no-referrer-when-downgrade"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# personal-color 페이지는 iframe 허용
+[[headers]]
+  for = "/personal-color/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
 
 # Service Worker - 캐시 비활성화 (중요!)
 [[headers]]
