@@ -2883,16 +2883,19 @@ async function loadCsvProductDatabase() {
                 product[header] = values[index] || '';
             });
             
-            // RGB 문자열을 객체로 변환
-            let rgb = { r: 150, g: 120, b: 100 };
-            try {
-                if (product.rgb) {
-                    const rgbArray = JSON.parse(product.rgb);
-                    rgb = { r: rgbArray[0] || 0, g: rgbArray[1] || 0, b: rgbArray[2] || 0 };
-                }
-            } catch (e) {
-                console.warn('RGB 파싱 실패:', product.rgb);
-            }
+           // RGB 문자열을 객체로 변환 (개선됨)
+let rgb = { r: 150, g: 120, b: 100 };
+try {
+    if (product.rgb) {
+        // 쌍따옴표 제거 후 JSON 파싱
+        const cleanedRgb = product.rgb.replace(/"/g, '');
+        const rgbArray = JSON.parse(cleanedRgb);
+        rgb = { r: rgbArray[0] || 0, g: rgbArray[1] || 0, b: rgbArray[2] || 0 };
+        console.log(`${product.brand} ${product.code}: RGB(${rgb.r}, ${rgb.g}, ${rgb.b})`); // 디버깅용
+    }
+} catch (e) {
+    console.warn('RGB 파싱 실패:', product.rgb, e);
+}
             
             return {
                 brand: product.brand || '',
