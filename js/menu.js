@@ -399,9 +399,9 @@ function loadTheme() {
     console.log('테마 로드:', savedTheme);
 }
 
-// ========== 퍼스널 컬러 시스템 (iframe 모달 수정) ==========
+// ========== 퍼스널 컬러 시스템 (전체화면 iframe 모달) ==========
 
-// 퍼스널 컬러 연결 함수 (iframe 모달 방식 - 외부창 방지)
+// 퍼스널 컬러 연결 함수 (전체화면 iframe 모달)
 function openPersonalColor() {
     // 로그인 상태 체크
     if (!checkLoginStatus()) {
@@ -422,10 +422,10 @@ function openPersonalColor() {
         showToast('퍼스널 컬러를 로드하는 중입니다', 'success');
     }
     
-    console.log('퍼스널 컬러 iframe 모달 열기');
+    console.log('퍼스널 컬러 전체화면 iframe 모달 열기');
 }
 
-// 퍼스널 컬러 모달 생성 (수정됨 - 외부창 방지)
+// 퍼스널 컬러 모달 생성 (전체화면 버전)
 function createPersonalColorModal() {
     // 기존 모달이 있으면 제거
     const existingModal = document.getElementById('personalColorModal');
@@ -433,7 +433,7 @@ function createPersonalColorModal() {
         existingModal.remove();
     }
     
-    // 모달 HTML 생성
+    // 모달 HTML 생성 (전체화면)
     const modal = document.createElement('div');
     modal.id = 'personalColorModal';
     modal.className = 'personal-color-modal';
@@ -443,10 +443,8 @@ function createPersonalColorModal() {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        background: #111;
+        display: block;
         z-index: 9999;
         opacity: 0;
         transition: opacity 0.3s ease;
@@ -455,34 +453,30 @@ function createPersonalColorModal() {
     modal.innerHTML = `
         <div class="personal-color-content" style="
             position: relative;
-            width: 95%;
-            height: 95%;
-            max-width: 1200px;
-            max-height: 800px;
+            width: 100vw;
+            height: 100vh;
             background: #111;
-            border-radius: 15px;
-            border: 2px solid #FF6B6B;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         ">
             <button class="personal-color-close" onclick="closePersonalColorModal()" style="
-                position: absolute;
+                position: fixed;
                 top: 15px;
                 right: 20px;
-                background: none;
-                border: none;
+                background: rgba(0, 0, 0, 0.7);
+                border: 2px solid #FF6B6B;
                 color: white;
                 font-size: 28px;
                 cursor: pointer;
-                z-index: 10;
-                width: 40px;
-                height: 40px;
+                z-index: 10000;
+                width: 50px;
+                height: 50px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 border-radius: 50%;
                 transition: all 0.3s ease;
-            " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">×</button>
+                backdrop-filter: blur(5px);
+            " onmouseover="this.style.background='rgba(255,107,107,0.2)'" onmouseout="this.style.background='rgba(0,0,0,0.7)'">×</button>
             
             <div class="personal-color-loading" style="
                 position: absolute;
@@ -494,15 +488,16 @@ function createPersonalColorModal() {
                 z-index: 5;
             ">
                 <div class="loading-spinner" style="
-                    width: 40px;
-                    height: 40px;
-                    border: 3px solid #333;
-                    border-top: 3px solid #FF6B6B;
+                    width: 60px;
+                    height: 60px;
+                    border: 4px solid #333;
+                    border-top: 4px solid #FF6B6B;
                     border-radius: 50%;
                     animation: spin 1s linear infinite;
-                    margin: 0 auto 20px;
+                    margin: 0 auto 30px;
                 "></div>
-                <div style="font-size: 16px;">퍼스널 컬러를 로드하는 중...</div>
+                <div style="font-size: 20px; font-weight: 600;">퍼스널 컬러를 로드하는 중...</div>
+                <div style="font-size: 14px; color: #999; margin-top: 10px;">잠시만 기다려주세요</div>
             </div>
             
             <iframe id="personalColorFrame" 
@@ -512,10 +507,8 @@ function createPersonalColorModal() {
                     width: 100%;
                     height: 100%;
                     border: none;
-                    border-radius: 13px;
                     display: none;
                 "
-                sandbox="allow-same-origin allow-scripts allow-forms allow-top-navigation"
                 loading="lazy">
             </iframe>
         </div>
@@ -555,6 +548,7 @@ function createPersonalColorModal() {
         const loading = modal.querySelector('.personal-color-loading');
         if (loading) loading.style.display = 'none';
         iframe.style.display = 'block';
+        console.log('퍼스널 컬러 iframe 로드 완료');
     };
     
     // iframe 로드 에러 처리
@@ -562,24 +556,28 @@ function createPersonalColorModal() {
         const loading = modal.querySelector('.personal-color-loading');
         if (loading) {
             loading.innerHTML = `
-                <div style="color: #ff6b6b; font-size: 18px; margin-bottom: 10px;">⚠️</div>
-                <div>퍼스널 컬러를 로드할 수 없습니다</div>
-                <div style="font-size: 14px; margin-top: 10px; color: #999;">personal-color 폴더가 없거나 파일을 찾을 수 없습니다</div>
+                <div style="color: #ff6b6b; font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                <div style="font-size: 24px; margin-bottom: 15px;">퍼스널 컬러를 로드할 수 없습니다</div>
+                <div style="font-size: 16px; color: #999; line-height: 1.5;">
+                    personal-color 폴더가 없거나<br>
+                    파일을 찾을 수 없습니다
+                </div>
             `;
         }
+        console.error('퍼스널 컬러 iframe 로드 실패');
     };
     
     // ESC 키로 모달 닫기
     document.addEventListener('keydown', handlePersonalColorEscape);
     
-    // 모달 외부 클릭으로 닫기
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            closePersonalColorModal();
-        }
-    });
+    // 모달 외부 클릭으로 닫기 (전체화면에서는 비활성화)
+    // modal.addEventListener('click', function(e) {
+    //     if (e.target === modal) {
+    //         closePersonalColorModal();
+    //     }
+    // });
     
-    console.log('퍼스널 컬러 모달 생성 완료');
+    console.log('퍼스널 컬러 전체화면 모달 생성 완료');
 }
 
 // 퍼스널 컬러 모달 닫기
@@ -597,7 +595,7 @@ function closePersonalColorModal() {
         }, 300);
     }
     
-    console.log('퍼스널 컬러 모달 닫기');
+    console.log('퍼스널 컬러 전체화면 모달 닫기');
 }
 
 // ESC 키 처리
@@ -869,6 +867,11 @@ function addLightThemeStyles() {
 
         body.light-theme .personal-color-content {
             background: #ffffff !important;
+        }
+
+        body.light-theme .personal-color-close {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #000000 !important;
             border-color: #FF6B6B !important;
         }
     `;
@@ -901,20 +904,20 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     // 주기적으로 로그인 상태 확인 (3초마다, 최대 10회)
-let checkCount = 0;
-const loginCheckInterval = setInterval(() => {
-    checkCount++;
-    
-    if (checkLoginStatus()) {
-        addSidebarButtons();
-        clearInterval(loginCheckInterval);
-    } else {
-        removeSidebarButtons(); // 로그아웃 상태면 버튼 제거
-        if (checkCount >= 10) {
+    let checkCount = 0;
+    const loginCheckInterval = setInterval(() => {
+        checkCount++;
+        
+        if (checkLoginStatus()) {
+            addSidebarButtons();
             clearInterval(loginCheckInterval);
+        } else {
+            removeSidebarButtons(); // 로그아웃 상태면 버튼 제거
+            if (checkCount >= 10) {
+                clearInterval(loginCheckInterval);
+            }
         }
-    }
-}, 3000);
+    }, 3000);
     
     // 즉시 체크도 수행
     setTimeout(checkLoginAndAddButtons, 1000);
@@ -935,5 +938,4 @@ window.closePersonalColorModal = closePersonalColorModal;
 window.updateSidebarButtons = updateSidebarButtons;
 window.checkLoginStatus = checkLoginStatus;
 
-console.log('메뉴 시스템 + 테마 시스템 + 퍼스널 컬러 (iframe 모달) 로드 완료 - 로그인 체크 강화됨');
-
+console.log('메뉴 시스템 + 테마 시스템 + 퍼스널 컬러 (전체화면 iframe 모달) 로드 완료 - 최종 버전');
