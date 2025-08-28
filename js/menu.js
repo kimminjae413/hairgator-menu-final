@@ -399,9 +399,9 @@ function loadTheme() {
     console.log('테마 로드:', savedTheme);
 }
 
-// PERSONAL COLOR PRO 연결 함수
-function openPersonalColorPro() {
-    // 새 창에서 PERSONAL COLOR PRO 사이트 열기
+// 퍼스널 컬러 연결 함수
+function openPersonalColor() {
+    // 새 창에서 퍼스널 컬러 사이트 열기
     window.open('https://magical-basbousa-5426f5.netlify.app', '_blank');
     
     // 햅틱 피드백 (모바일)
@@ -411,10 +411,10 @@ function openPersonalColorPro() {
     
     // 토스트 메시지
     if (typeof showToast === 'function') {
-        showToast('PERSONAL COLOR PRO로 이동합니다', 'success');
+        showToast('퍼스널 컬러로 이동합니다', 'success');
     }
     
-    console.log('PERSONAL COLOR PRO 사이트로 이동');
+    console.log('퍼스널 컬러 사이트로 이동');
 }
 
 // 사이드바에 테마 버튼과 PERSONAL COLOR PRO 버튼 동적 추가
@@ -441,14 +441,14 @@ function addSidebarButtons() {
         </button>
     `;
 
-    // PERSONAL COLOR PRO 버튼 HTML 생성
+    // 퍼스널 컬러 버튼 HTML 생성
     const personalColorSection = document.createElement('div');
     personalColorSection.className = 'personal-color-section';
     personalColorSection.style.marginBottom = '20px';
     personalColorSection.innerHTML = `
-        <button id="personalColorBtn" onclick="openPersonalColorPro()" 
+        <button id="personalColorBtn" onclick="openPersonalColor()" 
                 style="width: 100%; background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);">
-            🎨 PERSONAL COLOR PRO
+            🎨 퍼스널 컬러
         </button>
     `;
 
@@ -629,6 +629,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // 전역 함수로 등록
 window.toggleTheme = toggleTheme;
 window.loadTheme = loadTheme;
-window.openPersonalColorPro = openPersonalColorPro;
+window.openPersonalColor = openPersonalColor;
 
 console.log('메뉴 시스템 + 테마 시스템 + PERSONAL COLOR PRO 로드 완료');
