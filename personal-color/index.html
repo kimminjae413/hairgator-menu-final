@@ -2868,7 +2868,7 @@ async function loadCsvProductDatabase() {
     try {
         console.log('🔄 CSV 제품 데이터베이스 로딩...');
         
-        const response = await fetch('./hair_color_products_extended.csv');
+        const response = await fetch('./personal-color/hair_color_products_extended.csv');
         const csvText = await response.text();
         
         // CSV 파싱
