@@ -2871,43 +2871,52 @@ async function loadCsvProductDatabase() {
         const response = await fetch('./personal-color/hair_color_products_extended.csv');
         const csvText = await response.text();
         
-        // CSV 파싱
-        const lines = csvText.trim().split('\n');
-        const headers = lines[0].split(',').map(h => h.trim());
-        
         csvProductDatabase = lines.slice(1).map(line => {
-            const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-            const product = {};
-            
-            headers.forEach((header, index) => {
-                product[header] = values[index] || '';
-            });
-            
-           // RGB 문자열을 객체로 변환 (개선됨)
-let rgb = { r: 150, g: 120, b: 100 };
-try {
-    if (product.rgb) {
-        // 쌍따옴표 제거 후 JSON 파싱
-        const cleanedRgb = product.rgb.replace(/"/g, '');
-        const rgbArray = JSON.parse(cleanedRgb);
-        rgb = { r: rgbArray[0] || 0, g: rgbArray[1] || 0, b: rgbArray[2] || 0 };
-        console.log(`${product.brand} ${product.code}: RGB(${rgb.r}, ${rgb.g}, ${rgb.b})`); // 디버깅용
+    // 따옴표 안의 쉼표는 무시하고 파싱
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
     }
-} catch (e) {
-    console.warn('RGB 파싱 실패:', product.rgb, e);
-}
-            
-            return {
-                brand: product.brand || '',
-                line: product.line || '',
-                code: product.code || '',
-                name: product.name || '',
-                hex: product.hex || '#000000',
-                rgb: rgb,
-                season: product.season || '',
-                subType: product.sub_type || ''
-            };
-        }).filter(p => p.brand && p.code && p.name);
+    values.push(current.trim());
+    
+    const product = {};
+    headers.forEach((header, index) => {
+        product[header] = values[index] || '';
+    });
+    
+    // RGB 파싱
+    let rgb = { r: 150, g: 120, b: 100 };
+    try {
+        if (product.rgb) {
+            const rgbArray = JSON.parse(product.rgb);
+            rgb = { r: rgbArray[0] || 0, g: rgbArray[1] || 0, b: rgbArray[2] || 0 };
+        }
+    } catch (e) {
+        console.warn('RGB 파싱 실패:', product.rgb);
+    }
+    
+    return {
+        brand: product.brand || '',
+        line: product.line || '',
+        code: product.code || '',
+        name: product.name || '',
+        hex: product.hex || '#000000',
+        rgb: rgb,
+        season: product.season || '',
+        subType: product.sub_type || ''
+    };
+}).filter(p => p.brand && p.code && p.name);
         
         isCsvLoaded = true;
         console.log(`✅ ${csvProductDatabase.length}개 CSV 제품 로드 완료`);
