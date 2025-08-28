@@ -515,7 +515,7 @@ function createPersonalColorModal() {
                     border-radius: 13px;
                     display: none;
                 "
-                sandbox="allow-scripts allow-same-origin allow-forms"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-top-navigation"
                 loading="lazy">
             </iframe>
         </div>
@@ -643,15 +643,13 @@ function checkLoginStatus() {
 // 사이드바에 테마 버튼과 PERSONAL COLOR 버튼 동적 추가 (수정된 로그인 체크)
 function addSidebarButtons() {
     // 로그인 상태 확인
-    const isLoggedIn = checkLoginStatus();
-    
-    if (!isLoggedIn) {
-        console.log('로그인 상태가 아님 - 사이드바 버튼 추가하지 않음');
-        // 기존 버튼이 있다면 제거
-        removeSidebarButtons();
+    if (!checkLoginStatus()) {
+        console.log('로그인 상태가 아님 - 버튼 추가 안함');
+        removeSidebarButtons(); // 로그아웃 상태면 버튼 제거
         return;
     }
 
+    // 사이드바 찾기
     const sidebarContent = document.querySelector('.sidebar-content');
     if (!sidebarContent) {
         console.warn('사이드바를 찾을 수 없습니다');
@@ -659,9 +657,9 @@ function addSidebarButtons() {
     }
 
     // 기존 버튼들이 이미 있는지 확인
-    if (document.getElementById('themeToggleBtn') || document.getElementById('personalColorBtn')) {
+    if (document.getElementById('themeToggleBtn') && document.getElementById('personalColorBtn')) {
         console.log('사이드바 버튼이 이미 존재함');
-        return; // 이미 추가되어 있음
+        return;
     }
 
     // 테마 버튼 HTML 생성
@@ -903,17 +901,20 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     // 주기적으로 로그인 상태 확인 (3초마다, 최대 10회)
-    let checkCount = 0;
-    const loginCheckInterval = setInterval(() => {
-        checkCount++;
-        
-        if (checkLoginStatus()) {
-            addSidebarButtons();
-            clearInterval(loginCheckInterval); // 로그인되면 체크 중단
-        } else if (checkCount >= 10) {
-            clearInterval(loginCheckInterval); // 10회 체크 후 중단
+let checkCount = 0;
+const loginCheckInterval = setInterval(() => {
+    checkCount++;
+    
+    if (checkLoginStatus()) {
+        addSidebarButtons();
+        clearInterval(loginCheckInterval);
+    } else {
+        removeSidebarButtons(); // 로그아웃 상태면 버튼 제거
+        if (checkCount >= 10) {
+            clearInterval(loginCheckInterval);
         }
-    }, 3000);
+    }
+}, 3000);
     
     // 즉시 체크도 수행
     setTimeout(checkLoginAndAddButtons, 1000);
@@ -935,3 +936,4 @@ window.updateSidebarButtons = updateSidebarButtons;
 window.checkLoginStatus = checkLoginStatus;
 
 console.log('메뉴 시스템 + 테마 시스템 + 퍼스널 컬러 (iframe 모달) 로드 완료 - 로그인 체크 강화됨');
+
