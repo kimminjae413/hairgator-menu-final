@@ -2433,11 +2433,41 @@ function openPersonalColorModal() {
                         console.log('로딩 숨김');
                     }
                     
-                    if (container) {
-                        container.innerHTML = html;
-                        container.style.display = 'block';
-                        console.log('컨테이너에 HTML 삽입 완료');
-                    }
+                   if (container) {
+    container.innerHTML = html;
+    container.style.display = 'block';
+    console.log('컨테이너에 HTML 삽입 완료');
+    
+    // 삽입된 HTML 내의 스크립트 실행 및 초기화
+    setTimeout(() => {
+        const scripts = container.querySelectorAll('script');
+        scripts.forEach(script => {
+            const newScript = document.createElement('script');
+            if (script.src) {
+                newScript.src = script.src;
+            } else {
+                newScript.textContent = script.textContent;
+            }
+            document.head.appendChild(newScript);
+        });
+        
+        // 초기화 완료 후 로딩 화면 숨기기
+        setTimeout(() => {
+            const loadingScreen = container.querySelector('#loading-screen');
+            const mainApp = container.querySelector('#main-app');
+            
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+            if (mainApp) {
+                mainApp.classList.add('loaded');
+            }
+            
+            console.log('퍼스널 컬러 앱 초기화 완료');
+        }, 1500); // 스크립트 로딩 시간 대기
+        
+    }, 100);
+}
                     
                     console.log('=== 퍼스널 컬러 로드 성공 ===');
                     return; // 🔥 성공 시 여기서 종료하여 다음 시도 방지
@@ -3288,5 +3318,6 @@ function closePersonalColorModal() {
     </script>
 </body>
 </html>
+
 
 
