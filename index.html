@@ -2326,120 +2326,145 @@
             return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
         }
 
-        // 퍼스널 컬러 모달 열기 (최종 수정 버전)
+        // 퍼스널 컬러 모달 열기 (디버깅 강화 버전)
         function openPersonalColorModal() {
-            console.log('퍼스널 컬러 모달 열기 시작...');
+            console.log('=== 퍼스널 컬러 모달 디버깅 시작 ===');
             
             const modal = document.getElementById('personalColorModal');
+            console.log('1. 모달 요소 확인:', modal ? '존재' : '없음');
             if (!modal) {
-                console.error('퍼스널 컬러 모달을 찾을 수 없습니다');
+                console.error('모달 요소를 찾을 수 없습니다');
                 return;
             }
             
             const loadingContent = modal.querySelector('.personal-color-loading');
             const container = modal.querySelector('.personal-color-container');
+            console.log('2. 로딩 요소:', loadingContent ? '존재' : '없음');
+            console.log('3. 컨테이너 요소:', container ? '존재' : '없음');
             
             // 모달 표시
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            console.log('4. 모달 표시 완료');
             
             // 로딩 표시
-            if (loadingContent) loadingContent.style.display = 'block';
-            if (container) container.style.display = 'none';
+            if (loadingContent) {
+                loadingContent.style.display = 'block';
+                console.log('5. 로딩 표시됨');
+            }
+            if (container) {
+                container.style.display = 'none';
+                console.log('6. 컨테이너 숨김');
+            }
             
-            console.log('personal-color/index.html 파일 로드 시도...');
+            console.log('7. 현재 위치:', window.location.href);
+            console.log('8. fetch 함수 존재:', typeof fetch);
             
-            // 여러 경로 시도
-            const possiblePaths = [
+            // 즉시 대체 콘텐츠 표시 (테스트용)
+            setTimeout(() => {
+                console.log('9. 3초 후 대체 콘텐츠 표시');
+                showPersonalColorFallback(loadingContent, container);
+            }, 3000);
+            
+            // 파일 로드 시도
+            tryLoadPersonalColor([
                 './personal-color/index.html',
-                '/personal-color/index.html',
+                '/personal-color/index.html', 
                 'personal-color/index.html',
                 './personal-color.html'
-            ];
-            
-            tryLoadPersonalColor(possiblePaths, 0, loadingContent, container);
+            ], 0, loadingContent, container);
         }
         
-        // 퍼스널 컬러 로드 시도 함수
+        // 퍼스널 컬러 로드 시도 함수 (디버깅 강화)
         async function tryLoadPersonalColor(paths, currentIndex, loadingContent, container) {
+            console.log(`--- 경로 시도 ${currentIndex + 1}/${paths.length} ---`);
+            
             if (currentIndex >= paths.length) {
-                // 모든 경로 실패 시 임시 콘텐츠 표시
+                console.log('모든 경로 실패 - 대체 콘텐츠 표시');
                 showPersonalColorFallback(loadingContent, container);
                 return;
             }
             
             const currentPath = paths[currentIndex];
-            console.log(`경로 ${currentIndex + 1}/${paths.length} 시도: ${currentPath}`);
+            console.log(`시도할 경로: ${currentPath}`);
+            console.log(`절대 URL: ${new URL(currentPath, window.location.href).href}`);
             
             try {
+                console.log('fetch 요청 시작...');
                 const response = await fetch(currentPath);
+                console.log('fetch 응답 상태:', response.status, response.statusText);
+                console.log('응답 헤더:', response.headers);
                 
                 if (response.ok) {
+                    console.log('응답 성공 - HTML 읽기 시작');
                     const html = await response.text();
-                    console.log(`HTML 로드 성공: ${currentPath}, 길이: ${html.length}`);
+                    console.log(`HTML 로드 성공: 길이 ${html.length}자`);
+                    console.log('HTML 일부 미리보기:', html.substring(0, 200));
                     
-                    if (loadingContent) loadingContent.style.display = 'none';
+                    if (loadingContent) {
+                        loadingContent.style.display = 'none';
+                        console.log('로딩 숨김');
+                    }
                     if (container) {
                         container.innerHTML = html;
                         container.style.display = 'block';
+                        console.log('컨테이너에 HTML 삽입 완료');
                     }
                     
-                    console.log('퍼스널 컬러 모달 로드 완료');
+                    console.log('=== 퍼스널 컬러 로드 성공 ===');
                     return;
+                } else {
+                    console.log(`HTTP 오류: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
-                console.log(`경로 ${currentPath} 실패:`, error.message);
+                console.log(`경로 ${currentPath} 오류:`, error);
+                console.log('오류 유형:', error.name);
+                console.log('오류 메시지:', error.message);
+                if (error.stack) {
+                    console.log('스택 트레이스:', error.stack);
+                }
             }
             
             // 다음 경로 시도
+            console.log(`1초 후 다음 경로 시도...`);
             setTimeout(() => {
                 tryLoadPersonalColor(paths, currentIndex + 1, loadingContent, container);
-            }, 500);
+            }, 1000);
         }
         
-        // 퍼스널 컬러 대체 콘텐츠 표시
+        // 퍼스널 컬러 대체 콘텐츠 표시 (디버깅 정보 포함)
         function showPersonalColorFallback(loadingContent, container) {
-            console.log('모든 경로 실패 - 대체 콘텐츠 표시');
+            console.log('대체 콘텐츠 표시 시작');
             
-            if (loadingContent) loadingContent.style.display = 'none';
+            if (loadingContent) {
+                loadingContent.style.display = 'none';
+                console.log('로딩 숨김');
+            }
             if (container) {
+                console.log('대체 HTML 삽입 중');
                 container.innerHTML = `
                     <div style="width: 100vw; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 40px;">
                         <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 60px; max-width: 800px; margin: 20px;">
                             <h1 style="font-size: 48px; margin-bottom: 30px; color: #fff;">🎨 퍼스널 컬러</h1>
-                            <h2 style="font-size: 32px; margin-bottom: 20px;">개발 중인 기능입니다</h2>
-                            <p style="font-size: 18px; margin-bottom: 30px; line-height: 1.6; opacity: 0.9;">
-                                고객님의 퍼스널 컬러를 정확하게 진단하여<br>
-                                가장 어울리는 헤어 컬러를 추천해드립니다.
+                            <h2 style="font-size: 24px; margin-bottom: 20px; color: #ffeb3b;">디버깅 모드</h2>
+                            <p style="font-size: 16px; margin-bottom: 20px; line-height: 1.6; opacity: 0.9;">
+                                현재 위치: ${window.location.href}<br>
+                                시간: ${new Date().toLocaleString()}<br>
+                                퍼스널 컬러 파일을 찾을 수 없어 대체 화면을 표시합니다.
                             </p>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin: 40px 0;">
-                                <div style="background: rgba(255,255,255,0.1); border-radius: 15px; padding: 30px;">
-                                    <div style="font-size: 40px; margin-bottom: 15px;">🌸</div>
-                                    <h3 style="font-size: 20px; margin-bottom: 10px;">봄 웜톤</h3>
-                                    <p style="font-size: 14px; opacity: 0.8;">따뜻하고 밝은 컬러</p>
-                                </div>
-                                <div style="background: rgba(255,255,255,0.1); border-radius: 15px; padding: 30px;">
-                                    <div style="font-size: 40px; margin-bottom: 15px;">☀️</div>
-                                    <h3 style="font-size: 20px; margin-bottom: 10px;">여름 쿨톤</h3>
-                                    <p style="font-size: 14px; opacity: 0.8;">시원하고 부드러운 컬러</p>
-                                </div>
-                                <div style="background: rgba(255,255,255,0.1); border-radius: 15px; padding: 30px;">
-                                    <div style="font-size: 40px; margin-bottom: 15px;">🍂</div>
-                                    <h3 style="font-size: 20px; margin-bottom: 10px;">가을 웜톤</h3>
-                                    <p style="font-size: 14px; opacity: 0.8;">깊고 따뜻한 컬러</p>
-                                </div>
-                                <div style="background: rgba(255,255,255,0.1); border-radius: 15px; padding: 30px;">
-                                    <div style="font-size: 40px; margin-bottom: 15px;">❄️</div>
-                                    <h3 style="font-size: 20px; margin-bottom: 10px;">겨울 쿨톤</h3>
-                                    <p style="font-size: 14px; opacity: 0.8;">선명하고 차가운 컬러</p>
-                                </div>
+                            <div style="background: rgba(0,0,0,0.2); border-radius: 10px; padding: 20px; margin: 20px 0; font-family: monospace; text-align: left; font-size: 12px;">
+                                시도한 경로들:<br>
+                                • ./personal-color/index.html<br>
+                                • /personal-color/index.html<br>
+                                • personal-color/index.html<br>
+                                • ./personal-color.html
                             </div>
-                            <p style="font-size: 16px; margin-top: 40px; opacity: 0.7;">
-                                곧 정식 서비스로 만나보실 수 있습니다.
+                            <p style="font-size: 14px; margin: 20px 0; opacity: 0.8;">
+                                개발자 도구 Console에서 자세한 디버깅 정보를 확인하세요.
                             </p>
-                            <button onclick="closePersonalColorModal()" style="
-                                margin-top: 40px; 
-                                padding: 15px 40px; 
+                            <button onclick="closePersonalColorModal(); console.log('퍼스널 컬러 모달 닫기 버튼 클릭됨');" style="
+                                margin: 20px 10px; 
+                                padding: 15px 30px; 
                                 background: rgba(255,255,255,0.2); 
                                 color: white; 
                                 border: 2px solid rgba(255,255,255,0.3); 
@@ -2448,15 +2473,26 @@
                                 font-size: 16px; 
                                 font-weight: 600;
                                 transition: all 0.3s ease;
-                                backdrop-filter: blur(5px);
-                            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                                닫기
-                            </button>
+                            ">닫기</button>
+                            <button onclick="openPersonalColorModal(); console.log('퍼스널 컬러 재시도 버튼 클릭됨');" style="
+                                margin: 20px 10px; 
+                                padding: 15px 30px; 
+                                background: rgba(76,175,80,0.3); 
+                                color: white; 
+                                border: 2px solid rgba(76,175,80,0.5); 
+                                border-radius: 50px; 
+                                cursor: pointer; 
+                                font-size: 16px; 
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                            ">다시 시도</button>
                         </div>
                     </div>
                 `;
                 container.style.display = 'block';
+                console.log('대체 HTML 삽입 완료');
             }
+            console.log('=== 대체 콘텐츠 표시 완료 ===');
         }
 
         // 퍼스널 컬러 모달 닫기
