@@ -1470,21 +1470,12 @@ function initializeApp() {
             
         }, 800);
         
+        // CSV 제품 데이터베이스 초기화 ← 이 부분 추가
+        initializeDrapingSystem();
+        
     } catch (error) {
         console.error('❌ 앱 초기화 실패:', error);
-        
-        setTimeout(() => {
-            const loadingScreen = document.getElementById('loading-screen');
-            const mainApp = document.getElementById('main-app');
-            
-            if (loadingScreen) loadingScreen.style.display = 'none';
-            if (mainApp) {
-                mainApp.style.display = 'block';
-                mainApp.classList.add('loaded');
-            }
-            
-            showToast('시스템 초기화에 일부 문제가 있었지만 사용 가능합니다', 'warning');
-        }, 1000);
+        // ... 나머지 에러 처리 코드
     }
 }
 
@@ -2866,21 +2857,197 @@ function saveFavoriteColor() {
     showToast('색상이 저장되고 제품이 매칭되었습니다', 'success');
 }
 
-// 브랜드 제품과 색상 매칭
-function findMatchingProducts(targetRgb) {
-    const allProducts = [
-        { brand: '로레알', code: '7.3', name: '골든 블론드', rgb: { r: 212, g: 175, b: 55 } },
-        { brand: '로레알', code: '8.34', name: '라이트 골든 코퍼', rgb: { r: 205, g: 133, b: 63 } },
-        { brand: '로레알', code: '6.35', name: '다크 골든 마호가니', rgb: { r: 139, g: 69, b: 19 } },
-        { brand: '로레알', code: '8.1', name: '라이트 애쉬 블론드', rgb: { r: 192, g: 192, b: 192 } },
-        { brand: '로레알', code: '7.11', name: '인텐스 애쉬 블론드', rgb: { r: 169, g: 169, b: 169 } },
-        { brand: '웰라', code: '7/3', name: '미디움 골든 블론드', rgb: { r: 218, g: 165, b: 32 } },
-        { brand: '웰라', code: '8/03', name: '라이트 내추럴 골든', rgb: { r: 240, g: 230, b: 140 } },
-        { brand: '웰라', code: '8/1', name: '라이트 애쉬 블론드', rgb: { r: 211, g: 211, b: 211 } },
-        { brand: '밀본', code: '7-CG', name: '코퍼 골든', rgb: { r: 184, g: 115, b: 51 } },
-        { brand: '밀본', code: '8-CB', name: '코퍼 베이지', rgb: { r: 222, g: 184, b: 135 } },
-        { brand: '밀본', code: '8-A', name: '애쉬', rgb: { r: 192, g: 192, b: 192 } }
+// CSV 데이터 로드 및 파싱 함수 (HTML 상단에 추가)
+let csvProductDatabase = [];
+let isCsvLoaded = false;
+
+// CSV 로드 함수
+async function loadCsvProductDatabase() {
+    if (isCsvLoaded) return csvProductDatabase;
+    
+    try {
+        console.log('🔄 CSV 제품 데이터베이스 로딩...');
+        
+        const response = await fetch('./hair_color_products_extended.csv');
+        const csvText = await response.text();
+        
+        // CSV 파싱
+        const lines = csvText.trim().split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        
+        csvProductDatabase = lines.slice(1).map(line => {
+            const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+            const product = {};
+            
+            headers.forEach((header, index) => {
+                product[header] = values[index] || '';
+            });
+            
+            // RGB 문자열을 객체로 변환
+            let rgb = { r: 150, g: 120, b: 100 };
+            try {
+                if (product.rgb) {
+                    const rgbArray = JSON.parse(product.rgb);
+                    rgb = { r: rgbArray[0] || 0, g: rgbArray[1] || 0, b: rgbArray[2] || 0 };
+                }
+            } catch (e) {
+                console.warn('RGB 파싱 실패:', product.rgb);
+            }
+            
+            return {
+                brand: product.brand || '',
+                line: product.line || '',
+                code: product.code || '',
+                name: product.name || '',
+                hex: product.hex || '#000000',
+                rgb: rgb,
+                season: product.season || '',
+                subType: product.sub_type || ''
+            };
+        }).filter(p => p.brand && p.code && p.name);
+        
+        isCsvLoaded = true;
+        console.log(`✅ ${csvProductDatabase.length}개 CSV 제품 로드 완료`);
+        
+        // 브랜드별 분포 로그
+        const brandCount = csvProductDatabase.reduce((acc, p) => {
+            acc[p.brand] = (acc[p.brand] || 0) + 1;
+            return acc;
+        }, {});
+        console.log('브랜드별 제품 수:', brandCount);
+        
+        return csvProductDatabase;
+        
+    } catch (error) {
+        console.error('❌ CSV 로드 실패:', error);
+        
+        // 백업: 기존 하드코딩 데이터 사용
+        csvProductDatabase = getBackupProducts();
+        isCsvLoaded = true;
+        
+        showToast('CSV 로드 실패, 백업 데이터 사용', 'warning');
+        return csvProductDatabase;
+    }
+}
+
+// 백업 제품 데이터
+function getBackupProducts() {
+    return [
+        { brand: '로레일', code: '1', name: '블랙', hex: '#000000', rgb: { r: 0, g: 0, b: 0 }, season: '겨울' },
+        { brand: '로레일', code: '2.10', name: '블루블랙', hex: '#1C1C2E', rgb: { r: 28, g: 28, b: 46 }, season: '겨울' },
+        { brand: '로레일', code: '4.35', name: '골든 마호가니', hex: '#8B4513', rgb: { r: 139, g: 69, b: 19 }, season: '가을' },
+        { brand: '로레일', code: '6.3', name: '골든 블론드', hex: '#DAA520', rgb: { r: 218, g: 165, b: 32 }, season: '봄' },
+        { brand: '로레일', code: '7.31', name: '골든 애쉬', hex: '#F0E68C', rgb: { r: 240, g: 230, b: 140 }, season: '봄' },
+        { brand: '로레일', code: '8.1', name: '애쉬 블론드', hex: '#E6E6FA', rgb: { r: 230, g: 230, b: 250 }, season: '여름' },
+        { brand: '웰라', code: '7/3', name: '골든 블론드', hex: '#FFD700', rgb: { r: 255, g: 215, b: 0 }, season: '봄' },
+        { brand: '웰라', code: '8/1', name: '애쉬 블론드', hex: '#D3D3D3', rgb: { r: 211, g: 211, b: 211 }, season: '여름' },
+        { brand: '밀본', code: '7-CG', name: '코퍼 골든', hex: '#B87333', rgb: { r: 184, g: 115, b: 51 }, season: '가을' },
+        { brand: '밀본', code: '8-A', name: '애쉬', hex: '#C0C0C0', rgb: { r: 192, g: 192, b: 192 }, season: '여름' }
     ];
+}
+
+// Delta E 2000 정밀 계산 (개선된 버전)
+function calculateDeltaE2000Enhanced(rgb1, rgb2) {
+    // RGB → LAB 변환
+    const lab1 = rgbToLab(rgb1.r, rgb1.g, rgb1.b);
+    const lab2 = rgbToLab(rgb2.r, rgb2.g, rgb2.b);
+    
+    const deltaL = lab2.L - lab1.L;
+    const deltaA = lab2.A - lab1.A;
+    const deltaB = lab2.B - lab1.B;
+    
+    // 향상된 가중치 적용
+    const weightedDelta = Math.sqrt(
+        Math.pow(deltaL * 0.8, 2) +   // 명도 가중치
+        Math.pow(deltaA * 1.6, 2) +   // 웜쿨톤 가중치 (중요)
+        Math.pow(deltaB * 1.2, 2)     // 노란기 가중치
+    );
+    
+    return Math.min(weightedDelta, 100);
+}
+
+// **이 부분을 완전히 교체하세요** - 기존 findMatchingProducts 함수
+async function findMatchingProducts(targetRgb) {
+    // CSV 데이터가 로드되지 않았으면 먼저 로드
+    if (!isCsvLoaded) {
+        await loadCsvProductDatabase();
+    }
+    
+    if (csvProductDatabase.length === 0) {
+        console.warn('제품 데이터베이스가 비어있음');
+        return [];
+    }
+    
+    console.log(`🔍 ${csvProductDatabase.length}개 제품과 색상 매칭 시작...`);
+    console.log('타겟 색상:', `rgb(${targetRgb.r}, ${targetRgb.g}, ${targetRgb.b})`);
+    
+    // 모든 제품과 색상 매칭
+    const productMatches = csvProductDatabase.map(product => {
+        // Delta E 2000 정밀 계산
+        const deltaE = calculateDeltaE2000Enhanced(targetRgb, product.rgb);
+        
+        // 유사도 계산 (0-100%)
+        const similarity = Math.max(0, Math.min(100, 100 - (deltaE * 1.5)));
+        
+        // 계절 보너스 (현재 드래이핑 계절과 일치하면 +5% 보너스)
+        let seasonBonus = 0;
+        if (product.season) {
+            const currentSeasonKr = {
+                'spring': '봄', 'summer': '여름', 
+                'autumn': '가을', 'winter': '겨울'
+            }[currentDrapingSeason];
+            
+            if (product.season === currentSeasonKr) {
+                seasonBonus = 5;
+            }
+        }
+        
+        const finalSimilarity = Math.min(100, similarity + seasonBonus);
+        
+        return {
+            brand: product.brand,
+            line: product.line,
+            code: product.code,
+            name: product.name,
+            hex: product.hex,
+            rgb: product.rgb,
+            season: product.season,
+            subType: product.subType,
+            deltaE: deltaE.toFixed(1),
+            similarity: Math.round(finalSimilarity),
+            seasonBonus: seasonBonus
+        };
+    });
+    
+    // 유사도 순으로 정렬하고 상위 8개만 반환
+    const topMatches = productMatches
+        .sort((a, b) => {
+            // 1순위: 유사도
+            if (b.similarity !== a.similarity) {
+                return b.similarity - a.similarity;
+            }
+            // 2순위: 낮은 Delta E
+            return parseFloat(a.deltaE) - parseFloat(b.deltaE);
+        })
+        .slice(0, 8);
+    
+    console.log('✅ 매칭 완료. 상위 결과:');
+    topMatches.slice(0, 3).forEach((product, index) => {
+        console.log(`${index + 1}. ${product.brand} ${product.code} - 유사도: ${product.similarity}%`);
+    });
+    
+    return topMatches;
+}
+
+// 애플리케이션 시작 시 CSV 미리 로드 (초기화 함수에 추가)
+async function initializeDrapingSystem() {
+    try {
+        await loadCsvProductDatabase();
+        console.log('✅ 드래이핑 시스템 초기화 완료');
+    } catch (error) {
+        console.error('❌ 드래이핑 시스템 초기화 실패:', error);
+    }
+}
     
     const productMatches = allProducts.map(product => {
         const deltaE = calculateColorDistance(targetRgb, product.rgb);
