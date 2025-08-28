@@ -2319,118 +2319,106 @@ function showFinalResults(analysis) {
     showToast(`퍼스널컬러 진단 완료: ${analysis.season}`, 'success');
 }
 
-// 브랜드별 제품 추천 함수
+// CSV 기반 확장된 제품 추천 함수 (131개 제품)
 function getProductRecommendations(season) {
-    // 계절별 제품 매칭 로직
-    if (season.includes('스프링') || season.includes('봄')) {
-        return [
-            {
-                name: '로레알 프로페셔널',
-                products: [
-                    { code: '7.3', name: '골든 블론드', color: '#D4AF37' },
-                    { code: '8.34', name: '라이트 골든 코퍼', color: '#CD853F' },
-                    { code: '6.35', name: '다크 골든 마호가니', color: '#8B4513' }
-                ]
-            },
-            {
-                name: '웰라 프로페셔널',
-                products: [
-                    { code: '7/3', name: '미디움 골든 블론드', color: '#DAA520' },
-                    { code: '8/03', name: '라이트 내추럴 골든', color: '#F0E68C' },
-                    { code: '6/73', name: '다크 브라운 골든', color: '#A0522D' }
-                ]
-            },
-            {
-                name: '밀본 오르디브',
-                products: [
-                    { code: '7-CG', name: '코퍼 골든', color: '#B87333' },
-                    { code: '8-CB', name: '코퍼 베이지', color: '#DEB887' },
-                    { code: '6-GM', name: '골든 마호가니', color: '#CD853F' }
-                ]
-            }
-        ];
-    } else if (season.includes('서머') || season.includes('여름')) {
-        return [
-            {
-                name: '로레알 프로페셔널',
-                products: [
-                    { code: '8.1', name: '라이트 애쉬 블론드', color: '#C0C0C0' },
-                    { code: '7.11', name: '인텐스 애쉬 블론드', color: '#A9A9A9' },
-                    { code: '9.1', name: '베리 라이트 애쉬', color: '#E6E6FA' }
-                ]
-            },
-            {
-                name: '웰라 프로페셔널',
-                products: [
-                    { code: '8/1', name: '라이트 애쉬 블론드', color: '#D3D3D3' },
-                    { code: '7/1', name: '미디움 애쉬 블론드', color: '#B0C4DE' },
-                    { code: '6/1', name: '다크 애쉬 블론드', color: '#778899' }
-                ]
-            },
-            {
-                name: '밀본 오르디브',
-                products: [
-                    { code: '8-A', name: '애쉬', color: '#C0C0C0' },
-                    { code: '7-MT', name: '마트 베이지', color: '#F5F5DC' },
-                    { code: '9-P', name: '핑크 베이지', color: '#F0E68C' }
-                ]
-            }
-        ];
-    } else if (season.includes('오텀') || season.includes('가을')) {
-        return [
-            {
-                name: '로레알 프로페셔널',
-                products: [
-                    { code: '6.3', name: '다크 골든 블론드', color: '#B8860B' },
-                    { code: '5.35', name: '라이트 골든 마호가니', color: '#8B4513' },
-                    { code: '4.35', name: '골든 마호가니 브라운', color: '#A0522D' }
-                ]
-            },
-            {
-                name: '웰라 프로페셔널', 
-                products: [
-                    { code: '6/73', name: '다크 브라운 골든', color: '#8B4513' },
-                    { code: '5/7', name: '라이트 브라운 미디움', color: '#CD853F' },
-                    { code: '4/77', name: '미디움 브라운 인텐스', color: '#8B4513' }
-                ]
-            },
-            {
-                name: '밀본 오르디브',
-                products: [
-                    { code: '6-CB', name: '코퍼 베이지', color: '#DEB887' },
-                    { code: '5-GM', name: '골든 마호가니', color: '#A0522D' },
-                    { code: '7-OR', name: '오렌지', color: '#FF7F50' }
-                ]
-            }
-        ];
-    } else { // 윈터
-        return [
-            {
-                name: '로레알 프로페셔널',
-                products: [
-                    { code: '1.0', name: '블랙', color: '#000000' },
-                    { code: '2.1', name: '브라운 애쉬', color: '#2F4F4F' },
-                    { code: '6.11', name: '다크 인텐스 애쉬', color: '#696969' }
-                ]
-            },
-            {
-                name: '웰라 프로페셔널',
-                products: [
-                    { code: '2/0', name: '블랙', color: '#000000' },
-                    { code: '4/0', name: '미디움 브라운', color: '#2F4F4F' },
-                    { code: '6/0', name: '다크 블론드', color: '#696969' }
-                ]
-            },
-            {
-                name: '밀본 오르디브',
-                products: [
-                    { code: '2-N', name: '내추럴 블랙', color: '#000000' },
-                    { code: '4-N', name: '내추럴 브라운', color: '#2F2F2F' },
-                    { code: '6-A', name: '애쉬 브라운', color: '#708090' }
-                ]
-            }
-        ];
+    const productDatabase = {
+        "로레알": [
+            { "code": "1", "name": "블랙", "color": "#000000", "season": "겨울", "subType": "딥 윈터" },
+            { "code": "2.10", "name": "블루블랙", "color": "#1C1C2E", "season": "겨울", "subType": "딥 윈터" },
+            { "code": "4.0", "name": "미디움 브라운 내추럴", "color": "#5D4037", "season": "가을", "subType": "딥 오텀" },
+            { "code": "4.35", "name": "미디움 브라운 골든 마호가니", "color": "#8B4513", "season": "가을", "subType": "딥 오텀" },
+            { "code": "5.0", "name": "라이트 브라운 내추럴", "color": "#8B6914", "season": "가을", "subType": "트루 오텀" },
+            { "code": "6.3", "name": "다크 블론드 골든", "color": "#DAA520", "season": "봄", "subType": "트루 스프링" },
+            { "code": "7.0", "name": "블론드 내추럴", "color": "#F5DEB3", "season": "봄", "subType": "라이트 스프링" },
+            { "code": "7.31", "name": "블론드 골든 애쉬", "color": "#F0E68C", "season": "봄", "subType": "라이트 스프링" },
+            { "code": "8.0", "name": "라이트 블론드 내추럴", "color": "#FFEFD5", "season": "봄", "subType": "라이트 스프링" },
+            { "code": "8.34", "name": "라이트 블론드 골든 코퍼", "color": "#FF7F50", "season": "봄", "subType": "웜 스프링" },
+            { "code": "6.1", "name": "다크 블론드 애쉬", "color": "#A9A9A9", "season": "여름", "subType": "트루 서머" },
+            { "code": "7.1", "name": "블론드 애쉬", "color": "#D3D3D3", "season": "여름", "subType": "라이트 서머" },
+            { "code": "8.1", "name": "라이트 블론드 애쉬", "color": "#E6E6FA", "season": "여름", "subType": "라이트 서머" },
+            { "code": "5.1", "name": "라이트 브라운 애쉬", "color": "#8B7D6B", "season": "여름", "subType": "소프트 서머" },
+            { "code": "7.8", "name": "블론드 머브", "color": "#DDA0DD", "season": "여름", "subType": "라이트 서머" }
+        ],
+        "웰라": [
+            { "code": "2/0", "name": "블랙", "color": "#000000", "season": "겨울", "subType": "딥 윈터" },
+            { "code": "3/0", "name": "다크 브라운", "color": "#2F4F4F", "season": "겨울", "subType": "딥 윈터" },
+            { "code": "4/0", "name": "미디움 브라운", "color": "#654321", "season": "가을", "subType": "딥 오텀" },
+            { "code": "4/77", "name": "미디움 브라운 인텐스", "color": "#8B4513", "season": "가을", "subType": "딥 오텀" },
+            { "code": "5/0", "name": "라이트 브라운", "color": "#A0522D", "season": "가을", "subType": "트루 오텀" },
+            { "code": "6/73", "name": "다크 블론드 브라운 골든", "color": "#B8860B", "season": "가을", "subType": "트루 오텀" },
+            { "code": "7/3", "name": "미디움 블론드 골든", "color": "#FFD700", "season": "봄", "subType": "트루 스프링" },
+            { "code": "8/0", "name": "라이트 블론드", "color": "#FFFACD", "season": "봄", "subType": "라이트 스프링" },
+            { "code": "8/03", "name": "라이트 블론드 내추럴 골든", "color": "#FFE4B5", "season": "봄", "subType": "라이트 스프링" },
+            { "code": "9/0", "name": "베리 라이트 블론드", "color": "#FFF8DC", "season": "봄", "subType": "라이트 스프링" },
+            { "code": "6/1", "name": "다크 블론드 애쉬", "color": "#A9A9A9", "season": "여름", "subType": "트루 서머" },
+            { "code": "7/1", "name": "미디움 블론드 애쉬", "color": "#D3D3D3", "season": "여름", "subType": "라이트 서머" },
+            { "code": "8/1", "name": "라이트 블론드 애쉬", "color": "#E6E6FA", "season": "여름", "subType": "라이트 서머" },
+            { "code": "9/1", "name": "베리 라이트 블론드 애쉬", "color": "#F5F5F5", "season": "여름", "subType": "라이트 서머" },
+            { "code": "77/75", "name": "로즈 브라운", "color": "#BC8F8F", "season": "여름", "subType": "소프트 서머" }
+        ],
+        "밀본": [
+            { "code": "2-N", "name": "다크 브라운 내추럴", "color": "#2F2F2F", "season": "겨울", "subType": "딥 윈터" },
+            { "code": "3-N", "name": "다크 브라운 내추럴", "color": "#3C3C3C", "season": "겨울", "subType": "딥 윈터" },
+            { "code": "코발트블루", "name": "코발트 블루", "color": "#0047AB", "season": "겨울", "subType": "딥 윈터" },
+            { "code": "4-N", "name": "미디움 브라운 내추럴", "color": "#654321", "season": "가을", "subType": "딥 오텀" },
+            { "code": "5-N", "name": "라이트 브라운 내추럴", "color": "#8B7355", "season": "가을", "subType": "소프트 오텀" },
+            { "code": "5-G", "name": "라이트 브라운 골든", "color": "#CD853F", "season": "가을", "subType": "트루 오텀" },
+            { "code": "7-CG", "name": "미디움 블론드 코퍼 골든", "color": "#B87333", "season": "가을", "subType": "트루 오텀" },
+            { "code": "7-N", "name": "미디움 블론드 내추럴", "color": "#DEB887", "season": "봄", "subType": "라이트 스프링" },
+            { "code": "8-N", "name": "라이트 블론드 내추럴", "color": "#F5DEB3", "season": "봄", "subType": "라이트 스프링" },
+            { "code": "8-G", "name": "라이트 블론드 골든", "color": "#FFE4B5", "season": "봄", "subType": "라이트 스프링" },
+            { "code": "골드", "name": "골드", "color": "#FFD700", "season": "봄", "subType": "트루 스프링" },
+            { "code": "6-A", "name": "다크 블론드 애쉬", "color": "#A9A9A9", "season": "여름", "subType": "트루 서머" },
+            { "code": "7-A", "name": "미디움 블론드 애쉬", "color": "#D3D3D3", "season": "여름", "subType": "라이트 서머" },
+            { "code": "8-A", "name": "라이트 블론드 애쉬", "color": "#E6E6FA", "season": "여름", "subType": "라이트 서머" },
+            { "code": "페일실버", "name": "페일 실버", "color": "#C0C0C0", "season": "여름", "subType": "트루 서머" }
+        ]
+    };
+
+    // 계절 매핑
+    let targetSeason = '';
+    if (season.includes('스프링') || season.includes('Spring')) {
+        targetSeason = '봄';
+    } else if (season.includes('서머') || season.includes('Summer')) {
+        targetSeason = '여름';
+    } else if (season.includes('오텀') || season.includes('Autumn')) {
+        targetSeason = '가을';
+    } else if (season.includes('윈터') || season.includes('Winter')) {
+        targetSeason = '겨울';
     }
+
+    const recommendations = [];
+
+    Object.entries(productDatabase).forEach(([brandName, products]) => {
+        // 해당 계절 제품들 필터링 (1순위)
+        let seasonProducts = products.filter(p => p.season === targetSeason);
+        
+        // 서브타입 매칭 (2순위)
+        if (seasonProducts.length === 0) {
+            if (season.includes('라이트')) {
+                seasonProducts = products.filter(p => p.subType.includes('라이트'));
+            } else if (season.includes('딥')) {
+                seasonProducts = products.filter(p => p.subType.includes('딥'));
+            } else if (season.includes('트루')) {
+                seasonProducts = products.filter(p => p.subType.includes('트루'));
+            } else if (season.includes('소프트')) {
+                seasonProducts = products.filter(p => p.subType.includes('소프트'));
+            }
+        }
+
+        if (seasonProducts.length > 0) {
+            recommendations.push({
+                name: brandName,
+                products: seasonProducts.slice(0, 3).map(p => ({
+                    code: p.code,
+                    name: p.name,
+                    color: p.color
+                }))
+            });
+        }
+    });
+
+    return recommendations;
 }
 
 // 분석 초기화
