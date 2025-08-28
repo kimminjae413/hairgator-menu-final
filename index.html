@@ -39,40 +39,56 @@
         }
 
         :root {
-            --primary-dark: #000000;
-            --primary-light: #ffffff;
-            --male-color: #4A90E2;
-            --female-color: #E91E63;
+            /* 다크 테마 기본 변수 */
+            --bg-primary: #000000;
+            --bg-card: #111111;
+            --bg-secondary: #1a1a1a;
             --text-primary: #ffffff;
             --text-secondary: #999999;
-            --border-color: #222222;
+            --border-primary: #222222;
+            --border-secondary: #333333;
+            --header-bg: #000000;
+            --sidebar-bg: #111111;
+            --modal-bg: #111111;
+            --input-bg: #222222;
+            --input-border: #444444;
+            --category-bg: #111111;
+            --category-inactive: #222222;
+            --sub-tab-bg: #333333;
+            --styles-bg: #000000;
+            
+            /* 고정 컬러 */
+            --male-color: #4A90E2;
+            --female-color: #E91E63;
             --new-indicator: #ff4444;
             --ai-color: #9C27B0;
             --ai-gradient: linear-gradient(135deg, #9C27B0 0%, #673AB7 100%);
-            
-            /* 라이트 모드 변수 */
-            --bg-primary: #000000;
-            --bg-card: #111111;
-            --text-main: #ffffff;
-            --text-sub: #999999;
-            --border-main: #222222;
         }
 
-        /* 라이트 모드 */
-        @media (prefers-color-scheme: light) {
-            :root {
-                --bg-primary: #ffffff;
-                --bg-card: #ffffff;
-                --text-main: #000000;
-                --text-sub: #666666;
-                --border-main: #e0e0e0;
-            }
+        /* 라이트 테마 변수 오버라이드 */
+        body.light-theme {
+            --bg-primary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #000000;
+            --text-secondary: #666666;
+            --border-primary: #e0e0e0;
+            --border-secondary: #ddd;
+            --header-bg: #ffffff;
+            --sidebar-bg: #ffffff;
+            --modal-bg: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #ddd;
+            --category-bg: #f8f9fa;
+            --category-inactive: #ffffff;
+            --sub-tab-bg: #f8f9fa;
+            --styles-bg: #f9f9f9;
         }
 
         body {
             font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-primary);
-            color: var(--text-main);
+            color: var(--text-primary);
             overflow-x: hidden;
             user-select: none;
             -webkit-user-select: none;
@@ -86,7 +102,7 @@
             left: 0;
             right: 0;
             height: 60px;
-            background: var(--bg-primary);
+            background: var(--header-bg);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -119,7 +135,7 @@
             font-size: 22px;
             font-weight: bold;
             letter-spacing: 1px;
-            color: #ffffff;
+            color: var(--text-primary);
         }
 
         .menu-btn {
@@ -1325,7 +1341,7 @@
             overflow-y: auto;
         }
 
-        /* 성별 아이콘 모드별 표시 - 다크모드 기본 */
+        /* 성별 아이콘 모드별 표시 */
         .dark-mode-icon {
             display: inline;
         }
@@ -1334,146 +1350,13 @@
             display: none;
         }
 
-        /* 라이트 테마 클래스 기반 전환 */
+        /* 라이트 테마에서 성별 아이콘 전환 */
         body.light-theme .dark-mode-icon {
             display: none;
         }
 
         body.light-theme .light-mode-icon {
             display: inline;
-        }
-
-        /* 라이트 테마 전체 색상 */
-        body.light-theme {
-            background: #ffffff;
-            color: #000000;
-        }
-        
-        body.light-theme .header {
-            background: #ffffff;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        body.light-theme .logo {
-            color: #000000 !important;
-        }
-        
-        body.light-theme .back-btn, 
-        body.light-theme .menu-btn {
-            color: #000000;
-        }
-        
-        body.light-theme .menu-btn span {
-            background: #000000;
-        }
-        
-        body.light-theme .sidebar {
-            background: #ffffff;
-            border-left: 1px solid #ddd;
-        }
-        
-        body.light-theme .sidebar-header {
-            background: #ffffff;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        body.light-theme .sidebar-header h3 {
-            color: #000000;
-        }
-        
-        body.light-theme .sidebar-close {
-            color: #000000;
-        }
-        
-        body.light-theme .user-info {
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-        }
-        
-        body.light-theme .user-info h4 {
-            color: var(--female-color);
-        }
-        
-        body.light-theme .user-info p {
-            color: #000000;
-        }
-        
-        body.light-theme #guestMessage {
-            color: #666;
-        }
-        
-        body.light-theme .gender-btn {
-            background: #ffffff;
-            border-color: #e0e0e0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        
-        body.light-theme .gender-label {
-            color: #000000;
-        }
-        
-        body.light-theme .category-tabs {
-            background: #f8f9fa;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        body.light-theme .category-tab {
-            background: #ffffff;
-            color: #000000;
-            border-color: #e0e0e0;
-        }
-        
-        body.light-theme .sub-tabs {
-            background: #ffffff;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        body.light-theme .sub-tab {
-            background: #f8f9fa;
-            color: #000000;
-        }
-        
-        body.light-theme .styles-container {
-            background: #f9f9f9;
-        }
-        
-        body.light-theme .login-modal {
-            background: #ffffff;
-            border-color: var(--female-color);
-        }
-        
-        body.light-theme .form-group input {
-            background: #ffffff;
-            border-color: #ddd;
-            color: #000000;
-        }
-        
-        body.light-theme .style-modal-content {
-            background: #ffffff;
-        }
-        
-        body.light-theme .style-modal-name,
-        body.light-theme .style-detail-value {
-            color: #000000;
-        }
-        
-        body.light-theme .ai-experience-content {
-            background: #ffffff;
-        }
-        
-        body.light-theme .ai-upload-text,
-        body.light-theme .ai-processing-text {
-            color: #000000;
-        }
-        
-        body.light-theme .personal-color-content {
-            background: #ffffff !important;
-        }
-        
-        body.light-theme .personal-color-close {
-            background: rgba(255, 255, 255, 0.9) !important;
-            color: #000000 !important;
-            border-color: #FF6B6B !important;
         }
 
         @keyframes modalSlideUp {
