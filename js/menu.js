@@ -399,10 +399,10 @@ function loadTheme() {
     console.log('테마 로드:', savedTheme);
 }
 
-// 퍼스널 컬러 연결 함수
+// 퍼스널 컬러 연결 함수 (iframe 모달 방식)
 function openPersonalColor() {
-    // 새 창에서 퍼스널 컬러 사이트 열기
-    window.open('https://magical-basbousa-5426f5.netlify.app', '_blank');
+    // 퍼스널 컬러 모달 생성 및 열기
+    createPersonalColorModal();
     
     // 햅틱 피드백 (모바일)
     if (navigator.vibrate) {
@@ -411,10 +411,84 @@ function openPersonalColor() {
     
     // 토스트 메시지
     if (typeof showToast === 'function') {
-        showToast('퍼스널 컬러로 이동합니다', 'success');
+        showToast('퍼스널 컬러를 로드하는 중입니다', 'success');
     }
     
-    console.log('퍼스널 컬러 사이트로 이동');
+    console.log('퍼스널 컬러 iframe 모달 열기');
+}
+
+// 퍼스널 컬러 모달 생성
+function createPersonalColorModal() {
+    // 기존 모달이 있으면 제거
+    const existingModal = document.getElementById('personalColorModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // 모달 HTML 생성
+    const modal = document.createElement('div');
+    modal.id = 'personalColorModal';
+    modal.className = 'personal-color-modal';
+    
+    modal.innerHTML = `
+        <div class="personal-color-content">
+            <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
+            <div class="personal-color-loading">
+                <div class="loading-spinner"></div>
+                <div>퍼스널 컬러를 로드하는 중...</div>
+            </div>
+            <iframe id="personalColorFrame" src="personal-color/index.html" frameborder="0" style="display: none;"></iframe>
+        </div>
+    `;
+    
+    // body에 모달 추가
+    document.body.appendChild(modal);
+    
+    // 모달 표시
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 10);
+    
+    // body 스크롤 방지
+    document.body.style.overflow = 'hidden';
+    
+    // iframe 로드 완료 시 로딩 숨기기
+    const iframe = document.getElementById('personalColorFrame');
+    iframe.onload = function() {
+        const loading = modal.querySelector('.personal-color-loading');
+        if (loading) loading.style.display = 'none';
+        iframe.style.display = 'block';
+    };
+    
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', handlePersonalColorEscape);
+    
+    console.log('퍼스널 컬러 모달 생성 완료');
+}
+
+// 퍼스널 컬러 모달 닫기
+function closePersonalColorModal() {
+    const modal = document.getElementById('personalColorModal');
+    if (modal) {
+        modal.classList.remove('active');
+        
+        setTimeout(() => {
+            modal.remove();
+            document.body.style.overflow = '';
+            
+            // ESC 이벤트 제거
+            document.removeEventListener('keydown', handlePersonalColorEscape);
+        }, 300);
+    }
+    
+    console.log('퍼스널 컬러 모달 닫기');
+}
+
+// ESC 키 처리
+function handlePersonalColorEscape(e) {
+    if (e.key === 'Escape') {
+        closePersonalColorModal();
+    }
 }
 
 // 사이드바에 테마 버튼과 PERSONAL COLOR PRO 버튼 동적 추가
@@ -644,6 +718,7 @@ document.addEventListener('DOMContentLoaded', function() {
 window.toggleTheme = toggleTheme;
 window.loadTheme = loadTheme;
 window.openPersonalColor = openPersonalColor;
+window.closePersonalColorModal = closePersonalColorModal;
 window.updateSidebarButtons = updateSidebarButtons; // 로그인 후 버튼 업데이트용
 
 console.log('메뉴 시스템 + 테마 시스템 + PERSONAL COLOR PRO 로드 완료');
