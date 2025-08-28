@@ -1918,25 +1918,54 @@
         const closeCameraBtn = document.getElementById('closeCameraBtn');
         const captureBtn = document.getElementById('captureBtn');
 
-        // 🔥 사용 가능한 서브카테고리 & NEW 아이템 확인 (동기 버전)
-        function checkSubcategoriesAndNew(gender, categoryName) {
+        // 🔥 스마트 필터링 & NEW 표시 시스템
+        
+        // 사용 가능한 서브카테고리 & NEW 아이템 확인
+        async function checkSubcategoriesAndNew(gender, categoryName) {
             const cacheKey = `${gender}-${categoryName}`;
             
             if (availableSubcategories.has(cacheKey)) {
                 return availableSubcategories.get(cacheKey);
             }
             
-            // 기본값 반환 (Firebase 호출 없이)
-            const result = {
-                available: MENU_DATA[gender].subcategories,
-                newCounts: {}
-            };
-            
-            // 캐시에 저장
-            availableSubcategories.set(cacheKey, result);
-            
-            console.log(`서브카테고리 확인 완료: ${categoryName}`, result);
-            return result;
+            try {
+                const snapshot = await db.collection('hairstyles')
+                    .where('gender', '==', gender)
+                    .where('mainCategory', '==', categoryName)
+                    .get();
+                
+                const availableSubs = new Set();
+                const newCounts = {};
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    availableSubs.add(data.subCategory);
+                    
+                    // 7일 이내 생성된 아이템인지 확인
+                    const createdAt = data.createdAt?.toDate?.() || new Date(0);
+                    if (createdAt.getTime() > newItemsTimestamp) {
+                        newCounts[data.subCategory] = (newCounts[data.subCategory] || 0) + 1;
+                    }
+                });
+                
+                const result = {
+                    available: Array.from(availableSubs),
+                    newCounts: newCounts
+                };
+                
+                // 캐시에 저장
+                availableSubcategories.set(cacheKey, result);
+                
+                console.log(`✅ 서브카테고리 확인 완료: ${categoryName}`, result);
+                return result;
+                
+            } catch (error) {
+                console.error('서브카테고리 확인 오류:', error);
+                return {
+                    available: MENU_DATA[gender].subcategories,
+                    newCounts: {}
+                };
+            }
         }
 
         // NEW 표시 빨간 점 생성
@@ -2077,7 +2106,7 @@
                 return 'Unknown';
             }
 
-            async             async login(name, phone, password) {
+            async login(name, phone, password) {
                 try {
                     const snapshot = await db.collection(this.designerCollectionName)
                         .where('name', '==', name)
@@ -2137,7 +2166,7 @@
                 }
             }
 
-            async             async checkExistingSessions(designerId) {
+            async checkExistingSessions(designerId) {
                 try {
                     const existingSessions = await db.collection(this.sessionCollectionName)
                         .where('designerId', '==', designerId)
@@ -2177,7 +2206,7 @@
                 }, 30000);
             }
 
-            async             async updateLastActivity() {
+            async updateLastActivity() {
                 if (!window.currentSessionId) return;
 
                 await db.collection(this.sessionCollectionName).doc(window.currentSessionId).update({
@@ -2185,7 +2214,7 @@
                 });
             }
 
-            async             async logout() {
+            async logout() {
                 try {
                     if (currentSessionId) {
                         await db.collection(this.sessionCollectionName).doc(currentSessionId).update({
@@ -2302,224 +2331,99 @@
             return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
         }
 
-        // 🔥 퍼스널 컬러 모달 열기 (간단한 버전)
+        // 🔥 퍼스널 컬러 모달 열기 (수정된 버전 - 대체 콘텐츠 타이머 제거)
         function openPersonalColorModal() {
-            console.log('퍼스널 컬러 모달 열기');
+            console.log('=== 퍼스널 컬러 모달 디버깅 시작 ===');
             
             const modal = document.getElementById('personalColorModal');
-            const container = document.getElementById('personalColorContainer');
-            
-            if (!modal || !container) {
-                console.error('퍼스널 컬러 모달 요소를 찾을 수 없습니다');
+            console.log('1. 모달 요소 확인:', modal ? '존재' : '없음');
+            if (!modal) {
+                console.error('모달 요소를 찾을 수 없습니다');
                 return;
             }
+            
+            const loadingContent = modal.querySelector('.personal-color-loading');
+            const container = modal.querySelector('.personal-color-container');
+            console.log('2. 로딩 요소:', loadingContent ? '존재' : '없음');
+            console.log('3. 컨테이너 요소:', container ? '존재' : '없음');
             
             // 모달 표시
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            console.log('4. 모달 표시 완료');
             
-            // 간단한 iframe 방식으로 로드
-            container.innerHTML = `
-                <iframe 
-                    src="./personal-color/index.html" 
-                    style="width: 100vw; height: 100vh; border: none; background: white;"
-                    onload="console.log('퍼스널 컬러 로드 완료')"
-                    onerror="console.error('퍼스널 컬러 로드 실패')">
-                </iframe>
-            `;
-            container.style.display = 'block';
+            // 로딩 표시
+            if (loadingContent) {
+                loadingContent.style.display = 'block';
+                console.log('5. 로딩 표시됨');
+            }
+            if (container) {
+                container.style.display = 'none';
+                console.log('6. 컨테이너 숨김');
+            }
             
-            console.log('퍼스널 컬러 모달 열기 완료');
+            console.log('7. 현재 위치:', window.location.href);
+            console.log('8. fetch 함수 존재:', typeof fetch);
+            
+            // 🔥 대체 콘텐츠 타이머 제거 - 이제 파일 로드만 시도
+            
+            // 파일 로드 시도
+            tryLoadPersonalColor([
+                './personal-color/index.html',
+                '/personal-color/index.html', 
+                'personal-color/index.html',
+                './personal-color.html'
+            ], 0, loadingContent, container);
         }
         
-        // 🔥 퍼스널 컬러 파일 로드 함수 (개선된 버전 + 스크립트 실행)
-        async function loadPersonalColorFile(paths, currentIndex, loadingContent, container) {
-            console.log(`--- 시도 ${currentIndex + 1}/${paths.length}: ${paths[currentIndex]} ---`);
+        // 🔥 퍼스널 컬러 로드 시도 함수 (성공 시 즉시 종료하도록 수정)
+        async function tryLoadPersonalColor(paths, currentIndex, loadingContent, container) {
+            console.log(`--- 경로 시도 ${currentIndex + 1}/${paths.length} ---`);
             
             if (currentIndex >= paths.length) {
-                console.log('모든 경로 실패 - 대체 화면 표시');
-                showPersonalColorError(loadingContent, container);
+                console.log('모든 경로 실패 - 대체 콘텐츠 표시');
+                showPersonalColorFallback(loadingContent, container);
                 return;
             }
             
             const currentPath = paths[currentIndex];
+            console.log(`시도할 경로: ${currentPath}`);
+            console.log(`절대 URL: ${new URL(currentPath, window.location.href).href}`);
             
             try {
-                console.log('fetch 요청:', currentPath);
-                const response = await fetch(currentPath, {
-                    method: 'GET',
-                    cache: 'no-cache',
-                    headers: {
-                        'Cache-Control': 'no-cache'
-                    }
-                });
-                
-                console.log('응답 상태:', response.status, response.statusText);
+                console.log('fetch 요청 시작...');
+                const response = await fetch(currentPath);
+                console.log('fetch 응답 상태:', response.status, response.statusText);
+                console.log('응답 헤더:', response.headers);
                 
                 if (response.ok) {
+                    console.log('응답 성공 - HTML 읽기 시작');
                     const html = await response.text();
-                    console.log(`HTML 로드 성공 - 길이: ${html.length}자`);
+                    console.log(`HTML 로드 성공: 길이 ${html.length}자`);
+                    console.log('HTML 일부 미리보기:', html.substring(0, 200));
                     
-                    // 로딩 숨기기
+                    // 🔥 로딩 숨기고 컨테이너에 HTML 삽입
                     if (loadingContent) {
                         loadingContent.style.display = 'none';
+                        console.log('로딩 숨김');
                     }
                     
-                    // HTML 삽입 및 컨테이너 표시
                     if (container) {
                         container.innerHTML = html;
                         container.style.display = 'block';
-                        console.log('HTML 삽입 완료');
+                        console.log('컨테이너에 HTML 삽입 완료');
                     }
                     
-                    // 🔥 삽입된 스크립트와 CSS 강제 실행 (await 제거)
-                    executePersonalColorScripts(container);
-                    
                     console.log('=== 퍼스널 컬러 로드 성공 ===');
-                    return; // 성공 시 종료
+                    return; // 🔥 성공 시 여기서 종료하여 다음 시도 방지
                     
                 } else {
-                    console.log(`HTTP 오류: ${response.status} - 다음 시도`);
-                    // 다음 경로 시도
-                    setTimeout(() => {
-                        loadPersonalColorFile(paths, currentIndex + 1, loadingContent, container);
-                    }, 500);
+                    console.log(`HTTP ${response.status}: ${response.statusText} - 다음 경로 시도`);
+                    await tryLoadPersonalColor(paths, currentIndex + 1, loadingContent, container);
                 }
                 
             } catch (error) {
-                console.error(`로드 실패 (${currentPath}):`, error);
-                
-                // 마지막 경로가 아니면 다음 시도
-                if (currentIndex < paths.length - 1) {
-                    setTimeout(() => {
-                        loadPersonalColorFile(paths, currentIndex + 1, loadingContent, container);
-                    }, 500);
-                } else {
-                    console.log('모든 시도 실패 - 오류 화면 표시');
-                    showPersonalColorError(loadingContent, container);
-                }
-            }
-        }
-        
-        // 🔥 퍼스널 컬러 스크립트 실행 함수 (async 오류 수정)
-        async function executePersonalColorScripts(container) {
-            console.log('퍼스널 컬러 스크립트 실행 시작...');
-            
-            // 1. CSS 먼저 처리
-            const stylesheets = container.querySelectorAll('style, link[rel="stylesheet"]');
-            stylesheets.forEach((stylesheet, index) => {
-                if (stylesheet.tagName === 'STYLE') {
-                    const newStyle = document.createElement('style');
-                    newStyle.textContent = stylesheet.textContent;
-                    document.head.appendChild(newStyle);
-                    console.log(`CSS ${index + 1} head로 이동 완료`);
-                } else if (stylesheet.tagName === 'LINK') {
-                    const newLink = document.createElement('link');
-                    newLink.rel = 'stylesheet';
-                    newLink.href = stylesheet.href;
-                    document.head.appendChild(newLink);
-                }
-            });
-            
-            // 2. 스크립트 실행 (순차적으로)
-            const scripts = container.querySelectorAll('script');
-            const scriptPromises = [];
-            
-            scripts.forEach((script, index) => {
-                if (script.src) {
-                    // 외부 스크립트는 Promise로 처리
-                    const promise = new Promise((resolve) => {
-                        const newScript = document.createElement('script');
-                        newScript.src = script.src;
-                        newScript.onload = () => {
-                            console.log(`외부 스크립트 ${index + 1} 로드 완료: ${script.src}`);
-                            resolve();
-                        };
-                        newScript.onerror = () => {
-                            console.error(`외부 스크립트 ${index + 1} 로드 실패: ${script.src}`);
-                            resolve(); // 실패해도 다음으로 진행
-                        };
-                        document.head.appendChild(newScript);
-                    });
-                    scriptPromises.push(promise);
-                } else if (script.textContent && script.textContent.trim()) {
-                    // 인라인 스크립트 즉시 실행
-                    try {
-                        const newScript = document.createElement('script');
-                        newScript.textContent = script.textContent;
-                        document.body.appendChild(newScript);
-                        console.log(`인라인 스크립트 ${index + 1} 실행 완료`);
-                    } catch (error) {
-                        console.error(`인라인 스크립트 ${index + 1} 실행 오류:`, error);
-                    }
-                }
-            });
-            
-            // 3. 모든 외부 스크립트 로드 완료 대기
-            if (scriptPromises.length > 0) {
-                await Promise.all(scriptPromises);
-                console.log('모든 외부 스크립트 로드 완료');
-            }
-            
-            // 4. 로딩 화면 숨기고 메인 앱 표시 (약간의 지연 후)
-            setTimeout(() => {
-                const loadingScreen = container.querySelector('#loading-screen, .loading-screen');
-                const mainApp = container.querySelector('#main-app, .main-app');
-                
-                if (loadingScreen) {
-                    loadingScreen.style.display = 'none';
-                    console.log('퍼스널 컬러 로딩 화면 숨김');
-                }
-                
-                if (mainApp) {
-                    mainApp.style.display = 'block';
-                    mainApp.style.opacity = '1';
-                    mainApp.classList.add('loaded');
-                    console.log('퍼스널 컬러 메인 앱 표시');
-                }
-            }, 1000); // 1초 후 실행하여 스크립트 초기화 완료 대기
-            
-            console.log('퍼스널 컬러 스크립트 실행 완료');
-        }
-        
-        // 퍼스널 컬러 오류 화면 표시
-        function showPersonalColorError(loadingContent, container) {
-            console.log('오류 화면 표시 시작');
-            
-            if (loadingContent) {
-                loadingContent.style.display = 'none';
-            }
-            
-            if (container) {
-                container.innerHTML = `
-                    <div style="width: 100vw; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 40px;">
-                        <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 60px; max-width: 800px;">
-                            <h1 style="font-size: 48px; margin-bottom: 30px;">🎨 퍼스널 컬러</h1>
-                            <h2 style="font-size: 24px; margin-bottom: 20px; color: #ffeb3b;">서비스 준비 중</h2>
-                            <p style="font-size: 16px; margin-bottom: 30px; line-height: 1.6; opacity: 0.9;">
-                                퍼스널 컬러 진단 서비스를 준비하고 있습니다.<br>
-                                곧 새로운 기능으로 찾아뵙겠습니다.
-                            </p>
-                            <button onclick="closePersonalColorModal()" style="
-                                padding: 15px 30px; 
-                                background: rgba(255,255,255,0.2); 
-                                color: white; 
-                                border: 2px solid rgba(255,255,255,0.3); 
-                                border-radius: 50px; 
-                                cursor: pointer; 
-                                font-size: 16px; 
-                                font-weight: 600;
-                                transition: all 0.3s ease;
-                            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                                닫기
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.style.display = 'block';
-                console.log('오류 화면 표시 완료');
-            }
-        }
+                console.error(`경로 ${currentPath} 실패:`, error);
                 
                 // 마지막 경로가 아니면 다음 시도
                 if (currentIndex < paths.length - 1) {
@@ -2530,29 +2434,57 @@
                 }
             }
         }
+        
+        // 퍼스널 컬러 대체 콘텐츠 표시 (디버깅 정보 포함)
+        function showPersonalColorFallback(loadingContent, container) {
+            console.log('대체 콘텐츠 표시 시작');
+            
+            if (loadingContent) {
+                loadingContent.style.display = 'none';
+                console.log('로딩 숨김');
+            }
+            if (container) {
+                console.log('대체 HTML 삽입 중');
+                container.innerHTML = `
+                    <div style="width: 100vw; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white; padding: 40px;">
+                        <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 60px; max-width: 800px; margin: 20px;">
+                            <h1 style="font-size: 48px; margin-bottom: 30px; color: #fff;">🎨 퍼스널 컬러</h1>
+                            <h2 style="font-size: 24px; margin-bottom: 20px; color: #ffeb3b;">서비스 준비 중</h2>
+                            <p style="font-size: 16px; margin-bottom: 20px; line-height: 1.6; opacity: 0.9;">
+                                퍼스널 컬러 진단 서비스를 준비하고 있습니다.<br>
+                                빠른 시일 내에 서비스를 제공하겠습니다.
+                            </p>
+                            <button onclick="closePersonalColorModal(); console.log('퍼스널 컬러 모달 닫기 버튼 클릭됨');" style="
+                                margin: 20px 10px; 
+                                padding: 15px 30px; 
+                                background: rgba(255,255,255,0.2); 
+                                color: white; 
+                                border: 2px solid rgba(255,255,255,0.3); 
+                                border-radius: 50px; 
+                                cursor: pointer; 
+                                font-size: 16px; 
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                            ">닫기</button>
+                        </div>
+                    </div>
+                `;
+                container.style.display = 'block';
+                console.log('대체 HTML 삽입 완료');
+            }
+            console.log('=== 대체 콘텐츠 표시 완료 ===');
+        }
 
-        // 퍼스널 컬러 모달 닫기 (배경색 초기화 추가)
+        // 퍼스널 컬러 모달 닫기
         function closePersonalColorModal() {
             const modal = document.getElementById('personalColorModal');
             if (modal) {
                 modal.classList.remove('active');
                 document.body.style.overflow = '';
-                
-                // 퍼스널 컬러로 인한 모든 스타일 오염 초기화
-                resetPersonalColorStyles();
-                
-                // 퍼스널 컬러 컨테이너 내용 정리
-                const container = document.getElementById('personalColorContainer');
-                if (container) {
-                    container.innerHTML = '';
-                    container.style.display = 'none';
-                }
-                
-                console.log('퍼스널 컬러 모달 닫기 및 배경 초기화 완료');
             }
         }
 
-        // ESC 키 핸들러 (퍼스널 컬러 모달용) - 간단한 버전
+        // ESC 키 핸들러 (퍼스널 컬러 모달용)
         function handlePersonalColorEscape(event) {
             if (event.key === 'Escape') {
                 closePersonalColorModal();
@@ -2609,7 +2541,7 @@
             console.log('AI 체험 모달 닫힘');
         }
 
-        async         async function processAI() {
+        async function processAI() {
             if (!window.currentDesigner || window.currentDesigner.tokens < 5) {
                 showToast('토큰이 부족합니다', 'error');
                 return;
@@ -2865,7 +2797,7 @@
             }
         });
 
-        async         async function logout() {
+        async function logout() {
             if (confirm('로그아웃 하시겠습니까?')) {
                 showLoading(true);
                 await firebaseAuth.logout();
@@ -2884,8 +2816,8 @@
             loadMenuData(gender);
         }
 
-        // 메뉴 데이터 로드 (동기 버전)
-        function loadMenuData(gender) {
+        // 메뉴 데이터 로드 (스마트 필터링 적용)
+        async function loadMenuData(gender) {
             const menuData = MENU_DATA[gender];
             
             // 카테고리 탭 즉시 렌더링
@@ -2896,8 +2828,8 @@
                 const firstCategory = menuData.categories[0];
                 currentCategory = firstCategory;
                 
-                // 해당 카테고리의 서브카테고리 정보 확인 (동기)
-                const subInfo = checkSubcategoriesAndNew(gender, firstCategory.name);
+                // 해당 카테고리의 서브카테고리 정보 확인
+                const subInfo = await checkSubcategoriesAndNew(gender, firstCategory.name);
                 
                 // 스마트 필터링된 서브카테고리 렌더링
                 renderSmartSubcategories(gender, menuData.subcategories, subInfo);
@@ -2908,7 +2840,7 @@
                 loadStyles(firstCategory.name, firstAvailableSub, gender);
             }
             
-            console.log(`${gender} 메뉴 로드 완료`);
+            console.log(`✅ ${gender} 메뉴 로드 완료`);
         }
 
         // 카테고리 탭 렌더링 (NEW 표시는 백그라운드에서 추가)
@@ -2981,8 +2913,8 @@
             console.log(`✅ 스마트 서브카테고리 렌더링 완료 (사용가능: ${subInfo.available.length}/${allSubcategories.length})`);
         }
 
-        // 카테고리 선택 (동기 버전)
-        function selectCategory(category, gender) {
+        // 카테고리 선택 (스마트 필터링 적용)
+        async function selectCategory(category, gender) {
             currentCategory = category;
             
             // 탭 활성화 상태 업데이트
@@ -2993,8 +2925,8 @@
                 }
             });
             
-            // 해당 카테고리의 서브카테고리 정보 확인 (동기)
-            const subInfo = checkSubcategoriesAndNew(gender, category.name);
+            // 해당 카테고리의 서브카테고리 정보 확인
+            const subInfo = await checkSubcategoriesAndNew(gender, category.name);
             const menuData = MENU_DATA[gender];
             
             // 스마트 필터링된 서브카테고리 렌더링
@@ -3005,7 +2937,7 @@
             currentSubcategory = firstAvailableSub;
             loadStyles(category.name, firstAvailableSub, gender);
             
-            console.log(`카테고리 선택: ${category.name} (사용가능한 서브: ${subInfo.available.length}개)`);
+            console.log(`✅ 카테고리 선택: ${category.name} (사용가능한 서브: ${subInfo.available.length}개)`);
         }
 
         // 서브카테고리 선택
@@ -3030,49 +2962,49 @@
             console.log(`✅ 서브카테고리 선택: ${subcategory}`);
         }
 
-        // 스타일 로드 (동기 버전)
-        function loadStyles(categoryName, subcategory, gender) {
+        // 스타일 로드 (NEW 표시 포함)
+        async function loadStyles(categoryName, subcategory, gender) {
             const stylesGrid = document.getElementById('stylesGrid');
             
             // 로딩 스켈레톤 표시
             showSkeletonCards();
             
-            // Firebase 호출을 Promise로 래핑하여 처리
-            db.collection('hairstyles')
-                .where('gender', '==', gender)
-                .where('mainCategory', '==', categoryName)
-                .where('subCategory', '==', subcategory)
-                .get()
-                .then(snapshot => {
-                    stylesGrid.innerHTML = '';
-                    
-                    if (snapshot.empty) {
-                        stylesGrid.innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-icon">📭</div>
-                                <div style="font-size: 18px;">등록된 스타일이 없습니다</div>
-                                <div style="font-size: 14px; color: #666; margin-top: 10px;">${categoryName} - ${subcategory}</div>
-                            </div>
-                        `;
-                        return;
-                    }
-                    
-                    const fragment = document.createDocumentFragment();
-                    
-                    snapshot.forEach(doc => {
-                        const style = doc.data();
-                        const card = createStyleCard(style, doc.id);
-                        fragment.appendChild(card);
-                    });
-                    
-                    stylesGrid.appendChild(fragment);
-                    
-                    console.log(`${snapshot.size}개 스타일 로드 완료: ${categoryName} - ${subcategory}`);
-                })
-                .catch(error => {
-                    console.error('스타일 로드 오류:', error);
-                    showErrorState(error.message);
+            try {
+                const snapshot = await db.collection('hairstyles')
+                    .where('gender', '==', gender)
+                    .where('mainCategory', '==', categoryName)
+                    .where('subCategory', '==', subcategory)
+                    .get();
+                
+                stylesGrid.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    stylesGrid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div style="font-size: 18px;">등록된 스타일이 없습니다</div>
+                            <div style="font-size: 14px; color: #666; margin-top: 10px;">${categoryName} - ${subcategory}</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const fragment = document.createDocumentFragment();
+                
+                snapshot.forEach(doc => {
+                    const style = doc.data();
+                    const card = createStyleCard(style, doc.id);
+                    fragment.appendChild(card);
                 });
+                
+                stylesGrid.appendChild(fragment);
+                
+                console.log(`✅ ${snapshot.size}개 스타일 로드 완료: ${categoryName} - ${subcategory}`);
+                
+            } catch (error) {
+                console.error('스타일 로드 오류:', error);
+                showErrorState(error.message);
+            }
         }
 
         // 스타일 카드 생성 (NEW 표시 포함)
