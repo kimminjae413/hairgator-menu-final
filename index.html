@@ -1325,7 +1325,7 @@
             overflow-y: auto;
         }
 
-        /* 성별 아이콘 모드별 표시 */
+        /* 성별 아이콘 모드별 표시 - 다크모드 기본 */
         .dark-mode-icon {
             display: inline;
         }
@@ -1334,155 +1334,146 @@
             display: none;
         }
 
-        /* 라이트 모드 전체 설정 */
-        @media (prefers-color-scheme: light) {
-            :root {
-                --bg-primary: #ffffff;
-                --bg-card: #ffffff;
-                --text-main: #000000;
-                --text-sub: #666666;
-                --border-main: #e0e0e0;
-            }
-            
-            body {
-                background: #ffffff;
-                color: #000000;
-            }
-            
-            .header {
-                background: #ffffff;
-                border-bottom: 1px solid #ddd;
-            }
-            
-            .logo {
-                color: #000000 !important;
-            }
-            
-            .back-btn, .menu-btn {
-                color: #000000;
-            }
-            
-            .menu-btn span {
-                background: #000000;
-            }
-            
-            .sidebar {
-                background: #ffffff;
-                border-left: 1px solid #ddd;
-            }
-            
-            .sidebar-header {
-                background: #ffffff;
-                border-bottom: 1px solid #ddd;
-            }
-            
-            .sidebar-header h3 {
-                color: #000000;
-            }
-            
-            .sidebar-close {
-                color: #000000;
-            }
-            
-            .user-info {
-                background: #f8f9fa;
-                border: 1px solid #ddd;
-            }
-            
-            .user-info h4 {
-                color: var(--female-color);
-            }
-            
-            .user-info p {
-                color: #000000;
-            }
-            
-            #guestMessage {
-                color: #666;
-            }
-            
-            .gender-btn {
-                background: #ffffff;
-                border-color: #e0e0e0;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            }
-            
-            .gender-label {
-                color: #000000;
-            }
-            
-            .category-tabs {
-                background: #f8f9fa;
-                border-bottom: 1px solid #e0e0e0;
-            }
-            
-            .category-tab {
-                background: #ffffff;
-                color: #000000;
-                border-color: #e0e0e0;
-            }
-            
-            .sub-tabs {
-                background: #ffffff;
-                border-bottom: 1px solid #e0e0e0;
-            }
-            
-            .sub-tab {
-                background: #f8f9fa;
-                color: #000000;
-            }
-            
-            .styles-container {
-                background: #f9f9f9;
-            }
-            
-            .login-modal {
-                background: #ffffff;
-                border-color: var(--female-color);
-            }
-            
-            .form-group input {
-                background: #ffffff;
-                border-color: #ddd;
-                color: #000000;
-            }
-            
-            .style-modal-content {
-                background: #ffffff;
-            }
-            
-            .style-modal-name,
-            .style-detail-value {
-                color: #000000;
-            }
-            
-            .ai-experience-content {
-                background: #ffffff;
-            }
-            
-            .ai-upload-text,
-            .ai-processing-text {
-                color: #000000;
-            }
-            
-            .personal-color-content {
-                background: #ffffff !important;
-            }
-            
-            .personal-color-close {
-                background: rgba(255, 255, 255, 0.9) !important;
-                color: #000000 !important;
-                border-color: #FF6B6B !important;
-            }
-            
-            /* 라이트 모드에서 성별 아이콘 전환 */
-            .dark-mode-icon {
-                display: none;
-            }
-            
-            .light-mode-icon {
-                display: inline;
-            }
+        /* 라이트 테마 클래스 기반 전환 */
+        body.light-theme .dark-mode-icon {
+            display: none;
+        }
+
+        body.light-theme .light-mode-icon {
+            display: inline;
+        }
+
+        /* 라이트 테마 전체 색상 */
+        body.light-theme {
+            background: #ffffff;
+            color: #000000;
+        }
+        
+        body.light-theme .header {
+            background: #ffffff;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        body.light-theme .logo {
+            color: #000000 !important;
+        }
+        
+        body.light-theme .back-btn, 
+        body.light-theme .menu-btn {
+            color: #000000;
+        }
+        
+        body.light-theme .menu-btn span {
+            background: #000000;
+        }
+        
+        body.light-theme .sidebar {
+            background: #ffffff;
+            border-left: 1px solid #ddd;
+        }
+        
+        body.light-theme .sidebar-header {
+            background: #ffffff;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        body.light-theme .sidebar-header h3 {
+            color: #000000;
+        }
+        
+        body.light-theme .sidebar-close {
+            color: #000000;
+        }
+        
+        body.light-theme .user-info {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+        }
+        
+        body.light-theme .user-info h4 {
+            color: var(--female-color);
+        }
+        
+        body.light-theme .user-info p {
+            color: #000000;
+        }
+        
+        body.light-theme #guestMessage {
+            color: #666;
+        }
+        
+        body.light-theme .gender-btn {
+            background: #ffffff;
+            border-color: #e0e0e0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        body.light-theme .gender-label {
+            color: #000000;
+        }
+        
+        body.light-theme .category-tabs {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        body.light-theme .category-tab {
+            background: #ffffff;
+            color: #000000;
+            border-color: #e0e0e0;
+        }
+        
+        body.light-theme .sub-tabs {
+            background: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        body.light-theme .sub-tab {
+            background: #f8f9fa;
+            color: #000000;
+        }
+        
+        body.light-theme .styles-container {
+            background: #f9f9f9;
+        }
+        
+        body.light-theme .login-modal {
+            background: #ffffff;
+            border-color: var(--female-color);
+        }
+        
+        body.light-theme .form-group input {
+            background: #ffffff;
+            border-color: #ddd;
+            color: #000000;
+        }
+        
+        body.light-theme .style-modal-content {
+            background: #ffffff;
+        }
+        
+        body.light-theme .style-modal-name,
+        body.light-theme .style-detail-value {
+            color: #000000;
+        }
+        
+        body.light-theme .ai-experience-content {
+            background: #ffffff;
+        }
+        
+        body.light-theme .ai-upload-text,
+        body.light-theme .ai-processing-text {
+            color: #000000;
+        }
+        
+        body.light-theme .personal-color-content {
+            background: #ffffff !important;
+        }
+        
+        body.light-theme .personal-color-close {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #000000 !important;
+            border-color: #FF6B6B !important;
         }
 
         @keyframes modalSlideUp {
