@@ -1370,21 +1370,8 @@
             <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
         </div>
         <div class="sidebar-content">
-    <!-- 테마 버튼 추가 -->
-    <div class="theme-simple" style="margin-bottom: 20px;">
-        <button id="themeToggleBtn" onclick="toggleTheme()" 
-                style="width: 100%; background: var(--female-color); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">
-            <span id="themeButtonText">☀️ 라이트 모드로 변경</span>
-        </button>
-    </div>
-    
-    <!-- 퍼스널 컬러 버튼 추가 -->
-    <div class="personal-color-section" style="margin-bottom: 20px;">
-        <button id="personalColorBtn" onclick="openPersonalColor()" 
-                style="width: 100%; background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);">
-            🎨 퍼스널 컬러
-        </button>
-    </div>
+   <!-- 동적 버튼 컨테이너 (JavaScript에서 생성) -->
+        <div id="dynamicButtons"></div>
 
     <div class="user-info" id="userInfo" style="display: none;">
         <!-- 기존 사용자 정보 -->
@@ -2798,6 +2785,7 @@ if (swapResult && swapResult.success) {
     </script>
 </body>
 </html>
+
 
 
 
