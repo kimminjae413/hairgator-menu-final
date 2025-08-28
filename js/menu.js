@@ -399,8 +399,16 @@ function loadTheme() {
     console.log('테마 로드:', savedTheme);
 }
 
-// 퍼스널 컬러 연결 함수 (iframe 모달 방식)
+// ========== 퍼스널 컬러 시스템 (iframe 모달 수정) ==========
+
+// 퍼스널 컬러 연결 함수 (iframe 모달 방식 - 외부창 방지)
 function openPersonalColor() {
+    // 로그인 상태 체크
+    if (!checkLoginStatus()) {
+        showToast('로그인이 필요한 기능입니다', 'warning');
+        return;
+    }
+
     // 퍼스널 컬러 모달 생성 및 열기
     createPersonalColorModal();
     
@@ -417,7 +425,7 @@ function openPersonalColor() {
     console.log('퍼스널 컬러 iframe 모달 열기');
 }
 
-// 퍼스널 컬러 모달 생성
+// 퍼스널 컬러 모달 생성 (수정됨 - 외부창 방지)
 function createPersonalColorModal() {
     // 기존 모달이 있으면 제거
     const existingModal = document.getElementById('personalColorModal');
@@ -429,24 +437,113 @@ function createPersonalColorModal() {
     const modal = document.createElement('div');
     modal.id = 'personalColorModal';
     modal.className = 'personal-color-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
     
     modal.innerHTML = `
-        <div class="personal-color-content">
-            <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
-            <div class="personal-color-loading">
-                <div class="loading-spinner"></div>
-                <div>퍼스널 컬러를 로드하는 중...</div>
+        <div class="personal-color-content" style="
+            position: relative;
+            width: 95%;
+            height: 95%;
+            max-width: 1200px;
+            max-height: 800px;
+            background: #111;
+            border-radius: 15px;
+            border: 2px solid #FF6B6B;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        ">
+            <button class="personal-color-close" onclick="closePersonalColorModal()" style="
+                position: absolute;
+                top: 15px;
+                right: 20px;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 28px;
+                cursor: pointer;
+                z-index: 10;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">×</button>
+            
+            <div class="personal-color-loading" style="
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                color: white;
+                z-index: 5;
+            ">
+                <div class="loading-spinner" style="
+                    width: 40px;
+                    height: 40px;
+                    border: 3px solid #333;
+                    border-top: 3px solid #FF6B6B;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto 20px;
+                "></div>
+                <div style="font-size: 16px;">퍼스널 컬러를 로드하는 중...</div>
             </div>
-            <iframe id="personalColorFrame" src="personal-color/index.html" frameborder="0" style="display: none;"></iframe>
+            
+            <iframe id="personalColorFrame" 
+                src="personal-color/index.html" 
+                frameborder="0" 
+                style="
+                    width: 100%;
+                    height: 100%;
+                    border: none;
+                    border-radius: 13px;
+                    display: none;
+                "
+                sandbox="allow-scripts allow-same-origin allow-forms"
+                loading="lazy">
+            </iframe>
         </div>
     `;
+    
+    // CSS 애니메이션 추가
+    if (!document.getElementById('personal-color-animations')) {
+        const style = document.createElement('style');
+        style.id = 'personal-color-animations';
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            .personal-color-modal.active {
+                opacity: 1 !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
     
     // body에 모달 추가
     document.body.appendChild(modal);
     
-    // 모달 표시
+    // 모달 표시 애니메이션
     setTimeout(() => {
         modal.classList.add('active');
+        modal.style.opacity = '1';
     }, 10);
     
     // body 스크롤 방지
@@ -460,8 +557,27 @@ function createPersonalColorModal() {
         iframe.style.display = 'block';
     };
     
+    // iframe 로드 에러 처리
+    iframe.onerror = function() {
+        const loading = modal.querySelector('.personal-color-loading');
+        if (loading) {
+            loading.innerHTML = `
+                <div style="color: #ff6b6b; font-size: 18px; margin-bottom: 10px;">⚠️</div>
+                <div>퍼스널 컬러를 로드할 수 없습니다</div>
+                <div style="font-size: 14px; margin-top: 10px; color: #999;">personal-color 폴더가 없거나 파일을 찾을 수 없습니다</div>
+            `;
+        }
+    };
+    
     // ESC 키로 모달 닫기
     document.addEventListener('keydown', handlePersonalColorEscape);
+    
+    // 모달 외부 클릭으로 닫기
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closePersonalColorModal();
+        }
+    });
     
     console.log('퍼스널 컬러 모달 생성 완료');
 }
@@ -470,7 +586,7 @@ function createPersonalColorModal() {
 function closePersonalColorModal() {
     const modal = document.getElementById('personalColorModal');
     if (modal) {
-        modal.classList.remove('active');
+        modal.style.opacity = '0';
         
         setTimeout(() => {
             modal.remove();
@@ -491,8 +607,51 @@ function handlePersonalColorEscape(e) {
     }
 }
 
-// 사이드바에 테마 버튼과 PERSONAL COLOR PRO 버튼 동적 추가
+// ========== 로그인 상태 체크 및 사이드바 관리 ==========
+
+// 로그인 상태 체크 함수 (강화된 버전)
+function checkLoginStatus() {
+    // 1. window.currentDesigner 체크
+    if (window.currentDesigner && window.currentDesigner.id) {
+        return true;
+    }
+    
+    // 2. localStorage에서 로그인 정보 체크
+    const designerName = localStorage.getItem('designerName');
+    const designerPhone = localStorage.getItem('designerPhone');
+    const loginTime = localStorage.getItem('loginTime');
+    
+    if (designerName && designerPhone && loginTime) {
+        // 24시간 유효성 체크
+        const now = new Date().getTime();
+        const loginTimestamp = parseInt(loginTime);
+        const isValid = (now - loginTimestamp) < (24 * 60 * 60 * 1000);
+        
+        if (isValid) {
+            return true;
+        }
+    }
+    
+    // 3. 기타 인증 상태 체크
+    if (window.auth && window.auth.currentUser) {
+        return true;
+    }
+    
+    return false;
+}
+
+// 사이드바에 테마 버튼과 PERSONAL COLOR 버튼 동적 추가 (수정된 로그인 체크)
 function addSidebarButtons() {
+    // 로그인 상태 확인
+    const isLoggedIn = checkLoginStatus();
+    
+    if (!isLoggedIn) {
+        console.log('로그인 상태가 아님 - 사이드바 버튼 추가하지 않음');
+        // 기존 버튼이 있다면 제거
+        removeSidebarButtons();
+        return;
+    }
+
     const sidebarContent = document.querySelector('.sidebar-content');
     if (!sidebarContent) {
         console.warn('사이드바를 찾을 수 없습니다');
@@ -501,11 +660,13 @@ function addSidebarButtons() {
 
     // 기존 버튼들이 이미 있는지 확인
     if (document.getElementById('themeToggleBtn') || document.getElementById('personalColorBtn')) {
+        console.log('사이드바 버튼이 이미 존재함');
         return; // 이미 추가되어 있음
     }
 
     // 테마 버튼 HTML 생성
     const themeSection = document.createElement('div');
+    themeSection.id = 'themeSectionContainer';
     themeSection.className = 'theme-simple';
     themeSection.style.marginBottom = '20px';
     themeSection.innerHTML = `
@@ -517,6 +678,7 @@ function addSidebarButtons() {
 
     // 퍼스널 컬러 버튼 HTML 생성
     const personalColorSection = document.createElement('div');
+    personalColorSection.id = 'personalColorSectionContainer';
     personalColorSection.className = 'personal-color-section';
     personalColorSection.style.marginBottom = '20px';
     personalColorSection.innerHTML = `
@@ -531,6 +693,24 @@ function addSidebarButtons() {
     sidebarContent.insertBefore(themeSection, sidebarContent.firstChild);
 
     // 호버 효과 추가
+    addSidebarButtonHoverEffects();
+
+    console.log('사이드바 버튼들 추가 완료 (로그인 상태)');
+}
+
+// 사이드바 버튼 제거 함수
+function removeSidebarButtons() {
+    const themeSection = document.getElementById('themeSectionContainer');
+    const personalColorSection = document.getElementById('personalColorSectionContainer');
+    
+    if (themeSection) themeSection.remove();
+    if (personalColorSection) personalColorSection.remove();
+    
+    console.log('사이드바 버튼들 제거됨 (로그아웃 상태)');
+}
+
+// 사이드바 버튼 호버 효과
+function addSidebarButtonHoverEffects() {
     const themeBtn = document.getElementById('themeToggleBtn');
     const personalColorBtn = document.getElementById('personalColorBtn');
 
@@ -557,11 +737,22 @@ function addSidebarButtons() {
             personalColorBtn.style.boxShadow = '0 2px 8px rgba(255, 107, 107, 0.3)';
         });
     }
-
-    console.log('사이드바 버튼들 추가 완료');
 }
 
-// 라이트 테마 CSS 동적 추가
+// 로그인 후 버튼 업데이트
+function updateSidebarButtons() {
+    // 로그인 상태 체크 후 버튼 추가/제거
+    setTimeout(() => {
+        if (checkLoginStatus()) {
+            addSidebarButtons();
+        } else {
+            removeSidebarButtons();
+        }
+    }, 100);
+}
+
+// ========== 라이트 테마 CSS 동적 추가 ==========
+
 function addLightThemeStyles() {
     // 이미 라이트 테마 스타일이 있는지 확인
     if (document.getElementById('light-theme-styles')) {
@@ -677,6 +868,11 @@ function addLightThemeStyles() {
         body.light-theme .ai-processing-text {
             color: #000000;
         }
+
+        body.light-theme .personal-color-content {
+            background: #ffffff !important;
+            border-color: #FF6B6B !important;
+        }
     `;
 
     const style = document.createElement('style');
@@ -686,6 +882,8 @@ function addLightThemeStyles() {
 
     console.log('라이트 테마 스타일 추가 완료');
 }
+
+// ========== 초기화 및 이벤트 리스너 ==========
 
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
@@ -697,21 +895,35 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 로그인 상태 체크하여 사이드바 버튼 추가
     const checkLoginAndAddButtons = () => {
-        if (window.currentDesigner && window.currentDesigner.id) {
+        if (checkLoginStatus()) {
             addSidebarButtons();
+        } else {
+            removeSidebarButtons();
         }
     };
     
-    // 주기적으로 로그인 상태 확인 (5초마다)
+    // 주기적으로 로그인 상태 확인 (3초마다, 최대 10회)
+    let checkCount = 0;
     const loginCheckInterval = setInterval(() => {
-        if (window.currentDesigner && window.currentDesigner.id) {
+        checkCount++;
+        
+        if (checkLoginStatus()) {
             addSidebarButtons();
             clearInterval(loginCheckInterval); // 로그인되면 체크 중단
+        } else if (checkCount >= 10) {
+            clearInterval(loginCheckInterval); // 10회 체크 후 중단
         }
-    }, 5000);
+    }, 3000);
     
     // 즉시 체크도 수행
     setTimeout(checkLoginAndAddButtons, 1000);
+});
+
+// 로그인 상태 변경 감지를 위한 이벤트 리스너
+window.addEventListener('storage', function(e) {
+    if (e.key === 'designerName' || e.key === 'designerPhone' || e.key === 'loginTime') {
+        updateSidebarButtons();
+    }
 });
 
 // 전역 함수로 등록
@@ -719,6 +931,7 @@ window.toggleTheme = toggleTheme;
 window.loadTheme = loadTheme;
 window.openPersonalColor = openPersonalColor;
 window.closePersonalColorModal = closePersonalColorModal;
-window.updateSidebarButtons = updateSidebarButtons; // 로그인 후 버튼 업데이트용
+window.updateSidebarButtons = updateSidebarButtons;
+window.checkLoginStatus = checkLoginStatus;
 
-console.log('메뉴 시스템 + 테마 시스템 + PERSONAL COLOR PRO 로드 완료');
+console.log('메뉴 시스템 + 테마 시스템 + 퍼스널 컬러 (iframe 모달) 로드 완료 - 로그인 체크 강화됨');
