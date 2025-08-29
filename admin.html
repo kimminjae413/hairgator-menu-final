@@ -1841,29 +1841,20 @@ if (selectedFile) {
     try {
         const storageRef = storage.ref();
         const fileName = `${code}_${Date.now()}.webp`;
-        const timestamp = Date.now();
-const fileName = `${code}_${timestamp}.webp`;
-const thumbFileName = `thumb_${code}_${timestamp}.webp`;
+        const thumbFileName = `thumb_${code}_${Date.now()}.webp`;
         
         // 원본 WebP 변환
         const webpFile = await convertToWebP(selectedFile, 0.85);
         // 썸네일 생성
-       console.log('썸네일 생성 시작...');
-const thumbnailFile = await createThumbnail(selectedFile);
-console.log('썸네일 생성 완료, 크기:', thumbnailFile.size);
+        const thumbnailFile = await createThumbnail(selectedFile);
         
         // 원본 업로드
-        console.log('원본 업로드 시작:', fileName);
-const fileRef = storageRef.child(`hairstyles/${currentGender}/${fileName}`);
-const originalSnapshot = await fileRef.put(webpFile);
-console.log('원본 업로드 완료:', await originalSnapshot.ref.getDownloadURL());
+        const fileRef = storageRef.child(`hairstyles/${currentGender}/${fileName}`);
+        await fileRef.put(webpFile);
         
         // 썸네일 업로드  
-        // 썸네일 업로드  
-console.log('썸네일 업로드 시작:', thumbFileName);
-const thumbRef = storageRef.child(`hairstyles/${currentGender}/${thumbFileName}`);
-const thumbSnapshot = await thumbRef.put(thumbnailFile);
-console.log('썸네일 업로드 완료:', await thumbSnapshot.ref.getDownloadURL());
+        const thumbRef = storageRef.child(`hairstyles/${currentGender}/${thumbFileName}`);
+        await thumbRef.put(thumbnailFile);
         
         imageUrl = await fileRef.getDownloadURL();
         uploadStatus = 'success';
@@ -1972,31 +1963,15 @@ console.log('썸네일 업로드 완료:', await thumbSnapshot.ref.getDownloadUR
                 const doc = await db.collection(COLLECTIONS.HAIRSTYLES).doc(docId).get();
                 const data = doc.data();
                 
-                // Storage에서 이미지 삭제 (원본 + 썸네일)
-if (data.imageUrl) {
-    try {
-        // 원본 이미지 삭제
-        const imageRef = storage.refFromURL(data.imageUrl);
-        await imageRef.delete();
-        console.log('원본 이미지 삭제 완료');
-        
-        // 썸네일 삭제 (파일명에서 thumb_ 추가)
-        const originalPath = imageRef.fullPath;
-        const fileName = originalPath.split('/').pop();
-        const thumbPath = originalPath.replace(fileName, 'thumb_' + fileName);
-        
-        try {
-            const thumbRef = storage.ref(thumbPath);
-            await thumbRef.delete();
-            console.log('썸네일 삭제 완료');
-        } catch (thumbError) {
-            console.log('썸네일 삭제 실패 (없을 수 있음):', thumbError.message);
-        }
-        
-    } catch (error) {
-        console.error('이미지 삭제 실패:', error);
-    }
-}
+                // Storage에서 이미지 삭제
+                if (data.imageUrl) {
+                    try {
+                        const imageRef = storage.refFromURL(data.imageUrl);
+                        await imageRef.delete();
+                    } catch (error) {
+                        console.error('Image delete error:', error);
+                    }
+                }
                 
                 // Firestore에서 삭제
                 await db.collection(COLLECTIONS.HAIRSTYLES).doc(docId).delete();
@@ -2311,8 +2286,4 @@ async function createThumbnail(file, maxWidth = 150, maxHeight = 200) {
     </script>
 </body>
 </html>
-
-
-
-
 
