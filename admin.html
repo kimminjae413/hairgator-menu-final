@@ -1841,7 +1841,9 @@ if (selectedFile) {
     try {
         const storageRef = storage.ref();
         const fileName = `${code}_${Date.now()}.webp`;
-        const thumbFileName = `thumb_${code}_${Date.now()}.webp`;
+        const timestamp = Date.now();
+const fileName = `${code}_${timestamp}.webp`;
+const thumbFileName = `thumb_${code}_${timestamp}.webp`;
         
         // 원본 WebP 변환
         const webpFile = await convertToWebP(selectedFile, 0.85);
@@ -2309,6 +2311,7 @@ async function createThumbnail(file, maxWidth = 150, maxHeight = 200) {
     </script>
 </body>
 </html>
+
 
 
 
