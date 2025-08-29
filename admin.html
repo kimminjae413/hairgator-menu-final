@@ -1846,15 +1846,20 @@ if (selectedFile) {
         // 원본 WebP 변환
         const webpFile = await convertToWebP(selectedFile, 0.85);
         // 썸네일 생성
-        const thumbnailFile = await createThumbnail(selectedFile);
+       console.log('썸네일 생성 시작...');
+const thumbnailFile = await createThumbnail(selectedFile);
+console.log('썸네일 생성 완료, 크기:', thumbnailFile.size);
         
         // 원본 업로드
         const fileRef = storageRef.child(`hairstyles/${currentGender}/${fileName}`);
         await fileRef.put(webpFile);
         
         // 썸네일 업로드  
-        const thumbRef = storageRef.child(`hairstyles/${currentGender}/${thumbFileName}`);
-        await thumbRef.put(thumbnailFile);
+        // 썸네일 업로드  
+console.log('썸네일 업로드 시작:', thumbFileName);
+const thumbRef = storageRef.child(`hairstyles/${currentGender}/${thumbFileName}`);
+const thumbSnapshot = await thumbRef.put(thumbnailFile);
+console.log('썸네일 업로드 완료:', await thumbSnapshot.ref.getDownloadURL());
         
         imageUrl = await fileRef.getDownloadURL();
         uploadStatus = 'success';
@@ -2286,4 +2291,5 @@ async function createThumbnail(file, maxWidth = 150, maxHeight = 200) {
     </script>
 </body>
 </html>
+
 
