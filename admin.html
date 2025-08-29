@@ -1003,12 +1003,12 @@
             </div>
             
             <div class="form-group">
-                <label class="label-optional">스타일 코드</label>
-                <input type="text" id="styleCode" placeholder="예: FAE001 (비워두면 자동생성)" style="text-transform: uppercase;">
-                <div class="auto-code-info" id="autoCodeInfo">
-                    코드를 입력하지 않으면 자동으로 생성됩니다 (예: AUTO_001)
-                </div>
-            </div>
+    <label class="label-optional">스타일 코드 (자동생성)</label>
+    <input type="text" id="styleCode" placeholder="자동으로 생성됩니다" style="text-transform: uppercase;" readonly>
+    <div class="auto-code-info show" id="autoCodeInfo">
+        코드가 자동으로 생성됩니다. 직접 입력하려면 입력란을 더블클릭하세요.
+    </div>
+</div>
             
             <div class="form-group">
                 <label class="label-required">스타일 이름</label>
@@ -1145,32 +1145,31 @@
         }
         
         // 코드 입력 필드 이벤트
-        document.addEventListener('DOMContentLoaded', function() {
-            const styleCodeInput = document.getElementById('styleCode');
-            const autoCodeInfo = document.getElementById('autoCodeInfo');
-            
-            if (styleCodeInput && autoCodeInfo) {
-                styleCodeInput.addEventListener('focus', function() {
-                    if (!this.value.trim()) {
-                        autoCodeInfo.classList.add('show');
-                    }
-                });
-                
-                styleCodeInput.addEventListener('input', function() {
-                    if (this.value.trim()) {
-                        autoCodeInfo.classList.remove('show');
-                    } else {
-                        autoCodeInfo.classList.add('show');
-                    }
-                });
-                
-                styleCodeInput.addEventListener('blur', function() {
-                    setTimeout(() => {
-                        autoCodeInfo.classList.remove('show');
-                    }, 300);
-                });
+document.addEventListener('DOMContentLoaded', function() {
+    const styleCodeInput = document.getElementById('styleCode');
+    const autoCodeInfo = document.getElementById('autoCodeInfo');
+    
+    if (styleCodeInput && autoCodeInfo) {
+        // 더블클릭으로 수동 입력 모드 전환
+        styleCodeInput.addEventListener('dblclick', function() {
+            this.readOnly = false;
+            this.value = '';
+            this.placeholder = '예: FAE001 (직접 입력)';
+            autoCodeInfo.innerHTML = '직접 코드를 입력하거나 비워두면 자동 생성됩니다.';
+            this.focus();
+        });
+        
+        // 포커스 잃으면 다시 자동 모드로
+        styleCodeInput.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.readOnly = true;
+                this.value = '';
+                this.placeholder = '자동으로 생성됩니다';
+                autoCodeInfo.innerHTML = '코드가 자동으로 생성됩니다. 직접 입력하려면 입력란을 더블클릭하세요.';
             }
         });
+    }
+});
         
         // Firebase 연결 상태 확인
         async function checkFirebaseConnection() {
@@ -1755,13 +1754,14 @@
                 return;
             }
             
-            // 폼 초기화
-            document.getElementById('styleCode').value = '';
-            document.getElementById('styleName').value = '';
-            document.getElementById('styleImage').value = '';
-            document.getElementById('uploadPreview').style.display = 'none';
-            document.getElementById('autoCodeInfo').classList.add('show');
-            selectedFile = null;
+          // 폼 초기화
+document.getElementById('styleCode').value = '';
+document.getElementById('styleCode').readOnly = true;
+document.getElementById('styleName').value = '';
+document.getElementById('styleImage').value = '';
+document.getElementById('uploadPreview').style.display = 'none';
+document.getElementById('autoCodeInfo').classList.add('show');
+selectedFile = null;
             
             document.getElementById('addStyleModal').classList.add('active');
         }
@@ -1807,53 +1807,65 @@
             saveBtn.textContent = '저장 중...';
             
             try {
-                // 코드가 비어있으면 자동 생성
-                if (!code) {
-                    console.log('자동 코드 생성 중...');
-                    code = await generateAutoCode();
-                    console.log('자동 생성된 코드:', code);
-                    showToast(`자동 생성된 코드: ${code}`);
-                } else {
-                    // 코드가 입력된 경우 중복 체크
-                    console.log('중복 코드 검사 중...');
-                    
-                    const existing = await db.collection(COLLECTIONS.HAIRSTYLES)
-                        .where('code', '==', code)
-                        .get();
-                    
-                    if (!existing.empty) {
-                        showToast('이미 존재하는 코드입니다');
-                        saveBtn.disabled = false;
-                        saveBtn.textContent = '저장';
-                        return;
-                    }
-                    
-                    console.log('중복 검사 통과');
-                }
+                // 코드 처리 (기본적으로 자동 생성)
+if (!code || document.getElementById('styleCode').readOnly) {
+    console.log('자동 코드 생성 중...');
+    code = await generateAutoCode();
+    console.log('자동 생성된 코드:', code);
+    showToast(`코드 자동 생성: ${code}`);
+} else {
+    // 수동 입력된 경우 중복 체크
+    console.log('중복 코드 검사 중...');
+    
+    const existing = await db.collection(COLLECTIONS.HAIRSTYLES)
+        .where('code', '==', code)
+        .get();
+    
+    if (!existing.empty) {
+        showToast('이미 존재하는 코드입니다');
+        saveBtn.disabled = false;
+        saveBtn.textContent = '저장';
+        return;
+    }
+    
+    console.log('중복 검사 통과');
+}
                 
-                // 이미지 업로드
-                let imageUrl = '';
-                let uploadStatus = 'no-image';
-                
-                if (selectedFile) {
-                    console.log('이미지 업로드 시도 중...');
-                    
-                    try {
-                        const storageRef = storage.ref();
-                        const fileName = `${code}_${Date.now()}.jpg`;
-                        const fileRef = storageRef.child(`hairstyles/${currentGender}/${fileName}`);
-                        
-                        const snapshot = await fileRef.put(selectedFile);
-                        imageUrl = await snapshot.ref.getDownloadURL();
-                        uploadStatus = 'success';
-                        console.log('이미지 업로드 성공!');
-                        
-                    } catch (error) {
-                        console.log('이미지 업로드 실패:', error.message);
-                        uploadStatus = 'upload-failed';
-                        imageUrl = '';
-                    }
-                }
+                // 이미지 업로드 (WebP 변환 + 썸네일 생성)
+let imageUrl = '';
+let uploadStatus = 'no-image';
+
+if (selectedFile) {
+    console.log('이미지 WebP 변환 및 업로드 시도 중...');
+    
+    try {
+        const storageRef = storage.ref();
+        const fileName = `${code}_${Date.now()}.webp`;
+        const thumbFileName = `thumb_${code}_${Date.now()}.webp`;
+        
+        // 원본 WebP 변환
+        const webpFile = await convertToWebP(selectedFile, 0.85);
+        // 썸네일 생성
+        const thumbnailFile = await createThumbnail(selectedFile);
+        
+        // 원본 업로드
+        const fileRef = storageRef.child(`hairstyles/${currentGender}/${fileName}`);
+        await fileRef.put(webpFile);
+        
+        // 썸네일 업로드  
+        const thumbRef = storageRef.child(`hairstyles/${currentGender}/${thumbFileName}`);
+        await thumbRef.put(thumbnailFile);
+        
+        imageUrl = await fileRef.getDownloadURL();
+        uploadStatus = 'success';
+        console.log('WebP 이미지 및 썸네일 업로드 성공!');
+        
+    } catch (error) {
+        console.log('이미지 업로드 실패:', error.message);
+        uploadStatus = 'upload-failed';
+        imageUrl = '';
+    }
+}
                 
                 // Firestore에 스타일 정보 저장
                 console.log('Firestore에 스타일 정보 저장 중...');
@@ -2231,6 +2243,47 @@
             // Firebase 연결 상태 재확인
             setTimeout(checkFirebaseConnection, 1000);
         });
+        // WebP 변환 함수
+async function convertToWebP(file, quality = 0.85) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            canvas.toBlob((blob) => {
+                resolve(blob);
+            }, 'image/webp', quality);
+        };
+        
+        img.src = URL.createObjectURL(file);
+    });
+}
+
+// 썸네일 생성 함수
+async function createThumbnail(file, maxWidth = 150, maxHeight = 200) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = () => {
+            const ratio = Math.min(maxWidth/img.width, maxHeight/img.height);
+            canvas.width = img.width * ratio;
+            canvas.height = img.height * ratio;
+            
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(resolve, 'image/webp', 0.8);
+        };
+        
+        img.src = URL.createObjectURL(file);
+    });
+}
     </script>
 </body>
 </html>
+
