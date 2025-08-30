@@ -880,15 +880,34 @@
             <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
         </div>
         <div class="sidebar-content">
-            <div class="user-info" id="userInfo" style="display: none;">
-                <h4>디자이너 정보</h4>
-                <p id="designerNameDisplay"></p>
-                <p id="designerPhoneDisplay"></p>
-                <p id="sessionStatusDisplay"></p>
-                <button class="logout-btn" onclick="logout()">로그아웃</button>
-            </div>
-            <p id="guestMessage">로그인 후 이용 가능합니다.</p>
+    <!-- 테마 선택 섹션 추가 -->
+    <div class="theme-section" style="background: #1a1a1a; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+        <h4 style="color: var(--female-color); margin-bottom: 15px;">테마 선택</h4>
+        <div class="theme-options" style="display: flex; flex-direction: column; gap: 10px;">
+            <button class="theme-option luxury active" data-theme="luxury" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #333; border: none; border-radius: 8px; color: white; cursor: pointer; transition: all 0.3s ease;">
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(45deg, #000000, #d4af37);"></div>
+                <span>고급 헤어샵</span>
+            </button>
+            <button class="theme-option minimal" data-theme="minimal" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #333; border: none; border-radius: 8px; color: white; cursor: pointer; transition: all 0.3s ease;">
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(45deg, #ffffff, #f8f9fa); border: 1px solid #666;"></div>
+                <span>모던 미니멀</span>
+            </button>
+            <button class="theme-option warm" data-theme="warm" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #333; border: none; border-radius: 8px; color: white; cursor: pointer; transition: all 0.3s ease;">
+                <div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(45deg, #faf9f7, #c7956d);"></div>
+                <span>따뜻한 전문가</span>
+            </button>
         </div>
+    </div>
+
+    <div class="user-info" id="userInfo" style="display: none;">
+        <h4>디자이너 정보</h4>
+        <p id="designerNameDisplay"></p>
+        <p id="designerPhoneDisplay"></p>
+        <p id="sessionStatusDisplay"></p>
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+    <p id="guestMessage">로그인 후 이용 가능합니다.</p>
+</div>
     </aside>
 
     <!-- 로딩 오버레이 -->
@@ -1848,44 +1867,45 @@
     </script>
 
     <!-- 테마 전환 스크립트 -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const themeButtons = document.querySelectorAll('.theme-btn');
-        const htmlElement = document.documentElement;
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const themeOptions = document.querySelectorAll('.theme-option');
+    const htmlElement = document.documentElement;
+    
+    // 저장된 테마 로드
+    const savedTheme = localStorage.getItem('hairgator_theme') || 'luxury';
+    setTheme(savedTheme);
+    
+    // 테마 버튼 이벤트
+    themeOptions.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const theme = btn.dataset.theme;
+            setTheme(theme);
+            localStorage.setItem('hairgator_theme', theme);
+        });
+    });
+    
+    function setTheme(theme) {
+        htmlElement.setAttribute('data-theme', theme);
         
-        // 저장된 테마 로드
-        const savedTheme = localStorage.getItem('hairgator_theme') || 'luxury';
-        setTheme(savedTheme);
-        
-        // 테마 버튼 이벤트
-        themeButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const theme = btn.dataset.theme;
-                setTheme(theme);
-                localStorage.setItem('hairgator_theme', theme);
-            });
+        // 버튼 활성화 상태 업데이트
+        themeOptions.forEach(btn => {
+            if (btn.dataset.theme === theme) {
+                btn.style.background = 'var(--female-color)';
+                btn.style.transform = 'scale(1.02)';
+                btn.classList.add('active');
+            } else {
+                btn.style.background = '#333';
+                btn.style.transform = 'scale(1)';
+                btn.classList.remove('active');
+            }
         });
         
-        function setTheme(theme) {
-            htmlElement.setAttribute('data-theme', theme);
-            
-            // 버튼 활성화 상태 업데이트
-            themeButtons.forEach(btn => {
-                if (btn.dataset.theme === theme) {
-                    btn.style.transform = 'scale(1.2)';
-                    btn.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5)';
-                    btn.classList.add('active');
-                } else {
-                    btn.style.transform = 'scale(1)';
-                    btn.style.boxShadow = 'none';
-                    btn.classList.remove('active');
-                }
-            });
-            
-            console.log('테마 변경:', theme);
-        }
-    });
-    </script>
+        console.log('테마 변경:', theme);
+    }
+});
+</script>
 </body>
 </html>
+
 
