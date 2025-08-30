@@ -712,86 +712,105 @@
             }
         }
 
-        // 전화번호 입력 시 실시간 포맷팅
-        document.getElementById('phoneNumber').addEventListener('input', function(e) {
-            const input = e.target;
-            const cursorPos = input.selectionStart;
-            const oldValue = input.value;
-            const oldLength = oldValue.length;
-            
-            const formatted = formatPhoneNumber(input.value);
-            input.value = formatted;
-            
-            const newLength = formatted.length;
-            const diff = newLength - oldLength;
-            input.setSelectionRange(cursorPos + diff, cursorPos + diff);
-        });
+        // 전화번호 입력 시 실시간 포맷팅 (안전한 이벤트 리스너)
+        const phoneNumberInput = document.getElementById('phoneNumber');
+        if (phoneNumberInput) {
+            phoneNumberInput.addEventListener('input', function(e) {
+                const input = e.target;
+                const cursorPos = input.selectionStart;
+                const oldValue = input.value;
+                const oldLength = oldValue.length;
+                
+                const formatted = formatPhoneNumber(input.value);
+                input.value = formatted;
+                
+                const newLength = formatted.length;
+                const diff = newLength - oldLength;
+                input.setSelectionRange(cursorPos + diff, cursorPos + diff);
+            });
+        } else {
+            console.warn('phoneNumber 요소를 찾을 수 없습니다');
+        }
 
-        // 카메라 및 파일 업로드 이벤트
-        cameraBtn.addEventListener('click', function() {
-            initCamera();
-        });
+        // 카메라 및 파일 업로드 이벤트 (안전한 이벤트 리스너)
+        if (cameraBtn) {
+            cameraBtn.addEventListener('click', function() {
+                initCamera();
+            });
+        }
 
-        galleryBtn.addEventListener('click', function() {
-            aiFileInput.click();
-        });
+        if (galleryBtn) {
+            galleryBtn.addEventListener('click', function() {
+                aiFileInput.click();
+            });
+        }
 
-        closeCameraBtn.addEventListener('click', function() {
-            stopCamera();
-        });
+        if (closeCameraBtn) {
+            closeCameraBtn.addEventListener('click', function() {
+                stopCamera();
+            });
+        }
 
-        captureBtn.addEventListener('click', function() {
-            capturePhoto();
-        });
+        if (captureBtn) {
+            captureBtn.addEventListener('click', function() {
+                capturePhoto();
+            });
+        }
 
         // 기존 파일 업로드 이벤트 (갤러리용)
-        aiUploadArea.addEventListener('click', () => {
-            aiFileInput.click();
-        });
+        if (aiUploadArea) {
+            aiUploadArea.addEventListener('click', () => {
+                if (aiFileInput) aiFileInput.click();
+            });
+        }
 
-        aiFileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        if (aiFileInput) {
+            aiFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
 
-            // 파일 크기 체크 (10MB)
-            if (file.size > 10 * 1024 * 1024) {
-                showToast('파일 크기는 10MB 이하여야 합니다', 'error');
-                return;
-            }
+                // 파일 크기 체크 (10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('파일 크기는 10MB 이하여야 합니다', 'error');
+                    return;
+                }
 
-            // 이미지 미리보기
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                userPhoto.src = e.target.result;
-                aiPreviewArea.style.display = 'block';
-                processAIBtn.disabled = false;
-            };
-            reader.readAsDataURL(file);
-            
-            console.log('파일 업로드 완료:', file.name);
-        });
+                // 이미지 미리보기
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (userPhoto) userPhoto.src = e.target.result;
+                    if (aiPreviewArea) aiPreviewArea.style.display = 'block';
+                    if (processAIBtn) processAIBtn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+                
+                console.log('파일 업로드 완료:', file.name);
+            });
+        }
 
-        // 드래그 앤 드롭 지원
-        aiUploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            aiUploadArea.classList.add('dragging');
-        });
+        // 드래그 앤 드롭 지원 (안전한 이벤트 리스너)
+        if (aiUploadArea) {
+            aiUploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                aiUploadArea.classList.add('dragging');
+            });
 
-        aiUploadArea.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            aiUploadArea.classList.remove('dragging');
-        });
+            aiUploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                aiUploadArea.classList.remove('dragging');
+            });
 
-        aiUploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            aiUploadArea.classList.remove('dragging');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                aiFileInput.files = files;
-                aiFileInput.dispatchEvent(new Event('change'));
-            }
-        });
+            aiUploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                aiUploadArea.classList.remove('dragging');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && aiFileInput) {
+                    aiFileInput.files = files;
+                    aiFileInput.dispatchEvent(new Event('change'));
+                }
+            });
+        }
 
         // 로그인 처리
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
@@ -1230,21 +1249,25 @@
                 });
             }
 
-            // AI 모달 닫기 이벤트
-            aiExperienceModal.addEventListener('click', function(e) {
-                if (e.target === aiExperienceModal) {
-                    closeAIExperience();
-                }
-            });
+            // AI 모달 닫기 이벤트 (안전한 이벤트 리스너)
+            if (aiExperienceModal) {
+                aiExperienceModal.addEventListener('click', function(e) {
+                    if (e.target === aiExperienceModal) {
+                        closeAIExperience();
+                    }
+                });
+            }
 
-            // 카메라 모달 닫기 이벤트
-            cameraModal.addEventListener('click', function(e) {
-                if (e.target === cameraModal) {
-                    stopCamera();
-                }
-            });
+            // 카메라 모달 닫기 이벤트 (안전한 이벤트 리스너)
+            if (cameraModal) {
+                cameraModal.addEventListener('click', function(e) {
+                    if (e.target === cameraModal) {
+                        stopCamera();
+                    }
+                });
+            }
 
-            // 퍼스널 컬러 모달 닫기 이벤트
+            // 퍼스널 컬러 모달 닫기 이벤트 (안전한 이벤트 리스너)
             const personalColorModal = document.getElementById('personalColorModal');
             if (personalColorModal) {
                 personalColorModal.addEventListener('click', function(e) {
