@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>HAIRGATOR - Ultra Modern Hair Style Platform</title>
+    
+    <!-- PWA 메타데이터 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f0f23">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HAIRGATOR">
+    
+    <!-- 폰트 - 더 세련된 조합 -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- 아이콘 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.css" rel="stylesheet">
+    
+    <!-- CSS 파일들 -->
+    <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-theme="neon" class="theme-transition">
+    
+    <!-- 배경 효과들 -->
+    <div class="bg-effects">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+        <div class="mesh-gradient"></div>
+    </div>
+
+    <!-- 로딩 스크린 -->
+    <div id="loadingScreen" class="screen active">
+        <div class="loading-content">
+            <div class="logo-container">
+                <div class="logo-ring">
+                    <div class="logo-inner">
+                        <span class="logo-h">H</span>
+                        <div class="logo-particles">
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="logo-text">
+                    <span class="main-title">HAIRGATOR</span>
+                    <span class="subtitle">Ultra Modern Hair Platform</span>
+                </div>
+            </div>
+            
+            <div class="loading-animation">
+                <div class="loading-bars">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+                <div class="loading-progress">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+            
+            <div class="loading-text">
+                <span class="loading-message">Initializing Platform...</span>
+                <div class="loading-dots">
+                    <span>.</span><span>.</span><span>.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로그인 화면 -->
+    <div id="loginScreen" class="screen">
+        <div class="login-container">
+            <!-- 왼쪽 - 브랜딩 섹션 -->
+            <div class="branding-section">
+                <div class="brand-content">
+                    <div class="brand-logo">
+                        <div class="logo-symbol">
+                            <span>H</span>
+                            <div class="symbol-glow"></div>
+                        </div>
+                        <div class="brand-text">
+                            <h1>HAIRGATOR</h1>
+                            <p>차세대 헤어 스타일 플랫폼</p>
+                        </div>
+                    </div>
+                    
+                    <div class="features-preview">
+                        <div class="feature-item">
+                            <div class="feature-icon">✨</div>
+                            <span>AI 기반 스타일 추천</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">🎨</div>
+                            <span>실시간 미리보기</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">📱</div>
+                            <span>모바일 최적화</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="brand-visual">
+                    <div class="floating-elements">
+                        <div class="float-element element-1"></div>
+                        <div class="float-element element-2"></div>
+                        <div class="float-element element-3"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 오른쪽 - 로그인 폼 -->
+            <div class="login-section">
+                <div class="login-box">
+                    <div class="login-header">
+                        <h2>로그인</h2>
+                        <p>전문가용 계정으로 접속하세요</p>
+                    </div>
+                    
+                    <form id="loginForm" class="login-form">
+                        <div class="form-group">
+                            <div class="input-container">
+                                <i data-lucide="user" class="input-icon"></i>
+                                <input type="text" id="designerName" placeholder="디자이너명" required>
+                                <div class="input-line"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="input-container">
+                                <i data-lucide="phone" class="input-icon"></i>
+                                <input type="tel" id="phoneNumber" placeholder="전화번호 (4자리)" maxlength="4" required>
+                                <div class="input-line"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="input-container">
+                                <i data-lucide="lock" class="input-icon"></i>
+                                <input type="password" id="password" placeholder="비밀번호 (4자리)" maxlength="4" required>
+                                <div class="input-line"></div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="login-btn">
+                            <span>로그인</span>
+                            <i data-lucide="arrow-right" class="btn-icon"></i>
+                            <div class="btn-glow"></div>
+                        </button>
+                    </form>
+                    
+                    <div class="login-footer">
+                        <div class="theme-selector">
+                            <span>테마 선택</span>
+                            <div class="theme-options">
+                                <button class="theme-btn active" data-theme="neon" title="네온 (기본)">
+                                    <div class="theme-color" style="background: linear-gradient(45deg, #00f5ff, #ff0080);"></div>
+                                </button>
+                                <button class="theme-btn" data-theme="luxury" title="럭셔리">
+                                    <div class="theme-color" style="background: linear-gradient(45deg, #d4af37, #1a1a1a);"></div>
+                                </button>
+                                <button class="theme-btn" data-theme="minimal" title="미니멀">
+                                    <div class="theme-color" style="background: linear-gradient(45deg, #ffffff, #f8f9fa);"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 성별 선택 화면 -->
+    <div id="genderSelection" class="screen">
+        <div class="gender-container">
+            <div class="section-header">
+                <h2>성별을 선택해주세요</h2>
+                <p>맞춤형 스타일을 제공하기 위해 필요합니다</p>
+            </div>
+            
+            <div class="gender-options">
+                <button class="gender-btn" onclick="selectGender('male')">
+                    <div class="gender-icon male-icon">
+                        <i data-lucide="user" class="icon"></i>
+                        <div class="icon-glow"></div>
+                    </div>
+                    <span class="gender-label">남성</span>
+                    <div class="gender-description">Male Styles</div>
+                    <div class="hover-effect"></div>
+                </button>
+                
+                <button class="gender-btn" onclick="selectGender('female')">
+                    <div class="gender-icon female-icon">
+                        <i data-lucide="user" class="icon"></i>
+                        <div class="icon-glow"></div>
+                    </div>
+                    <span class="gender-label">여성</span>
+                    <div class="gender-description">Female Styles</div>
+                    <div class="hover-effect"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 메뉴 화면 -->
+    <div id="mainMenu" class="screen">
+        <!-- 상단 네비게이션 -->
+        <nav class="main-nav">
+            <div class="nav-left">
+                <button class="nav-btn" id="menuToggle">
+                    <i data-lucide="menu" class="icon"></i>
+                </button>
+                <div class="nav-logo">
+                    <span>HAIRGATOR</span>
+                </div>
+            </div>
+            
+            <div class="nav-center">
+                <div class="search-container">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="globalSearch" placeholder="스타일 검색...">
+                    <button class="search-btn">
+                        <i data-lucide="arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <button class="nav-btn" id="themeToggle">
+                    <i data-lucide="palette" class="icon"></i>
+                </button>
+                <div class="user-info">
+                    <span id="designerNameDisplay">디자이너</span>
+                    <div class="user-avatar">
+                        <i data-lucide="user"></i>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 메인 콘텐츠 -->
+        <main class="main-content">
+            <!-- 카테고리 탭 (대분류) -->
+            <div class="category-section">
+                <div class="category-header">
+                    <h3>스타일 카테고리</h3>
+                    <div class="category-indicator">
+                        <span class="active-count">7개 카테고리</span>
+                    </div>
+                </div>
+                
+                <div class="category-tabs" id="mainTabs">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+            </div>
+
+            <!-- 서브 카테고리 -->
+            <div class="subcategory-section">
+                <div class="subcategory-tabs" id="subTabs">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+            </div>
+
+            <!-- 스타일 그리드 -->
+            <div class="styles-section">
+                <div class="styles-header">
+                    <div class="view-controls">
+                        <button class="view-btn active" data-view="grid">
+                            <i data-lucide="grid-3x3"></i>
+                        </button>
+                        <button class="view-btn" data-view="list">
+                            <i data-lucide="list"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="sort-controls">
+                        <select id="sortOptions">
+                            <option value="newest">최신순</option>
+                            <option value="popular">인기순</option>
+                            <option value="name">이름순</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="styles-grid" id="stylesGrid">
+                    <!-- JavaScript로 동적 생성 -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 사이드바 -->
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <span>HAIRGATOR</span>
+                </div>
+                <button class="sidebar-close" id="sidebarClose">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="menu-section">
+                    <h4>테마</h4>
+                    <div class="theme-list">
+                        <button class="theme-option active" data-theme="neon">
+                            <div class="theme-preview neon-preview"></div>
+                            <span>네온 다크</span>
+                        </button>
+                        <button class="theme-option" data-theme="luxury">
+                            <div class="theme-preview luxury-preview"></div>
+                            <span>럭셔리 골드</span>
+                        </button>
+                        <button class="theme-option" data-theme="minimal">
+                            <div class="theme-preview minimal-preview"></div>
+                            <span>미니멀 화이트</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <h4>설정</h4>
+                    <div class="menu-items">
+                        <button class="menu-item">
+                            <i data-lucide="settings"></i>
+                            <span>환경설정</span>
+                        </button>
+                        <button class="menu-item">
+                            <i data-lucide="info"></i>
+                            <span>정보</span>
+                        </button>
+                        <button class="menu-item">
+                            <i data-lucide="log-out"></i>
+                            <span>로그아웃</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 오버레이 -->
+    <div id="overlay" class="overlay"></div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+    
+    <!-- JavaScript Files -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/token-system.js"></script>
+    <script src="js/themes.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        // 아이콘 초기화
+        lucide.createIcons();
+        
+        // 로딩 완료 후 로그인 화면으로
+        setTimeout(() => {
+            document.getElementById('loadingScreen').classList.remove('active');
+            document.getElementById('loginScreen').classList.add('active');
+        }, 2000);
+    </script>
+</body>
+</html>
