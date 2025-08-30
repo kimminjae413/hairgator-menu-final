@@ -39,15 +39,49 @@
         }
 
         :root {
-            --primary-dark: #000000;
-            --primary-light: #ffffff;
-            --male-color: #4A90E2;
-            --female-color: #E91E63;
-            --text-primary: #ffffff;
-            --text-secondary: #999999;
-            --border-color: #222222;
-            --new-indicator: #ff4444;
-        }
+    --primary-dark: #000000;
+    --primary-light: #ffffff;
+    --male-color: #4A90E2;
+    --female-color: #E91E63;
+    --text-primary: #ffffff;
+    --text-secondary: #999999;
+    --border-color: #222222;
+    --new-indicator: #ff4444;
+}
+
+/* 테마별 CSS 변수 */
+[data-theme="luxury"] {
+    --primary-dark: #000000;
+    --primary-light: #ffffff;
+    --male-color: #2c5aa0;
+    --female-color: #c41e3a;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --border-color: #333333;
+    --accent-gold: #d4af37;
+}
+
+[data-theme="minimal"] {
+    --primary-dark: #ffffff;
+    --primary-light: #f8f9fa;
+    --male-color: #0d6efd;
+    --female-color: #d63384;
+    --text-primary: #212529;
+    --text-secondary: #495057;
+    --border-color: #dee2e6;
+    --accent-gold: #6c757d;
+}
+
+[data-theme="warm"] {
+    --primary-dark: #faf9f7;
+    --primary-light: #f5f3f0;
+    --male-color: #4a7c59;
+    --female-color: #d2728b;
+    --text-primary: #3c3c3c;
+    --text-secondary: #666666;
+    --border-color: #e0d5cc;
+    --accent-gold: #c7956d;
+}
 
         body {
             font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -821,15 +855,23 @@
 </head>
 <body>
     <!-- 헤더 -->
-    <header class="header">
-        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
-        <h1 class="logo">HAIRGATOR</h1>
-        <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </header>
+<header class="header">
+    <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+    
+    <!-- 테마 선택 버튼 추가 -->
+    <div class="theme-selector" style="position: absolute; left: 60px; display: flex; gap: 5px; z-index: 1001;">
+        <button class="theme-btn luxury active" data-theme="luxury" style="width: 20px; height: 20px; border: 2px solid #333; border-radius: 50%; background: linear-gradient(45deg, #000000, #d4af37); cursor: pointer; transition: all 0.3s ease;" title="고급 헤어샵용"></button>
+        <button class="theme-btn minimal" data-theme="minimal" style="width: 20px; height: 20px; border: 2px solid #333; border-radius: 50%; background: linear-gradient(45deg, #ffffff, #f8f9fa); cursor: pointer; transition: all 0.3s ease;" title="모던 미니멀용"></button>
+        <button class="theme-btn warm" data-theme="warm" style="width: 20px; height: 20px; border: 2px solid #333; border-radius: 50%; background: linear-gradient(45deg, #faf9f7, #c7956d); cursor: pointer; transition: all 0.3s ease;" title="따뜻한 프로페셔널용"></button>
+    </div>
+    
+    <h1 class="logo">HAIRGATOR</h1>
+    <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</header>
 
     <!-- 사이드바 -->
     <aside class="sidebar" id="sidebar">
@@ -1804,5 +1846,46 @@
             }
         });
     </script>
+
+    <!-- 테마 전환 스크립트 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeButtons = document.querySelectorAll('.theme-btn');
+        const htmlElement = document.documentElement;
+        
+        // 저장된 테마 로드
+        const savedTheme = localStorage.getItem('hairgator_theme') || 'luxury';
+        setTheme(savedTheme);
+        
+        // 테마 버튼 이벤트
+        themeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const theme = btn.dataset.theme;
+                setTheme(theme);
+                localStorage.setItem('hairgator_theme', theme);
+            });
+        });
+        
+        function setTheme(theme) {
+            htmlElement.setAttribute('data-theme', theme);
+            
+            // 버튼 활성화 상태 업데이트
+            themeButtons.forEach(btn => {
+                if (btn.dataset.theme === theme) {
+                    btn.style.transform = 'scale(1.2)';
+                    btn.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5)';
+                    btn.classList.add('active');
+                } else {
+                    btn.style.transform = 'scale(1)';
+                    btn.style.boxShadow = 'none';
+                    btn.classList.remove('active');
+                }
+            });
+            
+            console.log('테마 변경:', theme);
+        }
+    });
+    </script>
 </body>
 </html>
+
