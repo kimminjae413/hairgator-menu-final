@@ -1,6 +1,8 @@
-/* Personal Color Pro - 모던 미니멀 스타일시트 */
+/* Personal Color Pro - 3가지 테마 시스템 완전 구현 */
+
+/* ========== 🎨 3가지 테마 시스템 CSS 변수 ========== */
 :root {
-    /* 모던 미니멀 색상 팔레트 */
+    /* 🎯 테마 1: 모던 미니멀 (기본) - 기존 스타일 유지 */
     --primary: #000000;          /* 순수 검은색 */
     --primary-hover: #333333;    /* 진한 회색 */
     --primary-light: #f8f9fa;    /* 매우 연한 회색 */
@@ -33,6 +35,71 @@
     --radius-lg: 8px;
 }
 
+/* ✨ 테마 2: 고급 헤어샵 (럭셔리) */
+[data-theme="luxury"] {
+    --primary: #d4af37;          /* 골드 */
+    --primary-hover: #b8941f;    /* 진한 골드 */
+    --primary-light: #1a1f2e;    /* 다크블루그레이 */
+    --secondary: #999999;        /* 중간 회색 */
+    --accent: #d4af37;           /* 골드 악센트 */
+    
+    /* 계절별 색상 (럭셔리 톤) */
+    --spring: #66bb6a;
+    --summer: #42a5f5;
+    --autumn: #ffb74d;
+    --winter: #ab47bc;
+    
+    /* 상태 색상 */
+    --success: #66bb6a;
+    --warning: #ffb74d;
+    --error: #ef5350;
+    --info: #42a5f5;
+    
+    /* 텍스트 및 배경 */
+    --text: #f8f9fa;             /* 밝은 텍스트 */
+    --text-light: #999999;       /* 회색 텍스트 */
+    --bg: #1a1f2e;               /* 다크 배경 */
+    --bg-light: #2a2f3e;         /* 연한 다크 */
+    --border: #3d4456;           /* 다크 테두리 */
+    
+    /* 그림자 및 효과 */
+    --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.5);
+    --shadow-lg: 0 3px 6px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* 🤎 테마 3: 따뜻한 프로페셔널 (웜 톤) */
+[data-theme="warm"] {
+    --primary: #6d4c41;          /* 브라운 */
+    --primary-hover: #5d4037;    /* 진한 브라운 */
+    --primary-light: #e8d5b7;    /* 연한 베이지 */
+    --secondary: #8d6e63;        /* 중간 브라운 */
+    --accent: #6d4c41;           /* 브라운 악센트 */
+    
+    /* 계절별 색상 (웜 톤) */
+    --spring: #7cb342;
+    --summer: #29b6f6;
+    --autumn: #ff8a65;
+    --winter: #8e24aa;
+    
+    /* 상태 색상 */
+    --success: #7cb342;
+    --warning: #ff8a65;
+    --error: #e57373;
+    --info: #29b6f6;
+    
+    /* 텍스트 및 배경 */
+    --text: #3e2723;             /* 다크 브라운 텍스트 */
+    --text-light: #5d4e37;       /* 미드 브라운 텍스트 */
+    --bg: #f4e4c1;               /* 베이지 배경 */
+    --bg-light: #fff8e1;         /* 연한 베이지 */
+    --border: #d7ccc8;           /* 베이지 테두리 */
+    
+    /* 그림자 및 효과 */
+    --shadow: 0 1px 3px rgba(62,39,35,0.15), 0 1px 2px rgba(62,39,35,0.25);
+    --shadow-lg: 0 3px 6px rgba(62,39,35,0.2), 0 2px 4px rgba(62,39,35,0.15);
+}
+
+/* ========== 기본 스타일 (모든 테마 공통) ========== */
 * {
     margin: 0;
     padding: 0;
@@ -42,26 +109,28 @@
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-weight: 300;            /* 가벼운 폰트 */
-    background: #ffffff;         /* 순수 흰색 배경 */
+    background: var(--bg);       /* 테마별 배경 */
     min-height: 100vh;
-    color: var(--text);
+    color: var(--text);          /* 테마별 텍스트 */
     letter-spacing: 0.01em;      /* 약간의 자간 */
+    transition: background-color 0.3s ease, color 0.3s ease; /* 테마 전환 애니메이션 */
 }
 
-/* 로딩 화면 - 모던 미니멀 */
+/* ========== 로딩 화면 - 테마 대응 ========== */
 .loading-screen {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: #ffffff;         /* 흰색 배경 */
+    background: var(--bg);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text);
     z-index: 9999;
     flex-direction: column;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .loading-content {
@@ -72,6 +141,7 @@ body {
     font-size: 4rem;
     margin-bottom: 1rem;
     color: var(--text);
+    transition: color 0.3s ease;
 }
 
 .loading-content h2 {
@@ -80,6 +150,8 @@ body {
     margin-bottom: 0.5rem;
     letter-spacing: 4px;         /* 넓은 자간 */
     text-transform: uppercase;
+    color: var(--text);
+    transition: color 0.3s ease;
 }
 
 .loading-content p {
@@ -89,22 +161,25 @@ body {
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 1px;
+    color: var(--text);
 }
 
 .loading-bar {
     width: 200px;                /* 더 작은 로딩바 */
     height: 1px;                 /* 매우 얇은 라인 */
-    background: rgba(0,0,0,0.1);
+    background: var(--border);
     border-radius: 0;
     overflow: hidden;
     margin-bottom: 1rem;
+    transition: background-color 0.3s ease;
 }
 
 .loading-progress {
     height: 100%;
-    background: var(--text);
+    background: var(--accent);
     width: 0%;
     animation: loading 3s ease-out forwards;
+    transition: background-color 0.3s ease;
 }
 
 @keyframes loading {
@@ -118,9 +193,10 @@ body {
     font-weight: 300;
     text-transform: uppercase;
     letter-spacing: 1px;
+    color: var(--text);
 }
 
-/* 메인 앱 */
+/* ========== 메인 앱 ========== */
 .main-app {
     display: none;
     min-height: 100vh;
@@ -130,14 +206,15 @@ body {
     display: block;
 }
 
-/* 헤더 - 미니멀 */
+/* ========== 헤더 - 테마 대응 ========== */
 .app-header {
-    background: #ffffff;
+    background: var(--bg);
     border-bottom: 1px solid var(--border);
     padding: 2rem;
     position: sticky;
     top: 0;
     z-index: 100;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .header-top {
@@ -153,6 +230,7 @@ body {
     color: var(--text);
     letter-spacing: 6px;         /* 넓은 자간 */
     text-transform: uppercase;
+    transition: color 0.3s ease;
 }
 
 .app-subtitle {
@@ -162,6 +240,7 @@ body {
     font-weight: 300;
     text-transform: uppercase;
     letter-spacing: 1px;
+    transition: color 0.3s ease;
 }
 
 .header-status {
@@ -170,6 +249,7 @@ body {
     color: var(--text-light);
     text-transform: uppercase;
     letter-spacing: 1px;
+    transition: color 0.3s ease;
 }
 
 .status-item {
@@ -208,7 +288,7 @@ body {
     cursor: pointer;
     font-size: 0.8rem;
     font-weight: 400;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     text-decoration: none;
     display: inline-block;
     text-transform: uppercase;
@@ -216,25 +296,54 @@ body {
 }
 
 .header-btn:hover {
-    border-color: var(--text);
-    background: var(--text);
-    color: white;
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg);
 }
 
 .header-btn.active {
-    background: var(--text);
-    color: white;
-    border-color: var(--text);
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
 }
 
-/* 메인 콘텐츠 */
+/* ========== 테마 전환 버튼 (퍼스널 컬러용) ========== */
+.theme-switcher {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+}
+
+.theme-switch-btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+}
+
+.theme-switch-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* ========== 메인 콘텐츠 ========== */
 .main-content {
     padding: 4rem 2rem;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-/* 섹션 공통 */
+/* ========== 섹션 공통 ========== */
 .section {
     display: none;
 }
@@ -257,9 +366,10 @@ body {
     text-align: center;
     letter-spacing: 8px;
     text-transform: uppercase;
+    transition: color 0.3s ease;
 }
 
-/* 모드 선택 - 미니멀 그리드 */
+/* ========== 모드 선택 - 테마 대응 ========== */
 .mode-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -269,13 +379,13 @@ body {
 }
 
 .mode-card {
-    background: #ffffff;
+    background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 0;            /* 사각형 카드 */
     padding: 3rem 2rem;
     text-align: left;            /* 왼쪽 정렬 */
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     min-height: 400px;
     position: relative;
     display: flex;
@@ -283,7 +393,7 @@ body {
 }
 
 .mode-card:hover {
-    border-color: var(--text);
+    border-color: var(--accent);
     box-shadow: var(--shadow);
 }
 
@@ -291,6 +401,7 @@ body {
     font-size: 2rem;
     margin-bottom: 2rem;
     color: var(--text);
+    transition: color 0.3s ease;
 }
 
 .mode-card h3 {
@@ -300,6 +411,7 @@ body {
     color: var(--text);
     text-transform: uppercase;
     letter-spacing: 2px;
+    transition: color 0.3s ease;
 }
 
 .mode-card p {
@@ -309,11 +421,12 @@ body {
     margin-bottom: 2rem;
     font-weight: 300;
     flex-grow: 1;
+    transition: color 0.3s ease;
 }
 
 .mode-accuracy {
-    background: var(--text);
-    color: white;
+    background: var(--accent);
+    color: var(--bg);
     padding: 0.3rem 1rem;
     border-radius: 0;
     font-size: 0.7rem;
@@ -322,18 +435,19 @@ body {
     margin-bottom: 2rem;
     text-transform: uppercase;
     letter-spacing: 1px;
+    transition: all 0.3s ease;
 }
 
 .mode-btn {
-    background: var(--text);
-    color: white;
+    background: var(--accent);
+    color: var(--bg);
     border: none;
     padding: 1rem 2rem;
     border-radius: 0;
     font-size: 0.8rem;
     font-weight: 400;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     width: 100%;
     margin-top: auto;
     text-transform: uppercase;
@@ -344,14 +458,15 @@ body {
     background: var(--primary-hover);
 }
 
-/* AI 분석 모드 - 클린한 레이아웃 */
+/* ========== AI 분석 모드 - 테마 대응 ========== */
 .ai-container {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 3rem;
-    background: #ffffff;
+    background: var(--bg);
     border: 1px solid var(--border);
     padding: 3rem;
+    transition: all 0.3s ease;
 }
 
 .camera-section {
@@ -366,6 +481,7 @@ body {
     border: 1px solid var(--border);
     overflow: hidden;
     margin-bottom: 2rem;
+    transition: all 0.3s ease;
 }
 
 #camera-video, #face-canvas {
@@ -390,14 +506,14 @@ body {
 }
 
 .control-btn {
-    background: var(--text);
-    color: white;
+    background: var(--accent);
+    color: var(--bg);
     border: none;
     padding: 0.8rem 1.5rem;
     border-radius: 0;
     cursor: pointer;
     font-weight: 400;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -427,15 +543,16 @@ body {
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: 1px;
+    transition: all 0.3s ease;
 }
 
 .detection-status.active {
     background: var(--success);
-    color: white;
+    color: var(--bg);
     border-color: var(--success);
 }
 
-/* 분석 섹션 - 미니멀 */
+/* ========== 분석 섹션 - 테마 대응 ========== */
 .analysis-section h3 {
     margin-bottom: 2rem;
     color: var(--text);
@@ -443,6 +560,7 @@ body {
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: 2px;
+    transition: color 0.3s ease;
 }
 
 .progress-steps {
@@ -457,12 +575,12 @@ body {
     padding: 1rem;
     background: transparent;
     border-bottom: 1px solid var(--border);
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .step-item.active {
     background: var(--bg-light);
-    border-left: 2px solid var(--text);
+    border-left: 2px solid var(--accent);
 }
 
 .step-item.completed {
@@ -480,27 +598,28 @@ body {
     justify-content: center;
     font-weight: 400;
     font-size: 0.8rem;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .step-item.active .step-number {
-    background: var(--text);
-    color: white;
-    border-color: var(--text);
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
 }
 
 .step-item.completed .step-number {
     background: var(--success);
-    color: white;
+    color: var(--bg);
     border-color: var(--success);
 }
 
-/* 실시간 색상 분석 */
+/* ========== 실시간 색상 분석 ========== */
 .results-display {
     background: var(--bg-light);
     border: 1px solid var(--border);
     padding: 2rem;
     min-height: 300px;
+    transition: all 0.3s ease;
 }
 
 .color-analysis {
@@ -514,8 +633,8 @@ body {
     height: 60px;
     border: 1px solid var(--border);
     margin: 0 auto 1rem;
-    background: #f0f0f0;
-    transition: background-color 0.3s ease;
+    background: var(--bg-light);
+    transition: all 0.3s ease;
 }
 
 .color-values {
@@ -524,9 +643,10 @@ body {
 }
 
 .rgb-section, .lab-section, .delta-section {
-    background: white;
+    background: var(--bg);
     padding: 1.5rem;
     border: 1px solid var(--border);
+    transition: all 0.3s ease;
 }
 
 .rgb-section h5, .lab-section h5, .delta-section h5 {
@@ -536,6 +656,7 @@ body {
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 1px;
+    transition: color 0.3s ease;
 }
 
 .color-grid {
@@ -544,19 +665,22 @@ body {
     gap: 1rem;
     font-size: 0.8rem;
     font-weight: 400;
+    color: var(--text);
 }
 
 .delta-section div {
     margin-bottom: 0.8rem;
     font-weight: 400;
     font-size: 0.9rem;
+    color: var(--text);
 }
 
-/* 드래이핑 모드 - 클린한 디자인 */
+/* ========== 드래이핑 모드 - 테마 대응 ========== */
 .draping-container {
-    background: #ffffff;
+    background: var(--bg);
     border: 1px solid var(--border);
     padding: 3rem;
+    transition: all 0.3s ease;
 }
 
 .draping-workspace {
@@ -575,6 +699,7 @@ body {
     border: 1px solid var(--border);
     position: relative;
     overflow: hidden;
+    transition: all 0.3s ease;
 }
 
 .photo-upload-zone {
@@ -586,6 +711,7 @@ body {
     font-size: 2rem;
     margin-bottom: 1rem;
     color: var(--text-light);
+    transition: color 0.3s ease;
 }
 
 .photo-upload-zone p {
@@ -593,6 +719,7 @@ body {
     color: var(--text-light);
     font-weight: 300;
     font-size: 0.9rem;
+    transition: color 0.3s ease;
 }
 
 .photo-upload-zone input[type="file"] {
@@ -601,13 +728,13 @@ body {
 
 .upload-label {
     display: inline-block;
-    background: var(--text);
-    color: white;
+    background: var(--accent);
+    color: var(--bg);
     padding: 1rem 2rem;
     border-radius: 0;
     cursor: pointer;
     font-weight: 400;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     margin-bottom: 1rem;
     font-size: 0.8rem;
     text-transform: uppercase;
@@ -623,6 +750,7 @@ body {
     font-size: 0.7rem;
     line-height: 1.6;
     font-weight: 300;
+    transition: color 0.3s ease;
 }
 
 #client-photo {
@@ -648,18 +776,19 @@ body {
     height: 50%;
     opacity: 0;
     transition: all 0.3s ease;
-    border: 1px solid white;
+    border: 1px solid var(--bg);
 }
 
 .color-drape.active {
     opacity: 0.7;
 }
 
-/* 색상 팔레트 패널 */
+/* ========== 색상 팔레트 패널 - 테마 대응 ========== */
 .color-palette-panel {
     background: var(--bg-light);
     border: 1px solid var(--border);
     padding: 2rem;
+    transition: all 0.3s ease;
 }
 
 .color-palette-panel h3 {
@@ -670,6 +799,7 @@ body {
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: 2px;
+    transition: color 0.3s ease;
 }
 
 .seasonal-tabs {
@@ -680,14 +810,14 @@ body {
 }
 
 .season-tab {
-    background: white;
+    background: var(--bg);
     border: 1px solid var(--border);
     color: var(--text);
     padding: 1rem;
     cursor: pointer;
     font-weight: 400;
     font-size: 0.8rem;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -697,9 +827,9 @@ body {
 }
 
 .season-tab.active {
-    background: var(--text);
-    color: white;
-    border-color: var(--text);
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
 }
 
 .season-palette {
@@ -711,25 +841,21 @@ body {
 }
 
 .palette-description {
-    background: white;
+    background: var(--bg);
     padding: 1.5rem;
     border: 1px solid var(--border);
     margin-bottom: 1.5rem;
     font-size: 0.8rem;
     font-weight: 300;
     line-height: 1.6;
-}
-
-.color-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    color: var(--text);
+    transition: all 0.3s ease;
 }
 
 .color-swatch {
     aspect-ratio: 1;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     border: 1px solid var(--border);
     position: relative;
     overflow: hidden;
@@ -739,15 +865,15 @@ body {
 }
 
 .color-swatch:hover {
-    border-color: var(--text);
+    border-color: var(--accent);
 }
 
 .color-swatch.active {
-    border: 2px solid var(--text);
+    border: 2px solid var(--accent);
 }
 
 .color-name {
-    background: rgba(255,255,255,0.9);
+    background: var(--bg);
     color: var(--text);
     font-size: 0.7rem;
     font-weight: 400;
@@ -756,9 +882,11 @@ body {
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
+    transition: all 0.3s ease;
+    opacity: 0.9;
 }
 
-/* 드래이핑 도구 */
+/* ========== 드래이핑 도구 ========== */
 .draping-tools {
     display: flex;
     gap: 1rem;
@@ -767,14 +895,14 @@ body {
 }
 
 .tool-btn {
-    background: var(--text);
-    color: white;
+    background: var(--accent);
+    color: var(--bg);
     border: none;
     padding: 0.8rem 1.5rem;
     cursor: pointer;
     font-weight: 400;
     font-size: 0.8rem;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -783,12 +911,13 @@ body {
     background: var(--primary-hover);
 }
 
-/* 분석 결과 */
+/* ========== 분석 결과 ========== */
 .analysis-result {
-    background: white;
+    background: var(--bg);
     padding: 2rem;
     border: 1px solid var(--border);
     margin-top: 3rem;
+    transition: all 0.3s ease;
 }
 
 .analysis-result h3 {
@@ -798,13 +927,15 @@ body {
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: 2px;
+    transition: color 0.3s ease;
 }
 
-/* 결과 섹션 */
+/* ========== 결과 섹션 ========== */
 .results-container {
-    background: #ffffff;
+    background: var(--bg);
     border: 1px solid var(--border);
     padding: 3rem;
+    transition: all 0.3s ease;
 }
 
 .final-diagnosis {
@@ -813,6 +944,7 @@ body {
     padding: 3rem;
     background: var(--bg-light);
     border: 1px solid var(--border);
+    transition: all 0.3s ease;
 }
 
 .diagnosis-summary {
@@ -820,6 +952,7 @@ body {
     line-height: 1.8;
     color: var(--text-light);
     font-weight: 300;
+    transition: color 0.3s ease;
 }
 
 .season-result {
@@ -830,6 +963,7 @@ body {
     border: 1px solid var(--border);
     text-transform: uppercase;
     letter-spacing: 4px;
+    transition: all 0.3s ease;
 }
 
 .season-result.spring {
@@ -856,7 +990,7 @@ body {
     border-color: var(--winter);
 }
 
-/* 제품 추천 */
+/* ========== 제품 추천 ========== */
 .product-recommendations {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -865,9 +999,10 @@ body {
 }
 
 .brand-section {
-    background: white;
+    background: var(--bg);
     padding: 2rem;
     border: 1px solid var(--border);
+    transition: all 0.3s ease;
 }
 
 .brand-header {
@@ -880,13 +1015,14 @@ body {
 .brand-logo {
     width: 50px;
     height: 50px;
-    background: var(--text);
+    background: var(--accent);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 500;
     font-size: 1rem;
-    color: white;
+    color: var(--bg);
+    transition: all 0.3s ease;
 }
 
 .brand-name {
@@ -895,6 +1031,7 @@ body {
     color: var(--text);
     text-transform: uppercase;
     letter-spacing: 1px;
+    transition: color 0.3s ease;
 }
 
 .product-list {
@@ -907,6 +1044,7 @@ body {
     align-items: center;
     padding: 1rem 0;
     border-bottom: 1px solid var(--border);
+    transition: border-color 0.3s ease;
 }
 
 .product-item:last-child {
@@ -923,6 +1061,7 @@ body {
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 1px;
+    transition: color 0.3s ease;
 }
 
 .product-name {
@@ -930,6 +1069,7 @@ body {
     color: var(--text-light);
     margin-top: 0.3rem;
     font-weight: 300;
+    transition: color 0.3s ease;
 }
 
 .product-cmyk {
@@ -937,6 +1077,7 @@ body {
     color: var(--text-light);
     font-family: monospace;
     font-weight: 300;
+    transition: color 0.3s ease;
 }
 
 .expert-note {
@@ -947,6 +1088,8 @@ body {
     font-size: 0.8rem;
     font-weight: 300;
     line-height: 1.6;
+    color: var(--text);
+    transition: all 0.3s ease;
 }
 
 .expert-note strong {
@@ -954,7 +1097,7 @@ body {
     font-weight: 500;
 }
 
-/* 토스트 메시지 - 미니멀 */
+/* ========== 토스트 메시지 - 테마 대응 ========== */
 .toast-container {
     position: fixed;
     top: 20px;
@@ -963,17 +1106,18 @@ body {
 }
 
 .toast {
-    background: white;
+    background: var(--bg);
     border: 1px solid var(--border);
     margin-bottom: 0.5rem;
     padding: 1rem 1.5rem;
     transform: translateX(100%);
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
     max-width: 300px;
     display: flex;
     align-items: center;
     gap: 1rem;
-    border-left: 3px solid var(--text);
+    border-left: 3px solid var(--accent);
+    box-shadow: var(--shadow);
 }
 
 .toast.show {
@@ -1000,9 +1144,10 @@ body {
     font-weight: 400;
     font-size: 0.8rem;
     color: var(--text);
+    transition: color 0.3s ease;
 }
 
-/* 반응형 디자인 */
+/* ========== 반응형 디자인 ========== */
 @media (max-width: 1200px) {
     .ai-container {
         grid-template-columns: 1fr;
@@ -1077,9 +1222,19 @@ body {
     .results-container {
         padding: 2rem 1rem;
     }
+    
+    .theme-switcher {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .theme-switch-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.6rem;
+    }
 }
 
-/* 접근성 및 기타 */
+/* ========== 접근성 및 기타 ========== */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -1096,6 +1251,14 @@ body {
         --shadow-lg: 0 8px 16px rgba(0,0,0,0.4);
         --border: #000000;
     }
+    
+    [data-theme="luxury"] {
+        --border: #d4af37;
+    }
+    
+    [data-theme="warm"] {
+        --border: #6d4c41;
+    }
 }
 
 @media print {
@@ -1103,7 +1266,8 @@ body {
     .header-controls,
     .camera-controls,
     .draping-tools,
-    .toast-container {
+    .toast-container,
+    .theme-switcher {
         display: none !important;
     }
     
@@ -1113,10 +1277,16 @@ body {
     
     body {
         background: white !important;
+        color: black !important;
     }
     
     .section {
         display: block !important;
         page-break-after: always;
     }
+}
+
+/* ========== 테마 전환 애니메이션 ========== */
+body.theme-transitioning * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
 }
