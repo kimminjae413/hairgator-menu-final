@@ -1,6 +1,6 @@
-/* HAIRGATOR - 3가지 프리미엄 테마 시스템 추가 */
+/* HAIRGATOR - 3가지 테마 시스템 + 기존 기능 완전 보존 */
 
-/* ========== 기존 코드 유지 ========== */
+/* ========== 전역 터치 및 성능 최적화 ========== */
 * {
     margin: 0;
     padding: 0;
@@ -12,72 +12,13 @@
     touch-action: manipulation;
 }
 
+/* 부드러운 스크롤 활성화 */
 html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
 }
 
-/* ========== 3가지 테마 CSS 변수 시스템 ========== */
-:root {
-    /* 🎯 테마 1: 고급 헤어샵 (기본 - 다크블루그레이 + 골드) */
-    --bg-primary: #1a1f2e;
-    --bg-secondary: #242937;
-    --bg-tertiary: #2d3348;
-    --text-primary: #f8f9fa;
-    --text-secondary: #adb5bd;
-    --text-muted: #6c757d;
-    --accent-primary: #d4af37;
-    --accent-secondary: #b8941f;
-    --border-color: #3d4456;
-    --border-light: #4a5568;
-    --shadow-color: rgba(26, 31, 46, 0.5);
-    --male-color: #5a9bdc;
-    --female-color: #e91e63;
-    
-    /* 테마 식별자 */
-    --theme-name: 'luxury';
-}
-
-/* ✨ 테마 2: 모던 미니멀 (순수 검정 + 흰색) */
-body.theme-minimal {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8f9fa;
-    --bg-tertiary: #f1f3f4;
-    --text-primary: #000000;
-    --text-secondary: #495057;
-    --text-muted: #6c757d;
-    --accent-primary: #000000;
-    --accent-secondary: #2c2c2c;
-    --border-color: #dee2e6;
-    --border-light: #f1f3f4;
-    --shadow-color: rgba(0, 0, 0, 0.1);
-    --male-color: #2196f3;
-    --female-color: #e91e63;
-    
-    --theme-name: 'minimal';
-}
-
-/* 🤎 테마 3: 따뜻한 프로페셔널 (브라운 + 베이지) */
-body.theme-warm {
-    --bg-primary: #f4e4c1;
-    --bg-secondary: #ede0c8;
-    --bg-tertiary: #e6d7be;
-    --text-primary: #3e2723;
-    --text-secondary: #5d4037;
-    --text-muted: #8d6e63;
-    --accent-primary: #6d4c41;
-    --accent-secondary: #8d6e63;
-    --border-color: #d7ccc8;
-    --border-light: #efebe9;
-    --shadow-color: rgba(109, 76, 65, 0.2);
-    --male-color: #3f51b5;
-    --female-color: #e91e63;
-    
-    --theme-name: 'warm';
-}
-
-/* ========== 기존 스타일을 CSS 변수 기반으로 업데이트 ========== */
 body {
     font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg-primary);
@@ -86,7 +27,60 @@ body {
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
+    /* 테마 전환 애니메이션 */
     transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ========== 3가지 테마 시스템 CSS 변수 ========== */
+:root {
+    /* 🎨 테마 1: 고급 헤어샵 (기본 다크) */
+    --bg-primary: #1a1f2e;
+    --bg-secondary: #111;
+    --text-primary: #f8f9fa;
+    --text-secondary: #999;
+    --accent-primary: #d4af37;
+    --accent-secondary: #E91E63;
+    --border-color: #3d4456;
+    --input-bg: #222;
+    --input-border: #444;
+    --male-color: #4A90E2;
+    --female-color: #E91E63;
+    --primary-dark: #1a1f2e;
+    --primary-light: #f8f9fa;
+}
+
+/* 🎯 테마 2: 모던 미니멀 (화이트) */
+[data-theme="minimal"] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --text-primary: #000000;
+    --text-secondary: #666666;
+    --accent-primary: #000000;
+    --accent-secondary: #333333;
+    --border-color: #dee2e6;
+    --input-bg: #ffffff;
+    --input-border: #dee2e6;
+    --male-color: #2196F3;
+    --female-color: #000000;
+    --primary-dark: #ffffff;
+    --primary-light: #000000;
+}
+
+/* 🤎 테마 3: 따뜻한 프로페셔널 (브라운) */
+[data-theme="warm"] {
+    --bg-primary: #f4e4c1;
+    --bg-secondary: #e8d5b7;
+    --text-primary: #3e2723;
+    --text-secondary: #5d4e37;
+    --accent-primary: #6d4c41;
+    --accent-secondary: #8d6e63;
+    --border-color: #d7ccc8;
+    --input-bg: #fff8e1;
+    --input-border: #d7ccc8;
+    --male-color: #5d4e37;
+    --female-color: #6d4c41;
+    --primary-dark: #f4e4c1;
+    --primary-light: #3e2723;
 }
 
 /* ========== 헤더 ========== */
@@ -104,7 +98,6 @@ body {
     z-index: 1000;
     will-change: transform;
     transition: background-color 0.3s ease;
-    border-bottom: 1px solid var(--border-color);
 }
 
 .back-btn {
@@ -144,282 +137,327 @@ body {
     border: none;
     cursor: pointer;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
+    align-items: center;
+    gap: 3px;
     transition: transform 0.2s ease;
 }
 
+.menu-btn:active {
+    transform: scale(0.9);
+}
+
 .menu-btn span {
-    width: 18px;
-    height: 2px;
-    background: var(--text-primary);
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.menu-btn span:before,
-.menu-btn span:after {
-    content: '';
-    position: absolute;
-    width: 18px;
+    width: 20px;
     height: 2px;
     background: var(--text-primary);
     transition: all 0.3s ease;
 }
 
-.menu-btn span:before {
-    top: -6px;
-}
-
-.menu-btn span:after {
-    top: 6px;
-}
-
-/* ========== 사이드바 테마 적용 ========== */
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: -280px;
-    width: 280px;
+/* ========== 메인 컨텐츠 ========== */
+.main-content {
+    margin-top: 65px;
+    min-height: calc(100vh - 65px);
     height: 100vh;
-    background: var(--bg-secondary);
-    z-index: 2000;
-    transition: left 0.3s ease, background-color 0.3s ease;
-    border-right: 1px solid var(--border-color);
-    box-shadow: 5px 0 15px var(--shadow-color);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    scroll-behavior: smooth;
+    will-change: transform;
 }
 
-.sidebar.open {
-    left: 0;
-}
-
-.sidebar-header {
+/* ========== 로그인 화면 ========== */
+.login-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 65px);
     padding: 20px;
-    border-bottom: 1px solid var(--border-color);
-    background: var(--bg-tertiary);
-    transition: background-color 0.3s ease;
 }
 
-.sidebar-title {
-    color: var(--text-primary);
-    font-size: 20px;
-    font-weight: bold;
+.login-modal {
+    background: var(--bg-secondary);
+    border: 2px solid var(--female-color);
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    animation: modalSlideUp 0.3s ease-out;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+@keyframes modalSlideUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(30px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.login-modal h2 {
+    font-size: 24px;
     margin-bottom: 5px;
+    letter-spacing: 2px;
+    color: var(--text-primary);
     transition: color 0.3s ease;
 }
 
-.sidebar-subtitle {
+.login-modal .subtitle {
     color: var(--text-secondary);
+    margin-bottom: 30px;
     font-size: 14px;
     transition: color 0.3s ease;
 }
 
+/* ========== 폼 스타일 ========== */
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    color: var(--female-color);
+    margin-bottom: 8px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 16px;
+    transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--female-color);
+    box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.1);
+}
+
+/* 테마별 인풋 포커스 색상 */
+[data-theme="minimal"] .form-group input:focus {
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="warm"] .form-group input:focus {
+    box-shadow: 0 0 0 2px rgba(109, 76, 65, 0.1);
+}
+
+.login-btn {
+    width: 100%;
+    background: var(--female-color);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+    filter: brightness(110%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+[data-theme="minimal"] .login-btn:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="warm"] .login-btn:hover {
+    box-shadow: 0 4px 12px rgba(109, 76, 65, 0.3);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+.login-help {
+    margin-top: 20px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    transition: color 0.3s ease;
+}
+
+/* ========== 성별 선택 ========== */
+.gender-selection {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 65px);
+    padding: 20px;
+    gap: 80px;
+}
+
+.gender-btn {
+    width: 160px;
+    height: 240px;
+    border: 2px solid var(--border-color);
+    border-radius: 20px;
+    background: var(--bg-secondary);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    
+    /* 터치 영역 확장 */
+    padding: 5px;
+    margin: -5px;
+    
+    /* GPU 가속 */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+.gender-btn:hover {
+    transform: scale(1.05) translateZ(0);
+}
+
+.gender-btn:active {
+    transform: scale(0.98) translateZ(0);
+    transition: transform 0.1s ease;
+}
+
+.gender-btn.male {
+    border-color: var(--male-color);
+}
+
+.gender-btn.female {
+    border-color: var(--female-color);
+}
+
+.gender-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.gender-btn.male .gender-icon {
+    background: var(--male-color);
+}
+
+.gender-btn.female .gender-icon {
+    background: var(--female-color);
+}
+
+.gender-label {
+    font-size: 16px;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+/* ========== 메뉴 컨테이너 ========== */
+.menu-container {
+    display: none;
+    contain: layout style paint;
+    will-change: contents;
+}
+
+.menu-container.active {
+    display: block;
+}
+
+/* ========== 사이드바 ========== */
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 300px;
+    height: 100vh;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    z-index: 2000;
+    transition: right 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.sidebar.active {
+    right: 0;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
 .sidebar-close {
-    position: absolute;
-    top: 15px;
-    right: 15px;
     background: none;
     border: none;
     color: var(--text-primary);
     font-size: 24px;
     cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-/* ========== 테마 전환 버튼 스타일 ========== */
-#themeToggleBtn {
-    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-    color: var(--bg-primary);
-    border: 2px solid var(--accent-primary);
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-}
-
-#themeToggleBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px var(--shadow-color);
-    filter: brightness(110%);
-}
-
-#themeToggleBtn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-}
-
-#themeToggleBtn:hover::before {
-    left: 100%;
-}
-
-/* ========== 메인 콘텐츠 영역 ========== */
-.main-content {
-    background: var(--bg-primary);
-    min-height: 100vh;
-    padding-top: 80px;
-    transition: background-color 0.3s ease;
-}
-
-/* ========== 성별 선택 ========== */
-.gender-selection {
-    padding: 40px 20px;
-    text-align: center;
-}
-
-.gender-title {
-    color: var(--text-primary);
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 40px;
-    transition: color 0.3s ease;
-}
-
-.gender-buttons {
+    width: 30px;
+    height: 30px;
     display: flex;
-    gap: 20px;
+    align-items: center;
     justify-content: center;
-    flex-wrap: wrap;
+    border-radius: 50%;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.gender-btn {
-    padding: 20px 40px;
-    border-radius: 15px;
-    border: 2px solid var(--border-color);
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 150px;
+.sidebar-close:hover {
+    background-color: var(--border-color);
 }
 
-.gender-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px var(--shadow-color);
-    border-color: var(--accent-primary);
-}
-
-.gender-btn.male:hover,
-.gender-btn.male.active {
-    background: var(--male-color);
-    border-color: var(--male-color);
-    color: white;
-}
-
-.gender-btn.female:hover,
-.gender-btn.female.active {
-    background: var(--female-color);
-    border-color: var(--female-color);
-    color: white;
-}
-
-/* ========== 메뉴 컨테이너 ========== */
-.menu-container {
-    background: var(--bg-primary);
-    transition: background-color 0.3s ease;
-}
-
-/* ========== 카테고리 탭 ========== */
-.category-tabs {
-    display: flex;
+.sidebar-content {
     padding: 20px;
-    gap: 15px;
-    background: var(--bg-secondary);
-    overflow-x: auto;
-    transition: background-color 0.3s ease;
 }
 
-.category-tab {
-    padding: 15px 25px;
-    border-radius: 25px;
-    border: 2px solid var(--border-color);
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.category-tab:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px var(--shadow-color);
-}
-
-.category-tab.active {
+/* ========== 테마 전환 버튼 ========== */
+.theme-toggle {
     background: var(--accent-primary);
-    border-color: var(--accent-primary);
-    color: var(--bg-primary);
-    box-shadow: 0 5px 20px var(--shadow-color);
-}
-
-/* ========== 스타일 그리드 ========== */
-.styles-container {
-    padding: 20px;
-    background: var(--bg-primary);
-    transition: background-color 0.3s ease;
-}
-
-.styles-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-}
-
-.style-card {
-    background: var(--bg-secondary);
-    border: 2px solid var(--border-color);
-    border-radius: 15px;
-    overflow: hidden;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
     cursor: pointer;
+    font-weight: bold;
     transition: all 0.3s ease;
-    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
 }
 
-.style-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--accent-primary);
-    box-shadow: 0 10px 30px var(--shadow-color);
+.theme-toggle:hover {
+    filter: brightness(110%);
+    transform: translateY(-2px);
 }
 
-.style-image {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    background: var(--bg-tertiary);
-    transition: background-color 0.3s ease;
-}
-
-.style-info {
-    padding: 15px;
-    text-align: center;
-}
-
-.style-code {
-    color: var(--text-muted);
-    font-size: 12px;
-    margin-bottom: 5px;
-    transition: color 0.3s ease;
-}
-
-.style-name {
-    color: var(--text-primary);
-    font-size: 16px;
-    font-weight: 600;
-    transition: color 0.3s ease;
+.theme-toggle:active {
+    transform: translateY(0);
 }
 
 /* ========== 로딩 오버레이 ========== */
@@ -429,19 +467,19 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--bg-primary);
+    background: rgba(0, 0, 0, 0.9);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    transition: background-color 0.3s ease;
+    backdrop-filter: blur(5px);
 }
 
 .loading-spinner {
-    width: 60px;
-    height: 60px;
-    border: 4px solid var(--border-color);
-    border-top: 4px solid var(--accent-primary);
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--border-color);
+    border-top: 3px solid var(--female-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -451,145 +489,97 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-/* ========== 모달 ========== */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-
-.modal.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-.modal-content {
-    background: var(--bg-secondary);
-    border: 2px solid var(--border-color);
-    border-radius: 20px;
-    padding: 30px;
-    max-width: 500px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-    transform: scale(0.9);
-    animation: modalShow 0.3s ease forwards;
-}
-
-@keyframes modalShow {
-    to {
-        transform: scale(1);
-    }
-}
-
-.modal-close {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    font-size: 28px;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-.modal-close:hover {
-    color: var(--accent-primary);
-}
-
-/* ========== 버튼 스타일 ========== */
-.btn {
-    padding: 12px 24px;
-    border-radius: 10px;
-    border: 2px solid var(--accent-primary);
-    background: var(--accent-primary);
-    color: var(--bg-primary);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px var(--shadow-color);
-    filter: brightness(110%);
-}
-
-.btn-outline {
-    background: transparent;
-    color: var(--accent-primary);
-}
-
-.btn-outline:hover {
-    background: var(--accent-primary);
-    color: var(--bg-primary);
-}
-
-/* ========== 반응형 디자인 ========== */
+/* ========== 반응형 ========== */
 @media (max-width: 768px) {
-    .styles-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-    }
-    
-    .gender-buttons {
+    .gender-selection {
         flex-direction: column;
-        align-items: center;
+        gap: 30px;
     }
     
-    .category-tabs {
-        padding: 15px;
+    .gender-btn {
+        width: 140px;
+        height: 200px;
+    }
+    
+    .gender-icon {
+        width: 80px;
+        height: 80px;
+        font-size: 40px;
+    }
+    
+    .login-modal {
+        margin: 0 10px;
+        padding: 20px;
     }
     
     .sidebar {
-        width: 100%;
-        left: -100%;
+        width: 280px;
+        right: -280px;
     }
 }
 
-/* ========== 스무스 전환 애니메이션 ========== */
-* {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+@media (max-width: 480px) {
+    .gender-selection {
+        gap: 20px;
+        padding: 10px;
+    }
+    
+    .gender-btn {
+        width: 120px;
+        height: 180px;
+    }
+    
+    .login-modal {
+        padding: 15px;
+    }
+    
+    .form-group input {
+        padding: 10px;
+        font-size: 14px;
+    }
 }
 
-/* ========== 토스트 메시지 테마 적용 ========== */
-.toast {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    box-shadow: 0 5px 15px var(--shadow-color);
+/* ========== 유틸리티 클래스 ========== */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mb-10 { margin-bottom: 10px; }
+.mb-20 { margin-bottom: 20px; }
+.mb-30 { margin-bottom: 30px; }
+
+.hidden { display: none !important; }
+.visible { display: block !important; }
+
+/* ========== 접근성 ========== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
-.toast.success {
-    border-left: 4px solid var(--accent-primary);
+/* 포커스 표시 */
+button:focus,
+input:focus,
+select:focus {
+    outline: 2px solid var(--female-color);
+    outline-offset: 2px;
 }
 
-/* ========== 퍼스널 컬러 버튼 스타일 ========== */
-#personalColorBtn {
-    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-    color: var(--bg-primary);
-    border: 2px solid var(--accent-primary);
-    transition: all 0.3s ease;
-}
-
-#personalColorBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px var(--shadow-color);
-    filter: brightness(110%);
+/* 터치 디바이스 최적화 */
+@media (hover: none) and (pointer: coarse) {
+    .gender-btn:hover {
+        transform: none;
+    }
+    
+    .login-btn:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .theme-toggle:hover {
+        transform: none;
+    }
 }
