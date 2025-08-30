@@ -1,94 +1,19 @@
+/* HAIRGATOR - Menu System CSS (기존 + 테마 변수 적용) */
+
 /* ========== 메인 메뉴 화면 ========== */
 .main-menu {
     display: none;
     min-height: 100vh;
-    background: #000;
+    background: var(--bg-primary);
 }
 
 .main-menu.active {
     display: block;
 }
 
-/* ========== 헤더 - 로고 중앙, 흰색 ========== */
-.header {
-    background: #000;
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    border-bottom: 1px solid #333;
-}
-
-.back-btn {
-    position: absolute;
-    left: 20px;
-    background: none;
-    border: none;
-    color: #fff;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 24px;
-}
-
-/* 로고 - 중앙 정렬, 흰색 */
-.logo {
-    color: #fff !important;  /* 강제 흰색 */
-    font-size: 24px;
-    font-weight: bold;
-    letter-spacing: 3px;
-    text-align: center;
-}
-
-.header-actions {
-    position: absolute;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.theme-btn {
-    background: none;
-    border: none;
-    color: #fff;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 20px;
-}
-
-.menu-btn {
-    background: none;
-    border: none;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    gap: 5px;
-}
-
-.menu-btn span {
-    width: 24px;
-    height: 2px;
-    background: #fff;
-    transition: all 0.3s;
-    border-radius: 2px;
-}
-
-/* ========== 대분류 탭 - 진한색 ========== */
+/* ========== 대분류 탭 ========== */
 .main-tabs {
-    background: #000;
+    background: var(--bg-primary);
     padding: 15px 10px;
     display: flex;
     gap: 10px;
@@ -101,96 +26,99 @@
 }
 
 .main-tab {
-    background: #1a1a1a;
-    color: #fff;
-    border: 2px solid #333;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
     padding: 12px 24px;
     border-radius: 30px;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    font-family: var(--font-ui);
     font-size: 14px;
     font-weight: 600;
 }
 
 .main-tab:hover {
-    background: #2a2a2a;
+    background: var(--bg-secondary);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-primary);
 }
 
-/* 남성 선택시 파란색, 여성 선택시 핑크색 */
-body.gender-male .main-tab.active {
-    background: #4A90E2;
-    color: #fff;
-    border-color: #4A90E2;
-    box-shadow: 0 5px 20px rgba(74, 144, 226, 0.4);
-}
-
-body.gender-female .main-tab.active {
-    background: #FF1493;
-    color: #fff;
-    border-color: #FF1493;
+.main-tab.active {
+    background: var(--female-color);
+    color: var(--text-primary);
+    border-color: var(--female-color);
     box-shadow: 0 5px 20px rgba(255, 20, 147, 0.4);
+}
+
+/* 남성 선택시 파란색 */
+body.gender-male .main-tab.active {
+    background: var(--male-color);
+    border-color: var(--male-color);
+    box-shadow: 0 5px 20px rgba(74, 144, 226, 0.4);
 }
 
 /* ========== 중분류 탭 - 성별에 따른 색상 ========== */
 .sub-tabs {
-    background: #0a0a0a;
+    background: var(--bg-secondary);
     padding: 15px;
     display: flex;
     gap: 10px;
     justify-content: center;
     flex-wrap: wrap;
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .sub-tab {
-    color: #fff;
+    color: var(--text-primary);
     border: none;
     padding: 10px 20px;
     border-radius: 25px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    font-family: var(--font-ui);
     font-size: 13px;
     font-weight: 600;
 }
 
 /* 남성일 때 파란색 */
 body.gender-male .sub-tab {
-    background: #4A90E2;
+    background: var(--male-color);
 }
 
 body.gender-male .sub-tab:hover {
     background: #6BA3E5;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+    box-shadow: 0 5px 15px var(--shadow-primary);
 }
 
 body.gender-male .sub-tab.active {
-    background: #fff;
-    color: #4A90E2;
+    background: var(--text-primary);
+    color: var(--male-color);
 }
 
 /* 여성일 때 핑크색 */
 body.gender-female .sub-tab {
-    background: #FF1493;
+    background: var(--female-color);
 }
 
 body.gender-female .sub-tab:hover {
     background: #FF69B4;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+    box-shadow: 0 5px 15px var(--shadow-primary);
 }
 
 body.gender-female .sub-tab.active {
-    background: #fff;
-    color: #FF1493;
+    background: var(--text-primary);
+    color: var(--female-color);
 }
 
 /* ========== 스타일 그리드 ========== */
 .styles-container {
     padding: 20px;
     min-height: calc(100vh - 200px);
+    background: var(--bg-primary);
 }
 
 .styles-grid {
@@ -207,22 +135,23 @@ body.gender-female .sub-tab.active {
 }
 
 .style-card {
-    background: #1a1a1a;
+    background: var(--bg-tertiary);
     border-radius: 15px;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.3s;
-    border: 1px solid #333;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    will-change: transform;
 }
 
 .style-card:hover {
     transform: translateY(-5px);
-    border-color: #FF1493;
-    box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+    border-color: var(--female-color);
+    box-shadow: 0 10px 30px var(--shadow-primary);
 }
 
 body.gender-male .style-card:hover {
-    border-color: #4A90E2;
+    border-color: var(--male-color);
     box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
 }
 
@@ -230,24 +159,27 @@ body.gender-male .style-card:hover {
     width: 100%;
     aspect-ratio: 3/4;
     object-fit: cover;
-    background: #2a2a2a;
+    background: var(--bg-secondary);
 }
 
 .style-info {
     padding: 12px;
     text-align: center;
+    background: var(--bg-tertiary);
 }
 
 .style-code {
     font-size: 11px;
-    color: #999;
+    color: var(--text-tertiary);
     margin-bottom: 4px;
+    font-family: var(--font-ui);
 }
 
 .style-name {
     font-size: 13px;
-    color: #fff;
+    color: var(--text-primary);
     font-weight: 500;
+    font-family: var(--font-body);
 }
 
 /* ========== 사이드 메뉴 ========== */
@@ -281,40 +213,41 @@ body.gender-male .style-card:hover {
     top: 0;
     width: 320px;
     height: 100%;
-    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
-    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+    box-shadow: -10px 0 40px var(--shadow-secondary);
     display: flex;
     flex-direction: column;
 }
 
 .side-menu-header {
     padding: 25px;
-    background: #000;
+    background: var(--bg-primary);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid #FF1493;
+    border-bottom: 2px solid var(--female-color);
 }
 
 body.gender-male .side-menu-header {
-    border-bottom-color: #4A90E2;
+    border-bottom-color: var(--male-color);
 }
 
 .side-menu-header h2 {
-    color: #FF1493;
+    color: var(--female-color);
     font-size: 22px;
     letter-spacing: 2px;
     font-weight: bold;
+    font-family: var(--font-heading);
 }
 
 body.gender-male .side-menu-header h2 {
-    color: #4A90E2;
+    color: var(--male-color);
 }
 
 .close-btn {
     background: none;
     border: none;
-    color: #fff;
+    color: var(--text-primary);
     width: 36px;
     height: 36px;
     display: flex;
@@ -322,7 +255,11 @@ body.gender-male .side-menu-header h2 {
     justify-content: center;
     cursor: pointer;
     border-radius: 50%;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background: var(--border-color);
 }
 
 .side-menu-nav {
@@ -334,10 +271,11 @@ body.gender-male .side-menu-header h2 {
     display: flex;
     align-items: center;
     padding: 18px 25px;
-    color: #fff;
+    color: var(--text-primary);
     text-decoration: none;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     position: relative;
+    font-family: var(--font-body);
 }
 
 .menu-item:hover {
@@ -361,91 +299,37 @@ body.gender-male .menu-item:hover {
 }
 
 .menu-arrow {
-    color: #666;
+    color: var(--text-tertiary);
     font-size: 18px;
 }
 
 .menu-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, #333, transparent);
+    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
     margin: 20px 25px;
 }
 
 .side-menu-footer {
     padding: 25px;
-    background: #000;
-    border-top: 1px solid #333;
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
 }
 
 .designer-info {
     text-align: center;
-    color: #999;
+    color: var(--text-tertiary);
     font-size: 14px;
+    font-family: var(--font-body);
 }
 
 #designerNameDisplay {
-    color: #FF1493;
+    color: var(--female-color);
     font-weight: bold;
     font-size: 16px;
 }
 
 body.gender-male #designerNameDisplay {
-    color: #4A90E2;
-}
-
-/* ========== 라이트 테마 ========== */
-body.light-theme {
-    background: #fff;
-}
-
-body.light-theme .main-menu {
-    background: #fff;
-}
-
-body.light-theme .header {
-    background: #fff;
-    border-bottom-color: #ddd;
-}
-
-body.light-theme .logo {
-    color: #000 !important;  /* 라이트 테마에서는 검은색 */
-}
-
-body.light-theme .back-btn,
-body.light-theme .theme-btn {
-    color: #000;
-}
-
-body.light-theme .menu-btn span {
-    background: #000;
-}
-
-body.light-theme .main-tabs {
-    background: #f5f5f5;
-}
-
-body.light-theme .main-tab {
-    background: #fff;
-    color: #000;
-    border-color: #ddd;
-}
-
-body.light-theme .sub-tabs {
-    background: #fff;
-    border-bottom-color: #eee;
-}
-
-body.light-theme .styles-container {
-    background: #f9f9f9;
-}
-
-body.light-theme .style-card {
-    background: #fff;
-    border-color: #ddd;
-}
-
-body.light-theme .style-name {
-    color: #000;
+    color: var(--male-color);
 }
 
 /* ========== 빈 상태 ========== */
@@ -453,7 +337,7 @@ body.light-theme .style-name {
     text-align: center;
     padding: 60px 20px;
     grid-column: 1 / -1;
-    color: #666;
+    color: var(--text-tertiary);
 }
 
 .empty-icon {
@@ -463,11 +347,13 @@ body.light-theme .style-name {
 
 .empty-title {
     font-size: 20px;
-    color: #999;
+    color: var(--text-secondary);
     margin-bottom: 10px;
+    font-family: var(--font-heading);
 }
 
 .empty-message {
     font-size: 14px;
-    color: #666;
+    color: var(--text-tertiary);
+    font-family: var(--font-body);
 }
