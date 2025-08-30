@@ -1,0 +1,809 @@
+/* ========================================
+   HAIRGATOR - ULTRA MODERN RESPONSIVE DESIGN
+   ======================================== */
+
+/* ========================================
+   데스크탑 Large (1440px+)
+   ======================================== */
+@media (min-width: 1440px) {
+    .styles-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+    }
+    
+    .main-content {
+        padding: 3rem;
+    }
+    
+    .login-container {
+        max-width: 1400px;
+    }
+    
+    .brand-text h1 {
+        font-size: 3.5rem;
+    }
+    
+    .main-title {
+        font-size: 3rem;
+    }
+}
+
+/* ========================================
+   데스크탑 Medium (1200px - 1439px)
+   ======================================== */
+@media (max-width: 1439px) and (min-width: 1200px) {
+    .styles-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+    
+    .nav-center {
+        max-width: 400px;
+    }
+}
+
+/* ========================================
+   데스크탑 Small / 큰 태블릿 (992px - 1199px)
+   ======================================== */
+@media (max-width: 1199px) and (min-width: 992px) {
+    .login-container {
+        grid-template-columns: 1fr 1.2fr;
+        gap: 2rem;
+    }
+    
+    .branding-section {
+        padding: 3rem 2rem;
+    }
+    
+    .login-section {
+        padding: 3rem 2rem;
+    }
+    
+    .brand-text h1 {
+        font-size: 2.8rem;
+    }
+    
+    .styles-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+    
+    .category-tabs {
+        gap: 0.8rem;
+    }
+    
+    .main-tab {
+        padding: 0.8rem 1.2rem;
+        font-size: 0.9rem;
+    }
+    
+    .nav-center {
+        max-width: 350px;
+        margin: 0 1rem;
+    }
+}
+
+/* ========================================
+   태블릿 (768px - 991px)
+   ======================================== */
+@media (max-width: 991px) {
+    /* 로그인 화면을 세로 배치로 변경 */
+    .login-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .branding-section {
+        padding: 2rem;
+        height: auto;
+        min-height: 45vh;
+        justify-content: center;
+    }
+    
+    .login-section {
+        padding: 2rem;
+        height: auto;
+        min-height: 55vh;
+    }
+    
+    .brand-logo {
+        justify-content: center;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .brand-text h1 {
+        font-size: 2.5rem;
+        text-align: center;
+    }
+    
+    .brand-text p {
+        text-align: center;
+    }
+    
+    .features-preview {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .feature-item {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    /* 메인 네비게이션 조정 */
+    .main-nav {
+        padding: 0 1rem;
+        height: 70px;
+    }
+    
+    .main-content {
+        margin-top: 70px;
+        padding: 1.5rem;
+    }
+    
+    .nav-center {
+        display: none; /* 태블릿에서는 검색바 숨김 */
+    }
+    
+    .nav-logo {
+        font-size: 1.1rem;
+    }
+    
+    /* 카테고리 탭들 */
+    .category-tabs {
+        gap: 0.5rem;
+    }
+    
+    .main-tab {
+        padding: 0.7rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    /* 스타일 그리드 - 3열 */
+    .styles-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+    
+    .style-card {
+        border-radius: var(--border-radius);
+    }
+    
+    .style-image {
+        height: 220px;
+    }
+    
+    /* 성별 선택 */
+    .gender-options {
+        gap: 1.5rem;
+    }
+    
+    .gender-btn {
+        padding: 2rem 1.5rem;
+    }
+    
+    .gender-icon {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .gender-icon .icon {
+        width: 35px;
+        height: 35px;
+    }
+    
+    /* 사이드바 */
+    .sidebar {
+        width: 350px;
+    }
+    
+    .sidebar-content {
+        padding: 1.5rem;
+    }
+    
+    /* 스타일 헤더 */
+    .styles-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .view-controls {
+        justify-content: center;
+    }
+}
+
+/* ========================================
+   모바일 Large (576px - 767px)
+   ======================================== */
+@media (max-width: 767px) and (min-width: 576px) {
+    /* 로딩 화면 */
+    .loading-content {
+        padding: 1.5rem;
+    }
+    
+    .logo-ring {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .logo-h {
+        font-size: 2.5rem;
+    }
+    
+    .main-title {
+        font-size: 2rem;
+    }
+    
+    .brand-text h1 {
+        font-size: 2rem;
+    }
+    
+    /* 로그인 폼 */
+    .login-box {
+        padding: 2rem;
+        margin: 1rem;
+    }
+    
+    .login-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    /* 메인 네비게이션 */
+    .main-nav {
+        height: 60px;
+        padding: 0 0.8rem;
+    }
+    
+    .main-content {
+        margin-top: 60px;
+        padding: 1rem;
+    }
+    
+    .nav-btn {
+        width: 42px;
+        height: 42px;
+    }
+    
+    .nav-logo {
+        font-size: 1rem;
+    }
+    
+    .user-info {
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .user-info span {
+        font-size: 0.8rem;
+    }
+    
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+    }
+    
+    /* 카테고리 */
+    .category-header h3 {
+        font-size: 1.5rem;
+    }
+    
+    .main-tab {
+        padding: 0.6rem 0.9rem;
+        font-size: 0.8rem;
+    }
+    
+    .subcategory-tabs {
+        gap: 0.5rem;
+    }
+    
+    .sub-tab {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    /* 스타일 그리드 - 2열 */
+    .styles-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+    
+    .style-image {
+        height: 200px;
+    }
+    
+    /* 성별 선택 */
+    .section-header h2 {
+        font-size: 2rem;
+    }
+    
+    .gender-options {
+        gap: 1rem;
+        grid-template-columns: 1fr;
+        max-width: 400px;
+    }
+    
+    .gender-btn {
+        padding: 1.5rem;
+    }
+    
+    .gender-icon {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .gender-icon .icon {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .gender-label {
+        font-size: 1.3rem;
+    }
+    
+    /* 사이드바 */
+    .sidebar {
+        width: 320px;
+    }
+    
+    .theme-option {
+        padding: 0.8rem;
+    }
+    
+    .menu-item {
+        padding: 0.8rem;
+    }
+}
+
+/* ========================================
+   모바일 Small (480px - 575px)
+   ======================================== */
+@media (max-width: 575px) and (min-width: 480px) {
+    /* 기본 여백 줄이기 */
+    .branding-section,
+    .login-section {
+        padding: 1.5rem 1rem;
+    }
+    
+    .login-box {
+        padding: 1.5rem;
+        margin: 0.5rem;
+    }
+    
+    .main-content {
+        padding: 0.8rem;
+    }
+    
+    /* 로고 크기 조정 */
+    .brand-text h1 {
+        font-size: 1.8rem;
+    }
+    
+    .logo-symbol {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .logo-symbol span {
+        font-size: 2rem;
+    }
+    
+    /* 카테고리 탭들 */
+    .main-tab {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.75rem;
+    }
+    
+    /* 성별 선택 */
+    .section-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .gender-btn {
+        padding: 1.2rem;
+    }
+    
+    .gender-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .gender-icon .icon {
+        width: 25px;
+        height: 25px;
+    }
+    
+    /* 스타일 카드 */
+    .style-image {
+        height: 180px;
+    }
+}
+
+/* ========================================
+   모바일 Extra Small (320px - 479px)
+   ======================================== */
+@media (max-width: 479px) {
+    /* 전체적인 여백 최소화 */
+    .branding-section,
+    .login-section {
+        padding: 1rem 0.5rem;
+    }
+    
+    .login-box {
+        padding: 1rem;
+        margin: 0.5rem;
+        border-radius: var(--border-radius);
+    }
+    
+    .main-content {
+        padding: 0.5rem;
+    }
+    
+    /* 로딩 화면 */
+    .loading-content {
+        padding: 1rem;
+    }
+    
+    .logo-ring {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1rem;
+    }
+    
+    .logo-h {
+        font-size: 2rem;
+    }
+    
+    .main-title {
+        font-size: 1.5rem;
+    }
+    
+    /* 브랜딩 */
+    .brand-text h1 {
+        font-size: 1.5rem;
+    }
+    
+    .brand-text p {
+        font-size: 1rem;
+    }
+    
+    .logo-symbol {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .logo-symbol span {
+        font-size: 1.5rem;
+    }
+    
+    .feature-item {
+        flex-direction: column;
+        text-align: center;
+        padding: 0.8rem 0.5rem;
+    }
+    
+    /* 메인 네비게이션 */
+    .main-nav {
+        height: 55px;
+        padding: 0 0.5rem;
+    }
+    
+    .main-content {
+        margin-top: 55px;
+    }
+    
+    .nav-btn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .nav-logo {
+        font-size: 0.9rem;
+    }
+    
+    .nav-left,
+    .nav-right {
+        gap: 0.5rem;
+    }
+    
+    .user-info {
+        padding: 0.3rem 0.6rem;
+    }
+    
+    .user-info span {
+        display: none; /* 아바타만 표시 */
+    }
+    
+    .user-avatar {
+        width: 28px;
+        height: 28px;
+    }
+    
+    /* 카테고리 섹션 */
+    .category-header {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    .category-header h3 {
+        font-size: 1.3rem;
+    }
+    
+    .category-tabs {
+        gap: 0.3rem;
+        justify-content: flex-start;
+    }
+    
+    .main-tab {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.7rem;
+        border-radius: var(--border-radius-sm);
+    }
+    
+    .subcategory-tabs {
+        gap: 0.3rem;
+    }
+    
+    .sub-tab {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.7rem;
+        border-radius: var(--border-radius-sm);
+    }
+    
+    /* 스타일 그리드 */
+    .styles-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .style-card {
+        border-radius: var(--border-radius-sm);
+    }
+    
+    .style-image {
+        height: 160px;
+    }
+    
+    /* 성별 선택 */
+    .section-header {
+        margin-bottom: 2rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .section-header p {
+        font-size: 0.9rem;
+    }
+    
+    .gender-options {
+        gap: 0.8rem;
+    }
+    
+    .gender-btn {
+        padding: 1rem 0.8rem;
+        border-radius: var(--border-radius);
+    }
+    
+    .gender-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .gender-icon .icon {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .gender-label {
+        font-size: 1.1rem;
+    }
+    
+    .gender-description {
+        font-size: 0.8rem;
+    }
+    
+    /* 사이드바 */
+    .sidebar {
+        width: 280px;
+    }
+    
+    .sidebar-content {
+        padding: 1rem;
+    }
+    
+    .sidebar-header {
+        margin-bottom: 2rem;
+    }
+    
+    .sidebar-logo {
+        font-size: 1.2rem;
+    }
+    
+    .theme-option,
+    .menu-item {
+        padding: 0.7rem;
+        font-size: 0.9rem;
+    }
+    
+    .theme-preview {
+        width: 24px;
+        height: 24px;
+    }
+    
+    /* 스타일 헤더 */
+    .styles-header {
+        margin-bottom: 1rem;
+    }
+    
+    .view-controls {
+        padding: 0.2rem;
+    }
+    
+    .view-btn {
+        padding: 0.4rem;
+    }
+    
+    .sort-controls select {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    /* 로그인 폼 요소들 */
+    .login-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    .login-header p {
+        font-size: 0.8rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .input-container input {
+        padding: 0.8rem 0.8rem 0.8rem 2.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .input-icon {
+        left: 0.8rem;
+    }
+    
+    .login-btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .theme-selector span {
+        font-size: 0.8rem;
+    }
+    
+    .theme-btn {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* ========================================
+   특별한 디바이스 대응
+   ======================================== */
+
+/* 아이폰 SE 및 매우 작은 화면 (320px 이하) */
+@media (max-width: 320px) {
+    .styles-grid {
+        grid-template-columns: 1fr; /* 1열로 변경 */
+        gap: 0.5rem;
+    }
+    
+    .gender-options {
+        grid-template-columns: 1fr;
+        max-width: 280px;
+    }
+    
+    .category-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .main-tab {
+        flex-grow: 1;
+        text-align: center;
+        min-width: 80px;
+    }
+}
+
+/* 가로 모드 대응 */
+@media (max-height: 500px) and (orientation: landscape) {
+    .login-container {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: none;
+        height: 100vh;
+    }
+    
+    .branding-section,
+    .login-section {
+        height: 100vh;
+        min-height: unset;
+    }
+    
+    .loading-content {
+        transform: scale(0.8);
+    }
+    
+    .gender-container {
+        transform: scale(0.9);
+    }
+}
+
+/* 다크모드 우선 사용자 대응 */
+@media (prefers-color-scheme: dark) {
+    [data-theme="minimal"] {
+        --bg-primary: #1a1a1a;
+        --bg-secondary: #2d2d2d;
+        --text-primary: #f5f5f5;
+        --text-secondary: #d4af37;
+    }
+}
+
+/* 움직임 줄이기 설정한 사용자 대응 */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .gradient-orb,
+    .mesh-gradient,
+    .float-element,
+    .logo-ring,
+    .particle {
+        animation: none !important;
+    }
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+    :root {
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+        --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.5);
+    }
+    
+    .style-card,
+    .login-box,
+    .nav-btn {
+        border-width: 2px !important;
+    }
+}
+
+/* 프린트 스타일 */
+@media print {
+    .bg-effects,
+    .gradient-orb,
+    .mesh-gradient,
+    .main-nav,
+    .sidebar,
+    .overlay {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-top: 0 !important;
+        padding: 1rem !important;
+    }
+    
+    .styles-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 1rem !important;
+    }
+}
