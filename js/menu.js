@@ -9,7 +9,7 @@ class MenuSystem {
             female: ['A Length', 'B Length', 'C Length', 'D Length', 'E Length', 'F Length', 'G Length', 'H Length']
         };
         this.subCategories = ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'];
-        this.availableSubcategories = new Map(); // 실제 데이터가 있는 서브카테고리
+        this.availableSubcategories = new Map();
     }
     
     // 성별에 따른 메뉴 로드
@@ -98,8 +98,12 @@ class MenuSystem {
                 }
                 
                 // NEW 표시 (7일 이내 등록된 스타일이 있는 경우)
-                if (hasData && await this.hasNewStyles(gender, mainCategory, subCategory)) {
-                    tab.classList.add('new');
+                if (hasData) {
+                    this.hasNewStyles(gender, mainCategory, subCategory).then(hasNew => {
+                        if (hasNew) {
+                            tab.classList.add('new');
+                        }
+                    });
                 }
                 
                 subTabsContainer.appendChild(tab);
@@ -288,9 +292,13 @@ class MenuSystem {
         console.log('스타일 상세보기:', styleId, styleData);
         
         // 토큰 시스템과 연동하여 상세보기 기능 구현
-        executeWithTokens('STYLE_DETAIL_VIEW', async () => {
+        if (typeof executeWithTokens !== 'undefined') {
+            executeWithTokens('STYLE_DETAIL_VIEW', async () => {
+                this.showStyleDetailModal(styleData);
+            });
+        } else {
             this.showStyleDetailModal(styleData);
-        });
+        }
     }
     
     // 스타일 상세보기 모달
@@ -338,7 +346,7 @@ class MenuSystem {
             </div>
         `;
         
-        // 스타일 추가
+        // 스타일 추가 (한 번만 추가)
         if (!document.getElementById('style-detail-modal-styles')) {
             const styles = document.createElement('style');
             styles.id = 'style-detail-modal-styles';
@@ -514,25 +522,26 @@ class MenuSystem {
     
     // 스타일 추천
     async recommendStyle(styleId) {
-        await executeWithTokens('STYLE_RECOMMEND', async () => {
-            // 추천 로직 구현
-            console.log('스타일 추천:', styleId);
-            
-            if (typeof app !== 'undefined') {
-                app.showToast('스타일을 추천했습니다!', 'success');
-            }
-            
-            // Firebase에 추천 기록 저장
-            try {
-                await db.collection('recommendations').add({
-                    styleId: styleId,
-                    userId: authSystem.getCurrentUser()?.id,
-                    createdAt: new Date()
-                });
-            } catch (error) {
-                console.error('추천 저장 실패:', error);
-            }
-        });
+        if (typeof executeWithTokens !== 'undefined') {
+            await executeWithTokens('STYLE_RECOMMEND', async () => {
+                console.log('스타일 추천:', styleId);
+                
+                if (typeof app !== 'undefined') {
+                    app.showToast('스타일을 추천했습니다!', 'success');
+                }
+                
+                // Firebase에 추천 기록 저장
+                try {
+                    await db.collection('recommendations').add({
+                        styleId: styleId,
+                        userId: authSystem.getCurrentUser()?.id,
+                        createdAt: new Date()
+                    });
+                } catch (error) {
+                    console.error('추천 저장 실패:', error);
+                }
+            });
+        }
     }
     
     // 스타일 공유
