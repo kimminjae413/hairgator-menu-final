@@ -1,0 +1,284 @@
+/* HAIRGATOR - 3가지 테마 시스템 */
+
+/* ========== Google Fonts 불러오기 ========== */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css');
+
+/* ========== 테마 1: 고급 헤어샵용 (기존 다크 개선) ========== */
+[data-theme="luxury"] {
+    /* 배경 색상 */
+    --bg-primary: #000000;
+    --bg-secondary: #111111;
+    --bg-tertiary: #1a1a1a;
+    
+    /* 텍스트 색상 */
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --text-tertiary: #999999;
+    
+    /* 액센트 색상 */
+    --accent-gold: #d4af37;
+    --accent-platinum: #e5e4e2;
+    
+    /* 성별 색상 (고급스럽게) */
+    --male-color: #2c5aa0;
+    --female-color: #c41e3a;
+    
+    /* 테두리 & 구분선 */
+    --border-color: #333333;
+    --border-light: #444444;
+    
+    /* 그림자 */
+    --shadow-primary: rgba(212, 175, 55, 0.2);
+    --shadow-secondary: rgba(0, 0, 0, 0.8);
+    
+    /* 폰트 설정 */
+    --font-heading: 'Playfair Display', 'Cormorant Garamond', serif;
+    --font-body: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+    --font-ui: 'Inter', 'Helvetica Neue', sans-serif;
+}
+
+/* ========== 테마 2: 모던 미니멀용 ========== */
+[data-theme="minimal"] {
+    /* 배경 색상 */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #e9ecef;
+    
+    /* 텍스트 색상 */
+    --text-primary: #212529;
+    --text-secondary: #495057;
+    --text-tertiary: #6c757d;
+    
+    /* 액센트 색상 */
+    --accent-gold: #6c757d;
+    --accent-platinum: #495057;
+    
+    /* 성별 색상 (미니멀하게) */
+    --male-color: #0d6efd;
+    --female-color: #d63384;
+    
+    /* 테두리 & 구분선 */
+    --border-color: #dee2e6;
+    --border-light: #f1f3f4;
+    
+    /* 그림자 */
+    --shadow-primary: rgba(0, 0, 0, 0.1);
+    --shadow-secondary: rgba(0, 0, 0, 0.15);
+    
+    /* 폰트 설정 */
+    --font-heading: 'Inter', 'Helvetica Neue', sans-serif;
+    --font-body: 'Inter', 'Helvetica Neue', sans-serif;
+    --font-ui: 'Inter', 'Helvetica Neue', sans-serif;
+}
+
+/* ========== 테마 3: 따뜻한 프로페셔널용 ========== */
+[data-theme="warm"] {
+    /* 배경 색상 */
+    --bg-primary: #faf9f7;
+    --bg-secondary: #f5f3f0;
+    --bg-tertiary: #ede8e3;
+    
+    /* 텍스트 색상 */
+    --text-primary: #3c3c3c;
+    --text-secondary: #666666;
+    --text-tertiary: #999999;
+    
+    /* 액센트 색상 */
+    --accent-gold: #c7956d;
+    --accent-platinum: #b8860b;
+    
+    /* 성별 색상 (따뜻하게) */
+    --male-color: #4a7c59;
+    --female-color: #d2728b;
+    
+    /* 테두리 & 구분선 */
+    --border-color: #e0d5cc;
+    --border-light: #f0e6d2;
+    
+    /* 그림자 */
+    --shadow-primary: rgba(199, 149, 109, 0.15);
+    --shadow-secondary: rgba(0, 0, 0, 0.1);
+    
+    /* 폰트 설정 */
+    --font-heading: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+    --font-body: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+    --font-ui: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+}
+
+/* ========== 기본 테마 (고급 헤어샵용) ========== */
+:root {
+    --bg-primary: #000000;
+    --bg-secondary: #111111;
+    --bg-tertiary: #1a1a1a;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --text-tertiary: #999999;
+    --accent-gold: #d4af37;
+    --accent-platinum: #e5e4e2;
+    --male-color: #2c5aa0;
+    --female-color: #c41e3a;
+    --border-color: #333333;
+    --border-light: #444444;
+    --shadow-primary: rgba(212, 175, 55, 0.2);
+    --shadow-secondary: rgba(0, 0, 0, 0.8);
+    --font-heading: 'Playfair Display', 'Cormorant Garamond', serif;
+    --font-body: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+    --font-ui: 'Inter', 'Helvetica Neue', sans-serif;
+}
+
+/* ========== 폰트 적용 ========== */
+/* 헤딩 및 로고 */
+.logo,
+h1, h2, h3,
+.style-modal-name,
+.login-modal h2 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+}
+
+/* UI 요소 */
+button,
+input,
+.menu-btn,
+.tab,
+.sub-tab {
+    font-family: var(--font-ui);
+}
+
+/* 본문 텍스트 */
+body,
+p,
+.form-group label,
+.text-content {
+    font-family: var(--font-body);
+}
+
+/* ========== 테마별 특별 효과 ========== */
+
+/* 고급 헤어샵용 - 골드 글로우 효과 */
+[data-theme="luxury"] .gender-btn:hover,
+[data-theme="luxury"] .login-btn:hover {
+    box-shadow: 0 0 20px var(--shadow-primary);
+}
+
+[data-theme="luxury"] .logo {
+    background: linear-gradient(45deg, var(--accent-gold), var(--accent-platinum));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* 모던 미니멀용 - 클린한 그림자 */
+[data-theme="minimal"] .gender-btn:hover,
+[data-theme="minimal"] .login-btn:hover {
+    box-shadow: 0 8px 25px var(--shadow-primary);
+}
+
+[data-theme="minimal"] .sidebar {
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border-color);
+}
+
+/* 따뜻한 프로페셔널용 - 부드러운 효과 */
+[data-theme="warm"] .gender-btn:hover,
+[data-theme="warm"] .login-btn:hover {
+    box-shadow: 0 6px 20px var(--shadow-primary);
+}
+
+[data-theme="warm"] .login-modal {
+    background: var(--bg-secondary);
+    border: 2px solid var(--accent-gold);
+}
+
+/* ========== 테마 전환 버튼 ========== */
+.theme-selector {
+    position: fixed;
+    top: 20px;
+    left: 60px;
+    display: flex;
+    gap: 5px;
+    z-index: 1001;
+}
+
+.theme-btn {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-btn.luxury {
+    background: linear-gradient(45deg, #000000, #d4af37);
+}
+
+.theme-btn.minimal {
+    background: linear-gradient(45deg, #ffffff, #f8f9fa);
+    border-color: #dee2e6;
+}
+
+.theme-btn.warm {
+    background: linear-gradient(45deg, #faf9f7, #c7956d);
+    border-color: #e0d5cc;
+}
+
+.theme-btn.active {
+    transform: scale(1.2);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.theme-btn:hover {
+    transform: scale(1.1);
+}
+
+/* ========== 테마별 애니메이션 ========== */
+[data-theme="luxury"] * {
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+[data-theme="minimal"] * {
+    transition: all 0.2s ease;
+}
+
+[data-theme="warm"] * {
+    transition: all 0.3s ease-out;
+}
+
+/* ========== 반응형 테마 조정 ========== */
+@media (max-width: 768px) {
+    .theme-selector {
+        left: 50px;
+        gap: 3px;
+    }
+    
+    .theme-btn {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* ========== 다크모드 지원 (시스템 설정) ========== */
+@media (prefers-color-scheme: dark) {
+    [data-theme="minimal"] {
+        --bg-primary: #1a1a1a;
+        --bg-secondary: #2d2d2d;
+        --bg-tertiary: #3d3d3d;
+        --text-primary: #ffffff;
+        --text-secondary: #cccccc;
+        --text-tertiary: #999999;
+    }
+}
+
+/* ========== 테마 전환 애니메이션 ========== */
+html {
+    transition: background-color 0.3s ease;
+}
+
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
