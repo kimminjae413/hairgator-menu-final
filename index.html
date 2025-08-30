@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<!-- 카메라 권한 문제 해결: Permissions Policy 메타 태그 추가 -->
-<meta http-equiv="Permissions-Policy" content="camera=*, microphone=*, geolocation=*">
-<meta http-equiv="Feature-Policy" content="camera '*'; microphone '*'">
+    <!-- 카메라 권한 문제 해결: Permissions Policy 메타 태그 수정 -->
+    <meta http-equiv="Permissions-Policy" content="camera=*, microphone=*, geolocation=*">
 
-    <!-- 🚀 성능 최적화: DNS 프리페치 및 프리커넥트 -->
+    <!-- 성능 최적화: DNS 프리페치 및 프리커넥트 -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link rel="dns-prefetch" href="//www.gstatic.com">
@@ -16,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
 
-<title>HAIRGATOR - Professional Hair Style Menu</title>
+    <title>HAIRGATOR - Professional Hair Style Menu</title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000">
@@ -32,11 +31,9 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     
     <!-- 구글 폰트 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Firebase -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -492,7 +489,7 @@
             pointer-events: none;
         }
 
-        /* 🚀 스타일 그리드 - 태블릿 우선 최적화 + 이미지 로딩 최적화 */
+        /* 스타일 그리드 - 태블릿 우선 최적화 + 이미지 로딩 최적화 */
         .styles-container {
             padding: 20px;
             min-height: 50vh;
@@ -569,7 +566,7 @@
             transform: scale(0.98);
         }
 
-        /* 🚀 이미지 로딩 최적화: 스켈레톤과 그라데이션 동시 적용 */
+        /* 이미지 로딩 최적화: 스켈레톤과 그라데이션 동시 적용 */
         .style-image {
             width: 100%;
             height: 100%;
@@ -618,7 +615,7 @@
             margin-bottom: 20px;
         }
 
-        /* 🚀 로딩 스켈레톤 최적화 */
+        /* 로딩 스켈레톤 최적화 */
         .skeleton-card {
             background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
             background-size: 200% 100%;
@@ -1576,6 +1573,7 @@
     </style>
 </head>
 <body>
+    <!-- HTML 구조는 기존과 동일하게 유지 -->
     <!-- 헤더 -->
     <header class="header">
         <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
@@ -1815,7 +1813,7 @@
         </div>
     </main>
 
-    <!-- Firebase 설정 -->
+    <!-- =============== Firebase 설정 및 초기화 (최우선) =============== -->
     <script>
         // Firebase 설정
         const firebaseConfig = {
@@ -1847,19 +1845,19 @@
 
         console.log('✅ Firebase 초기화 완료');
         
-        // ===== 전역 변수 선언 (window 객체에 할당하여 확실한 전역 접근 보장) =====
-        window.currentDesigner = null;           // 현재 로그인된 디자이너 정보
-        window.currentSessionId = null;          // 현재 세션 ID
-        window.currentStyleData = null;          // 현재 선택된 스타일 데이터
-        window.currentGender = null;             // 현재 선택된 성별
-        window.currentCategory = null;           // 현재 선택된 카테고리
-        window.currentSubcategory = null;        // 현재 선택된 서브카테고리
-        window.heartbeatInterval = null;         // 하트비트 인터벌
+        // 전역 변수 선언
+        window.currentDesigner = null;
+        window.currentSessionId = null;          
+        window.currentStyleData = null;          
+        window.currentGender = null;             
+        window.currentCategory = null;           
+        window.currentSubcategory = null;        
+        window.heartbeatInterval = null;         
         
         // 캐시용 Map 객체들
-        window.availableSubcategories = new Map(); // 서브카테고리 캐시
+        window.availableSubcategories = new Map();
         
-        // 호환성을 위한 let 선언 (기존 코드 호환)
+        // 호환성을 위한 let 선언
         let currentDesigner = window.currentDesigner;
         let currentSessionId = window.currentSessionId;
         let currentStyleData = window.currentStyleData;
@@ -1869,20 +1867,56 @@
         const availableSubcategories = window.availableSubcategories;
     </script>
 
-    <!-- 외부 스크립트들 로드 -->
-    <script src="js/token-system.js"></script>
-    <script src="js/akool-service.js"></script>
-    <script src="js/menu.js"></script>
+    <!-- Firebase 초기화 후 외부 스크립트들 순차 로드 -->
+    <script>
+        // 스크립트 동적 로드 함수 (Firebase 초기화 완료 후)
+        function loadExternalScripts() {
+            return new Promise((resolve, reject) => {
+                const scripts = [
+                    'js/token-system.js',
+                    'js/akool-service.js', 
+                    'js/menu.js'
+                ];
+                
+                let loadedCount = 0;
+                
+                scripts.forEach((src, index) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = () => {
+                        console.log(`✅ 스크립트 로드 완료: ${src}`);
+                        loadedCount++;
+                        if (loadedCount === scripts.length) {
+                            resolve();
+                        }
+                    };
+                    script.onerror = () => {
+                        console.error(`❌ 스크립트 로드 실패: ${src}`);
+                        reject(new Error(`Failed to load ${src}`));
+                    };
+                    document.head.appendChild(script);
+                });
+            });
+        }
+
+        // Firebase 초기화 완료 후 다른 스크립트들 로드
+        loadExternalScripts().then(() => {
+            console.log('✅ 모든 스크립트 로드 완료');
+        }).catch((error) => {
+            console.error('❌ 스크립트 로드 오류:', error);
+            showToast('시스템 초기화 중 오류가 발생했습니다.', 'error');
+        });
+    </script>
 
     <script>
-        // index.html 전용 변수들 (window와 분리된 로컬 변수들)
+        // index.html 전용 변수들
         let cameraStream = null;
         let cameraVideo = null;
         let cameraCanvas = null;
         let cameraContext = null;
         
         // NEW 시스템용 타임스탬프
-        const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
+        const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000);
 
         // 메뉴 데이터 정의
         const MENU_DATA = {
@@ -1913,7 +1947,7 @@
             }
         };
 
-        // DOM 요소
+        // DOM 요소들
         const loginScreen = document.getElementById('loginScreen');
         const genderSelection = document.getElementById('genderSelection');
         const menuContainer = document.getElementById('menuContainer');
@@ -1938,9 +1972,7 @@
         const closeCameraBtn = document.getElementById('closeCameraBtn');
         const captureBtn = document.getElementById('captureBtn');
 
-        // 🔥 스마트 필터링 & NEW 표시 시스템
-        
-        // 사용 가능한 서브카테고리 & NEW 아이템 확인
+        // 스마트 필터링 & NEW 표시 시스템
         async function checkSubcategoriesAndNew(gender, categoryName) {
             const cacheKey = `${gender}-${categoryName}`;
             
@@ -1961,7 +1993,6 @@
                     const data = doc.data();
                     availableSubs.add(data.subCategory);
                     
-                    // 7일 이내 생성된 아이템인지 확인
                     const createdAt = data.createdAt?.toDate?.() || new Date(0);
                     if (createdAt.getTime() > newItemsTimestamp) {
                         newCounts[data.subCategory] = (newCounts[data.subCategory] || 0) + 1;
@@ -1973,9 +2004,7 @@
                     newCounts: newCounts
                 };
                 
-                // 캐시에 저장
                 availableSubcategories.set(cacheKey, result);
-                
                 console.log(`✅ 서브카테고리 확인 완료: ${categoryName}`, result);
                 return result;
                 
@@ -1988,22 +2017,18 @@
             }
         }
 
-        // NEW 표시 빨간 점 생성
         function createNewIndicator() {
             const indicator = document.createElement('div');
             indicator.className = 'new-indicator';
             return indicator;
         }
 
-        // 🎥 카메라 기능들
-        
-        // 카메라 초기화
+        // 카메라 기능들
         async function initCamera() {
             try {
-                // 카메라 스트림 요청
                 cameraStream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: 'user', // 전면 카메라 우선
+                        facingMode: 'user',
                         width: { ideal: 400 },
                         height: { ideal: 300 }
                     }
@@ -2013,10 +2038,7 @@
                 cameraCanvas = document.getElementById('cameraCanvas');
                 cameraContext = cameraCanvas.getContext('2d');
 
-                // 비디오에 스트림 연결
                 cameraVideo.srcObject = cameraStream;
-                
-                // 카메라 모달 표시
                 cameraModal.classList.add('active');
                 document.body.style.overflow = 'hidden';
 
@@ -2038,7 +2060,6 @@
             }
         }
 
-        // 카메라 종료
         function stopCamera() {
             if (cameraStream) {
                 cameraStream.getTracks().forEach(track => track.stop());
@@ -2055,7 +2076,6 @@
             console.log('✅ 카메라 종료');
         }
 
-        // 사진 촬영
         function capturePhoto() {
             if (!cameraVideo || !cameraCanvas || !cameraContext) {
                 showToast('카메라가 준비되지 않았습니다', 'error');
@@ -2063,29 +2083,20 @@
             }
 
             try {
-                // 캔버스 크기를 비디오 크기에 맞춤
                 cameraCanvas.width = cameraVideo.videoWidth;
                 cameraCanvas.height = cameraVideo.videoHeight;
 
-                // 비디오 프레임을 캔버스에 그리기
                 cameraContext.drawImage(cameraVideo, 0, 0);
 
-                // 캔버스를 Blob으로 변환
                 cameraCanvas.toBlob(function(blob) {
-                    // File 객체 생성
                     const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
-                    
-                    // FileList 생성 (파일 입력과 동일한 형태)
                     const dataTransfer = new DataTransfer();
                     dataTransfer.items.add(file);
                     aiFileInput.files = dataTransfer.files;
                     
-                    // 파일 변경 이벤트 발생
                     aiFileInput.dispatchEvent(new Event('change'));
                     
-                    // 카메라 종료
                     stopCamera();
-                    
                     showToast('사진이 촬영되었습니다', 'success');
                     
                 }, 'image/jpeg', 0.8);
@@ -2101,7 +2112,7 @@
             constructor() {
                 this.sessionCollectionName = 'designer_sessions';
                 this.designerCollectionName = 'designers';
-                this.sessionTimeout = 24 * 60 * 60 * 1000; // 24시간
+                this.sessionTimeout = 24 * 60 * 60 * 1000;
             }
 
             generateSessionId() {
@@ -2280,7 +2291,6 @@
             }
         }
 
-        // Firebase 인증 인스턴스
         const firebaseAuth = new FirebaseAuth();
 
         // 유틸리티 함수들
@@ -2353,63 +2363,52 @@
 
         // 퍼스널 컬러 모달 열기
         function openPersonalColorModal() {
-            console.log('=== 퍼스널 컬러 모달 디버깅 시작 ===');
+            console.log('퍼스널 컬러 모달 열기');
             
-            // 기존 모달이 있으면 먼저 제거
             const existingModal = document.getElementById('personalColorModal');
             if (existingModal && existingModal.parentNode) {
                 existingModal.parentNode.removeChild(existingModal);
-                console.log('기존 모달 제거됨');
             }
             
-            // HTML에서 퍼스널 컬러 모달 찾기 (HTML에 정의된 모달 사용)
             let modal = document.getElementById('personalColorModal');
             
-            // 모달이 없으면 (제거되었으면) 새로 생성
             if (!modal) {
                 modal = document.createElement('div');
                 modal.id = 'personalColorModal';
                 modal.className = 'personal-color-modal';
                 modal.innerHTML = `
-            <div class="personal-color-content">
-                <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
-                
-                <iframe 
-                    id="personalColorFrame" 
-                    src="./personal-color/index.html" 
-                    style="width: 100%; height: 100%; border: none; background: #111;"
-                    allow="camera; microphone"
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
-                ></iframe>
-            </div>
-        `;
+                    <div class="personal-color-content">
+                        <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
+                        <iframe 
+                            id="personalColorFrame" 
+                            src="./personal-color/index.html" 
+                            style="width: 100%; height: 100%; border: none; background: #111;"
+                            allow="camera; microphone"
+                            sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
+                        ></iframe>
+                    </div>
+                `;
                 document.body.appendChild(modal);
-                console.log('새 모달 생성됨');
             }
             
-            // 모달 표시
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
-            console.log('퍼스널 컬러 iframe 로드 완료');
         }
                
-        // 퍼스널 컬러 모달 닫기
         function closePersonalColorModal() {
             const modal = document.getElementById('personalColorModal');
             if (modal) {
                 modal.classList.remove('active');
                 document.body.style.overflow = '';
                 
-                // 모달 완전 제거하여 배경색 잔여 효과 방지
                 setTimeout(() => {
                     if (modal.parentNode) {
                         modal.parentNode.removeChild(modal);
                     }
-                }, 300); // 애니메이션 시간 후 제거
+                }, 300);
             }
         }
 
-        // 공유 함수들
         function fallbackShare(imageUrl) {
             navigator.clipboard.writeText(imageUrl).then(() => {
                 showToast('이미지 URL이 클립보드에 복사되었습니다', 'success');
@@ -2435,7 +2434,6 @@
                 return;
             }
 
-            // 스타일 이미지 미리 설정
             stylePhoto.src = window.currentStyleData.imageUrl || '';
             
             aiExperienceModal.classList.add('active');
@@ -2448,7 +2446,6 @@
             aiExperienceModal.classList.remove('active');
             document.body.style.overflow = '';
             
-            // 초기화
             aiFileInput.value = '';
             aiPreviewArea.style.display = 'none';
             aiProcessing.style.display = 'none';
@@ -2470,30 +2467,26 @@
             }
 
             try {
-                // UI 상태 변경
                 processAIBtn.disabled = true;
                 aiProcessing.style.display = 'block';
                 
-                // 토큰 차감 (executeWithTokens 사용)
+                // executeWithTokens 함수가 로드되었는지 확인
+                if (typeof executeWithTokens !== 'function') {
+                    showToast('토큰 시스템이 로드되지 않았습니다. 잠시 후 다시 시도해주세요.', 'error');
+                    return;
+                }
+                
                 const result = await executeWithTokens('AI_FACE_ANALYSIS', async () => {
-                    // AKOOL 서비스 호출
                     const userImageFile = aiFileInput.files[0];
                     const styleImageUrl = window.currentStyleData.imageUrl;
                     
-                    console.log('AKOOL AI 처리 시작:', {
-                        styleUrl: styleImageUrl,
-                        styleName: window.currentStyleData.name
-                    });
-
-                    // AKOOL Face Swap 호출
-                    const swapResult = await window.akoolService.faceSwap(
-                        userImageFile, 
-                        styleImageUrl
-                    );
-
-                    // 결과 검증 및 처리
+                    if (!window.akoolService) {
+                        throw new Error('AKOOL 서비스가 로드되지 않았습니다');
+                    }
+                    
+                    const swapResult = await window.akoolService.faceSwap(userImageFile, styleImageUrl);
+                    
                     if (swapResult && swapResult.success) {
-                        console.log('AKOOL AI 처리 완료:', swapResult.imageUrl);
                         return swapResult.imageUrl;
                     } else {
                         throw new Error(swapResult ? swapResult.error : 'Face Swap 처리 실패');
@@ -2501,14 +2494,10 @@
                 });
 
                 if (result) {
-                    // 성공 - 결과 표시
                     showToast('AI 처리가 완료되었습니다!', 'success');
                     showAIResult(result);
                     
-                    // 토큰 잔액 업데이트
                     updateUserInfo();
-                    
-                    // AI 체험 모달 닫기
                     closeAIExperience();
                 }
             } catch (error) {
@@ -2521,25 +2510,23 @@
             }
         }
 
-        // AI 결과 표시 함수
         function showAIResult(resultImageUrl) {
-            // 결과 모달 생성
             const resultModal = document.createElement('div');
             resultModal.className = 'ai-result-modal';
             resultModal.innerHTML = `
                 <div class="ai-result-content">
                     <div class="ai-result-header">
-                        <h3>🎉 AI 스타일 체험 결과</h3>
+                        <h3>AI 스타일 체험 결과</h3>
                         <button class="ai-result-close" onclick="this.closest('.ai-result-modal').remove()">×</button>
                     </div>
                     <div class="ai-result-body">
                         <img src="${resultImageUrl}" alt="AI 결과" class="ai-result-image">
                         <div class="ai-result-actions">
                             <button class="ai-btn primary" onclick="downloadAIResult('${resultImageUrl}')">
-                                💾 다운로드
+                                다운로드
                             </button>
                             <button class="ai-btn secondary" onclick="shareAIResult('${resultImageUrl}')">
-                                📤 공유하기
+                                공유하기
                             </button>
                         </div>
                     </div>
@@ -2548,11 +2535,8 @@
             
             document.body.appendChild(resultModal);
             document.body.style.overflow = 'hidden';
-            
-            console.log('AI 결과 모달 표시:', resultImageUrl);
         }
 
-        // AI 결과 다운로드
         function downloadAIResult(imageUrl) {
             try {
                 const link = document.createElement('a');
@@ -2570,7 +2554,6 @@
             }
         }
 
-        // AI 결과 공유
         function shareAIResult(imageUrl) {
             if (navigator.share) {
                 navigator.share({
@@ -2588,7 +2571,307 @@
             }
         }
 
-        // 전화번호 입력 시 실시간 포맷팅
+        // 나머지 메뉴 시스템 함수들 (기존과 동일)
+        function selectGender(gender) {
+            currentGender = gender;
+            
+            genderSelection.style.display = 'none';
+            menuContainer.classList.add('active');
+            
+            loadMenuData(gender);
+        }
+
+        async function loadMenuData(gender) {
+            const menuData = MENU_DATA[gender];
+            
+            renderCategories(gender, menuData.categories);
+            
+            if (menuData.categories.length > 0) {
+                const firstCategory = menuData.categories[0];
+                currentCategory = firstCategory;
+                
+                const subInfo = await checkSubcategoriesAndNew(gender, firstCategory.name);
+                
+                renderSmartSubcategories(gender, menuData.subcategories, subInfo);
+                
+                const firstAvailableSub = subInfo.available[0] || 'None';
+                currentSubcategory = firstAvailableSub;
+                loadStyles(firstCategory.name, firstAvailableSub, gender);
+            }
+            
+            console.log(`✅ ${gender} 메뉴 로드 완료`);
+        }
+
+        function renderCategories(gender, categories) {
+            const categoryTabs = document.getElementById('categoryTabs');
+            categoryTabs.innerHTML = '';
+            
+            categories.forEach((category, index) => {
+                const tab = document.createElement('button');
+                tab.className = 'category-tab';
+                tab.textContent = category.name;
+                tab.dataset.categoryId = category.id;
+                
+                if (index === 0) {
+                    tab.classList.add('active', gender);
+                }
+                
+                tab.addEventListener('click', () => selectCategory(category, gender));
+                categoryTabs.appendChild(tab);
+                
+                setTimeout(async () => {
+                    const subInfo = await checkSubcategoriesAndNew(gender, category.name);
+                    const hasNewItems = Object.keys(subInfo.newCounts).length > 0;
+                    
+                    if (hasNewItems && !tab.querySelector('.new-indicator')) {
+                        tab.appendChild(createNewIndicator());
+                    }
+                }, 100);
+            });
+            
+            console.log(`✅ ${categories.length}개 카테고리 렌더링 완료`);
+        }
+
+        function renderSmartSubcategories(gender, allSubcategories, subInfo) {
+            const subTabs = document.getElementById('subTabs');
+            subTabs.innerHTML = '';
+            
+            allSubcategories.forEach((subcategory, index) => {
+                const tab = document.createElement('button');
+                tab.className = 'sub-tab';
+                tab.textContent = subcategory;
+                tab.dataset.subcategory = subcategory;
+                
+                const isAvailable = subInfo.available.includes(subcategory);
+                
+                if (!isAvailable) {
+                    tab.classList.add('disabled');
+                } else {
+                    if (index === 0 || (!document.querySelector('.sub-tab.active') && isAvailable)) {
+                        tab.classList.add('active', gender);
+                        currentSubcategory = subcategory;
+                    }
+                    
+                    const newCount = subInfo.newCounts[subcategory];
+                    if (newCount && newCount > 0) {
+                        tab.appendChild(createNewIndicator());
+                    }
+                    
+                    tab.addEventListener('click', () => selectSubcategory(subcategory, gender));
+                }
+                
+                subTabs.appendChild(tab);
+            });
+            
+            console.log(`✅ 스마트 서브카테고리 렌더링 완료 (사용가능: ${subInfo.available.length}/${allSubcategories.length})`);
+        }
+
+        async function selectCategory(category, gender) {
+            currentCategory = category;
+            
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active', 'male', 'female');
+                if (tab.dataset.categoryId === category.id) {
+                    tab.classList.add('active', gender);
+                }
+            });
+            
+            const subInfo = await checkSubcategoriesAndNew(gender, category.name);
+            const menuData = MENU_DATA[gender];
+            
+            renderSmartSubcategories(gender, menuData.subcategories, subInfo);
+            
+            const firstAvailableSub = subInfo.available[0] || 'None';
+            currentSubcategory = firstAvailableSub;
+            loadStyles(category.name, firstAvailableSub, gender);
+        }
+
+        function selectSubcategory(subcategory, gender) {
+            currentSubcategory = subcategory;
+            
+            document.querySelectorAll('.sub-tab').forEach(tab => {
+                if (!tab.classList.contains('disabled')) {
+                    tab.classList.remove('active', 'male', 'female');
+                    if (tab.dataset.subcategory === subcategory) {
+                        tab.classList.add('active', gender);
+                    }
+                }
+            });
+            
+            if (currentCategory) {
+                loadStyles(currentCategory.name, subcategory, gender);
+            }
+        }
+
+        async function loadStyles(categoryName, subcategory, gender) {
+            const stylesGrid = document.getElementById('stylesGrid');
+            
+            showSkeletonCards();
+            
+            try {
+                const snapshot = await db.collection('hairstyles')
+                    .where('gender', '==', gender)
+                    .where('mainCategory', '==', categoryName)
+                    .where('subCategory', '==', subcategory)
+                    .get();
+                
+                stylesGrid.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    stylesGrid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div style="font-size: 18px;">등록된 스타일이 없습니다</div>
+                            <div style="font-size: 14px; color: #666; margin-top: 10px;">${categoryName} - ${subcategory}</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const fragment = document.createDocumentFragment();
+                
+                snapshot.forEach(doc => {
+                    const style = doc.data();
+                    const card = createStyleCard(style, doc.id);
+                    fragment.appendChild(card);
+                });
+                
+                stylesGrid.appendChild(fragment);
+                
+            } catch (error) {
+                console.error('스타일 로드 오류:', error);
+                showErrorState(error.message);
+            }
+        }
+
+        function createStyleCard(style, docId) {
+            const card = document.createElement('div');
+            card.className = 'style-card';
+            
+            const img = document.createElement('img');
+            img.className = 'style-image';
+            img.alt = style.name || 'Style';
+            img.loading = 'lazy';
+            
+            img.onload = function() {
+                this.classList.add('loaded');
+            };
+            
+            img.onerror = function() {
+                this.classList.add('loaded');
+                this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                this.style.display = 'block';
+            };
+            
+            setTimeout(() => {
+                img.src = style.imageUrl || '';
+            }, Math.random() * 50);
+            
+            card.appendChild(img);
+            
+            const createdAt = style.createdAt?.toDate?.() || new Date(0);
+            const isNew = createdAt.getTime() > newItemsTimestamp;
+            
+            if (isNew) {
+                const newIndicator = createNewIndicator();
+                card.appendChild(newIndicator);
+            }
+            
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    card.style.transform = '';
+                }, 150);
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                
+                openStyleModal(style, docId);
+                
+            }, { passive: false });
+            
+            return card;
+        }
+
+        function openStyleModal(style, docId) {
+            window.currentStyleData = style;
+            currentStyleData = window.currentStyleData;
+            
+            const modal = document.getElementById('styleModal');
+            const modalImage = document.getElementById('styleModalImage');
+            const modalCode = document.getElementById('styleModalCode');
+            const modalName = document.getElementById('styleModalName');
+            const modalCategory = document.getElementById('styleModalCategory');
+            const modalSubcategory = document.getElementById('styleModalSubcategory');
+            const modalGender = document.getElementById('styleModalGender');
+            const aiExperienceBtn = document.getElementById('aiExperienceBtn');
+            
+            modalImage.src = style.imageUrl || '';
+            modalImage.onerror = function() {
+                this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                this.style.display = 'block';
+            };
+            
+            modalCode.textContent = style.code || 'NO CODE';
+            modalName.textContent = style.name || '이름 없음';
+            modalCategory.textContent = style.mainCategory || '-';
+            modalSubcategory.textContent = style.subCategory || '-';
+            modalGender.textContent = style.gender === 'male' ? '남성' : style.gender === 'female' ? '여성' : '-';
+            
+            if (window.currentDesigner && window.currentDesigner.tokens >= 5) {
+                aiExperienceBtn.disabled = false;
+                aiExperienceBtn.style.opacity = '1';
+            } else {
+                aiExperienceBtn.disabled = true;
+                aiExperienceBtn.style.opacity = '0.6';
+            }
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeStyleModal() {
+            const modal = document.getElementById('styleModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            window.currentStyleData = null;
+            currentStyleData = null;
+        }
+
+        function showSkeletonCards() {
+            const stylesGrid = document.getElementById('stylesGrid');
+            stylesGrid.innerHTML = '';
+            
+            const fragment = document.createDocumentFragment();
+            const count = window.innerWidth <= 767 ? 8 : 15;
+            
+            for (let i = 0; i < count; i++) {
+                const skeleton = document.createElement('div');
+                skeleton.className = 'skeleton-card';
+                fragment.appendChild(skeleton);
+            }
+            
+            stylesGrid.appendChild(fragment);
+        }
+
+        function showErrorState(message) {
+            const stylesGrid = document.getElementById('stylesGrid');
+            stylesGrid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <div style="font-size: 18px;">로드 실패</div>
+                    <div style="font-size: 14px; color: #666; margin-top: 10px;">${message}</div>
+                    <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: var(--female-color); color: white; border: none; border-radius: 5px; cursor: pointer;">새로고침</button>
+                </div>
+            `;
+        }
+
+        // 이벤트 리스너들
         document.getElementById('phoneNumber').addEventListener('input', function(e) {
             const input = e.target;
             const cursorPos = input.selectionStart;
@@ -2604,38 +2887,23 @@
         });
 
         // 카메라 및 파일 업로드 이벤트
-        cameraBtn.addEventListener('click', function() {
-            initCamera();
-        });
+        cameraBtn.addEventListener('click', initCamera);
+        galleryBtn.addEventListener('click', () => aiFileInput.click());
+        closeCameraBtn.addEventListener('click', stopCamera);
+        captureBtn.addEventListener('click', capturePhoto);
 
-        galleryBtn.addEventListener('click', function() {
-            aiFileInput.click();
-        });
-
-        closeCameraBtn.addEventListener('click', function() {
-            stopCamera();
-        });
-
-        captureBtn.addEventListener('click', function() {
-            capturePhoto();
-        });
-
-        // 기존 파일 업로드 이벤트 (갤러리용)
-        aiUploadArea.addEventListener('click', () => {
-            aiFileInput.click();
-        });
+        // 파일 업로드 이벤트
+        aiUploadArea.addEventListener('click', () => aiFileInput.click());
 
         aiFileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            // 파일 크기 체크 (10MB)
             if (file.size > 10 * 1024 * 1024) {
                 showToast('파일 크기는 10MB 이하여야 합니다', 'error');
                 return;
             }
 
-            // 이미지 미리보기
             const reader = new FileReader();
             reader.onload = function(e) {
                 userPhoto.src = e.target.result;
@@ -2643,11 +2911,9 @@
                 processAIBtn.disabled = false;
             };
             reader.readAsDataURL(file);
-            
-            console.log('파일 업로드 완료:', file.name);
         });
 
-        // 드래그 앤 드롭 지원
+        // 드래그 앤 드롭
         aiUploadArea.addEventListener('dragover', function(e) {
             e.preventDefault();
             aiUploadArea.classList.add('dragging');
@@ -2723,369 +2989,9 @@
             }
         }
 
-        // 성별 선택
-        function selectGender(gender) {
-            currentGender = gender;
-            
-            genderSelection.style.display = 'none';
-            menuContainer.classList.add('active');
-            
-            loadMenuData(gender);
-        }
-
-        // 메뉴 데이터 로드 (스마트 필터링 적용)
-        async function loadMenuData(gender) {
-            const menuData = MENU_DATA[gender];
-            
-            // 카테고리 탭 즉시 렌더링
-            renderCategories(gender, menuData.categories);
-            
-            // 첫 번째 카테고리 선택 및 스마트 필터링 적용
-            if (menuData.categories.length > 0) {
-                const firstCategory = menuData.categories[0];
-                currentCategory = firstCategory;
-                
-                // 해당 카테고리의 서브카테고리 정보 확인
-                const subInfo = await checkSubcategoriesAndNew(gender, firstCategory.name);
-                
-                // 스마트 필터링된 서브카테고리 렌더링
-                renderSmartSubcategories(gender, menuData.subcategories, subInfo);
-                
-                // 첫 번째 사용 가능한 서브카테고리로 스타일 로드
-                const firstAvailableSub = subInfo.available[0] || 'None';
-                currentSubcategory = firstAvailableSub;
-                loadStyles(firstCategory.name, firstAvailableSub, gender);
-            }
-            
-            console.log(`✅ ${gender} 메뉴 로드 완료`);
-        }
-
-        // 카테고리 탭 렌더링 (NEW 표시는 백그라운드에서 추가)
-        function renderCategories(gender, categories) {
-            const categoryTabs = document.getElementById('categoryTabs');
-            categoryTabs.innerHTML = '';
-            
-            categories.forEach((category, index) => {
-                const tab = document.createElement('button');
-                tab.className = 'category-tab';
-                tab.textContent = category.name;
-                tab.dataset.categoryId = category.id;
-                
-                if (index === 0) {
-                    tab.classList.add('active', gender);
-                }
-                
-                tab.addEventListener('click', () => selectCategory(category, gender));
-                categoryTabs.appendChild(tab);
-                
-                // 백그라운드에서 NEW 표시 확인 및 추가
-                setTimeout(async () => {
-                    const subInfo = await checkSubcategoriesAndNew(gender, category.name);
-                    const hasNewItems = Object.keys(subInfo.newCounts).length > 0;
-                    
-                    if (hasNewItems && !tab.querySelector('.new-indicator')) {
-                        tab.appendChild(createNewIndicator());
-                    }
-                }, 100);
-            });
-            
-            console.log(`✅ ${categories.length}개 카테고리 렌더링 완료`);
-        }
-
-        // 스마트 서브카테고리 렌더링 (필터링 + NEW 표시)
-        function renderSmartSubcategories(gender, allSubcategories, subInfo) {
-            const subTabs = document.getElementById('subTabs');
-            subTabs.innerHTML = '';
-            
-            allSubcategories.forEach((subcategory, index) => {
-                const tab = document.createElement('button');
-                tab.className = 'sub-tab';
-                tab.textContent = subcategory;
-                tab.dataset.subcategory = subcategory;
-                
-                // 사용 가능한 서브카테고리인지 확인
-                const isAvailable = subInfo.available.includes(subcategory);
-                
-                if (!isAvailable) {
-                    tab.classList.add('disabled');
-                } else {
-                    // 첫 번째 사용 가능한 서브카테고리를 활성화
-                    if (index === 0 || (!document.querySelector('.sub-tab.active') && isAvailable)) {
-                        tab.classList.add('active', gender);
-                        currentSubcategory = subcategory;
-                    }
-                    
-                    // NEW 표시 추가
-                    const newCount = subInfo.newCounts[subcategory];
-                    if (newCount && newCount > 0) {
-                        tab.appendChild(createNewIndicator());
-                    }
-                    
-                    tab.addEventListener('click', () => selectSubcategory(subcategory, gender));
-                }
-                
-                subTabs.appendChild(tab);
-            });
-            
-            console.log(`✅ 스마트 서브카테고리 렌더링 완료 (사용가능: ${subInfo.available.length}/${allSubcategories.length})`);
-        }
-
-        // 카테고리 선택 (스마트 필터링 적용)
-        async function selectCategory(category, gender) {
-            currentCategory = category;
-            
-            // 탭 활성화 상태 업데이트
-            document.querySelectorAll('.category-tab').forEach(tab => {
-                tab.classList.remove('active', 'male', 'female');
-                if (tab.dataset.categoryId === category.id) {
-                    tab.classList.add('active', gender);
-                }
-            });
-            
-            // 해당 카테고리의 서브카테고리 정보 확인
-            const subInfo = await checkSubcategoriesAndNew(gender, category.name);
-            const menuData = MENU_DATA[gender];
-            
-            // 스마트 필터링된 서브카테고리 렌더링
-            renderSmartSubcategories(gender, menuData.subcategories, subInfo);
-            
-            // 첫 번째 사용 가능한 서브카테고리로 스타일 로드
-            const firstAvailableSub = subInfo.available[0] || 'None';
-            currentSubcategory = firstAvailableSub;
-            loadStyles(category.name, firstAvailableSub, gender);
-            
-            console.log(`✅ 카테고리 선택: ${category.name} (사용가능한 서브: ${subInfo.available.length}개)`);
-        }
-
-        // 서브카테고리 선택
-        function selectSubcategory(subcategory, gender) {
-            currentSubcategory = subcategory;
-            
-            // 탭 활성화 상태 업데이트
-            document.querySelectorAll('.sub-tab').forEach(tab => {
-                if (!tab.classList.contains('disabled')) {
-                    tab.classList.remove('active', 'male', 'female');
-                    if (tab.dataset.subcategory === subcategory) {
-                        tab.classList.add('active', gender);
-                    }
-                }
-            });
-            
-            // 스타일 로드
-            if (currentCategory) {
-                loadStyles(currentCategory.name, subcategory, gender);
-            }
-            
-            console.log(`✅ 서브카테고리 선택: ${subcategory}`);
-        }
-
-        // 스타일 로드 (NEW 표시 포함) - 🚀 이미지 로딩 최적화 적용
-        async function loadStyles(categoryName, subcategory, gender) {
-            const stylesGrid = document.getElementById('stylesGrid');
-            
-            // 로딩 스켈레톤 표시
-            showSkeletonCards();
-            
-            try {
-                const snapshot = await db.collection('hairstyles')
-                    .where('gender', '==', gender)
-                    .where('mainCategory', '==', categoryName)
-                    .where('subCategory', '==', subcategory)
-                    .get();
-                
-                stylesGrid.innerHTML = '';
-                
-                if (snapshot.empty) {
-                    stylesGrid.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">📭</div>
-                            <div style="font-size: 18px;">등록된 스타일이 없습니다</div>
-                            <div style="font-size: 14px; color: #666; margin-top: 10px;">${categoryName} - ${subcategory}</div>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                const fragment = document.createDocumentFragment();
-                
-                snapshot.forEach(doc => {
-                    const style = doc.data();
-                    const card = createStyleCard(style, doc.id);
-                    fragment.appendChild(card);
-                });
-                
-                stylesGrid.appendChild(fragment);
-                
-                console.log(`✅ ${snapshot.size}개 스타일 로드 완료: ${categoryName} - ${subcategory}`);
-                
-            } catch (error) {
-                console.error('스타일 로드 오류:', error);
-                showErrorState(error.message);
-            }
-        }
-
-        // 🚀 스타일 카드 생성 (NEW 표시 포함) + 이미지 로딩 최적화
-        function createStyleCard(style, docId) {
-            const card = document.createElement('div');
-            card.className = 'style-card';
-            
-            // 이미지 먼저 생성
-            const img = document.createElement('img');
-            img.className = 'style-image';
-            img.alt = style.name || 'Style';
-            img.loading = 'lazy';
-            
-            // 🚀 이미지 로딩 최적화: 로드 완료 시 클래스 추가
-            img.onload = function() {
-                this.classList.add('loaded');
-            };
-            
-            img.onerror = function() {
-                this.classList.add('loaded');
-                this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                this.style.display = 'block';
-            };
-            
-            // 🚀 이미지 URL 설정 (지연 설정으로 성능 향상)
-            setTimeout(() => {
-                img.src = style.imageUrl || '';
-            }, Math.random() * 50); // 약간의 랜덤 지연으로 동시 요청 방지
-            
-            card.appendChild(img);
-            
-            // NEW 표시 (7일 이내 등록된 경우)
-            const createdAt = style.createdAt?.toDate?.() || new Date(0);
-            const isNew = createdAt.getTime() > newItemsTimestamp;
-            
-            if (isNew) {
-                const newIndicator = createNewIndicator();
-                card.appendChild(newIndicator);
-            }
-            
-            // 클릭 이벤트 - 모달 열기
-            card.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // 시각적 피드백
-                card.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    card.style.transform = '';
-                }, 150);
-                
-                // 햅틱 피드백 (모바일)
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-                
-                console.log('스타일 클릭됨:', { 
-                    code: style.code || 'NO_CODE', 
-                    name: style.name || 'NO_NAME',
-                    docId: docId 
-                });
-                
-                // 스타일 상세 모달 열기
-                openStyleModal(style, docId);
-                
-            }, { passive: false });
-            
-            return card;
-        }
-
-        // 스타일 상세 모달 열기
-        function openStyleModal(style, docId) {
-            // 현재 스타일 데이터 저장 (AI 체험용) - window 객체에 저장
-            window.currentStyleData = style;
-            currentStyleData = window.currentStyleData;
-            
-            const modal = document.getElementById('styleModal');
-            const modalImage = document.getElementById('styleModalImage');
-            const modalCode = document.getElementById('styleModalCode');
-            const modalName = document.getElementById('styleModalName');
-            const modalCategory = document.getElementById('styleModalCategory');
-            const modalSubcategory = document.getElementById('styleModalSubcategory');
-            const modalGender = document.getElementById('styleModalGender');
-            const aiExperienceBtn = document.getElementById('aiExperienceBtn');
-            
-            // 모달 정보 설정
-            modalImage.src = style.imageUrl || '';
-            modalImage.onerror = function() {
-                this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                this.style.display = 'block';
-            };
-            
-            modalCode.textContent = style.code || 'NO CODE';
-            modalName.textContent = style.name || '이름 없음';
-            modalCategory.textContent = style.mainCategory || '-';
-            modalSubcategory.textContent = style.subCategory || '-';
-            modalGender.textContent = style.gender === 'male' ? '남성' : style.gender === 'female' ? '여성' : '-';
-            
-            // AI 버튼 상태 업데이트
-            if (window.currentDesigner && window.currentDesigner.tokens >= 5) {
-                aiExperienceBtn.disabled = false;
-                aiExperienceBtn.style.opacity = '1';
-            } else {
-                aiExperienceBtn.disabled = true;
-                aiExperienceBtn.style.opacity = '0.6';
-            }
-            
-            // 모달 표시
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            
-            console.log('스타일 모달 열림:', { 
-                code: style.code, 
-                name: style.name,
-                category: style.mainCategory,
-                subcategory: style.subCategory,
-                currentStyleData: window.currentStyleData
-            });
-        }
-
-        // 스타일 모달 닫기
-        function closeStyleModal() {
-            const modal = document.getElementById('styleModal');
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-            
-            // 현재 스타일 데이터 초기화
-            window.currentStyleData = null;
-            currentStyleData = null;
-        }
-
-        // 스켈레톤 카드 표시
-        function showSkeletonCards() {
-            const stylesGrid = document.getElementById('stylesGrid');
-            stylesGrid.innerHTML = '';
-            
-            const fragment = document.createDocumentFragment();
-            const count = window.innerWidth <= 767 ? 8 : 15;
-            
-            for (let i = 0; i < count; i++) {
-                const skeleton = document.createElement('div');
-                skeleton.className = 'skeleton-card';
-                fragment.appendChild(skeleton);
-            }
-            
-            stylesGrid.appendChild(fragment);
-        }
-
-        // 에러 상태 표시
-        function showErrorState(message) {
-            const stylesGrid = document.getElementById('stylesGrid');
-            stylesGrid.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">⚠️</div>
-                    <div style="font-size: 18px;">로드 실패</div>
-                    <div style="font-size: 14px; color: #666; margin-top: 10px;">${message}</div>
-                    <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: var(--female-color); color: white; border: none; border-radius: 5px; cursor: pointer;">새로고침</button>
-                </div>
-            `;
-        }
-
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🦎 HAIRGATOR x AKOOL 시작 - AI 체험 + 카메라 + 퍼스널 컬러 기능 통합 완료 + 이미지 로딩 최적화 적용');
+            console.log('HAIRGATOR 앱 초기화 시작 - Firebase 오류 해결 완료');
             
             loginScreen.style.display = 'flex';
             updateUserInfo();
@@ -3175,8 +3081,8 @@
                     clearInterval(window.heartbeatInterval);
                 }
             } else {
-                if (window.currentSessionId && window.firebaseAuth) {
-                    window.firebaseAuth.startHeartbeat();
+                if (window.currentSessionId && firebaseAuth) {
+                    firebaseAuth.startHeartbeat();
                 }
             }
         });
