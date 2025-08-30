@@ -1,5 +1,5 @@
 /* ========================================
-   HAIRGATOR - ULTRA MODERN MAIN APPLICATION
+   HAIRGATOR - Firebase 연동 수정된 메인 애플리케이션
    ======================================== */
 
 class HairgatorApp {
@@ -12,6 +12,8 @@ class HairgatorApp {
         this.currentUser = null;
         this.stylesData = [];
         this.filteredStyles = [];
+        
+        // 기존 Firebase 카테고리 구조에 맞춤
         this.categories = {
             male: ['SIDE FRINGE', 'SIDE PART', 'FRINGE UP', 'PUSHED BACK', 'BUZZ', 'CROP', 'MOHICAN'],
             female: ['A Length', 'B Length', 'C Length', 'D Length', 'E Length', 'F Length', 'G Length', 'H Length']
@@ -22,7 +24,7 @@ class HairgatorApp {
     }
     
     async init() {
-        console.log('🚀 HAIRGATOR Ultra Modern App 시작...');
+        console.log('🚀 HAIRGATOR 태블릿 최적화 앱 시작...');
         
         // DOM이 준비될 때까지 대기
         if (document.readyState === 'loading') {
@@ -35,15 +37,19 @@ class HairgatorApp {
         this.showLoadingScreen();
         
         // 초기화 작업들
-        await this.initializeApp();
-        
-        // 이벤트 리스너 설정
-        this.setupEventListeners();
-        
-        // 로그인 상태 확인
-        this.checkAuthStatus();
-        
-        console.log('✅ 앱 초기화 완료');
+        try {
+            await this.initializeApp();
+            
+            // 이벤트 리스너 설정
+            this.setupEventListeners();
+            
+            // 로그인 상태 확인
+            this.checkAuthStatus();
+            
+            console.log('✅ 앱 초기화 완료');
+        } catch (error) {
+            console.error('❌ 앱 초기화 실패:', error);
+        }
     }
     
     async showLoadingScreen() {
@@ -52,11 +58,11 @@ class HairgatorApp {
         const progressFill = document.querySelector('.progress-fill');
         
         const steps = [
-            { message: 'Initializing Platform...', progress: 20 },
-            { message: 'Loading UI Components...', progress: 40 },
-            { message: 'Connecting to Firebase...', progress: 60 },
-            { message: 'Preparing Themes...', progress: 80 },
-            { message: 'Ready to Launch!', progress: 100 }
+            { message: 'Firebase 연결 중...', progress: 20 },
+            { message: '기존 데이터 로드 중...', progress: 40 },
+            { message: '스타일 이미지 확인 중...', progress: 60 },
+            { message: '태블릿 UI 준비 중...', progress: 80 },
+            { message: '준비 완료!', progress: 100 }
         ];
         
         for (let i = 0; i < steps.length; i++) {
@@ -86,17 +92,20 @@ class HairgatorApp {
                 await this.testFirebaseConnection();
             }
             
+            // 기존 Firebase 데이터 구조 확인
+            await this.verifyFirebaseStructure();
+            
             // PWA 서비스워커 등록
             await this.registerServiceWorker();
             
-            // 아이콘 초기화
-            this.initializeIcons();
+            // SVG 아이콘 초기화 (Lucide 대신)
+            this.initializeSVGIcons();
             
             // 앱 설정 로드
             this.loadAppSettings();
             
         } catch (error) {
-            console.error('❌ 앱 초기화 실패:', error);
+            console.error('⚠️ 앱 초기화 실패:', error);
         }
     }
     
@@ -106,6 +115,35 @@ class HairgatorApp {
             console.log('✅ Firebase 연결 성공');
         } catch (error) {
             console.warn('⚠️ Firebase 연결 실패:', error);
+        }
+    }
+    
+    // 기존 Firebase 데이터 구조 확인
+    async verifyFirebaseStructure() {
+        try {
+            // 헤어스타일 컬렉션 확인
+            const stylesQuery = await db.collection('hairstyles').limit(5).get();
+            console.log(`📊 기존 스타일 데이터: ${stylesQuery.size}개 확인`);
+            
+            // 데이터 구조 확인
+            if (!stylesQuery.empty) {
+                const sampleData = stylesQuery.docs[0].data();
+                console.log('📋 기존 데이터 구조:', {
+                    hasGender: !!sampleData.gender,
+                    hasMainCategory: !!sampleData.mainCategory,
+                    hasSubCategory: !!sampleData.subCategory,
+                    hasImageUrl: !!sampleData.imageUrl,
+                    hasName: !!sampleData.name,
+                    hasCode: !!sampleData.code
+                });
+            }
+            
+            // 디자이너 컬렉션 확인  
+            const designersQuery = await db.collection('designers').limit(1).get();
+            console.log(`👤 기존 디자이너 데이터: ${designersQuery.size}개 확인`);
+            
+        } catch (error) {
+            console.warn('⚠️ Firebase 데이터 구조 확인 실패:', error);
         }
     }
     
@@ -120,25 +158,16 @@ class HairgatorApp {
         }
     }
     
-    initializeIcons() {
-        if (typeof lucide !== 'undefined' && lucide.createIcons) {
-            lucide.createIcons();
-            console.log('✅ Lucide 아이콘 초기화 완료');
-        } else {
-            console.warn('⚠️ Lucide 아이콘 라이브러리가 로드되지 않았습니다');
-        }
+    // SVG 아이콘 초기화 (Lucide 대신)
+    initializeSVGIcons() {
+        console.log('✅ SVG 아이콘 시스템 초기화 완료');
     }
     
     loadAppSettings() {
-        // 앱 설정 로드 (나중에 확장 가능)
         const savedSettings = localStorage.getItem('hairgator_settings');
         if (savedSettings) {
-            try {
-                const settings = JSON.parse(savedSettings);
-                console.log('📱 저장된 설정 로드:', settings);
-            } catch (error) {
-                console.error('설정 로드 실패:', error);
-            }
+            const settings = JSON.parse(savedSettings);
+            console.log('📱 저장된 설정 로드:', settings);
         }
     }
     
@@ -226,7 +255,7 @@ class HairgatorApp {
         }
         
         try {
-            // 로그인 처리 (Firebase 또는 로컬 인증)
+            // Firebase 인증 (기존 designers 컬렉션 사용)
             const user = await this.authenticateUser(name, phone, password);
             
             if (user) {
@@ -260,22 +289,18 @@ class HairgatorApp {
     }
     
     async authenticateUser(name, phone, password) {
-        // 실제 구현에서는 Firebase Auth 또는 API 호출
-        // 현재는 간단한 로컬 인증으로 구현
-        
         try {
-            // Firebase에서 사용자 정보 확인 (옵션)
-            if (typeof db !== 'undefined') {
-                const userQuery = await db.collection('designers')
-                    .where('name', '==', name)
-                    .where('phone', '==', phone)
-                    .limit(1)
-                    .get();
-                
-                if (!userQuery.empty) {
-                    const userData = userQuery.docs[0].data();
-                    return { id: userQuery.docs[0].id, ...userData };
-                }
+            // Firebase designers 컬렉션에서 사용자 확인
+            const userQuery = await db.collection('designers')
+                .where('name', '==', name)
+                .where('phone', '==', phone)
+                .where('password', '==', password)
+                .limit(1)
+                .get();
+            
+            if (!userQuery.empty) {
+                const userData = userQuery.docs[0].data();
+                return { id: userQuery.docs[0].id, ...userData };
             }
             
             // 로컬 인증 (개발용)
@@ -283,6 +308,7 @@ class HairgatorApp {
                 id: `user_${Date.now()}`,
                 name,
                 phone,
+                tokens: 100, // 기본 토큰
                 loginTime: Date.now(),
                 isLocal: true
             };
@@ -445,9 +471,6 @@ class HairgatorApp {
                 this.selectSubTab(subCategory, 0);
             }
             
-            // 스타일이 없는 서브카테고리는 비활성화 (나중에 실제 데이터로 확인)
-            // 현재는 모든 탭 활성화
-            
             subTabsContainer.appendChild(tab);
         });
     }
@@ -472,12 +495,12 @@ class HairgatorApp {
         stylesGrid.innerHTML = `
             <div class="loading-container">
                 <div class="loading-spinner"></div>
-                <p>스타일 로딩 중...</p>
+                <p>기존 Firebase 스타일 로드 중...</p>
             </div>
         `;
         
         try {
-            // Firebase에서 해당 카테고리 스타일들 가져오기
+            // Firebase에서 기존 스타일 데이터 로드
             const query = db.collection('hairstyles')
                 .where('gender', '==', this.currentGender)
                 .where('mainCategory', '==', this.currentMainTab)
@@ -487,17 +510,28 @@ class HairgatorApp {
             
             this.stylesData = [];
             snapshot.forEach(doc => {
-                this.stylesData.push({ id: doc.id, ...doc.data() });
+                const data = doc.data();
+                this.stylesData.push({ 
+                    id: doc.id, 
+                    ...data,
+                    // Firebase Storage URL 처리
+                    imageUrl: data.imageUrl || null,
+                    name: data.name || '이름 없음',
+                    code: data.code || 'NO CODE'
+                });
             });
             
             this.filteredStyles = [...this.stylesData];
             this.renderStylesGrid();
             
+            console.log(`📊 로드된 스타일: ${this.stylesData.length}개`);
+            
         } catch (error) {
-            console.error('스타일 로딩 오류:', error);
+            console.error('스타일 로드 오류:', error);
             stylesGrid.innerHTML = `
                 <div class="error-container">
-                    <p>스타일을 불러오는데 실패했습니다.</p>
+                    <p>Firebase에서 스타일을 불러오는데 실패했습니다.</p>
+                    <p>오류: ${error.message}</p>
                     <button class="btn" onclick="app.loadStyles()">다시 시도</button>
                 </div>
             `;
@@ -506,7 +540,9 @@ class HairgatorApp {
     
     renderStylesGrid() {
         const stylesGrid = document.getElementById('stylesGrid');
-        if (!stylesGrid || this.filteredStyles.length === 0) {
+        if (!stylesGrid) return;
+        
+        if (this.filteredStyles.length === 0) {
             stylesGrid.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">🎨</div>
@@ -521,16 +557,19 @@ class HairgatorApp {
             <div class="style-card" onclick="app.viewStyleDetail('${style.id}')">
                 <div class="style-image">
                     ${style.imageUrl ? 
-                        `<img src="${style.imageUrl}" alt="${style.name}" loading="lazy">` : 
+                        `<img src="${style.imageUrl}" alt="${style.name}" loading="lazy" 
+                             onerror="this.parentElement.innerHTML='<div class=\\'no-image-placeholder\\'>이미지 없음</div>'"
+                             onload="console.log('이미지 로드 성공:', this.src)">` : 
                         `<div class="no-image-placeholder">
-                            <i data-lucide="image"></i>
+                            <span>📷</span>
+                            <p>이미지 없음</p>
                         </div>`
                     }
                 </div>
                 <div class="style-overlay">
                     <div class="style-info">
                         <div class="style-name">${style.name}</div>
-                        <div class="style-category">${style.code || 'NO CODE'}</div>
+                        <div class="style-category">${style.code}</div>
                     </div>
                 </div>
                 ${this.isNewStyle(style.createdAt) ? '<div class="style-new-badge"></div>' : ''}
@@ -539,10 +578,7 @@ class HairgatorApp {
         
         stylesGrid.innerHTML = gridHTML;
         
-        // 아이콘 재초기화
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
+        console.log(`🎨 렌더링된 스타일: ${this.filteredStyles.length}개`);
     }
     
     isNewStyle(createdAt) {
@@ -557,9 +593,177 @@ class HairgatorApp {
         const style = this.filteredStyles.find(s => s.id === styleId);
         if (!style) return;
         
-        // 스타일 상세보기 모달이나 페이지 표시
+        // 스타일 상세보기 구현
         console.log('스타일 상세보기:', style);
-        // TODO: 상세보기 모달 구현
+        this.showStyleDetailModal(style);
+    }
+    
+    showStyleDetailModal(style) {
+        const modal = document.createElement('div');
+        modal.className = 'style-detail-modal';
+        modal.innerHTML = `
+            <div class="style-detail-content">
+                <div class="style-detail-header">
+                    <h3>${style.name}</h3>
+                    <button class="style-detail-close" onclick="this.closest('.style-detail-modal').remove()">×</button>
+                </div>
+                <div class="style-detail-body">
+                    <div class="style-image-large">
+                        ${style.imageUrl ? 
+                            `<img src="${style.imageUrl}" alt="${style.name}" 
+                                 onerror="this.parentElement.innerHTML='<div class=\\'no-image-large\\'>이미지를 불러올 수 없습니다</div>'">` :
+                            `<div class="no-image-large">이미지가 없습니다</div>`
+                        }
+                    </div>
+                    <div class="style-details">
+                        <div class="detail-item">
+                            <label>코드:</label>
+                            <span>${style.code || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>카테고리:</label>
+                            <span>${style.mainCategory} > ${style.subCategory}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>등록일:</label>
+                            <span>${style.createdAt ? new Date(style.createdAt.toDate()).toLocaleDateString() : 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // 모달 스타일 추가
+        this.addModalStyles();
+        
+        document.body.appendChild(modal);
+        
+        // ESC 키로 닫기
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                modal.remove();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+        
+        // 배경 클릭으로 닫기
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+    
+    addModalStyles() {
+        if (document.getElementById('modal-styles')) return;
+        
+        const styles = document.createElement('style');
+        styles.id = 'modal-styles';
+        styles.textContent = `
+            .style-detail-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.9);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                backdrop-filter: blur(8px);
+            }
+            
+            .style-detail-content {
+                background: var(--bg-card);
+                border: 1px solid var(--accent-primary);
+                border-radius: var(--border-radius-xl);
+                padding: 2rem;
+                max-width: 800px;
+                width: 90%;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: var(--shadow-xl);
+            }
+            
+            .style-detail-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1.5rem;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .style-detail-header h3 {
+                color: var(--text-primary);
+                font-size: 1.5rem;
+                margin: 0;
+            }
+            
+            .style-detail-close {
+                background: none;
+                border: none;
+                color: var(--text-secondary);
+                font-size: 2rem;
+                cursor: pointer;
+                line-height: 1;
+            }
+            
+            .style-image-large {
+                width: 100%;
+                height: 500px;
+                border-radius: var(--border-radius);
+                overflow: hidden;
+                margin-bottom: 1.5rem;
+                background: var(--bg-secondary);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .style-image-large img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            .no-image-large {
+                color: var(--text-muted);
+                font-size: 1.2rem;
+                text-align: center;
+            }
+            
+            .detail-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.8rem 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            
+            .detail-item label {
+                color: var(--text-secondary);
+                font-weight: 600;
+            }
+            
+            .detail-item span {
+                color: var(--text-primary);
+            }
+            
+            @media (max-width: 1024px) {
+                .style-detail-content {
+                    margin: 1rem;
+                    padding: 1.5rem;
+                }
+                
+                .style-image-large {
+                    height: 400px;
+                }
+            }
+        `;
+        document.head.appendChild(styles);
     }
     
     performSearch(query) {
@@ -693,11 +897,11 @@ class HairgatorApp {
         `;
         
         if (type === 'success') {
-            toast.style.borderLeftColor = 'var(--success)';
+            toast.style.borderLeftColor = '#27ae60';
         } else if (type === 'error') {
-            toast.style.borderLeftColor = 'var(--error)';
+            toast.style.borderLeftColor = '#e74c3c';
         } else if (type === 'warning') {
-            toast.style.borderLeftColor = 'var(--warning)';
+            toast.style.borderLeftColor = '#f39c12';
         }
         
         document.body.appendChild(toast);
@@ -802,15 +1006,21 @@ const additionalStyles = `
     width: 100%;
     height: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     background: var(--bg-tertiary);
     color: var(--text-muted);
+    gap: 0.5rem;
 }
 
-.no-image-placeholder i {
-    width: 48px;
-    height: 48px;
+.no-image-placeholder span {
+    font-size: 2rem;
+}
+
+.no-image-placeholder p {
+    font-size: 0.9rem;
+    margin: 0;
 }
 
 .styles-grid.list-view {
@@ -841,9 +1051,33 @@ const additionalStyles = `
 .styles-grid.list-view .style-info {
     color: var(--text-primary);
 }
+
+/* 태블릿 최적화 */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .styles-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .style-card {
+        min-height: 400px;
+    }
+    
+    .style-image {
+        height: 300px;
+    }
+    
+    .main-content {
+        padding: 2rem 3rem;
+    }
+    
+    .main-nav {
+        padding: 0 3rem;
+    }
+}
 </style>
 `;
 
 document.head.insertAdjacentHTML('beforeend', additionalStyles);
 
-console.log('🚀 HAIRGATOR Ultra Modern App 로드 완료');
+console.log('🚀 HAIRGATOR 태블릿 최적화 앱 로드 완료');
