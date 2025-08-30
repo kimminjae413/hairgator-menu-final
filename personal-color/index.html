@@ -1190,28 +1190,24 @@ input[type="range"]::-moz-range-track {
                 </div>
 
                 <div class="mode-cards">
-                    <div class="mode-card" onclick="selectModeCard(this); startPhotoAnalysis();">
-                        <div class="mode-icon">
-                            <svg width="80" height="80" viewBox="0 0 40 40" style="fill: var(--primary-pink);">
-                                <!-- 얼굴 윤곽 -->
-                                <ellipse cx="20" cy="18" rx="12" ry="14" fill="#F5C6A0" stroke="var(--primary-pink)" stroke-width="2"/>
-                                <!-- 눈 -->
-                                <circle cx="16" cy="15" r="2" fill="#333"/>
-                                <circle cx="24" cy="15" r="2" fill="#333"/>
-                                <circle cx="16.5" cy="14.5" r="0.8" fill="white"/>
-                                <circle cx="24.5" cy="14.5" r="0.8" fill="white"/>
-                                <!-- 코 -->
-                                <path d="M19 18 L20 20 L21 18" stroke="#D4A574" stroke-width="1.5" fill="none"/>
-                                <!-- 입 -->
-                                <path d="M17 23 Q20 25 23 23" stroke="#D4546F" stroke-width="2" fill="none"/>
-                                <!-- 분석 포인트들 -->
-                                <circle cx="13" cy="12" r="1.5" fill="none" stroke="var(--primary-pink)" stroke-width="1"/>
-                                <circle cx="27" cy="12" r="1.5" fill="none" stroke="var(--primary-pink)" stroke-width="1"/>
-                                <circle cx="13" cy="20" r="1.5" fill="none" stroke="var(--primary-pink)" stroke-width="1"/>
-                                <circle cx="27" cy="20" r="1.5" fill="none" stroke="var(--primary-pink)" stroke-width="1"/>
-                            </svg>
-                        </div>
-                        <h3>AI 분석 모드</h3>
+                    <div class="mode-card ai-mode" onclick="selectModeCard(this); startPhotoAnalysis();">
+    <div class="mode-card-header">
+        <h3 class="mode-card-title">AI 분석 모드</h3>
+        <div class="professional-badge">Professional</div>
+    </div>
+    <div class="mode-card-body">
+        <p class="mode-card-description">실시간 카메라를 통한 AI 기반 과학적 퍼스널컬러 진단</p>
+        <ul class="mode-features">
+            <li>MediaPipe 얼굴 형태 추적</li>
+            <li>얼굴 모양 기반 피부톤 추출</li>
+            <li>RGB→LAB 색공간 변환</li>
+            <li>Delta E 2000 색차 측정</li>
+            <li>120가지 세부 타입 분석</li>
+            <li>브랜드별 제품 추천</li>
+        </ul>
+        <button class="mode-btn">시작하기</button>
+    </div>
+</div>
                         <p>실시간 카메라를 통한 AI 기반 과학적 퍼스널컬러 진단</p>
                         <ul class="mode-features">
                             <li>MediaPipe 얼굴 형태 추적</li>
@@ -1224,36 +1220,23 @@ input[type="range"]::-moz-range-track {
                         <button class="mode-btn">시작하기</button>
                     </div>
 
-                    <div class="mode-card" onclick="selectModeCard(this); startDraping();">
-                        <div class="mode-icon">
-                            <svg width="80" height="80" viewBox="0 0 40 40" style="fill: var(--primary-pink);">
-                                <!-- 얼굴 -->
-                                <ellipse cx="20" cy="16" rx="10" ry="12" fill="#F5C6A0" stroke="#DDD" stroke-width="1"/>
-                                <!-- 눈 -->
-                                <circle cx="17" cy="13" r="1.5" fill="#333"/>
-                                <circle cx="23" cy="13" r="1.5" fill="#333"/>
-                                <!-- 입 -->
-                                <path d="M17 19 Q20 21 23 19" stroke="#D4546F" stroke-width="1.5" fill="none"/>
-                                <!-- 드래이핑 천 - 무지개 색상 -->
-                                <path d="M8 25 Q12 22 16 24 Q20 26 24 24 Q28 22 32 25 L32 35 Q28 32 24 34 Q20 36 16 34 Q12 32 8 35 Z" fill="#FF6B6B"/>
-                                <path d="M8 27 Q12 24 16 26 Q20 28 24 26 Q28 24 32 27 L32 37 Q28 34 24 36 Q20 38 16 36 Q12 34 8 37 Z" fill="#FFD93D"/>
-                                <path d="M8 29 Q12 26 16 28 Q20 30 24 28 Q28 26 32 29 L32 39 Q28 36 24 38 Q20 40 16 38 Q12 36 8 39 Z" fill="#6BCF7F"/>
-                                <path d="M8 31 Q12 28 16 30 Q20 32 24 30 Q28 28 32 31 L32 38 Q28 35 24 37 Q20 39 16 37 Q12 35 8 38 Z" fill="#4D96FF"/>
-                                <path d="M8 33 Q12 30 16 32 Q20 34 24 32 Q28 30 32 33 L32 37 Q28 34 24 36 Q20 38 16 36 Q12 34 8 37 Z" fill="#9B59B6"/>
-                            </svg>
-                        </div>
-                        <h3>전문가 드래이핑 모드</h3>
-                        <p>전문가 노하우를 반영한 가상 드래이핑 진단</p>
-                        <ul class="mode-features">
-                            <li>실시간 카메라 드래이핑</li>
-                            <li>4계절 색상 팔레트</li>
-                            <li>유이레/빛날윤/블루미 노하우</li>
-                            <li>Before/After 비교</li>
-                            <li>개선도 지표 측정</li>
-                        </ul>
-                        <button class="mode-btn">시작하기</button>
-                    </div>
-                </div>
+                   <div class="mode-card draping-mode" onclick="selectModeCard(this); startDraping();">
+    <div class="mode-card-header">
+        <h3 class="mode-card-title">전문가 드래이핑 모드</h3>
+        <div class="professional-badge">Professional</div>
+    </div>
+    <div class="mode-card-body">
+        <p class="mode-card-description">전문가 노하우를 반영한 가상 드래이핑 진단</p>
+        <ul class="mode-features">
+            <li>실시간 카메라 드래이핑</li>
+            <li>4계절 색상 팔레트</li>
+            <li>유이레/빛날윤/블루미 노하우</li>
+            <li>Before/After 비교</li>
+            <li>개선도 지표 측정</li>
+        </ul>
+        <button class="mode-btn">시작하기</button>
+    </div>
+</div>
             </section>
 
             <!-- AI 사진 분석 섹션 -->
