@@ -471,5 +471,3 @@ if (document.readyState === 'loading') {
 
 // 성능 모니터링
 console.log(`🎨 Ultra Theme Manager 로드 시간: ${performance.now().toFixed(2)}ms`);
-
-export default ultraThemeManager;
