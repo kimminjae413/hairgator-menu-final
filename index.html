@@ -1,1880 +1,4 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<!-- 카메라 권한 문제 해결: Permissions Policy 메타 태그 추가 -->
-<meta http-equiv="Permissions-Policy" content="camera=*, microphone=*, geolocation=*">
-<meta http-equiv="Feature-Policy" content="camera '*'; microphone '*'">
-
-    <!-- 🚀 성능 최적화: DNS 프리페치 및 프리커넥트 -->
-    <link rel="dns-prefetch" href="//fonts.googleapis.com">
-    <link rel="dns-prefetch" href="//fonts.gstatic.com">
-    <link rel="dns-prefetch" href="//www.gstatic.com">
-    <link rel="dns-prefetch" href="//firebasestorage.googleapis.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
-
-<title>HAIRGATOR - Professional Hair Style Menu</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#000000">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HAIRGATOR">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="manifest.json">
-    
-    <!-- 아이콘 -->
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-    
-    <!-- 구글 폰트 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    
-    <style>
-        /* 초기화 및 기본 설정 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        :root {
-            /* 다크 테마 기본 변수 */
-            --bg-primary: #000000;
-            --bg-card: #111111;
-            --bg-secondary: #1a1a1a;
-            --text-primary: #ffffff;
-            --text-secondary: #999999;
-            --border-primary: #222222;
-            --border-secondary: #333333;
-            --header-bg: #000000;
-            --sidebar-bg: #111111;
-            --modal-bg: #111111;
-            --input-bg: #222222;
-            --input-border: #444444;
-            --category-bg: #111111;
-            --category-inactive: #222222;
-            --sub-tab-bg: #333333;
-            --styles-bg: #000000;
-            
-            /* 고정 컬러 */
-            --male-color: #4A90E2;
-            --female-color: #E91E63;
-            --new-indicator: #ff4444;
-            --ai-color: #9C27B0;
-            --ai-gradient: linear-gradient(135deg, #9C27B0 0%, #673AB7 100%);
-        }
-
-        /* 라이트 테마 변수 오버라이드 */
-        body.light-theme {
-            --bg-primary: #ffffff;
-            --bg-card: #ffffff;
-            --bg-secondary: #f8f9fa;
-            --text-primary: #000000;
-            --text-secondary: #666666;
-            --border-primary: #e0e0e0;
-            --border-secondary: #ddd;
-            --header-bg: #ffffff;
-            --sidebar-bg: #ffffff;
-            --modal-bg: #ffffff;
-            --input-bg: #ffffff;
-            --input-border: #ddd;
-            --category-bg: #f8f9fa;
-            --category-inactive: #ffffff;
-            --sub-tab-bg: #f8f9fa;
-            --styles-bg: #f9f9f9;
-        }
-
-        body {
-            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            overflow-x: hidden;
-            user-select: none;
-            -webkit-user-select: none;
-            line-height: 1.4;
-        }
-
-        /* 헤더 - 태블릿 최적화 */
-        .header {
-            position: fixed;
-            top: 15px;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: var(--header-bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 20px;
-            z-index: 1000;
-        }
-
-        .back-btn {
-            position: absolute;
-            left: 20px;
-            width: 40px;
-            height: 40px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-primary);
-            font-size: 28px;
-            border-radius: 50%;
-            transition: background-color 0.3s;
-        }
-
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .logo {
-            font-size: 22px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: var(--text-primary);
-        }
-
-        .menu-btn {
-            position: absolute;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 4px;
-            border-radius: 50%;
-            transition: background-color 0.3s;
-        }
-
-        .menu-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .menu-btn span {
-            width: 22px;
-            height: 2px;
-            background: var(--text-primary);
-            transition: all 0.3s ease;
-        }
-
-        /* 메인 콘텐츠 - 헤더 높이 조정 */
-        .main-content {
-            margin-top: 75px;
-            min-height: calc(100vh - 75px);
-            background: var(--bg-primary);
-        }
-
-        /* 로그인 화면 - 태블릿 최적화 */
-        .login-screen {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: calc(100vh - 75px);
-            padding: 30px;
-        }
-
-        .login-modal {
-            background: #111;
-            border: 3px solid var(--female-color);
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 450px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(233, 30, 99, 0.2);
-        }
-
-        .login-modal h2 {
-            font-size: 28px;
-            margin-bottom: 8px;
-            letter-spacing: 2px;
-        }
-
-        .login-modal .subtitle {
-            color: var(--text-secondary);
-            margin-bottom: 35px;
-            font-size: 16px;
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            color: var(--female-color);
-            margin-bottom: 10px;
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 16px;
-            background: #222;
-            border: 2px solid #444;
-            border-radius: 10px;
-            color: white;
-            font-size: 18px;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--female-color);
-            box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
-        }
-
-        .login-btn {
-            width: 100%;
-            background: var(--female-color);
-            color: white;
-            border: none;
-            padding: 18px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 25px;
-            transition: all 0.3s ease;
-        }
-
-        .login-btn:hover {
-            background: #d81b60;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4);
-        }
-
-        .login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .login-help {
-            margin-top: 25px;
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        /* NEW 표시 (빨간 점) - 태블릿 최적화 */
-        .new-indicator {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            width: 10px;
-            height: 10px;
-            background: var(--new-indicator);
-            border-radius: 50%;
-            box-shadow: 0 0 8px rgba(255, 68, 68, 0.6);
-            animation: pulse-red 2s infinite;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        @keyframes pulse-red {
-            0%, 100% { 
-                transform: scale(1);
-                opacity: 1;
-            }
-            50% { 
-                transform: scale(1.3);
-                opacity: 0.7;
-            }
-        }
-
-        /* 성별 선택 - 태블릿 최적화 */
-        .gender-selection {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            min-height: calc(100vh - 75px);
-            padding: 40px;
-            gap: 100px;
-        }
-
-        .gender-btn {
-            width: 180px;
-            height: 260px;
-            border: 4px solid #333333;
-            border-radius: 25px;
-            background: var(--bg-card);
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .gender-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .gender-btn.male {
-            border: 4px solid var(--male-color) !important;
-        }
-
-        .gender-btn.female {
-            border: 4px solid var(--female-color) !important;
-        }
-
-        .gender-icon {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 60px;
-            color: #fff;
-            transition: all 0.3s ease;
-        }
-
-        .gender-btn.male .gender-icon {
-            background: var(--male-color);
-        }
-
-        .gender-btn.female .gender-icon {
-            background: var(--female-color);
-        }
-
-        .gender-label {
-            font-size: 18px;
-            color: #ffffff !important;
-            font-weight: 600;
-        }
-
-        /* 라이트 테마에서도 성별 텍스트 명확하게 */
-        body.light-theme .gender-label {
-            color: #000000 !important;
-        }
-
-        /* 메뉴 컨테이너 */
-        .menu-container {
-            display: none;
-            padding: 0;
-        }
-
-        .menu-container.active {
-            display: block;
-        }
-
-        /* 카테고리 탭 - 태블릿 최적화 */
-        .category-tabs {
-            background: var(--bg-card);
-            padding: 18px;
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            border-bottom: 1px solid var(--border-main);
-            scrollbar-width: none;
-        }
-
-        .category-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .category-tab {
-            background: var(--border-main);
-            color: var(--text-sub);
-            border: 1px solid var(--border-main);
-            padding: 12px 24px;
-            border-radius: 25px;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-            font-size: 15px;
-            font-weight: 500;
-            position: relative;
-            min-width: 80px;
-        }
-
-        .category-tab:hover {
-            background: var(--text-sub);
-            color: var(--text-main);
-            transform: translateY(-1px);
-        }
-
-        .category-tab.active {
-            font-weight: bold;
-            transform: scale(1.05);
-        }
-
-        .category-tab.active.male {
-            background: var(--male-color);
-            color: white;
-            border-color: var(--male-color);
-            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
-        }
-
-        .category-tab.active.female {
-            background: var(--female-color);
-            color: white;
-            border-color: var(--female-color);
-            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
-        }
-
-        /* 서브카테고리 탭 - 태블릿 최적화 */
-        .sub-tabs {
-            background: #0a0a0a;
-            padding: 18px;
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-            border-bottom: 1px solid #222;
-        }
-
-        .sub-tab {
-            background: #333;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 18px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            font-weight: 500;
-            position: relative;
-            min-width: 70px;
-        }
-
-        .sub-tab:hover:not(.disabled) {
-            background: #444;
-            transform: translateY(-1px);
-        }
-
-        .sub-tab.active {
-            font-weight: bold;
-            transform: scale(1.05);
-        }
-
-        .sub-tab.active.male {
-            background: var(--male-color);
-            box-shadow: 0 3px 12px rgba(74, 144, 226, 0.4);
-        }
-
-        .sub-tab.active.female {
-            background: var(--female-color);
-            box-shadow: 0 3px 12px rgba(233, 30, 99, 0.4);
-        }
-
-        /* 비활성화된 서브카테고리 */
-        .sub-tab.disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        /* 🚀 스타일 그리드 - 태블릿 우선 최적화 + 이미지 로딩 최적화 */
-        .styles-container {
-            padding: 20px;
-            min-height: 50vh;
-            background: var(--bg-primary);
-        }
-
-        .styles-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            background: var(--bg-primary);
-        }
-
-        /* 태블릿 가로모드: 5열 */
-        @media (min-width: 768px) and (orientation: landscape) {
-            .styles-grid {
-                grid-template-columns: repeat(5, 1fr);
-                gap: 18px;
-            }
-        }
-
-        /* 태블릿 세로모드: 4열 */
-        @media (min-width: 768px) and (orientation: portrait) {
-            .styles-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 15px;
-            }
-            
-            .styles-container {
-                padding: 25px 20px;
-            }
-        }
-
-        /* 모바일: 2열 */
-        @media (max-width: 767px) {
-            .styles-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-            
-            .styles-container {
-                padding: 15px;
-            }
-        }
-
-        /* 대형 태블릿 (iPad Pro 등): 6열 */
-        @media (min-width: 1024px) and (max-width: 1366px) {
-            .styles-grid {
-                grid-template-columns: repeat(6, 1fr);
-                gap: 20px;
-            }
-            
-            .styles-container {
-                padding: 30px 25px;
-            }
-        }
-
-        .style-card {
-            background: transparent;
-            border-radius: 10px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            aspect-ratio: 3/4;
-            position: relative;
-        }
-
-        .style-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
-        }
-
-        .style-card:active {
-            transform: scale(0.98);
-        }
-
-        /* 🚀 이미지 로딩 최적화: 스켈레톤과 그라데이션 동시 적용 */
-        .style-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 10px;
-            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-            transition: all 0.3s ease;
-        }
-
-        /* 이미지가 로드되면 애니메이션 제거하고 그라데이션 적용 */
-        .style-image.loaded {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            animation: none;
-        }
-
-        /* 로딩 애니메이션 */
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* 텍스트 정보 완전히 숨김 */
-        .style-info {
-            display: none;
-        }
-
-        .style-code {
-            display: none;
-        }
-
-        .style-name {
-            display: none;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-            grid-column: 1 / -1;
-        }
-
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-
-        /* 🚀 로딩 스켈레톤 최적화 */
-        .skeleton-card {
-            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-            aspect-ratio: 3/4;
-            border-radius: 10px;
-        }
-
-        /* 사이드바 */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100vh;
-            background: #111;
-            border-left: 1px solid #333;
-            z-index: 2000;
-            transition: right 0.3s ease;
-            overflow-y: auto;
-        }
-
-        .sidebar.active {
-            right: 0;
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px;
-            border-bottom: 1px solid #333;
-        }
-
-        .sidebar-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .sidebar-content {
-            padding: 20px;
-        }
-
-        .user-info {
-            background: #1a1a1a;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .user-info h4 {
-            color: var(--female-color);
-            margin-bottom: 10px;
-        }
-
-        .logout-btn {
-            width: 100%;
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        /* 로딩 오버레이 */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid #333;
-            border-top: 3px solid var(--female-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* 토스트 메시지 */
-        .toast {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            z-index: 10000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .toast.success {
-            background: #28a745;
-        }
-
-        .toast.error {
-            background: #dc3545;
-        }
-
-        .toast.show {
-            opacity: 1;
-        }
-
-        /* 스타일 상세 모달 */
-        .style-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 5000;
-            padding: 20px;
-        }
-
-        .style-modal.active {
-            display: flex;
-        }
-
-        .style-modal-content {
-            background: #111;
-            border: 2px solid var(--female-color);
-            border-radius: 20px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            animation: modalSlideUp 0.3s ease-out;
-        }
-
-        .style-modal-close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 28px;
-            cursor: pointer;
-            z-index: 10;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background-color 0.3s;
-        }
-
-        .style-modal-close:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .style-modal-image {
-            width: 100%;
-            aspect-ratio: 3/4;
-            object-fit: cover;
-            border-radius: 18px 18px 0 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .style-modal-info {
-            padding: 30px;
-            text-align: center;
-        }
-
-        .style-modal-code {
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
-
-        .style-modal-name {
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        .style-modal-details {
-            background: #1a1a1a;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .style-detail-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid #333;
-        }
-
-        .style-detail-row:last-child {
-            margin-bottom: 0;
-            border-bottom: none;
-        }
-
-        .style-detail-label {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .style-detail-value {
-            color: white;
-            font-weight: 500;
-        }
-
-        .style-modal-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .modal-action-btn {
-            flex: 1;
-            min-width: 120px;
-            background: var(--female-color);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .modal-action-btn:hover {
-            background: #d81b60;
-            transform: translateY(-2px);
-        }
-
-        .modal-action-btn.secondary {
-            background: #333;
-        }
-
-        .modal-action-btn.secondary:hover {
-            background: #444;
-        }
-
-        /* AI 체험 버튼 스타일 */
-        .modal-action-btn.ai-btn {
-            background: var(--ai-gradient);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .modal-action-btn.ai-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .modal-action-btn.ai-btn:hover::before {
-            left: 100%;
-        }
-
-        .modal-action-btn.ai-btn:hover {
-            background: linear-gradient(135deg, #AB47BC 0%, #7B1FA2 100%);
-            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
-            transform: translateY(-3px);
-        }
-
-        .modal-action-btn.ai-btn:disabled {
-            background: #555;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .modal-action-btn.ai-btn:disabled:hover {
-            transform: none;
-            box-shadow: none;
-        }
-
-        /* AI 아이콘 */
-        .ai-icon {
-            display: inline-block;
-            margin-right: 5px;
-            font-size: 14px;
-        }
-
-        /* 토큰 정보 텍스트 */
-        .token-info {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 5px;
-            text-align: center;
-        }
-
-        /* AI 체험 모달 */
-        .ai-experience-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 6000;
-            padding: 20px;
-        }
-
-        .ai-experience-modal.active {
-            display: flex;
-        }
-
-        .ai-experience-content {
-            background: #111;
-            border: 2px solid var(--ai-color);
-            border-radius: 20px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            animation: modalSlideUp 0.3s ease-out;
-        }
-
-        .ai-experience-header {
-            background: var(--ai-gradient);
-            padding: 20px;
-            border-radius: 18px 18px 0 0;
-            text-align: center;
-        }
-
-        .ai-experience-title {
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .ai-experience-subtitle {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 14px;
-        }
-
-        .ai-experience-body {
-            padding: 30px;
-        }
-
-        .ai-upload-area {
-            border: 2px dashed var(--ai-color);
-            border-radius: 15px;
-            padding: 40px 20px;
-            text-align: center;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .ai-upload-area:hover {
-            border-color: #AB47BC;
-            background: rgba(156, 39, 176, 0.05);
-        }
-
-        .ai-upload-area.dragging {
-            border-color: #AB47BC;
-            background: rgba(156, 39, 176, 0.1);
-        }
-
-        .ai-upload-icon {
-            font-size: 48px;
-            color: var(--ai-color);
-            margin-bottom: 15px;
-        }
-
-        .ai-upload-text {
-            color: white;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        .ai-upload-hint {
-            color: var(--text-secondary);
-            font-size: 12px;
-        }
-
-        .ai-camera-options {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 15px;
-        }
-
-        .ai-camera-btn {
-            background: #333;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .ai-camera-btn:hover {
-            background: #444;
-            transform: translateY(-1px);
-        }
-
-        .ai-preview-area {
-            display: none;
-            margin-bottom: 20px;
-        }
-
-        .ai-preview-images {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .ai-preview-item {
-            text-align: center;
-        }
-
-        .ai-preview-img {
-            width: 150px;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 10px;
-            border: 2px solid #333;
-        }
-
-        .ai-preview-label {
-            color: var(--text-secondary);
-            font-size: 12px;
-            margin-top: 5px;
-        }
-
-        .ai-arrow {
-            font-size: 24px;
-            color: var(--ai-color);
-        }
-
-        .ai-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .ai-btn {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .ai-btn.primary {
-            background: var(--ai-gradient);
-            color: white;
-        }
-
-        .ai-btn.primary:hover {
-            background: linear-gradient(135deg, #AB47BC 0%, #7B1FA2 100%);
-        }
-
-        .ai-btn.secondary {
-            background: #333;
-            color: white;
-        }
-
-        .ai-btn.secondary:hover {
-            background: #444;
-        }
-
-        .ai-processing {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .ai-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #333;
-            border-top: 3px solid var(--ai-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        .ai-processing-text {
-            color: white;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        .ai-processing-hint {
-            color: var(--text-secondary);
-            font-size: 12px;
-        }
-
-        /* 카메라 모달 */
-        .camera-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 7000;
-            padding: 20px;
-        }
-
-        .camera-modal.active {
-            display: flex;
-        }
-
-        .camera-modal-content {
-            background: #111;
-            border: 2px solid var(--ai-color);
-            border-radius: 20px;
-            max-width: 500px;
-            width: 100%;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .camera-video {
-            width: 100%;
-            max-width: 400px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .camera-canvas {
-            display: none;
-        }
-
-        .camera-controls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .camera-btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .camera-btn.capture {
-            background: var(--ai-color);
-            color: white;
-        }
-
-        .camera-btn.cancel {
-            background: #666;
-            color: white;
-        }
-
-        .camera-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        /* AI 결과 모달 스타일 추가 */
-        .ai-result-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 8000;
-        }
-
-        .ai-result-content {
-            background: #111;
-            border: 2px solid var(--ai-color);
-            border-radius: 15px;
-            max-width: 400px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .ai-result-header {
-            background: var(--ai-gradient);
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 13px 13px 0 0;
-        }
-
-        .ai-result-header h3 {
-            color: white;
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .ai-result-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        .ai-result-close:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .ai-result-body {
-            padding: 20px;
-            text-align: center;
-        }
-
-        .ai-result-image {
-            width: 100%;
-            max-width: 300px;
-            height: auto;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 2px solid #333;
-        }
-
-        .ai-result-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        /* 퍼스널 컬러 모달 스타일 */
-        .personal-color-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9000;
-        }
-
-        .personal-color-modal.active {
-            display: flex;
-        }
-
-        .personal-color-content {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            background: #111;
-            overflow: hidden;
-        }
-
-        .personal-color-close {
-            position: fixed;
-            top: 15px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #FF6B6B;
-            color: white;
-            font-size: 28px;
-            cursor: pointer;
-            z-index: 10000;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-        }
-
-        .personal-color-close:hover {
-            background: rgba(255,107,107,0.2);
-        }
-
-        .personal-color-loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: white;
-            z-index: 5;
-        }
-
-        .personal-color-container {
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
-        }
-
-        /* 성별 아이콘 모드별 표시 */
-        .dark-mode-icon {
-            display: inline;
-        }
-
-        .light-mode-icon {
-            display: none;
-        }
-
-        /* 라이트 테마에서 성별 아이콘 전환 */
-        body.light-theme .dark-mode-icon {
-            display: none;
-        }
-
-        body.light-theme .light-mode-icon {
-            display: inline;
-        }
-
-        @keyframes modalSlideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        /* 반응형 - 태블릿 우선 최적화 */
-        
-        /* 모바일 (스마트폰) */
-        @media (max-width: 767px) {
-            .header {
-                height: 50px;
-                padding: 0 15px;
-            }
-            
-            .main-content {
-                margin-top: 65px;
-                min-height: calc(100vh - 65px);
-            }
-            
-            .back-btn, .menu-btn {
-                width: 35px;
-                height: 35px;
-            }
-            
-            .back-btn {
-                left: 15px;
-                font-size: 24px;
-            }
-            
-            .menu-btn {
-                right: 15px;
-            }
-            
-            .menu-btn span {
-                width: 18px;
-            }
-            
-            .logo {
-                font-size: 18px;
-            }
-            
-            .gender-selection {
-                flex-direction: column;
-                gap: 40px;
-                padding: 30px 20px;
-                min-height: calc(100vh - 65px);
-            }
-            
-            .gender-btn {
-                width: 150px;
-                height: 220px;
-            }
-            
-            .gender-icon {
-                width: 100px;
-                height: 100px;
-                font-size: 50px;
-            }
-            
-            .gender-label {
-                font-size: 16px;
-            }
-            
-            .login-modal {
-                margin: 0 15px;
-                padding: 25px;
-                border-radius: 15px;
-            }
-            
-            .login-modal h2 {
-                font-size: 22px;
-            }
-            
-            .login-modal .subtitle {
-                font-size: 14px;
-            }
-            
-            .form-group input {
-                padding: 14px;
-                font-size: 16px;
-            }
-            
-            .login-btn {
-                padding: 16px;
-                font-size: 16px;
-            }
-
-            .style-modal-content {
-                max-width: 95%;
-                margin: 10px;
-            }
-
-            .style-modal-info {
-                padding: 20px;
-            }
-
-            .style-modal-name {
-                font-size: 20px;
-            }
-
-            .style-modal-actions {
-                flex-direction: column;
-                gap: 8px;
-            }
-
-            .modal-action-btn {
-                min-width: auto;
-                font-size: 14px;
-                padding: 12px;
-            }
-            
-            .token-info {
-                font-size: 11px;
-                margin-top: 8px;
-            }
-
-            .ai-experience-content {
-                max-width: 95%;
-                margin: 10px;
-            }
-
-            .ai-preview-images {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .ai-preview-img {
-                width: 120px;
-                height: 160px;
-            }
-
-            .ai-arrow {
-                transform: rotate(90deg);
-            }
-
-            .ai-camera-options {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .ai-camera-btn {
-                width: 100%;
-            }
-        }
-        
-        /* 태블릿 세로 모드 */
-        @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
-            .category-tabs {
-                padding: 20px;
-            }
-            
-            .category-tab {
-                padding: 14px 26px;
-                font-size: 16px;
-            }
-            
-            .sub-tab {
-                padding: 11px 22px;
-                font-size: 15px;
-            }
-        }
-        
-        /* 태블릿 가로 모드 */
-        @media (min-width: 768px) and (orientation: landscape) {
-            .gender-selection {
-                gap: 120px;
-            }
-            
-            .gender-btn {
-                width: 200px;
-                height: 280px;
-            }
-            
-            .gender-icon {
-                width: 130px;
-                height: 130px;
-                font-size: 65px;
-            }
-            
-            .gender-label {
-                font-size: 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- 헤더 -->
-    <header class="header">
-        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
-        <h1 class="logo">HAIRGATOR</h1>
-        <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </header>
-
-    <!-- 사이드바 -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h3>메뉴</h3>
-            <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
-        </div>
-        <div class="sidebar-content">
-            <!-- 동적 버튼 컨테이너 (JavaScript에서 생성) -->
-            <div id="dynamicButtons"></div>
-
-            <div class="user-info" id="userInfo" style="display: none;">
-                <h4>디자이너 정보</h4>
-                <p id="designerNameDisplay"></p>
-                <p id="designerPhoneDisplay"></p>
-                <p id="sessionStatusDisplay"></p>
-                <button class="logout-btn" onclick="logout()">로그아웃</button>
-            </div>
-            <p id="guestMessage">로그인 후 이용 가능합니다.</p>
-        </div>
-    </aside>
-
-    <!-- 로딩 오버레이 -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-    </div>
-
-    <!-- 토스트 메시지 -->
-    <div class="toast" id="toast"></div>
-
-    <!-- 메인 콘텐츠 -->
-    <main class="main-content">
-        <!-- 로그인 화면 -->
-        <div class="login-screen" id="loginScreen">
-            <div class="login-modal">
-                <h2>HAIRGATOR</h2>
-                <p class="subtitle">Professional Hair Style Menu</p>
-                
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="designerName">디자이너명</label>
-                        <input type="text" id="designerName" placeholder="이름을 입력하세요" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="phoneNumber">전화번호</label>
-                        <input type="tel" id="phoneNumber" placeholder="01000000000 또는 010-0000-0000" maxlength="13" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password">비밀번호 (4자리)</label>
-                        <input type="password" id="password" placeholder="****" maxlength="4" required>
-                    </div>
-                    
-                    <button type="submit" class="login-btn" id="loginBtn">로그인</button>
-                </form>
-                
-                <p class="login-help">처음 사용하시나요? 관리자에게 계정을 요청하세요.</p>
-            </div>
-        </div>
-
-        <!-- 성별 선택 화면 -->
-        <div class="gender-selection" id="genderSelection">
-            <button class="gender-btn male" data-gender="male" onclick="selectGender('male')">
-                <div class="gender-icon">
-                    <span class="dark-mode-icon">♂</span>
-                    <span class="light-mode-icon">🧑‍💼</span>
-                </div>
-                <div class="gender-label">MALE</div>
-            </button>
-            <button class="gender-btn female" data-gender="female" onclick="selectGender('female')">
-                <div class="gender-icon">
-                    <span class="dark-mode-icon">♀</span>
-                    <span class="light-mode-icon">👩‍💼</span>
-                </div>
-                <div class="gender-label">FEMALE</div>
-            </button>
-        </div>
-
-        <!-- 메뉴 컨테이너 -->
-        <div class="menu-container" id="menuContainer">
-            <!-- 카테고리 탭 -->
-            <div class="category-tabs" id="categoryTabs">
-                <!-- 동적 생성 -->
-            </div>
-            
-            <!-- 서브카테고리 탭 -->
-            <div class="sub-tabs" id="subTabs">
-                <!-- 동적 생성 -->
-            </div>
-            
-            <!-- 스타일 컨테이너 -->
-            <div class="styles-container">
-                <div class="styles-grid" id="stylesGrid">
-                    <!-- 동적 생성 -->
-                </div>
-            </div>
-        </div>
-
-        <!-- 스타일 상세 모달 -->
-        <div class="style-modal" id="styleModal">
-            <div class="style-modal-content">
-                <button class="style-modal-close" id="styleModalClose">×</button>
-                
-                <img class="style-modal-image" id="styleModalImage" alt="Style Image">
-                
-                <div class="style-modal-info">
-                    <div class="style-modal-code" id="styleModalCode">CODE</div>
-                    <div class="style-modal-name" id="styleModalName">Style Name</div>
-                    
-                    <div class="style-modal-details">
-                        <div class="style-detail-row">
-                            <span class="style-detail-label">카테고리</span>
-                            <span class="style-detail-value" id="styleModalCategory">-</span>
-                        </div>
-                        <div class="style-detail-row">
-                            <span class="style-detail-label">서브카테고리</span>
-                            <span class="style-detail-value" id="styleModalSubcategory">-</span>
-                        </div>
-                        <div class="style-detail-row">
-                            <span class="style-detail-label">성별</span>
-                            <span class="style-detail-value" id="styleModalGender">-</span>
-                        </div>
-                    </div>
-                    
-                    <div class="style-modal-actions">
-                        <button class="modal-action-btn secondary" onclick="closeStyleModal()">닫기</button>
-                        <button class="modal-action-btn ai-btn" id="aiExperienceBtn" onclick="startAIExperience()">
-                            <span class="ai-icon">🤖</span>AI 체험하기
-                        </button>
-                        <button class="modal-action-btn">선택하기</button>
-                    </div>
-                    
-                    <div class="token-info" id="tokenInfo">
-                        AI 체험: 5토큰 소모 (현재: <span id="currentTokens">0</span>토큰)
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- AI 체험 모달 -->
-        <div class="ai-experience-modal" id="aiExperienceModal">
-            <div class="ai-experience-content">
-                <div class="ai-experience-header">
-                    <div class="ai-experience-title">🤖 AI 스타일 체험</div>
-                    <div class="ai-experience-subtitle">얼굴 사진을 업로드하여 스타일을 미리 체험해보세요</div>
-                </div>
-                
-                <div class="ai-experience-body">
-                    <!-- 파일 업로드 영역 -->
-                    <div class="ai-upload-area" id="aiUploadArea">
-                        <div class="ai-upload-icon">📸</div>
-                        <div class="ai-upload-text">얼굴 사진 업로드</div>
-                        <div class="ai-upload-hint">JPG, PNG 파일 지원 (최대 10MB)</div>
-                        <input type="file" id="aiFileInput" accept="image/*" style="display: none;">
-                        
-                        <!-- 카메라 및 갤러리 옵션 -->
-                        <div class="ai-camera-options">
-                            <button class="ai-camera-btn" id="cameraBtn">📷 카메라</button>
-                            <button class="ai-camera-btn" id="galleryBtn">🖼️ 갤러리</button>
-                        </div>
-                    </div>
-                    
-                    <!-- 미리보기 영역 -->
-                    <div class="ai-preview-area" id="aiPreviewArea">
-                        <div class="ai-preview-images">
-                            <div class="ai-preview-item">
-                                <img class="ai-preview-img" id="userPhoto" src="" alt="사용자 사진">
-                                <div class="ai-preview-label">내 사진</div>
-                            </div>
-                            <div class="ai-arrow">→</div>
-                            <div class="ai-preview-item">
-                                <img class="ai-preview-img" id="stylePhoto" src="" alt="스타일 사진">
-                                <div class="ai-preview-label">선택한 스타일</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 처리 중 표시 -->
-                    <div class="ai-processing" id="aiProcessing">
-                        <div class="ai-spinner"></div>
-                        <div class="ai-processing-text">AI가 스타일을 적용하고 있습니다...</div>
-                        <div class="ai-processing-hint">잠시만 기다려주세요 (약 10-30초 소요)</div>
-                    </div>
-                    
-                    <!-- 액션 버튼 -->
-                    <div class="ai-actions">
-                        <button class="ai-btn secondary" onclick="closeAIExperience()">취소</button>
-                        <button class="ai-btn primary" id="processAIBtn" onclick="processAI()" disabled>
-                            AI 처리 시작 (5토큰)
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 카메라 모달 -->
-        <div class="camera-modal" id="cameraModal">
-            <div class="camera-modal-content">
-                <h3 style="color: white; margin-bottom: 20px;">📷 사진 촬영</h3>
-                
-                <video class="camera-video" id="cameraVideo" autoplay muted playsinline></video>
-                <canvas class="camera-canvas" id="cameraCanvas"></canvas>
-                
-                <div class="camera-controls">
-                    <button class="camera-btn capture" id="captureBtn">📸 촬영</button>
-                    <button class="camera-btn cancel" id="closeCameraBtn">취소</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 퍼스널 컬러 모달 -->
-        <div class="personal-color-modal" id="personalColorModal">
-            <div class="personal-color-content">
-                <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
-                
-                <div class="personal-color-loading" id="personalColorLoading">
-                    <div class="loading-spinner"></div>
-                    <div>퍼스널 컬러를 로드하는 중...</div>
-                    <div style="font-size: 12px; color: #999; margin-top: 10px;">잠시만 기다려주세요</div>
-                </div>
-                
-                <div class="personal-color-container" id="personalColorContainer" style="display: none;">
-                    <!-- HTML 콘텐츠가 여기에 로드됨 -->
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Firebase 설정 -->
-    <script>
-        // Firebase 설정
-        const firebaseConfig = {
-            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
-            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
-            databaseURL: "https://hairgatormenu-4a43e-default-rtdb.firebaseio.com",
-            projectId: "hairgatormenu-4a43e",
-            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
-            messagingSenderId: "800038006875",
-            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
-        };
-
-        // Firebase 초기화
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-
-        // 캐시 설정
-        try {
-            db.settings({
-                cache: {
-                    kind: 'persistent',
-                    tabManager: { kind: 'multi-tab' }
-                }
-            });
-        } catch(e) {
-            console.log('Cache settings fallback');
-        }
-
-        console.log('✅ Firebase 초기화 완료');
-        
-        // ===== 전역 변수 선언 (window 객체에 할당하여 확실한 전역 접근 보장) =====
-        window.currentDesigner = null;           // 현재 로그인된 디자이너 정보
-        window.currentSessionId = null;          // 현재 세션 ID
-        window.currentStyleData = null;          // 현재 선택된 스타일 데이터
-        window.currentGender = null;             // 현재 선택된 성별
-        window.currentCategory = null;           // 현재 선택된 카테고리
-        window.currentSubcategory = null;        // 현재 선택된 서브카테고리
-        window.heartbeatInterval = null;         // 하트비트 인터벌
-        
-        // 캐시용 Map 객체들
-        window.availableSubcategories = new Map(); // 서브카테고리 캐시
-        
-        // 호환성을 위한 let 선언 (기존 코드 호환)
-        let currentDesigner = window.currentDesigner;
-        let currentSessionId = window.currentSessionId;
-        let currentStyleData = window.currentStyleData;
-        let currentGender = window.currentGender;
-        let currentCategory = window.currentCategory;
-        let currentSubcategory = window.currentSubcategory;
-        const availableSubcategories = window.availableSubcategories;
-    </script>
-
-    <!-- 외부 스크립트들 로드 -->
-    <script src="js/token-system.js"></script>
-    <script src="js/akool-service.js"></script>
-    <script src="js/menu.js"></script>
-
-    <script>
+<script>
         // index.html 전용 변수들 (window와 분리된 로컬 변수들)
         let cameraStream = null;
         let cameraVideo = null;
@@ -2377,7 +501,7 @@
                 <iframe 
                     id="personalColorFrame" 
                     src="./personal-color/index.html" 
-                    style="width: 100%; height: 100%; border: none; background: #111;"
+                    style="width: 100%; height: 100%; border: none; background: var(--bg-primary);"
                     allow="camera; microphone"
                     sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
                 ></iframe>
@@ -2900,7 +1024,7 @@
                         <div class="empty-state">
                             <div class="empty-icon">📭</div>
                             <div style="font-size: 18px;">등록된 스타일이 없습니다</div>
-                            <div style="font-size: 14px; color: #666; margin-top: 10px;">${categoryName} - ${subcategory}</div>
+                            <div style="font-size: 14px; color: var(--text-secondary); margin-top: 10px;">${categoryName} - ${subcategory}</div>
                         </div>
                     `;
                     return;
@@ -3077,15 +1201,15 @@
                 <div class="empty-state">
                     <div class="empty-icon">⚠️</div>
                     <div style="font-size: 18px;">로드 실패</div>
-                    <div style="font-size: 14px; color: #666; margin-top: 10px;">${message}</div>
-                    <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: var(--female-color); color: white; border: none; border-radius: 5px; cursor: pointer;">새로고침</button>
+                    <div style="font-size: 14px; color: var(--text-secondary); margin-top: 10px;">${message}</div>
+                    <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: var(--female-color); color: var(--bg-primary); border: none; border-radius: 5px; cursor: pointer;">새로고침</button>
                 </div>
             `;
         }
 
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🦎 HAIRGATOR x AKOOL 시작 - AI 체험 + 카메라 + 퍼스널 컬러 기능 통합 완료 + 이미지 로딩 최적화 적용');
+            console.log('🦎 HAIRGATOR 3가지 테마 시스템 완전 구현 - AI 체험 + 카메라 + 퍼스널 컬러 기능 통합 완료');
             
             loginScreen.style.display = 'flex';
             updateUserInfo();
@@ -3182,4 +1306,2032 @@
         });
     </script>
 </body>
-</html>
+</html><!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!-- 카메라 권한 문제 해결: Permissions Policy 메타 태그 추가 -->
+<meta http-equiv="Permissions-Policy" content="camera=*, microphone=*, geolocation=*">
+<meta http-equiv="Feature-Policy" content="camera '*'; microphone '*'">
+
+    <!-- 🚀 성능 최적화: DNS 프리페치 및 프리커넥트 -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link rel="dns-prefetch" href="//www.gstatic.com">
+    <link rel="dns-prefetch" href="//firebasestorage.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
+
+<title>HAIRGATOR - Professional Hair Style Menu</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1a1f2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HAIRGATOR">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- 아이콘 -->
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    
+    <!-- 구글 폰트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <style>
+        /* ========== 3가지 테마 시스템 CSS 변수 (index.html 전용) ========== */
+        
+        /* 초기화 및 기본 설정 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            /* ✨ 테마 1: 고급 헤어샵 (기본) - 다크블루그레이 + 골드 */
+            --bg-primary: #1a1f2e;
+            --bg-card: #2a2f3e;
+            --bg-secondary: #1a1f2e;
+            --text-primary: #f8f9fa;
+            --text-secondary: #999999;
+            --border-primary: #3d4456;
+            --border-secondary: #3d4456;
+            --header-bg: #1a1f2e;
+            --sidebar-bg: #2a2f3e;
+            --modal-bg: #2a2f3e;
+            --input-bg: #3d4456;
+            --input-border: #3d4456;
+            --category-bg: #2a2f3e;
+            --category-inactive: #3d4456;
+            --sub-tab-bg: #3d4456;
+            --styles-bg: #1a1f2e;
+            --accent-primary: #d4af37;
+            
+            /* 고정 컬러 */
+            --male-color: #4A90E2;
+            --female-color: #E91E63;
+            --new-indicator: #ff4444;
+            --ai-color: #9C27B0;
+            --ai-gradient: linear-gradient(135deg, #9C27B0 0%, #673AB7 100%);
+        }
+
+        /* 🎯 테마 2: 모던 미니멀 (화이트) */
+        [data-theme="minimal"] {
+            --bg-primary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #000000;
+            --text-secondary: #666666;
+            --border-primary: #dee2e6;
+            --border-secondary: #ddd;
+            --header-bg: #ffffff;
+            --sidebar-bg: #ffffff;
+            --modal-bg: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #dee2e6;
+            --category-bg: #f8f9fa;
+            --category-inactive: #ffffff;
+            --sub-tab-bg: #f8f9fa;
+            --styles-bg: #f9f9f9;
+            --accent-primary: #000000;
+            
+            /* 미니멀 테마 특별 색상 */
+            --male-color: #2196F3;
+            --female-color: #000000;
+        }
+
+        /* 🤎 테마 3: 따뜻한 프로페셔널 (브라운) */
+        [data-theme="warm"] {
+            --bg-primary: #f4e4c1;
+            --bg-card: #fff8e1;
+            --bg-secondary: #e8d5b7;
+            --text-primary: #3e2723;
+            --text-secondary: #5d4e37;
+            --border-primary: #d7ccc8;
+            --border-secondary: #d7ccc8;
+            --header-bg: #f4e4c1;
+            --sidebar-bg: #fff8e1;
+            --modal-bg: #fff8e1;
+            --input-bg: #fff8e1;
+            --input-border: #d7ccc8;
+            --category-bg: #e8d5b7;
+            --category-inactive: #fff8e1;
+            --sub-tab-bg: #d7ccc8;
+            --styles-bg: #f4e4c1;
+            --accent-primary: #6d4c41;
+            
+            /* 웜 톤 특별 색상 */
+            --male-color: #5d4e37;
+            --female-color: #6d4c41;
+        }
+
+        /* 라이트 테마 하위 호환성 (기존 코드 호환용) */
+        body.light-theme {
+            --bg-primary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #000000;
+            --text-secondary: #666666;
+            --border-primary: #e0e0e0;
+            --border-secondary: #ddd;
+            --header-bg: #ffffff;
+            --sidebar-bg: #ffffff;
+            --modal-bg: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #ddd;
+            --category-bg: #f8f9fa;
+            --category-inactive: #ffffff;
+            --sub-tab-bg: #f8f9fa;
+            --styles-bg: #f9f9f9;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            line-height: 1.4;
+            /* 테마 전환 애니메이션 */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* 헤더 - 태블릿 최적화 + 테마 대응 */
+        .header {
+            position: fixed;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--header-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            z-index: 1000;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 28px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--border-primary);
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .menu-btn {
+            position: absolute;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .menu-btn:hover {
+            background: var(--border-primary);
+        }
+
+        .menu-btn span {
+            width: 22px;
+            height: 2px;
+            background: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        /* 메인 콘텐츠 - 헤더 높이 조정 */
+        .main-content {
+            margin-top: 75px;
+            min-height: calc(100vh - 75px);
+            background: var(--bg-primary);
+            transition: background-color 0.3s ease;
+        }
+
+        /* 로그인 화면 - 태블릿 최적화 + 테마 대응 */
+        .login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 75px);
+            padding: 30px;
+        }
+
+        .login-modal {
+            background: var(--modal-bg);
+            border: 3px solid var(--female-color);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(233, 30, 99, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .login-modal h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .login-modal .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 35px;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--female-color);
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 16px;
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--female-color);
+            box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
+        }
+
+        /* 테마별 인풋 포커스 색상 */
+        [data-theme="minimal"] .form-group input:focus {
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="warm"] .form-group input:focus {
+            box-shadow: 0 0 0 3px rgba(109, 76, 65, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: var(--female-color);
+            color: var(--bg-primary);
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            filter: brightness(110%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-help {
+            margin-top: 25px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        /* NEW 표시 (빨간 점) - 태블릿 최적화 */
+        .new-indicator {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 10px;
+            height: 10px;
+            background: var(--new-indicator);
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(255, 68, 68, 0.6);
+            animation: pulse-red 2s infinite;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.3);
+                opacity: 0.7;
+            }
+        }
+
+        /* 성별 선택 - 태블릿 최적화 + 테마 대응 */
+        .gender-selection {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 75px);
+            padding: 40px;
+            gap: 100px;
+        }
+
+        .gender-btn {
+            width: 180px;
+            height: 260px;
+            border: 4px solid var(--border-primary);
+            border-radius: 25px;
+            background: var(--bg-card);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .gender-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .gender-btn.male {
+            border: 4px solid var(--male-color) !important;
+        }
+
+        .gender-btn.female {
+            border: 4px solid var(--female-color) !important;
+        }
+
+        .gender-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: var(--bg-primary);
+            transition: all 0.3s ease;
+        }
+
+        .gender-btn.male .gender-icon {
+            background: var(--male-color);
+        }
+
+        .gender-btn.female .gender-icon {
+            background: var(--female-color);
+        }
+
+        .gender-label {
+            font-size: 18px;
+            color: var(--text-primary) !important;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        /* 메뉴 컨테이너 */
+        .menu-container {
+            display: none;
+            padding: 0;
+        }
+
+        .menu-container.active {
+            display: block;
+        }
+
+        /* 카테고리 탭 - 태블릿 최적화 + 테마 대응 */
+        .category-tabs {
+            background: var(--bg-card);
+            padding: 18px;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border-primary);
+            scrollbar-width: none;
+            transition: all 0.3s ease;
+        }
+
+        .category-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-tab {
+            background: var(--category-inactive);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-primary);
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+            position: relative;
+            min-width: 80px;
+        }
+
+        .category-tab:hover {
+            background: var(--border-primary);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        .category-tab.active {
+            font-weight: bold;
+            transform: scale(1.05);
+        }
+
+        .category-tab.active.male {
+            background: var(--male-color);
+            color: var(--bg-primary);
+            border-color: var(--male-color);
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+        }
+
+        .category-tab.active.female {
+            background: var(--female-color);
+            color: var(--bg-primary);
+            border-color: var(--female-color);
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+        }
+
+        /* 서브카테고리 탭 - 태블릿 최적화 + 테마 대응 */
+        .sub-tabs {
+            background: var(--bg-secondary);
+            padding: 18px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border-primary);
+            transition: all 0.3s ease;
+        }
+
+        .sub-tab {
+            background: var(--sub-tab-bg);
+            color: var(--text-primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+            min-width: 70px;
+        }
+
+        .sub-tab:hover:not(.disabled) {
+            background: var(--border-secondary);
+            transform: translateY(-1px);
+        }
+
+        .sub-tab.active {
+            font-weight: bold;
+            transform: scale(1.05);
+        }
+
+        .sub-tab.active.male {
+            background: var(--male-color);
+            color: var(--bg-primary);
+            box-shadow: 0 3px 12px rgba(74, 144, 226, 0.4);
+        }
+
+        .sub-tab.active.female {
+            background: var(--female-color);
+            color: var(--bg-primary);
+            box-shadow: 0 3px 12px rgba(233, 30, 99, 0.4);
+        }
+
+        /* 비활성화된 서브카테고리 */
+        .sub-tab.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* 🚀 스타일 그리드 - 태블릿 우선 최적화 + 이미지 로딩 최적화 + 테마 대응 */
+        .styles-container {
+            padding: 20px;
+            min-height: 50vh;
+            background: var(--bg-primary);
+            transition: background-color 0.3s ease;
+        }
+
+        .styles-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            background: var(--bg-primary);
+            transition: background-color 0.3s ease;
+        }
+
+        /* 태블릿 가로모드: 5열 */
+        @media (min-width: 768px) and (orientation: landscape) {
+            .styles-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 18px;
+            }
+        }
+
+        /* 태블릿 세로모드: 4열 */
+        @media (min-width: 768px) and (orientation: portrait) {
+            .styles-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 15px;
+            }
+            
+            .styles-container {
+                padding: 25px 20px;
+            }
+        }
+
+        /* 모바일: 2열 */
+        @media (max-width: 767px) {
+            .styles-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .styles-container {
+                padding: 15px;
+            }
+        }
+
+        /* 대형 태블릿 (iPad Pro 등): 6열 */
+        @media (min-width: 1024px) and (max-width: 1366px) {
+            .styles-grid {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 20px;
+            }
+            
+            .styles-container {
+                padding: 30px 25px;
+            }
+        }
+
+        .style-card {
+            background: transparent;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            aspect-ratio: 3/4;
+            position: relative;
+        }
+
+        .style-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px var(--border-primary);
+        }
+
+        .style-card:active {
+            transform: scale(0.98);
+        }
+
+        /* 🚀 이미지 로딩 최적화: 스켈레톤과 그라데이션 동시 적용 + 테마 대응 */
+        .style-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--category-inactive) 25%, var(--border-primary) 50%, var(--category-inactive) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            transition: all 0.3s ease;
+        }
+
+        /* 이미지가 로드되면 애니메이션 제거하고 그라데이션 적용 */
+        .style-image.loaded {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            animation: none;
+        }
+
+        /* 로딩 애니메이션 */
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* 텍스트 정보 완전히 숨김 */
+        .style-info {
+            display: none;
+        }
+
+        .style-code {
+            display: none;
+        }
+
+        .style-name {
+            display: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+            grid-column: 1 / -1;
+            transition: color 0.3s ease;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        /* 🚀 로딩 스켈레톤 최적화 + 테마 대응 */
+        .skeleton-card {
+            background: linear-gradient(90deg, var(--category-inactive) 25%, var(--border-primary) 50%, var(--category-inactive) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            aspect-ratio: 3/4;
+            border-radius: 10px;
+        }
+
+        /* 사이드바 + 테마 대응 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            border-left: 1px solid var(--border-primary);
+            z-index: 2000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            right: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-primary);
+            transition: border-color 0.3s ease;
+        }
+
+        .sidebar-header h3 {
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .sidebar-close {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .sidebar-content {
+            padding: 20px;
+        }
+
+        .user-info {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-primary);
+            transition: all 0.3s ease;
+        }
+
+        .user-info h4 {
+            color: var(--female-color);
+            margin-bottom: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .user-info p {
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        #guestMessage {
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .logout-btn {
+            width: 100%;
+            background: #dc3545;
+            color: var(--bg-primary);
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        /* 로딩 오버레이 + 테마 대응 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-primary);
+            border-top: 3px solid var(--female-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            transition: border-color 0.3s ease;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 토스트 메시지 + 테마 대응 */
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--border-primary);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.success {
+            background: #28a745;
+            color: white;
+        }
+
+        .toast.error {
+            background: #dc3545;
+            color: white;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* 스타일 상세 모달 + 테마 대응 */
+        .style-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            padding: 20px;
+        }
+
+        .style-modal.active {
+            display: flex;
+        }
+
+        .style-modal-content {
+            background: var(--modal-bg);
+            border: 2px solid var(--female-color);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideUp 0.3s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .style-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .style-modal-close:hover {
+            background: var(--border-primary);
+        }
+
+        .style-modal-image {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            border-radius: 18px 18px 0 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .style-modal-info {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .style-modal-code {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .style-modal-name {
+            color: var(--text-primary);
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            transition: color 0.3s ease;
+        }
+
+        .style-modal-details {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-primary);
+            transition: all 0.3s ease;
+        }
+
+        .style-detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-primary);
+            transition: border-color 0.3s ease;
+        }
+
+        .style-detail-row:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+
+        .style-detail-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .style-detail-value {
+            color: var(--text-primary);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .style-modal-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .modal-action-btn {
+            flex: 1;
+            min-width: 120px;
+            background: var(--female-color);
+            color: var(--bg-primary);
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .modal-action-btn:hover {
+            filter: brightness(110%);
+            transform: translateY(-2px);
+        }
+
+        .modal-action-btn.secondary {
+            background: var(--border-primary);
+            color: var(--text-primary);
+        }
+
+        .modal-action-btn.secondary:hover {
+            background: var(--border-secondary);
+        }
+
+        /* AI 체험 버튼 스타일 */
+        .modal-action-btn.ai-btn {
+            background: var(--ai-gradient);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-action-btn.ai-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .modal-action-btn.ai-btn:hover::before {
+            left: 100%;
+        }
+
+        .modal-action-btn.ai-btn:hover {
+            background: linear-gradient(135deg, #AB47BC 0%, #7B1FA2 100%);
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+            transform: translateY(-3px);
+        }
+
+        .modal-action-btn.ai-btn:disabled {
+            background: var(--border-primary);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .modal-action-btn.ai-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* AI 아이콘 */
+        .ai-icon {
+            display: inline-block;
+            margin-right: 5px;
+            font-size: 14px;
+        }
+
+        /* 토큰 정보 텍스트 */
+        .token-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+
+        /* AI 체험 모달 + 테마 대응 */
+        .ai-experience-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 6000;
+            padding: 20px;
+        }
+
+        .ai-experience-modal.active {
+            display: flex;
+        }
+
+        .ai-experience-content {
+            background: var(--modal-bg);
+            border: 2px solid var(--ai-color);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideUp 0.3s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .ai-experience-header {
+            background: var(--ai-gradient);
+            padding: 20px;
+            border-radius: 18px 18px 0 0;
+            text-align: center;
+        }
+
+        .ai-experience-title {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .ai-experience-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .ai-experience-body {
+            padding: 30px;
+        }
+
+        .ai-upload-area {
+            border: 2px dashed var(--ai-color);
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-upload-area:hover {
+            border-color: #AB47BC;
+            background: rgba(156, 39, 176, 0.05);
+        }
+
+        .ai-upload-area.dragging {
+            border-color: #AB47BC;
+            background: rgba(156, 39, 176, 0.1);
+        }
+
+        .ai-upload-icon {
+            font-size: 48px;
+            color: var(--ai-color);
+            margin-bottom: 15px;
+        }
+
+        .ai-upload-text {
+            color: var(--text-primary);
+            font-size: 16px;
+            margin-bottom: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .ai-upload-hint {
+            color: var(--text-secondary);
+            font-size: 12px;
+            transition: color 0.3s ease;
+        }
+
+        .ai-camera-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .ai-camera-btn {
+            background: var(--border-primary);
+            color: var(--text-primary);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .ai-camera-btn:hover {
+            background: var(--border-secondary);
+            transform: translateY(-1px);
+        }
+
+        .ai-preview-area {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .ai-preview-images {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ai-preview-item {
+            text-align: center;
+        }
+
+        .ai-preview-img {
+            width: 150px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid var(--border-primary);
+            transition: border-color 0.3s ease;
+        }
+
+        .ai-preview-label {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-top: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .ai-arrow {
+            font-size: 24px;
+            color: var(--ai-color);
+        }
+
+        .ai-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .ai-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-btn.primary {
+            background: var(--ai-gradient);
+            color: white;
+        }
+
+        .ai-btn.primary:hover {
+            background: linear-gradient(135deg, #AB47BC 0%, #7B1FA2 100%);
+        }
+
+        .ai-btn.secondary {
+            background: var(--border-primary);
+            color: var(--text-primary);
+        }
+
+        .ai-btn.secondary:hover {
+            background: var(--border-secondary);
+        }
+
+        .ai-processing {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .ai-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-primary);
+            border-top: 3px solid var(--ai-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        .ai-processing-text {
+            color: var(--text-primary);
+            font-size: 16px;
+            margin-bottom: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .ai-processing-hint {
+            color: var(--text-secondary);
+            font-size: 12px;
+            transition: color 0.3s ease;
+        }
+
+        /* 카메라 모달 + 테마 대응 */
+        .camera-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 7000;
+            padding: 20px;
+        }
+
+        .camera-modal.active {
+            display: flex;
+        }
+
+        .camera-modal-content {
+            background: var(--modal-bg);
+            border: 2px solid var(--ai-color);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .camera-modal-content h3 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            transition: color 0.3s ease;
+        }
+
+        .camera-video {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .camera-canvas {
+            display: none;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .camera-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .camera-btn.capture {
+            background: var(--ai-color);
+            color: white;
+        }
+
+        .camera-btn.cancel {
+            background: var(--border-primary);
+            color: var(--text-primary);
+        }
+
+        .camera-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* AI 결과 모달 스타일 추가 + 테마 대응 */
+        .ai-result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 8000;
+        }
+
+        .ai-result-content {
+            background: var(--modal-bg);
+            border: 2px solid var(--ai-color);
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .ai-result-header {
+            background: var(--ai-gradient);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 13px 13px 0 0;
+        }
+
+        .ai-result-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .ai-result-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .ai-result-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .ai-result-body {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .ai-result-image {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid var(--border-primary);
+            transition: border-color 0.3s ease;
+        }
+
+        .ai-result-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* 퍼스널 컬러 모달 스타일 + 테마 대응 */
+        .personal-color-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9000;
+        }
+
+        .personal-color-modal.active {
+            display: flex;
+        }
+
+        .personal-color-content {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-primary);
+            overflow: hidden;
+            transition: background-color 0.3s ease;
+        }
+
+        .personal-color-close {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #FF6B6B;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 10000;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .personal-color-close:hover {
+            background: rgba(255,107,107,0.2);
+        }
+
+        /* 테마별 퍼스널 컬러 닫기 버튼 */
+        [data-theme="minimal"] .personal-color-close {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #000000 !important;
+        }
+
+        [data-theme="warm"] .personal-color-close {
+            background: rgba(62, 39, 35, 0.9) !important;
+            color: #f4e4c1 !important;
+        }
+
+        .personal-color-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--text-primary);
+            z-index: 5;
+            transition: color 0.3s ease;
+        }
+
+        .personal-color-container {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        /* 성별 아이콘 모드별 표시 */
+        .dark-mode-icon {
+            display: inline;
+        }
+
+        .light-mode-icon {
+            display: none;
+        }
+
+        /* 미니멀 테마에서 성별 아이콘 전환 */
+        [data-theme="minimal"] .dark-mode-icon {
+            display: none;
+        }
+
+        [data-theme="minimal"] .light-mode-icon {
+            display: inline;
+        }
+
+        /* 라이트 테마 하위 호환성 (기존 코드용) */
+        body.light-theme .dark-mode-icon {
+            display: none;
+        }
+
+        body.light-theme .light-mode-icon {
+            display: inline;
+        }
+
+        /* 테마 전환 애니메이션 */
+        body.theme-transitioning * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* 반응형 - 태블릿 우선 최적화 */
+        
+        /* 모바일 (스마트폰) */
+        @media (max-width: 767px) {
+            .header {
+                height: 50px;
+                padding: 0 15px;
+            }
+            
+            .main-content {
+                margin-top: 65px;
+                min-height: calc(100vh - 65px);
+            }
+            
+            .back-btn, .menu-btn {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .back-btn {
+                left: 15px;
+                font-size: 24px;
+            }
+            
+            .menu-btn {
+                right: 15px;
+            }
+            
+            .menu-btn span {
+                width: 18px;
+            }
+            
+            .logo {
+                font-size: 18px;
+            }
+            
+            .gender-selection {
+                flex-direction: column;
+                gap: 40px;
+                padding: 30px 20px;
+                min-height: calc(100vh - 65px);
+            }
+            
+            .gender-btn {
+                width: 150px;
+                height: 220px;
+            }
+            
+            .gender-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 50px;
+            }
+            
+            .gender-label {
+                font-size: 16px;
+            }
+            
+            .login-modal {
+                margin: 0 15px;
+                padding: 25px;
+                border-radius: 15px;
+            }
+            
+            .login-modal h2 {
+                font-size: 22px;
+            }
+            
+            .login-modal .subtitle {
+                font-size: 14px;
+            }
+            
+            .form-group input {
+                padding: 14px;
+                font-size: 16px;
+            }
+            
+            .login-btn {
+                padding: 16px;
+                font-size: 16px;
+            }
+
+            .style-modal-content {
+                max-width: 95%;
+                margin: 10px;
+            }
+
+            .style-modal-info {
+                padding: 20px;
+            }
+
+            .style-modal-name {
+                font-size: 20px;
+            }
+
+            .style-modal-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .modal-action-btn {
+                min-width: auto;
+                font-size: 14px;
+                padding: 12px;
+            }
+            
+            .token-info {
+                font-size: 11px;
+                margin-top: 8px;
+            }
+
+            .ai-experience-content {
+                max-width: 95%;
+                margin: 10px;
+            }
+
+            .ai-preview-images {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .ai-preview-img {
+                width: 120px;
+                height: 160px;
+            }
+
+            .ai-arrow {
+                transform: rotate(90deg);
+            }
+
+            .ai-camera-options {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .ai-camera-btn {
+                width: 100%;
+            }
+        }
+        
+        /* 태블릿 세로 모드 */
+        @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+            .category-tabs {
+                padding: 20px;
+            }
+            
+            .category-tab {
+                padding: 14px 26px;
+                font-size: 16px;
+            }
+            
+            .sub-tab {
+                padding: 11px 22px;
+                font-size: 15px;
+            }
+        }
+        
+        /* 태블릿 가로 모드 */
+        @media (min-width: 768px) and (orientation: landscape) {
+            .gender-selection {
+                gap: 120px;
+            }
+            
+            .gender-btn {
+                width: 200px;
+                height: 280px;
+            }
+            
+            .gender-icon {
+                width: 130px;
+                height: 130px;
+                font-size: 65px;
+            }
+            
+            .gender-label {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+        <h1 class="logo">HAIRGATOR</h1>
+        <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <!-- 사이드바 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>메뉴</h3>
+            <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
+        </div>
+        <div class="sidebar-content">
+            <!-- 동적 버튼 컨테이너 (JavaScript에서 생성) -->
+            <div id="dynamicButtons"></div>
+
+            <div class="user-info" id="userInfo" style="display: none;">
+                <h4>디자이너 정보</h4>
+                <p id="designerNameDisplay"></p>
+                <p id="designerPhoneDisplay"></p>
+                <p id="sessionStatusDisplay"></p>
+                <button class="logout-btn" onclick="logout()">로그아웃</button>
+            </div>
+            <p id="guestMessage">로그인 후 이용 가능합니다.</p>
+        </div>
+    </aside>
+
+    <!-- 로딩 오버레이 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 토스트 메시지 -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <!-- 로그인 화면 -->
+        <div class="login-screen" id="loginScreen">
+            <div class="login-modal">
+                <h2>HAIRGATOR</h2>
+                <p class="subtitle">Professional Hair Style Menu</p>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="designerName">디자이너명</label>
+                        <input type="text" id="designerName" placeholder="이름을 입력하세요" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phoneNumber">전화번호</label>
+                        <input type="tel" id="phoneNumber" placeholder="01000000000 또는 010-0000-0000" maxlength="13" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">비밀번호 (4자리)</label>
+                        <input type="password" id="password" placeholder="****" maxlength="4" required>
+                    </div>
+                    
+                    <button type="submit" class="login-btn" id="loginBtn">로그인</button>
+                </form>
+                
+                <p class="login-help">처음 사용하시나요? 관리자에게 계정을 요청하세요.</p>
+            </div>
+        </div>
+
+        <!-- 성별 선택 화면 -->
+        <div class="gender-selection" id="genderSelection">
+            <button class="gender-btn male" data-gender="male" onclick="selectGender('male')">
+                <div class="gender-icon">
+                    <span class="dark-mode-icon">♂</span>
+                    <span class="light-mode-icon">🧑‍💼</span>
+                </div>
+                <div class="gender-label">MALE</div>
+            </button>
+            <button class="gender-btn female" data-gender="female" onclick="selectGender('female')">
+                <div class="gender-icon">
+                    <span class="dark-mode-icon">♀</span>
+                    <span class="light-mode-icon">👩‍💼</span>
+                </div>
+                <div class="gender-label">FEMALE</div>
+            </button>
+        </div>
+
+        <!-- 메뉴 컨테이너 -->
+        <div class="menu-container" id="menuContainer">
+            <!-- 카테고리 탭 -->
+            <div class="category-tabs" id="categoryTabs">
+                <!-- 동적 생성 -->
+            </div>
+            
+            <!-- 서브카테고리 탭 -->
+            <div class="sub-tabs" id="subTabs">
+                <!-- 동적 생성 -->
+            </div>
+            
+            <!-- 스타일 컨테이너 -->
+            <div class="styles-container">
+                <div class="styles-grid" id="stylesGrid">
+                    <!-- 동적 생성 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 스타일 상세 모달 -->
+        <div class="style-modal" id="styleModal">
+            <div class="style-modal-content">
+                <button class="style-modal-close" id="styleModalClose">×</button>
+                
+                <img class="style-modal-image" id="styleModalImage" alt="Style Image">
+                
+                <div class="style-modal-info">
+                    <div class="style-modal-code" id="styleModalCode">CODE</div>
+                    <div class="style-modal-name" id="styleModalName">Style Name</div>
+                    
+                    <div class="style-modal-details">
+                        <div class="style-detail-row">
+                            <span class="style-detail-label">카테고리</span>
+                            <span class="style-detail-value" id="styleModalCategory">-</span>
+                        </div>
+                        <div class="style-detail-row">
+                            <span class="style-detail-label">서브카테고리</span>
+                            <span class="style-detail-value" id="styleModalSubcategory">-</span>
+                        </div>
+                        <div class="style-detail-row">
+                            <span class="style-detail-label">성별</span>
+                            <span class="style-detail-value" id="styleModalGender">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="style-modal-actions">
+                        <button class="modal-action-btn secondary" onclick="closeStyleModal()">닫기</button>
+                        <button class="modal-action-btn ai-btn" id="aiExperienceBtn" onclick="startAIExperience()">
+                            <span class="ai-icon">🤖</span>AI 체험하기
+                        </button>
+                        <button class="modal-action-btn">선택하기</button>
+                    </div>
+                    
+                    <div class="token-info" id="tokenInfo">
+                        AI 체험: 5토큰 소모 (현재: <span id="currentTokens">0</span>토큰)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI 체험 모달 -->
+        <div class="ai-experience-modal" id="aiExperienceModal">
+            <div class="ai-experience-content">
+                <div class="ai-experience-header">
+                    <div class="ai-experience-title">🤖 AI 스타일 체험</div>
+                    <div class="ai-experience-subtitle">얼굴 사진을 업로드하여 스타일을 미리 체험해보세요</div>
+                </div>
+                
+                <div class="ai-experience-body">
+                    <!-- 파일 업로드 영역 -->
+                    <div class="ai-upload-area" id="aiUploadArea">
+                        <div class="ai-upload-icon">📸</div>
+                        <div class="ai-upload-text">얼굴 사진 업로드</div>
+                        <div class="ai-upload-hint">JPG, PNG 파일 지원 (최대 10MB)</div>
+                        <input type="file" id="aiFileInput" accept="image/*" style="display: none;">
+                        
+                        <!-- 카메라 및 갤러리 옵션 -->
+                        <div class="ai-camera-options">
+                            <button class="ai-camera-btn" id="cameraBtn">📷 카메라</button>
+                            <button class="ai-camera-btn" id="galleryBtn">🖼️ 갤러리</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 미리보기 영역 -->
+                    <div class="ai-preview-area" id="aiPreviewArea">
+                        <div class="ai-preview-images">
+                            <div class="ai-preview-item">
+                                <img class="ai-preview-img" id="userPhoto" src="" alt="사용자 사진">
+                                <div class="ai-preview-label">내 사진</div>
+                            </div>
+                            <div class="ai-arrow">→</div>
+                            <div class="ai-preview-item">
+                                <img class="ai-preview-img" id="stylePhoto" src="" alt="스타일 사진">
+                                <div class="ai-preview-label">선택한 스타일</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 처리 중 표시 -->
+                    <div class="ai-processing" id="aiProcessing">
+                        <div class="ai-spinner"></div>
+                        <div class="ai-processing-text">AI가 스타일을 적용하고 있습니다...</div>
+                        <div class="ai-processing-hint">잠시만 기다려주세요 (약 10-30초 소요)</div>
+                    </div>
+                    
+                    <!-- 액션 버튼 -->
+                    <div class="ai-actions">
+                        <button class="ai-btn secondary" onclick="closeAIExperience()">취소</button>
+                        <button class="ai-btn primary" id="processAIBtn" onclick="processAI()" disabled>
+                            AI 처리 시작 (5토큰)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 카메라 모달 -->
+        <div class="camera-modal" id="cameraModal">
+            <div class="camera-modal-content">
+                <h3 style="color: var(--text-primary); margin-bottom: 20px;">📷 사진 촬영</h3>
+                
+                <video class="camera-video" id="cameraVideo" autoplay muted playsinline></video>
+                <canvas class="camera-canvas" id="cameraCanvas"></canvas>
+                
+                <div class="camera-controls">
+                    <button class="camera-btn capture" id="captureBtn">📸 촬영</button>
+                    <button class="camera-btn cancel" id="closeCameraBtn">취소</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 퍼스널 컬러 모달 -->
+        <div class="personal-color-modal" id="personalColorModal">
+            <div class="personal-color-content">
+                <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
+                
+                <iframe 
+                    id="personalColorFrame" 
+                    src="./personal-color/index.html" 
+                    style="width: 100%; height: 100%; border: none; background: var(--bg-primary);"
+                    allow="camera; microphone"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
+                ></iframe>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase 설정 -->
+    <script>
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            databaseURL: "https://hairgatormenu-4a43e-default-rtdb.firebaseio.com",
+            projectId: "hairgatormenu-4a43e",
+            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
+            messagingSenderId: "800038006875",
+            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        };
+
+        // Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // 캐시 설정
+        try {
+            db.settings({
+                cache: {
+                    kind: 'persistent',
+                    tabManager: { kind: 'multi-tab' }
+                }
+            });
+        } catch(e) {
+            console.log('Cache settings fallback');
+        }
+
+        console.log('✅ Firebase 초기화 완료');
+        
+        // ===== 전역 변수 선언 (window 객체에 할당하여 확실한 전역 접근 보장) =====
+        window.currentDesigner = null;           // 현재 로그인된 디자이너 정보
+        window.currentSessionId = null;          // 현재 세션 ID
+        window.currentStyleData = null;          // 현재 선택된 스타일 데이터
+        window.currentGender = null;             // 현재 선택된 성별
+        window.currentCategory = null;           // 현재 선택된 카테고리
+        window.currentSubcategory = null;        // 현재 선택된 서브카테고리
+        window.heartbeatInterval = null;         // 하트비트 인터벌
+        
+        // 캐시용 Map 객체들
+        window.availableSubcategories = new Map(); // 서브카테고리 캐시
+        
+        // 호환성을 위한 let 선언 (기존 코드 호환)
+        let currentDesigner = window.currentDesigner;
+        let currentSessionId = window.currentSessionId;
+        let currentStyleData = window.currentStyleData;
+        let currentGender = window.currentGender;
+        let currentCategory = window.currentCategory;
+        let currentSubcategory = window.currentSubcategory;
+        const availableSubcategories = window.availableSubcategories;
+    </script>
+
+    <!-- 외부 스크립트들 로드 -->
+    <script src="js/token-system.js"></script>
+    <script src="js/akool-service.js"></script>
+    <script src="js/menu.js"></script>
