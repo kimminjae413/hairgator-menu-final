@@ -497,6 +497,7 @@ class HairgatorApp {
                 </div>
             `;
         }
+        }
     }
     
     renderStylesGrid() {
