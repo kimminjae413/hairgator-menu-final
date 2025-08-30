@@ -124,6 +124,8 @@ class HairgatorApp {
         if (typeof lucide !== 'undefined' && lucide.createIcons) {
             lucide.createIcons();
             console.log('✅ Lucide 아이콘 초기화 완료');
+        } else {
+            console.warn('⚠️ Lucide 아이콘 라이브러리가 로드되지 않았습니다');
         }
     }
     
@@ -131,8 +133,12 @@ class HairgatorApp {
         // 앱 설정 로드 (나중에 확장 가능)
         const savedSettings = localStorage.getItem('hairgator_settings');
         if (savedSettings) {
-            const settings = JSON.parse(savedSettings);
-            console.log('📱 저장된 설정 로드:', settings);
+            try {
+                const settings = JSON.parse(savedSettings);
+                console.log('📱 저장된 설정 로드:', settings);
+            } catch (error) {
+                console.error('설정 로드 실패:', error);
+            }
         }
     }
     
@@ -459,11 +465,10 @@ class HairgatorApp {
     }
     
     async loadStyles() {
-        try {
-            const stylesGrid = document.getElementById('stylesGrid');
-            if (!stylesGrid) return;
-            
-            // 로딩 상태 표시
+        const stylesGrid = document.getElementById('stylesGrid');
+        if (!stylesGrid) return;
+        
+        // 로딩 상태 표시
         stylesGrid.innerHTML = `
             <div class="loading-container">
                 <div class="loading-spinner"></div>
@@ -496,7 +501,6 @@ class HairgatorApp {
                     <button class="btn" onclick="app.loadStyles()">다시 시도</button>
                 </div>
             `;
-        }
         }
     }
     
