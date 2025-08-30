@@ -1,6 +1,6 @@
-/* HAIRGATOR - 3가지 테마 색상 시스템 */
+/* HAIRGATOR - 3가지 프리미엄 테마 시스템 추가 */
 
-/* ========== 기본 설정 (변경 없음) ========== */
+/* ========== 기존 코드 유지 ========== */
 * {
     margin: 0;
     padding: 0;
@@ -18,6 +18,66 @@ html {
     -ms-text-size-adjust: 100%;
 }
 
+/* ========== 3가지 테마 CSS 변수 시스템 ========== */
+:root {
+    /* 🎯 테마 1: 고급 헤어샵 (기본 - 다크블루그레이 + 골드) */
+    --bg-primary: #1a1f2e;
+    --bg-secondary: #242937;
+    --bg-tertiary: #2d3348;
+    --text-primary: #f8f9fa;
+    --text-secondary: #adb5bd;
+    --text-muted: #6c757d;
+    --accent-primary: #d4af37;
+    --accent-secondary: #b8941f;
+    --border-color: #3d4456;
+    --border-light: #4a5568;
+    --shadow-color: rgba(26, 31, 46, 0.5);
+    --male-color: #5a9bdc;
+    --female-color: #e91e63;
+    
+    /* 테마 식별자 */
+    --theme-name: 'luxury';
+}
+
+/* ✨ 테마 2: 모던 미니멀 (순수 검정 + 흰색) */
+body.theme-minimal {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #f1f3f4;
+    --text-primary: #000000;
+    --text-secondary: #495057;
+    --text-muted: #6c757d;
+    --accent-primary: #000000;
+    --accent-secondary: #2c2c2c;
+    --border-color: #dee2e6;
+    --border-light: #f1f3f4;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --male-color: #2196f3;
+    --female-color: #e91e63;
+    
+    --theme-name: 'minimal';
+}
+
+/* 🤎 테마 3: 따뜻한 프로페셔널 (브라운 + 베이지) */
+body.theme-warm {
+    --bg-primary: #f4e4c1;
+    --bg-secondary: #ede0c8;
+    --bg-tertiary: #e6d7be;
+    --text-primary: #3e2723;
+    --text-secondary: #5d4037;
+    --text-muted: #8d6e63;
+    --accent-primary: #6d4c41;
+    --accent-secondary: #8d6e63;
+    --border-color: #d7ccc8;
+    --border-light: #efebe9;
+    --shadow-color: rgba(109, 76, 65, 0.2);
+    --male-color: #3f51b5;
+    --female-color: #e91e63;
+    
+    --theme-name: 'warm';
+}
+
+/* ========== 기존 스타일을 CSS 변수 기반으로 업데이트 ========== */
 body {
     font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg-primary);
@@ -26,108 +86,10 @@ body {
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
-    transition: all 0.3s ease; /* 부드러운 테마 전환 */
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* ========== 테마 1: 고급 헤어샵 (기본/다크) ========== */
-:root {
-    --theme-name: 'luxury';
-    
-    /* 메인 색상 */
-    --bg-primary: #1a1f2e;           /* 다크 블루그레이 배경 */
-    --bg-secondary: #252a3a;         /* 세컨더리 배경 */
-    --bg-card: #2c3441;              /* 카드 배경 */
-    
-    /* 텍스트 색상 */
-    --text-primary: #f8f9fa;         /* 주요 텍스트 */
-    --text-secondary: #adb5bd;       /* 보조 텍스트 */
-    --text-muted: #6c757d;           /* 약한 텍스트 */
-    
-    /* 액센트 색상 */
-    --accent-primary: #d4af37;       /* 골드 액센트 */
-    --accent-secondary: #b8941f;     /* 다크 골드 */
-    --accent-gradient: linear-gradient(135deg, #d4af37 0%, #f4e6a1 100%);
-    
-    /* 테두리 및 구분선 */
-    --border-primary: #3d4456;
-    --border-secondary: #495057;
-    
-    /* 기존 호환성 색상 */
-    --primary-dark: var(--bg-primary);
-    --primary-light: var(--bg-card);
-    --female-color: var(--accent-primary);
-    --male-color: #4A90E2;
-    
-    /* 상태 색상 */
-    --success: #28a745;
-    --warning: #ffc107;
-    --error: #dc3545;
-    --info: #17a2b8;
-}
-
-/* ========== 테마 2: 모던 미니멀 ========== */
-body.minimal-theme {
-    --theme-name: 'minimal';
-    
-    /* 메인 색상 */
-    --bg-primary: #ffffff;           /* 순수 흰색 */
-    --bg-secondary: #f8f9fa;         /* 연한 그레이 */
-    --bg-card: #ffffff;              /* 카드 배경 */
-    
-    /* 텍스트 색상 */
-    --text-primary: #000000;         /* 순수 검정 */
-    --text-secondary: #495057;       /* 진한 그레이 */
-    --text-muted: #6c757d;           /* 중간 그레이 */
-    
-    /* 액센트 색상 */
-    --accent-primary: #000000;       /* 검정 액센트 */
-    --accent-secondary: #333333;     /* 다크 그레이 */
-    --accent-gradient: linear-gradient(135deg, #000000 0%, #333333 100%);
-    
-    /* 테두리 및 구분선 */
-    --border-primary: #dee2e6;
-    --border-secondary: #e9ecef;
-    
-    /* 기존 호환성 색상 */
-    --primary-dark: var(--bg-secondary);
-    --primary-light: var(--bg-primary);
-    --female-color: var(--accent-primary);
-    --male-color: #495057;
-}
-
-/* ========== 테마 3: 따뜻한 프로페셔널 ========== */
-body.warm-theme {
-    --theme-name: 'warm';
-    
-    /* 메인 색상 */
-    --bg-primary: #f4e4c1;           /* 따뜻한 베이지 */
-    --bg-secondary: #ede0c8;         /* 라이트 베이지 */
-    --bg-card: #faf6f0;              /* 매우 밝은 베이지 */
-    
-    /* 텍스트 색상 */
-    --text-primary: #3e2723;         /* 다크 브라운 */
-    --text-secondary: #5d4037;       /* 미디엄 브라운 */
-    --text-muted: #8d6e63;           /* 라이트 브라운 */
-    
-    /* 액센트 색상 */
-    --accent-primary: #6d4c41;       /* 진한 브라운 */
-    --accent-secondary: #8d6e63;     /* 라이트 브라운 */
-    --accent-gradient: linear-gradient(135deg, #6d4c41 0%, #8d6e63 100%);
-    
-    /* 테두리 및 구분선 */
-    --border-primary: #d7ccc8;
-    --border-secondary: #bcaaa4;
-    
-    /* 기존 호환성 색상 */
-    --primary-dark: var(--bg-secondary);
-    --primary-light: var(--bg-card);
-    --female-color: var(--accent-primary);
-    --male-color: #795548;
-}
-
-/* ========== 공통 컴포넌트 스타일 ========== */
-
-/* 헤더 */
+/* ========== 헤더 ========== */
 .header {
     position: fixed;
     top: 15px;
@@ -141,17 +103,15 @@ body.warm-theme {
     padding: 0 15px;
     z-index: 1000;
     will-change: transform;
-    border-bottom: 1px solid var(--border-primary);
+    transition: background-color 0.3s ease;
+    border-bottom: 1px solid var(--border-color);
 }
 
-.logo {
-    font-size: 18px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    color: var(--text-primary);
-}
-
-.back-btn, .menu-btn {
+.back-btn {
+    position: absolute;
+    left: 15px;
+    width: 30px;
+    height: 30px;
     background: none;
     border: none;
     cursor: pointer;
@@ -160,14 +120,19 @@ body.warm-theme {
     justify-content: center;
     color: var(--text-primary);
     font-size: 24px;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, color 0.3s ease;
 }
 
-.back-btn {
-    position: absolute;
-    left: 15px;
-    width: 30px;
-    height: 30px;
+.back-btn:active {
+    transform: scale(0.9);
+}
+
+.logo {
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
 .menu-btn {
@@ -175,163 +140,456 @@ body.warm-theme {
     right: 15px;
     width: 30px;
     height: 30px;
-}
-
-.back-btn:active,
-.menu-btn:active {
-    transform: scale(0.9);
-    color: var(--accent-primary);
-}
-
-/* 메뉴 아이템 */
-.menu-item {
-    background: var(--bg-card);
-    border: 1px solid var(--border-primary);
-    border-radius: 12px;
-    padding: 20px;
-    margin: 10px 0;
-    transition: all 0.2s ease;
-    color: var(--text-primary);
-}
-
-.menu-item:hover {
-    transform: translateY(-2px);
-    border-color: var(--accent-primary);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-/* 버튼 스타일 */
-.btn-primary {
-    background: var(--accent-gradient);
-    color: var(--text-primary);
+    background: none;
     border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
     cursor: pointer;
-    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.menu-btn span {
+    width: 18px;
+    height: 2px;
+    background: var(--text-primary);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.menu-btn span:before,
+.menu-btn span:after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background: var(--text-primary);
     transition: all 0.3s ease;
 }
 
-.btn-primary:hover {
+.menu-btn span:before {
+    top: -6px;
+}
+
+.menu-btn span:after {
+    top: 6px;
+}
+
+/* ========== 사이드바 테마 적용 ========== */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
+    background: var(--bg-secondary);
+    z-index: 2000;
+    transition: left 0.3s ease, background-color 0.3s ease;
+    border-right: 1px solid var(--border-color);
+    box-shadow: 5px 0 15px var(--shadow-color);
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    transition: background-color 0.3s ease;
+}
+
+.sidebar-title {
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    transition: color 0.3s ease;
+}
+
+.sidebar-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.sidebar-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+/* ========== 테마 전환 버튼 스타일 ========== */
+#themeToggleBtn {
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    color: var(--bg-primary);
+    border: 2px solid var(--accent-primary);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+#themeToggleBtn:hover {
     transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadow-color);
     filter: brightness(110%);
 }
 
-/* 사이드바 */
-.sidebar {
+#themeToggleBtn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+#themeToggleBtn:hover::before {
+    left: 100%;
+}
+
+/* ========== 메인 콘텐츠 영역 ========== */
+.main-content {
+    background: var(--bg-primary);
+    min-height: 100vh;
+    padding-top: 80px;
+    transition: background-color 0.3s ease;
+}
+
+/* ========== 성별 선택 ========== */
+.gender-selection {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.gender-title {
+    color: var(--text-primary);
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 40px;
+    transition: color 0.3s ease;
+}
+
+.gender-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.gender-btn {
+    padding: 20px 40px;
+    border-radius: 15px;
+    border: 2px solid var(--border-color);
     background: var(--bg-secondary);
-    border-right: 1px solid var(--border-primary);
     color: var(--text-primary);
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 150px;
 }
 
-.sidebar-item {
-    color: var(--text-secondary);
-    border-bottom: 1px solid var(--border-primary);
-    transition: all 0.2s ease;
-}
-
-.sidebar-item:hover {
-    background: var(--bg-card);
-    color: var(--accent-primary);
-}
-
-/* 카드 컴포넌트 */
-.card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-primary);
-    border-radius: 8px;
-    padding: 20px;
-    color: var(--text-primary);
-}
-
-/* 입력 필드 */
-.form-control {
-    background: var(--bg-card);
-    border: 1px solid var(--border-primary);
-    color: var(--text-primary);
-    padding: 10px 15px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-
-.form-control:focus {
+.gender-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px var(--shadow-color);
     border-color: var(--accent-primary);
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
 
-/* 모달 */
+.gender-btn.male:hover,
+.gender-btn.male.active {
+    background: var(--male-color);
+    border-color: var(--male-color);
+    color: white;
+}
+
+.gender-btn.female:hover,
+.gender-btn.female.active {
+    background: var(--female-color);
+    border-color: var(--female-color);
+    color: white;
+}
+
+/* ========== 메뉴 컨테이너 ========== */
+.menu-container {
+    background: var(--bg-primary);
+    transition: background-color 0.3s ease;
+}
+
+/* ========== 카테고리 탭 ========== */
+.category-tabs {
+    display: flex;
+    padding: 20px;
+    gap: 15px;
+    background: var(--bg-secondary);
+    overflow-x: auto;
+    transition: background-color 0.3s ease;
+}
+
+.category-tab {
+    padding: 15px 25px;
+    border-radius: 25px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.category-tab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+.category-tab.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: var(--bg-primary);
+    box-shadow: 0 5px 20px var(--shadow-color);
+}
+
+/* ========== 스타일 그리드 ========== */
+.styles-container {
+    padding: 20px;
+    background: var(--bg-primary);
+    transition: background-color 0.3s ease;
+}
+
+.styles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.style-card {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.style-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-primary);
+    box-shadow: 0 10px 30px var(--shadow-color);
+}
+
+.style-image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    background: var(--bg-tertiary);
+    transition: background-color 0.3s ease;
+}
+
+.style-info {
+    padding: 15px;
+    text-align: center;
+}
+
+.style-code {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-bottom: 5px;
+    transition: color 0.3s ease;
+}
+
+.style-name {
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+/* ========== 로딩 오버레이 ========== */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: background-color 0.3s ease;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid var(--border-color);
+    border-top: 4px solid var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========== 모달 ========== */
 .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal.active {
+    opacity: 1;
+    visibility: visible;
 }
 
 .modal-content {
-    background: var(--bg-primary);
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    transform: scale(0.9);
+    animation: modalShow 0.3s ease forwards;
+}
+
+@keyframes modalShow {
+    to {
+        transform: scale(1);
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
     color: var(--text-primary);
-    border: 1px solid var(--border-primary);
-    border-radius: 12px;
+    font-size: 28px;
+    cursor: pointer;
+    transition: color 0.3s ease;
 }
 
-/* 테마별 특별 효과 */
-
-/* 고급 헤어샵 테마 - 골드 글로우 효과 */
-:root .btn-primary {
-    box-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+.modal-close:hover {
+    color: var(--accent-primary);
 }
 
-/* 모던 미니멀 테마 - 심플한 그림자 */
-body.minimal-theme .btn-primary {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+/* ========== 버튼 스타일 ========== */
+.btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    border: 2px solid var(--accent-primary);
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
-body.minimal-theme .menu-item:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadow-color);
+    filter: brightness(110%);
 }
 
-/* 따뜻한 프로페셔널 테마 - 부드러운 그림자 */
-body.warm-theme .btn-primary {
-    box-shadow: 0 2px 10px rgba(109, 76, 65, 0.2);
+.btn-outline {
+    background: transparent;
+    color: var(--accent-primary);
 }
 
-body.warm-theme .menu-item:hover {
-    box-shadow: 0 4px 15px rgba(109, 76, 65, 0.15);
+.btn-outline:hover {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
 }
 
 /* ========== 반응형 디자인 ========== */
 @media (max-width: 768px) {
-    .header {
-        height: 60px;
-        top: 0;
-        padding: 0 20px;
+    .styles-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
     }
     
-    .back-btn,
-    .menu-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 26px;
+    .gender-buttons {
+        flex-direction: column;
+        align-items: center;
     }
     
-    .menu-item {
-        padding: 16px;
-        margin: 8px 0;
+    .category-tabs {
+        padding: 15px;
+    }
+    
+    .sidebar {
+        width: 100%;
+        left: -100%;
     }
 }
 
-/* ========== 애니메이션 ========== */
-@keyframes themeTransition {
-    0% { opacity: 0.9; }
-    100% { opacity: 1; }
+/* ========== 스무스 전환 애니메이션 ========== */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-body {
-    animation: themeTransition 0.3s ease-out;
+/* ========== 토스트 메시지 테마 적용 ========== */
+.toast {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 5px 15px var(--shadow-color);
 }
 
-/* ========== 접근성 ========== */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        transition-duration: 0.01ms !important;
-        animation-duration: 0.01ms !important;
-    }
+.toast.success {
+    border-left: 4px solid var(--accent-primary);
+}
+
+/* ========== 퍼스널 컬러 버튼 스타일 ========== */
+#personalColorBtn {
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    color: var(--bg-primary);
+    border: 2px solid var(--accent-primary);
+    transition: all 0.3s ease;
+}
+
+#personalColorBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadow-color);
+    filter: brightness(110%);
 }
