@@ -1,0 +1,396 @@
+/* ========================================
+   HAIRGATOR - ULTRA MODERN 3-THEME SYSTEM
+   ======================================== */
+
+/* CSS 변수 기본 설정 */
+:root {
+    /* 공통 변수 */
+    --border-radius-sm: 8px;
+    --border-radius: 12px;
+    --border-radius-lg: 20px;
+    --border-radius-xl: 28px;
+    
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.16);
+    --shadow-xl: 0 24px 88px rgba(0, 0, 0, 0.24);
+    
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --blur-sm: blur(8px);
+    --blur: blur(16px);
+    --blur-lg: blur(24px);
+    
+    /* 폰트 */
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-ui: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ========================================
+   테마 1: NEON DARK (사이버펑크 스타일)
+   ======================================== */
+[data-theme="neon"] {
+    /* 메인 컬러 */
+    --bg-primary: #0f0f23;
+    --bg-secondary: #1a1a3a;
+    --bg-tertiary: #242448;
+    --bg-glass: rgba(26, 26, 58, 0.8);
+    --bg-card: rgba(36, 36, 72, 0.6);
+    
+    /* 텍스트 */
+    --text-primary: #ffffff;
+    --text-secondary: #b8b8d1;
+    --text-muted: #8888aa;
+    --text-inverse: #0f0f23;
+    
+    /* 브랜드 컬러 */
+    --accent-primary: #00f5ff;      /* 사이안 네온 */
+    --accent-secondary: #ff0080;    /* 마젠타 네온 */
+    --accent-tertiary: #00ff88;     /* 그린 네온 */
+    
+    /* 성별 구분 */
+    --male-color: #00f5ff;
+    --male-color-light: rgba(0, 245, 255, 0.2);
+    --male-gradient: linear-gradient(135deg, #00f5ff, #0080ff);
+    
+    --female-color: #ff0080;
+    --female-color-light: rgba(255, 0, 128, 0.2);
+    --female-gradient: linear-gradient(135deg, #ff0080, #ff4080);
+    
+    /* 상태 컬러 */
+    --success: #00ff88;
+    --warning: #ffaa00;
+    --error: #ff4444;
+    --info: #00f5ff;
+    
+    /* 특수 효과 */
+    --glow-primary: 0 0 20px rgba(0, 245, 255, 0.5);
+    --glow-secondary: 0 0 20px rgba(255, 0, 128, 0.5);
+    --neon-border: 1px solid rgba(0, 245, 255, 0.3);
+    
+    /* 그라디언트 */
+    --gradient-primary: linear-gradient(135deg, #00f5ff, #ff0080);
+    --gradient-secondary: linear-gradient(135deg, #1a1a3a, #242448);
+    --gradient-glass: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 128, 0.1));
+    
+    /* 배경 메시 */
+    --mesh-1: radial-gradient(circle at 20% 20%, rgba(0, 245, 255, 0.1) 0%, transparent 50%);
+    --mesh-2: radial-gradient(circle at 80% 80%, rgba(255, 0, 128, 0.1) 0%, transparent 50%);
+    --mesh-3: radial-gradient(circle at 40% 60%, rgba(0, 255, 136, 0.05) 0%, transparent 50%);
+}
+
+/* ========================================
+   테마 2: LUXURY GOLD (프리미엄 다크)
+   ======================================== */
+[data-theme="luxury"] {
+    /* 메인 컬러 */
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a1a;
+    --bg-tertiary: #2d2d2d;
+    --bg-glass: rgba(26, 26, 26, 0.9);
+    --bg-card: rgba(45, 45, 45, 0.7);
+    
+    /* 텍스트 */
+    --text-primary: #f5f5f5;
+    --text-secondary: #d4af37;
+    --text-muted: #999999;
+    --text-inverse: #0a0a0a;
+    
+    /* 브랜드 컬러 */
+    --accent-primary: #d4af37;      /* 클래식 골드 */
+    --accent-secondary: #f4d03f;    /* 밝은 골드 */
+    --accent-tertiary: #b8860b;     /* 다크 골드 */
+    
+    /* 성별 구분 */
+    --male-color: #4a90e2;
+    --male-color-light: rgba(74, 144, 226, 0.2);
+    --male-gradient: linear-gradient(135deg, #4a90e2, #357abd);
+    
+    --female-color: #e84393;
+    --female-color-light: rgba(232, 67, 147, 0.2);
+    --female-gradient: linear-gradient(135deg, #e84393, #fd79a8);
+    
+    /* 상태 컬러 */
+    --success: #27ae60;
+    --warning: #f39c12;
+    --error: #e74c3c;
+    --info: #3498db;
+    
+    /* 특수 효과 */
+    --glow-primary: 0 0 30px rgba(212, 175, 55, 0.4);
+    --glow-secondary: 0 0 20px rgba(244, 208, 63, 0.3);
+    --neon-border: 1px solid rgba(212, 175, 55, 0.4);
+    
+    /* 그라디언트 */
+    --gradient-primary: linear-gradient(135deg, #d4af37, #f4d03f);
+    --gradient-secondary: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    --gradient-glass: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(244, 208, 63, 0.05));
+    
+    /* 배경 메시 */
+    --mesh-1: radial-gradient(circle at 30% 30%, rgba(212, 175, 55, 0.08) 0%, transparent 60%);
+    --mesh-2: radial-gradient(circle at 70% 70%, rgba(244, 208, 63, 0.06) 0%, transparent 60%);
+    --mesh-3: radial-gradient(circle at 50% 20%, rgba(184, 134, 11, 0.04) 0%, transparent 60%);
+}
+
+/* ========================================
+   테마 3: MINIMAL WHITE (클린 모던)
+   ======================================== */
+[data-theme="minimal"] {
+    /* 메인 컬러 */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #e9ecef;
+    --bg-glass: rgba(248, 249, 250, 0.9);
+    --bg-card: rgba(255, 255, 255, 0.8);
+    
+    /* 텍스트 */
+    --text-primary: #212529;
+    --text-secondary: #495057;
+    --text-muted: #6c757d;
+    --text-inverse: #ffffff;
+    
+    /* 브랜드 컬러 */
+    --accent-primary: #6c757d;      /* 뉴트럴 그레이 */
+    --accent-secondary: #495057;    /* 다크 그레이 */
+    --accent-tertiary: #343a40;     /* 딥 그레이 */
+    
+    /* 성별 구분 */
+    --male-color: #007bff;
+    --male-color-light: rgba(0, 123, 255, 0.1);
+    --male-gradient: linear-gradient(135deg, #007bff, #0056b3);
+    
+    --female-color: #e83e8c;
+    --female-color-light: rgba(232, 62, 140, 0.1);
+    --female-gradient: linear-gradient(135deg, #e83e8c, #d91a72);
+    
+    /* 상태 컬러 */
+    --success: #28a745;
+    --warning: #ffc107;
+    --error: #dc3545;
+    --info: #17a2b8;
+    
+    /* 특수 효과 */
+    --glow-primary: 0 0 20px rgba(108, 117, 125, 0.2);
+    --glow-secondary: 0 0 15px rgba(73, 80, 87, 0.15);
+    --neon-border: 1px solid rgba(108, 117, 125, 0.2);
+    
+    /* 그라디언트 */
+    --gradient-primary: linear-gradient(135deg, #6c757d, #495057);
+    --gradient-secondary: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(248, 249, 250, 0.6));
+    
+    /* 배경 메시 */
+    --mesh-1: radial-gradient(circle at 25% 25%, rgba(108, 117, 125, 0.05) 0%, transparent 60%);
+    --mesh-2: radial-gradient(circle at 75% 75%, rgba(73, 80, 87, 0.03) 0%, transparent 60%);
+    --mesh-3: radial-gradient(circle at 50% 50%, rgba(52, 58, 64, 0.02) 0%, transparent 60%);
+    
+    /* 라이트 테마용 그림자 조정 */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.16);
+    --shadow-xl: 0 24px 88px rgba(0, 0, 0, 0.20);
+}
+
+/* ========================================
+   테마 전환 애니메이션
+   ======================================== */
+.theme-transition {
+    transition: 
+        background-color var(--transition-slow),
+        color var(--transition-slow),
+        border-color var(--transition-slow),
+        box-shadow var(--transition-slow) !important;
+}
+
+.theme-transition * {
+    transition: 
+        background-color var(--transition-slow),
+        color var(--transition-slow),
+        border-color var(--transition-slow),
+        box-shadow var(--transition-slow) !important;
+}
+
+/* ========================================
+   다크/라이트 모드별 특별 처리
+   ======================================== */
+
+/* 다크 테마 공통 (neon, luxury) */
+[data-theme="neon"], 
+[data-theme="luxury"] {
+    color-scheme: dark;
+}
+
+[data-theme="neon"] ::selection,
+[data-theme="luxury"] ::selection {
+    background: var(--accent-primary);
+    color: var(--text-inverse);
+}
+
+/* 라이트 테마 (minimal) */
+[data-theme="minimal"] {
+    color-scheme: light;
+}
+
+[data-theme="minimal"] ::selection {
+    background: var(--accent-primary);
+    color: var(--text-inverse);
+}
+
+/* ========================================
+   글로벌 배경 효과
+   ======================================== */
+.bg-effects {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.mesh-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        var(--mesh-1),
+        var(--mesh-2),
+        var(--mesh-3);
+    opacity: 1;
+    animation: meshFloat 20s ease-in-out infinite;
+}
+
+.gradient-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.6;
+    animation: orbFloat 15s ease-in-out infinite;
+}
+
+.orb-1 {
+    width: 200px;
+    height: 200px;
+    top: 10%;
+    left: 10%;
+    background: var(--gradient-primary);
+    animation-delay: 0s;
+}
+
+.orb-2 {
+    width: 300px;
+    height: 300px;
+    top: 60%;
+    right: 10%;
+    background: var(--accent-secondary);
+    animation-delay: 5s;
+}
+
+.orb-3 {
+    width: 150px;
+    height: 150px;
+    bottom: 20%;
+    left: 60%;
+    background: var(--accent-tertiary);
+    animation-delay: 10s;
+}
+
+/* ========================================
+   테마별 특별 애니메이션
+   ======================================== */
+
+/* Neon 테마 글리치 효과 */
+[data-theme="neon"] .logo-text,
+[data-theme="neon"] .main-title {
+    position: relative;
+    text-shadow: 
+        0 0 10px var(--accent-primary),
+        0 0 20px var(--accent-primary),
+        0 0 40px var(--accent-primary);
+}
+
+[data-theme="neon"] .logo-text::before {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: var(--accent-secondary);
+    z-index: -1;
+    animation: glitch 3s infinite;
+}
+
+/* Luxury 테마 골드 글로우 */
+[data-theme="luxury"] .logo-text,
+[data-theme="luxury"] .brand-text h1 {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: var(--glow-primary);
+}
+
+/* Minimal 테마 서브틀 애니메이션 */
+[data-theme="minimal"] .feature-item {
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+[data-theme="minimal"] .feature-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* ========================================
+   키프레임 애니메이션
+   ======================================== */
+@keyframes meshFloat {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(10px, -10px) rotate(1deg); }
+    66% { transform: translate(-5px, 5px) rotate(-1deg); }
+}
+
+@keyframes orbFloat {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(20px, -20px) scale(1.1); }
+    66% { transform: translate(-15px, 15px) scale(0.9); }
+}
+
+@keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+}
+
+/* ========================================
+   반응형 테마 조정
+   ======================================== */
+@media (max-width: 768px) {
+    .gradient-orb {
+        display: none; /* 모바일에서는 성능을 위해 숨김 */
+    }
+    
+    .mesh-gradient {
+        opacity: 0.5; /* 모바일에서 배경 효과 약화 */
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gradient-orb,
+    .mesh-gradient {
+        animation: none;
+    }
+    
+    .theme-transition,
+    .theme-transition * {
+        transition: none !important;
+    }
+}
