@@ -1,5 +1,5 @@
 /* ========================================
-   HAIRGATOR - ULTRA MODERN 3-THEME SYSTEM
+   HAIRGATOR - 올바른 테마 색상 시스템
    ======================================== */
 
 /* CSS 변수 기본 설정 */
@@ -30,88 +30,35 @@
 }
 
 /* ========================================
-   테마 1: NEON DARK (사이버펑크 스타일)
+   테마 1: PREMIUM DARK (고급 다크 - 첫번째 이미지)
    ======================================== */
 [data-theme="neon"] {
     /* 메인 컬러 */
-    --bg-primary: #0f0f23;
-    --bg-secondary: #1a1a3a;
-    --bg-tertiary: #242448;
-    --bg-glass: rgba(26, 26, 58, 0.8);
-    --bg-card: rgba(36, 36, 72, 0.6);
+    --bg-primary: #2c3e50;         /* 다크 네이비 */
+    --bg-secondary: #34495e;       /* 미드 네이비 */
+    --bg-tertiary: #3a4a5c;        /* 라이트 네이비 */
+    --bg-glass: rgba(52, 73, 94, 0.8);
+    --bg-card: rgba(58, 74, 92, 0.6);
     
     /* 텍스트 */
-    --text-primary: #ffffff;
-    --text-secondary: #b8b8d1;
-    --text-muted: #8888aa;
-    --text-inverse: #0f0f23;
+    --text-primary: #f1c40f;       /* 골드 */
+    --text-secondary: #f39c12;     /* 다크 골드 */
+    --text-muted: #95a5a6;         /* 그레이 */
+    --text-inverse: #2c3e50;       /* 다크 네이비 */
     
     /* 브랜드 컬러 */
-    --accent-primary: #00f5ff;      /* 사이안 네온 */
-    --accent-secondary: #ff0080;    /* 마젠타 네온 */
-    --accent-tertiary: #00ff88;     /* 그린 네온 */
+    --accent-primary: #f1c40f;      /* 골드 */
+    --accent-secondary: #f39c12;    /* 다크 골드 */
+    --accent-tertiary: #e67e22;     /* 오렌지 골드 */
     
     /* 성별 구분 */
-    --male-color: #00f5ff;
-    --male-color-light: rgba(0, 245, 255, 0.2);
-    --male-gradient: linear-gradient(135deg, #00f5ff, #0080ff);
+    --male-color: #3498db;
+    --male-color-light: rgba(52, 152, 219, 0.2);
+    --male-gradient: linear-gradient(135deg, #3498db, #2980b9);
     
-    --female-color: #ff0080;
-    --female-color-light: rgba(255, 0, 128, 0.2);
-    --female-gradient: linear-gradient(135deg, #ff0080, #ff4080);
-    
-    /* 상태 컬러 */
-    --success: #00ff88;
-    --warning: #ffaa00;
-    --error: #ff4444;
-    --info: #00f5ff;
-    
-    /* 특수 효과 */
-    --glow-primary: 0 0 20px rgba(0, 245, 255, 0.5);
-    --glow-secondary: 0 0 20px rgba(255, 0, 128, 0.5);
-    --neon-border: 1px solid rgba(0, 245, 255, 0.3);
-    
-    /* 그라디언트 */
-    --gradient-primary: linear-gradient(135deg, #00f5ff, #ff0080);
-    --gradient-secondary: linear-gradient(135deg, #1a1a3a, #242448);
-    --gradient-glass: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 128, 0.1));
-    
-    /* 배경 메시 */
-    --mesh-1: radial-gradient(circle at 20% 20%, rgba(0, 245, 255, 0.1) 0%, transparent 50%);
-    --mesh-2: radial-gradient(circle at 80% 80%, rgba(255, 0, 128, 0.1) 0%, transparent 50%);
-    --mesh-3: radial-gradient(circle at 40% 60%, rgba(0, 255, 136, 0.05) 0%, transparent 50%);
-}
-
-/* ========================================
-   테마 2: LUXURY GOLD (프리미엄 다크)
-   ======================================== */
-[data-theme="luxury"] {
-    /* 메인 컬러 */
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #1a1a1a;
-    --bg-tertiary: #2d2d2d;
-    --bg-glass: rgba(26, 26, 26, 0.9);
-    --bg-card: rgba(45, 45, 45, 0.7);
-    
-    /* 텍스트 */
-    --text-primary: #f5f5f5;
-    --text-secondary: #d4af37;
-    --text-muted: #999999;
-    --text-inverse: #0a0a0a;
-    
-    /* 브랜드 컬러 */
-    --accent-primary: #d4af37;      /* 클래식 골드 */
-    --accent-secondary: #f4d03f;    /* 밝은 골드 */
-    --accent-tertiary: #b8860b;     /* 다크 골드 */
-    
-    /* 성별 구분 */
-    --male-color: #4a90e2;
-    --male-color-light: rgba(74, 144, 226, 0.2);
-    --male-gradient: linear-gradient(135deg, #4a90e2, #357abd);
-    
-    --female-color: #e84393;
-    --female-color-light: rgba(232, 67, 147, 0.2);
-    --female-gradient: linear-gradient(135deg, #e84393, #fd79a8);
+    --female-color: #e74c3c;
+    --female-color-light: rgba(231, 76, 60, 0.2);
+    --female-gradient: linear-gradient(135deg, #e74c3c, #c0392b);
     
     /* 상태 컬러 */
     --success: #27ae60;
@@ -120,23 +67,76 @@
     --info: #3498db;
     
     /* 특수 효과 */
-    --glow-primary: 0 0 30px rgba(212, 175, 55, 0.4);
-    --glow-secondary: 0 0 20px rgba(244, 208, 63, 0.3);
-    --neon-border: 1px solid rgba(212, 175, 55, 0.4);
+    --glow-primary: 0 0 20px rgba(241, 196, 15, 0.3);
+    --glow-secondary: 0 0 20px rgba(243, 156, 18, 0.3);
+    --neon-border: 1px solid rgba(241, 196, 15, 0.3);
     
     /* 그라디언트 */
-    --gradient-primary: linear-gradient(135deg, #d4af37, #f4d03f);
-    --gradient-secondary: linear-gradient(135deg, #1a1a1a, #2d2d2d);
-    --gradient-glass: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(244, 208, 63, 0.05));
+    --gradient-primary: linear-gradient(135deg, #f1c40f, #f39c12);
+    --gradient-secondary: linear-gradient(135deg, #2c3e50, #34495e);
+    --gradient-glass: linear-gradient(135deg, rgba(241, 196, 15, 0.1), rgba(243, 156, 18, 0.1));
     
     /* 배경 메시 */
-    --mesh-1: radial-gradient(circle at 30% 30%, rgba(212, 175, 55, 0.08) 0%, transparent 60%);
-    --mesh-2: radial-gradient(circle at 70% 70%, rgba(244, 208, 63, 0.06) 0%, transparent 60%);
-    --mesh-3: radial-gradient(circle at 50% 20%, rgba(184, 134, 11, 0.04) 0%, transparent 60%);
+    --mesh-1: radial-gradient(circle at 20% 20%, rgba(241, 196, 15, 0.05) 0%, transparent 50%);
+    --mesh-2: radial-gradient(circle at 80% 80%, rgba(243, 156, 18, 0.05) 0%, transparent 50%);
+    --mesh-3: radial-gradient(circle at 40% 60%, rgba(230, 126, 34, 0.03) 0%, transparent 50%);
 }
 
 /* ========================================
-   테마 3: MINIMAL WHITE (클린 모던)
+   테마 2: NATURAL BEIGE (내추럴 - 두번째 이미지)
+   ======================================== */
+[data-theme="luxury"] {
+    /* 메인 컬러 */
+    --bg-primary: #f5f2e8;         /* 크림 베이지 */
+    --bg-secondary: #ede7d3;       /* 라이트 베이지 */
+    --bg-tertiary: #e6dcc6;        /* 미드 베이지 */
+    --bg-glass: rgba(237, 231, 211, 0.9);
+    --bg-card: rgba(230, 220, 198, 0.7);
+    
+    /* 텍스트 */
+    --text-primary: #8b4513;       /* 다크 브라운 */
+    --text-secondary: #a0522d;     /* 미드 브라운 */
+    --text-muted: #cd853f;         /* 라이트 브라운 */
+    --text-inverse: #f5f2e8;       /* 크림 베이지 */
+    
+    /* 브랜드 컬러 */
+    --accent-primary: #8b4513;      /* 다크 브라운 */
+    --accent-secondary: #a0522d;    /* 미드 브라운 */
+    --accent-tertiary: #d2b48c;     /* 라이트 브라운 */
+    
+    /* 성별 구분 */
+    --male-color: #5d4e75;
+    --male-color-light: rgba(93, 78, 117, 0.2);
+    --male-gradient: linear-gradient(135deg, #5d4e75, #4a3c57);
+    
+    --female-color: #c06c84;
+    --female-color-light: rgba(192, 108, 132, 0.2);
+    --female-gradient: linear-gradient(135deg, #c06c84, #a8556b);
+    
+    /* 상태 컬러 */
+    --success: #6a994e;
+    --warning: #f77f00;
+    --error: #d62828;
+    --info: #577590;
+    
+    /* 특수 효과 */
+    --glow-primary: 0 0 20px rgba(139, 69, 19, 0.2);
+    --glow-secondary: 0 0 15px rgba(160, 82, 45, 0.15);
+    --neon-border: 1px solid rgba(139, 69, 19, 0.2);
+    
+    /* 그라디언트 */
+    --gradient-primary: linear-gradient(135deg, #8b4513, #a0522d);
+    --gradient-secondary: linear-gradient(135deg, #f5f2e8, #ede7d3);
+    --gradient-glass: linear-gradient(135deg, rgba(139, 69, 19, 0.05), rgba(160, 82, 45, 0.03));
+    
+    /* 배경 메시 */
+    --mesh-1: radial-gradient(circle at 25% 25%, rgba(139, 69, 19, 0.03) 0%, transparent 60%);
+    --mesh-2: radial-gradient(circle at 75% 75%, rgba(160, 82, 45, 0.02) 0%, transparent 60%);
+    --mesh-3: radial-gradient(circle at 50% 50%, rgba(210, 180, 140, 0.02) 0%, transparent 60%);
+}
+
+/* ========================================
+   테마 3: MODERN MINIMAL (모던 화이트 - 세번째 이미지)
    ======================================== */
 [data-theme="minimal"] {
     /* 메인 컬러 */
@@ -147,51 +147,51 @@
     --bg-card: rgba(255, 255, 255, 0.8);
     
     /* 텍스트 */
-    --text-primary: #212529;
-    --text-secondary: #495057;
-    --text-muted: #6c757d;
+    --text-primary: #2c3e50;       /* 다크 그레이 */
+    --text-secondary: #34495e;     /* 미드 그레이 */
+    --text-muted: #7f8c8d;         /* 라이트 그레이 */
     --text-inverse: #ffffff;
     
     /* 브랜드 컬러 */
-    --accent-primary: #6c757d;      /* 뉴트럴 그레이 */
-    --accent-secondary: #495057;    /* 다크 그레이 */
-    --accent-tertiary: #343a40;     /* 딥 그레이 */
+    --accent-primary: #2c3e50;      /* 다크 그레이 */
+    --accent-secondary: #34495e;    /* 미드 그레이 */
+    --accent-tertiary: #95a5a6;     /* 라이트 그레이 */
     
     /* 성별 구분 */
-    --male-color: #007bff;
-    --male-color-light: rgba(0, 123, 255, 0.1);
-    --male-gradient: linear-gradient(135deg, #007bff, #0056b3);
+    --male-color: #3498db;
+    --male-color-light: rgba(52, 152, 219, 0.1);
+    --male-gradient: linear-gradient(135deg, #3498db, #2980b9);
     
-    --female-color: #e83e8c;
-    --female-color-light: rgba(232, 62, 140, 0.1);
-    --female-gradient: linear-gradient(135deg, #e83e8c, #d91a72);
+    --female-color: #e74c3c;
+    --female-color-light: rgba(231, 76, 60, 0.1);
+    --female-gradient: linear-gradient(135deg, #e74c3c, #c0392b);
     
     /* 상태 컬러 */
-    --success: #28a745;
-    --warning: #ffc107;
-    --error: #dc3545;
-    --info: #17a2b8;
+    --success: #27ae60;
+    --warning: #f39c12;
+    --error: #e74c3c;
+    --info: #3498db;
     
     /* 특수 효과 */
-    --glow-primary: 0 0 20px rgba(108, 117, 125, 0.2);
-    --glow-secondary: 0 0 15px rgba(73, 80, 87, 0.15);
-    --neon-border: 1px solid rgba(108, 117, 125, 0.2);
+    --glow-primary: 0 0 20px rgba(44, 62, 80, 0.1);
+    --glow-secondary: 0 0 15px rgba(52, 73, 94, 0.08);
+    --neon-border: 1px solid rgba(44, 62, 80, 0.2);
     
     /* 그라디언트 */
-    --gradient-primary: linear-gradient(135deg, #6c757d, #495057);
-    --gradient-secondary: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    --gradient-primary: linear-gradient(135deg, #2c3e50, #34495e);
+    --gradient-secondary: linear-gradient(135deg, #ffffff, #f8f9fa);
     --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(248, 249, 250, 0.6));
     
     /* 배경 메시 */
-    --mesh-1: radial-gradient(circle at 25% 25%, rgba(108, 117, 125, 0.05) 0%, transparent 60%);
-    --mesh-2: radial-gradient(circle at 75% 75%, rgba(73, 80, 87, 0.03) 0%, transparent 60%);
-    --mesh-3: radial-gradient(circle at 50% 50%, rgba(52, 58, 64, 0.02) 0%, transparent 60%);
+    --mesh-1: radial-gradient(circle at 25% 25%, rgba(44, 62, 80, 0.02) 0%, transparent 60%);
+    --mesh-2: radial-gradient(circle at 75% 75%, rgba(52, 73, 94, 0.01) 0%, transparent 60%);
+    --mesh-3: radial-gradient(circle at 50% 50%, rgba(149, 165, 166, 0.01) 0%, transparent 60%);
     
     /* 라이트 테마용 그림자 조정 */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-    --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.16);
-    --shadow-xl: 0 24px 88px rgba(0, 0, 0, 0.20);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 24px 88px rgba(0, 0, 0, 0.15);
 }
 
 /* ========================================
@@ -217,13 +217,21 @@
    다크/라이트 모드별 특별 처리
    ======================================== */
 
-/* 다크 테마 공통 (neon, luxury) */
-[data-theme="neon"], 
-[data-theme="luxury"] {
+/* 다크 테마 공통 (neon) */
+[data-theme="neon"] {
     color-scheme: dark;
 }
 
-[data-theme="neon"] ::selection,
+[data-theme="neon"] ::selection {
+    background: var(--accent-primary);
+    color: var(--text-inverse);
+}
+
+/* 내추럴 테마 (luxury) */
+[data-theme="luxury"] {
+    color-scheme: light;
+}
+
 [data-theme="luxury"] ::selection {
     background: var(--accent-primary);
     color: var(--text-inverse);
@@ -271,7 +279,7 @@
     position: absolute;
     border-radius: 50%;
     filter: blur(40px);
-    opacity: 0.6;
+    opacity: 0.3;
     animation: orbFloat 15s ease-in-out infinite;
 }
 
@@ -303,50 +311,6 @@
 }
 
 /* ========================================
-   테마별 특별 애니메이션
-   ======================================== */
-
-/* Neon 테마 글리치 효과 */
-[data-theme="neon"] .logo-text,
-[data-theme="neon"] .main-title {
-    position: relative;
-    text-shadow: 
-        0 0 10px var(--accent-primary),
-        0 0 20px var(--accent-primary),
-        0 0 40px var(--accent-primary);
-}
-
-[data-theme="neon"] .logo-text::before {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    color: var(--accent-secondary);
-    z-index: -1;
-    animation: glitch 3s infinite;
-}
-
-/* Luxury 테마 골드 글로우 */
-[data-theme="luxury"] .logo-text,
-[data-theme="luxury"] .brand-text h1 {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: var(--glow-primary);
-}
-
-/* Minimal 테마 서브틀 애니메이션 */
-[data-theme="minimal"] .feature-item {
-    transition: transform var(--transition), box-shadow var(--transition);
-}
-
-[data-theme="minimal"] .feature-item:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-}
-
-/* ========================================
    키프레임 애니메이션
    ======================================== */
 @keyframes meshFloat {
@@ -359,15 +323,6 @@
     0%, 100% { transform: translate(0, 0) scale(1); }
     33% { transform: translate(20px, -20px) scale(1.1); }
     66% { transform: translate(-15px, 15px) scale(0.9); }
-}
-
-@keyframes glitch {
-    0% { transform: translate(0); }
-    20% { transform: translate(-2px, 2px); }
-    40% { transform: translate(-2px, -2px); }
-    60% { transform: translate(2px, 2px); }
-    80% { transform: translate(2px, -2px); }
-    100% { transform: translate(0); }
 }
 
 /* ========================================
