@@ -343,61 +343,174 @@ async function startAIExperienceWithTokens(style) {
     }
 }
 
-// ========== 테마 시스템 ==========
+// ========== 🎨 3가지 테마 시스템 ==========
 
-// 테마 토글 함수
-function toggleTheme() {
-    const body = document.body;
-    const themeButtonText = document.getElementById('themeButtonText');
-    
-    if (body.classList.contains('light-theme')) {
-        // 라이트 → 다크
-        body.classList.remove('light-theme');
-        localStorage.setItem('hairgator_theme', 'dark');
-        
-        if (themeButtonText) {
-            themeButtonText.textContent = '☀️ 라이트 모드로 변경';
-        }
-        
-        console.log('테마 변경: 다크 모드');
-    } else {
-        // 다크 → 라이트
-        body.classList.add('light-theme');
-        localStorage.setItem('hairgator_theme', 'light');
-        
-        if (themeButtonText) {
-            themeButtonText.textContent = '🌙 다크 모드로 변경';
-        }
-        
-        console.log('테마 변경: 라이트 모드');
+// 현재 테마 상태 추적
+let currentTheme = 'luxury'; // luxury, minimal, warm
+
+// 3가지 테마 정의
+const THEMES = {
+    luxury: {
+        name: '✨ 고급 헤어샵',
+        icon: '✨',
+        description: '다크블루그레이 + 골드 액센트',
+        dataTheme: null // 기본 테마이므로 null
+    },
+    minimal: {
+        name: '🎯 모던 미니멀', 
+        icon: '🎯',
+        description: '순수 화이트 + 검정',
+        dataTheme: 'minimal'
+    },
+    warm: {
+        name: '🤎 따뜻한 프로페셔널',
+        icon: '🤎', 
+        description: '브라운 + 베이지 톤',
+        dataTheme: 'warm'
     }
+};
+
+// 테마 순환 전환 함수 (기존 toggleTheme 대체)
+function switchTheme() {
+    // 다음 테마로 순환
+    const themeKeys = Object.keys(THEMES);
+    const currentIndex = themeKeys.indexOf(currentTheme);
+    const nextIndex = (currentIndex + 1) % themeKeys.length;
+    const nextTheme = themeKeys[nextIndex];
+    
+    // 테마 적용
+    applyTheme(nextTheme);
+    
+    // 현재 테마 업데이트
+    currentTheme = nextTheme;
+    
+    // localStorage에 저장
+    localStorage.setItem('hairgator_theme', nextTheme);
+    
+    // UI 업데이트
+    updateThemeButton();
+    
+    // 퍼스널 컬러와 동기화
+    syncThemeWithPersonalColor(nextTheme);
     
     // 토스트 메시지
     if (typeof showToast === 'function') {
-        const mode = body.classList.contains('light-theme') ? '라이트' : '다크';
-        showToast(mode + ' 모드로 변경되었습니다', 'success');
+        showToast(`${THEMES[nextTheme].name}로 변경되었습니다`, 'success');
+    }
+    
+    console.log('테마 전환:', THEMES[nextTheme].name);
+}
+
+// 테마 적용 함수
+function applyTheme(themeName) {
+    const theme = THEMES[themeName];
+    if (!theme) return;
+    
+    // body의 data-theme 속성 설정
+    if (theme.dataTheme) {
+        document.body.setAttribute('data-theme', theme.dataTheme);
+    } else {
+        document.body.removeAttribute('data-theme');
+    }
+    
+    // 기존 light-theme 클래스 제거 (하위 호환성)
+    document.body.classList.remove('light-theme');
+    
+    // 부드러운 전환을 위한 클래스 추가
+    document.body.classList.add('theme-transitioning');
+    setTimeout(() => {
+        document.body.classList.remove('theme-transitioning');
+    }, 300);
+}
+
+// 테마 버튼 UI 업데이트
+function updateThemeButton() {
+    const themeButtonText = document.getElementById('themeButtonText');
+    if (themeButtonText) {
+        const theme = THEMES[currentTheme];
+        themeButtonText.textContent = `${theme.icon} ${theme.name}`;
     }
 }
 
-// 테마 로드 함수
+// 테마 로드 함수 (기존 함수 업그레이드)
 function loadTheme() {
-    const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
-    const themeButtonText = document.getElementById('themeButtonText');
+    // localStorage에서 테마 불러오기
+    const savedTheme = localStorage.getItem('hairgator_theme') || 'luxury';
     
+    // 기존 light 테마 마이그레이션
     if (savedTheme === 'light') {
-        document.body.classList.add('light-theme');
-        if (themeButtonText) {
-            themeButtonText.textContent = '🌙 다크 모드로 변경';
-        }
+        currentTheme = 'minimal';
+        localStorage.setItem('hairgator_theme', 'minimal');
+    } else if (savedTheme === 'dark') {
+        currentTheme = 'luxury';  
+        localStorage.setItem('hairgator_theme', 'luxury');
+    } else if (THEMES[savedTheme]) {
+        currentTheme = savedTheme;
     } else {
-        document.body.classList.remove('light-theme');
-        if (themeButtonText) {
-            themeButtonText.textContent = '☀️ 라이트 모드로 변경';
-        }
+        currentTheme = 'luxury';
     }
     
-    console.log('테마 로드:', savedTheme);
+    // 테마 적용
+    applyTheme(currentTheme);
+    
+    // 버튼 텍스트 업데이트
+    updateThemeButton();
+    
+    console.log('테마 로드:', THEMES[currentTheme].name);
 }
+
+// 기존 toggleTheme 함수를 switchTheme로 리다이렉트 (하위 호환성)
+function toggleTheme() {
+    switchTheme();
+}
+
+// 퍼스널 컬러와 테마 동기화
+function syncThemeWithPersonalColor(themeName) {
+    try {
+        // 퍼스널 컬러 iframe이 있는 경우 메시지 전송
+        const personalColorFrame = document.getElementById('personalColorFrame');
+        if (personalColorFrame && personalColorFrame.contentWindow) {
+            const themeData = {
+                type: 'THEME_CHANGE',
+                theme: themeName,
+                themeInfo: THEMES[themeName]
+            };
+            
+            personalColorFrame.contentWindow.postMessage(themeData, '*');
+            console.log('퍼스널 컬러에 테마 동기화:', themeName);
+        }
+    } catch (error) {
+        console.log('퍼스널 컬러 테마 동기화 실패:', error.message);
+    }
+}
+
+// 퍼스널 컬러로부터 테마 변경 메시지 수신
+window.addEventListener('message', function(event) {
+    try {
+        if (event.data.type === 'THEME_SYNC_REQUEST') {
+            // 퍼스널 컬러에서 현재 테마 정보 요청
+            const themeData = {
+                type: 'THEME_SYNC_RESPONSE',
+                theme: currentTheme,
+                themeInfo: THEMES[currentTheme]
+            };
+            event.source.postMessage(themeData, event.origin);
+        } else if (event.data.type === 'THEME_CHANGE_FROM_PC') {
+            // 퍼스널 컬러에서 테마 변경 요청
+            const requestedTheme = event.data.theme;
+            if (THEMES[requestedTheme] && requestedTheme !== currentTheme) {
+                applyTheme(requestedTheme);
+                currentTheme = requestedTheme;
+                localStorage.setItem('hairgator_theme', requestedTheme);
+                updateThemeButton();
+                
+                console.log('퍼스널 컬러로부터 테마 변경:', THEMES[requestedTheme].name);
+            }
+        }
+    } catch (error) {
+        console.log('테마 동기화 메시지 처리 오류:', error.message);
+    }
+});
 
 // ========== 퍼스널 컬러 시스템 (전체화면 iframe 모달) ==========
 
@@ -443,11 +556,11 @@ function createPersonalColorModal() {
         left: 0;
         width: 100%;
         height: 100%;
-        background: #111;
+        background: var(--bg-primary);
         display: block;
         z-index: 9999;
         opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.3s ease, background-color 0.3s ease;
     `;
     
    modal.innerHTML = `
@@ -455,8 +568,9 @@ function createPersonalColorModal() {
             position: relative;
             width: 100vw;
             height: 100vh;
-            background: #111;
+            background: var(--bg-primary);
             overflow: hidden;
+            transition: background-color 0.3s ease;
         ">
             <button class="personal-color-close" onclick="closePersonalColorModal()" style="
                 position: fixed;
@@ -481,7 +595,7 @@ function createPersonalColorModal() {
             <!-- iframe에 카메라 권한 허용 속성 추가 -->
             <iframe id="personalColorFrame" 
                     src="personal-color/index.html"
-                    style="width: 100%; height: 100%; border: none; background: #111;"
+                    style="width: 100%; height: 100%; border: none; background: var(--bg-primary);"
                     allow="camera *; microphone *; fullscreen *; geolocation *; autoplay *; encrypted-media *"
                     sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-presentation"
                     loading="lazy">
@@ -494,20 +608,21 @@ function createPersonalColorModal() {
                 left: 50%;
                 transform: translate(-50%, -50%);
                 text-align: center;
-                color: white;
+                color: var(--text-primary);
                 z-index: 5;
+                transition: color 0.3s ease;
             ">
                 <div class="loading-spinner" style="
                     width: 60px;
                     height: 60px;
-                    border: 4px solid #333;
+                    border: 4px solid var(--border-color);
                     border-top: 4px solid #FF6B6B;
                     border-radius: 50%;
                     animation: spin 1s linear infinite;
                     margin: 0 auto 30px;
                 "></div>
                 <div style="font-size: 20px; font-weight: 600;">퍼스널 컬러를 로드하는 중...</div>
-                <div style="font-size: 14px; color: #999; margin-top: 10px;">잠시만 기다려주세요</div>
+                <div style="font-size: 14px; color: var(--text-secondary); margin-top: 10px;">잠시만 기다려주세요</div>
             </div>
             
             <div id="personalColorContainer" style="
@@ -533,6 +648,17 @@ function createPersonalColorModal() {
             .personal-color-modal.active {
                 opacity: 1 !important;
             }
+            .personal-color-close {
+                background: rgba(0, 0, 0, 0.7) !important;
+            }
+            [data-theme="minimal"] .personal-color-close {
+                background: rgba(255, 255, 255, 0.9) !important;
+                color: #000000 !important;
+            }
+            [data-theme="warm"] .personal-color-close {
+                background: rgba(62, 39, 35, 0.9) !important;
+                color: #f4e4c1 !important;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -544,6 +670,9 @@ function createPersonalColorModal() {
     setTimeout(() => {
         modal.classList.add('active');
         modal.style.opacity = '1';
+        
+        // 현재 테마를 퍼스널 컬러에 전달
+        setTimeout(() => syncThemeWithPersonalColor(currentTheme), 1000);
     }, 10);
     
     // body 스크롤 방지
@@ -552,13 +681,6 @@ function createPersonalColorModal() {
     
     // ESC 키로 모달 닫기
     document.addEventListener('keydown', handlePersonalColorEscape);
-    
-    // 모달 외부 클릭으로 닫기 (전체화면에서는 비활성화)
-    // modal.addEventListener('click', function(e) {
-    //     if (e.target === modal) {
-    //         closePersonalColorModal();
-    //     }
-    // });
     
     console.log('퍼스널 컬러 전체화면 모달 생성 완료');
 }
@@ -643,19 +765,19 @@ function addSidebarButtons() {
         return;
     }
 
-    // 테마 버튼 HTML 생성
+    // 테마 버튼 HTML 생성 (3가지 테마 시스템)
     const themeSection = document.createElement('div');
     themeSection.id = 'themeSectionContainer';
     themeSection.className = 'theme-simple';
     themeSection.style.marginBottom = '20px';
     themeSection.innerHTML = `
-        <button id="themeToggleBtn" onclick="toggleTheme()" 
-                style="width: 100%; background: var(--female-color, #E91E63); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">
-            <span id="themeButtonText">☀️ 라이트 모드로 변경</span>
+        <button id="themeToggleBtn" onclick="switchTheme()" 
+                style="width: 100%; background: var(--accent-primary); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">
+            <span id="themeButtonText">✨ 고급 헤어샵</span>
         </button>
     `;
 
-    // 퍼스널 컬러 버튼 HTML 생성
+    // 퍼스널 컬러 버튼 HTML 생성 (테마 대응)
     const personalColorSection = document.createElement('div');
     personalColorSection.id = 'personalColorSectionContainer';
     personalColorSection.className = 'personal-color-section';
@@ -673,6 +795,9 @@ function addSidebarButtons() {
 
     // 호버 효과 추가
     addSidebarButtonHoverEffects();
+    
+    // 현재 테마에 맞게 버튼 텍스트 업데이트
+    updateThemeButton();
 
     console.log('사이드바 버튼들 추가 완료 (로그인 상태)');
 }
@@ -688,18 +813,18 @@ function removeSidebarButtons() {
     console.log('사이드바 버튼들 제거됨 (로그아웃 상태)');
 }
 
-// 사이드바 버튼 호버 효과
+// 사이드바 버튼 호버 효과 (테마 대응)
 function addSidebarButtonHoverEffects() {
     const themeBtn = document.getElementById('themeToggleBtn');
     const personalColorBtn = document.getElementById('personalColorBtn');
 
     if (themeBtn) {
         themeBtn.addEventListener('mouseenter', () => {
-            themeBtn.style.background = '#d81b60';
+            themeBtn.style.filter = 'brightness(110%)';
             themeBtn.style.transform = 'translateY(-1px)';
         });
         themeBtn.addEventListener('mouseleave', () => {
-            themeBtn.style.background = 'var(--female-color, #E91E63)';
+            themeBtn.style.filter = 'brightness(100%)';
             themeBtn.style.transform = 'translateY(0)';
         });
     }
@@ -730,149 +855,54 @@ function updateSidebarButtons() {
     }, 100);
 }
 
-// ========== 라이트 테마 CSS 동적 추가 ==========
-
-function addLightThemeStyles() {
-    // 이미 라이트 테마 스타일이 있는지 확인
-    if (document.getElementById('light-theme-styles')) {
+// ========== 테마별 동적 스타일 추가 ==========
+function addThemeStyles() {
+    // 이미 테마 스타일이 있는지 확인
+    if (document.getElementById('theme-styles')) {
         return;
     }
 
-    const lightThemeCSS = `
-        /* 라이트 테마 스타일들 */
-        body.light-theme {
-            background: #ffffff;
-            color: #000000;
+    const themeCSS = `
+        /* 테마 전환 애니메이션 */
+        body.theme-transitioning * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
         }
-
-        body.light-theme .header {
-            background: #ffffff;
-            border-bottom: 1px solid #ddd;
-        }
-
-        body.light-theme .logo {
-            color: #000000 !important;
-        }
-
-        body.light-theme .back-btn {
-            color: #000000;
-        }
-
-        body.light-theme .menu-btn span {
-            background: #000000;
-        }
-
-        body.light-theme .sidebar {
-            background: #f8f9fa;
-            border-left-color: #ddd;
-        }
-
-        body.light-theme .sidebar-header {
-            background: #ffffff;
-            border-bottom-color: #ddd;
-        }
-
-        body.light-theme .sidebar-header h3 {
-            color: #000000;
-        }
-
-        body.light-theme .sidebar-close {
-            color: #000000;
-        }
-
-        body.light-theme .user-info {
-            background: #ffffff;
-            border: 1px solid #ddd;
-        }
-
-        body.light-theme .user-info h4 {
-            color: var(--female-color, #E91E63);
-        }
-
-        body.light-theme .user-info p {
-            color: #000000;
-        }
-
-        body.light-theme #guestMessage {
-            color: #666;
-        }
-
-        body.light-theme .login-modal {
-            background: #ffffff;
-        }
-
-        body.light-theme .form-group input {
-            background: #ffffff;
-            border-color: #ddd;
-            color: #000000;
-        }
-
-        body.light-theme .category-tabs {
-            background: #f8f9fa;
-        }
-
-        body.light-theme .category-tab {
-            background: #ffffff;
-            color: #000000;
-            border-color: #ddd;
-        }
-
-        body.light-theme .sub-tabs {
-            background: #ffffff;
-        }
-
-        body.light-theme .sub-tab {
-            background: #f8f9fa;
-            color: #000000;
-        }
-
-        body.light-theme .styles-container {
-            background: #f8f9fa;
-        }
-
-        body.light-theme .style-modal-content {
-            background: #ffffff;
-            color: #000000;
-        }
-
-        body.light-theme .ai-experience-content {
-            background: #ffffff;
-            color: #000000;
-        }
-
-        body.light-theme .ai-upload-text {
-            color: #000000;
-        }
-
-        body.light-theme .ai-processing-text {
-            color: #000000;
-        }
-
-        body.light-theme .personal-color-content {
+        
+        /* 테마별 퍼스널 컬러 모달 스타일 */
+        [data-theme="minimal"] .personal-color-content {
             background: #ffffff !important;
         }
-
-        body.light-theme .personal-color-close {
-            background: rgba(255, 255, 255, 0.9) !important;
-            color: #000000 !important;
-            border-color: #FF6B6B !important;
+        
+        [data-theme="warm"] .personal-color-content {
+            background: #f4e4c1 !important;
+        }
+        
+        /* 테마별 로딩 스피너 */
+        [data-theme="minimal"] .loading-spinner {
+            border-color: #dee2e6;
+            border-top-color: #000000;
+        }
+        
+        [data-theme="warm"] .loading-spinner {
+            border-color: #d7ccc8;
+            border-top-color: #6d4c41;
         }
     `;
 
     const style = document.createElement('style');
-    style.id = 'light-theme-styles';
-    style.textContent = lightThemeCSS;
+    style.id = 'theme-styles';
+    style.textContent = themeCSS;
     document.head.appendChild(style);
 
-    console.log('라이트 테마 스타일 추가 완료');
+    console.log('테마 스타일 추가 완료');
 }
 
 // ========== 초기화 및 이벤트 리스너 ==========
 
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    // 라이트 테마 CSS 추가
-    addLightThemeStyles();
+    // 테마 스타일 추가
+    addThemeStyles();
     
     // 테마 로드
     setTimeout(loadTheme, 100);
@@ -914,14 +944,12 @@ window.addEventListener('storage', function(e) {
 });
 
 // 전역 함수로 등록
-window.toggleTheme = toggleTheme;
+window.switchTheme = switchTheme;
+window.toggleTheme = toggleTheme; // 하위 호환성
 window.loadTheme = loadTheme;
 window.openPersonalColor = openPersonalColor;
 window.closePersonalColorModal = closePersonalColorModal;
 window.updateSidebarButtons = updateSidebarButtons;
 window.checkLoginStatus = checkLoginStatus;
 
-console.log('메뉴 시스템 + 테마 시스템 + 퍼스널 컬러 (전체화면 iframe 모달) 로드 완료 - 최종 버전');
-
-
-
+console.log('메뉴 시스템 + 3가지 테마 시스템 + 퍼스널 컬러 (전체화면 iframe 모달) 로드 완료 - 최종 버전');
