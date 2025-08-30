@@ -1,0 +1,3185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!-- 카메라 권한 문제 해결: Permissions Policy 메타 태그 추가 -->
+<meta http-equiv="Permissions-Policy" content="camera=*, microphone=*, geolocation=*">
+<meta http-equiv="Feature-Policy" content="camera '*'; microphone '*'">
+
+    <!-- 🚀 성능 최적화: DNS 프리페치 및 프리커넥트 -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link rel="dns-prefetch" href="//www.gstatic.com">
+    <link rel="dns-prefetch" href="//firebasestorage.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
+
+<title>HAIRGATOR - Professional Hair Style Menu</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HAIRGATOR">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- 아이콘 -->
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    
+    <!-- 구글 폰트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <style>
+        /* 초기화 및 기본 설정 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            /* 다크 테마 기본 변수 */
+            --bg-primary: #000000;
+            --bg-card: #111111;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #999999;
+            --border-primary: #222222;
+            --border-secondary: #333333;
+            --header-bg: #000000;
+            --sidebar-bg: #111111;
+            --modal-bg: #111111;
+            --input-bg: #222222;
+            --input-border: #444444;
+            --category-bg: #111111;
+            --category-inactive: #222222;
+            --sub-tab-bg: #333333;
+            --styles-bg: #000000;
+            
+            /* 고정 컬러 */
+            --male-color: #4A90E2;
+            --female-color: #E91E63;
+            --new-indicator: #ff4444;
+            --ai-color: #9C27B0;
+            --ai-gradient: linear-gradient(135deg, #9C27B0 0%, #673AB7 100%);
+        }
+
+        /* 라이트 테마 변수 오버라이드 */
+        body.light-theme {
+            --bg-primary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #000000;
+            --text-secondary: #666666;
+            --border-primary: #e0e0e0;
+            --border-secondary: #ddd;
+            --header-bg: #ffffff;
+            --sidebar-bg: #ffffff;
+            --modal-bg: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #ddd;
+            --category-bg: #f8f9fa;
+            --category-inactive: #ffffff;
+            --sub-tab-bg: #f8f9fa;
+            --styles-bg: #f9f9f9;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            line-height: 1.4;
+        }
+
+        /* 헤더 - 태블릿 최적화 */
+        .header {
+            position: fixed;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--header-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 28px;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+        }
+
+        .menu-btn {
+            position: absolute;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-btn span {
+            width: 22px;
+            height: 2px;
+            background: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        /* 메인 콘텐츠 - 헤더 높이 조정 */
+        .main-content {
+            margin-top: 75px;
+            min-height: calc(100vh - 75px);
+            background: var(--bg-primary);
+        }
+
+        /* 로그인 화면 - 태블릿 최적화 */
+        .login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 75px);
+            padding: 30px;
+        }
+
+        .login-modal {
+            background: #111;
+            border: 3px solid var(--female-color);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(233, 30, 99, 0.2);
+        }
+
+        .login-modal h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+
+        .login-modal .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 35px;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--female-color);
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 16px;
+            background: #222;
+            border: 2px solid #444;
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--female-color);
+            box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: var(--female-color);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: #d81b60;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-help {
+            margin-top: 25px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* NEW 표시 (빨간 점) - 태블릿 최적화 */
+        .new-indicator {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 10px;
+            height: 10px;
+            background: var(--new-indicator);
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(255, 68, 68, 0.6);
+            animation: pulse-red 2s infinite;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.3);
+                opacity: 0.7;
+            }
+        }
+
+        /* 성별 선택 - 태블릿 최적화 */
+        .gender-selection {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 75px);
+            padding: 40px;
+            gap: 100px;
+        }
+
+        .gender-btn {
+            width: 180px;
+            height: 260px;
+            border: 4px solid #333333;
+            border-radius: 25px;
+            background: var(--bg-card);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .gender-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .gender-btn.male {
+            border: 4px solid var(--male-color) !important;
+        }
+
+        .gender-btn.female {
+            border: 4px solid var(--female-color) !important;
+        }
+
+        .gender-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .gender-btn.male .gender-icon {
+            background: var(--male-color);
+        }
+
+        .gender-btn.female .gender-icon {
+            background: var(--female-color);
+        }
+
+        .gender-label {
+            font-size: 18px;
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+
+        /* 라이트 테마에서도 성별 텍스트 명확하게 */
+        body.light-theme .gender-label {
+            color: #000000 !important;
+        }
+
+        /* 메뉴 컨테이너 */
+        .menu-container {
+            display: none;
+            padding: 0;
+        }
+
+        .menu-container.active {
+            display: block;
+        }
+
+        /* 카테고리 탭 - 태블릿 최적화 */
+        .category-tabs {
+            background: var(--bg-card);
+            padding: 18px;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border-main);
+            scrollbar-width: none;
+        }
+
+        .category-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-tab {
+            background: var(--border-main);
+            color: var(--text-sub);
+            border: 1px solid var(--border-main);
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+            position: relative;
+            min-width: 80px;
+        }
+
+        .category-tab:hover {
+            background: var(--text-sub);
+            color: var(--text-main);
+            transform: translateY(-1px);
+        }
+
+        .category-tab.active {
+            font-weight: bold;
+            transform: scale(1.05);
+        }
+
+        .category-tab.active.male {
+            background: var(--male-color);
+            color: white;
+            border-color: var(--male-color);
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+        }
+
+        .category-tab.active.female {
+            background: var(--female-color);
+            color: white;
+            border-color: var(--female-color);
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+        }
+
+        /* 서브카테고리 탭 - 태블릿 최적화 */
+        .sub-tabs {
+            background: #0a0a0a;
+            padding: 18px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #222;
+        }
+
+        .sub-tab {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+            min-width: 70px;
+        }
+
+        .sub-tab:hover:not(.disabled) {
+            background: #444;
+            transform: translateY(-1px);
+        }
+
+        .sub-tab.active {
+            font-weight: bold;
+            transform: scale(1.05);
+        }
+
+        .sub-tab.active.male {
+            background: var(--male-color);
+            box-shadow: 0 3px 12px rgba(74, 144, 226, 0.4);
+        }
+
+        .sub-tab.active.female {
+            background: var(--female-color);
+            box-shadow: 0 3px 12px rgba(233, 30, 99, 0.4);
+        }
+
+        /* 비활성화된 서브카테고리 */
+        .sub-tab.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* 🚀 스타일 그리드 - 태블릿 우선 최적화 + 이미지 로딩 최적화 */
+        .styles-container {
+            padding: 20px;
+            min-height: 50vh;
+            background: var(--bg-primary);
+        }
+
+        .styles-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            background: var(--bg-primary);
+        }
+
+        /* 태블릿 가로모드: 5열 */
+        @media (min-width: 768px) and (orientation: landscape) {
+            .styles-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 18px;
+            }
+        }
+
+        /* 태블릿 세로모드: 4열 */
+        @media (min-width: 768px) and (orientation: portrait) {
+            .styles-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 15px;
+            }
+            
+            .styles-container {
+                padding: 25px 20px;
+            }
+        }
+
+        /* 모바일: 2열 */
+        @media (max-width: 767px) {
+            .styles-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .styles-container {
+                padding: 15px;
+            }
+        }
+
+        /* 대형 태블릿 (iPad Pro 등): 6열 */
+        @media (min-width: 1024px) and (max-width: 1366px) {
+            .styles-grid {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 20px;
+            }
+            
+            .styles-container {
+                padding: 30px 25px;
+            }
+        }
+
+        .style-card {
+            background: transparent;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            aspect-ratio: 3/4;
+            position: relative;
+        }
+
+        .style-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+        }
+
+        .style-card:active {
+            transform: scale(0.98);
+        }
+
+        /* 🚀 이미지 로딩 최적화: 스켈레톤과 그라데이션 동시 적용 */
+        .style-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            transition: all 0.3s ease;
+        }
+
+        /* 이미지가 로드되면 애니메이션 제거하고 그라데이션 적용 */
+        .style-image.loaded {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            animation: none;
+        }
+
+        /* 로딩 애니메이션 */
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* 텍스트 정보 완전히 숨김 */
+        .style-info {
+            display: none;
+        }
+
+        .style-code {
+            display: none;
+        }
+
+        .style-name {
+            display: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        /* 🚀 로딩 스켈레톤 최적화 */
+        .skeleton-card {
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            aspect-ratio: 3/4;
+            border-radius: 10px;
+        }
+
+        /* 사이드바 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background: #111;
+            border-left: 1px solid #333;
+            z-index: 2000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            right: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .sidebar-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .sidebar-content {
+            padding: 20px;
+        }
+
+        .user-info {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .user-info h4 {
+            color: var(--female-color);
+            margin-bottom: 10px;
+        }
+
+        .logout-btn {
+            width: 100%;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* 로딩 오버레이 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #333;
+            border-top: 3px solid var(--female-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 토스트 메시지 */
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* 스타일 상세 모달 */
+        .style-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            padding: 20px;
+        }
+
+        .style-modal.active {
+            display: flex;
+        }
+
+        .style-modal-content {
+            background: #111;
+            border: 2px solid var(--female-color);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideUp 0.3s ease-out;
+        }
+
+        .style-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .style-modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .style-modal-image {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            border-radius: 18px 18px 0 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .style-modal-info {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .style-modal-code {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .style-modal-name {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .style-modal-details {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .style-detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .style-detail-row:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+
+        .style-detail-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .style-detail-value {
+            color: white;
+            font-weight: 500;
+        }
+
+        .style-modal-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .modal-action-btn {
+            flex: 1;
+            min-width: 120px;
+            background: var(--female-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .modal-action-btn:hover {
+            background: #d81b60;
+            transform: translateY(-2px);
+        }
+
+        .modal-action-btn.secondary {
+            background: #333;
+        }
+
+        .modal-action-btn.secondary:hover {
+            background: #444;
+        }
+
+        /* AI 체험 버튼 스타일 */
+        .modal-action-btn.ai-btn {
+            background: var(--ai-gradient);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-action-btn.ai-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .modal-action-btn.ai-btn:hover::before {
+            left: 100%;
+        }
+
+        .modal-action-btn.ai-btn:hover {
+            background: linear-gradient(135deg, #AB47BC 0%, #7B1FA2 100%);
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+            transform: translateY(-3px);
+        }
+
+        .modal-action-btn.ai-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .modal-action-btn.ai-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* AI 아이콘 */
+        .ai-icon {
+            display: inline-block;
+            margin-right: 5px;
+            font-size: 14px;
+        }
+
+        /* 토큰 정보 텍스트 */
+        .token-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        /* AI 체험 모달 */
+        .ai-experience-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 6000;
+            padding: 20px;
+        }
+
+        .ai-experience-modal.active {
+            display: flex;
+        }
+
+        .ai-experience-content {
+            background: #111;
+            border: 2px solid var(--ai-color);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideUp 0.3s ease-out;
+        }
+
+        .ai-experience-header {
+            background: var(--ai-gradient);
+            padding: 20px;
+            border-radius: 18px 18px 0 0;
+            text-align: center;
+        }
+
+        .ai-experience-title {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .ai-experience-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .ai-experience-body {
+            padding: 30px;
+        }
+
+        .ai-upload-area {
+            border: 2px dashed var(--ai-color);
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-upload-area:hover {
+            border-color: #AB47BC;
+            background: rgba(156, 39, 176, 0.05);
+        }
+
+        .ai-upload-area.dragging {
+            border-color: #AB47BC;
+            background: rgba(156, 39, 176, 0.1);
+        }
+
+        .ai-upload-icon {
+            font-size: 48px;
+            color: var(--ai-color);
+            margin-bottom: 15px;
+        }
+
+        .ai-upload-text {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .ai-upload-hint {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .ai-camera-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .ai-camera-btn {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .ai-camera-btn:hover {
+            background: #444;
+            transform: translateY(-1px);
+        }
+
+        .ai-preview-area {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .ai-preview-images {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ai-preview-item {
+            text-align: center;
+        }
+
+        .ai-preview-img {
+            width: 150px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #333;
+        }
+
+        .ai-preview-label {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .ai-arrow {
+            font-size: 24px;
+            color: var(--ai-color);
+        }
+
+        .ai-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .ai-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-btn.primary {
+            background: var(--ai-gradient);
+            color: white;
+        }
+
+        .ai-btn.primary:hover {
+            background: linear-gradient(135deg, #AB47BC 0%, #7B1FA2 100%);
+        }
+
+        .ai-btn.secondary {
+            background: #333;
+            color: white;
+        }
+
+        .ai-btn.secondary:hover {
+            background: #444;
+        }
+
+        .ai-processing {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .ai-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            border-top: 3px solid var(--ai-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        .ai-processing-text {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .ai-processing-hint {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        /* 카메라 모달 */
+        .camera-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 7000;
+            padding: 20px;
+        }
+
+        .camera-modal.active {
+            display: flex;
+        }
+
+        .camera-modal-content {
+            background: #111;
+            border: 2px solid var(--ai-color);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .camera-video {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .camera-canvas {
+            display: none;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .camera-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .camera-btn.capture {
+            background: var(--ai-color);
+            color: white;
+        }
+
+        .camera-btn.cancel {
+            background: #666;
+            color: white;
+        }
+
+        .camera-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* AI 결과 모달 스타일 추가 */
+        .ai-result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 8000;
+        }
+
+        .ai-result-content {
+            background: #111;
+            border: 2px solid var(--ai-color);
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .ai-result-header {
+            background: var(--ai-gradient);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 13px 13px 0 0;
+        }
+
+        .ai-result-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .ai-result-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .ai-result-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .ai-result-body {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .ai-result-image {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #333;
+        }
+
+        .ai-result-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* 퍼스널 컬러 모달 스타일 */
+        .personal-color-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9000;
+        }
+
+        .personal-color-modal.active {
+            display: flex;
+        }
+
+        .personal-color-content {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #111;
+            overflow: hidden;
+        }
+
+        .personal-color-close {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #FF6B6B;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 10000;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .personal-color-close:hover {
+            background: rgba(255,107,107,0.2);
+        }
+
+        .personal-color-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 5;
+        }
+
+        .personal-color-container {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        /* 성별 아이콘 모드별 표시 */
+        .dark-mode-icon {
+            display: inline;
+        }
+
+        .light-mode-icon {
+            display: none;
+        }
+
+        /* 라이트 테마에서 성별 아이콘 전환 */
+        body.light-theme .dark-mode-icon {
+            display: none;
+        }
+
+        body.light-theme .light-mode-icon {
+            display: inline;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* 반응형 - 태블릿 우선 최적화 */
+        
+        /* 모바일 (스마트폰) */
+        @media (max-width: 767px) {
+            .header {
+                height: 50px;
+                padding: 0 15px;
+            }
+            
+            .main-content {
+                margin-top: 65px;
+                min-height: calc(100vh - 65px);
+            }
+            
+            .back-btn, .menu-btn {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .back-btn {
+                left: 15px;
+                font-size: 24px;
+            }
+            
+            .menu-btn {
+                right: 15px;
+            }
+            
+            .menu-btn span {
+                width: 18px;
+            }
+            
+            .logo {
+                font-size: 18px;
+            }
+            
+            .gender-selection {
+                flex-direction: column;
+                gap: 40px;
+                padding: 30px 20px;
+                min-height: calc(100vh - 65px);
+            }
+            
+            .gender-btn {
+                width: 150px;
+                height: 220px;
+            }
+            
+            .gender-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 50px;
+            }
+            
+            .gender-label {
+                font-size: 16px;
+            }
+            
+            .login-modal {
+                margin: 0 15px;
+                padding: 25px;
+                border-radius: 15px;
+            }
+            
+            .login-modal h2 {
+                font-size: 22px;
+            }
+            
+            .login-modal .subtitle {
+                font-size: 14px;
+            }
+            
+            .form-group input {
+                padding: 14px;
+                font-size: 16px;
+            }
+            
+            .login-btn {
+                padding: 16px;
+                font-size: 16px;
+            }
+
+            .style-modal-content {
+                max-width: 95%;
+                margin: 10px;
+            }
+
+            .style-modal-info {
+                padding: 20px;
+            }
+
+            .style-modal-name {
+                font-size: 20px;
+            }
+
+            .style-modal-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .modal-action-btn {
+                min-width: auto;
+                font-size: 14px;
+                padding: 12px;
+            }
+            
+            .token-info {
+                font-size: 11px;
+                margin-top: 8px;
+            }
+
+            .ai-experience-content {
+                max-width: 95%;
+                margin: 10px;
+            }
+
+            .ai-preview-images {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .ai-preview-img {
+                width: 120px;
+                height: 160px;
+            }
+
+            .ai-arrow {
+                transform: rotate(90deg);
+            }
+
+            .ai-camera-options {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .ai-camera-btn {
+                width: 100%;
+            }
+        }
+        
+        /* 태블릿 세로 모드 */
+        @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+            .category-tabs {
+                padding: 20px;
+            }
+            
+            .category-tab {
+                padding: 14px 26px;
+                font-size: 16px;
+            }
+            
+            .sub-tab {
+                padding: 11px 22px;
+                font-size: 15px;
+            }
+        }
+        
+        /* 태블릿 가로 모드 */
+        @media (min-width: 768px) and (orientation: landscape) {
+            .gender-selection {
+                gap: 120px;
+            }
+            
+            .gender-btn {
+                width: 200px;
+                height: 280px;
+            }
+            
+            .gender-icon {
+                width: 130px;
+                height: 130px;
+                font-size: 65px;
+            }
+            
+            .gender-label {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+        <h1 class="logo">HAIRGATOR</h1>
+        <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <!-- 사이드바 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>메뉴</h3>
+            <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
+        </div>
+        <div class="sidebar-content">
+            <!-- 동적 버튼 컨테이너 (JavaScript에서 생성) -->
+            <div id="dynamicButtons"></div>
+
+            <div class="user-info" id="userInfo" style="display: none;">
+                <h4>디자이너 정보</h4>
+                <p id="designerNameDisplay"></p>
+                <p id="designerPhoneDisplay"></p>
+                <p id="sessionStatusDisplay"></p>
+                <button class="logout-btn" onclick="logout()">로그아웃</button>
+            </div>
+            <p id="guestMessage">로그인 후 이용 가능합니다.</p>
+        </div>
+    </aside>
+
+    <!-- 로딩 오버레이 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 토스트 메시지 -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+        <!-- 로그인 화면 -->
+        <div class="login-screen" id="loginScreen">
+            <div class="login-modal">
+                <h2>HAIRGATOR</h2>
+                <p class="subtitle">Professional Hair Style Menu</p>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="designerName">디자이너명</label>
+                        <input type="text" id="designerName" placeholder="이름을 입력하세요" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phoneNumber">전화번호</label>
+                        <input type="tel" id="phoneNumber" placeholder="01000000000 또는 010-0000-0000" maxlength="13" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">비밀번호 (4자리)</label>
+                        <input type="password" id="password" placeholder="****" maxlength="4" required>
+                    </div>
+                    
+                    <button type="submit" class="login-btn" id="loginBtn">로그인</button>
+                </form>
+                
+                <p class="login-help">처음 사용하시나요? 관리자에게 계정을 요청하세요.</p>
+            </div>
+        </div>
+
+        <!-- 성별 선택 화면 -->
+        <div class="gender-selection" id="genderSelection">
+            <button class="gender-btn male" data-gender="male" onclick="selectGender('male')">
+                <div class="gender-icon">
+                    <span class="dark-mode-icon">♂</span>
+                    <span class="light-mode-icon">🧑‍💼</span>
+                </div>
+                <div class="gender-label">MALE</div>
+            </button>
+            <button class="gender-btn female" data-gender="female" onclick="selectGender('female')">
+                <div class="gender-icon">
+                    <span class="dark-mode-icon">♀</span>
+                    <span class="light-mode-icon">👩‍💼</span>
+                </div>
+                <div class="gender-label">FEMALE</div>
+            </button>
+        </div>
+
+        <!-- 메뉴 컨테이너 -->
+        <div class="menu-container" id="menuContainer">
+            <!-- 카테고리 탭 -->
+            <div class="category-tabs" id="categoryTabs">
+                <!-- 동적 생성 -->
+            </div>
+            
+            <!-- 서브카테고리 탭 -->
+            <div class="sub-tabs" id="subTabs">
+                <!-- 동적 생성 -->
+            </div>
+            
+            <!-- 스타일 컨테이너 -->
+            <div class="styles-container">
+                <div class="styles-grid" id="stylesGrid">
+                    <!-- 동적 생성 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 스타일 상세 모달 -->
+        <div class="style-modal" id="styleModal">
+            <div class="style-modal-content">
+                <button class="style-modal-close" id="styleModalClose">×</button>
+                
+                <img class="style-modal-image" id="styleModalImage" alt="Style Image">
+                
+                <div class="style-modal-info">
+                    <div class="style-modal-code" id="styleModalCode">CODE</div>
+                    <div class="style-modal-name" id="styleModalName">Style Name</div>
+                    
+                    <div class="style-modal-details">
+                        <div class="style-detail-row">
+                            <span class="style-detail-label">카테고리</span>
+                            <span class="style-detail-value" id="styleModalCategory">-</span>
+                        </div>
+                        <div class="style-detail-row">
+                            <span class="style-detail-label">서브카테고리</span>
+                            <span class="style-detail-value" id="styleModalSubcategory">-</span>
+                        </div>
+                        <div class="style-detail-row">
+                            <span class="style-detail-label">성별</span>
+                            <span class="style-detail-value" id="styleModalGender">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="style-modal-actions">
+                        <button class="modal-action-btn secondary" onclick="closeStyleModal()">닫기</button>
+                        <button class="modal-action-btn ai-btn" id="aiExperienceBtn" onclick="startAIExperience()">
+                            <span class="ai-icon">🤖</span>AI 체험하기
+                        </button>
+                        <button class="modal-action-btn">선택하기</button>
+                    </div>
+                    
+                    <div class="token-info" id="tokenInfo">
+                        AI 체험: 5토큰 소모 (현재: <span id="currentTokens">0</span>토큰)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI 체험 모달 -->
+        <div class="ai-experience-modal" id="aiExperienceModal">
+            <div class="ai-experience-content">
+                <div class="ai-experience-header">
+                    <div class="ai-experience-title">🤖 AI 스타일 체험</div>
+                    <div class="ai-experience-subtitle">얼굴 사진을 업로드하여 스타일을 미리 체험해보세요</div>
+                </div>
+                
+                <div class="ai-experience-body">
+                    <!-- 파일 업로드 영역 -->
+                    <div class="ai-upload-area" id="aiUploadArea">
+                        <div class="ai-upload-icon">📸</div>
+                        <div class="ai-upload-text">얼굴 사진 업로드</div>
+                        <div class="ai-upload-hint">JPG, PNG 파일 지원 (최대 10MB)</div>
+                        <input type="file" id="aiFileInput" accept="image/*" style="display: none;">
+                        
+                        <!-- 카메라 및 갤러리 옵션 -->
+                        <div class="ai-camera-options">
+                            <button class="ai-camera-btn" id="cameraBtn">📷 카메라</button>
+                            <button class="ai-camera-btn" id="galleryBtn">🖼️ 갤러리</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 미리보기 영역 -->
+                    <div class="ai-preview-area" id="aiPreviewArea">
+                        <div class="ai-preview-images">
+                            <div class="ai-preview-item">
+                                <img class="ai-preview-img" id="userPhoto" src="" alt="사용자 사진">
+                                <div class="ai-preview-label">내 사진</div>
+                            </div>
+                            <div class="ai-arrow">→</div>
+                            <div class="ai-preview-item">
+                                <img class="ai-preview-img" id="stylePhoto" src="" alt="스타일 사진">
+                                <div class="ai-preview-label">선택한 스타일</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 처리 중 표시 -->
+                    <div class="ai-processing" id="aiProcessing">
+                        <div class="ai-spinner"></div>
+                        <div class="ai-processing-text">AI가 스타일을 적용하고 있습니다...</div>
+                        <div class="ai-processing-hint">잠시만 기다려주세요 (약 10-30초 소요)</div>
+                    </div>
+                    
+                    <!-- 액션 버튼 -->
+                    <div class="ai-actions">
+                        <button class="ai-btn secondary" onclick="closeAIExperience()">취소</button>
+                        <button class="ai-btn primary" id="processAIBtn" onclick="processAI()" disabled>
+                            AI 처리 시작 (5토큰)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 카메라 모달 -->
+        <div class="camera-modal" id="cameraModal">
+            <div class="camera-modal-content">
+                <h3 style="color: white; margin-bottom: 20px;">📷 사진 촬영</h3>
+                
+                <video class="camera-video" id="cameraVideo" autoplay muted playsinline></video>
+                <canvas class="camera-canvas" id="cameraCanvas"></canvas>
+                
+                <div class="camera-controls">
+                    <button class="camera-btn capture" id="captureBtn">📸 촬영</button>
+                    <button class="camera-btn cancel" id="closeCameraBtn">취소</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 퍼스널 컬러 모달 -->
+        <div class="personal-color-modal" id="personalColorModal">
+            <div class="personal-color-content">
+                <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
+                
+                <div class="personal-color-loading" id="personalColorLoading">
+                    <div class="loading-spinner"></div>
+                    <div>퍼스널 컬러를 로드하는 중...</div>
+                    <div style="font-size: 12px; color: #999; margin-top: 10px;">잠시만 기다려주세요</div>
+                </div>
+                
+                <div class="personal-color-container" id="personalColorContainer" style="display: none;">
+                    <!-- HTML 콘텐츠가 여기에 로드됨 -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase 설정 -->
+    <script>
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            databaseURL: "https://hairgatormenu-4a43e-default-rtdb.firebaseio.com",
+            projectId: "hairgatormenu-4a43e",
+            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
+            messagingSenderId: "800038006875",
+            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        };
+
+        // Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // 캐시 설정
+        try {
+            db.settings({
+                cache: {
+                    kind: 'persistent',
+                    tabManager: { kind: 'multi-tab' }
+                }
+            });
+        } catch(e) {
+            console.log('Cache settings fallback');
+        }
+
+        console.log('✅ Firebase 초기화 완료');
+        
+        // ===== 전역 변수 선언 (window 객체에 할당하여 확실한 전역 접근 보장) =====
+        window.currentDesigner = null;           // 현재 로그인된 디자이너 정보
+        window.currentSessionId = null;          // 현재 세션 ID
+        window.currentStyleData = null;          // 현재 선택된 스타일 데이터
+        window.currentGender = null;             // 현재 선택된 성별
+        window.currentCategory = null;           // 현재 선택된 카테고리
+        window.currentSubcategory = null;        // 현재 선택된 서브카테고리
+        window.heartbeatInterval = null;         // 하트비트 인터벌
+        
+        // 캐시용 Map 객체들
+        window.availableSubcategories = new Map(); // 서브카테고리 캐시
+        
+        // 호환성을 위한 let 선언 (기존 코드 호환)
+        let currentDesigner = window.currentDesigner;
+        let currentSessionId = window.currentSessionId;
+        let currentStyleData = window.currentStyleData;
+        let currentGender = window.currentGender;
+        let currentCategory = window.currentCategory;
+        let currentSubcategory = window.currentSubcategory;
+        const availableSubcategories = window.availableSubcategories;
+    </script>
+
+    <!-- 외부 스크립트들 로드 -->
+    <script src="js/token-system.js"></script>
+    <script src="js/akool-service.js"></script>
+    <script src="js/menu.js"></script>
+
+    <script>
+        // index.html 전용 변수들 (window와 분리된 로컬 변수들)
+        let cameraStream = null;
+        let cameraVideo = null;
+        let cameraCanvas = null;
+        let cameraContext = null;
+        
+        // NEW 시스템용 타임스탬프
+        const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
+
+        // 메뉴 데이터 정의
+        const MENU_DATA = {
+            male: {
+                categories: [
+                    { id: 'side-fringe', name: 'SIDE FRINGE' },
+                    { id: 'side-part', name: 'SIDE PART' },
+                    { id: 'fringe-up', name: 'FRINGE UP' },
+                    { id: 'pushed-back', name: 'PUSHED BACK' },
+                    { id: 'buzz', name: 'BUZZ' },
+                    { id: 'crop', name: 'CROP' },
+                    { id: 'mohican', name: 'MOHICAN' }
+                ],
+                subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
+            },
+            female: {
+                categories: [
+                    { id: 'a-length', name: 'A Length' },
+                    { id: 'b-length', name: 'B Length' },
+                    { id: 'c-length', name: 'C Length' },
+                    { id: 'd-length', name: 'D Length' },
+                    { id: 'e-length', name: 'E Length' },
+                    { id: 'f-length', name: 'F Length' },
+                    { id: 'g-length', name: 'G Length' },
+                    { id: 'h-length', name: 'H Length' }
+                ],
+                subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
+            }
+        };
+
+        // DOM 요소
+        const loginScreen = document.getElementById('loginScreen');
+        const genderSelection = document.getElementById('genderSelection');
+        const menuContainer = document.getElementById('menuContainer');
+        const backBtn = document.getElementById('backBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const toast = document.getElementById('toast');
+
+        // AI 체험 관련 DOM 요소
+        const aiExperienceModal = document.getElementById('aiExperienceModal');
+        const aiUploadArea = document.getElementById('aiUploadArea');
+        const aiFileInput = document.getElementById('aiFileInput');
+        const aiPreviewArea = document.getElementById('aiPreviewArea');
+        const userPhoto = document.getElementById('userPhoto');
+        const stylePhoto = document.getElementById('stylePhoto');
+        const aiProcessing = document.getElementById('aiProcessing');
+        const processAIBtn = document.getElementById('processAIBtn');
+
+        // 카메라 관련 DOM 요소
+        const cameraModal = document.getElementById('cameraModal');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const galleryBtn = document.getElementById('galleryBtn');
+        const closeCameraBtn = document.getElementById('closeCameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
+
+        // 🔥 스마트 필터링 & NEW 표시 시스템
+        
+        // 사용 가능한 서브카테고리 & NEW 아이템 확인
+        async function checkSubcategoriesAndNew(gender, categoryName) {
+            const cacheKey = `${gender}-${categoryName}`;
+            
+            if (availableSubcategories.has(cacheKey)) {
+                return availableSubcategories.get(cacheKey);
+            }
+            
+            try {
+                const snapshot = await db.collection('hairstyles')
+                    .where('gender', '==', gender)
+                    .where('mainCategory', '==', categoryName)
+                    .get();
+                
+                const availableSubs = new Set();
+                const newCounts = {};
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    availableSubs.add(data.subCategory);
+                    
+                    // 7일 이내 생성된 아이템인지 확인
+                    const createdAt = data.createdAt?.toDate?.() || new Date(0);
+                    if (createdAt.getTime() > newItemsTimestamp) {
+                        newCounts[data.subCategory] = (newCounts[data.subCategory] || 0) + 1;
+                    }
+                });
+                
+                const result = {
+                    available: Array.from(availableSubs),
+                    newCounts: newCounts
+                };
+                
+                // 캐시에 저장
+                availableSubcategories.set(cacheKey, result);
+                
+                console.log(`✅ 서브카테고리 확인 완료: ${categoryName}`, result);
+                return result;
+                
+            } catch (error) {
+                console.error('서브카테고리 확인 오류:', error);
+                return {
+                    available: MENU_DATA[gender].subcategories,
+                    newCounts: {}
+                };
+            }
+        }
+
+        // NEW 표시 빨간 점 생성
+        function createNewIndicator() {
+            const indicator = document.createElement('div');
+            indicator.className = 'new-indicator';
+            return indicator;
+        }
+
+        // 🎥 카메라 기능들
+        
+        // 카메라 초기화
+        async function initCamera() {
+            try {
+                // 카메라 스트림 요청
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'user', // 전면 카메라 우선
+                        width: { ideal: 400 },
+                        height: { ideal: 300 }
+                    }
+                });
+
+                cameraVideo = document.getElementById('cameraVideo');
+                cameraCanvas = document.getElementById('cameraCanvas');
+                cameraContext = cameraCanvas.getContext('2d');
+
+                // 비디오에 스트림 연결
+                cameraVideo.srcObject = cameraStream;
+                
+                // 카메라 모달 표시
+                cameraModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+
+                console.log('✅ 카메라 초기화 성공');
+
+            } catch (error) {
+                console.error('❌ 카메라 초기화 실패:', error);
+                
+                let errorMessage = '카메라에 접근할 수 없습니다.';
+                if (error.name === 'NotAllowedError') {
+                    errorMessage = '카메라 권한이 거부되었습니다. 브라우저 설정에서 카메라 권한을 허용해주세요.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage = '카메라를 찾을 수 없습니다.';
+                } else if (error.name === 'NotSupportedError') {
+                    errorMessage = '이 브라우저는 카메라 기능을 지원하지 않습니다.';
+                }
+                
+                showToast(errorMessage, 'error');
+            }
+        }
+
+        // 카메라 종료
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            
+            if (cameraVideo) {
+                cameraVideo.srcObject = null;
+            }
+            
+            cameraModal.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            console.log('✅ 카메라 종료');
+        }
+
+        // 사진 촬영
+        function capturePhoto() {
+            if (!cameraVideo || !cameraCanvas || !cameraContext) {
+                showToast('카메라가 준비되지 않았습니다', 'error');
+                return;
+            }
+
+            try {
+                // 캔버스 크기를 비디오 크기에 맞춤
+                cameraCanvas.width = cameraVideo.videoWidth;
+                cameraCanvas.height = cameraVideo.videoHeight;
+
+                // 비디오 프레임을 캔버스에 그리기
+                cameraContext.drawImage(cameraVideo, 0, 0);
+
+                // 캔버스를 Blob으로 변환
+                cameraCanvas.toBlob(function(blob) {
+                    // File 객체 생성
+                    const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+                    
+                    // FileList 생성 (파일 입력과 동일한 형태)
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    aiFileInput.files = dataTransfer.files;
+                    
+                    // 파일 변경 이벤트 발생
+                    aiFileInput.dispatchEvent(new Event('change'));
+                    
+                    // 카메라 종료
+                    stopCamera();
+                    
+                    showToast('사진이 촬영되었습니다', 'success');
+                    
+                }, 'image/jpeg', 0.8);
+
+            } catch (error) {
+                console.error('사진 촬영 오류:', error);
+                showToast('사진 촬영에 실패했습니다', 'error');
+            }
+        }
+
+        // Firebase 인증 시스템
+        class FirebaseAuth {
+            constructor() {
+                this.sessionCollectionName = 'designer_sessions';
+                this.designerCollectionName = 'designers';
+                this.sessionTimeout = 24 * 60 * 60 * 1000; // 24시간
+            }
+
+            generateSessionId() {
+                return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            getDeviceInfo() {
+                const userAgent = navigator.userAgent;
+                return {
+                    type: /Mobile|Android|iPhone|iPad/.test(userAgent) ? 'mobile' : 'desktop',
+                    browser: this.getBrowserName(),
+                    platform: navigator.platform,
+                    screenResolution: `${screen.width}x${screen.height}`
+                };
+            }
+
+            getBrowserName() {
+                const userAgent = navigator.userAgent;
+                if (userAgent.indexOf('Chrome') > -1) return 'Chrome';
+                if (userAgent.indexOf('Firefox') > -1) return 'Firefox';
+                if (userAgent.indexOf('Safari') > -1) return 'Safari';
+                return 'Unknown';
+            }
+
+            async login(name, phone, password) {
+                try {
+                    const snapshot = await db.collection(this.designerCollectionName)
+                        .where('name', '==', name)
+                        .where('phone', '==', phone)
+                        .where('password', '==', password)
+                        .limit(1)
+                        .get();
+
+                    if (snapshot.empty) {
+                        throw new Error('로그인 정보가 올바르지 않습니다');
+                    }
+
+                    const designerDoc = snapshot.docs[0];
+                    const designerData = designerDoc.data();
+
+                    await this.checkExistingSessions(designerDoc.id);
+
+                    const sessionId = this.generateSessionId();
+                    const sessionData = {
+                        designerId: designerDoc.id,
+                        designerName: designerData.name,
+                        designerPhone: designerData.phone,
+                        sessionId: sessionId,
+                        deviceInfo: this.getDeviceInfo(),
+                        loginTime: new Date(),
+                        lastActivity: new Date(),
+                        isActive: true,
+                        expiresAt: new Date(Date.now() + this.sessionTimeout)
+                    };
+
+                    await db.collection(this.sessionCollectionName).doc(sessionId).set(sessionData);
+
+                    await db.collection(this.designerCollectionName).doc(designerDoc.id).update({
+                        lastLogin: new Date(),
+                        currentSessionId: sessionId
+                    });
+
+                    window.currentDesigner = {
+                        id: designerDoc.id,
+                        name: designerData.name,
+                        phone: designerData.phone,
+                        tokens: designerData.tokens || 0,
+                        sessionId: sessionId
+                    };
+
+                    window.currentSessionId = sessionId;
+                    currentDesigner = window.currentDesigner;
+                    currentSessionId = window.currentSessionId;
+                    this.startHeartbeat();
+
+                    console.log('✅ 로그인 성공:', currentDesigner.name);
+                    return currentDesigner;
+
+                } catch (error) {
+                    console.error('❌ 로그인 실패:', error);
+                    throw error;
+                }
+            }
+
+            async checkExistingSessions(designerId) {
+                try {
+                    const existingSessions = await db.collection(this.sessionCollectionName)
+                        .where('designerId', '==', designerId)
+                        .where('isActive', '==', true)
+                        .get();
+
+                    const batch = db.batch();
+                    existingSessions.forEach(doc => {
+                        batch.update(doc.ref, {
+                            isActive: false,
+                            logoutTime: new Date(),
+                            logoutReason: 'new_login'
+                        });
+                    });
+
+                    if (!existingSessions.empty) {
+                        await batch.commit();
+                        console.log(`${existingSessions.size}개의 기존 세션을 종료했습니다`);
+                    }
+                } catch (error) {
+                    console.warn('기존 세션 정리 중 오류:', error);
+                }
+            }
+
+            startHeartbeat() {
+                if (window.heartbeatInterval) {
+                    clearInterval(window.heartbeatInterval);
+                }
+
+                window.heartbeatInterval = setInterval(async () => {
+                    try {
+                        await this.updateLastActivity();
+                    } catch (error) {
+                        console.error('하트비트 오류:', error);
+                        this.handleSessionError();
+                    }
+                }, 30000);
+            }
+
+            async updateLastActivity() {
+                if (!window.currentSessionId) return;
+
+                await db.collection(this.sessionCollectionName).doc(window.currentSessionId).update({
+                    lastActivity: new Date()
+                });
+            }
+
+            async logout() {
+                try {
+                    if (currentSessionId) {
+                        await db.collection(this.sessionCollectionName).doc(currentSessionId).update({
+                            isActive: false,
+                            logoutTime: new Date(),
+                            logoutReason: 'manual_logout'
+                        });
+                    }
+
+                    if (window.heartbeatInterval) {
+                        clearInterval(window.heartbeatInterval);
+                        window.heartbeatInterval = null;
+                    }
+
+                    window.currentDesigner = null;
+                    window.currentSessionId = null;
+                    currentDesigner = null;
+                    currentSessionId = null;
+
+                    console.log('✅ 로그아웃 완료');
+                    
+                } catch (error) {
+                    console.error('❌ 로그아웃 오류:', error);
+                } finally {
+                    this.resetUI();
+                }
+            }
+
+            handleSessionError() {
+                console.warn('세션 오류 발생 - 재로그인 필요');
+                showToast('세션이 만료되었습니다. 다시 로그인해주세요.', 'error');
+                setTimeout(() => {
+                    this.logout();
+                }, 2000);
+            }
+
+            resetUI() {
+                loginScreen.style.display = 'flex';
+                genderSelection.style.display = 'none';
+                menuContainer.classList.remove('active');
+                backBtn.style.display = 'none';
+                updateUserInfo();
+            }
+        }
+
+        // Firebase 인증 인스턴스
+        const firebaseAuth = new FirebaseAuth();
+
+        // 유틸리티 함수들
+        function showLoading(show = true) {
+            loadingOverlay.style.display = show ? 'flex' : 'none';
+        }
+
+        function showToast(message, type = 'info') {
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        function goBack() {
+            if (menuContainer.classList.contains('active')) {
+                menuContainer.classList.remove('active');
+                genderSelection.style.display = 'flex';
+                backBtn.style.display = 'flex';
+            } else if (genderSelection.style.display === 'flex') {
+                genderSelection.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                backBtn.style.display = 'none';
+            }
+        }
+
+        function updateUserInfo() {
+            const userInfo = document.getElementById('userInfo');
+            const guestMessage = document.getElementById('guestMessage');
+            const designerName = document.getElementById('designerNameDisplay');
+            const designerPhone = document.getElementById('designerPhoneDisplay');
+            const sessionStatus = document.getElementById('sessionStatusDisplay');
+            const currentTokensDisplay = document.getElementById('currentTokens');
+
+            if (window.currentDesigner) {
+                userInfo.style.display = 'block';
+                guestMessage.style.display = 'none';
+                
+                designerName.textContent = `이름: ${window.currentDesigner.name}`;
+                designerPhone.textContent = `전화: ${window.currentDesigner.phone}`;
+                sessionStatus.textContent = `토큰: ${window.currentDesigner.tokens || 0}개`;
+                
+                if (currentTokensDisplay) {
+                    currentTokensDisplay.textContent = window.currentDesigner.tokens || 0;
+                }
+            } else {
+                userInfo.style.display = 'none';
+                guestMessage.style.display = 'block';
+                
+                if (currentTokensDisplay) {
+                    currentTokensDisplay.textContent = '0';
+                }
+            }
+        }
+
+        function formatPhoneNumber(phone) {
+            const numbers = phone.replace(/[^\d]/g, '');
+            if (numbers.length !== 11) {
+                return phone;
+            }
+            return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+        }
+
+        // 퍼스널 컬러 모달 열기
+        function openPersonalColorModal() {
+            console.log('=== 퍼스널 컬러 모달 디버깅 시작 ===');
+            
+            // 기존 모달이 있으면 먼저 제거
+            const existingModal = document.getElementById('personalColorModal');
+            if (existingModal && existingModal.parentNode) {
+                existingModal.parentNode.removeChild(existingModal);
+                console.log('기존 모달 제거됨');
+            }
+            
+            // HTML에서 퍼스널 컬러 모달 찾기 (HTML에 정의된 모달 사용)
+            let modal = document.getElementById('personalColorModal');
+            
+            // 모달이 없으면 (제거되었으면) 새로 생성
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'personalColorModal';
+                modal.className = 'personal-color-modal';
+                modal.innerHTML = `
+            <div class="personal-color-content">
+                <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
+                
+                <iframe 
+                    id="personalColorFrame" 
+                    src="./personal-color/index.html" 
+                    style="width: 100%; height: 100%; border: none; background: #111;"
+                    allow="camera; microphone"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
+                ></iframe>
+            </div>
+        `;
+                document.body.appendChild(modal);
+                console.log('새 모달 생성됨');
+            }
+            
+            // 모달 표시
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            console.log('퍼스널 컬러 iframe 로드 완료');
+        }
+               
+        // 퍼스널 컬러 모달 닫기
+        function closePersonalColorModal() {
+            const modal = document.getElementById('personalColorModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+                
+                // 모달 완전 제거하여 배경색 잔여 효과 방지
+                setTimeout(() => {
+                    if (modal.parentNode) {
+                        modal.parentNode.removeChild(modal);
+                    }
+                }, 300); // 애니메이션 시간 후 제거
+            }
+        }
+
+        // 공유 함수들
+        function fallbackShare(imageUrl) {
+            navigator.clipboard.writeText(imageUrl).then(() => {
+                showToast('이미지 URL이 클립보드에 복사되었습니다', 'success');
+            }).catch(() => {
+                showToast('공유 링크: ' + imageUrl, 'info');
+            });
+        }
+
+        // AI 체험 기능들
+        function startAIExperience() {
+            if (!window.currentDesigner) {
+                showToast('로그인이 필요합니다', 'error');
+                return;
+            }
+
+            if (window.currentDesigner.tokens < 5) {
+                showToast('토큰이 부족합니다. 충전 후 이용해주세요.', 'error');
+                return;
+            }
+
+            if (!window.currentStyleData) {
+                showToast('스타일 정보를 불러올 수 없습니다', 'error');
+                return;
+            }
+
+            // 스타일 이미지 미리 설정
+            stylePhoto.src = window.currentStyleData.imageUrl || '';
+            
+            aiExperienceModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            console.log('AI 체험 모달 열림:', window.currentStyleData);
+        }
+
+        function closeAIExperience() {
+            aiExperienceModal.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            // 초기화
+            aiFileInput.value = '';
+            aiPreviewArea.style.display = 'none';
+            aiProcessing.style.display = 'none';
+            processAIBtn.disabled = true;
+            
+            userPhoto.src = '';
+            console.log('AI 체험 모달 닫힘');
+        }
+
+        async function processAI() {
+            if (!window.currentDesigner || window.currentDesigner.tokens < 5) {
+                showToast('토큰이 부족합니다', 'error');
+                return;
+            }
+
+            if (!aiFileInput.files[0] || !window.currentStyleData) {
+                showToast('필수 정보가 누락되었습니다', 'error');
+                return;
+            }
+
+            try {
+                // UI 상태 변경
+                processAIBtn.disabled = true;
+                aiProcessing.style.display = 'block';
+                
+                // 토큰 차감 (executeWithTokens 사용)
+                const result = await executeWithTokens('AI_FACE_ANALYSIS', async () => {
+                    // AKOOL 서비스 호출
+                    const userImageFile = aiFileInput.files[0];
+                    const styleImageUrl = window.currentStyleData.imageUrl;
+                    
+                    console.log('AKOOL AI 처리 시작:', {
+                        styleUrl: styleImageUrl,
+                        styleName: window.currentStyleData.name
+                    });
+
+                    // AKOOL Face Swap 호출
+                    const swapResult = await window.akoolService.faceSwap(
+                        userImageFile, 
+                        styleImageUrl
+                    );
+
+                    // 결과 검증 및 처리
+                    if (swapResult && swapResult.success) {
+                        console.log('AKOOL AI 처리 완료:', swapResult.imageUrl);
+                        return swapResult.imageUrl;
+                    } else {
+                        throw new Error(swapResult ? swapResult.error : 'Face Swap 처리 실패');
+                    }
+                });
+
+                if (result) {
+                    // 성공 - 결과 표시
+                    showToast('AI 처리가 완료되었습니다!', 'success');
+                    showAIResult(result);
+                    
+                    // 토큰 잔액 업데이트
+                    updateUserInfo();
+                    
+                    // AI 체험 모달 닫기
+                    closeAIExperience();
+                }
+            } catch (error) {
+                console.error('AI 처리 오류:', error);
+                showToast(`AI 처리 실패: ${error.message}`, 'error');
+                
+            } finally {
+                aiProcessing.style.display = 'none';
+                processAIBtn.disabled = false;
+            }
+        }
+
+        // AI 결과 표시 함수
+        function showAIResult(resultImageUrl) {
+            // 결과 모달 생성
+            const resultModal = document.createElement('div');
+            resultModal.className = 'ai-result-modal';
+            resultModal.innerHTML = `
+                <div class="ai-result-content">
+                    <div class="ai-result-header">
+                        <h3>🎉 AI 스타일 체험 결과</h3>
+                        <button class="ai-result-close" onclick="this.closest('.ai-result-modal').remove()">×</button>
+                    </div>
+                    <div class="ai-result-body">
+                        <img src="${resultImageUrl}" alt="AI 결과" class="ai-result-image">
+                        <div class="ai-result-actions">
+                            <button class="ai-btn primary" onclick="downloadAIResult('${resultImageUrl}')">
+                                💾 다운로드
+                            </button>
+                            <button class="ai-btn secondary" onclick="shareAIResult('${resultImageUrl}')">
+                                📤 공유하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(resultModal);
+            document.body.style.overflow = 'hidden';
+            
+            console.log('AI 결과 모달 표시:', resultImageUrl);
+        }
+
+        // AI 결과 다운로드
+        function downloadAIResult(imageUrl) {
+            try {
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.download = `hairgator-ai-result-${Date.now()}.jpg`;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showToast('다운로드가 시작되었습니다', 'success');
+            } catch (error) {
+                console.error('다운로드 오류:', error);
+                showToast('다운로드에 실패했습니다', 'error');
+            }
+        }
+
+        // AI 결과 공유
+        function shareAIResult(imageUrl) {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'HAIRGATOR AI 스타일 체험 결과',
+                    text: 'AI로 체험해본 헤어스타일입니다!',
+                    url: imageUrl
+                }).then(() => {
+                    showToast('공유가 완료되었습니다', 'success');
+                }).catch((error) => {
+                    console.error('공유 오류:', error);
+                    fallbackShare(imageUrl);
+                });
+            } else {
+                fallbackShare(imageUrl);
+            }
+        }
+
+        // 전화번호 입력 시 실시간 포맷팅
+        document.getElementById('phoneNumber').addEventListener('input', function(e) {
+            const input = e.target;
+            const cursorPos = input.selectionStart;
+            const oldValue = input.value;
+            const oldLength = oldValue.length;
+            
+            const formatted = formatPhoneNumber(input.value);
+            input.value = formatted;
+            
+            const newLength = formatted.length;
+            const diff = newLength - oldLength;
+            input.setSelectionRange(cursorPos + diff, cursorPos + diff);
+        });
+
+        // 카메라 및 파일 업로드 이벤트
+        cameraBtn.addEventListener('click', function() {
+            initCamera();
+        });
+
+        galleryBtn.addEventListener('click', function() {
+            aiFileInput.click();
+        });
+
+        closeCameraBtn.addEventListener('click', function() {
+            stopCamera();
+        });
+
+        captureBtn.addEventListener('click', function() {
+            capturePhoto();
+        });
+
+        // 기존 파일 업로드 이벤트 (갤러리용)
+        aiUploadArea.addEventListener('click', () => {
+            aiFileInput.click();
+        });
+
+        aiFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 파일 크기 체크 (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('파일 크기는 10MB 이하여야 합니다', 'error');
+                return;
+            }
+
+            // 이미지 미리보기
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                userPhoto.src = e.target.result;
+                aiPreviewArea.style.display = 'block';
+                processAIBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+            
+            console.log('파일 업로드 완료:', file.name);
+        });
+
+        // 드래그 앤 드롭 지원
+        aiUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            aiUploadArea.classList.add('dragging');
+        });
+
+        aiUploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            aiUploadArea.classList.remove('dragging');
+        });
+
+        aiUploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            aiUploadArea.classList.remove('dragging');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                aiFileInput.files = files;
+                aiFileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // 로그인 처리
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('designerName').value.trim();
+            let phone = document.getElementById('phoneNumber').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const loginBtn = document.getElementById('loginBtn');
+            
+            phone = formatPhoneNumber(phone);
+            
+            if (!name || !phone || password.length !== 4) {
+                showToast('모든 정보를 정확히 입력해주세요', 'error');
+                return;
+            }
+
+            const phoneRegex = /^01[0-9]-\d{4}-\d{4}$/;
+            if (!phoneRegex.test(phone)) {
+                showToast('전화번호는 11자리 숫자로 입력해주세요 (예: 01000000000)', 'error');
+                return;
+            }
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = '로그인 중...';
+            showLoading(true);
+
+            try {
+                await firebaseAuth.login(name, phone, password);
+                
+                loginScreen.style.display = 'none';
+                genderSelection.style.display = 'flex';
+                backBtn.style.display = 'flex';
+                
+                updateUserInfo();
+                showToast(`환영합니다, ${window.currentDesigner.name}님!`, 'success');
+                
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = '로그인';
+                showLoading(false);
+            }
+        });
+
+        async function logout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
+                showLoading(true);
+                await firebaseAuth.logout();
+                showLoading(false);
+                showToast('로그아웃되었습니다', 'success');
+            }
+        }
+
+        // 성별 선택
+        function selectGender(gender) {
+            currentGender = gender;
+            
+            genderSelection.style.display = 'none';
+            menuContainer.classList.add('active');
+            
+            loadMenuData(gender);
+        }
+
+        // 메뉴 데이터 로드 (스마트 필터링 적용)
+        async function loadMenuData(gender) {
+            const menuData = MENU_DATA[gender];
+            
+            // 카테고리 탭 즉시 렌더링
+            renderCategories(gender, menuData.categories);
+            
+            // 첫 번째 카테고리 선택 및 스마트 필터링 적용
+            if (menuData.categories.length > 0) {
+                const firstCategory = menuData.categories[0];
+                currentCategory = firstCategory;
+                
+                // 해당 카테고리의 서브카테고리 정보 확인
+                const subInfo = await checkSubcategoriesAndNew(gender, firstCategory.name);
+                
+                // 스마트 필터링된 서브카테고리 렌더링
+                renderSmartSubcategories(gender, menuData.subcategories, subInfo);
+                
+                // 첫 번째 사용 가능한 서브카테고리로 스타일 로드
+                const firstAvailableSub = subInfo.available[0] || 'None';
+                currentSubcategory = firstAvailableSub;
+                loadStyles(firstCategory.name, firstAvailableSub, gender);
+            }
+            
+            console.log(`✅ ${gender} 메뉴 로드 완료`);
+        }
+
+        // 카테고리 탭 렌더링 (NEW 표시는 백그라운드에서 추가)
+        function renderCategories(gender, categories) {
+            const categoryTabs = document.getElementById('categoryTabs');
+            categoryTabs.innerHTML = '';
+            
+            categories.forEach((category, index) => {
+                const tab = document.createElement('button');
+                tab.className = 'category-tab';
+                tab.textContent = category.name;
+                tab.dataset.categoryId = category.id;
+                
+                if (index === 0) {
+                    tab.classList.add('active', gender);
+                }
+                
+                tab.addEventListener('click', () => selectCategory(category, gender));
+                categoryTabs.appendChild(tab);
+                
+                // 백그라운드에서 NEW 표시 확인 및 추가
+                setTimeout(async () => {
+                    const subInfo = await checkSubcategoriesAndNew(gender, category.name);
+                    const hasNewItems = Object.keys(subInfo.newCounts).length > 0;
+                    
+                    if (hasNewItems && !tab.querySelector('.new-indicator')) {
+                        tab.appendChild(createNewIndicator());
+                    }
+                }, 100);
+            });
+            
+            console.log(`✅ ${categories.length}개 카테고리 렌더링 완료`);
+        }
+
+        // 스마트 서브카테고리 렌더링 (필터링 + NEW 표시)
+        function renderSmartSubcategories(gender, allSubcategories, subInfo) {
+            const subTabs = document.getElementById('subTabs');
+            subTabs.innerHTML = '';
+            
+            allSubcategories.forEach((subcategory, index) => {
+                const tab = document.createElement('button');
+                tab.className = 'sub-tab';
+                tab.textContent = subcategory;
+                tab.dataset.subcategory = subcategory;
+                
+                // 사용 가능한 서브카테고리인지 확인
+                const isAvailable = subInfo.available.includes(subcategory);
+                
+                if (!isAvailable) {
+                    tab.classList.add('disabled');
+                } else {
+                    // 첫 번째 사용 가능한 서브카테고리를 활성화
+                    if (index === 0 || (!document.querySelector('.sub-tab.active') && isAvailable)) {
+                        tab.classList.add('active', gender);
+                        currentSubcategory = subcategory;
+                    }
+                    
+                    // NEW 표시 추가
+                    const newCount = subInfo.newCounts[subcategory];
+                    if (newCount && newCount > 0) {
+                        tab.appendChild(createNewIndicator());
+                    }
+                    
+                    tab.addEventListener('click', () => selectSubcategory(subcategory, gender));
+                }
+                
+                subTabs.appendChild(tab);
+            });
+            
+            console.log(`✅ 스마트 서브카테고리 렌더링 완료 (사용가능: ${subInfo.available.length}/${allSubcategories.length})`);
+        }
+
+        // 카테고리 선택 (스마트 필터링 적용)
+        async function selectCategory(category, gender) {
+            currentCategory = category;
+            
+            // 탭 활성화 상태 업데이트
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active', 'male', 'female');
+                if (tab.dataset.categoryId === category.id) {
+                    tab.classList.add('active', gender);
+                }
+            });
+            
+            // 해당 카테고리의 서브카테고리 정보 확인
+            const subInfo = await checkSubcategoriesAndNew(gender, category.name);
+            const menuData = MENU_DATA[gender];
+            
+            // 스마트 필터링된 서브카테고리 렌더링
+            renderSmartSubcategories(gender, menuData.subcategories, subInfo);
+            
+            // 첫 번째 사용 가능한 서브카테고리로 스타일 로드
+            const firstAvailableSub = subInfo.available[0] || 'None';
+            currentSubcategory = firstAvailableSub;
+            loadStyles(category.name, firstAvailableSub, gender);
+            
+            console.log(`✅ 카테고리 선택: ${category.name} (사용가능한 서브: ${subInfo.available.length}개)`);
+        }
+
+        // 서브카테고리 선택
+        function selectSubcategory(subcategory, gender) {
+            currentSubcategory = subcategory;
+            
+            // 탭 활성화 상태 업데이트
+            document.querySelectorAll('.sub-tab').forEach(tab => {
+                if (!tab.classList.contains('disabled')) {
+                    tab.classList.remove('active', 'male', 'female');
+                    if (tab.dataset.subcategory === subcategory) {
+                        tab.classList.add('active', gender);
+                    }
+                }
+            });
+            
+            // 스타일 로드
+            if (currentCategory) {
+                loadStyles(currentCategory.name, subcategory, gender);
+            }
+            
+            console.log(`✅ 서브카테고리 선택: ${subcategory}`);
+        }
+
+        // 스타일 로드 (NEW 표시 포함) - 🚀 이미지 로딩 최적화 적용
+        async function loadStyles(categoryName, subcategory, gender) {
+            const stylesGrid = document.getElementById('stylesGrid');
+            
+            // 로딩 스켈레톤 표시
+            showSkeletonCards();
+            
+            try {
+                const snapshot = await db.collection('hairstyles')
+                    .where('gender', '==', gender)
+                    .where('mainCategory', '==', categoryName)
+                    .where('subCategory', '==', subcategory)
+                    .get();
+                
+                stylesGrid.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    stylesGrid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <div style="font-size: 18px;">등록된 스타일이 없습니다</div>
+                            <div style="font-size: 14px; color: #666; margin-top: 10px;">${categoryName} - ${subcategory}</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const fragment = document.createDocumentFragment();
+                
+                snapshot.forEach(doc => {
+                    const style = doc.data();
+                    const card = createStyleCard(style, doc.id);
+                    fragment.appendChild(card);
+                });
+                
+                stylesGrid.appendChild(fragment);
+                
+                console.log(`✅ ${snapshot.size}개 스타일 로드 완료: ${categoryName} - ${subcategory}`);
+                
+            } catch (error) {
+                console.error('스타일 로드 오류:', error);
+                showErrorState(error.message);
+            }
+        }
+
+        // 🚀 스타일 카드 생성 (NEW 표시 포함) + 이미지 로딩 최적화
+        function createStyleCard(style, docId) {
+            const card = document.createElement('div');
+            card.className = 'style-card';
+            
+            // 이미지 먼저 생성
+            const img = document.createElement('img');
+            img.className = 'style-image';
+            img.alt = style.name || 'Style';
+            img.loading = 'lazy';
+            
+            // 🚀 이미지 로딩 최적화: 로드 완료 시 클래스 추가
+            img.onload = function() {
+                this.classList.add('loaded');
+            };
+            
+            img.onerror = function() {
+                this.classList.add('loaded');
+                this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                this.style.display = 'block';
+            };
+            
+            // 🚀 이미지 URL 설정 (지연 설정으로 성능 향상)
+            setTimeout(() => {
+                img.src = style.imageUrl || '';
+            }, Math.random() * 50); // 약간의 랜덤 지연으로 동시 요청 방지
+            
+            card.appendChild(img);
+            
+            // NEW 표시 (7일 이내 등록된 경우)
+            const createdAt = style.createdAt?.toDate?.() || new Date(0);
+            const isNew = createdAt.getTime() > newItemsTimestamp;
+            
+            if (isNew) {
+                const newIndicator = createNewIndicator();
+                card.appendChild(newIndicator);
+            }
+            
+            // 클릭 이벤트 - 모달 열기
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 시각적 피드백
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    card.style.transform = '';
+                }, 150);
+                
+                // 햅틱 피드백 (모바일)
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                
+                console.log('스타일 클릭됨:', { 
+                    code: style.code || 'NO_CODE', 
+                    name: style.name || 'NO_NAME',
+                    docId: docId 
+                });
+                
+                // 스타일 상세 모달 열기
+                openStyleModal(style, docId);
+                
+            }, { passive: false });
+            
+            return card;
+        }
+
+        // 스타일 상세 모달 열기
+        function openStyleModal(style, docId) {
+            // 현재 스타일 데이터 저장 (AI 체험용) - window 객체에 저장
+            window.currentStyleData = style;
+            currentStyleData = window.currentStyleData;
+            
+            const modal = document.getElementById('styleModal');
+            const modalImage = document.getElementById('styleModalImage');
+            const modalCode = document.getElementById('styleModalCode');
+            const modalName = document.getElementById('styleModalName');
+            const modalCategory = document.getElementById('styleModalCategory');
+            const modalSubcategory = document.getElementById('styleModalSubcategory');
+            const modalGender = document.getElementById('styleModalGender');
+            const aiExperienceBtn = document.getElementById('aiExperienceBtn');
+            
+            // 모달 정보 설정
+            modalImage.src = style.imageUrl || '';
+            modalImage.onerror = function() {
+                this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                this.style.display = 'block';
+            };
+            
+            modalCode.textContent = style.code || 'NO CODE';
+            modalName.textContent = style.name || '이름 없음';
+            modalCategory.textContent = style.mainCategory || '-';
+            modalSubcategory.textContent = style.subCategory || '-';
+            modalGender.textContent = style.gender === 'male' ? '남성' : style.gender === 'female' ? '여성' : '-';
+            
+            // AI 버튼 상태 업데이트
+            if (window.currentDesigner && window.currentDesigner.tokens >= 5) {
+                aiExperienceBtn.disabled = false;
+                aiExperienceBtn.style.opacity = '1';
+            } else {
+                aiExperienceBtn.disabled = true;
+                aiExperienceBtn.style.opacity = '0.6';
+            }
+            
+            // 모달 표시
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            console.log('스타일 모달 열림:', { 
+                code: style.code, 
+                name: style.name,
+                category: style.mainCategory,
+                subcategory: style.subCategory,
+                currentStyleData: window.currentStyleData
+            });
+        }
+
+        // 스타일 모달 닫기
+        function closeStyleModal() {
+            const modal = document.getElementById('styleModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            // 현재 스타일 데이터 초기화
+            window.currentStyleData = null;
+            currentStyleData = null;
+        }
+
+        // 스켈레톤 카드 표시
+        function showSkeletonCards() {
+            const stylesGrid = document.getElementById('stylesGrid');
+            stylesGrid.innerHTML = '';
+            
+            const fragment = document.createDocumentFragment();
+            const count = window.innerWidth <= 767 ? 8 : 15;
+            
+            for (let i = 0; i < count; i++) {
+                const skeleton = document.createElement('div');
+                skeleton.className = 'skeleton-card';
+                fragment.appendChild(skeleton);
+            }
+            
+            stylesGrid.appendChild(fragment);
+        }
+
+        // 에러 상태 표시
+        function showErrorState(message) {
+            const stylesGrid = document.getElementById('stylesGrid');
+            stylesGrid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <div style="font-size: 18px;">로드 실패</div>
+                    <div style="font-size: 14px; color: #666; margin-top: 10px;">${message}</div>
+                    <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: var(--female-color); color: white; border: none; border-radius: 5px; cursor: pointer;">새로고침</button>
+                </div>
+            `;
+        }
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🦎 HAIRGATOR x AKOOL 시작 - AI 체험 + 카메라 + 퍼스널 컬러 기능 통합 완료 + 이미지 로딩 최적화 적용');
+            
+            loginScreen.style.display = 'flex';
+            updateUserInfo();
+
+            // 모달 닫기 이벤트 리스너 추가
+            const styleModalClose = document.getElementById('styleModalClose');
+            const styleModal = document.getElementById('styleModal');
+            
+            if (styleModalClose) {
+                styleModalClose.addEventListener('click', closeStyleModal);
+            }
+            
+            if (styleModal) {
+                styleModal.addEventListener('click', function(e) {
+                    if (e.target === styleModal) {
+                        closeStyleModal();
+                    }
+                });
+            }
+
+            // AI 모달 닫기 이벤트
+            aiExperienceModal.addEventListener('click', function(e) {
+                if (e.target === aiExperienceModal) {
+                    closeAIExperience();
+                }
+            });
+
+            // 카메라 모달 닫기 이벤트
+            cameraModal.addEventListener('click', function(e) {
+                if (e.target === cameraModal) {
+                    stopCamera();
+                }
+            });
+
+            // 퍼스널 컬러 모달 닫기 이벤트
+            const personalColorModal = document.getElementById('personalColorModal');
+            if (personalColorModal) {
+                personalColorModal.addEventListener('click', function(e) {
+                    if (e.target === personalColorModal) {
+                        closePersonalColorModal();
+                    }
+                });
+            }
+            
+            // ESC 키로 모달 닫기
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (cameraModal.classList.contains('active')) {
+                        stopCamera();
+                    } else if (aiExperienceModal.classList.contains('active')) {
+                        closeAIExperience();
+                    } else if (styleModal.classList.contains('active')) {
+                        closeStyleModal();
+                    } else if (personalColorModal && personalColorModal.classList.contains('active')) {
+                        closePersonalColorModal();
+                    }
+                }
+            });
+        });
+
+        // 클릭 이벤트 외부 영역에서 사이드바 닫기
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.getElementById('menuBtn');
+            
+            if (sidebar.classList.contains('active') && 
+                !sidebar.contains(e.target) && 
+                !menuBtn.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+
+        // 브라우저 종료 시 세션 정리
+        window.addEventListener('beforeunload', function() {
+            if (window.currentSessionId) {
+                navigator.sendBeacon('/api/logout', JSON.stringify({
+                    sessionId: window.currentSessionId,
+                    reason: 'browser_close'
+                }));
+            }
+        });
+
+        // 페이지 숨김/표시 시 세션 관리
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                if (window.heartbeatInterval) {
+                    clearInterval(window.heartbeatInterval);
+                }
+            } else {
+                if (window.currentSessionId && window.firebaseAuth) {
+                    window.firebaseAuth.startHeartbeat();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
