@@ -29,12 +29,12 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
-    <!-- 📌 기존 스타일을 별도 파일로 분리 -->
+    <!-- 기존 CSS 파일들 그대로 유지 -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/theme-extension.css">
 </head>
 <body>
-    <!-- 📌 기존 HTML 구조 그대로 유지 -->
+    <!-- 기존 HTML 구조 그대로 유지 -->
     
     <!-- 로딩 화면 -->
     <div id="loadingScreen" class="loading-screen">
@@ -96,7 +96,7 @@
             <button class="back-btn" id="backBtn" onclick="handleBack()">←</button>
             <div class="logo">HAIRGATOR</div>
             
-            <!-- 📌 개선: 테마 버튼과 메뉴 버튼 추가 -->
+            <!-- 개선: 테마 버튼과 메뉴 버튼 추가 -->
             <div class="header-actions">
                 <button class="theme-btn" id="themeToggle" onclick="toggleTheme()">
                     <span class="theme-icon">🌙</span>
@@ -127,7 +127,7 @@
         </div>
     </div>
 
-    <!-- 📌 개선: 사이드 메뉴 추가 -->
+    <!-- 개선: 사이드 메뉴 추가 -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h3>메뉴</h3>
@@ -140,7 +140,7 @@
                 <p>토큰: <span id="tokenBalance">0</span></p>
             </div>
             
-            <!-- 📌 개선: 테마 선택기 추가 -->
+            <!-- 개선: 테마 선택기 추가 -->
             <div class="theme-section">
                 <h5>테마 선택</h5>
                 <div class="theme-options">
@@ -185,7 +185,7 @@
                 <div class="style-modal-code" id="styleModalCode">CODE</div>
                 <div class="style-modal-name" id="styleModalName">Style Name</div>
                 
-                <!-- 📌 개선: 액션 버튼 추가 -->
+                <!-- 개선: 액션 버튼 추가 -->
                 <div class="style-actions">
                     <button class="action-btn favorite-btn" onclick="toggleFavorite()">
                         <span class="action-icon">⭐</span>
@@ -208,15 +208,20 @@
         <div class="loading-spinner"></div>
     </div>
 
-    <!-- 📌 기존 JavaScript 파일들 그대로 유지 -->
+    <!-- 테마 토글 버튼 (하단) -->
+    <button class="theme-toggle-bottom" id="themeToggleBottom">
+        <span>🌙</span>
+        <span>다크모드</span>
+        <span id="themeStatus">ON</span>
+    </button>
+
+    <!-- 🎯 수정된 JavaScript 로딩 (문제 해결용) -->
     <script src="js/firebase-config.js"></script>
-    <script src="js/token-system.js"></script>
     <script src="js/permission-system.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/menu.js"></script>
-    
-    <!-- 📌 새로운 테마 관리만 추가 -->
-    <script src="js/theme-extension.js"></script>
+    <!-- <script src="js/token-system.js"></script> --> <!-- 404 에러 제거 -->
+    <!-- <script src="js/auth.js"></script> --> <!-- main.js와 중복 제거 -->
+    <!-- <script src="js/menu.js"></script> --> <!-- main.js와 중복 제거 -->
+    <!-- <script src="js/theme-extension.js"></script> --> <!-- main.js와 중복 제거 -->
     <script src="js/main.js"></script>
 
     <!-- PWA Service Worker -->
