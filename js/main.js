@@ -1,4 +1,4 @@
-// HAIRGATOR Main Application Logic - 최종 버전 (모든 에러 수정)
+// HAIRGATOR Main Application Logic - 테마 시스템 제거 버전
 document.addEventListener('DOMContentLoaded', function() {
     // Global variables
     let currentGender = null;
@@ -6,52 +6,11 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentSubcategory = 'None';
     let menuData = {};
 
-    // 🎨 테마 레지스트리 - 먼저 선언 (호이스팅 문제 해결)
-    const THEME_REGISTRY = {
-        dark: {
-            name: '다크 모드',
-            icon: '🌙',
-            className: '',
-            category: 'basic'
-        },
-        light: {
-            name: '라이트 모드',
-            icon: '☀️',
-            className: 'light-theme',
-            category: 'basic'
-        },
-        blue: {
-            name: '오션 블루',
-            icon: '🌊',
-            className: 'blue-theme',
-            category: 'color'
-        },
-        purple: {
-            name: '갤럭시 퍼플',
-            icon: '🔮',
-            className: 'purple-theme',
-            category: 'color'
-        },
-        green: {
-            name: '네이처 그린',
-            icon: '🌲',
-            className: 'green-theme',
-            category: 'color'
-        }
-    };
-
-    // 현재 활성화된 테마들
-    let enabledThemes = ['dark', 'light', 'blue', 'purple', 'green'];
-    let currentTheme = 'dark';
-
     // Elements
     const backBtn = document.getElementById('backBtn');
     const menuBtn = document.getElementById('menuBtn');
     const sidebar = document.getElementById('sidebar');
     const sidebarClose = document.getElementById('sidebarClose');
-    const themeToggle = document.getElementById('themeToggle');
-    const themeToggleBottom = document.getElementById('themeToggleBottom');
-    const themeStatus = document.getElementById('themeStatus');
     const logoutBtn = document.getElementById('logoutBtn');
     const genderSelection = document.getElementById('genderSelection');
     const menuContainer = document.getElementById('menuContainer');
@@ -60,6 +19,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const subcategoryTabs = document.getElementById('subcategoryTabs');
     const menuGrid = document.getElementById('menuGrid');
     const loadingOverlay = document.getElementById('loadingOverlay');
+    const loginScreen = document.getElementById('loginScreen');
+    const loginForm = document.getElementById('loginForm');
     
     // Modal elements
     const styleModal = document.getElementById('styleModal');
@@ -77,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { 
                     id: 'side-fringe', 
                     name: 'SIDE FRINGE',
-                    description: '사이드 프린지는 클래식함과 모던함의 대명사로 스타일링이 따라 원하는 이미지를 자유롭게 표현할 수 있습니다. 가르마를 기준으로 단순히 넘어가는 스타일을 넘어 개인의 특성과 트렌드에 맞춰 고급 테이퍼링을 표현하는 것이 매우 중요합니다.'
+                    description: '사이드 프린지는 클래식함과 모던함의 대명사로 스타일링이 따라 원하는 이미지를 자유롭게 표현할 수 있습니다.'
                 },
                 { 
                     id: 'side-part', 
@@ -117,42 +78,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 { 
                     id: 'a-length', 
                     name: 'A Length',
-                    description: 'A 길이는 가슴선 아래로 내려오는 롱헤어로, 원랭스·레이어드 롱·굵은 S컬이 잘 맞아 우아하고 드라마틱한 분위기를 냅니다.'
+                    description: 'A 길이는 가슴선 아래로 내려오는 롱헤어로, 우아하고 드라마틱한 분위기를 냅니다.'
                 },
                 { 
                     id: 'b-length', 
                     name: 'B Length',
-                    description: 'B 길이는 가슴 아래(A)와 쇄골 아래(C) 사이의 미디엄-롱으로, 레이어드 미디엄롱·바디펌이 어울려 부드럽고 실용적인 인상을 줍니다.'
+                    description: 'B 길이는 가슴 아래와 쇄골 아래 사이의 미디엄-롱으로, 부드럽고 실용적인 인상을 줍니다.'
                 },
                 { 
                     id: 'c-length', 
                     name: 'C Length',
-                    description: 'C 길이는 쇄골 라인 아래의 세미 롱으로, 레이어드 C/S컬·에어리펌과 잘 맞아 단정하고 세련된 오피스 무드를 냅니다.'
+                    description: 'C 길이는 쇄골 라인 아래의 세미 롱으로, 단정하고 세련된 오피스 무드를 냅니다.'
                 },
                 { 
                     id: 'd-length', 
                     name: 'D Length',
-                    description: 'D 길이는 어깨에 정확히 닿는 길이로, LOB·숄더 C컬·빌드펌이 어울려 트렌디하고 깔끔한 느낌을 줍니다.'
+                    description: 'D 길이는 어깨에 정확히 닿는 길이로, 트렌디하고 깔끔한 느낌을 줍니다.'
                 },
                 { 
                     id: 'e-length', 
                     name: 'E Length',
-                    description: 'E 길이는 어깨 바로 위의 단발로, 클래식 보브·A라인 보브·내/외 C컬이 잘 맞아 경쾌하고 모던한 인상을 만듭니다.'
+                    description: 'E 길이는 어깨 바로 위의 단발로, 경쾌하고 모던한 인상을 만듭니다.'
                 },
                 { 
                     id: 'f-length', 
                     name: 'F Length',
-                    description: 'F 길이는 턱선 바로 밑 보브 길이로, 프렌치 보브·일자 단발·텍스처 보브가 어울려 시크하고 도회적인 분위기를 연출합니다.'
+                    description: 'F 길이는 턱선 바로 밑 보브 길이로, 시크하고 도회적인 분위기를 연출합니다.'
                 },
                 { 
                     id: 'g-length', 
                     name: 'G Length',
-                    description: 'G 길이는 턱선과 같은 높이의 미니 보브로, 클래식 턱선 보브·미니 레이어 보브가 잘 맞아 또렷하고 미니멀한 무드를 줍니다.'
+                    description: 'G 길이는 턱선과 같은 높이의 미니 보브로, 또렷하고 미니멀한 무드를 줍니다.'
                 },
                 { 
                     id: 'h-length', 
                     name: 'H Length',
-                    description: 'H 길이는 귀선~베리숏 구간의 숏헤어로, 픽시·샤그 숏·허쉬 숏 등이 어울려 활동적이고 개성 있는 스타일을 완성합니다.'
+                    description: 'H 길이는 귀선~베리숏 구간의 숏헤어로, 활동적이고 개성 있는 스타일을 완성합니다.'
                 }
             ],
             subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
@@ -164,8 +125,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function init() {
         console.log('🦎 HAIRGATOR 초기화 시작...');
+        
+        // Firebase 연결 확인
+        if (typeof firebase === 'undefined' || typeof db === 'undefined') {
+            console.warn('Firebase 로딩 대기 중...');
+            setTimeout(init, 100);
+            return;
+        }
+        
         setupEventListeners();
-        initThemeSystem();
+        setupLoginForm();
         checkAuthStatus();
         
         if (backBtn) {
@@ -190,23 +159,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Sidebar Close
         if (sidebarClose) {
             sidebarClose.addEventListener('click', closeSidebar);
-        }
-
-        // Theme Toggles
-        if (themeToggle) {
-            themeToggle.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleTheme();
-            });
-        }
-
-        if (themeToggleBottom) {
-            themeToggleBottom.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleTheme();
-            });
         }
 
         // Logout Button
@@ -251,159 +203,94 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // 테마 옵션 클릭 이벤트
-        document.addEventListener('click', function(e) {
-            const themeOption = e.target.closest('.theme-option');
-            if (themeOption && themeOption.dataset.theme) {
-                const themeName = themeOption.dataset.theme;
-                setTheme(themeName);
-            }
-        });
-
         console.log('✅ 이벤트 리스너 설정 완료');
     }
 
-    // ========== 테마 시스템 ==========
-    
-    // 테마 시스템 초기화
-    function initThemeSystem() {
-        const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
+    // Login Form Setup
+    function setupLoginForm() {
+        if (!loginForm) return;
         
-        if (THEME_REGISTRY[savedTheme] && enabledThemes.includes(savedTheme)) {
-            currentTheme = savedTheme;
-        }
-        
-        applyTheme(currentTheme);
-        updateAllThemeUI();
-        
-        console.log(`🎨 테마 시스템 초기화: ${THEME_REGISTRY[currentTheme].name}`);
-    }
-
-    // 테마 적용
-    function applyTheme(themeName) {
-        if (!THEME_REGISTRY[themeName]) {
-            console.error(`테마 '${themeName}'를 찾을 수 없습니다`);
-            return;
-        }
-
-        const theme = THEME_REGISTRY[themeName];
-        const body = document.body;
-
-        // 모든 테마 클래스 제거
-        Object.values(THEME_REGISTRY).forEach(t => {
-            if (t.className) body.classList.remove(t.className);
-        });
-
-        // 새 테마 클래스 추가
-        if (theme.className) {
-            body.classList.add(theme.className);
-        }
-
-        currentTheme = themeName;
-        localStorage.setItem('hairgator_theme', themeName);
-
-        console.log(`🎨 테마 적용: ${theme.name}`);
-        showToast(`${theme.name}로 변경되었습니다`);
-    }
-
-    // 테마 토글
-    function toggleTheme() {
-        const availableThemes = enabledThemes.filter(key => THEME_REGISTRY[key]);
-        const currentIndex = availableThemes.indexOf(currentTheme);
-        const nextIndex = (currentIndex + 1) % availableThemes.length;
-        const nextTheme = availableThemes[nextIndex];
-        
-        setTheme(nextTheme);
-    }
-
-    // 특정 테마로 설정
-    function setTheme(themeName) {
-        if (!THEME_REGISTRY[themeName]) {
-            console.error(`테마 '${themeName}'가 존재하지 않습니다`);
-            return;
-        }
-
-        if (!enabledThemes.includes(themeName)) {
-            console.warn(`테마 '${themeName}'가 비활성화되어 있습니다`);
-            return;
-        }
-
-        applyTheme(themeName);
-        updateAllThemeUI();
-        closeSidebar();
-    }
-
-    // 모든 테마 UI 업데이트
-    function updateAllThemeUI() {
-        updateThemeIcon();
-        updateThemeStatus();
-        updateSidebarThemeOptions();
-    }
-
-    // 테마 아이콘 업데이트
-    function updateThemeIcon() {
-        const theme = THEME_REGISTRY[currentTheme];
-        const themeIcons = document.querySelectorAll('.theme-icon');
-        
-        themeIcons.forEach(icon => {
-            if (icon) icon.textContent = theme.icon;
-        });
-    }
-
-    // 테마 상태 업데이트
-    function updateThemeStatus() {
-        if (themeStatus) {
-            themeStatus.textContent = currentTheme === 'dark' ? 'ON' : 'OFF';
-        }
-
-        if (themeToggleBottom) {
-            const theme = THEME_REGISTRY[currentTheme];
-            const iconSpan = themeToggleBottom.querySelector('span:first-child');
-            const textSpan = themeToggleBottom.querySelector('span:nth-child(2)');
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            if (iconSpan) iconSpan.textContent = theme.icon;
-            if (textSpan) textSpan.textContent = theme.name;
-        }
-    }
-
-    // 사이드바 테마 옵션 동적 생성
-    function updateSidebarThemeOptions() {
-        const container = document.querySelector('.theme-options');
-        if (!container) return;
-
-        container.innerHTML = '';
-
-        enabledThemes.forEach(themeKey => {
-            if (!THEME_REGISTRY[themeKey]) return;
-
-            const theme = THEME_REGISTRY[themeKey];
-            const option = document.createElement('button');
-            option.className = `theme-option ${themeKey === currentTheme ? 'active' : ''}`;
-            option.dataset.theme = themeKey;
-
-            option.innerHTML = `
-                <span class="theme-preview ${theme.className || 'dark'}"></span>
-                <span>${theme.name}</span>
-            `;
-
-            container.appendChild(option);
+            const designerName = document.getElementById('designerName')?.value?.trim();
+            const phoneNumber = document.getElementById('phoneNumber')?.value?.trim();
+            const password = document.getElementById('password')?.value?.trim();
+            
+            if (!designerName || !phoneNumber || !password) {
+                showToast('모든 정보를 입력해주세요');
+                return;
+            }
+            
+            if (password.length !== 4) {
+                showToast('비밀번호는 4자리 숫자입니다');
+                return;
+            }
+            
+            console.log('로그인 시도:', { designerName, phoneNumber });
+            
+            try {
+                showLoading(true);
+                
+                // Firebase 인증 로직 (간단 버전)
+                const userQuery = await db.collection('designers')
+                    .where('name', '==', designerName)
+                    .where('phone', '==', phoneNumber)
+                    .where('password', '==', password)
+                    .limit(1)
+                    .get();
+                
+                if (userQuery.empty) {
+                    throw new Error('로그인 정보가 올바르지 않습니다');
+                }
+                
+                const userDoc = userQuery.docs[0];
+                const userData = userDoc.data();
+                
+                // 로그인 성공
+                localStorage.setItem('hairgator_user', JSON.stringify({
+                    id: userDoc.id,
+                    name: userData.name,
+                    phone: userData.phone
+                }));
+                
+                showToast(`환영합니다, ${userData.name}님!`);
+                
+                // 화면 전환
+                if (loginScreen) loginScreen.classList.remove('active');
+                if (genderSelection) genderSelection.style.display = 'flex';
+                if (backBtn) backBtn.style.display = 'flex';
+                
+                updateUserInfo(userData);
+                
+            } catch (error) {
+                console.error('로그인 오류:', error);
+                showToast(error.message);
+            } finally {
+                showLoading(false);
+            }
         });
     }
 
-    // 전역 함수로 노출
-    window.setTheme = setTheme;
-    window.getCurrentTheme = () => currentTheme;
+    // Update User Info in Sidebar
+    function updateUserInfo(userData) {
+        const designerInfo = document.getElementById('designerInfo');
+        const designerName = document.getElementById('designerName');
+        
+        if (designerInfo && userData) {
+            designerInfo.style.display = 'block';
+            if (designerName) {
+                designerName.textContent = userData.name || 'Unknown';
+            }
+        }
+    }
 
     // Navigation Functions
     function handleBack() {
-        if (menuContainer.classList.contains('active')) {
+        if (menuContainer && menuContainer.classList.contains('active')) {
             menuContainer.classList.remove('active');
-            genderSelection.style.display = 'flex';
-            backBtn.style.display = 'none';
-            
-            if (themeToggleBottom) {
-                themeToggleBottom.style.display = 'flex';
-            }
+            if (genderSelection) genderSelection.style.display = 'flex';
+            if (backBtn) backBtn.style.display = 'none';
             
             currentGender = null;
             currentCategory = null;
@@ -422,28 +309,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Authentication Functions
     function checkAuthStatus() {
-        const designerInfo = document.getElementById('designerInfo');
-        if (window.auth && window.auth.currentUser) {
-            if (designerInfo) designerInfo.style.display = 'block';
-            const designerNameEl = document.getElementById('designerName');
-            if (designerNameEl) {
-                designerNameEl.textContent = window.auth.currentUser.displayName || window.auth.currentUser.email;
+        const userData = localStorage.getItem('hairgator_user');
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
+                updateUserInfo(user);
+                console.log('✅ 저장된 사용자 정보 복원:', user.name);
+            } catch (error) {
+                console.error('사용자 정보 복원 실패:', error);
+                localStorage.removeItem('hairgator_user');
             }
-            console.log('✅ 사용자 인증 확인 완료');
         }
     }
 
     async function handleLogout() {
         if (confirm('로그아웃 하시겠습니까?')) {
-            try {
-                if (window.authManager) {
-                    await window.authManager.signOut();
-                }
-                location.reload();
-            } catch (error) {
-                console.error('❌ 로그아웃 오류:', error);
-                showToast('로그아웃 실패: ' + error.message);
-            }
+            localStorage.removeItem('hairgator_user');
+            
+            // UI 초기화
+            if (loginScreen) loginScreen.classList.add('active');
+            if (genderSelection) genderSelection.style.display = 'none';
+            if (menuContainer) menuContainer.classList.remove('active');
+            if (backBtn) backBtn.style.display = 'none';
+            
+            const designerInfo = document.getElementById('designerInfo');
+            if (designerInfo) designerInfo.style.display = 'none';
+            
+            showToast('로그아웃되었습니다');
+            console.log('✅ 로그아웃 완료');
         }
     }
 
@@ -451,16 +344,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function selectGender(gender) {
         currentGender = gender;
         
-        genderSelection.style.display = 'none';
-        menuContainer.classList.add('active');
+        if (genderSelection) genderSelection.style.display = 'none';
+        if (menuContainer) menuContainer.classList.add('active');
         
-        if (backBtn) {
-            backBtn.style.display = 'flex';
-        }
-        
-        if (themeToggleBottom) {
-            themeToggleBottom.style.display = 'none';
-        }
+        if (backBtn) backBtn.style.display = 'flex';
         
         loadMenuData(gender);
         localStorage.setItem('hairgator_gender', gender);
@@ -521,12 +408,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.open('https://drive.google.com/file/d/15OgT9k5jCC6TjcJSImuQXcznS_HtFBVf/view?usp=sharing', '_blank');
             });
             categoryTabs.appendChild(helpTab);
-        }
-        
-        if (!menuData || !menuData.categories || !Array.isArray(menuData.categories)) {
-            console.error('❌ MenuData categories is invalid:', menuData);
-            showToast('❌ 카테고리 데이터를 로드할 수 없습니다.');
-            return;
         }
         
         menuData.categories.forEach((category, index) => {
@@ -764,7 +645,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 styleName: name,
                 styleId: docId,
                 gender: gender,
-                designer: localStorage.getItem('designerName') || 'Unknown',
+                designer: JSON.parse(localStorage.getItem('hairgator_user') || '{}').name || 'Unknown',
                 registeredAt: new Date(),
                 lastVisit: new Date()
             });
@@ -843,7 +724,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    console.log('🚀 HAIRGATOR 애플리케이션 준비 완료');
+    console.log('🚀 HAIRGATOR 메인 애플리케이션 준비 완료');
 });
 
 // Window Load Event
