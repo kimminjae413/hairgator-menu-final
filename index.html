@@ -697,12 +697,21 @@
                 tab.className = 'category-tab';
                 tab.textContent = category.name;
                 tab.dataset.categoryId = category.id;
+                tab.dataset.categoryName = category.name;
                 
                 if (index === 0) {
                     tab.classList.add('active', gender);
                 }
                 
-                tab.addEventListener('click', () => selectCategory(category, gender));
+                // 클로저 문제 해결: 데이터 속성 사용
+                tab.addEventListener('click', function() {
+                    const categoryData = {
+                        id: this.dataset.categoryId,
+                        name: this.dataset.categoryName
+                    };
+                    selectCategory(categoryData, gender);
+                });
+                
                 categoryTabs.appendChild(tab);
                 
                 // 디버깅: 카테고리 클릭 이벤트 확인
