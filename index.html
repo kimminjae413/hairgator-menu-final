@@ -1327,35 +1327,6 @@
         let newItemsCache = new Map();
         const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
 
-        // 메뉴 데이터 정의 - ID와 name 매칭 수정
-        const MENU_DATA = {
-            male: {
-                categories: [
-                    { id: 'side-fringe', name: 'SIDE FRINGE' },
-                    { id: 'side-part', name: 'SIDE PART' },
-                    { id: 'fringe-up', name: 'FRINGE UP' },
-                    { id: 'pushed-back', name: 'PUSHED BACK' },
-                    { id: 'buzz', name: 'BUZZ' },
-                    { id: 'crop', name: 'CROP' },
-                    { id: 'mohican', name: 'MOHICAN' }
-                ],
-                subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
-            },
-            female: {
-                categories: [
-                    { id: 'a-length', name: 'A Length' },
-                    { id: 'b-length', name: 'B Length' },
-                    { id: 'c-length', name: 'C Length' },
-                    { id: 'd-length', name: 'D Length' },
-                    { id: 'e-length', name: 'E Length' },
-                    { id: 'f-length', name: 'F Length' },
-                    { id: 'g-length', name: 'G Length' },
-                    { id: 'h-length', name: 'H Length' }
-                ],
-                subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
-            }
-        };
-
         // 테마 토글 기능 추가
         function toggleTheme() {
             const body = document.body;
