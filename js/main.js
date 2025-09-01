@@ -141,6 +141,19 @@ document.addEventListener('DOMContentLoaded', function() {
             backBtn.style.display = 'none';
         }
         
+        // 로딩 화면 숨기고 로그인 화면 표시
+        setTimeout(() => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+            
+            if (loginScreen) {
+                loginScreen.classList.add('active');
+                loginScreen.style.display = 'flex';
+            }
+        }, 500);
+        
         console.log('✅ HAIRGATOR 초기화 완료');
     }
 
@@ -314,6 +327,17 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const user = JSON.parse(userData);
                 updateUserInfo(user);
+                
+                // 저장된 사용자가 있으면 로그인 건너뛰고 성별 선택으로
+                setTimeout(() => {
+                    const loadingScreen = document.getElementById('loadingScreen');
+                    if (loadingScreen) loadingScreen.style.display = 'none';
+                    
+                    if (loginScreen) loginScreen.style.display = 'none';
+                    if (genderSelection) genderSelection.style.display = 'flex';
+                    if (backBtn) backBtn.style.display = 'flex';
+                }, 500);
+                
                 console.log('✅ 저장된 사용자 정보 복원:', user.name);
             } catch (error) {
                 console.error('사용자 정보 복원 실패:', error);
