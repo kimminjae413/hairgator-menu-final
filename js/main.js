@@ -1,4 +1,4 @@
-// HAIRGATOR Main Application Logic - Final Version
+// HAIRGATOR Main Application Logic - Final Version with Enhanced Theme System
 document.addEventListener('DOMContentLoaded', function() {
     // Global variables
     let currentGender = null;
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function init() {
         console.log('🦎 HAIRGATOR 초기화 시작...');
         setupEventListeners();
-        loadTheme();
+        initThemeSystem(); // 개선된 테마 시스템 초기화
         checkAuthStatus();
         
         if (backBtn) {
@@ -205,8 +205,214 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        // 테마 옵션 클릭 이벤트 (동적 생성된 버튼용)
+        document.addEventListener('click', function(e) {
+            const themeOption = e.target.closest('.theme-option');
+            if (themeOption && themeOption.dataset.theme) {
+                const themeName = themeOption.dataset.theme;
+                setTheme(themeName);
+            }
+        });
+
         console.log('✅ 이벤트 리스너 설정 완료');
     }
+
+    // ========== 🎨 확장 가능한 테마 시스템 ==========
+    
+    // 테마 레지스트리 - 새 테마 추가는 여기에!
+    const THEME_REGISTRY = {
+        dark: {
+            name: '다크 모드',
+            icon: '🌙',
+            className: '',
+            category: 'basic'
+        },
+        light: {
+            name: '라이트 모드',
+            icon: '☀️',
+            className: 'light-theme',
+            category: 'basic'
+        },
+        blue: {
+            name: '오션 블루',
+            icon: '🌊',
+            className: 'blue-theme',
+            category: 'color'
+        },
+        purple: {
+            name: '퍼플',
+            icon: '🔮',
+            className: 'purple-theme',
+            category: 'color'
+        },
+        green: {
+            name: '그린',
+            icon: '🌲',
+            className: 'green-theme',
+            category: 'color'
+        }
+        // 새 테마 추가 예시:
+        // orange: { name: '오렌지', icon: '🍊', className: 'orange-theme', category: 'color' }
+    };
+
+    // 현재 활성화된 테마들 (관리자 설정)
+    let enabledThemes = ['dark', 'light']; // 처음엔 기본 2개만
+    let currentTheme = 'dark';
+
+    // 테마 시스템 초기화
+    function initThemeSystem() {
+        const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
+        
+        // 저장된 테마가 활성화된 테마인지 확인
+        if (THEME_REGISTRY[savedTheme] && enabledThemes.includes(savedTheme)) {
+            currentTheme = savedTheme;
+        }
+        
+        applyTheme(currentTheme);
+        updateAllThemeUI();
+        
+        console.log(`🎨 테마 시스템 초기화: ${THEME_REGISTRY[currentTheme].name}`);
+    }
+
+    // 테마 적용
+    function applyTheme(themeName) {
+        if (!THEME_REGISTRY[themeName]) {
+            console.error(`테마 '${themeName}'를 찾을 수 없습니다`);
+            return;
+        }
+
+        const theme = THEME_REGISTRY[themeName];
+        const body = document.body;
+
+        // 모든 테마 클래스 제거
+        Object.values(THEME_REGISTRY).forEach(t => {
+            if (t.className) body.classList.remove(t.className);
+        });
+
+        // 새 테마 클래스 추가
+        if (theme.className) {
+            body.classList.add(theme.className);
+        }
+
+        currentTheme = themeName;
+        localStorage.setItem('hairgator_theme', themeName);
+
+        console.log(`🎨 테마 적용: ${theme.name}`);
+        showToast(`${theme.name}로 변경되었습니다`);
+    }
+
+    // 테마 토글 (순환)
+    function toggleTheme() {
+        const availableThemes = enabledThemes.filter(key => THEME_REGISTRY[key]);
+        const currentIndex = availableThemes.indexOf(currentTheme);
+        const nextIndex = (currentIndex + 1) % availableThemes.length;
+        const nextTheme = availableThemes[nextIndex];
+        
+        setTheme(nextTheme);
+    }
+
+    // 특정 테마로 설정
+    function setTheme(themeName) {
+        if (!THEME_REGISTRY[themeName]) {
+            console.error(`테마 '${themeName}'가 존재하지 않습니다`);
+            return;
+        }
+
+        if (!enabledThemes.includes(themeName)) {
+            console.warn(`테마 '${themeName}'가 비활성화되어 있습니다`);
+            return;
+        }
+
+        applyTheme(themeName);
+        updateAllThemeUI();
+        closeSidebar();
+    }
+
+    // 모든 테마 UI 업데이트
+    function updateAllThemeUI() {
+        updateThemeIcon();
+        updateThemeStatus();
+        updateSidebarThemeOptions();
+    }
+
+    // 테마 아이콘 업데이트
+    function updateThemeIcon() {
+        const theme = THEME_REGISTRY[currentTheme];
+        const themeIcons = document.querySelectorAll('.theme-icon');
+        
+        themeIcons.forEach(icon => {
+            if (icon) icon.textContent = theme.icon;
+        });
+    }
+
+    // 테마 상태 업데이트
+    function updateThemeStatus() {
+        if (themeStatus) {
+            themeStatus.textContent = currentTheme === 'dark' ? 'ON' : 'OFF';
+        }
+
+        // 하단 토글 버튼 텍스트 업데이트
+        if (themeToggleBottom) {
+            const theme = THEME_REGISTRY[currentTheme];
+            const iconSpan = themeToggleBottom.querySelector('span:first-child');
+            const textSpan = themeToggleBottom.querySelector('span:nth-child(2)');
+            
+            if (iconSpan) iconSpan.textContent = theme.icon;
+            if (textSpan) textSpan.textContent = theme.name;
+        }
+    }
+
+    // 사이드바 테마 옵션 동적 생성
+    function updateSidebarThemeOptions() {
+        const container = document.querySelector('.theme-options');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        enabledThemes.forEach(themeKey => {
+            if (!THEME_REGISTRY[themeKey]) return;
+
+            const theme = THEME_REGISTRY[themeKey];
+            const option = document.createElement('button');
+            option.className = `theme-option ${themeKey === currentTheme ? 'active' : ''}`;
+            option.dataset.theme = themeKey;
+
+            option.innerHTML = `
+                <span class="theme-preview ${theme.className || 'dark'}"></span>
+                <span>${theme.name}</span>
+            `;
+
+            container.appendChild(option);
+        });
+    }
+
+    // 테마 추가/제거 (관리자용)
+    function toggleThemeAvailability(themeKey, enabled) {
+        if (enabled && !enabledThemes.includes(themeKey)) {
+            enabledThemes.push(themeKey);
+        } else if (!enabled) {
+            enabledThemes = enabledThemes.filter(key => key !== themeKey);
+        }
+
+        updateAllThemeUI();
+        console.log(`테마 ${themeKey}: ${enabled ? '활성화' : '비활성화'}`);
+    }
+
+    // 새 테마 추가 (개발자용)
+    function addNewTheme(key, config) {
+        THEME_REGISTRY[key] = config;
+        if (!enabledThemes.includes(key)) {
+            enabledThemes.push(key);
+        }
+        updateAllThemeUI();
+        console.log(`새 테마 추가: ${config.name}`);
+    }
+
+    // 전역 함수로 노출
+    window.setTheme = setTheme;
+    window.addNewTheme = addNewTheme;
+    window.toggleThemeAvailability = toggleThemeAvailability;
+    window.getCurrentTheme = () => currentTheme;
 
     // Navigation Functions
     function handleBack() {
@@ -232,28 +438,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function closeSidebar() {
         sidebar.classList.remove('active');
-    }
-
-    // Theme Functions
-    function loadTheme() {
-        const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
-        if (savedTheme === 'light') {
-            document.body.classList.add('light-theme');
-            if (themeStatus) themeStatus.textContent = 'OFF';
-        }
-        console.log(`🎨 테마 로드: ${savedTheme}`);
-    }
-
-    function toggleTheme() {
-        document.body.classList.toggle('light-theme');
-        const isLight = document.body.classList.contains('light-theme');
-        
-        if (themeStatus) {
-            themeStatus.textContent = isLight ? 'OFF' : 'ON';
-        }
-        
-        localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
-        console.log(`🎨 테마 변경: ${isLight ? 'light' : 'dark'}`);
     }
 
     // Authentication Functions
@@ -743,173 +927,35 @@ window.addEventListener('load', function() {
     document.head.appendChild(style);
 });
 
-// ========== 🎨 테마 시스템 확장 (main.js 맨 아래 추가) ==========
-// 기존 toggleTheme 함수는 그대로 두고, 확장 기능만 추가
-
-(function extendThemeSystem() {
-    'use strict';
-    
-    // 🎨 테마 설정 (새 테마 추가하기 쉽게!)
-    const THEME_CONFIG = {
-        dark: { 
-            name: '다크 모드', 
-            icon: '🌙',
-            className: '' // 기본값
-        },
-        light: { 
-            name: '라이트 모드', 
-            icon: '☀️',
-            className: 'light-theme' 
-        }
-        // 나중에 쉽게 추가:
-        // blue: { name: '블루 모드', icon: '🌊', className: 'blue-theme' },
-        // green: { name: '그린 모드', icon: '🌱', className: 'green-theme' }
-    };
-    
-    // 🔄 확장된 테마 토글 함수 (기존 함수 대체)
-    window.toggleThemeExtended = function() {
-        const themeKeys = Object.keys(THEME_CONFIG);
-        const currentTheme = getCurrentTheme();
-        const currentIndex = themeKeys.indexOf(currentTheme);
-        const nextIndex = (currentIndex + 1) % themeKeys.length;
-        const nextTheme = themeKeys[nextIndex];
-        
-        applyTheme(nextTheme);
-        updateThemeUI(nextTheme);
-        
-        console.log(`🎨 테마 변경: ${THEME_CONFIG[nextTheme].name}`);
-        showToast(`${THEME_CONFIG[nextTheme].name}로 변경되었습니다`);
-    };
-    
-    // 🎯 특정 테마로 직접 변경
-    window.setTheme = function(themeName) {
-        if (THEME_CONFIG[themeName]) {
-            applyTheme(themeName);
-            updateThemeUI(themeName);
-            
-            // 사이드바 닫기
-            if (typeof closeSidebar === 'function') {
-                closeSidebar();
-            }
-            
-            console.log(`🎨 테마 설정: ${THEME_CONFIG[themeName].name}`);
-            showToast(`${THEME_CONFIG[themeName].name}로 변경되었습니다`);
-        }
-    };
-    
-    // 🎨 테마 적용 함수
-    function applyTheme(themeName) {
-        const theme = THEME_CONFIG[themeName];
-        if (!theme) return;
-        
-        // 모든 테마 클래스 제거
-        Object.values(THEME_CONFIG).forEach(t => {
-            if (t.className) document.body.classList.remove(t.className);
-        });
-        
-        // 새 테마 적용
-        if (theme.className) {
-            document.body.classList.add(theme.className);
-        }
-        
-        // 상태 저장
-        localStorage.setItem('hairgator_theme', themeName);
-    }
-    
-    // 📱 UI 업데이트
-    function updateThemeUI(themeName) {
-        const theme = THEME_CONFIG[themeName];
-        
-        // 테마 아이콘 업데이트 (기존 로직 유지)
-        const themeStatus = document.getElementById('themeStatus');
-        if (themeStatus) {
-            themeStatus.textContent = themeName === 'dark' ? 'ON' : 'OFF';
-        }
-        
-        // 새로운: 아이콘 업데이트
-        const themeIcons = document.querySelectorAll('.theme-icon');
-        themeIcons.forEach(icon => {
-            if (icon) icon.textContent = theme.icon;
-        });
-        
-        // 사이드바 테마 옵션 업데이트
-        updateSidebarThemeOptions(themeName);
-    }
-    
-    // 🎛️ 사이드바 테마 옵션 업데이트
-    function updateSidebarThemeOptions(currentTheme) {
-        const themeOptions = document.querySelector('.theme-options');
-        if (!themeOptions) return;
-        
-        // 동적으로 테마 옵션 생성
-        themeOptions.innerHTML = '';
-        
-        Object.entries(THEME_CONFIG).forEach(([key, theme]) => {
-            const option = document.createElement('button');
-            option.className = `theme-option ${key === currentTheme ? 'active' : ''}`;
-            option.dataset.theme = key;
-            
-            option.innerHTML = `
-                <span class="theme-preview ${theme.className || 'dark'}"></span>
-                <span>${theme.name}</span>
-            `;
-            
-            option.addEventListener('click', () => setTheme(key));
-            themeOptions.appendChild(option);
-        });
-    }
-    
-    // 🔍 현재 테마 감지
-    function getCurrentTheme() {
-        const hasLightClass = document.body.classList.contains('light-theme');
-        return hasLightClass ? 'light' : 'dark';
-    }
-    
-    // 📢 토스트 메시지 (기존 showToast 함수 활용)
-    function showToast(message) {
-        if (typeof window.showToast === 'function') {
-            window.showToast(message);
-        } else {
-            console.log('📢 ' + message);
-        }
-    }
-    
-    // 🚀 초기화 (기존 테마 상태 복원)
-    function initExtendedTheme() {
-        const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
-        updateThemeUI(savedTheme);
-        
-        console.log('✅ 확장 테마 시스템 초기화:', THEME_CONFIG[savedTheme]?.name);
-    }
-    
-    // 🔄 기존 toggleTheme 함수를 확장된 버전으로 교체 (선택적)
-    // window.toggleTheme = window.toggleThemeExtended;
-    
-    // 페이지 로드 완료 후 초기화
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initExtendedTheme);
-    } else {
-        initExtendedTheme();
-    }
-    
-    console.log('🎨 테마 확장 시스템 로드 완료');
-    console.log('사용법: setTheme("light"), toggleThemeExtended()');
-    
-})();
-
 // ========== 🌟 새 테마 추가 가이드 ==========
 /*
-새 테마 추가하는 방법:
+🎨 새 테마 추가하는 방법:
 
-1. THEME_CONFIG에 테마 추가:
-   blue: { name: '블루 모드', icon: '🌊', className: 'blue-theme' }
+1️⃣ THEME_REGISTRY에 테마 정보 추가:
+orange: {
+    name: '오렌지',
+    icon: '🍊', 
+    className: 'orange-theme',
+    category: 'color'
+}
 
-2. main.css에 CSS 추가:
-   body.blue-theme {
-       background: #0d1421;
-       color: #e3f2fd;
-   }
-   // ... 나머지 스타일들
+2️⃣ enabledThemes 배열에 추가:
+enabledThemes = ['dark', 'light', 'orange'];
 
-3. 끝! 자동으로 사이드바에 추가되고 토글 가능해짐
+3️⃣ main.css에 CSS 스타일 추가:
+body.orange-theme {
+    background: #1a0f0a;
+    color: #fff3e0;
+}
+// ... 나머지 스타일들
+
+4️⃣ 끝! 자동으로 사이드바에 나타나고 선택 가능해짐
+
+🔥 런타임에서 새 테마 추가:
+addNewTheme('coral', {
+    name: '코럴 핑크',
+    icon: '🐠',
+    className: 'coral-theme',
+    category: 'color'
+});
 */
