@@ -444,9 +444,9 @@ body.light-theme .category-description {
     color: var(--text-secondary);
     font-size: 14px;
     line-height: 1.6;
-    text-align: left;  ← 이렇게 바뀜
+    text-align: left !important;  /* !important 추가 */
     max-width: 800px;
-    margin: 0 auto;
+    margin: 0;  /* auto를 0으로 변경 */
     transition: color 0.3s ease;
     animation: fadeInDescription 0.5s ease;
 }
@@ -1387,5 +1387,6 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
 
 
