@@ -1,702 +1,845 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HAIRGATOR - Professional Hair Style Menu</title>
+// ========== HAIRGATOR 메뉴 시스템 최종 완료 버전 ==========
+
+// 남성 카테고리 (설명 포함)
+const MALE_CATEGORIES = [
+    {
+        id: 'side-fringe',
+        name: 'SIDE FRINGE',
+        description: '사이드 프린지는 옆으로 넘긴 앞머리 스타일로, 자연스럽고 부드러운 느낌을 줍니다.'
+    },
+    {
+        id: 'side-part',
+        name: 'SIDE PART',
+        description: '사이드 파트는 정갈하고 단정한 스타일로 비즈니스맨들에게 인기가 많습니다.'
+    },
+    {
+        id: 'fringe-up',
+        name: 'FRINGE UP',
+        description: '프린지 업은 앞머리를 올려 이마를 드러내는 시원한 스타일입니다.'
+    },
+    {
+        id: 'pushed-back',
+        name: 'PUSHED BACK',
+        description: '푸시백은 머리를 뒤로 넘긴 댄디한 스타일입니다.'
+    },
+    {
+        id: 'buzz',
+        name: 'BUZZ',
+        description: '버즈컷은 짧고 깔끔한 스타일로 관리가 편합니다.'
+    },
+    {
+        id: 'crop',
+        name: 'CROP',
+        description: '크롭 스타일은 짧으면서도 스타일리시한 느낌을 줍니다.'
+    },
+    {
+        id: 'mohican',
+        name: 'MOHICAN',
+        description: '모히칸 스타일은 개성 있고 강한 인상을 줍니다.'
+    }
+];
+
+// 여성 카테고리 (설명 포함)
+const FEMALE_CATEGORIES = [
+    {
+        id: 'a-length',
+        name: 'A Length',
+        description: 'A 길이는 가슴선 아래로 내려오는 롱헤어로, 원랭스·레이어드 롱·굵은 S컬이 잘 맞아 우아하고 드라마틱한 분위기를 냅니다.'
+    },
+    {
+        id: 'b-length',
+        name: 'B Length',
+        description: 'B 길이는 가슴 아래(A)와 쇄골 아래(C) 사이의 미디엄-롱으로, 레이어드 미디엄롱·바디펌이 어울려 부드럽고 실용적인 인상을 줍니다.'
+    },
+    {
+        id: 'c-length',
+        name: 'C Length',
+        description: 'C 길이는 쇄골 라인 아래의 세미 롱으로, 레이어드 C/S컬·에어리펌과 잘 맞아 단정하고 세련된 오피스 무드를 냅니다.'
+    },
+    {
+        id: 'd-length',
+        name: 'D Length',
+        description: 'D 길이는 어깨에 정확히 닿는 길이로, LOB·숄더 C컬·빌드펌이 어울려 트렌디하고 깔끔한 느낌을 줍니다.'
+    },
+    {
+        id: 'e-length',
+        name: 'E Length',
+        description: 'E 길이는 어깨 바로 위의 단발로, 클래식 보브·A라인 보브·내/외 C컬이 잘 맞아 경쾌하고 모던한 인상을 만듭니다.'
+    },
+    {
+        id: 'f-length',
+        name: 'F Length',
+        description: 'F 길이는 턱선 바로 밑 보브 길이로, 프렌치 보브·일자 단발·텍스쳐 보브가 어울려 시크하고 도회적인 분위기를 연출합니다.'
+    },
+    {
+        id: 'g-length',
+        name: 'G Length',
+        description: 'G 길이는 턱선과 같은 높이의 미니 보브로, 클래식 턱선 보브·미니 레이어 보브가 잘 맞아 똘똘하고 미니멀한 무드를 줍니다.'
+    },
+    {
+        id: 'h-length',
+        name: 'H Length',
+        description: 'H 길이는 귀선~베리숏구간의 숏헤어로, 픽시·샤그 숏·허쉬 숏 등이 어울려 활동적이고 개성 있는 스타일을 완성합니다.'
+    }
+];
+
+// 중분류 (앞머리 길이)
+const SUB_CATEGORIES = [
+    'None',
+    'Fore Head',
+    'Eye Brow',
+    'Eye',
+    'Cheekbone'
+];
+
+// ========== 전역 변수 ==========
+let currentMainTab = null;  // 현재 선택된 메인 카테고리 (객체)
+let currentSubTab = null;   // 현재 선택된 서브 카테고리 (문자열)
+
+// ========== 메뉴 로드 및 탭 관리 ==========
+
+// 성별에 따른 메뉴 로드
+function loadMenuForGender(gender) {
+    currentGender = gender;
+    const categories = gender === 'male' ? MALE_CATEGORIES : FEMALE_CATEGORIES;
     
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#000000">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HAIRGATOR">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="manifest.json">
+    console.log(`🔄 ${gender} 메뉴 로드 시작 (${categories.length}개 카테고리)`);
     
-    <!-- 아이콘 -->
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    // body에 gender 클래스 추가
+    document.body.classList.remove('gender-male', 'gender-female');
+    document.body.classList.add(`gender-${gender}`);
     
-    <!-- 구글 폰트 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    // 대분류 탭 생성
+    const mainTabsContainer = document.getElementById('categoryTabs');
+    if (!mainTabsContainer) {
+        console.error('❌ categoryTabs 요소를 찾을 수 없습니다');
+        return;
+    }
     
-    <!-- External CSS -->
-    <link rel="stylesheet" href="css/main.css">
-
-    <!-- External JavaScript -->
-    <script src="js/menu.js"></script>
+    mainTabsContainer.innerHTML = '';
     
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    
-</head>
-<body>
-    <!-- 헤더 -->
-    <header class="header">
-        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
-        <h1 class="logo">HAIRGATOR</h1>
-        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="테마 변경">🌙</button>
-        <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </header>
-
-    <!-- 사이드바 -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h3>메뉴</h3>
-            <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
-        </div>
-        <div class="sidebar-content">
-            <div class="user-info" id="userInfo" style="display: none;">
-                <h4>디자이너 정보</h4>
-                <p id="designerNameDisplay"></p>
-                <p id="designerPhoneDisplay"></p>
-                <p id="sessionStatusDisplay"></p>
-                <button class="logout-btn" onclick="logout()">로그아웃</button>
-            </div>
-            <p id="guestMessage">로그인 후 이용 가능합니다.</p>
-        </div>
-    </aside>
-
-    <!-- 로딩 오버레이 -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-    </div>
-
-    <!-- 토스트 메시지 -->
-    <div class="toast" id="toast"></div>
-
-    <!-- 메인 콘텐츠 -->
-    <main class="main-content">
-        <!-- 로그인 화면 -->
-        <div class="login-screen" id="loginScreen">
-            <div class="login-modal">
-                <h2>HAIRGATOR</h2>
-                <p class="subtitle">Professional Hair Style Menu</p>
-                
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="designerName">디자이너명</label>
-                        <input type="text" id="designerName" placeholder="이름을 입력하세요" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="phoneNumber">전화번호</label>
-                        <input type="tel" id="phoneNumber" placeholder="01000000000 또는 010-0000-0000" maxlength="13" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password">비밀번호 (4자리)</label>
-                        <input type="password" id="password" placeholder="****" maxlength="4" required>
-                    </div>
-                    
-                    <button type="submit" class="login-btn" id="loginBtn">로그인</button>
-                </form>
-                
-                <p class="login-help">처음 사용하시나요? 관리자에게 계정을 요청하세요.</p>
-            </div>
-        </div>
-
-        <!-- 성별 선택 화면 -->
-        <div class="gender-selection" id="genderSelection">
-            <button class="gender-btn male" onclick="selectGender('male')">
-                <div class="gender-icon">♂</div>
-                <div class="gender-label">남성</div>
-            </button>
-            <button class="gender-btn female" onclick="selectGender('female')">
-                <div class="gender-icon">♀</div>
-                <div class="gender-label">여성</div>
-            </button>
-        </div>
-
-        <!-- 메뉴 컨테이너 -->
-        <div class="menu-container" id="menuContainer">
-            <!-- 카테고리 탭 -->
-            <div class="category-tabs" id="categoryTabs">
-                <!-- 동적 생성 -->
-            </div>
-
-            <!-- 카테고리 설명 -->
-            <div class="category-description" id="categoryDescription">
-                <div class="category-description-text">
-                    카테고리를 선택하면 설명이 표시됩니다.
-                </div>
-            </div>
-
-            <!-- 서브카테고리 탭 -->
-            <div class="sub-tabs" id="subTabs">
-                <!-- 동적 생성 -->
-            </div>
-            
-            <!-- 스타일 컨테이너 -->
-            <div class="styles-container">
-                <div class="styles-grid" id="stylesGrid">
-                    <!-- 동적 생성 -->
-                </div>
-            </div>
-        </div>
-
-        <!-- 스타일 상세 모달 -->
-        <div class="style-modal" id="styleModal">
-            <div class="style-modal-content">
-                <button class="style-modal-close" id="styleModalClose">×</button>
-                
-                <img class="style-modal-image" id="styleModalImage" alt="Style Image">
-                
-                <div class="style-modal-info">
-                    <div class="style-modal-code" id="styleModalCode">CODE</div>
-                    <div class="style-modal-name" id="styleModalName">Style Name</div>
-                    
-                    <div class="style-modal-details">
-                        <div class="style-detail-row">
-                            <span class="style-detail-label">카테고리</span>
-                            <span class="style-detail-value" id="styleModalCategory">-</span>
-                        </div>
-                        <div class="style-detail-row">
-                            <span class="style-detail-label">서브카테고리</span>
-                            <span class="style-detail-value" id="styleModalSubcategory">-</span>
-                        </div>
-                        <div class="style-detail-row">
-                            <span class="style-detail-label">성별</span>
-                            <span class="style-detail-value" id="styleModalGender">-</span>
-                        </div>
-                    </div>
-                    
-                    <div class="style-modal-actions">
-                        <button class="modal-action-btn secondary" onclick="closeStyleModal()">닫기</button>
-                        <button class="modal-action-btn">선택하기</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Firebase 설정 -->
-    <script>
-        // Firebase 설정
-        const firebaseConfig = {
-            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
-            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
-            databaseURL: "https://hairgatormenu-4a43e-default-rtdb.firebaseio.com",
-            projectId: "hairgatormenu-4a43e",
-            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
-            messagingSenderId: "800038006875",
-            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
-        };
-
-        // Firebase 초기화
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-
-        // 캐시 설정
-        try {
-            db.settings({
-                cache: {
-                    kind: 'persistent',
-                    tabManager: { kind: 'multi-tab' }
-                }
-            });
-        } catch(e) {
-            console.log('Cache settings fallback');
-        }
-
-        console.log('✅ Firebase 초기화 완료');
-    </script>
-
-    <script>
-        // 전역 변수
-        let currentGender = null;
-        let currentDesigner = null;
-        let currentSessionId = null;
-        let heartbeatInterval = null;
-        let currentCategory = null;
-        let currentSubcategory = 'None';
+    categories.forEach((category, index) => {
+        const tab = document.createElement('button');
+        tab.className = `category-tab main-tab ${gender}`;
+        tab.textContent = category.name;
+        tab.onclick = () => selectMainTab(category, index);
         
-        // 스마트 필터링 & NEW 시스템
-        let availableSubcategories = new Map();
-        let newItemsCache = new Map();
-        const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
-
-        // DOM 요소
-        const loginScreen = document.getElementById('loginScreen');
-        const genderSelection = document.getElementById('genderSelection');
-        const menuContainer = document.getElementById('menuContainer');
-        const backBtn = document.getElementById('backBtn');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const toast = document.getElementById('toast');
-
-        // 테마 관리 함수들
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-theme');
-                updateThemeButton(true);
-            }
-            console.log(`테마 로드: ${savedTheme}`);
+        // 첫 번째 탭 기본 선택
+        if (index === 0) {
+            tab.classList.add('active');
+            currentMainTab = category;
+            console.log(`📌 기본 선택: ${category.name}`, category);
         }
+        
+        mainTabsContainer.appendChild(tab);
+    });
+    
+    // 카테고리 설명 영역 확인/생성
+    ensureCategoryDescriptionArea();
+    
+    // 중분류 탭 로드
+    loadSubTabs();
+    
+    // 첫 번째 카테고리 자동 선택
+    if (categories.length > 0) {
+        selectMainTab(categories[0], 0);
+    }
+    
+    console.log(`✅ ${gender} 메뉴 로드 완료`);
+}
 
-        function toggleTheme() {
-            document.body.classList.toggle('light-theme');
-            const isLight = document.body.classList.contains('light-theme');
+// 카테고리 설명 영역 확인/생성
+function ensureCategoryDescriptionArea() {
+    let descriptionArea = document.getElementById('categoryDescription');
+    if (!descriptionArea) {
+        descriptionArea = document.createElement('div');
+        descriptionArea.id = 'categoryDescription';
+        descriptionArea.className = 'category-description';
+        
+        const descriptionText = document.createElement('div');
+        descriptionText.className = 'category-description-text';
+        descriptionArea.appendChild(descriptionText);
+        
+        // 카테고리 탭 다음에 설명 영역 삽입
+        const categoryTabs = document.querySelector('.category-tabs') || 
+                            document.getElementById('categoryTabs')?.parentElement;
+        if (categoryTabs) {
+            const nextElement = categoryTabs.nextElementSibling;
+            categoryTabs.parentNode.insertBefore(descriptionArea, nextElement);
+            console.log('✅ 카테고리 설명 영역 생성됨');
+        }
+    }
+}
+
+// 대분류 탭 선택
+function selectMainTab(category, index) {
+    currentMainTab = category;
+    
+    console.log(`📂 대분류 선택: ${category.name}`, category);
+    
+    // 탭 활성화 상태 변경
+    document.querySelectorAll('.main-tab').forEach((tab, i) => {
+        tab.classList.remove('active', 'male', 'female');
+        if (i === index) {
+            tab.classList.add('active', currentGender);
+        }
+    });
+    
+    // 카테고리 설명 업데이트
+    updateCategoryDescription(category);
+    
+    // 중분류 탭 표시
+    loadSubTabs();
+    
+    // 스타일 로드
+    loadStyles();
+}
+
+// 카테고리 설명 업데이트
+function updateCategoryDescription(category) {
+    const descriptionText = document.querySelector('.category-description-text');
+    if (!descriptionText) {
+        console.warn('⚠️ 카테고리 설명 영역을 찾을 수 없습니다');
+        return;
+    }
+    
+    if (category.description) {
+        descriptionText.innerHTML = `
+            <span class="category-name">${category.name}</span>
+            ${category.description}
+        `;
+        descriptionText.classList.remove('empty');
+        console.log(`📝 카테고리 설명 업데이트: ${category.name}`);
+    } else {
+        descriptionText.textContent = '카테고리 설명이 없습니다.';
+        descriptionText.classList.add('empty');
+    }
+}
+
+// 중분류 탭 로드
+function loadSubTabs() {
+    const subTabsContainer = document.getElementById('subTabs');
+    if (!subTabsContainer) {
+        console.error('❌ subTabs 요소를 찾을 수 없습니다');
+        return;
+    }
+    
+    subTabsContainer.innerHTML = '';
+    
+    SUB_CATEGORIES.forEach((subCategory, index) => {
+        const tab = document.createElement('button');
+        tab.className = `sub-tab ${currentGender}`;
+        tab.textContent = subCategory;
+        tab.onclick = () => selectSubTab(subCategory, index);
+        
+        // 첫 번째 서브탭 기본 선택
+        if (index === 0) {
+            tab.classList.add('active');
+            currentSubTab = subCategory;
+        }
+        
+        subTabsContainer.appendChild(tab);
+    });
+    
+    console.log(`📋 중분류 탭 로드 완료 (${SUB_CATEGORIES.length}개)`);
+}
+
+// 중분류 탭 선택
+function selectSubTab(subCategory, index) {
+    currentSubTab = subCategory;
+    
+    console.log(`📋 중분류 선택: ${subCategory}`);
+    
+    // 탭 활성화 상태 변경
+    document.querySelectorAll('.sub-tab').forEach((tab, i) => {
+        tab.classList.remove('active', 'male', 'female');
+        if (i === index) {
+            tab.classList.add('active', currentGender);
+        }
+    });
+    
+    // 스타일 로드
+    loadStyles();
+}
+
+// ========== 스타일 로드 및 카드 생성 ==========
+
+// 스타일 로드 - Firebase Query 최종 안정화
+async function loadStyles() {
+    const stylesGrid = document.getElementById('stylesGrid');
+    if (!stylesGrid) {
+        console.error('❌ stylesGrid 요소를 찾을 수 없습니다');
+        return;
+    }
+    
+    // 필수 변수 체크
+    if (!currentGender) {
+        console.error('❌ currentGender가 설정되지 않았습니다');
+        showErrorState(stylesGrid, 'Gender not selected');
+        return;
+    }
+    
+    if (!currentMainTab) {
+        console.error('❌ currentMainTab이 설정되지 않았습니다');
+        showErrorState(stylesGrid, 'Category not selected');
+        return;
+    }
+    
+    if (!currentSubTab) {
+        console.error('❌ currentSubTab이 설정되지 않았습니다');
+        showErrorState(stylesGrid, 'Subcategory not selected');
+        return;
+    }
+    
+    // Firebase Query를 위한 안전한 카테고리명 추출
+    let mainCategoryName;
+    if (typeof currentMainTab === 'object' && currentMainTab.name) {
+        mainCategoryName = currentMainTab.name;
+    } else if (typeof currentMainTab === 'string') {
+        mainCategoryName = currentMainTab;
+    } else {
+        console.error('❌ currentMainTab 형식 오류:', currentMainTab);
+        showErrorState(stylesGrid, 'Invalid category format');
+        return;
+    }
+    
+    const subCategoryName = currentSubTab;
+    
+    console.log(`🔍 스타일 검색 시작:`, {
+        gender: currentGender,
+        mainCategory: mainCategoryName,
+        subCategory: subCategoryName,
+        currentMainTabType: typeof currentMainTab
+    });
+    
+    // 로딩 상태 표시
+    showLoadingState(stylesGrid);
+    
+    try {
+        // Firebase 연결 확인
+        if (typeof db === 'undefined') {
+            throw new Error('Firebase가 초기화되지 않았습니다');
+        }
+        
+        // 모든 쿼리 매개변수가 유효한지 재확인
+        if (!mainCategoryName || !subCategoryName || !currentGender) {
+            throw new Error(`쿼리 매개변수 누락: gender=${currentGender}, mainCategory=${mainCategoryName}, subCategory=${subCategoryName}`);
+        }
+        
+        console.log(`📡 Firebase 쿼리 실행:`, {
+            collection: 'hairstyles',
+            gender: currentGender,
+            mainCategory: mainCategoryName,
+            subCategory: subCategoryName
+        });
+        
+        const querySnapshot = await db.collection('hairstyles')
+            .where('gender', '==', currentGender)
+            .where('mainCategory', '==', mainCategoryName)
+            .where('subCategory', '==', subCategoryName)
+            .get();
+        
+        if (querySnapshot.empty) {
+            console.log(`📭 스타일 없음: ${mainCategoryName} - ${subCategoryName}`);
+            showEmptyState(stylesGrid);
+            return;
+        }
+        
+        // 스타일 카드 생성
+        stylesGrid.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        
+        let styleCount = 0;
+        querySnapshot.forEach(doc => {
+            const style = { ...doc.data(), id: doc.id };
+            const card = createStyleCard(style);
+            fragment.appendChild(card);
+            styleCount++;
+        });
+        
+        stylesGrid.appendChild(fragment);
+        
+        console.log(`✅ ${styleCount}개 스타일 로드 완료: ${mainCategoryName} - ${subCategoryName}`);
+        
+    } catch (error) {
+        console.error('❌ 스타일 로드 오류:', error);
+        showErrorState(stylesGrid, `로드 실패: ${error.message}`);
+        
+        // 상세한 디버그 정보 출력
+        console.error('🔍 디버그 정보:', {
+            currentGender,
+            currentMainTab,
+            currentSubTab,
+            mainCategoryName,
+            subCategoryName,
+            currentMainTabType: typeof currentMainTab,
+            dbStatus: typeof db !== 'undefined' ? 'OK' : 'NOT_DEFINED'
+        });
+    }
+}
+
+// 스타일 카드 생성 (NEW 표시 및 AI 버튼 포함)
+function createStyleCard(style) {
+    const card = document.createElement('div');
+    card.className = 'style-card';
+    
+    // NEW 표시 조건 확인 (7일 이내)
+    const isNew = style.createdAt && 
+                  (new Date() - style.createdAt.toDate()) < (7 * 24 * 60 * 60 * 1000);
+    
+    card.innerHTML = `
+        <div class="style-image-wrapper">
+            <img class="style-image" 
+                 src="${style.imageUrl || ''}" 
+                 alt="${style.name || 'Style'}" 
+                 loading="lazy"
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 400%22%3E%3Crect fill=%22%23333%22 width=%22300%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23666%22 font-size=%2220%22%3ENo Image%3C/text%3E%3C/svg%3E'">
             
-            localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
-            updateThemeButton(isLight);
+            ${isNew ? '<div class="new-indicator"></div>' : ''}
             
-            console.log(`테마 변경: ${isLight ? 'light' : 'dark'}`);
-        }
-
-        function updateThemeButton(isLight) {
-            const themeButton = document.getElementById('themeToggle');
-            if (themeButton) {
-                themeButton.textContent = isLight ? '☀️' : '🌙';
-                themeButton.title = isLight ? '다크 모드로 변경' : '라이트 모드로 변경';
-            }
-        }
-
-        // NEW 표시 빨간 점 생성
-        function createNewIndicator() {
-            const indicator = document.createElement('div');
-            indicator.className = 'new-indicator';
-            return indicator;
-        }
-
-        // Firebase 인증 시스템
-        class FirebaseAuth {
-            constructor() {
-                this.sessionCollectionName = 'designer_sessions';
-                this.designerCollectionName = 'designers';
-                this.sessionTimeout = 24 * 60 * 60 * 1000; // 24시간
-            }
-
-            generateSessionId() {
-                return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            }
-
-            getDeviceInfo() {
-                const userAgent = navigator.userAgent;
-                return {
-                    type: /Mobile|Android|iPhone|iPad/.test(userAgent) ? 'mobile' : 'desktop',
-                    browser: this.getBrowserName(),
-                    platform: navigator.platform,
-                    screenResolution: `${screen.width}x${screen.height}`
-                };
-            }
-
-            getBrowserName() {
-                const userAgent = navigator.userAgent;
-                if (userAgent.indexOf('Chrome') > -1) return 'Chrome';
-                if (userAgent.indexOf('Firefox') > -1) return 'Firefox';
-                if (userAgent.indexOf('Safari') > -1) return 'Safari';
-                return 'Unknown';
-            }
-
-            async login(name, phone, password) {
-                try {
-                    const snapshot = await db.collection(this.designerCollectionName)
-                        .where('name', '==', name)
-                        .where('phone', '==', phone)
-                        .where('password', '==', password)
-                        .limit(1)
-                        .get();
-
-                    if (snapshot.empty) {
-                        throw new Error('로그인 정보가 올바르지 않습니다');
-                    }
-
-                    const designerDoc = snapshot.docs[0];
-                    const designerData = designerDoc.data();
-
-                    await this.checkExistingSessions(designerDoc.id);
-
-                    const sessionId = this.generateSessionId();
-                    const sessionData = {
-                        designerId: designerDoc.id,
-                        designerName: designerData.name,
-                        designerPhone: designerData.phone,
-                        sessionId: sessionId,
-                        deviceInfo: this.getDeviceInfo(),
-                        loginTime: new Date(),
-                        lastActivity: new Date(),
-                        isActive: true,
-                        expiresAt: new Date(Date.now() + this.sessionTimeout)
-                    };
-
-                    await db.collection(this.sessionCollectionName).doc(sessionId).set(sessionData);
-
-                    await db.collection(this.designerCollectionName).doc(designerDoc.id).update({
-                        lastLogin: new Date(),
-                        currentSessionId: sessionId
-                    });
-
-                    currentDesigner = {
-                        id: designerDoc.id,
-                        name: designerData.name,
-                        phone: designerData.phone,
-                        tokens: designerData.tokens || 0,
-                        sessionId: sessionId
-                    };
-
-                    currentSessionId = sessionId;
-                    this.startHeartbeat();
-
-                    console.log('✅ 로그인 성공:', currentDesigner.name);
-                    return currentDesigner;
-
-                } catch (error) {
-                    console.error('❌ 로그인 실패:', error);
-                    throw error;
-                }
-            }
-
-            async checkExistingSessions(designerId) {
-                try {
-                    const existingSessions = await db.collection(this.sessionCollectionName)
-                        .where('designerId', '==', designerId)
-                        .where('isActive', '==', true)
-                        .get();
-
-                    const batch = db.batch();
-                    existingSessions.forEach(doc => {
-                        batch.update(doc.ref, {
-                            isActive: false,
-                            logoutTime: new Date(),
-                            logoutReason: 'new_login'
-                        });
-                    });
-
-                    if (!existingSessions.empty) {
-                        await batch.commit();
-                        console.log(`${existingSessions.size}개의 기존 세션을 종료했습니다`);
-                    }
-                } catch (error) {
-                    console.warn('기존 세션 정리 중 오류:', error);
-                }
-            }
-
-            startHeartbeat() {
-                if (heartbeatInterval) {
-                    clearInterval(heartbeatInterval);
-                }
-
-                heartbeatInterval = setInterval(async () => {
-                    try {
-                        await this.updateLastActivity();
-                    } catch (error) {
-                        console.error('하트비트 오류:', error);
-                        this.handleSessionError();
-                    }
-                }, 30000);
-            }
-
-            async updateLastActivity() {
-                if (!currentSessionId) return;
-
-                await db.collection(this.sessionCollectionName).doc(currentSessionId).update({
-                    lastActivity: new Date()
-                });
-            }
-
-            async logout() {
-                try {
-                    if (currentSessionId) {
-                        await db.collection(this.sessionCollectionName).doc(currentSessionId).update({
-                            isActive: false,
-                            logoutTime: new Date(),
-                            logoutReason: 'manual_logout'
-                        });
-                    }
-
-                    if (heartbeatInterval) {
-                        clearInterval(heartbeatInterval);
-                        heartbeatInterval = null;
-                    }
-
-                    currentDesigner = null;
-                    currentSessionId = null;
-
-                    console.log('✅ 로그아웃 완료');
-                    
-                } catch (error) {
-                    console.error('❌ 로그아웃 오류:', error);
-                } finally {
-                    this.resetUI();
-                }
-            }
-
-            handleSessionError() {
-                console.warn('세션 오류 발생 - 재로그인 필요');
-                showToast('세션이 만료되었습니다. 다시 로그인해주세요.', 'error');
-                setTimeout(() => {
-                    this.logout();
-                }, 2000);
-            }
-
-            resetUI() {
-                loginScreen.style.display = 'flex';
-                genderSelection.style.display = 'none';
-                menuContainer.classList.remove('active');
-                backBtn.style.display = 'none';
-                updateUserInfo();
-            }
-        }
-
-        // Firebase 인증 인스턴스
-        const firebaseAuth = new FirebaseAuth();
-
-        // 유틸리티 함수들
-        function showLoading(show = true) {
-            loadingOverlay.style.display = show ? 'flex' : 'none';
-        }
-
-        function showToast(message, type = 'info') {
-            toast.textContent = message;
-            toast.className = `toast ${type} show`;
+            <!-- AI 체험하기 오버레이 -->
+            <div class="ai-overlay">
+                <button class="ai-experience-btn" onclick="startAIExperience(event, '${style.id}', '${style.name || ''}', '${style.imageUrl || ''}')">
+                    <span class="ai-icon">🤖</span>
+                    <span>AI 체험하기</span>
+                </button>
+            </div>
             
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            <!-- 스타일 정보 -->
+            <div class="style-info">
+                <div class="style-code">${style.code || 'NO CODE'}</div>
+                <div class="style-name">${style.name || '이름 없음'}</div>
+            </div>
+        </div>
+    `;
+    
+    // 클릭 이벤트 추가 (AI 버튼 제외)
+    card.addEventListener('click', function(e) {
+        // AI 버튼 클릭인 경우 무시
+        if (e.target.closest('.ai-experience-btn')) {
+            return;
         }
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('active');
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // 시각적 피드백
+        card.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            card.style.transform = '';
+        }, 150);
+        
+        // 햅틱 피드백 (모바일)
+        if (navigator.vibrate) {
+            navigator.vibrate(50);
         }
+        
+        console.log('스타일 클릭:', { 
+            id: style.id,
+            code: style.code || 'NO_CODE', 
+            name: style.name || 'NO_NAME'
+        });
+        
+        // 스타일 상세 모달 열기
+        openStyleModal(style);
+    });
+    
+    return card;
+}
 
-        function goBack() {
-            if (menuContainer.classList.contains('active')) {
-                menuContainer.classList.remove('active');
-                genderSelection.style.display = 'flex';
-                backBtn.style.display = 'flex';
-            } else if (genderSelection.style.display === 'flex') {
-                genderSelection.style.display = 'none';
-                loginScreen.style.display = 'flex';
-                backBtn.style.display = 'none';
-            }
-        }
+// ========== AI 체험하기 기능 ==========
 
-        function updateUserInfo() {
-            const userInfo = document.getElementById('userInfo');
-            const guestMessage = document.getElementById('guestMessage');
-            const designerName = document.getElementById('designerNameDisplay');
-            const designerPhone = document.getElementById('designerPhoneDisplay');
-            const sessionStatus = document.getElementById('sessionStatusDisplay');
+// AI 체험하기 시작
+function startAIExperience(event, styleId, styleName, styleImageUrl) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    console.log('🤖 AI 체험하기 시작:', { styleId, styleName, styleImageUrl });
+    
+    // AI 사진 업로드 모달 열기
+    openAIPhotoModal(styleId, styleName, styleImageUrl);
+}
 
-            if (currentDesigner) {
-                userInfo.style.display = 'block';
-                guestMessage.style.display = 'none';
+// AI 사진 업로드 모달 열기
+function openAIPhotoModal(styleId, styleName, styleImageUrl) {
+    // 모달이 없으면 생성
+    let modal = document.getElementById('aiPhotoModal');
+    if (!modal) {
+        modal = createAIPhotoModal();
+        document.body.appendChild(modal);
+    }
+    
+    // 모달 내용 설정
+    const modalTitle = modal.querySelector('.ai-modal-title');
+    const modalSubtitle = modal.querySelector('.ai-modal-subtitle');
+    
+    if (modalTitle) {
+        modalTitle.innerHTML = `<span class="ai-icon">🤖</span> AI 헤어스타일 체험`;
+    }
+    
+    if (modalSubtitle) {
+        modalSubtitle.textContent = `${styleName} 스타일로 변신해보세요!`;
+    }
+    
+    // 현재 선택된 스타일 정보 저장
+    modal.dataset.styleId = styleId;
+    modal.dataset.styleName = styleName;
+    modal.dataset.styleImageUrl = styleImageUrl;
+    
+    // 모달 표시
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// AI 사진 업로드 모달 HTML 생성
+function createAIPhotoModal() {
+    const modal = document.createElement('div');
+    modal.id = 'aiPhotoModal';
+    modal.className = 'ai-photo-modal';
+    
+    modal.innerHTML = `
+        <div class="ai-modal-content">
+            <button class="ai-modal-close" onclick="closeAIPhotoModal()">×</button>
+            
+            <div class="ai-modal-header">
+                <div class="ai-modal-title">
+                    <span class="ai-icon">🤖</span> AI 헤어스타일 체험
+                </div>
+                <div class="ai-modal-subtitle">
+                    고객님의 사진을 업로드하면 AI가 선택한 헤어스타일을 합성해드립니다
+                </div>
+            </div>
+            
+            <div class="ai-modal-body">
+                <div class="ai-upload-area" onclick="triggerFileInput()">
+                    <input type="file" id="aiPhotoInput" accept="image/*" style="display: none;" onchange="handlePhotoUpload(this)">
+                    <div class="upload-placeholder">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text">사진 선택하기</div>
+                        <div class="upload-hint">JPG, PNG 파일만 가능</div>
+                    </div>
+                </div>
                 
-                designerName.textContent = `이름: ${currentDesigner.name}`;
-                designerPhone.textContent = `전화: ${currentDesigner.phone}`;
-                sessionStatus.textContent = `토큰: ${currentDesigner.tokens || 0}개`;
-            } else {
-                userInfo.style.display = 'none';
-                guestMessage.style.display = 'block';
-            }
-        }
-
-        function formatPhoneNumber(phone) {
-            const numbers = phone.replace(/[^\d]/g, '');
-            if (numbers.length !== 11) {
-                return phone;
-            }
-            return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
-        }
-
-        // 전화번호 입력 시 실시간 포맷팅
-        document.getElementById('phoneNumber').addEventListener('input', function(e) {
-            const input = e.target;
-            const cursorPos = input.selectionStart;
-            const oldValue = input.value;
-            const oldLength = oldValue.length;
-            
-            const formatted = formatPhoneNumber(input.value);
-            input.value = formatted;
-            
-            const newLength = formatted.length;
-            const diff = newLength - oldLength;
-            input.setSelectionRange(cursorPos + diff, cursorPos + diff);
-        });
-
-        // 로그인 처리
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('designerName').value.trim();
-            let phone = document.getElementById('phoneNumber').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const loginBtn = document.getElementById('loginBtn');
-            
-            phone = formatPhoneNumber(phone);
-            
-            if (!name || !phone || password.length !== 4) {
-                showToast('모든 정보를 정확히 입력해주세요', 'error');
-                return;
-            }
-
-            const phoneRegex = /^01[0-9]-\d{4}-\d{4}$/;
-            if (!phoneRegex.test(phone)) {
-                showToast('전화번호는 11자리 숫자로 입력해주세요 (예: 01000000000)', 'error');
-                return;
-            }
-            
-            loginBtn.disabled = true;
-            loginBtn.textContent = '로그인 중...';
-            showLoading(true);
-
-            try {
-                await firebaseAuth.login(name, phone, password);
+                <div id="aiPhotoPreview" class="ai-photo-preview" style="display: none;">
+                    <img id="previewImage" class="preview-image">
+                    <div>
+                        <button class="ai-process-btn" onclick="processAIFaceSwap()" id="aiProcessBtn">
+                            <span class="ai-icon">🎨</span>
+                            <span>AI 합성 시작</span>
+                        </button>
+                        <button class="ai-secondary-btn" onclick="resetPhotoUpload()" style="margin-left: 10px;">
+                            다시 선택
+                        </button>
+                    </div>
+                </div>
                 
-                loginScreen.style.display = 'none';
-                genderSelection.style.display = 'flex';
-                backBtn.style.display = 'flex';
-                
-                updateUserInfo();
-                showToast(`환영합니다, ${currentDesigner.name}님!`, 'success');
-                
-            } catch (error) {
-                showToast(error.message, 'error');
-            } finally {
-                loginBtn.disabled = false;
-                loginBtn.textContent = '로그인';
-                showLoading(false);
-            }
-        });
+                <div class="ai-info" style="margin-top: 20px; padding: 15px; background: var(--ai-bg-secondary); border-radius: 10px; font-size: 12px; color: var(--text-secondary);">
+                    💡 <strong>안내:</strong> 업로드된 사진은 AI 처리 후 자동으로 삭제되며, 다른 용도로 사용되지 않습니다.
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return modal;
+}
 
-        async function logout() {
-            if (confirm('로그아웃 하시겠습니까?')) {
-                showLoading(true);
-                await firebaseAuth.logout();
-                showLoading(false);
-                showToast('로그아웃되었습니다', 'success');
-            }
+// ========== 스타일 상세 모달 ==========
+
+// 스타일 상세 모달 열기
+function openStyleModal(style) {
+    // 기존 모달 사용 (index.html에 이미 존재)
+    const modal = document.getElementById('styleModal');
+    if (!modal) {
+        console.error('❌ styleModal 요소를 찾을 수 없습니다');
+        return;
+    }
+    
+    // 모달 내용 설정
+    const modalImage = document.getElementById('styleModalImage');
+    const modalCode = document.getElementById('styleModalCode');
+    const modalName = document.getElementById('styleModalName');
+    const modalCategory = document.getElementById('styleModalCategory');
+    const modalSubcategory = document.getElementById('styleModalSubcategory');
+    const modalGender = document.getElementById('styleModalGender');
+    
+    if (modalImage) {
+        modalImage.src = style.imageUrl || '';
+        modalImage.onerror = function() {
+            this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        };
+    }
+    
+    if (modalCode) modalCode.textContent = style.code || 'NO CODE';
+    if (modalName) modalName.textContent = style.name || '이름 없음';
+    if (modalCategory) modalCategory.textContent = style.mainCategory || '-';
+    if (modalSubcategory) modalSubcategory.textContent = style.subCategory || '-';
+    if (modalGender) {
+        modalGender.textContent = style.gender === 'male' ? '남성' : 
+                                 style.gender === 'female' ? '여성' : '-';
+    }
+    
+    // 모달 표시
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    console.log('스타일 모달 열림:', { 
+        code: style.code, 
+        name: style.name,
+        category: style.mainCategory,
+        subcategory: style.subCategory 
+    });
+}
+
+// ========== 상태 표시 함수들 ==========
+
+// 로딩 상태 표시
+function showLoadingState(container) {
+    container.innerHTML = `
+        <div class="empty-state">
+            <div class="empty-icon">⏳</div>
+            <div class="empty-title">로딩중...</div>
+        </div>
+    `;
+}
+
+// 빈 상태 표시
+function showEmptyState(container) {
+    container.innerHTML = `
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <div class="empty-title">스타일 없음</div>
+            <div class="empty-message">해당 카테고리에 등록된 스타일이 없습니다</div>
+        </div>
+    `;
+}
+
+// 오류 상태 표시
+function showErrorState(container, message) {
+    container.innerHTML = `
+        <div class="empty-state">
+            <div class="empty-icon">⚠️</div>
+            <div class="empty-title">오류 발생</div>
+            <div class="empty-message">${message}</div>
+            <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: var(--female-color); color: white; border: none; border-radius: 5px; cursor: pointer;">새로고침</button>
+        </div>
+    `;
+}
+
+// ========== 유틸리티 함수들 ==========
+
+// 파일 입력 트리거
+function triggerFileInput() {
+    const fileInput = document.getElementById('aiPhotoInput');
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+
+// 사진 업로드 처리
+function handlePhotoUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    // 파일 타입 검증
+    if (!file.type.startsWith('image/')) {
+        showToast('이미지 파일만 업로드 가능합니다', 'error');
+        return;
+    }
+    
+    // 파일 크기 검증 (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('파일 크기는 10MB 이하로 제한됩니다', 'error');
+        return;
+    }
+    
+    // 파일 읽기
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const previewContainer = document.getElementById('aiPhotoPreview');
+        const previewImage = document.getElementById('previewImage');
+        const uploadArea = document.querySelector('.ai-upload-area');
+        
+        if (previewImage && previewContainer && uploadArea) {
+            previewImage.src = e.target.result;
+            previewContainer.style.display = 'block';
+            uploadArea.style.display = 'none';
         }
+    };
+    
+    reader.readAsDataURL(file);
+}
 
-        // 성별 선택 (menu.js의 새로운 시스템만 사용)
-        function selectGender(gender) {
-            currentGender = gender;
-            
-            genderSelection.style.display = 'none';
-            menuContainer.classList.add('active');
-            
-            // menu.js의 새로운 메뉴 시스템만 사용
-            if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.loadMenuForGender) {
-                console.log(`🎯 새로운 메뉴 시스템 사용: ${gender}`);
-                window.HAIRGATOR_MENU.loadMenuForGender(gender);
-            } else {
-                console.error('❌ HAIRGATOR_MENU가 로드되지 않았습니다');
-                showToast('메뉴 시스템 오류입니다', 'error');
-            }
+// 사진 업로드 재설정
+function resetPhotoUpload() {
+    const previewContainer = document.getElementById('aiPhotoPreview');
+    const uploadArea = document.querySelector('.ai-upload-area');
+    const fileInput = document.getElementById('aiPhotoInput');
+    
+    if (previewContainer) previewContainer.style.display = 'none';
+    if (uploadArea) uploadArea.style.display = 'block';
+    if (fileInput) fileInput.value = '';
+}
+
+// AI 얼굴 합성 처리
+async function processAIFaceSwap() {
+    const processBtn = document.getElementById('aiProcessBtn');
+    const previewImage = document.getElementById('previewImage');
+    const modal = document.getElementById('aiPhotoModal');
+    
+    if (!processBtn || !previewImage || !modal) {
+        console.error('필요한 요소를 찾을 수 없습니다');
+        return;
+    }
+    
+    // 버튼 상태 변경
+    const originalText = processBtn.innerHTML;
+    processBtn.disabled = true;
+    processBtn.innerHTML = '<span class="ai-icon">⏳</span><span>AI 처리 중...</span>';
+    
+    try {
+        // 현재 선택된 스타일 정보 가져오기
+        const styleId = modal.dataset.styleId;
+        const styleName = modal.dataset.styleName;
+        const styleImageUrl = modal.dataset.styleImageUrl;
+        const customerImageUrl = previewImage.src;
+        
+        console.log('AI 처리 시작:', { styleId, styleName, customerImageUrl });
+        
+        // 데모용 지연 시간
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // 성공 시 결과 표시
+        showToast('AI 합성이 완료되었습니다!', 'success');
+        closeAIPhotoModal();
+        
+    } catch (error) {
+        console.error('AI 처리 오류:', error);
+        showToast('AI 처리 중 오류가 발생했습니다', 'error');
+        
+    } finally {
+        // 버튼 상태 복원
+        processBtn.disabled = false;
+        processBtn.innerHTML = originalText;
+    }
+}
+
+// 모달 닫기 함수들
+function closeAIPhotoModal() {
+    const modal = document.getElementById('aiPhotoModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        resetPhotoUpload();
+    }
+}
+
+function closeStyleModal() {
+    const modal = document.getElementById('styleModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// 토스트 메시지 표시
+function showToast(message, type = 'info') {
+    // 기존 토스트가 있으면 사용, 없으면 생성
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
+    
+    toast.textContent = message;
+    toast.className = `toast ${type} show`;
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// 즐겨찾기 기능
+function favoriteStyle() {
+    showToast('즐겨찾기에 추가되었습니다', 'success');
+}
+
+// 공유 기능
+function shareStyle() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'HAIRGATOR 스타일',
+            text: '이 헤어스타일 어떠세요?',
+            url: window.location.href
+        }).then(() => {
+            showToast('공유되었습니다', 'success');
+        }).catch(() => {
+            copyToClipboard(window.location.href);
+        });
+    } else {
+        copyToClipboard(window.location.href);
+    }
+}
+
+// 클립보드 복사
+function copyToClipboard(text) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('링크가 복사되었습니다', 'success');
+        }).catch(() => {
+            showToast('복사에 실패했습니다', 'error');
+        });
+    } else {
+        showToast('복사 기능을 지원하지 않는 브라우저입니다', 'error');
+    }
+}
+
+// ========== 이벤트 리스너 ==========
+
+// DOM 로드 완료 시 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료');
+    
+    // 모달 바깥 클릭 시 닫기
+    document.addEventListener('click', function(e) {
+        // 스타일 모달
+        const styleModal = document.getElementById('styleModal');
+        if (styleModal && e.target === styleModal) {
+            closeStyleModal();
         }
-
-        // 페이지 로드 시 실행
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🦎 HAIRGATOR 시작 - 최종 완료 버전');
-            
-            // 테마 로드
-            loadTheme();
-            
-            loginScreen.style.display = 'flex';
-            updateUserInfo();
-
-            // 모달 닫기 이벤트 리스너 추가
-            const styleModalClose = document.getElementById('styleModalClose');
-            const styleModal = document.getElementById('styleModal');
-            
-            if (styleModalClose) {
-                styleModalClose.addEventListener('click', function() {
-                    if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.closeStyleModal) {
-                        window.HAIRGATOR_MENU.closeStyleModal();
-                    }
-                });
-            }
-            
-            if (styleModal) {
-                styleModal.addEventListener('click', function(e) {
-                    if (e.target === styleModal) {
-                        if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.closeStyleModal) {
-                            window.HAIRGATOR_MENU.closeStyleModal();
-                        }
-                    }
-                });
-            }
-            
-            // ESC 키로 모달 닫기
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && styleModal.classList.contains('active')) {
-                    if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.closeStyleModal) {
-                        window.HAIRGATOR_MENU.closeStyleModal();
-                    }
-                }
-            });
-        });
-
-        // 클릭 이벤트 외부 영역에서 사이드바 닫기
-        document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const menuBtn = document.getElementById('menuBtn');
-            
-            if (sidebar.classList.contains('active') && 
-                !sidebar.contains(e.target) && 
-                !menuBtn.contains(e.target)) {
-                sidebar.classList.remove('active');
-            }
-        });
-
-        // 브라우저 종료 시 세션 정리
-        window.addEventListener('beforeunload', function() {
-            if (currentSessionId) {
-                navigator.sendBeacon('/api/logout', JSON.stringify({
-                    sessionId: currentSessionId,
-                    reason: 'browser_close'
-                }));
-            }
-        });
-
-        // 페이지 숨김/표시 시 세션 관리
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                if (heartbeatInterval) {
-                    clearInterval(heartbeatInterval);
-                }
-            } else {
-                if (currentSessionId) {
-                    firebaseAuth.startHeartbeat();
-                }
-            }
-        });
-    </script>
-
-    <!-- 테마 토글 버튼 CSS -->
-    <style>
-        .theme-toggle {
-            position: absolute;
-            right: 50px;
-            width: 30px;
-            height: 30px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            transition: transform 0.2s ease;
-            user-select: none;
+        
+        // AI 모달
+        const aiModal = document.getElementById('aiPhotoModal');
+        if (aiModal && e.target === aiModal) {
+            closeAIPhotoModal();
         }
-
-        .theme-toggle:hover {
-            transform: scale(1.1);
+    });
+    
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeStyleModal();
+            closeAIPhotoModal();
         }
-    </style>
-</body>
-</html>
+    });
+});
+
+// ========== 전역 함수 노출 ==========
+// 다른 파일에서 사용할 수 있도록 전역 스코프에 노출
+window.HAIRGATOR_MENU = {
+    loadMenuForGender,
+    selectMainTab,
+    selectSubTab,
+    loadStyles,
+    createStyleCard,
+    openStyleModal,
+    closeStyleModal,
+    startAIExperience,
+    openAIPhotoModal,
+    closeAIPhotoModal,
+    updateCategoryDescription,
+    showToast
+};
+
+console.log('✅ HAIRGATOR 메뉴 시스템 초기화 완료 - 최종 버전');
