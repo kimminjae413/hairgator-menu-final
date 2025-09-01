@@ -33,7 +33,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
 </head>
-<body>
+<body data-theme="dark">
     <!-- 헤더 -->
     <header class="header">
         <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
@@ -52,6 +52,25 @@
             <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
         </div>
         <div class="sidebar-content">
+            <!-- 테마 선택 섹션 -->
+            <div class="theme-section">
+                <h4>테마 선택</h4>
+                <div class="theme-options">
+                    <button class="theme-btn active" data-theme="dark">
+                        다크
+                    </button>
+                    <button class="theme-btn" data-theme="luxury">
+                        럭셔리
+                    </button>
+                    <button class="theme-btn" data-theme="minimal">
+                        미니멀
+                    </button>
+                    <button class="theme-btn" data-theme="warm">
+                        따뜻한
+                    </button>
+                </div>
+            </div>
+            
             <div class="user-info" id="userInfo" style="display: none;">
                 <h4>디자이너 정보</h4>
                 <p id="designerNameDisplay"></p>
@@ -203,6 +222,192 @@
     </script>
 
     <script>
+        // 테마 시스템 클래스
+        class ThemeManager {
+            constructor() {
+                this.currentTheme = 'dark';
+                this.storageKey = 'hairgator_theme';
+                this.init();
+            }
+            
+            init() {
+                // 저장된 테마 로드
+                const savedTheme = localStorage.getItem(this.storageKey);
+                if (savedTheme && this.isValidTheme(savedTheme)) {
+                    this.currentTheme = savedTheme;
+                }
+                
+                // 테마 적용
+                this.applyTheme(this.currentTheme);
+                
+                // 테마 버튼 이벤트 리스너 등록
+                this.setupThemeButtons();
+                
+                console.log(`🎨 테마 시스템 초기화 완료: ${this.currentTheme}`);
+            }
+            
+            isValidTheme(theme) {
+                const validThemes = ['dark', 'luxury', 'minimal', 'warm'];
+                return validThemes.includes(theme);
+            }
+            
+            applyTheme(themeName) {
+                if (!this.isValidTheme(themeName)) {
+                    console.warn(`Invalid theme: ${themeName}, fallback to dark`);
+                    themeName = 'dark';
+                }
+                
+                // body에 data-theme 속성 설정
+                document.body.setAttribute('data-theme', themeName);
+                
+                // 현재 테마 업데이트
+                this.currentTheme = themeName;
+                
+                // localStorage에 저장
+                localStorage.setItem(this.storageKey, themeName);
+                
+                // 테마 버튼 활성화 상태 업데이트
+                this.updateThemeButtons();
+                
+                // PWA 테마 컬러 업데이트
+                this.updateMetaThemeColor(themeName);
+                
+                console.log(`🎨 테마 적용 완료: ${themeName}`);
+                
+                // 테마 변경 이벤트 발생
+                document.dispatchEvent(new CustomEvent('themeChanged', {
+                    detail: { theme: themeName }
+                }));
+            }
+            
+            setupThemeButtons() {
+                const themeButtons = document.querySelectorAll('.theme-btn');
+                
+                themeButtons.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const theme = button.getAttribute('data-theme');
+                        if (theme && this.isValidTheme(theme)) {
+                            // 버튼 애니메이션
+                            button.style.transform = 'scale(0.95)';
+                            setTimeout(() => {
+                                button.style.transform = '';
+                            }, 150);
+                            
+                            // 테마 변경
+                            this.changeTheme(theme);
+                            
+                            // 햅틱 피드백 (모바일)
+                            if (navigator.vibrate) {
+                                navigator.vibrate(50);
+                            }
+                        }
+                    });
+                });
+            }
+            
+            updateThemeButtons() {
+                const themeButtons = document.querySelectorAll('.theme-btn');
+                
+                themeButtons.forEach(button => {
+                    const theme = button.getAttribute('data-theme');
+                    
+                    if (theme === this.currentTheme) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                });
+            }
+            
+            updateMetaThemeColor(themeName) {
+                const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+                
+                const themeColors = {
+                    dark: '#000000',
+                    luxury: '#2c3e50',
+                    minimal: '#ffffff',
+                    warm: '#f4e4c1'
+                };
+                
+                const color = themeColors[themeName] || themeColors.dark;
+                
+                if (metaThemeColor) {
+                    metaThemeColor.setAttribute('content', color);
+                }
+            }
+            
+            changeTheme(themeName) {
+                if (themeName === this.currentTheme) {
+                    return;
+                }
+                
+                // 테마 전환 애니메이션
+                document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+                
+                setTimeout(() => {
+                    this.applyTheme(themeName);
+                    
+                    // 토스트 메시지 표시
+                    const themeNames = {
+                        dark: '다크',
+                        luxury: '럭셔리',
+                        minimal: '미니멀',
+                        warm: '따뜻한'
+                    };
+                    
+                    showToast(`${themeNames[themeName]} 테마가 적용되었습니다`, 'success');
+                    
+                    // 전환 애니메이션 제거
+                    setTimeout(() => {
+                        document.body.style.transition = '';
+                    }, 300);
+                }, 50);
+            }
+            
+            getCurrentTheme() {
+                return this.currentTheme;
+            }
+            
+            // 테마별 색상 값 가져오기
+            getThemeColors(themeName = this.currentTheme) {
+                const themeColorMaps = {
+                    dark: {
+                        primary: '#000000',
+                        accent: '#E91E63',
+                        text: '#ffffff',
+                        male: '#4A90E2',
+                        female: '#E91E63'
+                    },
+                    luxury: {
+                        primary: '#2c3e50',
+                        accent: '#d4af37',
+                        text: '#ecf0f1',
+                        male: '#3498db',
+                        female: '#d4af37'
+                    },
+                    minimal: {
+                        primary: '#ffffff',
+                        accent: '#212529',
+                        text: '#212529',
+                        male: '#495057',
+                        female: '#212529'
+                    },
+                    warm: {
+                        primary: '#f4e4c1',
+                        accent: '#5d4037',
+                        text: '#3e2723',
+                        male: '#6d4c41',
+                        female: '#5d4037'
+                    }
+                };
+                
+                return themeColorMaps[themeName] || themeColorMaps.dark;
+            }
+        }
+
+        // 전역 테마 매니저 인스턴스
+        const themeManager = new ThemeManager();
+        
         // 전역 변수
         let currentGender = null;
         let currentDesigner = null;
@@ -253,7 +458,7 @@
         const loadingOverlay = document.getElementById('loadingOverlay');
         const toast = document.getElementById('toast');
 
-        // 🔥 스마트 필터링 & NEW 표시 시스템
+        // 스마트 필터링 & NEW 표시 시스템
         
         // 사용 가능한 서브카테고리 & NEW 아이템 확인
         async function checkSubcategoriesAndNew(gender, categoryName) {
@@ -798,7 +1003,7 @@
                         <div class="empty-state">
                             <div class="empty-icon">📭</div>
                             <div style="font-size: 18px;">등록된 스타일이 없습니다</div>
-                            <div style="font-size: 14px; color: #666; margin-top: 10px;">${categoryName} - ${subcategory}</div>
+                            <div style="font-size: 14px; color: var(--text-disabled); margin-top: 10px;">${categoryName} - ${subcategory}</div>
                         </div>
                     `;
                     return;
@@ -946,15 +1151,15 @@
                 <div class="empty-state">
                     <div class="empty-icon">⚠️</div>
                     <div style="font-size: 18px;">로드 실패</div>
-                    <div style="font-size: 14px; color: #666; margin-top: 10px;">${message}</div>
-                    <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: var(--female-color); color: white; border: none; border-radius: 5px; cursor: pointer;">새로고침</button>
+                    <div style="font-size: 14px; color: var(--text-disabled); margin-top: 10px;">${message}</div>
+                    <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: var(--accent-color); color: var(--text-primary); border: none; border-radius: 5px; cursor: pointer;">새로고침</button>
                 </div>
             `;
         }
 
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🦎 HAIRGATOR 시작 - 스마트 필터링 & NEW 표시 시스템');
+            console.log('🦎 HAIRGATOR 시작 - 테마 시스템 완전 통합');
             
             loginScreen.style.display = 'flex';
             updateUserInfo();
@@ -1017,9 +1222,12 @@
                 }
             }
         });
+
+        // 테마 변경 이벤트 리스너 (필요시 추가 로직)
+        document.addEventListener('themeChanged', function(e) {
+            console.log(`테마 변경됨: ${e.detail.theme}`);
+            // 테마 변경 시 추가로 실행할 코드가 있으면 여기에 추가
+        });
     </script>
 </body>
 </html>
-
-
-
