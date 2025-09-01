@@ -174,6 +174,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 try {
+                    // Firebase 연결 확인
+                    if (!db) {
+                        console.error('❌ Firebase DB가 초기화되지 않음');
+                        alert('Firebase 연결에 문제가 있습니다. 페이지를 새로고침해주세요.');
+                        return;
+                    }
+                    
+                    console.log('🔍 Firebase 쿼리 실행 중...');
+                    console.log(`쿼리 조건: name='${name}', phone='${phone}', password='${password}'`);
+                    
+                    // 먼저 designers 컬렉션이 존재하는지 확인
+                    const testQuery = await db.collection('designers').limit(1).get();
+                    console.log('🔍 designers 컬렉션 상태:', {
+                        exists: !testQuery.empty,
+                        size: testQuery.size,
+                        docs: testQuery.docs.map(doc => ({ id: doc.id, data: doc.data() }))
+                    });
+                    
+                    // 모든 디자이너 데이터 확인 (디버깅용)
+                    const allDesigners = await db.collection('designers').get();
+                    console.log('🔍 모든 designers 데이터:', allDesigners.docs.map(doc => ({
+                        id: doc.id,
+                        name: doc.data().name,
+                        phone: doc.data().phone,
+                        hasPassword: !!doc.data().password, // 보안상 비밀번호는 존재 여부만
+                        tokens: doc.data().tokens
+                    })));
+                    
                     // Firebase에서 사용자 확인 (토큰 정보 포함)
                     const userQuery = await db.collection('designers')
                         .where('name', '==', name)
@@ -181,8 +209,37 @@ document.addEventListener('DOMContentLoaded', function() {
                         .where('password', '==', password)
                         .get();
                     
+                    console.log('🔍 로그인 쿼리 결과:', {
+                        empty: userQuery.empty,
+                        size: userQuery.size,
+                        docs: userQuery.docs.map(doc => ({ id: doc.id, data: doc.data() }))
+                    });
+                    
                     if (userQuery.empty) {
-                        alert('로그인 정보가 올바르지 않습니다');
+                        // 각 조건별로 개별 확인
+                        console.log('🔍 개별 조건 확인 시작...');
+                        
+                        // 이름만으로 검색
+                        const nameOnlyQuery = await db.collection('designers')
+                            .where('name', '==', name)
+                            .get();
+                        console.log('🔍 이름만 일치하는 사용자:', nameOnlyQuery.docs.map(doc => ({ 
+                            id: doc.id, 
+                            name: doc.data().name,
+                            phone: doc.data().phone 
+                        })));
+                        
+                        // 휴대폰만으로 검색
+                        const phoneOnlyQuery = await db.collection('designers')
+                            .where('phone', '==', phone)
+                            .get();
+                        console.log('🔍 휴대폰만 일치하는 사용자:', phoneOnlyQuery.docs.map(doc => ({ 
+                            id: doc.id, 
+                            name: doc.data().name,
+                            phone: doc.data().phone 
+                        })));
+                        
+                        alert(`로그인 정보가 올바르지 않습니다.\n\n입력한 정보:\n이름: ${name}\n휴대폰: ${phone}\n\n콘솔 로그를 확인하여 관리자에게 문의하세요.`);
                         return;
                     }
                     
@@ -331,8 +388,76 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`✅ 성별 선택 완료: ${gender}`);
     }
 
-    // 전역 함수 등록
-    window.selectGender = selectGender;
+    // ========== 디버깅 헬퍼 함수들 ==========
+    
+    // 사용자 생성 헬퍼 함수 (디버깅용)
+    async function createTestUser() {
+        try {
+            console.log('🔧 테스트 사용자 생성 중...');
+            
+            const testUser = {
+                name: '김민재',
+                phone: '1234',
+                password: '1234',
+                isAdmin: false,
+                tokens: 100,
+                createdAt: new Date(),
+                isActive: true
+            };
+            
+            const docRef = await db.collection('designers').add(testUser);
+            console.log('✅ 테스트 사용자 생성 완료:', docRef.id);
+            showToast('테스트 사용자가 생성되었습니다!');
+            
+            return docRef.id;
+        } catch (error) {
+            console.error('❌ 테스트 사용자 생성 실패:', error);
+            showToast('테스트 사용자 생성 실패: ' + error.message);
+        }
+    }
+    
+    // 디버그 로그인 함수
+    function debugLogin(name = '김민재', phone = '1234', password = '1234') {
+        console.log('🔧 디버그 로그인 시작...');
+        document.getElementById('designerName').value = name;
+        document.getElementById('phoneNumber').value = phone;
+        document.getElementById('password').value = password;
+        
+        // 로그인 폼 제출 이벤트 생성
+        const submitEvent = new Event('submit', { 
+            bubbles: true, 
+            cancelable: true 
+        });
+        loginForm.dispatchEvent(submitEvent);
+    }
+    
+    // Firebase designers 컬렉션 상태 확인
+    async function checkDesignersCollection() {
+        try {
+            const snapshot = await db.collection('designers').get();
+            console.log('📊 designers 컬렉션 현황:', {
+                총_사용자_수: snapshot.size,
+                사용자_목록: snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    이름: doc.data().name,
+                    휴대폰: doc.data().phone,
+                    관리자: doc.data().isAdmin,
+                    토큰: doc.data().tokens
+                }))
+            });
+            
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (error) {
+            console.error('❌ 컬렉션 확인 실패:', error);
+            return [];
+        }
+    }
+    
+    // 전역 함수로 등록 (콘솔에서 사용 가능)
+    window.createTestUser = createTestUser;
+    window.debugLogin = debugLogin;
+    window.checkDesignersCollection = checkDesignersCollection;
+    window.getCurrentUser = () => currentUser;
 
     // Event Listeners Setup
     function setupEventListeners() {
@@ -1107,12 +1232,24 @@ document.addEventListener('DOMContentLoaded', function() {
     window.handleLogout = handleLogout;
 
     // Performance Monitoring
-    console.log('🚀 HAIRGATOR 애플리케이션 준비 완료 (토큰 시스템 통합)');
+    console.log('🚀 HAIRGATOR 애플리케이션 준비 완료 (토큰 시스템 통합 + 디버깅)');
+    console.log('🔧 디버깅 명령어:');
+    console.log('  - createTestUser(): 테스트 사용자 생성');
+    console.log('  - debugLogin(): 자동 로그인 시도');  
+    console.log('  - checkDesignersCollection(): 사용자 컬렉션 확인');
+    console.log('  - getCurrentUser(): 현재 사용자 정보');
 });
 
 // Window Load Event
 window.addEventListener('load', function() {
-    console.log('🦎 HAIRGATOR 앱 완전 로드 완료');
+    console.log('🦎 HAIRGATOR 앱 완전 로드 완료 (디버깅 강화 버전)');
+    console.log('');
+    console.log('🔧 === 디버깅 도구 사용법 ===');
+    console.log('1. checkDesignersCollection() - 사용자 데이터베이스 확인');
+    console.log('2. createTestUser() - 테스트 사용자 생성');
+    console.log('3. debugLogin("이름", "휴대폰", "비밀번호") - 자동 로그인');
+    console.log('4. getCurrentUser() - 현재 로그인된 사용자 확인');
+    console.log('');
     
     // CSS 애니메이션 추가
     const style = document.createElement('style');
