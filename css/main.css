@@ -423,6 +423,67 @@ body.light-theme .category-tab:hover {
     }
 }
 
+/* ========== 카테고리 설명 영역 ========== */
+.category-description {
+    background: #0a0a0a;
+    padding: 20px;
+    border-bottom: 1px solid #222;
+    transition: all 0.3s ease;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.light-theme .category-description {
+    background: #f8f9fa;
+    border-bottom-color: var(--border-color);
+}
+
+.category-description-text {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    transition: color 0.3s ease;
+    animation: fadeInDescription 0.5s ease;
+}
+
+body.light-theme .category-description-text {
+    color: var(--text-secondary);
+}
+
+/* 카테고리 이름 강조 */
+.category-description-text .category-name {
+    color: var(--female-color);
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+body.gender-male .category-description-text .category-name {
+    color: var(--male-color);
+}
+
+/* 설명이 없을 때 */
+.category-description-text.empty {
+    opacity: 0.5;
+    font-style: italic;
+}
+
+/* 애니메이션 */
+@keyframes fadeInDescription {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* 서브카테고리 탭 */
 .sub-tabs {
     background: #0a0a0a;
@@ -851,6 +912,24 @@ body.light-theme .ai-overlay {
     opacity: 0.7;
     cursor: not-allowed;
     transform: none;
+}
+
+.ai-secondary-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 2px solid var(--ai-border);
+    padding: 12px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ai-secondary-btn:hover {
+    border-color: var(--ai-primary);
+    color: var(--ai-primary);
+    background: var(--ai-bg-primary);
 }
 
 /* 빈 상태 */
@@ -1293,6 +1372,15 @@ body.light-theme .modal-action-btn.secondary:hover {
 
 /* 모바일 최적화 */
 @media (max-width: 767px) {
+    .category-description {
+        padding: 15px;
+        min-height: 60px;
+    }
+    
+    .category-description-text {
+        font-size: 13px;
+    }
+    
     .style-info {
         padding: 10px 6px 6px;
     }
