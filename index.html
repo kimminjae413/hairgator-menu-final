@@ -1282,7 +1282,7 @@
 
     <!-- Firebase 설정 -->
     <script>
-        // Firebase 설정
+        // Firebase 설정 (경고 제거)
         const firebaseConfig = {
             apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
             authDomain: "hairgatormenu-4a43e.firebaseapp.com",
@@ -1298,19 +1298,7 @@
         const db = firebase.firestore();
         const storage = firebase.storage();
 
-        // 캐시 설정
-        try {
-            db.settings({
-                cache: {
-                    kind: 'persistent',
-                    tabManager: { kind: 'multi-tab' }
-                }
-            });
-        } catch(e) {
-            console.log('Cache settings fallback');
-        }
-
-        console.log('✅ Firebase 초기화 완료');
+        console.log('Firebase 초기화 완료');
     </script>
 
     <script>
@@ -1389,7 +1377,7 @@
                 }, 100);
             });
             
-            console.log(`✅ ${categories.length}개 카테고리 렌더링 완료`);
+            console.log(categories.length + '개 카테고리 렌더링 완료');
         }
 
         // 카테고리 선택 (스마트 필터링 적용) - 수정된 버전
@@ -1416,7 +1404,7 @@
             currentSubcategory = firstAvailableSub;
             loadStyles(category.name, firstAvailableSub, gender);
             
-            console.log(`✅ 카테고리 선택: ${category.name} (사용가능한 서브: ${subInfo.available.length}개)`);
+            console.log('카테고리 선택: ' + category.name + ' (사용가능한 서브: ' + subInfo.available.length + '개)');
         }
 
         // DOM 요소
@@ -1465,7 +1453,7 @@
                 // 캐시에 저장
                 availableSubcategories.set(cacheKey, result);
                 
-                console.log(`✅ 서브카테고리 확인 완료: ${categoryName}`, result);
+                console.log('서브카테고리 확인 완료: ' + categoryName, result);
                 return result;
                 
             } catch (error) {
@@ -1829,7 +1817,7 @@
                 loadStyles(firstCategory.name, firstAvailableSub, gender);
             }
             
-            console.log(`✅ ${gender} 메뉴 로드 완료`);
+            console.log(gender + ' 메뉴 로드 완료');
         }
 
         // 카테고리 탭 렌더링 (NEW 표시는 백그라운드에서 추가)
@@ -1899,7 +1887,7 @@
                 subTabs.appendChild(tab);
             });
             
-            console.log(`✅ 스마트 서브카테고리 렌더링 완료 (사용가능: ${subInfo.available.length}/${allSubcategories.length})`);
+            console.log('✅ 스마트 서브카테고리 렌더링 완료 (사용가능: ' + subInfo.available.length + '/' + allSubcategories.length + ')');
         }
 
         // 카테고리 선택 (스마트 필터링 적용)
@@ -1948,7 +1936,7 @@
                 loadStyles(currentCategory.name, subcategory, gender);
             }
             
-            console.log(`✅ 서브카테고리 선택: ${subcategory}`);
+                console.log('서브카테고리 선택: ' + subcategory);
         }
 
         // 스타일 로드 (NEW 표시 포함)
@@ -1988,7 +1976,7 @@
                 
                 stylesGrid.appendChild(fragment);
                 
-                console.log(`✅ ${snapshot.size}개 스타일 로드 완료: ${categoryName} - ${subcategory}`);
+                console.log(snapshot.size + '개 스타일 로드 완료: ' + categoryName + ' - ' + subcategory);
                 
             } catch (error) {
                 console.error('스타일 로드 오류:', error);
