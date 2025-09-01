@@ -13,24 +13,10 @@ class FaceSwapBackend {
     }
 
     // 환경별 백엔드 URL 결정
-    getBackendURL() {
-        const hostname = window.location.hostname;
-        
-        // 로컬 개발 환경
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            // 여기에 실제 ngrok URL을 입력하세요
-            return 'https://your-ngrok-url.ngrok-free.app';
-        }
-        
-        // 배포 환경 (Netlify 등)
-        if (hostname.includes('netlify.app') || hostname.includes('hairgator')) {
-            // 여기에 실제 배포된 백엔드 서버 URL을 입력하세요
-            return 'https://your-production-backend.com';
-        }
-        
-        // 기본값 (개발용)
-        return 'http://localhost:3008';
-    }
+  getBackendURL() {
+    // 백엔드 서버가 없으므로 데모 모드
+    return 'http://demo-mode';  // 존재하지 않는 URL로 설정
+}
 
     // 백엔드 서버 연결 테스트
     async testConnection() {
