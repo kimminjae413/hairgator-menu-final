@@ -1,0 +1,619 @@
+/* 🎨 HAIRGATOR 테마 확장 시스템 - 완전한 최종 버전 */
+
+/* ========== 기본 다크 테마 ========== */
+body {
+    background: #000;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+/* ========== 라이트 테마 ========== */
+body.light-theme {
+    background: #ffffff;
+    color: #000000;
+}
+
+body.light-theme .login-screen {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: #333;
+}
+
+body.light-theme .login-container {
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .form-group input {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.2);
+    color: #333;
+}
+
+body.light-theme .form-group input::placeholder {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+body.light-theme .login-btn {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+}
+
+body.light-theme .header {
+    background: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    color: #000;
+}
+
+body.light-theme .sidebar {
+    background: rgba(255, 255, 255, 0.98);
+    color: #000;
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* ========== 블루 테마 (오션) ========== */
+body.blue-theme {
+    background: #0d1421;
+    color: #e3f2fd;
+}
+
+body.blue-theme .login-screen {
+    background: radial-gradient(circle at 20% 20%, rgba(33, 150, 243, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(63, 81, 181, 0.4) 0%, transparent 50%),
+                linear-gradient(135deg, #0d1421 0%, #1565c0 100%);
+}
+
+body.blue-theme .login-container {
+    background: rgba(13, 20, 33, 0.8);
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .form-group input {
+    background: rgba(33, 150, 243, 0.1);
+    border-color: rgba(33, 150, 243, 0.3);
+    color: #e3f2fd;
+}
+
+body.blue-theme .form-group input::placeholder {
+    color: rgba(227, 242, 253, 0.7);
+}
+
+body.blue-theme .form-group input:focus {
+    border-color: #2196f3;
+    box-shadow: 0 0 15px rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .login-btn {
+    background: linear-gradient(45deg, #2196f3, #3f51b5);
+}
+
+body.blue-theme .header {
+    background: rgba(13, 20, 33, 0.95);
+    border-bottom: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .sidebar {
+    background: rgba(13, 20, 33, 0.98);
+    border-left: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .main-tabs,
+body.blue-theme .sub-tabs {
+    background: rgba(22, 32, 50, 0.9);
+    border-bottom: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .category-tab,
+body.blue-theme .subcategory-tab {
+    background: rgba(30, 42, 66, 0.8);
+    color: #bbdefb;
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .category-tab:hover,
+body.blue-theme .subcategory-tab:hover {
+    background: rgba(37, 51, 82, 0.9);
+    border-color: #2196f3;
+}
+
+body.blue-theme .category-tab.active,
+body.blue-theme .subcategory-tab.active {
+    background: #2196f3;
+    color: white;
+    box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
+}
+
+body.blue-theme .menu-item {
+    background: rgba(37, 51, 82, 0.8);
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .menu-item:hover {
+    border-color: #2196f3;
+    box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+}
+
+body.blue-theme .style-modal-content {
+    background: rgba(13, 20, 33, 0.95);
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+/* ========== 퍼플 테마 (갤럭시) ========== */
+body.purple-theme {
+    background: #1a0d1a;
+    color: #f3e5f5;
+}
+
+body.purple-theme .login-screen {
+    background: radial-gradient(circle at 30% 30%, rgba(156, 39, 176, 0.5) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(103, 58, 183, 0.5) 0%, transparent 50%),
+                linear-gradient(135deg, #1a0d1a 0%, #4a148c 100%);
+}
+
+body.purple-theme .login-container {
+    background: rgba(26, 13, 26, 0.8);
+    border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+body.purple-theme .form-group input {
+    background: rgba(156, 39, 176, 0.1);
+    border-color: rgba(156, 39, 176, 0.3);
+    color: #f3e5f5;
+}
+
+body.purple-theme .form-group input::placeholder {
+    color: rgba(243, 229, 245, 0.7);
+}
+
+body.purple-theme .form-group input:focus {
+    border-color: #9c27b0;
+    box-shadow: 0 0 15px rgba(156, 39, 176, 0.3);
+}
+
+body.purple-theme .login-btn {
+    background: linear-gradient(45deg, #9c27b0, #673ab7);
+}
+
+body.purple-theme .header {
+    background: rgba(26, 13, 26, 0.95);
+    border-bottom: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+body.purple-theme .sidebar {
+    background: rgba(26, 13, 26, 0.98);
+    border-left: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+body.purple-theme .main-tabs,
+body.purple-theme .sub-tabs {
+    background: rgba(45, 27, 45, 0.9);
+    border-bottom: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+body.purple-theme .category-tab,
+body.purple-theme .subcategory-tab {
+    background: rgba(61, 42, 61, 0.8);
+    color: #e1bee7;
+    border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+body.purple-theme .category-tab:hover,
+body.purple-theme .subcategory-tab:hover {
+    background: rgba(74, 52, 74, 0.9);
+    border-color: #9c27b0;
+}
+
+body.purple-theme .category-tab.active,
+body.purple-theme .subcategory-tab.active {
+    background: #9c27b0;
+    color: white;
+    box-shadow: 0 0 15px rgba(156, 39, 176, 0.5);
+}
+
+body.purple-theme .menu-item {
+    background: rgba(61, 42, 61, 0.8);
+    border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+body.purple-theme .menu-item:hover {
+    border-color: #9c27b0;
+    box-shadow: 0 8px 25px rgba(156, 39, 176, 0.4);
+}
+
+body.purple-theme .style-modal-content {
+    background: rgba(26, 13, 26, 0.95);
+    border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+/* ========== 그린 테마 (네이처) ========== */
+body.green-theme {
+    background: #0d1410;
+    color: #e8f5e8;
+}
+
+body.green-theme .login-screen {
+    background: radial-gradient(circle at 25% 25%, rgba(76, 175, 80, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(139, 195, 74, 0.4) 0%, transparent 50%),
+                linear-gradient(135deg, #0d1410 0%, #2e7d32 100%);
+}
+
+body.green-theme .login-container {
+    background: rgba(13, 20, 16, 0.8);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+body.green-theme .form-group input {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: rgba(76, 175, 80, 0.3);
+    color: #e8f5e8;
+}
+
+body.green-theme .form-group input::placeholder {
+    color: rgba(232, 245, 232, 0.7);
+}
+
+body.green-theme .form-group input:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+}
+
+body.green-theme .login-btn {
+    background: linear-gradient(45deg, #4caf50, #8bc34a);
+}
+
+body.green-theme .header {
+    background: rgba(13, 20, 16, 0.95);
+    border-bottom: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+body.green-theme .sidebar {
+    background: rgba(13, 20, 16, 0.98);
+    border-left: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+body.green-theme .main-tabs,
+body.green-theme .sub-tabs {
+    background: rgba(27, 46, 27, 0.9);
+    border-bottom: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+body.green-theme .category-tab,
+body.green-theme .subcategory-tab {
+    background: rgba(42, 61, 42, 0.8);
+    color: #c8e6c9;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+body.green-theme .category-tab:hover,
+body.green-theme .subcategory-tab:hover {
+    background: rgba(52, 74, 52, 0.9);
+    border-color: #4caf50;
+}
+
+body.green-theme .category-tab.active,
+body.green-theme .subcategory-tab.active {
+    background: #4caf50;
+    color: white;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+body.green-theme .menu-item {
+    background: rgba(42, 61, 42, 0.8);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+body.green-theme .menu-item:hover {
+    border-color: #4caf50;
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+body.green-theme .style-modal-content {
+    background: rgba(13, 20, 16, 0.95);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+/* ========== 로그인 화면 공통 스타일 ========== */
+.login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-screen.active {
+    display: flex !important;
+}
+
+.login-container {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.login-header {
+    margin-bottom: 30px;
+}
+
+.login-logo {
+    font-size: 3em;
+    margin-bottom: 10px;
+    animation: logoFloat 3s ease-in-out infinite alternate;
+}
+
+@keyframes logoFloat {
+    from { transform: translateY(0px); }
+    to { transform: translateY(-10px); }
+}
+
+.login-header h1 {
+    font-size: 2.5em;
+    margin: 10px 0;
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.login-header p {
+    opacity: 0.8;
+    font-size: 1.1em;
+    margin-bottom: 0;
+}
+
+.form-group {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(45deg, rgba(255,255,255,0.2), rgba(255,255,255,0.3));
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.login-btn:hover {
+    background: linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255,255,255,0.4));
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+.login-btn:active {
+    transform: translateY(-1px);
+}
+
+.login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.login-footer {
+    margin-top: 25px;
+    font-size: 0.9em;
+    opacity: 0.7;
+    line-height: 1.4;
+}
+
+/* ========== 테마 옵션 스타일 ========== */
+.theme-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.theme-option {
+    padding: 12px 8px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-size: 0.85em;
+    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.theme-option:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.theme-option.active {
+    border-color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.theme-preview {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-bottom: 3px;
+}
+
+.theme-preview.dark {
+    background: linear-gradient(45deg, #000, #333);
+}
+
+.theme-preview.light-theme {
+    background: linear-gradient(45deg, #fff, #f0f0f0);
+    border: 1px solid rgba(0,0,0,0.2);
+}
+
+.theme-preview.blue-theme {
+    background: linear-gradient(45deg, #2196f3, #3f51b5);
+}
+
+.theme-preview.purple-theme {
+    background: linear-gradient(45deg, #9c27b0, #673ab7);
+}
+
+.theme-preview.green-theme {
+    background: linear-gradient(45deg, #4caf50, #8bc34a);
+}
+
+/* ========== 테마별 로고 글로우 효과 ========== */
+body.blue-theme .login-logo {
+    animation: blueGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes blueGlow {
+    from { text-shadow: 0 0 10px rgba(33, 150, 243, 0.5); }
+    to { text-shadow: 0 0 25px rgba(33, 150, 243, 0.8), 0 0 35px rgba(33, 150, 243, 0.6); }
+}
+
+body.purple-theme .login-logo {
+    animation: purpleGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes purpleGlow {
+    from { text-shadow: 0 0 10px rgba(156, 39, 176, 0.5); }
+    to { text-shadow: 0 0 25px rgba(156, 39, 176, 0.8), 0 0 35px rgba(156, 39, 176, 0.6); }
+}
+
+body.green-theme .login-logo {
+    animation: greenGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes greenGlow {
+    from { text-shadow: 0 0 10px rgba(76, 175, 80, 0.5); }
+    to { text-shadow: 0 0 25px rgba(76, 175, 80, 0.8), 0 0 35px rgba(76, 175, 80, 0.6); }
+}
+
+/* ========== 반응형 디자인 ========== */
+@media (max-width: 768px) {
+    .login-container {
+        margin: 20px;
+        padding: 30px 25px;
+    }
+    
+    .login-header h1 {
+        font-size: 2em;
+    }
+    
+    .login-logo {
+        font-size: 2.5em;
+    }
+    
+    .theme-options {
+        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        margin: 15px;
+        padding: 25px 20px;
+    }
+    
+    .login-header h1 {
+        font-size: 1.8em;
+    }
+    
+    .form-group input {
+        padding: 12px;
+        font-size: 16px; /* iOS zoom 방지 */
+    }
+    
+    .login-btn {
+        padding: 12px;
+    }
+}
+
+/* ========== 접근성 - 고대비 모드 지원 ========== */
+@media (prefers-contrast: high) {
+    .login-container {
+        border-width: 2px;
+        border-color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .form-group input {
+        border-width: 2px;
+    }
+    
+    .login-btn {
+        border-width: 2px;
+    }
+}
+
+/* ========== 모션 감소 설정 ========== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .login-logo {
+        animation: none;
+    }
+    
+    body.blue-theme .login-logo,
+    body.purple-theme .login-logo,
+    body.green-theme .login-logo {
+        animation: none;
+        text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    }
+}
