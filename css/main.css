@@ -1,4 +1,4 @@
-/* 🎨 HAIRGATOR - 기존 스타일을 파일로 분리 */
+/* 🎨 HAIRGATOR - 최종 완성 버전 */
 
 /* ========== 초기화 및 기본 설정 ========== */
 * {
@@ -13,6 +13,9 @@
     --primary-light: #ffffff;
     --male-color: #4A90E2;
     --female-color: #E91E63;
+    /* 🎨 라이트 테마용 파스텔 색상 추가 */
+    --male-color-light: #87CEEB;    /* 스카이블루 */
+    --female-color-light: #FFB6C1;  /* 라이트 핑크 */
     --text-primary: #ffffff;
     --text-secondary: #999999;
     --border-color: #222222;
@@ -303,8 +306,8 @@ body {
     z-index: 1000;
 }
 
+/* 🔧 뒤로가기 버튼 - 필요할 때만 표시되도록 수정 */
 .back-btn {
-    display: none;
     width: 40px;
     height: 40px;
     background: none;
@@ -314,6 +317,9 @@ body {
     cursor: pointer;
     border-radius: 50%;
     transition: background 0.3s;
+    display: flex !important; /* 강제 표시 */
+    align-items: center;
+    justify-content: center;
 }
 
 .back-btn:hover {
@@ -354,9 +360,12 @@ body {
     font-size: 20px;
 }
 
+/* 🔧 햄버거 버튼 강화 */
 .menu-btn {
     flex-direction: column;
     gap: 3px;
+    position: relative;
+    z-index: 1001;
 }
 
 .menu-btn span {
@@ -364,6 +373,8 @@ body {
     height: 2px;
     background: #fff;
     transition: all 0.3s;
+    border-radius: 1px;
+    display: block;
 }
 
 /* ========== 탭 시스템 ========== */
@@ -848,7 +859,7 @@ body.gender-male .theme-option.active {
     display: flex;
 }
 
-/* ========== 라이트 테마 ========== */
+/* ========== 🎨 라이트 테마 - 파스텔 톤으로 완전 개선 ========== */
 body.light-theme {
     background: #fff;
     color: #000;
@@ -859,70 +870,142 @@ body.light-theme .main-menu {
 }
 
 body.light-theme .header {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     color: #000;
-    border-bottom-color: #ddd;
+    border-bottom-color: #e0e0e0;
+    backdrop-filter: blur(20px);
 }
 
 body.light-theme .logo {
-    color: #000;
+    color: #333;
 }
 
 body.light-theme .back-btn,
-body.light-theme .theme-btn,
+body.light-theme .theme-btn {
+    color: #333;
+}
+
+/* 🔧 라이트 테마 햄버거 버튼 완전 수정 */
 body.light-theme .menu-btn {
-    color: #000;
+    color: #333;
+    border: 1px solid #e0e0e0;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+body.light-theme .menu-btn:hover {
+    background: #f5f5f5;
+    border-color: #333;
 }
 
 body.light-theme .menu-btn span {
-    background: #000;
+    background: #333;
 }
 
 body.light-theme .main-tabs,
 body.light-theme .sub-tabs {
-    background: #f5f5f5;
+    background: #f8f9fa;
+    border-bottom-color: #e0e0e0;
 }
 
 body.light-theme .main-tab,
 body.light-theme .sub-tab {
     background: #fff;
-    color: #000;
-    border-color: #ddd;
+    color: #666;
+    border-color: #e0e0e0;
 }
 
-body.light-theme .styles-container {
-    background: #f9f9f9;
+body.light-theme .main-tab:hover,
+body.light-theme .sub-tab:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+/* 🎨 라이트 테마 파스텔 색상 적용 */
+body.light-theme.gender-male .main-tab.active {
+    background: var(--male-color-light);
+    color: #2c5aa0;
+    border-color: var(--male-color-light);
+    box-shadow: 0 2px 8px rgba(135, 206, 235, 0.3);
+}
+
+body.light-theme.gender-female .main-tab.active {
+    background: var(--female-color-light);
+    color: #d63384;
+    border-color: var(--female-color-light);
+    box-shadow: 0 2px 8px rgba(255, 182, 193, 0.3);
 }
 
 body.light-theme .style-card {
     background: #fff;
-    border-color: #ddd;
+    border-color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-body.light-theme .style-name {
-    color: #000;
+body.light-theme .style-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border-color: #bbb;
+}
+
+body.light-theme .style-name,
+body.light-theme .style-code {
+    color: #333;
 }
 
 body.light-theme .sidebar {
     background: #fff;
-    border-left-color: #ddd;
+    border-left-color: #e0e0e0;
 }
 
 body.light-theme .sidebar-header h3,
-body.light-theme .sidebar-close,
-body.light-theme .user-info h4,
-body.light-theme .theme-section h5,
-body.light-theme .menu-item {
-    color: #000;
+body.light-theme .sidebar-close {
+    color: #333;
 }
 
-body.light-theme .user-info {
+body.light-theme .sidebar-close:hover {
     background: #f5f5f5;
 }
 
+/* 🎨 라이트 테마 사이드바 파스텔 색상 */
+body.light-theme.gender-male .user-info h4 {
+    color: #5dade2;
+}
+
+body.light-theme.gender-female .user-info h4 {
+    color: #f1948a;
+}
+
+body.light-theme .user-info {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+body.light-theme .theme-section h5,
+body.light-theme .menu-item {
+    color: #333;
+}
+
 body.light-theme .theme-option {
-    background: #f9f9f9;
-    border-color: #ddd;
+    background: #f8f9fa;
+    border-color: #e0e0e0;
+}
+
+body.light-theme .theme-option:hover {
+    background: #e9ecef;
+}
+
+/* 🎨 라이트 테마 테마 옵션 파스텔 색상 */
+body.light-theme.gender-male .theme-option.active {
+    border-color: var(--male-color-light);
+    background: rgba(135, 206, 235, 0.1);
+}
+
+body.light-theme.gender-female .theme-option.active {
+    border-color: var(--female-color-light);
+    background: rgba(255, 182, 193, 0.1);
+}
+
+body.light-theme .menu-item:hover {
+    background: #f5f5f5;
 }
 
 body.light-theme .style-modal-content {
@@ -931,7 +1014,21 @@ body.light-theme .style-modal-content {
 }
 
 body.light-theme .style-modal-name {
-    color: #000;
+    color: #333;
+}
+
+body.light-theme .style-modal-code {
+    color: #666;
+}
+
+body.light-theme .action-btn {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #e0e0e0;
+}
+
+body.light-theme .action-btn:hover {
+    background: #e9ecef;
 }
 
 /* ========== 반응형 ========== */
@@ -954,6 +1051,17 @@ body.light-theme .style-modal-name {
         width: 100%;
         right: -100%;
     }
+    
+    /* 모바일에서 햄버거 버튼 더 크게 */
+    .menu-btn {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .menu-btn span {
+        width: 20px;
+        height: 3px;
+    }
 }
 
 @media (min-width: 768px) {
@@ -972,3 +1080,29 @@ body.light-theme .style-modal-name {
         grid-template-columns: repeat(5, 1fr);
     }
 }
+
+/* ========== 접근성 개선 ========== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+    .style-card,
+    .main-tab,
+    .sub-tab {
+        border-width: 2px;
+    }
+    
+    body.light-theme .menu-btn {
+        border-width: 2px;
+    }
+}s-container {
+    background: #fafafa;
+}
+
+body.light-theme .style
