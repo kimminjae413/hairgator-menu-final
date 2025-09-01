@@ -1,30 +1,46 @@
-# netlify.toml - Netlify 배포 설정
+# netlify.toml - Netlify 배포 설정 (MIME 타입 수정)
 
 [build]
   publish = "/"
 
-# SPA 라우팅을 위한 리다이렉트
+# CSS 파일 MIME 타입 명시적 설정 (🔥 핵심 수정!)
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Content-Type = "text/css; charset=utf-8"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/css/*.css"
+  [headers.values]
+    Content-Type = "text/css; charset=utf-8"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# JavaScript 파일 MIME 타입 명시적 설정
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/js/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# SPA 라우팅을 위한 리다이렉트 (수정)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  conditions = {Role = ["admin", "user"]}
   force = false
-
-# 보안 헤더
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "no-referrer-when-downgrade"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
 
 # Service Worker - 캐시 비활성화 (중요!)
 [[headers]]
   for = "/service-worker.js"
   [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
     Cache-Control = "no-cache, no-store, must-revalidate"
     Service-Worker-Allowed = "/"
 
@@ -35,18 +51,6 @@
     Content-Type = "application/manifest+json"
     Cache-Control = "no-cache, no-store, must-revalidate"
     Access-Control-Allow-Origin = "*"
-
-# JavaScript 파일
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-# CSS 파일
-[[headers]]
-  for = "/*.css"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
 
 # 아이콘 파일
 [[headers]]
@@ -68,3 +72,13 @@
   [headers.values]
     Content-Type = "image/png"
     Cache-Control = "public, max-age=31536000, immutable"
+
+# 보안 헤더
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer-when-downgrade"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
