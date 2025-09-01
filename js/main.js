@@ -1,10 +1,11 @@
-// HAIRGATOR Main Application Logic - 최종 완성 버전 (로그인 시스템 포함)
+// HAIRGATOR Main Application Logic - 최종 완성 버전 (토큰 시스템 통합)
 document.addEventListener('DOMContentLoaded', function() {
     // Global variables
     let currentGender = null;
     let currentCategory = null;
     let currentSubcategory = 'None';
     let menuData = {};
+    let currentUser = null; // 토큰 시스템과 연동
 
     // Elements
     const backBtn = document.getElementById('backBtn');
@@ -144,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ HAIRGATOR 초기화 완료');
     }
 
-    // ========== 로그인 시스템 ==========
+    // ========== 토큰 통합 로그인 시스템 ==========
     function setupLoginSystem() {
         if (loginForm) {
             loginForm.addEventListener('submit', async (e) => {
@@ -173,54 +174,104 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 try {
+                    // Firebase에서 사용자 확인 (토큰 정보 포함)
+                    const userQuery = await db.collection('designers')
+                        .where('name', '==', name)
+                        .where('phone', '==', phone)
+                        .where('password', '==', password)
+                        .get();
+                    
+                    if (userQuery.empty) {
+                        alert('로그인 정보가 올바르지 않습니다');
+                        return;
+                    }
+                    
+                    const userData = userQuery.docs[0].data();
+                    currentUser = {
+                        id: userQuery.docs[0].id,
+                        name: userData.name,
+                        phone: userData.phone,
+                        isAdmin: userData.isAdmin || false,
+                        tokens: userData.tokens || 0,
+                        loginTime: new Date()
+                    };
+                    
+                    // 토큰 시스템에 사용자 설정 (전역 함수 사용)
+                    if (window.setCurrentUser) {
+                        window.setCurrentUser(currentUser);
+                    }
+                    
                     // localStorage에 로그인 정보 저장
                     localStorage.setItem('designerName', name);
                     localStorage.setItem('designerPhone', phone);
                     localStorage.setItem('designerPassword', password);
                     localStorage.setItem('loginTime', new Date().getTime());
+                    localStorage.setItem('hairgator_user', JSON.stringify(currentUser));
                     
                     // 화면 전환
                     if (loginScreen) loginScreen.style.display = 'none';
                     if (genderSelection) genderSelection.style.display = 'flex';
                     
-                    // 디자이너 이름 표시
+                    // 디자이너 이름 및 토큰 표시
                     updateDesignerInfo(name);
+                    updateTokenDisplay();
                     
-                    console.log('로그인 성공:', name);
-                    showToast(`환영합니다, ${name}님!`);
+                    console.log('✅ 로그인 성공:', name, `(${currentUser.tokens || 0} 토큰)`);
+                    showToast(`환영합니다, ${name}님! (보유 토큰: ${currentUser.tokens || 0}개)`);
                     
                 } catch (error) {
                     console.error('로그인 처리 오류:', error);
-                    alert('로그인 처리 중 오류가 발생했습니다.');
+                    alert('로그인 처리 중 오류가 발생했습니다: ' + error.message);
                 }
             });
         }
     }
     
-    // 로그인 상태 확인
+    // 토큰 표시 업데이트
+    function updateTokenDisplay() {
+        const tokenDisplays = document.querySelectorAll('.token-display');
+        tokenDisplays.forEach(tokenDisplay => {
+            if (currentUser) {
+                tokenDisplay.textContent = `${currentUser.tokens || 0} 토큰`;
+                tokenDisplay.style.display = 'block';
+                tokenDisplay.classList.add('visible');
+            } else {
+                tokenDisplay.style.display = 'none';
+                tokenDisplay.classList.remove('visible');
+            }
+        });
+    }
+    
+    // 로그인 상태 확인 (토큰 정보 포함)
     function checkLoginStatus() {
-        const savedName = localStorage.getItem('designerName');
+        const savedUser = localStorage.getItem('hairgator_user');
         const loginTime = localStorage.getItem('loginTime');
         
-        if (savedName && loginTime) {
+        if (savedUser && loginTime) {
             // 24시간 세션 체크
             const now = new Date().getTime();
             const timeDiff = now - parseInt(loginTime);
             const hoursDiff = timeDiff / (1000 * 60 * 60);
             
             if (hoursDiff < 24) {
+                // 저장된 사용자 정보 복원
+                currentUser = JSON.parse(savedUser);
+                
+                // 토큰 시스템에 사용자 설정
+                if (window.setCurrentUser) {
+                    window.setCurrentUser(currentUser);
+                }
+                
                 // 자동 로그인
                 if (loginScreen) loginScreen.style.display = 'none';
                 if (genderSelection) genderSelection.style.display = 'flex';
-                updateDesignerInfo(savedName);
-                console.log('자동 로그인:', savedName);
+                updateDesignerInfo(currentUser.name);
+                updateTokenDisplay();
+                console.log('자동 로그인:', currentUser.name, `(${currentUser.tokens || 0} 토큰)`);
                 return;
             } else {
                 // 세션 만료
-                localStorage.removeItem('designerName');
-                localStorage.removeItem('designerPhone');
-                localStorage.removeItem('designerPassword');
-                localStorage.removeItem('loginTime');
+                clearLoginData();
                 console.log('세션 만료 - 재로그인 필요');
             }
         }
@@ -229,15 +280,28 @@ document.addEventListener('DOMContentLoaded', function() {
         if (loginScreen) loginScreen.style.display = 'flex';
     }
     
+    // 로그인 데이터 초기화
+    function clearLoginData() {
+        localStorage.removeItem('designerName');
+        localStorage.removeItem('designerPhone');
+        localStorage.removeItem('designerPassword');
+        localStorage.removeItem('loginTime');
+        localStorage.removeItem('hairgator_user');
+        localStorage.removeItem('selectedGender');
+        currentUser = null;
+    }
+    
     // 디자이너 정보 업데이트
     function updateDesignerInfo(name) {
-        const designerNameDisplay = document.getElementById('designerNameDisplay');
-        if (designerNameDisplay) {
-            designerNameDisplay.textContent = name;
-        }
+        const designerDisplays = document.querySelectorAll('#designerNameDisplay, #designerNameDisplay2');
+        designerDisplays.forEach(display => {
+            if (display) {
+                display.textContent = name;
+            }
+        });
     }
 
-    // 성별 선택 (전역 함수로 등록)
+    // 성별 선택 (전역 함수로 등록) - 토큰 연동
     function selectGender(gender) {
         currentGender = gender;
         
@@ -483,22 +547,17 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ 테마 버튼 설정 완료');
     }
 
-    // Authentication Functions
-    function checkAuthStatus() {
-        // 이미 checkLoginStatus에서 처리됨
-        console.log('✅ 인증 상태 확인 완료');
-    }
-
+    // Authentication Functions - 토큰 연동
     async function handleLogout() {
         if (confirm('로그아웃 하시겠습니까?')) {
             try {
+                // 토큰 시스템 정리
+                if (window.setCurrentUser) {
+                    window.setCurrentUser(null);
+                }
+                
                 // 로컬 스토리지 초기화
-                localStorage.removeItem('designerName');
-                localStorage.removeItem('designerPhone');
-                localStorage.removeItem('designerPassword');
-                localStorage.removeItem('loginTime');
-                localStorage.removeItem('selectedGender');
-                localStorage.removeItem('hairgator_gender');
+                clearLoginData();
                 
                 // 페이지 새로고침
                 location.reload();
@@ -809,58 +868,188 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`🎭 모달 표시: ${code} - ${name}`);
     }
 
-    // Customer Registration Handler
+    // Customer Registration Handler with Token System
     async function handleCustomerRegistration(code, name, docId, gender) {
-        const customerName = prompt('고객 이름을 입력하세요:');
-        if (!customerName) return;
-        
-        const customerPhone = prompt('전화번호를 입력하세요 (예: 010-1234-5678):');
-        if (!customerPhone) return;
-        
-        try {
-            await db.collection('customers').add({
-                name: customerName,
-                phone: customerPhone,
-                styleCode: code,
-                styleName: name,
-                styleId: docId,
-                gender: gender,
-                designer: localStorage.getItem('designerName') || 'Unknown',
-                registeredAt: new Date(),
-                lastVisit: new Date()
-            });
+        // 토큰 시스템을 사용하여 고객 등록
+        return await executeWithTokens('CUSTOMER_REGISTER', async () => {
+            const customerName = prompt('고객 이름을 입력하세요:');
+            if (!customerName) return;
             
-            showToast('✅ 고객 등록 완료!');
-            console.log(`✅ 고객 등록: ${customerName} - ${code}`);
-            closeModal();
-        } catch (error) {
-            console.error('❌ 고객 등록 오류:', error);
-            showToast('❌ 등록 실패: ' + error.message);
-        }
+            const customerPhone = prompt('전화번호를 입력하세요 (예: 010-1234-5678):');
+            if (!customerPhone) return;
+            
+            try {
+                await db.collection('customers').add({
+                    name: customerName,
+                    phone: customerPhone,
+                    styleCode: code,
+                    styleName: name,
+                    styleId: docId,
+                    gender: gender,
+                    designer: currentUser?.name || 'Unknown',
+                    designerId: currentUser?.id || null,
+                    registeredAt: new Date(),
+                    lastVisit: new Date()
+                });
+                
+                showToast('✅ 고객 등록 완료! (1토큰 사용됨)');
+                console.log(`✅ 고객 등록: ${customerName} - ${code}`);
+                
+                // 현재 토큰 잔액 업데이트 (executeWithTokens에서 자동 처리되지만 UI 업데이트용)
+                if (currentUser) {
+                    // Firebase에서 최신 토큰 정보 다시 불러오기
+                    const userDoc = await db.collection('designers').doc(currentUser.id).get();
+                    if (userDoc.exists) {
+                        currentUser.tokens = userDoc.data().tokens || 0;
+                        localStorage.setItem('hairgator_user', JSON.stringify(currentUser));
+                        updateTokenDisplay();
+                    }
+                }
+                
+                closeModal();
+                return true;
+            } catch (error) {
+                console.error('❌ 고객 등록 오류:', error);
+                showToast('❌ 등록 실패: ' + error.message);
+                throw error;
+            }
+        });
     }
 
-    // Like Toggle Handler
+    // Like Toggle Handler (무료 기능)
     async function handleLikeToggle(button, docId) {
-        button.classList.toggle('active');
-        const heart = button.querySelector('span:first-child');
-        
-        if (heart) {
-            const isLiked = button.classList.contains('active');
-            heart.textContent = isLiked ? '♥' : '♡';
+        // 즐겨찾기는 무료 기능
+        return await executeWithTokens('FAVORITES', async () => {
+            button.classList.toggle('active');
+            const heart = button.querySelector('span:first-child');
             
-            // Firebase에 좋아요 업데이트
-            if (docId && typeof firebase !== 'undefined') {
-                try {
-                    const docRef = db.collection('hairstyles').doc(docId);
-                    await docRef.update({
-                        likes: firebase.firestore.FieldValue.increment(isLiked ? 1 : -1)
-                    });
-                    console.log(`${isLiked ? '❤️' : '💔'} 좋아요 업데이트: ${docId}`);
-                } catch (error) {
-                    console.error('❌ 좋아요 업데이트 오류:', error);
+            if (heart) {
+                const isLiked = button.classList.contains('active');
+                heart.textContent = isLiked ? '♥' : '♡';
+                
+                // Firebase에 좋아요 업데이트
+                if (docId && typeof firebase !== 'undefined') {
+                    try {
+                        const docRef = db.collection('hairstyles').doc(docId);
+                        await docRef.update({
+                            likes: firebase.firestore.FieldValue.increment(isLiked ? 1 : -1),
+                            likedBy: isLiked ? 
+                                firebase.firestore.FieldValue.arrayUnion(currentUser?.id || 'anonymous') :
+                                firebase.firestore.FieldValue.arrayRemove(currentUser?.id || 'anonymous')
+                        });
+                        console.log(`${isLiked ? '❤️' : '💔'} 좋아요 업데이트: ${docId}`);
+                        return true;
+                    } catch (error) {
+                        console.error('❌ 좋아요 업데이트 오류:', error);
+                        throw error;
+                    }
                 }
             }
-        }
+        });
+    }
+
+    // ========== executeWithTokens 함수 통합 (토큰 시스템과 연동) ==========
+    
+    // 전역 executeWithTokens 함수가 없는 경우 기본 구현 제공
+    if (!window.executeWithTokens) {
+        console.log('🪙 토큰 시스템이 로드되지 않음. 기본 구현 사용.');
+        
+        // 기본 토큰 비용 (토큰 시스템과 동일)
+        const BASIC_TOKEN_COSTS = {
+            'MENU_VIEW': 0,
+            'STYLE_DETAIL': 0,
+            'BASIC_SEARCH': 0,
+            'SHOP_INFO': 0,
+            'PWA_INSTALL': 0,
+            'CUSTOMER_REGISTER': 1,
+            'RESERVATION_CREATE': 1,
+            'BASIC_ANALYTICS': 2,
+            'PROFILE_MANAGE': 1,
+            'FAVORITES': 1,
+            'ADVANCED_RECOMMEND': 3,
+            'DATA_EXPORT': 3,
+            'CUSTOM_REPORT': 4,
+            'AI_FACE_ANALYSIS': 5,
+            'BULK_OPERATIONS': 10,
+            'ADVANCED_ANALYTICS': 8
+        };
+        
+        // 기본 executeWithTokens 구현
+        window.executeWithTokens = async function(featureKey, callback) {
+            try {
+                const cost = BASIC_TOKEN_COSTS[featureKey] || 0;
+                
+                console.log(`기능 실행 시도: ${featureKey}, 비용: ${cost}토큰`);
+                
+                // 무료 기능
+                if (cost === 0) {
+                    console.log(`무료 기능 실행: ${featureKey}`);
+                    return await callback();
+                }
+                
+                // 로그인 확인
+                if (!currentUser) {
+                    alert('로그인이 필요한 기능입니다.');
+                    return null;
+                }
+                
+                // 토큰 잔액 확인
+                const currentTokens = currentUser.tokens || 0;
+                if (currentTokens < cost) {
+                    const proceed = confirm(
+                        `토큰이 부족합니다.\n` +
+                        `필요: ${cost}토큰, 보유: ${currentTokens}토큰\n\n` +
+                        `관리자에게 토큰 충전을 요청하시겠습니까?`
+                    );
+                    
+                    if (proceed) {
+                        showToast('관리자에게 토큰 충전을 요청해주세요.');
+                    }
+                    return null;
+                }
+                
+                // 토큰 차감 및 기능 실행
+                try {
+                    // Firebase에서 토큰 차감
+                    await db.collection('designers').doc(currentUser.id).update({
+                        tokens: firebase.firestore.FieldValue.increment(-cost),
+                        tokenHistory: firebase.firestore.FieldValue.arrayUnion({
+                            featureKey: featureKey,
+                            cost: cost,
+                            timestamp: new Date(),
+                            type: 'consume'
+                        })
+                    });
+                    
+                    // 로컬 사용자 정보 업데이트
+                    currentUser.tokens = currentTokens - cost;
+                    localStorage.setItem('hairgator_user', JSON.stringify(currentUser));
+                    updateTokenDisplay();
+                    
+                    console.log(`토큰 소비: ${cost}개 (${featureKey}), 잔액: ${currentUser.tokens}`);
+                    
+                    // 기능 실행
+                    return await callback();
+                    
+                } catch (tokenError) {
+                    console.error('토큰 처리 실패:', tokenError);
+                    alert('토큰 처리 중 오류가 발생했습니다: ' + tokenError.message);
+                    return null;
+                }
+                
+            } catch (error) {
+                console.error(`기능 실행 실패 (${featureKey}):`, error);
+                alert('기능 실행 중 오류가 발생했습니다: ' + error.message);
+                return null;
+            }
+        };
+        
+        // setCurrentUser 함수도 제공
+        window.setCurrentUser = function(user) {
+            currentUser = user;
+            updateTokenDisplay();
+            console.log('사용자 설정:', user ? user.name : 'null');
+        };
     }
 
     // Loading Functions
@@ -918,7 +1107,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.handleLogout = handleLogout;
 
     // Performance Monitoring
-    console.log('🚀 HAIRGATOR 애플리케이션 준비 완료');
+    console.log('🚀 HAIRGATOR 애플리케이션 준비 완료 (토큰 시스템 통합)');
 });
 
 // Window Load Event
@@ -959,6 +1148,22 @@ window.addEventListener('load', function() {
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        /* 토큰 표시 스타일 */
+        .token-display {
+            color: #FF1493;
+            font-weight: bold;
+            background: rgba(255, 20, 147, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 20, 147, 0.3);
+            font-size: 12px;
+            display: none;
+        }
+        
+        .token-display.visible {
+            display: inline-block;
         }
     `;
     document.head.appendChild(style);
