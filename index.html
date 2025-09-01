@@ -221,11 +221,7 @@
         let heartbeatInterval = null;
         let currentCategory = null;
         let currentSubcategory = 'None';
-        
-        // 스마트 필터링 & NEW 시스템
-        let availableSubcategories = new Map();
-        let newItemsCache = new Map();
-        const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
+    
 
         // DOM 요소
         const loginScreen = document.getElementById('loginScreen');
@@ -700,3 +696,4 @@
     </style>
 </body>
 </html>
+
