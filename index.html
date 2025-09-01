@@ -58,7 +58,7 @@
                     <input type="text" id="designerName" placeholder="디자이너 이름" required>
                 </div>
                 <div class="form-group">
-                    <input type="tel" id="phoneNumber" placeholder="휴대폰 뒷자리 4자리" maxlength="4" required>
+                    <input type="tel" id="phoneNumber" placeholder="010-1234-5678" maxlength="13" required>
                 </div>
                 <div class="form-group">
                     <input type="password" id="password" placeholder="비밀번호 4자리" maxlength="4" required>
@@ -76,6 +76,8 @@
     <div class="gender-selection" id="genderSelection">
         <div class="gender-header">
             <h2>성별을 선택해주세요</h2>
+            <p id="designerNameDisplay" class="designer-info">Designer</p>
+            <div class="token-display" style="display: none;">0 토큰</div>
         </div>
         <div class="gender-buttons">
             <button class="gender-btn male" onclick="selectGender('male')">
@@ -95,13 +97,17 @@
         <div class="header" id="header">
             <button class="back-btn" id="backBtn" onclick="handleBack()">←</button>
             <div class="logo">HAIRGATOR</div>
+            <div class="user-info">
+                <span id="designerNameDisplay2">Designer</span>
+                <div class="token-display" style="display: none;">0 토큰</div>
+            </div>
             
             <!-- 개선: 테마 버튼과 메뉴 버튼 추가 -->
             <div class="header-actions">
                 <button class="theme-btn" id="themeToggle" onclick="toggleTheme()">
                     <span class="theme-icon">🌙</span>
                 </button>
-                <button class="menu-btn" id="menuToggle" onclick="openSidebar()">
+                <button class="menu-btn" id="menuBtn" onclick="openSidebar()">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -109,19 +115,25 @@
             </div>
         </div>
 
-        <!-- 메인 탭 -->
-        <div class="main-tabs" id="mainTabs">
-            <!-- 동적 생성 -->
-        </div>
+        <!-- 메뉴 컨테이너 -->
+        <div id="menuContainer" class="menu-container">
+            <!-- 카테고리 탭 -->
+            <div id="categoryTabs" class="category-tabs">
+                <!-- 동적 생성 -->
+            </div>
 
-        <!-- 서브 탭 -->
-        <div class="sub-tabs" id="subTabs">
-            <!-- 동적 생성 -->
-        </div>
+            <!-- 카테고리 설명 -->
+            <div id="categoryDescription" class="category-description">
+                <!-- 동적 생성 -->
+            </div>
 
-        <!-- 스타일 컨테이너 -->
-        <div class="styles-container">
-            <div class="styles-grid" id="stylesGrid">
+            <!-- 서브카테고리 탭 -->
+            <div id="subcategoryTabs" class="subcategory-tabs">
+                <!-- 동적 생성 -->
+            </div>
+
+            <!-- 스타일 그리드 -->
+            <div id="menuGrid" class="menu-grid">
                 <!-- 동적 생성 -->
             </div>
         </div>
@@ -131,28 +143,28 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h3>메뉴</h3>
-            <button class="sidebar-close" onclick="closeSidebar()">×</button>
+            <button class="sidebar-close" id="sidebarClose" onclick="closeSidebar()">×</button>
         </div>
         
         <div class="sidebar-content">
             <div class="user-info">
-                <h4 id="designerNameDisplay">디자이너</h4>
-                <p>토큰: <span id="tokenBalance">0</span></p>
+                <h4 id="designerNameDisplay3">디자이너</h4>
+                <p>토큰: <span class="token-display">0</span></p>
             </div>
             
             <!-- 개선: 테마 선택기 추가 -->
             <div class="theme-section">
                 <h5>테마 선택</h5>
                 <div class="theme-options">
-                    <button class="theme-option active" data-theme="dark">
+                    <button class="theme-option active" data-theme="dark" onclick="toggleTheme()">
                         <span class="theme-preview dark"></span>
                         <span>다크</span>
                     </button>
-                    <button class="theme-option" data-theme="light">
+                    <button class="theme-option" data-theme="light" onclick="toggleTheme()">
                         <span class="theme-preview light"></span>
                         <span>라이트</span>
                     </button>
-                    <button class="theme-option" data-theme="blue">
+                    <button class="theme-option" data-theme="blue" onclick="toggleTheme()">
                         <span class="theme-preview blue"></span>
                         <span>블루</span>
                     </button>
@@ -171,7 +183,7 @@
             </div>
             
             <div class="sidebar-footer">
-                <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
+                <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">로그아웃</button>
             </div>
         </div>
     </div>
@@ -179,17 +191,21 @@
     <!-- 스타일 모달 (기존 구조 유지) -->
     <div class="style-modal" id="styleModal">
         <div class="style-modal-content">
-            <button class="style-modal-close" id="styleModalClose">×</button>
-            <img class="style-modal-image" id="styleModalImage" alt="Style Image">
+            <button class="style-modal-close" id="modalClose">×</button>
+            <img class="style-modal-image" id="modalImage" alt="Style Image">
             <div class="style-modal-info">
-                <div class="style-modal-code" id="styleModalCode">CODE</div>
-                <div class="style-modal-name" id="styleModalName">Style Name</div>
+                <div class="style-modal-code" id="modalCode">CODE</div>
+                <div class="style-modal-name" id="modalName">Style Name</div>
                 
                 <!-- 개선: 액션 버튼 추가 -->
                 <div class="style-actions">
-                    <button class="action-btn favorite-btn" onclick="toggleFavorite()">
-                        <span class="action-icon">⭐</span>
-                        <span>즐겨찾기</span>
+                    <button class="action-btn register-btn" id="btnRegister">
+                        <span class="action-icon">👤</span>
+                        <span>고객 등록</span>
+                    </button>
+                    <button class="action-btn favorite-btn" id="btnLike">
+                        <span class="action-icon">♡</span>
+                        <span>좋아요</span>
                     </button>
                     <button class="action-btn share-btn" onclick="shareStyle()">
                         <span class="action-icon">📤</span>
