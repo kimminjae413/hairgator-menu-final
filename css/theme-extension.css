@@ -1,0 +1,255 @@
+/* 🎨 HAIRGATOR - 테마 확장 시스템 */
+
+/* ========== 블루 테마 ========== */
+body.blue-theme {
+    background: #0d1421;
+    color: #e3f2fd;
+}
+
+body.blue-theme .main-menu {
+    background: #0d1421;
+}
+
+body.blue-theme .header {
+    background: rgba(13, 20, 33, 0.9);
+    border-bottom: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .logo {
+    color: #e3f2fd;
+    text-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+}
+
+body.blue-theme .main-tabs,
+body.blue-theme .sub-tabs {
+    background: #162032;
+}
+
+body.blue-theme .main-tab,
+body.blue-theme .sub-tab {
+    background: #1e2a42;
+    color: #bbdefb;
+    border-color: rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .main-tab.active {
+    background: #2196f3;
+    color: white;
+    border-color: #2196f3;
+    box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
+}
+
+body.blue-theme .styles-container {
+    background: #0f1a26;
+}
+
+body.blue-theme .style-card {
+    background: #253352;
+    border-color: rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .style-card:hover {
+    border-color: #2196f3;
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .sidebar {
+    background: #162032;
+    border-left: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .user-info {
+    background: #1e2a42;
+}
+
+body.blue-theme .user-info h4 {
+    color: #64b5f6;
+}
+
+body.blue-theme .theme-option.active {
+    border-color: #2196f3;
+    background: rgba(33, 150, 243, 0.1);
+}
+
+body.blue-theme .style-modal-content {
+    background: #1e2a42;
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+body.blue-theme .style-modal-name {
+    color: #e3f2fd;
+}
+
+/* 블루 테마 로그인 화면 */
+body.blue-theme .login-screen {
+    background: radial-gradient(circle at 20% 20%, rgba(33, 150, 243, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(63, 81, 181, 0.3) 0%, transparent 50%),
+                #0d1421;
+}
+
+body.blue-theme .form-group input {
+    background: #1e2a42;
+    border-color: rgba(33, 150, 243, 0.3);
+    color: #e3f2fd;
+}
+
+body.blue-theme .form-group input:focus {
+    border-color: #2196f3;
+    box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+}
+
+/* ========== 추가 테마들을 위한 기본 구조 ========== */
+
+/* 퍼플 테마 예시 */
+body.purple-theme {
+    background: #1a0d1a;
+    color: #f3e5f5;
+}
+
+body.purple-theme .header {
+    background: rgba(26, 13, 26, 0.9);
+    border-bottom: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+body.purple-theme .main-tab.active {
+    background: #9c27b0;
+    border-color: #9c27b0;
+    box-shadow: 0 0 15px rgba(156, 39, 176, 0.5);
+}
+
+body.purple-theme .user-info h4 {
+    color: #ce93d8;
+}
+
+/* 그린 테마 예시 */
+body.green-theme {
+    background: #0d1410;
+    color: #e8f5e8;
+}
+
+body.green-theme .header {
+    background: rgba(13, 20, 16, 0.9);
+    border-bottom: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+body.green-theme .main-tab.active {
+    background: #4caf50;
+    border-color: #4caf50;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+body.green-theme .user-info h4 {
+    color: #81c784;
+}
+
+/* ========== 테마 전환 애니메이션 ========== */
+body {
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.header,
+.main-tabs,
+.sub-tabs,
+.styles-container,
+.sidebar,
+.style-modal-content {
+    transition: 
+        background-color 0.5s ease,
+        border-color 0.5s ease,
+        box-shadow 0.5s ease;
+}
+
+.main-tab,
+.sub-tab,
+.style-card,
+.theme-option {
+    transition: 
+        background-color 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease,
+        transform 0.2s ease;
+}
+
+/* ========== 테마별 스페셜 이펙트 ========== */
+
+/* 블루 테마 - 네온 효과 */
+body.blue-theme .logo {
+    animation: neonGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes neonGlow {
+    from {
+        text-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+    }
+    to {
+        text-shadow: 0 0 20px rgba(33, 150, 243, 0.8),
+                     0 0 30px rgba(33, 150, 243, 0.6);
+    }
+}
+
+/* 테마별 로딩 스피너 색상 */
+body.blue-theme .loading-spinner {
+    border-top-color: #2196f3;
+    filter: drop-shadow(0 0 5px rgba(33, 150, 243, 0.5));
+}
+
+body.purple-theme .loading-spinner {
+    border-top-color: #9c27b0;
+    filter: drop-shadow(0 0 5px rgba(156, 39, 176, 0.5));
+}
+
+body.green-theme .loading-spinner {
+    border-top-color: #4caf50;
+    filter: drop-shadow(0 0 5px rgba(76, 175, 80, 0.5));
+}
+
+/* ========== 테마 프리뷰 추가 스타일 ========== */
+.theme-preview.purple {
+    background: linear-gradient(45deg, #1a0d1a, #9c27b0);
+}
+
+.theme-preview.green {
+    background: linear-gradient(45deg, #0d1410, #4caf50);
+}
+
+/* ========== 접근성 - 고대비 모드 지원 ========== */
+@media (prefers-contrast: high) {
+    body.blue-theme .style-card,
+    body.purple-theme .style-card,
+    body.green-theme .style-card {
+        border-width: 2px;
+    }
+    
+    body.blue-theme .main-tab.active,
+    body.purple-theme .main-tab.active,
+    body.green-theme .main-tab.active {
+        border-width: 3px;
+    }
+}
+
+/* ========== 모션 감소 설정 ========== */
+@media (prefers-reduced-motion: reduce) {
+    body,
+    .header,
+    .main-tabs,
+    .sub-tabs,
+    .styles-container,
+    .sidebar,
+    .style-modal-content,
+    .main-tab,
+    .sub-tab,
+    .style-card,
+    .theme-option {
+        transition: none;
+    }
+    
+    body.blue-theme .logo {
+        animation: none;
+        text-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+    }
+    
+    .loading-spinner {
+        animation: none;
+        opacity: 0.7;
+    }
+}
