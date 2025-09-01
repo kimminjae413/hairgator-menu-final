@@ -303,10 +303,12 @@ function updateCategoryDescription(category) {
             <span class="category-name">${category.name}</span>
             ${category.description}
         `;
+        descriptionText.style.textAlign = 'left';  // 👈 이 줄 추가
         descriptionText.classList.remove('empty');
         console.log(`📝 카테고리 설명 업데이트: ${category.name}`);
     } else {
         descriptionText.textContent = '카테고리 설명이 없습니다.';
+        descriptionText.style.textAlign = 'left';  // 👈 이 줄도 추가
         descriptionText.classList.add('empty');
     }
 }
@@ -907,3 +909,4 @@ window.HAIRGATOR_MENU = {
 };
 
 console.log('✅ HAIRGATOR 메뉴 시스템 초기화 완료 - 스마트 필터링 & 모달 AI 버튼');
+
