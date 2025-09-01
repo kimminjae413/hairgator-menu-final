@@ -36,14 +36,15 @@
 <body>
     <!-- 헤더 -->
     <header class="header">
-        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
-        <h1 class="logo">HAIRGATOR</h1>
-        <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </header>
+    <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+    <h1 class="logo">HAIRGATOR</h1>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="테마 변경">🌙</button>
+    <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</header>
 
     <!-- 사이드바 -->
     <aside class="sidebar" id="sidebar">
@@ -1020,6 +1021,7 @@
     </script>
 </body>
 </html>
+
 
 
 
