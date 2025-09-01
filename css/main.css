@@ -432,7 +432,7 @@ body.light-theme .category-tab:hover {
     min-height: 70px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;  <- center를 flex-start로 변경
 }
 
 body.light-theme .category-description {
@@ -1387,6 +1387,7 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
 
 
 
