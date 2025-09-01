@@ -1,234 +1,91 @@
-// ========== HAIRGATOR 메뉴 시스템 최종 버전 ==========
+// ========== HAIRGATOR 메뉴 시스템 최종 버전 (카테고리 설명 포함) ==========
 
 // 글로벌 변수
 let currentGender = null;
 let currentMainTab = null;
 let currentSubTab = null;
 
-// 남성 카테고리
+// 남성 카테고리 (설명 포함)
 const MALE_CATEGORIES = [
-    // 모달 표시
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-// 기본 스타일 모달 HTML 생성
-function createStyleModal() {
-    const modal = document.createElement('div');
-    modal.id = 'styleModal';
-    modal.className = 'style-modal';
-    
-    modal.innerHTML = `
-        <div class="style-modal-content">
-            <button class="style-modal-close" onclick="closeStyleModal()">×</button>
-            
-            <img class="style-modal-image" src="" alt="Style">
-            
-            <div class="style-modal-info">
-                <div class="style-modal-code"></div>
-                <div class="style-modal-name"></div>
-                
-                <div class="style-modal-details">
-                    <div class="style-detail-row">
-                        <div class="style-detail-label">카테고리</div>
-                        <div class="style-detail-value" id="modalCategory">-</div>
-                    </div>
-                    <div class="style-detail-row">
-                        <div class="style-detail-label">서브카테고리</div>
-                        <div class="style-detail-value" id="modalSubcategory">-</div>
-                    </div>
-                    <div class="style-detail-row">
-                        <div class="style-detail-label">성별</div>
-                        <div class="style-detail-value" id="modalGender">-</div>
-                    </div>
-                </div>
-                
-                <div class="style-modal-actions">
-                    <button class="modal-action-btn" onclick="favoriteStyle()">
-                        ⭐ 즐겨찾기
-                    </button>
-                    <button class="modal-action-btn secondary" onclick="shareStyle()">
-                        📤 공유하기
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    return modal;
-}
-
-// 스타일 모달 닫기
-function closeStyleModal() {
-    const modal = document.getElementById('styleModal');
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
+    {
+        id: 'side-fringe',
+        name: 'SIDE FRINGE',
+        description: '사이드 프린지는 옆으로 넘긴 앞머리 스타일로, 자연스럽고 부드러운 느낌을 줍니다.'
+    },
+    {
+        id: 'side-part',
+        name: 'SIDE PART',
+        description: '사이드 파트는 정갈하고 단정한 스타일로 비즈니스맨들에게 인기가 많습니다.'
+    },
+    {
+        id: 'fringe-up',
+        name: 'FRINGE UP',
+        description: '프린지 업은 앞머리를 올려 이마를 드러내는 시원한 스타일입니다.'
+    },
+    {
+        id: 'pushed-back',
+        name: 'PUSHED BACK',
+        description: '푸시백은 머리를 뒤로 넘긴 댄디한 스타일입니다.'
+    },
+    {
+        id: 'buzz',
+        name: 'BUZZ',
+        description: '버즈컷은 짧고 깔끔한 스타일로 관리가 편합니다.'
+    },
+    {
+        id: 'crop',
+        name: 'CROP',
+        description: '크롭 스타일은 짧으면서도 스타일리시한 느낌을 줍니다.'
+    },
+    {
+        id: 'mohican',
+        name: 'MOHICAN',
+        description: '모히칸 스타일은 개성 있고 강한 인상을 줍니다.'
     }
-}
-
-// ========== 상태 표시 함수들 ==========
-
-// 로딩 상태 표시
-function showLoadingState(container) {
-    container.innerHTML = `
-        <div class="empty-state">
-            <div class="empty-icon">⏳</div>
-            <div class="empty-title">로딩중...</div>
-        </div>
-    `;
-}
-
-// 빈 상태 표시
-function showEmptyState(container) {
-    container.innerHTML = `
-        <div class="empty-state">
-            <div class="empty-icon">📭</div>
-            <div class="empty-title">스타일 없음</div>
-            <div class="empty-message">해당 카테고리에 등록된 스타일이 없습니다</div>
-        </div>
-    `;
-}
-
-// 오류 상태 표시
-function showErrorState(container, message) {
-    container.innerHTML = `
-        <div class="empty-state">
-            <div class="empty-icon">⚠️</div>
-            <div class="empty-title">오류 발생</div>
-            <div class="empty-message">${message}</div>
-        </div>
-    `;
-}
-
-// ========== 유틸리티 함수들 ==========
-
-// 토스트 메시지 표시
-function showToast(message, type = 'info') {
-    // 기존 토스트 제거
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) {
-        existingToast.remove();
-    }
-    
-    // 새 토스트 생성
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    // 애니메이션으로 표시
-    setTimeout(() => toast.classList.add('show'), 100);
-    
-    // 3초 후 제거
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// 즐겨찾기 기능
-function favoriteStyle() {
-    showToast('즐겨찾기에 추가되었습니다', 'success');
-    // 실제 즐겨찾기 로직 구현 필요
-}
-
-// 공유 기능
-function shareStyle() {
-    if (navigator.share) {
-        navigator.share({
-            title: 'HAIRGATOR 스타일',
-            text: '이 헤어스타일 어떠세요?',
-            url: window.location.href
-        }).then(() => {
-            showToast('공유되었습니다', 'success');
-        }).catch(() => {
-            copyToClipboard(window.location.href);
-        });
-    } else {
-        copyToClipboard(window.location.href);
-    }
-}
-
-// 클립보드 복사
-function copyToClipboard(text) {
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => {
-            showToast('링크가 복사되었습니다', 'success');
-        }).catch(() => {
-            showToast('복사에 실패했습니다', 'error');
-        });
-    } else {
-        showToast('복사 기능을 지원하지 않는 브라우저입니다', 'error');
-    }
-}
-
-// ========== 이벤트 리스너 ==========
-
-// DOM 로드 완료 시 초기화
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료');
-    
-    // 모달 바깥 클릭 시 닫기
-    document.addEventListener('click', function(e) {
-        // 스타일 모달
-        const styleModal = document.getElementById('styleModal');
-        if (styleModal && e.target === styleModal) {
-            closeStyleModal();
-        }
-        
-        // AI 모달
-        const aiModal = document.getElementById('aiPhotoModal');
-        if (aiModal && e.target === aiModal) {
-            closeAIPhotoModal();
-        }
-    });
-    
-    // ESC 키로 모달 닫기
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeStyleModal();
-            closeAIPhotoModal();
-        }
-    });
-});
-
-// ========== 전역 함수 노출 ==========
-// 다른 파일에서 사용할 수 있도록 전역 스코프에 노출
-window.HAIRGATOR_MENU = {
-    loadMenuForGender,
-    selectMainTab,
-    selectSubTab,
-    loadStyles,
-    createStyleCard,
-    openStyleModal,
-    closeStyleModal,
-    startAIExperience,
-    openAIPhotoModal,
-    closeAIPhotoModal,
-    showToast
-};
-
-console.log('✅ HAIRGATOR 메뉴 시스템 초기화 완료');'SIDE FRINGE',
-    'SIDE PART',
-    'FRINGE UP',
-    'PUSHED BACK',
-    'BUZZ',
-    'CROP',
-    'MOHICAN'
 ];
 
-// 여성 카테고리
+// 여성 카테고리 (설명 포함)
 const FEMALE_CATEGORIES = [
-    'A Length',
-    'B Length',
-    'C Length',
-    'D Length',
-    'E Length',
-    'F Length',
-    'G Length',
-    'H Length'
+    {
+        id: 'a-length',
+        name: 'A Length',
+        description: 'A 길이는 가슴선 아래로 내려오는 롱헤어로, 원랭스·레이어드 롱·굵은 S컬이 잘 맞아 우아하고 드라마틱한 분위기를 냅니다.'
+    },
+    {
+        id: 'b-length',
+        name: 'B Length',
+        description: 'B 길이는 가슴 아래(A)와 쇄골 아래(C) 사이의 미디엄-롱으로, 레이어드 미디엄롱·바디펌이 어울려 부드럽고 실용적인 인상을 줍니다.'
+    },
+    {
+        id: 'c-length',
+        name: 'C Length',
+        description: 'C 길이는 쇄골 라인 아래의 세미 롱으로, 레이어드 C/S컬·에어리펌과 잘 맞아 단정하고 세련된 오피스 무드를 냅니다.'
+    },
+    {
+        id: 'd-length',
+        name: 'D Length',
+        description: 'D 길이는 어깨에 정확히 닿는 길이로, LOB·숄더 C컬·빌드펌이 어울려 트렌디하고 깔끔한 느낌을 줍니다.'
+    },
+    {
+        id: 'e-length',
+        name: 'E Length',
+        description: 'E 길이는 어깨 바로 위의 단발로, 클래식 보브·A라인 보브·내/외 C컬이 잘 맞아 경쾌하고 모던한 인상을 만듭니다.'
+    },
+    {
+        id: 'f-length',
+        name: 'F Length',
+        description: 'F 길이는 턱선 바로 밑 보브 길이로, 프렌치 보브·일자 단발·텍스쳐 보브가 어울려 시크하고 도회적인 분위기를 연출합니다.'
+    },
+    {
+        id: 'g-length',
+        name: 'G Length',
+        description: 'G 길이는 턱선과 같은 높이의 미니 보브로, 클래식 턱선 보브·미니 레이어 보브가 잘 맞아 똘똘하고 미니멀한 무드를 줍니다.'
+    },
+    {
+        id: 'h-length',
+        name: 'H Length',
+        description: 'H 길이는 귀선~베리숏구간의 숏헤어로, 픽시·샤그 숏·허쉬 숏 등이 어울려 활동적이고 개성 있는 스타일을 완성합니다.'
+    }
 ];
 
 // 중분류 (앞머리 길이)
@@ -247,6 +104,10 @@ function loadMenuForGender(gender) {
     currentGender = gender;
     const categories = gender === 'male' ? MALE_CATEGORIES : FEMALE_CATEGORIES;
     
+    // body에 gender 클래스 추가
+    document.body.classList.remove('gender-male', 'gender-female');
+    document.body.classList.add(`gender-${gender}`);
+    
     // 대분류 탭 생성
     const mainTabsContainer = document.getElementById('mainTabs');
     if (!mainTabsContainer) {
@@ -259,7 +120,7 @@ function loadMenuForGender(gender) {
     categories.forEach((category, index) => {
         const tab = document.createElement('button');
         tab.className = `category-tab main-tab ${gender}`;
-        tab.textContent = category;
+        tab.textContent = category.name;
         tab.onclick = () => selectMainTab(category, index);
         
         // 첫 번째 탭 기본 선택
@@ -271,10 +132,28 @@ function loadMenuForGender(gender) {
         mainTabsContainer.appendChild(tab);
     });
     
+    // 카테고리 설명 영역 생성 (없으면)
+    let descriptionArea = document.getElementById('categoryDescription');
+    if (!descriptionArea) {
+        descriptionArea = document.createElement('div');
+        descriptionArea.id = 'categoryDescription';
+        descriptionArea.className = 'category-description';
+        
+        const descriptionText = document.createElement('div');
+        descriptionText.className = 'category-description-text';
+        descriptionArea.appendChild(descriptionText);
+        
+        // 카테고리 탭 다음에 설명 영역 삽입
+        const categoryTabs = document.querySelector('.category-tabs');
+        if (categoryTabs) {
+            categoryTabs.parentNode.insertBefore(descriptionArea, categoryTabs.nextSibling);
+        }
+    }
+    
     // 중분류 탭 로드
     loadSubTabs();
     
-    // 첫 번째 카테고리의 스타일 로드
+    // 첫 번째 카테고리 선택
     if (categories.length > 0) {
         selectMainTab(categories[0], 0);
     }
@@ -288,12 +167,14 @@ function selectMainTab(category, index) {
     
     // 탭 활성화 상태 변경
     document.querySelectorAll('.main-tab').forEach((tab, i) => {
-        tab.classList.toggle('active', i === index);
-        // 성별에 따른 클래스 추가
+        tab.classList.remove('active', 'male', 'female');
         if (i === index) {
-            tab.classList.add(currentGender);
+            tab.classList.add('active', currentGender);
         }
     });
+    
+    // 카테고리 설명 업데이트
+    updateCategoryDescription(category);
     
     // 중분류 탭 표시
     loadSubTabs();
@@ -301,7 +182,24 @@ function selectMainTab(category, index) {
     // 스타일 로드
     loadStyles();
     
-    console.log(`📂 대분류 선택: ${category}`);
+    console.log(`📂 대분류 선택: ${category.name}`);
+}
+
+// 카테고리 설명 업데이트
+function updateCategoryDescription(category) {
+    const descriptionText = document.querySelector('.category-description-text');
+    if (!descriptionText) return;
+    
+    if (category.description) {
+        descriptionText.innerHTML = `
+            <span class="category-name">${category.name}</span>
+            ${category.description}
+        `;
+        descriptionText.classList.remove('empty');
+    } else {
+        descriptionText.textContent = '카테고리 설명이 없습니다.';
+        descriptionText.classList.add('empty');
+    }
 }
 
 // 중분류 탭 로드
@@ -336,10 +234,9 @@ function selectSubTab(subCategory, index) {
     
     // 탭 활성화 상태 변경
     document.querySelectorAll('.sub-tab').forEach((tab, i) => {
-        tab.classList.toggle('active', i === index);
-        // 성별에 따른 클래스 추가
+        tab.classList.remove('active', 'male', 'female');
         if (i === index) {
-            tab.classList.add(currentGender);
+            tab.classList.add('active', currentGender);
         }
     });
     
@@ -366,7 +263,7 @@ async function loadStyles() {
         // Firebase에서 스타일 가져오기
         const querySnapshot = await db.collection('hairstyles')
             .where('gender', '==', currentGender)
-            .where('mainCategory', '==', currentMainTab)
+            .where('mainCategory', '==', currentMainTab.name)
             .where('subCategory', '==', currentSubTab)
             .get();
         
@@ -387,7 +284,7 @@ async function loadStyles() {
         
         stylesGrid.appendChild(fragment);
         
-        console.log(`✅ ${querySnapshot.size}개 스타일 로드 완료: ${currentMainTab} - ${currentSubTab}`);
+        console.log(`✅ ${querySnapshot.size}개 스타일 로드 완료: ${currentMainTab.name} - ${currentSubTab}`);
         
     } catch (error) {
         console.error('스타일 로드 오류:', error);
@@ -714,3 +611,209 @@ function openStyleModal(style) {
         modalGender.textContent = style.gender === 'male' ? '남성' : 
                                  style.gender === 'female' ? '여성' : '-';
     }
+    
+    // 모달 표시
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// 기본 스타일 모달 HTML 생성
+function createStyleModal() {
+    const modal = document.createElement('div');
+    modal.id = 'styleModal';
+    modal.className = 'style-modal';
+    
+    modal.innerHTML = `
+        <div class="style-modal-content">
+            <button class="style-modal-close" onclick="closeStyleModal()">×</button>
+            
+            <img class="style-modal-image" src="" alt="Style">
+            
+            <div class="style-modal-info">
+                <div class="style-modal-code"></div>
+                <div class="style-modal-name"></div>
+                
+                <div class="style-modal-details">
+                    <div class="style-detail-row">
+                        <div class="style-detail-label">카테고리</div>
+                        <div class="style-detail-value" id="modalCategory">-</div>
+                    </div>
+                    <div class="style-detail-row">
+                        <div class="style-detail-label">서브카테고리</div>
+                        <div class="style-detail-value" id="modalSubcategory">-</div>
+                    </div>
+                    <div class="style-detail-row">
+                        <div class="style-detail-label">성별</div>
+                        <div class="style-detail-value" id="modalGender">-</div>
+                    </div>
+                </div>
+                
+                <div class="style-modal-actions">
+                    <button class="modal-action-btn" onclick="favoriteStyle()">
+                        ⭐ 즐겨찾기
+                    </button>
+                    <button class="modal-action-btn secondary" onclick="shareStyle()">
+                        📤 공유하기
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return modal;
+}
+
+// 스타일 모달 닫기
+function closeStyleModal() {
+    const modal = document.getElementById('styleModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// ========== 상태 표시 함수들 ==========
+
+// 로딩 상태 표시
+function showLoadingState(container) {
+    container.innerHTML = `
+        <div class="empty-state">
+            <div class="empty-icon">⏳</div>
+            <div class="empty-title">로딩중...</div>
+        </div>
+    `;
+}
+
+// 빈 상태 표시
+function showEmptyState(container) {
+    container.innerHTML = `
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <div class="empty-title">스타일 없음</div>
+            <div class="empty-message">해당 카테고리에 등록된 스타일이 없습니다</div>
+        </div>
+    `;
+}
+
+// 오류 상태 표시
+function showErrorState(container, message) {
+    container.innerHTML = `
+        <div class="empty-state">
+            <div class="empty-icon">⚠️</div>
+            <div class="empty-title">오류 발생</div>
+            <div class="empty-message">${message}</div>
+        </div>
+    `;
+}
+
+// ========== 유틸리티 함수들 ==========
+
+// 토스트 메시지 표시
+function showToast(message, type = 'info') {
+    // 기존 토스트 제거
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // 새 토스트 생성
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    // 애니메이션으로 표시
+    setTimeout(() => toast.classList.add('show'), 100);
+    
+    // 3초 후 제거
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// 즐겨찾기 기능
+function favoriteStyle() {
+    showToast('즐겨찾기에 추가되었습니다', 'success');
+    // 실제 즐겨찾기 로직 구현 필요
+}
+
+// 공유 기능
+function shareStyle() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'HAIRGATOR 스타일',
+            text: '이 헤어스타일 어떠세요?',
+            url: window.location.href
+        }).then(() => {
+            showToast('공유되었습니다', 'success');
+        }).catch(() => {
+            copyToClipboard(window.location.href);
+        });
+    } else {
+        copyToClipboard(window.location.href);
+    }
+}
+
+// 클립보드 복사
+function copyToClipboard(text) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('링크가 복사되었습니다', 'success');
+        }).catch(() => {
+            showToast('복사에 실패했습니다', 'error');
+        });
+    } else {
+        showToast('복사 기능을 지원하지 않는 브라우저입니다', 'error');
+    }
+}
+
+// ========== 이벤트 리스너 ==========
+
+// DOM 로드 완료 시 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료');
+    
+    // 모달 바깥 클릭 시 닫기
+    document.addEventListener('click', function(e) {
+        // 스타일 모달
+        const styleModal = document.getElementById('styleModal');
+        if (styleModal && e.target === styleModal) {
+            closeStyleModal();
+        }
+        
+        // AI 모달
+        const aiModal = document.getElementById('aiPhotoModal');
+        if (aiModal && e.target === aiModal) {
+            closeAIPhotoModal();
+        }
+    });
+    
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeStyleModal();
+            closeAIPhotoModal();
+        }
+    });
+});
+
+// ========== 전역 함수 노출 ==========
+// 다른 파일에서 사용할 수 있도록 전역 스코프에 노출
+window.HAIRGATOR_MENU = {
+    loadMenuForGender,
+    selectMainTab,
+    selectSubTab,
+    loadStyles,
+    createStyleCard,
+    openStyleModal,
+    closeStyleModal,
+    startAIExperience,
+    openAIPhotoModal,
+    closeAIPhotoModal,
+    updateCategoryDescription,
+    showToast
+};
+
+console.log('✅ HAIRGATOR 메뉴 시스템 초기화 완료');
