@@ -108,10 +108,10 @@ function loadMenuForGender(gender) {
     document.body.classList.remove('gender-male', 'gender-female');
     document.body.classList.add(`gender-${gender}`);
     
-    // 대분류 탭 생성
-    const mainTabsContainer = document.getElementById('mainTabs');
+    // 대분류 탭 생성 - ID 수정
+    const mainTabsContainer = document.getElementById('categoryTabs'); // ✅ 올바른 ID
     if (!mainTabsContainer) {
-        console.error('mainTabs 요소를 찾을 수 없습니다');
+        console.error('categoryTabs 요소를 찾을 수 없습니다');
         return;
     }
     
@@ -817,4 +817,5 @@ window.HAIRGATOR_MENU = {
 };
 
 console.log('✅ HAIRGATOR 메뉴 시스템 초기화 완료');
+
 
