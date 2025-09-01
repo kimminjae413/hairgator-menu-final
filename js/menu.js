@@ -1,9 +1,9 @@
 // ========== HAIRGATOR 메뉴 시스템 최종 버전 (카테고리 설명 포함) ==========
 
-// 글로벌 변수
-let currentGender = null;
-let currentMainTab = null;
-let currentSubTab = null;
+// 글로벌 변수 (index.html에서 이미 선언된 것은 제외)
+// let currentGender = null;  // 이미 index.html에 있음
+// let currentMainTab = null; // 필요하면 추가
+// let currentSubTab = null;  // 필요하면 추가
 
 // 남성 카테고리 (설명 포함)
 const MALE_CATEGORIES = [
@@ -817,3 +817,4 @@ window.HAIRGATOR_MENU = {
 };
 
 console.log('✅ HAIRGATOR 메뉴 시스템 초기화 완료');
+
