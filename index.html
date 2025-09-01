@@ -18,11 +18,10 @@
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     
-    <!-- 구글 폰트 - Pretendard 추가 -->
+    <!-- 구글 폰트 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -48,50 +47,16 @@
             --text-secondary: #999999;
             --border-color: #222222;
             --new-indicator: #ff4444;
-            
-            /* 프리미엄 효과 변수 추가 */
-            --shadow-elevation: 0 8px 32px rgba(0, 0, 0, 0.4);
-            --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.6);
-            --glow-male: 0 0 30px rgba(74, 144, 226, 0.4);
-            --glow-female: 0 0 30px rgba(233, 30, 99, 0.4);
-            --blur-backdrop: blur(20px);
-            --transition-smooth: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            
-            /* 다크모드 기본값 */
-            --bg-primary: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
-            --bg-secondary: rgba(17, 17, 17, 0.95);
-            --bg-tertiary: rgba(34, 34, 34, 0.8);
-            --bg-quaternary: rgba(26, 26, 26, 0.8);
-            --text-color: #ffffff;
-            --text-muted: #999999;
-            --border-primary: rgba(255, 255, 255, 0.1);
-            --border-secondary: rgba(51, 51, 51, 0.5);
-        }
-
-        /* 라이트모드 */
-        .light-mode {
-            --bg-primary: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
-            --bg-secondary: rgba(255, 255, 255, 0.95);
-            --bg-tertiary: rgba(248, 249, 250, 0.9);
-            --bg-quaternary: rgba(233, 236, 239, 0.8);
-            --text-color: #212529;
-            --text-muted: #6c757d;
-            --border-primary: rgba(0, 0, 0, 0.1);
-            --border-secondary: rgba(108, 117, 125, 0.2);
-            --shadow-elevation: 0 8px 32px rgba(0, 0, 0, 0.15);
-            --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.25);
         }
 
         body {
-            font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-color);
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--primary-dark);
+            color: var(--text-primary);
             overflow-x: hidden;
             user-select: none;
             -webkit-user-select: none;
             line-height: 1.4;
-            transition: var(--transition-smooth);
         }
 
         /* 헤더 */
@@ -101,15 +66,12 @@
             left: 0;
             right: 0;
             height: 50px;
-            background: var(--bg-secondary);
+            background: var(--primary-dark);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0 15px;
             z-index: 1000;
-            backdrop-filter: var(--blur-backdrop);
-            border-bottom: 1px solid var(--border-primary);
-            transition: var(--transition-smooth);
         }
 
         .back-btn {
@@ -123,28 +85,20 @@
             display: none;
             align-items: center;
             justify-content: center;
-            color: var(--text-color);
+            color: var(--text-primary);
             font-size: 24px;
-            border-radius: 50%;
-            transition: var(--transition-smooth);
-        }
-
-        .back-btn:active {
-            transform: scale(0.85);
-            background: var(--border-primary);
         }
 
         .logo {
             font-size: 18px;
-            font-weight: 700;
+            font-weight: bold;
             letter-spacing: 1px;
-            color: var(--text-color);
-            text-shadow: 0 0 20px rgba(233, 30, 99, 0.5);
+            color: #ffffff;
         }
 
         .menu-btn {
             position: absolute;
-            right: 60px;
+            right: 15px;
             width: 30px;
             height: 30px;
             background: none;
@@ -155,47 +109,13 @@
             justify-content: center;
             align-items: center;
             gap: 3px;
-            border-radius: 50%;
-            transition: var(--transition-smooth);
-        }
-
-        .menu-btn:active {
-            transform: scale(0.85);
-            background: var(--border-primary);
         }
 
         .menu-btn span {
             width: 20px;
             height: 2px;
-            background: var(--text-color);
-            transition: var(--transition-smooth);
-        }
-
-        /* 테마 토글 버튼 */
-        .theme-toggle {
-            position: absolute;
-            right: 15px;
-            width: 30px;
-            height: 30px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            transition: var(--transition-smooth);
-            color: var(--text-color);
-        }
-
-        .theme-toggle:hover {
-            background: var(--border-primary);
-            transform: scale(1.1);
-        }
-
-        .theme-toggle:active {
-            transform: scale(0.9);
+            background: var(--text-primary);
+            transition: all 0.3s ease;
         }
 
         /* 메인 콘텐츠 */
@@ -211,27 +131,22 @@
             justify-content: center;
             min-height: calc(100vh - 65px);
             padding: 20px;
-            background: radial-gradient(circle at center, rgba(233, 30, 99, 0.1) 0%, transparent 50%);
         }
 
         .login-modal {
-            background: rgba(17, 17, 17, 0.95);
-            backdrop-filter: var(--blur-backdrop);
+            background: #111;
             border: 2px solid var(--female-color);
-            border-radius: 20px;
+            border-radius: 15px;
             padding: 30px;
             max-width: 400px;
             width: 100%;
             text-align: center;
-            box-shadow: var(--shadow-elevation);
-            animation: modalSlideUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         .login-modal h2 {
             font-size: 24px;
             margin-bottom: 5px;
             letter-spacing: 2px;
-            text-shadow: 0 0 20px rgba(233, 30, 99, 0.5);
         }
 
         .login-modal .subtitle {
@@ -255,56 +170,34 @@
         .form-group input {
             width: 100%;
             padding: 12px;
-            background: rgba(34, 34, 34, 0.8);
-            backdrop-filter: var(--blur-backdrop);
+            background: #222;
             border: 1px solid #444;
-            border-radius: 12px;
+            border-radius: 8px;
             color: white;
             font-size: 16px;
-            transition: var(--transition-smooth);
         }
 
         .form-group input:focus {
             outline: none;
             border-color: var(--female-color);
-            box-shadow: 0 0 20px rgba(233, 30, 99, 0.3);
-            transform: translateY(-2px);
         }
 
         .login-btn {
             width: 100%;
-            background: linear-gradient(135deg, var(--female-color) 0%, #d81b60 100%);
+            background: var(--female-color);
             color: white;
             border: none;
             padding: 15px;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             margin-top: 20px;
-            transition: var(--transition-smooth);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        .login-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .login-btn:hover::before {
-            left: 100%;
-        }
-
-        .login-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+        .login-btn:hover {
+            background: #d81b60;
         }
 
         .login-btn:disabled {
@@ -326,65 +219,33 @@
             min-height: calc(100vh - 65px);
             padding: 20px;
             gap: 80px;
-            background: radial-gradient(circle at center, rgba(74, 144, 226, 0.05) 0%, rgba(233, 30, 99, 0.05) 50%, transparent 100%);
         }
 
         .gender-btn {
             width: 160px;
             height: 240px;
             border: 2px solid #333;
-            border-radius: 25px;
-            background: rgba(17, 17, 17, 0.9);
-            backdrop-filter: var(--blur-backdrop);
+            border-radius: 20px;
+            background: #111;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 15px;
-            transition: var(--transition-bounce);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        .gender-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.05), transparent);
-            opacity: 0;
-            transition: var(--transition-smooth);
-        }
-
-        .gender-btn:hover::before {
-            opacity: 1;
-        }
-
-        .gender-btn:active {
-            transform: scale(0.95);
+        .gender-btn:hover {
+            transform: scale(1.05);
         }
 
         .gender-btn.male {
             border-color: var(--male-color);
-            box-shadow: 0 0 30px rgba(74, 144, 226, 0.2);
-        }
-
-        .gender-btn.male:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: var(--glow-male);
         }
 
         .gender-btn.female {
             border-color: var(--female-color);
-            box-shadow: 0 0 30px rgba(233, 30, 99, 0.2);
-        }
-
-        .gender-btn.female:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: var(--glow-female);
         }
 
         .gender-icon {
@@ -396,27 +257,20 @@
             justify-content: center;
             font-size: 48px;
             color: #fff;
-            transition: var(--transition-bounce);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .gender-btn.male .gender-icon {
-            background: linear-gradient(135deg, var(--male-color) 0%, #2980b9 100%);
+            background: var(--male-color);
         }
 
         .gender-btn.female .gender-icon {
-            background: linear-gradient(135deg, var(--female-color) 0%, #c2185b 100%);
-        }
-
-        .gender-btn:hover .gender-icon {
-            transform: rotate(5deg) scale(1.1);
+            background: var(--female-color);
         }
 
         .gender-label {
             font-size: 16px;
             color: var(--text-primary);
-            font-weight: 600;
         }
 
         /* 메뉴 컨테이너 */
@@ -427,20 +281,17 @@
 
         .menu-container.active {
             display: block;
-            animation: fadeInUp 0.5s ease-out;
         }
 
         /* 카테고리 탭 */
         .category-tabs {
-            background: var(--bg-secondary);
-            backdrop-filter: var(--blur-backdrop);
+            background: #111;
             padding: 15px;
             display: flex;
             gap: 10px;
             overflow-x: auto;
-            border-bottom: 1px solid var(--border-secondary);
+            border-bottom: 1px solid #333;
             scrollbar-width: none;
-            transition: var(--transition-smooth);
         }
 
         .category-tabs::-webkit-scrollbar {
@@ -448,132 +299,110 @@
         }
 
         .category-tab {
-            background: var(--bg-tertiary);
-            backdrop-filter: var(--blur-backdrop);
-            color: var(--text-muted);
-            border: 1px solid var(--border-secondary);
-            padding: 12px 24px;
-            border-radius: 25px;
+            background: #222;
+            color: #999;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            border-radius: 20px;
             cursor: pointer;
             white-space: nowrap;
-            transition: var(--transition-smooth);
+            transition: all 0.3s ease;
             font-size: 14px;
             font-weight: 500;
             position: relative;
-            overflow: hidden;
-        }
-
-        .category-tab::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.6s;
-        }
-
-        .category-tab:hover::before {
-            left: 100%;
         }
 
         .category-tab:hover {
-            background: var(--bg-quaternary);
-            color: var(--text-color);
-            transform: translateY(-2px);
-        }
-
-        .category-tab:active {
-            transform: translateY(1px) scale(0.98);
+            background: #333;
+            color: #fff;
         }
 
         .category-tab.active {
-            font-weight: 600;
-            transform: translateY(-3px) scale(1.02);
+            font-weight: bold;
+            transform: scale(1.05);
         }
 
         .category-tab.active.male {
-            background: linear-gradient(135deg, var(--male-color) 0%, #2980b9 100%);
+            background: var(--male-color);
             color: white;
             border-color: var(--male-color);
-            box-shadow: var(--glow-male);
+            box-shadow: 0 2px 10px rgba(74, 144, 226, 0.4);
         }
 
         .category-tab.active.female {
-            background: linear-gradient(135deg, var(--female-color) 0%, #c2185b 100%);
+            background: var(--female-color);
             color: white;
             border-color: var(--female-color);
-            box-shadow: var(--glow-female);
+            box-shadow: 0 2px 10px rgba(233, 30, 99, 0.4);
+        }
+
+        /* NEW 표시 (빨간 점) */
+        .new-indicator {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 8px;
+            height: 8px;
+            background: var(--new-indicator);
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(255, 68, 68, 0.6);
+            animation: pulse-red 2s infinite;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.2);
+                opacity: 0.7;
+            }
         }
 
         /* 서브카테고리 탭 */
         .sub-tabs {
-            background: var(--bg-secondary);
-            backdrop-filter: var(--blur-backdrop);
+            background: #0a0a0a;
             padding: 15px;
             display: flex;
             gap: 10px;
             justify-content: center;
             flex-wrap: wrap;
-            border-bottom: 1px solid var(--border-secondary);
-            transition: var(--transition-smooth);
+            border-bottom: 1px solid #222;
         }
 
         .sub-tab {
-            background: var(--bg-tertiary);
-            backdrop-filter: var(--blur-backdrop);
-            color: var(--text-color);
+            background: #333;
+            color: white;
             border: none;
-            padding: 10px 18px;
-            border-radius: 20px;
+            padding: 8px 16px;
+            border-radius: 15px;
             cursor: pointer;
-            transition: var(--transition-smooth);
+            transition: all 0.3s ease;
             font-size: 13px;
             font-weight: 500;
             position: relative;
-            overflow: hidden;
-        }
-
-        .sub-tab::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-            transition: left 0.5s;
-        }
-
-        .sub-tab:hover::before {
-            left: 100%;
         }
 
         .sub-tab:hover:not(.disabled) {
-            background: var(--bg-quaternary);
-            transform: translateY(-2px);
-        }
-
-        .sub-tab:active:not(.disabled) {
-            transform: translateY(1px) scale(0.95);
+            background: #444;
         }
 
         .sub-tab.active {
-            font-weight: 600;
-            transform: translateY(-3px) scale(1.05);
+            font-weight: bold;
+            transform: scale(1.05);
         }
 
         .sub-tab.active.male {
-            background: linear-gradient(135deg, var(--male-color) 0%, #2980b9 100%);
-            color: white;
-            box-shadow: 0 0 20px rgba(74, 144, 226, 0.4);
+            background: var(--male-color);
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.4);
         }
 
         .sub-tab.active.female {
-            background: linear-gradient(135deg, var(--female-color) 0%, #c2185b 100%);
-            color: white;
-            box-shadow: 0 0 20px rgba(233, 30, 99, 0.4);
+            background: var(--female-color);
+            box-shadow: 0 2px 8px rgba(233, 30, 99, 0.4);
         }
 
         /* 비활성화된 서브카테고리 */
@@ -587,20 +416,19 @@
         .styles-container {
             padding: 20px;
             min-height: 50vh;
-            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.9) 100%);
         }
 
         .styles-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 18px;
+            gap: 15px;
         }
 
         /* 태블릿: 5열 */
         @media (min-width: 768px) and (max-width: 1024px) {
             .styles-grid {
                 grid-template-columns: repeat(5, 1fr);
-                gap: 15px;
+                gap: 12px;
             }
         }
 
@@ -608,7 +436,7 @@
         @media (max-width: 767px) {
             .styles-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
+                gap: 10px;
             }
             
             .styles-container {
@@ -618,41 +446,21 @@
 
         .style-card {
             background: transparent;
-            border-radius: 15px;
+            border-radius: 10px;
             overflow: hidden;
             cursor: pointer;
-            transition: var(--transition-smooth);
+            transition: all 0.2s ease;
             aspect-ratio: 3/4;
             position: relative;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .style-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1), transparent);
-            opacity: 0;
-            transition: var(--transition-smooth);
-            z-index: 1;
-            border-radius: 15px;
-        }
-
-        .style-card:hover::before {
-            opacity: 1;
         }
 
         .style-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: var(--shadow-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
         }
 
         .style-card:active {
-            transform: translateY(-4px) scale(0.98);
-            transition: all 0.1s ease;
+            transform: scale(0.98);
         }
 
         .style-image {
@@ -660,12 +468,7 @@
             height: 100%;
             object-fit: cover;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
-            transition: var(--transition-smooth);
-        }
-
-        .style-card:hover .style-image {
-            filter: brightness(1.1) contrast(1.1);
+            border-radius: 10px;
         }
 
         /* 텍스트 정보 완전히 숨김 */
@@ -686,34 +489,23 @@
             padding: 60px 20px;
             color: #666;
             grid-column: 1 / -1;
-            background: rgba(17, 17, 17, 0.5);
-            backdrop-filter: var(--blur-backdrop);
-            border-radius: 20px;
-            border: 1px solid rgba(51, 51, 51, 0.3);
         }
 
         .empty-icon {
             font-size: 48px;
             margin-bottom: 20px;
-            animation: floatUpDown 3s ease-in-out infinite;
-        }
-
-        @keyframes floatUpDown {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
         }
 
         /* 로딩 스켈레톤 */
         .skeleton-card {
-            background: linear-gradient(90deg, rgba(26, 26, 26, 0.8) 25%, rgba(42, 42, 42, 0.8) 50%, rgba(26, 26, 26, 0.8) 75%);
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
             background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
+            animation: loading 1.5s infinite;
             aspect-ratio: 3/4;
-            border-radius: 15px;
-            backdrop-filter: var(--blur-backdrop);
+            border-radius: 10px;
         }
 
-        @keyframes shimmer {
+        @keyframes loading {
             0% {
                 background-position: 200% 0;
             }
@@ -726,16 +518,14 @@
         .sidebar {
             position: fixed;
             top: 0;
-            right: -320px;
-            width: 320px;
+            right: -300px;
+            width: 300px;
             height: 100vh;
-            background: rgba(17, 17, 17, 0.95);
-            backdrop-filter: var(--blur-backdrop);
-            border-left: 1px solid rgba(51, 51, 51, 0.5);
+            background: #111;
+            border-left: 1px solid #333;
             z-index: 2000;
-            transition: var(--transition-smooth);
+            transition: right 0.3s ease;
             overflow-y: auto;
-            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
         }
 
         .sidebar.active {
@@ -747,8 +537,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 20px;
-            border-bottom: 1px solid rgba(51, 51, 51, 0.5);
-            backdrop-filter: var(--blur-backdrop);
+            border-bottom: 1px solid #333;
         }
 
         .sidebar-close {
@@ -757,18 +546,6 @@
             color: white;
             font-size: 24px;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition-smooth);
-        }
-
-        .sidebar-close:active {
-            transform: scale(0.9);
-            background: rgba(255, 255, 255, 0.1);
         }
 
         .sidebar-content {
@@ -776,36 +553,26 @@
         }
 
         .user-info {
-            background: rgba(26, 26, 26, 0.8);
-            backdrop-filter: var(--blur-backdrop);
-            border-radius: 15px;
-            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 15px;
             margin-bottom: 20px;
-            border: 1px solid rgba(51, 51, 51, 0.3);
         }
 
         .user-info h4 {
             color: var(--female-color);
             margin-bottom: 10px;
-            text-shadow: 0 0 10px rgba(233, 30, 99, 0.3);
         }
 
         .logout-btn {
             width: 100%;
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            background: #dc3545;
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 10px;
+            padding: 10px;
+            border-radius: 5px;
             cursor: pointer;
-            margin-top: 15px;
-            transition: var(--transition-smooth);
-            font-weight: 600;
-        }
-
-        .logout-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+            margin-top: 10px;
         }
 
         /* 로딩 오버레이 */
@@ -815,8 +582,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: var(--blur-backdrop);
+            background: rgba(0, 0, 0, 0.9);
             display: none;
             align-items: center;
             justify-content: center;
@@ -824,13 +590,12 @@
         }
 
         .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(51, 51, 51, 0.3);
-            border-top: 4px solid var(--female-color);
+            width: 50px;
+            height: 50px;
+            border: 3px solid #333;
+            border-top: 3px solid var(--female-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            box-shadow: 0 0 30px rgba(233, 30, 99, 0.3);
         }
 
         @keyframes spin {
@@ -844,33 +609,25 @@
             top: 80px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(51, 51, 51, 0.95);
-            backdrop-filter: var(--blur-backdrop);
+            background: #333;
             color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
+            padding: 12px 20px;
+            border-radius: 8px;
             z-index: 10000;
             opacity: 0;
-            transition: var(--transition-smooth);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: opacity 0.3s ease;
         }
 
         .toast.success {
-            background: rgba(40, 167, 69, 0.95);
-            border-color: rgba(40, 167, 69, 0.3);
-            box-shadow: 0 0 30px rgba(40, 167, 69, 0.3);
+            background: #28a745;
         }
 
         .toast.error {
-            background: rgba(220, 53, 69, 0.95);
-            border-color: rgba(220, 53, 69, 0.3);
-            box-shadow: 0 0 30px rgba(220, 53, 69, 0.3);
+            background: #dc3545;
         }
 
         .toast.show {
             opacity: 1;
-            transform: translateX(-50%) translateY(-5px);
         }
 
         /* 스타일 상세 모달 */
@@ -880,8 +637,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: var(--blur-backdrop);
+            background: rgba(0, 0, 0, 0.9);
             display: none;
             align-items: center;
             justify-content: center;
@@ -894,53 +650,45 @@
         }
 
         .style-modal-content {
-            background: rgba(17, 17, 17, 0.95);
-            backdrop-filter: var(--blur-backdrop);
+            background: #111;
             border: 2px solid var(--female-color);
-            border-radius: 25px;
+            border-radius: 20px;
             max-width: 500px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
             position: relative;
-            animation: modalSlideUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            box-shadow: var(--shadow-elevation), 0 0 50px rgba(233, 30, 99, 0.3);
+            animation: modalSlideUp 0.3s ease-out;
         }
 
         .style-modal-close {
             position: absolute;
-            top: 20px;
-            right: 25px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: var(--blur-backdrop);
+            top: 15px;
+            right: 20px;
+            background: none;
             border: none;
             color: white;
             font-size: 28px;
             cursor: pointer;
             z-index: 10;
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            transition: var(--transition-smooth);
+            transition: background-color 0.3s;
         }
 
         .style-modal-close:hover {
             background: rgba(255, 255, 255, 0.1);
-            transform: rotate(90deg);
-        }
-
-        .style-modal-close:active {
-            transform: rotate(90deg) scale(0.9);
         }
 
         .style-modal-image {
             width: 100%;
             aspect-ratio: 3/4;
             object-fit: cover;
-            border-radius: 23px 23px 0 0;
+            border-radius: 18px 18px 0 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
@@ -961,25 +709,22 @@
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(233, 30, 99, 0.3);
         }
 
         .style-modal-details {
-            background: rgba(26, 26, 26, 0.8);
-            backdrop-filter: var(--blur-backdrop);
-            border-radius: 15px;
+            background: #1a1a1a;
+            border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
-            border: 1px solid rgba(51, 51, 51, 0.3);
         }
 
         .style-detail-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(51, 51, 51, 0.3);
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
         }
 
         .style-detail-row:last-child {
@@ -999,51 +744,33 @@
 
         .style-modal-actions {
             display: flex;
-            gap: 15px;
+            gap: 10px;
         }
 
         .modal-action-btn {
             flex: 1;
-            background: linear-gradient(135deg, var(--female-color) 0%, #d81b60 100%);
+            background: var(--female-color);
             color: white;
             border: none;
-            padding: 18px;
-            border-radius: 15px;
+            padding: 15px;
+            border-radius: 10px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: var(--transition-smooth);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        .modal-action-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .modal-action-btn:hover::before {
-            left: 100%;
-        }
-
-        .modal-action-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+        .modal-action-btn:hover {
+            background: #d81b60;
+            transform: translateY(-2px);
         }
 
         .modal-action-btn.secondary {
-            background: linear-gradient(135deg, rgba(51, 51, 51, 0.8) 0%, rgba(68, 68, 68, 0.8) 100%);
-            backdrop-filter: var(--blur-backdrop);
+            background: #333;
         }
 
-        .modal-action-btn.secondary:active {
-            box-shadow: 0 4px 15px rgba(51, 51, 51, 0.4);
+        .modal-action-btn.secondary:hover {
+            background: #444;
         }
 
         @keyframes modalSlideUp {
@@ -1057,22 +784,11 @@
             }
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
         /* 반응형 */
         @media (max-width: 768px) {
             .gender-selection {
                 flex-direction: column;
-                gap: 40px;
+                gap: 30px;
             }
             
             .gender-btn {
@@ -1082,13 +798,11 @@
             
             .login-modal {
                 margin: 0 10px;
-                padding: 25px;
-                border-radius: 15px;
+                padding: 20px;
             }
 
             .style-modal-content {
                 max-width: 95%;
-                border-radius: 20px;
             }
 
             .style-modal-info {
@@ -1101,43 +815,7 @@
 
             .style-modal-actions {
                 flex-direction: column;
-                gap: 10px;
             }
-            
-            .sidebar {
-                width: 100%;
-                right: -100%;
-            }
-        }
-
-        /* 태블릿 전용 터치 효과 강화 */
-        @media (min-width: 768px) and (max-width: 1024px) {
-            .style-card:hover {
-                transform: translateY(-12px) scale(1.03);
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-            }
-            
-            .category-tab:hover {
-                transform: translateY(-4px) scale(1.02);
-            }
-            
-            .sub-tab:hover:not(.disabled) {
-                transform: translateY(-3px) scale(1.02);
-            }
-            
-            .gender-btn:hover {
-                transform: translateY(-15px) scale(1.05);
-            }
-        }
-
-        /* 고성능 하드웨어 가속 */
-        .style-card,
-        .category-tab,
-        .sub-tab,
-        .gender-btn,
-        .login-btn,
-        .modal-action-btn {
-            will-change: transform;
         }
     </style>
 </head>
@@ -1150,9 +828,6 @@
             <span></span>
             <span></span>
             <span></span>
-        </button>
-        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
-            🌙
         </button>
     </header>
 
@@ -1282,7 +957,7 @@
 
     <!-- Firebase 설정 -->
     <script>
-        // Firebase 설정 (경고 제거)
+        // Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
             authDomain: "hairgatormenu-4a43e.firebaseapp.com",
@@ -1298,7 +973,19 @@
         const db = firebase.firestore();
         const storage = firebase.storage();
 
-        console.log('Firebase 초기화 완료');
+        // 캐시 설정
+        try {
+            db.settings({
+                cache: {
+                    kind: 'persistent',
+                    tabManager: { kind: 'multi-tab' }
+                }
+            });
+        } catch(e) {
+            console.log('Cache settings fallback');
+        }
+
+        console.log('✅ Firebase 초기화 완료');
     </script>
 
     <script>
@@ -1315,97 +1002,34 @@
         let newItemsCache = new Map();
         const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
 
-        // 테마 토글 기능 추가
-        function toggleTheme() {
-            const body = document.body;
-            const themeToggle = document.getElementById('themeToggle');
-            
-            if (body.classList.contains('light-mode')) {
-                // 다크모드로 전환
-                body.classList.remove('light-mode');
-                themeToggle.textContent = '🌙';
-                localStorage.setItem('theme', 'dark');
-            } else {
-                // 라이트모드로 전환
-                body.classList.add('light-mode');
-                themeToggle.textContent = '☀️';
-                localStorage.setItem('theme', 'light');
+        // 메뉴 데이터 정의
+        const MENU_DATA = {
+            male: {
+                categories: [
+                    { id: 'side-fringe', name: 'SIDE FRINGE' },
+                    { id: 'side-part', name: 'SIDE PART' },
+                    { id: 'fringe-up', name: 'FRINGE UP' },
+                    { id: 'pushed-back', name: 'PUSHED BACK' },
+                    { id: 'buzz', name: 'BUZZ' },
+                    { id: 'crop', name: 'CROP' },
+                    { id: 'mohican', name: 'MOHICAN' }
+                ],
+                subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
+            },
+            female: {
+                categories: [
+                    { id: 'a-length', name: 'A Length' },
+                    { id: 'b-length', name: 'B Length' },
+                    { id: 'c-length', name: 'C Length' },
+                    { id: 'd-length', name: 'D Length' },
+                    { id: 'e-length', name: 'E Length' },
+                    { id: 'f-length', name: 'F Length' },
+                    { id: 'g-length', name: 'G Length' },
+                    { id: 'h-length', name: 'H Length' }
+                ],
+                subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
             }
-        }
-
-        // 페이지 로드 시 저장된 테마 적용
-        function initializeTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const themeToggle = document.getElementById('themeToggle');
-            
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-mode');
-                themeToggle.textContent = '☀️';
-            } else {
-                document.body.classList.remove('light-mode');
-                themeToggle.textContent = '🌙';
-            }
-        }
-
-        // 카테고리 탭 렌더링 (NEW 표시는 백그라운드에서 추가) - 수정된 버전
-        function renderCategories(gender, categories) {
-            const categoryTabs = document.getElementById('categoryTabs');
-            categoryTabs.innerHTML = '';
-            
-            categories.forEach((category, index) => {
-                const tab = document.createElement('button');
-                tab.className = 'category-tab';
-                tab.textContent = category.name;
-                tab.dataset.categoryId = category.id;
-                tab.dataset.categoryName = category.name; // 추가: name도 저장
-                
-                if (index === 0) {
-                    tab.classList.add('active', gender);
-                }
-                
-                tab.addEventListener('click', () => selectCategory(category, gender));
-                categoryTabs.appendChild(tab);
-                
-                // 백그라운드에서 NEW 표시 확인 및 추가
-                setTimeout(async () => {
-                    const subInfo = await checkSubcategoriesAndNew(gender, category.name);
-                    const hasNewItems = Object.keys(subInfo.newCounts).length > 0;
-                    
-                    if (hasNewItems && !tab.querySelector('.new-indicator')) {
-                        tab.appendChild(createNewIndicator());
-                    }
-                }, 100);
-            });
-            
-            console.log(categories.length + '개 카테고리 렌더링 완료');
-        }
-
-        // 카테고리 선택 (스마트 필터링 적용) - 수정된 버전
-        async function selectCategory(category, gender) {
-            currentCategory = category;
-            
-            // 탭 활성화 상태 업데이트 - 수정된 로직
-            document.querySelectorAll('.category-tab').forEach(tab => {
-                tab.classList.remove('active', 'male', 'female');
-                if (tab.dataset.categoryName === category.name) { // name으로 매칭
-                    tab.classList.add('active', gender);
-                }
-            });
-            
-            // 해당 카테고리의 서브카테고리 정보 확인
-            const subInfo = await checkSubcategoriesAndNew(gender, category.name);
-            const menuData = MENU_DATA[gender];
-            
-            // 스마트 필터링된 서브카테고리 렌더링
-            renderSmartSubcategories(gender, menuData.subcategories, subInfo);
-            
-            // 첫 번째 사용 가능한 서브카테고리로 스타일 로드
-            const firstAvailableSub = subInfo.available[0] || 'None';
-            currentSubcategory = firstAvailableSub;
-            loadStyles(category.name, firstAvailableSub, gender);
-            
-            console.log('카테고리 선택: ' + category.name + ' (사용가능한 서브: ' + subInfo.available.length + '개)');
-        }
+        };
 
         // DOM 요소
         const loginScreen = document.getElementById('loginScreen');
@@ -1453,7 +1077,7 @@
                 // 캐시에 저장
                 availableSubcategories.set(cacheKey, result);
                 
-                console.log('서브카테고리 확인 완료: ' + categoryName, result);
+                console.log(`✅ 서브카테고리 확인 완료: ${categoryName}`, result);
                 return result;
                 
             } catch (error) {
@@ -1817,7 +1441,7 @@
                 loadStyles(firstCategory.name, firstAvailableSub, gender);
             }
             
-            console.log(gender + ' 메뉴 로드 완료');
+            console.log(`✅ ${gender} 메뉴 로드 완료`);
         }
 
         // 카테고리 탭 렌더링 (NEW 표시는 백그라운드에서 추가)
@@ -1887,7 +1511,7 @@
                 subTabs.appendChild(tab);
             });
             
-            console.log('✅ 스마트 서브카테고리 렌더링 완료 (사용가능: ' + subInfo.available.length + '/' + allSubcategories.length + ')');
+            console.log(`✅ 스마트 서브카테고리 렌더링 완료 (사용가능: ${subInfo.available.length}/${allSubcategories.length})`);
         }
 
         // 카테고리 선택 (스마트 필터링 적용)
@@ -1936,7 +1560,7 @@
                 loadStyles(currentCategory.name, subcategory, gender);
             }
             
-                console.log('서브카테고리 선택: ' + subcategory);
+            console.log(`✅ 서브카테고리 선택: ${subcategory}`);
         }
 
         // 스타일 로드 (NEW 표시 포함)
@@ -1976,7 +1600,7 @@
                 
                 stylesGrid.appendChild(fragment);
                 
-                console.log(snapshot.size + '개 스타일 로드 완료: ' + categoryName + ' - ' + subcategory);
+                console.log(`✅ ${snapshot.size}개 스타일 로드 완료: ${categoryName} - ${subcategory}`);
                 
             } catch (error) {
                 console.error('스타일 로드 오류:', error);
@@ -2114,33 +1738,12 @@
             `;
         }
 
-        /* NEW 표시 (빨간 점) - 개선된 버전 */
-        .new-indicator {
-            position: absolute;
-            top: -3px;
-            right: -3px;
-            width: 8px;
-            height: 8px;
-            background: var(--new-indicator);
-            border-radius: 50%;
-            box-shadow: 0 0 10px rgba(255, 68, 68, 0.8), 0 0 20px rgba(255, 68, 68, 0.4);
-            animation: pulseGlow 2s infinite;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% { 
-                transform: scale(1);
-                opacity: 1;
-                box-shadow: 0 0 10px rgba(255, 68, 68, 0.8), 0 0 20px rgba(255, 68, 68, 0.4);
-            }
-            50% { 
-                transform: scale(1.3);
-                opacity: 0.7;
-                box-shadow: 0 0 15px rgba(255, 68, 68, 1), 0 0 30px rgba(255, 68, 68, 0.6);
-            }
-        }
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🦎 HAIRGATOR 시작 - 스마트 필터링 & NEW 표시 시스템');
+            
+            loginScreen.style.display = 'flex';
+            updateUserInfo();
 
             // 모달 닫기 이벤트 리스너 추가
             const styleModalClose = document.getElementById('styleModalClose');
