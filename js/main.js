@@ -1,4 +1,4 @@
-// HAIRGATOR Main Application Logic - Final Version
+// HAIRGATOR Main Application Logic - 최종 완성 버전 (로그인 시스템 포함)
 document.addEventListener('DOMContentLoaded', function() {
     // Global variables
     let currentGender = null;
@@ -23,6 +23,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const menuGrid = document.getElementById('menuGrid');
     const loadingOverlay = document.getElementById('loadingOverlay');
     
+    // Login elements
+    const loginScreen = document.getElementById('loginScreen');
+    const loginForm = document.getElementById('loginForm');
+    const mainMenu = document.getElementById('mainMenu');
+    
     // Modal elements
     const styleModal = document.getElementById('styleModal');
     const modalClose = document.getElementById('modalClose');
@@ -32,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnRegister = document.getElementById('btnRegister');
     const btnLike = document.getElementById('btnLike');
 
-    // 🦎 HAIRGATOR 3-Tier 권한 시스템 메뉴 데이터 구조
+    // HAIRGATOR 메뉴 데이터 구조
     const MENU_DATA = {
         male: {
             categories: [
@@ -127,8 +132,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function init() {
         console.log('🦎 HAIRGATOR 초기화 시작...');
         setupEventListeners();
+        setupLoginSystem();
+        setupThemeButtons();
         loadTheme();
-        checkAuthStatus();
+        checkLoginStatus();
         
         if (backBtn) {
             backBtn.style.display = 'none';
@@ -137,11 +144,141 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ HAIRGATOR 초기화 완료');
     }
 
+    // ========== 로그인 시스템 ==========
+    function setupLoginSystem() {
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('designerName').value.trim();
+                const phone = document.getElementById('phoneNumber').value.trim();
+                const password = document.getElementById('password').value.trim();
+                
+                console.log('로그인 시도:', { name, phoneLength: phone.length, passwordLength: password.length });
+                
+                // 입력값 검증
+                if (!name) {
+                    alert('디자이너 이름을 입력해주세요.');
+                    return;
+                }
+                
+                if (phone.length !== 4) {
+                    alert('휴대폰 뒷자리 4자리를 정확히 입력해주세요.');
+                    return;
+                }
+                
+                if (password.length !== 4) {
+                    alert('비밀번호 4자리를 정확히 입력해주세요.');
+                    return;
+                }
+                
+                try {
+                    // localStorage에 로그인 정보 저장
+                    localStorage.setItem('designerName', name);
+                    localStorage.setItem('designerPhone', phone);
+                    localStorage.setItem('designerPassword', password);
+                    localStorage.setItem('loginTime', new Date().getTime());
+                    
+                    // 화면 전환
+                    if (loginScreen) loginScreen.style.display = 'none';
+                    if (genderSelection) genderSelection.style.display = 'flex';
+                    
+                    // 디자이너 이름 표시
+                    updateDesignerInfo(name);
+                    
+                    console.log('로그인 성공:', name);
+                    showToast(`환영합니다, ${name}님!`);
+                    
+                } catch (error) {
+                    console.error('로그인 처리 오류:', error);
+                    alert('로그인 처리 중 오류가 발생했습니다.');
+                }
+            });
+        }
+    }
+    
+    // 로그인 상태 확인
+    function checkLoginStatus() {
+        const savedName = localStorage.getItem('designerName');
+        const loginTime = localStorage.getItem('loginTime');
+        
+        if (savedName && loginTime) {
+            // 24시간 세션 체크
+            const now = new Date().getTime();
+            const timeDiff = now - parseInt(loginTime);
+            const hoursDiff = timeDiff / (1000 * 60 * 60);
+            
+            if (hoursDiff < 24) {
+                // 자동 로그인
+                if (loginScreen) loginScreen.style.display = 'none';
+                if (genderSelection) genderSelection.style.display = 'flex';
+                updateDesignerInfo(savedName);
+                console.log('자동 로그인:', savedName);
+                return;
+            } else {
+                // 세션 만료
+                localStorage.removeItem('designerName');
+                localStorage.removeItem('designerPhone');
+                localStorage.removeItem('designerPassword');
+                localStorage.removeItem('loginTime');
+                console.log('세션 만료 - 재로그인 필요');
+            }
+        }
+        
+        // 로그인 화면 표시
+        if (loginScreen) loginScreen.style.display = 'flex';
+    }
+    
+    // 디자이너 정보 업데이트
+    function updateDesignerInfo(name) {
+        const designerNameDisplay = document.getElementById('designerNameDisplay');
+        if (designerNameDisplay) {
+            designerNameDisplay.textContent = name;
+        }
+    }
+
+    // 성별 선택 (전역 함수로 등록)
+    function selectGender(gender) {
+        currentGender = gender;
+        
+        // body에 성별 클래스 추가
+        document.body.classList.remove('gender-male', 'gender-female');
+        document.body.classList.add(`gender-${gender}`);
+        
+        // 화면 전환
+        if (genderSelection) genderSelection.style.display = 'none';
+        if (mainMenu) mainMenu.style.display = 'block';
+        if (menuContainer) menuContainer.classList.add('active');
+        
+        if (backBtn) {
+            backBtn.style.display = 'flex';
+        }
+        
+        if (themeToggleBottom) {
+            themeToggleBottom.style.display = 'none';
+        }
+        
+        // 성별 저장
+        localStorage.setItem('selectedGender', gender);
+        
+        // 메뉴 로드
+        loadMenuData(gender);
+        
+        console.log(`✅ 성별 선택 완료: ${gender}`);
+    }
+
+    // 전역 함수 등록
+    window.selectGender = selectGender;
+
     // Event Listeners Setup
     function setupEventListeners() {
-        // Back Button
+        // Back Button - 완전 수정
         if (backBtn) {
-            backBtn.addEventListener('click', handleBack);
+            backBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleBack();
+            });
         }
 
         // Menu Button
@@ -156,11 +293,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Theme Toggles
         if (themeToggle) {
-            themeToggle.addEventListener('click', toggleTheme);
+            themeToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleTheme();
+            });
         }
 
         if (themeToggleBottom) {
-            themeToggleBottom.addEventListener('click', toggleTheme);
+            themeToggleBottom.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleTheme();
+            });
         }
 
         // Logout Button
@@ -171,8 +316,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Gender Selection Buttons
         document.querySelectorAll('.gender-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                console.log(`🎯 성별 선택: ${this.dataset.gender}`);
-                selectGender(this.dataset.gender);
+                const gender = this.dataset.gender || this.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
+                if (gender) {
+                    console.log(`🎯 성별 선택: ${gender}`);
+                    selectGender(gender);
+                }
             });
         });
 
@@ -208,33 +356,56 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ 이벤트 리스너 설정 완료');
     }
 
-    // Navigation Functions
+    // Navigation Functions - 완전 수정된 뒤로가기
     function handleBack() {
-        if (menuContainer.classList.contains('active')) {
+        console.log('🔙 뒤로가기 버튼 클릭됨');
+        
+        if (menuContainer && menuContainer.classList.contains('active')) {
+            // 메뉴에서 성별 선택으로 돌아가기
             menuContainer.classList.remove('active');
-            genderSelection.style.display = 'flex';
-            backBtn.style.display = 'none';
+            
+            if (mainMenu) {
+                mainMenu.style.display = 'none';
+            }
+            
+            if (genderSelection) {
+                genderSelection.style.display = 'flex';
+            }
+            
+            if (backBtn) {
+                backBtn.style.display = 'none';
+            }
             
             if (themeToggleBottom) {
                 themeToggleBottom.style.display = 'flex';
             }
             
+            // 전역 변수 초기화
             currentGender = null;
             currentCategory = null;
-            console.log('🔙 성별 선택 화면으로 이동');
+            
+            console.log('✅ 성별 선택 화면으로 돌아감');
+        } else {
+            console.log('⚠️ 뒤로가기 조건이 맞지 않음');
         }
     }
 
     // Sidebar Functions
     function openSidebar() {
-        sidebar.classList.add('active');
+        if (sidebar) {
+            sidebar.classList.add('active');
+            console.log('📋 사이드바 열림');
+        }
     }
 
     function closeSidebar() {
-        sidebar.classList.remove('active');
+        if (sidebar) {
+            sidebar.classList.remove('active');
+            console.log('📋 사이드바 닫힘');
+        }
     }
 
-    // Theme Functions
+    // Theme Functions - 완전 강화
     function loadTheme() {
         const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
         if (savedTheme === 'light') {
@@ -245,63 +416,97 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function toggleTheme() {
-        document.body.classList.toggle('light-theme');
-        const isLight = document.body.classList.contains('light-theme');
+        console.log('🎨 테마 토글 실행');
         
+        const body = document.body;
+        
+        // 테마 변경
+        body.classList.toggle('light-theme');
+        const isLight = body.classList.contains('light-theme');
+        
+        // 상태 텍스트 업데이트
         if (themeStatus) {
             themeStatus.textContent = isLight ? 'OFF' : 'ON';
         }
         
+        // 로컬 저장소에 저장
         localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
-        console.log(`🎨 테마 변경: ${isLight ? 'light' : 'dark'}`);
+        
+        // 성공 메시지
+        showToast(`🎨 ${isLight ? '라이트' : '다크'} 테마로 변경됨`);
+        
+        console.log(`✅ 테마 변경 완료: ${isLight ? 'light' : 'dark'}`);
+        
+        return isLight;
+    }
+
+    // 사이드바 테마 버튼 강화 설정
+    function setupThemeButtons() {
+        console.log('🎨 테마 버튼 설정 시작');
+        
+        // 사이드바 내부의 테마 관련 버튼들 찾기
+        const themeSelectors = [
+            '[onclick*="theme"]', 
+            '.theme-option', 
+            '#themeToggle', 
+            '#themeToggleBottom',
+            '[data-theme]',
+            '.dark-mode-toggle'
+        ];
+        
+        themeSelectors.forEach(selector => {
+            const buttons = document.querySelectorAll(selector);
+            buttons.forEach(btn => {
+                console.log('🎨 테마 버튼 찾음:', btn.textContent || btn.id || btn.className);
+                
+                // 기존 onclick 제거
+                btn.removeAttribute('onclick');
+                
+                // 새로운 클릭 이벤트 추가
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('🎨 테마 버튼 클릭됨:', this.textContent || this.id);
+                    
+                    // 테마 토글 실행
+                    const newTheme = toggleTheme();
+                    
+                    // 사이드바 닫기 (선택사항)
+                    setTimeout(() => {
+                        closeSidebar();
+                    }, 300);
+                });
+            });
+        });
+        
+        console.log('✅ 테마 버튼 설정 완료');
     }
 
     // Authentication Functions
     function checkAuthStatus() {
-        const designerInfo = document.getElementById('designerInfo');
-        if (window.auth && window.auth.currentUser) {
-            if (designerInfo) designerInfo.style.display = 'block';
-            const designerNameEl = document.getElementById('designerName');
-            if (designerNameEl) {
-                designerNameEl.textContent = window.auth.currentUser.displayName || window.auth.currentUser.email;
-            }
-            console.log('✅ 사용자 인증 확인 완료');
-        }
+        // 이미 checkLoginStatus에서 처리됨
+        console.log('✅ 인증 상태 확인 완료');
     }
 
     async function handleLogout() {
         if (confirm('로그아웃 하시겠습니까?')) {
             try {
-                if (window.authManager) {
-                    await window.authManager.signOut();
-                }
+                // 로컬 스토리지 초기화
+                localStorage.removeItem('designerName');
+                localStorage.removeItem('designerPhone');
+                localStorage.removeItem('designerPassword');
+                localStorage.removeItem('loginTime');
+                localStorage.removeItem('selectedGender');
+                localStorage.removeItem('hairgator_gender');
+                
+                // 페이지 새로고침
                 location.reload();
             } catch (error) {
                 console.error('❌ 로그아웃 오류:', error);
                 showToast('로그아웃 실패: ' + error.message);
             }
         }
-    }
-
-    // Gender Selection
-    function selectGender(gender) {
-        currentGender = gender;
-        
-        genderSelection.style.display = 'none';
-        menuContainer.classList.add('active');
-        
-        if (backBtn) {
-            backBtn.style.display = 'flex';
-        }
-        
-        if (themeToggleBottom) {
-            themeToggleBottom.style.display = 'none';
-        }
-        
-        loadMenuData(gender);
-        localStorage.setItem('hairgator_gender', gender);
-        
-        console.log(`✅ 성별 선택 완료: ${gender}`);
     }
 
     // Menu Data Loading with Error Handling
@@ -665,7 +870,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Toast Message Function
+    // Toast Message Function - 강화된 버전
     function showToast(message) {
         // 기존 토스트 제거
         const existingToast = document.querySelector('.toast-message');
@@ -682,13 +887,15 @@ document.addEventListener('DOMContentLoaded', function() {
             top: 80px;
             left: 50%;
             transform: translateX(-50%);
-            background: #333;
+            background: rgba(0,0,0,0.9);
             color: white;
             padding: 12px 20px;
             border-radius: 8px;
             z-index: 10000;
             font-size: 14px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
             animation: toastSlideIn 0.3s ease-out;
         `;
         
@@ -703,12 +910,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    // Auto Gender Selection (선택적)
-    const savedGender = localStorage.getItem('hairgator_gender');
-    if (savedGender && savedGender !== 'null' && !currentGender) {
-        console.log(`🔄 이전 성별 선택 복원: ${savedGender}`);
-        // 필요시 주석 해제: setTimeout(() => selectGender(savedGender), 100);
-    }
+    // 전역 함수로 등록 (HTML에서 onclick 사용 시)
+    window.handleBack = handleBack;
+    window.toggleTheme = toggleTheme;
+    window.openSidebar = openSidebar;
+    window.closeSidebar = closeSidebar;
+    window.handleLogout = handleLogout;
 
     // Performance Monitoring
     console.log('🚀 HAIRGATOR 애플리케이션 준비 완료');
@@ -738,6 +945,20 @@ window.addEventListener('load', function() {
         .menu-item:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #333;
+            border-top: 4px solid #E91E63;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     `;
     document.head.appendChild(style);
