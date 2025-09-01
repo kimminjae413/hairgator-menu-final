@@ -1,10 +1,48 @@
-// HAIRGATOR Main Application Logic - Final Version with Enhanced Theme System
+// HAIRGATOR Main Application Logic - 최종 버전 (모든 에러 수정)
 document.addEventListener('DOMContentLoaded', function() {
     // Global variables
     let currentGender = null;
     let currentCategory = null;
     let currentSubcategory = 'None';
     let menuData = {};
+
+    // 🎨 테마 레지스트리 - 먼저 선언 (호이스팅 문제 해결)
+    const THEME_REGISTRY = {
+        dark: {
+            name: '다크 모드',
+            icon: '🌙',
+            className: '',
+            category: 'basic'
+        },
+        light: {
+            name: '라이트 모드',
+            icon: '☀️',
+            className: 'light-theme',
+            category: 'basic'
+        },
+        blue: {
+            name: '오션 블루',
+            icon: '🌊',
+            className: 'blue-theme',
+            category: 'color'
+        },
+        purple: {
+            name: '갤럭시 퍼플',
+            icon: '🔮',
+            className: 'purple-theme',
+            category: 'color'
+        },
+        green: {
+            name: '네이처 그린',
+            icon: '🌲',
+            className: 'green-theme',
+            category: 'color'
+        }
+    };
+
+    // 현재 활성화된 테마들
+    let enabledThemes = ['dark', 'light', 'blue', 'purple', 'green'];
+    let currentTheme = 'dark';
 
     // Elements
     const backBtn = document.getElementById('backBtn');
@@ -32,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnRegister = document.getElementById('btnRegister');
     const btnLike = document.getElementById('btnLike');
 
-    // 🦎 HAIRGATOR 3-Tier 권한 시스템 메뉴 데이터 구조
+    // HAIRGATOR 메뉴 데이터 구조
     const MENU_DATA = {
         male: {
             categories: [
@@ -127,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function init() {
         console.log('🦎 HAIRGATOR 초기화 시작...');
         setupEventListeners();
-        initThemeSystem(); // 개선된 테마 시스템 초기화
+        initThemeSystem();
         checkAuthStatus();
         
         if (backBtn) {
@@ -156,11 +194,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Theme Toggles
         if (themeToggle) {
-            themeToggle.addEventListener('click', toggleTheme);
+            themeToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleTheme();
+            });
         }
 
         if (themeToggleBottom) {
-            themeToggleBottom.addEventListener('click', toggleTheme);
+            themeToggleBottom.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleTheme();
+            });
         }
 
         // Logout Button
@@ -205,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // 테마 옵션 클릭 이벤트 (동적 생성된 버튼용)
+        // 테마 옵션 클릭 이벤트
         document.addEventListener('click', function(e) {
             const themeOption = e.target.closest('.theme-option');
             if (themeOption && themeOption.dataset.theme) {
@@ -217,53 +263,12 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ 이벤트 리스너 설정 완료');
     }
 
-    // ========== 🎨 확장 가능한 테마 시스템 ==========
+    // ========== 테마 시스템 ==========
     
-    // 테마 레지스트리 - 새 테마 추가는 여기에!
-    const THEME_REGISTRY = {
-        dark: {
-            name: '다크 모드',
-            icon: '🌙',
-            className: '',
-            category: 'basic'
-        },
-        light: {
-            name: '라이트 모드',
-            icon: '☀️',
-            className: 'light-theme',
-            category: 'basic'
-        },
-        blue: {
-            name: '오션 블루',
-            icon: '🌊',
-            className: 'blue-theme',
-            category: 'color'
-        },
-        purple: {
-            name: '퍼플',
-            icon: '🔮',
-            className: 'purple-theme',
-            category: 'color'
-        },
-        green: {
-            name: '그린',
-            icon: '🌲',
-            className: 'green-theme',
-            category: 'color'
-        }
-        // 새 테마 추가 예시:
-        // orange: { name: '오렌지', icon: '🍊', className: 'orange-theme', category: 'color' }
-    };
-
-    // 현재 활성화된 테마들 (관리자 설정)
-    let enabledThemes = ['dark', 'light']; // 처음엔 기본 2개만
-    let currentTheme = 'dark';
-
     // 테마 시스템 초기화
     function initThemeSystem() {
         const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
         
-        // 저장된 테마가 활성화된 테마인지 확인
         if (THEME_REGISTRY[savedTheme] && enabledThemes.includes(savedTheme)) {
             currentTheme = savedTheme;
         }
@@ -301,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showToast(`${theme.name}로 변경되었습니다`);
     }
 
-    // 테마 토글 (순환)
+    // 테마 토글
     function toggleTheme() {
         const availableThemes = enabledThemes.filter(key => THEME_REGISTRY[key]);
         const currentIndex = availableThemes.indexOf(currentTheme);
@@ -351,7 +356,6 @@ document.addEventListener('DOMContentLoaded', function() {
             themeStatus.textContent = currentTheme === 'dark' ? 'ON' : 'OFF';
         }
 
-        // 하단 토글 버튼 텍스트 업데이트
         if (themeToggleBottom) {
             const theme = THEME_REGISTRY[currentTheme];
             const iconSpan = themeToggleBottom.querySelector('span:first-child');
@@ -386,32 +390,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 테마 추가/제거 (관리자용)
-    function toggleThemeAvailability(themeKey, enabled) {
-        if (enabled && !enabledThemes.includes(themeKey)) {
-            enabledThemes.push(themeKey);
-        } else if (!enabled) {
-            enabledThemes = enabledThemes.filter(key => key !== themeKey);
-        }
-
-        updateAllThemeUI();
-        console.log(`테마 ${themeKey}: ${enabled ? '활성화' : '비활성화'}`);
-    }
-
-    // 새 테마 추가 (개발자용)
-    function addNewTheme(key, config) {
-        THEME_REGISTRY[key] = config;
-        if (!enabledThemes.includes(key)) {
-            enabledThemes.push(key);
-        }
-        updateAllThemeUI();
-        console.log(`새 테마 추가: ${config.name}`);
-    }
-
     // 전역 함수로 노출
     window.setTheme = setTheme;
-    window.addNewTheme = addNewTheme;
-    window.toggleThemeAvailability = toggleThemeAvailability;
     window.getCurrentTheme = () => currentTheme;
 
     // Navigation Functions
@@ -433,11 +413,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Sidebar Functions
     function openSidebar() {
-        sidebar.classList.add('active');
+        if (sidebar) sidebar.classList.add('active');
     }
 
     function closeSidebar() {
-        sidebar.classList.remove('active');
+        if (sidebar) sidebar.classList.remove('active');
     }
 
     // Authentication Functions
@@ -488,11 +468,10 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`✅ 성별 선택 완료: ${gender}`);
     }
 
-    // Menu Data Loading with Error Handling
+    // Menu Data Loading
     function loadMenuData(gender) {
         showLoading(true);
         
-        // 성별 데이터 존재 확인
         if (!MENU_DATA[gender]) {
             console.error(`❌ Gender data not found: ${gender}`);
             showToast(`❌ ${gender} 데이터를 찾을 수 없습니다.`);
@@ -502,7 +481,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         menuData = MENU_DATA[gender];
         
-        // categories 배열 존재 확인
         if (!menuData.categories || !Array.isArray(menuData.categories)) {
             console.error(`❌ Categories not found for gender: ${gender}`);
             showToast(`❌ ${gender} 카테고리 데이터가 올바르지 않습니다.`);
@@ -524,7 +502,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => showLoading(false), 300);
     }
 
-    // Render Categories with Enhanced Error Handling
+    // Render Categories
     function renderCategories(gender) {
         if (!categoryTabs) {
             console.error('❌ Category tabs container not found');
@@ -533,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         categoryTabs.innerHTML = '';
         
-        // 여성인 경우 맨 앞에 물음표 도움말 버튼 추가
+        // 여성인 경우 도움말 버튼 추가
         if (gender === 'female') {
             const helpTab = document.createElement('button');
             helpTab.className = 'category-tab help-tab';
@@ -545,14 +523,12 @@ document.addEventListener('DOMContentLoaded', function() {
             categoryTabs.appendChild(helpTab);
         }
         
-        // Categories 안전 체크
         if (!menuData || !menuData.categories || !Array.isArray(menuData.categories)) {
             console.error('❌ MenuData categories is invalid:', menuData);
             showToast('❌ 카테고리 데이터를 로드할 수 없습니다.');
             return;
         }
         
-        // 카테고리 탭 생성
         menuData.categories.forEach((category, index) => {
             const tab = document.createElement('button');
             tab.className = 'category-tab';
@@ -578,16 +554,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function selectCategory(category, gender) {
         currentCategory = category;
         
-        // 탭 활성화 상태 업데이트
         document.querySelectorAll('.category-tab').forEach(tab => {
-            if (tab.classList.contains('help-tab')) return; // 물음표 버튼은 제외
+            if (tab.classList.contains('help-tab')) return;
             tab.classList.remove('active', 'male', 'female');
             if (tab.dataset.categoryId === category.id) {
                 tab.classList.add('active', gender);
             }
         });
         
-        // 카테고리 설명 업데이트
         if (categoryDescription) {
             categoryDescription.textContent = category.description || '';
         }
@@ -643,14 +617,13 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`🎯 서브카테고리 선택: ${subcategory}`);
     }
 
-    // Load Styles from Firebase with Enhanced Error Handling
+    // Load Styles from Firebase
     async function loadStyles(categoryId, subcategory, gender) {
         if (!menuGrid) return;
         
         menuGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
         
         try {
-            // Firebase 초기화 확인
             if (typeof db === 'undefined') {
                 console.error('❌ Firebase not initialized');
                 menuGrid.innerHTML = `
@@ -662,11 +635,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // 현재 카테고리 이름 찾기
             const categoryName = currentCategory?.name || 'Unknown';
             console.log('📱 스타일 로딩 중:', { gender, categoryName, subcategory });
             
-            // Firebase에서 데이터 가져오기
             const query = db.collection('hairstyles')
                 .where('gender', '==', gender)
                 .where('mainCategory', '==', categoryName)
@@ -676,7 +647,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             menuGrid.innerHTML = '';
             
-            // 결과가 없는 경우
             if (snapshot.empty) {
                 menuGrid.innerHTML = `
                     <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
@@ -691,14 +661,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // 스타일 카드 생성
             let styleCount = 0;
             snapshot.forEach(doc => {
                 const data = doc.data();
                 const item = document.createElement('div');
                 item.className = `menu-item ${gender}`;
                 
-                // 이미지와 정보 표시
                 item.innerHTML = `
                     <img src="${data.imageUrl || ''}" 
                          alt="${data.name || 'Style'}" 
@@ -739,11 +707,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Show Style Detail Modal with Enhanced Features
     function showStyleDetail(code, name, gender, imageSrc, docId) {
         if (!styleModal) return;
         
-        // 모달 이미지 설정
         if (modalImage) {
             modalImage.src = imageSrc || '';
             modalImage.onerror = function() {
@@ -752,33 +718,27 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         }
         
-        // 모달 정보 설정
         if (modalCode) modalCode.textContent = code || '';
         if (modalName) modalName.textContent = name || '';
         
-        // 성별에 따른 버튼 스타일 적용
         if (btnRegister) {
             btnRegister.classList.toggle('female', gender === 'female');
         }
         
-        // 좋아요 상태 초기화
         if (btnLike) {
             btnLike.classList.remove('active');
             const heart = btnLike.querySelector('span:first-child');
             if (heart) heart.textContent = '♡';
         }
         
-        // 모달 표시
         styleModal.classList.add('active');
         
-        // 고객 등록 버튼 이벤트
         if (btnRegister) {
             btnRegister.onclick = async function() {
                 await handleCustomerRegistration(code, name, docId, gender);
             };
         }
         
-        // 좋아요 버튼 이벤트
         if (btnLike) {
             btnLike.onclick = async function() {
                 await handleLikeToggle(this, docId);
@@ -827,7 +787,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const isLiked = button.classList.contains('active');
             heart.textContent = isLiked ? '♥' : '♡';
             
-            // Firebase에 좋아요 업데이트
             if (docId && typeof firebase !== 'undefined') {
                 try {
                     const docRef = db.collection('hairstyles').doc(docId);
@@ -851,13 +810,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toast Message Function
     function showToast(message) {
-        // 기존 토스트 제거
         const existingToast = document.querySelector('.toast-message');
         if (existingToast) {
             existingToast.remove();
         }
         
-        // 새 토스트 생성
         const toast = document.createElement('div');
         toast.className = 'toast-message';
         toast.textContent = message;
@@ -878,7 +835,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.body.appendChild(toast);
         
-        // 3초 후 자동 제거
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.style.animation = 'toastSlideOut 0.3s ease-in';
@@ -887,14 +843,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    // Auto Gender Selection (선택적)
-    const savedGender = localStorage.getItem('hairgator_gender');
-    if (savedGender && savedGender !== 'null' && !currentGender) {
-        console.log(`🔄 이전 성별 선택 복원: ${savedGender}`);
-        // 필요시 주석 해제: setTimeout(() => selectGender(savedGender), 100);
-    }
-
-    // Performance Monitoring
     console.log('🚀 HAIRGATOR 애플리케이션 준비 완료');
 });
 
@@ -902,7 +850,6 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('load', function() {
     console.log('🦎 HAIRGATOR 앱 완전 로드 완료');
     
-    // CSS 애니메이션 추가
     const style = document.createElement('style');
     style.textContent = `
         @keyframes toastSlideIn {
@@ -926,36 +873,3 @@ window.addEventListener('load', function() {
     `;
     document.head.appendChild(style);
 });
-
-// ========== 🌟 새 테마 추가 가이드 ==========
-/*
-🎨 새 테마 추가하는 방법:
-
-1️⃣ THEME_REGISTRY에 테마 정보 추가:
-orange: {
-    name: '오렌지',
-    icon: '🍊', 
-    className: 'orange-theme',
-    category: 'color'
-}
-
-2️⃣ enabledThemes 배열에 추가:
-enabledThemes = ['dark', 'light', 'orange'];
-
-3️⃣ main.css에 CSS 스타일 추가:
-body.orange-theme {
-    background: #1a0f0a;
-    color: #fff3e0;
-}
-// ... 나머지 스타일들
-
-4️⃣ 끝! 자동으로 사이드바에 나타나고 선택 가능해짐
-
-🔥 런타임에서 새 테마 추가:
-addNewTheme('coral', {
-    name: '코럴 핑크',
-    icon: '🐠',
-    className: 'coral-theme',
-    category: 'color'
-});
-*/
