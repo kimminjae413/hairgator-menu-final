@@ -444,7 +444,7 @@ body.light-theme .category-description {
     color: var(--text-secondary);
     font-size: 14px;
     line-height: 1.6;
-    text-align: center;
+    text-align: left;  ← 이렇게 바뀜
     max-width: 800px;
     margin: 0 auto;
     transition: color 0.3s ease;
@@ -1387,4 +1387,5 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
 
