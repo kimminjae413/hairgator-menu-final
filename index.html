@@ -18,10 +18,11 @@
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     
-    <!-- 구글 폰트 -->
+    <!-- 구글 폰트 - Pretendard 추가 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -56,16 +57,41 @@
             --blur-backdrop: blur(20px);
             --transition-smooth: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            
+            /* 다크모드 기본값 */
+            --bg-primary: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+            --bg-secondary: rgba(17, 17, 17, 0.95);
+            --bg-tertiary: rgba(34, 34, 34, 0.8);
+            --bg-quaternary: rgba(26, 26, 26, 0.8);
+            --text-color: #ffffff;
+            --text-muted: #999999;
+            --border-primary: rgba(255, 255, 255, 0.1);
+            --border-secondary: rgba(51, 51, 51, 0.5);
+        }
+
+        /* 라이트모드 */
+        .light-mode {
+            --bg-primary: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
+            --bg-secondary: rgba(255, 255, 255, 0.95);
+            --bg-tertiary: rgba(248, 249, 250, 0.9);
+            --bg-quaternary: rgba(233, 236, 239, 0.8);
+            --text-color: #212529;
+            --text-muted: #6c757d;
+            --border-primary: rgba(0, 0, 0, 0.1);
+            --border-secondary: rgba(108, 117, 125, 0.2);
+            --shadow-elevation: 0 8px 32px rgba(0, 0, 0, 0.15);
+            --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.25);
         }
 
         body {
-            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
-            color: var(--text-primary);
+            font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-color);
             overflow-x: hidden;
             user-select: none;
             -webkit-user-select: none;
             line-height: 1.4;
+            transition: var(--transition-smooth);
         }
 
         /* 헤더 */
@@ -75,14 +101,15 @@
             left: 0;
             right: 0;
             height: 50px;
-            background: var(--primary-dark);
+            background: var(--bg-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0 15px;
             z-index: 1000;
             backdrop-filter: var(--blur-backdrop);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--border-primary);
+            transition: var(--transition-smooth);
         }
 
         .back-btn {
@@ -96,7 +123,7 @@
             display: none;
             align-items: center;
             justify-content: center;
-            color: var(--text-primary);
+            color: var(--text-color);
             font-size: 24px;
             border-radius: 50%;
             transition: var(--transition-smooth);
@@ -104,20 +131,20 @@
 
         .back-btn:active {
             transform: scale(0.85);
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--border-primary);
         }
 
         .logo {
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 700;
             letter-spacing: 1px;
-            color: #ffffff;
+            color: var(--text-color);
             text-shadow: 0 0 20px rgba(233, 30, 99, 0.5);
         }
 
         .menu-btn {
             position: absolute;
-            right: 15px;
+            right: 60px;
             width: 30px;
             height: 30px;
             background: none;
@@ -134,14 +161,41 @@
 
         .menu-btn:active {
             transform: scale(0.85);
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--border-primary);
         }
 
         .menu-btn span {
             width: 20px;
             height: 2px;
-            background: var(--text-primary);
+            background: var(--text-color);
             transition: var(--transition-smooth);
+        }
+
+        /* 테마 토글 버튼 */
+        .theme-toggle {
+            position: absolute;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: var(--transition-smooth);
+            color: var(--text-color);
+        }
+
+        .theme-toggle:hover {
+            background: var(--border-primary);
+            transform: scale(1.1);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.9);
         }
 
         /* 메인 콘텐츠 */
@@ -378,14 +432,15 @@
 
         /* 카테고리 탭 */
         .category-tabs {
-            background: rgba(17, 17, 17, 0.95);
+            background: var(--bg-secondary);
             backdrop-filter: var(--blur-backdrop);
             padding: 15px;
             display: flex;
             gap: 10px;
             overflow-x: auto;
-            border-bottom: 1px solid rgba(51, 51, 51, 0.5);
+            border-bottom: 1px solid var(--border-secondary);
             scrollbar-width: none;
+            transition: var(--transition-smooth);
         }
 
         .category-tabs::-webkit-scrollbar {
@@ -393,10 +448,10 @@
         }
 
         .category-tab {
-            background: rgba(34, 34, 34, 0.8);
+            background: var(--bg-tertiary);
             backdrop-filter: var(--blur-backdrop);
-            color: #999;
-            border: 1px solid rgba(51, 51, 51, 0.5);
+            color: var(--text-muted);
+            border: 1px solid var(--border-secondary);
             padding: 12px 24px;
             border-radius: 25px;
             cursor: pointer;
@@ -424,8 +479,8 @@
         }
 
         .category-tab:hover {
-            background: rgba(51, 51, 51, 0.8);
-            color: #fff;
+            background: var(--bg-quaternary);
+            color: var(--text-color);
             transform: translateY(-2px);
         }
 
@@ -434,7 +489,7 @@
         }
 
         .category-tab.active {
-            font-weight: bold;
+            font-weight: 600;
             transform: translateY(-3px) scale(1.02);
         }
 
@@ -452,50 +507,23 @@
             box-shadow: var(--glow-female);
         }
 
-        /* NEW 표시 (빨간 점) */
-        .new-indicator {
-            position: absolute;
-            top: -3px;
-            right: -3px;
-            width: 8px;
-            height: 8px;
-            background: var(--new-indicator);
-            border-radius: 50%;
-            box-shadow: 0 0 10px rgba(255, 68, 68, 0.8), 0 0 20px rgba(255, 68, 68, 0.4);
-            animation: pulseGlow 2s infinite;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% { 
-                transform: scale(1);
-                opacity: 1;
-                box-shadow: 0 0 10px rgba(255, 68, 68, 0.8), 0 0 20px rgba(255, 68, 68, 0.4);
-            }
-            50% { 
-                transform: scale(1.3);
-                opacity: 0.7;
-                box-shadow: 0 0 15px rgba(255, 68, 68, 1), 0 0 30px rgba(255, 68, 68, 0.6);
-            }
-        }
-
         /* 서브카테고리 탭 */
         .sub-tabs {
-            background: rgba(10, 10, 10, 0.95);
+            background: var(--bg-secondary);
             backdrop-filter: var(--blur-backdrop);
             padding: 15px;
             display: flex;
             gap: 10px;
             justify-content: center;
             flex-wrap: wrap;
-            border-bottom: 1px solid rgba(34, 34, 34, 0.5);
+            border-bottom: 1px solid var(--border-secondary);
+            transition: var(--transition-smooth);
         }
 
         .sub-tab {
-            background: rgba(51, 51, 51, 0.8);
+            background: var(--bg-tertiary);
             backdrop-filter: var(--blur-backdrop);
-            color: white;
+            color: var(--text-color);
             border: none;
             padding: 10px 18px;
             border-radius: 20px;
@@ -523,7 +551,7 @@
         }
 
         .sub-tab:hover:not(.disabled) {
-            background: rgba(68, 68, 68, 0.8);
+            background: var(--bg-quaternary);
             transform: translateY(-2px);
         }
 
@@ -532,17 +560,19 @@
         }
 
         .sub-tab.active {
-            font-weight: bold;
+            font-weight: 600;
             transform: translateY(-3px) scale(1.05);
         }
 
         .sub-tab.active.male {
             background: linear-gradient(135deg, var(--male-color) 0%, #2980b9 100%);
+            color: white;
             box-shadow: 0 0 20px rgba(74, 144, 226, 0.4);
         }
 
         .sub-tab.active.female {
             background: linear-gradient(135deg, var(--female-color) 0%, #c2185b 100%);
+            color: white;
             box-shadow: 0 0 20px rgba(233, 30, 99, 0.4);
         }
 
@@ -1121,6 +1151,9 @@
             <span></span>
             <span></span>
         </button>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+            🌙
+        </button>
     </header>
 
     <!-- 사이드바 -->
@@ -1294,7 +1327,7 @@
         let newItemsCache = new Map();
         const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
 
-        // 메뉴 데이터 정의
+        // 메뉴 데이터 정의 - ID와 name 매칭 수정
         const MENU_DATA = {
             male: {
                 categories: [
@@ -1322,6 +1355,98 @@
                 subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
             }
         };
+
+        // 테마 토글 기능 추가
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.getElementById('themeToggle');
+            
+            if (body.classList.contains('light-mode')) {
+                // 다크모드로 전환
+                body.classList.remove('light-mode');
+                themeToggle.textContent = '🌙';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                // 라이트모드로 전환
+                body.classList.add('light-mode');
+                themeToggle.textContent = '☀️';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // 페이지 로드 시 저장된 테마 적용
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeToggle = document.getElementById('themeToggle');
+            
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                themeToggle.textContent = '☀️';
+            } else {
+                document.body.classList.remove('light-mode');
+                themeToggle.textContent = '🌙';
+            }
+        }
+
+        // 카테고리 탭 렌더링 (NEW 표시는 백그라운드에서 추가) - 수정된 버전
+        function renderCategories(gender, categories) {
+            const categoryTabs = document.getElementById('categoryTabs');
+            categoryTabs.innerHTML = '';
+            
+            categories.forEach((category, index) => {
+                const tab = document.createElement('button');
+                tab.className = 'category-tab';
+                tab.textContent = category.name;
+                tab.dataset.categoryId = category.id;
+                tab.dataset.categoryName = category.name; // 추가: name도 저장
+                
+                if (index === 0) {
+                    tab.classList.add('active', gender);
+                }
+                
+                tab.addEventListener('click', () => selectCategory(category, gender));
+                categoryTabs.appendChild(tab);
+                
+                // 백그라운드에서 NEW 표시 확인 및 추가
+                setTimeout(async () => {
+                    const subInfo = await checkSubcategoriesAndNew(gender, category.name);
+                    const hasNewItems = Object.keys(subInfo.newCounts).length > 0;
+                    
+                    if (hasNewItems && !tab.querySelector('.new-indicator')) {
+                        tab.appendChild(createNewIndicator());
+                    }
+                }, 100);
+            });
+            
+            console.log(`✅ ${categories.length}개 카테고리 렌더링 완료`);
+        }
+
+        // 카테고리 선택 (스마트 필터링 적용) - 수정된 버전
+        async function selectCategory(category, gender) {
+            currentCategory = category;
+            
+            // 탭 활성화 상태 업데이트 - 수정된 로직
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active', 'male', 'female');
+                if (tab.dataset.categoryName === category.name) { // name으로 매칭
+                    tab.classList.add('active', gender);
+                }
+            });
+            
+            // 해당 카테고리의 서브카테고리 정보 확인
+            const subInfo = await checkSubcategoriesAndNew(gender, category.name);
+            const menuData = MENU_DATA[gender];
+            
+            // 스마트 필터링된 서브카테고리 렌더링
+            renderSmartSubcategories(gender, menuData.subcategories, subInfo);
+            
+            // 첫 번째 사용 가능한 서브카테고리로 스타일 로드
+            const firstAvailableSub = subInfo.available[0] || 'None';
+            currentSubcategory = firstAvailableSub;
+            loadStyles(category.name, firstAvailableSub, gender);
+            
+            console.log(`✅ 카테고리 선택: ${category.name} (사용가능한 서브: ${subInfo.available.length}개)`);
+        }
 
         // DOM 요소
         const loginScreen = document.getElementById('loginScreen');
@@ -2030,12 +2155,33 @@
             `;
         }
 
-        // 페이지 로드 시 실행
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🦎 HAIRGATOR 시작 - 프리미엄 태블릿 UI');
-            
-            loginScreen.style.display = 'flex';
-            updateUserInfo();
+        /* NEW 표시 (빨간 점) - 개선된 버전 */
+        .new-indicator {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 8px;
+            height: 8px;
+            background: var(--new-indicator);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.8), 0 0 20px rgba(255, 68, 68, 0.4);
+            animation: pulseGlow 2s infinite;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 1;
+                box-shadow: 0 0 10px rgba(255, 68, 68, 0.8), 0 0 20px rgba(255, 68, 68, 0.4);
+            }
+            50% { 
+                transform: scale(1.3);
+                opacity: 0.7;
+                box-shadow: 0 0 15px rgba(255, 68, 68, 1), 0 0 30px rgba(255, 68, 68, 0.6);
+            }
+        }
 
             // 모달 닫기 이벤트 리스너 추가
             const styleModalClose = document.getElementById('styleModalClose');
