@@ -1,9 +1,4 @@
-// ========== HAIRGATOR 메뉴 시스템 최종 버전 (카테고리 설명 포함) ==========
-
-// 글로벌 변수 (index.html에서 이미 선언된 것은 제외)
-// let currentGender = null;  // 이미 index.html에 있음
-// let currentMainTab = null; // 필요하면 추가
-// let currentSubTab = null;  // 필요하면 추가
+// ========== HAIRGATOR 메뉴 시스템 최종 버전 (Firebase Query 오류 수정) ==========
 
 // 남성 카테고리 (설명 포함)
 const MALE_CATEGORIES = [
@@ -97,6 +92,11 @@ const SUB_CATEGORIES = [
     'Cheekbone'
 ];
 
+// ========== 전역 변수 (index.html과 동기화) ==========
+// 주의: 이미 index.html에서 선언된 변수들은 재선언하지 않음
+let currentMainTab = null;  // 현재 선택된 메인 카테고리 (객체)
+let currentSubTab = null;   // 현재 선택된 서브 카테고리 (문자열)
+
 // ========== 메뉴 로드 및 탭 관리 ==========
 
 // 성별에 따른 메뉴 로드
@@ -104,14 +104,16 @@ function loadMenuForGender(gender) {
     currentGender = gender;
     const categories = gender === 'male' ? MALE_CATEGORIES : FEMALE_CATEGORIES;
     
+    console.log(`🔄 ${gender} 메뉴 로드 시작 (${categories.length}개 카테고리)`);
+    
     // body에 gender 클래스 추가
     document.body.classList.remove('gender-male', 'gender-female');
     document.body.classList.add(`gender-${gender}`);
     
-    // 대분류 탭 생성 - ID 수정
-    const mainTabsContainer = document.getElementById('categoryTabs'); // ✅ 올바른 ID
+    // 대분류 탭 생성
+    const mainTabsContainer = document.getElementById('categoryTabs');
     if (!mainTabsContainer) {
-        console.error('categoryTabs 요소를 찾을 수 없습니다');
+        console.error('❌ categoryTabs 요소를 찾을 수 없습니다');
         return;
     }
     
@@ -126,13 +128,29 @@ function loadMenuForGender(gender) {
         // 첫 번째 탭 기본 선택
         if (index === 0) {
             tab.classList.add('active');
-            currentMainTab = category;
+            currentMainTab = category; // 🔥 객체 전체 저장
+            console.log(`📌 기본 선택: ${category.name}`, category);
         }
         
         mainTabsContainer.appendChild(tab);
     });
     
-    // 카테고리 설명 영역 생성 (없으면)
+    // 카테고리 설명 영역 확인/생성
+    ensureCategoryDescriptionArea();
+    
+    // 중분류 탭 로드
+    loadSubTabs();
+    
+    // 첫 번째 카테고리 자동 선택
+    if (categories.length > 0) {
+        selectMainTab(categories[0], 0);
+    }
+    
+    console.log(`✅ ${gender} 메뉴 로드 완료`);
+}
+
+// 카테고리 설명 영역 확인/생성
+function ensureCategoryDescriptionArea() {
     let descriptionArea = document.getElementById('categoryDescription');
     if (!descriptionArea) {
         descriptionArea = document.createElement('div');
@@ -144,26 +162,21 @@ function loadMenuForGender(gender) {
         descriptionArea.appendChild(descriptionText);
         
         // 카테고리 탭 다음에 설명 영역 삽입
-        const categoryTabs = document.querySelector('.category-tabs');
+        const categoryTabs = document.querySelector('.category-tabs') || 
+                            document.getElementById('categoryTabs')?.parentElement;
         if (categoryTabs) {
-            categoryTabs.parentNode.insertBefore(descriptionArea, categoryTabs.nextSibling);
+            const nextElement = categoryTabs.nextElementSibling;
+            categoryTabs.parentNode.insertBefore(descriptionArea, nextElement);
+            console.log('✅ 카테고리 설명 영역 생성됨');
         }
     }
-    
-    // 중분류 탭 로드
-    loadSubTabs();
-    
-    // 첫 번째 카테고리 선택
-    if (categories.length > 0) {
-        selectMainTab(categories[0], 0);
-    }
-    
-    console.log(`✅ ${gender} 메뉴 로드 완료`);
 }
 
 // 대분류 탭 선택
 function selectMainTab(category, index) {
-    currentMainTab = category;
+    currentMainTab = category; // 🔥 객체 전체 저장
+    
+    console.log(`📂 대분류 선택: ${category.name}`, category);
     
     // 탭 활성화 상태 변경
     document.querySelectorAll('.main-tab').forEach((tab, i) => {
@@ -181,14 +194,15 @@ function selectMainTab(category, index) {
     
     // 스타일 로드
     loadStyles();
-    
-    console.log(`📂 대분류 선택: ${category.name}`);
 }
 
 // 카테고리 설명 업데이트
 function updateCategoryDescription(category) {
     const descriptionText = document.querySelector('.category-description-text');
-    if (!descriptionText) return;
+    if (!descriptionText) {
+        console.warn('⚠️ 카테고리 설명 영역을 찾을 수 없습니다');
+        return;
+    }
     
     if (category.description) {
         descriptionText.innerHTML = `
@@ -196,6 +210,7 @@ function updateCategoryDescription(category) {
             ${category.description}
         `;
         descriptionText.classList.remove('empty');
+        console.log(`📝 카테고리 설명 업데이트: ${category.name}`);
     } else {
         descriptionText.textContent = '카테고리 설명이 없습니다.';
         descriptionText.classList.add('empty');
@@ -206,7 +221,7 @@ function updateCategoryDescription(category) {
 function loadSubTabs() {
     const subTabsContainer = document.getElementById('subTabs');
     if (!subTabsContainer) {
-        console.error('subTabs 요소를 찾을 수 없습니다');
+        console.error('❌ subTabs 요소를 찾을 수 없습니다');
         return;
     }
     
@@ -226,11 +241,15 @@ function loadSubTabs() {
         
         subTabsContainer.appendChild(tab);
     });
+    
+    console.log(`📋 중분류 탭 로드 완료 (${SUB_CATEGORIES.length}개)`);
 }
 
 // 중분류 탭 선택
 function selectSubTab(subCategory, index) {
     currentSubTab = subCategory;
+    
+    console.log(`📋 중분류 선택: ${subCategory}`);
     
     // 탭 활성화 상태 변경
     document.querySelectorAll('.sub-tab').forEach((tab, i) => {
@@ -242,32 +261,66 @@ function selectSubTab(subCategory, index) {
     
     // 스타일 로드
     loadStyles();
-    
-    console.log(`📋 중분류 선택: ${subCategory}`);
 }
 
-// ========== 스타일 로드 및 카드 생성 ==========
+// ========== 스타일 로드 및 카드 생성 (🔥 핵심 수정) ==========
 
-// 스타일 로드
+// 스타일 로드 - Firebase Query 오류 수정
 async function loadStyles() {
     const stylesGrid = document.getElementById('stylesGrid');
     if (!stylesGrid) {
-        console.error('stylesGrid 요소를 찾을 수 없습니다');
+        console.error('❌ stylesGrid 요소를 찾을 수 없습니다');
         return;
     }
+    
+    // 필수 변수 체크
+    if (!currentGender) {
+        console.error('❌ currentGender가 설정되지 않았습니다');
+        showErrorState(stylesGrid, 'Gender not selected');
+        return;
+    }
+    
+    if (!currentMainTab) {
+        console.error('❌ currentMainTab이 설정되지 않았습니다');
+        showErrorState(stylesGrid, 'Category not selected');
+        return;
+    }
+    
+    if (!currentSubTab) {
+        console.error('❌ currentSubTab이 설정되지 않았습니다');
+        showErrorState(stylesGrid, 'Subcategory not selected');
+        return;
+    }
+    
+    // 🔥 Firebase Query를 위한 안전한 카테고리명 추출
+    const mainCategoryName = currentMainTab.name || currentMainTab;
+    const subCategoryName = currentSubTab;
+    
+    console.log(`🔍 스타일 검색 시작:`, {
+        gender: currentGender,
+        mainCategory: mainCategoryName,
+        subCategory: subCategoryName,
+        currentMainTab: currentMainTab
+    });
     
     // 로딩 상태 표시
     showLoadingState(stylesGrid);
     
     try {
-        // Firebase에서 스타일 가져오기
+        // Firebase 연결 확인
+        if (typeof db === 'undefined') {
+            throw new Error('Firebase가 초기화되지 않았습니다');
+        }
+        
+        // 🔥 수정된 Firebase Query - undefined 방지
         const querySnapshot = await db.collection('hairstyles')
             .where('gender', '==', currentGender)
-            .where('mainCategory', '==', currentMainTab.name)
-            .where('subCategory', '==', currentSubTab)
+            .where('mainCategory', '==', mainCategoryName)  // 🔥 안전한 값 사용
+            .where('subCategory', '==', subCategoryName)    // 🔥 안전한 값 사용
             .get();
         
         if (querySnapshot.empty) {
+            console.log(`📭 스타일 없음: ${mainCategoryName} - ${subCategoryName}`);
             showEmptyState(stylesGrid);
             return;
         }
@@ -276,19 +329,31 @@ async function loadStyles() {
         stylesGrid.innerHTML = '';
         const fragment = document.createDocumentFragment();
         
+        let styleCount = 0;
         querySnapshot.forEach(doc => {
             const style = { ...doc.data(), id: doc.id };
             const card = createStyleCard(style);
             fragment.appendChild(card);
+            styleCount++;
         });
         
         stylesGrid.appendChild(fragment);
         
-        console.log(`✅ ${querySnapshot.size}개 스타일 로드 완료: ${currentMainTab.name} - ${currentSubTab}`);
+        console.log(`✅ ${styleCount}개 스타일 로드 완료: ${mainCategoryName} - ${subCategoryName}`);
         
     } catch (error) {
-        console.error('스타일 로드 오류:', error);
-        showErrorState(stylesGrid, error.message);
+        console.error('❌ 스타일 로드 오류:', error);
+        showErrorState(stylesGrid, `로드 실패: ${error.message}`);
+        
+        // 디버그 정보 출력
+        console.error('디버그 정보:', {
+            currentGender,
+            currentMainTab,
+            currentSubTab,
+            mainCategoryName,
+            subCategoryName,
+            dbStatus: typeof db !== 'undefined' ? 'OK' : 'NOT_DEFINED'
+        });
     }
 }
 
@@ -368,7 +433,7 @@ function startAIExperience(event, styleId, styleName, styleImageUrl) {
     event.preventDefault();
     event.stopPropagation();
     
-    console.log('AI 체험하기 시작:', { styleId, styleName, styleImageUrl });
+    console.log('🤖 AI 체험하기 시작:', { styleId, styleName, styleImageUrl });
     
     // AI 사진 업로드 모달 열기
     openAIPhotoModal(styleId, styleName, styleImageUrl);
@@ -457,127 +522,6 @@ function createAIPhotoModal() {
     return modal;
 }
 
-// 파일 입력 트리거
-function triggerFileInput() {
-    const fileInput = document.getElementById('aiPhotoInput');
-    if (fileInput) {
-        fileInput.click();
-    }
-}
-
-// 사진 업로드 처리
-function handlePhotoUpload(input) {
-    const file = input.files[0];
-    if (!file) return;
-    
-    // 파일 타입 검증
-    if (!file.type.startsWith('image/')) {
-        showToast('이미지 파일만 업로드 가능합니다', 'error');
-        return;
-    }
-    
-    // 파일 크기 검증 (10MB)
-    if (file.size > 10 * 1024 * 1024) {
-        showToast('파일 크기는 10MB 이하로 제한됩니다', 'error');
-        return;
-    }
-    
-    // 파일 읽기
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const previewContainer = document.getElementById('aiPhotoPreview');
-        const previewImage = document.getElementById('previewImage');
-        const uploadArea = document.querySelector('.ai-upload-area');
-        
-        if (previewImage && previewContainer && uploadArea) {
-            previewImage.src = e.target.result;
-            previewContainer.style.display = 'block';
-            uploadArea.style.display = 'none';
-        }
-    };
-    
-    reader.readAsDataURL(file);
-}
-
-// 사진 업로드 재설정
-function resetPhotoUpload() {
-    const previewContainer = document.getElementById('aiPhotoPreview');
-    const uploadArea = document.querySelector('.ai-upload-area');
-    const fileInput = document.getElementById('aiPhotoInput');
-    
-    if (previewContainer) previewContainer.style.display = 'none';
-    if (uploadArea) uploadArea.style.display = 'block';
-    if (fileInput) fileInput.value = '';
-}
-
-// AI 얼굴 합성 처리
-async function processAIFaceSwap() {
-    const processBtn = document.getElementById('aiProcessBtn');
-    const previewImage = document.getElementById('previewImage');
-    const modal = document.getElementById('aiPhotoModal');
-    
-    if (!processBtn || !previewImage || !modal) {
-        console.error('필요한 요소를 찾을 수 없습니다');
-        return;
-    }
-    
-    // 버튼 상태 변경
-    const originalText = processBtn.innerHTML;
-    processBtn.disabled = true;
-    processBtn.innerHTML = '<span class="ai-icon">⏳</span><span>AI 처리 중...</span>';
-    processBtn.classList.add('ai-processing');
-    
-    try {
-        // 현재 선택된 스타일 정보 가져오기
-        const styleId = modal.dataset.styleId;
-        const styleName = modal.dataset.styleName;
-        const styleImageUrl = modal.dataset.styleImageUrl;
-        const customerImageUrl = previewImage.src;
-        
-        console.log('AI 처리 시작:', { styleId, styleName, customerImageUrl });
-        
-        // AKOOL 서비스 호출 (실제 구현 시 사용)
-        // const result = await window.akoolService?.faceSwap(customerImageUrl, styleImageUrl);
-        
-        // 데모용 지연 시간
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        // 성공 시 결과 표시 (데모)
-        showToast('AI 합성이 완료되었습니다!', 'success');
-        showAIResult(customerImageUrl, styleName); // 데모용
-        closeAIPhotoModal();
-        
-    } catch (error) {
-        console.error('AI 처리 오류:', error);
-        showToast('AI 처리 중 오류가 발생했습니다', 'error');
-        
-    } finally {
-        // 버튼 상태 복원
-        processBtn.disabled = false;
-        processBtn.innerHTML = originalText;
-        processBtn.classList.remove('ai-processing');
-    }
-}
-
-// AI 결과 표시 (데모)
-function showAIResult(resultImageUrl, styleName) {
-    // 결과 모달 생성 및 표시 (실제 구현 필요)
-    console.log('AI 결과 표시:', { resultImageUrl, styleName });
-    // 여기에 결과 모달 구현
-}
-
-// AI 모달 닫기
-function closeAIPhotoModal() {
-    const modal = document.getElementById('aiPhotoModal');
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-        
-        // 업로드 상태 초기화
-        resetPhotoUpload();
-    }
-}
-
 // ========== 스타일 상세 모달 ==========
 
 // 스타일 상세 모달 열기
@@ -663,15 +607,6 @@ function createStyleModal() {
     return modal;
 }
 
-// 스타일 모달 닫기
-function closeStyleModal() {
-    const modal = document.getElementById('styleModal');
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-}
-
 // ========== 상태 표시 함수들 ==========
 
 // 로딩 상태 표시
@@ -702,41 +637,149 @@ function showErrorState(container, message) {
             <div class="empty-icon">⚠️</div>
             <div class="empty-title">오류 발생</div>
             <div class="empty-message">${message}</div>
+            <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: var(--female-color); color: white; border: none; border-radius: 5px; cursor: pointer;">새로고침</button>
         </div>
     `;
 }
 
 // ========== 유틸리티 함수들 ==========
 
-// 토스트 메시지 표시
-function showToast(message, type = 'info') {
-    // 기존 토스트 제거
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) {
-        existingToast.remove();
+// 파일 입력 트리거
+function triggerFileInput() {
+    const fileInput = document.getElementById('aiPhotoInput');
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+
+// 사진 업로드 처리
+function handlePhotoUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    // 파일 타입 검증
+    if (!file.type.startsWith('image/')) {
+        showToast('이미지 파일만 업로드 가능합니다', 'error');
+        return;
     }
     
-    // 새 토스트 생성
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
+    // 파일 크기 검증 (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('파일 크기는 10MB 이하로 제한됩니다', 'error');
+        return;
+    }
+    
+    // 파일 읽기
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const previewContainer = document.getElementById('aiPhotoPreview');
+        const previewImage = document.getElementById('previewImage');
+        const uploadArea = document.querySelector('.ai-upload-area');
+        
+        if (previewImage && previewContainer && uploadArea) {
+            previewImage.src = e.target.result;
+            previewContainer.style.display = 'block';
+            uploadArea.style.display = 'none';
+        }
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+// 사진 업로드 재설정
+function resetPhotoUpload() {
+    const previewContainer = document.getElementById('aiPhotoPreview');
+    const uploadArea = document.querySelector('.ai-upload-area');
+    const fileInput = document.getElementById('aiPhotoInput');
+    
+    if (previewContainer) previewContainer.style.display = 'none';
+    if (uploadArea) uploadArea.style.display = 'block';
+    if (fileInput) fileInput.value = '';
+}
+
+// AI 얼굴 합성 처리
+async function processAIFaceSwap() {
+    const processBtn = document.getElementById('aiProcessBtn');
+    const previewImage = document.getElementById('previewImage');
+    const modal = document.getElementById('aiPhotoModal');
+    
+    if (!processBtn || !previewImage || !modal) {
+        console.error('필요한 요소를 찾을 수 없습니다');
+        return;
+    }
+    
+    // 버튼 상태 변경
+    const originalText = processBtn.innerHTML;
+    processBtn.disabled = true;
+    processBtn.innerHTML = '<span class="ai-icon">⏳</span><span>AI 처리 중...</span>';
+    
+    try {
+        // 현재 선택된 스타일 정보 가져오기
+        const styleId = modal.dataset.styleId;
+        const styleName = modal.dataset.styleName;
+        const styleImageUrl = modal.dataset.styleImageUrl;
+        const customerImageUrl = previewImage.src;
+        
+        console.log('AI 처리 시작:', { styleId, styleName, customerImageUrl });
+        
+        // 데모용 지연 시간
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // 성공 시 결과 표시
+        showToast('AI 합성이 완료되었습니다!', 'success');
+        closeAIPhotoModal();
+        
+    } catch (error) {
+        console.error('AI 처리 오류:', error);
+        showToast('AI 처리 중 오류가 발생했습니다', 'error');
+        
+    } finally {
+        // 버튼 상태 복원
+        processBtn.disabled = false;
+        processBtn.innerHTML = originalText;
+    }
+}
+
+// 모달 닫기 함수들
+function closeAIPhotoModal() {
+    const modal = document.getElementById('aiPhotoModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        resetPhotoUpload();
+    }
+}
+
+function closeStyleModal() {
+    const modal = document.getElementById('styleModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+// 토스트 메시지 표시
+function showToast(message, type = 'info') {
+    // 기존 토스트가 있으면 사용, 없으면 생성
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
+    
     toast.textContent = message;
+    toast.className = `toast ${type} show`;
     
-    document.body.appendChild(toast);
-    
-    // 애니메이션으로 표시
-    setTimeout(() => toast.classList.add('show'), 100);
-    
-    // 3초 후 제거
     setTimeout(() => {
         toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
 
 // 즐겨찾기 기능
 function favoriteStyle() {
     showToast('즐겨찾기에 추가되었습니다', 'success');
-    // 실제 즐겨찾기 로직 구현 필요
 }
 
 // 공유 기능
@@ -816,6 +859,4 @@ window.HAIRGATOR_MENU = {
     showToast
 };
 
-console.log('✅ HAIRGATOR 메뉴 시스템 초기화 완료');
-
-
+console.log('✅ HAIRGATOR 메뉴 시스템 초기화 완료 (Firebase Query 수정됨)');
