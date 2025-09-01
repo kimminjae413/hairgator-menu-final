@@ -9,7 +9,7 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-/* ========== 기존 CSS 변수 시스템 (다크 테마 기본) ========== */
+/* ========== CSS 변수 시스템 (다크/라이트 테마) ========== */
 :root {
     --primary-dark: #000000;
     --primary-light: #ffffff;
@@ -19,9 +19,24 @@
     --text-secondary: #999999;
     --border-color: #222222;
     --new-indicator: #ff4444;
+    
+    /* AI 관련 색상 변수 */
+    --ai-primary: #E91E63;
+    --ai-secondary: #4A90E2;
+    --ai-accent: #FF1493;
+    --ai-bg-primary: rgba(233, 30, 99, 0.1);
+    --ai-bg-secondary: rgba(233, 30, 99, 0.05);
+    --ai-border: #333333;
+    --ai-gradient-start: #E91E63;
+    --ai-gradient-end: #C2185B;
+    --ai-text: #ffffff;
+    --ai-overlay: rgba(0, 0, 0, 0.8);
+    --ai-modal-bg: #111111;
+    --ai-button-hover: #d81b60;
+    --ai-shadow: rgba(233, 30, 99, 0.3);
 }
 
-/* ========== 라이트 테마 CSS 변수 추가 ========== */
+/* 라이트 테마 CSS 변수 */
 body.light-theme {
     --primary-dark: #ffffff;
     --primary-light: #000000;
@@ -29,6 +44,21 @@ body.light-theme {
     --text-secondary: #6c757d;
     --border-color: #dee2e6;
     --new-indicator: #ff4444;
+    
+    /* 라이트 테마 AI 색상 */
+    --ai-primary: #E91E63;
+    --ai-secondary: #4A90E2;
+    --ai-accent: #D81B60;
+    --ai-bg-primary: rgba(233, 30, 99, 0.08);
+    --ai-bg-secondary: rgba(233, 30, 99, 0.03);
+    --ai-border: #dee2e6;
+    --ai-gradient-start: #E91E63;
+    --ai-gradient-end: #AD1457;
+    --ai-text: #000000;
+    --ai-overlay: rgba(255, 255, 255, 0.95);
+    --ai-modal-bg: #ffffff;
+    --ai-button-hover: #c2185b;
+    --ai-shadow: rgba(233, 30, 99, 0.2);
 }
 
 body {
@@ -82,7 +112,6 @@ body {
     transition: color 0.3s ease;
 }
 
-/* 라이트 테마에서 로고 색상 조정 */
 body.light-theme .logo {
     color: #000000;
 }
@@ -136,7 +165,6 @@ body.light-theme .logo {
     transition: background-color 0.3s ease;
 }
 
-/* 라이트 테마 로그인 모달 */
 body.light-theme .login-modal {
     background: #ffffff;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -180,7 +208,6 @@ body.light-theme .login-modal {
     transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
-/* 라이트 테마 입력 필드 */
 body.light-theme .form-group input {
     background: #ffffff;
     border: 1px solid var(--border-color);
@@ -247,7 +274,6 @@ body.light-theme .form-group input {
     transition: all 0.3s ease;
 }
 
-/* 라이트 테마 성별 버튼 */
 body.light-theme .gender-btn {
     background: #ffffff;
     border-color: var(--border-color);
@@ -313,7 +339,6 @@ body.light-theme .gender-btn {
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* 라이트 테마 카테고리 탭 */
 body.light-theme .category-tabs {
     background: #f8f9fa;
     border-bottom-color: var(--border-color);
@@ -337,7 +362,6 @@ body.light-theme .category-tabs {
     position: relative;
 }
 
-/* 라이트 테마 카테고리 탭 */
 body.light-theme .category-tab {
     background: #ffffff;
     color: var(--text-secondary);
@@ -349,7 +373,6 @@ body.light-theme .category-tab {
     color: #fff;
 }
 
-/* 라이트 테마 카테고리 탭 호버 */
 body.light-theme .category-tab:hover {
     background: #e9ecef;
     color: var(--text-primary);
@@ -374,7 +397,7 @@ body.light-theme .category-tab:hover {
     box-shadow: 0 2px 10px rgba(233, 30, 99, 0.4);
 }
 
-/* NEW 표시 (빨간 점) - 수정된 위치 */
+/* NEW 표시 (빨간 점) */
 .new-indicator {
     position: absolute;
     top: 5px;
@@ -412,7 +435,6 @@ body.light-theme .category-tab:hover {
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* 라이트 테마 서브 탭 */
 body.light-theme .sub-tabs {
     background: #ffffff;
     border-bottom-color: var(--border-color);
@@ -431,7 +453,6 @@ body.light-theme .sub-tabs {
     position: relative;
 }
 
-/* 라이트 테마 서브 탭 */
 body.light-theme .sub-tab {
     background: #e9ecef;
     color: var(--text-primary);
@@ -441,7 +462,6 @@ body.light-theme .sub-tab {
     background: #444;
 }
 
-/* 라이트 테마 서브 탭 호버 */
 body.light-theme .sub-tab:hover:not(.disabled) {
     background: #dee2e6;
 }
@@ -461,7 +481,6 @@ body.light-theme .sub-tab:hover:not(.disabled) {
     box-shadow: 0 2px 8px rgba(233, 30, 99, 0.4);
 }
 
-/* 비활성화된 서브카테고리 */
 .sub-tab.disabled {
     opacity: 0.3;
     cursor: not-allowed;
@@ -475,7 +494,6 @@ body.light-theme .sub-tab:hover:not(.disabled) {
     transition: background-color 0.3s ease;
 }
 
-/* 라이트 테마 스타일 컨테이너 */
 body.light-theme .styles-container {
     background: #ffffff;
 }
@@ -486,7 +504,6 @@ body.light-theme .styles-container {
     gap: 15px;
 }
 
-/* 태블릿: 5열 */
 @media (min-width: 768px) and (max-width: 1024px) {
     .styles-grid {
         grid-template-columns: repeat(5, 1fr);
@@ -494,7 +511,6 @@ body.light-theme .styles-container {
     }
 }
 
-/* 모바일: 2열 */
 @media (max-width: 767px) {
     .styles-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -506,6 +522,7 @@ body.light-theme .styles-container {
     }
 }
 
+/* ========== 스타일 카드 (텍스트 정보 표시) ========== */
 .style-card {
     background: transparent;
     border-radius: 10px;
@@ -521,13 +538,18 @@ body.light-theme .styles-container {
     box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
 }
 
-/* 라이트 테마 스타일 카드 호버 */
 body.light-theme .style-card:hover {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .style-card:active {
     transform: scale(0.98);
+}
+
+.style-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 .style-image {
@@ -538,19 +560,300 @@ body.light-theme .style-card:hover {
     border-radius: 10px;
 }
 
-/* 텍스트 정보 완전히 숨김 */
+/* 스타일 정보 텍스트 표시 */
 .style-info {
-    display: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3));
+    padding: 12px 8px 8px;
+    transition: all 0.3s ease;
+    border-radius: 0 0 10px 10px;
+}
+
+body.light-theme .style-info {
+    background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.7));
+    backdrop-filter: blur(8px);
 }
 
 .style-code {
-    display: none;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
 }
 
 .style-name {
-    display: none;
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    transition: color 0.3s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
+.style-card:hover .style-info {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.5));
+    transform: translateY(-2px);
+}
+
+body.light-theme .style-card:hover .style-info {
+    background: linear-gradient(to top, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.8));
+}
+
+.style-card:hover .style-code {
+    color: var(--female-color);
+}
+
+.style-card:hover .style-name {
+    color: #ffffff;
+}
+
+body.light-theme .style-card:hover .style-name {
+    color: #000000;
+}
+
+/* ========== AI 체험하기 버튼 오버레이 ========== */
+.ai-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg, 
+        rgba(0, 0, 0, 0) 0%, 
+        rgba(0, 0, 0, 0.3) 50%, 
+        rgba(0, 0, 0, 0.7) 100%
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+body.light-theme .ai-overlay {
+    background: linear-gradient(
+        135deg, 
+        rgba(255, 255, 255, 0) 0%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        rgba(255, 255, 255, 0.8) 100%
+    );
+}
+
+.style-card:hover .ai-overlay {
+    opacity: 1;
+}
+
+.ai-experience-btn {
+    background: linear-gradient(135deg, var(--ai-gradient-start), var(--ai-gradient-end));
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px var(--ai-shadow);
+    transform: translateY(10px);
+}
+
+.style-card:hover .ai-experience-btn {
+    transform: translateY(0);
+}
+
+.ai-experience-btn:hover {
+    background: linear-gradient(135deg, var(--ai-button-hover), var(--ai-gradient-end));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--ai-shadow);
+}
+
+.ai-experience-btn:active {
+    transform: translateY(0);
+}
+
+.ai-icon {
+    font-size: 14px;
+}
+
+/* ========== AI 사진 업로드 모달 ========== */
+.ai-photo-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--ai-overlay);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 6000;
+    padding: 20px;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+.ai-photo-modal.active {
+    display: flex;
+}
+
+.ai-modal-content {
+    background: var(--ai-modal-bg);
+    border: 2px solid var(--ai-primary);
+    border-radius: 20px;
+    max-width: 450px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalSlideUp 0.3s ease-out;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.ai-modal-header {
+    padding: 30px 30px 0;
+    text-align: center;
+    position: relative;
+}
+
+.ai-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: var(--ai-text);
+    font-size: 28px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.ai-modal-close:hover {
+    background: var(--ai-bg-primary);
+    transform: rotate(90deg);
+}
+
+.ai-modal-title {
+    color: var(--ai-primary);
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.ai-modal-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 25px;
+}
+
+.ai-modal-body {
+    padding: 0 30px 30px;
+}
+
+/* AI 사진 업로드 영역 */
+.ai-upload-area {
+    border: 2px dashed var(--ai-border);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    background: var(--ai-bg-secondary);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-upload-area:hover {
+    border-color: var(--ai-primary);
+    background: var(--ai-bg-primary);
+}
+
+.ai-upload-area.dragover {
+    border-color: var(--ai-primary);
+    background: var(--ai-bg-primary);
+    transform: scale(1.02);
+}
+
+.upload-placeholder {
+    pointer-events: none;
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.7;
+    display: block;
+}
+
+.upload-text {
+    font-size: 16px;
+    color: var(--ai-primary);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* AI 처리 버튼 */
+.ai-process-btn {
+    background: linear-gradient(135deg, var(--ai-gradient-start), var(--ai-gradient-end));
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px var(--ai-shadow);
+    min-width: 180px;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-process-btn:hover {
+    background: linear-gradient(135deg, var(--ai-button-hover), var(--ai-gradient-end));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--ai-shadow);
+}
+
+.ai-process-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 빈 상태 */
 .empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -559,7 +862,6 @@ body.light-theme .style-card:hover {
     transition: color 0.3s ease;
 }
 
-/* 라이트 테마 빈 상태 */
 body.light-theme .empty-state {
     color: var(--text-secondary);
 }
@@ -578,7 +880,6 @@ body.light-theme .empty-state {
     border-radius: 10px;
 }
 
-/* 라이트 테마 로딩 스켈레톤 */
 body.light-theme .skeleton-card {
     background: linear-gradient(90deg, #f8f9fa 25%, #e9ecef 50%, #f8f9fa 75%);
     background-size: 200% 100%;
@@ -607,7 +908,6 @@ body.light-theme .skeleton-card {
     overflow-y: auto;
 }
 
-/* 라이트 테마 사이드바 */
 body.light-theme .sidebar {
     background: #ffffff;
     border-left-color: var(--border-color);
@@ -627,7 +927,6 @@ body.light-theme .sidebar {
     transition: border-color 0.3s ease;
 }
 
-/* 라이트 테마 사이드바 헤더 */
 body.light-theme .sidebar-header {
     border-bottom-color: var(--border-color);
 }
@@ -658,7 +957,6 @@ body.light-theme .sidebar-header {
     transition: background-color 0.3s ease;
 }
 
-/* 라이트 테마 사용자 정보 */
 body.light-theme .user-info {
     background: #f8f9fa;
     border: 1px solid var(--border-color);
@@ -710,7 +1008,6 @@ body.light-theme .user-info {
     transition: background-color 0.3s ease;
 }
 
-/* 라이트 테마 로딩 오버레이 */
 body.light-theme .loading-overlay {
     background: rgba(255, 255, 255, 0.9);
 }
@@ -725,7 +1022,6 @@ body.light-theme .loading-overlay {
     transition: border-color 0.3s ease;
 }
 
-/* 라이트 테마 로딩 스피너 */
 body.light-theme .loading-spinner {
     border-color: var(--border-color);
     border-top-color: var(--female-color);
@@ -751,7 +1047,6 @@ body.light-theme .loading-spinner {
     transition: opacity 0.3s ease, background-color 0.3s ease;
 }
 
-/* 라이트 테마 토스트 */
 body.light-theme .toast {
     background: #ffffff;
     color: var(--text-primary);
@@ -787,7 +1082,6 @@ body.light-theme .toast {
     transition: background-color 0.3s ease;
 }
 
-/* 라이트 테마 모달 오버레이 */
 body.light-theme .style-modal {
     background: rgba(255, 255, 255, 0.95);
 }
@@ -809,7 +1103,6 @@ body.light-theme .style-modal {
     transition: background-color 0.3s ease;
 }
 
-/* 라이트 테마 모달 콘텐츠 */
 body.light-theme .style-modal-content {
     background: #ffffff;
 }
@@ -837,7 +1130,6 @@ body.light-theme .style-modal-content {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* 라이트 테마 모달 닫기 버튼 호버 */
 body.light-theme .style-modal-close:hover {
     background: rgba(0, 0, 0, 0.1);
 }
@@ -879,7 +1171,6 @@ body.light-theme .style-modal-close:hover {
     transition: background-color 0.3s ease;
 }
 
-/* 라이트 테마 모달 디테일 */
 body.light-theme .style-modal-details {
     background: #f8f9fa;
     border: 1px solid var(--border-color);
@@ -895,7 +1186,6 @@ body.light-theme .style-modal-details {
     transition: border-color 0.3s ease;
 }
 
-/* 라이트 테마 디테일 로우 */
 body.light-theme .style-detail-row {
     border-bottom-color: var(--border-color);
 }
@@ -944,7 +1234,6 @@ body.light-theme .style-detail-row {
     background: #333;
 }
 
-/* 라이트 테마 보조 버튼 */
 body.light-theme .modal-action-btn.secondary {
     background: #6c757d;
 }
@@ -953,11 +1242,39 @@ body.light-theme .modal-action-btn.secondary {
     background: #444;
 }
 
-/* 라이트 테마 보조 버튼 호버 */
 body.light-theme .modal-action-btn.secondary:hover {
     background: #5a6268;
 }
 
+/* 테마 전환 버튼 */
+.theme-toggle {
+    background: none;
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.theme-toggle:hover {
+    border-color: var(--female-color);
+    color: var(--female-color);
+    background: rgba(233, 30, 99, 0.1);
+}
+
+.theme-toggle:focus {
+    outline: 2px solid var(--female-color);
+    outline-offset: 2px;
+}
+
+/* 애니메이션 */
 @keyframes modalSlideUp {
     from {
         opacity: 0;
@@ -966,6 +1283,36 @@ body.light-theme .modal-action-btn.secondary:hover {
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 모바일 최적화 */
+@media (max-width: 767px) {
+    .style-info {
+        padding: 10px 6px 6px;
+    }
+    
+    .style-code {
+        font-size: 9px;
+    }
+    
+    .style-name {
+        font-size: 11px;
+    }
+    
+    .ai-experience-btn {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+    
+    .ai-modal-content {
+        margin: 10px;
+        max-width: calc(100% - 20px);
     }
 }
 
@@ -1001,32 +1348,4 @@ body.light-theme .modal-action-btn.secondary:hover {
     .style-modal-actions {
         flex-direction: column;
     }
-}
-
-/* ========== 라이트 테마 전환 버튼 (추가) ========== */
-.theme-toggle {
-    background: none;
-    border: 2px solid var(--border-color);
-    color: var(--text-primary);
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-}
-
-.theme-toggle:hover {
-    border-color: var(--female-color);
-    color: var(--female-color);
-    background: rgba(233, 30, 99, 0.1);
-}
-
-.theme-toggle:focus {
-    outline: 2px solid var(--female-color);
-    outline-offset: 2px;
 }
