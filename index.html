@@ -659,14 +659,20 @@
         }
 
         // 성별 선택
-        function selectGender(gender) {
-            currentGender = gender;
-            
-            genderSelection.style.display = 'none';
-            menuContainer.classList.add('active');
-            
-            loadMenuData(gender);
-        }
+function selectGender(gender) {
+    currentGender = gender;
+    
+    genderSelection.style.display = 'none';
+    menuContainer.classList.add('active');
+    
+    // 새로운 메뉴 시스템 사용
+    if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.loadMenuForGender) {
+        window.HAIRGATOR_MENU.loadMenuForGender(gender);
+    } else {
+        // 기존 방식 유지 (fallback)
+        loadMenuData(gender);
+    }
+}
 
         // 메뉴 데이터 로드 (스마트 필터링 적용)
         async function loadMenuData(gender) {
@@ -1098,4 +1104,5 @@
     </style>
 </body>
 </html>
+
 
