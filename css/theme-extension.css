@@ -1,10 +1,10 @@
-/* HAIRGATOR 테마 확장 시스템 - 기존 디자인 유지 */
+/* HAIRGATOR - 깨진 텍스트 제거, 깔끔한 테마 시스템 */
 
-/* ========== 기본 다크 테마 ========== */
+/* ========== 기본 다크 테마 (기존 디자인 유지) ========== */
 body {
     background: #000;
     color: #fff;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 /* ========== 라이트 테마 ========== */
@@ -15,7 +15,6 @@ body.light-theme {
 
 body.light-theme .header {
     background: rgba(255, 255, 255, 0.95);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     color: #000;
 }
 
@@ -27,18 +26,6 @@ body.light-theme .sidebar {
 body.light-theme .main-tabs,
 body.light-theme .sub-tabs {
     background: rgba(245, 245, 245, 0.95);
-}
-
-body.light-theme .category-tab,
-body.light-theme .subcategory-tab {
-    background: #fff;
-    color: #333;
-    border: 1px solid #ddd;
-}
-
-body.light-theme .menu-item {
-    background: #fff;
-    border: 1px solid #ddd;
 }
 
 /* ========== 블루 테마 ========== */
@@ -54,44 +41,6 @@ body.blue-theme .header {
 
 body.blue-theme .sidebar {
     background: rgba(13, 20, 33, 0.95);
-    border-left: 1px solid rgba(33, 150, 243, 0.3);
-}
-
-body.blue-theme .main-tabs,
-body.blue-theme .sub-tabs {
-    background: rgba(22, 32, 50, 0.9);
-    border-bottom: 1px solid rgba(33, 150, 243, 0.3);
-}
-
-body.blue-theme .category-tab,
-body.blue-theme .subcategory-tab {
-    background: rgba(30, 42, 66, 0.8);
-    color: #bbdefb;
-    border: 1px solid rgba(33, 150, 243, 0.3);
-}
-
-body.blue-theme .category-tab:hover,
-body.blue-theme .subcategory-tab:hover {
-    background: rgba(37, 51, 82, 0.9);
-    border-color: #2196f3;
-}
-
-body.blue-theme .category-tab.active,
-body.blue-theme .subcategory-tab.active {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-    box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
-}
-
-body.blue-theme .menu-item {
-    background: rgba(37, 51, 82, 0.8);
-    border: 1px solid rgba(33, 150, 243, 0.3);
-}
-
-body.blue-theme .menu-item:hover {
-    border-color: #2196f3;
-    box-shadow: 0 8px 25px rgba(33, 150, 243, 0.3);
 }
 
 /* ========== 퍼플 테마 ========== */
@@ -107,44 +56,6 @@ body.purple-theme .header {
 
 body.purple-theme .sidebar {
     background: rgba(26, 13, 26, 0.95);
-    border-left: 1px solid rgba(156, 39, 176, 0.3);
-}
-
-body.purple-theme .main-tabs,
-body.purple-theme .sub-tabs {
-    background: rgba(45, 27, 45, 0.9);
-    border-bottom: 1px solid rgba(156, 39, 176, 0.3);
-}
-
-body.purple-theme .category-tab,
-body.purple-theme .subcategory-tab {
-    background: rgba(61, 42, 61, 0.8);
-    color: #e1bee7;
-    border: 1px solid rgba(156, 39, 176, 0.3);
-}
-
-body.purple-theme .category-tab:hover,
-body.purple-theme .subcategory-tab:hover {
-    background: rgba(74, 52, 74, 0.9);
-    border-color: #9c27b0;
-}
-
-body.purple-theme .category-tab.active,
-body.purple-theme .subcategory-tab.active {
-    background: #9c27b0;
-    color: white;
-    border-color: #9c27b0;
-    box-shadow: 0 0 15px rgba(156, 39, 176, 0.5);
-}
-
-body.purple-theme .menu-item {
-    background: rgba(61, 42, 61, 0.8);
-    border: 1px solid rgba(156, 39, 176, 0.3);
-}
-
-body.purple-theme .menu-item:hover {
-    border-color: #9c27b0;
-    box-shadow: 0 8px 25px rgba(156, 39, 176, 0.3);
 }
 
 /* ========== 그린 테마 ========== */
@@ -160,47 +71,9 @@ body.green-theme .header {
 
 body.green-theme .sidebar {
     background: rgba(13, 20, 16, 0.95);
-    border-left: 1px solid rgba(76, 175, 80, 0.3);
 }
 
-body.green-theme .main-tabs,
-body.green-theme .sub-tabs {
-    background: rgba(27, 46, 27, 0.9);
-    border-bottom: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-body.green-theme .category-tab,
-body.green-theme .subcategory-tab {
-    background: rgba(42, 61, 42, 0.8);
-    color: #c8e6c9;
-    border: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-body.green-theme .category-tab:hover,
-body.green-theme .subcategory-tab:hover {
-    background: rgba(52, 74, 52, 0.9);
-    border-color: #4caf50;
-}
-
-body.green-theme .category-tab.active,
-body.green-theme .subcategory-tab.active {
-    background: #4caf50;
-    color: white;
-    border-color: #4caf50;
-    box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
-}
-
-body.green-theme .menu-item {
-    background: rgba(42, 61, 42, 0.8);
-    border: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-body.green-theme .menu-item:hover {
-    border-color: #4caf50;
-    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
-}
-
-/* ========== 테마 옵션 스타일 ========== */
+/* ========== 테마 옵션 UI ========== */
 .theme-options {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
@@ -238,34 +111,17 @@ body.green-theme .menu-item:hover {
     margin: 0 auto 5px;
 }
 
-.theme-preview.dark {
-    background: #000;
-}
+.theme-preview.dark { background: #000; }
+.theme-preview.light-theme { background: #fff; }
+.theme-preview.blue-theme { background: #2196f3; }
+.theme-preview.purple-theme { background: #9c27b0; }
+.theme-preview.green-theme { background: #4caf50; }
 
-.theme-preview.light-theme {
-    background: #fff;
-}
-
-.theme-preview.blue-theme {
-    background: #2196f3;
-}
-
-.theme-preview.purple-theme {
-    background: #9c27b0;
-}
-
-.theme-preview.green-theme {
-    background: #4caf50;
-}
-
-/* ========== 테마 전환 애니메이션 ========== */
+/* ========== 부드러운 전환 효과 ========== */
 body,
 .header,
 .sidebar,
 .main-tabs,
-.sub-tabs,
-.category-tab,
-.subcategory-tab,
-.menu-item {
+.sub-tabs {
     transition: all 0.3s ease;
 }
