@@ -705,6 +705,9 @@
                 tab.addEventListener('click', () => selectCategory(category, gender));
                 categoryTabs.appendChild(tab);
                 
+                // 디버깅: 카테고리 클릭 이벤트 확인
+                console.log(`카테고리 탭 생성: ${category.name} (ID: ${category.id})`);
+                
                 // 백그라운드에서 NEW 표시 확인 및 추가
                 setTimeout(async () => {
                     const subInfo = await checkSubcategoriesAndNew(gender, category.name);
@@ -769,8 +772,11 @@
                 }
             });
             
+            // Firebase에서 사용하는 카테고리 이름 매핑
+            const categoryName = category.name;
+            
             // 해당 카테고리의 서브카테고리 정보 확인
-            const subInfo = await checkSubcategoriesAndNew(gender, category.name);
+            const subInfo = await checkSubcategoriesAndNew(gender, categoryName);
             const menuData = MENU_DATA[gender];
             
             // 스마트 필터링된 서브카테고리 렌더링
@@ -779,9 +785,9 @@
             // 첫 번째 사용 가능한 서브카테고리로 스타일 로드
             const firstAvailableSub = subInfo.available[0] || 'None';
             currentSubcategory = firstAvailableSub;
-            loadStyles(category.name, firstAvailableSub, gender);
+            loadStyles(categoryName, firstAvailableSub, gender);
             
-            console.log(`✅ 카테고리 선택: ${category.name} (사용가능한 서브: ${subInfo.available.length}개)`);
+            console.log(`✅ 카테고리 선택: ${categoryName} (사용가능한 서브: ${subInfo.available.length}개)`);
         }
 
         // 서브카테고리 선택
