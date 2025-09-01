@@ -338,18 +338,18 @@
 
         /* NEW 표시 (빨간 점) */
         .new-indicator {
-            position: absolute;
-            top: -3px;
-            right: -3px;
-            width: 8px;
-            height: 8px;
-            background: var(--new-indicator);
-            border-radius: 50%;
-            box-shadow: 0 0 6px rgba(255, 68, 68, 0.6);
-            animation: pulse-red 2s infinite;
-            z-index: 10;
-            pointer-events: none;
-        }
+    position: absolute;
+    top: 5px;  /* -3px에서 5px로 변경 */
+    right: 5px; /* -3px에서 5px로 변경 (선택사항) */
+    width: 8px;
+    height: 8px;
+    background: var(--new-indicator);
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(255, 68, 68, 0.6);
+    animation: pulse-red 2s infinite;
+    z-index: 10;
+    pointer-events: none;
+}
 
         @keyframes pulse-red {
             0%, 100% { 
@@ -1806,3 +1806,4 @@
     </script>
 </body>
 </html>
+
