@@ -120,23 +120,22 @@
 
         <!-- 메뉴 컨테이너 -->
         <div class="menu-container" id="menuContainer">
-           <!-- 카테고리 탭 -->
-<div class="category-tabs" id="categoryTabs">
-    <!-- 동적 생성 -->
-</div>
+            <!-- 카테고리 탭 -->
+            <div class="category-tabs" id="categoryTabs">
+                <!-- 동적 생성 -->
+            </div>
 
-<!-- 여기에 추가 시작 -->
-<div class="category-description" id="categoryDescription">
-    <div class="category-description-text">
-        카테고리를 선택하면 설명이 표시됩니다.
-    </div>
-</div>
-<!-- 여기까지 추가 끝 -->
+            <!-- 카테고리 설명 -->
+            <div class="category-description" id="categoryDescription">
+                <div class="category-description-text">
+                    카테고리를 선택하면 설명이 표시됩니다.
+                </div>
+            </div>
 
-<!-- 서브카테고리 탭 -->
-<div class="sub-tabs" id="subTabs">
-    <!-- 동적 생성 -->
-</div>
+            <!-- 서브카테고리 탭 -->
+            <div class="sub-tabs" id="subTabs">
+                <!-- 동적 생성 -->
+            </div>
             
             <!-- 스타일 컨테이너 -->
             <div class="styles-container">
@@ -228,35 +227,6 @@
         let newItemsCache = new Map();
         const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
 
-        // 메뉴 데이터 정의
-        const MENU_DATA = {
-            male: {
-                categories: [
-                    { id: 'side-fringe', name: 'SIDE FRINGE' },
-                    { id: 'side-part', name: 'SIDE PART' },
-                    { id: 'fringe-up', name: 'FRINGE UP' },
-                    { id: 'pushed-back', name: 'PUSHED BACK' },
-                    { id: 'buzz', name: 'BUZZ' },
-                    { id: 'crop', name: 'CROP' },
-                    { id: 'mohican', name: 'MOHICAN' }
-                ],
-                subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
-            },
-            female: {
-                categories: [
-                    { id: 'a-length', name: 'A Length' },
-                    { id: 'b-length', name: 'B Length' },
-                    { id: 'c-length', name: 'C Length' },
-                    { id: 'd-length', name: 'D Length' },
-                    { id: 'e-length', name: 'E Length' },
-                    { id: 'f-length', name: 'F Length' },
-                    { id: 'g-length', name: 'G Length' },
-                    { id: 'h-length', name: 'H Length' }
-                ],
-                subcategories: ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone']
-            }
-        };
-
         // DOM 요소
         const loginScreen = document.getElementById('loginScreen');
         const genderSelection = document.getElementById('genderSelection');
@@ -290,56 +260,6 @@
             if (themeButton) {
                 themeButton.textContent = isLight ? '☀️' : '🌙';
                 themeButton.title = isLight ? '다크 모드로 변경' : '라이트 모드로 변경';
-            }
-        }
-
-        // 🔥 스마트 필터링 & NEW 표시 시스템
-        
-        // 사용 가능한 서브카테고리 & NEW 아이템 확인
-        async function checkSubcategoriesAndNew(gender, categoryName) {
-            const cacheKey = `${gender}-${categoryName}`;
-            
-            if (availableSubcategories.has(cacheKey)) {
-                return availableSubcategories.get(cacheKey);
-            }
-            
-            try {
-                const snapshot = await db.collection('hairstyles')
-                    .where('gender', '==', gender)
-                    .where('mainCategory', '==', categoryName)
-                    .get();
-                
-                const availableSubs = new Set();
-                const newCounts = {};
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    availableSubs.add(data.subCategory);
-                    
-                    // 7일 이내 생성된 아이템인지 확인
-                    const createdAt = data.createdAt?.toDate?.() || new Date(0);
-                    if (createdAt.getTime() > newItemsTimestamp) {
-                        newCounts[data.subCategory] = (newCounts[data.subCategory] || 0) + 1;
-                    }
-                });
-                
-                const result = {
-                    available: Array.from(availableSubs),
-                    newCounts: newCounts
-                };
-                
-                // 캐시에 저장
-                availableSubcategories.set(cacheKey, result);
-                
-                console.log(`✅ 서브카테고리 확인 완료: ${categoryName}`, result);
-                return result;
-                
-            } catch (error) {
-                console.error('서브카테고리 확인 오류:', error);
-                return {
-                    available: MENU_DATA[gender].subcategories,
-                    newCounts: {}
-                };
             }
         }
 
@@ -661,157 +581,26 @@
             }
         }
 
-        // 성별 선택
-function selectGender(gender) {
-    currentGender = gender;
-    
-    genderSelection.style.display = 'none';
-    menuContainer.classList.add('active');
-    
-    // menu.js의 새로운 메뉴 시스템만 사용
-    if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.loadMenuForGender) {
-        console.log(`🎯 새로운 메뉴 시스템 사용: ${gender}`);
-        window.HAIRGATOR_MENU.loadMenuForGender(gender);
-    } else {
-        console.error('❌ HAIRGATOR_MENU가 로드되지 않았습니다');
-        showToast('메뉴 시스템 오류입니다', 'error');
-    }
-}
-
-
-        // 스타일 카드 생성 (NEW 표시 포함)
-        function createStyleCard(style, docId) {
-            const card = document.createElement('div');
-            card.className = 'style-card';
+        // 성별 선택 (menu.js의 새로운 시스템만 사용)
+        function selectGender(gender) {
+            currentGender = gender;
             
-            // 이미지 먼저 생성
-            const img = document.createElement('img');
-            img.className = 'style-image';
-            img.src = style.imageUrl || '';
-            img.alt = style.name || 'Style';
-            img.loading = 'lazy';
+            genderSelection.style.display = 'none';
+            menuContainer.classList.add('active');
             
-            img.onerror = function() {
-                this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                this.style.display = 'block';
-            };
-            
-            card.appendChild(img);
-            
-            // NEW 표시 (7일 이내 등록된 경우)
-            const createdAt = style.createdAt?.toDate?.() || new Date(0);
-            const isNew = createdAt.getTime() > newItemsTimestamp;
-            
-            if (isNew) {
-                const newIndicator = createNewIndicator();
-                card.appendChild(newIndicator);
+            // menu.js의 새로운 메뉴 시스템만 사용
+            if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.loadMenuForGender) {
+                console.log(`🎯 새로운 메뉴 시스템 사용: ${gender}`);
+                window.HAIRGATOR_MENU.loadMenuForGender(gender);
+            } else {
+                console.error('❌ HAIRGATOR_MENU가 로드되지 않았습니다');
+                showToast('메뉴 시스템 오류입니다', 'error');
             }
-            
-            // 클릭 이벤트 - 모달 열기
-            card.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // 시각적 피드백
-                card.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    card.style.transform = '';
-                }, 150);
-                
-                // 햅틱 피드백 (모바일)
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-                
-                console.log('스타일 클릭됨:', { 
-                    code: style.code || 'NO_CODE', 
-                    name: style.name || 'NO_NAME',
-                    docId: docId 
-                });
-                
-                // 스타일 상세 모달 열기
-                openStyleModal(style, docId);
-                
-            }, { passive: false });
-            
-            return card;
-        }
-
-        // 스타일 상세 모달 열기
-        function openStyleModal(style, docId) {
-            const modal = document.getElementById('styleModal');
-            const modalImage = document.getElementById('styleModalImage');
-            const modalCode = document.getElementById('styleModalCode');
-            const modalName = document.getElementById('styleModalName');
-            const modalCategory = document.getElementById('styleModalCategory');
-            const modalSubcategory = document.getElementById('styleModalSubcategory');
-            const modalGender = document.getElementById('styleModalGender');
-            
-            // 모달 정보 설정
-            modalImage.src = style.imageUrl || '';
-            modalImage.onerror = function() {
-                this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                this.style.display = 'block';
-            };
-            
-            modalCode.textContent = style.code || 'NO CODE';
-            modalName.textContent = style.name || '이름 없음';
-            modalCategory.textContent = style.mainCategory || '-';
-            modalSubcategory.textContent = style.subCategory || '-';
-            modalGender.textContent = style.gender === 'male' ? '남성' : style.gender === 'female' ? '여성' : '-';
-            
-            // 모달 표시
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            
-            console.log('스타일 모달 열림:', { 
-                code: style.code, 
-                name: style.name,
-                category: style.mainCategory,
-                subcategory: style.subCategory 
-            });
-        }
-
-        // 스타일 모달 닫기
-        function closeStyleModal() {
-            const modal = document.getElementById('styleModal');
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        // 스켈레톤 카드 표시
-        function showSkeletonCards() {
-            const stylesGrid = document.getElementById('stylesGrid');
-            stylesGrid.innerHTML = '';
-            
-            const fragment = document.createDocumentFragment();
-            const count = window.innerWidth <= 767 ? 8 : 15;
-            
-            for (let i = 0; i < count; i++) {
-                const skeleton = document.createElement('div');
-                skeleton.className = 'skeleton-card';
-                fragment.appendChild(skeleton);
-            }
-            
-            stylesGrid.appendChild(fragment);
-        }
-
-        // 에러 상태 표시
-        function showErrorState(message) {
-            const stylesGrid = document.getElementById('stylesGrid');
-            stylesGrid.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">⚠️</div>
-                    <div style="font-size: 18px;">로드 실패</div>
-                    <div style="font-size: 14px; color: #666; margin-top: 10px;">${message}</div>
-                    <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: var(--female-color); color: white; border: none; border-radius: 5px; cursor: pointer;">새로고침</button>
-                </div>
-            `;
         }
 
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🦎 HAIRGATOR 시작 - 스마트 필터링 & NEW 표시 시스템');
+            console.log('🦎 HAIRGATOR 시작 - 최종 완료 버전');
             
             // 테마 로드
             loadTheme();
@@ -824,13 +613,19 @@ function selectGender(gender) {
             const styleModal = document.getElementById('styleModal');
             
             if (styleModalClose) {
-                styleModalClose.addEventListener('click', closeStyleModal);
+                styleModalClose.addEventListener('click', function() {
+                    if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.closeStyleModal) {
+                        window.HAIRGATOR_MENU.closeStyleModal();
+                    }
+                });
             }
             
             if (styleModal) {
                 styleModal.addEventListener('click', function(e) {
                     if (e.target === styleModal) {
-                        closeStyleModal();
+                        if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.closeStyleModal) {
+                            window.HAIRGATOR_MENU.closeStyleModal();
+                        }
                     }
                 });
             }
@@ -838,7 +633,9 @@ function selectGender(gender) {
             // ESC 키로 모달 닫기
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && styleModal.classList.contains('active')) {
-                    closeStyleModal();
+                    if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.closeStyleModal) {
+                        window.HAIRGATOR_MENU.closeStyleModal();
+                    }
                 }
             });
         });
@@ -903,9 +700,3 @@ function selectGender(gender) {
     </style>
 </body>
 </html>
-
-
-
-
-
-
