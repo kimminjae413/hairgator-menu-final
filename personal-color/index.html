@@ -1019,33 +1019,17 @@
 
         // MediaPipe 초기화
         async function initializeMediaPipe() {
-            try {
-                if (typeof FaceDetection !== 'undefined') {
-                    faceDetection = new FaceDetection({
-                        locateFile: (file) => {
-                            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`;
-                        }
-                    });
-                    
-                    faceDetection.setOptions({
-                        model: 'short',
-                        minDetectionConfidence: 0.5,
-                    });
-                    
-                    faceDetection.onResults(onFaceDetectionResults);
-                    
-                    console.log('✅ MediaPipe 초기화 완료');
-                    updateDataStatus('AI 얼굴 인식 준비됨', 'success');
-                } else {
-                    console.warn('⚠️ MediaPipe 라이브러리가 로드되지 않음 - 기본 모드로 동작');
-                    updateDataStatus('기본 모드로 동작', 'warning');
-                }
-            } catch (error) {
-                console.error('❌ MediaPipe 초기화 실패:', error);
-                updateDataStatus('AI 얼굴 인식 오류', 'error');
-            }
-        }
-
+    try {
+        // MediaPipe 초기화는 카메라 시작할 때만 하도록 변경
+        console.log('✅ MediaPipe 지연 로딩으로 설정 완료');
+        updateDataStatus('MediaPipe 지연 로딩 준비', 'success');
+        return true;
+    } catch (error) {
+        console.error('❌ MediaPipe 설정 실패:', error);
+        updateDataStatus('기본 모드로 동작', 'warning');
+        return false;
+    }
+}
         function loadHairColorData() {
             return new Promise((resolve) => {
                 // 부모 창의 헤어컬러 데이터 확인
@@ -1440,11 +1424,28 @@
                 
                 showToast('카메라를 준비하고 있습니다...', 'info');
                 
-                // MediaPipe 먼저 초기화 (카메라 시작할 때만)
-                if (!faceDetection) {
-                    console.log('🤖 MediaPipe 초기화 시작...');
-                    await initializeMediaPipe();
-                }
+             // MediaPipe 실제 초기화 (카메라 시작할 때만)
+if (!faceDetection && typeof FaceDetection !== 'undefined') {
+    console.log('🤖 MediaPipe 실제 초기화 시작...');
+    try {
+        faceDetection = new FaceDetection({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`;
+            }
+        });
+        
+        faceDetection.setOptions({
+            model: 'short',
+            minDetectionConfidence: 0.5,
+        });
+        
+        faceDetection.onResults(onFaceDetectionResults);
+        console.log('✅ MediaPipe 초기화 완료');
+    } catch (error) {
+        console.warn('⚠️ MediaPipe 초기화 실패:', error);
+        faceDetection = null;
+    }
+}
                 
                 // 카메라 스트림 시작
                 const stream = await navigator.mediaDevices.getUserMedia({
