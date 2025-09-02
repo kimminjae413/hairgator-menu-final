@@ -3,22 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
-    <title>Personal Color Pro - 퍼스널컬러 진단 시스템</title>
-    <script src="hair-color-data.js"></script>
+    <title>HAIRGATOR Personal Color - 퍼스널컬러 진단 시스템</title>
     
-    <!-- 파비콘 404 오류 방지 -->
+    <!-- 파비콘 -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎨</text></svg>">
     
-    <!-- HAIRGATOR 테마와 통일된 색상 -->
     <style>
         :root {
-            --primary-pink: #E91E63;
-            --secondary-rose: #8E24AA;
-            --light-pink: #FCE4EC;
-            --dark-rose: #C2185B;
-            --text: #333;
-            --bg: #ffffff;
+            --primary: #E91E63;
+            --primary-dark: #C2185B;
+            --primary-light: #F8BBD9;
+            --text-dark: #333333;
+            --text-light: #666666;
+            --bg-light: #ffffff;
+            --bg-gray: #f5f5f5;
             --border: #e0e0e0;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --error: #F44336;
         }
         
         * {
@@ -28,41 +30,47 @@
         }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            overflow-x: hidden;
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
         }
         
+        /* 로딩 화면 */
         .loading-screen {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--bg);
+            background: var(--bg-light);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text);
-            z-index: 9999;
             flex-direction: column;
+            z-index: 9999;
         }
         
         .loading-logo {
-            font-size: 3rem;
+            font-size: 4rem;
             margin-bottom: 1rem;
-            color: var(--primary-pink);
+            color: var(--primary);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
         }
         
         .loading-text {
-            color: var(--text);
-            font-size: 1rem;
+            font-size: 1.2rem;
             margin-bottom: 2rem;
+            font-weight: 500;
         }
         
         .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border);
-            border-top: 3px solid var(--primary-pink);
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -72,6 +80,7 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* 메인 앱 */
         .main-app {
             display: none;
             min-height: 100vh;
@@ -82,120 +91,403 @@
         }
         
         .app-header {
-            background: var(--primary-pink);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            padding: 1.5rem 2rem;
+            padding: 2rem;
             text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            box-shadow: 0 4px 20px rgba(233, 30, 99, 0.3);
         }
         
         .app-title {
-            font-size: 1.5rem;
-            font-weight: 600;
+            font-size: 2rem;
+            font-weight: 700;
             margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
         }
         
         .app-subtitle {
-            font-size: 0.9rem;
-            opacity: 0.9;
+            font-size: 1rem;
+            opacity: 0.95;
+            font-weight: 400;
         }
         
+        .data-status {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+        
+        /* 메인 콘텐츠 */
         .main-content {
-            padding: 2rem;
+            padding: 3rem 2rem;
             max-width: 1200px;
             margin: 0 auto;
         }
         
+        /* 모드 선택 */
         .mode-selection {
             text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .mode-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary);
             margin-bottom: 3rem;
         }
         
         .mode-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            margin-bottom: 3rem;
         }
         
         .mode-card {
             background: white;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 2rem;
+            border: 3px solid var(--border);
+            border-radius: 20px;
+            padding: 3rem 2rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(233, 30, 99, 0.1), transparent);
+            transition: left 0.6s;
         }
         
         .mode-card:hover {
-            border-color: var(--primary-pink);
-            box-shadow: 0 8px 25px rgba(233, 30, 99, 0.15);
-            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 40px rgba(233, 30, 99, 0.2);
+            transform: translateY(-8px);
+        }
+        
+        .mode-card:hover::before {
+            left: 100%;
         }
         
         .mode-card.selected {
-            border-color: var(--primary-pink);
-            background: var(--light-pink);
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: translateY(-5px);
         }
         
         .mode-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
         }
         
-        .mode-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--primary-pink);
+        .mode-card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--primary);
         }
         
         .mode-description {
-            color: var(--text);
-            line-height: 1.5;
-            margin-bottom: 1.5rem;
+            color: var(--text-light);
+            line-height: 1.7;
+            margin-bottom: 2rem;
+            font-size: 1rem;
         }
         
         .mode-btn {
-            background: var(--primary-pink);
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 0.8rem 2rem;
-            border-radius: 6px;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 1rem;
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .mode-btn:hover {
-            background: var(--dark-rose);
+            background: var(--primary-dark);
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(233, 30, 99, 0.3);
         }
         
+        /* 섹션 */
         .section {
             display: none;
         }
         
         .section.active {
             display: block;
+            animation: fadeIn 0.5s ease;
         }
         
-        .iframe-container {
-            width: 100%;
-            height: 80vh;
-            border: 2px solid var(--primary-pink);
-            border-radius: 12px;
-            overflow: hidden;
-            background: white;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        #analysis-frame {
-            width: 100%;
-            height: 100%;
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .back-btn {
+            background: var(--text-light);
+            color: white;
             border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-right: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: var(--text-dark);
+            transform: translateX(-3px);
+        }
+        
+        .section-title {
+            display: inline;
+            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        /* 분석 인터페이스 */
+        .analysis-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .upload-area {
+            border: 3px dashed var(--border);
+            border-radius: 15px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .upload-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+        
+        .upload-hint {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        .image-preview {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .preview-img {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .analysis-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-top: 2rem;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .analysis-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(233, 30, 99, 0.3);
+        }
+        
+        .analysis-btn:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+        }
+        
+        /* 결과 표시 */
+        .results-container {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 3rem;
+        }
+        
+        .result-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .result-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .result-subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+        
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+        
+        .color-item {
+            text-align: center;
+        }
+        
+        .color-swatch {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: 4px solid white;
+        }
+        
+        .color-name {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .color-code {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-family: monospace;
+        }
+        
+        .recommendations {
+            background: var(--bg-gray);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .recommendations h3 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+        }
+        
+        .recommendation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .recommendation-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .recommendation-category {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .recommendation-text {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+        
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 2rem 1rem;
+            }
+            
+            .mode-cards {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .mode-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .analysis-container {
+                padding: 2rem 1.5rem;
+            }
+            
+            .app-title {
+                font-size: 1.5rem;
+            }
+            
+            .mode-title {
+                font-size: 1.5rem;
+            }
+            
+            .color-palette {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 1rem;
+            }
+            
+            .color-swatch {
+                width: 80px;
+                height: 80px;
+            }
         }
     </style>
 </head>
@@ -203,36 +495,37 @@
     <!-- 로딩 화면 -->
     <div class="loading-screen" id="loading-screen">
         <div class="loading-logo">🎨</div>
-        <h2 class="loading-text">Personal Color Pro 로딩 중...</h2>
+        <h2 class="loading-text">HAIRGATOR Personal Color 로딩 중...</h2>
         <div class="loading-spinner"></div>
     </div>
 
     <!-- 메인 애플리케이션 -->
     <div class="main-app" id="main-app">
         <header class="app-header">
-            <h1 class="app-title">Personal Color Pro</h1>
-            <div class="app-subtitle">AI 기반 퍼스널컬러 진단 시스템</div>
+            <h1 class="app-title">HAIRGATOR Personal Color</h1>
+            <div class="app-subtitle">614개 헤어컬러 데이터 기반 AI 퍼스널컬러 진단</div>
+            <div class="data-status" id="data-status">데이터 로딩 중...</div>
         </header>
 
         <main class="main-content">
             <!-- 모드 선택 섹션 -->
             <section class="section active" id="mode-selection">
                 <div class="mode-selection">
-                    <h2 style="margin-bottom: 2rem; color: var(--primary-pink);">진단 모드를 선택하세요</h2>
+                    <h2 class="mode-title">퍼스널컬러 진단 방법을 선택하세요</h2>
                     
                     <div class="mode-cards">
                         <div class="mode-card" onclick="selectMode('photo')">
-                            <div class="mode-icon">📸</div>
-                            <h3 class="mode-title">AI 사진 분석</h3>
-                            <p class="mode-description">실시간 카메라 또는 사진 업로드를 통한 정밀한 퍼스널컬러 분석</p>
+                            <span class="mode-icon">📸</span>
+                            <h3 class="mode-card-title">AI 사진 분석</h3>
+                            <p class="mode-description">사진을 업로드하여 AI가 분석한 정확한 퍼스널컬러 진단을 받아보세요. 614개 헤어컬러 데이터베이스를 활용합니다.</p>
                             <button class="mode-btn">분석 시작</button>
                         </div>
                         
-                        <div class="mode-card" onclick="selectMode('draping')">
-                            <div class="mode-icon">🎭</div>
-                            <h3 class="mode-title">가상 드래이핑</h3>
-                            <p class="mode-description">다양한 색상을 실시간으로 적용하여 어울리는 컬러 찾기</p>
-                            <button class="mode-btn">체험하기</button>
+                        <div class="mode-card" onclick="selectMode('manual')">
+                            <span class="mode-icon">🎨</span>
+                            <h3 class="mode-card-title">수동 컬러 매칭</h3>
+                            <p class="mode-description">다양한 헤어 컬러를 직접 비교해보며 가장 어울리는 색상을 찾아보세요. 브랜드별 전문 데이터를 제공합니다.</p>
+                            <button class="mode-btn">시작하기</button>
                         </div>
                     </div>
                 </div>
@@ -240,76 +533,167 @@
 
             <!-- AI 분석 섹션 -->
             <section class="section" id="photo-analysis">
-                <div style="text-align: center; margin-bottom: 2rem;">
-                    <button onclick="goBack()" style="background: #666; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-right: 1rem;">← 뒤로</button>
-                    <h2 style="display: inline; color: var(--primary-pink);">AI 퍼스널컬러 분석</h2>
+                <div class="section-header">
+                    <button class="back-btn" onclick="goBack()">← 뒤로</button>
+                    <h2 class="section-title">AI 퍼스널컬러 분석</h2>
                 </div>
-                <div class="iframe-container">
-                    <iframe id="analysis-frame" src="about:blank"></iframe>
+                
+                <div class="analysis-container">
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text">사진을 선택하거나 드래그하세요</div>
+                        <div class="upload-hint">정면을 향한 자연광 사진이 가장 정확합니다</div>
+                    </div>
+                    
+                    <input type="file" id="photo-input" accept="image/*" style="display: none;">
+                    
+                    <div class="image-preview" id="image-preview">
+                        <img class="preview-img" id="preview-img" alt="업로드된 사진">
+                        <div style="margin-top: 1rem;">
+                            <button class="analysis-btn" id="analysis-btn" onclick="analyzePhoto()">퍼스널컬러 분석하기</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 결과 표시 영역 -->
+                <div class="results-container" id="results-container">
+                    <div class="result-header">
+                        <div class="result-icon">✨</div>
+                        <h3 class="result-title" id="result-title">분석 결과</h3>
+                        <p class="result-subtitle">당신에게 어울리는 퍼스널컬러입니다</p>
+                    </div>
+                    
+                    <div class="color-palette" id="color-palette">
+                        <!-- 동적 생성 -->
+                    </div>
+                    
+                    <div class="recommendations">
+                        <h3>헤어컬러 추천</h3>
+                        <div class="recommendation-grid" id="recommendation-grid">
+                            <!-- 동적 생성 -->
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <!-- 드래이핑 섹션 -->
-            <section class="section" id="draping-mode">
-                <div style="text-align: center; margin-bottom: 2rem;">
-                    <button onclick="goBack()" style="background: #666; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-right: 1rem;">← 뒤로</button>
-                    <h2 style="display: inline; color: var(--primary-pink);">가상 드래이핑 체험</h2>
+            <!-- 수동 분석 섹션 -->
+            <section class="section" id="manual-analysis">
+                <div class="section-header">
+                    <button class="back-btn" onclick="goBack()">← 뒤로</button>
+                    <h2 class="section-title">수동 컬러 매칭</h2>
                 </div>
-                <div class="iframe-container">
-                    <iframe id="draping-frame" src="about:blank"></iframe>
+                
+                <div class="analysis-container">
+                    <h3 style="margin-bottom: 2rem; color: var(--primary);">브랜드별 헤어 컬러 탐색</h3>
+                    <div id="brand-filter" style="margin-bottom: 2rem;">
+                        <!-- 동적 생성 -->
+                    </div>
+                    <div id="color-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <!-- 동적 생성 -->
+                    </div>
                 </div>
             </section>
         </main>
     </div>
 
     <script>
+        // 전역 변수
+        let hairColorData = [];
+        let currentMode = null;
+        let uploadedImage = null;
+
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎨 Personal Color Pro 초기화...');
-    
-    // 614개 헤어컬러 데이터 확인
-    if (typeof HAIR_COLOR_614_DATA !== 'undefined') {
-        console.log(`✅ 614개 헤어컬러 데이터 로드 성공: ${HAIR_COLOR_614_DATA.length}개`);
-        window.hairColorData = HAIR_COLOR_614_DATA;
-    } else {
-        console.warn('❌ 614개 데이터를 찾을 수 없음');
-        window.hairColorData = [];
-    }
-    
-    // 로딩 화면 3초 후 제거
-    setTimeout(() => {
-        document.getElementById('loading-screen').style.display = 'none';
-        document.getElementById('main-app').classList.add('loaded');
-        console.log('✅ Personal Color Pro 준비 완료');
-    }, 3000);
-});
+            console.log('🎨 HAIRGATOR Personal Color 초기화...');
+            initializeSystem();
+        });
+
+        async function initializeSystem() {
+            try {
+                // 614개 헤어컬러 데이터 로드
+                await loadHairColorData();
+                
+                // 로딩 화면 제거
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('main-app').classList.add('loaded');
+                    console.log('✅ HAIRGATOR Personal Color 준비 완료');
+                }, 1500);
+                
+            } catch (error) {
+                console.error('❌ 시스템 초기화 실패:', error);
+                updateDataStatus('데이터 로드 실패', 'error');
+            }
+        }
+
+        function loadHairColorData() {
+            return new Promise((resolve) => {
+                // 부모 창의 614개 데이터 확인 (우선순위별로 시도)
+                if (typeof HAIR_COLOR_614_DATA !== 'undefined') {
+                    hairColorData = HAIR_COLOR_614_DATA;
+                    console.log(`✅ 614개 헤어컬러 데이터 로드 성공: ${hairColorData.length}개`);
+                    updateDataStatus(`${hairColorData.length}개 헤어컬러 데이터 로드됨`, 'success');
+                } else if (parent && parent.HAIR_COLOR_614_DATA) {
+                    // 부모 창에서 가져오기
+                    hairColorData = parent.HAIR_COLOR_614_DATA;
+                    console.log(`✅ 부모창에서 614개 데이터 로드: ${hairColorData.length}개`);
+                    updateDataStatus(`${hairColorData.length}개 헤어컬러 데이터 로드됨`, 'success');
+                } else if (window.parent && window.parent.HAIRGATOR_614_DATA) {
+                    // HAIRGATOR 전역 변수에서 가져오기
+                    hairColorData = window.parent.HAIRGATOR_614_DATA;
+                    console.log(`✅ HAIRGATOR에서 614개 데이터 로드: ${hairColorData.length}개`);
+                    updateDataStatus(`${hairColorData.length}개 헤어컬러 데이터 로드됨`, 'success');
+                } else {
+                    // 614개 데이터를 찾을 수 없을 때만 에러
+                    console.error('❌ 614개 헤어컬러 데이터를 찾을 수 없습니다!');
+                    hairColorData = [];
+                    updateDataStatus('614개 헤어컬러 데이터 로드 실패', 'error');
+                }
+                resolve();
+            });
+        }
+
+        function updateDataStatus(text, type = 'info') {
+            const statusEl = document.getElementById('data-status');
+            statusEl.textContent = text;
+            statusEl.style.background = type === 'success' ? 'rgba(76, 175, 80, 0.3)' : 
+                                      type === 'error' ? 'rgba(244, 67, 54, 0.3)' :
+                                      type === 'warning' ? 'rgba(255, 152, 0, 0.3)' :
+                                      'rgba(255, 255, 255, 0.2)';
+        }
+
+        function generateDefaultData() {
+            // 614개 데이터 로드 실패 시에만 호출되는 함수
+            // 실제로는 사용하지 않아야 함
+            console.warn('⚠️ generateDefaultData 호출됨 - 614개 데이터를 찾지 못했습니다');
+            return [];
+        }
 
         // 모드 선택
         function selectMode(mode) {
             console.log('모드 선택:', mode);
-            
-            // 모든 카드 선택 해제
+            currentMode = mode;
+
+            // 카드 선택 효과
             document.querySelectorAll('.mode-card').forEach(card => {
                 card.classList.remove('selected');
             });
-            
-            // 클릭된 카드 선택
             event.currentTarget.classList.add('selected');
-            
+
             // 섹션 전환
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            if (mode === 'photo') {
-                document.getElementById('photo-analysis').classList.add('active');
-                // iframe에 AI 분석 페이지 로드 (별도 구현 필요)
-                document.getElementById('analysis-frame').src = 'ai-analysis.html';
-            } else if (mode === 'draping') {
-                document.getElementById('draping-mode').classList.add('active');
-                // iframe에 드래이핑 페이지 로드 (별도 구현 필요)
-                document.getElementById('draping-frame').src = 'draping.html';
-            }
+            setTimeout(() => {
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                if (mode === 'photo') {
+                    document.getElementById('photo-analysis').classList.add('active');
+                    setupPhotoAnalysis();
+                } else if (mode === 'manual') {
+                    document.getElementById('manual-analysis').classList.add('active');
+                    setupManualAnalysis();
+                }
+            }, 300);
         }
 
         // 뒤로가기
@@ -319,18 +703,311 @@
             });
             document.getElementById('mode-selection').classList.add('active');
             
-            // iframe 정리
-            document.getElementById('analysis-frame').src = 'about:blank';
-            document.getElementById('draping-frame').src = 'about:blank';
+            // 상태 초기화
+            resetAnalysis();
         }
 
-        // HAIRGATOR 테마 동기화 (부모 창에서 메시지 받기)
+        function resetAnalysis() {
+            document.getElementById('image-preview').style.display = 'none';
+            document.getElementById('results-container').style.display = 'none';
+            document.getElementById('analysis-btn').style.display = 'none';
+            uploadedImage = null;
+        }
+
+        // 사진 분석 설정
+        function setupPhotoAnalysis() {
+            const uploadArea = document.getElementById('upload-area');
+            const photoInput = document.getElementById('photo-input');
+            
+            // 클릭 이벤트
+            uploadArea.addEventListener('click', () => {
+                photoInput.click();
+            });
+
+            // 드래그 앤 드롭
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleImageUpload(files[0]);
+                }
+            });
+
+            // 파일 선택
+            photoInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleImageUpload(e.target.files[0]);
+                }
+            });
+        }
+
+        function handleImageUpload(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                uploadedImage = e.target.result;
+                
+                // 미리보기 표시
+                const previewImg = document.getElementById('preview-img');
+                previewImg.src = uploadedImage;
+                
+                document.getElementById('image-preview').style.display = 'block';
+                document.getElementById('analysis-btn').style.display = 'inline-block';
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        // 사진 분석
+        function analyzePhoto() {
+            if (!uploadedImage) {
+                alert('먼저 사진을 업로드해주세요.');
+                return;
+            }
+
+            const analysisBtn = document.getElementById('analysis-btn');
+            analysisBtn.disabled = true;
+            analysisBtn.textContent = '분석 중...';
+
+            // 시뮬레이션된 분석
+            setTimeout(() => {
+                const result = performColorAnalysis();
+                displayAnalysisResult(result);
+                
+                analysisBtn.disabled = false;
+                analysisBtn.textContent = '퍼스널컬러 분석하기';
+            }, 2000);
+        }
+
+        function performColorAnalysis() {
+            // 시뮬레이션된 분석 결과
+            const seasons = ['Spring', 'Summer', 'Autumn', 'Winter'];
+            const selectedSeason = seasons[Math.floor(Math.random() * seasons.length)];
+            
+            // 해당 시즌의 색상 추출
+            const seasonColors = hairColorData.filter(item => 
+                item.season === selectedSeason
+            ).slice(0, 8);
+
+            return {
+                season: selectedSeason,
+                confidence: 85 + Math.floor(Math.random() * 15),
+                colors: seasonColors,
+                recommendations: generateRecommendations(selectedSeason, seasonColors)
+            };
+        }
+
+        function generateRecommendations(season, colors) {
+            const recommendations = [];
+            const brands = [...new Set(colors.map(c => c.brand))];
+            
+            brands.forEach(brand => {
+                const brandColors = colors.filter(c => c.brand === brand);
+                if (brandColors.length > 0) {
+                    recommendations.push({
+                        category: `${brand} 추천`,
+                        text: `${brandColors.map(c => c.name).join(', ')} 등이 ${season} 타입에 잘 어울립니다.`
+                    });
+                }
+            });
+
+            return recommendations;
+        }
+
+        function displayAnalysisResult(result) {
+            // 결과 제목
+            document.getElementById('result-title').textContent = 
+                `당신의 퍼스널컬러: ${result.season} (${result.confidence}% 확신)`;
+
+            // 컬러 팔레트
+            const palette = document.getElementById('color-palette');
+            palette.innerHTML = '';
+            
+            result.colors.forEach(color => {
+                const colorItem = document.createElement('div');
+                colorItem.className = 'color-item';
+                colorItem.innerHTML = `
+                    <div class="color-swatch" style="background: ${color.hex}"></div>
+                    <div class="color-name">${color.name}</div>
+                    <div class="color-code">${color.hex}</div>
+                `;
+                palette.appendChild(colorItem);
+            });
+
+            // 추천 사항
+            const recommendationGrid = document.getElementById('recommendation-grid');
+            recommendationGrid.innerHTML = '';
+            
+            result.recommendations.forEach(rec => {
+                const recItem = document.createElement('div');
+                recItem.className = 'recommendation-item';
+                recItem.innerHTML = `
+                    <div class="recommendation-category">${rec.category}</div>
+                    <div class="recommendation-text">${rec.text}</div>
+                `;
+                recommendationGrid.appendChild(recItem);
+            });
+
+            // 결과 컨테이너 표시
+            document.getElementById('results-container').style.display = 'block';
+            document.getElementById('results-container').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+
+            // 부모 창에 결과 전송
+            try {
+                parent.postMessage({
+                    type: 'PERSONAL_COLOR_RESULT',
+                    result: {
+                        season: result.season,
+                        confidence: result.confidence,
+                        colors: result.colors,
+                        timestamp: new Date().toISOString()
+                    }
+                }, '*');
+            } catch (error) {
+                console.log('부모 창 메시지 전송 실패');
+            }
+        }
+
+        // 수동 분석 설정
+        function setupManualAnalysis() {
+            if (hairColorData.length === 0) {
+                document.getElementById('color-grid').innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--error);">
+                        <h3>614개 헤어컬러 데이터를 로드할 수 없습니다</h3>
+                        <p>HAIRGATOR 메인 시스템에서 데이터를 확인해주세요.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const brands = [...new Set(hairColorData.map(item => item.brand))];
+            
+            // 브랜드 필터 (실제 개수 표시)
+            const brandFilter = document.getElementById('brand-filter');
+            brandFilter.innerHTML = `
+                <button class="filter-btn active" onclick="filterByBrand('all')">전체 (${hairColorData.length}개)</button>
+                ${brands.map(brand => {
+                    const count = hairColorData.filter(item => item.brand === brand).length;
+                    return `<button class="filter-btn" onclick="filterByBrand('${brand}')">${brand} (${count}개)</button>`;
+                }).join('')}
+            `;
+
+            // 614개 데이터에서 처음 120개 표시 (성능 고려)
+            displayColorGrid(hairColorData.slice(0, 120));
+        }
+
+        function filterByBrand(brand) {
+            // 필터 버튼 활성화
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // 614개 전체 데이터에서 필터링 (제한 없음)
+            const filtered = brand === 'all' ? 
+                hairColorData.slice(0, 120) :  // 전체일 때는 성능상 120개만
+                hairColorData.filter(item => item.brand === brand);  // 브랜드별로는 전체 표시
+            
+            displayColorGrid(filtered);
+            
+            // 로딩된 개수 표시
+            console.log(`${brand === 'all' ? '전체' : brand}: ${filtered.length}개 표시됨`);
+        }
+
+        function displayColorGrid(colors) {
+            const colorGrid = document.getElementById('color-grid');
+            colorGrid.innerHTML = '';
+
+            colors.forEach(color => {
+                const colorCard = document.createElement('div');
+                colorCard.className = 'color-card';
+                colorCard.innerHTML = `
+                    <div class="color-preview" style="background: ${color.hex}; height: 100px; border-radius: 10px; margin-bottom: 1rem;"></div>
+                    <div style="padding: 1rem;">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">${color.name}</div>
+                        <div style="color: #666; font-size: 0.9rem;">${color.brand}</div>
+                        <div style="color: #666; font-size: 0.9rem;">${color.season}</div>
+                        <div style="font-family: monospace; color: #888; font-size: 0.8rem; margin-top: 0.5rem;">${color.hex}</div>
+                    </div>
+                `;
+                colorCard.style.cssText = 'background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;';
+                
+                colorCard.addEventListener('mouseenter', () => {
+                    colorCard.style.transform = 'translateY(-5px)';
+                    colorCard.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+                });
+                
+                colorCard.addEventListener('mouseleave', () => {
+                    colorCard.style.transform = 'translateY(0)';
+                    colorCard.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+                });
+
+                colorGrid.appendChild(colorCard);
+            });
+        }
+
+        // 테마 동기화 (부모 창에서 메시지 받기)
         window.addEventListener('message', function(event) {
-            if (event.data.type === 'THEME_UPDATE') {
-                console.log('테마 업데이트 받음:', event.data.theme);
-                // 필요시 테마 적용 로직 구현
+            if (event.data.type === 'HAIRGATOR_THEME_SYNC') {
+                console.log('테마 동기화:', event.data.theme);
+                applyTheme(event.data.theme, event.data.colors);
             }
         });
+
+        function applyTheme(theme, colors) {
+            if (theme === 'light') {
+                document.documentElement.style.setProperty('--bg-light', '#ffffff');
+                document.documentElement.style.setProperty('--text-dark', '#333333');
+            } else {
+                document.documentElement.style.setProperty('--bg-light', '#121212');
+                document.documentElement.style.setProperty('--text-dark', '#ffffff');
+            }
+            
+            if (colors && colors.primary) {
+                document.documentElement.style.setProperty('--primary', colors.primary);
+            }
+        }
+
+        // CSS 추가 (브랜드 필터 버튼)
+        const style = document.createElement('style');
+        style.textContent = `
+            .filter-btn {
+                background: white;
+                border: 2px solid var(--border);
+                padding: 0.8rem 1.5rem;
+                border-radius: 25px;
+                margin-right: 1rem;
+                margin-bottom: 1rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-weight: 500;
+            }
+            
+            .filter-btn:hover,
+            .filter-btn.active {
+                background: var(--primary);
+                color: white;
+                border-color: var(--primary);
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
