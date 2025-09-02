@@ -365,13 +365,57 @@
                         .get();
 
                     if (snapshot.empty) {
-                        // 로그인 실패 시 시도 횟수 증가
-                        if (window.HAIRGATOR_PASSWORD_RECOVERY) {
-                            const warningMessage = window.HAIRGATOR_PASSWORD_RECOVERY.incrementLoginAttempts(name, phone);
-                            throw new Error(warningMessage + '\n\n패스워드를 잊으셨나요? "내 패스워드 확인"을 이용해보세요.');
-                        }
-                        throw new Error('로그인 정보가 올바르지 않습니다');
-                    }
+    // 계정이 없으면 자동 회원가입
+    console.log('신규 사용자 자동 가입 처리:', name);
+    
+    const newUserData = {
+        name: name,
+        phone: phone,
+        password: password,
+        tokens: 10, // 초기 토큰
+        createdAt: new Date(),
+        isNewUser: true
+    };
+    
+    const newUserDoc = await db.collection(this.designerCollectionName).add(newUserData);
+    
+    // 새로 생성된 계정으로 로그인 처리 계속
+    const designerData = newUserData;
+    const designerDoc = { id: newUserDoc.id, data: () => designerData };
+    
+    // 기존 로그인 로직과 동일하게 처리
+    await this.checkExistingSessions(newUserDoc.id);
+    
+    const sessionId = this.generateSessionId();
+    const sessionData = {
+        designerId: newUserDoc.id,
+        designerName: designerData.name,
+        designerPhone: designerData.phone,
+        sessionId: sessionId,
+        deviceInfo: this.getDeviceInfo(),
+        loginTime: new Date(),
+        lastActivity: new Date(),
+        isActive: true,
+        expiresAt: new Date(Date.now() + this.sessionTimeout)
+    };
+
+    await db.collection(this.sessionCollectionName).doc(sessionId).set(sessionData);
+
+    currentDesigner = {
+        id: newUserDoc.id,
+        name: designerData.name,
+        phone: designerData.phone,
+        tokens: designerData.tokens || 10,
+        sessionId: sessionId,
+        isNewUser: true
+    };
+
+    currentSessionId = sessionId;
+    this.startHeartbeat();
+
+    console.log('✅ 신규 가입 및 로그인 성공:', currentDesigner.name);
+    return currentDesigner;
+}
 
                     const designerDoc = snapshot.docs[0];
                     const designerData = designerDoc.data();
@@ -686,7 +730,11 @@
                         backBtn.style.display = 'flex';
                         
                         updateUserInfo();
-                        showToast(`환영합니다, ${currentDesigner.name}님!`, 'success');
+                        if (currentDesigner.isNewUser) {
+    showToast(`가입을 환영합니다, ${currentDesigner.name}님! 🎉`, 'success');
+} else {
+    showToast(`환영합니다, ${currentDesigner.name}님!`, 'success');
+}
                         
                     } catch (error) {
                         showToast(error.message, 'error');
@@ -1108,5 +1156,6 @@
     </style>
 </body>
 </html>
+
 
 
