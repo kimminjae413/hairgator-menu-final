@@ -144,21 +144,21 @@
                     </div>
                     
                     <div class="help-options">
-    <button type="button" class="help-btn self-password-check" onclick="showSelfPasswordCheckModal()">
-        <span class="help-icon">🔍</span>
-        <span>내 패스워드 확인</span>
-    </button>
-    
-    <button type="button" class="help-btn password-recovery" onclick="showPasswordRecoveryModal()">
-        <span class="help-icon">🔑</span>
-        <span>관리자 승인</span>
-    </button>
-    
-    <button type="button" class="help-btn account-check" onclick="showAccountCheckModal()">
-        <span class="help-icon">👤</span>
-        <span>계정 확인</span>
-    </button>
-</div>
+                        <button type="button" class="help-btn self-password-check" onclick="showSelfPasswordCheckModal()">
+                            <span class="help-icon">🔍</span>
+                            <span>내 패스워드 확인</span>
+                        </button>
+                        
+                        <button type="button" class="help-btn password-recovery" onclick="showPasswordRecoveryModal()">
+                            <span class="help-icon">🔑</span>
+                            <span>관리자 승인</span>
+                        </button>
+                        
+                        <button type="button" class="help-btn account-check" onclick="showAccountCheckModal()">
+                            <span class="help-icon">👤</span>
+                            <span>계정 확인</span>
+                        </button>
+                    </div>
                     
                     <p class="login-help">
                         처음 사용하시나요? <a href="#contact-admin" onclick="showContactAdmin()">관리자에게 계정을 요청하세요</a>
@@ -258,6 +258,10 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const storage = firebase.storage();
+
+        // 전역 변수로 설정
+        window.db = db;
+        window.storage = storage;
 
         // 캐시 설정
         try {
@@ -374,7 +378,7 @@
                         // 로그인 실패 시 시도 횟수 증가
                         if (window.HAIRGATOR_PASSWORD_RECOVERY) {
                             const warningMessage = window.HAIRGATOR_PASSWORD_RECOVERY.incrementLoginAttempts(name, phone);
-                            throw new Error(warningMessage + '\n\n패스워드를 잊으셨나요? "패스워드 찾기"를 이용해보세요.');
+                            throw new Error(warningMessage + '\n\n패스워드를 잊으셨나요? "내 패스워드 확인"을 이용해보세요.');
                         }
                         throw new Error('로그인 정보가 올바르지 않습니다');
                     }
@@ -739,6 +743,14 @@
         }
 
         // 패스워드 복구 UI 함수들 (외부 스크립트에서 사용)
+        function showSelfPasswordCheckModal() {
+            if (window.HAIRGATOR_PASSWORD_RECOVERY) {
+                window.HAIRGATOR_PASSWORD_RECOVERY.showSelfPasswordCheckModal();
+            } else {
+                showToast('셀프 패스워드 확인 시스템을 로드 중입니다...', 'info');
+            }
+        }
+
         function showPasswordRecoveryModal() {
             if (window.HAIRGATOR_PASSWORD_RECOVERY) {
                 window.HAIRGATOR_PASSWORD_RECOVERY.showPasswordRecoveryModal();
@@ -761,17 +773,16 @@
             } else {
                 alert(`관리자 연락처:
 
-📞 전화: 010-0000-0000
-📧 이메일: admin@hairgator.com
-💬 카카오톡: @hairgator
+📞 전화: 02-6731-5000
+💬 운영시간: 평일 09:30-18:30
 
-운영시간: 평일 09:00-18:00`);
+계정 문제나 패스워드 재설정에 대해 문의해주세요.`);
             }
         }
 
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🦎 HAIRGATOR 시작 - 패스워드 복구 통합 버전');
+            console.log('🦎 HAIRGATOR 시작 - 셀프 패스워드 확인 통합 버전');
             
             loadTheme();
             setupPhoneFormatting();
@@ -975,27 +986,44 @@
             padding: 0 15px;
         }
 
-        /* 도움말 버튼들 */
+        /* 도움말 버튼들 - 셀프 패스워드 확인 강조 */
         .help-options {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
             margin-bottom: 15px;
         }
 
         .help-btn {
-            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 12px;
+            padding: 12px 8px;
             background: #222;
             border: 1px solid #444;
             border-radius: 8px;
             color: #ccc;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        .help-btn.self-password-check {
+            grid-column: 1 / -1; /* 전체 너비 */
+            background: linear-gradient(135deg, #FF1493, #E91E63);
+            border-color: #FF1493;
+            color: white;
+            font-weight: 600;
             font-size: 14px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(255, 20, 147, 0.2);
+        }
+
+        .help-btn.self-password-check:hover {
+            background: linear-gradient(135deg, #E91E63, #C2185B);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(255, 20, 147, 0.4);
         }
 
         .help-btn:hover {
@@ -1074,14 +1102,19 @@
         /* 반응형 디자인 */
         @media (max-width: 480px) {
             .help-options {
-                flex-direction: column;
+                grid-template-columns: 1fr;
+                gap: 8px;
             }
             
             .help-btn {
                 padding: 15px;
+                font-size: 14px;
+            }
+
+            .help-btn.self-password-check {
+                grid-column: auto; /* 모바일에서는 일반 크기 */
             }
         }
     </style>
 </body>
 </html>
-
