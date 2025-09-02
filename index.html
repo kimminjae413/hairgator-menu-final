@@ -68,7 +68,17 @@
                 <button class="logout-btn" onclick="logout()">로그아웃</button>
             </div>
             <p id="guestMessage">로그인 후 이용 가능합니다.</p>
-          
+          <!-- 퍼스널컬러 메뉴 섹션 추가 -->
+<div class="sidebar-section">
+    <div class="sidebar-menu-item" onclick="openPersonalColorModal()">
+        <span class="sidebar-icon">🎨</span>
+        <div class="sidebar-text">
+            <div class="sidebar-title">퍼스널컬러</div>
+            <div class="sidebar-subtitle">614개 헤어컬러 데이터 기반 분석</div>
+        </div>
+        <span class="sidebar-new">NEW</span>
+    </div>
+</div>
         </div>
     </aside>
 
@@ -1153,9 +1163,28 @@
                 grid-column: auto; /* 모바일에서는 일반 크기 */
             }
         }
-    </style>
+  </style>
+    
+    <!-- 퍼스널컬러 모달 -->
+    <div id="personalColorModal" class="personal-color-modal">
+        <div class="personal-color-content">
+            <div class="personal-color-header">
+                <h2>퍼스널컬러 진단 시스템</h2>
+                <button class="personal-color-close" onclick="closePersonalColorModal()">×</button>
+            </div>
+            <iframe 
+                id="personalColorFrame" 
+                src="personal-color/index.html" 
+                frameborder="0"
+                style="width: 100%; height: calc(100% - 60px); border-radius: 0 0 15px 15px;">
+            </iframe>
+        </div>
+    </div>
+    
 </body>
 </html>
+</html>
+
 
 
 
