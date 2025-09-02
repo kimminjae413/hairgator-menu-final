@@ -68,8 +68,8 @@
                 <button class="logout-btn" onclick="logout()">로그아웃</button>
             </div>
             <p id="guestMessage">로그인 후 이용 가능합니다.</p>
-          <!-- 퍼스널컬러 메뉴 섹션 추가 -->
-<div class="sidebar-section">
+          <!-- 퍼스널컬러 메뉴 섹션 - 로그인 후에만 표시 -->
+<div class="sidebar-section" id="personalColorSection" style="display: none;">
     <div class="sidebar-menu-item" onclick="openPersonalColorModal()">
         <span class="sidebar-icon">🎨</span>
         <div class="sidebar-text">
@@ -606,6 +606,7 @@
         function updateUserInfo() {
             const userInfo = document.getElementById('userInfo');
             const guestMessage = document.getElementById('guestMessage');
+            const personalColorSection = document.getElementById('personalColorSection');
             const designerName = document.getElementById('designerNameDisplay');
             const designerPhone = document.getElementById('designerPhoneDisplay');
             const sessionStatus = document.getElementById('sessionStatusDisplay');
@@ -613,6 +614,7 @@
             if (currentDesigner) {
                 userInfo.style.display = 'block';
                 guestMessage.style.display = 'none';
+                personalColorSection.style.display = 'block'; // 퍼스널컬러 버튼 표시
                 
                 designerName.textContent = `이름: ${currentDesigner.name}`;
                 designerPhone.textContent = `전화: ${currentDesigner.phone}`;
@@ -620,9 +622,9 @@
             } else {
                 userInfo.style.display = 'none';
                 guestMessage.style.display = 'block';
+                personalColorSection.style.display = 'none'; // 퍼스널컬러 버튼 숨김
             }
         }
-
         function formatPhoneNumber(phone) {
             const numbers = phone.replace(/[^\d]/g, '');
             if (numbers.length !== 11) {
@@ -916,6 +918,13 @@
                             window.HAIRGATOR_MENU.closeStyleModal();
                         }
                     }
+                    
+                    // 퍼스널컬러 모달 닫기 추가
+                    const personalColorModal = document.getElementById('personalColorModal');
+                    if (personalColorModal && personalColorModal.classList.contains('active')) {
+                        closePersonalColorModal();
+                    }
+                    
                     // 패스워드 모달들도 닫기
                     if (window.HAIRGATOR_PASSWORD_RECOVERY) {
                         window.HAIRGATOR_PASSWORD_RECOVERY.closeAllModals();
@@ -1218,6 +1227,7 @@
 </body>
 </html>
 </html>
+
 
 
 
