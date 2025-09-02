@@ -1,0 +1,374 @@
+/* Personal Color Pro - HAIRGATOR 테마 통일 CSS */
+
+/* ========== HAIRGATOR 색상 변수 ========== */
+:root {
+    --primary-pink: #E91E63;
+    --secondary-rose: #8E24AA;
+    --light-pink: #FCE4EC;
+    --dark-rose: #C2185B;
+    --face-color: #10b981;
+    --text: #333;
+    --text-secondary: #666;
+    --bg: #ffffff;
+    --bg-light: #f5f5f5;
+    --border: #e0e0e0;
+    --shadow: 0 2px 8px rgba(0,0,0,0.1);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.15);
+    --border-radius: 8px;
+}
+
+/* ========== 기본 스타일 ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* ========== 로딩 화면 ========== */
+.loading-screen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    z-index: 9999;
+    flex-direction: column;
+}
+
+.loading-logo {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--primary-pink);
+}
+
+.loading-text {
+    color: var(--text);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    font-weight: 500;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top: 3px solid var(--primary-pink);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========== 메인 앱 ========== */
+.main-app {
+    display: none;
+    min-height: 100vh;
+}
+
+.main-app.loaded {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ========== 헤더 ========== */
+.app-header {
+    background: linear-gradient(135deg, var(--primary-pink), var(--secondary-rose));
+    color: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+}
+
+.app-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+}
+
+.app-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* ========== 메인 콘텐츠 ========== */
+.main-content {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ========== 섹션 ========== */
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* ========== 모드 선택 ========== */
+.mode-selection {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.mode-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.mode-card {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.mode-card:hover {
+    border-color: var(--primary-pink);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-5px);
+}
+
+.mode-card.selected {
+    border-color: var(--primary-pink);
+    background: var(--light-pink);
+    transform: translateY(-5px);
+}
+
+.mode-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(233, 30, 99, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.mode-card:hover::before {
+    left: 100%;
+}
+
+.mode-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.mode-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--primary-pink);
+}
+
+.mode-description {
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.mode-btn {
+    background: var(--primary-pink);
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.mode-btn:hover {
+    background: var(--dark-rose);
+    transform: translateY(-2px);
+}
+
+/* ========== iframe 컨테이너 ========== */
+.iframe-container {
+    width: 100%;
+    height: 80vh;
+    border: 2px solid var(--primary-pink);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background: white;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+}
+
+.iframe-container::before {
+    content: '로딩 중...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-secondary);
+    font-size: 1rem;
+    z-index: 1;
+}
+
+#analysis-frame,
+#draping-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    position: relative;
+    z-index: 2;
+}
+
+/* ========== 네비게이션 버튼 ========== */
+.nav-btn {
+    background: var(--text-secondary);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    margin-right: 1rem;
+}
+
+.nav-btn:hover {
+    background: var(--text);
+    transform: translateY(-1px);
+}
+
+/* ========== 반응형 디자인 ========== */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .mode-cards {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .mode-card {
+        padding: 1.5rem;
+    }
+    
+    .app-header {
+        padding: 1rem;
+    }
+    
+    .app-title {
+        font-size: 1.3rem;
+    }
+    
+    .iframe-container {
+        height: 70vh;
+        border-width: 1px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mode-card {
+        padding: 1rem;
+    }
+    
+    .mode-icon {
+        font-size: 2.5rem;
+    }
+    
+    .mode-title {
+        font-size: 1.1rem;
+    }
+    
+    .mode-btn {
+        padding: 0.7rem 1.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .iframe-container {
+        height: 60vh;
+    }
+}
+
+/* ========== 접근성 및 다크모드 대응 ========== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: #e0e0e0;
+        --text-secondary: #b0b0b0;
+        --bg: #121212;
+        --bg-light: #1e1e1e;
+        --border: #333;
+    }
+    
+    .mode-card {
+        background: var(--bg-light);
+        color: var(--text);
+    }
+    
+    .loading-screen {
+        background: var(--bg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========== 인쇄 스타일 ========== */
+@media print {
+    .loading-screen,
+    .nav-btn {
+        display: none !important;
+    }
+    
+    .main-app {
+        display: block !important;
+    }
+    
+    .iframe-container {
+        height: auto;
+        min-height: 500px;
+        border: 1px solid #000;
+    }
+}
