@@ -11,9 +11,6 @@
     <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
     
-    <!-- 🔥 핵심: 614개 헤어컬러 데이터 로드 -->
-    <script src="hair-color-data.js"></script>
-    
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -260,8 +257,7 @@
 
     <script>
         // ==========================================
-        // HAIRGATOR Personal Color - 최종 완성 버전
-        // 614개 데이터 완전 활용 + MediaPipe 연동
+        // HAIRGATOR Personal Color - 2모드 최적화 버전
         // ==========================================
 
         // 전역 변수 정의 (iframe 독립 실행용)
@@ -290,7 +286,6 @@
             },
             skinAnalysis: {
                 redness: "홍조 피부는 미드나잇 컬러로 중화시킬 수 있습니다",
-                yellowish: "황기 피부는 애쉬 계열로 투명감을 줄 수 있습니다",
                 principle: "명도와 채도의 조합이 색상 이름보다 중요합니다"
             },
             colorMatching: {
@@ -348,8 +343,8 @@
                 updateLoadingProgress(50, 'UI 컴포넌트 설정 중...');
                 setupUI();
                 
-                // 3단계: 시스템 준비 완료 (MediaPipe는 카메라 시작 시 로드)
-                updateLoadingProgress(75, '시스템 준비 중...');
+                // 3단계: MediaPipe 준비 (실제로는 지연 로딩)
+                updateLoadingProgress(75, 'AI 엔진 준비 중...');
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
                 updateLoadingProgress(100, '시스템 준비 완료!');
@@ -384,80 +379,93 @@
 
         async function loadHairColorData() {
             try {
-                // 1순위: hair-color-data.js에서 직접 로드
-                if (typeof HAIR_COLOR_614_DATA !== 'undefined' && HAIR_COLOR_614_DATA.length > 0) {
-                    hairColorData = HAIR_COLOR_614_DATA;
-                    console.log(`✅ hair-color-data.js에서 ${hairColorData.length}개 데이터 로드 완료`);
-                    updateDataStatus(`${hairColorData.length}개 프리미엄 헤어컬러 데이터 로드됨`, 'success');
+                // 1순위: 부모창의 HAIR_COLOR_614_DATA 확인
+                if (parent && parent.HAIR_COLOR_614_DATA) {
+                    hairColorData = parent.HAIR_COLOR_614_DATA;
+                    console.log(`✅ 부모창에서 614개 헤어컬러 데이터 로드 완료`);
+                    updateDataStatus(`614개 프리미엄 헤어컬러 데이터 로드됨`, 'success');
                     return;
                 }
-
-                // 2순위: 부모창의 HAIR_COLOR_614_DATA 확인
-                if (parent && parent.HAIR_COLOR_614_DATA && parent.HAIR_COLOR_614_DATA.length > 0) {
-                    hairColorData = parent.HAIR_COLOR_614_DATA;
-                    console.log(`✅ 부모창에서 ${hairColorData.length}개 헤어컬러 데이터 로드 완료`);
-                    updateDataStatus(`${hairColorData.length}개 프리미엄 헤어컬러 데이터 로드됨`, 'success');
+                
+                // 2순위: 별도 스크립트에서 로드 시도
+                if (typeof HAIR_COLOR_614_DATA !== 'undefined') {
+                    hairColorData = HAIR_COLOR_614_DATA;
+                    console.log(`✅ 글로벌 변수에서 614개 데이터 로드`);
+                    updateDataStatus(`614개 헤어컬러 데이터 로드됨`, 'success');
                     return;
                 }
                 
                 // 3순위: 기존 호환성 데이터 확인
-                if (parent && parent.hairColorDatabase && parent.hairColorDatabase.length > 0) {
+                if (parent && parent.hairColorDatabase) {
                     hairColorData = parent.hairColorDatabase;
                     console.log(`부모창 데이터베이스에서 ${hairColorData.length}개 로드`);
                     updateDataStatus(`${hairColorData.length}개 헤어컬러 데이터 로드됨`, 'success');
                     return;
                 }
                 
-                // 4순위: 기본 데이터 생성
-                console.warn('외부 데이터 없음 - 기본 데이터 생성');
-                hairColorData = generateDefaultHairColors();
-                updateDataStatus('기본 데이터로 대체됨', 'warning');
+                // 4순위: 외부 스크립트 로드 시도
+                await loadExternalHairColorData();
                 
             } catch (error) {
                 console.error('헤어컬러 데이터 로드 실패:', error);
                 hairColorData = generateDefaultHairColors();
-                updateDataStatus('오류 발생 - 기본 데이터 사용', 'warning');
+                updateDataStatus('기본 데이터로 대체됨', 'warning');
             }
         }
 
-        // loadExternalHairColorData 함수 제거 (불필요)
+        async function loadExternalHairColorData() {
+            try {
+                // hair-color-data.js 스크립트 동적 로드 시도
+                const script = document.createElement('script');
+                script.src = 'hair-color-data.js';
+                script.onload = () => {
+                    if (typeof HAIR_COLOR_614_DATA !== 'undefined') {
+                        hairColorData = HAIR_COLOR_614_DATA;
+                        console.log(`✅ 외부 스크립트에서 614개 데이터 로드`);
+                        updateDataStatus(`614개 프리미엄 헤어컬러 데이터 로드됨`, 'success');
+                    }
+                };
+                script.onerror = () => {
+                    console.warn('외부 헤어컬러 데이터 스크립트 로드 실패');
+                    hairColorData = generateDefaultHairColors();
+                    updateDataStatus('기본 데이터 사용', 'warning');
+                };
+                
+                document.head.appendChild(script);
+                
+                // 3초 대기 후 확인
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                if (hairColorData.length === 0) {
+                    hairColorData = generateDefaultHairColors();
+                }
+                
+            } catch (error) {
+                console.error('외부 데이터 로드 오류:', error);
+                hairColorData = generateDefaultHairColors();
+            }
+        }
 
         function generateDefaultHairColors() {
-            const brands = ['로레알', '웰라', '밀본', '시세이도'];
-            const seasons = ['Spring', 'Summer', 'Autumn', 'Winter'];
+            const brands = ['로레알', '웰라', '밀본'];
+            const seasons = ['spring', 'summer', 'autumn', 'winter'];
             const data = [];
             
-            brands.forEach((brand, brandIndex) => {
-                seasons.forEach((season, seasonIndex) => {
-                    for(let i = 1; i <= 10; i++) {
-                        const code = `${brand.substring(0,2).toUpperCase()}${(brandIndex * 40 + seasonIndex * 10 + i).toString().padStart(3, '0')}`;
-                        const colors = SeasonPalettes[season.toLowerCase()]?.colors || ['#8B4513'];
-                        const hex = colors[i % colors.length];
-                        
+            brands.forEach(brand => {
+                seasons.forEach(season => {
+                    SeasonPalettes[season].colors.forEach((color, index) => {
                         data.push({
                             brand: brand,
-                            line: "Professional",
-                            code: code,
-                            name: `${season} ${i}레벨`,
-                            hex: hex,
-                            rgb: hexToRgb(hex),
+                            name: `${season} Color ${index + 1}`,
+                            hex: color,
                             season: season,
-                            sub_type: `${season} Type`,
                             confidence: 0.8 + Math.random() * 0.2
                         });
-                    }
+                    });
                 });
             });
             
-            console.log(`기본 데이터 생성: ${data.length}개`);
             return data;
-        }
-
-        function hexToRgb(hex) {
-            const r = parseInt(hex.slice(1, 3), 16);
-            const g = parseInt(hex.slice(3, 5), 16);
-            const b = parseInt(hex.slice(5, 7), 16);
-            return `[${r},${g},${b}]`;
         }
 
         function setupUI() {
@@ -795,48 +803,23 @@
         function updateColorGrid(season) {
             const colorGrid = document.getElementById('color-grid');
             
-            // 614개 데이터에서 해당 계절에 맞는 실제 헤어컬러 필터링
-            let seasonColors = [];
-            
-            if (hairColorData && hairColorData.length > 0) {
-                seasonColors = hairColorData.filter(item => {
-                    if (!item || !item.season) return false;
-                    
-                    const itemSeason = item.season.toLowerCase();
-                    const targetSeason = season.toLowerCase();
-                    
-                    // 다양한 계절 표현 매칭
-                    return itemSeason.includes(targetSeason) || 
-                           (targetSeason === 'spring' && itemSeason.includes('봄')) ||
-                           (targetSeason === 'summer' && itemSeason.includes('여름')) ||
-                           (targetSeason === 'autumn' && itemSeason.includes('가을')) ||
-                           (targetSeason === 'winter' && itemSeason.includes('겨울'));
-                });
-            }
+            // 선택된 시즌에 맞는 실제 헤어컬러 데이터에서 색상 추출
+            const seasonColors = hairColorData.filter(item => 
+                item.season && item.season.toLowerCase() === season.toLowerCase()
+            );
             
             colorGrid.innerHTML = '';
             
             if (seasonColors.length === 0) {
                 // 데이터가 없으면 기본 팔레트 사용
                 const defaultColors = SeasonPalettes[season].colors;
-                defaultColors.forEach((color, index) => {
+                defaultColors.forEach(color => {
                     const colorItem = document.createElement('div');
                     colorItem.className = 'color-item';
                     colorItem.style.background = color;
                     colorItem.onclick = () => selectColor(color);
-                    colorItem.title = `기본 색상 ${index + 1}`;
                     colorGrid.appendChild(colorItem);
                 });
-                
-                // 정보 표시
-                const infoDiv = document.createElement('div');
-                infoDiv.style.cssText = `
-                    grid-column: 1 / -1; text-align: center; padding: 1rem; 
-                    background: #fff3cd; border-radius: 8px; border: 1px solid #ffeaa7;
-                    font-size: 0.9rem; color: #856404; margin-top: 0.5rem;
-                `;
-                infoDiv.innerHTML = `⚠️ ${season} 계절 데이터가 없어서 기본 팔레트를 표시합니다`;
-                colorGrid.appendChild(infoDiv);
                 return;
             }
             
@@ -845,12 +828,10 @@
                 .sort((a, b) => (b.confidence || 0.8) - (a.confidence || 0.8)) // 신뢰도순 정렬
                 .slice(0, 12) // 상위 12개만
                 .map(item => ({
-                    hex: item.hex || '#8B4513',
-                    name: item.name || '이름없음',
-                    brand: item.brand || 'Unknown',
-                    code: item.code || 'N/A',
-                    line: item.line,
-                    sub_type: item.sub_type
+                    hex: item.hex,
+                    name: item.name,
+                    brand: item.brand,
+                    code: item.code
                 }));
             
             representativeColors.forEach(colorData => {
@@ -866,15 +847,13 @@
             const infoDiv = document.createElement('div');
             infoDiv.style.cssText = `
                 grid-column: 1 / -1; text-align: center; padding: 1rem; 
-                background: #d4edda; border-radius: 8px; border: 1px solid #c3e6cb;
-                font-size: 0.9rem; color: #155724; margin-top: 0.5rem;
+                background: var(--bg-light); border-radius: var(--border-radius);
+                font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;
             `;
             infoDiv.innerHTML = `
-                ✅ <strong>${season}</strong> 시즌: 614개 DB에서 ${seasonColors.length}개 발견, 상위 ${representativeColors.length}개 표시
+                <strong>${season}</strong> 시즌: ${seasonColors.length}개 헤어컬러 중 상위 ${representativeColors.length}개 표시
             `;
             colorGrid.appendChild(infoDiv);
-            
-            console.log(`${season} 시즌: ${seasonColors.length}개 색상 중 ${representativeColors.length}개 표시`);
         }
 
         function selectColor(color, colorData = null) {
@@ -912,9 +891,9 @@
                 infoPanel.id = 'selected-color-info';
                 infoPanel.style.cssText = `
                     margin-top: 1rem; padding: 1rem; 
-                    background: #fff0f5; 
-                    border-radius: 8px;
-                    border: 2px solid #E91E63;
+                    background: var(--light-pink); 
+                    border-radius: var(--border-radius);
+                    border: 2px solid var(--primary-pink);
                 `;
                 
                 const adjustments = document.querySelector('.color-adjustments');
@@ -924,15 +903,13 @@
             }
             
             infoPanel.innerHTML = `
-                <h5 style="color: #E91E63; margin-bottom: 0.5rem;">선택된 헤어컬러</h5>
+                <h5 style="color: var(--primary-pink); margin-bottom: 0.5rem;">선택된 헤어컬러</h5>
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 50px; height: 50px; background: ${colorData.hex}; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>
+                    <div style="width: 40px; height: 40px; background: ${colorData.hex}; border-radius: 50%; border: 2px solid white; box-shadow: var(--shadow);"></div>
                     <div>
-                        <div style="font-weight: 700; margin-bottom: 0.2rem; color: #E91E63;">${colorData.brand} ${colorData.code}</div>
-                        <div style="font-size: 0.95rem; margin-bottom: 0.2rem; color: #333;">${colorData.name}</div>
-                        ${colorData.line ? `<div style="font-size: 0.85rem; color: #666;">라인: ${colorData.line}</div>` : ''}
-                        <div style="font-size: 0.8rem; color: #666;">HEX: ${colorData.hex}</div>
-                        ${colorData.sub_type ? `<div style="font-size: 0.8rem; color: #666;">타입: ${colorData.sub_type}</div>` : ''}
+                        <div style="font-weight: 600; margin-bottom: 0.2rem;">${colorData.brand} ${colorData.code}</div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary);">${colorData.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">HEX: ${colorData.hex}</div>
                     </div>
                 </div>
             `;
@@ -1035,192 +1012,212 @@
         }
 
         // ==========================================
-        // 🔥 개선된 제품 추천 함수 (614개 데이터 완전 활용)
+        // 공통 결과 표시 함수들
         // ==========================================
 
-        function displayProductRecommendations(season) {
-            const brandSections = document.getElementById('brand-sections');
-            
-            if (!brandSections) {
-                console.warn('brand-sections 요소를 찾을 수 없습니다');
-                return;
-            }
-            
-            // 614개 데이터에서 해당 계절에 맞는 실제 데이터 필터링
-            let seasonalColors = [];
-            
-            if (hairColorData && Array.isArray(hairColorData) && hairColorData.length > 0) {
-                // 계절 매칭 로직 (다양한 포맷 지원)
-                const seasonKeywords = {
-                    '봄 웜톤': ['spring', 'warm', 'golden', 'light', '봄'],
-                    '여름 쿨톤': ['summer', 'cool', 'ash', 'soft', '여름'],  
-                    '가을 웜톤': ['autumn', 'warm', 'rich', 'deep', '가을'],
-                    '겨울 쿨톤': ['winter', 'cool', 'dark', 'bold', '겨울']
-                };
-                
-                const keywords = seasonKeywords[season] || ['spring'];
-                
-                seasonalColors = hairColorData.filter(item => {
-                    if (!item || !item.season) return false;
-                    
-                    const itemSeason = item.season.toLowerCase();
-                    const itemName = (item.name || '').toLowerCase();
-                    const itemSubType = (item.sub_type || '').toLowerCase();
-                    
-                    // 정확한 계절 매칭
-                    return keywords.some(keyword => 
-                        itemSeason.includes(keyword) || 
-                        itemName.includes(keyword) || 
-                        itemSubType.includes(keyword)
-                    );
-                });
-                
-                console.log(`${season}에 맞는 ${seasonalColors.length}개 색상 발견`);
-            }
-            
-            // 데이터가 없거나 부족하면 기본 데이터 사용
-            if (seasonalColors.length === 0) {
-                console.warn('실제 데이터가 없어서 기본 추천 사용');
-                displayBasicRecommendations(season, brandSections);
-                return;
-            }
-            
-            // 브랜드별로 그룹화
-            const brandGroups = {};
-            
-            seasonalColors.forEach(item => {
-                const brand = item.brand || 'Unknown';
-                if (!brandGroups[brand]) {
-                    brandGroups[brand] = [];
+        function displayFinalResults(result) {
+    const resultsSection = document.getElementById('results-section');
+    const finalResults = document.getElementById('final-results');
+    
+    // 안전한 데이터 처리
+    let colors = [];
+    let season = '분석 중';
+    let confidence = 0;
+    
+    // result 객체와 그 속성들을 안전하게 확인
+    if (result && typeof result === 'object') {
+        season = result.season || '분석 중';
+        confidence = result.confidence || 0;
+        
+        // colors 배열 안전하게 처리
+        if (result.colors && Array.isArray(result.colors) && result.colors.length > 0) {
+            // 실제 헤어컬러 데이터가 있는 경우
+            colors = result.colors.map(colorItem => {
+                if (typeof colorItem === 'string') {
+                    return colorItem; // 이미 hex 색상인 경우
+                } else if (colorItem && colorItem.hex) {
+                    return colorItem.hex; // 객체에서 hex 추출
+                } else {
+                    return '#8B4513'; // 기본 갈색
                 }
-                brandGroups[brand].push(item);
             });
+        } else if (season && season !== '분석 중') {
+            // colors가 없으면 계절별 기본 색상 사용
+            const seasonKey = season.toLowerCase()
+                .replace(' 웜톤', '')
+                .replace(' 쿨톤', '')
+                .replace('봄', 'spring')
+                .replace('여름', 'summer')
+                .replace('가을', 'autumn')
+                .replace('겨울', 'winter');
+                
+            colors = SeasonPalettes[seasonKey]?.colors || ['#8B4513', '#A0522D', '#CD853F'];
+        } else {
+            // 아무것도 없으면 기본 색상
+            colors = ['#8B4513', '#A0522D', '#CD853F'];
+        }
+    } else {
+        // result가 없거나 잘못된 경우 기본값 사용
+        colors = ['#8B4513', '#A0522D', '#CD853F'];
+    }
+    
+    // HTML 생성 (이제 안전함)
+    finalResults.innerHTML = `
+        <div class="result-header">
+            <h3>${season}</h3>
+            <div class="confidence">신뢰도: ${confidence}%</div>
+        </div>
+        <div class="result-colors">
+            ${colors.slice(0, 8).map(color => 
+                `<div class="result-color" style="background: ${color}; width: 50px; height: 50px; border-radius: 50%; display: inline-block; margin: 5px;" title="${color}"></div>`
+            ).join('')}
+        </div>
+        <div class="result-description">
+            <p>${season}에 어울리는 ${colors.length}가지 색상을 표시합니다.</p>
+        </div>
+    `;
+    
+    // 제품 추천 표시 (안전하게)
+    if (season && season !== '분석 중') {
+        displayProductRecommendations(season);
+    }
+    
+    // 결과 섹션 표시
+    resultsSection.style.display = 'block';
+    resultsSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+        // ==========================================
+        // 유틸리티 함수들
+        // ==========================================
+
+        function generateExpertAnalysis(season) {
+            const analyses = {
+                '봄 웜톤': ExpertKnowledge.colorMatching.warm + " 밝고 선명한 색상이 잘 어울립니다.",
+                '여름 쿨톤': ExpertKnowledge.skinAnalysis.principle + " 부드러운 파스텔 톤을 추천합니다.",
+                '가을 웜톤': "깊고 따뜻한 색상이 적합합니다. 리치한 브라운 계열을 권장합니다.",
+                '겨울 쿨톤': ExpertKnowledge.colorMatching.cool + " 진하고 선명한 색상이 적합합니다."
+            };
             
-            // 브랜드별 추천 HTML 생성
-            const brandsHtml = Object.entries(brandGroups)
-                .sort(([a], [b]) => a.localeCompare(b)) // 브랜드명 알파벳 순
-                .map(([brand, products]) => {
-                    // 각 브랜드당 최대 6개 제품 표시
-                    const topProducts = products
-                        .sort((a, b) => (b.confidence || 0.8) - (a.confidence || 0.8))
-                        .slice(0, 6);
-                        
-                    return `
-                        <div class="brand-section" style="
-                            margin-bottom: 2rem; 
-                            padding: 1.5rem; 
-                            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-                            border-radius: 15px;
-                            border: 1px solid #e9ecef;
-                            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-                        ">
-                            <div class="brand-header" style="
-                                display: flex; 
-                                align-items: center; 
-                                justify-content: space-between;
-                                margin-bottom: 1rem;
-                            ">
-                                <h5 style="
-                                    color: #E91E63; 
-                                    margin: 0;
-                                    font-size: 1.3rem;
-                                    font-weight: 700;
-                                ">${brand}</h5>
-                                <span style="
-                                    background: #E91E63;
-                                    color: white;
-                                    padding: 4px 12px;
-                                    border-radius: 20px;
-                                    font-size: 0.85rem;
-                                    font-weight: 600;
-                                ">${topProducts.length}개 제품</span>
-                            </div>
-                            
-                            <div class="product-grid" style="
-                                display: grid;
-                                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                                gap: 1rem;
-                            ">
-                                ${topProducts.map(product => `
-                                    <div class="product-item" style="
-                                        display: flex;
-                                        align-items: center;
-                                        gap: 1rem;
-                                        padding: 1rem;
-                                        background: white;
-                                        border-radius: 12px;
-                                        border: 1px solid #f0f0f0;
-                                        transition: all 0.3s ease;
-                                        cursor: pointer;
-                                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.1)'"
-                                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                                       
-                                        <div class="color-preview" style="
-                                            width: 50px;
-                                            height: 50px;
-                                            background: ${product.hex || '#8B4513'};
-                                            border-radius: 50%;
-                                            border: 3px solid white;
-                                            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                                            flex-shrink: 0;
-                                        "></div>
-                                        
-                                        <div class="product-details" style="flex: 1; min-width: 0;">
-                                            <div class="product-code" style="
-                                                color: #E91E63;
-                                                font-weight: 700;
-                                                font-size: 1rem;
-                                                margin-bottom: 0.3rem;
-                                            ">${product.code || 'N/A'}</div>
-                                            
-                                            <div class="product-name" style="
-                                                color: #333;
-                                                font-weight: 600;
-                                                font-size: 0.95rem;
-                                                margin-bottom: 0.3rem;
-                                                word-wrap: break-word;
-                                            ">${product.name || '이름 없음'}</div>
-                                            
-                                            <div class="product-meta" style="
-                                                display: flex;
-                                                gap: 0.5rem;
-                                                font-size: 0.8rem;
-                                                color: #666;
-                                                flex-wrap: wrap;
-                                            ">
-                                                <span style="
-                                                    background: #f8f9fa;
-                                                    padding: 2px 8px;
-                                                    border-radius: 12px;
-                                                    border: 1px solid #e9ecef;
-                                                ">${product.hex || 'N/A'}</span>
-                                                
-                                                ${product.line ? `
-                                                    <span style="
-                                                        background: #e3f2fd;
-                                                        color: #1976d2;
-                                                        padding: 2px 8px;
-                                                        border-radius: 12px;
-                                                        font-weight: 500;
-                                                    ">${product.line}</span>
-                                                ` : ''}
-                                                
-                                                ${product.sub_type ? `
-                                                    <span style="
-                                                        background: #f3e5f5;
-                                                        color: #7b1fa2;
-                                                        padding: 2px 8px;
-                                                        border-radius: 12px;
-                                                        font-weight: 500;
-                                                    ">${product.sub_type}</span>
-                                                ` : ''}
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            
-                            <div class="brand-stats" style="
-                                margin-top: 1rem;
-                                padding: 1rem;
-                                background: #f8f9
+            return analyses[season] || '전문가 분석 결과를 생성 중입니다.';
+        }
+
+        function showToast(message, type = 'info', duration = 3000) {
+            // 기존 토스트 제거
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed; top: 20px; right: 20px; z-index: 10000;
+                background: white; padding: 1rem 1.5rem; border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-left: 4px solid;
+                border-left-color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#F44336' : type === 'warning' ? '#FF9800' : '#2196F3'};
+                transform: translateX(100%); transition: transform 0.3s ease;
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.style.transform = 'translateX(0)', 100);
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, duration);
+        }
+
+        // ==========================================
+        // 외부 통신 및 이벤트
+        // ==========================================
+
+        // 부모 창에 결과 전송
+        function sendResultToParent(result) {
+            try {
+                if (parent && parent.postMessage) {
+                    parent.postMessage({
+                        type: 'PERSONAL_COLOR_RESULT',
+                        result: result
+                    }, '*');
+                }
+            } catch (error) {
+                console.log('부모 창 통신 실패:', error);
+            }
+        }
+
+        // 키보드 단축키
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && currentMode === 'ai' && !analysisInProgress) {
+                event.preventDefault();
+                analyzeAI();
+            }
+            
+            if (event.key === 'Escape') {
+                goHome();
+            }
+        });
+
+        // 페이지 언로드 시 정리
+        window.addEventListener('beforeunload', function() {
+            stopAICamera();
+            stopDrapingCamera();
+        });
+function displayProductRecommendations(season) {
+    const brandSections = document.getElementById('brand-sections');
+    
+    if (!brandSections) {
+        console.warn('brand-sections 요소를 찾을 수 없습니다');
+        return;
+    }
+    
+    // 기본 추천 데이터
+    const defaultRecommendations = {
+        '봄 웜톤': [
+            { brand: '로레알', products: ['골든 베이지', '허니 블론드', '카라멜 브라운'] },
+            { brand: '웰라', products: ['라이트 골든', '웜 베이지', '소프트 브라운'] },
+            { brand: '밀본', products: ['허니 골드', '웜 초콜릿', '라이트 카라멜'] }
+        ],
+        '여름 쿨톤': [
+            { brand: '로레알', products: ['애쉬 블론드', '쿨 베이지', '플래티넘'] },
+            { brand: '웰라', products: ['실버 애쉬', '쿨 브라운', '아이시 블론드'] },
+            { brand: '밀본', products: ['미스트 그레이', '쿨 베이지', '소프트 애쉬'] }
+        ],
+        '가을 웜톤': [
+            { brand: '로레알', products: ['리치 브라운', '다크 초콜릿', '마호가니'] },
+            { brand: '웰라', products: ['딥 브라운', '체스트넛', '다크 카라멜'] },
+            { brand: '밀본', products: ['에스프레소', '다크 모카', '리치 허니'] }
+        ],
+        '겨울 쿨톤': [
+            { brand: '로레알', products: ['제트 블랙', '블루 블랙', '다크 애쉬'] },
+            { brand: '웰라', products: ['미드나잇 블랙', '쿨 다크', '플래티넘 실버'] },
+            { brand: '밀본', products: ['딥 블랙', '스틸 그레이', '아이스 블론드'] }
+        ]
+    };
+    
+    const recommendations = defaultRecommendations[season] || defaultRecommendations['봄 웜톤'];
+    
+    brandSections.innerHTML = recommendations.map(brand => `
+        <div class="brand-section" style="margin-bottom: 1.5rem; padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+            <h5 style="color: #E91E63; margin-bottom: 0.5rem;">${brand.brand}</h5>
+            <div class="product-list">
+                ${brand.products.map(product => `
+                    <div style="padding: 0.5rem; margin: 0.2rem 0; background: white; border-radius: 4px; border-left: 3px solid #E91E63;">
+                        ${product}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateDataStatus(message, type) {
+    console.log(`Data Status [${type}]: ${message}`);
+}
+        console.log('HAIRGATOR Personal Color - 2모드 최적화 버전 로드 완료');
+    </script>
+</body>
+</html>
