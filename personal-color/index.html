@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
+    <title>Personal Color Pro - 퍼스널컬러 진단 시스템</title>
+    
+    <!-- 파비콘 404 오류 방지 -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎨</text></svg>">
+    
+    <!-- HAIRGATOR 테마와 통일된 색상 -->
+    <style>
+        :root {
+            --primary-pink: #E91E63;
+            --secondary-rose: #8E24AA;
+            --light-pink: #FCE4EC;
+            --dark-rose: #C2185B;
+            --text: #333;
+            --bg: #ffffff;
+            --border: #e0e0e0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            z-index: 9999;
+            flex-direction: column;
+        }
+        
+        .loading-logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-pink);
+        }
+        
+        .loading-text {
+            color: var(--text);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary-pink);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .main-app {
+            display: none;
+            min-height: 100vh;
+        }
+        
+        .main-app.loaded {
+            display: block;
+        }
+        
+        .app-header {
+            background: var(--primary-pink);
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .app-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .mode-selection {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .mode-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .mode-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .mode-card:hover {
+            border-color: var(--primary-pink);
+            box-shadow: 0 8px 25px rgba(233, 30, 99, 0.15);
+            transform: translateY(-5px);
+        }
+        
+        .mode-card.selected {
+            border-color: var(--primary-pink);
+            background: var(--light-pink);
+        }
+        
+        .mode-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .mode-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-pink);
+        }
+        
+        .mode-description {
+            color: var(--text);
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+        
+        .mode-btn {
+            background: var(--primary-pink);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .mode-btn:hover {
+            background: var(--dark-rose);
+            transform: translateY(-2px);
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .iframe-container {
+            width: 100%;
+            height: 80vh;
+            border: 2px solid var(--primary-pink);
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        #analysis-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 로딩 화면 -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-logo">🎨</div>
+        <h2 class="loading-text">Personal Color Pro 로딩 중...</h2>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 메인 애플리케이션 -->
+    <div class="main-app" id="main-app">
+        <header class="app-header">
+            <h1 class="app-title">Personal Color Pro</h1>
+            <div class="app-subtitle">AI 기반 퍼스널컬러 진단 시스템</div>
+        </header>
+
+        <main class="main-content">
+            <!-- 모드 선택 섹션 -->
+            <section class="section active" id="mode-selection">
+                <div class="mode-selection">
+                    <h2 style="margin-bottom: 2rem; color: var(--primary-pink);">진단 모드를 선택하세요</h2>
+                    
+                    <div class="mode-cards">
+                        <div class="mode-card" onclick="selectMode('photo')">
+                            <div class="mode-icon">📸</div>
+                            <h3 class="mode-title">AI 사진 분석</h3>
+                            <p class="mode-description">실시간 카메라 또는 사진 업로드를 통한 정밀한 퍼스널컬러 분석</p>
+                            <button class="mode-btn">분석 시작</button>
+                        </div>
+                        
+                        <div class="mode-card" onclick="selectMode('draping')">
+                            <div class="mode-icon">🎭</div>
+                            <h3 class="mode-title">가상 드래이핑</h3>
+                            <p class="mode-description">다양한 색상을 실시간으로 적용하여 어울리는 컬러 찾기</p>
+                            <button class="mode-btn">체험하기</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI 분석 섹션 -->
+            <section class="section" id="photo-analysis">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <button onclick="goBack()" style="background: #666; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-right: 1rem;">← 뒤로</button>
+                    <h2 style="display: inline; color: var(--primary-pink);">AI 퍼스널컬러 분석</h2>
+                </div>
+                <div class="iframe-container">
+                    <iframe id="analysis-frame" src="about:blank"></iframe>
+                </div>
+            </section>
+
+            <!-- 드래이핑 섹션 -->
+            <section class="section" id="draping-mode">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <button onclick="goBack()" style="background: #666; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-right: 1rem;">← 뒤로</button>
+                    <h2 style="display: inline; color: var(--primary-pink);">가상 드래이핑 체험</h2>
+                </div>
+                <div class="iframe-container">
+                    <iframe id="draping-frame" src="about:blank"></iframe>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎨 Personal Color Pro 초기화...');
+            
+            // 로딩 화면 3초 후 제거
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('main-app').classList.add('loaded');
+                console.log('✅ Personal Color Pro 준비 완료');
+            }, 3000);
+        });
+
+        // 모드 선택
+        function selectMode(mode) {
+            console.log('모드 선택:', mode);
+            
+            // 모든 카드 선택 해제
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // 클릭된 카드 선택
+            event.currentTarget.classList.add('selected');
+            
+            // 섹션 전환
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            if (mode === 'photo') {
+                document.getElementById('photo-analysis').classList.add('active');
+                // iframe에 AI 분석 페이지 로드 (별도 구현 필요)
+                document.getElementById('analysis-frame').src = 'ai-analysis.html';
+            } else if (mode === 'draping') {
+                document.getElementById('draping-mode').classList.add('active');
+                // iframe에 드래이핑 페이지 로드 (별도 구현 필요)
+                document.getElementById('draping-frame').src = 'draping.html';
+            }
+        }
+
+        // 뒤로가기
+        function goBack() {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('mode-selection').classList.add('active');
+            
+            // iframe 정리
+            document.getElementById('analysis-frame').src = 'about:blank';
+            document.getElementById('draping-frame').src = 'about:blank';
+        }
+
+        // HAIRGATOR 테마 동기화 (부모 창에서 메시지 받기)
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'THEME_UPDATE') {
+                console.log('테마 업데이트 받음:', event.data.theme);
+                // 필요시 테마 적용 로직 구현
+            }
+        });
+    </script>
+</body>
+</html>
