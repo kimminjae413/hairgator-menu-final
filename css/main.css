@@ -1080,72 +1080,67 @@ body.light-theme .user-info {
     animation: pulse 2s infinite;
 }
 
-/* 퍼스널컬러 모달 */
+/* 완전한 전체화면 퍼스널컬러 모달 - 백그라운드 없음 */
 .personal-color-modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.9);
+    background: none; /* 검정 백그라운드 제거 */
     z-index: 10000;
     display: none;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(5px);
 }
 
 .personal-color-modal.active {
-    display: flex;
-    animation: fadeInModal 0.3s ease;
+    display: block; /* flex에서 block으로 변경 */
 }
 
 .personal-color-content {
-    width: 95%;
-    height: 95%;
-    max-width: 1400px;
-    background: white;
-    border-radius: 20px;
+    width: 100vw;
+    height: 100vh;
+    background: none; /* 백그라운드 제거 */
     position: relative;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     overflow: hidden;
 }
 
-.personal-color-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 30px;
-    background: linear-gradient(135deg, var(--female-color), #C2185B);
-    color: white;
+/* iframe을 완전한 전체화면으로 */
+#personalColorFrame {
+    width: 100vw !important;
+    height: 100vh !important;
+    border: none !important;
+    border-radius: 0 !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
 }
 
-.personal-color-header h2 {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 600;
-}
-
-.personal-color-close {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 32px;
-    cursor: pointer;
+/* 닫기 버튼을 최상단에 고정 */
+.personal-color-close-btn {
+    position: fixed;
+    top: 15px;
+    right: 15px;
     width: 40px;
     height: 40px;
+    background: rgba(233, 30, 99, 0.9);
+    color: white;
+    border: none;
     border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10001;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-.personal-color-close:hover {
-    background: rgba(255, 255, 255, 0.2);
+.personal-color-close-btn:hover {
+    background: rgba(233, 30, 99, 1);
     transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
-
 @keyframes fadeInModal {
     from { opacity: 0; transform: scale(0.9); }
     to { opacity: 1; transform: scale(1); }
@@ -1542,3 +1537,4 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
