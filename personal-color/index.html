@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
     <title>Personal Color Pro - 퍼스널컬러 진단 시스템</title>
+    <script src="hair-color-data.js"></script>
     
     <!-- 파비콘 404 오류 방지 -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🎨</text></svg>">
@@ -264,15 +265,24 @@
     <script>
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎨 Personal Color Pro 초기화...');
-            
-            // 로딩 화면 3초 후 제거
-            setTimeout(() => {
-                document.getElementById('loading-screen').style.display = 'none';
-                document.getElementById('main-app').classList.add('loaded');
-                console.log('✅ Personal Color Pro 준비 완료');
-            }, 3000);
-        });
+    console.log('🎨 Personal Color Pro 초기화...');
+    
+    // 614개 헤어컬러 데이터 확인
+    if (typeof HAIR_COLOR_614_DATA !== 'undefined') {
+        console.log(`✅ 614개 헤어컬러 데이터 로드 성공: ${HAIR_COLOR_614_DATA.length}개`);
+        window.hairColorData = HAIR_COLOR_614_DATA;
+    } else {
+        console.warn('❌ 614개 데이터를 찾을 수 없음');
+        window.hairColorData = [];
+    }
+    
+    // 로딩 화면 3초 후 제거
+    setTimeout(() => {
+        document.getElementById('loading-screen').style.display = 'none';
+        document.getElementById('main-app').classList.add('loaded');
+        console.log('✅ Personal Color Pro 준비 완료');
+    }, 3000);
+});
 
         // 모드 선택
         function selectMode(mode) {
