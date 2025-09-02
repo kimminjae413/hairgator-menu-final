@@ -827,7 +827,41 @@
 계정 문제나 패스워드 재설정에 대해 문의해주세요.`);
             }
         }
+// ========== 퍼스널컬러 모달 기능 ==========
 
+        function openPersonalColorModal() {
+            console.log('🎨 퍼스널컬러 모달 열기');
+            
+            const modal = document.getElementById('personalColorModal');
+            if (!modal) {
+                console.error('퍼스널컬러 모달을 찾을 수 없습니다');
+                return;
+            }
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // 사이드바 닫기
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+            
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
+
+        function closePersonalColorModal() {
+            console.log('🎨 퍼스널컬러 모달 닫기');
+            
+            const modal = document.getElementById('personalColorModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+        
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🦎 HAIRGATOR 시작 - 셀프 패스워드 확인 통합 버전');
@@ -1184,6 +1218,7 @@
 </body>
 </html>
 </html>
+
 
 
 
