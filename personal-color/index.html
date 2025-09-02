@@ -623,50 +623,64 @@
 
 // 새로 추가할 함수들
 function drawFaceContour(ctx, landmarks) {
-    // 얼굴 윤곽선 포인트들 (MediaPipe Face Mesh 기준)
-    const faceContour = [10, 151, 9, 8, 168, 6, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10];
+    // MediaPipe Face Mesh 정확한 얼굴 윤곽선 포인트
+    const faceOval = [
+        10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288,
+        397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136,
+        172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109
+    ];
     
     ctx.strokeStyle = '#00FF88';
     ctx.lineWidth = 2;
     ctx.beginPath();
     
-    for (let i = 0; i < faceContour.length; i++) {
-        const point = landmarks[faceContour[i]];
-        const x = point.x * canvasElement.width;
-        const y = point.y * canvasElement.height;
-        
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-    }
+    faceOval.forEach((pointIndex, i) => {
+        if (landmarks[pointIndex]) {
+            const point = landmarks[pointIndex];
+            const x = point.x * canvasElement.width;
+            const y = point.y * canvasElement.height;
+            
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+    });
+    
     ctx.closePath();
     ctx.stroke();
 }
 
 function drawSkinTonePoints(ctx, landmarks) {
-    // 피부톤 추출 최적 포인트들
+    // 정확한 피부톤 추출 포인트들
     const skinPoints = [
-        { index: 9, name: '이마', color: '#FF6B6B' },      // 이마 중앙
-        { index: 151, name: '코', color: '#4ECDC4' },      // 코끝
-        { index: 234, name: '왼쪽 볼', color: '#45B7D1' }, // 왼쪽 볼
-        { index: 454, name: '오른쪽 볼', color: '#96CEB4' },// 오른쪽 볼
-        { index: 152, name: '턱', color: '#FECA57' },      // 턱 중앙
-        { index: 10, name: '이마상단', color: '#FF9FF3' },  // 이마 상단
-        { index: 175, name: '입술아래', color: '#54A0FF' }  // 입술 아래
+        { index: 10, name: '이마중앙', color: '#FF6B6B' },     // 이마 중앙
+        { index: 151, name: '코끝', color: '#4ECDC4' },       // 코끝
+        { index: 116, name: '왼쪽볼', color: '#45B7D1' },      // 왼쪽 볼
+        { index: 345, name: '오른쪽볼', color: '#96CEB4' },     // 오른쪽 볼
+        { index: 175, name: '턱중앙', color: '#FECA57' },      // 턱 중앙
+        { index: 9, name: '이마상단', color: '#FF9FF3' },       // 이마 상단
+        { index: 18, name: '턱끝', color: '#54A0FF' }          // 턱 끝
     ];
     
     skinPoints.forEach(point => {
-        const landmark = landmarks[point.index];
-        const x = landmark.x * canvasElement.width;
-        const y = landmark.y * canvasElement.height;
-        
-        // 샘플링 영역 표시 (5x5 픽셀)
-        ctx.fillStyle = point.color;
-        ctx.fillRect(x - 2, y - 2, 5, 5);
-        
-        // 포인트 이름 표시
-        ctx.fillStyle = 'white';
-        ctx.font = '10px Arial';
-        ctx.fillText(point.name, x + 8, y - 5);
+        if (landmarks[point.index]) {
+            const landmark = landmarks[point.index];
+            const x = landmark.x * canvasElement.width;
+            const y = landmark.y * canvasElement.height;
+            
+            // 샘플링 영역 표시 (더 큰 원형)
+            ctx.fillStyle = point.color;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // 포인트 이름 표시 (위치 조정)
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1;
+            ctx.font = 'bold 12px Arial';
+            ctx.strokeText(point.name, x + 8, y - 8);
+            ctx.fillText(point.name, x + 8, y - 8);
+        }
     });
 }
 
