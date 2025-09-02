@@ -1,10 +1,13 @@
 # _headers - 보안 및 캐싱 설정
 /*
-  X-Frame-Options: DENY
+  X-Frame-Options: SAMEORIGIN
   X-XSS-Protection: 1; mode=block
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer-when-downgrade
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/personal-color/*
+  X-Frame-Options: SAMEORIGIN
 
 /service-worker.js
   Cache-Control: no-cache
