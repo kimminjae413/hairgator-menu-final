@@ -612,35 +612,16 @@ function addAIButtonToModal(style) {
 
 // ========== AI 체험하기 기능 ==========
 
-// AI 사진 업로드 모달 열기
+// AI 사진 업로드 모달 열기 (개발중 상태)
 function openAIPhotoModal(styleId, styleName, styleImageUrl) {
-    // 모달이 없으면 생성
-    let modal = document.getElementById('aiPhotoModal');
-    if (!modal) {
-        modal = createAIPhotoModal();
-        document.body.appendChild(modal);
-    }
+    console.log('🚧 AI 체험하기 클릭 (개발중 상태):', {
+        styleId: styleId,
+        styleName: styleName,
+        status: 'DEVELOPMENT_MODE'
+    });
     
-    // 모달 내용 설정
-    const modalTitle = modal.querySelector('.ai-modal-title');
-    const modalSubtitle = modal.querySelector('.ai-modal-subtitle');
-    
-    if (modalTitle) {
-        modalTitle.innerHTML = `<span class="ai-icon">🤖</span> AI 헤어스타일 체험`;
-    }
-    
-    if (modalSubtitle) {
-        modalSubtitle.textContent = `${styleName} 스타일로 변신해보세요!`;
-    }
-    
-    // 현재 선택된 스타일 정보 저장
-    modal.dataset.styleId = styleId;
-    modal.dataset.styleName = styleName;
-    modal.dataset.styleImageUrl = styleImageUrl;
-    
-    // 모달 표시
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
+    // 개발중 토스트 메시지 표시
+    showToast('🚧 개발중입니다\nAI 헤어체험 기능은 현재 개발 중이며, 곧 만나보실 수 있습니다!', 'info');
 }
 
 // AI 사진 업로드 모달 HTML 생성
@@ -909,4 +890,5 @@ window.HAIRGATOR_MENU = {
 };
 
 console.log('✅ HAIRGATOR 메뉴 시스템 초기화 완료 - 스마트 필터링 & 모달 AI 버튼');
+
 
