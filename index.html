@@ -535,11 +535,11 @@
         designerPhone.textContent = `전화: ${currentDesigner.phone}`;
         sessionStatus.textContent = `토큰: ${currentDesigner.tokens || 0}개`;
         
-        // 🎯 퍼스널컬러 버튼이 없으면 추가
+        // 퍼스널컬러 버튼 자동 추가 (없을 때만)
         setTimeout(() => {
-            const existingButton = document.querySelector('.menu-item');
-            if (!existingButton) {
-                const personalColorButton = `
+            if (!document.querySelector('.menu-item')) {
+                const sidebarContent = document.querySelector('.sidebar-content');
+                const personalColorHTML = `
                 <div class="menu-item" onclick="openPersonalColorModal()">
                     <div class="menu-icon">🎨</div>
                     <div class="menu-text">
@@ -548,8 +548,11 @@
                     </div>
                     <div class="menu-arrow">›</div>
                 </div>`;
-                userInfo.insertAdjacentHTML('afterend', personalColorButton);
-                console.log('✅ 퍼스널컬러 버튼 자동 추가됨');
+                
+                const connectionStatus = document.getElementById('connectionStatus');
+                if (connectionStatus) {
+                    connectionStatus.insertAdjacentHTML('beforebegin', personalColorHTML);
+                }
             }
         }, 100);
         
@@ -558,7 +561,6 @@
         guestMessage.style.display = 'block';
     }
 }
-
         function formatPhoneNumber(phone) {
             const numbers = phone.replace(/[^\d]/g, '');
             if (numbers.length !== 11) {
@@ -967,4 +969,5 @@
     
 </body>
 </html>
+
 
