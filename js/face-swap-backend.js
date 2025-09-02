@@ -1,5 +1,5 @@
 // js/face-swap-backend.js
-// Face Swap 백엔드 연결 관리 모듈 - 새로 생성할 파일
+// Face Swap 백엔드 연결 관리 모듈 - 수정된 버전
 
 class FaceSwapBackend {
     constructor() {
@@ -12,15 +12,48 @@ class FaceSwapBackend {
         console.log('🔧 Face Swap 백엔드 초기화:', this.baseURL);
     }
 
-    // 환경별 백엔드 URL 결정
-  getBackendURL() {
-    // 백엔드 서버가 없으므로 데모 모드
-    return 'http://demo-mode';  // 존재하지 않는 URL로 설정
-}
+    // 환경별 백엔드 URL 결정 - 수정된 버전
+    getBackendURL() {
+        // 1. 로컬 스토리지에서 저장된 URL 확인
+        try {
+            const savedURL = localStorage.getItem('hairgator_backend_url');
+            if (savedURL && savedURL !== 'http://demo-mode') {
+                console.log('💾 저장된 백엔드 URL 사용:', savedURL);
+                return savedURL;
+            }
+        } catch (error) {
+            console.warn('저장된 URL 로드 실패:', error);
+        }
+
+        // 2. 환경별 기본 URL 설정
+        const hostname = window.location.hostname;
+        
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            // 로컬 개발 환경
+            return 'http://localhost:3008';
+        } else if (hostname.includes('netlify.app') || hostname.includes('github.io')) {
+            // 프로덕션 환경 - ngrok 또는 실제 서버 URL 사용
+            // 🔧 실제 ngrok URL로 변경하세요
+            return 'https://your-ngrok-url.ngrok-free.app';
+        } else {
+            // 기타 환경 - 수동 설정 필요
+            console.warn('⚠️ 백엔드 URL을 수동으로 설정해주세요');
+            return 'http://localhost:3008'; // 기본값
+        }
+    }
 
     // 백엔드 서버 연결 테스트
     async testConnection() {
         console.log('🔍 Face Swap 백엔드 연결 테스트 시작...', this.baseURL);
+        
+        // 데모 모드인 경우 연결 시도하지 않음
+        if (this.baseURL === 'http://demo-mode') {
+            console.warn('⚠️ 데모 모드입니다. 실제 백엔드 URL을 설정해주세요.');
+            this.isConnected = false;
+            this.connectionChecked = true;
+            this.updateConnectionStatus(false, '데모 모드 - 백엔드 URL 설정 필요');
+            return { success: false, error: '데모 모드 - 백엔드 URL 설정 필요' };
+        }
         
         try {
             // 타임아웃 설정 (5초)
@@ -213,7 +246,7 @@ class FaceSwapBackend {
             }
             
         } catch (error) {
-            console.error('상태 확인 오류:', error);
+            console.error('상태 확인 오료:', error);
             return { success: false, error: error.message };
         }
     }
@@ -249,8 +282,9 @@ class FaceSwapBackend {
     loadSavedURL() {
         try {
             const savedURL = localStorage.getItem('hairgator_backend_url');
-            if (savedURL) {
-                this.updateBackendURL(savedURL);
+            if (savedURL && savedURL !== 'http://demo-mode') {
+                this.baseURL = savedURL;
+                this.webhookURL = `${savedURL}/api/webhook`;
                 console.log('💾 저장된 백엔드 URL 로드:', savedURL);
                 return true;
             }
@@ -269,6 +303,29 @@ class FaceSwapBackend {
             webhookURL: this.webhookURL
         };
     }
+
+    // URL 설정 도우미 함수
+    showURLSetupInstructions() {
+        const instructions = `
+🔧 AKOOL 백엔드 URL 설정이 필요합니다!
+
+1. 백엔드 서버 실행:
+   cd HAIRGATOR-backend
+   python app.py
+
+2. ngrok으로 외부 접근 허용:
+   ngrok http 3008
+
+3. 브라우저 콘솔에서 URL 설정:
+   window.faceSwapDebug.updateURL('https://your-ngrok-url.ngrok-free.app')
+
+4. 연결 테스트:
+   window.faceSwapDebug.testConnection()
+        `;
+        
+        console.log(instructions);
+        return instructions;
+    }
 }
 
 // 전역 인스턴스 생성
@@ -279,7 +336,14 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Face Swap 백엔드 모듈 초기화 시작...');
     
     // 저장된 URL 로드
-    window.faceSwapBackend.loadSavedURL();
+    if (!window.faceSwapBackend.loadSavedURL()) {
+        // 저장된 URL이 없으면 설정 안내 표시
+        setTimeout(() => {
+            if (window.faceSwapBackend.baseURL === 'http://demo-mode') {
+                window.faceSwapBackend.showURLSetupInstructions();
+            }
+        }, 2000);
+    }
     
     // Firebase 초기화 대기 후 연결 테스트 (3초 후)
     setTimeout(async () => {
@@ -300,14 +364,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 30000);
 });
 
-// 전역 함수 노출 (디버깅용)
+// 전역 함수 노출 (디버깅용) - 확장된 버전
 window.faceSwapDebug = {
+    // 연결 테스트
     testConnection: () => window.faceSwapBackend.testConnection(),
+    
+    // 연결 정보 확인
     getInfo: () => window.faceSwapBackend.getConnectionInfo(),
-    updateURL: (url) => window.faceSwapBackend.updateBackendURL(url)
+    
+    // URL 업데이트
+    updateURL: (url) => {
+        if (window.faceSwapBackend.updateBackendURL(url)) {
+            console.log('✅ URL 업데이트 완료. 연결 테스트를 실행합니다...');
+            return window.faceSwapBackend.testConnection();
+        }
+    },
+    
+    // 설정 도움말
+    help: () => window.faceSwapBackend.showURLSetupInstructions(),
+    
+    // 로컬 서버 URL 설정 (개발용)
+    setLocal: () => window.faceSwapDebug.updateURL('http://localhost:3008'),
+    
+    // ngrok URL 설정 도우미
+    setNgrok: (ngrokId) => {
+        if (!ngrokId) {
+            console.error('ngrok ID가 필요합니다. 예: setNgrok("abc123")');
+            return false;
+        }
+        return window.faceSwapDebug.updateURL(`https://${ngrokId}.ngrok-free.app`);
+    }
 };
 
 console.log('🔧 Face Swap 백엔드 모듈 로드 완료');
+console.log('💡 도움말: window.faceSwapDebug.help() 실행');
 
 // CSS 스타일 추가 (연결 상태 표시용)
 const faceSwapStyles = `
@@ -389,6 +479,39 @@ const faceSwapStyles = `
     margin-top: 10px;
     font-size: 14px;
     text-align: center;
+}
+
+/* URL 설정 안내 */
+.url-setup-notice {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(45deg, #FF1493, #FF69B4);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(255, 20, 147, 0.4);
+    z-index: 10000;
+    font-size: 14px;
+    max-width: 300px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.url-setup-notice:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(255, 20, 147, 0.6);
+}
+
+.url-setup-notice .close-btn {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
 }
 </style>
 `;
