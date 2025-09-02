@@ -45,11 +45,7 @@
         <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
         <h1 class="logo">HAIRGATOR</h1>
         <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="테마 변경">🌙</button>
-        <!-- AI 서버 상태 표시 -->
-        <div id="aiServerStatus" class="ai-status">
-            <span class="status-dot offline"></span>
-            <span class="status-text">AI 연결 확인 중</span>
-        </div>
+       
         <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
             <span></span>
             <span></span>
@@ -73,12 +69,13 @@
             </div>
             <p id="guestMessage">로그인 후 이용 가능합니다.</p>
             <!-- 연결 상태 표시 -->
-            <div id="connectionStatus" class="connection-status">
-                <div class="status-indicator">
-                    <span class="dot offline"></span>
-                    <span class="text">AI 서버 연결 확인 중</span>
-                </div>
-            </div>
+            <!-- AI 서버 연결 상태 -->
+<div class="menu-divider"></div>
+<div class="menu-item" id="aiConnectionStatus">
+    <span class="menu-icon">🤖</span>
+    <span class="menu-text">AI 서버</span>
+    <span class="connection-dot offline" id="aiStatusDot"></span>
+</div>
         </div>
     </aside>
 
@@ -1118,3 +1115,4 @@
     </style>
 </body>
 </html>
+
