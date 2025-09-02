@@ -1,22 +1,23 @@
-// ========== HAIRGATOR 패스워드 복구 시스템 ==========
+// ========== HAIRGATOR 패스워드 복구 시스템 (셀프 확인 버전) ==========
 // js/password-recovery.js
 
 (function() {
     'use strict';
 
-    // 패스워드 복구 시스템 클래스
+    // 패스워드 복구 시스템 클래스 (셀프 확인 기능 추가)
     class PasswordRecoverySystem {
         constructor() {
             this.db = null; // Firebase 연결은 메인에서 전달받음
             this.maxLoginAttempts = 3;
             this.lockoutDuration = 15 * 60 * 1000; // 15분
+            this.passwordHideTimeout = null; // 패스워드 자동 숨김 타이머
             this.init();
         }
 
         init() {
             // Firebase DB 연결 대기
             this.waitForFirebase();
-            console.log('🔐 패스워드 복구 시스템 초기화 완료');
+            console.log('🔐 패스워드 복구 시스템 초기화 완료 (셀프 확인 기능 포함)');
         }
 
         waitForFirebase() {
@@ -47,7 +48,382 @@
             checkFirebase();
         }
 
-        // 계정 존재 여부 확인
+        // 🆕 셀프 패스워드 확인 - 본인 계정의 패스워드 직접 조회
+        async getSelfPassword(name, phone) {
+            try {
+                if (!this.db) {
+                    throw new Error('데이터베이스 연결이 필요합니다');
+                }
+
+                const formattedPhone = this.formatPhoneNumber(phone);
+                
+                const snapshot = await this.db.collection('designers')
+                    .where('name', '==', name.trim())
+                    .where('phone', '==', formattedPhone)
+                    .limit(1)
+                    .get();
+
+                if (snapshot.empty) {
+                    throw new Error('입력하신 정보와 일치하는 계정이 없습니다.\n디자이너명과 전화번호를 다시 확인해주세요.');
+                }
+
+                const userData = snapshot.docs[0].data();
+                
+                // 조회 기록 저장
+                await this.logPasswordAccess(name, formattedPhone);
+                
+                return {
+                    success: true,
+                    password: userData.password,
+                    userData: {
+                        name: userData.name,
+                        phone: userData.phone,
+                        tokens: userData.tokens || 0,
+                        lastLogin: userData.lastLogin || '기록 없음'
+                    }
+                };
+
+            } catch (error) {
+                console.error('패스워드 조회 중 오류:', error);
+                throw error;
+            }
+        }
+
+        // 패스워드 조회 기록 저장
+        async logPasswordAccess(name, phone) {
+            try {
+                await this.db.collection('password_access_logs').add({
+                    designerName: name,
+                    designerPhone: phone,
+                    accessedAt: new Date(),
+                    deviceInfo: this.getDeviceInfo(),
+                    ipAddress: await this.getClientIP(),
+                    accessType: 'self_check'
+                });
+            } catch (error) {
+                console.warn('접근 기록 저장 실패:', error);
+            }
+        }
+
+        // 🆕 셀프 패스워드 확인 모달
+        showSelfPasswordCheckModal() {
+            this.closeAllModals();
+
+            const modal = document.createElement('div');
+            modal.className = 'self-password-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.closeSelfPasswordModal()"></div>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>내 패스워드 확인</h3>
+                        <button class="modal-close" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.closeSelfPasswordModal()">×</button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <div class="step-indicator">
+                            <div class="step active" data-step="1">본인 확인</div>
+                            <div class="step" data-step="2">패스워드 확인</div>
+                            <div class="step" data-step="3">변경 요청</div>
+                        </div>
+                        
+                        <!-- 1단계: 본인 확인 -->
+                        <div id="selfStep1" class="recovery-step active">
+                            <p class="step-description">본인 계정 정보를 입력하여 패스워드를 확인하세요.</p>
+                            
+                            <div class="security-notice">
+                                <div class="notice-icon">🔐</div>
+                                <div class="notice-text">
+                                    <strong>보안 안내</strong><br>
+                                    패스워드는 10초간만 표시되며 자동으로 숨겨집니다.
+                                </div>
+                            </div>
+                            
+                            <form id="selfPasswordCheckForm">
+                                <div class="form-group">
+                                    <label for="selfCheckName">디자이너명</label>
+                                    <input type="text" id="selfCheckName" placeholder="등록하신 이름을 입력하세요" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="selfCheckPhone">전화번호</label>
+                                    <input type="tel" id="selfCheckPhone" placeholder="010-0000-0000" maxlength="13" required>
+                                </div>
+                                
+                                <button type="submit" class="btn-primary" id="selfCheckBtn">
+                                    패스워드 확인
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- 2단계: 패스워드 표시 -->
+                        <div id="selfStep2" class="recovery-step">
+                            <div class="password-result">
+                                <div class="success-icon">✅</div>
+                                <h4>패스워드를 확인했습니다</h4>
+                                
+                                <div class="password-display">
+                                    <div class="password-label">현재 패스워드:</div>
+                                    <div class="password-value" id="displayedPassword">****</div>
+                                    <div class="password-timer">
+                                        <div class="timer-bar" id="passwordTimer"></div>
+                                        <div class="timer-text" id="timerText">10초 후 자동으로 숨겨집니다</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="account-info" id="accountInfo">
+                                    <h5>계정 정보</h5>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <span class="info-label">이름:</span>
+                                            <span class="info-value" id="userName">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">전화번호:</span>
+                                            <span class="info-value" id="userPhone">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">토큰:</span>
+                                            <span class="info-value" id="userTokens">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">마지막 로그인:</span>
+                                            <span class="info-value" id="lastLogin">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="modal-actions">
+                                    <button class="btn-secondary" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.closeSelfPasswordModal()">확인</button>
+                                    <button class="btn-primary" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.goToPasswordChangeRequest()">패스워드 변경 요청</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 3단계: 패스워드 변경 요청 -->
+                        <div id="selfStep3" class="recovery-step">
+                            <div class="change-request">
+                                <div class="change-icon">🔄</div>
+                                <h4>새 패스워드 요청</h4>
+                                <p>새로운 패스워드로 변경을 원하시면 아래 정보를 입력하세요.</p>
+                                
+                                <form id="passwordChangeRequestForm">
+                                    <div class="form-group">
+                                        <label for="newPasswordRequest">원하는 새 패스워드</label>
+                                        <input type="text" id="newPasswordRequest" placeholder="새로 사용할 패스워드 입력" maxlength="20" required>
+                                        <small class="form-help">4-20자, 숫자와 영문 조합 권장</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="changeReason">변경 사유 (선택)</label>
+                                        <select id="changeReason">
+                                            <option value="보안 강화">보안 강화</option>
+                                            <option value="기억하기 쉬운 패스워드로">기억하기 쉬운 패스워드로</option>
+                                            <option value="정기 변경">정기 변경</option>
+                                            <option value="기타">기타</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="change-notice">
+                                        <strong>⚠️ 주의사항:</strong><br>
+                                        • 패스워드 변경은 관리자 승인 후 적용됩니다<br>
+                                        • 승인까지 기존 패스워드를 계속 사용하세요<br>
+                                        • 보통 1-2시간 내에 변경됩니다
+                                    </div>
+                                    
+                                    <div class="modal-actions">
+                                        <button type="button" class="btn-secondary" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.goBackToStep2()">이전으로</button>
+                                        <button type="submit" class="btn-primary" id="changeRequestBtn">변경 요청</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 전화번호 포맷팅
+            const phoneInput = modal.querySelector('#selfCheckPhone');
+            phoneInput.addEventListener('input', (e) => {
+                e.target.value = this.formatPhoneNumber(e.target.value);
+            });
+            
+            // 폼 제출 처리
+            const form = modal.querySelector('#selfPasswordCheckForm');
+            form.addEventListener('submit', (e) => this.handleSelfPasswordCheck(e));
+
+            // 패스워드 변경 요청 폼 처리
+            const changeForm = modal.querySelector('#passwordChangeRequestForm');
+            changeForm.addEventListener('submit', (e) => this.handlePasswordChangeRequest(e));
+        }
+
+        // 셀프 패스워드 확인 처리
+        async handleSelfPasswordCheck(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('selfCheckName').value.trim();
+            const phone = document.getElementById('selfCheckPhone').value.trim();
+            const checkBtn = document.getElementById('selfCheckBtn');
+            
+            if (!name || !phone) {
+                this.showToast('모든 정보를 입력해주세요', 'error');
+                return;
+            }
+            
+            checkBtn.disabled = true;
+            checkBtn.textContent = '확인 중...';
+            
+            try {
+                const result = await this.getSelfPassword(name, phone);
+                
+                // 계정 정보 표시
+                document.getElementById('userName').textContent = result.userData.name;
+                document.getElementById('userPhone').textContent = result.userData.phone;
+                document.getElementById('userTokens').textContent = result.userData.tokens;
+                document.getElementById('lastLogin').textContent = 
+                    result.userData.lastLogin === '기록 없음' ? '기록 없음' : 
+                    new Date(result.userData.lastLogin.seconds * 1000).toLocaleString('ko-KR');
+                
+                // 단계 전환
+                this.goToStep(2);
+                
+                // 패스워드 표시 및 타이머 시작
+                this.showPasswordWithTimer(result.password);
+                
+                this.showToast('패스워드를 확인했습니다', 'success');
+                
+            } catch (error) {
+                this.showToast(error.message, 'error');
+            } finally {
+                checkBtn.disabled = false;
+                checkBtn.textContent = '패스워드 확인';
+            }
+        }
+
+        // 패스워드를 10초간 표시하고 자동 숨김
+        showPasswordWithTimer(password) {
+            const passwordElement = document.getElementById('displayedPassword');
+            const timerBar = document.getElementById('passwordTimer');
+            const timerText = document.getElementById('timerText');
+            
+            // 패스워드 표시
+            passwordElement.textContent = password;
+            passwordElement.classList.add('visible');
+            
+            // 기존 타이머 클리어
+            if (this.passwordHideTimeout) {
+                clearTimeout(this.passwordHideTimeout);
+            }
+            
+            // 타이머 바 애니메이션
+            timerBar.style.width = '100%';
+            timerBar.style.transition = 'width 10s linear';
+            
+            let countdown = 10;
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                timerText.textContent = countdown > 0 ? 
+                    `${countdown}초 후 자동으로 숨겨집니다` : 
+                    '패스워드가 숨겨졌습니다';
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+            
+            // 10초 후 패스워드 숨김
+            this.passwordHideTimeout = setTimeout(() => {
+                passwordElement.textContent = '••••••••';
+                passwordElement.classList.remove('visible');
+                timerBar.style.width = '0%';
+                timerText.textContent = '보안을 위해 패스워드가 숨겨졌습니다';
+            }, 10000);
+            
+            // 타이머 바 시작
+            setTimeout(() => {
+                timerBar.style.width = '0%';
+            }, 100);
+        }
+
+        // 패스워드 변경 요청 처리
+        async handlePasswordChangeRequest(e) {
+            e.preventDefault();
+            
+            const newPassword = document.getElementById('newPasswordRequest').value.trim();
+            const reason = document.getElementById('changeReason').value;
+            const changeBtn = document.getElementById('changeRequestBtn');
+            
+            // 현재 사용자 정보
+            const userName = document.getElementById('userName').textContent;
+            const userPhone = document.getElementById('userPhone').textContent;
+            
+            if (!newPassword) {
+                this.showToast('새 패스워드를 입력해주세요', 'error');
+                return;
+            }
+
+            if (newPassword.length < 4) {
+                this.showToast('패스워드는 최소 4자 이상 입력해주세요', 'error');
+                return;
+            }
+            
+            changeBtn.disabled = true;
+            changeBtn.textContent = '요청 중...';
+            
+            try {
+                const changeRequest = {
+                    designerName: userName,
+                    designerPhone: userPhone,
+                    currentPassword: '***', // 보안상 기록하지 않음
+                    requestedPassword: newPassword,
+                    reason: reason,
+                    requestedAt: new Date(),
+                    status: 'pending',
+                    requestId: this.generateRequestId(),
+                    requestType: 'password_change',
+                    deviceInfo: this.getDeviceInfo(),
+                    ipAddress: await this.getClientIP()
+                };
+
+                await this.db.collection('password_change_requests').add(changeRequest);
+                
+                this.showToast('패스워드 변경 요청이 완료되었습니다!\n관리자 승인 후 변경됩니다.', 'success');
+                
+                // 모달 닫기
+                setTimeout(() => {
+                    this.closeSelfPasswordModal();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('패스워드 변경 요청 실패:', error);
+                this.showToast('요청 처리 중 문제가 발생했습니다. 다시 시도해주세요.', 'error');
+            } finally {
+                changeBtn.disabled = false;
+                changeBtn.textContent = '변경 요청';
+            }
+        }
+
+        // 단계 전환 함수들
+        goToStep(stepNumber) {
+            // 모든 단계 비활성화
+            document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+            document.querySelectorAll('.recovery-step').forEach(step => step.classList.remove('active'));
+            
+            // 해당 단계 활성화
+            document.querySelector(`[data-step="${stepNumber}"]`).classList.add('active');
+            document.getElementById(`selfStep${stepNumber}`).classList.add('active');
+        }
+
+        goToPasswordChangeRequest() {
+            this.goToStep(3);
+        }
+
+        goBackToStep2() {
+            this.goToStep(2);
+        }
+
+        // 기존 함수들 (계정 존재 여부 확인, 패스워드 재설정 요청 등)
         async checkAccountExists(name, phone) {
             try {
                 if (!this.db) {
@@ -69,7 +445,6 @@
             }
         }
 
-        // 패스워드 재설정 요청
         async requestPasswordReset(name, phone, reason) {
             try {
                 const accountExists = await this.checkAccountExists(name, phone);
@@ -103,7 +478,7 @@
             }
         }
 
-        // 로그인 시도 횟수 관리
+        // 로그인 시도 횟수 관리 (기존 함수들)
         async checkLoginAttempts(name, phone) {
             try {
                 const key = `${name}_${phone}`;
@@ -117,7 +492,6 @@
                         const remainingTime = Math.ceil((this.lockoutDuration - timeSinceLock) / 1000 / 60);
                         throw new Error(`계정이 일시적으로 잠겼습니다.\n${remainingTime}분 후 다시 시도해주세요.`);
                     } else {
-                        // 잠금 시간 만료 - 초기화
                         delete attempts[key];
                         localStorage.setItem('hairgator_login_attempts', JSON.stringify(attempts));
                     }
@@ -129,7 +503,6 @@
             }
         }
 
-        // 로그인 실패 시 시도 횟수 증가
         incrementLoginAttempts(name, phone) {
             const key = `${name}_${phone}`;
             const attempts = JSON.parse(localStorage.getItem('hairgator_login_attempts') || '{}');
@@ -153,7 +526,6 @@
             }
         }
 
-        // 성공적인 로그인 시 시도 횟수 초기화
         clearLoginAttempts(name, phone) {
             const key = `${name}_${phone}`;
             const attempts = JSON.parse(localStorage.getItem('hairgator_login_attempts') || '{}');
@@ -161,37 +533,8 @@
             localStorage.setItem('hairgator_login_attempts', JSON.stringify(attempts));
         }
 
-        // 계정 잠금 상태 확인
-        isAccountLocked(name, phone) {
-            const key = `${name}_${phone}`;
-            const attempts = JSON.parse(localStorage.getItem('hairgator_login_attempts') || '{}');
-            const userAttempts = attempts[key];
-
-            if (userAttempts && userAttempts.count >= this.maxLoginAttempts && userAttempts.lockedAt) {
-                const timeSinceLock = Date.now() - userAttempts.lockedAt;
-                return timeSinceLock < this.lockoutDuration;
-            }
-
-            return false;
-        }
-
-        // 남은 잠금 시간
-        getRemainingLockTime(name, phone) {
-            const key = `${name}_${phone}`;
-            const attempts = JSON.parse(localStorage.getItem('hairgator_login_attempts') || '{}');
-            const userAttempts = attempts[key];
-
-            if (userAttempts && userAttempts.lockedAt) {
-                const timeSinceLock = Date.now() - userAttempts.lockedAt;
-                return Math.max(0, this.lockoutDuration - timeSinceLock);
-            }
-
-            return 0;
-        }
-
-        // 패스워드 찾기 모달 표시
+        // 기존 모달 함수들 (패스워드 찾기, 계정 확인, 관리자 연락)
         showPasswordRecoveryModal() {
-            // 기존 모달 제거
             this.closeAllModals();
 
             const modal = document.createElement('div');
@@ -200,7 +543,7 @@
                 <div class="modal-overlay" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.closePasswordRecoveryModal()"></div>
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3>패스워드 찾기</h3>
+                        <h3>패스워드 찾기 (관리자 승인)</h3>
                         <button class="modal-close" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.closePasswordRecoveryModal()">×</button>
                     </div>
                     
@@ -211,7 +554,7 @@
                         </div>
                         
                         <div id="step1" class="recovery-step active">
-                            <p class="step-description">계정 정보를 입력하여 패스워드 재설정을 요청합니다.</p>
+                            <p class="step-description">관리자 승인을 통한 패스워드 재설정을 요청합니다.</p>
                             
                             <form id="passwordResetForm">
                                 <div class="form-group">
@@ -235,7 +578,7 @@
                                 </div>
                                 
                                 <button type="submit" class="btn-primary" id="requestResetBtn">
-                                    재설정 요청하기
+                                    관리자 승인 요청
                                 </button>
                             </form>
                         </div>
@@ -253,7 +596,6 @@
                                         <li>보통 1-2시간 내에 연락드립니다</li>
                                     </ul>
                                 </div>
-                                <p class="sub-info">급하신 경우 관리자에게 직접 연락해주세요.</p>
                             </div>
                             
                             <div class="modal-actions">
@@ -267,18 +609,51 @@
             
             document.body.appendChild(modal);
             
-            // 전화번호 포맷팅
             const phoneInput = modal.querySelector('#recoveryPhone');
             phoneInput.addEventListener('input', (e) => {
                 e.target.value = this.formatPhoneNumber(e.target.value);
             });
             
-            // 폼 제출 처리
             const form = modal.querySelector('#passwordResetForm');
             form.addEventListener('submit', (e) => this.handlePasswordResetRequest(e));
         }
 
-        // 계정 확인 모달
+        async handlePasswordResetRequest(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('recoveryName').value.trim();
+            const phone = document.getElementById('recoveryPhone').value.trim();
+            const reason = document.getElementById('resetReason').value;
+            const requestBtn = document.getElementById('requestResetBtn');
+            
+            if (!name || !phone) {
+                this.showToast('모든 정보를 입력해주세요', 'error');
+                return;
+            }
+            
+            requestBtn.disabled = true;
+            requestBtn.textContent = '요청 중...';
+            
+            try {
+                const result = await this.requestPasswordReset(name, phone, reason);
+                
+                document.querySelector('[data-step="1"]').classList.remove('active');
+                document.querySelector('[data-step="2"]').classList.add('active');
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step2').classList.add('active');
+                document.getElementById('requestResult').textContent = result.message;
+                
+                this.showToast('요청이 성공적으로 접수되었습니다', 'success');
+                
+            } catch (error) {
+                this.showToast(error.message, 'error');
+            } finally {
+                requestBtn.disabled = false;
+                requestBtn.textContent = '관리자 승인 요청';
+            }
+        }
+
+        // 계정 확인 모달 (기존)
         showAccountCheckModal() {
             this.closeAllModals();
 
@@ -320,18 +695,75 @@
             
             document.body.appendChild(modal);
             
-            // 전화번호 포맷팅
             const phoneInput = modal.querySelector('#checkPhone');
             phoneInput.addEventListener('input', (e) => {
                 e.target.value = this.formatPhoneNumber(e.target.value);
             });
             
-            // 폼 제출 처리
             const form = modal.querySelector('#accountCheckForm');
             form.addEventListener('submit', (e) => this.handleAccountCheck(e));
         }
 
-        // 관리자 연락처 모달
+        async handleAccountCheck(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('checkName').value.trim();
+            const phone = document.getElementById('checkPhone').value.trim();
+            const checkBtn = document.getElementById('accountCheckBtn');
+            const resultDiv = document.getElementById('accountCheckResult');
+            
+            if (!name || !phone) {
+                this.showToast('모든 정보를 입력해주세요', 'error');
+                return;
+            }
+            
+            checkBtn.disabled = true;
+            checkBtn.textContent = '확인 중...';
+            resultDiv.style.display = 'none';
+            
+            try {
+                const accountExists = await this.checkAccountExists(name, phone);
+                
+                resultDiv.style.display = 'block';
+                
+                if (accountExists) {
+                    resultDiv.className = 'check-result success';
+                    resultDiv.innerHTML = `
+                        <div class="result-icon">✅</div>
+                        <h4>계정이 확인되었습니다</h4>
+                        <p>입력하신 정보로 등록된 계정이 존재합니다.</p>
+                        <div class="result-actions">
+                            <button class="btn-primary" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.closeAccountCheckModal(); window.HAIRGATOR_PASSWORD_RECOVERY.showSelfPasswordCheckModal();">내 패스워드 확인</button>
+                            <button class="btn-secondary" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.closeAccountCheckModal(); window.HAIRGATOR_PASSWORD_RECOVERY.showPasswordRecoveryModal();">관리자 승인 요청</button>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = 'check-result error';
+                    resultDiv.innerHTML = `
+                        <div class="result-icon">❌</div>
+                        <h4>계정을 찾을 수 없습니다</h4>
+                        <p>입력하신 정보로 등록된 계정이 없습니다.</p>
+                        <div class="result-actions">
+                            <button class="btn-primary" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.showContactAdmin()">관리자 연락</button>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'check-result error';
+                resultDiv.innerHTML = `
+                    <div class="result-icon">⚠️</div>
+                    <h4>확인 중 오류가 발생했습니다</h4>
+                    <p>${error.message}</p>
+                `;
+            } finally {
+                checkBtn.disabled = false;
+                checkBtn.textContent = '계정 확인';
+            }
+        }
+
+        // 관리자 연락처 모달 (기존)
         showContactAdmin() {
             this.closeAllModals();
 
@@ -362,16 +794,6 @@
                                     <span class="contact-value">평일 09:30-18:30</span>
                                 </div>
                             </div>
-                            
-                            <div class="request-info">
-                                <h5>문의 시 준비사항:</h5>
-                                <ul>
-                                    <li>디자이너명 (실명)</li>
-                                    <li>등록된 전화번호</li>
-                                    <li>신분 확인 가능한 정보</li>
-                                    <li>패스워드 재설정 요청 이유</li>
-                                </ul>
-                            </div>
                         </div>
                         
                         <div class="modal-actions">
@@ -384,122 +806,30 @@
             document.body.appendChild(modal);
         }
 
-        // 패스워드 재설정 요청 처리
-        async handlePasswordResetRequest(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('recoveryName').value.trim();
-            const phone = document.getElementById('recoveryPhone').value.trim();
-            const reason = document.getElementById('resetReason').value;
-            const requestBtn = document.getElementById('requestResetBtn');
-            
-            if (!name || !phone) {
-                this.showToast('모든 정보를 입력해주세요', 'error');
-                return;
-            }
-            
-            requestBtn.disabled = true;
-            requestBtn.textContent = '요청 중...';
-            
-            try {
-                const result = await this.requestPasswordReset(name, phone, reason);
-                
-                // UI 업데이트
-                document.querySelector('[data-step="1"]').classList.remove('active');
-                document.querySelector('[data-step="2"]').classList.add('active');
-                document.getElementById('step1').classList.remove('active');
-                document.getElementById('step2').classList.add('active');
-                document.getElementById('requestResult').textContent = result.message;
-                
-                this.showToast('요청이 성공적으로 접수되었습니다', 'success');
-                
-            } catch (error) {
-                this.showToast(error.message, 'error');
-            } finally {
-                requestBtn.disabled = false;
-                requestBtn.textContent = '재설정 요청하기';
-            }
-        }
-
-        // 계정 확인 처리
-        async handleAccountCheck(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('checkName').value.trim();
-            const phone = document.getElementById('checkPhone').value.trim();
-            const checkBtn = document.getElementById('accountCheckBtn');
-            const resultDiv = document.getElementById('accountCheckResult');
-            
-            if (!name || !phone) {
-                this.showToast('모든 정보를 입력해주세요', 'error');
-                return;
-            }
-            
-            checkBtn.disabled = true;
-            checkBtn.textContent = '확인 중...';
-            resultDiv.style.display = 'none';
-            
-            try {
-                const accountExists = await this.checkAccountExists(name, phone);
-                
-                resultDiv.style.display = 'block';
-                
-                if (accountExists) {
-                    resultDiv.className = 'check-result success';
-                    resultDiv.innerHTML = `
-                        <div class="result-icon">✅</div>
-                        <h4>계정이 확인되었습니다</h4>
-                        <p>입력하신 정보로 등록된 계정이 존재합니다.</p>
-                        <p>패스워드를 잊으셨다면 "패스워드 찾기"를 이용해주세요.</p>
-                        <div class="result-actions">
-                            <button class="btn-primary" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.closeAccountCheckModal(); window.HAIRGATOR_PASSWORD_RECOVERY.showPasswordRecoveryModal();">패스워드 찾기</button>
-                        </div>
-                    `;
-                } else {
-                    resultDiv.className = 'check-result error';
-                    resultDiv.innerHTML = `
-                        <div class="result-icon">❌</div>
-                        <h4>계정을 찾을 수 없습니다</h4>
-                        <p>입력하신 정보로 등록된 계정이 없습니다.</p>
-                        <p>디자이너명과 전화번호를 다시 확인하거나<br>관리자에게 계정 생성을 요청해주세요.</p>
-                        <div class="result-actions">
-                            <button class="btn-primary" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.showContactAdmin()">관리자 연락</button>
-                        </div>
-                    `;
-                }
-                
-            } catch (error) {
-                resultDiv.style.display = 'block';
-                resultDiv.className = 'check-result error';
-                resultDiv.innerHTML = `
-                    <div class="result-icon">⚠️</div>
-                    <h4>확인 중 오류가 발생했습니다</h4>
-                    <p>${error.message}</p>
-                `;
-            } finally {
-                checkBtn.disabled = false;
-                checkBtn.textContent = '계정 확인';
-            }
-        }
-
         // 모달 닫기 함수들
         closePasswordRecoveryModal() {
             const modal = document.querySelector('.password-recovery-modal');
-            if (modal) {
-                modal.remove();
-            }
+            if (modal) modal.remove();
         }
 
         closeAccountCheckModal() {
             const modal = document.querySelector('.account-check-modal');
-            if (modal) {
-                modal.remove();
-            }
+            if (modal) modal.remove();
         }
 
         closeContactAdminModal() {
             const modal = document.querySelector('.contact-admin-modal');
+            if (modal) modal.remove();
+        }
+
+        closeSelfPasswordModal() {
+            const modal = document.querySelector('.self-password-modal');
             if (modal) {
+                // 타이머 클리어
+                if (this.passwordHideTimeout) {
+                    clearTimeout(this.passwordHideTimeout);
+                    this.passwordHideTimeout = null;
+                }
                 modal.remove();
             }
         }
@@ -508,9 +838,10 @@
             this.closePasswordRecoveryModal();
             this.closeAccountCheckModal();
             this.closeContactAdminModal();
+            this.closeSelfPasswordModal();
         }
 
-        // 유틸리티 함수들
+        // 유틸리티 함수들 (기존)
         formatPhoneNumber(phone) {
             const numbers = phone.replace(/[^\d]/g, '');
             if (numbers.length === 11) {
@@ -576,26 +907,24 @@
         }
 
         showToast(message, type = 'info') {
-            // 메인 페이지의 toast 함수 사용
             if (window.showToast) {
                 window.showToast(message, type);
             } else {
-                // 대체 토스트
                 console.log(`${type.toUpperCase()}: ${message}`);
                 alert(message);
             }
         }
     }
 
-    // CSS 스타일 자동 주입
+    // CSS 스타일 자동 주입 (기존 + 셀프 확인 스타일 추가)
     function injectStyles() {
         if (document.getElementById('password-recovery-styles')) return;
 
         const style = document.createElement('style');
         style.id = 'password-recovery-styles';
         style.textContent = `
-            /* 패스워드 복구 모달 스타일 */
-            .password-recovery-modal, .account-check-modal, .contact-admin-modal {
+            /* 기존 패스워드 복구 모달 스타일 */
+            .password-recovery-modal, .account-check-modal, .contact-admin-modal, .self-password-modal {
                 position: fixed;
                 top: 0;
                 left: 0;
@@ -610,7 +939,8 @@
 
             .password-recovery-modal .modal-overlay,
             .account-check-modal .modal-overlay,
-            .contact-admin-modal .modal-overlay {
+            .contact-admin-modal .modal-overlay,
+            .self-password-modal .modal-overlay {
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -622,7 +952,8 @@
 
             .password-recovery-modal .modal-content,
             .account-check-modal .modal-content,
-            .contact-admin-modal .modal-content {
+            .contact-admin-modal .modal-content,
+            .self-password-modal .modal-content {
                 position: relative;
                 background: #111;
                 border-radius: 15px;
@@ -634,6 +965,161 @@
                 box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             }
 
+            /* 셀프 패스워드 확인 전용 스타일 */
+            .security-notice {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                background: rgba(255, 193, 7, 0.1);
+                border: 1px solid #FFC107;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 15px 0 20px 0;
+            }
+
+            .notice-icon {
+                font-size: 24px;
+                color: #FFC107;
+            }
+
+            .notice-text {
+                color: #ccc;
+                font-size: 14px;
+                line-height: 1.4;
+            }
+
+            .notice-text strong {
+                color: #FFC107;
+            }
+
+            .password-display {
+                background: #222;
+                padding: 20px;
+                border-radius: 10px;
+                margin: 20px 0;
+                text-align: center;
+                border: 2px solid #FF1493;
+            }
+
+            .password-label {
+                color: #FF1493;
+                font-weight: 600;
+                margin-bottom: 10px;
+                font-size: 14px;
+            }
+
+            .password-value {
+                font-size: 24px;
+                font-weight: bold;
+                color: #ccc;
+                font-family: 'Courier New', monospace;
+                margin: 15px 0;
+                padding: 10px;
+                background: #333;
+                border-radius: 6px;
+                letter-spacing: 2px;
+                transition: all 0.3s ease;
+            }
+
+            .password-value.visible {
+                color: #00ff00;
+                text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            }
+
+            .password-timer {
+                margin-top: 15px;
+            }
+
+            .timer-bar {
+                height: 4px;
+                background: #FF1493;
+                border-radius: 2px;
+                transition: width 0.1s linear;
+                margin-bottom: 8px;
+            }
+
+            .timer-text {
+                color: #999;
+                font-size: 12px;
+                font-style: italic;
+            }
+
+            .account-info {
+                background: #222;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 20px 0;
+            }
+
+            .account-info h5 {
+                color: #FF1493;
+                margin: 0 0 15px 0;
+                font-size: 16px;
+                text-align: center;
+            }
+
+            .info-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .info-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #333;
+            }
+
+            .info-item:last-child {
+                border-bottom: none;
+            }
+
+            .info-label {
+                color: #999;
+                font-size: 14px;
+            }
+
+            .info-value {
+                color: #ccc;
+                font-family: 'Courier New', monospace;
+                font-size: 14px;
+            }
+
+            .change-request {
+                text-align: center;
+            }
+
+            .change-icon {
+                font-size: 48px;
+                margin-bottom: 15px;
+            }
+
+            .form-help {
+                color: #999;
+                font-size: 12px;
+                margin-top: 5px;
+                display: block;
+            }
+
+            .change-notice {
+                background: rgba(255, 193, 7, 0.1);
+                border: 1px solid #FFC107;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 20px 0;
+                text-align: left;
+                font-size: 13px;
+                color: #ccc;
+                line-height: 1.5;
+            }
+
+            .change-notice strong {
+                color: #FFC107;
+            }
+
+            /* 기존 스타일들... */
             .modal-header {
                 display: flex;
                 justify-content: space-between;
@@ -673,19 +1159,21 @@
             .step-indicator {
                 display: flex;
                 justify-content: center;
-                gap: 20px;
+                gap: 15px;
                 padding: 20px;
                 border-bottom: 1px solid #333;
+                flex-wrap: wrap;
             }
 
             .step {
-                padding: 8px 16px;
+                padding: 8px 12px;
                 border-radius: 20px;
                 background: #333;
                 color: #666;
-                font-size: 14px;
+                font-size: 13px;
                 font-weight: 500;
                 transition: all 0.3s ease;
+                white-space: nowrap;
             }
 
             .step.active {
@@ -707,6 +1195,7 @@
                 margin-bottom: 20px;
                 text-align: center;
                 line-height: 1.5;
+                font-size: 14px;
             }
 
             .form-group {
@@ -718,6 +1207,7 @@
                 color: #FF1493;
                 margin-bottom: 5px;
                 font-weight: 500;
+                font-size: 14px;
             }
 
             .form-group input, .form-group select {
@@ -729,6 +1219,7 @@
                 border-radius: 8px;
                 font-size: 14px;
                 transition: all 0.3s ease;
+                box-sizing: border-box;
             }
 
             .form-group input:focus, .form-group select:focus {
@@ -742,10 +1233,10 @@
                 border-radius: 8px;
                 border: none;
                 cursor: pointer;
-                font-size: 16px;
+                font-size: 14px;
                 font-weight: 500;
                 transition: all 0.3s ease;
-                min-width: 120px;
+                min-width: 100px;
             }
 
             .btn-primary {
@@ -774,200 +1265,51 @@
                 transform: translateY(-2px);
             }
 
-            .success-message {
-                text-align: center;
-            }
-
-            .success-icon {
-                font-size: 48px;
-                margin-bottom: 15px;
-            }
-
-            .success-message h4 {
-                color: #FF1493;
-                margin: 15px 0;
-                font-size: 18px;
-            }
-
-            .success-message p {
-                color: #ccc;
-                margin: 10px 0;
-                line-height: 1.5;
-            }
-
-            .request-info {
-                background: #222;
-                padding: 15px;
-                border-radius: 8px;
-                margin: 20px 0;
-                text-align: left;
-            }
-
-            .request-info h5 {
-                color: #FF1493;
-                margin: 0 0 10px 0;
-                font-size: 14px;
-            }
-
-            .request-info ul {
-                margin: 0;
-                padding-left: 20px;
-                color: #ccc;
-            }
-
-            .request-info li {
-                margin: 5px 0;
-                font-size: 13px;
-            }
-
-            .sub-info {
-                font-size: 13px;
-                color: #999 !important;
-                margin-top: 15px;
-            }
-
             .modal-actions {
                 margin-top: 20px;
                 display: flex;
                 justify-content: center;
                 gap: 10px;
-            }
-
-            .check-result {
-                text-align: center;
-                padding: 20px;
-                border-radius: 10px;
-                margin-top: 20px;
-            }
-
-            .check-result.success {
-                background: rgba(76, 175, 80, 0.1);
-                border: 1px solid #4CAF50;
-            }
-
-            .check-result.error {
-                background: rgba(244, 67, 54, 0.1);
-                border: 1px solid #f44336;
-            }
-
-            .result-icon {
-                font-size: 36px;
-                margin-bottom: 15px;
-            }
-
-            .check-result h4 {
-                color: #FF1493;
-                margin: 15px 0;
-                font-size: 16px;
-            }
-
-            .check-result p {
-                color: #ccc;
-                margin: 8px 0;
-                line-height: 1.5;
-                font-size: 14px;
-            }
-
-            .result-actions {
-                margin-top: 15px;
-            }
-
-            .contact-info {
-                text-align: center;
-                padding: 20px;
-            }
-
-            .contact-icon {
-                font-size: 48px;
-                margin-bottom: 15px;
-            }
-
-            .contact-info h4 {
-                color: #FF1493;
-                margin-bottom: 15px;
-                font-size: 18px;
-            }
-
-            .contact-details {
-                background: #222;
-                padding: 20px;
-                border-radius: 10px;
-                margin: 20px 0;
-                text-align: left;
-            }
-
-            .contact-item {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin: 12px 0;
-                padding: 8px 0;
-                border-bottom: 1px solid #333;
-            }
-
-            .contact-item:last-child {
-                border-bottom: none;
-            }
-
-            .contact-label {
-                color: #FF1493;
-                font-weight: 500;
-                min-width: 80px;
-            }
-
-            .contact-value {
-                color: #ccc;
-                flex: 1;
-                margin: 0 15px;
-                font-family: monospace;
-            }
-
-            .contact-copy {
-                background: #333;
-                color: white;
-                border: none;
-                padding: 4px 12px;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 12px;
-                transition: background 0.2s ease;
-            }
-
-            .contact-copy:hover {
-                background: #555;
+                flex-wrap: wrap;
             }
 
             /* 반응형 디자인 */
             @media (max-width: 480px) {
                 .password-recovery-modal .modal-content,
                 .account-check-modal .modal-content,
-                .contact-admin-modal .modal-content {
+                .contact-admin-modal .modal-content,
+                .self-password-modal .modal-content {
                     width: 95%;
                     margin: 10px;
                 }
 
                 .step-indicator {
-                    gap: 10px;
+                    gap: 8px;
                     padding: 15px;
                 }
 
                 .step {
-                    padding: 6px 12px;
+                    padding: 6px 10px;
                     font-size: 12px;
+                }
+
+                .password-value {
+                    font-size: 20px;
+                    letter-spacing: 1px;
                 }
 
                 .modal-actions {
                     flex-direction: column;
                 }
 
-                .contact-item {
-                    flex-direction: column;
-                    align-items: flex-start;
-                    gap: 8px;
+                .info-grid {
+                    grid-template-columns: 1fr;
                 }
 
-                .contact-value {
-                    margin: 0;
+                .info-item {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 5px;
                 }
             }
         `;
@@ -977,7 +1319,6 @@
 
     // 초기화 함수
     function init() {
-        // DOM 로드 완료 대기
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 injectStyles();
@@ -994,5 +1335,4 @@
 
 })();
 
-// 콘솔 확인용
-console.log('🔐 HAIRGATOR 패스워드 복구 시스템 로드됨');
+console.log('🔐 HAIRGATOR 패스워드 복구 시스템 (셀프 확인 기능) 로드됨');
