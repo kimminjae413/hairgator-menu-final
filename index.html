@@ -144,16 +144,21 @@
                     </div>
                     
                     <div class="help-options">
-                        <button type="button" class="help-btn password-recovery" onclick="showPasswordRecoveryModal()">
-                            <span class="help-icon">🔑</span>
-                            <span>패스워드 찾기</span>
-                        </button>
-                        
-                        <button type="button" class="help-btn account-check" onclick="showAccountCheckModal()">
-                            <span class="help-icon">👤</span>
-                            <span>계정 확인</span>
-                        </button>
-                    </div>
+    <button type="button" class="help-btn self-password-check" onclick="showSelfPasswordCheckModal()">
+        <span class="help-icon">🔍</span>
+        <span>내 패스워드 확인</span>
+    </button>
+    
+    <button type="button" class="help-btn password-recovery" onclick="showPasswordRecoveryModal()">
+        <span class="help-icon">🔑</span>
+        <span>관리자 승인</span>
+    </button>
+    
+    <button type="button" class="help-btn account-check" onclick="showAccountCheckModal()">
+        <span class="help-icon">👤</span>
+        <span>계정 확인</span>
+    </button>
+</div>
                     
                     <p class="login-help">
                         처음 사용하시나요? <a href="#contact-admin" onclick="showContactAdmin()">관리자에게 계정을 요청하세요</a>
@@ -1079,3 +1084,4 @@
     </style>
 </body>
 </html>
+
