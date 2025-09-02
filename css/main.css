@@ -432,7 +432,7 @@ body.light-theme .category-tab:hover {
     min-height: 70px;
     display: flex;
     align-items: center;
-    justify-content: flex-start;  <- center를 flex-start로 변경
+    justify-content: flex-start;
 }
 
 body.light-theme .category-description {
@@ -444,9 +444,9 @@ body.light-theme .category-description {
     color: var(--text-secondary);
     font-size: 14px;
     line-height: 1.6;
-    text-align: left !important;  /* !important 추가 */
+    text-align: left !important;
     max-width: 800px;
-    margin: 0;  /* auto를 0으로 변경 */
+    margin: 0;
     transition: color 0.3s ease;
     animation: fadeInDescription 0.5s ease;
 }
@@ -593,6 +593,7 @@ body.light-theme .styles-container {
     aspect-ratio: 3/4;
     position: relative;
 }
+
 /* 스타일 정보 완전 숨김 처리 */
 .style-info {
     display: none !important;
@@ -1022,6 +1023,134 @@ body.light-theme .user-info {
     background: #c82333;
 }
 
+/* ========== 퍼스널컬러 사이드바 및 모달 ========== */
+
+.sidebar-section {
+    border-bottom: 1px solid var(--border-color);
+    padding: 15px 0;
+}
+
+.sidebar-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    border-radius: 10px;
+    margin: 0 10px;
+}
+
+.sidebar-menu-item:hover {
+    background: var(--ai-bg-primary);
+    transform: translateX(5px);
+}
+
+.sidebar-icon {
+    font-size: 20px;
+    margin-right: 15px;
+    width: 24px;
+    text-align: center;
+}
+
+.sidebar-text {
+    flex: 1;
+}
+
+.sidebar-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.sidebar-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.sidebar-new {
+    background: var(--new-indicator);
+    color: white;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+/* 퍼스널컬러 모달 */
+.personal-color-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.personal-color-modal.active {
+    display: flex;
+    animation: fadeInModal 0.3s ease;
+}
+
+.personal-color-content {
+    width: 95%;
+    height: 95%;
+    max-width: 1400px;
+    background: white;
+    border-radius: 20px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.personal-color-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: linear-gradient(135deg, var(--female-color), #C2185B);
+    color: white;
+}
+
+.personal-color-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.personal-color-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.personal-color-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
 /* 로딩 오버레이 */
 .loading-overlay {
     position: fixed;
@@ -1352,6 +1481,32 @@ body.light-theme .modal-action-btn.secondary:hover {
         margin: 10px;
         max-width: calc(100% - 20px);
     }
+    
+    .personal-color-content {
+        width: 98%;
+        height: 98%;
+        border-radius: 15px;
+    }
+    
+    .personal-color-header {
+        padding: 15px 20px;
+    }
+    
+    .personal-color-header h2 {
+        font-size: 20px;
+    }
+    
+    .sidebar-menu-item {
+        padding: 12px 15px;
+    }
+    
+    .sidebar-title {
+        font-size: 14px;
+    }
+    
+    .sidebar-subtitle {
+        font-size: 11px;
+    }
 }
 
 /* 반응형 */
@@ -1387,7 +1542,3 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
-
-
-
-
