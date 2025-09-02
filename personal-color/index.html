@@ -514,6 +514,74 @@
         }
 
         // ==========================================
+        // AI 카메라 함수 (누락된 함수 추가)
+        // ==========================================
+
+        async function startAICamera() {
+            try {
+                showToast('AI 카메라를 시작합니다...', 'info');
+                
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: 640, height: 480 }
+                });
+
+                videoElement = document.getElementById('ai-camera');
+                videoElement.srcObject = stream;
+                
+                canvasElement = document.getElementById('ai-face-overlay');
+                canvasCtx = canvasElement.getContext('2d');
+                
+                // MediaPipe Face Mesh 초기화 (468개 랜드마크)
+                if (typeof FaceMesh !== 'undefined' && !faceDetection) {
+                    try {
+                        faceDetection = new FaceMesh({
+                            locateFile: (file) => {
+                                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+                            }
+                        });
+                        
+                        faceDetection.setOptions({
+                            maxNumFaces: 1,
+                            refineLandmarks: true,
+                            minDetectionConfidence: 0.5,
+                            minTrackingConfidence: 0.5
+                        });
+                        
+                        faceDetection.onResults(onAdvancedFaceResults);
+                        
+                        if (typeof Camera !== 'undefined') {
+                            camera = new Camera(videoElement, {
+                                onFrame: async () => {
+                                    if (faceDetection && videoElement.readyState === 4) {
+                                        await faceDetection.send({ image: videoElement });
+                                    }
+                                },
+                                width: 640,
+                                height: 480
+                            });
+                            camera.start();
+                        }
+                        
+                        console.log('MediaPipe Face Mesh 활성화 - 468개 랜드마크 인식');
+                        showToast('고급 얼굴 랜드마크 인식이 활성화되었습니다', 'success');
+                    } catch (error) {
+                        console.warn('Face Mesh 초기화 실패, 기본 모드:', error);
+                        showToast('기본 카메라 모드로 시작합니다', 'warning');
+                    }
+                } else {
+                    // MediaPipe가 없으면 기본 카메라만 실행
+                    showToast('기본 카메라 모드로 시작합니다', 'warning');
+                }
+                
+                document.getElementById('ai-face-guide').style.display = 'flex';
+                
+            } catch (error) {
+                console.error('카메라 시작 실패:', error);
+                showToast('카메라에 접근할 수 없습니다', 'error');
+            }
+        }
+        
+        // ==========================================
         // AI 분석 모드 함수들
         // ==========================================
 
