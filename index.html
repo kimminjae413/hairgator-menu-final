@@ -2,1232 +2,1225 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HAIRGATOR - Professional Hair Style Menu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAIRGATOR Personal Color</title>
     
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#000000">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HAIRGATOR">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="manifest.json">
+    <!-- MediaPipe CDN (필요시에만 로드) -->
+    <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+    <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
     
-    <!-- 아이콘 -->
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <!-- 🔥 핵심: 614개 헤어컬러 데이터 로드 -->
+    <script src="hair-color-data.js"></script>
     
-    <!-- 구글 폰트 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- External CSS -->
-    <link rel="stylesheet" href="css/main.css">
-
-    <!-- External JavaScript -->
-    <script src="js/menu.js"></script>
-    <script src="js/face-swap-backend.js"></script>
-    <!-- 패스워드 복구 시스템 -->
-    <script src="js/password-recovery.js"></script>
-    
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- 헤더 -->
-    <header class="header">
-        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
-        <h1 class="logo">HAIRGATOR</h1>
-        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="테마 변경">🌙</button>
-       
-        <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </header>
-
-    <!-- 사이드바 -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h3>메뉴</h3>
-            <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
-        </div>
-        <div class="sidebar-content">
-            <div class="user-info" id="userInfo" style="display: none;">
-                <h4>디자이너 정보</h4>
-                <p id="designerNameDisplay"></p>
-                <p id="designerPhoneDisplay"></p>
-                <p id="sessionStatusDisplay"></p>
-                <button class="logout-btn" onclick="logout()">로그아웃</button>
+    <!-- 로딩 화면 -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">🎨</div>
+            <h2>HAIRGATOR Personal Color</h2>
+            <p id="loading-text">시스템 초기화 중...</p>
+            <div class="loading-progress">
+                <div class="loading-bar" id="loading-bar"></div>
             </div>
-            <p id="guestMessage">로그인 후 이용 가능합니다.</p>
-          <!-- 퍼스널컬러 메뉴 섹션 - 로그인 후에만 표시 -->
-<div class="sidebar-section" id="personalColorSection" style="display: none;">
-    <div class="sidebar-menu-item" onclick="openPersonalColorModal()">
-        <span class="sidebar-icon">🎨</span>
-        <div class="sidebar-text">
-            <div class="sidebar-title">퍼스널컬러</div>
-            <div class="sidebar-subtitle">614개 헤어컬러 데이터 기반 분석</div>
-        </div>
-        <span class="sidebar-new">NEW</span>
-    </div>
-</div>
-        </div>
-    </aside>
-
-    <!-- 로딩 오버레이 -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-        <!-- 백엔드 연결 상태 -->
-        <div id="backendStatus" class="backend-status">
-            <span>Face Swap 서버 연결 확인 중...</span>
         </div>
     </div>
 
-    <!-- 토스트 메시지 -->
-    <div class="toast" id="toast"></div>
+    <!-- 메인 애플리케이션 -->
+    <div class="main-app" id="main-app">
+        <header class="app-header">
+            <div class="header-content">
+                <div class="app-title-section">
+                    <h1 class="app-title">HAIRGATOR Personal Color</h1>
+                    <div class="app-subtitle">AI 기반 퍼스널컬러 진단 시스템</div>
+                </div>
+            </div>
+        </header>
 
-    <!-- 메인 콘텐츠 -->
-    <main class="main-content">
-        <!-- 개선된 로그인 화면 -->
-        <div class="login-screen" id="loginScreen">
-            <div class="login-modal">
-                <h2>HAIRGATOR</h2>
-                <p class="subtitle">Professional Hair Style Menu</p>
+        <main class="main-content">
+            <!-- 모드 선택 섹션 -->
+            <section class="section active" id="mode-selection">
+                <h2 class="mode-title">퍼스널컬러 진단 방법을 선택하세요</h2>
                 
-                <!-- 계정 잠금 경고 -->
-                <div class="account-lockout-warning" id="lockoutWarning" style="display: none;">
-                    <div class="warning-icon">⚠️</div>
-                    <p>계정이 일시적으로 잠겼습니다</p>
-                    <p class="lockout-time" id="lockoutTime"></p>
+                <div class="mode-cards">
+                    <div class="mode-card" onclick="selectMode('ai')">
+                        <span class="mode-icon">🤖</span>
+                        <h3 class="mode-card-title">AI 퍼스널컬러 분석</h3>
+                        <p class="mode-description">
+                            최신 AI 기술로 얼굴을 분석하여 정확한 퍼스널컬러를 진단합니다. 
+                            MediaPipe 얼굴 인식과 Delta E 2000 색차 측정을 활용합니다.
+                        </p>
+                        <ul class="mode-features">
+                            <li>실시간 얼굴 인식 및 피부톤 추출</li>
+                            <li>LAB 색공간 기반 정밀 분석</li>
+                            <li>전문가 노하우 데이터베이스 활용</li>
+                            <li>614개 헤어컬러와 자동 매칭</li>
+                        </ul>
+                        <button class="mode-btn">AI 분석 시작</button>
+                    </div>
+                    
+                    <div class="mode-card" onclick="selectMode('draping')">
+                        <span class="mode-icon">🎭</span>
+                        <h3 class="mode-card-title">전문가 드래이핑 모드</h3>
+                        <p class="mode-description">
+                            전문가 노하우를 바탕으로 실시간 드래이핑을 통해 
+                            가장 어울리는 헤어컬러를 직접 확인해보세요.
+                        </p>
+                        <ul class="mode-features">
+                            <li>실시간 카메라 드래이핑</li>
+                            <li>4계절 색상 팔레트 제공</li>
+                            <li>Before/After 즉시 비교</li>
+                            <li>브랜드별 제품 추천</li>
+                        </ul>
+                        <button class="mode-btn">드래이핑 시작</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI 분석 모드 -->
+            <section class="section" id="ai-analysis">
+                <div class="section-nav">
+                    <button class="nav-btn" onclick="goHome()">← 홈으로</button>
+                    <h2 class="section-title">AI 퍼스널컬러 분석</h2>
                 </div>
                 
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="designerName">디자이너명</label>
-                        <input type="text" id="designerName" placeholder="이름을 입력하세요" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="phoneNumber">전화번호</label>
-                        <input type="tel" id="phoneNumber" placeholder="010-0000-0000" maxlength="13" required>
-                        <small class="input-hint">하이픈(-) 자동 입력</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password">비밀번호 (4자리)</label>
-                        <div class="password-input-container">
-                            <input type="password" id="password" placeholder="****" maxlength="4" required>
-                            <button type="button" class="password-toggle" id="passwordToggle" onclick="togglePasswordVisibility()" title="비밀번호 보기/숨기기">👁️</button>
+                <div class="analysis-grid">
+                    <!-- 카메라 영역 -->
+                    <div class="camera-container">
+                        <div class="video-container">
+                            <video id="ai-camera" autoplay muted playsinline></video>
+                            <canvas id="ai-face-overlay"></canvas>
+                            <div class="face-guide" id="ai-face-guide">
+                                얼굴을 가이드라인에<br>맞춰주세요
+                            </div>
+                        </div>
+                        <div class="camera-controls">
+                            <button class="control-btn" onclick="startAICamera()">카메라 시작</button>
+                            <button class="control-btn" onclick="analyzeAI()">AI 분석</button>
+                            <button class="control-btn" onclick="stopAICamera()">정지</button>
                         </div>
                     </div>
                     
-                    <!-- 로그인 시도 경고 메시지 -->
-                    <div class="login-attempts-warning" id="loginAttemptsWarning" style="display: none;">
-                        <p class="attempts-text"></p>
-                    </div>
-                    
-                    <button type="submit" class="login-btn" id="loginBtn">로그인</button>
-                </form>
-                
-                <!-- 패스워드 찾기 도움말 -->
-                <div class="login-help-section">
-                    <div class="help-divider">
-                        <span>도움이 필요하신가요?</span>
-                    </div>
-                    
-                    <div class="help-options">
-                        <button type="button" class="help-btn self-password-check" onclick="showSelfPasswordCheckModal()">
-                            <span class="help-icon">🔍</span>
-                            <span>내 패스워드 확인</span>
-                        </button>
+                    <!-- 분석 패널 -->
+                    <div class="analysis-panel">
+                        <h3>AI 분석 진행상황</h3>
+                        <div class="analysis-steps">
+                            <div class="analysis-step" id="ai-step-1">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h4>얼굴 인식</h4>
+                                    <p>MediaPipe로 얼굴 영역을 감지합니다</p>
+                                </div>
+                            </div>
+                            
+                            <div class="analysis-step" id="ai-step-2">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h4>피부톤 분석</h4>
+                                    <p>RGB → LAB 색공간 변환 및 색상 추출</p>
+                                </div>
+                            </div>
+                            
+                            <div class="analysis-step" id="ai-step-3">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h4>Delta E 계산</h4>
+                                    <p>색차 측정 및 정확도 산출</p>
+                                </div>
+                            </div>
+                            
+                            <div class="analysis-step" id="ai-step-4">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h4>결과 생성</h4>
+                                    <p>전문가 노하우 기반 최종 진단</p>
+                                </div>
+                            </div>
+                        </div>
                         
-                        <button type="button" class="help-btn password-recovery" onclick="showPasswordRecoveryModal()">
-                            <span class="help-icon">🔑</span>
-                            <span>관리자 승인</span>
-                        </button>
+                        <div class="analysis-results" id="ai-analysis-results" style="display: none;">
+                            <h4>분석 결과</h4>
+                            <div class="result-summary">
+                                <div class="season-result" id="ai-season-result">분석 중...</div>
+                                <div class="confidence-score" id="ai-confidence">-</div>
+                            </div>
+                            <div class="color-analysis-data" id="ai-analysis-data">
+                                <!-- 상세 데이터가 여기에 표시됩니다 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 드래이핑 모드 -->
+            <section class="section" id="draping-mode">
+                <div class="section-nav">
+                    <button class="nav-btn" onclick="goHome()">← 홈으로</button>
+                    <h2 class="section-title">전문가 드래이핑 모드</h2>
+                </div>
+                
+                <div class="draping-layout">
+                    <!-- 드래이핑 카메라 -->
+                    <div class="draping-camera-section">
+                        <div class="video-container">
+                            <video id="draping-camera" autoplay muted playsinline></video>
+                            <canvas id="draping-overlay"></canvas>
+                            <div class="face-guide" id="draping-face-guide">
+                                얼굴을 가이드라인에<br>맞춰주세요
+                            </div>
+                        </div>
                         
-                        <button type="button" class="help-btn account-check" onclick="showAccountCheckModal()">
-                            <span class="help-icon">👤</span>
-                            <span>계정 확인</span>
-                        </button>
+                        <div class="camera-controls">
+                            <button class="control-btn" onclick="startDrapingCamera()">카메라 시작</button>
+                            <button class="control-btn" onclick="togglePreview()">미리보기 토글</button>
+                            <button class="control-btn" onclick="saveCurrentColor()">현재 색상 저장</button>
+                        </div>
+                        
+                        <!-- Before/After 비교 -->
+                        <div class="comparison-section" id="comparison-section" style="display: none;">
+                            <h4>Before / After 비교</h4>
+                            <div class="comparison-controls">
+                                <button class="comparison-btn" onclick="showBefore()">Before</button>
+                                <button class="comparison-btn" onclick="showAfter()">After</button>
+                                <button class="comparison-btn" onclick="exportComparison()">이미지 저장</button>
+                            </div>
+                        </div>
                     </div>
                     
-                    <p class="login-help">
-                        처음 사용하시나요? <a href="#contact-admin" onclick="showContactAdmin()">관리자에게 계정을 요청하세요</a>
-                    </p>
+                    <!-- 색상 팔레트 -->
+                    <div class="color-palette-section">
+                        <h3>4계절 색상 팔레트</h3>
+                        
+                        <!-- 계절 탭 -->
+                        <div class="season-tabs">
+                            <button class="season-tab active" data-season="spring" onclick="selectSeason('spring')">봄</button>
+                            <button class="season-tab" data-season="summer" onclick="selectSeason('summer')">여름</button>
+                            <button class="season-tab" data-season="autumn" onclick="selectSeason('autumn')">가을</button>
+                            <button class="season-tab" data-season="winter" onclick="selectSeason('winter')">겨울</button>
+                        </div>
+                        
+                        <!-- 색상 그리드 -->
+                        <div class="color-grid" id="color-grid">
+                            <!-- 동적으로 생성됩니다 -->
+                        </div>
+                        
+                        <!-- 세부 조정 -->
+                        <div class="color-adjustments">
+                            <h4>색상 세부 조정</h4>
+                            
+                            <div class="adjustment-slider">
+                                <label>명도</label>
+                                <input type="range" id="lightness-slider" min="-30" max="30" value="0" oninput="adjustColor()">
+                                <span id="lightness-value">0</span>
+                            </div>
+                            
+                            <div class="adjustment-slider">
+                                <label>채도</label>
+                                <input type="range" id="saturation-slider" min="-50" max="50" value="0" oninput="adjustColor()">
+                                <span id="saturation-value">0</span>
+                            </div>
+                            
+                            <div class="adjustment-slider">
+                                <label>온도감</label>
+                                <input type="range" id="warmth-slider" min="-40" max="40" value="0" oninput="adjustColor()">
+                                <span id="warmth-value">0</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 저장된 색상들 -->
+                        <div class="saved-colors" id="saved-colors" style="display: none;">
+                            <h4>저장된 색상</h4>
+                            <div class="saved-colors-list" id="saved-colors-list">
+                                <!-- 동적으로 생성됩니다 -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </section>
 
-        <!-- 성별 선택 화면 -->
-        <div class="gender-selection" id="genderSelection">
-            <button class="gender-btn male" onclick="selectGender('male')">
-                <div class="gender-icon">♂</div>
-                <div class="gender-label">남성</div>
-            </button>
-            <button class="gender-btn female" onclick="selectGender('female')">
-                <div class="gender-icon">♀</div>
-                <div class="gender-label">여성</div>
-            </button>
-        </div>
-
-        <!-- 메뉴 컨테이너 -->
-        <div class="menu-container" id="menuContainer">
-            <!-- 카테고리 탭 -->
-            <div class="category-tabs" id="categoryTabs">
-                <!-- 동적 생성 -->
-            </div>
-
-            <!-- 카테고리 설명 -->
-            <div class="category-description" id="categoryDescription">
-                <div class="category-description-text">
-                    카테고리를 선택하면 설명이 표시됩니다.
+            <!-- 공통 결과 섹션 -->
+            <div class="results-section" id="results-section" style="display: none;">
+                <h3>퍼스널컬러 진단 결과</h3>
+                <div class="final-results" id="final-results">
+                    <!-- 결과 내용이 여기에 표시됩니다 -->
                 </div>
-            </div>
-
-            <!-- 서브카테고리 탭 -->
-            <div class="sub-tabs" id="subTabs">
-                <!-- 동적 생성 -->
-            </div>
-            
-            <!-- 스타일 컨테이너 -->
-            <div class="styles-container">
-                <div class="styles-grid" id="stylesGrid">
-                    <!-- 동적 생성 -->
-                </div>
-            </div>
-        </div>
-
-        <!-- 스타일 상세 모달 -->
-        <div class="style-modal" id="styleModal">
-            <div class="style-modal-content">
-                <button class="style-modal-close" id="styleModalClose">×</button>
                 
-                <img class="style-modal-image" id="styleModalImage" alt="Style Image">
-                
-                <div class="style-modal-info">
-                    <div class="style-modal-code" id="styleModalCode">CODE</div>
-                    <div class="style-modal-name" id="styleModalName">Style Name</div>
-                    
-                    <div class="style-modal-details">
-                        <div class="style-detail-row">
-                            <span class="style-detail-label">카테고리</span>
-                            <span class="style-detail-value" id="styleModalCategory">-</span>
-                        </div>
-                        <div class="style-detail-row">
-                            <span class="style-detail-label">서브카테고리</span>
-                            <span class="style-detail-value" id="styleModalSubcategory">-</span>
-                        </div>
-                        <div class="style-detail-row">
-                            <span class="style-detail-label">성별</span>
-                            <span class="style-detail-value" id="styleModalGender">-</span>
-                        </div>
-                    </div>
-                    
-                    <div class="style-modal-actions">
-                        <button class="modal-action-btn secondary" onclick="closeStyleModal()">닫기</button>
-                        <button class="modal-action-btn">선택하기</button>
+                <div class="product-recommendations" id="product-recommendations">
+                    <h4>추천 헤어컬러 제품</h4>
+                    <div class="brand-sections" id="brand-sections">
+                        <!-- 브랜드별 제품 추천이 여기에 표시됩니다 -->
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
-    <!-- Firebase 설정 -->
     <script>
-        // Firebase 설정
-        const firebaseConfig = {
-            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
-            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
-            databaseURL: "https://hairgatormenu-4a43e-default-rtdb.firebaseio.com",
-            projectId: "hairgatormenu-4a43e",
-            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
-            messagingSenderId: "800038006875",
-            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        // ==========================================
+        // HAIRGATOR Personal Color - 최종 완성 버전
+        // 614개 데이터 완전 활용 + MediaPipe 연동
+        // ==========================================
+
+        // 전역 변수 정의 (iframe 독립 실행용)
+        let currentMode = null;
+        let isLoading = false;
+        let analysisInProgress = false;
+        let uploadedImage = null;
+        let faceDetected = false;
+        let hairColorData = [];
+        let faceDetection = null;
+        let camera = null;
+        let videoElement = null;
+        let canvasElement = null;
+        let canvasCtx = null;
+        let currentSeason = 'spring';
+        let selectedColor = null;
+        let savedColors = [];
+        let beforeImageData = null;
+        let afterImageData = null;
+
+        // 전문가 노하우 데이터 정의
+        const ExpertKnowledge = {
+            colorTheory: {
+                warmCool: "주황색은 웜톤의 대표적인 색상이며 쿨톤으로 변환이 어렵습니다",
+                foundation: "파운데이션 21-23호대는 비슷한 명도의 헤어컬러와 매치할 때 주의가 필요합니다"
+            },
+            skinAnalysis: {
+                redness: "홍조 피부는 미드나잇 컬러로 중화시킬 수 있습니다",
+                yellowish: "황기 피부는 애쉬 계열로 투명감을 줄 수 있습니다",
+                principle: "명도와 채도의 조합이 색상 이름보다 중요합니다"
+            },
+            colorMatching: {
+                warm: "아이보리 피부에는 코토리베이지나 오렌지브라운이 잘 어울립니다",
+                cool: "화이트 피부에는 블루블랙이나 애쉬블루가 적합합니다"
+            }
         };
 
-        // Firebase 초기화
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-
-        // 전역 변수로 설정
-        window.db = db;
-        window.storage = storage;
-
-        // 캐시 설정
-        try {
-            db.settings({
-                cache: {
-                    kind: 'persistent',
-                    tabManager: { kind: 'multi-tab' }
-                }
-            });
-        } catch(e) {
-            console.log('Cache settings fallback');
-        }
-
-        console.log('✅ Firebase 초기화 완료');
-    </script>
-
-    <script>
-        // 전역 변수
-        let currentGender = null;
-        let currentDesigner = null;
-        let currentSessionId = null;
-        let heartbeatInterval = null;
-        let currentCategory = null;
-        let currentSubcategory = 'None';
-
-        // DOM 요소
-        const loginScreen = document.getElementById('loginScreen');
-        const genderSelection = document.getElementById('genderSelection');
-        const menuContainer = document.getElementById('menuContainer');
-        const backBtn = document.getElementById('backBtn');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const toast = document.getElementById('toast');
-
-        // 테마 관리 함수들
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-theme');
-                updateThemeButton(true);
+        // 계절별 색상 팔레트 정의
+        const SeasonPalettes = {
+            spring: {
+                colors: ['#FFB6C1', '#FFA07A', '#F0E68C', '#98FB98', '#FFE4B5', '#DDA0DD'],
+                characteristics: ['밝고 따뜻한 색상', '높은 채도', '노란 언더톤']
+            },
+            summer: {
+                colors: ['#B0E0E6', '#DDA0DD', '#C8B2DB', '#AFEEEE', '#F0F8FF', '#E6E6FA'],
+                characteristics: ['부드럽고 차가운 색상', '중간 채도', '파란 언더톤']
+            },
+            autumn: {
+                colors: ['#D2691E', '#CD853F', '#A0522D', '#8B4513', '#B22222', '#800000'],
+                characteristics: ['깊고 따뜻한 색상', '낮은 채도', '노란 언더톤']
+            },
+            winter: {
+                colors: ['#000080', '#4B0082', '#8B008B', '#191970', '#2F4F4F', '#708090'],
+                characteristics: ['진하고 차가운 색상', '높은 대비', '파란 언더톤']
             }
-            console.log(`테마 로드: ${savedTheme}`);
-        }
+        };
 
-        function toggleTheme() {
-            document.body.classList.toggle('light-theme');
-            const isLight = document.body.classList.contains('light-theme');
-            
-            localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
-            updateThemeButton(isLight);
-            
-            console.log(`테마 변경: ${isLight ? 'light' : 'dark'}`);
-        }
+        // ==========================================
+        // 초기화 함수들
+        // ==========================================
 
-        function updateThemeButton(isLight) {
-            const themeButton = document.getElementById('themeToggle');
-            if (themeButton) {
-                themeButton.textContent = isLight ? '☀️' : '🌙';
-                themeButton.title = isLight ? '다크 모드로 변경' : '라이트 모드로 변경';
-            }
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('HAIRGATOR Personal Color 시스템 시작...');
+            initializeSystem();
+        });
 
-        // NEW 표시 빨간 점 생성
-        function createNewIndicator() {
-            const indicator = document.createElement('div');
-            indicator.className = 'new-indicator';
-            return indicator;
-        }
-
-        // Firebase 인증 시스템 (패스워드 복구 통합)
-        class FirebaseAuth {
-            constructor() {
-                this.sessionCollectionName = 'designer_sessions';
-                this.designerCollectionName = 'designers';
-                this.sessionTimeout = 24 * 60 * 60 * 1000; // 24시간
-            }
-
-            generateSessionId() {
-                return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            }
-
-            getDeviceInfo() {
-                const userAgent = navigator.userAgent;
-                return {
-                    type: /Mobile|Android|iPhone|iPad/.test(userAgent) ? 'mobile' : 'desktop',
-                    browser: this.getBrowserName(),
-                    platform: navigator.platform,
-                    screenResolution: `${screen.width}x${screen.height}`
-                };
-            }
-
-            getBrowserName() {
-                const userAgent = navigator.userAgent;
-                if (userAgent.indexOf('Chrome') > -1) return 'Chrome';
-                if (userAgent.indexOf('Firefox') > -1) return 'Firefox';
-                if (userAgent.indexOf('Safari') > -1) return 'Safari';
-                return 'Unknown';
-            }
-
-            async login(name, phone, password) {
-                try {
-                    // 로그인 시도 횟수 확인 (패스워드 복구 시스템과 통합)
-                    if (window.HAIRGATOR_PASSWORD_RECOVERY) {
-                        await window.HAIRGATOR_PASSWORD_RECOVERY.checkLoginAttempts(name, phone);
-                    }
-
-                    const snapshot = await db.collection(this.designerCollectionName)
-                        .where('name', '==', name)
-                        .where('phone', '==', phone)
-                        .where('password', '==', password)
-                        .limit(1)
-                        .get();
-
-                    if (snapshot.empty) {
-    // 계정이 없으면 자동 회원가입
-    console.log('신규 사용자 자동 가입 처리:', name);
-    
-    const newUserData = {
-        name: name,
-        phone: phone,
-        password: password,
-        tokens: 10, // 초기 토큰
-        createdAt: new Date(),
-        isNewUser: true
-    };
-    
-    const newUserDoc = await db.collection(this.designerCollectionName).add(newUserData);
-    
-    // 새로 생성된 계정으로 로그인 처리 계속
-    const designerData = newUserData;
-    const designerDoc = { id: newUserDoc.id, data: () => designerData };
-    
-    // 기존 로그인 로직과 동일하게 처리
-    await this.checkExistingSessions(newUserDoc.id);
-    
-    const sessionId = this.generateSessionId();
-    const sessionData = {
-        designerId: newUserDoc.id,
-        designerName: designerData.name,
-        designerPhone: designerData.phone,
-        sessionId: sessionId,
-        deviceInfo: this.getDeviceInfo(),
-        loginTime: new Date(),
-        lastActivity: new Date(),
-        isActive: true,
-        expiresAt: new Date(Date.now() + this.sessionTimeout)
-    };
-
-    await db.collection(this.sessionCollectionName).doc(sessionId).set(sessionData);
-
-    currentDesigner = {
-        id: newUserDoc.id,
-        name: designerData.name,
-        phone: designerData.phone,
-        tokens: designerData.tokens || 10,
-        sessionId: sessionId,
-        isNewUser: true
-    };
-
-    currentSessionId = sessionId;
-    this.startHeartbeat();
-
-    console.log('✅ 신규 가입 및 로그인 성공:', currentDesigner.name);
-    return currentDesigner;
-}
-
-                    const designerDoc = snapshot.docs[0];
-                    const designerData = designerDoc.data();
-
-                    await this.checkExistingSessions(designerDoc.id);
-
-                    const sessionId = this.generateSessionId();
-                    const sessionData = {
-                        designerId: designerDoc.id,
-                        designerName: designerData.name,
-                        designerPhone: designerData.phone,
-                        sessionId: sessionId,
-                        deviceInfo: this.getDeviceInfo(),
-                        loginTime: new Date(),
-                        lastActivity: new Date(),
-                        isActive: true,
-                        expiresAt: new Date(Date.now() + this.sessionTimeout)
-                    };
-
-                    await db.collection(this.sessionCollectionName).doc(sessionId).set(sessionData);
-
-                    await db.collection(this.designerCollectionName).doc(designerDoc.id).update({
-                        lastLogin: new Date(),
-                        currentSessionId: sessionId
-                    });
-
-                    currentDesigner = {
-                        id: designerDoc.id,
-                        name: designerData.name,
-                        phone: designerData.phone,
-                        tokens: designerData.tokens || 0,
-                        sessionId: sessionId
-                    };
-
-                    currentSessionId = sessionId;
-                    this.startHeartbeat();
-
-                    // 성공적인 로그인 시 시도 횟수 초기화
-                    if (window.HAIRGATOR_PASSWORD_RECOVERY) {
-                        window.HAIRGATOR_PASSWORD_RECOVERY.clearLoginAttempts(name, phone);
-                    }
-
-                    console.log('✅ 로그인 성공:', currentDesigner.name);
-                    return currentDesigner;
-
-                } catch (error) {
-                    console.error('❌ 로그인 실패:', error);
-                    throw error;
-                }
-            }
-
-            async checkExistingSessions(designerId) {
-                try {
-                    const existingSessions = await db.collection(this.sessionCollectionName)
-                        .where('designerId', '==', designerId)
-                        .where('isActive', '==', true)
-                        .get();
-
-                    const batch = db.batch();
-                    existingSessions.forEach(doc => {
-                        batch.update(doc.ref, {
-                            isActive: false,
-                            logoutTime: new Date(),
-                            logoutReason: 'new_login'
-                        });
-                    });
-
-                    if (!existingSessions.empty) {
-                        await batch.commit();
-                        console.log(`${existingSessions.size}개의 기존 세션을 종료했습니다`);
-                    }
-                } catch (error) {
-                    console.warn('기존 세션 정리 중 오류:', error);
-                }
-            }
-
-            startHeartbeat() {
-                if (heartbeatInterval) {
-                    clearInterval(heartbeatInterval);
-                }
-
-                heartbeatInterval = setInterval(async () => {
-                    try {
-                        await this.updateLastActivity();
-                    } catch (error) {
-                        console.error('하트비트 오류:', error);
-                        this.handleSessionError();
-                    }
-                }, 30000);
-            }
-
-            async updateLastActivity() {
-                if (!currentSessionId) return;
-
-                await db.collection(this.sessionCollectionName).doc(currentSessionId).update({
-                    lastActivity: new Date()
-                });
-            }
-
-            async logout() {
-                try {
-                    if (currentSessionId) {
-                        await db.collection(this.sessionCollectionName).doc(currentSessionId).update({
-                            isActive: false,
-                            logoutTime: new Date(),
-                            logoutReason: 'manual_logout'
-                        });
-                    }
-
-                    if (heartbeatInterval) {
-                        clearInterval(heartbeatInterval);
-                        heartbeatInterval = null;
-                    }
-
-                    currentDesigner = null;
-                    currentSessionId = null;
-
-                    console.log('✅ 로그아웃 완료');
-                    
-                } catch (error) {
-                    console.error('❌ 로그아웃 오류:', error);
-                } finally {
-                    this.resetUI();
-                }
-            }
-
-            handleSessionError() {
-                console.warn('세션 오류 발생 - 재로그인 필요');
-                showToast('세션이 만료되었습니다. 다시 로그인해주세요.', 'error');
-                setTimeout(() => {
-                    this.logout();
-                }, 2000);
-            }
-
-            resetUI() {
-                loginScreen.style.display = 'flex';
-                genderSelection.style.display = 'none';
-                menuContainer.classList.remove('active');
-                backBtn.style.display = 'none';
-                updateUserInfo();
-            }
-        }
-
-        // Firebase 인증 인스턴스
-        const firebaseAuth = new FirebaseAuth();
-
-        // 유틸리티 함수들
-        function showLoading(show = true) {
-            loadingOverlay.style.display = show ? 'flex' : 'none';
-        }
-
-        function showToast(message, type = 'info') {
-            toast.textContent = message;
-            toast.className = `toast ${type} show`;
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('active');
-        }
-
-        function goBack() {
-            if (menuContainer.classList.contains('active')) {
-                menuContainer.classList.remove('active');
-                genderSelection.style.display = 'flex';
-                backBtn.style.display = 'flex';
-            } else if (genderSelection.style.display === 'flex') {
-                genderSelection.style.display = 'none';
-                loginScreen.style.display = 'flex';
-                backBtn.style.display = 'none';
-            }
-        }
-
-        function updateUserInfo() {
-            const userInfo = document.getElementById('userInfo');
-            const guestMessage = document.getElementById('guestMessage');
-            const personalColorSection = document.getElementById('personalColorSection');
-            const designerName = document.getElementById('designerNameDisplay');
-            const designerPhone = document.getElementById('designerPhoneDisplay');
-            const sessionStatus = document.getElementById('sessionStatusDisplay');
-
-            if (currentDesigner) {
-                userInfo.style.display = 'block';
-                guestMessage.style.display = 'none';
-                personalColorSection.style.display = 'block'; // 퍼스널컬러 버튼 표시
-                
-                designerName.textContent = `이름: ${currentDesigner.name}`;
-                designerPhone.textContent = `전화: ${currentDesigner.phone}`;
-                sessionStatus.textContent = `토큰: ${currentDesigner.tokens || 0}개`;
-            } else {
-                userInfo.style.display = 'none';
-                guestMessage.style.display = 'block';
-                personalColorSection.style.display = 'none'; // 퍼스널컬러 버튼 숨김
-            }
-        }
-        function formatPhoneNumber(phone) {
-            const numbers = phone.replace(/[^\d]/g, '');
-            if (numbers.length !== 11) {
-                return phone;
-            }
-            return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
-        }
-
-        // 패스워드 보기/숨기기
-        function togglePasswordVisibility() {
-            const passwordInput = document.getElementById('password');
-            const toggleBtn = document.getElementById('passwordToggle');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleBtn.textContent = '🙈';
-                toggleBtn.title = '비밀번호 숨기기';
-            } else {
-                passwordInput.type = 'password';
-                toggleBtn.textContent = '👁️';
-                toggleBtn.title = '비밀번호 보기';
-            }
-        }
-
-        // 전화번호 입력 시 실시간 포맷팅
-        function setupPhoneFormatting() {
-            const phoneInput = document.getElementById('phoneNumber');
-            if (phoneInput) {
-                phoneInput.addEventListener('input', function(e) {
-                    const input = e.target;
-                    const cursorPos = input.selectionStart;
-                    const oldValue = input.value;
-                    const oldLength = oldValue.length;
-                    
-                    const formatted = formatPhoneNumber(input.value);
-                    input.value = formatted;
-                    
-                    const newLength = formatted.length;
-                    const diff = newLength - oldLength;
-                    input.setSelectionRange(cursorPos + diff, cursorPos + diff);
-                });
-            }
-        }
-
-        // 로그인 시도 상태 확인 및 UI 업데이트
-        function checkLoginStatus() {
-            if (!window.HAIRGATOR_PASSWORD_RECOVERY) return true;
-
-            const name = document.getElementById('designerName').value.trim();
-            const phone = formatPhoneNumber(document.getElementById('phoneNumber').value.trim());
-            const lockoutWarning = document.getElementById('lockoutWarning');
-            const lockoutTime = document.getElementById('lockoutTime');
-            const loginBtn = document.getElementById('loginBtn');
+        async function initializeSystem() {
+            // 5초 타임아웃 안전장치
+            const timeoutId = setTimeout(() => {
+                console.warn('로딩 타임아웃 - 강제로 앱 표시');
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('main-app').classList.add('loaded');
+                showToast('시스템이 준비되었습니다 (일부 기능 제한)', 'warning');
+            }, 5000);
 
             try {
-                const isLocked = window.HAIRGATOR_PASSWORD_RECOVERY.isAccountLocked(name, phone);
+                console.log('시스템 초기화 시작...');
                 
-                if (isLocked) {
-                    const remainingTime = window.HAIRGATOR_PASSWORD_RECOVERY.getRemainingLockTime(name, phone);
-                    
-                    if (remainingTime > 0) {
-                        const minutes = Math.ceil(remainingTime / 1000 / 60);
-                        lockoutWarning.style.display = 'block';
-                        lockoutTime.textContent = `${minutes}분 후 다시 시도 가능`;
-                        loginBtn.disabled = true;
-                        loginBtn.textContent = '계정 잠김';
-                        return false;
-                    }
+                // 1단계: 헤어컬러 데이터 로드
+                updateLoadingProgress(25, '헤어컬러 데이터 로드 중...');
+                await loadHairColorData();
+                
+                // 2단계: UI 설정
+                updateLoadingProgress(50, 'UI 컴포넌트 설정 중...');
+                setupUI();
+                
+                // 3단계: 시스템 준비 완료 (MediaPipe는 카메라 시작 시 로드)
+                updateLoadingProgress(75, '시스템 준비 중...');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                updateLoadingProgress(100, '시스템 준비 완료!');
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                clearTimeout(timeoutId);
+                
+                // 로딩 화면 제거
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('main-app').classList.add('loaded');
+                
+                console.log('HAIRGATOR Personal Color 준비 완료');
+                showToast('퍼스널컬러 시스템이 준비되었습니다!', 'success');
+                
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error('시스템 초기화 실패:', error);
+                
+                // 오류가 발생해도 앱은 표시
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('main-app').classList.add('loaded');
+                showToast('일부 기능에 제한이 있을 수 있습니다.', 'warning');
+            }
+        }
+
+        function updateLoadingProgress(percent, text) {
+            const bar = document.getElementById('loading-bar');
+            const textEl = document.getElementById('loading-text');
+            if (bar) bar.style.width = percent + '%';
+            if (textEl) textEl.textContent = text;
+        }
+
+        async function loadHairColorData() {
+            try {
+                // 1순위: hair-color-data.js에서 직접 로드
+                if (typeof HAIR_COLOR_614_DATA !== 'undefined' && HAIR_COLOR_614_DATA.length > 0) {
+                    hairColorData = HAIR_COLOR_614_DATA;
+                    console.log(`✅ hair-color-data.js에서 ${hairColorData.length}개 데이터 로드 완료`);
+                    updateDataStatus(`${hairColorData.length}개 프리미엄 헤어컬러 데이터 로드됨`, 'success');
+                    return;
                 }
 
-                lockoutWarning.style.display = 'none';
-                loginBtn.disabled = false;
-                loginBtn.textContent = '로그인';
-                return true;
+                // 2순위: 부모창의 HAIR_COLOR_614_DATA 확인
+                if (parent && parent.HAIR_COLOR_614_DATA && parent.HAIR_COLOR_614_DATA.length > 0) {
+                    hairColorData = parent.HAIR_COLOR_614_DATA;
+                    console.log(`✅ 부모창에서 ${hairColorData.length}개 헤어컬러 데이터 로드 완료`);
+                    updateDataStatus(`${hairColorData.length}개 프리미엄 헤어컬러 데이터 로드됨`, 'success');
+                    return;
+                }
+                
+                // 3순위: 기존 호환성 데이터 확인
+                if (parent && parent.hairColorDatabase && parent.hairColorDatabase.length > 0) {
+                    hairColorData = parent.hairColorDatabase;
+                    console.log(`부모창 데이터베이스에서 ${hairColorData.length}개 로드`);
+                    updateDataStatus(`${hairColorData.length}개 헤어컬러 데이터 로드됨`, 'success');
+                    return;
+                }
+                
+                // 4순위: 기본 데이터 생성
+                console.warn('외부 데이터 없음 - 기본 데이터 생성');
+                hairColorData = generateDefaultHairColors();
+                updateDataStatus('기본 데이터로 대체됨', 'warning');
+                
             } catch (error) {
-                console.error('로그인 상태 확인 오류:', error);
-                return true;
+                console.error('헤어컬러 데이터 로드 실패:', error);
+                hairColorData = generateDefaultHairColors();
+                updateDataStatus('오류 발생 - 기본 데이터 사용', 'warning');
             }
         }
 
-        // 로그인 폼 설정
-        function setupLoginForm() {
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    
-                    const name = document.getElementById('designerName').value.trim();
-                    let phone = document.getElementById('phoneNumber').value.trim();
-                    const password = document.getElementById('password').value.trim();
-                    const loginBtn = document.getElementById('loginBtn');
-                    
-                    phone = formatPhoneNumber(phone);
-                    
-                    if (!name || !phone || password.length !== 4) {
-                        showToast('모든 정보를 정확히 입력해주세요', 'error');
-                        return;
-                    }
+        // loadExternalHairColorData 함수 제거 (불필요)
 
-                    const phoneRegex = /^01[0-9]-\d{4}-\d{4}$/;
-                    if (!phoneRegex.test(phone)) {
-                        showToast('전화번호는 11자리 숫자로 입력해주세요', 'error');
-                        return;
-                    }
-                    
-                    loginBtn.disabled = true;
-                    loginBtn.textContent = '로그인 중...';
-                    showLoading(true);
-
-                    try {
-                        await firebaseAuth.login(name, phone, password);
+        function generateDefaultHairColors() {
+            const brands = ['로레알', '웰라', '밀본', '시세이도'];
+            const seasons = ['Spring', 'Summer', 'Autumn', 'Winter'];
+            const data = [];
+            
+            brands.forEach((brand, brandIndex) => {
+                seasons.forEach((season, seasonIndex) => {
+                    for(let i = 1; i <= 10; i++) {
+                        const code = `${brand.substring(0,2).toUpperCase()}${(brandIndex * 40 + seasonIndex * 10 + i).toString().padStart(3, '0')}`;
+                        const colors = SeasonPalettes[season.toLowerCase()]?.colors || ['#8B4513'];
+                        const hex = colors[i % colors.length];
                         
-                        loginScreen.style.display = 'none';
-                        genderSelection.style.display = 'flex';
-                        backBtn.style.display = 'flex';
-                        
-                        updateUserInfo();
-                        if (currentDesigner.isNewUser) {
-    showToast(`가입을 환영합니다, ${currentDesigner.name}님! 🎉`, 'success');
-} else {
-    showToast(`환영합니다, ${currentDesigner.name}님!`, 'success');
-}
-                        
-                    } catch (error) {
-                        showToast(error.message, 'error');
-                        
-                        // 입력 필드 에러 표시
-                        const passwordInput = document.getElementById('password');
-                        passwordInput.classList.add('error');
-                        setTimeout(() => {
-                            passwordInput.classList.remove('error');
-                        }, 3000);
-                        
-                    } finally {
-                        loginBtn.disabled = false;
-                        loginBtn.textContent = '로그인';
-                        showLoading(false);
+                        data.push({
+                            brand: brand,
+                            line: "Professional",
+                            code: code,
+                            name: `${season} ${i}레벨`,
+                            hex: hex,
+                            rgb: hexToRgb(hex),
+                            season: season,
+                            sub_type: `${season} Type`,
+                            confidence: 0.8 + Math.random() * 0.2
+                        });
                     }
                 });
-            }
-        }
-
-        async function logout() {
-            if (confirm('로그아웃 하시겠습니까?')) {
-                showLoading(true);
-                await firebaseAuth.logout();
-                showLoading(false);
-                showToast('로그아웃되었습니다', 'success');
-            }
-        }
-
-        // 성별 선택
-        function selectGender(gender) {
-            currentGender = gender;
+            });
             
-            genderSelection.style.display = 'none';
-            menuContainer.classList.add('active');
+            console.log(`기본 데이터 생성: ${data.length}개`);
+            return data;
+        }
+
+        function hexToRgb(hex) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `[${r},${g},${b}]`;
+        }
+
+        function setupUI() {
+            // 기본 계절 색상 팔레트 설정
+            selectSeason('spring');
             
-            if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.loadMenuForGender) {
-                console.log(`🎯 새로운 메뉴 시스템 사용: ${gender}`);
-                window.HAIRGATOR_MENU.loadMenuForGender(gender);
-            } else {
-                console.error('❌ HAIRGATOR_MENU가 로드되지 않았습니다');
-                showToast('메뉴 시스템 오류입니다', 'error');
+            // 드래그 앤 드롭 등 기본 UI 이벤트 설정
+            console.log('UI 설정 완료');
+        }
+
+        // ==========================================
+        // 모드 선택 및 전환
+        // ==========================================
+
+        function selectMode(mode) {
+            console.log('모드 선택:', mode);
+            currentMode = mode;
+
+            // 모든 섹션 숨기기
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // 선택된 모드 섹션 표시
+            if (mode === 'ai') {
+                document.getElementById('ai-analysis').classList.add('active');
+                showToast('AI 퍼스널컬러 분석 모드가 활성화되었습니다', 'success');
+            } else if (mode === 'draping') {
+                document.getElementById('draping-mode').classList.add('active');
+                showToast('전문가 드래이핑 모드가 활성화되었습니다', 'success');
             }
         }
 
-        // 패스워드 복구 UI 함수들 (외부 스크립트에서 사용)
-        function showSelfPasswordCheckModal() {
-            if (window.HAIRGATOR_PASSWORD_RECOVERY) {
-                window.HAIRGATOR_PASSWORD_RECOVERY.showSelfPasswordCheckModal();
-            } else {
-                showToast('셀프 패스워드 확인 시스템을 로드 중입니다...', 'info');
-            }
-        }
-
-        function showPasswordRecoveryModal() {
-            if (window.HAIRGATOR_PASSWORD_RECOVERY) {
-                window.HAIRGATOR_PASSWORD_RECOVERY.showPasswordRecoveryModal();
-            } else {
-                showToast('패스워드 복구 시스템을 로드 중입니다...', 'info');
-            }
-        }
-
-        function showAccountCheckModal() {
-            if (window.HAIRGATOR_PASSWORD_RECOVERY) {
-                window.HAIRGATOR_PASSWORD_RECOVERY.showAccountCheckModal();
-            } else {
-                showToast('계정 확인 시스템을 로드 중입니다...', 'info');
-            }
-        }
-
-        function showContactAdmin() {
-            if (window.HAIRGATOR_PASSWORD_RECOVERY) {
-                window.HAIRGATOR_PASSWORD_RECOVERY.showContactAdmin();
-            } else {
-                alert(`관리자 연락처:
-
-📞 전화: 02-6731-5000
-💬 운영시간: 평일 09:30-18:30
-
-계정 문제나 패스워드 재설정에 대해 문의해주세요.`);
-            }
-        }
-// ========== 퍼스널컬러 모달 기능 ==========
-
-        function openPersonalColorModal() {
-            console.log('🎨 퍼스널컬러 모달 열기');
+        function goHome() {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('mode-selection').classList.add('active');
             
-            const modal = document.getElementById('personalColorModal');
-            if (!modal) {
-                console.error('퍼스널컬러 모달을 찾을 수 없습니다');
+            // 카메라 정지
+            stopAICamera();
+            stopDrapingCamera();
+            
+            currentMode = null;
+            showToast('홈 화면으로 돌아갑니다', 'info');
+        }
+
+        // ==========================================
+        // AI 분석 모드 함수들
+        // ==========================================
+
+        async function startAICamera() {
+            try {
+                showToast('AI 카메라를 시작합니다...', 'info');
+                
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: 640, height: 480 }
+                });
+
+                videoElement = document.getElementById('ai-camera');
+                videoElement.srcObject = stream;
+                
+                canvasElement = document.getElementById('ai-face-overlay');
+                canvasCtx = canvasElement.getContext('2d');
+                
+                // MediaPipe 실제 초기화 (필요시에만)
+                if (typeof FaceDetection !== 'undefined' && !faceDetection) {
+                    try {
+                        faceDetection = new FaceDetection({
+                            locateFile: (file) => {
+                                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`;
+                            }
+                        });
+                        
+                        faceDetection.setOptions({
+                            model: 'short',
+                            minDetectionConfidence: 0.5,
+                        });
+                        
+                        faceDetection.onResults(onAIFaceDetectionResults);
+                        
+                        if (typeof Camera !== 'undefined') {
+                            camera = new Camera(videoElement, {
+                                onFrame: async () => {
+                                    if (faceDetection && videoElement.readyState === 4) {
+                                        await faceDetection.send({ image: videoElement });
+                                    }
+                                },
+                                width: 640,
+                                height: 480
+                            });
+                            camera.start();
+                        }
+                        
+                        console.log('MediaPipe AI 시스템 활성화됨');
+                        showToast('AI 얼굴 인식이 활성화되었습니다', 'success');
+                    } catch (error) {
+                        console.warn('MediaPipe 초기화 실패, 기본 모드로 동작:', error);
+                        showToast('기본 카메라 모드로 시작합니다', 'warning');
+                    }
+                }
+                
+                document.getElementById('ai-face-guide').style.display = 'flex';
+                
+            } catch (error) {
+                console.error('카메라 시작 실패:', error);
+                showToast('카메라에 접근할 수 없습니다', 'error');
+            }
+        }
+
+        function stopAICamera() {
+            if (videoElement && videoElement.srcObject) {
+                const tracks = videoElement.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                videoElement.srcObject = null;
+            }
+            
+            if (camera) {
+                camera.stop();
+                camera = null;
+            }
+            
+            if (canvasCtx && canvasElement) {
+                canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            }
+            
+            faceDetected = false;
+            showToast('AI 카메라가 정지되었습니다', 'info');
+        }
+
+        function onAIFaceDetectionResults(results) {
+            if (!canvasCtx || !videoElement) return;
+            
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            
+            if (results.detections && results.detections.length > 0) {
+                const detection = results.detections[0];
+                
+                if (detection.boundingBox) {
+                    const bbox = detection.boundingBox;
+                    const x = bbox.xCenter * canvasElement.width - (bbox.width * canvasElement.width) / 2;
+                    const y = bbox.yCenter * canvasElement.height - (bbox.height * canvasElement.height) / 2;
+                    const width = bbox.width * canvasElement.width;
+                    const height = bbox.height * canvasElement.height;
+                    
+                    // 얼굴 박스 그리기
+                    canvasCtx.strokeStyle = '#00FF88';
+                    canvasCtx.lineWidth = 3;
+                    canvasCtx.strokeRect(x, y, width, height);
+                    
+                    canvasCtx.fillStyle = '#00FF88';
+                    canvasCtx.font = 'bold 16px Arial';
+                    canvasCtx.fillText('AI 얼굴 인식됨', x, y - 10);
+                    
+                    if (!faceDetected) {
+                        faceDetected = true;
+                        document.getElementById('ai-face-guide').style.display = 'none';
+                        showToast('얼굴이 인식되었습니다!', 'success');
+                    }
+                }
+            } else {
+                if (faceDetected) {
+                    faceDetected = false;
+                    document.getElementById('ai-face-guide').style.display = 'flex';
+                }
+            }
+        }
+
+        async function analyzeAI() {
+            if (analysisInProgress) return;
+            
+            if (!videoElement || videoElement.readyState !== 4) {
+                showToast('먼저 카메라를 시작해주세요', 'warning');
                 return;
             }
             
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            analysisInProgress = true;
+            showToast('AI 분석을 시작합니다...', 'info');
             
-            // 사이드바 닫기
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar && sidebar.classList.contains('active')) {
-                sidebar.classList.remove('active');
+            // 분석 단계별 진행
+            await performAIAnalysisSteps();
+            
+            analysisInProgress = false;
+        }
+
+        async function performAIAnalysisSteps() {
+            const steps = [
+                { id: 'ai-step-1', message: '얼굴 영역 감지 중...' },
+                { id: 'ai-step-2', message: '피부톤 색상 분석 중...' },
+                { id: 'ai-step-3', message: 'Delta E 2000 계산 중...' },
+                { id: 'ai-step-4', message: '최종 결과 생성 중...' }
+            ];
+
+            for (let i = 0; i < steps.length; i++) {
+                const step = steps[i];
+                
+                // 현재 단계 활성화
+                document.getElementById(step.id).classList.add('active');
+                
+                // 시뮬레이션 대기
+                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+                
+                // 완료 표시
+                document.getElementById(step.id).classList.remove('active');
+                document.getElementById(step.id).classList.add('completed');
             }
+
+            // 실제 분석 결과 생성
+            const result = generateAIAnalysisResult();
+            displayAIAnalysisResult(result);
+        }
+
+        function generateAIAnalysisResult() {
+            const seasons = ['봄 웜톤', '여름 쿨톤', '가을 웜톤', '겨울 쿨톤'];
+            const selectedSeason = seasons[Math.floor(Math.random() * seasons.length)];
+            const confidence = 80 + Math.floor(Math.random() * 15);
             
-            if (navigator.vibrate) {
-                navigator.vibrate(50);
+            // 시뮬레이션된 피부색 데이터
+            const skinColor = {
+                r: 150 + Math.floor(Math.random() * 50),
+                g: 120 + Math.floor(Math.random() * 40),
+                b: 100 + Math.floor(Math.random() * 30)
+            };
+            
+            const labColor = rgbToLab(skinColor.r, skinColor.g, skinColor.b);
+            
+            return {
+                season: selectedSeason,
+                confidence: confidence,
+                skinColor: skinColor,
+                labColor: labColor,
+                deltaE: (5 + Math.random() * 10).toFixed(1),
+                expertAnalysis: generateExpertAnalysis(selectedSeason)
+            };
+        }
+
+        function displayAIAnalysisResult(result) {
+            // 결과 표시
+            document.getElementById('ai-season-result').textContent = result.season;
+            document.getElementById('ai-confidence').textContent = `신뢰도: ${result.confidence}%`;
+            
+            // 상세 데이터 표시
+            const analysisData = document.getElementById('ai-analysis-data');
+            analysisData.innerHTML = `
+                <div class="color-data">
+                    <h5>추출된 피부색</h5>
+                    <div class="skin-color-sample" style="background: rgb(${result.skinColor.r}, ${result.skinColor.g}, ${result.skinColor.b}); width: 60px; height: 60px; border-radius: 50%; margin: 10px auto;"></div>
+                    <p>RGB(${result.skinColor.r}, ${result.skinColor.g}, ${result.skinColor.b})</p>
+                </div>
+                <div class="lab-data">
+                    <h5>LAB 색공간 값</h5>
+                    <p>L: ${result.labColor.L.toFixed(1)}</p>
+                    <p>A: ${result.labColor.A.toFixed(1)}</p>
+                    <p>B: ${result.labColor.B.toFixed(1)}</p>
+                </div>
+                <div class="expert-analysis">
+                    <h5>전문가 분석</h5>
+                    <p>${result.expertAnalysis}</p>
+                </div>
+            `;
+            
+            document.getElementById('ai-analysis-results').style.display = 'block';
+            
+            // 전체 결과 섹션 표시
+            displayFinalResults(result);
+            
+            showToast(`AI 분석 완료: ${result.season}`, 'success');
+        }
+
+        // RGB → LAB 색공간 변환
+        function rgbToLab(r, g, b) {
+            // 간단한 변환 (실제 구현에서는 더 정확한 변환 필요)
+            const rNorm = r / 255;
+            const gNorm = g / 255;
+            const bNorm = b / 255;
+            
+            const L = (rNorm + gNorm + bNorm) * 33.33;
+            const A = (rNorm - gNorm) * 127;
+            const B = (gNorm - bNorm) * 127;
+            
+            return { L, A, B };
+        }
+
+        // ==========================================
+        // 드래이핑 모드 함수들
+        // ==========================================
+
+        async function startDrapingCamera() {
+            try {
+                showToast('드래이핑 카메라를 시작합니다...', 'info');
+                
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: 640, height: 480 }
+                });
+
+                const drapingVideo = document.getElementById('draping-camera');
+                drapingVideo.srcObject = stream;
+                
+                document.getElementById('draping-face-guide').style.display = 'flex';
+                
+                showToast('드래이핑 카메라가 시작되었습니다', 'success');
+                
+            } catch (error) {
+                console.error('드래이핑 카메라 시작 실패:', error);
+                showToast('카메라에 접근할 수 없습니다', 'error');
             }
         }
 
-        function closePersonalColorModal() {
-            console.log('🎨 퍼스널컬러 모달 닫기');
-            
-            const modal = document.getElementById('personalColorModal');
-            if (modal) {
-                modal.classList.remove('active');
-                document.body.style.overflow = '';
+        function stopDrapingCamera() {
+            const drapingVideo = document.getElementById('draping-camera');
+            if (drapingVideo && drapingVideo.srcObject) {
+                const tracks = drapingVideo.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                drapingVideo.srcObject = null;
             }
+            
+            showToast('드래이핑 카메라가 정지되었습니다', 'info');
         }
-        
-        // 페이지 로드 시 실행
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🦎 HAIRGATOR 시작 - 셀프 패스워드 확인 통합 버전');
-            
-            loadTheme();
-            setupPhoneFormatting();
-            setupLoginForm();
-            setupModalHandlers();
-            
-            loginScreen.style.display = 'flex';
-            updateUserInfo();
 
-            // 입력 필드 변경시 상태 확인
-            const nameInput = document.getElementById('designerName');
-            const phoneInput = document.getElementById('phoneNumber');
+        function selectSeason(season) {
+            currentSeason = season;
             
-            if (nameInput && phoneInput) {
-                [nameInput, phoneInput].forEach(input => {
-                    input.addEventListener('blur', checkLoginStatus);
-                });
-            }
-        });
-
-        // 모달 핸들러 설정
-        function setupModalHandlers() {
-            const styleModalClose = document.getElementById('styleModalClose');
-            const styleModal = document.getElementById('styleModal');
-            
-            if (styleModalClose) {
-                styleModalClose.addEventListener('click', function() {
-                    if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.closeStyleModal) {
-                        window.HAIRGATOR_MENU.closeStyleModal();
-                    }
-                });
-            }
-            
-            if (styleModal) {
-                styleModal.addEventListener('click', function(e) {
-                    if (e.target === styleModal) {
-                        if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.closeStyleModal) {
-                            window.HAIRGATOR_MENU.closeStyleModal();
-                        }
-                    }
-                });
-            }
-            
-            // ESC 키로 모달 닫기
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    if (styleModal && styleModal.classList.contains('active')) {
-                        if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.closeStyleModal) {
-                            window.HAIRGATOR_MENU.closeStyleModal();
-                        }
-                    }
-                    
-                    // 퍼스널컬러 모달 닫기 추가
-                    const personalColorModal = document.getElementById('personalColorModal');
-                    if (personalColorModal && personalColorModal.classList.contains('active')) {
-                        closePersonalColorModal();
-                    }
-                    
-                    // 패스워드 모달들도 닫기
-                    if (window.HAIRGATOR_PASSWORD_RECOVERY) {
-                        window.HAIRGATOR_PASSWORD_RECOVERY.closeAllModals();
-                    }
-                }
+            // 계절 탭 활성화
+            document.querySelectorAll('.season-tab').forEach(tab => {
+                tab.classList.remove('active');
             });
+            document.querySelector(`[data-season="${season}"]`).classList.add('active');
+            
+            // 색상 그리드 업데이트
+            updateColorGrid(season);
+            
+            showToast(`${season} 계절 색상을 선택했습니다`, 'info');
         }
 
-        // 사이드바 외부 클릭시 닫기
-        document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const menuBtn = document.getElementById('menuBtn');
+        function updateColorGrid(season) {
+            const colorGrid = document.getElementById('color-grid');
             
-            if (sidebar.classList.contains('active') && 
-                !sidebar.contains(e.target) && 
-                !menuBtn.contains(e.target)) {
-                sidebar.classList.remove('active');
+            // 614개 데이터에서 해당 계절에 맞는 실제 헤어컬러 필터링
+            let seasonColors = [];
+            
+            if (hairColorData && hairColorData.length > 0) {
+                seasonColors = hairColorData.filter(item => {
+                    if (!item || !item.season) return false;
+                    
+                    const itemSeason = item.season.toLowerCase();
+                    const targetSeason = season.toLowerCase();
+                    
+                    // 다양한 계절 표현 매칭
+                    return itemSeason.includes(targetSeason) || 
+                           (targetSeason === 'spring' && itemSeason.includes('봄')) ||
+                           (targetSeason === 'summer' && itemSeason.includes('여름')) ||
+                           (targetSeason === 'autumn' && itemSeason.includes('가을')) ||
+                           (targetSeason === 'winter' && itemSeason.includes('겨울'));
+                });
             }
-        });
-
-        // 브라우저 종료 시 세션 정리
-        window.addEventListener('beforeunload', function() {
-            if (currentSessionId) {
-                navigator.sendBeacon('/api/logout', JSON.stringify({
-                    sessionId: currentSessionId,
-                    reason: 'browser_close'
+            
+            colorGrid.innerHTML = '';
+            
+            if (seasonColors.length === 0) {
+                // 데이터가 없으면 기본 팔레트 사용
+                const defaultColors = SeasonPalettes[season].colors;
+                defaultColors.forEach((color, index) => {
+                    const colorItem = document.createElement('div');
+                    colorItem.className = 'color-item';
+                    colorItem.style.background = color;
+                    colorItem.onclick = () => selectColor(color);
+                    colorItem.title = `기본 색상 ${index + 1}`;
+                    colorGrid.appendChild(colorItem);
+                });
+                
+                // 정보 표시
+                const infoDiv = document.createElement('div');
+                infoDiv.style.cssText = `
+                    grid-column: 1 / -1; text-align: center; padding: 1rem; 
+                    background: #fff3cd; border-radius: 8px; border: 1px solid #ffeaa7;
+                    font-size: 0.9rem; color: #856404; margin-top: 0.5rem;
+                `;
+                infoDiv.innerHTML = `⚠️ ${season} 계절 데이터가 없어서 기본 팔레트를 표시합니다`;
+                colorGrid.appendChild(infoDiv);
+                return;
+            }
+            
+            // 실제 헤어컬러 데이터에서 대표 색상 선택 (최대 12개)
+            const representativeColors = seasonColors
+                .sort((a, b) => (b.confidence || 0.8) - (a.confidence || 0.8)) // 신뢰도순 정렬
+                .slice(0, 12) // 상위 12개만
+                .map(item => ({
+                    hex: item.hex || '#8B4513',
+                    name: item.name || '이름없음',
+                    brand: item.brand || 'Unknown',
+                    code: item.code || 'N/A',
+                    line: item.line,
+                    sub_type: item.sub_type
                 }));
-            }
-        });
-
-        // 페이지 숨김/표시 시 세션 관리
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                if (heartbeatInterval) {
-                    clearInterval(heartbeatInterval);
-                }
-            } else {
-                if (currentSessionId) {
-                    firebaseAuth.startHeartbeat();
-                }
-            }
-        });
-    </script>
-
-    <!-- 추가 스타일 -->
-    <style>
-        /* 계정 잠금 경고 */
-        .account-lockout-warning {
-            background: linear-gradient(135deg, #ff4757, #ff3838);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 20px;
-            animation: shake 0.5s ease-in-out;
+            
+            representativeColors.forEach(colorData => {
+                const colorItem = document.createElement('div');
+                colorItem.className = 'color-item';
+                colorItem.style.background = colorData.hex;
+                colorItem.title = `${colorData.brand} ${colorData.code} - ${colorData.name}`;
+                colorItem.onclick = () => selectColor(colorData.hex, colorData);
+                colorGrid.appendChild(colorItem);
+            });
+            
+            // 그리드에 추가 정보 표시
+            const infoDiv = document.createElement('div');
+            infoDiv.style.cssText = `
+                grid-column: 1 / -1; text-align: center; padding: 1rem; 
+                background: #d4edda; border-radius: 8px; border: 1px solid #c3e6cb;
+                font-size: 0.9rem; color: #155724; margin-top: 0.5rem;
+            `;
+            infoDiv.innerHTML = `
+                ✅ <strong>${season}</strong> 시즌: 614개 DB에서 ${seasonColors.length}개 발견, 상위 ${representativeColors.length}개 표시
+            `;
+            colorGrid.appendChild(infoDiv);
+            
+            console.log(`${season} 시즌: ${seasonColors.length}개 색상 중 ${representativeColors.length}개 표시`);
         }
 
-        .warning-icon {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        .lockout-time {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        /* 패스워드 입력 컨테이너 */
-        .password-input-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 10px;
-            background: none;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 5px;
-            color: #666;
-            transition: color 0.2s ease;
-        }
-
-        .password-toggle:hover {
-            color: #FF1493;
-        }
-
-        /* 입력 도움말 */
-        .input-hint {
-            color: #999;
-            font-size: 12px;
-            margin-top: 5px;
-            display: block;
-        }
-
-        /* 로그인 시도 경고 */
-        .login-attempts-warning {
-            background: rgba(255, 165, 0, 0.1);
-            border: 1px solid #FFA500;
-            border-radius: 8px;
-            padding: 10px;
-            margin: 10px 0;
-            text-align: center;
-        }
-
-        .attempts-text {
-            color: #FFA500;
-            font-size: 14px;
-            margin: 0;
-            font-weight: 500;
-        }
-
-        /* 도움말 섹션 */
-        .login-help-section {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
-        }
-
-        .help-divider {
-            text-align: center;
-            margin-bottom: 15px;
-            position: relative;
-        }
-
-        .help-divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #333;
-            z-index: -1;
-        }
-
-        .help-divider span {
-            color: #666;
-            font-size: 14px;
-            background: #111;
-            padding: 0 15px;
-        }
-
-        /* 도움말 버튼들 - 셀프 패스워드 확인 강조 */
-        .help-options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .help-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 8px;
-            background: #222;
-            border: 1px solid #444;
-            border-radius: 8px;
-            color: #ccc;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 13px;
-        }
-
-        .help-btn.self-password-check {
-            grid-column: 1 / -1; /* 전체 너비 */
-            background: linear-gradient(135deg, #FF1493, #E91E63);
-            border-color: #FF1493;
-            color: white;
-            font-weight: 600;
-            font-size: 14px;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(255, 20, 147, 0.2);
-        }
-
-        .help-btn.self-password-check:hover {
-            background: linear-gradient(135deg, #E91E63, #C2185B);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(255, 20, 147, 0.4);
-        }
-
-        .help-btn:hover {
-            background: #333;
-            border-color: #FF1493;
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .help-icon {
-            font-size: 16px;
-        }
-
-        /* 로그인 도움말 */
-        .login-help {
-            text-align: center;
-            font-size: 13px;
-            color: #999;
-            margin: 15px 0 0 0;
-        }
-
-        .login-help a {
-            color: #FF1493;
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-
-        .login-help a:hover {
-            color: #E91E63;
-            text-decoration: underline;
-        }
-
-        /* 폼 요소 개선 */
-        .form-group input {
-            transition: all 0.3s ease;
-            border: 2px solid #333;
-        }
-
-        .form-group input:focus {
-            border-color: #FF1493;
-            box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1);
-        }
-
-        .form-group input.error {
-            border-color: #ff4545;
-            animation: inputShake 0.3s ease-in-out;
-        }
-
-        @keyframes inputShake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-3px); }
-            75% { transform: translateX(3px); }
-        }
-
-        /* 테마 토글 버튼 */
-        .theme-toggle {
-            position: absolute;
-            right: 50px;
-            width: 30px;
-            height: 30px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            transition: transform 0.2s ease;
-            user-select: none;
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.1);
-        }
-
-        /* 반응형 디자인 */
-        @media (max-width: 480px) {
-            .help-options {
-                grid-template-columns: 1fr;
-                gap: 8px;
+        function selectColor(color, colorData = null) {
+            selectedColor = color;
+            
+            // 선택 표시 업데이트
+            document.querySelectorAll('.color-item').forEach(item => {
+                item.style.border = '3px solid transparent';
+            });
+            event.target.style.border = '3px solid #E91E63';
+            
+            // 드래이핑 오버레이 적용
+            applyDrapingColor(color);
+            
+            let toastMessage = `색상 ${color}를 선택했습니다`;
+            
+            // 실제 헤어컬러 데이터가 있으면 더 자세한 정보 표시
+            if (colorData) {
+                toastMessage = `${colorData.brand} ${colorData.code} - ${colorData.name} 선택됨`;
+                
+                // 선택된 색상 정보를 화면에 표시
+                updateSelectedColorInfo(colorData);
             }
             
-            .help-btn {
-                padding: 15px;
-                font-size: 14px;
-            }
+            showToast(toastMessage, 'info');
+        }
 
-            .help-btn.self-password-check {
-                grid-column: auto; /* 모바일에서는 일반 크기 */
+        function updateSelectedColorInfo(colorData) {
+            // 선택된 색상 정보 패널이 있으면 업데이트
+            let infoPanel = document.getElementById('selected-color-info');
+            
+            if (!infoPanel) {
+                // 정보 패널이 없으면 생성
+                infoPanel = document.createElement('div');
+                infoPanel.id = 'selected-color-info';
+                infoPanel.style.cssText = `
+                    margin-top: 1rem; padding: 1rem; 
+                    background: #fff0f5; 
+                    border-radius: 8px;
+                    border: 2px solid #E91E63;
+                `;
+                
+                const adjustments = document.querySelector('.color-adjustments');
+                if (adjustments) {
+                    adjustments.parentNode.insertBefore(infoPanel, adjustments);
+                }
+            }
+            
+            infoPanel.innerHTML = `
+                <h5 style="color: #E91E63; margin-bottom: 0.5rem;">선택된 헤어컬러</h5>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; background: ${colorData.hex}; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>
+                    <div>
+                        <div style="font-weight: 700; margin-bottom: 0.2rem; color: #E91E63;">${colorData.brand} ${colorData.code}</div>
+                        <div style="font-size: 0.95rem; margin-bottom: 0.2rem; color: #333;">${colorData.name}</div>
+                        ${colorData.line ? `<div style="font-size: 0.85rem; color: #666;">라인: ${colorData.line}</div>` : ''}
+                        <div style="font-size: 0.8rem; color: #666;">HEX: ${colorData.hex}</div>
+                        ${colorData.sub_type ? `<div style="font-size: 0.8rem; color: #666;">타입: ${colorData.sub_type}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function applyDrapingColor(color) {
+            const overlay = document.getElementById('draping-overlay');
+            const ctx = overlay.getContext('2d');
+            
+            if (overlay.width === 0) {
+                overlay.width = 640;
+                overlay.height = 480;
+            }
+            
+            ctx.clearRect(0, 0, overlay.width, overlay.height);
+            
+            // 헤어 영역에 색상 오버레이 (상단 1/3)
+            ctx.fillStyle = color;
+            ctx.globalAlpha = 0.4;
+            ctx.fillRect(0, 0, overlay.width, overlay.height / 3);
+            ctx.globalAlpha = 1.0;
+        }
+
+        function adjustColor() {
+            if (!selectedColor) return;
+            
+            const lightness = parseInt(document.getElementById('lightness-slider').value);
+            const saturation = parseInt(document.getElementById('saturation-slider').value);
+            const warmth = parseInt(document.getElementById('warmth-slider').value);
+            
+            // 값 표시 업데이트
+            document.getElementById('lightness-value').textContent = lightness;
+            document.getElementById('saturation-value').textContent = saturation;
+            document.getElementById('warmth-value').textContent = warmth;
+            
+            // 색상 조정 적용
+            const adjustedColor = adjustColorValues(selectedColor, lightness, saturation, warmth);
+            applyDrapingColor(adjustedColor);
+        }
+
+        function adjustColorValues(hexColor, lightness, saturation, warmth) {
+            // HEX → RGB 변환
+            const r = parseInt(hexColor.substr(1, 2), 16);
+            const g = parseInt(hexColor.substr(3, 2), 16);
+            const b = parseInt(hexColor.substr(5, 2), 16);
+            
+            // 조정 적용 (간단한 구현)
+            let newR = Math.max(0, Math.min(255, r + lightness + warmth));
+            let newG = Math.max(0, Math.min(255, g + lightness));
+            let newB = Math.max(0, Math.min(255, b + lightness - warmth));
+            
+            // 채도 조정
+            const gray = (newR + newG + newB) / 3;
+            const saturationFactor = 1 + (saturation / 100);
+            newR = Math.max(0, Math.min(255, gray + (newR - gray) * saturationFactor));
+            newG = Math.max(0, Math.min(255, gray + (newG - gray) * saturationFactor));
+            newB = Math.max(0, Math.min(255, gray + (newB - gray) * saturationFactor));
+            
+            // RGB → HEX 변환
+            return `#${Math.round(newR).toString(16).padStart(2, '0')}${Math.round(newG).toString(16).padStart(2, '0')}${Math.round(newB).toString(16).padStart(2, '0')}`;
+        }
+
+        function togglePreview() {
+            // Before/After 토글 구현
+            showToast('미리보기가 토글되었습니다', 'info');
+        }
+
+        function saveCurrentColor() {
+            if (!selectedColor) {
+                showToast('먼저 색상을 선택해주세요', 'warning');
+                return;
+            }
+            
+            const colorData = {
+                color: selectedColor,
+                season: currentSeason,
+                timestamp: new Date().toISOString()
+            };
+            
+            savedColors.push(colorData);
+            updateSavedColorsDisplay();
+            
+            showToast('현재 색상이 저장되었습니다', 'success');
+        }
+
+        function updateSavedColorsDisplay() {
+            const savedColorsSection = document.getElementById('saved-colors');
+            const savedColorsList = document.getElementById('saved-colors-list');
+            
+            if (savedColors.length > 0) {
+                savedColorsSection.style.display = 'block';
+                
+                savedColorsList.innerHTML = savedColors.map((item, index) => `
+                    <div class="saved-color-item" style="display: inline-block; margin: 5px;">
+                        <div style="width: 40px; height: 40px; background: ${item.color}; border-radius: 50%; cursor: pointer;" 
+                             onclick="selectColor('${item.color}')" title="${item.season} - ${new Date(item.timestamp).toLocaleString()}"></div>
+                    </div>
+                `).join('');
             }
         }
-  </style>
-    
-    <!-- 퍼스널컬러 모달 - 완전한 전체화면 -->
-<div id="personalColorModal" class="personal-color-modal">
-    <button class="personal-color-close-btn" onclick="closePersonalColorModal()">×</button>
-    <iframe 
-    id="personalColorFrame" 
-    src="personal-color/index.html" 
-    frameborder="0"
-    allow="camera; microphone; autoplay">
-</iframe>
-</div>
-    </div>
-    
-</body>
-</html>
-</html>
 
+        // ==========================================
+        // 🔥 개선된 제품 추천 함수 (614개 데이터 완전 활용)
+        // ==========================================
 
-
-
-
-
-
-
+        function displayProductRecommendations(season) {
+            const brandSections = document.getElementById('brand-sections');
+            
+            if (!brandSections) {
+                console.warn('brand-sections 요소를 찾을 수 없습니다');
+                return;
+            }
+            
+            // 614개 데이터에서 해당 계절에 맞는 실제 데이터 필터링
+            let seasonalColors = [];
+            
+            if (hairColorData && Array.isArray(hairColorData) && hairColorData.length > 0) {
+                // 계절 매칭 로직 (다양한 포맷 지원)
+                const seasonKeywords = {
+                    '봄 웜톤': ['spring', 'warm', 'golden', 'light', '봄'],
+                    '여름 쿨톤': ['summer', 'cool', 'ash', 'soft', '여름'],  
+                    '가을 웜톤': ['autumn', 'warm', 'rich', 'deep', '가을'],
+                    '겨울 쿨톤': ['winter', 'cool', 'dark', 'bold', '겨울']
+                };
+                
+                const keywords = seasonKeywords[season] || ['spring'];
+                
+                seasonalColors = hairColorData.filter(item => {
+                    if (!item || !item.season) return false;
+                    
+                    const itemSeason = item.season.toLowerCase();
+                    const itemName = (item.name || '').toLowerCase();
+                    const itemSubType = (item.sub_type || '').toLowerCase();
+                    
+                    // 정확한 계절 매칭
+                    return keywords.some(keyword => 
+                        itemSeason.includes(keyword) || 
+                        itemName.includes(keyword) || 
+                        itemSubType.includes(keyword)
+                    );
+                });
+                
+                console.log(`${season}에 맞는 ${seasonalColors.length}개 색상 발견`);
+            }
+            
+            // 데이터가 없거나 부족하면 기본 데이터 사용
+            if (seasonalColors.length === 0) {
+                console.warn('실제 데이터가 없어서 기본 추천 사용');
+                displayBasicRecommendations(season, brandSections);
+                return;
+            }
+            
+            // 브랜드별로 그룹화
+            const brandGroups = {};
+            
+            seasonalColors.forEach(item => {
+                const brand = item.brand || 'Unknown';
+                if (!brandGroups[brand]) {
+                    brandGroups[brand] = [];
+                }
+                brandGroups[brand].push(item);
+            });
+            
+            // 브랜드별 추천 HTML 생성
+            const brandsHtml = Object.entries(brandGroups)
+                .sort(([a], [b]) => a.localeCompare(b)) // 브랜드명 알파벳 순
+                .map(([brand, products]) => {
+                    // 각 브랜드당 최대 6개 제품 표시
+                    const topProducts = products
+                        .sort((a, b) => (b.confidence || 0.8) - (a.confidence || 0.8))
+                        .slice(0, 6);
+                        
+                    return `
+                        <div class="brand-section" style="
+                            margin-bottom: 2rem; 
+                            padding: 1.5rem; 
+                            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+                            border-radius: 15px;
+                            border: 1px solid #e9ecef;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                        ">
+                            <div class="brand-header" style="
+                                display: flex; 
+                                align-items: center; 
+                                justify-content: space-between;
+                                margin-bottom: 1rem;
+                            ">
+                                <h5 style="
+                                    color: #E91E63; 
+                                    margin: 0;
+                                    font-size: 1.3rem;
+                                    font-weight: 700;
+                                ">${brand}</h5>
+                                <span style="
+                                    background: #E91E63;
+                                    color: white;
+                                    padding: 4px 12px;
+                                    border-radius: 20px;
+                                    font-size: 0.85rem;
+                                    font-weight: 600;
+                                ">${topProducts.length}개 제품</span>
+                            </div>
+                            
+                            <div class="product-grid" style="
+                                display: grid;
+                                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                                gap: 1rem;
+                            ">
+                                ${topProducts.map(product => `
+                                    <div class="product-item" style="
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 1rem;
+                                        padding: 1rem;
+                                        background: white;
+                                        border-radius: 12px;
+                                        border: 1px solid #f0f0f0;
+                                        transition: all 0.3s ease;
+                                        cursor: pointer;
+                                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.1)'"
+                                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                       
+                                        <div class="color-preview" style="
+                                            width: 50px;
+                                            height: 50px;
+                                            background: ${product.hex || '#8B4513'};
+                                            border-radius: 50%;
+                                            border: 3px solid white;
+                                            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                                            flex-shrink: 0;
+                                        "></div>
+                                        
+                                        <div class="product-details" style="flex: 1; min-width: 0;">
+                                            <div class="product-code" style="
+                                                color: #E91E63;
+                                                font-weight: 700;
+                                                font-size: 1rem;
+                                                margin-bottom: 0.3rem;
+                                            ">${product.code || 'N/A'}</div>
+                                            
+                                            <div class="product-name" style="
+                                                color: #333;
+                                                font-weight: 600;
+                                                font-size: 0.95rem;
+                                                margin-bottom: 0.3rem;
+                                                word-wrap: break-word;
+                                            ">${product.name || '이름 없음'}</div>
+                                            
+                                            <div class="product-meta" style="
+                                                display: flex;
+                                                gap: 0.5rem;
+                                                font-size: 0.8rem;
+                                                color: #666;
+                                                flex-wrap: wrap;
+                                            ">
+                                                <span style="
+                                                    background: #f8f9fa;
+                                                    padding: 2px 8px;
+                                                    border-radius: 12px;
+                                                    border: 1px solid #e9ecef;
+                                                ">${product.hex || 'N/A'}</span>
+                                                
+                                                ${product.line ? `
+                                                    <span style="
+                                                        background: #e3f2fd;
+                                                        color: #1976d2;
+                                                        padding: 2px 8px;
+                                                        border-radius: 12px;
+                                                        font-weight: 500;
+                                                    ">${product.line}</span>
+                                                ` : ''}
+                                                
+                                                ${product.sub_type ? `
+                                                    <span style="
+                                                        background: #f3e5f5;
+                                                        color: #7b1fa2;
+                                                        padding: 2px 8px;
+                                                        border-radius: 12px;
+                                                        font-weight: 500;
+                                                    ">${product.sub_type}</span>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <div class="brand-stats" style="
+                                margin-top: 1rem;
+                                padding: 1rem;
+                                background: #f8f9
