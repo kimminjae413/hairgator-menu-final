@@ -21,13 +21,29 @@
 
         waitForFirebase() {
             const checkFirebase = () => {
-                if (window.firebase && window.db) {
-                    this.db = window.db;
+                // 전역 변수들 확인
+                if (window.firebase && (window.db || window.firestore)) {
+                    this.db = window.db || window.firestore || firebase.firestore();
                     console.log('✅ Firebase 연결 확인됨 - 패스워드 복구 시스템 활성화');
-                } else {
-                    setTimeout(checkFirebase, 100);
+                    return;
                 }
+                
+                // Firebase 인스턴스 직접 확인
+                if (window.firebase && firebase.firestore) {
+                    try {
+                        this.db = firebase.firestore();
+                        console.log('✅ Firebase 직접 연결 - 패스워드 복구 시스템 활성화');
+                        return;
+                    } catch (error) {
+                        console.warn('Firebase 직접 연결 실패:', error);
+                    }
+                }
+                
+                // 재시도
+                setTimeout(checkFirebase, 200);
             };
+            
+            // 즉시 실행 + 재시도
             checkFirebase();
         }
 
