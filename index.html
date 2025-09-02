@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HAIRGATOR - Professional Hair Style Menu</title>
-    
+
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,16 +13,16 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
-    
+
     <!-- 아이콘 -->
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-    
+
     <!-- 구글 폰트 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- External CSS -->
     <link rel="stylesheet" href="css/main.css">
 
@@ -31,13 +31,13 @@
     <script src="js/face-swap-backend.js"></script>
     <!-- 패스워드 복구 시스템 -->
     <script src="js/password-recovery.js"></script>
-    
+
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    
+
 </head>
 <body>
     <!-- 헤더 -->
@@ -45,7 +45,7 @@
         <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
         <h1 class="logo">HAIRGATOR</h1>
         <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="테마 변경">🌙</button>
-       
+
         <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
             <span></span>
             <span></span>
@@ -68,7 +68,17 @@
                 <button class="logout-btn" onclick="logout()">로그아웃</button>
             </div>
             <p id="guestMessage">로그인 후 이용 가능합니다.</p>
-          
+          <!-- 퍼스널컬러 메뉴 섹션 - 로그인 후에만 표시 -->
+<div class="sidebar-section" id="personalColorSection" style="display: none;">
+    <div class="sidebar-menu-item" onclick="openPersonalColorModal()">
+        <span class="sidebar-icon">🎨</span>
+        <div class="sidebar-text">
+            <div class="sidebar-title">퍼스널컬러</div>
+            <div class="sidebar-subtitle">614개 헤어컬러 데이터 기반 분석</div>
+        </div>
+        <span class="sidebar-new">NEW</span>
+    </div>
+</div>
         </div>
     </aside>
 
@@ -91,26 +101,26 @@
             <div class="login-modal">
                 <h2>HAIRGATOR</h2>
                 <p class="subtitle">Professional Hair Style Menu</p>
-                
+
                 <!-- 계정 잠금 경고 -->
                 <div class="account-lockout-warning" id="lockoutWarning" style="display: none;">
                     <div class="warning-icon">⚠️</div>
                     <p>계정이 일시적으로 잠겼습니다</p>
                     <p class="lockout-time" id="lockoutTime"></p>
                 </div>
-                
+
                 <form id="loginForm">
                     <div class="form-group">
                         <label for="designerName">디자이너명</label>
                         <input type="text" id="designerName" placeholder="이름을 입력하세요" required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="phoneNumber">전화번호</label>
                         <input type="tel" id="phoneNumber" placeholder="010-0000-0000" maxlength="13" required>
                         <small class="input-hint">하이픈(-) 자동 입력</small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="password">비밀번호 (4자리)</label>
                         <div class="password-input-container">
@@ -118,38 +128,38 @@
                             <button type="button" class="password-toggle" id="passwordToggle" onclick="togglePasswordVisibility()" title="비밀번호 보기/숨기기">👁️</button>
                         </div>
                     </div>
-                    
+
                     <!-- 로그인 시도 경고 메시지 -->
                     <div class="login-attempts-warning" id="loginAttemptsWarning" style="display: none;">
                         <p class="attempts-text"></p>
                     </div>
-                    
+
                     <button type="submit" class="login-btn" id="loginBtn">로그인</button>
                 </form>
-                
+
                 <!-- 패스워드 찾기 도움말 -->
                 <div class="login-help-section">
                     <div class="help-divider">
                         <span>도움이 필요하신가요?</span>
                     </div>
-                    
+
                     <div class="help-options">
                         <button type="button" class="help-btn self-password-check" onclick="showSelfPasswordCheckModal()">
                             <span class="help-icon">🔍</span>
                             <span>내 패스워드 확인</span>
                         </button>
-                        
+
                         <button type="button" class="help-btn password-recovery" onclick="showPasswordRecoveryModal()">
                             <span class="help-icon">🔑</span>
                             <span>관리자 승인</span>
                         </button>
-                        
+
                         <button type="button" class="help-btn account-check" onclick="showAccountCheckModal()">
                             <span class="help-icon">👤</span>
                             <span>계정 확인</span>
                         </button>
                     </div>
-                    
+
                     <p class="login-help">
                         처음 사용하시나요? <a href="#contact-admin" onclick="showContactAdmin()">관리자에게 계정을 요청하세요</a>
                     </p>
@@ -187,7 +197,7 @@
             <div class="sub-tabs" id="subTabs">
                 <!-- 동적 생성 -->
             </div>
-            
+
             <!-- 스타일 컨테이너 -->
             <div class="styles-container">
                 <div class="styles-grid" id="stylesGrid">
@@ -200,13 +210,13 @@
         <div class="style-modal" id="styleModal">
             <div class="style-modal-content">
                 <button class="style-modal-close" id="styleModalClose">×</button>
-                
+
                 <img class="style-modal-image" id="styleModalImage" alt="Style Image">
-                
+
                 <div class="style-modal-info">
                     <div class="style-modal-code" id="styleModalCode">CODE</div>
                     <div class="style-modal-name" id="styleModalName">Style Name</div>
-                    
+
                     <div class="style-modal-details">
                         <div class="style-detail-row">
                             <span class="style-detail-label">카테고리</span>
@@ -221,7 +231,7 @@
                             <span class="style-detail-value" id="styleModalGender">-</span>
                         </div>
                     </div>
-                    
+
                     <div class="style-modal-actions">
                         <button class="modal-action-btn secondary" onclick="closeStyleModal()">닫기</button>
                         <button class="modal-action-btn">선택하기</button>
@@ -298,10 +308,10 @@
         function toggleTheme() {
             document.body.classList.toggle('light-theme');
             const isLight = document.body.classList.contains('light-theme');
-            
+
             localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
             updateThemeButton(isLight);
-            
+
             console.log(`테마 변경: ${isLight ? 'light' : 'dark'}`);
         }
 
@@ -367,7 +377,7 @@
                     if (snapshot.empty) {
     // 계정이 없으면 자동 회원가입
     console.log('신규 사용자 자동 가입 처리:', name);
-    
+
     const newUserData = {
         name: name,
         phone: phone,
@@ -376,16 +386,16 @@
         createdAt: new Date(),
         isNewUser: true
     };
-    
+
     const newUserDoc = await db.collection(this.designerCollectionName).add(newUserData);
-    
+
     // 새로 생성된 계정으로 로그인 처리 계속
     const designerData = newUserData;
     const designerDoc = { id: newUserDoc.id, data: () => designerData };
-    
+
     // 기존 로그인 로직과 동일하게 처리
     await this.checkExistingSessions(newUserDoc.id);
-    
+
     const sessionId = this.generateSessionId();
     const sessionData = {
         designerId: newUserDoc.id,
@@ -534,7 +544,7 @@
                     currentSessionId = null;
 
                     console.log('✅ 로그아웃 완료');
-                    
+
                 } catch (error) {
                     console.error('❌ 로그아웃 오류:', error);
                 } finally {
@@ -570,7 +580,7 @@
         function showToast(message, type = 'info') {
             toast.textContent = message;
             toast.className = `toast ${type} show`;
-            
+
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
@@ -596,6 +606,7 @@
         function updateUserInfo() {
             const userInfo = document.getElementById('userInfo');
             const guestMessage = document.getElementById('guestMessage');
+            const personalColorSection = document.getElementById('personalColorSection');
             const designerName = document.getElementById('designerNameDisplay');
             const designerPhone = document.getElementById('designerPhoneDisplay');
             const sessionStatus = document.getElementById('sessionStatusDisplay');
@@ -603,16 +614,17 @@
             if (currentDesigner) {
                 userInfo.style.display = 'block';
                 guestMessage.style.display = 'none';
-                
+                personalColorSection.style.display = 'block'; // 퍼스널컬러 버튼 표시
+
                 designerName.textContent = `이름: ${currentDesigner.name}`;
                 designerPhone.textContent = `전화: ${currentDesigner.phone}`;
                 sessionStatus.textContent = `토큰: ${currentDesigner.tokens || 0}개`;
             } else {
                 userInfo.style.display = 'none';
                 guestMessage.style.display = 'block';
+                personalColorSection.style.display = 'none'; // 퍼스널컬러 버튼 숨김
             }
         }
-
         function formatPhoneNumber(phone) {
             const numbers = phone.replace(/[^\d]/g, '');
             if (numbers.length !== 11) {
@@ -625,7 +637,7 @@
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('password');
             const toggleBtn = document.getElementById('passwordToggle');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleBtn.textContent = '🙈';
@@ -646,10 +658,10 @@
                     const cursorPos = input.selectionStart;
                     const oldValue = input.value;
                     const oldLength = oldValue.length;
-                    
+
                     const formatted = formatPhoneNumber(input.value);
                     input.value = formatted;
-                    
+
                     const newLength = formatted.length;
                     const diff = newLength - oldLength;
                     input.setSelectionRange(cursorPos + diff, cursorPos + diff);
@@ -669,10 +681,10 @@
 
             try {
                 const isLocked = window.HAIRGATOR_PASSWORD_RECOVERY.isAccountLocked(name, phone);
-                
+
                 if (isLocked) {
                     const remainingTime = window.HAIRGATOR_PASSWORD_RECOVERY.getRemainingLockTime(name, phone);
-                    
+
                     if (remainingTime > 0) {
                         const minutes = Math.ceil(remainingTime / 1000 / 60);
                         lockoutWarning.style.display = 'block';
@@ -699,14 +711,14 @@
             if (loginForm) {
                 loginForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
-                    
+
                     const name = document.getElementById('designerName').value.trim();
                     let phone = document.getElementById('phoneNumber').value.trim();
                     const password = document.getElementById('password').value.trim();
                     const loginBtn = document.getElementById('loginBtn');
-                    
+
                     phone = formatPhoneNumber(phone);
-                    
+
                     if (!name || !phone || password.length !== 4) {
                         showToast('모든 정보를 정확히 입력해주세요', 'error');
                         return;
@@ -717,35 +729,35 @@
                         showToast('전화번호는 11자리 숫자로 입력해주세요', 'error');
                         return;
                     }
-                    
+
                     loginBtn.disabled = true;
                     loginBtn.textContent = '로그인 중...';
                     showLoading(true);
 
                     try {
                         await firebaseAuth.login(name, phone, password);
-                        
+
                         loginScreen.style.display = 'none';
                         genderSelection.style.display = 'flex';
                         backBtn.style.display = 'flex';
-                        
+
                         updateUserInfo();
                         if (currentDesigner.isNewUser) {
     showToast(`가입을 환영합니다, ${currentDesigner.name}님! 🎉`, 'success');
 } else {
     showToast(`환영합니다, ${currentDesigner.name}님!`, 'success');
 }
-                        
+
                     } catch (error) {
                         showToast(error.message, 'error');
-                        
+
                         // 입력 필드 에러 표시
                         const passwordInput = document.getElementById('password');
                         passwordInput.classList.add('error');
                         setTimeout(() => {
                             passwordInput.classList.remove('error');
                         }, 3000);
-                        
+
                     } finally {
                         loginBtn.disabled = false;
                         loginBtn.textContent = '로그인';
@@ -767,10 +779,10 @@
         // 성별 선택
         function selectGender(gender) {
             currentGender = gender;
-            
+
             genderSelection.style.display = 'none';
             menuContainer.classList.add('active');
-            
+
             if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.loadMenuForGender) {
                 console.log(`🎯 새로운 메뉴 시스템 사용: ${gender}`);
                 window.HAIRGATOR_MENU.loadMenuForGender(gender);
@@ -817,23 +829,57 @@
 계정 문제나 패스워드 재설정에 대해 문의해주세요.`);
             }
         }
+// ========== 퍼스널컬러 모달 기능 ==========
+
+        function openPersonalColorModal() {
+            console.log('🎨 퍼스널컬러 모달 열기');
+
+            const modal = document.getElementById('personalColorModal');
+            if (!modal) {
+                console.error('퍼스널컬러 모달을 찾을 수 없습니다');
+                return;
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // 사이드바 닫기
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
+
+        function closePersonalColorModal() {
+            console.log('🎨 퍼스널컬러 모달 닫기');
+
+            const modal = document.getElementById('personalColorModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
 
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🦎 HAIRGATOR 시작 - 셀프 패스워드 확인 통합 버전');
-            
+
             loadTheme();
             setupPhoneFormatting();
             setupLoginForm();
             setupModalHandlers();
-            
+
             loginScreen.style.display = 'flex';
             updateUserInfo();
 
             // 입력 필드 변경시 상태 확인
             const nameInput = document.getElementById('designerName');
             const phoneInput = document.getElementById('phoneNumber');
-            
+
             if (nameInput && phoneInput) {
                 [nameInput, phoneInput].forEach(input => {
                     input.addEventListener('blur', checkLoginStatus);
@@ -845,7 +891,7 @@
         function setupModalHandlers() {
             const styleModalClose = document.getElementById('styleModalClose');
             const styleModal = document.getElementById('styleModal');
-            
+
             if (styleModalClose) {
                 styleModalClose.addEventListener('click', function() {
                     if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.closeStyleModal) {
@@ -853,7 +899,7 @@
                     }
                 });
             }
-            
+
             if (styleModal) {
                 styleModal.addEventListener('click', function(e) {
                     if (e.target === styleModal) {
@@ -863,7 +909,7 @@
                     }
                 });
             }
-            
+
             // ESC 키로 모달 닫기
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
@@ -872,6 +918,13 @@
                             window.HAIRGATOR_MENU.closeStyleModal();
                         }
                     }
+
+                    // 퍼스널컬러 모달 닫기 추가
+                    const personalColorModal = document.getElementById('personalColorModal');
+                    if (personalColorModal && personalColorModal.classList.contains('active')) {
+                        closePersonalColorModal();
+                    }
+
                     // 패스워드 모달들도 닫기
                     if (window.HAIRGATOR_PASSWORD_RECOVERY) {
                         window.HAIRGATOR_PASSWORD_RECOVERY.closeAllModals();
@@ -884,7 +937,7 @@
         document.addEventListener('click', function(e) {
             const sidebar = document.getElementById('sidebar');
             const menuBtn = document.getElementById('menuBtn');
-            
+
             if (sidebar.classList.contains('active') && 
                 !sidebar.contains(e.target) && 
                 !menuBtn.contains(e.target)) {
@@ -1143,7 +1196,7 @@
                 grid-template-columns: 1fr;
                 gap: 8px;
             }
-            
+
             .help-btn {
                 padding: 15px;
                 font-size: 14px;
@@ -1153,9 +1206,24 @@
                 grid-column: auto; /* 모바일에서는 일반 크기 */
             }
         }
-    </style>
+  </style>
+
+    <!-- 퍼스널컬러 모달 - 완전한 전체화면 -->
+<div id="personalColorModal" class="personal-color-modal">
+    <button class="personal-color-close-btn" onclick="closePersonalColorModal()">×</button>
+    <iframe 
+        id="personalColorFrame" 
+        src="personal-color/index.html" 
+        frameborder="0">
+    </iframe>
+    id="personalColorFrame" 
+    src="personal-color/index.html" 
+    frameborder="0"
+    allow="camera; microphone; autoplay">
+</iframe>
+</div>
+    </div>
+
 </body>
 </html>
-
-
-
+</html>
