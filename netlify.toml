@@ -1,5 +1,4 @@
 # netlify.toml - Netlify 배포 설정
-
 [build]
   publish = "/"
 
@@ -11,11 +10,19 @@
   conditions = {Role = ["admin", "user"]}
   force = false
 
-# 보안 헤더
+# 퍼스널컬러 경로 - iframe 허용
+[[headers]]
+  for = "/personal-color/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+
+# 보안 헤더 (DENY → SAMEORIGIN으로 변경)
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
+    X-Frame-Options = "SAMEORIGIN"
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "no-referrer-when-downgrade"
