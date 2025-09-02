@@ -9,7 +9,7 @@
     <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
     <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-    <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
+    <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
     
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -517,64 +517,185 @@
         // AI 분석 모드 함수들
         // ==========================================
 
-        async function startAICamera() {
-            try {
-                showToast('AI 카메라를 시작합니다...', 'info');
-                
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user', width: 640, height: 480 }
-                });
+        function onAdvancedFaceResults(results) {
+    if (!canvasCtx || !videoElement) return;
+    
+    // 캔버스 크기 설정
+    canvasElement.width = videoElement.videoWidth || 640;
+    canvasElement.height = videoElement.videoHeight || 480;
+    
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    
+    if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+        const landmarks = results.multiFaceLandmarks[0];
+        
+        // 얼굴 윤곽선 그리기
+        drawFaceContour(canvasCtx, landmarks);
+        
+        // 피부톤 추출 포인트 표시
+        drawSkinTonePoints(canvasCtx, landmarks);
+        
+        // 실시간 피부톤 분석
+        const skinToneData = extractSkinTone(landmarks);
+        displaySkinToneAnalysis(skinToneData);
+        
+        if (!faceDetected) {
+            faceDetected = true;
+            document.getElementById('ai-face-guide').style.display = 'none';
+            showToast('고급 얼굴 랜드마크 인식됨!', 'success');
+        }
+    } else {
+        if (faceDetected) {
+            faceDetected = false;
+            document.getElementById('ai-face-guide').style.display = 'flex';
+            clearSkinToneDisplay();
+        }
+    }
+}
 
-                videoElement = document.getElementById('ai-camera');
-                videoElement.srcObject = stream;
+// 새로 추가할 함수들
+function drawFaceContour(ctx, landmarks) {
+    // 얼굴 윤곽선 포인트들 (MediaPipe Face Mesh 기준)
+    const faceContour = [10, 151, 9, 8, 168, 6, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109, 10];
+    
+    ctx.strokeStyle = '#00FF88';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    for (let i = 0; i < faceContour.length; i++) {
+        const point = landmarks[faceContour[i]];
+        const x = point.x * canvasElement.width;
+        const y = point.y * canvasElement.height;
+        
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+}
+
+function drawSkinTonePoints(ctx, landmarks) {
+    // 피부톤 추출 최적 포인트들
+    const skinPoints = [
+        { index: 9, name: '이마', color: '#FF6B6B' },      // 이마 중앙
+        { index: 151, name: '코', color: '#4ECDC4' },      // 코끝
+        { index: 234, name: '왼쪽 볼', color: '#45B7D1' }, // 왼쪽 볼
+        { index: 454, name: '오른쪽 볼', color: '#96CEB4' },// 오른쪽 볼
+        { index: 152, name: '턱', color: '#FECA57' },      // 턱 중앙
+        { index: 10, name: '이마상단', color: '#FF9FF3' },  // 이마 상단
+        { index: 175, name: '입술아래', color: '#54A0FF' }  // 입술 아래
+    ];
+    
+    skinPoints.forEach(point => {
+        const landmark = landmarks[point.index];
+        const x = landmark.x * canvasElement.width;
+        const y = landmark.y * canvasElement.height;
+        
+        // 샘플링 영역 표시 (5x5 픽셀)
+        ctx.fillStyle = point.color;
+        ctx.fillRect(x - 2, y - 2, 5, 5);
+        
+        // 포인트 이름 표시
+        ctx.fillStyle = 'white';
+        ctx.font = '10px Arial';
+        ctx.fillText(point.name, x + 8, y - 5);
+    });
+}
+
+function extractSkinTone(landmarks) {
+    // 실제 픽셀 데이터에서 피부톤 추출
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = videoElement.videoWidth;
+    canvas.height = videoElement.videoHeight;
+    
+    ctx.drawImage(videoElement, 0, 0);
+    
+    const skinPoints = [9, 151, 234, 454, 152, 10, 175];
+    let totalR = 0, totalG = 0, totalB = 0;
+    let validSamples = 0;
+    
+    skinPoints.forEach(pointIndex => {
+        const landmark = landmarks[pointIndex];
+        const x = Math.floor(landmark.x * canvas.width);
+        const y = Math.floor(landmark.y * canvas.height);
+        
+        // 5x5 영역의 평균 색상 계산
+        for (let dx = -2; dx <= 2; dx++) {
+            for (let dy = -2; dy <= 2; dy++) {
+                const pixelX = Math.max(0, Math.min(canvas.width - 1, x + dx));
+                const pixelY = Math.max(0, Math.min(canvas.height - 1, y + dy));
                 
-                canvasElement = document.getElementById('ai-face-overlay');
-                canvasCtx = canvasElement.getContext('2d');
+                const imageData = ctx.getImageData(pixelX, pixelY, 1, 1);
+                const [r, g, b] = imageData.data;
                 
-                // MediaPipe 실제 초기화 (필요시에만)
-                if (typeof FaceDetection !== 'undefined' && !faceDetection) {
-                    try {
-                        faceDetection = new FaceDetection({
-                            locateFile: (file) => {
-                                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`;
-                            }
-                        });
-                        
-                        faceDetection.setOptions({
-                            model: 'short',
-                            minDetectionConfidence: 0.5,
-                        });
-                        
-                        faceDetection.onResults(onAIFaceDetectionResults);
-                        
-                        if (typeof Camera !== 'undefined') {
-                            camera = new Camera(videoElement, {
-                                onFrame: async () => {
-                                    if (faceDetection && videoElement.readyState === 4) {
-                                        await faceDetection.send({ image: videoElement });
-                                    }
-                                },
-                                width: 640,
-                                height: 480
-                            });
-                            camera.start();
-                        }
-                        
-                        console.log('MediaPipe AI 시스템 활성화됨');
-                        showToast('AI 얼굴 인식이 활성화되었습니다', 'success');
-                    } catch (error) {
-                        console.warn('MediaPipe 초기화 실패, 기본 모드로 동작:', error);
-                        showToast('기본 카메라 모드로 시작합니다', 'warning');
-                    }
-                }
-                
-                document.getElementById('ai-face-guide').style.display = 'flex';
-                
-            } catch (error) {
-                console.error('카메라 시작 실패:', error);
-                showToast('카메라에 접근할 수 없습니다', 'error');
+                totalR += r;
+                totalG += g;
+                totalB += b;
+                validSamples++;
             }
         }
+    });
+    
+    if (validSamples === 0) return null;
+    
+    const avgR = Math.round(totalR / validSamples);
+    const avgG = Math.round(totalG / validSamples);
+    const avgB = Math.round(totalB / validSamples);
+    
+    // 언더톤 분석
+    const undertone = analyzeUndertone(avgR, avgG, avgB);
+    
+    return {
+        rgb: { r: avgR, g: avgG, b: avgB },
+        hex: `#${avgR.toString(16).padStart(2, '0')}${avgG.toString(16).padStart(2, '0')}${avgB.toString(16).padStart(2, '0')}`,
+        undertone: undertone,
+        samples: validSamples
+    };
+}
+
+function analyzeUndertone(r, g, b) {
+    const yellowness = (r + g) - b;
+    const pinkness = (r + b) - g;
+    
+    if (yellowness > pinkness + 20) return 'Warm (웜톤)';
+    else if (pinkness > yellowness + 20) return 'Cool (쿨톤)';
+    else return 'Neutral (뉴트럴)';
+}
+
+function displaySkinToneAnalysis(skinToneData) {
+    if (!skinToneData) return;
+    
+    // 실시간 피부톤 데이터 표시
+    let analysisPanel = document.getElementById('realtime-skin-analysis');
+    if (!analysisPanel) {
+        analysisPanel = document.createElement('div');
+        analysisPanel.id = 'realtime-skin-analysis';
+        analysisPanel.style.cssText = `
+            position: absolute; top: 10px; right: 10px; 
+            background: rgba(0,0,0,0.8); color: white; 
+            padding: 1rem; border-radius: 8px; 
+            font-size: 0.8rem; max-width: 200px;
+        `;
+        document.querySelector('.analysis-panel').appendChild(analysisPanel);
+    }
+    
+    analysisPanel.innerHTML = `
+        <h5>실시간 피부톤 분석</h5>
+        <div style="display: flex; align-items: center; margin: 0.5rem 0;">
+            <div style="width: 20px; height: 20px; background: ${skinToneData.hex}; border-radius: 50%; margin-right: 0.5rem;"></div>
+            <span>${skinToneData.hex}</span>
+        </div>
+        <div>RGB: ${skinToneData.rgb.r}, ${skinToneData.rgb.g}, ${skinToneData.rgb.b}</div>
+        <div>언더톤: ${skinToneData.undertone}</div>
+        <div>샘플: ${skinToneData.samples}개 포인트</div>
+    `;
+}
+
+function clearSkinToneDisplay() {
+    const panel = document.getElementById('realtime-skin-analysis');
+    if (panel) panel.remove();
+}
 
         function stopAICamera() {
             if (videoElement && videoElement.srcObject) {
