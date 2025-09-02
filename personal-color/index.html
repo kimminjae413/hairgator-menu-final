@@ -379,20 +379,69 @@
 
         async function loadHairColorData() {
             try {
-                // 부모창 데이터 확인
+                // 1순위: 부모창의 HAIR_COLOR_614_DATA 확인
+                if (parent && parent.HAIR_COLOR_614_DATA) {
+                    hairColorData = parent.HAIR_COLOR_614_DATA;
+                    console.log(`✅ 부모창에서 614개 헤어컬러 데이터 로드 완료`);
+                    updateDataStatus(`614개 프리미엄 헤어컬러 데이터 로드됨`, 'success');
+                    return;
+                }
+                
+                // 2순위: 별도 스크립트에서 로드 시도
+                if (typeof HAIR_COLOR_614_DATA !== 'undefined') {
+                    hairColorData = HAIR_COLOR_614_DATA;
+                    console.log(`✅ 글로벌 변수에서 614개 데이터 로드`);
+                    updateDataStatus(`614개 헤어컬러 데이터 로드됨`, 'success');
+                    return;
+                }
+                
+                // 3순위: 기존 호환성 데이터 확인
                 if (parent && parent.hairColorDatabase) {
                     hairColorData = parent.hairColorDatabase;
-                    console.log(`부모창에서 ${hairColorData.length}개 헤어컬러 데이터 로드`);
-                } else if (parent && parent.HAIRGATOR_614_DATA) {
-                    hairColorData = parent.HAIRGATOR_614_DATA;
-                    console.log(`HAIRGATOR 614 데이터 로드: ${hairColorData.length}개`);
-                } else {
-                    // 기본 데이터 생성
-                    hairColorData = generateDefaultHairColors();
-                    console.warn('기본 헤어컬러 데이터 사용');
+                    console.log(`부모창 데이터베이스에서 ${hairColorData.length}개 로드`);
+                    updateDataStatus(`${hairColorData.length}개 헤어컬러 데이터 로드됨`, 'success');
+                    return;
                 }
+                
+                // 4순위: 외부 스크립트 로드 시도
+                await loadExternalHairColorData();
+                
             } catch (error) {
                 console.error('헤어컬러 데이터 로드 실패:', error);
+                hairColorData = generateDefaultHairColors();
+                updateDataStatus('기본 데이터로 대체됨', 'warning');
+            }
+        }
+
+        async function loadExternalHairColorData() {
+            try {
+                // hair-color-data.js 스크립트 동적 로드 시도
+                const script = document.createElement('script');
+                script.src = 'hair-color-data.js';
+                script.onload = () => {
+                    if (typeof HAIR_COLOR_614_DATA !== 'undefined') {
+                        hairColorData = HAIR_COLOR_614_DATA;
+                        console.log(`✅ 외부 스크립트에서 614개 데이터 로드`);
+                        updateDataStatus(`614개 프리미엄 헤어컬러 데이터 로드됨`, 'success');
+                    }
+                };
+                script.onerror = () => {
+                    console.warn('외부 헤어컬러 데이터 스크립트 로드 실패');
+                    hairColorData = generateDefaultHairColors();
+                    updateDataStatus('기본 데이터 사용', 'warning');
+                };
+                
+                document.head.appendChild(script);
+                
+                // 3초 대기 후 확인
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                if (hairColorData.length === 0) {
+                    hairColorData = generateDefaultHairColors();
+                }
+                
+            } catch (error) {
+                console.error('외부 데이터 로드 오류:', error);
                 hairColorData = generateDefaultHairColors();
             }
         }
@@ -753,25 +802,61 @@
 
         function updateColorGrid(season) {
             const colorGrid = document.getElementById('color-grid');
-            const colors = SeasonPalettes[season].colors;
+            
+            // 선택된 시즌에 맞는 실제 헤어컬러 데이터에서 색상 추출
+            const seasonColors = hairColorData.filter(item => 
+                item.season && item.season.toLowerCase() === season.toLowerCase()
+            );
             
             colorGrid.innerHTML = '';
             
-            colors.forEach(color => {
+            if (seasonColors.length === 0) {
+                // 데이터가 없으면 기본 팔레트 사용
+                const defaultColors = SeasonPalettes[season].colors;
+                defaultColors.forEach(color => {
+                    const colorItem = document.createElement('div');
+                    colorItem.className = 'color-item';
+                    colorItem.style.background = color;
+                    colorItem.onclick = () => selectColor(color);
+                    colorGrid.appendChild(colorItem);
+                });
+                return;
+            }
+            
+            // 실제 헤어컬러 데이터에서 대표 색상 선택 (최대 12개)
+            const representativeColors = seasonColors
+                .sort((a, b) => (b.confidence || 0.8) - (a.confidence || 0.8)) // 신뢰도순 정렬
+                .slice(0, 12) // 상위 12개만
+                .map(item => ({
+                    hex: item.hex,
+                    name: item.name,
+                    brand: item.brand,
+                    code: item.code
+                }));
+            
+            representativeColors.forEach(colorData => {
                 const colorItem = document.createElement('div');
                 colorItem.className = 'color-item';
-                colorItem.style.cssText = `
-                    width: 50px; height: 50px; background: ${color}; 
-                    border-radius: 50%; cursor: pointer; margin: 5px;
-                    border: 3px solid transparent; transition: all 0.3s;
-                `;
-                
-                colorItem.onclick = () => selectColor(color);
+                colorItem.style.background = colorData.hex;
+                colorItem.title = `${colorData.brand} ${colorData.code} - ${colorData.name}`;
+                colorItem.onclick = () => selectColor(colorData.hex, colorData);
                 colorGrid.appendChild(colorItem);
             });
+            
+            // 그리드에 추가 정보 표시
+            const infoDiv = document.createElement('div');
+            infoDiv.style.cssText = `
+                grid-column: 1 / -1; text-align: center; padding: 1rem; 
+                background: var(--bg-light); border-radius: var(--border-radius);
+                font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;
+            `;
+            infoDiv.innerHTML = `
+                <strong>${season}</strong> 시즌: ${seasonColors.length}개 헤어컬러 중 상위 ${representativeColors.length}개 표시
+            `;
+            colorGrid.appendChild(infoDiv);
         }
 
-        function selectColor(color) {
+        function selectColor(color, colorData = null) {
             selectedColor = color;
             
             // 선택 표시 업데이트
@@ -783,7 +868,51 @@
             // 드래이핑 오버레이 적용
             applyDrapingColor(color);
             
-            showToast(`색상 ${color}를 선택했습니다`, 'info');
+            let toastMessage = `색상 ${color}를 선택했습니다`;
+            
+            // 실제 헤어컬러 데이터가 있으면 더 자세한 정보 표시
+            if (colorData) {
+                toastMessage = `${colorData.brand} ${colorData.code} - ${colorData.name} 선택됨`;
+                
+                // 선택된 색상 정보를 화면에 표시
+                updateSelectedColorInfo(colorData);
+            }
+            
+            showToast(toastMessage, 'info');
+        }
+
+        function updateSelectedColorInfo(colorData) {
+            // 선택된 색상 정보 패널이 있으면 업데이트
+            let infoPanel = document.getElementById('selected-color-info');
+            
+            if (!infoPanel) {
+                // 정보 패널이 없으면 생성
+                infoPanel = document.createElement('div');
+                infoPanel.id = 'selected-color-info';
+                infoPanel.style.cssText = `
+                    margin-top: 1rem; padding: 1rem; 
+                    background: var(--light-pink); 
+                    border-radius: var(--border-radius);
+                    border: 2px solid var(--primary-pink);
+                `;
+                
+                const adjustments = document.querySelector('.color-adjustments');
+                if (adjustments) {
+                    adjustments.parentNode.insertBefore(infoPanel, adjustments);
+                }
+            }
+            
+            infoPanel.innerHTML = `
+                <h5 style="color: var(--primary-pink); margin-bottom: 0.5rem;">선택된 헤어컬러</h5>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 40px; height: 40px; background: ${colorData.hex}; border-radius: 50%; border: 2px solid white; box-shadow: var(--shadow);"></div>
+                    <div>
+                        <div style="font-weight: 600; margin-bottom: 0.2rem;">${colorData.brand} ${colorData.code}</div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary);">${colorData.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">HEX: ${colorData.hex}</div>
+                    </div>
+                </div>
+            `;
         }
 
         function applyDrapingColor(color) {
