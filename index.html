@@ -750,7 +750,7 @@
         });
     </script>
 
-    <!-- 퍼스널컬러 모달 CSS (중복 제거 및 최적화) -->
+    <!-- 퍼스널컬러 모달 CSS -->
     <style>
         /* 퍼스널컬러 모달 - HAIRGATOR 테마 통일 */
         .personal-color-modal {
@@ -788,8 +788,8 @@
             width: 95%;
             height: 95%;
             max-width: 1400px;
-            background: var(--background);
-            border-radius: var(--border-radius);
+            background: var(--primary-dark);
+            border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
             transform: scale(0.9);
@@ -863,7 +863,7 @@
         }
 
         .menu-item:hover {
-            background: var(--hover-background);
+            background: rgba(233, 30, 99, 0.1);
             color: var(--female-color);
         }
 
@@ -938,20 +938,13 @@
                 font-size: 0.75rem;
             }
         }
-  <!-- HAIRGATOR 퍼스널컬러 관련 스크립트 (순서 중요!) -->
+    </style>
+
+    <!-- HAIRGATOR 퍼스널컬러 관련 스크립트 (순서 중요!) -->
     <script src="personal-color/hair-color-data.js"></script>
     <script src="js/personal-color.js"></script>
     <script src="js/menu.js"></script>
     <script src="js/face-swap-backend.js"></script>
     
-    <!-- 퍼스널컬러 모달 CSS 부분은 그대로 두세요 -->
-    <style>
-        /* 퍼스널컬러 모달 - HAIRGATOR 테마 통일 */
-        .personal-color-modal {
-            /* ... 기존 CSS 그대로 ... */
-        }
-    </style>
 </body>
 </html>
-
-
