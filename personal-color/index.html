@@ -597,10 +597,10 @@
     if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
         const landmarks = results.multiFaceLandmarks[0];
         
-        // 얼굴 윤곽선 그리기
-        drawFaceContour(canvasCtx, landmarks);
+        // 전체 468개 랜드마크 메시 그리기
+        drawFullFaceMesh(canvasCtx, landmarks);
         
-        // 피부톤 추출 포인트 표시
+        // 피부톤 추출 포인트만 특별 표시
         drawSkinTonePoints(canvasCtx, landmarks);
         
         // 실시간 피부톤 분석
@@ -610,7 +610,7 @@
         if (!faceDetected) {
             faceDetected = true;
             document.getElementById('ai-face-guide').style.display = 'none';
-            showToast('고급 얼굴 랜드마크 인식됨!', 'success');
+            showToast('고급 468포인트 Face Mesh 인식 완료!', 'success');
         }
     } else {
         if (faceDetected) {
@@ -620,33 +620,72 @@
         }
     }
 }
-
-// 새로 추가할 함수들
-function drawFaceContour(ctx, landmarks) {
-    // 더 정교한 얼굴 윤곽선 (3단계 레이어)
+function drawFullFaceMesh(ctx, landmarks) {
+    // MediaPipe Face Mesh 연결선 정의 (주요 연결만)
+    const FACE_CONNECTIONS = [
+        // 얼굴 윤곽선
+        [10, 338], [338, 297], [297, 332], [332, 284], [284, 251], [251, 389], [389, 356], [356, 454], [454, 323], [323, 361], [361, 288], [288, 397], [397, 365], [365, 379], [379, 378], [378, 400], [400, 377], [377, 152], [152, 148], [148, 176], [176, 149], [149, 150], [150, 136], [136, 172], [172, 58], [58, 132], [132, 93], [93, 234], [234, 127], [127, 162], [162, 21], [21, 54], [54, 103], [103, 67], [67, 109], [109, 10],
+        
+        // 왼쪽 눈
+        [33, 7], [7, 163], [163, 144], [144, 145], [145, 153], [153, 154], [154, 155], [155, 133], [133, 173], [173, 157], [157, 158], [158, 159], [159, 160], [160, 161], [161, 246], [246, 33],
+        
+        // 오른쪽 눈
+        [362, 382], [382, 381], [381, 380], [380, 374], [374, 373], [373, 390], [390, 249], [249, 263], [263, 466], [466, 388], [388, 387], [387, 386], [386, 385], [385, 384], [384, 398], [398, 362],
+        
+        // 입술 외곽
+        [61, 84], [84, 17], [17, 314], [314, 405], [405, 320], [320, 307], [307, 375], [375, 321], [321, 308], [308, 324], [324, 318], [318, 402], [402, 317], [317, 14], [14, 87], [87, 178], [178, 88], [88, 95], [95, 61],
+        
+        // 코
+        [1, 2], [2, 5], [5, 4], [4, 6], [6, 168], [168, 8], [8, 9], [9, 10], [19, 94], [94, 125], [125, 141], [141, 235], [235, 31], [31, 228], [228, 229], [229, 230], [230, 231], [231, 232], [232, 233], [233, 244], [244, 245], [245, 122], [122, 6]
+    ];
     
-    // 1단계: 외곽 윤곽선
+    // 1. 모든 랜드마크 포인트 그리기
+    ctx.fillStyle = '#00FF88';
+    landmarks.forEach((landmark, index) => {
+        const x = landmark.x * canvasElement.width;
+        const y = landmark.y * canvasElement.height;
+        
+        ctx.beginPath();
+        ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
+        ctx.fill();
+    });
+    
+    // 2. 연결선 그리기
+    ctx.strokeStyle = '#00FF8860'; // 투명도 적용
+    ctx.lineWidth = 0.8;
+    
+    FACE_CONNECTIONS.forEach(connection => {
+        const [startIdx, endIdx] = connection;
+        
+        if (landmarks[startIdx] && landmarks[endIdx]) {
+            const start = landmarks[startIdx];
+            const end = landmarks[endIdx];
+            
+            const startX = start.x * canvasElement.width;
+            const startY = start.y * canvasElement.height;
+            const endX = end.x * canvasElement.width;
+            const endY = end.y * canvasElement.height;
+            
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+        }
+    });
+}
+
+        }
+
+function drawFaceContour(ctx, landmarks) {
+    // MediaPipe 얼굴 윤곽선 그리기 (단순화 버전)
     const faceOuter = [
         10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288,
         397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136,
         172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109
     ];
     
-    // 2단계: 내부 가이드라인
-    const faceInner = [
-        10, 151, 9, 10
-    ]; // 이마-코-턱 중심선
-    
-    // 외곽선 그리기 (그라디언트 효과)
-    const gradient = ctx.createLinearGradient(0, 0, canvasElement.width, canvasElement.height);
-    gradient.addColorStop(0, '#00FF88');
-    gradient.addColorStop(0.5, '#00CC66');
-    gradient.addColorStop(1, '#009944');
-    
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = 3;
-    ctx.shadowColor = '#00FF88';
-    ctx.shadowBlur = 8;
+    ctx.strokeStyle = '#00FF88';
+    ctx.lineWidth = 2;
     ctx.beginPath();
     
     faceOuter.forEach((pointIndex, i) => {
@@ -662,31 +701,10 @@ function drawFaceContour(ctx, landmarks) {
     
     ctx.closePath();
     ctx.stroke();
-    
-    // 중심선 그리기
-    ctx.strokeStyle = '#00FFAA';
-    ctx.lineWidth = 1;
-    ctx.shadowBlur = 4;
-    ctx.setLineDash([5, 5]);
-    ctx.beginPath();
-    
-    faceInner.forEach((pointIndex, i) => {
-        if (landmarks[pointIndex]) {
-            const point = landmarks[pointIndex];
-            const x = point.x * canvasElement.width;
-            const y = point.y * canvasElement.height;
-            
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-    });
-    
-    ctx.stroke();
-    ctx.setLineDash([]); // 점선 해제
-    ctx.shadowBlur = 0; // 그림자 해제
 }
 
 function drawSkinTonePoints(ctx, landmarks) {
+    
     // 전문가급 피부톤 분석 포인트들
     const skinPoints = [
         { index: 10, name: '이마중앙', color: '#FF6B6B', zone: 'T-Zone' },
