@@ -640,14 +640,20 @@ function saveSavedColors() {
 // 실시간 카메라 기능
 // ==========================================
 
-// 카메라 시작
+// 카메라 시작 (iframe 권한 문제 해결)
 async function startCamera() {
+    const startBtn = document.getElementById('start-camera');
+    
     try {
-        const startBtn = document.getElementById('start-camera');
         startBtn.disabled = true;
         startBtn.textContent = 'MediaPipe 로딩 중...';
         
         showToast('카메라를 준비하고 있습니다...', 'info');
+        
+        // iframe 권한 확인
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('이 브라우저는 카메라를 지원하지 않습니다.');
+        }
         
         // MediaPipe 먼저 초기화 (카메라 시작할 때만)
         if (!faceDetection) {
@@ -655,14 +661,36 @@ async function startCamera() {
             await initializeMediaPipe();
         }
         
-        // 카메라 스트림 시작
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { 
-                width: 640, 
-                height: 480, 
-                facingMode: 'user' 
+        // iframe 내부에서 안전한 카메라 접근
+        let stream;
+        try {
+            // 기본 설정으로 시도
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { 
+                    width: { ideal: 640 }, 
+                    height: { ideal: 480 }, 
+                    facingMode: 'user' 
+                }
+            });
+        } catch (basicError) {
+            console.warn('기본 카메라 설정 실패, 최소 설정으로 재시도:', basicError);
+            
+            // 최소 설정으로 재시도
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: true
+                });
+            } catch (minimalError) {
+                console.error('최소 카메라 설정도 실패:', minimalError);
+                
+                // iframe 권한 문제인지 확인
+                if (minimalError.name === 'NotAllowedError') {
+                    throw new Error('iframe_permission_denied');
+                } else {
+                    throw minimalError;
+                }
             }
-        });
+        }
         
         videoElement = document.getElementById('camera-feed');
         canvasElement = document.getElementById('camera-canvas');
@@ -688,12 +716,81 @@ async function startCamera() {
         
     } catch (error) {
         console.error('❌ 카메라 시작 실패:', error);
-        showToast('카메라 접근에 실패했습니다. 권한을 확인해주세요.', 'error');
         
-        const startBtn = document.getElementById('start-camera');
+        let errorMessage = '카메라 접근에 실패했습니다.';
+        
+        if (error.message === 'iframe_permission_denied') {
+            errorMessage = `
+                🚨 iframe 카메라 권한 문제 발생!
+                
+                해결 방법:
+                1. 메인 index.html의 iframe에 allow="camera" 추가
+                2. netlify.toml에서 camera=() → camera=(self) 수정
+                3. 브라우저 새로고침 후 재시도
+                
+                현재는 사진 업로드 모드를 사용해주세요.
+            `;
+            
+            // 사진 업로드 모드로 자동 전환
+            setTimeout(() => {
+                showPhotoUploadAlternative();
+            }, 2000);
+            
+        } else if (error.name === 'NotAllowedError') {
+            errorMessage = '카메라 권한이 거부되었습니다. 브라우저 설정에서 카메라 접근을 허용해주세요.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage = '카메라를 찾을 수 없습니다. 카메라가 연결되어 있는지 확인해주세요.';
+        } else if (error.name === 'NotReadableError') {
+            errorMessage = '카메라가 다른 앱에서 사용 중입니다. 다른 앱을 종료하고 다시 시도해주세요.';
+        }
+        
+        showToast(errorMessage, 'error', 5000);
+        
         startBtn.disabled = false;
         startBtn.textContent = '📹 실시간 카메라 분석';
     }
+}
+
+// 사진 업로드 대안 표시
+function showPhotoUploadAlternative() {
+    const aiMode = document.getElementById('ai-mode');
+    if (aiMode) {
+        const alternativeDiv = document.createElement('div');
+        alternativeDiv.className = 'camera-alternative';
+        alternativeDiv.innerHTML = `
+            <div class="alternative-notice">
+                <h3>🔄 카메라 대신 사진 업로드 사용</h3>
+                <p>실시간 카메라 분석이 불가능한 상황입니다.<br>
+                아래 사진 업로드로 AI 퍼스널컬러 분석을 진행해주세요.</p>
+                <button class="highlight-upload-btn" onclick="highlightPhotoUpload()">
+                    📸 사진 업로드하러 가기
+                </button>
+            </div>
+        `;
+        
+        const cameraSection = aiMode.querySelector('.camera-section');
+        if (cameraSection) {
+            cameraSection.appendChild(alternativeDiv);
+        }
+    }
+}
+
+// 사진 업로드 섹션 강조
+function highlightPhotoUpload() {
+    const photoSection = document.getElementById('photo-upload-section');
+    if (photoSection) {
+        photoSection.scrollIntoView({ behavior: 'smooth' });
+        photoSection.style.border = '2px solid var(--primary-pink)';
+        photoSection.style.borderRadius = '10px';
+        photoSection.style.padding = '20px';
+        
+        setTimeout(() => {
+            photoSection.style.border = '';
+            photoSection.style.padding = '';
+        }, 3000);
+    }
+    
+    showToast('사진을 선택하여 AI 분석을 시작하세요!', 'info');
 }
 
 // 카메라 중지
