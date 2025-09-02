@@ -1016,49 +1016,76 @@
         // ==========================================
 
         function displayFinalResults(result) {
-            const resultsSection = document.getElementById('results-section');
-            const finalResults = document.getElementById('final-results');
-            
-            finalResults.innerHTML = `
-                <div class="result-header">
-                    <h3>${result.season}</h3>
-                    <div class="confidence">신뢰도: ${result.confidence}%</div>
-                </div>
-                <div class="result-colors">
-                    ${SeasonPalettes[result.season.toLowerCase().replace(' 웜톤', '').replace(' 쿨톤', '')].colors.map(color => 
-                        `<div class="result-color" style="background: ${color}; width: 50px; height: 50px; border-radius: 50%; display: inline-block; margin: 5px;"></div>`
-                    ).join('')}
-                </div>
-            `;
-            
-            // 제품 추천 표시
-            displayProductRecommendations(result.season);
-            
-            resultsSection.style.display = 'block';
-            resultsSection.scrollIntoView({ behavior: 'smooth' });
+    const resultsSection = document.getElementById('results-section');
+    const finalResults = document.getElementById('final-results');
+    
+    // 안전한 데이터 처리
+    let colors = [];
+    let season = '분석 중';
+    let confidence = 0;
+    
+    // result 객체와 그 속성들을 안전하게 확인
+    if (result && typeof result === 'object') {
+        season = result.season || '분석 중';
+        confidence = result.confidence || 0;
+        
+        // colors 배열 안전하게 처리
+        if (result.colors && Array.isArray(result.colors) && result.colors.length > 0) {
+            // 실제 헤어컬러 데이터가 있는 경우
+            colors = result.colors.map(colorItem => {
+                if (typeof colorItem === 'string') {
+                    return colorItem; // 이미 hex 색상인 경우
+                } else if (colorItem && colorItem.hex) {
+                    return colorItem.hex; // 객체에서 hex 추출
+                } else {
+                    return '#8B4513'; // 기본 갈색
+                }
+            });
+        } else if (season && season !== '분석 중') {
+            // colors가 없으면 계절별 기본 색상 사용
+            const seasonKey = season.toLowerCase()
+                .replace(' 웜톤', '')
+                .replace(' 쿨톤', '')
+                .replace('봄', 'spring')
+                .replace('여름', 'summer')
+                .replace('가을', 'autumn')
+                .replace('겨울', 'winter');
+                
+            colors = SeasonPalettes[seasonKey]?.colors || ['#8B4513', '#A0522D', '#CD853F'];
+        } else {
+            // 아무것도 없으면 기본 색상
+            colors = ['#8B4513', '#A0522D', '#CD853F'];
         }
-
-        function displayProductRecommendations(season) {
-            const brandSections = document.getElementById('brand-sections');
-            
-            // 시뮬레이션된 제품 추천
-            const recommendations = [
-                { brand: '로레알', products: ['내추럴 브라운', '골든 베이지', '소프트 애쉬'] },
-                { brand: '웰라', products: ['리치 브라운', '플래티넘 블론드', '다크 초콜릿'] },
-                { brand: '밀본', products: ['허니 베이지', '카라멜 브라운', '미스트 그레이'] }
-            ];
-            
-            brandSections.innerHTML = recommendations.map(brand => `
-                <div class="brand-section">
-                    <h5>${brand.brand}</h5>
-                    <div class="product-list">
-                        ${brand.products.map(product => `
-                            <div class="product-item">${product}</div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
-        }
+    } else {
+        // result가 없거나 잘못된 경우 기본값 사용
+        colors = ['#8B4513', '#A0522D', '#CD853F'];
+    }
+    
+    // HTML 생성 (이제 안전함)
+    finalResults.innerHTML = `
+        <div class="result-header">
+            <h3>${season}</h3>
+            <div class="confidence">신뢰도: ${confidence}%</div>
+        </div>
+        <div class="result-colors">
+            ${colors.slice(0, 8).map(color => 
+                `<div class="result-color" style="background: ${color}; width: 50px; height: 50px; border-radius: 50%; display: inline-block; margin: 5px;" title="${color}"></div>`
+            ).join('')}
+        </div>
+        <div class="result-description">
+            <p>${season}에 어울리는 ${colors.length}가지 색상을 표시합니다.</p>
+        </div>
+    `;
+    
+    // 제품 추천 표시 (안전하게)
+    if (season && season !== '분석 중') {
+        displayProductRecommendations(season);
+    }
+    
+    // 결과 섹션 표시
+    resultsSection.style.display = 'block';
+    resultsSection.scrollIntoView({ behavior: 'smooth' });
+}
 
         // ==========================================
         // 유틸리티 함수들
@@ -1139,7 +1166,57 @@
             stopAICamera();
             stopDrapingCamera();
         });
+function displayProductRecommendations(season) {
+    const brandSections = document.getElementById('brand-sections');
+    
+    if (!brandSections) {
+        console.warn('brand-sections 요소를 찾을 수 없습니다');
+        return;
+    }
+    
+    // 기본 추천 데이터
+    const defaultRecommendations = {
+        '봄 웜톤': [
+            { brand: '로레알', products: ['골든 베이지', '허니 블론드', '카라멜 브라운'] },
+            { brand: '웰라', products: ['라이트 골든', '웜 베이지', '소프트 브라운'] },
+            { brand: '밀본', products: ['허니 골드', '웜 초콜릿', '라이트 카라멜'] }
+        ],
+        '여름 쿨톤': [
+            { brand: '로레알', products: ['애쉬 블론드', '쿨 베이지', '플래티넘'] },
+            { brand: '웰라', products: ['실버 애쉬', '쿨 브라운', '아이시 블론드'] },
+            { brand: '밀본', products: ['미스트 그레이', '쿨 베이지', '소프트 애쉬'] }
+        ],
+        '가을 웜톤': [
+            { brand: '로레알', products: ['리치 브라운', '다크 초콜릿', '마호가니'] },
+            { brand: '웰라', products: ['딥 브라운', '체스트넛', '다크 카라멜'] },
+            { brand: '밀본', products: ['에스프레소', '다크 모카', '리치 허니'] }
+        ],
+        '겨울 쿨톤': [
+            { brand: '로레알', products: ['제트 블랙', '블루 블랙', '다크 애쉬'] },
+            { brand: '웰라', products: ['미드나잇 블랙', '쿨 다크', '플래티넘 실버'] },
+            { brand: '밀본', products: ['딥 블랙', '스틸 그레이', '아이스 블론드'] }
+        ]
+    };
+    
+    const recommendations = defaultRecommendations[season] || defaultRecommendations['봄 웜톤'];
+    
+    brandSections.innerHTML = recommendations.map(brand => `
+        <div class="brand-section" style="margin-bottom: 1.5rem; padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+            <h5 style="color: #E91E63; margin-bottom: 0.5rem;">${brand.brand}</h5>
+            <div class="product-list">
+                ${brand.products.map(product => `
+                    <div style="padding: 0.5rem; margin: 0.2rem 0; background: white; border-radius: 4px; border-left: 3px solid #E91E63;">
+                        ${product}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
 
+function updateDataStatus(message, type) {
+    console.log(`Data Status [${type}]: ${message}`);
+}
         console.log('HAIRGATOR Personal Color - 2모드 최적화 버전 로드 완료');
     </script>
 </body>
