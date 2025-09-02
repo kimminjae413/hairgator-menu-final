@@ -354,22 +354,12 @@
                             <div class="contact-details">
                                 <div class="contact-item">
                                     <span class="contact-label">📱 전화:</span>
-                                    <span class="contact-value">010-0000-0000</span>
-                                    <button class="contact-copy" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.copyToClipboard('010-0000-0000')">복사</button>
-                                </div>
-                                <div class="contact-item">
-                                    <span class="contact-label">📧 이메일:</span>
-                                    <span class="contact-value">admin@hairgator.com</span>
-                                    <button class="contact-copy" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.copyToClipboard('admin@hairgator.com')">복사</button>
-                                </div>
-                                <div class="contact-item">
-                                    <span class="contact-label">💬 카카오톡:</span>
-                                    <span class="contact-value">@hairgator</span>
-                                    <button class="contact-copy" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.copyToClipboard('@hairgator')">복사</button>
+                                    <span class="contact-value">02-6731-5000</span>
+                                    <button class="contact-copy" onclick="window.HAIRGATOR_PASSWORD_RECOVERY.copyToClipboard('02-6731-5000')">복사</button>
                                 </div>
                                 <div class="contact-item">
                                     <span class="contact-label">⏰ 운영시간:</span>
-                                    <span class="contact-value">평일 09:00-18:00</span>
+                                    <span class="contact-value">평일 09:30-18:30</span>
                                 </div>
                             </div>
                             
