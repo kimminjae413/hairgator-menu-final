@@ -69,6 +69,7 @@
         <button class="logout-btn" onclick="logout()">로그아웃</button>
     </div>
     <p id="guestMessage">로그인 후 이용 가능합니다.</p>
+       
        <!-- 퍼스널컬러 메뉴 버튼 추가 -->
     <div class="menu-item" onclick="openPersonalColorModal()">
         <div class="menu-icon">🎨</div>
@@ -78,6 +79,7 @@
         </div>
         <div class="menu-arrow">›</div>
     </div>
+           
            <!-- 연결 상태 표시 추가 -->
     <div id="connectionStatus" class="connection-status">
         <div class="status-indicator">
@@ -200,6 +202,24 @@
                         <button class="modal-action-btn secondary" onclick="closeStyleModal()">닫기</button>
                         <button class="modal-action-btn">선택하기</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 퍼스널컬러 모달 -->
+        <div id="personalColorModal" class="personal-color-modal" style="display: none;">
+            <div class="modal-backdrop" onclick="closePersonalColorModal()"></div>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2>퍼스널컬러 진단 시스템</h2>
+                    <button class="modal-close-btn" onclick="closePersonalColorModal()">×</button>
+                </div>
+                <div class="modal-content">
+                    <iframe id="personalColorFrame" 
+                            src="personal-color.html" 
+                            frameborder="0"
+                            style="width: 100%; height: calc(100vh - 120px); border: none;">
+                    </iframe>
                 </div>
             </div>
         </div>
@@ -619,9 +639,75 @@
             }
         }
 
+        // 퍼스널컬러 모달 제어 함수들
+        function openPersonalColorModal() {
+            console.log('🎨 퍼스널컬러 진단 시스템 열기');
+            
+            const modal = document.getElementById('personalColorModal');
+            const iframe = document.getElementById('personalColorFrame');
+            
+            if (modal) {
+                modal.style.display = 'flex';
+                setTimeout(() => {
+                    modal.classList.add('active');
+                }, 10);
+                
+                if (iframe) {
+                    iframe.src = iframe.src;
+                }
+                
+                document.body.style.overflow = 'hidden';
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                
+                console.log('✅ 퍼스널컬러 모달 활성화됨');
+            }
+        }
+
+        function closePersonalColorModal() {
+            console.log('🔄 퍼스널컬러 진단 시스템 닫기');
+            
+            const modal = document.getElementById('personalColorModal');
+            
+            if (modal) {
+                modal.classList.remove('active');
+                
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = '';
+                }, 300);
+                
+                console.log('✅ 퍼스널컬러 모달 비활성화됨');
+            }
+        }
+
+        // 테마 동기화 함수 (퍼스널컬러 iframe용)
+        function syncThemeToPersonalColor() {
+            const iframe = document.getElementById('personalColorFrame');
+            const currentTheme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+            
+            if (iframe && iframe.contentWindow) {
+                try {
+                    iframe.contentWindow.postMessage({
+                        type: 'THEME_UPDATE',
+                        theme: currentTheme,
+                        colors: {
+                            primary: getComputedStyle(document.documentElement).getPropertyValue('--female-color') || '#E91E63',
+                            background: getComputedStyle(document.documentElement).getPropertyValue('--background') || '#121212',
+                            textPrimary: getComputedStyle(document.documentElement).getPropertyValue('--text-primary') || '#FFFFFF'
+                        }
+                    }, '*');
+                } catch (error) {
+                    console.log('테마 동기화 실패 (정상적인 보안 제한):', error.message);
+                }
+            }
+        }
+
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🦎 HAIRGATOR 시작 - 최종 완료 버전');
+            console.log('🦎 HAIRGATOR 시작 - 퍼스널컬러 통합 최종 완료 버전');
             
             // 테마 로드
             loadTheme();
@@ -651,14 +737,30 @@
                 });
             }
             
-            // ESC 키로 모달 닫기
+            // ESC 키로 모달 닫기 (스타일 모달과 퍼스널컬러 모달 모두)
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && styleModal.classList.contains('active')) {
-                    if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.closeStyleModal) {
-                        window.HAIRGATOR_MENU.closeStyleModal();
+                if (e.key === 'Escape') {
+                    // 스타일 모달 닫기
+                    if (styleModal.classList.contains('active')) {
+                        if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.closeStyleModal) {
+                            window.HAIRGATOR_MENU.closeStyleModal();
+                        }
+                    }
+                    // 퍼스널컬러 모달 닫기
+                    const personalColorModal = document.getElementById('personalColorModal');
+                    if (personalColorModal && personalColorModal.classList.contains('active')) {
+                        closePersonalColorModal();
                     }
                 }
             });
+
+            // 퍼스널컬러 iframe 로드 완료 시 테마 동기화
+            const iframe = document.getElementById('personalColorFrame');
+            if (iframe) {
+                iframe.addEventListener('load', function() {
+                    setTimeout(syncThemeToPersonalColor, 500);
+                });
+            }
         });
 
         // 클릭 이벤트 외부 영역에서 사이드바 닫기
@@ -697,8 +799,157 @@
         });
     </script>
 
-    <!-- 테마 토글 버튼 CSS -->
+    <!-- 퍼스널컬러 모달 & 메뉴 아이템 CSS -->
     <style>
+        /* 퍼스널컬러 모달 - HAIRGATOR 테마 통일 */
+        .personal-color-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .personal-color-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-container {
+            position: relative;
+            width: 95%;
+            height: 95%;
+            max-width: 1400px;
+            background: var(--background);
+            border-radius: var(--border-radius);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            border: 2px solid var(--female-color);
+        }
+
+        .personal-color-modal.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            background: var(--female-color);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--female-color);
+        }
+
+        .modal-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+
+        .modal-content {
+            height: calc(100% - 80px);
+            overflow: hidden;
+        }
+
+        #personalColorFrame {
+            border: none;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* 사이드바 메뉴 아이템 스타일 */
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .menu-item:hover {
+            background: var(--hover-background);
+            color: var(--female-color);
+        }
+
+        .menu-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            width: 30px;
+            text-align: center;
+        }
+
+        .menu-text {
+            flex: 1;
+        }
+
+        .menu-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .menu-subtitle {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            font-weight: 400;
+        }
+
+        .menu-arrow {
+            font-size: 1.2rem;
+            opacity: 0.5;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-item:hover .menu-arrow {
+            transform: translateX(3px);
+        }
+
+        /* 테마 토글 버튼 */
         .theme-toggle {
             position: absolute;
             right: 50px;
@@ -718,9 +969,45 @@
         .theme-toggle:hover {
             transform: scale(1.1);
         }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .modal-container {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+                max-width: none;
+            }
+            
+            .modal-header {
+                padding: 1rem 1.5rem;
+            }
+            
+            .modal-header h2 {
+                font-size: 1.2rem;
+            }
+            
+            .modal-content {
+                height: calc(100% - 70px);
+            }
+
+            .menu-item {
+                padding: 0.8rem 1rem;
+            }
+
+            .menu-icon {
+                font-size: 1.3rem;
+                margin-right: 0.8rem;
+            }
+
+            .menu-title {
+                font-size: 0.9rem;
+            }
+
+            .menu-subtitle {
+                font-size: 0.75rem;
+            }
+        }
     </style>
 </body>
 </html>
-
-
-
