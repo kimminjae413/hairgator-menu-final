@@ -27,8 +27,9 @@
     <link rel="stylesheet" href="css/main.css">
 
    <!-- External JavaScript -->
-<script src="js/menu.js"></script>
-<script src="js/face-swap-backend.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/face-swap-backend.js"></script>
+    <script src="js/personal-color.js"></script>
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -40,64 +41,64 @@
 <body>
     <!-- 헤더 -->
     <header class="header">
-    <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
-    <h1 class="logo">HAIRGATOR</h1>
-    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="테마 변경">🌙</button>
-    <!-- AI 서버 상태 표시 추가 -->
-    <div id="aiServerStatus" class="ai-status">
-        <span class="status-dot offline"></span>
-        <span class="status-text">AI 연결 확인 중</span>
-    </div>
-    <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
-</header>
+        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+        <h1 class="logo">HAIRGATOR</h1>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="테마 변경">🌙</button>
+        <!-- AI 서버 상태 표시 -->
+        <div id="aiServerStatus" class="ai-status">
+            <span class="status-dot offline"></span>
+            <span class="status-text">AI 연결 확인 중</span>
+        </div>
+        <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
     <!-- 사이드바 -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h3>메뉴</h3>
             <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
         </div>
-       <div class="sidebar-content">
-    <div class="user-info" id="userInfo" style="display: none;">
-        <h4>디자이너 정보</h4>
-        <p id="designerNameDisplay"></p>
-        <p id="designerPhoneDisplay"></p>
-        <p id="sessionStatusDisplay"></p>
-        <button class="logout-btn" onclick="logout()">로그아웃</button>
-    </div>
-    <p id="guestMessage">로그인 후 이용 가능합니다.</p>
-       
-       <!-- 퍼스널컬러 메뉴 버튼 추가 -->
-    <div class="menu-item" onclick="openPersonalColorModal()">
-        <div class="menu-icon">🎨</div>
-        <div class="menu-text">
-            <div class="menu-title">퍼스널컬러</div>
-            <div class="menu-subtitle">AI 퍼스널컬러 진단</div>
-        </div>
-        <div class="menu-arrow">›</div>
-    </div>
+        <div class="sidebar-content">
+            <div class="user-info" id="userInfo" style="display: none;">
+                <h4>디자이너 정보</h4>
+                <p id="designerNameDisplay"></p>
+                <p id="designerPhoneDisplay"></p>
+                <p id="sessionStatusDisplay"></p>
+                <button class="logout-btn" onclick="logout()">로그아웃</button>
+            </div>
+            <p id="guestMessage">로그인 후 이용 가능합니다.</p>
            
-           <!-- 연결 상태 표시 추가 -->
-    <div id="connectionStatus" class="connection-status">
-        <div class="status-indicator">
-            <span class="dot offline"></span>
-            <span class="text">AI 서버 연결 확인 중</span>
+            <!-- 퍼스널컬러 메뉴 버튼 -->
+            <div class="menu-item" onclick="openPersonalColorModal()">
+                <div class="menu-icon">🎨</div>
+                <div class="menu-text">
+                    <div class="menu-title">퍼스널컬러</div>
+                    <div class="menu-subtitle">AI 퍼스널컬러 진단</div>
+                </div>
+                <div class="menu-arrow">›</div>
+            </div>
+           
+            <!-- 연결 상태 표시 -->
+            <div id="connectionStatus" class="connection-status">
+                <div class="status-indicator">
+                    <span class="dot offline"></span>
+                    <span class="text">AI 서버 연결 확인 중</span>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
     </aside>
 
-   <!-- 로딩 오버레이 -->
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-spinner"></div>
-    <!-- 백엔드 연결 상태 추가 -->
-    <div id="backendStatus" class="backend-status">
-        <span>Face Swap 서버 연결 확인 중...</span>
+    <!-- 로딩 오버레이 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div id="backendStatus" class="backend-status">
+            <span>Face Swap 서버 연결 확인 중...</span>
+        </div>
     </div>
-</div>
 
     <!-- 토스트 메시지 -->
     <div class="toast" id="toast"></div>
@@ -211,12 +212,12 @@
             <div class="modal-backdrop" onclick="closePersonalColorModal()"></div>
             <div class="modal-container">
                 <div class="modal-header">
-                    <h2>퍼스널컬러 진단 시스템</h2>
+                    <h2>HAIRGATOR 퍼스널컬러 진단</h2>
                     <button class="modal-close-btn" onclick="closePersonalColorModal()">×</button>
                 </div>
                 <div class="modal-content">
                     <iframe id="personalColorFrame" 
-                            src="personal-color.html" 
+                            src="personal-color/index.html" 
                             frameborder="0"
                             style="width: 100%; height: calc(100vh - 120px); border: none;">
                     </iframe>
@@ -266,7 +267,6 @@
         let heartbeatInterval = null;
         let currentCategory = null;
         let currentSubcategory = 'None';
-    
 
         // DOM 요소
         const loginScreen = document.getElementById('loginScreen');
@@ -639,72 +639,6 @@
             }
         }
 
-        // 퍼스널컬러 모달 제어 함수들
-        function openPersonalColorModal() {
-            console.log('🎨 퍼스널컬러 진단 시스템 열기');
-            
-            const modal = document.getElementById('personalColorModal');
-            const iframe = document.getElementById('personalColorFrame');
-            
-            if (modal) {
-                modal.style.display = 'flex';
-                setTimeout(() => {
-                    modal.classList.add('active');
-                }, 10);
-                
-                if (iframe) {
-                    iframe.src = iframe.src;
-                }
-                
-                document.body.style.overflow = 'hidden';
-                
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-                
-                console.log('✅ 퍼스널컬러 모달 활성화됨');
-            }
-        }
-
-        function closePersonalColorModal() {
-            console.log('🔄 퍼스널컬러 진단 시스템 닫기');
-            
-            const modal = document.getElementById('personalColorModal');
-            
-            if (modal) {
-                modal.classList.remove('active');
-                
-                setTimeout(() => {
-                    modal.style.display = 'none';
-                    document.body.style.overflow = '';
-                }, 300);
-                
-                console.log('✅ 퍼스널컬러 모달 비활성화됨');
-            }
-        }
-
-        // 테마 동기화 함수 (퍼스널컬러 iframe용)
-        function syncThemeToPersonalColor() {
-            const iframe = document.getElementById('personalColorFrame');
-            const currentTheme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
-            
-            if (iframe && iframe.contentWindow) {
-                try {
-                    iframe.contentWindow.postMessage({
-                        type: 'THEME_UPDATE',
-                        theme: currentTheme,
-                        colors: {
-                            primary: getComputedStyle(document.documentElement).getPropertyValue('--female-color') || '#E91E63',
-                            background: getComputedStyle(document.documentElement).getPropertyValue('--background') || '#121212',
-                            textPrimary: getComputedStyle(document.documentElement).getPropertyValue('--text-primary') || '#FFFFFF'
-                        }
-                    }, '*');
-                } catch (error) {
-                    console.log('테마 동기화 실패 (정상적인 보안 제한):', error.message);
-                }
-            }
-        }
-
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🦎 HAIRGATOR 시작 - 퍼스널컬러 통합 최종 완료 버전');
@@ -763,6 +697,28 @@
             }
         });
 
+        // 테마 동기화 함수 (퍼스널컬러 iframe용)
+        function syncThemeToPersonalColor() {
+            const iframe = document.getElementById('personalColorFrame');
+            const currentTheme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+            
+            if (iframe && iframe.contentWindow) {
+                try {
+                    iframe.contentWindow.postMessage({
+                        type: 'THEME_UPDATE',
+                        theme: currentTheme,
+                        colors: {
+                            primary: getComputedStyle(document.documentElement).getPropertyValue('--female-color') || '#E91E63',
+                            background: getComputedStyle(document.documentElement).getPropertyValue('--background') || '#121212',
+                            textPrimary: getComputedStyle(document.documentElement).getPropertyValue('--text-primary') || '#FFFFFF'
+                        }
+                    }, '*');
+                } catch (error) {
+                    console.log('테마 동기화 실패 (정상적인 보안 제한):', error.message);
+                }
+            }
+        }
+
         // 클릭 이벤트 외부 영역에서 사이드바 닫기
         document.addEventListener('click', function(e) {
             const sidebar = document.getElementById('sidebar');
@@ -799,7 +755,7 @@
         });
     </script>
 
-    <!-- 퍼스널컬러 모달 & 메뉴 아이템 CSS -->
+    <!-- 퍼스널컬러 모달 CSS (중복 제거 및 최적화) -->
     <style>
         /* 퍼스널컬러 모달 - HAIRGATOR 테마 통일 */
         .personal-color-modal {
@@ -947,27 +903,6 @@
 
         .menu-item:hover .menu-arrow {
             transform: translateX(3px);
-        }
-
-        /* 테마 토글 버튼 */
-        .theme-toggle {
-            position: absolute;
-            right: 50px;
-            width: 30px;
-            height: 30px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            transition: transform 0.2s ease;
-            user-select: none;
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.1);
         }
 
         /* 반응형 디자인 */
