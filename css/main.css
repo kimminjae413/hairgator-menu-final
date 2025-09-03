@@ -382,6 +382,33 @@ body.light-theme .category-tabs {
 .category-tab:nth-child(n+5) {
     z-index: 25 !important;
     position: relative !important;
+    min-height: 60px !important;
+    padding: 20px 25px !important;
+}
+
+/* 특히 문제가 되는 buzz, crop, F length 탭 강제 해결 */
+.category-tab:nth-child(6),
+.category-tab:nth-child(7),
+.category-tab:nth-child(8),
+.category-tab:nth-child(9) {
+    z-index: 50 !important;
+    min-height: 65px !important;
+    padding: 22px 28px !important;
+    margin: 0 4px !important;
+    box-shadow: 0 0 0 2px transparent !important;
+    isolation: isolate !important;
+}
+
+/* 태블릿에서 터치 영역 완전 재정의 */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .category-tab:nth-child(n+5) {
+        min-height: 70px !important;
+        padding: 25px 30px !important;
+        margin: 0 3px !important;
+        z-index: 100 !important;
+        transform: translateZ(0) !important;
+        will-change: transform !important;
+    }
 }
 
 body.light-theme .category-tab {
