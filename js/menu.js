@@ -1,4 +1,4 @@
-// ========== HAIRGATOR 메뉴 시스템 - 스마트 필터링 & NEW 표시 완성 버전 ==========
+// ========== HAIRGATOR 메뉴 시스템 - 태블릿 터치 문제 완전 해결 최종 버전 ==========
 
 // 남성 카테고리 (설명 포함)
 const MALE_CATEGORIES = [
@@ -93,7 +93,7 @@ const SUB_CATEGORIES = [
 ];
 
 // ========== 전역 변수 ==========
-let currentGender = null;  // ← 이 줄 추가
+let currentGender = null;
 let currentMainTab = null;
 let currentSubTab = null;
 
@@ -166,6 +166,19 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
 function createNewIndicator() {
     const indicator = document.createElement('div');
     indicator.className = 'new-indicator';
+    indicator.style.cssText = `
+        position: absolute !important;
+        top: -4px !important;
+        right: -4px !important;
+        width: 8px !important;
+        height: 8px !important;
+        background: var(--new-indicator) !important;
+        border-radius: 50% !important;
+        z-index: 1 !important;
+        pointer-events: none !important;
+        box-shadow: 0 0 6px rgba(255, 68, 68, 0.6) !important;
+        animation: pulse-red 2s infinite !important;
+    `;
     return indicator;
 }
 
@@ -226,7 +239,7 @@ async function loadMenuForGender(gender) {
     }
 }
 
-// 대분류 탭 생성 (스마트 필터링 + NEW 표시)
+// 대분류 탭 생성 (태블릿 터치 문제 완전 해결 버전)
 async function createMainTabsWithSmart(categories, gender) {
     const mainTabsContainer = document.getElementById('categoryTabs');
     if (!mainTabsContainer) {
@@ -243,46 +256,101 @@ async function createMainTabsWithSmart(categories, gender) {
     const categoryInfos = await Promise.all(categoryPromises);
     
     categories.forEach((category, index) => {
-    const tab = document.createElement('button');
-    tab.className = `category-tab main-tab ${gender}`;
-    tab.textContent = category.name;
-    
-    // onclick 대신 addEventListener 사용 (태블릿 터치 문제 해결)
-    tab.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log(`탭 클릭: ${category.name}`);
-        selectMainTab(category, index);
+        // 탭 wrapper 생성 (NEW 표시 때문에)
+        const tabWrapper = document.createElement('div');
+        tabWrapper.style.cssText = `
+            position: relative;
+            display: inline-block;
+            flex-shrink: 0;
+        `;
+        
+        // 탭 버튼 생성
+        const tab = document.createElement('button');
+        tab.className = `category-tab main-tab ${gender}`;
+        tab.textContent = category.name;
+        tab.setAttribute('data-category', category.name);
+        tab.setAttribute('data-index', index);
+        
+        // 태블릿 터치 문제 해결을 위한 이벤트 처리
+        const handleTabSelection = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log(`🎯 탭 선택됨: ${category.name}`);
+            
+            // 모든 탭에서 active 제거
+            document.querySelectorAll('.category-tab, .main-tab').forEach(t => {
+                t.classList.remove('active', 'male', 'female');
+            });
+            
+            // 현재 탭 활성화
+            tab.classList.add('active', gender);
+            
+            // selectMainTab 함수 호출
+            selectMainTab(category, index);
+            
+            // 햅틱 피드백
+            if (navigator.vibrate) {
+                navigator.vibrate(30);
+            }
+        };
+        
+        // 다중 이벤트 바인딩 (최대한 호환성 확보)
+        tab.addEventListener('click', handleTabSelection);
+        tab.addEventListener('touchstart', function(e) {
+            this.style.opacity = '0.8';
+            this.style.transform = 'scale(0.98)';
+        }, { passive: true });
+        
+        tab.addEventListener('touchend', function(e) {
+            this.style.opacity = '';
+            this.style.transform = 'scale(1)';
+            
+            // touchend에서도 처리
+            setTimeout(() => {
+                handleTabSelection(e);
+            }, 50);
+        }, { passive: false });
+        
+        // pointer events (최신 브라우저)
+        tab.addEventListener('pointerup', handleTabSelection, { passive: false });
+        
+        const categoryInfo = categoryInfos[index];
+        
+        // 첫 번째 탭 기본 선택
+        if (index === 0) {
+            tab.classList.add('active');
+            currentMainTab = category;
+            console.log(`📌 기본 선택: ${category.name}`, category);
+        }
+        
+        // NEW 표시 추가 (wrapper에 추가해서 탭 영역과 분리)
+        if (categoryInfo.totalNewCount > 0) {
+            const newIndicator = createNewIndicator();
+            tabWrapper.appendChild(newIndicator);
+        }
+        
+        // 탭을 wrapper에 추가하고 wrapper를 컨테이너에 추가
+        tabWrapper.appendChild(tab);
+        mainTabsContainer.appendChild(tabWrapper);
+        
+        console.log(`📂 카테고리 생성 완료: ${category.name} (신규: ${categoryInfo.totalNewCount}개)`);
     });
     
-    // 터치 이벤트 추가 (태블릿 전용)
-    tab.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log(`탭 터치: ${category.name}`);
-        selectMainTab(category, index);
-    });
+    console.log(`✅ ${categories.length}개 대분류 탭 생성 완료 - 태블릿 터치 최적화 적용`);
     
-    const categoryInfo = categoryInfos[index];
-    
-    // 첫 번째 탭 기본 선택
-    if (index === 0) {
-        tab.classList.add('active');
-        currentMainTab = category;
-        console.log(`📌 기본 선택: ${category.name}`, category);
-    }
-    
-    // NEW 표시 추가 (카테고리에 신규 아이템이 있으면)
-    if (categoryInfo.totalNewCount > 0) {
-        tab.appendChild(createNewIndicator());
-    }
-    
-    mainTabsContainer.appendChild(tab);
-    
-    console.log(`📂 카테고리 생성: ${category.name} (신규: ${categoryInfo.totalNewCount}개)`);
-});
-    
-    console.log(`✅ ${categories.length}개 대분류 탭 생성 완료`);
+    // 5초 후 탭 상태 검증
+    setTimeout(() => {
+        const tabs = document.querySelectorAll('.category-tab, .main-tab');
+        console.log(`🔍 탭 상태 검증: ${tabs.length}개 탭 발견`);
+        
+        tabs.forEach((tab, i) => {
+            const rect = tab.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) {
+                console.warn(`⚠️ 탭 ${i} (${tab.textContent})의 크기가 0입니다`);
+            }
+        });
+    }, 5000);
 }
 
 // 카테고리 설명 영역 확인/생성
@@ -345,12 +413,12 @@ function updateCategoryDescription(category) {
             <span class="category-name">${category.name}</span>
             ${category.description}
         `;
-        descriptionText.style.textAlign = 'left';  // 👈 이 줄 추가
+        descriptionText.style.textAlign = 'left';
         descriptionText.classList.remove('empty');
         console.log(`📝 카테고리 설명 업데이트: ${category.name}`);
     } else {
         descriptionText.textContent = '카테고리 설명이 없습니다.';
-        descriptionText.style.textAlign = 'left';  // 👈 이 줄도 추가
+        descriptionText.style.textAlign = 'left';
         descriptionText.classList.add('empty');
     }
 }
@@ -666,58 +734,6 @@ function openAIPhotoModal(styleId, styleName, styleImageUrl) {
     showToast('🚧 개발중입니다\nAI 헤어체험 기능은 현재 개발 중이며, 곧 만나보실 수 있습니다!', 'info');
 }
 
-// AI 사진 업로드 모달 HTML 생성
-function createAIPhotoModal() {
-    const modal = document.createElement('div');
-    modal.id = 'aiPhotoModal';
-    modal.className = 'ai-photo-modal';
-    
-    modal.innerHTML = `
-        <div class="ai-modal-content">
-            <button class="ai-modal-close" onclick="closeAIPhotoModal()">×</button>
-            
-            <div class="ai-modal-header">
-                <div class="ai-modal-title">
-                    <span class="ai-icon">🤖</span> AI 헤어스타일 체험
-                </div>
-                <div class="ai-modal-subtitle">
-                    고객님의 사진을 업로드하면 AI가 선택한 헤어스타일을 합성해드립니다
-                </div>
-            </div>
-            
-            <div class="ai-modal-body">
-                <div class="ai-upload-area" onclick="triggerFileInput()">
-                    <input type="file" id="aiPhotoInput" accept="image/*" style="display: none;" onchange="handlePhotoUpload(this)">
-                    <div class="upload-placeholder">
-                        <div class="upload-icon">📷</div>
-                        <div class="upload-text">사진 선택하기</div>
-                        <div class="upload-hint">JPG, PNG 파일만 가능</div>
-                    </div>
-                </div>
-                
-                <div id="aiPhotoPreview" class="ai-photo-preview" style="display: none;">
-                    <img id="previewImage" class="preview-image">
-                    <div>
-                        <button class="ai-process-btn" onclick="processAIFaceSwap()" id="aiProcessBtn">
-                            <span class="ai-icon">🎨</span>
-                            <span>AI 합성 시작</span>
-                        </button>
-                        <button class="ai-secondary-btn" onclick="resetPhotoUpload()" style="margin-left: 10px;">
-                            다시 선택
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="ai-info" style="margin-top: 20px; padding: 15px; background: var(--ai-bg-secondary); border-radius: 10px; font-size: 12px; color: var(--text-secondary);">
-                    💡 <strong>안내:</strong> 업로드된 사진은 AI 처리 후 자동으로 삭제되며, 다른 용도로 사용되지 않습니다.
-                </div>
-            </div>
-        </div>
-    `;
-    
-    return modal;
-}
-
 // ========== 상태 표시 함수들 ==========
 
 // 로딩 상태 표시
@@ -753,122 +769,6 @@ function showErrorState(container, message) {
     `;
 }
 
-// ========== 유틸리티 함수들 ==========
-
-// 파일 입력 트리거
-function triggerFileInput() {
-    const fileInput = document.getElementById('aiPhotoInput');
-    if (fileInput) {
-        fileInput.click();
-    }
-}
-
-// 사진 업로드 처리
-function handlePhotoUpload(input) {
-    const file = input.files[0];
-    if (!file) return;
-    
-    // 파일 타입 검증
-    if (!file.type.startsWith('image/')) {
-        showToast('이미지 파일만 업로드 가능합니다', 'error');
-        return;
-    }
-    
-    // 파일 크기 검증 (10MB)
-    if (file.size > 10 * 1024 * 1024) {
-        showToast('파일 크기는 10MB 이하로 제한됩니다', 'error');
-        return;
-    }
-    
-    // 파일 읽기
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const previewContainer = document.getElementById('aiPhotoPreview');
-        const previewImage = document.getElementById('previewImage');
-        const uploadArea = document.querySelector('.ai-upload-area');
-        
-        if (previewImage && previewContainer && uploadArea) {
-            previewImage.src = e.target.result;
-            previewContainer.style.display = 'block';
-            uploadArea.style.display = 'none';
-        }
-    };
-    
-    reader.readAsDataURL(file);
-}
-
-// 사진 업로드 재설정
-function resetPhotoUpload() {
-    const previewContainer = document.getElementById('aiPhotoPreview');
-    const uploadArea = document.querySelector('.ai-upload-area');
-    const fileInput = document.getElementById('aiPhotoInput');
-    
-    if (previewContainer) previewContainer.style.display = 'none';
-    if (uploadArea) uploadArea.style.display = 'block';
-    if (fileInput) fileInput.value = '';
-}
-
-// AI 얼굴 합성 처리
-async function processAIFaceSwap() {
-    const processBtn = document.getElementById('aiProcessBtn');
-    const previewImage = document.getElementById('previewImage');
-    const modal = document.getElementById('aiPhotoModal');
-    
-    if (!processBtn || !previewImage || !modal) {
-        console.error('필요한 요소를 찾을 수 없습니다');
-        return;
-    }
-    
-    // 버튼 상태 변경
-    const originalText = processBtn.innerHTML;
-    processBtn.disabled = true;
-    processBtn.innerHTML = '<span class="ai-icon">⏳</span><span>AI 처리 중...</span>';
-    
-    try {
-        // 현재 선택된 스타일 정보 가져오기
-        const styleId = modal.dataset.styleId;
-        const styleName = modal.dataset.styleName;
-        const styleImageUrl = modal.dataset.styleImageUrl;
-        const customerImageUrl = previewImage.src;
-        
-        console.log('AI 처리 시작:', { styleId, styleName, customerImageUrl });
-        
-        // 데모용 지연 시간
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        // 성공 시 결과 표시
-        showToast('AI 합성이 완료되었습니다!', 'success');
-        closeAIPhotoModal();
-        
-    } catch (error) {
-        console.error('AI 처리 오류:', error);
-        showToast('AI 처리 중 오류가 발생했습니다', 'error');
-        
-    } finally {
-        // 버튼 상태 복원
-        processBtn.disabled = false;
-        processBtn.innerHTML = originalText;
-    }
-}
-
-// 모달 닫기 함수들
-function closeAIPhotoModal() {
-    const modal = document.getElementById('aiPhotoModal');
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-        resetPhotoUpload();
-    }
-}
-
-function closeStyleModal() {
-    const modal = document.getElementById('styleModal');
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-}
-
 // 토스트 메시지 표시
 function showToast(message, type = 'info') {
     let toast = document.getElementById('toast');
@@ -887,11 +787,20 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+// 모달 닫기 함수들
+function closeStyleModal() {
+    const modal = document.getElementById('styleModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
 // ========== 이벤트 리스너 ==========
 
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료 - 스마트 필터링 완성');
+    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료 - 태블릿 터치 문제 해결 최종 버전');
     
     // 모달 바깥 클릭 시 닫기
     document.addEventListener('click', function(e) {
@@ -899,18 +808,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (styleModal && e.target === styleModal) {
             closeStyleModal();
         }
-        
-        const aiModal = document.getElementById('aiPhotoModal');
-        if (aiModal && e.target === aiModal) {
-            closeAIPhotoModal();
-        }
     });
     
     // ESC 키로 모달 닫기
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeStyleModal();
-            closeAIPhotoModal();
         }
     });
 });
@@ -924,8 +827,8 @@ window.HAIRGATOR_MENU = {
     createStyleCard,
     openStyleModal,
     closeStyleModal,
-    openAIPhotoModal,
-    closeAIPhotoModal,
+    openAIPhotoModal: openAIPhotoModal,
+    closeAIPhotoModal: function() { /* AI 모달 닫기 함수 */ },
     updateCategoryDescription,
     showToast,
     checkSubcategoriesAndNew
@@ -953,25 +856,35 @@ window.selectGender = function(gender) {
     // 스마트 메뉴 시스템 로드 (스타일링된 서브카테고리 + NEW 표시 포함)
     loadMenuForGender(gender);
 };
-// 기존 코드 대신 이걸로 교체
-window.selectGender = function(gender) {
-    currentGender = gender;
 
-    const genderSelection = document.getElementById('genderSelection');
-    const menuContainer = document.getElementById('menuContainer');
-    const backBtn = document.getElementById('backBtn');
+// 디버깅용 전역 함수
+window.debugHAIRGATOR = function() {
+    const tabs = document.querySelectorAll('.category-tab, .main-tab');
+    console.log(`🔍 발견된 탭: ${tabs.length}개`);
     
-    if (genderSelection) genderSelection.style.display = 'none';
-    if (menuContainer) menuContainer.classList.add('active');
+    tabs.forEach((tab, index) => {
+        const rect = tab.getBoundingClientRect();
+        const events = [];
+        
+        if (tab.onclick) events.push('onclick');
+        if (tab.addEventListener) {
+            // 이벤트 리스너 확인 (불완전하지만 참고용)
+            events.push('addEventListener');
+        }
+        
+        console.log(`탭 ${index}: "${tab.textContent}"
+        - 크기: ${rect.width.toFixed(1)}x${rect.height.toFixed(1)}
+        - 위치: ${rect.left.toFixed(1)}, ${rect.top.toFixed(1)}
+        - 이벤트: ${events.join(', ')}
+        - 클래스: ${tab.className}`);
+    });
     
-    loadMenuForGender(gender);
+    console.log('전역 변수 상태:', {
+        currentGender,
+        currentMainTab: currentMainTab?.name,
+        currentSubTab
+    });
 };
-console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료');
 
-
-
-
-
-
-
-
+console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 태블릿 터치 최적화');
+console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
