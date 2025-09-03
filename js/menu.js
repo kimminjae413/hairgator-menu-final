@@ -243,29 +243,44 @@ async function createMainTabsWithSmart(categories, gender) {
     const categoryInfos = await Promise.all(categoryPromises);
     
     categories.forEach((category, index) => {
-        const tab = document.createElement('button');
-        tab.className = `category-tab main-tab ${gender}`;
-        tab.textContent = category.name;
-        tab.onclick = () => selectMainTab(category, index);
-        
-        const categoryInfo = categoryInfos[index];
-        
-        // 첫 번째 탭 기본 선택
-        if (index === 0) {
-            tab.classList.add('active');
-            currentMainTab = category;
-            console.log(`📌 기본 선택: ${category.name}`, category);
-        }
-        
-        // NEW 표시 추가 (카테고리에 신규 아이템이 있으면)
-        if (categoryInfo.totalNewCount > 0) {
-            tab.appendChild(createNewIndicator());
-        }
-        
-        mainTabsContainer.appendChild(tab);
-        
-        console.log(`📂 카테고리 생성: ${category.name} (신규: ${categoryInfo.totalNewCount}개)`);
+    const tab = document.createElement('button');
+    tab.className = `category-tab main-tab ${gender}`;
+    tab.textContent = category.name;
+    
+    // onclick 대신 addEventListener 사용 (태블릿 터치 문제 해결)
+    tab.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log(`탭 클릭: ${category.name}`);
+        selectMainTab(category, index);
     });
+    
+    // 터치 이벤트 추가 (태블릿 전용)
+    tab.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log(`탭 터치: ${category.name}`);
+        selectMainTab(category, index);
+    });
+    
+    const categoryInfo = categoryInfos[index];
+    
+    // 첫 번째 탭 기본 선택
+    if (index === 0) {
+        tab.classList.add('active');
+        currentMainTab = category;
+        console.log(`📌 기본 선택: ${category.name}`, category);
+    }
+    
+    // NEW 표시 추가 (카테고리에 신규 아이템이 있으면)
+    if (categoryInfo.totalNewCount > 0) {
+        tab.appendChild(createNewIndicator());
+    }
+    
+    mainTabsContainer.appendChild(tab);
+    
+    console.log(`📂 카테고리 생성: ${category.name} (신규: ${categoryInfo.totalNewCount}개)`);
+});
     
     console.log(`✅ ${categories.length}개 대분류 탭 생성 완료`);
 }
@@ -952,6 +967,7 @@ window.selectGender = function(gender) {
     loadMenuForGender(gender);
 };
 console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료');
+
 
 
 
