@@ -938,26 +938,22 @@ window.selectGender = function(gender) {
     // 스마트 메뉴 시스템 로드 (스타일링된 서브카테고리 + NEW 표시 포함)
     loadMenuForGender(gender);
 };
-// HTML에서 직접 호출되는 전역 함수 추가
+// 기존 코드 대신 이걸로 교체
 window.selectGender = function(gender) {
-    console.log(`성별 선택: ${gender}`);
+    alert('터치됨: ' + gender); // 터치 확인용
     
     currentGender = gender;
-    if (typeof window.currentGender !== 'undefined') {
-        window.currentGender = gender;
-    }
     
     const genderSelection = document.getElementById('genderSelection');
     const menuContainer = document.getElementById('menuContainer');
-    const backBtn = document.getElementById('backBtn');
     
     if (genderSelection) genderSelection.style.display = 'none';
     if (menuContainer) menuContainer.classList.add('active');
-    if (backBtn) backBtn.style.display = 'flex';
     
     loadMenuForGender(gender);
 };
 console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료');
+
 
 
 
