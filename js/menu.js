@@ -239,7 +239,6 @@ async function loadMenuForGender(gender) {
     }
 }
 
-// 대분류 탭 생성 (태블릿 터치 문제 완전 해결 버전)
 async function createMainTabsWithSmart(categories, gender) {
     const mainTabsContainer = document.getElementById('categoryTabs');
     if (!mainTabsContainer) {
@@ -249,108 +248,22 @@ async function createMainTabsWithSmart(categories, gender) {
     
     mainTabsContainer.innerHTML = '';
     
-    // 모든 카테고리의 서브카테고리 정보를 병렬로 확인
-    const categoryPromises = categories.map(category => 
-        checkSubcategoriesAndNew(gender, category.name)
-    );
-    const categoryInfos = await Promise.all(categoryPromises);
-    
     categories.forEach((category, index) => {
-        // 탭 wrapper 생성 (NEW 표시 때문에)
-        const tabWrapper = document.createElement('div');
-        tabWrapper.style.cssText = `
-            position: relative;
-            display: inline-block;
-            flex-shrink: 0;
-        `;
-        
-        // 탭 버튼 생성
         const tab = document.createElement('button');
         tab.className = `category-tab main-tab ${gender}`;
         tab.textContent = category.name;
-        tab.setAttribute('data-category', category.name);
-        tab.setAttribute('data-index', index);
         
-        // 태블릿 터치 문제 해결을 위한 이벤트 처리
-        const handleTabSelection = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            console.log(`🎯 탭 선택됨: ${category.name}`);
-            
-            // 모든 탭에서 active 제거
-            document.querySelectorAll('.category-tab, .main-tab').forEach(t => {
-                t.classList.remove('active', 'male', 'female');
-            });
-            
-            // 현재 탭 활성화
-            tab.classList.add('active', gender);
-            
-            // selectMainTab 함수 호출
-            selectMainTab(category, index);
-            
-            // 햅틱 피드백
-            if (navigator.vibrate) {
-                navigator.vibrate(30);
-            }
-        };
+        tab.onclick = () => selectMainTab(category, index);
         
-        // 다중 이벤트 바인딩 (최대한 호환성 확보)
-        tab.addEventListener('click', handleTabSelection);
-        tab.addEventListener('touchstart', function(e) {
-            this.style.opacity = '0.8';
-            this.style.transform = 'scale(0.98)';
-        }, { passive: true });
-        
-        tab.addEventListener('touchend', function(e) {
-            this.style.opacity = '';
-            this.style.transform = 'scale(1)';
-            
-            // touchend에서도 처리
-            setTimeout(() => {
-                handleTabSelection(e);
-            }, 50);
-        }, { passive: false });
-        
-        // pointer events (최신 브라우저)
-        tab.addEventListener('pointerup', handleTabSelection, { passive: false });
-        
-        const categoryInfo = categoryInfos[index];
-        
-        // 첫 번째 탭 기본 선택
         if (index === 0) {
             tab.classList.add('active');
             currentMainTab = category;
-            console.log(`📌 기본 선택: ${category.name}`, category);
         }
         
-        // NEW 표시 추가 (wrapper에 추가해서 탭 영역과 분리)
-        if (categoryInfo.totalNewCount > 0) {
-            const newIndicator = createNewIndicator();
-            tabWrapper.appendChild(newIndicator);
-        }
-        
-        // 탭을 wrapper에 추가하고 wrapper를 컨테이너에 추가
-        tabWrapper.appendChild(tab);
-        mainTabsContainer.appendChild(tabWrapper);
-        
-        console.log(`📂 카테고리 생성 완료: ${category.name} (신규: ${categoryInfo.totalNewCount}개)`);
+        mainTabsContainer.appendChild(tab);
     });
     
-    console.log(`✅ ${categories.length}개 대분류 탭 생성 완료 - 태블릿 터치 최적화 적용`);
-    
-    // 5초 후 탭 상태 검증
-    setTimeout(() => {
-        const tabs = document.querySelectorAll('.category-tab, .main-tab');
-        console.log(`🔍 탭 상태 검증: ${tabs.length}개 탭 발견`);
-        
-        tabs.forEach((tab, i) => {
-            const rect = tab.getBoundingClientRect();
-            if (rect.width === 0 || rect.height === 0) {
-                console.warn(`⚠️ 탭 ${i} (${tab.textContent})의 크기가 0입니다`);
-            }
-        });
-    }, 5000);
+    console.log(`✅ ${categories.length}개 대분류 탭 생성 완료`);
 }
 
 // 카테고리 설명 영역 확인/생성
@@ -888,3 +801,4 @@ window.debugHAIRGATOR = function() {
 
 console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 태블릿 터치 최적화');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
+
