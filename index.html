@@ -1553,13 +1553,55 @@ function forcePersonalColorAccess() {
     }
 }
 </script>
+    <!-- 새로고침 제스처 방지 스크립트 -->
+    <script>
+        // 핀치 줌 후 새로고침 방지
+        let isZooming = false;
+        
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                isZooming = true;
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchmove', function(e) {
+            // 핀치 줌 중이거나 맨 위에서 아래로 당기기 감지
+            if (e.touches.length > 1 || isZooming) {
+                e.preventDefault();
+            }
+            
+            // pull-to-refresh 방지 (맨 위에서 아래로 당기기)
+            if (window.scrollY === 0 && e.touches.length === 1) {
+                const touch = e.touches[0];
+                const startY = touch.clientY;
+                
+                if (startY > 100) { // 위에서 아래로 당기는 동작
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+        
+        document.addEventListener('touchend', function(e) {
+            setTimeout(() => {
+                isZooming = false;
+            }, 100);
+        }, { passive: true });
+        
+        // 브라우저 기본 새로고침 제스처 차단
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gesturechange', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gestureend', function(e) {
+            e.preventDefault();
+        });
+    </script>
 </body>
 </html>
-</html>
-
-
-
-
 
 
 
