@@ -70,7 +70,7 @@
             <p id="guestMessage">로그인 후 이용 가능합니다.</p>
           <!-- 퍼스널컬러 메뉴 섹션 - 로그인 후에만 표시 -->
 <div class="sidebar-section" id="personalColorSection" style="display: none;">
-    <div class="sidebar-menu-item" onclick="handlePersonalColorAccess()">
+    <div class="sidebar-menu-item" onclick="handlePersonalColorAccess(event)">
         <span class="sidebar-icon">🎨</span>
         <div class="sidebar-text">
             <div class="sidebar-title">퍼스널컬러</div>
@@ -1500,16 +1500,31 @@ function isMobileDevice() {
 }
 
 // 퍼스널컬러 접근 처리
-function handlePersonalColorAccess() {
-    console.log('퍼스널컬러 버튼 클릭됨');
-    
-    if (isMobileDevice()) {
-        console.log('📱 모바일 디바이스 감지 - 안내 모달 표시');
-        showMobileRestrictionModal();
-    } else {
-        console.log('💻 데스크탑/태블릿 - 퍼스널컬러 실행');
-        openPersonalColorModal();
+function handlePersonalColorAccess(event) {
+    // 이벤트 전파 중단
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
     }
+    
+    console.log('퍼스널컬러 버튼 클릭됨 - 태블릿 터치 최적화');
+    
+    // 사이드바 먼저 닫기
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+    }
+    
+    // 300ms 대기 후 모달 열기
+    setTimeout(() => {
+        if (isMobileDevice()) {
+            console.log('모바일 디바이스 감지 - 안내 모달 표시');
+            showMobileRestrictionModal();
+        } else {
+            console.log('데스크탑/태블릿 - 퍼스널컬러 실행');
+            openPersonalColorModal();
+        }
+    }, 300);
 }
 
 // 모바일 제한 모달 표시
@@ -1555,6 +1570,7 @@ function forcePersonalColorAccess() {
 </body>
 </html>
 </html>
+
 
 
 
