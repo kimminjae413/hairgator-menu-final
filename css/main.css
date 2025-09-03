@@ -1716,6 +1716,14 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+/* 터치 문제 최종 해결 */
+.category-tab:nth-last-child(-n+2) {
+    z-index: 999 !important;
+    position: relative !important;
+    pointer-events: all !important;
+    touch-action: manipulation !important;
+    min-height: 70px !important;
+}
 
 
 
