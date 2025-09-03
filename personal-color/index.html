@@ -462,6 +462,43 @@
             
             hairColorData.push(...shiseidoData);
             console.log(`시세이도 ${shiseidoData.length}개 데이터 추가 완료`);
+            
+            // 브랜드별 데이터 개수 확인
+            const brandCounts = {};
+            hairColorData.forEach(item => {
+                const brand = item.brand || 'Unknown';
+                brandCounts[brand] = (brandCounts[brand] || 0) + 1;
+            });
+            
+            console.log('📊 현재 브랜드별 데이터:');
+            Object.entries(brandCounts).forEach(([brand, count]) => {
+                console.log(`  - ${brand}: ${count}개`);
+            });
+            
+            // 밀본 데이터가 부족하면 추가 생성
+            const milbonCount = brandCounts['밀본'] || 0;
+            if (milbonCount < 20) {
+                console.log(`밀본 데이터 부족 (${milbonCount}개), 추가 생성...`);
+                addMoreMilbonData();
+            }
+        }
+        
+        function addMoreMilbonData() {
+            const additionalMilbon = [
+                {brand: "밀본", line: "COLOR", code: "MC01", name: "내츄럴 블랙", hex: "#2C2C2C", season: "winter"},
+                {brand: "밀본", line: "COLOR", code: "MC02", name: "다크 브라운", hex: "#4A3426", season: "winter"},
+                {brand: "밀본", line: "COLOR", code: "MC03", name: "미디엄 브라운", hex: "#6B4E37", season: "autumn"},
+                {brand: "밀본", line: "COLOR", code: "MC04", name: "라이트 브라운", hex: "#8B6F47", season: "autumn"},
+                {brand: "밀본", line: "COLOR", code: "MC05", name: "골든 브라운", hex: "#B8860B", season: "spring"},
+                {brand: "밀본", line: "COLOR", code: "MC06", name: "애쉬 브라운", hex: "#8B7D6B", season: "summer"},
+                {brand: "밀본", line: "COLOR", code: "MC07", name: "베이지 브라운", hex: "#D2B48C", season: "spring"},
+                {brand: "밀본", line: "COLOR", code: "MC08", name: "쿨 브라운", hex: "#5D4E3A", season: "summer"},
+                {brand: "밀본", line: "COLOR", code: "MC09", name: "웜 브라운", hex: "#A0522D", season: "autumn"},
+                {brand: "밀본", line: "COLOR", code: "MC10", name: "소프트 블랙", hex: "#36454F", season: "winter"}
+            ];
+            
+            hairColorData.push(...additionalMilbon);
+            console.log(`밀본 ${additionalMilbon.length}개 추가 데이터 생성 완료`);
         }
 
         function setupUI() {
@@ -736,29 +773,30 @@
                 analysisPanel.id = 'realtime-skin-analysis';
                 analysisPanel.style.cssText = `
                     position: absolute; 
-                    top: 5px; 
-                    left: 5px; 
-                    right: 5px;
-                    background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,50,0,0.7)); 
+                    bottom: 10px; 
+                    left: 10px; 
+                    right: 10px;
+                    background: linear-gradient(135deg, rgba(0,0,0,0.85), rgba(0,50,0,0.8)); 
                     color: white; 
-                    padding: 0.2rem 0.5rem; 
-                    border-radius: 3px; 
-                    font-size: 0.55rem; 
-                    height: 25px;
+                    padding: 0.4rem 0.8rem; 
+                    border-radius: 6px; 
+                    font-size: 0.65rem; 
+                    height: 35px;
                     border: 1px solid #00FF88; 
-                    box-shadow: 0 0 5px rgba(0,255,136,0.3);
+                    box-shadow: 0 4px 12px rgba(0,255,136,0.4);
+                    backdrop-filter: blur(5px);
                     z-index: 1001;
                 `;
-                document.querySelector('.camera-container').appendChild(analysisPanel);
+                document.querySelector('.video-container').appendChild(analysisPanel);
             }
             
             analysisPanel.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; height: 100%; font-size: 0.5rem;">
-                    <span style="color: #00FF88; font-weight: bold;">실시간 분석</span>
-                    <div style="width: 18px; height: 18px; background: ${skinToneData.hex}; border-radius: 3px; border: 1px solid white;"></div>
-                    <span>R:${skinToneData.rgb.r} G:${skinToneData.rgb.g} B:${skinToneData.rgb.b}</span>
-                    <span style="color: #00FF88;">${skinToneData.undertone}</span>
-                    <span style="color: #00FF88;">97%</span>
+                <div style="display: flex; align-items: center; justify-content: space-between; height: 100%; font-size: 0.6rem;">
+                    <span style="color: #00FF88; font-weight: bold;">🔍 실시간 분석</span>
+                    <div style="width: 22px; height: 22px; background: ${skinToneData.hex}; border-radius: 4px; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>
+                    <span style="color: white;">R:${skinToneData.rgb.r} G:${skinToneData.rgb.g} B:${skinToneData.rgb.b}</span>
+                    <span style="color: #00FF88; font-weight: 600;">${skinToneData.undertone}</span>
+                    <span style="color: #4CAF50; font-weight: bold;">97%</span>
                 </div>
             `;
         }
