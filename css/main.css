@@ -390,17 +390,23 @@ body.light-theme .category-tabs {
 .category-tab:nth-child(6),
 .category-tab:nth-child(7),
 .category-tab:nth-child(8),
-.category-tab:nth-child(9) {
-    z-index: 50 !important;
-    min-height: 65px !important;
-    padding: 22px 28px !important;
-    margin: 0 4px !important;
-    box-shadow: 0 0 0 2px transparent !important;
-    isolation: isolate !important;
-    /* 이 3줄 추가하세요 */
-    touch-action: manipulation !important;
+.category-tab:nth-last-child(-n+3) {
+    z-index: 999 !important;
+    position: relative !important;
     pointer-events: all !important;
-    -webkit-tap-highlight-color: rgba(233, 30, 99, 0.8) !important;
+    touch-action: manipulation !important;
+    min-height: 70px !important;
+}
+
+/* 클릭 영역 전체 확장 */
+.category-tab::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
 }
 
 /* 태블릿에서 터치 영역 완전 재정의 */
@@ -1724,6 +1730,7 @@ body.light-theme .modal-action-btn.secondary:hover {
     touch-action: manipulation !important;
     min-height: 70px !important;
 }
+
 
 
 
