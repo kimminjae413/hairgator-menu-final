@@ -1235,9 +1235,10 @@ body.light-theme .loading-spinner {
     color: white;
     padding: 12px 20px;
     border-radius: 8px;
-    z-index: 10000;
+    z-index: 1500; /* 10000에서 1500으로 변경 - 탭보다 낮게 */
     opacity: 0;
     transition: opacity 0.3s ease, background-color 0.3s ease;
+    pointer-events: none; /* 클릭 이벤트 차단 추가 */
 }
 
 body.light-theme .toast {
