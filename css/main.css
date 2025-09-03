@@ -563,12 +563,12 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 
 /* 스타일 그리드 */
 .styles-container {
-    padding: 20px;
+    padding: 10px;  /* 20px에서 10px로 줄이기 */
     min-height: 50vh;
-    max-height: 70vh;  /* 🔥 이 줄 추가 */
+    max-height: 70vh;
     transition: background-color 0.3s ease;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;  /* 🔥 이 줄 추가 */
+    -webkit-overflow-scrolling: touch;
 }
 
 body.light-theme .styles-container {
@@ -579,9 +579,10 @@ body.light-theme .styles-container {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 15px;
-    max-height: inherit;  /* 🔥 추가 */
+    max-height: inherit;
+    width: 100%;  /* 추가 */
+    box-sizing: border-box;  /* 추가 */
 }
-
 @media (min-width: 768px) and (max-width: 1024px) {
     .styles-grid {
         grid-template-columns: repeat(5, 1fr);
@@ -609,6 +610,8 @@ body.light-theme .styles-container {
     transition: all 0.2s ease;
     aspect-ratio: 3/4;
     position: relative;
+    width: 100%;  /* 추가 */
+    height: auto;  /* 추가 */
 }
 
 /* 스타일 정보 완전 숨김 처리 */
@@ -1683,6 +1686,7 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
 
 
 
