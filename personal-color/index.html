@@ -463,28 +463,28 @@ let animationFrameId = null;
         }
 
         function generateDefaultHairColors() {
-            const brands = ['로레알', '웰라', '밀본'];
-            const seasons = ['spring', 'summer', 'autumn', 'winter'];
-            const data = [];
-            
-            brands.forEach(brand => {
-                seasons.forEach(season => {
-                    SeasonPalettes[season].colors.forEach((color, index) => {
-                        data.push({
-                            brand: brand,
-                            name: `${season} Color ${index + 1}`,
-                            hex: color,
-                            season: season,
-                            confidence: 0.8 + Math.random() * 0.2
-                        });
-                    });
+    const brands = ['로레알', '웰라', '밀본'];
+    const seasons = ['spring', 'summer', 'autumn', 'winter'];
+    const data = [];
+    
+    brands.forEach(brand => {
+        seasons.forEach(season => {
+            SeasonPalettes[season].colors.forEach((color, index) => {
+                data.push({
+                    brand: brand,
+                    name: `${season} Color ${index + 1}`,
+                    hex: color,
+                    season: season,
+                    confidence: 0.8 + Math.random() * 0.2
                 });
             });
-            
-            return data;
-        }
-        function checkShiseidoData() {
-    // 시세이도 데이터 확인
+        });
+    });
+    
+    return data;
+}
+
+function checkShiseidoData() {
     const shiseidoCount = hairColorData.filter(item => 
         item.brand && (
             item.brand.toLowerCase().includes('shiseido') ||
@@ -501,6 +501,20 @@ let animationFrameId = null;
     } else {
         console.log('✅ 시세이도 데이터 확인됨');
     }
+}
+
+function addShiseidoData() {
+    const shiseidoData = [
+        {brand: "Shiseido", name: "내츄럴 브라운", hex: "#6B4E37", season: "autumn"},
+        {brand: "Shiseido", name: "애쉬 브라운", hex: "#8B7D6B", season: "summer"},
+        {brand: "Shiseido", name: "골든 베이지", hex: "#D2B48C", season: "spring"},
+        {brand: "Shiseido", name: "딥 블랙", hex: "#2F2F2F", season: "winter"},
+        {brand: "Shiseido", name: "소프트 블랙", hex: "#4A4A4A", season: "winter"}
+    ];
+    
+    hairColorData.push(...shiseidoData);
+    console.log(`시세이도 ${shiseidoData.length}개 데이터 추가 완료`);
+}
     
     // 브랜드별 통계 출력
     printBrandStats();
