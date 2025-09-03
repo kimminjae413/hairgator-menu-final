@@ -457,8 +457,8 @@ body.light-theme .category-tab:hover {
     border-radius: 50%;
     box-shadow: 0 0 6px rgba(255, 68, 68, 0.6);
     animation: pulse-red 2s infinite;
-    z-index: 10;
-    pointer-events: none; /* 클릭 이벤트 통과 */
+    z-index: 5 !important;
+    pointer-events: none !important;
 }
 
 @keyframes pulse-red {
@@ -1699,3 +1699,4 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
