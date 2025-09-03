@@ -383,40 +383,51 @@ let animationFrameId = null;
         }
 
         async function loadHairColorData() {
-            try {
-                // 1순위: 부모창의 HAIR_COLOR_614_DATA 확인
-                if (parent && parent.HAIR_COLOR_614_DATA) {
-                    hairColorData = parent.HAIR_COLOR_614_DATA;
-                    console.log(`✅ 부모창에서 614개 헤어컬러 데이터 로드 완료`);
-                    updateDataStatus(`614개 프리미엄 헤어컬러 데이터 로드됨`, 'success');
-                    return;
-                }
-                
-                // 2순위: 별도 스크립트에서 로드 시도
-                if (typeof HAIR_COLOR_614_DATA !== 'undefined') {
-                    hairColorData = HAIR_COLOR_614_DATA;
-                    console.log(`✅ 글로벌 변수에서 614개 데이터 로드`);
-                    updateDataStatus(`614개 헤어컬러 데이터 로드됨`, 'success');
-                    return;
-                }
-                
-                // 3순위: 기존 호환성 데이터 확인
-                if (parent && parent.hairColorDatabase) {
-                    hairColorData = parent.hairColorDatabase;
-                    console.log(`부모창 데이터베이스에서 ${hairColorData.length}개 로드`);
-                    updateDataStatus(`${hairColorData.length}개 헤어컬러 데이터 로드됨`, 'success');
-                    return;
-                }
-                
-                // 4순위: 외부 스크립트 로드 시도
-                await loadExternalHairColorData();
-                
-            } catch (error) {
-                console.error('헤어컬러 데이터 로드 실패:', error);
-                hairColorData = generateDefaultHairColors();
-                updateDataStatus('기본 데이터로 대체됨', 'warning');
-            }
+    try {
+        // 1순위: 부모창의 HAIR_COLOR_614_DATA 확인
+        if (parent && parent.HAIR_COLOR_614_DATA) {
+            hairColorData = parent.HAIR_COLOR_614_DATA;
+            console.log(`✅ 부모창에서 614개 헤어컬러 데이터 로드 완료`);
+            updateDataStatus(`614개 프리미엄 헤어컬러 데이터 로드됨`, 'success');
+            // 시세이도 데이터 확인
+            checkShiseidoData();
+            return;
         }
+        
+        // 2순위: 별도 스크립트에서 로드 시도
+        if (typeof HAIR_COLOR_614_DATA !== 'undefined') {
+            hairColorData = HAIR_COLOR_614_DATA;
+            console.log(`✅ 글로벌 변수에서 614개 데이터 로드`);
+            updateDataStatus(`614개 헤어컬러 데이터 로드됨`, 'success');
+            // 시세이도 데이터 확인
+            checkShiseidoData();
+            return;
+        }
+        
+        // 3순위: 기존 호환성 데이터 확인
+        if (parent && parent.hairColorDatabase) {
+            hairColorData = parent.hairColorDatabase;
+            console.log(`부모창 데이터베이스에서 ${hairColorData.length}개 로드`);
+            updateDataStatus(`${hairColorData.length}개 헤어컬러 데이터 로드됨`, 'success');
+            // 시세이도 데이터 확인
+            checkShiseidoData();
+            return;
+        }
+        
+        // 4순위: 외부 스크립트 로드 시도
+        await loadExternalHairColorData();
+        
+        // 최종적으로 시세이도 데이터 확인
+        checkShiseidoData();
+        
+    } catch (error) {
+        console.error('헤어컬러 데이터 로드 실패:', error);
+        hairColorData = generateDefaultHairColors();
+        updateDataStatus('기본 데이터로 대체됨', 'warning');
+        // 기본 데이터에도 시세이도 추가
+        checkShiseidoData();
+    }
+}
 
         async function loadExternalHairColorData() {
             try {
@@ -472,6 +483,70 @@ let animationFrameId = null;
             
             return data;
         }
+        function checkShiseidoData() {
+    // 시세이도 데이터 확인
+    const shiseidoCount = hairColorData.filter(item => 
+        item.brand && (
+            item.brand.toLowerCase().includes('shiseido') ||
+            item.brand.toLowerCase().includes('시세이도')
+        )
+    ).length;
+    
+    console.log(`현재 시세이도 데이터: ${shiseidoCount}개`);
+    console.log(`전체 헤어컬러 데이터: ${hairColorData.length}개`);
+    
+    if (shiseidoCount === 0) {
+        console.warn('시세이도 데이터 없음. 기본 시세이도 데이터 추가...');
+        addShiseidoData();
+    } else {
+        console.log('✅ 시세이도 데이터 확인됨');
+    }
+    
+    // 브랜드별 통계 출력
+    printBrandStats();
+}
+
+function addShiseidoData() {
+    // 시세이도 기본 데이터 추가
+    const shiseidoColors = [
+        {brand: "Shiseido", line: "PRIMIENCE", code: "N5", name: "내츄럴 브라운", hex: "#6B4E37", season: "autumn"},
+        {brand: "Shiseido", line: "PRIMIENCE", code: "A6", name: "애쉬 브라운", hex: "#8B7D6B", season: "summer"},
+        {brand: "Shiseido", line: "PRIMIENCE", code: "G7", name: "골든 베이지", hex: "#D2B48C", season: "spring"},
+        {brand: "Shiseido", line: "ADENOVITAL", code: "AD01", name: "딥 블랙", hex: "#2F2F2F", season: "winter"},
+        {brand: "Shiseido", line: "ADENOVITAL", code: "AD02", name: "소프트 블랙", hex: "#4A4A4A", season: "winter"},
+        
+        // 추가 시세이도 색상들
+        {brand: "Shiseido", line: "PRIMIENCE", code: "B8", name: "베이지 브라운", hex: "#A0826D", season: "autumn"},
+        {brand: "Shiseido", line: "PRIMIENCE", code: "M9", name: "매트 브라운", hex: "#8B6F47", season: "autumn"},
+        {brand: "Shiseido", line: "ADENOVITAL", code: "AD03", name: "다크 브라운", hex: "#3D2F23", season: "winter"},
+        {brand: "Shiseido", line: "ADENOVITAL", code: "AD04", name: "쿨 브라운", hex: "#5D4E3A", season: "summer"},
+        {brand: "Shiseido", line: "PRIMIENCE", code: "C10", name: "카라멜 브라운", hex: "#B8860B", season: "spring"},
+        
+        // 더 많은 시세이도 색상 (50개까지)
+        {brand: "Shiseido", line: "PRIMIENCE", code: "R11", name: "로즈 브라운", hex: "#A0522D", season: "autumn"},
+        {brand: "Shiseido", line: "PRIMIENCE", code: "V12", name: "바이올렛 애쉬", hex: "#8B7B8B", season: "summer"},
+        {brand: "Shiseido", line: "ADENOVITAL", code: "AD05", name: "미드나잇", hex: "#191970", season: "winter"},
+        {brand: "Shiseido", line: "PRIMIENCE", code: "H13", name: "허니 골드", hex: "#DAA520", season: "spring"},
+        {brand: "Shiseido", line: "PRIMIENCE", code: "O14", name: "오렌지 베이지", hex: "#CD853F", season: "autumn"}
+    ];
+    
+    hairColorData.push(...shiseidoColors);
+    console.log(`시세이도 ${shiseidoColors.length}개 데이터 추가 완료`);
+}
+
+function printBrandStats() {
+    const brandStats = {};
+    hairColorData.forEach(item => {
+        const brand = item.brand || 'Unknown';
+        brandStats[brand] = (brandStats[brand] || 0) + 1;
+    });
+    
+    console.log('📊 브랜드별 헤어컬러 데이터:');
+    Object.entries(brandStats).forEach(([brand, count]) => {
+        console.log(`  - ${brand}: ${count}개`);
+    });
+    console.log(`📈 총 데이터: ${hairColorData.length}개`);
+}
 
         function setupUI() {
             // 기본 계절 색상 팔레트 설정
