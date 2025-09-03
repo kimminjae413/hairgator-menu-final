@@ -369,7 +369,9 @@ body.light-theme .category-tabs {
     justify-content: center;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation; /* 터치 지연 제거 */
-    z-index: 10; /* z-index 명시 */
+     z-index: 1000 !important; /* 10에서 1000으로 증가 */
+    position: relative !important;
+    pointer-events: auto !important;
 }
 
 body.light-theme .category-tab {
@@ -1488,6 +1490,18 @@ body.light-theme .modal-action-btn.secondary:hover {
         min-width: 85px;
         padding: 16px 24px;
         touch-action: manipulation;
+        z-index: 1500 !important;
+        position: relative !important;
+        pointer-events: auto !important;
+    }
+    
+    /* F, G, CROP 등 특정 탭들 특별 처리 */
+    .category-tab:nth-child(6),
+    .category-tab:nth-child(7),
+    .category-tab:nth-last-child(-n+2) {
+        z-index: 2000 !important;
+        background: #333 !important;
+        border: 2px solid #444 !important;
     }
     
     .category-tab:active {
@@ -1497,21 +1511,19 @@ body.light-theme .modal-action-btn.secondary:hover {
         transition: all 0.1s ease;
     }
     
-    /* 터치 시 즉시 반응 */
-    .category-tab:hover {
-        background: #333;
-        color: #fff;
-    }
-    
-    /* 서브탭도 터치 최적화 */
-    .sub-tab {
-        min-height: 44px;
-        padding: 12px 20px;
+    /* 사이드바 메뉴 아이템 터치 개선 */
+    .sidebar-menu-item {
+        min-height: 70px;
+        padding: 25px 30px;
         touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
+        position: relative;
+        z-index: 100;
     }
     
-    .sub-tab:active {
-        transform: scale(0.95);
+    .sidebar-menu-item:active {
+        background: var(--ai-bg-primary) !important;
+        transform: translateX(3px);
         transition: all 0.1s ease;
     }
 }
@@ -1609,3 +1621,4 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
