@@ -916,7 +916,30 @@ window.HAIRGATOR_MENU = {
     checkSubcategoriesAndNew
 };
 
-console.log('✅ HAIRGATOR 메뉴 시스템 초기화 완료 - 스마트 필터링 & 모달 AI 버튼');
+// HTML에서 직접 호출되는 전역 함수 추가
+window.selectGender = function(gender) {
+    console.log(`성별 선택: ${gender}`);
+    
+    // 현재 성별 전역 변수 설정
+    currentGender = gender;
+    if (typeof window.currentGender !== 'undefined') {
+        window.currentGender = gender;
+    }
+    
+    // 성별 선택 화면 숨기기
+    const genderSelection = document.getElementById('genderSelection');
+    const menuContainer = document.getElementById('menuContainer');
+    const backBtn = document.getElementById('backBtn');
+    
+    if (genderSelection) genderSelection.style.display = 'none';
+    if (menuContainer) menuContainer.classList.add('active');
+    if (backBtn) backBtn.style.display = 'flex';
+    
+    // 스마트 메뉴 시스템 로드 (스타일링된 서브카테고리 + NEW 표시 포함)
+    loadMenuForGender(gender);
+};
+
+console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료');
 
 
 
