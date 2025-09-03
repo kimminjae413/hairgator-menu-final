@@ -429,7 +429,9 @@ body.light-theme .category-tab:hover {
     box-shadow: 0 2px 10px rgba(233, 30, 99, 0.4);
 }
 
-/* NEW 표시 다시 활성화 */
+/* ========== NEW 표시 시스템 완전 해결 (대분류/중분류 구분) ========== */
+
+/* 기본 NEW 표시 (중분류용) */
 .new-indicator {
     position: absolute;
     top: -4px;
@@ -438,12 +440,37 @@ body.light-theme .category-tab:hover {
     height: 8px;
     background: var(--new-indicator);
     border-radius: 50%;
-    z-index: 15; /* 탭보다 위에 표시되도록 높은 z-index */
-    pointer-events: none; /* 클릭 방해하지 않도록 */
+    z-index: 15;
+    pointer-events: none;
     box-shadow: 0 0 6px rgba(255, 68, 68, 0.6);
     animation: pulse-red 2s infinite;
 }
 
+/* 대분류 탭(.category-tab) 내부의 NEW 표시 - 크기 확대 */
+.category-tab .new-indicator {
+    top: -6px;
+    right: -6px;
+    width: 12px;
+    height: 12px;
+    background: var(--new-indicator);
+    border: 2px solid var(--primary-dark);
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.8);
+    z-index: 20;
+}
+
+/* 중분류 탭(.sub-tab) 내부의 NEW 표시 - 기본 크기 */
+.sub-tab .new-indicator {
+    top: -4px;
+    right: -4px;
+    width: 8px;
+    height: 8px;
+    background: var(--new-indicator);
+    border: 1px solid var(--primary-dark);
+    box-shadow: 0 0 6px rgba(255, 68, 68, 0.6);
+    z-index: 15;
+}
+
+/* NEW 표시 깜빡이는 애니메이션 */
 @keyframes pulse-red {
     0%, 100% { 
         transform: scale(1);
@@ -452,6 +479,44 @@ body.light-theme .category-tab:hover {
     50% { 
         transform: scale(1.2);
         opacity: 0.7;
+    }
+}
+
+/* 태블릿에서 NEW 표시 크기 조정 */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .category-tab .new-indicator {
+        width: 14px;
+        height: 14px;
+        top: -7px;
+        right: -7px;
+        border-width: 3px;
+    }
+    
+    .sub-tab .new-indicator {
+        width: 10px;
+        height: 10px;
+        top: -5px;
+        right: -5px;
+        border-width: 2px;
+    }
+}
+
+/* 모바일에서 NEW 표시 크기 조정 */
+@media (max-width: 767px) {
+    .category-tab .new-indicator {
+        width: 16px;
+        height: 16px;
+        top: -8px;
+        right: -8px;
+        border-width: 3px;
+    }
+    
+    .sub-tab .new-indicator {
+        width: 12px;
+        height: 12px;
+        top: -6px;
+        right: -6px;
+        border-width: 2px;
     }
 }
 
@@ -1542,13 +1607,6 @@ body.light-theme .modal-action-btn.secondary:hover {
         left: -15px;
         right: -15px;
         bottom: -15px;
-    }
-    
-    .category-tab::after {
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
     }
     
     body {
