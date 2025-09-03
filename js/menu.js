@@ -93,8 +93,9 @@ const SUB_CATEGORIES = [
 ];
 
 // ========== 전역 변수 ==========
-let currentMainTab = null;  // 현재 선택된 메인 카테고리 (객체)
-let currentSubTab = null;   // 현재 선택된 서브 카테고리 (문자열)
+let currentGender = null;  // ← 이 줄 추가
+let currentMainTab = null;
+let currentSubTab = null;
 
 // 스마트 필터링 & NEW 시스템 캐시
 let availableSubcategories = new Map();
@@ -890,5 +891,6 @@ window.HAIRGATOR_MENU = {
 };
 
 console.log('✅ HAIRGATOR 메뉴 시스템 초기화 완료 - 스마트 필터링 & 모달 AI 버튼');
+
 
 
