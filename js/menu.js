@@ -173,31 +173,57 @@ function createNewIndicator() {
 
 // 성별에 따른 메뉴 로드
 async function loadMenuForGender(gender) {
-    currentGender = gender;
-    const categories = gender === 'male' ? MALE_CATEGORIES : FEMALE_CATEGORIES;
-    
-    console.log(`🔄 ${gender} 메뉴 로드 시작 (${categories.length}개 카테고리)`);
-    
-    // body에 gender 클래스 추가
-    document.body.classList.remove('gender-male', 'gender-female');
-    document.body.classList.add(`gender-${gender}`);
-    
-    // 캐시 초기화
-    availableSubcategories.clear();
-    categoryNewCounts.clear();
-    
-    // 대분류 탭 생성 (NEW 표시 포함)
-    await createMainTabsWithSmart(categories, gender);
-    
-    // 카테고리 설명 영역 확인/생성
-    ensureCategoryDescriptionArea();
-    
-    // 첫 번째 카테고리 자동 선택
-    if (categories.length > 0) {
-        await selectMainTab(categories[0], 0);
+    try {
+        // 전역 변수 설정 (HTML과 동기화)
+        if (typeof window.currentGender !== 'undefined') {
+            window.currentGender = gender;
+        }
+        currentGender = gender;
+        
+        const categories = gender === 'male' ? MALE_CATEGORIES : FEMALE_CATEGORIES;
+        
+        console.log(`🔄 태블릿 호환 ${gender} 메뉴 로드 시작 (${categories.length}개 카테고리)`);
+        
+        // Firebase 연결 확인
+        if (typeof db === 'undefined' || !db) {
+            console.warn('Firebase 미연결 - 3초 후 재시도');
+            setTimeout(() => loadMenuForGender(gender), 3000);
+            return;
+        }
+        
+        // DOM 준비 확인
+        if (!document.getElementById('categoryTabs')) {
+            console.warn('DOM 미준비 - 2초 후 재시도');
+            setTimeout(() => loadMenuForGender(gender), 2000);
+            return;
+        }
+        
+        // body에 gender 클래스 추가
+        document.body.classList.remove('gender-male', 'gender-female');
+        document.body.classList.add(`gender-${gender}`);
+        
+        // 캐시 초기화
+        availableSubcategories.clear();
+        categoryNewCounts.clear();
+        
+        // 대분류 탭 생성 (NEW 표시 포함)
+        await createMainTabsWithSmart(categories, gender);
+        
+        // 카테고리 설명 영역 확인/생성
+        ensureCategoryDescriptionArea();
+        
+        // 첫 번째 카테고리 자동 선택
+        if (categories.length > 0) {
+            await selectMainTab(categories[0], 0);
+        }
+        
+        console.log(`✅ 태블릿 호환 ${gender} 메뉴 로드 완료`);
+        
+    } catch (error) {
+        console.error('태블릿 메뉴 로드 오류:', error);
+        // 오류 발생시 5초 후 재시도
+        setTimeout(() => loadMenuForGender(gender), 5000);
     }
-    
-    console.log(`✅ ${gender} 메뉴 로드 완료`);
 }
 
 // 대분류 탭 생성 (스마트 필터링 + NEW 표시)
@@ -891,6 +917,7 @@ window.HAIRGATOR_MENU = {
 };
 
 console.log('✅ HAIRGATOR 메뉴 시스템 초기화 완료 - 스마트 필터링 & 모달 AI 버튼');
+
 
 
 
