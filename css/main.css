@@ -327,7 +327,7 @@ body.light-theme .gender-btn {
     display: block;
 }
 
-/* ========== 카테고리 탭 (태블릿 터치 문제 해결) ========== */
+/* ========== 카테고리 탭 (태블릿 터치 문제 완전 해결 최종 버전) ========== */
 .category-tabs {
     background: #111;
     padding: 15px;
@@ -337,8 +337,8 @@ body.light-theme .gender-btn {
     border-bottom: 1px solid #333;
     scrollbar-width: none;
     transition: background-color 0.3s ease, border-color 0.3s ease;
-    -webkit-overflow-scrolling: touch; /* iOS 터치 스크롤 개선 */
-    scroll-behavior: smooth; /* 부드러운 스크롤 */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
 }
 
 body.light-theme .category-tabs {
@@ -370,55 +370,28 @@ body.light-theme .category-tabs {
     -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
     pointer-events: auto;
     z-index: 10;
+    
+    /* 터치 문제 해결을 위한 확장된 클릭 영역 */
+    overflow: visible;
+}
+
+/* 모든 탭에 보이지 않는 확장된 터치 영역 생성 */
+.category-tab::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    cursor: pointer;
+    z-index: -1;
+    border-radius: 28px;
 }
 
 /* 호버 시 z-index 더 높이기 */
 .category-tab:hover,
 .category-tab:active {
     z-index: 30 !important;
-}
-
-/* 문제가 있는 특정 탭들 강제 우선순위 (5번째 이후 탭들) */
-.category-tab:nth-child(n+5) {
-    z-index: 25 !important;
-    position: relative !important;
-    min-height: 60px !important;
-    padding: 20px 25px !important;
-}
-
-/* 특히 문제가 되는 buzz, crop, F length 탭 강제 해결 */
-.category-tab:nth-child(6),
-.category-tab:nth-child(7),
-.category-tab:nth-child(8),
-.category-tab:nth-last-child(-n+3) {
-    z-index: 999 !important;
-    position: relative !important;
-    pointer-events: all !important;
-    touch-action: manipulation !important;
-    min-height: 70px !important;
-}
-
-/* 클릭 영역 전체 확장 */
-.category-tab::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-}
-
-/* 태블릿에서 터치 영역 완전 재정의 */
-@media (min-width: 768px) and (max-width: 1024px) {
-    .category-tab:nth-child(n+5) {
-        min-height: 70px !important;
-        padding: 25px 30px !important;
-        margin: 0 3px !important;
-        z-index: 100 !important;
-        transform: translateZ(0) !important;
-        will-change: transform !important;
-    }
 }
 
 body.light-theme .category-tab {
@@ -599,7 +572,7 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 
 /* 스타일 그리드 */
 .styles-container {
-    padding: 10px;  /* 20px에서 10px로 줄이기 */
+    padding: 10px;
     min-height: 50vh;
     max-height: 70vh;
     transition: background-color 0.3s ease;
@@ -616,9 +589,10 @@ body.light-theme .styles-container {
     grid-template-columns: repeat(5, 1fr);
     gap: 15px;
     max-height: inherit;
-    width: 100%;  /* 추가 */
-    box-sizing: border-box;  /* 추가 */
+    width: 100%;
+    box-sizing: border-box;
 }
+
 @media (min-width: 768px) and (max-width: 1024px) {
     .styles-grid {
         grid-template-columns: repeat(5, 1fr);
@@ -644,40 +618,14 @@ body.light-theme .styles-container {
     overflow: hidden;
     cursor: pointer;
     transition: all 0.2s ease;
-    aspect-ratio: 3/4;
+    aspect-ratio: 3/4 !important;
     position: relative;
-    width: 100%;  /* 추가 */
-    height: auto;  /* 추가 */
-}
-
-/* 스타일 정보 완전 숨김 처리 */
-.style-info {
-    display: none !important;
-}
-
-.style-code,
-.style-card {
-    background: transparent;
-    border-radius: 10px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    aspect-ratio: 3/4 !important;  /* !important 추가 */
-    position: relative;
-    width: 100% !important;  /* !important 추가 */
+    width: 100% !important;
     height: auto;
 }
 
-/* NEW 표시 임시 숨김 (터치 테스트용) */
-.new-indicator {
-    display: none !important;
-}
-
 /* 스타일 정보 완전 숨김 처리 */
-.style-info {
-    display: none !important;
-}
-
+.style-info,
 .style-code,
 .style-name {
     display: none !important;
@@ -698,18 +646,19 @@ body.light-theme .style-card:hover {
 
 .style-image-wrapper {
     position: relative;
-    width: 100% !important;  /* !important 추가 */
-    height: 100% !important;  /* !important 추가 */
+    width: 100% !important;
+    height: 100% !important;
 }
 
 .style-image {
-    width: 100% !important;  /* !important 추가 */
-    height: 100% !important;  /* !important 추가 */
-    object-fit: cover !important;  /* !important 추가 */
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 10px;
-    display: block !important;  /* 추가 */
+    display: block !important;
 }
+
 /* ========== AI 체험하기 버튼 오버레이 ========== */
 .ai-overlay {
     position: absolute;
@@ -1103,7 +1052,6 @@ body.light-theme .user-info {
 }
 
 /* ========== 퍼스널컬러 사이드바 및 모달 ========== */
-
 .sidebar-section {
     border-bottom: 1px solid var(--border-color);
     padding: 15px 0;
@@ -1130,11 +1078,13 @@ body.light-theme .user-info {
     transform: translateX(5px);
     border-color: var(--female-color);
 }
+
 .sidebar-menu-item:active {
     background: var(--female-color) !important;
     color: white !important;
     transform: scale(0.98);
 }
+
 .sidebar-icon {
     font-size: 20px;
     margin-right: 15px;
@@ -1176,19 +1126,19 @@ body.light-theme .user-info {
     left: 0;
     width: 100%;
     height: 100%;
-    background: none; /* 검정 백그라운드 제거 */
+    background: none;
     z-index: 10000;
     display: none;
 }
 
 .personal-color-modal.active {
-    display: block; /* flex에서 block으로 변경 */
+    display: block;
 }
 
 .personal-color-content {
     width: 100vw;
     height: 100vh;
-    background: none; /* 백그라운드 제거 */
+    background: none;
     position: relative;
     overflow: hidden;
 }
@@ -1541,17 +1491,23 @@ body.light-theme .modal-action-btn.secondary:hover {
         font-size: 15px;
         min-height: 52px;
         min-width: 90px;
-        /* touch-action 완전 제거 */
         user-select: none;
         cursor: pointer;
         position: relative;
         z-index: 100;
     }
     
+    /* 태블릿에서 터치 영역 더 크게 확장 */
+    .category-tab::before {
+        top: -12px;
+        left: -12px;
+        right: -12px;
+        bottom: -12px;
+    }
+    
     .category-tabs {
         padding: 20px 15px;
         gap: 15px;
-        /* touch-action 제거 */
         overflow-y: visible;
     }
     
@@ -1594,15 +1550,20 @@ body.light-theme .modal-action-btn.secondary:hover {
         min-height: 52px;
         min-width: 90px;
         padding: 18px 28px;
-        /* touch-action 완전 제거 */
         -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
         position: relative;
         z-index: 100;
     }
     
-    /* body 전체 스크롤 개선 */
+    /* 터치 디바이스에서 더 넓은 터치 영역 */
+    .category-tab::before {
+        top: -15px;
+        left: -15px;
+        right: -15px;
+        bottom: -15px;
+    }
+    
     body {
-        /* touch-action 제거 */
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
@@ -1638,18 +1599,6 @@ body.light-theme .modal-action-btn.secondary:hover {
     
     .category-description-text {
         font-size: 13px;
-    }
-    
-    .style-info {
-        padding: 10px 6px 6px;
-    }
-    
-    .style-code {
-        font-size: 9px;
-    }
-    
-    .style-name {
-        font-size: 11px;
     }
     
     .ai-experience-btn {
@@ -1722,15 +1671,3 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
-/* 터치 문제 최종 해결 */
-.category-tab:nth-last-child(-n+2) {
-    z-index: 999 !important;
-    position: relative !important;
-    pointer-events: all !important;
-    touch-action: manipulation !important;
-    min-height: 70px !important;
-}
-
-
-
-
