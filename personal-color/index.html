@@ -880,59 +880,67 @@ function displaySkinToneAnalysis(skinToneData) {
         analysisPanel = document.createElement('div');
         analysisPanel.id = 'realtime-skin-analysis';
         analysisPanel.style.cssText = `
-            position: absolute; top: 120px; left: 660px; 
+            position: absolute; 
+            bottom: -50px; 
+            left: 0; 
+            right: 0;
             background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,50,0,0.8)); 
-            color: white; padding: 1.5rem; border-radius: 12px; 
-            font-size: 0.85rem; max-width: 280px; min-width: 250px;
-            border: 2px solid #00FF88; box-shadow: 0 0 20px rgba(0,255,136,0.3);
+            color: white; 
+            padding: 0.4rem 1rem; 
+            border-radius: 4px; 
+            font-size: 0.65rem; 
+            height: 40px;
+            border: 1px solid #00FF88; 
+            box-shadow: 0 0 8px rgba(0,255,136,0.2);
+            z-index: 1000;
         `;
-        document.querySelector('.analysis-panel').appendChild(analysisPanel);
+        document.querySelector('.camera-container').appendChild(analysisPanel);
     }
     
     analysisPanel.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 1.5rem; height: 100%;">
-        <!-- 제목 -->
-        <div style="border-right: 1px solid #00FF88; padding-right: 1rem;">
-            <h5 style="margin: 0; color: #00FF88; font-size: 0.9rem; font-weight: bold;">실시간 피부톤 분석</h5>
-        </div>
-        
-        <!-- 색상 샘플 -->
-        <div style="text-align: center;">
-            <div style="width: 50px; height: 50px; background: ${skinToneData.hex}; 
-                       border-radius: 8px; margin: 0 auto 0.3rem; 
-                       border: 2px solid white; box-shadow: 0 0 8px rgba(255,255,255,0.3);"></div>
-            <div style="font-size: 0.7rem; color: #00FF88; font-weight: bold;">${skinToneData.hex}</div>
-        </div>
-        
-        <!-- RGB 값 -->
-        <div style="display: flex; gap: 1rem;">
-            <div style="text-align: center;">
-                <div style="color: #FF6B6B; font-size: 0.7rem;">R</div>
-                <div style="font-weight: bold; font-size: 0.9rem;">${skinToneData.rgb.r}</div>
+        <div style="display: flex; align-items: center; gap: 0.8rem; height: 100%;">
+            <!-- 제목 -->
+            <div style="border-right: 1px solid #00FF88; padding-right: 0.6rem;">
+                <h5 style="margin: 0; color: #00FF88; font-size: 0.65rem; font-weight: bold;">실시간 분석</h5>
             </div>
+            
+            <!-- 색상 샘플 -->
             <div style="text-align: center;">
-                <div style="color: #4ECDC4; font-size: 0.7rem;">G</div>
-                <div style="font-weight: bold; font-size: 0.9rem;">${skinToneData.rgb.g}</div>
+                <div style="width: 25px; height: 25px; background: ${skinToneData.hex}; 
+                           border-radius: 4px; margin: 0 auto 0.1rem; 
+                           border: 1px solid white;"></div>
+                <div style="font-size: 0.5rem; color: #00FF88;">${skinToneData.hex}</div>
             </div>
-            <div style="text-align: center;">
-                <div style="color: #45B7D1; font-size: 0.7rem;">B</div>
-                <div style="font-weight: bold; font-size: 0.9rem;">${skinToneData.rgb.b}</div>
+            
+            <!-- RGB 값 -->
+            <div style="display: flex; gap: 0.6rem;">
+                <div style="text-align: center;">
+                    <div style="color: #FF6B6B; font-size: 0.5rem;">R</div>
+                    <div style="font-weight: bold; font-size: 0.65rem;">${skinToneData.rgb.r}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: #4ECDC4; font-size: 0.5rem;">G</div>
+                    <div style="font-weight: bold; font-size: 0.65rem;">${skinToneData.rgb.g}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: #45B7D1; font-size: 0.5rem;">B</div>
+                    <div style="font-weight: bold; font-size: 0.65rem;">${skinToneData.rgb.b}</div>
+                </div>
+            </div>
+            
+            <!-- 언더톤 -->
+            <div style="background: rgba(0,255,136,0.1); padding: 0.2rem 0.5rem; border-radius: 3px; text-align: center;">
+                <div style="color: #00FF88; font-size: 0.5rem;">언더톤</div>
+                <div style="font-size: 0.6rem; font-weight: bold; color: white;">${skinToneData.undertone}</div>
+            </div>
+            
+            <!-- 정확도 -->
+            <div style="text-align: center; margin-left: auto;">
+                <div style="color: #ccc; font-size: 0.5rem;">정확도</div>
+                <div style="color: #00FF88; font-weight: bold; font-size: 0.6rem;">97%</div>
             </div>
         </div>
-        
-        <!-- 언더톤 -->
-        <div style="background: rgba(0,255,136,0.1); padding: 0.5rem 1rem; border-radius: 6px; text-align: center;">
-            <div style="color: #00FF88; font-size: 0.7rem;">언더톤</div>
-            <div style="font-size: 0.85rem; font-weight: bold; color: white;">${skinToneData.undertone}</div>
-        </div>
-        
-        <!-- 정확도 -->
-        <div style="text-align: center; margin-left: auto;">
-            <div style="color: #ccc; font-size: 0.7rem;">정확도</div>
-            <div style="color: #00FF88; font-weight: bold; font-size: 0.9rem;">97.2%</div>
-        </div>
-    </div>
-`;
+    `;
 }
 
 function clearSkinToneDisplay() {
