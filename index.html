@@ -70,7 +70,7 @@
             <p id="guestMessage">로그인 후 이용 가능합니다.</p>
           <!-- 퍼스널컬러 메뉴 섹션 - 로그인 후에만 표시 -->
 <div class="sidebar-section" id="personalColorSection" style="display: none;">
-    <div class="sidebar-menu-item" onclick="openPersonalColorModal()">
+    <div class="sidebar-menu-item" onclick="handlePersonalColorAccess()">
         <span class="sidebar-icon">🎨</span>
         <div class="sidebar-text">
             <div class="sidebar-title">퍼스널컬러</div>
@@ -1206,6 +1206,224 @@
                 grid-column: auto; /* 모바일에서는 일반 크기 */
             }
         }
+      /* 모바일 제한 모달 스타일 */
+.mobile-restriction-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-restriction-modal.active {
+    opacity: 1;
+}
+
+.mobile-restriction-content {
+    background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+    border: 2px solid #E91E63;
+    border-radius: 20px;
+    max-width: 90%;
+    width: 400px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(233, 30, 99, 0.3);
+    transform: translateY(30px);
+    transition: transform 0.3s ease;
+}
+
+.mobile-restriction-modal.active .mobile-restriction-content {
+    transform: translateY(0);
+}
+
+.mobile-restriction-header {
+    background: linear-gradient(135deg, #E91E63, #C2185B);
+    padding: 20px;
+    border-radius: 18px 18px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mobile-restriction-header h3 {
+    color: white;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.close-mobile-modal {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+
+.close-mobile-modal:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.mobile-restriction-body {
+    padding: 25px;
+    color: white;
+}
+
+.device-comparison {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-bottom: 25px;
+    padding: 20px;
+    background: rgba(233, 30, 99, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(233, 30, 99, 0.3);
+}
+
+.device-item {
+    text-align: center;
+    padding: 10px;
+}
+
+.device-icon {
+    font-size: 30px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.device-text {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.device-status {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 15px;
+}
+
+.not-recommended .device-status {
+    background: #ff4444;
+    color: white;
+}
+
+.recommended .device-status {
+    background: #4CAF50;
+    color: white;
+}
+
+.arrow {
+    font-size: 24px;
+    color: #E91E63;
+    font-weight: bold;
+}
+
+.restriction-message h4 {
+    color: #E91E63;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.restriction-message p {
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.reason-list {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.reason-list li {
+    margin-bottom: 8px;
+    color: #ccc;
+    font-size: 14px;
+}
+
+.recommendation-box {
+    background: linear-gradient(135deg, #4CAF50, #45A049);
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rec-icon {
+    font-size: 20px;
+}
+
+.mobile-restriction-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.btn-understand {
+    flex: 1;
+    background: #E91E63;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-understand:hover {
+    background: #D81B60;
+}
+
+.btn-force-access {
+    flex: 1;
+    background: transparent;
+    color: #ccc;
+    border: 1px solid #666;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 13px;
+}
+
+.btn-force-access:hover {
+    border-color: #E91E63;
+    color: #E91E63;
+}
+
+@media (max-width: 480px) {
+    .mobile-restriction-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .device-comparison {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .arrow {
+        transform: rotate(90deg);
+    }
+}  
   </style>
 
     <!-- 퍼스널컬러 모달 - 수정된 버전 -->
@@ -1219,10 +1437,124 @@
         sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox">
     </iframe>
 </div>
-    </div>
 
+<!-- 모바일 제한 안내 모달 -->
+<div class="mobile-restriction-modal" id="mobileRestrictionModal" style="display: none;">
+    <div class="mobile-restriction-content">
+        <div class="mobile-restriction-header">
+            <h3>📱➡️📟 화면이 작습니다</h3>
+            <button class="close-mobile-modal" onclick="closeMobileRestrictionModal()">✕</button>
+        </div>
+        <div class="mobile-restriction-body">
+            <div class="device-comparison">
+                <div class="device-item not-recommended">
+                    <span class="device-icon">📱</span>
+                    <div class="device-text">스마트폰</div>
+                    <div class="device-status">권장하지 않음</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="device-item recommended">
+                    <span class="device-icon">📟</span>
+                    <div class="device-text">태블릿 이상</div>
+                    <div class="device-status">권장</div>
+                </div>
+            </div>
+            
+            <div class="restriction-message">
+                <h4>🎨 퍼스널컬러 진단 안내</h4>
+                <p><strong>정확한 색상 분석을 위해서는 더 큰 화면이 필요합니다</strong></p>
+                <ul class="reason-list">
+                    <li>MediaPipe 얼굴 랜드마크 인식의 정확도</li>
+                    <li>실시간 피부톤 분석 화면 크기</li>
+                    <li>색상 팔레트와 결과 비교 화면</li>
+                    <li>드래이핑 모드의 시각적 효과</li>
+                </ul>
+                <div class="recommendation-box">
+                    <span class="rec-icon">💡</span>
+                    <p><strong>태블릿, 노트북, 데스크탑</strong>에서 이용해주세요</p>
+                </div>
+            </div>
+            
+            <div class="mobile-restriction-actions">
+                <button class="btn-understand" onclick="closeMobileRestrictionModal()">
+                    이해했습니다
+                </button>
+                <button class="btn-force-access" onclick="forcePersonalColorAccess()">
+                    그래도 사용하기
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 모바일 디바이스 감지
+function isMobileDevice() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const mobileKeywords = ['mobile', 'android', 'iphone', 'ipod', 'blackberry'];
+    const isMobileUA = mobileKeywords.some(keyword => userAgent.includes(keyword));
+    const isSmallScreen = window.innerWidth < 768;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    return isMobileUA || (isSmallScreen && isTouchDevice);
+}
+
+// 퍼스널컬러 접근 처리
+function handlePersonalColorAccess() {
+    console.log('퍼스널컬러 버튼 클릭됨');
+    
+    if (isMobileDevice()) {
+        console.log('📱 모바일 디바이스 감지 - 안내 모달 표시');
+        showMobileRestrictionModal();
+    } else {
+        console.log('💻 데스크탑/태블릿 - 퍼스널컬러 실행');
+        openPersonalColorModal();
+    }
+}
+
+// 모바일 제한 모달 표시
+function showMobileRestrictionModal() {
+    const modal = document.getElementById('mobileRestrictionModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        setTimeout(() => {
+            modal.classList.add('active');
+        }, 100);
+        
+        if (navigator.vibrate) {
+            navigator.vibrate([100, 50, 100]);
+        }
+    }
+}
+
+// 모바일 제한 모달 닫기
+function closeMobileRestrictionModal() {
+    const modal = document.getElementById('mobileRestrictionModal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }, 300);
+    }
+}
+
+// 강제 접근
+function forcePersonalColorAccess() {
+    if (confirm('정말로 모바일에서 사용하시겠습니까?\n\n화면이 작아서 일부 기능이 제한되고 정확도가 떨어질 수 있습니다.')) {
+        closeMobileRestrictionModal();
+        showToast('⚠️ 모바일 모드: 기능 제한됨', 'warning');
+        setTimeout(() => {
+            openPersonalColorModal();
+        }, 1000);
+    }
+}
+</script>
 </body>
 </html>
 </html>
+
 
 
