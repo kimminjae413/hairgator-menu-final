@@ -367,12 +367,10 @@ body.light-theme .category-tabs {
     display: flex;
     align-items: center;
     justify-content: center;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    /* 다음 3줄을 완전히 삭제하세요 */
-    /* z-index: 1000 !important; */
-    /* position: relative !important; */
-    /* pointer-events: auto !important; */
+    -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);  /* ← 터치 피드백 추가 */
+    touch-action: auto;  /* ← 터치 제한 해제 */
+    pointer-events: auto;  /* ← 클릭 이벤트 보장 */
+    z-index: 10;  /* ← 터치 우선순위 보장 */
 }
 
 body.light-theme .category-tab {
@@ -1483,14 +1481,16 @@ body.light-theme .modal-action-btn.secondary:hover {
         font-size: 15px;
         min-height: 52px;
         min-width: 90px;
-        /* 터치 이벤트 보장 */
-        touch-action: manipulation;
+        /* 다음 줄을 수정 */
+        touch-action: pan-y; /* manipulation에서 pan-y로 변경 */
         user-select: none;
     }
     
-    .category-tabs {
+     .category-tabs {
         padding: 20px 15px;
         gap: 15px;
+        touch-action: pan-x pan-y;  /* ← 수평/수직 스크롤 허용 */
+        overflow-y: visible;
     }
     
     .category-tab.active {
@@ -1534,23 +1534,15 @@ body.light-theme .modal-action-btn.secondary:hover {
         min-height: 52px;
         min-width: 90px;
         padding: 18px 28px;
-        touch-action: manipulation;
-        /* 다음 3줄 완전히 삭제 - z-index 충돌 제거 */
-        /* z-index: 1500 !important; */
-        /* position: relative !important; */
-        /* pointer-events: auto !important; */
+        touch-action: pan-y pinch-zoom;  /* ← 수직 스크롤 허용 */
     }
     
-    /* 특정 탭 처리 코드 전체 삭제 - 터치 방해 요소 제거 */
-    /*
-    .category-tab:nth-child(6),
-    .category-tab:nth-child(7),
-    .category-tab:nth-last-child(-n+2) {
-        z-index: 2000 !important;
-        background: #333 !important;
-        border: 2px solid #444 !important;
+    /* 추가: body 전체 터치 스크롤 개선 */
+    body {
+        touch-action: pan-y pinch-zoom;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
-    */
     
     .category-tab:active {
         opacity: 0.7;
@@ -1686,6 +1678,7 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
 
 
 
