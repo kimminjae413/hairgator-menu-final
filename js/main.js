@@ -764,6 +764,14 @@ window.addEventListener('load', function() {
         }
     `;
     document.head.appendChild(style);
+    
+    // 전역 접근을 위한 함수 노출
+    window.selectGender = selectGender;
+
+    // Performance Monitoring
+    console.log('🚀 HAIRGATOR 애플리케이션 준비 완료');
 });
+});
+
 
 
