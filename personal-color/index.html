@@ -582,20 +582,27 @@ let animationFrameId = null;
         
         document.getElementById('ai-face-guide').style.display = 'flex';
 
-const usageGuideDiv = document.createElement('div');
-usageGuideDiv.id = 'usage-guide';
-usageGuideDiv.innerHTML = `
-    <div style="background: rgba(233,30,99,0.1); border: 1px solid rgba(233,30,99,0.3); border-radius: 10px; padding: 1rem; margin-top: 1rem; color: white;">
-        <h4 style="color: #E91E63; margin-bottom: 0.5rem;">이용 방법</h4>
-        <div style="font-size: 14px; line-height: 1.5;">
-            <p style="margin: 0.3rem 0;">1. 카메라 시작 버튼을 클릭하세요</p>
-            <p style="margin: 0.3rem 0;">2. 얼굴을 가이드라인에 맞춰주세요</p>
-            <p style="margin: 0.3rem 0;">3. AI 분석 버튼을 눌러 분석을 시작하세요</p>
-            <p style="margin: 0.3rem 0;">4. 분석 완료 후 결과를 확인하세요</p>
-        </div>
-    </div>
-`;
-cameraContainer.appendChild(usageGuideDiv);
+// 이용방법 안내 추가 (안전한 버전)
+setTimeout(() => {
+    const cameraContainer = document.querySelector('.camera-container');
+    if (cameraContainer && !document.getElementById('usage-guide')) {
+        const usageGuideDiv = document.createElement('div');
+        usageGuideDiv.id = 'usage-guide';
+        usageGuideDiv.innerHTML = `
+            <div style="background: rgba(233,30,99,0.1); border: 1px solid rgba(233,30,99,0.3); border-radius: 10px; padding: 1rem; margin-top: 1rem; color: white;">
+                <h4 style="color: #E91E63; margin-bottom: 0.5rem;">이용 방법</h4>
+                <div style="font-size: 14px; line-height: 1.5;">
+                    <p style="margin: 0.3rem 0;">1. 카메라 시작 버튼을 클릭하세요</p>
+                    <p style="margin: 0.3rem 0;">2. 얼굴을 가이드라인에 맞춰주세요</p>
+                    <p style="margin: 0.3rem 0;">3. AI 분석 버튼을 눌러 분석을 시작하세요</p>
+                    <p style="margin: 0.3rem 0;">4. 분석 완료 후 결과를 확인하세요</p>
+                </div>
+            </div>
+        `;
+        cameraContainer.appendChild(usageGuideDiv);
+        console.log('이용방법 안내 추가됨');
+    }
+}, 500);
         
     } catch (error) {
         console.error('카메라 시작 실패:', error);
