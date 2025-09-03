@@ -582,23 +582,20 @@ let animationFrameId = null;
         
         document.getElementById('ai-face-guide').style.display = 'flex';
 
-// 카메라 사용법 안내 추가
-const cameraContainer = document.querySelector('.camera-container');
-if (cameraContainer && !document.getElementById('camera-instructions')) {
-    const instructionsDiv = document.createElement('div');
-    instructionsDiv.id = 'camera-instructions';
-    instructionsDiv.innerHTML = `
-        <div style="background: rgba(233,30,99,0.1); border: 1px solid rgba(233,30,99,0.3); border-radius: 10px; padding: 1rem; margin-top: 1rem; color: white; text-align: center;">
-            <h4 style="color: #E91E63; margin-bottom: 0.5rem;">📸 촬영 가이드</h4>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
-                <div>✨ 밝은 조명</div>
-                <div>👤 정면 응시</div>
-                <div>📏 얼굴 전체</div>
-                <div>🚫 민낯 권장</div>
-            </div>
+const usageGuideDiv = document.createElement('div');
+usageGuideDiv.id = 'usage-guide';
+usageGuideDiv.innerHTML = `
+    <div style="background: rgba(233,30,99,0.1); border: 1px solid rgba(233,30,99,0.3); border-radius: 10px; padding: 1rem; margin-top: 1rem; color: white;">
+        <h4 style="color: #E91E63; margin-bottom: 0.5rem;">이용 방법</h4>
+        <div style="font-size: 14px; line-height: 1.5;">
+            <p style="margin: 0.3rem 0;">1. 카메라 시작 버튼을 클릭하세요</p>
+            <p style="margin: 0.3rem 0;">2. 얼굴을 가이드라인에 맞춰주세요</p>
+            <p style="margin: 0.3rem 0;">3. AI 분석 버튼을 눌러 분석을 시작하세요</p>
+            <p style="margin: 0.3rem 0;">4. 분석 완료 후 결과를 확인하세요</p>
         </div>
-    `;
-    cameraContainer.appendChild(instructionsDiv);
+    </div>
+`;
+cameraContainer.appendChild(usageGuideDiv);
 }
         
     } catch (error) {
@@ -880,7 +877,7 @@ function displaySkinToneAnalysis(skinToneData) {
         analysisPanel = document.createElement('div');
         analysisPanel.id = 'realtime-skin-analysis';
         analysisPanel.style.cssText = `
-            position: absolute; top: 80px; right: 20px; 
+            position: absolute; top: 120px; left: 660px; 
             background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,50,0,0.8)); 
             color: white; padding: 1.5rem; border-radius: 12px; 
             font-size: 0.85rem; max-width: 280px; min-width: 250px;
