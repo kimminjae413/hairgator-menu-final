@@ -367,10 +367,9 @@ body.light-theme .category-tabs {
     display: flex;
     align-items: center;
     justify-content: center;
-    -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);  /* ← 터치 피드백 추가 */
-    touch-action: auto;  /* ← 터치 제한 해제 */
-    pointer-events: auto;  /* ← 클릭 이벤트 보장 */
-    z-index: 10;  /* ← 터치 우선순위 보장 */
+    -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
+    pointer-events: auto;
+    z-index: 10;
 }
 
 body.light-theme .category-tab {
@@ -1051,24 +1050,23 @@ body.light-theme .user-info {
 .sidebar-menu-item {
     display: flex;
     align-items: center;
-    padding: 20px 25px; /* 15px 20px에서 증가 */
+    padding: 20px 25px;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
     border-radius: 10px;
     margin: 0 10px;
-    min-height: 70px; /* 추가 */
-    -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3); /* 추가 */
-    touch-action: manipulation; /* 추가 */
-    background: rgba(255, 255, 255, 0.05); /* 추가 */
-    border: 1px solid rgba(255, 255, 255, 0.1); /* 추가 */
-    z-index: 100; /* 추가 */
+    min-height: 70px;
+    -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
 }
 
 .sidebar-menu-item:hover {
     background: var(--ai-bg-primary);
     transform: translateX(5px);
-    border-color: var(--female-color); /* 추가 */
+    border-color: var(--female-color);
 }
 .sidebar-menu-item:active {
     background: var(--female-color) !important;
@@ -1481,15 +1479,17 @@ body.light-theme .modal-action-btn.secondary:hover {
         font-size: 15px;
         min-height: 52px;
         min-width: 90px;
-        /* 다음 줄을 수정 */
-        touch-action: pan-y; /* manipulation에서 pan-y로 변경 */
+        /* touch-action 완전 제거 */
         user-select: none;
+        cursor: pointer;
+        position: relative;
+        z-index: 100;
     }
     
-     .category-tabs {
+    .category-tabs {
         padding: 20px 15px;
         gap: 15px;
-        touch-action: pan-x pan-y;  /* ← 수평/수직 스크롤 허용 */
+        /* touch-action 제거 */
         overflow-y: visible;
     }
     
@@ -1497,13 +1497,12 @@ body.light-theme .modal-action-btn.secondary:hover {
         transform: scale(1.03);
     }
     
-    /* 기존 :active 스타일을 삭제하고 아래로 교체 */
     .category-tab:active {
         opacity: 0.8;
         transform: scale(0.98);
         transition: all 0.1s ease;
     }
-}
+    
     #personalColorSection .sidebar-menu-item {
         min-height: 90px;
         padding: 30px;
@@ -1526,7 +1525,6 @@ body.light-theme .modal-action-btn.secondary:hover {
         font-size: 14px;
     }
 }
-}
 
 /* ========== 터치 디바이스 전용 최적화 ========== */
 @media (hover: none) and (pointer: coarse) {
@@ -1534,12 +1532,15 @@ body.light-theme .modal-action-btn.secondary:hover {
         min-height: 52px;
         min-width: 90px;
         padding: 18px 28px;
-        touch-action: pan-y pinch-zoom;  /* ← 수직 스크롤 허용 */
+        /* touch-action 완전 제거 */
+        -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
+        position: relative;
+        z-index: 100;
     }
     
-    /* 추가: body 전체 터치 스크롤 개선 */
+    /* body 전체 스크롤 개선 */
     body {
-        touch-action: pan-y pinch-zoom;
+        /* touch-action 제거 */
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
@@ -1548,31 +1549,12 @@ body.light-theme .modal-action-btn.secondary:hover {
         opacity: 0.7;
         transform: scale(0.96);
         transition: all 0.1s ease;
-        /* !important 제거로 일반 CSS와 충돌 방지 */
     }
     
     /* 사이드바 메뉴 아이템 터치 개선 */
     .sidebar-menu-item {
         min-height: 70px;
         padding: 25px 30px;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
-        position: relative;
-        z-index: 100;
-    }
-    
-    .sidebar-menu-item:active {
-        background: var(--ai-bg-primary) !important;
-        transform: translateX(3px);
-        transition: all 0.1s ease;
-    }
-}
-    
-    /* 사이드바 메뉴 아이템 터치 개선 */
-    .sidebar-menu-item {
-        min-height: 70px;
-        padding: 25px 30px;
-        touch-action: manipulation;
         -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
         position: relative;
         z-index: 100;
@@ -1678,11 +1660,3 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
-
-
-
-
-
-
-
-
