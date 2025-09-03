@@ -105,7 +105,7 @@ const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
 
 // ========== 스마트 필터링 & NEW 표시 시스템 ==========
 
-// 사용 가능한 서브카테고리 & NEW 아이템 확인
+// 사용 가능한 서브카테고리 & NEW 아이템 확인 (인덱스 불필요 버전)
 async function checkSubcategoriesAndNew(gender, categoryName) {
     const cacheKey = `${gender}-${categoryName}`;
     
@@ -114,6 +114,7 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
     }
     
     try {
+        // 복합 인덱스 없이 작동하도록 수정
         const snapshot = await db.collection('hairstyles')
             .where('gender', '==', gender)
             .where('mainCategory', '==', categoryName)
@@ -122,14 +123,15 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
         const availableSubs = new Set();
         const newCounts = {};
         let totalNewInCategory = 0;
+        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
         
         snapshot.forEach(doc => {
             const data = doc.data();
             availableSubs.add(data.subCategory);
             
-            // 7일 이내 생성된 아이템인지 확인
+            // 클라이언트에서 7일 이내 확인 (Firebase 쿼리 대신)
             const createdAt = data.createdAt?.toDate?.() || new Date(0);
-            if (createdAt.getTime() > newItemsTimestamp) {
+            if (createdAt.getTime() > sevenDaysAgo) {
                 newCounts[data.subCategory] = (newCounts[data.subCategory] || 0) + 1;
                 totalNewInCategory++;
             }
@@ -166,19 +168,6 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
 function createNewIndicator() {
     const indicator = document.createElement('div');
     indicator.className = 'new-indicator';
-    indicator.style.cssText = `
-        position: absolute !important;
-        top: -4px !important;
-        right: -4px !important;
-        width: 8px !important;
-        height: 8px !important;
-        background: var(--new-indicator) !important;
-        border-radius: 50% !important;
-        z-index: 1 !important;
-        pointer-events: none !important;
-        box-shadow: 0 0 6px rgba(255, 68, 68, 0.6) !important;
-        animation: pulse-red 2s infinite !important;
-    `;
     return indicator;
 }
 
@@ -239,6 +228,7 @@ async function loadMenuForGender(gender) {
     }
 }
 
+// 대분류 탭 생성 (스마트 필터링 + NEW 표시)
 async function createMainTabsWithSmart(categories, gender) {
     const mainTabsContainer = document.getElementById('categoryTabs');
     if (!mainTabsContainer) {
@@ -248,19 +238,36 @@ async function createMainTabsWithSmart(categories, gender) {
     
     mainTabsContainer.innerHTML = '';
     
+    // 모든 카테고리의 서브카테고리 정보를 병렬로 확인
+    const categoryPromises = categories.map(category => 
+        checkSubcategoriesAndNew(gender, category.name)
+    );
+    const categoryInfos = await Promise.all(categoryPromises);
+    
     categories.forEach((category, index) => {
         const tab = document.createElement('button');
         tab.className = `category-tab main-tab ${gender}`;
         tab.textContent = category.name;
-        
         tab.onclick = () => selectMainTab(category, index);
         
+        const categoryInfo = categoryInfos[index];
+        
+        // 첫 번째 탭 기본 선택
         if (index === 0) {
             tab.classList.add('active');
             currentMainTab = category;
+            console.log(`📌 기본 선택: ${category.name}`, category);
+        }
+        
+        // NEW 표시 추가 (카테고리에 신규 아이템이 있으면)
+        if (categoryInfo.totalNewCount > 0) {
+            tab.appendChild(createNewIndicator());
+            console.log(`🔴 NEW 표시 추가: ${category.name} (${categoryInfo.totalNewCount}개)`);
         }
         
         mainTabsContainer.appendChild(tab);
+        
+        console.log(`📂 카테고리 생성: ${category.name} (신규: ${categoryInfo.totalNewCount}개)`);
     });
     
     console.log(`✅ ${categories.length}개 대분류 탭 생성 완료`);
@@ -380,6 +387,7 @@ async function loadSmartSubTabs(categoryName) {
             const newCount = subInfo.newCounts[subCategory];
             if (newCount && newCount > 0) {
                 tab.appendChild(createNewIndicator());
+                console.log(`🔴 중분류 NEW 표시: ${subCategory} (${newCount}개)`);
             }
         }
         
@@ -491,7 +499,7 @@ async function loadStyles() {
     }
 }
 
-// 스타일 카드 생성 (NEW 표시만, AI 버튼 제거)
+// 스타일 카드 생성 (NEW 표시 포함)
 function createStyleCard(style) {
     const card = document.createElement('div');
     card.className = 'style-card';
@@ -537,7 +545,8 @@ function createStyleCard(style) {
         console.log('스타일 클릭:', { 
             id: style.id,
             code: style.code || 'NO_CODE', 
-            name: style.name || 'NO_NAME'
+            name: style.name || 'NO_NAME',
+            isNew: isNew
         });
         
         // 스타일 상세 모달 열기
@@ -713,7 +722,7 @@ function closeStyleModal() {
 
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료 - 태블릿 터치 문제 해결 최종 버전');
+    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료 - NEW 표시 및 태블릿 터치 최종 버전');
     
     // 모달 바깥 클릭 시 닫기
     document.addEventListener('click', function(e) {
@@ -778,10 +787,10 @@ window.debugHAIRGATOR = function() {
     tabs.forEach((tab, index) => {
         const rect = tab.getBoundingClientRect();
         const events = [];
+        const hasNewIndicator = !!tab.querySelector('.new-indicator');
         
         if (tab.onclick) events.push('onclick');
         if (tab.addEventListener) {
-            // 이벤트 리스너 확인 (불완전하지만 참고용)
             events.push('addEventListener');
         }
         
@@ -789,16 +798,17 @@ window.debugHAIRGATOR = function() {
         - 크기: ${rect.width.toFixed(1)}x${rect.height.toFixed(1)}
         - 위치: ${rect.left.toFixed(1)}, ${rect.top.toFixed(1)}
         - 이벤트: ${events.join(', ')}
+        - NEW 표시: ${hasNewIndicator ? '🔴' : '⚪'}
         - 클래스: ${tab.className}`);
     });
     
     console.log('전역 변수 상태:', {
         currentGender,
         currentMainTab: currentMainTab?.name,
-        currentSubTab
+        currentSubTab,
+        categoryNewCounts: Object.fromEntries(categoryNewCounts)
     });
 };
 
-console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 태블릿 터치 최적화');
+console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - NEW 표시 및 태블릿 터치 최적화');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
-
