@@ -565,8 +565,9 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 .styles-container {
     padding: 20px;
     min-height: 50vh;
+    max-height: 70vh;  /* 🔥 이 줄 추가 */
     transition: background-color 0.3s ease;
-    overflow-y: auto;  /* 🔥 이 줄 추가 */
+    overflow-y: auto;
 }
 
 body.light-theme .styles-container {
@@ -577,6 +578,7 @@ body.light-theme .styles-container {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 15px;
+    max-height: inherit;  /* 🔥 추가 */
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
@@ -1680,6 +1682,7 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
 
 
 
