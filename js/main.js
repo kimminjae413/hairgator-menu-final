@@ -168,13 +168,23 @@ document.addEventListener('DOMContentLoaded', function() {
             logoutBtn.addEventListener('click', handleLogout);
         }
 
-        // Gender Selection Buttons
-        document.querySelectorAll('.gender-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                console.log(`🎯 성별 선택: ${this.dataset.gender}`);
-                selectGender(this.dataset.gender);
-            });
-        });
+        // Gender Selection Buttons (기존 141-147줄 교체)
+document.querySelectorAll('.gender-btn').forEach(btn => {
+    // 터치 이벤트 추가
+    btn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        console.log(`🎯 성별 선택 (터치): ${this.dataset.gender}`);
+        selectGender(this.dataset.gender);
+    });
+    
+    // 클릭 이벤트 (마우스용)
+    btn.addEventListener('click', function(e) {
+        if (e.pointerType !== 'touch') {
+            console.log(`🎯 성별 선택 (클릭): ${this.dataset.gender}`);
+            selectGender(this.dataset.gender);
+        }
+    });
+});
 
         // Modal Events
         if (modalClose) {
@@ -368,27 +378,40 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // 카테고리 탭 생성
-        menuData.categories.forEach((category, index) => {
-            const tab = document.createElement('button');
-            tab.className = 'category-tab';
-            tab.textContent = category.name || 'Unknown';
-            tab.dataset.categoryId = category.id || `category-${index}`;
-            tab.title = category.description || category.name;
-            
-            if (index === 0) {
-                tab.classList.add('active', gender);
-            }
-            
-            tab.addEventListener('click', function() {
-                selectCategory(category, gender);
-            });
-            
-            categoryTabs.appendChild(tab);
-        });
-        
-        console.log(`✅ ${menuData.categories.length}개 카테고리 렌더링 완료 - ${gender}`);
+        // 카테고리 탭 생성 (기존 298-308줄 교체)
+menuData.categories.forEach((category, index) => {
+    const tab = document.createElement('button');
+    tab.className = 'category-tab';
+    tab.textContent = category.name || 'Unknown';
+    tab.dataset.categoryId = category.id || `category-${index}`;
+    tab.title = category.description || category.name;
+    
+    if (index === 0) {
+        tab.classList.add('active', gender);
     }
+    
+    // 🔥 터치/클릭 이벤트 개선
+    tab.addEventListener('touchstart', function(e) {
+        e.preventDefault(); // 기본 터치 동작 방지
+        this.style.opacity = '0.7'; // 즉시 시각적 피드백
+    });
+    
+    tab.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        this.style.opacity = '1';
+        selectCategory(category, gender);
+    });
+    
+    // 마우스/키보드 지원 유지
+    tab.addEventListener('click', function(e) {
+        // 터치 디바이스에서는 실행 안함
+        if (e.pointerType !== 'touch') {
+            selectCategory(category, gender);
+        }
+    });
+    
+    categoryTabs.appendChild(tab);
+});
 
     // Select Category
     function selectCategory(category, gender) {
@@ -742,3 +765,4 @@ window.addEventListener('load', function() {
     `;
     document.head.appendChild(style);
 });
+
