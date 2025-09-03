@@ -1208,22 +1208,20 @@
         }
   </style>
 
-    <!-- 퍼스널컬러 모달 - 완전한 전체화면 -->
+    <!-- 퍼스널컬러 모달 - 수정된 버전 -->
 <div id="personalColorModal" class="personal-color-modal">
     <button class="personal-color-close-btn" onclick="closePersonalColorModal()">×</button>
     <iframe 
         id="personalColorFrame" 
         src="personal-color/index.html" 
-        frameborder="0">
+        frameborder="0"
+        allow="camera; microphone; autoplay; fullscreen"
+        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox">
     </iframe>
-    id="personalColorFrame" 
-    src="personal-color/index.html" 
-    frameborder="0"
-    allow="camera; microphone; autoplay">
-</iframe>
 </div>
     </div>
 
 </body>
 </html>
 </html>
+
