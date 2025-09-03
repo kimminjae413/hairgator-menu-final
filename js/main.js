@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const menuContainer = document.getElementById('menuContainer');
     const categoryTabs = document.getElementById('categoryTabs');
     const categoryDescription = document.getElementById('categoryDescription');
-    const subcategoryTabs = document.getElementById('subcategoryTabs');
+    const subcategoryTabs = document.getElementById('subTabs');
     const menuGrid = document.getElementById('stylesGrid');
     const loadingOverlay = document.getElementById('loadingOverlay');
     
@@ -770,3 +770,4 @@ window.addEventListener('load', function() {
     `;
     document.head.appendChild(style);
 });
+
