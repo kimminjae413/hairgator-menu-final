@@ -566,6 +566,7 @@ body.light-theme .sub-tab:hover:not(.disabled) {
     padding: 20px;
     min-height: 50vh;
     transition: background-color 0.3s ease;
+    overflow-y: auto;  /* 🔥 이 줄 추가 */
 }
 
 body.light-theme .styles-container {
@@ -1679,6 +1680,7 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
 
 
 
