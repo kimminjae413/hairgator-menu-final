@@ -429,9 +429,19 @@ body.light-theme .category-tab:hover {
     box-shadow: 0 2px 10px rgba(233, 30, 99, 0.4);
 }
 
-/* NEW 표시 임시 숨김 (테스트용) */
+/* NEW 표시 다시 활성화 */
 .new-indicator {
-    display: none !important;
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 8px;
+    height: 8px;
+    background: var(--new-indicator);
+    border-radius: 50%;
+    z-index: 15; /* 탭보다 위에 표시되도록 높은 z-index */
+    pointer-events: none; /* 클릭 방해하지 않도록 */
+    box-shadow: 0 0 6px rgba(255, 68, 68, 0.6);
+    animation: pulse-red 2s infinite;
 }
 
 @keyframes pulse-red {
