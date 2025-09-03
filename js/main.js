@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const categoryTabs = document.getElementById('categoryTabs');
     const categoryDescription = document.getElementById('categoryDescription');
     const subcategoryTabs = document.getElementById('subcategoryTabs');
-    const menuGrid = document.getElementById('menuGrid');
+    const menuGrid = document.getElementById('stylesGrid');
     const loadingOverlay = document.getElementById('loadingOverlay');
     
     // Modal elements
@@ -765,4 +765,5 @@ window.addEventListener('load', function() {
     `;
     document.head.appendChild(style);
 });
+
 
