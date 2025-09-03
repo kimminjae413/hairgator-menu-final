@@ -777,22 +777,7 @@
             }
         }
 
-        // 성별 선택
-        function selectGender(gender) {
-            currentGender = gender;
-
-            genderSelection.style.display = 'none';
-            menuContainer.classList.add('active');
-
-            if (window.HAIRGATOR_MENU && window.HAIRGATOR_MENU.loadMenuForGender) {
-                console.log(`🎯 새로운 메뉴 시스템 사용: ${gender}`);
-                window.HAIRGATOR_MENU.loadMenuForGender(gender);
-            } else {
-                console.error('❌ HAIRGATOR_MENU가 로드되지 않았습니다');
-                showToast('메뉴 시스템 오류입니다', 'error');
-            }
-        }
-
+        
         // 패스워드 복구 UI 함수들 (외부 스크립트에서 사용)
         function showSelfPasswordCheckModal() {
             if (window.HAIRGATOR_PASSWORD_RECOVERY) {
@@ -1571,6 +1556,7 @@ function forcePersonalColorAccess() {
 </body>
 </html>
 </html>
+
 
 
 
