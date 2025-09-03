@@ -940,12 +940,11 @@ window.selectGender = function(gender) {
 };
 // 기존 코드 대신 이걸로 교체
 window.selectGender = function(gender) {
-    alert('터치됨: ' + gender); // 터치 확인용
-    
     currentGender = gender;
-    
+
     const genderSelection = document.getElementById('genderSelection');
     const menuContainer = document.getElementById('menuContainer');
+    const backBtn = document.getElementById('backBtn');
     
     if (genderSelection) genderSelection.style.display = 'none';
     if (menuContainer) menuContainer.classList.add('active');
@@ -953,6 +952,7 @@ window.selectGender = function(gender) {
     loadMenuForGender(gender);
 };
 console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료');
+
 
 
 
