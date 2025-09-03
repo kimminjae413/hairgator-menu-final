@@ -172,7 +172,6 @@
                         
                         <div class="camera-controls">
                             <button class="control-btn" onclick="startDrapingCamera()">카메라 시작</button>
-                            <button class="control-btn" onclick="togglePreview()">미리보기 토글</button>
                             <button class="control-btn" onclick="saveCurrentColor()">현재 색상 저장</button>
                         </div>
                     </div>
@@ -1060,9 +1059,9 @@
             return `#${Math.round(newR).toString(16).padStart(2, '0')}${Math.round(newG).toString(16).padStart(2, '0')}${Math.round(newB).toString(16).padStart(2, '0')}`;
         }
 
-        function togglePreview() {
-            showToast('미리보기가 토글되었습니다', 'info');
-        }
+        // function togglePreview() {
+//     showToast('미리보기가 토글되었습니다', 'info');
+// }
 
         function saveCurrentColor() {
             if (!selectedColor) {
