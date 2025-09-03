@@ -354,7 +354,7 @@ body.light-theme .category-tabs {
     background: #222;
     color: #999;
     border: 1px solid #333;
-    padding: 15px 25px; /* 기존 10px 20px에서 증가 */
+    padding: 15px 25px;
     border-radius: 20px;
     cursor: pointer;
     white-space: nowrap;
@@ -362,16 +362,17 @@ body.light-theme .category-tabs {
     font-size: 14px;
     font-weight: 500;
     position: relative;
-    min-height: 48px; /* 최소 터치 높이 보장 */
-    min-width: 80px;  /* 최소 터치 너비 보장 */
+    min-height: 48px;
+    min-width: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation; /* 터치 지연 제거 */
-     z-index: 1000 !important; /* 10에서 1000으로 증가 */
-    position: relative !important;
-    pointer-events: auto !important;
+    touch-action: manipulation;
+    /* 다음 3줄을 완전히 삭제하세요 */
+    /* z-index: 1000 !important; */
+    /* position: relative !important; */
+    /* pointer-events: auto !important; */
 }
 
 body.light-theme .category-tab {
@@ -1471,10 +1472,13 @@ body.light-theme .modal-action-btn.secondary:hover {
 /* ========== 태블릿 전용 스타일 (768px ~ 1024px) ========== */
 @media (min-width: 768px) and (max-width: 1024px) {
     .category-tab {
-        padding: 18px 30px; /* 더 큰 터치 영역 */
+        padding: 18px 30px;
         font-size: 15px;
         min-height: 52px;
         min-width: 90px;
+        /* 터치 이벤트 보장 */
+        touch-action: manipulation;
+        user-select: none;
     }
     
     .category-tabs {
@@ -1482,16 +1486,17 @@ body.light-theme .modal-action-btn.secondary:hover {
         gap: 15px;
     }
     
-    /* 활성 탭 스케일 조정 */
     .category-tab.active {
-        transform: scale(1.03); /* 기존 1.05에서 줄임 */
+        transform: scale(1.03);
     }
     
-    /* 터치 반응 개선 */
+    /* 기존 :active 스타일을 삭제하고 아래로 교체 */
     .category-tab:active {
-        background: #444 !important;
+        opacity: 0.8;
         transform: scale(0.98);
+        transition: all 0.1s ease;
     }
+}
     #personalColorSection .sidebar-menu-item {
         min-height: 90px;
         padding: 30px;
@@ -1519,16 +1524,18 @@ body.light-theme .modal-action-btn.secondary:hover {
 /* ========== 터치 디바이스 전용 최적화 ========== */
 @media (hover: none) and (pointer: coarse) {
     .category-tab {
-        min-height: 50px;
-        min-width: 85px;
-        padding: 16px 24px;
+        min-height: 52px;
+        min-width: 90px;
+        padding: 18px 28px;
         touch-action: manipulation;
-        z-index: 1500 !important;
-        position: relative !important;
-        pointer-events: auto !important;
+        /* 다음 3줄 완전히 삭제 - z-index 충돌 제거 */
+        /* z-index: 1500 !important; */
+        /* position: relative !important; */
+        /* pointer-events: auto !important; */
     }
     
-    /* F, G, CROP 등 특정 탭들 특별 처리 */
+    /* 특정 탭 처리 코드 전체 삭제 - 터치 방해 요소 제거 */
+    /*
     .category-tab:nth-child(6),
     .category-tab:nth-child(7),
     .category-tab:nth-last-child(-n+2) {
@@ -1536,13 +1543,31 @@ body.light-theme .modal-action-btn.secondary:hover {
         background: #333 !important;
         border: 2px solid #444 !important;
     }
+    */
     
     .category-tab:active {
-        background: #444 !important;
-        color: #fff !important;
-        transform: scale(0.97);
+        opacity: 0.7;
+        transform: scale(0.96);
+        transition: all 0.1s ease;
+        /* !important 제거로 일반 CSS와 충돌 방지 */
+    }
+    
+    /* 사이드바 메뉴 아이템 터치 개선 */
+    .sidebar-menu-item {
+        min-height: 70px;
+        padding: 25px 30px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
+        position: relative;
+        z-index: 100;
+    }
+    
+    .sidebar-menu-item:active {
+        background: var(--ai-bg-primary) !important;
+        transform: translateX(3px);
         transition: all 0.1s ease;
     }
+}
     
     /* 사이드바 메뉴 아이템 터치 개선 */
     .sidebar-menu-item {
@@ -1654,5 +1679,6 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
 
 
