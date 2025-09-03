@@ -372,6 +372,18 @@ body.light-theme .category-tabs {
     z-index: 10;
 }
 
+/* 호버 시 z-index 더 높이기 */
+.category-tab:hover,
+.category-tab:active {
+    z-index: 30 !important;
+}
+
+/* 문제가 있는 특정 탭들 강제 우선순위 (5번째 이후 탭들) */
+.category-tab:nth-child(n+5) {
+    z-index: 25 !important;
+    position: relative !important;
+}
+
 body.light-theme .category-tab {
     background: #ffffff;
     color: var(--text-secondary);
