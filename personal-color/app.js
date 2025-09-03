@@ -1033,3 +1033,4 @@ window.addEventListener('beforeunload', function() {
 });
 
 console.log('🎨 HAIRGATOR Personal Color - 2모드 최적화 버전 로드 완료');
+document.addEventListener('DOMContentLoaded', initializeSystem);
