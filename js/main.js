@@ -1,4 +1,4 @@
-// HAIRGATOR Main Application - menu.js 연동 최소 버전
+// HAIRGATOR Main Application - menu.js 연동 최종 버전
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🦎 HAIRGATOR 메인 앱 시작...');
     
@@ -60,24 +60,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (logoutBtn) {
             logoutBtn.addEventListener('click', handleLogout);
         }
-            
-            // 마우스/키보드용 이벤트 (터치와 중복 방지)
-            btn.addEventListener('click', function(e) {
-                if (e.pointerType !== 'touch') {
-                    const gender = this.dataset.gender || this.getAttribute('data-gender');
-                    console.log(`성별 선택 (클릭): ${gender}`);
-                    
-                    // menu.js의 selectGender 함수 호출
-                    if (typeof window.selectGender === 'function') {
-                        window.selectGender(gender);
-                    } else {
-                        console.error('❌ menu.js의 selectGender 함수를 찾을 수 없습니다');
-                        // 폴백: 기본 동작
-                        handleGenderSelection(gender);
-                    }
-                }
-            });
-        });
+
+        // Gender Selection은 index.html의 onclick이 처리
+        // 중복 이벤트 리스너 제거로 문제 해결
 
         // Keyboard Events
         document.addEventListener('keydown', function(e) {
@@ -103,28 +88,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         console.log('✅ 이벤트 리스너 설정 완료');
-    }
-
-    // 폴백 성별 선택 함수 (menu.js가 없을 때만 사용)
-    function handleGenderSelection(gender) {
-        if (!gender) {
-            console.error('❌ 성별이 지정되지 않았습니다');
-            return;
-        }
-        
-        console.log(`📌 폴백 성별 선택: ${gender}`);
-        
-        // UI 전환
-        if (genderSelection) genderSelection.style.display = 'none';
-        if (menuContainer) menuContainer.classList.add('active');
-        if (backBtn) backBtn.style.display = 'flex';
-        if (themeToggleBottom) themeToggleBottom.style.display = 'none';
-        
-        // localStorage 저장
-        localStorage.setItem('hairgator_gender', gender);
-        
-        // menu.js가 로드되지 않은 경우 경고
-        showToast('⚠️ 메뉴 시스템이 로드되지 않았습니다. 페이지를 새로고침해주세요.');
     }
 
     // Navigation Functions
@@ -285,6 +248,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
 
+    // 전역 함수 노출 (필요한 경우)
+    window.showToast = showToast;
+
     // Performance Monitoring
     console.log('🚀 HAIRGATOR 메인 애플리케이션 준비 완료');
 });
@@ -305,7 +271,10 @@ window.addEventListener('load', function() {
             from { transform: translateX(-50%) translateY(0); opacity: 1; }
             to { transform: translateX(-50%) translateY(-20px); opacity: 0; }
         }
+        
+        .toast-message {
+            white-space: pre-line;
+        }
     `;
     document.head.appendChild(style);
 });
-
