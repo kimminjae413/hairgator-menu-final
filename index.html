@@ -27,9 +27,14 @@
     <link rel="stylesheet" href="css/main.css">
 
     <!-- External JavaScript -->
+<!-- Firebase 설정 먼저 -->
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<!-- 그 다음 메뉴와 레이아웃 -->
 <script src="js/menu.js"></script>
-<script src="js/tablet-touch-handler.js"></script>
 <script src="js/dynamic-layout.js"></script>
+<script src="js/tablet-touch-handler.js"></script>
+<script src="js/main.js"></script>
 
 <script src="js/face-swap-backend.js"></script>
     <!-- 패스워드 복구 시스템 -->
@@ -171,22 +176,52 @@
         </div>
 
        <!-- 메뉴 컨테이너 -->
-        <div class="menu-container" id="menuContainer">
-            
-            <!-- 헤더를 맨 위에 추가 -->
-            <header class="header">
-                <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
-                <h1 class="logo">HAIRGATOR</h1>
-                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="테마 변경">🌙</button>
-                <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-            </header>
+<div class="menu-container" id="menuContainer">
+    
+    <!-- 헤더를 맨 위에 추가 -->
+    <header class="header">
+        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+        <h1 class="logo">HAIRGATOR</h1>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="테마 변경">🌙</button>
+        <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
 
-            <!-- 고정될 영역 묶기 -->
-            <div class="fixed-menu-section">
+    <!-- A+B 영역: 태블릿에서 고정될 부분 -->
+    <div class="tablet-fixed-header">
+        <!-- 성별 컨테이너 추가 -->
+        <div class="gender-container" id="genderContainer" style="display: none;">
+            <!-- 동적 생성 -->
+        </div>
+        
+        <!-- 카테고리 탭 -->
+        <div class="category-tabs" id="categoryTabs">
+            <!-- 동적 생성 -->
+        </div>
+
+        <!-- 카테고리 설명 -->
+        <div class="category-description" id="categoryDescription">
+            <div class="category-description-text">
+                카테고리를 선택하면 설명이 표시됩니다.
+            </div>
+        </div>
+
+        <!-- 서브카테고리 탭 -->
+        <div class="sub-tabs" id="subTabs">
+            <!-- 동적 생성 -->
+        </div>
+    </div>
+
+    <!-- C 영역: 스크롤될 부분 -->
+    <div class="menu-items-container">
+        <div class="styles-grid" id="stylesGrid">
+            <!-- 동적 생성 -->
+        </div>
+    </div>
+</div>
         <!-- 카테고리 탭 -->
         <div class="category-tabs" id="categoryTabs">
             <!-- 동적 생성 -->
@@ -1611,6 +1646,7 @@ function forcePersonalColorAccess() {
     </script>
 </body>
 </html>
+
 
 
 
