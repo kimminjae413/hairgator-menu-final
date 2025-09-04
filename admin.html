@@ -2135,140 +2135,147 @@
                 alert('디자이너 삭제에 실패했습니다: ' + error.message);
             }
         }
-
-    // ========== 여기에 새 코드 추가 ==========
-    
-    // 카테고리 로드
-    async function loadCategories() {
-        const genderSelect = document.getElementById('genderSelect');
-        const categorySelect = document.getElementById('categorySelect');
-        const subcategorySelect = document.getElementById('subcategorySelect');
-        
-        // 초기화
-        categorySelect.innerHTML = '<option value="">대분류 선택</option>';
-        subcategorySelect.innerHTML = '<option value="">중분류 선택</option>';
-        
-        const selectedGender = genderSelect.value;
-        if (!selectedGender) return;
-        
-        currentGender = selectedGender;
-        
-        // 대분류 로드
-        const categories = CATEGORIES[selectedGender] || [];
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category;
-            option.textContent = category;
-            categorySelect.appendChild(option);
-        });
-    }
-
-    // 중분류 로드
-    async function loadSubcategories() {
-        const categorySelect = document.getElementById('categorySelect');
-        const subcategorySelect = document.getElementById('subcategorySelect');
-        
-        // 초기화
-        subcategorySelect.innerHTML = '<option value="">중분류 선택</option>';
-        
-        const selectedCategory = categorySelect.value;
-        if (!selectedCategory) return;
-        
-        currentCategory = selectedCategory;
-        
-        try {
-            // Firebase에서 해당 카테고리의 실제 중분류들을 가져오기
-            const stylesQuery = await db.collection('hairstyles')
-                .where('gender', '==', currentGender)
-                .where('mainCategory', '==', selectedCategory)
-                .get();
+// 카테고리 로드
+        async function loadCategories() {
+            const genderSelect = document.getElementById('genderSelect');
+            const categorySelect = document.getElementById('categorySelect');
+            const subcategorySelect = document.getElementById('subcategorySelect');
             
-            // 유니크한 중분류 추출
-            const uniqueSubcategories = new Set();
-            stylesQuery.forEach(doc => {
-                const subCategory = doc.data().subCategory;
-                if (subCategory) {
-                    uniqueSubcategories.add(subCategory);
-                }
-            });
+            categorySelect.innerHTML = '<option value="">대분류 선택</option>';
+            subcategorySelect.innerHTML = '<option value="">중분류 선택</option>';
             
-            // 중분류 옵션 추가
-            [...uniqueSubcategories].sort().forEach(subCategory => {
+            const selectedGender = genderSelect.value;
+            if (!selectedGender) return;
+            
+            currentGender = selectedGender;
+            
+            const categories = CATEGORIES[selectedGender] || [];
+            categories.forEach(category => {
                 const option = document.createElement('option');
-                option.value = subCategory;
-                option.textContent = subCategory;
-                subcategorySelect.appendChild(option);
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
             });
-            
-            console.log(`${selectedCategory} - 중분류 ${uniqueSubcategories.size}개 로드됨`);
-            
-        } catch (error) {
-            console.error('중분류 로드 오류:', error);
-            showToast('중분류 로드 실패: ' + error.message);
         }
-    }
 
-    // 스타일 로드
-    async function loadStyles() {
-        const stylesGrid = document.getElementById('stylesGrid');
-        const subcategorySelect = document.getElementById('subcategorySelect');
-        
-        const selectedSubcategory = subcategorySelect.value;
-        if (!selectedSubcategory || !currentGender || !currentCategory) {
-            stylesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">카테고리를 모두 선택하세요</div>';
-            return;
+        // 중분류 로드 (어드민용 - 모든 중분류 표시)
+        async function loadSubcategories() {
+            const categorySelect = document.getElementById('categorySelect');
+            const subcategorySelect = document.getElementById('subcategorySelect');
+            
+            subcategorySelect.innerHTML = '<option value="">중분류 선택</option>';
+            
+            const selectedCategory = categorySelect.value;
+            if (!selectedCategory || !currentGender) return;
+            
+            currentCategory = selectedCategory;
+            
+            try {
+                const stylesQuery = await db.collection('hairstyles')
+                    .where('gender', '==', currentGender)
+                    .where('mainCategory', '==', selectedCategory)
+                    .get();
+                
+                const availableSubcategories = new Set();
+                stylesQuery.forEach(doc => {
+                    const subCategory = doc.data().subCategory;
+                    if (subCategory) {
+                        availableSubcategories.add(subCategory);
+                    }
+                });
+                
+                SUBCATEGORIES.forEach(subCategory => {
+                    const option = document.createElement('option');
+                    option.value = subCategory;
+                    option.textContent = subCategory;
+                    
+                    if (!availableSubcategories.has(subCategory)) {
+                        option.style.color = '#999';
+                        option.style.fontStyle = 'italic';
+                        option.textContent = subCategory + ' (데이터 없음)';
+                    }
+                    
+                    subcategorySelect.appendChild(option);
+                });
+                
+                console.log(`전체 중분류 ${SUBCATEGORIES.length}개 표시됨`);
+                
+            } catch (error) {
+                console.error('중분류 로드 오류:', error);
+                
+                SUBCATEGORIES.forEach(subCategory => {
+                    const option = document.createElement('option');
+                    option.value = subCategory;
+                    option.textContent = subCategory + ' (오류)';
+                    option.style.color = '#ff9999';
+                    subcategorySelect.appendChild(option);
+                });
+            }
         }
-        
-        currentSubcategory = selectedSubcategory;
-        stylesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">로딩 중...</div>';
-        
-        try {
-            const snapshot = await db.collection('hairstyles')
-                .where('gender', '==', currentGender)
-                .where('mainCategory', '==', currentCategory)
-                .where('subCategory', '==', selectedSubcategory)
-                .get();
+
+        // 스타일 로드
+        async function loadStyles() {
+            const stylesGrid = document.getElementById('stylesGrid');
+            const subcategorySelect = document.getElementById('subcategorySelect');
             
-            stylesGrid.innerHTML = '';
-            
-            if (snapshot.empty) {
-                stylesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">등록된 스타일이 없습니다</div>';
+            const selectedSubcategory = subcategorySelect.value;
+            if (!selectedSubcategory || !currentGender || !currentCategory) {
+                stylesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">카테고리를 모두 선택하세요</div>';
                 return;
             }
             
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                const card = createStyleCard(doc.id, data);
-                stylesGrid.appendChild(card);
-            });
+            currentSubcategory = selectedSubcategory;
+            stylesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">로딩 중...</div>';
             
-            console.log(`스타일 ${snapshot.size}개 로드됨`);
-            
-        } catch (error) {
-            console.error('스타일 로드 오류:', error);
-            stylesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #ff4444;">로드 실패: ' + error.message + '</div>';
-        }
-    }
-// 스타일 카드 생성
-function createStyleCard(docId, data) {
-    const card = document.createElement('div');
-    card.className = 'style-card';
-    
-    card.innerHTML = `
-        <div class="style-image-container">
-            ${data.imageUrl ? 
-                `<img src="${data.imageUrl}" alt="${data.name}" class="style-image">` :
-                `<div class="no-image-text">이미지 없음</div>`
+            try {
+                const snapshot = await db.collection('hairstyles')
+                    .where('gender', '==', currentGender)
+                    .where('mainCategory', '==', currentCategory)
+                    .where('subCategory', '==', selectedSubcategory)
+                    .get();
+                
+                stylesGrid.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    stylesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">등록된 스타일이 없습니다</div>';
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const card = createStyleCard(doc.id, data);
+                    stylesGrid.appendChild(card);
+                });
+                
+                console.log(`스타일 ${snapshot.size}개 로드됨`);
+                
+            } catch (error) {
+                console.error('스타일 로드 오류:', error);
+                stylesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #ff4444;">로드 실패: ' + error.message + '</div>';
             }
-        </div>
-        <div class="style-info">
-            <div class="style-code">${data.code || docId.substring(0, 8)}</div>
-            <div class="style-name">${data.name}</div>
-        </div>
-    `;
-    
-    return card;
-}
+        }
+
+        // 스타일 카드 생성
+        function createStyleCard(docId, data) {
+            const card = document.createElement('div');
+            card.className = 'style-card';
+            
+            card.innerHTML = `
+                <div class="style-image-container">
+                    ${data.imageUrl ? 
+                        `<img src="${data.imageUrl}" alt="${data.name}" class="style-image">` :
+                        `<div class="no-image-text">이미지 없음</div>`
+                    }
+                </div>
+                <div class="style-info">
+                    <div class="style-code">${data.code || docId.substring(0, 8)}</div>
+                    <div class="style-name">${data.name}</div>
+                </div>
+            `;
+            
+            return card;
+        }
         </script>
     </body>
 </html>
+
