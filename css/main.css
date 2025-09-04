@@ -74,8 +74,8 @@ body {
 
 /* 헤더 */
 .header {
-    position: fixed;
-    top: 15px;
+    position: relative;
+    top: 0;
     left: 0;
     right: 0;
     height: 50px;
@@ -84,6 +84,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 0 15px;
+    margin-top: 15px;
     z-index: 1000;
     transition: background-color 0.3s ease;
 }
@@ -140,8 +141,8 @@ body.light-theme .logo {
 
 /* 메인 콘텐츠 */
 .main-content {
-    margin-top: 65px;
-    min-height: calc(100vh - 65px);
+    margin-top: 0;  /* 65px → 0으로 변경 */
+    min-height: 100vh;  /* calc(100vh - 65px) → 100vh로 변경 */
     transition: background-color 0.3s ease;
 }
 
@@ -321,27 +322,25 @@ body.light-theme .gender-btn {
 .menu-container {
     display: none;
     position: fixed;
-    top: 65px;
+    top: 0;
     left: 0;
     width: 100%;
-    height: calc(100vh - 65px);
+    height: 100vh;
     background: var(--primary-dark);
+    flex-direction: column;
 }
 
 .menu-container.active {
-    display: block;
+    display: flex;
 }
 
 /* 고정될 영역 (빨간 박스) */
 .fixed-menu-section {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+    position: relative;  /* absolute → relative로 변경 */
+    flex-shrink: 0;
     background: var(--primary-dark);
     z-index: 100;
     border-bottom: 1px solid var(--border-color);
-    min-height: 200px;
 }
 /* ========== 카테고리 탭 (태블릿 터치 문제 완전 해결 최종 버전) ========== */
 .category-tabs {
@@ -663,16 +662,13 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 
 /* 스타일 그리드 */
 .styles-container {
-    position: absolute;
-    top: 200px;
-    left: 0;
-    width: 100%;
-    bottom: 0;
+    flex: 1;  /* position과 top 제거하고 flex로 변경 */
     padding: 10px;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     background: var(--primary-dark);
+    min-height: 60vh;  /* 5개 미만일 때도 스크롤 보장 */
 }
 
 body.light-theme .styles-container {
@@ -1758,6 +1754,7 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
 
 
 
