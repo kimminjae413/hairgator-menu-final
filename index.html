@@ -1580,8 +1580,55 @@ function forcePersonalColorAccess() {
             e.preventDefault();
         });
     </script>
+
+    <!-- 태블릿 스크롤 자동 수정 -->
+<script>
+// 태블릿 감지 및 스크롤 수정
+if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
+    console.log('🔧 태블릿 스크롤 감시 시작');
+    
+    const observer = new MutationObserver(function(mutations) {
+        const container = document.querySelector('.menu-items-container');
+        
+        if (container) {
+            // 이미 수정되었는지 확인
+            if (container.dataset.scrollFixed !== 'true') {
+                container.style.cssText = `
+                    position: absolute !important;
+                    top: 280px !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    bottom: 0 !important;
+                    overflow-y: auto !important;
+                    overflow-x: hidden !important;
+                    -webkit-overflow-scrolling: touch !important;
+                    height: auto !important;
+                `;
+                container.dataset.scrollFixed = 'true';
+                console.log('✅ 태블릿 스크롤 자동 적용 완료');
+                
+                // 성공하면 감시 중지
+                observer.disconnect();
+            }
+        }
+    });
+    
+    // body 감시 시작
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+    
+    // 30초 후 자동 중지 (안전장치)
+    setTimeout(function() {
+        observer.disconnect();
+        console.log('⏱️ 스크롤 감시 종료');
+    }, 30000);
+}
+</script>
 </body>
 </html>
+
 
 
 
