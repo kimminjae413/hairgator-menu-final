@@ -677,6 +677,23 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 body.light-theme .styles-container {
     background: #ffffff;
 }
+/* dynamic-layout.js가 생성하는 컨테이너 */
+.menu-items-container {
+    position: absolute;
+    top: 280px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    background: var(--primary-dark);
+}
+
+body.light-theme .menu-items-container {
+    background: #ffffff;
+}
 
 .styles-grid {
     display: grid;
@@ -1791,7 +1808,25 @@ body.light-theme .modal-action-btn.secondary:hover {
         right: -12px;
         bottom: -12px;
     }
+
+  /* Pull-to-refresh 차단 및 스크롤 보정 */
+html, body {
+    overscroll-behavior: none;
 }
+
+/* 태블릿에서 C영역 스크롤 강제 적용 */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .menu-items-container,
+    .styles-container {
+        position: absolute !important;
+        top: 280px !important;
+        bottom: 0 !important;
+        height: auto !important;
+        overflow-y: auto !important;
+    }
+}  
+}
+
 
 
 
