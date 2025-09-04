@@ -2135,6 +2135,136 @@
                 alert('디자이너 삭제에 실패했습니다: ' + error.message);
             }
         }
+
+        // ========== 스타일 추가 관련 함수들 ==========
+        
+        // 스타일 추가 모달 열기
+        function openAddStyleModal() {
+            if (!currentGender || !currentCategory || !currentSubcategory) {
+                alert('먼저 성별, 대분류, 중분류를 모두 선택해주세요');
+                return;
+            }
+            
+            document.getElementById('styleCode').value = '';
+            document.getElementById('styleName').value = '';
+            document.getElementById('styleImage').value = '';
+            document.getElementById('uploadPreview').style.display = 'none';
+            
+            const timestamp = Date.now().toString(36).toUpperCase();
+            const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+            const code = `${currentGender.substring(0, 1).toUpperCase()}${timestamp}${random}`;
+            document.getElementById('styleCode').value = code;
+            
+            document.getElementById('addStyleModal').classList.add('active');
+        }
+
+        // 이미지 미리보기
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('uploadPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 스타일 저장
+        async function saveStyle() {
+            const code = document.getElementById('styleCode').value.trim();
+            const name = document.getElementById('styleName').value.trim();
+            
+            if (!name) {
+                alert('스타일 이름은 필수입니다');
+                return;
+            }
+            
+            if (!currentGender || !currentCategory || !currentSubcategory) {
+                alert('카테고리 정보가 없습니다');
+                return;
+            }
+            
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = '저장 중...';
+            
+            try {
+                let imageUrl = '';
+                
+                if (selectedFile) {
+                    const storageRef = storage.ref();
+                    const imageRef = storageRef.child(`hairstyles/${Date.now()}_${selectedFile.name}`);
+                    const uploadTask = await imageRef.put(selectedFile);
+                    imageUrl = await uploadTask.ref.getDownloadURL();
+                }
+                
+                const styleData = {
+                    code: code,
+                    name: name,
+                    gender: currentGender,
+                    mainCategory: currentCategory,
+                    subCategory: currentSubcategory,
+                    imageUrl: imageUrl,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    createdBy: 'admin'
+                };
+                
+                await db.collection('hairstyles').add(styleData);
+                
+                alert('스타일이 추가되었습니다');
+                closeModal();
+                loadStyles();
+                
+            } catch (error) {
+                console.error('스타일 저장 오류:', error);
+                alert('저장 실패: ' + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '저장';
+                selectedFile = null;
+            }
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('addStyleModal').classList.remove('active');
+            selectedFile = null;
+        }
+
+        // 토스트 메시지
+        function showToast(message) {
+            alert(message);
+        }
+
+        // 탭 전환
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            event.target.classList.add('active');
+            
+            const activeContent = document.getElementById(tabName + 'Tab');
+            if (activeContent) {
+                activeContent.style.display = 'block';
+            }
+        }
+
+        // 초기화
+        function initializeData() {
+            console.log('데이터 초기화');
+            loadDefaultTokens();
+            refreshPasswordRequests();
+            refreshDesigners();
+        }
 // 카테고리 로드
         async function loadCategories() {
             const genderSelect = document.getElementById('genderSelect');
@@ -2278,3 +2408,4 @@
         </script>
     </body>
 </html>
+
