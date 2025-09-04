@@ -1,4 +1,4 @@
-// ========== HAIRGATOR 메뉴 시스템 - 태블릿 터치 문제 완전 해결 최종 버전 ==========
+// ========== HAIRGATOR 메뉴 시스템 - 전역 변수 문제 해결 최종 버전 ==========
 
 // 남성 카테고리 (설명 포함)
 const MALE_CATEGORIES = [
@@ -97,12 +97,13 @@ let currentGender = null;
 let currentMainTab = null;
 let currentSubTab = null;
 
-// 이 아래에 추가하세요! (Line 50)
+// window 전역 객체 초기화
 if (typeof window !== 'undefined') {
     window.currentGender = currentGender;
     window.currentMainTab = currentMainTab;
     window.currentSubTab = currentSubTab;
 }
+
 // 스마트 필터링 & NEW 시스템 캐시
 let availableSubcategories = new Map();
 let newItemsCache = new Map();
@@ -182,11 +183,9 @@ function createNewIndicator() {
 // 성별에 따른 메뉴 로드
 async function loadMenuForGender(gender) {
     try {
-        // 전역 변수 설정 (HTML과 동기화)
-        if (typeof window.currentGender !== 'undefined') {
-            window.currentGender = gender;
-        }
+        // 전역 변수 설정 (window와 동기화)
         currentGender = gender;
+        window.currentGender = gender;
         
         const categories = gender === 'male' ? MALE_CATEGORIES : FEMALE_CATEGORIES;
         
@@ -262,6 +261,7 @@ async function createMainTabsWithSmart(categories, gender) {
         if (index === 0) {
             tab.classList.add('active');
             currentMainTab = category;
+            window.currentMainTab = category; // window 동기화
             console.log(`📌 기본 선택: ${category.name}`, category);
         }
         
@@ -305,6 +305,7 @@ function ensureCategoryDescriptionArea() {
 // 대분류 탭 선택
 async function selectMainTab(category, index) {
     currentMainTab = category;
+    window.currentMainTab = category; // window 전역 변수 동기화
     
     console.log(`📂 대분류 선택: ${category.name}`, category);
     
@@ -384,14 +385,11 @@ async function loadSmartSubTabs(categoryName) {
             
             // 첫 번째 사용 가능한 서브카테고리를 활성화
             if (firstAvailableIndex === -1) {
-    firstAvailableIndex = index;
-    tab.classList.add('active');
-    currentSubTab = subCategory;
-    // ↓↓↓ 이 줄 추가
-    if (typeof window !== 'undefined') {
-        window.currentSubTab = subCategory;
-    }
-}
+                firstAvailableIndex = index;
+                tab.classList.add('active');
+                currentSubTab = subCategory;
+                window.currentSubTab = subCategory; // window 동기화
+            }
             
             // NEW 표시 추가
             const newCount = subInfo.newCounts[subCategory];
@@ -410,6 +408,7 @@ async function loadSmartSubTabs(categoryName) {
 // 중분류 탭 선택
 function selectSubTab(subCategory, index) {
     currentSubTab = subCategory;
+    window.currentSubTab = subCategory; // window 전역 변수 동기화
     
     console.log(`📋 중분류 선택: ${subCategory}`);
     
@@ -431,6 +430,11 @@ function selectSubTab(subCategory, index) {
 
 // 스타일 로드 - Firebase Query 최종 안정화
 async function loadStyles() {
+    // window에서 전역 변수 가져오기
+    if (!currentGender && window.currentGender) currentGender = window.currentGender;
+    if (!currentMainTab && window.currentMainTab) currentMainTab = window.currentMainTab;
+    if (!currentSubTab && window.currentSubTab) currentSubTab = window.currentSubTab;
+    
     const stylesGrid = document.getElementById('stylesGrid');
     if (!stylesGrid) {
         console.error('❌ stylesGrid 요소를 찾을 수 없습니다');
@@ -732,7 +736,7 @@ function closeStyleModal() {
 
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료 - NEW 표시 및 태블릿 터치 최종 버전');
+    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료 - 전역 변수 문제 해결 최종 버전');
     
     // 모달 바깥 클릭 시 닫기
     document.addEventListener('click', function(e) {
@@ -763,7 +767,11 @@ window.HAIRGATOR_MENU = {
     closeAIPhotoModal: function() { /* AI 모달 닫기 함수 */ },
     updateCategoryDescription,
     showToast,
-    checkSubcategoriesAndNew
+    checkSubcategoriesAndNew,
+    // 전역 변수 getter 추가
+    getCurrentGender: () => currentGender,
+    getCurrentMainTab: () => currentMainTab,
+    getCurrentSubTab: () => currentSubTab
 };
 
 // HTML에서 직접 호출되는 전역 함수 추가
@@ -772,9 +780,7 @@ window.selectGender = function(gender) {
     
     // 현재 성별 전역 변수 설정
     currentGender = gender;
-    if (typeof window.currentGender !== 'undefined') {
-        window.currentGender = gender;
-    }
+    window.currentGender = gender;
     
     // 성별 선택 화면 숨기기
     const genderSelection = document.getElementById('genderSelection');
@@ -785,7 +791,7 @@ window.selectGender = function(gender) {
     if (menuContainer) menuContainer.classList.add('active');
     if (backBtn) backBtn.style.display = 'flex';
     
-    // 스마트 메뉴 시스템 로드 (스타일링된 서브카테고리 + NEW 표시 포함)
+    // 스마트 메뉴 시스템 로드
     loadMenuForGender(gender);
 };
 
@@ -816,10 +822,12 @@ window.debugHAIRGATOR = function() {
         currentGender,
         currentMainTab: currentMainTab?.name,
         currentSubTab,
+        windowGender: window.currentGender,
+        windowMainTab: window.currentMainTab?.name,
+        windowSubTab: window.currentSubTab,
         categoryNewCounts: Object.fromEntries(categoryNewCounts)
     });
 };
 
-console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - NEW 표시 및 태블릿 터치 최적화');
+console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 전역 변수 문제 해결 버전');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
-
