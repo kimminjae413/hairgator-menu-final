@@ -163,17 +163,16 @@
         </div>
 
         <!-- 성별 선택 화면 -->
-        <div class="gender-selection" id="genderSelection">
-            <button class="gender-btn male" onclick="selectGender('male')">
-                <div class="gender-icon">♂</div>
-                <div class="gender-label">남성</div>
-            </button>
-            <button class="gender-btn female" onclick="selectGender('female')">
-                <div class="gender-icon">♀</div>
-                <div class="gender-label">여성</div>
-            </button>
-        </div>
-
+<div class="gender-selection" id="genderSelection">
+    <button class="gender-btn male" data-gender="male" onclick="selectGender('male')">
+        <div class="gender-icon">♂</div>
+        <div class="gender-label">남성</div>
+    </button>
+    <button class="gender-btn female" data-gender="female" onclick="selectGender('female')">
+        <div class="gender-icon">♀</div>
+        <div class="gender-label">여성</div>
+    </button>
+</div>
        <!-- 메뉴 컨테이너 -->
 <div class="menu-container" id="menuContainer">
     
@@ -1583,6 +1582,7 @@ function forcePersonalColorAccess() {
     </script>
 </body>
 </html>
+
 
 
 
