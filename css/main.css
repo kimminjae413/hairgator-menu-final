@@ -332,7 +332,10 @@ body.light-theme .gender-btn {
 
 /* 고정될 영역 (빨간 박스) */
 .fixed-menu-section {
-    flex-shrink: 0; /* 크기 고정 */
+    flex-shrink: 0;
+    position: sticky; /* 이 줄 추가 */
+    top: 0; /* 이 줄 추가 */
+    z-index: 100; /* 이 줄 추가 */
     background: var(--primary-dark);
 }
 
@@ -1725,4 +1728,5 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
 
