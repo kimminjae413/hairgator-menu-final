@@ -321,10 +321,19 @@ body.light-theme .gender-btn {
 .menu-container {
     display: none;
     padding: 0;
+    height: calc(100vh - 65px); /* 헤더 높이 제외 */
+    overflow: hidden; /* 전체 스크롤 차단 */
+    flex-direction: column; /* 세로 배치 */
 }
 
 .menu-container.active {
-    display: block;
+    display: flex; /* block을 flex로 변경 */
+}
+
+/* 고정될 영역 (빨간 박스) */
+.fixed-menu-section {
+    flex-shrink: 0; /* 크기 고정 */
+    background: var(--primary-dark);
 }
 
 /* ========== 카테고리 탭 (태블릿 터치 문제 완전 해결 최종 버전) ========== */
@@ -648,10 +657,9 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 /* 스타일 그리드 */
 .styles-container {
     padding: 10px;
-    min-height: 50vh;
-    max-height: 70vh;
+    flex: 1; /* 남은 공간 모두 차지 */
     transition: background-color 0.3s ease;
-    overflow-y: auto;
+    overflow-y: auto; /* 이 영역만 스크롤 */
     -webkit-overflow-scrolling: touch;
 }
 
@@ -1717,3 +1725,4 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
