@@ -97,6 +97,12 @@ let currentGender = null;
 let currentMainTab = null;
 let currentSubTab = null;
 
+// 이 아래에 추가하세요! (Line 50)
+if (typeof window !== 'undefined') {
+    window.currentGender = currentGender;
+    window.currentMainTab = currentMainTab;
+    window.currentSubTab = currentSubTab;
+}
 // 스마트 필터링 & NEW 시스템 캐시
 let availableSubcategories = new Map();
 let newItemsCache = new Map();
@@ -378,10 +384,14 @@ async function loadSmartSubTabs(categoryName) {
             
             // 첫 번째 사용 가능한 서브카테고리를 활성화
             if (firstAvailableIndex === -1) {
-                firstAvailableIndex = index;
-                tab.classList.add('active');
-                currentSubTab = subCategory;
-            }
+    firstAvailableIndex = index;
+    tab.classList.add('active');
+    currentSubTab = subCategory;
+    // ↓↓↓ 이 줄 추가
+    if (typeof window !== 'undefined') {
+        window.currentSubTab = subCategory;
+    }
+}
             
             // NEW 표시 추가
             const newCount = subInfo.newCounts[subCategory];
@@ -812,3 +822,4 @@ window.debugHAIRGATOR = function() {
 
 console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - NEW 표시 및 태블릿 터치 최적화');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
+
