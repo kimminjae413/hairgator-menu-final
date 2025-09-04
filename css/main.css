@@ -320,23 +320,29 @@ body.light-theme .gender-btn {
 /* 메뉴 컨테이너 */
 .menu-container {
     display: none;
-    padding: 0;
-    flex-direction: column; /* 세로 배치 */
+    position: fixed;
+    top: 65px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 65px);
+    background: var(--primary-dark);
 }
 
 .menu-container.active {
-    display: flex; /* block을 flex로 변경 */
+    display: block;
 }
 
 /* 고정될 영역 (빨간 박스) */
 .fixed-menu-section {
-    flex-shrink: 0;
-    position: sticky; /* 이 줄 추가 */
-    top: 0; /* 이 줄 추가 */
-    z-index: 100; /* 이 줄 추가 */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
     background: var(--primary-dark);
+    z-index: 100;
+    border-bottom: 1px solid var(--border-color);
+    min-height: 200px;
 }
-
 /* ========== 카테고리 탭 (태블릿 터치 문제 완전 해결 최종 버전) ========== */
 .category-tabs {
     background: #111;
@@ -657,11 +663,16 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 
 /* 스타일 그리드 */
 .styles-container {
+    position: absolute;
+    top: 200px;
+    left: 0;
+    width: 100%;
+    bottom: 0;
     padding: 10px;
-    flex: 1; /* 남은 공간 모두 차지 */
-    transition: background-color 0.3s ease;
-    overflow-y: auto; /* 이 영역만 스크롤 */
+    overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    background: var(--primary-dark);
 }
 
 body.light-theme .styles-container {
@@ -1559,6 +1570,27 @@ body.light-theme .modal-action-btn.secondary:hover {
         right: -12px;
         bottom: -12px;
     }
+
+    /* 여기에 5번 코드를 추가 */
+    .menu-container {
+        top: 65px;
+        height: calc(100vh - 65px);
+    }
+    
+    .fixed-menu-section {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: var(--primary-dark);
+        z-index: 150;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .styles-container {
+        padding: 15px;
+        scroll-behavior: smooth;
+    }
     
     .category-tabs {
         padding: 20px 15px;
@@ -1726,6 +1758,7 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
 
 
 
