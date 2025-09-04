@@ -60,24 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (logoutBtn) {
             logoutBtn.addEventListener('click', handleLogout);
         }
-
-        // Gender Selection Buttons - menu.js의 selectGender 사용
-        document.querySelectorAll('.gender-btn').forEach(btn => {
-            // 터치 디바이스용 이벤트
-            btn.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                const gender = this.dataset.gender || this.getAttribute('data-gender');
-                console.log(`성별 선택 (터치): ${gender}`);
-                
-                // menu.js의 selectGender 함수 호출
-                if (typeof window.selectGender === 'function') {
-                    window.selectGender(gender);
-                } else {
-                    console.error('❌ menu.js의 selectGender 함수를 찾을 수 없습니다');
-                    // 폴백: 기본 동작
-                    handleGenderSelection(gender);
-                }
-            });
             
             // 마우스/키보드용 이벤트 (터치와 중복 방지)
             btn.addEventListener('click', function(e) {
@@ -326,3 +308,4 @@ window.addEventListener('load', function() {
     `;
     document.head.appendChild(style);
 });
+
