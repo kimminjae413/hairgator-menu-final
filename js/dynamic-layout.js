@@ -139,15 +139,18 @@
                 
                 /* C영역: 이미지 그리드 (스크롤 가능) */
                 .menu-items-container {
-                    flex: 1;
-                    overflow-y: auto !important;
-                    overflow-x: hidden;
-                    -webkit-overflow-scrolling: touch;
-                    overscroll-behavior-y: contain;
-                    padding-bottom: 100px;
-                    position: relative;
-                    height: calc(100vh - 300px); /* 고정 영역 높이를 뺀 나머지 */
-                }
+    position: absolute;
+    top: 280px;  /* A+B 영역 높이 */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    padding: 10px;
+    padding-bottom: 50px;
+}
                 
                 /* 스크롤바 스타일링 */
                 .menu-items-container::-webkit-scrollbar {
