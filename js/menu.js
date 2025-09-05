@@ -43,42 +43,42 @@ const MALE_CATEGORIES = [
 const FEMALE_CATEGORIES = [
     {
         id: 'a-length',
-        name: 'A Length',
+        name: 'A LENGTH',
         description: 'A 길이는 가슴선 아래로 내려오는 롱헤어로, 원랭스·레이어드 롱·굵은 S컬이 잘 맞아 우아하고 드라마틱한 분위기를 냅니다.'
     },
     {
         id: 'b-length',
-        name: 'B Length',
+        name: 'B LENGTH',
         description: 'B 길이는 가슴 아래(A)와 쇄골 아래(C) 사이의 미디엄-롱으로, 레이어드 미디엄롱·바디펌이 어울려 부드럽고 실용적인 인상을 줍니다.'
     },
     {
         id: 'c-length',
-        name: 'C Length',
+        name: 'C LENGTH',
         description: 'C 길이는 쇄골 라인 아래의 세미 롱으로, 레이어드 C/S컬·에어리펌과 잘 맞아 단정하고 세련된 오피스 무드를 냅니다.'
     },
     {
         id: 'd-length',
-        name: 'D Length',
+        name: 'D LENGTH',
         description: 'D 길이는 어깨에 정확히 닿는 길이로, LOB·숄더 C컬·빌드펌이 어울려 트렌디하고 깔끔한 느낌을 줍니다.'
     },
     {
         id: 'e-length',
-        name: 'E Length',
+        name: 'E LENGTH',
         description: 'E 길이는 어깨 바로 위의 단발로, 클래식 보브·A라인 보브·내/외 C컬이 잘 맞아 경쾌하고 모던한 인상을 만듭니다.'
     },
     {
         id: 'f-length',
-        name: 'F Length',
+        name: 'F LENGTH',
         description: 'F 길이는 턱선 바로 밑 보브 길이로, 프렌치 보브·일자 단발·텍스쳐 보브가 어울려 시크하고 도회적인 분위기를 연출합니다.'
     },
     {
         id: 'g-length',
-        name: 'G Length',
+        name: 'G LENGTH',
         description: 'G 길이는 턱선과 같은 높이의 미니 보브로, 클래식 턱선 보브·미니 레이어 보브가 잘 맞아 똘똘하고 미니멀한 무드를 줍니다.'
     },
     {
         id: 'h-length',
-        name: 'H Length',
+        name: 'H LENGTH',
         description: 'H 길이는 귀선~베리숏구간의 숏헤어로, 픽시·샤그 숏·허쉬 숏 등이 어울려 활동적이고 개성 있는 스타일을 완성합니다.'
     }
 ];
@@ -831,3 +831,4 @@ window.debugHAIRGATOR = function() {
 
 console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 전역 변수 문제 해결 버전');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
+
