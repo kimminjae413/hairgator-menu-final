@@ -114,7 +114,12 @@ const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
 
 // 사용 가능한 서브카테고리 & NEW 아이템 확인 (인덱스 불필요 버전)
 async function checkSubcategoriesAndNew(gender, categoryName) {
-    const cacheKey = `${gender}-${categoryName}`;
+    // ✅ 추가: Firebase 조회용 이름 변환
+    const dbCategoryName = categoryName.includes('LENGTH') 
+        ? categoryName.replace('LENGTH', 'Length')
+        : categoryName;
+    
+    const cacheKey = `${gender}-${dbCategoryName}`;
     
     if (availableSubcategories.has(cacheKey)) {
         return availableSubcategories.get(cacheKey);
@@ -124,7 +129,7 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
         // 복합 인덱스 없이 작동하도록 수정
         const snapshot = await db.collection('hairstyles')
             .where('gender', '==', gender)
-            .where('mainCategory', '==', categoryName)
+            .where('mainCategory', '==', dbCategoryName)  // ✅ categoryName을 dbCategoryName으로 변경
             .get();
         
         const availableSubs = new Set();
@@ -462,11 +467,15 @@ async function loadStyles() {
     
     // Firebase Query를 위한 안전한 카테고리명 추출
     const mainCategoryName = currentMainTab.name || currentMainTab;
+    // ✅ 추가: Firebase 조회용 이름 변환
+    const dbMainCategoryName = mainCategoryName.includes('LENGTH')
+        ? mainCategoryName.replace('LENGTH', 'Length')
+        : mainCategoryName;
     const subCategoryName = currentSubTab;
     
     console.log(`🔍 스타일 검색 시작:`, {
         gender: currentGender,
-        mainCategory: mainCategoryName,
+        mainCategory: dbMainCategoryName,  // ✅ 변경
         subCategory: subCategoryName
     });
     
@@ -481,7 +490,7 @@ async function loadStyles() {
         
         const querySnapshot = await db.collection('hairstyles')
             .where('gender', '==', currentGender)
-            .where('mainCategory', '==', mainCategoryName)
+            .where('mainCategory', '==', dbMainCategoryName)  // ✅ mainCategoryName을 dbMainCategoryName으로 변경
             .where('subCategory', '==', subCategoryName)
             .get();
         
@@ -831,4 +840,5 @@ window.debugHAIRGATOR = function() {
 
 console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 전역 변수 문제 해결 버전');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
+
 
