@@ -1,6 +1,35 @@
 // HAIRGATOR PWA Service Worker - Production Version
-const CACHE_NAME = 'hairgator-v3.6.6';
-const CACHE_VERSION = '20241201'; // 날짜 기반 버전
+
+// ============================================
+// 📌 배포 시 VERSION만 변경하세요!
+// ============================================
+const VERSION = '4.0.0';  // 이것만 바꾸면 됩니다!
+
+// ============================================
+// 자동 생성 영역 (수정 불필요)
+// ============================================
+const BUILD_DATE = new Date();
+const BUILD_NUMBER = BUILD_DATE.getFullYear() + 
+  String(BUILD_DATE.getMonth() + 1).padStart(2, '0') + 
+  String(BUILD_DATE.getDate()).padStart(2, '0') +
+  String(BUILD_DATE.getHours()).padStart(2, '0') +
+  String(BUILD_DATE.getMinutes()).padStart(2, '0');
+
+const CACHE_NAME = `hairgator-v${VERSION}`;
+const CACHE_VERSION = BUILD_NUMBER;
+
+// 시작 로그
+console.log(`🦎 HAIRGATOR PWA Service Worker
+╔════════════════════════════════
+║ Version: ${VERSION}
+║ Build: ${BUILD_NUMBER}
+║ Cache: ${CACHE_NAME}
+║ Time: ${BUILD_DATE.toLocaleString('ko-KR')}
+╚════════════════════════════════`);
+
+// ============================================
+// 캐시 설정
+// ============================================
 
 // 캐시할 핵심 파일들
 const CORE_CACHE = [
@@ -33,9 +62,13 @@ const NO_CACHE_PATTERNS = [
   /\/debug\//
 ];
 
+// ============================================
+// 서비스워커 이벤트 핸들러
+// ============================================
+
 // 설치 이벤트
 self.addEventListener('install', event => {
-  console.log('[SW] Installing HAIRGATOR Service Worker v' + CACHE_VERSION);
+  console.log(`[SW] Installing HAIRGATOR v${VERSION} (Build: ${CACHE_VERSION})`);
   
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -55,7 +88,7 @@ self.addEventListener('install', event => {
 
 // 활성화 이벤트
 self.addEventListener('activate', event => {
-  console.log('[SW] Activating Service Worker');
+  console.log(`[SW] Activating v${VERSION}`);
   
   event.waitUntil(
     Promise.all([
@@ -201,7 +234,8 @@ self.addEventListener('message', event => {
           event.ports[0].postMessage({ 
             success: true, 
             count: keys.length,
-            version: CACHE_VERSION
+            version: VERSION,
+            build: CACHE_VERSION
           });
         })
         .catch(error => {
@@ -221,6 +255,15 @@ self.addEventListener('message', event => {
         });
       break;
       
+    case 'GET_VERSION':
+      event.ports[0].postMessage({ 
+        success: true, 
+        version: VERSION,
+        build: CACHE_VERSION,
+        cache: CACHE_NAME
+      });
+      break;
+      
     default:
       console.log('[SW] 알 수 없는 메시지:', data.type);
       event.ports[0].postMessage({ success: false, error: 'Unknown message type' });
@@ -236,7 +279,7 @@ self.addEventListener('unhandledrejection', event => {
   console.error('[SW] Unhandled Promise Rejection:', event.reason);
 });
 
-console.log('🦎 HAIRGATOR Service Worker v' + CACHE_VERSION + ' 로드 완료');
+console.log(`🦎 HAIRGATOR Service Worker v${VERSION} (Build: ${CACHE_VERSION}) 로드 완료`);
 
 // 주기적인 캐시 정리 (24시간마다)
 const CACHE_CLEANUP_INTERVAL = 24 * 60 * 60 * 1000; // 24시간
@@ -253,30 +296,3 @@ setInterval(() => {
     });
   });
 }, CACHE_CLEANUP_INTERVAL);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
