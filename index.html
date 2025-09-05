@@ -289,22 +289,25 @@
         }
 
         function toggleTheme() {
-            document.body.classList.toggle('light-theme');
-            const isLight = document.body.classList.contains('light-theme');
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+    const themeButton = document.getElementById('themeToggle');
+    
+    if (themeIcon) themeIcon.textContent = isLight ? '☀️' : '🌙';
+    if (themeText) themeText.textContent = isLight ? '라이트 모드' : '다크 모드';
+    if (themeButton) {
+        themeButton.textContent = isLight ? '☀️' : '🌙';
+        themeButton.title = isLight ? '다크 모드로 변경' : '라이트 모드로 변경';
+    }
+    
+    localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
+    console.log(`테마 변경: ${isLight ? 'light' : 'dark'}`);
+}
 
-            localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
-            updateThemeButton(isLight);
-
-            console.log(`테마 변경: ${isLight ? 'light' : 'dark'}`);
-        }
-
-        function updateThemeButton(isLight) {
-            const themeButton = document.getElementById('themeToggle');
-            if (themeButton) {
-                themeButton.textContent = isLight ? '☀️' : '🌙';
-                themeButton.title = isLight ? '다크 모드로 변경' : '라이트 모드로 변경';
-            }
-        }
+// updateThemeButton 함수는 삭제
 
         // NEW 표시 빨간 점 생성
         function createNewIndicator() {
@@ -1633,6 +1636,7 @@ if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
 </script>
 </body>
 </html>
+
 
 
 
