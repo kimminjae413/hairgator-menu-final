@@ -1,0 +1,2507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAIRGATOR Admin - 완전한 관리 시스템</title>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <style>
+        /* 기본 스타일 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        /* 헤더 */
+        .header {
+            background: #1a1a1a;
+            border-bottom: 2px solid #FF1493;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #FF1493;
+            font-size: 28px;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            background: #FF1493;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #FF69B4;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        /* 토큰 관련 버튼 (화이트 톤) */
+        .btn-token {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            color: #495057;
+            border: 1px solid #dee2e6;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-token:hover {
+            background: linear-gradient(135deg, #e9ecef, #dee2e6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* 컨테이너 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 탭 */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            overflow-x: auto;
+        }
+        
+        .tab {
+            background: transparent;
+            color: #999;
+            border: 1px solid #333;
+            padding: 10px 20px;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .tab.active {
+            background: #1a1a1a;
+            color: #FF1493;
+            border-color: #FF1493;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        
+        /* 섹션 */
+        .section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            color: #FF1493;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        /* 토큰 설정 카드 (화이트 톤) */
+        .token-settings-card {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+        
+        .token-settings-title {
+            color: #495057;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .token-form-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .token-form-group label {
+            color: #495057;
+            font-weight: bold;
+            min-width: 150px;
+        }
+        
+        .token-form-group input {
+            flex: 1;
+            padding: 12px;
+            background: #fff;
+            color: #495057;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .token-form-group input:focus {
+            outline: none;
+            border-color: #6c757d;
+            box-shadow: 0 0 10px rgba(108, 117, 125, 0.3);
+        }
+        
+        /* Firebase 연결 상태 */
+        .firebase-status {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #155724;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .firebase-status.error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+        
+        .status-indicator.error {
+            background: #dc3545;
+        }
+        
+        /* 패스워드 요청 카드 스타일 */
+        .password-requests-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .password-request-card {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            border: 2px solid #444;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .password-request-card.pending {
+            border-color: #ffc107;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.2);
+        }
+
+        .password-request-card.approved {
+            border-color: #28a745;
+            opacity: 0.7;
+        }
+
+        .password-request-card.rejected {
+            border-color: #dc3545;
+            opacity: 0.7;
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .request-id {
+            font-family: monospace;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .request-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .request-status.pending {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .request-status.approved {
+            background: #28a745;
+            color: white;
+        }
+
+        .request-status.rejected {
+            background: #dc3545;
+            color: white;
+        }
+
+        .request-info {
+            margin-bottom: 15px;
+        }
+
+        .request-info p {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .request-info strong {
+            color: #FF1493;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .request-actions button {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        
+        /* 선택 영역 */
+        .selection-area {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .selection-group {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .selection-group label {
+            display: block;
+            color: #FF1493;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .selection-group select {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        /* 스타일 그리드 */
+        .styles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .style-card {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s;
+            aspect-ratio: 3/4;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .style-card:hover {
+            border-color: #FF1493;
+            transform: translateY(-5px);
+        }
+        
+        .style-image-container {
+            width: 100%;
+            flex: 1;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .style-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .no-image-text {
+            color: white;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .style-info {
+            padding: 10px;
+            text-align: center;
+            background: #000;
+        }
+        
+        .style-code {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .style-name {
+            font-size: 14px;
+            color: white;
+            margin-top: 5px;
+        }
+        
+        .style-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            z-index: 10;
+        }
+        
+        .action-btn {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: 1px solid #333;
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            background: #FF1493;
+        }
+        
+        .action-btn.delete:hover {
+            background: #dc3545;
+        }
+        
+        /* 디자이너 테이블 개선 */
+        .designers-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            font-size: 13px;
+        }
+        
+        .designers-table th {
+            background: #f8f9fa;
+            color: #495057;
+            padding: 15px 12px;
+            text-align: left;
+            border-bottom: 2px solid #e9ecef;
+            font-weight: 700;
+        }
+        
+        .designers-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            color: #495057;
+        }
+        
+        .designers-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .password-cell {
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 5px;
+            border-radius: 3px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .password-toggle-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+
+        .password-toggle-btn:hover {
+            background: #e9ecef;
+        }
+
+        .designer-status {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .designer-status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .designer-status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .designer-status.locked {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* 액션 버튼 그룹 */
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons button {
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+        
+        /* 토큰 입력 (화이트 톤) */
+        .token-input {
+            width: 100px;
+            padding: 8px;
+            background: #fff;
+            color: #495057;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .token-input:focus {
+            outline: none;
+            border-color: #6c757d;
+        }
+        
+        .token-display {
+            color: #495057;
+            font-weight: bold;
+            font-size: 16px;
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 15px;
+            border: 1px solid #e9ecef;
+        }
+        
+        /* 업로드 영역 */
+        .upload-area {
+            background: #000;
+            border: 2px dashed #FF1493;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area.dragover {
+            background: rgba(255, 20, 147, 0.1);
+        }
+        
+        .upload-input {
+            display: none;
+        }
+        
+        .upload-label {
+            color: #FF1493;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .upload-preview {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .upload-preview img {
+            max-width: 200px;
+            border-radius: 10px;
+        }
+        
+        /* 폼 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #FF1493;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: #000;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #FF1493;
+        }
+        
+        /* 필수/선택 라벨 */
+        .label-required {
+            color: #FF1493;
+            font-weight: bold;
+        }
+        
+        .label-required::after {
+            content: ' *';
+            color: #ff4444;
+        }
+        
+        .label-optional {
+            color: #FF1493;
+            font-weight: bold;
+        }
+        
+        .label-optional::after {
+            content: ' (선택)';
+            color: #999;
+            font-size: 12px;
+            font-weight: normal;
+        }
+        
+        /* 자동 생성 코드 표시 */
+        .auto-code-info {
+            background: rgba(255, 20, 147, 0.1);
+            border: 1px solid #FF1493;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #FF69B4;
+            display: none;
+        }
+        
+        .auto-code-info.show {
+            display: block;
+        }
+        
+        /* 통계 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            color: #FF1493;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            color: #999;
+            margin-top: 10px;
+        }
+        
+        /* 데이터 테이블 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .data-table th {
+            background: #000;
+            color: #FF1493;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #FF1493;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .data-table tr:hover {
+            background: rgba(255, 20, 147, 0.05);
+        }
+        
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #1a1a1a;
+            border: 2px solid #FF1493;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            color: #FF1493;
+            font-size: 24px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        
+        /* 로딩 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .spinner {
+            border: 3px solid #333;
+            border-top: 3px solid #FF1493;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 토스트 알림 */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #FF1493;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            display: none;
+            animation: slideUp 0.3s ease;
+            z-index: 2000;
+        }
+        
+        .toast.show {
+            display: block;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* 토큰 정보 박스 (화이트 톤) */
+        .token-info-box {
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .token-info-box p {
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .token-info-box strong {
+            color: #495057;
+            font-weight: 700;
+        }
+        
+        /* 새 기능 추가 폼 */
+        .new-feature-form {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .new-feature-form.show {
+            display: block;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr 3fr 1fr;
+            gap: 10px;
+            align-items: end;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .selection-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .styles-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .token-form-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .token-form-group label {
+                min-width: auto;
+                text-align: center;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .password-requests-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .designers-table {
+                font-size: 11px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <div class="header">
+        <h1>HAIRGATOR Admin</h1>
+        <div class="header-buttons">
+            <button class="btn btn-success" onclick="initializeData()">데이터 초기화</button>
+            <button class="btn" onclick="location.href='/'">메인 페이지</button>
+        </div>
+    </div>
+    
+    <!-- 컨테이너 -->
+    <div class="container">
+        <!-- Firebase 연결 상태 -->
+        <div class="firebase-status" id="firebaseStatus">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <span id="statusText">Firebase 연결 중...</span>
+        </div>
+        
+        <!-- 탭 -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('styles')">헤어스타일 관리</button>
+            <button class="tab" onclick="switchTab('designers')">디자이너 관리</button>
+            <button class="tab" onclick="switchTab('tokens')">토큰 비용 관리</button>
+            <button class="tab" onclick="switchTab('customers')">고객 관리</button>
+            <button class="tab" onclick="switchTab('stats')">통계</button>
+            <button class="tab" onclick="switchTab('settings')">설정</button>
+        </div>
+        
+        <!-- 스타일 관리 탭 -->
+        <div id="stylesTab" class="tab-content">
+            <!-- 선택 영역 -->
+            <div class="section">
+                <h2 class="section-title">카테고리 선택</h2>
+                <div class="selection-area">
+                    <div class="selection-group">
+                        <label>성별</label>
+                        <select id="genderSelect" onchange="loadCategories()">
+                            <option value="">성별 선택</option>
+                            <option value="male">남성</option>
+                            <option value="female">여성</option>
+                        </select>
+                    </div>
+                    <div class="selection-group">
+                        <label>대분류</label>
+                        <select id="categorySelect" onchange="loadSubcategories()">
+                            <option value="">대분류 선택</option>
+                        </select>
+                    </div>
+                    <div class="selection-group">
+                        <label>중분류 (앞머리 길이)</label>
+                        <select id="subcategorySelect" onchange="loadStyles()">
+                            <option value="">중분류 선택</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="openAddStyleModal()">새 스타일 추가</button>
+            </div>
+            
+            <!-- 스타일 목록 -->
+            <div class="section">
+                <h2 class="section-title">등록된 스타일</h2>
+                <div id="stylesGrid" class="styles-grid">
+                    <!-- 동적 생성 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 디자이너 관리 탭 -->
+        <div id="designersTab" class="tab-content" style="display: none;">
+            <!-- 토큰 기본 설정 -->
+            <div class="token-settings-card">
+                <h2 class="token-settings-title">토큰 시스템 설정</h2>
+                
+                <div class="token-form-group">
+                    <label>신규 디자이너 기본 토큰:</label>
+                    <input type="number" id="defaultTokens" min="0" max="99999" value="100" placeholder="예: 100">
+                    <button class="btn btn-token" onclick="saveDefaultTokens()">저장</button>
+                </div>
+                
+                <div class="token-info-box">
+                    <p><strong>안내:</strong> 신규 가입하는 디자이너에게 자동으로 지급되는 기본 토큰 수량을 설정합니다.</p>
+                    <p><strong>보안:</strong> 토큰 수량은 관리자만 변경할 수 있으며, 디자이너는 확인만 가능합니다.</p>
+                    <p><strong>사용:</strong> 고객등록(1토큰), AI분석(2토큰) 등의 기능에서 자동 차감됩니다.</p>
+                    <p><strong>Firebase:</strong> 모든 토큰 데이터는 실시간으로 Firebase에 동기화됩니다.</p>
+                </div>
+            </div>
+
+            <!-- 패스워드 변경 요청 관리 -->
+            <div class="section">
+                <h2 class="section-title">패스워드 변경 요청 관리</h2>
+                
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-warning" onclick="refreshPasswordRequests()">요청 목록 새로고침</button>
+                    <button class="btn btn-success" onclick="approveAllRequests()">모든 요청 일괄 승인</button>
+                    <button class="btn btn-danger" onclick="clearCompletedRequests()">완료된 요청 삭제</button>
+                </div>
+                
+                <div class="password-requests-container" id="passwordRequestsContainer">
+                    <!-- 동적 생성 -->
+                </div>
+            </div>
+            
+            <!-- 디자이너 목록 및 관리 -->
+            <div class="section">
+                <h2 class="section-title">디자이너 계정 관리</h2>
+                
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-success" onclick="addNewDesigner()">새 디자이너 추가</button>
+                    <button class="btn btn-token" onclick="addTestDesigner()">테스트 디자이너 추가</button>
+                    <button class="btn btn-warning" onclick="refreshDesigners()">목록 새로고침</button>
+                    <button class="btn btn-success" onclick="batchTokenUpdate()">일괄 토큰 지급</button>
+                </div>
+                
+                <table class="designers-table">
+                    <thead>
+                        <tr>
+                            <th>디자이너명</th>
+                            <th>전화번호</th>
+                            <th>패스워드</th>
+                            <th>현재 토큰</th>
+                            <th>토큰 수정</th>
+                            <th>가입일</th>
+                            <th>마지막 로그인</th>
+                            <th>상태</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="designersTable">
+                        <!-- 동적 생성 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 토큰 비용 관리 탭 -->
+        <div id="tokensTab" class="tab-content" style="display: none;">
+            <!-- 토큰 비용 설정 -->
+            <div class="token-settings-card">
+                <h2 class="token-settings-title">기능별 토큰 비용 설정</h2>
+                
+                <div class="token-info-box">
+                    <p><strong>안내:</strong> 각 기능에서 소모되는 토큰 비용을 설정할 수 있습니다.</p>
+                    <p><strong>실시간 적용:</strong> 변경 즉시 모든 사용자에게 적용됩니다.</p>
+                    <p><strong>보안:</strong> 토큰 비용은 관리자만 변경할 수 있습니다.</p>
+                </div>
+            </div>
+            
+            <!-- 새 기능 추가 폼 -->
+            <div class="new-feature-form" id="newFeatureForm">
+                <h3 style="color: #FF1493; margin-bottom: 15px;">새 기능 추가</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>기능 키</label>
+                        <input type="text" id="newFeatureKey" placeholder="예: CUSTOM_FEATURE" style="text-transform: uppercase;">
+                    </div>
+                    <div class="form-group">
+                        <label>기능 이름</label>
+                        <input type="text" id="newFeatureName" placeholder="예: 커스텀 기능">
+                    </div>
+                    <div class="form-group">
+                        <label>토큰 비용</label>
+                        <input type="number" id="newFeatureCost" placeholder="1" min="0" max="9999">
+                    </div>
+                    <div class="form-group">
+                        <label>설명</label>
+                        <input type="text" id="newFeatureDescription" placeholder="기능 설명">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-success" onclick="saveNewFeature()">추가</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 토큰 비용 목록 -->
+            <div class="section">
+                <h2 class="section-title">기능별 토큰 비용</h2>
+                
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-success" onclick="toggleNewFeatureForm()">새 기능 추가</button>
+                    <button class="btn btn-warning" onclick="refreshTokenCosts()">목록 새로고침</button>
+                    <button class="btn btn-token" onclick="resetToDefaults()">기본값으로 초기화</button>
+                </div>
+                
+                <table class="designers-table">
+                    <thead>
+                        <tr>
+                            <th>기능 키</th>
+                            <th>기능 이름</th>
+                            <th>토큰 비용</th>
+                            <th>설명</th>
+                            <th>수정일</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tokenCostsTable">
+                        <!-- 동적 생성 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 고객 관리 탭 -->
+        <div id="customersTab" class="tab-content" style="display: none;">
+            <div class="section">
+                <h2 class="section-title">고객 목록</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>이름</th>
+                            <th>전화번호</th>
+                            <th>스타일</th>
+                            <th>디자이너</th>
+                            <th>등록일</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersTable">
+                        <!-- 동적 생성 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 통계 탭 -->
+        <div id="statsTab" class="tab-content" style="display: none;">
+            <div class="section">
+                <h2 class="section-title">전체 통계</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalStyles">0</div>
+                        <div class="stat-label">전체 스타일</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalDesigners">0</div>
+                        <div class="stat-label">전체 디자이너</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalTokens">0</div>
+                        <div class="stat-label">총 발행 토큰</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCustomers">0</div>
+                        <div class="stat-label">전체 고객</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalMale">0</div>
+                        <div class="stat-label">남성 스타일</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalFemale">0</div>
+                        <div class="stat-label">여성 스타일</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 설정 탭 -->
+        <div id="settingsTab" class="tab-content" style="display: none;">
+            <div class="section">
+                <h2 class="section-title">시스템 설정</h2>
+                <button class="btn btn-danger" onclick="clearAllData()">모든 데이터 삭제</button>
+                <button class="btn" onclick="exportData()">데이터 내보내기</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 스타일 추가 모달 -->
+    <div id="addStyleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">새 스타일 추가</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="label-optional">스타일 코드 (자동생성)</label>
+                <input type="text" id="styleCode" placeholder="자동으로 생성됩니다" style="text-transform: uppercase;" readonly>
+                <div class="auto-code-info show" id="autoCodeInfo">
+                    코드가 자동으로 생성됩니다. 직접 입력하려면 입력란을 더블클릭하세요.
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="label-required">스타일 이름</label>
+                <input type="text" id="styleName" placeholder="예: 글램웨이브 (필수)">
+            </div>
+            
+            <div class="form-group">
+                <label class="label-optional">이미지 업로드</label>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="styleImage" class="upload-input" accept="image/*" onchange="previewImage(event)">
+                    <label for="styleImage" class="upload-label">
+                        클릭하거나 드래그하여 이미지 업로드
+                    </label>
+                </div>
+                <div class="upload-preview" id="uploadPreview">
+                    <img id="previewImg" src="" alt="Preview">
+                </div>
+            </div>
+            
+            <button class="btn" onclick="saveStyle()" id="saveBtn">저장</button>
+        </div>
+    </div>
+
+    <!-- 디자이너 추가/수정 모달 -->
+    <div id="designerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="designerModalTitle">새 디자이너 추가</h3>
+                <button class="modal-close" onclick="closeDesignerModal()">×</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="label-required">디자이너 이름</label>
+                <input type="text" id="designerName" placeholder="실명을 입력하세요">
+            </div>
+            
+            <div class="form-group">
+                <label class="label-required">전화번호</label>
+                <input type="tel" id="designerPhone" placeholder="010-0000-0000" maxlength="13">
+                <small style="color: #999; font-size: 12px;">하이픈(-) 포함하여 입력</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="label-required">초기 패스워드</label>
+                <input type="text" id="designerPassword" placeholder="4자리 숫자" maxlength="4">
+                <small style="color: #999; font-size: 12px;">디자이너가 나중에 변경 가능</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="label-optional">초기 토큰</label>
+                <input type="number" id="designerTokens" min="0" max="99999" placeholder="기본값 사용">
+            </div>
+            
+            <button class="btn" onclick="saveDesigner()" id="saveDesignerBtn">저장</button>
+        </div>
+    </div>
+
+    <!-- 패스워드 변경 요청 모달 -->
+    <div id="passwordRequestModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">패스워드 변경 요청 처리</h3>
+                <button class="modal-close" onclick="closePasswordRequestModal()">×</button>
+            </div>
+            
+            <div id="requestDetails">
+                <!-- 동적 생성 -->
+            </div>
+            
+            <div class="form-group">
+                <label>관리자 메모 (선택)</label>
+                <textarea id="adminMemo" rows="3" placeholder="승인/거부 사유를 입력하세요"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-success" onclick="approvePasswordRequest()" id="approveBtn">승인</button>
+                <button class="btn btn-danger" onclick="rejectPasswordRequest()" id="rejectBtn">거부</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 토스트 알림 -->
+    <div id="toast" class="toast"></div>
+    
+    <!-- JavaScript -->
+    <script>
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
+            authDomain: "hairgatormenu-4a43e.firebaseapp.com",
+            databaseURL: "https://hairgatormenu-4a43e-default-rtdb.firebaseio.com",
+            projectId: "hairgatormenu-4a43e",
+            storageBucket: "hairgatormenu-4a43e.firebasestorage.app",
+            messagingSenderId: "800038006875",
+            appId: "1:800038006875:web:2a4de70e3a306986e0cf7e"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // 전역 변수로 설정
+        window.db = db;
+        window.storage = storage;
+
+        db.settings({
+            cache: {
+                kind: 'persistent',
+                tabManager: { kind: 'multi-tab' }
+            }
+        });
+
+        console.log('Firebase initialized');
+        
+        // Firebase 연결 상태 확인
+        checkFirebaseConnection();
+        
+        // 전역 변수
+        let currentGender = null;
+        let currentCategory = null;
+        let currentSubcategory = null;
+        let selectedFile = null;
+        let currentEditingDesigner = null;
+        let currentPasswordRequest = null;
+        
+        // Firebase 컬렉션 이름
+        const COLLECTIONS = {
+            DESIGNERS: 'designers',
+            HAIRSTYLES: 'hairstyles',
+            CUSTOMERS: 'customers',
+            METADATA: 'metadata',
+            PASSWORD_CHANGE_REQUESTS: 'password_change_requests',
+            PASSWORD_RESET_REQUESTS: 'password_reset_requests'
+        };
+        
+        // 카테고리 구조
+        const CATEGORIES = {
+            male: [
+                'SIDE FRINGE', 
+                'SIDE PART', 
+                'FRINGE UP', 
+                'PUSHED BACK', 
+                'BUZZ', 
+                'CROP', 
+                'MOHICAN'
+            ],
+            female: [
+                'A Length',
+                'B Length',
+                'C Length',
+                'D Length',
+                'E Length',
+                'F Length',
+                'G Length',
+                'H Length'
+            ]
+        };
+        
+        const SUBCATEGORIES = ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'];
+        
+        // 기본 토큰 비용 정의
+        const DEFAULT_TOKEN_COSTS = {
+            'AI_FACE_ANALYSIS': { cost: 5, name: 'AI 얼굴 분석', description: 'AKOOL API를 사용한 얼굴 분석 기능' },
+            'CUSTOMER_REGISTER': { cost: 1, name: '고객 등록', description: '새 고객 정보 등록' },
+            'RESERVATION_CREATE': { cost: 1, name: '예약 생성', description: '새 예약 생성' },
+            'BASIC_ANALYTICS': { cost: 2, name: '기본 분석', description: '기본 통계 및 분석 기능' },
+            'ADVANCED_RECOMMEND': { cost: 3, name: '고급 추천', description: '고급 스타일 추천 기능' },
+            'DATA_EXPORT': { cost: 2, name: '데이터 내보내기', description: '데이터 내보내기 기능' },
+            'BULK_OPERATIONS': { cost: 10, name: '대량 작업', description: '대량 데이터 처리' }
+        };
+        
+        // 전화번호 포맷팅 함수
+        function formatPhoneNumber(phone) {
+            const numbers = phone.replace(/[^\d]/g, '');
+            if (numbers.length === 11) {
+                return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+            }
+            return phone;
+        }
+        
+        // Firebase 연결 상태 확인
+        async function checkFirebaseConnection() {
+            const statusElement = document.getElementById('firebaseStatus');
+            const indicatorElement = document.getElementById('statusIndicator');
+            const textElement = document.getElementById('statusText');
+            
+            try {
+                await db.collection('metadata').doc('connection_test').set({
+                    timestamp: new Date(),
+                    status: 'connected'
+                });
+                
+                statusElement.classList.remove('error');
+                indicatorElement.classList.remove('error');
+                textElement.textContent = 'Firebase 연결됨 (실시간 동기화 활성)';
+                console.log('Firebase 연결 테스트 성공');
+                
+            } catch (error) {
+                statusElement.classList.add('error');
+                indicatorElement.classList.add('error');
+                textElement.textContent = 'Firebase 연결 실패: ' + error.message;
+                console.error('Firebase 연결 실패:', error);
+            }
+        }
+
+        // ========== 디자이너 관리 함수들 ==========
+
+        // 새 디자이너 추가 모달
+        function addNewDesigner() {
+            currentEditingDesigner = null;
+            document.getElementById('designerModalTitle').textContent = '새 디자이너 추가';
+            document.getElementById('designerName').value = '';
+            document.getElementById('designerPhone').value = '';
+            document.getElementById('designerPassword').value = '';
+            document.getElementById('designerTokens').value = '';
+            document.getElementById('designerModal').classList.add('active');
+            
+            // 전화번호 포맷팅 이벤트 추가
+            const phoneInput = document.getElementById('designerPhone');
+            phoneInput.addEventListener('input', function(e) {
+                e.target.value = formatPhoneNumber(e.target.value);
+            });
+        }
+
+        // 디자이너 수정 모달
+        async function editDesigner(designerId) {
+            try {
+                const doc = await db.collection(COLLECTIONS.DESIGNERS).doc(designerId).get();
+                if (!doc.exists) {
+                    showToast('디자이너 정보를 찾을 수 없습니다');
+                    return;
+                }
+                
+                const data = doc.data();
+                currentEditingDesigner = { id: designerId, data: data };
+                
+                document.getElementById('designerModalTitle').textContent = '디자이너 정보 수정';
+                document.getElementById('designerName').value = data.name;
+                document.getElementById('designerPhone').value = data.phone;
+                document.getElementById('designerPassword').value = data.password;
+                document.getElementById('designerTokens').value = data.tokens || 0;
+                document.getElementById('designerModal').classList.add('active');
+                
+            } catch (error) {
+                console.error('디자이너 정보 로드 오류:', error);
+                showToast('디자이너 정보 로드 실패: ' + error.message);
+            }
+        }
+
+        // 디자이너 저장
+        async function saveDesigner() {
+            const name = document.getElementById('designerName').value.trim();
+            const phone = document.getElementById('designerPhone').value.trim();
+            const password = document.getElementById('designerPassword').value.trim();
+            const tokens = parseInt(document.getElementById('designerTokens').value) || 0;
+            
+            if (!name || !phone || !password) {
+                showToast('이름, 전화번호, 패스워드는 필수입니다');
+                return;
+            }
+            
+            if (password.length !== 4 || !/^\d+$/.test(password)) {
+                showToast('패스워드는 4자리 숫자여야 합니다');
+                return;
+            }
+            
+            const phoneRegex = /^010-\d{4}-\d{4}$/;
+            if (!phoneRegex.test(phone)) {
+                showToast('전화번호 형식이 올바르지 않습니다 (010-0000-0000)');
+                return;
+            }
+            
+            const saveBtn = document.getElementById('saveDesignerBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = '저장 중...';
+            
+            try {
+                // 중복 체크
+                const duplicateQuery = await db.collection(COLLECTIONS.DESIGNERS)
+                    .where('phone', '==', phone)
+                    .get();
+                
+                let hasDuplicate = false;
+                duplicateQuery.forEach(doc => {
+                    if (!currentEditingDesigner || doc.id !== currentEditingDesigner.id) {
+                        hasDuplicate = true;
+                    }
+                });
+                
+                if (hasDuplicate) {
+                    showToast('이미 등록된 전화번호입니다');
+                    return;
+                }
+                
+                // 기본 토큰 가져오기
+                let defaultTokens = 100;
+                if (tokens === 0 && !currentEditingDesigner) {
+                    try {
+                        const defaultDoc = await db.collection(COLLECTIONS.METADATA).doc('default_tokens').get();
+                        if (defaultDoc.exists) {
+                            defaultTokens = defaultDoc.data().amount || 100;
+                        }
+                    } catch (error) {
+                        console.warn('기본 토큰 설정 로드 실패:', error);
+                    }
+                }
+                
+                const designerData = {
+                    name: name,
+                    phone: phone,
+                    password: password,
+                    tokens: tokens || (currentEditingDesigner ? currentEditingDesigner.data.tokens : defaultTokens),
+                    updatedAt: new Date(),
+                    updatedBy: 'admin'
+                };
+                
+                if (currentEditingDesigner) {
+                    // 수정
+                    await db.collection(COLLECTIONS.DESIGNERS).doc(currentEditingDesigner.id).update(designerData);
+                    showToast('디자이너 정보가 수정되었습니다');
+                } else {
+                    // 신규 추가
+                    designerData.joinedAt = new Date();
+                    designerData.createdBy = 'admin';
+                    designerData.isActive = true;
+                    
+                    await db.collection(COLLECTIONS.DESIGNERS).add(designerData);
+                    showToast('새 디자이너가 추가되었습니다');
+                }
+                
+                closeDesignerModal();
+                refreshDesigners();
+                
+            } catch (error) {
+                console.error('디자이너 저장 오류:', error);
+                showToast('저장 실패: ' + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '저장';
+            }
+        }
+
+        // 디자이너 모달 닫기
+        function closeDesignerModal() {
+            document.getElementById('designerModal').classList.remove('active');
+            currentEditingDesigner = null;
+        }
+
+        // 디자이너 패스워드 재설정
+        async function resetDesignerPassword(designerId, designerName) {
+            const newPassword = prompt(`${designerName}님의 새 패스워드를 입력하세요 (4자리 숫자):`);
+            
+            if (!newPassword) return;
+            
+            if (newPassword.length !== 4 || !/^\d+$/.test(newPassword)) {
+                showToast('패스워드는 4자리 숫자여야 합니다');
+                return;
+            }
+            
+            try {
+                await db.collection(COLLECTIONS.DESIGNERS).doc(designerId).update({
+                    password: newPassword,
+                    passwordUpdatedAt: new Date(),
+                    updatedBy: 'admin_reset'
+                });
+                
+                showToast(`${designerName}님의 패스워드가 ${newPassword}로 재설정되었습니다`);
+                refreshDesigners();
+                
+            } catch (error) {
+                console.error('패스워드 재설정 오류:', error);
+                showToast('패스워드 재설정 실패: ' + error.message);
+            }
+        }
+
+        // 패스워드 보기/숨기기 토글
+        function togglePassword(element, designerId) {
+            const passwordSpan = element.parentElement.querySelector('.password-text');
+            if (passwordSpan.textContent === '••••') {
+                // 패스워드 보이기
+                db.collection(COLLECTIONS.DESIGNERS).doc(designerId).get().then(doc => {
+                    if (doc.exists) {
+                        passwordSpan.textContent = doc.data().password;
+                        element.textContent = '👁️‍🗨️';
+                    }
+                });
+            } else {
+                // 패스워드 숨기기
+                passwordSpan.textContent = '••••';
+                element.textContent = '👁️';
+            }
+        }
+
+        // 패스워드 변경 요청 목록 새로고침
+        async function refreshPasswordRequests() {
+            const container = document.getElementById('passwordRequestsContainer');
+            container.innerHTML = '<div style="text-align: center; color: #999; padding: 40px;">로딩 중...</div>';
+            
+            try {
+                // 패스워드 변경 요청과 재설정 요청 모두 가져오기
+                const changeRequests = await db.collection(COLLECTIONS.PASSWORD_CHANGE_REQUESTS)
+                    .orderBy('requestedAt', 'desc')
+                    .limit(20)
+                    .get();
+                
+                const resetRequests = await db.collection(COLLECTIONS.PASSWORD_RESET_REQUESTS)
+                    .orderBy('requestedAt', 'desc')  
+                    .limit(20)
+                    .get();
+                
+                let html = '';
+                let totalRequests = 0;
+                
+                // 패스워드 변경 요청 처리
+                changeRequests.forEach(doc => {
+                    const data = doc.data();
+                    totalRequests++;
+                    
+                    html += `
+                        <div class="password-request-card ${data.status || 'pending'}">
+                            <div class="request-header">
+                                <div class="request-id">${data.requestId || doc.id}</div>
+                                <div class="request-status ${data.status || 'pending'}">${data.status || 'pending'}</div>
+                            </div>
+                            <div class="request-info">
+                                <p><strong>유형:</strong> <span>패스워드 변경</span></p>
+                                <p><strong>디자이너:</strong> <span>${data.designerName}</span></p>
+                                <p><strong>전화번호:</strong> <span>${data.designerPhone}</span></p>
+                                <p><strong>요청 패스워드:</strong> <span>${data.requestedPassword || '미제공'}</span></p>
+                                <p><strong>사유:</strong> <span>${data.reason || '-'}</span></p>
+                                <p><strong>요청일:</strong> <span>${data.requestedAt ? new Date(data.requestedAt.toDate()).toLocaleString('ko-KR') : '-'}</span></p>
+                            </div>
+                            ${data.status === 'pending' ? `
+                                <div class="request-actions">
+                                    <button class="btn btn-success" onclick="approvePasswordChangeRequest('${doc.id}', '${data.requestedPassword || '1234'}', '${data.designerName}')">승인</button>
+                                    <button class="btn btn-danger" onclick="rejectPasswordChangeRequest('${doc.id}')">거부</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                
+                // 패스워드 재설정 요청 처리
+                resetRequests.forEach(doc => {
+                    const data = doc.data();
+                    totalRequests++;
+                    
+                    html += `
+                        <div class="password-request-card ${data.status || 'pending'}">
+                            <div class="request-header">
+                                <div class="request-id">${data.requestId || doc.id}</div>
+                                <div class="request-status ${data.status || 'pending'}">${data.status || 'pending'}</div>
+                            </div>
+                            <div class="request-info">
+                                <p><strong>유형:</strong> <span>패스워드 재설정</span></p>
+                                <p><strong>디자이너:</strong> <span>${data.designerName}</span></p>
+                                <p><strong>전화번호:</strong> <span>${data.designerPhone}</span></p>
+                                <p><strong>사유:</strong> <span>${data.reason || '-'}</span></p>
+                                <p><strong>요청일:</strong> <span>${data.requestedAt ? new Date(data.requestedAt.toDate()).toLocaleString('ko-KR') : '-'}</span></p>
+                            </div>
+                            ${data.status === 'pending' ? `
+                                <div class="request-actions">
+                                    <button class="btn btn-success" onclick="approvePasswordResetRequest('${doc.id}', '${data.designerName}')">승인</button>
+                                    <button class="btn btn-danger" onclick="rejectPasswordResetRequest('${doc.id}')">거부</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                
+                if (totalRequests === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; color: #999; padding: 40px;">
+                            패스워드 변경/재설정 요청이 없습니다<br>
+                            <small>새로운 요청이 있으면 여기에 표시됩니다</small>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = html;
+                }
+                
+            } catch (error) {
+                console.error('패스워드 요청 로드 오류:', error);
+                container.innerHTML = `
+                    <div style="text-align: center; color: #ff4444; padding: 40px;">
+                        패스워드 요청 로드 실패: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // 패스워드 변경 요청 승인
+        async function approvePasswordChangeRequest(requestId, newPassword, designerName) {
+            try {
+                // 디자이너 찾기
+                const designerQuery = await db.collection(COLLECTIONS.DESIGNERS)
+                    .where('name', '==', designerName)
+                    .limit(1)
+                    .get();
+                
+                if (designerQuery.empty) {
+                    showToast('디자이너를 찾을 수 없습니다');
+                    return;
+                }
+                
+                const designerDoc = designerQuery.docs[0];
+                
+                // 패스워드 업데이트
+                await db.collection(COLLECTIONS.DESIGNERS).doc(designerDoc.id).update({
+                    password: newPassword,
+                    passwordUpdatedAt: new Date(),
+                    updatedBy: 'admin_approval'
+                });
+                
+                // 요청 상태 업데이트
+                await db.collection(COLLECTIONS.PASSWORD_CHANGE_REQUESTS).doc(requestId).update({
+                    status: 'approved',
+                    approvedAt: new Date(),
+                    approvedBy: 'admin'
+                });
+                
+                showToast(`${designerName}님의 패스워드가 ${newPassword}로 변경되었습니다`);
+                refreshPasswordRequests();
+                refreshDesigners();
+                
+            } catch (error) {
+                console.error('패스워드 변경 승인 오류:', error);
+                showToast('승인 처리 실패: ' + error.message);
+            }
+        }
+
+        // 패스워드 변경 요청 거부
+        async function rejectPasswordChangeRequest(requestId) {
+            const reason = prompt('거부 사유를 입력하세요 (선택):') || '관리자 판단';
+            
+            try {
+                await db.collection(COLLECTIONS.PASSWORD_CHANGE_REQUESTS).doc(requestId).update({
+                    status: 'rejected',
+                    rejectedAt: new Date(),
+                    rejectedBy: 'admin',
+                    rejectionReason: reason
+                });
+                
+                showToast('패스워드 변경 요청이 거부되었습니다');
+                refreshPasswordRequests();
+                
+            } catch (error) {
+                console.error('패스워드 변경 거부 오류:', error);
+                showToast('거부 처리 실패: ' + error.message);
+            }
+        }
+
+        // 패스워드 재설정 요청 승인
+        async function approvePasswordResetRequest(requestId, designerName) {
+            const newPassword = prompt(`${designerName}님의 새 패스워드를 입력하세요 (4자리):`, '1234');
+            
+            if (!newPassword || newPassword.length !== 4 || !/^\d+$/.test(newPassword)) {
+                showToast('4자리 숫자 패스워드를 입력하세요');
+                return;
+            }
+            
+            try {
+                // 디자이너 찾기
+                const designerQuery = await db.collection(COLLECTIONS.DESIGNERS)
+                    .where('name', '==', designerName)
+                    .limit(1)
+                    .get();
+                
+                if (designerQuery.empty) {
+                    showToast('디자이너를 찾을 수 없습니다');
+                    return;
+                }
+                
+                const designerDoc = designerQuery.docs[0];
+                
+                // 패스워드 업데이트
+                await db.collection(COLLECTIONS.DESIGNERS).doc(designerDoc.id).update({
+                    password: newPassword,
+                    passwordUpdatedAt: new Date(),
+                    updatedBy: 'admin_reset'
+                });
+                
+                // 요청 상태 업데이트
+                await db.collection(COLLECTIONS.PASSWORD_RESET_REQUESTS).doc(requestId).update({
+                    status: 'approved',
+                    approvedAt: new Date(),
+                    approvedBy: 'admin',
+                    newPassword: newPassword
+                });
+                
+                showToast(`${designerName}님의 패스워드가 ${newPassword}로 재설정되었습니다`);
+                refreshPasswordRequests();
+                refreshDesigners();
+                
+            } catch (error) {
+                console.error('패스워드 재설정 승인 오류:', error);
+                showToast('승인 처리 실패: ' + error.message);
+            }
+        }
+
+        // 패스워드 재설정 요청 거부
+        async function rejectPasswordResetRequest(requestId) {
+            const reason = prompt('거부 사유를 입력하세요:') || '관리자 판단';
+            
+            try {
+                await db.collection(COLLECTIONS.PASSWORD_RESET_REQUESTS).doc(requestId).update({
+                    status: 'rejected',
+                    rejectedAt: new Date(),
+                    rejectedBy: 'admin',
+                    rejectionReason: reason
+                });
+                
+                showToast('패스워드 재설정 요청이 거부되었습니다');
+                refreshPasswordRequests();
+                
+            } catch (error) {
+                console.error('패스워드 재설정 거부 오류:', error);
+                showToast('거부 처리 실패: ' + error.message);
+            }
+        }
+
+        // 모든 요청 일괄 승인
+        async function approveAllRequests() {
+            if (!confirm('모든 대기 중인 요청을 승인하시겠습니까?')) return;
+            
+            try {
+                // 대기 중인 변경 요청 처리
+                const changeRequests = await db.collection(COLLECTIONS.PASSWORD_CHANGE_REQUESTS)
+                    .where('status', '==', 'pending')
+                    .get();
+                
+                for (const doc of changeRequests.docs) {
+                    const data = doc.data();
+                    await approvePasswordChangeRequest(doc.id, data.requestedPassword || '1234', data.designerName);
+                }
+                
+                // 대기 중인 재설정 요청 처리
+                const resetRequests = await db.collection(COLLECTIONS.PASSWORD_RESET_REQUESTS)
+                    .where('status', '==', 'pending')
+                    .get();
+                
+                for (const doc of resetRequests.docs) {
+                    const data = doc.data();
+                    await approvePasswordResetRequest(doc.id, data.designerName);
+                }
+                
+                showToast('모든 대기 중인 요청이 처리되었습니다');
+                
+            } catch (error) {
+                console.error('일괄 승인 오류:', error);
+                showToast('일괄 승인 실패: ' + error.message);
+            }
+        }
+
+        // 완료된 요청 삭제
+        async function clearCompletedRequests() {
+            if (!confirm('승인/거부 완료된 요청을 모두 삭제하시겠습니까?')) return;
+            
+            try {
+                // 완료된 변경 요청 삭제
+                const completedChangeRequests = await db.collection(COLLECTIONS.PASSWORD_CHANGE_REQUESTS)
+                    .where('status', 'in', ['approved', 'rejected'])
+                    .get();
+                
+                const batch1 = db.batch();
+                completedChangeRequests.forEach(doc => {
+                    batch1.delete(doc.ref);
+                });
+                await batch1.commit();
+                
+                // 완료된 재설정 요청 삭제
+                const completedResetRequests = await db.collection(COLLECTIONS.PASSWORD_RESET_REQUESTS)
+                    .where('status', 'in', ['approved', 'rejected'])
+                    .get();
+                
+                const batch2 = db.batch();
+                completedResetRequests.forEach(doc => {
+                    batch2.delete(doc.ref);
+                });
+                await batch2.commit();
+                
+                showToast('완료된 요청이 삭제되었습니다');
+                refreshPasswordRequests();
+                
+            } catch (error) {
+                console.error('완료된 요청 삭제 오류:', error);
+                showToast('삭제 실패: ' + error.message);
+            }
+        }
+
+        // 토큰 시스템 함수들
+        
+        // 기본 토큰 수량 로드
+        async function loadDefaultTokens() {
+            try {
+                const doc = await db.collection(COLLECTIONS.METADATA).doc('default_tokens').get();
+                if (doc.exists) {
+                    document.getElementById('defaultTokens').value = doc.data().amount || 100;
+                } else {
+                    document.getElementById('defaultTokens').value = 100;
+                }
+            } catch (error) {
+                console.error('기본 토큰 로드 실패:', error);
+                document.getElementById('defaultTokens').value = 100;
+            }
+        }
+        
+        // 기본 토큰 수량 저장
+        async function saveDefaultTokens() {
+            const defaultTokens = document.getElementById('defaultTokens').value;
+            if (!defaultTokens || defaultTokens < 0) {
+                alert('올바른 토큰 수량을 입력하세요');
+                return;
+            }
+            
+            try {
+                await db.collection(COLLECTIONS.METADATA).doc('default_tokens').set({
+                    amount: parseInt(defaultTokens),
+                    updatedAt: new Date(),
+                    updatedBy: 'admin'
+                });
+                
+                showToast('기본 토큰 수량이 저장되었습니다!');
+            } catch (error) {
+                console.error('기본 토큰 저장 실패:', error);
+                showToast('저장 실패: ' + error.message);
+            }
+        }
+        
+        // 디자이너 토큰 업데이트
+        async function updateDesignerTokens(designerId, newTokens) {
+            if (newTokens < 0 || newTokens > 99999) {
+                alert('토큰은 0~99999 사이의 값이어야 합니다');
+                return;
+            }
+            
+            try {
+                await db.collection(COLLECTIONS.DESIGNERS).doc(designerId).update({
+                    tokens: parseInt(newTokens),
+                    tokenUpdatedAt: new Date(),
+                    updatedBy: 'admin'
+                });
+                
+                showToast('토큰이 업데이트되었습니다!');
+                refreshDesigners();
+            } catch (error) {
+                console.error('토큰 업데이트 오류:', error);
+                alert('토큰 업데이트에 실패했습니다: ' + error.message);
+            }
+        }
+        
+        // 테스트 디자이너 추가
+        async function addTestDesigner() {
+            const name = prompt('디자이너 이름을 입력하세요:');
+            if (!name) return;
+            
+            const phone = prompt('전화번호 뒷자리 4자리를 입력하세요:');
+            if (!phone || phone.length !== 4) {
+                alert('4자리 숫자를 입력하세요');
+                return;
+            }
+            
+            try {
+                const fullPhone = `010-0000-${phone}`;
+                
+                // 중복 체크
+                const existingQuery = await db.collection(COLLECTIONS.DESIGNERS)
+                    .where('phone', '==', fullPhone)
+                    .get();
+                
+                if (!existingQuery.empty) {
+                    alert('이미 등록된 전화번호입니다');
+                    return;
+                }
+                
+                // 기본 토큰 수량 가져오기
+                let defaultTokens = 100;
+                try {
+                    const defaultDoc = await db.collection(COLLECTIONS.METADATA).doc('default_tokens').get();
+                    if (defaultDoc.exists) {
+                        defaultTokens = defaultDoc.data().amount || 100;
+                    }
+                } catch (error) {
+                    console.warn('기본 토큰 설정 로드 실패, 100개로 설정:', error);
+                }
+                
+                const newDesigner = {
+                    name: name,
+                    phone: fullPhone,
+                    password: '1234',
+                    tokens: defaultTokens,
+                    joinedAt: new Date(),
+                    tokenUpdatedAt: new Date(),
+                    createdBy: 'admin',
+                    isActive: true
+                };
+                
+                await db.collection(COLLECTIONS.DESIGNERS).add(newDesigner);
+                
+                showToast(`${name} 디자이너가 추가되었습니다 (토큰: ${defaultTokens}개)`);
+                refreshDesigners();
+            } catch (error) {
+                console.error('디자이너 추가 오류:', error);
+                alert('디자이너 추가에 실패했습니다: ' + error.message);
+            }
+        }
+        
+        // 일괄 토큰 지급
+        async function batchTokenUpdate() {
+            const amount = prompt('모든 디자이너에게 지급할 토큰 수량을 입력하세요:');
+            if (!amount || amount <= 0) return;
+            
+            const tokens = parseInt(amount);
+            if (!confirm(`모든 디자이너에게 ${tokens}토큰을 일괄 지급하시겠습니까?`)) return;
+            
+            try {
+                const snapshot = await db.collection(COLLECTIONS.DESIGNERS).get();
+                const batch = db.batch();
+                
+                snapshot.forEach(doc => {
+                    const currentTokens = doc.data().tokens || 0;
+                    batch.update(doc.ref, {
+                        tokens: currentTokens + tokens,
+                        tokenUpdatedAt: new Date(),
+                        updatedBy: 'admin_batch'
+                    });
+                });
+                
+                await batch.commit();
+                
+                showToast(`${snapshot.size}명의 디자이너에게 ${tokens}토큰씩 지급완료!`);
+                refreshDesigners();
+            } catch (error) {
+                console.error('일괄 토큰 지급 오류:', error);
+                alert('일괄 토큰 지급에 실패했습니다: ' + error.message);
+            }
+        }
+        
+        // 디자이너 목록 새로고침
+        async function refreshDesigners() {
+            const table = document.getElementById('designersTable');
+            table.innerHTML = '<tr><td colspan="9" style="text-align: center;">로딩 중...</td></tr>';
+            
+            try {
+                const snapshot = await db.collection(COLLECTIONS.DESIGNERS)
+                    .orderBy('joinedAt', 'desc')
+                    .get();
+                
+                table.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    table.innerHTML = `
+                        <tr>
+                            <td colspan="9" style="text-align: center; color: #999; padding: 40px;">
+                                등록된 디자이너가 없습니다<br>
+                                <small>테스트 디자이너를 추가해보세요</small>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const row = document.createElement('tr');
+                    
+                    const joinedDate = data.joinedAt ? new Date(data.joinedAt.toDate()).toLocaleDateString('ko-KR') : '-';
+                    const lastLoginDate = data.lastLogin ? new Date(data.lastLogin.toDate()).toLocaleDateString('ko-KR') : '로그인 기록 없음';
+                    const status = data.isActive !== false ? 'active' : 'inactive';
+                    
+                    row.innerHTML = `
+                        <td style="font-weight: 600;">${data.name}</td>
+                        <td>${data.phone}</td>
+                        <td>
+                            <div class="password-cell">
+                                <span class="password-text">••••</span>
+                                <button class="password-toggle-btn" onclick="togglePassword(this, '${doc.id}')">👁️</button>
+                            </div>
+                        </td>
+                        <td><span class="token-display">${data.tokens || 0}🪙</span></td>
+                        <td>
+                            <input type="number" class="token-input" value="${data.tokens || 0}" 
+                                   min="0" max="99999" 
+                                   onchange="updateDesignerTokens('${doc.id}', this.value)">
+                        </td>
+                        <td style="font-size: 12px;">${joinedDate}</td>
+                        <td style="font-size: 12px;">${lastLoginDate}</td>
+                        <td>
+                            <span class="designer-status ${status}">${status === 'active' ? '활성' : '비활성'}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary" onclick="editDesigner('${doc.id}')" title="정보 수정">✏️</button>
+                                <button class="btn btn-warning" onclick="resetDesignerPassword('${doc.id}', '${data.name}')" title="패스워드 재설정">🔑</button>
+                                <button class="btn btn-danger" onclick="deleteDesigner('${doc.id}', '${data.name}')" title="삭제">🗑️</button>
+                            </div>
+                        </td>
+                    `;
+                    table.appendChild(row);
+                });
+                
+            } catch (error) {
+                console.error('디자이너 목록 로드 오류:', error);
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; color: #ff4444;">
+                            디자이너 목록 로드 실패: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        // 디자이너 삭제
+        async function deleteDesigner(designerId, designerName) {
+            if (!confirm(`정말 ${designerName} 디자이너를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+            
+            try {
+                await db.collection(COLLECTIONS.DESIGNERS).doc(designerId).delete();
+                showToast(`${designerName} 디자이너가 삭제되었습니다`);
+                refreshDesigners();
+            } catch (error) {
+                console.error('디자이너 삭제 오류:', error);
+                alert('디자이너 삭제에 실패했습니다: ' + error.message);
+            }
+        }
+
+        // ========== 스타일 추가 관련 함수들 ==========
+        
+        // 스타일 추가 모달 열기
+        function openAddStyleModal() {
+            if (!currentGender || !currentCategory || !currentSubcategory) {
+                alert('먼저 성별, 대분류, 중분류를 모두 선택해주세요');
+                return;
+            }
+            
+            document.getElementById('styleCode').value = '';
+            document.getElementById('styleName').value = '';
+            document.getElementById('styleImage').value = '';
+            document.getElementById('uploadPreview').style.display = 'none';
+            
+            const timestamp = Date.now().toString(36).toUpperCase();
+            const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+            const code = `${currentGender.substring(0, 1).toUpperCase()}${timestamp}${random}`;
+            document.getElementById('styleCode').value = code;
+            
+            document.getElementById('addStyleModal').classList.add('active');
+        }
+
+        // 이미지 미리보기
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('uploadPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 스타일 저장 (추가 & 수정 통합)
+        async function saveStyle() {
+            const code = document.getElementById('styleCode').value.trim();
+            const name = document.getElementById('styleName').value.trim();
+            
+            if (!name) {
+                alert('스타일 이름은 필수입니다');
+                return;
+            }
+            
+            if (!currentGender || !currentCategory || !currentSubcategory) {
+                alert('카테고리 정보가 없습니다');
+                return;
+            }
+            
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = '저장 중...';
+            
+            try {
+                let imageUrl = '';
+                
+                // 수정 모드일 때 기존 이미지 URL 유지
+                if (currentEditingStyleId) {
+                    const existingDoc = await db.collection('hairstyles').doc(currentEditingStyleId).get();
+                    if (existingDoc.exists) {
+                        imageUrl = existingDoc.data().imageUrl || '';
+                    }
+                }
+                
+                // 새 이미지가 있으면 업로드
+                if (selectedFile) {
+                    const storageRef = storage.ref();
+                    const imageRef = storageRef.child(`hairstyles/${Date.now()}_${selectedFile.name}`);
+                    const uploadTask = await imageRef.put(selectedFile);
+                    imageUrl = await uploadTask.ref.getDownloadURL();
+                }
+                
+                const styleData = {
+                    code: code,
+                    name: name,
+                    gender: currentGender,
+                    mainCategory: currentCategory,
+                    subCategory: currentSubcategory,
+                    imageUrl: imageUrl,
+                    updatedAt: new Date(),
+                    updatedBy: 'admin'
+                };
+                
+                if (currentEditingStyleId) {
+                    // 수정 모드
+                    await db.collection('hairstyles').doc(currentEditingStyleId).update(styleData);
+                    alert('스타일이 수정되었습니다');
+                } else {
+                    // 추가 모드
+                    styleData.createdAt = new Date();
+                    styleData.createdBy = 'admin';
+                    await db.collection('hairstyles').add(styleData);
+                    alert('스타일이 추가되었습니다');
+                }
+                
+                closeModal();
+                loadStyles();
+                
+            } catch (error) {
+                console.error('스타일 저장 오류:', error);
+                alert('저장 실패: ' + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '저장';
+                selectedFile = null;
+                currentEditingStyleId = null;
+            }
+        }
+
+       // 모달 닫기
+        function closeModal() {
+            document.getElementById('addStyleModal').classList.remove('active');
+            document.querySelector('.modal-title').textContent = '새 스타일 추가';
+            selectedFile = null;
+            currentEditingStyleId = null;
+        }
+
+        // 토스트 메시지
+        function showToast(message) {
+            alert(message);
+        }
+
+        // 탭 전환
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            event.target.classList.add('active');
+            
+            const activeContent = document.getElementById(tabName + 'Tab');
+            if (activeContent) {
+                activeContent.style.display = 'block';
+            }
+        }
+
+        // 초기화
+        function initializeData() {
+            console.log('데이터 초기화');
+            loadDefaultTokens();
+            refreshPasswordRequests();
+            refreshDesigners();
+        }
+// 카테고리 로드
+        async function loadCategories() {
+            const genderSelect = document.getElementById('genderSelect');
+            const categorySelect = document.getElementById('categorySelect');
+            const subcategorySelect = document.getElementById('subcategorySelect');
+            
+            categorySelect.innerHTML = '<option value="">대분류 선택</option>';
+            subcategorySelect.innerHTML = '<option value="">중분류 선택</option>';
+            
+            const selectedGender = genderSelect.value;
+            if (!selectedGender) return;
+            
+            currentGender = selectedGender;
+            
+            const categories = CATEGORIES[selectedGender] || [];
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        // 중분류 로드 (어드민용 - 모든 중분류 표시)
+        async function loadSubcategories() {
+            const categorySelect = document.getElementById('categorySelect');
+            const subcategorySelect = document.getElementById('subcategorySelect');
+            
+            subcategorySelect.innerHTML = '<option value="">중분류 선택</option>';
+            
+            const selectedCategory = categorySelect.value;
+            if (!selectedCategory || !currentGender) return;
+            
+            currentCategory = selectedCategory;
+            
+            try {
+                const stylesQuery = await db.collection('hairstyles')
+                    .where('gender', '==', currentGender)
+                    .where('mainCategory', '==', selectedCategory)
+                    .get();
+                
+                const availableSubcategories = new Set();
+                stylesQuery.forEach(doc => {
+                    const subCategory = doc.data().subCategory;
+                    if (subCategory) {
+                        availableSubcategories.add(subCategory);
+                    }
+                });
+                
+                SUBCATEGORIES.forEach(subCategory => {
+                    const option = document.createElement('option');
+                    option.value = subCategory;
+                    option.textContent = subCategory;
+                    
+                    if (!availableSubcategories.has(subCategory)) {
+                        option.style.color = '#999';
+                        option.style.fontStyle = 'italic';
+                        option.textContent = subCategory + ' (데이터 없음)';
+                    }
+                    
+                    subcategorySelect.appendChild(option);
+                });
+                
+                console.log(`전체 중분류 ${SUBCATEGORIES.length}개 표시됨`);
+                
+            } catch (error) {
+                console.error('중분류 로드 오류:', error);
+                
+                SUBCATEGORIES.forEach(subCategory => {
+                    const option = document.createElement('option');
+                    option.value = subCategory;
+                    option.textContent = subCategory + ' (오류)';
+                    option.style.color = '#ff9999';
+                    subcategorySelect.appendChild(option);
+                });
+            }
+        }
+
+        // 스타일 로드
+        async function loadStyles() {
+            const stylesGrid = document.getElementById('stylesGrid');
+            const subcategorySelect = document.getElementById('subcategorySelect');
+            
+            const selectedSubcategory = subcategorySelect.value;
+            if (!selectedSubcategory || !currentGender || !currentCategory) {
+                stylesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">카테고리를 모두 선택하세요</div>';
+                return;
+            }
+            
+            currentSubcategory = selectedSubcategory;
+            stylesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">로딩 중...</div>';
+            
+            try {
+                const snapshot = await db.collection('hairstyles')
+                    .where('gender', '==', currentGender)
+                    .where('mainCategory', '==', currentCategory)
+                    .where('subCategory', '==', selectedSubcategory)
+                    .get();
+                
+                stylesGrid.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    stylesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">등록된 스타일이 없습니다</div>';
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const card = createStyleCard(doc.id, data);
+                    stylesGrid.appendChild(card);
+                });
+                
+                console.log(`스타일 ${snapshot.size}개 로드됨`);
+                
+            } catch (error) {
+                console.error('스타일 로드 오류:', error);
+                stylesGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #ff4444;">로드 실패: ' + error.message + '</div>';
+            }
+        }
+
+        // 스타일 카드 생성 (수정/삭제 버튼 포함)
+        function createStyleCard(docId, data) {
+            const card = document.createElement('div');
+            card.className = 'style-card';
+            
+            card.innerHTML = `
+                <div class="style-actions">
+                    <button class="action-btn" onclick="editStyle('${docId}')" title="수정">✏️</button>
+                    <button class="action-btn delete" onclick="deleteStyle('${docId}', '${data.name}')" title="삭제">🗑️</button>
+                </div>
+                <div class="style-image-container">
+                    ${data.imageUrl ? 
+                        `<img src="${data.imageUrl}" alt="${data.name}" class="style-image">` :
+                        `<div class="no-image-text">이미지 없음</div>`
+                    }
+                </div>
+                <div class="style-info">
+                    <div class="style-code">${data.code || docId.substring(0, 8)}</div>
+                    <div class="style-name">${data.name}</div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // 스타일 수정
+        let currentEditingStyleId = null;
+        
+        async function editStyle(styleId) {
+            try {
+                const doc = await db.collection('hairstyles').doc(styleId).get();
+                if (!doc.exists) {
+                    alert('스타일을 찾을 수 없습니다');
+                    return;
+                }
+                
+                const data = doc.data();
+                currentEditingStyleId = styleId;
+                
+                // 현재 카테고리 설정
+                currentGender = data.gender;
+                currentCategory = data.mainCategory;
+                currentSubcategory = data.subCategory;
+                
+                // 폼에 기존 데이터 채우기
+                document.getElementById('styleCode').value = data.code || '';
+                document.getElementById('styleName').value = data.name || '';
+                
+                // 이미지 미리보기
+                if (data.imageUrl) {
+                    document.getElementById('previewImg').src = data.imageUrl;
+                    document.getElementById('uploadPreview').style.display = 'block';
+                }
+                
+                // 모달 열기
+                document.getElementById('addStyleModal').classList.add('active');
+                document.querySelector('.modal-title').textContent = '스타일 수정';
+                
+            } catch (error) {
+                console.error('스타일 로드 오류:', error);
+                alert('스타일 정보를 불러올 수 없습니다');
+            }
+        }
+        
+        // 스타일 삭제
+        async function deleteStyle(styleId, styleName) {
+            if (!confirm(`정말 "${styleName}" 스타일을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+                return;
+            }
+            
+            try {
+                // 이미지가 있다면 Storage에서도 삭제
+                const doc = await db.collection('hairstyles').doc(styleId).get();
+                if (doc.exists && doc.data().imageUrl) {
+                    try {
+                        const imageUrl = doc.data().imageUrl;
+                        const imageRef = storage.refFromURL(imageUrl);
+                        await imageRef.delete();
+                    } catch (imgError) {
+                        console.warn('이미지 삭제 실패:', imgError);
+                    }
+                }
+                
+                // Firestore에서 삭제
+                await db.collection('hairstyles').doc(styleId).delete();
+                
+                alert(`"${styleName}" 스타일이 삭제되었습니다`);
+                loadStyles(); // 목록 새로고침
+                
+            } catch (error) {
+                console.error('스타일 삭제 오류:', error);
+                alert('삭제 실패: ' + error.message);
+            }
+        }
+        </script>
+    </body>
+</html>
+
+
+
