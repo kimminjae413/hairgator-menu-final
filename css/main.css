@@ -44,6 +44,8 @@ body.light-theme {
     --text-secondary: #6c757d;
     --border-color: #dee2e6;
     --new-indicator: #ff4444;
+     background: #ffffff !important;
+    color: #000000 !important;
     
     /* 라이트 테마 AI 색상 */
     --ai-primary: #E91E63;
@@ -1826,6 +1828,7 @@ html, body {
     }
 }  
 }
+
 
 
 
