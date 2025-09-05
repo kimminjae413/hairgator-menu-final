@@ -559,7 +559,7 @@ body.light-theme .category-description {
     font-size: 14px;
     line-height: 1.6;
     text-align: left !important;
-    max-width: 800px;
+    max-width: 100%;  /* 800px에서 100%로 변경 */
     margin: 0;
     transition: color 0.3s ease;
     animation: fadeInDescription 0.5s ease;
@@ -1878,6 +1878,7 @@ html, body {
     }
 }  
 }
+
 
 
 
