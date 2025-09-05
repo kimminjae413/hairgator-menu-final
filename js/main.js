@@ -130,16 +130,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function toggleTheme() {
-        document.body.classList.toggle('light-theme');
-        const isLight = document.body.classList.contains('light-theme');
-        
-        if (themeStatus) {
-            themeStatus.textContent = isLight ? 'OFF' : 'ON';
-        }
-        
-        localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
-        console.log(`🎨 테마 변경: ${isLight ? 'light' : 'dark'}`);
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    
+    // 사이드바 테마 토글 업데이트
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+    
+    if (themeIcon) themeIcon.textContent = isLight ? '☀️' : '🌙';
+    if (themeText) themeText.textContent = isLight ? '라이트 모드' : '다크 모드';
+    
+    // 기존 themeStatus (있다면)
+    if (themeStatus) {
+        themeStatus.textContent = isLight ? 'OFF' : 'ON';
     }
+    
+    localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
+    console.log(`🎨 테마 변경: ${isLight ? 'light' : 'dark'}`);
+}
 
     // Authentication Functions
     function checkAuthStatus() {
@@ -278,3 +286,4 @@ window.addEventListener('load', function() {
     `;
     document.head.appendChild(style);
 });
+
