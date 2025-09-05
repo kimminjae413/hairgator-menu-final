@@ -1234,6 +1234,12 @@ body.light-theme .user-info {
     transform: scale(0.98);
 }
 
+.sidebar-menu-item.theme-toggle-mini {
+    min-height: 50px;
+    padding: 12px 20px;
+    margin: 10px 15px;
+}
+
 .sidebar-icon {
     font-size: 20px;
     margin-right: 15px;
@@ -1828,6 +1834,7 @@ html, body {
     }
 }  
 }
+
 
 
 
