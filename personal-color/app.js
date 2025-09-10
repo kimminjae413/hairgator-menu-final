@@ -297,6 +297,338 @@ function applyReferenceWhiteBalance(imageData, refArea) {
 }
 
 // ==========================================
+// 추가 색상 추출 함수들 (성능 최적화)
+// ==========================================
+
+// 효율적인 픽셀 추출 함수
+function getPixelFromBuffer(imageData, width, x, y) {
+    if (x < 0 || x >= width || y < 0 || y >= imageData.height) {
+        return { r: 0, g: 0, b: 0, a: 0 };
+    }
+    
+    const index = (y * width + x) * 4;
+    return {
+        r: imageData.data[index],
+        g: imageData.data[index + 1],
+        b: imageData.data[index + 2],
+        a: imageData.data[index + 3]
+    };
+}
+
+// 홍채 색상 추출 (폴백 방식)
+function extractIrisColorFallback(imageData, width, height, landmarks, side) {
+    // 눈 영역 랜드마크 인덱스
+    const eyeIndices = side === 'left' ? 
+        [33, 160, 159, 158, 133, 153, 144, 145] : // 왼쪽 눈
+        [362, 385, 386, 387, 263, 373, 374, 380]; // 오른쪽 눈
+    
+    // 눈 영역 경계 계산
+    let minX = width, maxX = 0, minY = height, maxY = 0;
+    
+    for (const idx of eyeIndices) {
+        if (landmarks[idx]) {
+            const point = landmarks[idx];
+            const x = point.x * width;
+            const y = point.y * height;
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+        }
+    }
+    
+    if (minX >= maxX || minY >= maxY) return null;
+    
+    // 홍채 영역 추정 (눈 중앙 30% 영역)
+    const eyeWidth = maxX - minX;
+    const eyeHeight = maxY - minY;
+    const irisCenterX = minX + eyeWidth * 0.5;
+    const irisCenterY = minY + eyeHeight * 0.5;
+    const irisRadius = Math.min(eyeWidth, eyeHeight) * 0.2;
+    
+    let rSum = 0, gSum = 0, bSum = 0, count = 0;
+    
+    // 원형 샘플링
+    for (let angle = 0; angle < 360; angle += 30) {
+        for (let r = 2; r < irisRadius; r += 2) {
+            const x = Math.round(irisCenterX + r * Math.cos(angle * Math.PI / 180));
+            const y = Math.round(irisCenterY + r * Math.sin(angle * Math.PI / 180));
+            
+            const pixel = getPixelFromBuffer(imageData, width, x, y);
+            
+            // 반사광 및 극단값 제외
+            const brightness = (pixel.r + pixel.g + pixel.b) / 3;
+            if (brightness > 30 && brightness < 200) {
+                rSum += pixel.r;
+                gSum += pixel.g;
+                bSum += pixel.b;
+                count++;
+            }
+        }
+    }
+    
+    if (count < 10) return null;
+    
+    return {
+        r: Math.round(rSum / count),
+        g: Math.round(gSum / count),
+        b: Math.round(bSum / count)
+    };
+}
+
+// 헤어 색상 추출 (제공된 효율적인 버전)
+function extractHairColorFromLandmarks(imageData, width, height, landmarks) {
+    // 머리 상단 근사 좌표: 머리 꼭대기 근처를 forehead 포인트에서 위로 오프셋
+    const foreheadIdx = 10; // FaceMesh 기준 이마 중앙
+    if (!landmarks || !landmarks[foreheadIdx]) return null;
+    
+    const fx = Math.round(landmarks[foreheadIdx].x * width);
+    const fy = Math.round(landmarks[foreheadIdx].y * height);
+    
+    // 헤어 라인 샘플링 박스 (이 값은 조정 가능)
+    const boxW = Math.round(width * 0.35);
+    const boxH = Math.round(height * 0.18);
+    const startX = Math.max(0, fx - Math.round(boxW/2));
+    const startY = Math.max(0, fy - Math.round(boxH * 1.2)); // 이마 위쪽 영역
+    const endX = Math.min(width, startX + boxW);
+    const endY = Math.min(height, startY + boxH);
+    
+    let rSum = 0, gSum = 0, bSum = 0, count = 0;
+    
+    // 2픽셀 간격으로 샘플링하여 속도 확보
+    for (let yy = startY; yy < endY; yy += 2) {
+        for (let xx = startX; xx < endX; xx += 2) {
+            const p = getPixelFromBuffer(imageData, width, xx, yy);
+            
+            // 피부 픽셀은 제외 (피부와 대비되어야 하므로 채도/색상 기준)
+            const brightness = (p.r + p.g + p.b) / 3;
+            const saturation = Math.max(p.r, p.g, p.b) - Math.min(p.r, p.g, p.b);
+            
+            if (saturation > 15 && brightness > 20 && brightness < 240) {
+                rSum += p.r;
+                gSum += p.g;
+                bSum += p.b;
+                count++;
+            }
+        }
+    }
+    
+    if (count < 10) return null; // 최소 샘플 수 체크
+    
+    const avgColor = {
+        r: Math.round(rSum / count),
+        g: Math.round(gSum / count),
+        b: Math.round(bSum / count)
+    };
+    
+    // 헤어 색상 분류
+    const lab = rgbToLab(avgColor.r, avgColor.g, avgColor.b);
+    const darkness = lab.L < 30 ? 'dark' : lab.L < 60 ? 'medium' : 'light';
+    
+    return {
+        ...avgColor,
+        darkness: darkness,
+        samplingArea: { startX, startY, width: boxW, height: boxH },
+        sampleCount: count
+    };
+}
+
+// 통합 색상 추출 함수 (개선 버전)
+function extractComprehensiveColors(landmarks, videoElement) {
+    if (!landmarks || !videoElement) return null;
+    
+    // 임시 캔버스 생성
+    const canvas = document.createElement('canvas');
+    canvas.width = videoElement.videoWidth || 640;
+    canvas.height = videoElement.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(videoElement, 0, 0);
+    
+    // 전체 이미지 데이터를 한 번만 가져오기
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    
+    // 1. 피부톤 (기존 함수 사용)
+    const skinTone = extractSkinToneFromLandmarks(landmarks, videoElement);
+    
+    // 2. 홍채 색상 (양쪽 눈)
+    const leftEye = extractIrisColorFallback(imageData, canvas.width, canvas.height, landmarks, 'left');
+    const rightEye = extractIrisColorFallback(imageData, canvas.width, canvas.height, landmarks, 'right');
+    const eyeColor = leftEye || rightEye;
+    
+    // 3. 헤어 색상
+    const hairColor = extractHairColorFromLandmarks(imageData, canvas.width, canvas.height, landmarks);
+    
+    return {
+        skin: skinTone,
+        eye: eyeColor ? {
+            ...eyeColor,
+            lab: rgbToLab(eyeColor.r, eyeColor.g, eyeColor.b)
+        } : null,
+        hair: hairColor ? {
+            ...hairColor,
+            lab: rgbToLab(hairColor.r, hairColor.g, hairColor.b)
+        } : null,
+        timestamp: Date.now()
+    };
+}
+
+// 통합 시즌 분류 (3요소 고려)
+function classifySeasonComprehensive(skinLab, eyeLab, hairLab) {
+    let scores = { Spring: 0, Summer: 0, Autumn: 0, Winter: 0 };
+    
+    // 피부톤 기반 점수 (가중치 50%)
+    if (skinLab) {
+        const skinScores = classifySeasonAdvanced(skinLab, labToLch(skinLab.L, skinLab.a, skinLab.b));
+        for (const [season, score] of Object.entries(skinScores.scores)) {
+            scores[season] += score * 0.5;
+        }
+    }
+    
+    // 눈 색상 보정 (가중치 30%)
+    if (eyeLab) {
+        // 어두운 눈 → Winter/Autumn 강화
+        if (eyeLab.L < 40) {
+            scores.Winter += 15;
+            scores.Autumn += 10;
+        }
+        // 밝은 눈 → Summer/Spring 강화
+        else if (eyeLab.L > 60) {
+            scores.Summer += 15;
+            scores.Spring += 10;
+        }
+    }
+    
+    // 원래 머리색 보정 (가중치 20%)
+    if (hairLab) {
+        // 어두운 머리 → Winter/Autumn
+        if (hairLab.L < 35) {
+            scores.Winter += 10;
+            scores.Autumn += 8;
+        }
+        // 밝은 머리 → Spring/Summer
+        else if (hairLab.L > 50) {
+            scores.Spring += 10;
+            scores.Summer += 8;
+        }
+    }
+    
+    // 최고 점수 시즌 찾기
+    let bestSeason = 'Spring';
+    let maxScore = 0;
+    
+    for (const [season, score] of Object.entries(scores)) {
+        if (score > maxScore) {
+            maxScore = score;
+            bestSeason = season;
+        }
+    }
+    
+    return {
+        season: bestSeason,
+        confidence: Math.min(95, Math.max(60, maxScore * 0.8)),
+        scores: scores,
+        factors: {
+            skin: skinLab ? 'analyzed' : 'missing',
+            eye: eyeLab ? 'analyzed' : 'estimated',
+            hair: hairLab ? 'analyzed' : 'estimated'
+        }
+    };
+}
+
+// Face Mesh 랜드마크 그리기
+function drawFaceMeshLandmarks(ctx, landmarks) {
+    if (!ctx || !landmarks) return;
+    
+    // 피부톤 샘플링 포인트 표시
+    const skinPoints = [10, 151, 9, 67, 116, 117, 345, 346, 18, 175, 1, 2];
+    ctx.fillStyle = '#00FF00';
+    
+    skinPoints.forEach(idx => {
+        if (landmarks[idx]) {
+            const point = landmarks[idx];
+            const x = point.x * ctx.canvas.width;
+            const y = point.y * ctx.canvas.height;
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    });
+    
+    // 눈 영역 표시
+    const leftEyeIndices = [33, 160, 159, 158, 133, 153, 144, 145];
+    const rightEyeIndices = [362, 385, 386, 387, 263, 373, 374, 380];
+    
+    ctx.strokeStyle = '#FF0000';
+    ctx.lineWidth = 1;
+    
+    [leftEyeIndices, rightEyeIndices].forEach(eyeIndices => {
+        ctx.beginPath();
+        eyeIndices.forEach((idx, i) => {
+            if (landmarks[idx]) {
+                const point = landmarks[idx];
+                const x = point.x * ctx.canvas.width;
+                const y = point.y * ctx.canvas.height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+        });
+        ctx.closePath();
+        ctx.stroke();
+    });
+    
+    // 헤어라인 영역 표시
+    if (landmarks[10]) {
+        const forehead = landmarks[10];
+        const fx = forehead.x * ctx.canvas.width;
+        const fy = forehead.y * ctx.canvas.height;
+        
+        const boxW = ctx.canvas.width * 0.35;
+        const boxH = ctx.canvas.height * 0.18;
+        const startX = fx - boxW/2;
+        const startY = fy - boxH * 1.2;
+        
+        ctx.strokeStyle = '#0000FF';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(startX, startY, boxW, boxH);
+    }
+}
+
+// 실시간 표시 업데이트
+function updateRealtimeDisplay(seasonResult) {
+    const realtimeInfo = document.getElementById('realtime-info');
+    if (realtimeInfo) {
+        realtimeInfo.innerHTML = `
+            <div class="realtime-season">
+                <strong>${SeasonPalettes[seasonResult.season].name}</strong>
+                <span class="confidence">${seasonResult.confidence}%</span>
+            </div>
+            <div class="realtime-colors" id="realtime-colors"></div>
+        `;
+    }
+    
+    // 실시간 추천 색상 표시
+    updateRealtimeColorRecommendations(seasonResult.season);
+}
+
+// 실시간 색상 추천
+function updateRealtimeColorRecommendations(season) {
+    const container = document.getElementById('realtime-colors');
+    if (!container) return;
+    
+    const palette = SeasonPalettes[season];
+    if (!palette) return;
+    
+    container.innerHTML = '';
+    palette.colors.slice(0, 4).forEach(color => {
+        const colorChip = document.createElement('div');
+        colorChip.className = 'realtime-color-chip';
+        colorChip.style.backgroundColor = color;
+        colorChip.title = color;
+        container.appendChild(colorChip);
+    });
+}
+
+// ==========================================
 // 개선된 피부톤 추출 함수들
 // ==========================================
 
@@ -996,6 +1328,98 @@ async function initializeMediaPipe() {
     }
 }
 
+// MediaPipe Face Mesh 결과 처리 (개선 버전)
+function onFaceMeshResults(results) {
+    if (!results || !results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+        // Face Detection 폴백
+        if (faceDetection && results.detections) {
+            onFaceDetectionResults(results);
+        }
+        return;
+    }
+    
+    const landmarks = results.multiFaceLandmarks[0];
+    
+    // 효율적인 캔버스 처리 - 한 번만 생성하고 재사용
+    const canvas = document.createElement('canvas');
+    canvas.width = videoElement.videoWidth || 640;
+    canvas.height = videoElement.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(videoElement, 0, 0);
+    
+    // 전체 이미지 데이터를 한 번만 가져오기
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    
+    // 1) 피부톤 추출
+    const skin = extractSkinToneFromLandmarks(landmarks, videoElement);
+    
+    // 2) 눈동자 색상 추출 (폴백 방식)
+    const leftIris = extractIrisColorFallback(imageData, canvas.width, canvas.height, landmarks, 'left');
+    const rightIris = extractIrisColorFallback(imageData, canvas.width, canvas.height, landmarks, 'right');
+    const eye = leftIris || rightIris ? (leftIris || rightIris) : null;
+    
+    // 3) 헤어 색상 추출
+    const hair = extractHairColorFromLandmarks(imageData, canvas.width, canvas.height, landmarks);
+    
+    // LAB 변환
+    const eyeLab = eye ? rgbToLab(eye.r, eye.g, eye.b) : null;
+    const hairLab = hair ? rgbToLab(hair.r, hair.g, hair.b) : null;
+    
+    // 실시간 분석 데이터 업데이트
+    realtimeAnalysisData.skinTone = skin;
+    if (eyeLab) realtimeAnalysisData.eyeLab = eyeLab;
+    if (hairLab) realtimeAnalysisData.hairLab = hairLab;
+    realtimeAnalysisData.lastUpdate = Date.now();
+    
+    // 실시간 시즌 분석
+    if (skin && skin.lab) {
+        const seasonResult = classifySeasonAdvanced(skin.lab, skin.lch);
+        realtimeAnalysisData.season = seasonResult.season;
+        realtimeAnalysisData.confidence = seasonResult.confidence;
+        
+        // UI 업데이트 (실시간)
+        updateRealtimeDisplay(seasonResult);
+    }
+    
+    // 캔버스에 랜드마크 그리기
+    if (canvasCtx) {
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+        drawFaceMeshLandmarks(canvasCtx, landmarks);
+    }
+}
+
+// MediaPipe 얼굴 인식 결과 처리 (폴백)
+function onFaceDetectionResults(results) {
+    if (!canvasCtx) return;
+    
+    canvasCtx.save();
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+    
+    if (results.detections && results.detections.length > 0) {
+        results.detections.forEach(detection => {
+            // 얼굴 영역 표시
+            const box = detection.boundingBox;
+            const x = box.xCenter * canvasElement.width - (box.width * canvasElement.width) / 2;
+            const y = box.yCenter * canvasElement.height - (box.height * canvasElement.height) / 2;
+            const width = box.width * canvasElement.width;
+            const height = box.height * canvasElement.height;
+            
+            canvasCtx.strokeStyle = '#00FF00';
+            canvasCtx.lineWidth = 2;
+            canvasCtx.strokeRect(x, y, width, height);
+            
+            // 신뢰도 표시
+            canvasCtx.fillStyle = '#00FF00';
+            canvasCtx.font = '16px Arial';
+            canvasCtx.fillText(`${Math.round(detection.score * 100)}%`, x, y - 10);
+        });
+    }
+    
+    canvasCtx.restore();
+}
+
 // ==========================================
 // AI 모드 - 자동 분석
 // ==========================================
@@ -1291,4 +1715,583 @@ async function startCamera() {
             console.log('🤖 MediaPipe 초기화 시작...');
             const initialized = await initializeMediaPipe();
             if (!initialized) {
-                throw new Error('MediaPipe 초기화
+                throw new Error('MediaPipe 초기화 실패');
+            }
+        }
+        
+        // iframe 내부에서 안전한 카메라 접근
+        let stream;
+        try {
+            // 기본 설정으로 시도
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { 
+                    width: { ideal: 640 }, 
+                    height: { ideal: 480 }, 
+                    facingMode: 'user' 
+                }
+            });
+        } catch (basicError) {
+            console.warn('기본 카메라 설정 실패, 최소 설정으로 재시도:', basicError);
+            
+            // 최소 설정으로 재시도
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: true
+                });
+            } catch (minimalError) {
+                console.error('최소 카메라 설정도 실패:', minimalError);
+                
+                // iframe 권한 문제인지 확인
+                if (minimalError.name === 'NotAllowedError') {
+                    throw new Error('iframe_permission_denied');
+                } else {
+                    throw minimalError;
+                }
+            }
+        }
+        
+        videoElement = document.getElementById('camera-feed');
+        canvasElement = document.getElementById('camera-canvas');
+        
+        if (videoElement && canvasElement) {
+            videoElement.srcObject = stream;
+            canvasCtx = canvasElement.getContext('2d');
+            
+            videoElement.onloadedmetadata = () => {
+                videoElement.play();
+                startBtn.textContent = '📹 카메라 중지';
+                startBtn.disabled = false;
+                startBtn.onclick = stopCamera;
+                
+                // 실시간 분석 시작
+                if (faceMesh || faceDetection) {
+                    startRealTimeAnalysis();
+                }
+                
+                showToast('실시간 카메라 분석이 시작되었습니다!', 'success');
+            };
+        }
+        
+    } catch (error) {
+        console.error('❌ 카메라 시작 실패:', error);
+        
+        let errorMessage = '카메라 접근에 실패했습니다.';
+        
+        if (error.message === 'iframe_permission_denied') {
+            errorMessage = `
+                🚨 iframe 카메라 권한 문제 발생!
+                
+                해결 방법:
+                1. 메인 index.html의 iframe에 allow="camera" 추가
+                2. netlify.toml에서 camera=() → camera=(self) 수정
+                3. 브라우저 새로고침 후 재시도
+                
+                현재는 사진 업로드 모드를 사용해주세요.
+            `;
+            
+            // 사진 업로드 모드로 자동 전환
+            setTimeout(() => {
+                showPhotoUploadAlternative();
+            }, 2000);
+            
+        } else if (error.name === 'NotAllowedError') {
+            errorMessage = '카메라 권한이 거부되었습니다. 브라우저 설정에서 카메라 접근을 허용해주세요.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage = '카메라를 찾을 수 없습니다. 카메라가 연결되어 있는지 확인해주세요.';
+        } else if (error.name === 'NotReadableError') {
+            errorMessage = '카메라가 다른 앱에서 사용 중입니다. 다른 앱을 종료하고 다시 시도해주세요.';
+        }
+        
+        showToast(errorMessage, 'error', 5000);
+        
+        startBtn.disabled = false;
+        startBtn.textContent = '📹 실시간 카메라 분석';
+    }
+}
+
+// 사진 업로드 대안 표시
+function showPhotoUploadAlternative() {
+    const aiMode = document.getElementById('ai-mode');
+    if (aiMode) {
+        const alternativeDiv = document.createElement('div');
+        alternativeDiv.className = 'camera-alternative';
+        alternativeDiv.innerHTML = `
+            <div class="alternative-notice">
+                <h3>🔄 카메라 대신 사진 업로드 사용</h3>
+                <p>실시간 카메라 분석이 불가능한 상황입니다.<br>
+                아래 사진 업로드로 AI 퍼스널컬러 분석을 진행해주세요.</p>
+                <button class="highlight-upload-btn" onclick="highlightPhotoUpload()">
+                    📸 사진 업로드하러 가기
+                </button>
+            </div>
+        `;
+        
+        const cameraSection = aiMode.querySelector('.camera-section');
+        if (cameraSection) {
+            cameraSection.appendChild(alternativeDiv);
+        }
+    }
+}
+
+// 사진 업로드 섹션 강조
+function highlightPhotoUpload() {
+    const photoSection = document.getElementById('photo-upload-section');
+    if (photoSection) {
+        photoSection.scrollIntoView({ behavior: 'smooth' });
+        photoSection.style.border = '2px solid var(--primary-pink)';
+        photoSection.style.borderRadius = '10px';
+        photoSection.style.padding = '20px';
+        
+        setTimeout(() => {
+            photoSection.style.border = '';
+            photoSection.style.padding = '';
+        }, 3000);
+    }
+    
+    showToast('사진을 선택하여 AI 분석을 시작하세요!', 'info');
+}
+
+// 카메라 중지
+function stopCamera() {
+    if (videoElement && videoElement.srcObject) {
+        const tracks = videoElement.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+        videoElement.srcObject = null;
+    }
+    
+    const startBtn = document.getElementById('start-camera');
+    startBtn.textContent = '📹 실시간 카메라 분석';
+    startBtn.onclick = startCamera;
+    
+    showToast('카메라가 중지되었습니다.', 'info');
+}
+
+// 실시간 분석 시작 (개선 버전)
+function startRealTimeAnalysis() {
+    if (!videoElement || !canvasElement || (!faceMesh && !faceDetection)) return;
+    
+    let frameCount = 0;
+    const analyzeEveryNFrames = 10; // 10프레임마다 분석 (성능 최적화)
+    
+    const analyze = async () => {
+        if (videoElement.readyState === 4) {
+            frameCount++;
+            
+            // 캔버스 크기 조정
+            canvasElement.width = videoElement.videoWidth || 640;
+            canvasElement.height = videoElement.videoHeight || 480;
+            
+            // Face Mesh 우선 사용
+            if (faceMesh) {
+                try {
+                    await faceMesh.send({ image: videoElement });
+                } catch (error) {
+                    console.warn('Face Mesh 실패, Face Detection으로 폴백:', error);
+                    if (faceDetection) {
+                        await faceDetection.send({ image: videoElement });
+                    }
+                }
+            }
+            // Face Detection 폴백
+            else if (faceDetection) {
+                try {
+                    await faceDetection.send({ image: videoElement });
+                } catch (error) {
+                    console.error('Face Detection 실패:', error);
+                }
+            }
+            
+            // 주기적으로 통합 분석 실행
+            if (frameCount % analyzeEveryNFrames === 0 && realtimeAnalysisData.skinTone) {
+                performRealtimeComprehensiveAnalysis();
+            }
+        }
+        
+        // 카메라가 활성화되어 있으면 계속 실행
+        if (videoElement.srcObject) {
+            requestAnimationFrame(analyze);
+        }
+    };
+    
+    analyze();
+}
+
+// 실시간 통합 분석
+function performRealtimeComprehensiveAnalysis() {
+    try {
+        const { skinTone, eyeLab, hairLab } = realtimeAnalysisData;
+        
+        if (!skinTone || !skinTone.lab) return;
+        
+        // 통합 시즌 분류
+        const comprehensiveResult = classifySeasonComprehensive(
+            skinTone.lab,
+            eyeLab,
+            hairLab
+        );
+        
+        // 결과 업데이트
+        realtimeAnalysisData.season = comprehensiveResult.season;
+        realtimeAnalysisData.confidence = comprehensiveResult.confidence;
+        realtimeAnalysisData.comprehensiveScores = comprehensiveResult.scores;
+        
+        // UI 실시간 업데이트
+        updateRealtimeDisplay(comprehensiveResult);
+        
+        console.log(`실시간 분석: ${comprehensiveResult.season} (${comprehensiveResult.confidence}%)`, comprehensiveResult.factors);
+        
+    } catch (error) {
+        console.error('실시간 분석 오류:', error);
+    }
+}
+
+// ==========================================
+// 드래이핑 모드 - 실시간 색상 테스트
+// ==========================================
+
+// 드래이핑 모드 초기화
+function setupDrapingMode() {
+    setupColorAdjustments();
+    setupSeasonTabs();
+    loadSavedColors();
+}
+
+// 색상 조정 슬라이더 설정
+function setupColorAdjustments() {
+    const sliders = ['lightness', 'saturation', 'warmth'];
+    
+    sliders.forEach(type => {
+        const slider = document.getElementById(`${type}-slider`);
+        if (slider) {
+            slider.addEventListener('input', function() {
+                colorAdjustments[type] = parseInt(this.value);
+                updateColorAdjustmentDisplay(type, this.value);
+                applyColorAdjustments();
+            });
+        }
+    });
+}
+
+// 색상 조정값 표시 업데이트
+function updateColorAdjustmentDisplay(type, value) {
+    const display = document.getElementById(`${type}-value`);
+    if (display) {
+        display.textContent = value > 0 ? `+${value}` : value;
+    }
+}
+
+// 색상 조정 적용
+function applyColorAdjustments() {
+    const colorGrid = document.getElementById('color-grid');
+    if (!colorGrid) return;
+    
+    // CSS 필터로 실시간 색상 조정
+    const { lightness, saturation, warmth } = colorAdjustments;
+    
+    const filter = `
+        brightness(${100 + lightness}%) 
+        saturate(${100 + saturation}%) 
+        hue-rotate(${warmth * 2}deg)
+    `.trim();
+    
+    colorGrid.style.filter = filter;
+}
+
+// 계절 탭 설정
+function setupSeasonTabs() {
+    const seasons = ['Spring', 'Summer', 'Autumn', 'Winter'];
+    
+    seasons.forEach(season => {
+        const tab = document.getElementById(`${season.toLowerCase()}-tab`);
+        if (tab) {
+            tab.addEventListener('click', () => selectSeason(season));
+        }
+    });
+    
+    // 기본 선택
+    selectSeason('Spring');
+}
+
+// 계절 선택
+function selectSeason(season) {
+    selectedSeason = season;
+    
+    // 탭 활성화
+    document.querySelectorAll('.season-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    const activeTab = document.getElementById(`${season.toLowerCase()}-tab`);
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+    
+    // 색상 팔레트 업데이트
+    updateColorPalette(season);
+}
+
+// 색상 팔레트 업데이트
+function updateColorPalette(season) {
+    const colorGrid = document.getElementById('color-grid');
+    if (!colorGrid) return;
+    
+    const palette = SeasonPalettes[season];
+    if (!palette) return;
+    
+    colorGrid.innerHTML = '';
+    
+    palette.colors.forEach(color => {
+        const colorDiv = document.createElement('div');
+        colorDiv.className = 'color-item';
+        colorDiv.style.backgroundColor = color;
+        colorDiv.addEventListener('click', () => saveColor(color, season));
+        colorGrid.appendChild(colorDiv);
+    });
+    
+    // 특성 설명 업데이트
+    const characteristics = document.getElementById('season-characteristics');
+    if (characteristics) {
+        characteristics.innerHTML = palette.characteristics
+            .map(char => `<li>${char}</li>`)
+            .join('');
+    }
+}
+
+// 색상 저장
+function saveColor(color, season) {
+    const savedColor = {
+        id: Date.now(),
+        color: color,
+        season: season,
+        timestamp: new Date().toISOString()
+    };
+    
+    savedColors.push(savedColor);
+    updateSavedColorsDisplay();
+    
+    showToast(`${SeasonPalettes[season].name} 색상이 저장되었습니다!`, 'success');
+}
+
+// 저장된 색상 표시
+function updateSavedColorsDisplay() {
+    const container = document.getElementById('saved-colors');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    savedColors.forEach(saved => {
+        const colorDiv = document.createElement('div');
+        colorDiv.className = 'saved-color-item';
+        colorDiv.innerHTML = `
+            <div class="saved-color-swatch" style="background-color: ${saved.color}"></div>
+            <div class="saved-color-info">
+                <div class="saved-season">${saved.season}</div>
+                <div class="saved-time">${new Date(saved.timestamp).toLocaleTimeString()}</div>
+            </div>
+            <button class="remove-saved-color" onclick="removeSavedColor(${saved.id})">×</button>
+        `;
+        container.appendChild(colorDiv);
+    });
+}
+
+// 저장된 색상 제거
+function removeSavedColor(id) {
+    savedColors = savedColors.filter(color => color.id !== id);
+    updateSavedColorsDisplay();
+    showToast('저장된 색상이 제거되었습니다.', 'info');
+}
+
+// 저장된 색상 불러오기
+function loadSavedColors() {
+    // localStorage에서 불러오기 (브라우저 지원 시)
+    try {
+        const saved = localStorage.getItem('hairgator-saved-colors');
+        if (saved) {
+            savedColors = JSON.parse(saved);
+            updateSavedColorsDisplay();
+        }
+    } catch (error) {
+        console.warn('저장된 색상 불러오기 실패:', error);
+    }
+}
+
+// 저장된 색상 저장하기
+function saveSavedColors() {
+    try {
+        localStorage.setItem('hairgator-saved-colors', JSON.stringify(savedColors));
+    } catch (error) {
+        console.warn('색상 저장 실패:', error);
+    }
+}
+
+// ==========================================
+// 유틸리티 함수들
+// ==========================================
+
+// 전문가 분석 텍스트 생성
+function generateExpertAnalysis(season) {
+    const analyses = {
+        Spring: `${ExpertKnowledge.blume.specificTypes.warm}. 밝고 선명한 색상이 잘 어울립니다.`,
+        Summer: `${ExpertKnowledge.bitnalyun.skinConditions.pale}에 따라 부드러운 파스텔 톤을 추천합니다.`,
+        Autumn: `${ExpertKnowledge.bitnalyun.skinConditions.yellowish} 원칙에 따라 리치한 브라운 계열이 적합합니다.`,
+        Winter: `${ExpertKnowledge.blume.specificTypes.cool}. 명확한 대비를 위해 진하고 선명한 색상을 권장합니다.`
+    };
+    
+    return analyses[season] || '전문가 분석 결과를 생성 중입니다.';
+}
+
+// 데이터 상태 업데이트
+function updateDataStatus(message, type) {
+    const statusElement = document.getElementById('data-status');
+    if (statusElement) {
+        statusElement.textContent = message;
+        statusElement.className = `status-${type}`;
+    }
+}
+
+// 토스트 메시지 표시
+function showToast(message, type = 'info', duration = 3000) {
+    console.log(`Toast [${type}]: ${message}`);
+    
+    // 실제 토스트 UI가 있다면 여기서 처리
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#2196F3'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+// ==========================================
+// 모드 전환 및 네비게이션
+// ==========================================
+
+// 모드 선택
+function selectMode(mode) {
+    currentMode = mode;
+    
+    // 모든 섹션 숨기기
+    document.querySelectorAll('.mode-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // 선택한 모드 표시
+    const selectedSection = document.getElementById(`${mode}-mode`);
+    if (selectedSection) {
+        selectedSection.style.display = 'block';
+    }
+    
+    // 네비게이션 버튼 업데이트
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const activeBtn = document.querySelector(`[onclick="selectMode('${mode}')"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+    
+    console.log(`모드 전환: ${mode}`);
+}
+
+// 뒤로 가기
+function goBack() {
+    if (currentMode !== 'selection') {
+        selectMode('selection');
+    }
+}
+
+// ==========================================
+// 외부 연동 함수들 (HAIRGATOR 호환)
+// ==========================================
+
+// 부모창과의 메시지 통신
+window.addEventListener('message', function(event) {
+    if (event.data.type === 'THEME_CHANGE') {
+        // 테마 변경 처리
+        document.documentElement.setAttribute('data-theme', event.data.theme);
+    } else if (event.data.type === 'HAIR_COLOR_DATA') {
+        // 헤어컬러 데이터 업데이트
+        hairColorData = event.data.data;
+        console.log(`📡 부모창에서 ${hairColorData.length}개 데이터 수신`);
+    }
+});
+
+// 키보드 단축키
+document.addEventListener('keydown', function(event) {
+    if (currentMode === 'selection') {
+        switch (event.key) {
+            case '1':
+                event.preventDefault();
+                selectMode('ai');
+                break;
+            case '2':
+                event.preventDefault();
+                selectMode('draping');
+                break;
+            case 'Escape':
+                event.preventDefault();
+                goBack();
+                break;
+        }
+    }
+    
+    // 스페이스바로 분석 시작
+    if (event.code === 'Space' && uploadedImage && !isAnalyzing) {
+        event.preventDefault();
+        analyzePhoto();
+    }
+});
+
+// 부모 창에 시스템 준비 완료 알림
+window.addEventListener('load', function() {
+    setTimeout(() => {
+        try {
+            if (parent && parent.postMessage) {
+                parent.postMessage({
+                    type: 'PERSONAL_COLOR_READY',
+                    message: 'Personal Color 시스템이 준비되었습니다.'
+                }, '*');
+            }
+        } catch (error) {
+            console.log('부모 창 알림 전송 실패:', error);
+        }
+    }, 3000);
+});
+
+// 페이지 언로드 시 정리
+window.addEventListener('beforeunload', function() {
+    if (videoElement && videoElement.srcObject) {
+        const tracks = videoElement.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+    }
+    if (camera) {
+        camera.stop();
+    }
+    
+    // 저장된 색상 저장
+    saveSavedColors();
+});
+
+console.log('🎨 HAIRGATOR Personal Color Pro - 실제 작동 버전 로드 완료');
+document.addEventListener('DOMContentLoaded', initializeSystem);
