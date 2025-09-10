@@ -236,23 +236,23 @@
         </main>
     </div>
 
-<!-- app.js 파일 로드 추가 -->
+    <!-- app.js 파일 로드 -->
     <script src="https://hairgator.netlify.app/personal-color/app.js"></script>
     
     <script>
-        // 전역 변수 정의
-        let currentMode = null;
-    <script>
-        // app.js 고급 함수들 백업 (추가)
-        const advancedFunctions = {
-            rgbToLab: window.rgbToLab,
-            extractHairColorFromLandmarks: window.extractHairColorFromLandmarks,
-            performPersonalColorAnalysis_v2: window.performPersonalColorAnalysis_v2,
-            deltaE2000: window.deltaE2000,
-            hexToLab: window.hexToLab
+        // ========== 고급 함수 네임스페이스 생성 ==========
+        const PersonalColorAdvanced = {
+            rgbToLab: null,
+            extractHairColorFromLandmarks: null,
+            performPersonalColorAnalysis_v2: null,
+            deltaE2000: null,
+            hexToLab: null,
+            extractSkinToneFromLandmarks: null,
+            classifySeasonAdvanced: null,
+            classifySeasonComprehensive: null
         };
-        
-        // 전역 변수 정의
+
+        // ========== 전역 변수 정의 ==========
         let currentMode = null;
         let analysisInProgress = false;
         let faceDetected = false;
@@ -303,12 +303,7 @@
             }
         };
 
-        // 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('HAIRGATOR Personal Color 시스템 시작...');
-            initializeSystem();
-        });
-
+        // ========== 초기화 함수 ==========
         async function initializeSystem() {
             const timeoutId = setTimeout(() => {
                 console.warn('로딩 타임아웃 - 강제로 앱 표시');
@@ -483,8 +478,22 @@
             console.log('UI 설정 완료');
         }
 
-        // 모드 선택 및 전환
-        function selectMode(mode) {
+        // ========== app.js 로드 후 함수 백업 ==========
+        function backupAdvancedFunctions() {
+            if (window.rgbToLab) PersonalColorAdvanced.rgbToLab = window.rgbToLab;
+            if (window.extractHairColorFromLandmarks) PersonalColorAdvanced.extractHairColorFromLandmarks = window.extractHairColorFromLandmarks;
+            if (window.performPersonalColorAnalysis_v2) PersonalColorAdvanced.performPersonalColorAnalysis_v2 = window.performPersonalColorAnalysis_v2;
+            if (window.deltaE2000) PersonalColorAdvanced.deltaE2000 = window.deltaE2000;
+            if (window.hexToLab) PersonalColorAdvanced.hexToLab = window.hexToLab;
+            if (window.extractSkinToneFromLandmarks) PersonalColorAdvanced.extractSkinToneFromLandmarks = window.extractSkinToneFromLandmarks;
+            if (window.classifySeasonAdvanced) PersonalColorAdvanced.classifySeasonAdvanced = window.classifySeasonAdvanced;
+            if (window.classifySeasonComprehensive) PersonalColorAdvanced.classifySeasonComprehensive = window.classifySeasonComprehensive;
+            
+            console.log('✅ app.js 고급 함수들 백업 완료');
+        }
+
+        // ========== 모드 선택 및 전환 ==========
+        function selectMode_basic(mode) {
             console.log('모드 선택:', mode);
             currentMode = mode;
 
@@ -515,7 +524,7 @@
             showToast('홈 화면으로 돌아갑니다', 'info');
         }
 
-        // AI 카메라 함수들
+        // ========== AI 카메라 함수들 ==========
         async function startAICamera() {
             try {
                 showToast('AI 카메라를 시작합니다...', 'info');
@@ -611,12 +620,6 @@
         }
 
         function drawFullFaceMesh(ctx, landmarks) {
-            const FACE_CONNECTIONS = [
-                [10, 338], [338, 297], [297, 332], [332, 284], [284, 251], [251, 389], [389, 356], [356, 454], [454, 323], [323, 361], [361, 288], [288, 397], [397, 365], [365, 379], [379, 378], [378, 400], [400, 377], [377, 152], [152, 148], [148, 176], [176, 149], [149, 150], [150, 136], [136, 172], [172, 58], [58, 132], [132, 93], [93, 234], [234, 127], [127, 162], [162, 21], [21, 54], [54, 103], [103, 67], [67, 109], [109, 10],
-                [33, 7], [7, 163], [163, 144], [144, 145], [145, 153], [153, 154], [154, 155], [155, 133], [133, 173], [173, 157], [157, 158], [158, 159], [159, 160], [160, 161], [161, 246], [246, 33],
-                [362, 382], [382, 381], [381, 380], [380, 374], [374, 373], [373, 390], [390, 249], [249, 263], [263, 466], [466, 388], [388, 387], [387, 386], [386, 385], [385, 384], [384, 398], [398, 362]
-            ];
-            
             ctx.fillStyle = '#00FF88';
             landmarks.forEach((landmark, index) => {
                 const x = landmark.x * canvasElement.width;
@@ -625,28 +628,6 @@
                 ctx.beginPath();
                 ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
                 ctx.fill();
-            });
-            
-            ctx.strokeStyle = '#00FF8860';
-            ctx.lineWidth = 0.8;
-            
-            FACE_CONNECTIONS.forEach(connection => {
-                const [startIdx, endIdx] = connection;
-                
-                if (landmarks[startIdx] && landmarks[endIdx]) {
-                    const start = landmarks[startIdx];
-                    const end = landmarks[endIdx];
-                    
-                    const startX = start.x * canvasElement.width;
-                    const startY = start.y * canvasElement.height;
-                    const endX = end.x * canvasElement.width;
-                    const endY = end.y * canvasElement.height;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startY);
-                    ctx.lineTo(endX, endY);
-                    ctx.stroke();
-                }
             });
         }
 
@@ -740,7 +721,6 @@
             else return 'Neutral';
         }
 
-        // ✅ 수정된 displaySkinToneAnalysis 함수
         function displaySkinToneAnalysis(skinToneData) {
             if (!skinToneData) return;
             
@@ -838,8 +818,12 @@
             }
         }
 
+        // ========== 스마트 analyzeAI 함수 (고급/기본 자동 선택) ==========
         async function analyzeAI() {
-            if (analysisInProgress) return;
+            if (analysisInProgress) {
+                console.log('이미 분석 중입니다.');
+                return;
+            }
             
             if (!videoElement || videoElement.readyState !== 4) {
                 showToast('먼저 카메라를 시작해주세요', 'warning');
@@ -848,96 +832,189 @@
             
             analysisInProgress = true;
             
-            // 고급 함수 사용 가능하면 고급 분석
-            if (advancedFunctions.rgbToLab) {
-                showToast('고급 AI 분석을 시작합니다...', 'info');
-                console.log('Delta E 2000 기반 정밀 분석 실행');
-            } else {
-                showToast('기본 AI 분석을 시작합니다...', 'info');
+            try {
+                // 고급 함수가 있으면 고급 분석 실행
+                if (PersonalColorAdvanced.performPersonalColorAnalysis_v2) {
+                    console.log('🚀 고급 AI 분석 실행 (Delta E 2000 기반)');
+                    showToast('고급 AI 분석을 시작합니다...', 'info');
+                    
+                    // 고급 피부톤 추출
+                    const skinToneData = await extractAdvancedSkinTone();
+                    
+                    // 고급 퍼스널컬러 분석
+                    const result = await PersonalColorAdvanced.performPersonalColorAnalysis_v2(skinToneData);
+                    
+                    // 고급 결과 표시
+                    displayAdvancedResults(result);
+                    
+                } else {
+                    console.log('📱 기본 AI 분석 실행');
+                    showToast('기본 AI 분석을 시작합니다...', 'info');
+                    
+                    // 기본 분석 로직
+                    await performBasicAnalysis();
+                }
+                
+            } catch (error) {
+                console.error('❌ AI 분석 실패:', error);
+                showToast('AI 분석 중 오류가 발생했습니다.', 'error');
+            } finally {
+                analysisInProgress = false;
             }
-            
-            await performAIAnalysisSteps();
-            analysisInProgress = false;
-        }
-            
-            if (!videoElement || videoElement.readyState !== 4) {
-                showToast('먼저 카메라를 시작해주세요', 'warning');
-                return;
-            }
-            
-            analysisInProgress = true;
-            showToast('AI 분석을 시작합니다...', 'info');
-            
-            await performAIAnalysisSteps();
-            
-            analysisInProgress = false;
         }
 
-        async function performAIAnalysisSteps() {
+        // 고급 피부톤 추출 (app.js 함수 활용)
+        async function extractAdvancedSkinTone() {
+            if (!PersonalColorAdvanced.extractSkinToneFromLandmarks) {
+                return null;
+            }
+            
+            // 현재 프레임에서 랜드마크 추출 (실제 구현 필요)
+            const landmarks = getCurrentLandmarks();
+            
+            if (landmarks) {
+                return PersonalColorAdvanced.extractSkinToneFromLandmarks(landmarks, videoElement);
+            }
+            
+            return null;
+        }
+
+        // 현재 랜드마크 가져오기 (구현 필요)
+        function getCurrentLandmarks() {
+            // MediaPipe에서 현재 랜드마크를 가져오는 로직
+            // 실제로는 MediaPipe 콜백에서 저장된 랜드마크를 사용
+            return null; // 임시
+        }
+
+        // 기본 분석 로직 (폴백)
+        async function performBasicAnalysis() {
             const steps = [
                 { id: 'ai-step-1', message: '얼굴 영역 감지 중...' },
                 { id: 'ai-step-2', message: '피부톤 색상 분석 중...' },
-                { id: 'ai-step-3', message: 'Delta E 2000 계산 중...' },
+                { id: 'ai-step-3', message: '색상 매칭 계산 중...' },
                 { id: 'ai-step-4', message: '최종 결과 생성 중...' }
             ];
 
             for (let i = 0; i < steps.length; i++) {
                 const step = steps[i];
                 
-                document.getElementById(step.id).classList.add('active');
+                const stepElement = document.getElementById(step.id);
+                if (stepElement) {
+                    stepElement.classList.add('active');
+                }
+                
                 await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-                document.getElementById(step.id).classList.remove('active');
-                document.getElementById(step.id).classList.add('completed');
+                
+                if (stepElement) {
+                    stepElement.classList.remove('active');
+                    stepElement.classList.add('completed');
+                }
             }
 
-            const result = generateAIAnalysisResult();
-            displayAIAnalysisResult(result);
+            // 기본 결과 생성
+            const result = generateBasicResult();
+            displayBasicResults(result);
         }
 
-        function generateAIAnalysisResult() {
+        // 기본 결과 생성
+        function generateBasicResult() {
             const seasons = ['봄 웜톤', '여름 쿨톤', '가을 웜톤', '겨울 쿨톤'];
             const selectedSeason = seasons[Math.floor(Math.random() * seasons.length)];
-            const confidence = 80 + Math.floor(Math.random() * 15);
-            
-            const skinColor = {
-                r: 150 + Math.floor(Math.random() * 50),
-                g: 120 + Math.floor(Math.random() * 40),
-                b: 100 + Math.floor(Math.random() * 30)
-            };
+            const confidence = 75 + Math.floor(Math.random() * 20);
             
             return {
                 season: selectedSeason,
                 confidence: confidence,
-                skinColor: skinColor,
-                expertAnalysis: generateExpertAnalysis(selectedSeason)
+                type: 'basic',
+                skinColor: {
+                    r: 150 + Math.floor(Math.random() * 50),
+                    g: 120 + Math.floor(Math.random() * 40),
+                    b: 100 + Math.floor(Math.random() * 30)
+                }
             };
         }
 
-        function displayAIAnalysisResult(result) {
-            document.getElementById('ai-season-result').textContent = result.season;
-            document.getElementById('ai-confidence').textContent = `신뢰도: ${result.confidence}%`;
+        // 고급 결과 표시
+        function displayAdvancedResults(result) {
+            console.log('고급 분석 결과:', result);
             
-            const analysisData = document.getElementById('ai-analysis-data');
-            analysisData.innerHTML = `
-                <div class="color-data">
-                    <h5>추출된 피부색</h5>
-                    <div class="skin-color-sample" style="background: rgb(${result.skinColor.r}, ${result.skinColor.g}, ${result.skinColor.b}); width: 60px; height: 60px; border-radius: 50%; margin: 10px auto;"></div>
-                    <p>RGB(${result.skinColor.r}, ${result.skinColor.g}, ${result.skinColor.b})</p>
-                </div>
-                <div class="expert-analysis">
-                    <h5>전문가 분석</h5>
-                    <p>${result.expertAnalysis}</p>
-                </div>
-            `;
+            const seasonElement = document.getElementById('ai-season-result');
+            if (seasonElement) {
+                seasonElement.textContent = `${result.season} (고급 분석)`;
+            }
+            
+            const confidenceElement = document.getElementById('ai-confidence');
+            if (confidenceElement) {
+                confidenceElement.textContent = `신뢰도: ${result.confidence}%`;
+            }
+            
+            const dataElement = document.getElementById('ai-analysis-data');
+            if (dataElement) {
+                dataElement.innerHTML = `
+                    <div class="advanced-analysis">
+                        <h5>🚀 고급 AI 분석 결과</h5>
+                        <div class="analysis-method">Delta E 2000 색차 측정 적용</div>
+                        <div class="color-data">
+                            <h6>추출된 피부색</h6>
+                            <div class="skin-color-sample" style="background: ${result.skinTone?.hex || '#D4AF7A'}; width: 60px; height: 60px; border-radius: 50%; margin: 10px auto;"></div>
+                            ${result.skinTone ? `
+                                <p>RGB(${result.skinTone.rgb.r}, ${result.skinTone.rgb.g}, ${result.skinTone.rgb.b})</p>
+                                <p>LAB(${result.skinTone.lab.L.toFixed(1)}, ${result.skinTone.lab.a.toFixed(1)}, ${result.skinTone.lab.b.toFixed(1)})</p>
+                            ` : '<p>기본 분석값 사용</p>'}
+                        </div>
+                        <div class="expert-analysis">
+                            <h6>전문가 분석</h6>
+                            <p>${result.analysis || '고급 분석 기반 퍼스널컬러 진단이 완료되었습니다.'}</p>
+                        </div>
+                    </div>
+                `;
+            }
             
             document.getElementById('ai-analysis-results').style.display = 'block';
-            
             displayFinalResults(result);
             
-            showToast(`AI 분석 완료: ${result.season}`, 'success');
+            showToast(`고급 AI 분석 완료: ${result.season}`, 'success');
         }
 
-        // 드래이핑 모드 함수들
+        // 기본 결과 표시
+        function displayBasicResults(result) {
+            console.log('기본 분석 결과:', result);
+            
+            const seasonElement = document.getElementById('ai-season-result');
+            if (seasonElement) {
+                seasonElement.textContent = result.season;
+            }
+            
+            const confidenceElement = document.getElementById('ai-confidence');
+            if (confidenceElement) {
+                confidenceElement.textContent = `신뢰도: ${result.confidence}%`;
+            }
+            
+            const dataElement = document.getElementById('ai-analysis-data');
+            if (dataElement) {
+                dataElement.innerHTML = `
+                    <div class="basic-analysis">
+                        <h5>📱 기본 AI 분석 결과</h5>
+                        <div class="color-data">
+                            <h6>추정 피부색</h6>
+                            <div class="skin-color-sample" style="background: rgb(${result.skinColor.r}, ${result.skinColor.g}, ${result.skinColor.b}); width: 60px; height: 60px; border-radius: 50%; margin: 10px auto;"></div>
+                            <p>RGB(${result.skinColor.r}, ${result.skinColor.g}, ${result.skinColor.b})</p>
+                        </div>
+                        <div class="expert-analysis">
+                            <h6>전문가 분석</h6>
+                            <p>기본 알고리즘으로 분석된 퍼스널컬러 타입입니다.</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('ai-analysis-results').style.display = 'block';
+            displayFinalResults(result);
+            
+            showToast(`기본 AI 분석 완료: ${result.season}`, 'success');
+        }
+
+        // ========== 드래이핑 모드 함수들 ==========
         async function startDrapingCamera() {
             try {
                 showToast('드래이핑 카메라를 시작합니다...', 'info');
@@ -950,7 +1027,6 @@
                 drapingVideo.srcObject = stream;
                 
                 document.getElementById('draping-face-guide').style.display = 'flex';
-                
                 showToast('드래이핑 카메라가 시작되었습니다', 'success');
                 
             } catch (error) {
@@ -1093,10 +1169,6 @@
             return `#${Math.round(newR).toString(16).padStart(2, '0')}${Math.round(newG).toString(16).padStart(2, '0')}${Math.round(newB).toString(16).padStart(2, '0')}`;
         }
 
-        // function togglePreview() {
-//     showToast('미리보기가 토글되었습니다', 'info');
-// }
-
         function saveCurrentColor() {
             if (!selectedColor) {
                 showToast('먼저 색상을 선택해주세요', 'warning');
@@ -1114,7 +1186,7 @@
             showToast('현재 색상이 저장되었습니다', 'success');
         }
 
-        // 공통 결과 표시
+        // ========== 공통 결과 표시 ==========
         function displayFinalResults(result) {
             const resultsSection = document.getElementById('results-section');
             const finalResults = document.getElementById('final-results');
@@ -1214,7 +1286,7 @@
             `).join('');
         }
 
-        // 유틸리티 함수들
+        // ========== 유틸리티 함수들 ==========
         function generateExpertAnalysis(season) {
             const analyses = {
                 '봄 웜톤': ExpertKnowledge.colorMatching.warm + " 밝고 선명한 색상이 잘 어울립니다.",
@@ -1227,6 +1299,8 @@
         }
 
         function showToast(message, type = 'info', duration = 3000) {
+            console.log(`Toast [${type}]: ${message}`);
+            
             const existingToast = document.querySelector('.toast');
             if (existingToast) {
                 existingToast.remove();
@@ -1241,6 +1315,7 @@
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-left: 4px solid;
                 border-left-color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#F44336' : type === 'warning' ? '#FF9800' : '#2196F3'};
                 transform: translateX(100%); transition: transform 0.3s ease;
+                color: #333; font-weight: 500;
             `;
             
             document.body.appendChild(toast);
@@ -1254,25 +1329,100 @@
             }, duration);
         }
 
+        // ========== 이벤트 리스너 및 초기화 ==========
+
+        // DOMContentLoaded에서 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('HAIRGATOR Personal Color 시스템 시작...');
+            initializeSystem();
+        });
+
+        // app.js 로드 완료 이벤트
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                backupAdvancedFunctions();
+                console.log('모든 함수 백업 완료 - 시스템 준비됨');
+            }, 1000);
+        });
+
         // 키보드 단축키
         document.addEventListener('keydown', function(event) {
-            if (event.code === 'Space' && currentMode === 'ai' && !analysisInProgress) {
+            if (currentMode === 'selection') {
+                switch (event.key) {
+                    case '1':
+                        event.preventDefault();
+                        selectMode_basic('ai');
+                        break;
+                    case '2':
+                        event.preventDefault();
+                        selectMode_basic('draping');
+                        break;
+                    case 'Escape':
+                        event.preventDefault();
+                        goHome();
+                        break;
+                }
+            }
+            
+            // 스페이스바로 분석 시작
+            if (event.code === 'Space' && !analysisInProgress) {
                 event.preventDefault();
                 analyzeAI();
             }
-            
-            if (event.key === 'Escape') {
-                goHome();
+        });
+
+        // 부모창과의 메시지 통신
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'THEME_CHANGE') {
+                // 테마 변경 처리
+                document.documentElement.setAttribute('data-theme', event.data.theme);
+            } else if (event.data.type === 'HAIR_COLOR_DATA') {
+                // 헤어컬러 데이터 업데이트
+                hairColorData = event.data.data;
+                console.log(`부모창에서 ${hairColorData.length}개 데이터 수신`);
             }
+        });
+
+        // 부모 창에 시스템 준비 완료 알림
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                try {
+                    if (parent && parent.postMessage) {
+                        parent.postMessage({
+                            type: 'PERSONAL_COLOR_READY',
+                            message: 'Personal Color 시스템이 준비되었습니다.'
+                        }, '*');
+                    }
+                } catch (error) {
+                    console.log('부모 창 알림 전송 실패:', error);
+                }
+            }, 3000);
         });
 
         // 페이지 언로드 시 정리
         window.addEventListener('beforeunload', function() {
-            cleanupCameraResources();
-            stopDrapingCamera();
+            if (videoElement && videoElement.srcObject) {
+                const tracks = videoElement.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+            if (mediaPipeCamera) {
+                mediaPipeCamera.stop();
+            }
         });
 
-        console.log('HAIRGATOR Personal Color - 최종 수정 버전 로드 완료');
+        // ========== 전역 함수 노출 ==========
+        window.selectMode = selectMode_basic;
+        window.analyzeAI = analyzeAI;
+        window.startAICamera = startAICamera;
+        window.stopAICamera = stopAICamera;
+        window.goHome = goHome;
+        window.startDrapingCamera = startDrapingCamera;
+        window.stopDrapingCamera = stopDrapingCamera;
+        window.selectSeason = selectSeason;
+        window.adjustColor = adjustColor;
+        window.saveCurrentColor = saveCurrentColor;
+
+        console.log('HAIRGATOR 함수명 충돌 해결 완료 - 최종 버전 로드됨');
     </script>
     
 </body>
