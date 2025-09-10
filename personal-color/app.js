@@ -17,6 +17,9 @@ let camera = null;
 let videoElement = null;
 let canvasElement = null;
 let canvasCtx = null;
+let analysisFrameId = null;        // 이 줄 추가
+let lastAnalysisTime = 0;          // 이 줄 추가
+const ANALYSIS_INTERVAL = 200;     // 이 줄 추가
 
 // 헤어컬러 데이터 (614개)
 let hairColorData = [];
@@ -1081,16 +1084,41 @@ function highlightPhotoUpload() {
 
 // 카메라 중지
 function stopCamera() {
-    if (videoElement && videoElement.srcObject) {
-        const tracks = videoElement.srcObject.getTracks();
-        tracks.forEach(track => track.stop());
-        videoElement.srcObject = null;
+    console.log('카메라 중지 시작...');
+    
+    // requestAnimationFrame 중지 (핵심!)
+    if (analysisFrameId) {
+        cancelAnimationFrame(analysisFrameId);
+        analysisFrameId = null;
+        console.log('requestAnimationFrame 중지됨');
     }
     
-    const startBtn = document.getElementById('start-camera');
-    startBtn.textContent = '📹 실시간 카메라 분석';
-    startBtn.onclick = startCamera;
+    // 비디오 스트림 완전 정리
+    if (videoElement && videoElement.srcObject) {
+        const tracks = videoElement.srcObject.getTracks();
+        tracks.forEach(track => {
+            track.stop();
+            console.log('비디오 트랙 중지:', track.kind);
+        });
+        videoElement.srcObject = null;
+        videoElement.pause();
+    }
     
+    // 캔버스 정리
+    if (canvasCtx) {
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        console.log('캔버스 정리 완료');
+    }
+    
+    // UI 업데이트
+    const startBtn = document.getElementById('start-camera');
+    if (startBtn) {
+        startBtn.textContent = '📹 실시간 카메라 분석';
+        startBtn.onclick = startCamera;
+        startBtn.disabled = false;
+    }
+    
+    console.log('카메라 완전 중지 완료');
     showToast('카메라가 중지되었습니다.', 'info');
 }
 
@@ -1098,8 +1126,32 @@ function stopCamera() {
 function startRealTimeAnalysis() {
     if (!videoElement || !canvasElement || !faceDetection) return;
     
+    // 이전 루프가 있다면 중지
+    if (analysisFrameId) {
+        cancelAnimationFrame(analysisFrameId);
+        analysisFrameId = null;
+    }
+    
     const analyze = async () => {
+        const currentTime = Date.now();
+        
+        // 프레임 제한 (200ms마다 실행)
+        if (currentTime - lastAnalysisTime < ANALYSIS_INTERVAL) {
+            if (videoElement.srcObject) {
+                analysisFrameId = requestAnimationFrame(analyze);
+            }
+            return;
+        }
+        
+        lastAnalysisTime = currentTime;
+        
         if (videoElement.readyState === 4) {
+            // 캔버스 크기 동적 조정
+            if (canvasElement.width !== videoElement.videoWidth) {
+                canvasElement.width = videoElement.videoWidth;
+                canvasElement.height = videoElement.videoHeight;
+            }
+            
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
             canvasCtx.scale(-1, 1);
@@ -1110,8 +1162,11 @@ function startRealTimeAnalysis() {
             await faceDetection.send({ image: canvasElement });
         }
         
-        if (videoElement.srcObject) {
-            requestAnimationFrame(analyze);
+        // 조건부 계속 실행
+        if (videoElement.srcObject && !videoElement.paused) {
+            analysisFrameId = requestAnimationFrame(analyze);
+        } else {
+            analysisFrameId = null;
         }
     };
     
@@ -1306,16 +1361,44 @@ window.addEventListener('load', function() {
 
 // 페이지 언로드 시 정리
 window.addEventListener('beforeunload', function() {
+    console.log('페이지 종료 - 전체 리소스 정리 시작');
+    
+    // 애니메이션 프레임 강제 중지 (핵심!)
+    if (analysisFrameId) {
+        cancelAnimationFrame(analysisFrameId);
+        analysisFrameId = null;
+    }
+    
+    // 비디오 스트림 강제 정리
     if (videoElement && videoElement.srcObject) {
         const tracks = videoElement.srcObject.getTracks();
         tracks.forEach(track => track.stop());
+        videoElement.srcObject = null;
     }
+    
+    // MediaPipe 리소스 정리
+    if (faceDetection) {
+        try {
+            faceDetection.close();
+        } catch (e) {
+            console.warn('MediaPipe 정리 중 오류:', e);
+        }
+        faceDetection = null;
+    }
+    
     if (camera) {
-        camera.stop();
+        try {
+            camera.stop();
+        } catch (e) {
+            console.warn('카메라 정리 중 오류:', e);
+        }
+        camera = null;
     }
     
     // 저장된 색상 저장
     saveSavedColors();
+    
+    console.log('전체 리소스 정리 완료');
 });
 
 console.log('🎨 HAIRGATOR Personal Color - 2모드 최적화 버전 로드 완료');
