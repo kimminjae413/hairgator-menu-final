@@ -251,7 +251,9 @@
         let activeVideoStream = null;
         let mediaPipeCamera = null;
         let faceDetectionInstance = null;
-
+        let sharedExtractCanvas = null;    // 여기로 이동
+        let sharedExtractCtx = null;       // 여기로 이동
+        
         // 전문가 노하우 데이터
         const ExpertKnowledge = {
             colorTheory: {
@@ -667,54 +669,60 @@
             });
         }
 
-        function extractSkinTone(landmarks) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            canvas.width = videoElement.videoWidth;
-            canvas.height = videoElement.videoHeight;
-            
-            ctx.drawImage(videoElement, 0, 0);
-            
-            const skinPoints = [9, 151, 234, 454, 152, 10, 175];
-            let totalR = 0, totalG = 0, totalB = 0;
-            let validSamples = 0;
-            
-            skinPoints.forEach(pointIndex => {
-                const landmark = landmarks[pointIndex];
-                const x = Math.floor(landmark.x * canvas.width);
-                const y = Math.floor(landmark.y * canvas.height);
+function extractSkinTone(landmarks) {
+    // 공유 Canvas 초기화 (한 번만)
+    if (!sharedExtractCanvas) {
+        sharedExtractCanvas = document.createElement('canvas');
+        sharedExtractCtx = sharedExtractCanvas.getContext('2d', { willReadFrequently: true });
+        console.log('공유 Canvas 생성됨');
+    }
+    
+    // Canvas 크기 설정
+    sharedExtractCanvas.width = videoElement.videoWidth;
+    sharedExtractCanvas.height = videoElement.videoHeight;
+    
+    sharedExtractCtx.drawImage(videoElement, 0, 0);
+    
+    const skinPoints = [9, 151, 234, 454, 152, 10, 175];
+    let totalR = 0, totalG = 0, totalB = 0;
+    let validSamples = 0;
+    
+    skinPoints.forEach(pointIndex => {
+        const landmark = landmarks[pointIndex];
+        const x = Math.floor(landmark.x * sharedExtractCanvas.width);
+        const y = Math.floor(landmark.y * sharedExtractCanvas.height);
+        
+        for (let dx = -2; dx <= 2; dx++) {
+            for (let dy = -2; dy <= 2; dy++) {
+                const pixelX = Math.max(0, Math.min(sharedExtractCanvas.width - 1, x + dx));
+                const pixelY = Math.max(0, Math.min(sharedExtractCanvas.height - 1, y + dy));
                 
-                for (let dx = -2; dx <= 2; dx++) {
-                    for (let dy = -2; dy <= 2; dy++) {
-                        const pixelX = Math.max(0, Math.min(canvas.width - 1, x + dx));
-                        const pixelY = Math.max(0, Math.min(canvas.height - 1, y + dy));
-                        
-                        const imageData = ctx.getImageData(pixelX, pixelY, 1, 1);
-                        const [r, g, b] = imageData.data;
-                        
-                        totalR += r;
-                        totalG += g;
-                        totalB += b;
-                        validSamples++;
-                    }
-                }
-            });
-            
-            if (validSamples === 0) return null;
-            
-            const avgR = Math.round(totalR / validSamples);
-            const avgG = Math.round(totalG / validSamples);
-            const avgB = Math.round(totalB / validSamples);
-            
-            const undertone = analyzeUndertone(avgR, avgG, avgB);
-            
-            return {
-                rgb: { r: avgR, g: avgG, b: avgB },
-                hex: `#${avgR.toString(16).padStart(2, '0')}${avgG.toString(16).padStart(2, '0')}${avgB.toString(16).padStart(2, '0')}`,
-                undertone: undertone,
-                samples: validSamples
-            };
+                const imageData = sharedExtractCtx.getImageData(pixelX, pixelY, 1, 1);
+                const [r, g, b] = imageData.data;
+                
+                totalR += r;
+                totalG += g;
+                totalB += b;
+                validSamples++;
+            }
         }
+    });
+    
+    if (validSamples === 0) return null;
+    
+    const avgR = Math.round(totalR / validSamples);
+    const avgG = Math.round(totalG / validSamples);
+    const avgB = Math.round(totalB / validSamples);
+    
+    const undertone = analyzeUndertone(avgR, avgG, avgB);
+    
+    return {
+        rgb: { r: avgR, g: avgG, b: avgB },
+        hex: `#${avgR.toString(16).padStart(2, '0')}${avgG.toString(16).padStart(2, '0')}${avgB.toString(16).padStart(2, '0')}`,
+        undertone: undertone,
+        samples: validSamples
+    };
+}
 
         function analyzeUndertone(r, g, b) {
             const yellowness = (r + g) - b;
@@ -816,13 +824,19 @@
                 const analysisPanel = document.getElementById('realtime-skin-analysis');
                 if (analysisPanel) analysisPanel.remove();
                 
+                // 공유 Canvas 정리 추가
+                if (sharedExtractCanvas) {
+                    sharedExtractCanvas = null;
+                    sharedExtractCtx = null;
+                    console.log('공유 Canvas 정리 완료');
+                }
+                
                 console.log('모든 카메라 리소스 정리 완료');
                 
             } catch (error) {
                 console.error('리소스 정리 중 오류:', error);
             }
         }
-
         async function analyzeAI() {
             if (analysisInProgress) return;
             
