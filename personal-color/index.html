@@ -515,7 +515,7 @@
                 videoElement.srcObject = activeVideoStream;
                 
                 canvasElement = document.getElementById('ai-face-overlay');
-                canvasCtx = canvasElement.getContext('2d');
+                canvasCtx = canvasElement.getContext('2d', { willReadFrequently: true });
                 
                 if (typeof FaceMesh !== 'undefined' && !faceDetectionInstance) {
                     try {
@@ -669,7 +669,7 @@
 
         function extractSkinTone(landmarks) {
             const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
             canvas.width = videoElement.videoWidth;
             canvas.height = videoElement.videoHeight;
             
