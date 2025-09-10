@@ -898,8 +898,14 @@ function loadHairColorData() {
     });
 }
 
-// 614개 구조의 기본 데이터 생성
+// 614개 구조의 기본 데이터 생성 (개선 버전)
 function generate614DefaultData() {
+    // 신뢰할 수 있는 데이터 생성 함수 사용
+    if (typeof generateReliableDefaultData === 'function') {
+        return generateReliableDefaultData();
+    }
+    
+    // 기존 랜덤 생성 (폴백)
     const brands = ['L\'Oreal', 'Wella', 'Milbon', 'Shiseido', 'Schwarzkopf'];
     const levels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const tones = ['N', 'A', 'G', 'B', 'V', 'R', 'O', 'Y'];
