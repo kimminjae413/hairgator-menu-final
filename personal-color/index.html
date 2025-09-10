@@ -494,35 +494,76 @@
 
         // ========== 모드 선택 및 전환 ==========
         function selectMode_basic(mode) {
-            console.log('모드 선택:', mode);
-            currentMode = mode;
+    console.log(`🔄 모드 전환: ${mode}`);
+    currentMode = mode;
 
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
-            });
+    // 모든 섹션 숨기기 (클래스 + 강제 스타일)
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+        section.style.cssText = `
+            display: none !important;
+            visibility: hidden !important;
+        `;
+    });
 
-            if (mode === 'ai') {
-                document.getElementById('ai-analysis').classList.add('active');
-                showToast('AI 퍼스널컬러 분석 모드가 활성화되었습니다', 'success');
-            } else if (mode === 'draping') {
-                document.getElementById('draping-mode').classList.add('active');
-                showToast('전문가 드래이핑 모드가 활성화되었습니다', 'success');
-            }
-        }
+    // AI 모드 활성화
+    if (mode === 'ai') {
+        const aiSection = document.getElementById('ai-analysis');
+        aiSection.classList.add('active');
+        aiSection.style.cssText = `
+            display: block !important;
+            visibility: visible !important;
+            position: relative !important;
+            z-index: 1 !important;
+        `;
+        showToast('AI 퍼스널컬러 분석 모드가 활성화되었습니다', 'success');
+        console.log('✅ AI 분석 모드 활성화');
+    } 
+    // 드레이핑 모드 활성화
+    else if (mode === 'draping') {
+        const drapingSection = document.getElementById('draping-mode');
+        drapingSection.classList.add('active');
+        drapingSection.style.cssText = `
+            display: block !important;
+            visibility: visible !important;
+            position: relative !important;
+            z-index: 1 !important;
+        `;
+        showToast('전문가 드래이핑 모드가 활성화되었습니다', 'success');
+        console.log('✅ 드레이핑 분석 모드 활성화');
+    }
+}
 
         function goHome() {
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.getElementById('mode-selection').classList.add('active');
-            
-            stopAICamera();
-            stopDrapingCamera();
-            cleanupCameraResources();
-            
-            currentMode = null;
-            showToast('홈 화면으로 돌아갑니다', 'info');
-        }
+    console.log('🏠 홈으로 돌아가기');
+    
+    // 모든 섹션 숨기기
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+        section.style.cssText = `
+            display: none !important;
+            visibility: hidden !important;
+        `;
+    });
+    
+    // 선택 화면 활성화
+    const selectionSection = document.getElementById('mode-selection');
+    selectionSection.classList.add('active');
+    selectionSection.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        position: relative !important;
+        z-index: 1 !important;
+    `;
+    
+    stopAICamera();
+    stopDrapingCamera();
+    cleanupCameraResources();
+    
+    currentMode = null;
+    showToast('홈 화면으로 돌아갑니다', 'info');
+    console.log('✅ 홈 화면 활성화');
+}
 
         // ========== AI 카메라 함수들 ==========
         async function startAICamera() {
