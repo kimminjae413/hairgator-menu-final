@@ -1340,11 +1340,11 @@ function onFaceMeshResults(results) {
     
     const landmarks = results.multiFaceLandmarks[0];
     
-    // 효율적인 캔버스 처리 - 한 번만 생성하고 재사용
+    // 효율적인 캔버스 처리 - 한 번만 생성하고 재사용 (성능 최적화)
     const canvas = document.createElement('canvas');
     canvas.width = videoElement.videoWidth || 640;
     canvas.height = videoElement.videoHeight || 480;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     ctx.drawImage(videoElement, 0, 0);
     
     // 전체 이미지 데이터를 한 번만 가져오기
