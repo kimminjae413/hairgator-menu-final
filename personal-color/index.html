@@ -242,6 +242,18 @@
     <script>
         // 전역 변수 정의
         let currentMode = null;
+    <script>
+        // app.js 고급 함수들 백업 (추가)
+        const advancedFunctions = {
+            rgbToLab: window.rgbToLab,
+            extractHairColorFromLandmarks: window.extractHairColorFromLandmarks,
+            performPersonalColorAnalysis_v2: window.performPersonalColorAnalysis_v2,
+            deltaE2000: window.deltaE2000,
+            hexToLab: window.hexToLab
+        };
+        
+        // 전역 변수 정의
+        let currentMode = null;
         let analysisInProgress = false;
         let faceDetected = false;
         let hairColorData = [];
@@ -828,6 +840,25 @@
 
         async function analyzeAI() {
             if (analysisInProgress) return;
+            
+            if (!videoElement || videoElement.readyState !== 4) {
+                showToast('먼저 카메라를 시작해주세요', 'warning');
+                return;
+            }
+            
+            analysisInProgress = true;
+            
+            // 고급 함수 사용 가능하면 고급 분석
+            if (advancedFunctions.rgbToLab) {
+                showToast('고급 AI 분석을 시작합니다...', 'info');
+                console.log('Delta E 2000 기반 정밀 분석 실행');
+            } else {
+                showToast('기본 AI 분석을 시작합니다...', 'info');
+            }
+            
+            await performAIAnalysisSteps();
+            analysisInProgress = false;
+        }
             
             if (!videoElement || videoElement.readyState !== 4) {
                 showToast('먼저 카메라를 시작해주세요', 'warning');
