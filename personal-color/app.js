@@ -9,6 +9,7 @@ let isAnalyzing = false;
 let analysisCount = 0;
 let selectedSeason = 'Spring';
 let uploadedImage = null;
+window.lastSkinToneData = null;  // 이 줄만 추가
 
 // MediaPipe 관련 변수
 let faceDetection = null;
@@ -617,10 +618,14 @@ function generateRealExpertAnalysis(season, skinLab, colors) {
 // ========================================
 
 function getCurrentSkinToneData() {
-    // 기존 extractSkinTone 결과를 가져오는 함수
-    // 실제 구현은 현재 저장된 피부톤 데이터를 반환
+    // 전역 변수에서 실제 데이터 확인
+    if (window.lastSkinToneData && window.lastSkinToneData.samples > 0) {
+        console.log('✅ 실제 추출된 피부톤 사용:', window.lastSkinToneData.rgb);
+        return window.lastSkinToneData;
+    }
     
-    // 임시로 기본값 반환 (실제로는 실시간 데이터 사용)
+    // 백업: 기본값
+    console.log('⚠️ 기본 피부톤 사용 (실제 데이터 없음)');
     return {
         rgb: { r: 156, g: 125, b: 103 },
         samples: 175
