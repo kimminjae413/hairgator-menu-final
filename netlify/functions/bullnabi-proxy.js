@@ -31,7 +31,6 @@ exports.handler = async (event, context) => {
     const token = process.env.BULLNABI_TOKEN || 
       'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlcmljNzA4QG5hdmVyLmNvbSIsImxvZ2luVXNlckluZm8iOiJ7IFwiX2lkXCIgOiB7IFwiJG9pZFwiIDogXCI2NTgzYTNhYzJjZDFjYWM4YWUyZTgzYzFcIiB9LCBcImlkXCIgOiBcImVyaWM3MDhAbmF2ZXIuY29tXCIsIFwiZW1haWxcIiA6IFwiZXJpYzcwOEBuYXZlci5jb21cIiwgXCJuYW1lXCIgOiBcIuq5gOuvvOyerFwiLCBcIm5pY2tuYW1lXCIgOiBudWxsLCBcInN0YXR1c1wiIDogXCJhZG1pblwiLCBcIl9zZXJ2aWNlTmFtZVwiIDogXCJkcnlsaW5rXCIsIFwiX3NlcnZpY2VBcHBOYW1lXCIgOiBcIuuTnOudvOydtOunge2BrCDrlJTsnpHsnbTrhIjsmqlcIiwgXCJvc1R5cGVcIiA6IFwiaU9TXCIgfSIsImV4cCI6MTc1ODAxODIzNn0.ZXuCaGQEynAPQXhptlYkzne4cQr7CK_JhrX8jJovD2k';
 
-    // URLSearchParams 사용 (form-data 의존성 제거)
     const params = new URLSearchParams();
     params.append('metaCode', '_users');
     params.append('collectionName', '_users');
@@ -67,28 +66,23 @@ exports.handler = async (event, context) => {
     } else if (result.data && result.data.length > 0) {
       userData = result.data[0];
     } else {
-      console.log('[Bullnabi Proxy] 사용자 데이터 없음, 기본값 사용');
-      // 사용자를 찾지 못한 경우 기본값 반환
+      // 하드코딩 제거하고 실제 API 응답 반환
       return {
-        statusCode: 200,
+        statusCode: 404,
         headers,
         body: JSON.stringify({
-          success: true,
-          userInfo: {
-            id: userId,
-            name: '김민재',
-            email: 'kimmin@bullnabi.com',
-            remainCount: 42
-          }
+          error: 'User not found in API response',
+          userId: userId,
+          apiResponse: result
         })
       };
     }
 
     const userInfo = {
       id: userData._id?.$oid || userId,
-      name: userData.name || userData.nickname || '김민재',
-      email: userData.email || 'kimmin@bullnabi.com',
-      remainCount: userData.remainCount || 42
+      name: userData.name || userData.nickname || '사용자',  // 최소한의 fallback만
+      email: userData.email || 'user@example.com',
+      remainCount: userData.remainCount || 0
     };
 
     console.log('[Bullnabi Proxy] 최종 사용자 정보:', userInfo);
