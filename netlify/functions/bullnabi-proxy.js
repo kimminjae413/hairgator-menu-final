@@ -77,8 +77,11 @@ exports.handler = async (event, context) => {
         });
 
         console.log('불나비 API 응답 상태:', response.status);
+        console.log('불나비 API 응답 헤더:', JSON.stringify([...response.headers.entries()]));
+        
         const responseText = await response.text();
         console.log('불나비 API 응답 길이:', responseText.length);
+        console.log('불나비 API 응답 전체:', responseText);
 
         if (responseText && responseText.length > 0) {
             try {
