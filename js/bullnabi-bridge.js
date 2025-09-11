@@ -1,4 +1,4 @@
-// HAIRGATOR ↔ 불나비 네이티브 앱 연동 브릿지
+// HAIRGATOR ↔ 불나비 네이티브 앱 연동 브릿지 (최종 버전)
 // js/bullnabi-bridge.js
 
 (function() {
@@ -46,23 +46,87 @@
             });
         },
 
-        // URL 파라미터로 불나비 정보 확인
+        // URL 파라미터로 불나비 정보 확인 및 자동 로그인
         setupURLParamCheck() {
             const urlParams = new URLSearchParams(window.location.search);
             const userId = urlParams.get('userId');
-            const token = urlParams.get('token');
             
             if (userId) {
                 console.log('🔍 URL에서 불나비 사용자 ID 발견:', userId);
                 
-                // URL 파라미터로 전달된 경우 자동 로그인 시도
-                if (token) {
-                    this.requestUserInfoFromNative(userId, token);
-                }
+                // 자동으로 불나비 API 호출해서 로그인 처리
+                this.fetchUserInfoAndLogin(userId);
             }
         },
 
-        // 네이티브 앱에 사용자 정보 요청
+        // 불나비 API로 사용자 정보 조회 및 자동 로그인
+        async fetchUserInfoAndLogin(userId) {
+            const token = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlcmljNzA4QG5hdmVyLmNvbSIsImxvZ2luVXNlckluZm8iOiJ7IFwiX2lkXCIgOiB7IFwiJG9pZFwiIDogXCI2NTgzYTNhYzJjZDFjYWM4YWUyZTgzYzFcIiB9LCBcImlkXCIgOiBcImVyaWM3MDhAbmF2ZXIuY29tXCIsIFwiZW1haWxcIiA6IFwiZXJpYzcwOEBuYXZlci5jb21cIiwgXCJuYW1lXCIgOiBcIuq5gOuvvOyerFwiLCBcIm5pY2tuYW1lXCIgOiBudWxsLCBcInN0YXR1c1wiIDogXCJhZG1pblwiLCBcIl9zZXJ2aWNlTmFtZVwiIDogXCJkcnlsaW5rXCIsIFwiX3NlcnZpY2VBcHBOYW1lXCIgOiBcIuuTnOudvOydtOunge2BrCDrlJTsnpHsnbTrhIjsmqlcIiwgXCJvc1R5cGVcIiA6IFwiaU9TXCIgfSIsImV4cCI6MTc1ODAxODIzNn0.ZXuCaGQEynAPQXhptlYkzne4cQr7CK_JhrX8jJovD2k';
+            
+            try {
+                console.log('📡 불나비 API 호출 중... userId:', userId);
+                
+                const response = await fetch('https://jihwanworld.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
+                    method: 'POST',
+                    headers: {
+                        'User-Agent': token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        metaCode: "_users",
+                        collectionName: "_users",
+                        documentJson: {
+                            pipeline: {
+                                "$match": {"_id": {"$eq": {"$oid": userId}}},
+                                "$project": {"remainCount": 1, "nickname": 1, "email": 1, "name": 1}
+                            }
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('📋 불나비 API 응답:', result);
+                
+                if (result.body && result.body.length > 0) {
+                    const userData = result.body[0];
+                    
+                    const bullnabiUserInfo = {
+                        id: userData._id.$oid,
+                        name: userData.name || userData.nickname || '사용자',
+                        email: userData.email || 'user@example.com',
+                        remainCount: userData.remainCount || 0
+                    };
+                    
+                    console.log('🎯 URL 파라미터 자동 로그인 실행:', bullnabiUserInfo);
+                    
+                    // 자동 로그인 처리
+                    if (typeof window.loginWithBullnabi === 'function') {
+                        window.loginWithBullnabi(bullnabiUserInfo);
+                        this.isConnected = true;
+                        this.lastHeartbeat = Date.now();
+                    } else {
+                        // auth.js 로딩 대기 후 재시도
+                        setTimeout(() => {
+                            if (typeof window.loginWithBullnabi === 'function') {
+                                window.loginWithBullnabi(bullnabiUserInfo);
+                                this.isConnected = true;
+                                this.lastHeartbeat = Date.now();
+                            } else {
+                                console.error('❌ loginWithBullnabi 함수를 찾을 수 없습니다');
+                            }
+                        }, 1000);
+                    }
+                } else {
+                    console.error('❌ 사용자 정보를 찾을 수 없습니다:', userId);
+                }
+                
+            } catch (error) {
+                console.error('❌ 불나비 API 호출 실패:', error);
+                console.error('자동 로그인 실패 - 수동 로그인 화면을 사용하세요');
+            }
+        },
+
+        // 네이티브 앱에 사용자 정보 요청 (PostMessage 방식)
         requestUserInfoFromNative(userId, token) {
             console.log('📱 네이티브 앱에 사용자 정보 요청:', userId);
             
@@ -76,7 +140,7 @@
             }
         },
 
-        // 불나비 로그인 처리
+        // 불나비 로그인 처리 (PostMessage 수신)
         handleBullnabiLogin(data) {
             console.log('🚀 불나비 로그인 처리 시작:', data);
             
@@ -109,24 +173,26 @@
             
             try {
                 // 불나비 사용자 정보 업데이트
-                const bullnabiUser = getBullnabiUser();
-                if (bullnabiUser) {
-                    bullnabiUser.remainCount = data.remainCount;
-                    localStorage.setItem('bullnabi_user', JSON.stringify(bullnabiUser));
-                    
-                    // currentDesigner 업데이트
-                    if (window.currentDesigner) {
-                        window.currentDesigner.tokens = data.remainCount;
-                    }
-                    
-                    // UI 업데이트
-                    if (typeof updateUserInfo === 'function') {
-                        updateUserInfo();
-                    }
-                    
-                    // 토스트 알림
-                    if (typeof showToast === 'function') {
-                        showToast(`크레딧이 업데이트되었습니다: ${data.remainCount}개`, 'info');
+                if (typeof window.getBullnabiUser === 'function') {
+                    const bullnabiUser = window.getBullnabiUser();
+                    if (bullnabiUser) {
+                        bullnabiUser.remainCount = data.remainCount;
+                        localStorage.setItem('bullnabi_user', JSON.stringify(bullnabiUser));
+                        
+                        // currentDesigner 업데이트
+                        if (window.currentDesigner) {
+                            window.currentDesigner.tokens = data.remainCount;
+                        }
+                        
+                        // UI 업데이트
+                        if (typeof updateUserInfo === 'function') {
+                            updateUserInfo();
+                        }
+                        
+                        // 토스트 알림
+                        if (typeof showToast === 'function') {
+                            showToast(`크레딧이 업데이트되었습니다: ${data.remainCount}개`, 'info');
+                        }
                     }
                 }
             } catch (error) {
