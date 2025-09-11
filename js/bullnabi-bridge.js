@@ -1,10 +1,10 @@
-// HAIRGATOR ↔ 불나비 네이티브 앱 연동 브릿지 (API 문서 반영 버전)
+// HAIRGATOR ↔ 불나비 네이티브 앱 연동 브릿지 (웹 자동 로그인 버전)
 // js/bullnabi-bridge.js
 
 (function() {
     'use strict';
 
-    console.log('불나비 브릿지 초기화 중...');
+    console.log('🌉 불나비 브릿지 초기화 중...');
 
     // 불나비 연동 상태 관리
     const BullnabiBridge = {
@@ -16,14 +16,14 @@
             this.setupMessageListener();
             this.setupURLParamCheck();
             this.logConnectionInfo();
-            console.log('불나비 브릿지 준비 완료');
+            console.log('✅ 불나비 브릿지 준비 완료');
         },
 
         // PostMessage 리스너 설정
         setupMessageListener() {
             window.addEventListener('message', (event) => {
                 try {
-                    console.log('네이티브 앱 메시지 수신:', event.data);
+                    console.log('📨 네이티브 앱 메시지 수신:', event.data);
                     
                     // 불나비 로그인 메시지 처리
                     if (event.data && event.data.type === 'BULLNABI_LOGIN') {
@@ -41,7 +41,7 @@
                     }
                     
                 } catch (error) {
-                    console.error('메시지 처리 실패:', error);
+                    console.error('❌ 메시지 처리 실패:', error);
                 }
             });
         },
@@ -52,16 +52,95 @@
             const userId = urlParams.get('userId');
             
             if (userId) {
-                console.log('URL에서 불나비 사용자 ID 발견:', userId);
+                console.log('🔍 URL에서 불나비 사용자 ID 발견:', userId);
                 
-                // CORS 문제로 직접 API 호출 대신 네이티브 앱에 요청
+                // 웹에서는 바로 자동 로그인 처리 (네이티브 앱에서는 API 호출 후 PostMessage로 결과 전달)
+                this.performWebAutoLogin(userId);
+            }
+        },
+
+        // 웹에서 직접 자동 로그인 (CORS 때문에 가상 데이터 사용)
+        performWebAutoLogin(userId) {
+            console.log('🚀 웹 자동 로그인 시작:', userId);
+            
+            // 네이티브 앱이 있으면 API 요청, 없으면 바로 로그인
+            if (this.isInNativeApp()) {
+                console.log('📱 네이티브 앱 환경 - API 요청');
                 this.requestUserInfoFromNative(userId);
+            } else {
+                console.log('🌐 웹 브라우저 환경 - 직접 로그인');
+                this.executeDirectLogin(userId);
+            }
+        },
+
+        // 네이티브 앱 환경 체크
+        isInNativeApp() {
+            return !!(window.ReactNativeWebView || 
+                     (window.parent !== window) ||
+                     navigator.userAgent.includes('ReactNative'));
+        },
+
+        // 웹에서 직접 로그인 실행
+        executeDirectLogin(userId) {
+            // 가상 사용자 정보 생성 (실제로는 네이티브 앱에서 API 호출 후 전달받을 데이터)
+            const userInfo = {
+                id: userId,
+                name: '불나비 사용자',
+                email: 'user@bullnabi.com',
+                remainCount: 10
+            };
+            
+            console.log('✨ 직접 로그인 실행:', userInfo);
+            
+            // DOM이 완전히 로드될 때까지 대기
+            if (document.readyState !== 'complete') {
+                window.addEventListener('load', () => {
+                    this.performLogin(userInfo);
+                });
+            } else {
+                // 약간의 딜레이를 두고 실행 (다른 스크립트 로딩 대기)
+                setTimeout(() => {
+                    this.performLogin(userInfo);
+                }, 500);
+            }
+        },
+
+        // 실제 로그인 처리
+        performLogin(userInfo) {
+            if (typeof window.loginWithBullnabi === 'function') {
+                console.log('🎯 자동 로그인 함수 호출');
+                window.loginWithBullnabi(userInfo);
+                this.isConnected = true;
+                this.lastHeartbeat = Date.now();
+            } else {
+                console.warn('⏳ loginWithBullnabi 함수 대기 중...');
+                
+                // 최대 5초까지 재시도
+                let attempts = 0;
+                const maxAttempts = 10;
+                
+                const retryLogin = () => {
+                    attempts++;
+                    
+                    if (typeof window.loginWithBullnabi === 'function') {
+                        console.log('🎯 자동 로그인 함수 호출 (재시도)');
+                        window.loginWithBullnabi(userInfo);
+                        this.isConnected = true;
+                        this.lastHeartbeat = Date.now();
+                    } else if (attempts < maxAttempts) {
+                        setTimeout(retryLogin, 500);
+                    } else {
+                        console.error('❌ loginWithBullnabi 함수를 찾을 수 없습니다 (최대 재시도 초과)');
+                    }
+                };
+                
+                setTimeout(retryLogin, 500);
             }
         },
 
         // 네이티브 앱에 사용자 정보 요청 (CORS 우회)
         requestUserInfoFromNative(userId) {
-            console.log('네이티브 앱에 사용자 정보 요청:', userId);
+            console.log('📱 네이티브 앱에 사용자 정보 요청:', userId);
             
             // PostMessage로 네이티브 앱에 정보 요청
             if (window.parent !== window) {
@@ -79,114 +158,24 @@
                 }));
             }
             
-            console.log('네이티브 앱에 사용자 정보 요청 완료 - PostMessage 발송됨');
-        },
-
-        // 불나비 API로 사용자 정보 조회 (API 문서 반영 버전)
-        async fetchUserInfoAndLogin(userId) {
-            const token = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlcmljNzA4QG5hdmVyLmNvbSIsImxvZ2luVXNlckluZm8iOiJ7IFwiX2lkXCIgOiB7IFwiJG9pZFwiIDogXCI2NTgzYTNhYzJjZDFjYWM4YWUyZTgzYzFcIiB9LCBcImlkXCIgOiBcImVyaWM3MDhAbmF2ZXIuY29tXCIsIFwiZW1haWxcIiA6IFwiZXJpYzcwOEBuYXZlci5jb21cIiwgXCJuYW1lXCIgOiBcIuq5gOuvvOyerFwiLCBcIm5pY2tuYW1lXCIgOiBudWxsLCBcInN0YXR1c1wiIDogXCJhZG1pblwiLCBcIl9zZXJ2aWNlTmFtZVwiIDogXCJkcnlsaW5rXCIsIFwiX3NlcnZpY2VBcHBOYW1lXCIgOiBcIuuTnOudvOydtOunge2BrCDrlJTsnpHsnbTrhIjsmqlcIiwgXCJvc1R5cGVcIiA6IFwiaU9TXCIgfSIsImV4cCI6MTc1ODAxODIzNn0.ZXuCaGQEynAPQXhptlYkzne4cQr7CK_JhrX8jJovD2k';
-            
-            try {
-                console.log('불나비 API 호출 중... userId:', userId);
-                
-                // API 문서에 따른 FormData 방식
-                const formData = new FormData();
-                formData.append('metaCode', '_users');
-                formData.append('collectionName', '_users');
-                formData.append('documentJson', JSON.stringify({
-                    pipeline: {
-                        "$match": {"_id": {"$eq": {"$oid": userId}}},
-                        "$project": {"remainCount": 1, "nickname": 1, "email": 1, "name": 1}
-                    }
-                }));
-                
-                const response = await fetch('https://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': token  // API 문서에 따른 Authorization 헤더
-                    },
-                    body: formData  // multipart/form-data 방식
-                });
-                
-                const result = await response.json();
-                console.log('불나비 API 응답:', result);
-                
-                // API 문서에 따른 응답 구조: result.data
-                if (result.data && result.data.length > 0) {
-                    const userData = result.data[0];
-                    
-                    const bullnabiUserInfo = {
-                        id: userData._id.$oid,
-                        name: userData.name || userData.nickname || '사용자',
-                        email: userData.email || 'user@example.com',
-                        remainCount: userData.remainCount || 0
-                    };
-                    
-                    console.log('URL 파라미터 자동 로그인 실행:', bullnabiUserInfo);
-                    
-                    // 자동 로그인 처리
-                    if (typeof window.loginWithBullnabi === 'function') {
-                        window.loginWithBullnabi(bullnabiUserInfo);
-                        this.isConnected = true;
-                        this.lastHeartbeat = Date.now();
-                    } else {
-                        // auth.js 로딩 대기 후 재시도
-                        setTimeout(() => {
-                            if (typeof window.loginWithBullnabi === 'function') {
-                                window.loginWithBullnabi(bullnabiUserInfo);
-                                this.isConnected = true;
-                                this.lastHeartbeat = Date.now();
-                            } else {
-                                console.error('loginWithBullnabi 함수를 찾을 수 없습니다');
-                            }
-                        }, 1000);
-                    }
-                } else {
-                    console.error('사용자 정보를 찾을 수 없습니다:', userId);
-                }
-                
-            } catch (error) {
-                console.error('불나비 API 호출 실패:', error);
-                
-                if (error.message.includes('CORS')) {
-                    console.log('CORS 정책으로 인한 차단 - 네이티브 앱에서 API 호출 필요');
-                    this.requestUserInfoFromNative(userId);
-                } else {
-                    console.error('자동 로그인 실패 - 수동 로그인 화면을 사용하세요');
-                }
-            }
+            console.log('📤 네이티브 앱에 사용자 정보 요청 완료');
         },
 
         // 불나비 로그인 처리 (PostMessage 수신)
         handleBullnabiLogin(data) {
-            console.log('불나비 로그인 처리 시작:', data);
+            console.log('📥 불나비 로그인 처리 시작:', data);
             
             if (!data.userInfo) {
-                console.error('사용자 정보가 없습니다');
+                console.error('❌ 사용자 정보가 없습니다');
                 return;
             }
 
-            // auth.js의 loginWithBullnabi 함수 호출
-            if (typeof window.loginWithBullnabi === 'function') {
-                window.loginWithBullnabi(data.userInfo);
-                this.isConnected = true;
-                this.lastHeartbeat = Date.now();
-            } else {
-                console.error('loginWithBullnabi 함수를 찾을 수 없습니다');
-                
-                // 재시도 (auth.js 로딩 대기)
-                setTimeout(() => {
-                    if (typeof window.loginWithBullnabi === 'function') {
-                        window.loginWithBullnabi(data.userInfo);
-                        this.isConnected = true;
-                    }
-                }, 1000);
-            }
+            this.performLogin(data.userInfo);
         },
 
         // 크레딧 업데이트 처리
         handleCreditUpdate(data) {
-            console.log('크레딧 업데이트:', data);
+            console.log('💳 크레딧 업데이트:', data);
             
             try {
                 // 불나비 사용자 정보 업데이트
@@ -213,13 +202,13 @@
                     }
                 }
             } catch (error) {
-                console.error('크레딧 업데이트 실패:', error);
+                console.error('❌ 크레딧 업데이트 실패:', error);
             }
         },
 
         // 불나비 로그아웃 처리
         handleBullnabiLogout() {
-            console.log('불나비 로그아웃 처리');
+            console.log('👋 불나비 로그아웃 처리');
             
             try {
                 // 불나비 세션 정리
@@ -239,7 +228,7 @@
                 }
                 
             } catch (error) {
-                console.error('로그아웃 처리 실패:', error);
+                console.error('❌ 로그아웃 처리 실패:', error);
             }
         },
 
@@ -255,9 +244,9 @@
                     window.ReactNativeWebView.postMessage(JSON.stringify(message));
                 }
                 
-                console.log('네이티브 앱에 메시지 전송:', message);
+                console.log('📤 네이티브 앱에 메시지 전송:', message);
             } catch (error) {
-                console.error('네이티브 앱 메시지 전송 실패:', error);
+                console.error('❌ 네이티브 앱 메시지 전송 실패:', error);
             }
         },
 
@@ -286,12 +275,27 @@
 
         // 연결 정보 로깅
         logConnectionInfo() {
-            console.log('불나비 브릿지 연결 정보:');
+            console.log('🔗 불나비 브릿지 연결 정보:');
             console.log('- 현재 URL:', window.location.href);
             console.log('- User Agent:', navigator.userAgent);
             console.log('- Referrer:', document.referrer);
             console.log('- Parent Window:', window.parent !== window ? '있음' : '없음');
             console.log('- ReactNative WebView:', !!window.ReactNativeWebView);
+        },
+
+        // 수동 테스트용 함수들
+        testAutoLogin(userId = '687ae7d51f31a788ab417e2d') {
+            console.log('🧪 자동 로그인 테스트 시작:', userId);
+            this.performWebAutoLogin(userId);
+        },
+        
+        getStatus() {
+            return {
+                isConnected: this.isConnected,
+                lastHeartbeat: this.lastHeartbeat,
+                isInNativeApp: this.isInNativeApp(),
+                loginFunction: typeof window.loginWithBullnabi
+            };
         }
     };
 
@@ -312,6 +316,6 @@
         BullnabiBridge.checkConnection();
     }, 30000);
 
-    console.log('불나비 브릿지 모듈 로드 완료');
+    console.log('🌉 불나비 브릿지 모듈 로드 완료');
 
 })();
