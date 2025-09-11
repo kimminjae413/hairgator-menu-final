@@ -41,9 +41,10 @@ exports.handler = async (event, context) => {
 
         console.log('🔍 불나비 사용자 조회 시작:', userId);
 
-        // ========== 수정된 부분: FormData 사용 ==========
+        // ========== 수정된 부분: node-fetch + FormData 사용 ==========
         
-        // 1. FormData 생성 (URLSearchParams 대신)
+        // 1. 필수 모듈 로드
+        const fetch = require('node-fetch');
         const FormData = require('form-data');
         const formData = new FormData();
         
