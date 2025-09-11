@@ -1,10 +1,10 @@
-// HAIRGATOR ↔ 불나비 네이티브 앱 연동 브릿지 (최종 버전)
+// HAIRGATOR ↔ 불나비 네이티브 앱 연동 브릿지 (API 문서 반영 버전)
 // js/bullnabi-bridge.js
 
 (function() {
     'use strict';
 
-    console.log('🌉 불나비 브릿지 초기화 중...');
+    console.log('불나비 브릿지 초기화 중...');
 
     // 불나비 연동 상태 관리
     const BullnabiBridge = {
@@ -16,14 +16,14 @@
             this.setupMessageListener();
             this.setupURLParamCheck();
             this.logConnectionInfo();
-            console.log('✅ 불나비 브릿지 준비 완료');
+            console.log('불나비 브릿지 준비 완료');
         },
 
         // PostMessage 리스너 설정
         setupMessageListener() {
             window.addEventListener('message', (event) => {
                 try {
-                    console.log('📨 네이티브 앱 메시지 수신:', event.data);
+                    console.log('네이티브 앱 메시지 수신:', event.data);
                     
                     // 불나비 로그인 메시지 처리
                     if (event.data && event.data.type === 'BULLNABI_LOGIN') {
@@ -41,7 +41,7 @@
                     }
                     
                 } catch (error) {
-                    console.error('❌ 메시지 처리 실패:', error);
+                    console.error('메시지 처리 실패:', error);
                 }
             });
         },
@@ -52,43 +52,68 @@
             const userId = urlParams.get('userId');
             
             if (userId) {
-                console.log('🔍 URL에서 불나비 사용자 ID 발견:', userId);
+                console.log('URL에서 불나비 사용자 ID 발견:', userId);
                 
-                // 자동으로 불나비 API 호출해서 로그인 처리
-                this.fetchUserInfoAndLogin(userId);
+                // CORS 문제로 직접 API 호출 대신 네이티브 앱에 요청
+                this.requestUserInfoFromNative(userId);
             }
         },
 
-        // 불나비 API로 사용자 정보 조회 및 자동 로그인
+        // 네이티브 앱에 사용자 정보 요청 (CORS 우회)
+        requestUserInfoFromNative(userId) {
+            console.log('네이티브 앱에 사용자 정보 요청:', userId);
+            
+            // PostMessage로 네이티브 앱에 정보 요청
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'REQUEST_USER_INFO',
+                    userId: userId
+                }, '*');
+            }
+            
+            // ReactNative WebView 방식
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                    type: 'REQUEST_USER_INFO',
+                    userId: userId
+                }));
+            }
+            
+            console.log('네이티브 앱에 사용자 정보 요청 완료 - PostMessage 발송됨');
+        },
+
+        // 불나비 API로 사용자 정보 조회 (API 문서 반영 버전)
         async fetchUserInfoAndLogin(userId) {
             const token = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlcmljNzA4QG5hdmVyLmNvbSIsImxvZ2luVXNlckluZm8iOiJ7IFwiX2lkXCIgOiB7IFwiJG9pZFwiIDogXCI2NTgzYTNhYzJjZDFjYWM4YWUyZTgzYzFcIiB9LCBcImlkXCIgOiBcImVyaWM3MDhAbmF2ZXIuY29tXCIsIFwiZW1haWxcIiA6IFwiZXJpYzcwOEBuYXZlci5jb21cIiwgXCJuYW1lXCIgOiBcIuq5gOuvvOyerFwiLCBcIm5pY2tuYW1lXCIgOiBudWxsLCBcInN0YXR1c1wiIDogXCJhZG1pblwiLCBcIl9zZXJ2aWNlTmFtZVwiIDogXCJkcnlsaW5rXCIsIFwiX3NlcnZpY2VBcHBOYW1lXCIgOiBcIuuTnOudvOydtOunge2BrCDrlJTsnpHsnbTrhIjsmqlcIiwgXCJvc1R5cGVcIiA6IFwiaU9TXCIgfSIsImV4cCI6MTc1ODAxODIzNn0.ZXuCaGQEynAPQXhptlYkzne4cQr7CK_JhrX8jJovD2k';
             
             try {
-                console.log('📡 불나비 API 호출 중... userId:', userId);
+                console.log('불나비 API 호출 중... userId:', userId);
                 
-                const response = await fetch('http://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
+                // API 문서에 따른 FormData 방식
+                const formData = new FormData();
+                formData.append('metaCode', '_users');
+                formData.append('collectionName', '_users');
+                formData.append('documentJson', JSON.stringify({
+                    pipeline: {
+                        "$match": {"_id": {"$eq": {"$oid": userId}}},
+                        "$project": {"remainCount": 1, "nickname": 1, "email": 1, "name": 1}
+                    }
+                }));
+                
+                const response = await fetch('https://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
                     method: 'POST',
                     headers: {
-                        'User-Agent': token,
-                        'Content-Type': 'application/json'
+                        'Authorization': token  // API 문서에 따른 Authorization 헤더
                     },
-                    body: JSON.stringify({
-                        metaCode: "_users",
-                        collectionName: "_users",
-                        documentJson: {
-                            pipeline: {
-                                "$match": {"_id": {"$eq": {"$oid": userId}}},
-                                "$project": {"remainCount": 1, "nickname": 1, "email": 1, "name": 1}
-                            }
-                        }
-                    })
+                    body: formData  // multipart/form-data 방식
                 });
                 
                 const result = await response.json();
-                console.log('📋 불나비 API 응답:', result);
+                console.log('불나비 API 응답:', result);
                 
-                if (result.body && result.body.length > 0) {
-                    const userData = result.body[0];
+                // API 문서에 따른 응답 구조: result.data
+                if (result.data && result.data.length > 0) {
+                    const userData = result.data[0];
                     
                     const bullnabiUserInfo = {
                         id: userData._id.$oid,
@@ -97,7 +122,7 @@
                         remainCount: userData.remainCount || 0
                     };
                     
-                    console.log('🎯 URL 파라미터 자동 로그인 실행:', bullnabiUserInfo);
+                    console.log('URL 파라미터 자동 로그인 실행:', bullnabiUserInfo);
                     
                     // 자동 로그인 처리
                     if (typeof window.loginWithBullnabi === 'function') {
@@ -112,40 +137,32 @@
                                 this.isConnected = true;
                                 this.lastHeartbeat = Date.now();
                             } else {
-                                console.error('❌ loginWithBullnabi 함수를 찾을 수 없습니다');
+                                console.error('loginWithBullnabi 함수를 찾을 수 없습니다');
                             }
                         }, 1000);
                     }
                 } else {
-                    console.error('❌ 사용자 정보를 찾을 수 없습니다:', userId);
+                    console.error('사용자 정보를 찾을 수 없습니다:', userId);
                 }
                 
             } catch (error) {
-                console.error('❌ 불나비 API 호출 실패:', error);
-                console.error('자동 로그인 실패 - 수동 로그인 화면을 사용하세요');
-            }
-        },
-
-        // 네이티브 앱에 사용자 정보 요청 (PostMessage 방식)
-        requestUserInfoFromNative(userId, token) {
-            console.log('📱 네이티브 앱에 사용자 정보 요청:', userId);
-            
-            // PostMessage로 네이티브 앱에 정보 요청
-            if (window.parent !== window) {
-                window.parent.postMessage({
-                    type: 'REQUEST_USER_INFO',
-                    userId: userId,
-                    token: token
-                }, '*');
+                console.error('불나비 API 호출 실패:', error);
+                
+                if (error.message.includes('CORS')) {
+                    console.log('CORS 정책으로 인한 차단 - 네이티브 앱에서 API 호출 필요');
+                    this.requestUserInfoFromNative(userId);
+                } else {
+                    console.error('자동 로그인 실패 - 수동 로그인 화면을 사용하세요');
+                }
             }
         },
 
         // 불나비 로그인 처리 (PostMessage 수신)
         handleBullnabiLogin(data) {
-            console.log('🚀 불나비 로그인 처리 시작:', data);
+            console.log('불나비 로그인 처리 시작:', data);
             
             if (!data.userInfo) {
-                console.error('❌ 사용자 정보가 없습니다');
+                console.error('사용자 정보가 없습니다');
                 return;
             }
 
@@ -155,7 +172,7 @@
                 this.isConnected = true;
                 this.lastHeartbeat = Date.now();
             } else {
-                console.error('❌ loginWithBullnabi 함수를 찾을 수 없습니다');
+                console.error('loginWithBullnabi 함수를 찾을 수 없습니다');
                 
                 // 재시도 (auth.js 로딩 대기)
                 setTimeout(() => {
@@ -169,7 +186,7 @@
 
         // 크레딧 업데이트 처리
         handleCreditUpdate(data) {
-            console.log('💰 크레딧 업데이트:', data);
+            console.log('크레딧 업데이트:', data);
             
             try {
                 // 불나비 사용자 정보 업데이트
@@ -196,13 +213,13 @@
                     }
                 }
             } catch (error) {
-                console.error('❌ 크레딧 업데이트 실패:', error);
+                console.error('크레딧 업데이트 실패:', error);
             }
         },
 
         // 불나비 로그아웃 처리
         handleBullnabiLogout() {
-            console.log('🚪 불나비 로그아웃 처리');
+            console.log('불나비 로그아웃 처리');
             
             try {
                 // 불나비 세션 정리
@@ -222,7 +239,7 @@
                 }
                 
             } catch (error) {
-                console.error('❌ 로그아웃 처리 실패:', error);
+                console.error('로그아웃 처리 실패:', error);
             }
         },
 
@@ -238,9 +255,9 @@
                     window.ReactNativeWebView.postMessage(JSON.stringify(message));
                 }
                 
-                console.log('📤 네이티브 앱에 메시지 전송:', message);
+                console.log('네이티브 앱에 메시지 전송:', message);
             } catch (error) {
-                console.error('❌ 네이티브 앱 메시지 전송 실패:', error);
+                console.error('네이티브 앱 메시지 전송 실패:', error);
             }
         },
 
@@ -269,7 +286,7 @@
 
         // 연결 정보 로깅
         logConnectionInfo() {
-            console.log('🌉 불나비 브릿지 연결 정보:');
+            console.log('불나비 브릿지 연결 정보:');
             console.log('- 현재 URL:', window.location.href);
             console.log('- User Agent:', navigator.userAgent);
             console.log('- Referrer:', document.referrer);
@@ -295,6 +312,6 @@
         BullnabiBridge.checkConnection();
     }, 30000);
 
-    console.log('🌉 불나비 브릿지 모듈 로드 완료');
+    console.log('불나비 브릿지 모듈 로드 완료');
 
 })();
