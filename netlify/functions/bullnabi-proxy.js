@@ -45,6 +45,9 @@ exports.handler = async (event, context) => {
         
         console.log('🔑 토큰 사용:', newToken.substring(0, 20) + '...');
 
+        // node-fetch 라이브러리 사용 (Netlify Functions 호환성)
+        const fetch = require('node-fetch');
+        
         // URLSearchParams 방식으로 불나비 API 호출 (Netlify Functions 호환)
         const params = new URLSearchParams();
         params.append('metaCode', '_users');
@@ -53,14 +56,15 @@ exports.handler = async (event, context) => {
             "_id": { "$oid": userId }
         }));
 
+        console.log('📡 불나비 API 호출 중...');
+
         const response = await fetch('https://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${newToken}`,
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json'
+                ...formData.getHeaders()
             },
-            body: params.toString()
+            body: formData
         });
 
         console.log('📥 불나비 API 응답 상태:', response.status);
