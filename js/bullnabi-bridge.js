@@ -66,7 +66,7 @@
             try {
                 console.log('📡 불나비 API 호출 중... userId:', userId);
                 
-                const response = await fetch('https://jihwanworld.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
+                const response = await fetch('http://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
                     method: 'POST',
                     headers: {
                         'User-Agent': token,
