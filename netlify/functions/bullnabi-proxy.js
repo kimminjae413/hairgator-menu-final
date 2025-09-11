@@ -45,20 +45,22 @@ exports.handler = async (event, context) => {
         
         console.log('🔑 토큰 사용:', newToken.substring(0, 20) + '...');
 
-        // FormData 방식으로 불나비 API 호출
-        const formData = new FormData();
-        formData.append('metaCode', '_users');
-        formData.append('collectionName', '_users');
-        formData.append('documentJson', JSON.stringify({
+        // URLSearchParams 방식으로 불나비 API 호출 (Netlify Functions 호환)
+        const params = new URLSearchParams();
+        params.append('metaCode', '_users');
+        params.append('collectionName', '_users');
+        params.append('documentJson', JSON.stringify({
             "_id": { "$oid": userId }
         }));
 
         const response = await fetch('https://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${newToken}`
+                'Authorization': `Bearer ${newToken}`,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json'
             },
-            body: formData
+            body: params.toString()
         });
 
         console.log('📥 불나비 API 응답 상태:', response.status);
