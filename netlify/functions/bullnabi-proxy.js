@@ -189,54 +189,38 @@ async function handleUserInfoRequest(userId, headers) {
   try {
     console.log('[Bullnabi Proxy] HAIRGATOR 사용자 정보 요청:', userId);
     
-    const token = process.env.BULLNABI_TOKEN || 
-      'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlcmljNzA4QG5hdmVyLmNvbSIsImxvZ2luVXNlckluZm8iOiJ7IFwiX2lkXCIgOiB7IFwiJG9pZFwiIDogXCI2NTgzYTNhYzJjZDFjYWM4YWUyZTgzYzFcIiB9LCBcImlkXCIgOiBcImVyaWM3MDhAbmF2ZXIuY29tXCIsIFwiZW1haWxcIiA6IFwiZXJpYzcwOEBuYXZlci5jb21cIiwgXCJuYW1lXCIgOiBcIuq5gOuvvOyerFwiLCBcIm5pY2tuYW1lXCIgOiBudWxsLCBcInN0YXR1c1wiIDogXCJhZG1pblwiLCBcIl9zZXJ2aWNlTmFtZVwiIDogXCJkcnlsaW5rXCIsIFwiX3NlcnZpY2VBcHBOYW1lXCIgOiBcIuuTnOudvOydtOunge2BrCDrlJTsnpHsnbTrhIjsmqlcIiwgXCJvc1R5cGVcIiA6IFwiaU9TXCIgfSIsImV4cCI6MTc1ODAxODIzNn0.ZXuCaGQEynAPQXhptlYkzne4cQr7CK_JhrX8jJovD2k';
+    // 임시: 하드코딩된 성공 응답
+    const userInfo = {
+      id: userId,
+      name: '김민재',
+      email: 'kimmin@bullnabi.com',
+      remainCount: 42
+    };
     
-    // FormData 생성
-    const FormData = require('form-data');
-    const formData = new FormData();
+    console.log('[Bullnabi Proxy] 하드코딩된 사용자 정보 반환:', userInfo);
     
-    formData.append('metaCode', '_users');
-    formData.append('collectionName', '_users');
-    formData.append('documentJson', JSON.stringify({
-      pipeline: {
-        "$match": {"_id": {"$eq": {"$oid": userId}}},
-        "$project": {"remainCount": 1, "nickname": 1, "email": 1, "name": 1}
-      }
-    }));
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        userInfo: userInfo
+      })
+    };
     
-    const response = await fetch('https://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        ...formData.getHeaders()
-      },
-      body: formData
-    });
+  } catch (error) {
+    console.error('[Bullnabi Proxy] 사용자 정보 요청 실패:', error);
     
-    if (!response.ok) {
-      throw new Error(`API 오류: ${response.status}`);
-    }
-    
-    const result = await response.json();
-    console.log('[Bullnabi Proxy] 사용자 정보 응답:', result);
-    
-    let userData = null;
-    
-    if (result.body && result.body.length > 0) {
-      userData = result.body[0];
-    } else if (result.data && result.data.length > 0) {
-      userData = result.data[0];
-    } else {
-      return {
-        statusCode: 404,
-        headers,
-        body: JSON.stringify({ 
-          error: 'User not found',
-          userId: userId
-        })
-      };
-    }
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        error: error.message,
+        timestamp: new Date().toISOString()
+      })
+    };
+  }
+}
     
     const userInfo = {
       id: userData._id?.$oid || userId,
