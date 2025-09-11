@@ -109,7 +109,7 @@ exports.handler = async (event, context) => {
                             success: true,
                             userInfo: userInfo,
                             debug: {
-                                method: 'native_multipart_success',
+                                method: 'urlencoded_success',
                                 dataFound: true,
                                 apiResponseLength: responseText.length
                             }
