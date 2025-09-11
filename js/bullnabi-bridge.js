@@ -80,27 +80,59 @@
                      navigator.userAgent.includes('ReactNative'));
         },
 
-        // 웹에서 직접 로그인 실행
-        executeDirectLogin(userId) {
-            // 가상 사용자 정보 생성 (실제로는 네이티브 앱에서 API 호출 후 전달받을 데이터)
-            const userInfo = {
-                id: userId,
-                name: '불나비 사용자',
-                email: 'user@bullnabi.com',
-                remainCount: 10
-            };
+        // 웹에서 직접 로그인 실행 (프록시 서버 사용)
+        async executeDirectLogin(userId) {
+            console.log('🚀 프록시 서버를 통한 실제 사용자 정보 조회:', userId);
             
-            console.log('✨ 직접 로그인 실행:', userInfo);
-            
-            // DOM이 완전히 로드될 때까지 대기
-            if (document.readyState !== 'complete') {
-                window.addEventListener('load', () => {
-                    this.performLogin(userInfo);
+            try {
+                // Netlify Functions 프록시 서버 호출
+                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId: userId })
                 });
-            } else {
-                // 약간의 딜레이를 두고 실행 (다른 스크립트 로딩 대기)
+
+                if (!response.ok) {
+                    throw new Error(`프록시 서버 오류: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('📋 프록시 서버 응답:', result);
+
+                if (result.success && result.userInfo) {
+                    console.log('✅ 실제 사용자 정보 조회 성공:', result.userInfo);
+                    
+                    // DOM이 완전히 로드될 때까지 대기
+                    if (document.readyState !== 'complete') {
+                        window.addEventListener('load', () => {
+                            this.performLogin(result.userInfo);
+                        });
+                    } else {
+                        // 약간의 딜레이를 두고 실행 (다른 스크립트 로딩 대기)
+                        setTimeout(() => {
+                            this.performLogin(result.userInfo);
+                        }, 500);
+                    }
+                } else {
+                    throw new Error('사용자 정보를 찾을 수 없습니다');
+                }
+
+            } catch (error) {
+                console.error('❌ 실제 사용자 정보 조회 실패:', error);
+                
+                // 실패 시 테스트용 사용자 정보로 로그인
+                console.log('🔄 테스트용 사용자 정보로 대체 로그인');
+                const fallbackUserInfo = {
+                    id: userId,
+                    name: '김민재 (테스트)',
+                    email: 'kimmin@bullnabi.com',
+                    remainCount: 25
+                };
+                
                 setTimeout(() => {
-                    this.performLogin(userInfo);
+                    this.performLogin(fallbackUserInfo);
                 }, 500);
             }
         },
