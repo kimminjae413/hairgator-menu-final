@@ -628,7 +628,7 @@ function openStyleModal(style) {
     });
 }
 
-// 모달에 AI 체험하기 버튼 추가
+// 모달에 GPT AI 체험하기 버튼 추가 (AKOOL 대체)
 function addAIButtonToModal(style) {
     const modalActions = document.querySelector('.style-modal-actions');
     if (!modalActions) return;
@@ -639,44 +639,49 @@ function addAIButtonToModal(style) {
         existingAIBtn.remove();
     }
     
-    // 새 AI 버튼 생성
-    const aiButton = document.createElement('button');
-    aiButton.className = 'modal-action-btn ai-experience-modal-btn';
-    aiButton.innerHTML = `
-        <span class="ai-icon">🤖</span>
-        <span>AI 체험하기</span>
+    // GPT AI 버튼 생성
+    const gptAiButton = document.createElement('button');
+    gptAiButton.className = 'modal-action-btn gpt-ai-experience-modal-btn';
+    gptAiButton.innerHTML = `
+        <span class="ai-icon">🎨</span>
+        <span>GPT AI 체험하기</span>
+        <span class="new-badge">NEW</span>
     `;
     
-    aiButton.onclick = function(e) {
+    gptAiButton.onclick = function(e) {
         e.preventDefault();
         e.stopPropagation();
         
-        console.log('🤖 모달에서 AI 체험하기 시작:', {
+        console.log('🎨 GPT Image 1 AI 체험하기 시작:', {
             id: style.id,
             name: style.name,
             imageUrl: style.imageUrl
         });
         
-        // AI 사진 업로드 모달 열기
-        openAIPhotoModal(style.id, style.name || '스타일', style.imageUrl || '');
+        // GPT 헤어스타일 체험 모달 열기
+        if (window.openGPTHairStyleModal) {
+            window.openGPTHairStyleModal(style);
+        } else {
+            console.error('GPT 헤어체험 시스템이 로드되지 않았습니다');
+            showToast('GPT 시스템을 로드하는 중입니다...', 'info');
+        }
     };
     
     // 기존 버튼들 앞에 추가
-    modalActions.insertBefore(aiButton, modalActions.firstChild);
+    modalActions.insertBefore(gptAiButton, modalActions.firstChild);
 }
-
 // ========== AI 체험하기 기능 ==========
 
-// AI 사진 업로드 모달 열기 (개발중 상태)
+// AKOOL 시스템 비활성화 (GPT로 대체됨)
 function openAIPhotoModal(styleId, styleName, styleImageUrl) {
-    console.log('🚧 AI 체험하기 클릭 (개발중 상태):', {
-        styleId: styleId,
-        styleName: styleName,
-        status: 'DEVELOPMENT_MODE'
-    });
+    console.log('🚫 AKOOL 시스템 호출 차단됨 - GPT로 리다이렉트');
+    showToast('🆕 새로운 GPT Image 1으로 업그레이드되었습니다!', 'info');
     
-    // 개발중 토스트 메시지 표시
-    showToast('🚧 개발중입니다\nAI 헤어체험 기능은 현재 개발 중이며, 곧 만나보실 수 있습니다!', 'info');
+    // GPT 시스템이 로드되어 있다면 리다이렉트
+    if (window.openGPTHairStyleModal) {
+        const style = { id: styleId, name: styleName, imageUrl: styleImageUrl };
+        window.openGPTHairStyleModal(style);
+    }
 }
 
 // ========== 상태 표시 함수들 ==========
@@ -840,5 +845,6 @@ window.debugHAIRGATOR = function() {
 
 console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 전역 변수 문제 해결 버전');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
+
 
 
