@@ -1385,7 +1385,12 @@ async function sendToGeminiForVirtualTry(imageBase64, colorRecommendations) {
             `${index + 1}. ${color.brand} ${color.code} - ${color.name} (헥스코드: ${color.hex})`
         ).join('\n');
         
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getGeminiApiKey()}`, {
+        const apiKey = getGeminiApiKey();
+if (!apiKey) {
+    throw new Error('API 키가 설정되지 않았습니다');
+}
+
+const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1555,10 +1560,56 @@ function processGeminiVirtualTryImages(geminiResult, colorRecommendations) {
 
 // 제미나이 API 키 가져오기
 function getGeminiApiKey() {
-    // 환경변수에서 가져오거나 백엔드 API 호출
-    return window.GEMINI_API_KEY || 'your_api_key_here';
+    // 실제 환경변수나 안전한 방법으로 API 키 처리 필요
+    showToast('제미나이 API 키가 설정되지 않았습니다', 'warning');
+    return null; // API 키가 없으면 null 반환
 }
 
+// 색상 프리뷰 결과 표시 (제미나이 실패 시 대체)
+function displayColorPreviewResults(colorRecommendations, originalImageBase64) {
+    const resultsSection = document.getElementById('results-section');
+    if (!resultsSection) return;
+    
+    // 기존 결과 제거
+    const existingVirtualTry = document.getElementById('virtual-try-results');
+    if (existingVirtualTry) {
+        existingVirtualTry.remove();
+    }
+    
+    const virtualTrySection = document.createElement('div');
+    virtualTrySection.id = 'virtual-try-results';
+    virtualTrySection.innerHTML = `
+        <div class="virtual-try-container" style="margin-top: 2rem; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; color: white;">
+            <h4>🎨 퍼스널컬러 맞춤 헤어컬러 추천</h4>
+            <p style="margin-bottom: 2rem;">분석된 퍼스널컬러에 따라 선정된 5가지 헤어컬러입니다.</p>
+            <div class="virtual-try-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                ${colorRecommendations.map((color, index) => `
+                    <div class="virtual-try-item" style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                        <div class="color-info" style="margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px;">
+                                <div style="width: 40px; height: 40px; background: ${color.hex}; border-radius: 50%; border: 3px solid white;"></div>
+                                <h6 style="margin: 0;">${color.brand} ${color.code}</h6>
+                            </div>
+                            <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">${color.name}</p>
+                            <p style="margin: 5px 0 0 0; font-size: 0.8em; opacity: 0.8;">${color.description}</p>
+                        </div>
+                        <div style="width: 100%; height: 200px; background: ${color.hex}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center;">
+                            <div style="font-size: 1.2em; margin-bottom: 8px;">${color.name}</div>
+                            <div style="font-size: 0.9em; opacity: 0.9;">${color.brand} ${color.code}</div>
+                            <div style="font-size: 0.8em; margin-top: 8px; opacity: 0.8;">색상 프리뷰</div>
+                        </div>
+                        <div style="margin-top: 1rem; font-size: 0.8em; opacity: 0.8;">
+                            ${color.hex}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    resultsSection.appendChild(virtualTrySection);
+    virtualTrySection.scrollIntoView({ behavior: 'smooth' });
+}        
         console.log('HAIRGATOR Personal Color - 최종 수정 버전 로드 완료');
         console.log('HAIRGATOR Personal Color - 최종 수정 버전 로드 완료');
    </script>
