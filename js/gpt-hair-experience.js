@@ -1,6 +1,6 @@
 // ========================================
-// HAIRGATOR 스타일 모달 GPT Image 1 교체
-// js/menu.js에서 addAIButtonToModal 함수 교체
+// HAIRGATOR GPT Image 1 헤어스타일 체험 시스템 - 최종 완성본
+// Netlify Functions 연동 + 보안 강화 버전
 // ========================================
 
 // 기존 AKOOL 버튼을 GPT Image 1 버튼으로 교체
@@ -73,11 +73,11 @@ function openGPTHairStyleModal(style) {
                 <!-- 선택된 스타일 정보 -->
                 <div class="selected-style-info">
                     <div class="style-preview">
-                        <img src="${style.imageUrl}" alt="${style.name}" class="style-reference-image">
+                        <img src="${style.imageUrl || ''}" alt="${style.name || '스타일'}" class="style-reference-image">
                         <div class="style-details">
-                            <h3>${style.name}</h3>
-                            <p class="style-code">${style.code}</p>
-                            <p class="style-category">${style.mainCategory} > ${style.subCategory || ''}</p>
+                            <h3>${style.name || '스타일명 없음'}</h3>
+                            <p class="style-code">${style.code || 'NO CODE'}</p>
+                            <p class="style-category">${style.mainCategory || ''} > ${style.subCategory || ''}</p>
                         </div>
                     </div>
                     <div class="style-description">
@@ -105,10 +105,10 @@ function openGPTHairStyleModal(style) {
                             <h5>AI 샘플 생성</h5>
                             <p>가상 모델에 이 헤어스타일을 적용합니다</p>
                             <div class="sample-options">
-                                <button class="sample-btn" onclick="generateGPTSample('${style.gender}', 'young')">
+                                <button class="sample-btn" onclick="selectSampleType('young')" data-age="young">
                                     젊은 ${style.gender === 'male' ? '남성' : '여성'}
                                 </button>
-                                <button class="sample-btn" onclick="generateGPTSample('${style.gender}', 'mature')">
+                                <button class="sample-btn" onclick="selectSampleType('mature')" data-age="mature">
                                     성숙한 ${style.gender === 'male' ? '남성' : '여성'}
                                 </button>
                             </div>
@@ -140,7 +140,7 @@ function openGPTHairStyleModal(style) {
                 <button class="btn-secondary" onclick="closeGPTHairStyleModal()">
                     취소
                 </button>
-                <button class="btn-primary" id="startGPTExperience" onclick="startGPTHairStyleExperience('${style.id}', '${style.name}', '${style.imageUrl}')" disabled>
+                <button class="btn-primary" id="startGPTExperience" onclick="startGPTHairStyleExperience('${style.id || ''}', '${style.name || ''}', '${style.imageUrl || ''}')" disabled>
                     <span class="btn-icon">🎨</span>
                     AI 헤어스타일 체험 시작
                 </button>
@@ -155,7 +155,7 @@ function openGPTHairStyleModal(style) {
                         <img id="originalImage" class="result-image">
                     </div>
                     <div class="result-item">
-                        <h5>${style.name} 적용</h5>
+                        <h5>${style.name || '새 스타일'} 적용</h5>
                         <img id="styledImage" class="result-image">
                         <div class="result-actions">
                             <button class="save-result-btn" onclick="saveGPTResult()">
@@ -170,7 +170,7 @@ function openGPTHairStyleModal(style) {
                 
                 <div class="consultation-booking">
                     <p>이 스타일이 마음에 드시나요?</p>
-                    <button class="book-consultation-btn" onclick="bookConsultationWithStyle('${style.id}')">
+                    <button class="book-consultation-btn" onclick="bookConsultationWithStyle('${style.id || ''}')">
                         📅 이 스타일로 상담 예약하기
                     </button>
                 </div>
@@ -186,11 +186,71 @@ function openGPTHairStyleModal(style) {
     // 전역 변수에 현재 스타일 저장
     window.currentGPTStyle = style;
     
+    // 메서드 선택 이벤트 바인딩
+    bindMethodSelectionEvents();
+    
     console.log('✅ GPT 헤어스타일 체험 모달 열림:', style.name);
 }
 
 // ========================================
-// GPT Image 1 API 호출 함수들
+// 이벤트 바인딩 및 상호작용
+// ========================================
+
+function bindMethodSelectionEvents() {
+    const methodOptions = document.querySelectorAll('.method-option');
+    methodOptions.forEach(option => {
+        option.onclick = function() {
+            // 기존 활성화 제거
+            methodOptions.forEach(opt => opt.classList.remove('active'));
+            // 새로 선택된 옵션 활성화
+            this.classList.add('active');
+            
+            // 체험 시작 버튼 상태 업데이트
+            updateStartButtonState();
+        };
+    });
+}
+
+function selectSampleType(ageType) {
+    const sampleBtns = document.querySelectorAll('.sample-btn');
+    sampleBtns.forEach(btn => btn.classList.remove('active'));
+    
+    const selectedBtn = document.querySelector(`[data-age="${ageType}"]`);
+    if (selectedBtn) {
+        selectedBtn.classList.add('active');
+    }
+    
+    // 샘플 모드이므로 시작 버튼 활성화
+    const generateOption = document.querySelector('[data-method="generate"]');
+    if (generateOption && generateOption.classList.contains('active')) {
+        document.getElementById('startGPTExperience').disabled = false;
+    }
+}
+
+function updateStartButtonState() {
+    const startBtn = document.getElementById('startGPTExperience');
+    const activeMethod = document.querySelector('.method-option.active');
+    
+    if (!activeMethod) {
+        startBtn.disabled = true;
+        return;
+    }
+    
+    const method = activeMethod.dataset.method;
+    
+    if (method === 'upload') {
+        // 업로드 모드: 파일이 선택되었는지 확인
+        const fileInput = document.getElementById('gptUserPhoto');
+        startBtn.disabled = !fileInput || !fileInput.files[0];
+    } else if (method === 'generate') {
+        // 생성 모드: 샘플 타입이 선택되었는지 확인
+        const selectedSample = document.querySelector('.sample-btn.active');
+        startBtn.disabled = !selectedSample;
+    }
+}
+
+// ========================================
+// GPT Image 1 API 호출 (Netlify Functions 활용)
 // ========================================
 
 async function startGPTHairStyleExperience(styleId, styleName, styleImageUrl) {
@@ -235,83 +295,97 @@ async function startGPTHairStyleExperience(styleId, styleName, styleImageUrl) {
 async function processGPTHairStyleChange(userPhoto, styleImageUrl, styleName) {
     console.log('🎨 GPT Image 1 헤어스타일 변경 시작...');
     
-    // 1. 사용자 사진을 Base64로 변환
-    const userPhotoBase64 = await fileToBase64(userPhoto);
-    
-    // 2. GPT Image 1 API 호출용 프롬프트 생성
-    const prompt = buildHairStyleChangePrompt(styleName, styleImageUrl);
-    
-    // 3. GPT Image 1 API 호출
-    const apiKey = await getOpenAIApiKey(); // 환경변수에서 가져오기
-    
-    const formData = new FormData();
-    formData.append('image', userPhoto);
-    formData.append('prompt', prompt);
-    formData.append('model', 'gpt-image-1');
-    formData.append('size', '1024x1024');
-    formData.append('response_format', 'url');
-    
-    const response = await fetch('https://api.openai.com/v1/images/edits', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-        },
-        body: formData
-    });
-    
-    const result = await response.json();
-    
-    if (result.data && result.data[0]) {
-        return {
-            success: true,
-            originalImage: userPhotoBase64,
-            styledImage: result.data[0].url,
-            styleName: styleName,
-            method: 'edit'
-        };
-    } else {
-        throw new Error('GPT Image 1 API 오류: ' + (result.error?.message || '알 수 없는 오류'));
+    try {
+        // 1. 사용자 사진을 Base64로 변환
+        const userPhotoBase64 = await fileToBase64(userPhoto);
+        
+        // 2. 프롬프트 생성
+        const prompt = buildHairStyleChangePrompt(styleName, styleImageUrl);
+        
+        // 3. Netlify Function 호출
+        const response = await fetch('/.netlify/functions/openai-proxy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                method: 'edit',
+                prompt: prompt,
+                imageData: userPhotoBase64
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.error) {
+            throw new Error(result.error.message || result.error);
+        }
+        
+        if (result.data && result.data[0]) {
+            return {
+                success: true,
+                originalImage: userPhotoBase64,
+                styledImage: result.data[0].url,
+                styleName: styleName,
+                method: 'edit'
+            };
+        } else {
+            throw new Error('GPT Image 1 API에서 유효한 결과를 받지 못했습니다');
+        }
+        
+    } catch (error) {
+        console.error('GPT 헤어스타일 변경 실패:', error);
+        throw error;
     }
 }
 
 async function generateGPTSampleWithStyle(styleId, styleName, styleImageUrl, ageType) {
     console.log('✨ GPT Image 1 샘플 생성 시작...');
     
-    const prompt = buildSampleGenerationPrompt(styleName, ageType, window.currentGender);
-    
-    const apiKey = await getOpenAIApiKey();
-    
-    const requestBody = {
-        model: 'gpt-image-1',
-        prompt: prompt,
-        size: '1024x1024',
-        quality: 'hd',
-        style: 'natural',
-        response_format: 'url',
-        n: 1
-    };
-    
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-    });
-    
-    const result = await response.json();
-    
-    if (result.data && result.data[0]) {
-        return {
-            success: true,
-            originalImage: null, // 샘플이므로 원본 없음
-            styledImage: result.data[0].url,
-            styleName: styleName,
-            method: 'generate'
-        };
-    } else {
-        throw new Error('GPT Image 1 API 오류: ' + (result.error?.message || '알 수 없는 오류'));
+    try {
+        const prompt = buildSampleGenerationPrompt(styleName, ageType, window.currentGender);
+        
+        // Netlify Function 호출
+        const response = await fetch('/.netlify/functions/openai-proxy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                method: 'generate',
+                prompt: prompt
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.error) {
+            throw new Error(result.error.message || result.error);
+        }
+        
+        if (result.data && result.data[0]) {
+            return {
+                success: true,
+                originalImage: null, // 샘플이므로 원본 없음
+                styledImage: result.data[0].url,
+                styleName: styleName,
+                method: 'generate'
+            };
+        } else {
+            throw new Error('GPT Image 1 API에서 유효한 결과를 받지 못했습니다');
+        }
+        
+    } catch (error) {
+        console.error('GPT 샘플 생성 실패:', error);
+        throw error;
     }
 }
 
@@ -368,15 +442,32 @@ function handleGPTPhotoUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
     
+    // 파일 크기 확인 (10MB 제한)
+    if (file.size > 10 * 1024 * 1024) {
+        showGPTError('파일 크기가 너무 큽니다. 10MB 이하의 이미지를 선택해주세요.');
+        return;
+    }
+    
+    // 파일 형식 확인
+    if (!file.type.startsWith('image/')) {
+        showGPTError('이미지 파일만 업로드 가능합니다.');
+        return;
+    }
+    
     const reader = new FileReader();
     reader.onload = function(e) {
         const preview = document.getElementById('gptPhotoPreview');
-        preview.innerHTML = `<img src="${e.target.result}" alt="업로드된 사진">`;
+        preview.innerHTML = `<img src="${e.target.result}" alt="업로드된 사진" style="width: 100%; max-width: 200px; border-radius: 8px;">`;
         preview.style.display = 'block';
         
         // 시작 버튼 활성화
         document.getElementById('startGPTExperience').disabled = false;
     };
+    
+    reader.onerror = function() {
+        showGPTError('파일을 읽는 중 오류가 발생했습니다.');
+    };
+    
     reader.readAsDataURL(file);
 }
 
@@ -397,6 +488,11 @@ function showGPTResults(result) {
     
     // 결과 섹션으로 스크롤
     resultsSection.scrollIntoView({ behavior: 'smooth' });
+    
+    // 성공 메시지
+    if (window.showToast) {
+        window.showToast('🌟 GPT 헤어스타일 체험이 완료되었습니다!', 'success');
+    }
 }
 
 function showGPTError(errorMessage) {
@@ -417,10 +513,55 @@ async function fileToBase64(file) {
     });
 }
 
-async function getOpenAIApiKey() {
-    // 환경변수나 Firebase Functions에서 안전하게 가져오기
-    // 실제 구현에서는 서버 사이드에서 처리하는 것이 보안상 안전
-    return process.env.OPENAI_API_KEY || 'your-openai-api-key-here';
+// ========================================
+// 결과 처리 및 저장 함수들
+// ========================================
+
+function saveGPTResult() {
+    const styledImage = document.getElementById('styledImage');
+    if (!styledImage || !styledImage.src) {
+        showGPTError('저장할 결과가 없습니다.');
+        return;
+    }
+    
+    // 이미지 다운로드
+    const link = document.createElement('a');
+    link.href = styledImage.src;
+    link.download = `hairgator-gpt-result-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    if (window.showToast) {
+        window.showToast('💾 결과가 저장되었습니다!', 'success');
+    }
+}
+
+function retryGPTExperience() {
+    // 결과 섹션 숨기기
+    const resultsSection = document.getElementById('gptResultsSection');
+    if (resultsSection) {
+        resultsSection.style.display = 'none';
+    }
+    
+    // 시작 버튼 활성화
+    const startBtn = document.getElementById('startGPTExperience');
+    if (startBtn) {
+        startBtn.disabled = false;
+    }
+    
+    if (window.showToast) {
+        window.showToast('🔄 다시 체험해보세요!', 'info');
+    }
+}
+
+function bookConsultationWithStyle(styleId) {
+    if (window.showToast) {
+        window.showToast('📅 상담 예약 기능은 준비 중입니다!', 'info');
+    }
+    
+    // 실제 구현에서는 상담 예약 시스템과 연동
+    console.log('상담 예약 요청:', { styleId, currentGPTStyle: window.currentGPTStyle });
 }
 
 // ========================================
@@ -432,8 +573,8 @@ if (window.openAIPhotoModal) {
     const originalAkoolFunction = window.openAIPhotoModal;
     window.openAIPhotoModal = function(...args) {
         console.log('🚫 AKOOL 함수 호출 차단됨. GPT Image 1으로 리다이렉트.');
-        // GPT 모달로 리다이렉트하거나 아무것도 하지 않음
         showGPTUpgradeMessage();
+        return false;
     };
 }
 
@@ -443,6 +584,35 @@ function showGPTUpgradeMessage() {
     }
 }
 
-console.log('✅ HAIRGATOR GPT Image 1 모달 교체 시스템 로드 완료');
-console.log('🚫 AKOOL 시스템 비활성화됨');
-console.log('🎨 GPT Image 1 헤어스타일 체험 준비 완료');
+// ========================================
+// 전역 함수 노출
+// ========================================
+
+// 글로벌 스코프에 함수들 노출
+window.openGPTHairStyleModal = openGPTHairStyleModal;
+window.closeGPTHairStyleModal = closeGPTHairStyleModal;
+window.handleGPTPhotoUpload = handleGPTPhotoUpload;
+window.startGPTHairStyleExperience = startGPTHairStyleExperience;
+window.selectSampleType = selectSampleType;
+window.saveGPTResult = saveGPTResult;
+window.retryGPTExperience = retryGPTExperience;
+window.bookConsultationWithStyle = bookConsultationWithStyle;
+
+// ========================================
+// 초기화
+// ========================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ HAIRGATOR GPT Image 1 헤어스타일 체험 시스템 로드 완료');
+    console.log('🚫 AKOOL 시스템 비활성화됨');
+    console.log('🎨 GPT Image 1 Netlify Functions 연동 준비 완료');
+    
+    // AKOOL 시스템 업그레이드 알림 (3초 후)
+    setTimeout(() => {
+        if (window.showToast) {
+            window.showToast('🆕 AI 헤어체험이 GPT Image 1으로 업그레이드되었습니다!', 'success');
+        }
+    }, 3000);
+});
+
+console.log('🎯 HAIRGATOR GPT Image 1 시스템 - 최종 완성본 로드 완료');
