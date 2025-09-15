@@ -1,12 +1,67 @@
 {
-  "name": "hairgator-bullnabi-proxy",
-  "version": "1.0.0",
-  "description": "HAIRGATOR 불나비 API 연동 프록시",
-  "main": "index.js",
-  "dependencies": {},
-  "scripts": {
-    "start": "node index.js"
+  "name": "hairgator-gpt-image-system",
+  "version": "2.0.0",
+  "description": "HAIRGATOR Professional Hair Style Menu with GPT Image 1 AI Experience",
+  "main": "index.html",
+  "engines": {
+    "node": ">=16.0.0"
   },
-  "author": "HAIRGATOR",
-  "license": "MIT"
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  },
+  "scripts": {
+    "start": "netlify dev",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "netlify deploy --prod",
+    "dev": "netlify dev",
+    "functions:serve": "netlify functions:serve",
+    "test:functions": "netlify functions:invoke openai-proxy --payload '{\"method\":\"generate\",\"prompt\":\"test\"}'"
+  },
+  "keywords": [
+    "hairgator",
+    "hair-styling",
+    "ai-experience",
+    "gpt-image-1",
+    "salon-menu",
+    "hair-simulation",
+    "beauty-tech",
+    "korean-beauty"
+  ],
+  "author": "HAIRGATOR Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hairgator/hairgator-system.git"
+  },
+  "netlify": {
+    "functions": "netlify/functions",
+    "publish": ".",
+    "redirects": [
+      {
+        "from": "/api/*",
+        "to": "/.netlify/functions/:splat",
+        "status": 200
+      }
+    ]
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "files": [
+    "index.html",
+    "css/**/*",
+    "js/**/*",
+    "icons/**/*",
+    "personal-color/**/*",
+    "netlify/functions/**/*",
+    "manifest.json",
+    "_headers",
+    "_redirects"
+  ]
 }
