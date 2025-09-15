@@ -1,0 +1,530 @@
+/* ========================================
+   HAIRGATOR GPT Image 1 모달 CSS
+   css/gpt-modal-styles.css
+======================================== */
+
+/* 1️⃣ GPT AI 버튼 (기존 AKOOL 버튼 교체) */
+.gpt-ai-experience-modal-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: white !important;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.gpt-ai-experience-modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.gpt-ai-experience-modal-btn .new-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4757;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.gpt-ai-experience-modal-btn .ai-icon {
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+/* 2️⃣ GPT 헤어스타일 체험 모달 */
+.gpt-hair-style-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10001; /* 기존 모달보다 위에 */
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.gpt-hair-style-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.gpt-modal-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    width: 90%;
+    max-width: 900px;
+    max-height: 90vh;
+    background: var(--background);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease;
+}
+
+.gpt-hair-style-modal.show .gpt-modal-container {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* 3️⃣ GPT 모달 헤더 */
+.gpt-modal-header {
+    padding: 24px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.gpt-modal-header h2 {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.gpt-modal-header .header-icon {
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.gpt-modal-header .gpt-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    margin-left: 10px;
+    font-weight: 500;
+}
+
+.gpt-modal-header .close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.gpt-modal-header .close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* 4️⃣ GPT 모달 콘텐츠 */
+.gpt-modal-content {
+    padding: 30px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.gpt-modal-content h4 {
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 5️⃣ 선택된 스타일 정보 */
+.selected-style-info {
+    background: var(--card-background);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+}
+
+.style-preview {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.style-reference-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid var(--border-color);
+}
+
+.style-details h3 {
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.style-code {
+    color: var(--female-color);
+    font-weight: 500;
+    margin: 0 0 2px 0;
+}
+
+.style-category {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin: 0;
+}
+
+.style-description {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* 6️⃣ 체험 방법 선택 */
+.experience-method-selection {
+    margin-bottom: 24px;
+}
+
+.method-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.method-option {
+    background: var(--card-background);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.method-option:hover {
+    border-color: var(--female-color);
+    transform: translateY(-2px);
+}
+
+.method-option.active {
+    border-color: var(--female-color);
+    background: rgba(233, 30, 99, 0.05);
+}
+
+.method-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.method-option h5 {
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.method-option p {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin: 0 0 16px 0;
+    line-height: 1.4;
+}
+
+.upload-area {
+    background: var(--background);
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    border-color: var(--female-color);
+    background: rgba(233, 30, 99, 0.02);
+}
+
+.upload-text {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.photo-preview {
+    margin-top: 12px;
+}
+
+.photo-preview img {
+    width: 100%;
+    max-width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid var(--border-color);
+}
+
+.sample-options {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.sample-btn {
+    background: var(--female-color);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sample-btn:hover {
+    background: #d1185e;
+    transform: translateY(-1px);
+}
+
+.sample-btn.active {
+    background: #b0155a;
+}
+
+/* 7️⃣ 처리 옵션 */
+.processing-options {
+    margin-bottom: 24px;
+}
+
+.option-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.option-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.option-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--female-color);
+}
+
+/* 8️⃣ GPT 모달 액션 */
+.gpt-modal-actions {
+    padding: 20px 30px;
+    background: var(--card-background);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.gpt-modal-actions .btn-secondary,
+.gpt-modal-actions .btn-primary {
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gpt-modal-actions .btn-secondary {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+
+.gpt-modal-actions .btn-primary {
+    background: var(--female-color);
+    color: white;
+}
+
+.gpt-modal-actions .btn-secondary:hover,
+.gpt-modal-actions .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.gpt-modal-actions .btn-primary:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 9️⃣ 결과 섹션 */
+.gpt-results-section {
+    margin-top: 24px;
+    padding: 24px;
+    background: var(--card-background);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.results-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.result-item {
+    text-align: center;
+}
+
+.result-item h5 {
+    color: var(--text-primary);
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.result-image {
+    width: 100%;
+    max-width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    margin-bottom: 12px;
+}
+
+.result-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.save-result-btn,
+.retry-btn {
+    background: var(--female-color);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.retry-btn {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+
+.save-result-btn:hover,
+.retry-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.consultation-booking {
+    text-align: center;
+    padding: 20px;
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.consultation-booking p {
+    color: var(--text-primary);
+    margin: 0 0 12px 0;
+    font-weight: 500;
+}
+
+.book-consultation-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.book-consultation-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+/* 🔟 로딩 스피너 */
+.loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 📱 반응형 */
+@media (max-width: 768px) {
+    .gpt-modal-container {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .method-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .results-comparison {
+        grid-template-columns: 1fr;
+    }
+    
+    .gpt-modal-content {
+        padding: 20px;
+    }
+    
+    .gpt-modal-actions {
+        padding: 15px 20px;
+        flex-direction: column;
+    }
+    
+    .gpt-modal-actions button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* AKOOL 시스템 비활성화 스타일 */
+.ai-experience-modal-btn:not(.gpt-ai-experience-modal-btn) {
+    opacity: 0.5;
+    pointer-events: none;
+    position: relative;
+}
+
+.ai-experience-modal-btn:not(.gpt-ai-experience-modal-btn)::after {
+    content: '업그레이드됨';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ff4757;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+}
