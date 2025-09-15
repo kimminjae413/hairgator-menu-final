@@ -28,8 +28,21 @@ class AkoolService {
     }
 
     // Face Swap 실행 (백엔드를 통해)
-    async faceSwap(customerImageUrl, styleImageUrl) {
-        try {
+async faceSwap(customerImageUrl, styleImageUrl) {
+    // ========== GPT 리다이렉트 로직 추가 ==========
+    console.log('🚫 AKOOL faceSwap 호출 차단 - GPT Image 1으로 리다이렉트');
+    
+    if (typeof showToast === 'function') {
+        showToast('🆕 GPT Image 1으로 업그레이드되었습니다!', 'info');
+    }
+    
+    return {
+        success: false,
+        error: 'AKOOL 시스템이 GPT Image 1으로 업그레이드되었습니다'
+    };
+    // ========== 기존 코드 차단 ==========
+    
+    try {  // ← 기존 코드는 실행되지 않음
             // 초기화 확인
             if (!await this.init()) {
                 throw new Error('Face Swap 백엔드 서버에 연결할 수 없습니다');
@@ -157,3 +170,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 console.log('🔧 AKOOL 서비스 (백엔드 연동 버전) 로드 완료');
+
+console.log('🔧 AKOOL 서비스 (백엔드 연동 버전) 로드 완료');
+
+// ========== AKOOL 시스템 업그레이드 안내 ==========
+console.log('🔄 AKOOL Service → GPT Image 1 업그레이드 완료');
+window.AKOOL_SYSTEM_UPGRADED = true;
