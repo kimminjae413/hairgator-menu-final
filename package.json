@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node index.js",
-    "build": "npm run clean",
+    "build": "echo 'HAIRGATOR 정적 사이트 - 빌드 완료' && exit 0",
     "clean": "rimraf dist"
   },
   "author": "HAIRGATOR",
