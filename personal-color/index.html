@@ -914,7 +914,17 @@ function extractSkinTone(landmarks) {
             
             displayFinalResults(result);
             
-            showToast(`AI 분석 완료: ${result.season}`, 'success');
+           showToast(`AI 분석 완료: ${result.season}`, 'success');
+   
+   // 제미나이 헤어컬러 시스템에 이벤트 전달
+   document.dispatchEvent(new CustomEvent('personalColorAnalyzed', {
+       detail: {
+           season: result.season,
+           tone: result.season.includes('웜톤') ? '웜톤' : '쿨톤',
+           characteristics: result.expertAnalysis,
+           confidence: result.confidence
+       }
+   }));
         }
 
         // 드래이핑 모드 함수들
@@ -1253,6 +1263,7 @@ function extractSkinTone(landmarks) {
         });
 
         console.log('HAIRGATOR Personal Color - 최종 수정 버전 로드 완료');
-    </script>
+   </script>
+    <script src="../js/gemini-hair-color.js"></script>
 </body>
 </html>
