@@ -1,6 +1,7 @@
 # netlify.toml - HAIRGATOR 배포 설정
 [build]
   publish = "/"
+  functions = "netlify/functions"
 
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
