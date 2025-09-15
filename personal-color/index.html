@@ -859,13 +859,20 @@ window.lastSkinToneData = skinToneData;
         // ========================================
         // AI 분석 함수들
         // ========================================
-        async function analyzeAI() {
-            if (analysisInProgress) return;
-            
-            if (!videoElement || videoElement.readyState !== 4) {
-                showToast('먼저 카메라를 시작해주세요', 'warning');
-                return;
-            }
+       async function analyzeAI() {
+    // 임시 차단 - 개발중
+    showToast('퍼스널컬러 분석 기능을 개선중입니다. 잠시만 기다려주세요!', 'warning', 4000);
+    return;
+    
+    // 기존 코드는 그대로 유지 (아래 모든 코드 보존)
+    if (analysisInProgress) return;
+    
+    if (!videoElement || videoElement.readyState !== 4) {
+        showToast('먼저 카메라를 시작해주세요', 'warning');
+        return;
+    }
+    
+    // ... 나머지 기존 코드 모두 그대로 유지
             
             analysisInProgress = true;
             showToast('사진을 촬영하고 AI 분석을 시작합니다...', 'info');
