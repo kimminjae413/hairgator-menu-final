@@ -1377,67 +1377,187 @@ function extractSkinTone(landmarks) {
         }
 
         // 제미나이 가상체험 요청
-        async function sendToGeminiForVirtualTry(imageBase64, colorRecommendations) {
-            try {
-                showToast('제미나이가 5가지 헤어컬러로 가상체험을 생성중입니다...', 'info');
+async function sendToGeminiForVirtualTry(imageBase64, colorRecommendations) {
+    try {
+        showToast('제미나이가 5가지 헤어컬러로 가상체험을 생성중입니다...', 'info');
+        
+        const colorList = colorRecommendations.map((color, index) => 
+            `${index + 1}. ${color.brand} ${color.code} - ${color.name} (헥스코드: ${color.hex})`
+        ).join('\n');
+        
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getGeminiApiKey()}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        {
+                            text: `이 사진에서 다음 5가지 정확한 헤어컬러로 각각 편집한 결과 이미지 5개를 생성해주세요:
+
+${colorList}
+
+요구사항:
+- 각 헥스코드에 정확히 맞춰서 머리카락 부분만 자연스럽게 염색
+- 피부톤, 얼굴형, 배경은 그대로 유지  
+- 원본의 헤어스타일과 볼륨 유지
+- 자연스러운 그라데이션과 음영 적용
+- 총 5개의 서로 다른 편집된 이미지 생성
+
+5개의 편집된 이미지를 각각 생성해서 반환해주세요.`
+                        },
+                        {
+                            inline_data: {
+                                mime_type: "image/jpeg",
+                                data: imageBase64
+                            }
+                        }
+                    ]
+                }],
+                generationConfig: {
+                    temperature: 0.4,
+                    topK: 32,
+                    topP: 1,
+                    maxOutputTokens: 4096
+                }
+            })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            displayVirtualTryResults(result, colorRecommendations, imageBase64);
+            showToast('제미나이 헤어컬러 가상체험 완료!', 'success');
+        } else {
+            throw new Error(`제미나이 API 오류: ${response.status}`);
+        }
+        
+    } catch (error) {
+        console.error('제미나이 가상체험 실패:', error);
+        showToast('AI 헤어컬러 가상체험에 실패했습니다', 'error');
+        
+        // 실패 시 색상 프리뷰만 표시
+        displayColorPreviewResults(colorRecommendations, imageBase64);
+    }
+}
+
+// 제미나이 가상체험 결과 표시 (5개 편집된 이미지)
+function displayVirtualTryResults(geminiResult, colorRecommendations, originalImageBase64) {
+    try {
+        const resultsSection = document.getElementById('results-section');
+        if (!resultsSection) return;
+        
+        // 기존 가상체험 결과 제거
+        const existingVirtualTry = document.getElementById('virtual-try-results');
+        if (existingVirtualTry) {
+            existingVirtualTry.remove();
+        }
+        
+        const virtualTrySection = document.createElement('div');
+        virtualTrySection.id = 'virtual-try-results';
+        virtualTrySection.innerHTML = `
+            <div class="virtual-try-container" style="margin-top: 2rem; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; color: white;">
+                <h4>🎨 제미나이 헤어컬러 가상체험 결과</h4>
+                <div class="original-section" style="text-align: center; margin-bottom: 2rem;">
+                    <h5>원본 사진</h5>
+                    <img src="data:image/jpeg;base64,${originalImageBase64}" style="max-width: 250px; border-radius: 10px; border: 3px solid white;">
+                </div>
+                <div class="virtual-results-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                    ${colorRecommendations.map((color, index) => `
+                        <div class="virtual-result-item" style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                            <div class="color-info" style="margin-bottom: 1rem;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px;">
+                                    <div style="width: 30px; height: 30px; background: ${color.hex}; border-radius: 50%; border: 2px solid white;"></div>
+                                    <h6 style="margin: 0;">${color.brand} ${color.code}</h6>
+                                </div>
+                                <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">${color.name}</p>
+                            </div>
+                            <div class="virtual-image-container" id="virtual-image-${index}" style="width: 100%; height: 250px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255,255,255,0.5);">
+                                <span style="opacity: 0.7;">가상체험 이미지 로딩중...</span>
+                            </div>
+                            <div style="margin-top: 1rem; font-size: 0.8em; opacity: 0.8;">
+                                ${color.hex}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+        resultsSection.appendChild(virtualTrySection);
+        
+        // 제미나이 응답에서 5개 이미지 추출 및 표시
+        processGeminiVirtualTryImages(geminiResult, colorRecommendations);
+        
+        virtualTrySection.scrollIntoView({ behavior: 'smooth' });
+        
+    } catch (error) {
+        console.error('가상체험 결과 표시 실패:', error);
+        displayColorPreviewResults(colorRecommendations, originalImageBase64);
+    }
+}
+
+// 제미나이 응답에서 5개 편집된 이미지 처리
+function processGeminiVirtualTryImages(geminiResult, colorRecommendations) {
+    try {
+        const content = geminiResult.candidates[0].content.parts;
+        
+        let imageIndex = 0;
+        content.forEach((part) => {
+            if (part.inline_data && part.inline_data.mime_type.startsWith('image/') && imageIndex < 5) {
+                // 제미나이가 생성한 편집된 이미지를 표시
+                const imgElement = document.createElement('img');
+                imgElement.src = `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
+                imgElement.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 8px;';
                 
-                const colorList = colorRecommendations.map((color, index) => 
-                    `${index + 1}. ${color.brand} ${color.code} - ${color.name} (헥스코드: ${color.hex})`
-                ).join('\n');
+                const container = document.getElementById(`virtual-image-${imageIndex}`);
+                if (container) {
+                    container.innerHTML = '';
+                    container.appendChild(imgElement);
+                }
                 
-                console.log('제미나이에게 전송할 색상 정보:', colorList);
-                
-                // 실제 API 호출은 환경변수 설정 후 활성화
-                showToast('제미나이 연동 준비 완료 (API 키 설정 후 활성화)', 'info');
-                
-                // 임시로 색상 프리뷰 표시
-                displayColorPreviewResults(colorRecommendations, imageBase64);
-                
-            } catch (error) {
-                console.error('제미나이 가상체험 실패:', error);
-                showToast('AI 헤어컬러 가상체험에 실패했습니다', 'error');
+                imageIndex++;
+            }
+        });
+        
+        // 5개가 모두 로드되지 않은 경우 색상 프리뷰로 대체
+        for (let i = imageIndex; i < 5; i++) {
+            const container = document.getElementById(`virtual-image-${i}`);
+            if (container) {
+                container.innerHTML = `
+                    <div style="width: 100%; height: 100%; background: ${colorRecommendations[i].hex}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                        <div style="font-size: 1.1em;">이미지 생성 실패</div>
+                        <div style="font-size: 0.9em; margin-top: 8px; opacity: 0.8;">색상 프리뷰</div>
+                    </div>
+                `;
             }
         }
-
-        // 색상 프리뷰 결과 표시 (제미나이 대기 중)
-        function displayColorPreviewResults(colorRecommendations, originalImageBase64) {
-            const resultsSection = document.getElementById('results-section');
-            if (!resultsSection) return;
-            
-            const virtualTrySection = document.createElement('div');
-            virtualTrySection.id = 'virtual-try-results';
-            virtualTrySection.innerHTML = `
-                <div class="virtual-try-container" style="margin-top: 2rem; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; color: white;">
-                    <h4>🎨 퍼스널컬러 맞춤 헤어컬러 추천</h4>
-                    <p style="margin-bottom: 2rem;">분석된 퍼스널컬러에 따라 선정된 5가지 헤어컬러입니다.</p>
-                    <div class="virtual-try-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
-                        ${colorRecommendations.map((color, index) => `
-                            <div class="virtual-try-item" style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 12px; text-align: center;">
-                                <div class="color-info" style="margin-bottom: 1rem;">
-                                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px;">
-                                        <div style="width: 40px; height: 40px; background: ${color.hex}; border-radius: 50%; border: 3px solid white;"></div>
-                                        <h6 style="margin: 0;">${color.brand} ${color.code}</h6>
-                                    </div>
-                                    <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">${color.name}</p>
-                                    <p style="margin: 5px 0 0 0; font-size: 0.8em; opacity: 0.8;">${color.description}</p>
-                                </div>
-                                <div style="width: 100%; height: 200px; background: ${color.hex}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center;">
-                                    <div style="font-size: 1.2em; margin-bottom: 8px;">${color.name}</div>
-                                    <div style="font-size: 0.9em; opacity: 0.9;">${color.brand} ${color.code}</div>
-                                    <div style="font-size: 0.8em; margin-top: 8px; opacity: 0.8;">색상 프리뷰</div>
-                                </div>
-                                <div style="margin-top: 1rem; font-size: 0.8em; opacity: 0.8;">
-                                    ${color.hex}
-                                </div>
-                            </div>
-                        `).join('')}
+        
+        console.log(`제미나이에서 ${imageIndex}개 이미지 처리 완료`);
+        
+    } catch (error) {
+        console.error('제미나이 이미지 처리 실패:', error);
+        
+        // 실패 시 모든 컨테이너를 색상 프리뷰로 대체
+        colorRecommendations.forEach((color, index) => {
+            const container = document.getElementById(`virtual-image-${index}`);
+            if (container) {
+                container.innerHTML = `
+                    <div style="width: 100%; height: 100%; background: ${color.hex}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                        <div style="font-size: 1.1em;">${color.name}</div>
+                        <div style="font-size: 0.9em; margin-top: 8px; opacity: 0.8;">API 오류</div>
                     </div>
-                </div>
-            `;
-            
-            resultsSection.appendChild(virtualTrySection);
-            virtualTrySection.scrollIntoView({ behavior: 'smooth' });
-        }
+                `;
+            }
+        });
+    }
+}
+
+// 제미나이 API 키 가져오기
+function getGeminiApiKey() {
+    // 환경변수에서 가져오거나 백엔드 API 호출
+    return window.GEMINI_API_KEY || 'your_api_key_here';
+}
 
         console.log('HAIRGATOR Personal Color - 최종 수정 버전 로드 완료');
         console.log('HAIRGATOR Personal Color - 최종 수정 버전 로드 완료');
