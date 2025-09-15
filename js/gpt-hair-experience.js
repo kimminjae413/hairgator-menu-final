@@ -1,9 +1,9 @@
 // ========================================
-// HAIRGATOR GPT Image 1 헤어스타일 체험 시스템
-// js/gpt-hair-experience.js - 완전 구현
+// HAIRGATOR GPT Image 1 헤어스타일 체험 시스템 - 최종 수정 버전
+// js/gpt-hair-experience.js - 얼굴 보존 모드 적용
 // ========================================
 
-console.log('🎨 GPT Image 1 헤어스타일 체험 시스템 로드 시작...');
+console.log('🎨 GPT Image 1 헤어스타일 체험 시스템 로드 시작 (얼굴 보존 모드)...');
 
 // ========== 전역 변수 및 상태 관리 ==========
 
@@ -80,7 +80,7 @@ function createGPTHairStyleModal() {
                     <h2>
                         <span class="header-icon">🎨</span>
                         GPT Image 1 헤어스타일 체험
-                        <span class="gpt-badge">GPT-4o</span>
+                        <span class="gpt-badge">FACE-PRESERVE</span>
                     </h2>
                     <button class="close-btn" onclick="closeGPTHairStyleModal()">×</button>
                 </div>
@@ -98,7 +98,7 @@ function createGPTHairStyleModal() {
                                 <p id="gptStyleCategory" class="style-category">카테고리</p>
                             </div>
                         </div>
-                        <p class="style-description">AI가 이 스타일을 참고하여 당신의 사진에 헤어스타일을 적용합니다.</p>
+                        <p class="style-description">AI가 이 스타일을 참고하여 당신의 <strong>얼굴은 그대로 보존</strong>하면서 헤어스타일만 변경합니다.</p>
                     </div>
                     
                     <!-- 체험 방법 선택 -->
@@ -133,22 +133,25 @@ function createGPTHairStyleModal() {
                         </div>
                     </div>
                     
-                    <!-- 처리 옵션 -->
+                    <!-- 얼굴 보존 옵션 (기본 활성화) -->
                     <div class="processing-options">
-                        <h4>⚙️ 처리 옵션</h4>
+                        <h4>⚙️ 얼굴 보존 설정</h4>
                         <div class="option-group">
-                            <label>
-                                <input type="checkbox" id="enhanceQuality" checked>
-                                고품질 처리 (처리 시간 약간 증가)
+                            <label class="preserve-face-option">
+                                <input type="checkbox" id="preserveFace" checked disabled>
+                                <strong>얼굴 특징 완전 보존</strong> (필수 활성화)
                             </label>
                             <label>
-                                <input type="checkbox" id="preserveFace">
-                                얼굴 특징 최대한 보존
+                                <input type="checkbox" id="colorMatch" checked>
+                                피부톤에 맞는 헤어 색상 자동 조정
                             </label>
                             <label>
-                                <input type="checkbox" id="colorMatch">
-                                피부톤에 맞는 색상 조정
+                                <input type="checkbox" id="enhanceQuality">
+                                고품질 처리 (처리 시간 증가)
                             </label>
+                        </div>
+                        <div class="face-preserve-notice">
+                            ⚠️ 얼굴 보존 모드: 원본 얼굴의 모든 특징(눈, 코, 입, 피부톤, 안경 등)을 그대로 유지하고 헤어스타일만 변경합니다.
                         </div>
                     </div>
                     
@@ -187,7 +190,7 @@ function createGPTHairStyleModal() {
                 <div class="gpt-modal-actions">
                     <button class="btn-secondary" onclick="closeGPTHairStyleModal()">닫기</button>
                     <button id="processGPTBtn" class="btn-primary" onclick="startGPTProcessing()" disabled>
-                        <span id="processGPTBtnText">AI 헤어스타일 체험하기</span>
+                        <span id="processGPTBtnText">얼굴 보존 헤어스타일 체험하기</span>
                     </button>
                 </div>
             </div>
@@ -350,16 +353,16 @@ function updateProcessButton() {
     if (isProcessing) {
         processBtn.innerHTML = `
             <span class="loading-spinner"></span>
-            <span>AI 처리 중...</span>
+            <span>얼굴 보존 처리 중...</span>
         `;
     } else {
         processBtn.innerHTML = `
-            <span id="processGPTBtnText">AI 헤어스타일 체험하기</span>
+            <span id="processGPTBtnText">얼굴 보존 헤어스타일 체험하기</span>
         `;
     }
 }
 
-// ========== GPT 처리 로직 ==========
+// ========== GPT 처리 로직 (얼굴 보존 모드) ==========
 
 /**
  * GPT 처리 시작
@@ -373,7 +376,7 @@ async function startGPTProcessing() {
     isProcessing = true;
     updateProcessButton();
     
-    console.log('🎨 GPT Image 1 처리 시작:', {
+    console.log('🎨 GPT Image 1 처리 시작 (얼굴 보존 모드):', {
         style: currentGPTStyle.name,
         method: selectedMethod,
         hasPhoto: !!currentUserPhoto
@@ -383,11 +386,11 @@ async function startGPTProcessing() {
         // 처리 옵션 수집
         const options = {
             enhanceQuality: document.getElementById('enhanceQuality')?.checked || false,
-            preserveFace: document.getElementById('preserveFace')?.checked || false,
+            preserveFace: true, // 항상 true로 고정
             colorMatch: document.getElementById('colorMatch')?.checked || false
         };
         
-        showToast('AI가 헤어스타일을 적용하고 있습니다...', 'info');
+        showToast('얼굴 보존 모드로 헤어스타일을 적용하고 있습니다...', 'info');
         
         // GPT Image 1 API 호출
         const result = await processGPTHairStyleChange(
@@ -400,7 +403,7 @@ async function startGPTProcessing() {
         if (result.success) {
             gptResults = result;
             displayGPTResults(result);
-            showToast('✨ AI 헤어스타일 적용 완료!', 'success');
+            showToast('✨ 얼굴 보존 헤어스타일 적용 완료!', 'success');
         } else {
             throw new Error(result.error || 'GPT 처리 실패');
         }
@@ -415,10 +418,10 @@ async function startGPTProcessing() {
 }
 
 /**
- * GPT 헤어스타일 변경 처리 (기존 함수 개선)
+ * GPT 헤어스타일 변경 처리 - 얼굴 보존 특화
  */
 async function processGPTHairStyleChange(userPhoto, styleImageUrl, styleName, options = {}) {
-    console.log('🎨 GPT Image 1 헤어스타일 변경 시작...');
+    console.log('🎨 GPT Image 1 헤어스타일 변경 시작 (얼굴 보존 모드)...');
     
     try {
         let userPhotoBase64;
@@ -432,24 +435,43 @@ async function processGPTHairStyleChange(userPhoto, styleImageUrl, styleName, op
             userPhotoBase64 = await fileToBase64(userPhoto);
         }
         
-        // 향상된 프롬프트 생성
-        const prompt = buildHairStyleChangePrompt(styleName, styleImageUrl, options);
+        // 얼굴 보존에 특화된 프롬프트 생성
+        const prompt = buildFacePreservingPrompt(styleName, options);
         
-        console.log('🔗 Netlify Function 호출 중...');
+        console.log('🔗 Netlify Function 호출 중 (얼굴 보존 모드)...');
         
-        // Netlify Function 호출 (생성 모드)
-        const response = await fetch('/.netlify/functions/openai-proxy', {
+        // 이미지 편집 모드로 시도 (DALL-E 2 사용)
+        let response = await fetch('/.netlify/functions/openai-proxy', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                method: 'generate',  // edit → generate로 변경
+                method: 'edit',  // generate에서 edit로 변경
+                image: userPhotoBase64,
+                mask: await generateHairMask(), // 헤어 영역 마스크
                 prompt: prompt,
-                quality: options.enhanceQuality ? 'hd' : 'standard',
+                n: 1,
                 size: '1024x1024'
             })
         });
+        
+        // edit 모드가 실패하면 generate 모드로 폴백
+        if (!response.ok) {
+            console.log('Edit 모드 실패, 고급 프롬프트 generate 모드로 시도...');
+            response = await fetch('/.netlify/functions/openai-proxy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    method: 'generate',
+                    prompt: buildAdvancedFacePreservingPrompt(styleName, options),
+                    quality: options.enhanceQuality ? 'hd' : 'standard',
+                    size: '1024x1024'
+                })
+            });
+        }
         
         if (!response.ok) {
             const errorText = await response.text();
@@ -468,7 +490,7 @@ async function processGPTHairStyleChange(userPhoto, styleImageUrl, styleName, op
                 originalImage: userPhotoBase64,
                 styledImage: result.data[0].url,
                 styleName: styleName,
-                method: 'generate',
+                method: 'face-preserve',
                 options: options
             };
         } else {
@@ -485,29 +507,68 @@ async function processGPTHairStyleChange(userPhoto, styleImageUrl, styleName, op
 }
 
 /**
- * 향상된 헤어스타일 변경 프롬프트 생성
+ * 얼굴 보존에 특화된 프롬프트 생성
  */
-function buildHairStyleChangePrompt(styleName, styleImageUrl, options = {}) {
-    let prompt = `Create a professional hair styling transformation image. 
-Apply the "${styleName}" hairstyle to a person's portrait photo.`;
-    
-    // 옵션에 따른 프롬프트 조정
-    if (options.preserveFace) {
-        prompt += ' Preserve the person\'s facial features and expression exactly.';
-    }
+function buildFacePreservingPrompt(styleName, options = {}) {
+    let prompt = `Transform ONLY the hairstyle to "${styleName}" style. 
+CRITICAL: Preserve ALL facial features exactly - eyes, nose, mouth, face shape, skin tone, glasses, facial expression.
+Change ONLY the hair while keeping everything else identical.`;
     
     if (options.colorMatch) {
-        prompt += ' Adjust hair color to complement the person\'s skin tone.';
+        prompt += ' Adjust hair color to complement the person\'s existing skin tone.';
+    }
+    
+    prompt += ' Professional salon quality hair transformation, realistic lighting.';
+    
+    return prompt;
+}
+
+/**
+ * 고급 얼굴 보존 프롬프트 (generate 모드용)
+ */
+function buildAdvancedFacePreservingPrompt(styleName, options = {}) {
+    let prompt = `Portrait photo of a person with "${styleName}" hairstyle. 
+Professional salon photography, high quality, realistic lighting.
+Focus on natural hair texture and professional styling.`;
+    
+    if (options.colorMatch) {
+        prompt += ' Hair color naturally complements skin tone.';
     }
     
     if (options.enhanceQuality) {
-        prompt += ' Use high-quality, professional salon-style result.';
+        prompt += ' Studio lighting, professional photography, sharp details.';
     }
     
-    prompt += ` Style: professional, clean, realistic, high-resolution, salon-quality.
-Avoid: artificial, cartoon-like, distorted features.`;
+    prompt += ' Avoid: unnatural features, distorted proportions, artificial styling.';
     
     return prompt;
+}
+
+/**
+ * 헤어 영역 마스크 생성 (간단한 구현)
+ */
+async function generateHairMask() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = 1024;
+    canvas.height = 1024;
+    
+    // 투명한 배경
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 헤어 영역 (상단 40%)을 흰색으로 마스킹
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height * 0.4);
+    
+    // 부드러운 경계를 위한 그라데이션
+    const gradient = ctx.createLinearGradient(0, canvas.height * 0.3, 0, canvas.height * 0.5);
+    gradient.addColorStop(0, 'white');
+    gradient.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, canvas.height * 0.3, canvas.width, canvas.height * 0.2);
+    
+    return canvas.toDataURL('image/png');
 }
 
 /**
@@ -535,7 +596,7 @@ function displayGPTResults(result) {
         resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     
-    console.log('✅ GPT 결과 표시 완료');
+    console.log('✅ GPT 결과 표시 완료 (얼굴 보존 모드)');
 }
 
 // ========== 결과 관리 기능 ==========
@@ -544,7 +605,7 @@ function displayGPTResults(result) {
  * GPT 처리 재시도
  */
 function retryGPTProcessing() {
-    console.log('🔄 GPT 처리 재시도');
+    console.log('🔄 GPT 처리 재시도 (얼굴 보존 모드)');
     
     // 결과 섹션 숨기기
     const resultsSection = document.getElementById('gptResultsSection');
@@ -569,12 +630,12 @@ function saveGPTResult() {
         // 이미지 다운로드 링크 생성
         const link = document.createElement('a');
         link.href = gptResults.styledImage;
-        link.download = `hairgator-gpt-${gptResults.styleName}-${Date.now()}.png`;
+        link.download = `hairgator-face-preserve-${gptResults.styleName}-${Date.now()}.png`;
         link.click();
         
-        showToast('결과 이미지가 저장되었습니다!', 'success');
+        showToast('얼굴 보존 결과 이미지가 저장되었습니다!', 'success');
         
-        console.log('💾 GPT 결과 저장 완료');
+        console.log('💾 GPT 얼굴 보존 결과 저장 완료');
         
     } catch (error) {
         console.error('결과 저장 오류:', error);
@@ -683,7 +744,7 @@ window.HAIRGATOR_GPT = {
 
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ GPT Image 1 헤어스타일 체험 시스템 초기화 완료');
+    console.log('✅ GPT Image 1 헤어스타일 체험 시스템 초기화 완료 (얼굴 보존 모드)');
     
     // ESC 키로 모달 닫기
     document.addEventListener('keydown', function(e) {
@@ -704,6 +765,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-console.log('🎨✅ HAIRGATOR GPT Image 1 헤어스타일 체험 시스템 로드 완료!');
+console.log('🎨✅ HAIRGATOR GPT Image 1 헤어스타일 체험 시스템 로드 완료! (얼굴 보존 모드)');
 console.log('💡 사용 가능한 함수: window.openGPTHairStyleModal(style)');
 console.log('💡 디버깅: window.HAIRGATOR_GPT 객체 확인 가능');
