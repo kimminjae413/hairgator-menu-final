@@ -141,10 +141,8 @@ class HAIRGATORGeminiIntegration {
     }
 
     // Gemini API로 헤어컬러 체험
-    async tryHairColor(imageFile, colorData, personalColorType) {
-        if (!this.apiKey) {
-            throw new Error('Gemini API 키가 설정되지 않았습니다.');
-        }
+   async tryHairColor(imageFile, colorData, personalColorType) {
+    // API 키 체크 제거 - 서버에서 처리
 
         try {
             console.log(`🎨 헤어컬러 체험 시작: ${colorData.name} (${colorData.brand} ${colorData.code})`);
@@ -210,13 +208,13 @@ class HAIRGATORGeminiIntegration {
 
     // Gemini API 호출
     async callGeminiAPI(requestData) {
-        const response = await fetch(`${this.baseURL}?key=${this.apiKey}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestData)
-        });
+    const response = await fetch('/.netlify/functions/hair-color-api', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+    });
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -250,10 +248,13 @@ class HAIRGATORGeminiIntegration {
 
     // 연결 테스트
     async testConnection() {
-        if (!this.apiKey) {
-            console.warn('⚠️ API 키가 설정되지 않았습니다');
-            return false;
-        }
+    try {
+        const response = await fetch('/.netlify/functions/health-check');
+        return response.ok;
+    } catch (error) {
+        console.error('연결 테스트 실패:', error);
+        return false;
+    }
 
         try {
             const testData = {
