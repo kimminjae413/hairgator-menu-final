@@ -1318,55 +1318,76 @@
         }
 
         async function sendToGeminiForVirtualTry(imageBase64, colorRecommendations) {
+    try {
+        showToast('5가지 헤어컬러를 하나씩 생성합니다...', 'info');
+        
+        displayVirtualTryResults(null, colorRecommendations, imageBase64);
+        
+        for (let i = 0; i < colorRecommendations.length; i++) {
+            const color = colorRecommendations[i];
+            
             try {
-                showToast('제미나이가 5가지 헤어컬러로 가상체험을 생성중입니다...', 'info');
+                showToast(`${i+1}/5 ${color.name} 생성 중...`, 'info');
                 
-                const colorList = colorRecommendations.map((color, index) => 
-                    `${index + 1}. ${color.brand} ${color.code} - ${color.name} (헥스코드: ${color.hex})`
-                ).join('\n');
-                
-                const apiKey = getGeminiApiKey();
-                if (!apiKey) {
-                    throw new Error('API 키가 설정되지 않았습니다');
-                }
+                const singleColorPrompt = `이 사진에서 머리카락을 다음 색상으로 염색해주세요: ${color.brand} ${color.code} - ${color.name} (헥스코드: ${color.hex}) 자연스러운 헤어컬러 변경만 해주세요.`;
 
                 const response = await fetch('/.netlify/functions/gemini-proxy', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-    prompt: `이 사진에서 다음 5가지 정확한 헤어컬러로 각각 편집한 결과 이미지 5개를 생성해주세요:
-
-${colorList}
-
-요구사항:
-- 각 헥스코드에 정확히 맞춰서 머리카락 부분만 자연스럽게 염색
-- 피부톤, 얼굴형, 배경은 그대로 유지  
-- 원본의 헤어스타일과 볼륨 유지
-- 자연스러운 그라데이션과 음영 적용
-- 총 5개의 서로 다른 편집된 이미지 생성
-
-5개의 편집된 이미지를 각각 생성해서 반환해주세요.`,
-    imageBase64: imageBase64,
-    colorRecommendations: colorRecommendations
-})
-});    
+                        prompt: singleColorPrompt,
+                        imageBase64: imageBase64,
+                        colorRecommendations: [color]
+                    })
+                });
                 
                 if (response.ok) {
                     const result = await response.json();
-                    displayVirtualTryResults(result, colorRecommendations, imageBase64);
-                    showToast('제미나이 헤어컬러 가상체험 완료!', 'success');
+                    let content;
+                    if (result.result && result.result.candidates && result.result.candidates[0]) {
+                        content = result.result.candidates[0].content.parts;
+                    } else if (result.candidates && result.candidates[0]) {
+                        content = result.candidates[0].content.parts;
+                    } else {
+                        throw new Error('응답 오류');
+                    }
+                    
+                    content.forEach((part) => {
+                        if (part.inlineData && part.inlineData.mimeType.startsWith('image/')) {
+                            const imgElement = document.createElement('img');
+                            imgElement.src = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                            imgElement.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 8px;';
+                            
+                            const container = document.getElementById(`virtual-image-${i}`);
+                            if (container) {
+                                container.innerHTML = '';
+                                container.appendChild(imgElement);
+                            }
+                        }
+                    });
                 } else {
-                    throw new Error(`제미나이 API 오류: ${response.status}`);
+                    const container = document.getElementById(`virtual-image-${i}`);
+                    if (container) {
+                        container.innerHTML = `<div style="width: 100%; height: 100%; background: ${color.hex}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold;"><div style="font-size: 1.1em;">${color.name}</div><div style="font-size: 0.9em; margin-top: 8px; opacity: 0.8;">색상 프리뷰</div></div>`;
+                    }
                 }
                 
             } catch (error) {
-                console.error('제미나이 가상체험 실패:', error);
-                showToast('AI 헤어컬러 가상체험에 실패했습니다', 'error');
-                displayColorPreviewResults(colorRecommendations, imageBase64);
+                console.error(`색상 ${i+1} 생성 실패:`, error);
+                const container = document.getElementById(`virtual-image-${i}`);
+                if (container) {
+                    container.innerHTML = `<div style="width: 100%; height: 100%; background: ${color.hex}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold;"><div style="font-size: 1.1em;">${color.name}</div><div style="font-size: 0.9em; margin-top: 8px; opacity: 0.8;">오류</div></div>`;
+                }
             }
         }
+        
+        showToast('헤어컬러 가상체험 완료!', 'success');
+        
+    } catch (error) {
+        console.error('전체 프로세스 실패:', error);
+        displayColorPreviewResults(colorRecommendations, imageBase64);
+    }
+}
 
         function displayVirtualTryResults(geminiResult, colorRecommendations, originalImageBase64) {
             try {
