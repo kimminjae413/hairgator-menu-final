@@ -71,7 +71,14 @@ exports.handler = async (event, context) => {
             `--${boundary}`,
             'Content-Disposition: form-data; name="documentJson"',
             '',
-            JSON.stringify({"_id": {"$oid": userId}}),
+            JSON.stringify({
+    "pipeline": {
+        "$match": {
+            "_id": {"$oid": userId}
+        },
+        "$limit": 1
+    }
+}),
             `--${boundary}--`,
             ''
         ].join('\r\n');
