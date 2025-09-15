@@ -1,12 +1,12 @@
 // ========================================
-// HAIRGATOR GPT Image 1 Netlify Function - 얼굴 보존 모드 지원
-// netlify/functions/openai-proxy.js - 최종 수정 버전
+// HAIRGATOR GPT Image 1 Netlify Function - GPT Image 1 전용 구현
+// netlify/functions/openai-proxy.js - 얼굴 보존 최적화
 // ========================================
 
 const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
-    console.log('🎨 OpenAI Proxy 호출됨:', event.httpMethod);
+    console.log('🎨 OpenAI Proxy 호출됨 (GPT Image 1 전용):', event.httpMethod);
     
     const headers = {
         'Access-Control-Allow-Origin': '*',
@@ -30,9 +30,15 @@ exports.handler = async (event, context) => {
 
     try {
         const requestData = JSON.parse(event.body);
-        const { method, prompt, image, mask, quality, size, n } = requestData;
+        const { method, prompt, image, mask, quality, size, n, input_fidelity } = requestData;
         
-        console.log('📋 요청 파라미터:', { method, hasPrompt: !!prompt, hasImage: !!image, hasMask: !!mask });
+        console.log('📋 요청 파라미터:', { 
+            method, 
+            hasPrompt: !!prompt, 
+            hasImage: !!image, 
+            hasMask: !!mask,
+            input_fidelity 
+        });
         
         // 테스트 요청 처리
         if (method === 'test') {
@@ -40,9 +46,10 @@ exports.handler = async (event, context) => {
                 statusCode: 200,
                 headers,
                 body: JSON.stringify({ 
-                    status: 'Function working', 
+                    status: 'GPT Image 1 Function working', 
                     hasApiKey: !!process.env.OPENAI_API_KEY,
-                    supportedMethods: ['generate', 'edit', 'test']
+                    supportedMethods: ['generate', 'edit', 'test'],
+                    model: 'gpt-image-1'
                 })
             };
         }
@@ -68,9 +75,9 @@ exports.handler = async (event, context) => {
 
         let apiUrl, requestBody, openaiResponse;
 
-        // ========== 이미지 편집 모드 (얼굴 보존용) ==========
+        // ========== GPT Image 1 이미지 편집 모드 (얼굴 보존) ==========
         if (method === 'edit') {
-            console.log('🖼️ Edit 모드 실행 (얼굴 보존)');
+            console.log('🖼️ GPT Image 1 Edit 모드 실행 (얼굴 보존)');
             
             if (!image) {
                 return {
@@ -82,9 +89,15 @@ exports.handler = async (event, context) => {
 
             apiUrl = 'https://api.openai.com/v1/images/edits';
             
-            // FormData 생성 (이미지 편집은 multipart/form-data 필요)
+            // GPT Image 1용 FormData 생성
             const FormData = require('form-data');
             const formData = new FormData();
+            
+            // 모델 명시적 지정 (중요!)
+            formData.append('model', 'gpt-image-1');
+            
+            // 얼굴 보존을 위한 핵심 설정
+            formData.append('input_fidelity', input_fidelity || 'high');
             
             // Base64 이미지를 Buffer로 변환
             let imageBuffer;
@@ -97,10 +110,17 @@ exports.handler = async (event, context) => {
                 imageBuffer = await imageResponse.buffer();
             }
             
-            formData.append('image', imageBuffer, { filename: 'image.png', contentType: 'image/png' });
+            // 이미지는 배열 형태로 전송 (GPT Image 1 방식)
+            formData.append('image[]', imageBuffer, { 
+                filename: 'image.png', 
+                contentType: 'image/png' 
+            });
+            
             formData.append('prompt', prompt);
             formData.append('n', n || 1);
             formData.append('size', size || '1024x1024');
+            formData.append('quality', quality || 'high');
+            formData.append('output_format', 'png');
             
             // 마스크가 있으면 추가
             if (mask) {
@@ -108,10 +128,15 @@ exports.handler = async (event, context) => {
                 if (mask.startsWith('data:image/')) {
                     const base64Data = mask.split(',')[1];
                     maskBuffer = Buffer.from(base64Data, 'base64');
-                    formData.append('mask', maskBuffer, { filename: 'mask.png', contentType: 'image/png' });
+                    formData.append('mask', maskBuffer, { 
+                        filename: 'mask.png', 
+                        contentType: 'image/png' 
+                    });
                 }
             }
 
+            console.log('📤 GPT Image 1 Edit API 호출 중...');
+            
             openaiResponse = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
@@ -121,20 +146,22 @@ exports.handler = async (event, context) => {
                 body: formData
             });
 
-        // ========== 이미지 생성 모드 ==========
+        // ========== GPT Image 1 이미지 생성 모드 ==========
         } else if (method === 'generate') {
-            console.log('✨ Generate 모드 실행');
+            console.log('✨ GPT Image 1 Generate 모드 실행');
             
             apiUrl = 'https://api.openai.com/v1/images/generations';
             
             requestBody = {
-                model: 'dall-e-3',
+                model: 'gpt-image-1',  // GPT Image 1 명시적 지정
                 prompt: prompt,
                 size: size || '1024x1024',
-                quality: quality || 'standard',
-                response_format: 'url',
+                quality: quality || 'high',
+                output_format: 'png',
                 n: n || 1
             };
+
+            console.log('📤 GPT Image 1 Generate API 호출 중...');
 
             openaiResponse = await fetch(apiUrl, {
                 method: 'POST',
@@ -159,6 +186,7 @@ exports.handler = async (event, context) => {
         const result = await openaiResponse.json();
         
         console.log('📤 OpenAI 응답 상태:', openaiResponse.status);
+        console.log('📊 응답 데이터:', JSON.stringify(result, null, 2));
         
         if (!openaiResponse.ok) {
             console.error('❌ OpenAI API 오류:', result);
@@ -168,14 +196,22 @@ exports.handler = async (event, context) => {
                 body: JSON.stringify({
                     error: result.error || { 
                         message: `OpenAI API 오류 (${openaiResponse.status})`,
-                        type: 'api_error'
+                        type: 'api_error',
+                        details: result
                     }
                 })
             };
         }
 
+        // GPT Image 1은 base64로 응답하므로 URL 변환 필요할 수 있음
+        if (result.data && result.data[0] && result.data[0].b64_json) {
+            console.log('🔄 Base64 이미지를 URL로 변환 중...');
+            // Base64를 data URL로 변환
+            result.data[0].url = `data:image/png;base64,${result.data[0].b64_json}`;
+        }
+
         // 성공 응답
-        console.log('✅ 성공:', result.data?.length || 0, '개 이미지 생성');
+        console.log('✅ GPT Image 1 성공:', result.data?.length || 0, '개 이미지 생성');
         
         return {
             statusCode: 200,
@@ -184,7 +220,8 @@ exports.handler = async (event, context) => {
         };
 
     } catch (error) {
-        console.error('❌ Function 오류:', error);
+        console.error('❌ Function 오류:', error.message);
+        console.error('🔍 스택 트레이스:', error.stack);
         
         return {
             statusCode: 500,
@@ -192,7 +229,8 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({
                 error: {
                     message: error.message || 'Internal server error',
-                    type: 'function_error'
+                    type: 'function_error',
+                    stack: error.stack
                 }
             })
         };
