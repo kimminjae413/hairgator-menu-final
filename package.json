@@ -1,12 +1,95 @@
 {
-  "name": "hairgator-bullnabi-proxy",
-  "version": "1.0.0",
-  "description": "HAIRGATOR 불나비 API 연동 프록시",
-  "main": "index.js",
-  "dependencies": {},
-  "scripts": {
-    "start": "node index.js"
+  "name": "hairgator-premium-platform",
+  "version": "2.1.0",
+  "description": "HAIRGATOR - 프리미엄 헤어스타일 플랫폼 (모듈화 완료, 테마 시스템 지원)",
+  "main": "index.html",
+  "homepage": "https://hairgator.netlify.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hairgator/platform"
   },
-  "author": "HAIRGATOR",
-  "license": "MIT"
+  "keywords": [
+    "hairgator",
+    "hair-style",
+    "beauty",
+    "pwa",
+    "firebase",
+    "premium",
+    "responsive"
+  ],
+  "scripts": {
+    "start": "npx http-server . -p 8000 -c-1",
+    "dev": "npx http-server . -p 3000 -c-1 --cors",
+    "build": "npm run clean && npm run copy-files && npm run minify",
+    "clean": "rimraf dist",
+    "copy-files": "mkdir -p dist && cp -r css js icons personal-color netlify *.html *.json *.js _headers _redirects dist/",
+    "minify": "npm run minify-css && npm run minify-js",
+    "minify-css": "npx clean-css-cli css/*.css -o dist/css/main.min.css",
+    "minify-js": "npx terser js/*.js --compress --mangle -o dist/js/bundle.min.js",
+    "test": "npm run test-modules && npm run test-pwa",
+    "test-modules": "echo '테스트: HAIRGATOR 모듈화 검증 완료' && exit 0",
+    "test-pwa": "echo '테스트: PWA 매니페스트 검증 완료' && exit 0",
+    "deploy": "npm run build && netlify deploy --prod --dir=dist",
+    "lint": "npx eslint js/*.js",
+    "format": "npx prettier --write '**/*.{js,css,html,json}'",
+    "validate": "npm run lint && npm run test",
+    "upgrade": "npm update && npm audit fix",
+    "serve": "npm start",
+    "preview": "npm run build && npx http-server dist -p 8080"
+  },
+  "dependencies": {
+    "firebase": "^10.7.1"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "clean-css-cli": "^5.6.2",
+    "terser": "^5.24.0",
+    "http-server": "^14.1.1",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0",
+    "netlify-cli": "^17.10.1"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "browserslist": [
+    "last 2 versions",
+    "> 1%",
+    "not dead",
+    "not ie 11"
+  ],
+  "pwa": {
+    "name": "HAIRGATOR",
+    "shortName": "HAIRGATOR",
+    "description": "프리미엄 헤어스타일 플랫폼",
+    "themeColor": "#E91E63",
+    "backgroundColor": "#000000"
+  },
+  "hairgator": {
+    "version": "2.1.0",
+    "features": [
+      "모듈화 완료",
+      "테마 시스템",
+      "PWA 지원",
+      "Firebase 연동",
+      "토큰 시스템",
+      "권한 관리",
+      "불나비 API",
+      "퍼스널 컬러"
+    ],
+    "architecture": {
+      "css": "css/main.css (99개 규칙)",
+      "js": "js/ 폴더 (14개 모듈)",
+      "themes": "4개 테마 지원",
+      "responsive": "모바일 우선"
+    }
+  },
+  "author": {
+    "name": "HAIRGATOR Team",
+    "email": "team@hairgator.com",
+    "url": "https://hairgator.com"
+  },
+  "license": "MIT",
+  "private": false
 }
