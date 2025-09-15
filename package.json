@@ -4,13 +4,10 @@
   "description": "HAIRGATOR 불나비 API 연동 프록시",
   "main": "index.js",
   "dependencies": {},
-  "devDependencies": {
-    "rimraf": "^5.0.5"
-  },
   "scripts": {
     "start": "node index.js",
-    "build": "echo 'HAIRGATOR 정적 사이트 - 빌드 완료' && exit 0",
-    "clean": "rimraf dist"
+    "build": "echo 'Build completed successfully'",
+    "test": "echo 'No tests specified'"
   },
   "author": "HAIRGATOR",
   "license": "MIT"
