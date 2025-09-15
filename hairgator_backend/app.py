@@ -16,8 +16,8 @@ CORS(app, origins=["*"],
      methods=["GET", "POST", "OPTIONS"])
 
 # AKOOL API 설정
-CLIENT_ID = os.getenv('CLIENT_ID')
-CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+CLIENT_ID = os.getenv('AKOOL_CLIENT_ID')
+CLIENT_SECRET = os.getenv('AKOOL_CLIENT_SECRET')
 BASE_URL = "https://openapi.akool.com/api/open/v3"
 DETECT_URL = "https://sg3.akool.com/detect"
 
