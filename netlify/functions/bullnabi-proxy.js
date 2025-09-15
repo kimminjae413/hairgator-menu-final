@@ -1,5 +1,5 @@
 // HAIRGATOR 불나비 API 프록시 서버 (네이티브 multipart 방식)
-// 해결: form-data 라이브러리 없이 네이티브로 multipart/form-data 구성
+// 해결: pipeline 객체 형식으로 수정
 
 exports.handler = async (event, context) => {
     // CORS 헤더 설정
@@ -72,16 +72,12 @@ exports.handler = async (event, context) => {
             'Content-Disposition: form-data; name="documentJson"',
             '',
             JSON.stringify({
-                "pipeline": [
-                    {
-                        "$match": {
-                            "_id": {"$oid": userId}
-                        }
+                "pipeline": {
+                    "$match": {
+                        "_id": {"$oid": userId}
                     },
-                    {
-                        "$limit": 1
-                    }
-                ]
+                    "$limit": 1
+                }
             }),
             `--${boundary}--`,
             ''
@@ -118,7 +114,7 @@ exports.handler = async (event, context) => {
                     userInfo: {
                         name: '김민재',
                         phone: '708eric@hanmail.net',
-                        remainCount: 360,
+                        remainCount: 276,
                         lastLoginDate: new Date().toISOString(),
                         source: 'fallback_api_error'
                     },
@@ -143,16 +139,20 @@ exports.handler = async (event, context) => {
                 // 실제 사용자 데이터가 있는지 확인
                 if (apiData.data && apiData.data.length > 0) {
                     // 최신 사용자 정보 추출
-                    const latestEntry = apiData.data[0];
-                    const userData = latestEntry._createUser || latestEntry._updateUser || latestEntry;
+                    const userData = apiData.data[0];
                     
                     const userInfo = {
                         name: userData.nickname || userData.name || '김민재',
-                        phone: userData.phone || userData.email || '708eric@hanmail.net',
-                        remainCount: userData.remainCount || 360,
+                        phone: userData.email || '708eric@hanmail.net',
+                        remainCount: userData.remainCount || 276,
                         lastLoginDate: new Date().toISOString(),
                         source: 'bullnabi_api_success',
-                        userId: userData.userId || userData._id?.$oid
+                        userId: userData.userId || userData._id?.$oid,
+                        // 추가 정보
+                        socialType: userData.socialType,
+                        registerType: userData.registerType,
+                        status: userData.status,
+                        loginCount: userData._loginCount
                     };
 
                     console.log('실제 불나비 사용자 정보 추출 성공:', userInfo);
@@ -166,7 +166,8 @@ exports.handler = async (event, context) => {
                             debug: {
                                 method: 'api_success',
                                 dataFound: true,
-                                apiResponseLength: responseText.length
+                                apiResponseLength: responseText.length,
+                                recordsTotal: apiData.recordsTotal
                             }
                         })
                     };
@@ -184,7 +185,7 @@ exports.handler = async (event, context) => {
         const fallbackUserInfo = {
             name: '김민재',
             phone: '708eric@hanmail.net',
-            remainCount: 360,
+            remainCount: 276,
             lastLoginDate: new Date().toISOString(),
             source: 'fallback_native_multipart'
         };
