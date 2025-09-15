@@ -12,6 +12,7 @@
     <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
     
     <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="hair-experience-styles.css">
 </head>
 <body>
     <!-- 로딩 화면 -->
@@ -234,6 +235,18 @@
                 </div>
             </div>
         </main>
+   </div>
+
+    <!-- 헤어체험 UI 요소 추가 -->
+    <div id="hair-experience-section" style="display: none;">
+        <div class="hair-experience-controls">
+            <button id="capture-photo-for-hair" class="capture-btn">📷 헤어체험용 사진 촬영</button>
+            <button id="start-hair-experience" class="hair-experience-btn" disabled>🎨 AI 헤어컬러 체험</button>
+            <button id="set-gemini-key" class="api-key-btn">🔑 Gemini API 키 설정</button>
+        </div>
+        
+        <div id="captured-image-preview" style="display: none;"></div>
+        <div id="quick-personal-color-result" style="display: none;"></div>
     </div>
 
     <script>
@@ -1254,5 +1267,9 @@ function extractSkinTone(landmarks) {
 
         console.log('HAIRGATOR Personal Color - 최종 수정 버전 로드 완료');
     </script>
+    
+    <!-- 헤어체험 통합 스크립트 추가 -->
+    <script src="gemini-integration.js"></script>
+    <script src="camera-to-hair-experience.js"></script>
 </body>
 </html>
