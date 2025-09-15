@@ -633,11 +633,12 @@ function addAIButtonToModal(style) {
     const modalActions = document.querySelector('.style-modal-actions');
     if (!modalActions) return;
     
-    // 기존 AI 버튼이 있으면 제거
-    const existingAIBtn = modalActions.querySelector('.ai-experience-modal-btn');
-    if (existingAIBtn) {
-        existingAIBtn.remove();
-    }
+   // 기존 모든 AI 버튼 제거 (GPT 버튼 중복 방지)
+const existingAIBtns = modalActions.querySelectorAll('.ai-experience-modal-btn, .gpt-ai-experience-modal-btn');
+existingAIBtns.forEach(btn => {
+    console.log('기존 AI 버튼 제거:', btn.className);
+    btn.remove();
+});
     
     // GPT AI 버튼 생성
     const gptAiButton = document.createElement('button');
@@ -854,6 +855,7 @@ window.debugHAIRGATOR = function() {
 
 console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 전역 변수 문제 해결 버전');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
+
 
 
 
