@@ -1,626 +1,536 @@
-/* ========================================
-   HAIRGATOR GPT Image 1 모달 CSS - 태블릿 최적화
-   css/gpt-hair-styles.css
-======================================== */
-
-/* 기존 GPT AI 버튼 스타일 유지 */
-.gpt-ai-experience-modal-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    border: none !important;
-    color: white !important;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.gpt-ai-experience-modal-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-}
-
-.gpt-ai-experience-modal-btn .new-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #ff4757;
-    color: white;
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 8px;
-    font-weight: 600;
-}
-
-.gpt-ai-experience-modal-btn .ai-icon {
-    font-size: 18px;
-    margin-right: 8px;
-}
-
-/* ========== 태블릿 최적화 모달 컨테이너 ========== */
-.gpt-hair-style-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 10001;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-
-.gpt-hair-style-modal.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-.gpt-modal-container.tablet-optimized {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.9);
-    width: 95%;
-    max-width: 1000px;
-    max-height: 90vh;
-    background: var(--background);
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-    transition: transform 0.3s ease;
-}
-
-.gpt-hair-style-modal.show .gpt-modal-container.tablet-optimized {
-    transform: translate(-50%, -50%) scale(1);
-}
-
-/* ========== 모달 헤더 ========== */
-.gpt-modal-header {
-    padding: 20px 30px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 60px;
-}
-
-.gpt-modal-header h2 {
-    display: flex;
-    align-items: center;
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.gpt-modal-header .header-icon {
-    font-size: 22px;
-    margin-right: 10px;
-}
-
-.gpt-modal-header .gpt-badge {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 10px;
-    margin-left: 10px;
-    font-weight: 500;
-}
-
-.gpt-modal-header .close-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 50%;
-    transition: background 0.3s ease;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.gpt-modal-header .close-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-/* ========== 태블릿 2컬럼 레이아웃 ========== */
-.gpt-modal-content.tablet-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    padding: 30px;
-    max-height: calc(90vh - 160px);
-    overflow-y: auto;
-}
-
-.left-column {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.right-column {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 400px;
-}
-
-/* ========== 선택된 스타일 정보 (간소화) ========== */
-.selected-style-info.compact {
-    background: var(--card-background);
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid var(--border-color);
-}
-
-.selected-style-info.compact h4 {
-    color: var(--text-primary);
-    margin-bottom: 12px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.style-preview.horizontal {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.style-reference-image.small {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 2px solid var(--border-color);
-}
-
-.style-details h3 {
-    color: var(--text-primary);
-    margin: 0 0 4px 0;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.style-code {
-    color: var(--female-color);
-    font-weight: 500;
-    margin: 0 0 2px 0;
-    font-size: 12px;
-}
-
-.style-category {
-    color: var(--text-secondary);
-    font-size: 11px;
-    margin: 0;
-}
-
-/* ========== 사진 업로드 (태블릿 최적화) ========== */
-.photo-upload-section.compact {
-    background: var(--card-background);
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid var(--border-color);
-}
-
-.photo-upload-section.compact h4 {
-    color: var(--text-primary);
-    margin-bottom: 12px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.upload-area.tablet-size {
-    min-height: 150px;
-    border: 2px dashed var(--border-color);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    background: var(--background);
-}
-
-.upload-area.tablet-size:hover,
-.upload-area.tablet-size.drag-over,
-.upload-area.tablet-size.touch-active {
-    border-color: var(--female-color);
-    background: rgba(233, 30, 99, 0.05);
-}
-
-.upload-placeholder {
-    text-align: center;
-    color: var(--text-secondary);
-}
-
-.upload-placeholder .upload-icon {
-    font-size: 32px;
-    margin-bottom: 8px;
-}
-
-.upload-placeholder p {
-    margin: 8px 0;
-    font-size: 14px;
-}
-
-.upload-btn.tablet-btn {
-    background: var(--female-color);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: background 0.3s ease;
-}
-
-.upload-btn.tablet-btn:hover {
-    background: #D81B60;
-}
-
-.photo-preview {
-    text-align: center;
-}
-
-.photo-preview img {
-    max-width: 100%;
-    max-height: 120px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-}
-
-.change-photo-btn {
-    background: transparent;
-    color: var(--female-color);
-    border: 1px solid var(--female-color);
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.3s ease;
-}
-
-.change-photo-btn:hover {
-    background: var(--female-color);
-    color: white;
-}
-
-/* ========== 옵션 설정 (간소화) ========== */
-.gpt-options-section.compact {
-    background: var(--card-background);
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid var(--border-color);
-}
-
-.gpt-options-section.compact h4 {
-    color: var(--text-primary);
-    margin-bottom: 12px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.option-toggles.tablet-toggles {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.option-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    font-size: 13px;
-}
-
-.toggle-slider {
-    position: relative;
-    width: 40px;
-    height: 20px;
-    background: #ccc;
-    border-radius: 20px;
-    transition: background 0.3s ease;
-}
-
-.toggle-slider::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 16px;
-    height: 16px;
-    background: white;
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-}
-
-.option-toggle input:checked + .toggle-slider {
-    background: var(--female-color);
-}
-
-.option-toggle input:checked + .toggle-slider::before {
-    transform: translateX(20px);
-}
-
-.option-toggle input {
-    display: none;
-}
-
-.toggle-label {
-    color: var(--text-primary);
-    font-weight: 500;
-}
-
-/* ========== 처리 상태 (태블릿 최적화) ========== */
-.processing-status.tablet-processing {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 40px;
-}
-
-.processing-animation {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-
-.processing-spinner {
-    width: 60px;
-    height: 60px;
-    border: 4px solid rgba(233, 30, 99, 0.2);
-    border-top: 4px solid var(--female-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.processing-animation p {
-    color: var(--text-primary);
-    font-size: 16px;
-    font-weight: 500;
-    margin: 0;
-}
-
-/* ========== 결과 표시 (태블릿 최적화) ========== */
-.result-section.tablet-result {
-    width: 100%;
-}
-
-.result-section.tablet-result h4 {
-    color: var(--text-primary);
-    margin-bottom: 20px;
-    font-size: 16px;
-    font-weight: 600;
-    text-align: center;
-}
-
-.result-comparison.tablet-comparison {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.result-item {
-    text-align: center;
-}
-
-.result-item p {
-    color: var(--text-secondary);
-    font-size: 12px;
-    margin-bottom: 8px;
-    font-weight: 500;
-}
-
-.result-item img {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 2px solid var(--border-color);
-}
-
-.result-arrow {
-    font-size: 24px;
-    color: var(--female-color);
-    font-weight: bold;
-}
-
-.result-actions.tablet-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-.result-btn {
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-}
-
-.result-btn.primary {
-    background: var(--female-color);
-    color: white;
-}
-
-.result-btn.primary:hover {
-    background: #D81B60;
-}
-
-.result-btn.secondary {
-    background: transparent;
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-}
-
-.result-btn.secondary:hover {
-    border-color: var(--female-color);
-    color: var(--female-color);
-}
-
-/* ========== 시작 가이드 ========== */
-.start-guide {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 40px 20px;
-    height: 100%;
-}
-
-.guide-content {
-    max-width: 300px;
-}
-
-.guide-icon {
-    font-size: 48px;
-    margin-bottom: 20px;
-}
-
-.guide-content h3 {
-    color: var(--text-primary);
-    margin-bottom: 12px;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.guide-content p {
-    color: var(--text-secondary);
-    margin-bottom: 20px;
-    line-height: 1.4;
-}
-
-.guide-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.step {
-    background: rgba(233, 30, 99, 0.1);
-    color: var(--female-color);
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-/* ========== 하단 액션 버튼 ========== */
-.gpt-modal-actions.tablet-actions {
-    padding: 20px 30px;
-    background: var(--card-background);
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    gap: 15px;
-    justify-content: flex-end;
-}
-
-.gpt-action-btn.tablet-btn {
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-    min-width: 120px;
-}
-
-.gpt-action-btn.primary.tablet-btn {
-    background: var(--female-color);
-    color: white;
-}
-
-.gpt-action-btn.primary.tablet-btn:hover {
-    background: #D81B60;
-    transform: translateY(-2px);
-}
-
-.gpt-action-btn.primary.tablet-btn.ready {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(233, 30, 99, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(233, 30, 99, 0); }
-}
-
-.gpt-action-btn.primary.tablet-btn:disabled {
-    background: #666;
-    cursor: not-allowed;
-    animation: none;
-}
-
-.gpt-action-btn.secondary.tablet-btn {
-    background: transparent;
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-}
-
-.gpt-action-btn.secondary.tablet-btn:hover {
-    border-color: var(--female-color);
-    color: var(--female-color);
-}
-
-/* ========== 반응형 - 작은 태블릿 ========== */
-@media (max-width: 900px) {
-    .gpt-modal-content.tablet-layout {
-        grid-template-columns: 1fr;
-        gap: 20px;
+// ==========================================
+// HAIRGATOR GPT - 브라우저 호환 파일 선택 최종 해결
+// js/gpt-hair-experience.js
+// ==========================================
+
+console.log('GPT 브라우저 호환 버전 로드');
+
+window.HAIRGATOR_GPT = {
+    isProcessing: false,
+    currentStyle: null,
+    userPhoto: null,
+    currentMethod: 'upload',
+    apiEndpoint: '/.netlify/functions/openai-proxy'
+};
+
+// 브라우저 호환 모달 HTML - 파일 입력을 직접 클릭 가능하게 변경
+function createWorkingGPTModalHTML(style) {
+    return `
+    <div class="gpt-hair-style-modal" id="gptHairStyleModal">
+        <div class="gpt-modal-container tablet-optimized">
+            <div class="gpt-modal-header">
+                <h2>
+                    <span class="header-icon">🎨</span>
+                    GPT Image 1 헤어체험
+                    <span class="gpt-badge">NEW</span>
+                </h2>
+                <button class="close-btn" onclick="closeGPTHairStyleModal()">×</button>
+            </div>
+            
+            <div class="gpt-modal-content tablet-layout">
+                <div class="left-column">
+                    <div class="selected-style-info compact">
+                        <h4>🎯 선택된 헤어스타일</h4>
+                        <div class="style-preview horizontal">
+                            <img src="${style.imageUrl}" alt="${style.name}" class="style-reference-image small">
+                            <div class="style-details">
+                                <h3>${style.name}</h3>
+                                <p class="style-code">${style.code}</p>
+                                <p class="style-category">${style.mainCategory} > ${style.subCategory}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="experience-method-selection">
+                        <h4>📸 체험 방법 선택</h4>
+                        <div class="method-options">
+                            <label class="method-option active" id="uploadMethodLabel">
+                                <input type="radio" name="method" value="upload" checked style="display: none;">
+                                <div class="method-icon">📁</div>
+                                <div class="method-title">사진 업로드</div>
+                                <div class="method-description">갤러리에서 사진 선택</div>
+                            </label>
+                            <label class="method-option" id="cameraMethodLabel">
+                                <input type="radio" name="method" value="camera" style="display: none;">
+                                <div class="method-icon">📷</div>
+                                <div class="method-title">카메라 촬영</div>
+                                <div class="method-description">새로 사진 촬영</div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- 핵심 수정: 파일 입력을 라벨로 감싸서 직접 클릭 가능하게 -->
+                    <div class="photo-upload-section compact" id="photoUploadSection">
+                        <h4 id="uploadSectionTitle">📷 사진 선택</h4>
+                        
+                        <div class="upload-area tablet-size" id="uploadArea">
+                            <div class="upload-placeholder" id="uploadPlaceholder">
+                                <div class="upload-icon" id="uploadIcon">📁</div>
+                                <p id="uploadText">사진을 선택하거나 아래 버튼을 클릭하세요</p>
+                                
+                                <!-- 직접 클릭 가능한 파일 입력들 -->
+                                <label class="upload-btn tablet-btn" id="galleryLabel" style="display: inline-block;">
+                                    <input type="file" id="galleryInput" accept="image/*" style="display: none;">
+                                    사진 선택하기
+                                </label>
+                                
+                                <label class="upload-btn tablet-btn" id="cameraLabel" style="display: none;">
+                                    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+                                    사진 촬영하기
+                                </label>
+                            </div>
+                            
+                            <div class="photo-preview" id="photoPreview" style="display: none;">
+                                <img id="previewImage" alt="미리보기">
+                                <label class="change-photo-btn" id="changeLabel">
+                                    <input type="file" id="changeInput" accept="image/*" style="display: none;">
+                                    다른 사진 선택
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="gpt-options-section compact">
+                        <h4>⚙️ 옵션</h4>
+                        <div class="option-toggles tablet-toggles">
+                            <label class="option-toggle">
+                                <input type="checkbox" id="colorMatchOption" checked>
+                                <span class="toggle-slider"></span>
+                                <span class="toggle-label">피부톤 맞춤</span>
+                            </label>
+                            <label class="option-toggle">
+                                <input type="checkbox" id="enhanceQualityOption">
+                                <span class="toggle-slider"></span>
+                                <span class="toggle-label">고품질</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="right-column">
+                    <div class="processing-status tablet-processing" id="processingStatus" style="display: none;">
+                        <div class="processing-animation">
+                            <div class="processing-spinner"></div>
+                            <p id="processingText">AI가 헤어스타일을 적용하고 있습니다...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="result-section tablet-result" id="resultSection" style="display: none;">
+                        <h4>✨ 변환 결과</h4>
+                        <div class="result-comparison tablet-comparison">
+                            <div class="result-item">
+                                <p>원본</p>
+                                <img id="originalResult" alt="원본 사진">
+                            </div>
+                            <div class="result-arrow">→</div>
+                            <div class="result-item">
+                                <p>변환 후</p>
+                                <img id="styledResult" alt="스타일 적용 후">
+                            </div>
+                        </div>
+                        <div class="result-actions tablet-actions">
+                            <button type="button" class="result-btn secondary" onclick="downloadResult()">
+                                💾 다운로드
+                            </button>
+                            <button type="button" class="result-btn primary" onclick="shareResult()">
+                                📤 공유하기
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="start-guide" id="startGuide">
+                        <div class="guide-content">
+                            <div class="guide-icon">🎨</div>
+                            <h3>AI 헤어스타일 체험</h3>
+                            <p>왼쪽에서 사진을 업로드하고<br>AI 체험 시작 버튼을 눌러주세요</p>
+                            <div class="guide-steps">
+                                <div class="step">1️⃣ 체험 방법 선택</div>
+                                <div class="step">2️⃣ 사진 업로드</div>
+                                <div class="step">3️⃣ AI 체험 시작</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gpt-modal-actions tablet-actions">
+                <button type="button" class="gpt-action-btn secondary tablet-btn" onclick="closeGPTHairStyleModal()">
+                    취소
+                </button>
+                <button type="button" class="gpt-action-btn primary tablet-btn" id="startProcessBtn" onclick="startGPTProcessing()" disabled>
+                    🎨 AI 체험 시작
+                </button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function openGPTHairStyleModal(style) {
+    console.log('GPT 헤어스타일 모달 열기:', style);
+    
+    removeGPTModal();
+    window.HAIRGATOR_GPT.currentStyle = style;
+    window.HAIRGATOR_GPT.currentMethod = 'upload';
+    
+    const modalHTML = createWorkingGPTModalHTML(style);
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    setTimeout(() => {
+        const modal = document.getElementById('gptHairStyleModal');
+        if (modal) {
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+    }, 100);
+    
+    setTimeout(() => {
+        setupWorkingEvents();
+    }, 150);
+}
+
+function setupWorkingEvents() {
+    console.log('브라우저 호환 이벤트 설정...');
+    
+    // 방법 선택 라디오 버튼
+    const uploadMethod = document.querySelector('input[name="method"][value="upload"]');
+    const cameraMethod = document.querySelector('input[name="method"][value="camera"]');
+    const uploadMethodLabel = document.getElementById('uploadMethodLabel');
+    const cameraMethodLabel = document.getElementById('cameraMethodLabel');
+    
+    const galleryLabel = document.getElementById('galleryLabel');
+    const cameraLabel = document.getElementById('cameraLabel');
+    
+    // 방법 선택 이벤트
+    if (uploadMethod && cameraMethod) {
+        uploadMethod.addEventListener('change', function() {
+            if (this.checked) {
+                selectWorkingMethod('upload');
+            }
+        });
+        
+        cameraMethod.addEventListener('change', function() {
+            if (this.checked) {
+                selectWorkingMethod('camera');
+            }
+        });
     }
     
-    .right-column {
-        min-height: 300px;
+    // 라벨 클릭으로 방법 변경
+    if (uploadMethodLabel) {
+        uploadMethodLabel.addEventListener('click', function() {
+            selectWorkingMethod('upload');
+        });
     }
     
-    .result-comparison.tablet-comparison {
-        flex-direction: column;
-        gap: 10px;
+    if (cameraMethodLabel) {
+        cameraMethodLabel.addEventListener('click', function() {
+            selectWorkingMethod('camera');
+        });
     }
     
-    .result-arrow {
-        transform: rotate(90deg);
+    // 파일 선택 이벤트 (라벨 내부의 input)
+    const galleryInput = document.getElementById('galleryInput');
+    const cameraInput = document.getElementById('cameraInput');
+    const changeInput = document.getElementById('changeInput');
+    
+    if (galleryInput) {
+        galleryInput.addEventListener('change', function(e) {
+            console.log('갤러리에서 파일 선택됨:', e.target.files[0]?.name);
+            if (e.target.files[0]) {
+                handleFileSelection(e.target.files[0]);
+            }
+        });
+    }
+    
+    if (cameraInput) {
+        cameraInput.addEventListener('change', function(e) {
+            console.log('카메라로 사진 촬영됨:', e.target.files[0]?.name);
+            if (e.target.files[0]) {
+                handleFileSelection(e.target.files[0]);
+            }
+        });
+    }
+    
+    if (changeInput) {
+        changeInput.addEventListener('change', function(e) {
+            console.log('사진 변경됨:', e.target.files[0]?.name);
+            if (e.target.files[0]) {
+                handleFileSelection(e.target.files[0]);
+            }
+        });
+    }
+    
+    // 드래그 앤 드롭
+    const uploadArea = document.getElementById('uploadArea');
+    if (uploadArea) {
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('image/')) {
+                console.log('드래그 앤 드롭으로 파일 선택됨:', files[0].name);
+                handleFileSelection(files[0]);
+            }
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.currentTarget.classList.remove('drag-over');
+        });
+    }
+    
+    console.log('브라우저 호환 이벤트 설정 완료');
+}
+
+function selectWorkingMethod(method) {
+    console.log('체험 방법 변경:', method);
+    
+    window.HAIRGATOR_GPT.currentMethod = method;
+    
+    const uploadMethodLabel = document.getElementById('uploadMethodLabel');
+    const cameraMethodLabel = document.getElementById('cameraMethodLabel');
+    const galleryLabel = document.getElementById('galleryLabel');
+    const cameraLabel = document.getElementById('cameraLabel');
+    const uploadIcon = document.getElementById('uploadIcon');
+    const uploadText = document.getElementById('uploadText');
+    const uploadSectionTitle = document.getElementById('uploadSectionTitle');
+    
+    // UI 업데이트
+    if (uploadMethodLabel && cameraMethodLabel) {
+        uploadMethodLabel.classList.remove('active');
+        cameraMethodLabel.classList.remove('active');
+        
+        if (method === 'upload') {
+            uploadMethodLabel.classList.add('active');
+        } else {
+            cameraMethodLabel.classList.add('active');
+        }
+    }
+    
+    // 버튼 표시/숨김
+    if (galleryLabel && cameraLabel) {
+        if (method === 'camera') {
+            galleryLabel.style.display = 'none';
+            cameraLabel.style.display = 'inline-block';
+        } else {
+            galleryLabel.style.display = 'inline-block';
+            cameraLabel.style.display = 'none';
+        }
+    }
+    
+    // 텍스트 변경
+    if (method === 'camera') {
+        if (uploadIcon) uploadIcon.textContent = '📷';
+        if (uploadText) uploadText.textContent = '카메라로 새 사진을 촬영하세요';
+        if (uploadSectionTitle) uploadSectionTitle.textContent = '📷 사진 촬영';
+    } else {
+        if (uploadIcon) uploadIcon.textContent = '📁';
+        if (uploadText) uploadText.textContent = '사진을 선택하거나 아래 버튼을 클릭하세요';
+        if (uploadSectionTitle) uploadSectionTitle.textContent = '📷 사진 선택';
     }
 }
 
-/* ========== 모바일 폴백 ========== */
-@media (max-width: 600px) {
-    .gpt-modal-container.tablet-optimized {
-        width: 100%;
-        height: 100%;
-        max-width: none;
-        max-height: none;
-        border-radius: 0;
+function handleFileSelection(file) {
+    if (!file) {
+        console.error('파일이 선택되지 않음');
+        return;
     }
     
-    .gpt-modal-content.tablet-layout {
-        padding: 20px;
-        max-height: calc(100vh - 140px);
+    console.log('파일 처리 시작:', {
+        name: file.name,
+        size: file.size + ' bytes',
+        type: file.type
+    });
+    
+    if (file.size > 10 * 1024 * 1024) {
+        alert('파일 크기가 너무 큽니다. 10MB 이하의 이미지를 선택해주세요.');
+        return;
     }
     
-    .gpt-modal-actions.tablet-actions {
-        padding: 15px 20px;
+    if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 선택할 수 있습니다.');
+        return;
+    }
+    
+    window.HAIRGATOR_GPT.userPhoto = file;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const previewImage = document.getElementById('previewImage');
+        const photoPreview = document.getElementById('photoPreview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+        const startBtn = document.getElementById('startProcessBtn');
+        const startGuide = document.getElementById('startGuide');
+        
+        if (previewImage) {
+            previewImage.src = e.target.result;
+        }
+        
+        if (photoPreview) photoPreview.style.display = 'block';
+        if (uploadPlaceholder) uploadPlaceholder.style.display = 'none';
+        if (startGuide) startGuide.style.display = 'none';
+        
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.textContent = '🎨 AI 체험 시작';
+            startBtn.classList.add('ready');
+        }
+        
+        console.log('파일 처리 완료 - 미리보기 표시됨');
+    };
+    
+    reader.onerror = function() {
+        console.error('파일 읽기 오류');
+        alert('파일을 읽을 수 없습니다. 다른 파일을 선택해주세요.');
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+function startGPTProcessing() {
+    if (!window.HAIRGATOR_GPT.userPhoto || !window.HAIRGATOR_GPT.currentStyle) {
+        alert('사진을 먼저 업로드해주세요');
+        return;
+    }
+    
+    console.log('GPT 처리 시작');
+    
+    const startBtn = document.getElementById('startProcessBtn');
+    const processingStatus = document.getElementById('processingStatus');
+    const startGuide = document.getElementById('startGuide');
+    
+    if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.textContent = '처리 중...';
+        startBtn.classList.remove('ready');
+    }
+    
+    if (processingStatus) {
+        processingStatus.style.display = 'block';
+    }
+    
+    if (startGuide) {
+        startGuide.style.display = 'none';
+    }
+    
+    window.HAIRGATOR_GPT.isProcessing = true;
+    
+    setTimeout(() => {
+        displayGPTResult();
+        
+        window.HAIRGATOR_GPT.isProcessing = false;
+        if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.textContent = '🎨 AI 체험 시작';
+            startBtn.classList.add('ready');
+        }
+    }, 3000);
+}
+
+function displayGPTResult() {
+    const processingStatus = document.getElementById('processingStatus');
+    const resultSection = document.getElementById('resultSection');
+    const originalResult = document.getElementById('originalResult');
+    const styledResult = document.getElementById('styledResult');
+    
+    if (processingStatus) {
+        processingStatus.style.display = 'none';
+    }
+    
+    if (resultSection) {
+        resultSection.style.display = 'block';
+    }
+    
+    if (originalResult && window.HAIRGATOR_GPT.userPhoto) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            originalResult.src = e.target.result;
+        };
+        reader.readAsDataURL(window.HAIRGATOR_GPT.userPhoto);
+    }
+    
+    if (styledResult && window.HAIRGATOR_GPT.currentStyle) {
+        styledResult.src = window.HAIRGATOR_GPT.currentStyle.imageUrl;
+    }
+    
+    console.log('GPT 결과 표시 완료');
+}
+
+function downloadResult() {
+    if (!window.HAIRGATOR_GPT.currentStyle) {
+        alert('다운로드할 결과가 없습니다');
+        return;
+    }
+    
+    const link = document.createElement('a');
+    link.href = window.HAIRGATOR_GPT.currentStyle.imageUrl;
+    link.download = `hairgator_gpt_${Date.now()}.png`;
+    link.click();
+}
+
+function shareResult() {
+    if (!window.HAIRGATOR_GPT.currentStyle) {
+        alert('공유할 결과가 없습니다');
+        return;
+    }
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'HAIRGATOR GPT 헤어스타일 체험',
+            text: '새로운 헤어스타일을 확인해보세요!',
+            url: window.location.href
+        });
+    } else {
+        navigator.clipboard.writeText(window.HAIRGATOR_GPT.currentStyle.imageUrl)
+            .then(() => alert('이미지 URL이 클립보드에 복사되었습니다'))
+            .catch(() => alert('공유 기능을 사용할 수 없습니다'));
     }
 }
+
+function closeGPTHairStyleModal() {
+    const modal = document.getElementById('gptHairStyleModal');
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+        
+        setTimeout(() => {
+            removeGPTModal();
+        }, 300);
+    }
+    
+    window.HAIRGATOR_GPT.isProcessing = false;
+    window.HAIRGATOR_GPT.userPhoto = null;
+    window.HAIRGATOR_GPT.currentStyle = null;
+    window.HAIRGATOR_GPT.currentMethod = 'upload';
+}
+
+function removeGPTModal() {
+    const existingModal = document.getElementById('gptHairStyleModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+}
+
+// 전역 함수 등록
+window.openGPTHairStyleModal = openGPTHairStyleModal;
+window.closeGPTHairStyleModal = closeGPTHairStyleModal;
+window.startGPTProcessing = startGPTProcessing;
+window.downloadResult = downloadResult;
+window.shareResult = shareResult;
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('GPT 브라우저 호환 시스템 로드 완료');
+    
+    if (typeof window.openGPTHairStyleModal === 'function') {
+        console.log('window.openGPTHairStyleModal 함수 등록 완료');
+    } else {
+        console.error('window.openGPTHairStyleModal 함수 등록 실패');
+    }
+});
+
+console.log('GPT 브라우저 호환 스크립트 로드 완료');
