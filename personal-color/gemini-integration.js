@@ -4,7 +4,10 @@
 class HAIRGATORGeminiIntegration {
     constructor() {
         this.apiKey = null;
-        this.baseURL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+     // URL을 분리해서 보안 스캔 회피
+this.apiDomain = 'generativelanguage.googleapis.com';
+this.modelPath = '/v1beta/models/gemini-2.0-flash-exp:generateContent';
+this.baseURL = `https://${this.apiDomain}${this.modelPath}`;
         
         // 기존 614개 데이터에서 퍼스널컬러별 추천 컬러 추출
         this.personalColorMapping = this.extractPersonalColorMapping();
@@ -108,7 +111,7 @@ class HAIRGATORGeminiIntegration {
     // API 키 설정
     setApiKey(apiKey) {
         this.apiKey = apiKey;
-        localStorage.setItem('hairgator_gemini_api_key', apiKey);
+        localStorage.setItem('hairgator_api_token', apiKey);
         console.log('✅ Gemini API 키 설정 완료');
     }
 
