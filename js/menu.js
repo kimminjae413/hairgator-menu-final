@@ -659,12 +659,21 @@ function addAIButtonToModal(style) {
         });
         
         // GPT 헤어스타일 체험 모달 열기
-        if (window.openGPTHairStyleModal) {
+console.log('GPT 함수 확인:', typeof window.openGPTHairStyleModal);
+
+if (typeof window.openGPTHairStyleModal === 'function') {
+    window.openGPTHairStyleModal(style);
+} else {
+    // 함수가 아직 로드되지 않았다면 잠시 대기
+    setTimeout(() => {
+        if (typeof window.openGPTHairStyleModal === 'function') {
             window.openGPTHairStyleModal(style);
         } else {
             console.error('GPT 헤어체험 시스템이 로드되지 않았습니다');
-            showToast('GPT 시스템을 로드하는 중입니다...', 'info');
+            showToast('GPT 시스템 로드 중... 잠시 후 다시 시도해주세요', 'info');
         }
+    }, 1000);
+}
     };
     
     // 기존 버튼들 앞에 추가
@@ -845,6 +854,7 @@ window.debugHAIRGATOR = function() {
 
 console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 전역 변수 문제 해결 버전');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
+
 
 
 
