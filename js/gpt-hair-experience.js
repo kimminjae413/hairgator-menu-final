@@ -177,76 +177,76 @@ function openGPTHairStyleModal(style) {
     setupGPTModalEvents();
 }
 
+// ========== 전역 파일 선택 함수 ==========
+let currentMethod = 'upload'; // 전역 변수
+
+function triggerFileSelect() {
+    console.log('파일 선택 버튼 클릭됨, 현재 모드:', currentMethod);
+    
+    const userPhotoInput = document.getElementById('userPhotoInput');
+    const cameraPhotoInput = document.getElementById('cameraPhotoInput');
+    
+    if (currentMethod === 'upload' && userPhotoInput) {
+        userPhotoInput.click();
+        console.log('갤러리 파일 선택 실행');
+    } else if (currentMethod === 'camera' && cameraPhotoInput) {
+        cameraPhotoInput.click();
+        console.log('카메라 촬영 실행');
+    } else {
+        console.error('파일 입력 요소를 찾을 수 없음');
+    }
+}
+
+function selectMethod(method) {
+    currentMethod = method;
+    console.log('체험 방법 변경:', method);
+    
+    const options = document.querySelectorAll('.method-option');
+    options.forEach(opt => opt.classList.remove('active'));
+    
+    const selectedOption = document.querySelector(`[data-method="${method}"]`);
+    if (selectedOption) {
+        selectedOption.classList.add('active');
+    }
+    
+    // UI 업데이트
+    const uploadIcon = document.querySelector('.upload-icon');
+    const uploadText = document.querySelector('.upload-placeholder p');
+    const uploadBtn = document.querySelector('.upload-btn');
+    
+    if (method === 'camera') {
+        if (uploadIcon) uploadIcon.textContent = '📷';
+        if (uploadText) uploadText.textContent = '카메라로 새 사진을 촬영하세요';
+        if (uploadBtn) uploadBtn.textContent = '사진 촬영하기';
+    } else {
+        if (uploadIcon) uploadIcon.textContent = '📁';
+        if (uploadText) uploadText.textContent = '사진을 선택하거나 여기에 드래그하세요';
+        if (uploadBtn) uploadBtn.textContent = '사진 선택하기';
+    }
+}
+
 // ========== 태블릿 최적화 이벤트 처리 ==========
 function setupGPTModalEvents() {
     const userPhotoInput = document.getElementById('userPhotoInput');
     const cameraPhotoInput = document.getElementById('cameraPhotoInput');
     const uploadArea = document.getElementById('uploadArea');
-    const photoSelectBtn = document.getElementById('photoSelectBtn');
-    const changePhotoBtn = document.getElementById('changePhotoBtn');
     
-    let currentMethod = 'upload'; // 기본값
+    console.log('GPT 모달 이벤트 설정 시작');
     
     // 파일 선택 이벤트
     if (userPhotoInput) {
-        userPhotoInput.addEventListener('change', handlePhotoSelect);
+        userPhotoInput.addEventListener('change', function(e) {
+            console.log('갤러리 파일 선택됨:', e.target.files[0]);
+            handlePhotoSelect(e);
+        });
     }
     
     if (cameraPhotoInput) {
-        cameraPhotoInput.addEventListener('change', handlePhotoSelect);
-    }
-    
-    // 버튼 클릭 이벤트
-    if (photoSelectBtn) {
-        photoSelectBtn.addEventListener('click', function() {
-            if (currentMethod === 'upload') {
-                userPhotoInput.click();
-            } else if (currentMethod === 'camera') {
-                cameraPhotoInput.click();
-            }
+        cameraPhotoInput.addEventListener('change', function(e) {
+            console.log('카메라 사진 촬영됨:', e.target.files[0]);
+            handlePhotoSelect(e);
         });
     }
-    
-    if (changePhotoBtn) {
-        changePhotoBtn.addEventListener('click', function() {
-            if (currentMethod === 'upload') {
-                userPhotoInput.click();
-            } else if (currentMethod === 'camera') {
-                cameraPhotoInput.click();
-            }
-        });
-    }
-    
-    // 체험 방법 변경 함수를 전역에서 접근 가능하도록
-    window.selectMethod = function(method) {
-        currentMethod = method;
-        const options = document.querySelectorAll('.method-option');
-        options.forEach(opt => opt.classList.remove('active'));
-        
-        const selectedOption = document.querySelector(`[data-method="${method}"]`);
-        if (selectedOption) {
-            selectedOption.classList.add('active');
-        }
-        
-        // 버튼 텍스트 업데이트
-        if (photoSelectBtn) {
-            photoSelectBtn.textContent = method === 'camera' ? '사진 촬영하기' : '사진 선택하기';
-        }
-        
-        // 업로드 영역 아이콘 업데이트
-        const uploadIcon = document.querySelector('.upload-icon');
-        if (uploadIcon) {
-            uploadIcon.textContent = method === 'camera' ? '📷' : '📁';
-        }
-        
-        // 설명 텍스트 업데이트
-        const uploadText = document.querySelector('.upload-placeholder p');
-        if (uploadText) {
-            uploadText.textContent = method === 'camera' 
-                ? '카메라로 새 사진을 촬영하세요' 
-                : '사진을 선택하거나 여기에 드래그하세요';
-        }
-    };
     
     // 드래그 앤 드롭 (업로드 모드에서만)
     if (uploadArea) {
@@ -263,16 +263,9 @@ function setupGPTModalEvents() {
         });
         
         uploadArea.addEventListener('dragleave', handleDragLeave);
-        
-        // 태블릿 터치 이벤트
-        uploadArea.addEventListener('touchstart', function(e) {
-            e.currentTarget.classList.add('touch-active');
-        });
-        
-        uploadArea.addEventListener('touchend', function(e) {
-            e.currentTarget.classList.remove('touch-active');
-        });
     }
+    
+    console.log('GPT 모달 이벤트 설정 완료');
 }
 
 // ========== 사진 선택 처리 - 태블릿 최적화 ==========
