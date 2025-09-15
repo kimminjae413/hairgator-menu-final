@@ -268,7 +268,7 @@ this.baseURL = `https://${this.apiDomain}${this.modelPath}`;
                 }]
             };
 
-            const response = await fetch(`${this.baseURL}?key=${this.apiKey}`, {
+            const response = await fetch('/.netlify/functions/hair-color-api', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
