@@ -1,13 +1,14 @@
 {
   "name": "hairgator-gpt-image-system",
-  "version": "2.0.0",
-  "description": "HAIRGATOR Professional Hair Style Menu with GPT Image 1 AI Experience",
+  "version": "3.0.0",
+  "description": "HAIRGATOR Professional Hair Style Menu with GPT Image 1 Face-Preserve AI Experience",
   "main": "index.html",
   "engines": {
     "node": ">=16.0.0"
   },
   "dependencies": {
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^2.6.7",
+    "form-data": "^4.0.0"
   },
   "devDependencies": {
     "netlify-cli": "^17.0.0"
@@ -18,17 +19,22 @@
     "deploy": "netlify deploy --prod",
     "dev": "netlify dev",
     "functions:serve": "netlify functions:serve",
-    "test:functions": "netlify functions:invoke openai-proxy --payload '{\"method\":\"generate\",\"prompt\":\"test\"}'"
+    "test:functions": "netlify functions:invoke openai-proxy --payload '{\"method\":\"test\"}'",
+    "test:generate": "netlify functions:invoke openai-proxy --payload '{\"method\":\"generate\",\"prompt\":\"test hairstyle transformation\"}'",
+    "test:edit": "netlify functions:invoke openai-proxy --payload '{\"method\":\"edit\",\"prompt\":\"change hairstyle\",\"image\":\"data:image/png;base64,test\"}'"
   },
   "keywords": [
     "hairgator",
     "hair-styling",
     "ai-experience",
     "gpt-image-1",
-    "salon-menu",
+    "face-preserve",
     "hair-simulation",
+    "salon-menu",
     "beauty-tech",
-    "korean-beauty"
+    "korean-beauty",
+    "image-editing",
+    "dalle-3"
   ],
   "author": "HAIRGATOR Team",
   "license": "MIT",
@@ -39,6 +45,11 @@
   "netlify": {
     "functions": "netlify/functions",
     "publish": ".",
+    "build": {
+      "environment": {
+        "NODE_VERSION": "16"
+      }
+    },
     "redirects": [
       {
         "from": "/api/*",
@@ -63,5 +74,13 @@
     "manifest.json",
     "_headers",
     "_redirects"
-  ]
+  ],
+  "config": {
+    "gpt": {
+      "mode": "face-preserve",
+      "defaultSize": "1024x1024",
+      "maxRetries": 3,
+      "timeout": 60000
+    }
+  }
 }
