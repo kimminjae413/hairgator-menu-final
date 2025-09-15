@@ -1,6 +1,6 @@
 // ==========================================
 // HAIRGATOR GPT Image 1 헤어스타일 체험 시스템
-// js/gpt-hair-experience.js - 파일 선택 확실 작동 버전
+// js/gpt-hair-experience.js - 파일 선택 확실 작동 최종 버전
 // ==========================================
 
 console.log('GPT Image 1 헤어스타일 체험 시스템 로드 시작');
@@ -196,15 +196,17 @@ function openGPTHairStyleModal(style) {
         }
     }, 100);
     
-    // 이벤트 리스너 등록
-    setupGPTModalEvents();
+    // 🔧 핵심 수정: DOM 추가 후 즉시 이벤트 리스너 등록
+    setTimeout(() => {
+        setupGPTModalEvents();
+    }, 150);
 }
 
 // ========== 확실한 이벤트 처리 ==========
 function setupGPTModalEvents() {
-    console.log('GPT 모달 이벤트 설정 시작');
+    console.log('🔧 GPT 모달 이벤트 설정 시작...');
     
-    // 파일 입력 요소들
+    // 파일 입력 요소들 재확인
     const galleryInput = document.getElementById('galleryInput');
     const cameraInput = document.getElementById('cameraInput');
     const mainUploadBtn = document.getElementById('mainUploadBtn');
@@ -212,30 +214,57 @@ function setupGPTModalEvents() {
     const uploadMethodBtn = document.getElementById('uploadMethodBtn');
     const cameraMethodBtn = document.getElementById('cameraMethodBtn');
     
+    console.log('🔍 요소 확인:', {
+        galleryInput: !!galleryInput,
+        cameraInput: !!cameraInput,
+        mainUploadBtn: !!mainUploadBtn,
+        changePhotoBtn: !!changePhotoBtn,
+        uploadMethodBtn: !!uploadMethodBtn,
+        cameraMethodBtn: !!cameraMethodBtn
+    });
+    
     // 1. 체험 방법 선택 이벤트
     if (uploadMethodBtn) {
-        uploadMethodBtn.addEventListener('click', function() {
+        uploadMethodBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('📁 업로드 방법 선택됨');
             selectMethod('upload');
         });
     }
     
     if (cameraMethodBtn) {
-        cameraMethodBtn.addEventListener('click', function() {
+        cameraMethodBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('📷 카메라 방법 선택됨');
             selectMethod('camera');
         });
     }
     
-    // 2. 파일 선택 버튼 이벤트 (직접 연결)
+    // 2. 🔧 핵심 수정: 파일 선택 버튼 이벤트 (강제 직접 연결)
     if (mainUploadBtn) {
-        mainUploadBtn.addEventListener('click', function() {
-            console.log('메인 업로드 버튼 클릭, 현재 모드:', window.HAIRGATOR_GPT.currentMethod);
+        // 기존 이벤트 제거
+        mainUploadBtn.onclick = null;
+        
+        // 새 이벤트 직접 연결
+        mainUploadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔧 메인 업로드 버튼 클릭됨, 현재 모드:', window.HAIRGATOR_GPT.currentMethod);
             triggerFileInput();
         });
+        
+        console.log('✅ mainUploadBtn 이벤트 등록 완료');
+    } else {
+        console.error('❌ mainUploadBtn을 찾을 수 없음');
     }
     
     if (changePhotoBtn) {
-        changePhotoBtn.addEventListener('click', function() {
-            console.log('사진 변경 버튼 클릭');
+        changePhotoBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('📸 사진 변경 버튼 클릭됨');
             triggerFileInput();
         });
     }
@@ -243,16 +272,26 @@ function setupGPTModalEvents() {
     // 3. 파일 선택 이벤트
     if (galleryInput) {
         galleryInput.addEventListener('change', function(e) {
-            console.log('갤러리에서 파일 선택됨:', e.target.files[0]);
-            handleFileSelection(e.target.files[0]);
+            console.log('📁 갤러리에서 파일 선택됨:', e.target.files[0]?.name);
+            if (e.target.files[0]) {
+                handleFileSelection(e.target.files[0]);
+            }
         });
+        console.log('✅ galleryInput 이벤트 등록 완료');
+    } else {
+        console.error('❌ galleryInput을 찾을 수 없음');
     }
     
     if (cameraInput) {
         cameraInput.addEventListener('change', function(e) {
-            console.log('카메라로 사진 촬영됨:', e.target.files[0]);
-            handleFileSelection(e.target.files[0]);
+            console.log('📷 카메라로 사진 촬영됨:', e.target.files[0]?.name);
+            if (e.target.files[0]) {
+                handleFileSelection(e.target.files[0]);
+            }
         });
+        console.log('✅ cameraInput 이벤트 등록 완료');
+    } else {
+        console.error('❌ cameraInput을 찾을 수 없음');
     }
     
     // 4. 드래그 앤 드롭 (갤러리 모드에서만)
@@ -272,7 +311,7 @@ function setupGPTModalEvents() {
                 
                 const files = e.dataTransfer.files;
                 if (files.length > 0 && files[0].type.startsWith('image/')) {
-                    console.log('드래그 앤 드롭으로 파일 선택됨:', files[0]);
+                    console.log('🎯 드래그 앤 드롭으로 파일 선택됨:', files[0].name);
                     handleFileSelection(files[0]);
                 }
             }
@@ -281,14 +320,16 @@ function setupGPTModalEvents() {
         uploadArea.addEventListener('dragleave', function(e) {
             e.currentTarget.classList.remove('drag-over');
         });
+        
+        console.log('✅ 드래그 앤 드롭 이벤트 등록 완료');
     }
     
-    console.log('GPT 모달 이벤트 설정 완료');
+    console.log('✅ GPT 모달 이벤트 설정 완료');
 }
 
 // ========== 체험 방법 선택 ==========
 function selectMethod(method) {
-    console.log('체험 방법 변경:', method);
+    console.log('🔄 체험 방법 변경:', method);
     
     window.HAIRGATOR_GPT.currentMethod = method;
     
@@ -326,26 +367,30 @@ function selectMethod(method) {
     }
 }
 
-// ========== 파일 입력 트리거 ==========
+// ========== 🔧 핵심 수정: 파일 입력 트리거 ==========
 function triggerFileInput() {
     const method = window.HAIRGATOR_GPT.currentMethod;
-    console.log('파일 입력 트리거, 모드:', method);
+    console.log('🚀 파일 입력 트리거 실행, 현재 모드:', method);
     
     if (method === 'camera') {
         const cameraInput = document.getElementById('cameraInput');
         if (cameraInput) {
+            console.log('📷 카메라 입력 실행 중...');
             cameraInput.click();
-            console.log('카메라 입력 실행');
+            console.log('✅ 카메라 입력 클릭 완료');
         } else {
-            console.error('카메라 입력 요소를 찾을 수 없음');
+            console.error('❌ cameraInput 요소를 찾을 수 없음');
+            alert('카메라 입력을 찾을 수 없습니다. 페이지를 새로고침해주세요.');
         }
     } else {
         const galleryInput = document.getElementById('galleryInput');
         if (galleryInput) {
+            console.log('📁 갤러리 입력 실행 중...');
             galleryInput.click();
-            console.log('갤러리 입력 실행');
+            console.log('✅ 갤러리 입력 클릭 완료');
         } else {
-            console.error('갤러리 입력 요소를 찾을 수 없음');
+            console.error('❌ galleryInput 요소를 찾을 수 없음');
+            alert('파일 선택 입력을 찾을 수 없습니다. 페이지를 새로고침해주세요.');
         }
     }
 }
@@ -353,11 +398,15 @@ function triggerFileInput() {
 // ========== 파일 선택 처리 ==========
 function handleFileSelection(file) {
     if (!file) {
-        console.error('파일이 선택되지 않음');
+        console.error('❌ 파일이 선택되지 않음');
         return;
     }
     
-    console.log('파일 처리 시작:', file.name, file.size, 'bytes');
+    console.log('📁 파일 처리 시작:', {
+        name: file.name,
+        size: file.size + ' bytes',
+        type: file.type
+    });
     
     // 파일 크기 검증
     if (file.size > 10 * 1024 * 1024) { // 10MB
@@ -400,11 +449,11 @@ function handleFileSelection(file) {
             startBtn.classList.add('ready');
         }
         
-        console.log('파일 처리 완료 - 미리보기 표시됨');
+        console.log('✅ 파일 처리 완료 - 미리보기 표시됨');
     };
     
     reader.onerror = function() {
-        console.error('파일 읽기 오류');
+        console.error('❌ 파일 읽기 오류');
         alert('파일을 읽을 수 없습니다. 다른 파일을 선택해주세요.');
     };
     
@@ -418,7 +467,7 @@ function startGPTProcessing() {
         return;
     }
     
-    console.log('GPT 처리 시작');
+    console.log('🎨 GPT 처리 시작');
     
     const startBtn = document.getElementById('startProcessBtn');
     const processingStatus = document.getElementById('processingStatus');
@@ -486,7 +535,7 @@ function displayGPTResult() {
         styledResult.src = window.HAIRGATOR_GPT.currentStyle.imageUrl;
     }
     
-    console.log('GPT 결과 표시 완료');
+    console.log('✅ GPT 결과 표시 완료');
 }
 
 // ========== 유틸리티 함수들 ==========
@@ -501,7 +550,7 @@ function downloadResult() {
     link.download = `hairgator_gpt_${Date.now()}.png`;
     link.click();
     
-    console.log('이미지 다운로드 실행');
+    console.log('💾 이미지 다운로드 실행');
 }
 
 function shareResult() {
@@ -557,15 +606,43 @@ window.shareResult = shareResult;
 window.selectMethod = selectMethod;
 window.triggerFileInput = triggerFileInput;
 
+// ========== 🔧 추가 디버깅 함수 ==========
+window.debugGPTFileSelection = function() {
+    console.log('🔍 GPT 파일 선택 디버깅 정보:');
+    
+    const galleryInput = document.getElementById('galleryInput');
+    const cameraInput = document.getElementById('cameraInput');
+    const mainUploadBtn = document.getElementById('mainUploadBtn');
+    const modal = document.getElementById('gptHairStyleModal');
+    
+    console.log({
+        modal존재: !!modal,
+        모달클래스: modal?.className,
+        galleryInput존재: !!galleryInput,
+        cameraInput존재: !!cameraInput,
+        mainUploadBtn존재: !!mainUploadBtn,
+        mainUploadBtn이벤트: mainUploadBtn?.onclick,
+        현재방법: window.HAIRGATOR_GPT?.currentMethod,
+        GPT객체: window.HAIRGATOR_GPT
+    });
+    
+    if (mainUploadBtn) {
+        console.log('🔧 강제 파일 선택 실행...');
+        triggerFileInput();
+    }
+};
+
 // ========== 초기화 확인 ==========
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('GPT Image 1 헤어스타일 체험 시스템 로드 완료');
+    console.log('🚀 GPT Image 1 헤어스타일 체험 시스템 로드 완료');
     
     if (typeof window.openGPTHairStyleModal === 'function') {
-        console.log('window.openGPTHairStyleModal 함수 등록 완료');
+        console.log('✅ window.openGPTHairStyleModal 함수 등록 완료');
     } else {
-        console.error('window.openGPTHairStyleModal 함수 등록 실패');
+        console.error('❌ window.openGPTHairStyleModal 함수 등록 실패');
     }
+    
+    console.log('💡 디버깅: window.debugGPTFileSelection() 실행 가능');
 });
 
-console.log('GPT 시스템 스크립트 로드 완료');
+console.log('🎨 GPT 시스템 스크립트 로드 완료');
