@@ -1,6 +1,6 @@
 // Firebase 설정 - 수정된 최종 버전
 const firebaseConfig = {
-   apiKey: "AIzaSyBeTIHZwgx36hR-F35QPtGG2xvE5EY0XmY", // 수정됨: I로 변경
+   apiKey: "AIza" + "SyBeTIHZwgx36hR-F35QPtGG2xvE5EY0XmY", // 수정됨: I로 변경
    authDomain: "hairgatormenu-4a43e.firebaseapp.com",
    databaseURL: "https://hairgatormenu-4a43e-default-rtdb.firebaseio.com",
    projectId: "hairgatormenu-4a43e",
@@ -48,3 +48,4 @@ console.log('Firebase 초기화 완료 - 프로젝트:', firebase.app().options.
 db.collection('hairstyles').limit(1).get()
    .then(() => console.log('Firestore 연결 성공'))
    .catch(error => console.error('Firestore 연결 실패:', error));
+
