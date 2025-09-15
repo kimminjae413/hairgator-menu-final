@@ -193,3 +193,47 @@ window.checkAkoolCredit = checkAkoolCredit;
 window.prepareImageForProcessing = prepareImageForProcessing;
 
 console.log('AI Integration (백엔드 연동) 로드 완료');
+
+// ========== AKOOL → GPT 리다이렉트 시스템 ==========
+
+// AKOOL 시스템 비활성화 및 GPT 안내
+function disableAkoolAndRedirectToGPT() {
+    console.log('🚫 AKOOL 시스템 비활성화 - GPT Image 1으로 전환');
+    
+    // AKOOL 관련 버튼들 비활성화
+    const akoolButtons = document.querySelectorAll('.ai-experience-modal-btn:not(.gpt-ai-experience-modal-btn)');
+    akoolButtons.forEach(btn => {
+        btn.style.opacity = '0.5';
+        btn.style.pointerEvents = 'none';
+        
+        // 업그레이드 안내 추가
+        if (!btn.querySelector('.upgrade-notice')) {
+            const notice = document.createElement('span');
+            notice.className = 'upgrade-notice';
+            notice.textContent = '→ GPT 업그레이드';
+            notice.style.fontSize = '10px';
+            notice.style.marginLeft = '5px';
+            notice.style.color = '#ff4757';
+            btn.appendChild(notice);
+        }
+    });
+}
+
+// AKOOL 함수들을 GPT로 리다이렉트
+if (window.processAIFaceSwap) {
+    const originalProcessAIFaceSwap = window.processAIFaceSwap;
+    window.processAIFaceSwap = function(...args) {
+        console.log('🔄 AKOOL processAIFaceSwap 호출 차단 - GPT로 리다이렉트');
+        showToast('새로운 GPT Image 1 시스템으로 업그레이드되었습니다!', 'info');
+        return false;
+    };
+}
+
+// 페이지 로드 시 AKOOL 비활성화 실행
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        disableAkoolAndRedirectToGPT();
+    }, 3000); // 3초 후 실행 (다른 시스템들이 로드된 후)
+});
+
+console.log('✅ AKOOL → GPT 리다이렉트 시스템 활성화');
