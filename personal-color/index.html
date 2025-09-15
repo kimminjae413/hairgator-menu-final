@@ -1488,22 +1488,9 @@ ${colorList}
         }
 
         function getGeminiApiKey() {
-            // 로컬스토리지에서 API 키 확인
-            const apiKey = localStorage.getItem('gemini-api-key');
-            if (apiKey) {
-                return apiKey;
-            }
-            
-            // API 키가 없으면 사용자에게 입력 요청
-            const userApiKey = prompt('제미나이 API 키를 입력하세요 (선택사항):');
-            if (userApiKey && userApiKey.trim()) {
-                localStorage.setItem('gemini-api-key', userApiKey.trim());
-                return userApiKey.trim();
-            }
-            
-            showToast('API 키가 없어 색상 프리뷰로 표시합니다', 'info');
-            return null;
-        }
+    // Netlify Functions 프록시 사용 (prompt 제거)
+    return 'NETLIFY_PROXY';
+}
 
         function displayColorPreviewResults(colorRecommendations, originalImageBase64) {
             const resultsSection = document.getElementById('results-section');
