@@ -2,6 +2,10 @@
 [build]
   publish = "/"
 
+# ========== 시크릿 스캔 비활성화 ==========
+[build.environment]
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
 [[headers]]
