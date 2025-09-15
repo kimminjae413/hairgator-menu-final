@@ -707,20 +707,23 @@
                 const x = Math.floor(landmark.x * sharedExtractCanvas.width);
                 const y = Math.floor(landmark.y * sharedExtractCanvas.height);
                 
-                for (let dx = -2; dx <= 2; dx++) {
-                    for (let dy = -2; dy <= 2; dy++) {
-                        const pixelX = Math.max(0, Math.min(sharedExtractCanvas.width - 1, x + dx));
-                        const pixelY = Math.max(0, Math.min(sharedExtractCanvas.height - 1, y + dy));
-                        
-                        const imageData = sharedExtractCtx.getImageData(pixelX, pixelY, 1, 1);
-                        const [r, g, b] = imageData.data;
-                        
-                        totalR += r;
-                        totalG += g;
-                        totalB += b;
-                        validSamples++;
-                    }
-                }
+                for (let dx = -7; dx <= 7; dx++) {
+    for (let dy = -7; dy <= 7; dy++) {
+        const pixelX = Math.max(0, Math.min(sharedExtractCanvas.width - 1, x + dx));
+        const pixelY = Math.max(0, Math.min(sharedExtractCanvas.height - 1, y + dy));
+        
+        const imageData = sharedExtractCtx.getImageData(pixelX, pixelY, 1, 1);
+        const [r, g, b] = imageData.data;
+        
+        const brightness = (r + g + b) / 3;
+        if (brightness > 30 && brightness < 240) {
+            totalR += r;
+            totalG += g;
+            totalB += b;
+            validSamples++;
+        }
+    }
+}
             });
             
             if (validSamples === 0) return null;
@@ -749,7 +752,9 @@
         }
 
         function displaySkinToneAnalysis(skinToneData) {
-            if (!skinToneData) return;
+           if (!skinToneData) return;
+
+window.lastSkinToneData = skinToneData;
             
             let analysisPanel = document.getElementById('realtime-skin-analysis');
             if (!analysisPanel) {
@@ -899,24 +904,103 @@
             displayAIAnalysisResult(result);
         }
 
-        function generateAIAnalysisResult() {
-            const seasons = ['봄 웜톤', '여름 쿨톤', '가을 웜톤', '겨울 쿨톤'];
-            const selectedSeason = seasons[Math.floor(Math.random() * seasons.length)];
-            const confidence = 80 + Math.floor(Math.random() * 15);
-            
-            const skinColor = {
-                r: 150 + Math.floor(Math.random() * 50),
-                g: 120 + Math.floor(Math.random() * 40),
-                b: 100 + Math.floor(Math.random() * 30)
-            };
-            
-            return {
-                season: selectedSeason,
-                confidence: confidence,
-                skinColor: skinColor,
-                expertAnalysis: generateExpertAnalysis(selectedSeason)
-            };
+function analyzePersonalColorScientific(r, g, b) {
+    const lab = rgbToLab(r, g, b);
+    
+    const seasonReferences = {
+        spring: { L: 67.58, a: 8.91, b: 14.81 },
+        summer: { L: 67.92, a: 9.23, b: 11.70 },
+        autumn: { L: 62.09, a: 10.20, b: 16.54 },
+        winter: { L: 61.41, a: 12.46, b: 12.54 }
+    };
+    
+    let bestSeason = 'spring';
+    let minDeltaE = Infinity;
+    
+    Object.keys(seasonReferences).forEach(season => {
+        const deltaE = calculateDeltaE(lab, seasonReferences[season]);
+        if (deltaE < minDeltaE) {
+            minDeltaE = deltaE;
+            bestSeason = season;
         }
+    });
+    
+    const seasonNames = {
+        spring: '봄 웜톤',
+        summer: '여름 쿨톤',
+        autumn: '가을 웜톤', 
+        winter: '겨울 쿨톤'
+    };
+    
+    const confidence = Math.max(65, Math.min(95, 100 - (minDeltaE * 10)));
+    
+    return {
+        season: seasonNames[bestSeason],
+        confidence: Math.round(confidence),
+        explanation: `LAB 색공간 분석 결과 ${seasonNames[bestSeason]}과 가장 높은 일치도를 보입니다.`
+    };
+}
+
+function rgbToLab(r, g, b) {
+    let rNorm = r / 255.0;
+    let gNorm = g / 255.0;
+    let bNorm = b / 255.0;
+    
+    rNorm = rNorm > 0.04045 ? Math.pow((rNorm + 0.055) / 1.055, 2.4) : rNorm / 12.92;
+    gNorm = gNorm > 0.04045 ? Math.pow((gNorm + 0.055) / 1.055, 2.4) : gNorm / 12.92;
+    bNorm = bNorm > 0.04045 ? Math.pow((bNorm + 0.055) / 1.055, 2.4) : bNorm / 12.92;
+    
+    const x = rNorm * 0.4124564 + gNorm * 0.3575761 + bNorm * 0.1804375;
+    const y = rNorm * 0.2126729 + gNorm * 0.7151522 + bNorm * 0.0721750;
+    const z = rNorm * 0.0193339 + gNorm * 0.1191920 + bNorm * 0.9503041;
+    
+    const xn = 0.95047, yn = 1.00000, zn = 1.08883;
+    const fx = labF(x / xn);
+    const fy = labF(y / yn);
+    const fz = labF(z / zn);
+    
+    return {
+        L: 116 * fy - 16,
+        a: 500 * (fx - fy),
+        b: 200 * (fy - fz)
+    };
+}
+
+function labF(t) {
+    const delta = 6.0 / 29.0;
+    return t > Math.pow(delta, 3) ? Math.pow(t, 1.0 / 3.0) : (t / (3 * delta * delta) + 4.0 / 29.0);
+}
+
+function calculateDeltaE(lab1, lab2) {
+    const dL = lab2.L - lab1.L;
+    const da = lab2.a - lab1.a;
+    const db = lab2.b - lab1.b;
+    return Math.sqrt(dL * dL + da * da + db * db);
+}
+        
+        function generateAIAnalysisResult() {
+    const skinData = window.lastSkinToneData;
+    
+    if (!skinData) {
+        const seasons = ['봄 웜톤', '여름 쿨톤', '가을 웜톤', '겨울 쿨톤'];
+        const selectedSeason = seasons[Math.floor(Math.random() * seasons.length)];
+        return {
+            season: selectedSeason,
+            confidence: 75,
+            skinColor: { r: 150, g: 120, b: 100 },
+            expertAnalysis: '실시간 피부톤 데이터를 사용할 수 없어 기본 분석을 수행했습니다.'
+        };
+    }
+
+    const analysis = analyzePersonalColorScientific(skinData.rgb.r, skinData.rgb.g, skinData.rgb.b);
+    
+    return {
+        season: analysis.season,
+        confidence: analysis.confidence,
+        skinColor: skinData.rgb,
+        expertAnalysis: analysis.explanation
+    };
+}
 
         function displayAIAnalysisResult(result) {
             document.getElementById('ai-season-result').textContent = result.season;
