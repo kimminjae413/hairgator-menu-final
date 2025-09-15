@@ -1,4 +1,4 @@
-// ========== HAIRGATOR 메뉴 시스템 - 전역 변수 문제 해결 최종 버전 ==========
+// ========== HAIRGATOR 메뉴 시스템 - GPT 파일 선택 문제 해결 최종 버전 ==========
 
 // 남성 카테고리 (설명 포함)
 const MALE_CATEGORIES = [
@@ -628,19 +628,31 @@ function openStyleModal(style) {
     });
 }
 
-// 모달에 GPT AI 체험하기 버튼 추가 (AKOOL 대체)
+// 🔧 수정: 모달에 GPT AI 체험하기 버튼 추가 (GPT 파일 선택 보호)
 function addAIButtonToModal(style) {
     const modalActions = document.querySelector('.style-modal-actions');
     if (!modalActions) return;
     
-   // 기존 모든 AI 버튼 제거 (GPT 버튼 중복 방지)
-const existingAIBtns = modalActions.querySelectorAll('.ai-experience-modal-btn, .gpt-ai-experience-modal-btn');
-existingAIBtns.forEach(btn => {
-    console.log('기존 AI 버튼 제거:', btn.className);
-    btn.remove();
-});
+    // ✅ 핵심 수정: 스타일 모달에서만 기존 AI 버튼 제거 (GPT 모달 보호)
+    const styleModal = document.getElementById('styleModal');
     
-    // GPT AI 버튼 생성
+    // 현재 modalActions가 스타일 모달 내부에 있는지 확인
+    const isInStyleModal = styleModal && styleModal.contains(modalActions);
+    
+    if (isInStyleModal) {
+        // 스타일 모달 내부에서만 기존 AI 버튼 제거
+        const existingAIBtns = modalActions.querySelectorAll('.ai-experience-modal-btn, .gpt-ai-experience-modal-btn');
+        existingAIBtns.forEach(btn => {
+            console.log('✅ 기존 AI 버튼 제거 (스타일 모달만):', btn.className);
+            btn.remove();
+        });
+    } else {
+        // GPT 모달이나 다른 곳에서는 기존 버튼 제거하지 않음
+        console.log('🛡️ GPT 모달 또는 외부 영역 - 기존 버튼 제거 건너뛰기');
+        return; // GPT 모달에서는 버튼 추가도 하지 않음
+    }
+    
+    // GPT AI 버튼 생성 (스타일 모달에서만)
     const gptAiButton = document.createElement('button');
     gptAiButton.className = 'modal-action-btn gpt-ai-experience-modal-btn';
     gptAiButton.innerHTML = `
@@ -660,26 +672,29 @@ existingAIBtns.forEach(btn => {
         });
         
         // GPT 헤어스타일 체험 모달 열기
-console.log('GPT 함수 확인:', typeof window.openGPTHairStyleModal);
+        console.log('GPT 함수 확인:', typeof window.openGPTHairStyleModal);
 
-if (typeof window.openGPTHairStyleModal === 'function') {
-    window.openGPTHairStyleModal(style);
-} else {
-    // 함수가 아직 로드되지 않았다면 잠시 대기
-    setTimeout(() => {
         if (typeof window.openGPTHairStyleModal === 'function') {
             window.openGPTHairStyleModal(style);
         } else {
-            console.error('GPT 헤어체험 시스템이 로드되지 않았습니다');
-            showToast('GPT 시스템 로드 중... 잠시 후 다시 시도해주세요', 'info');
+            // 함수가 아직 로드되지 않았다면 잠시 대기
+            setTimeout(() => {
+                if (typeof window.openGPTHairStyleModal === 'function') {
+                    window.openGPTHairStyleModal(style);
+                } else {
+                    console.error('GPT 헤어체험 시스템이 로드되지 않았습니다');
+                    showToast('GPT 시스템 로드 중... 잠시 후 다시 시도해주세요', 'info');
+                }
+            }, 1000);
         }
-    }, 1000);
-}
     };
     
     // 기존 버튼들 앞에 추가
     modalActions.insertBefore(gptAiButton, modalActions.firstChild);
+    
+    console.log('✅ GPT AI 버튼 추가 완료 (스타일 모달)');
 }
+
 // ========== AI 체험하기 기능 ==========
 
 // AKOOL 시스템 비활성화 (GPT로 대체됨)
@@ -760,7 +775,7 @@ function closeStyleModal() {
 
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료 - 전역 변수 문제 해결 최종 버전');
+    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료 - GPT 파일 선택 문제 해결 최종 버전');
     
     // 모달 바깥 클릭 시 닫기
     document.addEventListener('click', function(e) {
@@ -853,10 +868,46 @@ window.debugHAIRGATOR = function() {
     });
 };
 
-console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 전역 변수 문제 해결 버전');
+// 🔧 GPT 파일 선택 복구 함수 추가
+window.repairGPTFileSelection = function() {
+    console.log('🔧 GPT 파일 선택 기능 복구 시작...');
+    
+    // GPT 모달이 열려있는지 확인
+    const gptModal = document.querySelector('.gpt-hair-style-modal.show');
+    if (!gptModal) {
+        console.log('GPT 모달이 열려있지 않음 - 복구 건너뛰기');
+        return false;
+    }
+    
+    // 메인 업로드 버튼 찾기
+    const mainUploadBtn = document.getElementById('mainUploadBtn');
+    if (!mainUploadBtn) {
+        console.error('❌ mainUploadBtn을 찾을 수 없습니다');
+        return false;
+    }
+    
+    // 숨겨진 파일 입력 요소 찾기
+    const fileInput = gptModal.querySelector('input[type="file"][accept="image/*"]');
+    if (!fileInput) {
+        console.error('❌ 파일 입력 요소를 찾을 수 없습니다');
+        return false;
+    }
+    
+    // 강제로 이벤트 리스너 재등록
+    const newBtn = mainUploadBtn.cloneNode(true);
+    mainUploadBtn.parentNode.replaceChild(newBtn, mainUploadBtn);
+    
+    newBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🔧 복구된 파일 선택 버튼 클릭됨');
+        fileInput.click();
+    });
+    
+    console.log('✅ GPT 파일 선택 기능 복구 완료');
+    return true;
+};
+
+console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - GPT 파일 선택 문제 해결 최종 버전');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
-
-
-
-
-
+console.log('🔧 GPT 복구: window.repairGPTFileSelection() 실행 가능');
