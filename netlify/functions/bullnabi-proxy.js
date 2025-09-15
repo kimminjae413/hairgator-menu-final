@@ -39,8 +39,18 @@ exports.handler = async (event, context) => {
         }
 
         // JWT 토큰
-        const newToken = process.env.BULLNABI_JWT_TOKEN || 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlcmljNzA4QG5hdmVyLmNvbSIsImxvZ2luVXNlckluZm8iOiJ7IFwiX2lkXCIgOiB7IFwiJG9pZFwiIDogXCI2NTgzYTNhYzJjZDFjYWM4YWUyZTgzYzFcIiB9LCBcImlkXCIgOiBcImVyaWM3MDhAbmF2ZXIuY29tXCIsIFwiZW1haWxcIiA6IFwiZXJpYzcwOEBuYXZlci5jb21cIiwgXCJuYW1lXCIgOiBcIuq5gOuvvOyerFwiLCBcIm5pY2tuYW1lXCIgOiBudWxsLCBcInN0YXR1c1wiIDogXCJhZG1pblwiLCBcIl9zZXJ2aWNlTmFtZVwiIDogXCJkcnlsaW5rXCIsIFwiX3NlcnZpY2VBcHBOYW1lXCIgOiBcIuuTnOudvOydtOunge2BrCDrlJTsnpDsnbTrhIjsmqlcIiwgXCJvc1R5cGVcIiA6IFwiaU9TXCIgfSIsImV4cCI6MTc1ODAxODIzNn0.ZXuCaGQEynAPQXhptlYkzne4cQq7CK_JhrX8jJovD2k';
-        
+       // ✅ 이렇게 바꾸세요
+const newToken = process.env.BULLNABI_JWT_TOKEN;
+
+if (!newToken) {
+    return {
+        statusCode: 500,
+        headers: corsHeaders,
+        body: JSON.stringify({ 
+            error: 'BULLNABI_JWT_TOKEN 환경변수가 설정되지 않았습니다' 
+        })
+    };
+}
         console.log('토큰 사용:', newToken.substring(0, 20) + '...');
 
         // 네이티브 방식으로 multipart/form-data 구성
