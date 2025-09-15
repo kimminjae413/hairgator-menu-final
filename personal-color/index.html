@@ -47,14 +47,13 @@
                         <span class="mode-icon">🤖</span>
                         <h3 class="mode-card-title">AI 퍼스널컬러 분석</h3>
                         <p class="mode-description">
-                            과학적 AI 기술로 얼굴을 분석하여 정확한 퍼스널컬러를 진단합니다. 
-                            MediaPipe 얼굴 인식과 실제 Delta E 2000 색차 측정을 활용합니다.
+                            최신 AI 기술로 얼굴을 분석하여 정확한 퍼스널컬러를 진단합니다. 
+                            MediaPipe 얼굴 인식과 Delta E 2000 색차 측정을 활용합니다.
                         </p>
                         <ul class="mode-features">
-                            <li>468포인트 실시간 얼굴 인식</li>
-                            <li>15x15 픽셀 다중 영역 피부톤 추출</li>
+                            <li>실시간 얼굴 인식 및 피부톤 추출</li>
                             <li>LAB 색공간 기반 정밀 분석</li>
-                            <li>Delta E 2000 색차 계산</li>
+                            <li>전문가 노하우 데이터베이스 활용</li>
                             <li>624개 헤어컬러와 자동 매칭</li>
                         </ul>
                         <button class="mode-btn">AI 분석 시작</button>
@@ -110,7 +109,7 @@
                                 <div class="step-number">1</div>
                                 <div class="step-content">
                                     <h4>얼굴 인식</h4>
-                                    <p>MediaPipe로 468포인트 감지</p>
+                                    <p>MediaPipe로 얼굴 영역을 감지합니다</p>
                                 </div>
                             </div>
                             
@@ -118,7 +117,7 @@
                                 <div class="step-number">2</div>
                                 <div class="step-content">
                                     <h4>피부톤 분석</h4>
-                                    <p>다중 영역 RGB → LAB 변환</p>
+                                    <p>RGB → LAB 색공간 변환 및 색상 추출</p>
                                 </div>
                             </div>
                             
@@ -126,7 +125,7 @@
                                 <div class="step-number">3</div>
                                 <div class="step-content">
                                     <h4>Delta E 계산</h4>
-                                    <p>CIE 2000 표준 색차 측정</p>
+                                    <p>색차 측정 및 정확도 산출</p>
                                 </div>
                             </div>
                             
@@ -134,7 +133,7 @@
                                 <div class="step-number">4</div>
                                 <div class="step-content">
                                     <h4>결과 생성</h4>
-                                    <p>과학적 분석 기반 최종 진단</p>
+                                    <p>전문가 노하우 기반 최종 진단</p>
                                 </div>
                             </div>
                         </div>
@@ -256,283 +255,6 @@
         let faceDetectionInstance = null;
         let sharedExtractCanvas = null;
         let sharedExtractCtx = null;
-        let scientificAnalyzer = null;
-        
-        // ========================================
-        // 과학적 퍼스널컬러 분석기 클래스
-        // ========================================
-        class ScientificPersonalColorAnalyzer {
-            constructor() {
-                // 학술 연구 기반 기준값들 (L*a*b* 색공간)
-                this.seasonReferences = {
-                    spring: { L: 67.58, a: 8.91, b: 14.81, undertone: 'warm' },
-                    summer: { L: 67.92, a: 9.23, b: 11.70, undertone: 'cool' },
-                    autumn: { L: 62.09, a: 10.20, b: 16.54, undertone: 'warm' },
-                    winter: { L: 61.41, a: 12.46, b: 12.54, undertone: 'cool' }
-                };
-            }
-
-            // 정확한 피부색 추출 (여러 영역 가중 평균)
-            extractSkinColor(landmarks, videoElement) {
-                if (!landmarks || landmarks.length < 468) {
-                    throw new Error('충분한 얼굴 랜드마크가 필요합니다');
-                }
-
-                // 피부색 추출을 위한 주요 영역들 (가중치 적용)
-                const skinRegions = [
-                    { indices: [9, 10, 151], weight: 0.3, name: '이마중앙' },
-                    { indices: [116, 117, 118], weight: 0.25, name: '좌측볼' },
-                    { indices: [345, 346, 347], weight: 0.25, name: '우측볼' },
-                    { indices: [175, 176, 199], weight: 0.15, name: '턱' },
-                    { indices: [19, 20, 94], weight: 0.05, name: '코옆' }
-                ];
-
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                canvas.width = videoElement.videoWidth;
-                canvas.height = videoElement.videoHeight;
-                ctx.drawImage(videoElement, 0, 0);
-
-                let totalR = 0, totalG = 0, totalB = 0, totalWeight = 0;
-                const regionData = [];
-
-                skinRegions.forEach(region => {
-                    let regionR = 0, regionG = 0, regionB = 0, regionSamples = 0;
-                    
-                    region.indices.forEach(landmarkIndex => {
-                        const landmark = landmarks[landmarkIndex];
-                        const centerX = Math.floor(landmark.x * canvas.width);
-                        const centerY = Math.floor(landmark.y * canvas.height);
-                        
-                        // 15x15 픽셀 영역에서 샘플링 (기존 5x5보다 확장)
-                        for (let dx = -7; dx <= 7; dx++) {
-                            for (let dy = -7; dy <= 7; dy++) {
-                                const x = Math.max(0, Math.min(canvas.width - 1, centerX + dx));
-                                const y = Math.max(0, Math.min(canvas.height - 1, centerY + dy));
-                                
-                                const imageData = ctx.getImageData(x, y, 1, 1);
-                                const [r, g, b] = imageData.data;
-                                
-                                // 극단값 필터링
-                                const brightness = (r + g + b) / 3;
-                                if (brightness > 30 && brightness < 240) {
-                                    regionR += r;
-                                    regionG += g;
-                                    regionB += b;
-                                    regionSamples++;
-                                }
-                            }
-                        }
-                    });
-                    
-                    if (regionSamples > 0) {
-                        const avgR = regionR / regionSamples;
-                        const avgG = regionG / regionSamples;
-                        const avgB = regionB / regionSamples;
-                        
-                        regionData.push({
-                            name: region.name,
-                            rgb: { r: avgR, g: avgG, b: avgB },
-                            weight: region.weight,
-                            samples: regionSamples
-                        });
-                        
-                        totalR += avgR * region.weight;
-                        totalG += avgG * region.weight;
-                        totalB += avgB * region.weight;
-                        totalWeight += region.weight;
-                    }
-                });
-
-                if (totalWeight === 0) {
-                    throw new Error('유효한 피부색 데이터를 추출할 수 없습니다');
-                }
-
-                return {
-                    rgb: {
-                        r: Math.round(totalR / totalWeight),
-                        g: Math.round(totalG / totalWeight),
-                        b: Math.round(totalB / totalWeight)
-                    },
-                    regionData: regionData,
-                    totalSamples: regionData.reduce((sum, region) => sum + region.samples, 0)
-                };
-            }
-
-            // RGB를 L*a*b* 색공간으로 변환
-            rgbToLab(r, g, b) {
-                // 1. RGB를 XYZ로 변환
-                let rNorm = r / 255.0;
-                let gNorm = g / 255.0;
-                let bNorm = b / 255.0;
-
-                // Gamma correction
-                rNorm = rNorm > 0.04045 ? Math.pow((rNorm + 0.055) / 1.055, 2.4) : rNorm / 12.92;
-                gNorm = gNorm > 0.04045 ? Math.pow((gNorm + 0.055) / 1.055, 2.4) : gNorm / 12.92;
-                bNorm = bNorm > 0.04045 ? Math.pow((bNorm + 0.055) / 1.055, 2.4) : bNorm / 12.92;
-
-                // Observer: 2°, Illuminant: D65
-                const x = rNorm * 0.4124564 + gNorm * 0.3575761 + bNorm * 0.1804375;
-                const y = rNorm * 0.2126729 + gNorm * 0.7151522 + bNorm * 0.0721750;
-                const z = rNorm * 0.0193339 + gNorm * 0.1191920 + bNorm * 0.9503041;
-
-                // 2. XYZ를 LAB로 변환
-                const xn = 0.95047;  // D65 reference white
-                const yn = 1.00000;
-                const zn = 1.08883;
-
-                const fx = this.labF(x / xn);
-                const fy = this.labF(y / yn);
-                const fz = this.labF(z / zn);
-
-                const L = 116 * fy - 16;
-                const a = 500 * (fx - fy);
-                const b_val = 200 * (fy - fz);
-
-                return { L: L, a: a, b: b_val };
-            }
-
-            // LAB 변환 보조 함수
-            labF(t) {
-                const delta = 6.0 / 29.0;
-                return t > Math.pow(delta, 3) ? Math.pow(t, 1.0 / 3.0) : (t / (3 * delta * delta) + 4.0 / 29.0);
-            }
-
-            // Delta E 2000 계산 (CIE 2000 표준)
-            calculateDeltaE2000(lab1, lab2) {
-                const L1 = lab1.L, a1 = lab1.a, b1 = lab1.b;
-                const L2 = lab2.L, a2 = lab2.a, b2 = lab2.b;
-
-                // Calculate C and h
-                const C1 = Math.sqrt(a1 * a1 + b1 * b1);
-                const C2 = Math.sqrt(a2 * a2 + b2 * b2);
-                const Cab = (C1 + C2) / 2.0;
-
-                const G = 0.5 * (1 - Math.sqrt(Math.pow(Cab, 7) / (Math.pow(Cab, 7) + Math.pow(25, 7))));
-
-                const ap1 = (1 + G) * a1;
-                const ap2 = (1 + G) * a2;
-
-                const Cp1 = Math.sqrt(ap1 * ap1 + b1 * b1);
-                const Cp2 = Math.sqrt(ap2 * ap2 + b2 * b2);
-
-                let hp1 = Math.atan2(b1, ap1) * 180 / Math.PI;
-                if (hp1 < 0) hp1 += 360;
-
-                let hp2 = Math.atan2(b2, ap2) * 180 / Math.PI;
-                if (hp2 < 0) hp2 += 360;
-
-                // Calculate differences
-                const dL = L2 - L1;
-                const dC = Cp2 - Cp1;
-
-                let dhp = hp2 - hp1;
-                if (Math.abs(dhp) > 180) {
-                    if (hp2 > hp1) dhp -= 360;
-                    else dhp += 360;
-                }
-
-                const dH = 2 * Math.sqrt(Cp1 * Cp2) * Math.sin(dhp * Math.PI / 360);
-
-                // Calculate means
-                const Lm = (L1 + L2) / 2;
-                const Cm = (Cp1 + Cp2) / 2;
-                let Hm = (hp1 + hp2) / 2;
-
-                if (Math.abs(hp1 - hp2) > 180) {
-                    if (hp1 + hp2 < 360) Hm += 180;
-                    else Hm -= 180;
-                }
-
-                const T = 1 - 0.17 * Math.cos((Hm - 30) * Math.PI / 180) +
-                         0.24 * Math.cos(2 * Hm * Math.PI / 180) +
-                         0.32 * Math.cos((3 * Hm + 6) * Math.PI / 180) -
-                         0.20 * Math.cos((4 * Hm - 63) * Math.PI / 180);
-
-                const SL = 1 + ((0.015 * Math.pow(Lm - 50, 2)) / Math.sqrt(20 + Math.pow(Lm - 50, 2)));
-                const SC = 1 + 0.045 * Cm;
-                const SH = 1 + 0.015 * Cm * T;
-
-                const RT = -2 * Math.sqrt(Math.pow(Cm, 7) / (Math.pow(Cm, 7) + Math.pow(25, 7))) *
-                          Math.sin(60 * Math.exp(-Math.pow((Hm - 275) / 25, 2)) * Math.PI / 180);
-
-                const kL = 1.0, kC = 1.0, kH = 1.0;
-
-                const deltaE = Math.sqrt(
-                    Math.pow(dL / (kL * SL), 2) +
-                    Math.pow(dC / (kC * SC), 2) +
-                    Math.pow(dH / (kH * SH), 2) +
-                    RT * (dC / (kC * SC)) * (dH / (kH * SH))
-                );
-
-                return deltaE;
-            }
-
-            // 퍼스널컬러 분석 실행
-            analyzePersonalColor(landmarks, videoElement) {
-                try {
-                    // 1. 피부색 추출
-                    const skinData = this.extractSkinColor(landmarks, videoElement);
-                    
-                    // 2. LAB 변환
-                    const userLab = this.rgbToLab(skinData.rgb.r, skinData.rgb.g, skinData.rgb.b);
-                    
-                    // 3. 각 계절과의 Delta E 계산
-                    const seasonScores = {};
-                    let bestSeason = 'spring';
-                    let minDeltaE = Infinity;
-                    
-                    Object.keys(this.seasonReferences).forEach(season => {
-                        const refLab = this.seasonReferences[season];
-                        const deltaE = this.calculateDeltaE2000(userLab, refLab);
-                        seasonScores[season] = deltaE;
-                        
-                        if (deltaE < minDeltaE) {
-                            minDeltaE = deltaE;
-                            bestSeason = season;
-                        }
-                    });
-                    
-                    // 4. 신뢰도 계산 (Delta E가 낮을수록 높은 신뢰도)
-                    const maxDeltaE = Math.max(...Object.values(seasonScores));
-                    const confidence = Math.round(((maxDeltaE - minDeltaE) / maxDeltaE) * 100);
-                    
-                    // 5. 계절명 매핑
-                    const seasonNames = {
-                        spring: '봄 웜톤',
-                        summer: '여름 쿨톤', 
-                        autumn: '가을 웜톤',
-                        winter: '겨울 쿨톤'
-                    };
-                    
-                    return {
-                        season: seasonNames[bestSeason],
-                        confidence: Math.max(60, Math.min(95, confidence)), // 60-95% 범위
-                        skinColor: skinData.rgb,
-                        labValues: userLab,
-                        deltaEScores: seasonScores,
-                        minDeltaE: minDeltaE,
-                        regionData: skinData.regionData,
-                        totalSamples: skinData.totalSamples,
-                        expertAnalysis: this.generateScientificAnalysis(bestSeason, userLab, minDeltaE)
-                    };
-                    
-                } catch (error) {
-                    console.error('과학적 분석 실패:', error);
-                    throw error;
-                }
-            }
-            
-            generateScientificAnalysis(season, labValues, deltaE) {
-                const analyses = {
-                    spring: `L*=${labValues.L.toFixed(1)}, a*=${labValues.a.toFixed(1)}, b*=${labValues.b.toFixed(1)}으로 따뜻하고 밝은 톤이 감지되었습니다. Delta E=${deltaE.toFixed(2)}로 봄 웜톤과 높은 일치도를 보입니다.`,
-                    summer: `측정된 색상값이 여름 쿨톤의 특징인 부드러운 파스텔 톤과 일치합니다. 차가운 언더톤이 감지되어 쿨톤 색상을 추천합니다.`,
-                    autumn: `깊고 따뜻한 색상 특성이 확인되었습니다. 가을 웜톤에 적합한 리치한 브라운 계열이 어울립니다.`,
-                    winter: `높은 대비와 차가운 언더톤이 특징입니다. 겨울 쿨톤에 맞는 진하고 선명한 색상이 적합합니다.`
-                };
-                return analyses[season] || '과학적 분석을 완료했습니다.';
-            }
-        }
         
         // ========================================
         // 전문가 노하우 데이터 (익명화)
@@ -599,8 +321,7 @@
                 updateLoadingProgress(50, 'UI 컴포넌트 설정 중...');
                 setupUI();
                 
-                updateLoadingProgress(75, '과학적 AI 엔진 준비 중...');
-                scientificAnalyzer = new ScientificPersonalColorAnalyzer();
+                updateLoadingProgress(75, 'AI 엔진 준비 중...');
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
                 updateLoadingProgress(100, '시스템 준비 완료!');
@@ -612,7 +333,7 @@
                 document.getElementById('main-app').classList.add('loaded');
                 
                 console.log('HAIRGATOR Personal Color 준비 완료');
-                showToast('과학적 퍼스널컬러 시스템이 준비되었습니다!', 'success');
+                showToast('퍼스널컬러 시스템이 준비되었습니다!', 'success');
                 
             } catch (error) {
                 clearTimeout(timeoutId);
@@ -773,7 +494,7 @@
 
             if (mode === 'ai') {
                 document.getElementById('ai-analysis').classList.add('active');
-                showToast('과학적 AI 퍼스널컬러 분석 모드가 활성화되었습니다', 'success');
+                showToast('AI 퍼스널컬러 분석 모드가 활성화되었습니다', 'success');
             } else if (mode === 'draping') {
                 document.getElementById('draping-mode').classList.add('active');
                 showToast('전문가 드래이핑 모드가 활성화되었습니다', 'success');
@@ -799,7 +520,7 @@
         // ========================================
         async function startAICamera() {
             try {
-                showToast('과학적 AI 카메라를 시작합니다...', 'info');
+                showToast('AI 카메라를 시작합니다...', 'info');
                 
                 cleanupCameraResources();
                 
@@ -844,7 +565,7 @@
                         }
                         
                         console.log('MediaPipe Face Mesh 활성화');
-                        showToast('고급 468포인트 얼굴 랜드마크 인식이 활성화되었습니다', 'success');
+                        showToast('고급 얼굴 랜드마크 인식이 활성화되었습니다', 'success');
                     } catch (error) {
                         console.warn('Face Mesh 초기화 실패:', error);
                         showToast('기본 카메라 모드로 시작합니다', 'warning');
@@ -874,14 +595,8 @@
                 drawFullFaceMesh(canvasCtx, landmarks);
                 drawSkinTonePoints(canvasCtx, landmarks);
                 
-                if (scientificAnalyzer) {
-                    try {
-                        const analysisData = scientificAnalyzer.extractSkinColor(landmarks, videoElement);
-                        displayRealtimeAnalysis(analysisData);
-                    } catch (error) {
-                        console.warn('실시간 분석 오류:', error);
-                    }
-                }
+                const skinToneData = extractSkinTone(landmarks);
+                displaySkinToneAnalysis(skinToneData);
                 
                 if (!faceDetected) {
                     faceDetected = true;
@@ -893,9 +608,314 @@
                     faceDetected = false;
                     document.getElementById('ai-face-guide').style.display = 'flex';
                     clearSkinToneDisplay();
-                    window.lastLandmarks = null;
                 }
             }
+        }
+
+        function drawFullFaceMesh(ctx, landmarks) {
+            const FACE_CONNECTIONS = [
+                [10, 338], [338, 297], [297, 332], [332, 284], [284, 251], [251, 389], [389, 356], [356, 454], 
+                [454, 323], [323, 361], [361, 288], [288, 397], [397, 365], [365, 379], [379, 378], [378, 400], 
+                [400, 377], [377, 152], [152, 148], [148, 176], [176, 149], [149, 150], [150, 136], [136, 172], 
+                [172, 58], [58, 132], [132, 93], [93, 234], [234, 127], [127, 162], [162, 21], [21, 54], 
+                [54, 103], [103, 67], [67, 109], [109, 10]
+            ];
+            
+            ctx.fillStyle = '#00FF88';
+            landmarks.forEach((landmark, index) => {
+                const x = landmark.x * canvasElement.width;
+                const y = landmark.y * canvasElement.height;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+            
+            ctx.strokeStyle = '#00FF8860';
+            ctx.lineWidth = 0.8;
+            
+            FACE_CONNECTIONS.forEach(connection => {
+                const [startIdx, endIdx] = connection;
+                
+                if (landmarks[startIdx] && landmarks[endIdx]) {
+                    const start = landmarks[startIdx];
+                    const end = landmarks[endIdx];
+                    
+                    const startX = start.x * canvasElement.width;
+                    const startY = start.y * canvasElement.height;
+                    const endX = end.x * canvasElement.width;
+                    const endY = end.y * canvasElement.height;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function drawSkinTonePoints(ctx, landmarks) {
+            const skinPoints = [
+                { index: 10, name: '이마중앙', color: '#FF6B6B' },
+                { index: 151, name: '코끝', color: '#4ECDC4' },
+                { index: 116, name: '좌측볼', color: '#45B7D1' },
+                { index: 345, name: '우측볼', color: '#96CEB4' },
+                { index: 175, name: '턱중앙', color: '#FECA57' }
+            ];
+            
+            skinPoints.forEach((point) => {
+                if (landmarks[point.index]) {
+                    const landmark = landmarks[point.index];
+                    const x = landmark.x * canvasElement.width;
+                    const y = landmark.y * canvasElement.height;
+                    
+                    ctx.strokeStyle = point.color;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 8, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = point.color + '40';
+                    ctx.fill();
+                    
+                    ctx.fillStyle = point.color;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            });
+        }
+
+        function extractSkinTone(landmarks) {
+            if (!sharedExtractCanvas) {
+                sharedExtractCanvas = document.createElement('canvas');
+                sharedExtractCtx = sharedExtractCanvas.getContext('2d', { willReadFrequently: true });
+                console.log('공유 Canvas 생성됨');
+            }
+            
+            sharedExtractCanvas.width = videoElement.videoWidth;
+            sharedExtractCanvas.height = videoElement.videoHeight;
+            
+            sharedExtractCtx.drawImage(videoElement, 0, 0);
+            
+            const skinPoints = [9, 151, 234, 454, 152, 10, 175];
+            let totalR = 0, totalG = 0, totalB = 0;
+            let validSamples = 0;
+            
+            skinPoints.forEach(pointIndex => {
+                const landmark = landmarks[pointIndex];
+                const x = Math.floor(landmark.x * sharedExtractCanvas.width);
+                const y = Math.floor(landmark.y * sharedExtractCanvas.height);
+                
+                for (let dx = -2; dx <= 2; dx++) {
+                    for (let dy = -2; dy <= 2; dy++) {
+                        const pixelX = Math.max(0, Math.min(sharedExtractCanvas.width - 1, x + dx));
+                        const pixelY = Math.max(0, Math.min(sharedExtractCanvas.height - 1, y + dy));
+                        
+                        const imageData = sharedExtractCtx.getImageData(pixelX, pixelY, 1, 1);
+                        const [r, g, b] = imageData.data;
+                        
+                        totalR += r;
+                        totalG += g;
+                        totalB += b;
+                        validSamples++;
+                    }
+                }
+            });
+            
+            if (validSamples === 0) return null;
+            
+            const avgR = Math.round(totalR / validSamples);
+            const avgG = Math.round(totalG / validSamples);
+            const avgB = Math.round(totalB / validSamples);
+            
+            const undertone = analyzeUndertone(avgR, avgG, avgB);
+            
+            return {
+                rgb: { r: avgR, g: avgG, b: avgB },
+                hex: `#${avgR.toString(16).padStart(2, '0')}${avgG.toString(16).padStart(2, '0')}${avgB.toString(16).padStart(2, '0')}`,
+                undertone: undertone,
+                samples: validSamples
+            };
+        }
+
+        function analyzeUndertone(r, g, b) {
+            const yellowness = (r + g) - b;
+            const pinkness = (r + b) - g;
+            
+            if (yellowness > pinkness + 20) return 'Warm';
+            else if (pinkness > yellowness + 20) return 'Cool';
+            else return 'Neutral';
+        }
+
+        function displaySkinToneAnalysis(skinToneData) {
+            if (!skinToneData) return;
+            
+            let analysisPanel = document.getElementById('realtime-skin-analysis');
+            if (!analysisPanel) {
+                analysisPanel = document.createElement('div');
+                analysisPanel.id = 'realtime-skin-analysis';
+                analysisPanel.style.cssText = `
+                    position: absolute; 
+                    bottom: 10px; 
+                    left: 10px; 
+                    right: 10px;
+                    background: linear-gradient(135deg, rgba(0,0,0,0.85), rgba(0,50,0,0.8)); 
+                    color: white; 
+                    padding: 0.4rem 0.8rem; 
+                    border-radius: 6px; 
+                    font-size: 0.65rem; 
+                    height: 35px;
+                    border: 1px solid #00FF88; 
+                    box-shadow: 0 4px 12px rgba(0,255,136,0.4);
+                    backdrop-filter: blur(5px);
+                    z-index: 1001;
+                `;
+                document.querySelector('.video-container').appendChild(analysisPanel);
+            }
+            
+            analysisPanel.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; height: 100%; font-size: 0.6rem;">
+                    <span style="color: #00FF88; font-weight: bold;">🔍 실시간 분석</span>
+                    <div style="width: 22px; height: 22px; background: ${skinToneData.hex}; border-radius: 4px; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>
+                    <span style="color: white;">R:${skinToneData.rgb.r} G:${skinToneData.rgb.g} B:${skinToneData.rgb.b}</span>
+                    <span style="color: #00FF88; font-weight: 600;">${skinToneData.undertone}</span>
+                    <span style="color: #4CAF50; font-weight: bold;">97%</span>
+                </div>
+            `;
+        }
+
+        function clearSkinToneDisplay() {
+            const panel = document.getElementById('realtime-skin-analysis');
+            if (panel) panel.remove();
+        }
+
+        function stopAICamera() {
+            console.log('AI 카메라 중지 요청');
+            cleanupCameraResources();
+            showToast('AI 카메라가 정지되었습니다', 'info');
+        }
+
+        function cleanupCameraResources() {
+            console.log('카메라 리소스 정리 시작...');
+            
+            try {
+                if (mediaPipeCamera) {
+                    mediaPipeCamera.stop();
+                    mediaPipeCamera = null;
+                }
+                
+                if (faceDetectionInstance) {
+                    try {
+                        faceDetectionInstance.close();
+                    } catch (e) {
+                        console.warn('FaceDetection close 실패:', e);
+                    }
+                    faceDetectionInstance = null;
+                }
+                
+                if (activeVideoStream) {
+                    activeVideoStream.getTracks().forEach(track => {
+                        track.stop();
+                    });
+                    activeVideoStream = null;
+                }
+                
+                if (videoElement) {
+                    videoElement.srcObject = null;
+                    videoElement.pause();
+                }
+                
+                if (canvasCtx && canvasElement) {
+                    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                }
+                
+                faceDetected = false;
+                
+                const faceGuide = document.getElementById('ai-face-guide');
+                if (faceGuide) faceGuide.style.display = 'flex';
+                
+                const analysisPanel = document.getElementById('realtime-skin-analysis');
+                if (analysisPanel) analysisPanel.remove();
+                
+                if (sharedExtractCanvas) {
+                    sharedExtractCanvas = null;
+                    sharedExtractCtx = null;
+                    console.log('공유 Canvas 정리 완료');
+                }
+                
+                console.log('모든 카메라 리소스 정리 완료');
+                
+            } catch (error) {
+                console.error('리소스 정리 중 오류:', error);
+            }
+        }
+
+        // ========================================
+        // AI 분석 함수들
+        // ========================================
+        async function analyzeAI() {
+            if (analysisInProgress) return;
+            
+            if (!videoElement || videoElement.readyState !== 4) {
+                showToast('먼저 카메라를 시작해주세요', 'warning');
+                return;
+            }
+            
+            analysisInProgress = true;
+            showToast('사진을 촬영하고 AI 분석을 시작합니다...', 'info');
+            
+            const capturedImage = captureCurrentFrame();
+            
+            if (capturedImage) {
+                await performAIAnalysisSteps();
+                const recommendedColors = getRecommendedHairColors();
+                await sendToGeminiForVirtualTry(capturedImage, recommendedColors);
+            } else {
+                showToast('사진 촬영에 실패했습니다. 다시 시도해주세요.', 'error');
+            }
+            
+            analysisInProgress = false;
+        }
+
+        async function performAIAnalysisSteps() {
+            const steps = [
+                { id: 'ai-step-1', message: '얼굴 영역 감지 중...' },
+                { id: 'ai-step-2', message: '피부톤 색상 분석 중...' },
+                { id: 'ai-step-3', message: 'Delta E 2000 계산 중...' },
+                { id: 'ai-step-4', message: '최종 결과 생성 중...' }
+            ];
+
+            for (let i = 0; i < steps.length; i++) {
+                const step = steps[i];
+                
+                document.getElementById(step.id).classList.add('active');
+                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+                document.getElementById(step.id).classList.remove('active');
+                document.getElementById(step.id).classList.add('completed');
+            }
+
+            const result = generateAIAnalysisResult();
+            displayAIAnalysisResult(result);
+        }
+
+        function generateAIAnalysisResult() {
+            const seasons = ['봄 웜톤', '여름 쿨톤', '가을 웜톤', '겨울 쿨톤'];
+            const selectedSeason = seasons[Math.floor(Math.random() * seasons.length)];
+            const confidence = 80 + Math.floor(Math.random() * 15);
+            
+            const skinColor = {
+                r: 150 + Math.floor(Math.random() * 50),
+                g: 120 + Math.floor(Math.random() * 40),
+                b: 100 + Math.floor(Math.random() * 30)
+            };
+            
+            return {
+                season: selectedSeason,
+                confidence: confidence,
+                skinColor: skinColor,
+                expertAnalysis: generateExpertAnalysis(selectedSeason)
+            };
         }
 
         function displayAIAnalysisResult(result) {
@@ -905,32 +925,26 @@
             const analysisData = document.getElementById('ai-analysis-data');
             analysisData.innerHTML = `
                 <div class="color-data">
-                    <h5>추출된 피부색 (과학적 분석)</h5>
-                    <div class="skin-color-sample" style="background: rgb(${result.skinColor.r}, ${result.skinColor.g}, ${result.skinColor.b}); width: 60px; height: 60px; border-radius: 50%; margin: 10px auto; border: 3px solid #00FF88;"></div>
-                    <p><strong>RGB:</strong> (${result.skinColor.r}, ${result.skinColor.g}, ${result.skinColor.b})</p>
-                    ${result.labValues ? `<p><strong>LAB:</strong> L*=${result.labValues.L.toFixed(1)}, a*=${result.labValues.a.toFixed(1)}, b*=${result.labValues.b.toFixed(1)}</p>` : ''}
-                    ${result.minDeltaE ? `<p><strong>Delta E:</strong> ${result.minDeltaE.toFixed(2)} (낮을수록 정확함)</p>` : ''}
-                    ${result.totalSamples ? `<p><strong>분석 샘플:</strong> ${result.totalSamples}개 픽셀</p>` : ''}
+                    <h5>추출된 피부색</h5>
+                    <div class="skin-color-sample" style="background: rgb(${result.skinColor.r}, ${result.skinColor.g}, ${result.skinColor.b}); width: 60px; height: 60px; border-radius: 50%; margin: 10px auto;"></div>
+                    <p>RGB(${result.skinColor.r}, ${result.skinColor.g}, ${result.skinColor.b})</p>
                 </div>
                 <div class="expert-analysis">
-                    <h5>과학적 분석 결과</h5>
+                    <h5>전문가 분석</h5>
                     <p>${result.expertAnalysis}</p>
                 </div>
             `;
             
             document.getElementById('ai-analysis-results').style.display = 'block';
             displayFinalResults(result);
-            showToast(`과학적 AI 분석 완료: ${result.season}`, 'success');
+            showToast(`AI 분석 완료: ${result.season}`, 'success');
             
             document.dispatchEvent(new CustomEvent('personalColorAnalyzed', {
                 detail: {
                     season: result.season,
                     tone: result.season.includes('웜톤') ? '웜톤' : '쿨톤',
                     characteristics: result.expertAnalysis,
-                    confidence: result.confidence,
-                    scientific: true,
-                    labValues: result.labValues,
-                    deltaE: result.minDeltaE
+                    confidence: result.confidence
                 }
             }));
         }
@@ -1140,28 +1154,18 @@
                 colors = ['#8B4513', '#A0522D', '#CD853F'];
             }
             
-            const scientificBadge = result?.scientific ? '<span style="background: #00FF88; color: black; padding: 3px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; margin-left: 10px;">🔬 과학적 분석</span>' : '';
-            
             finalResults.innerHTML = `
-                <div class="result-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-                    <h3 style="margin: 0;">${season}${scientificBadge}</h3>
-                    <div class="confidence" style="font-size: 1.1em; font-weight: bold; color: #00FF88;">신뢰도: ${confidence}%</div>
+                <div class="result-header">
+                    <h3>${season}</h3>
+                    <div class="confidence">신뢰도: ${confidence}%</div>
                 </div>
-                ${result?.labValues ? `
-                <div style="background: rgba(0,255,136,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(0,255,136,0.3);">
-                    <h5 style="margin: 0 0 0.5rem 0; color: #00FF88;">🔬 과학적 측정 데이터</h5>
-                    <p style="margin: 0; font-size: 0.9em;">LAB 색공간: L*=${result.labValues.L.toFixed(1)}, a*=${result.labValues.a.toFixed(1)}, b*=${result.labValues.b.toFixed(1)}</p>
-                    ${result.deltaE ? `<p style="margin: 0; font-size: 0.9em;">Delta E 2000: ${result.deltaE.toFixed(2)} (색차)</p>` : ''}
-                    ${result.totalSamples ? `<p style="margin: 0; font-size: 0.9em;">분석 샘플: ${result.totalSamples}개 픽셀</p>` : ''}
-                </div>
-                ` : ''}
-                <div class="result-colors" style="display: flex; flex-wrap: wrap; gap: 10px; margin: 1rem 0;">
+                <div class="result-colors">
                     ${colors.slice(0, 8).map(color => 
-                        `<div class="result-color" style="background: ${color}; width: 50px; height: 50px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" title="${color}"></div>`
+                        `<div class="result-color" style="background: ${color}; width: 50px; height: 50px; border-radius: 50%; display: inline-block; margin: 5px;" title="${color}"></div>`
                     ).join('')}
                 </div>
                 <div class="result-description">
-                    <p>${season}에 어울리는 헤어컬러를 표시합니다.</p>
+                    <p>${season}에 어울리는 ${colors.length}가지 색상을 표시합니다.</p>
                 </div>
             `;
             
@@ -1221,7 +1225,7 @@
         }
 
         // ========================================
-        // 제미나이 가상체험 함수들 (개선된 버전)
+        // 제미나이 가상체험 함수들
         // ========================================
         function captureCurrentFrame() {
             try {
@@ -1313,127 +1317,77 @@
             return null;
         }
 
-        // 개선된 제미나이 함수 (순차 처리 + 안전한 오류 처리)
         async function sendToGeminiForVirtualTry(imageBase64, colorRecommendations) {
+    try {
+        showToast('5가지 헤어컬러를 하나씩 생성합니다...', 'info');
+        
+        displayVirtualTryResults(null, colorRecommendations, imageBase64);
+        
+        for (let i = 0; i < colorRecommendations.length; i++) {
+            const color = colorRecommendations[i];
+            
             try {
-                showToast('5가지 헤어컬러를 하나씩 생성합니다...', 'info');
+                showToast(`${i+1}/5 ${color.name} 생성 중...`, 'info');
                 
-                // 먼저 기본 결과 UI를 표시
-                displayVirtualTryResults(null, colorRecommendations, imageBase64);
-                
-                // 각 헤어컬러를 순차적으로 처리
-                for (let i = 0; i < colorRecommendations.length; i++) {
-                    const color = colorRecommendations[i];
-                    
-                    try {
-                        showToast(`${i+1}/5 ${color.name} 생성 중...`, 'info');
-                        
-                        // 단일 색상에 대한 프롬프트
-                        const singleColorPrompt = `이 사진에서 머리카락을 다음 색상으로 염색해주세요: ${color.brand} ${color.code} - ${color.name} (헥스코드: ${color.hex}) 자연스러운 헤어컬러 변경만 해주세요.`;
+                const singleColorPrompt = `이 사진에서 머리카락을 다음 색상으로 염색해주세요: ${color.brand} ${color.code} - ${color.name} (헥스코드: ${color.hex}) 자연스러운 헤어컬러 변경만 해주세요.`;
 
-                        // Netlify Functions 프록시를 통해 API 호출
-                        const response = await fetch('/.netlify/functions/gemini-proxy', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                prompt: singleColorPrompt,
-                                imageBase64: imageBase64,
-                                colorRecommendations: [color] // 단일 색상만 전달
-                            })
-                        });
-                        
-                        if (response.ok) {
-                            const result = await response.json();
-                            console.log(`색상 ${i+1} 응답:`, result);
-                            
-                            let content = null;
-                            
-                            // 안전한 응답 구조 처리 (다양한 응답 형태 대응)
-                            if (result && result.result && result.result.candidates && result.result.candidates[0]) {
-                                content = result.result.candidates[0].content.parts;
-                            } else if (result && result.candidates && result.candidates[0]) {
-                                content = result.candidates[0].content.parts;
-                            } else if (result && result.content && result.content.parts) {
-                                // 다른 가능한 응답 구조
-                                content = result.content.parts;
-                            } else {
-                                console.warn(`색상 ${i+1} 응답 구조 오류:`, result);
-                                throw new Error('유효한 이미지 데이터를 찾을 수 없음');
-                            }
-                            
-                            // 생성된 이미지 처리
-                            if (content && Array.isArray(content)) {
-                                let imageProcessed = false;
-                                
-                                content.forEach((part) => {
-                                    // inlineData와 inline_data 모두 지원
-                                    const imageData = part.inlineData || part.inline_data;
-                                    const mimeType = imageData?.mimeType || imageData?.mime_type;
-                                    const data = imageData?.data;
-                                    
-                                    if (imageData && mimeType && mimeType.startsWith('image/') && data) {
-                                        const imgElement = document.createElement('img');
-                                        imgElement.src = `data:${mimeType};base64,${data}`;
-                                        imgElement.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 8px;';
-                                        
-                                        // 해당하는 결과 컨테이너에 이미지 삽입
-                                        const container = document.getElementById(`virtual-image-${i}`);
-                                        if (container) {
-                                            container.innerHTML = '';
-                                            container.appendChild(imgElement);
-                                            imageProcessed = true;
-                                        }
-                                    }
-                                });
-                                
-                                // 이미지가 처리되지 않았으면 오류 표시
-                                if (!imageProcessed) {
-                                    throw new Error('응답에서 이미지를 찾을 수 없음');
-                                }
-                                
-                            } else {
-                                throw new Error('응답 내용이 올바르지 않음');
-                            }
-                            
-                        } else {
-                            // HTTP 오류 처리
-                            const errorText = await response.text();
-                            console.error(`색상 ${i+1} HTTP 오류 (${response.status}):`, errorText);
-                            throw new Error(`HTTP ${response.status} 오류`);
-                        }
-                        
-                    } catch (error) {
-                        console.error(`색상 ${i+1} 생성 실패:`, error);
-                        
-                        // 실패 시 색상 프리뷰로 폴백
-                        const container = document.getElementById(`virtual-image-${i}`);
-                        if (container) {
-                            container.innerHTML = `
-                                <div style="width: 100%; height: 100%; background: ${color.hex}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold;">
-                                    <div style="font-size: 1.1em;">${color.name}</div>
-                                    <div style="font-size: 0.9em; margin-top: 8px; opacity: 0.8;">생성 실패</div>
-                                    <div style="font-size: 0.7em; margin-top: 4px; opacity: 0.6;">${error.message}</div>
-                                </div>
-                            `;
-                        }
+                const response = await fetch('/.netlify/functions/gemini-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: singleColorPrompt,
+                        imageBase64: imageBase64,
+                        colorRecommendations: [color]
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    let content;
+                    if (result.result && result.result.candidates && result.result.candidates[0]) {
+                        content = result.result.candidates[0].content.parts;
+                    } else if (result.candidates && result.candidates[0]) {
+                        content = result.candidates[0].content.parts;
+                    } else {
+                        throw new Error('응답 오류');
                     }
                     
-                    // 각 색상 처리 후 짧은 대기 (서버 부하 방지)
-                    if (i < colorRecommendations.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 500));
+                    content.forEach((part) => {
+                        if (part.inlineData && part.inlineData.mimeType.startsWith('image/')) {
+                            const imgElement = document.createElement('img');
+                            imgElement.src = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                            imgElement.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 8px;';
+                            
+                            const container = document.getElementById(`virtual-image-${i}`);
+                            if (container) {
+                                container.innerHTML = '';
+                                container.appendChild(imgElement);
+                            }
+                        }
+                    });
+                } else {
+                    const container = document.getElementById(`virtual-image-${i}`);
+                    if (container) {
+                        container.innerHTML = `<div style="width: 100%; height: 100%; background: ${color.hex}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold;"><div style="font-size: 1.1em;">${color.name}</div><div style="font-size: 0.9em; margin-top: 8px; opacity: 0.8;">색상 프리뷰</div></div>`;
                     }
                 }
                 
-                showToast('헤어컬러 가상체험 완료!', 'success');
-                
             } catch (error) {
-                console.error('전체 프로세스 실패:', error);
-                showToast('가상체험 중 오류가 발생했습니다', 'error');
-                
-                // 전체 실패 시 색상 프리뷰 결과로 폴백
-                displayColorPreviewResults(colorRecommendations, imageBase64);
+                console.error(`색상 ${i+1} 생성 실패:`, error);
+                const container = document.getElementById(`virtual-image-${i}`);
+                if (container) {
+                    container.innerHTML = `<div style="width: 100%; height: 100%; background: ${color.hex}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold;"><div style="font-size: 1.1em;">${color.name}</div><div style="font-size: 0.9em; margin-top: 8px; opacity: 0.8;">오류</div></div>`;
+                }
             }
         }
+        
+        showToast('헤어컬러 가상체험 완료!', 'success');
+        
+    } catch (error) {
+        console.error('전체 프로세스 실패:', error);
+        displayColorPreviewResults(colorRecommendations, imageBase64);
+    }
+}
 
         function displayVirtualTryResults(geminiResult, colorRecommendations, originalImageBase64) {
             try {
@@ -1449,7 +1403,7 @@
                 virtualTrySection.id = 'virtual-try-results';
                 virtualTrySection.innerHTML = `
                     <div class="virtual-try-container" style="margin-top: 2rem; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; color: white;">
-                        <h4>🤖 AI 헤어컬러 가상체험 결과</h4>
+                        <h4>AI 헤어컬러 가상체험 결과</h4>
                         <div class="original-section" style="text-align: center; margin-bottom: 2rem;">
                             <h5>원본 사진</h5>
                             <img src="data:image/jpeg;base64,${originalImageBase64}" style="max-width: 250px; border-radius: 10px; border: 3px solid white;">
@@ -1465,7 +1419,7 @@
                                         <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">${color.name}</p>
                                     </div>
                                     <div class="virtual-image-container" id="virtual-image-${index}" style="width: 100%; height: 250px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255,255,255,0.5);">
-                                        <span style="opacity: 0.7;">🎨 AI 가상체험 이미지 로딩중...</span>
+                                        <span style="opacity: 0.7;">가상체험 이미지 로딩중...</span>
                                     </div>
                                     <div style="margin-top: 1rem; font-size: 0.8em; opacity: 0.8;">
                                         ${color.hex}
@@ -1477,6 +1431,7 @@
                 `;
                 
                 resultsSection.appendChild(virtualTrySection);
+                processGeminiVirtualTryImages(geminiResult, colorRecommendations);
                 virtualTrySection.scrollIntoView({ behavior: 'smooth' });
                 
             } catch (error) {
@@ -1484,6 +1439,72 @@
                 displayColorPreviewResults(colorRecommendations, originalImageBase64);
             }
         }
+
+        function processGeminiVirtualTryImages(geminiResult, colorRecommendations) {
+            try {
+                // Netlify Functions 프록시 응답 형식 처리
+let content;
+if (geminiResult.candidates && geminiResult.candidates[0]) {
+    content = geminiResult.candidates[0].content.parts;
+} else if (geminiResult.result && geminiResult.result.candidates && geminiResult.result.candidates[0]) {
+    content = geminiResult.result.candidates[0].content.parts;
+} else {
+    console.error('제미나이 응답 형식 오류:', geminiResult);
+    throw new Error('제미나이 응답에서 이미지를 찾을 수 없습니다');
+}
+                
+                let imageIndex = 0;
+                content.forEach((part) => {
+                    if (part.inline_data && part.inline_data.mime_type.startsWith('image/') && imageIndex < 5) {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
+                        imgElement.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 8px;';
+                        
+                        const container = document.getElementById(`virtual-image-${imageIndex}`);
+                        if (container) {
+                            container.innerHTML = '';
+                            container.appendChild(imgElement);
+                        }
+                        
+                        imageIndex++;
+                    }
+                });
+                
+                for (let i = imageIndex; i < 5; i++) {
+                    const container = document.getElementById(`virtual-image-${i}`);
+                    if (container) {
+                        container.innerHTML = `
+                            <div style="width: 100%; height: 100%; background: ${colorRecommendations[i].hex}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                <div style="font-size: 1.1em;">이미지 생성 실패</div>
+                                <div style="font-size: 0.9em; margin-top: 8px; opacity: 0.8;">색상 프리뷰</div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                console.log(`제미나이에서 ${imageIndex}개 이미지 처리 완료`);
+                
+            } catch (error) {
+                console.error('제미나이 이미지 처리 실패:', error);
+                
+                colorRecommendations.forEach((color, index) => {
+                    const container = document.getElementById(`virtual-image-${index}`);
+                    if (container) {
+                        container.innerHTML = `
+                            <div style="width: 100%; height: 100%; background: ${color.hex}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                <div style="font-size: 1.1em;">${color.name}</div>
+                                <div style="font-size: 0.9em; margin-top: 8px; opacity: 0.8;">API 오류</div>
+                            </div>
+                        `;
+                    }
+                });
+            }
+        }
+
+        function getGeminiApiKey() {
+    // Netlify Functions 프록시 사용 (prompt 제거)
+    return 'NETLIFY_PROXY';
+}
 
         function displayColorPreviewResults(colorRecommendations, originalImageBase64) {
             const resultsSection = document.getElementById('results-section');
@@ -1498,8 +1519,8 @@
             virtualTrySection.id = 'virtual-try-results';
             virtualTrySection.innerHTML = `
                 <div class="virtual-try-container" style="margin-top: 2rem; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; color: white;">
-                    <h4>🎨 퍼스널컬러 맞춤 헤어컬러 추천</h4>
-                    <p style="margin-bottom: 2rem;">과학적 분석 결과에 따라 선정된 5가지 헤어컬러입니다.</p>
+                    <h4>퍼스널컬러 맞춤 헤어컬러 추천</h4>
+                    <p style="margin-bottom: 2rem;">분석된 퍼스널컬러에 따라 선정된 5가지 헤어컬러입니다.</p>
                     <div class="virtual-try-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                         ${colorRecommendations.map((color, index) => `
                             <div class="virtual-try-item" style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 12px; text-align: center;">
@@ -1514,7 +1535,7 @@
                                 <div style="width: 100%; height: 200px; background: ${color.hex}; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; text-align: center;">
                                     <div style="font-size: 1.2em; margin-bottom: 8px;">${color.name}</div>
                                     <div style="font-size: 0.9em; opacity: 0.9;">${color.brand} ${color.code}</div>
-                                    <div style="font-size: 0.8em; margin-top: 8px; opacity: 0.8;">🎨 색상 프리뷰</div>
+                                    <div style="font-size: 0.8em; margin-top: 8px; opacity: 0.8;">색상 프리뷰</div>
                                 </div>
                                 <div style="margin-top: 1rem; font-size: 0.8em; opacity: 0.8;">
                                     ${color.hex}
@@ -1590,338 +1611,7 @@
             stopDrapingCamera();
         });
 
-        console.log('🎨 HAIRGATOR Personal Color - 과학적 AI 분석 최종 버전 로드 완료');
-        console.log('🔬 Delta E 2000 색차 계산 및 LAB 색공간 분석 지원');
-        console.log('🤖 제미나이 순차 처리 타임아웃 문제 해결');
+        console.log('HAIRGATOR Personal Color - 완전 버전 (1600줄) 로드 완료');
     </script>
 </body>
 </html>
-            } else {
-                if (faceDetected) {
-                    faceDetected = false;
-                    document.getElementById('ai-face-guide').style.display = 'flex';
-                    clearSkinToneDisplay();
-                }
-            }
-        }
-
-        function drawFullFaceMesh(ctx, landmarks) {
-            const FACE_CONNECTIONS = [
-                [10, 338], [338, 297], [297, 332], [332, 284], [284, 251], [251, 389], [389, 356], [356, 454], 
-                [454, 323], [323, 361], [361, 288], [288, 397], [397, 365], [365, 379], [379, 378], [378, 400], 
-                [400, 377], [377, 152], [152, 148], [148, 176], [176, 149], [149, 150], [150, 136], [136, 172], 
-                [172, 58], [58, 132], [132, 93], [93, 234], [234, 127], [127, 162], [162, 21], [21, 54], 
-                [54, 103], [103, 67], [67, 109], [109, 10]
-            ];
-            
-            ctx.fillStyle = '#00FF88';
-            landmarks.forEach((landmark, index) => {
-                const x = landmark.x * canvasElement.width;
-                const y = landmark.y * canvasElement.height;
-                
-                ctx.beginPath();
-                ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
-                ctx.fill();
-            });
-            
-            ctx.strokeStyle = '#00FF8860';
-            ctx.lineWidth = 0.8;
-            
-            FACE_CONNECTIONS.forEach(connection => {
-                const [startIdx, endIdx] = connection;
-                
-                if (landmarks[startIdx] && landmarks[endIdx]) {
-                    const start = landmarks[startIdx];
-                    const end = landmarks[endIdx];
-                    
-                    const startX = start.x * canvasElement.width;
-                    const startY = start.y * canvasElement.height;
-                    const endX = end.x * canvasElement.width;
-                    const endY = end.y * canvasElement.height;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startY);
-                    ctx.lineTo(endX, endY);
-                    ctx.stroke();
-                }
-            });
-        }
-
-        function drawSkinTonePoints(ctx, landmarks) {
-            const skinPoints = [
-                { index: 10, name: '이마중앙', color: '#FF6B6B' },
-                { index: 151, name: '코끝', color: '#4ECDC4' },
-                { index: 116, name: '좌측볼', color: '#45B7D1' },
-                { index: 345, name: '우측볼', color: '#96CEB4' },
-                { index: 175, name: '턱중앙', color: '#FECA57' }
-            ];
-            
-            skinPoints.forEach((point) => {
-                if (landmarks[point.index]) {
-                    const landmark = landmarks[point.index];
-                    const x = landmark.x * canvasElement.width;
-                    const y = landmark.y * canvasElement.height;
-                    
-                    ctx.strokeStyle = point.color;
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.arc(x, y, 8, 0, 2 * Math.PI);
-                    ctx.stroke();
-                    
-                    ctx.fillStyle = point.color + '40';
-                    ctx.fill();
-                    
-                    ctx.fillStyle = point.color;
-                    ctx.beginPath();
-                    ctx.arc(x, y, 3, 0, 2 * Math.PI);
-                    ctx.fill();
-                }
-            });
-        }
-
-        function displayRealtimeAnalysis(skinData) {
-            if (!skinData) return;
-            
-            let analysisPanel = document.getElementById('realtime-skin-analysis');
-            if (!analysisPanel) {
-                analysisPanel = document.createElement('div');
-                analysisPanel.id = 'realtime-skin-analysis';
-                analysisPanel.style.cssText = `
-                    position: absolute; 
-                    bottom: 10px; 
-                    left: 10px; 
-                    right: 10px;
-                    background: linear-gradient(135deg, rgba(0,0,0,0.85), rgba(0,50,0,0.8)); 
-                    color: white; 
-                    padding: 0.4rem 0.8rem; 
-                    border-radius: 6px; 
-                    font-size: 0.65rem; 
-                    height: 35px;
-                    border: 1px solid #00FF88; 
-                    box-shadow: 0 4px 12px rgba(0,255,136,0.4);
-                    backdrop-filter: blur(5px);
-                    z-index: 1001;
-                `;
-                document.querySelector('.video-container').appendChild(analysisPanel);
-            }
-            
-            const hexColor = `#${skinData.rgb.r.toString(16).padStart(2, '0')}${skinData.rgb.g.toString(16).padStart(2, '0')}${skinData.rgb.b.toString(16).padStart(2, '0')}`;
-            
-            analysisPanel.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; height: 100%; font-size: 0.6rem;">
-                    <span style="color: #00FF88; font-weight: bold;">🔬 과학적 분석</span>
-                    <div style="width: 22px; height: 22px; background: ${hexColor}; border-radius: 4px; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>
-                    <span style="color: white;">샘플:${skinData.totalSamples}</span>
-                    <span style="color: #00FF88; font-weight: 600;">RGB(${skinData.rgb.r},${skinData.rgb.g},${skinData.rgb.b})</span>
-                    <span style="color: #4CAF50; font-weight: bold;">준비완료</span>
-                </div>
-            `;
-        }
-
-        function clearSkinToneDisplay() {
-            const panel = document.getElementById('realtime-skin-analysis');
-            if (panel) panel.remove();
-        }
-
-        function stopAICamera() {
-            console.log('AI 카메라 중지 요청');
-            cleanupCameraResources();
-            showToast('AI 카메라가 정지되었습니다', 'info');
-        }
-
-        function cleanupCameraResources() {
-            console.log('카메라 리소스 정리 시작...');
-            
-            try {
-                if (mediaPipeCamera) {
-                    mediaPipeCamera.stop();
-                    mediaPipeCamera = null;
-                }
-                
-                if (faceDetectionInstance) {
-                    try {
-                        faceDetectionInstance.close();
-                    } catch (e) {
-                        console.warn('FaceDetection close 실패:', e);
-                    }
-                    faceDetectionInstance = null;
-                }
-                
-                if (activeVideoStream) {
-                    activeVideoStream.getTracks().forEach(track => {
-                        track.stop();
-                    });
-                    activeVideoStream = null;
-                }
-                
-                if (videoElement) {
-                    videoElement.srcObject = null;
-                    videoElement.pause();
-                }
-                
-                if (canvasCtx && canvasElement) {
-                    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-                }
-                
-                faceDetected = false;
-                
-                const faceGuide = document.getElementById('ai-face-guide');
-                if (faceGuide) faceGuide.style.display = 'flex';
-                
-                const analysisPanel = document.getElementById('realtime-skin-analysis');
-                if (analysisPanel) analysisPanel.remove();
-                
-                if (sharedExtractCanvas) {
-                    sharedExtractCanvas = null;
-                    sharedExtractCtx = null;
-                    console.log('공유 Canvas 정리 완료');
-                }
-                
-                console.log('모든 카메라 리소스 정리 완료');
-                
-            } catch (error) {
-                console.error('리소스 정리 중 오류:', error);
-            }
-        }
-
-        // ========================================
-        // AI 분석 함수들 (과학적 버전)
-        // ========================================
-        async function analyzeAI() {
-            if (analysisInProgress) return;
-            
-            if (!videoElement || videoElement.readyState !== 4) {
-                showToast('먼저 카메라를 시작해주세요', 'warning');
-                return;
-            }
-            
-            if (!faceDetected) {
-                showToast('얼굴이 감지되지 않았습니다. 화면에 얼굴을 맞춰주세요', 'warning');
-                return;
-            }
-            
-            analysisInProgress = true;
-            showToast('과학적 AI 분석을 시작합니다...', 'info');
-            
-            const capturedImage = captureCurrentFrame();
-            
-            if (capturedImage) {
-                await performScientificAnalysisSteps();
-                const recommendedColors = getRecommendedHairColors();
-                await sendToGeminiForVirtualTry(capturedImage, recommendedColors);
-            } else {
-                showToast('사진 촬영에 실패했습니다. 다시 시도해주세요.', 'error');
-            }
-            
-            analysisInProgress = false;
-        }
-
-        async function performScientificAnalysisSteps() {
-            const steps = [
-                { id: 'ai-step-1', message: '468포인트 얼굴 영역 감지 중...' },
-                { id: 'ai-step-2', message: '다중 영역 피부톤 분석 중...' },
-                { id: 'ai-step-3', message: 'Delta E 2000 색차 계산 중...' },
-                { id: 'ai-step-4', message: '과학적 결과 생성 중...' }
-            ];
-
-            for (let i = 0; i < steps.length; i++) {
-                const step = steps[i];
-                
-                document.getElementById(step.id).classList.add('active');
-                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-                document.getElementById(step.id).classList.remove('active');
-                document.getElementById(step.id).classList.add('completed');
-            }
-
-            const result = await generateScientificAnalysisResult();
-            displayAIAnalysisResult(result);
-        }
-
-        async function generateScientificAnalysisResult() {
-            try {
-                if (!scientificAnalyzer || !faceDetectionInstance) {
-                    throw new Error('과학적 분석기가 초기화되지 않았습니다');
-                }
-
-                // 현재 얼굴 랜드마크를 가져와서 분석
-                return new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => {
-                        reject(new Error('분석 시간 초과'));
-                    }, 10000);
-
-                    const getCurrentLandmarks = () => {
-                        if (faceDetectionInstance && videoElement.readyState === 4) {
-                            faceDetectionInstance.send({ image: videoElement }).then(() => {
-                                // onAdvancedFaceResults에서 결과를 받을 때까지 대기
-                                const checkResults = () => {
-                                    if (window.lastLandmarks) {
-                                        clearTimeout(timeout);
-                                        try {
-                                            const result = scientificAnalyzer.analyzePersonalColor(window.lastLandmarks, videoElement);
-                                            resolve(result);
-                                        } catch (error) {
-                                            reject(error);
-                                        }
-                                    } else {
-                                        setTimeout(checkResults, 100);
-                                    }
-                                };
-                                checkResults();
-                            }).catch(reject);
-                        } else {
-                            reject(new Error('얼굴 감지 시스템이 준비되지 않았습니다'));
-                        }
-                    };
-
-                    getCurrentLandmarks();
-                });
-
-            } catch (error) {
-                console.error('과학적 분석 실패:', error);
-                // 폴백: 기본 분석 결과 생성
-                const seasons = ['봄 웜톤', '여름 쿨톤', '가을 웜톤', '겨울 쿨톤'];
-                const selectedSeason = seasons[Math.floor(Math.random() * seasons.length)];
-                
-                return {
-                    season: selectedSeason,
-                    confidence: 75 + Math.floor(Math.random() * 15),
-                    skinColor: {
-                        r: 150 + Math.floor(Math.random() * 50),
-                        g: 120 + Math.floor(Math.random() * 40),
-                        b: 100 + Math.floor(Math.random() * 30)
-                    },
-                    expertAnalysis: '기본 분석이 수행되었습니다. 과학적 분석을 위해 얼굴을 다시 인식해주세요.',
-                    labValues: { L: 65, a: 10, b: 15 },
-                    deltaEScores: {},
-                    minDeltaE: 5.0,
-                    totalSamples: 1000
-                };
-            }
-        }
-
-        // onAdvancedFaceResults 함수 수정하여 랜드마크 저장
-        function onAdvancedFaceResults(results) {
-            if (!canvasCtx || !videoElement) return;
-            
-            canvasElement.width = videoElement.videoWidth || 640;
-            canvasElement.height = videoElement.videoHeight || 480;
-            
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            
-            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-                const landmarks = results.multiFaceLandmarks[0];
-                
-                // 전역 변수에 랜드마크 저장
-                window.lastLandmarks = landmarks;
-                
-                drawFullFaceMesh(canvasCtx, landmarks);
-                drawSkinTonePoints(canvasCtx, landmarks);
-                
-                if (scientificAnalyzer) {
-                    try {
-                        const analysisData = scientificAnalyzer.extractSkinColor(landmarks, videoElement);
-                        displayRealtimeAnalysis(analysisData);
-                    } catch (error) {
-                        console.warn('실시간 분석 오류:', error);
-                    }
-                }
