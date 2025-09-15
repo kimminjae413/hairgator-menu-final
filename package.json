@@ -1,10 +1,10 @@
 {
   "name": "hairgator-gpt-image-system",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "HAIRGATOR Professional Hair Style Menu with GPT Image 1 Face-Preserve AI Experience",
   "main": "index.html",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "node-fetch": "^2.6.7",
@@ -20,8 +20,9 @@
     "dev": "netlify dev",
     "functions:serve": "netlify functions:serve",
     "test:functions": "netlify functions:invoke openai-proxy --payload '{\"method\":\"test\"}'",
-    "test:generate": "netlify functions:invoke openai-proxy --payload '{\"method\":\"generate\",\"prompt\":\"test hairstyle transformation\"}'",
-    "test:edit": "netlify functions:invoke openai-proxy --payload '{\"method\":\"edit\",\"prompt\":\"change hairstyle\",\"image\":\"data:image/png;base64,test\"}'"
+    "test:generate": "netlify functions:invoke openai-proxy --payload '{\"method\":\"generate\",\"prompt\":\"Professional portrait with modern hairstyle\",\"quality\":\"high\"}'",
+    "test:edit": "netlify functions:invoke openai-proxy --payload '{\"method\":\"edit\",\"prompt\":\"Transform hairstyle while preserving facial features\",\"image\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==\",\"input_fidelity\":\"high\"}'",
+    "test:face-preserve": "netlify functions:invoke openai-proxy --payload '{\"method\":\"edit\",\"prompt\":\"Change only the hairstyle, keep face identical\",\"input_fidelity\":\"high\",\"quality\":\"high\"}'"
   },
   "keywords": [
     "hairgator",
@@ -29,12 +30,13 @@
     "ai-experience",
     "gpt-image-1",
     "face-preserve",
+    "input-fidelity",
     "hair-simulation",
     "salon-menu",
     "beauty-tech",
     "korean-beauty",
     "image-editing",
-    "dalle-3"
+    "facial-preservation"
   ],
   "author": "HAIRGATOR Team",
   "license": "MIT",
@@ -47,7 +49,7 @@
     "publish": ".",
     "build": {
       "environment": {
-        "NODE_VERSION": "16"
+        "NODE_VERSION": "18"
       }
     },
     "redirects": [
@@ -78,9 +80,18 @@
   "config": {
     "gpt": {
       "mode": "face-preserve",
+      "model": "gpt-image-1",
+      "input_fidelity": "high",
       "defaultSize": "1024x1024",
+      "defaultQuality": "high",
       "maxRetries": 3,
-      "timeout": 60000
+      "timeout": 90000,
+      "features": {
+        "edit_mode": true,
+        "generate_mode": true,
+        "mask_support": true,
+        "face_preservation": true
+      }
     }
   }
 }
