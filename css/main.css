@@ -690,8 +690,8 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 .styles-container,
 .menu-items-container {
     position: absolute;
-    /* 새로운 높이 계산: 헤더(65px) + 패딩(70px) + 대분류탭(60px) + 설명(70px) + 중분류탭(50px) = 315px */
-    top: 315px;
+    /* 새로운 높이 계산: 헤더(65px) + margin-top(70px) + 대분류탭(60px) + 설명(70px) + 중분류탭(50px) = 315px */
+    top: 385px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -720,7 +720,7 @@ body.light-theme .menu-items-container {
 @media (min-width: 768px) and (max-width: 1024px) {
     /* 고정 메뉴 섹션 패딩 조정 */
     .fixed-menu-section {
-        padding-top: 75px; /* 태블릿에서 조금 더 여유 */
+        margin-top: 75px; /* 태블릿에서 조금 더 여유 */
     }
     
     /* 스타일 그리드 5열 유지 */
@@ -733,7 +733,7 @@ body.light-theme .menu-items-container {
     .menu-items-container,
     .styles-container {
         position: absolute !important;
-        top: 320px !important; /* 태블릿용 조정된 높이 */
+        top: 390px !important; /* 태블릿용 조정된 높이 */
         bottom: 0 !important;
         height: auto !important;
         overflow-y: auto !important;
