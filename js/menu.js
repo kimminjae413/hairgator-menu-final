@@ -58,7 +58,7 @@ function addAIButtonToModal(style) {
             // nano-banana-hair.js 동적 로드
             if (!document.querySelector('script[src*="nano-banana-hair.js"]')) {
                 const script = document.createElement('script');
-                script.src = '/js/nano-banana-hair.// ===============================================
+                script.src = '/js/nano-banana-hair.js'; // ===============================================
 // HAIRGATOR 메뉴 시스템 - AI 헤어체험 통합 완전 버전
 // js/menu.js - 기존 스마트 필터링 + NEW 시스템 + AI 통합
 // ===============================================
@@ -960,4 +960,5 @@ window.debugHAIRGATOR = function() {
 
 console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - AI 헤어체험 통합 버전');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
+
 
