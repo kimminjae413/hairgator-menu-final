@@ -1,5 +1,5 @@
-// HAIRGATOR 불나비 API 프록시 서버 - FormData 방식 적용
-// 기존 코드에서 URLSearchParams → FormData로 변경
+// HAIRGATOR 불나비 API 프록시 서버 - 최종 수정 버전
+// FormData + 간단한 documentJson + 환경변수 토큰
 
 exports.handler = async (event, context) => {
     // CORS 헤더 설정
@@ -38,34 +38,33 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // JWT 토큰 (환경변수 또는 기본값)
-        const newToken = process.env.BULLNABI_JWT_TOKEN || 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlcmljNzA4QG5hdmVyLmNvbSIsImxvZ2luVXNlckluZm8iOiJ7IFwiX2lkXCIgOiB7IFwiJG9pZFwiIDogXCI2NTgzYTNhYzJjZDFjYWM4YWUyZTgzYzFcIiB9LCBcImlkXCIgOiBcImVyaWM3MDhAbmF2ZXIuY29tXCIsIFwiZW1haWxcIiA6IFwiZXJpYzcwOEBuYXZlci5jb21cIiwgXCJuYW1lXCIgOiBcIuq5gOuvvOyerFwiLCBcIm5pY2tuYW1lXCIgOiBudWxsLCBcInN0YXR1c1wiIDogXCJhZG1pblwiLCBcIl9zZXJ2aWNlTmFtZVwiIDogXCJkcnlsaW5rXCIsIFwiX3NlcnZpY2VBcHBOYW1lXCIgOiBcIuuTnOudvOydtOunge2BrCDrlJTsnpDsnbTrhIjsmqlcIiwgXCJvc1R5cGVcIiA6IFwiaU9TXCIgfSIsImV4cCI6MTc1ODAxODIzNn0.ZXuCaGQEynAPQXhptlYkzne4cQq7CK_JhrX8jJovD2k';
+        // JWT 토큰 (환경변수에서 가져오기)
+        const newToken = process.env.BULLNABI_JWT_TOKEN;
+        
+        if (!newToken) {
+            console.error('❌ BULLNABI_JWT_TOKEN 환경변수가 설정되지 않았습니다');
+            return {
+                statusCode: 500,
+                headers: corsHeaders,
+                body: JSON.stringify({ 
+                    success: false, 
+                    error: 'JWT 토큰이 설정되지 않았습니다' 
+                })
+            };
+        }
         
         console.log('토큰 사용:', newToken.substring(0, 20) + '...');
 
-        // 성공했던 방식: FormData 사용 (URLSearchParams 대신)
+        // FormData 사용
         const FormData = require('form-data');
         const formData = new FormData();
         
         formData.append('metaCode', '_users');
         formData.append('collectionName', '_users');
         
-        // API 문서에 맞는 올바른 documentJson 구조
+        // 간단한 documentJson 구조로 수정
         const documentJson = {
-            "pipeline": {
-                "$match": {
-                    "_id": {"$oid": userId}
-                },
-                "$project": {
-                    "nickname": 1,
-                    "email": 1,
-                    "remainCount": 1,
-                    "name": 1,
-                    "phone": 1,
-                    "_createTime": 1,
-                    "_updateTime": 1
-                }
-            }
+            "_id": {"$oid": userId}
         };
         
         formData.append('documentJson', JSON.stringify(documentJson));
@@ -73,16 +72,16 @@ exports.handler = async (event, context) => {
         console.log('FormData 생성 완료');
         console.log('documentJson:', JSON.stringify(documentJson));
 
-        // 성공했던 방식: Authorization 헤더 (Bearer 없이)
+        // Authorization 헤더 (Bearer 없이)
         const fetchHeaders = {
             'Accept': 'application/json',
             ...formData.getHeaders()
         };
-        fetchHeaders['Authorization'] = newToken; // Bearer 없이 (성공했던 방식)
+        fetchHeaders['Authorization'] = newToken; // Bearer 없이
 
         console.log('실제 전송되는 Authorization 헤더:', newToken.substring(0, 20) + '...');
 
-        // API 호출 (http로 수정)
+        // API 호출
         const response = await fetch('http://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
             method: 'POST',
             headers: fetchHeaders,
@@ -102,21 +101,21 @@ exports.handler = async (event, context) => {
                 console.log('JSON 파싱 성공');
                 
                 // API 응답 확인 - 성공적인 응답인지 체크
-                if (apiData.code && apiData.code === "1" && apiData.data && apiData.data.length > 0) {
+                if (apiData && apiData.data && apiData.data.length > 0) {
                     // 실제 사용자 정보 추출
                     const userData = apiData.data[0];
                     
                     const userInfo = {
-                        name: userData.nickname || userData.name || '김민재',
-                        phone: userData.phone || userData.email || '708eric@hanmail.net',
-                        remainCount: userData.remainCount || 360,
+                        name: userData.nickname || userData.name || '불나비 사용자',
+                        phone: userData.phone || userData.email || 'unknown',
+                        remainCount: userData.remainCount || 0,
                         lastLoginDate: new Date().toISOString(),
                         source: 'bullnabi_api_success',
                         userId: userData._id?.$oid || userId,
                         email: userData.email
                     };
 
-                    console.log('실제 불나비 사용자 정보 추출 성공:', userInfo);
+                    console.log('✅ 실제 불나비 사용자 정보 추출 성공:', userInfo);
 
                     return {
                         statusCode: 200,
@@ -143,14 +142,14 @@ exports.handler = async (event, context) => {
         }
 
         // 실패 시 fallback
-        console.log('API 실패, fallback 사용');
+        console.log('❌ API 실패, fallback 사용');
         
         const fallbackUserInfo = {
             name: '김민재',
             phone: '708eric@hanmail.net',
             remainCount: 360,
             lastLoginDate: new Date().toISOString(),
-            source: 'fallback_formdata'
+            source: 'fallback_api_failed'
         };
 
         return {
@@ -169,7 +168,7 @@ exports.handler = async (event, context) => {
         };
 
     } catch (error) {
-        console.error('프록시 서버 오류:', error);
+        console.error('❌ 프록시 서버 오류:', error);
         
         return {
             statusCode: 500,
