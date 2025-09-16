@@ -929,13 +929,14 @@ function addHairUploadModalStyles() {
         }
         
         .hair-upload-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-        }
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: -1;  /* 이 줄 추가 */
+}
         
         .hair-upload-content {
             position: relative;
@@ -1363,5 +1364,6 @@ window.debugHAIRGATOR = function() {
 
 console.log('HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 헤어체험 연동 최종 버전');
 console.log('디버깅: window.debugHAIRGATOR() 실행 가능');
+
 
 
