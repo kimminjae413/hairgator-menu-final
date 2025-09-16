@@ -897,6 +897,12 @@ window.HAIRGATOR_MENU = {
     getCurrentSubTab: () => currentSubTab
 };
 
+// ✅ 여기에 추가하세요! (4줄 추가)
+window.loadMenuForGender = loadMenuForGender;
+window.selectMainTab = selectMainTab;
+window.selectSubTab = selectSubTab;
+window.loadStyles = loadStyles;
+
 // HTML에서 직접 호출되는 전역 함수 추가
 window.selectGender = function(gender) {
     console.log(`성별 선택: ${gender}`);
@@ -954,3 +960,4 @@ window.debugHAIRGATOR = function() {
 
 console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - AI 헤어체험 통합 버전');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
+
