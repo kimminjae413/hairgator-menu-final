@@ -1,16 +1,31 @@
-# netlify.toml - HAIRGATOR 정적 사이트 배포 설정
+# netlify.toml - 단순 정적 사이트 설정
 [build]
   publish = "."
-  
-# 모든 프레임워크 감지 및 빌드 프로세스 완전 비활성화
-[build.environment]
-  NETLIFY_SKIP_FRAMEWORK_DETECTION = "true"
-  GATSBY_TELEMETRY_DISABLED = "1"
-  DISABLE_ESLINT_PLUGIN = "true"
-  
-# 빌드 무시 (정적 파일만 배포)
-[build.ignore]
-  command = "exit 0"
+
+# JavaScript 파일 - 짧은 캐시 (10분)
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+
+# CSS 파일 - 짧은 캐시 (10분)
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+
+# HTML 파일 - 캐시 비활성화
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# SPA 라우팅
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
 
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
