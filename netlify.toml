@@ -114,8 +114,8 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "no-referrer-when-downgrade"
     Permissions-Policy = "camera=(self), microphone=(self), geolocation=()"
-    # 헤어체험 API 통신을 위한 CSP 설정
-    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com https://*.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:;"
+    # 헤어체험 API 통신을 위한 CSP 설정 (Firebase source map 오류 해결)
+    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com https://*.googleapis.com https://www.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:;"
 
 # ========== SPA 라우팅 ==========
 [[redirects]]
