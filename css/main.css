@@ -796,7 +796,7 @@ body.light-theme .menu-items-container {
         -webkit-overflow-scrolling: touch;
         overscroll-behavior-y: contain;
         padding: 10px;
-        padding-top: 320px; /* 고정 영역 높이만큼 상단 패딩 */
+        padding-top: 150px; /* 최적화된 값으로 조정 */
         background: var(--primary-dark);
     }
     
