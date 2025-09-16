@@ -260,6 +260,13 @@ body.light-theme .form-group input {
     min-height: calc(100vh - 65px);
     padding: 20px;
     gap: 80px;
+    position: relative;
+    z-index: 1000;
+    background: var(--primary-dark);
+}
+
+.gender-selection.active {
+    display: flex;
 }
 
 .gender-btn {
@@ -335,6 +342,15 @@ body.light-theme .gender-btn {
 
 .menu-container.active {
     display: flex;
+    z-index: 500;
+}
+
+/* 성별 선택 화면이 활성화되어 있을 때 메뉴 컨테이너 완전 숨김 */
+body:has(.gender-selection:not([style*="display: none"])) .menu-container,
+body:has(.gender-selection.active) .menu-container {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
 }
 
 /* 고정될 영역 (빨간 박스) */
