@@ -512,4 +512,84 @@ async function simulateVisualAnalysis() {
             liveAnalysis.style.display = 'block';
             const analysisDiv = document.createElement('div');
             analysisDiv.className = 'analysis-item';
-            analysisDiv.innerHTML = `<span class="analysis-step
+            analysisDiv.innerHTML = `<span class="analysis-step">${i + 1}단계:</span> ${step.analysis}`;
+            analysisResults.appendChild(analysisDiv);
+        }
+        
+        // 각 단계별 대기 시간
+        await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1000));
+    }
+    
+    console.log('시각적 분석 시뮬레이션 완료');
+}
+
+// nano_banana API 호출
+async function callNanoBananaAPI() {
+    const formData = new FormData();
+    formData.append('userPhoto', window.HAIRGATOR_NANO_BANANA.userPhoto);
+    formData.append('styleImageUrl', window.HAIRGATOR_NANO_BANANA.currentStyle.imageUrl);
+    formData.append('preserveFace', document.getElementById('preserveFaceOption').checked);
+    formData.append('skinToneMatch', document.getElementById('skinToneMatchOption').checked);
+    formData.append('naturalBlend', document.getElementById('naturalBlendOption').checked);
+    formData.append('enhanceQuality', document.getElementById('enhanceQualityOption').checked);
+    
+    const response = await fetch(window.HAIRGATOR_NANO_BANANA.apiEndpoint, {
+        method: 'POST',
+        body: formData
+    });
+    
+    if (!response.ok) {
+        throw new Error('API 호출 실패: ' + response.statusText);
+    }
+    
+    return await response.json();
+}
+
+// 결과 표시
+function showNanoBananaResult(result) {
+    document.getElementById('nanoProgressSection').style.display = 'none';
+    document.getElementById('nanoResultSection').style.display = 'block';
+    
+    if (result.originalImage) {
+        document.getElementById('nanoOriginalResult').src = result.originalImage;
+    }
+    
+    if (result.styledImage) {
+        document.getElementById('nanoStyledResult').src = result.styledImage;
+    }
+    
+    window.HAIRGATOR_NANO_BANANA.analysisResults = result;
+    console.log('nano_banana 결과 표시 완료');
+}
+
+// 이벤트 설정 함수들
+function setupAIHairEvents() {
+    setupNanoBananaEvents();
+}
+
+// AI 헤어체험 모달 닫기
+function closeAIHairModal() {
+    const modal = document.getElementById('aiHairModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            removeAIHairModal();
+        }, 300);
+    }
+    document.body.style.overflow = '';
+}
+
+// 모달 제거
+function removeAIHairModal() {
+    const existingModal = document.getElementById('aiHairModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+}
+
+// 전역 함수 등록
+window.openAIHairModal = openAIHairModal;
+window.closeAIHairModal = closeAIHairModal;
+window.startAIHairProcessing = startNanoBananaProcessing;
+
+console.log('nano_banana 헤어 시스템 로드 완료');
