@@ -1,35 +1,10 @@
-# netlify.toml - 단순 정적 사이트 설정
+# netlify.toml - HAIRGATOR 헤어체험 연동 최종 설정
 [build]
   publish = "."
 
 [build.environment]
   # 시크릿 스캔 비활성화 (Firebase/API 키들이 의도적으로 포함됨)
   SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
-
-# JavaScript 파일 - 짧은 캐시 (10분)
-[[headers]]
-  for = "/js/*"
-  [headers.values]
-    Cache-Control = "public, max-age=600, must-revalidate"
-
-# CSS 파일 - 짧은 캐시 (10분)
-[[headers]]
-  for = "/css/*"
-  [headers.values]
-    Cache-Control = "public, max-age=600, must-revalidate"
-
-# HTML 파일 - 캐시 비활성화
-[[headers]]
-  for = "/*.html"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-
-# SPA 라우팅
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = false
 
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
@@ -59,6 +34,30 @@
     Cache-Control = "no-cache, no-store, must-revalidate"
     Pragma = "no-cache"
     Expires = "0"
+
+# ========== 헤어체험 AI 서비스 설정 ==========
+# 헤어체험 서비스 파일 - 짧은 캐시
+[[headers]]
+  for = "/js/hair-experience-service.js"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+
+# AI 통합 파일 - 짧은 캐시
+[[headers]]
+  for = "/js/ai-integration.js"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+
+# Netlify Functions (API 키 제공) - CORS 설정
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
 # ========== PWA 설정 ==========
 # Service Worker - 캐시 비활성화
@@ -115,6 +114,8 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "no-referrer-when-downgrade"
     Permissions-Policy = "camera=(self), microphone=(self), geolocation=()"
+    # 헤어체험 API 통신을 위한 CSP 설정
+    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com https://*.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:;"
 
 # ========== SPA 라우팅 ==========
 [[redirects]]
@@ -122,3 +123,23 @@
   to = "/index.html"
   status = 200
   force = false
+
+# ========== 환경변수 보안 ==========
+# Functions에서 환경변수 사용을 위한 설정
+[context.production.environment]
+  GEMINI_API_KEY = ""  # 네틀리파이 대시보드에서 설정
+
+[context.deploy-preview.environment]
+  GEMINI_API_KEY = ""  # 프리뷰용 별도 키 (필요시)
+
+# ========== 빌드 최적화 ==========
+[build.processing]
+  skip_processing = false
+[build.processing.css]
+  bundle = false
+  minify = false
+[build.processing.js]
+  bundle = false
+  minify = false
+[build.processing.html]
+  pretty_urls = true
