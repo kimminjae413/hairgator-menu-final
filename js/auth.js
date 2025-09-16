@@ -31,7 +31,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 });
 
-// 성별 선택 - ✅ 수정된 부분
+// 성별 선택 - ✅ 최종 수정된 버전
 function selectGender(gender) {
     console.log(`🚀 성별 선택: ${gender}`);
     
@@ -43,7 +43,7 @@ function selectGender(gender) {
     currentGender = gender;
     localStorage.setItem('selectedGender', gender);
     
-    // 화면 전환 - ✅ mainMenu → menuContainer로 수정
+    // 화면 전환 - ✅ menuContainer로 올바르게 수정
     const genderSelection = document.getElementById('genderSelection');
     const menuContainer = document.getElementById('menuContainer');
     
@@ -63,25 +63,31 @@ function selectGender(gender) {
         backBtn.style.display = 'flex';
     }
     
-    // ✅ 메뉴 로드 - window.loadMenuForGender 확인 후 호출
-    if (typeof window.loadMenuForGender === 'function') {
-        console.log('🔄 Firebase 메뉴 로드 시작...');
+    // ✅ 메뉴 로드 - HAIRGATOR_MENU 객체를 통해 호출
+    if (window.HAIRGATOR_MENU && typeof window.HAIRGATOR_MENU.loadMenuForGender === 'function') {
+        console.log('🔄 Firebase 메뉴 로드 시작 (HAIRGATOR_MENU)...');
+        window.HAIRGATOR_MENU.loadMenuForGender(gender);
+    } else if (typeof window.loadMenuForGender === 'function') {
+        console.log('🔄 Firebase 메뉴 로드 시작 (window)...');
         window.loadMenuForGender(gender);
     } else if (typeof loadMenuForGender === 'function') {
-        console.log('🔄 Firebase 메뉴 로드 시작...');
+        console.log('🔄 Firebase 메뉴 로드 시작 (global)...');
         loadMenuForGender(gender);
     } else {
-        console.error('❌ loadMenuForGender 함수를 찾을 수 없습니다');
-        // 3초 후 재시도
+        console.error('❌ loadMenuForGender 함수를 찾을 수 없습니다 - 3초 후 재시도');
+        // 3초 후 재시도 (menu.js 로드 대기)
         setTimeout(() => {
-            if (typeof window.loadMenuForGender === 'function') {
-                window.loadMenuForGender(gender);
+            if (window.HAIRGATOR_MENU && typeof window.HAIRGATOR_MENU.loadMenuForGender === 'function') {
+                console.log('🔄 재시도: Firebase 메뉴 로드...');
+                window.HAIRGATOR_MENU.loadMenuForGender(gender);
+            } else {
+                console.error('❌ 재시도 실패: menu.js가 로드되지 않았습니다');
             }
         }, 3000);
     }
 }
 
-// ========== 불나비 연동 기능 추가 (기존 auth.js 파일 맨 끝에 추가) ==========
+// ========== 불나비 연동 기능 ==========
 
 /**
  * 불나비 네이티브 앱을 통한 자동 로그인
@@ -146,7 +152,121 @@ function consumeCredits(amount) {
     }
 }
 
+// ========== 세션 관리 ==========
+
+/**
+ * 로그인 상태 확인
+ * @returns {boolean} - 로그인 상태
+ */
+function checkLoginStatus() {
+    const loginTime = localStorage.getItem('loginTime');
+    const designerName = localStorage.getItem('designerName');
+    
+    if (!loginTime || !designerName) {
+        return false;
+    }
+    
+    // 24시간 체크 (86400000 밀리초)
+    const currentTime = new Date().getTime();
+    const timeDiff = currentTime - parseInt(loginTime);
+    
+    if (timeDiff > 86400000) {
+        // 24시간 초과시 로그아웃
+        logout();
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * 로그아웃 처리
+ */
+function logout() {
+    // localStorage 정리
+    localStorage.removeItem('designerName');
+    localStorage.removeItem('designerPhone');
+    localStorage.removeItem('designerPassword');
+    localStorage.removeItem('loginTime');
+    localStorage.removeItem('selectedGender');
+    localStorage.removeItem('bullnabi_user');
+    localStorage.removeItem('bullnabi_login_time');
+    
+    // 화면 초기화
+    const loginScreen = document.getElementById('loginScreen');
+    const genderSelection = document.getElementById('genderSelection');
+    const menuContainer = document.getElementById('menuContainer');
+    const backBtn = document.getElementById('backBtn');
+    
+    if (loginScreen) {
+        loginScreen.classList.add('active');
+        loginScreen.style.display = 'flex';
+    }
+    if (genderSelection) {
+        genderSelection.classList.remove('active');
+        genderSelection.style.display = 'none';
+    }
+    if (menuContainer) {
+        menuContainer.classList.remove('active');
+        menuContainer.style.display = 'none';
+    }
+    if (backBtn) {
+        backBtn.style.display = 'none';
+    }
+    
+    // 폼 초기화
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.reset();
+    }
+    
+    console.log('✅ 로그아웃 완료');
+}
+
+// ========== 초기화 및 전역 함수 노출 ==========
+
+// 페이지 로드시 로그인 상태 확인
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔐 인증 시스템 초기화...');
+    
+    // 자동 로그인 체크
+    if (checkLoginStatus()) {
+        const designerName = localStorage.getItem('designerName');
+        const selectedGender = localStorage.getItem('selectedGender');
+        
+        console.log('✅ 기존 로그인 상태 복원:', designerName);
+        
+        // 디자이너 이름 표시
+        if (document.getElementById('designerNameDisplay')) {
+            document.getElementById('designerNameDisplay').textContent = designerName;
+        }
+        
+        // 성별이 선택되어 있다면 메뉴로 이동
+        if (selectedGender) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('genderSelection').style.display = 'none';
+            document.getElementById('menuContainer').style.display = 'flex';
+            document.getElementById('backBtn').style.display = 'flex';
+            
+            // 메뉴 로드
+            setTimeout(() => {
+                if (window.HAIRGATOR_MENU && typeof window.HAIRGATOR_MENU.loadMenuForGender === 'function') {
+                    window.HAIRGATOR_MENU.loadMenuForGender(selectedGender);
+                }
+            }, 1000);
+        } else {
+            // 성별 선택 화면으로 이동
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('genderSelection').style.display = 'flex';
+        }
+    }
+});
+
 // 전역 함수로 등록 (HTML에서 호출 가능하도록)
 window.selectGender = selectGender;
 window.loginWithBullnabi = loginWithBullnabi;
 window.consumeCredits = consumeCredits;
+window.logout = logout;
+window.checkLoginStatus = checkLoginStatus;
+
+console.log('✅ HAIRGATOR 인증 시스템 로드 완료');
