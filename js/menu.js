@@ -1,4 +1,4 @@
-// ========== HAIRGATOR 메뉴 시스템 - 전역 변수 문제 해결 최종 버전 ==========
+// ========== HAIRGATOR 메뉴 시스템 - 헤어체험 연동 최종 버전 ==========
 
 // 남성 카테고리 (설명 포함)
 const MALE_CATEGORIES = [
@@ -114,7 +114,7 @@ const newItemsTimestamp = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7일 전
 
 // 사용 가능한 서브카테고리 & NEW 아이템 확인 (인덱스 불필요 버전)
 async function checkSubcategoriesAndNew(gender, categoryName) {
-    // ✅ 추가: Firebase 조회용 이름 변환
+    // Firebase 조회용 이름 변환
     const dbCategoryName = categoryName.includes('LENGTH') 
         ? categoryName.replace('LENGTH', 'Length')
         : categoryName;
@@ -129,7 +129,7 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
         // 복합 인덱스 없이 작동하도록 수정
         const snapshot = await db.collection('hairstyles')
             .where('gender', '==', gender)
-            .where('mainCategory', '==', dbCategoryName)  // ✅ categoryName을 dbCategoryName으로 변경
+            .where('mainCategory', '==', dbCategoryName)
             .get();
         
         const availableSubs = new Set();
@@ -163,7 +163,7 @@ async function checkSubcategoriesAndNew(gender, categoryName) {
             categoryNewCounts.set(categoryName, totalNewInCategory);
         }
         
-        console.log(`✅ 서브카테고리 확인 완료: ${categoryName}`, result);
+        console.log(`서브카테고리 확인 완료: ${categoryName}`, result);
         return result;
         
     } catch (error) {
@@ -194,7 +194,7 @@ async function loadMenuForGender(gender) {
         
         const categories = gender === 'male' ? MALE_CATEGORIES : FEMALE_CATEGORIES;
         
-        console.log(`🔄 태블릿 호환 ${gender} 메뉴 로드 시작 (${categories.length}개 카테고리)`);
+        console.log(`태블릿 호환 ${gender} 메뉴 로드 시작 (${categories.length}개 카테고리)`);
         
         // Firebase 연결 확인
         if (typeof db === 'undefined' || !db) {
@@ -229,7 +229,7 @@ async function loadMenuForGender(gender) {
             await selectMainTab(categories[0], 0);
         }
         
-        console.log(`✅ 태블릿 호환 ${gender} 메뉴 로드 완료`);
+        console.log(`태블릿 호환 ${gender} 메뉴 로드 완료`);
         
     } catch (error) {
         console.error('태블릿 메뉴 로드 오류:', error);
@@ -242,7 +242,7 @@ async function loadMenuForGender(gender) {
 async function createMainTabsWithSmart(categories, gender) {
     const mainTabsContainer = document.getElementById('categoryTabs');
     if (!mainTabsContainer) {
-        console.error('❌ categoryTabs 요소를 찾을 수 없습니다');
+        console.error('categoryTabs 요소를 찾을 수 없습니다');
         return;
     }
     
@@ -267,21 +267,21 @@ async function createMainTabsWithSmart(categories, gender) {
             tab.classList.add('active');
             currentMainTab = category;
             window.currentMainTab = category; // window 동기화
-            console.log(`📌 기본 선택: ${category.name}`, category);
+            console.log(`기본 선택: ${category.name}`, category);
         }
         
         // NEW 표시 추가 (카테고리에 신규 아이템이 있으면)
         if (categoryInfo.totalNewCount > 0) {
             tab.appendChild(createNewIndicator());
-            console.log(`🔴 NEW 표시 추가: ${category.name} (${categoryInfo.totalNewCount}개)`);
+            console.log(`NEW 표시 추가: ${category.name} (${categoryInfo.totalNewCount}개)`);
         }
         
         mainTabsContainer.appendChild(tab);
         
-        console.log(`📂 카테고리 생성: ${category.name} (신규: ${categoryInfo.totalNewCount}개)`);
+        console.log(`카테고리 생성: ${category.name} (신규: ${categoryInfo.totalNewCount}개)`);
     });
     
-    console.log(`✅ ${categories.length}개 대분류 탭 생성 완료`);
+    console.log(`${categories.length}개 대분류 탭 생성 완료`);
 }
 
 // 카테고리 설명 영역 확인/생성
@@ -302,7 +302,7 @@ function ensureCategoryDescriptionArea() {
         if (categoryTabs) {
             const nextElement = categoryTabs.nextElementSibling;
             categoryTabs.parentNode.insertBefore(descriptionArea, nextElement);
-            console.log('✅ 카테고리 설명 영역 생성됨');
+            console.log('카테고리 설명 영역 생성됨');
         }
     }
 }
@@ -312,7 +312,7 @@ async function selectMainTab(category, index) {
     currentMainTab = category;
     window.currentMainTab = category; // window 전역 변수 동기화
     
-    console.log(`📂 대분류 선택: ${category.name}`, category);
+    console.log(`대분류 선택: ${category.name}`, category);
     
     // 탭 활성화 상태 변경
     document.querySelectorAll('.main-tab').forEach((tab, i) => {
@@ -336,7 +336,7 @@ async function selectMainTab(category, index) {
 function updateCategoryDescription(category) {
     const descriptionText = document.querySelector('.category-description-text');
     if (!descriptionText) {
-        console.warn('⚠️ 카테고리 설명 영역을 찾을 수 없습니다');
+        console.warn('카테고리 설명 영역을 찾을 수 없습니다');
         return;
     }
     
@@ -347,7 +347,7 @@ function updateCategoryDescription(category) {
         `;
         descriptionText.style.textAlign = 'left';
         descriptionText.classList.remove('empty');
-        console.log(`📝 카테고리 설명 업데이트: ${category.name}`);
+        console.log(`카테고리 설명 업데이트: ${category.name}`);
     } else {
         descriptionText.textContent = '카테고리 설명이 없습니다.';
         descriptionText.style.textAlign = 'left';
@@ -359,7 +359,7 @@ function updateCategoryDescription(category) {
 async function loadSmartSubTabs(categoryName) {
     const subTabsContainer = document.getElementById('subTabs');
     if (!subTabsContainer) {
-        console.error('❌ subTabs 요소를 찾을 수 없습니다');
+        console.error('subTabs 요소를 찾을 수 없습니다');
         return;
     }
     
@@ -400,14 +400,14 @@ async function loadSmartSubTabs(categoryName) {
             const newCount = subInfo.newCounts[subCategory];
             if (newCount && newCount > 0) {
                 tab.appendChild(createNewIndicator());
-                console.log(`🔴 중분류 NEW 표시: ${subCategory} (${newCount}개)`);
+                console.log(`중분류 NEW 표시: ${subCategory} (${newCount}개)`);
             }
         }
         
         subTabsContainer.appendChild(tab);
     });
     
-    console.log(`📋 스마트 중분류 탭 로드 완료 (사용가능: ${subInfo.available.length}/${SUB_CATEGORIES.length}개, 신규: ${Object.keys(subInfo.newCounts).length}개)`);
+    console.log(`스마트 중분류 탭 로드 완료 (사용가능: ${subInfo.available.length}/${SUB_CATEGORIES.length}개, 신규: ${Object.keys(subInfo.newCounts).length}개)`);
 }
 
 // 중분류 탭 선택
@@ -415,7 +415,7 @@ function selectSubTab(subCategory, index) {
     currentSubTab = subCategory;
     window.currentSubTab = subCategory; // window 전역 변수 동기화
     
-    console.log(`📋 중분류 선택: ${subCategory}`);
+    console.log(`중분류 선택: ${subCategory}`);
     
     // 탭 활성화 상태 변경 (비활성화된 탭은 제외)
     document.querySelectorAll('.sub-tab').forEach((tab, i) => {
@@ -442,40 +442,40 @@ async function loadStyles() {
     
     const stylesGrid = document.getElementById('stylesGrid');
     if (!stylesGrid) {
-        console.error('❌ stylesGrid 요소를 찾을 수 없습니다');
+        console.error('stylesGrid 요소를 찾을 수 없습니다');
         return;
     }
     
     // 필수 변수 체크
     if (!currentGender) {
-        console.error('❌ currentGender가 설정되지 않았습니다');
+        console.error('currentGender가 설정되지 않았습니다');
         showErrorState(stylesGrid, 'Gender not selected');
         return;
     }
     
     if (!currentMainTab) {
-        console.error('❌ currentMainTab이 설정되지 않았습니다');
+        console.error('currentMainTab이 설정되지 않았습니다');
         showErrorState(stylesGrid, 'Category not selected');
         return;
     }
     
     if (!currentSubTab) {
-        console.error('❌ currentSubTab이 설정되지 않았습니다');
+        console.error('currentSubTab이 설정되지 않았습니다');
         showErrorState(stylesGrid, 'Subcategory not selected');
         return;
     }
     
     // Firebase Query를 위한 안전한 카테고리명 추출
     const mainCategoryName = currentMainTab.name || currentMainTab;
-    // ✅ 추가: Firebase 조회용 이름 변환
+    // Firebase 조회용 이름 변환
     const dbMainCategoryName = mainCategoryName.includes('LENGTH')
         ? mainCategoryName.replace('LENGTH', 'Length')
         : mainCategoryName;
     const subCategoryName = currentSubTab;
     
-    console.log(`🔍 스타일 검색 시작:`, {
+    console.log(`스타일 검색 시작:`, {
         gender: currentGender,
-        mainCategory: dbMainCategoryName,  // ✅ 변경
+        mainCategory: dbMainCategoryName,
         subCategory: subCategoryName
     });
     
@@ -490,12 +490,12 @@ async function loadStyles() {
         
         const querySnapshot = await db.collection('hairstyles')
             .where('gender', '==', currentGender)
-            .where('mainCategory', '==', dbMainCategoryName)  // ✅ mainCategoryName을 dbMainCategoryName으로 변경
+            .where('mainCategory', '==', dbMainCategoryName)
             .where('subCategory', '==', subCategoryName)
             .get();
         
         if (querySnapshot.empty) {
-            console.log(`📭 스타일 없음: ${mainCategoryName} - ${subCategoryName}`);
+            console.log(`스타일 없음: ${mainCategoryName} - ${subCategoryName}`);
             showEmptyState(stylesGrid);
             return;
         }
@@ -514,10 +514,10 @@ async function loadStyles() {
         
         stylesGrid.appendChild(fragment);
         
-        console.log(`✅ ${styleCount}개 스타일 로드 완료: ${mainCategoryName} - ${subCategoryName}`);
+        console.log(`${styleCount}개 스타일 로드 완료: ${mainCategoryName} - ${subCategoryName}`);
         
     } catch (error) {
-        console.error('❌ 스타일 로드 오류:', error);
+        console.error('스타일 로드 오류:', error);
         showErrorState(stylesGrid, `로드 실패: ${error.message}`);
     }
 }
@@ -579,13 +579,13 @@ function createStyleCard(style) {
     return card;
 }
 
-// ========== 스타일 상세 모달 (AI 버튼 포함) ==========
+// ========== 스타일 상세 모달 (헤어체험 버튼 포함) ==========
 
-// 스타일 상세 모달 열기 (AI 버튼 추가)
+// 스타일 상세 모달 열기 (헤어체험 버튼 추가)
 function openStyleModal(style) {
     const modal = document.getElementById('styleModal');
     if (!modal) {
-        console.error('❌ styleModal 요소를 찾을 수 없습니다');
+        console.error('styleModal 요소를 찾을 수 없습니다');
         return;
     }
     
@@ -613,7 +613,7 @@ function openStyleModal(style) {
                                  style.gender === 'female' ? '여성' : '-';
     }
     
-    // AI 체험하기 버튼 추가/업데이트
+    // 헤어체험하기 버튼 추가/업데이트
     addAIButtonToModal(style);
     
     // 모달 표시
@@ -628,55 +628,512 @@ function openStyleModal(style) {
     });
 }
 
-// 모달에 AI 체험하기 버튼 추가
+// 모달에 헤어체험하기 버튼 추가
 function addAIButtonToModal(style) {
     const modalActions = document.querySelector('.style-modal-actions');
     if (!modalActions) return;
     
     // 기존 AI 버튼이 있으면 제거
-    const existingAIBtn = modalActions.querySelector('.ai-experience-modal-btn');
+    const existingAIBtn = modalActions.querySelector('.ai-experience-modal-btn, .hair-experience-modal-btn');
     if (existingAIBtn) {
         existingAIBtn.remove();
     }
     
-    // 새 AI 버튼 생성
-    const aiButton = document.createElement('button');
-    aiButton.className = 'modal-action-btn ai-experience-modal-btn';
-    aiButton.innerHTML = `
-        <span class="ai-icon">🤖</span>
-        <span>AI 체험하기</span>
+    // 새 헤어체험하기 버튼 생성
+    const hairExperienceButton = document.createElement('button');
+    hairExperienceButton.className = 'modal-action-btn ai-experience-modal-btn'; // 기존 클래스명 유지 (CSS 호환성)
+    hairExperienceButton.innerHTML = `
+        <span class="ai-icon">✨</span>
+        <span>헤어체험하기</span>
     `;
     
-    aiButton.onclick = function(e) {
+    hairExperienceButton.onclick = function(e) {
         e.preventDefault();
         e.stopPropagation();
         
-        console.log('🤖 모달에서 AI 체험하기 시작:', {
+        console.log('헤어체험하기 시작:', {
             id: style.id,
             name: style.name,
             imageUrl: style.imageUrl
         });
         
-        // AI 사진 업로드 모달 열기
+        // 헤어체험 사진 업로드 모달 열기
         openAIPhotoModal(style.id, style.name || '스타일', style.imageUrl || '');
     };
     
     // 기존 버튼들 앞에 추가
-    modalActions.insertBefore(aiButton, modalActions.firstChild);
+    modalActions.insertBefore(hairExperienceButton, modalActions.firstChild);
 }
 
-// ========== AI 체험하기 기능 ==========
+// ========== 헤어체험 기능 ==========
 
-// AI 사진 업로드 모달 열기 (개발중 상태)
+// 헤어체험 사진 업로드 모달 열기
 function openAIPhotoModal(styleId, styleName, styleImageUrl) {
-    console.log('🚧 AI 체험하기 클릭 (개발중 상태):', {
+    console.log('헤어체험하기 클릭:', {
         styleId: styleId,
         styleName: styleName,
-        status: 'DEVELOPMENT_MODE'
+        status: 'ACTIVE'
     });
     
-    // 개발중 토스트 메시지 표시
-    showToast('🚧 개발중입니다\nAI 헤어체험 기능은 현재 개발 중이며, 곧 만나보실 수 있습니다!', 'info');
+    // 현재 선택된 스타일 정보 저장 (기존 변수명 유지)
+    window.currentAIStyleImage = styleImageUrl;
+    window.currentAIStyleName = styleName;
+    
+    // 기존 업로드 모달이 있으면 제거
+    const existingModal = document.querySelector('.hair-upload-modal, .photo-upload-modal, .ai-photo-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // 헤어체험 업로드 모달 생성
+    const modal = document.createElement('div');
+    modal.className = 'hair-upload-modal';
+    modal.innerHTML = `
+        <div class="hair-upload-content">
+            <div class="hair-upload-header">
+                <h3>✨ 헤어체험하기</h3>
+                <p>선택한 스타일: <strong>${styleName}</strong></p>
+                <button class="close-upload-btn" onclick="closePhotoUploadModal()">×</button>
+            </div>
+            
+            <div class="hair-upload-body">
+                <div class="style-preview">
+                    <img src="${styleImageUrl}" alt="${styleName}" class="style-preview-image">
+                    <p>적용할 스타일</p>
+                </div>
+                
+                <div class="upload-arrow">→</div>
+                
+                <div class="customer-photo-section">
+                    <div class="upload-area" id="customerPhotoUpload">
+                        <div class="upload-placeholder">
+                            <span class="upload-icon">📷</span>
+                            <p>고객 사진을 업로드해주세요</p>
+                            <small>정면을 향한 선명한 사진을 권장합니다</small>
+                        </div>
+                        <input type="file" id="customerPhotoInput" accept="image/*" style="display: none;">
+                    </div>
+                    <div class="customer-preview" id="customerPreview" style="display: none;">
+                        <img id="customerPreviewImage" alt="고객 사진">
+                        <button class="change-photo-btn" onclick="changeCustomerPhoto()">사진 변경</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hair-upload-actions">
+                <button class="upload-action-btn cancel-btn" onclick="closePhotoUploadModal()">
+                    취소
+                </button>
+                <button class="upload-action-btn process-btn" id="processBtn" disabled onclick="processAIFaceSwap()">
+                    <span class="ai-icon">✨</span>
+                    <span>헤어체험 시작</span>
+                </button>
+            </div>
+        </div>
+        <div class="hair-upload-overlay" onclick="closePhotoUploadModal()"></div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+    
+    // 모달 표시 애니메이션
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 10);
+    
+    // 파일 업로드 이벤트 설정
+    setupHairUploadEvents();
+    
+    // 헤어체험 모달 스타일 추가
+    addHairUploadModalStyles();
+    
+    console.log('헤어체험 업로드 모달 표시 완료');
+}
+
+// 헤어체험 업로드 이벤트 설정
+function setupHairUploadEvents() {
+    const uploadArea = document.getElementById('customerPhotoUpload');
+    const fileInput = document.getElementById('customerPhotoInput');
+    const processBtn = document.getElementById('processBtn');
+    
+    if (!uploadArea || !fileInput) return;
+    
+    // 클릭으로 파일 선택
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // 드래그 앤 드롭
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleCustomerPhotoUpload(files[0]);
+        }
+    });
+    
+    // 파일 선택
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleCustomerPhotoUpload(e.target.files[0]);
+        }
+    });
+}
+
+// 고객 사진 업로드 처리
+function handleCustomerPhotoUpload(file) {
+    // 파일 형식 검증
+    if (!file.type.startsWith('image/')) {
+        showToast('이미지 파일만 업로드 가능합니다', 'error');
+        return;
+    }
+    
+    // 파일 크기 검증 (10MB 제한)
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('파일 크기는 10MB 이하로 제한됩니다', 'error');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const imageUrl = e.target.result;
+        
+        // 전역 변수에 저장 (기존 변수명 유지)
+        window.uploadedCustomerPhoto = imageUrl;
+        
+        // 미리보기 표시
+        showCustomerPhotoPreview(imageUrl);
+        
+        // 처리 버튼 활성화
+        const processBtn = document.getElementById('processBtn');
+        if (processBtn) {
+            processBtn.disabled = false;
+        }
+        
+        console.log('고객 사진 업로드 완료');
+    };
+    
+    reader.onerror = function() {
+        showToast('이미지 읽기 중 오류가 발생했습니다', 'error');
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+// 고객 사진 미리보기 표시
+function showCustomerPhotoPreview(imageUrl) {
+    const uploadArea = document.getElementById('customerPhotoUpload');
+    const previewArea = document.getElementById('customerPreview');
+    const previewImage = document.getElementById('customerPreviewImage');
+    
+    if (uploadArea && previewArea && previewImage) {
+        uploadArea.style.display = 'none';
+        previewArea.style.display = 'block';
+        previewImage.src = imageUrl;
+    }
+}
+
+// 고객 사진 변경
+function changeCustomerPhoto() {
+    const uploadArea = document.getElementById('customerPhotoUpload');
+    const previewArea = document.getElementById('customerPreview');
+    const processBtn = document.getElementById('processBtn');
+    
+    if (uploadArea && previewArea) {
+        uploadArea.style.display = 'block';
+        previewArea.style.display = 'none';
+    }
+    
+    if (processBtn) {
+        processBtn.disabled = true;
+    }
+    
+    window.uploadedCustomerPhoto = null;
+}
+
+// 헤어체험 모달 닫기
+function closePhotoUploadModal() {
+    const modal = document.querySelector('.hair-upload-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.remove();
+            document.body.style.overflow = '';
+        }, 300);
+    }
+}
+
+// 헤어체험 업로드 모달 스타일 추가
+function addHairUploadModalStyles() {
+    // 이미 스타일이 추가되었는지 확인
+    if (document.getElementById('hair-upload-modal-styles')) return;
+    
+    const style = document.createElement('style');
+    style.id = 'hair-upload-modal-styles';
+    style.textContent = `
+        /* 헤어체험 업로드 모달 스타일 */
+        .hair-upload-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .hair-upload-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .hair-upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        .hair-upload-content {
+            position: relative;
+            background: var(--primary-dark);
+            border-radius: 15px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            min-width: 500px;
+        }
+        
+        .hair-upload-header {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        .hair-upload-header h3 {
+            margin: 0 0 10px 0;
+            color: var(--text-primary);
+            font-size: 18px;
+        }
+        
+        .hair-upload-header p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .close-upload-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .hair-upload-body {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .style-preview {
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .style-preview-image {
+            width: 120px;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+        }
+        
+        .style-preview p {
+            margin: 10px 0 0 0;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+        
+        .upload-arrow {
+            font-size: 24px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+        
+        .customer-photo-section {
+            flex: 1;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--female-color);
+            background: rgba(233, 30, 99, 0.05);
+        }
+        
+        .upload-area.dragover {
+            border-color: var(--female-color);
+            background: rgba(233, 30, 99, 0.1);
+        }
+        
+        .upload-placeholder .upload-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 15px;
+        }
+        
+        .upload-placeholder p {
+            margin: 0 0 5px 0;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .upload-placeholder small {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+        
+        .customer-preview {
+            text-align: center;
+        }
+        
+        .customer-preview img {
+            width: 150px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+        
+        .change-photo-btn {
+            background: var(--text-secondary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .change-photo-btn:hover {
+            background: var(--female-color);
+        }
+        
+        .hair-upload-actions {
+            display: flex;
+            gap: 10px;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            justify-content: flex-end;
+        }
+        
+        .upload-action-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .cancel-btn {
+            background: var(--text-secondary);
+            color: white;
+        }
+        
+        .cancel-btn:hover {
+            background: #666;
+        }
+        
+        .process-btn {
+            background: linear-gradient(135deg, var(--female-color), #c2185b);
+            color: white;
+        }
+        
+        .process-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+        }
+        
+        .process-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* 모바일 반응형 */
+        @media (max-width: 767px) {
+            .hair-upload-content {
+                max-width: 95vw;
+                margin: 10px;
+                min-width: auto;
+            }
+            
+            .hair-upload-body {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .upload-arrow {
+                transform: rotate(90deg);
+            }
+            
+            .hair-upload-actions {
+                flex-direction: column;
+            }
+            
+            .upload-action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // ========== 상태 표시 함수들 ==========
@@ -745,7 +1202,7 @@ function closeStyleModal() {
 
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료 - 전역 변수 문제 해결 최종 버전');
+    console.log('HAIRGATOR 메뉴 시스템 로드 완료 - 헤어체험 연동 최종 버전');
     
     // 모달 바깥 클릭 시 닫기
     document.addEventListener('click', function(e) {
@@ -773,7 +1230,7 @@ window.HAIRGATOR_MENU = {
     openStyleModal,
     closeStyleModal,
     openAIPhotoModal: openAIPhotoModal,
-    closeAIPhotoModal: function() { /* AI 모달 닫기 함수 */ },
+    closeAIPhotoModal: closePhotoUploadModal,
     updateCategoryDescription,
     showToast,
     checkSubcategoriesAndNew,
@@ -804,10 +1261,14 @@ window.selectGender = function(gender) {
     loadMenuForGender(gender);
 };
 
+// 헤어체험 관련 전역 함수 노출
+window.changeCustomerPhoto = changeCustomerPhoto;
+window.closePhotoUploadModal = closePhotoUploadModal;
+
 // 디버깅용 전역 함수
 window.debugHAIRGATOR = function() {
     const tabs = document.querySelectorAll('.category-tab, .main-tab');
-    console.log(`🔍 발견된 탭: ${tabs.length}개`);
+    console.log(`발견된 탭: ${tabs.length}개`);
     
     tabs.forEach((tab, index) => {
         const rect = tab.getBoundingClientRect();
@@ -838,7 +1299,5 @@ window.debugHAIRGATOR = function() {
     });
 };
 
-console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 전역 변수 문제 해결 버전');
-console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
-
-
+console.log('HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 헤어체험 연동 최종 버전');
+console.log('디버깅: window.debugHAIRGATOR() 실행 가능');
