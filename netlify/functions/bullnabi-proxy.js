@@ -1,5 +1,5 @@
-// HAIRGATOR 불나비 API 프록시 서버 (네이티브 multipart 방식)
-// 해결: form-data 라이브러리 없이 네이티브로 multipart/form-data 구성
+// HAIRGATOR 불나비 API 프록시 서버 - 최종 버전
+// API 문서 기준으로 수정된 버전
 
 exports.handler = async (event, context) => {
     // CORS 헤더 설정
@@ -38,7 +38,7 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // JWT 토큰
+        // JWT 토큰 (환경변수 또는 기본값)
         const newToken = process.env.BULLNABI_JWT_TOKEN || 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlcmljNzA4QG5hdmVyLmNvbSIsImxvZ2luVXNlckluZm8iOiJ7IFwiX2lkXCIgOiB7IFwiJG9pZFwiIDogXCI2NTgzYTNhYzJjZDFjYWM4YWUyZTgzYzFcIiB9LCBcImlkXCIgOiBcImVyaWM3MDhAbmF2ZXIuY29tXCIsIFwiZW1haWxcIiA6IFwiZXJpYzcwOEBuYXZlci5jb21cIiwgXCJuYW1lXCIgOiBcIuq5gOuvvOyerFwiLCBcIm5pY2tuYW1lXCIgOiBudWxsLCBcInN0YXR1c1wiIDogXCJhZG1pblwiLCBcIl9zZXJ2aWNlTmFtZVwiIDogXCJkcnlsaW5rXCIsIFwiX3NlcnZpY2VBcHBOYW1lXCIgOiBcIuuTnOudvOydtOunge2BrCDrlJTsnpDsnbTrhIjsmqlcIiwgXCJvc1R5cGVcIiA6IFwiaU9TXCIgfSIsImV4cCI6MTc1ODAxODIzNn0.ZXuCaGQEynAPQXhptlYkzne4cQq7CK_JhrX8jJovD2k';
         
         console.log('토큰 사용:', newToken.substring(0, 20) + '...');
@@ -46,6 +46,24 @@ exports.handler = async (event, context) => {
         // 네이티브 방식으로 multipart/form-data 구성
         const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         
+        // API 문서에 맞는 올바른 documentJson 구조
+        const documentJson = {
+            "pipeline": {
+                "$match": {
+                    "_id": {"$oid": userId}
+                },
+                "$project": {
+                    "nickname": 1,
+                    "email": 1,
+                    "remainCount": 1,
+                    "name": 1,
+                    "phone": 1,
+                    "_createTime": 1,
+                    "_updateTime": 1
+                }
+            }
+        };
+
         const formData = [
             `--${boundary}`,
             'Content-Disposition: form-data; name="metaCode"',
@@ -58,15 +76,16 @@ exports.handler = async (event, context) => {
             `--${boundary}`,
             'Content-Disposition: form-data; name="documentJson"',
             '',
-            JSON.stringify({"_id": {"$oid": userId}}),
+            JSON.stringify(documentJson),
             `--${boundary}--`,
             ''
         ].join('\r\n');
 
         console.log('네이티브 FormData 생성 완료');
+        console.log('documentJson:', JSON.stringify(documentJson));
 
-        // API 호출
-        const response = await fetch('https://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
+        // API 호출 (http로 수정)
+        const response = await fetch('http://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${newToken}`,
@@ -88,11 +107,10 @@ exports.handler = async (event, context) => {
                 const apiData = JSON.parse(responseText);
                 console.log('JSON 파싱 성공');
                 
-                // 실제 사용자 데이터가 있는지 확인
-                if (apiData.data && apiData.data.length > 0) {
-                    // 최신 사용자 정보 추출
-                    const latestEntry = apiData.data[0];
-                    const userData = latestEntry._createUser || latestEntry._updateUser || latestEntry;
+                // API 응답 확인 - 성공적인 응답인지 체크
+                if (apiData.code && apiData.code === "1" && apiData.data && apiData.data.length > 0) {
+                    // 실제 사용자 정보 추출
+                    const userData = apiData.data[0];
                     
                     const userInfo = {
                         name: userData.nickname || userData.name || '김민재',
@@ -100,7 +118,8 @@ exports.handler = async (event, context) => {
                         remainCount: userData.remainCount || 360,
                         lastLoginDate: new Date().toISOString(),
                         source: 'bullnabi_api_success',
-                        userId: userData.userId || userData._id?.$oid
+                        userId: userData._id?.$oid || userId,
+                        email: userData.email
                     };
 
                     console.log('실제 불나비 사용자 정보 추출 성공:', userInfo);
@@ -112,12 +131,16 @@ exports.handler = async (event, context) => {
                             success: true,
                             userInfo: userInfo,
                             debug: {
-                                method: 'urlencoded_success',
+                                method: 'pipeline_success',
                                 dataFound: true,
-                                apiResponseLength: responseText.length
+                                apiResponseLength: responseText.length,
+                                apiCode: apiData.code
                             }
                         })
                     };
+                } else {
+                    // API 응답은 있지만 데이터가 없거나 오류인 경우
+                    console.log('API 응답 오류 또는 데이터 없음:', apiData);
                 }
                 
             } catch (parseError) {
@@ -133,7 +156,7 @@ exports.handler = async (event, context) => {
             phone: '708eric@hanmail.net',
             remainCount: 360,
             lastLoginDate: new Date().toISOString(),
-            source: 'fallback_native_multipart'
+            source: 'fallback_pipeline'
         };
 
         return {
@@ -145,7 +168,8 @@ exports.handler = async (event, context) => {
                 debug: {
                     apiError: 'API 호출 실패 또는 응답 파싱 실패',
                     responseLength: responseText?.length || 0,
-                    method: 'native_multipart_fallback'
+                    method: 'pipeline_fallback',
+                    rawResponse: responseText?.substring(0, 200) + '...'
                 }
             })
         };
