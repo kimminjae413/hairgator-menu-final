@@ -1,10 +1,9 @@
 # netlify.toml - HAIRGATOR 배포 설정
 [build]
   publish = "."
-  command = "npm run build"
-
-[build.environment]
-  NODE_VERSION = "18"
+  
+# 정적 사이트이므로 빌드 건너뛰기
+# command를 생략하면 자동으로 정적 배포
 
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
