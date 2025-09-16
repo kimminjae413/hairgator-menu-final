@@ -82,10 +82,29 @@ const modalHTML = `
                     
                     <div class="screenshot-item tablet-view">
                         <div class="screenshot-label">📟 태블릿 화면</div>
-                        <div class="tablet-screenshot">
-                            <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAoAGQDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD//Z" 
-                                 alt="태블릿 실제 화면" 
-                                 style="width: 100%; height: auto; border-radius: 8px; border: 1px solid #333;">
+                        <div class="tablet-mockup">
+                            <div class="tablet-screen">
+                                <div class="tablet-header">HAIRGATOR</div>
+                                <div class="tablet-tabs">
+                                    <div class="tablet-tab">A LENGTH</div>
+                                    <div class="tablet-tab active">B LENGTH</div>
+                                    <div class="tablet-tab">C LENGTH</div>
+                                    <div class="tablet-tab">D LENGTH</div>
+                                </div>
+                                <div class="tablet-description">
+                                    B길이는 가슴 아래까지 오는 스타일
+                                </div>
+                                <div class="tablet-styles">
+                                    <div class="tablet-style-card"></div>
+                                    <div class="tablet-style-card"></div>
+                                    <div class="tablet-style-card"></div>
+                                    <div class="tablet-style-card"></div>
+                                    <div class="tablet-style-card"></div>
+                                    <div class="tablet-style-card"></div>
+                                    <div class="tablet-style-card"></div>
+                                    <div class="tablet-style-card"></div>
+                                </div>
+                            </div>
                         </div>
                         <div class="device-benefits">
                             <span class="benefit-icon">✅</span>
@@ -299,17 +318,110 @@ const styles = `
         border-radius: 3px;
     }
     
-    .tablet-screenshot {
+    .tablet-mockup {
+        background: #333;
+        border-radius: 15px;
+        padding: 8px;
         margin-bottom: 10px;
+        width: 160px;
+        margin: 0 auto 10px auto;
     }
     
-    .tablet-screenshot img {
-        width: 100%;
-        max-width: 150px;
-        height: auto;
+    .tablet-screen {
+        background: linear-gradient(135deg, #000000, #1a1a1a);
         border-radius: 8px;
-        border: 2px solid #E91E63;
+        padding: 10px;
+        height: 120px;
+        position: relative;
+        border: 1px solid #E91E63;
         box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
+    }
+    
+    .tablet-header {
+        color: white;
+        font-size: 10px;
+        text-align: center;
+        margin-bottom: 8px;
+        font-weight: bold;
+        background: rgba(233, 30, 99, 0.2);
+        padding: 2px;
+        border-radius: 3px;
+    }
+    
+    .tablet-tabs {
+        display: flex;
+        gap: 2px;
+        margin-bottom: 8px;
+    }
+    
+    .tablet-tab {
+        background: #444;
+        color: #999;
+        font-size: 7px;
+        padding: 3px 5px;
+        border-radius: 4px;
+        flex: 1;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .tablet-tab.active {
+        background: #E91E63;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .tablet-tab:nth-child(2) {
+        background: #E91E63;
+        color: white;
+    }
+    
+    .tablet-description {
+        background: rgba(233, 30, 99, 0.1);
+        color: #E91E63;
+        font-size: 6px;
+        padding: 3px;
+        border-radius: 3px;
+        margin-bottom: 6px;
+        text-align: center;
+        border: 1px solid rgba(233, 30, 99, 0.3);
+    }
+    
+    .tablet-styles {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2px;
+    }
+    
+    .tablet-style-card {
+        background: linear-gradient(135deg, #2a2a2a, #404040);
+        height: 18px;
+        border-radius: 3px;
+        border: 1px solid #555;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .tablet-style-card::before {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        right: 2px;
+        height: 8px;
+        background: linear-gradient(45deg, #666, #888);
+        border-radius: 2px;
+    }
+    
+    .tablet-style-card::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        left: 2px;
+        right: 2px;
+        height: 4px;
+        background: #444;
+        border-radius: 1px;
     }
     
     .comparison-arrow {
