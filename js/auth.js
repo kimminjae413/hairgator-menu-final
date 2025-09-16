@@ -31,10 +31,25 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 });
 
-// selectGender 함수는 menu.js에서 처리하므로 여기서는 삭제
-// HTML의 onclick="selectGender()" 호출은 menu.js의 window.selectGender 함수를 사용
+// 성별 선택
+function selectGender(gender) {
+    // body에 성별 클래스 추가
+    document.body.classList.remove('gender-male', 'gender-female');
+    document.body.classList.add(`gender-${gender}`);
+    
+    // 성별 저장
+    currentGender = gender;
+    localStorage.setItem('selectedGender', gender);
+    
+    // 화면 전환
+    document.getElementById('genderSelection').classList.remove('active');
+    document.getElementById('mainMenu').classList.add('active');
+    
+    // 메뉴 로드
+    loadMenuForGender(gender);
+}
 
-// ========== 불나비 연동 기능 ==========
+// ========== 불나비 연동 기능 추가 (기존 auth.js 파일 맨 끝에 추가) ==========
 
 /**
  * 불나비 네이티브 앱을 통한 자동 로그인
@@ -58,11 +73,8 @@ function loginWithBullnabi(userInfo) {
         localStorage.setItem('loginTime', new Date().getTime());
         
         // 로그인 화면 건너뛰고 성별 선택으로 이동
-        const loginScreen = document.getElementById('loginScreen');
-        const genderSelection = document.getElementById('genderSelection');
-        
-        if (loginScreen) loginScreen.style.display = 'none';
-        if (genderSelection) genderSelection.style.display = 'flex';
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('genderSelection').style.display = 'flex';
         
         // 디자이너 이름 표시
         if (document.getElementById('designerNameDisplay')) {
@@ -93,23 +105,13 @@ function loginWithBullnabi(userInfo) {
         }
         
         // 기존 currentDesigner 호환성 유지
-        if (typeof currentDesigner !== 'undefined') {
-            currentDesigner = {
-                id: userInfo.id,
-                name: userInfo.name,
-                phone: '0000',
-                tokens: userInfo.remainCount || 0,
-                isBullnabiUser: true
-            };
-        } else {
-            window.currentDesigner = {
-                id: userInfo.id,
-                name: userInfo.name,
-                phone: '0000',
-                tokens: userInfo.remainCount || 0,
-                isBullnabiUser: true
-            };
-        }
+        currentDesigner = {
+            id: userInfo.id,
+            name: userInfo.name,
+            phone: '0000',
+            tokens: userInfo.remainCount || 0,
+            isBullnabiUser: true
+        };
         
         // 사용자 정보 UI 업데이트
         if (typeof updateUserInfo === 'function') {
@@ -126,11 +128,8 @@ function loginWithBullnabi(userInfo) {
     } catch (error) {
         console.error('❌ 불나비 자동 로그인 실패:', error);
         // 실패 시 기존 로그인 화면으로 돌아가기
-        const loginScreen = document.getElementById('loginScreen');
-        const genderSelection = document.getElementById('genderSelection');
-        
-        if (loginScreen) loginScreen.style.display = 'flex';
-        if (genderSelection) genderSelection.style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('genderSelection').style.display = 'none';
         
         if (typeof showToast === 'function') {
             showToast('자동 로그인에 실패했습니다. 수동 로그인을 시도해주세요.', 'error');
@@ -169,24 +168,14 @@ function getBullnabiUser() {
 // 전역 함수로 노출 (브릿지에서 사용)
 window.loginWithBullnabi = loginWithBullnabi;
 window.getBullnabiUser = getBullnabiUser;
-// window.selectGender는 menu.js에서 정의하므로 여기서는 제거
 
-// 페이지 로드 시 불나비 자동 로그인 체크
+// 페이지 로드 시 불나비 자동 로그인 체크 추가
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 auth.js 로드 완료');
-    
     // 기존 불나비 세션이 있는지 확인
     const bullnabiUser = getBullnabiUser();
     if (bullnabiUser) {
         console.log('🔄 기존 불나비 세션 복원:', bullnabiUser.name);
         // 자동 로그인 처리는 하지 않고 정보만 복원
         // 사용자가 직접 성별 선택부터 시작하도록 함
-    }
-    
-    // selectGender 함수가 menu.js에서 로드되었는지 확인
-    if (typeof window.selectGender === 'function') {
-        console.log('✅ menu.js selectGender 함수 사용 가능');
-    } else {
-        console.warn('⚠️ menu.js selectGender 함수가 아직 로드되지 않음');
     }
 });
