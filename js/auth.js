@@ -1,33 +1,47 @@
 // ========== 인증 시스템 ==========
 
-// 로그인 폼 처리
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+// DOM 로드 완료 후 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    // 로그인 폼 처리
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('designerName').value;
+            const phone = document.getElementById('phoneNumber').value;
+            const password = document.getElementById('password').value;
+            
+            // 로그인 검증
+            if (name && phone.length === 4 && password.length === 4) {
+                // localStorage에 저장 (24시간 유지)
+                localStorage.setItem('designerName', name);
+                localStorage.setItem('designerPhone', phone);
+                localStorage.setItem('designerPassword', password);
+                localStorage.setItem('loginTime', new Date().getTime());
+                
+                // 화면 전환
+                document.getElementById('loginScreen').classList.remove('active');
+                document.getElementById('genderSelection').classList.add('active');
+                
+                // 디자이너 이름 표시
+                if (document.getElementById('designerNameDisplay')) {
+                    document.getElementById('designerNameDisplay').textContent = name;
+                }
+                
+                console.log('로그인 성공:', name);
+            } else {
+                alert('모든 정보를 정확히 입력해주세요');
+            }
+        });
+    }
     
-    const name = document.getElementById('designerName').value;
-    const phone = document.getElementById('phoneNumber').value;
-    const password = document.getElementById('password').value;
-    
-    // 로그인 검증
-    if (name && phone.length === 4 && password.length === 4) {
-        // localStorage에 저장 (24시간 유지)
-        localStorage.setItem('designerName', name);
-        localStorage.setItem('designerPhone', phone);
-        localStorage.setItem('designerPassword', password);
-        localStorage.setItem('loginTime', new Date().getTime());
-        
-        // 화면 전환
-        document.getElementById('loginScreen').classList.remove('active');
-        document.getElementById('genderSelection').classList.add('active');
-        
-        // 디자이너 이름 표시
-        if (document.getElementById('designerNameDisplay')) {
-            document.getElementById('designerNameDisplay').textContent = name;
-        }
-        
-        console.log('로그인 성공:', name);
-    } else {
-        alert('모든 정보를 정확히 입력해주세요');
+    // 기존 불나비 세션이 있는지 확인
+    const bullnabiUser = getBullnabiUser();
+    if (bullnabiUser) {
+        console.log('기존 불나비 세션 복원:', bullnabiUser.name);
+        // 자동 로그인 처리는 하지 않고 정보만 복원
+        // 사용자가 직접 성별 선택부터 시작하도록 함
     }
 });
 
@@ -61,7 +75,7 @@ function selectGender(gender) {
  */
 function loginWithBullnabi(userInfo) {
     try {
-        console.log('🚀 불나비 자동 로그인 시작:', userInfo);
+        console.log('불나비 자동 로그인 시작:', userInfo);
         
         // 불나비 사용자 정보 저장
         localStorage.setItem('bullnabi_user', JSON.stringify(userInfo));
@@ -118,7 +132,7 @@ function loginWithBullnabi(userInfo) {
             updateUserInfo();
         }
         
-        console.log('✅ 불나비 자동 로그인 완료:', userInfo.name);
+        console.log('불나비 자동 로그인 완료:', userInfo.name);
         
         // 성공 알림
         if (typeof showToast === 'function') {
@@ -126,7 +140,7 @@ function loginWithBullnabi(userInfo) {
         }
         
     } catch (error) {
-        console.error('❌ 불나비 자동 로그인 실패:', error);
+        console.error('불나비 자동 로그인 실패:', error);
         // 실패 시 기존 로그인 화면으로 돌아가기
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('genderSelection').style.display = 'none';
@@ -168,14 +182,3 @@ function getBullnabiUser() {
 // 전역 함수로 노출 (브릿지에서 사용)
 window.loginWithBullnabi = loginWithBullnabi;
 window.getBullnabiUser = getBullnabiUser;
-
-// 페이지 로드 시 불나비 자동 로그인 체크 추가
-document.addEventListener('DOMContentLoaded', function() {
-    // 기존 불나비 세션이 있는지 확인
-    const bullnabiUser = getBullnabiUser();
-    if (bullnabiUser) {
-        console.log('🔄 기존 불나비 세션 복원:', bullnabiUser.name);
-        // 자동 로그인 처리는 하지 않고 정보만 복원
-        // 사용자가 직접 성별 선택부터 시작하도록 함
-    }
-});
