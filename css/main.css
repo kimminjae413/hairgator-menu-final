@@ -1,5 +1,6 @@
 /* HAIRGATOR Base Styles - 기본 다크모드 */
 /* 현재 index.html의 모든 CSS를 외부 파일로 분리 */
+/* 태블릿 레이아웃 문제 완전 해결 최종 버전 */
 
 /* 초기화 및 기본 설정 */
 * {
@@ -260,13 +261,17 @@ body.light-theme .form-group input {
     min-height: calc(100vh - 65px);
     padding: 20px;
     gap: 80px;
-    position: relative;
-    z-index: 1000;
-    background: var(--primary-dark);
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: var(--primary-dark) !important;
+    z-index: 2000 !important;
 }
 
 .gender-selection.active {
-    display: flex;
+    display: flex !important;
 }
 
 .gender-btn {
@@ -345,22 +350,22 @@ body.light-theme .gender-btn {
     z-index: 500;
 }
 
-/* 성별 선택 화면이 활성화되어 있을 때 메뉴 컨테이너 완전 숨김 */
-body:has(.gender-selection:not([style*="display: none"])) .menu-container,
-body:has(.gender-selection.active) .menu-container {
+/* 성별 선택 시 메뉴 완전 숨김 */
+body.gender-selecting .menu-container {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
 }
 
-/* 고정될 영역 (빨간 박스) */
+/* 고정될 영역 (A+B 영역) - 태블릿 문제 해결 */
 .fixed-menu-section {
-    /* position 제거 - dynamic-layout.js에서 처리 */
     flex-shrink: 0;
     background: var(--primary-dark);
     z-index: 100;
     border-bottom: 1px solid var(--border-color);
+    padding-top: 70px; /* 헤더 높이(50px) + 마진(15px) + 여유(5px) */
 }
+
 /* ========== 카테고리 탭 (태블릿 터치 문제 완전 해결 최종 버전) ========== */
 .category-tabs {
     background: #111;
@@ -563,7 +568,7 @@ body.light-theme .category-tab:hover {
     border-bottom: 1px solid #222;
     transition: all 0.3s ease;
     min-height: 70px;
-    display: flex;
+    display: flex !important; /* 강제 표시 */
     align-items: center;
     justify-content: flex-start;
 }
@@ -621,7 +626,7 @@ body.gender-male .category-description-text .category-name {
 .sub-tabs {
     background: #0a0a0a;
     padding: 15px;
-    display: flex;
+    display: flex !important; /* 강제 표시 */
     gap: 10px;
     justify-content: center;
     flex-wrap: wrap;
@@ -681,27 +686,12 @@ body.light-theme .sub-tab:hover:not(.disabled) {
     pointer-events: none;
 }
 
-/* 스타일 그리드 */
-.styles-container {
-    position: absolute;
-    top: 280px;  /* A+B영역 높이만큼 아래로 */
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 10px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    background: var(--primary-dark);
-}
-
-body.light-theme .styles-container {
-    background: #ffffff;
-}
-/* dynamic-layout.js가 생성하는 컨테이너 */
+/* 스타일 그리드 - 태블릿 문제 해결 */
+.styles-container,
 .menu-items-container {
     position: absolute;
-    top: 280px;
+    /* 새로운 높이 계산: 헤더(65px) + 패딩(70px) + 대분류탭(60px) + 설명(70px) + 중분류탭(50px) = 315px */
+    top: 315px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -712,6 +702,7 @@ body.light-theme .styles-container {
     background: var(--primary-dark);
 }
 
+body.light-theme .styles-container,
 body.light-theme .menu-items-container {
     background: #ffffff;
 }
@@ -725,31 +716,72 @@ body.light-theme .menu-items-container {
     box-sizing: border-box;
 }
 
+/* 태블릿 전용 미디어 쿼리 - 완전 수정 */
 @media (min-width: 768px) and (max-width: 1024px) {
+    /* 고정 메뉴 섹션 패딩 조정 */
+    .fixed-menu-section {
+        padding-top: 75px; /* 태블릿에서 조금 더 여유 */
+    }
+    
+    /* 스타일 그리드 5열 유지 */
     .styles-grid {
         grid-template-columns: repeat(5, 1fr) !important;
         gap: 12px;
     }
     
-    /* 태블릿에서 C영역 스크롤 위치 조정 */
+    /* 스타일 컨테이너 위치 조정 */
     .menu-items-container,
     .styles-container {
         position: absolute !important;
-        top: 280px !important;
+        top: 320px !important; /* 태블릿용 조정된 높이 */
         bottom: 0 !important;
         height: auto !important;
         overflow-y: auto !important;
     }
+    
+    /* 카테고리 설명 텍스트 크기 조정 */
+    .category-description-text {
+        font-size: 15px;
+        line-height: 1.5;
+    }
+    
+    /* 대분류 탭 크기 조정 */
+    .category-tab {
+        padding: 12px 20px;
+        font-size: 13px;
+        min-height: 44px;
+    }
+    
+    /* 중분류 탭 크기 조정 */
+    .sub-tab {
+        padding: 10px 18px;
+        font-size: 12px;
+    }
 }
 
 @media (max-width: 767px) {
+    .fixed-menu-section {
+        padding-top: 65px; /* 모바일용 */
+    }
+    
+    .styles-container,
+    .menu-items-container {
+        top: 300px; /* 모바일용 조정 */
+        padding: 15px;
+    }
+    
     .styles-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
     
-    .styles-container {
+    .category-description {
         padding: 15px;
+        min-height: 60px;
+    }
+    
+    .category-description-text {
+        font-size: 13px;
     }
 }
 
@@ -1269,7 +1301,6 @@ body.light-theme .user-info {
     margin: 10px 15px;
 }
 
-
 /* 테마 토글 미니 버튼 전용 스타일 */
 .theme-toggle-mini {
     display: flex;
@@ -1735,15 +1766,6 @@ body.light-theme .modal-action-btn.secondary:hover {
 
 /* 모바일 최적화 */
 @media (max-width: 767px) {
-    .category-description {
-        padding: 15px;
-        min-height: 60px;
-    }
-    
-    .category-description-text {
-        font-size: 13px;
-    }
-    
     .ai-experience-btn {
         padding: 8px 14px;
         font-size: 12px;
