@@ -1,5 +1,5 @@
-// HAIRGATOR 불나비 API 프록시 서버 - 최종 수정 버전
-// FormData + 간단한 documentJson + 환경변수 토큰
+// HAIRGATOR 불나비 API 프록시 서버 - Swagger 문서 기준 올바른 구현
+// API 문서: https://drylink.ohmyapp.io/swagger-ui/index.html#/bullnabi-controller/delete_2
 
 exports.handler = async (event, context) => {
     // CORS 헤더 설정
@@ -39,10 +39,10 @@ exports.handler = async (event, context) => {
         }
 
         // JWT 토큰 (환경변수에서 가져오기)
-        const newToken = process.env.BULLNABI_TOKEN;
+        const token = process.env.BULLNABI_TOKEN;
         
-        if (!newToken) {
-            console.error('❌ BULLNABI_JWT_TOKEN 환경변수가 설정되지 않았습니다');
+        if (!token) {
+            console.error('❌ BULLNABI_TOKEN 환경변수가 설정되지 않았습니다');
             return {
                 statusCode: 500,
                 headers: corsHeaders,
@@ -53,38 +53,51 @@ exports.handler = async (event, context) => {
             };
         }
         
-        console.log('토큰 사용:', newToken.substring(0, 20) + '...');
+        console.log('토큰 사용:', token.substring(0, 20) + '...');
 
-        // FormData 사용
-        const FormData = require('form-data');
-        const formData = new FormData();
-        
-        formData.append('metaCode', '_users');
-        formData.append('collectionName', '_users');
-        
-        // 간단한 documentJson 구조로 수정
+        // API 문서에 따른 정확한 요청 구조
+        const metaCode = '_users';
+        const collectionName = '_users';
         const documentJson = {
-            "_id": {"$oid": userId}
+            "pipeline": {
+                "$match": {
+                    "_id": {"$oid": userId}
+                },
+                "$project": {
+                    "nickname": 1,
+                    "email": 1,
+                    "remainCount": 1,
+                    "name": 1,
+                    "phone": 1,
+                    "_createTime": 1,
+                    "_updateTime": 1
+                }
+            }
         };
-        
-        formData.append('documentJson', JSON.stringify(documentJson));
 
-        console.log('FormData 생성 완료');
+        // Query Parameters로 전송 (API 문서 기준)
+        const params = new URLSearchParams();
+        params.append('metaCode', metaCode);
+        params.append('collectionName', collectionName);
+        params.append('documentJson', JSON.stringify(documentJson));
+
+        const url = `http://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline?${params.toString()}`;
+
+        console.log('API 요청 URL:', url);
         console.log('documentJson:', JSON.stringify(documentJson));
 
-        // Authorization 헤더 (Bearer 없이)
-        const fetchHeaders = {
-            'Accept': 'application/json',
-            ...formData.getHeaders()
-        };
-        fetchHeaders['Authorization'] = newToken; // Bearer 없이
+        // FormData는 빈 body로 전송 (multipart/form-data 형식 유지)
+        const FormData = require('form-data');
+        const formData = new FormData();
 
-        console.log('실제 전송되는 Authorization 헤더:', newToken.substring(0, 20) + '...');
-
-        // API 호출
-        const response = await fetch('http://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
+        // API 호출 (Bearer 접두사 필수)
+        const response = await fetch(url, {
             method: 'POST',
-            headers: fetchHeaders,
+            headers: {
+                'Authorization': `Bearer ${token}`, // Bearer 접두사 필수
+                'Accept': 'application/json',
+                ...formData.getHeaders()
+            },
             body: formData
         });
 
@@ -100,8 +113,8 @@ exports.handler = async (event, context) => {
                 const apiData = JSON.parse(responseText);
                 console.log('JSON 파싱 성공');
                 
-                // API 응답 확인 - 성공적인 응답인지 체크
-                if (apiData && apiData.data && apiData.data.length > 0) {
+                // API 응답 확인 (code가 "1"이면 성공)
+                if (apiData.code === "1" && apiData.data && apiData.data.length > 0) {
                     // 실제 사용자 정보 추출
                     const userData = apiData.data[0];
                     
@@ -124,10 +137,12 @@ exports.handler = async (event, context) => {
                             success: true,
                             userInfo: userInfo,
                             debug: {
-                                method: 'formdata_success',
+                                method: 'swagger_api_success',
                                 dataFound: true,
                                 apiResponseLength: responseText.length,
-                                apiCode: apiData.code
+                                apiCode: apiData.code,
+                                recordsTotal: apiData.recordsTotal,
+                                recordsFiltered: apiData.recordsFiltered
                             }
                         })
                     };
@@ -149,7 +164,7 @@ exports.handler = async (event, context) => {
             phone: '708eric@hanmail.net',
             remainCount: 360,
             lastLoginDate: new Date().toISOString(),
-            source: 'fallback_api_failed'
+            source: 'fallback_swagger_failed'
         };
 
         return {
@@ -161,7 +176,7 @@ exports.handler = async (event, context) => {
                 debug: {
                     apiError: 'API 호출 실패 또는 응답 파싱 실패',
                     responseLength: responseText?.length || 0,
-                    method: 'formdata_fallback',
+                    method: 'swagger_fallback',
                     rawResponse: responseText?.substring(0, 200) + '...'
                 }
             })
