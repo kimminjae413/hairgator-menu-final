@@ -373,6 +373,8 @@ body:has(.gender-selection.active) .menu-container {
     transition: background-color 0.3s ease, border-color 0.3s ease;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
+    position: relative;
+    z-index: 200;
 }
 
 body.light-theme .category-tabs {
