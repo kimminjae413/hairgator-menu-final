@@ -1785,7 +1785,8 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
-/* ========== 태블릿 A+B 영역 고정 완전 해결 v2.0 ========== */
+
+/* ========== 태블릿 A+B 영역 고정 완전 해결 v2.1 - 최종 수정 ========== */
 @media (min-width: 768px) and (max-width: 1024px) {
     /* Pull-to-refresh 완전 차단 */
     html {
@@ -1802,16 +1803,16 @@ body.light-theme .modal-action-btn.secondary:hover {
     
     /* 메뉴 컨테이너 전체 화면 고정 */
     .menu-container {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background: var(--primary-dark);
-    flex-direction: column;
-    overflow: hidden;  /* 이 줄 추가 */
-}
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: var(--primary-dark);
+        flex-direction: column;
+        overflow: hidden;
+    }
     
     /* 헤더 고정 */
     .header {
@@ -1821,29 +1822,46 @@ body.light-theme .modal-action-btn.secondary:hover {
         z-index: 1001;
     }
     
-    /* A+B 영역을 묶는 컨테이너 */
-    .tablet-fixed-header {
-        flex-shrink: 0;
-        background: var(--primary-dark);
-        border-bottom: 2px solid var(--accent-color, #E91E63);
-        position: relative;
-        z-index: 1000;
+    /* 대분류 탭을 헤더 아래로 내리기 */
+    .category-tabs {
+        margin-top: 80px !important;
+        padding-top: 15px !important;
+        background: #111 !important;
+        z-index: 50 !important;
+    }
+
+    /* 카테고리 설명 조정 */
+    .category-description {
+        margin-top: 15px !important;
+        background: #0a0a0a !important;
+    }
+
+    /* 중분류 탭 조정 */
+    .sub-tabs {
+        margin-top: 15px !important;
+        background: #0a0a0a !important;
+    }
+
+    /* 5열 그리드 */
+    .styles-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 15px !important;
     }
     
-    /* C 영역 스크롤 */
-    .menu-items-container {
-        flex: 1;
+    /* C 영역 스크롤 - top 값을 450px로 수정 */
+    .menu-items-container,
+    .styles-container {
+        position: absolute !important;
+        top: 450px !important;
+        bottom: 0 !important;
+        height: auto !important;
         overflow-y: auto !important;
-        overflow-x: hidden;
+        left: 0;
+        right: 0;
+        padding: 10px;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior-y: contain;
         padding-bottom: 50px;
-    }
-    
-    /* 스타일 그리드는 기존 설정 유지 */
-    .styles-container {
-        height: 100%;
-        overflow-y: auto;
     }
     
     /* 카테고리 탭 터치 최적화 */
@@ -1860,25 +1878,7 @@ body.light-theme .modal-action-btn.secondary:hover {
         right: -12px;
         bottom: -12px;
     }
-
-  /* Pull-to-refresh 차단 및 스크롤 보정 */
-html, body {
-    overscroll-behavior: none;
 }
-
-/* 태블릿에서 C영역 스크롤 강제 적용 */
-@media (min-width: 768px) and (max-width: 1024px) {
-    .menu-items-container,
-    .styles-container {
-        position: absolute !important;
-        top: 280px !important;
-        bottom: 0 !important;
-        height: auto !important;
-        overflow-y: auto !important;
-    }
-}  
-}
-
 
 /* 헤어체험 버튼 보이게 하기 */
 .ai-experience-modal-btn {
@@ -1895,13 +1895,3 @@ html, body {
     background: linear-gradient(135deg, #d81b60, #ad1457) !important;
     transform: translateY(-2px) !important;
 }
-
-
-
-
-
-
-
-
-
-
