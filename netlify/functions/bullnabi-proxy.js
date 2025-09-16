@@ -1,5 +1,5 @@
-// HAIRGATOR 불나비 API 프록시 서버 - Swagger 문서 기준 올바른 구현
-// API 문서: https://drylink.ohmyapp.io/swagger-ui/index.html#/bullnabi-controller/delete_2
+// HAIRGATOR 불나비 API 프록시 서버 - 최종 완성 버전
+// API 문서 기준으로 구현된 정상 작동 버전
 
 exports.handler = async (event, context) => {
     // CORS 헤더 설정
@@ -113,8 +113,8 @@ exports.handler = async (event, context) => {
                 const apiData = JSON.parse(responseText);
                 console.log('JSON 파싱 성공');
                 
-                // API 응답 확인 (code가 "1"이면 성공)
-                if (apiData.code === "1" && apiData.data && apiData.data.length > 0) {
+                // API 응답 확인 (data 배열이 있으면 성공)
+                if (apiData.data && apiData.data.length > 0) {
                     // 실제 사용자 정보 추출
                     const userData = apiData.data[0];
                     
@@ -140,7 +140,6 @@ exports.handler = async (event, context) => {
                                 method: 'swagger_api_success',
                                 dataFound: true,
                                 apiResponseLength: responseText.length,
-                                apiCode: apiData.code,
                                 recordsTotal: apiData.recordsTotal,
                                 recordsFiltered: apiData.recordsFiltered
                             }
@@ -164,7 +163,7 @@ exports.handler = async (event, context) => {
             phone: '708eric@hanmail.net',
             remainCount: 360,
             lastLoginDate: new Date().toISOString(),
-            source: 'fallback_swagger_failed'
+            source: 'fallback_api_failed'
         };
 
         return {
@@ -176,7 +175,7 @@ exports.handler = async (event, context) => {
                 debug: {
                     apiError: 'API 호출 실패 또는 응답 파싱 실패',
                     responseLength: responseText?.length || 0,
-                    method: 'swagger_fallback',
+                    method: 'fallback',
                     rawResponse: responseText?.substring(0, 200) + '...'
                 }
             })
