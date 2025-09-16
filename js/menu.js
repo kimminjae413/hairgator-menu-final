@@ -705,28 +705,28 @@ function openAIPhotoModal(styleId, styleName, styleImageUrl) {
                 <div class="upload-arrow">→</div>
                 
                 <div class="customer-photo-section">
-    <!-- 2개 버튼 옵션 (태블릿 최적화) -->
-    <div class="photo-options">
-        <button class="photo-option-btn upload-btn" onclick="selectPhotoFromGallery()">
-            <span class="option-icon">📁</span>
-            <span>갤러리에서 선택</span>
-        </button>
-        <button class="photo-option-btn camera-btn" onclick="takePhotoWithCamera()">
-            <span class="option-icon">📷</span>
-            <span>카메라로 촬영</span>
-        </button>
-    </div>
-    
-    <!-- 숨겨진 input들 -->
-    <input type="file" id="customerPhotoUpload" accept="image/*" style="display: none;">
-    <input type="file" id="customerPhotoCamera" accept="image/*" capture="environment" style="display: none;">
-    
-    <!-- 미리보기 영역 -->
-    <div class="customer-preview" id="customerPreview" style="display: none;">
-        <img id="customerPreviewImage" alt="고객 사진">
-        <button class="change-photo-btn" onclick="changeCustomerPhoto()">사진 변경</button>
-    </div>
-</div>
+                    <!-- 2개 버튼 옵션 (태블릿 최적화) -->
+                    <div class="photo-options">
+                        <button class="photo-option-btn upload-btn" onclick="selectPhotoFromGallery()">
+                            <span class="option-icon">📁</span>
+                            <span>갤러리에서 선택</span>
+                        </button>
+                        <button class="photo-option-btn camera-btn" onclick="takePhotoWithCamera()">
+                            <span class="option-icon">📷</span>
+                            <span>카메라로 촬영</span>
+                        </button>
+                    </div>
+                    
+                    <!-- 숨겨진 input들 -->
+                    <input type="file" id="customerPhotoUpload" accept="image/*" style="display: none;">
+                    <input type="file" id="customerPhotoCamera" accept="image/*" capture="environment" style="display: none;">
+                    
+                    <!-- 미리보기 영역 -->
+                    <div class="customer-preview" id="customerPreview" style="display: none;">
+                        <img id="customerPreviewImage" alt="고객 사진">
+                        <button class="change-photo-btn" onclick="changeCustomerPhoto()">사진 변경</button>
+                    </div>
+                </div>
             </div>
             
             <div class="hair-upload-actions">
@@ -759,60 +759,80 @@ function openAIPhotoModal(styleId, styleName, styleImageUrl) {
     console.log('헤어체험 업로드 모달 표시 완료');
 }
 
-// 헤어체험 업로드 이벤트 설정
+// 헤어체험 업로드 이벤트 설정 (수정된 버전)
 function setupHairUploadEvents() {
-    const uploadArea = document.getElementById('customerPhotoUpload');
-    const fileInput = document.getElementById('customerPhotoInput');
-    const processBtn = document.getElementById('processBtn');
+    // 실제 존재하는 input 요소들 가져오기
+    const galleryInput = document.getElementById('customerPhotoUpload');
+    const cameraInput = document.getElementById('customerPhotoCamera');
     
-    if (!uploadArea || !fileInput) return;
-    
-    // 클릭으로 파일 선택
-    uploadArea.addEventListener('click', () => {
-        fileInput.click();
+    console.log('이벤트 설정:', { 
+        gallery: !!galleryInput, 
+        camera: !!cameraInput 
     });
     
-    // 드래그 앤 드롭
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-    });
+    // 갤러리 input 이벤트
+    if (galleryInput) {
+        galleryInput.addEventListener('change', (e) => {
+            console.log('갤러리에서 파일 선택:', e.target.files.length);
+            if (e.target.files.length > 0) {
+                handleCustomerPhotoUpload(e.target.files[0]);
+            }
+        });
+    }
     
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('dragover');
-    });
+    // 카메라 input 이벤트
+    if (cameraInput) {
+        cameraInput.addEventListener('change', (e) => {
+            console.log('카메라로 사진 촬영:', e.target.files.length);
+            if (e.target.files.length > 0) {
+                handleCustomerPhotoUpload(e.target.files[0]);
+            }
+        });
+    }
     
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
+    // 드래그 앤 드롭 (customer-photo-section에 적용)
+    const photoSection = document.querySelector('.customer-photo-section');
+    if (photoSection) {
+        photoSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            photoSection.classList.add('dragover');
+        });
         
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleCustomerPhotoUpload(files[0]);
-        }
-    });
-    
-    // 파일 선택
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleCustomerPhotoUpload(e.target.files[0]);
-        }
-    });
+        photoSection.addEventListener('dragleave', () => {
+            photoSection.classList.remove('dragover');
+        });
+        
+        photoSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            photoSection.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleCustomerPhotoUpload(files[0]);
+            }
+        });
+    }
 }
 
 // 갤러리에서 사진 선택
 function selectPhotoFromGallery() {
+    console.log('갤러리 버튼 클릭');
     const fileInput = document.getElementById('customerPhotoUpload');
     if (fileInput) {
         fileInput.click();
+    } else {
+        console.error('customerPhotoUpload 요소를 찾을 수 없음');
     }
 }
 
 // 카메라로 사진 촬영
 function takePhotoWithCamera() {
+    console.log('카메라 버튼 클릭');
     const cameraInput = document.getElementById('customerPhotoCamera');
     if (cameraInput) {
         cameraInput.click();
+    } else {
+        console.error('customerPhotoCamera 요소를 찾을 수 없음');
     }
 }
 
@@ -858,12 +878,13 @@ function handleCustomerPhotoUpload(file) {
 
 // 고객 사진 미리보기 표시
 function showCustomerPhotoPreview(imageUrl) {
-    const uploadArea = document.getElementById('customerPhotoUpload');
+    // 버튼 영역 숨기기
+    const photoOptions = document.querySelector('.photo-options');
     const previewArea = document.getElementById('customerPreview');
     const previewImage = document.getElementById('customerPreviewImage');
     
-    if (uploadArea && previewArea && previewImage) {
-        uploadArea.style.display = 'none';
+    if (photoOptions && previewArea && previewImage) {
+        photoOptions.style.display = 'none';
         previewArea.style.display = 'block';
         previewImage.src = imageUrl;
     }
@@ -871,12 +892,12 @@ function showCustomerPhotoPreview(imageUrl) {
 
 // 고객 사진 변경
 function changeCustomerPhoto() {
-    const uploadArea = document.getElementById('customerPhotoUpload');
+    const photoOptions = document.querySelector('.photo-options');
     const previewArea = document.getElementById('customerPreview');
     const processBtn = document.getElementById('processBtn');
     
-    if (uploadArea && previewArea) {
-        uploadArea.style.display = 'block';
+    if (photoOptions && previewArea) {
+        photoOptions.style.display = 'flex';
         previewArea.style.display = 'none';
     }
     
@@ -929,14 +950,14 @@ function addHairUploadModalStyles() {
         }
         
         .hair-upload-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: -1;  /* 이 줄 추가 */
-}
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: -1;
+        }
         
         .hair-upload-content {
             position: relative;
@@ -1057,41 +1078,18 @@ function addHairUploadModalStyles() {
         .photo-option-btn .option-icon {
             font-size: 28px;
         }
-        
-        .upload-area {
-            border: 2px dashed var(--border-color);
+
+        /* 드래그오버 상태 스타일 */
+        .customer-photo-section.dragover {
+            border: 2px dashed var(--female-color);
+            background: rgba(233, 30, 99, 0.05);
             border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
+            padding: 10px;
             transition: all 0.3s ease;
         }
-        
-        .upload-area:hover {
-            border-color: var(--female-color);
-            background: rgba(233, 30, 99, 0.05);
-        }
-        
-        .upload-area.dragover {
-            border-color: var(--female-color);
-            background: rgba(233, 30, 99, 0.1);
-        }
-        
-        .upload-placeholder .upload-icon {
-            font-size: 48px;
-            display: block;
-            margin-bottom: 15px;
-        }
-        
-        .upload-placeholder p {
-            margin: 0 0 5px 0;
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-        
-        .upload-placeholder small {
-            color: var(--text-secondary);
-            font-size: 12px;
+
+        .customer-photo-section.dragover .photo-options {
+            transform: scale(1.02);
         }
         
         .customer-preview {
@@ -1191,6 +1189,10 @@ function addHairUploadModalStyles() {
             .upload-action-btn {
                 width: 100%;
                 justify-content: center;
+            }
+            
+            .photo-options {
+                flex-direction: column;
             }
         }
     `;
@@ -1364,6 +1366,3 @@ window.debugHAIRGATOR = function() {
 
 console.log('HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 헤어체험 연동 최종 버전');
 console.log('디버깅: window.debugHAIRGATOR() 실행 가능');
-
-
-
