@@ -1,0 +1,14 @@
+{
+  "name": "hairgator-bullnabi-proxy",
+  "version": "1.0.0",
+  "description": "HAIRGATOR 불나비 API 연동 프록시",
+  "main": "index.js",
+  "dependencies": {
+    "form-data": "^4.0.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "HAIRGATOR",
+  "license": "MIT"
+}
