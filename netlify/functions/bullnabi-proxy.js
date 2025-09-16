@@ -1,5 +1,5 @@
-// HAIRGATOR 불나비 API 프록시 서버 - 최종 버전
-// API 문서 기준으로 수정된 버전
+// HAIRGATOR 불나비 API 프록시 서버 - FormData 방식 적용
+// 기존 코드에서 URLSearchParams → FormData로 변경
 
 exports.handler = async (event, context) => {
     // CORS 헤더 설정
@@ -43,8 +43,12 @@ exports.handler = async (event, context) => {
         
         console.log('토큰 사용:', newToken.substring(0, 20) + '...');
 
-        // 네이티브 방식으로 multipart/form-data 구성
-        const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        // 성공했던 방식: FormData 사용 (URLSearchParams 대신)
+        const FormData = require('form-data');
+        const formData = new FormData();
+        
+        formData.append('metaCode', '_users');
+        formData.append('collectionName', '_users');
         
         // API 문서에 맞는 올바른 documentJson 구조
         const documentJson = {
@@ -63,35 +67,25 @@ exports.handler = async (event, context) => {
                 }
             }
         };
+        
+        formData.append('documentJson', JSON.stringify(documentJson));
 
-        const formData = [
-            `--${boundary}`,
-            'Content-Disposition: form-data; name="metaCode"',
-            '',
-            '_users',
-            `--${boundary}`,
-            'Content-Disposition: form-data; name="collectionName"',
-            '',
-            '_users',
-            `--${boundary}`,
-            'Content-Disposition: form-data; name="documentJson"',
-            '',
-            JSON.stringify(documentJson),
-            `--${boundary}--`,
-            ''
-        ].join('\r\n');
-
-        console.log('네이티브 FormData 생성 완료');
+        console.log('FormData 생성 완료');
         console.log('documentJson:', JSON.stringify(documentJson));
+
+        // 성공했던 방식: Authorization 헤더 (Bearer 없이)
+        const fetchHeaders = {
+            'Accept': 'application/json',
+            ...formData.getHeaders()
+        };
+        fetchHeaders['Authorization'] = newToken; // Bearer 없이 (성공했던 방식)
+
+        console.log('실제 전송되는 Authorization 헤더:', newToken.substring(0, 20) + '...');
 
         // API 호출 (http로 수정)
         const response = await fetch('http://drylink.ohmyapp.io/bnb/aggregateForTableWithDocTimeline', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${newToken}`,
-                'Content-Type': `multipart/form-data; boundary=${boundary}`,
-                'Accept': 'application/json'
-            },
+            headers: fetchHeaders,
             body: formData
         });
 
@@ -131,7 +125,7 @@ exports.handler = async (event, context) => {
                             success: true,
                             userInfo: userInfo,
                             debug: {
-                                method: 'pipeline_success',
+                                method: 'formdata_success',
                                 dataFound: true,
                                 apiResponseLength: responseText.length,
                                 apiCode: apiData.code
@@ -156,7 +150,7 @@ exports.handler = async (event, context) => {
             phone: '708eric@hanmail.net',
             remainCount: 360,
             lastLoginDate: new Date().toISOString(),
-            source: 'fallback_pipeline'
+            source: 'fallback_formdata'
         };
 
         return {
@@ -168,7 +162,7 @@ exports.handler = async (event, context) => {
                 debug: {
                     apiError: 'API 호출 실패 또는 응답 파싱 실패',
                     responseLength: responseText?.length || 0,
-                    method: 'pipeline_fallback',
+                    method: 'formdata_fallback',
                     rawResponse: responseText?.substring(0, 200) + '...'
                 }
             })
