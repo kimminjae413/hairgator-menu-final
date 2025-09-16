@@ -1880,6 +1880,21 @@ html, body {
 }
 
 
+/* 헤어체험 버튼 보이게 하기 */
+.ai-experience-modal-btn {
+    background: linear-gradient(135deg, var(--female-color), #c2185b) !important;
+    color: white !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.ai-experience-modal-btn:hover {
+    background: linear-gradient(135deg, #d81b60, #ad1457) !important;
+    transform: translateY(-2px) !important;
+}
 
 
 
