@@ -31,7 +31,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 });
 
-// 성별 선택
+// 성별 선택 - 수정된 최종 버전
 function selectGender(gender) {
     // body에 성별 클래스 추가
     document.body.classList.remove('gender-male', 'gender-female');
@@ -41,15 +41,33 @@ function selectGender(gender) {
     currentGender = gender;
     localStorage.setItem('selectedGender', gender);
     
-    // 화면 전환
-    document.getElementById('genderSelection').classList.remove('active');
-    document.getElementById('mainMenu').classList.add('active');
+    // 화면 전환 - 안전한 요소 접근
+    const genderSelection = document.getElementById('genderSelection');
+    const menuContainer = document.getElementById('menuContainer'); // mainMenu → menuContainer로 수정
     
-    // 메뉴 로드
-    loadMenuForGender(gender);
+    if (genderSelection) {
+        genderSelection.classList.remove('active');
+        genderSelection.style.display = 'none';
+    }
+    
+    if (menuContainer) {
+        menuContainer.classList.add('active');
+        menuContainer.style.display = 'flex';
+    } else {
+        console.error('menuContainer 요소를 찾을 수 없습니다');
+    }
+    
+    // 메뉴 로드 - 안전한 함수 호출
+    if (typeof loadMenuForGender === 'function') {
+        loadMenuForGender(gender);
+    } else {
+        console.error('loadMenuForGender 함수를 찾을 수 없습니다');
+    }
+    
+    console.log(`성별 선택 완료: ${gender}`);
 }
 
-// ========== 불나비 연동 기능 추가 (기존 auth.js 파일 맨 끝에 추가) ==========
+// ========== 불나비 연동 기능 ==========
 
 /**
  * 불나비 네이티브 앱을 통한 자동 로그인
@@ -73,8 +91,11 @@ function loginWithBullnabi(userInfo) {
         localStorage.setItem('loginTime', new Date().getTime());
         
         // 로그인 화면 건너뛰고 성별 선택으로 이동
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('genderSelection').style.display = 'flex';
+        const loginScreen = document.getElementById('loginScreen');
+        const genderSelection = document.getElementById('genderSelection');
+        
+        if (loginScreen) loginScreen.style.display = 'none';
+        if (genderSelection) genderSelection.style.display = 'flex';
         
         // 디자이너 이름 표시
         if (document.getElementById('designerNameDisplay')) {
@@ -105,13 +126,23 @@ function loginWithBullnabi(userInfo) {
         }
         
         // 기존 currentDesigner 호환성 유지
-        currentDesigner = {
-            id: userInfo.id,
-            name: userInfo.name,
-            phone: '0000',
-            tokens: userInfo.remainCount || 0,
-            isBullnabiUser: true
-        };
+        if (typeof currentDesigner !== 'undefined') {
+            currentDesigner = {
+                id: userInfo.id,
+                name: userInfo.name,
+                phone: '0000',
+                tokens: userInfo.remainCount || 0,
+                isBullnabiUser: true
+            };
+        } else {
+            window.currentDesigner = {
+                id: userInfo.id,
+                name: userInfo.name,
+                phone: '0000',
+                tokens: userInfo.remainCount || 0,
+                isBullnabiUser: true
+            };
+        }
         
         // 사용자 정보 UI 업데이트
         if (typeof updateUserInfo === 'function') {
@@ -128,8 +159,11 @@ function loginWithBullnabi(userInfo) {
     } catch (error) {
         console.error('❌ 불나비 자동 로그인 실패:', error);
         // 실패 시 기존 로그인 화면으로 돌아가기
-        document.getElementById('loginScreen').style.display = 'flex';
-        document.getElementById('genderSelection').style.display = 'none';
+        const loginScreen = document.getElementById('loginScreen');
+        const genderSelection = document.getElementById('genderSelection');
+        
+        if (loginScreen) loginScreen.style.display = 'flex';
+        if (genderSelection) genderSelection.style.display = 'none';
         
         if (typeof showToast === 'function') {
             showToast('자동 로그인에 실패했습니다. 수동 로그인을 시도해주세요.', 'error');
@@ -168,14 +202,24 @@ function getBullnabiUser() {
 // 전역 함수로 노출 (브릿지에서 사용)
 window.loginWithBullnabi = loginWithBullnabi;
 window.getBullnabiUser = getBullnabiUser;
+window.selectGender = selectGender; // 전역 함수로 노출
 
-// 페이지 로드 시 불나비 자동 로그인 체크 추가
+// 페이지 로드 시 불나비 자동 로그인 체크
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 auth.js 로드 완료');
+    
     // 기존 불나비 세션이 있는지 확인
     const bullnabiUser = getBullnabiUser();
     if (bullnabiUser) {
         console.log('🔄 기존 불나비 세션 복원:', bullnabiUser.name);
         // 자동 로그인 처리는 하지 않고 정보만 복원
         // 사용자가 직접 성별 선택부터 시작하도록 함
+    }
+    
+    // selectGender 함수가 전역에서 사용 가능한지 확인
+    if (typeof window.selectGender === 'function') {
+        console.log('✅ selectGender 함수 전역 등록 완료');
+    } else {
+        console.error('❌ selectGender 함수 전역 등록 실패');
     }
 });
