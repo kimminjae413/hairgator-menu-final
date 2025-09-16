@@ -1935,3 +1935,68 @@ body.light-theme .modal-action-btn.secondary:hover {
     background: linear-gradient(135deg, #d81b60, #ad1457) !important;
     transform: translateY(-2px) !important;
 }
+
+/* 스타일 모달 - 헤어체험하기 버튼 비활성화 및 스타일명 숨기기 */
+
+/* 1. 스타일명 숨기기 (포마드컷 등) */
+.style-modal .style-name,
+#styleModal .style-name,
+#styleModalName {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* 2. 헤어체험하기 버튼 비활성화 스타일 */
+.ai-experience-modal-btn,
+.hair-experience-modal-btn,
+.modal-action-btn.ai-experience-modal-btn {
+    background: #666666 !important;
+    color: #999999 !important;
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+    position: relative;
+}
+
+.ai-experience-modal-btn:hover,
+.hair-experience-modal-btn:hover {
+    background: #666666 !important;
+    transform: none !important;
+}
+
+/* 3. 비활성화 상태 표시 */
+.ai-experience-modal-btn::after,
+.hair-experience-modal-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+/* 4. 버튼 텍스트 변경을 위한 스타일 */
+.ai-experience-modal-btn span:last-child,
+.hair-experience-modal-btn span:last-child {
+    position: relative;
+}
+
+.ai-experience-modal-btn span:last-child::after,
+.hair-experience-modal-btn span:last-child::after {
+    content: '개발중';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999999;
+    font-size: 12px;
+}
