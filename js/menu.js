@@ -800,6 +800,22 @@ function setupHairUploadEvents() {
     });
 }
 
+// 갤러리에서 사진 선택
+function selectPhotoFromGallery() {
+    const fileInput = document.getElementById('customerPhotoUpload');
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+
+// 카메라로 사진 촬영
+function takePhotoWithCamera() {
+    const cameraInput = document.getElementById('customerPhotoCamera');
+    if (cameraInput) {
+        cameraInput.click();
+    }
+}
+
 // 고객 사진 업로드 처리
 function handleCustomerPhotoUpload(file) {
     // 파일 형식 검증
@@ -1004,6 +1020,41 @@ function addHairUploadModalStyles() {
         
         .customer-photo-section {
             flex: 1;
+        }
+
+        /* 태블릿 최적화 사진 선택 버튼 */
+        .photo-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .photo-option-btn {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid var(--border-color);
+            background: transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            min-height: 100px;
+        }
+
+        .photo-option-btn:hover {
+            border-color: var(--female-color);
+            background: rgba(233, 30, 99, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .photo-option-btn .option-icon {
+            font-size: 28px;
         }
         
         .upload-area {
@@ -1273,6 +1324,8 @@ window.selectGender = function(gender) {
 // 헤어체험 관련 전역 함수 노출
 window.changeCustomerPhoto = changeCustomerPhoto;
 window.closePhotoUploadModal = closePhotoUploadModal;
+window.selectPhotoFromGallery = selectPhotoFromGallery;
+window.takePhotoWithCamera = takePhotoWithCamera;
 
 // 디버깅용 전역 함수
 window.debugHAIRGATOR = function() {
@@ -1310,4 +1363,5 @@ window.debugHAIRGATOR = function() {
 
 console.log('HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 헤어체험 연동 최종 버전');
 console.log('디버깅: window.debugHAIRGATOR() 실행 가능');
+
 
