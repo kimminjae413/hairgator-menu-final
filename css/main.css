@@ -708,15 +708,15 @@ body.light-theme .menu-items-container {
 
 @media (min-width: 768px) and (max-width: 1024px) {
     .styles-grid {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(5, 1fr) !important;
         gap: 12px;
     }
     
-    /* 태블릿에서 C영역 스크롤 강제 적용 - 이 부분만 수정 */
+    /* 태블릿에서 C영역 스크롤 위치 조정 */
     .menu-items-container,
     .styles-container {
         position: absolute !important;
-        top: 450px !important;
+        top: 280px !important;
         bottom: 0 !important;
         height: auto !important;
         overflow-y: auto !important;
