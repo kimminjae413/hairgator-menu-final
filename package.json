@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {},
   "scripts": {
+    "build": "echo 'Static site - no build needed'",
     "start": "node index.js"
   },
   "author": "HAIRGATOR",
