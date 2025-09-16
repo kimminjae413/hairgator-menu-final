@@ -1643,8 +1643,128 @@ if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
     }, 30000);
 }
 </script>
+
+<!-- index.html의 </body> 태그 바로 직전에 추가하세요 -->
+<script>
+// 퍼스널컬러 기능을 간단한 개발중 메시지로 덮어쓰기
+function handlePersonalColorAccess(event) {
+    // 이벤트 전파 중단
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    console.log('퍼스널컬러 버튼 클릭됨 - 개발중 메시지 표시');
+    
+    // 사이드바 먼저 닫기
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+    }
+    
+    // 간단한 개발중 메시지 표시
+    showSimpleDevelopmentToast();
+}
+
+// 간단한 개발중 토스트 메시지 함수
+function showSimpleDevelopmentToast() {
+    // 기존 토스트가 있으면 제거
+    const existingToast = document.querySelector('.dev-toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // 토스트 메시지 생성
+    const toast = document.createElement('div');
+    toast.className = 'dev-toast';
+    toast.innerHTML = `
+        <div class="dev-toast-content">
+            <span class="dev-toast-icon">🔧</span>
+            <span class="dev-toast-message">개발중입니다</span>
+        </div>
+    `;
+    
+    // 토스트 스타일 적용
+    toast.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        z-index: 10002;
+        font-size: 16px;
+        font-weight: 500;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        animation: devToastFadeIn 0.3s ease-out;
+        backdrop-filter: blur(10px);
+    `;
+    
+    // 토스트 애니메이션 CSS 추가 (한 번만)
+    if (!document.querySelector('#dev-toast-styles')) {
+        const style = document.createElement('style');
+        style.id = 'dev-toast-styles';
+        style.textContent = `
+            @keyframes devToastFadeIn {
+                from { 
+                    opacity: 0; 
+                    transform: translate(-50%, -50%) scale(0.9);
+                }
+                to { 
+                    opacity: 1; 
+                    transform: translate(-50%, -50%) scale(1);
+                }
+            }
+            @keyframes devToastFadeOut {
+                from { 
+                    opacity: 1; 
+                    transform: translate(-50%, -50%) scale(1);
+                }
+                to { 
+                    opacity: 0; 
+                    transform: translate(-50%, -50%) scale(0.9);
+                }
+            }
+            .dev-toast-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .dev-toast-icon {
+                font-size: 20px;
+            }
+            .dev-toast-message {
+                font-size: 16px;
+                font-weight: 500;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // DOM에 추가
+    document.body.appendChild(toast);
+    
+    // 2초 후 제거 (더 빠르게)
+    setTimeout(() => {
+        toast.style.animation = 'devToastFadeOut 0.3s ease-out';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 2000);
+    
+    // 햅틱 피드백
+    if (navigator.vibrate) {
+        navigator.vibrate(100);
+    }
+}
+</script>    
 </body>
 </html>
+
 
 
 
