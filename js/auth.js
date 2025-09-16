@@ -1,49 +1,56 @@
 // ========== 인증 시스템 ==========
 
-// 로그인 폼 처리
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const name = document.getElementById('designerName').value;
-    const phone = document.getElementById('phoneNumber').value;
-    const password = document.getElementById('password').value;
-    
-    // 로그인 검증
-    if (name && phone.length === 4 && password.length === 4) {
-        // localStorage에 저장 (24시간 유지)
-        localStorage.setItem('designerName', name);
-        localStorage.setItem('designerPhone', phone);
-        localStorage.setItem('designerPassword', password);
-        localStorage.setItem('loginTime', new Date().getTime());
-        
-        // 화면 전환
-        document.getElementById('loginScreen').classList.remove('active');
-        document.getElementById('genderSelection').classList.add('active');
-        
-        // 디자이너 이름 표시
-        if (document.getElementById('designerNameDisplay')) {
-            document.getElementById('designerNameDisplay').textContent = name;
-        }
-        
-        console.log('로그인 성공:', name);
-    } else {
-        alert('모든 정보를 정확히 입력해주세요');
+// 로그인 폼 처리 함수
+function setupLoginForm() {
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('designerName').value;
+            const phone = document.getElementById('phoneNumber').value;
+            const password = document.getElementById('password').value;
+            
+            // 로그인 검증
+            if (name && phone.length === 4 && password.length === 4) {
+                // localStorage에 저장 (24시간 유지)
+                localStorage.setItem('designerName', name);
+                localStorage.setItem('designerPhone', phone);
+                localStorage.setItem('designerPassword', password);
+                localStorage.setItem('loginTime', new Date().getTime());
+                
+                // 화면 전환
+                document.getElementById('loginScreen').classList.remove('active');
+                document.getElementById('genderSelection').classList.add('active');
+                
+                // 디자이너 이름 표시
+                if (document.getElementById('designerNameDisplay')) {
+                    document.getElementById('designerNameDisplay').textContent = name;
+                }
+                
+                console.log('로그인 성공:', name);
+            } else {
+                alert('모든 정보를 정확히 입력해주세요');
+            }
+        });
     }
-});
+}
 
-// 성별 선택 - ✅ 최종 수정된 버전
+// 성별 선택 - 최종 수정된 버전
 function selectGender(gender) {
-    console.log(`🚀 성별 선택: ${gender}`);
+    console.log('성별 선택:', gender);
     
     // body에 성별 클래스 추가
     document.body.classList.remove('gender-male', 'gender-female');
     document.body.classList.add(`gender-${gender}`);
     
     // 성별 저장
-    currentGender = gender;
+    if (typeof currentGender !== 'undefined') {
+        currentGender = gender;
+    }
     localStorage.setItem('selectedGender', gender);
     
-    // 화면 전환 - ✅ menuContainer로 올바르게 수정
+    // 화면 전환 - menuContainer로 올바르게 수정
     const genderSelection = document.getElementById('genderSelection');
     const menuContainer = document.getElementById('menuContainer');
     
@@ -63,25 +70,25 @@ function selectGender(gender) {
         backBtn.style.display = 'flex';
     }
     
-    // ✅ 메뉴 로드 - HAIRGATOR_MENU 객체를 통해 호출
+    // 메뉴 로드 - HAIRGATOR_MENU 객체를 통해 호출
     if (window.HAIRGATOR_MENU && typeof window.HAIRGATOR_MENU.loadMenuForGender === 'function') {
-        console.log('🔄 Firebase 메뉴 로드 시작 (HAIRGATOR_MENU)...');
+        console.log('Firebase 메뉴 로드 시작 (HAIRGATOR_MENU)...');
         window.HAIRGATOR_MENU.loadMenuForGender(gender);
     } else if (typeof window.loadMenuForGender === 'function') {
-        console.log('🔄 Firebase 메뉴 로드 시작 (window)...');
+        console.log('Firebase 메뉴 로드 시작 (window)...');
         window.loadMenuForGender(gender);
     } else if (typeof loadMenuForGender === 'function') {
-        console.log('🔄 Firebase 메뉴 로드 시작 (global)...');
+        console.log('Firebase 메뉴 로드 시작 (global)...');
         loadMenuForGender(gender);
     } else {
-        console.error('❌ loadMenuForGender 함수를 찾을 수 없습니다 - 3초 후 재시도');
+        console.error('loadMenuForGender 함수를 찾을 수 없습니다 - 3초 후 재시도');
         // 3초 후 재시도 (menu.js 로드 대기)
         setTimeout(() => {
             if (window.HAIRGATOR_MENU && typeof window.HAIRGATOR_MENU.loadMenuForGender === 'function') {
-                console.log('🔄 재시도: Firebase 메뉴 로드...');
+                console.log('재시도: Firebase 메뉴 로드...');
                 window.HAIRGATOR_MENU.loadMenuForGender(gender);
             } else {
-                console.error('❌ 재시도 실패: menu.js가 로드되지 않았습니다');
+                console.error('재시도 실패: menu.js가 로드되지 않았습니다');
             }
         }, 3000);
     }
@@ -99,7 +106,7 @@ function selectGender(gender) {
  */
 function loginWithBullnabi(userInfo) {
     try {
-        console.log('🚀 불나비 자동 로그인 시작:', userInfo);
+        console.log('불나비 자동 로그인 시작:', userInfo);
         
         // 불나비 사용자 정보 저장
         localStorage.setItem('bullnabi_user', JSON.stringify(userInfo));
@@ -111,20 +118,24 @@ function loginWithBullnabi(userInfo) {
         localStorage.setItem('loginTime', new Date().getTime());
         
         // 로그인 화면 건너뛰고 성별 선택으로 이동
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('genderSelection').style.display = 'flex';
+        const loginScreen = document.getElementById('loginScreen');
+        const genderSelection = document.getElementById('genderSelection');
+        
+        if (loginScreen) loginScreen.style.display = 'none';
+        if (genderSelection) genderSelection.style.display = 'flex';
         
         // 디자이너 이름 표시
         if (document.getElementById('designerNameDisplay')) {
             document.getElementById('designerNameDisplay').textContent = userInfo.name || '불나비 사용자';
         }
         
-        console.log('✅ 불나비 자동 로그인 완료');
+        console.log('불나비 자동 로그인 완료');
         
     } catch (error) {
-        console.error('❌ 불나비 로그인 오류:', error);
+        console.error('불나비 로그인 오류:', error);
         // 오류 시 일반 로그인 화면으로 이동
-        document.getElementById('loginScreen').style.display = 'flex';
+        const loginScreen = document.getElementById('loginScreen');
+        if (loginScreen) loginScreen.style.display = 'flex';
     }
 }
 
@@ -220,33 +231,42 @@ function logout() {
         loginForm.reset();
     }
     
-    console.log('✅ 로그아웃 완료');
+    console.log('로그아웃 완료');
 }
 
 // ========== 초기화 및 전역 함수 노출 ==========
 
 // 페이지 로드시 로그인 상태 확인
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔐 인증 시스템 초기화...');
+    console.log('인증 시스템 초기화...');
+    
+    // 로그인 폼 설정
+    setupLoginForm();
     
     // 자동 로그인 체크
     if (checkLoginStatus()) {
         const designerName = localStorage.getItem('designerName');
         const selectedGender = localStorage.getItem('selectedGender');
         
-        console.log('✅ 기존 로그인 상태 복원:', designerName);
+        console.log('기존 로그인 상태 복원:', designerName);
         
         // 디자이너 이름 표시
-        if (document.getElementById('designerNameDisplay')) {
-            document.getElementById('designerNameDisplay').textContent = designerName;
+        const designerNameDisplay = document.getElementById('designerNameDisplay');
+        if (designerNameDisplay) {
+            designerNameDisplay.textContent = designerName;
         }
         
         // 성별이 선택되어 있다면 메뉴로 이동
         if (selectedGender) {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('genderSelection').style.display = 'none';
-            document.getElementById('menuContainer').style.display = 'flex';
-            document.getElementById('backBtn').style.display = 'flex';
+            const loginScreen = document.getElementById('loginScreen');
+            const genderSelection = document.getElementById('genderSelection');
+            const menuContainer = document.getElementById('menuContainer');
+            const backBtn = document.getElementById('backBtn');
+            
+            if (loginScreen) loginScreen.style.display = 'none';
+            if (genderSelection) genderSelection.style.display = 'none';
+            if (menuContainer) menuContainer.style.display = 'flex';
+            if (backBtn) backBtn.style.display = 'flex';
             
             // 메뉴 로드
             setTimeout(() => {
@@ -256,8 +276,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1000);
         } else {
             // 성별 선택 화면으로 이동
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('genderSelection').style.display = 'flex';
+            const loginScreen = document.getElementById('loginScreen');
+            const genderSelection = document.getElementById('genderSelection');
+            
+            if (loginScreen) loginScreen.style.display = 'none';
+            if (genderSelection) genderSelection.style.display = 'flex';
         }
     }
 });
@@ -269,4 +292,4 @@ window.consumeCredits = consumeCredits;
 window.logout = logout;
 window.checkLoginStatus = checkLoginStatus;
 
-console.log('✅ HAIRGATOR 인증 시스템 로드 완료');
+console.log('HAIRGATOR 인증 시스템 로드 완료');
