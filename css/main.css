@@ -330,6 +330,7 @@ body.light-theme .gender-btn {
     height: 100vh;
     background: var(--primary-dark);
     flex-direction: column;
+    z-index: 50;
 }
 
 .menu-container.active {
