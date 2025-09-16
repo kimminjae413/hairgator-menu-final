@@ -31,41 +31,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 });
 
-// 성별 선택 - 수정된 최종 버전
-function selectGender(gender) {
-    // body에 성별 클래스 추가
-    document.body.classList.remove('gender-male', 'gender-female');
-    document.body.classList.add(`gender-${gender}`);
-    
-    // 성별 저장
-    currentGender = gender;
-    localStorage.setItem('selectedGender', gender);
-    
-    // 화면 전환 - 안전한 요소 접근
-    const genderSelection = document.getElementById('genderSelection');
-    const menuContainer = document.getElementById('menuContainer'); // mainMenu → menuContainer로 수정
-    
-    if (genderSelection) {
-        genderSelection.classList.remove('active');
-        genderSelection.style.display = 'none';
-    }
-    
-    if (menuContainer) {
-        menuContainer.classList.add('active');
-        menuContainer.style.display = 'flex';
-    } else {
-        console.error('menuContainer 요소를 찾을 수 없습니다');
-    }
-    
-    // 메뉴 로드 - 안전한 함수 호출
-    if (typeof loadMenuForGender === 'function') {
-        loadMenuForGender(gender);
-    } else {
-        console.error('loadMenuForGender 함수를 찾을 수 없습니다');
-    }
-    
-    console.log(`성별 선택 완료: ${gender}`);
-}
+// selectGender 함수는 menu.js에서 처리하므로 여기서는 삭제
+// HTML의 onclick="selectGender()" 호출은 menu.js의 window.selectGender 함수를 사용
 
 // ========== 불나비 연동 기능 ==========
 
@@ -202,7 +169,7 @@ function getBullnabiUser() {
 // 전역 함수로 노출 (브릿지에서 사용)
 window.loginWithBullnabi = loginWithBullnabi;
 window.getBullnabiUser = getBullnabiUser;
-window.selectGender = selectGender; // 전역 함수로 노출
+// window.selectGender는 menu.js에서 정의하므로 여기서는 제거
 
 // 페이지 로드 시 불나비 자동 로그인 체크
 document.addEventListener('DOMContentLoaded', function() {
@@ -216,10 +183,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // 사용자가 직접 성별 선택부터 시작하도록 함
     }
     
-    // selectGender 함수가 전역에서 사용 가능한지 확인
+    // selectGender 함수가 menu.js에서 로드되었는지 확인
     if (typeof window.selectGender === 'function') {
-        console.log('✅ selectGender 함수 전역 등록 완료');
+        console.log('✅ menu.js selectGender 함수 사용 가능');
     } else {
-        console.error('❌ selectGender 함수 전역 등록 실패');
+        console.warn('⚠️ menu.js selectGender 함수가 아직 로드되지 않음');
     }
 });
