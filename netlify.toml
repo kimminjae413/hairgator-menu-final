@@ -1,6 +1,10 @@
 # netlify.toml - HAIRGATOR 배포 설정
 [build]
-  publish = "/"
+  publish = "."
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
 
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
