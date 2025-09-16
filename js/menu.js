@@ -705,19 +705,28 @@ function openAIPhotoModal(styleId, styleName, styleImageUrl) {
                 <div class="upload-arrow">→</div>
                 
                 <div class="customer-photo-section">
-                    <div class="upload-area" id="customerPhotoUpload">
-                        <div class="upload-placeholder">
-                            <span class="upload-icon">📷</span>
-                            <p>고객 사진을 업로드해주세요</p>
-                            <small>정면을 향한 선명한 사진을 권장합니다</small>
-                        </div>
-                        <input type="file" id="customerPhotoInput" accept="image/*" style="display: none;">
-                    </div>
-                    <div class="customer-preview" id="customerPreview" style="display: none;">
-                        <img id="customerPreviewImage" alt="고객 사진">
-                        <button class="change-photo-btn" onclick="changeCustomerPhoto()">사진 변경</button>
-                    </div>
-                </div>
+    <!-- 2개 버튼 옵션 (태블릿 최적화) -->
+    <div class="photo-options">
+        <button class="photo-option-btn upload-btn" onclick="selectPhotoFromGallery()">
+            <span class="option-icon">📁</span>
+            <span>갤러리에서 선택</span>
+        </button>
+        <button class="photo-option-btn camera-btn" onclick="takePhotoWithCamera()">
+            <span class="option-icon">📷</span>
+            <span>카메라로 촬영</span>
+        </button>
+    </div>
+    
+    <!-- 숨겨진 input들 -->
+    <input type="file" id="customerPhotoUpload" accept="image/*" style="display: none;">
+    <input type="file" id="customerPhotoCamera" accept="image/*" capture="environment" style="display: none;">
+    
+    <!-- 미리보기 영역 -->
+    <div class="customer-preview" id="customerPreview" style="display: none;">
+        <img id="customerPreviewImage" alt="고객 사진">
+        <button class="change-photo-btn" onclick="changeCustomerPhoto()">사진 변경</button>
+    </div>
+</div>
             </div>
             
             <div class="hair-upload-actions">
@@ -1301,3 +1310,4 @@ window.debugHAIRGATOR = function() {
 
 console.log('HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 헤어체험 연동 최종 버전');
 console.log('디버깅: window.debugHAIRGATOR() 실행 가능');
+
