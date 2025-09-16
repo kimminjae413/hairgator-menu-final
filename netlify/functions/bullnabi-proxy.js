@@ -39,7 +39,7 @@ exports.handler = async (event, context) => {
         }
 
         // JWT 토큰 (환경변수에서 가져오기)
-        const newToken = process.env.BULLNABI_JWT_TOKEN;
+        const newToken = process.env.BULLNABI_TOKEN;
         
         if (!newToken) {
             console.error('❌ BULLNABI_JWT_TOKEN 환경변수가 설정되지 않았습니다');
