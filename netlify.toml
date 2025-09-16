@@ -2,6 +2,10 @@
 [build]
   publish = "."
 
+[build.environment]
+  # 시크릿 스캔 비활성화 (Firebase/API 키들이 의도적으로 포함됨)
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+
 # JavaScript 파일 - 짧은 캐시 (10분)
 [[headers]]
   for = "/js/*"
