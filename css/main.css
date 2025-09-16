@@ -363,7 +363,7 @@ body.gender-selecting .menu-container {
     background: var(--primary-dark);
     z-index: 100;
     border-bottom: 1px solid var(--border-color);
-    padding-top: 70px; /* 헤더 높이(50px) + 마진(15px) + 여유(5px) */
+    margin-top: 70px; /* 헤더 높이(50px) + 마진(15px) + 여유(5px) */
 }
 
 /* ========== 카테고리 탭 (태블릿 터치 문제 완전 해결 최종 버전) ========== */
