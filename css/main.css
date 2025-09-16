@@ -1879,6 +1879,563 @@ html, body {
 }  
 }
 
+/* ========== AI 헤어체험 모달 (nano_banana 통합) ========== */
+.ai-hair-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--ai-overlay);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 6000;
+    padding: 20px;
+    backdrop-filter: blur(5px);
+}
+
+.ai-hair-modal.show { 
+    display: flex; 
+}
+
+.ai-modal-container {
+    background: var(--ai-modal-bg);
+    border: 2px solid var(--ai-primary);
+    border-radius: 20px;
+    max-width: 900px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalSlideUp 0.3s ease-out;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* 태블릿 레이아웃 (좌우 분할) */
+.ai-modal-content.tablet-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    padding: 30px;
+    min-height: 500px;
+}
+
+/* 모바일 레이아웃 (세로 배치) */
+.ai-modal-content.mobile-layout {
+    display: flex;
+    flex-direction: column;
+    padding: 25px;
+    gap: 20px;
+}
+
+/* AI 모달 헤더 */
+.ai-hair-header {
+    text-align: center;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.ai-hair-title {
+    color: var(--ai-primary);
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.ai-hair-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* 모달 닫기 버튼 */
+.ai-hair-close {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: var(--ai-primary);
+    color: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px var(--ai-shadow);
+}
+
+.ai-hair-close:hover {
+    background: var(--ai-button-hover);
+    transform: scale(1.1);
+}
+
+/* 왼쪽 패널 - 사진 업로드 */
+.ai-upload-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ai-upload-section {
+    flex: 1;
+}
+
+.ai-section-title {
+    color: var(--ai-primary);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 탭 스위처 */
+.ai-tab-switcher {
+    display: flex;
+    background: var(--ai-bg-secondary);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 20px;
+}
+
+.ai-tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
+}
+
+.ai-tab-btn.active {
+    background: var(--ai-primary);
+    color: white;
+    box-shadow: 0 2px 8px var(--ai-shadow);
+}
+
+.ai-tab-btn:not(.active):hover {
+    background: var(--ai-bg-primary);
+    color: var(--ai-primary);
+}
+
+/* 업로드 영역 */
+.ai-photo-upload {
+    border: 2px dashed var(--ai-border);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    background: var(--ai-bg-secondary);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-photo-upload:hover {
+    border-color: var(--ai-primary);
+    background: var(--ai-bg-primary);
+}
+
+.ai-photo-upload.dragover {
+    border-color: var(--ai-primary);
+    background: var(--ai-bg-primary);
+    transform: scale(1.02);
+}
+
+.ai-upload-icon {
+    font-size: 48px;
+    color: var(--ai-primary);
+    margin-bottom: 15px;
+    opacity: 0.7;
+}
+
+.ai-upload-text {
+    font-size: 16px;
+    color: var(--ai-primary);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.ai-upload-hint {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* 카메라 캡처 영역 */
+.ai-camera-section {
+    display: none;
+}
+
+.ai-camera-section.active {
+    display: block;
+}
+
+.ai-camera-container {
+    position: relative;
+    background: #000;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.ai-camera-video {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    display: block;
+}
+
+.ai-camera-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.ai-camera-btn {
+    background: var(--ai-primary);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-camera-btn:hover {
+    background: var(--ai-button-hover);
+    transform: translateY(-2px);
+}
+
+.ai-camera-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 오른쪽 패널 - 결과 및 컨트롤 */
+.ai-result-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 참고 스타일 정보 */
+.ai-style-info {
+    background: var(--ai-bg-secondary);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+}
+
+.ai-style-preview {
+    width: 120px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin: 0 auto 15px;
+    display: block;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.ai-style-name {
+    color: var(--ai-primary);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.ai-style-description {
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* AI 분석 결과 */
+.ai-analysis-section {
+    background: var(--ai-bg-secondary);
+    border-radius: 15px;
+    padding: 20px;
+    flex: 1;
+}
+
+.ai-analysis-content {
+    display: none;
+}
+
+.ai-analysis-content.show {
+    display: block;
+    animation: fadeInAnalysis 0.5s ease;
+}
+
+.ai-analysis-text {
+    color: var(--ai-text);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.ai-features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ai-features-list li {
+    color: var(--text-secondary);
+    font-size: 13px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--ai-border);
+    display: flex;
+    justify-content: space-between;
+}
+
+.ai-features-list li:last-child {
+    border-bottom: none;
+}
+
+.ai-feature-label {
+    font-weight: 500;
+}
+
+.ai-feature-value {
+    color: var(--ai-primary);
+    font-weight: 600;
+}
+
+/* 로딩 상태 */
+.ai-loading-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+}
+
+.ai-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--ai-border);
+    border-top: 3px solid var(--ai-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+.ai-loading-text {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.ai-loading-progress {
+    width: 100%;
+    height: 6px;
+    background: var(--ai-border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.ai-loading-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--ai-gradient-start), var(--ai-gradient-end));
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+/* 액션 버튼들 */
+.ai-action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.ai-process-button {
+    background: linear-gradient(135deg, var(--ai-gradient-start), var(--ai-gradient-end));
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px var(--ai-shadow);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.ai-process-button:hover {
+    background: linear-gradient(135deg, var(--ai-button-hover), var(--ai-gradient-end));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--ai-shadow);
+}
+
+.ai-process-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.ai-reset-button {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 2px solid var(--ai-border);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ai-reset-button:hover {
+    border-color: var(--ai-primary);
+    color: var(--ai-primary);
+    background: var(--ai-bg-primary);
+}
+
+/* 모바일 반응형 */
+@media (max-width: 767px) {
+    .ai-modal-container {
+        max-width: 95%;
+        margin: 10px;
+    }
+    
+    .ai-modal-content.tablet-layout {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+    }
+    
+    .ai-hair-title {
+        font-size: 20px;
+    }
+    
+    .ai-camera-video {
+        height: 200px;
+    }
+    
+    .ai-style-preview {
+        width: 100px;
+        height: 130px;
+    }
+    
+    .ai-action-buttons {
+        flex-direction: column;
+    }
+    
+    .ai-upload-icon {
+        font-size: 36px;
+    }
+    
+    .ai-photo-upload {
+        padding: 20px;
+        min-height: 150px;
+    }
+}
+
+/* 태블릿 최적화 */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .ai-modal-container {
+        max-width: 85%;
+    }
+    
+    .ai-modal-content.tablet-layout {
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        padding: 25px;
+    }
+    
+    .ai-camera-video {
+        height: 220px;
+    }
+}
+
+/* 애니메이션 */
+@keyframes fadeInAnalysis {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 에러 상태 */
+.ai-error-state {
+    text-align: center;
+    padding: 30px 20px;
+    color: #ff6b6b;
+}
+
+.ai-error-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.ai-error-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.ai-error-message {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* 성공 상태 */
+.ai-success-state {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--ai-primary);
+}
+
+.ai-success-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.ai-success-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.ai-success-message {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
 
 
 
