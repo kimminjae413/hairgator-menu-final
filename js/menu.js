@@ -1,4 +1,169 @@
-// ========== HAIRGATOR 메뉴 시스템 - GPT 파일 선택 문제 해결 최종 버전 ==========
+// ===============================================
+// HAIRGATOR 메뉴 시스템 - nano_banana 통합 버전
+// js/menu.js - nano_banana Image-to-Image 모델 사용
+// ===============================================
+
+// 🔧 수정: GPT AI 버튼을 nano_banana로 교체
+function addAIButtonToModal(style) {
+    const modalActions = document.querySelector('.style-modal-actions');
+    if (!modalActions) return;
+    
+    // ✅ 핵심 수정: 스타일 모달에서만 기존 AI 버튼 제거 (nano_banana 모달 보호)
+    const styleModal = document.getElementById('styleModal');
+    
+    // 현재 modalActions가 스타일 모달 내부에 있는지 확인
+    const isInStyleModal = styleModal && styleModal.contains(modalActions);
+    
+    if (isInStyleModal) {
+        // 스타일 모달 내부에서만 기존 AI 버튼 제거
+        const existingAIBtns = modalActions.querySelectorAll('.ai-experience-modal-btn, .gpt-ai-experience-modal-btn, .nano-banana-ai-btn');
+        existingAIBtns.forEach(btn => {
+            console.log('✅ 기존 AI 버튼 제거 (스타일 모달만):', btn.className);
+            btn.remove();
+        });
+    } else {
+        // nano_banana 모달이나 다른 곳에서는 기존 버튼 제거하지 않음
+        console.log('🛡️ nano_banana 모달 또는 외부 영역 - 기존 버튼 제거 건너뛰기');
+        return; // nano_banana 모달에서는 버튼 추가도 하지 않음
+    }
+    
+    // ✅ AI 헤어체험 버튼 생성 (스타일 모달에서만)
+    const aiExperienceButton = document.createElement('button');
+    aiExperienceButton.className = 'modal-action-btn ai-experience-modal-btn';
+    aiExperienceButton.innerHTML = `
+        <span class="ai-icon">🎨</span>
+        <span>AI 헤어체험하기</span>
+        <span class="new-badge">NEW</span>
+    `;
+    
+    aiExperienceButton.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('🎨 AI 헤어체험 시작:', {
+            id: style.id,
+            name: style.name,
+            imageUrl: style.imageUrl
+        });
+        
+        // AI 헤어체험 모달 열기 (nano_banana 기반)
+        console.log('헤어체험 함수 확인:', typeof window.openAIHairModal);
+
+        if (typeof window.openAIHairModal === 'function') {
+            window.openAIHairModal(style);
+        } else {
+            // 함수가 아직 로드되지 않았다면 잠시 대기
+            console.log('⏳ AI 헤어체험 시스템 로딩 중...');
+            
+            // nano-banana-hair.js 동적 로드
+            if (!document.querySelector('script[src*="nano-banana-hair.js"]')) {
+                const script = document.createElement('script');
+                script.src = '/js/nano-banana-hair.// ===============================================
+// HAIRGATOR 메뉴 시스템 - AI 헤어체험 통합 완전 버전
+// js/menu.js - 기존 스마트 필터링 + NEW 시스템 + AI 통합
+// ===============================================
+
+// 🔧 수정: AI 헤어체험 버튼을 기존 시스템에 완전 통합
+function addAIButtonToModal(style) {
+    const modalActions = document.querySelector('.style-modal-actions');
+    if (!modalActions) return;
+    
+    // ✅ 핵심 수정: 스타일 모달에서만 기존 AI 버튼 제거 (AI 모달 보호)
+    const styleModal = document.getElementById('styleModal');
+    
+    // 현재 modalActions가 스타일 모달 내부에 있는지 확인
+    const isInStyleModal = styleModal && styleModal.contains(modalActions);
+    
+    if (isInStyleModal) {
+        // 스타일 모달 내부에서만 기존 AI 버튼 제거
+        const existingAIBtns = modalActions.querySelectorAll('.ai-experience-modal-btn, .gpt-ai-experience-modal-btn, .nano-banana-ai-btn');
+        existingAIBtns.forEach(btn => {
+            console.log('✅ 기존 AI 버튼 제거 (스타일 모달만):', btn.className);
+            btn.remove();
+        });
+    } else {
+        // AI 모달이나 다른 곳에서는 기존 버튼 제거하지 않음
+        console.log('🛡️ AI 모달 또는 외부 영역 - 기존 버튼 제거 건너뛰기');
+        return; // AI 모달에서는 버튼 추가도 하지 않음
+    }
+    
+    // ✅ AI 헤어체험 버튼 생성 (스타일 모달에서만)
+    const aiExperienceButton = document.createElement('button');
+    aiExperienceButton.className = 'modal-action-btn ai-experience-modal-btn';
+    aiExperienceButton.innerHTML = `
+        <span class="ai-icon">🎨</span>
+        <span>AI 헤어체험하기</span>
+        <span class="new-badge">NEW</span>
+    `;
+    
+    aiExperienceButton.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('🎨 AI 헤어체험 시작:', {
+            id: style.id,
+            name: style.name,
+            imageUrl: style.imageUrl
+        });
+        
+        // AI 헤어체험 모달 열기 (nano_banana 기반)
+        console.log('헤어체험 함수 확인:', typeof window.openAIHairModal);
+
+        if (typeof window.openAIHairModal === 'function') {
+            window.openAIHairModal(style);
+        } else {
+            // 함수가 아직 로드되지 않았다면 잠시 대기
+            console.log('⏳ AI 헤어체험 시스템 로딩 중...');
+            
+            // nano-banana-hair.js 동적 로드
+            if (!document.querySelector('script[src*="nano-banana-hair.js"]')) {
+                const script = document.createElement('script');
+                script.src = '/js/nano-banana-hair.js';
+                script.onload = function() {
+                    if (typeof window.openAIHairModal === 'function') {
+                        window.openAIHairModal(style);
+                    } else {
+                        console.error('AI 헤어체험 시스템 로드 실패');
+                        showToast('AI 헤어체험 시스템을 불러올 수 없습니다', 'error');
+                    }
+                };
+                script.onerror = function() {
+                    console.error('nano-banana-hair.js 로드 실패');
+                    showToast('AI 헤어체험 기능을 사용할 수 없습니다', 'error');
+                };
+                document.head.appendChild(script);
+            } else {
+                setTimeout(() => {
+                    if (typeof window.openAIHairModal === 'function') {
+                        window.openAIHairModal(style);
+                    } else {
+                        console.error('AI 헤어체험 시스템이 로드되지 않았습니다');
+                        showToast('AI 헤어체험 시스템 로드 중... 잠시 후 다시 시도해주세요', 'info');
+                    }
+                }, 1000);
+            }
+        }
+    };
+    
+    // 기존 버튼들 앞에 추가
+    modalActions.insertBefore(aiExperienceButton, modalActions.firstChild);
+    
+    console.log('✅ AI 헤어체험 버튼 추가 완료 (스타일 모달)');
+}
+
+// ✅ 기존 AKOOL 시스템 비활성화 (AI 헤어체험으로 리다이렉트)
+function openAIPhotoModal(styleId, styleName, styleImageUrl) {
+    console.log('🚫 기존 AKOOL 시스템 호출 차단됨 - AI 헤어체험으로 리다이렉트');
+    showToast('🆕 새로운 AI 헤어체험으로 업그레이드되었습니다!', 'info');
+    
+    // AI 헤어체험 시스템이 로드되어 있다면 리다이렉트
+    if (window.openAIHairModal) {
+        const style = { id: styleId, name: styleName, imageUrl: styleImageUrl };
+        window.openAIHairModal(style);
+    }
+}
+
+// ========== 기존 시스템 그대로 유지 ==========
 
 // 남성 카테고리 (설명 포함)
 const MALE_CATEGORIES = [
@@ -628,87 +793,6 @@ function openStyleModal(style) {
     });
 }
 
-// 🔧 수정: 모달에 GPT AI 체험하기 버튼 추가 (GPT 파일 선택 보호)
-function addAIButtonToModal(style) {
-    const modalActions = document.querySelector('.style-modal-actions');
-    if (!modalActions) return;
-    
-    // ✅ 핵심 수정: 스타일 모달에서만 기존 AI 버튼 제거 (GPT 모달 보호)
-    const styleModal = document.getElementById('styleModal');
-    
-    // 현재 modalActions가 스타일 모달 내부에 있는지 확인
-    const isInStyleModal = styleModal && styleModal.contains(modalActions);
-    
-    if (isInStyleModal) {
-        // 스타일 모달 내부에서만 기존 AI 버튼 제거
-        const existingAIBtns = modalActions.querySelectorAll('.ai-experience-modal-btn, .gpt-ai-experience-modal-btn');
-        existingAIBtns.forEach(btn => {
-            console.log('✅ 기존 AI 버튼 제거 (스타일 모달만):', btn.className);
-            btn.remove();
-        });
-    } else {
-        // GPT 모달이나 다른 곳에서는 기존 버튼 제거하지 않음
-        console.log('🛡️ GPT 모달 또는 외부 영역 - 기존 버튼 제거 건너뛰기');
-        return; // GPT 모달에서는 버튼 추가도 하지 않음
-    }
-    
-    // GPT AI 버튼 생성 (스타일 모달에서만)
-    const gptAiButton = document.createElement('button');
-    gptAiButton.className = 'modal-action-btn gpt-ai-experience-modal-btn';
-    gptAiButton.innerHTML = `
-        <span class="ai-icon">🎨</span>
-        <span>GPT AI 체험하기</span>
-        <span class="new-badge">NEW</span>
-    `;
-    
-    gptAiButton.onclick = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        console.log('🎨 GPT Image 1 AI 체험하기 시작:', {
-            id: style.id,
-            name: style.name,
-            imageUrl: style.imageUrl
-        });
-        
-        // GPT 헤어스타일 체험 모달 열기
-        console.log('GPT 함수 확인:', typeof window.openGPTHairStyleModal);
-
-        if (typeof window.openGPTHairStyleModal === 'function') {
-            window.openGPTHairStyleModal(style);
-        } else {
-            // 함수가 아직 로드되지 않았다면 잠시 대기
-            setTimeout(() => {
-                if (typeof window.openGPTHairStyleModal === 'function') {
-                    window.openGPTHairStyleModal(style);
-                } else {
-                    console.error('GPT 헤어체험 시스템이 로드되지 않았습니다');
-                    showToast('GPT 시스템 로드 중... 잠시 후 다시 시도해주세요', 'info');
-                }
-            }, 1000);
-        }
-    };
-    
-    // 기존 버튼들 앞에 추가
-    modalActions.insertBefore(gptAiButton, modalActions.firstChild);
-    
-    console.log('✅ GPT AI 버튼 추가 완료 (스타일 모달)');
-}
-
-// ========== AI 체험하기 기능 ==========
-
-// AKOOL 시스템 비활성화 (GPT로 대체됨)
-function openAIPhotoModal(styleId, styleName, styleImageUrl) {
-    console.log('🚫 AKOOL 시스템 호출 차단됨 - GPT로 리다이렉트');
-    showToast('🆕 새로운 GPT Image 1으로 업그레이드되었습니다!', 'info');
-    
-    // GPT 시스템이 로드되어 있다면 리다이렉트
-    if (window.openGPTHairStyleModal) {
-        const style = { id: styleId, name: styleName, imageUrl: styleImageUrl };
-        window.openGPTHairStyleModal(style);
-    }
-}
-
 // ========== 상태 표시 함수들 ==========
 
 // 로딩 상태 표시
@@ -775,7 +859,7 @@ function closeStyleModal() {
 
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료 - GPT 파일 선택 문제 해결 최종 버전');
+    console.log('🚀 HAIRGATOR 메뉴 시스템 로드 완료 - AI 헤어체험 통합 완전 버전');
     
     // 모달 바깥 클릭 시 닫기
     document.addEventListener('click', function(e) {
@@ -868,46 +952,5 @@ window.debugHAIRGATOR = function() {
     });
 };
 
-// 🔧 GPT 파일 선택 복구 함수 추가
-window.repairGPTFileSelection = function() {
-    console.log('🔧 GPT 파일 선택 기능 복구 시작...');
-    
-    // GPT 모달이 열려있는지 확인
-    const gptModal = document.querySelector('.gpt-hair-style-modal.show');
-    if (!gptModal) {
-        console.log('GPT 모달이 열려있지 않음 - 복구 건너뛰기');
-        return false;
-    }
-    
-    // 메인 업로드 버튼 찾기
-    const mainUploadBtn = document.getElementById('mainUploadBtn');
-    if (!mainUploadBtn) {
-        console.error('❌ mainUploadBtn을 찾을 수 없습니다');
-        return false;
-    }
-    
-    // 숨겨진 파일 입력 요소 찾기
-    const fileInput = gptModal.querySelector('input[type="file"][accept="image/*"]');
-    if (!fileInput) {
-        console.error('❌ 파일 입력 요소를 찾을 수 없습니다');
-        return false;
-    }
-    
-    // 강제로 이벤트 리스너 재등록
-    const newBtn = mainUploadBtn.cloneNode(true);
-    mainUploadBtn.parentNode.replaceChild(newBtn, mainUploadBtn);
-    
-    newBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('🔧 복구된 파일 선택 버튼 클릭됨');
-        fileInput.click();
-    });
-    
-    console.log('✅ GPT 파일 선택 기능 복구 완료');
-    return true;
-};
-
-console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - GPT 파일 선택 문제 해결 최종 버전');
+console.log('✅ HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - AI 헤어체험 통합 버전');
 console.log('💡 디버깅: window.debugHAIRGATOR() 실행 가능');
-console.log('🔧 GPT 복구: window.repairGPTFileSelection() 실행 가능');
