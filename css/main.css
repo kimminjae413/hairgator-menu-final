@@ -76,17 +76,18 @@ body {
 
 /* 헤더 */
 .header {
-    position: fixed;
+    position: relative;
     top: 0;
     left: 0;
     right: 0;
-    height: 65px;
+    height: 50px;
     background: var(--primary-dark);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0 15px;
-    z-index: 9999;
+    margin-top: 15px;
+    z-index: 1000;
     transition: background-color 0.3s ease;
 }
 
@@ -142,8 +143,8 @@ body.light-theme .logo {
 
 /* 메인 콘텐츠 */
 .main-content {
-    margin-top: 65px;
-    min-height: calc(100vh - 65px);
+    margin-top: 0;
+    min-height: 100vh;
     transition: background-color 0.3s ease;
 }
 
@@ -323,13 +324,12 @@ body.light-theme .gender-btn {
 .menu-container {
     display: none;
     position: fixed;
-    top: 65px;
+    top: 0;
     left: 0;
     width: 100%;
-    height: calc(100vh - 65px);
+    height: 100vh;
     background: var(--primary-dark);
     flex-direction: column;
-    z-index: 100;
 }
 
 .menu-container.active {
@@ -710,6 +710,16 @@ body.light-theme .menu-items-container {
     .styles-grid {
         grid-template-columns: repeat(5, 1fr);
         gap: 12px;
+    }
+    
+    /* 태블릿에서 C영역 스크롤 강제 적용 - 이 부분만 수정 */
+    .menu-items-container,
+    .styles-container {
+        position: absolute !important;
+        top: 450px !important;
+        bottom: 0 !important;
+        height: auto !important;
+        overflow-y: auto !important;
     }
 }
 
@@ -1783,89 +1793,6 @@ body.light-theme .modal-action-btn.secondary:hover {
 
     .style-modal-actions {
         flex-direction: column;
-    }
-}
-
-/* ========== 태블릿 A+B 영역 고정 완전 해결 v2.1 - 최종 수정 ========== */
-@media (min-width: 768px) and (max-width: 1024px) {
-    /* Pull-to-refresh 완전 차단 */
-    html {
-        overscroll-behavior: none !important;
-    }
-    
-    body {
-        overscroll-behavior: none !important;
-    }
-    
-    /* 메뉴 컨테이너 태블릿 조정 */
-    .menu-container {
-        top: 65px;
-        height: calc(100vh - 65px);
-    }
-    
-    /* 헤더는 fixed로 최상단 고정 */
-    .header {
-        position: fixed;
-        top: 0;
-        z-index: 9999;
-        height: 65px;
-    }
-    
-    /* 대분류 탭 조정 - margin-top 제거 */
-    .category-tabs {
-        margin-top: 0 !important;
-        padding-top: 15px !important;
-        background: #111 !important;
-        z-index: 50 !important;
-    }
-
-    /* 카테고리 설명 조정 */
-    .category-description {
-        margin-top: 0 !important;
-        background: #0a0a0a !important;
-    }
-
-    /* 중분류 탭 조정 */
-    .sub-tabs {
-        margin-top: 0 !important;
-        background: #0a0a0a !important;
-    }
-
-    /* 5열 그리드 */
-    .styles-grid {
-        grid-template-columns: repeat(5, 1fr) !important;
-        gap: 15px !important;
-    }
-    
-    /* C 영역 스크롤 - top 값을 280px로 원복 */
-    .menu-items-container,
-    .styles-container {
-        position: absolute !important;
-        top: 280px !important;
-        bottom: 0 !important;
-        height: auto !important;
-        overflow-y: auto !important;
-        left: 0;
-        right: 0;
-        padding: 10px;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior-y: contain;
-        padding-bottom: 50px;
-    }
-    
-    /* 카테고리 탭 터치 최적화 */
-    .category-tab {
-        padding: 18px 30px;
-        font-size: 15px;
-        min-height: 52px;
-        min-width: 90px;
-    }
-    
-    .category-tab::before {
-        top: -12px;
-        left: -12px;
-        right: -12px;
-        bottom: -12px;
     }
 }
 
