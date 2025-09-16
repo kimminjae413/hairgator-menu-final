@@ -628,7 +628,7 @@ function openStyleModal(style) {
     });
 }
 
-// 모달에 헤어체험하기 버튼 추가
+// 모달에 헤어체험하기 버튼 추가 (비활성화 버전)
 function addAIButtonToModal(style) {
     const modalActions = document.querySelector('.style-modal-actions');
     if (!modalActions) return;
@@ -639,30 +639,108 @@ function addAIButtonToModal(style) {
         existingAIBtn.remove();
     }
     
-    // 새 헤어체험하기 버튼 생성
+    // 새 헤어체험하기 버튼 생성 (비활성화 상태)
     const hairExperienceButton = document.createElement('button');
-    hairExperienceButton.className = 'modal-action-btn ai-experience-modal-btn'; // 기존 클래스명 유지 (CSS 호환성)
+    hairExperienceButton.className = 'modal-action-btn ai-experience-modal-btn disabled-btn';
     hairExperienceButton.innerHTML = `
-        <span class="ai-icon">✨</span>
-        <span>헤어체험하기</span>
+        <span class="ai-icon">⚠️</span>
+        <span>개발중</span>
     `;
     
+    // 비활성화 스타일 적용
+    hairExperienceButton.style.background = '#666666';
+    hairExperienceButton.style.color = '#999999';
+    hairExperienceButton.style.cursor = 'not-allowed';
+    hairExperienceButton.style.opacity = '0.5';
+    
+    // 클릭 이벤트 - 개발중 메시지 표시
     hairExperienceButton.onclick = function(e) {
         e.preventDefault();
         e.stopPropagation();
         
-        console.log('헤어체험하기 시작:', {
-            id: style.id,
-            name: style.name,
-            imageUrl: style.imageUrl
-        });
-        
-        // 헤어체험 사진 업로드 모달 열기
-        openAIPhotoModal(style.id, style.name || '스타일', style.imageUrl || '');
+        // 개발중 메시지 표시
+        showDevelopmentMessage();
     };
     
     // 기존 버튼들 앞에 추가
     modalActions.insertBefore(hairExperienceButton, modalActions.firstChild);
+}
+
+// 개발중 메시지 표시 함수
+function showDevelopmentMessage() {
+    // 기존 토스트 메시지 함수가 있다면 사용
+    if (typeof showToast === 'function') {
+        showToast('🔧 개발중이에요! 곧 만나볼 수 있어요', 'info', 3000);
+        return;
+    }
+    
+    // 토스트 함수가 없다면 임시 알림 생성
+    const toast = document.createElement('div');
+    toast.className = 'development-toast';
+    toast.innerHTML = `
+        <div class="toast-content">
+            <span class="toast-icon">🔧</span>
+            <span class="toast-message">개발중이에요! 곧 만나볼 수 있어요</span>
+        </div>
+    `;
+    
+    // 토스트 스타일
+    toast.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        z-index: 10001;
+        font-size: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        animation: toastFadeIn 0.3s ease-out;
+    `;
+    
+    // 토스트 애니메이션 CSS 추가
+    if (!document.querySelector('#toast-animation-styles')) {
+        const style = document.createElement('style');
+        style.id = 'toast-animation-styles';
+        style.textContent = `
+            @keyframes toastFadeIn {
+                from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+                to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            }
+            @keyframes toastFadeOut {
+                from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                to { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            }
+            .toast-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .toast-icon {
+                font-size: 20px;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(toast);
+    
+    // 3초 후 제거
+    setTimeout(() => {
+        toast.style.animation = 'toastFadeOut 0.3s ease-out';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+    
+    // 햅틱 피드백
+    if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]);
+    }
 }
 
 // ========== 헤어체험 기능 ==========
@@ -1366,3 +1444,4 @@ window.debugHAIRGATOR = function() {
 
 console.log('HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 헤어체험 연동 최종 버전');
 console.log('디버깅: window.debugHAIRGATOR() 실행 가능');
+
