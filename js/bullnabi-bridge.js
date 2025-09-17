@@ -1,4 +1,4 @@
-// HAIRGATOR ↔ 불나비 네이티브 앱 연동 브릿지 (웹 자동 로그인 버전)
+// HAIRGATOR ↔ 불나비 네이티브 앱 연동 브릿지 - 동적 토큰 지원 최종 버전
 // js/bullnabi-bridge.js
 
 (function() {
@@ -46,52 +46,62 @@
             });
         },
 
-        // URL 파라미터로 불나비 정보 확인 및 자동 로그인
+        // 🆕 URL 파라미터로 불나비 정보 확인 및 자동 로그인 (토큰 지원)
         setupURLParamCheck() {
             const urlParams = new URLSearchParams(window.location.search);
             const userId = urlParams.get('userId');
+            const userToken = urlParams.get('token'); // 🆕 토큰 파라미터 추가
             
             if (userId) {
-                console.log('🔍 URL에서 불나비 사용자 ID 발견:', userId);
+                console.log('🔍 URL에서 불나비 정보 발견:');
+                console.log('- userId:', userId);
+                console.log('- token:', userToken ? userToken.substring(0, 20) + '...' : 'null');
                 
-                // 웹에서는 바로 자동 로그인 처리 (네이티브 앱에서는 API 호출 후 PostMessage로 결과 전달)
-                this.performWebAutoLogin(userId);
+                // 🆕 토큰도 함께 전달
+                this.performWebAutoLogin(userId, userToken);
             }
         },
 
-        // 웹에서 직접 자동 로그인 (CORS 때문에 가상 데이터 사용)
-        performWebAutoLogin(userId) {
-            console.log('🚀 웹 자동 로그인 시작:', userId);
+        // 🆕 웹에서 직접 자동 로그인 (토큰 지원)
+        performWebAutoLogin(userId, userToken = null) { // 🆕 userToken 파라미터 추가
+            console.log('🚀 웹 자동 로그인 시작:');
+            console.log('- userId:', userId);
+            console.log('- userToken:', userToken ? '있음 (동적)' : '없음 (환경변수 사용)');
             
             // 네이티브 앱이 있으면 API 요청, 없으면 바로 로그인
             if (this.isInNativeApp()) {
                 console.log('📱 네이티브 앱 환경 - API 요청');
-                this.requestUserInfoFromNative(userId);
+                this.requestUserInfoFromNative(userId, userToken); // 🆕 토큰 전달
             } else {
                 console.log('🌐 웹 브라우저 환경 - 직접 로그인');
-                this.executeDirectLogin(userId);
+                this.executeDirectLogin(userId, userToken); // 🆕 토큰 전달
             }
         },
 
-        // 네이티브 앱 환경 체크
+        // 네이티브 앱 환경 체크 (기존과 동일)
         isInNativeApp() {
             return !!(window.ReactNativeWebView || 
                      (window.parent !== window) ||
                      navigator.userAgent.includes('ReactNative'));
         },
 
-        // 웹에서 직접 로그인 실행 (프록시 서버 사용)
-        async executeDirectLogin(userId) {
-            console.log('🚀 프록시 서버를 통한 실제 사용자 정보 조회:', userId);
+        // 🆕 웹에서 직접 로그인 실행 (토큰 지원)
+        async executeDirectLogin(userId, userToken = null) { // 🆕 userToken 파라미터 추가
+            console.log('🚀 프록시 서버를 통한 실제 사용자 정보 조회:');
+            console.log('- userId:', userId);
+            console.log('- userToken:', userToken ? '동적 토큰 사용' : '환경변수 토큰 사용');
             
             try {
-                // Netlify Functions 프록시 서버 호출
+                // 🆕 Netlify Functions 프록시 서버 호출 (토큰 포함)
                 const response = await fetch('/.netlify/functions/bullnabi-proxy', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ userId: userId })
+                    body: JSON.stringify({ 
+                        userId: userId,
+                        userToken: userToken  // 🆕 토큰 추가
+                    })
                 });
 
                 if (!response.ok) {
@@ -101,8 +111,31 @@
                 const result = await response.json();
                 console.log('📋 프록시 서버 응답:', result);
 
+                // 🆕 토큰 오류 처리 추가
+                if (!result.success && result.error === 'TOKEN_ERROR') {
+                    console.error('🔑 토큰 오류 감지:', result.message);
+                    
+                    // 토큰 오류 알림
+                    if (typeof showToast === 'function') {
+                        showToast('토큰이 만료되었습니다. 다시 로그인해주세요.', 'error');
+                    }
+                    
+                    // URL에서 토큰 파라미터 제거하고 새로고침
+                    const url = new URL(window.location);
+                    url.searchParams.delete('token');
+                    window.history.replaceState({}, '', url);
+                    
+                    throw new Error('토큰이 유효하지 않습니다');
+                }
+
                 if (result.success && result.userInfo) {
                     console.log('✅ 실제 사용자 정보 조회 성공:', result.userInfo);
+                    
+                    // 🆕 토큰 소스 정보 로깅
+                    if (result.debug) {
+                        console.log('🔍 토큰 사용 정보:', result.debug.tokenSource);
+                        console.log('🔍 동적 토큰 사용:', result.debug.usedDynamicToken);
+                    }
                     
                     // DOM이 완전히 로드될 때까지 대기
                     if (document.readyState !== 'complete') {
@@ -122,22 +155,25 @@
             } catch (error) {
                 console.error('❌ 실제 사용자 정보 조회 실패:', error);
                 
-                // 실패 시 테스트용 사용자 정보로 로그인
-                console.log('🔄 테스트용 사용자 정보로 대체 로그인');
-                const fallbackUserInfo = {
-                    id: userId,
-                    name: '김민재 (테스트)',
-                    email: 'kimmin@bullnabi.com',
-                    remainCount: 25
-                };
-                
-                setTimeout(() => {
-                    this.performLogin(fallbackUserInfo);
-                }, 500);
+                // 🆕 토큰 오류가 아닌 경우에만 fallback 실행
+                if (!error.message.includes('토큰')) {
+                    // 실패 시 테스트용 사용자 정보로 로그인
+                    console.log('🔄 테스트용 사용자 정보로 대체 로그인');
+                    const fallbackUserInfo = {
+                        id: userId,
+                        name: '김민재 (테스트)',
+                        email: 'kimmin@bullnabi.com',
+                        remainCount: 25
+                    };
+                    
+                    setTimeout(() => {
+                        this.performLogin(fallbackUserInfo);
+                    }, 500);
+                }
             }
         },
 
-        // 실제 로그인 처리
+        // 실제 로그인 처리 (기존과 동일)
         performLogin(userInfo) {
             if (typeof window.loginWithBullnabi === 'function') {
                 console.log('🎯 자동 로그인 함수 호출');
@@ -170,30 +206,36 @@
             }
         },
 
-        // 네이티브 앱에 사용자 정보 요청 (CORS 우회)
-        requestUserInfoFromNative(userId) {
-            console.log('📱 네이티브 앱에 사용자 정보 요청:', userId);
+        // 🆕 네이티브 앱에 사용자 정보 요청 (토큰 지원)
+        requestUserInfoFromNative(userId, userToken = null) { // 🆕 userToken 파라미터 추가
+            console.log('📱 네이티브 앱에 사용자 정보 요청:');
+            console.log('- userId:', userId);  
+            console.log('- userToken:', userToken ? '있음' : '없음');
+            
+            const requestData = {
+                type: 'REQUEST_USER_INFO',
+                userId: userId
+            };
+            
+            // 🆕 토큰이 있으면 함께 전달
+            if (userToken) {
+                requestData.userToken = userToken;
+            }
             
             // PostMessage로 네이티브 앱에 정보 요청
             if (window.parent !== window) {
-                window.parent.postMessage({
-                    type: 'REQUEST_USER_INFO',
-                    userId: userId
-                }, '*');
+                window.parent.postMessage(requestData, '*');
             }
             
             // ReactNative WebView 방식
             if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({
-                    type: 'REQUEST_USER_INFO',
-                    userId: userId
-                }));
+                window.ReactNativeWebView.postMessage(JSON.stringify(requestData));
             }
             
             console.log('📤 네이티브 앱에 사용자 정보 요청 완료');
         },
 
-        // 불나비 로그인 처리 (PostMessage 수신)
+        // 불나비 로그인 처리 (PostMessage 수신) - 기존과 동일
         handleBullnabiLogin(data) {
             console.log('📥 불나비 로그인 처리 시작:', data);
             
@@ -205,7 +247,7 @@
             this.performLogin(data.userInfo);
         },
 
-        // 크레딧 업데이트 처리
+        // 크레딧 업데이트 처리 (기존과 동일)
         handleCreditUpdate(data) {
             console.log('💳 크레딧 업데이트:', data);
             
@@ -238,7 +280,7 @@
             }
         },
 
-        // 불나비 로그아웃 처리
+        // 불나비 로그아웃 처리 (기존과 동일)
         handleBullnabiLogout() {
             console.log('👋 불나비 로그아웃 처리');
             
@@ -264,7 +306,7 @@
             }
         },
 
-        // 네이티브 앱에 메시지 전송
+        // 네이티브 앱에 메시지 전송 (기존과 동일)
         sendToNative(message) {
             try {
                 if (window.parent !== window) {
@@ -282,7 +324,7 @@
             }
         },
 
-        // AI 기능 사용 시 크레딧 차감 요청
+        // AI 기능 사용 시 크레딧 차감 요청 (기존과 동일)
         requestCreditDeduction(usageType, count) {
             this.sendToNative({
                 type: 'DEDUCT_CREDIT',
@@ -292,7 +334,7 @@
             });
         },
 
-        // 연결 상태 확인
+        // 연결 상태 확인 (기존과 동일)
         checkConnection() {
             const now = Date.now();
             const timeSinceLastHeartbeat = now - (this.lastHeartbeat || 0);
@@ -305,7 +347,7 @@
             return this.isConnected;
         },
 
-        // 연결 정보 로깅
+        // 연결 정보 로깅 (기존과 동일)
         logConnectionInfo() {
             console.log('🔗 불나비 브릿지 연결 정보:');
             console.log('- 현재 URL:', window.location.href);
@@ -315,12 +357,15 @@
             console.log('- ReactNative WebView:', !!window.ReactNativeWebView);
         },
 
-        // 수동 테스트용 함수들
-        testAutoLogin(userId = '687ae7d51f31a788ab417e2d') {
-            console.log('🧪 자동 로그인 테스트 시작:', userId);
-            this.performWebAutoLogin(userId);
+        // 🆕 수동 테스트용 함수들 (토큰 지원)
+        testAutoLogin(userId = '687ae7d51f31a788ab417e2d', userToken = null) { // 🆕 토큰 파라미터 추가
+            console.log('🧪 자동 로그인 테스트 시작:');
+            console.log('- userId:', userId);
+            console.log('- userToken:', userToken ? '사용' : '미사용');
+            this.performWebAutoLogin(userId, userToken);
         },
         
+        // 상태 조회 (기존과 동일)
         getStatus() {
             return {
                 isConnected: this.isConnected,
@@ -331,7 +376,7 @@
         }
     };
 
-    // 페이지 로드 완료 시 초기화
+    // 페이지 로드 완료 시 초기화 (기존과 동일)
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             BullnabiBridge.init();
@@ -340,14 +385,14 @@
         BullnabiBridge.init();
     }
 
-    // 전역 접근을 위해 노출
+    // 전역 접근을 위해 노출 (기존과 동일)
     window.BullnabiBridge = BullnabiBridge;
 
-    // 주기적 연결 상태 확인 (30초마다)
+    // 주기적 연결 상태 확인 (30초마다) - 기존과 동일
     setInterval(() => {
         BullnabiBridge.checkConnection();
     }, 30000);
 
-    console.log('🌉 불나비 브릿지 모듈 로드 완료');
+    console.log('🌉 불나비 브릿지 모듈 로드 완료 - 동적 토큰 지원');
 
 })();
