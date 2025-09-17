@@ -1,4 +1,4 @@
-// tablet-recommendation.js - 최종 버전 (구문 오류 완전 해결)
+// tablet-recommendation.js - 실제 이미지 포함 버전
 
 function checkDeviceAndShowModal() {
     const isMobile = window.innerWidth < 768;
@@ -24,7 +24,7 @@ function showTabletRecommendationModal() {
         existingModal.remove();
     }
     
-    // 모달 HTML 생성
+    // 모달 HTML 생성 - 실제 이미지 사용
     const modalHTML = `
         <div id="tabletRecommendationModal" class="tablet-recommendation-modal">
             <div class="tablet-modal-content">
@@ -65,27 +65,30 @@ function showTabletRecommendationModal() {
                         
                         <div class="screenshot-item tablet-view">
                             <div class="screenshot-label">📟 태블릿 화면</div>
-                            <div class="tablet-mockup">
-                                <div class="tablet-screen">
-                                    <div class="tablet-header">HAIRGATOR</div>
-                                    <div class="tablet-tabs">
-                                        <div class="tablet-tab">A LENGTH</div>
-                                        <div class="tablet-tab active">B LENGTH</div>
-                                        <div class="tablet-tab">C LENGTH</div>
-                                        <div class="tablet-tab">D LENGTH</div>
-                                    </div>
-                                    <div class="tablet-description">
-                                        B길이는 가슴 아래까지 오는 스타일
-                                    </div>
-                                    <div class="tablet-styles">
-                                        <div class="tablet-style-card"></div>
-                                        <div class="tablet-style-card"></div>
-                                        <div class="tablet-style-card"></div>
-                                        <div class="tablet-style-card"></div>
-                                        <div class="tablet-style-card"></div>
-                                        <div class="tablet-style-card"></div>
-                                        <div class="tablet-style-card"></div>
-                                        <div class="tablet-style-card"></div>
+                            <div class="real-screenshot-container">
+                                <img src="images/tablet-screenshot.jpg" 
+                                     alt="태블릿 화면 스크린샷" 
+                                     class="device-screenshot tablet-screenshot"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <!-- 이미지 로드 실패시 fallback -->
+                                <div class="tablet-mockup fallback" style="display: none;">
+                                    <div class="tablet-screen">
+                                        <div class="tablet-header">HAIRGATOR</div>
+                                        <div class="tablet-tabs">
+                                            <div class="tablet-tab">A LENGTH</div>
+                                            <div class="tablet-tab active">B LENGTH</div>
+                                            <div class="tablet-tab">C LENGTH</div>
+                                            <div class="tablet-tab">D LENGTH</div>
+                                        </div>
+                                        <div class="tablet-description">
+                                            B길이는 가슴 아래까지 오는 스타일
+                                        </div>
+                                        <div class="tablet-styles">
+                                            <div class="tablet-style-card"></div>
+                                            <div class="tablet-style-card"></div>
+                                            <div class="tablet-style-card"></div>
+                                            <div class="tablet-style-card"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -164,7 +167,7 @@ function addTabletModalStyles() {
             border: 2px solid #E91E63;
             border-radius: 20px;
             max-width: 90%;
-            width: 450px;
+            width: 500px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 20px 60px rgba(233, 30, 99, 0.4);
@@ -241,9 +244,40 @@ function addTabletModalStyles() {
             font-weight: 600;
             margin-bottom: 12px;
             color: #E91E63;
+            font-size: 14px;
         }
         
-        .mobile-mockup {
+        /* 실제 스크린샷 이미지 스타일 */
+        .real-screenshot-container {
+            position: relative;
+            margin-bottom: 10px;
+        }
+        
+        .device-screenshot {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border: 2px solid #333;
+            transition: transform 0.3s ease;
+        }
+        
+        .device-screenshot:hover {
+            transform: scale(1.05);
+        }
+        
+        .mobile-screenshot {
+            max-height: 180px;
+            width: auto;
+        }
+        
+        .tablet-screenshot {
+            max-height: 140px;
+            width: auto;
+        }
+        
+        /* Fallback 스타일 (기존 목업) */
+        .mobile-mockup.fallback {
             background: #333;
             border-radius: 20px;
             padding: 8px;
@@ -298,7 +332,7 @@ function addTabletModalStyles() {
             border-radius: 3px;
         }
         
-        .tablet-mockup {
+        .tablet-mockup.fallback {
             background: #333;
             border-radius: 15px;
             padding: 8px;
@@ -342,18 +376,12 @@ function addTabletModalStyles() {
             border-radius: 4px;
             flex: 1;
             text-align: center;
-            transition: all 0.3s ease;
         }
         
         .tablet-tab.active {
             background: #E91E63;
             color: white;
             font-weight: bold;
-        }
-        
-        .tablet-tab:nth-child(2) {
-            background: #E91E63;
-            color: white;
         }
         
         .tablet-description {
@@ -378,37 +406,19 @@ function addTabletModalStyles() {
             height: 18px;
             border-radius: 3px;
             border: 1px solid #555;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .tablet-style-card::before {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            right: 2px;
-            height: 8px;
-            background: linear-gradient(45deg, #666, #888);
-            border-radius: 2px;
-        }
-        
-        .tablet-style-card::after {
-            content: '';
-            position: absolute;
-            bottom: 2px;
-            left: 2px;
-            right: 2px;
-            height: 4px;
-            background: #444;
-            border-radius: 1px;
         }
         
         .comparison-arrow {
-            font-size: 20px;
+            font-size: 24px;
             color: #E91E63;
             font-weight: bold;
             flex-shrink: 0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
         
         .device-issues {
@@ -495,6 +505,14 @@ function addTabletModalStyles() {
             .comparison-arrow {
                 transform: rotate(90deg);
             }
+            
+            .mobile-screenshot {
+                max-height: 140px;
+            }
+            
+            .tablet-screenshot {
+                max-height: 120px;
+            }
         }
         </style>
     `;
@@ -529,7 +547,7 @@ function continueWithMobile() {
     }
 }
 
-console.log('📟 태블릿 권장 시스템 준비 완료 - 최종 버전');
+console.log('📟 태블릿 권장 시스템 준비 완료 - 실제 이미지 포함 버전');
 
 // MutationObserver로 성별 선택 화면 감지
 document.addEventListener('DOMContentLoaded', function() {
