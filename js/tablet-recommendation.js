@@ -555,3 +555,30 @@ if (typeof showToast === 'function') {
 }
 
 console.log(‘📟 태블릿 권장 시스템 준비 완료 - 실제 스크린샷 포함’);
+
+// MutationObserver로 성별 선택 화면 감지
+document.addEventListener('DOMContentLoaded', function() {
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                const target = mutation.target;
+                if (target.id === 'genderSelection' && target.style.display !== 'none') {
+                    checkDeviceAndShowModal();
+                }
+            }
+        });
+    });
+    
+    const genderSelection = document.getElementById('genderSelection');
+    if (genderSelection) {
+        observer.observe(genderSelection, {
+            attributes: true,
+            attributeFilter: ['style']
+        });
+    }
+    
+    // 즉시 체크도 한 번 실행
+    setTimeout(() => {
+        checkDeviceAndShowModal();
+    }, 1000);
+});
