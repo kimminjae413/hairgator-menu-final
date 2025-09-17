@@ -1,17 +1,5 @@
 // tablet-recommendation.js - 실제 스크린샷 포함 버전
 
-document.addEventListener(‘DOMContentLoaded’, function() {
-console.log(‘📱➡️📟 태블릿 권장 시스템 로드 완료’);
-
-```
-// 모바일 감지 및 모달 표시
-setTimeout(() => {
-    checkDeviceAndShowModal();
-}, 1000);
-```
-
-});
-
 function checkDeviceAndShowModal() {
 const isMobile = window.innerWidth < 768;
 const isGenderSelectionVisible = document.getElementById(‘genderSelection’)?.style.display === ‘flex’;
