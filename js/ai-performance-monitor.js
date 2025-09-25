@@ -260,49 +260,49 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 HAIRGATOR AI 성능 모니터링 이벤트 리스너 등록 완료');
 });
 
-// 헤어체험 버튼 클릭 감지 및 자동 모니터링 실행
+// 헤어체험 버튼 클릭 감지 및 자동 모니터링 실행 (동적 버튼 대응)
 document.addEventListener('click', function(e) {
     const target = e.target;
     
-    // HAIRGATOR 실제 구조에 맞는 버튼 클릭 감지
+    // HAIRGATOR 실제 구조에 맞는 버튼 클릭 감지 (이벤트 위임 사용)
     if (target && (
         target.classList.contains('ai-experience-btn') || 
         target.classList.contains('btn-hair-experience') ||
         target.classList.contains('hair-experience-btn') ||
+        target.classList.contains('experience-btn') ||
         target.textContent.includes('헤어체험하기') ||
+        target.textContent.includes('헤어체험 시작하기') ||
         target.closest('.ai-experience-btn') ||
         target.closest('.btn-hair-experience') ||
-        target.closest('.hair-experience-btn')
+        target.closest('.hair-experience-btn') ||
+        target.closest('.experience-btn')
     )) {
-        // 버튼이 활성화된 경우에만 모니터링 실행
-        if (!target.disabled && !target.closest('.disabled')) {
-            console.log('🎯 헤어체험 버튼 클릭 감지 - AI 성능 모니터링 자동 시작');
+        console.log('🎯 헤어체험 버튼 클릭 감지 - AI 성능 모니터링 자동 시작');
+        
+        // HAIRGATOR 실제 DOM 구조에서 스타일 정보 추출
+        const styleModal = document.querySelector('#styleModal.active') || 
+                         document.querySelector('.style-modal.active');
+        let styleCode = 'AUTO_223';
+        let styleName = '댄디컷';
+        
+        if (styleModal) {
+            const codeElement = styleModal.querySelector('#styleModalCode') || 
+                              styleModal.querySelector('.style-modal-code');
+            const nameElement = styleModal.querySelector('#styleModalName') || 
+                              styleModal.querySelector('.style-modal-name');
             
-            // HAIRGATOR 실제 DOM 구조에서 스타일 정보 추출
-            const styleModal = document.querySelector('#styleModal.active') || 
-                             document.querySelector('.style-modal.active');
-            let styleCode = 'AUTO_223';
-            let styleName = '댄디컷';
-            
-            if (styleModal) {
-                const codeElement = styleModal.querySelector('#styleModalCode') || 
-                                  styleModal.querySelector('.style-modal-code');
-                const nameElement = styleModal.querySelector('#styleModalName') || 
-                                  styleModal.querySelector('.style-modal-name');
-                
-                if (codeElement) styleCode = codeElement.textContent.trim();
-                if (nameElement) styleName = nameElement.textContent.trim();
-            }
-            
-            // 모든 헤어체험에서 모니터링 실행 (자동 감지 활성화)
-            console.log('🎯 헤어체험 버튼 감지됨:', styleCode, styleName);
-            // UI가 안정된 후 모니터링 시작
-            setTimeout(() => {
-                window.aiMonitor.startPerformanceMonitoring(styleCode, styleName);
-            }, 500);
+            if (codeElement) styleCode = codeElement.textContent.trim();
+            if (nameElement) styleName = nameElement.textContent.trim();
         }
+        
+        // 모든 헤어체험에서 모니터링 실행 (자동 감지 활성화)
+        console.log('🎯 헤어체험 버튼 감지됨:', styleCode, styleName);
+        // UI가 안정된 후 모니터링 시작
+        setTimeout(() => {
+            window.aiMonitor.startPerformanceMonitoring(styleCode, styleName);
+        }, 500);
     }
-});
+}, true); // 캡처링 단계에서 이벤트 감지
 
 // ========================================
 // 디버깅 및 테스트 함수
