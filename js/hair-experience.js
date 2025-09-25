@@ -364,6 +364,15 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         if (isSupported) {
+            // onclick 방식으로 변경 (더 확실한 이벤트 연결)
+            hairExperienceBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('헤어체험 버튼 클릭됨:', currentCode);
+                openModal(currentCode);
+            };
+            
+            // 추가 보장을 위한 이벤트 리스너도 함께 설정
             hairExperienceBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
