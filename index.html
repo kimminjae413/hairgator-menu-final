@@ -292,15 +292,13 @@
         const loadingOverlay = document.getElementById('loadingOverlay');
         const toast = document.getElementById('toast');
 
-        // 테마 관리 함수들
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-theme');
-                updateThemeButton(true);
-            }
-            console.log(`테마 로드: ${savedTheme}`);
-        }
+        function updateThemeButton(isLight) {
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+    
+    if (themeIcon) themeIcon.textContent = isLight ? '☀️' : '🌙';
+    if (themeText) themeText.textContent = isLight ? '라이트 모드' : '다크 모드';
+}
 
         function toggleTheme() {
     document.body.classList.toggle('light-theme');
@@ -1650,6 +1648,7 @@ if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
 </script>
 </body>
 </html>
+
 
 
 
