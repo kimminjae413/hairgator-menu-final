@@ -341,30 +341,49 @@ document.addEventListener('DOMContentLoaded', function() {
     function injectHairExperienceButton(modal) {
         // 이미 버튼이 있다면 스킵
         if (modal.querySelector('.hair-experience-btn')) {
+            console.log('헤어체험 버튼이 이미 존재함');
             return;
         }
         
         // 개발중 텍스트 영역 찾기
         const devText = modal.querySelector('.style-modal-info');
-        if (!devText) return;
+        if (!devText) {
+            console.log('style-modal-info 요소를 찾을 수 없음');
+            return;
+        }
         
         // 현재 표시된 스타일의 코드 가져오기
         const styleCode = modal.querySelector('.style-modal-code');
         const currentCode = styleCode ? styleCode.textContent.trim() : '';
         
+        console.log('감지된 스타일 코드:', currentCode);
+        console.log('지원 스타일 목록:', Object.keys(SUPPORTED_STYLES));
+        
         // 지원하는 스타일인지 확인
         const isSupported = SUPPORTED_STYLES.hasOwnProperty(currentCode);
+        
+        console.log(`스타일 ${currentCode} 지원 여부:`, isSupported);
         
         // 헤어체험 버튼 생성
         const hairExperienceBtn = document.createElement('button');
         hairExperienceBtn.className = 'hair-experience-btn';
         hairExperienceBtn.innerHTML = `
             <span>✂️</span>
-            <span>${isSupported ? '헤어체험하기' : '개발중'}</span>
+            <span>헤어체험하기</span>
         `;
         
         if (isSupported) {
-            // onclick 방식으로 변경 (더 확실한 이벤트 연결)
+            // 지원하는 스타일 - 활성화
+            hairExperienceBtn.disabled = false;
+            hairExperienceBtn.style.cssText = `
+                background: linear-gradient(135deg, #E91E63, #C2185B) !important;
+                color: white !important;
+                opacity: 1 !important;
+                cursor: pointer !important;
+                pointer-events: auto !important;
+            `;
+            
+            // onclick 방식으로 이벤트 연결
             hairExperienceBtn.onclick = function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -372,16 +391,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 openModal(currentCode);
             };
             
-            // 추가 보장을 위한 이벤트 리스너도 함께 설정
-            hairExperienceBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                openModal(currentCode);
-            });
+            console.log(`✅ 헤어체험 버튼 활성화됨: ${currentCode}`);
         } else {
+            // 지원하지 않는 스타일 - 비활성화
             hairExperienceBtn.disabled = true;
-            hairExperienceBtn.style.opacity = '0.5';
-            hairExperienceBtn.style.cursor = 'not-allowed';
+            hairExperienceBtn.innerHTML = `
+                <span>⚠️</span>
+                <span>개발중</span>
+            `;
+            hairExperienceBtn.style.cssText = `
+                background: #666666 !important;
+                color: #999999 !important;
+                opacity: 0.5 !important;
+                cursor: not-allowed !important;
+                pointer-events: none !important;
+            `;
+            
+            console.log(`❌ 헤어체험 버튼 비활성화됨: ${currentCode}`);
         }
         
         // 모달 액션 버튼 영역 찾기
@@ -389,12 +415,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (modalActions) {
             // 헤어체험 버튼을 첫 번째로 추가
             modalActions.insertBefore(hairExperienceBtn, modalActions.firstChild);
+            console.log('버튼이 modal actions에 추가됨');
         } else {
             // 액션 영역이 없다면 info 영역 끝에 추가
             devText.appendChild(hairExperienceBtn);
+            console.log('버튼이 modal info에 추가됨');
         }
         
-        console.log(`헤어체험 버튼 추가됨: ${currentCode} (지원: ${isSupported})`);
+        console.log(`헤어체험 버튼 주입 완료: ${currentCode} (지원: ${isSupported})`);
     }
     
     // 초기화
