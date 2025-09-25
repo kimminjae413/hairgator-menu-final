@@ -339,10 +339,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 스타일 모달에 헤어체험 버튼 주입
     function injectHairExperienceButton(modal) {
-        // 이미 버튼이 있다면 스킵
-        if (modal.querySelector('.hair-experience-btn')) {
-            console.log('헤어체험 버튼이 이미 존재함');
-            return;
+        // 이미 버튼이 있다면 제거 후 새로 생성 (동적 코드 적용을 위해)
+        const existingBtn = modal.querySelector('.hair-experience-btn');
+        if (existingBtn) {
+            existingBtn.remove();
+            console.log('기존 헤어체험 버튼 제거됨');
         }
         
         // 개발중 텍스트 영역 찾기
@@ -352,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // 현재 표시된 스타일의 코드 가져오기
+        // 현재 표시된 스타일의 코드 가져오기 (실시간)
         const styleCode = modal.querySelector('.style-modal-code');
         const currentCode = styleCode ? styleCode.textContent.trim() : '';
         
@@ -367,43 +368,67 @@ document.addEventListener('DOMContentLoaded', function() {
         // 헤어체험 버튼 생성
         const hairExperienceBtn = document.createElement('button');
         hairExperienceBtn.className = 'hair-experience-btn';
-        hairExperienceBtn.innerHTML = `
-            <span>✂️</span>
-            <span>헤어체험하기</span>
-        `;
         
         if (isSupported) {
             // 지원하는 스타일 - 활성화
+            hairExperienceBtn.innerHTML = `
+                <span>✂️</span>
+                <span>헤어체험하기</span>
+            `;
             hairExperienceBtn.disabled = false;
             hairExperienceBtn.style.cssText = `
                 background: linear-gradient(135deg, #E91E63, #C2185B) !important;
                 color: white !important;
-                opacity: 1 !important;
+                padding: 12px 20px !important;
+                border-radius: 10px !important;
+                font-weight: 600 !important;
+                font-size: 14px !important;
                 cursor: pointer !important;
+                transition: all 0.3s ease !important;
+                width: 100% !important;
+                margin-bottom: 10px !important;
+                box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 8px !important;
+                border: none !important;
+                opacity: 1 !important;
                 pointer-events: auto !important;
             `;
             
-            // onclick 방식으로 이벤트 연결
+            // onclick 방식으로 이벤트 연결 - 현재 코드를 클로저로 캡처
             hairExperienceBtn.onclick = function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('헤어체험 버튼 클릭됨:', currentCode);
-                openModal(currentCode);
+                openModal(currentCode); // 실시간으로 가져온 currentCode 사용
             };
             
             console.log(`✅ 헤어체험 버튼 활성화됨: ${currentCode}`);
         } else {
             // 지원하지 않는 스타일 - 비활성화
-            hairExperienceBtn.disabled = true;
             hairExperienceBtn.innerHTML = `
                 <span>⚠️</span>
                 <span>개발중</span>
             `;
+            hairExperienceBtn.disabled = true;
             hairExperienceBtn.style.cssText = `
                 background: #666666 !important;
                 color: #999999 !important;
-                opacity: 0.5 !important;
+                padding: 12px 20px !important;
+                border-radius: 10px !important;
+                font-weight: 600 !important;
+                font-size: 14px !important;
                 cursor: not-allowed !important;
+                width: 100% !important;
+                margin-bottom: 10px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 8px !important;
+                border: none !important;
+                opacity: 0.5 !important;
                 pointer-events: none !important;
             `;
             
