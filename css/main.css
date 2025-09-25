@@ -1,6 +1,7 @@
 /* HAIRGATOR Base Styles - 기본 다크모드 */
 /* 현재 index.html의 모든 CSS를 외부 파일로 분리 */
 /* 태블릿 레이아웃 문제 완전 해결 최종 버전 */
+/* 헤어체험 기능 추가 완료 */
 
 /* 초기화 및 기본 설정 */
 * {
@@ -1021,7 +1022,824 @@ body.light-theme .ai-overlay {
     font-size: 14px;
 }
 
-/* ========== AI 사진 업로드 모달 ========== */
+/* ========== 헤어체험 모달 스타일 ========== */
+.hair-experience-btn {
+    background: linear-gradient(135deg, var(--ai-gradient-start), var(--ai-gradient-end));
+    color: var(--ai-text);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 15px var(--ai-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.hair-experience-btn:hover {
+    background: linear-gradient(135deg, var(--ai-button-hover), var(--ai-gradient-end));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--ai-shadow);
+}
+
+.hair-experience-btn:active {
+    transform: translateY(0);
+    transition: transform 0.1s ease;
+}
+
+.hair-experience-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #666666;
+    color: #999999;
+}
+
+/* 헤어체험 모달 */
+.hair-experience-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--ai-overlay);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 6000;
+    padding: 20px;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+.hair-experience-modal.active {
+    display: flex;
+}
+
+.hair-experience-content {
+    background: var(--ai-modal-bg);
+    border: 2px solid var(--ai-primary);
+    border-radius: 20px;
+    max-width: 450px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalSlideUp 0.3s ease-out;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.hair-experience-header {
+    padding: 30px 30px 0;
+    text-align: center;
+    position: relative;
+}
+
+.hair-experience-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: var(--ai-text);
+    font-size: 28px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.style-modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.light-theme .style-modal-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.style-modal-image {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    border-radius: 18px 18px 0 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.style-modal-info {
+    padding: 30px;
+    text-align: center;
+}
+
+.style-modal-code {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    transition: color 0.3s ease;
+}
+
+.style-modal-name {
+    color: var(--text-primary);
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    transition: color 0.3s ease;
+}
+
+.style-modal-details {
+    background: #1a1a1a;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+}
+
+body.light-theme .style-modal-details {
+    background: #f8f9fa;
+    border: 1px solid var(--border-color);
+}
+
+.style-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #333;
+    transition: border-color 0.3s ease;
+}
+
+body.light-theme .style-detail-row {
+    border-bottom-color: var(--border-color);
+}
+
+.style-detail-row:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.style-detail-label {
+    color: var(--text-secondary);
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.style-detail-value {
+    color: var(--text-primary);
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.style-modal-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-action-btn {
+    flex: 1;
+    background: var(--female-color);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-action-btn:hover {
+    background: #d81b60;
+    transform: translateY(-2px);
+}
+
+.modal-action-btn.secondary {
+    background: #333;
+}
+
+body.light-theme .modal-action-btn.secondary {
+    background: #6c757d;
+}
+
+.modal-action-btn.secondary:hover {
+    background: #444;
+}
+
+body.light-theme .modal-action-btn.secondary:hover {
+    background: #5a6268;
+}
+
+/* 테마 전환 버튼 */
+.theme-toggle {
+    position: absolute;  /* fixed → absolute */
+    right: 50px;  /* 메뉴버튼 옆으로 */
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;  /* 테두리 제거 */
+    color: var(--text-primary);
+    padding: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle:hover {
+    border-color: var(--female-color);
+    color: var(--female-color);
+    background: rgba(233, 30, 99, 0.1);
+}
+
+.theme-toggle:focus {
+    outline: 2px solid var(--female-color);
+    outline-offset: 2px;
+}
+
+/* 애니메이션 */
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ========== 터치 디바이스 전용 최적화 ========== */
+@media (hover: none) and (pointer: coarse) {
+    .category-tab {
+        min-height: 52px;
+        min-width: 90px;
+        padding: 18px 28px;
+        -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
+        position: relative;
+        z-index: 100;
+    }
+    
+    /* 터치 디바이스에서 더 넓은 터치 영역 */
+    .category-tab::before {
+        top: -15px;
+        left: -15px;
+        right: -15px;
+        bottom: -15px;
+    }
+    
+    body {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .category-tab:active {
+        opacity: 0.7;
+        transform: scale(0.96);
+        transition: all 0.1s ease;
+    }
+    
+    /* 사이드바 메뉴 아이템 터치 개선 */
+    .sidebar-menu-item {
+        min-height: 70px;
+        padding: 25px 30px;
+        -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
+        position: relative;
+        z-index: 100;
+    }
+    
+    .sidebar-menu-item:active {
+        background: var(--ai-bg-primary) !important;
+        transform: translateX(3px);
+        transition: all 0.1s ease;
+    }
+}
+
+/* 모바일 최적화 */
+@media (max-width: 767px) {
+    .ai-experience-btn {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+    
+    .ai-modal-content,
+    .hair-experience-content {
+        margin: 10px;
+        max-width: calc(100% - 20px);
+    }
+    
+    .personal-color-content {
+        width: 98%;
+        height: 98%;
+        border-radius: 15px;
+    }
+    
+    .personal-color-header {
+        padding: 15px 20px;
+    }
+    
+    .personal-color-header h2 {
+        font-size: 20px;
+    }
+    
+    .sidebar-menu-item {
+        padding: 12px 15px;
+    }
+    
+    .sidebar-title {
+        font-size: 14px;
+    }
+    
+    .sidebar-subtitle {
+        font-size: 11px;
+    }
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .gender-selection {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .gender-btn {
+        width: 140px;
+        height: 200px;
+    }
+    
+    .login-modal {
+        margin: 0 10px;
+        padding: 20px;
+    }
+
+    .style-modal-content {
+        max-width: 95%;
+    }
+
+    .style-modal-info {
+        padding: 20px;
+    }
+
+    .style-modal-name {
+        font-size: 20px;
+    }
+
+    .style-modal-actions {
+        flex-direction: column;
+    }
+}
+
+/* 헤어체험 버튼 보이게 하기 */
+.ai-experience-modal-btn {
+    background: linear-gradient(135deg, var(--female-color), #c2185b) !important;
+    color: white !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.ai-experience-modal-btn:hover {
+    background: linear-gradient(135deg, #d81b60, #ad1457) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* 스타일 모달 - 헤어체험하기 버튼 비활성화 및 스타일명 숨기기 */
+
+/* 1. 스타일명 숨기기 (포마드컷 등) */
+.style-modal .style-name,
+#styleModal .style-name,
+#styleModalName {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* 2. 헤어체험하기 버튼 비활성화 스타일 */
+.ai-experience-modal-btn,
+.hair-experience-modal-btn,
+.modal-action-btn.ai-experience-modal-btn {
+    background: #666666 !important;
+    color: #999999 !important;
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+    position: relative;
+}
+
+.ai-experience-modal-btn:hover,
+.hair-experience-modal-btn:hover {
+    background: #666666 !important;
+    transform: none !important;
+}
+
+/* 3. 비활성화 상태 표시 */
+.ai-experience-modal-btn::after,
+.hair-experience-modal-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+/* 4. 버튼 텍스트 변경을 위한 스타일 */
+.ai-experience-modal-btn span:last-child,
+.hair-experience-modal-btn span:last-child {
+    position: relative;
+}
+
+.ai-experience-modal-btn span:last-child::after,
+.hair-experience-modal-btn span:last-child::after {
+    content: '개발중';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999999;
+    font-size: 12px;
+}
+
+/* ========== 라이트 테마 추가 수정 ========== */
+body.light-theme .header {
+    background: #ffffff !important;
+    border-bottom: 1px solid #dee2e6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+body.light-theme .logo {
+    color: #000000 !important;
+}
+
+body.light-theme .back-btn,
+body.light-theme .menu-btn {
+    color: #000000 !important;
+}
+
+body.light-theme .menu-btn span {
+    background: #000000 !important;
+}
+
+body.light-theme .category-tabs {
+    background: #f8f9fa !important;
+}
+
+body.light-theme .category-tab {
+    background: #ffffff !important;
+    color: #6c757d !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+body.light-theme .category-tab:hover {
+    background: #e9ecef !important;
+}
+
+body.light-theme .category-description {
+    background: #ffffff !important;
+}
+
+body.light-theme .sub-tabs {
+    background: #ffffff !important;
+}
+
+body.light-theme .sub-tab {
+    background: #e9ecef !important;
+    color: #000000 !important;
+}
+
+/* 남성 대분류 탭 선택 시 파란색 + 볼드 */
+.category-tab.active.male {
+    background: var(--male-color) !important;
+    color: white !important;
+    border-color: var(--male-color) !important;
+    box-shadow: 0 2px 10px rgba(74, 144, 226, 0.4);
+    font-weight: bold !important;
+    font-size: 15px !important;
+}
+
+body.light-theme .category-tab.active.male {
+    background: var(--male-color) !important;
+    color: white !important;
+    border-color: var(--male-color) !important;
+    box-shadow: 0 2px 10px rgba(74, 144, 226, 0.4);
+    font-weight: bold !important;
+    font-size: 15px !important;
+}
+
+/* 여성 대분류 탭 선택 시 핑크색 + 볼드 */
+.category-tab.active.female {
+    background: var(--female-color) !important;
+    color: white !important;
+    border-color: var(--female-color) !important;
+    box-shadow: 0 2px 10px rgba(233, 30, 99, 0.4);
+    font-weight: bold !important;
+    font-size: 15px !important;
+}
+
+body.light-theme .category-tab.active.female {
+    background: var(--female-color) !important;
+    color: white !important;
+    border-color: var(--female-color) !important;
+    box-shadow: 0 2px 10px rgba(233, 30, 99, 0.4);
+    font-weight: bold !important;
+    font-size: 15px !important;
+}
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.hair-experience-close:hover {
+    background: var(--ai-bg-primary);
+    transform: rotate(90deg);
+}
+
+.hair-experience-title {
+    color: var(--ai-primary);
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.hair-experience-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 25px;
+}
+
+.hair-experience-body {
+    padding: 0 30px 30px;
+}
+
+/* 업로드 영역 */
+.upload-area {
+    border: 2px dashed var(--ai-border);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    background: var(--ai-bg-secondary);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.upload-area:hover {
+    border-color: var(--ai-primary);
+    background: var(--ai-bg-primary);
+}
+
+.upload-area.dragover {
+    border-color: var(--ai-primary);
+    background: var(--ai-bg-primary);
+    transform: scale(1.02);
+}
+
+.upload-placeholder {
+    pointer-events: none;
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.7;
+    display: block;
+    color: var(--ai-primary);
+}
+
+.upload-text {
+    font-size: 16px;
+    color: var(--ai-primary);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.upload-input {
+    display: none;
+}
+
+/* 업로드된 이미지 미리보기 */
+.upload-preview {
+    display: none;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.upload-preview.active {
+    display: block;
+}
+
+.preview-image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.preview-text {
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.change-photo-btn {
+    background: transparent;
+    color: var(--ai-primary);
+    border: 1px solid var(--ai-primary);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.change-photo-btn:hover {
+    background: var(--ai-bg-primary);
+}
+
+/* 체험하기 버튼 */
+.experience-btn {
+    background: linear-gradient(135deg, var(--ai-gradient-start), var(--ai-gradient-end));
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px var(--ai-shadow);
+    min-width: 180px;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.experience-btn:hover {
+    background: linear-gradient(135deg, var(--ai-button-hover), var(--ai-gradient-end));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--ai-shadow);
+}
+
+.experience-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 결과 화면 */
+.experience-result {
+    display: none;
+    text-align: center;
+    padding: 20px;
+}
+
+.experience-result.active {
+    display: block;
+}
+
+.result-image {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.result-title {
+    color: var(--ai-primary);
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.result-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.result-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.result-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.result-btn.primary {
+    background: var(--ai-primary);
+    color: white;
+}
+
+.result-btn.primary:hover {
+    background: var(--ai-button-hover);
+}
+
+.result-btn.secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--ai-border);
+}
+
+.result-btn.secondary:hover {
+    border-color: var(--ai-primary);
+    color: var(--ai-primary);
+}
+
+/* 로딩 상태 */
+.experience-loading {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.experience-loading.active {
+    display: block;
+}
+
+.loading-spinner-hair {
+    width: 60px;
+    height: 60px;
+    border: 4px solid var(--ai-bg-primary);
+    border-top: 4px solid var(--ai-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+.loading-text {
+    color: var(--ai-primary);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.loading-hint {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========== AI 사진 업로드 모달 (기존) ========== */
 .ai-photo-modal {
     position: fixed;
     top: 0;
@@ -1128,29 +1946,6 @@ body.light-theme .ai-overlay {
     border-color: var(--ai-primary);
     background: var(--ai-bg-primary);
     transform: scale(1.02);
-}
-
-.upload-placeholder {
-    pointer-events: none;
-}
-
-.upload-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-    opacity: 0.7;
-    display: block;
-}
-
-.upload-text {
-    font-size: 16px;
-    color: var(--ai-primary);
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.upload-hint {
-    font-size: 12px;
-    color: var(--text-secondary);
 }
 
 /* AI 처리 버튼 */
@@ -1427,6 +2222,7 @@ body.light-theme .theme-toggle-mini:hover {
     border-color: #E91E63;
     color: #E91E63;
 }
+
 .sidebar-icon {
     font-size: 20px;
     margin-right: 15px;
@@ -1562,11 +2358,6 @@ body.light-theme .loading-spinner {
     border-top-color: var(--female-color);
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 /* 토스트 메시지 완전 제거 */
 .toast {
     display: none !important;
@@ -1625,467 +2416,3 @@ body.light-theme .style-modal-content {
     z-index: 10;
     width: 40px;
     height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.style-modal-close:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-body.light-theme .style-modal-close:hover {
-    background: rgba(0, 0, 0, 0.1);
-}
-
-.style-modal-image {
-    width: 100%;
-    aspect-ratio: 3/4;
-    object-fit: cover;
-    border-radius: 18px 18px 0 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.style-modal-info {
-    padding: 30px;
-    text-align: center;
-}
-
-.style-modal-code {
-    color: var(--text-secondary);
-    font-size: 14px;
-    margin-bottom: 10px;
-    letter-spacing: 1px;
-    transition: color 0.3s ease;
-}
-
-.style-modal-name {
-    color: var(--text-primary);
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    transition: color 0.3s ease;
-}
-
-.style-modal-details {
-    background: #1a1a1a;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    transition: background-color 0.3s ease;
-}
-
-body.light-theme .style-modal-details {
-    background: #f8f9fa;
-    border: 1px solid var(--border-color);
-}
-
-.style-detail-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid #333;
-    transition: border-color 0.3s ease;
-}
-
-body.light-theme .style-detail-row {
-    border-bottom-color: var(--border-color);
-}
-
-.style-detail-row:last-child {
-    margin-bottom: 0;
-    border-bottom: none;
-}
-
-.style-detail-label {
-    color: var(--text-secondary);
-    font-size: 14px;
-    transition: color 0.3s ease;
-}
-
-.style-detail-value {
-    color: var(--text-primary);
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.style-modal-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.modal-action-btn {
-    flex: 1;
-    background: var(--female-color);
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.modal-action-btn:hover {
-    background: #d81b60;
-    transform: translateY(-2px);
-}
-
-.modal-action-btn.secondary {
-    background: #333;
-}
-
-body.light-theme .modal-action-btn.secondary {
-    background: #6c757d;
-}
-
-.modal-action-btn.secondary:hover {
-    background: #444;
-}
-
-body.light-theme .modal-action-btn.secondary:hover {
-    background: #5a6268;
-}
-
-/* 테마 전환 버튼 */
-.theme-toggle {
-    position: absolute;  /* fixed → absolute */
-    right: 50px;  /* 메뉴버튼 옆으로 */
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;  /* 테두리 제거 */
-    color: var(--text-primary);
-    padding: 5px;
-    cursor: pointer;
-    font-size: 20px;
-    transition: all 0.3s ease;
-    z-index: 1000;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.theme-toggle:hover {
-    border-color: var(--female-color);
-    color: var(--female-color);
-    background: rgba(233, 30, 99, 0.1);
-}
-
-.theme-toggle:focus {
-    outline: 2px solid var(--female-color);
-    outline-offset: 2px;
-}
-
-/* 애니메이션 */
-@keyframes modalSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(50px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* ========== 터치 디바이스 전용 최적화 ========== */
-@media (hover: none) and (pointer: coarse) {
-    .category-tab {
-        min-height: 52px;
-        min-width: 90px;
-        padding: 18px 28px;
-        -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
-        position: relative;
-        z-index: 100;
-    }
-    
-    /* 터치 디바이스에서 더 넓은 터치 영역 */
-    .category-tab::before {
-        top: -15px;
-        left: -15px;
-        right: -15px;
-        bottom: -15px;
-    }
-    
-    body {
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    .category-tab:active {
-        opacity: 0.7;
-        transform: scale(0.96);
-        transition: all 0.1s ease;
-    }
-    
-    /* 사이드바 메뉴 아이템 터치 개선 */
-    .sidebar-menu-item {
-        min-height: 70px;
-        padding: 25px 30px;
-        -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
-        position: relative;
-        z-index: 100;
-    }
-    
-    .sidebar-menu-item:active {
-        background: var(--ai-bg-primary) !important;
-        transform: translateX(3px);
-        transition: all 0.1s ease;
-    }
-}
-
-/* 모바일 최적화 */
-@media (max-width: 767px) {
-    .ai-experience-btn {
-        padding: 8px 14px;
-        font-size: 12px;
-    }
-    
-    .ai-modal-content {
-        margin: 10px;
-        max-width: calc(100% - 20px);
-    }
-    
-    .personal-color-content {
-        width: 98%;
-        height: 98%;
-        border-radius: 15px;
-    }
-    
-    .personal-color-header {
-        padding: 15px 20px;
-    }
-    
-    .personal-color-header h2 {
-        font-size: 20px;
-    }
-    
-    .sidebar-menu-item {
-        padding: 12px 15px;
-    }
-    
-    .sidebar-title {
-        font-size: 14px;
-    }
-    
-    .sidebar-subtitle {
-        font-size: 11px;
-    }
-}
-
-/* 반응형 */
-@media (max-width: 768px) {
-    .gender-selection {
-        flex-direction: column;
-        gap: 30px;
-    }
-    
-    .gender-btn {
-        width: 140px;
-        height: 200px;
-    }
-    
-    .login-modal {
-        margin: 0 10px;
-        padding: 20px;
-    }
-
-    .style-modal-content {
-        max-width: 95%;
-    }
-
-    .style-modal-info {
-        padding: 20px;
-    }
-
-    .style-modal-name {
-        font-size: 20px;
-    }
-
-    .style-modal-actions {
-        flex-direction: column;
-    }
-}
-
-/* 헤어체험 버튼 보이게 하기 */
-.ai-experience-modal-btn {
-    background: linear-gradient(135deg, var(--female-color), #c2185b) !important;
-    color: white !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-}
-
-.ai-experience-modal-btn:hover {
-    background: linear-gradient(135deg, #d81b60, #ad1457) !important;
-    transform: translateY(-2px) !important;
-}
-
-/* 스타일 모달 - 헤어체험하기 버튼 비활성화 및 스타일명 숨기기 */
-
-/* 1. 스타일명 숨기기 (포마드컷 등) */
-.style-modal .style-name,
-#styleModal .style-name,
-#styleModalName {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-}
-
-/* 2. 헤어체험하기 버튼 비활성화 스타일 */
-.ai-experience-modal-btn,
-.hair-experience-modal-btn,
-.modal-action-btn.ai-experience-modal-btn {
-    background: #666666 !important;
-    color: #999999 !important;
-    cursor: not-allowed !important;
-    opacity: 0.5 !important;
-    pointer-events: none !important;
-    position: relative;
-}
-
-.ai-experience-modal-btn:hover,
-.hair-experience-modal-btn:hover {
-    background: #666666 !important;
-    transform: none !important;
-}
-
-/* 3. 비활성화 상태 표시 */
-.ai-experience-modal-btn::after,
-.hair-experience-modal-btn::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: inherit;
-    pointer-events: none;
-}
-
-/* 4. 버튼 텍스트 변경을 위한 스타일 */
-.ai-experience-modal-btn span:last-child,
-.hair-experience-modal-btn span:last-child {
-    position: relative;
-}
-
-.ai-experience-modal-btn span:last-child::after,
-.hair-experience-modal-btn span:last-child::after {
-    content: '개발중';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: inherit;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #999999;
-    font-size: 12px;
-}
-
-/* ========== 라이트 테마 추가 수정 ========== */
-body.light-theme .header {
-    background: #ffffff !important;
-    border-bottom: 1px solid #dee2e6;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-body.light-theme .logo {
-    color: #000000 !important;
-}
-
-body.light-theme .back-btn,
-body.light-theme .menu-btn {
-    color: #000000 !important;
-}
-
-body.light-theme .menu-btn span {
-    background: #000000 !important;
-}
-
-body.light-theme .category-tabs {
-    background: #f8f9fa !important;
-}
-
-body.light-theme .category-tab {
-    background: #ffffff !important;
-    color: #6c757d !important;
-    border: 1px solid #dee2e6 !important;
-}
-
-body.light-theme .category-tab:hover {
-    background: #e9ecef !important;
-}
-
-body.light-theme .category-description {
-    background: #ffffff !important;
-}
-
-body.light-theme .sub-tabs {
-    background: #ffffff !important;
-}
-
-body.light-theme .sub-tab {
-    background: #e9ecef !important;
-    color: #000000 !important;
-}
-body.light-theme .sub-tab {
-    background: #e9ecef !important;
-    color: #000000 !important;
-}
-
-/* 남성 대분류 탭 선택 시 파란색 + 볼드 */
-.category-tab.active.male {
-    background: var(--male-color) !important;
-    color: white !important;
-    border-color: var(--male-color) !important;
-    box-shadow: 0 2px 10px rgba(74, 144, 226, 0.4);
-    font-weight: bold !important;
-    font-size: 15px !important;
-}
-
-body.light-theme .category-tab.active.male {
-    background: var(--male-color) !important;
-    color: white !important;
-    border-color: var(--male-color) !important;
-    box-shadow: 0 2px 10px rgba(74, 144, 226, 0.4);
-    font-weight: bold !important;
-    font-size: 15px !important;
-}
-
-/* 여성 대분류 탭 선택 시 핑크색 + 볼드 */
-.category-tab.active.female {
-    background: var(--female-color) !important;
-    color: white !important;
-    border-color: var(--female-color) !important;
-    box-shadow: 0 2px 10px rgba(233, 30, 99, 0.4);
-    font-weight: bold !important;
-    font-size: 15px !important;
-}
-
-body.light-theme .category-tab.active.female {
-    background: var(--female-color) !important;
-    color: white !important;
-    border-color: var(--female-color) !important;
-    box-shadow: 0 2px 10px rgba(233, 30, 99, 0.4);
-    font-weight: bold !important;
-    font-size: 15px !important;
-}
