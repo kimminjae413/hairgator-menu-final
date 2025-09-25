@@ -294,15 +294,12 @@ document.addEventListener('click', function(e) {
                 if (nameElement) styleName = nameElement.textContent.trim();
             }
             
-            // AUTO_217 또는 AUTO_223인 경우에만 모니터링 실행
-            if (styleCode === 'AUTO_217' || styleCode === 'AUTO_223') {
-                // UI가 안정된 후 모니터링 시작
-                setTimeout(() => {
-                    window.aiMonitor.startPerformanceMonitoring(styleCode, styleName);
-                }, 500);
-            } else {
-                console.log('📝 모니터링 대상 아님:', styleCode, '(AUTO_217, AUTO_223만 해당)');
-            }
+            // 모든 헤어체험에서 모니터링 실행 (자동 감지 활성화)
+            console.log('🎯 헤어체험 버튼 감지됨:', styleCode, styleName);
+            // UI가 안정된 후 모니터링 시작
+            setTimeout(() => {
+                window.aiMonitor.startPerformanceMonitoring(styleCode, styleName);
+            }, 500);
         }
     }
 });
