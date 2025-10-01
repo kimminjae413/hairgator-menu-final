@@ -587,20 +587,21 @@
             border: 1px solid #e9ecef;
         }
         
-        /* 업로드 영역 */
-        .upload-area {
+        /* 다중 미디어 업로드 스타일 */
+        .multi-upload-area {
             background: #000;
             border: 2px dashed #FF1493;
             border-radius: 10px;
-            padding: 40px;
+            padding: 30px;
             text-align: center;
-            margin-top: 20px;
+            margin-top: 10px;
             cursor: pointer;
             transition: all 0.3s;
         }
         
-        .upload-area.dragover {
+        .multi-upload-area.dragover {
             background: rgba(255, 20, 147, 0.1);
+            border-color: #FF69B4;
         }
         
         .upload-input {
@@ -613,14 +614,133 @@
             cursor: pointer;
         }
         
-        .upload-preview {
-            margin-top: 20px;
-            display: none;
+        .upload-info {
+            color: #999;
+            font-size: 12px;
+            margin-top: 10px;
         }
         
-        .upload-preview img {
-            max-width: 200px;
+        .image-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 20, 147, 0.05);
             border-radius: 10px;
+        }
+        
+        .preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .preview-item.main {
+            border-color: #FF1493;
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.5);
+        }
+        
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .preview-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .preview-btn {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .preview-btn:hover {
+            background: #FF1493;
+        }
+        
+        .preview-btn.delete:hover {
+            background: #dc3545;
+        }
+        
+        .main-badge {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            background: #FF1493;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .video-url-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+        
+        .video-preview {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 20, 147, 0.05);
+            border-radius: 8px;
+            border: 1px solid #FF1493;
+        }
+        
+        .video-preview-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .video-thumbnail {
+            width: 120px;
+            height: 68px;
+            background: #333;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 24px;
+        }
+        
+        .video-info {
+            flex: 1;
+        }
+        
+        .video-platform {
+            color: #FF1493;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .video-url {
+            color: #999;
+            font-size: 12px;
+            word-break: break-all;
+            margin-top: 5px;
         }
         
         /* 폼 */
@@ -1216,15 +1336,31 @@
             </div>
             
             <div class="form-group">
-                <label class="label-optional">이미지 업로드</label>
-                <div class="upload-area" id="uploadArea">
-                    <input type="file" id="styleImage" class="upload-input" accept="image/*" onchange="previewImage(event)">
-                    <label for="styleImage" class="upload-label">
-                        클릭하거나 드래그하여 이미지 업로드
+                <label class="label-optional">다중 미디어 업로드 (최대 5장)</label>
+                
+                <!-- 다중 이미지 업로드 영역 -->
+                <div class="multi-upload-area" id="multiUploadArea">
+                    <input type="file" id="multiImageInput" class="upload-input" accept="image/*" multiple onchange="handleMultiImageSelect(event)">
+                    <label for="multiImageInput" class="upload-label">
+                        📷 클릭하거나 드래그하여 이미지 업로드 (최대 5장)
                     </label>
+                    <div class="upload-info">
+                        JPG, PNG, WebP 형식 / 각 파일 최대 5MB
+                    </div>
                 </div>
-                <div class="upload-preview" id="uploadPreview">
-                    <img id="previewImg" src="" alt="Preview">
+                
+                <!-- 이미지 미리보기 그리드 -->
+                <div class="image-preview-grid" id="imagePreviewGrid" style="display: none;">
+                    <!-- 동적 생성 -->
+                </div>
+                
+                <!-- 동영상 URL 입력 -->
+                <div class="video-url-section">
+                    <label class="label-optional">동영상 URL (YouTube/Vimeo/Instagram)</label>
+                    <input type="url" id="videoUrlInput" placeholder="https://youtube.com/watch?v=..." onchange="handleVideoUrlChange(event)">
+                    <div class="video-preview" id="videoPreview" style="display: none;">
+                        <!-- 동적 생성 -->
+                    </div>
                 </div>
             </div>
             
@@ -1330,9 +1466,15 @@
         let currentGender = null;
         let currentCategory = null;
         let currentSubcategory = null;
-        let selectedFile = null;
         let currentEditingDesigner = null;
         let currentPasswordRequest = null;
+        let currentEditingStyleId = null;
+        
+        // 다중 미디어 업로드 전역 변수
+        let selectedImages = []; // File 객체들
+        let mainImageIndex = 0; // 대표 이미지 인덱스
+        let videoUrl = ''; // YouTube/Vimeo URL
+        let videoData = null; // 파싱된 동영상 정보
         
         // Firebase 컬렉션 이름
         const COLLECTIONS = {
@@ -1411,6 +1553,246 @@
                 indicatorElement.classList.add('error');
                 textElement.textContent = 'Firebase 연결 실패: ' + error.message;
                 console.error('Firebase 연결 실패:', error);
+            }
+        }
+
+        // ========== 다중 미디어 업로드 함수들 ==========
+        
+        // 다중 이미지 선택 처리
+        function handleMultiImageSelect(event) {
+            const files = Array.from(event.target.files);
+            addImagesToSelection(files);
+        }
+        
+        // 이미지들을 선택 목록에 추가
+        function addImagesToSelection(files) {
+            const maxImages = 5;
+            const maxFileSize = 5 * 1024 * 1024; // 5MB
+            const supportedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            
+            for (const file of files) {
+                // 최대 개수 체크
+                if (selectedImages.length >= maxImages) {
+                    showToast(`최대 ${maxImages}장까지만 업로드 가능합니다`);
+                    break;
+                }
+                
+                // 파일 형식 체크
+                if (!supportedTypes.includes(file.type)) {
+                    showToast(`${file.name}: 지원하지 않는 형식입니다`);
+                    continue;
+                }
+                
+                // 파일 크기 체크
+                if (file.size > maxFileSize) {
+                    showToast(`${file.name}: 파일 크기가 5MB를 초과합니다`);
+                    continue;
+                }
+                
+                selectedImages.push(file);
+            }
+            
+            updateImagePreviewGrid();
+        }
+        
+        // 이미지 미리보기 그리드 업데이트
+        function updateImagePreviewGrid() {
+            const grid = document.getElementById('imagePreviewGrid');
+            
+            if (selectedImages.length === 0) {
+                grid.style.display = 'none';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            grid.innerHTML = '';
+            
+            selectedImages.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const item = document.createElement('div');
+                    item.className = `preview-item ${index === mainImageIndex ? 'main' : ''}`;
+                    
+                    item.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview ${index + 1}">
+                        <div class="preview-actions">
+                            <button class="preview-btn" onclick="setMainImage(${index})" title="대표 이미지로 설정">⭐</button>
+                            <button class="preview-btn delete" onclick="removeImage(${index})" title="삭제">✕</button>
+                        </div>
+                        ${index === mainImageIndex ? '<div class="main-badge">대표</div>' : ''}
+                    `;
+                    
+                    grid.appendChild(item);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // 대표 이미지 설정
+        function setMainImage(index) {
+            if (index >= 0 && index < selectedImages.length) {
+                mainImageIndex = index;
+                updateImagePreviewGrid();
+                showToast(`${index + 1}번째 이미지가 대표 이미지로 설정되었습니다`);
+            }
+        }
+        
+        // 이미지 삭제
+        function removeImage(index) {
+            if (index >= 0 && index < selectedImages.length) {
+                selectedImages.splice(index, 1);
+                
+                // 대표 이미지 인덱스 조정
+                if (mainImageIndex >= selectedImages.length) {
+                    mainImageIndex = Math.max(0, selectedImages.length - 1);
+                } else if (mainImageIndex > index) {
+                    mainImageIndex--;
+                }
+                
+                updateImagePreviewGrid();
+                showToast('이미지가 삭제되었습니다');
+            }
+        }
+        
+        // 동영상 URL 변경 처리
+        function handleVideoUrlChange(event) {
+            const url = event.target.value.trim();
+            
+            if (!url) {
+                videoUrl = '';
+                videoData = null;
+                document.getElementById('videoPreview').style.display = 'none';
+                return;
+            }
+            
+            const parsedVideo = parseVideoUrl(url);
+            if (parsedVideo) {
+                videoUrl = url;
+                videoData = parsedVideo;
+                updateVideoPreview();
+                showToast(`${parsedVideo.platform} 동영상이 인식되었습니다`);
+            } else {
+                videoUrl = '';
+                videoData = null;
+                document.getElementById('videoPreview').style.display = 'none';
+                showToast('지원하지 않는 동영상 URL입니다');
+            }
+        }
+        
+        // 동영상 URL 파싱
+        function parseVideoUrl(url) {
+            // YouTube 정규식
+            const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const youtubeMatch = url.match(youtubeRegex);
+            
+            if (youtubeMatch) {
+                return {
+                    platform: 'youtube',
+                    videoId: youtubeMatch[1],
+                    embedUrl: `https://www.youtube.com/embed/${youtubeMatch[1]}`,
+                    thumbnailUrl: `https://img.youtube.com/vi/${youtubeMatch[1]}/mqdefault.jpg`
+                };
+            }
+            
+            // Vimeo 정규식
+            const vimeoRegex = /(?:vimeo\.com\/)([0-9]+)/;
+            const vimeoMatch = url.match(vimeoRegex);
+            
+            if (vimeoMatch) {
+                return {
+                    platform: 'vimeo',
+                    videoId: vimeoMatch[1],
+                    embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}`,
+                    thumbnailUrl: null // Vimeo는 API 호출 필요
+                };
+            }
+            
+            // Instagram 정규식 (간단한 형태)
+            const instagramRegex = /(?:instagram\.com\/p\/)([A-Za-z0-9_-]+)/;
+            const instagramMatch = url.match(instagramRegex);
+            
+            if (instagramMatch) {
+                return {
+                    platform: 'instagram',
+                    videoId: instagramMatch[1],
+                    embedUrl: `https://www.instagram.com/p/${instagramMatch[1]}/embed`,
+                    thumbnailUrl: null
+                };
+            }
+            
+            return null;
+        }
+        
+        // 동영상 미리보기 업데이트
+        function updateVideoPreview() {
+            const preview = document.getElementById('videoPreview');
+            
+            if (!videoData) {
+                preview.style.display = 'none';
+                return;
+            }
+            
+            preview.style.display = 'block';
+            preview.innerHTML = `
+                <div class="video-preview-content">
+                    <div class="video-thumbnail">
+                        ${videoData.thumbnailUrl ? 
+                            `<img src="${videoData.thumbnailUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 5px;">` :
+                            '🎥'
+                        }
+                    </div>
+                    <div class="video-info">
+                        <div class="video-platform">${videoData.platform}</div>
+                        <div class="video-url">${videoUrl}</div>
+                    </div>
+                    <button class="preview-btn delete" onclick="clearVideoUrl()" title="동영상 삭제">✕</button>
+                </div>
+            `;
+        }
+        
+        // 동영상 URL 삭제
+        function clearVideoUrl() {
+            document.getElementById('videoUrlInput').value = '';
+            videoUrl = '';
+            videoData = null;
+            document.getElementById('videoPreview').style.display = 'none';
+            showToast('동영상이 삭제되었습니다');
+        }
+        
+        // 드래그 앤 드롭 이벤트 설정
+        function setupDragAndDrop() {
+            const uploadArea = document.getElementById('multiUploadArea');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => {
+                    uploadArea.classList.add('dragover');
+                }, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => {
+                    uploadArea.classList.remove('dragover');
+                }, false);
+            });
+            
+            uploadArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const files = Array.from(e.dataTransfer.files);
+                const imageFiles = files.filter(file => file.type.startsWith('image/'));
+                
+                if (imageFiles.length > 0) {
+                    addImagesToSelection(imageFiles);
+                }
             }
         }
 
@@ -2138,41 +2520,41 @@
 
         // ========== 스타일 추가 관련 함수들 ==========
         
-        // 스타일 추가 모달 열기
+        // 스타일 추가 모달 열기 (다중 미디어 초기화 포함)
         function openAddStyleModal() {
             if (!currentGender || !currentCategory || !currentSubcategory) {
                 alert('먼저 성별, 대분류, 중분류를 모두 선택해주세요');
                 return;
             }
             
+            // 기본 폼 초기화
             document.getElementById('styleCode').value = '';
             document.getElementById('styleName').value = '';
-            document.getElementById('styleImage').value = '';
-            document.getElementById('uploadPreview').style.display = 'none';
             
+            // 다중 미디어 초기화
+            selectedImages = [];
+            mainImageIndex = 0;
+            videoUrl = '';
+            videoData = null;
+            document.getElementById('imagePreviewGrid').style.display = 'none';
+            document.getElementById('imagePreviewGrid').innerHTML = '';
+            document.getElementById('videoUrlInput').value = '';
+            document.getElementById('videoPreview').style.display = 'none';
+            document.getElementById('multiImageInput').value = '';
+            
+            // 자동 코드 생성
             const timestamp = Date.now().toString(36).toUpperCase();
             const random = Math.random().toString(36).substring(2, 5).toUpperCase();
             const code = `${currentGender.substring(0, 1).toUpperCase()}${timestamp}${random}`;
             document.getElementById('styleCode').value = code;
             
             document.getElementById('addStyleModal').classList.add('active');
+            
+            // 드래그 앤 드롭 이벤트 설정
+            setupDragAndDrop();
         }
 
-        // 이미지 미리보기
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                selectedFile = file;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('previewImg').src = e.target.result;
-                    document.getElementById('uploadPreview').style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // 스타일 저장 (추가 & 수정 통합)
+        // 스타일 저장 (다중 미디어 지원)
         async function saveStyle() {
             const code = document.getElementById('styleCode').value.trim();
             const name = document.getElementById('styleName').value.trim();
@@ -2192,45 +2574,101 @@
             saveBtn.textContent = '저장 중...';
             
             try {
-                let imageUrl = '';
+                let mediaData = {
+                    images: [],
+                    mainImageIndex: 0,
+                    video: null
+                };
                 
-                // 수정 모드일 때 기존 이미지 URL 유지
+                // 기존 데이터 로드 (수정 모드인 경우)
                 if (currentEditingStyleId) {
                     const existingDoc = await db.collection('hairstyles').doc(currentEditingStyleId).get();
                     if (existingDoc.exists) {
-                        imageUrl = existingDoc.data().imageUrl || '';
+                        const existingData = existingDoc.data();
+                        // 기존 다중 미디어 데이터 또는 단일 이미지 데이터 유지
+                        if (existingData.media) {
+                            mediaData = { ...existingData.media };
+                        } else if (existingData.imageUrl) {
+                            // 기존 단일 이미지를 다중 이미지 형식으로 변환
+                            mediaData.images = [existingData.imageUrl];
+                            mediaData.mainImageIndex = 0;
+                        }
+                        
+                        // 기존 이미지 URL들이 수정되었다면 반영
+                        if (window.existingImageUrls) {
+                            mediaData.images = window.existingImageUrls;
+                            mediaData.mainImageIndex = mainImageIndex;
+                        }
                     }
                 }
                 
-                // 새 이미지가 있으면 업로드
-                if (selectedFile) {
-                    const storageRef = storage.ref();
-                    const imageRef = storageRef.child(`hairstyles/${Date.now()}_${selectedFile.name}`);
-                    const uploadTask = await imageRef.put(selectedFile);
-                    imageUrl = await uploadTask.ref.getDownloadURL();
+                // 새 이미지들 업로드
+                if (selectedImages.length > 0) {
+                    showToast('이미지 업로드 중...');
+                    const uploadedUrls = [];
+                    
+                    for (let i = 0; i < selectedImages.length; i++) {
+                        const file = selectedImages[i];
+                        const filename = `${Date.now()}_${i}_${file.name}`;
+                        const storageRef = storage.ref().child(`hairstyles/${filename}`);
+                        
+                        const uploadTask = await storageRef.put(file);
+                        const downloadUrl = await uploadTask.ref.getDownloadURL();
+                        uploadedUrls.push(downloadUrl);
+                    }
+                    
+                    // 기존 이미지와 새 이미지 통합
+                    if (currentEditingStyleId && mediaData.images.length > 0) {
+                        // 수정 모드: 기존 이미지 + 새 이미지
+                        mediaData.images = [...mediaData.images, ...uploadedUrls];
+                    } else {
+                        // 새 추가 모드: 새 이미지만
+                        mediaData.images = uploadedUrls;
+                        mediaData.mainImageIndex = mainImageIndex;
+                    }
                 }
                 
+                // 동영상 데이터 처리
+                if (videoData) {
+                    mediaData.video = {
+                        url: videoUrl,
+                        type: videoData.platform,
+                        embedUrl: videoData.embedUrl,
+                        videoId: videoData.videoId,
+                        thumbnailUrl: videoData.thumbnailUrl
+                    };
+                } else if (!currentEditingStyleId) {
+                    // 새 추가 모드에서 동영상이 없으면 null로 설정
+                    mediaData.video = null;
+                }
+                
+                // Firebase 저장 데이터 구성
                 const styleData = {
                     code: code,
                     name: name,
                     gender: currentGender,
                     mainCategory: currentCategory,
                     subCategory: currentSubcategory,
-                    imageUrl: imageUrl,
+                    media: mediaData,
                     updatedAt: new Date(),
                     updatedBy: 'admin'
                 };
                 
+                // 기존 단일 이미지 호환성을 위해 대표 이미지 URL도 저장
+                if (mediaData.images.length > 0) {
+                    styleData.imageUrl = mediaData.images[mediaData.mainImageIndex];
+                }
+                
                 if (currentEditingStyleId) {
                     // 수정 모드
                     await db.collection('hairstyles').doc(currentEditingStyleId).update(styleData);
-                    alert('스타일이 수정되었습니다');
+                    showToast('스타일이 수정되었습니다');
                 } else {
                     // 추가 모드
                     styleData.createdAt = new Date();
                     styleData.createdBy = 'admin';
                     await db.collection('hairstyles').add(styleData);
-                    alert('스타일이 추가되었습니다');
+                    showToast('스타일이 추가되었습니다');
                 }
                 
                 closeModal();
@@ -2238,26 +2676,185 @@
                 
             } catch (error) {
                 console.error('스타일 저장 오류:', error);
-                alert('저장 실패: ' + error.message);
+                showToast('저장 실패: ' + error.message);
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.textContent = '저장';
-                selectedFile = null;
+                // 다중 미디어 데이터 초기화
+                selectedImages = [];
+                mainImageIndex = 0;
+                videoUrl = '';
+                videoData = null;
                 currentEditingStyleId = null;
+                window.existingImageUrls = null;
             }
         }
 
-       // 모달 닫기
+       // 모달 닫기 (다중 미디어 초기화 포함)
         function closeModal() {
             document.getElementById('addStyleModal').classList.remove('active');
             document.querySelector('.modal-title').textContent = '새 스타일 추가';
-            selectedFile = null;
+            
+            // 다중 미디어 데이터 초기화
+            selectedImages = [];
+            mainImageIndex = 0;
+            videoUrl = '';
+            videoData = null;
             currentEditingStyleId = null;
+            
+            // UI 초기화
+            document.getElementById('imagePreviewGrid').style.display = 'none';
+            document.getElementById('imagePreviewGrid').innerHTML = '';
+            document.getElementById('videoUrlInput').value = '';
+            document.getElementById('videoPreview').style.display = 'none';
+            document.getElementById('multiImageInput').value = '';
+            
+            // 기존 이미지 데이터 초기화
+            window.existingImageUrls = null;
+        }
+
+        // 스타일 수정 (다중 미디어 지원)
+        async function editStyle(styleId) {
+            try {
+                const doc = await db.collection('hairstyles').doc(styleId).get();
+                if (!doc.exists) {
+                    showToast('스타일을 찾을 수 없습니다');
+                    return;
+                }
+                
+                const data = doc.data();
+                currentEditingStyleId = styleId;
+                
+                // 현재 카테고리 설정
+                currentGender = data.gender;
+                currentCategory = data.mainCategory;
+                currentSubcategory = data.subCategory;
+                
+                // 폼에 기존 데이터 채우기
+                document.getElementById('styleCode').value = data.code || '';
+                document.getElementById('styleName').value = data.name || '';
+                
+                // 다중 미디어 데이터 초기화
+                selectedImages = [];
+                mainImageIndex = 0;
+                videoUrl = '';
+                videoData = null;
+                
+                // 기존 미디어 데이터 로드
+                if (data.media) {
+                    // 새로운 다중 미디어 형식
+                    if (data.media.images && data.media.images.length > 0) {
+                        // 기존 이미지들을 미리보기로 표시 (편집용)
+                        showExistingImages(data.media.images, data.media.mainImageIndex || 0);
+                    }
+                    
+                    if (data.media.video) {
+                        // 기존 동영상 정보 표시
+                        videoUrl = data.media.video.url;
+                        videoData = {
+                            platform: data.media.video.type,
+                            videoId: data.media.video.videoId,
+                            embedUrl: data.media.video.embedUrl,
+                            thumbnailUrl: data.media.video.thumbnailUrl
+                        };
+                        document.getElementById('videoUrlInput').value = videoUrl;
+                        updateVideoPreview();
+                    }
+                } else if (data.imageUrl) {
+                    // 기존 단일 이미지 형식 - 미리보기로 표시
+                    showExistingImages([data.imageUrl], 0);
+                }
+                
+                // 모달 열기
+                document.getElementById('addStyleModal').classList.add('active');
+                document.querySelector('.modal-title').textContent = '스타일 수정';
+                
+                // 드래그 앤 드롭 이벤트 설정
+                setupDragAndDrop();
+                
+            } catch (error) {
+                console.error('스타일 로드 오류:', error);
+                showToast('스타일 정보를 불러올 수 없습니다: ' + error.message);
+            }
+        }
+        
+        // 기존 이미지들을 미리보기로 표시 (수정 모드용)
+        function showExistingImages(imageUrls, mainIndex) {
+            const grid = document.getElementById('imagePreviewGrid');
+            
+            if (imageUrls.length === 0) {
+                grid.style.display = 'none';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            grid.innerHTML = '';
+            mainImageIndex = mainIndex;
+            
+            imageUrls.forEach((url, index) => {
+                const item = document.createElement('div');
+                item.className = `preview-item ${index === mainIndex ? 'main' : ''}`;
+                
+                item.innerHTML = `
+                    <img src="${url}" alt="기존 이미지 ${index + 1}">
+                    <div class="preview-actions">
+                        <button class="preview-btn" onclick="setMainImageFromExisting(${index})" title="대표 이미지로 설정">⭐</button>
+                        <button class="preview-btn delete" onclick="removeExistingImage(${index})" title="삭제">✕</button>
+                    </div>
+                    ${index === mainIndex ? '<div class="main-badge">대표</div>' : ''}
+                `;
+                
+                grid.appendChild(item);
+            });
+            
+            // 기존 이미지 URL들을 임시 저장 (수정 시 사용)
+            window.existingImageUrls = imageUrls;
+        }
+        
+        // 기존 이미지에서 대표 이미지 설정
+        function setMainImageFromExisting(index) {
+            if (window.existingImageUrls && index >= 0 && index < window.existingImageUrls.length) {
+                mainImageIndex = index;
+                showExistingImages(window.existingImageUrls, mainImageIndex);
+                showToast(`${index + 1}번째 이미지가 대표 이미지로 설정되었습니다`);
+            }
+        }
+        
+        // 기존 이미지 삭제
+        function removeExistingImage(index) {
+            if (window.existingImageUrls && index >= 0 && index < window.existingImageUrls.length) {
+                window.existingImageUrls.splice(index, 1);
+                
+                // 대표 이미지 인덱스 조정
+                if (mainImageIndex >= window.existingImageUrls.length) {
+                    mainImageIndex = Math.max(0, window.existingImageUrls.length - 1);
+                } else if (mainImageIndex > index) {
+                    mainImageIndex--;
+                }
+                
+                showExistingImages(window.existingImageUrls, mainImageIndex);
+                showToast('기존 이미지가 삭제되었습니다');
+            }
         }
 
         // 토스트 메시지
         function showToast(message) {
-            alert(message);
+            // 기존 토스트가 있으면 제거
+            const existingToast = document.getElementById('toast');
+            if (existingToast.classList.contains('show')) {
+                existingToast.classList.remove('show');
+            }
+            
+            // 새 토스트 표시
+            setTimeout(() => {
+                existingToast.textContent = message;
+                existingToast.classList.add('show');
+                
+                // 3초 후 자동 숨김
+                setTimeout(() => {
+                    existingToast.classList.remove('show');
+                }, 3000);
+            }, 100);
         }
 
         // 탭 전환
@@ -2278,14 +2875,7 @@
             }
         }
 
-        // 초기화
-        function initializeData() {
-            console.log('데이터 초기화');
-            loadDefaultTokens();
-            refreshPasswordRequests();
-            refreshDesigners();
-        }
-// 카테고리 로드
+        // 카테고리 로드
         async function loadCategories() {
             const genderSelect = document.getElementById('genderSelect');
             const categorySelect = document.getElementById('categorySelect');
@@ -2410,14 +3000,25 @@
             const card = document.createElement('div');
             card.className = 'style-card';
             
+            // 대표 이미지 결정
+            let imageUrl = '';
+            if (data.media && data.media.images && data.media.images.length > 0) {
+                // 새로운 다중 미디어 형식
+                const mainIndex = data.media.mainImageIndex || 0;
+                imageUrl = data.media.images[mainIndex];
+            } else if (data.imageUrl) {
+                // 기존 단일 이미지 형식
+                imageUrl = data.imageUrl;
+            }
+            
             card.innerHTML = `
                 <div class="style-actions">
                     <button class="action-btn" onclick="editStyle('${docId}')" title="수정">✏️</button>
                     <button class="action-btn delete" onclick="deleteStyle('${docId}', '${data.name}')" title="삭제">🗑️</button>
                 </div>
                 <div class="style-image-container">
-                    ${data.imageUrl ? 
-                        `<img src="${data.imageUrl}" alt="${data.name}" class="style-image">` :
+                    ${imageUrl ? 
+                        `<img src="${imageUrl}" alt="${data.name}" class="style-image">` :
                         `<div class="no-image-text">이미지 없음</div>`
                     }
                 </div>
@@ -2429,45 +3030,6 @@
             
             return card;
         }
-
-        // 스타일 수정
-        let currentEditingStyleId = null;
-        
-        async function editStyle(styleId) {
-            try {
-                const doc = await db.collection('hairstyles').doc(styleId).get();
-                if (!doc.exists) {
-                    alert('스타일을 찾을 수 없습니다');
-                    return;
-                }
-                
-                const data = doc.data();
-                currentEditingStyleId = styleId;
-                
-                // 현재 카테고리 설정
-                currentGender = data.gender;
-                currentCategory = data.mainCategory;
-                currentSubcategory = data.subCategory;
-                
-                // 폼에 기존 데이터 채우기
-                document.getElementById('styleCode').value = data.code || '';
-                document.getElementById('styleName').value = data.name || '';
-                
-                // 이미지 미리보기
-                if (data.imageUrl) {
-                    document.getElementById('previewImg').src = data.imageUrl;
-                    document.getElementById('uploadPreview').style.display = 'block';
-                }
-                
-                // 모달 열기
-                document.getElementById('addStyleModal').classList.add('active');
-                document.querySelector('.modal-title').textContent = '스타일 수정';
-                
-            } catch (error) {
-                console.error('스타일 로드 오류:', error);
-                alert('스타일 정보를 불러올 수 없습니다');
-            }
-        }
         
         // 스타일 삭제
         async function deleteStyle(styleId, styleName) {
@@ -2478,30 +3040,51 @@
             try {
                 // 이미지가 있다면 Storage에서도 삭제
                 const doc = await db.collection('hairstyles').doc(styleId).get();
-                if (doc.exists && doc.data().imageUrl) {
-                    try {
-                        const imageUrl = doc.data().imageUrl;
-                        const imageRef = storage.refFromURL(imageUrl);
-                        await imageRef.delete();
-                    } catch (imgError) {
-                        console.warn('이미지 삭제 실패:', imgError);
+                if (doc.exists) {
+                    const data = doc.data();
+                    
+                    // 다중 미디어 이미지 삭제
+                    if (data.media && data.media.images) {
+                        for (const imageUrl of data.media.images) {
+                            try {
+                                const imageRef = storage.refFromURL(imageUrl);
+                                await imageRef.delete();
+                            } catch (imgError) {
+                                console.warn('이미지 삭제 실패:', imgError);
+                            }
+                        }
+                    }
+                    
+                    // 기존 단일 이미지 삭제
+                    if (data.imageUrl && (!data.media || !data.media.images || !data.media.images.includes(data.imageUrl))) {
+                        try {
+                            const imageRef = storage.refFromURL(data.imageUrl);
+                            await imageRef.delete();
+                        } catch (imgError) {
+                            console.warn('단일 이미지 삭제 실패:', imgError);
+                        }
                     }
                 }
                 
                 // Firestore에서 삭제
                 await db.collection('hairstyles').doc(styleId).delete();
                 
-                alert(`"${styleName}" 스타일이 삭제되었습니다`);
+                showToast(`"${styleName}" 스타일이 삭제되었습니다`);
                 loadStyles(); // 목록 새로고침
                 
             } catch (error) {
                 console.error('스타일 삭제 오류:', error);
-                alert('삭제 실패: ' + error.message);
+                showToast('삭제 실패: ' + error.message);
             }
+        }
+
+        // 초기화
+        function initializeData() {
+            console.log('데이터 초기화');
+            loadDefaultTokens();
+            refreshPasswordRequests();
+            refreshDesigners();
         }
         </script>
     </body>
 </html>
-
-
-
