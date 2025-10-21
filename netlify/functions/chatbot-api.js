@@ -1,5 +1,5 @@
 // netlify/functions/chatbot-api.js
-// Netlify Functions로 API 키 보호 + 다국어 지원
+// Netlify Functions로 API 키 보호 + 다국어 지원 - 최종 완성 버전
 
 const fetch = require('node-fetch');
 
@@ -41,7 +41,7 @@ exports.handler = async (event, context) => {
       hasGemini: !!GEMINI_KEY,
       hasSupabaseUrl: !!SUPABASE_URL,
       hasSupabaseKey: !!SUPABASE_KEY,
-      supabaseUrl: SUPABASE_URL // 실제 값 확인
+      supabaseUrl: SUPABASE_URL
     });
 
     // 필수 환경변수 체크
@@ -201,30 +201,76 @@ async function searchStyles(payload, openaiKey, supabaseUrl, supabaseKey) {
   const embeddingData = await embeddingResponse.json();
   const embedding = embeddingData.data[0].embedding;
 
-  // 2. Supabase 벡터 검색
-  const supabaseResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/match_hairstyles`, {
-    method: 'POST',
+  // 2. Supabase 벡터 검색 (match_hairstyles 함수 사용)
+  try {
+    const supabaseResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/match_hairstyles`, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query_embedding: embedding,
+        match_count: 5
+      })
+    });
+
+    if (!supabaseResponse.ok) {
+      const errorText = await supabaseResponse.text();
+      console.error('Supabase error:', errorText);
+      
+      // match_hairstyles 함수가 없으면 직접 테이블 검색
+      console.log('Falling back to direct table query');
+      return await directTableSearch(supabaseUrl, supabaseKey);
+    }
+
+    const results = await supabaseResponse.json();
+    
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ 
+        success: true, 
+        data: results,
+        search_method: 'vector_search'
+      })
+    };
+  } catch (error) {
+    console.error('Supabase search error:', error);
+    // 실패 시 대체 검색
+    return await directTableSearch(supabaseUrl, supabaseKey);
+  }
+}
+
+// ==================== 대체 검색 (벡터 함수 없을 때) ====================
+async function directTableSearch(supabaseUrl, supabaseKey) {
+  console.log('Using direct table search as fallback');
+  
+  const response = await fetch(`${supabaseUrl}/rest/v1/hairstyles?select=id,code,name,description,image_url&limit=5`, {
+    method: 'GET',
     headers: {
       'apikey': supabaseKey,
-      'Authorization': `Bearer ${supabaseKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      query_embedding: embedding,
-      match_count: 5
-    })
+      'Authorization': `Bearer ${supabaseKey}`
+    }
   });
 
-  if (!supabaseResponse.ok) {
-    throw new Error('Supabase search failed');
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Direct table search failed: ${errorText}`);
   }
 
-  const results = await supabaseResponse.json();
-
+  const results = await response.json();
+  
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ success: true, data: results })
+    body: JSON.stringify({ 
+      success: true, 
+      data: results,
+      search_method: 'direct_table',
+      note: 'Vector search unavailable, showing random results'
+    })
   };
 }
 
@@ -254,7 +300,7 @@ async function generateResponse(payload, openaiKey) {
   };
 
   const context = search_results.map(r => 
-    `${r.name}: ${r.description}`
+    `${r.name}: ${r.description || '스타일 설명 없음'}`
   ).join('\n\n');
 
   const systemPrompt = (systemPrompts[userLanguage] || systemPrompts['korean']) + 
