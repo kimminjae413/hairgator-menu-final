@@ -1,10 +1,19 @@
-# netlify.toml - HAIRGATOR 헤어체험 연동 최종 설정
+# netlify.toml - HAIRGATOR 최종 설정 (헤어체험 + 챗봇 통합)
+
 [build]
   publish = "."
+  functions = "netlify/functions"  # ⭐ Functions 폴더 추가
 
 [build.environment]
   # 시크릿 스캔 비활성화 (Firebase/API 키들이 의도적으로 포함됨)
   SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+
+# ========== Functions 설정 ========== ⭐ 새로 추가
+[functions]
+  node_bundler = "esbuild"
+  # Functions 타임아웃 설정 (Gemini 이미지 분석 시간 고려)
+  [functions.timeout]
+    default = 10
 
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
@@ -50,14 +59,28 @@
     Cache-Control = "public, max-age=600, must-revalidate"
     X-Content-Type-Options = "nosniff"
 
-# Netlify Functions (API 키 제공) - CORS 설정
+# ========== 챗봇 파일 설정 ========== ⭐ 새로 추가
+[[headers]]
+  for = "/js/chatbot.js"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/css/chatbot.css"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+
+# ========== Netlify Functions (챗봇 API) - CORS 설정 ========== ⭐ 업데이트
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
     Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Headers = "Content-Type, Authorization"
-    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
     Cache-Control = "no-cache, no-store, must-revalidate"
+    X-Content-Type-Options = "nosniff"
 
 # ========== PWA 설정 ==========
 # Service Worker - 캐시 비활성화
@@ -105,7 +128,7 @@
     X-Content-Type-Options = "nosniff"
     Permissions-Policy = "camera=(self), microphone=(self), autoplay=(self)"
 
-# ========== 보안 헤더 (전체 적용) ==========
+# ========== 보안 헤더 (전체 적용) ========== ⭐ 업데이트 (Gemini + OpenAI API 추가)
 [[headers]]
   for = "/*"
   [headers.values]
@@ -114,8 +137,8 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "no-referrer-when-downgrade"
     Permissions-Policy = "camera=(self), microphone=(self), geolocation=()"
-    # 헤어체험 API 통신을 위한 CSP 설정 (Firebase source map 오류 해결)
-    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com https://*.googleapis.com https://www.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:;"
+    # 헤어체험 + 챗봇 API 통신을 위한 CSP 설정
+    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://*.googleapis.com https://www.gstatic.com https://*.supabase.co; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:;"
 
 # ========== SPA 라우팅 ==========
 [[redirects]]
@@ -124,13 +147,19 @@
   status = 200
   force = false
 
-# ========== 환경변수 보안 ==========
+# ========== 환경변수 보안 ========== ⭐ 업데이트 (챗봇 API 키 추가)
 # Functions에서 환경변수 사용을 위한 설정
 [context.production.environment]
-  GEMINI_API_KEY = ""  # 네틀리파이 대시보드에서 설정
+  GEMINI_API_KEY = ""           # 네틀리파이 대시보드에서 설정
+  OPENAI_API_KEY = ""           # ⭐ 새로 추가
+  SUPABASE_URL = ""             # ⭐ 새로 추가
+  SUPABASE_ANON_KEY = ""        # ⭐ 새로 추가
 
 [context.deploy-preview.environment]
-  GEMINI_API_KEY = ""  # 프리뷰용 별도 키 (필요시)
+  GEMINI_API_KEY = ""           # 프리뷰용 별도 키 (필요시)
+  OPENAI_API_KEY = ""           # ⭐ 새로 추가
+  SUPABASE_URL = ""             # ⭐ 새로 추가
+  SUPABASE_ANON_KEY = ""        # ⭐ 새로 추가
 
 # ========== 빌드 최적화 ==========
 [build.processing]
@@ -143,3 +172,22 @@
   minify = false
 [build.processing.html]
   pretty_urls = true
+
+# ========== Functions 환경변수 참고 ==========
+# Netlify Dashboard에서 설정할 환경변수 목록:
+# 
+# 1. GEMINI_API_KEY
+#    값: gen-lang-client-0911375709
+#    용도: 헤어체험 AI + 챗봇 이미지 분석
+#
+# 2. OPENAI_API_KEY
+#    값: sk-proj-Wibr2er9B0Z5QqcqdJ_0_B1e9YXbacLzHFS2oVEJ...
+#    용도: 챗봇 임베딩 생성 + GPT 답변
+#
+# 3. SUPABASE_URL
+#    값: https://bhsbwbeisqzgipvzpvym.supabase.co
+#    용도: 챗봇 벡터 검색
+#
+# 4. SUPABASE_ANON_KEY
+#    값: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3M...
+#    용도: Supabase 인증
