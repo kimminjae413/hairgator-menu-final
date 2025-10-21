@@ -16,7 +16,7 @@ class HairGatorChatbot {
 
   createChatbotUI() {
     const chatbotHTML = `
-      <button id="chatbot-toggle" class="chatbot-toggle" aria-label="AI HAIR RECIPE">
+      <button id="chatbot-toggle" class="chatbot-toggle" aria-label="AI 헤어 상담">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
@@ -24,7 +24,7 @@ class HairGatorChatbot {
 
       <div id="chatbot-container" class="chatbot-container">
         <div class="chatbot-header">
-          <span class="chatbot-title">AI HAIR RECIPE</span>
+          <span class="chatbot-title">AI 헤어 상담</span>
           <button id="chatbot-close" class="chatbot-close" aria-label="닫기">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -184,6 +184,43 @@ class HairGatorChatbot {
 
     this.addMessage('user', message);
     input.value = '';
+
+    // 인사말이나 일반 대화 감지
+    const casualKeywords = ['안녕', '반가', '고마', '감사', '도움', '뭐', '어떻게', 'hello', 'hi', 'thanks', 'thank you', 'help'];
+    const isCasualChat = casualKeywords.some(keyword => message.toLowerCase().includes(keyword)) && message.length < 20;
+
+    if (isCasualChat) {
+      // 일반 대화 모드
+      this.addMessage('bot', '답변 생성 중...');
+      
+      try {
+        const gptResponse = await fetch(this.apiEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'generate_response',
+            payload: {
+              user_query: message,
+              search_results: [] // 빈 배열로 일반 대화 모드 트리거
+            }
+          })
+        });
+
+        const gptResult = await gptResponse.json();
+
+        if (gptResult.success) {
+          this.replaceLastBotMessage(gptResult.data);
+        } else {
+          this.replaceLastBotMessage('답변 생성에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('대화 오류:', error);
+        this.replaceLastBotMessage('오류가 발생했습니다. 다시 시도해주세요.');
+      }
+      return;
+    }
+
+    // 스타일 검색 모드
     this.addMessage('bot', '검색 중...');
 
     try {
