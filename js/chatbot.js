@@ -16,7 +16,7 @@ class HairGatorChatbot {
 
   createChatbotUI() {
     const chatbotHTML = `
-      <button id="chatbot-toggle" class="chatbot-toggle" aria-label="AI HAIR RECIPIE">
+      <button id="chatbot-toggle" class="chatbot-toggle" aria-label="AI HAIR RECIPE">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
@@ -24,7 +24,7 @@ class HairGatorChatbot {
 
       <div id="chatbot-container" class="chatbot-container">
         <div class="chatbot-header">
-          <span class="chatbot-title">AI 헤어 상담</span>
+          <span class="chatbot-title">AI HAIR RECIPE</span>
           <button id="chatbot-close" class="chatbot-close" aria-label="닫기">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
