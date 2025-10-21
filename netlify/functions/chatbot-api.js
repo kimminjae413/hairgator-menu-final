@@ -35,6 +35,28 @@ exports.handler = async (event, context) => {
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
+    // 환경변수 검증
+    console.log('Environment check:', {
+      hasOpenAI: !!OPENAI_KEY,
+      hasGemini: !!GEMINI_KEY,
+      hasSupabaseUrl: !!SUPABASE_URL,
+      hasSupabaseKey: !!SUPABASE_KEY,
+      supabaseUrl: SUPABASE_URL // 실제 값 확인
+    });
+
+    // 필수 환경변수 체크
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+      throw new Error('Supabase credentials not configured');
+    }
+
+    if (!OPENAI_KEY) {
+      throw new Error('OpenAI API key not configured');
+    }
+
+    if (!GEMINI_KEY) {
+      throw new Error('Gemini API key not configured');
+    }
+
     switch (action) {
       case 'analyze_image':
         return await analyzeImage(payload, GEMINI_KEY);
@@ -148,6 +170,17 @@ async function analyzeImage(payload, geminiKey) {
 async function searchStyles(payload, openaiKey, supabaseUrl, supabaseKey) {
   const { query } = payload;
 
+  console.log('searchStyles called with:', {
+    query,
+    supabaseUrl,
+    hasSupabaseKey: !!supabaseKey
+  });
+
+  // URL 검증
+  if (!supabaseUrl || !supabaseUrl.startsWith('http')) {
+    throw new Error(`Invalid Supabase URL: ${supabaseUrl}`);
+  }
+
   // 1. OpenAI 임베딩 생성
   const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
     method: 'POST',
@@ -207,7 +240,8 @@ async function generateResponse(payload, openaiKey) {
     korean: '당신은 전문 헤어 스타일리스트입니다. 검색된 스타일 정보를 바탕으로 자연스럽게 한국어로 추천해주세요.',
     english: 'You are a professional hair stylist. Based on the search results, provide natural recommendations in English.',
     japanese: 'あなたはプロのヘアスタイリストです。検索されたスタイル情報をもとに、日本語で自然にお勧めしてください。',
-    chinese: '你是专业的发型师。根据搜索结果，用中文自然地推荐发型。'
+    chinese: '你是专业的发型师。根据搜索结果，用中文自然地推荐发型。',
+    vietnamese: 'Bạn là nhà tạo mẫu tóc chuyên nghiệp. Dựa trên kết quả tìm kiếm, hãy đề xuất tự nhiên bằng tiếng Việt.'
   };
 
   // 언어별 지시문
@@ -215,7 +249,8 @@ async function generateResponse(payload, openaiKey) {
     korean: '\n\n**중요**: 반드시 한국어로만 답변하세요.',
     english: '\n\n**Important**: Always respond in English.',
     japanese: '\n\n**重要**: 必ず日本語で回答してください。',
-    chinese: '\n\n**重要**: 必须用中文回答。'
+    chinese: '\n\n**重要**: 必须用中文回答。',
+    vietnamese: '\n\n**Quan trọng**: Luôn trả lời bằng tiếng Việt.'
   };
 
   const context = search_results.map(r => 
