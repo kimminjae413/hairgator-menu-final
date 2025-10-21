@@ -1,4 +1,4 @@
-// js/chatbot.js - HAIRGATOR 브랜드 통합 버전 + 네이티브 앱 키보드 대응
+// js/chatbot.js - HAIRGATOR 브랜드 통합 버전 + 전체 화면 키보드 대응
 
 class HairGatorChatbot {
   constructor() {
@@ -111,33 +111,33 @@ class HairGatorChatbot {
     });
   }
 
-  // ⭐ 네이티브 앱 키보드 자동 대응 시스템
+  // ⭐ 전체 화면 모드 + 키보드 자동 대응 시스템
   initKeyboardHandler() {
     const chatbotContainer = document.getElementById('chatbot-container');
     const chatbotInput = document.getElementById('chatbot-input');
 
-    // Visual Viewport API로 키보드 높이 실시간 감지
+    // Visual Viewport API로 키보드 높이 실시간 감지 (모바일만)
     if (window.visualViewport && window.innerWidth <= 768) {
       
       const handleViewportResize = () => {
         const viewportHeight = window.visualViewport.height;
-        const screenHeight = window.innerHeight;
-        const keyboardHeight = screenHeight - viewportHeight;
+        const windowHeight = window.innerHeight;
         
-        // 키보드가 올라왔을 때 (높이 차이가 150px 이상)
-        if (keyboardHeight > 150) {
-          // 챗봇 높이를 키보드 위로 조정 (네이티브 탭 80px 고려)
-          chatbotContainer.style.height = `${viewportHeight - 80}px`;
-          chatbotContainer.style.maxHeight = `${viewportHeight - 80}px`;
+        // ⭐ 키보드가 올라왔는지 확인 (뷰포트가 줄어듦)
+        if (viewportHeight < windowHeight * 0.75) {
+          // 키보드 올라옴 → 뷰포트 높이로 조정
+          chatbotContainer.style.height = `${viewportHeight}px`;
+          chatbotContainer.style.maxHeight = `${viewportHeight}px`;
           
           // 입력창으로 자동 스크롤
           setTimeout(() => {
             this.scrollToBottom();
           }, 100);
         } else {
-          // 키보드가 내려갔을 때 원래대로 복구
-          chatbotContainer.style.height = `calc(100vh - 80px)`;
-          chatbotContainer.style.maxHeight = `calc(100vh - 80px)`;
+          // 키보드 내려감 → 전체 화면 복구
+          chatbotContainer.style.height = '100vh';
+          chatbotContainer.style.height = '100dvh'; // 동적 뷰포트
+          chatbotContainer.style.maxHeight = 'none';
         }
       };
       
@@ -151,9 +151,13 @@ class HairGatorChatbot {
       chatbotInput.addEventListener('focus', () => {
         setTimeout(() => {
           // 입력창이 보이도록 스크롤
-          chatbotInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
           this.scrollToBottom();
-        }, 300);
+          
+          // 키보드 올라오는 애니메이션 후 다시 스크롤
+          setTimeout(() => {
+            this.scrollToBottom();
+          }, 300);
+        }, 100);
       });
     }
 
@@ -161,13 +165,14 @@ class HairGatorChatbot {
     document.addEventListener('focusout', () => {
       if (window.innerWidth <= 768) {
         setTimeout(() => {
-          chatbotContainer.style.height = `calc(100vh - 80px)`;
-          chatbotContainer.style.maxHeight = `calc(100vh - 80px)`;
+          chatbotContainer.style.height = '100vh';
+          chatbotContainer.style.height = '100dvh';
+          chatbotContainer.style.maxHeight = 'none';
         }, 100);
       }
     });
 
-    console.log('✅ HAIRGATOR 챗봇: 네이티브 앱 키보드 대응 완료');
+    console.log('✅ HAIRGATOR 챗봇: 전체 화면 + 키보드 대응 완료');
   }
 
   toggleChatbot() {
@@ -450,5 +455,5 @@ class HairGatorChatbot {
 // DOM 로드 완료 후 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR 챗봇 로드 완료');
+  console.log('🦎 HAIRGATOR 챗봇 로드 완료 (전체 화면 모드)');
 });
