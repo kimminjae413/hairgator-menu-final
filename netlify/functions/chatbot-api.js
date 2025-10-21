@@ -70,8 +70,14 @@ function detectLanguage(text) {
     return 'korean';
   }
   
+  // 베트남어 체크 (베트남어 특수문자)
+  const vietnameseRegex = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i;
+  if (vietnameseRegex.test(text)) {
+    return 'vietnamese';
+  }
+  
   // 일본어 체크
-  const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/;
+  const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF]/;
   if (japaneseRegex.test(text)) {
     return 'japanese';
   }
