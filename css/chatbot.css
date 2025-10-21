@@ -258,6 +258,36 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
+/* ==================== 언어 지원 배지 ==================== */
+.language-support {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lang-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(233, 30, 99, 0.1);
+  border: 1px solid rgba(233, 30, 99, 0.3);
+  border-radius: 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.lang-badge:hover {
+  background: rgba(233, 30, 99, 0.2);
+  border-color: var(--female-color);
+  color: var(--female-color);
+  transform: translateY(-1px);
+}
+
 /* ==================== 스타일 카드 ==================== */
 .style-cards-container {
   display: grid;
