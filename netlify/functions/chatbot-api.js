@@ -352,7 +352,8 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey) {
 
 // ==================== 대체 검색 ====================
 async function directTableSearch(supabaseUrl, supabaseKey, limit) {
-  const response = await fetch(`${supabaseUrl}/rest/v1/hairstyles?select=id,code,name,description,image_url&limit=${limit}`, {
+  // ⭐ recipe 컬럼 추가 (I열)
+  const response = await fetch(`${supabaseUrl}/rest/v1/hairstyles?select=id,code,name,description,image_url,recipe&limit=${limit}`, {
     method: 'GET',
     headers: {
       'apikey': supabaseKey,
@@ -448,18 +449,29 @@ async function generateCutRecipe(params, similarStyles, openaiKey) {
 - 시즌 매치: ${params.season_match || 'null'}
 `.trim();
 
-  // 유사 스타일 요약
-  let stylesSummary = '';
+  // 유사 스타일 요약 (⭐ I열의 56개 파라미터 JSON 레시피 포함)
+  let recipeExamples = '';
   if (similarStyles && similarStyles.length > 0) {
-    stylesSummary = '\n\n**참고할 유사 스타일:**\n' + 
-      similarStyles.map((s, i) => 
-        `${i+1}. ${s.name} (${s.code}): ${s.description || '스타일 설명 없음'}`
-      ).join('\n');
+    recipeExamples = '\n\n**데이터베이스의 유사 스타일 레시피 (56개 파라미터):**\n\n' + 
+      similarStyles.map((s, i) => {
+        if (s.recipe) {
+          // recipe가 JSON 문자열이면 파싱
+          let recipeData;
+          try {
+            recipeData = typeof s.recipe === 'string' ? JSON.parse(s.recipe) : s.recipe;
+          } catch (e) {
+            recipeData = s.recipe;
+          }
+          
+          return `[레시피 ${i+1}] ${s.name} (${s.code})\n${JSON.stringify(recipeData, null, 2)}`;
+        }
+        return `[레시피 ${i+1}] ${s.name} (${s.code})\n레시피 데이터 없음`;
+      }).join('\n\n');
   }
 
   const systemPrompt = `당신은 경력 20년 이상의 헤어 마스터입니다. 
 
-**미션**: 분석된 파라미터와 유사 스타일을 학습하여, 실무에서 바로 적용 가능한 **커트 레시피 1개**를 작성하세요.
+**미션**: 분석된 파라미터와 데이터베이스의 실제 레시피를 참고하여, 실무에서 바로 적용 가능한 **커트 레시피 1개**를 작성하세요.
 
 **레시피 구조:**
 1. **스타일 개요** (1문장)
@@ -475,7 +487,8 @@ async function generateCutRecipe(params, similarStyles, openaiKey) {
    - 스타일링 팁
 
 **중요**: 
-- 파라미터에 기반하여 작성
+- 분석된 56개 파라미터에 기반
+- 유사 스타일의 실제 레시피 참고
 - 실무 용어 사용
 - 완결된 문장으로 작성`;
 
