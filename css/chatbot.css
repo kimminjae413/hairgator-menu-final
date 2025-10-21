@@ -105,6 +105,7 @@
   );
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
+  flex-shrink: 0;
 }
 
 .chatbot-header::after {
@@ -165,6 +166,7 @@
   flex-direction: column;
   gap: 20px;
   background: var(--background);
+  min-height: 0;
 }
 
 .chatbot-messages::-webkit-scrollbar {
@@ -356,6 +358,7 @@
   );
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
+  flex-shrink: 0;
 }
 
 .input-wrapper {
@@ -420,21 +423,29 @@
   opacity: 0.5;
 }
 
-/* ==================== 모바일 대응 ==================== */
+/* ==================== 모바일 키보드 대응 ==================== */
 @media (max-width: 768px) {
   .chatbot-container {
     width: 100vw;
-    height: 100vh;
-    bottom: 0;
+    /* ⭐ 네이티브 탭 메뉴 공간 확보 (80px) + 키보드 대응 */
+    height: calc(100vh - 80px);
+    max-height: calc(100vh - 80px);
+    bottom: 80px !important; /* 네이티브 탭 위에 위치 */
     right: 0;
     left: 0;
-    top: 0;
+    top: auto; /* top 제거 - 하단 고정 */
     border-radius: 0;
-    max-height: 100vh;
+    border: none;
+  }
+
+  .chatbot-container.open {
+    /* 열릴 때도 네이티브 탭 메뉴 침범 방지 */
+    bottom: 80px !important;
   }
 
   .chatbot-toggle {
-    bottom: 80px;
+    /* 네이티브 탭 메뉴 바로 위에 플로팅 버튼 배치 */
+    bottom: 90px !important;
     right: 20px;
     width: 56px;
     height: 56px;
@@ -453,7 +464,9 @@
 
   .chatbot-messages {
     padding: 20px 16px;
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    /* 키보드 올라와도 스크롤 가능하도록 */
+    padding-bottom: 20px;
+    overflow-y: auto;
   }
 
   .style-cards-container {
@@ -462,7 +475,11 @@
 
   .chatbot-input-area {
     padding: 16px 20px;
-    padding-bottom: max(16px, calc(env(safe-area-inset-bottom) + 16px));
+    /* 키보드 위에 입력창 고정 */
+    padding-bottom: 16px;
+    position: sticky;
+    bottom: 0;
+    background: var(--background);
   }
 
   .language-support {
@@ -478,15 +495,15 @@
 @media (max-width: 480px) {
   .chatbot-container {
     width: 100vw;
-    height: 100vh;
-    bottom: 0;
+    height: calc(100vh - 80px);
+    bottom: 80px !important;
     right: 0;
     border-radius: 0;
     border: none;
   }
 
   .chatbot-toggle {
-    bottom: 16px;
+    bottom: 90px !important;
     right: 16px;
   }
 }
