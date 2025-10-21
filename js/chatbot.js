@@ -24,13 +24,13 @@ class HairGatorChatbot {
 
       <div id="chatbot-container" class="chatbot-container">
         <div class="chatbot-header">
-          <div class="chatbot-title">
-            <svg class="logo-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+          <span class="chatbot-title">AI 헤어 상담</span>
+          <button id="chatbot-close" class="chatbot-close" aria-label="닫기">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
-            <span>AI 헤어 상담</span>
-          </div>
-          <button id="chatbot-close" class="chatbot-close" aria-label="닫기">×</button>
+          </button>
         </div>
 
         <div id="chatbot-messages" class="chatbot-messages">
@@ -38,6 +38,13 @@ class HairGatorChatbot {
             <div class="message-content">
               <p><strong>원하는 헤어스타일을</strong></p>
               <p>이미지 또는 텍스트로 설명해주세요</p>
+              <div class="language-support">
+                <span class="lang-badge">🇰🇷 한국어</span>
+                <span class="lang-badge">🇺🇸 English</span>
+                <span class="lang-badge">🇯🇵 日本語</span>
+                <span class="lang-badge">🇨🇳 中文</span>
+                <span class="lang-badge">🇻🇳 Tiếng Việt</span>
+              </div>
             </div>
           </div>
         </div>
