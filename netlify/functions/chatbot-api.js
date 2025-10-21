@@ -281,26 +281,129 @@ async function generateResponse(payload, openaiKey) {
   // 사용자 질문의 언어 감지
   const userLanguage = detectLanguage(user_query);
 
+  // 검색 결과가 없거나 비어있으면 일반 대화 모드
+  const isCasualChat = !search_results || search_results.length === 0;
+
+  if (isCasualChat) {
+    // 일반 대화 모드
+    return await casualConversation(user_query, userLanguage, openaiKey);
+  }
+
+  // 전문 멘토 모드 (스타일 검색 결과가 있을 때)
+  return await professionalAdvice(user_query, search_results, userLanguage, openaiKey);
+}
+
+// ==================== 일반 대화 ====================
+async function casualConversation(user_query, userLanguage, openaiKey) {
+  const casualPrompts = {
+    korean: '당신은 친근한 헤어 AI 어시스턴트입니다. 자연스럽고 편안하게 대화하세요.',
+    english: 'You are a friendly hair AI assistant. Chat naturally and casually.',
+    japanese: 'あなたは親しみやすいヘアAIアシスタントです。自然に会話してください。',
+    chinese: '你是友好的发型AI助手。自然轻松地聊天。',
+    vietnamese: 'Bạn là trợ lý AI tóc thân thiện. Trò chuyện tự nhiên và thoải mái.'
+  };
+
+  const systemPrompt = casualPrompts[userLanguage] || casualPrompts['korean'];
+
+  const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openaiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt
+        },
+        {
+          role: 'user',
+          content: user_query
+        }
+      ],
+      temperature: 0.9,
+      max_tokens: 100
+    })
+  });
+
+  if (!gptResponse.ok) {
+    throw new Error('GPT API failed');
+  }
+
+  const data = await gptResponse.json();
+  const answer = data.choices[0].message.content;
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ 
+      success: true, 
+      data: answer,
+      detected_language: userLanguage,
+      mode: 'casual_chat'
+    })
+  };
+}
+
+// ==================== 전문 멘토 조언 ====================
+async function professionalAdvice(user_query, search_results, userLanguage, openaiKey) {
+
   // 언어별 시스템 프롬프트
   const systemPrompts = {
-    korean: '당신은 전문 헤어 스타일리스트입니다. 검색된 스타일 정보를 바탕으로 자연스럽게 한국어로 추천해주세요.',
-    english: 'You are a professional hair stylist. Based on the search results, provide natural recommendations in English.',
-    japanese: 'あなたはプロのヘアスタイリストです。検索されたスタイル情報をもとに、日本語で自然にお勧めしてください。',
-    chinese: '你是专业的发型师。根据搜索结果，用中文自然地推荐发型。',
-    vietnamese: 'Bạn là nhà tạo mẫu tóc chuyên nghiệp. Dựa trên kết quả tìm kiếm, hãy đề xuất tự nhiên bằng tiếng Việt.'
+    korean: `당신은 경력 20년 이상의 헤어 마스터입니다. 현장 헤어디자이너들에게 실무 기술과 노하우를 가르치는 선생님 역할을 합니다.
+
+**답변 가이드:**
+- 검색된 스타일의 핵심 커트 기법을 2-3문장으로 설명
+- 시술 시 주의사항과 팁 제공
+- 전문 용어 사용 (레이어, 그라데이션, 언더컷 등)
+- 실무에 바로 적용 가능한 조언`,
+
+    english: `You are a master hair stylist with 20+ years of experience, teaching practical techniques to salon professionals.
+
+**Guide:**
+- Explain key cutting techniques in 2-3 sentences
+- Provide practical tips for execution
+- Use professional terminology
+- Give actionable advice`,
+
+    japanese: `あなたは20年以上の経験を持つヘアマスターです。サロンのプロフェッショナルに実践的なテクニックを教える先生です。
+
+**ガイド:**
+- 主要なカット技術を2-3文で説明
+- 施術時の注意点とコツを提供
+- 専門用語を使用
+- 実務に応用可能なアドバイス`,
+
+    chinese: `你是拥有20年以上经验的发型大师，向沙龙专业人士传授实用技术的老师。
+
+**指南:**
+- 用2-3句话解释关键剪发技巧
+- 提供实施技巧和注意事项
+- 使用专业术语
+- 给出可操作的建议`,
+
+    vietnamese: `Bạn là bậc thầy tóc với hơn 20 năm kinh nghiệm, dạy kỹ thuật thực tế cho các chuyên gia salon.
+
+**Hướng dẫn:**
+- Giải thích kỹ thuật cắt chính trong 2-3 câu
+- Cung cấp mẹo thực hiện và lưu ý
+- Sử dụng thuật ngữ chuyên nghiệp
+- Đưa ra lời khuyên khả thi`
   };
 
   // 언어별 지시문
   const languageInstructions = {
-    korean: '\n\n**중요**: 반드시 한국어로만 답변하세요.',
-    english: '\n\n**Important**: Always respond in English.',
-    japanese: '\n\n**重要**: 必ず日本語で回答してください。',
-    chinese: '\n\n**重要**: 必须用中文回答。',
-    vietnamese: '\n\n**Quan trọng**: Luôn trả lời bằng tiếng Việt.'
+    korean: '\n\n**중요**: 반드시 한국어로, 헤어디자이너가 현장에서 바로 쓸 수 있는 실무 조언을 2-3문장으로 간결하게 제공하세요.',
+    english: '\n\n**Important**: Respond in English with practical salon advice in 2-3 sentences.',
+    japanese: '\n\n**重要**: 日本語で、サロンですぐ使える実務アドバイスを2-3文で簡潔に提供してください。',
+    chinese: '\n\n**重要**: 用中文提供沙龙可直接使用的实用建议，保持在2-3句话。',
+    vietnamese: '\n\n**Quan trọng**: Trả lời bằng tiếng Việt với lời khuyên thực tế cho salon trong 2-3 câu.'
   };
 
   const context = search_results.map(r => 
-    `${r.name}: ${r.description || '스타일 설명 없음'}`
+    `스타일명: ${r.name}\n설명: ${r.description || '스타일 정보'}\n코드: ${r.code}`
   ).join('\n\n');
 
   const systemPrompt = (systemPrompts[userLanguage] || systemPrompts['korean']) + 
@@ -321,11 +424,11 @@ async function generateResponse(payload, openaiKey) {
         },
         {
           role: 'user',
-          content: `질문: ${user_query}\n\n관련 스타일:\n${context}`
+          content: `디자이너 질문: ${user_query}\n\n참고 스타일 정보:\n${context}\n\n위 스타일의 커트 기법과 시술 팁을 알려주세요.`
         }
       ],
-      temperature: 0.7,
-      max_tokens: 500
+      temperature: 0.8,
+      max_tokens: 200
     })
   });
 
