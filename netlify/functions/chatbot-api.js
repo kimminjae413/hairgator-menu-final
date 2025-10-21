@@ -145,8 +145,8 @@ async function analyzeImage(payload, geminiKey) {
           ]
         }],
         generationConfig: {
-          temperature: 0.1,
-          responseMimeType: "application/json"
+          temperature: 0.1
+          // ⭐ responseMimeType는 v1 API에서 지원 안 함 (제거)
         }
       })
     }
