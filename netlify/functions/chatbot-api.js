@@ -376,7 +376,8 @@ async function generateCutRecipe(params, similarStyles, openaiKey) {
 
 === 기본 분류 ===
 - 컷 카테고리: ${params.cut_category || 'null'}
-- 여성 컷: ${params.womens_cut_category || 'null'}
+- 여성 컷 길이: ${params.womens_cut_length || 'null'}
+- 여성 컷 스타일: ${params.womens_cut_category || 'null'}
 - 남성 컷: ${params.mens_cut_category || 'null'}
 - 예상 길이: ${params.estimated_hair_length_cm || 0}cm
 - 성별: ${params.gender || 'null'}
@@ -468,17 +469,15 @@ async function generateCutRecipe(params, similarStyles, openaiKey) {
    - 커트 각도
 3. **레이어링**
    - 레이어 높이 및 각도
-   - 커트 방향 (슬라이딩/포인트)
+   - 커트 방향
 4. **마무리**
    - 텍스처 처리
    - 스타일링 팁
-5. **난이도 및 주의사항**
 
 **중요**: 
 - 파라미터에 기반하여 작성
-- 유사 스타일의 공통점 활용
-- 실무 용어 사용 (그라데이션, 레이어, 슬라이딩 커트 등)
-- 300자 이내로 간결하게`;
+- 실무 용어 사용
+- 완결된 문장으로 작성`;
 
   const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -496,7 +495,7 @@ async function generateCutRecipe(params, similarStyles, openaiKey) {
         }
       ],
       temperature: 0.7,
-      max_tokens: 500
+      max_tokens: 1000  // ⭐ 500 → 1000으로 증가
     })
   });
 
