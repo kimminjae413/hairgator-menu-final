@@ -1,4 +1,4 @@
-// js/chatbot.js - HAIRGATOR 브랜드 통합 버전 + 전체 화면 키보드 대응
+// js/chatbot.js - HAIRGATOR 56개 파라미터 + 레시피 생성 최종 버전
 
 class HairGatorChatbot {
   constructor() {
@@ -12,7 +12,7 @@ class HairGatorChatbot {
   init() {
     this.createChatbotUI();
     this.attachEventListeners();
-    this.initKeyboardHandler(); // ⭐ 키보드 대응 초기화
+    this.initKeyboardHandler();
   }
 
   createChatbotUI() {
@@ -25,7 +25,7 @@ class HairGatorChatbot {
 
       <div id="chatbot-container" class="chatbot-container">
         <div class="chatbot-header">
-          <span class="chatbot-title">AI 헤어 상담</span>
+          <span class="chatbot-title">✂️ AI 커트 레시피</span>
           <button id="chatbot-close" class="chatbot-close" aria-label="닫기">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -37,8 +37,9 @@ class HairGatorChatbot {
         <div id="chatbot-messages" class="chatbot-messages">
           <div class="bot-message">
             <div class="message-content">
-              <p><strong>원하는 헤어스타일을</strong></p>
-              <p>이미지 또는 텍스트로 설명해주세요</p>
+              <p><strong>🦎 HAIRGATOR AI 분석</strong></p>
+              <p>📸 이미지 업로드 → 56개 파라미터 분석</p>
+              <p>🔍 유사 스타일 학습 → ✂️ 커트 레시피 생성</p>
               <div class="language-support">
                 <span class="lang-badge">🇰🇷 한국어</span>
                 <span class="lang-badge">🇺🇸 English</span>
@@ -111,37 +112,28 @@ class HairGatorChatbot {
     });
   }
 
-  // ⭐ 전체 화면 모드 + 키보드 자동 대응 시스템
   initKeyboardHandler() {
     const chatbotContainer = document.getElementById('chatbot-container');
     const chatbotInput = document.getElementById('chatbot-input');
     const chatbotMessages = document.getElementById('chatbot-messages');
 
-    // 모바일인 경우에만 실행
     if (window.innerWidth <= 768) {
-      
-      // ⭐ window.innerHeight 사용 (Visual Viewport보다 안정적)
       let lastHeight = window.innerHeight;
       
       const handleResize = () => {
         const currentHeight = window.innerHeight;
         
-        // 키보드가 올라왔는지 확인 (화면 높이가 20% 이상 줄어듦)
         if (currentHeight < lastHeight * 0.8) {
-          // 키보드 올라옴
           chatbotContainer.style.height = `${currentHeight}px`;
           
-          // 메시지 영역 축소
-          const headerHeight = 60; // 헤더 높이
-          const inputHeight = 80;  // 입력창 높이
+          const headerHeight = 60;
+          const inputHeight = 80;
           chatbotMessages.style.maxHeight = `${currentHeight - headerHeight - inputHeight}px`;
           
-          // 입력창으로 자동 스크롤
           setTimeout(() => {
             this.scrollToBottom();
           }, 100);
         } else {
-          // 키보드 내려감
           chatbotContainer.style.height = '100vh';
           chatbotMessages.style.maxHeight = '';
         }
@@ -149,10 +141,8 @@ class HairGatorChatbot {
         lastHeight = currentHeight;
       };
       
-      // resize 이벤트 감지
       window.addEventListener('resize', handleResize);
       
-      // 입력창 포커스/블러 이벤트
       if (chatbotInput) {
         chatbotInput.addEventListener('focus', () => {
           setTimeout(() => {
@@ -181,10 +171,8 @@ class HairGatorChatbot {
       container.classList.add('open');
       toggle.classList.add('hidden');
       
-      // ⭐ body에 클래스 추가 (CSS에서 스타일 적용)
       document.body.classList.add('chatbot-open');
       
-      // ⭐ 추가 보험: 직접 스타일도 적용
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
@@ -192,7 +180,6 @@ class HairGatorChatbot {
       document.body.style.top = '0';
       document.body.style.left = '0';
       
-      // iOS에서 스크롤 방지
       document.documentElement.style.overflow = 'hidden';
       document.documentElement.style.position = 'fixed';
       document.documentElement.style.width = '100%';
@@ -201,10 +188,8 @@ class HairGatorChatbot {
       container.classList.remove('open');
       toggle.classList.remove('hidden');
       
-      // ⭐ body 클래스 제거
       document.body.classList.remove('chatbot-open');
       
-      // ⭐ 스타일 복구
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
@@ -219,27 +204,29 @@ class HairGatorChatbot {
     }
   }
 
+  // ⭐ 수정된 부분: 56개 파라미터 분석 + 레시피 생성
   async handleImageUpload(file) {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      this.addMessage('bot', '이미지 크기는 5MB 이하여야 합니다.');
+      this.addMessage('bot', '⚠️ 이미지 크기는 5MB 이하여야 합니다.');
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      this.addMessage('bot', '이미지 파일만 업로드 가능합니다.');
+      this.addMessage('bot', '⚠️ 이미지 파일만 업로드 가능합니다.');
       return;
     }
 
     const imageUrl = URL.createObjectURL(file);
     this.addMessage('user', `<img src="${imageUrl}" alt="업로드 이미지" class="uploaded-image">`);
-    this.addMessage('bot', '이미지를 분석하고 있습니다...');
+    this.addMessage('bot', '📊 56개 파라미터 분석 중...');
 
     try {
       const base64 = await this.fileToBase64(file);
 
-      const response = await fetch(this.apiEndpoint, {
+      // 1단계: 이미지 분석 (Gemini - 56개 파라미터)
+      const analyzeResponse = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -251,24 +238,80 @@ class HairGatorChatbot {
         })
       });
 
-      const result = await response.json();
+      const analyzeResult = await analyzeResponse.json();
 
-      if (!result.success) {
-        throw new Error(result.error || '분석 실패');
+      if (!analyzeResult.success) {
+        throw new Error(analyzeResult.error || '분석 실패');
       }
 
-      const analysisResult = result.data;
-      const displayText = this.formatAnalysisResult(analysisResult);
-      this.replaceLastBotMessage(displayText);
+      const params = analyzeResult.data;
+      
+      // 분석 결과 표시
+      const summaryText = this.formatParameters(params);
+      this.replaceLastBotMessage(summaryText);
 
-      await this.searchAndRecommend(analysisResult);
+      // 2-4단계: 파라미터 → 검색 → 레시피 생성
+      this.addMessage('bot', '🔍 유사 스타일 학습 중...');
+
+      const recipeResponse = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'generate_recipe',
+          payload: {
+            analysis_result: params
+          }
+        })
+      });
+
+      const recipeResult = await recipeResponse.json();
+
+      if (!recipeResult.success) {
+        throw new Error(recipeResult.error || '레시피 생성 실패');
+      }
+
+      // 최종 레시피 표시
+      const recipe = recipeResult.data.recipe;
+      const styleCount = recipeResult.data.similar_styles_count;
+      
+      this.replaceLastBotMessage(`✂️ **커트 레시피** (유사 스타일 ${styleCount}개 학습)\n\n${recipe}`);
 
     } catch (error) {
       console.error('이미지 분석 오류:', error);
-      this.replaceLastBotMessage('이미지 분석 중 오류가 발생했습니다. 다시 시도해주세요.');
+      this.replaceLastBotMessage('❌ 오류가 발생했습니다. 다시 시도해주세요.');
     }
 
     document.getElementById('image-upload').value = '';
+  }
+
+  // ⭐ 새로 추가: 56개 파라미터 포맷팅
+  formatParameters(params) {
+    const lines = ['📊 **분석 완료**\n'];
+
+    // 핵심 정보만 표시
+    if (params.womens_cut_length) {
+      lines.push(`📏 길이 분류: **${params.womens_cut_length}**`);
+    }
+    if (params.womens_cut_category) {
+      lines.push(`✂️ 스타일: **${params.womens_cut_category}**`);
+    }
+    if (params.estimated_hair_length_cm) {
+      lines.push(`📐 예상 길이: **${params.estimated_hair_length_cm}cm**`);
+    }
+    if (params.structure_layer) {
+      lines.push(`🎨 레이어: ${params.structure_layer}`);
+    }
+    if (params.fringe_type) {
+      lines.push(`💇 앞머리: ${params.fringe_type}`);
+    }
+    if (params.cut_form) {
+      lines.push(`📐 컷 형태: ${params.cut_form}`);
+    }
+
+    const paramCount = Object.values(params).filter(v => v !== null && v !== undefined && v !== 0).length;
+    lines.push(`\n✅ 감지된 파라미터: **${paramCount}/56개**`);
+
+    return lines.join('\n');
   }
 
   async handleTextMessage() {
@@ -280,12 +323,10 @@ class HairGatorChatbot {
     this.addMessage('user', message);
     input.value = '';
 
-    // 인사말이나 일반 대화 감지
     const casualKeywords = ['안녕', '반가', '고마', '감사', '도움', '뭐', '어떻게', 'hello', 'hi', 'thanks', 'thank you', 'help'];
     const isCasualChat = casualKeywords.some(keyword => message.toLowerCase().includes(keyword)) && message.length < 20;
 
     if (isCasualChat) {
-      // 일반 대화 모드
       this.addMessage('bot', '답변 생성 중...');
       
       try {
@@ -296,7 +337,7 @@ class HairGatorChatbot {
             action: 'generate_response',
             payload: {
               user_query: message,
-              search_results: [] // 빈 배열로 일반 대화 모드 트리거
+              search_results: []
             }
           })
         });
@@ -315,7 +356,6 @@ class HairGatorChatbot {
       return;
     }
 
-    // 스타일 검색 모드
     this.addMessage('bot', '검색 중...');
 
     try {
@@ -362,36 +402,6 @@ class HairGatorChatbot {
     }
   }
 
-  async searchAndRecommend(analysisResult) {
-    try {
-      const searchQuery = this.createSearchQuery(analysisResult);
-      this.addMessage('bot', `"${searchQuery}" 스타일을 검색합니다...`);
-
-      const response = await fetch(this.apiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'search_styles',
-          payload: { query: searchQuery }
-        })
-      });
-
-      const result = await response.json();
-
-      if (!result.success || result.data.length === 0) {
-        this.addMessage('bot', '유사한 스타일을 찾지 못했습니다.');
-        return;
-      }
-
-      this.addMessage('bot', `업로드하신 이미지와 유사한 스타일 ${result.data.length}개를 찾았습니다`);
-      this.displayStyleCards(result.data);
-
-    } catch (error) {
-      console.error('추천 오류:', error);
-      this.addMessage('bot', '추천 중 오류가 발생했습니다.');
-    }
-  }
-
   async fileToBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -402,39 +412,6 @@ class HairGatorChatbot {
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
-  }
-
-  createSearchQuery(analysisResult) {
-    const keywords = [];
-    
-    if (analysisResult.womens_cut_category) {
-      keywords.push(analysisResult.womens_cut_category);
-    }
-    if (analysisResult.estimated_hair_length_cm) {
-      const length = analysisResult.estimated_hair_length_cm;
-      if (length > 40) keywords.push('롱');
-      else if (length > 25) keywords.push('미디엄');
-      else keywords.push('단발');
-    }
-    
-    return keywords.join(' ') || '헤어스타일';
-  }
-
-  formatAnalysisResult(result) {
-    const lines = ['분석 결과\n'];
-    
-    if (result.womens_cut_category) {
-      lines.push(`스타일: ${result.womens_cut_category}`);
-    }
-    if (result.estimated_hair_length_cm) {
-      lines.push(`예상 길이: 약 ${result.estimated_hair_length_cm}cm`);
-    }
-    if (result.confidence_score) {
-      const confidence = (result.confidence_score * 100).toFixed(0);
-      lines.push(`\n분석 신뢰도: ${confidence}%`);
-    }
-    
-    return lines.join('\n');
   }
 
   displayStyleCards(styles) {
@@ -482,8 +459,7 @@ class HairGatorChatbot {
   }
 }
 
-// DOM 로드 완료 후 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR 챗봇 로드 완료 (전체 화면 모드)');
+  console.log('🦎 HAIRGATOR 챗봇 로드 완료 (56개 파라미터 + 레시피 생성)');
 });
