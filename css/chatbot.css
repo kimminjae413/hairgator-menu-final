@@ -1,4 +1,4 @@
-/* css/chatbot.css - HAIRGATOR 메뉴판 스타일 통합 */
+/* css/chatbot.css - HAIRGATOR 최종 브랜드 통합 버전 */
 
 /* ==================== 플로팅 버튼 ==================== */
 .chatbot-toggle {
@@ -133,11 +133,6 @@
   letter-spacing: 0.5px;
 }
 
-.chatbot-icon {
-  font-size: 24px;
-  filter: drop-shadow(0 0 8px rgba(233, 30, 99, 0.6));
-}
-
 .chatbot-close {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -149,6 +144,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 .chatbot-close:hover {
@@ -207,19 +204,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.message-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--female-color), var(--male-color));
-  flex-shrink: 0;
-  font-size: 20px;
-  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
 }
 
 .message-content {
