@@ -115,62 +115,59 @@ class HairGatorChatbot {
   initKeyboardHandler() {
     const chatbotContainer = document.getElementById('chatbot-container');
     const chatbotInput = document.getElementById('chatbot-input');
+    const chatbotMessages = document.getElementById('chatbot-messages');
 
-    // Visual Viewport API로 키보드 높이 실시간 감지 (모바일만)
-    if (window.visualViewport && window.innerWidth <= 768) {
+    // 모바일인 경우에만 실행
+    if (window.innerWidth <= 768) {
       
-      const handleViewportResize = () => {
-        const viewportHeight = window.visualViewport.height;
-        const windowHeight = window.innerHeight;
+      // ⭐ window.innerHeight 사용 (Visual Viewport보다 안정적)
+      let lastHeight = window.innerHeight;
+      
+      const handleResize = () => {
+        const currentHeight = window.innerHeight;
         
-        // ⭐ 키보드가 올라왔는지 확인 (뷰포트가 줄어듦)
-        if (viewportHeight < windowHeight * 0.75) {
-          // 키보드 올라옴 → 뷰포트 높이로 조정
-          chatbotContainer.style.height = `${viewportHeight}px`;
-          chatbotContainer.style.maxHeight = `${viewportHeight}px`;
+        // 키보드가 올라왔는지 확인 (화면 높이가 20% 이상 줄어듦)
+        if (currentHeight < lastHeight * 0.8) {
+          // 키보드 올라옴
+          chatbotContainer.style.height = `${currentHeight}px`;
+          
+          // 메시지 영역 축소
+          const headerHeight = 60; // 헤더 높이
+          const inputHeight = 80;  // 입력창 높이
+          chatbotMessages.style.maxHeight = `${currentHeight - headerHeight - inputHeight}px`;
           
           // 입력창으로 자동 스크롤
           setTimeout(() => {
             this.scrollToBottom();
           }, 100);
         } else {
-          // 키보드 내려감 → 전체 화면 복구
+          // 키보드 내려감
           chatbotContainer.style.height = '100vh';
-          chatbotContainer.style.height = '100dvh'; // 동적 뷰포트
-          chatbotContainer.style.maxHeight = 'none';
+          chatbotMessages.style.maxHeight = '';
         }
+        
+        lastHeight = currentHeight;
       };
       
-      // 키보드 올라올 때 / 내려갈 때 실시간 감지
-      window.visualViewport.addEventListener('resize', handleViewportResize);
-      window.visualViewport.addEventListener('scroll', handleViewportResize);
-    }
-
-    // 입력창 포커스 시 자동 스크롤 (iOS 대응)
-    if (chatbotInput) {
-      chatbotInput.addEventListener('focus', () => {
-        setTimeout(() => {
-          // 입력창이 보이도록 스크롤
-          this.scrollToBottom();
-          
-          // 키보드 올라오는 애니메이션 후 다시 스크롤
+      // resize 이벤트 감지
+      window.addEventListener('resize', handleResize);
+      
+      // 입력창 포커스/블러 이벤트
+      if (chatbotInput) {
+        chatbotInput.addEventListener('focus', () => {
           setTimeout(() => {
+            handleResize();
             this.scrollToBottom();
           }, 300);
-        }, 100);
-      });
-    }
-
-    // iOS에서 키보드 내려갈 때 레이아웃 복구
-    document.addEventListener('focusout', () => {
-      if (window.innerWidth <= 768) {
-        setTimeout(() => {
-          chatbotContainer.style.height = '100vh';
-          chatbotContainer.style.height = '100dvh';
-          chatbotContainer.style.maxHeight = 'none';
-        }, 100);
+        });
+        
+        chatbotInput.addEventListener('blur', () => {
+          setTimeout(() => {
+            handleResize();
+          }, 300);
+        });
       }
-    });
+    }
 
     console.log('✅ HAIRGATOR 챗봇: 전체 화면 + 키보드 대응 완료');
   }
@@ -183,9 +180,42 @@ class HairGatorChatbot {
     if (this.isOpen) {
       container.classList.add('open');
       toggle.classList.add('hidden');
+      
+      // ⭐ body에 클래스 추가 (CSS에서 스타일 적용)
+      document.body.classList.add('chatbot-open');
+      
+      // ⭐ 추가 보험: 직접 스타일도 적용
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+      document.body.style.top = '0';
+      document.body.style.left = '0';
+      
+      // iOS에서 스크롤 방지
+      document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.position = 'fixed';
+      document.documentElement.style.width = '100%';
+      document.documentElement.style.height = '100%';
     } else {
       container.classList.remove('open');
       toggle.classList.remove('hidden');
+      
+      // ⭐ body 클래스 제거
+      document.body.classList.remove('chatbot-open');
+      
+      // ⭐ 스타일 복구
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.position = '';
+      document.documentElement.style.width = '';
+      document.documentElement.style.height = '';
     }
   }
 
