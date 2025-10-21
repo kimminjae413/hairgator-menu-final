@@ -224,9 +224,9 @@
 }
 
 .user-message .message-content {
-  background: var(--female-color);
-  border: none;
-  color: #ffffff;
+  background: #ffffff;
+  border: 2px solid var(--female-color);
+  color: #000000;
   border-radius: 12px;
 }
 
@@ -242,6 +242,11 @@
 .message-content strong {
   color: var(--female-color);
   font-weight: 500;
+}
+
+.user-message .message-content strong {
+  color: #000000;
+  font-weight: 600;
 }
 
 /* ==================== 업로드된 이미지 ==================== */
