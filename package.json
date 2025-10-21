@@ -1,14 +1,38 @@
 {
-  "name": "hairgator-bullnabi-proxy",
-  "version": "1.0.0",
-  "description": "HAIRGATOR 불나비 API 연동 프록시",
+  "name": "hairgator",
+  "version": "2.0.0",
+  "description": "HAIRGATOR AI 헤어스타일 메뉴판 + 챗봇 + 불나비 API 통합",
   "main": "index.js",
-  "dependencies": {
-    "form-data": "^4.0.0"
-  },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "netlify dev",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "netlify deploy --prod"
+  },
+  "dependencies": {
+    "form-data": "^4.0.0",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "author": "HAIRGATOR",
-  "license": "MIT"
+  "license": "MIT",
+  "keywords": [
+    "hairstyle",
+    "ai",
+    "chatbot",
+    "gemini",
+    "openai",
+    "supabase",
+    "rag",
+    "bullnabi-api"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/hairgator.git"
+  }
 }
