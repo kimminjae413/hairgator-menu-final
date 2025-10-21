@@ -1,5 +1,5 @@
 // netlify/functions/chatbot-api.js
-// Netlify Functions로 API 키 보호
+// Netlify Functions로 API 키 보호 + 다국어 지원
 
 const fetch = require('node-fetch');
 
@@ -61,6 +61,30 @@ exports.handler = async (event, context) => {
     };
   }
 };
+
+// ==================== 언어 감지 함수 ====================
+function detectLanguage(text) {
+  // 한글 체크
+  const koreanRegex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
+  if (koreanRegex.test(text)) {
+    return 'korean';
+  }
+  
+  // 일본어 체크
+  const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/;
+  if (japaneseRegex.test(text)) {
+    return 'japanese';
+  }
+  
+  // 중국어 체크
+  const chineseRegex = /[\u4E00-\u9FFF]/;
+  if (chineseRegex.test(text)) {
+    return 'chinese';
+  }
+  
+  // 기본값: 영어
+  return 'english';
+}
 
 // ==================== 이미지 분석 (Gemini) ====================
 async function analyzeImage(payload, geminiKey) {
@@ -165,13 +189,35 @@ async function searchStyles(payload, openaiKey, supabaseUrl, supabaseKey) {
   };
 }
 
-// ==================== GPT 답변 생성 ====================
+// ==================== GPT 답변 생성 (다국어 지원) ====================
 async function generateResponse(payload, openaiKey) {
   const { user_query, search_results } = payload;
+
+  // 사용자 질문의 언어 감지
+  const userLanguage = detectLanguage(user_query);
+
+  // 언어별 시스템 프롬프트
+  const systemPrompts = {
+    korean: '당신은 전문 헤어 스타일리스트입니다. 검색된 스타일 정보를 바탕으로 자연스럽게 한국어로 추천해주세요.',
+    english: 'You are a professional hair stylist. Based on the search results, provide natural recommendations in English.',
+    japanese: 'あなたはプロのヘアスタイリストです。検索されたスタイル情報をもとに、日本語で自然にお勧めしてください。',
+    chinese: '你是专业的发型师。根据搜索结果，用中文自然地推荐发型。'
+  };
+
+  // 언어별 지시문
+  const languageInstructions = {
+    korean: '\n\n**중요**: 반드시 한국어로만 답변하세요.',
+    english: '\n\n**Important**: Always respond in English.',
+    japanese: '\n\n**重要**: 必ず日本語で回答してください。',
+    chinese: '\n\n**重要**: 必须用中文回答。'
+  };
 
   const context = search_results.map(r => 
     `${r.name}: ${r.description}`
   ).join('\n\n');
+
+  const systemPrompt = (systemPrompts[userLanguage] || systemPrompts['korean']) + 
+                       (languageInstructions[userLanguage] || languageInstructions['korean']);
 
   const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -184,7 +230,7 @@ async function generateResponse(payload, openaiKey) {
       messages: [
         {
           role: 'system',
-          content: '당신은 전문 헤어 스타일리스트입니다. 검색된 스타일 정보를 바탕으로 자연스럽게 추천해주세요.'
+          content: systemPrompt
         },
         {
           role: 'user',
@@ -206,6 +252,10 @@ async function generateResponse(payload, openaiKey) {
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ success: true, data: answer })
+    body: JSON.stringify({ 
+      success: true, 
+      data: answer,
+      detected_language: userLanguage 
+    })
   };
 }
