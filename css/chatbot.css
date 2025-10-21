@@ -426,16 +426,20 @@
 /* ==================== 모바일 전체 화면 + 키보드 대응 ==================== */
 @media (max-width: 768px) {
   .chatbot-container {
+    position: fixed;
     width: 100vw;
+    width: 100dvw; /* ⭐ 동적 뷰포트 너비 */
     /* ⭐ 전체 화면 - 탭 메뉴 완전히 가림 */
     height: 100vh;
-    max-height: 100vh;
+    height: 100dvh; /* ⭐ 동적 뷰포트 높이 */
+    max-height: none;
     bottom: 0 !important;
-    right: 0;
-    left: 0;
-    top: 0;
+    right: 0 !important;
+    left: 0 !important;
+    top: 0 !important;
     border-radius: 0;
     border: none;
+    z-index: 10000 !important; /* ⭐ 탭 메뉴보다 훨씬 높게 */
   }
 
   .chatbot-container.open {
