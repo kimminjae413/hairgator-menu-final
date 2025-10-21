@@ -131,9 +131,9 @@ async function analyzeImage(payload, geminiKey) {
   "confidence_score": 0.85
 }`;
 
-  // ⭐ 수정: gemini-1.5-pro → gemini-1.5-flash (이미지 분석용)
+  // ⭐ 수정: v1beta → v1 (최신 API 버전)
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
