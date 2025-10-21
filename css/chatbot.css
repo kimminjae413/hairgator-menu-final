@@ -423,18 +423,22 @@
 /* ==================== 모바일 대응 ==================== */
 @media (max-width: 768px) {
   .chatbot-container {
-    width: calc(100vw - 24px);
-    height: calc(100vh - 80px);
-    bottom: 12px;
-    right: 12px;
-    border-radius: 16px;
+    width: 100vw;
+    height: 100vh;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: 0;
+    border-radius: 0;
+    max-height: 100vh;
   }
 
   .chatbot-toggle {
-    bottom: 20px;
+    bottom: 80px;
     right: 20px;
     width: 56px;
     height: 56px;
+    z-index: 9997;
   }
 
   .chatbot-toggle svg {
@@ -444,10 +448,12 @@
 
   .chatbot-header {
     padding: 16px 20px;
+    padding-top: max(16px, env(safe-area-inset-top));
   }
 
   .chatbot-messages {
     padding: 20px 16px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
   }
 
   .style-cards-container {
@@ -456,6 +462,16 @@
 
   .chatbot-input-area {
     padding: 16px 20px;
+    padding-bottom: max(16px, calc(env(safe-area-inset-bottom) + 16px));
+  }
+
+  .language-support {
+    flex-wrap: wrap;
+  }
+
+  .lang-badge {
+    font-size: 10px;
+    padding: 3px 8px;
   }
 }
 
