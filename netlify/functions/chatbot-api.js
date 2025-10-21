@@ -131,9 +131,11 @@ async function analyzeImage(payload, geminiKey) {
   "confidence_score": 0.85
 }`;
 
-  // ⭐ Google AI Studio에서 확인된 사용 가능 모델
+  // ⭐ 최종 선택: gemini-2.5-flash-lite (가성비 최고)
+  // 입력: $0.10/1M 토큰, 출력: $0.40/1M 토큰
+  // RPM: 4,000 (분당 66장 이미지 처리 가능)
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview:generateContent?key=${geminiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -146,7 +148,6 @@ async function analyzeImage(payload, geminiKey) {
         }],
         generationConfig: {
           temperature: 0.1
-          // ⭐ responseMimeType는 v1 API에서 지원 안 함 (제거)
         }
       })
     }
@@ -160,7 +161,20 @@ async function analyzeImage(payload, geminiKey) {
 
   const data = await response.json();
   const text = data.candidates[0].content.parts[0].text;
-  const analysisResult = JSON.parse(text);
+  
+  // JSON 파싱 시도
+  let analysisResult;
+  try {
+    analysisResult = JSON.parse(text);
+  } catch (e) {
+    // JSON 추출 재시도
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      analysisResult = JSON.parse(jsonMatch[0]);
+    } else {
+      throw new Error('JSON 파싱 실패');
+    }
+  }
 
   return {
     statusCode: 200,
@@ -448,7 +462,8 @@ async function professionalAdvice(user_query, search_results, userLanguage, open
     body: JSON.stringify({ 
       success: true, 
       data: answer,
-      detected_language: userLanguage 
+      detected_language: userLanguage,
+      mode: 'professional_mentor'
     })
   };
 }
