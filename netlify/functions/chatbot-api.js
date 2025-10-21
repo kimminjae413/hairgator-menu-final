@@ -471,26 +471,45 @@ async function generateCutRecipe(params, similarStyles, openaiKey) {
 
   const systemPrompt = `당신은 경력 20년 이상의 헤어 마스터입니다. 
 
-**미션**: 분석된 파라미터와 데이터베이스의 실제 레시피를 참고하여, 실무에서 바로 적용 가능한 **커트 레시피 1개**를 작성하세요.
+**미션**: 분석된 56개 파라미터와 데이터베이스의 유사 스타일 레시피(56개 파라미터)를 학습하여, 새로운 **커트 레시피**를 생성하세요.
 
-**레시피 구조:**
-1. **스타일 개요** (1문장)
-2. **베이스 커트** 
-   - 가이드 라인 설정
-   - 섹션 분할
-   - 커트 각도
-3. **레이어링**
-   - 레이어 높이 및 각도
-   - 커트 방향
-4. **마무리**
-   - 텍스처 처리
-   - 스타일링 팁
+**입력 데이터:**
+1. 업로드된 이미지의 56개 파라미터 (분석 결과)
+2. 유사 스타일 3-5개의 레시피 (각각 56개 파라미터 포함)
 
-**중요**: 
-- 분석된 56개 파라미터에 기반
-- 유사 스타일의 실제 레시피 참고
-- 실무 용어 사용
-- 완결된 문장으로 작성`;
+**출력 형식:**
+실무에서 바로 사용 가능한 커트 레시피를 다음 구조로 작성:
+
+### 1. 스타일 개요
+- 스타일명과 핵심 특징 (1-2문장)
+
+### 2. 베이스 커트
+- **컷 셰이프(Cut Shape)**: {값}
+- **가이드 라인**: {위치와 각도}
+- **섹션 패턴(Section Pattern)**: {값}
+- **커팅 각도(Cutting Angle)**: {값}
+
+### 3. 레이어링
+- **디렉션(Direction)**: {D0/D45/D90 등}
+- **엘리베이션 각도(Elevation Angle)**: {값}
+- **레이어 구조(Structure Layer)**: {값}
+- **그라데이션 각도(Graduation Angle)**: {값}
+
+### 4. 텍스처 & 마무리
+- **텍스처라이징 기법**: {값}
+- **끝선 처리(Perimeter Line)**: {값}
+- **표면 처리(Surface Treatment)**: {값}
+
+### 5. 스타일링
+- **스타일링 방향(Styling Direction)**: {값}
+- **무브먼트(Movement Direction)**: {값}
+- **스타일링 방법**: {구체적 설명}
+
+**중요:**
+- 데이터베이스 레시피의 파라미터 값들을 참고
+- 정확한 용어 사용 (D0, 45°, Horizontal 등)
+- 측정 가능한 수치 포함
+- 완결된 실무 지침`;
 
   const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -504,11 +523,11 @@ async function generateCutRecipe(params, similarStyles, openaiKey) {
         { role: 'system', content: systemPrompt },
         { 
           role: 'user', 
-          content: `${paramsSummary}${stylesSummary}\n\n위 정보를 바탕으로 이 스타일의 커트 레시피를 작성해주세요.`
+          content: `${paramsSummary}${recipeExamples}\n\n위 분석 결과와 데이터베이스 레시피들을 참고하여, 이 스타일의 정확한 커트 레시피를 생성해주세요. 데이터베이스 레시피의 파라미터 값(각도, 디렉션, 섹션 등)을 적극 활용하세요.`
         }
       ],
       temperature: 0.7,
-      max_tokens: 1000  // ⭐ 500 → 1000으로 증가
+      max_tokens: 1500  // ⭐ 구조화된 레시피라 더 길게
     })
   });
 
