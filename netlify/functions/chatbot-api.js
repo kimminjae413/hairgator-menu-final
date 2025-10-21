@@ -131,9 +131,9 @@ async function analyzeImage(payload, geminiKey) {
   "confidence_score": 0.85
 }`;
 
-  // ⭐ 모든 API 키에서 사용 가능한 안정 모델
+  // ⭐ Google AI Studio에서 확인된 사용 가능 모델
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${geminiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview:generateContent?key=${geminiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
