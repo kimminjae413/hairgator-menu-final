@@ -189,8 +189,14 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
   const { formula42, params56 } = payload;
 
   // Supabase에서 유사 레시피 찾기
+  const searchQuery = (params56 && params56.womens_cut_category) 
+    ? params56.womens_cut_category 
+    : (params56 && params56.cut_category) 
+    ? params56.cut_category 
+    : 'Layer Cut';
+    
   const similarRecipes = await searchSimilarStyles(
-    params56.womens_cut_category || 'Layer Cut',
+    searchQuery,
     openaiKey,
     supabaseUrl,
     supabaseKey
