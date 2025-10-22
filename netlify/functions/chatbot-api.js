@@ -425,150 +425,86 @@ ${JSON.stringify(style.recipe, null, 2)}
 
   const systemPrompt = `당신은 **42포뮬러 커트 레시피 전문가**입니다.
 
-업로드 이미지의 42포뮬러 + 56파라미터 분석 결과와 Supabase의 유사 레시피들을 학습하여, **실무에서 바로 사용 가능한 가독성 높은 커트 매뉴얼**을 생성하세요.
+업로드 이미지의 42포뮬러 + 56파라미터 분석 결과와 Supabase의 유사 레시피들을 학습하여, **실무에서 바로 사용 가능한 커트 레시피**를 생성하세요.
 
-**출력 형식:**
+**⚠️ 중요 - 다음 내용은 절대 출력하지 마세요:**
+- 스타일명
+- 예상 길이 (estimated_hair_length_cm)
+- 인크리스 레이어 (Increase Layer 용어)
+- 컷 셰이프 (Cut Shape 용어)
 
-# ✂️ [${params56.womens_cut_length || '길이'} / ${params56.womens_cut_category || '스타일'}] 커트 매뉴얼
+**출력 형식 (반드시 이 구조로만):**
 
-**컷 정보**
-- 길이: ${params56.estimated_hair_length_cm || 0}cm
-- 레이어: ${params56.structure_layer || 'Increase Layer'}
-- 앞머리: ${params56.fringe_type || 'None'}
-- 난이도: ${params56.difficulty_level || '중급'}
-- 예상 소요시간: ${params56.estimated_time_minutes || 60}분
+# ✂️ 커트 레시피
+
+## 1. 스타일 설명
+부드럽고 여성스러운 이미지를 갖는 레이어 스타일입니다. [분석 결과 기반 1-2문장]
+
+## 2. 스타일 길이 (Style Length)
+- 롱(Long): A, B, C Length
+- 미디움(Medium): D, E, F, G Length  
+- 숏(Short): H Length
+**해당 길이**: ${params56.womens_cut_length || 'Medium'}
+
+## 3. 스타일 형태 (Style Form)
+**기본 형태**: ${params56.cut_form === 'One Length' ? '원렝스(O)' : params56.cut_form === 'Graduation' ? '그래쥬에이션(G)' : '레이어(L)'}
+
+## 4. 앞머리 길이 (Fringe Length)
+**설정**: ${params56.fringe_type === 'No Fringe' ? '없음(None)' : params56.fringe_type || '이마(Fore Head)'}
+- 옵션: 없음(None), 이마(Fore Head), 눈썹(Eye Brow), 눈(Eye), 광대(Cheek Bone)
+
+## 5. 베이스 커트 (Base Cut)
+
+### 다이렉션 (Direction)
+**적용**: D${params56.direction_level || '4'} (D8부터 D0까지 선택)
+
+### 섹션 (Section)
+**주요 섹션**: ${params56.section_pattern || 'Vertical'} 
+- 가로(Horizontal), 세로(Vertical), 전대각(Diagonal Forward), 후대각(Diagonal Backward)
+
+### 리프팅 (Lifting)
+**기준 각도**: L${Math.floor((params56.elevation_angle_degrees || 90) / 22.5)} (${params56.elevation_angle_degrees || 90}도)
+- L0(0도), L1(22.5도), L2(45도), L3(67.5도), L4(90도), L5(112.5도), L6(135도), L7(157.5도), L8(180도)
+
+### 아웃라인 (Outline) 설정
+**라인**: ${params56.womens_cut_length?.charAt(0) || 'E'} 라인 (A~H 라인 중)
+
+### 인터널 (Internal) 진행
+
+**A 존 (A Zone)**
+\`\`\`
+${formula42?.vertical_section?.layers?.slice(0, 6).map((layer, i) => 
+  `층 ${i+1}: ${layer.lifting || 'L0'} (${layer.lifting_degrees || 0}도), ${layer.length_cm || 0}cm`
+).join('\n') || '세로섹션 1-6층 데이터 분석 필요'}
+\`\`\`
+
+**B 존 (B Zone)**
+\`\`\`
+${formula42?.vertical_section?.layers?.slice(6, 12).map((layer, i) => 
+  `층 ${i+7}: ${layer.lifting || 'L0'} (${layer.lifting_degrees || 0}도), ${layer.length_cm || 0}cm`
+).join('\n') || '세로섹션 7-12층 데이터 분석 필요'}
+\`\`\`
+
+### 엑스터널 (External) 진행
+
+**C 존 (C Zone)**
+\`\`\`
+${formula42?.diagonal_backward_section?.layers?.slice(0, 5).map((layer, i) => 
+  `층 ${i+1}: ${layer.lifting || 'L2'} (${layer.lifting_degrees || 45}도), ${layer.length_cm || 0}cm`
+).join('\n') || '후대각섹션 1-5층 데이터 분석 필요'}
+\`\`\`
+
+### 볼륨 (Volume)
+**볼륨 레벨**: ${params56.elevation_angle_degrees < 45 ? '로우(Low/0도~45도)' : params56.elevation_angle_degrees < 90 ? '미디움(Medium/45도~90도)' : '하이(High/90도 이상)'}
+
+## 6. 질감처리 (Texturizing)
+포인트 커트(Point Cut)를 이용하여 ${params56.texturizing_technique || '자연스러운 끝단 처리'} 효과를 적용합니다.
+
+## 7. 스타일링 (Styling)
+블로우 드라이 후 손가락을 이용하여 ${params56.styling_direction || '자연스러운 볼륨감'}을 연출합니다.
 
 ---
-
-## 📐 1. 42포뮬러 공간 분석
-
-### 세로섹션 (중앙 실루엣 축) ⭐
-\`\`\`
-층 1: L0 (0°), 45cm - Blunt Cut
-층 2: L0 (0°), 45cm
-층 3: L1 (22.5°), 43cm
-층 4: L2 (45°), 40cm - 레이어 시작점
-층 5: L2 (45°), 38cm
-층 6: L3 (67.5°), 35cm
-층 7: L3 (67.5°), 32cm
-층 8: L4 (90°), 30cm - Point Cut 적용
-층 9: L4 (90°), 28cm
-층 10: L5 (112.5°), 25cm
-층 11: L5 (112.5°), 22cm
-층 12: L6 (135°), 20cm
-\`\`\`
-
-### 후대각섹션 (뒷머리 볼륨)
-\`\`\`
-층 1: L2 (45°), 40cm
-층 2: L3 (67.5°), 38cm
-층 3: L3 (67.5°), 35cm - Slide Cut
-층 4: L4 (90°), 32cm
-층 5: L4 (90°), 30cm
-층 6: L5 (112.5°), 28cm
-층 7: L5 (112.5°), 25cm
-층 8: L6 (135°), 22cm
-층 9: L6 (135°), 20cm
-\`\`\`
-
-### 전대각섹션 (측면 연결)
-\`\`\`
-층 1: L2 (45°), 38cm
-층 2: L3 (67.5°), 35cm
-층 3: L3 (67.5°), 32cm
-층 4: L4 (90°), 30cm
-층 5: L4 (90°), 28cm
-층 6: L5 (112.5°), 25cm
-\`\`\`
-
-### 네이프존 (목 부위)
-\`\`\`
-층 1: L0 (0°), 5cm - Blunt Cut
-층 2: L0 (0°), 5cm - Brick Cut (텍스처)
-층 3: L1 (22.5°), 4cm - Taper
-층 4: L2 (45°), 3cm
-\`\`\`
-
-### 업스컵 (정수리 최상단)
-\`\`\`
-층 1: L4 (90°), 15cm
-층 2: L4 (90°), 14cm
-층 3: L5 (112.5°), 13cm
-층 4: L5 (112.5°), 12cm
-층 5: L6 (135°), 11cm
-층 6: L6 (135°), 10cm
-\`\`\`
-
----
-
-## 📊 2. 56파라미터 상세
-
-### 기본 정보
-- 스타일: ${params56.womens_cut_category || '...'}
-- 길이: ${params56.estimated_hair_length_cm || 0}cm
-- 성별: ${params56.gender || 'Female'}
-- 난이도: ${params56.difficulty_level || '중급'}
-
-### 컷 구조
-- Cut Form: ${params56.cut_form || 'Layer'}
-- Structure Layer: ${params56.structure_layer || 'Increase Layer'}
-- Weight Flow: ${params56.weight_flow || 'Evenly Distributed'}
-
-### 각도 정보
-- Elevation Angle: ${params56.elevation_angle || '90°'}
-- Graduation Angle: ${params56.graduation_angle || 'Medium'}
-- Cutting Angle: ${params56.cutting_angle || 'Vertical'}
-- Section Pattern: ${params56.section_pattern || 'Radial'}
-
-### 텍스처
-- Technique: ${params56.texturizing_technique || 'Point Cut'}
-- End Texture: ${params56.end_texture || 'Feathered'}
-- Surface: ${params56.surface_treatment || 'Layered'}
-
----
-
-## ✂️ 3. 실무 커팅 순서
-
-### 준비 단계
-1. 샴푸 후 80% 건조
-2. 자연 낙하 확인
-3. 42포뮬러 섹션 분할
-
-### 커팅 순서
-\`\`\`
-1단계: 세로섹션 기준선 설정
-   └ 층1~2: L0 (0°) 45cm Blunt Cut
-   
-2단계: 후대각섹션 볼륨 형성
-   └ 층3: L3 (67.5°) 35cm Slide Cut
-   
-3단계: 네이프존 정리
-   └ 층2: Brick Cut 텍스처
-   
-4단계: 전대각섹션 연결
-   └ 층1~6: 측면 매끄럽게
-   
-5단계: 업스컵 볼륨 조절
-   └ 층1~6: 정수리 최종 마무리
-\`\`\`
-
----
-
-## 💡 4. 프로 팁
-
-### 42포뮬러 핵심
-- **세로섹션 12층**이 전체 형태의 기준
-- 층 4~6: 레이어 전환 구간 (45°→67.5°)
-- 층 8: Point Cut으로 텍스처 추가
-
-### 정밀도 체크포인트
-- 각 층의 각도 ±5° 이내 유지
-- 층 간 연결 매끄럽게 (1cm 간격)
-- Brick Cut은 네이프존에만 적용
-
----
-
-**이 레시피는 42포뮬러 + 56파라미터 + Supabase 레시피 ${recipesWithData.length}개 학습 기반입니다.**`;
+**📊 레시피 기반**: 42포뮬러 + 56파라미터 + Supabase 학습 ${recipesWithData.length}개`;
 
   // 🔥 스트리밍 방식으로 변경
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
