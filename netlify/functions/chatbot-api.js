@@ -117,6 +117,18 @@ async function analyzeImage(payload, geminiKey) {
 
 기본 분류, 컷 형태, 길이, 텍스처, 스타일링, 컬러, 디자인 등 56개 전체 파라미터
 
+**⚠️ 중요: 여성 헤어 길이 분류 (A~H만 사용)**
+- **A**: 가슴 아래 (60cm 이상)
+- **B**: 가슴~쇄골 중간 (45~60cm)
+- **C**: 쇄골라인 (40~45cm)
+- **D**: 어깨 닿는 선 (35~40cm)
+- **E**: 어깨 바로 위 (30~35cm)
+- **F**: 턱선 바로 밑 (25~30cm)
+- **G**: Jaw 라인 (20~25cm)
+- **H**: 숏헤어 (20cm 이하)
+
+**반드시 A~H 중 하나만 사용하세요. S, M, L 같은 다른 분류는 사용하지 마세요!**
+
 ---
 
 ## 🎯 출력 형식 (JSON만 출력)
@@ -546,7 +558,8 @@ ${JSON.stringify(style.recipe, null, 2)}
 
 **이 레시피는 42포뮬러 + 56파라미터 + Supabase 레시피 ${similarStyles.length}개 학습 기반입니다.**`;
 
-  const data = await httpRequest('https://api.openai.com/v1/chat/completions', {
+  // 🔥 스트리밍 방식으로 변경
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${openaiKey}`,
@@ -574,11 +587,50 @@ ${recipeExamples}
         }
       ],
       temperature: 0.7,
-      max_tokens: 3000
+      max_tokens: 3000,
+      stream: true  // ⭐ 스트리밍 활성화
     })
   });
 
-  return data.choices[0].message.content;
+  if (!response.ok) {
+    throw new Error(`GPT API failed: ${response.status}`);
+  }
+
+  // 스트리밍 응답 읽기
+  let fullContent = '';
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n').filter(line => line.trim() !== '');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') continue;
+
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices[0]?.delta?.content;
+            if (content) {
+              fullContent += content;
+            }
+          } catch (e) {
+            // JSON 파싱 오류 무시
+          }
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  return fullContent;
 }
 
 // ==================== 기존 함수들 ====================
