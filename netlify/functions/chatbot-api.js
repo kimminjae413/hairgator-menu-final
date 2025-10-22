@@ -1,6 +1,8 @@
 // netlify/functions/chatbot-api.js
 // HAIRGATOR 챗봇 - 42포뮬러 + 56파라미터 최종 완성 버전
-// punycode 경고 해결 (node-fetch 사용 최적화)
+// ✅ Netlify 배포 가능 버전 (fetch import 추가)
+
+const fetch = require('node-fetch'); // ⭐ 필수!
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -98,24 +100,23 @@ async function analyzeImage(payload, geminiKey) {
 두상을 7개 공간 영역으로 나눠 각 층의 커트 정보를 추출:
 
 **7개 섹션:**
-1. **가로섹션** (2층) - 정수리~이마 라인
-2. **후대각섹션** (9층) - 뒷머리 대각선 볼륨
-3. **전대각섹션** (6층) - 측면~앞머리 연결
-4. **세로섹션** (12층) - 중앙 실루엣 축 ⭐ 가장 중요
-5. **현대각백준** (3층) - 목덜미~귀라인
-6. **네이프존** (4층) - 목 부위 볼륨 조절
-7. **업스컵** (6층) - 정수리 최상단 볼륨
+1. **horizontal_section (가로섹션)** (2층) - 정수리~이마 라인
+2. **diagonal_backward_section (후대각섹션)** (9층) - 뒷머리 대각선 볼륨
+3. **diagonal_forward_section (전대각섹션)** (6층) - 측면~앞머리 연결
+4. **vertical_section (세로섹션)** (12층) - 중앙 실루엣 축 ⭐ 가장 중요
+5. **hyundae_gagback_section (현대각백준)** (3층) - 목덜미~귀라인
+6. **nape_zone (네이프존)** (4층) - 목 부위 볼륨 조절
+7. **up_scoop (업스컵)** (6층) - 정수리 최상단 볼륨
 
 **각 층의 분석 항목:**
-- **Lifting Angle**: L0(0°), L1(22.5°), L2(45°), L3(67.5°), L4(90°), L5(112.5°), L6(135°), L7(157.5°), L8(180°)
-- **Length**: 각 층의 길이 (cm)
-- **Cut Method**: Blunt Cut, Slide Cut, Point Cut, Brick Cut, Channel Cut, Razor Cut, Scissor Over Comb
+- **lifting**: L0, L1, L2, L3, L4, L5, L6, L7, L8
+- **lifting_degrees**: 0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180
+- **length_cm**: 각 층의 길이 (cm)
+- **method**: Blunt Cut, Slide Cut, Point Cut, Brick Cut, Channel Cut, Razor Cut, Scissor Over Comb
 
 ---
 
 ## 📊 56파라미터 (기존 유지)
-
-기본 분류, 컷 형태, 길이, 텍스처, 스타일링, 컬러, 디자인 등 56개 전체 파라미터
 
 **⚠️ 중요: 여성 헤어 길이 분류 (A~H만 사용)**
 - **A**: 가슴 아래 (60cm 이상)
@@ -127,8 +128,6 @@ async function analyzeImage(payload, geminiKey) {
 - **G**: Jaw 라인 (20~25cm)
 - **H**: 숏헤어 (20cm 이하)
 
-**반드시 A~H 중 하나만 사용하세요. S, M, L 같은 다른 분류는 사용하지 마세요!**
-
 ---
 
 ## 🎯 출력 형식 (JSON만 출력)
@@ -136,62 +135,76 @@ async function analyzeImage(payload, geminiKey) {
 \`\`\`json
 {
   "formula_42": {
-    "가로섹션": [
-      {"층": 1, "angle": "L0 (0°)", "length_cm": 45, "method": "Blunt Cut"},
-      {"층": 2, "angle": "L1 (22.5°)", "length_cm": 42, "method": "Point Cut"}
-    ],
-    "후대각섹션": [
-      {"층": 1, "angle": "L2 (45°)", "length_cm": 40},
-      {"층": 2, "angle": "L3 (67.5°)", "length_cm": 38},
-      {"층": 3, "angle": "L3 (67.5°)", "length_cm": 35, "method": "Slide Cut"},
-      {"층": 4, "angle": "L4 (90°)", "length_cm": 32},
-      {"층": 5, "angle": "L4 (90°)", "length_cm": 30},
-      {"층": 6, "angle": "L5 (112.5°)", "length_cm": 28},
-      {"층": 7, "angle": "L5 (112.5°)", "length_cm": 25},
-      {"층": 8, "angle": "L6 (135°)", "length_cm": 22},
-      {"층": 9, "angle": "L6 (135°)", "length_cm": 20}
-    ],
-    "전대각섹션": [
-      {"층": 1, "angle": "L2 (45°)", "length_cm": 38},
-      {"층": 2, "angle": "L3 (67.5°)", "length_cm": 35},
-      {"층": 3, "angle": "L3 (67.5°)", "length_cm": 32},
-      {"층": 4, "angle": "L4 (90°)", "length_cm": 30},
-      {"층": 5, "angle": "L4 (90°)", "length_cm": 28},
-      {"층": 6, "angle": "L5 (112.5°)", "length_cm": 25}
-    ],
-    "세로섹션": [
-      {"층": 1, "angle": "L0 (0°)", "length_cm": 45},
-      {"층": 2, "angle": "L0 (0°)", "length_cm": 45},
-      {"층": 3, "angle": "L1 (22.5°)", "length_cm": 43},
-      {"층": 4, "angle": "L2 (45°)", "length_cm": 40},
-      {"층": 5, "angle": "L2 (45°)", "length_cm": 38},
-      {"층": 6, "angle": "L3 (67.5°)", "length_cm": 35},
-      {"층": 7, "angle": "L3 (67.5°)", "length_cm": 32},
-      {"층": 8, "angle": "L4 (90°)", "length_cm": 30},
-      {"층": 9, "angle": "L4 (90°)", "length_cm": 28},
-      {"층": 10, "angle": "L5 (112.5°)", "length_cm": 25},
-      {"층": 11, "angle": "L5 (112.5°)", "length_cm": 22},
-      {"층": 12, "angle": "L6 (135°)", "length_cm": 20}
-    ],
-    "현대각백준": [
-      {"층": 1, "angle": "L0 (0°)", "length_cm": 8},
-      {"층": 2, "angle": "L1 (22.5°)", "length_cm": 6},
-      {"층": 3, "angle": "L2 (45°)", "length_cm": 4}
-    ],
-    "네이프존": [
-      {"층": 1, "angle": "L0 (0°)", "length_cm": 5, "method": "Blunt Cut"},
-      {"층": 2, "angle": "L0 (0°)", "length_cm": 5, "method": "Brick Cut"},
-      {"층": 3, "angle": "L1 (22.5°)", "length_cm": 4, "method": "Taper"},
-      {"층": 4, "angle": "L2 (45°)", "length_cm": 3}
-    ],
-    "업스컵": [
-      {"층": 1, "angle": "L4 (90°)", "length_cm": 15},
-      {"층": 2, "angle": "L4 (90°)", "length_cm": 14},
-      {"층": 3, "angle": "L5 (112.5°)", "length_cm": 13},
-      {"층": 4, "angle": "L5 (112.5°)", "length_cm": 12},
-      {"층": 5, "angle": "L6 (135°)", "length_cm": 11},
-      {"층": 6, "angle": "L6 (135°)", "length_cm": 10}
-    ]
+    "horizontal_section": {
+      "layers": [
+        {"layer_number": 1, "lifting": "L0", "lifting_degrees": 0, "length_cm": 45, "method": "Blunt Cut"},
+        {"layer_number": 2, "lifting": "L1", "lifting_degrees": 22.5, "length_cm": 42, "method": "Point Cut"}
+      ]
+    },
+    "diagonal_backward_section": {
+      "layers": [
+        {"layer_number": 1, "lifting": "L2", "lifting_degrees": 45, "length_cm": 40},
+        {"layer_number": 2, "lifting": "L3", "lifting_degrees": 67.5, "length_cm": 38},
+        {"layer_number": 3, "lifting": "L3", "lifting_degrees": 67.5, "length_cm": 35, "method": "Slide Cut"},
+        {"layer_number": 4, "lifting": "L4", "lifting_degrees": 90, "length_cm": 32},
+        {"layer_number": 5, "lifting": "L4", "lifting_degrees": 90, "length_cm": 30},
+        {"layer_number": 6, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 28},
+        {"layer_number": 7, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 25},
+        {"layer_number": 8, "lifting": "L6", "lifting_degrees": 135, "length_cm": 22},
+        {"layer_number": 9, "lifting": "L6", "lifting_degrees": 135, "length_cm": 20}
+      ]
+    },
+    "diagonal_forward_section": {
+      "layers": [
+        {"layer_number": 1, "lifting": "L2", "lifting_degrees": 45, "length_cm": 38},
+        {"layer_number": 2, "lifting": "L3", "lifting_degrees": 67.5, "length_cm": 35},
+        {"layer_number": 3, "lifting": "L3", "lifting_degrees": 67.5, "length_cm": 32},
+        {"layer_number": 4, "lifting": "L4", "lifting_degrees": 90, "length_cm": 30},
+        {"layer_number": 5, "lifting": "L4", "lifting_degrees": 90, "length_cm": 28},
+        {"layer_number": 6, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 25}
+      ]
+    },
+    "vertical_section": {
+      "layers": [
+        {"layer_number": 1, "lifting": "L0", "lifting_degrees": 0, "length_cm": 45},
+        {"layer_number": 2, "lifting": "L0", "lifting_degrees": 0, "length_cm": 45},
+        {"layer_number": 3, "lifting": "L1", "lifting_degrees": 22.5, "length_cm": 43},
+        {"layer_number": 4, "lifting": "L2", "lifting_degrees": 45, "length_cm": 40},
+        {"layer_number": 5, "lifting": "L2", "lifting_degrees": 45, "length_cm": 38},
+        {"layer_number": 6, "lifting": "L3", "lifting_degrees": 67.5, "length_cm": 35},
+        {"layer_number": 7, "lifting": "L3", "lifting_degrees": 67.5, "length_cm": 32},
+        {"layer_number": 8, "lifting": "L4", "lifting_degrees": 90, "length_cm": 30},
+        {"layer_number": 9, "lifting": "L4", "lifting_degrees": 90, "length_cm": 28},
+        {"layer_number": 10, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 25},
+        {"layer_number": 11, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 22},
+        {"layer_number": 12, "lifting": "L6", "lifting_degrees": 135, "length_cm": 20}
+      ]
+    },
+    "hyundae_gagback_section": {
+      "layers": [
+        {"layer_number": 1, "lifting": "L0", "lifting_degrees": 0, "length_cm": 8},
+        {"layer_number": 2, "lifting": "L1", "lifting_degrees": 22.5, "length_cm": 6},
+        {"layer_number": 3, "lifting": "L2", "lifting_degrees": 45, "length_cm": 4}
+      ]
+    },
+    "nape_zone": {
+      "layers": [
+        {"layer_number": 1, "lifting": "L0", "lifting_degrees": 0, "length_cm": 5, "method": "Blunt Cut"},
+        {"layer_number": 2, "lifting": "L0", "lifting_degrees": 0, "length_cm": 5, "method": "Brick Cut"},
+        {"layer_number": 3, "lifting": "L1", "lifting_degrees": 22.5, "length_cm": 4, "method": "Taper"},
+        {"layer_number": 4, "lifting": "L2", "lifting_degrees": 45, "length_cm": 3}
+      ]
+    },
+    "up_scoop": {
+      "layers": [
+        {"layer_number": 1, "lifting": "L4", "lifting_degrees": 90, "length_cm": 15},
+        {"layer_number": 2, "lifting": "L4", "lifting_degrees": 90, "length_cm": 14},
+        {"layer_number": 3, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 13},
+        {"layer_number": 4, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 12},
+        {"layer_number": 5, "lifting": "L6", "lifting_degrees": 135, "length_cm": 11},
+        {"layer_number": 6, "lifting": "L6", "lifting_degrees": 135, "length_cm": 10}
+      ]
+    }
   },
   
   "parameters_56": {
@@ -243,31 +256,19 @@ async function analyzeImage(payload, geminiKey) {
     "undercut_presence": "No",
     "graduation_angle": "Medium (45-90°)",
     "elevation_angle": "90°",
+    "elevation_angle_degrees": 90,
     "cutting_angle": "Vertical",
     "section_pattern": "Radial",
     "confidence_score": 0.85,
     "difficulty_level": "중급",
     "estimated_time_minutes": 60,
-    "face_shape_match": "Oval",
-    "age_suitability": "20대",
-    "occasion": "Daily"
+    "face_shape_match": "Oval"
   }
 }
-\`\`\`
+\`\`\``;
 
----
-
-## ⚠️ 분석 가이드라인
-
-1. **3D 구조 추론**: 2D 이미지여도 그림자/하이라이트/각도로 3D 구조 파악
-2. **세로섹션 최우선**: 중앙 실루엣 축(12층)이 가장 중요
-3. **확신 없으면 생략**: 보이지 않는 섹션/층은 배열에서 제외
-4. **JSON만 출력**: 설명 없이 순수 JSON만 반환
-
-**중요**: 이미지에서 명확히 보이는 섹션/층만 분석하고, 불확실하면 해당 섹션 전체를 빈 배열 []로 반환하세요.`;
-
-  const data = await httpRequest(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiKey}`,
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${geminiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -275,236 +276,176 @@ async function analyzeImage(payload, geminiKey) {
         contents: [{
           parts: [
             { text: systemPrompt },
-            { inline_data: { mime_type, data: image_base64 } }
+            {
+              inline_data: {
+                mime_type: mime_type,
+                data: image_base64
+              }
+            }
           ]
         }],
-        generationConfig: { temperature: 0.1 }
+        generationConfig: {
+          temperature: 0.1,
+          responseMimeType: "application/json"
+        }
       })
     }
   );
 
-  const text = data.candidates[0].content.parts[0].text;
-  
-  let analysisResult;
-  try {
-    analysisResult = JSON.parse(text);
-  } catch (e) {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      analysisResult = JSON.parse(jsonMatch[0]);
-    } else {
-      throw new Error('JSON 파싱 실패');
-    }
+  if (!response.ok) {
+    throw new Error(`Gemini API error: ${response.statusText}`);
   }
 
+  const data = await response.json();
+  const text = data.candidates[0].content.parts[0].text;
+  const analysisResult = JSON.parse(text);
+
+  // ✅ 반환값 추가
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ success: true, data: analysisResult })
+    body: JSON.stringify({
+      success: true,
+      data: analysisResult
+    })
   };
 }
 
 // ==================== 2단계: 레시피 생성 ====================
 async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
-  const { analysis_result } = payload;
-  
-  console.log('레시피 생성 시작:', analysis_result.parameters_56);
+  const { formula42, params56 } = payload;
 
-  // 1. 검색 쿼리 생성
-  const params = analysis_result.parameters_56;
-  const searchQuery = [
-    params.womens_cut_category || params.mens_cut_category,
-    params.womens_cut_length?.split('(')[0]?.trim(),
-    params.structure_layer,
-    params.fringe_type !== 'No Fringe' ? '앞머리' : null
-  ].filter(Boolean).join(' ');
+  // Supabase에서 유사 레시피 찾기
+  const similarRecipes = await searchSimilarStyles(
+    params56.womens_cut_category || 'Layer Cut',
+    openaiKey,
+    supabaseUrl,
+    supabaseKey
+  );
 
-  console.log('생성된 검색 쿼리:', searchQuery);
+  // 학습용 레시피 예제 생성
+  const recipesWithData = similarRecipes.filter(r => r.recipe_42 || r.recipe_56);
+  const recipeExamples = recipesWithData.slice(0, 3).map((recipe, i) => 
+    `### 예제 ${i + 1}: ${recipe.name}\n\n` +
+    `**42포뮬러:**\n\`\`\`json\n${JSON.stringify(recipe.recipe_42, null, 2)}\n\`\`\`\n\n` +
+    `**56파라미터:**\n\`\`\`json\n${JSON.stringify(recipe.recipe_56, null, 2)}\n\`\`\``
+  ).join('\n\n---\n\n');
 
-  // 2. Supabase에서 유사 스타일 검색
-  const similarStyles = await searchSimilarStyles(searchQuery, openaiKey, supabaseUrl, supabaseKey);
-  console.log('찾은 유사 스타일:', similarStyles.length + '개');
-
-  // 3. GPT로 레시피 생성
-  const recipe = await generateDetailedRecipe(
-    analysis_result.formula_42,
-    analysis_result.parameters_56,
-    similarStyles,
+  // GPT로 상세 레시피 생성
+  const detailedRecipe = await generateDetailedRecipe(
+    formula42,
+    params56,
+    recipeExamples,
+    recipesWithData.length,
     openaiKey
   );
 
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ 
-      success: true, 
-      data: recipe
+    body: JSON.stringify({
+      success: true,
+      data: {
+        recipe: detailedRecipe,
+        similar_styles_count: recipesWithData.length
+      }
     })
   };
 }
 
-// Supabase 벡터 검색
-async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey) {
-  try {
-    // 1. OpenAI 임베딩 생성
-    const embeddingData = await httpRequest('https://api.openai.com/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openaiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'text-embedding-3-small',
-        input: query
-      })
-    });
+// ==================== 상세 레시피 생성 ====================
+async function generateDetailedRecipe(formula42, params56, recipeExamples, recipesCount, openaiKey) {
+  const systemPrompt = `당신은 **42포뮬러 헤어 전문가**입니다. 
 
-    const embedding = embeddingData.data[0].embedding;
+업로드된 이미지 분석 결과(42포뮬러 + 56파라미터)와 Supabase 학습 데이터를 바탕으로, 
+**실무에서 바로 사용 가능한 7단계 커트 레시피**를 생성하세요.
 
-    // 2. Supabase 벡터 검색
-    try {
-      const results = await httpRequest(`${supabaseUrl}/rest/v1/rpc/match_hairstyles`, {
-        method: 'POST',
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          query_embedding: embedding,
-          match_count: 5
-        })
-      });
+---
 
-      return results;
-    } catch (rpcError) {
-      console.log('벡터 검색 실패, 직접 검색으로 전환');
-      return await directTableSearch(supabaseUrl, supabaseKey);
-    }
+## ✂️ 커트 레시피 포맷
 
-  } catch (error) {
-    console.error('벡터 검색 오류:', error);
-    return await directTableSearch(supabaseUrl, supabaseKey);
-  }
-}
+### 1. 스타일 설명
+부드럽고 여성스러운 이미지를 갖는 ...
 
-// 대체 검색
-async function directTableSearch(supabaseUrl, supabaseKey) {
-  return await httpRequest(`${supabaseUrl}/rest/v1/hairstyles?select=id,code,name,description,image_url,recipe&limit=5`, {
-    method: 'GET',
-    headers: {
-      'apikey': supabaseKey,
-      'Authorization': `Bearer ${supabaseKey}`
-    }
-  });
-}
-
-// GPT 레시피 생성
-async function generateDetailedRecipe(formula42, params56, similarStyles, openaiKey) {
-  // 🔍 디버깅: 유사 스타일 확인
-  console.log('📊 유사 스타일 분석:', {
-    총개수: similarStyles.length,
-    레시피있는개수: similarStyles.filter(s => s.recipe).length,
-    스타일목록: similarStyles.map(s => ({ 
-      name: s.name, 
-      hasRecipe: !!s.recipe,
-      recipeKeys: s.recipe ? Object.keys(s.recipe) : []
-    }))
-  });
-
-  // Supabase 레시피 예제
-  const recipesWithData = similarStyles.filter(style => style.recipe);
-  const recipeExamples = recipesWithData.length > 0 
-    ? recipesWithData.map((style, i) => `
-**레시피 ${i + 1}: ${style.name}**
-\`\`\`json
-${JSON.stringify(style.recipe, null, 2)}
-\`\`\`
-`).join('\n')
-    : '// ⚠️ Supabase에 레시피 데이터가 없습니다. 42포뮬러 분석만으로 레시피를 생성합니다.';
-
-  const systemPrompt = `당신은 **42포뮬러 커트 레시피 전문가**입니다.
-
-업로드 이미지의 42포뮬러 + 56파라미터 분석 결과와 Supabase의 유사 레시피들을 학습하여, **실무에서 바로 사용 가능한 커트 레시피**를 생성하세요.
-
-**⚠️ 중요 - 다음 내용은 절대 출력하지 마세요:**
-- 스타일명
-- 예상 길이 (estimated_hair_length_cm)
-- 인크리스 레이어 (Increase Layer 용어)
-- 컷 셰이프 (Cut Shape 용어)
-
-**출력 형식 (반드시 이 구조로만):**
-
-# ✂️ 커트 레시피
-
-## 1. 스타일 설명
-부드럽고 여성스러운 이미지를 갖는 레이어 스타일입니다. [분석 결과 기반 1-2문장]
-
-## 2. 스타일 길이 (Style Length)
+### 2. 스타일 길이 (Style Length)
 - 롱(Long): A, B, C Length
-- 미디움(Medium): D, E, F, G Length  
+- 미디움(Medium): D, E, F, G Length
 - 숏(Short): H Length
-**해당 길이**: ${params56.womens_cut_length || 'Medium'}
 
-## 3. 스타일 형태 (Style Form)
-**기본 형태**: ${params56.cut_form === 'One Length' ? '원렝스(O)' : params56.cut_form === 'Graduation' ? '그래쥬에이션(G)' : '레이어(L)'}
+### 3. 스타일 형태 (Style Form)
+- 원렝스(O)
+- 그래쥬에이션(G)
+- 레이어(L)
 
-## 4. 앞머리 길이 (Fringe Length)
-**설정**: ${params56.fringe_type === 'No Fringe' ? '없음(None)' : params56.fringe_type || '이마(Fore Head)'}
-- 옵션: 없음(None), 이마(Fore Head), 눈썹(Eye Brow), 눈(Eye), 광대(Cheek Bone)
+### 4. 앞머리 길이 (Fringe Length)
+- 없음(None), 이마(Fore Head), 눈썹(Eye Brow), 눈(Eye), 광대(Cheek Bone)...
 
-## 5. 베이스 커트 (Base Cut)
+### 5. 베이스 커트 (Base Cut)
 
-### 다이렉션 (Direction)
-**적용**: D${params56.direction_level || '4'} (D8부터 D0까지 선택)
+#### 다이렉션 (Direction)
+D8, D7, D6, D5, D4, D3, D2, D1, D0
 
-### 섹션 (Section)
-**주요 섹션**: ${params56.section_pattern || 'Vertical'} 
-- 가로(Horizontal), 세로(Vertical), 전대각(Diagonal Forward), 후대각(Diagonal Backward)
+#### 섹션 (Section)
+- 가로(Horizontal)
+- 세로(Vertical)
+- 전대각(Diagonal Forward)
+- 후대각(Diagonal Backward)
 
-### 리프팅 (Lifting)
-**기준 각도**: L${Math.floor((params56.elevation_angle_degrees || 90) / 22.5)} (${params56.elevation_angle_degrees || 90}도)
-- L0(0도), L1(22.5도), L2(45도), L3(67.5도), L4(90도), L5(112.5도), L6(135도), L7(157.5도), L8(180도)
+#### 리프팅 (Lifting)
+L0(0도), L1(22.5도), L2(45도), L3(67.5도), L4(90도), L5(112.5도), L6(135도), L7(157.5도), L8(180도)
 
-### 아웃라인 (Outline) 설정
-**라인**: ${params56.womens_cut_length?.charAt(0) || 'E'} 라인 (A~H 라인 중)
+#### 아웃라인 (Outline) 설정
+A~H 라인 설정
 
-### 인터널 (Internal) 진행
+#### 인터널 (Internal) 진행
 
 **A 존 (A Zone)**
 \`\`\`
-${formula42?.vertical_section?.layers?.slice(0, 6).map((layer, i) => 
-  `층 ${i+1}: ${layer.lifting || 'L0'} (${layer.lifting_degrees || 0}도), ${layer.length_cm || 0}cm`
-).join('\n') || '세로섹션 1-6층 데이터 분석 필요'}
+(세로섹션 1-6층 데이터)
 \`\`\`
 
 **B 존 (B Zone)**
 \`\`\`
-${formula42?.vertical_section?.layers?.slice(6, 12).map((layer, i) => 
-  `층 ${i+7}: ${layer.lifting || 'L0'} (${layer.lifting_degrees || 0}도), ${layer.length_cm || 0}cm`
-).join('\n') || '세로섹션 7-12층 데이터 분석 필요'}
+(세로섹션 7-12층 데이터)
 \`\`\`
 
-### 엑스터널 (External) 진행
+#### 엑스터널 (External) 진행
 
 **C 존 (C Zone)**
 \`\`\`
-${formula42?.diagonal_backward_section?.layers?.slice(0, 5).map((layer, i) => 
-  `층 ${i+1}: ${layer.lifting || 'L2'} (${layer.lifting_degrees || 45}도), ${layer.length_cm || 0}cm`
-).join('\n') || '후대각섹션 1-5층 데이터 분석 필요'}
+(후대각섹션 1-5층 데이터)
 \`\`\`
 
-### 볼륨 (Volume)
-**볼륨 레벨**: ${params56.elevation_angle_degrees < 45 ? '로우(Low/0도~45도)' : params56.elevation_angle_degrees < 90 ? '미디움(Medium/45도~90도)' : '하이(High/90도 이상)'}
+#### 볼륨 (Volume)
+로우(Low/0도~45도), 미디움(Medium/45도~90도), 하이(High/90 이상)
 
-## 6. 질감처리 (Texturizing)
-포인트 커트(Point Cut)를 이용하여 ${params56.texturizing_technique || '자연스러운 끝단 처리'} 효과를 적용합니다.
+### 6. 질감처리 (Texturizing)
+포인트 커트를 이용하여...
 
-## 7. 스타일링 (Styling)
-블로우 드라이 후 손가락을 이용하여 ${params56.styling_direction || '자연스러운 볼륨감'}을 연출합니다.
+### 7. 스타일링 (Styling)
+블로우 드라이 후 손가락을 이용하여...
 
 ---
-**📊 레시피 기반**: 42포뮬러 + 56파라미터 + Supabase 학습 ${recipesWithData.length}개`;
+
+**📋 참고사항:**
+1. ❌ 나오지 않게할 내용: 스타일명, 예상길이(cm), Increase Layer 용어, Cut Shape 용어
+2. ✅ A~H 라인만 사용 (S, M, L 금지)
+3. ✅ 실무 용어 사용 (가로섹션, 세로섹션, 후대각섹션...)
+`;
+
+  const userContent = `**📸 업로드 이미지 분석 결과:**
+
+42포뮬러:
+${JSON.stringify(formula42, null, 2)}
+
+56파라미터:
+${JSON.stringify(params56, null, 2)}
+
+${recipeExamples}
+
+---
+
+위 분석 결과와 Supabase 레시피들을 학습하여, **7단계 커트 레시피**를 생성하세요.`;
 
   // 🔥 스트리밍 방식으로 변경
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -517,26 +458,11 @@ ${formula42?.diagonal_backward_section?.layers?.slice(0, 5).map((layer, i) =>
       model: 'gpt-3.5-turbo',
       messages: [
         { role: 'system', content: systemPrompt },
-        { 
-          role: 'user', 
-          content: `**📸 업로드 이미지 분석 결과:**
-
-42포뮬러:
-${JSON.stringify(formula42, null, 2)}
-
-56파라미터:
-${JSON.stringify(params56, null, 2)}
-
-${recipeExamples}
-
----
-
-위 분석 결과와 Supabase 레시피들을 학습하여, **Supabase와 100% 동일한 구조의 42포뮬러 + 56파라미터 레시피**를 생성하세요.`
-        }
+        { role: 'user', content: userContent }
       ],
       temperature: 0.7,
       max_tokens: 3000,
-      stream: true  // ⭐ 스트리밍 활성화
+      stream: true
     })
   });
 
@@ -579,6 +505,75 @@ ${recipeExamples}
   }
 
   return fullContent;
+}
+
+// ==================== 유사 스타일 검색 (벡터 검색) ====================
+async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey) {
+  // 1. OpenAI 임베딩 생성
+  const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openaiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'text-embedding-3-small',
+      input: query
+    })
+  });
+
+  if (!embeddingResponse.ok) {
+    throw new Error('OpenAI embedding failed');
+  }
+
+  const embeddingData = await embeddingResponse.json();
+  const embedding = embeddingData.data[0].embedding;
+
+  // 2. Supabase 벡터 검색
+  try {
+    const supabaseResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/match_hairstyles`, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query_embedding: embedding,
+        match_count: 5
+      })
+    });
+
+    if (!supabaseResponse.ok) {
+      console.error('Supabase vector search failed, using fallback');
+      return await directTableSearch(supabaseUrl, supabaseKey, query);
+    }
+
+    const results = await supabaseResponse.json();
+    return results;
+  } catch (error) {
+    console.error('Supabase search error:', error);
+    return await directTableSearch(supabaseUrl, supabaseKey, query);
+  }
+}
+
+// ==================== 대체 검색 ====================
+async function directTableSearch(supabaseUrl, supabaseKey, query) {
+  const response = await fetch(
+    `${supabaseUrl}/rest/v1/hairstyles?select=*&limit=5`,
+    {
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`
+      }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error('Direct table search failed');
+  }
+
+  return await response.json();
 }
 
 // ==================== 기존 함수들 ====================
