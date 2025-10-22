@@ -273,20 +273,40 @@ class HairGatorChatbot {
     
     modal.classList.remove('hidden');
     
-    // 색인 파일 로드 (언어별로)
+    // 색인 이미지 갤러리 생성 (89개)
+    content.innerHTML = '<div class="index-loading">색인 로딩 중...</div>';
+    
     try {
-      const indexFile = `index_${this.currentLanguage}.html`;
-      const response = await fetch(`/indexes/${indexFile}`);
+      const indexImages = [];
       
-      if (response.ok) {
-        const html = await response.text();
-        content.innerHTML = html;
-      } else {
-        content.innerHTML = '<p>색인을 불러올 수 없습니다.</p>';
+      // 89개 이미지 경로 생성
+      for (let i = 1; i <= 89; i++) {
+        const paddedNum = String(i).padStart(2, '0');
+        const imagePath = `/indexes/${this.currentLanguage}/${paddedNum}.png`;
+        indexImages.push({
+          num: paddedNum,
+          path: imagePath
+        });
       }
+      
+      // 갤러리 HTML 생성
+      const galleryHTML = `
+        <div class="index-gallery">
+          ${indexImages.map(img => `
+            <div class="index-item">
+              <img src="${img.path}" alt="Index ${img.num}" loading="lazy" 
+                   onerror="this.style.display='none'; this.parentElement.classList.add('image-error');">
+              <span class="index-number">${img.num}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      
+      content.innerHTML = galleryHTML;
+      
     } catch (error) {
       console.error('색인 로드 오류:', error);
-      content.innerHTML = '<p>색인 파일을 찾을 수 없습니다.</p>';
+      content.innerHTML = '<p class="index-error">색인을 불러올 수 없습니다.</p>';
     }
   }
 
