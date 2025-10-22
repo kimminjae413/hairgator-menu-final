@@ -108,6 +108,12 @@
   flex-shrink: 0;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .chatbot-header::after {
   content: '';
   position: absolute;
@@ -155,6 +161,91 @@
 .chatbot-close svg {
   width: 18px;
   height: 18px;
+}
+
+/* ==================== 언어 선택 드롭다운 ==================== */
+.language-selector {
+  position: relative;
+}
+
+.language-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.language-btn:hover {
+  background: rgba(33, 150, 243, 0.2);
+  border-color: var(--male-color);
+  color: var(--male-color);
+}
+
+.language-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.language-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--background);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  z-index: 10000;
+  min-width: 140px;
+  backdrop-filter: blur(20px);
+  animation: dropdownSlide 0.2s ease-out;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.language-dropdown.hidden {
+  display: none;
+}
+
+.lang-option {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-option:hover {
+  background: rgba(33, 150, 243, 0.1);
+  color: var(--male-color);
+}
+
+.lang-option:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* ==================== 메시지 영역 ==================== */
@@ -403,6 +494,33 @@
 
 .upload-btn svg,
 .send-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.index-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.index-btn:hover {
+  background: linear-gradient(135deg, var(--female-color), var(--male-color));
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.4);
+}
+
+.index-btn svg {
   width: 20px;
   height: 20px;
 }
@@ -944,4 +1062,185 @@
 [data-theme="light"] .analysis-item:hover,
 [data-theme="minimal"] .analysis-item:hover {
   background: rgba(0, 0, 0, 0.04);
+}
+
+/* ==================== ⭐ 색인 모달 ==================== */
+.index-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.index-modal.hidden {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.index-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.index-modal-content {
+  position: relative;
+  background: var(--background);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: modalSlide 0.3s ease-out;
+  z-index: 1;
+}
+
+@keyframes modalSlide {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.index-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    135deg,
+    rgba(233, 30, 99, 0.05),
+    rgba(33, 150, 243, 0.05)
+  );
+}
+
+.index-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.index-close {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.index-close:hover {
+  background: rgba(233, 30, 99, 0.2);
+  border-color: var(--female-color);
+  color: var(--female-color);
+}
+
+.index-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  color: var(--text-primary);
+  line-height: 1.8;
+}
+
+.index-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.index-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.index-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.index-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.index-content h1,
+.index-content h2,
+.index-content h3 {
+  color: var(--female-color);
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.index-content h1 {
+  font-size: 20px;
+  border-bottom: 2px solid rgba(233, 30, 99, 0.3);
+  padding-bottom: 8px;
+}
+
+.index-content h2 {
+  font-size: 18px;
+}
+
+.index-content h3 {
+  font-size: 16px;
+}
+
+.index-content ul,
+.index-content ol {
+  padding-left: 24px;
+  margin: 12px 0;
+}
+
+.index-content li {
+  margin: 8px 0;
+}
+
+.index-content a {
+  color: var(--male-color);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.index-content a:hover {
+  color: var(--female-color);
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .index-modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .index-modal-header {
+    padding: 16px 20px;
+  }
+
+  .index-content {
+    padding: 20px 16px;
+  }
 }
