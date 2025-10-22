@@ -89,226 +89,99 @@ async function httpRequest(url, options = {}) {
 async function analyzeImage(payload, geminiKey) {
   const { image_base64, mime_type } = payload;
 
-  const systemPrompt = `당신은 **42포뮬러 전문 헤어 분석가**입니다.
+  // ✅ 간소화된 프롬프트 (에러 방지)
+  const systemPrompt = `당신은 전문 헤어 스타일리스트입니다. 
+업로드된 헤어스타일 이미지를 분석하고 JSON 형식으로 정보를 추출하세요.
 
-**미션**: 업로드된 이미지를 **3D 공간 구조**로 분석하여 42포뮬러 + 56파라미터를 추출하세요.
-
----
-
-## 📐 42포뮬러 (3D 공간 분석)
-
-두상을 7개 공간 영역으로 나눠 각 층의 커트 정보를 추출:
-
-**7개 섹션:**
-1. **horizontal_section (가로섹션)** (2층) - 정수리~이마 라인
-2. **diagonal_backward_section (후대각섹션)** (9층) - 뒷머리 대각선 볼륨
-3. **diagonal_forward_section (전대각섹션)** (6층) - 측면~앞머리 연결
-4. **vertical_section (세로섹션)** (12층) - 중앙 실루엣 축 ⭐ 가장 중요
-5. **hyundae_gagback_section (현대각백준)** (3층) - 목덜미~귀라인
-6. **nape_zone (네이프존)** (4층) - 목 부위 볼륨 조절
-7. **up_scoop (업스컵)** (6층) - 정수리 최상단 볼륨
-
-**각 층의 분석 항목:**
-- **lifting**: L0, L1, L2, L3, L4, L5, L6, L7, L8
-- **lifting_degrees**: 0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180
-- **length_cm**: 각 층의 길이 (cm)
-- **method**: Blunt Cut, Slide Cut, Point Cut, Brick Cut, Channel Cut, Razor Cut, Scissor Over Comb
-
----
-
-## 📊 56파라미터 (기존 유지)
-
-**⚠️ 중요: 여성 헤어 길이 분류 (A~H만 사용)**
-- **A**: 가슴 아래 (60cm 이상)
-- **B**: 가슴~쇄골 중간 (45~60cm)
-- **C**: 쇄골라인 (40~45cm)
-- **D**: 어깨 닿는 선 (35~40cm)
-- **E**: 어깨 바로 위 (30~35cm)
-- **F**: 턱선 바로 밑 (25~30cm)
-- **G**: Jaw 라인 (20~25cm)
-- **H**: 숏헤어 (20cm 이하)
-
----
-
-## 🎯 출력 형식 (JSON만 출력)
-
-\`\`\`json
+**출력 형식 (JSON만):**
 {
-  "formula_42": {
-    "horizontal_section": {
-      "layers": [
-        {"layer_number": 1, "lifting": "L0", "lifting_degrees": 0, "length_cm": 45, "method": "Blunt Cut"},
-        {"layer_number": 2, "lifting": "L1", "lifting_degrees": 22.5, "length_cm": 42, "method": "Point Cut"}
-      ]
-    },
-    "diagonal_backward_section": {
-      "layers": [
-        {"layer_number": 1, "lifting": "L2", "lifting_degrees": 45, "length_cm": 40},
-        {"layer_number": 2, "lifting": "L3", "lifting_degrees": 67.5, "length_cm": 38},
-        {"layer_number": 3, "lifting": "L3", "lifting_degrees": 67.5, "length_cm": 35, "method": "Slide Cut"},
-        {"layer_number": 4, "lifting": "L4", "lifting_degrees": 90, "length_cm": 32},
-        {"layer_number": 5, "lifting": "L4", "lifting_degrees": 90, "length_cm": 30},
-        {"layer_number": 6, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 28},
-        {"layer_number": 7, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 25},
-        {"layer_number": 8, "lifting": "L6", "lifting_degrees": 135, "length_cm": 22},
-        {"layer_number": 9, "lifting": "L6", "lifting_degrees": 135, "length_cm": 20}
-      ]
-    },
-    "diagonal_forward_section": {
-      "layers": [
-        {"layer_number": 1, "lifting": "L2", "lifting_degrees": 45, "length_cm": 38},
-        {"layer_number": 2, "lifting": "L3", "lifting_degrees": 67.5, "length_cm": 35},
-        {"layer_number": 3, "lifting": "L3", "lifting_degrees": 67.5, "length_cm": 32},
-        {"layer_number": 4, "lifting": "L4", "lifting_degrees": 90, "length_cm": 30},
-        {"layer_number": 5, "lifting": "L4", "lifting_degrees": 90, "length_cm": 28},
-        {"layer_number": 6, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 25}
-      ]
-    },
-    "vertical_section": {
-      "layers": [
-        {"layer_number": 1, "lifting": "L0", "lifting_degrees": 0, "length_cm": 45},
-        {"layer_number": 2, "lifting": "L0", "lifting_degrees": 0, "length_cm": 45},
-        {"layer_number": 3, "lifting": "L1", "lifting_degrees": 22.5, "length_cm": 43},
-        {"layer_number": 4, "lifting": "L2", "lifting_degrees": 45, "length_cm": 40},
-        {"layer_number": 5, "lifting": "L2", "lifting_degrees": 45, "length_cm": 38},
-        {"layer_number": 6, "lifting": "L3", "lifting_degrees": 67.5, "length_cm": 35},
-        {"layer_number": 7, "lifting": "L3", "lifting_degrees": 67.5, "length_cm": 32},
-        {"layer_number": 8, "lifting": "L4", "lifting_degrees": 90, "length_cm": 30},
-        {"layer_number": 9, "lifting": "L4", "lifting_degrees": 90, "length_cm": 28},
-        {"layer_number": 10, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 25},
-        {"layer_number": 11, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 22},
-        {"layer_number": 12, "lifting": "L6", "lifting_degrees": 135, "length_cm": 20}
-      ]
-    },
-    "hyundae_gagback_section": {
-      "layers": [
-        {"layer_number": 1, "lifting": "L0", "lifting_degrees": 0, "length_cm": 8},
-        {"layer_number": 2, "lifting": "L1", "lifting_degrees": 22.5, "length_cm": 6},
-        {"layer_number": 3, "lifting": "L2", "lifting_degrees": 45, "length_cm": 4}
-      ]
-    },
-    "nape_zone": {
-      "layers": [
-        {"layer_number": 1, "lifting": "L0", "lifting_degrees": 0, "length_cm": 5, "method": "Blunt Cut"},
-        {"layer_number": 2, "lifting": "L0", "lifting_degrees": 0, "length_cm": 5, "method": "Brick Cut"},
-        {"layer_number": 3, "lifting": "L1", "lifting_degrees": 22.5, "length_cm": 4, "method": "Taper"},
-        {"layer_number": 4, "lifting": "L2", "lifting_degrees": 45, "length_cm": 3}
-      ]
-    },
-    "up_scoop": {
-      "layers": [
-        {"layer_number": 1, "lifting": "L4", "lifting_degrees": 90, "length_cm": 15},
-        {"layer_number": 2, "lifting": "L4", "lifting_degrees": 90, "length_cm": 14},
-        {"layer_number": 3, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 13},
-        {"layer_number": 4, "lifting": "L5", "lifting_degrees": 112.5, "length_cm": 12},
-        {"layer_number": 5, "lifting": "L6", "lifting_degrees": 135, "length_cm": 11},
-        {"layer_number": 6, "lifting": "L6", "lifting_degrees": 135, "length_cm": 10}
-      ]
-    }
-  },
-  
-  "parameters_56": {
-    "cut_category": "Women's Cut",
-    "womens_cut_length": "B (가슴-쇄골 중간)",
-    "womens_cut_category": "허그컷",
-    "mens_cut_category": null,
-    "estimated_hair_length_cm": 45,
-    "gender": "Female",
-    "cut_form": "L (Layer)",
-    "weight_flow": "Evenly Distributed",
-    "structure_layer": "Increase Layer",
-    "fringe_type": "Side Bang",
-    "fringe_length": "Chin",
-    "perimeter_line": "Point Cut",
-    "outline_shape": "Round",
-    "nape_treatment": "Tapered",
-    "top_section_length_cm": 20,
-    "side_section_length_cm": 35,
-    "back_section_length_cm": 45,
-    "crown_height": "Medium",
-    "volume_placement": "Crown",
-    "silhouette": "Oval",
-    "shape_emphasis": "Volume",
-    "hair_texture": "Medium",
-    "hair_density": "Medium",
-    "natural_texture": "Straight",
-    "texturizing_technique": "Point Cut",
-    "finish_look": "Textured",
-    "interior_texture": "Light",
-    "end_texture": "Feathered",
-    "surface_treatment": "Layered",
-    "detailing": "Point Cut Detail",
-    "styling_direction": "Backward",
-    "parting": "Center",
-    "styling_method": "Blow Dry",
-    "movement_direction": "Outward",
-    "face_framing": "Soft",
-    "styling_product": "Light",
-    "maintenance_level": "Medium",
-    "versatility": "High",
-    "color_level": null,
-    "color_tone": null,
-    "color_technique": "None",
-    "dimension": "None",
-    "root_shadow": null,
-    "design_emphasis": "Shape Emphasis",
-    "disconnection": "No",
-    "undercut_presence": "No",
-    "graduation_angle": "Medium (45-90°)",
-    "elevation_angle": "90°",
-    "elevation_angle_degrees": 90,
-    "cutting_angle": "Vertical",
-    "section_pattern": "Radial",
-    "confidence_score": 0.85,
-    "difficulty_level": "중급",
-    "estimated_time_minutes": 60,
-    "face_shape_match": "Oval"
-  }
-}
-\`\`\``;
+  "cut_category": "Women's Cut or Men's Cut",
+  "womens_cut_category": "허그컷",
+  "estimated_hair_length_cm": 35,
+  "fringe_type": "Side Bang",
+  "structure_layer": "Graduated Layer",
+  "hair_texture": "Medium",
+  "styling_method": "Blow Dry",
+  "confidence_score": 0.85
+}`;
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${geminiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: systemPrompt },
-            {
-              inline_data: {
-                mime_type: mime_type,
-                data: image_base64
+  try {
+    // ✅ gemini-1.5-flash 사용 (가장 안정적)
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: systemPrompt },
+              {
+                inline_data: {
+                  mime_type: mime_type,
+                  data: image_base64
+                }
               }
-            }
-          ]
-        }],
-        generationConfig: {
-          temperature: 0.1,
-          responseMimeType: "application/json"
-        }
-      })
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.4,
+            topP: 1,
+            topK: 32,
+            maxOutputTokens: 2048
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Gemini API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+        apiKeyPrefix: geminiKey.substring(0, 15) + '...'
+      });
+      throw new Error(`Gemini API failed (${response.status}): ${errorText}`);
     }
-  );
 
-  if (!response.ok) {
-    throw new Error(`Gemini API error: ${response.statusText}`);
+    const data = await response.json();
+    
+    // ✅ 안전한 응답 파싱
+    if (!data.candidates || !data.candidates[0]) {
+      console.error('No candidates in response:', data);
+      throw new Error('Gemini API returned no candidates');
+    }
+
+    const text = data.candidates[0].content.parts[0].text;
+    console.log('✅ Gemini response received:', text.substring(0, 100) + '...');
+    
+    // JSON 추출 (마크다운 코드 블록 제거)
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const jsonText = jsonMatch ? jsonMatch[0] : text;
+    
+    const analysisResult = JSON.parse(jsonText);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: analysisResult
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 Image analysis failed:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: error.message || 'Image analysis failed'
+      })
+    };
   }
-
-  const data = await response.json();
-  const text = data.candidates[0].content.parts[0].text;
-  const analysisResult = JSON.parse(text);
-
-  // ✅ 반환값 추가
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({
-      success: true,
-      data: analysisResult
-    })
-  };
 }
 
 // ==================== 2단계: 레시피 생성 ====================
