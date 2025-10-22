@@ -1,4 +1,4 @@
-// js/chatbot.js - HAIRGATOR 마크다운 파싱 + 스트리밍 최종 버전
+// js/chatbot.js - HAIRGATOR 마크다운 파싱 + 스트리밍 + 언어선택 + 인덱스
 
 class HairGatorChatbot {
   constructor() {
@@ -6,6 +6,7 @@ class HairGatorChatbot {
     this.supabaseUrl = 'https://bhsbwbeisqzgipvzpvym.supabase.co';
     this.isOpen = false;
     this.conversationHistory = [];
+    this.currentLanguage = 'ko'; // 기본 언어
     this.init();
   }
 
@@ -15,7 +16,65 @@ class HairGatorChatbot {
     this.initKeyboardHandler();
   }
 
+  // 다국어 텍스트
+  getTexts() {
+    const texts = {
+      ko: {
+        title: '✂️ AI 커트 레시피',
+        welcome: '헤어스타일 이미지를 업로드하거나 질문해주세요',
+        analyzing: '📊 이미지 분석 중...',
+        generating: '✂️ 커트 레시피 생성 중...',
+        placeholder: '헤어스타일 검색...',
+        indexTitle: '📑 색인',
+        errorSize: '⚠️ 이미지 크기는 5MB 이하여야 합니다.',
+        errorType: '⚠️ 이미지 파일만 업로드 가능합니다.'
+      },
+      en: {
+        title: '✂️ AI Cut Recipe',
+        welcome: 'Upload a hairstyle image or ask a question',
+        analyzing: '📊 Analyzing image...',
+        generating: '✂️ Generating cut recipe...',
+        placeholder: 'Search hairstyle...',
+        indexTitle: '📑 Index',
+        errorSize: '⚠️ Image size must be under 5MB.',
+        errorType: '⚠️ Only image files are allowed.'
+      },
+      ja: {
+        title: '✂️ AIカットレシピ',
+        welcome: 'ヘアスタイル画像をアップロードするか質問してください',
+        analyzing: '📊 画像分析中...',
+        generating: '✂️ カットレシピ生成中...',
+        placeholder: 'ヘアスタイル検索...',
+        indexTitle: '📑 索引',
+        errorSize: '⚠️ 画像サイズは5MB以下である必要があります。',
+        errorType: '⚠️ 画像ファイルのみアップロード可能です。'
+      },
+      zh: {
+        title: '✂️ AI剪发配方',
+        welcome: '上传发型图片或提问',
+        analyzing: '📊 正在分析图片...',
+        generating: '✂️ 正在生成剪发配方...',
+        placeholder: '搜索发型...',
+        indexTitle: '📑 索引',
+        errorSize: '⚠️ 图片大小必须小于5MB。',
+        errorType: '⚠️ 仅允许上传图片文件。'
+      },
+      vi: {
+        title: '✂️ Công Thức Cắt Tóc AI',
+        welcome: 'Tải lên hình ảnh kiểu tóc hoặc đặt câu hỏi',
+        analyzing: '📊 Đang phân tích hình ảnh...',
+        generating: '✂️ Đang tạo công thức cắt...',
+        placeholder: 'Tìm kiếm kiểu tóc...',
+        indexTitle: '📑 Mục lục',
+        errorSize: '⚠️ Kích thước hình ảnh phải dưới 5MB.',
+        errorType: '⚠️ Chỉ cho phép tải lên tệp hình ảnh.'
+      }
+    };
+    return texts[this.currentLanguage] || texts.ko;
+  }
+
   createChatbotUI() {
+    const texts = this.getTexts();
     const chatbotHTML = `
       <button id="chatbot-toggle" class="chatbot-toggle" aria-label="AI 헤어 상담">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -25,29 +84,39 @@ class HairGatorChatbot {
 
       <div id="chatbot-container" class="chatbot-container">
         <div class="chatbot-header">
-          <span class="chatbot-title">✂️ AI 커트 레시피</span>
-          <button id="chatbot-close" class="chatbot-close" aria-label="닫기">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+          <span class="chatbot-title" id="chatbot-title">${texts.title}</span>
+          <div class="header-actions">
+            <!-- 언어 선택 버튼 -->
+            <div class="language-selector">
+              <button id="language-btn" class="language-btn" title="Language">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+              </button>
+              <div id="language-dropdown" class="language-dropdown hidden">
+                <button class="lang-option" data-lang="ko">🇰🇷 한국어</button>
+                <button class="lang-option" data-lang="en">🇺🇸 English</button>
+                <button class="lang-option" data-lang="ja">🇯🇵 日本語</button>
+                <button class="lang-option" data-lang="zh">🇨🇳 中文</button>
+                <button class="lang-option" data-lang="vi">🇻🇳 Tiếng Việt</button>
+              </div>
+            </div>
+            <button id="chatbot-close" class="chatbot-close" aria-label="닫기">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div id="chatbot-messages" class="chatbot-messages">
           <div class="bot-message">
-            <div class="message-content">
-              <p><strong>🦎 HAIRGATOR 42포뮬러 분석</strong></p>
-              <p>📸 이미지 업로드 → 3D 공간 분석</p>
-              <p>🔍 42포뮬러 + 56파라미터</p>
-              <p>✂️ 실무 커트 레시피 생성</p>
-              <div class="language-support">
-                <span class="lang-badge">🇰🇷 한국어</span>
-                <span class="lang-badge">🇺🇸 English</span>
-                <span class="lang-badge">🇯🇵 日本語</span>
-                <span class="lang-badge">🇨🇳 中文</span>
-                <span class="lang-badge">🇻🇳 Tiếng Việt</span>
-              </div>
+            <div class="message-content" id="welcome-message">
+              <p><strong>🦎 HAIRGATOR</strong></p>
+              <p id="welcome-text">${texts.welcome}</p>
             </div>
           </div>
         </div>
@@ -67,16 +136,47 @@ class HairGatorChatbot {
             <input 
               type="text" 
               id="chatbot-input" 
-              placeholder="헤어스타일 검색..." 
+              placeholder="${texts.placeholder}" 
               autocomplete="off"
             >
             
+            <!-- 색인 버튼 -->
+            <button id="index-btn" class="index-btn" title="색인 보기">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+            </button>
+
             <button id="send-btn" class="send-btn" title="전송">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="22" y1="2" x2="11" y2="13"></line>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
               </svg>
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 색인 모달 -->
+      <div id="index-modal" class="index-modal hidden">
+        <div class="index-modal-overlay" id="index-modal-overlay"></div>
+        <div class="index-modal-content">
+          <div class="index-modal-header">
+            <h3 id="index-modal-title">${texts.indexTitle}</h3>
+            <button id="index-modal-close" class="index-close">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div id="index-content" class="index-content">
+            <p>색인 파일을 로드하는 중...</p>
           </div>
         </div>
       </div>
@@ -111,6 +211,88 @@ class HairGatorChatbot {
         this.handleTextMessage();
       }
     });
+
+    // 언어 선택
+    document.getElementById('language-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const dropdown = document.getElementById('language-dropdown');
+      dropdown.classList.toggle('hidden');
+    });
+
+    // 언어 옵션 클릭
+    document.querySelectorAll('.lang-option').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const lang = e.currentTarget.getAttribute('data-lang');
+        this.changeLanguage(lang);
+        document.getElementById('language-dropdown').classList.add('hidden');
+      });
+    });
+
+    // 색인 버튼
+    document.getElementById('index-btn').addEventListener('click', () => {
+      this.showIndex();
+    });
+
+    // 색인 모달 닫기
+    document.getElementById('index-modal-close').addEventListener('click', () => {
+      this.hideIndex();
+    });
+
+    document.getElementById('index-modal-overlay').addEventListener('click', () => {
+      this.hideIndex();
+    });
+
+    // 드롭다운 외부 클릭 시 닫기
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('language-dropdown');
+      const langBtn = document.getElementById('language-btn');
+      if (!langBtn.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+  }
+
+  // 언어 변경
+  changeLanguage(lang) {
+    this.currentLanguage = lang;
+    const texts = this.getTexts();
+    
+    // UI 텍스트 업데이트
+    document.getElementById('chatbot-title').textContent = texts.title;
+    document.getElementById('welcome-text').textContent = texts.welcome;
+    document.getElementById('chatbot-input').placeholder = texts.placeholder;
+    document.getElementById('index-modal-title').textContent = texts.indexTitle;
+
+    console.log(`언어 변경: ${lang}`);
+  }
+
+  // 색인 표시
+  async showIndex() {
+    const modal = document.getElementById('index-modal');
+    const content = document.getElementById('index-content');
+    
+    modal.classList.remove('hidden');
+    
+    // 색인 파일 로드 (언어별로)
+    try {
+      const indexFile = `index_${this.currentLanguage}.html`;
+      const response = await fetch(`/indexes/${indexFile}`);
+      
+      if (response.ok) {
+        const html = await response.text();
+        content.innerHTML = html;
+      } else {
+        content.innerHTML = '<p>색인을 불러올 수 없습니다.</p>';
+      }
+    } catch (error) {
+      console.error('색인 로드 오류:', error);
+      content.innerHTML = '<p>색인 파일을 찾을 수 없습니다.</p>';
+    }
+  }
+
+  // 색인 숨기기
+  hideIndex() {
+    document.getElementById('index-modal').classList.add('hidden');
   }
 
   initKeyboardHandler() {
@@ -205,28 +387,30 @@ class HairGatorChatbot {
     }
   }
 
-  // ⭐ 이미지 업로드 처리 (42포뮬러 + 56파라미터)
+  // 이미지 업로드 처리
   async handleImageUpload(file) {
     if (!file) return;
 
+    const texts = this.getTexts();
+
     if (file.size > 5 * 1024 * 1024) {
-      this.addMessage('bot', '⚠️ 이미지 크기는 5MB 이하여야 합니다.');
+      this.addMessage('bot', texts.errorSize);
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      this.addMessage('bot', '⚠️ 이미지 파일만 업로드 가능합니다.');
+      this.addMessage('bot', texts.errorType);
       return;
     }
 
     const imageUrl = URL.createObjectURL(file);
     this.addMessage('user', `<img src="${imageUrl}" alt="업로드 이미지" class="uploaded-image">`);
-    this.addMessage('bot', '📊 42포뮬러 3D 공간 분석 중...');
+    this.addMessage('bot', texts.analyzing);
 
     try {
       const base64 = await this.fileToBase64(file);
 
-      // 1단계: 이미지 분석 (Gemini - 42포뮬러 + 56파라미터)
+      // 1단계: 이미지 분석
       const analyzeResponse = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -247,12 +431,12 @@ class HairGatorChatbot {
 
       const analysisData = analyzeResult.data;
       
-      // 분석 결과 표시
+      // 분석 결과 표시 (전문 용어 제거)
       const summaryText = this.formatParameters(analysisData);
       this.replaceLastBotMessage(summaryText);
 
-      // 2단계: 레시피 생성 (스트리밍)
-      this.addMessage('bot', '<div class="recipe-streaming">✂️ <strong>커트 레시피 생성 중...</strong></div>');
+      // 2단계: 레시피 생성
+      this.addMessage('bot', `<div class="recipe-streaming">✂️ <strong>${texts.generating}</strong></div>`);
 
       await this.streamRecipe(analysisData);
 
@@ -264,7 +448,7 @@ class HairGatorChatbot {
     document.getElementById('image-upload').value = '';
   }
 
-  // ⭐ 레시피 스트리밍 생성
+  // 레시피 스트리밍 생성
   async streamRecipe(analysisData) {
     try {
       const response = await fetch(this.apiEndpoint, {
@@ -284,11 +468,9 @@ class HairGatorChatbot {
         throw new Error(result.error || '레시피 생성 실패');
       }
 
-      // 레시피 텍스트를 HTML로 변환
       const rawRecipe = result.data;
       const formattedRecipe = this.markdownToHTML(rawRecipe);
       
-      // 스트리밍 효과 (한 글자씩 타이핑)
       await this.typeWriter(formattedRecipe);
 
     } catch (error) {
@@ -297,42 +479,27 @@ class HairGatorChatbot {
     }
   }
 
-  // ⭐ 마크다운 → HTML 변환 (가독성 개선)
+  // 마크다운 → HTML 변환
   markdownToHTML(markdown) {
     let html = markdown;
 
-    // 1. 제목 변환
     html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
     html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
     html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-
-    // 2. 굵은 글씨
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-    // 3. 코드 블록
     html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-
-    // 4. 인라인 코드
     html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-    // 5. 리스트
     html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
     html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-
-    // 6. 구분선
     html = html.replace(/^---$/gim, '<hr>');
-
-    // 7. 줄바꿈 → <br> (2개 이상 연속 줄바꿈은 <p>로)
     html = html.replace(/\n\n/g, '</p><p>');
     html = html.replace(/\n/g, '<br>');
-
-    // 8. 이모지 유지
     html = `<div class="recipe-content">${html}</div>`;
 
     return html;
   }
 
-  // ⭐ 타이핑 효과 (스트리밍 시뮬레이션)
+  // 타이핑 효과
   async typeWriter(html) {
     const messages = document.querySelectorAll('.bot-message');
     const lastMessage = messages[messages.length - 1];
@@ -340,80 +507,44 @@ class HairGatorChatbot {
 
     const contentDiv = lastMessage.querySelector('.message-content');
     
-    // 임시로 빈 div 생성
     contentDiv.innerHTML = '<div class="recipe-streaming"></div>';
     const streamingDiv = contentDiv.querySelector('.recipe-streaming');
 
-    // HTML을 DOM으로 변환
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
 
-    // 청크 단위로 스트리밍 (50자씩)
-    const chunkSize = 50;
-    const fullText = tempDiv.textContent || '';
-    let currentIndex = 0;
-
-    // 최종 HTML을 미리 설정
     streamingDiv.innerHTML = html;
     const allElements = streamingDiv.querySelectorAll('*');
     
-    // 모든 요소 숨기기
     allElements.forEach(el => {
       el.style.opacity = '0';
     });
 
-    // 순차적으로 표시
     for (let i = 0; i < allElements.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 30));  // 30ms 간격
+      await new Promise(resolve => setTimeout(resolve, 30));
       allElements[i].style.opacity = '1';
       allElements[i].style.transition = 'opacity 0.2s ease-in';
       this.scrollToBottom();
     }
   }
 
-  // ⭐ 파라미터 포맷팅 (42포뮬러 포함)
+  // 파라미터 포맷팅 (전문 용어 제거)
   formatParameters(analysisData) {
     const lines = [];
-
-    // 42포뮬러 정보
-    const formula42 = analysisData.formula_42 || {};
     const params56 = analysisData.parameters_56 || analysisData;
 
     lines.push('<div class="analysis-result">');
     lines.push('<h3>📊 분석 완료</h3>');
 
-    if (Object.keys(formula42).length > 0) {
-      lines.push('<div class="formula-section">');
-      lines.push('<h4>📐 42포뮬러 (3D 공간)</h4>');
-      lines.push('<ul>');
-      
-      const sectionMap = {
-        '가로섹션': '정수리~이마',
-        '후대각섹션': '뒷머리 볼륨',
-        '전대각섹션': '측면 연결',
-        '세로섹션': '중앙 축 ⭐',
-        '현대각백준': '귀라인',
-        '네이프존': '목 부위',
-        '업스컵': '정수리 최상단'
-      };
-      
-      for (const [section, layers] of Object.entries(formula42)) {
-        if (layers && layers.length > 0) {
-          const desc = sectionMap[section] || '';
-          lines.push(`<li><strong>${section}</strong> (${desc}): ${layers.length}개 층</li>`);
-        }
-      }
-      lines.push('</ul>');
-      lines.push('</div>');
-    }
-
-    // 핵심 정보 (간소화)
+    // 핵심 정보만 표시
     lines.push('<div class="params-section">');
-    lines.push('<h4>✂️ 핵심 정보</h4>');
     lines.push('<ul>');
     
     if (params56.womens_cut_length) {
       lines.push(`<li>📏 길이: <strong>${params56.womens_cut_length}</strong></li>`);
+    }
+    if (params56.womens_cut_category) {
+      lines.push(`<li>✂️ 스타일: <strong>${params56.womens_cut_category}</strong></li>`);
     }
     if (params56.fringe_type && params56.fringe_type !== 'No Fringe') {
       lines.push(`<li>💇 앞머리: ${params56.fringe_type}</li>`);
@@ -425,9 +556,7 @@ class HairGatorChatbot {
       lines.push(`<li>👤 얼굴형: ${params56.face_shape_match}</li>`);
     }
 
-    const paramCount = Object.values(params56).filter(v => v !== null && v !== undefined && v !== 0).length;
     lines.push(`</ul>`);
-    lines.push(`<p class="param-count">✅ 감지: <strong>${paramCount}/56개 파라미터</strong></p>`);
     lines.push('</div>');
     lines.push('</div>');
 
@@ -585,5 +714,5 @@ class HairGatorChatbot {
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR 챗봇 로드 완료 (마크다운 파싱 + 스트리밍)');
+  console.log('🦎 HAIRGATOR 챗봇 로드 완료 (언어선택 + 색인 + 전문용어 제거)');
 });
