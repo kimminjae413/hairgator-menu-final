@@ -1,7 +1,6 @@
 // netlify/functions/chatbot-api.js
 // HAIRGATOR 챗봇 - 42포뮬러 + 56파라미터 최종 완성 버전
-
-const fetch = require('node-fetch');
+// punycode 경고 해결 (node-fetch 사용 최적화)
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -71,6 +70,18 @@ exports.handler = async (event, context) => {
     };
   }
 };
+
+// ==================== HTTP 요청 헬퍼 (fetch 통일) ====================
+async function httpRequest(url, options = {}) {
+  const response = await fetch(url, options);
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`HTTP ${response.status}: ${errorText}`);
+  }
+  
+  return response.json();
+}
 
 // ==================== 1단계: 이미지 분석 (42포뮬러 + 56파라미터) ====================
 async function analyzeImage(payload, geminiKey) {
@@ -243,7 +254,7 @@ async function analyzeImage(payload, geminiKey) {
 
 **중요**: 이미지에서 명확히 보이는 섹션/층만 분석하고, 불확실하면 해당 섹션 전체를 빈 배열 []로 반환하세요.`;
 
-  const response = await fetch(
+  const data = await httpRequest(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiKey}`,
     {
       method: 'POST',
@@ -260,13 +271,6 @@ async function analyzeImage(payload, geminiKey) {
     }
   );
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error('Gemini API Error:', errorData);
-    throw new Error(`Gemini API error: ${response.statusText}`);
-  }
-
-  const data = await response.json();
   const text = data.candidates[0].content.parts[0].text;
   
   let analysisResult;
@@ -331,7 +335,7 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
 async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey) {
   try {
     // 1. OpenAI 임베딩 생성
-    const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+    const embeddingData = await httpRequest('https://api.openai.com/v1/embeddings', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openaiKey}`,
@@ -343,34 +347,28 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey) {
       })
     });
 
-    if (!embeddingResponse.ok) {
-      throw new Error('OpenAI embedding failed');
-    }
-
-    const embeddingData = await embeddingResponse.json();
     const embedding = embeddingData.data[0].embedding;
 
     // 2. Supabase 벡터 검색
-    const supabaseResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/match_hairstyles`, {
-      method: 'POST',
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        query_embedding: embedding,
-        match_count: 5
-      })
-    });
+    try {
+      const results = await httpRequest(`${supabaseUrl}/rest/v1/rpc/match_hairstyles`, {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          query_embedding: embedding,
+          match_count: 5
+        })
+      });
 
-    if (!supabaseResponse.ok) {
+      return results;
+    } catch (rpcError) {
       console.log('벡터 검색 실패, 직접 검색으로 전환');
       return await directTableSearch(supabaseUrl, supabaseKey);
     }
-
-    const results = await supabaseResponse.json();
-    return results;
 
   } catch (error) {
     console.error('벡터 검색 오류:', error);
@@ -380,19 +378,13 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey) {
 
 // 대체 검색
 async function directTableSearch(supabaseUrl, supabaseKey) {
-  const response = await fetch(`${supabaseUrl}/rest/v1/hairstyles?select=id,code,name,description,image_url,recipe&limit=5`, {
+  return await httpRequest(`${supabaseUrl}/rest/v1/hairstyles?select=id,code,name,description,image_url,recipe&limit=5`, {
     method: 'GET',
     headers: {
       'apikey': supabaseKey,
       'Authorization': `Bearer ${supabaseKey}`
     }
   });
-
-  if (!response.ok) {
-    throw new Error('Direct table search failed');
-  }
-
-  return await response.json();
 }
 
 // GPT 레시피 생성
@@ -509,8 +501,6 @@ ${JSON.stringify(style.recipe, null, 2)}
 - End Texture: ${params56.end_texture || 'Feathered'}
 - Surface: ${params56.surface_treatment || 'Layered'}
 
-[나머지 50개 파라미터도 포함]
-
 ---
 
 ## ✂️ 3. 실무 커팅 순서
@@ -556,7 +546,7 @@ ${JSON.stringify(style.recipe, null, 2)}
 
 **이 레시피는 42포뮬러 + 56파라미터 + Supabase 레시피 ${similarStyles.length}개 학습 기반입니다.**`;
 
-  const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+  const data = await httpRequest('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${openaiKey}`,
@@ -580,7 +570,7 @@ ${recipeExamples}
 
 ---
 
-위 분석 결과와 Supabase 레시피들을 학습하여, **Supabase와 100% 동일한 구조의 42포뮬러 + 56파라미터 레시피**를 생성하세요. 데이터베이스 레시피의 정확한 층별 각도와 커트 기법을 참고하세요.`
+위 분석 결과와 Supabase 레시피들을 학습하여, **Supabase와 100% 동일한 구조의 42포뮬러 + 56파라미터 레시피**를 생성하세요.`
         }
       ],
       temperature: 0.7,
@@ -588,15 +578,10 @@ ${recipeExamples}
     })
   });
 
-  if (!gptResponse.ok) {
-    throw new Error('GPT API failed');
-  }
-
-  const data = await gptResponse.json();
   return data.choices[0].message.content;
 }
 
-// ==================== 기존 함수들 (그대로 유지) ====================
+// ==================== 기존 함수들 ====================
 function detectLanguage(text) {
   const koreanRegex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
   if (koreanRegex.test(text)) return 'korean';
@@ -615,12 +600,13 @@ function detectLanguage(text) {
 
 async function searchStyles(payload, openaiKey, supabaseUrl, supabaseKey) {
   const { query } = payload;
+  const results = await searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey);
   
-  return await searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey).then(results => ({
+  return {
     statusCode: 200,
     headers,
     body: JSON.stringify({ success: true, data: results })
-  }));
+  };
 }
 
 async function generateResponse(payload, openaiKey) {
@@ -645,7 +631,7 @@ async function casualConversation(user_query, userLanguage, openaiKey) {
     vietnamese: 'Bạn là trợ lý AI tóc thân thiện.'
   };
 
-  const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+  const data = await httpRequest('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${openaiKey}`,
@@ -661,8 +647,6 @@ async function casualConversation(user_query, userLanguage, openaiKey) {
       max_tokens: 100
     })
   });
-
-  const data = await gptResponse.json();
   
   return {
     statusCode: 200,
@@ -679,7 +663,7 @@ async function professionalAdvice(user_query, search_results, userLanguage, open
     `${r.name}: ${r.description || '스타일 정보'}`
   ).join('\n');
 
-  const gptResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+  const data = await httpRequest('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${openaiKey}`,
@@ -701,8 +685,6 @@ async function professionalAdvice(user_query, search_results, userLanguage, open
       max_tokens: 200
     })
   });
-
-  const data = await gptResponse.json();
   
   return {
     statusCode: 200,
