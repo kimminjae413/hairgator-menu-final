@@ -115,7 +115,7 @@ class HairGatorChatbot {
         <div id="chatbot-messages" class="chatbot-messages">
           <div class="bot-message">
             <div class="message-content" id="welcome-message">
-              <p><strong>🦎 HAIRGATOR</strong></p>
+              <p><strong>HAIR Recipe</strong></p>
               <p id="welcome-text">${texts.welcome}</p>
             </div>
           </div>
