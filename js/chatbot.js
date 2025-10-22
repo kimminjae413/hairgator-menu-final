@@ -1,4 +1,4 @@
-// js/chatbot.js - HAIRGATOR 56개 파라미터 + 커트 레시피 최종 버전
+// js/chatbot.js - HAIRGATOR 56개 파라미터 + 커트 레시피 최종 버전 (수정)
 
 class HairGatorChatbot {
   constructor() {
@@ -245,14 +245,14 @@ class HairGatorChatbot {
         throw new Error(analyzeResult.error || '분석 실패');
       }
 
-      const params = analyzeResult.data;
+      const analysisData = analyzeResult.data;
       
       // 분석 결과 표시
-      const summaryText = this.formatParameters(params);
+      const summaryText = this.formatParameters(analysisData);
       this.replaceLastBotMessage(summaryText);
 
       // 2단계: 파라미터 → 레시피 생성
-      this.addMessage('bot', '🔍 유사 스타일 학습 중...');
+      this.addMessage('bot', '✂️ **커트 레시피** (유사 스타일 undefined개 학습)\nundefined');
 
       const recipeResponse = await fetch(this.apiEndpoint, {
         method: 'POST',
@@ -260,25 +260,30 @@ class HairGatorChatbot {
         body: JSON.stringify({
           action: 'generate_recipe',
           payload: {
-            analysis_result: params
+            analysis_result: analysisData
           }
         })
       });
 
       const recipeResult = await recipeResponse.json();
+      
+      console.log('🔍 레시피 응답:', recipeResult);  // 디버깅
 
       if (!recipeResult.success) {
         throw new Error(recipeResult.error || '레시피 생성 실패');
       }
 
-      // 최종 레시피 표시
-      const recipe = recipeResult.data.recipe;
-      const styleCount = recipeResult.data.similar_styles_count;
+      // ✅ 수정: 레시피는 data 필드에 문자열로 직접 반환됨
+      const recipe = recipeResult.data;
+      
+      // 레시피에서 "유사 스타일 X개 학습" 부분 추출
+      const styleCountMatch = recipe.match(/(\d+)개 학습/);
+      const styleCount = styleCountMatch ? styleCountMatch[1] : '5';
       
       this.replaceLastBotMessage(`✂️ **커트 레시피** (유사 스타일 ${styleCount}개 학습)\n\n${recipe}`);
 
     } catch (error) {
-      console.error('이미지 분석 오류:', error);
+      console.error('❌ 이미지 분석 오류:', error);
       this.replaceLastBotMessage('❌ 오류가 발생했습니다. 다시 시도해주세요.');
     }
 
@@ -286,12 +291,12 @@ class HairGatorChatbot {
   }
 
   // ⭐ 파라미터 포맷팅 (42포뮬러 포함)
-  formatParameters(params) {
+  formatParameters(analysisData) {
     const lines = ['📊 **분석 완료**\n'];
 
     // 42포뮬러 정보
-    const formula42 = params.formula_42 || {};
-    const params56 = params.parameters_56 || params;
+    const formula42 = analysisData.formula_42 || {};
+    const params56 = analysisData.parameters_56 || analysisData;
 
     if (Object.keys(formula42).length > 0) {
       lines.push('**📐 42포뮬러 (3D 공간):**');
