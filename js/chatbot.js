@@ -273,30 +273,152 @@ class HairGatorChatbot {
     
     modal.classList.remove('hidden');
     
-    // 색인 이미지 갤러리 생성 (89개)
+    // 기본 파일명 리스트 (번호와 제목)
+    const indexTitles = [
+      '1 Section & 2 Section',
+      '1Way Cut & 2Way Cut',
+      '2 Section',
+      '210 Degree Panel Control',
+      'A Zone & V Zone',
+      'Angle',
+      'Asymmetry',
+      'Bais Cut',
+      'Balance',
+      'Base',
+      'Base Control',
+      'Base Line',
+      'Base Position',
+      'Bevel',
+      'Bevel Off',
+      'Block Cut',
+      'Blocking',
+      'Blow Dry',
+      'Blunt Cut',
+      'Brick Cut',
+      'C Curveture',
+      'Channel Cut',
+      'Clipper Cut',
+      'Clipper Over Comb',
+      'Convex Line & Concave Line',
+      'Corner Off',
+      'Cowlick Parting',
+      'Curved Shape',
+      'Cut Form',
+      'Degree',
+      'Design Line',
+      'Diffuser',
+      'Direction',
+      'Disconnection',
+      'Distribution',
+      'Elevation',
+      'Face Line',
+      'Face Shape',
+      'Finger\'s Angle',
+      'Form',
+      'Freehands Cut',
+      'Fringe',
+      'Geometric Shape',
+      'Graduation',
+      'Graduation & Layer',
+      'Hairstyle Classification',
+      'Head Point',
+      'Head Position',
+      'Hemline',
+      'Image Cycle On & On',
+      'Inner Length',
+      'Layer',
+      'Layer & Weight',
+      'Lifting',
+      'Natural Inversion',
+      'Natural Parting',
+      'Occipital Bone',
+      'One Finger Projection',
+      'One Length',
+      'Outline Long Form',
+      'Outline Medium Form',
+      'Over Direction',
+      'Panel',
+      'Perimeter Line',
+      'Personalizing',
+      'Proportion',
+      'Recession Area',
+      'Recession Type',
+      'Scissor Over Comb',
+      'Section',
+      'Section Application',
+      'Section Control',
+      'Section Off',
+      'Separation',
+      'Silhouette',
+      'Skull Structure',
+      'Style Form',
+      'Subsequent Section',
+      'Symmetry',
+      'Temple Area',
+      'Texturizing',
+      'Texturizing Zone',
+      'Trimming',
+      'Under Cut',
+      'Visual Balance',
+      'Volume',
+      'Volume Location by Section',
+      'Weight Sit Area',
+      'Zone'
+    ];
+    
+    // 언어별 파일명 suffix
+    const suffixMap = {
+      'ko': '',      // 한국어는 suffix 없음
+      'en': ' – 1',  // 영어는 모두 – 1
+      'ja': ' – 2',  // 일본어는 대부분 – 2, 처음 2개만 – 3
+      'zh': ' – 3',  // 중국어는 대부분 – 3, 처음 2개만 – 2
+      'vi': ' – 5'   // 베트남어는 대부분 – 5, 처음 2개만 – 4
+    };
+    
     content.innerHTML = '<div class="index-loading">색인 로딩 중...</div>';
     
     try {
-      const indexImages = [];
+      const suffix = suffixMap[this.currentLanguage] || '';
       
-      // 89개 이미지 경로 생성
-      for (let i = 1; i <= 89; i++) {
-        const paddedNum = String(i).padStart(2, '0');
-        const imagePath = `/indexes/${this.currentLanguage}/${paddedNum}.png`;
-        indexImages.push({
-          num: paddedNum,
-          path: imagePath
-        });
-      }
+      const indexImages = indexTitles.map((title, index) => {
+        const num = String(index + 1).padStart(2, '0');
+        
+        let fileSuffix = suffix;
+        
+        // 일본어: 처음 2개는 – 3, 나머지는 – 2
+        if (this.currentLanguage === 'ja' && index < 2) {
+          fileSuffix = ' – 3';
+        }
+        
+        // 중국어: 처음 2개는 – 2, 나머지는 – 3
+        if (this.currentLanguage === 'zh' && index < 2) {
+          fileSuffix = ' – 2';
+        }
+        
+        // 베트남어: 처음 2개는 – 4, 나머지는 – 5
+        if (this.currentLanguage === 'vi' && index < 2) {
+          fileSuffix = ' – 4';
+        }
+        
+        const fileName = `${num}. ${title}${fileSuffix}.png`;
+        const imagePath = `/indexes/${this.currentLanguage}/${fileName}`;
+        
+        return {
+          num: num,
+          path: imagePath,
+          title: title
+        };
+      });
       
       // 갤러리 HTML 생성
       const galleryHTML = `
         <div class="index-gallery">
           ${indexImages.map(img => `
-            <div class="index-item" onclick="window.hairgatorChatbot.showImagePreview('${img.path}', '${img.num}')">
-              <img src="${img.path}" alt="Index ${img.num}" loading="lazy" 
+            <div class="index-item" onclick="window.hairgatorChatbot.showImagePreview('${img.path}', '${img.num}', '${img.title.replace(/'/g, "\\'")}')">
+              <img src="${img.path}" alt="${img.title}" loading="lazy" 
                    onerror="this.style.display='none'; this.parentElement.classList.add('image-error');">
               <span class="index-number">${img.num}</span>
+              <div class="index-title">${img.title}</div>
             </div>
           `).join('')}
         </div>
@@ -311,12 +433,12 @@ class HairGatorChatbot {
   }
 
   // 이미지 미리보기
-  showImagePreview(imagePath, imageNum) {
+  showImagePreview(imagePath, imageNum, imageTitle) {
     const previewHTML = `
       <div class="image-preview-overlay" onclick="this.remove()">
         <div class="image-preview-container" onclick="event.stopPropagation()">
           <div class="image-preview-header">
-            <span class="image-preview-title">Index ${imageNum}</span>
+            <span class="image-preview-title">${imageNum}. ${imageTitle}</span>
             <button class="image-preview-close" onclick="this.closest('.image-preview-overlay').remove()">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -325,7 +447,7 @@ class HairGatorChatbot {
             </button>
           </div>
           <div class="image-preview-content">
-            <img src="${imagePath}" alt="Index ${imageNum}">
+            <img src="${imagePath}" alt="${imageTitle}">
           </div>
         </div>
       </div>
