@@ -293,7 +293,7 @@ class HairGatorChatbot {
       const galleryHTML = `
         <div class="index-gallery">
           ${indexImages.map(img => `
-            <div class="index-item">
+            <div class="index-item" onclick="window.hairgatorChatbot.showImagePreview('${img.path}', '${img.num}')">
               <img src="${img.path}" alt="Index ${img.num}" loading="lazy" 
                    onerror="this.style.display='none'; this.parentElement.classList.add('image-error');">
               <span class="index-number">${img.num}</span>
@@ -308,6 +308,29 @@ class HairGatorChatbot {
       console.error('색인 로드 오류:', error);
       content.innerHTML = '<p class="index-error">색인을 불러올 수 없습니다.</p>';
     }
+  }
+
+  // 이미지 미리보기
+  showImagePreview(imagePath, imageNum) {
+    const previewHTML = `
+      <div class="image-preview-overlay" onclick="this.remove()">
+        <div class="image-preview-container" onclick="event.stopPropagation()">
+          <div class="image-preview-header">
+            <span class="image-preview-title">Index ${imageNum}</span>
+            <button class="image-preview-close" onclick="this.closest('.image-preview-overlay').remove()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="image-preview-content">
+            <img src="${imagePath}" alt="Index ${imageNum}">
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', previewHTML);
   }
 
   // 색인 숨기기
