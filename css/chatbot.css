@@ -198,14 +198,13 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  background: var(--background);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   z-index: 10000;
   min-width: 140px;
-  backdrop-filter: blur(20px);
   animation: dropdownSlide 0.2s ease-out;
 }
 
@@ -1062,6 +1061,23 @@
 [data-theme="light"] .analysis-item:hover,
 [data-theme="minimal"] .analysis-item:hover {
   background: rgba(0, 0, 0, 0.04);
+}
+
+/* 라이트 테마 언어 드롭다운 */
+[data-theme="light"] .language-dropdown,
+[data-theme="minimal"] .language-dropdown {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .lang-option,
+[data-theme="minimal"] .lang-option {
+  color: #000000;
+}
+
+[data-theme="light"] .lang-option:not(:last-child),
+[data-theme="minimal"] .lang-option:not(:last-child) {
+  border-bottom-color: rgba(0, 0, 0, 0.08);
 }
 
 /* ==================== ⭐ 색인 모달 ==================== */
