@@ -288,66 +288,49 @@ async function analyzeImage(payload, geminiKey) {
   };
 }
 
-// ==================== 2-4단계: 레시피 생성 ====================
+// ==================== 2단계: 레시피 생성 ====================
 async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
   const { analysis_result } = payload;
+  
+  console.log('레시피 생성 시작:', analysis_result.parameters_56);
 
-  console.log('레시피 생성 시작 (42포뮬러):', analysis_result);
+  // 1. 검색 쿼리 생성
+  const params = analysis_result.parameters_56;
+  const searchQuery = [
+    params.womens_cut_category || params.mens_cut_category,
+    params.womens_cut_length?.split('(')[0]?.trim(),
+    params.structure_layer,
+    params.fringe_type !== 'No Fringe' ? '앞머리' : null
+  ].filter(Boolean).join(' ');
 
-  // 검색 쿼리 생성
-  const searchQuery = createSearchQueryFromParams(analysis_result.parameters_56 || analysis_result);
   console.log('생성된 검색 쿼리:', searchQuery);
 
-  // 유사 스타일 검색 (I열 레시피 포함)
+  // 2. Supabase에서 유사 스타일 검색
   const similarStyles = await searchSimilarStyles(searchQuery, openaiKey, supabaseUrl, supabaseKey);
-  console.log(`찾은 유사 스타일: ${similarStyles.length}개`);
+  console.log('찾은 유사 스타일:', similarStyles.length + '개');
 
-  // GPT 레시피 생성 (42포뮬러 형식)
-  const recipe = await generateCutRecipe42(analysis_result, similarStyles, openaiKey);
+  // 3. GPT로 레시피 생성
+  const recipe = await generateDetailedRecipe(
+    analysis_result.formula_42,
+    analysis_result.parameters_56,
+    similarStyles,
+    openaiKey
+  );
 
   return {
     statusCode: 200,
     headers,
     body: JSON.stringify({ 
       success: true, 
-      data: {
-        recipe: recipe,
-        similar_styles_count: similarStyles.length,
-        formula_42_sections: Object.keys(analysis_result.formula_42 || {}).length
-      }
+      data: recipe
     })
   };
 }
 
-// ==================== 검색 쿼리 생성 ====================
-function createSearchQueryFromParams(params) {
-  const keywords = [];
-
-  if (params.womens_cut_category) keywords.push(params.womens_cut_category);
-  if (params.mens_cut_category) keywords.push(params.mens_cut_category);
-
-  if (params.estimated_hair_length_cm) {
-    const length = params.estimated_hair_length_cm;
-    if (length > 40) keywords.push('롱헤어');
-    else if (length > 25) keywords.push('미디엄');
-    else if (length > 15) keywords.push('단발');
-    else keywords.push('숏헤어');
-  }
-
-  if (params.structure_layer) {
-    keywords.push(params.structure_layer.replace(' Layer', ''));
-  }
-
-  if (params.fringe_type && params.fringe_type !== 'No Fringe') {
-    keywords.push('앞머리');
-  }
-
-  return keywords.join(' ') || '헤어스타일';
-}
-
-// ==================== 유사 스타일 검색 ====================
+// Supabase 벡터 검색
 async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey) {
   try {
+    // 1. OpenAI 임베딩 생성
     const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
       headers: {
@@ -367,6 +350,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey) {
     const embeddingData = await embeddingResponse.json();
     const embedding = embeddingData.data[0].embedding;
 
+    // 2. Supabase 벡터 검색
     const supabaseResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/match_hairstyles`, {
       method: 'POST',
       headers: {
@@ -382,21 +366,21 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey) {
 
     if (!supabaseResponse.ok) {
       console.log('벡터 검색 실패, 직접 검색으로 전환');
-      return await directTableSearch(supabaseUrl, supabaseKey, 5);
+      return await directTableSearch(supabaseUrl, supabaseKey);
     }
 
     const results = await supabaseResponse.json();
-    return results || [];
+    return results;
 
   } catch (error) {
-    console.error('검색 오류:', error);
-    return await directTableSearch(supabaseUrl, supabaseKey, 5);
+    console.error('벡터 검색 오류:', error);
+    return await directTableSearch(supabaseUrl, supabaseKey);
   }
 }
 
-// ==================== 대체 검색 ====================
-async function directTableSearch(supabaseUrl, supabaseKey, limit) {
-  const response = await fetch(`${supabaseUrl}/rest/v1/hairstyles?select=id,code,name,description,image_url,recipe&limit=${limit}`, {
+// 대체 검색
+async function directTableSearch(supabaseUrl, supabaseKey) {
+  const response = await fetch(`${supabaseUrl}/rest/v1/hairstyles?select=id,code,name,description,image_url,recipe&limit=5`, {
     method: 'GET',
     headers: {
       'apikey': supabaseKey,
@@ -405,63 +389,38 @@ async function directTableSearch(supabaseUrl, supabaseKey, limit) {
   });
 
   if (!response.ok) {
-    return [];
+    throw new Error('Direct table search failed');
   }
 
   return await response.json();
 }
 
-// ==================== GPT 레시피 생성 (42포뮬러 형식) ====================
-async function generateCutRecipe42(analysisResult, similarStyles, openaiKey) {
-  
-  const formula42 = analysisResult.formula_42 || {};
-  const params56 = analysisResult.parameters_56 || analysisResult;
+// GPT 레시피 생성
+async function generateDetailedRecipe(formula42, params56, similarStyles, openaiKey) {
+  // Supabase 레시피 예제
+  const recipeExamples = similarStyles
+    .filter(style => style.recipe)
+    .map((style, i) => `
+**레시피 ${i + 1}: ${style.name}**
+\`\`\`json
+${JSON.stringify(style.recipe, null, 2)}
+\`\`\`
+`).join('\n');
 
-  // Supabase 레시피 예시 (42포뮬러 형식)
-  let recipeExamples = '';
-  if (similarStyles && similarStyles.length > 0) {
-    recipeExamples = '\n\n**📚 Supabase 데이터베이스의 유사 스타일 레시피 (42포뮬러 + 56파라미터):**\n\n' + 
-      similarStyles.map((s, i) => {
-        if (s.recipe) {
-          let recipeData;
-          try {
-            recipeData = typeof s.recipe === 'string' ? JSON.parse(s.recipe) : s.recipe;
-          } catch (e) {
-            recipeData = s.recipe;
-          }
-          
-          return `[레시피 ${i+1}] ${s.name} (${s.code})\n${JSON.stringify(recipeData, null, 2)}`;
-        }
-        return `[레시피 ${i+1}] ${s.name} (${s.code})\n레시피 데이터 없음`;
-      }).join('\n\n');
-  }
+  const systemPrompt = `당신은 **42포뮬러 커트 레시피 전문가**입니다.
 
-  const systemPrompt = `당신은 **42포뮬러 전문 헤어 마스터**입니다.
+업로드 이미지의 42포뮬러 + 56파라미터 분석 결과와 Supabase의 유사 레시피들을 학습하여, **실무에서 바로 사용 가능한 가독성 높은 커트 매뉴얼**을 생성하세요.
 
-**미션**: 분석된 42포뮬러 + 56파라미터와 데이터베이스 레시피를 학습하여, **Supabase와 동일한 구조의 커트 레시피**를 생성하세요.
+**출력 형식:**
 
----
+# ✂️ [${params56.womens_cut_length || '길이'} / ${params56.womens_cut_category || '스타일'}] 커트 매뉴얼
 
-## 📐 42포뮬러 구조
-
-7개 섹션 × 층별 커트 정보:
-- **가로섹션** (2층): 정수리~이마
-- **후대각섹션** (9층): 뒷머리 볼륨
-- **전대각섹션** (6층): 측면~앞머리
-- **세로섹션** (12층): 중앙 축 ⭐ 최중요
-- **현대각백준** (3층): 귀라인
-- **네이프존** (4층): 목 부위
-- **업스컵** (6층): 정수리 최상단
-
-각 층: Lifting Angle (L0~L8), Length (cm), Cut Method
-
----
-
-## 📊 출력 형식
-
-**Supabase와 100% 동일한 구조로 작성하세요:**
-
-# ✂️ ${params56.womens_cut_category || params56.mens_cut_category || '헤어스타일'} 커트 레시피
+**컷 정보**
+- 길이: ${params56.estimated_hair_length_cm || 0}cm
+- 레이어: ${params56.structure_layer || 'Increase Layer'}
+- 앞머리: ${params56.fringe_type || 'None'}
+- 난이도: ${params56.difficulty_level || '중급'}
+- 예상 소요시간: ${params56.estimated_time_minutes || 60}분
 
 ---
 
