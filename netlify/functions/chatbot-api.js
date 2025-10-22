@@ -401,15 +401,27 @@ async function directTableSearch(supabaseUrl, supabaseKey) {
 
 // GPT 레시피 생성
 async function generateDetailedRecipe(formula42, params56, similarStyles, openaiKey) {
+  // 🔍 디버깅: 유사 스타일 확인
+  console.log('📊 유사 스타일 분석:', {
+    총개수: similarStyles.length,
+    레시피있는개수: similarStyles.filter(s => s.recipe).length,
+    스타일목록: similarStyles.map(s => ({ 
+      name: s.name, 
+      hasRecipe: !!s.recipe,
+      recipeKeys: s.recipe ? Object.keys(s.recipe) : []
+    }))
+  });
+
   // Supabase 레시피 예제
-  const recipeExamples = similarStyles
-    .filter(style => style.recipe)
-    .map((style, i) => `
+  const recipesWithData = similarStyles.filter(style => style.recipe);
+  const recipeExamples = recipesWithData.length > 0 
+    ? recipesWithData.map((style, i) => `
 **레시피 ${i + 1}: ${style.name}**
 \`\`\`json
 ${JSON.stringify(style.recipe, null, 2)}
 \`\`\`
-`).join('\n');
+`).join('\n')
+    : '// ⚠️ Supabase에 레시피 데이터가 없습니다. 42포뮬러 분석만으로 레시피를 생성합니다.';
 
   const systemPrompt = `당신은 **42포뮬러 커트 레시피 전문가**입니다.
 
@@ -556,7 +568,7 @@ ${JSON.stringify(style.recipe, null, 2)}
 
 ---
 
-**이 레시피는 42포뮬러 + 56파라미터 + Supabase 레시피 ${similarStyles.length}개 학습 기반입니다.**`;
+**이 레시피는 42포뮬러 + 56파라미터 + Supabase 레시피 ${recipesWithData.length}개 학습 기반입니다.**`;
 
   // 🔥 스트리밍 방식으로 변경
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
