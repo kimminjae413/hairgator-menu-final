@@ -1,4 +1,4 @@
-// js/chatbot.js - HAIRGATOR 56개 파라미터 + 커트 레시피 최종 버전 (수정)
+// js/chatbot.js - HAIRGATOR 마크다운 파싱 + 스트리밍 최종 버전
 
 class HairGatorChatbot {
   constructor() {
@@ -251,10 +251,23 @@ class HairGatorChatbot {
       const summaryText = this.formatParameters(analysisData);
       this.replaceLastBotMessage(summaryText);
 
-      // 2단계: 파라미터 → 레시피 생성
-      this.addMessage('bot', '✂️ **커트 레시피** (유사 스타일 undefined개 학습)\nundefined');
+      // 2단계: 레시피 생성 (스트리밍)
+      this.addMessage('bot', '<div class="recipe-streaming">✂️ <strong>커트 레시피 생성 중...</strong></div>');
 
-      const recipeResponse = await fetch(this.apiEndpoint, {
+      await this.streamRecipe(analysisData);
+
+    } catch (error) {
+      console.error('❌ 이미지 분석 오류:', error);
+      this.replaceLastBotMessage('❌ 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+
+    document.getElementById('image-upload').value = '';
+  }
+
+  // ⭐ 레시피 스트리밍 생성
+  async streamRecipe(analysisData) {
+    try {
+      const response = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -265,41 +278,114 @@ class HairGatorChatbot {
         })
       });
 
-      const recipeResult = await recipeResponse.json();
-      
-      console.log('🔍 레시피 응답:', recipeResult);  // 디버깅
+      const result = await response.json();
 
-      if (!recipeResult.success) {
-        throw new Error(recipeResult.error || '레시피 생성 실패');
+      if (!result.success) {
+        throw new Error(result.error || '레시피 생성 실패');
       }
 
-      // ✅ 수정: 레시피는 data 필드에 문자열로 직접 반환됨
-      const recipe = recipeResult.data;
+      // 레시피 텍스트를 HTML로 변환
+      const rawRecipe = result.data;
+      const formattedRecipe = this.markdownToHTML(rawRecipe);
       
-      // 레시피에서 "유사 스타일 X개 학습" 부분 추출
-      const styleCountMatch = recipe.match(/(\d+)개 학습/);
-      const styleCount = styleCountMatch ? styleCountMatch[1] : '5';
-      
-      this.replaceLastBotMessage(`✂️ **커트 레시피** (유사 스타일 ${styleCount}개 학습)\n\n${recipe}`);
+      // 스트리밍 효과 (한 글자씩 타이핑)
+      await this.typeWriter(formattedRecipe);
 
     } catch (error) {
-      console.error('❌ 이미지 분석 오류:', error);
-      this.replaceLastBotMessage('❌ 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error('❌ 레시피 생성 오류:', error);
+      this.replaceLastBotMessage('❌ 레시피 생성 중 오류가 발생했습니다.');
     }
+  }
 
-    document.getElementById('image-upload').value = '';
+  // ⭐ 마크다운 → HTML 변환 (가독성 개선)
+  markdownToHTML(markdown) {
+    let html = markdown;
+
+    // 1. 제목 변환
+    html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+    html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+    html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+
+    // 2. 굵은 글씨
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // 3. 코드 블록
+    html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+
+    // 4. 인라인 코드
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // 5. 리스트
+    html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+    // 6. 구분선
+    html = html.replace(/^---$/gim, '<hr>');
+
+    // 7. 줄바꿈 → <br> (2개 이상 연속 줄바꿈은 <p>로)
+    html = html.replace(/\n\n/g, '</p><p>');
+    html = html.replace(/\n/g, '<br>');
+
+    // 8. 이모지 유지
+    html = `<div class="recipe-content">${html}</div>`;
+
+    return html;
+  }
+
+  // ⭐ 타이핑 효과 (스트리밍 시뮬레이션)
+  async typeWriter(html) {
+    const messages = document.querySelectorAll('.bot-message');
+    const lastMessage = messages[messages.length - 1];
+    if (!lastMessage) return;
+
+    const contentDiv = lastMessage.querySelector('.message-content');
+    
+    // 임시로 빈 div 생성
+    contentDiv.innerHTML = '<div class="recipe-streaming"></div>';
+    const streamingDiv = contentDiv.querySelector('.recipe-streaming');
+
+    // HTML을 DOM으로 변환
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+
+    // 청크 단위로 스트리밍 (50자씩)
+    const chunkSize = 50;
+    const fullText = tempDiv.textContent || '';
+    let currentIndex = 0;
+
+    // 최종 HTML을 미리 설정
+    streamingDiv.innerHTML = html;
+    const allElements = streamingDiv.querySelectorAll('*');
+    
+    // 모든 요소 숨기기
+    allElements.forEach(el => {
+      el.style.opacity = '0';
+    });
+
+    // 순차적으로 표시
+    for (let i = 0; i < allElements.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 30));  // 30ms 간격
+      allElements[i].style.opacity = '1';
+      allElements[i].style.transition = 'opacity 0.2s ease-in';
+      this.scrollToBottom();
+    }
   }
 
   // ⭐ 파라미터 포맷팅 (42포뮬러 포함)
   formatParameters(analysisData) {
-    const lines = ['📊 **분석 완료**\n'];
+    const lines = [];
 
     // 42포뮬러 정보
     const formula42 = analysisData.formula_42 || {};
     const params56 = analysisData.parameters_56 || analysisData;
 
+    lines.push('<div class="analysis-result">');
+    lines.push('<h3>📊 분석 완료</h3>');
+
     if (Object.keys(formula42).length > 0) {
-      lines.push('**📐 42포뮬러 (3D 공간):**');
+      lines.push('<div class="formula-section">');
+      lines.push('<h4>📐 42포뮬러 (3D 공간)</h4>');
+      lines.push('<ul>');
       
       const sectionMap = {
         '가로섹션': '정수리~이마',
@@ -314,36 +400,38 @@ class HairGatorChatbot {
       for (const [section, layers] of Object.entries(formula42)) {
         if (layers && layers.length > 0) {
           const desc = sectionMap[section] || '';
-          lines.push(`  • ${section} (${desc}): ${layers.length}개 층`);
+          lines.push(`<li><strong>${section}</strong> (${desc}): ${layers.length}개 층</li>`);
         }
       }
-      lines.push('');
+      lines.push('</ul>');
+      lines.push('</div>');
     }
 
-    // 핵심 정보만 표시
+    // 핵심 정보 (간소화)
+    lines.push('<div class="params-section">');
+    lines.push('<h4>✂️ 핵심 정보</h4>');
+    lines.push('<ul>');
+    
     if (params56.womens_cut_length) {
-      lines.push(`📏 길이: **${params56.womens_cut_length}**`);
-    }
-    if (params56.womens_cut_category) {
-      lines.push(`✂️ 스타일: **${params56.womens_cut_category}**`);
-    }
-    if (params56.estimated_hair_length_cm) {
-      lines.push(`📐 예상: **${params56.estimated_hair_length_cm}cm**`);
-    }
-    if (params56.structure_layer) {
-      lines.push(`🎨 레이어: ${params56.structure_layer}`);
+      lines.push(`<li>📏 길이: <strong>${params56.womens_cut_length}</strong></li>`);
     }
     if (params56.fringe_type && params56.fringe_type !== 'No Fringe') {
-      lines.push(`💇 앞머리: ${params56.fringe_type}`);
+      lines.push(`<li>💇 앞머리: ${params56.fringe_type}</li>`);
     }
-    if (params56.cut_form) {
-      lines.push(`📐 컷 형태: ${params56.cut_form}`);
+    if (params56.hair_texture) {
+      lines.push(`<li>🧵 모질: ${params56.hair_texture}</li>`);
+    }
+    if (params56.face_shape_match) {
+      lines.push(`<li>👤 얼굴형: ${params56.face_shape_match}</li>`);
     }
 
     const paramCount = Object.values(params56).filter(v => v !== null && v !== undefined && v !== 0).length;
-    lines.push(`\n✅ 감지: **${paramCount}/56개**`);
+    lines.push(`</ul>`);
+    lines.push(`<p class="param-count">✅ 감지: <strong>${paramCount}/56개 파라미터</strong></p>`);
+    lines.push('</div>');
+    lines.push('</div>');
 
-    return lines.join('\n');
+    return lines.join('');
   }
 
   async handleTextMessage() {
@@ -497,5 +585,5 @@ class HairGatorChatbot {
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR 챗봇 로드 완료 (42포뮬러 + 56파라미터)');
+  console.log('🦎 HAIRGATOR 챗봇 로드 완료 (마크다운 파싱 + 스트리밍)');
 });
