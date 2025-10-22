@@ -723,9 +723,30 @@ async function casualConversation(user_query, userLanguage, openaiKey) {
 }
 
 async function professionalAdvice(user_query, search_results, userLanguage, openaiKey) {
+  // ⭐ 다국어 시스템 프롬프트
+  const systemPrompts = {
+    korean: '당신은 경력 20년 이상의 헤어 마스터입니다. 실무 조언을 2-3문장으로 제공하세요.',
+    english: 'You are a master hair stylist with 20+ years of experience. Provide practical advice in 2-3 sentences.',
+    japanese: 'あなたは20年以上の経験を持つヘアマスターです。実務アドバイスを2-3文で提供してください。',
+    chinese: '你是拥有20年以上经验的发型大师。用2-3句话提供实用建议。',
+    vietnamese: 'Bạn là bậc thầy tóc với hơn 20 năm kinh nghiệm. Cung cấp lời khuyên thực tế trong 2-3 câu.'
+  };
+
+  // ⭐ 다국어 사용자 프롬프트
+  const userPrompts = {
+    korean: (query, context) => `질문: ${query}\n\n참고 스타일:\n${context}`,
+    english: (query, context) => `Question: ${query}\n\nReference styles:\n${context}`,
+    japanese: (query, context) => `質問: ${query}\n\n参考スタイル:\n${context}`,
+    chinese: (query, context) => `问题: ${query}\n\n参考风格:\n${context}`,
+    vietnamese: (query, context) => `Câu hỏi: ${query}\n\nKiểu tóc tham khảo:\n${context}`
+  };
+
   const context = search_results.map(r => 
     `${r.name}: ${r.description || '스타일 정보'}`
   ).join('\n');
+
+  const systemPrompt = systemPrompts[userLanguage] || systemPrompts['korean'];
+  const userPromptFn = userPrompts[userLanguage] || userPrompts['korean'];
 
   const data = await httpRequest('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -736,14 +757,8 @@ async function professionalAdvice(user_query, search_results, userLanguage, open
     body: JSON.stringify({
       model: 'gpt-3.5-turbo',
       messages: [
-        { 
-          role: 'system', 
-          content: '당신은 헤어 전문가입니다. 실무 조언을 2-3문장으로 제공하세요.'
-        },
-        { 
-          role: 'user', 
-          content: `질문: ${user_query}\n\n참고:\n${context}`
-        }
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPromptFn(user_query, context) }
       ],
       temperature: 0.8,
       max_tokens: 200
@@ -755,7 +770,8 @@ async function professionalAdvice(user_query, search_results, userLanguage, open
     headers,
     body: JSON.stringify({ 
       success: true, 
-      data: data.choices[0].message.content
+      data: data.choices[0].message.content,
+      detected_language: userLanguage
     })
   };
 }
