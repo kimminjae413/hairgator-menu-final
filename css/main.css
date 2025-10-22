@@ -1955,3 +1955,358 @@ body.light-theme .modal-action-btn.secondary:hover {
     color: #999999 !important;
     cursor: not-allowed !important;
     opacity: 0.5 !important;
+/* ========================================
+   🦎 HAIRGATOR 챗봇 레시피 스타일
+   ======================================== */
+
+/* ========== 분석 결과 컨테이너 ========== */
+.analysis-result {
+    background: rgba(26, 26, 26, 0.8);
+    border: 1px solid rgba(233, 30, 99, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 10px 0;
+    backdrop-filter: blur(10px);
+}
+
+.analysis-result h3 {
+    margin: 0 0 20px 0;
+    font-size: 1.3em;
+    color: var(--text-primary);
+    border-bottom: 3px solid var(--female-color);
+    padding-bottom: 12px;
+    font-weight: 700;
+}
+
+.analysis-result h4 {
+    margin: 20px 0 12px 0;
+    font-size: 1.1em;
+    color: var(--female-color);
+    font-weight: 600;
+}
+
+.analysis-result ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.analysis-result li {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    transition: background-color 0.2s ease;
+}
+
+.analysis-result li:hover {
+    background-color: rgba(233, 30, 99, 0.05);
+    padding-left: 10px;
+}
+
+.analysis-result li:last-child {
+    border-bottom: none;
+}
+
+.analysis-result strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* 42포뮬러 섹션 */
+.formula-section {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: rgba(233, 30, 99, 0.03);
+    border-radius: 8px;
+}
+
+.formula-section h4 {
+    margin-top: 0;
+}
+
+/* 파라미터 섹션 */
+.params-section {
+    margin-top: 25px;
+    padding: 15px;
+    background: rgba(74, 144, 226, 0.03);
+    border-radius: 8px;
+}
+
+.params-section h4 {
+    margin-top: 0;
+}
+
+/* 파라미터 카운트 */
+.param-count {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid var(--female-color);
+    font-size: 1.15em;
+    text-align: center;
+    color: var(--female-color);
+    font-weight: 700;
+}
+
+/* ========== 레시피 콘텐츠 스타일 ========== */
+.recipe-content {
+    background: rgba(26, 26, 26, 0.8);
+    border: 1px solid rgba(233, 30, 99, 0.2);
+    border-radius: 12px;
+    padding: 25px;
+    margin: 15px 0;
+    line-height: 1.8;
+    backdrop-filter: blur(10px);
+}
+
+.recipe-content h1 {
+    font-size: 1.6em;
+    color: var(--text-primary);
+    margin: 0 0 25px 0;
+    padding-bottom: 20px;
+    border-bottom: 3px solid var(--female-color);
+    font-weight: 700;
+}
+
+.recipe-content h2 {
+    font-size: 1.35em;
+    color: var(--female-color);
+    margin: 35px 0 18px 0;
+    padding-left: 15px;
+    border-left: 5px solid var(--female-color);
+    font-weight: 600;
+}
+
+.recipe-content h3 {
+    font-size: 1.15em;
+    color: var(--text-primary);
+    margin: 25px 0 12px 0;
+    font-weight: 600;
+}
+
+.recipe-content h4 {
+    font-size: 1.05em;
+    color: rgba(233, 30, 99, 0.8);
+    margin: 20px 0 10px 0;
+    font-weight: 600;
+}
+
+.recipe-content p {
+    margin: 18px 0;
+    color: var(--text-secondary);
+    line-height: 1.9;
+}
+
+.recipe-content strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.recipe-content code {
+    background: rgba(233, 30, 99, 0.15);
+    color: var(--female-color);
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-size: 0.92em;
+    font-weight: 500;
+}
+
+.recipe-content pre {
+    background: rgba(0, 0, 0, 0.4);
+    border-left: 5px solid var(--female-color);
+    padding: 18px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 20px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.recipe-content pre code {
+    background: none;
+    color: var(--text-secondary);
+    padding: 0;
+    display: block;
+    white-space: pre;
+    line-height: 1.7;
+}
+
+.recipe-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.recipe-content li {
+    padding: 10px 0 10px 30px;
+    position: relative;
+    color: var(--text-secondary);
+    line-height: 1.8;
+}
+
+.recipe-content li:before {
+    content: '▸';
+    position: absolute;
+    left: 5px;
+    color: var(--female-color);
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.recipe-content hr {
+    border: none;
+    border-top: 2px solid rgba(233, 30, 99, 0.3);
+    margin: 35px 0;
+}
+
+/* ========== 스트리밍 효과 ========== */
+.recipe-streaming {
+    position: relative;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--female-color);
+    font-size: 1.1em;
+}
+
+.recipe-streaming::after {
+    content: '|';
+    animation: blink 1s infinite;
+    color: var(--female-color);
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-left: 5px;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* 스트리밍 중 로딩 애니메이션 */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.recipe-streaming {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ========== 챗봇 메시지 내 이미지 ========== */
+.uploaded-image {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 10px 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* ========== 반응형 (모바일) ========== */
+@media (max-width: 768px) {
+    .analysis-result,
+    .recipe-content {
+        padding: 15px;
+        font-size: 0.95em;
+        margin: 10px 5px;
+    }
+
+    .analysis-result h3 {
+        font-size: 1.2em;
+    }
+
+    .recipe-content h1 {
+        font-size: 1.4em;
+        margin-bottom: 20px;
+    }
+
+    .recipe-content h2 {
+        font-size: 1.2em;
+        margin: 30px 0 15px 0;
+        padding-left: 12px;
+    }
+
+    .recipe-content h3 {
+        font-size: 1.05em;
+    }
+
+    .recipe-content pre {
+        padding: 12px;
+        font-size: 0.85em;
+    }
+
+    .recipe-content li {
+        padding-left: 25px;
+    }
+
+    .param-count {
+        font-size: 1.05em;
+    }
+}
+
+/* ========== 라이트 테마 대응 ========== */
+body.light-theme .analysis-result,
+body.light-theme .recipe-content {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(233, 30, 99, 0.3);
+}
+
+body.light-theme .analysis-result li,
+body.light-theme .recipe-content p,
+body.light-theme .recipe-content li {
+    color: #333333;
+}
+
+body.light-theme .recipe-content pre {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .recipe-content pre code {
+    color: #555555;
+}
+
+body.light-theme .formula-section {
+    background: rgba(233, 30, 99, 0.05);
+}
+
+body.light-theme .params-section {
+    background: rgba(74, 144, 226, 0.05);
+}
+
+/* ========== 스크롤바 스타일 (레시피용) ========== */
+.recipe-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.recipe-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.recipe-content::-webkit-scrollbar-thumb {
+    background: var(--female-color);
+    border-radius: 4px;
+}
+
+.recipe-content::-webkit-scrollbar-thumb:hover {
+    background: #d81b60;
+}
+
+/* ========== 프린트 최적화 ========== */
+@media print {
+    .analysis-result,
+    .recipe-content {
+        background: white;
+        color: black;
+        border: 1px solid #ccc;
+    }
+
+    .recipe-content h1,
+    .recipe-content h2 {
+        color: #000;
+        border-color: #000;
+    }
+
+    .recipe-streaming::after {
+        display: none;
+    }
+}
