@@ -1,6 +1,9 @@
 // js/chatbot.js - HAIRGATOR v2.0
 // 89용어 통합 + 새 레시피 포맷(###1~###7) + 스트리밍 지원
 // ✅ TypeError 버그 수정 완료
+// ✅ Cut Form O/G/L 3개만 (Combination 제거)
+// ✅ Volume 엄격한 기준 (Low: 0~44°, Medium: 45~89°, High: 90°~)
+// ✅ Touch Event passive listener 추가
 
 class HairGatorChatbot {
   constructor() {
@@ -223,62 +226,34 @@ class HairGatorChatbot {
 
       <!-- 색인 모달 -->
       <div id="index-modal" class="index-modal hidden">
-        <div class="index-content">
-          <div class="index-header">
-            <h3 id="index-modal-title">${texts.indexTitle}</h3>
-            <button id="index-close" class="index-close">×</button>
+        <div class="index-modal-content">
+          <div class="index-modal-header">
+            <h2 id="index-modal-title">${texts.indexTitle}</h2>
+            <button id="close-index-modal" class="close-index-modal">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
-          <div class="index-body">
-            <div class="index-search">
-              <input type="text" id="index-search-input" placeholder="용어 검색...">
-            </div>
-            <div id="index-list" class="index-list"></div>
+          <div class="index-modal-body" id="index-modal-body">
+            <!-- 동적 생성 -->
           </div>
         </div>
       </div>
     `;
-    
+
     document.body.insertAdjacentHTML('beforeend', chatbotHTML);
-    this.renderIndexList();
-  }
-
-  renderIndexList() {
-    const indexList = document.getElementById('index-list');
-    if (!indexList) return;
-
-    const tier1 = ['01', '02', '05', '11', '19', '31', '33', '35', '44', '52', '54', '62', '70', '86', '89'];
-    const tier2 = ['04', '06', '20', '22', '23', '24', '29', '34', '36', '38', '41', '42', '45', '51', '53', '59', '60', '61', '75', '76', '81', '82', '84', '88'];
-    
-    let html = '<div class="tier-section"><h4>⭐ Tier 1: 필수 핵심</h4><ul>';
-    tier1.forEach(num => {
-      const term = this.terms89Map[num];
-      if (term) {
-        html += `<li><span class="term-number">${num}</span> ${term.ko}</li>`;
-      }
-    });
-    html += '</ul></div>';
-
-    html += '<div class="tier-section"><h4>🔸 Tier 2: 고급 기법</h4><ul>';
-    tier2.forEach(num => {
-      const term = this.terms89Map[num];
-      if (term) {
-        html += `<li><span class="term-number">${num}</span> ${term.ko}</li>`;
-      }
-    });
-    html += '</ul></div>';
-
-    indexList.innerHTML = html;
   }
 
   attachEventListeners() {
-    // 토글 버튼
+    // 챗봇 토글
     document.getElementById('chatbot-toggle').addEventListener('click', () => {
-      this.toggleChat();
+      this.toggleChatbot();
     });
 
-    // 닫기 버튼
     document.getElementById('chatbot-close').addEventListener('click', () => {
-      this.closeChat();
+      this.toggleChatbot();
     });
 
     // 업로드 버튼
@@ -286,7 +261,7 @@ class HairGatorChatbot {
       document.getElementById('image-upload').click();
     });
 
-    // 파일 선택
+    // 파일 업로드
     document.getElementById('image-upload').addEventListener('change', (e) => {
       this.handleImageUpload(e);
     });
@@ -304,335 +279,356 @@ class HairGatorChatbot {
     });
 
     // 언어 선택
-    document.getElementById('language-btn').addEventListener('click', () => {
-      document.getElementById('language-dropdown').classList.toggle('hidden');
+    document.getElementById('language-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const dropdown = document.getElementById('language-dropdown');
+      dropdown.classList.toggle('hidden');
     });
 
     document.querySelectorAll('.lang-option').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.currentLanguage = btn.dataset.lang;
+      btn.addEventListener('click', (e) => {
+        const lang = e.currentTarget.getAttribute('data-lang');
+        this.changeLanguage(lang);
         document.getElementById('language-dropdown').classList.add('hidden');
-        this.updateLanguage();
       });
     });
 
     // 색인 버튼
     document.getElementById('index-btn').addEventListener('click', () => {
-      document.getElementById('index-modal').classList.remove('hidden');
+      this.showIndexModal();
     });
 
-    document.getElementById('index-close').addEventListener('click', () => {
-      document.getElementById('index-modal').classList.add('hidden');
+    document.getElementById('close-index-modal').addEventListener('click', () => {
+      this.closeIndexModal();
     });
 
-    // 색인 검색
-    document.getElementById('index-search-input')?.addEventListener('input', (e) => {
-      this.filterIndexTerms(e.target.value);
-    });
-  }
-
-  filterIndexTerms(query) {
-    const items = document.querySelectorAll('#index-list li');
-    const lowerQuery = query.toLowerCase();
-
-    items.forEach(item => {
-      const text = item.textContent.toLowerCase();
-      item.style.display = text.includes(lowerQuery) ? '' : 'none';
-    });
-  }
-
-  initKeyboardHandler() {
-    window.addEventListener('resize', () => {
-      if (window.visualViewport) {
-        const container = document.getElementById('chatbot-container');
-        if (container) {
-          const offsetY = window.visualViewport.offsetTop;
-          const height = window.visualViewport.height;
-          container.style.transform = `translateY(${offsetY}px)`;
-          container.style.height = `${height}px`;
-        }
+    // 모달 외부 클릭 시 닫기
+    document.getElementById('index-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'index-modal') {
+        this.closeIndexModal();
       }
     });
+
+    // 언어 드롭다운 외부 클릭 시 닫기
+    document.addEventListener('click', () => {
+      document.getElementById('language-dropdown').classList.add('hidden');
+    });
   }
 
-  toggleChat() {
+  // ✅ 수정: Touch Event에 passive listener 추가
+  initKeyboardHandler() {
+    const chatbotInput = document.getElementById('chatbot-input');
+    const chatbotContainer = document.getElementById('chatbot-container');
+    const messagesDiv = document.getElementById('chatbot-messages');
+
+    if (!chatbotInput || !chatbotContainer) return;
+
+    let originalViewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    let isKeyboardVisible = false;
+
+    const adjustLayout = () => {
+      if (!window.visualViewport) return;
+
+      const currentViewportHeight = window.visualViewport.height;
+      const heightDiff = originalViewportHeight - currentViewportHeight;
+
+      if (heightDiff > 150) {
+        if (!isKeyboardVisible) {
+          isKeyboardVisible = true;
+          chatbotContainer.style.height = `${currentViewportHeight}px`;
+          
+          if (messagesDiv) {
+            messagesDiv.style.maxHeight = `calc(${currentViewportHeight}px - 140px)`;
+          }
+
+          setTimeout(() => {
+            const activeElement = document.activeElement;
+            if (activeElement && activeElement.tagName === 'INPUT') {
+              activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 300);
+        }
+      } else {
+        if (isKeyboardVisible) {
+          isKeyboardVisible = false;
+          chatbotContainer.style.height = '';
+          
+          if (messagesDiv) {
+            messagesDiv.style.maxHeight = '';
+          }
+        }
+      }
+    };
+
+    if (window.visualViewport) {
+      // ✅ 수정: { passive: true } 옵션 추가
+      window.visualViewport.addEventListener('resize', adjustLayout, { passive: true });
+      window.visualViewport.addEventListener('scroll', adjustLayout, { passive: true });
+    }
+
+    chatbotInput.addEventListener('focus', () => {
+      setTimeout(adjustLayout, 300);
+    });
+
+    chatbotInput.addEventListener('blur', () => {
+      setTimeout(() => {
+        if (document.activeElement.tagName !== 'INPUT') {
+          isKeyboardVisible = false;
+          chatbotContainer.style.height = '';
+          if (messagesDiv) {
+            messagesDiv.style.maxHeight = '';
+          }
+        }
+      }, 300);
+    });
+
+    // ✅ 수정: { passive: true } 옵션 추가
+    window.addEventListener('resize', () => {
+      if (!isKeyboardVisible) {
+        originalViewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      }
+    }, { passive: true });
+  }
+
+  toggleChatbot() {
     const container = document.getElementById('chatbot-container');
     const toggle = document.getElementById('chatbot-toggle');
     
-    if (!this.isOpen) {
-      // 챗봇 열기
-      this.isOpen = true;
+    this.isOpen = !this.isOpen;
+    
+    if (this.isOpen) {
       container.classList.add('active');
       toggle.classList.add('hidden');
-      this.scrollToBottom();
     } else {
-      // 챗봇 닫기
-      this.isOpen = false;
       container.classList.remove('active');
       toggle.classList.remove('hidden');
     }
   }
 
-  closeChat() {
-    this.isOpen = false;
-    const container = document.getElementById('chatbot-container');
-    const toggle = document.getElementById('chatbot-toggle');
-    container.classList.remove('active');
-    toggle.classList.remove('hidden');
+  changeLanguage(lang) {
+    this.currentLanguage = lang;
+    const texts = this.getTexts();
+    
+    document.getElementById('chatbot-title').textContent = texts.title;
+    document.getElementById('chatbot-input').placeholder = texts.placeholder;
+    document.getElementById('welcome-text').textContent = texts.welcome;
+    document.getElementById('index-modal-title').textContent = texts.indexTitle;
   }
 
-  updateLanguage() {
-    const texts = this.getTexts();
-    document.getElementById('chatbot-title').textContent = texts.title;
-    document.getElementById('welcome-text').textContent = texts.welcome;
-    document.getElementById('chatbot-input').placeholder = texts.placeholder;
-    document.getElementById('index-modal-title').textContent = texts.indexTitle;
+  showIndexModal() {
+    const modal = document.getElementById('index-modal');
+    const body = document.getElementById('index-modal-body');
+
+    const indexHTML = `
+      <div class="index-categories">
+        <div class="index-category">
+          <h3>✂️ Tier 1: 필수 핵심 15개</h3>
+          <ul>
+            ${Object.entries(this.terms89Map)
+              .filter(([id]) => ['01','02','05','11','19','31','33','35','44','52','54','62','70','86','89'].includes(id))
+              .map(([id, term]) => `
+                <li>
+                  <span class="term-number">${id}</span>
+                  <span class="term-name">${term[this.currentLanguage]}</span>
+                </li>
+              `).join('')}
+          </ul>
+        </div>
+
+        <div class="index-category">
+          <h3>🎯 Tier 2: 고급 기법 25개</h3>
+          <ul>
+            ${Object.entries(this.terms89Map)
+              .filter(([id]) => !['01','02','05','11','19','31','33','35','44','52','54','62','70','86','89','09','47','49','64','87'].includes(id))
+              .map(([id, term]) => `
+                <li>
+                  <span class="term-number">${id}</span>
+                  <span class="term-name">${term[this.currentLanguage]}</span>
+                </li>
+              `).join('')}
+          </ul>
+        </div>
+      </div>
+    `;
+
+    body.innerHTML = indexHTML;
+    modal.classList.remove('hidden');
+  }
+
+  closeIndexModal() {
+    document.getElementById('index-modal').classList.add('hidden');
   }
 
   async handleImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const texts = this.getTexts();
-
+    // 파일 크기 체크 (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert(texts.errorSize);
+      const texts = this.getTexts();
+      this.addMessage('bot', texts.errorSize);
       return;
     }
 
+    // 이미지 타입 체크
     if (!file.type.startsWith('image/')) {
-      alert(texts.errorType);
+      const texts = this.getTexts();
+      this.addMessage('bot', texts.errorType);
       return;
     }
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const imageData = e.target.result;
-      
-      this.addRawHTML(`
-        <div class="user-message">
-          <div class="message-content">
-            <img src="${imageData}" alt="Uploaded" style="max-width:200px;border-radius:8px;">
-          </div>
-        </div>
-      `);
-
-      this.addMessage('bot', texts.analyzing);
-
-      try {
-        const base64Data = imageData.split(',')[1];
-        
-        const analysisResponse = await fetch(this.apiEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'analyze_image',
-            payload: {
-              image_base64: base64Data,
-              mime_type: file.type
-            }
-          })
-        });
-
-        const analysisResult = await analysisResponse.json();
-
-        if (!analysisResult.success) {
-          throw new Error(analysisResult.error || '분석 실패');
-        }
-
-        const params56 = analysisResult.data;
-        this.replaceLastBotMessage(this.formatParameters(params56));
-
-        // 레시피 생성 (스트리밍)
-        await this.generateRecipeWithStream(params56);
-
-      } catch (error) {
-        console.error('이미지 분석 오류:', error);
-        this.replaceLastBotMessage(`❌ 이미지 분석에 실패했습니다: ${error.message}`);
-      }
-    };
-
-    reader.readAsDataURL(file);
-  }
-
-  async generateRecipeWithStream(params56) {
-    const texts = this.getTexts();
-    
-    // 새 메시지 추가
-    this.addMessage('bot', `<div class="streaming-content">${texts.generating}</div>`);
-    
-    const botMessages = document.querySelectorAll('.bot-message');
-    const streamingMessage = botMessages[botMessages.length - 1];
-    const contentDiv = streamingMessage.querySelector('.streaming-content');
 
     try {
-      const response = await fetch(this.apiEndpoint, {
+      // 이미지 미리보기 추가
+      const previewURL = URL.createObjectURL(file);
+      this.addMessage('user', `<img src="${previewURL}" alt="업로드 이미지" style="max-width:200px;border-radius:8px;">`);
+
+      const texts = this.getTexts();
+      this.addMessage('bot', texts.analyzing);
+
+      // Base64 변환
+      const base64Image = await this.fileToBase64(file);
+
+      // 1단계: 이미지 분석
+      const analysisResponse = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'generate_recipe_stream',
-          payload: { params56 }
+          action: 'analyze_image',
+          payload: { image: base64Image }
         })
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      const analysisResult = await analysisResponse.json();
+
+      if (!analysisResult.success) {
+        this.replaceLastBotMessage('❌ 이미지 분석 실패: ' + (analysisResult.error || '알 수 없는 오류'));
+        return;
       }
 
-      const result = await response.json();
-      
-      if (result.success) {
-        const formattedRecipe = this.parseNewRecipeFormat(result.data.recipe);
-        contentDiv.innerHTML = formattedRecipe;
-      } else {
-        throw new Error(result.error || '레시피 생성 실패');
+      // 분석 결과 표시
+      const formattedAnalysis = this.formatParameters(analysisResult.data);
+      this.replaceLastBotMessage(formattedAnalysis);
+
+      // 2단계: 레시피 생성 (스트리밍)
+      this.addMessage('bot', texts.generating);
+      const lastBotMessageDiv = document.querySelectorAll('.bot-message:last-child .message-content')[0];
+
+      const recipeResponse = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'generate_recipe_streaming',
+          payload: {
+            parameters_56: analysisResult.data.parameters_56,
+            formula_analysis: analysisResult.data.formula_analysis
+          }
+        })
+      });
+
+      if (!recipeResponse.ok) {
+        throw new Error(`HTTP ${recipeResponse.status}`);
       }
+
+      const reader = recipeResponse.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let accumulatedText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.content) {
+                accumulatedText += parsed.content;
+                
+                // 실시간 HTML 렌더링 (89용어 하이라이트 포함)
+                const rendered = this.parseMarkdownWithHighlight(accumulatedText);
+                lastBotMessageDiv.innerHTML = rendered;
+                this.scrollToBottom();
+              }
+            } catch (e) {
+              console.error('JSON 파싱 오류:', e);
+            }
+          }
+        }
+      }
+
+      // 최종 렌더링
+      const finalRendered = this.parseMarkdownWithHighlight(accumulatedText);
+      lastBotMessageDiv.innerHTML = finalRendered;
 
     } catch (error) {
-      console.error('레시피 생성 오류:', error);
-      contentDiv.innerHTML = `❌ 레시피 생성에 실패했습니다: ${error.message}`;
+      console.error('이미지 처리 오류:', error);
+      this.replaceLastBotMessage(`❌ 오류 발생: ${error.message}`);
     }
 
-    this.scrollToBottom();
+    // 파일 입력 초기화
+    event.target.value = '';
   }
 
-  // 🆕 새 레시피 포맷 파싱 (STEP1~STEP7 구조)
-  parseNewRecipeFormat(text) {
-    if (!text) return '<p>레시피 내용이 없습니다.</p>';
-
-    // <커트 레시피> 제목 제거
-    text = text.replace(/<커트 레시피>/gi, '');
-
-    // 섹션 분할 (STEP1 ~ STEP7)
-    const sections = [];
-    const regex = /STEP(\d+)\.\s*([^:]+):\s*([\s\S]*?)(?=STEP\d+\.|$)/g;
-    let match;
-
-    while ((match = regex.exec(text)) !== null) {
-      sections.push({
-        number: match[1],
-        title: match[2].trim(),
-        content: match[3].trim()
-      });
-    }
-
-    if (sections.length === 0) {
-      return `<div class="recipe-error">⚠️ 레시피 형식을 인식할 수 없습니다.</div>`;
-    }
-
-    // HTML 생성
-    let html = '<div class="new-recipe-format">';
-
-    sections.forEach(section => {
-      const sectionClass = this.getSectionClass(section.number);
-      
-      html += `
-        <div class="recipe-section ${sectionClass}">
-          <div class="section-header">
-            <span class="section-number">STEP${section.number}</span>
-            <h3 class="section-title">${this.escapeHtml(section.title)}</h3>
-          </div>
-          <div class="section-content">
-            ${this.highlight89Terms(this.parseMarkdown(section.content))}
-          </div>
-        </div>
-      `;
-    });
-
-    html += '</div>';
-    return html;
-  }
-
-  getSectionClass(sectionNumber) {
-    const classMap = {
-      '1': 'style-description',
-      '2': 'style-length',
-      '3': 'style-form',
-      '4': 'fringe-length',
-      '5': 'base-cut',
-      '6': 'texturizing',
-      '7': 'styling'
-    };
-    return classMap[sectionNumber] || '';
-  }
-
-  // 🆕 89용어 하이라이팅 (✅ TypeError 버그 수정)
+  // 89용어 하이라이팅 함수 (✅ TypeError 방지)
   highlight89Terms(text) {
-    // ⭐ 타입 안전성 체크 강화 (배열/객체 처리)
-    if (!text) return '';
-    
-    // 문자열이 아닌 경우 문자열로 변환
-    if (typeof text !== 'string') {
-      console.warn('⚠️ highlight89Terms: 문자열 변환 필요', typeof text);
-      
-      // 배열인 경우 join
-      if (Array.isArray(text)) {
-        text = text.join(' ');
-      } 
-      // 객체인 경우 JSON stringify
-      else if (typeof text === 'object') {
-        text = JSON.stringify(text);
-      }
-      // 그 외의 경우 String() 변환
-      else {
-        text = String(text);
-      }
-    }
+    if (!text || typeof text !== 'string') return text;
 
-    // 안전하게 문자열이 되었으므로 replace 가능
-    let highlighted = text;
+    let result = text;
 
-    // 용어 번호 패턴 (01~89)
-    Object.keys(this.terms89Map).forEach(termNum => {
-      const termInfo = this.terms89Map[termNum];
-      const pattern = new RegExp(`(${termNum}\\.[\\w\\s&-]+)`, 'gi');
-      
-      // 이제 highlighted는 확실히 문자열
-      highlighted = highlighted.replace(pattern, (match) => {
-        return `<span class="term-89" data-term="${termNum}" title="${termInfo.ko}">${match}</span>`;
+    // 정규식으로 안전하게 매칭 (대소문자 무시, 단어 경계 고려)
+    Object.entries(this.terms89Map).forEach(([id, term]) => {
+      const koTerm = term.ko;
+      const enTerm = term.en;
+
+      // 한글/영문 모두 매칭 (정확한 단어만)
+      const regex = new RegExp(`\\b(${koTerm}|${enTerm})\\b`, 'gi');
+      result = result.replace(regex, (match) => {
+        return `<span class="term-highlight" data-term-id="${id}" title="89용어 #${id}">${match}</span>`;
       });
     });
 
-    // 각도 패턴 하이라이팅 (L0~L8)
-    highlighted = highlighted.replace(/\bL([0-8])\b/g, '<span class="angle-lift">L$1</span>');
-    
-    // 방향 패턴 하이라이팅 (D0~D8)
-    highlighted = highlighted.replace(/\bD([0-8])\b/g, '<span class="angle-dir">D$1</span>');
-
-    // A존/B존/C존 하이라이팅
-    highlighted = highlighted.replace(/\bA존\b/g, '<span class="zone-a">A존</span>');
-    highlighted = highlighted.replace(/\bB존\b/g, '<span class="zone-b">B존</span>');
-    highlighted = highlighted.replace(/\bC존\b/g, '<span class="zone-c">C존</span>');
-
-    // 영어 Zone 패턴
-    highlighted = highlighted.replace(/\bZone-?A\b/gi, '<span class="zone-a">Zone-A</span>');
-    highlighted = highlighted.replace(/\bZone-?B\b/gi, '<span class="zone-b">Zone-B</span>');
-    highlighted = highlighted.replace(/\bZone-?C\b/gi, '<span class="zone-c">Zone-C</span>');
-
-    return highlighted;
+    return result;
   }
 
-  // 🆕 개선된 마크다운 파싱 (구조 유지)
-  parseMarkdown(text) {
-    if (!text || typeof text !== 'string') {
-      return '';
-    }
+  // 마크다운 파싱 + 89용어 하이라이트
+  parseMarkdownWithHighlight(markdown) {
+    if (!markdown) return '';
 
-    // 코드 블록 임시 저장
+    // 1. 코드 블록 임시 저장
     const codeBlocks = [];
-    let html = text.replace(/```([\s\S]*?)```/g, (match, code) => {
-      const index = codeBlocks.length;
-      codeBlocks.push(`<pre><code>${this.escapeHtml(code.trim())}</code></pre>`);
-      return `___CODE_BLOCK_${index}___`;
+    let html = markdown.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+      const placeholder = `___CODE_BLOCK_${codeBlocks.length}___`;
+      codeBlocks.push(`<pre><code class="language-${lang || 'text'}">${this.escapeHtml(code.trim())}</code></pre>`);
+      return placeholder;
     });
 
-    // 1. **굵은 글씨** → <strong>
+    // 2. STEP 헤더 파싱 (###1 ~ ###7)
+    html = html.replace(/^###(\d)\.\s*(.+)$/gm, (match, num, title) => {
+      return `<h3 class="recipe-step">STEP ${num}. ${title}</h3>`;
+    });
+
+    // 3. 일반 헤더 파싱
+    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+    // 4. 89용어 하이라이팅 적용
+    html = this.highlight89Terms(html);
+
+    // 5. 인라인 스타일
     html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-
-    // 2. *이탤릭* → <em>
     html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    html = html.replace(/`(.+?)`/g, '<code>$1</code>');
 
-    // 3. 줄바꿈 처리
+    // 6. 리스트 파싱 개선 (중첩 리스트 지원)
     const lines = html.split('\n');
     const result = [];
     let inList = false;
@@ -640,23 +636,25 @@ class HairGatorChatbot {
     lines.forEach(line => {
       const trimmed = line.trim();
       
-      if (!trimmed) {
+      // 리스트 항목
+      if (trimmed.match(/^[-*•]\s+/)) {
+        if (!inList) {
+          result.push('<ul>');
+          inList = true;
+        }
+        const content = trimmed.replace(/^[-*•]\s+/, '');
+        result.push(`<li>${content}</li>`);
+      } 
+      // 빈 줄
+      else if (trimmed === '') {
         if (inList) {
           result.push('</ul>');
           inList = false;
         }
-        return;
+        // 빈 줄은 무시
       }
-
-      // 리스트 항목 (- 또는 * 로 시작)
-      if (/^[-*]\s+/.test(trimmed)) {
-        if (!inList) {
-          result.push('<ul class="recipe-list">');
-          inList = true;
-        }
-        const content = trimmed.replace(/^[-*]\s+/, '');
-        result.push(`<li>${content}</li>`);
-      } else {
+      // 일반 텍스트
+      else {
         if (inList) {
           result.push('</ul>');
           inList = false;
@@ -880,5 +878,5 @@ class HairGatorChatbot {
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (TypeError 수정 + 89용어)');
+  console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (Cut Form O/G/L + Volume 엄격화 + Touch Event 수정)');
 });
