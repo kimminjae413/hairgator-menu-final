@@ -356,15 +356,21 @@ class HairGatorChatbot {
   }
 
   toggleChat() {
-    this.isOpen = !this.isOpen;
     const container = document.getElementById('chatbot-container');
     const toggle = document.getElementById('chatbot-toggle');
     
-    if (this.isOpen) {
+    // 현재 표시 상태를 직접 확인
+    const isCurrentlyHidden = container.style.display === 'none' || !container.style.display;
+    
+    if (isCurrentlyHidden) {
+      // 챗봇 열기
+      this.isOpen = true;
       container.style.display = 'flex';
       toggle.style.display = 'none';
       this.scrollToBottom();
     } else {
+      // 챗봇 닫기
+      this.isOpen = false;
       container.style.display = 'none';
       toggle.style.display = 'flex';
     }
