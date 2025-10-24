@@ -465,11 +465,11 @@ class HairGatorChatbot {
       if (lang === 'ko') return '';
       if (lang === 'en') return ' – 1';
       
-      // ja, zh, vi는 번호에 따라 다름
+      // ✅ 수정: ja, zh, vi는 번호에 따라 다름
       if (idNum <= 2) {
-        // 01-02: ja=2, zh=3, vi=4
-        if (lang === 'ja') return ' – 2';
-        if (lang === 'zh') return ' – 3';
+        // 01-02: ja=3, zh=2, vi=4
+        if (lang === 'ja') return ' – 3';
+        if (lang === 'zh') return ' – 2';
         if (lang === 'vi') return ' – 4';
       } else {
         // 03-89: ja=2, zh=3, vi=5
