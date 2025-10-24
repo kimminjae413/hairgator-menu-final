@@ -512,9 +512,8 @@ class HairGatorChatbot {
       const formattedAnalysis = this.formatParameters(analysisResult.data);
       this.replaceLastBotMessage(formattedAnalysis);
 
-      // 2단계: 레시피 생성 (스트리밍)
+      // 2단계: 레시피 생성
       this.addMessage('bot', texts.generating);
-      const lastBotMessageDiv = document.querySelectorAll('.bot-message:last-child .message-content')[0];
 
       const recipeResponse = await fetch(this.apiEndpoint, {
         method: 'POST',
@@ -531,44 +530,15 @@ class HairGatorChatbot {
         throw new Error(`HTTP ${recipeResponse.status}`);
       }
 
-      const reader = recipeResponse.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let accumulatedText = '';
+      const recipeResult = await recipeResponse.json();
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop();
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.content) {
-                accumulatedText += parsed.content;
-                
-                // 실시간 HTML 렌더링 (89용어 하이라이트 포함)
-                const rendered = this.parseMarkdownWithHighlight(accumulatedText);
-                lastBotMessageDiv.innerHTML = rendered;
-                this.scrollToBottom();
-              }
-            } catch (e) {
-              console.error('JSON 파싱 오류:', e);
-            }
-          }
-        }
+      if (recipeResult.success && recipeResult.data.recipe) {
+        // 레시피를 HTML로 렌더링 (89용어 하이라이트 포함)
+        const rendered = this.parseMarkdownWithHighlight(recipeResult.data.recipe);
+        this.replaceLastBotMessage(rendered);
+      } else {
+        this.replaceLastBotMessage('❌ 레시피 생성 실패');
       }
-
-      // 최종 렌더링
-      const finalRendered = this.parseMarkdownWithHighlight(accumulatedText);
-      lastBotMessageDiv.innerHTML = finalRendered;
 
     } catch (error) {
       console.error('이미지 처리 오류:', error);
