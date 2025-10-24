@@ -665,33 +665,26 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
     const langTerms = getTerms(language);
     
     // Direction 설명 (언어별)
-    const directionDesc = langTerms.direction[params56.direction_primary || 'D0'] || 
-                          langTerms.direction['D0'];
+    const directionDesc = langTerms.direction[params56.direction_primary || 'D0'] || langTerms.direction['D0'];
     
     // Section 설명 (언어별)
-    const sectionDesc = langTerms.section[params56.section_primary] || 
-                        langTerms.section['Vertical'];
+    const sectionDesc = langTerms.section[params56.section_primary] || langTerms.section['Vertical'];
     
     // Lifting 설명 (언어별, 배열 처리)
-    const liftingDescs = (params56.lifting_range || ['L2', 'L4']).map(l => 
-      `${l} (${langTerms.lifting[l] || l})`
-    ).join(', ');
+    const liftingDescs = (params56.lifting_range || ['L2', 'L4']).map(l => `${l} (${langTerms.lifting[l] || l})`).join(', ');
     
     // Volume 설명 (언어별)
-    const volumeDesc = langTerms.volume[params56.volume_zone] || 
-                       langTerms.volume['Medium'];
+    const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
 
     // ⭐ 언어별 시스템 프롬프트 완전 분리
-    const getSystemPrompt = (lang) => {
-      const ko_prompt = `당신은 HAIRGATOR 시스템 전문가입니다.
+    const systemPromptTemplates = {
+      ko: `당신은 HAIRGATOR 시스템 전문가입니다.
 
 **CRITICAL: 반드시 한국어로만 작성하세요.**
 
-다음 56파라미터를 바탕으로 커트 레시피를 작성하세요.
-
 <커트 레시피>
 STEP1. 스타일 설명: 
-[2-3문장]
+[2-3문장으로 작성]
 
 STEP2. 스타일 길이: 
 **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
@@ -717,17 +710,83 @@ C 존: [구체적 시술]
 
 STEP6. 질감처리: [구체적 기법]
 
-STEP7. 스타일링: [구체적 방법]`;
+STEP7. 스타일링: [구체적 방법]`,
 
-      const zh_prompt = `你是HAIRGATOR系统专家。
+      en: `You are a HAIRGATOR system expert.
+
+**CRITICAL: Write entirely in English.**
+
+<Cut Recipe>
+STEP1. Style Description: 
+[Write 2-3 sentences]
+
+STEP2. Style Length: 
+**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
+
+STEP3. Style Form: 
+**${params56.cut_form}**
+
+STEP4. Fringe Length: 
+**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
+
+STEP5. Base Cut
+**Internal Progression:**
+Zone A: [specific techniques]
+Zone B: [specific techniques]
+
+**External Progression:**
+Zone C: [specific techniques]
+
+**Direction**: ${params56.direction_primary || 'D0'} (${directionDesc})
+**Section**: ${params56.section_primary} (${sectionDesc})
+**Lifting**: ${liftingDescs}
+**Volume**: ${params56.volume_zone} (${volumeDesc})
+
+STEP6. Texturizing: [specific techniques]
+
+STEP7. Styling: [specific methods]`,
+
+      ja: `あなたはHAIRGATORシステムの専門家です。
+
+**CRITICAL: 必ず日本語で書いてください。**
+
+<カットレシピ>
+STEP1. スタイル説明: 
+[2-3文で作成]
+
+STEP2. スタイル長さ: 
+**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
+
+STEP3. スタイル形態: 
+**${params56.cut_form}**
+
+STEP4. 前髪長さ: 
+**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
+
+STEP5. ベースカット
+**インターナル進行:**
+Aゾーン: [具体的施術]
+Bゾーン: [具体的施術]
+
+**エクスターナル進行:**
+Cゾーン: [具体的施術]
+
+**ダイレクション**: ${params56.direction_primary || 'D0'} (${directionDesc})
+**セクション**: ${params56.section_primary} (${sectionDesc})
+**リフティング**: ${liftingDescs}
+**ボリューム**: ${params56.volume_zone} (${volumeDesc})
+
+STEP6. 質感処理: [具体的技法]
+
+STEP7. スタイリング: [具体的方法]`,
+
+      zh: `你是HAIRGATOR系统专家。
 
 **CRITICAL: 必须用中文书写。**
 
-根据56个参数创建剪发配方。
-
 <剪发配方>
 STEP1. 风格说明: 
-[2-3句]
+[用2-3句话描述]
 
 STEP2. 风格长度: 
 **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
@@ -753,13 +812,44 @@ C区: [具体手法]
 
 STEP6. 质感处理: [具体技法]
 
-STEP7. 造型: [具体方法]`;
+STEP7. 造型: [具体方法]`,
 
-      const prompts = { ko: ko_prompt, zh: zh_prompt, en: ko_prompt, ja: ko_prompt, vi: ko_prompt };
-      return prompts[lang] || prompts['ko'];
+      vi: `Bạn là chuyên gia hệ thống HAIRGATOR.
+
+**CRITICAL: Viết hoàn toàn bằng tiếng Việt.**
+
+<Công thức cắt>
+STEP1. Mô tả phong cách: 
+[Viết 2-3 câu]
+
+STEP2. Chiều dài phong cách: 
+**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
+
+STEP3. Hình thức phong cách: 
+**${params56.cut_form}**
+
+STEP4. Chiều dài tóc mái: 
+**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
+
+STEP5. Cắt cơ bản
+**Tiến triển nội bộ:**
+Vùng A: [kỹ thuật cụ thể]
+Vùng B: [kỹ thuật cụ thể]
+
+**Tiến triển bên ngoài:**
+Vùng C: [kỹ thuật cụ thể]
+
+**Hướng**: ${params56.direction_primary || 'D0'} (${directionDesc})
+**Phân đoạn**: ${params56.section_primary} (${sectionDesc})
+**Nâng**: ${liftingDescs}
+**Âm lượng**: ${params56.volume_zone} (${volumeDesc})
+
+STEP6. Xử lý kết cấu: [kỹ thuật cụ thể]
+
+STEP7. Tạo kiểu: [phương pháp cụ thể]`
     };
 
-    const systemPrompt = getSystemPrompt(language);
+    const systemPrompt = systemPromptTemplates[language] || systemPromptTemplates['ko'];
 
 
     const userPrompt = `다음 파라미터로 레시피를 생성하세요:
