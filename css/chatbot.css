@@ -1290,14 +1290,14 @@
 .term-card-single {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   background: #fff;
   border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 16px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 80px;
+  min-height: 220px;
 }
 
 .term-card-single:hover {
@@ -1311,14 +1311,15 @@
   transform: scale(0.98);
 }
 
-/* 이미지 섹션 (고정 크기) */
+/* 이미지 섹션 (고정 크기 - 대형) */
 .term-card-single img {
-  width: 120px;
-  height: 80px;
+  width: 300px;
+  height: 200px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 12px;
   flex-shrink: 0;
   background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 용어 정보 섹션 (유연하게 확장) */
@@ -1347,7 +1348,7 @@
   font-size: 13px;
   color: #333;
   line-height: 1.4;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* ============================================================
