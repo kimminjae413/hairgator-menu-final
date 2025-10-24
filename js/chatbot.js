@@ -520,10 +520,9 @@ class HairGatorChatbot {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'generate_recipe_streaming',
+          action: 'generate_recipe_stream',
           payload: {
-            parameters_56: analysisResult.data.parameters_56,
-            formula_analysis: analysisResult.data.formula_analysis
+            parameters_56: analysisResult.data
           }
         })
       });
