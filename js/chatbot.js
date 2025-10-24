@@ -591,37 +591,87 @@ class HairGatorChatbot {
     return highlighted;
   }
 
-  // 마크다운 파싱 (기존 유지)
+  // 🆕 개선된 마크다운 파싱 (구조 유지)
   parseMarkdown(text) {
     if (!text) return '';
 
     let html = text;
 
-    // 헤더
-    html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-    html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-    html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+    // 1. 코드 블록 보호 (먼저 처리)
+    const codeBlocks = [];
+    html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
+      codeBlocks.push(`<pre><code>${this.escapeHtml(code)}</code></pre>`);
+      return `___CODE_BLOCK_${codeBlocks.length - 1}___`;
+    });
 
-    // 볼드
+    // 2. 볼드 텍스트 (**텍스트**)
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
 
-    // 이탤릭
+    // 3. 이탤릭 (*텍스트*)
     html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    html = html.replace(/_(.*?)_/g, '<em>$1</em>');
 
-    // 리스트
-    html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
-    html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+    // 4. 리스트 처리 (- 로 시작하는 줄)
+    const lines = html.split('\n');
+    let inList = false;
+    let result = [];
 
-    // 구분선
-    html = html.replace(/^---$/gim, '<hr>');
+    lines.forEach((line, index) => {
+      const trimmed = line.trim();
+      
+      // 리스트 아이템
+      if (trimmed.startsWith('- ')) {
+        if (!inList) {
+          result.push('<ul class="recipe-list">');
+          inList = true;
+        }
+        result.push(`<li>${trimmed.substring(2)}</li>`);
+      } 
+      // 빈 줄
+      else if (trimmed === '') {
+        if (inList) {
+          result.push('</ul>');
+          inList = false;
+        }
+        result.push('<br>'); // 문단 구분
+      }
+      // 일반 텍스트
+      else {
+        if (inList) {
+          result.push('</ul>');
+          inList = false;
+        }
+        result.push(`<p class="recipe-text">${trimmed}</p>`);
+      }
+    });
 
-    // 줄바꿈
-    html = html.replace(/\n\n/g, '</p><p>');
-    html = html.replace(/\n/g, '<br>');
+    // 리스트가 열려있으면 닫기
+    if (inList) {
+      result.push('</ul>');
+    }
 
-    return `<p>${html}</p>`;
+    html = result.join('\n');
+
+    // 5. 코드 블록 복원
+    codeBlocks.forEach((block, index) => {
+      html = html.replace(`___CODE_BLOCK_${index}___`, block);
+    });
+
+    // 6. → 화살표를 예쁘게
+    html = html.replace(/→/g, '<span class="arrow">→</span>');
+
+    return html;
+  }
+
+  // HTML 이스케이프
+  escapeHtml(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
   }
 
   // 파라미터 포맷팅
