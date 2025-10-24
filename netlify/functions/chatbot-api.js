@@ -183,24 +183,51 @@ H Length (15cm): **귀 중간**
 - cut_form은 O, G, L 중 하나만 (C 사용 금지)
 
 **출력 형식 (JSON만):**
-\`\`\`json
+**출력 형식 (JSON - 모든 값에 괄호 설명 필수):**
+```json
 {
   "cut_category": "Women's Cut",
-  "length_category": "B Length",
+  "length_category": "B Length (가슴 상단~중간, 50cm)",
   "estimated_hair_length_cm": 50,
-  "cut_form": "L (Layer)",
-  "structure_layer": "Graduated Layer",
-  "fringe_type": "Side Bang",
-  "fringe_length": "Eye",
-  "volume_zone": "Medium",
-  "weight_flow": "Forward Weighted",
-  "hair_texture": "Medium",
-  "styling_method": "Blow Dry",
-  "section_primary": "Vertical",
-  "lifting_range": ["L2", "L4", "L6"],
-  "direction_primary": "D0"
+  "cut_form": "L (Layer, 레이어 - 층을 두어 자르는 기법)",
+  "structure_layer": "Graduated Layer (그래쥬에이티드 레이어 - 외곽 짧고 내부 긴 층)",
+  "fringe_type": "Side Bang (사이드 뱅 - 옆으로 넘긴 앞머리)",
+  "fringe_length": "Eye (눈 길이)",
+  "volume_zone": "High (상단 볼륨 - 정수리 근처에 볼륨)",
+  "weight_flow": "Forward Weighted (앞쪽 무게감)",
+  "hair_texture": "Medium (중간 모질)",
+  "styling_method": "Blow Dry (블로우 드라이)",
+  "section_primary": "Vertical (수직 섹션)",
+  "lifting_range": ["L2 (45도)", "L4 (90도)", "L6 (135도)"],
+  "direction_primary": "D0 (자연 낙하, 0도)"
 }
-\`\`\`
+```
+
+**⚠️ 필수 규칙: 모든 영문 값 뒤에 괄호로 한글 설명 추가**
+
+**Cut Form 설명:**
+- O: "O (One Length, 원렝스 - 일직선 커트, 층 없음)"
+- G: "G (Graduation, 그래쥬에이션 - 외곽 짧고 내부 긴 층, 아래 무거움)"
+- L: "L (Layer, 레이어 - 층을 두어 자르는 기법, 전체 볼륨)"
+
+**Volume 설명 (리프팅 각도 기준):**
+- Low: "Low (하단 볼륨 - 0~44도, 목 근처)"
+- Medium: "Medium (중단 볼륨 - 45~89도, 귀 위)"
+- High: "High (상단 볼륨 - 90도 이상, 정수리 근처)"
+
+**Lifting 설명:**
+- L0: "L0 (0도 - 자연 낙하)"
+- L2: "L2 (45도 - 중간 각도)"
+- L4: "L4 (90도 - 수평)"
+- L6: "L6 (135도 - 위로)"
+- L8: "L8 (180도 - 완전 위로)"
+
+**Direction 설명:**
+- D0: "D0 (자연 낙하, 0도)"
+- D2: "D2 (45도 앞)"
+- D4: "D4 (90도 앞, 얼굴 쪽)"
+- D6: "D6 (135도 뒤)"
+- D8: "D8 (180도 뒤, 후방)"
 
 **재확인 체크리스트:**
 - ✅ 머리카락 끝이 쇄골 위치인가? → C Length
@@ -208,6 +235,7 @@ H Length (15cm): **귀 중간**
 - ✅ 머리카락 끝이 가슴 아래인가? → A Length
 - ✅ 애매하면 더 긴 쪽 선택
 - ✅ cut_form은 O/G/L만 사용 (C 금지)
+- ✅ **모든 영문 값에 괄호 설명 필수!**
 `;
 
   try {
