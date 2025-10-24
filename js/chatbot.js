@@ -19,55 +19,95 @@ class HairGatorChatbot {
   // 89용어 매핑 테이블 (하이라이팅용)
   init89TermsMap() {
     return {
-      // Tier 1: 필수 핵심 15개
       '01': { ko: '1 Section & 2 Section', en: '1 Section & 2 Section' },
-      '02': { ko: '1Way & 2Way Cut', en: '1Way & 2Way Cut' },
-      '05': { ko: 'A Zone & V Zone', en: 'A Zone & V Zone' },
-      '11': { ko: 'Base Control', en: 'Base Control' },
-      '19': { ko: 'Blunt Cut', en: 'Blunt Cut' },
-      '31': { ko: 'Design Line', en: 'Design Line' },
-      '33': { ko: 'Direction', en: 'Direction' },
-      '35': { ko: 'Distribution', en: 'Distribution' },
-      '44': { ko: 'Graduation', en: 'Graduation' },
-      '52': { ko: 'Layer', en: 'Layer' },
-      '54': { ko: 'Lifting', en: 'Lifting' },
-      '62': { ko: 'Over Direction', en: 'Over Direction' },
-      '70': { ko: 'Section', en: 'Section' },
-      '86': { ko: 'Volume', en: 'Volume' },
-      '89': { ko: 'Zone', en: 'Zone' },
-      
-      // Tier 2: 고급 기법 25개
+      '02': { ko: '1Way & 2Way Cut', en: '1Way Cut & 2Way Cut' },
+      '03': { ko: '2 Section', en: '2 Section' },
       '04': { ko: '210 Degree Panel Control', en: '210 Degree Panel Control' },
+      '05': { ko: 'A Zone & V Zone', en: 'A Zone & V Zone' },
       '06': { ko: 'Angle', en: 'Angle' },
+      '07': { ko: 'Asymmetry', en: 'Asymmetry' },
+      '08': { ko: 'Bais Cut', en: 'Bais Cut' },
+      '09': { ko: 'Balance', en: 'Balance' },
+      '10': { ko: 'Base', en: 'Base' },
+      '11': { ko: 'Base Control', en: 'Base Control' },
+      '12': { ko: 'Base Line', en: 'Base Line' },
+      '13': { ko: 'Base Position', en: 'Base Position' },
+      '14': { ko: 'Bevel', en: 'Bevel' },
+      '15': { ko: 'Bevel Off', en: 'Bevel Off' },
+      '16': { ko: 'Block Cut', en: 'Block Cut' },
+      '17': { ko: 'Blocking', en: 'Blocking' },
+      '18': { ko: 'Blow Dry', en: 'Blow Dry' },
+      '19': { ko: 'Blunt Cut', en: 'Blunt Cut' },
       '20': { ko: 'Brick Cut', en: 'Brick Cut' },
+      '21': { ko: 'C Curveture', en: 'C Curveture' },
       '22': { ko: 'Channel Cut', en: 'Channel Cut' },
       '23': { ko: 'Clipper Cut', en: 'Clipper Cut' },
       '24': { ko: 'Clipper Over Comb', en: 'Clipper Over Comb' },
+      '25': { ko: 'Convex Line & Concave Line', en: 'Convex Line & Concave Line' },
+      '26': { ko: 'Corner Off', en: 'Corner Off' },
+      '27': { ko: 'Cowlick Parting', en: 'Cowlick Parting' },
+      '28': { ko: 'Curved Shape', en: 'Curved Shape' },
       '29': { ko: 'Cut Form', en: 'Cut Form' },
+      '30': { ko: 'Degree', en: 'Degree' },
+      '31': { ko: 'Design Line', en: 'Design Line' },
+      '32': { ko: 'Diffuser', en: 'Diffuser' },
+      '33': { ko: 'Direction', en: 'Direction' },
       '34': { ko: 'Disconnection', en: 'Disconnection' },
+      '35': { ko: 'Distribution', en: 'Distribution' },
       '36': { ko: 'Elevation', en: 'Elevation' },
+      '37': { ko: 'Face Line', en: 'Face Line' },
       '38': { ko: 'Face Shape', en: 'Face Shape' },
+      '39': { ko: "Finger's Angle", en: "Finger's Angle" },
+      '40': { ko: 'Form', en: 'Form' },
       '41': { ko: 'Freehands Cut', en: 'Freehands Cut' },
       '42': { ko: 'Fringe', en: 'Fringe' },
+      '43': { ko: 'Geometric Shape', en: 'Geometric Shape' },
+      '44': { ko: 'Graduation', en: 'Graduation' },
       '45': { ko: 'Graduation & Layer', en: 'Graduation & Layer' },
+      '46': { ko: 'Hairstyle Classification', en: 'Hairstyle Classification' },
+      '47': { ko: 'Head Point', en: 'Head Point' },
+      '48': { ko: 'Head Position', en: 'Head Position' },
+      '49': { ko: 'Hemline', en: 'Hemline' },
+      '50': { ko: 'Image Cycle On & On', en: 'Image Cycle On & On' },
       '51': { ko: 'Inner Length', en: 'Inner Length' },
+      '52': { ko: 'Layer', en: 'Layer' },
       '53': { ko: 'Layer & Weight', en: 'Layer & Weight' },
+      '54': { ko: 'Lifting', en: 'Lifting' },
+      '55': { ko: 'Natural Inversion', en: 'Natural Inversion' },
+      '56': { ko: 'Natural Parting', en: 'Natural Parting' },
+      '57': { ko: 'Occipital Bone', en: 'Occipital Bone' },
+      '58': { ko: 'One Finger Projection', en: 'One Finger Projection' },
       '59': { ko: 'One Length', en: 'One Length' },
       '60': { ko: 'Outline Long Form', en: 'Outline Long Form' },
       '61': { ko: 'Outline Medium Form', en: 'Outline Medium Form' },
+      '62': { ko: 'Over Direction', en: 'Over Direction' },
+      '63': { ko: 'Panel', en: 'Panel' },
+      '64': { ko: 'Perimeter Line', en: 'Perimeter Line' },
+      '65': { ko: 'Personalizing', en: 'Personalizing' },
+      '66': { ko: 'Proportion', en: 'Proportion' },
+      '67': { ko: 'Recession Area', en: 'Recession Area' },
+      '68': { ko: 'Recession Type', en: 'Recession Type' },
+      '69': { ko: 'Scissor Over Comb', en: 'Scissor Over Comb' },
+      '70': { ko: 'Section', en: 'Section' },
+      '71': { ko: 'Section Application', en: 'Section Application' },
+      '72': { ko: 'Section Control', en: 'Section Control' },
+      '73': { ko: 'Section Off', en: 'Section Off' },
+      '74': { ko: 'Separation', en: 'Separation' },
       '75': { ko: 'Silhouette', en: 'Silhouette' },
       '76': { ko: 'Skull Structure', en: 'Skull Structure' },
+      '77': { ko: 'Style Form', en: 'Style Form' },
+      '78': { ko: 'Subsequent Section', en: 'Subsequent Section' },
+      '79': { ko: 'Symmetry', en: 'Symmetry' },
+      '80': { ko: 'Temple Area', en: 'Temple Area' },
       '81': { ko: 'Texturizing', en: 'Texturizing' },
       '82': { ko: 'Texturizing Zone', en: 'Texturizing Zone' },
+      '83': { ko: 'Trimming', en: 'Trimming' },
       '84': { ko: 'Under Cut', en: 'Under Cut' },
+      '85': { ko: 'Visual Balance', en: 'Visual Balance' },
+      '86': { ko: 'Volume', en: 'Volume' },
+      '87': { ko: 'Volume Location by Section', en: 'Volume Location by Section' },
       '88': { ko: 'Weight Sit Area', en: 'Weight Sit Area' },
-      
-      // 추가 용어들 (필요시 확장)
-      '09': { ko: 'Balance', en: 'Balance' },
-      '47': { ko: 'Head Point', en: 'Head Point' },
-      '49': { ko: 'Hemline', en: 'Hemline' },
-      '64': { ko: 'Perimeter Line', en: 'Perimeter Line' },
-      '87': { ko: 'Volume Location', en: 'Volume Location' }
+      '89': { ko: 'Zone', en: 'Zone' }
     };
   }
 
@@ -419,46 +459,148 @@ class HairGatorChatbot {
     const modal = document.getElementById('index-modal');
     const body = document.getElementById('index-modal-body');
 
-    const indexHTML = `
-      <div class="index-categories">
-        <div class="index-category">
-          <h3>✂️ Tier 1: 필수 핵심 15개</h3>
-          <ul>
-            ${Object.entries(this.terms89Map)
-              .filter(([id]) => ['01','02','05','11','19','31','33','35','44','52','54','62','70','86','89'].includes(id))
-              .map(([id, term]) => `
-                <li>
-                  <span class="term-number">${id}</span>
-                  <span class="term-name">${term[this.currentLanguage]}</span>
-                </li>
-              `).join('')}
-          </ul>
-        </div>
+    const languageFileSuffix = {
+      ko: '',
+      en: ' – 1',
+      ja: ' – 3',
+      zh: ' – 2',
+      vi: ' – 4'
+    };
 
-        <div class="index-category">
-          <h3>🎯 Tier 2: 고급 기법 25개</h3>
-          <ul>
-            ${Object.entries(this.terms89Map)
-              .filter(([id]) => !['01','02','05','11','19','31','33','35','44','52','54','62','70','86','89','09','47','49','64','87'].includes(id))
-              .map(([id, term]) => `
-                <li>
-                  <span class="term-number">${id}</span>
-                  <span class="term-name">${term[this.currentLanguage]}</span>
-                </li>
-              `).join('')}
-          </ul>
-        </div>
+    const suffix = languageFileSuffix[this.currentLanguage] || '';
+    const baseURL = 'https://bhsbwbeisqzgipvzpvym.supabase.co/storage/v1/object/public/term-images/';
+
+    const galleryHTML = `
+      <div class="term-gallery-single-column">
+        ${Object.entries(this.terms89Map)
+          .sort(([idA], [idB]) => parseInt(idA) - parseInt(idB))
+          .map(([id, term]) => {
+            const termName = term.en;
+            const fileName = `${id}. ${termName}${suffix}.png`;
+            const imageURL = baseURL + encodeURIComponent(fileName);
+            
+            return `
+              <div class="term-card-single" onclick="window.hairgatorChatbot.openImageViewer(${parseInt(id) - 1})">
+                <img 
+                  src="${imageURL}" 
+                  alt="${term[this.currentLanguage]}"
+                  onerror="this.parentElement.classList.add('image-error'); this.style.display='none';"
+                />
+                <div class="term-info-single">
+                  <span class="term-num">${id}</span>
+                  <span class="term-title">${term[this.currentLanguage]}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
       </div>
     `;
 
-    body.innerHTML = indexHTML;
+    body.innerHTML = galleryHTML;
     modal.classList.remove('hidden');
+
+    window.hairgatorTermImages = Object.entries(this.terms89Map)
+      .sort(([idA], [idB]) => parseInt(idA) - parseInt(idB))
+      .map(([id, term]) => {
+        const termName = term.en;
+        const fileName = `${id}. ${termName}${suffix}.png`;
+        return {
+          url: baseURL + encodeURIComponent(fileName),
+          title: `${id}. ${term[this.currentLanguage]}`
+        };
+      });
   }
 
   closeIndexModal() {
     document.getElementById('index-modal').classList.add('hidden');
   }
 
+  openImageViewer(index) {
+    const images = window.hairgatorTermImages;
+    if (!images || !images[index]) return;
+
+    let currentIndex = index;
+
+    const viewerHTML = `
+      <div class="image-viewer-modal" id="image-viewer">
+        <div class="viewer-content">
+          <img id="viewer-image" src="${images[currentIndex].url}" alt="${images[currentIndex].title}">
+          <div class="viewer-info">
+            <span class="viewer-title">${images[currentIndex].title}</span>
+            <span class="viewer-counter">${currentIndex + 1} / ${images.length}</span>
+          </div>
+          <button class="viewer-prev" id="viewer-prev">‹</button>
+          <button class="viewer-next" id="viewer-next">›</button>
+          <button class="viewer-close" id="viewer-close">✕</button>
+        </div>
+      </div>
+    `;
+
+    const existingViewer = document.getElementById('image-viewer');
+    if (existingViewer) existingViewer.remove();
+    document.body.insertAdjacentHTML('beforeend', viewerHTML);
+
+    const viewer = document.getElementById('image-viewer');
+    const viewerImage = document.getElementById('viewer-image');
+    const viewerTitle = viewer.querySelector('.viewer-title');
+    const viewerCounter = viewer.querySelector('.viewer-counter');
+
+    const updateImage = (newIndex) => {
+      if (newIndex < 0 || newIndex >= images.length) return;
+      currentIndex = newIndex;
+      viewerImage.src = images[currentIndex].url;
+      viewerTitle.textContent = images[currentIndex].title;
+      viewerCounter.textContent = `${currentIndex + 1} / ${images.length}`;
+    };
+
+    document.getElementById('viewer-prev').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (currentIndex > 0) updateImage(currentIndex - 1);
+    });
+
+    document.getElementById('viewer-next').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (currentIndex < images.length - 1) updateImage(currentIndex + 1);
+    });
+
+    const closeViewer = () => viewer.remove();
+    document.getElementById('viewer-close').addEventListener('click', closeViewer);
+    viewer.addEventListener('click', (e) => {
+      if (e.target === viewer) closeViewer();
+    });
+
+    const handleKeyboard = (e) => {
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        updateImage(currentIndex - 1);
+      } else if (e.key === 'ArrowRight' && currentIndex < images.length - 1) {
+        updateImage(currentIndex + 1);
+      } else if (e.key === 'Escape') {
+        closeViewer();
+        document.removeEventListener('keydown', handleKeyboard);
+      }
+    };
+    document.addEventListener('keydown', handleKeyboard);
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    viewerImage.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    viewerImage.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const swipeDistance = touchStartX - touchEndX;
+
+      if (Math.abs(swipeDistance) > 50) {
+        if (swipeDistance > 0 && currentIndex < images.length - 1) {
+          updateImage(currentIndex + 1);
+        } else if (swipeDistance < 0 && currentIndex > 0) {
+          updateImage(currentIndex - 1);
+        }
+      }
+    }, { passive: true });
+  }
   async handleImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
