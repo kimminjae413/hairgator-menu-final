@@ -424,20 +424,21 @@ class HairGatorChatbot {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            action: 'analyze_image',
-            payload: { image_data: base64Data }
+            action: 'analyze-image',  // 기존 형식
+            image: base64Data
           })
         });
 
         const analysisResult = await analysisResponse.json();
 
-        if (!analysisResult.success) {
+        if (!analysisResult || analysisResult.error) {
           this.replaceLastBotMessage('❌ 이미지 분석에 실패했습니다.');
           return;
         }
 
-        const params56 = analysisResult.data.parameters_56;
-        const formula42 = analysisResult.data.formula_42;
+        // 기존 응답 형식에 맞게 수정
+        const params56 = analysisResult.parameters_56 || analysisResult;
+        const formula42 = analysisResult.formula_42 || {};
 
         this.replaceLastBotMessage(this.formatParameters(params56));
 
@@ -453,7 +454,7 @@ class HairGatorChatbot {
     reader.readAsDataURL(file);
   }
 
-  // 🆕 스트리밍 레시피 생성 (새 포맷 ###1~###7)
+  // 레시피 생성 (기존 방식 - 스트리밍 비활성화)
   async generateRecipeWithStream(formula42, params56) {
     const texts = this.getTexts();
     
@@ -468,41 +469,21 @@ class HairGatorChatbot {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'generate_recipe_stream',
-          payload: {
-            formula_42: formula42,
-            parameters_56: params56
-          }
+          action: 'generate-recipe',  // 기존 액션명
+          formula42: formula42,
+          params56: params56
         })
       });
 
-      if (!response.ok) {
+      const result = await response.json();
+
+      if (!result || result.error) {
         throw new Error('레시피 생성 실패');
       }
 
-      // 스트리밍 응답 처리
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedText = '';
-
-      contentDiv.innerHTML = '<div class="recipe-streaming"></div>';
-      const streamingDiv = contentDiv.querySelector('.recipe-streaming');
-
-      while (true) {
-        const { done, value } = await reader.read();
-        
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        accumulatedText += chunk;
-
-        // 실시간 렌더링 (89용어 하이라이팅 적용)
-        streamingDiv.innerHTML = this.parseNewRecipeFormat(accumulatedText);
-        this.scrollToBottom();
-      }
-
-      // 최종 렌더링
-      contentDiv.innerHTML = this.parseNewRecipeFormat(accumulatedText);
+      // 결과 렌더링 (새 포맷 적용)
+      const recipeText = result.recipe || result;
+      contentDiv.innerHTML = this.parseNewRecipeFormat(recipeText);
       this.scrollToBottom();
 
     } catch (error) {
