@@ -494,7 +494,10 @@ class HairGatorChatbot {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'analyze_image',
-          payload: { image: base64Image }
+          payload: { 
+            image_base64: base64Image,
+            mime_type: file.type || 'image/jpeg'
+          }
         })
       });
 
