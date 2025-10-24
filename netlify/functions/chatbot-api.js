@@ -284,7 +284,7 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
     const similarStyles = await searchSimilarStyles(
       searchQuery, 
       openaiKey, 
-      supabase Url, 
+      supabaseUrl, 
       supabaseKey, 
       params56.cut_category?.includes('Women') ? 'female' : 'male'
     );
