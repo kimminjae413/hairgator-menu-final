@@ -468,7 +468,8 @@ class HairGatorChatbot {
     };
 
     const suffix = languageFileSuffix[this.currentLanguage] || '';
-    const baseURL = 'https://bhsbwbeisqzgipvzpvym.supabase.co/storage/v1/object/public/term-images/';
+    const baseURL = 'https://raw.githubusercontent.com/kimminjae413/hairgator-menu-final/main/indexes/';
+    const langFolder = this.currentLanguage;
 
     const galleryHTML = `
       <div class="term-gallery-single-column">
@@ -477,7 +478,7 @@ class HairGatorChatbot {
           .map(([id, term]) => {
             const termName = term.en;
             const fileName = `${id}. ${termName}${suffix}.png`;
-            const imageURL = baseURL + encodeURIComponent(fileName);
+            const imageURL = baseURL + langFolder + '/' + encodeURIComponent(fileName);
             
             return `
               <div class="term-card-single" onclick="window.hairgatorChatbot.openImageViewer(${parseInt(id) - 1})">
@@ -505,7 +506,7 @@ class HairGatorChatbot {
         const termName = term.en;
         const fileName = `${id}. ${termName}${suffix}.png`;
         return {
-          url: baseURL + encodeURIComponent(fileName),
+          url: baseURL + langFolder + '/' + encodeURIComponent(fileName),
           title: `${id}. ${term[this.currentLanguage]}`
         };
       });
