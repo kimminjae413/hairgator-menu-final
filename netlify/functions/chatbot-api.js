@@ -429,12 +429,6 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
     console.log('🔄 텍스트 유사도 검색으로 전환...');
     return await directTableSearch(supabaseUrl, supabaseKey, query, targetGender);  // ✅ targetGender 전달
   }
-    return results;
-  } catch (error) {
-    console.error('❌ Supabase 벡터 검색 예외:', error.message);
-    console.log('🔄 텍스트 유사도 검색으로 전환...');
-    return await directTableSearch(supabaseUrl, supabaseKey, query);
-  }
 }
 
 // ==================== 헤어스타일 코드 파싱 ====================
