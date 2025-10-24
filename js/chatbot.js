@@ -459,15 +459,27 @@ class HairGatorChatbot {
     const modal = document.getElementById('index-modal');
     const body = document.getElementById('index-modal-body');
 
-    const languageFileSuffix = {
-      ko: '',
-      en: ' – 1',
-      ja: ' – 3',
-      zh: ' – 2',
-      vi: ' – 4'
+    // 언어별 접미사 매핑 (정확한 파일명 기준)
+    const getFileSuffix = (id, lang) => {
+      const idNum = parseInt(id);
+      if (lang === 'ko') return '';
+      if (lang === 'en') return ' – 1';
+      
+      // ja, zh, vi는 번호에 따라 다름
+      if (idNum <= 2) {
+        // 01-02: ja=2, zh=3, vi=4
+        if (lang === 'ja') return ' – 2';
+        if (lang === 'zh') return ' – 3';
+        if (lang === 'vi') return ' – 4';
+      } else {
+        // 03-89: ja=2, zh=3, vi=5
+        if (lang === 'ja') return ' – 2';
+        if (lang === 'zh') return ' – 3';
+        if (lang === 'vi') return ' – 5';
+      }
+      return '';
     };
 
-    const suffix = languageFileSuffix[this.currentLanguage] || '';
     const baseURL = 'https://raw.githubusercontent.com/kimminjae413/hairgator-menu-final/main/indexes/';
     const langFolder = this.currentLanguage;
 
@@ -477,6 +489,7 @@ class HairGatorChatbot {
           .sort(([idA], [idB]) => parseInt(idA) - parseInt(idB))
           .map(([id, term]) => {
             const termName = term.en;
+            const suffix = getFileSuffix(id, this.currentLanguage);
             const fileName = `${id}. ${termName}${suffix}.png`;
             const imageURL = baseURL + langFolder + '/' + encodeURIComponent(fileName);
             
@@ -504,6 +517,7 @@ class HairGatorChatbot {
       .sort(([idA], [idB]) => parseInt(idA) - parseInt(idB))
       .map(([id, term]) => {
         const termName = term.en;
+        const suffix = getFileSuffix(id, this.currentLanguage);
         const fileName = `${id}. ${termName}${suffix}.png`;
         return {
           url: baseURL + langFolder + '/' + encodeURIComponent(fileName),
