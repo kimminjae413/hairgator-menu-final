@@ -633,7 +633,15 @@ class HairGatorChatbot {
         throw new Error(result.error || '레시피 생성 실패');
       }
 
-      const rawRecipe = result.data;
+      // ✅ recipe 속성 안전하게 추출
+      const rawRecipe = result.data?.recipe || result.data;
+      
+      // ✅ 문자열 타입 검증
+      if (typeof rawRecipe !== 'string') {
+        console.error('레시피 형식 오류:', rawRecipe);
+        throw new Error('레시피 데이터가 올바른 형식이 아닙니다.');
+      }
+      
       const formattedRecipe = this.markdownToHTML(rawRecipe);
       
       await this.typeWriter(formattedRecipe);
