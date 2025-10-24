@@ -296,66 +296,59 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
 # 필수 출력 형식 (절대 변경 금지)
 
 <커트 레시피>
-###1. 스타일 설명: [이 스타일의 전체적인 이미지와 특징을 2-3문장으로 설명]
+STEP1. 스타일 설명: [이 스타일의 전체적인 이미지와 특징을 2-3문장으로 설명]
 
-###2. 스타일 길이(Style Length): 
-**${params56.length_category}** (${params56.estimated_hair_length_cm}cm)
-- 롱(Long): A, B, C Length
-- 미디움(Medium): D, E, F, G Length
-- 숏(Short): H Length
+STEP2. 스타일 길이(Style Length): 
+**${params56.length_category} (${params56.estimated_hair_length_cm}cm, ${getLengthDescription(params56.length_category)})**
+- 롱(Long): A Length (65cm, 가슴 아래), B Length (50cm, 가슴 중간), C Length (40cm, 쇄골)
+- 미디움(Medium): D Length (35cm, 어깨), E Length (30cm, 어깨 위), F Length (25cm, 턱 아래), G Length (20cm, 턱선)
+- 숏(Short): H Length (15cm, 귀 중간)
 
-###3. 스타일 형태(Style Form): 
-**${params56.cut_form}**
-- 원렝스(O): One Length
-- 그래쥬에이션(G): Graduation
-- 레이어(L): Layer
-- 복합(C): Combination
+STEP3. 스타일 형태(Style Form): 
+**${params56.cut_form} (${getFormDescription(params56.cut_form)})**
+- O (One Length, 원렝스 - 모든 머리카락이 같은 길이)
+- G (Graduation, 그래쥬에이션 - 아래가 길고 위로 갈수록 짧아짐)
+- L (Layer, 레이어 - 층을 두어 자르는 기법)
+- C (Combination, 복합 - 여러 기법 혼합)
 
-###4. 앞머리 길이(Fringe Length): 
-**${params56.fringe_type}** - **${params56.fringe_length}**
-- 없음(None)
-- 이마(Fore Head)
-- 눈썹(Eye Brow)
-- 눈(Eye)
-- 광대(Cheek Bone)
-- 입술(Lip)
-- 턱(Chin)
+STEP4. 앞머리 길이(Fringe Length): 
+**${params56.fringe_type} (${getFringeTypeDescription(params56.fringe_type)}) - ${params56.fringe_length} (${getFringeLengthDescription(params56.fringe_length)})**
+- 타입: Full Bang (전체 앞머리), See-through Bang (시스루 앞머리), Side Bang (옆으로 넘긴 앞머리), No Fringe (앞머리 없음)
+- 길이: Forehead (이마), Eyebrow (눈썹), Eye (눈), Cheekbone (광대), Lip (입술), Chin (턱), None (없음)
 
-###5. 베이스 커트(Base Cut)
+STEP5. 베이스 커트(Base Cut)
 **인터널(Internal) 진행:**
-A 존(A Zone): [귀 아래-목 부위 시술 내용을 구체적으로 기술]
-B 존(B Zone): [귀 위 중단 부위 시술 내용을 구체적으로 기술]
+A 존(A Zone, 귀 아래-목 부위): [구체적 시술 내용]
+B 존(B Zone, 귀 위 중단 부위): [구체적 시술 내용]
 
 **엑스터널(External) 진행:**
-C 존(C Zone): [정수리 상단 부위 시술 내용을 구체적으로 기술]
+C 존(C Zone, 정수리 상단 부위): [구체적 시술 내용]
 
-**다이렉션(Direction)**: ${params56.direction_primary || 'D0'}
-- D0: 정면, D1: 우측전방 45°, D2: 우측측면 90°, D3: 우측후방 135°
-- D4: 정후방 180°, D5: 좌측후방 225°, D6: 좌측측면 270°, D7: 좌측전방 315°, D8: 전체 360°
+**다이렉션(Direction, 커트 방향)**: ${params56.direction_primary || 'D0'} (${getDirectionDescription(params56.direction_primary || 'D0')})
+- D0 (정면, 0도), D1 (우측전방, 45도), D2 (우측측면, 90도), D3 (우측후방, 135도)
+- D4 (정후방, 180도), D5 (좌측후방, 225도), D6 (좌측측면, 270도), D7 (좌측전방, 315도), D8 (전체, 360도)
 
-**섹션(Section)**: ${params56.section_primary}
-- 가로(Horizontal): 수평 섹션
-- 세로(Vertical): 수직 섹션
-- 전대각(Diagonal Forward): 앞쪽 대각선
-- 후대각(Diagonal Backward): 뒤쪽 대각선
+**섹션(Section, 분할 방식)**: ${params56.section_primary} (${getSectionDescription(params56.section_primary)})
+- Horizontal (가로 섹션, 수평 분할), Vertical (세로 섹션, 수직 분할)
+- Diagonal Forward (전대각 섹션, 앞쪽 대각선), Diagonal Backward (후대각 섹션, 뒤쪽 대각선)
 
-**리프팅(Lifting)**: ${(params56.lifting_range || []).join(', ')}
-- L0(0도), L1(22.5도), L2(45도), L3(67.5도), L4(90도)
-- L5(112.5도), L6(135도), L7(157.5도), L8(180도)
+**리프팅(Lifting, 들어올리는 각도)**: ${(params56.lifting_range || []).map(l => `${l} (${getLiftingDescription(l)})`).join(', ')}
+- L0 (0도, 자연낙하), L1 (22.5도), L2 (45도, 대각선), L3 (67.5도)
+- L4 (90도, 수평), L5 (112.5도), L6 (135도, 대각선 위), L7 (157.5도), L8 (180도, 수직)
 
-**아웃라인(Outline) 설정**: ${params56.length_category}
-- A~H 라인 중 해당 라인에 맞춰 아웃라인 설정
+**아웃라인(Outline, 외곽선 설정)**: ${params56.length_category}
+- A~H 라인 중 해당 길이에 맞춰 외곽선 설정
 
-**볼륨(Volume)**: ${params56.volume_zone}
-- 로우(Low/0도~45도): 하단 볼륨
-- 미디움(Medium/45도~90도): 중단 볼륨
-- 하이(High/90도 이상): 상단 볼륨
+**볼륨(Volume, 볼륨 위치)**: ${params56.volume_zone} (${getVolumeDescription(params56.volume_zone)})
+- Low (낮은 볼륨, 0도~45도, 하단에 무게감)
+- Medium (중간 볼륨, 45도~90도, 중단에 볼륨)
+- High (높은 볼륨, 90도 이상, 상단에 볼륨)
 
-###6. 질감처리(Texturizing): 
-[포인트 커트, 슬라이드 커트 등 구체적인 텍스처 기법을 상세히 기술]
+STEP6. 질감처리(Texturizing): 
+[포인트 커트 (Point Cut, 끝을 잘게 자르기), 슬라이드 커트 (Slide Cut, 미끄러지듯 자르기) 등 구체적인 텍스처 기법을 상세히 기술]
 
-###7. 스타일링(Styling): 
-[블로우 드라이, 스타일링 제품 사용법 등을 구체적으로 기술]
+STEP7. 스타일링(Styling): 
+[블로우 드라이 (Blow Dry, 드라이기 사용), 아이롱 (Iron, 고데기), 스타일링 제품 사용법 등을 구체적으로 기술]
 
 **절대 포함 금지 사항:**
 - ❌ 스타일명 (엘리자벳컷, 엘리스컷 등의 고유명사)
@@ -364,11 +357,109 @@ C 존(C Zone): [정수리 상단 부위 시술 내용을 구체적으로 기술]
 - ❌ "컷 셰이프" 같은 중복 설명
 
 **반드시 포함해야 할 사항:**
-- ✅ 89용어 시스템 (01~89번 용어 번호 활용)
+- ✅ 모든 파라미터에 괄호로 설명 추가
+- ✅ STEP1~STEP7 형식 사용
+- ✅ D0~D8, L0~L8 각도 표기 시 괄호로 의미 설명
 - ✅ A/B/C 존 구분
-- ✅ L0~L8, D0~D8 각도 표기
-- ✅ 구체적인 시술 방법 (어떻게 자르는지)
+- ✅ 구체적인 시술 방법
 `;
+
+    // 설명 함수들
+    function getLengthDescription(length) {
+      const desc = {
+        'A Length': '가슴 아래 밑선, 매우 긴 머리',
+        'B Length': '가슴 상단~중간, 긴 머리',
+        'C Length': '쇄골 밑선',
+        'D Length': '어깨선에 닿는 길이',
+        'E Length': '어깨 위 5cm',
+        'F Length': '턱선 아래',
+        'G Length': '턱선, Jaw 라인',
+        'H Length': '귀 중간, 숏헤어'
+      };
+      return desc[length] || '미분류 길이';
+    }
+
+    function getFormDescription(form) {
+      const desc = {
+        'O (One Length)': '원렝스, 모든 머리카락이 같은 길이',
+        'G (Graduation)': '그래쥬에이션, 아래가 길고 위로 갈수록 짧음',
+        'L (Layer)': '레이어, 층을 두어 자르는 기법',
+        'C (Combination)': '복합, 여러 기법 혼합'
+      };
+      return desc[form] || form?.replace(/[OGLCoглc]\s*\(([^)]+)\)/, '$1') || '미분류';
+    }
+
+    function getFringeTypeDescription(type) {
+      const desc = {
+        'Full Bang': '전체 앞머리, 이마를 완전히 덮음',
+        'See-through Bang': '시스루 앞머리, 비치는 앞머리',
+        'Side Bang': '옆으로 넘긴 앞머리',
+        'No Fringe': '앞머리 없음'
+      };
+      return desc[type] || '미분류 앞머리';
+    }
+
+    function getFringeLengthDescription(length) {
+      const desc = {
+        'Forehead': '이마 길이',
+        'Eyebrow': '눈썹 길이',
+        'Eye': '눈 길이',
+        'Cheekbone': '광대 길이',
+        'Lip': '입술 길이',
+        'Chin': '턱 길이',
+        'None': '없음'
+      };
+      return desc[length] || '미분류 길이';
+    }
+
+    function getDirectionDescription(dir) {
+      const desc = {
+        'D0': '정면 방향, 0도',
+        'D1': '우측 전방, 45도',
+        'D2': '우측 측면, 90도',
+        'D3': '우측 후방, 135도',
+        'D4': '정후방, 180도',
+        'D5': '좌측 후방, 225도',
+        'D6': '좌측 측면, 270도',
+        'D7': '좌측 전방, 315도',
+        'D8': '전체 방향, 360도'
+      };
+      return desc[dir] || '미분류 방향';
+    }
+
+    function getSectionDescription(section) {
+      const desc = {
+        'Horizontal': '가로 섹션, 수평으로 분할',
+        'Vertical': '세로 섹션, 수직으로 분할',
+        'Diagonal Forward': '전대각 섹션, 앞쪽 대각선',
+        'Diagonal Backward': '후대각 섹션, 뒤쪽 대각선'
+      };
+      return desc[section] || '미분류 섹션';
+    }
+
+    function getLiftingDescription(lift) {
+      const desc = {
+        'L0': '0도, 자연낙하',
+        'L1': '22.5도, 낮은 각도',
+        'L2': '45도, 대각선',
+        'L3': '67.5도, 중간 각도',
+        'L4': '90도, 수평',
+        'L5': '112.5도, 중상 각도',
+        'L6': '135도, 대각선 위',
+        'L7': '157.5도, 높은 각도',
+        'L8': '180도, 수직'
+      };
+      return desc[lift] || '미분류 각도';
+    }
+
+    function getVolumeDescription(volume) {
+      const desc = {
+        'Low': '낮은 볼륨, 하단에 무게감',
+        'Medium': '중간 볼륨, 중단에 볼륨',
+        'High': '높은 볼륨, 상단에 볼륨'
+      };
+      return desc[volume] || '미분류 볼륨';
+    }
 
     const userPrompt = `다음 파라미터로 레시피를 생성하세요:
 ${JSON.stringify(params56, null, 2)}
@@ -450,35 +541,37 @@ async function generateRecipeStream(payload, openaiKey, supabaseUrl, supabaseKey
 # 필수 출력 형식 (절대 변경 금지)
 
 <커트 레시피>
-###1. 스타일 설명: [이 스타일의 전체적인 이미지와 특징을 2-3문장으로 설명]
+STEP1. 스타일 설명: [이 스타일의 전체적인 이미지와 특징을 2-3문장으로 설명]
 
-###2. 스타일 길이(Style Length): 
-**${params56.length_category}** (${params56.estimated_hair_length_cm}cm)
+STEP2. 스타일 길이(Style Length): 
+**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
 
-###3. 스타일 형태(Style Form): 
+STEP3. 스타일 형태(Style Form): 
 **${params56.cut_form}**
 
-###4. 앞머리 길이(Fringe Length): 
-**${params56.fringe_type}** - **${params56.fringe_length}**
+STEP4. 앞머리 길이(Fringe Length): 
+**${params56.fringe_type} - ${params56.fringe_length}**
 
-###5. 베이스 커트(Base Cut)
+STEP5. 베이스 커트(Base Cut)
 **인터널(Internal) 진행:**
-A 존(A Zone): [귀 아래-목 부위 시술 내용]
-B 존(B Zone): [귀 위 중단 부위 시술 내용]
+A 존(A Zone, 귀 아래-목 부위): [시술 내용]
+B 존(B Zone, 귀 위 중단 부위): [시술 내용]
 
 **엑스터널(External) 진행:**
-C 존(C Zone): [정수리 상단 부위 시술 내용]
+C 존(C Zone, 정수리 상단 부위): [시술 내용]
 
-**다이렉션(Direction)**: ${params56.direction_primary || 'D0'}
-**섹션(Section)**: ${params56.section_primary}
-**리프팅(Lifting)**: ${(params56.lifting_range || []).join(', ')}
-**볼륨(Volume)**: ${params56.volume_zone}
+**다이렉션(Direction, 커트 방향)**: ${params56.direction_primary || 'D0'}
+**섹션(Section, 분할 방식)**: ${params56.section_primary}
+**리프팅(Lifting, 들어올리는 각도)**: ${(params56.lifting_range || []).join(', ')}
+**볼륨(Volume, 볼륨 위치)**: ${params56.volume_zone}
 
-###6. 질감처리(Texturizing): 
+STEP6. 질감처리(Texturizing): 
 [구체적인 텍스처 기법 기술]
 
-###7. 스타일링(Styling): 
+STEP7. 스타일링(Styling): 
 [구체적인 스타일링 방법 기술]
+
+**주의: 모든 파라미터에 괄호로 설명을 추가하세요 (예: D0 (정면, 0도), L4 (90도, 수평))**
 `;
 
     const userPrompt = `다음 파라미터로 레시피를 생성하세요:
