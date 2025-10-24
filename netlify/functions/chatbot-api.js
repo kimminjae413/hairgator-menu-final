@@ -210,12 +210,40 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
   );
 
   // 학습용 레시피 예제 생성
-  const recipesWithData = similarRecipes.filter(r => r.recipe_42 || r.recipe_56);
-  const recipeExamples = recipesWithData.slice(0, 3).map((recipe, i) => 
-    `### 예제 ${i + 1}: ${recipe.name}\n\n` +
-    `**42포뮬러:**\n\`\`\`json\n${JSON.stringify(recipe.recipe_42, null, 2)}\n\`\`\`\n\n` +
-    `**56파라미터:**\n\`\`\`json\n${JSON.stringify(recipe.recipe_56, null, 2)}\n\`\`\``
-  ).join('\n\n---\n\n');
+  const recipesWithData = similarRecipes.filter(r => r.recipe);
+  
+  console.log(`📚 학습 데이터: ${recipesWithData.length}개 레시피 발견`);
+  
+  const recipeExamples = recipesWithData.slice(0, 5).map((recipe, i) => {
+    // recipe가 JSON 객체인지 문자열인지 확인
+    let recipeData = recipe.recipe;
+    if (typeof recipeData === 'string') {
+      try {
+        recipeData = JSON.parse(recipeData);
+      } catch (e) {
+        // 파싱 실패시 그대로 사용
+      }
+    }
+    
+    // recipe 안에 recipe_42, recipe_56이 있는지 확인
+    const formula42 = recipeData?.recipe_42 || recipeData?.formula42 || null;
+    const params56 = recipeData?.recipe_56 || recipeData?.params56 || null;
+    
+    let example = `### 예제 ${i + 1}: ${recipe.name}\n\n`;
+    
+    if (formula42) {
+      example += `**42포뮬러:**\n\`\`\`json\n${JSON.stringify(formula42, null, 2)}\n\`\`\`\n\n`;
+    }
+    if (params56) {
+      example += `**56파라미터:**\n\`\`\`json\n${JSON.stringify(params56, null, 2)}\n\`\`\`\n\n`;
+    }
+    if (!formula42 && !params56 && recipeData) {
+      // recipe 전체를 예제로 사용
+      example += `**레시피:**\n\`\`\`\n${typeof recipeData === 'string' ? recipeData : JSON.stringify(recipeData, null, 2)}\n\`\`\`\n\n`;
+    }
+    
+    return example;
+  }).join('\n---\n\n');
 
   // GPT로 상세 레시피 생성
   const detailedRecipe = await generateDetailedRecipe(
@@ -448,9 +476,9 @@ function parseHairstyleCode(code) {
 async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender = null) {
   console.log(`🔍 Fallback 검색 시작: "${query}"${targetGender ? ` (${targetGender} 우선)` : ''}`);
   
-  // 1. 전체 데이터 가져오기 (code 컬럼 포함, gender 제외)
+  // 1. 전체 데이터 가져오기 (code 컬럼 포함, 실제 존재하는 컬럼만)
   const response = await fetch(
-    `${supabaseUrl}/rest/v1/hairstyles?select=id,name,category,code,embedding,recipe,recipe_42,recipe_56`,
+    `${supabaseUrl}/rest/v1/hairstyles?select=id,name,category,code,embedding,recipe`,
     {
       headers: {
         'apikey': supabaseKey,
@@ -525,7 +553,7 @@ async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender =
     });
 
     // recipe 데이터가 있으면 우선순위
-    if (style.recipe_42 || style.recipe_56 || style.recipe) {
+    if (style.recipe) {
       score += 30;
     }
 
@@ -544,7 +572,7 @@ async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender =
     .slice(0, 10);
 
   console.log(`✅ 유사도 검색 완료: 상위 ${results.length}개 선택`);
-  console.log(`📋 Recipe 있는 개수: ${results.filter(r => r.recipe_42 || r.recipe_56 || r.recipe).length}`);
+  console.log(`📋 Recipe 있는 개수: ${results.filter(r => r.recipe).length}`);
   
   if (results.length > 0) {
     console.log(`🏆 Top 3:`, results.slice(0, 3).map(r => 
