@@ -558,9 +558,14 @@ class HairGatorChatbot {
 
   // 🆕 89용어 하이라이팅
   highlight89Terms(text) {
+    // 타입 안전성 체크 강화 ⭐
     if (!text) return '';
+    if (typeof text !== 'string') {
+      console.warn('⚠️ highlight89Terms: 문자열 변환', typeof text);
+      text = String(text);
+    }
 
-    // 89용어 패턴 매칭 (예: 70.Section, 54.Lifting, L4, D0 등)
+    // 89용어 패턴 매칭
     let highlighted = text;
 
     // 용어 번호 패턴 (01~89)
