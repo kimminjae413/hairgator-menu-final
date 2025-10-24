@@ -1409,7 +1409,7 @@
 .viewer-prev,
 .viewer-next {
   position: absolute;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(10px);
   border: 2px solid rgba(255, 255, 255, 0.3);
   color: white;
@@ -1447,22 +1447,20 @@
 
 .viewer-prev {
   left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
+  bottom: 100px;
 }
 
 .viewer-prev:hover {
-  transform: translateY(-50%) scale(1.1);
+  transform: scale(1.1);
 }
 
 .viewer-next {
   right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
+  bottom: 100px;
 }
 
 .viewer-next:hover {
-  transform: translateY(-50%) scale(1.1);
+  transform: scale(1.1);
 }
 
 /* 카운터 */
