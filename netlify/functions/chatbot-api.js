@@ -663,15 +663,6 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
 
     // 언어별 용어 가져오기
     const langTerms = getTerms(language);
-
-    // 언어별 시스템 프롬프트
-    const languageInstructions = {
-      ko: '**CRITICAL: 반드시 한국어로만 작성하세요. 영어 단어가 나오면 괄호 안에 한글 설명을 추가하세요.**',
-      en: '**CRITICAL: Write entirely in English. Add explanations in parentheses for all technical terms.**',
-      ja: '**CRITICAL: 必ず日本語で書いてください。英語の単語が出る場合は括弧内に日本語の説明を追加してください。**',
-      zh: '**CRITICAL: 必须用中文书写。如果出现英文单词，请在括号内添加中文说明。**',
-      vi: '**CRITICAL: Viết hoàn toàn bằng tiếng Việt. Thêm giải thích trong ngoặc đơn cho tất cả thuật ngữ kỹ thuật.**'
-    };
     
     // Direction 설명 (언어별)
     const directionDesc = langTerms.direction[params56.direction_primary || 'D0'] || 
@@ -690,70 +681,86 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
     const volumeDesc = langTerms.volume[params56.volume_zone] || 
                        langTerms.volume['Medium'];
 
-    const systemPrompt = `당신은 HAIRGATOR 시스템 전문가입니다.
+    // ⭐ 언어별 시스템 프롬프트 완전 분리
+    const getSystemPrompt = (lang) => {
+      const ko_prompt = `당신은 HAIRGATOR 시스템 전문가입니다.
 
-${languageInstructions[language] || languageInstructions['ko']}
+**CRITICAL: 반드시 한국어로만 작성하세요.**
 
-다음 56파라미터를 바탕으로 **정확히 아래 형식**으로 커트 레시피를 작성하세요.
-
-# 필수 출력 형식 (절대 변경 금지)
+다음 56파라미터를 바탕으로 커트 레시피를 작성하세요.
 
 <커트 레시피>
 STEP1. 스타일 설명: 
-**⚠️ 반드시 아래 "참고할 유사 스타일 설명"을 활용하여 2-3문장으로 작성**
-- 유사 스타일의 특징을 분석하여 자연스럽게 재작성
-- 원문을 그대로 복사하지 말고, 핵심 특징을 조합하여 새롭게 표현
+[2-3문장]
 
-STEP2. 스타일 길이(Style Length): 
-**${params56.length_category} (${params56.estimated_hair_length_cm}cm, ${langTerms.lengthDesc[params56.length_category] || params56.length_category})**
+STEP2. 스타일 길이: 
+**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
 
-STEP3. 스타일 형태(Style Form): 
+STEP3. 스타일 형태: 
 **${params56.cut_form}**
-- ${langTerms.formDesc[params56.cut_form?.charAt(0)] || langTerms.formDesc['L']}
 
-STEP4. 앞머리 길이(Fringe Length): 
-**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type} - ${langTerms.fringeLength[params56.fringe_length] || params56.fringe_length}**
+STEP4. 앞머리 길이: 
+**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
 
-STEP5. 베이스 커트(Base Cut)
-**인터널(Internal) 진행:**
-A 존 (A Zone, 귀 아래-목 부위): [구체적 시술 내용]
-B 존 (B Zone, 귀 위 중단 부위): [구체적 시술 내용]
+STEP5. 베이스 커트
+**인터널 진행:**
+A 존: [구체적 시술]
+B 존: [구체적 시술]
 
-**엑스터널(External) 진행:**
-C 존 (C Zone, 정수리 상단 부위): [구체적 시술 내용]
+**엑스터널 진행:**
+C 존: [구체적 시술]
 
-**⚠️ CRITICAL: 아래 모든 파라미터는 반드시 괄호 안에 설명을 포함하세요!**
+**다이렉션**: ${params56.direction_primary || 'D0'} (${directionDesc})
+**섹션**: ${params56.section_primary} (${sectionDesc})
+**리프팅**: ${liftingDescs}
+**볼륨**: ${params56.volume_zone} (${volumeDesc})
 
-**다이렉션 (Direction, 커트 방향)**: ${params56.direction_primary || 'D0'} (${directionDesc})
+STEP6. 질감처리: [구체적 기법]
 
-**섹션 (Section, 분할 방식)**: ${params56.section_primary} (${sectionDesc})
+STEP7. 스타일링: [구체적 방법]`;
 
-**리프팅 (Lifting, 들어올리는 각도)**: ${liftingDescs}
+      const zh_prompt = `你是HAIRGATOR系统专家。
 
-**아웃라인 (Outline, 외곽선 설정)**: ${params56.length_category}
+**CRITICAL: 必须用中文书写。**
 
-**볼륨 (Volume, 볼륨 위치)**: ${params56.volume_zone} (${volumeDesc})
+根据56个参数创建剪发配方。
 
-STEP6. 질감처리 (Texturizing): 
-[포인트 커트 (Point Cut), 슬라이드 커트 (Slide Cut) 등 구체적인 텍스처 기법을 상세히 기술]
+<剪发配方>
+STEP1. 风格说明: 
+[2-3句]
 
-STEP7. 스타일링 (Styling): 
-[블로우 드라이 (Blow Dry), 아이론 스타일링 등 구체적인 스타일링 방법과 제품 사용법을 상세히 기술]
+STEP2. 风格长度: 
+**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
 
-# 절대 포함하지 말 것
-❌ 스타일명 (엘리자벳컷, 허그컷 등 고유명사)
-❌ 예상길이 중복 설명
-❌ 인크리스 레이어
-❌ 컷 셰이프
+STEP3. 风格形态: 
+**${params56.cut_form}**
 
-# 반드시 포함할 것
-✅ 각 STEP 번호 명확히 표시
-✅ **모든 파라미터에 괄호 안에 설명 포함** (D0, L2, Vertical 등)
-✅ A/B/C 존 각각 구체적 시술 내용
-✅ 리프팅 각도와 볼륨 위치의 논리적 일치
-✅ ${language === 'ko' ? '한국어' : language === 'en' ? 'English' : language === 'ja' ? '日本語' : language === 'zh' ? '中文' : 'Tiếng Việt'}로 작성
+STEP4. 刘海长度: 
+**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
 
-`;
+STEP5. 基础剪裁
+**内部进行:**
+A区: [具体手法]
+B区: [具体手法]
+
+**外部进行:**
+C区: [具体手法]
+
+**方向**: ${params56.direction_primary || 'D0'} (${directionDesc})
+**分区**: ${params56.section_primary} (${sectionDesc})
+**提拉**: ${liftingDescs}
+**体积**: ${params56.volume_zone} (${volumeDesc})
+
+STEP6. 质感处理: [具体技法]
+
+STEP7. 造型: [具体方法]`;
+
+      const prompts = { ko: ko_prompt, zh: zh_prompt, en: ko_prompt, ja: ko_prompt, vi: ko_prompt };
+      return prompts[lang] || prompts['ko'];
+    };
+
+    const systemPrompt = getSystemPrompt(language);
+
 
     const userPrompt = `다음 파라미터로 레시피를 생성하세요:
 ${JSON.stringify(params56, null, 2)}
