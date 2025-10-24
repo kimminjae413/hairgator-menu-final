@@ -1,67 +1,178 @@
 // js/gemini-analyzer.js
-// HAIRGATOR 이미지 분석 전용 모듈
+// HAIRGATOR 이미지 분석 전용 모듈 - FINAL VERSION
+// ⚠️ 현재 사용 안 함 (Backend chatbot-api.js가 대신 처리)
+// 📝 독립 실행 또는 미래 확장용 참고 파일
 
 class GeminiHairAnalyzer {
   constructor(apiKey) {
-    this.apiKey = apiKey || 'gen-lang-client-0911375709';
-    this.apiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent';
+    this.apiKey = apiKey || 'AIzaSyDpYourKeyHere'; // 실제 키로 교체 필요
+    this.apiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent';
   }
 
-  // 56개 파라미터 분석 프롬프트
+  // 56개 파라미터 분석 프롬프트 (chatbot-api.js와 동일)
   getSystemPrompt() {
     return {
       contents: [{
         parts: [{
-          text: `당신은 전문 헤어 스타일리스트입니다. 업로드된 헤어스타일 이미지를 분석하고, 
-아래 56개 파라미터 중 식별 가능한 항목을 정확하게 추출하세요.
+          text: `당신은 전문 헤어 스타일리스트입니다. 
+업로드된 헤어스타일 이미지를 **56파라미터 체계**에 따라 분석하세요.
 
-**분석 규칙:**
-1. 이미지에서 명확하게 확인 가능한 파라미터만 추출
-2. 불확실한 경우 null 반환
-3. 한국어 컷 이름을 정확히 사용 (예: "허그컷", "에어컷")
+## 분석 가이드라인
 
-**여성 컷 카테고리 (길이별 분류):**
-- A (가슴 아래): 에어컷, 구름컷, 프릴컷, 그레이스컷, 레이컷
-- B (가슴-쇄골 중간): 엘리자벳컷, 허그컷, 샌드컷, 페미닌컷, 젤리컷, 스무스컷, 포그컷, 미스티컷, 허쉬컷
-- C (쇄골라인): 빌드컷
-- D (어깨 닿는 선): 플라워컷, 플리츠컷, 레이스컷
-- E (어깨 바로 위): 타미컷, 벌룬컷
-- F (턱선 바로 밑): 클래식컷, 보니컷, 바그컷, 에그컷, 빌로우컷, 모즈컷
-- G (Jaw 라인): 엘리스컷, 슬림컷, 브록컷, 리플컷
-- H (숏헤어): 코튼컷, 이지컷, 본컷, 듀컷, 플컷, 다이앤컷, 리프컷
+### Cut Category (필수)
+- "Women's Cut" 또는 "Men's Cut"
 
-**응답 형식 (반드시 JSON만 출력):**
+### Women's Cut Length Categories (매우 중요 - 신체 랜드마크 기준)
+
+**길이 분류 - 이미지에서 머리카락 끝이 신체 어느 부위에 닿는지 정확히 확인:**
+
+A Length (65cm): **가슴 아래 밑선**
+  - 머리카락 끝이 가슴보다 확실히 아래, 배꼽 근처
+  - 기준: 유두보다 최소 10cm 이상 아래
+
+B Length (50cm): **가슴 상단~중간**
+  - 머리카락 끝이 유두 높이 전후 (±5cm 이내)
+  - 기준: 가슴 위쪽에서 중간 사이
+  - **주의:** 쇄골 아래 5cm부터 가슴 중간까지
+
+C Length (40cm): **쇄골 밑선**
+  - 머리카락 끝이 쇄골뼈에 정확히 닿거나 바로 아래
+  - 기준: 쇄골뼈 ±3cm 범위
+
+D Length (35cm): **어깨선**
+  - 머리카락 끝이 **어깨에 정확히 닿음**
+  - **핵심 판단 기준: 어깨선과 머리카락이 맞닿음** ← 중요!
+  - 목 전체가 보이고, 어깨 시작 부분에 닿음
+  - 쇄골과 어깨 사이 거리 있음
+
+**🔥 D vs E vs F vs G 구분 (가장 헷갈리는 부분! 어깨 기준으로 판단)**
+
+E Length (30cm): **어깨 바로 위**
+  - 머리카락 끝이 어깨선 위 2-3cm
+  - **핵심 판단 기준: 어깨와 머리카락 사이 공간 있음** ← 중요!
+  - 목 전체 + 어깨 시작 부분 모두 보임
+  - 어깨에 닿지 않음
+
+F Length (25cm): **턱선 바로 밑**
+  - 머리카락 끝이 턱뼈 아래
+  - **핵심 판단 기준: 목 상단만 보임, 목 중간까지 머리카락** ← 중요!
+  - 어깨와 상당한 거리 있음 (5cm 이상)
+  - 턱에서 목으로 넘어가는 지점
+
+G Length (20cm): **턱선 (Jaw Line)**
+  - 머리카락 끝이 턱뼈 각도 라인
+  - **핵심 판단 기준: 목이 거의 안 보임** ← 중요!
+  - 턱선 바로 아래
+  - 얼굴 윤곽선 따라감
+
+H Length (15cm): **귀 중간**
+  - 숏헤어, 머리카락 끝이 귀 높이
+  - 기준: 귀 아래 ~ 턱선 사이
+
+**판단 방법 (우선순위대로 확인):**
+1. **어깨선 확인** (가장 먼저!): 
+   - **머리카락이 어깨에 닿음** → **D Length**
+   - 어깨보다 아래 → A/B/C 중 하나
+   - 어깨보다 위 (공간 있음) → E/F/G/H 중 하나
+
+2. **쇄골 확인** (어깨 아래인 경우):
+   - 쇄골에 닿음 → **C Length**
+   - 쇄골 아래 ~ 가슴 중간 → **B Length**
+   - 가슴 중간 아래 → **A Length**
+
+3. **목 노출 정도 확인** (어깨 위인 경우) ← 중요!:
+   - **목 전체 보임 + 어깨와 공간** → **E Length**
+   - **목 상단만 보임** (턱 아래 일부만) → **F Length**
+   - **목 거의 안 보임** (턱선에 가려짐) → **G Length**
+   - 귀 높이 → **H Length**
+
+4. **애매한 경우 규칙**:
+   - D와 E 사이: 어깨에 닿는가?
+     → 살짝이라도 닿음 = D, 공간 있음 = E
+   - E와 F 사이: 목이 얼마나 보이는가? 
+     → 목 전체 보임 = E, 일부만 = F
+   - F와 G 사이: 목이 보이는가?
+     → 목 조금이라도 보임 = F, 거의 안 보임 = G
+   - 두 길이 중간이면 → **더 긴 쪽 선택**
+
+### Men's Cut Categories (해당 시)
+- Side Fringe / Side Part / Fringe Up / Pushed Back / Buzz / Crop / Mohican
+
+### 스타일 형태 (Cut Form) - 반드시 3가지 중 하나만 선택
+**⚠️ 중요: O, G, L 중 하나만 선택하세요.**
+
+- **O (One Length, 원렝스)**: 모든 머리카락이 같은 길이로 떨어지는 형태
+  → 머리카락 끝이 일직선, 층이 없음
+  
+- **G (Graduation, 그래쥬에이션)**: 외곽이 짧고 내부가 긴 층, 무게감이 하단
+  → 뒤에서 보면 삼각형 모양, 아래가 무거움
+  
+- **L (Layer, 레이어)**: 층을 두어 자르는 기법, 전체적인 볼륨과 움직임
+  → 여러 층으로 나뉘어져 있음, 가벼운 느낌
+
+**선택 가이드:**
+- 끝이 일직선, 층 없음 → **O**
+- 아래가 무겁고 위가 가벼움 → **G**
+- 전체적으로 층이 많음 → **L**
+
+### Structure Layer
+- Long Layer / Medium Layer / Short Layer
+- Square Layer / Round Layer / Graduated Layer
+
+### Fringe (앞머리)
+**타입:** Full Bang / See-through Bang / Side Bang / No Fringe
+**길이:** Forehead / Eyebrow / Eye / Cheekbone / Lip / Chin / None
+
+### Volume & Weight
+- Volume Zone: Low / Medium / High
+- Weight Flow: Balanced / Forward Weighted / Backward Weighted
+
+### 기술 파라미터
+- Section: Horizontal / Vertical / Diagonal Forward / Diagonal Backward
+- Lifting: L0~L8
+- Direction: D0~D8
+
+**중요: JSON 출력 시 절대 규칙**
+- womens_cut_category 필드 생성 금지
+- length_category만 A~H Length 형식으로 출력
+- cut_form은 O, G, L 중 하나만 (괄호 포함 예: "L (Layer)")
+
+**출력 형식 (JSON만):**
+\`\`\`json
 {
-  "cut_category": "Women's Cut" | "Men's Cut",
-  "womens_cut_category": "허그컷" | null,
-  "cut_form": "G (Graduation)" | null,
-  "weight_flow": "Forward Weighted" | null,
-  "structure_layer": "Graduated Layer" | null,
-  "fringe_type": "Side Bang" | "No Fringe" | null,
+  "cut_category": "Women's Cut",
+  "length_category": "D Length",
   "estimated_hair_length_cm": 35,
-  "hair_texture": "Medium" | null,
-  "color_level": "Level 5" | null,
-  "color_tone": "Natural" | null,
-  "styling_direction": "Forward" | null,
-  "design_emphasis": "Shape Emphasis" | null,
-  "finish_look": "Blow Dry" | null,
-  "confidence_score": 0.85,
-  "detected_parameters": 12,
-  "analysis_notes": "분석 특이사항"
+  "cut_form": "L (Layer)",
+  "structure_layer": "Graduated Layer",
+  "fringe_type": "Side Bang",
+  "fringe_length": "Eye",
+  "volume_zone": "Medium",
+  "weight_flow": "Forward Weighted",
+  "hair_texture": "Medium",
+  "styling_method": "Blow Dry",
+  "section_primary": "Vertical",
+  "lifting_range": ["L2", "L4", "L6"],
+  "direction_primary": "D0"
 }
+\`\`\`
 
-**중요:** 
-- JSON 형식만 출력 (설명 텍스트 제외)
-- 확실하지 않은 파라미터는 null
-- 한국어 컷 이름 정확히 사용`
+**재확인 체크리스트:**
+- ✅ **머리카락이 어깨에 닿는가? → D Length**
+- ✅ 머리카락 끝이 쇄골 위치인가? → C Length
+- ✅ 머리카락 끝이 가슴 중간인가? → B Length
+- ✅ 머리카락 끝이 가슴 아래인가? → A Length
+- ✅ **목 전체 보이고 어깨와 공간 있는가? → E Length**
+- ✅ **목 상단만 보이고 턱 아래인가? → F Length**
+- ✅ **목이 거의 안 보이고 턱선인가? → G Length**
+- ✅ cut_form은 O/G/L만 사용 (괄호 포함)`
         }]
       }],
       generationConfig: {
-        temperature: 0.1,
-        topK: 1,
-        topP: 0.8,
-        maxOutputTokens: 2048,
-        responseMimeType: "application/json"
+        temperature: 0.3,
+        topP: 0.95,
+        topK: 40,
+        maxOutputTokens: 2048
       }
     };
   }
@@ -69,13 +180,9 @@ class GeminiHairAnalyzer {
   // 이미지 분석 실행
   async analyzeImage(imageFile) {
     try {
-      // 1. 이미지를 Base64로 변환
       const base64Image = await this.fileToBase64(imageFile);
-      
-      // 2. API 요청 준비
       const requestBody = this.getSystemPrompt();
       
-      // 이미지 추가
       requestBody.contents[0].parts.push({
         inline_data: {
           mime_type: imageFile.type,
@@ -83,12 +190,9 @@ class GeminiHairAnalyzer {
         }
       });
 
-      // 3. Gemini API 호출
       const response = await fetch(`${this.apiEndpoint}?key=${this.apiKey}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody)
       });
 
@@ -98,24 +202,31 @@ class GeminiHairAnalyzer {
       }
 
       const data = await response.json();
-      
-      // 4. 응답 파싱
       const text = data.candidates[0].content.parts[0].text;
       
       let analysisResult;
       try {
         analysisResult = JSON.parse(text);
       } catch (e) {
-        // JSON 추출 재시도
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/{[\s\S]*}/);
         if (jsonMatch) {
-          analysisResult = JSON.parse(jsonMatch[0]);
+          analysisResult = JSON.parse(jsonMatch[1] || jsonMatch[0]);
         } else {
           throw new Error('JSON 응답을 파싱할 수 없습니다');
         }
       }
 
-      // 5. 결과 검증 및 보강
+      // Cut Form 괄호 강제 추가 (Backend와 동일)
+      if (analysisResult.cut_form && !analysisResult.cut_form.includes('(')) {
+        const formChar = analysisResult.cut_form.charAt(0).toUpperCase();
+        const formMap = {
+          'O': 'O (One Length)',
+          'G': 'G (Graduation)',
+          'L': 'L (Layer)'
+        };
+        analysisResult.cut_form = formMap[formChar] || 'L (Layer)';
+      }
+
       return this.enhanceResult(analysisResult);
 
     } catch (error) {
@@ -124,12 +235,10 @@ class GeminiHairAnalyzer {
     }
   }
 
-  // 파일을 Base64로 변환
   async fileToBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
-        // "data:image/jpeg;base64," 부분 제거
         const base64 = reader.result.split(',')[1];
         resolve(base64);
       };
@@ -138,18 +247,14 @@ class GeminiHairAnalyzer {
     });
   }
 
-  // 결과 보강
   enhanceResult(result) {
-    // 타임스탬프 추가
     result.analyzed_at = new Date().toISOString();
     
-    // 감지된 파라미터 개수 계산
     if (!result.detected_parameters) {
       result.detected_parameters = Object.values(result)
         .filter(v => v !== null && v !== undefined).length;
     }
 
-    // 신뢰도 점수 기본값
     if (!result.confidence_score) {
       result.confidence_score = Math.min(result.detected_parameters / 20, 1).toFixed(2);
     }
@@ -157,11 +262,9 @@ class GeminiHairAnalyzer {
     return result;
   }
 
-  // 분석 결과를 검색 쿼리로 변환
   toSearchQuery(analysisResult) {
     const keywords = [];
     
-    // 1. 컷 이름 (최우선)
     if (analysisResult.womens_cut_category) {
       keywords.push(analysisResult.womens_cut_category);
     }
@@ -169,7 +272,6 @@ class GeminiHairAnalyzer {
       keywords.push(analysisResult.mens_cut_category);
     }
 
-    // 2. 길이 정보
     if (analysisResult.estimated_hair_length_cm) {
       const length = analysisResult.estimated_hair_length_cm;
       if (length > 40) keywords.push('롱');
@@ -178,12 +280,10 @@ class GeminiHairAnalyzer {
       else keywords.push('숏');
     }
 
-    // 3. 스타일 특징
     if (analysisResult.fringe_type && analysisResult.fringe_type !== 'No Fringe') {
       keywords.push('앞머리');
     }
 
-    // 4. 레이어 정보
     if (analysisResult.structure_layer) {
       keywords.push(analysisResult.structure_layer.replace(' Layer', '레이어'));
     }
@@ -191,40 +291,33 @@ class GeminiHairAnalyzer {
     return keywords.join(' ');
   }
 
-  // 사용자 친화적인 분석 결과 텍스트 생성
   toDisplayText(analysisResult) {
     const lines = [];
     
     lines.push('📊 **이미지 분석 결과**\n');
     
-    // 컷 이름
     if (analysisResult.womens_cut_category) {
       lines.push(`✂️ 스타일: **${analysisResult.womens_cut_category}**`);
     }
     
-    // 길이
-    if (analysisResult.estimated_hair_length_cm) {
-      lines.push(`📏 예상 길이: 약 **${analysisResult.estimated_hair_length_cm}cm**`);
+    if (analysisResult.length_category) {
+      lines.push(`📏 길이: **${analysisResult.length_category}** (${analysisResult.estimated_hair_length_cm}cm)`);
     }
 
-    // 주요 특징
+    if (analysisResult.cut_form) {
+      lines.push(`✂️ 형태: **${analysisResult.cut_form}**`);
+    }
+
     const features = [];
-    if (analysisResult.fringe_type) {
-      features.push(analysisResult.fringe_type);
-    }
-    if (analysisResult.structure_layer) {
-      features.push(analysisResult.structure_layer);
-    }
-    if (analysisResult.design_emphasis) {
-      features.push(analysisResult.design_emphasis);
-    }
+    if (analysisResult.fringe_type) features.push(analysisResult.fringe_type);
+    if (analysisResult.structure_layer) features.push(analysisResult.structure_layer);
+    if (analysisResult.design_emphasis) features.push(analysisResult.design_emphasis);
     
     if (features.length > 0) {
       lines.push(`\n🎨 주요 특징:`);
       features.forEach(f => lines.push(`- ${f}`));
     }
 
-    // 신뢰도
     const confidence = (analysisResult.confidence_score * 100).toFixed(0);
     lines.push(`\n🎯 분석 신뢰도: ${confidence}%`);
     
