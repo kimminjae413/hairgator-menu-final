@@ -140,7 +140,7 @@ class HairGatorChatbot {
         </svg>
       </button>
 
-      <div id="chatbot-container" class="chatbot-container">
+      <div id="chatbot-container" class="chatbot-container" style="display: none;">
         <div class="chatbot-header">
           <span class="chatbot-title" id="chatbot-title">${texts.title}</span>
           <div class="header-actions">
@@ -359,10 +359,7 @@ class HairGatorChatbot {
     const container = document.getElementById('chatbot-container');
     const toggle = document.getElementById('chatbot-toggle');
     
-    // 현재 표시 상태를 직접 확인
-    const isCurrentlyHidden = container.style.display === 'none' || !container.style.display;
-    
-    if (isCurrentlyHidden) {
+    if (!this.isOpen) {
       // 챗봇 열기
       this.isOpen = true;
       container.style.display = 'flex';
