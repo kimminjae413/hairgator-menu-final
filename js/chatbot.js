@@ -1,4 +1,5 @@
-// js/chatbot.js - HAIRGATOR 마크다운 파싱 + 스트리밍 + 언어선택 + 인덱스
+// js/chatbot.js - HAIRGATOR v2.0
+// 89용어 통합 + 새 레시피 포맷(###1~###7) + 스트리밍 지원
 
 class HairGatorChatbot {
   constructor() {
@@ -6,8 +7,64 @@ class HairGatorChatbot {
     this.supabaseUrl = 'https://bhsbwbeisqzgipvzpvym.supabase.co';
     this.isOpen = false;
     this.conversationHistory = [];
-    this.currentLanguage = 'ko'; // 기본 언어
+    this.currentLanguage = 'ko';
+    this.terms89Map = this.init89TermsMap(); // 89용어 매핑
     this.init();
+  }
+
+  // 89용어 매핑 테이블 (하이라이팅용)
+  init89TermsMap() {
+    return {
+      // Tier 1: 필수 핵심 15개
+      '01': { ko: '1 Section & 2 Section', en: '1 Section & 2 Section' },
+      '02': { ko: '1Way & 2Way Cut', en: '1Way & 2Way Cut' },
+      '05': { ko: 'A Zone & V Zone', en: 'A Zone & V Zone' },
+      '11': { ko: 'Base Control', en: 'Base Control' },
+      '19': { ko: 'Blunt Cut', en: 'Blunt Cut' },
+      '31': { ko: 'Design Line', en: 'Design Line' },
+      '33': { ko: 'Direction', en: 'Direction' },
+      '35': { ko: 'Distribution', en: 'Distribution' },
+      '44': { ko: 'Graduation', en: 'Graduation' },
+      '52': { ko: 'Layer', en: 'Layer' },
+      '54': { ko: 'Lifting', en: 'Lifting' },
+      '62': { ko: 'Over Direction', en: 'Over Direction' },
+      '70': { ko: 'Section', en: 'Section' },
+      '86': { ko: 'Volume', en: 'Volume' },
+      '89': { ko: 'Zone', en: 'Zone' },
+      
+      // Tier 2: 고급 기법 25개
+      '04': { ko: '210 Degree Panel Control', en: '210 Degree Panel Control' },
+      '06': { ko: 'Angle', en: 'Angle' },
+      '20': { ko: 'Brick Cut', en: 'Brick Cut' },
+      '22': { ko: 'Channel Cut', en: 'Channel Cut' },
+      '23': { ko: 'Clipper Cut', en: 'Clipper Cut' },
+      '24': { ko: 'Clipper Over Comb', en: 'Clipper Over Comb' },
+      '29': { ko: 'Cut Form', en: 'Cut Form' },
+      '34': { ko: 'Disconnection', en: 'Disconnection' },
+      '36': { ko: 'Elevation', en: 'Elevation' },
+      '38': { ko: 'Face Shape', en: 'Face Shape' },
+      '41': { ko: 'Freehands Cut', en: 'Freehands Cut' },
+      '42': { ko: 'Fringe', en: 'Fringe' },
+      '45': { ko: 'Graduation & Layer', en: 'Graduation & Layer' },
+      '51': { ko: 'Inner Length', en: 'Inner Length' },
+      '53': { ko: 'Layer & Weight', en: 'Layer & Weight' },
+      '59': { ko: 'One Length', en: 'One Length' },
+      '60': { ko: 'Outline Long Form', en: 'Outline Long Form' },
+      '61': { ko: 'Outline Medium Form', en: 'Outline Medium Form' },
+      '75': { ko: 'Silhouette', en: 'Silhouette' },
+      '76': { ko: 'Skull Structure', en: 'Skull Structure' },
+      '81': { ko: 'Texturizing', en: 'Texturizing' },
+      '82': { ko: 'Texturizing Zone', en: 'Texturizing Zone' },
+      '84': { ko: 'Under Cut', en: 'Under Cut' },
+      '88': { ko: 'Weight Sit Area', en: 'Weight Sit Area' },
+      
+      // 추가 용어들 (필요시 확장)
+      '09': { ko: 'Balance', en: 'Balance' },
+      '47': { ko: 'Head Point', en: 'Head Point' },
+      '49': { ko: 'Hemline', en: 'Hemline' },
+      '64': { ko: 'Perimeter Line', en: 'Perimeter Line' },
+      '87': { ko: 'Volume Location', en: 'Volume Location' }
+    };
   }
 
   init() {
@@ -115,8 +172,9 @@ class HairGatorChatbot {
         <div id="chatbot-messages" class="chatbot-messages">
           <div class="bot-message">
             <div class="message-content" id="welcome-message">
-              <p><strong>HAIR Recipe</strong></p>
+              <p><strong>HAIR Recipe v2.0</strong></p>
               <p id="welcome-text">${texts.welcome}</p>
+              <p style="font-size:0.85em;opacity:0.7;">✨ 89용어 시스템 적용</p>
             </div>
           </div>
         </div>
@@ -228,480 +286,358 @@ class HairGatorChatbot {
       });
     });
 
+    // 외부 클릭 시 드롭다운 닫기
+    document.addEventListener('click', () => {
+      document.getElementById('language-dropdown').classList.add('hidden');
+    });
+
     // 색인 버튼
     document.getElementById('index-btn').addEventListener('click', () => {
-      this.showIndex();
+      this.showIndexModal();
     });
 
     // 색인 모달 닫기
     document.getElementById('index-modal-close').addEventListener('click', () => {
-      this.hideIndex();
+      this.hideIndexModal();
     });
 
     document.getElementById('index-modal-overlay').addEventListener('click', () => {
-      this.hideIndex();
-    });
-
-    // 드롭다운 외부 클릭 시 닫기
-    document.addEventListener('click', (e) => {
-      const dropdown = document.getElementById('language-dropdown');
-      const langBtn = document.getElementById('language-btn');
-      if (!langBtn.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.classList.add('hidden');
-      }
+      this.hideIndexModal();
     });
   }
 
-  // 언어 변경
   changeLanguage(lang) {
     this.currentLanguage = lang;
     const texts = this.getTexts();
     
-    // UI 텍스트 업데이트
     document.getElementById('chatbot-title').textContent = texts.title;
     document.getElementById('welcome-text').textContent = texts.welcome;
     document.getElementById('chatbot-input').placeholder = texts.placeholder;
     document.getElementById('index-modal-title').textContent = texts.indexTitle;
-
-    console.log(`언어 변경: ${lang}`);
   }
 
-  // 색인 표시
-  async showIndex() {
-    const modal = document.getElementById('index-modal');
-    const content = document.getElementById('index-content');
-    
-    modal.classList.remove('hidden');
-    
-    // 기본 파일명 리스트 (번호와 제목)
-    const indexTitles = [
-      '1 Section & 2 Section',
-      '1Way Cut & 2Way Cut',
-      '2 Section',
-      '210 Degree Panel Control',
-      'A Zone & V Zone',
-      'Angle',
-      'Asymmetry',
-      'Bais Cut',
-      'Balance',
-      'Base',
-      'Base Control',
-      'Base Line',
-      'Base Position',
-      'Bevel',
-      'Bevel Off',
-      'Block Cut',
-      'Blocking',
-      'Blow Dry',
-      'Blunt Cut',
-      'Brick Cut',
-      'C Curveture',
-      'Channel Cut',
-      'Clipper Cut',
-      'Clipper Over Comb',
-      'Convex Line & Concave Line',
-      'Corner Off',
-      'Cowlick Parting',
-      'Curved Shape',
-      'Cut Form',
-      'Degree',
-      'Design Line',
-      'Diffuser',
-      'Direction',
-      'Disconnection',
-      'Distribution',
-      'Elevation',
-      'Face Line',
-      'Face Shape',
-      'Finger\'s Angle',
-      'Form',
-      'Freehands Cut',
-      'Fringe',
-      'Geometric Shape',
-      'Graduation',
-      'Graduation & Layer',
-      'Hairstyle Classification',
-      'Head Point',
-      'Head Position',
-      'Hemline',
-      'Image Cycle On & On',
-      'Inner Length',
-      'Layer',
-      'Layer & Weight',
-      'Lifting',
-      'Natural Inversion',
-      'Natural Parting',
-      'Occipital Bone',
-      'One Finger Projection',
-      'One Length',
-      'Outline Long Form',
-      'Outline Medium Form',
-      'Over Direction',
-      'Panel',
-      'Perimeter Line',
-      'Personalizing',
-      'Proportion',
-      'Recession Area',
-      'Recession Type',
-      'Scissor Over Comb',
-      'Section',
-      'Section Application',
-      'Section Control',
-      'Section Off',
-      'Separation',
-      'Silhouette',
-      'Skull Structure',
-      'Style Form',
-      'Subsequent Section',
-      'Symmetry',
-      'Temple Area',
-      'Texturizing',
-      'Texturizing Zone',
-      'Trimming',
-      'Under Cut',
-      'Visual Balance',
-      'Volume',
-      'Volume Location by Section',
-      'Weight Sit Area',
-      'Zone'
-    ];
-    
-    // 언어별 파일명 suffix
-    const suffixMap = {
-      'ko': '',      // 한국어는 suffix 없음
-      'en': ' – 1',  // 영어는 모두 – 1
-      'ja': ' – 2',  // 일본어는 대부분 – 2, 처음 2개만 – 3
-      'zh': ' – 3',  // 중국어는 대부분 – 3, 처음 2개만 – 2
-      'vi': ' – 5'   // 베트남어는 대부분 – 5, 처음 2개만 – 4
-    };
-    
-    content.innerHTML = '<div class="index-loading">색인 로딩 중...</div>';
-    
-    try {
-      const suffix = suffixMap[this.currentLanguage] || '';
-      
-      const indexImages = indexTitles.map((title, index) => {
-        const num = String(index + 1).padStart(2, '0');
-        
-        let fileSuffix = suffix;
-        
-        // 일본어: 처음 2개는 – 3, 나머지는 – 2
-        if (this.currentLanguage === 'ja' && index < 2) {
-          fileSuffix = ' – 3';
-        }
-        
-        // 중국어: 처음 2개는 – 2, 나머지는 – 3
-        if (this.currentLanguage === 'zh' && index < 2) {
-          fileSuffix = ' – 2';
-        }
-        
-        // 베트남어: 처음 2개는 – 4, 나머지는 – 5
-        if (this.currentLanguage === 'vi' && index < 2) {
-          fileSuffix = ' – 4';
-        }
-        
-        const fileName = `${num}. ${title}${fileSuffix}.png`;
-        const imagePath = `/indexes/${this.currentLanguage}/${fileName}`;
-        
-        return {
-          num: num,
-          path: imagePath,
-          title: title
-        };
-      });
-      
-      // 갤러리 HTML 생성
-      const galleryHTML = `
-        <div class="index-gallery">
-          ${indexImages.map(img => `
-            <div class="index-item" onclick="window.hairgatorChatbot.showImagePreview('${img.path}', '${img.num}', '${img.title.replace(/'/g, "\\'")}')">
-              <img src="${img.path}" alt="${img.title}" loading="lazy" 
-                   onerror="this.style.display='none'; this.parentElement.classList.add('image-error');">
-              <span class="index-number">${img.num}</span>
-              <div class="index-title">${img.title}</div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-      
-      content.innerHTML = galleryHTML;
-      
-    } catch (error) {
-      console.error('색인 로드 오류:', error);
-      content.innerHTML = '<p class="index-error">색인을 불러올 수 없습니다.</p>';
-    }
+  showIndexModal() {
+    document.getElementById('index-modal').classList.remove('hidden');
+    this.loadIndexContent();
   }
 
-  // 이미지 미리보기
-  showImagePreview(imagePath, imageNum, imageTitle) {
-    const previewHTML = `
-      <div class="image-preview-overlay" onclick="this.remove()">
-        <div class="image-preview-container" onclick="event.stopPropagation()">
-          <div class="image-preview-header">
-            <span class="image-preview-title">${imageNum}. ${imageTitle}</span>
-            <button class="image-preview-close" onclick="this.closest('.image-preview-overlay').remove()">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-          <div class="image-preview-content">
-            <img src="${imagePath}" alt="${imageTitle}">
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', previewHTML);
-  }
-
-  // 색인 숨기기
-  hideIndex() {
+  hideIndexModal() {
     document.getElementById('index-modal').classList.add('hidden');
   }
 
-  initKeyboardHandler() {
-    const chatbotContainer = document.getElementById('chatbot-container');
-    const chatbotInput = document.getElementById('chatbot-input');
-    const chatbotMessages = document.getElementById('chatbot-messages');
-
-    if (window.innerWidth <= 768) {
-      let lastHeight = window.innerHeight;
+  async loadIndexContent() {
+    const indexContent = document.getElementById('index-content');
+    
+    try {
+      const response = await fetch('/hairgator-index.json');
+      const indexData = await response.json();
       
-      const handleResize = () => {
-        const currentHeight = window.innerHeight;
+      let html = '<div class="index-list">';
+      
+      Object.entries(indexData).forEach(([category, items]) => {
+        html += `<div class="index-category">`;
+        html += `<h4>${category}</h4>`;
+        html += `<ul>`;
         
-        if (currentHeight < lastHeight * 0.8) {
-          chatbotContainer.style.height = `${currentHeight}px`;
-          
-          const headerHeight = 60;
-          const inputHeight = 80;
-          chatbotMessages.style.maxHeight = `${currentHeight - headerHeight - inputHeight}px`;
-          
-          setTimeout(() => {
-            this.scrollToBottom();
-          }, 100);
-        } else {
-          chatbotContainer.style.height = '100vh';
-          chatbotMessages.style.maxHeight = '';
-        }
-        
-        lastHeight = currentHeight;
-      };
-      
-      window.addEventListener('resize', handleResize);
-      
-      if (chatbotInput) {
-        chatbotInput.addEventListener('focus', () => {
-          setTimeout(() => {
-            handleResize();
-            this.scrollToBottom();
-          }, 300);
+        items.forEach(item => {
+          html += `<li><a href="#${item.code}">${item.name}</a></li>`;
         });
         
-        chatbotInput.addEventListener('blur', () => {
-          setTimeout(() => {
-            handleResize();
-          }, 300);
-        });
-      }
+        html += `</ul></div>`;
+      });
+      
+      html += '</div>';
+      indexContent.innerHTML = html;
+      
+    } catch (error) {
+      console.error('색인 로드 실패:', error);
+      indexContent.innerHTML = '<p>색인을 로드할 수 없습니다.</p>';
     }
+  }
 
-    console.log('✅ HAIRGATOR 챗봇: 전체 화면 + 키보드 대응 완료');
+  initKeyboardHandler() {
+    if (!window.visualViewport) return;
+
+    let originalHeight = window.innerHeight;
+    let keyboardOpen = false;
+
+    window.visualViewport.addEventListener('resize', () => {
+      const currentHeight = window.visualViewport.height;
+      const container = document.getElementById('chatbot-container');
+      
+      if (!container) return;
+
+      if (currentHeight < originalHeight * 0.75) {
+        if (!keyboardOpen) {
+          keyboardOpen = true;
+          container.style.height = `${currentHeight}px`;
+          container.style.top = `${window.visualViewport.offsetTop}px`;
+        }
+      } else {
+        if (keyboardOpen) {
+          keyboardOpen = false;
+          container.style.height = '';
+          container.style.top = '';
+        }
+      }
+    });
   }
 
   toggleChatbot() {
-    this.isOpen = !this.isOpen;
     const container = document.getElementById('chatbot-container');
-    const toggle = document.getElementById('chatbot-toggle');
+    this.isOpen = !this.isOpen;
     
     if (this.isOpen) {
-      container.classList.add('open');
-      toggle.classList.add('hidden');
-      
-      document.body.classList.add('chatbot-open');
-      
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-      document.body.style.top = '0';
-      document.body.style.left = '0';
-      
-      document.documentElement.style.overflow = 'hidden';
-      document.documentElement.style.position = 'fixed';
-      document.documentElement.style.width = '100%';
-      document.documentElement.style.height = '100%';
+      container.classList.add('active');
+      document.getElementById('chatbot-input').focus();
     } else {
-      container.classList.remove('open');
-      toggle.classList.remove('hidden');
-      
-      document.body.classList.remove('chatbot-open');
-      
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      
-      document.documentElement.style.overflow = '';
-      document.documentElement.style.position = '';
-      document.documentElement.style.width = '';
-      document.documentElement.style.height = '';
+      container.classList.remove('active');
     }
   }
 
-  // 이미지 업로드 처리
   async handleImageUpload(file) {
     if (!file) return;
 
     const texts = this.getTexts();
 
     if (file.size > 5 * 1024 * 1024) {
-      this.addMessage('bot', texts.errorSize);
+      alert(texts.errorSize);
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      this.addMessage('bot', texts.errorType);
+      alert(texts.errorType);
       return;
     }
 
-    const imageUrl = URL.createObjectURL(file);
-    this.addMessage('user', `<img src="${imageUrl}" alt="업로드 이미지" class="uploaded-image">`);
-    this.addMessage('bot', texts.analyzing);
-
-    try {
-      const base64 = await this.fileToBase64(file);
-
-      // 1단계: 이미지 분석
-      const analyzeResponse = await fetch(this.apiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'analyze_image',
-          payload: {
-            image_base64: base64,
-            mime_type: file.type
-          }
-        })
-      });
-
-      const analyzeResult = await analyzeResponse.json();
-
-      if (!analyzeResult.success) {
-        throw new Error(analyzeResult.error || '분석 실패');
-      }
-
-      const analysisData = analyzeResult.data;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const imageDataUrl = e.target.result;
       
-      // 분석 결과 표시 (전문 용어 제거)
-      const summaryText = this.formatParameters(analysisData);
-      this.replaceLastBotMessage(summaryText);
+      this.addMessage('user', `<img src="${imageDataUrl}" alt="업로드된 이미지" class="uploaded-image">`);
+      this.addMessage('bot', texts.analyzing);
 
-      // 2단계: 레시피 생성
-      this.addMessage('bot', `<div class="recipe-streaming">✂️ <strong>${texts.generating}</strong></div>`);
+      try {
+        const base64Data = imageDataUrl.split(',')[1];
+        
+        const analysisResponse = await fetch(this.apiEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'analyze_image',
+            payload: { image_data: base64Data }
+          })
+        });
 
-      await this.streamRecipe(analysisData);
+        const analysisResult = await analysisResponse.json();
 
-    } catch (error) {
-      console.error('❌ 이미지 분석 오류:', error);
-      this.replaceLastBotMessage('❌ 오류가 발생했습니다. 다시 시도해주세요.');
-    }
+        if (!analysisResult.success) {
+          this.replaceLastBotMessage('❌ 이미지 분석에 실패했습니다.');
+          return;
+        }
 
-    document.getElementById('image-upload').value = '';
+        const params56 = analysisResult.data.parameters_56;
+        const formula42 = analysisResult.data.formula_42;
+
+        this.replaceLastBotMessage(this.formatParameters(params56));
+
+        // 새로운 스트리밍 레시피 생성
+        await this.generateRecipeWithStream(formula42, params56);
+
+      } catch (error) {
+        console.error('이미지 분석 오류:', error);
+        this.replaceLastBotMessage('오류가 발생했습니다. 다시 시도해주세요.');
+      }
+    };
+
+    reader.readAsDataURL(file);
   }
 
-  // 레시피 스트리밍 생성
-  async streamRecipe(analysisData) {
+  // 🆕 스트리밍 레시피 생성 (새 포맷 ###1~###7)
+  async generateRecipeWithStream(formula42, params56) {
+    const texts = this.getTexts();
+    
+    // 레시피 생성 시작 메시지
+    this.addMessage('bot', texts.generating);
+    const messages = document.querySelectorAll('.bot-message');
+    const recipeMessageDiv = messages[messages.length - 1];
+    const contentDiv = recipeMessageDiv.querySelector('.message-content');
+
     try {
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'generate_recipe',
+          action: 'generate_recipe_stream',
           payload: {
-            analysis_result: analysisData
+            formula_42: formula42,
+            parameters_56: params56
           }
         })
       });
 
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || '레시피 생성 실패');
+      if (!response.ok) {
+        throw new Error('레시피 생성 실패');
       }
 
-      // ✅ recipe 속성 안전하게 추출
-      const rawRecipe = result.data?.recipe || result.data;
-      
-      // ✅ 문자열 타입 검증
-      if (typeof rawRecipe !== 'string') {
-        console.error('레시피 형식 오류:', rawRecipe);
-        throw new Error('레시피 데이터가 올바른 형식이 아닙니다.');
+      // 스트리밍 응답 처리
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedText = '';
+
+      contentDiv.innerHTML = '<div class="recipe-streaming"></div>';
+      const streamingDiv = contentDiv.querySelector('.recipe-streaming');
+
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        accumulatedText += chunk;
+
+        // 실시간 렌더링 (89용어 하이라이팅 적용)
+        streamingDiv.innerHTML = this.parseNewRecipeFormat(accumulatedText);
+        this.scrollToBottom();
       }
-      
-      const formattedRecipe = this.markdownToHTML(rawRecipe);
-      
-      await this.typeWriter(formattedRecipe);
+
+      // 최종 렌더링
+      contentDiv.innerHTML = this.parseNewRecipeFormat(accumulatedText);
+      this.scrollToBottom();
 
     } catch (error) {
-      console.error('❌ 레시피 생성 오류:', error);
-      this.replaceLastBotMessage('❌ 레시피 생성 중 오류가 발생했습니다.');
+      console.error('레시피 생성 오류:', error);
+      contentDiv.innerHTML = '레시피 생성 중 오류가 발생했습니다.';
     }
   }
 
-  // 마크다운 → HTML 변환
-  markdownToHTML(markdown) {
-    let html = markdown;
+  // 🆕 새 레시피 포맷 파싱 (###1~###7)
+  parseNewRecipeFormat(text) {
+    if (!text) return '<p>레시피 생성 중...</p>';
 
-    html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-    html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-    html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-    html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
-    html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-    html = html.replace(/^---$/gim, '<hr>');
-    html = html.replace(/\n\n/g, '</p><p>');
-    html = html.replace(/\n/g, '<br>');
-    html = `<div class="recipe-content">${html}</div>`;
+    let html = '<div class="recipe-v2">';
 
+    // ###1 ~ ###7 섹션 분리
+    const sectionPattern = /###(\d+)\.\s*([^\n]+)\n([\s\S]*?)(?=###\d+\.|$)/g;
+    const sections = [];
+    let match;
+
+    while ((match = sectionPattern.exec(text)) !== null) {
+      sections.push({
+        number: match[1],
+        title: match[2].trim(),
+        content: match[3].trim()
+      });
+    }
+
+    if (sections.length === 0) {
+      // 아직 섹션이 생성되지 않았을 때
+      html += `<div class="recipe-section"><p>${this.highlight89Terms(text)}</p></div>`;
+    } else {
+      // 섹션별 렌더링
+      sections.forEach(section => {
+        const sectionClass = this.getSectionClass(section.number);
+        html += `
+          <div class="recipe-section ${sectionClass}">
+            <h3 class="section-title">
+              <span class="section-number">###${section.number}</span>
+              ${section.title}
+            </h3>
+            <div class="section-content">
+              ${this.parseMarkdown(this.highlight89Terms(section.content))}
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    html += '</div>';
     return html;
   }
 
-  // 타이핑 효과
-  async typeWriter(html) {
-    const messages = document.querySelectorAll('.bot-message');
-    const lastMessage = messages[messages.length - 1];
-    if (!lastMessage) return;
-
-    const contentDiv = lastMessage.querySelector('.message-content');
-    
-    contentDiv.innerHTML = '<div class="recipe-streaming"></div>';
-    const streamingDiv = contentDiv.querySelector('.recipe-streaming');
-
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
-
-    streamingDiv.innerHTML = html;
-    const allElements = streamingDiv.querySelectorAll('*');
-    
-    allElements.forEach(el => {
-      el.style.opacity = '0';
-    });
-
-    for (let i = 0; i < allElements.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 30));
-      allElements[i].style.opacity = '1';
-      allElements[i].style.transition = 'opacity 0.2s ease-in';
-      this.scrollToBottom();
-    }
+  // 섹션별 CSS 클래스
+  getSectionClass(sectionNumber) {
+    const classMap = {
+      '1': 'style-description',
+      '2': 'style-length',
+      '3': 'style-form',
+      '4': 'fringe-length',
+      '5': 'base-cut',
+      '6': 'texturizing',
+      '7': 'styling'
+    };
+    return classMap[sectionNumber] || '';
   }
 
-  // 파라미터 포맷팅 (전문 용어 제거)
+  // 🆕 89용어 하이라이팅
+  highlight89Terms(text) {
+    if (!text) return '';
+
+    // 89용어 패턴 매칭 (예: 70.Section, 54.Lifting, L4, D0 등)
+    let highlighted = text;
+
+    // 용어 번호 패턴 (01~89)
+    Object.keys(this.terms89Map).forEach(termNum => {
+      const termInfo = this.terms89Map[termNum];
+      const pattern = new RegExp(`(${termNum}\\.[\\w\\s&-]+)`, 'gi');
+      highlighted = highlighted.replace(pattern, (match) => {
+        return `<span class="term-89" data-term="${termNum}" title="${termInfo.ko}">${match}</span>`;
+      });
+    });
+
+    // 각도 패턴 하이라이팅 (L0~L8)
+    highlighted = highlighted.replace(/\bL([0-8])\b/g, '<span class="angle-lift">L$1</span>');
+    
+    // 방향 패턴 하이라이팅 (D0~D8)
+    highlighted = highlighted.replace(/\bD([0-8])\b/g, '<span class="angle-dir">D$1</span>');
+
+    // A존/B존/C존 하이라이팅
+    highlighted = highlighted.replace(/\bA존\b/g, '<span class="zone-a">A존</span>');
+    highlighted = highlighted.replace(/\bB존\b/g, '<span class="zone-b">B존</span>');
+    highlighted = highlighted.replace(/\bC존\b/g, '<span class="zone-c">C존</span>');
+
+    // 영어 Zone 패턴
+    highlighted = highlighted.replace(/\bZone-?A\b/gi, '<span class="zone-a">Zone-A</span>');
+    highlighted = highlighted.replace(/\bZone-?B\b/gi, '<span class="zone-b">Zone-B</span>');
+    highlighted = highlighted.replace(/\bZone-?C\b/gi, '<span class="zone-c">Zone-C</span>');
+
+    return highlighted;
+  }
+
+  // 마크다운 파싱 (기존 유지)
+  parseMarkdown(text) {
+    if (!text) return '';
+
+    let html = text;
+
+    // 헤더
+    html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+    html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+    // 볼드
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+
+    // 이탤릭
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+
+    // 리스트
+    html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+    // 구분선
+    html = html.replace(/^---$/gim, '<hr>');
+
+    // 줄바꿈
+    html = html.replace(/\n\n/g, '</p><p>');
+    html = html.replace(/\n/g, '<br>');
+
+    return `<p>${html}</p>`;
+  }
+
+  // 파라미터 포맷팅
   formatParameters(analysisData) {
     const lines = [];
     const params56 = analysisData.parameters_56 || analysisData;
@@ -709,7 +645,6 @@ class HairGatorChatbot {
     lines.push('<div class="analysis-result">');
     lines.push('<h3>📊 분석 완료</h3>');
 
-    // 핵심 정보만 표시
     lines.push('<div class="params-section">');
     lines.push('<ul>');
     
@@ -887,5 +822,5 @@ class HairGatorChatbot {
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR 챗봇 로드 완료 (언어선택 + 색인 + 전문용어 제거)');
+  console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (89용어 + 새 레시피 포맷 + 스트리밍)');
 });
