@@ -522,7 +522,7 @@ class HairGatorChatbot {
         body: JSON.stringify({
           action: 'generate_recipe_stream',
           payload: {
-            parameters_56: analysisResult.data
+            params56: analysisResult.data
           }
         })
       });
