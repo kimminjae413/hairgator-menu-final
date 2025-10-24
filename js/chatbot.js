@@ -4,6 +4,7 @@
 // ✅ Cut Form O/G/L 3개만 (Combination 제거)
 // ✅ Volume 엄격한 기준 (Low: 0~44°, Medium: 45~89°, High: 90°~)
 // ✅ Touch Event passive listener 추가
+// ✅ undefined 버그 수정 (505번째, 524번째 줄 fallback 추가) ← 새로 추가!
 
 class HairGatorChatbot {
   constructor() {
@@ -493,16 +494,19 @@ class HairGatorChatbot {
             const fileName = `${id}. ${termName}${suffix}.png`;
             const imageURL = baseURL + langFolder + '/' + encodeURIComponent(fileName);
             
+            // ✅ 수정 1: Fallback 추가 (undefined 방지)
+            const displayName = term[this.currentLanguage] || term.ko || term.en;
+            
             return `
               <div class="term-card-single" onclick="window.hairgatorChatbot.openImageViewer(${parseInt(id) - 1})">
                 <img 
                   src="${imageURL}" 
-                  alt="${term[this.currentLanguage]}"
+                  alt="${displayName}"
                   onerror="this.parentElement.classList.add('image-error'); this.style.display='none';"
                 />
                 <div class="term-info-single">
                   <span class="term-num">${id}</span>
-                  <span class="term-title">${term[this.currentLanguage]}</span>
+                  <span class="term-title">${displayName}</span>
                 </div>
               </div>
             `;
@@ -513,15 +517,18 @@ class HairGatorChatbot {
     body.innerHTML = galleryHTML;
     modal.classList.remove('hidden');
 
+    // ✅ 수정 2: Fallback 추가 (undefined 방지)
     window.hairgatorTermImages = Object.entries(this.terms89Map)
       .sort(([idA], [idB]) => parseInt(idA) - parseInt(idB))
       .map(([id, term]) => {
         const termName = term.en;
         const suffix = getFileSuffix(id, this.currentLanguage);
         const fileName = `${id}. ${termName}${suffix}.png`;
+        const displayName = term[this.currentLanguage] || term.ko || term.en;
+        
         return {
           url: baseURL + langFolder + '/' + encodeURIComponent(fileName),
-          title: `${id}. ${term[this.currentLanguage]}`
+          title: `${id}. ${displayName}`
         };
       });
   }
@@ -678,8 +685,7 @@ class HairGatorChatbot {
         body: JSON.stringify({
           action: 'generate_recipe_stream',
           payload: {
-            params56: analysisResult.data
-,
+            params56: analysisResult.data,
             language: this.currentLanguage  // 다국어 지원
           }
         })
@@ -1009,5 +1015,5 @@ class HairGatorChatbot {
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (Cut Form O/G/L + Volume 엄격화 + Touch Event 수정)');
+  console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (undefined 버그 수정 완료)');
 });
