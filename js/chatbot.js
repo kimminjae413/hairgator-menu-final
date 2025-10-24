@@ -1,5 +1,6 @@
 // js/chatbot.js - HAIRGATOR v2.0
 // 89용어 통합 + 새 레시피 포맷(###1~###7) + 스트리밍 지원
+// ✅ TypeError 버그 수정 완료
 
 class HairGatorChatbot {
   constructor() {
@@ -222,48 +223,80 @@ class HairGatorChatbot {
 
       <!-- 색인 모달 -->
       <div id="index-modal" class="index-modal hidden">
-        <div class="index-modal-overlay" id="index-modal-overlay"></div>
-        <div class="index-modal-content">
-          <div class="index-modal-header">
+        <div class="index-content">
+          <div class="index-header">
             <h3 id="index-modal-title">${texts.indexTitle}</h3>
-            <button id="index-modal-close" class="index-close">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
+            <button id="index-close" class="index-close">×</button>
           </div>
-          <div id="index-content" class="index-content">
-            <p>색인 파일을 로드하는 중...</p>
+          <div class="index-body">
+            <div class="index-search">
+              <input type="text" id="index-search-input" placeholder="용어 검색...">
+            </div>
+            <div id="index-list" class="index-list"></div>
           </div>
         </div>
       </div>
     `;
-
+    
     document.body.insertAdjacentHTML('beforeend', chatbotHTML);
+    this.renderIndexList();
+  }
+
+  renderIndexList() {
+    const indexList = document.getElementById('index-list');
+    if (!indexList) return;
+
+    const tier1 = ['01', '02', '05', '11', '19', '31', '33', '35', '44', '52', '54', '62', '70', '86', '89'];
+    const tier2 = ['04', '06', '20', '22', '23', '24', '29', '34', '36', '38', '41', '42', '45', '51', '53', '59', '60', '61', '75', '76', '81', '82', '84', '88'];
+    
+    let html = '<div class="tier-section"><h4>⭐ Tier 1: 필수 핵심</h4><ul>';
+    tier1.forEach(num => {
+      const term = this.terms89Map[num];
+      if (term) {
+        html += `<li><span class="term-number">${num}</span> ${term.ko}</li>`;
+      }
+    });
+    html += '</ul></div>';
+
+    html += '<div class="tier-section"><h4>🔸 Tier 2: 고급 기법</h4><ul>';
+    tier2.forEach(num => {
+      const term = this.terms89Map[num];
+      if (term) {
+        html += `<li><span class="term-number">${num}</span> ${term.ko}</li>`;
+      }
+    });
+    html += '</ul></div>';
+
+    indexList.innerHTML = html;
   }
 
   attachEventListeners() {
+    // 토글 버튼
     document.getElementById('chatbot-toggle').addEventListener('click', () => {
-      this.toggleChatbot();
+      this.toggleChat();
     });
 
+    // 닫기 버튼
     document.getElementById('chatbot-close').addEventListener('click', () => {
-      this.toggleChatbot();
+      this.closeChat();
     });
 
+    // 업로드 버튼
     document.getElementById('upload-btn').addEventListener('click', () => {
       document.getElementById('image-upload').click();
     });
 
+    // 파일 선택
     document.getElementById('image-upload').addEventListener('change', (e) => {
-      this.handleImageUpload(e.target.files[0]);
+      this.handleImageUpload(e);
     });
 
+    // 전송 버튼
     document.getElementById('send-btn').addEventListener('click', () => {
       this.handleTextMessage();
     });
 
+    // Enter 키
     document.getElementById('chatbot-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         this.handleTextMessage();
@@ -271,131 +304,88 @@ class HairGatorChatbot {
     });
 
     // 언어 선택
-    document.getElementById('language-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      const dropdown = document.getElementById('language-dropdown');
-      dropdown.classList.toggle('hidden');
+    document.getElementById('language-btn').addEventListener('click', () => {
+      document.getElementById('language-dropdown').classList.toggle('hidden');
     });
 
-    // 언어 옵션 클릭
     document.querySelectorAll('.lang-option').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const lang = e.currentTarget.getAttribute('data-lang');
-        this.changeLanguage(lang);
+      btn.addEventListener('click', () => {
+        this.currentLanguage = btn.dataset.lang;
         document.getElementById('language-dropdown').classList.add('hidden');
+        this.updateLanguage();
       });
-    });
-
-    // 외부 클릭 시 드롭다운 닫기
-    document.addEventListener('click', () => {
-      document.getElementById('language-dropdown').classList.add('hidden');
     });
 
     // 색인 버튼
     document.getElementById('index-btn').addEventListener('click', () => {
-      this.showIndexModal();
+      document.getElementById('index-modal').classList.remove('hidden');
     });
 
-    // 색인 모달 닫기
-    document.getElementById('index-modal-close').addEventListener('click', () => {
-      this.hideIndexModal();
+    document.getElementById('index-close').addEventListener('click', () => {
+      document.getElementById('index-modal').classList.add('hidden');
     });
 
-    document.getElementById('index-modal-overlay').addEventListener('click', () => {
-      this.hideIndexModal();
+    // 색인 검색
+    document.getElementById('index-search-input')?.addEventListener('input', (e) => {
+      this.filterIndexTerms(e.target.value);
     });
   }
 
-  changeLanguage(lang) {
-    this.currentLanguage = lang;
-    const texts = this.getTexts();
+  filterIndexTerms(query) {
+    const items = document.querySelectorAll('#index-list li');
+    const lowerQuery = query.toLowerCase();
+
+    items.forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(lowerQuery) ? '' : 'none';
+    });
+  }
+
+  initKeyboardHandler() {
+    window.addEventListener('resize', () => {
+      if (window.visualViewport) {
+        const container = document.getElementById('chatbot-container');
+        if (container) {
+          const offsetY = window.visualViewport.offsetTop;
+          const height = window.visualViewport.height;
+          container.style.transform = `translateY(${offsetY}px)`;
+          container.style.height = `${height}px`;
+        }
+      }
+    });
+  }
+
+  toggleChat() {
+    this.isOpen = !this.isOpen;
+    const container = document.getElementById('chatbot-container');
+    const toggle = document.getElementById('chatbot-toggle');
     
+    if (this.isOpen) {
+      container.style.display = 'flex';
+      toggle.style.display = 'none';
+      this.scrollToBottom();
+    } else {
+      container.style.display = 'none';
+      toggle.style.display = 'flex';
+    }
+  }
+
+  closeChat() {
+    this.isOpen = false;
+    document.getElementById('chatbot-container').style.display = 'none';
+    document.getElementById('chatbot-toggle').style.display = 'flex';
+  }
+
+  updateLanguage() {
+    const texts = this.getTexts();
     document.getElementById('chatbot-title').textContent = texts.title;
     document.getElementById('welcome-text').textContent = texts.welcome;
     document.getElementById('chatbot-input').placeholder = texts.placeholder;
     document.getElementById('index-modal-title').textContent = texts.indexTitle;
   }
 
-  showIndexModal() {
-    document.getElementById('index-modal').classList.remove('hidden');
-    this.loadIndexContent();
-  }
-
-  hideIndexModal() {
-    document.getElementById('index-modal').classList.add('hidden');
-  }
-
-  async loadIndexContent() {
-    const indexContent = document.getElementById('index-content');
-    
-    try {
-      const response = await fetch('/hairgator-index.json');
-      const indexData = await response.json();
-      
-      let html = '<div class="index-list">';
-      
-      Object.entries(indexData).forEach(([category, items]) => {
-        html += `<div class="index-category">`;
-        html += `<h4>${category}</h4>`;
-        html += `<ul>`;
-        
-        items.forEach(item => {
-          html += `<li><a href="#${item.code}">${item.name}</a></li>`;
-        });
-        
-        html += `</ul></div>`;
-      });
-      
-      html += '</div>';
-      indexContent.innerHTML = html;
-      
-    } catch (error) {
-      console.error('색인 로드 실패:', error);
-      indexContent.innerHTML = '<p>색인을 로드할 수 없습니다.</p>';
-    }
-  }
-
-  initKeyboardHandler() {
-    if (!window.visualViewport) return;
-
-    let originalHeight = window.innerHeight;
-    let keyboardOpen = false;
-
-    window.visualViewport.addEventListener('resize', () => {
-      const currentHeight = window.visualViewport.height;
-      const container = document.getElementById('chatbot-container');
-      
-      if (!container) return;
-
-      if (currentHeight < originalHeight * 0.75) {
-        if (!keyboardOpen) {
-          keyboardOpen = true;
-          container.style.height = `${currentHeight}px`;
-          container.style.top = `${window.visualViewport.offsetTop}px`;
-        }
-      } else {
-        if (keyboardOpen) {
-          keyboardOpen = false;
-          container.style.height = '';
-          container.style.top = '';
-        }
-      }
-    });
-  }
-
-  toggleChatbot() {
-    const container = document.getElementById('chatbot-container');
-    this.isOpen = !this.isOpen;
-    
-    if (this.isOpen) {
-      container.classList.add('active');
-      document.getElementById('chatbot-input').focus();
-    } else {
-      container.classList.remove('active');
-    }
-  }
-
-  async handleImageUpload(file) {
+  async handleImageUpload(event) {
+    const file = event.target.files[0];
     if (!file) return;
 
     const texts = this.getTexts();
@@ -412,104 +402,108 @@ class HairGatorChatbot {
 
     const reader = new FileReader();
     reader.onload = async (e) => {
-      const imageDataUrl = e.target.result;
+      const imageData = e.target.result;
       
-      this.addMessage('user', `<img src="${imageDataUrl}" alt="업로드된 이미지" class="uploaded-image">`);
+      this.addRawHTML(`
+        <div class="user-message">
+          <div class="message-content">
+            <img src="${imageData}" alt="Uploaded" style="max-width:200px;border-radius:8px;">
+          </div>
+        </div>
+      `);
+
       this.addMessage('bot', texts.analyzing);
 
       try {
-        const base64Data = imageDataUrl.split(',')[1];
-        const mimeType = file.type || 'image/jpeg';
+        const base64Data = imageData.split(',')[1];
         
         const analysisResponse = await fetch(this.apiEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            action: 'analyze_image',  // ✅ Backend 형식
+            action: 'analyze_image',
             payload: {
-              image_base64: base64Data,  // ✅ Backend가 기대하는 키
-              mime_type: mimeType
+              image_base64: base64Data,
+              mime_type: file.type
             }
           })
         });
 
         const analysisResult = await analysisResponse.json();
 
-        if (!analysisResult.success || !analysisResult.data) {
-          this.replaceLastBotMessage('❌ 이미지 분석에 실패했습니다.');
-          return;
+        if (!analysisResult.success) {
+          throw new Error(analysisResult.error || '분석 실패');
         }
 
-        // Backend 응답: { success: true, data: {...} }
         const params56 = analysisResult.data;
-        const formula42 = {};
-
         this.replaceLastBotMessage(this.formatParameters(params56));
 
-        // 새로운 스트리밍 레시피 생성
-        await this.generateRecipeWithStream(formula42, params56);
+        // 레시피 생성 (스트리밍)
+        await this.generateRecipeWithStream(params56);
 
       } catch (error) {
         console.error('이미지 분석 오류:', error);
-        this.replaceLastBotMessage('오류가 발생했습니다. 다시 시도해주세요.');
+        this.replaceLastBotMessage(`❌ 이미지 분석에 실패했습니다: ${error.message}`);
       }
     };
 
     reader.readAsDataURL(file);
   }
 
-  // 레시피 생성 (기존 방식 - 스트리밍 비활성화)
-  async generateRecipeWithStream(formula42, params56) {
+  async generateRecipeWithStream(params56) {
     const texts = this.getTexts();
     
-    // 레시피 생성 시작 메시지
-    this.addMessage('bot', texts.generating);
-    const messages = document.querySelectorAll('.bot-message');
-    const recipeMessageDiv = messages[messages.length - 1];
-    const contentDiv = recipeMessageDiv.querySelector('.message-content');
+    // 새 메시지 추가
+    this.addMessage('bot', `<div class="streaming-content">${texts.generating}</div>`);
+    
+    const botMessages = document.querySelectorAll('.bot-message');
+    const streamingMessage = botMessages[botMessages.length - 1];
+    const contentDiv = streamingMessage.querySelector('.streaming-content');
 
     try {
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'generate_recipe',  // ✅ Backend 형식 (비스트리밍)
-          payload: {
-            formula42: formula42,
-            params56: params56
-          }
+          action: 'generate_recipe_stream',
+          payload: { params56 }
         })
       });
 
-      const result = await response.json();
-
-      if (!result.success || !result.data) {
-        throw new Error('레시피 생성 실패');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
 
-      // Backend 응답: { success: true, data: { recipe_text: "..." } }
-      const recipeText = result.data.recipe_text || result.data;
-      contentDiv.innerHTML = this.parseNewRecipeFormat(recipeText);
-      this.scrollToBottom();
+      const result = await response.json();
+      
+      if (result.success) {
+        const formattedRecipe = this.parseNewRecipeFormat(result.data.recipe);
+        contentDiv.innerHTML = formattedRecipe;
+      } else {
+        throw new Error(result.error || '레시피 생성 실패');
+      }
 
     } catch (error) {
       console.error('레시피 생성 오류:', error);
-      contentDiv.innerHTML = '레시피 생성 중 오류가 발생했습니다.';
+      contentDiv.innerHTML = `❌ 레시피 생성에 실패했습니다: ${error.message}`;
     }
+
+    this.scrollToBottom();
   }
 
-  // 🆕 새 레시피 포맷 파싱 (###1~###7)
+  // 🆕 새 레시피 포맷 파싱 (###1~###7 구조)
   parseNewRecipeFormat(text) {
-    if (!text) return '<p>레시피 생성 중...</p>';
+    if (!text) return '<p>레시피 내용이 없습니다.</p>';
 
-    let html = '<div class="recipe-v2">';
+    // <커트 레시피> 제목 제거
+    text = text.replace(/<커트 레시피>/gi, '');
 
-    // ###1 ~ ###7 섹션 분리
-    const sectionPattern = /###(\d+)\.\s*([^\n]+)\n([\s\S]*?)(?=###\d+\.|$)/g;
+    // 섹션 분할 (###1 ~ ###7)
     const sections = [];
+    const regex = /###(\d+)\.\s*([^:]+):\s*([\s\S]*?)(?=###\d+\.|$)/g;
     let match;
 
-    while ((match = sectionPattern.exec(text)) !== null) {
+    while ((match = regex.exec(text)) !== null) {
       sections.push({
         number: match[1],
         title: match[2].trim(),
@@ -518,31 +512,32 @@ class HairGatorChatbot {
     }
 
     if (sections.length === 0) {
-      // 아직 섹션이 생성되지 않았을 때
-      html += `<div class="recipe-section"><p>${this.highlight89Terms(text)}</p></div>`;
-    } else {
-      // 섹션별 렌더링
-      sections.forEach(section => {
-        const sectionClass = this.getSectionClass(section.number);
-        html += `
-          <div class="recipe-section ${sectionClass}">
-            <h3 class="section-title">
-              <span class="section-number">###${section.number}</span>
-              ${section.title}
-            </h3>
-            <div class="section-content">
-              ${this.parseMarkdown(this.highlight89Terms(section.content))}
-            </div>
-          </div>
-        `;
-      });
+      return `<div class="recipe-error">⚠️ 레시피 형식을 인식할 수 없습니다.</div>`;
     }
+
+    // HTML 생성
+    let html = '<div class="new-recipe-format">';
+
+    sections.forEach(section => {
+      const sectionClass = this.getSectionClass(section.number);
+      
+      html += `
+        <div class="recipe-section ${sectionClass}">
+          <div class="section-header">
+            <span class="section-number">###${section.number}</span>
+            <h3 class="section-title">${this.escapeHtml(section.title)}</h3>
+          </div>
+          <div class="section-content">
+            ${this.highlight89Terms(this.parseMarkdown(section.content))}
+          </div>
+        </div>
+      `;
+    });
 
     html += '</div>';
     return html;
   }
 
-  // 섹션별 CSS 클래스
   getSectionClass(sectionNumber) {
     const classMap = {
       '1': 'style-description',
@@ -556,22 +551,38 @@ class HairGatorChatbot {
     return classMap[sectionNumber] || '';
   }
 
-  // 🆕 89용어 하이라이팅
+  // 🆕 89용어 하이라이팅 (✅ TypeError 버그 수정)
   highlight89Terms(text) {
-    // 타입 안전성 체크 강화 ⭐
+    // ⭐ 타입 안전성 체크 강화 (배열/객체 처리)
     if (!text) return '';
+    
+    // 문자열이 아닌 경우 문자열로 변환
     if (typeof text !== 'string') {
-      console.warn('⚠️ highlight89Terms: 문자열 변환', typeof text);
-      text = String(text);
+      console.warn('⚠️ highlight89Terms: 문자열 변환 필요', typeof text);
+      
+      // 배열인 경우 join
+      if (Array.isArray(text)) {
+        text = text.join(' ');
+      } 
+      // 객체인 경우 JSON stringify
+      else if (typeof text === 'object') {
+        text = JSON.stringify(text);
+      }
+      // 그 외의 경우 String() 변환
+      else {
+        text = String(text);
+      }
     }
 
-    // 89용어 패턴 매칭
+    // 안전하게 문자열이 되었으므로 replace 가능
     let highlighted = text;
 
     // 용어 번호 패턴 (01~89)
     Object.keys(this.terms89Map).forEach(termNum => {
       const termInfo = this.terms89Map[termNum];
       const pattern = new RegExp(`(${termNum}\\.[\\w\\s&-]+)`, 'gi');
+      
+      // 이제 highlighted는 확실히 문자열
       highlighted = highlighted.replace(pattern, (match) => {
         return `<span class="term-89" data-term="${termNum}" title="${termInfo.ko}">${match}</span>`;
       });
@@ -598,49 +609,49 @@ class HairGatorChatbot {
 
   // 🆕 개선된 마크다운 파싱 (구조 유지)
   parseMarkdown(text) {
-    if (!text) return '';
+    if (!text || typeof text !== 'string') {
+      return '';
+    }
 
-    let html = text;
-
-    // 1. 코드 블록 보호 (먼저 처리)
+    // 코드 블록 임시 저장
     const codeBlocks = [];
-    html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
-      codeBlocks.push(`<pre><code>${this.escapeHtml(code)}</code></pre>`);
-      return `___CODE_BLOCK_${codeBlocks.length - 1}___`;
+    let html = text.replace(/```([\s\S]*?)```/g, (match, code) => {
+      const index = codeBlocks.length;
+      codeBlocks.push(`<pre><code>${this.escapeHtml(code.trim())}</code></pre>`);
+      return `___CODE_BLOCK_${index}___`;
     });
 
-    // 2. 볼드 텍스트 (**텍스트**)
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // 1. **굵은 글씨** → <strong>
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
-    // 3. 이탤릭 (*텍스트*)
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    // 2. *이탤릭* → <em>
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
-    // 4. 리스트 처리 (- 로 시작하는 줄)
+    // 3. 줄바꿈 처리
     const lines = html.split('\n');
+    const result = [];
     let inList = false;
-    let result = [];
 
-    lines.forEach((line, index) => {
+    lines.forEach(line => {
       const trimmed = line.trim();
       
-      // 리스트 아이템
-      if (trimmed.startsWith('- ')) {
-        if (!inList) {
-          result.push('<ul class="recipe-list">');
-          inList = true;
-        }
-        result.push(`<li>${trimmed.substring(2)}</li>`);
-      } 
-      // 빈 줄
-      else if (trimmed === '') {
+      if (!trimmed) {
         if (inList) {
           result.push('</ul>');
           inList = false;
         }
-        result.push('<br>'); // 문단 구분
+        return;
       }
-      // 일반 텍스트
-      else {
+
+      // 리스트 항목 (- 또는 * 로 시작)
+      if (/^[-*]\s+/.test(trimmed)) {
+        if (!inList) {
+          result.push('<ul class="recipe-list">');
+          inList = true;
+        }
+        const content = trimmed.replace(/^[-*]\s+/, '');
+        result.push(`<li>${content}</li>`);
+      } else {
         if (inList) {
           result.push('</ul>');
           inList = false;
@@ -864,5 +875,5 @@ class HairGatorChatbot {
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (89용어 + 새 레시피 포맷 + 스트리밍)');
+  console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (TypeError 수정 + 89용어)');
 });
