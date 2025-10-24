@@ -1,4 +1,5 @@
-/* css/chatbot.css - HAIRGATOR 최종 브랜드 통합 버전 + 레시피 스타일 */
+/* css/chatbot.css - HAIRGATOR v2.0 완전통합버전 
+   기존 UI + 89용어 시스템 + 새 레시피 포맷(###1~###7) */
 
 /* ==================== 플로팅 버튼 ==================== */
 .chatbot-toggle {
@@ -85,7 +86,7 @@
   backdrop-filter: blur(20px);
 }
 
-.chatbot-container.open {
+.chatbot-container.active {
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: all;
@@ -350,34 +351,341 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* ==================== 언어 지원 배지 ==================== */
-.language-support {
+/* ==================== 🆕 새 레시피 포맷 (###1~###7) ==================== */
+
+.recipe-v2 {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.7;
+  color: var(--text-primary);
+  padding: 8px 0;
+}
+
+.recipe-section {
+  margin-bottom: 1.2rem;
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid var(--female-color);
+  transition: all 0.3s ease;
+}
+
+.recipe-section:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(3px);
+}
+
+.section-title {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.lang-badge {
-  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background: rgba(233, 30, 99, 0.1);
-  border: 1px solid rgba(233, 30, 99, 0.3);
-  border-radius: 12px;
-  font-size: 11px;
-  color: var(--text-secondary);
-  transition: all 0.2s;
+  gap: 8px;
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--female-color);
 }
 
-.lang-badge:hover {
-  background: rgba(233, 30, 99, 0.2);
-  border-color: var(--female-color);
-  color: var(--female-color);
+.section-number {
+  display: inline-block;
+  padding: 3px 8px;
+  background: var(--female-color);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  min-width: 42px;
+  text-align: center;
+}
+
+.section-content {
+  padding-left: 0;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.section-content p {
+  margin: 6px 0;
+}
+
+.section-content ul {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+
+.section-content li {
+  margin: 4px 0;
+}
+
+/* 섹션별 색상 구분 */
+.style-description { border-left-color: #E91E63; }
+.style-description .section-number { background: #E91E63; }
+
+.style-length { border-left-color: #9C27B0; }
+.style-length .section-number { background: #9C27B0; }
+
+.style-form { border-left-color: #673AB7; }
+.style-form .section-number { background: #673AB7; }
+
+.fringe-length { border-left-color: #3F51B5; }
+.fringe-length .section-number { background: #3F51B5; }
+
+.base-cut { border-left-color: #2196F3; }
+.base-cut .section-number { background: #2196F3; }
+
+.texturizing { border-left-color: #00BCD4; }
+.texturizing .section-number { background: #00BCD4; }
+
+.styling { border-left-color: #009688; }
+.styling .section-number { background: #009688; }
+
+/* ==================== 🆕 89용어 하이라이팅 ==================== */
+
+/* 기본 89용어 스타일 (Tier 1 필수 용어) */
+.term-89 {
+  display: inline-block;
+  padding: 2px 6px;
+  margin: 0 2px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  cursor: help;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.term-89:hover {
   transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.5);
+}
+
+/* Tier 1 필수 용어 - 진한 보라/핑크 그라데이션 */
+.term-89[data-term="01"],
+.term-89[data-term="02"],
+.term-89[data-term="05"],
+.term-89[data-term="11"],
+.term-89[data-term="19"],
+.term-89[data-term="31"],
+.term-89[data-term="33"],
+.term-89[data-term="35"],
+.term-89[data-term="44"],
+.term-89[data-term="52"],
+.term-89[data-term="54"],
+.term-89[data-term="62"],
+.term-89[data-term="70"],
+.term-89[data-term="86"],
+.term-89[data-term="89"] {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Tier 2 고급 기법 - 청록색 그라데이션 */
+.term-89[data-term="04"],
+.term-89[data-term="06"],
+.term-89[data-term="20"],
+.term-89[data-term="22"],
+.term-89[data-term="23"],
+.term-89[data-term="24"],
+.term-89[data-term="29"],
+.term-89[data-term="34"],
+.term-89[data-term="36"],
+.term-89[data-term="38"],
+.term-89[data-term="41"],
+.term-89[data-term="42"],
+.term-89[data-term="45"],
+.term-89[data-term="51"],
+.term-89[data-term="53"],
+.term-89[data-term="59"],
+.term-89[data-term="60"],
+.term-89[data-term="61"],
+.term-89[data-term="75"],
+.term-89[data-term="76"],
+.term-89[data-term="81"],
+.term-89[data-term="82"],
+.term-89[data-term="84"],
+.term-89[data-term="88"] {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+/* ==================== 🆕 각도 하이라이팅 (Lifting & Direction) ==================== */
+
+/* Lifting Angle (L0~L8) - 핑크/주황 그라데이션 */
+.angle-lift {
+  display: inline-block;
+  padding: 2px 6px;
+  margin: 0 2px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+  line-height: 1.4;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.angle-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(245, 87, 108, 0.5);
+}
+
+/* Direction (D0~D8) - 파란색 그라데이션 */
+.angle-dir {
+  display: inline-block;
+  padding: 2px 6px;
+  margin: 0 2px;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+  line-height: 1.4;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.angle-dir:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 242, 254, 0.5);
+}
+
+/* ==================== 🆕 A존/B존/C존 하이라이팅 ==================== */
+
+/* A존 (하단) - 빨강/노랑 그라데이션 */
+.zone-a {
+  display: inline-block;
+  padding: 3px 10px;
+  margin: 0 3px;
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.9em;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  box-shadow: 0 2px 6px rgba(250, 112, 154, 0.4);
+  line-height: 1.4;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.zone-a:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(250, 112, 154, 0.6);
+}
+
+/* B존 (중단) - 핑크/파랑 그라데이션 */
+.zone-b {
+  display: inline-block;
+  padding: 3px 10px;
+  margin: 0 3px;
+  background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.9em;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  box-shadow: 0 2px 6px rgba(251, 194, 235, 0.4);
+  line-height: 1.4;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.zone-b:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(251, 194, 235, 0.6);
+}
+
+/* C존 (상단) - 청록/핑크 그라데이션 */
+.zone-c {
+  display: inline-block;
+  padding: 3px 10px;
+  margin: 0 3px;
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.9em;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  box-shadow: 0 2px 6px rgba(168, 237, 234, 0.4);
+  line-height: 1.4;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.zone-c:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(168, 237, 234, 0.6);
+}
+
+/* ==================== 🆕 스트리밍 애니메이션 ==================== */
+
+.recipe-streaming {
+  animation: fadeIn 0.3s ease-in;
+  position: relative;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 스트리밍 중 커서 효과 */
+.recipe-streaming::after {
+  content: '▊';
+  animation: blink 1s infinite;
+  color: var(--female-color);
+  margin-left: 3px;
+  font-size: 1em;
+  line-height: 1;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ==================== 분석 결과 스타일 ==================== */
+
+.analysis-result {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  border-left: 3px solid var(--female-color);
+}
+
+.analysis-result h3 {
+  margin: 0 0 10px 0;
+  color: var(--female-color);
+  font-size: 1rem;
+}
+
+.params-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.params-section li {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+}
+
+.params-section li:last-child {
+  border-bottom: none;
 }
 
 /* ==================== 스타일 카드 ==================== */
@@ -401,39 +709,29 @@
 .style-card:hover {
   transform: translateY(-4px);
   border-color: var(--female-color);
-  box-shadow: 
-    0 8px 20px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(233, 30, 99, 0.3);
+  box-shadow: 0 8px 20px rgba(233, 30, 99, 0.3);
 }
 
 .style-card img {
   width: 100%;
-  height: 120px;
+  height: 140px;
   object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.style-card:hover img {
-  transform: scale(1.05);
+  display: block;
 }
 
 .style-card-info {
   padding: 12px;
-  background: rgba(0, 0, 0, 0.3);
 }
 
 .style-card-info h4 {
   margin: 0 0 6px 0;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
   color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 500;
 }
 
 .style-code {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   font-family: 'Courier New', monospace;
 }
@@ -441,84 +739,48 @@
 /* ==================== 입력 영역 ==================== */
 .chatbot-input-area {
   padding: 20px 24px;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    rgba(0, 0, 0, 0.2)
-  );
+  background: rgba(255, 255, 255, 0.02);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
   flex-shrink: 0;
 }
 
 .input-wrapper {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 30px;
-  padding: 6px;
-  transition: all 0.3s;
-}
-
-.input-wrapper:focus-within {
-  border-color: var(--female-color);
-  box-shadow: 0 0 20px rgba(233, 30, 99, 0.2);
 }
 
 .upload-btn,
-.send-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
+.send-btn,
+.index-btn {
   background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-secondary);
   cursor: pointer;
+  padding: 10px;
+  border-radius: 10px;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s;
   flex-shrink: 0;
 }
 
 .upload-btn:hover,
+.index-btn:hover {
+  background: rgba(233, 30, 99, 0.2);
+  border-color: var(--female-color);
+  color: var(--female-color);
+}
+
 .send-btn:hover {
-  background: linear-gradient(135deg, var(--female-color), var(--male-color));
-  color: white;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.4);
+  background: rgba(33, 150, 243, 0.2);
+  border-color: var(--male-color);
+  color: var(--male-color);
 }
 
 .upload-btn svg,
-.send-btn svg {
-  width: 20px;
-  height: 20px;
-}
-
-.index-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
-  flex-shrink: 0;
-}
-
-.index-btn:hover {
-  background: linear-gradient(135deg, var(--female-color), var(--male-color));
-  color: white;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.4);
-}
-
+.send-btn svg,
 .index-btn svg {
   width: 20px;
   height: 20px;
@@ -526,600 +788,27 @@
 
 #chatbot-input {
   flex: 1;
-  background: none;
-  border: none;
-  outline: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
+  padding: 12px 16px;
+  border-radius: 10px;
   font-size: 14px;
-  padding: 0 16px;
-  font-family: inherit;
+  outline: none;
+  transition: all 0.2s;
+}
+
+#chatbot-input:focus {
+  border-color: var(--female-color);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 #chatbot-input::placeholder {
   color: var(--text-secondary);
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
-/* ==================== 모바일 전체 화면 + 키보드 대응 ==================== */
-@media (max-width: 768px) {
-  /* ⭐ 챗봇 열렸을 때 body 고정 (탭 메뉴 완전 차단) */
-  body.chatbot-open {
-    overflow: hidden !important;
-    position: fixed !important;
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  .chatbot-container {
-    position: fixed !important;
-    width: 100vw !important;
-    width: 100dvw !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    max-height: none !important;
-    bottom: 0 !important;
-    right: 0 !important;
-    left: 0 !important;
-    top: 0 !important;
-    border-radius: 0 !important;
-    border: none !important;
-    z-index: 999999 !important; /* ⭐ 최대한 높게 */
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  .chatbot-container.open {
-    bottom: 0 !important;
-  }
-
-  .chatbot-toggle {
-    /* ⭐ 화면 중간 정도에 플로팅 버튼 배치 (탭 메뉴 신경 안 씀) */
-    bottom: 20px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    z-index: 9997;
-  }
-
-  .chatbot-toggle svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  .chatbot-header {
-    padding: 16px 20px;
-    padding-top: max(16px, env(safe-area-inset-top));
-  }
-
-  .chatbot-messages {
-    padding: 20px 16px;
-    padding-bottom: 20px;
-    overflow-y: auto;
-  }
-
-  .style-cards-container {
-    grid-template-columns: 1fr;
-  }
-
-  .chatbot-input-area {
-    padding: 16px 20px;
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
-  }
-
-  .language-support {
-    flex-wrap: wrap;
-  }
-
-  .lang-badge {
-    font-size: 10px;
-    padding: 3px 8px;
-  }
-}
-
-@media (max-width: 480px) {
-  .chatbot-container {
-    position: fixed;
-    width: 100vw;
-    width: 100dvw;
-    height: 100vh;
-    height: 100dvh;
-    bottom: 0 !important;
-    right: 0 !important;
-    left: 0 !important;
-    top: 0 !important;
-    border-radius: 0;
-    border: none;
-    z-index: 10000 !important;
-  }
-
-  .chatbot-toggle {
-    bottom: 20px;
-    right: 16px;
-  }
-}
-
-/* ==================== 다크 모드 강화 ==================== */
-[data-theme="dark"] .chatbot-container {
-  box-shadow: 
-    0 0 60px rgba(0, 0, 0, 0.9),
-    inset 0 0 80px rgba(255, 255, 255, 0.01);
-}
-
-[data-theme="dark"] .message-content {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-[data-theme="dark"] .style-card {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-/* ==================== 애니메이션 효과 ==================== */
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 
-      0 0 20px rgba(233, 30, 99, 0.3),
-      0 4px 12px rgba(0, 0, 0, 0.5);
-  }
-  50% {
-    box-shadow: 
-      0 0 30px rgba(233, 30, 99, 0.5),
-      0 4px 12px rgba(0, 0, 0, 0.5);
-  }
-}
-
-.chatbot-toggle.has-notification {
-  animation: pulse 2s infinite;
-}
-
-/* ==================== 로딩 상태 ==================== */
-.message-content.loading::after {
-  content: '';
-  display: inline-block;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--text-secondary);
-  margin-left: 4px;
-  animation: loadingDot 1.4s infinite;
-}
-
-@keyframes loadingDot {
-  0%, 80%, 100% {
-    opacity: 0;
-  }
-  40% {
-    opacity: 1;
-  }
-}
-
-/* ==================== ⭐ 레시피 분석 결과 스타일 ==================== */
-.analysis-result {
-  background: linear-gradient(
-    135deg,
-    rgba(233, 30, 99, 0.05),
-    rgba(33, 150, 243, 0.05)
-  );
-  border: 1px solid rgba(233, 30, 99, 0.2);
-  border-radius: 16px;
-  padding: 20px;
-  margin: 16px 0;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-
-.analysis-result h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--female-color);
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.analysis-result h3::before {
-  content: '📊';
-  font-size: 20px;
-}
-
-.analysis-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.analysis-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 12px;
-  transition: all 0.3s;
-}
-
-.analysis-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--female-color);
-  transform: translateY(-2px);
-}
-
-.analysis-label {
-  font-size: 11px;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.analysis-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.detection-status {
-  margin-top: 12px;
-  padding: 12px;
-  background: rgba(76, 175, 80, 0.1);
-  border: 1px solid rgba(76, 175, 80, 0.3);
-  border-radius: 12px;
-  font-size: 13px;
-  color: #81C784;
-  text-align: center;
-}
-
-/* ==================== ⭐ 레시피 콘텐츠 스타일 ==================== */
-.recipe-content {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 24px;
-  margin: 16px 0;
-  line-height: 1.8;
-  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-/* 레시피 제목 */
-.recipe-content h1 {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--female-color);
-  margin: 0 0 8px 0;
-  padding-bottom: 12px;
-  border-bottom: 2px solid rgba(233, 30, 99, 0.3);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.recipe-content h1::before {
-  content: '✂️';
-  font-size: 22px;
-}
-
-/* 레시피 섹션 제목 */
-.recipe-content h2 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 24px 0 12px 0;
-  padding: 8px 12px;
-  background: linear-gradient(
-    90deg,
-    rgba(233, 30, 99, 0.15),
-    transparent
-  );
-  border-left: 3px solid var(--female-color);
-  border-radius: 4px;
-}
-
-/* 레시피 소제목 */
-.recipe-content h3 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin: 16px 0 8px 0;
-  padding-left: 8px;
-  border-left: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-/* 레시피 본문 */
-.recipe-content p {
-  margin: 8px 0;
-  color: var(--text-primary);
-  font-size: 14px;
-  line-height: 1.8;
-}
-
-/* 레시피 리스트 */
-.recipe-content ul,
-.recipe-content ol {
-  margin: 12px 0;
-  padding-left: 24px;
-}
-
-.recipe-content li {
-  margin: 8px 0;
-  color: var(--text-primary);
-  font-size: 14px;
-  line-height: 1.8;
-  position: relative;
-}
-
-.recipe-content ul li::marker {
-  color: var(--female-color);
-}
-
-.recipe-content ol li::marker {
-  color: var(--female-color);
-  font-weight: 600;
-}
-
-/* 레시피 강조 텍스트 */
-.recipe-content strong {
-  color: var(--female-color);
-  font-weight: 600;
-}
-
-.recipe-content em {
-  color: var(--male-color);
-  font-style: normal;
-  font-weight: 500;
-}
-
-/* 레시피 코드 블록 */
-.recipe-content code {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-  color: var(--male-color);
-}
-
-.recipe-content pre {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 16px;
-  margin: 16px 0;
-  overflow-x: auto;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.recipe-content pre code {
-  background: none;
-  border: none;
-  padding: 0;
-  color: #81C784;
-}
-
-/* 레시피 인용구 */
-.recipe-content blockquote {
-  margin: 16px 0;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-left: 4px solid var(--female-color);
-  border-radius: 4px;
-  font-style: italic;
-  color: var(--text-secondary);
-}
-
-/* 레시피 테이블 */
-.recipe-content table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 16px 0;
-  font-size: 13px;
-}
-
-.recipe-content th {
-  background: rgba(233, 30, 99, 0.1);
-  color: var(--female-color);
-  font-weight: 600;
-  padding: 10px;
-  text-align: left;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.recipe-content td {
-  padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-}
-
-.recipe-content tr:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-/* 레시피 구분선 */
-.recipe-content hr {
-  border: none;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(233, 30, 99, 0.3),
-    transparent
-  );
-  margin: 24px 0;
-}
-
-/* ==================== ⭐ 스트리밍 효과 ==================== */
-.recipe-streaming {
-  opacity: 0;
-  animation: fadeInUp 0.3s ease-out forwards;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 타이핑 커서 효과 */
-.recipe-content.typing::after {
-  content: '▊';
-  color: var(--female-color);
-  animation: blink 1s step-end infinite;
-  margin-left: 2px;
-}
-
-@keyframes blink {
-  0%, 50% {
-    opacity: 1;
-  }
-  51%, 100% {
-    opacity: 0;
-  }
-}
-
-/* ==================== ⭐ 반응형 레시피 스타일 ==================== */
-@media (max-width: 768px) {
-  .analysis-grid {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .recipe-content {
-    padding: 16px;
-    font-size: 13px;
-  }
-
-  .recipe-content h1 {
-    font-size: 18px;
-  }
-
-  .recipe-content h2 {
-    font-size: 15px;
-    margin: 20px 0 10px 0;
-  }
-
-  .recipe-content h3 {
-    font-size: 13px;
-  }
-
-  .recipe-content pre {
-    padding: 12px;
-    font-size: 12px;
-  }
-
-  .recipe-content table {
-    font-size: 12px;
-  }
-}
-
-/* ==================== ⭐ 라이트 테마 대응 ==================== */
-[data-theme="light"] .analysis-result,
-[data-theme="minimal"] .analysis-result {
-  background: linear-gradient(
-    135deg,
-    rgba(233, 30, 99, 0.08),
-    rgba(33, 150, 243, 0.08)
-  );
-  border-color: rgba(233, 30, 99, 0.3);
-}
-
-[data-theme="light"] .recipe-content,
-[data-theme="minimal"] .recipe-content {
-  background: rgba(0, 0, 0, 0.02);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-[data-theme="light"] .recipe-content h2,
-[data-theme="minimal"] .recipe-content h2 {
-  background: linear-gradient(
-    90deg,
-    rgba(233, 30, 99, 0.1),
-    transparent
-  );
-}
-
-[data-theme="light"] .recipe-content pre,
-[data-theme="minimal"] .recipe-content pre {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-[data-theme="light"] .analysis-item,
-[data-theme="minimal"] .analysis-item {
-  background: rgba(0, 0, 0, 0.02);
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
-[data-theme="light"] .analysis-item:hover,
-[data-theme="minimal"] .analysis-item:hover {
-  background: rgba(0, 0, 0, 0.04);
-}
-
-/* 라이트 테마 언어 드롭다운 */
-[data-theme="light"] .language-dropdown,
-[data-theme="minimal"] .language-dropdown {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.15);
-}
-
-[data-theme="light"] .lang-option,
-[data-theme="minimal"] .lang-option {
-  color: #000000;
-}
-
-[data-theme="light"] .lang-option:not(:last-child),
-[data-theme="minimal"] .lang-option:not(:last-child) {
-  border-bottom-color: rgba(0, 0, 0, 0.08);
-}
-
-/* 다크 테마 언어 드롭다운 */
-[data-theme="dark"] .language-dropdown {
-  background: #1a1a1a;
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-[data-theme="dark"] .lang-option {
-  color: #ffffff;
-}
-
-[data-theme="dark"] .lang-option:not(:last-child) {
-  border-bottom-color: rgba(255, 255, 255, 0.1);
-}
-
-/* 다크 테마 색인 모달 */
-[data-theme="dark"] .index-modal-content {
-  background: #1a1a1a;
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-[data-theme="dark"] .index-modal-header h3 {
-  color: #ffffff;
-}
-
-[data-theme="dark"] .index-close {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #cccccc;
-}
-
-[data-theme="dark"] .index-content {
-  color: #ffffff;
-}
-
-[data-theme="dark"] .index-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-/* ==================== ⭐ 색인 모달 ==================== */
+/* ==================== 색인 모달 ==================== */
 .index-modal {
   position: fixed;
   inset: 0;
@@ -1134,19 +823,10 @@
   display: none;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 .index-modal-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(10px);
 }
 
@@ -1181,11 +861,11 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   background: linear-gradient(
     135deg,
-    rgba(233, 30, 99, 0.05),
-    rgba(33, 150, 243, 0.05)
+    rgba(233, 30, 99, 0.08),
+    rgba(33, 150, 243, 0.08)
   );
 }
 
@@ -1213,8 +893,8 @@
 
 .index-close:hover {
   background: rgba(233, 30, 99, 0.2);
-  border-color: var(--female-color);
-  color: var(--female-color);
+  border-color: #E91E63;
+  color: #E91E63;
 }
 
 .index-content {
@@ -1234,18 +914,18 @@
 }
 
 .index-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
 }
 
 .index-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .index-content h1,
 .index-content h2,
 .index-content h3 {
-  color: var(--female-color);
+  color: #E91E63;
   margin-top: 24px;
   margin-bottom: 12px;
 }
@@ -1275,13 +955,13 @@
 }
 
 .index-content a {
-  color: var(--male-color);
+  color: #2196F3;
   text-decoration: none;
   transition: all 0.2s;
 }
 
 .index-content a:hover {
-  color: var(--female-color);
+  color: #E91E63;
   text-decoration: underline;
 }
 
@@ -1309,7 +989,7 @@
 
 .index-item:hover {
   transform: translateY(-4px);
-  border-color: var(--female-color);
+  border-color: #E91E63;
   box-shadow: 0 8px 20px rgba(233, 30, 99, 0.3);
 }
 
@@ -1328,8 +1008,8 @@
   position: absolute;
   bottom: 8px;
   right: 8px;
-  background: rgba(0, 0, 0, 0.7);
-  color: var(--female-color);
+  background: rgba(0, 0, 0, 0.75);
+  color: #E91E63;
   font-size: 11px;
   font-weight: 600;
   padding: 4px 8px;
@@ -1357,160 +1037,172 @@
   opacity: 1;
 }
 
-.index-loading,
-.index-error {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-.index-loading::after {
-  content: '...';
-  animation: dots 1.5s steps(4, end) infinite;
-}
-
-@keyframes dots {
-  0%, 20% {
-    content: '.';
-  }
-  40% {
-    content: '..';
-  }
-  60%, 100% {
-    content: '...';
-  }
-}
+/* ==================== 모바일 반응형 ==================== */
 
 @media (max-width: 768px) {
-  .index-gallery {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 12px;
+  .chatbot-toggle {
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
   }
 
-  .index-item {
-    aspect-ratio: 1;
+  .chatbot-toggle svg {
+    width: 24px;
+    height: 24px;
   }
 
-  .index-number {
-    font-size: 10px;
-    padding: 3px 6px;
-    bottom: 6px;
-    right: 6px;
-  }
-}
-
-/* ==================== 이미지 미리보기 오버레이 ==================== */
-.image-preview-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100001;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.3s ease-out;
-  cursor: pointer;
-}
-
-.image-preview-container {
-  max-width: 90%;
-  max-height: 90%;
-  background: var(--background);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  cursor: default;
-  animation: modalSlide 0.3s ease-out;
-}
-
-.image-preview-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  background: linear-gradient(
-    135deg,
-    rgba(233, 30, 99, 0.1),
-    rgba(33, 150, 243, 0.1)
-  );
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.image-preview-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.image-preview-close {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.image-preview-close:hover {
-  background: rgba(233, 30, 99, 0.2);
-  border-color: var(--female-color);
-  color: var(--female-color);
-}
-
-.image-preview-content {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  overflow: auto;
-}
-
-.image-preview-content img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  border-radius: 8px;
-}
-
-@media (max-width: 768px) {
-  .image-preview-container {
-    max-width: 95%;
-    max-height: 95%;
+  .chatbot-container {
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    max-height: 100vh;
   }
 
-  .image-preview-header {
-    padding: 12px 16px;
+  .chatbot-header {
+    padding: 16px 20px;
   }
 
-  .image-preview-title {
-    font-size: 14px;
+  .chatbot-title {
+    font-size: 15px;
   }
 
-  .image-preview-content {
+  .chatbot-messages {
     padding: 16px;
+    gap: 16px;
   }
-}
 
-@media (max-width: 768px) {
+  .message-content {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+
+  .chatbot-input-area {
+    padding: 16px 20px;
+  }
+
+  .style-cards-container {
+    grid-template-columns: 1fr;
+  }
+
+  .style-card img {
+    height: 180px;
+  }
+
   .index-modal-content {
     width: 95%;
     max-height: 90vh;
   }
 
-  .index-modal-header {
-    padding: 16px 20px;
+  .index-gallery {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
   }
 
-  .index-content {
-    padding: 20px 16px;
+  .index-number {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  /* 89용어 모바일 최적화 */
+  .term-89,
+  .angle-lift,
+  .angle-dir {
+    font-size: 0.8em;
+    padding: 2px 5px;
+  }
+
+  .zone-a,
+  .zone-b,
+  .zone-c {
+    font-size: 0.85em;
+    padding: 2px 8px;
+  }
+
+  .recipe-section {
+    padding: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-size: 0.95rem;
+  }
+
+  .section-number {
+    font-size: 0.8rem;
+    min-width: 38px;
+  }
+
+  .section-content {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .message-content {
+    font-size: 12px;
+  }
+
+  .section-content {
+    font-size: 11px;
+  }
+
+  .term-89,
+  .angle-lift,
+  .angle-dir {
+    font-size: 0.75em;
+    padding: 1px 4px;
+  }
+
+  .zone-a,
+  .zone-b,
+  .zone-c {
+    font-size: 0.8em;
+    padding: 2px 6px;
+  }
+}
+
+/* ==================== 인쇄 스타일 (선택사항) ==================== */
+
+@media print {
+  .chatbot-toggle,
+  .chatbot-close,
+  .chatbot-input-area,
+  .language-selector,
+  .index-btn {
+    display: none !important;
+  }
+
+  .chatbot-container {
+    position: static;
+    width: 100%;
+    height: auto;
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+  .recipe-v2 {
+    page-break-inside: avoid;
+  }
+
+  .recipe-section {
+    page-break-inside: avoid;
+    border: 1px solid #ddd;
+    background: #fff;
+  }
+
+  /* 인쇄 시 하이라이팅 유지 */
+  .term-89,
+  .angle-lift,
+  .angle-dir,
+  .zone-a,
+  .zone-b,
+  .zone-c {
+    border: 1px solid #333;
+    background: #f0f0f0 !important;
+    color: #000 !important;
   }
 }
