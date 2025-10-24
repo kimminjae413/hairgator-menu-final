@@ -419,26 +419,30 @@ class HairGatorChatbot {
 
       try {
         const base64Data = imageDataUrl.split(',')[1];
+        const mimeType = file.type || 'image/jpeg';
         
         const analysisResponse = await fetch(this.apiEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            action: 'analyze-image',  // 기존 형식
-            image: base64Data
+            action: 'analyze_image',  // ✅ Backend 형식
+            payload: {
+              image_data: base64Data,
+              mime_type: mimeType
+            }
           })
         });
 
         const analysisResult = await analysisResponse.json();
 
-        if (!analysisResult || analysisResult.error) {
+        if (!analysisResult.success || !analysisResult.data) {
           this.replaceLastBotMessage('❌ 이미지 분석에 실패했습니다.');
           return;
         }
 
-        // 기존 응답 형식에 맞게 수정
-        const params56 = analysisResult.parameters_56 || analysisResult;
-        const formula42 = analysisResult.formula_42 || {};
+        // Backend 응답: { success: true, data: {...} }
+        const params56 = analysisResult.data;
+        const formula42 = {};
 
         this.replaceLastBotMessage(this.formatParameters(params56));
 
@@ -469,20 +473,22 @@ class HairGatorChatbot {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'generate-recipe',  // 기존 액션명
-          formula42: formula42,
-          params56: params56
+          action: 'generate_recipe',  // ✅ Backend 형식 (비스트리밍)
+          payload: {
+            formula42: formula42,
+            params56: params56
+          }
         })
       });
 
       const result = await response.json();
 
-      if (!result || result.error) {
+      if (!result.success || !result.data) {
         throw new Error('레시피 생성 실패');
       }
 
-      // 결과 렌더링 (새 포맷 적용)
-      const recipeText = result.recipe || result;
+      // Backend 응답: { success: true, data: { recipe_text: "..." } }
+      const recipeText = result.data.recipe_text || result.data;
       contentDiv.innerHTML = this.parseNewRecipeFormat(recipeText);
       this.scrollToBottom();
 
