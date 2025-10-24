@@ -427,7 +427,7 @@ class HairGatorChatbot {
           body: JSON.stringify({
             action: 'analyze_image',  // ✅ Backend 형식
             payload: {
-              image_data: base64Data,
+              image_base64: base64Data,  // ✅ Backend가 기대하는 키
               mime_type: mimeType
             }
           })
