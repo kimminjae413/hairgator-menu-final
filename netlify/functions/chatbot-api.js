@@ -403,27 +403,34 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey) {
       },
       body: JSON.stringify({
         query_embedding: embedding,
-        match_count: 5
+        match_count: 10  // ✅ 5개 → 10개로 증가
       })
     });
 
     if (!supabaseResponse.ok) {
-      console.error('Supabase vector search failed, using fallback');
+      const errorText = await supabaseResponse.text();
+      console.error(`❌ Supabase RPC 실패: ${supabaseResponse.status} - ${errorText}`);
+      console.log('🔄 텍스트 유사도 검색으로 전환...');
       return await directTableSearch(supabaseUrl, supabaseKey, query);
     }
 
     const results = await supabaseResponse.json();
+    console.log(`✅ 벡터 검색 성공: ${results.length}개 발견`);
     return results;
   } catch (error) {
-    console.error('Supabase search error:', error);
+    console.error('❌ Supabase 벡터 검색 예외:', error.message);
+    console.log('🔄 텍스트 유사도 검색으로 전환...');
     return await directTableSearch(supabaseUrl, supabaseKey, query);
   }
 }
 
-// ==================== 대체 검색 ====================
+// ==================== 대체 검색 (텍스트 유사도 기반) ====================
 async function directTableSearch(supabaseUrl, supabaseKey, query) {
+  console.log(`🔍 Fallback 검색 시작: "${query}"`);
+  
+  // 1. 전체 데이터 가져오기
   const response = await fetch(
-    `${supabaseUrl}/rest/v1/hairstyles?select=*&limit=5`,
+    `${supabaseUrl}/rest/v1/hairstyles?select=id,name,category,gender,embedding,recipe,recipe_42,recipe_56`,
     {
       headers: {
         'apikey': supabaseKey,
@@ -433,10 +440,55 @@ async function directTableSearch(supabaseUrl, supabaseKey, query) {
   );
 
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Direct table search failed:', errorText);
     throw new Error('Direct table search failed');
   }
 
-  return await response.json();
+  const allStyles = await response.json();
+  console.log(`📊 전체 데이터: ${allStyles.length}개`);
+
+  // 2. 텍스트 유사도 계산
+  const scoredStyles = allStyles.map(style => {
+    let score = 0;
+    const queryLower = query.toLowerCase();
+    const nameLower = (style.name || '').toLowerCase();
+    const categoryLower = (style.category || '').toLowerCase();
+
+    // 정확히 일치하면 높은 점수
+    if (nameLower.includes(queryLower) || queryLower.includes(nameLower)) {
+      score += 100;
+    }
+    if (categoryLower.includes(queryLower) || queryLower.includes(categoryLower)) {
+      score += 80;
+    }
+
+    // 키워드 매칭
+    const keywords = ['허그컷', 'bob', '밥', 'layer', '레이어', 'cut', '컷', 'short', '숏', 'long', '롱'];
+    keywords.forEach(keyword => {
+      if (nameLower.includes(keyword.toLowerCase()) && queryLower.includes(keyword.toLowerCase())) {
+        score += 50;
+      }
+    });
+
+    // recipe 데이터가 있으면 우선순위
+    if (style.recipe_42 || style.recipe_56 || style.recipe) {
+      score += 30;
+    }
+
+    return { ...style, similarity_score: score };
+  });
+
+  // 3. 점수순 정렬 후 상위 10개 반환
+  const results = scoredStyles
+    .sort((a, b) => b.similarity_score - a.similarity_score)
+    .slice(0, 10);
+
+  console.log(`✅ 유사도 검색 완료: 상위 ${results.length}개 선택`);
+  console.log(`📋 Recipe 있는 개수: ${results.filter(r => r.recipe_42 || r.recipe_56).length}`);
+  console.log(`🏆 Top 3 점수:`, results.slice(0, 3).map(r => `${r.name}(${r.similarity_score}점)`));
+
+  return results;
 }
 
 // ==================== 기존 함수들 ====================
