@@ -1,8 +1,8 @@
 // netlify/functions/chatbot-api.js
 // HAIRGATOR 챗봇 - 56파라미터 기반 7섹션 레시피 완성 버전
-// ✅ Cut Form: O/G/L 3개만 (Combination 완전 제거)
-// ✅ Volume: 엄격한 기준 (Low: 0~44°, Medium: 45~89°, High: 90°~)
-// ✅ 리프팅 각도 → 볼륨 자동 매핑
+// ✅ 파라미터 설명 강제 출력 (D0, L2 등 괄호 설명 필수)
+// ✅ Length 판단 정확도 향상 (E vs F 구분 강화)
+// ✅ 언어별 레시피 생성 (한국어/영어/일본어/중국어/베트남어)
 
 const fetch = require('node-fetch');
 
@@ -71,7 +71,7 @@ exports.handler = async (event, context) => {
   }
 };
 
-// ==================== 1단계: 이미지 분석 (56파라미터) ====================
+// ==================== 1단계: 이미지 분석 (56파라미터) - Length 정확도 향상 ====================
 async function analyzeImage(payload, geminiKey) {
   const { image_base64, mime_type } = payload;
 
@@ -85,76 +85,56 @@ async function analyzeImage(payload, geminiKey) {
 
 ### Women's Cut Length Categories (매우 중요 - 신체 랜드마크 기준)
 
-**길이 분류 - 이미지에서 머리카락 끝이 신체 어느 부위에 닿는지 정확히 확인:**
+**🔥 LENGTH 판단 3단계 프로세스 (정확도 향상)**
 
-A Length (65cm): **가슴 아래 밑선**
-  - 머리카락 끝이 가슴보다 확실히 아래, 배꼽 근처
-  - 기준: 유두보다 최소 10cm 이상 아래
+**STEP 1: 어깨선 확인 (최우선)**
+- 머리카락 끝이 어깨에 **정확히 닿음** → **D Length** (확정)
+- 어깨보다 명확히 아래 → A/B/C 중 하나
+- 어깨보다 명확히 위 → E/F/G/H 중 하나
 
-B Length (50cm): **가슴 상단~중간**
-  - 머리카락 끝이 유두 높이 전후 (±5cm 이내)
-  - 기준: 가슴 위쪽에서 중간 사이
-  - **주의:** 쇄골 아래 5cm부터 가슴 중간까지
+**STEP 2-A: 어깨 아래인 경우**
+- 가슴 아래 → A Length (65cm)
+- 가슴 중간 → B Length (50cm)
+- 쇄골 밑선 → C Length (40cm)
 
-C Length (40cm): **쇄골 밑선**
-  - 머리카락 끝이 쇄골뼈에 정확히 닿거나 바로 아래
-  - 기준: 쇄골뼈 ±3cm 범위
+**STEP 2-B: 어깨 위인 경우 (목 노출 정도로 판단!)**
 
-D Length (35cm): **어깨선**
-  - 머리카락 끝이 **어깨에 정확히 닿음**
-  - **핵심 판단 기준: 어깨선과 머리카락이 맞닿음** ← 중요!
-  - 목 전체가 보이고, 어깨 시작 부분에 닿음
-  - 쇄골과 어깨 사이 거리 있음
+✅ **E Length (30cm) - 목 전체 노출형**
+- **목 전체가 완전히 보임** (목덜미 + 목 중간 + 목 상단)
+- 어깨와 머리카락 사이 **명확한 공간** (2-5cm)
+- 뒤에서 봤을 때 목선이 깔끔하게 드러남
+- **핵심: 어깨 시작 부분도 보임**
 
-**🔥 D vs E vs F vs G 구분 (가장 헷갈리는 부분! 어깨 기준으로 판단)**
+✅ **F Length (25cm) - 목 부분 노출형**
+- **목 상단만 보임** (턱 밑 ~ 목 중간까지만 머리카락)
+- 목 하단 (목덜미 쪽)은 머리카락에 가려짐
+- 턱선 아래 3-5cm 위치
+- **핵심: 목이 절반 정도 보임**
 
-E Length (30cm): **어깨 바로 위**
-  - 머리카락 끝이 어깨선 위 2-3cm
-  - **핵심 판단 기준: 어깨와 머리카락 사이 공간 있음** ← 중요!
-  - 목 전체 + 어깨 시작 부분 모두 보임
-  - 어깨에 닿지 않음
+✅ **G Length (20cm) - 턱선형**
+- 목이 거의 안 보임 (턱선에 머리카락이 걸침)
+- 턱뼈 각도 라인을 따라감
+- **핵심: 목 노출 최소**
 
-F Length (25cm): **턱선 바로 밑**
-  - 머리카락 끝이 턱뼈 아래
-  - **핵심 판단 기준: 목 상단만 보임, 목 중간까지 머리카락** ← 중요!
-  - 어깨와 상당한 거리 있음 (5cm 이상)
-  - 턱에서 목으로 넘어가는 지점
+❌ **H Length (15cm) - 숏헤어**
+- 귀 높이, 목 전체 노출
 
-G Length (20cm): **턱선 (Jaw Line)**
-  - 머리카락 끝이 턱뼈 각도 라인
-  - **핵심 판단 기준: 목이 거의 안 보임** ← 중요!
-  - 턱선 바로 아래
-  - 얼굴 윤곽선 따라감
+**STEP 3: 애매한 경우 판단 규칙**
 
-H Length (15cm): **귀 중간**
-  - 숏헤어, 머리카락 끝이 귀 높이
-  - 기준: 귀 아래 ~ 턱선 사이
+D vs E:
+- 어깨에 살짝이라도 닿음 → D
+- 어깨와 공간 있음 → E
 
-**판단 방법 (우선순위대로 확인):**
-1. **어깨선 확인** (가장 먼저!): 
-   - **머리카락이 어깨에 닿음** → **D Length**
-   - 어깨보다 아래 → A/B/C 중 하나
-   - 어깨보다 위 (공간 있음) → E/F/G/H 중 하나
+E vs F (가장 헷갈림!):
+- 목 전체 보임 + 어깨 시작점 보임 → **E**
+- 목 절반만 보임 + 어깨 안 보임 → **F**
+- **기준: 목덜미가 보이는가?** → 보임 = E, 안 보임 = F
 
-2. **쇄골 확인** (어깨 아래인 경우):
-   - 쇄골에 닿음 → **C Length**
-   - 쇄골 아래 ~ 가슴 중간 → **B Length**
-   - 가슴 중간 아래 → **A Length**
+F vs G:
+- 목이 조금이라도 보임 → F
+- 목이 거의 안 보임 → G
 
-3. **목 노출 정도 확인** (어깨 위인 경우) ← 중요!:
-   - **목 전체 보임 + 어깨와 공간** → **E Length**
-   - **목 상단만 보임** (턱 아래 일부만) → **F Length**
-   - **목 거의 안 보임** (턱선에 가려짐) → **G Length**
-   - 귀 높이 → **H Length**
-
-4. **애매한 경우 규칙**:
-   - D와 E 사이: 어깨에 닿는가?
-     → 살짝이라도 닿음 = D, 공간 있음 = E
-   - E와 F 사이: 목이 얼마나 보이는가? 
-     → 목 전체 보임 = E, 일부만 = F
-   - F와 G 사이: 목이 보이는가?
-     → 목 조금이라도 보임 = F, 거의 안 보임 = G
-   - 두 길이 중간이면 → **더 긴 쪽 선택**
+**중간 길이면 → 더 긴 쪽 선택**
 
 ### Men's Cut Categories (해당 시)
 - Side Fringe / Side Part / Fringe Up / Pushed Back / Buzz / Crop / Mohican
@@ -202,8 +182,8 @@ H Length (15cm): **귀 중간**
 \`\`\`json
 {
   "cut_category": "Women's Cut",
-  "length_category": "B Length",
-  "estimated_hair_length_cm": 50,
+  "length_category": "E Length",
+  "estimated_hair_length_cm": 30,
   "cut_form": "L (Layer)",
   "structure_layer": "Graduated Layer",
   "fringe_type": "Side Bang",
@@ -219,13 +199,10 @@ H Length (15cm): **귀 중간**
 \`\`\`
 
 **재확인 체크리스트:**
-- ✅ **머리카락이 어깨에 닿는가? → D Length**
-- ✅ 머리카락 끝이 쇄골 위치인가? → C Length
-- ✅ 머리카락 끝이 가슴 중간인가? → B Length
-- ✅ 머리카락 끝이 가슴 아래인가? → A Length
-- ✅ **목 전체 보이고 어깨와 공간 있는가? → E Length**
-- ✅ **목 상단만 보이고 턱 아래인가? → F Length**
-- ✅ **목이 거의 안 보이고 턱선인가? → G Length**
+- ✅ **어깨에 닿는가? → D Length**
+- ✅ **목 전체 + 어깨 보이는가? → E Length**
+- ✅ **목 절반만 보이는가? → F Length**
+- ✅ **목 거의 안 보이는가? → G Length**
 - ✅ 애매하면 더 긴 쪽 선택
 - ✅ cut_form은 O/G/L만 사용 (C 금지)
 `;
@@ -334,7 +311,340 @@ function calculateVolumeFromLifting(liftingCode) {
   return 'High';                      // 90°~ (L4, L5, L6, L7, L8)
 }
 
-// ==================== 2단계: 레시피 생성 (56파라미터 → 7섹션 구조) ====================
+// ==================== 언어별 용어 매핑 시스템 ====================
+function getTerms(lang) {
+  const terms = {
+    ko: {
+      lengthDesc: {
+        'A Length': '가슴 아래 밑선',
+        'B Length': '가슴 상단~중간',
+        'C Length': '쇄골 밑선',
+        'D Length': '어깨선',
+        'E Length': '어깨 위 5cm',
+        'F Length': '턱 아래',
+        'G Length': '턱선',
+        'H Length': '귀 중간'
+      },
+      formDesc: {
+        'O': 'One Length, 원렝스 - 모든 머리카락이 같은 길이',
+        'G': 'Graduation, 그래쥬에이션 - 외곽이 짧고 내부가 긴 층',
+        'L': 'Layer, 레이어 - 층을 두어 자르는 기법'
+      },
+      fringeType: {
+        'Full Bang': '전체 앞머리',
+        'See-through Bang': '시스루 앞머리',
+        'Side Bang': '옆으로 넘긴 앞머리',
+        'No Fringe': '앞머리 없음'
+      },
+      fringeLength: {
+        'Forehead': '이마 길이',
+        'Eyebrow': '눈썹 길이',
+        'Eye': '눈 길이',
+        'Cheekbone': '광대 길이',
+        'Lip': '입술 길이',
+        'Chin': '턱 길이',
+        'None': '없음'
+      },
+      direction: {
+        'D0': '정면 방향 (0도)',
+        'D1': '우측 전방 (45도)',
+        'D2': '우측 측면 (90도)',
+        'D3': '우측 후방 (135도)',
+        'D4': '정후방 (180도)',
+        'D5': '좌측 후방 (225도)',
+        'D6': '좌측 측면 (270도)',
+        'D7': '좌측 전방 (315도)',
+        'D8': '전체 방향 (360도)'
+      },
+      section: {
+        'Horizontal': '가로 섹션 (수평 분할)',
+        'Vertical': '세로 섹션 (수직 분할)',
+        'Diagonal Forward': '전대각 섹션 (앞쪽 대각선)',
+        'Diagonal Backward': '후대각 섹션 (뒤쪽 대각선)'
+      },
+      lifting: {
+        'L0': '0도 (자연낙하)',
+        'L1': '22.5도 (낮은 각도)',
+        'L2': '45도 (대각선)',
+        'L3': '67.5도 (중간 각도)',
+        'L4': '90도 (수평)',
+        'L5': '112.5도 (중상 각도)',
+        'L6': '135도 (대각선 위)',
+        'L7': '157.5도 (높은 각도)',
+        'L8': '180도 (수직)'
+      },
+      volume: {
+        'Low': '하단 볼륨 (0~44도)',
+        'Medium': '중단 볼륨 (45~89도)',
+        'High': '상단 볼륨 (90도 이상)'
+      }
+    },
+    en: {
+      lengthDesc: {
+        'A Length': 'Below chest',
+        'B Length': 'Upper to mid chest',
+        'C Length': 'Collarbone',
+        'D Length': 'Shoulder line',
+        'E Length': '5cm above shoulder',
+        'F Length': 'Below chin',
+        'G Length': 'Jaw line',
+        'H Length': 'Ear level'
+      },
+      formDesc: {
+        'O': 'One Length - All hair same length',
+        'G': 'Graduation - Shorter outside, longer inside',
+        'L': 'Layer - Layered throughout'
+      },
+      fringeType: {
+        'Full Bang': 'Full fringe',
+        'See-through Bang': 'See-through fringe',
+        'Side Bang': 'Side-swept fringe',
+        'No Fringe': 'No fringe'
+      },
+      fringeLength: {
+        'Forehead': 'Forehead length',
+        'Eyebrow': 'Eyebrow length',
+        'Eye': 'Eye length',
+        'Cheekbone': 'Cheekbone length',
+        'Lip': 'Lip length',
+        'Chin': 'Chin length',
+        'None': 'None'
+      },
+      direction: {
+        'D0': 'Front (0°)',
+        'D1': 'Right front (45°)',
+        'D2': 'Right side (90°)',
+        'D3': 'Right back (135°)',
+        'D4': 'Back (180°)',
+        'D5': 'Left back (225°)',
+        'D6': 'Left side (270°)',
+        'D7': 'Left front (315°)',
+        'D8': 'All directions (360°)'
+      },
+      section: {
+        'Horizontal': 'Horizontal section',
+        'Vertical': 'Vertical section',
+        'Diagonal Forward': 'Forward diagonal section',
+        'Diagonal Backward': 'Backward diagonal section'
+      },
+      lifting: {
+        'L0': '0° (Natural fall)',
+        'L1': '22.5° (Low angle)',
+        'L2': '45° (Diagonal)',
+        'L3': '67.5° (Medium angle)',
+        'L4': '90° (Horizontal)',
+        'L5': '112.5° (Medium-high)',
+        'L6': '135° (Diagonal up)',
+        'L7': '157.5° (High angle)',
+        'L8': '180° (Vertical)'
+      },
+      volume: {
+        'Low': 'Low volume (0-44°)',
+        'Medium': 'Medium volume (45-89°)',
+        'High': 'High volume (90°+)'
+      }
+    },
+    ja: {
+      lengthDesc: {
+        'A Length': '胸下',
+        'B Length': '胸上~中央',
+        'C Length': '鎖骨',
+        'D Length': '肩のライン',
+        'E Length': '肩上5cm',
+        'F Length': '顎下',
+        'G Length': '顎のライン',
+        'H Length': '耳の高さ'
+      },
+      formDesc: {
+        'O': 'ワンレングス - 全て同じ長さ',
+        'G': 'グラデーション - 外側が短く内側が長い層',
+        'L': 'レイヤー - 段を付けてカット'
+      },
+      fringeType: {
+        'Full Bang': '全体前髪',
+        'See-through Bang': 'シースルー前髪',
+        'Side Bang': '横に流した前髪',
+        'No Fringe': '前髪なし'
+      },
+      fringeLength: {
+        'Forehead': 'おでこの長さ',
+        'Eyebrow': '眉の長さ',
+        'Eye': '目の長さ',
+        'Cheekbone': '頬骨の長さ',
+        'Lip': '唇の長さ',
+        'Chin': '顎の長さ',
+        'None': 'なし'
+      },
+      direction: {
+        'D0': '正面方向 (0度)',
+        'D1': '右前方 (45度)',
+        'D2': '右側面 (90度)',
+        'D3': '右後方 (135度)',
+        'D4': '正後方 (180度)',
+        'D5': '左後方 (225度)',
+        'D6': '左側面 (270度)',
+        'D7': '左前方 (315度)',
+        'D8': '全方向 (360度)'
+      },
+      section: {
+        'Horizontal': '水平セクション',
+        'Vertical': '垂直セクション',
+        'Diagonal Forward': '前斜めセクション',
+        'Diagonal Backward': '後斜めセクション'
+      },
+      lifting: {
+        'L0': '0度 (自然落下)',
+        'L1': '22.5度 (低い角度)',
+        'L2': '45度 (斜め)',
+        'L3': '67.5度 (中間角度)',
+        'L4': '90度 (水平)',
+        'L5': '112.5度 (中高角度)',
+        'L6': '135度 (斜め上)',
+        'L7': '157.5度 (高い角度)',
+        'L8': '180度 (垂直)'
+      },
+      volume: {
+        'Low': '下部ボリューム (0~44度)',
+        'Medium': '中部ボリューム (45~89度)',
+        'High': '上部ボリューム (90度以上)'
+      }
+    },
+    zh: {
+      lengthDesc: {
+        'A Length': '胸部以下',
+        'B Length': '胸部上方至中部',
+        'C Length': '锁骨',
+        'D Length': '肩线',
+        'E Length': '肩上5厘米',
+        'F Length': '下巴以下',
+        'G Length': '下巴线',
+        'H Length': '耳朵高度'
+      },
+      formDesc: {
+        'O': '齐长 - 所有头发长度相同',
+        'G': '渐层 - 外侧短内侧长',
+        'L': '层次 - 分层剪裁'
+      },
+      fringeType: {
+        'Full Bang': '全刘海',
+        'See-through Bang': '空气刘海',
+        'Side Bang': '侧分刘海',
+        'No Fringe': '无刘海'
+      },
+      fringeLength: {
+        'Forehead': '额头长度',
+        'Eyebrow': '眉毛长度',
+        'Eye': '眼睛长度',
+        'Cheekbone': '颧骨长度',
+        'Lip': '嘴唇长度',
+        'Chin': '下巴长度',
+        'None': '无'
+      },
+      direction: {
+        'D0': '正面方向 (0度)',
+        'D1': '右前方 (45度)',
+        'D2': '右侧面 (90度)',
+        'D3': '右后方 (135度)',
+        'D4': '正后方 (180度)',
+        'D5': '左后方 (225度)',
+        'D6': '左侧面 (270度)',
+        'D7': '左前方 (315度)',
+        'D8': '全方向 (360度)'
+      },
+      section: {
+        'Horizontal': '水平分区',
+        'Vertical': '垂直分区',
+        'Diagonal Forward': '前斜分区',
+        'Diagonal Backward': '后斜分区'
+      },
+      lifting: {
+        'L0': '0度 (自然下垂)',
+        'L1': '22.5度 (低角度)',
+        'L2': '45度 (斜线)',
+        'L3': '67.5度 (中角度)',
+        'L4': '90度 (水平)',
+        'L5': '112.5度 (中高角度)',
+        'L6': '135度 (斜上)',
+        'L7': '157.5度 (高角度)',
+        'L8': '180度 (垂直)'
+      },
+      volume: {
+        'Low': '下部体积 (0~44度)',
+        'Medium': '中部体积 (45~89度)',
+        'High': '上部体积 (90度以上)'
+      }
+    },
+    vi: {
+      lengthDesc: {
+        'A Length': 'Dưới ngực',
+        'B Length': 'Trên ngực đến giữa ngực',
+        'C Length': 'Xương đòn',
+        'D Length': 'Vai',
+        'E Length': '5cm trên vai',
+        'F Length': 'Dưới cằm',
+        'G Length': 'Đường cằm',
+        'H Length': 'Tai'
+      },
+      formDesc: {
+        'O': 'Một độ dài - Tất cả tóc cùng độ dài',
+        'G': 'Tầng nấc - Ngoài ngắn trong dài',
+        'L': 'Lớp - Cắt từng lớp'
+      },
+      fringeType: {
+        'Full Bang': 'Mái đầy',
+        'See-through Bang': 'Mái thưa',
+        'Side Bang': 'Mái lệch',
+        'No Fringe': 'Không mái'
+      },
+      fringeLength: {
+        'Forehead': 'Dài trán',
+        'Eyebrow': 'Dài lông mày',
+        'Eye': 'Dài mắt',
+        'Cheekbone': 'Dài gò má',
+        'Lip': 'Dài môi',
+        'Chin': 'Dài cằm',
+        'None': 'Không có'
+      },
+      direction: {
+        'D0': 'Hướng trước (0°)',
+        'D1': 'Phải trước (45°)',
+        'D2': 'Phải ngang (90°)',
+        'D3': 'Phải sau (135°)',
+        'D4': 'Hướng sau (180°)',
+        'D5': 'Trái sau (225°)',
+        'D6': 'Trái ngang (270°)',
+        'D7': 'Trái trước (315°)',
+        'D8': 'Toàn bộ (360°)'
+      },
+      section: {
+        'Horizontal': 'Phân ngang',
+        'Vertical': 'Phân dọc',
+        'Diagonal Forward': 'Phân chéo trước',
+        'Diagonal Backward': 'Phân chéo sau'
+      },
+      lifting: {
+        'L0': '0° (Rơi tự nhiên)',
+        'L1': '22.5° (Góc thấp)',
+        'L2': '45° (Chéo)',
+        'L3': '67.5° (Góc trung)',
+        'L4': '90° (Ngang)',
+        'L5': '112.5° (Trung cao)',
+        'L6': '135° (Chéo lên)',
+        'L7': '157.5° (Góc cao)',
+        'L8': '180° (Dọc)'
+      },
+      volume: {
+        'Low': 'Thể tích thấp (0~44°)',
+        'Medium': 'Thể tích trung (45~89°)',
+        'High': 'Thể tích cao (90°+)'
+      }
+    }
+  };
+  
+  return terms[lang] || terms['ko'];
+}
+
+// ==================== 2단계: 레시피 생성 (파라미터 설명 강제 버전) ====================
 async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
   const { params56, language = 'ko' } = payload;
 
@@ -351,17 +661,38 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
       params56.cut_category?.includes('Women') ? 'female' : 'male'
     );
 
-    // GPT 프롬프트 (다국어 지원)
+    // 언어별 용어 가져오기
+    const langTerms = getTerms(language);
+
+    // 언어별 시스템 프롬프트
     const languageInstructions = {
-      ko: '한국어로 작성하세요.',
-      en: 'Write in English.',
-      ja: '日本語で作成してください。',
-      zh: '用中文写。',
-      vi: 'Viết bằng tiếng Việt.'
+      ko: '**CRITICAL: 반드시 한국어로만 작성하세요. 영어 단어가 나오면 괄호 안에 한글 설명을 추가하세요.**',
+      en: '**CRITICAL: Write entirely in English. Add explanations in parentheses for all technical terms.**',
+      ja: '**CRITICAL: 必ず日本語で書いてください。英語の単語が出る場合は括弧内に日本語の説明を追加してください。**',
+      zh: '**CRITICAL: 必须用中文书写。如果出现英文单词，请在括号内添加中文说明。**',
+      vi: '**CRITICAL: Viết hoàn toàn bằng tiếng Việt. Thêm giải thích trong ngoặc đơn cho tất cả thuật ngữ kỹ thuật.**'
     };
     
+    // Direction 설명 (언어별)
+    const directionDesc = langTerms.direction[params56.direction_primary || 'D0'] || 
+                          langTerms.direction['D0'];
+    
+    // Section 설명 (언어별)
+    const sectionDesc = langTerms.section[params56.section_primary] || 
+                        langTerms.section['Vertical'];
+    
+    // Lifting 설명 (언어별, 배열 처리)
+    const liftingDescs = (params56.lifting_range || ['L2', 'L4']).map(l => 
+      `${l} (${langTerms.lifting[l] || l})`
+    ).join(', ');
+    
+    // Volume 설명 (언어별)
+    const volumeDesc = langTerms.volume[params56.volume_zone] || 
+                       langTerms.volume['Medium'];
+
     const systemPrompt = `당신은 HAIRGATOR 시스템 전문가입니다.
-**중요: ${languageInstructions[language] || languageInstructions['ko']}**
+
+${languageInstructions[language] || languageInstructions['ko']}
 
 다음 56파라미터를 바탕으로 **정확히 아래 형식**으로 커트 레시피를 작성하세요.
 
@@ -374,40 +705,39 @@ STEP1. 스타일 설명:
 - 원문을 그대로 복사하지 말고, 핵심 특징을 조합하여 새롭게 표현
 
 STEP2. 스타일 길이(Style Length): 
-**${params56.length_category} (${params56.estimated_hair_length_cm}cm, ${getLengthDescription(params56.length_category)})**
+**${params56.length_category} (${params56.estimated_hair_length_cm}cm, ${langTerms.lengthDesc[params56.length_category] || params56.length_category})**
 
 STEP3. 스타일 형태(Style Form): 
-**⚠️ CRITICAL: 반드시 O/G/L 중 하나와 괄호 안에 풀네임 표기**
-- O (One Length): 원렝스, 모든 머리카락이 같은 길이
-- G (Graduation): 그래쥬에이션, 외곽이 짧고 내부가 긴 층
-- L (Layer): 레이어, 층을 두어 자르는 기법
-**형식: ${params56.cut_form} (${getFormDescription(params56.cut_form)})**
+**${params56.cut_form}**
+- ${langTerms.formDesc[params56.cut_form?.charAt(0)] || langTerms.formDesc['L']}
 
 STEP4. 앞머리 길이(Fringe Length): 
-**${params56.fringe_type} (${getFringeTypeDescription(params56.fringe_type)}) - ${params56.fringe_length} (${getFringeLengthDescription(params56.fringe_length)})**
+**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type} - ${langTerms.fringeLength[params56.fringe_length] || params56.fringe_length}**
 
 STEP5. 베이스 커트(Base Cut)
 **인터널(Internal) 진행:**
-A 존(A Zone, 귀 아래-목 부위): [구체적 시술 내용]
-B 존(B Zone, 귀 위 중단 부위): [구체적 시술 내용]
+A 존 (A Zone, 귀 아래-목 부위): [구체적 시술 내용]
+B 존 (B Zone, 귀 위 중단 부위): [구체적 시술 내용]
 
 **엑스터널(External) 진행:**
-C 존(C Zone, 정수리 상단 부위): [구체적 시술 내용]
+C 존 (C Zone, 정수리 상단 부위): [구체적 시술 내용]
 
-**다이렉션(Direction, 커트 방향)**: ${params56.direction_primary || 'D0'} (${getDirectionDescription(params56.direction_primary || 'D0')})
+**⚠️ CRITICAL: 아래 모든 파라미터는 반드시 괄호 안에 설명을 포함하세요!**
 
-**섹션(Section, 분할 방식)**: ${params56.section_primary} (${getSectionDescription(params56.section_primary)})
+**다이렉션 (Direction, 커트 방향)**: ${params56.direction_primary || 'D0'} (${directionDesc})
 
-**리프팅(Lifting, 들어올리는 각도)**: ${(params56.lifting_range || []).map(l => `${l} (${getLiftingDescription(l)})`).join(', ')}
+**섹션 (Section, 분할 방식)**: ${params56.section_primary} (${sectionDesc})
 
-**아웃라인(Outline, 외곽선 설정)**: ${params56.length_category}
+**리프팅 (Lifting, 들어올리는 각도)**: ${liftingDescs}
 
-**볼륨(Volume, 볼륨 위치)**: ${params56.volume_zone} (${getVolumeDescription(params56.volume_zone)})
+**아웃라인 (Outline, 외곽선 설정)**: ${params56.length_category}
 
-STEP6. 질감처리(Texturizing): 
+**볼륨 (Volume, 볼륨 위치)**: ${params56.volume_zone} (${volumeDesc})
+
+STEP6. 질감처리 (Texturizing): 
 [포인트 커트 (Point Cut), 슬라이드 커트 (Slide Cut) 등 구체적인 텍스처 기법을 상세히 기술]
 
-STEP7. 스타일링(Styling): 
+STEP7. 스타일링 (Styling): 
 [블로우 드라이 (Blow Dry), 아이론 스타일링 등 구체적인 스타일링 방법과 제품 사용법을 상세히 기술]
 
 # 절대 포함하지 말 것
@@ -418,121 +748,20 @@ STEP7. 스타일링(Styling):
 
 # 반드시 포함할 것
 ✅ 각 STEP 번호 명확히 표시
-✅ 괄호 안에 한글 설명 포함
+✅ **모든 파라미터에 괄호 안에 설명 포함** (D0, L2, Vertical 등)
 ✅ A/B/C 존 각각 구체적 시술 내용
 ✅ 리프팅 각도와 볼륨 위치의 논리적 일치
+✅ ${language === 'ko' ? '한국어' : language === 'en' ? 'English' : language === 'ja' ? '日本語' : language === 'zh' ? '中文' : 'Tiếng Việt'}로 작성
 
 `;
-
-    function getLengthDescription(length) {
-      const desc = {
-        'A Length': '가슴 아래 밑선, 긴 머리',
-        'B Length': '가슴 상단~중간, 긴 머리',
-        'C Length': '쇄골 밑선, 긴 머리',
-        'D Length': '어깨선, 미디움 머리',
-        'E Length': '어깨 위 5cm, 미디움 머리',
-        'F Length': '턱 아래, 미디움 머리',
-        'G Length': '턱선, 짧은 머리',
-        'H Length': '귀 중간, 숏헤어'
-      };
-      return desc[length] || '미분류 길이';
-    }
-
-    function getFormDescription(form) {
-      // C (Combination) 제거, O/G/L만 허용
-      if (!form) return '미분류 형태';
-      const firstChar = form.charAt(0).toUpperCase();
-      const desc = {
-        'O': 'One Length, 원렝스 - 모든 머리카락이 같은 길이',
-        'G': 'Graduation, 그래쥬에이션 - 외곽이 짧고 내부가 긴 층',
-        'L': 'Layer, 레이어 - 층을 두어 자르는 기법'
-      };
-      return desc[firstChar] || 'Layer, 레이어 - 층을 두어 자르는 기법';
-    }
-
-    function getFringeTypeDescription(type) {
-      const desc = {
-        'Full Bang': '전체 앞머리, 이마를 완전히 덮음',
-        'See-through Bang': '시스루 앞머리, 이마가 비침',
-        'Side Bang': '옆으로 넘긴 앞머리',
-        'No Fringe': '앞머리 없음'
-      };
-      return desc[type] || '앞머리 형태 미분류';
-    }
-
-    function getFringeLengthDescription(length) {
-      const desc = {
-        'Forehead': '이마 길이',
-        'Eyebrow': '눈썹 길이',
-        'Eye': '눈 길이',
-        'Cheekbone': '광대 길이',
-        'Lip': '입술 길이',
-        'Chin': '턱 길이',
-        'None': '없음'
-      };
-      return desc[length] || '길이 미분류';
-    }
-
-    function getDirectionDescription(dir) {
-      const desc = {
-        'D0': '정면 방향, 0도',
-        'D1': '우측 전방, 45도',
-        'D2': '우측 측면, 90도',
-        'D3': '우측 후방, 135도',
-        'D4': '정후방, 180도',
-        'D5': '좌측 후방, 225도',
-        'D6': '좌측 측면, 270도',
-        'D7': '좌측 전방, 315도',
-        'D8': '전체 방향, 360도'
-      };
-      return desc[dir] || '방향 미분류';
-    }
-
-    function getSectionDescription(section) {
-      const desc = {
-        'Horizontal': '가로 섹션, 수평 분할',
-        'Vertical': '세로 섹션, 수직 분할',
-        'Diagonal Forward': '전대각 섹션, 앞쪽 대각선',
-        'Diagonal Backward': '후대각 섹션, 뒤쪽 대각선'
-      };
-      return desc[section] || '섹션 미분류';
-    }
-
-    function getLiftingDescription(lift) {
-      const desc = {
-        'L0': '0도, 자연낙하',
-        'L1': '22.5도, 낮은 각도',
-        'L2': '45도, 대각선',
-        'L3': '67.5도, 중간 각도',
-        'L4': '90도, 수평',
-        'L5': '112.5도, 중상 각도',
-        'L6': '135도, 대각선 위',
-        'L7': '157.5도, 높은 각도',
-        'L8': '180도, 수직'
-      };
-      return desc[lift] || '미분류 각도';
-    }
-
-    function getVolumeDescription(volume) {
-      // 엄격한 기준 명시
-      const desc = {
-        'Low': '하단 볼륨 (0~44도, L0~L1)',
-        'Medium': '중단 볼륨 (45~89도, L2~L3)',
-        'High': '상단 볼륨 (90도 이상, L4~L8)'
-      };
-      return desc[volume] || '미분류 볼륨';
-    }
 
     const userPrompt = `다음 파라미터로 레시피를 생성하세요:
 ${JSON.stringify(params56, null, 2)}
 
-참고할 유사 스타일:
-${similarStyles.slice(0, 3).map(s => `- ${s.name}: ${s.description || '설명 없음'}`).join('\n')}
-
-**⚠️ 중요: STEP3 작성 규칙**
-- Cut Form은 반드시 "X (Full Name)" 형식으로 작성
-- 예: L (Layer), G (Graduation), O (One Length)
-- 절대 "L"만 쓰지 말 것!
+참고할 유사 스타일 (실제 데이터):
+${similarStyles.slice(0, 3).map((s, idx) => 
+  `${idx+1}. ${s.name || s.code}: ${s.description || s.recipe?.substring(0, 100) || '설명 없음'}`
+).join('\n')}
 
 위 형식을 정확히 따라서 STEP1부터 STEP7까지 순서대로 작성해주세요.`;
 
@@ -586,7 +815,7 @@ ${similarStyles.slice(0, 3).map(s => `- ${s.name}: ${s.description || '설명 �
   }
 }
 
-// ==================== 2-2단계: 스트리밍 레시피 생성 ====================
+// ==================== 2-2단계: 스트리밍 레시피 생성 (동일 로직 적용) ====================
 async function generateRecipeStream(payload, openaiKey, supabaseUrl, supabaseKey) {
   const { params56, language = 'ko' } = payload;
 
@@ -602,80 +831,66 @@ async function generateRecipeStream(payload, openaiKey, supabaseUrl, supabaseKey
       params56.cut_category?.includes('Women') ? 'female' : 'male'
     );
 
+    const langTerms = getTerms(language);
+
     const languageInstructions = {
-      ko: '한국어로 작성하세요.',
-      en: 'Write in English.',
-      ja: '日本語で作成してください。',
-      zh: '用中文写。',
-      vi: 'Viết bằng tiếng Việt.'
+      ko: '**CRITICAL: 반드시 한국어로만 작성하세요.**',
+      en: '**CRITICAL: Write entirely in English.**',
+      ja: '**CRITICAL: 必ず日本語で書いてください。**',
+      zh: '**CRITICAL: 必须用中文书写。**',
+      vi: '**CRITICAL: Viết hoàn toàn bằng tiếng Việt.**'
     };
     
+    const directionDesc = langTerms.direction[params56.direction_primary || 'D0'] || langTerms.direction['D0'];
+    const sectionDesc = langTerms.section[params56.section_primary] || langTerms.section['Vertical'];
+    const liftingDescs = (params56.lifting_range || ['L2', 'L4']).map(l => `${l} (${langTerms.lifting[l] || l})`).join(', ');
+    const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
+
     const systemPrompt = `당신은 HAIRGATOR 시스템 전문가입니다.
-**중요: ${languageInstructions[language] || languageInstructions['ko']}**
+
+${languageInstructions[language] || languageInstructions['ko']}
 
 다음 56파라미터를 바탕으로 **정확히 아래 형식**으로 커트 레시피를 작성하세요.
 
-# 필수 출력 형식
-
 <커트 레시피>
-STEP1. 스타일 설명: [2-3문장]
+STEP1. 스타일 설명: 
+[2-3문장으로 작성]
 
 STEP2. 스타일 길이(Style Length): 
-**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
+**${params56.length_category} (${params56.estimated_hair_length_cm}cm, ${langTerms.lengthDesc[params56.length_category] || params56.length_category})**
 
 STEP3. 스타일 형태(Style Form): 
-**⚠️ CRITICAL: 반드시 괄호 안에 풀네임 포함!**
-**예: L (Layer), G (Graduation), O (One Length)**
-**형식: ${params56.cut_form}**
+**${params56.cut_form}**
 
 STEP4. 앞머리 길이(Fringe Length): 
-**${params56.fringe_type} - ${params56.fringe_length}**
+**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type} - ${langTerms.fringeLength[params56.fringe_length] || params56.fringe_length}**
 
 STEP5. 베이스 커트(Base Cut)
-**인터널 진행:**
-A 존: [시술 내용]
-B 존: [시술 내용]
+**인터널(Internal) 진행:**
+A 존: [구체적 시술 내용]
+B 존: [구체적 시술 내용]
 
-**엑스터널 진행:**
-C 존: [시술 내용]
+**엑스터널(External) 진행:**
+C 존: [구체적 시술 내용]
 
-**다이렉션**: ${params56.direction_primary || 'D0'}
-**섹션**: ${params56.section_primary}
-**리프팅**: ${(params56.lifting_range || []).join(', ')}
-**볼륨**: ${params56.volume_zone}
+**다이렉션**: ${params56.direction_primary || 'D0'} (${directionDesc})
+**섹션**: ${params56.section_primary} (${sectionDesc})
+**리프팅**: ${liftingDescs}
+**아웃라인**: ${params56.length_category}
+**볼륨**: ${params56.volume_zone} (${volumeDesc})
 
-STEP6. 질감처리(Texturizing): [내용]
+STEP6. 질감처리: 
+[구체적 텍스처 기법]
 
-STEP7. 스타일링(Styling): [내용]
-
-# 금지사항
-❌ 스타일명, 예상길이 중복, 인크리스 레이어, 컷 셰이프
+STEP7. 스타일링: 
+[구체적 스타일링 방법]
 `;
 
-    const userPrompt = `파라미터:
+    const userPrompt = `다음 파라미터로 레시피를 생성하세요:
 ${JSON.stringify(params56, null, 2)}
 
-# 참고할 유사 스타일 정보 (Supabase RAG 데이터):
-
-${similarStyles.slice(0, 3).map((s, idx) => `
-## 유사 스타일 ${idx + 1}: ${s.name || s.code}
-
-**스타일 설명 (STEP1 참고용):**
-${s.style_introduction || s.description || '정보 없음'}
-
-**관리법 (STEP7 참고용):**
-${s.management || s.styling || '정보 없음'}
-
-**이미지 분석 (추가 참고):**
-${s.image_analysis || s.analysis || '정보 없음'}
-`).join('\n---\n')}
-
-**작성 지침:**
-1. STEP1은 위 "스타일 설명"들을 참고하여 새롭게 작성
-2. STEP7은 위 "관리법"들을 참고하여 구체적으로 작성
-3. **STEP3는 반드시 "X (Full Name)" 형식: L (Layer), G (Graduation), O (One Length)**
-4. 단순 복사 금지 - 핵심 특징을 조합하여 자연스럽게 표현
-`;
+참고 스타일:
+${similarStyles.slice(0, 3).map((s, idx) => `${idx+1}. ${s.name || s.code}`).join('\n')}`;
 
     const streamResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -803,7 +1018,7 @@ async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender =
   console.log(`🔍 Fallback 검색 시작: "${query}"`);
   
   const response = await fetch(
-    `${supabaseUrl}/rest/v1/hairstyles?select=id,name,category,code,recipe`,
+    `${supabaseUrl}/rest/v1/hairstyles?select=id,name,category,code,recipe,description`,
     {
       headers: {
         'apikey': supabaseKey,
@@ -833,7 +1048,7 @@ async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender =
       score += 100;
     }
 
-    if (style.recipe) {
+    if (style.recipe || style.description) {
       score += 30;
     }
 
