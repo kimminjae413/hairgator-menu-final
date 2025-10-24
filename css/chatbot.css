@@ -938,29 +938,32 @@
 
 .index-content {
 
+
 .index-modal-body {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto !important;
   padding: 0;
   color: #000000;
   line-height: 1.8;
+  min-height: 0;
 }
 
 .index-modal-body::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .index-modal-body::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
 }
 
 .index-modal-body::-webkit-scrollbar-thumb {
-  background: rgba(233, 30, 99, 0.3);
-  border-radius: 3px;
+  background: rgba(233, 30, 99, 0.4);
+  border-radius: 4px;
 }
 
 .index-modal-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(233, 30, 99, 0.5);
+  background: rgba(233, 30, 99, 0.6);
 }
   flex: 1;
   overflow-y: auto;
@@ -1276,14 +1279,24 @@
    ============================================================ */
 
 /* 갤러리 그리드 */
+/* index-modal-body에서만 스크롤 처리 */
+.index-modal-body {
+  flex: 1;
+  overflow-y: auto !important;
+  padding: 0;
+  color: #000000;
+  line-height: 1.8;
+  min-height: 0;
+}
+
+/* 갤러리는 높이 제한 없이 자연스럽게 확장 */
 .term-gallery-single-column {
   display: flex;
   flex-direction: column;
   gap: 24px;
   padding: 20px;
-  max-height: calc(90vh - 80px);
-  overflow-y: scroll !important;
-  -webkit-overflow-scrolling: touch;
+  /* max-height 제거 */
+  /* overflow 제거 - 부모에서 처리 */
 }
 
 .term-card-single {
