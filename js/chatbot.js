@@ -496,16 +496,16 @@ class HairGatorChatbot {
     this.scrollToBottom();
   }
 
-  // 🆕 새 레시피 포맷 파싱 (###1~###7 구조)
+  // 🆕 새 레시피 포맷 파싱 (STEP1~STEP7 구조)
   parseNewRecipeFormat(text) {
     if (!text) return '<p>레시피 내용이 없습니다.</p>';
 
     // <커트 레시피> 제목 제거
     text = text.replace(/<커트 레시피>/gi, '');
 
-    // 섹션 분할 (###1 ~ ###7)
+    // 섹션 분할 (STEP1 ~ STEP7)
     const sections = [];
-    const regex = /###(\d+)\.\s*([^:]+):\s*([\s\S]*?)(?=###\d+\.|$)/g;
+    const regex = /STEP(\d+)\.\s*([^:]+):\s*([\s\S]*?)(?=STEP\d+\.|$)/g;
     let match;
 
     while ((match = regex.exec(text)) !== null) {
@@ -529,7 +529,7 @@ class HairGatorChatbot {
       html += `
         <div class="recipe-section ${sectionClass}">
           <div class="section-header">
-            <span class="section-number">###${section.number}</span>
+            <span class="section-number">STEP${section.number}</span>
             <h3 class="section-title">${this.escapeHtml(section.title)}</h3>
           </div>
           <div class="section-content">
