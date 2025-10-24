@@ -336,10 +336,10 @@ function calculateVolumeFromLifting(liftingCode) {
 
 // ==================== 2단계: 레시피 생성 (56파라미터 → 7섹션 구조) ====================
 async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
-  const { params56 } = payload;
+  const { params56, language = 'ko' } = payload;
 
   try {
-    console.log('🍳 레시피 생성 시작:', params56);
+    console.log('🍳 레시피 생성 시작:', params56, '언어:', language);
 
     // 벡터 검색으로 유사 스타일 찾기
     const searchQuery = `${params56.length_category || ''} ${params56.structure_layer || ''} ${params56.cut_form || ''}`;
@@ -351,8 +351,18 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
       params56.cut_category?.includes('Women') ? 'female' : 'male'
     );
 
-    // GPT 프롬프트 (정확한 형식 강제)
+    // GPT 프롬프트 (다국어 지원)
+    const languageInstructions = {
+      ko: '한국어로 작성하세요.',
+      en: 'Write in English.',
+      ja: '日本語で作成してください。',
+      zh: '用中文写。',
+      vi: 'Viết bằng tiếng Việt.'
+    };
+    
     const systemPrompt = `당신은 HAIRGATOR 시스템 전문가입니다.
+**중요: ${languageInstructions[language] || languageInstructions['ko']}**
+
 다음 56파라미터를 바탕으로 **정확히 아래 형식**으로 커트 레시피를 작성하세요.
 
 # 필수 출력 형식 (절대 변경 금지)
@@ -578,10 +588,10 @@ ${similarStyles.slice(0, 3).map(s => `- ${s.name}: ${s.description || '설명 �
 
 // ==================== 2-2단계: 스트리밍 레시피 생성 ====================
 async function generateRecipeStream(payload, openaiKey, supabaseUrl, supabaseKey) {
-  const { params56 } = payload;
+  const { params56, language = 'ko' } = payload;
 
   try {
-    console.log('🍳 스트리밍 레시피 생성 시작:', params56);
+    console.log('🍳 스트리밍 레시피 생성 시작:', params56, '언어:', language);
 
     const searchQuery = `${params56.length_category || ''} ${params56.structure_layer || ''} ${params56.cut_form || ''}`;
     const similarStyles = await searchSimilarStyles(
@@ -592,7 +602,17 @@ async function generateRecipeStream(payload, openaiKey, supabaseUrl, supabaseKey
       params56.cut_category?.includes('Women') ? 'female' : 'male'
     );
 
+    const languageInstructions = {
+      ko: '한국어로 작성하세요.',
+      en: 'Write in English.',
+      ja: '日本語で作成してください。',
+      zh: '用中文写。',
+      vi: 'Viết bằng tiếng Việt.'
+    };
+    
     const systemPrompt = `당신은 HAIRGATOR 시스템 전문가입니다.
+**중요: ${languageInstructions[language] || languageInstructions['ko']}**
+
 다음 56파라미터를 바탕으로 **정확히 아래 형식**으로 커트 레시피를 작성하세요.
 
 # 필수 출력 형식
