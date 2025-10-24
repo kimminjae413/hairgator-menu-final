@@ -237,66 +237,50 @@ async function generateDetailedRecipe(formula42, params56, recipeExamples, recip
   const systemPrompt = `당신은 **42포뮬러 헤어 전문가**입니다. 
 
 업로드된 이미지 분석 결과(42포뮬러 + 56파라미터)와 Supabase 학습 데이터를 바탕으로, 
-**실무에서 바로 사용 가능한 7단계 커트 레시피**를 생성하세요.
+**실무에서 바로 사용 가능한 커트 레시피**를 생성하세요.
 
 ---
 
-## ✂️ 커트 레시피 포맷
+## ✂️ 커트 레시피 포맷 (정확히 이 형식으로 출력)
 
 ### 1. 스타일 설명
 부드럽고 여성스러운 이미지를 갖는 ...
 
 ### 2. 스타일 길이 (Style Length)
-- 롱(Long): A, B, C Length
-- 미디움(Medium): D, E, F, G Length
-- 숏(Short): H Length
+**롱(Long)**: A, B, C Length
+**미디움(Medium)**: D, E, F, G Length
+**숏(Short)**: H Length
 
 ### 3. 스타일 형태 (Style Form)
-- 원렝스(O)
-- 그래쥬에이션(G)
-- 레이어(L)
+**원렝스(O)**
+**그래쥬에이션(G)**
+**레이어(L)**
 
 ### 4. 앞머리 길이 (Fringe Length)
-- 없음(None), 이마(Fore Head), 눈썹(Eye Brow), 눈(Eye), 광대(Cheek Bone)...
+**없음(None)**
+**이마(Fore Head)**
+**눈썹(Eye Brow)**
+**눈(Eye)**
+**광대(Cheek Bone)**
 
 ### 5. 베이스 커트 (Base Cut)
 
-#### 다이렉션 (Direction)
-D8, D7, D6, D5, D4, D3, D2, D1, D0
+**인터널(Internal) 진행**:
+A 존(A Zone)
+B 존(B Zone)
 
-#### 섹션 (Section)
-- 가로(Horizontal)
-- 세로(Vertical)
-- 전대각(Diagonal Forward)
-- 후대각(Diagonal Backward)
+**엑스터널(External) 진행**:
+C 존(C Zone)
 
-#### 리프팅 (Lifting)
-L0(0도), L1(22.5도), L2(45도), L3(67.5도), L4(90도), L5(112.5도), L6(135도), L7(157.5도), L8(180도)
+**다이렉션(Direction)**: D8, D7, D6, D5, D4, D3, D2, D1, D0
 
-#### 아웃라인 (Outline) 설정
-A~H 라인 설정
+**섹션(Section)**: 가로(Horizontal), 세로(Vertical), 전대각(Diagonal Forward), 후대각(Diagonal Backward)
 
-#### 인터널 (Internal) 진행
+**리프팅(Lifting)**: L0(0도), L1(22.5도), L2(45도), L3(67.5도), L4(90도), L5(112.5도), L6(135도), L7(157.5도), L8(180도)
 
-**A 존 (A Zone)**
-\`\`\`
-(세로섹션 1-6층 데이터)
-\`\`\`
+**아웃라인(Outline) 설정**: A~H 라인 설정
 
-**B 존 (B Zone)**
-\`\`\`
-(세로섹션 7-12층 데이터)
-\`\`\`
-
-#### 엑스터널 (External) 진행
-
-**C 존 (C Zone)**
-\`\`\`
-(후대각섹션 1-5층 데이터)
-\`\`\`
-
-#### 볼륨 (Volume)
-로우(Low/0도~45도), 미디움(Medium/45도~90도), 하이(High/90 이상)
+**볼륨(Volume)**: 로우(Low/0도~45도), 미디움(Medium/45도~90도), 하이(High/90 이상)
 
 ### 6. 질감처리 (Texturizing)
 포인트 커트를 이용하여...
@@ -307,9 +291,10 @@ A~H 라인 설정
 ---
 
 **📋 참고사항:**
-1. ❌ 나오지 않게할 내용: 스타일명, 예상길이(cm), Increase Layer 용어, Cut Shape 용어
+1. ❌ 나오지 않게할 내용: 스타일명, 예상길이, 인크리스 레이어, 컷 셰이프
 2. ✅ A~H 라인만 사용 (S, M, L 금지)
 3. ✅ 실무 용어 사용 (가로섹션, 세로섹션, 후대각섹션...)
+4. ✅ 위 포맷을 정확히 따를 것 (### 1. ~ ### 7. 순서대로)
 `;
 
   const userContent = `**📸 업로드 이미지 분석 결과:**
@@ -326,7 +311,7 @@ ${recipeExamples}
 
 위 분석 결과와 Supabase 레시피들을 학습하여, **7단계 커트 레시피**를 생성하세요.`;
 
-  // 🔥 스트리밍 방식으로 변경
+  // ✅ Node.js용 스트리밍 방식 (for await 사용)
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -346,21 +331,18 @@ ${recipeExamples}
   });
 
   if (!response.ok) {
-    throw new Error(`GPT API failed: ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(`GPT API failed: ${response.status} - ${errorText}`);
   }
 
-  // 스트리밍 응답 읽기
+  // ✅ Node.js 환경에서 작동하는 스트리밍 처리
   let fullContent = '';
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-
+  
   try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n').filter(line => line.trim() !== '');
+    // for await...of는 Node.js의 ReadableStream을 자동으로 처리
+    for await (const chunk of response.body) {
+      const text = chunk.toString('utf8');
+      const lines = text.split('\n').filter(line => line.trim() !== '');
 
       for (const line of lines) {
         if (line.startsWith('data: ')) {
@@ -374,15 +356,17 @@ ${recipeExamples}
               fullContent += content;
             }
           } catch (e) {
-            // JSON 파싱 오류 무시
+            // JSON 파싱 오류 무시 (data: 뒤에 빈 줄이 올 수 있음)
           }
         }
       }
     }
-  } finally {
-    reader.releaseLock();
+  } catch (streamError) {
+    console.error('스트리밍 처리 중 오류:', streamError);
+    throw new Error(`스트리밍 오류: ${streamError.message}`);
   }
 
+  console.log('✅ GPT 레시피 생성 완료, 길이:', fullContent.length);
   return fullContent;
 }
 
