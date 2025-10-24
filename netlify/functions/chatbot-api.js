@@ -765,6 +765,15 @@ ${similarStyles.slice(0, 3).map((s, idx) =>
 
 위 형식을 정확히 따라서 STEP1부터 STEP7까지 순서대로 작성해주세요.`;
 
+    // 언어별 강제 시스템 메시지 (짬뽕 방지)
+    const strictLanguageMessage = {
+      ko: '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요. 영어나 일본어 단어를 절대 사용하지 마세요.',
+      en: 'You are an English expert. Write ALL responses in English ONLY. Never use Korean or Japanese words.',
+      ja: 'あなたは日本語の専門家です。すべての応答を日本語のみで書いてください。英語や韓国語の単語を絶対に使用しないでください。',
+      zh: '你是中文专家。所有回答只用中文。绝对不要使用英语或韩语单词。',
+      vi: 'Bạn là chuyên gia tiếng Việt. Viết TẤT CẢ phản hồi chỉ bằng tiếng Việt. Không bao giờ sử dụng từ tiếng Anh hoặc tiếng Hàn.'
+    }[language] || '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요.';
+
     const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -774,10 +783,11 @@ ${similarStyles.slice(0, 3).map((s, idx) =>
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'system', content: strictLanguageMessage }, // 1차: 언어 강제
+          { role: 'system', content: systemPrompt },           // 2차: 레시피 형식
+          { role: 'user', content: userPrompt }                // 3차: 사용자 요청
         ],
-        temperature: 0.7,
+        temperature: 0.5, // 온도 낮춤 (더 정확하게)
         max_tokens: 2000
       })
     });
@@ -892,6 +902,15 @@ ${JSON.stringify(params56, null, 2)}
 참고 스타일:
 ${similarStyles.slice(0, 3).map((s, idx) => `${idx+1}. ${s.name || s.code}`).join('\n')}`;
 
+    // 언어별 강제 시스템 메시지 (짬뽕 방지)
+    const strictLanguageMessage = {
+      ko: '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요. 영어나 일본어 단어를 절대 사용하지 마세요.',
+      en: 'You are an English expert. Write ALL responses in English ONLY. Never use Korean or Japanese words.',
+      ja: 'あなたは日本語の専門家です。すべての応答を日本語のみで書いてください。英語や韓国語の単語を絶対に使用しないでください。',
+      zh: '你是中文专家。所有回答只用中文。绝对不要使用英语或韩语单词。',
+      vi: 'Bạn là chuyên gia tiếng Việt. Viết TẤT CẢ phản hồi chỉ bằng tiếng Việt. Không bao giờ sử dụng từ tiếng Anh hoặc tiếng Hàn.'
+    }[language] || '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요.';
+
     const streamResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -901,10 +920,11 @@ ${similarStyles.slice(0, 3).map((s, idx) => `${idx+1}. ${s.name || s.code}`).joi
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'system', content: strictLanguageMessage }, // 1차: 언어 강제
+          { role: 'system', content: systemPrompt },           // 2차: 레시피 형식
+          { role: 'user', content: userPrompt }                // 3차: 사용자 요청
         ],
-        temperature: 0.7,
+        temperature: 0.5, // 온도 낮춤
         max_tokens: 2000,
         stream: false
       })
