@@ -848,25 +848,28 @@
 }
 
 /* ==================== 색인 모달 ==================== */
+
+/* ============================================================
+   색인 모달 - 스크롤 확실하게 작동
+   ============================================================ */
+
 .index-modal {
   position: fixed;
-  inset: 0;
-  z-index: 100000;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.3s ease-out;
+  z-index: 100000;
+  animation: fadeIn 0.2s ease;
 }
 
 .index-modal.hidden {
   display: none;
-}
-
-.index-modal-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(10px);
 }
 
 .index-modal-content {
@@ -875,24 +878,14 @@
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 20px;
   width: 90%;
-  max-width: 600px;
-  max-height: 95vh; overflow: hidden;
+  max-width: 700px;
+  height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   animation: modalSlide 0.3s ease-out;
   z-index: 1;
-}
-
-@keyframes modalSlide {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  overflow: hidden;
 }
 
 .index-modal-header {
@@ -901,13 +894,11 @@
   align-items: center;
   padding: 20px 24px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  background: linear-gradient(
-    135deg,
-    rgba(233, 30, 99, 0.08),
-    rgba(33, 150, 243, 0.08)
-  );
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.08), rgba(33, 150, 243, 0.08));
+  flex-shrink: 0;
 }
 
+.index-modal-header h2,
 .index-modal-header h3 {
   margin: 0;
   font-size: 18px;
@@ -915,7 +906,7 @@
   color: #000000;
 }
 
-.index-close {
+.close-index-modal {
   background: rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(0, 0, 0, 0.1);
   color: #666666;
@@ -930,39 +921,46 @@
   height: 32px;
 }
 
-.index-close:hover {
+.close-index-modal:hover {
   background: rgba(233, 30, 99, 0.2);
   border-color: #E91E63;
   color: #E91E63;
 }
 
-.index-content {
-
-
 .index-modal-body {
   flex: 1;
-  overflow-y: auto !important;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 0;
-  color: #000000;
-  line-height: 1.8;
   min-height: 0;
 }
 
 .index-modal-body::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 .index-modal-body::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
+  border-radius: 5px;
+  margin: 4px 0;
 }
 
 .index-modal-body::-webkit-scrollbar-thumb {
-  background: rgba(233, 30, 99, 0.4);
-  border-radius: 4px;
+  background: rgba(233, 30, 99, 0.5);
+  border-radius: 5px;
 }
 
 .index-modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(233, 30, 99, 0.7);
+}
+
+.term-gallery-single-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px;
+}
+
   background: rgba(233, 30, 99, 0.6);
 }
   flex: 1;
