@@ -183,51 +183,24 @@ H Length (15cm): **귀 중간**
 - cut_form은 O, G, L 중 하나만 (C 사용 금지)
 
 **출력 형식 (JSON만):**
-**출력 형식 (JSON - 모든 값에 괄호 설명 필수):**
-```json
+\`\`\`json
 {
   "cut_category": "Women's Cut",
-  "length_category": "B Length (가슴 상단~중간, 50cm)",
+  "length_category": "B Length",
   "estimated_hair_length_cm": 50,
-  "cut_form": "L (Layer, 레이어 - 층을 두어 자르는 기법)",
-  "structure_layer": "Graduated Layer (그래쥬에이티드 레이어 - 외곽 짧고 내부 긴 층)",
-  "fringe_type": "Side Bang (사이드 뱅 - 옆으로 넘긴 앞머리)",
-  "fringe_length": "Eye (눈 길이)",
-  "volume_zone": "High (상단 볼륨 - 정수리 근처에 볼륨)",
-  "weight_flow": "Forward Weighted (앞쪽 무게감)",
-  "hair_texture": "Medium (중간 모질)",
-  "styling_method": "Blow Dry (블로우 드라이)",
-  "section_primary": "Vertical (수직 섹션)",
-  "lifting_range": ["L2 (45도)", "L4 (90도)", "L6 (135도)"],
-  "direction_primary": "D0 (자연 낙하, 0도)"
+  "cut_form": "L (Layer)",
+  "structure_layer": "Graduated Layer",
+  "fringe_type": "Side Bang",
+  "fringe_length": "Eye",
+  "volume_zone": "Medium",
+  "weight_flow": "Forward Weighted",
+  "hair_texture": "Medium",
+  "styling_method": "Blow Dry",
+  "section_primary": "Vertical",
+  "lifting_range": ["L2", "L4", "L6"],
+  "direction_primary": "D0"
 }
-```
-
-**⚠️ 필수 규칙: 모든 영문 값 뒤에 괄호로 한글 설명 추가**
-
-**Cut Form 설명:**
-- O: "O (One Length, 원렝스 - 일직선 커트, 층 없음)"
-- G: "G (Graduation, 그래쥬에이션 - 외곽 짧고 내부 긴 층, 아래 무거움)"
-- L: "L (Layer, 레이어 - 층을 두어 자르는 기법, 전체 볼륨)"
-
-**Volume 설명 (리프팅 각도 기준):**
-- Low: "Low (하단 볼륨 - 0~44도, 목 근처)"
-- Medium: "Medium (중단 볼륨 - 45~89도, 귀 위)"
-- High: "High (상단 볼륨 - 90도 이상, 정수리 근처)"
-
-**Lifting 설명:**
-- L0: "L0 (0도 - 자연 낙하)"
-- L2: "L2 (45도 - 중간 각도)"
-- L4: "L4 (90도 - 수평)"
-- L6: "L6 (135도 - 위로)"
-- L8: "L8 (180도 - 완전 위로)"
-
-**Direction 설명:**
-- D0: "D0 (자연 낙하, 0도)"
-- D2: "D2 (45도 앞)"
-- D4: "D4 (90도 앞, 얼굴 쪽)"
-- D6: "D6 (135도 뒤)"
-- D8: "D8 (180도 뒤, 후방)"
+\`\`\`
 
 **재확인 체크리스트:**
 - ✅ 머리카락 끝이 쇄골 위치인가? → C Length
@@ -235,7 +208,6 @@ H Length (15cm): **귀 중간**
 - ✅ 머리카락 끝이 가슴 아래인가? → A Length
 - ✅ 애매하면 더 긴 쪽 선택
 - ✅ cut_form은 O/G/L만 사용 (C 금지)
-- ✅ **모든 영문 값에 괄호 설명 필수!**
 `;
 
   try {
@@ -351,7 +323,7 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
     const systemPrompt = `당신은 HAIRGATOR 시스템 전문가입니다.
 다음 56파라미터를 바탕으로 **정확히 아래 형식**으로 커트 레시피를 작성하세요.
 
-# 필수 출력 형식
+# 필수 출력 형식 (절대 변경 금지)
 
 <커트 레시피>
 STEP1. 스타일 설명: 
@@ -360,38 +332,51 @@ STEP1. 스타일 설명:
 - 원문을 그대로 복사하지 말고, 핵심 특징을 조합하여 새롭게 표현
 
 STEP2. 스타일 길이(Style Length): 
-**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
+**${params56.length_category} (${params56.estimated_hair_length_cm}cm, ${getLengthDescription(params56.length_category)})**
 
 STEP3. 스타일 형태(Style Form): 
-**${params56.cut_form}**
+**${params56.cut_form} (${getFormDescription(params56.cut_form)})**
 
 STEP4. 앞머리 길이(Fringe Length): 
-**${params56.fringe_type} - ${params56.fringe_length}**
+**${params56.fringe_type} (${getFringeTypeDescription(params56.fringe_type)}) - ${params56.fringe_length} (${getFringeLengthDescription(params56.fringe_length)})**
 
 STEP5. 베이스 커트(Base Cut)
-**인터널 진행:**
-A 존: [시술 내용]
-B 존: [시술 내용]
+**인터널(Internal) 진행:**
+A 존(A Zone, 귀 아래-목 부위): [구체적 시술 내용]
+B 존(B Zone, 귀 위 중단 부위): [구체적 시술 내용]
 
-**엑스터널 진행:**
-C 존: [시술 내용]
+**엑스터널(External) 진행:**
+C 존(C Zone, 정수리 상단 부위): [구체적 시술 내용]
 
-**다이렉션**: ${params56.direction_primary || 'D0'}
-**섹션**: ${params56.section_primary}
-**리프팅**: ${(params56.lifting_range || []).join(', ')}
-**볼륨**: ${params56.volume_zone}
+**다이렉션(Direction, 커트 방향)**: ${params56.direction_primary || 'D0'} (${getDirectionDescription(params56.direction_primary || 'D0')})
 
-STEP6. 질감처리(Texturizing): [내용]
+**섹션(Section, 분할 방식)**: ${params56.section_primary} (${getSectionDescription(params56.section_primary)})
+
+**리프팅(Lifting, 들어올리는 각도)**: ${(params56.lifting_range || []).map(l => `${l} (${getLiftingDescription(l)})`).join(', ')}
+
+**아웃라인(Outline, 외곽선 설정)**: ${params56.length_category}
+
+**볼륨(Volume, 볼륨 위치)**: ${params56.volume_zone} (${getVolumeDescription(params56.volume_zone)})
+
+STEP6. 질감처리(Texturizing): 
+[포인트 커트 (Point Cut), 슬라이드 커트 (Slide Cut) 등 구체적인 텍스처 기법을 상세히 기술]
 
 STEP7. 스타일링(Styling): 
-**⚠️ 반드시 아래 "참고할 관리법"을 활용하여 작성**
-- 드라이 방법, 아이롱 사용법, 제품 추천 등을 구체적으로 설명
-- 유사 스타일의 관리법을 참고하여 실용적인 스타일링 가이드 제공
+[블로우 드라이 (Blow Dry), 아이론 스타일링 등 구체적인 스타일링 방법과 제품 사용법을 상세히 기술]
 
-# 금지사항
-❌ 스타일명, 예상길이 중복, 인크리스 레이어, 컷 셰이프
+# 절대 포함하지 말 것
+❌ 스타일명 (엘리자벳컷, 허그컷 등 고유명사)
+❌ 예상길이 중복 설명
+❌ 인크리스 레이어
+❌ 컷 셰이프
+
+# 반드시 포함할 것
+✅ 각 STEP 번호 명확히 표시
+✅ 괄호 안에 한글 설명 포함
+✅ A/B/C 존 각각 구체적 시술 내용
+✅ 리프팅 각도와 볼륨 위치의 논리적 일치
+
 `;
-
 
     function getLengthDescription(length) {
       const desc = {
@@ -572,10 +557,7 @@ async function generateRecipeStream(payload, openaiKey, supabaseUrl, supabaseKey
 # 필수 출력 형식
 
 <커트 레시피>
-STEP1. 스타일 설명: 
-**⚠️ 반드시 아래 "참고할 유사 스타일 설명"을 활용하여 2-3문장으로 작성**
-- 유사 스타일의 특징을 분석하여 자연스럽게 재작성
-- 원문을 그대로 복사하지 말고, 핵심 특징을 조합하여 새롭게 표현
+STEP1. 스타일 설명: [2-3문장]
 
 STEP2. 스타일 길이(Style Length): 
 **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
@@ -601,15 +583,11 @@ C 존: [시술 내용]
 
 STEP6. 질감처리(Texturizing): [내용]
 
-STEP7. 스타일링(Styling): 
-**⚠️ 반드시 아래 "참고할 관리법"을 활용하여 작성**
-- 드라이 방법, 아이롱 사용법, 제품 추천 등을 구체적으로 설명
-- 유사 스타일의 관리법을 참고하여 실용적인 스타일링 가이드 제공
+STEP7. 스타일링(Styling): [내용]
 
 # 금지사항
 ❌ 스타일명, 예상길이 중복, 인크리스 레이어, 컷 셰이프
 `;
-
 
     const userPrompt = `파라미터:
 ${JSON.stringify(params56, null, 2)}
@@ -634,7 +612,6 @@ ${s.image_analysis || s.analysis || '정보 없음'}
 2. STEP7은 위 "관리법"들을 참고하여 구체적으로 작성
 3. 단순 복사 금지 - 핵심 특징을 조합하여 자연스럽게 표현
 `;
-
 
     const streamResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
