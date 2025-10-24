@@ -404,16 +404,55 @@
 }
 
 .section-content p {
-  margin: 6px 0;
+  margin: 8px 0;
+  line-height: 1.7;
 }
 
-.section-content ul {
+.section-content ul,
+.section-content .recipe-list {
+  margin: 8px 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.section-content li,
+.section-content .recipe-list li {
+  position: relative;
   margin: 6px 0;
   padding-left: 20px;
+  line-height: 1.7;
 }
 
-.section-content li {
-  margin: 4px 0;
+.section-content li::before,
+.section-content .recipe-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--female-color);
+  font-weight: bold;
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* 강조 텍스트 */
+.section-content strong {
+  color: var(--female-color);
+  font-weight: 600;
+}
+
+/* 화살표 스타일 */
+.section-content .arrow,
+.arrow {
+  color: var(--female-color);
+  font-weight: bold;
+  margin: 0 4px;
+}
+
+/* 일반 텍스트 */
+.recipe-text {
+  margin: 8px 0;
+  line-height: 1.7;
+  color: var(--text-primary);
 }
 
 /* 섹션별 색상 구분 */
