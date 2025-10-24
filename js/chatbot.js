@@ -140,7 +140,7 @@ class HairGatorChatbot {
         </svg>
       </button>
 
-      <div id="chatbot-container" class="chatbot-container" style="display: none;">
+      <div id="chatbot-container" class="chatbot-container">
         <div class="chatbot-header">
           <span class="chatbot-title" id="chatbot-title">${texts.title}</span>
           <div class="header-actions">
@@ -362,21 +362,23 @@ class HairGatorChatbot {
     if (!this.isOpen) {
       // 챗봇 열기
       this.isOpen = true;
-      container.style.display = 'flex';
-      toggle.style.display = 'none';
+      container.classList.add('active');
+      toggle.classList.add('hidden');
       this.scrollToBottom();
     } else {
       // 챗봇 닫기
       this.isOpen = false;
-      container.style.display = 'none';
-      toggle.style.display = 'flex';
+      container.classList.remove('active');
+      toggle.classList.remove('hidden');
     }
   }
 
   closeChat() {
     this.isOpen = false;
-    document.getElementById('chatbot-container').style.display = 'none';
-    document.getElementById('chatbot-toggle').style.display = 'flex';
+    const container = document.getElementById('chatbot-container');
+    const toggle = document.getElementById('chatbot-toggle');
+    container.classList.remove('active');
+    toggle.classList.remove('hidden');
   }
 
   updateLanguage() {
