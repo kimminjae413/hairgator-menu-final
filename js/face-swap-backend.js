@@ -307,7 +307,7 @@ class FaceSwapBackend {
     // URL 설정 도우미 함수
     showURLSetupInstructions() {
         const instructions = `
-🔧 AKOOL 백엔드 URL 설정이 필요합니다!
+🔧 백엔드 URL 설정이 필요합니다!
 
 1. 백엔드 서버 실행:
    cd HAIRGATOR-backend
@@ -322,7 +322,7 @@ class FaceSwapBackend {
 4. 연결 테스트:
    window.faceSwapDebug.testConnection()
         `;
-        
+
         console.log(instructions);
         return instructions;
     }

@@ -389,29 +389,4 @@ document.addEventListener('DOMContentLoaded', async function() {
     }, 2000);
 });
 
-// ========== 호환성 래퍼 (기존 akoolService 인터페이스 유지) ==========
-window.akoolService = {
-    async init() {
-        return await window.hairExperienceService.init();
-    },
-    
-    async faceSwap(customerImageUrl, styleImageUrl) {
-        return await window.hairExperienceService.processHairExperience(
-            customerImageUrl, 
-            styleImageUrl
-        );
-    },
-    
-    isConnected() {
-        return window.hairExperienceService.isConnected();
-    },
-    
-    async getCreditInfo() {
-        return {
-            success: true,
-            credit: 100
-        };
-    }
-};
-
 console.log('✨ HAIRGATOR 헤어체험 AI 서비스 준비 완료');
