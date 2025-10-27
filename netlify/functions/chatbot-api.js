@@ -1033,7 +1033,7 @@ ${similarStyles.slice(0, 3).map((s, idx) =>
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: strictLanguageMessage }, // 1차: 언어 강제
           { role: 'system', content: systemPrompt },           // 2차: 레시피 형식
@@ -1279,7 +1279,7 @@ ${similarStyles.slice(0, 3).map((s, idx) => `${idx+1}. ${s.name || s.code}`).joi
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: strictLanguageMessage }, // 1차: 언어 강제
           { role: 'system', content: systemPrompt },           // 2차: 레시피 형식
@@ -1503,7 +1503,7 @@ async function casualConversation(user_query, userLanguage, openaiKey) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: casualPrompts[userLanguage] || casualPrompts['korean'] },
         { role: 'user', content: user_query }
@@ -1545,7 +1545,7 @@ async function professionalAdvice(user_query, search_results, userLanguage, open
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompts[userLanguage] || systemPrompts['korean'] },
         { role: 'user', content: `질문: ${user_query}\n\n참고:\n${context}` }
