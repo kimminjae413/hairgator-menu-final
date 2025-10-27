@@ -351,7 +351,116 @@ class HairGatorChatbot {
     languageBtn.addEventListener('click', toggleDropdown);
     languageBtn.addEventListener('touchstart', toggleDropdown, { passive: false });
 
-    this.attachLanguageHandlers();
+    // 🔍 디버깅용 화면 로그
+    const showLog = (msg) => {
+      const log = document.getElementById('debug-log') || (() => {
+        const div = document.createElement('div');
+        div.id = 'debug-log';
+        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;';
+        document.body.appendChild(div);
+        return div;
+      })();
+      const time = new Date().toLocaleTimeString();
+      log.innerHTML += `<div>${time}: ${msg}</div>`;
+      log.scrollTop = log.scrollHeight;
+    };
+    
+    showLog('🚀 init 시작');
+    
+    const langBtns = document.querySelectorAll('.lang-option');
+    showLog(`📊 버튼: ${langBtns.length}개`);
+    
+    langBtns.forEach((btn, i) => {
+      const lang = btn.getAttribute('data-lang');
+      showLog(`등록 ${i}: ${lang}`);
+      
+      // 기존 이벤트 완전 제거
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+    });
+    
+    // 새로 등록
+    document.querySelectorAll('.lang-option').forEach((btn) => {
+      const lang = btn.getAttribute('data-lang');
+      
+      btn.onclick = (e) => {
+        showLog(`🎯 CLICK: ${lang}`);
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // 드롭다운 닫기
+        const dd = document.getElementById('language-dropdown');
+        if (dd) {
+          dd.classList.add('hidden');
+          showLog('✅ 드롭다운 닫음');
+        }
+        
+        // 언어 변경
+        this.currentLanguage = lang;
+        this.setStoredLanguage(lang);
+        showLog(`💾 저장: ${lang}`);
+        
+        const texts = this.getTexts();
+        
+        // DOM 업데이트
+        const title = document.getElementById('chatbot-title');
+        if (title) {
+          title.textContent = texts.title;
+          showLog(`✅ 타이틀: ${texts.title}`);
+        }
+        
+        const input = document.getElementById('chatbot-input');
+        if (input) input.placeholder = texts.placeholder;
+        
+        const msgs = document.getElementById('chatbot-messages');
+        if (msgs) {
+          msgs.innerHTML = `
+            <div class="welcome-message">
+              <div class="welcome-icon">👋</div>
+              <div class="welcome-text">${texts.welcome}</div>
+            </div>
+          `;
+          showLog('✅ 메시지 업데이트');
+        }
+        
+        this.conversationHistory = [];
+        showLog(`🎉 완료: ${lang}`);
+        
+        // 🔥 이벤트 재등록 (다른 언어도 작동하도록)
+        setTimeout(() => {
+          const reattach = () => {
+            document.querySelectorAll('.lang-option').forEach((b) => {
+              const l = b.getAttribute('data-lang');
+              b.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showLog(\`🎯 \${l}\`);
+                const dd = document.getElementById('language-dropdown');
+                if (dd) dd.classList.add('hidden');
+                this.currentLanguage = l;
+                this.setStoredLanguage(l);
+                const t = this.getTexts();
+                const ti = document.getElementById('chatbot-title');
+                if (ti) ti.textContent = t.title;
+                const inp = document.getElementById('chatbot-input');
+                if (inp) inp.placeholder = t.placeholder;
+                const m = document.getElementById('chatbot-messages');
+                if (m) m.innerHTML = \`<div class="welcome-message"><div class="welcome-icon">👋</div><div class="welcome-text">\${t.welcome}</div></div>\`;
+                this.conversationHistory = [];
+                setTimeout(() => reattach(), 100);
+              };
+              b.ontouchend = b.onclick;
+            });
+          };
+          reattach();
+        }, 100);
+      };
+      
+      // 터치도
+      btn.ontouchend = btn.onclick;
+    });
+    
+    showLog('✅ 등록 완료');
 
     // 색인 버튼
     document.getElementById('index-btn').addEventListener('click', () => {
@@ -1211,67 +1320,3 @@ document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
   console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (undefined 버그 수정 완료)');
 });
-  // 🔥 언어 핸들러 등록/재등록 함수
-  attachLanguageHandlers() {
-    const showLog = (msg) => {
-      const log = document.getElementById('debug-log') || (() => {
-        const div = document.createElement('div');
-        div.id = 'debug-log';
-        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;';
-        document.body.appendChild(div);
-        return div;
-      })();
-      log.innerHTML += \`<div>\${new Date().toLocaleTimeString()}: \${msg}</div>\`;
-      log.scrollTop = log.scrollHeight;
-    };
-    
-    showLog('🔄 핸들러 등록');
-    
-    document.querySelectorAll('.lang-option').forEach((btn) => {
-      const lang = btn.getAttribute('data-lang');
-      const newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-    });
-    
-    document.querySelectorAll('.lang-option').forEach((btn) => {
-      const lang = btn.getAttribute('data-lang');
-      
-      btn.onclick = (e) => {
-        showLog(\`🎯 \${lang}\`);
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const dd = document.getElementById('language-dropdown');
-        if (dd) dd.classList.add('hidden');
-        
-        this.currentLanguage = lang;
-        this.setStoredLanguage(lang);
-        
-        const texts = this.getTexts();
-        const title = document.getElementById('chatbot-title');
-        if (title) title.textContent = texts.title;
-        
-        const input = document.getElementById('chatbot-input');
-        if (input) input.placeholder = texts.placeholder;
-        
-        const msgs = document.getElementById('chatbot-messages');
-        if (msgs) {
-          msgs.innerHTML = \`
-            <div class="welcome-message">
-              <div class="welcome-icon">👋</div>
-              <div class="welcome-text">\${texts.welcome}</div>
-            </div>
-          \`;
-        }
-        
-        this.conversationHistory = [];
-        showLog(\`✅ \${lang}\`);
-        
-        setTimeout(() => this.attachLanguageHandlers(), 100);
-      };
-      
-      btn.ontouchend = btn.onclick;
-    });
-    
-    showLog('✅ 완료');
-  }
