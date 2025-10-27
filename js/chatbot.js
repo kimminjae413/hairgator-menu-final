@@ -370,9 +370,15 @@ class HairGatorChatbot {
       }
     });
 
-    // 언어 드롭다운 외부 클릭 시 닫기
-    document.addEventListener('click', () => {
-      document.getElementById('language-dropdown').classList.add('hidden');
+    // 언어 드롭다운 외부 클릭 시 닫기 (내부 클릭은 제외!)
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('language-dropdown');
+      const languageBtn = document.getElementById('language-btn');
+      
+      // 드롭다운 내부나 언어 버튼 클릭은 무시
+      if (!dropdown.contains(e.target) && !languageBtn.contains(e.target)) {
+        dropdown.classList.add('hidden');
+      }
     });
   }
 
@@ -458,13 +464,6 @@ class HairGatorChatbot {
     this.isOpen = !this.isOpen;
     
     if (this.isOpen) {
-      container.classList.add('active');
-      toggle.classList.add('hidden');
-    } else {
-      container.classList.remove('active');
-      toggle.classList.remove('hidden');
-    }
-  }
   // 🔥 언어 핸들러 등록 함수 (재사용 가능)
   setupLanguageHandlers() {
     const showDebugLog = (msg) => {
@@ -543,6 +542,13 @@ class HairGatorChatbot {
     });
     
     showDebugLog('✅ 핸들러 등록 완료');
+  }
+      container.classList.add('active');
+      toggle.classList.add('hidden');
+    } else {
+      container.classList.remove('active');
+      toggle.classList.remove('hidden');
+    }
   }
 
   changeLanguage(lang) {
