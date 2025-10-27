@@ -367,72 +367,9 @@ class HairGatorChatbot {
     
     showLog('🚀 init 시작');
     
-    const langBtns = document.querySelectorAll('.lang-option');
-    showLog(`📊 버튼: ${langBtns.length}개`);
-    
-    langBtns.forEach((btn, i) => {
-      const lang = btn.getAttribute('data-lang');
-      showLog(`등록 ${i}: ${lang}`);
-      
-      // 기존 이벤트 완전 제거
-      const newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-    });
-    
-    // 새로 등록
-    document.querySelectorAll('.lang-option').forEach((btn) => {
-      const lang = btn.getAttribute('data-lang');
-      
-      btn.onclick = (e) => {
-        showLog(`🎯 CLICK: ${lang}`);
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // 드롭다운 닫기
-        const dd = document.getElementById('language-dropdown');
-        if (dd) {
-          dd.classList.add('hidden');
-          showLog('✅ 드롭다운 닫음');
-        }
-        
-        // 언어 변경
-        this.currentLanguage = lang;
-        this.setStoredLanguage(lang);
-        showLog(`💾 저장: ${lang}`);
-        
-        const texts = this.getTexts();
-        
-        // DOM 업데이트
-        const title = document.getElementById('chatbot-title');
-        if (title) {
-          title.textContent = texts.title;
-          showLog(`✅ 타이틀: ${texts.title}`);
-        }
-        
-        const input = document.getElementById('chatbot-input');
-        if (input) input.placeholder = texts.placeholder;
-        
-        const msgs = document.getElementById('chatbot-messages');
-        if (msgs) {
-          msgs.innerHTML = `
-            <div class="welcome-message">
-              <div class="welcome-icon">👋</div>
-              <div class="welcome-text">${texts.welcome}</div>
-            </div>
-          `;
-          showLog('✅ 메시지 업데이트');
-        }
-        
-        this.conversationHistory = [];
-        showLog(`🎉 완료: ${lang}`);
-        setTimeout(() => { this.reattachLanguageHandlers(); }, 100);
-      };
-      
-      // 터치도
-      btn.ontouchend = btn.onclick;
-    });
-    
-    showLog('✅ 등록 완료');
+    // 언어 버튼 이벤트 등록 - reattachLanguageHandlers로 통합
+    showLog('🔄 초기 등록 시작');
+    this.reattachLanguageHandlers();
 
     // 색인 버튼
     document.getElementById('index-btn').addEventListener('click', () => {
