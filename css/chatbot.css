@@ -1628,3 +1628,81 @@
 .term-gallery-single-column::-webkit-scrollbar-thumb:hover {
   background: rgba(233, 30, 99, 0.5);
 }
+/* ==================== 89용어 클릭 가능 스타일 ==================== */
+
+.term-89.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: rgba(102, 126, 234, 0.5);
+  transition: all 0.2s ease;
+  position: relative;
+  padding: 1px 2px;
+  border-radius: 3px;
+}
+
+.term-89.clickable:hover {
+  text-decoration-color: #667eea;
+  text-decoration-style: solid;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+  transform: translateY(-1px);
+}
+
+.term-89.clickable:active {
+  transform: translateY(0);
+  background: rgba(102, 126, 234, 0.1);
+}
+
+/* 참고 번호 스타일 */
+.term-ref {
+  font-size: 0.75em;
+  color: rgba(102, 126, 234, 0.7);
+  font-weight: 600;
+  margin-left: 2px;
+  white-space: nowrap;
+}
+
+/* 클릭 효과 애니메이션 */
+@keyframes termPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+  }
+}
+
+.term-89.clickable:active {
+  animation: termPulse 0.4s ease-out;
+}
+
+/* 모바일 터치 피드백 */
+@media (max-width: 768px) {
+  .term-89.clickable {
+    padding: 2px 4px;
+  }
+  
+  .term-89.clickable:active {
+    background: rgba(102, 126, 234, 0.15);
+    border-radius: 4px;
+  }
+  
+  .term-ref {
+    font-size: 0.7em;
+  }
+}
+
+/* WebView 최적화 */
+@supports (-webkit-touch-callout: none) {
+  .term-89.clickable {
+    -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
+  }
+}
+
+/* 색인 카드 하이라이트 효과 */
+.term-card-single.highlighted {
+  border: 3px solid #2196F3 !important;
+  box-shadow: 0 8px 24px rgba(33, 150, 243, 0.4) !important;
+  transition: all 0.3s ease;
+}
