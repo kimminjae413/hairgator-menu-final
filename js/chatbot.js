@@ -425,35 +425,6 @@ class HairGatorChatbot {
         
         this.conversationHistory = [];
         showLog(`🎉 완료: ${lang}`);
-        
-        // 🔥 이벤트 재등록 (다른 언어도 작동하도록)
-        setTimeout(() => {
-          const reattach = () => {
-            document.querySelectorAll('.lang-option').forEach((b) => {
-              const l = b.getAttribute('data-lang');
-              b.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                showLog(\`🎯 \${l}\`);
-                const dd = document.getElementById('language-dropdown');
-                if (dd) dd.classList.add('hidden');
-                this.currentLanguage = l;
-                this.setStoredLanguage(l);
-                const t = this.getTexts();
-                const ti = document.getElementById('chatbot-title');
-                if (ti) ti.textContent = t.title;
-                const inp = document.getElementById('chatbot-input');
-                if (inp) inp.placeholder = t.placeholder;
-                const m = document.getElementById('chatbot-messages');
-                if (m) m.innerHTML = \`<div class="welcome-message"><div class="welcome-icon">👋</div><div class="welcome-text">\${t.welcome}</div></div>\`;
-                this.conversationHistory = [];
-                setTimeout(() => reattach(), 100);
-              };
-              b.ontouchend = b.onclick;
-            });
-          };
-          reattach();
-        }, 100);
       };
       
       // 터치도
