@@ -1237,8 +1237,16 @@ class HairGatorChatbot {
 
   reattachLanguageHandlers() {
     const showLog = (msg) => {
-      console.log(msg);  // 콘솔에만 출력
-      // 화면 표시 제거!
+      const log = document.getElementById('debug-log') || (() => {
+        const div = document.createElement('div');
+        div.id = 'debug-log';
+        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;pointer-events:none;';
+        document.body.appendChild(div);
+        return div;
+      })();
+      const time = new Date().toLocaleTimeString();
+      log.innerHTML += '<div>' + time + ': ' + msg + '</div>';
+      log.scrollTop = log.scrollHeight;
     };
     
     showLog('🔄 재등록 시작 (v8.1 - 복제후재쿼리)');
@@ -1249,36 +1257,6 @@ class HairGatorChatbot {
     if (!dropdown) {
       showLog('⚠️ 드롭다운 없음');
       return;
-    }
-    
-    // ⭐ 핵심 수정: 드롭다운을 body로 이동!
-    if (dropdown.parentElement && dropdown.parentElement.classList.contains('language-selector')) {
-      showLog('🚀 드롭다운을 body로 이동 중...');
-      const langBtn = document.getElementById('language-btn');
-      
-      // body에 추가
-      document.body.appendChild(dropdown);
-      
-      // fixed 포지션으로 변경
-      dropdown.style.position = 'fixed';
-      dropdown.style.zIndex = '999999';
-      
-      // 버튼 클릭 시 위치 재계산
-      if (langBtn) {
-        const originalClick = langBtn.onclick;
-        langBtn.onclick = function(e) {
-          const rect = langBtn.getBoundingClientRect();
-          dropdown.style.top = (rect.bottom + 8) + 'px';
-          dropdown.style.left = (rect.right - 140) + 'px';
-          showLog('📍 드롭다운 위치: top=' + (rect.bottom + 8) + ' left=' + (rect.right - 140));
-          
-          if (originalClick) {
-            originalClick.call(this, e);
-          }
-        };
-      }
-      
-      showLog('✅ body로 이동 완료');
     }
     
     // 강제로 매번 등록 (플래그 제거)
@@ -1330,63 +1308,44 @@ class HairGatorChatbot {
       }, 300);
     };
     
-    // ⭐ CSS 오버라이드: hidden을 화면 밖으로 이동으로 변경
+    // ⭐ CSS 오버라이드: overflow 문제 해결!
     const style = document.createElement('style');
     style.textContent = `
-      .language-dropdown {
-        position: absolute !important;
-        top: calc(100% + 8px) !important;
-        right: 0 !important;
-        background: #ffffff !important;
-        border: 1px solid rgba(0, 0, 0, 0.15) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+      /* 챗봇 컨테이너 overflow 수정 */
+      .chatbot-container {
         overflow: visible !important;
+      }
+      
+      .chatbot-messages {
+        overflow-y: auto !important;
+      }
+      
+      /* 드롭다운 표시 수정 */
+      .language-dropdown {
+        display: block !important;
+        position: absolute !important;
         z-index: 99999 !important;
-        min-width: 140px !important;
-        transition: opacity 0.2s ease-out, transform 0.2s ease-out !important;
       }
       
       .language-dropdown.hidden {
+        visibility: hidden !important;
         opacity: 0 !important;
-        transform: translateY(-10px) scale(0.95) !important;
         pointer-events: none !important;
-        /* display는 항상 block! */
       }
       
       .language-dropdown:not(.hidden) {
+        visibility: visible !important;
         opacity: 1 !important;
-        transform: translateY(0) scale(1) !important;
         pointer-events: auto !important;
       }
       
       .lang-option {
         pointer-events: auto !important;
-        touch-action: manipulation !important;
-        background: rgba(255, 255, 0, 0.3) !important;
-        border: 2px solid lime !important;
-        min-height: 44px !important;
-        display: block !important;
-        width: 100% !important;
-      }
-      
-      /* 디버깅: 부모 요소들 */
-      .language-selector {
-        overflow: visible !important;
-        border: 2px dashed red !important;
-      }
-      
-      .language-dropdown {
-        display: block !important;
+        cursor: pointer !important;
       }
     `;
     document.head.appendChild(style);
-    showLog('🎨 CSS 강제 오버라이드 + 디버그 테두리');
-    
-    // 추가: 드롭다운에 직접 스타일 적용
-    dropdown.style.display = 'block';
-    dropdown.style.overflow = 'visible';
-    showLog('📌 드롭다운 강제 설정');
+    showLog('🎨 CSS 오버라이드 적용 (overflow 수정)');
     
     // 버튼에 직접 이벤트 등록
     const langBtns = dropdown.querySelectorAll('.lang-option');
