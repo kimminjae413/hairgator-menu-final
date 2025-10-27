@@ -176,11 +176,11 @@ F vs G:
 
 ### 🎨 펌/컬 분석 (이미지에서 컬이 보이면 분석)
 
-**1. Curl Pattern (컬 패턴)**
-- **C-Curl**: 끝부분만 안쪽으로 한 번 말린 컬 (끝말림, 내권)
-- **CS-Curl**: C와 S 중간, 자연스러운 웨이브
-- **S-Curl**: 뚜렷한 S자 웨이브 (2개 이상)
-- **SS-Curl**: 매우 큰 S자 웨이브
+**1. Curl Pattern**: C-Curl / CS-Curl / S-Curl / SS-Curl
+- C-Curl: 끝부분만 안으로 한 번 말림
+- CS-Curl: C와 S 중간, 자연스러운 웨이브
+- S-Curl: 뚜렷한 S자 웨이브
+- SS-Curl: 매우 큰 S자 웨이브
 
 **2. Curl Strength**: Soft / Medium / Strong
 
@@ -192,18 +192,13 @@ F vs G:
 
 **6. Setting Pattern**: Horizontal / Vertical / Brick Wind / null
 
-**컬 분석 규칙:**
-- 끝부분만 안으로 → C-Curl
-- 자연스러운 웨이브 → CS-Curl  
-- 명확한 S자 → S-Curl
-- 큰 S자 → SS-Curl
-- 컬 없으면 모든 perm 필드 null
+**컬이 없으면 모든 perm 필드 null**
 
 **중요: JSON 출력 시 절대 규칙**
 - womens_cut_category 필드 생성 금지 (스타일명은 포함하지 말것)
 - length_category만 A~H Length 형식으로 출력
 - cut_form은 O, G, L 중 하나만 (C 사용 금지)
-- 컬이 보이면 perm 필드 반드시 작성
+- 컬이 보이면 perm 필드 작성
 
 **출력 형식 (JSON만):**
 \`\`\`json
@@ -1194,13 +1189,6 @@ STEP5. 42 Formula Base Cut
 - **L1-12:** L2~L8 (Lifting: 45°~180°), V Zone, Round Layer, Silhouette
 ### 5-5. Diagonal Nape Section (Hemline) - 3 layers
 - **L1-3:** Perimeter Line, L0~L1 (Lifting: 0°~22.5°), Trimming
-### 5-6. Nape Zone (Zone-A) - 4 layers
-- **L1-4:** L0~L2 (Lifting: 0°~45°), **Increasing Graduation → Neckline C-Curl Formation**, Brick Cut, Weight Sit
-### 5-7. Up-Scoop Zone (Zone-C) - 6 layers
-- **L1-6:** L5~L8 (Lifting: 112.5°~180°), Volume High, Over Direction Forward
-**✓ 42 layers**
-STEP6. Texturing: Point Cut (Soften C-curl ends), Zone Mid-Lower, Corner Off (Smooth curl flow)
-STEP7. Styling: Blow Dry (Enhance C-curl designed by Graduation), Volume Crown`,
 ### 5-6. Nape Zone (89.Zone-A) - 4 layers
 - **L1-4:** 54.L0~L2, 20.Brick, 88.Weight
 ### 5-7. Up-Scoop (89.Zone-C) - 6 layers
