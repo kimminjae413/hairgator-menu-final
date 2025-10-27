@@ -352,13 +352,25 @@ class HairGatorChatbot {
     languageBtn.addEventListener('touchstart', toggleDropdown, { passive: false });
 
     document.querySelectorAll('.lang-option').forEach(btn => {
+      // 중복 실행 방지 플래그
+      let isProcessing = false;
+      
       // WebView 환경을 위한 통합 핸들러
       const handleLanguageSelect = (e) => {
+        // 이미 처리 중이면 무시
+        if (isProcessing) {
+          console.log('⏭️ 이미 처리 중 - 무시');
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        
+        isProcessing = true;
         e.preventDefault();
         e.stopPropagation();
         
         const lang = e.currentTarget.getAttribute('data-lang');
-        console.log(`🎯 언어 선택됨: ${lang}`);
+        console.log(`🎯 언어 선택됨: ${lang} (이벤트: ${e.type})`);
         
         // 드롭다운 먼저 닫기
         const dropdown = document.getElementById('language-dropdown');
@@ -369,6 +381,11 @@ class HairGatorChatbot {
         // 약간의 딜레이 후 언어 변경 (WebView 안정성)
         setTimeout(() => {
           this.changeLanguage(lang);
+          // 500ms 후 플래그 리셋 (충분한 시간)
+          setTimeout(() => {
+            isProcessing = false;
+            console.log('✅ 처리 완료 - 다음 클릭 가능');
+          }, 500);
         }, 50);
       };
       
