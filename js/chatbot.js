@@ -1306,21 +1306,28 @@ class HairGatorChatbot {
     };
     
     // 각 언어 버튼에 직접 이벤트 등록
-    const langBtns = dropdown.querySelectorAll('.lang-option');
-    showLog('🔍 버튼 개수: ' + langBtns.length);
+    let langBtns = dropdown.querySelectorAll('.lang-option');
+    showLog('🔍 원본 버튼 개수: ' + langBtns.length);
     
-    langBtns.forEach(function(btn, index) {
-      const lang = btn.getAttribute('data-lang');
-      showLog('📝 ' + index + '번: ' + lang);
-      
-      // ⭐ 기존 이벤트 완전 제거를 위해 버튼 복제
+    // 1단계: 모든 버튼을 복제하여 기존 이벤트 제거
+    langBtns.forEach(function(btn) {
       const newBtn = btn.cloneNode(true);
       btn.parentNode.replaceChild(newBtn, btn);
-      
-      showLog('🔄 복제 완료: ' + lang);
+    });
+    
+    showLog('🔄 복제 완료 - 다시 쿼리');
+    
+    // 2단계: 복제된 버튼들을 다시 쿼리
+    langBtns = dropdown.querySelectorAll('.lang-option');
+    showLog('🔍 새 버튼 개수: ' + langBtns.length);
+    
+    // 3단계: 새 버튼들에 이벤트 등록
+    langBtns.forEach(function(btn, index) {
+      const lang = btn.getAttribute('data-lang');
+      showLog('📝 ' + index + '번 등록: ' + lang);
       
       // 클릭 이벤트 (브라우저용)
-      newBtn.addEventListener('click', function(e) {
+      btn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         showLog('🖱️ CLICK: ' + lang);
@@ -1328,14 +1335,14 @@ class HairGatorChatbot {
       });
       
       // 터치 이벤트 (웹뷰용)
-      newBtn.addEventListener('touchend', function(e) {
+      btn.addEventListener('touchend', function(e) {
         e.preventDefault();
         e.stopPropagation();
         showLog('👆 TOUCH: ' + lang);
         handleLanguageChange(lang);
       }, { passive: false });
       
-      showLog('✅ 등록 완료: ' + lang);
+      showLog('✅ 완료: ' + lang);
     });
     
     showLog('✅ 재등록 완료: ' + langBtns.length + '개');
