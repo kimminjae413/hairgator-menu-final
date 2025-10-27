@@ -353,16 +353,7 @@ class HairGatorChatbot {
 
     // 🔍 디버깅용 화면 로그
     const showLog = (msg) => {
-      const log = document.getElementById('debug-log') || (() => {
-        const div = document.createElement('div');
-        div.id = 'debug-log';
-        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;pointer-events:none;';
-        document.body.appendChild(div);
-        return div;
-      })();
-      const time = new Date().toLocaleTimeString();
-      log.innerHTML += `<div>${time}: ${msg}</div>`;
-      log.scrollTop = log.scrollHeight;
+      console.log(msg);
     };
     
     showLog('🚀 init 시작');
@@ -1461,3 +1452,11 @@ document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
   console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (undefined 버그 수정 완료)');
 });
+// 기존 디버그 로그 제거 (혹시 남아있을 경우 대비)
+(function() {
+  const oldLog = document.getElementById('debug-log');
+  if (oldLog) {
+    oldLog.remove();
+    console.log('🧹 기존 디버그 로그 제거됨');
+  }
+})();
