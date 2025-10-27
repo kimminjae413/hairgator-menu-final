@@ -243,7 +243,7 @@ class HairGatorChatbot {
             <div class="message-content" id="welcome-message">
               <p><strong>HAIR Recipe v2.0</strong></p>
               <p id="welcome-text">${texts.welcome}</p>
-              <p style="font-size:0.85em;opacity:0.7;">✨ 89용어 시스템 적용</p>
+              <p style="font-size:0.85em;opacity:0.7;">✨ 📑 눌러 용어 및 자세한 설명을 확인하세요</p>
             </div>
           </div>
         </div>
