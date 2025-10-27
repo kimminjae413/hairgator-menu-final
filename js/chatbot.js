@@ -1308,7 +1308,7 @@ class HairGatorChatbot {
       }, 300);
     };
     
-    // ⭐ CSS 오버라이드: overflow 문제 해결!
+    // ⭐ CSS 오버라이드: overflow 문제 해결 + 디버깅!
     const style = document.createElement('style');
     style.textContent = `
       /* 챗봇 컨테이너 overflow 수정 */
@@ -1320,11 +1320,37 @@ class HairGatorChatbot {
         overflow-y: auto !important;
       }
       
+      /* 헤더 overflow 수정 */
+      .chatbot-header {
+        overflow: visible !important;
+      }
+      
+      /* 🔍 디버깅: X 버튼 영역 표시 */
+      .chatbot-close {
+        background: rgba(255, 0, 0, 0.3) !important;
+        border: 2px solid red !important;
+        pointer-events: auto !important;
+      }
+      
+      /* 🔍 디버깅: 지구본 버튼 영역 표시 */
+      .language-btn {
+        background: rgba(0, 0, 255, 0.3) !important;
+        border: 2px solid blue !important;
+      }
+      
+      /* 🔍 디버깅: header-actions 영역 표시 */
+      .header-actions {
+        background: rgba(0, 255, 0, 0.2) !important;
+        border: 2px dashed green !important;
+      }
+      
       /* 드롭다운 표시 수정 */
       .language-dropdown {
         display: block !important;
         position: absolute !important;
         z-index: 99999 !important;
+        background: white !important;
+        border: 3px solid purple !important;
       }
       
       .language-dropdown.hidden {
@@ -1342,10 +1368,13 @@ class HairGatorChatbot {
       .lang-option {
         pointer-events: auto !important;
         cursor: pointer !important;
+        background: yellow !important;
+        border: 2px solid lime !important;
+        min-height: 44px !important;
       }
     `;
     document.head.appendChild(style);
-    showLog('🎨 CSS 오버라이드 적용 (overflow 수정)');
+    showLog('🎨 CSS 디버깅 모드 적용');
     
     // 버튼에 직접 이벤트 등록
     const langBtns = dropdown.querySelectorAll('.lang-option');
