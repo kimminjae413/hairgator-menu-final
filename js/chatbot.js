@@ -4,8 +4,7 @@
 // ✅ Cut Form O/G/L 3개만 (Combination 제거)
 // ✅ Volume 엄격한 기준 (Low: 0~44°, Medium: 45~89°, High: 90°~)
 // ✅ Touch Event passive listener 추가
-// ✅ undefined 버그 수정 (505번째, 524번째 줄 fallback 추가)
-// ✅ 모바일 언어 변경 버그 수정 완료 ← 🆕 추가!
+// ✅ undefined 버그 수정 (505번째, 524번째 줄 fallback 추가) ← 새로 추가!
 
 class HairGatorChatbot {
   constructor() {
@@ -13,11 +12,7 @@ class HairGatorChatbot {
     this.supabaseUrl = 'https://bhsbwbeisqzgipvzpvym.supabase.co';
     this.isOpen = false;
     this.conversationHistory = [];
-    
-    // ✅ localStorage에서 저장된 언어 불러오기
     this.currentLanguage = localStorage.getItem('hairgator_chatbot_lang') || 'ko';
-    console.log(`🌍 챗봇 초기 언어: ${this.currentLanguage}`);
-    
     this.terms89Map = this.init89TermsMap(); // 89용어 매핑
     this.init();
   }
@@ -220,56 +215,75 @@ class HairGatorChatbot {
         </div>
 
         <div id="chatbot-messages" class="chatbot-messages">
-          <div class="welcome-message">
-            <div class="welcome-icon">✂️</div>
-            <div class="welcome-text" id="welcome-text">${texts.welcome}</div>
+          <div class="bot-message">
+            <div class="message-content" id="welcome-message">
+              <p><strong>HAIR Recipe v2.0</strong></p>
+              <p id="welcome-text">${texts.welcome}</p>
+              <p style="font-size:0.85em;opacity:0.7;">✨ 89용어 시스템 적용</p>
+            </div>
           </div>
         </div>
 
         <div class="chatbot-input-area">
-          <div class="input-buttons">
-            <button id="upload-btn" class="input-action-btn" title="이미지 업로드">
+          <input type="file" id="image-upload" accept="image/*" style="display: none;">
+          
+          <div class="input-wrapper">
+            <button id="upload-btn" class="upload-btn" title="이미지 업로드">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                 <polyline points="21 15 16 10 5 21"></polyline>
               </svg>
             </button>
-            <button id="index-btn" class="input-action-btn" title="색인">
+            
+            <input 
+              type="text" 
+              id="chatbot-input" 
+              placeholder="${texts.placeholder}" 
+              autocomplete="off"
+            >
+            
+            <!-- 색인 버튼 -->
+            <button id="index-btn" class="index-btn" title="색인 보기">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+            </button>
+
+            <button id="send-btn" class="send-btn" title="전송">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
               </svg>
             </button>
           </div>
-          <input type="file" id="image-input" accept="image/*" style="display:none">
-          <input type="text" id="chatbot-input" class="chatbot-input" placeholder="${texts.placeholder}">
-          <button id="send-btn" class="send-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="22" y1="2" x2="11" y2="13"></line>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-          </button>
         </div>
       </div>
 
       <!-- 색인 모달 -->
-      <div id="index-modal" class="index-modal">
+      <div id="index-modal" class="index-modal hidden">
         <div class="index-modal-content">
           <div class="index-modal-header">
             <h2 id="index-modal-title">${texts.indexTitle}</h2>
-            <button id="close-index-modal" class="modal-close-btn">×</button>
+            <button id="close-index-modal" class="close-index-modal">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
-          <div id="index-modal-body" class="index-modal-body">
-            <!-- 동적으로 생성됨 -->
+          <div class="index-modal-body" id="index-modal-body">
+            <!-- 동적 생성 -->
           </div>
         </div>
       </div>
     `;
-    
+
     document.body.insertAdjacentHTML('beforeend', chatbotHTML);
   }
 
@@ -283,12 +297,13 @@ class HairGatorChatbot {
       this.toggleChatbot();
     });
 
-    // 이미지 업로드
+    // 업로드 버튼
     document.getElementById('upload-btn').addEventListener('click', () => {
-      document.getElementById('image-input').click();
+      document.getElementById('image-upload').click();
     });
 
-    document.getElementById('image-input').addEventListener('change', (e) => {
+    // 파일 업로드
+    document.getElementById('image-upload').addEventListener('change', (e) => {
       this.handleImageUpload(e);
     });
 
@@ -304,31 +319,26 @@ class HairGatorChatbot {
       }
     });
 
-    // ✅ 언어 선택 - 모바일 최적화
+    // 언어 선택
     document.getElementById('language-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       const dropdown = document.getElementById('language-dropdown');
       dropdown.classList.toggle('hidden');
     });
 
-    // ✅ 언어 옵션 클릭 - touchend도 추가
     document.querySelectorAll('.lang-option').forEach(btn => {
-      // click 이벤트
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         const lang = e.currentTarget.getAttribute('data-lang');
-        console.log(`🌍 언어 선택 클릭: ${lang}`);
         this.changeLanguage(lang);
         document.getElementById('language-dropdown').classList.add('hidden');
       });
       
-      // touchend 이벤트 추가 (모바일 최적화)
       btn.addEventListener('touchend', (e) => {
         e.preventDefault();
         e.stopPropagation();
         const lang = e.currentTarget.getAttribute('data-lang');
-        console.log(`🌍 언어 선택 터치: ${lang}`);
         this.changeLanguage(lang);
         document.getElementById('language-dropdown').classList.add('hidden');
       }, { passive: false });
@@ -365,29 +375,70 @@ class HairGatorChatbot {
     if (!chatbotInput || !chatbotContainer) return;
 
     let originalViewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    let isKeyboardVisible = false;
 
-    // 키보드 열릴 때 처리
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => {
-        const currentHeight = window.visualViewport.height;
-        const keyboardHeight = originalViewportHeight - currentHeight;
+    const adjustLayout = () => {
+      if (!window.visualViewport) return;
 
-        if (keyboardHeight > 100) {
-          // 키보드 열림
-          chatbotContainer.style.height = `${currentHeight}px`;
+      const currentViewportHeight = window.visualViewport.height;
+      const heightDiff = originalViewportHeight - currentViewportHeight;
+
+      if (heightDiff > 150) {
+        if (!isKeyboardVisible) {
+          isKeyboardVisible = true;
+          chatbotContainer.style.height = `${currentViewportHeight}px`;
+          
           if (messagesDiv) {
-            setTimeout(() => {
-              messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            }, 100);
+            messagesDiv.style.maxHeight = `calc(${currentViewportHeight}px - 140px)`;
           }
-        } else {
-          // 키보드 닫힘
-          chatbotContainer.style.height = '';
-        }
 
-        originalViewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-      }, { passive: true });
+          setTimeout(() => {
+            const activeElement = document.activeElement;
+            if (activeElement && activeElement.tagName === 'INPUT') {
+              activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 300);
+        }
+      } else {
+        if (isKeyboardVisible) {
+          isKeyboardVisible = false;
+          chatbotContainer.style.height = '';
+          
+          if (messagesDiv) {
+            messagesDiv.style.maxHeight = '';
+          }
+        }
+      }
+    };
+
+    if (window.visualViewport) {
+      // ✅ 수정: { passive: true } 옵션 추가
+      window.visualViewport.addEventListener('resize', adjustLayout, { passive: true });
+      window.visualViewport.addEventListener('scroll', adjustLayout, { passive: true });
     }
+
+    chatbotInput.addEventListener('focus', () => {
+      setTimeout(adjustLayout, 300);
+    });
+
+    chatbotInput.addEventListener('blur', () => {
+      setTimeout(() => {
+        if (document.activeElement.tagName !== 'INPUT') {
+          isKeyboardVisible = false;
+          chatbotContainer.style.height = '';
+          if (messagesDiv) {
+            messagesDiv.style.maxHeight = '';
+          }
+        }
+      }, 300);
+    });
+
+    // ✅ 수정: { passive: true } 옵션 추가
+    window.addEventListener('resize', () => {
+      if (!isKeyboardVisible) {
+        originalViewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      }
+    }, { passive: true });
   }
 
   toggleChatbot() {
@@ -405,20 +456,14 @@ class HairGatorChatbot {
     }
   }
 
-  // ✅ 모바일 언어 변경 버그 수정 - 완전한 UI 업데이트
   changeLanguage(lang) {
-    console.log(`🌍 언어 변경 시작: ${this.currentLanguage} → ${lang}`);
+    console.log(`🌍 언어 변경: ${this.currentLanguage} → ${lang}`);
     
-    // 1. 언어 설정 변경
     this.currentLanguage = lang;
-    
-    // 2. localStorage에 저장 (새로고침 후에도 유지)
     localStorage.setItem('hairgator_chatbot_lang', lang);
     
-    // 3. 새로운 언어의 텍스트 가져오기
     const texts = this.getTexts();
     
-    // 4. UI 요소들 업데이트
     const titleEl = document.getElementById('chatbot-title');
     if (titleEl) titleEl.textContent = texts.title;
     
@@ -428,11 +473,9 @@ class HairGatorChatbot {
     const indexTitleEl = document.getElementById('index-modal-title');
     if (indexTitleEl) indexTitleEl.textContent = texts.indexTitle;
     
-    // 5. 환영 메시지 업데이트
     const welcomeTextEl = document.getElementById('welcome-text');
     if (welcomeTextEl) welcomeTextEl.textContent = texts.welcome;
     
-    // 6. 대화 히스토리 초기화 (기존 메시지를 환영 메시지로 교체)
     const messagesDiv = document.getElementById('chatbot-messages');
     if (messagesDiv) {
       messagesDiv.innerHTML = `
@@ -443,17 +486,12 @@ class HairGatorChatbot {
       `;
     }
     
-    // 7. 대화 히스토리 초기화
     this.conversationHistory = [];
-    
-    // 8. 사용자 피드백 (모바일에서 변경 확인용)
-    console.log(`✅ 언어 변경 완료: ${lang}`);
-    
-    // 9. 시각적 피드백 추가
     this.showLanguageChangeFeedback(lang);
+    
+    console.log(`✅ 언어 변경 완료: ${lang}`);
   }
 
-  // ✅ 언어 변경 시각적 피드백 함수 (새로 추가)
   showLanguageChangeFeedback(lang) {
     const langNames = {
       'ko': '한국어',
@@ -482,7 +520,6 @@ class HairGatorChatbot {
     
     messagesDiv.appendChild(feedbackMsg);
     
-    // 2초 후 자동 제거
     setTimeout(() => {
       if (feedbackMsg.parentNode) {
         feedbackMsg.style.opacity = '0';
@@ -527,76 +564,193 @@ class HairGatorChatbot {
           .map(([id, term]) => {
             const termName = term.en;
             const suffix = getFileSuffix(id, this.currentLanguage);
-            const fileName = `${id}.${termName}${suffix}.html`;
-            const fileURL = `${baseURL}${langFolder}/${encodeURIComponent(fileName)}`;
-
+            const fileName = `${id}. ${termName}${suffix}.png`;
+            const imageURL = baseURL + langFolder + '/' + encodeURIComponent(fileName);
+            
+            // ✅ 수정 1: Fallback 추가 (undefined 방지)
+            const displayName = term[this.currentLanguage] || term.ko || term.en;
+            
             return `
-              <div class="term-card">
-                <div class="term-number">${id}</div>
-                <a href="${fileURL}" target="_blank" class="term-link">
-                  ${termName}
-                </a>
+              <div class="term-card-single" onclick="window.hairgatorChatbot.openImageViewer(${parseInt(id) - 1})">
+                <img 
+                  src="${imageURL}" 
+                  alt="${displayName}"
+                  onerror="this.parentElement.classList.add('image-error'); this.style.display='none';"
+                />
+                <div class="term-info-single">
+                  <span class="term-num">${id}</span>
+                  <span class="term-title">${displayName}</span>
+                </div>
               </div>
             `;
-          })
-          .join('')}
+          }).join('')}
       </div>
     `;
 
     body.innerHTML = galleryHTML;
-    modal.classList.add('active');
+    modal.classList.remove('hidden');
+
+    // ✅ 수정 2: Fallback 추가 (undefined 방지)
+    window.hairgatorTermImages = Object.entries(this.terms89Map)
+      .sort(([idA], [idB]) => parseInt(idA) - parseInt(idB))
+      .map(([id, term]) => {
+        const termName = term.en;
+        const suffix = getFileSuffix(id, this.currentLanguage);
+        const fileName = `${id}. ${termName}${suffix}.png`;
+        const displayName = term[this.currentLanguage] || term.ko || term.en;
+        
+        return {
+          url: baseURL + langFolder + '/' + encodeURIComponent(fileName),
+          title: `${id}. ${displayName}`
+        };
+      });
   }
 
   closeIndexModal() {
-    const modal = document.getElementById('index-modal');
-    modal.classList.remove('active');
+    document.getElementById('index-modal').classList.add('hidden');
   }
 
+  openImageViewer(index) {
+    const images = window.hairgatorTermImages;
+    if (!images || !images[index]) return;
+
+    let currentIndex = index;
+
+    const viewerHTML = `
+      <div class="image-viewer-modal" id="image-viewer">
+        <div class="viewer-content">
+          <img id="viewer-image" src="${images[currentIndex].url}" alt="${images[currentIndex].title}">
+          <div class="viewer-info">
+            <span class="viewer-title">${images[currentIndex].title}</span>
+            <span class="viewer-counter">${currentIndex + 1} / ${images.length}</span>
+          </div>
+          <button class="viewer-prev" id="viewer-prev">‹</button>
+          <button class="viewer-next" id="viewer-next">›</button>
+          <button class="viewer-close" id="viewer-close">✕</button>
+        </div>
+      </div>
+    `;
+
+    const existingViewer = document.getElementById('image-viewer');
+    if (existingViewer) existingViewer.remove();
+    document.body.insertAdjacentHTML('beforeend', viewerHTML);
+
+    const viewer = document.getElementById('image-viewer');
+    const viewerImage = document.getElementById('viewer-image');
+    const viewerTitle = viewer.querySelector('.viewer-title');
+    const viewerCounter = viewer.querySelector('.viewer-counter');
+
+    const updateImage = (newIndex) => {
+      if (newIndex < 0 || newIndex >= images.length) return;
+      currentIndex = newIndex;
+      viewerImage.src = images[currentIndex].url;
+      viewerTitle.textContent = images[currentIndex].title;
+      viewerCounter.textContent = `${currentIndex + 1} / ${images.length}`;
+    };
+
+    document.getElementById('viewer-prev').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (currentIndex > 0) updateImage(currentIndex - 1);
+    });
+
+    document.getElementById('viewer-next').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (currentIndex < images.length - 1) updateImage(currentIndex + 1);
+    });
+
+    const closeViewer = () => viewer.remove();
+    document.getElementById('viewer-close').addEventListener('click', closeViewer);
+    viewer.addEventListener('click', (e) => {
+      if (e.target === viewer) closeViewer();
+    });
+
+    const handleKeyboard = (e) => {
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        updateImage(currentIndex - 1);
+      } else if (e.key === 'ArrowRight' && currentIndex < images.length - 1) {
+        updateImage(currentIndex + 1);
+      } else if (e.key === 'Escape') {
+        closeViewer();
+        document.removeEventListener('keydown', handleKeyboard);
+      }
+    };
+    document.addEventListener('keydown', handleKeyboard);
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    viewerImage.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    viewerImage.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const swipeDistance = touchStartX - touchEndX;
+
+      if (Math.abs(swipeDistance) > 50) {
+        if (swipeDistance > 0 && currentIndex < images.length - 1) {
+          updateImage(currentIndex + 1);
+        } else if (swipeDistance < 0 && currentIndex > 0) {
+          updateImage(currentIndex - 1);
+        }
+      }
+    }, { passive: true });
+  }
   async handleImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const texts = this.getTexts();
-
+    // 파일 크기 체크 (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert(texts.errorSize);
+      const texts = this.getTexts();
+      this.addMessage('bot', texts.errorSize);
       return;
     }
 
+    // 이미지 타입 체크
     if (!file.type.startsWith('image/')) {
-      alert(texts.errorType);
+      const texts = this.getTexts();
+      this.addMessage('bot', texts.errorType);
       return;
     }
 
     try {
-      this.addMessage('user', `🖼️ ${file.name}`);
+      // 이미지 미리보기 추가
+      const previewURL = URL.createObjectURL(file);
+      this.addMessage('user', `<img src="${previewURL}" alt="업로드 이미지" style="max-width:200px;border-radius:8px;">`);
+
+      const texts = this.getTexts();
       this.addMessage('bot', texts.analyzing);
 
+      // Base64 변환
       const base64Image = await this.fileToBase64(file);
 
+      // 1단계: 이미지 분석
       const analysisResponse = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'analyze_image',
-          payload: {
-            image: base64Image,
-            language: this.currentLanguage
+          payload: { 
+            image_base64: base64Image,
+            mime_type: file.type || 'image/jpeg'
           }
         })
       });
 
-      if (!analysisResponse.ok) {
-        throw new Error(`HTTP ${analysisResponse.status}`);
-      }
-
       const analysisResult = await analysisResponse.json();
 
-      if (!analysisResult.success || !analysisResult.data) {
-        throw new Error('이미지 분석 실패');
+      if (!analysisResult.success) {
+        this.replaceLastBotMessage('❌ 이미지 분석 실패: ' + (analysisResult.error || '알 수 없는 오류'));
+        return;
       }
 
-      this.replaceLastBotMessage(texts.generating);
+      // 분석 결과 표시
+      const formattedAnalysis = this.formatParameters(analysisResult.data);
+      this.replaceLastBotMessage(formattedAnalysis);
+
+      // 2단계: 레시피 생성
+      this.addMessage('bot', texts.generating);
 
       const recipeResponse = await fetch(this.apiEndpoint, {
         method: 'POST',
@@ -934,5 +1088,5 @@ class HairGatorChatbot {
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (모바일 언어 변경 버그 수정 완료)');
+  console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (undefined 버그 수정 완료)');
 });
