@@ -1308,30 +1308,37 @@ class HairGatorChatbot {
       }, 300);
     };
     
-    // 버튼에 직접 이벤트 등록 (복제 없이)
+    // ⭐ 핵심: 드롭다운을 잠깐 보이게 해서 버튼들이 렌더링되도록!
+    const wasHidden = dropdown.classList.contains('hidden');
+    if (wasHidden) {
+      dropdown.classList.remove('hidden');
+      showLog('👁️ 드롭다운 임시로 표시');
+    }
+    
+    // 버튼에 직접 이벤트 등록
     const langBtns = dropdown.querySelectorAll('.lang-option');
     showLog('🔍 버튼 개수: ' + langBtns.length);
     
     // 드롭다운 위치 확인
     const dropdownRect = dropdown.getBoundingClientRect();
-    showLog('📍 드롭다운 위치: top=' + Math.round(dropdownRect.top) + ' left=' + Math.round(dropdownRect.left));
+    showLog('📍 드롭다운: top=' + Math.round(dropdownRect.top) + ' left=' + Math.round(dropdownRect.left));
     
     langBtns.forEach(function(btn, index) {
       const lang = btn.getAttribute('data-lang');
       
       // 각 버튼의 위치 확인
       const btnRect = btn.getBoundingClientRect();
-      showLog('📍 ' + lang + ' 위치: top=' + Math.round(btnRect.top) + ' left=' + Math.round(btnRect.left) + ' width=' + Math.round(btnRect.width) + ' height=' + Math.round(btnRect.height));
+      showLog('📍 ' + lang + ': top=' + Math.round(btnRect.top) + ' left=' + Math.round(btnRect.left) + ' w=' + Math.round(btnRect.width) + ' h=' + Math.round(btnRect.height));
       
       // ⭐ 강제로 터치 가능하도록 스타일 적용
       btn.style.pointerEvents = 'auto';
       btn.style.touchAction = 'auto';
       btn.style.position = 'relative';
-      btn.style.zIndex = '10001';  // 드롭다운보다 높게
+      btn.style.zIndex = '10001';
       btn.style.display = 'block';
       btn.style.width = '100%';
       
-      // onclick 직접 할당 (가장 안정적)
+      // onclick 직접 할당
       btn.onclick = function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -1342,25 +1349,26 @@ class HairGatorChatbot {
       // ontouchstart 직접 할당
       btn.ontouchstart = function(e) {
         showLog('👆 TOUCHSTART: ' + lang);
-        return true;  // 이벤트 전파 허용
+        return true;
       };
       
       // ontouchend 직접 할당
       btn.ontouchend = function(e) {
         e.preventDefault();
         e.stopPropagation();
-        showLog('🎯 TOUCH 처리: ' + lang);
+        showLog('🎯 TOUCH: ' + lang);
         handleLanguageChange(lang);
-        return false;  // 이벤트 전파 차단
+        return false;
       };
       
-      // ⭐ 검증: 이벤트가 등록되었는지 확인
-      if (btn.onclick && btn.ontouchend) {
-        showLog('✅ 등록 확인: ' + lang);
-      } else {
-        showLog('❌ 등록 실패: ' + lang);
-      }
+      showLog('✅ 등록: ' + lang);
     });
+    
+    // ⭐ 다시 숨기기
+    if (wasHidden) {
+      dropdown.classList.add('hidden');
+      showLog('🙈 드롭다운 다시 숨김');
+    }
     
     showLog('✅ 재등록 완료: ' + langBtns.length + '개');
   }
