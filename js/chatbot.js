@@ -1237,16 +1237,8 @@ class HairGatorChatbot {
 
   reattachLanguageHandlers() {
     const showLog = (msg) => {
-      const log = document.getElementById('debug-log') || (() => {
-        const div = document.createElement('div');
-        div.id = 'debug-log';
-        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;pointer-events:none;';
-        document.body.appendChild(div);
-        return div;
-      })();
-      const time = new Date().toLocaleTimeString();
-      log.innerHTML += '<div>' + time + ': ' + msg + '</div>';
-      log.scrollTop = log.scrollHeight;
+      console.log(msg);  // 콘솔에만 출력
+      // 화면 표시 제거!
     };
     
     showLog('🔄 재등록 시작 (v8.1 - 복제후재쿼리)');
@@ -1308,12 +1300,63 @@ class HairGatorChatbot {
       }, 300);
     };
     
-    // ⭐ 핵심: 드롭다운을 잠깐 보이게 해서 버튼들이 렌더링되도록!
-    const wasHidden = dropdown.classList.contains('hidden');
-    if (wasHidden) {
-      dropdown.classList.remove('hidden');
-      showLog('👁️ 드롭다운 임시로 표시');
-    }
+    // ⭐ CSS 오버라이드: hidden을 화면 밖으로 이동으로 변경
+    const style = document.createElement('style');
+    style.textContent = `
+      .language-dropdown {
+        position: absolute !important;
+        top: calc(100% + 8px) !important;
+        right: 0 !important;
+        background: #ffffff !important;
+        border: 1px solid rgba(0, 0, 0, 0.15) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+        overflow: visible !important;
+        z-index: 99999 !important;
+        min-width: 140px !important;
+        transition: opacity 0.2s ease-out, transform 0.2s ease-out !important;
+      }
+      
+      .language-dropdown.hidden {
+        opacity: 0 !important;
+        transform: translateY(-10px) scale(0.95) !important;
+        pointer-events: none !important;
+        /* display는 항상 block! */
+      }
+      
+      .language-dropdown:not(.hidden) {
+        opacity: 1 !important;
+        transform: translateY(0) scale(1) !important;
+        pointer-events: auto !important;
+      }
+      
+      .lang-option {
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
+        background: rgba(255, 255, 0, 0.3) !important;
+        border: 2px solid lime !important;
+        min-height: 44px !important;
+        display: block !important;
+        width: 100% !important;
+      }
+      
+      /* 디버깅: 부모 요소들 */
+      .language-selector {
+        overflow: visible !important;
+        border: 2px dashed red !important;
+      }
+      
+      .language-dropdown {
+        display: block !important;
+      }
+    `;
+    document.head.appendChild(style);
+    showLog('🎨 CSS 강제 오버라이드 + 디버그 테두리');
+    
+    // 추가: 드롭다운에 직접 스타일 적용
+    dropdown.style.display = 'block';
+    dropdown.style.overflow = 'visible';
+    showLog('📌 드롭다운 강제 설정');
     
     // 버튼에 직접 이벤트 등록
     const langBtns = dropdown.querySelectorAll('.lang-option');
@@ -1363,12 +1406,6 @@ class HairGatorChatbot {
       
       showLog('✅ 등록: ' + lang);
     });
-    
-    // ⭐ 다시 숨기기
-    if (wasHidden) {
-      dropdown.classList.add('hidden');
-      showLog('🙈 드롭다운 다시 숨김');
-    }
     
     showLog('✅ 재등록 완료: ' + langBtns.length + '개');
   }
