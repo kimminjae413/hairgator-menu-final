@@ -417,16 +417,9 @@ class HairGatorChatbot {
       }
     });
 
-    // 언어 드롭다운 외부 클릭 시 닫기 (내부 클릭은 제외!)
-    document.addEventListener('click', (e) => {
-      const dropdown = document.getElementById('language-dropdown');
-      const languageBtn = document.getElementById('language-btn');
-      
-      if (dropdown && languageBtn && 
-          !dropdown.contains(e.target) && 
-          !languageBtn.contains(e.target)) {
-        dropdown.classList.add('hidden');
-      }
+    // 언어 드롭다운 외부 클릭 시 닫기
+    document.addEventListener('click', () => {
+      document.getElementById('language-dropdown').classList.add('hidden');
     });
   }
 
