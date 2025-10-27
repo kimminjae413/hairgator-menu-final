@@ -1308,63 +1308,43 @@ class HairGatorChatbot {
       }, 300);
     };
     
-    // 각 언어 버튼에 직접 이벤트 등록
-    let langBtns = dropdown.querySelectorAll('.lang-option');
-    showLog('🔍 원본 버튼 개수: ' + langBtns.length);
+    // 버튼에 직접 이벤트 등록 (복제 없이)
+    const langBtns = dropdown.querySelectorAll('.lang-option');
+    showLog('🔍 버튼 개수: ' + langBtns.length);
     
-    // 1단계: 모든 버튼을 복제하여 기존 이벤트 제거
-    langBtns.forEach(function(btn) {
-      const newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-    });
-    
-    showLog('🔄 복제 완료 - 다시 쿼리');
-    
-    // 2단계: 복제된 버튼들을 다시 쿼리
-    langBtns = dropdown.querySelectorAll('.lang-option');
-    showLog('🔍 새 버튼 개수: ' + langBtns.length);
-    
-    // 3단계: 새 버튼들에 이벤트 등록
     langBtns.forEach(function(btn, index) {
       const lang = btn.getAttribute('data-lang');
-      showLog('📝 ' + index + '번 등록: ' + lang);
+      showLog('📝 ' + index + '번 시작: ' + lang);
       
-      let touchHandled = false;  // 중복 실행 방지
-      
-      // 터치 시작 (웹뷰용 1)
-      btn.addEventListener('touchstart', function(e) {
-        touchHandled = true;
-        showLog('👆 TOUCHSTART: ' + lang);
-      }, { passive: true });
-      
-      // 터치 종료 (웹뷰용 2)
-      btn.addEventListener('touchend', function(e) {
-        if (!touchHandled) {
-          showLog('👆 TOUCHEND: ' + lang);
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        showLog('🎯 TOUCH 처리: ' + lang);
-        handleLanguageChange(lang);
-        touchHandled = false;
-      }, { passive: false });
-      
-      // 클릭 이벤트 (브라우저용 + 백업)
-      btn.addEventListener('click', function(e) {
-        // 터치가 이미 처리되었으면 스킵
-        if (touchHandled) {
-          showLog('⏩ 터치 처리됨 - 클릭 스킵');
-          touchHandled = false;
-          return;
-        }
-        
+      // onclick 직접 할당 (가장 안정적)
+      btn.onclick = function(e) {
         e.preventDefault();
         e.stopPropagation();
         showLog('🖱️ CLICK: ' + lang);
         handleLanguageChange(lang);
-      });
+      };
       
-      showLog('✅ 완료: ' + lang);
+      // ontouchstart 직접 할당
+      btn.ontouchstart = function(e) {
+        showLog('👆 TOUCHSTART: ' + lang);
+        return true;  // 이벤트 전파 허용
+      };
+      
+      // ontouchend 직접 할당
+      btn.ontouchend = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showLog('🎯 TOUCH 처리: ' + lang);
+        handleLanguageChange(lang);
+        return false;  // 이벤트 전파 차단
+      };
+      
+      // ⭐ 검증: 이벤트가 등록되었는지 확인
+      if (btn.onclick && btn.ontouchend) {
+        showLog('✅ 등록 확인: ' + lang);
+      } else {
+        showLog('❌ 등록 실패: ' + lang);
+      }
     });
     
     showLog('✅ 재등록 완료: ' + langBtns.length + '개');
