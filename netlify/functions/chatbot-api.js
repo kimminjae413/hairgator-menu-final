@@ -173,13 +173,76 @@ F vs G:
 - Lifting: L0~L8
 - Direction: D0~D8
 
+
+### 🎨 펌/컬 분석 (PERM Parameters) - 매우 중요!
+
+이미지에서 컬이나 웨이브가 보이면 반드시 분석하세요.
+
+**1. Curl Pattern (컬 패턴) - 필수**
+- **C-Curl**: 끝부분만 안쪽으로 **한 번** 말린 컬 (부드러운 내권)
+  → 목선, 어깨선 부근에서 끝만 살짝 안으로
+  → 키워드: "끝말림", "내권", "C자"
+  
+- **CS-Curl**: C와 S의 중간, **자연스러운 웨이브** (약한 S자)
+  → 끝이 C컬처럼 말리면서 중간에 살짝 S자
+  → 키워드: "자연스러운", "부드러운 웨이브"
+  
+- **S-Curl**: 뚜렷한 **S자 웨이브**가 2개 이상
+  → 머리카락이 물결치듯 S자로 흐름
+  → 키워드: "웨이브", "물결", "S자"
+  
+- **SS-Curl**: 매우 강한 **큰 S자 웨이브** (대형 컬)
+  → S자가 크고 명확하게 반복됨
+  → 키워드: "굵은 웨이브", "빅 웨이브"
+
+**2. Curl Strength (컬 강도)**
+- **Soft**: 자연스럽고 부드러운 컬 (거의 안 보일 정도)
+- **Medium**: 중간 강도의 컬 (명확히 보임)
+- **Strong**: 강한 컬 (매우 뚜렷함)
+
+**3. Perm Type (펌 종류) - 선택사항**
+- **Wave Perm**: 자연스러운 웨이브 펌
+- **Digital Perm**: 디지털 펌 (S컬, SS컬)
+- **Heat Perm**: 히트 펌
+- **Iron Perm**: 고데기 스타일 (C컬)
+- **null**: 판단 불가 시
+
+**4. Rod Size (로드 사이즈) - 선택사항**
+컬의 굵기를 보고 추정:
+- **6mm-10mm**: 매우 작은 컬
+- **11mm-15mm**: 작은 컬
+- **16mm-20mm**: 중간 컬 (일반적)
+- **21mm-25mm**: 큰 컬
+- **null**: 판단 불가 시
+
+**5. Perm Technique (펌 시술 부위)**
+- **End**: 끝부분만 (C-Curl 주로)
+- **Body**: 중간~끝 (CS-Curl, S-Curl)
+- **Root**: 뿌리부터 (볼륨)
+- **Partial**: 부분 펌
+- **null**: 판단 불가
+
+**6. Setting Pattern (세팅 패턴)**
+- **Horizontal**: 수평 세팅
+- **Vertical**: 수직 세팅
+- **Brick Wind**: 벽돌쌓기
+- **null**: 판단 불가
+
+**컬 분석 체크리스트:**
+- ✅ 끝부분만 안으로 말림 → **C-Curl**
+- ✅ 자연스러운 웨이브 → **CS-Curl**
+- ✅ 명확한 S자 웨이브 → **S-Curl**
+- ✅ 큰 S자 웨이브 → **SS-Curl**
+- ✅ 컬이 없으면 모든 perm 필드 **null**
+
 **중요: JSON 출력 시 절대 규칙**
 - womens_cut_category 필드 생성 금지 (스타일명은 포함하지 말것)
 - length_category만 A~H Length 형식으로 출력
 - cut_form은 O, G, L 중 하나만 (C 사용 금지)
+- 컬이 보이면 perm 필드 반드시 작성
 
 **출력 형식 (JSON만):**
-\`\`\`json
+```json
 {
   "cut_category": "Women's Cut",
   "length_category": "E Length",
@@ -194,18 +257,17 @@ F vs G:
   "styling_method": "Blow Dry",
   "section_primary": "Vertical",
   "lifting_range": ["L2", "L4", "L6"],
-  "direction_primary": "D0"
+  "direction_primary": "D0",
+  "perm_type": "Digital Perm",
+  "curl_pattern": "S-Curl",
+  "curl_strength": "Medium",
+  "rod_size": "16mm-20mm",
+  "perm_technique": "Body",
+  "setting_pattern": "Vertical"
 }
-\`\`\`
+```
 
 **재확인 체크리스트:**
-- ✅ **어깨에 닿는가? → D Length**
-- ✅ **목 전체 + 어깨 보이는가? → E Length**
-- ✅ **목 절반만 보이는가? → F Length**
-- ✅ **목 거의 안 보이는가? → G Length**
-- ✅ 애매하면 더 긴 쪽 선택
-- ✅ cut_form은 O/G/L만 사용 (C 금지)
-`;
 
   try {
     const response = await fetch(
@@ -644,6 +706,47 @@ function getTerms(lang) {
   return terms[lang] || terms['ko'];
 }
 
+// 컬 패턴 설명 헬퍼 함수
+function getCurlDescription(curlPattern, curlStrength) {
+  const descriptions = {
+    'C-Curl': '끝부분만 안쪽으로 부드럽게 말린 C컬',
+    'CS-Curl': 'C와 S의 중간인 자연스러운 웨이브',
+    'S-Curl': '뚜렷한 S자 웨이브가 흐르는',
+    'SS-Curl': '큰 S자 웨이브가 명확한'
+  };
+  
+  const strengthDesc = {
+    'Soft': '부드러운',
+    'Medium': '중간 강도의',
+    'Strong': '강한'
+  };
+  
+  let desc = descriptions[curlPattern] || curlPattern;
+  if (curlStrength && strengthDesc[curlStrength]) {
+    desc = `${strengthDesc[curlStrength]} ${desc}`;
+  }
+  
+  return desc;
+}
+
+// STEP1에 컬 정보 포함
+function getStep1WithCurl(params56) {
+  if (!params56.curl_pattern) {
+    return '[2-3문장으로 작성]';
+  }
+  
+  const curlDesc = getCurlDescription(params56.curl_pattern, params56.curl_strength);
+  const permTypeDesc = params56.perm_type ? ` (${params56.perm_type})` : '';
+  
+  return `[2-3문장으로 작성, **${curlDesc}${permTypeDesc} 스타일**임을 명시]
+
+**컬 정보:**
+- 컬 패턴: **${params56.curl_pattern}**${params56.curl_strength ? ` (강도: ${params56.curl_strength})` : ''}
+${params56.perm_type ? `- 펌 타입: **${params56.perm_type}**` : ''}
+${params56.rod_size ? `- 로드 사이즈: **${params56.rod_size}**` : ''}
+${params56.perm_technique ? `- 시술 부위: **${params56.perm_technique}**` : ''}`;
+}
+
 // ==================== 2단계: 레시피 생성 (파라미터 설명 강제 버전) ====================
 async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
   const { params56, language = 'ko' } = payload;
@@ -684,7 +787,7 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
 
 <커트 레시피>
 STEP1. 스타일 설명: 
-[2-3문장으로 작성]
+${getStep1WithCurl(params56)}
 
 STEP2. 스타일 길이: 
 **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
