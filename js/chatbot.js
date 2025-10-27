@@ -417,13 +417,11 @@ class HairGatorChatbot {
       }
     });
 
-    // 언어 드롭다운 외부 클릭 시 닫기
-    // 언어 드롭다운 외부 클릭 시 닫기
+    // 언어 드롭다운 외부 클릭 시 닫기 (내부 클릭은 제외!)
     document.addEventListener('click', (e) => {
       const dropdown = document.getElementById('language-dropdown');
       const languageBtn = document.getElementById('language-btn');
       
-      // 드롭다운 내부나 버튼 클릭은 무시
       if (dropdown && languageBtn && 
           !dropdown.contains(e.target) && 
           !languageBtn.contains(e.target)) {
