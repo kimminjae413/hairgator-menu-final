@@ -387,9 +387,15 @@ class HairGatorChatbot {
       }
     });
 
-    // 언어 드롭다운 외부 클릭 시 닫기
-    document.addEventListener('click', () => {
-      document.getElementById('language-dropdown').classList.add('hidden');
+    // 언어 드롭다운 외부 클릭 시 닫기 (드롭다운 내부 클릭은 제외)
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('language-dropdown');
+      const langBtn = document.getElementById('language-btn');
+      
+      // 드롭다운이나 언어 버튼을 클릭한 경우는 무시
+      if (dropdown && !dropdown.contains(e.target) && !langBtn.contains(e.target)) {
+        dropdown.classList.add('hidden');
+      }
     });
   }
 
@@ -1243,28 +1249,51 @@ class HairGatorChatbot {
     document.querySelectorAll('.lang-option').forEach(function(btn) {
       const lang = btn.getAttribute('data-lang');
       showLog('등록: ' + lang);
-      btn.onclick = function(e) {
+      
+      // 기존 이벤트 제거
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      
+      // 새 버튼에 이벤트 등록 (캡처 단계)
+      newBtn.addEventListener('click', function(e) {
         showLog('🎯 CLICK: ' + lang);
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation();  // 다른 이벤트 리스너 차단
+        
         const dropdown = document.getElementById('language-dropdown');
         if (dropdown) dropdown.classList.add('hidden');
+        
         self.currentLanguage = lang;
         self.setStoredLanguage(lang);
         const texts = self.getTexts();
+        
         const title = document.getElementById('chatbot-title');
         if (title) title.textContent = texts.title;
+        
         const input = document.getElementById('chatbot-input');
         if (input) input.placeholder = texts.placeholder;
+        
         const msgs = document.getElementById('chatbot-messages');
         if (msgs) {
           msgs.innerHTML = '<div class="welcome-message"><div class="welcome-icon">👋</div><div class="welcome-text">' + texts.welcome + '</div></div>';
         }
+        
         self.conversationHistory = [];
         showLog('✅ ' + lang);
+        
         setTimeout(function() { self.reattachLanguageHandlers(); }, 100);
-      };
-      btn.ontouchend = btn.onclick;
+      }, { capture: true });  // 캡처 단계에서 먼저 처리
+      
+      // 터치 이벤트도 동일하게
+      newBtn.addEventListener('touchend', function(e) {
+        showLog('👆 TOUCH: ' + lang);
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        newBtn.click();  // 클릭 이벤트로 위임
+      }, { capture: true, passive: false });
     });
     
     showLog('✅ 재등록 완료');
