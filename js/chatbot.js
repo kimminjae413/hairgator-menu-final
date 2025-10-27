@@ -398,8 +398,11 @@ class HairGatorChatbot {
       }
     };
     
+    // 언어 드롭다운 외부 클릭 시 닫기
     document.addEventListener('click', closeDropdownOnOutside);
-    document.addEventListener('touchstart', closeDropdownOnOutside, { passive: true });
+    
+    // ⚠️ touchstart는 제거 - 드롭다운 내부 버튼 터치를 방해함
+    // document.addEventListener('touchstart', closeDropdownOnOutside, { passive: true });
   }
 
   // ✅ 수정: Touch Event에 passive listener 추가
@@ -1246,7 +1249,7 @@ class HairGatorChatbot {
       log.scrollTop = log.scrollHeight;
     };
     
-    showLog('🔄 재등록 시작 (이벤트 위임 v2)');
+    showLog('🔄 재등록 시작 (v8.1 - 복제후재쿼리)');
     
     const self = this;
     const dropdown = document.getElementById('language-dropdown');
@@ -1326,21 +1329,40 @@ class HairGatorChatbot {
       const lang = btn.getAttribute('data-lang');
       showLog('📝 ' + index + '번 등록: ' + lang);
       
-      // 클릭 이벤트 (브라우저용)
+      let touchHandled = false;  // 중복 실행 방지
+      
+      // 터치 시작 (웹뷰용 1)
+      btn.addEventListener('touchstart', function(e) {
+        touchHandled = true;
+        showLog('👆 TOUCHSTART: ' + lang);
+      }, { passive: true });
+      
+      // 터치 종료 (웹뷰용 2)
+      btn.addEventListener('touchend', function(e) {
+        if (!touchHandled) {
+          showLog('👆 TOUCHEND: ' + lang);
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        showLog('🎯 TOUCH 처리: ' + lang);
+        handleLanguageChange(lang);
+        touchHandled = false;
+      }, { passive: false });
+      
+      // 클릭 이벤트 (브라우저용 + 백업)
       btn.addEventListener('click', function(e) {
+        // 터치가 이미 처리되었으면 스킵
+        if (touchHandled) {
+          showLog('⏩ 터치 처리됨 - 클릭 스킵');
+          touchHandled = false;
+          return;
+        }
+        
         e.preventDefault();
         e.stopPropagation();
         showLog('🖱️ CLICK: ' + lang);
         handleLanguageChange(lang);
       });
-      
-      // 터치 이벤트 (웹뷰용)
-      btn.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        showLog('👆 TOUCH: ' + lang);
-        handleLanguageChange(lang);
-      }, { passive: false });
       
       showLog('✅ 완료: ' + lang);
     });
