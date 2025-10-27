@@ -697,49 +697,56 @@ STEP4. 앞머리 길이:
 
 STEP5. 42포뮬러 기초 커트
 
-### 5-1. 가로섹션 (70.Section-Horizontal) - 2층
+### 5-1. 가로섹션 (Section: Horizontal) - 2층
 **공간:** 정수리 → 이마
-- **L1:** 54.Lifting L0 (0°), 33.D4 (정후방), 19.Blunt Cut
-- **L2:** 54.Lifting L1 (22.5°), 33.D4, 19.Blunt Cut
+- **L1:** L0 (Lifting: 0°), D4 (Direction: 정후방), Blunt Cut
+- **L2:** L1 (Lifting: 22.5°), D4 (Direction: 정후방), Blunt Cut
 
-### 5-2. 후대각섹션 (70.Section-Diagonal-Backward) - 9층  
+### 5-2. 후대각섹션 (Section: Diagonal-Backward) - 9층  
 **공간:** 뒷머리 대각 (귀 뒤→정수리)
-- **L1-3:** 54.L1~L3 (22.5°~67.5°), 33.D3~D5, Slide Cut, 62.Backward
-- **L4-6:** 54.L3~L5 (67.5°~112.5°), 44.Graduation Decreasing, 86.Volume ${params56.volume_zone}
-- **L7-9:** 54.L5~L6 (112.5°~135°), Weight Flow Forward
+- **L1-3:** L1~L3 (Lifting: 22.5°~67.5°), D3~D5 (Direction: 우측후방~좌측후방), Slide Cut, Over Direction Backward
+- **L4-6:** L3~L5 (Lifting: 67.5°~112.5°), **Graduation Decreasing** → **C컬 형성 설계**
+  - **컬 원리:** 외부층(짧음) < 내부층(길음) → 끝단이 자연스럽게 안으로 말림
+  - **각도 설계:** 67.5°~112.5° 중간 리프팅 → 드라이 시 자동 C컬 완성
+  - Volume ${params56.volume_zone}
+- **L7-9:** L5~L6 (Lifting: 112.5°~135°), Weight Flow Forward
 
-### 5-3. 전대각섹션 (70.Section-Diagonal-Forward) - 6층
+### 5-3. 전대각섹션 (Section: Diagonal-Forward) - 6층
 **공간:** 측면→앞머리  
-- **L1-3:** 54.L4 (90°), 33.D1~D3, 측면 수평
-- **L4-6:** 54.L5~L6 (112.5°~135°), 42.Fringe 연결
+- **L1-3:** L4 (Lifting: 90°), D1~D3 (Direction: 측면 대각), 측면 수평
+- **L4-6:** L5~L6 (Lifting: 112.5°~135°), Fringe 연결
 
-### 5-4. 세로섹션 (70.Section-Vertical) - 12층
-**공간:** 05.V Zone (정수리→목 중앙축)
-- **L1-4:** 54.L2~L3 (45°~67.5°), 52.Round Layer
-- **L5-8:** 54.L4~L6 (90°~135°), 89.Zone-B
-- **L9-12:** 54.L6~L8 (135°~180°), 75.Silhouette
+### 5-4. 세로섹션 (Section: Vertical) - 12층
+**공간:** V Zone (정수리→목 중앙축)
+- **L1-4:** L2~L3 (Lifting: 45°~67.5°), Round Layer
+- **L5-8:** L4~L6 (Lifting: 90°~135°), Zone-B (중단)
+- **L9-12:** L6~L8 (Lifting: 135°~180°), Silhouette
 
-### 5-5. 현대각섹션_백준 (49.Hemline) - 3층
+### 5-5. 현대각섹션_백준 (Hemline) - 3층
 **공간:** 목덜미
-- **L1-3:** 64.Perimeter Line, 54.L0~L1, 83.Trimming
+- **L1-3:** Perimeter Line, L0~L1 (Lifting: 0°~22.5°), Trimming
 
-### 5-6. 네이프존 (89.Zone-A) - 4층
+### 5-6. 네이프존 (Zone-A) - 4층
 **공간:** 목 부위
-- **L1-4:** 54.L0~L2 (0°~45°), 20.Brick Cut, 88.Weight Sit
+- **L1-4:** L0~L2 (Lifting: 0°~45°), **Increasing Graduation** → **목선 C컬 형성**
+  - **컬 원리:** 목 라인을 따라 Graduation 증가 → 목선에 밀착되는 C컬
+  - **각도 설계:** 0°~45° 낮은 리프팅 → 자연 낙하 시 C컬 자동 형성
+  - Brick Cut, Weight Sit
 
-### 5-7. 업스컵 (89.Zone-C + 47.Head Point) - 6층
+### 5-7. 업스컵 (Zone-C + Head Point) - 6층
 **공간:** 정수리 최상단
-- **L1-6:** 54.L5~L8 (112.5°~180°), 86.Volume High, 62.Forward
+- **L1-6:** L5~L8 (Lifting: 112.5°~180°), Volume High, Over Direction Forward
 
 **✓ 검증:** 2+9+6+12+3+4+6 = 42층
 
 STEP6. 질감처리
-- 81.Texturizing: Point Cut
-- 82.Zone: 중단~하단  
-- 26.Corner Off
+- Texturizing: Point Cut → **C컬 끝단 부드럽게 (자연스러운 컬 강화)**
+- Zone: 중단~하단  
+- Corner Off → **모서리 둥글게 (컬 흐름 부드럽게)**
 
 STEP7. 스타일링
-- 18.Blow Dry: Round Brush
+- Blow Dry: Round Brush → **Graduation으로 설계된 C컬 방향 강조**
+- **컬 활성화:** 커트 단계에서 설계된 C컬을 드라이로 완성
 - Volume: 정수리
 - Finish: Natural`,
 
@@ -1113,25 +1120,25 @@ STEP2. 스타일 길이: **${params56.length_category} (${params56.estimated_hai
 STEP3. 스타일 형태: **${params56.cut_form}**
 STEP4. 앞머리 길이: **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
 STEP5. 42포뮬러 기초 커트
-### 5-1. 가로섹션 (70.Horizontal) - 2층
-- **L1-2:** 54.L0~L1, 33.D4, 19.Blunt
-### 5-2. 후대각섹션 (70.Diagonal-Backward) - 9층  
-- **L1-3:** 54.L1~L3, 33.D3~D5, Slide, 62.Backward
-- **L4-6:** 54.L3~L5, 44.Graduation, 86.Vol ${params56.volume_zone}
-- **L7-9:** 54.L5~L6, Weight Forward
-### 5-3. 전대각섹션 (70.Diagonal-Forward) - 6층
-- **L1-6:** 54.L4~L6, 33.D1~D3, 42.Fringe
-### 5-4. 세로섹션 (70.Vertical) - 12층
-- **L1-12:** 54.L2~L8, 05.V Zone, 52.Round, 75.Silhouette
-### 5-5. 현대각_백준 (49.Hemline) - 3층
-- **L1-3:** 64.Perimeter, 54.L0~L1, 83.Trimming
-### 5-6. 네이프존 (89.Zone-A) - 4층
-- **L1-4:** 54.L0~L2, 20.Brick, 88.Weight
-### 5-7. 업스컵 (89.Zone-C) - 6층
-- **L1-6:** 54.L5~L8, 86.Vol High, 62.Forward
+### 5-1. 가로섹션 (Horizontal) - 2층
+- **L1-2:** L0~L1 (Lifting: 0°~22.5°), D4 (Direction: 정후방), Blunt Cut
+### 5-2. 후대각섹션 (Diagonal-Backward) - 9층  
+- **L1-3:** L1~L3 (Lifting: 22.5°~67.5°), D3~D5 (Direction: 후방), Slide Cut, Over Direction Backward
+- **L4-6:** L3~L5 (Lifting: 67.5°~112.5°), **Graduation Decreasing → C컬 형성 설계**, Volume ${params56.volume_zone}
+- **L7-9:** L5~L6 (Lifting: 112.5°~135°), Weight Forward
+### 5-3. 전대각섹션 (Diagonal-Forward) - 6층
+- **L1-6:** L4~L6 (Lifting: 90°~135°), D1~D3 (Direction: 전방), Fringe 연결
+### 5-4. 세로섹션 (Vertical) - 12층
+- **L1-12:** L2~L8 (Lifting: 45°~180°), V Zone, Round Layer, Silhouette
+### 5-5. 현대각_백준 (Hemline) - 3층
+- **L1-3:** Perimeter Line, L0~L1 (Lifting: 0°~22.5°), Trimming
+### 5-6. 네이프존 (Zone-A) - 4층
+- **L1-4:** L0~L2 (Lifting: 0°~45°), **Increasing Graduation → 목선 C컬 형성**, Brick Cut, Weight Sit
+### 5-7. 업스컵 (Zone-C) - 6층
+- **L1-6:** L5~L8 (Lifting: 112.5°~180°), Volume High, Over Direction Forward
 **✓ 42층**
-STEP6. 질감: 81.Point Cut, 82.Zone 중하단, 26.Corner Off
-STEP7. 스타일: 18.Blow Dry, Vol 정수리`,
+STEP6. 질감: Point Cut (C컬 끝단 부드럽게), Zone 중하단, Corner Off (컬 흐름 부드럽게)
+STEP7. 스타일: Blow Dry (Graduation으로 설계된 C컬 방향 강조), Volume 정수리`,
 
       en: `You are a HAIRGATOR system expert.
 
@@ -1143,18 +1150,25 @@ STEP2. Style Length: **${params56.length_category} (${params56.estimated_hair_le
 STEP3. Style Form: **${params56.cut_form}**
 STEP4. Fringe Length: **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
 STEP5. 42 Formula Base Cut
-### 5-1. Horizontal (70.Horizontal) - 2 layers
-- **L1-2:** 54.L0~L1, 33.D4, 19.Blunt
-### 5-2. Diagonal Backward (70.Diagonal-Backward) - 9 layers  
-- **L1-3:** 54.L1~L3, 33.D3~D5, Slide, 62.Backward
-- **L4-6:** 54.L3~L5, 44.Graduation, 86.Vol ${params56.volume_zone}
-- **L7-9:** 54.L5~L6, Weight Forward
-### 5-3. Diagonal Forward (70.Diagonal-Forward) - 6 layers
-- **L1-6:** 54.L4~L6, 33.D1~D3, 42.Fringe
-### 5-4. Vertical (70.Vertical) - 12 layers
-- **L1-12:** 54.L2~L8, 05.V Zone, 52.Round, 75.Silhouette
-### 5-5. Diagonal Nape (49.Hemline) - 3 layers
-- **L1-3:** 64.Perimeter, 54.L0~L1, 83.Trimming
+### 5-1. Horizontal Section - 2 layers
+- **L1-2:** L0~L1 (Lifting: 0°~22.5°), D4 (Direction: Back), Blunt Cut
+### 5-2. Diagonal Backward Section - 9 layers  
+- **L1-3:** L1~L3 (Lifting: 22.5°~67.5°), D3~D5 (Direction: Back), Slide Cut, Over Direction Backward
+- **L4-6:** L3~L5 (Lifting: 67.5°~112.5°), **Graduation Decreasing → C-Curl Formation Design**, Volume ${params56.volume_zone}
+- **L7-9:** L5~L6 (Lifting: 112.5°~135°), Weight Forward
+### 5-3. Diagonal Forward Section - 6 layers
+- **L1-6:** L4~L6 (Lifting: 90°~135°), D1~D3 (Direction: Forward), Fringe Connection
+### 5-4. Vertical Section - 12 layers
+- **L1-12:** L2~L8 (Lifting: 45°~180°), V Zone, Round Layer, Silhouette
+### 5-5. Diagonal Nape Section (Hemline) - 3 layers
+- **L1-3:** Perimeter Line, L0~L1 (Lifting: 0°~22.5°), Trimming
+### 5-6. Nape Zone (Zone-A) - 4 layers
+- **L1-4:** L0~L2 (Lifting: 0°~45°), **Increasing Graduation → Neckline C-Curl Formation**, Brick Cut, Weight Sit
+### 5-7. Up-Scoop Zone (Zone-C) - 6 layers
+- **L1-6:** L5~L8 (Lifting: 112.5°~180°), Volume High, Over Direction Forward
+**✓ 42 layers**
+STEP6. Texturing: Point Cut (Soften C-curl ends), Zone Mid-Lower, Corner Off (Smooth curl flow)
+STEP7. Styling: Blow Dry (Enhance C-curl designed by Graduation), Volume Crown`,
 ### 5-6. Nape Zone (89.Zone-A) - 4 layers
 - **L1-4:** 54.L0~L2, 20.Brick, 88.Weight
 ### 5-7. Up-Scoop (89.Zone-C) - 6 layers
