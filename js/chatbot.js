@@ -1265,11 +1265,16 @@ class HairGatorChatbot {
       return;
     }
     
-    // 언어 변경 함수 (click과 touchend에서 공통 사용)
-    const handleLanguageChange = function(target) {
-      const lang = target.getAttribute('data-lang');
-      if (!lang) return;
+    // 언어 변경 함수
+    let isProcessing = false;  // 중복 실행 방지
+    
+    const handleLanguageChange = function(lang) {
+      if (isProcessing) {
+        showLog('⏸️ 처리 중 - 스킵');
+        return;
+      }
       
+      isProcessing = true;
       showLog('🎯 선택: ' + lang);
       
       // 드롭다운 닫기
@@ -1299,38 +1304,40 @@ class HairGatorChatbot {
       
       self.conversationHistory = [];
       showLog('✅ 완료: ' + lang);
+      
+      // 300ms 후 플래그 해제
+      setTimeout(function() {
+        isProcessing = false;
+      }, 300);
     };
     
-    // 드롭다운에 단 하나의 이벤트만 등록 (이벤트 위임)
-    dropdown.addEventListener('click', function(e) {
-      e.stopPropagation();
-      
-      // 클릭된 요소가 lang-option인지 확인
-      const target = e.target.closest('.lang-option');
-      if (!target) return;
-      
-      showLog('🖱️ CLICK 감지');
-      handleLanguageChange(target);
-    }, { capture: true });
+    // 각 언어 버튼에 직접 이벤트 등록
+    const langBtns = dropdown.querySelectorAll('.lang-option');
+    showLog('🔍 버튼 개수: ' + langBtns.length);
     
-    // 터치 이벤트 (웹뷰용) - touchstart로 변경하여 더 빠른 반응
-    dropdown.addEventListener('touchstart', function(e) {
-      const target = e.target.closest('.lang-option');
-      if (!target) return;
+    langBtns.forEach(function(btn) {
+      const lang = btn.getAttribute('data-lang');
+      showLog('📝 등록: ' + lang);
       
-      e.preventDefault();
-      e.stopPropagation();
-      showLog('👆 TOUCH 감지');
+      // 클릭 이벤트 (브라우저용)
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showLog('🖱️ CLICK: ' + lang);
+        handleLanguageChange(lang);
+      });
       
-      // 직접 언어 변경 처리
-      handleLanguageChange(target);
-    }, { capture: true, passive: false });
+      // 터치 이벤트 (웹뷰용)
+      btn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showLog('👆 TOUCH: ' + lang);
+        handleLanguageChange(lang);
+      }, { passive: false });
+    });
     
     // 등록 완료 표시
     dropdown.dataset.handlerAttached = 'true';
-    
-    // 등록된 언어 개수 확인
-    const langBtns = dropdown.querySelectorAll('.lang-option');
     showLog('✅ 재등록 완료: ' + langBtns.length + '개');
   }
 }
