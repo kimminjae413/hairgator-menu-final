@@ -1237,16 +1237,7 @@ class HairGatorChatbot {
 
   reattachLanguageHandlers() {
     const showLog = (msg) => {
-      const log = document.getElementById('debug-log') || (() => {
-        const div = document.createElement('div');
-        div.id = 'debug-log';
-        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;pointer-events:none;';
-        document.body.appendChild(div);
-        return div;
-      })();
-      const time = new Date().toLocaleTimeString();
-      log.innerHTML += '<div>' + time + ': ' + msg + '</div>';
-      log.scrollTop = log.scrollHeight;
+      console.log(msg);  // 콘솔에만 출력
     };
     
     showLog('🔄 재등록 시작 (v8.1 - 복제후재쿼리)');
@@ -1308,15 +1299,10 @@ class HairGatorChatbot {
       }, 300);
     };
     
-    // ⭐ CSS 오버라이드: 모든 방해 요소 제거!
+    // ⭐ CSS 오버라이드: 최종 프로덕션 버전
     const style = document.createElement('style');
     style.textContent = `
-      /* 모든 요소의 기본 z-index 조정 */
-      body * {
-        position: relative;
-      }
-      
-      /* 챗봇 관련 요소만 높은 z-index */
+      /* 챗봇 컨테이너 overflow 수정 */
       .chatbot-container {
         overflow: visible !important;
         z-index: 9999 !important;
@@ -1333,8 +1319,6 @@ class HairGatorChatbot {
       
       .header-actions {
         z-index: 10001 !important;
-        background: rgba(0, 255, 0, 0.2) !important;
-        border: 2px dashed green !important;
       }
       
       .language-selector {
@@ -1342,20 +1326,13 @@ class HairGatorChatbot {
         position: relative !important;
       }
       
-      /* X 버튼 영역 축소 */
       .chatbot-close {
-        background: rgba(255, 0, 0, 0.3) !important;
-        border: 2px solid red !important;
-        pointer-events: auto !important;
         z-index: 10001 !important;
         width: 32px !important;
         height: 32px !important;
       }
       
-      /* 지구본 버튼 */
       .language-btn {
-        background: rgba(0, 0, 255, 0.3) !important;
-        border: 2px solid blue !important;
         z-index: 10002 !important;
       }
       
@@ -1364,8 +1341,6 @@ class HairGatorChatbot {
         display: block !important;
         position: absolute !important;
         z-index: 999999 !important;
-        background: white !important;
-        border: 3px solid purple !important;
       }
       
       .language-dropdown.hidden {
@@ -1380,12 +1355,10 @@ class HairGatorChatbot {
         pointer-events: auto !important;
       }
       
-      /* 언어 버튼 최우선 */
+      /* 언어 버튼 */
       .lang-option {
         pointer-events: auto !important;
         cursor: pointer !important;
-        background: yellow !important;
-        border: 2px solid lime !important;
         min-height: 44px !important;
         z-index: 1000000 !important;
         position: relative !important;
@@ -1395,7 +1368,7 @@ class HairGatorChatbot {
       }
     `;
     document.head.appendChild(style);
-    showLog('🎨 CSS 최종 수정 적용');
+    console.log('✅ HAIRGATOR 언어 선택 시스템 초기화 완료');
     
     // ⭐ 이벤트 위임: 드롭다운에 직접 클릭 이벤트 등록
     dropdown.addEventListener('click', function(e) {
