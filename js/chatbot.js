@@ -1256,14 +1256,8 @@ class HairGatorChatbot {
       return;
     }
     
-    // 기존 방식: 드롭다운의 클릭 핸들러만 새로 등록
-    // (복제하지 않음 - 지구본 버튼 이벤트 유지)
-    
-    // 이미 등록된 핸들러가 있다면 표시
-    if (dropdown.dataset.handlerAttached === 'true') {
-      showLog('⏩ 이미 등록됨 - 스킵');
-      return;
-    }
+    // 강제로 매번 등록 (플래그 제거)
+    showLog('🔄 강제 재등록');
     
     // 언어 변경 함수
     let isProcessing = false;  // 중복 실행 방지
@@ -1315,12 +1309,18 @@ class HairGatorChatbot {
     const langBtns = dropdown.querySelectorAll('.lang-option');
     showLog('🔍 버튼 개수: ' + langBtns.length);
     
-    langBtns.forEach(function(btn) {
+    langBtns.forEach(function(btn, index) {
       const lang = btn.getAttribute('data-lang');
-      showLog('📝 등록: ' + lang);
+      showLog('📝 ' + index + '번: ' + lang);
+      
+      // ⭐ 기존 이벤트 완전 제거를 위해 버튼 복제
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      
+      showLog('🔄 복제 완료: ' + lang);
       
       // 클릭 이벤트 (브라우저용)
-      btn.addEventListener('click', function(e) {
+      newBtn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         showLog('🖱️ CLICK: ' + lang);
@@ -1328,16 +1328,16 @@ class HairGatorChatbot {
       });
       
       // 터치 이벤트 (웹뷰용)
-      btn.addEventListener('touchend', function(e) {
+      newBtn.addEventListener('touchend', function(e) {
         e.preventDefault();
         e.stopPropagation();
         showLog('👆 TOUCH: ' + lang);
         handleLanguageChange(lang);
       }, { passive: false });
+      
+      showLog('✅ 등록 완료: ' + lang);
     });
     
-    // 등록 완료 표시
-    dropdown.dataset.handlerAttached = 'true';
     showLog('✅ 재등록 완료: ' + langBtns.length + '개');
   }
 }
