@@ -297,37 +297,8 @@ class HairGatorChatbot {
           <div class="index-modal-body" id="index-modal-body">
             <!-- 동적 생성 -->
           </div>
-  // 🔥 언어 핸들러 등록 함수 (재사용)
-  attachLanguageHandlers() {
-    const showLog = (msg) => {
-      const log = document.getElementById('debug-log') || (() => {
-        const div = document.createElement('div');
-        div.id = 'debug-log';
-        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;';
-        document.body.appendChild(div);
-        return div;
-      })();
-      const time = new Date().toLocaleTimeString();
-      log.innerHTML += `<div>${time}: ${msg}</div>`;
-      log.scrollTop = log.scrollHeight;
-    };
-    
-    showLog('🔄 핸들러 재등록');
-    
-    const langBtns = document.querySelectorAll('.lang-option');
-    showLog(`📊 ${langBtns.length}개`);
-    
-    langBtns.forEach((btn) => {
-      const lang = btn.getAttribute('data-lang');
-      
-      // 기존 이벤트 제거
-      const newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-    });
-    
-    // 새로 등록
-    // 언어 핸들러 초기 등록
-    this.attachLanguageHandlers();
+        </div>
+      </div>
     `;
 
     document.body.insertAdjacentHTML('beforeend', chatbotHTML);
@@ -380,55 +351,7 @@ class HairGatorChatbot {
     languageBtn.addEventListener('click', toggleDropdown);
     languageBtn.addEventListener('touchstart', toggleDropdown, { passive: false });
 
-    document.querySelectorAll('.lang-option').forEach(btn => {
-      // 중복 실행 방지 플래그
-      let isProcessing = false;
-      
-      // WebView 환경을 위한 통합 핸들러
-      const handleLanguageSelect = (e) => {
-        // 이미 처리 중이면 무시
-        if (isProcessing) {
-          console.log('⏭️ 이미 처리 중 - 무시');
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-        
-        isProcessing = true;
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const lang = e.currentTarget.getAttribute('data-lang');
-        console.log(`🎯 언어 선택됨: ${lang} (이벤트: ${e.type})`);
-        
-        // 드롭다운 먼저 닫기
-        const dropdown = document.getElementById('language-dropdown');
-        if (dropdown) {
-          dropdown.classList.add('hidden');
-        }
-        
-        // 약간의 딜레이 후 언어 변경 (WebView 안정성)
-        setTimeout(() => {
-          this.changeLanguage(lang);
-          // 500ms 후 플래그 리셋 (충분한 시간)
-          setTimeout(() => {
-            isProcessing = false;
-            console.log('✅ 처리 완료 - 다음 클릭 가능');
-          }, 500);
-        }, 50);
-      };
-      
-      // 여러 이벤트 타입 모두 처리
-      btn.addEventListener('click', handleLanguageSelect);
-      btn.addEventListener('touchend', handleLanguageSelect, { passive: false });
-      btn.addEventListener('touchstart', (e) => {
-        // 터치 피드백
-        e.currentTarget.style.backgroundColor = 'rgba(33, 150, 243, 0.2)';
-        setTimeout(() => {
-          e.currentTarget.style.backgroundColor = '';
-        }, 200);
-      }, { passive: true });
-    });
+    this.attachLanguageHandlers();
 
     // 색인 버튼
     document.getElementById('index-btn').addEventListener('click', () => {
@@ -1288,3 +1211,67 @@ document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
   console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (undefined 버그 수정 완료)');
 });
+  // 🔥 언어 핸들러 등록/재등록 함수
+  attachLanguageHandlers() {
+    const showLog = (msg) => {
+      const log = document.getElementById('debug-log') || (() => {
+        const div = document.createElement('div');
+        div.id = 'debug-log';
+        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;';
+        document.body.appendChild(div);
+        return div;
+      })();
+      log.innerHTML += \`<div>\${new Date().toLocaleTimeString()}: \${msg}</div>\`;
+      log.scrollTop = log.scrollHeight;
+    };
+    
+    showLog('🔄 핸들러 등록');
+    
+    document.querySelectorAll('.lang-option').forEach((btn) => {
+      const lang = btn.getAttribute('data-lang');
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+    });
+    
+    document.querySelectorAll('.lang-option').forEach((btn) => {
+      const lang = btn.getAttribute('data-lang');
+      
+      btn.onclick = (e) => {
+        showLog(\`🎯 \${lang}\`);
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const dd = document.getElementById('language-dropdown');
+        if (dd) dd.classList.add('hidden');
+        
+        this.currentLanguage = lang;
+        this.setStoredLanguage(lang);
+        
+        const texts = this.getTexts();
+        const title = document.getElementById('chatbot-title');
+        if (title) title.textContent = texts.title;
+        
+        const input = document.getElementById('chatbot-input');
+        if (input) input.placeholder = texts.placeholder;
+        
+        const msgs = document.getElementById('chatbot-messages');
+        if (msgs) {
+          msgs.innerHTML = \`
+            <div class="welcome-message">
+              <div class="welcome-icon">👋</div>
+              <div class="welcome-text">\${texts.welcome}</div>
+            </div>
+          \`;
+        }
+        
+        this.conversationHistory = [];
+        showLog(\`✅ \${lang}\`);
+        
+        setTimeout(() => this.attachLanguageHandlers(), 100);
+      };
+      
+      btn.ontouchend = btn.onclick;
+    });
+    
+    showLog('✅ 완료');
+  }
