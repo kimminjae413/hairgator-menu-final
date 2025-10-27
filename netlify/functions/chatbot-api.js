@@ -695,22 +695,53 @@ STEP3. 스타일 형태:
 STEP4. 앞머리 길이: 
 **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
 
-STEP5. 베이스 커트
-**인터널 진행:**
-A 존: [구체적 시술]
-B 존: [구체적 시술]
+STEP5. 42포뮬러 기초 커트
 
-**엑스터널 진행:**
-C 존: [구체적 시술]
+### 5-1. 가로섹션 (70.Section-Horizontal) - 2층
+**공간:** 정수리 → 이마
+- **L1:** 54.Lifting L0 (0°), 33.D4 (정후방), 19.Blunt Cut
+- **L2:** 54.Lifting L1 (22.5°), 33.D4, 19.Blunt Cut
 
-**다이렉션**: ${params56.direction_primary || 'D0'} (${directionDesc})
-**섹션**: ${params56.section_primary} (${sectionDesc})
-**리프팅**: ${liftingDescs}
-**볼륨**: ${params56.volume_zone} (${volumeDesc})
+### 5-2. 후대각섹션 (70.Section-Diagonal-Backward) - 9층  
+**공간:** 뒷머리 대각 (귀 뒤→정수리)
+- **L1-3:** 54.L1~L3 (22.5°~67.5°), 33.D3~D5, Slide Cut, 62.Backward
+- **L4-6:** 54.L3~L5 (67.5°~112.5°), 44.Graduation Decreasing, 86.Volume ${params56.volume_zone}
+- **L7-9:** 54.L5~L6 (112.5°~135°), Weight Flow Forward
 
-STEP6. 질감처리: [구체적 기법]
+### 5-3. 전대각섹션 (70.Section-Diagonal-Forward) - 6층
+**공간:** 측면→앞머리  
+- **L1-3:** 54.L4 (90°), 33.D1~D3, 측면 수평
+- **L4-6:** 54.L5~L6 (112.5°~135°), 42.Fringe 연결
 
-STEP7. 스타일링: [구체적 방법]`,
+### 5-4. 세로섹션 (70.Section-Vertical) - 12층
+**공간:** 05.V Zone (정수리→목 중앙축)
+- **L1-4:** 54.L2~L3 (45°~67.5°), 52.Round Layer
+- **L5-8:** 54.L4~L6 (90°~135°), 89.Zone-B
+- **L9-12:** 54.L6~L8 (135°~180°), 75.Silhouette
+
+### 5-5. 현대각섹션_백준 (49.Hemline) - 3층
+**공간:** 목덜미
+- **L1-3:** 64.Perimeter Line, 54.L0~L1, 83.Trimming
+
+### 5-6. 네이프존 (89.Zone-A) - 4층
+**공간:** 목 부위
+- **L1-4:** 54.L0~L2 (0°~45°), 20.Brick Cut, 88.Weight Sit
+
+### 5-7. 업스컵 (89.Zone-C + 47.Head Point) - 6층
+**공간:** 정수리 최상단
+- **L1-6:** 54.L5~L8 (112.5°~180°), 86.Volume High, 62.Forward
+
+**✓ 검증:** 2+9+6+12+3+4+6 = 42층
+
+STEP6. 질감처리
+- 81.Texturizing: Point Cut
+- 82.Zone: 중단~하단  
+- 26.Corner Off
+
+STEP7. 스타일링
+- 18.Blow Dry: Round Brush
+- Volume: 정수리
+- Finish: Natural`,
 
       en: `You are a HAIRGATOR system expert.
 
@@ -729,22 +760,53 @@ STEP3. Style Form:
 STEP4. Fringe Length: 
 **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
 
-STEP5. Base Cut
-**Internal Progression:**
-Zone A: [specific techniques]
-Zone B: [specific techniques]
+STEP5. 42 Formula Base Cut
 
-**External Progression:**
-Zone C: [specific techniques]
+### 5-1. Horizontal Section (70.Section-Horizontal) - 2 Layers
+**Space:** Crown → Forehead
+- **L1:** 54.Lifting L0 (0°), 33.D4 (Back), 19.Blunt Cut
+- **L2:** 54.Lifting L1 (22.5°), 33.D4, 19.Blunt Cut
 
-**Direction**: ${params56.direction_primary || 'D0'} (${directionDesc})
-**Section**: ${params56.section_primary} (${sectionDesc})
-**Lifting**: ${liftingDescs}
-**Volume**: ${params56.volume_zone} (${volumeDesc})
+### 5-2. Diagonal Backward Section (70.Section-Diagonal-Backward) - 9 Layers
+**Space:** Back diagonal (Behind ear→Crown)
+- **L1-3:** 54.L1~L3 (22.5°~67.5°), 33.D3~D5, Slide Cut, 62.Backward
+- **L4-6:** 54.L3~L5 (67.5°~112.5°), 44.Graduation Decreasing, 86.Volume ${params56.volume_zone}
+- **L7-9:** 54.L5~L6 (112.5°~135°), Weight Flow Forward
 
-STEP6. Texturizing: [specific techniques]
+### 5-3. Diagonal Forward Section (70.Section-Diagonal-Forward) - 6 Layers
+**Space:** Side→Fringe
+- **L1-3:** 54.L4 (90°), 33.D1~D3, Side horizontal
+- **L4-6:** 54.L5~L6 (112.5°~135°), 42.Fringe connection
 
-STEP7. Styling: [specific methods]`,
+### 5-4. Vertical Section (70.Section-Vertical) - 12 Layers
+**Space:** 05.V Zone (Crown→Nape central axis)
+- **L1-4:** 54.L2~L3 (45°~67.5°), 52.Round Layer
+- **L5-8:** 54.L4~L6 (90°~135°), 89.Zone-B
+- **L9-12:** 54.L6~L8 (135°~180°), 75.Silhouette
+
+### 5-5. Diagonal Nape Line (49.Hemline) - 3 Layers
+**Space:** Nape line
+- **L1-3:** 64.Perimeter Line, 54.L0~L1, 83.Trimming
+
+### 5-6. Nape Zone (89.Zone-A) - 4 Layers
+**Space:** Neck area
+- **L1-4:** 54.L0~L2 (0°~45°), 20.Brick Cut, 88.Weight Sit
+
+### 5-7. Up-Scoop (89.Zone-C + 47.Head Point) - 6 Layers
+**Space:** Crown top
+- **L1-6:** 54.L5~L8 (112.5°~180°), 86.Volume High, 62.Forward
+
+**✓ Verify:** 2+9+6+12+3+4+6 = 42 layers
+
+STEP6. Texturizing
+- 81.Texturizing: Point Cut
+- 82.Zone: Mid~Low
+- 26.Corner Off
+
+STEP7. Styling
+- 18.Blow Dry: Round Brush
+- Volume: Crown
+- Finish: Natural`,
 
       ja: `あなたはHAIRGATORシステムの専門家です。
 
@@ -763,22 +825,53 @@ STEP3. スタイル形態:
 STEP4. 前髪長さ: 
 **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
 
-STEP5. ベースカット
-**インターナル進行:**
-Aゾーン: [具体的施術]
-Bゾーン: [具体的施術]
+STEP5. 42フォーミュラ ベースカット
 
-**エクスターナル進行:**
-Cゾーン: [具体的施術]
+### 5-1. 横セクション (70.Section-Horizontal) - 2層
+**空間:** 頭頂部 → 額
+- **L1:** 54.Lifting L0 (0°), 33.D4 (後方), 19.Blunt Cut
+- **L2:** 54.Lifting L1 (22.5°), 33.D4, 19.Blunt Cut
 
-**ダイレクション**: ${params56.direction_primary || 'D0'} (${directionDesc})
-**セクション**: ${params56.section_primary} (${sectionDesc})
-**リフティング**: ${liftingDescs}
-**ボリューム**: ${params56.volume_zone} (${volumeDesc})
+### 5-2. 後方斜めセクション (70.Section-Diagonal-Backward) - 9層
+**空間:** 後頭部斜め (耳後→頭頂)
+- **L1-3:** 54.L1~L3 (22.5°~67.5°), 33.D3~D5, Slide Cut, 62.Backward
+- **L4-6:** 54.L3~L5 (67.5°~112.5°), 44.Graduation Decreasing, 86.Volume ${params56.volume_zone}
+- **L7-9:** 54.L5~L6 (112.5°~135°), Weight Flow Forward
 
-STEP6. 質感処理: [具体的技法]
+### 5-3. 前方斜めセクション (70.Section-Diagonal-Forward) - 6層
+**空間:** 側面→前髪
+- **L1-3:** 54.L4 (90°), 33.D1~D3, 側面水平
+- **L4-6:** 54.L5~L6 (112.5°~135°), 42.Fringe 接続
 
-STEP7. スタイリング: [具体的方法]`,
+### 5-4. 縦セクション (70.Section-Vertical) - 12層
+**空間:** 05.V Zone (頭頂→襟足中央軸)
+- **L1-4:** 54.L2~L3 (45°~67.5°), 52.Round Layer
+- **L5-8:** 54.L4~L6 (90°~135°), 89.Zone-B
+- **L9-12:** 54.L6~L8 (135°~180°), 75.Silhouette
+
+### 5-5. 斜め襟足ライン (49.Hemline) - 3層
+**空間:** 襟足ライン
+- **L1-3:** 64.Perimeter Line, 54.L0~L1, 83.Trimming
+
+### 5-6. ネープゾーン (89.Zone-A) - 4層
+**空間:** 首部位
+- **L1-4:** 54.L0~L2 (0°~45°), 20.Brick Cut, 88.Weight Sit
+
+### 5-7. アップスクープ (89.Zone-C + 47.Head Point) - 6層
+**空間:** 頭頂最上部
+- **L1-6:** 54.L5~L8 (112.5°~180°), 86.Volume High, 62.Forward
+
+**✓ 検証:** 2+9+6+12+3+4+6 = 42層
+
+STEP6. 質感処理
+- 81.Texturizing: Point Cut
+- 82.Zone: 中段~下段
+- 26.Corner Off
+
+STEP7. スタイリング
+- 18.Blow Dry: Round Brush
+- Volume: 頭頂部
+- Finish: Natural`,
 
       zh: `你是HAIRGATOR系统专家。
 
@@ -797,22 +890,53 @@ STEP3. 风格形态:
 STEP4. 刘海长度: 
 **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
 
-STEP5. 基础剪裁
-**内部进行:**
-A区: [具体手法]
-B区: [具体手法]
+STEP5. 42配方 基础剪裁
 
-**外部进行:**
-C区: [具体手法]
+### 5-1. 横向分区 (70.Section-Horizontal) - 2层
+**空间:** 头顶 → 额头
+- **L1:** 54.Lifting L0 (0°), 33.D4 (后方), 19.Blunt Cut
+- **L2:** 54.Lifting L1 (22.5°), 33.D4, 19.Blunt Cut
 
-**方向**: ${params56.direction_primary || 'D0'} (${directionDesc})
-**分区**: ${params56.section_primary} (${sectionDesc})
-**提拉**: ${liftingDescs}
-**体积**: ${params56.volume_zone} (${volumeDesc})
+### 5-2. 后斜分区 (70.Section-Diagonal-Backward) - 9层
+**空间:** 后脑斜向 (耳后→头顶)
+- **L1-3:** 54.L1~L3 (22.5°~67.5°), 33.D3~D5, Slide Cut, 62.Backward
+- **L4-6:** 54.L3~L5 (67.5°~112.5°), 44.Graduation Decreasing, 86.Volume ${params56.volume_zone}
+- **L7-9:** 54.L5~L6 (112.5°~135°), Weight Flow Forward
 
-STEP6. 质感处理: [具体技法]
+### 5-3. 前斜分区 (70.Section-Diagonal-Forward) - 6层
+**空间:** 侧面→刘海
+- **L1-3:** 54.L4 (90°), 33.D1~D3, 侧面水平
+- **L4-6:** 54.L5~L6 (112.5°~135°), 42.Fringe 连接
 
-STEP7. 造型: [具体方法]`,
+### 5-4. 纵向分区 (70.Section-Vertical) - 12层
+**空间:** 05.V Zone (头顶→颈部中央轴)
+- **L1-4:** 54.L2~L3 (45°~67.5°), 52.Round Layer
+- **L5-8:** 54.L4~L6 (90°~135°), 89.Zone-B
+- **L9-12:** 54.L6~L8 (135°~180°), 75.Silhouette
+
+### 5-5. 斜向颈部线 (49.Hemline) - 3层
+**空间:** 颈部线
+- **L1-3:** 64.Perimeter Line, 54.L0~L1, 83.Trimming
+
+### 5-6. 颈部区 (89.Zone-A) - 4层
+**空间:** 颈部
+- **L1-4:** 54.L0~L2 (0°~45°), 20.Brick Cut, 88.Weight Sit
+
+### 5-7. 顶部区 (89.Zone-C + 47.Head Point) - 6层
+**空间:** 头顶最上部
+- **L1-6:** 54.L5~L8 (112.5°~180°), 86.Volume High, 62.Forward
+
+**✓ 验证:** 2+9+6+12+3+4+6 = 42层
+
+STEP6. 质感处理
+- 81.Texturizing: Point Cut
+- 82.Zone: 中段~下段
+- 26.Corner Off
+
+STEP7. 造型
+- 18.Blow Dry: Round Brush
+- Volume: 头顶
+- Finish: Natural`,
 
       vi: `Bạn là chuyên gia hệ thống HAIRGATOR.
 
@@ -831,22 +955,53 @@ STEP3. Hình thức phong cách:
 STEP4. Chiều dài tóc mái: 
 **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
 
-STEP5. Cắt cơ bản
-**Tiến triển nội bộ:**
-Vùng A: [kỹ thuật cụ thể]
-Vùng B: [kỹ thuật cụ thể]
+STEP5. 42 Công thức Cắt cơ bản
 
-**Tiến triển bên ngoài:**
-Vùng C: [kỹ thuật cụ thể]
+### 5-1. Phân ngang (70.Section-Horizontal) - 2 lớp
+**Không gian:** Đỉnh đầu → Trán
+- **L1:** 54.Lifting L0 (0°), 33.D4 (Sau), 19.Blunt Cut
+- **L2:** 54.Lifting L1 (22.5°), 33.D4, 19.Blunt Cut
 
-**Hướng**: ${params56.direction_primary || 'D0'} (${directionDesc})
-**Phân đoạn**: ${params56.section_primary} (${sectionDesc})
-**Nâng**: ${liftingDescs}
-**Âm lượng**: ${params56.volume_zone} (${volumeDesc})
+### 5-2. Phân chéo sau (70.Section-Diagonal-Backward) - 9 lớp
+**Không gian:** Chéo sau (Sau tai→Đỉnh)
+- **L1-3:** 54.L1~L3 (22.5°~67.5°), 33.D3~D5, Slide Cut, 62.Backward
+- **L4-6:** 54.L3~L5 (67.5°~112.5°), 44.Graduation Decreasing, 86.Volume ${params56.volume_zone}
+- **L7-9:** 54.L5~L6 (112.5°~135°), Weight Flow Forward
 
-STEP6. Xử lý kết cấu: [kỹ thuật cụ thể]
+### 5-3. Phân chéo trước (70.Section-Diagonal-Forward) - 6 lớp
+**Không gian:** Bên→Mái
+- **L1-3:** 54.L4 (90°), 33.D1~D3, Bên ngang
+- **L4-6:** 54.L5~L6 (112.5°~135°), 42.Fringe kết nối
 
-STEP7. Tạo kiểu: [phương pháp cụ thể]`
+### 5-4. Phân dọc (70.Section-Vertical) - 12 lớp
+**Không gian:** 05.V Zone (Đỉnh→Gáy trục giữa)
+- **L1-4:** 54.L2~L3 (45°~67.5°), 52.Round Layer
+- **L5-8:** 54.L4~L6 (90°~135°), 89.Zone-B
+- **L9-12:** 54.L6~L8 (135°~180°), 75.Silhouette
+
+### 5-5. Đường gáy chéo (49.Hemline) - 3 lớp
+**Không gian:** Đường gáy
+- **L1-3:** 64.Perimeter Line, 54.L0~L1, 83.Trimming
+
+### 5-6. Vùng gáy (89.Zone-A) - 4 lớp
+**Không gian:** Vùng cổ
+- **L1-4:** 54.L0~L2 (0°~45°), 20.Brick Cut, 88.Weight Sit
+
+### 5-7. Vùng đỉnh (89.Zone-C + 47.Head Point) - 6 lớp
+**Không gian:** Đỉnh đầu trên cùng
+- **L1-6:** 54.L5~L8 (112.5°~180°), 86.Volume High, 62.Forward
+
+**✓ Xác minh:** 2+9+6+12+3+4+6 = 42 lớp
+
+STEP6. Xử lý kết cấu
+- 81.Texturizing: Point Cut
+- 82.Zone: Giữa~Dưới
+- 26.Corner Off
+
+STEP7. Tạo kiểu
+- 18.Blow Dry: Round Brush
+- Volume: Đỉnh đầu
+- Finish: Natural`,
     };
 
     const systemPrompt = systemPromptTemplates[language] || systemPromptTemplates['ko'];
@@ -957,15 +1112,26 @@ STEP1. 스타일 설명: [2-3문장]
 STEP2. 스타일 길이: **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
 STEP3. 스타일 형태: **${params56.cut_form}**
 STEP4. 앞머리 길이: **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
-STEP5. 베이스 커트
-**인터널 진행:** A 존, B 존
-**엑스터널 진행:** C 존
-**다이렉션**: ${params56.direction_primary || 'D0'} (${directionDesc})
-**섹션**: ${params56.section_primary} (${sectionDesc})
-**리프팅**: ${liftingDescs}
-**볼륨**: ${params56.volume_zone} (${volumeDesc})
-STEP6. 질감처리: [구체적 기법]
-STEP7. 스타일링: [구체적 방법]`,
+STEP5. 42포뮬러 기초 커트
+### 5-1. 가로섹션 (70.Horizontal) - 2층
+- **L1-2:** 54.L0~L1, 33.D4, 19.Blunt
+### 5-2. 후대각섹션 (70.Diagonal-Backward) - 9층  
+- **L1-3:** 54.L1~L3, 33.D3~D5, Slide, 62.Backward
+- **L4-6:** 54.L3~L5, 44.Graduation, 86.Vol ${params56.volume_zone}
+- **L7-9:** 54.L5~L6, Weight Forward
+### 5-3. 전대각섹션 (70.Diagonal-Forward) - 6층
+- **L1-6:** 54.L4~L6, 33.D1~D3, 42.Fringe
+### 5-4. 세로섹션 (70.Vertical) - 12층
+- **L1-12:** 54.L2~L8, 05.V Zone, 52.Round, 75.Silhouette
+### 5-5. 현대각_백준 (49.Hemline) - 3층
+- **L1-3:** 64.Perimeter, 54.L0~L1, 83.Trimming
+### 5-6. 네이프존 (89.Zone-A) - 4층
+- **L1-4:** 54.L0~L2, 20.Brick, 88.Weight
+### 5-7. 업스컵 (89.Zone-C) - 6층
+- **L1-6:** 54.L5~L8, 86.Vol High, 62.Forward
+**✓ 42층**
+STEP6. 질감: 81.Point Cut, 82.Zone 중하단, 26.Corner Off
+STEP7. 스타일: 18.Blow Dry, Vol 정수리`,
 
       en: `You are a HAIRGATOR system expert.
 
@@ -976,15 +1142,26 @@ STEP1. Style Description: [2-3 sentences]
 STEP2. Style Length: **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
 STEP3. Style Form: **${params56.cut_form}**
 STEP4. Fringe Length: **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
-STEP5. Base Cut
-**Internal Progression:** Zone A, Zone B
-**External Progression:** Zone C
-**Direction**: ${params56.direction_primary || 'D0'} (${directionDesc})
-**Section**: ${params56.section_primary} (${sectionDesc})
-**Lifting**: ${liftingDescs}
-**Volume**: ${params56.volume_zone} (${volumeDesc})
-STEP6. Texturizing: [specific techniques]
-STEP7. Styling: [specific methods]`,
+STEP5. 42 Formula Base Cut
+### 5-1. Horizontal (70.Horizontal) - 2 layers
+- **L1-2:** 54.L0~L1, 33.D4, 19.Blunt
+### 5-2. Diagonal Backward (70.Diagonal-Backward) - 9 layers  
+- **L1-3:** 54.L1~L3, 33.D3~D5, Slide, 62.Backward
+- **L4-6:** 54.L3~L5, 44.Graduation, 86.Vol ${params56.volume_zone}
+- **L7-9:** 54.L5~L6, Weight Forward
+### 5-3. Diagonal Forward (70.Diagonal-Forward) - 6 layers
+- **L1-6:** 54.L4~L6, 33.D1~D3, 42.Fringe
+### 5-4. Vertical (70.Vertical) - 12 layers
+- **L1-12:** 54.L2~L8, 05.V Zone, 52.Round, 75.Silhouette
+### 5-5. Diagonal Nape (49.Hemline) - 3 layers
+- **L1-3:** 64.Perimeter, 54.L0~L1, 83.Trimming
+### 5-6. Nape Zone (89.Zone-A) - 4 layers
+- **L1-4:** 54.L0~L2, 20.Brick, 88.Weight
+### 5-7. Up-Scoop (89.Zone-C) - 6 layers
+- **L1-6:** 54.L5~L8, 86.Vol High, 62.Forward
+**✓ 42 layers**
+STEP6. Texture: 81.Point Cut, 82.Zone mid-low, 26.Corner Off
+STEP7. Style: 18.Blow Dry, Vol crown`,
 
       ja: `あなたはHAIRGATORシステムの専門家です。
 
@@ -995,15 +1172,26 @@ STEP1. スタイル説明: [2-3文]
 STEP2. スタイル長さ: **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
 STEP3. スタイル形態: **${params56.cut_form}**
 STEP4. 前髪長さ: **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
-STEP5. ベースカット
-**インターナル進行:** Aゾーン, Bゾーン
-**エクスターナル進行:** Cゾーン
-**ダイレクション**: ${params56.direction_primary || 'D0'} (${directionDesc})
-**セクション**: ${params56.section_primary} (${sectionDesc})
-**リフティング**: ${liftingDescs}
-**ボリューム**: ${params56.volume_zone} (${volumeDesc})
-STEP6. 質感処理: [具体的技法]
-STEP7. スタイリング: [具体的方法]`,
+STEP5. 42フォーミュラ ベースカット
+### 5-1. 横 (70.Horizontal) - 2層
+- **L1-2:** 54.L0~L1, 33.D4, 19.Blunt
+### 5-2. 後方斜め (70.Diagonal-Backward) - 9層  
+- **L1-3:** 54.L1~L3, 33.D3~D5, Slide, 62.Backward
+- **L4-6:** 54.L3~L5, 44.Graduation, 86.Vol ${params56.volume_zone}
+- **L7-9:** 54.L5~L6, Weight Forward
+### 5-3. 前方斜め (70.Diagonal-Forward) - 6層
+- **L1-6:** 54.L4~L6, 33.D1~D3, 42.Fringe
+### 5-4. 縦 (70.Vertical) - 12層
+- **L1-12:** 54.L2~L8, 05.V Zone, 52.Round, 75.Silhouette
+### 5-5. 斜め襟足 (49.Hemline) - 3層
+- **L1-3:** 64.Perimeter, 54.L0~L1, 83.Trimming
+### 5-6. ネープ (89.Zone-A) - 4層
+- **L1-4:** 54.L0~L2, 20.Brick, 88.Weight
+### 5-7. アップスクープ (89.Zone-C) - 6層
+- **L1-6:** 54.L5~L8, 86.Vol High, 62.Forward
+**✓ 42層**
+STEP6. 質感: 81.Point Cut, 82.Zone 中下段, 26.Corner Off
+STEP7. スタイル: 18.Blow Dry, Vol 頭頂`,
 
       zh: `你是HAIRGATOR系统专家。
 
@@ -1014,15 +1202,26 @@ STEP1. 风格说明: [2-3句]
 STEP2. 风格长度: **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
 STEP3. 风格形态: **${params56.cut_form}**
 STEP4. 刘海长度: **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
-STEP5. 基础剪裁
-**内部进行:** A区, B区
-**外部进行:** C区
-**方向**: ${params56.direction_primary || 'D0'} (${directionDesc})
-**分区**: ${params56.section_primary} (${sectionDesc})
-**提拉**: ${liftingDescs}
-**体积**: ${params56.volume_zone} (${volumeDesc})
-STEP6. 质感处理: [具体技法]
-STEP7. 造型: [具体方法]`,
+STEP5. 42配方 基础剪裁
+### 5-1. 横向 (70.Horizontal) - 2层
+- **L1-2:** 54.L0~L1, 33.D4, 19.Blunt
+### 5-2. 后斜 (70.Diagonal-Backward) - 9层  
+- **L1-3:** 54.L1~L3, 33.D3~D5, Slide, 62.Backward
+- **L4-6:** 54.L3~L5, 44.Graduation, 86.Vol ${params56.volume_zone}
+- **L7-9:** 54.L5~L6, Weight Forward
+### 5-3. 前斜 (70.Diagonal-Forward) - 6层
+- **L1-6:** 54.L4~L6, 33.D1~D3, 42.Fringe
+### 5-4. 纵向 (70.Vertical) - 12层
+- **L1-12:** 54.L2~L8, 05.V Zone, 52.Round, 75.Silhouette
+### 5-5. 斜向颈 (49.Hemline) - 3层
+- **L1-3:** 64.Perimeter, 54.L0~L1, 83.Trimming
+### 5-6. 颈部区 (89.Zone-A) - 4层
+- **L1-4:** 54.L0~L2, 20.Brick, 88.Weight
+### 5-7. 顶部区 (89.Zone-C) - 6层
+- **L1-6:** 54.L5~L8, 86.Vol High, 62.Forward
+**✓ 42层**
+STEP6. 质感: 81.Point Cut, 82.Zone 中下, 26.Corner Off
+STEP7. 造型: 18.Blow Dry, Vol 头顶`,
 
       vi: `Bạn là chuyên gia hệ thống HAIRGATOR.
 
@@ -1033,15 +1232,26 @@ STEP1. Mô tả phong cách: [2-3 câu]
 STEP2. Chiều dài phong cách: **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
 STEP3. Hình thức phong cách: **${params56.cut_form}**
 STEP4. Chiều dài tóc mái: **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
-STEP5. Cắt cơ bản
-**Tiến triển nội bộ:** Vùng A, Vùng B
-**Tiến triển bên ngoài:** Vùng C
-**Hướng**: ${params56.direction_primary || 'D0'} (${directionDesc})
-**Phân đoạn**: ${params56.section_primary} (${sectionDesc})
-**Nâng**: ${liftingDescs}
-**Âm lượng**: ${params56.volume_zone} (${volumeDesc})
-STEP6. Xử lý kết cấu: [kỹ thuật cụ thể]
-STEP7. Tạo kiểu: [phương pháp cụ thể]`
+STEP5. 42 Công thức Cắt cơ bản
+### 5-1. Ngang (70.Horizontal) - 2 lớp
+- **L1-2:** 54.L0~L1, 33.D4, 19.Blunt
+### 5-2. Chéo sau (70.Diagonal-Backward) - 9 lớp  
+- **L1-3:** 54.L1~L3, 33.D3~D5, Slide, 62.Backward
+- **L4-6:** 54.L3~L5, 44.Graduation, 86.Vol ${params56.volume_zone}
+- **L7-9:** 54.L5~L6, Weight Forward
+### 5-3. Chéo trước (70.Diagonal-Forward) - 6 lớp
+- **L1-6:** 54.L4~L6, 33.D1~D3, 42.Fringe
+### 5-4. Dọc (70.Vertical) - 12 lớp
+- **L1-12:** 54.L2~L8, 05.V Zone, 52.Round, 75.Silhouette
+### 5-5. Chéo gáy (49.Hemline) - 3 lớp
+- **L1-3:** 64.Perimeter, 54.L0~L1, 83.Trimming
+### 5-6. Vùng gáy (89.Zone-A) - 4 lớp
+- **L1-4:** 54.L0~L2, 20.Brick, 88.Weight
+### 5-7. Vùng đỉnh (89.Zone-C) - 6 lớp
+- **L1-6:** 54.L5~L8, 86.Vol High, 62.Forward
+**✓ 42 lớp**
+STEP6. Kết cấu: 81.Point Cut, 82.Zone giữa-dưới, 26.Corner Off
+STEP7. Tạo kiểu: 18.Blow Dry, Vol đỉnh`,
     };
 
     const systemPrompt = systemPromptTemplates[language] || systemPromptTemplates['ko'];
