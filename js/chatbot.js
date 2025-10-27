@@ -243,7 +243,7 @@ class HairGatorChatbot {
             <div class="message-content" id="welcome-message">
               <p><strong>HAIR Recipe v2.0</strong></p>
               <p id="welcome-text">${texts.welcome}</p>
-              <p style="font-size:0.85em;opacity:0.7;">✨ 📑 눌러 용어 및 자세한 설명을 확인하세요</p>
+              <p style="font-size:0.85em;opacity:0.7;">📑를 눌러 자세한 용어 및 설명을 확인하세요</p>
             </div>
           </div>
         </div>
@@ -269,14 +269,7 @@ class HairGatorChatbot {
             
             <!-- 색인 버튼 -->
             <button id="index-btn" class="index-btn" title="색인 보기">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="8" y1="6" x2="21" y2="6"></line>
-                <line x1="8" y1="12" x2="21" y2="12"></line>
-                <line x1="8" y1="18" x2="21" y2="18"></line>
-                <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                <line x1="3" y1="18" x2="3.01" y2="18"></line>
-              </svg>
+              <span style="font-size: 20px;">📑</span>
             </button>
 
             <button id="send-btn" class="send-btn" title="전송">
