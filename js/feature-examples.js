@@ -106,8 +106,8 @@ async function performFaceAnalysis(imageFile) {
             const imageRef = storage.ref().child(`face-analysis/${Date.now()}.jpg`);
             await imageRef.put(imageFile);
             const imageUrl = await imageRef.getDownloadURL();
-            
-            // AKOOL API 호출 (실제 구현에서는 서버 사이드에서 처리)
+
+            // Face Analysis API 호출 (실제 구현에서는 서버 사이드에서 처리)
             const response = await fetch('/api/face-analysis', {
                 method: 'POST',
                 headers: {
