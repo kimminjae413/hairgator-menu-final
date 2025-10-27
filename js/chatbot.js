@@ -351,57 +351,66 @@ class HairGatorChatbot {
     languageBtn.addEventListener('click', toggleDropdown);
     languageBtn.addEventListener('touchstart', toggleDropdown, { passive: false });
 
-    // 전역 처리 플래그 (버튼별이 아닌 전역)
-    this.isChangingLanguage = false;
+    // 🔥 언어 선택 핸들러 - 최대한 단순하게
+    const langButtons = document.querySelectorAll('.lang-option');
     
+    langButtons.forEach(btn => {
+      // 모든 이벤트 제거하고 처음부터 (중복 방지)
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+    });
+    
+    // 새로 추가된 버튼들에 이벤트 등록
     document.querySelectorAll('.lang-option').forEach(btn => {
-      // WebView 환경을 위한 통합 핸들러
-      const handleLanguageSelect = (e) => {
-        console.log(`🔍 [${e.type}] 언어 버튼 클릭됨:`, e.currentTarget.getAttribute('data-lang'));
-        
-        // 전역 플래그로 중복 실행 방지
-        if (this.isChangingLanguage) {
-          console.log('⏭️ 이미 처리 중 - 무시');
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-        
-        this.isChangingLanguage = true;
+      btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         
-        const lang = e.currentTarget.getAttribute('data-lang');
-        console.log(`🎯 언어 선택 확정: ${lang}`);
+        const lang = btn.getAttribute('data-lang');
+        console.log('🎯 언어 클릭:', lang);
         
-        // 드롭다운 먼저 닫기
+        // 드롭다운 닫기
         const dropdown = document.getElementById('language-dropdown');
         if (dropdown) {
           dropdown.classList.add('hidden');
         }
         
+        // active 상태 즉시 업데이트
+        document.querySelectorAll('.lang-option').forEach(b => {
+          b.classList.remove('active');
+        });
+        btn.classList.add('active');
+        
         // 언어 변경
-        setTimeout(() => {
-          this.changeLanguage(lang);
-          // 플래그 리셋
-          setTimeout(() => {
-            this.isChangingLanguage = false;
-            console.log('✅ 언어 변경 완료 - 다음 클릭 가능');
-          }, 300);
-        }, 50);
-      };
-      
-      // click만 사용 (touchend 제거 - 중복 실행 방지)
-      btn.addEventListener('click', handleLanguageSelect);
-      
-      // 터치 피드백만 추가
-      btn.addEventListener('touchstart', (e) => {
-        console.log('👆 터치 피드백');
-        e.currentTarget.style.backgroundColor = 'rgba(33, 150, 243, 0.2)';
-        setTimeout(() => {
-          e.currentTarget.style.backgroundColor = '';
-        }, 200);
-      }, { passive: true });
+        this.currentLanguage = lang;
+        this.setStoredLanguage(lang);
+        
+        const texts = this.getTexts();
+        
+        // DOM 업데이트
+        const titleEl = document.getElementById('chatbot-title');
+        if (titleEl) titleEl.textContent = texts.title;
+        
+        const inputEl = document.getElementById('chatbot-input');
+        if (inputEl) inputEl.placeholder = texts.placeholder;
+        
+        const indexTitleEl = document.getElementById('index-modal-title');
+        if (indexTitleEl) indexTitleEl.textContent = texts.indexTitle;
+        
+        const messagesDiv = document.getElementById('chatbot-messages');
+        if (messagesDiv) {
+          messagesDiv.innerHTML = `
+            <div class="welcome-message">
+              <div class="welcome-icon">👋</div>
+              <div class="welcome-text">${texts.welcome}</div>
+            </div>
+          `;
+        }
+        
+        this.conversationHistory = [];
+        
+        console.log('✅ 언어 변경 완료:', lang);
+      }, { passive: false });
     });
 
     // 색인 버튼
@@ -579,16 +588,6 @@ class HairGatorChatbot {
       }
       
       // 대화 기록 초기화
-      
-      // ✅ 언어 버튼 active 상태 업데이트
-      document.querySelectorAll('.lang-option').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      const activeBtn = document.querySelector(`.lang-option[data-lang="${lang}"]`);
-      if (activeBtn) {
-        activeBtn.classList.add('active');
-        console.log(`✅ 버튼 active: ${lang}`);
-      }
       this.conversationHistory = [];
       
       console.log(`🎉 [COMPLETE] 언어 변경 완료: ${lang}`);
