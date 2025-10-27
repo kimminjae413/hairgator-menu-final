@@ -12,9 +12,33 @@ class HairGatorChatbot {
     this.supabaseUrl = 'https://bhsbwbeisqzgipvzpvym.supabase.co';
     this.isOpen = false;
     this.conversationHistory = [];
-    this.currentLanguage = localStorage.getItem('hairgator_chatbot_lang') || 'ko';
+    
+    // 웹뷰용 localStorage fallback
+    this.currentLanguage = this.getStoredLanguage();
     this.terms89Map = this.init89TermsMap(); // 89용어 매핑
     this.init();
+  }
+  
+  // localStorage 안전하게 접근 (웹뷰용)
+  getStoredLanguage() {
+    try {
+      return localStorage.getItem('hairgator_chatbot_lang') || 'ko';
+    } catch (e) {
+      console.warn('⚠️ localStorage 접근 실패, 기본값 사용:', e);
+      return 'ko';
+    }
+  }
+  
+  // localStorage 안전하게 저장 (웹뷰용)
+  setStoredLanguage(lang) {
+    try {
+      localStorage.setItem('hairgator_chatbot_lang', lang);
+      console.log(`✅ localStorage 저장 성공: ${lang}`);
+      return true;
+    } catch (e) {
+      console.warn('⚠️ localStorage 저장 실패:', e);
+      return false;
+    }
   }
 
   // 89용어 매핑 테이블 (하이라이팅용)
@@ -319,12 +343,20 @@ class HairGatorChatbot {
       }
     });
 
-    // 언어 선택
-    document.getElementById('language-btn').addEventListener('click', (e) => {
+    // 언어 선택 - WebView를 위한 터치 이벤트 추가
+    const languageBtn = document.getElementById('language-btn');
+    const languageDropdown = document.getElementById('language-dropdown');
+    
+    const toggleDropdown = (e) => {
       e.stopPropagation();
-      const dropdown = document.getElementById('language-dropdown');
-      dropdown.classList.toggle('hidden');
-    });
+      e.preventDefault();
+      console.log('🌐 언어 버튼 클릭/터치됨');
+      languageDropdown.classList.toggle('hidden');
+      console.log('드롭다운 상태:', languageDropdown.classList.contains('hidden') ? '숨김' : '표시');
+    };
+    
+    languageBtn.addEventListener('click', toggleDropdown);
+    languageBtn.addEventListener('touchstart', toggleDropdown, { passive: false });
 
     document.querySelectorAll('.lang-option').forEach(btn => {
       // WebView 환경을 위한 통합 핸들러
@@ -474,20 +506,24 @@ class HairGatorChatbot {
   changeLanguage(lang) {
     console.log(`🌍 [START] 언어 변경 시작: ${this.currentLanguage} → ${lang}`);
     
-    // WebView에서 이벤트가 제대로 발생했는지 확인
-    if (window.ReactNativeWebView) {
+    // WebView 환경 감지
+    const isWebView = !!(window.ReactNativeWebView || navigator.userAgent.includes('wv'));
+    if (isWebView) {
       console.log('📱 WebView 환경 감지됨');
     }
     
+    // 언어 업데이트
     this.currentLanguage = lang;
-    localStorage.setItem('hairgator_chatbot_lang', lang);
-    console.log(`💾 localStorage 저장 완료: ${lang}`);
+    this.setStoredLanguage(lang);
     
     const texts = this.getTexts();
     console.log(`📝 새로운 텍스트:`, texts);
     
-    // WebView에서는 DOM 업데이트가 느릴 수 있으므로 명시적으로 처리
+    // WebView에서는 DOM 업데이트를 명시적으로, 그리고 더 긴 딜레이로
+    const updateDelay = isWebView ? 150 : 10;
+    
     setTimeout(() => {
+      // 타이틀 변경
       const titleEl = document.getElementById('chatbot-title');
       if (titleEl) {
         titleEl.textContent = texts.title;
@@ -496,28 +532,58 @@ class HairGatorChatbot {
         console.error('❌ chatbot-title 요소를 찾을 수 없음');
       }
       
+      // placeholder 변경
       const inputEl = document.getElementById('chatbot-input');
       if (inputEl) {
         inputEl.placeholder = texts.placeholder;
         console.log(`✅ placeholder 변경: ${texts.placeholder}`);
       }
       
+      // 색인 제목 변경
       const indexTitleEl = document.getElementById('index-modal-title');
       if (indexTitleEl) {
         indexTitleEl.textContent = texts.indexTitle;
         console.log(`✅ 색인 제목 변경: ${texts.indexTitle}`);
       }
       
+      // 환영 메시지 변경
       const welcomeTextEl = document.getElementById('welcome-text');
       if (welcomeTextEl) {
         welcomeTextEl.textContent = texts.welcome;
         console.log(`✅ 환영 메시지 변경: ${texts.welcome}`);
       }
       
+      // 메시지 영역 초기화
       const messagesDiv = document.getElementById('chatbot-messages');
       if (messagesDiv) {
         messagesDiv.innerHTML = `
           <div class="welcome-message">
+            <div class="welcome-icon">👋</div>
+            <div class="welcome-text" id="welcome-text">${texts.welcome}</div>
+            <div class="welcome-subtitle">${texts.uploadPrompt}</div>
+          </div>
+        `;
+        console.log(`✅ 환영 메시지 영역 업데이트`);
+      }
+      
+      // 대화 기록 초기화
+      this.conversationHistory = [];
+      
+      console.log(`🎉 [COMPLETE] 언어 변경 완료: ${lang}`);
+      
+      // WebView에 알림 (선택사항)
+      if (window.ReactNativeWebView) {
+        try {
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: 'LANGUAGE_CHANGED',
+            language: lang
+          }));
+        } catch (e) {
+          console.warn('WebView postMessage 실패:', e);
+        }
+      }
+    }, updateDelay);
+  }
             <div class="welcome-icon">✂️</div>
             <div class="welcome-text" id="welcome-text">${texts.welcome}</div>
           </div>
