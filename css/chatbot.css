@@ -1430,8 +1430,8 @@
 
 /* 뷰어 컨트롤 버튼 */
 .viewer-close,
-.viewer-prev,
-.viewer-next {
+.image-viewer-modal .viewer-prev,
+.image-viewer-modal .viewer-next {
   position: absolute;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(10px);
@@ -1449,15 +1449,15 @@
 }
 
 .viewer-close:hover,
-.viewer-prev:hover,
-.viewer-next:hover {
+.image-viewer-modal .viewer-prev:hover,
+.image-viewer-modal .viewer-next:hover {
   background: rgba(255, 255, 255, 0.25);
   transform: scale(1.1);
 }
 
 .viewer-close:active,
-.viewer-prev:active,
-.viewer-next:active {
+.image-viewer-modal .viewer-prev:active,
+.image-viewer-modal .viewer-next:active {
   transform: scale(0.95);
 }
 
@@ -1469,21 +1469,21 @@
   line-height: 1;
 }
 
-.viewer-prev {
+.image-viewer-modal .viewer-prev {
   left: 20px;
   bottom: 100px;
 }
 
-.viewer-prev:hover {
+.image-viewer-modal .viewer-prev:hover {
   transform: scale(1.1);
 }
 
-.viewer-next {
+.image-viewer-modal .viewer-next {
   right: 20px;
   bottom: 100px;
 }
 
-.viewer-next:hover {
+.image-viewer-modal .viewer-next:hover {
   transform: scale(1.1);
 }
 
@@ -1513,8 +1513,8 @@
     height: 120px;
   }
   
-  .viewer-prev,
-  .viewer-next {
+  .image-viewer-modal .viewer-prev,
+  .image-viewer-modal .viewer-next {
     font-size: 28px;
     padding: 8px 12px;
   }
