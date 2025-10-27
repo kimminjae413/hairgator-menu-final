@@ -356,7 +356,7 @@ class HairGatorChatbot {
       const log = document.getElementById('debug-log') || (() => {
         const div = document.createElement('div');
         div.id = 'debug-log';
-        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;';
+        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;pointer-events:none;';
         document.body.appendChild(div);
         return div;
       })();
@@ -1240,7 +1240,7 @@ class HairGatorChatbot {
       const log = document.getElementById('debug-log') || (() => {
         const div = document.createElement('div');
         div.id = 'debug-log';
-        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;';
+        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;pointer-events:none;';
         document.body.appendChild(div);
         return div;
       })();
@@ -1312,9 +1312,24 @@ class HairGatorChatbot {
     const langBtns = dropdown.querySelectorAll('.lang-option');
     showLog('🔍 버튼 개수: ' + langBtns.length);
     
+    // 드롭다운 위치 확인
+    const dropdownRect = dropdown.getBoundingClientRect();
+    showLog('📍 드롭다운 위치: top=' + Math.round(dropdownRect.top) + ' left=' + Math.round(dropdownRect.left));
+    
     langBtns.forEach(function(btn, index) {
       const lang = btn.getAttribute('data-lang');
-      showLog('📝 ' + index + '번 시작: ' + lang);
+      
+      // 각 버튼의 위치 확인
+      const btnRect = btn.getBoundingClientRect();
+      showLog('📍 ' + lang + ' 위치: top=' + Math.round(btnRect.top) + ' left=' + Math.round(btnRect.left) + ' width=' + Math.round(btnRect.width) + ' height=' + Math.round(btnRect.height));
+      
+      // ⭐ 강제로 터치 가능하도록 스타일 적용
+      btn.style.pointerEvents = 'auto';
+      btn.style.touchAction = 'auto';
+      btn.style.position = 'relative';
+      btn.style.zIndex = '10001';  // 드롭다운보다 높게
+      btn.style.display = 'block';
+      btn.style.width = '100%';
       
       // onclick 직접 할당 (가장 안정적)
       btn.onclick = function(e) {
