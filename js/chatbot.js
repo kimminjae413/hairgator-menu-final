@@ -1243,60 +1243,82 @@ class HairGatorChatbot {
       log.scrollTop = log.scrollHeight;
     };
     
-    showLog('🔄 재등록 시작');
+    showLog('🔄 재등록 시작 (이벤트 위임)');
     
     const self = this;
-    document.querySelectorAll('.lang-option').forEach(function(btn) {
-      const lang = btn.getAttribute('data-lang');
-      showLog('등록: ' + lang);
-      
-      // 기존 이벤트 제거
-      const newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-      
-      // 새 버튼에 이벤트 등록 (캡처 단계)
-      newBtn.addEventListener('click', function(e) {
-        showLog('🎯 CLICK: ' + lang);
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();  // 다른 이벤트 리스너 차단
-        
-        const dropdown = document.getElementById('language-dropdown');
-        if (dropdown) dropdown.classList.add('hidden');
-        
-        self.currentLanguage = lang;
-        self.setStoredLanguage(lang);
-        const texts = self.getTexts();
-        
-        const title = document.getElementById('chatbot-title');
-        if (title) title.textContent = texts.title;
-        
-        const input = document.getElementById('chatbot-input');
-        if (input) input.placeholder = texts.placeholder;
-        
-        const msgs = document.getElementById('chatbot-messages');
-        if (msgs) {
-          msgs.innerHTML = '<div class="welcome-message"><div class="welcome-icon">👋</div><div class="welcome-text">' + texts.welcome + '</div></div>';
-        }
-        
-        self.conversationHistory = [];
-        showLog('✅ ' + lang);
-        
-        setTimeout(function() { self.reattachLanguageHandlers(); }, 100);
-      }, { capture: true });  // 캡처 단계에서 먼저 처리
-      
-      // 터치 이벤트도 동일하게
-      newBtn.addEventListener('touchend', function(e) {
-        showLog('👆 TOUCH: ' + lang);
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        
-        newBtn.click();  // 클릭 이벤트로 위임
-      }, { capture: true, passive: false });
-    });
+    const dropdown = document.getElementById('language-dropdown');
     
-    showLog('✅ 재등록 완료');
+    if (!dropdown) {
+      showLog('⚠️ 드롭다운 없음');
+      return;
+    }
+    
+    // 기존 이벤트 리스너 제거를 위해 복제
+    const newDropdown = dropdown.cloneNode(true);
+    dropdown.parentNode.replaceChild(newDropdown, dropdown);
+    
+    // 드롭다운에 단 하나의 이벤트만 등록 (이벤트 위임)
+    newDropdown.addEventListener('click', function(e) {
+      e.stopPropagation();
+      
+      // 클릭된 요소가 lang-option인지 확인
+      const target = e.target.closest('.lang-option');
+      if (!target) return;
+      
+      const lang = target.getAttribute('data-lang');
+      if (!lang) return;
+      
+      showLog('🎯 CLICK: ' + lang);
+      
+      // 드롭다운 닫기
+      newDropdown.classList.add('hidden');
+      
+      // 언어 변경
+      self.currentLanguage = lang;
+      self.setStoredLanguage(lang);
+      showLog('💾 저장: ' + lang);
+      
+      const texts = self.getTexts();
+      
+      // DOM 업데이트
+      const title = document.getElementById('chatbot-title');
+      if (title) {
+        title.textContent = texts.title;
+        showLog('✅ 타이틀: ' + texts.title);
+      }
+      
+      const input = document.getElementById('chatbot-input');
+      if (input) input.placeholder = texts.placeholder;
+      
+      const msgs = document.getElementById('chatbot-messages');
+      if (msgs) {
+        msgs.innerHTML = '<div class="welcome-message"><div class="welcome-icon">👋</div><div class="welcome-text">' + texts.welcome + '</div></div>';
+      }
+      
+      self.conversationHistory = [];
+      showLog('✅ 완료: ' + lang);
+      
+      // 재등록
+      setTimeout(function() {
+        self.reattachLanguageHandlers();
+      }, 100);
+    }, { capture: true });
+    
+    // 터치 이벤트
+    newDropdown.addEventListener('touchend', function(e) {
+      const target = e.target.closest('.lang-option');
+      if (!target) return;
+      
+      e.preventDefault();
+      showLog('👆 TOUCH: ' + target.getAttribute('data-lang'));
+      
+      // 클릭 이벤트 트리거
+      target.click();
+    }, { capture: true, passive: false });
+    
+    // 등록된 언어 개수 확인
+    const langBtns = newDropdown.querySelectorAll('.lang-option');
+    showLog('✅ 재등록 완료: ' + langBtns.length + '개');
   }
 }
 
