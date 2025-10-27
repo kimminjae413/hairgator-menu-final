@@ -584,27 +584,6 @@ class HairGatorChatbot {
       }
     }, updateDelay);
   }
-            <div class="welcome-icon">✂️</div>
-            <div class="welcome-text" id="welcome-text">${texts.welcome}</div>
-          </div>
-        `;
-        console.log(`✅ 메시지 영역 초기화 완료`);
-      }
-      
-      this.conversationHistory = [];
-      this.showLanguageChangeFeedback(lang);
-      
-      console.log(`✅ [END] 언어 변경 완료: ${lang}`);
-      
-      // WebView에 메시지 전송 (네이티브 앱에서 감지 가능)
-      if (window.ReactNativeWebView) {
-        window.ReactNativeWebView.postMessage(JSON.stringify({
-          type: 'LANGUAGE_CHANGED',
-          language: lang
-        }));
-      }
-    }, 100); // WebView 렌더링 대기
-  }
 
   showLanguageChangeFeedback(lang) {
     const langNames = {
