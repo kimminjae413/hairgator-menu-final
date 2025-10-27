@@ -1287,10 +1287,27 @@ class HairGatorChatbot {
   }
 
   reattachLanguageHandlers() {
+    const showLog = (msg) => {
+      const log = document.getElementById('debug-log') || (() => {
+        const div = document.createElement('div');
+        div.id = 'debug-log';
+        div.style.cssText = 'position:fixed;top:10px;left:10px;background:black;color:lime;padding:10px;font-size:10px;z-index:99999;max-width:250px;max-height:150px;overflow:auto;border:2px solid lime;';
+        document.body.appendChild(div);
+        return div;
+      })();
+      const time = new Date().toLocaleTimeString();
+      log.innerHTML += '<div>' + time + ': ' + msg + '</div>';
+      log.scrollTop = log.scrollHeight;
+    };
+    
+    showLog('🔄 재등록 시작');
+    
     const self = this;
     document.querySelectorAll('.lang-option').forEach(function(btn) {
       const lang = btn.getAttribute('data-lang');
+      showLog('등록: ' + lang);
       btn.onclick = function(e) {
+        showLog('🎯 CLICK: ' + lang);
         e.preventDefault();
         e.stopPropagation();
         const dropdown = document.getElementById('language-dropdown');
@@ -1307,10 +1324,13 @@ class HairGatorChatbot {
           msgs.innerHTML = '<div class="welcome-message"><div class="welcome-icon">👋</div><div class="welcome-text">' + texts.welcome + '</div></div>';
         }
         self.conversationHistory = [];
+        showLog('✅ ' + lang);
         setTimeout(function() { self.reattachLanguageHandlers(); }, 100);
       };
       btn.ontouchend = btn.onclick;
     });
+    
+    showLog('✅ 재등록 완료');
   }
 }
 
