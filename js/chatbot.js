@@ -580,6 +580,16 @@ class HairGatorChatbot {
       
       console.log(`🎉 [COMPLETE] 언어 변경 완료: ${lang}`);
       
+      // ✅ 언어 버튼 active 상태 업데이트 (웹뷰용 필수!)
+      document.querySelectorAll('.lang-option').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      const activeBtn = document.querySelector(`.lang-option[data-lang="${lang}"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+        console.log(`✅ 언어 버튼 active 설정: ${lang}`);
+      }
+      
       // WebView에 알림 (선택사항)
       if (window.ReactNativeWebView) {
         try {
