@@ -327,21 +327,36 @@ class HairGatorChatbot {
     });
 
     document.querySelectorAll('.lang-option').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      // WebView 환경을 위한 통합 핸들러
+      const handleLanguageSelect = (e) => {
         e.preventDefault();
         e.stopPropagation();
+        
         const lang = e.currentTarget.getAttribute('data-lang');
-        this.changeLanguage(lang);
-        document.getElementById('language-dropdown').classList.add('hidden');
-      });
+        console.log(`🎯 언어 선택됨: ${lang}`);
+        
+        // 드롭다운 먼저 닫기
+        const dropdown = document.getElementById('language-dropdown');
+        if (dropdown) {
+          dropdown.classList.add('hidden');
+        }
+        
+        // 약간의 딜레이 후 언어 변경 (WebView 안정성)
+        setTimeout(() => {
+          this.changeLanguage(lang);
+        }, 50);
+      };
       
-      btn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const lang = e.currentTarget.getAttribute('data-lang');
-        this.changeLanguage(lang);
-        document.getElementById('language-dropdown').classList.add('hidden');
-      }, { passive: false });
+      // 여러 이벤트 타입 모두 처리
+      btn.addEventListener('click', handleLanguageSelect);
+      btn.addEventListener('touchend', handleLanguageSelect, { passive: false });
+      btn.addEventListener('touchstart', (e) => {
+        // 터치 피드백
+        e.currentTarget.style.backgroundColor = 'rgba(33, 150, 243, 0.2)';
+        setTimeout(() => {
+          e.currentTarget.style.backgroundColor = '';
+        }, 200);
+      }, { passive: true });
     });
 
     // 색인 버튼
@@ -457,39 +472,72 @@ class HairGatorChatbot {
   }
 
   changeLanguage(lang) {
-    console.log(`🌍 언어 변경: ${this.currentLanguage} → ${lang}`);
+    console.log(`🌍 [START] 언어 변경 시작: ${this.currentLanguage} → ${lang}`);
+    
+    // WebView에서 이벤트가 제대로 발생했는지 확인
+    if (window.ReactNativeWebView) {
+      console.log('📱 WebView 환경 감지됨');
+    }
     
     this.currentLanguage = lang;
     localStorage.setItem('hairgator_chatbot_lang', lang);
+    console.log(`💾 localStorage 저장 완료: ${lang}`);
     
     const texts = this.getTexts();
+    console.log(`📝 새로운 텍스트:`, texts);
     
-    const titleEl = document.getElementById('chatbot-title');
-    if (titleEl) titleEl.textContent = texts.title;
-    
-    const inputEl = document.getElementById('chatbot-input');
-    if (inputEl) inputEl.placeholder = texts.placeholder;
-    
-    const indexTitleEl = document.getElementById('index-modal-title');
-    if (indexTitleEl) indexTitleEl.textContent = texts.indexTitle;
-    
-    const welcomeTextEl = document.getElementById('welcome-text');
-    if (welcomeTextEl) welcomeTextEl.textContent = texts.welcome;
-    
-    const messagesDiv = document.getElementById('chatbot-messages');
-    if (messagesDiv) {
-      messagesDiv.innerHTML = `
-        <div class="welcome-message">
-          <div class="welcome-icon">✂️</div>
-          <div class="welcome-text" id="welcome-text">${texts.welcome}</div>
-        </div>
-      `;
-    }
-    
-    this.conversationHistory = [];
-    this.showLanguageChangeFeedback(lang);
-    
-    console.log(`✅ 언어 변경 완료: ${lang}`);
+    // WebView에서는 DOM 업데이트가 느릴 수 있으므로 명시적으로 처리
+    setTimeout(() => {
+      const titleEl = document.getElementById('chatbot-title');
+      if (titleEl) {
+        titleEl.textContent = texts.title;
+        console.log(`✅ 타이틀 변경: ${texts.title}`);
+      } else {
+        console.error('❌ chatbot-title 요소를 찾을 수 없음');
+      }
+      
+      const inputEl = document.getElementById('chatbot-input');
+      if (inputEl) {
+        inputEl.placeholder = texts.placeholder;
+        console.log(`✅ placeholder 변경: ${texts.placeholder}`);
+      }
+      
+      const indexTitleEl = document.getElementById('index-modal-title');
+      if (indexTitleEl) {
+        indexTitleEl.textContent = texts.indexTitle;
+        console.log(`✅ 색인 제목 변경: ${texts.indexTitle}`);
+      }
+      
+      const welcomeTextEl = document.getElementById('welcome-text');
+      if (welcomeTextEl) {
+        welcomeTextEl.textContent = texts.welcome;
+        console.log(`✅ 환영 메시지 변경: ${texts.welcome}`);
+      }
+      
+      const messagesDiv = document.getElementById('chatbot-messages');
+      if (messagesDiv) {
+        messagesDiv.innerHTML = `
+          <div class="welcome-message">
+            <div class="welcome-icon">✂️</div>
+            <div class="welcome-text" id="welcome-text">${texts.welcome}</div>
+          </div>
+        `;
+        console.log(`✅ 메시지 영역 초기화 완료`);
+      }
+      
+      this.conversationHistory = [];
+      this.showLanguageChangeFeedback(lang);
+      
+      console.log(`✅ [END] 언어 변경 완료: ${lang}`);
+      
+      // WebView에 메시지 전송 (네이티브 앱에서 감지 가능)
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'LANGUAGE_CHANGED',
+          language: lang
+        }));
+      }
+    }, 100); // WebView 렌더링 대기
   }
 
   showLanguageChangeFeedback(lang) {
