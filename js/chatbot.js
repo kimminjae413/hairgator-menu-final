@@ -387,16 +387,19 @@ class HairGatorChatbot {
       }
     });
 
-    // 언어 드롭다운 외부 클릭 시 닫기 (드롭다운 내부 클릭은 제외)
-    document.addEventListener('click', (e) => {
+    // 언어 드롭다운 외부 클릭/터치 시 닫기 (드롭다운 내부는 제외)
+    const closeDropdownOnOutside = (e) => {
       const dropdown = document.getElementById('language-dropdown');
       const langBtn = document.getElementById('language-btn');
       
-      // 드롭다운이나 언어 버튼을 클릭한 경우는 무시
+      // 드롭다운이나 언어 버튼을 클릭/터치한 경우는 무시
       if (dropdown && !dropdown.contains(e.target) && !langBtn.contains(e.target)) {
         dropdown.classList.add('hidden');
       }
-    });
+    };
+    
+    document.addEventListener('click', closeDropdownOnOutside);
+    document.addEventListener('touchstart', closeDropdownOnOutside, { passive: true });
   }
 
   // ✅ 수정: Touch Event에 passive listener 추가
@@ -1262,18 +1265,12 @@ class HairGatorChatbot {
       return;
     }
     
-    // 드롭다운에 단 하나의 이벤트만 등록 (이벤트 위임)
-    dropdown.addEventListener('click', function(e) {
-      e.stopPropagation();
-      
-      // 클릭된 요소가 lang-option인지 확인
-      const target = e.target.closest('.lang-option');
-      if (!target) return;
-      
+    // 언어 변경 함수 (click과 touchend에서 공통 사용)
+    const handleLanguageChange = function(target) {
       const lang = target.getAttribute('data-lang');
       if (!lang) return;
       
-      showLog('🎯 CLICK: ' + lang);
+      showLog('🎯 선택: ' + lang);
       
       // 드롭다운 닫기
       dropdown.classList.add('hidden');
@@ -1302,18 +1299,31 @@ class HairGatorChatbot {
       
       self.conversationHistory = [];
       showLog('✅ 완료: ' + lang);
+    };
+    
+    // 드롭다운에 단 하나의 이벤트만 등록 (이벤트 위임)
+    dropdown.addEventListener('click', function(e) {
+      e.stopPropagation();
+      
+      // 클릭된 요소가 lang-option인지 확인
+      const target = e.target.closest('.lang-option');
+      if (!target) return;
+      
+      showLog('🖱️ CLICK 감지');
+      handleLanguageChange(target);
     }, { capture: true });
     
-    // 터치 이벤트
-    dropdown.addEventListener('touchend', function(e) {
+    // 터치 이벤트 (웹뷰용) - touchstart로 변경하여 더 빠른 반응
+    dropdown.addEventListener('touchstart', function(e) {
       const target = e.target.closest('.lang-option');
       if (!target) return;
       
       e.preventDefault();
-      showLog('👆 TOUCH: ' + target.getAttribute('data-lang'));
+      e.stopPropagation();
+      showLog('👆 TOUCH 감지');
       
-      // 클릭 이벤트 트리거
-      target.click();
+      // 직접 언어 변경 처리
+      handleLanguageChange(target);
     }, { capture: true, passive: false });
     
     // 등록 완료 표시
