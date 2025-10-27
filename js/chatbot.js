@@ -1251,6 +1251,36 @@ class HairGatorChatbot {
       return;
     }
     
+    // ⭐ 핵심 수정: 드롭다운을 body로 이동!
+    if (dropdown.parentElement && dropdown.parentElement.classList.contains('language-selector')) {
+      showLog('🚀 드롭다운을 body로 이동 중...');
+      const langBtn = document.getElementById('language-btn');
+      
+      // body에 추가
+      document.body.appendChild(dropdown);
+      
+      // fixed 포지션으로 변경
+      dropdown.style.position = 'fixed';
+      dropdown.style.zIndex = '999999';
+      
+      // 버튼 클릭 시 위치 재계산
+      if (langBtn) {
+        const originalClick = langBtn.onclick;
+        langBtn.onclick = function(e) {
+          const rect = langBtn.getBoundingClientRect();
+          dropdown.style.top = (rect.bottom + 8) + 'px';
+          dropdown.style.left = (rect.right - 140) + 'px';
+          showLog('📍 드롭다운 위치: top=' + (rect.bottom + 8) + ' left=' + (rect.right - 140));
+          
+          if (originalClick) {
+            originalClick.call(this, e);
+          }
+        };
+      }
+      
+      showLog('✅ body로 이동 완료');
+    }
+    
     // 강제로 매번 등록 (플래그 제거)
     showLog('🔄 강제 재등록');
     
