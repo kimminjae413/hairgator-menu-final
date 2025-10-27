@@ -1308,47 +1308,62 @@ class HairGatorChatbot {
       }, 300);
     };
     
-    // ⭐ CSS 오버라이드: overflow 문제 해결 + 디버깅!
+    // ⭐ CSS 오버라이드: 모든 방해 요소 제거!
     const style = document.createElement('style');
     style.textContent = `
-      /* 챗봇 컨테이너 overflow 수정 */
+      /* 모든 요소의 기본 z-index 조정 */
+      body * {
+        position: relative;
+      }
+      
+      /* 챗봇 관련 요소만 높은 z-index */
       .chatbot-container {
         overflow: visible !important;
+        z-index: 9999 !important;
       }
       
       .chatbot-messages {
         overflow-y: auto !important;
       }
       
-      /* 헤더 overflow 수정 */
       .chatbot-header {
         overflow: visible !important;
+        z-index: 10000 !important;
       }
       
-      /* 🔍 디버깅: X 버튼 영역 표시 */
-      .chatbot-close {
-        background: rgba(255, 0, 0, 0.3) !important;
-        border: 2px solid red !important;
-        pointer-events: auto !important;
-      }
-      
-      /* 🔍 디버깅: 지구본 버튼 영역 표시 */
-      .language-btn {
-        background: rgba(0, 0, 255, 0.3) !important;
-        border: 2px solid blue !important;
-      }
-      
-      /* 🔍 디버깅: header-actions 영역 표시 */
       .header-actions {
+        z-index: 10001 !important;
         background: rgba(0, 255, 0, 0.2) !important;
         border: 2px dashed green !important;
       }
       
-      /* 드롭다운 표시 수정 */
+      .language-selector {
+        z-index: 10002 !important;
+        position: relative !important;
+      }
+      
+      /* X 버튼 영역 축소 */
+      .chatbot-close {
+        background: rgba(255, 0, 0, 0.3) !important;
+        border: 2px solid red !important;
+        pointer-events: auto !important;
+        z-index: 10001 !important;
+        width: 32px !important;
+        height: 32px !important;
+      }
+      
+      /* 지구본 버튼 */
+      .language-btn {
+        background: rgba(0, 0, 255, 0.3) !important;
+        border: 2px solid blue !important;
+        z-index: 10002 !important;
+      }
+      
+      /* 드롭다운 최상위 */
       .language-dropdown {
         display: block !important;
         position: absolute !important;
-        z-index: 99999 !important;
+        z-index: 999999 !important;
         background: white !important;
         border: 3px solid purple !important;
       }
@@ -1365,16 +1380,55 @@ class HairGatorChatbot {
         pointer-events: auto !important;
       }
       
+      /* 언어 버튼 최우선 */
       .lang-option {
         pointer-events: auto !important;
         cursor: pointer !important;
         background: yellow !important;
         border: 2px solid lime !important;
         min-height: 44px !important;
+        z-index: 1000000 !important;
+        position: relative !important;
+        display: block !important;
+        width: 100% !important;
+        touch-action: manipulation !important;
       }
     `;
     document.head.appendChild(style);
-    showLog('🎨 CSS 디버깅 모드 적용');
+    showLog('🎨 CSS 최종 수정 적용');
+    
+    // ⭐ 이벤트 위임: 드롭다운에 직접 클릭 이벤트 등록
+    dropdown.addEventListener('click', function(e) {
+      const target = e.target;
+      
+      // 클릭된 요소가 .lang-option이거나 그 자식인지 확인
+      const langBtn = target.closest('.lang-option');
+      
+      if (langBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const lang = langBtn.getAttribute('data-lang');
+        showLog('🖱️ CLICK: ' + lang);
+        handleLanguageChange(lang);
+      }
+    }, true); // useCapture = true
+    
+    dropdown.addEventListener('touchend', function(e) {
+      const target = e.target;
+      const langBtn = target.closest('.lang-option');
+      
+      if (langBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const lang = langBtn.getAttribute('data-lang');
+        showLog('🎯 TOUCH: ' + lang);
+        handleLanguageChange(lang);
+      }
+    }, true); // useCapture = true
+    
+    showLog('✅ 이벤트 위임 등록 완료');
     
     // 버튼에 직접 이벤트 등록
     const langBtns = dropdown.querySelectorAll('.lang-option');
