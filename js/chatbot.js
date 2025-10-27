@@ -351,26 +351,28 @@ class HairGatorChatbot {
     languageBtn.addEventListener('click', toggleDropdown);
     languageBtn.addEventListener('touchstart', toggleDropdown, { passive: false });
 
+    // 전역 처리 플래그 (버튼별이 아닌 전역)
+    this.isChangingLanguage = false;
+    
     document.querySelectorAll('.lang-option').forEach(btn => {
-      // 중복 실행 방지 플래그
-      let isProcessing = false;
-      
       // WebView 환경을 위한 통합 핸들러
       const handleLanguageSelect = (e) => {
-        // 이미 처리 중이면 무시
-        if (isProcessing) {
+        console.log(`🔍 [${e.type}] 언어 버튼 클릭됨:`, e.currentTarget.getAttribute('data-lang'));
+        
+        // 전역 플래그로 중복 실행 방지
+        if (this.isChangingLanguage) {
           console.log('⏭️ 이미 처리 중 - 무시');
           e.preventDefault();
           e.stopPropagation();
           return;
         }
         
-        isProcessing = true;
+        this.isChangingLanguage = true;
         e.preventDefault();
         e.stopPropagation();
         
         const lang = e.currentTarget.getAttribute('data-lang');
-        console.log(`🎯 언어 선택됨: ${lang} (이벤트: ${e.type})`);
+        console.log(`🎯 언어 선택 확정: ${lang}`);
         
         // 드롭다운 먼저 닫기
         const dropdown = document.getElementById('language-dropdown');
@@ -378,22 +380,23 @@ class HairGatorChatbot {
           dropdown.classList.add('hidden');
         }
         
-        // 약간의 딜레이 후 언어 변경 (WebView 안정성)
+        // 언어 변경
         setTimeout(() => {
           this.changeLanguage(lang);
-          // 500ms 후 플래그 리셋 (충분한 시간)
+          // 플래그 리셋
           setTimeout(() => {
-            isProcessing = false;
-            console.log('✅ 처리 완료 - 다음 클릭 가능');
-          }, 500);
+            this.isChangingLanguage = false;
+            console.log('✅ 언어 변경 완료 - 다음 클릭 가능');
+          }, 300);
         }, 50);
       };
       
-      // 여러 이벤트 타입 모두 처리
+      // click만 사용 (touchend 제거 - 중복 실행 방지)
       btn.addEventListener('click', handleLanguageSelect);
-      btn.addEventListener('touchend', handleLanguageSelect, { passive: false });
+      
+      // 터치 피드백만 추가
       btn.addEventListener('touchstart', (e) => {
-        // 터치 피드백
+        console.log('👆 터치 피드백');
         e.currentTarget.style.backgroundColor = 'rgba(33, 150, 243, 0.2)';
         setTimeout(() => {
           e.currentTarget.style.backgroundColor = '';
@@ -576,19 +579,19 @@ class HairGatorChatbot {
       }
       
       // 대화 기록 초기화
-      this.conversationHistory = [];
       
-      console.log(`🎉 [COMPLETE] 언어 변경 완료: ${lang}`);
-      
-      // ✅ 언어 버튼 active 상태 업데이트 (웹뷰용 필수!)
+      // ✅ 언어 버튼 active 상태 업데이트
       document.querySelectorAll('.lang-option').forEach(btn => {
         btn.classList.remove('active');
       });
       const activeBtn = document.querySelector(`.lang-option[data-lang="${lang}"]`);
       if (activeBtn) {
         activeBtn.classList.add('active');
-        console.log(`✅ 언어 버튼 active 설정: ${lang}`);
+        console.log(`✅ 버튼 active: ${lang}`);
       }
+      this.conversationHistory = [];
+      
+      console.log(`🎉 [COMPLETE] 언어 변경 완료: ${lang}`);
       
       // WebView에 알림 (선택사항)
       if (window.ReactNativeWebView) {
