@@ -685,7 +685,7 @@ class HairGatorChatbot {
             const displayName = term[this.currentLanguage] || term.ko || term.en;
             
             return `
-              <div class="term-card-single" onclick="window.hairgatorChatbot.openImageViewer(${parseInt(id) - 1})">
+              <div class="term-card-single" data-term-id="${id}" onclick="window.hairgatorChatbot.openImageViewer(${parseInt(id) - 1})">
                 <img 
                   src="${imageURL}" 
                   alt="${displayName}"
@@ -907,15 +907,32 @@ class HairGatorChatbot {
 
     let result = text;
 
-    // 정규식으로 안전하게 매칭 (대소문자 무시, 단어 경계 고려)
+    // 1단계: 숫자.용어명 패턴 먼저 처리 (54.Lifting, 33.Direction 등)
+    result = result.replace(/(\d{1,2})\.([\w\s&'-]+?)(?=[\s,.:;)]|$)/g, (match, id, termName) => {
+      const paddedId = id.padStart(2, '0'); // "5" -> "05"
+      const term = this.terms89Map[paddedId];
+      
+      if (term) {
+        const displayName = term[this.currentLanguage] || term.ko || term.en;
+        return `<span class="term-89 clickable" data-term="${paddedId}" title="클릭하여 색인 보기">${id}.${termName}</span>`;
+      }
+      return match;
+    });
+
+    // 2단계: 용어명만 있는 경우 처리
     Object.entries(this.terms89Map).forEach(([id, term]) => {
       const koTerm = term.ko;
       const enTerm = term.en;
+      const displayName = term[this.currentLanguage] || term.ko || term.en;
 
-      // 한글/영문 모두 매칭 (정확한 단어만)
-      const regex = new RegExp(`\\b(${koTerm}|${enTerm})\\b`, 'gi');
+      // 이미 span으로 감싸진 용어는 제외
+      const regex = new RegExp(`(?<!<span[^>]*>)\\b(${koTerm}|${enTerm})\\b(?![^<]*<\\/span>)`, 'gi');
+      
       result = result.replace(regex, (match) => {
-        return `<span class="term-highlight" data-term-id="${id}" title="89용어 #${id}">${match}</span>`;
+        // 이미 "54.Lifting" 형식으로 처리된 경우는 제외
+        if (result.includes(`>${match}</span>`)) return match;
+        
+        return `<span class="term-89 clickable" data-term="${id}" title="클릭하여 색인 보기">${match} <span class="term-ref">(${id}번 참고)</span></span>`;
       });
     });
 
@@ -1175,7 +1192,54 @@ class HairGatorChatbot {
       </div>
     `;
     messagesDiv.insertAdjacentHTML('beforeend', messageHTML);
+    
+    // 89용어 클릭 이벤트 등록
+    this.attach89TermClickHandlers();
+    
     this.scrollToBottom();
+  }
+  
+  // 89용어 클릭 핸들러 등록
+  attach89TermClickHandlers() {
+    document.querySelectorAll('.term-89.clickable').forEach(termEl => {
+      // 이미 이벤트가 등록된 경우 중복 방지
+      if (termEl.dataset.listenerAttached) return;
+      termEl.dataset.listenerAttached = 'true';
+      
+      const handleClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const termId = termEl.dataset.term;
+        console.log(`🔍 89용어 클릭: ${termId}번`);
+        
+        // 색인 모달 열기
+        this.showIndexModal();
+        
+        // 약간의 딜레이 후 해당 용어로 스크롤
+        setTimeout(() => {
+          const targetCard = document.querySelector(`.term-card-single[data-term-id="${termId}"]`);
+          if (targetCard) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // 하이라이트 효과
+            targetCard.style.border = '3px solid #2196F3';
+            targetCard.style.boxShadow = '0 8px 24px rgba(33, 150, 243, 0.4)';
+            
+            setTimeout(() => {
+              targetCard.style.border = '1px solid #e0e0e0';
+              targetCard.style.boxShadow = 'none';
+            }, 2000);
+          }
+        }, 300);
+      };
+      
+      termEl.addEventListener('click', handleClick);
+      termEl.addEventListener('touchstart', handleClick, { passive: false });
+      
+      // 호버 효과
+      termEl.style.cursor = 'pointer';
+    });
   }
 
   addRawHTML(html) {
@@ -1189,6 +1253,9 @@ class HairGatorChatbot {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage) {
       lastMessage.querySelector('.message-content').innerHTML = newContent;
+      
+      // 89용어 클릭 이벤트 등록
+      this.attach89TermClickHandlers();
     }
     this.scrollToBottom();
   }
