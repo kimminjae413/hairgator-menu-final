@@ -426,6 +426,7 @@ class HairGatorChatbot {
         this.conversationHistory = [];
         showLog(`🎉 완료: ${lang}`);
       };
+        setTimeout(() => { this.reattachLanguageHandlers(); }, 100);
       
       // 터치도
       btn.ontouchend = btn.onclick;
@@ -1283,6 +1284,44 @@ class HairGatorChatbot {
   scrollToBottom() {
     const messagesDiv = document.getElementById('chatbot-messages');
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  // 언어 버튼 이벤트 재등록 함수
+  reattachLanguageHandlers() {
+    const self = this;
+    document.querySelectorAll('.lang-option').forEach(function(btn) {
+      const lang = btn.getAttribute('data-lang');
+      btn.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const dropdown = document.getElementById('language-dropdown');
+        if (dropdown) dropdown.classList.add('hidden');
+        
+        self.currentLanguage = lang;
+        self.setStoredLanguage(lang);
+        
+        const texts = self.getTexts();
+        const title = document.getElementById('chatbot-title');
+        if (title) title.textContent = texts.title;
+        
+        const input = document.getElementById('chatbot-input');
+        if (input) input.placeholder = texts.placeholder;
+        
+        const msgs = document.getElementById('chatbot-messages');
+        if (msgs) {
+          msgs.innerHTML = '<div class="welcome-message"><div class="welcome-icon">👋</div><div class="welcome-text">' + texts.welcome + '</div></div>';
+        }
+        
+        self.conversationHistory = [];
+        
+        // 재등록
+        setTimeout(function() {
+          self.reattachLanguageHandlers();
+        }, 100);
+      };
+      btn.ontouchend = btn.onclick;
+    });
   }
 }
 
