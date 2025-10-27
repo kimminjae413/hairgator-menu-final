@@ -1243,7 +1243,7 @@ class HairGatorChatbot {
       log.scrollTop = log.scrollHeight;
     };
     
-    showLog('🔄 재등록 시작 (이벤트 위임)');
+    showLog('🔄 재등록 시작 (이벤트 위임 v2)');
     
     const self = this;
     const dropdown = document.getElementById('language-dropdown');
@@ -1253,12 +1253,17 @@ class HairGatorChatbot {
       return;
     }
     
-    // 기존 이벤트 리스너 제거를 위해 복제
-    const newDropdown = dropdown.cloneNode(true);
-    dropdown.parentNode.replaceChild(newDropdown, dropdown);
+    // 기존 방식: 드롭다운의 클릭 핸들러만 새로 등록
+    // (복제하지 않음 - 지구본 버튼 이벤트 유지)
+    
+    // 이미 등록된 핸들러가 있다면 표시
+    if (dropdown.dataset.handlerAttached === 'true') {
+      showLog('⏩ 이미 등록됨 - 스킵');
+      return;
+    }
     
     // 드롭다운에 단 하나의 이벤트만 등록 (이벤트 위임)
-    newDropdown.addEventListener('click', function(e) {
+    dropdown.addEventListener('click', function(e) {
       e.stopPropagation();
       
       // 클릭된 요소가 lang-option인지 확인
@@ -1271,7 +1276,7 @@ class HairGatorChatbot {
       showLog('🎯 CLICK: ' + lang);
       
       // 드롭다운 닫기
-      newDropdown.classList.add('hidden');
+      dropdown.classList.add('hidden');
       
       // 언어 변경
       self.currentLanguage = lang;
@@ -1297,15 +1302,10 @@ class HairGatorChatbot {
       
       self.conversationHistory = [];
       showLog('✅ 완료: ' + lang);
-      
-      // 재등록
-      setTimeout(function() {
-        self.reattachLanguageHandlers();
-      }, 100);
     }, { capture: true });
     
     // 터치 이벤트
-    newDropdown.addEventListener('touchend', function(e) {
+    dropdown.addEventListener('touchend', function(e) {
       const target = e.target.closest('.lang-option');
       if (!target) return;
       
@@ -1316,8 +1316,11 @@ class HairGatorChatbot {
       target.click();
     }, { capture: true, passive: false });
     
+    // 등록 완료 표시
+    dropdown.dataset.handlerAttached = 'true';
+    
     // 등록된 언어 개수 확인
-    const langBtns = newDropdown.querySelectorAll('.lang-option');
+    const langBtns = dropdown.querySelectorAll('.lang-option');
     showLog('✅ 재등록 완료: ' + langBtns.length + '개');
   }
 }
