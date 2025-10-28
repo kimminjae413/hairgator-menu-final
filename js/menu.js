@@ -1275,14 +1275,28 @@ window.selectGender = function(gender) {
     currentGender = gender;
     window.currentGender = gender;
     
-    // 성별 선택 화면 숨기기
+    // 성별 선택 화면 완전히 숨기기
     const genderSelection = document.getElementById('genderSelection');
     const menuContainer = document.getElementById('menuContainer');
     const backBtn = document.getElementById('backBtn');
     
-    if (genderSelection) genderSelection.style.display = 'none';
-    if (menuContainer) menuContainer.classList.add('active');
-    if (backBtn) backBtn.style.display = 'flex';
+    if (genderSelection) {
+        genderSelection.style.display = 'none';
+        genderSelection.classList.remove('active');
+        genderSelection.style.zIndex = '-1';
+        genderSelection.style.visibility = 'hidden';
+    }
+    
+    if (menuContainer) {
+        menuContainer.style.display = 'block';
+        menuContainer.classList.add('active');
+        menuContainer.style.zIndex = '1000';
+        menuContainer.style.visibility = 'visible';
+    }
+    
+    if (backBtn) {
+        backBtn.style.display = 'flex';
+    }
     
     // 스마트 메뉴 시스템 로드
     loadMenuForGender(gender);
@@ -1340,6 +1354,7 @@ window.goBack = function() {
     if (menuContainer) {
         menuContainer.style.display = 'none';
         menuContainer.classList.remove('active');
+        menuContainer.style.zIndex = '500';
         console.log('✅ 메뉴 컨테이너 숨김');
     }
     
@@ -1349,7 +1364,7 @@ window.goBack = function() {
         genderSelection.classList.remove('active');
         genderSelection.style.display = 'flex';
         genderSelection.style.position = 'relative';
-        genderSelection.style.zIndex = '1';
+        genderSelection.style.zIndex = '2000';
         genderSelection.style.opacity = '1';
         genderSelection.style.visibility = 'visible';
         console.log('✅ 성별 선택 화면 표시');
