@@ -258,3 +258,8 @@ function getBullnabiUser() {
 window.loginWithBullnabi = loginWithBullnabi;
 window.getBullnabiUser = getBullnabiUser;
 window.selectGender = selectGender;
+
+// menu.js의 selectGender를 강제로 덮어쓰기
+window.selectGender = selectGender;
+console.log('✅ auth.js selectGender로 덮어쓰기 완료');
+
