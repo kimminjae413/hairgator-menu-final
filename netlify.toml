@@ -1,14 +1,14 @@
-# netlify.toml - HAIRGATOR 최종 설정 (헤어체험 + 챗봇 통합)
+# netlify.toml - HAIRGATOR 최종 설정 (헤어체험 + 챗봇 + MediaPipe 통합)
 
 [build]
   publish = "."
-  functions = "netlify/functions"  # ⭐ Functions 폴더 추가
+  functions = "netlify/functions"
 
 [build.environment]
   # 시크릿 스캔 비활성화 (Firebase/API 키들이 의도적으로 포함됨)
   SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
 
-# ========== Functions 설정 ========== ⭐ 새로 추가
+# ========== Functions 설정 ==========
 [functions]
   node_bundler = "esbuild"
   # Functions 타임아웃 설정 (Gemini 이미지 분석 시간 고려)
@@ -59,7 +59,7 @@
     Cache-Control = "public, max-age=600, must-revalidate"
     X-Content-Type-Options = "nosniff"
 
-# ========== 챗봇 파일 설정 ========== ⭐ 새로 추가
+# ========== 챗봇 파일 설정 ==========
 [[headers]]
   for = "/js/chatbot.js"
   [headers.values]
@@ -72,7 +72,7 @@
     Cache-Control = "public, max-age=600, must-revalidate"
     X-Content-Type-Options = "nosniff"
 
-# ========== Netlify Functions (챗봇 API) - CORS 설정 ========== ⭐ 업데이트
+# ========== Netlify Functions (챗봇 API) - CORS 설정 ==========
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
@@ -128,7 +128,7 @@
     X-Content-Type-Options = "nosniff"
     Permissions-Policy = "camera=(self), microphone=(self), autoplay=(self)"
 
-# ========== 보안 헤더 (전체 적용) ========== ⭐ 업데이트 (Gemini + OpenAI API 추가)
+# ========== 보안 헤더 (전체 적용) - MediaPipe + AI API 통합 ==========
 [[headers]]
   for = "/*"
   [headers.values]
@@ -137,8 +137,8 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "no-referrer-when-downgrade"
     Permissions-Policy = "camera=(self), microphone=(self), geolocation=()"
-    # 헤어체험 + 챗봇 API 통신을 위한 CSP 설정
-    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://*.googleapis.com https://www.gstatic.com https://*.supabase.co; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:;"
+    # 헤어체험 + 챗봇 + MediaPipe 통신을 위한 CSP 설정
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://*.googleapis.com https://www.gstatic.com https://*.supabase.co https://*.firebaseio.com https://lovely-lebkuchen-4017ca.netlify.app;"
 
 # ========== SPA 라우팅 ==========
 [[redirects]]
@@ -147,19 +147,19 @@
   status = 200
   force = false
 
-# ========== 환경변수 보안 ========== ⭐ 업데이트 (챗봇 API 키 추가)
+# ========== 환경변수 보안 ==========
 # Functions에서 환경변수 사용을 위한 설정
 [context.production.environment]
   GEMINI_API_KEY = ""           # 네틀리파이 대시보드에서 설정
-  OPENAI_API_KEY = ""           # ⭐ 새로 추가
-  SUPABASE_URL = ""             # ⭐ 새로 추가
-  SUPABASE_ANON_KEY = ""        # ⭐ 새로 추가
+  OPENAI_API_KEY = ""
+  SUPABASE_URL = ""
+  SUPABASE_ANON_KEY = ""
 
 [context.deploy-preview.environment]
   GEMINI_API_KEY = ""           # 프리뷰용 별도 키 (필요시)
-  OPENAI_API_KEY = ""           # ⭐ 새로 추가
-  SUPABASE_URL = ""             # ⭐ 새로 추가
-  SUPABASE_ANON_KEY = ""        # ⭐ 새로 추가
+  OPENAI_API_KEY = ""
+  SUPABASE_URL = ""
+  SUPABASE_ANON_KEY = ""
 
 # ========== 빌드 최적화 ==========
 [build.processing]
