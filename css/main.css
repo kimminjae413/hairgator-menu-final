@@ -952,6 +952,399 @@ body.light-theme .style-card:hover {
     display: block !important;
 }
 
+/* ========== AI 체험하기 버튼 오버레이 ========== */
+.ai-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg, 
+        rgba(0, 0, 0, 0) 0%, 
+        rgba(0, 0, 0, 0.3) 50%, 
+        rgba(0, 0, 0, 0.7) 100%
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+body.light-theme .ai-overlay {
+    background: linear-gradient(
+        135deg, 
+        rgba(255, 255, 255, 0) 0%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        rgba(255, 255, 255, 0.8) 100%
+    );
+}
+
+.style-card:hover .ai-overlay {
+    opacity: 1;
+}
+
+.ai-experience-btn {
+    background: linear-gradient(135deg, var(--ai-gradient-start), var(--ai-gradient-end));
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px var(--ai-shadow);
+    transform: translateY(10px);
+}
+
+.style-card:hover .ai-experience-btn {
+    transform: translateY(0);
+}
+
+.ai-experience-btn:hover {
+    background: linear-gradient(135deg, var(--ai-button-hover), var(--ai-gradient-end));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--ai-shadow);
+}
+
+.ai-experience-btn:active {
+    transform: translateY(0);
+}
+
+.ai-icon {
+    font-size: 14px;
+}
+
+/* ========== AI 사진 업로드 모달 ========== */
+.ai-photo-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--ai-overlay);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 6000;
+    padding: 20px;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+.ai-photo-modal.active {
+    display: flex;
+}
+
+.ai-modal-content {
+    background: var(--ai-modal-bg);
+    border: 2px solid var(--ai-primary);
+    border-radius: 20px;
+    max-width: 450px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalSlideUp 0.3s ease-out;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.ai-modal-header {
+    padding: 30px 30px 0;
+    text-align: center;
+    position: relative;
+}
+
+.ai-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: var(--ai-text);
+    font-size: 28px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.ai-modal-close:hover {
+    background: var(--ai-bg-primary);
+    transform: rotate(90deg);
+}
+
+.ai-modal-title {
+    color: var(--ai-primary);
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.ai-modal-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 25px;
+}
+
+.ai-modal-body {
+    padding: 0 30px 30px;
+}
+
+/* AI 사진 업로드 영역 */
+.ai-upload-area {
+    border: 2px dashed var(--ai-border);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    background: var(--ai-bg-secondary);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-upload-area:hover {
+    border-color: var(--ai-primary);
+    background: var(--ai-bg-primary);
+}
+
+.ai-upload-area.dragover {
+    border-color: var(--ai-primary);
+    background: var(--ai-bg-primary);
+    transform: scale(1.02);
+}
+
+.upload-placeholder {
+    pointer-events: none;
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.7;
+    display: block;
+}
+
+.upload-text {
+    font-size: 16px;
+    color: var(--ai-primary);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* AI 처리 버튼 */
+.ai-process-btn {
+    background: linear-gradient(135deg, var(--ai-gradient-start), var(--ai-gradient-end));
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px var(--ai-shadow);
+    min-width: 180px;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-process-btn:hover {
+    background: linear-gradient(135deg, var(--ai-button-hover), var(--ai-gradient-end));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--ai-shadow);
+}
+
+.ai-process-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.ai-secondary-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 2px solid var(--ai-border);
+    padding: 12px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ai-secondary-btn:hover {
+    border-color: var(--ai-primary);
+    color: var(--ai-primary);
+    background: var(--ai-bg-primary);
+}
+
+/* 빈 상태 */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    grid-column: 1 / -1;
+    transition: color 0.3s ease;
+}
+
+body.light-theme .empty-state {
+    color: var(--text-secondary);
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+/* 로딩 스켈레톤 */
+.skeleton-card {
+    background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    aspect-ratio: 3/4;
+    border-radius: 10px;
+}
+
+body.light-theme .skeleton-card {
+    background: linear-gradient(90deg, #f8f9fa 25%, #e9ecef 50%, #f8f9fa 75%);
+    background-size: 200% 100%;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* 사이드바 */
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 300px;
+    height: 100vh;
+    background: #111;
+    border-left: 1px solid #333;
+    z-index: 2000;
+    transition: right 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+    overflow-y: auto;
+}
+
+body.light-theme .sidebar {
+    background: #ffffff;
+    border-left-color: var(--border-color);
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar.active {
+    right: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #333;
+    transition: border-color 0.3s ease;
+}
+
+body.light-theme .sidebar-header {
+    border-bottom-color: var(--border-color);
+}
+
+.sidebar-header h3 {
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.sidebar-close {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.sidebar-content {
+    padding: 20px;
+}
+
+.user-info {
+    background: #1a1a1a;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+}
+
+body.light-theme .user-info {
+    background: #f8f9fa;
+    border: 1px solid var(--border-color);
+}
+
+.user-info h4 {
+    color: var(--female-color);
+    margin-bottom: 10px;
+}
+
+.user-info p {
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+#guestMessage {
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+.logout-btn {
+    width: 100%;
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: #c82333;
+}
+
+/* ========== 퍼스널컬러 사이드바 및 모달 ========== */
 .sidebar-section {
     border-bottom: 1px solid var(--border-color);
     padding: 15px 0;
@@ -1526,3 +1919,39 @@ body.light-theme .modal-action-btn.secondary:hover {
         flex-direction: column;
     }
 }
+
+/* 헤어체험 버튼 보이게 하기 */
+.ai-experience-modal-btn {
+    background: linear-gradient(135deg, var(--female-color), #c2185b) !important;
+    color: white !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.ai-experience-modal-btn:hover {
+    background: linear-gradient(135deg, #d81b60, #ad1457) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* 스타일 모달 - 헤어체험하기 버튼 비활성화 및 스타일명 숨기기 */
+
+/* 1. 스타일명 숨기기 (포마드컷 등) */
+.style-modal .style-name,
+#styleModal .style-name,
+#styleModalName {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* 2. 헤어체험하기 버튼 비활성화 스타일 */
+.ai-experience-modal-btn,
+.hair-experience-modal-btn,
+.modal-action-btn.ai-experience-modal-btn {
+    background: #666666 !important;
+    color: #999999 !important;
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
