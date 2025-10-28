@@ -57,37 +57,49 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ========== 전역 함수 ==========
 
-// 성별 선택
+// 성별 선택 (menu.js와 호환되도록 수정)
 function selectGender(gender) {
-    console.log('🎯 성별 선택:', gender);
+    console.log('🎯 AUTH.JS 성별 선택:', gender);
     
     // body에 성별 클래스 추가
     document.body.classList.remove('gender-male', 'gender-female');
     document.body.classList.add(`gender-${gender}`);
 
     // 성별 저장
+    currentGender = gender;
     window.currentGender = gender;
     localStorage.setItem('selectedGender', gender);
 
-    // 성별 선택 화면 완전히 숨기기 (cssText로 강제 적용)
+    // 성별 선택 화면 숨기기
     const genderSelection = document.getElementById('genderSelection');
+    const menuContainer = document.getElementById('menuContainer');
+    const backBtn = document.getElementById('backBtn');
+    
     if (genderSelection) {
-        genderSelection.style.cssText = 'display: none !important; opacity: 0; visibility: hidden; position: absolute; z-index: -1;';
+        genderSelection.style.display = 'none';
+        genderSelection.style.visibility = 'hidden';
+        genderSelection.style.opacity = '0';
+        genderSelection.style.position = 'absolute';
+        genderSelection.style.zIndex = '-1';
         genderSelection.classList.remove('active');
     }
-
-    // 메뉴 컨테이너 완전히 보이기 (cssText로 강제 적용)
-    const menuContainer = document.getElementById('menuContainer');
+    
     if (menuContainer) {
-        menuContainer.style.cssText = 'display: block !important; opacity: 1; visibility: visible; position: relative; z-index: 1;';
+        menuContainer.style.display = 'block';
+        menuContainer.style.visibility = 'visible';
+        menuContainer.style.opacity = '1';
+        menuContainer.style.position = 'relative';
+        menuContainer.style.zIndex = '1';
         menuContainer.classList.add('active');
     }
+    
+    if (backBtn) backBtn.style.display = 'flex';
 
     // 메뉴 로드
     if (typeof loadMenuForGender === 'function') {
         loadMenuForGender(gender);
         
-        // 메뉴 로드 후 중복 탭 제거 (500ms 대기)
+        // 중복 탭 제거
         setTimeout(() => {
             removeDuplicateTabs();
         }, 500);
@@ -258,8 +270,3 @@ function getBullnabiUser() {
 window.loginWithBullnabi = loginWithBullnabi;
 window.getBullnabiUser = getBullnabiUser;
 window.selectGender = selectGender;
-
-// menu.js의 selectGender를 강제로 덮어쓰기
-window.selectGender = selectGender;
-console.log('✅ auth.js selectGender로 덮어쓰기 완료');
-
