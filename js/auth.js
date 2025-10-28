@@ -43,7 +43,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // 자동 로그인 처리는 하지 않고 정보만 복원
         // 사용자가 직접 성별 선택부터 시작하도록 함
     }
+    
+    // 성별 버튼 이벤트 리스너 추가
+    const maleBtn = document.querySelector('.gender-btn.male');
+    const femaleBtn = document.querySelector('.gender-btn.female');
+    
+    if (maleBtn) {
+        maleBtn.addEventListener('click', () => selectGender('male'));
+    }
+    
+    if (femaleBtn) {
+        femaleBtn.addEventListener('click', () => selectGender('female'));
+    }
 });
+
+// ========== 전역 함수 ==========
 
 // 성별 선택
 function selectGender(gender) {
