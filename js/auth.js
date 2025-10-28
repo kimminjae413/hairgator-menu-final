@@ -93,7 +93,10 @@ function selectGender(gender) {
         menuContainer.classList.add('active');
     }
     
-    if (backBtn) backBtn.style.display = 'flex';
+    if (backBtn) {
+        backBtn.style.display = 'flex';
+        backBtn.style.visibility = 'visible';
+    }
 
     // 메뉴 로드
     if (typeof loadMenuForGender === 'function') {
@@ -116,9 +119,12 @@ function removeDuplicateTabs() {
     const allTabs = Array.from(categoryTabs.children);
     const totalTabs = allTabs.length;
     
-    // 탭이 중복된 경우에만 제거
-    if (totalTabs > 7) {
-        console.log('🔧 중복 탭 제거 시작, 총:', totalTabs);
+    // 성별에 따른 정상 탭 개수
+    const expectedCount = window.currentGender === 'male' ? 7 : 8;
+    
+    // 정상 개수의 2배 이상일 때만 중복으로 판단
+    if (totalTabs >= expectedCount * 2) {
+        console.log('🔧 중복 탭 제거 시작, 총:', totalTabs, '정상:', expectedCount);
         
         // 절반만 남기고 나머지 제거
         const half = Math.floor(totalTabs / 2);
@@ -129,6 +135,10 @@ function removeDuplicateTabs() {
         }
         
         console.log('✅ 중복 제거 완료, 남은 탭:', categoryTabs.children.length);
+    } else if (totalTabs < expectedCount) {
+        console.log('⚠️ 탭이 부족합니다. 현재:', totalTabs, '필요:', expectedCount);
+    } else {
+        console.log('✅ 정상 탭 개수:', totalTabs);
     }
 }
 
