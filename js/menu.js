@@ -1330,3 +1330,40 @@ window.debugHAIRGATOR = function() {
 
 console.log('HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 헤어체험 연동 최종 버전');
 console.log('디버깅: window.debugHAIRGATOR() 실행 가능');
+
+// ========== 뒤로가기 함수 ==========
+window.goBack = function() {
+    console.log('🔙 뒤로가기 버튼 클릭');
+    
+    // 메뉴 컨테이너 숨기기
+    const menuContainer = document.getElementById('menuContainer');
+    if (menuContainer) {
+        menuContainer.style.display = 'none';
+        menuContainer.classList.remove('active');
+        console.log('✅ 메뉴 컨테이너 숨김');
+    }
+    
+    // 성별 선택 화면 다시 표시
+    const genderSelection = document.getElementById('genderSelection');
+    if (genderSelection) {
+        genderSelection.classList.remove('active');
+        genderSelection.style.display = 'flex';
+        genderSelection.style.position = 'relative';
+        genderSelection.style.zIndex = '1';
+        genderSelection.style.opacity = '1';
+        genderSelection.style.visibility = 'visible';
+        console.log('✅ 성별 선택 화면 표시');
+    }
+    
+    // 뒤로가기 버튼 숨기기
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        backBtn.style.display = 'none';
+        console.log('✅ 뒤로가기 버튼 숨김');
+    }
+    
+    // 성별 초기화
+    currentGender = null;
+    window.currentGender = null;
+    console.log('✅ 성별 초기화 완료');
+};
