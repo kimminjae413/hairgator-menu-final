@@ -16,6 +16,13 @@ class HairGatorChatbot {
     // 웹뷰용 localStorage fallback
     this.currentLanguage = this.getStoredLanguage();
     this.terms89Map = this.init89TermsMap(); // 89용어 매핑
+    
+    // ========== 유저별 히스토리 관리 시스템 ==========
+    this.currentUserId = null;
+    this.HISTORY_EXPIRE_DAYS = 30; // 1개월 보존
+    this.MAX_MESSAGES_PER_USER = 100; // 유저당 최대 메시지 수
+    this.initUserHistory();
+    
     this.init();
   }
   
@@ -38,6 +45,191 @@ class HairGatorChatbot {
     } catch (e) {
       console.warn('⚠️ localStorage 저장 실패:', e);
       return false;
+    }
+  }
+
+  // ========== 유저별 히스토리 관리 시스템 ==========
+  
+  // 유저 히스토리 초기화 (불나비 연동)
+  initUserHistory() {
+    try {
+      // 불나비 유저 정보 가져오기
+      const bullnabiUser = window.getBullnabiUser ? window.getBullnabiUser() : null;
+      
+      if (bullnabiUser && bullnabiUser.userId) {
+        this.currentUserId = bullnabiUser.userId;
+        console.log(`👤 유저 ID 설정: ${this.currentUserId}`);
+      } else {
+        // 불나비 유저가 없으면 임시 ID 생성
+        this.currentUserId = this.getOrCreateAnonymousId();
+        console.log(`👤 임시 유저 ID: ${this.currentUserId}`);
+      }
+      
+      // 기존 히스토리 로드
+      this.loadUserHistory();
+      
+      // 만료된 메시지 자동 삭제
+      this.cleanExpiredMessages();
+      
+    } catch (e) {
+      console.error('❌ 유저 히스토리 초기화 실패:', e);
+      this.currentUserId = 'anonymous_' + Date.now();
+    }
+  }
+  
+  // 익명 사용자 ID 생성 또는 가져오기
+  getOrCreateAnonymousId() {
+    try {
+      let anonId = localStorage.getItem('hairgator_anonymous_id');
+      if (!anonId) {
+        anonId = 'anon_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('hairgator_anonymous_id', anonId);
+      }
+      return anonId;
+    } catch (e) {
+      return 'anon_' + Date.now();
+    }
+  }
+  
+  // 유저 히스토리 로드
+  loadUserHistory() {
+    try {
+      if (!this.currentUserId) return;
+      
+      const key = `hairgator_history_${this.currentUserId}`;
+      const saved = localStorage.getItem(key);
+      
+      if (saved) {
+        const history = JSON.parse(saved);
+        this.conversationHistory = history;
+        console.log(`📚 히스토리 로드: ${history.length}개 메시지`);
+        
+        // UI에 기존 대화 복원
+        this.restoreHistoryToUI();
+      }
+    } catch (e) {
+      console.error('❌ 히스토리 로드 실패:', e);
+      this.conversationHistory = [];
+    }
+  }
+  
+  // 유저 히스토리 저장 (WebView 안전 처리)
+  saveUserHistory() {
+    try {
+      if (!this.currentUserId) return;
+      
+      const key = `hairgator_history_${this.currentUserId}`;
+      
+      // 최대 메시지 수 제한 (오래된 것부터 삭제)
+      if (this.conversationHistory.length > this.MAX_MESSAGES_PER_USER) {
+        this.conversationHistory = this.conversationHistory.slice(-this.MAX_MESSAGES_PER_USER);
+      }
+      
+      localStorage.setItem(key, JSON.stringify(this.conversationHistory));
+      console.log(`💾 히스토리 저장: ${this.conversationHistory.length}개 메시지`);
+      
+    } catch (e) {
+      console.warn('⚠️ 히스토리 저장 실패 (WebView):', e);
+      // WebView에서 저장 실패 시 메모리에만 유지
+    }
+  }
+  
+  // 만료된 메시지 삭제 (1개월 이상된 것)
+  cleanExpiredMessages() {
+    try {
+      if (!this.currentUserId) return;
+      
+      const expireTime = Date.now() - (this.HISTORY_EXPIRE_DAYS * 24 * 60 * 60 * 1000);
+      const originalLength = this.conversationHistory.length;
+      
+      // 타임스탬프가 있는 메시지만 필터링
+      this.conversationHistory = this.conversationHistory.filter(msg => {
+        return msg.timestamp && msg.timestamp > expireTime;
+      });
+      
+      const deleted = originalLength - this.conversationHistory.length;
+      if (deleted > 0) {
+        console.log(`🗑️ 만료된 메시지 ${deleted}개 삭제 (${this.HISTORY_EXPIRE_DAYS}일 이상)`);
+        this.saveUserHistory();
+      }
+      
+    } catch (e) {
+      console.error('❌ 만료 메시지 정리 실패:', e);
+    }
+  }
+  
+  // UI에 히스토리 복원
+  restoreHistoryToUI() {
+    try {
+      const messagesDiv = document.getElementById('chatbot-messages');
+      if (!messagesDiv) return;
+      
+      // Welcome 메시지 제거
+      messagesDiv.innerHTML = '';
+      
+      // 히스토리 메시지 복원
+      this.conversationHistory.forEach(msg => {
+        const messageHTML = `
+          <div class="${msg.sender}-message">
+            <div class="message-content">${msg.content}</div>
+          </div>
+        `;
+        messagesDiv.insertAdjacentHTML('beforeend', messageHTML);
+      });
+      
+      // 89용어 클릭 이벤트 재등록
+      this.attach89TermClickHandlers();
+      
+      this.scrollToBottom();
+      console.log('✅ UI 히스토리 복원 완료');
+      
+    } catch (e) {
+      console.error('❌ UI 복원 실패:', e);
+    }
+  }
+  
+  // 메시지 히스토리에 추가 (타임스탬프 포함)
+  addToHistory(sender, content) {
+    try {
+      const message = {
+        sender: sender,
+        content: content,
+        timestamp: Date.now(),
+        userId: this.currentUserId
+      };
+      
+      this.conversationHistory.push(message);
+      this.saveUserHistory();
+      
+    } catch (e) {
+      console.error('❌ 히스토리 추가 실패:', e);
+    }
+  }
+  
+  // 히스토리 전체 삭제
+  clearUserHistory() {
+    try {
+      if (!this.currentUserId) return;
+      
+      const key = `hairgator_history_${this.currentUserId}`;
+      localStorage.removeItem(key);
+      this.conversationHistory = [];
+      
+      const messagesDiv = document.getElementById('chatbot-messages');
+      if (messagesDiv) {
+        const texts = this.getTexts();
+        messagesDiv.innerHTML = `
+          <div class="welcome-message">
+            <div class="welcome-icon">👋</div>
+            <div class="welcome-text">${texts.welcome}</div>
+          </div>
+        `;
+      }
+      
+      console.log('🗑️ 히스토리 전체 삭제 완료');
+      
+    } catch (e) {
+      console.error('❌ 히스토리 삭제 실패:', e);
     }
   }
 
@@ -1157,6 +1349,9 @@ class HairGatorChatbot {
     // 89용어 클릭 이벤트 등록
     this.attach89TermClickHandlers();
     
+    // ✅ 히스토리에 저장 (타임스탬프 포함)
+    this.addToHistory(sender, content);
+    
     this.scrollToBottom();
   }
   
@@ -1278,10 +1473,16 @@ class HairGatorChatbot {
       
       const msgs = document.getElementById('chatbot-messages');
       if (msgs) {
-        msgs.innerHTML = '<div class="welcome-message"><div class="welcome-icon">👋</div><div class="welcome-text">' + texts.welcome + '</div></div>';
+        // ✅ 히스토리가 있으면 복원, 없으면 환영 메시지
+        if (self.conversationHistory && self.conversationHistory.length > 0) {
+          self.restoreHistoryToUI();
+        } else {
+          msgs.innerHTML = '<div class="welcome-message"><div class="welcome-icon">👋</div><div class="welcome-text">' + texts.welcome + '</div></div>';
+        }
       }
       
-      self.conversationHistory = [];
+      // ❌ 히스토리 초기화 제거 - 언어만 변경
+      // self.conversationHistory = [];
       showLog('✅ 완료: ' + lang);
       
       // 300ms 후 플래그 해제
