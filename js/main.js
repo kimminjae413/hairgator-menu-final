@@ -1,4 +1,4 @@
-// HAIRGATOR Main Application - menu.js 연동 최종 버전
+// HAIRGATOR Main Application - 최종 버전 (사이드바 메뉴 복원)
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🦎 HAIRGATOR 메인 앱 시작...');
     
@@ -7,10 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const menuBtn = document.getElementById('menuBtn');
     const sidebar = document.getElementById('sidebar');
     const sidebarClose = document.getElementById('sidebarClose');
-    const themeToggle = document.getElementById('themeToggle');
-    const themeToggleBottom = document.getElementById('themeToggleBottom');
-    const themeStatus = document.getElementById('themeStatus');
-    const logoutBtn = document.getElementById('logoutBtn');
     const genderSelection = document.getElementById('genderSelection');
     const menuContainer = document.getElementById('menuContainer');
     
@@ -22,12 +18,105 @@ document.addEventListener('DOMContentLoaded', function() {
         setupEventListeners();
         loadTheme();
         checkAuthStatus();
+        setupSidebar(); // 사이드바 메뉴 복원
         
         if (backBtn) {
             backBtn.style.display = 'none';
         }
         
         console.log('✅ HAIRGATOR 초기화 완료');
+    }
+
+    // 사이드바 메뉴 구조 복원
+    function setupSidebar() {
+        if (sidebar) {
+            const content = sidebar.querySelector('.sidebar-content');
+            if (content) {
+                content.innerHTML = `
+                    <!-- 로그인 정보 -->
+                    <div class="login-info" style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <div class="login-status" id="loginStatus" style="color: #4A90E2; font-size: 14px; margin-bottom: 10px;">
+                            로그인: 확인중...
+                        </div>
+                        <div style="color: #aaa; font-size: 12px;">
+                            크레딧: <span id="creditDisplay" style="color: #4A90E2; font-weight: bold;">-</span>
+                        </div>
+                    </div>
+
+                    <!-- 메뉴 목록 -->
+                    <nav class="sidebar-menu" style="padding: 10px 0;">
+                        
+                        <!-- 테마 전환 -->
+                        <div class="menu-item" id="themeToggleMenu" style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span id="themeIcon" style="font-size: 20px;">🌙</span>
+                                <span id="themeText" style="color: white; font-size: 14px;">다크 모드</span>
+                            </div>
+                        </div>
+
+                        <!-- 퍼스널 컬러 진단 -->
+                        <div class="menu-item" id="personalColorBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 20px;">🎨</span>
+                                <span style="color: white; font-size: 14px;">퍼스널 컬러 진단</span>
+                            </div>
+                        </div>
+
+                        <!-- 로그아웃 -->
+                        <div class="menu-item" id="logoutBtn" style="padding: 15px 20px; cursor: pointer;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 20px;">🚪</span>
+                                <span style="color: #ff4444; font-size: 14px;">로그아웃</span>
+                            </div>
+                        </div>
+
+                    </nav>
+                `;
+                
+                // 호버 효과 CSS 추가
+                const style = document.createElement('style');
+                style.textContent = `
+                    .menu-item:hover {
+                        background: rgba(255, 255, 255, 0.1) !important;
+                        transition: background 0.3s ease;
+                    }
+                    
+                    .sidebar-menu {
+                        max-height: calc(100vh - 200px);
+                        overflow-y: auto;
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                console.log('✅ 사이드바 메뉴 복원 완료');
+                
+                // 로그인 정보 업데이트
+                updateLoginInfo();
+            }
+        }
+    }
+
+    // 로그인 정보 업데이트
+    function updateLoginInfo() {
+        const loginStatus = document.getElementById('loginStatus');
+        const creditDisplay = document.getElementById('creditDisplay');
+        
+        // 불나비 사용자 확인
+        const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
+        if (bullnabiUser) {
+            if (loginStatus) loginStatus.textContent = `로그인: ${bullnabiUser.name}`;
+            if (creditDisplay) creditDisplay.textContent = bullnabiUser.remainCount || 0;
+        } else {
+            // 일반 로그인 확인
+            const designerName = localStorage.getItem('designerName');
+            if (designerName) {
+                if (loginStatus) loginStatus.textContent = `로그인: ${designerName}`;
+                if (creditDisplay) creditDisplay.textContent = '∞';
+            } else {
+                if (loginStatus) loginStatus.textContent = '로그인: 게스트';
+                if (creditDisplay) creditDisplay.textContent = '0';
+            }
+        }
     }
 
     // Event Listeners Setup
@@ -47,22 +136,27 @@ document.addEventListener('DOMContentLoaded', function() {
             sidebarClose.addEventListener('click', closeSidebar);
         }
 
-        // Theme Toggles
-        if (themeToggle) {
-            themeToggle.addEventListener('click', toggleTheme);
-        }
-
-        if (themeToggleBottom) {
-            themeToggleBottom.addEventListener('click', toggleTheme);
-        }
-
-        // Logout Button
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', handleLogout);
-        }
-
-        // Gender Selection은 index.html의 onclick이 처리
-        // 중복 이벤트 리스너 제거로 문제 해결
+        // 사이드바 메뉴 이벤트 (동적 생성 후 연결)
+        setTimeout(() => {
+            const themeToggleMenu = document.getElementById('themeToggleMenu');
+            const personalColorBtn = document.getElementById('personalColorBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            
+            if (themeToggleMenu) {
+                themeToggleMenu.addEventListener('click', toggleTheme);
+            }
+            
+            if (personalColorBtn) {
+                personalColorBtn.addEventListener('click', function() {
+                    console.log('🎨 퍼스널 컬러 진단 클릭');
+                    window.location.href = '/personal-color/';
+                });
+            }
+            
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', handleLogout);
+            }
+        }, 500);
 
         // Keyboard Events
         document.addEventListener('keydown', function(e) {
@@ -97,10 +191,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (genderSelection) genderSelection.style.display = 'flex';
             if (backBtn) backBtn.style.display = 'none';
             
-            if (themeToggleBottom) {
-                themeToggleBottom.style.display = 'flex';
-            }
-            
             // menu.js의 전역 변수 리셋
             if (window.currentGender) window.currentGender = null;
             if (window.currentMainTab) window.currentMainTab = null;
@@ -112,7 +202,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Sidebar Functions
     function openSidebar() {
-        if (sidebar) sidebar.classList.add('active');
+        if (sidebar) {
+            sidebar.classList.add('active');
+            updateLoginInfo(); // 열 때마다 정보 업데이트
+        }
     }
 
     function closeSidebar() {
@@ -122,32 +215,40 @@ document.addEventListener('DOMContentLoaded', function() {
     // Theme Functions
     function loadTheme() {
         const savedTheme = localStorage.getItem('hairgator_theme') || 'dark';
-        if (savedTheme === 'light') {
+        const isLight = savedTheme === 'light';
+        
+        if (isLight) {
             document.body.classList.add('light-theme');
-            if (themeStatus) themeStatus.textContent = 'OFF';
         }
+        
+        // 테마 아이콘 업데이트
+        setTimeout(() => {
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            
+            if (themeIcon) themeIcon.textContent = isLight ? '☀️' : '🌙';
+            if (themeText) themeText.textContent = isLight ? '라이트 모드' : '다크 모드';
+        }, 100);
+        
         console.log(`🎨 테마 로드: ${savedTheme}`);
     }
 
     function toggleTheme() {
-    document.body.classList.toggle('light-theme');
-    const isLight = document.body.classList.contains('light-theme');
-    
-    // 사이드바 테마 토글 업데이트
-    const themeIcon = document.getElementById('themeIcon');
-    const themeText = document.getElementById('themeText');
-    
-    if (themeIcon) themeIcon.textContent = isLight ? '☀️' : '🌙';
-    if (themeText) themeText.textContent = isLight ? '라이트 모드' : '다크 모드';
-    
-    // 기존 themeStatus (있다면)
-    if (themeStatus) {
-        themeStatus.textContent = isLight ? 'OFF' : 'ON';
+        document.body.classList.toggle('light-theme');
+        const isLight = document.body.classList.contains('light-theme');
+        
+        // 사이드바 테마 토글 업데이트
+        const themeIcon = document.getElementById('themeIcon');
+        const themeText = document.getElementById('themeText');
+        
+        if (themeIcon) themeIcon.textContent = isLight ? '☀️' : '🌙';
+        if (themeText) themeText.textContent = isLight ? '라이트 모드' : '다크 모드';
+        
+        localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
+        console.log(`🎨 테마 변경: ${isLight ? 'light' : 'dark'}`);
+        
+        closeSidebar(); // 테마 변경 후 사이드바 닫기
     }
-    
-    localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
-    console.log(`🎨 테마 변경: ${isLight ? 'light' : 'dark'}`);
-}
 
     // Authentication Functions
     function checkAuthStatus() {
@@ -165,9 +266,16 @@ document.addEventListener('DOMContentLoaded', function() {
     async function handleLogout() {
         if (confirm('로그아웃 하시겠습니까?')) {
             try {
-                if (window.authManager) {
-                    await window.authManager.signOut();
-                }
+                // 로그인 정보 삭제
+                localStorage.removeItem('bullnabi_user');
+                localStorage.removeItem('bullnabi_login_time');
+                localStorage.removeItem('designerName');
+                localStorage.removeItem('designerPhone');
+                localStorage.removeItem('designerPassword');
+                localStorage.removeItem('loginTime');
+                sessionStorage.clear();
+                
+                console.log('✅ 로그아웃 완료');
                 location.reload();
             } catch (error) {
                 console.error('❌ 로그아웃 오류:', error);
@@ -214,38 +322,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    // 퍼스널컬러 사이드바 메뉴 설정
-    const personalColorBtn = document.getElementById('personalColorBtn');
-    if (personalColorBtn) {
-        personalColorBtn.addEventListener('click', function() {
-            console.log('🎨 퍼스널컬러 진단 클릭');
-            closeSidebar();
-            
-            // 퍼스널컬러 모달 열기
-            const modal = document.getElementById('personalColorModal');
-            if (modal) {
-                modal.classList.add('active');
-                
-                // iframe 로드
-                const iframe = document.getElementById('personalColorFrame');
-                if (iframe && !iframe.src) {
-                    iframe.src = 'https://mypersonalcolor.com/';
-                }
-            }
-        });
-    }
-    
-    // 퍼스널컬러 모달 닫기 버튼
-    const personalColorClose = document.getElementById('personalColorClose');
-    if (personalColorClose) {
-        personalColorClose.addEventListener('click', function() {
-            const modal = document.getElementById('personalColorModal');
-            if (modal) {
-                modal.classList.remove('active');
-            }
-        });
-    }
-
     // menu.js 로드 확인
     setTimeout(() => {
         if (typeof window.HAIRGATOR_MENU === 'undefined') {
@@ -254,12 +330,17 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             console.log('✅ menu.js 연동 확인');
         }
+        
+        if (typeof window.goBack === 'undefined') {
+            console.error('❌ goBack() 함수가 없습니다');
+        } else {
+            console.log('✅ goBack() 함수 확인');
+        }
     }, 1000);
 
-    // 전역 함수 노출 (필요한 경우)
+    // 전역 함수 노출
     window.showToast = showToast;
 
-    // Performance Monitoring
     console.log('🚀 HAIRGATOR 메인 애플리케이션 준비 완료');
 });
 
@@ -286,4 +367,3 @@ window.addEventListener('load', function() {
     `;
     document.head.appendChild(style);
 });
-
