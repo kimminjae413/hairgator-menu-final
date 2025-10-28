@@ -42,105 +42,26 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('기존 불나비 세션 복원:', bullnabiUser.name);
     }
     
-    // 성별 버튼 이벤트 리스너 추가
+    // 성별 버튼 이벤트 리스너 추가 (menu.js의 selectGender 사용)
     const maleBtn = document.querySelector('.gender-btn.male');
     const femaleBtn = document.querySelector('.gender-btn.female');
     
     if (maleBtn) {
-        maleBtn.addEventListener('click', () => selectGender('male'));
+        maleBtn.addEventListener('click', () => {
+            if (typeof window.selectGender === 'function') {
+                window.selectGender('male');
+            }
+        });
     }
     
     if (femaleBtn) {
-        femaleBtn.addEventListener('click', () => selectGender('female'));
+        femaleBtn.addEventListener('click', () => {
+            if (typeof window.selectGender === 'function') {
+                window.selectGender('female');
+            }
+        });
     }
 });
-
-// ========== 전역 함수 ==========
-
-// 성별 선택 (menu.js와 호환되도록 수정)
-function selectGender(gender) {
-    console.log('🎯 AUTH.JS 성별 선택:', gender);
-    
-    // body에 성별 클래스 추가
-    document.body.classList.remove('gender-male', 'gender-female');
-    document.body.classList.add(`gender-${gender}`);
-
-    // 성별 저장
-    currentGender = gender;
-    window.currentGender = gender;
-    localStorage.setItem('selectedGender', gender);
-
-    // 성별 선택 화면 숨기기
-    const genderSelection = document.getElementById('genderSelection');
-    const menuContainer = document.getElementById('menuContainer');
-    const backBtn = document.getElementById('backBtn');
-    
-    if (genderSelection) {
-        genderSelection.style.display = 'none';
-        genderSelection.style.visibility = 'hidden';
-        genderSelection.style.opacity = '0';
-        genderSelection.style.position = 'absolute';
-        genderSelection.style.zIndex = '-1';
-        genderSelection.classList.remove('active');
-    }
-    
-    if (menuContainer) {
-        menuContainer.style.display = 'block';
-        menuContainer.style.visibility = 'visible';
-        menuContainer.style.opacity = '1';
-        menuContainer.style.position = 'relative';
-        menuContainer.style.zIndex = '1';
-        menuContainer.classList.add('active');
-    }
-    
-    if (backBtn) {
-        backBtn.style.display = 'flex';
-        backBtn.style.visibility = 'visible';
-    }
-
-    // 메뉴 로드
-    if (typeof loadMenuForGender === 'function') {
-        loadMenuForGender(gender);
-        
-        // 중복 탭 제거
-        setTimeout(() => {
-            removeDuplicateTabs();
-        }, 500);
-    } else {
-        console.error('❌ loadMenuForGender 함수를 찾을 수 없습니다');
-    }
-}
-
-// 대분류 탭 중복 제거
-function removeDuplicateTabs() {
-    const categoryTabs = document.getElementById('categoryTabs');
-    if (!categoryTabs) return;
-    
-    const allTabs = Array.from(categoryTabs.children);
-    const totalTabs = allTabs.length;
-    
-    // 성별에 따른 정상 탭 개수
-    const expectedCount = window.currentGender === 'male' ? 7 : 8;
-    
-    // 정상 개수의 2배 이상일 때만 중복으로 판단
-    if (totalTabs >= expectedCount * 2) {
-        console.log('🔧 중복 탭 제거 시작, 총:', totalTabs, '정상:', expectedCount);
-        
-        // 절반만 남기고 나머지 제거
-        const half = Math.floor(totalTabs / 2);
-        for (let i = half; i < totalTabs; i++) {
-            if (allTabs[i]) {
-                allTabs[i].remove();
-            }
-        }
-        
-        console.log('✅ 중복 제거 완료, 남은 탭:', categoryTabs.children.length);
-    } else if (totalTabs < expectedCount) {
-        console.log('⚠️ 탭이 부족합니다. 현재:', totalTabs, '필요:', expectedCount);
-    } else {
-        console.log('✅ 정상 탭 개수:', totalTabs);
-    }
-}
 
 // ========== 불나비 연동 기능 ==========
 
@@ -279,4 +200,3 @@ function getBullnabiUser() {
 // 전역 함수 노출
 window.loginWithBullnabi = loginWithBullnabi;
 window.getBullnabiUser = getBullnabiUser;
-window.selectGender = selectGender;
