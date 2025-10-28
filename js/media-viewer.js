@@ -186,13 +186,9 @@ class MediaViewer {
     
     // 미디어 정보 HTML
     generateMediaInfoHTML() {
-        const imageInfo = this.images.length > 0 ? `이미지 ${this.images.length}장` : '';
-        const videoInfo = this.videoData ? `동영상 (${this.videoData.type.toUpperCase()})` : '';
-        
-        const parts = [imageInfo, videoInfo].filter(Boolean);
-        
-        return parts.length > 0 ? `<span class="media-summary">${parts.join(' • ')}</span>` : '';
-    }
+    // ⭐ 미디어 정보 표시 안 함
+    return '';
+}
 
     // ========== 이벤트 처리 ==========
     
