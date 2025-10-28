@@ -40,6 +40,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const bullnabiUser = getBullnabiUser();
     if (bullnabiUser) {
         console.log('기존 불나비 세션 복원:', bullnabiUser.name);
+        // 자동 로그인 처리는 하지 않고 정보만 복원
+        // 사용자가 직접 성별 선택부터 시작하도록 함
+    }
+});
 
 // 성별 선택
 function selectGender(gender) {
