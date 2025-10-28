@@ -1,4 +1,4 @@
-// HAIRGATOR ↔ 불나비 네이티브 앱 연동 브릿지 - 동적 토큰 지원 최종 버전
+// HAIRGATOR ↔ 불나비 네이티브 앱 연동 브릿지 - DynamicTokenService 통합 최종 버전
 // js/bullnabi-bridge.js
 
 (function() {
@@ -46,53 +46,82 @@
             });
         },
 
-        // 🆕 URL 파라미터로 불나비 정보 확인 및 자동 로그인 (토큰 지원)
+        // URL 파라미터로 불나비 정보 확인 및 자동 로그인
         setupURLParamCheck() {
             const urlParams = new URLSearchParams(window.location.search);
             const userId = urlParams.get('userId');
-            const userToken = urlParams.get('token'); // 🆕 토큰 파라미터 추가
+            const userToken = urlParams.get('token');
             
             if (userId) {
                 console.log('🔍 URL에서 불나비 정보 발견:');
                 console.log('- userId:', userId);
                 console.log('- token:', userToken ? userToken.substring(0, 20) + '...' : 'null');
                 
-                // 🆕 토큰도 함께 전달
                 this.performWebAutoLogin(userId, userToken);
             }
         },
 
-        // 🆕 웹에서 직접 자동 로그인 (토큰 지원)
-        performWebAutoLogin(userId, userToken = null) { // 🆕 userToken 파라미터 추가
+        // 웹에서 직접 자동 로그인
+        performWebAutoLogin(userId, userToken = null) {
             console.log('🚀 웹 자동 로그인 시작:');
             console.log('- userId:', userId);
-            console.log('- userToken:', userToken ? '있음 (동적)' : '없음 (환경변수 사용)');
+            console.log('- userToken:', userToken ? '있음 (동적)' : '없음 (DynamicTokenService 사용)');
             
             // 네이티브 앱이 있으면 API 요청, 없으면 바로 로그인
             if (this.isInNativeApp()) {
                 console.log('📱 네이티브 앱 환경 - API 요청');
-                this.requestUserInfoFromNative(userId, userToken); // 🆕 토큰 전달
+                this.requestUserInfoFromNative(userId, userToken);
             } else {
                 console.log('🌐 웹 브라우저 환경 - 직접 로그인');
-                this.executeDirectLogin(userId, userToken); // 🆕 토큰 전달
+                this.executeDirectLogin(userId, userToken);
             }
         },
 
-        // 네이티브 앱 환경 체크 (기존과 동일)
+        // 네이티브 앱 환경 체크
         isInNativeApp() {
             return !!(window.ReactNativeWebView || 
                      (window.parent !== window) ||
                      navigator.userAgent.includes('ReactNative'));
         },
 
-        // 🆕 웹에서 직접 로그인 실행 (토큰 지원)
-        async executeDirectLogin(userId, userToken = null) { // 🆕 userToken 파라미터 추가
-            console.log('🚀 프록시 서버를 통한 실제 사용자 정보 조회:');
+        // ⭐ 웹에서 직접 로그인 실행 - DynamicTokenService 우선 사용
+        async executeDirectLogin(userId, userToken = null) {
+            console.log('🚀 실제 사용자 정보 조회 시작:');
             console.log('- userId:', userId);
-            console.log('- userToken:', userToken ? '동적 토큰 사용' : '환경변수 토큰 사용');
+            console.log('- userToken:', userToken ? '파라미터 토큰 있음' : '파라미터 토큰 없음');
             
             try {
-                // 🆕 Netlify Functions 프록시 서버 호출 (토큰 포함)
+                // ========== 1순위: DynamicTokenService 사용 (자동 갱신) ==========
+                if (window.DynamicTokenService && !userToken) {
+                    console.log('🔑 DynamicTokenService로 자동 로그인 시도...');
+                    
+                    try {
+                        const userInfo = await DynamicTokenService.getUserCreditsWithDynamicToken(userId);
+                        
+                        if (userInfo) {
+                            console.log('✅ DynamicTokenService로 사용자 정보 조회 성공');
+                            
+                            // DOM 로드 대기 후 로그인
+                            if (document.readyState !== 'complete') {
+                                window.addEventListener('load', () => {
+                                    this.performLogin(userInfo);
+                                });
+                            } else {
+                                setTimeout(() => {
+                                    this.performLogin(userInfo);
+                                }, 500);
+                            }
+                            return;
+                        }
+                    } catch (dynamicError) {
+                        console.warn('⚠️ DynamicTokenService 실패, 기존 방식으로 폴백:', dynamicError.message);
+                        // 폴백으로 계속 진행
+                    }
+                }
+
+                // ========== 2순위: 기존 방식 (프록시 서버 직접 호출) ==========
+                console.log('🔄 기존 프록시 서버 방식 사용');
+                
                 const response = await fetch('/.netlify/functions/bullnabi-proxy', {
                     method: 'POST',
                     headers: {
@@ -100,7 +129,7 @@
                     },
                     body: JSON.stringify({ 
                         userId: userId,
-                        userToken: userToken  // 🆕 토큰 추가
+                        userToken: userToken
                     })
                 });
 
@@ -111,7 +140,7 @@
                 const result = await response.json();
                 console.log('📋 프록시 서버 응답:', result);
 
-                // 🆕 토큰 오류 처리 추가
+                // 토큰 오류 처리
                 if (!result.success && result.error === 'TOKEN_ERROR') {
                     console.error('🔑 토큰 오류 감지:', result.message);
                     
@@ -120,7 +149,7 @@
                         showToast('토큰이 만료되었습니다. 다시 로그인해주세요.', 'error');
                     }
                     
-                    // URL에서 토큰 파라미터 제거하고 새로고침
+                    // URL에서 토큰 파라미터 제거
                     const url = new URL(window.location);
                     url.searchParams.delete('token');
                     window.history.replaceState({}, '', url);
@@ -129,21 +158,20 @@
                 }
 
                 if (result.success && result.userInfo) {
-                    console.log('✅ 실제 사용자 정보 조회 성공:', result.userInfo);
+                    console.log('✅ 프록시 서버로 사용자 정보 조회 성공:', result.userInfo);
                     
-                    // 🆕 토큰 소스 정보 로깅
+                    // 토큰 소스 정보 로깅
                     if (result.debug) {
                         console.log('🔍 토큰 사용 정보:', result.debug.tokenSource);
                         console.log('🔍 동적 토큰 사용:', result.debug.usedDynamicToken);
                     }
                     
-                    // DOM이 완전히 로드될 때까지 대기
+                    // DOM 로드 대기 후 로그인
                     if (document.readyState !== 'complete') {
                         window.addEventListener('load', () => {
                             this.performLogin(result.userInfo);
                         });
                     } else {
-                        // 약간의 딜레이를 두고 실행 (다른 스크립트 로딩 대기)
                         setTimeout(() => {
                             this.performLogin(result.userInfo);
                         }, 500);
@@ -153,11 +181,10 @@
                 }
 
             } catch (error) {
-                console.error('❌ 실제 사용자 정보 조회 실패:', error);
+                console.error('❌ 사용자 정보 조회 실패:', error);
                 
-                // 🆕 토큰 오류가 아닌 경우에만 fallback 실행
+                // 토큰 오류가 아닌 경우에만 fallback 실행
                 if (!error.message.includes('토큰')) {
-                    // 실패 시 테스트용 사용자 정보로 로그인
                     console.log('🔄 테스트용 사용자 정보로 대체 로그인');
                     const fallbackUserInfo = {
                         id: userId,
@@ -173,7 +200,7 @@
             }
         },
 
-        // 실제 로그인 처리 (기존과 동일)
+        // 실제 로그인 처리
         performLogin(userInfo) {
             if (typeof window.loginWithBullnabi === 'function') {
                 console.log('🎯 자동 로그인 함수 호출');
@@ -206,8 +233,8 @@
             }
         },
 
-        // 🆕 네이티브 앱에 사용자 정보 요청 (토큰 지원)
-        requestUserInfoFromNative(userId, userToken = null) { // 🆕 userToken 파라미터 추가
+        // 네이티브 앱에 사용자 정보 요청
+        requestUserInfoFromNative(userId, userToken = null) {
             console.log('📱 네이티브 앱에 사용자 정보 요청:');
             console.log('- userId:', userId);  
             console.log('- userToken:', userToken ? '있음' : '없음');
@@ -217,7 +244,7 @@
                 userId: userId
             };
             
-            // 🆕 토큰이 있으면 함께 전달
+            // 토큰이 있으면 함께 전달
             if (userToken) {
                 requestData.userToken = userToken;
             }
@@ -235,7 +262,7 @@
             console.log('📤 네이티브 앱에 사용자 정보 요청 완료');
         },
 
-        // 불나비 로그인 처리 (PostMessage 수신) - 기존과 동일
+        // 불나비 로그인 처리 (PostMessage 수신)
         handleBullnabiLogin(data) {
             console.log('📥 불나비 로그인 처리 시작:', data);
             
@@ -247,7 +274,7 @@
             this.performLogin(data.userInfo);
         },
 
-        // 크레딧 업데이트 처리 (기존과 동일)
+        // 크레딧 업데이트 처리
         handleCreditUpdate(data) {
             console.log('💳 크레딧 업데이트:', data);
             
@@ -280,7 +307,7 @@
             }
         },
 
-        // 불나비 로그아웃 처리 (기존과 동일)
+        // 불나비 로그아웃 처리
         handleBullnabiLogout() {
             console.log('👋 불나비 로그아웃 처리');
             
@@ -288,6 +315,12 @@
                 // 불나비 세션 정리
                 localStorage.removeItem('bullnabi_user');
                 localStorage.removeItem('bullnabi_login_time');
+                
+                // DynamicTokenService 캐시 클리어
+                if (window.DynamicTokenService) {
+                    DynamicTokenService.clearAllTokenCache();
+                    console.log('🗑️ DynamicTokenService 캐시 클리어');
+                }
                 
                 // HAIRGATOR 로그아웃 처리
                 if (typeof logout === 'function') {
@@ -306,7 +339,7 @@
             }
         },
 
-        // 네이티브 앱에 메시지 전송 (기존과 동일)
+        // 네이티브 앱에 메시지 전송
         sendToNative(message) {
             try {
                 if (window.parent !== window) {
@@ -324,7 +357,7 @@
             }
         },
 
-        // AI 기능 사용 시 크레딧 차감 요청 (기존과 동일)
+        // AI 기능 사용 시 크레딧 차감 요청
         requestCreditDeduction(usageType, count) {
             this.sendToNative({
                 type: 'DEDUCT_CREDIT',
@@ -334,7 +367,7 @@
             });
         },
 
-        // 연결 상태 확인 (기존과 동일)
+        // 연결 상태 확인
         checkConnection() {
             const now = Date.now();
             const timeSinceLastHeartbeat = now - (this.lastHeartbeat || 0);
@@ -347,7 +380,7 @@
             return this.isConnected;
         },
 
-        // 연결 정보 로깅 (기존과 동일)
+        // 연결 정보 로깅
         logConnectionInfo() {
             console.log('🔗 불나비 브릿지 연결 정보:');
             console.log('- 현재 URL:', window.location.href);
@@ -355,28 +388,69 @@
             console.log('- Referrer:', document.referrer);
             console.log('- Parent Window:', window.parent !== window ? '있음' : '없음');
             console.log('- ReactNative WebView:', !!window.ReactNativeWebView);
+            console.log('- DynamicTokenService:', !!window.DynamicTokenService ? '로드됨' : '미로드');
         },
 
-        // 🆕 수동 테스트용 함수들 (토큰 지원)
-        testAutoLogin(userId = '687ae7d51f31a788ab417e2d', userToken = null) { // 🆕 토큰 파라미터 추가
+        // ⭐ 수동 테스트용 함수들
+        testAutoLogin(userId = '687ae7d51f31a788ab417e2d', userToken = null) {
             console.log('🧪 자동 로그인 테스트 시작:');
             console.log('- userId:', userId);
             console.log('- userToken:', userToken ? '사용' : '미사용');
+            console.log('- DynamicTokenService:', !!window.DynamicTokenService ? '사용 가능' : '사용 불가');
             this.performWebAutoLogin(userId, userToken);
         },
+
+        // ⭐ DynamicTokenService 테스트
+        async testDynamicTokenService(userId = '687ae7d51f31a788ab417e2d') {
+            if (!window.DynamicTokenService) {
+                console.error('❌ DynamicTokenService가 로드되지 않았습니다');
+                return;
+            }
+
+            console.log('🧪 DynamicTokenService 테스트 시작:');
+            
+            try {
+                // 서비스 상태 확인
+                const status = DynamicTokenService.getServiceStatus();
+                console.log('📊 서비스 상태:', status);
+                
+                // 토큰 발급 테스트
+                console.log('\n1️⃣ 토큰 발급 테스트...');
+                const tokenResult = await DynamicTokenService.getUserToken(userId);
+                console.log('토큰 발급 결과:', tokenResult);
+                
+                // 사용자 정보 조회 테스트
+                console.log('\n2️⃣ 사용자 정보 조회 테스트...');
+                const userInfo = await DynamicTokenService.getUserCreditsWithDynamicToken(userId);
+                console.log('사용자 정보:', userInfo);
+                
+                // 캐시 확인
+                console.log('\n3️⃣ 캐시 확인...');
+                const cached = DynamicTokenService.getCachedToken(userId);
+                console.log('캐시된 토큰:', cached ? cached.substring(0, 20) + '...' : null);
+                
+                console.log('\n✅ 모든 테스트 완료');
+                
+            } catch (error) {
+                console.error('❌ 테스트 실패:', error);
+            }
+        },
         
-        // 상태 조회 (기존과 동일)
+        // 상태 조회
         getStatus() {
             return {
                 isConnected: this.isConnected,
                 lastHeartbeat: this.lastHeartbeat,
                 isInNativeApp: this.isInNativeApp(),
-                loginFunction: typeof window.loginWithBullnabi
+                loginFunction: typeof window.loginWithBullnabi,
+                dynamicTokenService: !!window.DynamicTokenService,
+                dynamicTokenServiceStatus: window.DynamicTokenService ? 
+                    DynamicTokenService.getServiceStatus() : null
             };
         }
     };
 
-    // 페이지 로드 완료 시 초기화 (기존과 동일)
+    // 페이지 로드 완료 시 초기화
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             BullnabiBridge.init();
@@ -385,14 +459,15 @@
         BullnabiBridge.init();
     }
 
-    // 전역 접근을 위해 노출 (기존과 동일)
+    // 전역 접근을 위해 노출
     window.BullnabiBridge = BullnabiBridge;
 
-    // 주기적 연결 상태 확인 (30초마다) - 기존과 동일
+    // 주기적 연결 상태 확인 (30초마다)
     setInterval(() => {
         BullnabiBridge.checkConnection();
     }, 30000);
 
-    console.log('🌉 불나비 브릿지 모듈 로드 완료 - 동적 토큰 지원');
+    console.log('🌉 불나비 브릿지 모듈 로드 완료 - DynamicTokenService 통합');
+    console.log('테스트: BullnabiBridge.testDynamicTokenService()');
 
 })();
