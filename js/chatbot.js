@@ -332,12 +332,6 @@ class HairGatorChatbot {
     this.createChatbotUI();
     this.attachEventListeners();
     this.initKeyboardHandler();
-    
-    // ✅ UI 생성 후 히스토리 복원
-    if (this.conversationHistory && this.conversationHistory.length > 0) {
-      console.log('📚 기존 히스토리 복원:', this.conversationHistory.length + '개');
-      this.restoreHistoryToUI();
-    }
   }
 
   // 다국어 텍스트
