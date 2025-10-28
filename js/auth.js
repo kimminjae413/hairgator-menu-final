@@ -50,15 +50,22 @@ function selectGender(gender) {
     // body에 성별 클래스 추가
     document.body.classList.remove('gender-male', 'gender-female');
     document.body.classList.add(`gender-${gender}`);
-    
+
     // 성별 저장
     currentGender = gender;
     localStorage.setItem('selectedGender', gender);
-    
+
     // 화면 전환
-    document.getElementById('genderSelection').classList.remove('active');
-    document.getElementById('mainMenu').classList.add('active');
-    
+    const genderSelection = document.getElementById('genderSelection');
+    if (genderSelection) {
+        genderSelection.classList.remove('active');
+    }
+
+    const menuContainer = document.getElementById('menuContainer');
+    if (menuContainer) {
+        menuContainer.classList.add('active');
+    }
+
     // 메뉴 로드
     loadMenuForGender(gender);
 }
