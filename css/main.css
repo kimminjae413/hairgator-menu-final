@@ -2038,3 +2038,12 @@ button.fullscreen-btn,
     position: relative !important;
     z-index: auto !important;
 }
+
+/* ========== 전체화면 버튼 숨김 (왼쪽 하단 아이콘 제거) ========== */
+.fullscreen-btn,
+button.fullscreen-btn,
+.image-display .fullscreen-btn {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
