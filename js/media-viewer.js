@@ -65,21 +65,10 @@ class MediaViewer {
         
         return `
             <div class="media-viewer">
-                <!-- 메인 디스플레이 영역 -->
                 <div class="main-display">
                     ${this.generateMainDisplayHTML()}
-                    
-                    <!-- 미디어 전환 버튼 -->
                     ${this.images.length > 0 && this.videoData ? this.generateMediaToggleHTML() : ''}
                 </div>
-                
-                <!-- 썸네일 갤러리 -->
-                ${false ? this.generateThumbnailGalleryHTML() : ''}
-                
-                //                 <!-- 미디어 정보 -->
-                //                 <div class="media-info">
-                //                     ${this.generateMediaInfoHTML()}
-                //                 </div>
             </div>
         `;
     }
@@ -106,7 +95,6 @@ class MediaViewer {
                      class="main-image"
                      onclick="mediaViewer.openFullscreen('${currentImage}')">
                 
-                <!-- 이미지 네비게이션 -->
                 ${this.images.length > 1 ? `
                     <button class="nav-btn nav-prev" onclick="mediaViewer.previousImage()" title="이전 이미지">‹</button>
                     <button class="nav-btn nav-next" onclick="mediaViewer.nextImage()" title="다음 이미지">›</button>
@@ -116,7 +104,6 @@ class MediaViewer {
                     </div>
                 ` : ''}
                 
-                <!-- 전체화면 버튼 -->
                 <button class="fullscreen-btn" onclick="mediaViewer.openFullscreen('${currentImage}')" title="전체화면">⛶</button>
             </div>
         `;
@@ -163,7 +150,7 @@ class MediaViewer {
         `;
     }
     
-    // 썸네일 갤러리 HTML
+    // 썸네일 갤러리 HTML (호출 안 됨)
     generateThumbnailGalleryHTML() {
         const thumbnails = this.images.map((image, index) => `
             <div class="thumbnail-item ${index === this.currentImageIndex ? 'active' : ''}" 
@@ -184,24 +171,26 @@ class MediaViewer {
         `;
     }
     
-    // 미디어 정보 HTML
+    // 미디어 정보 HTML (호출 안 됨)
     generateMediaInfoHTML() {
-    // ⭐ 미디어 정보 표시 안 함
-    return '';
-}
+        const imageInfo = this.images.length > 0 ? `이미지 ${this.images.length}장` : '';
+        const videoInfo = this.videoData ? `동영상 (${this.videoData.type.toUpperCase()})` : '';
+        
+        const parts = [imageInfo, videoInfo].filter(Boolean);
+        
+        return parts.length > 0 ? `<span class="media-summary">${parts.join(' • ')}</span>` : '';
+    }
 
     // ========== 이벤트 처리 ==========
     
     // 뷰어 이벤트 바인딩
     bindViewerEvents() {
-        // 터치 이벤트 (모바일 스와이프)
         this.bindTouchEvents();
     }
     
     // 키보드 이벤트 바인딩
     bindKeyboardEvents() {
         document.addEventListener('keydown', (e) => {
-            // 모달이 열려있을 때만 작동
             const modal = document.getElementById('styleModal');
             if (!modal || !modal.classList.contains('active')) return;
             
@@ -221,7 +210,7 @@ class MediaViewer {
         });
     }
     
-    // 터치 이벤트 바인딩 (모바일 스와이프)
+    // 터치 이벤트 바인딩
     bindTouchEvents() {
         const mainDisplay = document.querySelector('.main-display');
         if (!mainDisplay) return;
@@ -240,15 +229,14 @@ class MediaViewer {
             const touchEndX = e.changedTouches[0].clientX;
             const touchEndY = e.changedTouches[0].clientY;
             
-            const deltaX = touchStartX - touchEndX;
-            const deltaY = touchStartY - touchEndY;
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
             
-            // 수평 스와이프가 수직 스와이프보다 클 때만 처리
             if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
                 if (deltaX > 0) {
-                    this.nextImage(); // 왼쪽 스와이프 = 다음 이미지
+                    this.previousImage();
                 } else {
-                    this.previousImage(); // 오른쪽 스와이프 = 이전 이미지
+                    this.nextImage();
                 }
             }
             
@@ -259,31 +247,24 @@ class MediaViewer {
 
     // ========== 이미지 네비게이션 ==========
     
-    // 다음 이미지
-    nextImage() {
-        if (this.images.length <= 1) return;
-        
-        this.currentImageIndex = (this.currentImageIndex + 1) % this.images.length;
-        this.updateImageDisplay();
-    }
-    
-    // 이전 이미지
     previousImage() {
         if (this.images.length <= 1) return;
-        
         this.currentImageIndex = (this.currentImageIndex - 1 + this.images.length) % this.images.length;
         this.updateImageDisplay();
     }
     
-    // 특정 이미지 선택
-    selectImage(index) {
-        if (index >= 0 && index < this.images.length) {
-            this.currentImageIndex = index;
-            this.updateImageDisplay();
-        }
+    nextImage() {
+        if (this.images.length <= 1) return;
+        this.currentImageIndex = (this.currentImageIndex + 1) % this.images.length;
+        this.updateImageDisplay();
     }
     
-    // 이미지 디스플레이 업데이트 (전체 재렌더링 없이)
+    selectImage(index) {
+        if (index < 0 || index >= this.images.length) return;
+        this.currentImageIndex = index;
+        this.updateImageDisplay();
+    }
+    
     updateImageDisplay() {
         const imageElement = document.querySelector('.main-image');
         const counterElement = document.querySelector('.image-counter');
@@ -299,7 +280,6 @@ class MediaViewer {
             counterElement.textContent = `${this.currentImageIndex + 1} / ${this.images.length}`;
         }
         
-        // 썸네일 활성 상태 업데이트
         thumbnails.forEach((thumb, index) => {
             if (index === this.currentImageIndex) {
                 thumb.classList.add('active');
@@ -311,25 +291,20 @@ class MediaViewer {
 
     // ========== 미디어 모드 전환 ==========
     
-    // 이미지 모드로 전환
     switchToImages() {
         if (this.images.length === 0) return;
-        
         this.isVideoMode = false;
         this.renderMediaViewer();
     }
     
-    // 동영상 모드로 전환
     switchToVideo() {
         if (!this.videoData) return;
-        
         this.isVideoMode = true;
         this.renderMediaViewer();
     }
 
     // ========== 전체화면 ==========
     
-    // 이미지 전체화면 열기
     openFullscreen(imageUrl) {
         const fullscreenModal = document.createElement('div');
         fullscreenModal.className = 'fullscreen-modal';
@@ -339,130 +314,65 @@ class MediaViewer {
                 <button class="fullscreen-close" onclick="mediaViewer.closeFullscreen()">×</button>
                 
                 ${this.images.length > 1 ? `
-                    <button class="fullscreen-nav fullscreen-prev" onclick="mediaViewer.fullscreenPrevious()">‹</button>
-                    <button class="fullscreen-nav fullscreen-next" onclick="mediaViewer.fullscreenNext()">›</button>
+                    <button class="fullscreen-prev" onclick="mediaViewer.fullscreenPrevImage()">‹</button>
+                    <button class="fullscreen-next" onclick="mediaViewer.fullscreenNextImage()">›</button>
                     <div class="fullscreen-counter">${this.currentImageIndex + 1} / ${this.images.length}</div>
                 ` : ''}
             </div>
-            <div class="fullscreen-overlay" onclick="mediaViewer.closeFullscreen()"></div>
         `;
+        
+        fullscreenModal.addEventListener('click', (e) => {
+            if (e.target === fullscreenModal) {
+                this.closeFullscreen();
+            }
+        });
         
         document.body.appendChild(fullscreenModal);
         document.body.style.overflow = 'hidden';
         
-        // 애니메이션
-        setTimeout(() => fullscreenModal.classList.add('active'), 10);
-    }
-    
-    // 전체화면 닫기
-    closeFullscreen() {
-        const fullscreenModal = document.querySelector('.fullscreen-modal');
-        if (fullscreenModal) {
-            fullscreenModal.classList.remove('active');
-            setTimeout(() => {
-                fullscreenModal.remove();
-                document.body.style.overflow = '';
-            }, 300);
-        }
-    }
-    
-    // 전체화면 이전 이미지
-    fullscreenPrevious() {
-        this.previousImage();
-        const fullscreenImage = document.querySelector('.fullscreen-image');
-        const fullscreenCounter = document.querySelector('.fullscreen-counter');
-        
-        if (fullscreenImage) {
-            fullscreenImage.src = this.images[this.currentImageIndex];
-        }
-        if (fullscreenCounter) {
-            fullscreenCounter.textContent = `${this.currentImageIndex + 1} / ${this.images.length}`;
-        }
-    }
-    
-    // 전체화면 다음 이미지
-    fullscreenNext() {
-        this.nextImage();
-        const fullscreenImage = document.querySelector('.fullscreen-image');
-        const fullscreenCounter = document.querySelector('.fullscreen-counter');
-        
-        if (fullscreenImage) {
-            fullscreenImage.src = this.images[this.currentImageIndex];
-        }
-        if (fullscreenCounter) {
-            fullscreenCounter.textContent = `${this.currentImageIndex + 1} / ${this.images.length}`;
-        }
-    }
-
-    // ========== 유틸리티 ==========
-    
-    // 현재 표시 중인 미디어 정보
-    getCurrentMedia() {
-        return {
-            type: this.isVideoMode ? 'video' : 'image',
-            imageIndex: this.currentImageIndex,
-            imageUrl: this.images[this.currentImageIndex] || null,
-            videoData: this.videoData,
-            totalImages: this.images.length,
-            hasVideo: !!this.videoData
-        };
-    }
-    
-    // 뷰어 상태 초기화
-    reset() {
-        this.currentImageIndex = 0;
-        this.images = [];
-        this.videoData = null;
-        this.isVideoMode = false;
-        
-        // 전체화면 모달이 열려있으면 닫기
-        this.closeFullscreen();
-    }
-    
-    // 디버깅 정보
-    getDebugInfo() {
-        return {
-            currentImageIndex: this.currentImageIndex,
-            totalImages: this.images.length,
-            hasVideo: !!this.videoData,
-            isVideoMode: this.isVideoMode,
-            videoType: this.videoData?.type || null
-        };
-    }
-}
-
-// ========== 기존 styleModal 연동 ==========
-
-// 기존 openStyleModal 함수 확장
-function enhanceStyleModal() {
-    const originalOpenStyleModal = window.openStyleModal;
-    
-    if (originalOpenStyleModal) {
-        window.openStyleModal = function(style) {
-            // 기존 모달 열기 로직 실행
-            originalOpenStyleModal(style);
-            
-            // MediaViewer에 데이터 로드
-            if (window.mediaViewer && style) {
-                setTimeout(() => {
-                    window.mediaViewer.loadMedia(style);
-                }, 100); // DOM 업데이트 대기
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                this.closeFullscreen();
+                document.removeEventListener('keydown', escHandler);
             }
         };
+        document.addEventListener('keydown', escHandler);
+    }
+    
+    fullscreenPrevImage() {
+        this.previousImage();
+        this.updateFullscreenDisplay();
+    }
+    
+    fullscreenNextImage() {
+        this.nextImage();
+        this.updateFullscreenDisplay();
+    }
+    
+    updateFullscreenDisplay() {
+        const fullscreenImage = document.querySelector('.fullscreen-image');
+        const fullscreenCounter = document.querySelector('.fullscreen-counter');
+        
+        if (fullscreenImage) {
+            fullscreenImage.src = this.images[this.currentImageIndex];
+        }
+        
+        if (fullscreenCounter) {
+            fullscreenCounter.textContent = `${this.currentImageIndex + 1} / ${this.images.length}`;
+        }
+    }
+    
+    closeFullscreen() {
+        const modal = document.querySelector('.fullscreen-modal');
+        if (modal) {
+            modal.remove();
+            document.body.style.overflow = '';
+        }
     }
 }
 
-// ========== 글로벌 초기화 ==========
-document.addEventListener('DOMContentLoaded', function() {
-    // MediaViewer 인스턴스 생성
-    window.mediaViewer = new MediaViewer();
-    
-    // 기존 모달 시스템과 연동
-    enhanceStyleModal();
-    
-    console.log('✅ HAIRGATOR MediaViewer 로드 완료');
-});
+// 전역 인스턴스 생성
+const mediaViewer = new MediaViewer();
+window.mediaViewer = mediaViewer;
 
-// ========== 글로벌 함수 노출 ==========
-window.MediaViewer = MediaViewer;
-window.enhanceStyleModal = enhanceStyleModal;
+console.log('✅ MediaViewer 스크립트 로드 완료');
