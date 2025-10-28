@@ -37,7 +37,6 @@
 <!-- Firebase SDK 로드 후에 설정 파일 로드 -->
 <script src="js/firebase-config.js"></script>
 <script src="js/dynamic-token-service.js"></script>
-<script src="js/auth.js"></script>
 <script src="js/password-recovery.js"></script>
 <script src="js/bullnabi-bridge.js"></script>
 
@@ -45,6 +44,10 @@
 <script src="js/menu.js"></script>
 <script src="js/dynamic-layout.js"></script>
 <script src="js/tablet-touch-handler.js"></script>
+
+<!-- ⭐ auth.js를 menu.js 다음에 로드해서 selectGender 덮어쓰기 -->
+<script src="js/auth.js"></script>
+
 <script src="js/main.js"></script>
 
 
@@ -1767,9 +1770,3 @@ function showSimpleDevelopmentToast() {
 <script src="js/chatbot.js"></script>
 </body>
 </html>
-
-
-
-
-
-
