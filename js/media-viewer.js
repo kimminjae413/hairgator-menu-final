@@ -74,12 +74,12 @@ class MediaViewer {
                 </div>
                 
                 <!-- 썸네일 갤러리 -->
-                ${this.images.length > 1 ? this.generateThumbnailGalleryHTML() : ''}
+                ${false ? this.generateThumbnailGalleryHTML() : ''}
                 
-                <!-- 미디어 정보 -->
-                <div class="media-info">
-                    ${this.generateMediaInfoHTML()}
-                </div>
+                //                 <!-- 미디어 정보 -->
+                //                 <div class="media-info">
+                //                     ${this.generateMediaInfoHTML()}
+                //                 </div>
             </div>
         `;
     }
