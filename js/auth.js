@@ -69,24 +69,17 @@ function selectGender(gender) {
     window.currentGender = gender;
     localStorage.setItem('selectedGender', gender);
 
-    // 성별 선택 화면 완전히 숨기기
+    // 성별 선택 화면 완전히 숨기기 (cssText로 강제 적용)
     const genderSelection = document.getElementById('genderSelection');
     if (genderSelection) {
-        genderSelection.style.display = 'none';
-        genderSelection.style.visibility = 'hidden';
-        genderSelection.style.opacity = '0';
-        genderSelection.style.pointerEvents = 'none';
+        genderSelection.style.cssText = 'display: none !important; opacity: 0; visibility: hidden; position: absolute; z-index: -1;';
         genderSelection.classList.remove('active');
     }
 
-    // 메뉴 컨테이너 완전히 보이기
+    // 메뉴 컨테이너 완전히 보이기 (cssText로 강제 적용)
     const menuContainer = document.getElementById('menuContainer');
     if (menuContainer) {
-        menuContainer.style.display = 'block';
-        menuContainer.style.visibility = 'visible';
-        menuContainer.style.opacity = '1';
-        menuContainer.style.position = 'relative';
-        menuContainer.style.zIndex = '1';
+        menuContainer.style.cssText = 'display: block !important; opacity: 1; visibility: visible; position: relative; z-index: 1;';
         menuContainer.classList.add('active');
     }
 
