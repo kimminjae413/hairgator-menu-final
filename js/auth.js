@@ -40,8 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const bullnabiUser = getBullnabiUser();
     if (bullnabiUser) {
         console.log('기존 불나비 세션 복원:', bullnabiUser.name);
-        // 자동 로그인 처리는 하지 않고 정보만 복원
-        // 사용자가 직접 성별 선택부터 시작하도록 함
     }
     
     // 성별 버튼 이벤트 리스너 추가
@@ -71,25 +69,61 @@ function selectGender(gender) {
     window.currentGender = gender;
     localStorage.setItem('selectedGender', gender);
 
-    // 성별 선택 화면 숨기기 (display + classList)
+    // 성별 선택 화면 완전히 숨기기
     const genderSelection = document.getElementById('genderSelection');
     if (genderSelection) {
         genderSelection.style.display = 'none';
+        genderSelection.style.visibility = 'hidden';
+        genderSelection.style.opacity = '0';
+        genderSelection.style.pointerEvents = 'none';
         genderSelection.classList.remove('active');
     }
 
-    // 메뉴 컨테이너 보이기 (display + classList)
+    // 메뉴 컨테이너 완전히 보이기
     const menuContainer = document.getElementById('menuContainer');
     if (menuContainer) {
         menuContainer.style.display = 'block';
+        menuContainer.style.visibility = 'visible';
+        menuContainer.style.opacity = '1';
+        menuContainer.style.position = 'relative';
+        menuContainer.style.zIndex = '1';
         menuContainer.classList.add('active');
     }
 
     // 메뉴 로드
     if (typeof loadMenuForGender === 'function') {
         loadMenuForGender(gender);
+        
+        // 메뉴 로드 후 중복 탭 제거 (500ms 대기)
+        setTimeout(() => {
+            removeDuplicateTabs();
+        }, 500);
     } else {
         console.error('❌ loadMenuForGender 함수를 찾을 수 없습니다');
+    }
+}
+
+// 대분류 탭 중복 제거
+function removeDuplicateTabs() {
+    const categoryTabs = document.getElementById('categoryTabs');
+    if (!categoryTabs) return;
+    
+    const allTabs = Array.from(categoryTabs.children);
+    const totalTabs = allTabs.length;
+    
+    // 탭이 중복된 경우에만 제거
+    if (totalTabs > 7) {
+        console.log('🔧 중복 탭 제거 시작, 총:', totalTabs);
+        
+        // 절반만 남기고 나머지 제거
+        const half = Math.floor(totalTabs / 2);
+        for (let i = half; i < totalTabs; i++) {
+            if (allTabs[i]) {
+                allTabs[i].remove();
+            }
+        }
+        
+        console.log('✅ 중복 제거 완료, 남은 탭:', categoryTabs.children.length);
     }
 }
 
@@ -97,12 +131,6 @@ function selectGender(gender) {
 
 /**
  * 불나비 네이티브 앱을 통한 자동 로그인
- * @param {Object} userInfo - 불나비에서 전달받은 사용자 정보
- * @param {string} userInfo.id - 사용자 ID
- * @param {string} userInfo.userId - 사용자 ID (대체)
- * @param {string} userInfo.name - 사용자 이름
- * @param {string} userInfo.email - 이메일
- * @param {number} userInfo.remainCount - 잔여 크레딧
  */
 function loginWithBullnabi(userInfo) {
     try {
@@ -112,35 +140,27 @@ function loginWithBullnabi(userInfo) {
         localStorage.setItem('bullnabi_user', JSON.stringify(userInfo));
         localStorage.setItem('bullnabi_login_time', new Date().getTime());
         
-        // HAIRGATOR 기존 로그인 정보도 저장 (호환성)
+        // HAIRGATOR 기존 로그인 정보도 저장
         localStorage.setItem('designerName', userInfo.name || '불나비 사용자');
-        localStorage.setItem('designerPhone', '0000'); // 더미값
+        localStorage.setItem('designerPhone', '0000');
         localStorage.setItem('loginTime', new Date().getTime());
         
-        // ⭐ 화면 전환 (display와 classList 둘 다 처리)
+        // 화면 전환
         const loginScreen = document.getElementById('loginScreen');
         const genderSelection = document.getElementById('genderSelection');
         
         if (loginScreen) {
-            // display 속성 제거 (CSS로 제어)
-            loginScreen.style.display = '';
+            loginScreen.style.display = 'none';
+            loginScreen.style.visibility = 'hidden';
+            loginScreen.style.opacity = '0';
             loginScreen.classList.remove('active');
-            
-            // 완전히 숨기기 (강제)
-            setTimeout(() => {
-                loginScreen.style.display = 'none';
-            }, 10);
         }
         
         if (genderSelection) {
-            // display 속성 제거 (CSS로 제어)
-            genderSelection.style.display = '';
+            genderSelection.style.display = 'flex';
+            genderSelection.style.visibility = 'visible';
+            genderSelection.style.opacity = '1';
             genderSelection.classList.add('active');
-            
-            // 완전히 보이기 (강제)
-            setTimeout(() => {
-                genderSelection.style.display = 'flex';
-            }, 10);
         }
         
         // 디자이너 이름 표시
@@ -149,7 +169,7 @@ function loginWithBullnabi(userInfo) {
             designerNameDisplay.textContent = userInfo.name || '불나비 사용자';
         }
         
-        // 권한 시스템에 사용자 정보 전달
+        // 권한 시스템
         if (window.permissionManager) {
             window.permissionManager.currentUser = {
                 id: userInfo.userId || userInfo.id,
@@ -162,7 +182,7 @@ function loginWithBullnabi(userInfo) {
             window.permissionManager.updatePermissions();
         }
         
-        // 토큰 시스템에 사용자 정보 전달
+        // 토큰 시스템
         if (window.onTokenSystemLogin) {
             window.onTokenSystemLogin({
                 id: userInfo.userId || userInfo.id,
@@ -172,18 +192,16 @@ function loginWithBullnabi(userInfo) {
             });
         }
         
-        // 기존 currentDesigner 호환성 유지
-        if (typeof currentDesigner !== 'undefined' || window.currentDesigner) {
-            window.currentDesigner = {
-                id: userInfo.userId || userInfo.id,
-                name: userInfo.name,
-                phone: userInfo.phone || '0000',
-                tokens: userInfo.remainCount || 0,
-                isBullnabiUser: true
-            };
-        }
+        // currentDesigner 호환성
+        window.currentDesigner = {
+            id: userInfo.userId || userInfo.id,
+            name: userInfo.name,
+            phone: userInfo.phone || '0000',
+            tokens: userInfo.remainCount || 0,
+            isBullnabiUser: true
+        };
         
-        // 사용자 정보 UI 업데이트
+        // UI 업데이트
         if (typeof updateUserInfo === 'function') {
             updateUserInfo();
         }
@@ -198,7 +216,6 @@ function loginWithBullnabi(userInfo) {
     } catch (error) {
         console.error('불나비 자동 로그인 실패:', error);
         
-        // 실패 시 기존 로그인 화면으로 돌아가기
         const loginScreen = document.getElementById('loginScreen');
         const genderSelection = document.getElementById('genderSelection');
         
@@ -213,14 +230,13 @@ function loginWithBullnabi(userInfo) {
         }
         
         if (typeof showToast === 'function') {
-            showToast('자동 로그인에 실패했습니다. 수동 로그인을 시도해주세요.', 'error');
+            showToast('자동 로그인에 실패했습니다.', 'error');
         }
     }
 }
 
 /**
  * 불나비 사용자 정보 조회
- * @returns {Object|null} 저장된 불나비 사용자 정보
  */
 function getBullnabiUser() {
     try {
@@ -233,7 +249,6 @@ function getBullnabiUser() {
             if (loginTime && (Date.now() - parseInt(loginTime)) < 24 * 60 * 60 * 1000) {
                 return userInfo;
             } else {
-                // 세션 만료 시 정리
                 localStorage.removeItem('bullnabi_user');
                 localStorage.removeItem('bullnabi_login_time');
                 return null;
@@ -246,6 +261,7 @@ function getBullnabiUser() {
     }
 }
 
-// 전역 함수로 노출 (브릿지에서 사용)
+// 전역 함수 노출
 window.loginWithBullnabi = loginWithBullnabi;
 window.getBullnabiUser = getBullnabiUser;
+window.selectGender = selectGender;
