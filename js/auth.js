@@ -40,34 +40,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const bullnabiUser = getBullnabiUser();
     if (bullnabiUser) {
         console.log('기존 불나비 세션 복원:', bullnabiUser.name);
-        // 자동 로그인 처리는 하지 않고 정보만 복원
-        // 사용자가 직접 성별 선택부터 시작하도록 함
-    }
-});
 
 // 성별 선택
 function selectGender(gender) {
+    console.log('🎯 성별 선택:', gender);
+    
     // body에 성별 클래스 추가
     document.body.classList.remove('gender-male', 'gender-female');
     document.body.classList.add(`gender-${gender}`);
 
     // 성별 저장
-    currentGender = gender;
+    window.currentGender = gender;
     localStorage.setItem('selectedGender', gender);
 
-    // 화면 전환
+    // 성별 선택 화면 숨기기 (display + classList)
     const genderSelection = document.getElementById('genderSelection');
     if (genderSelection) {
+        genderSelection.style.display = 'none';
         genderSelection.classList.remove('active');
     }
 
+    // 메뉴 컨테이너 보이기 (display + classList)
     const menuContainer = document.getElementById('menuContainer');
     if (menuContainer) {
+        menuContainer.style.display = 'block';
         menuContainer.classList.add('active');
     }
 
     // 메뉴 로드
-    loadMenuForGender(gender);
+    if (typeof loadMenuForGender === 'function') {
+        loadMenuForGender(gender);
+    } else {
+        console.error('❌ loadMenuForGender 함수를 찾을 수 없습니다');
+    }
 }
 
 // ========== 불나비 연동 기능 ==========
