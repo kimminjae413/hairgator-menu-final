@@ -1978,4 +1978,13 @@ body.light-theme .modal-action-btn.secondary:hover {
     cursor: not-allowed !important;
     opacity: 0.5 !important;
 
+/* ========== 썸네일 갤러리 아이콘 숨김 ========== */
+.thumbnail-gallery {
+    display: none !important;
+}
+
+/* 미디어 정보 텍스트 숨김 (선택사항) */
+.media-info {
+    display: none !important;
+}
 
