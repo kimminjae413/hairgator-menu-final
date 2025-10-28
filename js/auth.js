@@ -42,25 +42,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('기존 불나비 세션 복원:', bullnabiUser.name);
     }
     
-    // 성별 버튼 이벤트 리스너 추가 (menu.js의 selectGender 사용)
-    const maleBtn = document.querySelector('.gender-btn.male');
-    const femaleBtn = document.querySelector('.gender-btn.female');
-    
-    if (maleBtn) {
-        maleBtn.addEventListener('click', () => {
-            if (typeof window.selectGender === 'function') {
-                window.selectGender('male');
-            }
-        });
-    }
-    
-    if (femaleBtn) {
-        femaleBtn.addEventListener('click', () => {
-            if (typeof window.selectGender === 'function') {
-                window.selectGender('female');
-            }
-        });
-    }
+    // ⚠️ 성별 버튼 이벤트 리스너 제거 (중복 호출 방지)
+    // index.html의 onclick="selectGender()" 만 사용
+    console.log('✅ 인증 시스템 초기화 완료 (성별 선택 중복 방지)');
 });
 
 // ========== 불나비 연동 기능 ==========
@@ -200,3 +184,5 @@ function getBullnabiUser() {
 // 전역 함수 노출
 window.loginWithBullnabi = loginWithBullnabi;
 window.getBullnabiUser = getBullnabiUser;
+
+console.log('🔐 HAIRGATOR 인증 시스템 로드 완료');
