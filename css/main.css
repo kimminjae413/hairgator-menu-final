@@ -1617,23 +1617,24 @@ body.light-theme .style-modal-content {
     position: absolute;
     top: 15px;
     right: 20px;
-    background: none;
+    background: rgba(0, 0, 0, 0.7); /* ⭐ 변경: 배경 추가 */
     border: none;
-    color: var(--text-primary);
+    color: #ffffff; /* ⭐ 변경: 흰색 고정 */
     font-size: 28px;
     cursor: pointer;
-    z-index: 10;
+    z-index: 10001; /* ⭐ 변경: 10 → 10001 */
     width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: all 0.3s ease; /* ⭐ 변경 */
 }
 
 .style-modal-close:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(233, 30, 99, 0.9); /* ⭐ 변경: 핑크색 배경 */
+    transform: rotate(90deg); /* ⭐ 추가: 회전 효과 */
 }
 
 body.light-theme .style-modal-close:hover {
@@ -1642,10 +1643,30 @@ body.light-theme .style-modal-close:hover {
 
 .style-modal-image {
     width: 100%;
-    aspect-ratio: 3/4;
-    object-fit: cover;
+    max-height: 60vh; /* ⭐ 추가: 최대 높이 제한 */
+    object-fit: contain; /* ⭐ 변경: cover → contain */
     border-radius: 18px 18px 0 0;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: block; /* ⭐ 추가 */
+}
+
+/* mediaViewerContainer 스타일 추가 */
+#mediaViewerContainer {
+    width: 100%;
+    max-height: 60vh;
+    overflow: hidden;
+    background: #000;
+    border-radius: 18px 18px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#mediaViewerContainer img {
+    width: 100%;
+    max-height: 60vh;
+    object-fit: contain;
+    display: block;
 }
 
 .style-modal-info {
@@ -1955,3 +1976,4 @@ body.light-theme .modal-action-btn.secondary:hover {
     color: #999999 !important;
     cursor: not-allowed !important;
     opacity: 0.5 !important;
+
