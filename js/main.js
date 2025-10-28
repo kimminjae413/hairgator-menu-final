@@ -34,11 +34,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (content) {
                 content.innerHTML = `
                     <!-- 로그인 정보 -->
-                    <div class="login-info" style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div class="login-info" style="padding: 20px; border-bottom: 1px solid rgba(128,128,128,0.2);">
                         <div class="login-status" id="loginStatus" style="color: #4A90E2; font-size: 14px; margin-bottom: 10px;">
                             로그인: 확인중...
                         </div>
-                        <div style="color: #aaa; font-size: 12px;">
+                        <div style="color: var(--text-secondary, #aaa); font-size: 12px;">
                             크레딧: <span id="creditDisplay" style="color: #4A90E2; font-weight: bold;">-</span>
                         </div>
                     </div>
@@ -47,18 +47,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     <nav class="sidebar-menu" style="padding: 10px 0;">
                         
                         <!-- 테마 전환 -->
-                        <div class="menu-item" id="themeToggleMenu" style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">
+                        <div class="menu-item" id="themeToggleMenu" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <span id="themeIcon" style="font-size: 20px;">🌙</span>
-                                <span id="themeText" style="color: white; font-size: 14px;">다크 모드</span>
+                                <span id="themeText" style="color: var(--text-primary, #333); font-size: 14px;">다크 모드</span>
                             </div>
                         </div>
 
                         <!-- 퍼스널 컬러 진단 -->
-                        <div class="menu-item" id="personalColorBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">
+                        <div class="menu-item" id="personalColorBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <span style="font-size: 20px;">🎨</span>
-                                <span style="color: white; font-size: 14px;">퍼스널 컬러 진단</span>
+                                <span style="color: var(--text-primary, #333); font-size: 14px;">퍼스널 컬러 진단</span>
                             </div>
                         </div>
 
@@ -77,13 +77,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 const style = document.createElement('style');
                 style.textContent = `
                     .menu-item:hover {
-                        background: rgba(255, 255, 255, 0.1) !important;
+                        background: rgba(128, 128, 128, 0.1) !important;
                         transition: background 0.3s ease;
                     }
                     
                     .sidebar-menu {
                         max-height: calc(100vh - 200px);
                         overflow-y: auto;
+                    }
+                    
+                    /* 라이트 모드에서 사이드바 배경 */
+                    body.light-theme .sidebar {
+                        background: #f5f5f5;
+                    }
+                    
+                    body.light-theme .sidebar-header {
+                        background: #f5f5f5;
+                        border-bottom: 1px solid rgba(0,0,0,0.1);
+                    }
+                    
+                    body.light-theme .sidebar-header h3,
+                    body.light-theme .sidebar-close {
+                        color: #333;
                     }
                 `;
                 document.head.appendChild(style);
