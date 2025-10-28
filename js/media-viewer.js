@@ -113,8 +113,6 @@ class MediaViewer {
                     </div>
                 ` : ''}
                 
-                <!-- 전체화면 버튼 -->
-                <button class="fullscreen-btn" onclick="mediaViewer.openFullscreen('${currentImage}')" title="전체화면">⛶</button>
             </div>
         `;
     }
