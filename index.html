@@ -240,39 +240,42 @@
     </div>
 </div>
 
-        <!-- 스타일 상세 모달 -->
-        <div class="style-modal" id="styleModal">
-            <div class="style-modal-content">
-                <button class="style-modal-close" id="styleModalClose">×</button>
+        <!-- 스타일 상세 모달 (다중 미디어 지원) -->
+<div class="style-modal" id="styleModal">
+    <div class="style-modal-content">
+        <button class="style-modal-close" id="styleModalClose">×</button>
+        
+        <!-- ⭐ media-viewer.js가 여기에 렌더링 -->
+        <div id="mediaViewerContainer">
+            <!-- 동적으로 생성됨: 이미지 갤러리 + 동영상 플레이어 -->
+        </div>
+        
+        <div class="style-modal-info">
+            <div class="style-modal-code" id="styleModalCode">CODE</div>
+            <div class="style-modal-name" id="styleModalName">Style Name</div>
 
-                <img class="style-modal-image" id="styleModalImage" alt="Style Image">
-
-                <div class="style-modal-info">
-                    <div class="style-modal-code" id="styleModalCode">CODE</div>
-                    <div class="style-modal-name" id="styleModalName">Style Name</div>
-
-                    <div class="style-modal-details">
-                        <div class="style-detail-row">
-                            <span class="style-detail-label">카테고리</span>
-                            <span class="style-detail-value" id="styleModalCategory">-</span>
-                        </div>
-                        <div class="style-detail-row">
-                            <span class="style-detail-label">서브카테고리</span>
-                            <span class="style-detail-value" id="styleModalSubcategory">-</span>
-                        </div>
-                        <div class="style-detail-row">
-                            <span class="style-detail-label">성별</span>
-                            <span class="style-detail-value" id="styleModalGender">-</span>
-                        </div>
-                    </div>
-
-                    <div class="style-modal-actions">
-                        <button class="modal-action-btn secondary" onclick="closeStyleModal()">닫기</button>
-                        <button class="modal-action-btn">선택하기</button>
-                    </div>
+            <div class="style-modal-details">
+                <div class="style-detail-row">
+                    <span class="style-detail-label">카테고리</span>
+                    <span class="style-detail-value" id="styleModalCategory">-</span>
+                </div>
+                <div class="style-detail-row">
+                    <span class="style-detail-label">서브카테고리</span>
+                    <span class="style-detail-value" id="styleModalSubcategory">-</span>
+                </div>
+                <div class="style-detail-row">
+                    <span class="style-detail-label">성별</span>
+                    <span class="style-detail-value" id="styleModalGender">-</span>
                 </div>
             </div>
+
+            <div class="style-modal-actions">
+                <button class="modal-action-btn secondary" onclick="closeStyleModal()">닫기</button>
+                <button class="modal-action-btn">선택하기</button>
+            </div>
         </div>
+    </div>
+</div>
     </main>
 
     <script>
@@ -1770,3 +1773,4 @@ function showSimpleDevelopmentToast() {
 <script src="js/chatbot.js"></script>
 </body>
 </html>
+
