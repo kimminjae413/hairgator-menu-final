@@ -1345,7 +1345,12 @@ window.debugHAIRGATOR = function() {
 console.log('HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 헤어체험 연동 최종 버전');
 console.log('디버깅: window.debugHAIRGATOR() 실행 가능');
 
-// ========== 뒤로가기 함수 ==========
+// ========== 뒤로가기 함수 (menu.js 끝부분에 추가) ==========
+
+/**
+ * 뒤로가기 버튼 핸들러
+ * 메뉴 화면에서 성별 선택 화면으로 돌아가기
+ */
 window.goBack = function() {
     console.log('🔙 뒤로가기 버튼 클릭');
     
@@ -1354,7 +1359,6 @@ window.goBack = function() {
     if (menuContainer) {
         menuContainer.style.display = 'none';
         menuContainer.classList.remove('active');
-        menuContainer.style.zIndex = '500';
         console.log('✅ 메뉴 컨테이너 숨김');
     }
     
@@ -1364,7 +1368,7 @@ window.goBack = function() {
         genderSelection.classList.remove('active');
         genderSelection.style.display = 'flex';
         genderSelection.style.position = 'relative';
-        genderSelection.style.zIndex = '2000';
+        genderSelection.style.zIndex = '1';
         genderSelection.style.opacity = '1';
         genderSelection.style.visibility = 'visible';
         console.log('✅ 성별 선택 화면 표시');
@@ -1382,3 +1386,8 @@ window.goBack = function() {
     window.currentGender = null;
     console.log('✅ 성별 초기화 완료');
 };
+
+// ========== 기존 console.log 유지 ==========
+console.log('HAIRGATOR 스마트 메뉴 시스템 초기화 완료 - 헤어체험 연동 최종 버전');
+console.log('디버깅: window.debugHAIRGATOR() 실행 가능');
+console.log('🔙 뒤로가기: window.goBack() 함수 등록 완료');
