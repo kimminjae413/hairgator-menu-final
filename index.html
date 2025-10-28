@@ -45,9 +45,10 @@
 <script src="js/dynamic-layout.js"></script>
 <script src="js/tablet-touch-handler.js"></script>
 
-<!-- ⭐ auth.js를 menu.js 다음에 로드해서 selectGender 덮어쓰기 -->
+<!-- ⭐ auth.js - 성별 선택 중복 방지 완료 -->
 <script src="js/auth.js"></script>
 
+<!-- ⭐ main.js - 사이드바를 동적으로 생성 -->
 <script src="js/main.js"></script>
 
 
@@ -65,7 +66,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h3>메뉴</h3>
-            <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">×</button>
+            <button class="sidebar-close" id="sidebarClose">×</button>
         </div>
         <div class="sidebar-content">
             <div class="user-info" id="userInfo" style="display: none;">
@@ -199,7 +200,7 @@
     <header class="header">
         <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
         <h1 class="logo">HAIRGATOR</h1>
-        <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
+        <button class="menu-btn" id="menuBtn">
             <span></span>
             <span></span>
             <span></span>
