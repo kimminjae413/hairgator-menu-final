@@ -1323,12 +1323,12 @@
             </div>
             
             <div class="form-group">
-                <label class="label-optional">스타일 코드 (자동생성)</label>
-                <input type="text" id="styleCode" placeholder="자동으로 생성됩니다" style="text-transform: uppercase;" readonly>
-                <div class="auto-code-info show" id="autoCodeInfo">
-                    코드가 자동으로 생성됩니다. 직접 입력하려면 입력란을 더블클릭하세요.
-                </div>
-            </div>
+    <label class="label-optional">스타일 코드 (선택 - 비워두면 자동생성)</label>
+    <input type="text" id="styleCode" placeholder="직접 입력 또는 비워두면 자동생성" style="text-transform: uppercase;">
+    <div class="auto-code-info" id="autoCodeInfo" style="display: block;">
+        💡 코드를 직접 입력하거나 비워두면 자동으로 생성됩니다
+    </div>
+</div>
             
             <div class="form-group">
                 <label class="label-required">스타일 이름</label>
@@ -2522,33 +2522,33 @@
         
         // 스타일 추가 모달 열기 (다중 미디어 초기화 포함)
         function openAddStyleModal() {
-            if (!currentGender || !currentCategory || !currentSubcategory) {
-                alert('먼저 성별, 대분류, 중분류를 모두 선택해주세요');
-                return;
-            }
-            
-            // 기본 폼 초기화
-            document.getElementById('styleCode').value = '';
-            document.getElementById('styleName').value = '';
-            
-            // 다중 미디어 초기화
-            selectedImages = [];
-            mainImageIndex = 0;
-            videoUrl = '';
-            videoData = null;
-            document.getElementById('imagePreviewGrid').style.display = 'none';
-            document.getElementById('imagePreviewGrid').innerHTML = '';
-            document.getElementById('videoUrlInput').value = '';
-            document.getElementById('videoPreview').style.display = 'none';
-            document.getElementById('multiImageInput').value = '';
-            
-            // 자동 코드 생성
-            const timestamp = Date.now().toString(36).toUpperCase();
-            const random = Math.random().toString(36).substring(2, 5).toUpperCase();
-            const code = `${currentGender.substring(0, 1).toUpperCase()}${timestamp}${random}`;
-            document.getElementById('styleCode').value = code;
-            
-            document.getElementById('addStyleModal').classList.add('active');
+    if (!currentGender || !currentCategory || !currentSubcategory) {
+        alert('먼저 성별, 대분류, 중분류를 모두 선택해주세요');
+        return;
+    }
+    
+    // 기본 폼 초기화
+    document.getElementById('styleCode').value = '';  // 비워둠 (자동생성 안함)
+    document.getElementById('styleName').value = '';
+    
+    // 다중 미디어 초기화
+    selectedImages = [];
+    mainImageIndex = 0;
+    videoUrl = '';
+    videoData = null;
+    document.getElementById('imagePreviewGrid').style.display = 'none';
+    document.getElementById('imagePreviewGrid').innerHTML = '';
+    document.getElementById('videoUrlInput').value = '';
+    document.getElementById('videoPreview').style.display = 'none';
+    document.getElementById('multiImageInput').value = '';
+    
+    // ❌ 아래 4줄 삭제
+    // const timestamp = Date.now().toString(36).toUpperCase();
+    // const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    // const code = `${currentGender.substring(0, 1).toUpperCase()}${timestamp}${random}`;
+    // document.getElementById('styleCode').value = code;
+    
+    document.getElementById('addStyleModal').classList.add('active');
             
             // 드래그 앤 드롭 이벤트 설정
             setupDragAndDrop();
@@ -2556,15 +2556,24 @@
 
         // 스타일 저장 (다중 미디어 지원)
         async function saveStyle() {
-            const code = document.getElementById('styleCode').value.trim();
-            const name = document.getElementById('styleName').value.trim();
-            
-            if (!name) {
-                alert('스타일 이름은 필수입니다');
-                return;
-            }
-            
-            if (!currentGender || !currentCategory || !currentSubcategory) {
+    const code = document.getElementById('styleCode').value.trim();
+    const name = document.getElementById('styleName').value.trim();
+    
+    if (!name) {
+        alert('스타일 이름은 필수입니다');
+        return;
+    }
+    
+    // 코드가 비어있으면 자동 생성
+    let finalCode = code;
+    if (!finalCode) {
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+        finalCode = `${currentGender.substring(0, 1).toUpperCase()}${timestamp}${random}`;
+        console.log('자동 생성된 코드:', finalCode);
+    }
+    
+    if (!currentGender || !currentCategory || !currentSubcategory) {
                 alert('카테고리 정보가 없습니다');
                 return;
             }
@@ -2644,8 +2653,8 @@
                 
                 // Firebase 저장 데이터 구성
                 const styleData = {
-                    code: code,
-                    name: name,
+    code: finalCode,  // ← code에서 finalCode로 변경
+    name: name,
                     gender: currentGender,
                     mainCategory: currentCategory,
                     subCategory: currentSubcategory,
@@ -3088,3 +3097,4 @@
         </script>
     </body>
 </html>
+
