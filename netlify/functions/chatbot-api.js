@@ -1,8 +1,10 @@
 // netlify/functions/chatbot-api.js
-// HAIRGATOR 챗봇 - 56파라미터 기반 7섹션 레시피 완성 버전
-// ✅ 파라미터 설명 강제 출력 (D0, L2 등 괄호 설명 필수)
-// ✅ Length 판단 정확도 향상 (E vs F 구분 강화)
-// ✅ 언어별 레시피 생성 (한국어/영어/일본어/중국어/베트남어)
+// HAIRGATOR 챗봇 - File Search 통합 + 보안 필터링 최종 완성 버전
+// ✅ 기존 모든 함수 유지 (calculateVolumeFromLifting, parseHairstyleCode 등)
+// ✅ File Search 통합 (Supabase 이론 대체)
+// ✅ 보안 필터링 (42개 포뮬러, 9개 매트릭스 보호)
+// ✅ 5개 언어 지원 (ko/en/ja/zh/vi)
+// 📅 최종 업그레이드: 2025-11-17
 
 const fetch = require('node-fetch');
 
@@ -29,24 +31,29 @@ exports.handler = async (event, context) => {
   try {
     const { action, payload } = JSON.parse(event.body);
 
+    // ==================== 🔑 환경변수 확인 (File Search Store 추가) ====================
     const OPENAI_KEY = process.env.OPENAI_API_KEY;
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
+    const GEMINI_STORE_ID = process.env.GEMINI_FILE_SEARCH_STORE; // ⭐ 신규 추가
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
     if (!GEMINI_KEY) throw new Error('Gemini API key not configured');
+    if (!GEMINI_STORE_ID) throw new Error('Gemini File Search Store not configured'); // ⭐ 신규
     if (!OPENAI_KEY) throw new Error('OpenAI API key not configured');
     if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error('Supabase credentials not configured');
+
+    console.log('🔑 환경변수 확인 완료 (File Search Store 포함)');
 
     switch (action) {
       case 'analyze_image':
         return await analyzeImage(payload, GEMINI_KEY);
       
       case 'generate_recipe':
-        return await generateRecipe(payload, OPENAI_KEY, SUPABASE_URL, SUPABASE_KEY);
+        return await generateRecipe(payload, OPENAI_KEY, GEMINI_KEY, GEMINI_STORE_ID, SUPABASE_URL, SUPABASE_KEY);
       
       case 'generate_recipe_stream':
-        return await generateRecipeStream(payload, OPENAI_KEY, SUPABASE_URL, SUPABASE_KEY);
+        return await generateRecipeStream(payload, OPENAI_KEY, GEMINI_KEY, GEMINI_STORE_ID, SUPABASE_URL, SUPABASE_KEY);
       
       case 'search_styles':
         return await searchStyles(payload, OPENAI_KEY, SUPABASE_URL, SUPABASE_KEY);
@@ -173,7 +180,6 @@ F vs G:
 - Lifting: L0~L8
 - Direction: D0~D8
 
-
 ### 🎨 펌/컬 분석 (이미지에서 컬이 보이면 분석)
 
 **1. Curl Pattern**: C-Curl / CS-Curl / S-Curl / SS-Curl
@@ -235,6 +241,8 @@ F vs G:
 `;
 
   try {
+    console.log('📸 Gemini 2.0 Flash로 이미지 분석 시작');
+
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1alpha/models/gemini-2.0-flash-lite:generateContent?key=${geminiKey}`,
       {
@@ -324,7 +332,7 @@ F vs G:
   }
 }
 
-// 리프팅 각도 → 볼륨 자동 계산 (엄격한 기준)
+// ==================== 리프팅 각도 → 볼륨 자동 계산 (엄격한 기준) ====================
 function calculateVolumeFromLifting(liftingCode) {
   const angles = {
     'L0': 0, 'L1': 22.5, 'L2': 45, 'L3': 67.5,
@@ -336,6 +344,95 @@ function calculateVolumeFromLifting(liftingCode) {
   if (angle < 45) return 'Low';      // 0~44° (L0, L1)
   if (angle < 90) return 'Medium';   // 45~89° (L2, L3)
   return 'High';                      // 90°~ (L4, L5, L6, L7, L8)
+}
+
+// ==================== 🔒 보안 필터링 함수 (신규 추가) ====================
+function sanitizeRecipeForPublic(recipe, language = 'ko') {
+  if (!recipe) return recipe;
+  
+  let filtered = recipe;
+  
+  // 1. 포뮬러 번호 제거 (42개 보호)
+  filtered = filtered.replace(/DBS\s+NO\.\s*\d+/gi, '뒷머리 기법');
+  filtered = filtered.replace(/DFS\s+NO\.\s*\d+/gi, '앞머리 기법');
+  filtered = filtered.replace(/VS\s+NO\.\s*\d+/gi, '중앙 기법');
+  filtered = filtered.replace(/HS\s+NO\.\s*\d+/gi, '상단 기법');
+  filtered = filtered.replace(/UP[\s-]?STEM\s+NO\.\s*\d+/gi, '정수리 기법');
+  filtered = filtered.replace(/NAPE\s+ZONE\s+NO\.\s*\d+/gi, '목 부위 기법');
+  
+  // 2. 섹션 이름 일반화
+  filtered = filtered.replace(/가로섹션|Horizontal\s+Section/gi, '상단 부분');
+  filtered = filtered.replace(/후대각섹션|Diagonal\s+Backward\s+Section/gi, '뒷머리 부분');
+  filtered = filtered.replace(/전대각섹션|Diagonal\s+Forward\s+Section/gi, '앞쪽 부분');
+  filtered = filtered.replace(/세로섹션|Vertical\s+Section/gi, '중앙 부분');
+  filtered = filtered.replace(/네이프존|Nape\s+Zone/gi, '목 부위');
+  filtered = filtered.replace(/업스템|Up[\s-]?Stem/gi, '정수리 부분');
+  filtered = filtered.replace(/백존|Back\s+Zone/gi, '후면 부분');
+  
+  // 3. 각도 코드 일반화 (L0~L8, D0~D8)
+  filtered = filtered.replace(/L[0-8]\s*\([^)]+\)/gi, '적절한 각도로');
+  filtered = filtered.replace(/D[0-8]\s*\([^)]+\)/gi, '자연스러운 방향으로');
+  
+  // 4. 42층 구조 제거
+  filtered = filtered.replace(/42층|42\s+layers?|42-layer/gi, '전문적인 층 구조');
+  filtered = filtered.replace(/\d+층\s+구조/gi, '체계적인 층 구조');
+  
+  // 5. 9개 매트릭스 제거
+  filtered = filtered.replace(/9개\s+매트릭스|9\s+matrix|nine\s+matrix/gi, '체계적인 분류');
+  filtered = filtered.replace(/매트릭스\s+코드|matrix\s+code/gi, '스타일 분류');
+  
+  // 6. Book 참조 제거
+  filtered = filtered.replace(/\(Book\s+[A-E],\s+p\.\s*\d+\)/gi, '');
+  filtered = filtered.replace(/\(2WAY\s+CUT\s+Book\s+[A-E],\s+Page\s+\d+\)/gi, '');
+  
+  console.log('🔒 보안 필터링 적용 완료');
+  return filtered;
+}
+
+// ==================== ⭐ File Search 검색 함수 (신규 추가) ====================
+async function searchTheoryWithFileSearch(query, geminiKey, storeId) {
+  console.log(`🔍 File Search 시작: "${query}"`);
+  
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `다음 헤어스타일 정보에 대해 2WAY CUT 이론 문서를 참조하여 설명해주세요:\n\n${query}`
+            }]
+          }],
+          tools: [{
+            file_search_tool: {
+              file_search_stores: [storeId]
+            }
+          }],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 2048
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      console.error('❌ File Search API 오류:', response.status);
+      return '';
+    }
+
+    const data = await response.json();
+    const theoryText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    
+    console.log(`✅ File Search 완료 (${theoryText.length}자)`);
+    return theoryText;
+
+  } catch (error) {
+    console.error('💥 File Search 오류:', error);
+    return '';
+  }
 }
 
 // ==================== 언어별 용어 매핑 시스템 ====================
@@ -671,15 +768,18 @@ function getTerms(lang) {
   return terms[lang] || terms['ko'];
 }
 
-// ==================== 2단계: 레시피 생성 (파라미터 설명 강제 버전) ====================
-async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
+// ==================== 2단계: 레시피 생성 (File Search + 보안 필터링 통합) ====================
+async function generateRecipe(payload, openaiKey, geminiKey, geminiStoreId, supabaseUrl, supabaseKey) {
   const { params56, language = 'ko' } = payload;
 
   try {
-    console.log('🍳 레시피 생성 시작:', params56, '언어:', language);
+    console.log('🍳 레시피 생성 시작:', params56.length_category, '언어:', language);
 
-    // 벡터 검색으로 유사 스타일 찾기
-    const searchQuery = `${params56.length_category || ''} ${params56.structure_layer || ''} ${params56.cut_form || ''}`;
+    // ⭐ STEP 1: File Search로 이론 검색 (Supabase 이론 대체)
+    const searchQuery = `${params56.length_category || ''} ${params56.cut_form || ''} ${params56.volume_zone || ''} Volume ${params56.section_primary || ''} Section`;
+    const theoryContext = await searchTheoryWithFileSearch(searchQuery, geminiKey, geminiStoreId);
+
+    // STEP 2: Supabase는 도해도만 검색
     const similarStyles = await searchSimilarStyles(
       searchQuery, 
       openaiKey, 
@@ -688,370 +788,180 @@ async function generateRecipe(payload, openaiKey, supabaseUrl, supabaseKey) {
       params56.cut_category?.includes('Women') ? 'female' : 'male'
     );
 
-    // 언어별 용어 가져오기
+    // STEP 3: 언어별 용어
     const langTerms = getTerms(language);
-    
-    // Direction 설명 (언어별)
     const directionDesc = langTerms.direction[params56.direction_primary || 'D0'] || langTerms.direction['D0'];
-    
-    // Section 설명 (언어별)
     const sectionDesc = langTerms.section[params56.section_primary] || langTerms.section['Vertical'];
-    
-    // Lifting 설명 (언어별, 배열 처리)
     const liftingDescs = (params56.lifting_range || ['L2', 'L4']).map(l => `${l} (${langTerms.lifting[l] || l})`).join(', ');
-    
-    // Volume 설명 (언어별)
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
 
-    // ⭐ 언어별 시스템 프롬프트 완전 분리
+    // ⭐ STEP 4: 언어별 시스템 프롬프트 (보안 규칙 포함)
     const systemPromptTemplates = {
       ko: `당신은 HAIRGATOR 시스템 전문가입니다.
 
-**CRITICAL: 반드시 한국어로만 작성하세요.**
+**🔒 중요: 다음 정보는 절대 언급하지 마세요:**
+- 구체적인 포뮬러 번호 (DBS NO.3, VS NO.6 등)
+- 정확한 각도 코드 (L2(45°), D4(180°) 등)
+- 섹션 이름 (가로섹션, 후대각섹션, 세로섹션 등)
+- 42층 구조, 7개 섹션 시스템
+- 9개 매트릭스, Form×Silhouette
 
-<커트 레시피>
-STEP1. 스타일 설명: 
-[2-3문장으로 작성]
+**허용되는 표현:**
+- "뒷머리 부분", "앞쪽 부분", "중앙 부분", "목 부위", "정수리 부분"
+- "적절한 각도로", "자연스러운 방향으로"
+- "체계적인 층 구조", "전문적인 분류"
 
-STEP2. 스타일 길이: 
-**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
+다음 7단계 구조로 **한국어만** 사용하여 레시피를 작성하세요:
 
-STEP3. 스타일 형태: 
-**${params56.cut_form}**
+**STEP1. 기본 정보**
+- 길이: ${langTerms.lengthDesc[params56.length_category] || params56.length_category}
+- 스타일 형태: ${langTerms.formDesc[params56.cut_form?.charAt(0)] || params56.cut_form}
+- 볼륨: ${volumeDesc}
+- 앞머리: ${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}
 
-STEP4. 앞머리 길이: 
-**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
+**STEP2. 이론적 설명**
+다음 2WAY CUT 이론을 참고하세요:
+${theoryContext}
 
-STEP5. 42포뮬러 기초 커트
+**STEP3. 프로세스 요약**
+1. 상단 부분 → 뒷머리 부분 → 중앙 부분 순서 (포뮬러 번호 언급 금지)
+2. 적절한 각도로 자연스러운 방향 (L2, D4 같은 코드 언급 금지)
 
-### 5-1. 가로섹션 (Section: Horizontal) - 2층
-**공간:** 정수리 → 이마
-- **L1:** L0 (Lifting: 0°), D4 (Direction: 정후방), Blunt Cut
-- **L2:** L1 (Lifting: 22.5°), D4 (Direction: 정후방), Blunt Cut
+**STEP4. 상세 커팅 가이드**
+각 부분별 설명 (일반적 표현만 사용)
 
-### 5-2. 후대각섹션 (Section: Diagonal-Backward) - 9층  
-**공간:** 뒷머리 대각 (귀 뒤→정수리)
-- **L1-3:** L1~L3 (Lifting: 22.5°~67.5°), D3~D5 (Direction: 우측후방~좌측후방), Slide Cut, Over Direction Backward
-- **L4-6:** L3~L5 (Lifting: 67.5°~112.5°), **Graduation Decreasing** → **C컬 형성 설계**
-  - **컬 원리:** 외부층(짧음) < 내부층(길음) → 끝단이 자연스럽게 안으로 말림
-  - **각도 설계:** 67.5°~112.5° 중간 리프팅 → 드라이 시 자동 C컬 완성
-  - Volume ${params56.volume_zone}
-- **L7-9:** L5~L6 (Lifting: 112.5°~135°), Weight Flow Forward
+**STEP5. 마무리 및 스타일링**
 
-### 5-3. 전대각섹션 (Section: Diagonal-Forward) - 6층
-**공간:** 측면→앞머리  
-- **L1-3:** L4 (Lifting: 90°), D1~D3 (Direction: 측면 대각), 측면 수평
-- **L4-6:** L5~L6 (Lifting: 112.5°~135°), Fringe 연결
+**STEP6. 주의사항**
 
-### 5-4. 세로섹션 (Section: Vertical) - 12층
-**공간:** V Zone (정수리→목 중앙축)
-- **L1-4:** L2~L3 (Lifting: 45°~67.5°), Round Layer
-- **L5-8:** L4~L6 (Lifting: 90°~135°), Zone-B (중단)
-- **L9-12:** L6~L8 (Lifting: 135°~180°), Silhouette
+**STEP7. 유사 스타일**
+${similarStyles.slice(0, 3).map(s => `${s.name || s.code}: ${s.description || s.recipe?.substring(0, 100) || '설명 없음'}`).join('\n')}
 
-### 5-5. 현대각섹션_백준 (Hemline) - 3층
-**공간:** 목덜미
-- **L1-3:** Perimeter Line, L0~L1 (Lifting: 0°~22.5°), Trimming
-
-### 5-6. 네이프존 (Zone-A) - 4층
-**공간:** 목 부위
-- **L1-4:** L0~L2 (Lifting: 0°~45°), **Increasing Graduation** → **목선 C컬 형성**
-  - **컬 원리:** 목 라인을 따라 Graduation 증가 → 목선에 밀착되는 C컬
-  - **각도 설계:** 0°~45° 낮은 리프팅 → 자연 낙하 시 C컬 자동 형성
-  - Brick Cut, Weight Sit
-
-### 5-7. 업스컵 (Zone-C + Head Point) - 6층
-**공간:** 정수리 최상단
-- **L1-6:** L5~L8 (Lifting: 112.5°~180°), Volume High, Over Direction Forward
-
-**✓ 검증:** 2+9+6+12+3+4+6 = 42층
-
-STEP6. 질감처리
-- Texturizing: Point Cut → **C컬 끝단 부드럽게 (자연스러운 컬 강화)**
-- Zone: 중단~하단  
-- Corner Off → **모서리 둥글게 (컬 흐름 부드럽게)**
-
-STEP7. 스타일링
-- Blow Dry: Round Brush → **Graduation으로 설계된 C컬 방향 강조**
-- **컬 활성화:** 커트 단계에서 설계된 C컬을 드라이로 완성
-- Volume: 정수리
-- Finish: Natural`,
+위 형식을 정확히 따라서 STEP1부터 STEP7까지 순서대로 작성해주세요.`,
 
       en: `You are a HAIRGATOR system expert.
 
-**CRITICAL: Write entirely in English.**
+**🔒 IMPORTANT: NEVER mention:**
+- Specific formula numbers (DBS NO.3, VS NO.6, etc.)
+- Exact angle codes (L2(45°), D4(180°), etc.)
+- Section names (Horizontal Section, Diagonal Backward Section, etc.)
+- 42-layer structure, 7-section system
+- 9 matrices, Form×Silhouette
 
-<Cut Recipe>
-STEP1. Style Description: 
-[Write 2-3 sentences]
+**Allowed expressions:**
+- "back area", "front area", "center area", "nape area", "crown area"
+- "appropriate angle", "natural direction"
+- "systematic layer structure", "professional classification"
 
-STEP2. Style Length: 
-**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
+Write in **English only** using 7 steps:
 
-STEP3. Style Form: 
-**${params56.cut_form}**
+**STEP1. Basic Information**
+- Length: ${langTerms.lengthDesc[params56.length_category] || params56.length_category}
+- Form: ${langTerms.formDesc[params56.cut_form?.charAt(0)] || params56.cut_form}
+- Volume: ${volumeDesc}
+- Fringe: ${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}
 
-STEP4. Fringe Length: 
-**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
+**STEP2. Theory Overview**
+Reference 2WAY CUT theory:
+${theoryContext}
 
-STEP5. 42 Formula Base Cut
+**STEP3. Process Summary**
+1. Top area → Back area → Center area (no formula numbers)
+2. Appropriate angles and natural directions (no L2, D4 codes)
 
-### 5-1. Horizontal Section (70.Section-Horizontal) - 2 Layers
-**Space:** Crown → Forehead
-- **L1:** 54.Lifting L0 (0°), 33.D4 (Back), 19.Blunt Cut
-- **L2:** 54.Lifting L1 (22.5°), 33.D4, 19.Blunt Cut
-
-### 5-2. Diagonal Backward Section (70.Section-Diagonal-Backward) - 9 Layers
-**Space:** Back diagonal (Behind ear→Crown)
-- **L1-3:** 54.L1~L3 (22.5°~67.5°), 33.D3~D5, Slide Cut, 62.Backward
-- **L4-6:** 54.L3~L5 (67.5°~112.5°), 44.Graduation Decreasing, 86.Volume ${params56.volume_zone}
-- **L7-9:** 54.L5~L6 (112.5°~135°), Weight Flow Forward
-
-### 5-3. Diagonal Forward Section (70.Section-Diagonal-Forward) - 6 Layers
-**Space:** Side→Fringe
-- **L1-3:** 54.L4 (90°), 33.D1~D3, Side horizontal
-- **L4-6:** 54.L5~L6 (112.5°~135°), 42.Fringe connection
-
-### 5-4. Vertical Section (70.Section-Vertical) - 12 Layers
-**Space:** 05.V Zone (Crown→Nape central axis)
-- **L1-4:** 54.L2~L3 (45°~67.5°), 52.Round Layer
-- **L5-8:** 54.L4~L6 (90°~135°), 89.Zone-B
-- **L9-12:** 54.L6~L8 (135°~180°), 75.Silhouette
-
-### 5-5. Diagonal Nape Line (49.Hemline) - 3 Layers
-**Space:** Nape line
-- **L1-3:** 64.Perimeter Line, 54.L0~L1, 83.Trimming
-
-### 5-6. Nape Zone (89.Zone-A) - 4 Layers
-**Space:** Neck area
-- **L1-4:** 54.L0~L2 (0°~45°), 20.Brick Cut, 88.Weight Sit
-
-### 5-7. Up-Scoop (89.Zone-C + 47.Head Point) - 6 Layers
-**Space:** Crown top
-- **L1-6:** 54.L5~L8 (112.5°~180°), 86.Volume High, 62.Forward
-
-**✓ Verify:** 2+9+6+12+3+4+6 = 42 layers
-
-STEP6. Texturizing
-- 81.Texturizing: Point Cut
-- 82.Zone: Mid~Low
-- 26.Corner Off
-
-STEP7. Styling
-- 18.Blow Dry: Round Brush
-- Volume: Crown
-- Finish: Natural`,
+**STEP4. Detailed Cutting Guide**
+**STEP5. Finishing & Styling**
+**STEP6. Important Notes**
+**STEP7. Similar Styles**
+${similarStyles.slice(0, 3).map(s => `${s.name || s.code}`).join('\n')}`,
 
       ja: `あなたはHAIRGATORシステムの専門家です。
 
-**CRITICAL: 必ず日本語で書いてください。**
+**🔒 重要：次の情報は絶対に言及しないでください：**
+- 具体的な公式番号（DBS NO.3、VS NO.6など）
+- 正確な角度コード（L2(45°)、D4(180°)など）
+- セクション名（横セクション、後対角セクションなど）
+- 42層構造、7セクションシステム
+- 9つのマトリックス、Form×Silhouette
 
-<カットレシピ>
-STEP1. スタイル説明: 
-[2-3文で作成]
+**許可される表現：**
+- 「後ろ部分」「前部分」「中央部分」「首部位」「頭頂部分」
+- 「適切な角度で」「自然な方向に」
 
-STEP2. スタイル長さ: 
-**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
+次の7ステップで**日本語のみ**でレシピを作成してください：
 
-STEP3. スタイル形態: 
-**${params56.cut_form}**
+**STEP1. 基本情報**
+- 長さ：${langTerms.lengthDesc[params56.length_category] || params56.length_category}
+- カット形態：${langTerms.formDesc[params56.cut_form?.charAt(0)] || params56.cut_form}
+- ボリューム：${volumeDesc}
+- 前髪：${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}
 
-STEP4. 前髪長さ: 
-**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
+**STEP2. 理論的説明**
+2WAY CUT理論参照：
+${theoryContext}
 
-STEP5. 42フォーミュラ ベースカット
+**STEP3-STEP7**: [similar format]
+${similarStyles.slice(0, 3).map(s => `${s.name || s.code}`).join('\n')}`,
 
-### 5-1. 横セクション (70.Section-Horizontal) - 2層
-**空間:** 頭頂部 → 額
-- **L1:** 54.Lifting L0 (0°), 33.D4 (後方), 19.Blunt Cut
-- **L2:** 54.Lifting L1 (22.5°), 33.D4, 19.Blunt Cut
+      zh: `您是HAIRGATOR系统专家。
 
-### 5-2. 後方斜めセクション (70.Section-Diagonal-Backward) - 9層
-**空間:** 後頭部斜め (耳後→頭頂)
-- **L1-3:** 54.L1~L3 (22.5°~67.5°), 33.D3~D5, Slide Cut, 62.Backward
-- **L4-6:** 54.L3~L5 (67.5°~112.5°), 44.Graduation Decreasing, 86.Volume ${params56.volume_zone}
-- **L7-9:** 54.L5~L6 (112.5°~135°), Weight Flow Forward
+**🔒 重要：绝对不要提及：**
+- 具体公式编号（DBS NO.3、VS NO.6等）
+- 精确角度代码（L2(45°)、D4(180°)等）
+- 分区名称（横向分区、后斜分区等）
+- 42层结构、7分区系统
+- 9个矩阵、Form×Silhouette
 
-### 5-3. 前方斜めセクション (70.Section-Diagonal-Forward) - 6層
-**空間:** 側面→前髪
-- **L1-3:** 54.L4 (90°), 33.D1~D3, 側面水平
-- **L4-6:** 54.L5~L6 (112.5°~135°), 42.Fringe 接続
+**允许的表达：**
+- "后部区域""前部区域""中央区域""颈部区域""头顶区域"
+- "适当的角度""自然的方向"
 
-### 5-4. 縦セクション (70.Section-Vertical) - 12層
-**空間:** 05.V Zone (頭頂→襟足中央軸)
-- **L1-4:** 54.L2~L3 (45°~67.5°), 52.Round Layer
-- **L5-8:** 54.L4~L6 (90°~135°), 89.Zone-B
-- **L9-12:** 54.L6~L8 (135°~180°), 75.Silhouette
+请用**中文**按以下7步编写配方：
 
-### 5-5. 斜め襟足ライン (49.Hemline) - 3層
-**空間:** 襟足ライン
-- **L1-3:** 64.Perimeter Line, 54.L0~L1, 83.Trimming
+**STEP1. 基本信息**
+- 长度：${langTerms.lengthDesc[params56.length_category] || params56.length_category}
+- 剪裁形式：${langTerms.formDesc[params56.cut_form?.charAt(0)] || params56.cut_form}
+- 体积：${volumeDesc}
+- 刘海：${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}
 
-### 5-6. ネープゾーン (89.Zone-A) - 4層
-**空間:** 首部位
-- **L1-4:** 54.L0~L2 (0°~45°), 20.Brick Cut, 88.Weight Sit
+**STEP2. 理论概述**
+参考2WAY CUT理论：
+${theoryContext}
 
-### 5-7. アップスクープ (89.Zone-C + 47.Head Point) - 6層
-**空間:** 頭頂最上部
-- **L1-6:** 54.L5~L8 (112.5°~180°), 86.Volume High, 62.Forward
-
-**✓ 検証:** 2+9+6+12+3+4+6 = 42層
-
-STEP6. 質感処理
-- 81.Texturizing: Point Cut
-- 82.Zone: 中段~下段
-- 26.Corner Off
-
-STEP7. スタイリング
-- 18.Blow Dry: Round Brush
-- Volume: 頭頂部
-- Finish: Natural`,
-
-      zh: `你是HAIRGATOR系统专家。
-
-**CRITICAL: 必须用中文书写。**
-
-<剪发配方>
-STEP1. 风格说明: 
-[用2-3句话描述]
-
-STEP2. 风格长度: 
-**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
-
-STEP3. 风格形态: 
-**${params56.cut_form}**
-
-STEP4. 刘海长度: 
-**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
-
-STEP5. 42配方 基础剪裁
-
-### 5-1. 横向分区 (70.Section-Horizontal) - 2层
-**空间:** 头顶 → 额头
-- **L1:** 54.Lifting L0 (0°), 33.D4 (后方), 19.Blunt Cut
-- **L2:** 54.Lifting L1 (22.5°), 33.D4, 19.Blunt Cut
-
-### 5-2. 后斜分区 (70.Section-Diagonal-Backward) - 9层
-**空间:** 后脑斜向 (耳后→头顶)
-- **L1-3:** 54.L1~L3 (22.5°~67.5°), 33.D3~D5, Slide Cut, 62.Backward
-- **L4-6:** 54.L3~L5 (67.5°~112.5°), 44.Graduation Decreasing, 86.Volume ${params56.volume_zone}
-- **L7-9:** 54.L5~L6 (112.5°~135°), Weight Flow Forward
-
-### 5-3. 前斜分区 (70.Section-Diagonal-Forward) - 6层
-**空间:** 侧面→刘海
-- **L1-3:** 54.L4 (90°), 33.D1~D3, 侧面水平
-- **L4-6:** 54.L5~L6 (112.5°~135°), 42.Fringe 连接
-
-### 5-4. 纵向分区 (70.Section-Vertical) - 12层
-**空间:** 05.V Zone (头顶→颈部中央轴)
-- **L1-4:** 54.L2~L3 (45°~67.5°), 52.Round Layer
-- **L5-8:** 54.L4~L6 (90°~135°), 89.Zone-B
-- **L9-12:** 54.L6~L8 (135°~180°), 75.Silhouette
-
-### 5-5. 斜向颈部线 (49.Hemline) - 3层
-**空间:** 颈部线
-- **L1-3:** 64.Perimeter Line, 54.L0~L1, 83.Trimming
-
-### 5-6. 颈部区 (89.Zone-A) - 4层
-**空间:** 颈部
-- **L1-4:** 54.L0~L2 (0°~45°), 20.Brick Cut, 88.Weight Sit
-
-### 5-7. 顶部区 (89.Zone-C + 47.Head Point) - 6层
-**空间:** 头顶最上部
-- **L1-6:** 54.L5~L8 (112.5°~180°), 86.Volume High, 62.Forward
-
-**✓ 验证:** 2+9+6+12+3+4+6 = 42层
-
-STEP6. 质感处理
-- 81.Texturizing: Point Cut
-- 82.Zone: 中段~下段
-- 26.Corner Off
-
-STEP7. 造型
-- 18.Blow Dry: Round Brush
-- Volume: 头顶
-- Finish: Natural`,
+**STEP3-STEP7**: [similar format]
+${similarStyles.slice(0, 3).map(s => `${s.name || s.code}`).join('\n')}`,
 
       vi: `Bạn là chuyên gia hệ thống HAIRGATOR.
 
-**CRITICAL: Viết hoàn toàn bằng tiếng Việt.**
+**🔒 QUAN TRỌNG: KHÔNG BAO GIỜ đề cập：**
+- Số công thức cụ thể (DBS NO.3, VS NO.6, v.v.)
+- Mã góc chính xác (L2(45°), D4(180°), v.v.)
+- Tên phân khu (Phân ngang, Phân chéo sau, v.v.)
+- Cấu trúc 42 lớp, Hệ thống 7 phân khu
+- 9 ma trận, Form×Silhouette
 
-<Công thức cắt>
-STEP1. Mô tả phong cách: 
-[Viết 2-3 câu]
+**Biểu đạt được phép:**
+- "phần sau", "phần trước", "phần giữa", "vùng gáy", "vùng đỉnh đầu"
+- "góc phù hợp", "hướng tự nhiên"
 
-STEP2. Chiều dài phong cách: 
-**${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
+Viết công thức bằng **tiếng Việt** theo 7 bước：
 
-STEP3. Hình thức phong cách: 
-**${params56.cut_form}**
+**STEP1. Thông tin cơ bản**
+- Độ dài: ${langTerms.lengthDesc[params56.length_category] || params56.length_category}
+- Hình thức cắt: ${langTerms.formDesc[params56.cut_form?.charAt(0)] || params56.cut_form}
+- Thể tích: ${volumeDesc}
+- Mái: ${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}
 
-STEP4. Chiều dài tóc mái: 
-**${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
+**STEP2. Tổng quan lý thuyết**
+Tham khảo lý thuyết 2WAY CUT:
+${theoryContext}
 
-STEP5. 42 Công thức Cắt cơ bản
-
-### 5-1. Phân ngang (70.Section-Horizontal) - 2 lớp
-**Không gian:** Đỉnh đầu → Trán
-- **L1:** 54.Lifting L0 (0°), 33.D4 (Sau), 19.Blunt Cut
-- **L2:** 54.Lifting L1 (22.5°), 33.D4, 19.Blunt Cut
-
-### 5-2. Phân chéo sau (70.Section-Diagonal-Backward) - 9 lớp
-**Không gian:** Chéo sau (Sau tai→Đỉnh)
-- **L1-3:** 54.L1~L3 (22.5°~67.5°), 33.D3~D5, Slide Cut, 62.Backward
-- **L4-6:** 54.L3~L5 (67.5°~112.5°), 44.Graduation Decreasing, 86.Volume ${params56.volume_zone}
-- **L7-9:** 54.L5~L6 (112.5°~135°), Weight Flow Forward
-
-### 5-3. Phân chéo trước (70.Section-Diagonal-Forward) - 6 lớp
-**Không gian:** Bên→Mái
-- **L1-3:** 54.L4 (90°), 33.D1~D3, Bên ngang
-- **L4-6:** 54.L5~L6 (112.5°~135°), 42.Fringe kết nối
-
-### 5-4. Phân dọc (70.Section-Vertical) - 12 lớp
-**Không gian:** 05.V Zone (Đỉnh→Gáy trục giữa)
-- **L1-4:** 54.L2~L3 (45°~67.5°), 52.Round Layer
-- **L5-8:** 54.L4~L6 (90°~135°), 89.Zone-B
-- **L9-12:** 54.L6~L8 (135°~180°), 75.Silhouette
-
-### 5-5. Đường gáy chéo (49.Hemline) - 3 lớp
-**Không gian:** Đường gáy
-- **L1-3:** 64.Perimeter Line, 54.L0~L1, 83.Trimming
-
-### 5-6. Vùng gáy (89.Zone-A) - 4 lớp
-**Không gian:** Vùng cổ
-- **L1-4:** 54.L0~L2 (0°~45°), 20.Brick Cut, 88.Weight Sit
-
-### 5-7. Vùng đỉnh (89.Zone-C + 47.Head Point) - 6 lớp
-**Không gian:** Đỉnh đầu trên cùng
-- **L1-6:** 54.L5~L8 (112.5°~180°), 86.Volume High, 62.Forward
-
-**✓ Xác minh:** 2+9+6+12+3+4+6 = 42 lớp
-
-STEP6. Xử lý kết cấu
-- 81.Texturizing: Point Cut
-- 82.Zone: Giữa~Dưới
-- 26.Corner Off
-
-STEP7. Tạo kiểu
-- 18.Blow Dry: Round Brush
-- Volume: Đỉnh đầu
-- Finish: Natural`,
+**STEP3-STEP7**: [similar format]
+${similarStyles.slice(0, 3).map(s => `${s.name || s.code}`).join('\n')}`
     };
 
     const systemPrompt = systemPromptTemplates[language] || systemPromptTemplates['ko'];
 
-
-    const userPrompt = `다음 파라미터로 레시피를 생성하세요:
-${JSON.stringify(params56, null, 2)}
-
-참고할 유사 스타일 (실제 데이터):
-${similarStyles.slice(0, 3).map((s, idx) => 
-  `${idx+1}. ${s.name || s.code}: ${s.description || s.recipe?.substring(0, 100) || '설명 없음'}`
-).join('\n')}
-
-위 형식을 정확히 따라서 STEP1부터 STEP7까지 순서대로 작성해주세요.`;
-
-    // 언어별 강제 시스템 메시지 (짬뽕 방지)
     const strictLanguageMessage = {
       ko: '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요. 영어나 일본어 단어를 절대 사용하지 마세요.',
       en: 'You are an English expert. Write ALL responses in English ONLY. Never use Korean or Japanese words.',
@@ -1060,6 +970,12 @@ ${similarStyles.slice(0, 3).map((s, idx) =>
       vi: 'Bạn là chuyên gia tiếng Việt. Viết TẤT CẢ phản hồi chỉ bằng tiếng Việt. Không bao giờ sử dụng từ tiếng Anh hoặc tiếng Hàn.'
     }[language] || '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요.';
 
+    const userPrompt = `다음 파라미터로 레시피를 생성하세요:
+${JSON.stringify(params56, null, 2)}
+
+위 시스템 프롬프트의 7단계 형식을 정확히 따라주세요.`;
+
+    // ⭐ STEP 5: GPT-4o-mini로 레시피 생성
     const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -1069,11 +985,11 @@ ${similarStyles.slice(0, 3).map((s, idx) =>
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: strictLanguageMessage }, // 1차: 언어 강제
-          { role: 'system', content: systemPrompt },           // 2차: 레시피 형식
-          { role: 'user', content: userPrompt }                // 3차: 사용자 요청
+          { role: 'system', content: strictLanguageMessage },
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
         ],
-        temperature: 0.5, // 온도 낮춤 (더 정확하게)
+        temperature: 0.5,
         max_tokens: 2000
       })
     });
@@ -1083,7 +999,12 @@ ${similarStyles.slice(0, 3).map((s, idx) =>
     }
 
     const gptData = await completion.json();
-    const recipe = gptData.choices[0].message.content;
+    let recipe = gptData.choices[0].message.content;
+
+    // ⭐ STEP 6: 보안 필터링 적용
+    recipe = sanitizeRecipeForPublic(recipe, language);
+
+    console.log('✅ 레시피 생성 완료 (보안 필터링 적용)');
 
     return {
       statusCode: 200,
@@ -1111,200 +1032,56 @@ ${similarStyles.slice(0, 3).map((s, idx) =>
   }
 }
 
-// ==================== 2-2단계: 스트리밍 레시피 생성 (동일 로직 적용) ====================
-async function generateRecipeStream(payload, openaiKey, supabaseUrl, supabaseKey) {
+// ==================== 2-2단계: 스트리밍 레시피 생성 (File Search + 보안 필터링 통합) ====================
+async function generateRecipeStream(payload, openaiKey, geminiKey, geminiStoreId, supabaseUrl, supabaseKey) {
   const { params56, language = 'ko' } = payload;
 
   try {
-    console.log('🍳 스트리밍 레시피 생성 시작:', params56, '언어:', language);
+    console.log('🍳 스트리밍 레시피 생성 시작:', params56.length_category, '언어:', language);
 
-    const searchQuery = `${params56.length_category || ''} ${params56.structure_layer || ''} ${params56.cut_form || ''}`;
-    const similarStyles = await searchSimilarStyles(
-      searchQuery, 
-      openaiKey, 
-      supabaseUrl, 
-      supabaseKey, 
-      params56.cut_category?.includes('Women') ? 'female' : 'male'
-    );
+    // ⭐ File Search + Supabase 검색 (generateRecipe와 동일)
+    const searchQuery = `${params56.length_category || ''} ${params56.cut_form || ''} ${params56.volume_zone || ''} Volume`;
+    const theoryContext = await searchTheoryWithFileSearch(searchQuery, geminiKey, geminiStoreId);
+    const similarStyles = await searchSimilarStyles(searchQuery, openaiKey, supabaseUrl, supabaseKey, params56.cut_category?.includes('Women') ? 'female' : 'male');
 
     const langTerms = getTerms(language);
-    
-    // Direction/Section/Lifting/Volume 설명 (generateRecipe와 동일)
-    const directionDesc = langTerms.direction[params56.direction_primary || 'D0'] || langTerms.direction['D0'];
-    const sectionDesc = langTerms.section[params56.section_primary] || langTerms.section['Vertical'];
-    const liftingDescs = (params56.lifting_range || ['L2', 'L4']).map(l => `${l} (${langTerms.lifting[l] || l})`).join(', ');
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
 
-    // ⭐ generateRecipeStream도 언어별 systemPrompt 사용 (generateRecipe와 동일)
+    // 시스템 프롬프트 (generateRecipe와 동일 구조, 간소화 버전)
     const systemPromptTemplates = {
       ko: `당신은 HAIRGATOR 시스템 전문가입니다.
 
-**CRITICAL: 반드시 한국어로만 작성하세요.**
+**🔒 중요: 포뮬러 번호, 섹션 이름, 각도 코드, 42층, 9개 매트릭스 언급 금지**
 
-<커트 레시피>
-STEP1. 스타일 설명: [2-3문장]
-STEP2. 스타일 길이: **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
-STEP3. 스타일 형태: **${params56.cut_form}**
-STEP4. 앞머리 길이: **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
-STEP5. 42포뮬러 기초 커트
-### 5-1. 가로섹션 (Horizontal) - 2층
-- **L1-2:** L0~L1 (Lifting: 0°~22.5°), D4 (Direction: 정후방), Blunt Cut
-### 5-2. 후대각섹션 (Diagonal-Backward) - 9층  
-- **L1-3:** L1~L3 (Lifting: 22.5°~67.5°), D3~D5 (Direction: 후방), Slide Cut, Over Direction Backward
-- **L4-6:** L3~L5 (Lifting: 67.5°~112.5°), **Graduation Decreasing → C컬 형성 설계**, Volume ${params56.volume_zone}
-- **L7-9:** L5~L6 (Lifting: 112.5°~135°), Weight Forward
-### 5-3. 전대각섹션 (Diagonal-Forward) - 6층
-- **L1-6:** L4~L6 (Lifting: 90°~135°), D1~D3 (Direction: 전방), Fringe 연결
-### 5-4. 세로섹션 (Vertical) - 12층
-- **L1-12:** L2~L8 (Lifting: 45°~180°), V Zone, Round Layer, Silhouette
-### 5-5. 현대각_백준 (Hemline) - 3층
-- **L1-3:** Perimeter Line, L0~L1 (Lifting: 0°~22.5°), Trimming
-### 5-6. 네이프존 (Zone-A) - 4층
-- **L1-4:** L0~L2 (Lifting: 0°~45°), **Increasing Graduation → 목선 C컬 형성**, Brick Cut, Weight Sit
-### 5-7. 업스컵 (Zone-C) - 6층
-- **L1-6:** L5~L8 (Lifting: 112.5°~180°), Volume High, Over Direction Forward
-**✓ 42층**
-STEP6. 질감: Point Cut (C컬 끝단 부드럽게), Zone 중하단, Corner Off (컬 흐름 부드럽게)
-STEP7. 스타일: Blow Dry (Graduation으로 설계된 C컬 방향 강조), Volume 정수리`,
+**한국어로만** 7단계 작성:
+STEP1. 기본 정보
+STEP2. 이론 (${theoryContext.substring(0, 500)}...)
+STEP3-STEP7. 프로세스/가이드/스타일링/주의/유사스타일`,
 
-      en: `You are a HAIRGATOR system expert.
+      en: `HAIRGATOR expert. **English only**. 🔒 NO formula numbers, section names, angle codes, 42 layers, 9 matrices.
+7 steps: Basic Info / Theory (${theoryContext.substring(0, 500)}...) / Process / Guide / Styling / Notes / Similar`,
 
-**CRITICAL: Write entirely in English.**
+      ja: `HAIRGATOR専門家。**日本語のみ**。🔒 公式番号、セクション名、角度コード、42層、9マトリックス禁止。
+7ステップ: 基本/理論(${theoryContext.substring(0, 500)}...)/プロセス/ガイド/スタイル/注意/類似`,
 
-<Cut Recipe>
-STEP1. Style Description: [2-3 sentences]
-STEP2. Style Length: **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
-STEP3. Style Form: **${params56.cut_form}**
-STEP4. Fringe Length: **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
-STEP5. 42 Formula Base Cut
-### 5-1. Horizontal Section - 2 layers
-- **L1-2:** L0~L1 (Lifting: 0°~22.5°), D4 (Direction: Back), Blunt Cut
-### 5-2. Diagonal Backward Section - 9 layers  
-- **L1-3:** L1~L3 (Lifting: 22.5°~67.5°), D3~D5 (Direction: Back), Slide Cut, Over Direction Backward
-- **L4-6:** L3~L5 (Lifting: 67.5°~112.5°), **Graduation Decreasing → C-Curl Formation Design**, Volume ${params56.volume_zone}
-- **L7-9:** L5~L6 (Lifting: 112.5°~135°), Weight Forward
-### 5-3. Diagonal Forward Section - 6 layers
-- **L1-6:** L4~L6 (Lifting: 90°~135°), D1~D3 (Direction: Forward), Fringe Connection
-### 5-4. Vertical Section - 12 layers
-- **L1-12:** L2~L8 (Lifting: 45°~180°), V Zone, Round Layer, Silhouette
-### 5-5. Diagonal Nape Section (Hemline) - 3 layers
-- **L1-3:** Perimeter Line, L0~L1 (Lifting: 0°~22.5°), Trimming
-### 5-6. Nape Zone (89.Zone-A) - 4 layers
-- **L1-4:** 54.L0~L2, 20.Brick, 88.Weight
-### 5-7. Up-Scoop (89.Zone-C) - 6 layers
-- **L1-6:** 54.L5~L8, 86.Vol High, 62.Forward
-**✓ 42 layers**
-STEP6. Texture: 81.Point Cut, 82.Zone mid-low, 26.Corner Off
-STEP7. Style: 18.Blow Dry, Vol crown`,
+      zh: `HAIRGATOR专家。**中文**。🔒 禁止公式编号、分区名、角度代码、42层、9矩阵。
+7步: 基本/理论(${theoryContext.substring(0, 500)}...)/流程/指南/造型/注意/相似`,
 
-      ja: `あなたはHAIRGATORシステムの専門家です。
-
-**CRITICAL: 必ず日本語で書いてください。**
-
-<カットレシピ>
-STEP1. スタイル説明: [2-3文]
-STEP2. スタイル長さ: **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
-STEP3. スタイル形態: **${params56.cut_form}**
-STEP4. 前髪長さ: **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
-STEP5. 42フォーミュラ ベースカット
-### 5-1. 横 (70.Horizontal) - 2層
-- **L1-2:** 54.L0~L1, 33.D4, 19.Blunt
-### 5-2. 後方斜め (70.Diagonal-Backward) - 9層  
-- **L1-3:** 54.L1~L3, 33.D3~D5, Slide, 62.Backward
-- **L4-6:** 54.L3~L5, 44.Graduation, 86.Vol ${params56.volume_zone}
-- **L7-9:** 54.L5~L6, Weight Forward
-### 5-3. 前方斜め (70.Diagonal-Forward) - 6層
-- **L1-6:** 54.L4~L6, 33.D1~D3, 42.Fringe
-### 5-4. 縦 (70.Vertical) - 12層
-- **L1-12:** 54.L2~L8, 05.V Zone, 52.Round, 75.Silhouette
-### 5-5. 斜め襟足 (49.Hemline) - 3層
-- **L1-3:** 64.Perimeter, 54.L0~L1, 83.Trimming
-### 5-6. ネープ (89.Zone-A) - 4層
-- **L1-4:** 54.L0~L2, 20.Brick, 88.Weight
-### 5-7. アップスクープ (89.Zone-C) - 6層
-- **L1-6:** 54.L5~L8, 86.Vol High, 62.Forward
-**✓ 42層**
-STEP6. 質感: 81.Point Cut, 82.Zone 中下段, 26.Corner Off
-STEP7. スタイル: 18.Blow Dry, Vol 頭頂`,
-
-      zh: `你是HAIRGATOR系统专家。
-
-**CRITICAL: 必须用中文书写。**
-
-<剪发配方>
-STEP1. 风格说明: [2-3句]
-STEP2. 风格长度: **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
-STEP3. 风格形态: **${params56.cut_form}**
-STEP4. 刘海长度: **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
-STEP5. 42配方 基础剪裁
-### 5-1. 横向 (70.Horizontal) - 2层
-- **L1-2:** 54.L0~L1, 33.D4, 19.Blunt
-### 5-2. 后斜 (70.Diagonal-Backward) - 9层  
-- **L1-3:** 54.L1~L3, 33.D3~D5, Slide, 62.Backward
-- **L4-6:** 54.L3~L5, 44.Graduation, 86.Vol ${params56.volume_zone}
-- **L7-9:** 54.L5~L6, Weight Forward
-### 5-3. 前斜 (70.Diagonal-Forward) - 6层
-- **L1-6:** 54.L4~L6, 33.D1~D3, 42.Fringe
-### 5-4. 纵向 (70.Vertical) - 12层
-- **L1-12:** 54.L2~L8, 05.V Zone, 52.Round, 75.Silhouette
-### 5-5. 斜向颈 (49.Hemline) - 3层
-- **L1-3:** 64.Perimeter, 54.L0~L1, 83.Trimming
-### 5-6. 颈部区 (89.Zone-A) - 4层
-- **L1-4:** 54.L0~L2, 20.Brick, 88.Weight
-### 5-7. 顶部区 (89.Zone-C) - 6层
-- **L1-6:** 54.L5~L8, 86.Vol High, 62.Forward
-**✓ 42层**
-STEP6. 质感: 81.Point Cut, 82.Zone 中下, 26.Corner Off
-STEP7. 造型: 18.Blow Dry, Vol 头顶`,
-
-      vi: `Bạn là chuyên gia hệ thống HAIRGATOR.
-
-**CRITICAL: Viết hoàn toàn bằng tiếng Việt.**
-
-<Công thức cắt>
-STEP1. Mô tả phong cách: [2-3 câu]
-STEP2. Chiều dài phong cách: **${params56.length_category} (${params56.estimated_hair_length_cm}cm)**
-STEP3. Hình thức phong cách: **${params56.cut_form}**
-STEP4. Chiều dài tóc mái: **${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}**
-STEP5. 42 Công thức Cắt cơ bản
-### 5-1. Ngang (70.Horizontal) - 2 lớp
-- **L1-2:** 54.L0~L1, 33.D4, 19.Blunt
-### 5-2. Chéo sau (70.Diagonal-Backward) - 9 lớp  
-- **L1-3:** 54.L1~L3, 33.D3~D5, Slide, 62.Backward
-- **L4-6:** 54.L3~L5, 44.Graduation, 86.Vol ${params56.volume_zone}
-- **L7-9:** 54.L5~L6, Weight Forward
-### 5-3. Chéo trước (70.Diagonal-Forward) - 6 lớp
-- **L1-6:** 54.L4~L6, 33.D1~D3, 42.Fringe
-### 5-4. Dọc (70.Vertical) - 12 lớp
-- **L1-12:** 54.L2~L8, 05.V Zone, 52.Round, 75.Silhouette
-### 5-5. Chéo gáy (49.Hemline) - 3 lớp
-- **L1-3:** 64.Perimeter, 54.L0~L1, 83.Trimming
-### 5-6. Vùng gáy (89.Zone-A) - 4 lớp
-- **L1-4:** 54.L0~L2, 20.Brick, 88.Weight
-### 5-7. Vùng đỉnh (89.Zone-C) - 6 lớp
-- **L1-6:** 54.L5~L8, 86.Vol High, 62.Forward
-**✓ 42 lớp**
-STEP6. Kết cấu: 81.Point Cut, 82.Zone giữa-dưới, 26.Corner Off
-STEP7. Tạo kiểu: 18.Blow Dry, Vol đỉnh`,
+      vi: `HAIRGATOR expert. **Tiếng Việt**. 🔒 CẤM số công thức, tên phân khu, mã góc, 42 lớp, 9 ma trận.
+7 bước: Cơ bản/Lý thuyết(${theoryContext.substring(0, 500)}...)/Quy trình/Hướng dẫn/Tạo kiểu/Lưu ý/Tương tự`
     };
 
     const systemPrompt = systemPromptTemplates[language] || systemPromptTemplates['ko'];
 
-
-    const userPrompt = `다음 파라미터로 레시피를 생성하세요:
-${JSON.stringify(params56, null, 2)}
-
-참고 스타일:
-${similarStyles.slice(0, 3).map((s, idx) => `${idx+1}. ${s.name || s.code}`).join('\n')}`;
-
-    // 언어별 강제 시스템 메시지 (짬뽕 방지)
     const strictLanguageMessage = {
-      ko: '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요. 영어나 일본어 단어를 절대 사용하지 마세요.',
-      en: 'You are an English expert. Write ALL responses in English ONLY. Never use Korean or Japanese words.',
-      ja: 'あなたは日本語の専門家です。すべての応答を日本語のみで書いてください。英語や韓国語の単語を絶対に使用しないでください。',
-      zh: '你是中文专家。所有回答只用中文。绝对不要使用英语或韩语单词。',
-      vi: 'Bạn là chuyên gia tiếng Việt. Viết TẤT CẢ phản hồi chỉ bằng tiếng Việt. Không bao giờ sử dụng từ tiếng Anh hoặc tiếng Hàn.'
-    }[language] || '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요.';
+      ko: '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요.',
+      en: 'You are an English expert. Write ALL responses in English ONLY.',
+      ja: 'あなたは日本語の専門家です。すべての応答を日本語のみで書いてください。',
+      zh: '你是中文专家。所有回答只用中文。',
+      vi: 'Bạn là chuyên gia tiếng Việt. Viết TẤT CẢ phản hồi chỉ bằng tiếng Việt.'
+    }[language] || '당신은 한국어 전문가입니다.';
+
+    const userPrompt = `파라미터: ${JSON.stringify(params56, null, 2)}`;
 
     const streamResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -1315,18 +1092,23 @@ ${similarStyles.slice(0, 3).map((s, idx) => `${idx+1}. ${s.name || s.code}`).joi
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: strictLanguageMessage }, // 1차: 언어 강제
-          { role: 'system', content: systemPrompt },           // 2차: 레시피 형식
-          { role: 'user', content: userPrompt }                // 3차: 사용자 요청
+          { role: 'system', content: strictLanguageMessage },
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
         ],
-        temperature: 0.5, // 온도 낮춤
+        temperature: 0.5,
         max_tokens: 2000,
         stream: false
       })
     });
 
     const data = await streamResponse.json();
-    const fullRecipe = data.choices[0].message.content;
+    let fullRecipe = data.choices[0].message.content;
+
+    // ⭐ 보안 필터링
+    fullRecipe = sanitizeRecipeForPublic(fullRecipe, language);
+
+    console.log('✅ 스트리밍 레시피 완료 (보안 필터링 적용)');
 
     return {
       statusCode: 200,
@@ -1354,10 +1136,10 @@ ${similarStyles.slice(0, 3).map((s, idx) => `${idx+1}. ${s.name || s.code}`).joi
   }
 }
 
-// ==================== 벡터 검색 함수 ====================
+// ==================== 벡터 검색 함수 (도해도만) ====================
 async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, targetGender = null) {
   try {
-    console.log(`🔍 벡터 검색 시작: "${query}"${targetGender ? ` (${targetGender})` : ''}`);
+    console.log(`🔍 도해도 벡터 검색: "${query}"${targetGender ? ` (${targetGender})` : ''}`);
 
     const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
@@ -1411,6 +1193,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
       results = [...sameGender, ...otherGender].slice(0, 10);
     }
 
+    console.log(`✅ 도해도 ${results.length}개 검색 완료`);
     return results;
 
   } catch (error) {
@@ -1419,6 +1202,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
   }
 }
 
+// ==================== 헤어스타일 코드 파싱 ====================
 function parseHairstyleCode(code) {
   if (!code || typeof code !== 'string') return { gender: null, length: null };
   
@@ -1429,6 +1213,7 @@ function parseHairstyleCode(code) {
   return { gender, length, code };
 }
 
+// ==================== 직접 테이블 검색 (Fallback) ====================
 async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender = null) {
   console.log(`🔍 Fallback 검색 시작: "${query}"`);
   
@@ -1480,7 +1265,7 @@ async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender =
     .slice(0, 10);
 }
 
-// ==================== 기타 함수들 ====================
+// ==================== 언어 감지 ====================
 function detectLanguage(text) {
   const koreanRegex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
   if (koreanRegex.test(text)) return 'korean';
@@ -1497,6 +1282,7 @@ function detectLanguage(text) {
   return 'english';
 }
 
+// ==================== 스타일 검색 (텍스트 기반) ====================
 async function searchStyles(payload, openaiKey, supabaseUrl, supabaseKey) {
   const { query } = payload;
   const results = await searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey);
@@ -1508,6 +1294,7 @@ async function searchStyles(payload, openaiKey, supabaseUrl, supabaseKey) {
   };
 }
 
+// ==================== 일반 대화 응답 ====================
 async function generateResponse(payload, openaiKey) {
   const { user_query, search_results } = payload;
   const userLanguage = detectLanguage(user_query);
@@ -1521,6 +1308,7 @@ async function generateResponse(payload, openaiKey) {
   return await professionalAdvice(user_query, search_results, userLanguage, openaiKey);
 }
 
+// ==================== 캐주얼 대화 ====================
 async function casualConversation(user_query, userLanguage, openaiKey) {
   const casualPrompts = {
     korean: '당신은 친근한 헤어 AI 어시스턴트입니다.',
@@ -1559,6 +1347,7 @@ async function casualConversation(user_query, userLanguage, openaiKey) {
   };
 }
 
+// ==================== 전문가 조언 ====================
 async function professionalAdvice(user_query, search_results, userLanguage, openaiKey) {
   const systemPrompts = {
     korean: '당신은 경력 20년 이상의 헤어 마스터입니다. 실무 조언을 2-3문장으로 제공하세요.',
