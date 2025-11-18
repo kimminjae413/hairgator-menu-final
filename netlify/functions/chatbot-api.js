@@ -1225,13 +1225,60 @@ async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supa
     };
   }
   
-  // ⭐ 헤어 관련 질문 감지 (정규식 개선)
-  const isHairQuery = /투웨이|투 웨이|2웨이|2 웨이|2way|two way|twoway|크리스기|헤어|머리|커트|컷|cut|hair|스타일|레이어|layer|그래쥬에이션|graduation/i.test(user_query);
+  // ⭐ 2WAY CUT 시스템 질문 감지 (정확한 매칭)
+  const is2WayCutSystemQuery = /투웨이|투 웨이|2웨이|2 웨이|2way|two way|twoway|크리스기/i.test(user_query);
   
-  console.log(`🔍 헤어 질문 감지: ${isHairQuery}`);
+  console.log(`🔍 2WAY CUT 시스템 질문: ${is2WayCutSystemQuery}, 질문: "${user_query}"`);
   
-  // ⭐ 헤어 관련 질문이면 무조건 theory_chunks 검색
-  if (isHairQuery) {
+  // ⭐ 2WAY CUT 시스템 질문이면 직접 답변 (theory_chunks 의존 X)
+  if (is2WayCutSystemQuery) {
+    console.log('📚 2WAY CUT 시스템 직접 답변 생성...');
+    
+    const systemOverview = {
+      korean: `2WAY CUT은 크리스기 원장이 개발한 과학적 헤어 커팅 시스템입니다. 
+
+**핵심 특징:**
+- 수학적 공식을 기반으로 체계적인 커팅 방법 제공
+- 직관이 아닌 논리적 접근으로 누구나 배울 수 있는 시스템
+- 머리를 여러 부분으로 나누어 각 부분마다 최적의 기법 적용
+- 다양한 헤어스타일을 일관된 방법론으로 구현 가능
+
+이 시스템은 전문 미용사들의 학습 시간을 획기적으로 단축시키고, 일관된 품질의 결과물을 만들어낼 수 있도록 설계되었습니다.`,
+
+      english: `2WAY CUT is a scientific hair cutting system developed by director Chris-gi.
+
+**Key Features:**
+- Systematic cutting methods based on mathematical formulas
+- Logical approach that anyone can learn, not relying on intuition
+- Divides hair into multiple sections and applies optimal techniques to each
+- Enables various hairstyles through a consistent methodology
+
+This system significantly reduces learning time for professional stylists and ensures consistent quality results.`
+    };
+    
+    const answer = systemOverview[userLanguage] || systemOverview['korean'];
+    
+    console.log('✅ 2WAY CUT 시스템 설명 완료');
+    
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ 
+        success: true, 
+        data: answer,
+        theory_used: false,
+        system_overview: true
+      })
+    };
+  }
+  
+  // ⭐ 일반 헤어 질문 감지
+  const isGeneralHairQuery = /헤어|머리|커트|컷|cut|hair|스타일|레이어|layer|그래쥬에이션|graduation|앞머리|뱅|bang|펌|perm/i.test(user_query);
+  
+  console.log(`🔍 일반 헤어 질문: ${isGeneralHairQuery}`);
+  
+  // ⭐ 일반 헤어 질문이면 theory_chunks 검색
+  if (isGeneralHairQuery) {
     console.log('📚 theory_chunks 검색 시작...');
     
     const theoryResults = await searchTheoryChunks(user_query, geminiKey, supabaseUrl, supabaseKey, 10);
@@ -1239,35 +1286,38 @@ async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supa
     console.log(`✅ theory_chunks ${theoryResults.length}개 검색 완료`);
     
     if (theoryResults.length > 0) {
+      // 첫 3개만 사용 (너무 많으면 혼란)
+      const topResults = theoryResults.slice(0, 3);
+      
       // 이론 컨텍스트 구성
-      const context = theoryResults.map((chunk, idx) => 
-        `[참고자료 ${idx+1}] ${chunk.section_title || ''}\n${(chunk.content_ko || chunk.content || '').substring(0, 300)}`
+      const context = topResults.map((chunk, idx) => 
+        `[참고 ${idx+1}] ${(chunk.content_ko || chunk.content || '').substring(0, 250)}`
       ).join('\n\n');
       
+      console.log(`📝 컨텍스트 길이: ${context.length}자`);
+      
       const systemPrompt = {
-        korean: `당신은 2WAY CUT 시스템 전문가입니다. 
+        korean: `당신은 전문 헤어 스타일리스트입니다. 
 
-다음 이론 자료를 참고하여 **자연스럽고 이해하기 쉽게** 답변하세요:
-
-${context}
-
-**중요 규칙:**
-1. 포뮬러 번호(DBS NO.3 등), 섹션 이름(가로섹션 등), 각도 코드(L2, D4 등)는 절대 언급 금지
-2. 대신 "뒷머리 부분", "적절한 각도로", "체계적인 분류" 같은 일반적 표현 사용
-3. 2-3문장으로 간결하게 설명
-4. 전문 용어보다는 쉬운 말로 설명`,
-
-        english: `You are a 2WAY CUT system expert. 
-
-Reference these materials and answer naturally:
+다음 전문 자료를 참고하여 **간단하고 이해하기 쉽게** 2-3문장으로 답변하세요:
 
 ${context}
 
-**Rules:**
-1. NEVER mention formula numbers (DBS NO.3), section names (Horizontal Section), angle codes (L2, D4)
-2. Use general terms like "back area", "appropriate angle", "systematic classification"
-3. Keep it concise (2-3 sentences)
-4. Use simple language`
+**중요:**
+- 전문 용어(포뮬러, 섹션, 코드 등)는 절대 사용 금지
+- 일반인이 이해할 수 있는 쉬운 말로 설명
+- 핵심만 간결하게`,
+
+        english: `You are a professional hair stylist.
+
+Reference these materials and answer in 2-3 sentences using simple language:
+
+${context}
+
+**Important:**
+- NO technical terms (formulas, sections, codes)
+- Use language that general public can understand
+- Keep it brief and clear`
       };
       
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -1282,8 +1332,8 @@ ${context}
             { role: 'system', content: systemPrompt[userLanguage] || systemPrompt['korean'] },
             { role: 'user', content: user_query }
           ],
-          temperature: 0.7,
-          max_tokens: 400
+          temperature: 0.6,
+          max_tokens: 300
         })
       });
       
@@ -1293,7 +1343,7 @@ ${context}
       // 보안 필터링 적용
       answer = sanitizeRecipeForPublic(answer, userLanguage);
       
-      console.log('✅ theory 기반 답변 생성 완료');
+      console.log('✅ theory 기반 답변 완료');
       
       return {
         statusCode: 200,
@@ -1306,7 +1356,7 @@ ${context}
         })
       };
     } else {
-      console.log('⚠️ theory_chunks 검색 결과 없음 - 기본 답변');
+      console.log('⚠️ theory_chunks 검색 결과 없음');
     }
   }
   
