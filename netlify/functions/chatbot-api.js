@@ -256,6 +256,42 @@ function sanitizeRecipeForPublic(recipe, language = 'ko') {
   return filtered;
 }
 
+// ==================== ⭐ 유효한 이미지 필터링 함수 (2025-01-25 추가) ⭐ ====================
+function filterValidStyles(styles) {
+  if (!styles || !Array.isArray(styles)) {
+    console.log('⚠️ styles가 배열이 아니거나 undefined');
+    return [];
+  }
+
+  const filtered = styles.filter(style => {
+    if (!style.main_image_url) {
+      console.log(`❌ 제외: ${style.sample_code || style.code} - main_image_url 없음`);
+      return false;
+    }
+    
+    if (style.main_image_url.includes('hairgatorchatbot')) {
+      console.log(`❌ 제외: ${style.sample_code || style.code} - hairgatorchatbot 포함`);
+      return false;
+    }
+    
+    if (style.main_image_url.includes('temp')) {
+      console.log(`❌ 제외: ${style.sample_code || style.code} - temp 포함`);
+      return false;
+    }
+    
+    if (style.main_image_url.includes('supabase.co/storage')) {
+      console.log(`❌ 제외: ${style.sample_code || style.code} - supabase storage 포함`);
+      return false;
+    }
+    
+    console.log(`✅ 유효: ${style.sample_code || style.code}`);
+    return true;
+  });
+
+  console.log(`📊 필터링 결과: ${filtered.length}개 유효 (전체 ${styles.length}개)`);
+  return filtered;
+}
+
 // ==================== ⭐ theory_chunks 벡터 검색 함수 (신규 추가) ⭐ ====================
 async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, matchCount = 15) {
   try {
@@ -667,8 +703,8 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
         ).join('\n\n')
       : '관련 이론을 찾을 수 없습니다.';
 
-    // STEP 2: Supabase는 도해도만 검색
-    const similarStyles = await searchSimilarStyles(
+  // STEP 2: Supabase는 도해도만 검색 + 필터링
+    const allSimilarStyles = await searchSimilarStyles(
       searchQuery, 
       openaiKey, 
       supabaseUrl, 
@@ -676,6 +712,10 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       params56.cut_category?.includes('Women') ? 'female' : 'male'
     );
 
+    // ⭐ 유효한 이미지만 필터링
+    const similarStyles = filterValidStyles(allSimilarStyles);
+    console.log(`📊 도해도 검색 완료: 전체 ${allSimilarStyles.length}개 → 유효 ${similarStyles.length}개`);
+    
     // STEP 3: 언어별 용어
     const langTerms = getTerms(language);
     const directionDesc = langTerms.direction[params56.direction_primary || 'D0'] || langTerms.direction['D0'];
@@ -936,7 +976,11 @@ async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, 
         ).join('\n\n')
       : '';
       
-    const similarStyles = await searchSimilarStyles(searchQuery, openaiKey, supabaseUrl, supabaseKey, params56.cut_category?.includes('Women') ? 'female' : 'male');
+    const allSimilarStyles = await searchSimilarStyles(searchQuery, openaiKey, supabaseUrl, supabaseKey, params56.cut_category?.includes('Women') ? 'female' : 'male');
+
+    // ⭐ 유효한 이미지만 필터링
+    const similarStyles = filterValidStyles(allSimilarStyles);
+    console.log(`📊 스트리밍 도해도 검색: 전체 ${allSimilarStyles.length}개 → 유효 ${similarStyles.length}개`);
 
     const langTerms = getTerms(language);
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
