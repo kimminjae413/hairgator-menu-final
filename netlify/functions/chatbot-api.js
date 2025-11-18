@@ -1191,14 +1191,14 @@ async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supa
   
   console.log(`💬 일반 대화 응답: "${user_query}" (언어: ${userLanguage})`);
   
-  // ⭐ 보안 키워드 감지
+  // ⭐ 보안 키워드 감지 (가장 먼저 체크)
   const securityKeywords = [
-    '42포뮬러', '42개 포뮬러', '42 formula',
-    '9매트릭스', '9개 매트릭스', '9 matrix',
+    '42포뮬러', '42개 포뮬러', '42 formula', 'formula 42',
+    '9매트릭스', '9개 매트릭스', '9 matrix', 'matrix 9',
     'DBS NO', 'DFS NO', 'VS NO', 'HS NO',
     '가로섹션', '후대각섹션', '전대각섹션', '세로섹션',
     'Horizontal Section', 'Diagonal Backward', 'Diagonal Forward', 'Vertical Section',
-    '42층', '7개 섹션'
+    '42층', '7개 섹션', '7 section'
   ];
   
   const isSecurityQuery = securityKeywords.some(keyword => 
@@ -1225,28 +1225,49 @@ async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supa
     };
   }
   
-  // ⭐ 2WAY CUT 시스템 질문인 경우 theory_chunks 검색
-  const is2WayCutQuery = /투웨이컷|2way\s*cut|two\s*way\s*cut|2웨이|크리스기/i.test(user_query);
+  // ⭐ 헤어 관련 질문 감지 (정규식 개선)
+  const isHairQuery = /투웨이|투 웨이|2웨이|2 웨이|2way|two way|twoway|크리스기|헤어|머리|커트|컷|cut|hair|스타일|레이어|layer|그래쥬에이션|graduation/i.test(user_query);
   
-  if (is2WayCutQuery) {
-    const theoryResults = await searchTheoryChunks(user_query, geminiKey, supabaseUrl, supabaseKey, 5);
+  console.log(`🔍 헤어 질문 감지: ${isHairQuery}`);
+  
+  // ⭐ 헤어 관련 질문이면 무조건 theory_chunks 검색
+  if (isHairQuery) {
+    console.log('📚 theory_chunks 검색 시작...');
+    
+    const theoryResults = await searchTheoryChunks(user_query, geminiKey, supabaseUrl, supabaseKey, 10);
+    
+    console.log(`✅ theory_chunks ${theoryResults.length}개 검색 완료`);
     
     if (theoryResults.length > 0) {
+      // 이론 컨텍스트 구성
       const context = theoryResults.map((chunk, idx) => 
-        `[${idx+1}] ${chunk.section_title || ''}\n${(chunk.content_ko || chunk.content || '').substring(0, 200)}`
+        `[참고자료 ${idx+1}] ${chunk.section_title || ''}\n${(chunk.content_ko || chunk.content || '').substring(0, 300)}`
       ).join('\n\n');
       
       const systemPrompt = {
-        korean: `당신은 2WAY CUT 시스템 전문가입니다. 다음 이론을 참고하여 답변하세요:
+        korean: `당신은 2WAY CUT 시스템 전문가입니다. 
+
+다음 이론 자료를 참고하여 **자연스럽고 이해하기 쉽게** 답변하세요:
 
 ${context}
 
-**주의:** 포뮬러 번호, 섹션 이름, 각도 코드는 언급하지 마세요.`,
-        english: `You are a 2WAY CUT system expert. Reference this theory:
+**중요 규칙:**
+1. 포뮬러 번호(DBS NO.3 등), 섹션 이름(가로섹션 등), 각도 코드(L2, D4 등)는 절대 언급 금지
+2. 대신 "뒷머리 부분", "적절한 각도로", "체계적인 분류" 같은 일반적 표현 사용
+3. 2-3문장으로 간결하게 설명
+4. 전문 용어보다는 쉬운 말로 설명`,
+
+        english: `You are a 2WAY CUT system expert. 
+
+Reference these materials and answer naturally:
 
 ${context}
 
-**Note:** Do not mention formula numbers, section names, or angle codes.`
+**Rules:**
+1. NEVER mention formula numbers (DBS NO.3), section names (Horizontal Section), angle codes (L2, D4)
+2. Use general terms like "back area", "appropriate angle", "systematic classification"
+3. Keep it concise (2-3 sentences)
+4. Use simple language`
       };
       
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -1262,7 +1283,7 @@ ${context}
             { role: 'user', content: user_query }
           ],
           temperature: 0.7,
-          max_tokens: 300
+          max_tokens: 400
         })
       });
       
@@ -1271,6 +1292,8 @@ ${context}
       
       // 보안 필터링 적용
       answer = sanitizeRecipeForPublic(answer, userLanguage);
+      
+      console.log('✅ theory 기반 답변 생성 완료');
       
       return {
         statusCode: 200,
@@ -1282,16 +1305,18 @@ ${context}
           theory_count: theoryResults.length
         })
       };
+    } else {
+      console.log('⚠️ theory_chunks 검색 결과 없음 - 기본 답변');
     }
   }
   
-  const isCasualChat = !search_results || search_results.length === 0;
-
-  if (isCasualChat) {
-    return await casualConversation(user_query, userLanguage, openaiKey);
+  // ⭐ search_results가 있으면 전문가 조언
+  if (search_results && search_results.length > 0) {
+    return await professionalAdvice(user_query, search_results, userLanguage, openaiKey);
   }
-
-  return await professionalAdvice(user_query, search_results, userLanguage, openaiKey);
+  
+  // ⭐ 그 외는 캐주얼 대화
+  return await casualConversation(user_query, userLanguage, openaiKey);
 }
 
 // ==================== 캐주얼 대화 ====================
