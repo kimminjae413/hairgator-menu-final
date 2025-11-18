@@ -35,12 +35,10 @@ exports.handler = async (event, context) => {
     // ==================== 🔑 환경변수 확인 (File Search Store 추가) ====================
     const OPENAI_KEY = process.env.OPENAI_API_KEY;
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
-    const GEMINI_STORE_ID = process.env.GEMINI_FILE_SEARCH_STORE;
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
     if (!GEMINI_KEY) throw new Error('Gemini API key not configured');
-    if (!GEMINI_STORE_ID) throw new Error('Gemini File Search Store not configured');
     if (!OPENAI_KEY) throw new Error('OpenAI API key not configured');
     if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error('Supabase credentials not configured');
 
@@ -51,10 +49,10 @@ exports.handler = async (event, context) => {
         return await analyzeImage(payload, GEMINI_KEY);
       
       case 'generate_recipe':
-        return await generateRecipe(payload, OPENAI_KEY, GEMINI_KEY, GEMINI_STORE_ID, SUPABASE_URL, SUPABASE_KEY);
+       return await generateRecipe(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
       
       case 'generate_recipe_stream':
-        return await generateRecipeStream(payload, OPENAI_KEY, GEMINI_KEY, GEMINI_STORE_ID, SUPABASE_URL, SUPABASE_KEY);
+       return await generateRecipeStream(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
       
       case 'search_styles':
         return await searchStyles(payload, OPENAI_KEY, SUPABASE_URL, SUPABASE_KEY);
@@ -633,7 +631,7 @@ function getTerms(lang) {
 }
 
 // ==================== 2단계: 레시피 생성 (File Search + 보안 필터링 통합) ====================
-async function generateRecipe(payload, openaiKey, geminiKey, geminiStoreId, supabaseUrl, supabaseKey) {
+async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
   const { params56, language = 'ko' } = payload;
 
   try {
@@ -641,7 +639,7 @@ async function generateRecipe(payload, openaiKey, geminiKey, geminiStoreId, supa
 
     // ⭐ STEP 1: File Search로 이론 검색 (Supabase 이론 대체)
     const searchQuery = `${params56.length_category || ''} ${params56.cut_form || ''} ${params56.volume_zone || ''} Volume ${params56.section_primary || ''} Section`;
-    const theoryContext = await searchTheoryWithFileSearch(searchQuery, geminiKey, geminiStoreId);
+    const theoryContext = ''; // File Search 비활성화 - Supabase theory_chunks 사용 권장
 
     // STEP 2: Supabase는 도해도만 검색
     const similarStyles = await searchSimilarStyles(
@@ -897,7 +895,7 @@ ${JSON.stringify(params56, null, 2)}
 }
 
 // ==================== 2-2단계: 스트리밍 레시피 생성 (File Search + 보안 필터링 통합) ====================
-async function generateRecipeStream(payload, openaiKey, geminiKey, geminiStoreId, supabaseUrl, supabaseKey) {
+async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
   const { params56, language = 'ko' } = payload;
 
   try {
@@ -905,7 +903,7 @@ async function generateRecipeStream(payload, openaiKey, geminiKey, geminiStoreId
 
     // ⭐ File Search + Supabase 검색 (generateRecipe와 동일)
     const searchQuery = `${params56.length_category || ''} ${params56.cut_form || ''} ${params56.volume_zone || ''} Volume`;
-    const theoryContext = await searchTheoryWithFileSearch(searchQuery, geminiKey, geminiStoreId);
+     const theoryContext = ''; // File Search 비활성화
     const similarStyles = await searchSimilarStyles(searchQuery, openaiKey, supabaseUrl, supabaseKey, params56.cut_category?.includes('Women') ? 'female' : 'male');
 
     const langTerms = getTerms(language);
