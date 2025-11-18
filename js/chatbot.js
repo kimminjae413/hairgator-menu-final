@@ -1,10 +1,11 @@
-// js/chatbot.js - HAIRGATOR v2.0
+// js/chatbot.js - HAIRGATOR v2.0 FINAL
 // 89용어 통합 + 새 레시피 포맷(###1~###7) + 스트리밍 지원
 // ✅ TypeError 버그 수정 완료
 // ✅ Cut Form O/G/L 3개만 (Combination 제거)
 // ✅ Volume 엄격한 기준 (Low: 0~44°, Medium: 45~89°, High: 90°~)
 // ✅ Touch Event passive listener 추가
-// ✅ undefined 버그 수정 (505번째, 524번째 줄 fallback 추가) ← 새로 추가!
+// ✅ undefined 버그 수정 (505번째, 524번째 줄 fallback 추가)
+// ✅ 임시 Storage 이미지 표시 방지 추가 (2025-01-25)
 
 class HairGatorChatbot {
   constructor() {
@@ -543,15 +544,7 @@ class HairGatorChatbot {
     languageBtn.addEventListener('click', toggleDropdown);
     languageBtn.addEventListener('touchstart', toggleDropdown, { passive: false });
 
-    // 🔍 디버깅용 화면 로그
-    const showLog = (msg) => {
-      console.log(msg);
-    };
-    
-    showLog('🚀 init 시작');
-    
     // 언어 버튼 이벤트 등록 - reattachLanguageHandlers로 통합
-    showLog('🔄 초기 등록 시작');
     this.reattachLanguageHandlers();
 
     // 색인 버튼
@@ -583,9 +576,6 @@ class HairGatorChatbot {
     
     // 언어 드롭다운 외부 클릭 시 닫기
     document.addEventListener('click', closeDropdownOnOutside);
-    
-    // ⚠️ touchstart는 제거 - 드롭다운 내부 버튼 터치를 방해함
-    // document.addEventListener('touchstart', closeDropdownOnOutside, { passive: true });
   }
 
   // ✅ 수정: Touch Event에 passive listener 추가
@@ -634,7 +624,6 @@ class HairGatorChatbot {
     };
 
     if (window.visualViewport) {
-      // ✅ 수정: { passive: true } 옵션 추가
       window.visualViewport.addEventListener('resize', adjustLayout, { passive: true });
       window.visualViewport.addEventListener('scroll', adjustLayout, { passive: true });
     }
@@ -655,7 +644,6 @@ class HairGatorChatbot {
       }, 300);
     });
 
-    // ✅ 수정: { passive: true } 옵션 추가
     window.addEventListener('resize', () => {
       if (!isKeyboardVisible) {
         originalViewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
@@ -806,7 +794,6 @@ class HairGatorChatbot {
       if (lang === 'ko') return '';
       if (lang === 'en') return ' – 1';
       
-      // ✅ 수정: ja, zh, vi는 번호에 따라 다름
       if (idNum <= 2) {
         // 01-02: ja=3, zh=2, vi=4
         if (lang === 'ja') return ' – 3';
@@ -834,7 +821,7 @@ class HairGatorChatbot {
             const fileName = `${id}. ${termName}${suffix}.png`;
             const imageURL = baseURL + langFolder + '/' + encodeURIComponent(fileName);
             
-            // ✅ 수정 1: Fallback 추가 (undefined 방지)
+            // ✅ Fallback 추가 (undefined 방지)
             const displayName = term[this.currentLanguage] || term.ko || term.en;
             
             return `
@@ -857,7 +844,7 @@ class HairGatorChatbot {
     body.innerHTML = galleryHTML;
     modal.classList.remove('hidden');
 
-    // ✅ 수정 2: Fallback 추가 (undefined 방지)
+    // ✅ Fallback 추가 (undefined 방지)
     window.hairgatorTermImages = Object.entries(this.terms89Map)
       .sort(([idA], [idB]) => parseInt(idA) - parseInt(idB))
       .map(([id, term]) => {
@@ -963,6 +950,7 @@ class HairGatorChatbot {
       }
     }, { passive: true });
   }
+  
   async handleImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1323,16 +1311,27 @@ class HairGatorChatbot {
     });
   }
 
+  // ✅ 수정: 임시 Storage 이미지 필터링 추가
   displayStyleCards(styles) {
-    const cardsHTML = styles.map(style => `
-      <div class="style-card" onclick="window.location.href='#${style.code}'">
-        <img src="${style.image_url}" alt="${style.name}" loading="lazy">
-        <div class="style-card-info">
-          <h4>${style.name}</h4>
-          <span class="style-code">${style.code}</span>
+    const cardsHTML = styles.map(style => {
+      // 이미지 URL 검증 (Storage URL 및 임시 이미지 제외)
+      const hasValidImage = style.main_image_url && 
+                           !style.main_image_url.includes('hairgatorchatbot') &&
+                           !style.main_image_url.includes('temp') &&
+                           !style.main_image_url.includes('supabase.co/storage');
+      
+      return `
+        <div class="style-card" onclick="window.location.href='#${style.code || style.sample_code}'">
+          ${hasValidImage ? 
+            `<img src="${style.main_image_url}" alt="${style.name || style.style_name_ko}" loading="lazy">` : 
+            '<div class="style-card-placeholder">📄</div>'}
+          <div class="style-card-info">
+            <h4>${style.name || style.style_name_ko}</h4>
+            <span class="style-code">${style.code || style.sample_code}</span>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     this.addRawHTML(`<div class="style-cards-container">${cardsHTML}</div>`);
   }
@@ -1422,34 +1421,25 @@ class HairGatorChatbot {
   }
 
   reattachLanguageHandlers() {
-    const showLog = (msg) => {
-      console.log(msg);  // 콘솔에만 출력
-    };
-    
-    showLog('🔄 재등록 시작 (v8.1 - 복제후재쿼리)');
-    
     const self = this;
     const dropdown = document.getElementById('language-dropdown');
     
     if (!dropdown) {
-      showLog('⚠️ 드롭다운 없음');
+      console.warn('⚠️ 언어 드롭다운을 찾을 수 없음');
       return;
     }
-    
-    // 강제로 매번 등록 (플래그 제거)
-    showLog('🔄 강제 재등록');
     
     // 언어 변경 함수
     let isProcessing = false;  // 중복 실행 방지
     
     const handleLanguageChange = function(lang) {
       if (isProcessing) {
-        showLog('⏸️ 처리 중 - 스킵');
+        console.log('⏸️ 처리 중 - 스킵');
         return;
       }
       
       isProcessing = true;
-      showLog('🎯 선택: ' + lang);
+      console.log('🎯 언어 선택: ' + lang);
       
       // 드롭다운 닫기
       dropdown.classList.add('hidden');
@@ -1457,16 +1447,12 @@ class HairGatorChatbot {
       // 언어 변경
       self.currentLanguage = lang;
       self.setStoredLanguage(lang);
-      showLog('💾 저장: ' + lang);
       
       const texts = self.getTexts();
       
       // DOM 업데이트
       const title = document.getElementById('chatbot-title');
-      if (title) {
-        title.textContent = texts.title;
-        showLog('✅ 타이틀: ' + texts.title);
-      }
+      if (title) title.textContent = texts.title;
       
       const input = document.getElementById('chatbot-input');
       if (input) input.placeholder = texts.placeholder;
@@ -1481,9 +1467,7 @@ class HairGatorChatbot {
         }
       }
       
-      // ❌ 히스토리 초기화 제거 - 언어만 변경
-      // self.conversationHistory = [];
-      showLog('✅ 완료: ' + lang);
+      console.log('✅ 언어 변경 완료: ' + lang);
       
       // 300ms 후 플래그 해제
       setTimeout(function() {
@@ -1491,17 +1475,12 @@ class HairGatorChatbot {
       }, 300);
     };
     
-    // ⭐ CSS 오버라이드: 최종 프로덕션 버전
+    // ⭐ CSS 오버라이드: 언어 드롭다운 최상위
     const style = document.createElement('style');
     style.textContent = `
-      /* 챗봇 컨테이너 overflow 수정 */
       .chatbot-container {
         overflow: visible !important;
         z-index: 9999 !important;
-      }
-      
-      .chatbot-messages {
-        overflow-y: auto !important;
       }
       
       .chatbot-header {
@@ -1509,26 +1488,11 @@ class HairGatorChatbot {
         z-index: 10000 !important;
       }
       
-      .header-actions {
-        z-index: 10001 !important;
-      }
-      
       .language-selector {
         z-index: 10002 !important;
         position: relative !important;
       }
       
-      .chatbot-close {
-        z-index: 10001 !important;
-        width: 32px !important;
-        height: 32px !important;
-      }
-      
-      .language-btn {
-        z-index: 10002 !important;
-      }
-      
-      /* 드롭다운 최상위 */
       .language-dropdown {
         display: block !important;
         position: absolute !important;
@@ -1547,117 +1511,46 @@ class HairGatorChatbot {
         pointer-events: auto !important;
       }
       
-      /* 언어 버튼 */
       .lang-option {
         pointer-events: auto !important;
         cursor: pointer !important;
         min-height: 44px !important;
         z-index: 1000000 !important;
-        position: relative !important;
-        display: block !important;
-        width: 100% !important;
-        touch-action: manipulation !important;
       }
     `;
     document.head.appendChild(style);
-    console.log('✅ HAIRGATOR 언어 선택 시스템 초기화 완료');
     
     // ⭐ 이벤트 위임: 드롭다운에 직접 클릭 이벤트 등록
     dropdown.addEventListener('click', function(e) {
-      const target = e.target;
-      
-      // 클릭된 요소가 .lang-option이거나 그 자식인지 확인
-      const langBtn = target.closest('.lang-option');
+      const langBtn = e.target.closest('.lang-option');
       
       if (langBtn) {
         e.preventDefault();
         e.stopPropagation();
         
         const lang = langBtn.getAttribute('data-lang');
-        showLog('🖱️ CLICK: ' + lang);
         handleLanguageChange(lang);
       }
-    }, true); // useCapture = true
+    }, true);
     
     dropdown.addEventListener('touchend', function(e) {
-      const target = e.target;
-      const langBtn = target.closest('.lang-option');
+      const langBtn = e.target.closest('.lang-option');
       
       if (langBtn) {
         e.preventDefault();
         e.stopPropagation();
         
         const lang = langBtn.getAttribute('data-lang');
-        showLog('🎯 TOUCH: ' + lang);
         handleLanguageChange(lang);
       }
-    }, true); // useCapture = true
+    }, true);
     
-    showLog('✅ 이벤트 위임 등록 완료');
-    
-    // 버튼에 직접 이벤트 등록
-    const langBtns = dropdown.querySelectorAll('.lang-option');
-    showLog('🔍 버튼 개수: ' + langBtns.length);
-    
-    // 드롭다운 위치 확인
-    const dropdownRect = dropdown.getBoundingClientRect();
-    showLog('📍 드롭다운: top=' + Math.round(dropdownRect.top) + ' left=' + Math.round(dropdownRect.left));
-    
-    langBtns.forEach(function(btn, index) {
-      const lang = btn.getAttribute('data-lang');
-      
-      // 각 버튼의 위치 확인
-      const btnRect = btn.getBoundingClientRect();
-      showLog('📍 ' + lang + ': top=' + Math.round(btnRect.top) + ' left=' + Math.round(btnRect.left) + ' w=' + Math.round(btnRect.width) + ' h=' + Math.round(btnRect.height));
-      
-      // ⭐ 강제로 터치 가능하도록 스타일 적용
-      btn.style.pointerEvents = 'auto';
-      btn.style.touchAction = 'auto';
-      btn.style.position = 'relative';
-      btn.style.zIndex = '10001';
-      btn.style.display = 'block';
-      btn.style.width = '100%';
-      
-      // onclick 직접 할당
-      btn.onclick = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        showLog('🖱️ CLICK: ' + lang);
-        handleLanguageChange(lang);
-      };
-      
-      // ontouchstart 직접 할당
-      btn.ontouchstart = function(e) {
-        showLog('👆 TOUCHSTART: ' + lang);
-        return true;
-      };
-      
-      // ontouchend 직접 할당
-      btn.ontouchend = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        showLog('🎯 TOUCH: ' + lang);
-        handleLanguageChange(lang);
-        return false;
-      };
-      
-      showLog('✅ 등록: ' + lang);
-    });
-    
-    showLog('✅ 재등록 완료: ' + langBtns.length + '개');
+    console.log('✅ HAIRGATOR 언어 선택 시스템 초기화 완료');
   }
 }
 
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR v2.0 챗봇 로드 완료 (undefined 버그 수정 완료)');
+  console.log('🦎 HAIRGATOR v2.0 FINAL 챗봇 로드 완료');
 });
-// 기존 디버그 로그 제거 (혹시 남아있을 경우 대비)
-(function() {
-  const oldLog = document.getElementById('debug-log');
-  if (oldLog) {
-    oldLog.remove();
-    console.log('🧹 기존 디버그 로그 제거됨');
-  }
-})();
