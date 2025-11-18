@@ -58,7 +58,8 @@ exports.handler = async (event, context) => {
         return await searchStyles(payload, OPENAI_KEY, SUPABASE_URL, SUPABASE_KEY);
       
       case 'generate_response':
-        return await generateResponse(payload, OPENAI_KEY);
+        // ⭐⭐⭐ 수정 1/3: Supabase 파라미터 추가 ⭐⭐⭐
+        return await generateResponse(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
       
       default:
         return {
@@ -251,49 +252,63 @@ function sanitizeRecipeForPublic(recipe, language = 'ko') {
   return filtered;
 }
 
-// ==================== ⭐ File Search 검색 함수 (신규 추가) ====================
-async function searchTheoryWithFileSearch(query, geminiKey, storeId) {
-  console.log(`🔍 File Search 시작: "${query}"`);
-  
+// ==================== ⭐ theory_chunks 벡터 검색 함수 (신규 추가) ⭐ ====================
+async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, matchCount = 15) {
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+    console.log(`🔍 theory_chunks 벡터 검색: "${query}"`);
+    
+    // Gemini 임베딩 생성 (768차원)
+    const embeddingResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${geminiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `다음 헤어스타일 정보에 대해 2WAY CUT 이론 문서를 참조하여 설명해주세요:\n\n${query}`
-            }]
-          }],
-          tools: [{
-            file_search_tool: {
-              file_search_stores: [storeId]
-            }
-          }],
-          generationConfig: {
-            temperature: 0.4,
-            maxOutputTokens: 2048
-          }
+          model: 'models/text-embedding-004',
+          content: { parts: [{ text: query }] }
         })
       }
     );
 
-    if (!response.ok) {
-      console.error('❌ File Search API 오류:', response.status);
-      return '';
+    if (!embeddingResponse.ok) {
+      console.error('❌ Gemini 임베딩 생성 실패');
+      return [];
     }
 
-    const data = await response.json();
-    const theoryText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const embeddingData = await embeddingResponse.json();
+    const queryEmbedding = embeddingData.embedding.values;
+
+    // Supabase RPC 호출
+    const rpcResponse = await fetch(
+      `${supabaseUrl}/rest/v1/rpc/match_theory_chunks`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          query_embedding: queryEmbedding,
+          match_threshold: 0.70,
+          match_count: matchCount
+        })
+      }
+    );
+
+    if (!rpcResponse.ok) {
+      console.error('❌ Supabase RPC 호출 실패:', rpcResponse.status);
+      return [];
+    }
+
+    const results = await rpcResponse.json();
+    console.log(`✅ theory_chunks ${results.length}개 검색 완료`);
     
-    console.log(`✅ File Search 완료 (${theoryText.length}자)`);
-    return theoryText;
+    return results;
 
   } catch (error) {
-    console.error('💥 File Search 오류:', error);
-    return '';
+    console.error('💥 theory_chunks 검색 오류:', error);
+    return [];
   }
 }
 
@@ -637,9 +652,16 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
   try {
     console.log('🍳 레시피 생성 시작:', params56.length_category, '언어:', language);
 
-    // ⭐ STEP 1: File Search로 이론 검색 (Supabase 이론 대체)
+    // ⭐⭐⭐ 수정 2/3: theory_chunks 벡터 검색 추가 ⭐⭐⭐
     const searchQuery = `${params56.length_category || ''} ${params56.cut_form || ''} ${params56.volume_zone || ''} Volume ${params56.section_primary || ''} Section`;
-    const theoryContext = ''; // File Search 비활성화 - Supabase theory_chunks 사용 권장
+    const theoryChunks = await searchTheoryChunks(searchQuery, geminiKey, supabaseUrl, supabaseKey, 15);
+    
+    // 이론 컨텍스트 구성
+    const theoryContext = theoryChunks.length > 0 
+      ? theoryChunks.map((chunk, idx) => 
+          `[이론 ${idx+1}] ${chunk.section_title || ''}\n${(chunk.content_ko || chunk.content || '').substring(0, 300)}`
+        ).join('\n\n')
+      : '관련 이론을 찾을 수 없습니다.';
 
     // STEP 2: Supabase는 도해도만 검색
     const similarStyles = await searchSimilarStyles(
@@ -903,7 +925,13 @@ async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, 
 
     // ⭐ File Search + Supabase 검색 (generateRecipe와 동일)
     const searchQuery = `${params56.length_category || ''} ${params56.cut_form || ''} ${params56.volume_zone || ''} Volume`;
-     const theoryContext = ''; // File Search 비활성화
+    const theoryChunks = await searchTheoryChunks(searchQuery, geminiKey, supabaseUrl, supabaseKey, 15);
+    const theoryContext = theoryChunks.length > 0 
+      ? theoryChunks.map((chunk, idx) => 
+          `[이론 ${idx+1}] ${chunk.section_title || ''}\n${(chunk.content_ko || chunk.content || '').substring(0, 300)}`
+        ).join('\n\n')
+      : '';
+      
     const similarStyles = await searchSimilarStyles(searchQuery, openaiKey, supabaseUrl, supabaseKey, params56.cut_category?.includes('Women') ? 'female' : 'male');
 
     const langTerms = getTerms(language);
@@ -1156,10 +1184,106 @@ async function searchStyles(payload, openaiKey, supabaseUrl, supabaseKey) {
   };
 }
 
-// ==================== 일반 대화 응답 ====================
-async function generateResponse(payload, openaiKey) {
+// ==================== ⭐⭐⭐ 수정 3/3: 일반 대화 응답 (theory_chunks + 보안 필터링) ⭐⭐⭐ ====================
+async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
   const { user_query, search_results } = payload;
   const userLanguage = detectLanguage(user_query);
+  
+  console.log(`💬 일반 대화 응답: "${user_query}" (언어: ${userLanguage})`);
+  
+  // ⭐ 보안 키워드 감지
+  const securityKeywords = [
+    '42포뮬러', '42개 포뮬러', '42 formula',
+    '9매트릭스', '9개 매트릭스', '9 matrix',
+    'DBS NO', 'DFS NO', 'VS NO', 'HS NO',
+    '가로섹션', '후대각섹션', '전대각섹션', '세로섹션',
+    'Horizontal Section', 'Diagonal Backward', 'Diagonal Forward', 'Vertical Section',
+    '42층', '7개 섹션'
+  ];
+  
+  const isSecurityQuery = securityKeywords.some(keyword => 
+    user_query.toLowerCase().includes(keyword.toLowerCase())
+  );
+  
+  if (isSecurityQuery) {
+    const securityResponse = {
+      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀로, 원장급 이상만 접근 가능합니다. 일반 사용자께는 체계적인 커팅 가이드를 제공해드립니다.',
+      english: 'I apologize, but that information is proprietary to the 2WAY CUT system and only accessible to director-level professionals.',
+      japanese: '申し訳ございませんが、その情報は2WAY CUTシステムの企業秘密であり、ディレクターレベル以上のみアクセス可能です。',
+      chinese: '抱歉，该信息属于2WAY CUT系统的核心商业机密，仅对总监级别以上开放。',
+      vietnamese: 'Xin lỗi, thông tin đó là bí mật kinh doanh của hệ thống 2WAY CUT.'
+    };
+    
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ 
+        success: true, 
+        data: securityResponse[userLanguage] || securityResponse['korean'],
+        security_filtered: true
+      })
+    };
+  }
+  
+  // ⭐ 2WAY CUT 시스템 질문인 경우 theory_chunks 검색
+  const is2WayCutQuery = /투웨이컷|2way\s*cut|two\s*way\s*cut|2웨이|크리스기/i.test(user_query);
+  
+  if (is2WayCutQuery) {
+    const theoryResults = await searchTheoryChunks(user_query, geminiKey, supabaseUrl, supabaseKey, 5);
+    
+    if (theoryResults.length > 0) {
+      const context = theoryResults.map((chunk, idx) => 
+        `[${idx+1}] ${chunk.section_title || ''}\n${(chunk.content_ko || chunk.content || '').substring(0, 200)}`
+      ).join('\n\n');
+      
+      const systemPrompt = {
+        korean: `당신은 2WAY CUT 시스템 전문가입니다. 다음 이론을 참고하여 답변하세요:
+
+${context}
+
+**주의:** 포뮬러 번호, 섹션 이름, 각도 코드는 언급하지 마세요.`,
+        english: `You are a 2WAY CUT system expert. Reference this theory:
+
+${context}
+
+**Note:** Do not mention formula numbers, section names, or angle codes.`
+      };
+      
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openaiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt[userLanguage] || systemPrompt['korean'] },
+            { role: 'user', content: user_query }
+          ],
+          temperature: 0.7,
+          max_tokens: 300
+        })
+      });
+      
+      const data = await response.json();
+      let answer = data.choices[0].message.content;
+      
+      // 보안 필터링 적용
+      answer = sanitizeRecipeForPublic(answer, userLanguage);
+      
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ 
+          success: true, 
+          data: answer,
+          theory_used: true,
+          theory_count: theoryResults.length
+        })
+      };
+    }
+  }
   
   const isCasualChat = !search_results || search_results.length === 0;
 
