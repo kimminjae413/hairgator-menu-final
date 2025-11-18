@@ -1233,33 +1233,102 @@ async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supa
   const is1WayVs2WayQuery = /원웨이|1웨이|1way|서양|두상|머리\s?모양|한국인|동양인|평평|뒤통수/i.test(user_query);
   
   if (is1WayVs2WayQuery) {
-    console.log('📚 1WAY vs 2WAY 비교 질문 - 직접 답변');
+    console.log('📚 1WAY vs 2WAY 비교 질문 - 자연스러운 답변 생성');
     
-    const comparisonAnswer = {
-      korean: `맞습니다! 원웨이컷(1WAY CUT)은 서양인의 두상 구조에 최적화된 커팅 시스템입니다.
+    // 배경 지식 제공
+    const backgroundKnowledge = {
+      korean: `**1WAY CUT vs 2WAY CUT 배경 지식:**
 
-**서양인 vs 한국인 두상 차이:**
-- 서양인: 뒤통수가 튀어나오고 입체적 (원웨이컷에 적합)
-- 한국인: 뒤통수가 평평하고 측면이 넓음 (원웨이컷 부적합)
+원웨이컷(1WAY CUT)은 서양인의 두상 구조에 최적화된 커팅 시스템입니다.
+
+**서양인 두상 특징:**
+- 뒤통수(후두부)가 자연스럽게 튀어나와 있음
+- 측면에서 봤을 때 입체적이고 둥근 형태
+- 원웨이컷을 적용하면 자연스러운 실루엣이 완성됨
+
+**한국인(동양인) 두상 특징:**
+- 뒤통수가 평평함 (flat back of head)
+- 측면이 넓고 전체적으로 납작한 형태
+- 원웨이컷을 그대로 적용하면 더 평평해 보이고 볼륨감 부족
 
 **2WAY CUT의 탄생:**
-이러한 동서양 두상의 근본적인 차이 때문에, 크리스기 원장이 한국인을 포함한 동양인 두상에 최적화된 **투웨이컷(2WAY CUT)** 시스템을 개발하게 되었습니다. 
+이러한 동서양 두상의 근본적인 차이를 해결하기 위해, 크리스기 원장이 한국인을 포함한 동양인 두상에 최적화된 투웨이컷(2WAY CUT) 시스템을 개발했습니다. 
 
-투웨이컷은 평평한 뒤통수에 자연스러운 볼륨을 만들고, 얼굴형에 맞는 균형잡힌 실루엣을 완성하는 것이 핵심입니다.`,
+2WAY CUT은 평평한 뒤통수에 자연스러운 볼륨을 만들고, 측면의 넓은 부분을 보완하여 균형잡힌 실루엣을 완성하는 것이 핵심입니다.`,
 
-      english: `That's correct! 1WAY CUT was originally designed for Western head shapes.
+      english: `**1WAY CUT vs 2WAY CUT Background:**
 
-**Western vs Asian Head Shape Differences:**
-- Western: Prominent occipital bone, naturally rounded back profile (suitable for 1WAY CUT)
-- Korean/Asian: Flatter back of head, wider sides (unsuitable for direct 1WAY CUT application)
+1WAY CUT was originally designed for Western head shapes.
+
+**Western head characteristics:**
+- Prominent occipital bone (naturally protruding back of head)
+- Three-dimensional and rounded profile from the side
+- 1WAY CUT creates natural silhouette
+
+**Korean/Asian head characteristics:**
+- Flat back of head
+- Wider sides, overall flatter shape
+- Direct 1WAY CUT application results in flatter appearance and lack of volume
 
 **Birth of 2WAY CUT:**
-Due to these fundamental differences between Eastern and Western head shapes, Master Chris-gi developed the **2WAY CUT** system specifically optimized for Korean and Asian head shapes.
+To address these fundamental differences between Eastern and Western head shapes, Master Chris-gi developed the 2WAY CUT system specifically optimized for Korean and Asian head shapes.
 
-2WAY CUT focuses on creating natural volume on flat back heads and achieving balanced silhouettes that complement facial features.`
+2WAY CUT focuses on creating natural volume on flat back heads and balancing wider sides to achieve harmonious silhouettes.`
     };
     
-    const answer = comparisonAnswer[userLanguage] || comparisonAnswer['korean'];
+    const knowledge = backgroundKnowledge[userLanguage] || backgroundKnowledge['korean'];
+    
+    // GPT로 자연스러운 답변 생성
+    const systemPrompt = {
+      korean: `당신은 친절하고 전문적인 헤어 스타일리스트입니다. 
+
+다음 배경 지식을 바탕으로 사용자의 질문에 **자연스럽고 대화하듯이** 답변하세요:
+
+${knowledge}
+
+**답변 스타일:**
+1. 친근하고 공감하는 톤 사용 ("맞아요", "정확히 아시네요" 등)
+2. 2-3문단으로 구성
+3. 전문 용어는 쉽게 풀어서 설명
+4. 마지막에 추가 질문 유도하지 말 것`,
+
+      english: `You are a friendly and professional hair stylist.
+
+Answer the user's question naturally and conversationally based on this background knowledge:
+
+${knowledge}
+
+**Answer style:**
+1. Use friendly and empathetic tone
+2. 2-3 paragraphs
+3. Explain technical terms simply
+4. Don't ask follow-up questions at the end`
+    };
+    
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt[userLanguage] || systemPrompt['korean'] },
+          { role: 'user', content: user_query }
+        ],
+        temperature: 0.8, // 더 자연스럽게
+        max_tokens: 400
+      })
+    });
+    
+    const data = await response.json();
+    let answer = data.choices[0].message.content;
+    
+    // 보안 필터링
+    answer = sanitizeRecipeForPublic(answer, userLanguage);
+    
+    console.log('✅ 자연스러운 답변 생성 완료');
     
     return {
       statusCode: 200,
