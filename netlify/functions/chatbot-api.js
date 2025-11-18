@@ -244,7 +244,11 @@ function sanitizeRecipeForPublic(recipe, language = 'ko') {
   filtered = filtered.replace(/9개\s+매트릭스|9\s+matrix|nine\s+matrix/gi, '체계적인 분류');
   filtered = filtered.replace(/매트릭스\s+코드|matrix\s+code/gi, '스타일 분류');
   
-  // 6. Book 참조 제거
+  // 6. 7개 섹션/존 제거
+  filtered = filtered.replace(/7개\s+섹션|7개\s+존|7\s+section|7\s+zone/gi, '여러 부분');
+  filtered = filtered.replace(/섹션|존|section|zone/gi, '부분');
+  
+  // 7. Book 참조 제거
   filtered = filtered.replace(/\(Book\s+[A-E],\s+p\.\s*\d+\)/gi, '');
   filtered = filtered.replace(/\(2WAY\s+CUT\s+Book\s+[A-E],\s+Page\s+\d+\)/gi, '');
   
