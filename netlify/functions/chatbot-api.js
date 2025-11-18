@@ -1229,6 +1229,50 @@ async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supa
     };
   }
   
+  // ⭐ 1WAY vs 2WAY 비교 질문 감지 (서양인/한국인 두상)
+  const is1WayVs2WayQuery = /원웨이|1웨이|1way|서양|두상|머리\s?모양|한국인|동양인|평평|뒤통수/i.test(user_query);
+  
+  if (is1WayVs2WayQuery) {
+    console.log('📚 1WAY vs 2WAY 비교 질문 - 직접 답변');
+    
+    const comparisonAnswer = {
+      korean: `맞습니다! 원웨이컷(1WAY CUT)은 서양인의 두상 구조에 최적화된 커팅 시스템입니다.
+
+**서양인 vs 한국인 두상 차이:**
+- 서양인: 뒤통수가 튀어나오고 입체적 (원웨이컷에 적합)
+- 한국인: 뒤통수가 평평하고 측면이 넓음 (원웨이컷 부적합)
+
+**2WAY CUT의 탄생:**
+이러한 동서양 두상의 근본적인 차이 때문에, 크리스기 원장이 한국인을 포함한 동양인 두상에 최적화된 **투웨이컷(2WAY CUT)** 시스템을 개발하게 되었습니다. 
+
+투웨이컷은 평평한 뒤통수에 자연스러운 볼륨을 만들고, 얼굴형에 맞는 균형잡힌 실루엣을 완성하는 것이 핵심입니다.`,
+
+      english: `That's correct! 1WAY CUT was originally designed for Western head shapes.
+
+**Western vs Asian Head Shape Differences:**
+- Western: Prominent occipital bone, naturally rounded back profile (suitable for 1WAY CUT)
+- Korean/Asian: Flatter back of head, wider sides (unsuitable for direct 1WAY CUT application)
+
+**Birth of 2WAY CUT:**
+Due to these fundamental differences between Eastern and Western head shapes, Master Chris-gi developed the **2WAY CUT** system specifically optimized for Korean and Asian head shapes.
+
+2WAY CUT focuses on creating natural volume on flat back heads and achieving balanced silhouettes that complement facial features.`
+    };
+    
+    const answer = comparisonAnswer[userLanguage] || comparisonAnswer['korean'];
+    
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ 
+        success: true, 
+        data: answer,
+        theory_used: false,
+        comparison_answer: true
+      })
+    };
+  }
+  
   // ⭐ 2WAY CUT 시스템 질문 감지 (정확한 매칭)
   const is2WayCutSystemQuery = /투웨이|투 웨이|2웨이|2 웨이|2way|two way|twoway|크리스기/i.test(user_query);
   
