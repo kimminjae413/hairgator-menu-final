@@ -1029,6 +1029,11 @@ class HairGatorChatbot {
         // 레시피를 HTML로 렌더링 (89용어 하이라이트 포함)
         const rendered = this.parseMarkdownWithHighlight(recipeResult.data.recipe);
         this.replaceLastBotMessage(rendered);
+        
+        // ✅ 유사 스타일 카드 표시 (백엔드에서 필터링된 것만 옴)
+        if (recipeResult.data.similar_styles && recipeResult.data.similar_styles.length > 0) {
+          this.displayStyleCards(recipeResult.data.similar_styles);
+        }
       } else {
         this.replaceLastBotMessage('❌ 레시피 생성 실패');
       }
@@ -1218,11 +1223,24 @@ class HairGatorChatbot {
     this.addMessage('user', message);
     input.value = '';
 
-    // 일반 대화 감지
-    const casualKeywords = ['안녕', '반가', '고마', '감사', '도움', '뭐', '어떻게', 'hello', 'hi', 'thanks', 'thank you', 'help'];
-    const isCasualChat = casualKeywords.some(keyword => message.toLowerCase().includes(keyword)) && message.length < 20;
+    // ✅ 개선된 일반 대화 감지
+    const casualKeywords = ['안녕', '반가', '고마', '감사', '도움', '뭐', '어떻게', '알려줘', '설명', '궁금', 'hello', 'hi', 'thanks', 'thank you', 'help', 'explain'];
+    const questionKeywords = ['뭐', '무엇', '어떻게', '왜', '언제', '어디', '누가', 'what', 'how', 'why', 'when', 'where', 'who'];
+    
+    // 스타일 검색 키워드
+    const styleKeywords = ['스타일', '헤어', '커트', '펌', '컬러', '염색', '미디움', '숏', '롱', '단발', '레이어', '그래쥬에이션', 'style', 'hair', 'cut', 'perm', 'color', 'medium', 'short', 'long', 'layer', 'graduation'];
+    
+    // 일반 대화인지 판단
+    const isCasualChat = casualKeywords.some(keyword => message.includes(keyword)) && message.length < 30;
+    
+    // 스타일 검색 의도가 있는지 판단
+    const isStyleSearch = styleKeywords.some(keyword => message.includes(keyword));
+    
+    // 질문이지만 스타일 검색이 아닌 경우 (이론 질문)
+    const isTheoryQuestion = questionKeywords.some(keyword => message.includes(keyword)) && !isStyleSearch;
 
-    if (isCasualChat) {
+    // ✅ Case 1: 일반 대화 또는 이론 질문
+    if (isCasualChat || isTheoryQuestion) {
       this.addMessage('bot', '답변 생성 중...');
       
       try {
@@ -1252,7 +1270,7 @@ class HairGatorChatbot {
       return;
     }
 
-    // 스타일 검색 모드
+    // ✅ Case 2: 스타일 검색 모드
     this.addMessage('bot', '검색 중...');
 
     try {
@@ -1290,7 +1308,21 @@ class HairGatorChatbot {
 
       if (gptResult.success) {
         this.replaceLastBotMessage(gptResult.data);
-        this.displayStyleCards(styles);
+        
+        // ✅ 유효한 스타일만 필터링해서 표시
+        const validStyles = styles.filter(style => {
+          const hasValidImage = style.main_image_url && 
+                               !style.main_image_url.includes('hairgatorchatbot') &&
+                               !style.main_image_url.includes('temp') &&
+                               !style.main_image_url.includes('supabase.co/storage');
+          
+          return hasValidImage;
+        });
+        
+        // 유효한 스타일이 있을 때만 카드 표시
+        if (validStyles.length > 0) {
+          this.displayStyleCards(validStyles);
+        }
       }
 
     } catch (error) {
