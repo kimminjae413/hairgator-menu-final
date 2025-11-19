@@ -727,6 +727,9 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
 
     const userPrompt = `다음 파라미터로 레시피를 생성하세요:\n길이: ${params56.length_category}\n형태: ${params56.cut_form}\n볼륨: ${params56.volume_zone}`;
 
+    // ✅ 시스템 프롬프트 합치기 (400 에러 방지)
+    const combinedSystemPrompt = `${strictLanguageMessage}\n\n${systemPrompt}`;
+
    const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -736,13 +739,11 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: strictLanguageMessage },
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: combinedSystemPrompt },  // ✅ 하나로 합침
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.5,
-        max_tokens: 3000,  // 6000 → 3000 (속도 개선)
-        timeout: 8000      // 8초 타임아웃 명시
+        max_tokens: 3000  // 6000 → 3000 (속도 개선)
       })
     });
 
