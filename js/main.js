@@ -1,4 +1,4 @@
-// HAIRGATOR Main Application - 최종 버전 (사이드바 메뉴 복원)
+// HAIRGATOR Main Application - 최종 버전 (goBack 함수 추가)
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🦎 HAIRGATOR 메인 앱 시작...');
     
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setupEventListeners();
         loadTheme();
         checkAuthStatus();
-        setupSidebar(); // 사이드바 메뉴 복원
+        setupSidebar();
         
         if (backBtn) {
             backBtn.style.display = 'none';
@@ -204,14 +204,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (menuContainer && menuContainer.classList.contains('active')) {
             menuContainer.classList.remove('active');
             if (genderSelection) genderSelection.style.display = 'flex';
-            if (backBtn) backBtn.style.display = 'none';
+            if (backBtn) backBtn.style.display = 'flex'; // ← 버튼 유지!
             
             // menu.js의 전역 변수 리셋
             if (window.currentGender) window.currentGender = null;
             if (window.currentMainTab) window.currentMainTab = null;
             if (window.currentSubTab) window.currentSubTab = null;
             
-            console.log('🔙 성별 선택 화면으로 이동');
+            console.log('🔙 메뉴 → 성별 선택');
         }
     }
 
@@ -336,6 +336,32 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 3000);
     }
+
+    // ⭐⭐⭐ 전역 goBack 함수 (index.html 호환) ⭐⭐⭐
+    window.goBack = function() {
+        console.log('🔙 goBack() 호출');
+        
+        if (menuContainer && menuContainer.classList.contains('active')) {
+            menuContainer.classList.remove('active');
+            if (genderSelection) genderSelection.style.display = 'flex';
+            if (backBtn) backBtn.style.display = 'flex'; // ← 핵심!
+            
+            // menu.js의 전역 변수 리셋
+            if (window.currentGender) window.currentGender = null;
+            if (window.currentMainTab) window.currentMainTab = null;
+            if (window.currentSubTab) window.currentSubTab = null;
+            
+            console.log('🔙 메뉴 → 성별 선택');
+        } 
+        else if (genderSelection && genderSelection.style.display === 'flex') {
+            genderSelection.style.display = 'none';
+            const loginScreen = document.getElementById('loginScreen');
+            if (loginScreen) loginScreen.style.display = 'flex';
+            if (backBtn) backBtn.style.display = 'none';
+            
+            console.log('🔙 성별 선택 → 로그인');
+        }
+    };
 
     // menu.js 로드 확인
     setTimeout(() => {
