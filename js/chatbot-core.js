@@ -149,7 +149,7 @@ class ChatbotCore {
    * @param {string} language - 언어 (ko/en/ja/zh/vi)
    * @returns {Promise<Object>} 레시피 + 도해도
    */
-  async generateRecipe(params56, language = 'ko') {
+  async generateRecipe(params56, language = 'ko', onProgress = null) {
     try {
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',
@@ -162,6 +162,40 @@ class ChatbotCore {
           }
         })
       });
+
+      // ⭐ 스트리밍 응답 처리 추가
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      // 스트리밍으로 데이터 읽기
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let recipe = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        recipe += chunk;
+
+        // 실시간 콜백 (있으면 UI 업데이트)
+        if (onProgress && typeof onProgress === 'function') {
+          onProgress(recipe);
+        }
+      }
+
+      return {
+        success: true,
+        data: { recipe: recipe }
+      };
+
+    } catch (error) {
+      console.error('❌ 레시피 생성 오류:', error);
+      throw error;
+    }
+  }
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
