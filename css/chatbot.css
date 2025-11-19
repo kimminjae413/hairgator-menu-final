@@ -1712,3 +1712,56 @@
   box-shadow: 0 8px 24px rgba(33, 150, 243, 0.4) !important;
   transition: all 0.3s ease;
 }
+
+/* ============================================
+   레시피 메시지 가로 스크롤 방지 (긴급 수정)
+   ============================================ */
+
+.bot-message .message-content,
+.user-message .message-content {
+  max-width: 100%;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  overflow-x: hidden !important;  /* 가로 스크롤 강제 숨김 */
+  overflow-y: visible;
+}
+
+/* JSON 코드 블록 특별 처리 */
+.bot-message pre,
+.message-content pre {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 6px;
+  margin: 8px 0;
+}
+
+.bot-message code,
+.message-content code {
+  word-break: break-all;
+  white-space: pre-wrap;
+  max-width: 100%;
+  display: inline-block;
+}
+
+/* 레시피 텍스트 */
+.recipe-text,
+.message-content p {
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  margin: 8px 0;
+}
+
+/* 챗봇 메시지 영역 전체 */
+.chatbot-messages {
+  overflow-x: hidden !important;
+  overflow-y: auto;
+  max-width: 100%;
+}
