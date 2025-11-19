@@ -1,11 +1,11 @@
 // netlify/functions/chatbot-api.js
-// HAIRGATOR 챗봇 - Structured Output + File Search + 보안 필터링 최종 완성 버전
-// ✅ Structured Output (56파라미터 100% 정확도)
-// ✅ File Search 통합 (Supabase 이론 대체)
-// ✅ 보안 필터링 (42개 포뮬러, 9개 매트릭스 보호)
-// ✅ 5개 언어 지원 (ko/en/ja/zh/vi)
-// ⭐ Syntax Error 완전 제거 버전 (2025-01-25)
-// 🔧 리팩토링: 프롬프트 빌더 모듈화 (2025-01-25)
+// HAIRGATOR 챗봇 - HOTFIX 적용 버전 (2025-01-25)
+// 
+// 🔥 주요 수정사항:
+// 1. Gemini 프롬프트: 길이 정의 수정 (A=가장 긴 것, H=가장 짧은 것)
+// 2. 도해도 매칭: 길이별 코드 필터링 추가 (G Length → FGL 시리즈)
+// 3. texture_technique: 배열 처리 안전화
+// ==================== 
 
 const fetch = require('node-fetch');
 const { PARAMS_56_SCHEMA } = require('./params56-schema.js');
@@ -85,26 +85,94 @@ exports.handler = async (event, context) => {
 };
 
 // ==================== 이미지 분석 (Structured Output) ====================
+// 🔥 HOTFIX 1: Gemini 프롬프트 길이 정의 수정
 async function analyzeImage(payload, geminiKey) {
   const { image_base64, mime_type } = payload;
 
+  // ✅ 수정된 systemPrompt
   const systemPrompt = `당신은 전문 헤어 스타일리스트입니다. 
 업로드된 헤어스타일 이미지를 56개 파라미터로 정확히 분석하세요.
 
-**핵심 판단 기준**
+## 🎯 핵심 판단 기준
 
-**1. 길이 - 어깨선 기준**
-- 어깨에 닿음 → D Length
-- 어깨 아래 → A/B/C
-- 어깨 위 → E/F/G/H
+### 📏 Women's Cut 길이 분류 (매우 중요!)
 
-**2. 커트 형태 - 괄호 포함**
-- "O (One Length)" / "G (Graduation)" / "L (Layer)"
+**⚠️ 길이 기준 (A가 가장 길고, H가 가장 짧음):**
 
-**3. 리프팅 각도 - 배열로**
-- ["L0"], ["L2"], ["L2", "L4"]
+**A Length (65cm)**: 가슴 아래 밑선 - **가장 긴 길이** ⭐
+  - 머리카락 끝이 가슴보다 확실히 아래 (배꼽 근처)
 
-**4. 펌/컬 - 있는 경우만**
+**B Length (50cm)**: 가슴 상단~중간
+  - 머리카락 끝이 유두 높이 전후 (±5cm)
+
+**C Length (40cm)**: 쇄골 밑선
+  - 머리카락 끝이 쇄골뼈에 정확히 닿거나 바로 아래
+
+**D Length (35cm)**: 어깨선 ⭐⭐⭐ 핵심 기준선!
+  - 머리카락 끝이 **어깨에 정확히 닿음**
+  - 목 전체 보임 + 어깨선과 머리카락 맞닿음
+
+**E Length (30cm)**: 어깨 위 2-3cm
+  - 머리카락 끝이 어깨선 위 2-3cm
+  - **어깨와 머리카락 사이 공간 있음** ← 핵심!
+  - 목 전체 + 어깨 시작 부분 모두 보임
+
+**F Length (25cm)**: 턱 아래
+  - 머리카락 끝이 턱뼈 아래
+  - **목 상단만 보임, 목 중간까지 머리카락**
+  - 어깨와 5cm 이상 거리
+
+**G Length (20cm)**: 턱선 (Jaw Line) ⭐⭐⭐
+  - 머리카락 끝이 턱뼈 각도 라인
+  - **목이 거의 안 보임** ← 핵심!
+  - 턱선 바로 아래, 얼굴 윤곽선 따라감
+
+**H Length (15cm)**: 귀 중간 - **가장 짧은 길이** ⭐
+  - 숏헤어, 귀 아래 ~ 턱선 사이
+
+---
+
+## 🎯 판단 순서 (반드시 이 순서로!)
+
+### Step 1: 어깨선 확인 (가장 먼저!)
+- **머리카락이 어깨에 닿는가?**
+  - YES → **D Length**
+  - NO → Step 2로
+
+### Step 2: 어깨보다 긴가? 짧은가?
+- **어깨보다 아래 (긴 머리)?**
+  - 쇄골에 닿음 → **C Length**
+  - 가슴 중간 → **B Length**
+  - 가슴 아래 → **A Length**
+
+- **어깨보다 위 (짧은 머리)?**
+  - Step 3로
+
+### Step 3: 목 노출 정도 확인 ← 핵심!
+- **목 전체 보임 + 어깨와 공간** → **E Length**
+- **목 상단만 보임** → **F Length**
+- **목 거의 안 보임** → **G Length** ⭐⭐⭐
+- **귀 높이** → **H Length**
+
+---
+
+### ✂️ 커트 형태 - 반드시 괄호 포함
+- **"O (One Length)"** / **"G (Graduation)"** / **"L (Layer)"**
+
+### 📐 리프팅 각도 - 반드시 배열
+- **["L0"]** / **["L2"]** / **["L2", "L4"]**
+
+### 🎨 질감 기법 - 반드시 배열 또는 빈 배열
+**✅ 올바른 출력:** 
+  - ["Point Cut", "Slide Cut"]
+  - ["Stroke Cut"]
+  - [] (없으면 빈 배열)
+
+**❌ 잘못된 출력:** 
+  - "Point Cut, Slide Cut" (문자열 ❌)
+  - null (❌)
+
+### 💇 펌/컬 - 있는 경우만
 - curl_pattern: C-Curl / CS-Curl / S-Curl / SS-Curl / null
 - curl_strength: Soft / Medium / Strong / null
 - perm_type: Wave Perm / Digital Perm / Heat Perm / Iron Perm / null
@@ -338,6 +406,22 @@ async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, ma
   }
 }
 
+// ==================== 🔥 HOTFIX 2: 길이별 도해도 코드 매칭 ====================
+function getLengthCodePrefix(lengthCategory) {
+  const lengthMap = {
+    'A Length': 'FAL',  // A = 가장 긴 길이 → FAL 시리즈
+    'B Length': 'FBL',  // B = 가슴 중간 → FBL 시리즈
+    'C Length': 'FCL',  // C = 쇄골 → FCL 시리즈
+    'D Length': 'FDL',  // D = 어깨선 → FDL 시리즈
+    'E Length': 'FEL',  // E = 어깨 위 → FEL 시리즈
+    'F Length': 'FFL',  // F = 턱 아래 → FFL 시리즈
+    'G Length': 'FGL',  // G = 턱선 → FGL 시리즈 ⭐⭐⭐
+    'H Length': 'FHL'   // H = 귀 중간 → FHL 시리즈
+  };
+  
+  return lengthMap[lengthCategory] || null;
+}
+
 // ==================== 언어별 용어 매핑 ====================
 function getTerms(lang) {
   const terms = {
@@ -507,12 +591,14 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
         }).join('\n\n')
       : '관련 이론을 찾을 수 없습니다.';
 
+    // 🔥 HOTFIX 2: lengthCategory 파라미터 추가
     const allSimilarStyles = await searchSimilarStyles(
       searchQuery, 
       openaiKey, 
-      supabaseUrl, 
+      supabase Url, 
       supabaseKey, 
-      params56.cut_category?.includes('Women') ? 'female' : 'male'
+      params56.cut_category?.includes('Women') ? 'female' : 'male',
+      params56.length_category  // ⭐ 새로 추가: 길이별 필터링
     );
 
     const similarStyles = filterValidStyles(allSimilarStyles);
@@ -521,7 +607,6 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     const langTerms = getTerms(language);
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
 
-    // ⭐⭐⭐ 유사 스타일 텍스트 미리 생성 (Syntax Error 방지) ⭐⭐⭐
     const similarStylesTextKo = similarStyles.slice(0, 3).map((s, i) => {
       const name = s.name || s.code || '이름없음';
       const similarity = ((s.similarity || 0) * 100).toFixed(0);
@@ -534,7 +619,7 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       return `${i+1}. ${name}`;
     }).join('\n');
 
-    // 언어별 시스템 프롬프트 생성 (이제 외부 모듈 사용)
+    // 언어별 시스템 프롬프트 생성
     let systemPrompt;
     if (language === 'ko') {
       systemPrompt = buildKoreanPrompt(params56, theoryContext, similarStylesTextKo, langTerms, volumeDesc);
@@ -620,8 +705,8 @@ async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, 
   return await generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey);
 }
 
-// ==================== 벡터 검색 (도해도) ====================
-async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, targetGender = null) {
+// ==================== 🔥 HOTFIX 2: 벡터 검색 (도해도) - 길이별 필터링 추가 ====================
+async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, targetGender = null, lengthCategory = null) {
   try {
     console.log(`🔍 도해도 벡터 검색: "${query}"`);
 
@@ -638,7 +723,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
     });
 
     if (!embeddingResponse.ok) {
-      return await directTableSearch(supabaseUrl, supabaseKey, query, targetGender);
+      return await directTableSearch(supabaseUrl, supabaseKey, query, targetGender, lengthCategory);
     }
 
     const embeddingData = await embeddingResponse.json();
@@ -661,10 +746,28 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
     );
 
     if (!rpcResponse.ok) {
-      return await directTableSearch(supabaseUrl, supabaseKey, query, targetGender);
+      return await directTableSearch(supabaseUrl, supabaseKey, query, targetGender, lengthCategory);
     }
 
     let results = await rpcResponse.json();
+
+    // ⭐⭐⭐ 새로 추가: 길이별 도해도 필터링 ⭐⭐⭐
+    if (lengthCategory) {
+      const targetPrefix = getLengthCodePrefix(lengthCategory);
+      
+      if (targetPrefix) {
+        console.log(`🎯 길이별 필터링: ${lengthCategory} → ${targetPrefix} 시리즈`);
+        
+        // 같은 길이 시리즈 우선
+        const sameLength = results.filter(r => r.code && r.code.startsWith(targetPrefix));
+        // 다른 길이 시리즈
+        const otherLength = results.filter(r => !r.code || !r.code.startsWith(targetPrefix));
+        
+        results = [...sameLength, ...otherLength].slice(0, 10);
+        
+        console.log(`✅ ${targetPrefix} 시리즈 ${sameLength.length}개 우선 배치`);
+      }
+    }
 
     if (targetGender) {
       results = results.map(r => {
@@ -682,7 +785,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
 
   } catch (error) {
     console.error('💥 Vector search failed:', error);
-    return await directTableSearch(supabaseUrl, supabaseKey, query, targetGender);
+    return await directTableSearch(supabaseUrl, supabaseKey, query, targetGender, lengthCategory);
   }
 }
 
@@ -697,8 +800,8 @@ function parseHairstyleCode(code) {
   return { gender, length, code };
 }
 
-// ==================== 직접 테이블 검색 ====================
-async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender = null) {
+// ==================== 🔥 HOTFIX 2: 직접 테이블 검색 - 길이별 필터링 추가 ====================
+async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender = null, lengthCategory = null) {
   console.log(`🔍 Fallback 검색 시작`);
   
   const response = await fetch(
@@ -723,6 +826,14 @@ async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender =
     const nameLower = (style.name || '').toLowerCase();
     
     const parsed = parseHairstyleCode(style.code);
+
+    // ⭐⭐⭐ 새로 추가: 길이별 코드 매칭 점수 ⭐⭐⭐
+    if (lengthCategory) {
+      const targetPrefix = getLengthCodePrefix(lengthCategory);
+      if (targetPrefix && style.code && style.code.startsWith(targetPrefix)) {
+        score += 300; // 같은 길이 시리즈 높은 점수
+      }
+    }
 
     if (targetGender && parsed.gender === targetGender) {
       score += 200;
