@@ -1,6 +1,4 @@
-// js/chatbot-core.js - HAIRGATOR v3.0 Core Logic
-// ✅ API 통신 & 데이터 처리 전담 모듈
-// ✅ UI와 완전 분리
+// js/chatbot-core.js - HAIRGATOR v3.0 Core Logic (최종 정리 버전)
 
 class ChatbotCore {
   constructor(config) {
@@ -8,7 +6,6 @@ class ChatbotCore {
     this.supabaseUrl = config.supabaseUrl || 'https://bhsbwbeisqzgipvzpvym.supabase.co';
     this.currentLanguage = config.language || 'ko';
     
-    // 89용어 매핑 초기화
     this.terms89Map = this.init89TermsMap();
   }
 
@@ -109,12 +106,6 @@ class ChatbotCore {
 
   // ==================== API 통신 ====================
 
-  /**
-   * 이미지 분석 (Gemini 2.0 Flash)
-   * @param {string} base64Image - Base64 인코딩된 이미지
-   * @param {string} mimeType - 이미지 MIME 타입
-   * @returns {Promise<Object>} 56개 파라미터
-   */
   async analyzeImage(base64Image, mimeType) {
     try {
       const response = await fetch(this.apiEndpoint, {
@@ -143,35 +134,26 @@ class ChatbotCore {
     }
   }
 
-  /**
-   * 레시피 생성 (GPT-4o-mini)
-   * @param {Object} params56 - 56개 파라미터
-   * @param {string} language - 언어 (ko/en/ja/zh/vi)
-   * @returns {Promise<Object>} 레시피 + 도해도
-   */
   async generateRecipe(params56, language = 'ko', onProgress = null) {
-  try {
-    // ⭐ 디버깅 로그 추가
-    console.log('📤 프론트엔드 전송:', { params56, language });
-    
-    const response = await fetch(this.apiEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'generate_recipe_stream',
-        payload: {
-          params56: params56,
-          language: language
-        }
-      })
-    });
+    try {
+      console.log('📤 프론트엔드 전송:', { params56, language });
+      
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'generate_recipe_stream',
+          payload: {
+            params56: params56,
+            language: language
+          }
+        })
+      });
 
-      // ⭐ 스트리밍 응답 처리 추가
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      // 스트리밍으로 데이터 읽기
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let recipe = '';
@@ -183,7 +165,6 @@ class ChatbotCore {
         const chunk = decoder.decode(value);
         recipe += chunk;
 
-        // 실시간 콜백 (있으면 UI 업데이트)
         if (onProgress && typeof onProgress === 'function') {
           onProgress(recipe);
         }
@@ -200,12 +181,6 @@ class ChatbotCore {
     }
   }
 
-
-  /**
-   * 스타일 검색
-   * @param {string} query - 검색어
-   * @returns {Promise<Array>} 스타일 목록
-   */
   async searchStyles(query) {
     try {
       const response = await fetch(this.apiEndpoint, {
@@ -231,12 +206,6 @@ class ChatbotCore {
     }
   }
 
-  /**
-   * GPT 응답 생성 (일반 대화)
-   * @param {string} query - 사용자 질문
-   * @param {Array} searchResults - 검색 결과
-   * @returns {Promise<string>} GPT 응답
-   */
   async generateResponse(query, searchResults = []) {
     try {
       const response = await fetch(this.apiEndpoint, {
@@ -267,11 +236,6 @@ class ChatbotCore {
 
   // ==================== 데이터 처리 ====================
 
-  /**
-   * 파라미터 포맷팅
-   * @param {Object} analysisData - 분석 데이터
-   * @returns {string} HTML 문자열
-   */
   formatParameters(analysisData) {
     const lines = [];
     const params56 = analysisData.parameters_56 || analysisData;
@@ -279,7 +243,6 @@ class ChatbotCore {
 
     lines.push('<div class="analysis-result">');
     lines.push('<h3>📊 분석 완료</h3>');
-
     lines.push('<div class="params-section">');
     lines.push('<ul>');
     
@@ -345,15 +308,9 @@ class ChatbotCore {
     return lines.join('');
   }
 
-  /**
-   * 마크다운 파싱 + 89용어 하이라이팅
-   * @param {string} markdown - 마크다운 텍스트
-   * @returns {string} HTML 문자열
-   */
   parseMarkdownWithHighlight(markdown) {
     if (!markdown) return '';
 
-    // 1. 코드 블록 임시 저장
     const codeBlocks = [];
     let html = markdown.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
       const placeholder = `___CODE_BLOCK_${codeBlocks.length}___`;
@@ -361,25 +318,20 @@ class ChatbotCore {
       return placeholder;
     });
 
-    // 2. STEP 헤딩
     html = html.replace(/^###(\d)\.\s*(.+)$/gm, (match, num, title) => {
       return `<h3 class="recipe-step">STEP ${num}. ${title}</h3>`;
     });
 
-    // 3. 일반 헤딩
     html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
     html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
     html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
 
-    // 4. 89용어 하이라이팅
     html = this.highlight89Terms(html);
 
-    // 5. 볼드/이탤릭/코드
     html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
     html = html.replace(/`(.+?)`/g, '<code>$1</code>');
 
-    // 6. 리스트 처리
     const lines = html.split('\n');
     const result = [];
     let inList = false;
@@ -416,28 +368,20 @@ class ChatbotCore {
 
     html = result.join('\n');
 
-    // 7. 코드 블록 복원
     codeBlocks.forEach((block, index) => {
       html = html.replace(`___CODE_BLOCK_${index}___`, block);
     });
 
-    // 8. 화살표 스타일링
     html = html.replace(/→/g, '<span class="arrow">→</span>');
 
     return html;
   }
 
-  /**
-   * 89용어 하이라이팅
-   * @param {string} text - 원본 텍스트
-   * @returns {string} 하이라이팅된 HTML
-   */
   highlight89Terms(text) {
     if (!text || typeof text !== 'string') return text;
 
     let result = text;
 
-    // 번호 패턴 (01. Term Name)
     result = result.replace(/(\d{1,2})\.([\w\s&'-]+?)(?=[\s,.:;)]|$)/g, (match, id, termName) => {
       const paddedId = id.padStart(2, '0');
       const term = this.terms89Map[paddedId];
@@ -449,7 +393,6 @@ class ChatbotCore {
       return match;
     });
 
-    // 용어 이름 패턴
     Object.entries(this.terms89Map).forEach(([id, term]) => {
       const koTerm = term.ko;
       const enTerm = term.en;
@@ -466,11 +409,6 @@ class ChatbotCore {
     return result;
   }
 
-  /**
-   * 유효한 스타일 필터링
-   * @param {Array} styles - 스타일 목록
-   * @returns {Array} 필터링된 스타일
-   */
   filterValidStyles(styles) {
     if (!styles || !Array.isArray(styles)) return [];
 
@@ -486,11 +424,6 @@ class ChatbotCore {
 
   // ==================== 유틸리티 ====================
 
-  /**
-   * 파일을 Base64로 변환
-   * @param {File} file - 파일 객체
-   * @returns {Promise<string>} Base64 문자열
-   */
   async fileToBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -503,11 +436,6 @@ class ChatbotCore {
     });
   }
 
-  /**
-   * HTML 이스케이프
-   * @param {string} text - 원본 텍스트
-   * @returns {string} 이스케이프된 텍스트
-   */
   escapeHtml(text) {
     const map = {
       '&': '&amp;',
@@ -519,20 +447,19 @@ class ChatbotCore {
     return text.replace(/[&<>"']/g, m => map[m]);
   }
 
-  /**
-   * 다국어 용어 가져오기
-   * @param {string} lang - 언어 코드
-   * @returns {Object} 용어 객체
-   */
+  // ⭐⭐⭐ chatbot-api.js와 100% 동일한 정의 ⭐⭐⭐
   getTerms(lang) {
     const terms = {
       ko: {
         lengthDesc: {
-          'A Length': '짧은 길이 (귀 위)',
-          'B Length': '중간 길이 (턱선)',
-          'C Length': '어깨 길이',
-          'D Length': '긴 길이 (어깨 아래)',
-          'E Length': '매우 긴 길이'
+          'A Length': '가슴 아래 밑선',
+          'B Length': '가슴 상단~중간',
+          'C Length': '쇄골 밑선',
+          'D Length': '어깨선',
+          'E Length': '어깨 위 5cm',
+          'F Length': '턱 아래',
+          'G Length': '턱선',
+          'H Length': '귀 중간'
         },
         formDesc: {
           'O': 'One Length - 단일 길이로 무게감 있는 스타일',
@@ -565,11 +492,14 @@ class ChatbotCore {
       },
       en: {
         lengthDesc: {
-          'A Length': 'Short length (above ears)',
-          'B Length': 'Medium length (jawline)',
-          'C Length': 'Shoulder length',
-          'D Length': 'Long length (below shoulders)',
-          'E Length': 'Very long length'
+          'A Length': 'Below chest baseline',
+          'B Length': 'Upper to mid chest',
+          'C Length': 'Below collarbone',
+          'D Length': 'Shoulder line',
+          'E Length': '5cm above shoulder',
+          'F Length': 'Below chin',
+          'G Length': 'Chin line',
+          'H Length': 'Mid-ear'
         },
         formDesc: {
           'O': 'One Length - Solid, weighty style',
@@ -599,117 +529,6 @@ class ChatbotCore {
           'Curtain Fringe': 'Curtain fringe',
           'No Fringe': 'No fringe'
         }
-      },
-      ja: {
-        lengthDesc: {
-          'A Length': '短い長さ（耳上）',
-          'B Length': '中間の長さ（顎ライン）',
-          'C Length': '肩の長さ',
-          'D Length': '長い長さ（肩下）',
-          'E Length': 'とても長い長さ'
-        },
-        formDesc: {
-          'O': 'ワンレングス - 重厚感のあるスタイル',
-          'G': 'グラデーション - 段階的なレイヤーでボリューム感',
-          'L': 'レイヤー - 自由なレイヤーで軽やかな印象'
-        },
-        volume: {
-          'Low': '0~44°（低ボリューム）',
-          'Medium': '45~89°（中ボリューム）',
-          'High': '90°+（高ボリューム）'
-        },
-        lifting: {
-          'L0': '0°（自然落下）',
-          'L1': '22.5°（わずかに持ち上げ）',
-          'L2': '45°（中程度の持ち上げ）',
-          'L3': '67.5°（やや強い持ち上げ）',
-          'L4': '90°（垂直）',
-          'L5': '112.5°（逆方向開始）',
-          'L6': '135°（逆方向）',
-          'L7': '157.5°（強い逆方向）',
-          'L8': '180°（完全逆方向）'
-        },
-        fringeType: {
-          'Heavy Fringe': '重い前髪',
-          'Light Fringe': '軽い前髪',
-          'Side-Swept Fringe': '横に流した前髪',
-          'Curtain Fringe': 'カーテン前髪',
-          'No Fringe': '前髪なし'
-        }
-      },
-      zh: {
-        lengthDesc: {
-          'A Length': '短长度（耳上）',
-          'B Length': '中长度（下颌线）',
-          'C Length': '及肩长度',
-          'D Length': '长长度（肩下）',
-          'E Length': '超长长度'
-        },
-        formDesc: {
-          'O': '一刀切 - 厚重的单一长度',
-          'G': '渐变 - 渐进式层次感',
-          'L': '层次 - 轻盈的自由层次'
-        },
-        volume: {
-          'Low': '0~44°（低音量）',
-          'Medium': '45~89°（中音量）',
-          'High': '90°+（高音量）'
-        },
-        lifting: {
-          'L0': '0°（自然下垂）',
-          'L1': '22.5°（轻微提升）',
-          'L2': '45°（中等提升）',
-          'L3': '67.5°（适度提升）',
-          'L4': '90°（垂直）',
-          'L5': '112.5°（反向开始）',
-          'L6': '135°（逆方向）',
-          'L7': '157.5°（强反向）',
-          'L8': '180°（完全反向）'
-        },
-        fringeType: {
-          'Heavy Fringe': '厚刘海',
-          'Light Fringe': '薄刘海',
-          'Side-Swept Fringe': '侧分刘海',
-          'Curtain Fringe': '窗帘刘海',
-          'No Fringe': '无刘海'
-        }
-      },
-      vi: {
-        lengthDesc: {
-          'A Length': 'Độ dài ngắn (trên tai)',
-          'B Length': 'Độ dài trung bình (đường hàm)',
-          'C Length': 'Ngang vai',
-          'D Length': 'Độ dài dài (dưới vai)',
-          'E Length': 'Rất dài'
-        },
-        formDesc: {
-          'O': 'Một độ dài - Phong cách nặng nề',
-          'G': 'Tốt nghiệp - Lớp dần dần với khối lượng',
-          'L': 'Lớp - Lớp tự do với chuyển động'
-        },
-        volume: {
-          'Low': '0~44° (Âm lượng thấp)',
-          'Medium': '45~89° (Âm lượng trung bình)',
-          'High': '90°+ (Âm lượng cao)'
-        },
-        lifting: {
-          'L0': '0° (Rơi tự nhiên)',
-          'L1': '22.5° (Nâng nhẹ)',
-          'L2': '45° (Nâng trung bình)',
-          'L3': '67.5° (Nâng vừa phải)',
-          'L4': '90° (Thẳng đứng)',
-          'L5': '112.5° (Bắt đầu ngược)',
-          'L6': '135° (Ngược)',
-          'L7': '157.5° (Ngược mạnh)',
-          'L8': '180° (Hoàn toàn ngược)'
-        },
-        fringeType: {
-          'Heavy Fringe': 'Mái nặng',
-          'Light Fringe': 'Mái nhẹ',
-          'Side-Swept Fringe': 'Mái xéo',
-          'Curtain Fringe': 'Mái rèm',
-          'No Fringe': 'Không có mái'
-        }
       }
     };
     
@@ -717,5 +536,4 @@ class ChatbotCore {
   }
 }
 
-// ES6 모듈로 export
 export { ChatbotCore };
