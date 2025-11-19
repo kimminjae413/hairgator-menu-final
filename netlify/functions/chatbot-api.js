@@ -1102,10 +1102,8 @@ Provide actionable instructions applicable in salons immediately.`,
 
 **日本語のみ**で7ステップ：
 STEP1. 基本情報
-STEP2. 理論（${theoryContext.substring(0, 300)}...）
-STEP3-STEP7. プロセス/ガイド/スタイル/注意/類似
-
-${similarStyles.slice(0, 3).map(s => s.name || s.code).join('\\n')}`,
+STEP2. 理論
+STEP3-STEP7. プロセス/ガイド/スタイル/注意/類似`,
 
       zh: `您是HAIRGATOR系统专家。
 
@@ -1122,10 +1120,8 @@ ${similarStyles.slice(0, 3).map(s => s.name || s.code).join('\\n')}`,
 
 **中文**7步：
 STEP1. 基本信息
-STEP2. 理论（${theoryContext.substring(0, 300)}...）
-STEP3-STEP7. 流程/指南/造型/注意/相似
-
-${similarStyles.slice(0, 3).map(s => s.name || s.code).join('\\n')}`,
+STEP2. 理论
+STEP3-STEP7. 流程/指南/造型/注意/相似`,
 
       vi: `Bạn là chuyên gia hệ thống HAIRGATOR.
 
@@ -1143,21 +1139,11 @@ ${similarStyles.slice(0, 3).map(s => s.name || s.code).join('\\n')}`,
 Viết công thức bằng **tiếng Việt** theo 7 bước：
 
 **STEP1. Thông tin cơ bản**
-- Độ dài: ${langTerms.lengthDesc[params56.length_category] || params56.length_category}
-- Hình thức cắt: ${langTerms.formDesc[params56.cut_form?.charAt(0)] || params56.cut_form}
-- Thể tích: ${volumeDesc}
-- Mái: ${langTerms.fringeType[params56.fringe_type] || params56.fringe_type}
-
 **STEP2. Tổng quan lý thuyết**
-Tham khảo lý thuyết 2WAY CUT:
-${theoryContext}
-
-**STEP3-STEP7**: [similar format]
-${similarStyles.slice(0, 3).map(s => `${s.name || s.code}`).join('\n')}`
+**STEP3-STEP7**: Quy trình/Hướng dẫn/Tạo kiểu/Lưu ý/Tương tự`
     };
 
     const systemPrompt = systemPromptTemplates[language] || systemPromptTemplates['ko'];
-
     const strictLanguageMessage = {
       ko: '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요. 영어나 일본어 단어를 절대 사용하지 마세요.',
       en: 'You are an English expert. Write ALL responses in English ONLY. Never use Korean or Japanese words.',
