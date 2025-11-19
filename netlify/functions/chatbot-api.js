@@ -264,34 +264,41 @@ function filterValidStyles(styles) {
   }
 
   const filtered = styles.filter(style => {
-    if (!style.main_image_url) {
-      console.log(`❌ 제외: ${style.sample_code || style.code} - main_image_url 없음`);
+    // 1. image_url 필드 확인 (main_image_url이 아님!)
+    if (!style.image_url) {
+      console.log(`❌ 제외: ${style.code} - image_url 없음`);
       return false;
     }
     
-    if (style.main_image_url.includes('hairgatorchatbot')) {
-      console.log(`❌ 제외: ${style.sample_code || style.code} - hairgatorchatbot 포함`);
+    // 2. URL이 문자열인지 확인
+    if (typeof style.image_url !== 'string') {
+      console.log(`❌ 제외: ${style.code} - image_url이 문자열이 아님`);
       return false;
     }
     
-    if (style.main_image_url.includes('temp')) {
-      console.log(`❌ 제외: ${style.sample_code || style.code} - temp 포함`);
+    // 3. 빈 문자열 체크
+    if (style.image_url.trim() === '') {
+      console.log(`❌ 제외: ${style.code} - image_url이 빈 문자열`);
       return false;
     }
     
-    if (style.main_image_url.includes('supabase.co/storage')) {
-      console.log(`❌ 제외: ${style.sample_code || style.code} - supabase storage 포함`);
+    // 4. 임시 파일만 제외 (temp, temporary)
+    if (style.image_url.includes('/temp/') || 
+        style.image_url.includes('/temporary/')) {
+      console.log(`❌ 제외: ${style.code} - 임시 이미지`);
       return false;
     }
     
-    console.log(`✅ 유효: ${style.sample_code || style.code}`);
+    // 5. ✅ hairgatorchatbot 폴더는 허용! (제거하던 코드 삭제)
+    // 6. ✅ supabase.co/storage도 허용! (제거하던 코드 삭제)
+    
+    console.log(`✅ 유효: ${style.code}`);
     return true;
   });
 
   console.log(`📊 필터링 결과: ${filtered.length}개 유효 (전체 ${styles.length}개)`);
   return filtered;
 }
-
 // ==================== ⭐ theory_chunks 벡터 검색 함수 (신규 추가) ⭐ ====================
 async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, matchCount = 15) {
   try {
