@@ -1256,7 +1256,7 @@ STEP3-STEP7. 프로세스/가이드/스타일링/주의/유사스타일`,
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.5,
-        max_tokens: 2000,
+        max_tokens: 8000,
         stream: false
       })
     });
