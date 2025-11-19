@@ -725,13 +725,36 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     
     // STEP 3: 언어별 용어
     const langTerms = getTerms(language);
-    const directionDesc = langTerms.direction[params56.direction_primary || 'D0'] || langTerms.direction['D0'];
-    const sectionDesc = langTerms.section[params56.section_primary] || langTerms.section['Vertical'];
-    const liftingDescs = (params56.lifting_range || ['L2', 'L4']).map(l => `${l} (${langTerms.lifting[l] || l})`).join(', ');
-    const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
+const directionDesc = langTerms.direction[params56.direction_primary || 'D0'] || langTerms.direction['D0'];
+const sectionDesc = langTerms.section[params56.section_primary] || langTerms.section['Vertical'];
+const liftingDescs = (params56.lifting_range || ['L2', 'L4']).map(l => `${l} (${langTerms.lifting[l] || l})`).join(', ');
+const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
 
-    // ⭐ STEP 4: 언어별 시스템 프롬프트 (42층 구체적 레시피 생성)
-    const systemPromptTemplates = {
+// ⭐⭐⭐ Syntax Error 방지: 복잡한 표현식 미리 계산 ⭐⭐⭐
+const params56Json = JSON.stringify({
+  length: params56.length_category,
+  form: params56.cut_form,
+  volume: params56.volume_zone,
+  fringe: params56.fringe_type,
+  lifting: params56.lifting_range,
+  texture: params56.texture_technique,
+  silhouette: params56.silhouette_type
+}, null, 2);
+
+// 유사 스타일 리스트 미리 생성 (언어별)
+const similarStylesTextKo = similarStyles.slice(0, 3).map((s, i) => {
+  const name = s.name || s.code || '이름없음';
+  const similarity = ((s.similarity || 0) * 100).toFixed(0);
+  const desc = s.description || (s.recipe ? s.recipe.substring(0, 100) : '상세 설명 준비 중');
+  return `**${i+1}. ${name}**
+- 유사도: ${similarity}%
+- 특징: ${desc}`;
+}).join('\n\n');
+
+const similarStylesTextEn = similarStyles.slice(0, 3).map(s => `- ${s.name || s.code}`).join('\n');
+
+// ⭐ STEP 4: 언어별 시스템 프롬프트 (42층 구체적 레시피 생성)
+const systemPromptTemplates = {
   ko: `당신은 HAIRGATOR 시스템의 2WAY CUT 마스터입니다.
 
 **🔒 보안 규칙 (철저히 준수):**
@@ -743,8 +766,7 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
 - 9개 매트릭스 → "전문적인 분류"로 표현
 
 **📊 분석 데이터:**
-${JSON.stringify({
-  length: params56.length_category,
+${params56Json}
   form: params56.cut_form,
   volume: params56.volume_zone,
   fringe: params56.fringe_type,
@@ -932,11 +954,7 @@ ${params56.fringe_type === 'Side Bang' ? `
 
 다음 스타일들도 함께 고려해보세요:
 
-${similarStyles.slice(0, 3).map((s, i) => `
-**${i+1}. ${s.name || s.code}**
-- 유사도: ${(s.similarity * 100).toFixed(0)}%
-- 특징: ${s.description || s.recipe?.substring(0, 100) || '상세 설명 준비 중'}
-`).join('\n')}
+${similarStylesTextKo}
 
 ---
 
