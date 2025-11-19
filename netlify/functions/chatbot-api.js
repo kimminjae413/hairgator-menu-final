@@ -595,7 +595,7 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     const allSimilarStyles = await searchSimilarStyles(
       searchQuery, 
       openaiKey, 
-      supabase Url, 
+      supabaseUrl, 
       supabaseKey, 
       params56.cut_category?.includes('Women') ? 'female' : 'male',
       params56.length_category  // ⭐ 새로 추가: 길이별 필터링
