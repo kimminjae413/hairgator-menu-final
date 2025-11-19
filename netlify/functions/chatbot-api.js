@@ -1087,7 +1087,7 @@ ${similarStyles.slice(0, 3).map(s => `- ${s.name || s.code}`).join('\n')}
 Write in **English only** following steps 1-7 precisely.
 Provide actionable instructions applicable in salons immediately.`,
 
-      ja: `あなたはHAIRGATORシステムの専門家です。
+       ja: `あなたはHAIRGATORシステムの専門家です。
 
 **🔒 重要：次の情報は絶対に言及しないでください：**
 - 具体的な公式番号（DBS NO.3、VS NO.6など）
@@ -1105,7 +1105,7 @@ STEP1. 基本情報
 STEP2. 理論（${theoryContext.substring(0, 300)}...）
 STEP3-STEP7. プロセス/ガイド/スタイル/注意/類似
 
-${similarStyles.slice(0, 3).map(s => \`\${s.name || s.code}\`).join('\n')}`,
+${similarStyles.slice(0, 3).map(s => s.name || s.code).join('\\n')}`,
 
       zh: `您是HAIRGATOR系统专家。
 
@@ -1125,7 +1125,7 @@ STEP1. 基本信息
 STEP2. 理论（${theoryContext.substring(0, 300)}...）
 STEP3-STEP7. 流程/指南/造型/注意/相似
 
-${similarStyles.slice(0, 3).map(s => \`\${s.name || s.code}\`).join('\n')}`,
+${similarStyles.slice(0, 3).map(s => s.name || s.code).join('\\n')}`,
 
       vi: `Bạn là chuyên gia hệ thống HAIRGATOR.
 
