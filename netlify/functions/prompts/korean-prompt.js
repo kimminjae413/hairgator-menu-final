@@ -6,7 +6,11 @@ function buildKoreanPrompt(params56, theoryContext, similarStylesText, langTerms
   const lengthDesc = langTerms.lengthDesc[params56.length_category] || params56.length_category;
   const formDesc = langTerms.formDesc[params56.cut_form?.charAt(0)] || params56.cut_form;
   const fringeDesc = langTerms.fringeType[params56.fringe_type] || params56.fringe_type;
-  const textureDesc = params56.texture_technique?.join(', ') || '자연스러운 질감';
+  
+  // ✅ HOTFIX: texture_technique 안전한 배열 처리
+  const textureDesc = Array.isArray(params56.texture_technique) 
+    ? params56.texture_technique.join(', ') 
+    : (params56.texture_technique || '자연스러운 질감');
   
   const liftingDesc = params56.lifting_range?.[0] === 'L0' || params56.lifting_range?.[0] === 'L1' 
     ? '자연 낙하~약간 들어올림 (0-22.5도)' 
