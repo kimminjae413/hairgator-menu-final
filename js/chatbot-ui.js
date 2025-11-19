@@ -1,6 +1,7 @@
-// js/chatbot-ui.js - HAIRGATOR v3.0 UI Module
+// js/chatbot-ui.js - HAIRGATOR v3.0 UI Module - STABLE
 // ✅ UI 렌더링 & 이벤트 핸들러 전담
 // ✅ Core와 완전 분리
+// ✅ 스트리밍 코드 제거, 안정화 버전
 
 import { ChatbotCore } from './chatbot-core.js';
 
@@ -794,7 +795,6 @@ class HairGatorChatbot {
       this.addMessage('bot', texts.analyzing);
 
       const base64Image = await this.core.fileToBase64(file);
-
       const analysisResult = await this.core.analyzeImage(base64Image, file.type);
 
       const formattedAnalysis = this.core.formatParameters(analysisResult);
@@ -802,41 +802,11 @@ class HairGatorChatbot {
 
       this.addMessage('bot', texts.generating);
 
-     // 스트리밍으로 실시간 업데이트
-let botMessageDiv = this.addMessage('', 'bot');
-
-const recipeResult = await this.core.generateRecipe(
-  analysisResult.data,
-  this.currentLanguage,
-  (partialRecipe) => {
-    // 실시간으로 레시피 표시 ⭐
-    botMessageDiv.innerHTML = this.core.formatRecipe(partialRecipe);
-    this.scrollToBottom();
-  }
-);
-```
-
----
-
-## 📊 스트리밍의 장점
-
-✅ **타임아웃 없음** - 데이터 전송 중에는 연결 유지
-✅ **사용자 경험 향상** - 실시간으로 레시피가 보임
-✅ **체감 속도 빠름** - 기다리는 느낌이 적음
-✅ **Pro 플랜으로 충분** - 26초 제한 OK
-
----
-
-## 🎯 예상 결과
-```
-Before (일반):
-[요청] → [45초 대기] → [504 ❌]
-
-After (스트리밍):
-[요청] → [2초] "###1 스타일 설명" 
-       → [5초] "짧은 길이에 레이어..."
-       → [10초] "###2 길이\nG Length..."
-       → [45초] [완료 ✅]
+      // ✅ 원래 코드 (스트리밍 제거)
+      const recipeResult = await this.core.generateRecipe(
+        analysisResult.data,
+        this.currentLanguage
+      );
 
       if (recipeResult.recipe) {
         const rendered = this.core.parseMarkdownWithHighlight(recipeResult.recipe);
@@ -1138,5 +1108,5 @@ After (스트리밍):
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR v3.0 챗봇 로드 완료 (리팩토링 버전)');
+  console.log('🦎 HAIRGATOR v3.0 챗봇 로드 완료 (안정화 버전 - 스트리밍 제거)');
 });
