@@ -1,10 +1,19 @@
 // params56-schema.js
 // HAIRGATOR 56개 파라미터 Structured Output 스키마
 // Gemini API용 JSON Schema 정의
+// ✅ FINAL VERSION - 얼굴형 추천 필드 추가
 
 /**
- * 56개 파라미터 JSON Schema
+ * 56개 파라미터 + 얼굴형 추천 JSON Schema
  * Gemini Structured Output에서 사용
+ * 
+ * 🎯 얼굴형 분류 (프로젝트 3_face_design.pdf 기준):
+ * - Oval (계란형) : 이상적 비율, 부드러운 턱선 → 대부분의 스타일 잘 어울림
+ * - Round (둥근형) : 부드러운 곡선, 폭과 길이 비슷 → 사이드 볼륨, 레이어
+ * - Square (사각형) : 각진 턱선, 강한 인상 → 부드러운 웨이브, 사이드뱅
+ * - Heart (하트형) : 넓은 이마, 뾰족한 턱 → 턱선 커버, 사이드 볼륨
+ * - Long (긴 얼굴형) : 세로가 가로보다 긴 비율 → 중간 볼륨, 사이드뱅
+ * - Diamond (다이아몬드형) : 넓은 광대, 좁은 이마와 턱 → 광대 커버
  */
 const PARAMS_56_SCHEMA = {
   type: "object",
@@ -217,36 +226,36 @@ const PARAMS_56_SCHEMA = {
       items: {
         type: "string",
         enum: [
-          "L0",  // 0°
-          "L1",  // 22.5°
-          "L2",  // 45°
-          "L3",  // 67.5°
-          "L4",  // 90°
-          "L5",  // 112.5°
-          "L6",  // 135°
-          "L7",  // 157.5°
-          "L8"   // 180°
+          "L0",  // 0° - 자연 낙하
+          "L1",  // 22.5° - 약간 들어올림
+          "L2",  // 45° - 중간 들어올림
+          "L3",  // 67.5° - 중강 들어올림
+          "L4",  // 90° - 수직
+          "L5",  // 112.5° - 역방향 시작
+          "L6",  // 135° - 역방향
+          "L7",  // 157.5° - 강한 역방향
+          "L8"   // 180° - 완전 역방향
         ]
       },
       minItems: 1,
       maxItems: 9,
-      description: "리프팅 각도 범위 (배열로 반환)"
+      description: "리프팅 각도 범위 (22.5도 단위, 배열로 반환)"
     },
     
     direction_primary: {
       type: "string",
       enum: [
-        "D0",  // 정면
-        "D1",  // 전방 22.5°
-        "D2",  // 전방 45°
-        "D3",  // 전방 67.5°
-        "D4",  // 정후방 90°
-        "D5",  // 후방 67.5°
-        "D6",  // 후방 45°
-        "D7",  // 후방 22.5°
-        "D8"   // 정후방 180°
+        "D0",  // 0° - 정면
+        "D1",  // 22.5° - 전방
+        "D2",  // 45° - 전방
+        "D3",  // 67.5° - 전방
+        "D4",  // 90° - 측면
+        "D5",  // 112.5° - 후방
+        "D6",  // 135° - 후방
+        "D7",  // 157.5° - 후방
+        "D8"   // 180° - 정후방
       ],
-      description: "주요 커팅 방향"
+      description: "주요 커팅 방향 (22.5도 단위)"
     },
     
     cutting_method: {
@@ -316,6 +325,41 @@ const PARAMS_56_SCHEMA = {
         "Mohican"
       ],
       description: "남성 커트 카테고리 (Men's Cut일 때만)"
+    },
+    
+    // ===== ⭐ 얼굴형 추천 (FACE SHAPE MATCH) - 신규 추가! ⭐ =====
+    face_shape_match: {
+      type: "array",
+      items: {
+        type: "string",
+        enum: [
+          "Oval",      // 계란형 - 이상적 비율, 대부분 스타일 잘 어울림
+          "Round",     // 둥근형 - 사이드 볼륨, 레이어로 갸름하게
+          "Square",    // 사각형 - 부드러운 웨이브, 사이드뱅으로 각 완화
+          "Heart",     // 하트형 - 턱선 커버, 사이드 볼륨
+          "Long",      // 긴 얼굴형 - 중간 볼륨, 사이드뱅으로 비율 조정
+          "Diamond"    // 다이아몬드형 - 광대 커버, 부드러운 라인
+        ]
+      },
+      minItems: 1,
+      maxItems: 3,
+      description: `이 헤어스타일이 어울리는 얼굴형 (1~3개 선택)
+      
+분석 기준:
+- Oval: 거의 모든 스타일 가능, 균형잡힌 헤어
+- Round: 사이드 볼륨 있는 레이어, 세로 라인 강조
+- Square: 부드러운 웨이브, 사이드뱅, 각진 라인 완화
+- Heart: 턱선 커버하는 길이, 사이드 볼륨
+- Long: 가로 볼륨 (Middle zone), 사이드뱅으로 시선 분산
+- Diamond: 광대 커버, 부드러운 곡선 라인
+
+선택 로직:
+1. 레이어 스타일 → Oval, Round, Long 추천
+2. 사이드뱅 → Square, Long, Heart 추천
+3. 중간 볼륨 → Round, Long, Diamond 추천
+4. 부드러운 웨이브 → Square, Heart 추천
+5. 긴 길이 (A~D) → Oval, Long 추천
+6. 짧은 길이 (E~H) → Oval, Heart, Diamond 추천`
     }
   },
   
@@ -327,11 +371,19 @@ const PARAMS_56_SCHEMA = {
     "lifting_range",
     "section_primary",
     "fringe_type",
-    "volume_zone"
+    "volume_zone",
+    "face_shape_match"  // ⭐ 얼굴형 추천 필수!
   ]
 };
 
 // CommonJS export (Node.js)
-module.exports = {
-  PARAMS_56_SCHEMA
-};
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    PARAMS_56_SCHEMA
+  };
+}
+
+// ES6 export (브라우저)
+if (typeof window !== 'undefined') {
+  window.PARAMS_56_SCHEMA = PARAMS_56_SCHEMA;
+}
