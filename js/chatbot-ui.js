@@ -1,7 +1,7 @@
-// js/chatbot-ui.js - HAIRGATOR v3.0 UI Module - STABLE
+// js/chatbot-ui.js - HAIRGATOR v3.0 UI Module - FINAL FIX
 // ✅ UI 렌더링 & 이벤트 핸들러 전담
 // ✅ Core와 완전 분리
-// ✅ 스트리밍 코드 제거, 안정화 버전
+// ✅ 데이터 검증 추가 (params56 undefined 방지)
 
 import { ChatbotCore } from './chatbot-core.js';
 
@@ -797,18 +797,47 @@ class HairGatorChatbot {
       const base64Image = await this.core.fileToBase64(file);
       const analysisResult = await this.core.analyzeImage(base64Image, file.type);
 
-      const formattedAnalysis = this.core.formatParameters(analysisResult);
+      // ⭐⭐⭐ 데이터 검증 추가 ⭐⭐⭐
+      console.log('📊 분석 결과 전체:', analysisResult);
+      
+      // analysisResult 구조 확인
+      let params56;
+      if (analysisResult.success && analysisResult.data) {
+        params56 = analysisResult.data;
+      } else if (analysisResult.data) {
+        params56 = analysisResult.data;
+      } else {
+        params56 = analysisResult;
+      }
+      
+      console.log('📤 추출된 params56:', params56);
+      
+      // params56 검증
+      if (!params56 || !params56.length_category) {
+        throw new Error('이미지 분석 결과가 올바르지 않습니다.');
+      }
+
+      const formattedAnalysis = this.core.formatParameters(params56);
       this.replaceLastBotMessage(formattedAnalysis);
 
       this.addMessage('bot', texts.generating);
 
-      // ✅ 원래 코드 (스트리밍 제거)
+      // ✅ 검증된 params56 전달
       const recipeResult = await this.core.generateRecipe(
-        analysisResult.data,
+        params56,
         this.currentLanguage
       );
 
-      if (recipeResult.recipe) {
+      console.log('📥 레시피 결과:', recipeResult);
+
+      if (recipeResult && recipeResult.data && recipeResult.data.recipe) {
+        const rendered = this.core.parseMarkdownWithHighlight(recipeResult.data.recipe);
+        this.replaceLastBotMessage(rendered);
+        
+        if (recipeResult.data.similar_styles && recipeResult.data.similar_styles.length > 0) {
+          this.displayStyleCards(recipeResult.data.similar_styles);
+        }
+      } else if (recipeResult && recipeResult.recipe) {
         const rendered = this.core.parseMarkdownWithHighlight(recipeResult.recipe);
         this.replaceLastBotMessage(rendered);
         
@@ -1108,5 +1137,5 @@ class HairGatorChatbot {
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR v3.0 챗봇 로드 완료 (안정화 버전 - 스트리밍 제거)');
+  console.log('🦎 HAIRGATOR v3.0 챗봇 로드 완료 (데이터 검증 버전)');
 });
