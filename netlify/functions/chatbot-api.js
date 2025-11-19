@@ -1,21 +1,15 @@
 // netlify/functions/chatbot-api.js
-// HAIRGATOR 챗봇 - ULTRA FINAL 버전 (2025-01-25)
+// HAIRGATOR 챗봇 - ULTRA FINAL 버전 (2025-11-19)
 // 
 // 🔥 최종 수정사항:
-// 1. H Length vs G Length 판단 프롬프트 극강화
-// 2. 시각적 체크리스트 추가
-// 3. 단계별 판단 로직 명확화
+// 1. 길이 분류 프롬프트 완전 재작성 (초정밀 기준)
+// 2. 8단계 시각적 체크리스트 추가
+// 3. 신체 부위 기준 명확화
+// 4. H/G/F/E/D 구분 강화
 // ==================== 
 
 const fetch = require('node-fetch');
 const { PARAMS_56_SCHEMA } = require('./params56-schema.js');
-
-// 프롬프트 빌더 import
-const { buildKoreanPrompt } = require('./prompts/korean-prompt.js');
-const { buildEnglishPrompt } = require('./prompts/english-prompt.js');
-const { buildJapanesePrompt } = require('./prompts/japanese-prompt.js');
-const { buildChinesePrompt } = require('./prompts/chinese-prompt.js');
-const { buildVietnamesePrompt } = require('./prompts/vietnamese-prompt.js');
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -84,184 +78,302 @@ exports.handler = async (event, context) => {
   }
 };
 
-// ==================== 이미지 분석 (Structured Output) - ULTRA 버전 ====================
+// ==================== 이미지 분석 (Structured Output) - ULTRA FINAL 버전 ====================
 async function analyzeImage(payload, geminiKey) {
   const { image_base64, mime_type } = payload;
 
-  // ✅ 완전 수정된 systemPrompt (머리카락 끝 위치 기준)
-  const systemPrompt = `당신은 전문 헤어 스타일리스트입니다. 
-업로드된 헤어스타일 이미지를 56개 파라미터로 정확히 분석하세요.
+  // ✅✅✅ 완전히 새로 작성된 초정밀 프롬프트
+  const systemPrompt = `당신은 2WAY CUT 전문 헤어 스타일리스트입니다.
+업로드된 이미지를 보고 56개 파라미터를 **절대적으로 정확하게** 분석하세요.
 
-## 🔥🔥🔥 길이 판단 절대 원칙 🔥🔥🔥
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔥🔥🔥 길이 분류 (LENGTH CATEGORY) - 초정밀 기준 🔥🔥🔥
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**⚠️ 중요: "머리카락 끝"의 신체 위치만 보세요! 귀가 보이는지는 중요하지 않습니다!**
+## ⚠️ 절대 원칙
 
-### 📐 길이 기준 (머리카락 "끝"이 어디에 닿는가?)
-\`\`\`
-A Length (65cm) ═══════ 머리카락 끝이 가슴 아래 (배꼽 근처) - 가장 김!
-B Length (50cm) ═══════ 머리카락 끝이 가슴 중간 (유두 높이)
-C Length (40cm) ═══════ 머리카락 끝이 쇄골뼈
-D Length (35cm) ═══════ 머리카락 끝이 어깨선 ⭐ 핵심 기준!
-E Length (30cm) ═══════ 머리카락 끝이 어깨 위 2-3cm
-F Length (25cm) ═══════ 머리카락 끝이 턱뼈 아래 (목 시작)
-G Length (20cm) ═══════ 머리카락 끝이 턱선 (Jaw Line) ⭐⭐⭐
-H Length (15cm) ═══════ 머리카락 끝이 귀 높이 - 가장 짧음!
-\`\`\`
+**"머리카락의 가장 긴 끝부분이 신체 어디에 닿는가?"**
+**→ 이것만 보세요! 다른 건 신경 쓰지 마세요!**
+
+❌ 귀가 보이는지 = 중요하지 않음
+❌ 목이 얼마나 보이는지 = 중요하지 않음  
+❌ 스타일이 단발인지 = 중요하지 않음
+✅ **오직 "머리카락 끝 + 신체 부위"만 확인!**
 
 ---
 
-## 🎯 2단계 판단 프로세스 (단순하고 명확하게!)
+## 📏 8단계 길이 분류표 (아래로 갈수록 짧음)
 
-### 【STEP 1】 머리카락 끝의 절대 위치 파악
-**"이미지에서 머리카락의 가장 긴 부분(끝)이 신체 어디에 닿는가?"**
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ A Length (65cm) ★★★★★★★★                      ┃
+┃                                                  ┃
+┃ 📍 머리카락 끝 위치: 가슴 아래 (배꼽 근처)        ┃
+┃ 📍 신체 기준: 유두보다 훨씬 아래                  ┃
+┃ 📍 예시: 매우 긴 생머리, 가슴 아래 웨이브          ┃
+┃                                                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-⭐ **절대적 기준점 (위에서 아래로):**
-1. 가슴 아래? → **A Length**
-2. 가슴 중간? → **B Length**
-3. 쇄골? → **C Length**
-4. **어깨선?** → **D Length** ⭐⭐⭐ (가장 중요한 기준선!)
-5. 어깨 위 2-3cm? → **E Length**
-6. 턱 아래 (목 시작)? → **F Length**
-7. **턱선?** → **G Length** ⭐⭐⭐
-8. 귀 높이? → **H Length**
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ B Length (50cm) ★★★★★★★☆                      ┃
+┃                                                  ┃
+┃ 📍 머리카락 끝 위치: 가슴 중간 (유두 높이)        ┃
+┃ 📍 신체 기준: 가슴의 가장 볼록한 지점             ┃
+┃ 📍 예시: 긴 생머리, 가슴까지 오는 웨이브          ┃
+┃                                                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ C Length (40cm) ★★★★★★☆☆                      ┃
+┃                                                  ┃
+┃ 📍 머리카락 끝 위치: 쇄골뼈 (목 아래 움푹 뼈)     ┃
+┃ 📍 신체 기준: 목과 어깨 사이의 쇄골 라인          ┃
+┃ 📍 예시: 쇄골 단발, 긴 단발                       ┃
+┃                                                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ D Length (35cm) ★★★★★☆☆☆ ⭐⭐⭐ 핵심 기준!      ┃
+┃                                                  ┃
+┃ 📍 머리카락 끝 위치: 어깨선 (어깨 꼭대기)         ┃
+┃ 📍 신체 기준: 목에서 팔이 시작되는 어깨 라인      ┃
+┃ 📍 예시: 일반 단발, 어깨 길이 bob                 ┃
+┃                                                  ┃
+┃ ⚠️ 중요: 어깨에 "살짝 닿음" vs "2cm 위"          ┃
+┃    → 닿으면 D / 안 닿으면 E                       ┃
+┃                                                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ E Length (30cm) ★★★★☆☆☆☆                      ┃
+┃                                                  ┃
+┃ 📍 머리카락 끝 위치: 어깨 위 2-3cm                ┃
+┃ 📍 신체 기준: 목 아래이지만 어깨에 안 닿음        ┃
+┃ 📍 예시: 짧은 단발, 목 길이 bob                   ┃
+┃                                                  ┃
+┃ 🎯 핵심: 어깨선과 명확한 "공간" 있음!            ┃
+┃    (어깨에 닿으면 이미 D Length임)               ┃
+┃                                                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ F Length (25cm) ★★★☆☆☆☆☆                      ┃
+┃                                                  ┃
+┃ 📍 머리카락 끝 위치: 턱뼈 바로 아래 (목 시작)     ┃
+┃ 📍 신체 기준: 턱에서 목으로 넘어가는 경계         ┃
+┃ 📍 예시: 턱 아래 bob, 짧은 단발                   ┃
+┃                                                  ┃
+┃ 🎯 핵심: 턱뼈보다 "아래" (목 방향)               ┃
+┃    턱뼈 라인이면 → G Length                      ┃
+┃    턱뼈 아래면 → F Length                        ┃
+┃                                                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ G Length (20cm) ★★☆☆☆☆☆☆ ⭐⭐⭐ 정밀 판단!      ┃
+┃                                                  ┃
+┃ 📍 머리카락 끝 위치: 턱선 (Jaw Line, 턱뼈 각도선) ┃
+┃ 📍 신체 기준: 턱뼈의 각진 라인                    ┃
+┃ 📍 예시: 턱선 bob, 짧은 bob                       ┃
+┃                                                  ┃
+┃ 🎯 초정밀 기준:                                  ┃
+┃    - 머리카락 끝이 턱뼈 "라인"에 정확히 걸침     ┃
+┃    - 턱뼈보다 위 = H Length                      ┃
+┃    - 턱뼈 라인 = G Length ⭐                      ┃
+┃    - 턱뼈보다 아래 = F Length                    ┃
+┃                                                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ H Length (15cm) ★☆☆☆☆☆☆☆ (가장 짧음!)         ┃
+┃                                                  ┃
+┃ 📍 머리카락 끝 위치: 귀 높이 (귀 위~귀 아래)     ┃
+┃ 📍 신체 기준: 귀 전체를 기준                      ┃
+┃ 📍 예시: 숏컷, 베리 숏, 픽시 컷                   ┃
+┃                                                  ┃
+┃ 🎯 초정밀 기준:                                  ┃
+┃    - 머리카락 끝이 귀 위쪽 ~ 귀 중간 ~ 귀 아래   ┃
+┃    - 턱선(턱뼈)보다 확실히 "위쪽"                ┃
+┃    - 매우 짧은 헤어만 해당!                      ┃
+┃                                                  ┃
+┃ ⚠️ 주의: 긴 머리를 귀 뒤로 넘겨서 귀가 보여도    ┃
+┃    머리카락 끝이 어깨 아래면 H 아님!             ┃
+┃                                                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 ---
 
-### 【STEP 2】 H vs G 최종 구분 (가장 헷갈리는 부분!)
+## 🎯 3단계 판단 프로세스 (절대 틀리지 않는 방법!)
 
-**🔴 핵심 질문: "머리카락 끝이 턱뼈보다 위인가? 아래인가?"**
+### 【STEP 1】 어깨선 기준 체크 (가장 중요!)
 
-**📏 측정 방법:**
-1. 턱뼈의 각도 라인(Jaw Line) 위치를 상상
-2. 머리카락 끝이 그 라인보다:
-   - **위쪽 (귀 쪽)** → **H Length** ⭐
-   - **라인 위에 정확히** → **G Length** ⭐
-   - **아래쪽 (목 쪽)** → **F Length**
+**질문: "머리카락 끝이 어깨선에 닿는가?"**
+
+✅ YES (어깨선에 닿음) → **D Length 확정! 끝!**
+❌ NO (안 닿음) → STEP 2로
 
 ---
 
-## 🔍 구체적인 예시로 이해하기
+### 【STEP 2】 어깨보다 긴가? 짧은가?
 
-### ✅ H Length 예시
-\`\`\`
-- 짧은 단발 (bob cut)
-- 머리카락 끝이 귀 중간~귀 아래
-- 턱선보다 확실히 위쪽
-- 목 전체가 완전히 노출
+**어깨선보다 아래 (긴 쪽):**
+- 쇄골 → C Length
+- 가슴 중간 → B Length  
+- 가슴 아래 → A Length
 
-❌ 주의: 긴 머리를 귀 뒤로 넘겨서 귀가 보여도,
-         머리카락 끝이 어깨 아래면 H Length 아님!
-\`\`\`
+**어깨선보다 위 (짧은 쪽):**
+→ STEP 3으로 이동
 
-### ⚠️ G Length 예시
-\`\`\`
-- 턱선 길이 bob
-- 머리카락 끝이 턱뼈 라인에 정확히 닿음
-- 턱 윤곽선을 따라감
-- 목 상단이 약간 보이거나 거의 안 보임
+---
 
-🎯 판단 포인트: 턱선을 따라 흐르는가?
-\`\`\`
+### 【STEP 3】 짧은 머리 정밀 판단 (H/G/F/E 구분)
 
-### 📐 F Length 예시
-\`\`\`
-- 턱선보다 살짝 긴 bob
-- 머리카락 끝이 턱뼈 아래 (목 시작 부분)
-- 목 상단 일부가 보임
-- 어깨와는 확실한 거리
+**🔍 턱뼈(Jaw Line)를 기준으로 판단:**
 
-🎯 판단 포인트: 턱과 어깨 중간
-\`\`\`
+**3-1. 머리카락 끝이 턱뼈보다 위쪽인가?**
+- ✅ YES → **H Length** (가장 짧음!)
+- ❌ NO → 3-2로
+
+**3-2. 머리카락 끝이 정확히 턱뼈 라인인가?**
+- ✅ YES → **G Length** (턱선 길이!)
+- ❌ NO → 3-3으로
+
+**3-3. 머리카락 끝이 턱뼈 아래 (목 방향)인가?**
+- 목 시작 부분 → **F Length**
+- 목 중간~어깨 사이 → **E Length**
+
+---
+
+## 📸 시각적 체크리스트 (이미지 보면서 확인!)
+
+```
+□ 머리카락 끝이 가슴 아래까지? → A Length
+□ 머리카락 끝이 가슴 중간까지? → B Length
+□ 머리카락 끝이 쇄골까지? → C Length
+□ 머리카락 끝이 어깨선까지? → D Length ⭐⭐⭐
+□ 머리카락 끝이 어깨 위 2-3cm? → E Length
+□ 머리카락 끝이 턱뼈 아래? → F Length
+□ 머리카락 끝이 턱뼈 라인? → G Length ⭐⭐⭐
+□ 머리카락 끝이 귀 높이? → H Length
+```
+
+---
+
+## 🚫 절대 하지 말아야 할 실수들
+
+❌ **실수 1: "귀가 보이니까 H Length"**
+   → 틀림! 긴 머리도 귀 뒤로 넘기면 귀 보임
+   → 오직 "머리카락 끝 위치"만 보세요!
+
+❌ **실수 2: "목이 많이 보이니까 짧은 길이"**
+   → 위험! 목 노출은 참고만
+   → 절대 기준은 머리카락 끝!
+
+❌ **실수 3: "단발머리니까 무조건 G나 H"**
+   → 큰 오류! D/E/F Length 단발도 많음
+
+❌ **실수 4: "전체적인 느낌으로 판단"**
+   → 금지! 정확한 신체 부위 매칭 필수!
+
+✅ **정답: "머리카락 끝 + 신체 부위" 1:1 매칭!**
 
 ---
 
 ## 💡 애매한 경우 최종 판단 기준
 
-**Case 1: H vs G 사이?**
-→ 머리카락 끝이 턱선보다 위? → **H**
-→ 머리카락 끝이 턱선 위? → **G**
-→ 정확히 경계? → **더 짧은 쪽 (H) 선택**
+**Case 1: D와 E 사이?**
+→ 어깨에 살짝이라도 닿으면 → **D Length**
+→ 명확히 안 닿으면 → **E Length**
+→ 애매하면 → **D Length** (더 긴 쪽)
 
-**Case 2: G vs F 사이?**
-→ 머리카락 끝이 턱뼈 위치? → **G**
-→ 머리카락 끝이 턱뼈 아래? → **F**
-→ 정확히 경계? → **더 긴 쪽 (F) 선택**
+**Case 2: E와 F 사이?**
+→ 목 중간 정도 → **E Length**
+→ 턱 바로 아래 → **F Length**
 
-**Case 3: 한쪽은 짧고 한쪽은 길어서 애매?**
-→ **가장 긴 부분(끝) 기준**으로 판단
+**Case 3: F와 G 사이?**
+→ 턱뼈 아래 (목 방향) → **F Length**
+→ 정확히 턱뼈 라인 → **G Length**
+→ 애매하면 → **F Length** (더 긴 쪽)
 
----
+**Case 4: G와 H 사이?**
+→ 턱뼈 위쪽 (귀 방향) → **H Length**
+→ 턱뼈 라인 → **G Length**
+→ 애매하면 → **G Length** (더 긴 쪽)
 
-## 🚫 절대 하지 말아야 할 실수
-
-❌ "귀가 보이니까 H Length" → **틀림!**
-   → 긴 머리도 귀 뒤로 넘기면 귀 보임
-
-❌ "목이 많이 보이니까 H Length" → **위험!**
-   → 목 노출은 참고만, 절대 기준은 머리카락 끝!
-
-❌ "단발머리니까 무조건 G나 H" → **틀림!**
-   → D/E/F Length 단발도 있음
-
-✅ **오직 "머리카락 끝이 신체 어디?"만 보세요!**
+**Case 5: 한쪽은 길고 한쪽은 짧음?**
+→ **가장 긴 부분 기준**으로 판단
 
 ---
 
-## 📸 분석 순서 (반드시 이 순서로!)
+## ✂️ 커트 형태 (CUT FORM)
 
-1️⃣ **어깨선 확인** (D Length 체크)
-   - 머리카락 끝이 어깨에 닿음? → **D Length 확정**
+**반드시 괄호 포함!**
+- **"O (One Length)"** - 모든 머리카락 같은 길이
+- **"G (Graduation)"** - 외곽 짧고 내부 긴 층
+- **"L (Layer)"** - 층이 있는 컷
 
-2️⃣ **어깨보다 긴가? 짧은가?**
-   - 긴 쪽 → A/B/C 중 하나
-   - 짧은 쪽 → E/F/G/H 중 하나
-
-3️⃣ **짧은 경우: 턱선 기준으로 재확인**
-   - 턱선보다 위 → **H Length**
-   - 턱선 위치 → **G Length**
-   - 턱선 아래 → **F Length**
-   - 턱과 어깨 중간 → **E Length**
+❌ 틀린 예: "O" / "One Length" / "O-One Length"
+✅ 올바른 예: "O (One Length)"
 
 ---
 
-## ✂️ 커트 형태 - 반드시 괄호 포함
-- **"O (One Length)"** / **"G (Graduation)"** / **"L (Layer)"**
+## 📐 리프팅 각도 (LIFTING RANGE)
 
-## 📐 리프팅 각도 - 반드시 배열
-- **["L0"]** / **["L2"]** / **["L2", "L4"]**
+**반드시 배열 형태!**
+- ["L0"] - 0도 (자연 낙하)
+- ["L2"] - 45도
+- ["L4"] - 90도 (수평)
+- ["L2", "L4"] - 45도 + 90도 혼합
 
-## 🎨 질감 기법 - 반드시 배열
-**✅ 올바른 출력:** 
-  - ["Point Cut", "Slide Cut"]
-  - ["Stroke Cut"]
-  - [] (없으면 빈 배열)
+❌ 틀린 예: "L2" / "L2, L4" (문자열)
+✅ 올바른 예: ["L2", "L4"]
 
-**❌ 잘못된 출력:** 
-  - "Point Cut, Slide Cut" (문자열 ❌)
-  - null (❌)
+---
 
-## 💇 펌/컬 - 있는 경우만
-- curl_pattern: C-Curl / CS-Curl / S-Curl / SS-Curl / null
-- curl_strength: Soft / Medium / Strong / null
-- perm_type: Wave Perm / Digital Perm / Heat Perm / Iron Perm / null
+## 🎨 질감 기법 (TEXTURE TECHNIQUE)
 
-## 🎯 최종 검증
+**반드시 배열 형태! 없으면 빈 배열!**
 
-**반드시 다시 한번 확인:**
-1. 귀가 완전히 보이는가? → YES = H Length 강력 후보
-2. 머리카락이 어깨에 닿는가? → YES = D Length 확정
-3. 목 노출이 50% 이상인가? → YES = E Length 이상
-4. cut_form은 O/G/L 중 하나 + 괄호 포함
-5. lifting_range는 배열 형태
-6. texture_technique는 배열 (없으면 [])
+**올바른 출력:**
+- ["Point Cut", "Slide Cut"]
+- ["Stroke Cut"]
+- [] ← 없으면 빈 배열!
 
-JSON Schema에 정확히 맞춰 출력하세요.`;
+**잘못된 출력:**
+- "Point Cut, Slide Cut" (문자열 ❌)
+- null (❌)
+
+---
+
+## 💇 펌/컬 (있는 경우만 입력)
+
+**curl_pattern**: C-Curl / CS-Curl / S-Curl / SS-Curl / null
+**curl_strength**: Soft / Medium / Strong / null  
+**perm_type**: Wave Perm / Digital Perm / Heat Perm / Iron Perm / null
+
+펌이 없으면 모두 null
+
+---
+
+## 🎯 최종 검증 체크리스트 (제출 전 필수!)
+
+```
+1. ✅ length_category는 A/B/C/D/E/F/G/H 중 하나?
+2. ✅ 어깨선이 기준점으로 명확히 고려되었는가?
+3. ✅ H/G/F/E는 턱뼈 기준으로 정밀 판단했는가?
+4. ✅ cut_form은 O/G/L + 괄호 포함?
+5. ✅ lifting_range는 배열? ["L0"] 또는 ["L2", "L4"]
+6. ✅ texture_technique는 배열? (없으면 [])
+7. ✅ 귀 노출 여부에 속지 않았는가?
+8. ✅ 목 노출 여부에 속지 않았는가?
+```
+
+**모든 체크가 완료되면 JSON Schema에 맞춰 출력하세요.**`;
 
   try {
-    console.log('📸 Gemini 이미지 분석 시작 (ULTRA 프롬프트)');
+    console.log('📸 Gemini 이미지 분석 시작 (ULTRA FINAL 프롬프트)');
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -278,9 +390,9 @@ JSON Schema에 정확히 맞춰 출력하세요.`;
             ]
           }],
           generationConfig: {
-            temperature: 0.2,  // 0.3 → 0.2로 낮춤 (더 일관된 판단)
-            topP: 0.90,        // 0.95 → 0.90으로 낮춤
-            topK: 30,          // 40 → 30으로 낮춤
+            temperature: 0.1,  // 0.2 → 0.1로 더 낮춤 (극도로 일관된 판단)
+            topP: 0.85,        // 0.90 → 0.85로 낮춤
+            topK: 20,          // 30 → 20으로 낮춤
             maxOutputTokens: 2048,
             responseMimeType: "application/json",
             responseSchema: PARAMS_56_SCHEMA
@@ -298,27 +410,24 @@ JSON Schema에 정확히 맞춰 출력하세요.`;
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
     const params56 = JSON.parse(text);
     
-    // ✅ 추가 검증 로직: H Length 재확인
-    if (params56.length_category === 'G Length') {
-      console.log('⚠️ G Length 판단 재검증 필요');
-      // 로그만 남기고, AI 판단 존중 (나중에 피드백 수집용)
-    }
+    // ✅ 검증 로직 강화
+    console.log('🔍 길이 판단 검증:', {
+      detected: params56.length_category,
+      form: params56.cut_form,
+      volume: params56.volume_zone
+    });
     
+    // Volume 자동 계산 검증
     if (params56.lifting_range && params56.lifting_range.length > 0) {
       const maxLifting = params56.lifting_range[params56.lifting_range.length - 1];
       const calculatedVolume = calculateVolumeFromLifting(maxLifting);
       
       if (calculatedVolume !== params56.volume_zone) {
-        console.log(`⚠️ Volume 불일치: Structured=${params56.volume_zone}, Calculated=${calculatedVolume}`);
+        console.log(`⚠️ Volume 불일치 감지: Structured=${params56.volume_zone}, Calculated=${calculatedVolume}`);
       }
     }
 
-    console.log('✅ 분석 완료 (ULTRA):', {
-      length: params56.length_category,
-      form: params56.cut_form,
-      volume: params56.volume_zone,
-      lifting: params56.lifting_range
-    });
+    console.log('✅ 분석 완료 (ULTRA FINAL)');
 
     return {
       statusCode: 200,
@@ -515,10 +624,10 @@ function getTerms(lang) {
         'B Length': '가슴 상단~중간',
         'C Length': '쇄골 밑선',
         'D Length': '어깨선',
-        'E Length': '어깨 위 5cm',
-        'F Length': '턱 아래',
+        'E Length': '어깨 위 2-3cm',
+        'F Length': '턱뼈 아래',
         'G Length': '턱선',
-        'H Length': '귀 중간'
+        'H Length': '귀 높이'
       },
       formDesc: {
         'O': 'One Length, 원렝스 - 모든 머리카락이 같은 길이',
@@ -552,7 +661,7 @@ function getTerms(lang) {
         'B Length': 'Upper to mid chest',
         'C Length': 'Collarbone',
         'D Length': 'Shoulder line',
-        'E Length': '5cm above shoulder',
+        'E Length': '2-3cm above shoulder',
         'F Length': 'Below chin',
         'G Length': 'Jaw line',
         'H Length': 'Ear level'
@@ -587,7 +696,7 @@ function getTerms(lang) {
       lengthDesc: {
         'A Length': '胸下',
         'D Length': '肩のライン',
-        'E Length': '肩上5cm',
+        'E Length': '肩上2-3cm',
         'G Length': '顎のライン'
       },
       formDesc: {
@@ -610,7 +719,7 @@ function getTerms(lang) {
       lengthDesc: {
         'A Length': '胸部以下',
         'D Length': '肩线',
-        'E Length': '肩上5厘米',
+        'E Length': '肩上2-3厘米',
         'G Length': '下巴线'
       },
       formDesc: {
@@ -633,7 +742,7 @@ function getTerms(lang) {
       lengthDesc: {
         'A Length': 'Dưới ngực',
         'D Length': 'Vai',
-        'E Length': '5cm trên vai',
+        'E Length': '2-3cm trên vai',
         'G Length': 'Đường cằm'
       },
       formDesc: {
@@ -665,16 +774,8 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     console.log('🍳 레시피 생성 시작:', params56.length_category, '언어:', language);
 
     const searchQuery = `${params56.length_category || ''} ${params56.cut_form || ''} ${params56.volume_zone || ''} Volume`;
-    const theoryChunks = await searchTheoryChunks(searchQuery, geminiKey, supabaseUrl, supabaseKey, 5);  // ⚡ 10 → 5
+    const theoryChunks = await searchTheoryChunks(searchQuery, geminiKey, supabaseUrl, supabaseKey, 5);
     
-    const theoryContext = theoryChunks.length > 0 
-      ? theoryChunks.map((chunk, idx) => {
-          const title = chunk.section_title || '';
-          const content = (chunk.content_ko || chunk.content || '').substring(0, 300);
-          return `[이론 ${idx+1}] ${title}\n${content}`;
-        }).join('\n\n')
-      : '관련 이론을 찾을 수 없습니다.';
-
     const allSimilarStyles = await searchSimilarStyles(
       searchQuery, 
       openaiKey, 
@@ -690,20 +791,7 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     const langTerms = getTerms(language);
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
 
-    const similarStylesTextKo = similarStyles.slice(0, 3).map((s, i) => {
-      const name = s.name || s.code || '이름없음';
-      const similarity = ((s.similarity || 0) * 100).toFixed(0);
-      const desc = s.description || (s.recipe ? s.recipe.substring(0, 100) : '상세 설명 준비 중');
-      return `**${i+1}. ${name}**\n- 유사도: ${similarity}%\n- 특징: ${desc}`;
-    }).join('\n\n');
-
-    const similarStylesTextEn = similarStyles.slice(0, 3).map((s, i) => {
-      const name = s.name || s.code || 'Unnamed';
-      return `${i+1}. ${name}`;
-    }).join('\n');
-
-    // ⚡ 긴급 수정: 간단한 프롬프트로 교체 (속도 개선)
-    const simpleSystemPrompt = `당신은 전문 헤어 스타일리스트입니다.
+    const simplePrompt = `당신은 전문 헤어 스타일리스트입니다.
 
 다음 정보로 간단하고 실용적인 커팅 레시피를 작성하세요:
 
@@ -721,8 +809,6 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
 
 간결하고 실용적으로 작성하세요. 총 500자 이내.`;
 
-    const systemPrompt = simpleSystemPrompt;
-
     const strictLanguageMessage = {
       ko: '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요.',
       en: 'You are an English expert. Write ALL responses in English ONLY.',
@@ -733,10 +819,8 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
 
     const userPrompt = `다음 파라미터로 레시피를 생성하세요:\n길이: ${params56.length_category}\n형태: ${params56.cut_form}\n볼륨: ${params56.volume_zone}`;
 
-    // ✅ 시스템 프롬프트 합치기 (400 에러 방지)
-    const combinedSystemPrompt = `${strictLanguageMessage}\n\n${systemPrompt}`;
+    const combinedSystemPrompt = `${strictLanguageMessage}\n\n${simplePrompt}`;
 
-    // ⚡⚡⚡ 스트리밍 방식으로 변경! ⚡⚡⚡
     const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -751,7 +835,7 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
         ],
         temperature: 0.5,
         max_tokens: 2000,
-        stream: true  // ⭐⭐⭐ 스트리밍 활성화!
+        stream: true
       })
     });
 
@@ -759,7 +843,6 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       throw new Error(`OpenAI API Error: ${completion.status}`);
     }
 
-    // ⚡ 스트리밍 응답 처리
     let fullRecipe = '';
     const reader = completion.body.getReader();
     const decoder = new TextDecoder('utf-8');
@@ -790,7 +873,6 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     }
 
     let recipe = fullRecipe;
-
     recipe = sanitizeRecipeForPublic(recipe, language);
 
     console.log('✅ 레시피 생성 완료');
@@ -821,14 +903,13 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
   }
 }
 
-// ==================== 스트리밍 레시피 생성 (진짜 스트리밍) ====================
+// ==================== 스트리밍 레시피 생성 ====================
 async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
   const { params56, language = 'ko' } = payload;
 
   try {
     console.log('🍳 스트리밍 레시피 생성 시작:', params56.length_category, '언어:', language);
 
-    // ⚡ 간단한 프롬프트만 사용 (속도 최우선)
     const langTerms = getTerms(language);
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
     
@@ -860,7 +941,6 @@ async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, 
 
     const combinedPrompt = `${strictLanguageMessage}\n\n${simplePrompt}`;
 
-    // ⚡⚡⚡ OpenAI 스트리밍 API 호출
     const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -875,7 +955,7 @@ async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, 
         ],
         temperature: 0.7,
         max_tokens: 800,
-        stream: true  // ⭐ 스트리밍 활성화
+        stream: true
       })
     });
 
@@ -883,11 +963,9 @@ async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, 
       throw new Error(`OpenAI API Error: ${completion.status}`);
     }
 
-    // ⚡ Node.js 환경에서 스트리밍 데이터 수집
     let fullRecipe = '';
     const body = completion.body;
     
-    // Node.js Stream 처리
     for await (const chunk of body) {
       const text = chunk.toString('utf-8');
       const lines = text.split('\n').filter(line => line.trim() !== '');
@@ -910,13 +988,10 @@ async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, 
       }
     }
 
-    // 보안 필터링
     const sanitizedRecipe = sanitizeRecipeForPublic(fullRecipe, language);
 
     console.log('✅ 스트리밍 레시피 완성');
 
-    // ⚠️ Netlify Functions는 진짜 스트리밍 응답 불가능
-    // 대신 전체 결과를 한 번에 반환
     return {
       statusCode: 200,
       headers,
@@ -925,7 +1000,7 @@ async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, 
         data: {
           recipe: sanitizedRecipe,
           params56: params56,
-          similar_styles: []  // 속도 개선을 위해 생략
+          similar_styles: []
         }
       })
     };
@@ -978,7 +1053,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
         },
         body: JSON.stringify({
           query_embedding: queryEmbedding,
-          match_count: 5  // ⚡ 8 → 5
+          match_count: 5
         })
       }
     );
