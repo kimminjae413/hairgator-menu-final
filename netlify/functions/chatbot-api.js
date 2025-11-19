@@ -1078,8 +1078,8 @@ ${similarStyles.slice(0, 3).map(s => `- ${s.name || s.code}`).join('\n')}
 - Reason for each step
 
 Write in **English only** following steps 1-7 precisely.
-Provide actionable instructions applicable in salons immediately.`
-};
+Write in **English only** following steps 1-7 precisely.
+Provide actionable instructions applicable in salons immediately.`,
       vi: `Bạn là chuyên gia hệ thống HAIRGATOR.
 
 **🔒 QUAN TRỌNG: KHÔNG BAO GIỜ đề cập：**
