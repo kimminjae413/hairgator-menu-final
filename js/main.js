@@ -1,4 +1,4 @@
-// HAIRGATOR Main Application - 최종 버전 (goBack return 추가)
+// HAIRGATOR Main Application - 최종 버전 (goBack display:none 추가)
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🦎 HAIRGATOR 메인 앱 시작...');
     
@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    // ⭐ 수정된 goBack 함수 - return 추가!
+    // ⭐⭐⭐ 최종 수정된 goBack 함수 ⭐⭐⭐
     window.goBack = function() {
         console.log('🔙 goBack() 호출');
         
@@ -320,41 +320,54 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 메뉴 → 성별 선택
         if (menuContainer && menuContainer.classList.contains('active')) {
-            console.log('🔙 메뉴 → 성별 선택');
+            console.log('🔙 Step 1: 메뉴 숨김');
             
+            // 메뉴 완전히 숨기기
             menuContainer.classList.remove('active');
+            menuContainer.style.display = 'none';  // ⭐ 핵심!
             
+            // 성별 선택 보이기
             if (genderSelection) {
                 genderSelection.style.display = 'flex';
+                genderSelection.style.visibility = 'visible';
+                genderSelection.style.opacity = '1';
+                console.log('✅ 성별 선택 표시됨');
             }
             
+            // 버튼 유지
             if (backBtn) {
                 backBtn.style.display = 'flex';
             }
             
+            // 전역 변수 리셋
             if (window.currentGender) window.currentGender = null;
             if (window.currentMainTab) window.currentMainTab = null;
             if (window.currentSubTab) window.currentSubTab = null;
             
-            return; // ⭐ 핵심!
+            console.log('✅ 메뉴 → 성별 완료');
+            return;
         }
         
         // 성별 선택 → 로그인
         if (genderSelection && genderSelection.style.display === 'flex') {
-            console.log('🔙 성별 선택 → 로그인');
+            console.log('🔙 Step 2: 성별 숨김');
             
             genderSelection.style.display = 'none';
             
             if (loginScreen) {
                 loginScreen.style.display = 'flex';
+                console.log('✅ 로그인 화면 표시됨');
             }
             
             if (backBtn) {
                 backBtn.style.display = 'none';
             }
             
+            console.log('✅ 성별 → 로그인 완료');
             return;
         }
+        
+        console.warn('⚠️ 알 수 없는 상태');
     };
 
     setTimeout(() => {
