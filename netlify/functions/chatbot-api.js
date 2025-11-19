@@ -581,7 +581,7 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     console.log('🍳 레시피 생성 시작:', params56.length_category, '언어:', language);
 
     const searchQuery = `${params56.length_category || ''} ${params56.cut_form || ''} ${params56.volume_zone || ''} Volume`;
-    const theoryChunks = await searchTheoryChunks(searchQuery, geminiKey, supabaseUrl, supabaseKey, 15);
+    const theoryChunks = await searchTheoryChunks(searchQuery, geminiKey, supabaseUrl, supabaseKey, 10);  // ⚡ 15 → 10
     
     const theoryContext = theoryChunks.length > 0 
       ? theoryChunks.map((chunk, idx) => {
@@ -659,7 +659,7 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.5,
-        max_tokens: 8000
+        max_tokens: 6000
       })
     });
 
@@ -740,7 +740,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
         },
         body: JSON.stringify({
           query_embedding: queryEmbedding,
-          match_count: 10
+          match_count: 8
         })
       }
     );
