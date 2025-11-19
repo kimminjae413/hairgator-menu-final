@@ -828,31 +828,12 @@ class HairGatorChatbot {
         this.currentLanguage
       );
 
-      console.log('📥 레시피 결과:', recipeResult);
+     console.log('📥 레시피 결과:', recipeResult);
 
+      // ⭐ 레시피 파싱 및 표시
       if (recipeResult && recipeResult.data && recipeResult.data.recipe) {
-  // ⭐ 마크다운 파싱 적용
-  const rendered = this.core.parseMarkdownWithHighlight(recipeResult.data.recipe);
-  this.replaceLastBotMessage(rendered);
-  
-  if (recipeResult.data.similar_styles && recipeResult.data.similar_styles.length > 0) {
-    this.displayStyleCards(recipeResult.data.similar_styles);
-  }
-} else if (recipeResult && recipeResult.recipe) {
-  // ⭐ 마크다운 파싱 적용
-  const rendered = this.core.parseMarkdownWithHighlight(recipeResult.recipe);
-  this.replaceLastBotMessage(rendered);
-  
-  if (recipeResult.similar_styles && recipeResult.similar_styles.length > 0) {
-    this.displayStyleCards(recipeResult.similar_styles);
-  }
-} else {
-  // ⭐ 에러 상황에서도 전체 응답 확인
-  console.error('❌ 예상치 못한 레시피 형식:', recipeResult);
-  const rawText = typeof recipeResult === 'string' ? recipeResult : JSON.stringify(recipeResult, null, 2);
-  const rendered = this.core.parseMarkdownWithHighlight(rawText);
-  this.replaceLastBotMessage(rendered);
-}
+        const rendered = this.core.parseMarkdownWithHighlight(recipeResult.data.recipe);
+        this.replaceLastBotMessage(rendered);
         
         if (recipeResult.data.similar_styles && recipeResult.data.similar_styles.length > 0) {
           this.displayStyleCards(recipeResult.data.similar_styles);
@@ -865,7 +846,10 @@ class HairGatorChatbot {
           this.displayStyleCards(recipeResult.similar_styles);
         }
       } else {
-        this.replaceLastBotMessage('❌ 레시피 생성 실패');
+        console.error('❌ 예상치 못한 레시피 형식:', recipeResult);
+        const rawText = typeof recipeResult === 'string' ? recipeResult : JSON.stringify(recipeResult, null, 2);
+        const rendered = this.core.parseMarkdownWithHighlight(rawText);
+        this.replaceLastBotMessage(rendered);
       }
 
     } catch (error) {
