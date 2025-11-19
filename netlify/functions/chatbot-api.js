@@ -883,17 +883,14 @@ async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, 
       throw new Error(`OpenAI API Error: ${completion.status}`);
     }
 
-    // ⚡ 스트리밍 데이터 수집
+    // ⚡ Node.js 환경에서 스트리밍 데이터 수집
     let fullRecipe = '';
-    const reader = completion.body.getReader();
-    const decoder = new TextDecoder('utf-8');
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n').filter(line => line.trim() !== '');
+    const body = completion.body;
+    
+    // Node.js Stream 처리
+    for await (const chunk of body) {
+      const text = chunk.toString('utf-8');
+      const lines = text.split('\n').filter(line => line.trim() !== '');
 
       for (const line of lines) {
         if (line.startsWith('data: ')) {
