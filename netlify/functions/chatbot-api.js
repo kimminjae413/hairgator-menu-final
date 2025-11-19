@@ -1384,14 +1384,14 @@ async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender =
   console.log(`🔍 Fallback 검색 시작: "${query}"`);
   
   const response = await fetch(
-    `${supabaseUrl}/rest/v1/hairstyles?select=id,name,category,code,recipe,description`,
-    {
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`
-      }
+  `${supabaseUrl}/rest/v1/hairstyles?select=id,name,category,code,recipe,description,image_url`,  // ✅ image_url 추가
+  {
+    headers: {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`
     }
-  );
+  }
+);
 
   if (!response.ok) {
     throw new Error('All search methods failed');
@@ -1415,15 +1415,19 @@ async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender =
     }
 
     if (style.recipe || style.description) {
-      score += 30;
-    }
+  score += 30;
+}
 
-    return { 
-      ...style, 
-      similarity_score: score,
-      parsed_gender: parsed.gender
-    };
-  });
+// ⭐ 이 부분 추가!
+if (style.image_url) {
+  score += 50;
+}
+
+return { 
+  ...style, 
+  similarity: score / 1000,  // ✅ similarity로 변경 (0-1 사이)
+  parsed_gender: parsed.gender
+};
 
   return scoredStyles
     .filter(s => s.similarity_score > -50)
