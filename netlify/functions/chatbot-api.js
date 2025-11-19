@@ -646,56 +646,31 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     const userPrompt = `다음 파라미터로 레시피를 생성하세요:\n길이: ${params56.length_category}\n형태: ${params56.cut_form}\n볼륨: ${params56.volume_zone}`;
 
    const completion = await fetch('https://api.openai.com/v1/chat/completions', {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${openaiKey}`,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    model: 'gpt-4o-mini',
-    messages: [
-      { role: 'system', content: strictLanguageMessage },
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt }
-    ],  // ✅ messages 배열 완성
-    temperature: 0.5,
-    max_tokens: 8000,
-    stream: true
-  })
-});
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: strictLanguageMessage },
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.5,
+        max_tokens: 6000
+      })
+    });
 
     if (!completion.ok) {
       throw new Error(`OpenAI API Error: ${completion.status}`);
     }
 
-   // 스트리밍 응답 처리
-let recipe = '';
+    const gptData = await completion.json();
+    let recipe = gptData.choices[0].message.content;
 
-const reader = completion.body.getReader();
-const decoder = new TextDecoder();
-
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
-  
-  const chunk = decoder.decode(value);
-  const lines = chunk.split('\n').filter(line => line.trim() !== '');
-  
-  for (const line of lines) {
-    if (line.startsWith('data: ')) {
-      const data = line.slice(6);
-      if (data === '[DONE]') continue;
-      
-      try {
-        const json = JSON.parse(data);
-        const content = json.choices[0]?.delta?.content || '';
-        recipe += content;
-      } catch (e) {
-        // 파싱 오류 무시
-      }
-    }
-  }
-}
+    recipe = sanitizeRecipeForPublic(recipe, language);
 
     recipe = sanitizeRecipeForPublic(recipe, language);
 
