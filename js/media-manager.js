@@ -306,9 +306,12 @@ class MediaManager {
         this.mainImageIndex = mediaData.mainImageIndex || 0;
         
         // 기존 동영상 URL 설정
-        if (mediaData.video?.url) {
+        if (mediaData.video && mediaData.video.url) {
             this.videoUrl = mediaData.video.url;
-            document.getElementById('videoUrl')?.value = this.videoUrl;
+            const videoInput = document.getElementById('videoUrl');
+            if (videoInput) {
+                videoInput.value = this.videoUrl;
+            }
             this.updateVideoPreview();
         }
     }
