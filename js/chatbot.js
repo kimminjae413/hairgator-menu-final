@@ -1,11 +1,12 @@
-// js/chatbot.js - HAIRGATOR v2.0 FINAL
-// 89용어 통합 + 새 레시피 포맷(###1~###7) + 스트리밍 지원
+// js/chatbot.js - HAIRGATOR v2.1 FINAL
+// ✅ getTerms() 메서드 추가 (formatParameters 버그 수정)
+// ✅ 89용어 통합 + 새 레시피 포맷(###1~###7) + 스트리밍 지원
 // ✅ TypeError 버그 수정 완료
 // ✅ Cut Form O/G/L 3개만 (Combination 제거)
 // ✅ Volume 엄격한 기준 (Low: 0~44°, Medium: 45~89°, High: 90°~)
 // ✅ Touch Event passive listener 추가
 // ✅ undefined 버그 수정 (505번째, 524번째 줄 fallback 추가)
-// ✅ 임시 Storage 이미지 표시 방지 추가 (2025-01-25)
+// ✅ 임시 Storage 이미지 표시 방지 추가
 
 class HairGatorChatbot {
   constructor() {
@@ -392,6 +393,199 @@ class HairGatorChatbot {
     return texts[this.currentLanguage] || texts.ko;
   }
 
+  // ✅ 추가: getTerms() 메서드 (formatParameters에서 사용)
+  getTerms(lang) {
+    const terms = {
+      ko: {
+        lengthDesc: {
+          'A Length': '짧은 길이 (귀 위)',
+          'B Length': '중간 길이 (턱선)',
+          'C Length': '어깨 길이',
+          'D Length': '긴 길이 (어깨 아래)',
+          'E Length': '매우 긴 길이'
+        },
+        formDesc: {
+          'O': 'One Length - 단일 길이로 무게감 있는 스타일',
+          'G': 'Graduation - 점진적인 레이어로 볼륨감',
+          'L': 'Layer - 자유로운 레이어로 경쾌한 느낌'
+        },
+        volume: {
+          'Low': '0~44° (낮은 볼륨)',
+          'Medium': '45~89° (중간 볼륨)',
+          'High': '90°+ (높은 볼륨)'
+        },
+        lifting: {
+          'L0': '0° (자연 낙하)',
+          'L1': '15° (약간 들어올림)',
+          'L2': '30° (중간 들어올림)',
+          'L3': '45° (중강 들어올림)',
+          'L4': '60° (강한 들어올림)',
+          'L5': '75° (매우 강한 들어올림)',
+          'L6': '90° (수직)',
+          'L7': '105° (역방향)',
+          'L8': '120° (강한 역방향)'
+        },
+        fringeType: {
+          'Heavy Fringe': '무거운 앞머리',
+          'Light Fringe': '가벼운 앞머리',
+          'Side-Swept Fringe': '옆으로 넘긴 앞머리',
+          'Curtain Fringe': '커튼 앞머리',
+          'No Fringe': '앞머리 없음'
+        }
+      },
+      en: {
+        lengthDesc: {
+          'A Length': 'Short length (above ears)',
+          'B Length': 'Medium length (jawline)',
+          'C Length': 'Shoulder length',
+          'D Length': 'Long length (below shoulders)',
+          'E Length': 'Very long length'
+        },
+        formDesc: {
+          'O': 'One Length - Solid, weighty style',
+          'G': 'Graduation - Gradual layers with volume',
+          'L': 'Layer - Free-flowing layers with movement'
+        },
+        volume: {
+          'Low': '0~44° (Low volume)',
+          'Medium': '45~89° (Medium volume)',
+          'High': '90°+ (High volume)'
+        },
+        lifting: {
+          'L0': '0° (Natural fall)',
+          'L1': '15° (Slight lift)',
+          'L2': '30° (Medium lift)',
+          'L3': '45° (Moderate lift)',
+          'L4': '60° (Strong lift)',
+          'L5': '75° (Very strong lift)',
+          'L6': '90° (Vertical)',
+          'L7': '105° (Reverse)',
+          'L8': '120° (Strong reverse)'
+        },
+        fringeType: {
+          'Heavy Fringe': 'Heavy fringe',
+          'Light Fringe': 'Light fringe',
+          'Side-Swept Fringe': 'Side-swept fringe',
+          'Curtain Fringe': 'Curtain fringe',
+          'No Fringe': 'No fringe'
+        }
+      },
+      ja: {
+        lengthDesc: {
+          'A Length': '短い長さ（耳上）',
+          'B Length': '中間の長さ（顎ライン）',
+          'C Length': '肩の長さ',
+          'D Length': '長い長さ（肩下）',
+          'E Length': 'とても長い長さ'
+        },
+        formDesc: {
+          'O': 'ワンレングス - 重厚感のあるスタイル',
+          'G': 'グラデーション - 段階的なレイヤーでボリューム感',
+          'L': 'レイヤー - 自由なレイヤーで軽やかな印象'
+        },
+        volume: {
+          'Low': '0~44°（低ボリューム）',
+          'Medium': '45~89°（中ボリューム）',
+          'High': '90°+（高ボリューム）'
+        },
+        lifting: {
+          'L0': '0°（自然落下）',
+          'L1': '15°（わずかに持ち上げ）',
+          'L2': '30°（中程度の持ち上げ）',
+          'L3': '45°（やや強い持ち上げ）',
+          'L4': '60°（強い持ち上げ）',
+          'L5': '75°（非常に強い持ち上げ）',
+          'L6': '90°（垂直）',
+          'L7': '105°（逆方向）',
+          'L8': '120°（強い逆方向）'
+        },
+        fringeType: {
+          'Heavy Fringe': '重い前髪',
+          'Light Fringe': '軽い前髪',
+          'Side-Swept Fringe': '横に流した前髪',
+          'Curtain Fringe': 'カーテン前髪',
+          'No Fringe': '前髪なし'
+        }
+      },
+      zh: {
+        lengthDesc: {
+          'A Length': '短长度（耳上）',
+          'B Length': '中长度（下颌线）',
+          'C Length': '及肩长度',
+          'D Length': '长长度（肩下）',
+          'E Length': '超长长度'
+        },
+        formDesc: {
+          'O': '一刀切 - 厚重的单一长度',
+          'G': '渐变 - 渐进式层次感',
+          'L': '层次 - 轻盈的自由层次'
+        },
+        volume: {
+          'Low': '0~44°（低音量）',
+          'Medium': '45~89°（中音量）',
+          'High': '90°+（高音量）'
+        },
+        lifting: {
+          'L0': '0°（自然下垂）',
+          'L1': '15°（轻微提升）',
+          'L2': '30°（中等提升）',
+          'L3': '45°（适度提升）',
+          'L4': '60°（强力提升）',
+          'L5': '75°（非常强力提升）',
+          'L6': '90°（垂直）',
+          'L7': '105°（反向）',
+          'L8': '120°（强反向）'
+        },
+        fringeType: {
+          'Heavy Fringe': '厚刘海',
+          'Light Fringe': '薄刘海',
+          'Side-Swept Fringe': '侧分刘海',
+          'Curtain Fringe': '窗帘刘海',
+          'No Fringe': '无刘海'
+        }
+      },
+      vi: {
+        lengthDesc: {
+          'A Length': 'Độ dài ngắn (trên tai)',
+          'B Length': 'Độ dài trung bình (đường hàm)',
+          'C Length': 'Ngang vai',
+          'D Length': 'Độ dài dài (dưới vai)',
+          'E Length': 'Rất dài'
+        },
+        formDesc: {
+          'O': 'Một độ dài - Phong cách nặng nề',
+          'G': 'Tốt nghiệp - Lớp dần dần với khối lượng',
+          'L': 'Lớp - Lớp tự do với chuyển động'
+        },
+        volume: {
+          'Low': '0~44° (Âm lượng thấp)',
+          'Medium': '45~89° (Âm lượng trung bình)',
+          'High': '90°+ (Âm lượng cao)'
+        },
+        lifting: {
+          'L0': '0° (Rơi tự nhiên)',
+          'L1': '15° (Nâng nhẹ)',
+          'L2': '30° (Nâng trung bình)',
+          'L3': '45° (Nâng vừa phải)',
+          'L4': '60° (Nâng mạnh)',
+          'L5': '75° (Nâng rất mạnh)',
+          'L6': '90° (Thẳng đứng)',
+          'L7': '105° (Ngược)',
+          'L8': '120° (Ngược mạnh)'
+        },
+        fringeType: {
+          'Heavy Fringe': 'Mái nặng',
+          'Light Fringe': 'Mái nhẹ',
+          'Side-Swept Fringe': 'Mái xéo',
+          'Curtain Fringe': 'Mái rèm',
+          'No Fringe': 'Không có mái'
+        }
+      }
+    };
+    
+    return terms[lang] || terms.ko;
+  }
+
   createChatbotUI() {
     const texts = this.getTexts();
     const chatbotHTML = `
@@ -434,7 +628,7 @@ class HairGatorChatbot {
         <div id="chatbot-messages" class="chatbot-messages">
           <div class="bot-message">
             <div class="message-content" id="welcome-message">
-              <p><strong>HAIR Recipe v2.0</strong></p>
+              <p><strong>HAIR Recipe v2.1</strong></p>
               <p id="welcome-text">${texts.welcome}</p>
               <p style="font-size:0.85em;opacity:0.7;">✨ 89용어 시스템 적용</p>
             </div>
@@ -563,22 +757,19 @@ class HairGatorChatbot {
       }
     });
 
-    // 언어 드롭다운 외부 클릭/터치 시 닫기 (드롭다운 내부는 제외)
+    // 언어 드롭다운 외부 클릭/터치 시 닫기
     const closeDropdownOnOutside = (e) => {
       const dropdown = document.getElementById('language-dropdown');
       const langBtn = document.getElementById('language-btn');
       
-      // 드롭다운이나 언어 버튼을 클릭/터치한 경우는 무시
       if (dropdown && !dropdown.contains(e.target) && !langBtn.contains(e.target)) {
         dropdown.classList.add('hidden');
       }
     };
     
-    // 언어 드롭다운 외부 클릭 시 닫기
     document.addEventListener('click', closeDropdownOnOutside);
   }
 
-  // ✅ 수정: Touch Event에 passive listener 추가
   initKeyboardHandler() {
     const chatbotInput = document.getElementById('chatbot-input');
     const chatbotContainer = document.getElementById('chatbot-container');
@@ -669,54 +860,42 @@ class HairGatorChatbot {
   changeLanguage(lang) {
     console.log(`🌍 [START] 언어 변경 시작: ${this.currentLanguage} → ${lang}`);
     
-    // WebView 환경 감지
     const isWebView = !!(window.ReactNativeWebView || navigator.userAgent.includes('wv'));
     if (isWebView) {
       console.log('📱 WebView 환경 감지됨');
     }
     
-    // 언어 업데이트
     this.currentLanguage = lang;
     this.setStoredLanguage(lang);
     
     const texts = this.getTexts();
     console.log(`📝 새로운 텍스트:`, texts);
     
-    // WebView에서는 DOM 업데이트를 명시적으로, 그리고 더 긴 딜레이로
     const updateDelay = isWebView ? 150 : 10;
     
     setTimeout(() => {
-      // 타이틀 변경
       const titleEl = document.getElementById('chatbot-title');
       if (titleEl) {
         titleEl.textContent = texts.title;
         console.log(`✅ 타이틀 변경: ${texts.title}`);
-      } else {
-        console.error('❌ chatbot-title 요소를 찾을 수 없음');
       }
       
-      // placeholder 변경
       const inputEl = document.getElementById('chatbot-input');
       if (inputEl) {
         inputEl.placeholder = texts.placeholder;
         console.log(`✅ placeholder 변경: ${texts.placeholder}`);
       }
       
-      // 색인 제목 변경
       const indexTitleEl = document.getElementById('index-modal-title');
       if (indexTitleEl) {
         indexTitleEl.textContent = texts.indexTitle;
-        console.log(`✅ 색인 제목 변경: ${texts.indexTitle}`);
       }
       
-      // 환영 메시지 변경
       const welcomeTextEl = document.getElementById('welcome-text');
       if (welcomeTextEl) {
         welcomeTextEl.textContent = texts.welcome;
-        console.log(`✅ 환영 메시지 변경: ${texts.welcome}`);
       }
       
-      // 메시지 영역 초기화
       const messagesDiv = document.getElementById('chatbot-messages');
       if (messagesDiv) {
         messagesDiv.innerHTML = `
@@ -725,15 +904,12 @@ class HairGatorChatbot {
             <div class="welcome-text" id="welcome-text">${texts.welcome}</div>
           </div>
         `;
-        console.log(`✅ 환영 메시지 영역 업데이트`);
       }
       
-      // 대화 기록 초기화
       this.conversationHistory = [];
       
       console.log(`🎉 [COMPLETE] 언어 변경 완료: ${lang}`);
       
-      // WebView에 알림 (선택사항)
       if (window.ReactNativeWebView) {
         try {
           window.ReactNativeWebView.postMessage(JSON.stringify({
@@ -747,60 +923,20 @@ class HairGatorChatbot {
     }, updateDelay);
   }
 
-  showLanguageChangeFeedback(lang) {
-    const langNames = {
-      'ko': '한국어',
-      'en': 'English',
-      'ja': '日本語',
-      'zh': '中文',
-      'vi': 'Tiếng Việt'
-    };
-    
-    const messagesDiv = document.getElementById('chatbot-messages');
-    if (!messagesDiv) return;
-    
-    const feedbackMsg = document.createElement('div');
-    feedbackMsg.className = 'system-message';
-    feedbackMsg.style.cssText = `
-      text-align: center;
-      padding: 8px 12px;
-      margin: 10px auto;
-      background: rgba(33, 150, 243, 0.1);
-      border-radius: 8px;
-      font-size: 12px;
-      color: #2196F3;
-      animation: fadeInOut 2s ease-in-out;
-    `;
-    feedbackMsg.textContent = `🌍 ${langNames[lang] || lang}`;
-    
-    messagesDiv.appendChild(feedbackMsg);
-    
-    setTimeout(() => {
-      if (feedbackMsg.parentNode) {
-        feedbackMsg.style.opacity = '0';
-        feedbackMsg.style.transition = 'opacity 0.3s';
-        setTimeout(() => feedbackMsg.remove(), 300);
-      }
-    }, 2000);
-  }
-
   showIndexModal() {
     const modal = document.getElementById('index-modal');
     const body = document.getElementById('index-modal-body');
 
-    // 언어별 접미사 매핑 (정확한 파일명 기준)
     const getFileSuffix = (id, lang) => {
       const idNum = parseInt(id);
       if (lang === 'ko') return '';
       if (lang === 'en') return ' – 1';
       
       if (idNum <= 2) {
-        // 01-02: ja=3, zh=2, vi=4
         if (lang === 'ja') return ' – 3';
         if (lang === 'zh') return ' – 2';
         if (lang === 'vi') return ' – 4';
       } else {
-        // 03-89: ja=2, zh=3, vi=5
         if (lang === 'ja') return ' – 2';
         if (lang === 'zh') return ' – 3';
         if (lang === 'vi') return ' – 5';
@@ -820,8 +956,6 @@ class HairGatorChatbot {
             const suffix = getFileSuffix(id, this.currentLanguage);
             const fileName = `${id}. ${termName}${suffix}.png`;
             const imageURL = baseURL + langFolder + '/' + encodeURIComponent(fileName);
-            
-            // ✅ Fallback 추가 (undefined 방지)
             const displayName = term[this.currentLanguage] || term.ko || term.en;
             
             return `
@@ -844,7 +978,6 @@ class HairGatorChatbot {
     body.innerHTML = galleryHTML;
     modal.classList.remove('hidden');
 
-    // ✅ Fallback 추가 (undefined 방지)
     window.hairgatorTermImages = Object.entries(this.terms89Map)
       .sort(([idA], [idB]) => parseInt(idA) - parseInt(idB))
       .map(([id, term]) => {
@@ -955,14 +1088,12 @@ class HairGatorChatbot {
     const file = event.target.files[0];
     if (!file) return;
 
-    // 파일 크기 체크 (5MB)
     if (file.size > 5 * 1024 * 1024) {
       const texts = this.getTexts();
       this.addMessage('bot', texts.errorSize);
       return;
     }
 
-    // 이미지 타입 체크
     if (!file.type.startsWith('image/')) {
       const texts = this.getTexts();
       this.addMessage('bot', texts.errorType);
@@ -970,17 +1101,14 @@ class HairGatorChatbot {
     }
 
     try {
-      // 이미지 미리보기 추가
       const previewURL = URL.createObjectURL(file);
       this.addMessage('user', `<img src="${previewURL}" alt="업로드 이미지" style="max-width:200px;border-radius:8px;">`);
 
       const texts = this.getTexts();
       this.addMessage('bot', texts.analyzing);
 
-      // Base64 변환
       const base64Image = await this.fileToBase64(file);
 
-      // 1단계: 이미지 분석
       const analysisResponse = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1000,11 +1128,9 @@ class HairGatorChatbot {
         return;
       }
 
-      // 분석 결과 표시
       const formattedAnalysis = this.formatParameters(analysisResult.data);
       this.replaceLastBotMessage(formattedAnalysis);
 
-      // 2단계: 레시피 생성
       this.addMessage('bot', texts.generating);
 
       const recipeResponse = await fetch(this.apiEndpoint, {
@@ -1014,7 +1140,7 @@ class HairGatorChatbot {
           action: 'generate_recipe_stream',
           payload: {
             params56: analysisResult.data,
-            language: this.currentLanguage  // 다국어 지원
+            language: this.currentLanguage
           }
         })
       });
@@ -1026,11 +1152,9 @@ class HairGatorChatbot {
       const recipeResult = await recipeResponse.json();
 
       if (recipeResult.success && recipeResult.data.recipe) {
-        // 레시피를 HTML로 렌더링 (89용어 하이라이트 포함)
         const rendered = this.parseMarkdownWithHighlight(recipeResult.data.recipe);
         this.replaceLastBotMessage(rendered);
         
-        // ✅ 유사 스타일 카드 표시 (백엔드에서 필터링된 것만 옴)
         if (recipeResult.data.similar_styles && recipeResult.data.similar_styles.length > 0) {
           this.displayStyleCards(recipeResult.data.similar_styles);
         }
@@ -1043,19 +1167,16 @@ class HairGatorChatbot {
       this.replaceLastBotMessage(`❌ 오류 발생: ${error.message}`);
     }
 
-    // 파일 입력 초기화
     event.target.value = '';
   }
 
-  // 89용어 하이라이팅 함수 (✅ TypeError 방지)
   highlight89Terms(text) {
     if (!text || typeof text !== 'string') return text;
 
     let result = text;
 
-    // 1단계: 숫자.용어명 패턴 먼저 처리 (54.Lifting, 33.Direction 등)
     result = result.replace(/(\d{1,2})\.([\w\s&'-]+?)(?=[\s,.:;)]|$)/g, (match, id, termName) => {
-      const paddedId = id.padStart(2, '0'); // "5" -> "05"
+      const paddedId = id.padStart(2, '0');
       const term = this.terms89Map[paddedId];
       
       if (term) {
@@ -1065,17 +1186,14 @@ class HairGatorChatbot {
       return match;
     });
 
-    // 2단계: 용어명만 있는 경우 처리
     Object.entries(this.terms89Map).forEach(([id, term]) => {
       const koTerm = term.ko;
       const enTerm = term.en;
       const displayName = term[this.currentLanguage] || term.ko || term.en;
 
-      // 이미 span으로 감싸진 용어는 제외
       const regex = new RegExp(`(?<!<span[^>]*>)\\b(${koTerm}|${enTerm})\\b(?![^<]*<\\/span>)`, 'gi');
       
       result = result.replace(regex, (match) => {
-        // 이미 "54.Lifting" 형식으로 처리된 경우는 제외
         if (result.includes(`>${match}</span>`)) return match;
         
         return `<span class="term-89 clickable" data-term="${id}" title="클릭하여 색인 보기">${match} <span class="term-ref">(${id}번 참고)</span></span>`;
@@ -1085,11 +1203,9 @@ class HairGatorChatbot {
     return result;
   }
 
-  // 마크다운 파싱 + 89용어 하이라이트
   parseMarkdownWithHighlight(markdown) {
     if (!markdown) return '';
 
-    // 1. 코드 블록 임시 저장
     const codeBlocks = [];
     let html = markdown.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
       const placeholder = `___CODE_BLOCK_${codeBlocks.length}___`;
@@ -1097,25 +1213,20 @@ class HairGatorChatbot {
       return placeholder;
     });
 
-    // 2. STEP 헤더 파싱 (###1 ~ ###7)
     html = html.replace(/^###(\d)\.\s*(.+)$/gm, (match, num, title) => {
       return `<h3 class="recipe-step">STEP ${num}. ${title}</h3>`;
     });
 
-    // 3. 일반 헤더 파싱
     html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
     html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
     html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
 
-    // 4. 89용어 하이라이팅 적용
     html = this.highlight89Terms(html);
 
-    // 5. 인라인 스타일
     html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
     html = html.replace(/`(.+?)`/g, '<code>$1</code>');
 
-    // 6. 리스트 파싱 개선 (중첩 리스트 지원)
     const lines = html.split('\n');
     const result = [];
     let inList = false;
@@ -1123,7 +1234,6 @@ class HairGatorChatbot {
     lines.forEach(line => {
       const trimmed = line.trim();
       
-      // 리스트 항목
       if (trimmed.match(/^[-*•]\s+/)) {
         if (!inList) {
           result.push('<ul>');
@@ -1132,15 +1242,12 @@ class HairGatorChatbot {
         const content = trimmed.replace(/^[-*•]\s+/, '');
         result.push(`<li>${content}</li>`);
       } 
-      // 빈 줄
       else if (trimmed === '') {
         if (inList) {
           result.push('</ul>');
           inList = false;
         }
-        // 빈 줄은 무시
       }
-      // 일반 텍스트
       else {
         if (inList) {
           result.push('</ul>');
@@ -1150,25 +1257,21 @@ class HairGatorChatbot {
       }
     });
 
-    // 리스트가 열려있으면 닫기
     if (inList) {
       result.push('</ul>');
     }
 
     html = result.join('\n');
 
-    // 5. 코드 블록 복원
     codeBlocks.forEach((block, index) => {
       html = html.replace(`___CODE_BLOCK_${index}___`, block);
     });
 
-    // 6. → 화살표를 예쁘게
     html = html.replace(/→/g, '<span class="arrow">→</span>');
 
     return html;
   }
 
-  // HTML 이스케이프
   escapeHtml(text) {
     const map = {
       '&': '&amp;',
@@ -1180,87 +1283,78 @@ class HairGatorChatbot {
     return text.replace(/[&<>"']/g, m => map[m]);
   }
 
-  // 파라미터 포맷팅
   formatParameters(analysisData) {
-  const lines = [];
-  const params56 = analysisData.parameters_56 || analysisData;
-  const langTerms = this.getTerms(this.currentLanguage);
+    const lines = [];
+    const params56 = analysisData.parameters_56 || analysisData;
+    const langTerms = this.getTerms(this.currentLanguage);
 
-  lines.push('<div class="analysis-result">');
-  lines.push('<h3>📊 분석 완료</h3>');
+    lines.push('<div class="analysis-result">');
+    lines.push('<h3>📊 분석 완료</h3>');
 
-  lines.push('<div class="params-section">');
-  lines.push('<ul>');
-  
-  // 1. 길이 (설명 추가)
-  if (params56.length_category) {
-    const lengthDesc = langTerms.lengthDesc[params56.length_category] || params56.length_category;
-    lines.push(`<li>📏 길이: <strong>${params56.length_category}</strong> (${lengthDesc})</li>`);
-  }
-  
-  // 2. 형태 (설명 추가)
-  if (params56.cut_form) {
-    const formCode = params56.cut_form.charAt(0); // "L (Layer)" → "L"
-    const formDesc = langTerms.formDesc[formCode] || params56.cut_form;
-    lines.push(`<li>✂️ 형태: <strong>${params56.cut_form}</strong> - ${formDesc}</li>`);
-  }
-  
-  // 3. 볼륨 (각도 포함)
-  if (params56.volume_zone) {
-    const volumeDesc = langTerms.volume[params56.volume_zone] || params56.volume_zone;
-    lines.push(`<li>📐 볼륨: <strong>${params56.volume_zone}</strong> (${volumeDesc})</li>`);
-  }
-  
-  // 4. 리프팅 각도 (추가!)
-  if (params56.lifting_range && params56.lifting_range.length > 0) {
-    const liftingDesc = params56.lifting_range.map(l => {
-      const desc = langTerms.lifting[l] || l;
-      return `${l} (${desc})`;
-    }).join(', ');
-    lines.push(`<li>🎯 리프팅: <strong>${params56.lifting_range.join(', ')}</strong></li>`);
-  }
-  
-  // 5. 앞머리
-  if (params56.fringe_type && params56.fringe_type !== 'No Fringe') {
-    const fringeDesc = langTerms.fringeType[params56.fringe_type] || params56.fringe_type;
-    lines.push(`<li>👤 앞머리: <strong>${params56.fringe_type}</strong> (${fringeDesc})</li>`);
-  }
-  
-  // 6. 모질
-  if (params56.hair_texture) {
-    lines.push(`<li>🧵 모질: <strong>${params56.hair_texture}</strong></li>`);
-  }
-  
-  // 7. 추천 얼굴형 (face_shape_match를 추천으로 변경!)
-  if (params56.face_shape_match) {
-    // face_shape_match가 배열이면 그대로, 문자열이면 배열로 변환
-    const faceShapes = Array.isArray(params56.face_shape_match) 
-      ? params56.face_shape_match 
-      : [params56.face_shape_match];
+    lines.push('<div class="params-section">');
+    lines.push('<ul>');
     
-    const faceShapeNames = {
-      'Oval': '계란형',
-      'Round': '둥근형',
-      'Square': '사각형',
-      'Heart': '하트형',
-      'Long': '긴 얼굴형',
-      'Diamond': '다이아몬드형'
-    };
+    if (params56.length_category) {
+      const lengthDesc = langTerms.lengthDesc[params56.length_category] || params56.length_category;
+      lines.push(`<li>📏 길이: <strong>${params56.length_category}</strong> (${lengthDesc})</li>`);
+    }
     
-    const faceShapeList = faceShapes.map(shape => {
-      const koreanName = faceShapeNames[shape] || shape;
-      return `${shape} (${koreanName})`;
-    }).join(', ');
+    if (params56.cut_form) {
+      const formCode = params56.cut_form.charAt(0);
+      const formDesc = langTerms.formDesc[formCode] || params56.cut_form;
+      lines.push(`<li>✂️ 형태: <strong>${params56.cut_form}</strong> - ${formDesc}</li>`);
+    }
     
-    lines.push(`<li>😊 추천 얼굴형: <strong>${faceShapeList}</strong></li>`);
+    if (params56.volume_zone) {
+      const volumeDesc = langTerms.volume[params56.volume_zone] || params56.volume_zone;
+      lines.push(`<li>📐 볼륨: <strong>${params56.volume_zone}</strong> (${volumeDesc})</li>`);
+    }
+    
+    if (params56.lifting_range && params56.lifting_range.length > 0) {
+      const liftingDesc = params56.lifting_range.map(l => {
+        const desc = langTerms.lifting[l] || l;
+        return `${l} (${desc})`;
+      }).join(', ');
+      lines.push(`<li>🎯 리프팅: <strong>${params56.lifting_range.join(', ')}</strong></li>`);
+    }
+    
+    if (params56.fringe_type && params56.fringe_type !== 'No Fringe') {
+      const fringeDesc = langTerms.fringeType[params56.fringe_type] || params56.fringe_type;
+      lines.push(`<li>👤 앞머리: <strong>${params56.fringe_type}</strong> (${fringeDesc})</li>`);
+    }
+    
+    if (params56.hair_texture) {
+      lines.push(`<li>🧵 모질: <strong>${params56.hair_texture}</strong></li>`);
+    }
+    
+    if (params56.face_shape_match) {
+      const faceShapes = Array.isArray(params56.face_shape_match) 
+        ? params56.face_shape_match 
+        : [params56.face_shape_match];
+      
+      const faceShapeNames = {
+        'Oval': '계란형',
+        'Round': '둥근형',
+        'Square': '사각형',
+        'Heart': '하트형',
+        'Long': '긴 얼굴형',
+        'Diamond': '다이아몬드형'
+      };
+      
+      const faceShapeList = faceShapes.map(shape => {
+        const koreanName = faceShapeNames[shape] || shape;
+        return `${shape} (${koreanName})`;
+      }).join(', ');
+      
+      lines.push(`<li>😊 추천 얼굴형: <strong>${faceShapeList}</strong></li>`);
+    }
+
+    lines.push(`</ul>`);
+    lines.push('</div>');
+    lines.push('</div>');
+
+    return lines.join('');
   }
-
-  lines.push(`</ul>`);
-  lines.push('</div>');
-  lines.push('</div>');
-
-  return lines.join('');
-}
 
   async handleTextMessage() {
     const input = document.getElementById('chatbot-input');
@@ -1271,23 +1365,14 @@ class HairGatorChatbot {
     this.addMessage('user', message);
     input.value = '';
 
-    // ✅ 개선된 일반 대화 감지
     const casualKeywords = ['안녕', '반가', '고마', '감사', '도움', '뭐', '어떻게', '알려줘', '설명', '궁금', 'hello', 'hi', 'thanks', 'thank you', 'help', 'explain'];
     const questionKeywords = ['뭐', '무엇', '어떻게', '왜', '언제', '어디', '누가', 'what', 'how', 'why', 'when', 'where', 'who'];
-    
-    // 스타일 검색 키워드
     const styleKeywords = ['스타일', '헤어', '커트', '펌', '컬러', '염색', '미디움', '숏', '롱', '단발', '레이어', '그래쥬에이션', 'style', 'hair', 'cut', 'perm', 'color', 'medium', 'short', 'long', 'layer', 'graduation'];
     
-    // 일반 대화인지 판단
     const isCasualChat = casualKeywords.some(keyword => message.includes(keyword)) && message.length < 30;
-    
-    // 스타일 검색 의도가 있는지 판단
     const isStyleSearch = styleKeywords.some(keyword => message.includes(keyword));
-    
-    // 질문이지만 스타일 검색이 아닌 경우 (이론 질문)
     const isTheoryQuestion = questionKeywords.some(keyword => message.includes(keyword)) && !isStyleSearch;
 
-    // ✅ Case 1: 일반 대화 또는 이론 질문
     if (isCasualChat || isTheoryQuestion) {
       this.addMessage('bot', '답변 생성 중...');
       
@@ -1318,7 +1403,6 @@ class HairGatorChatbot {
       return;
     }
 
-    // ✅ Case 2: 스타일 검색 모드
     this.addMessage('bot', '검색 중...');
 
     try {
@@ -1357,7 +1441,6 @@ class HairGatorChatbot {
       if (gptResult.success) {
         this.replaceLastBotMessage(gptResult.data);
         
-        // ✅ 유효한 스타일만 필터링해서 표시
         const validStyles = styles.filter(style => {
           const hasValidImage = style.main_image_url && 
                                !style.main_image_url.includes('hairgatorchatbot') &&
@@ -1367,7 +1450,6 @@ class HairGatorChatbot {
           return hasValidImage;
         });
         
-        // 유효한 스타일이 있을 때만 카드 표시
         if (validStyles.length > 0) {
           this.displayStyleCards(validStyles);
         }
@@ -1391,10 +1473,8 @@ class HairGatorChatbot {
     });
   }
 
-  // ✅ 수정: 임시 Storage 이미지 필터링 추가
   displayStyleCards(styles) {
     const cardsHTML = styles.map(style => {
-      // 이미지 URL 검증 (Storage URL 및 임시 이미지 제외)
       const hasValidImage = style.main_image_url && 
                            !style.main_image_url.includes('hairgatorchatbot') &&
                            !style.main_image_url.includes('temp') &&
@@ -1425,19 +1505,13 @@ class HairGatorChatbot {
     `;
     messagesDiv.insertAdjacentHTML('beforeend', messageHTML);
     
-    // 89용어 클릭 이벤트 등록
     this.attach89TermClickHandlers();
-    
-    // ✅ 히스토리에 저장 (타임스탬프 포함)
     this.addToHistory(sender, content);
-    
     this.scrollToBottom();
   }
   
-  // 89용어 클릭 핸들러 등록
   attach89TermClickHandlers() {
     document.querySelectorAll('.term-89.clickable').forEach(termEl => {
-      // 이미 이벤트가 등록된 경우 중복 방지
       if (termEl.dataset.listenerAttached) return;
       termEl.dataset.listenerAttached = 'true';
       
@@ -1448,16 +1522,13 @@ class HairGatorChatbot {
         const termId = termEl.dataset.term;
         console.log(`🔍 89용어 클릭: ${termId}번`);
         
-        // 색인 모달 열기
         this.showIndexModal();
         
-        // 약간의 딜레이 후 해당 용어로 스크롤
         setTimeout(() => {
           const targetCard = document.querySelector(`.term-card-single[data-term-id="${termId}"]`);
           if (targetCard) {
             targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
-            // 하이라이트 효과
             targetCard.style.border = '3px solid #2196F3';
             targetCard.style.boxShadow = '0 8px 24px rgba(33, 150, 243, 0.4)';
             
@@ -1472,7 +1543,6 @@ class HairGatorChatbot {
       termEl.addEventListener('click', handleClick);
       termEl.addEventListener('touchstart', handleClick, { passive: false });
       
-      // 호버 효과
       termEl.style.cursor = 'pointer';
     });
   }
@@ -1488,8 +1558,6 @@ class HairGatorChatbot {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage) {
       lastMessage.querySelector('.message-content').innerHTML = newContent;
-      
-      // 89용어 클릭 이벤트 등록
       this.attach89TermClickHandlers();
     }
     this.scrollToBottom();
@@ -1509,8 +1577,7 @@ class HairGatorChatbot {
       return;
     }
     
-    // 언어 변경 함수
-    let isProcessing = false;  // 중복 실행 방지
+    let isProcessing = false;
     
     const handleLanguageChange = function(lang) {
       if (isProcessing) {
@@ -1521,16 +1588,13 @@ class HairGatorChatbot {
       isProcessing = true;
       console.log('🎯 언어 선택: ' + lang);
       
-      // 드롭다운 닫기
       dropdown.classList.add('hidden');
       
-      // 언어 변경
       self.currentLanguage = lang;
       self.setStoredLanguage(lang);
       
       const texts = self.getTexts();
       
-      // DOM 업데이트
       const title = document.getElementById('chatbot-title');
       if (title) title.textContent = texts.title;
       
@@ -1539,7 +1603,6 @@ class HairGatorChatbot {
       
       const msgs = document.getElementById('chatbot-messages');
       if (msgs) {
-        // ✅ 히스토리가 있으면 복원, 없으면 환영 메시지
         if (self.conversationHistory && self.conversationHistory.length > 0) {
           self.restoreHistoryToUI();
         } else {
@@ -1549,13 +1612,11 @@ class HairGatorChatbot {
       
       console.log('✅ 언어 변경 완료: ' + lang);
       
-      // 300ms 후 플래그 해제
       setTimeout(function() {
         isProcessing = false;
       }, 300);
     };
     
-    // ⭐ CSS 오버라이드: 언어 드롭다운 최상위
     const style = document.createElement('style');
     style.textContent = `
       .chatbot-container {
@@ -1600,7 +1661,6 @@ class HairGatorChatbot {
     `;
     document.head.appendChild(style);
     
-    // ⭐ 이벤트 위임: 드롭다운에 직접 클릭 이벤트 등록
     dropdown.addEventListener('click', function(e) {
       const langBtn = e.target.closest('.lang-option');
       
@@ -1632,5 +1692,5 @@ class HairGatorChatbot {
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR v2.0 FINAL 챗봇 로드 완료');
+  console.log('🦎 HAIRGATOR v2.1 FINAL 챗봇 로드 완료');
 });
