@@ -150,18 +150,21 @@ class ChatbotCore {
    * @returns {Promise<Object>} 레시피 + 도해도
    */
   async generateRecipe(params56, language = 'ko', onProgress = null) {
-    try {
-      const response = await fetch(this.apiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'generate_recipe_stream',
-          payload: {
-            params56: params56,
-            language: language
-          }
-        })
-      });
+  try {
+    // ⭐ 디버깅 로그 추가
+    console.log('📤 프론트엔드 전송:', { params56, language });
+    
+    const response = await fetch(this.apiEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'generate_recipe_stream',
+        payload: {
+          params56: params56,
+          language: language
+        }
+      })
+    });
 
       // ⭐ 스트리밍 응답 처리 추가
       if (!response.ok) {
