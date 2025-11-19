@@ -611,14 +611,27 @@
             const designerPhone = document.getElementById('designerPhoneDisplay');
             const sessionStatus = document.getElementById('sessionStatusDisplay');
 
+            // null 체크 추가
+            if (!userInfo || !guestMessage || !personalColorSection) {
+                console.warn('⚠️ updateUserInfo: 필수 DOM 요소를 찾을 수 없습니다');
+                return;
+            }
+
             if (currentDesigner) {
                 userInfo.style.display = 'block';
                 guestMessage.style.display = 'none';
                 personalColorSection.style.display = 'block'; // 퍼스널컬러 버튼 표시
 
-                designerName.textContent = `이름: ${currentDesigner.name}`;
-                designerPhone.textContent = `전화: ${currentDesigner.phone}`;
-                sessionStatus.textContent = `토큰: ${currentDesigner.tokens || 0}개`;
+                // 각 요소 null 체크
+                if (designerName) {
+                    designerName.textContent = `이름: ${currentDesigner.name}`;
+                }
+                if (designerPhone) {
+                    designerPhone.textContent = `전화: ${currentDesigner.phone}`;
+                }
+                if (sessionStatus) {
+                    sessionStatus.textContent = `토큰: ${currentDesigner.tokens || 0}개`;
+                }
             } else {
                 userInfo.style.display = 'none';
                 guestMessage.style.display = 'block';
@@ -859,7 +872,11 @@
             setupModalHandlers();
 
             loginScreen.style.display = 'flex';
-            updateUserInfo();
+            
+            // updateUserInfo를 약간 지연시켜 DOM이 완전히 로드된 후 실행
+            setTimeout(() => {
+                updateUserInfo();
+            }, 100);
 
             // 입력 필드 변경시 상태 확인
             const nameInput = document.getElementById('designerName');
