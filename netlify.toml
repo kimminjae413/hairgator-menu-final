@@ -1,4 +1,5 @@
 # netlify.toml - HAIRGATOR 최종 설정 (헤어체험 + 챗봇 + MediaPipe 통합)
+# 🔥 HOTFIX: Functions 타임아웃 26초로 연장 (GPT 레시피 생성 시간 고려)
 
 [build]
   publish = "."
@@ -11,9 +12,16 @@
 # ========== Functions 설정 ==========
 [functions]
   node_bundler = "esbuild"
-  # Functions 타임아웃 설정 (Gemini 이미지 분석 시간 고려)
-  [functions.timeout]
-    default = 10
+
+# ⭐ HOTFIX: 타임아웃 26초로 연장 (기본 10초 → 26초)
+# - Gemini 이미지 분석: ~2-3초
+# - Supabase 벡터 검색: ~1-2초
+# - GPT 레시피 생성: ~5-10초
+# - 보안 필터링: ~1초
+# 총 예상 시간: 10-16초 → 26초로 여유 확보
+[functions."chatbot-api"]
+  node_bundler = "esbuild"
+  timeout = 26
 
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
@@ -191,3 +199,9 @@
 # 4. SUPABASE_ANON_KEY
 #    값: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3M...
 #    용도: Supabase 인증
+
+# ========== 타임아웃 설정 히스토리 ==========
+# 2025-01-25: 기본 10초 → 26초로 연장
+# - 원인: GPT 레시피 생성 시 HTTP 504 타임아웃 발생
+# - 해결: 무료 플랜 최대값 26초로 설정
+# - 효과: 복잡한 레시피 생성도 안정적으로 처리
