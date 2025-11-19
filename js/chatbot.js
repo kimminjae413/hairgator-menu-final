@@ -1182,37 +1182,85 @@ class HairGatorChatbot {
 
   // 파라미터 포맷팅
   formatParameters(analysisData) {
-    const lines = [];
-    const params56 = analysisData.parameters_56 || analysisData;
+  const lines = [];
+  const params56 = analysisData.parameters_56 || analysisData;
+  const langTerms = this.getTerms(this.currentLanguage);
 
-    lines.push('<div class="analysis-result">');
-    lines.push('<h3>📊 분석 완료</h3>');
+  lines.push('<div class="analysis-result">');
+  lines.push('<h3>📊 분석 완료</h3>');
 
-    lines.push('<div class="params-section">');
-    lines.push('<ul>');
-    
-    if (params56.womens_cut_length) {
-      lines.push(`<li>📏 길이: <strong>${params56.womens_cut_length}</strong></li>`);
-    }
-    if (params56.womens_cut_category) {
-      lines.push(`<li>✂️ 스타일: <strong>${params56.womens_cut_category}</strong></li>`);
-    }
-    if (params56.fringe_type && params56.fringe_type !== 'No Fringe') {
-      lines.push(`<li>💇 앞머리: ${params56.fringe_type}</li>`);
-    }
-    if (params56.hair_texture) {
-      lines.push(`<li>🧵 모질: ${params56.hair_texture}</li>`);
-    }
-    if (params56.face_shape_match) {
-      lines.push(`<li>👤 얼굴형: ${params56.face_shape_match}</li>`);
-    }
-
-    lines.push(`</ul>`);
-    lines.push('</div>');
-    lines.push('</div>');
-
-    return lines.join('');
+  lines.push('<div class="params-section">');
+  lines.push('<ul>');
+  
+  // 1. 길이 (설명 추가)
+  if (params56.length_category) {
+    const lengthDesc = langTerms.lengthDesc[params56.length_category] || params56.length_category;
+    lines.push(`<li>📏 길이: <strong>${params56.length_category}</strong> (${lengthDesc})</li>`);
   }
+  
+  // 2. 형태 (설명 추가)
+  if (params56.cut_form) {
+    const formCode = params56.cut_form.charAt(0); // "L (Layer)" → "L"
+    const formDesc = langTerms.formDesc[formCode] || params56.cut_form;
+    lines.push(`<li>✂️ 형태: <strong>${params56.cut_form}</strong> - ${formDesc}</li>`);
+  }
+  
+  // 3. 볼륨 (각도 포함)
+  if (params56.volume_zone) {
+    const volumeDesc = langTerms.volume[params56.volume_zone] || params56.volume_zone;
+    lines.push(`<li>📐 볼륨: <strong>${params56.volume_zone}</strong> (${volumeDesc})</li>`);
+  }
+  
+  // 4. 리프팅 각도 (추가!)
+  if (params56.lifting_range && params56.lifting_range.length > 0) {
+    const liftingDesc = params56.lifting_range.map(l => {
+      const desc = langTerms.lifting[l] || l;
+      return `${l} (${desc})`;
+    }).join(', ');
+    lines.push(`<li>🎯 리프팅: <strong>${params56.lifting_range.join(', ')}</strong></li>`);
+  }
+  
+  // 5. 앞머리
+  if (params56.fringe_type && params56.fringe_type !== 'No Fringe') {
+    const fringeDesc = langTerms.fringeType[params56.fringe_type] || params56.fringe_type;
+    lines.push(`<li>👤 앞머리: <strong>${params56.fringe_type}</strong> (${fringeDesc})</li>`);
+  }
+  
+  // 6. 모질
+  if (params56.hair_texture) {
+    lines.push(`<li>🧵 모질: <strong>${params56.hair_texture}</strong></li>`);
+  }
+  
+  // 7. 추천 얼굴형 (face_shape_match를 추천으로 변경!)
+  if (params56.face_shape_match) {
+    // face_shape_match가 배열이면 그대로, 문자열이면 배열로 변환
+    const faceShapes = Array.isArray(params56.face_shape_match) 
+      ? params56.face_shape_match 
+      : [params56.face_shape_match];
+    
+    const faceShapeNames = {
+      'Oval': '계란형',
+      'Round': '둥근형',
+      'Square': '사각형',
+      'Heart': '하트형',
+      'Long': '긴 얼굴형',
+      'Diamond': '다이아몬드형'
+    };
+    
+    const faceShapeList = faceShapes.map(shape => {
+      const koreanName = faceShapeNames[shape] || shape;
+      return `${shape} (${koreanName})`;
+    }).join(', ');
+    
+    lines.push(`<li>😊 추천 얼굴형: <strong>${faceShapeList}</strong></li>`);
+  }
+
+  lines.push(`</ul>`);
+  lines.push('</div>');
+  lines.push('</div>');
+
+  return lines.join('');
+}
 
   async handleTextMessage() {
     const input = document.getElementById('chatbot-input');
