@@ -197,23 +197,6 @@ class ChatbotCore {
     }
   }
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || '레시피 생성 실패');
-      }
-
-      return result.data;
-
-    } catch (error) {
-      console.error('❌ 레시피 생성 오류:', error);
-      throw error;
-    }
-  }
 
   /**
    * 스타일 검색
