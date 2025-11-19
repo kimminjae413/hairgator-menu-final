@@ -296,10 +296,9 @@
         const toast = document.getElementById('toast');
 
         // 테마 관리 함수들
-        ffunction loadTheme() {
-    const savedTheme = localStorage.getItem('hairgator-theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-}
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('hairgator-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
             console.log(`테마 로드: ${savedTheme}`);
         }
 
@@ -955,7 +954,7 @@
         });
     </script>
 
-    <!-- 추가 스타일 -->
+    <!-- 추가 스타일 (기존 style 태그 그대로 유지) -->
     <style>
         /* 계정 잠금 경고 */
         .account-lockout-warning {
@@ -1768,6 +1767,9 @@ function showSimpleDevelopmentToast() {
     }
 }
 </script>    
-<script src="js/chatbot.js"></script>
+
+<!-- ⭐ 챗봇 시스템 - ES6 Modules로 변경 -->
+<script type="module" src="js/chatbot-ui.js"></script>
+
 </body>
 </html>
