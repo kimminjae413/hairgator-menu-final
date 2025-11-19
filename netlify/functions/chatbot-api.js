@@ -702,20 +702,26 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       return `${i+1}. ${name}`;
     }).join('\n');
 
-    let systemPrompt;
-    if (language === 'ko') {
-      systemPrompt = buildKoreanPrompt(params56, theoryContext, similarStylesTextKo, langTerms, volumeDesc);
-    } else if (language === 'en') {
-      systemPrompt = buildEnglishPrompt(params56, theoryContext, similarStylesTextEn, langTerms, volumeDesc);
-    } else if (language === 'ja') {
-      systemPrompt = buildJapanesePrompt(params56, theoryContext, similarStylesTextKo, langTerms, volumeDesc);
-    } else if (language === 'zh') {
-      systemPrompt = buildChinesePrompt(params56, theoryContext, similarStylesTextKo, langTerms, volumeDesc);
-    } else if (language === 'vi') {
-      systemPrompt = buildVietnamesePrompt(params56, theoryContext, similarStylesTextKo, langTerms, volumeDesc);
-    } else {
-      systemPrompt = buildKoreanPrompt(params56, theoryContext, similarStylesTextKo, langTerms, volumeDesc);
-    }
+    // ⚡ 긴급 수정: 간단한 프롬프트로 교체 (속도 개선)
+    const simpleSystemPrompt = `당신은 전문 헤어 스타일리스트입니다.
+
+다음 정보로 간단하고 실용적인 커팅 레시피를 작성하세요:
+
+**분석 결과:**
+- 길이: ${params56.length_category} (${langTerms.lengthDesc[params56.length_category] || params56.length_category})
+- 형태: ${params56.cut_form}
+- 볼륨: ${params56.volume_zone} (${volumeDesc})
+- 앞머리: ${params56.fringe_type || '없음'}
+- 모질: ${params56.hair_texture || '보통'}
+
+**레시피 구성:**
+1. 전체 개요 (2-3줄)
+2. 주요 커팅 방법 (3-4단계)
+3. 스타일링 팁 (2-3줄)
+
+간결하고 실용적으로 작성하세요. 총 500자 이내.`;
+
+    const systemPrompt = simpleSystemPrompt;
 
     const strictLanguageMessage = {
       ko: '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요.',
@@ -730,7 +736,8 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     // ✅ 시스템 프롬프트 합치기 (400 에러 방지)
     const combinedSystemPrompt = `${strictLanguageMessage}\n\n${systemPrompt}`;
 
-   const completion = await fetch('https://api.openai.com/v1/chat/completions', {
+    // ⚡⚡⚡ 스트리밍 방식으로 변경! ⚡⚡⚡
+    const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openaiKey}`,
@@ -739,11 +746,12 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: combinedSystemPrompt },  // ✅ 하나로 합침
+          { role: 'system', content: combinedSystemPrompt },
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.5,
-        max_tokens: 3000  // 6000 → 3000 (속도 개선)
+        max_tokens: 2000,
+        stream: true  // ⭐⭐⭐ 스트리밍 활성화!
       })
     });
 
@@ -751,8 +759,37 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       throw new Error(`OpenAI API Error: ${completion.status}`);
     }
 
-    const gptData = await completion.json();
-    let recipe = gptData.choices[0].message.content;
+    // ⚡ 스트리밍 응답 처리
+    let fullRecipe = '';
+    const reader = completion.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n').filter(line => line.trim() !== '');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') continue;
+
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullRecipe += content;
+            }
+          } catch (e) {
+            // 파싱 에러 무시
+          }
+        }
+      }
+    }
+
+    let recipe = fullRecipe;
 
     recipe = sanitizeRecipeForPublic(recipe, language);
 
