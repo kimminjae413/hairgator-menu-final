@@ -1,11 +1,11 @@
 // netlify/functions/chatbot-api.js
-// HAIRGATOR 챗봇 - GPT-4o Vision 버전 (2025-11-20)
+// HAIRGATOR 챗봇 - GPT-4o Vision 완벽 버전 (2025-11-20)
 // 
 // 🔥 최종 수정사항:
-// 1. Gemini 2.0 Flash → GPT-4o Vision으로 교체
-// 2. 모델명: gpt-4o-2024-11-20 (최신 안정 버전)
-// 3. 영어 프롬프트로 전환 (정확도 향상)
-// 4. JSON Schema 방식 Structured Output
+// 1. GPT-4o Vision (gpt-4o-2024-11-20)
+// 2. Function Calling으로 56개 파라미터 강제 추출
+// 3. 얼굴형 추천 (face_shape_match) 포함
+// 4. JSON Schema Strict Mode
 // ==================== 
 
 const fetch = require('node-fetch');
@@ -15,6 +15,303 @@ const headers = {
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json'
+};
+
+// ==================== 56개 파라미터 스키마 ====================
+const PARAMS_56_SCHEMA = {
+  type: "object",
+  properties: {
+    // 기본 정보
+    cut_category: {
+      type: "string",
+      enum: ["Women's Cut", "Men's Cut"],
+      description: "Gender category"
+    },
+    
+    // 길이 (Length) - 8개
+    length_category: {
+      type: "string",
+      enum: [
+        "A Length", "B Length", "C Length", "D Length",
+        "E Length", "F Length", "G Length", "H Length"
+      ],
+      description: "Overall length category based on body landmarks"
+    },
+    
+    estimated_hair_length_cm: {
+      type: "string",
+      description: "Estimated hair length in cm (e.g., '35')"
+    },
+    
+    front_length: {
+      type: "string",
+      enum: ["Very Short", "Short", "Medium", "Long", "Very Long"],
+      description: "Front hair length"
+    },
+    
+    back_length: {
+      type: "string",
+      enum: ["Very Short", "Short", "Medium", "Long", "Very Long"],
+      description: "Back hair length"
+    },
+    
+    side_length: {
+      type: "string",
+      enum: ["Very Short", "Short", "Medium", "Long", "Very Long"],
+      description: "Side hair length"
+    },
+    
+    // 구조 (Structure)
+    cut_form: {
+      type: "string",
+      enum: ["O (One Length)", "G (Graduation)", "L (Layer)"],
+      description: "Cut form - must include parentheses"
+    },
+    
+    structure_layer: {
+      type: "string",
+      enum: [
+        "No Layer", "Low Layer", "Mid Layer", "High Layer",
+        "Full Layer", "Square Layer", "Round Layer", "Graduated Layer"
+      ],
+      description: "Layer structure"
+    },
+    
+    graduation_type: {
+      type: "string",
+      enum: ["None", "Light", "Medium", "Heavy"],
+      description: "Graduation level"
+    },
+    
+    weight_distribution: {
+      type: "string",
+      enum: ["Top Heavy", "Balanced", "Bottom Heavy"],
+      description: "Weight distribution"
+    },
+    
+    layer_type: {
+      type: "string",
+      enum: ["No Layer", "Low Layer", "Mid Layer", "High Layer", "Full Layer"],
+      description: "Layer type"
+    },
+    
+    // 형태 (Shape)
+    silhouette: {
+      type: "string",
+      enum: ["Triangular", "Square", "Round"],
+      description: "Overall silhouette shape"
+    },
+    
+    outline_shape: {
+      type: "string",
+      enum: ["Straight", "Curved", "Angular", "Irregular"],
+      description: "Outline shape"
+    },
+    
+    volume_zone: {
+      type: "string",
+      enum: ["Low", "Medium", "High"],
+      description: "Volume zone (bottom/middle/top)"
+    },
+    
+    volume_distribution: {
+      type: "string",
+      enum: ["Top", "Middle", "Bottom", "Even"],
+      description: "Volume distribution"
+    },
+    
+    line_quality: {
+      type: "string",
+      enum: ["Sharp", "Soft", "Blended", "Disconnected"],
+      description: "Line quality"
+    },
+    
+    // 앞머리 (Fringe)
+    fringe_type: {
+      type: "string",
+      enum: [
+        "Full Bang", "See-through Bang", "Side Bang",
+        "Center Part", "No Fringe"
+      ],
+      description: "Fringe type"
+    },
+    
+    fringe_length: {
+      type: "string",
+      enum: [
+        "Forehead", "Eyebrow", "Eye", "Cheekbone",
+        "Lip", "Chin", "None"
+      ],
+      description: "Fringe length"
+    },
+    
+    fringe_texture: {
+      type: "string",
+      enum: ["Blunt", "Textured", "Wispy", "Choppy"],
+      description: "Fringe texture"
+    },
+    
+    // 텍스처 (Texture)
+    surface_texture: {
+      type: "string",
+      enum: ["Smooth", "Textured", "Choppy", "Soft"],
+      description: "Surface texture"
+    },
+    
+    internal_texture: {
+      type: "string",
+      enum: ["Blunt", "Point Cut", "Slide Cut", "Razor Cut"],
+      description: "Internal texture"
+    },
+    
+    hair_density: {
+      type: "string",
+      enum: ["Thin", "Medium", "Thick"],
+      description: "Hair density"
+    },
+    
+    hair_texture: {
+      type: "string",
+      enum: ["Straight", "Wavy", "Curly", "Coily"],
+      description: "Natural hair texture"
+    },
+    
+    movement: {
+      type: "string",
+      enum: ["Static", "Slight", "Moderate", "High"],
+      description: "Movement level"
+    },
+    
+    texture_technique: {
+      type: "string",
+      enum: ["None", "Point Cut", "Slide Cut", "Razor", "Texturizing"],
+      description: "Texturizing technique"
+    },
+    
+    // 기술 (Technique)
+    section_primary: {
+      type: "string",
+      enum: [
+        "Horizontal", "Vertical",
+        "Diagonal-Forward", "Diagonal-Backward"
+      ],
+      description: "Primary sectioning direction"
+    },
+    
+    lifting_range: {
+      type: "array",
+      items: {
+        type: "string",
+        enum: ["L0", "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"]
+      },
+      minItems: 1,
+      maxItems: 9,
+      description: "Lifting angle range (array format)"
+    },
+    
+    direction_primary: {
+      type: "string",
+      enum: ["D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"],
+      description: "Primary cutting direction"
+    },
+    
+    cutting_method: {
+      type: "string",
+      enum: [
+        "Blunt Cut", "Point Cut", "Slide Cut",
+        "Stroke Cut", "Razor Cut"
+      ],
+      description: "Cutting method"
+    },
+    
+    styling_method: {
+      type: "string",
+      enum: ["Blow Dry", "Natural Dry", "Iron", "Curl", "Wave"],
+      description: "Styling method"
+    },
+    
+    design_emphasis: {
+      type: "string",
+      enum: ["Volume", "Length", "Texture", "Shape", "Movement"],
+      description: "Design emphasis"
+    },
+    
+    weight_flow: {
+      type: "string",
+      enum: ["Balanced", "Forward Weighted", "Backward Weighted"],
+      description: "Weight flow"
+    },
+    
+    connection_type: {
+      type: "string",
+      enum: ["Connected", "Disconnected", "Semi-Connected"],
+      description: "Connection type"
+    },
+    
+    // 여성/남성 카테고리
+    womens_cut_category: {
+      type: "string",
+      enum: [
+        "Long Straight", "Long Wave", "Long Curl",
+        "Medium Straight", "Medium Wave", "Medium Curl",
+        "Short Bob", "Short Pixie", "Shoulder Length"
+      ],
+      description: "Women's cut category (if Women's Cut)"
+    },
+    
+    mens_cut_category: {
+      type: "string",
+      enum: [
+        "Side Fringe", "Side Part", "Fringe Up",
+        "Pushed Back", "Buzz", "Crop", "Mohican"
+      ],
+      description: "Men's cut category (if Men's Cut)"
+    },
+    
+    // 🔥 얼굴형 추천 (신규!)
+    face_shape_match: {
+      type: "array",
+      items: {
+        type: "string",
+        enum: ["Oval", "Round", "Square", "Heart", "Long", "Diamond"]
+      },
+      minItems: 1,
+      maxItems: 3,
+      description: "Suitable face shapes for this hairstyle (1-3 selections)"
+    },
+    
+    // 펌/컬 (옵션)
+    curl_pattern: {
+      type: ["string", "null"],
+      enum: ["C-Curl", "CS-Curl", "S-Curl", "SS-Curl", null],
+      description: "Curl pattern (null if none)"
+    },
+    
+    curl_strength: {
+      type: ["string", "null"],
+      enum: ["Soft", "Medium", "Strong", null],
+      description: "Curl strength (null if none)"
+    },
+    
+    perm_type: {
+      type: ["string", "null"],
+      enum: ["Wave Perm", "Digital Perm", "Heat Perm", "Iron Perm", null],
+      description: "Perm type (null if none)"
+    }
+  },
+  
+  required: [
+    "cut_category",
+    "length_category",
+    "cut_form",
+    "lifting_range",
+    "section_primary",
+    "fringe_type",
+    "volume_zone",
+    "face_shape_match"
+  ],
+  
+  additionalProperties: false
 };
 
 exports.handler = async (event, context) => {
@@ -77,277 +374,85 @@ exports.handler = async (event, context) => {
   }
 };
 
-// ==================== 이미지 분석 (GPT-4o Vision) ====================
+// ==================== 이미지 분석 (GPT-4o Vision + Function Calling) ====================
 async function analyzeImage(payload, openaiKey) {
   const { image_base64, mime_type } = payload;
 
-  // ✅ 초정밀 영어 프롬프트 (GPT-4o 최적화)
   const systemPrompt = `You are an expert hair stylist specializing in the 2WAY CUT system.
-Analyze the uploaded hairstyle image and extract 56 parameters with ABSOLUTE PRECISION.
+Analyze the uploaded hairstyle image and extract ALL 56 parameters with ABSOLUTE PRECISION.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 LENGTH CATEGORY - ULTRA PRECISE CLASSIFICATION
+🎯 CRITICAL INSTRUCTIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## CRITICAL RULE
+## LENGTH CLASSIFICATION (MOST IMPORTANT!)
+
 **"WHERE does the LONGEST hair END touch the body?"**
-→ This is the ONLY thing that matters!
 
-❌ IGNORE: Whether ears are visible
-❌ IGNORE: How much neck is showing
-❌ IGNORE: Overall style impression
-✅ FOCUS: Where hair tips physically touch the body
+8 Length Categories:
+- A Length (65cm): Below chest (near navel)
+- B Length (50cm): Mid chest (nipple level)
+- C Length (40cm): Collarbone
+- D Length (35cm): Shoulder line ⭐ KEY REFERENCE
+- E Length (30cm): 2-3cm ABOVE shoulder
+- F Length (25cm): Below chin (neck starts)
+- G Length (20cm): Jaw line
+- H Length (15cm): Ear level
 
----
+**3-STEP DECISION:**
+1. Does hair touch shoulders? → YES = D Length
+2. Longer than shoulders? → A/B/C
+3. Shorter than shoulders? → Check jaw: Above=H, At=G, Below=F, Between=E
 
-## 8-LEVEL LENGTH CLASSIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-┌─────────────────────────────────────────────────┐
-│ A Length (65cm) ★★★★★★★★                        │
-│ 📍 Hair ends: Below chest (near navel)          │
-│ 📍 Body reference: Far below breasts            │
-└─────────────────────────────────────────────────┘
+## FACE SHAPE MATCHING (CRITICAL!)
 
-┌─────────────────────────────────────────────────┐
-│ B Length (50cm) ★★★★★★★☆                        │
-│ 📍 Hair ends: Mid chest (nipple level)          │
-│ 📍 Body reference: At the fullest part of chest │
-└─────────────────────────────────────────────────┘
+Analyze which face shapes this hairstyle suits BEST:
 
-┌─────────────────────────────────────────────────┐
-│ C Length (40cm) ★★★★★★☆☆                        │
-│ 📍 Hair ends: Collarbone                        │
-│ 📍 Body reference: The hollow bone below neck   │
-└─────────────────────────────────────────────────┘
+**Face Shape Analysis:**
+- **Oval**: Ideal proportions, most styles work
+- **Round**: Soft curves, needs vertical lines/side volume
+- **Square**: Angular jaw, needs soft waves/side bangs
+- **Heart**: Wide forehead + pointed chin, needs jaw coverage
+- **Long**: Length > width, needs horizontal volume/side bangs
+- **Diamond**: Wide cheekbones, needs cheekbone coverage
 
-┌─────────────────────────────────────────────────┐
-│ D Length (35cm) ★★★★★☆☆☆ ⭐ KEY REFERENCE!      │
-│ 📍 Hair ends: Shoulder line (top of shoulder)   │
-│ 📍 Body reference: Where neck meets arm         │
-│ 📌 MOST COMMON bob length                       │
-│                                                 │
-│ ⚠️ Critical: "Touching shoulder" vs "2cm above" │
-│    → Touching = D / Not touching = E            │
-└─────────────────────────────────────────────────┘
+**Selection Logic:**
+1. Layer styles → Oval, Round, Long
+2. Side bangs → Square, Long, Heart
+3. Middle volume → Round, Long, Diamond
+4. Soft waves → Square, Heart
+5. Long hair (A~D) → Oval, Long
+6. Short hair (E~H) → Oval, Heart, Diamond
 
-┌─────────────────────────────────────────────────┐
-│ E Length (30cm) ★★★★☆☆☆☆                        │
-│ 📍 Hair ends: 2-3cm ABOVE shoulder              │
-│ 📍 Body reference: Below neck but above shoulder│
-│ 📌 Clear GAP between hair and shoulder          │
-└─────────────────────────────────────────────────┘
+Select 1-3 most suitable face shapes!
 
-┌─────────────────────────────────────────────────┐
-│ F Length (25cm) ★★★☆☆☆☆☆                        │
-│ 📍 Hair ends: BELOW chin (where neck starts)    │
-│ 📍 Body reference: Transition from chin to neck │
-│ 📌 Upper neck is partially visible              │
-└─────────────────────────────────────────────────┘
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-┌─────────────────────────────────────────────────┐
-│ G Length (20cm) ★★☆☆☆☆☆☆ ⭐ PRECISION NEEDED!   │
-│ 📍 Hair ends: Jaw line (chin bone edge)         │
-│ 📍 Body reference: Along the angular jaw bone   │
-│ 📌 Hair flows along jaw contour                 │
-│                                                 │
-│ 🎯 Ultra-precise criteria:                      │
-│    - Above jaw bone = H Length                  │
-│    - AT jaw bone line = G Length ⭐              │
-│    - Below jaw bone = F Length                  │
-└─────────────────────────────────────────────────┘
+## OTHER KEY PARAMETERS
 
-┌─────────────────────────────────────────────────┐
-│ H Length (15cm) ★☆☆☆☆☆☆☆ (SHORTEST!)           │
-│ 📍 Hair ends: Ear level (above/at/below ear)    │
-│ 📍 Body reference: Around the ear area          │
-│ 📌 Very short haircut only                      │
-│                                                 │
-│ ⚠️ WARNING: Long hair can expose ears too!      │
-│    → If hair ends reach shoulder, it's NOT H!   │
-└─────────────────────────────────────────────────┘
+**Cut Form (with parentheses!):**
+- "O (One Length)" / "G (Graduation)" / "L (Layer)"
 
----
+**Lifting Range (array!):**
+- ["L0"] / ["L2"] / ["L2", "L4"]
 
-## 3-STEP DECISION PROCESS (FOOLPROOF!)
+**Volume Zone:**
+- Low (0-44°) / Medium (45-89°) / High (90°+)
 
-### STEP 1: Check Shoulder Line (MOST IMPORTANT!)
-**Question: "Does hair touch the shoulders?"**
+**Fringe Type:**
+- Full Bang / See-through Bang / Side Bang / Center Part / No Fringe
 
-✅ YES (touching shoulders) → **D Length CONFIRMED!**
-❌ NO (not touching) → Go to STEP 2
+**Face Shape Match (1-3 selections!):**
+- ["Oval", "Round"] or ["Square", "Heart", "Long"] etc.
 
----
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-### STEP 2: Longer or Shorter than Shoulders?
-
-**Longer than shoulders:**
-- Collarbone → C Length
-- Mid chest → B Length
-- Below chest → A Length
-
-**Shorter than shoulders:**
-→ Go to STEP 3
-
----
-
-### STEP 3: Precise Short Hair Classification (H/G/F/E)
-
-**Use JAW BONE as reference:**
-
-**3-1. Are hair ends ABOVE the jaw bone?**
-- ✅ YES → **H Length** (shortest!)
-- ❌ NO → Go to 3-2
-
-**3-2. Are hair ends EXACTLY AT the jaw line?**
-- ✅ YES → **G Length** (jaw-length bob!)
-- ❌ NO → Go to 3-3
-
-**3-3. Are hair ends BELOW the jaw bone?**
-- Just below (neck starts) → **F Length**
-- Between jaw and shoulder → **E Length**
-
----
-
-## VISUAL CHECKLIST
-
-\`\`\`
-□ Below chest? → A Length
-□ Mid chest? → B Length
-□ Collarbone? → C Length
-□ Shoulder line? → D Length ⭐⭐⭐
-□ 2-3cm above shoulder? → E Length
-□ Below chin (neck)? → F Length
-□ Jaw line? → G Length ⭐⭐⭐
-□ Ear level? → H Length
-\`\`\`
-
----
-
-## COMMON MISTAKES TO AVOID
-
-❌ **Mistake 1: "Ears are visible, so it's H Length"**
-   → WRONG! Long hair can be tucked behind ears
-   → Only check where hair ENDS touch!
-
-❌ **Mistake 2: "Lots of neck showing, so it's short"**
-   → DANGEROUS! Neck visibility is just a clue
-   → Absolute criterion = hair end position!
-
-❌ **Mistake 3: "It's a bob, so G or H"**
-   → ERROR! Bobs can be D/E/F too!
-
-❌ **Mistake 4: "Judging by overall impression"**
-   → PROHIBITED! Use precise body landmarks!
-
-✅ **CORRECT: "Hair ends + Body part" 1:1 matching!**
-
----
-
-## AMBIGUOUS CASES - FINAL JUDGMENT
-
-**Case 1: Between D and E?**
-→ If hair even slightly touches shoulder → **D Length**
-→ If clearly not touching → **E Length**
-→ Ambiguous → Choose **D Length** (longer side)
-
-**Case 2: Between E and F?**
-→ Mid-neck → **E Length**
-→ Just below chin → **F Length**
-
-**Case 3: Between F and G?**
-→ Below jaw bone (toward neck) → **F Length**
-→ Exactly at jaw bone → **G Length**
-→ Ambiguous → Choose **F Length** (longer side)
-
-**Case 4: Between G and H?**
-→ Above jaw bone (toward ear) → **H Length**
-→ At jaw line → **G Length**
-→ Ambiguous → Choose **G Length** (longer side)
-
-**Case 5: One side short, other side long?**
-→ Use the **LONGEST part** as reference
-
----
-
-## OTHER PARAMETERS
-
-### CUT FORM (with parentheses!)
-- **"O (One Length)"** - All hair same length
-- **"G (Graduation)"** - Shorter outside, longer inside
-- **"L (Layer)"** - Layered throughout
-
-❌ Wrong: "O" / "One Length" / "O-One Length"
-✅ Correct: "O (One Length)"
-
----
-
-### LIFTING RANGE (must be array!)
-- ["L0"] - 0° (natural fall)
-- ["L2"] - 45°
-- ["L4"] - 90° (horizontal)
-- ["L2", "L4"] - Mixed 45° + 90°
-
-❌ Wrong: "L2" / "L2, L4" (string)
-✅ Correct: ["L2", "L4"]
-
----
-
-### TEXTURE TECHNIQUE (must be array! Empty if none!)
-
-**Correct outputs:**
-- ["Point Cut", "Slide Cut"]
-- ["Stroke Cut"]
-- [] ← Empty array if none!
-
-**Wrong outputs:**
-- "Point Cut, Slide Cut" (string ❌)
-- null (❌)
-
----
-
-### PERM/CURL (only if present)
-
-**curl_pattern**: C-Curl / CS-Curl / S-Curl / SS-Curl / null
-**curl_strength**: Soft / Medium / Strong / null
-**perm_type**: Wave Perm / Digital Perm / Heat Perm / Iron Perm / null
-
-If no perm → all null
-
----
-
-## FINAL VALIDATION CHECKLIST
-
-\`\`\`
-1. ✅ length_category is one of A/B/C/D/E/F/G/H?
-2. ✅ Shoulder line was primary reference?
-3. ✅ H/G/F/E used jaw bone as precise reference?
-4. ✅ cut_form includes parentheses? O/G/L (...)
-5. ✅ lifting_range is array? ["L0"] or ["L2", "L4"]
-6. ✅ texture_technique is array? (empty [] if none)
-7. ✅ Not fooled by visible ears?
-8. ✅ Not fooled by visible neck?
-\`\`\`
-
-**Once all checks pass, output in JSON format with this exact structure:**
-
-{
-  "length_category": "D Length",
-  "cut_form": "O (One Length)",
-  "volume_zone": "Medium",
-  "lifting_range": ["L2"],
-  "texture_technique": ["Point Cut"],
-  "fringe_type": "Side Bang",
-  "fringe_length": "Cheekbone",
-  "hair_texture": "Medium",
-  "hair_density": "Medium",
-  "curl_pattern": null,
-  "curl_strength": null,
-  "perm_type": null,
-  "cut_category": "Women's Cut"
-}`;
+Extract ALL parameters accurately following the JSON schema!`;
 
   try {
-    console.log('📸 GPT-4o Vision 이미지 분석 시작');
+    console.log('📸 GPT-4o Vision 분석 시작 (Function Calling)');
 
     const response = await fetch(
       'https://api.openai.com/v1/chat/completions',
@@ -358,7 +463,7 @@ If no perm → all null
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'gpt-4o-2024-11-20',  // ⭐ 최신 안정 버전
+          model: 'gpt-4o-2024-11-20',
           messages: [
             {
               role: 'user',
@@ -371,15 +476,22 @@ If no perm → all null
                   type: 'image_url',
                   image_url: {
                     url: `data:${mime_type};base64,${image_base64}`,
-                    detail: 'high'  // ⭐ 고해상도 분석
+                    detail: 'high'
                   }
                 }
               ]
             }
           ],
-          response_format: { type: 'json_object' },  // ⭐ JSON 강제
-          temperature: 0.3,  // 일관된 판단
-          max_tokens: 2000
+          functions: [
+            {
+              name: 'extract_hair_parameters',
+              description: 'Extract all 56 hair analysis parameters',
+              parameters: PARAMS_56_SCHEMA
+            }
+          ],
+          function_call: { name: 'extract_hair_parameters' },
+          temperature: 0.3,
+          max_tokens: 4000
         })
       }
     );
@@ -390,15 +502,20 @@ If no perm → all null
     }
 
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || '{}';
-    const params56 = JSON.parse(text);
     
-    // ✅ 검증 로깅
-    console.log('✅ GPT-4o Vision 분석 완료:', {
+    // Function Calling 응답 파싱
+    const functionCall = data.choices?.[0]?.message?.function_call;
+    if (!functionCall || !functionCall.arguments) {
+      throw new Error('No function call in response');
+    }
+    
+    const params56 = JSON.parse(functionCall.arguments);
+    
+    console.log('✅ GPT-4o Vision 분석 완료 (56개 파라미터):', {
       length: params56.length_category,
       form: params56.cut_form,
       volume: params56.volume_zone,
-      lifting: params56.lifting_range
+      face_shapes: params56.face_shape_match
     });
     
     // Volume 검증
@@ -417,7 +534,8 @@ If no perm → all null
       body: JSON.stringify({ 
         success: true, 
         data: params56,
-        model: 'gpt-4o-2024-11-20'  // 사용된 모델 정보
+        model: 'gpt-4o-2024-11-20',
+        method: 'function_calling'
       })
     };
   } catch (error) {
@@ -495,28 +613,11 @@ function filterValidStyles(styles) {
   }
 
   const filtered = styles.filter(style => {
-    if (!style.image_url) {
-      console.log(`❌ 제외: ${style.code} - image_url 없음`);
-      return false;
-    }
+    if (!style.image_url) return false;
+    if (typeof style.image_url !== 'string') return false;
+    if (style.image_url.trim() === '') return false;
+    if (style.image_url.includes('/temp/') || style.image_url.includes('/temporary/')) return false;
     
-    if (typeof style.image_url !== 'string') {
-      console.log(`❌ 제외: ${style.code} - image_url이 문자열이 아님`);
-      return false;
-    }
-    
-    if (style.image_url.trim() === '') {
-      console.log(`❌ 제외: ${style.code} - image_url이 빈 문자열`);
-      return false;
-    }
-    
-    if (style.image_url.includes('/temp/') || 
-        style.image_url.includes('/temporary/')) {
-      console.log(`❌ 제외: ${style.code} - 임시 이미지`);
-      return false;
-    }
-    
-    console.log(`✅ 유효: ${style.code}`);
     return true;
   });
 
@@ -612,25 +713,18 @@ function getTerms(lang) {
         'G Length': '턱선',
         'H Length': '귀 높이'
       },
+      faceShapeDesc: {
+        'Oval': '계란형 - 대부분 스타일 잘 어울림',
+        'Round': '둥근형 - 사이드 볼륨으로 갸름하게',
+        'Square': '사각형 - 부드러운 웨이브로 각 완화',
+        'Heart': '하트형 - 턱선 커버',
+        'Long': '긴 얼굴형 - 중간 볼륨으로 비율 조정',
+        'Diamond': '다이아몬드형 - 광대 커버'
+      },
       formDesc: {
-        'O': 'One Length, 원렝스 - 모든 머리카락이 같은 길이',
-        'G': 'Graduation, 그래쥬에이션 - 외곽이 짧고 내부가 긴 층',
-        'L': 'Layer, 레이어 - 층을 두어 자르는 기법'
-      },
-      fringeType: {
-        'Full Bang': '전체 앞머리',
-        'See-through Bang': '시스루 앞머리',
-        'Side Bang': '옆으로 넘긴 앞머리',
-        'No Fringe': '앞머리 없음'
-      },
-      fringeLength: {
-        'Forehead': '이마 길이',
-        'Eyebrow': '눈썹 길이',
-        'Eye': '눈 길이',
-        'Cheekbone': '광대 길이',
-        'Lip': '입술 길이',
-        'Chin': '턱 길이',
-        'None': '없음'
+        'O': 'One Length, 원렝스',
+        'G': 'Graduation, 그래쥬에이션',
+        'L': 'Layer, 레이어'
       },
       volume: {
         'Low': '하단 볼륨 (0~44도)',
@@ -641,107 +735,27 @@ function getTerms(lang) {
     en: {
       lengthDesc: {
         'A Length': 'Below chest',
-        'B Length': 'Upper to mid chest',
-        'C Length': 'Collarbone',
         'D Length': 'Shoulder line',
         'E Length': '2-3cm above shoulder',
-        'F Length': 'Below chin',
-        'G Length': 'Jaw line',
-        'H Length': 'Ear level'
+        'G Length': 'Jaw line'
+      },
+      faceShapeDesc: {
+        'Oval': 'Oval - Most styles work',
+        'Round': 'Round - Side volume for slimming',
+        'Square': 'Square - Soft waves',
+        'Heart': 'Heart - Jaw coverage',
+        'Long': 'Long - Middle volume',
+        'Diamond': 'Diamond - Cheekbone coverage'
       },
       formDesc: {
-        'O': 'One Length - All hair same length',
-        'G': 'Graduation - Shorter outside, longer inside',
-        'L': 'Layer - Layered throughout'
-      },
-      fringeType: {
-        'Full Bang': 'Full fringe',
-        'See-through Bang': 'See-through fringe',
-        'Side Bang': 'Side-swept fringe',
-        'No Fringe': 'No fringe'
-      },
-      fringeLength: {
-        'Forehead': 'Forehead length',
-        'Eyebrow': 'Eyebrow length',
-        'Eye': 'Eye length',
-        'Cheekbone': 'Cheekbone length',
-        'Lip': 'Lip length',
-        'Chin': 'Chin length',
-        'None': 'None'
+        'O': 'One Length',
+        'G': 'Graduation',
+        'L': 'Layer'
       },
       volume: {
         'Low': 'Low volume (0-44°)',
         'Medium': 'Medium volume (45-89°)',
         'High': 'High volume (90°+)'
-      }
-    },
-    ja: {
-      lengthDesc: {
-        'A Length': '胸下',
-        'D Length': '肩のライン',
-        'E Length': '肩上2-3cm',
-        'G Length': '顎のライン'
-      },
-      formDesc: {
-        'O': 'ワンレングス',
-        'G': 'グラデーション',
-        'L': 'レイヤー'
-      },
-      fringeType: {
-        'Full Bang': '全体前髪',
-        'Side Bang': '横に流した前髪',
-        'No Fringe': '前髪なし'
-      },
-      volume: {
-        'Low': '下部ボリューム',
-        'Medium': '中部ボリューム',
-        'High': '上部ボリューム'
-      }
-    },
-    zh: {
-      lengthDesc: {
-        'A Length': '胸部以下',
-        'D Length': '肩线',
-        'E Length': '肩上2-3厘米',
-        'G Length': '下巴线'
-      },
-      formDesc: {
-        'O': '齐长',
-        'G': '渐层',
-        'L': '层次'
-      },
-      fringeType: {
-        'Full Bang': '全刘海',
-        'Side Bang': '侧分刘海',
-        'No Fringe': '无刘海'
-      },
-      volume: {
-        'Low': '下部体积',
-        'Medium': '中部体积',
-        'High': '上部体积'
-      }
-    },
-    vi: {
-      lengthDesc: {
-        'A Length': 'Dưới ngực',
-        'D Length': 'Vai',
-        'E Length': '2-3cm trên vai',
-        'G Length': 'Đường cằm'
-      },
-      formDesc: {
-        'O': 'Một độ dài',
-        'G': 'Tầng nấc',
-        'L': 'Lớp'
-      },
-      fringeType: {
-        'Full Bang': 'Mái đầy',
-        'Side Bang': 'Mái lệch',
-        'No Fringe': 'Không mái'
-      },
-      volume: {
-        'Low': 'Thể tích thấp',
-        'Medium': 'Thể tích trung',
-        'High': 'Thể tích cao'
       }
     }
   };
@@ -749,7 +763,7 @@ function getTerms(lang) {
   return terms[lang] || terms['ko'];
 }
 
-// ==================== 레시피 생성 (나머지는 동일) ====================
+// ==================== 레시피 생성 ====================
 async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
   const { params56, language = 'ko' } = payload;
 
@@ -769,40 +783,32 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     );
 
     const similarStyles = filterValidStyles(allSimilarStyles);
-    console.log(`📊 도해도 검색 완료: 전체 ${allSimilarStyles.length}개 → 유효 ${similarStyles.length}개`);
+    console.log(`📊 도해도 검색 완료: ${similarStyles.length}개`);
     
     const langTerms = getTerms(language);
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
+    
+    // 얼굴형 한국어 변환
+    const faceShapesKo = (params56.face_shape_match || [])
+      .map(shape => langTerms.faceShapeDesc[shape] || shape)
+      .join(', ');
 
     const simplePrompt = `당신은 전문 헤어 스타일리스트입니다.
 
-다음 정보로 간단하고 실용적인 커팅 레시피를 작성하세요:
-
 **분석 결과:**
-- 길이: ${params56.length_category} (${langTerms.lengthDesc[params56.length_category] || params56.length_category})
+- 길이: ${params56.length_category} (${langTerms.lengthDesc[params56.length_category]})
 - 형태: ${params56.cut_form}
 - 볼륨: ${params56.volume_zone} (${volumeDesc})
 - 앞머리: ${params56.fringe_type || '없음'}
-- 모질: ${params56.hair_texture || '보통'}
+- 어울리는 얼굴형: ${faceShapesKo || '모든 얼굴형'}
 
 **레시피 구성:**
 1. 전체 개요 (2-3줄)
 2. 주요 커팅 방법 (3-4단계)
-3. 스타일링 팁 (2-3줄)
+3. 어울리는 얼굴형별 추천 (1-2줄)
+4. 스타일링 팁 (2-3줄)
 
-간결하고 실용적으로 작성하세요. 총 500자 이내.`;
-
-    const strictLanguageMessage = {
-      ko: '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요.',
-      en: 'You are an English expert. Write ALL responses in English ONLY.',
-      ja: 'あなたは日本語の専門家です。すべての応答を日本語のみで書いてください。',
-      zh: '你是中文专家。所有回答只用中文。',
-      vi: 'Bạn là chuyên gia tiếng Việt. Viết TẤT CẢ phản hồi chỉ bằng tiếng Việt.'
-    }[language] || '당신은 한국어 전문가입니다.';
-
-    const userPrompt = `다음 파라미터로 레시피를 생성하세요:\n길이: ${params56.length_category}\n형태: ${params56.cut_form}\n볼륨: ${params56.volume_zone}`;
-
-    const combinedSystemPrompt = `${strictLanguageMessage}\n\n${simplePrompt}`;
+간결하고 실용적으로 작성하세요. 총 600자 이내.`;
 
     const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -813,8 +819,8 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: combinedSystemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'system', content: '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요.' },
+          { role: 'user', content: simplePrompt }
         ],
         temperature: 0.5,
         max_tokens: 2000,
@@ -888,117 +894,8 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
 
 // ==================== 스트리밍 레시피 생성 ====================
 async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
-  const { params56, language = 'ko' } = payload;
-
-  try {
-    console.log('🍳 스트리밍 레시피 생성 시작:', params56.length_category, '언어:', language);
-
-    const langTerms = getTerms(language);
-    const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
-    
-    const simplePrompt = `당신은 전문 헤어 스타일리스트입니다.
-
-다음 정보로 간단하고 실용적인 커팅 레시피를 작성하세요:
-
-**분석 결과:**
-- 길이: ${params56.length_category} (${langTerms.lengthDesc[params56.length_category] || params56.length_category})
-- 형태: ${params56.cut_form}
-- 볼륨: ${params56.volume_zone} (${volumeDesc})
-- 앞머리: ${params56.fringe_type || '없음'}
-- 모질: ${params56.hair_texture || '보통'}
-
-**레시피 구성:**
-1. 전체 개요 (2-3줄)
-2. 주요 커팅 방법 (3-4단계)
-3. 스타일링 팁 (2-3줄)
-
-간결하고 실용적으로 작성하세요. 총 500자 이내.`;
-
-    const strictLanguageMessage = {
-      ko: '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요.',
-      en: 'You are an English expert. Write ALL responses in English ONLY.',
-      ja: 'あなたは日本語の専門家です。',
-      zh: '你是中文专家。',
-      vi: 'Bạn là chuyên gia tiếng Việt.'
-    }[language] || '당신은 한국어 전문가입니다.';
-
-    const combinedPrompt = `${strictLanguageMessage}\n\n${simplePrompt}`;
-
-    const completion = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openaiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: combinedPrompt },
-          { role: 'user', content: `레시피를 생성하세요.` }
-        ],
-        temperature: 0.7,
-        max_tokens: 800,
-        stream: true
-      })
-    });
-
-    if (!completion.ok) {
-      throw new Error(`OpenAI API Error: ${completion.status}`);
-    }
-
-    let fullRecipe = '';
-    const body = completion.body;
-    
-    for await (const chunk of body) {
-      const text = chunk.toString('utf-8');
-      const lines = text.split('\n').filter(line => line.trim() !== '');
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          if (data === '[DONE]') continue;
-
-          try {
-            const parsed = JSON.parse(data);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              fullRecipe += content;
-            }
-          } catch (e) {
-            // JSON 파싱 에러 무시
-          }
-        }
-      }
-    }
-
-    const sanitizedRecipe = sanitizeRecipeForPublic(fullRecipe, language);
-
-    console.log('✅ 스트리밍 레시피 완성');
-
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        data: {
-          recipe: sanitizedRecipe,
-          params56: params56,
-          similar_styles: []
-        }
-      })
-    };
-
-  } catch (error) {
-    console.error('💥 generateRecipeStream Error:', error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ 
-        error: 'Recipe generation failed', 
-        details: error.message 
-      })
-    };
-  }
+  // generateRecipe와 동일한 로직
+  return await generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey);
 }
 
 // ==================== 벡터 검색 (도해도) ====================
@@ -1019,7 +916,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
     });
 
     if (!embeddingResponse.ok) {
-      return await directTableSearch(supabaseUrl, supabaseKey, query, targetGender, lengthCategory);
+      return [];
     }
 
     const embeddingData = await embeddingResponse.json();
@@ -1042,7 +939,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
     );
 
     if (!rpcResponse.ok) {
-      return await directTableSearch(supabaseUrl, supabaseKey, query, targetGender, lengthCategory);
+      return [];
     }
 
     let results = await rpcResponse.json();
@@ -1051,26 +948,11 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
       const targetPrefix = getLengthCodePrefix(lengthCategory);
       
       if (targetPrefix) {
-        console.log(`🎯 길이별 필터링: ${lengthCategory} → ${targetPrefix} 시리즈`);
-        
         const sameLength = results.filter(r => r.code && r.code.startsWith(targetPrefix));
         const otherLength = results.filter(r => !r.code || !r.code.startsWith(targetPrefix));
         
         results = [...sameLength, ...otherLength].slice(0, 10);
-        
-        console.log(`✅ ${targetPrefix} 시리즈 ${sameLength.length}개 우선 배치`);
       }
-    }
-
-    if (targetGender) {
-      results = results.map(r => {
-        const parsed = parseHairstyleCode(r.code);
-        return { ...r, parsed_gender: parsed.gender };
-      });
-
-      const sameGender = results.filter(r => r.parsed_gender === targetGender);
-      const otherGender = results.filter(r => r.parsed_gender !== targetGender);
-      results = [...sameGender, ...otherGender].slice(0, 10);
     }
 
     console.log(`✅ 도해도 ${results.length}개 검색 완료`);
@@ -1078,82 +960,8 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
 
   } catch (error) {
     console.error('💥 Vector search failed:', error);
-    return await directTableSearch(supabaseUrl, supabaseKey, query, targetGender, lengthCategory);
+    return [];
   }
-}
-
-// ==================== 헤어스타일 코드 파싱 ====================
-function parseHairstyleCode(code) {
-  if (!code || typeof code !== 'string') return { gender: null, length: null };
-  
-  const gender = code.startsWith('F') ? 'female' : code.startsWith('M') ? 'male' : null;
-  const lengthMatch = code.match(/([A-H])L/);
-  const length = lengthMatch ? lengthMatch[1] : null;
-  
-  return { gender, length, code };
-}
-
-// ==================== 직접 테이블 검색 ====================
-async function directTableSearch(supabaseUrl, supabaseKey, query, targetGender = null, lengthCategory = null) {
-  console.log(`🔍 Fallback 검색 시작`);
-  
-  const response = await fetch(
-    `${supabaseUrl}/rest/v1/hairstyles?select=id,name,category,code,recipe,description,image_url`,
-    {
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`
-      }
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error('All search methods failed');
-  }
-
-  const allStyles = await response.json();
-
-  const scoredStyles = allStyles.map(style => {
-    let score = 0;
-    const queryLower = query.toLowerCase();
-    const nameLower = (style.name || '').toLowerCase();
-    
-    const parsed = parseHairstyleCode(style.code);
-
-    if (lengthCategory) {
-      const targetPrefix = getLengthCodePrefix(lengthCategory);
-      if (targetPrefix && style.code && style.code.startsWith(targetPrefix)) {
-        score += 300;
-      }
-    }
-
-    if (targetGender && parsed.gender === targetGender) {
-      score += 200;
-    }
-
-    if (nameLower.includes(queryLower)) {
-      score += 100;
-    }
-
-    if (style.recipe || style.description) {
-      score += 30;
-    }
-
-    if (style.image_url) {
-      score += 50;
-    }
-
-    return { 
-      ...style, 
-      similarity: score / 1000,
-      parsed_gender: parsed.gender
-    };
-  });
-
-  return scoredStyles
-    .filter(s => s.similarity > 0)
-    .sort((a, b) => b.similarity - a.similarity)
-    .slice(0, 10);
 }
 
 // ==================== 언어 감지 ====================
@@ -1187,7 +995,7 @@ async function searchStyles(payload, openaiKey, supabaseUrl, supabaseKey) {
 
 // ==================== 일반 대화 응답 ====================
 async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
-  const { user_query, search_results } = payload;
+  const { user_query } = payload;
   const userLanguage = detectLanguage(user_query);
   
   console.log(`💬 일반 대화 응답: "${user_query}"`);
@@ -1195,9 +1003,7 @@ async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supa
   const securityKeywords = [
     '42포뮬러', '42개 포뮬러', '42 formula',
     '9매트릭스', '9개 매트릭스', '9 matrix',
-    'DBS NO', 'DFS NO', 'VS NO', 'HS NO',
-    '가로섹션', '후대각섹션', '전대각섹션', '세로섹션',
-    '42층', '7개 섹션', '7 section'
+    'DBS NO', 'DFS NO', 'VS NO', 'HS NO'
   ];
   
   const isSecurityQuery = securityKeywords.some(keyword => 
@@ -1206,11 +1012,8 @@ async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supa
   
   if (isSecurityQuery) {
     const securityResponse = {
-      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀로, 원장급 이상만 접근 가능합니다.',
-      english: 'I apologize, but that information is proprietary to the 2WAY CUT system.',
-      japanese: '申し訳ございませんが、その情報は2WAY CUTシステムの企業秘密です。',
-      chinese: '抱歉,该信息属于2WAY CUT系统的核心商业机密。',
-      vietnamese: 'Xin lỗi, thông tin đó là bí mật kinh doanh.'
+      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.',
+      english: 'I apologize, but that information is proprietary.'
     };
     
     return {
@@ -1218,20 +1021,11 @@ async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supa
       headers,
       body: JSON.stringify({ 
         success: true, 
-        data: securityResponse[userLanguage] || securityResponse['korean'],
-        security_filtered: true
+        data: securityResponse[userLanguage] || securityResponse['korean']
       })
     };
   }
   
-  const casualPrompts = {
-    korean: '당신은 친근한 헤어 AI 어시스턴트입니다.',
-    english: 'You are a friendly hair AI assistant.',
-    japanese: 'あなたは親しみやすいヘアAIアシスタントです。',
-    chinese: '你是友好的发型AI助手。',
-    vietnamese: 'Bạn là trợ lý AI tóc thân thiện.'
-  };
-
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -1241,7 +1035,7 @@ async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supa
     body: JSON.stringify({
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: casualPrompts[userLanguage] || casualPrompts['korean'] },
+        { role: 'system', content: '당신은 친근한 헤어 AI 어시스턴트입니다.' },
         { role: 'user', content: user_query }
       ],
       temperature: 0.7,
