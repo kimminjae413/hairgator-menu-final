@@ -835,14 +835,29 @@ class HairGatorChatbot {
       // 응답 구조 파싱
       if (recipeResult.success && recipeResult.data) {
         console.log('🔍 recipeResult.data:', recipeResult.data);
-        console.log('🔍 recipeResult.data.recipe 존재?', !!recipeResult.data.recipe);
-        console.log('🔍 recipeResult.data.similar_styles 존재?', !!recipeResult.data.similar_styles);
-        console.log('🔍 recipeResult.data.similar_styles 타입:', typeof recipeResult.data.similar_styles);
-        console.log('🔍 recipeResult.data.similar_styles 내용:', recipeResult.data.similar_styles);
+        console.log('🔍 recipeResult.data.recipe 타입:', typeof recipeResult.data.recipe);
         
-        recipe = recipeResult.data.recipe || '';
-        styles = recipeResult.data.similar_styles || [];
+        // ⭐ 이중 JSON 체크 (GPT가 JSON을 반환한 경우)
+        let parsedData = recipeResult.data;
+        
+        if (typeof recipeResult.data.recipe === 'string' && recipeResult.data.recipe.startsWith('{')) {
+          console.log('⚠️ 이중 JSON 감지 - 재파싱 시도');
+          try {
+            parsedData = JSON.parse(recipeResult.data.recipe);
+            if (parsedData.success && parsedData.data) {
+              parsedData = parsedData.data;
+              console.log('✅ 이중 JSON 파싱 성공');
+            }
+          } catch (e) {
+            console.warn('⚠️ 재파싱 실패, 원본 사용:', e);
+          }
+        }
+        
+        recipe = parsedData.recipe || '';
+        styles = parsedData.similar_styles || [];
         console.log('✅ 파싱 성공 (success.data)');
+        console.log('🔍 최종 recipe 길이:', recipe.length);
+        console.log('🔍 최종 styles 개수:', styles.length);
       } else if (recipeResult.data) {
         recipe = recipeResult.data.recipe || recipeResult.data || '';
         styles = recipeResult.data.similar_styles || [];
