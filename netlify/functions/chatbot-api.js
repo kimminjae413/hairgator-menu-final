@@ -896,6 +896,10 @@ ${params56.curl_pattern || 'C컬'} 웨이브
     recipe = sanitizeRecipeForPublic(recipe, language);
 
     console.log('✅ 레시피 생성 완료');
+    console.log(`🎯 반환할 도해도 개수: ${similarStyles.length}개`);
+    if (similarStyles.length > 0) {
+      console.log(`🎯 첫 번째 도해도:`, JSON.stringify(similarStyles[0]));
+    }
 
     return {
       statusCode: 200,
