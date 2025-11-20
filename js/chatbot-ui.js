@@ -328,10 +328,25 @@ class HairGatorChatbot {
         </div>
 
         <div class="chatbot-input-area">
-          <input type="file" id="image-upload" accept="image/*" style="display: none;">
-          
-          <div class="input-wrapper">
-            <button id="upload-btn" class="upload-btn" title="이미지 업로드">
+  <!-- ⭐ 성별 선택 UI 추가 ⭐ -->
+  <div class="gender-selector">
+    <label>헤어스타일 성별 선택:</label>
+    <div class="radio-group">
+      <label class="gender-option">
+        <input type="radio" name="gender" value="female" checked>
+        <span class="gender-label">👩 여성 헤어스타일</span>
+      </label>
+      <label class="gender-option">
+        <input type="radio" name="gender" value="male">
+        <span class="gender-label">👨 남성 헤어스타일</span>
+      </label>
+    </div>
+  </div>
+  
+  <input type="file" id="image-upload" accept="image/*" style="display: none;">
+  
+  <div class="input-wrapper">
+    <button id="upload-btn" class="upload-btn" title="이미지 업로드">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
