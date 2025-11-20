@@ -394,90 +394,94 @@ class HairGatorChatbot {
         overflow-x: hidden !important;
         display: flex !important;
         flex-direction: column !important;
-        padding-bottom: 20px !important;
+        padding-bottom: 100px !important;  /* 🔥 하단 여백 증가 */
         -webkit-overflow-scrolling: touch !important;
       }
       
-      /* 도해도 컨테이너 스타일 */
+      /* 도해도 컨테이너 스타일 - 세로 배치! */
       .style-cards-container {
         display: flex !important;
+        flex-direction: column !important;  /* 🔥 세로 배치 */
         gap: 16px !important;
-        overflow-x: auto !important;
         padding: 20px 10px !important;
         margin-top: 20px !important;
-        position: relative !important;  /* absolute 제거! */
-        scroll-snap-type: x mandatory !important;
-        -webkit-overflow-scrolling: touch !important;
+        margin-bottom: 40px !important;  /* 🔥 하단 여백 추가 */
+        position: relative !important;
         width: 100% !important;
       }
       
-      /* 도해도 카드 스타일 */
+      /* 도해도 카드 스타일 - 전체 너비 */
       .style-card {
-        flex: 0 0 auto !important;
-        width: 200px !important;
-        scroll-snap-align: start !important;
+        width: 100% !important;  /* 🔥 전체 너비 */
         background: rgba(255, 255, 255, 0.1) !important;
         border-radius: 12px !important;
         padding: 12px !important;
         transition: transform 0.2s !important;
+        display: flex !important;
+        flex-direction: column !important;
       }
       
-      .style-card:hover {
-        transform: translateY(-4px) !important;
+      .style-card:active {
+        transform: scale(0.98) !important;
       }
       
       .style-card img {
         width: 100% !important;
-        height: 200px !important;
-        object-fit: cover !important;
+        height: auto !important;  /* 🔥 비율 유지 */
+        max-height: 400px !important;
+        object-fit: contain !important;  /* 🔥 전체 이미지 표시 */
         border-radius: 8px !important;
         display: block !important;
-        margin-bottom: 8px !important;
+        margin-bottom: 12px !important;
+        background: rgba(0, 0, 0, 0.3) !important;
       }
       
       .style-card-info {
         margin-top: 8px !important;
+        padding: 8px !important;
       }
       
       .style-card-info h4 {
-        font-size: 14px !important;
-        margin: 0 0 4px 0 !important;
+        font-size: 15px !important;
+        margin: 0 0 6px 0 !important;
         color: #fff !important;
+        line-height: 1.4 !important;
       }
       
       .style-code {
-        font-size: 12px !important;
-        color: rgba(255, 255, 255, 0.6) !important;
-      }
-      
-      /* 스크롤바 스타일 */
-      .style-cards-container::-webkit-scrollbar {
-        height: 8px !important;
-      }
-      
-      .style-cards-container::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.3) !important;
-        border-radius: 4px !important;
-      }
-      
-      .style-cards-container::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.1) !important;
+        font-size: 13px !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-family: monospace !important;
       }
       
       /* 이미지 로드 실패 플레이스홀더 */
       .style-card-placeholder {
         width: 100% !important;
-        height: 200px !important;
+        height: 300px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         background: rgba(255, 255, 255, 0.05) !important;
         border-radius: 8px !important;
-        font-size: 48px !important;
+        font-size: 64px !important;
+      }
+      
+      /* 메시지 스크롤바 스타일 */
+      .chatbot-messages::-webkit-scrollbar {
+        width: 6px !important;
+      }
+      
+      .chatbot-messages::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3) !important;
+        border-radius: 3px !important;
+      }
+      
+      .chatbot-messages::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1) !important;
       }
     `;
     document.head.appendChild(style);
-    console.log('✅ 모달 스크롤 스타일 추가 완료');
+    console.log('✅ 모달 스크롤 스타일 추가 완료 (세로 배치)');
   }
 
   // ==================== 이벤트 리스너 ====================
