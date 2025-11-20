@@ -928,9 +928,10 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          query_embedding: queryEmbedding,
-          match_count: 5
-        })
+  query_embedding: queryEmbedding,
+  match_threshold: 0.50,
+  match_count: 10
+})
       }
     );
 
