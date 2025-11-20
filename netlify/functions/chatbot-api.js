@@ -5,7 +5,8 @@
 // 1. GPT-4o Vision (gpt-4o-2024-11-20)
 // 2. Function Calling으로 56개 파라미터 강제 추출
 // 3. 얼굴형 추천 (face_shape_match) 포함
-// 4. JSON Schema Strict Mode
+// 4. filter_length 파라미터 추가 (도해도 검색)
+// 5. 에러 로깅 대폭 개선
 // ==================== 
 
 const fetch = require('node-fetch');
@@ -898,6 +899,7 @@ async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, 
 async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, targetGender = null, lengthCategory = null) {
   try {
     console.log(`🔍 도해도 벡터 검색: "${query}"`);
+    console.log(`   필터: gender=${targetGender}, length=${lengthCategory}`);
 
     const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
@@ -912,11 +914,19 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
     });
 
     if (!embeddingResponse.ok) {
+      const errorText = await embeddingResponse.text();
+      console.error('❌ OpenAI 임베딩 생성 실패:', embeddingResponse.status, errorText);
       return [];
     }
 
     const embeddingData = await embeddingResponse.json();
     const queryEmbedding = embeddingData.data[0].embedding;
+    
+    console.log(`✅ OpenAI 임베딩 생성 완료 (${queryEmbedding.length}차원)`);
+
+    // ⭐ filter_length 파라미터 추가
+    const lengthFilter = lengthCategory ? lengthCategory.charAt(0) : null;
+    console.log(`   RPC 호출: filter_length=${lengthFilter}`);
 
     const rpcResponse = await fetch(
       `${supabaseUrl}/rest/v1/rpc/match_hairstyles`,
@@ -928,19 +938,22 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-  query_embedding: queryEmbedding,
-  match_threshold: 0.50,
-  match_count: 10,
-  filter_length: lengthCategory ? lengthCategory.charAt(0) : null  // ⭐ 추가
-})
+          query_embedding: queryEmbedding,
+          match_threshold: 0.50,
+          match_count: 10,
+          filter_length: lengthFilter
+        })
       }
     );
 
     if (!rpcResponse.ok) {
+      const errorText = await rpcResponse.text();
+      console.error('❌ Supabase RPC 호출 실패:', rpcResponse.status, errorText);
       return [];
     }
 
     let results = await rpcResponse.json();
+    console.log(`📊 원본 검색 결과: ${results?.length || 0}개`);
 
     if (lengthCategory) {
       const targetPrefix = getLengthCodePrefix(lengthCategory);
@@ -950,6 +963,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
         const otherLength = results.filter(r => !r.code || !r.code.startsWith(targetPrefix));
         
         results = [...sameLength, ...otherLength].slice(0, 10);
+        console.log(`   동일 길이: ${sameLength.length}개, 기타: ${otherLength.length}개`);
       }
     }
 
