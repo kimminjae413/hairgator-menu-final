@@ -1,15 +1,14 @@
 // netlify/functions/chatbot-api.js
-// HAIRGATOR 챗봇 - GPT-4o Vision 완벽 버전 (2025-11-20)
+// HAIRGATOR 챗봇 - 최종 완성 버전 (2025-11-20)
 // 
 // 🔥 최종 수정사항:
-// 1. GPT-4o Vision (gpt-4o-2024-11-20)
-// 2. Function Calling으로 56개 파라미터 강제 추출
+// 1. GPT-4o Vision (gpt-4o-2024-11-20) - Function Calling
+// 2. 56개 파라미터 강제 추출
 // 3. 얼굴형 추천 (face_shape_match) 포함
-// 4. filter_length 파라미터 추가 (도해도 검색)
-// 5. 에러 로깅 대폭 개선
-// 6. 길이 판단 로직 개선 (B Length 정확도 향상)
-// 7. 검색 쿼리 개선 (더 구체적인 텍스트)
-// 8. Threshold 0.30으로 낮춤 (더 많은 결과)
+// 4. Storage 경로 수정: recipe-images/{code}/main.png ⭐⭐⭐
+// 5. filter_length 파라미터 추가 (도해도 검색)
+// 6. Threshold 0.30으로 낮춤 (더 많은 결과)
+// 7. 길이 판단 로직 개선 (B Length 정확도 향상)
 // ==================== 
 
 const fetch = require('node-fetch');
@@ -796,7 +795,6 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
   try {
     console.log('🍳 레시피 생성 시작:', params56.length_category, '언어:', language);
 
-    // ✅ 개선된 검색 쿼리 (더 구체적으로)
     const searchQuery = `
 미디움 헤어스타일 ${params56.length_category || ''} 
 ${params56.cut_form?.replace(/[()]/g, '') || ''} 레이어컷 
@@ -823,7 +821,6 @@ ${params56.curl_pattern || 'C컬'} 웨이브
     const langTerms = getTerms(language);
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
     
-    // 얼굴형 한국어 변환
     const faceShapesKo = (params56.face_shape_match || [])
       .map(shape => langTerms.faceShapeDesc[shape] || shape)
       .join(', ');
@@ -869,7 +866,6 @@ ${params56.curl_pattern || 'C컬'} 웨이브
 
     let fullRecipe = '';
     
-    // ✅ Node.js 방식 스트리밍 처리
     for await (const chunk of completion.body) {
       const text = chunk.toString('utf-8');
       const lines = text.split('\n').filter(line => line.trim() !== '');
@@ -895,10 +891,17 @@ ${params56.curl_pattern || 'C컬'} 웨이브
     let recipe = fullRecipe;
     recipe = sanitizeRecipeForPublic(recipe, language);
 
+    // ⭐⭐⭐ CRITICAL: Storage 경로 수정 ⭐⭐⭐
+    // hairgatorchatbot/{code}.png → recipe-images/{code}/main.png
+    const stylesWithCorrectUrls = similarStyles.slice(0, 3).map(style => ({
+      ...style,
+      image_url: `https://bhsbwbeisqzgipvzpvym.supabase.co/storage/v1/object/public/recipe-images/${style.code}/main.png`
+    }));
+
     console.log('✅ 레시피 생성 완료');
-    console.log(`🎯 반환할 도해도 개수: ${similarStyles.length}개`);
-    if (similarStyles.length > 0) {
-      console.log(`🎯 첫 번째 도해도:`, JSON.stringify(similarStyles[0]));
+    console.log(`🎯 반환할 도해도 개수: ${stylesWithCorrectUrls.length}개`);
+    if (stylesWithCorrectUrls.length > 0) {
+      console.log(`🎯 첫 번째 도해도:`, JSON.stringify(stylesWithCorrectUrls[0]));
     }
 
     return {
@@ -909,7 +912,7 @@ ${params56.curl_pattern || 'C컬'} 웨이브
         data: {
           recipe: recipe,
           params56: params56,
-          similar_styles: similarStyles.slice(0, 3)
+          similar_styles: stylesWithCorrectUrls
         }
       })
     };
@@ -929,7 +932,6 @@ ${params56.curl_pattern || 'C컬'} 웨이브
 
 // ==================== 스트리밍 레시피 생성 ====================
 async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
-  // generateRecipe와 동일한 로직
   return await generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey);
 }
 
@@ -962,7 +964,6 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
     
     console.log(`✅ OpenAI 임베딩 생성 완료 (${queryEmbedding.length}차원)`);
 
-    // ⭐ filter_length 파라미터 추가
     const lengthFilter = lengthCategory ? lengthCategory.charAt(0) : null;
     console.log(`   RPC 호출: filter_length=${lengthFilter}`);
 
@@ -977,7 +978,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
         },
         body: JSON.stringify({
           query_embedding: queryEmbedding,
-          match_threshold: 0.30,  // ⭐ 0.50 → 0.30으로 낮춤
+          match_threshold: 0.30,
           match_count: 10,
           filter_length: lengthFilter
         })
