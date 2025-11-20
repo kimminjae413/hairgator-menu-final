@@ -1,8 +1,8 @@
-// js/chatbot-ui.js - HAIRGATOR v3.1 UI Module - FINAL FIX (2025-11-20 17:20)
-// 🎉 최종 수정: 도해도 스크롤 문제 완벽 해결
+// js/chatbot-ui.js - HAIRGATOR v5.0 UI Module - FINAL VERSION (2025-01-25)
+// ✅ 성별 선택 UI 통합 완료
 // ✅ 이중 JSON 파싱 완료
 // ✅ 모달 스크롤 활성화
-// ✅ 도해도 정상 표시
+// ✅ 도해도 세로 배치
 
 import { ChatbotCore } from './chatbot-core.js';
 
@@ -24,8 +24,13 @@ class HairGatorChatbot {
     this.HISTORY_EXPIRE_DAYS = 30;
     this.MAX_MESSAGES_PER_USER = 100;
     
+    // ⭐ 이미지 업로드 임시 저장
+    this.pendingImage = null;
+    
     this.initUserHistory();
     this.init();
+    
+    console.log('✅ HairGatorChatbot 초기화 완료');
   }
 
   // ==================== localStorage 관리 ====================
@@ -225,7 +230,8 @@ class HairGatorChatbot {
         placeholder: '헤어스타일 검색...',
         indexTitle: '📑 색인',
         errorSize: '⚠️ 이미지 크기는 5MB 이하여야 합니다.',
-        errorType: '⚠️ 이미지 파일만 업로드 가능합니다.'
+        errorType: '⚠️ 이미지 파일만 업로드 가능합니다.',
+        selectGender: '성별을 선택해주세요'
       },
       en: {
         title: '✂️ AI Cut Recipe',
@@ -235,7 +241,8 @@ class HairGatorChatbot {
         placeholder: 'Search hairstyle...',
         indexTitle: '📑 Index',
         errorSize: '⚠️ Image size must be under 5MB.',
-        errorType: '⚠️ Only image files are allowed.'
+        errorType: '⚠️ Only image files are allowed.',
+        selectGender: 'Please select gender'
       },
       ja: {
         title: '✂️ AIカットレシピ',
@@ -245,7 +252,8 @@ class HairGatorChatbot {
         placeholder: 'ヘアスタイル検索...',
         indexTitle: '📑 索引',
         errorSize: '⚠️ 画像サイズは5MB以下である必要があります。',
-        errorType: '⚠️ 画像ファイルのみアップロード可能です。'
+        errorType: '⚠️ 画像ファイルのみアップロード可能です。',
+        selectGender: '性別を選択してください'
       },
       zh: {
         title: '✂️ AI剪发配方',
@@ -255,7 +263,8 @@ class HairGatorChatbot {
         placeholder: '搜索发型...',
         indexTitle: '📑 索引',
         errorSize: '⚠️ 图片大小必须小于5MB。',
-        errorType: '⚠️ 仅允许上传图片文件。'
+        errorType: '⚠️ 仅允许上传图片文件。',
+        selectGender: '请选择性别'
       },
       vi: {
         title: '✂️ Công Thức Cắt Tóc AI',
@@ -265,7 +274,8 @@ class HairGatorChatbot {
         placeholder: 'Tìm kiếm kiểu tóc...',
         indexTitle: '📑 Mục lục',
         errorSize: '⚠️ Kích thước hình ảnh phải dưới 5MB.',
-        errorType: '⚠️ Chỉ cho phép tải lên tệp hình ảnh.'
+        errorType: '⚠️ Chỉ cho phép tải lên tệp hình ảnh.',
+        selectGender: 'Vui lòng chọn giới tính'
       }
     };
     return texts[this.currentLanguage] || texts.ko;
@@ -320,7 +330,7 @@ class HairGatorChatbot {
         <div id="chatbot-messages" class="chatbot-messages">
           <div class="bot-message">
             <div class="message-content" id="welcome-message">
-              <p><strong>HAIR Recipe v3.0</strong></p>
+              <p><strong>HAIRGATOR v5.0</strong></p>
               <p id="welcome-text">${texts.welcome}</p>
               <p style="font-size:0.85em;opacity:0.7;">✨ 89용어 시스템 적용</p>
             </div>
@@ -328,25 +338,10 @@ class HairGatorChatbot {
         </div>
 
         <div class="chatbot-input-area">
-  <!-- ⭐ 성별 선택 UI 추가 ⭐ -->
-  <div class="gender-selector">
-    <label>헤어스타일 성별 선택:</label>
-    <div class="radio-group">
-      <label class="gender-option">
-        <input type="radio" name="gender" value="female" checked>
-        <span class="gender-label">👩 여성 헤어스타일</span>
-      </label>
-      <label class="gender-option">
-        <input type="radio" name="gender" value="male">
-        <span class="gender-label">👨 남성 헤어스타일</span>
-      </label>
-    </div>
-  </div>
-  
-  <input type="file" id="image-upload" accept="image/*" style="display: none;">
-  
-  <div class="input-wrapper">
-    <button id="upload-btn" class="upload-btn" title="이미지 업로드">
+          <input type="file" id="image-upload" accept="image/*" style="display: none;">
+          
+          <div class="input-wrapper">
+            <button id="upload-btn" class="upload-btn" title="이미지 업로드">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -394,11 +389,9 @@ class HairGatorChatbot {
 
     document.body.insertAdjacentHTML('beforeend', chatbotHTML);
     
-    // ⭐⭐⭐ 핵심 수정: 모달 스크롤 CSS 추가 ⭐⭐⭐
     this.addModalScrollStyles();
   }
 
-  // ⭐⭐⭐ 새 함수: 모달 스크롤 스타일 추가 ⭐⭐⭐
   addModalScrollStyles() {
     const style = document.createElement('style');
     style.textContent = `
@@ -409,25 +402,25 @@ class HairGatorChatbot {
         overflow-x: hidden !important;
         display: flex !important;
         flex-direction: column !important;
-        padding-bottom: 100px !important;  /* 🔥 하단 여백 증가 */
+        padding-bottom: 100px !important;
         -webkit-overflow-scrolling: touch !important;
       }
       
-      /* 도해도 컨테이너 스타일 - 세로 배치! */
+      /* 도해도 컨테이너 - 세로 배치 */
       .style-cards-container {
         display: flex !important;
-        flex-direction: column !important;  /* 🔥 세로 배치 */
+        flex-direction: column !important;
         gap: 16px !important;
         padding: 20px 10px !important;
         margin-top: 20px !important;
-        margin-bottom: 40px !important;  /* 🔥 하단 여백 추가 */
+        margin-bottom: 40px !important;
         position: relative !important;
         width: 100% !important;
       }
       
-      /* 도해도 카드 스타일 - 전체 너비 */
+      /* 도해도 카드 - 전체 너비 */
       .style-card {
-        width: 100% !important;  /* 🔥 전체 너비 */
+        width: 100% !important;
         background: rgba(255, 255, 255, 0.1) !important;
         border-radius: 12px !important;
         padding: 12px !important;
@@ -442,9 +435,9 @@ class HairGatorChatbot {
       
       .style-card img {
         width: 100% !important;
-        height: auto !important;  /* 🔥 비율 유지 */
+        height: auto !important;
         max-height: 400px !important;
-        object-fit: contain !important;  /* 🔥 전체 이미지 표시 */
+        object-fit: contain !important;
         border-radius: 8px !important;
         display: block !important;
         margin-bottom: 12px !important;
@@ -469,19 +462,7 @@ class HairGatorChatbot {
         font-family: monospace !important;
       }
       
-      /* 이미지 로드 실패 플레이스홀더 */
-      .style-card-placeholder {
-        width: 100% !important;
-        height: 300px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-radius: 8px !important;
-        font-size: 64px !important;
-      }
-      
-      /* 메시지 스크롤바 스타일 */
+      /* 메시지 스크롤바 */
       .chatbot-messages::-webkit-scrollbar {
         width: 6px !important;
       }
@@ -490,13 +471,9 @@ class HairGatorChatbot {
         background: rgba(255, 255, 255, 0.3) !important;
         border-radius: 3px !important;
       }
-      
-      .chatbot-messages::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.1) !important;
-      }
     `;
     document.head.appendChild(style);
-    console.log('✅ 모달 스크롤 스타일 추가 완료 (세로 배치)');
+    console.log('✅ 모달 스크롤 스타일 추가 완료');
   }
 
   // ==================== 이벤트 리스너 ====================
@@ -534,9 +511,7 @@ class HairGatorChatbot {
     const toggleDropdown = (e) => {
       e.stopPropagation();
       e.preventDefault();
-      console.log('🌐 언어 버튼 클릭/터치됨');
       languageDropdown.classList.toggle('hidden');
-      console.log('드롭다운 상태:', languageDropdown.classList.contains('hidden') ? '숨김' : '표시');
     };
     
     languageBtn.addEventListener('click', toggleDropdown);
@@ -660,74 +635,345 @@ class HairGatorChatbot {
   }
 
   changeLanguage(lang) {
-    console.log(`🌍 [START] 언어 변경 시작: ${this.currentLanguage} → ${lang}`);
-    
-    const isWebView = !!(window.ReactNativeWebView || navigator.userAgent.includes('wv'));
-    if (isWebView) {
-      console.log('📱 WebView 환경 감지됨');
-    }
-    
     this.currentLanguage = lang;
     this.core.currentLanguage = lang;
     this.setStoredLanguage(lang);
     
     const texts = this.getTexts();
-    console.log(`📝 새로운 텍스트:`, texts);
-    
-    const updateDelay = isWebView ? 150 : 10;
     
     setTimeout(() => {
       const titleEl = document.getElementById('chatbot-title');
-      if (titleEl) {
-        titleEl.textContent = texts.title;
-        console.log(`✅ 타이틀 변경: ${texts.title}`);
-      }
+      if (titleEl) titleEl.textContent = texts.title;
       
       const inputEl = document.getElementById('chatbot-input');
-      if (inputEl) {
-        inputEl.placeholder = texts.placeholder;
-        console.log(`✅ placeholder 변경: ${texts.placeholder}`);
-      }
+      if (inputEl) inputEl.placeholder = texts.placeholder;
       
       const indexTitleEl = document.getElementById('index-modal-title');
-      if (indexTitleEl) {
-        indexTitleEl.textContent = texts.indexTitle;
-      }
+      if (indexTitleEl) indexTitleEl.textContent = texts.indexTitle;
       
       const welcomeTextEl = document.getElementById('welcome-text');
-      if (welcomeTextEl) {
-        welcomeTextEl.textContent = texts.welcome;
-      }
+      if (welcomeTextEl) welcomeTextEl.textContent = texts.welcome;
       
       const messagesDiv = document.getElementById('chatbot-messages');
       if (messagesDiv) {
         messagesDiv.innerHTML = `
           <div class="welcome-message">
             <div class="welcome-icon">👋</div>
-            <div class="welcome-text" id="welcome-text">${texts.welcome}</div>
+            <div class="welcome-text">${texts.welcome}</div>
           </div>
         `;
       }
       
       this.conversationHistory = [];
-      
-      console.log(`🎉 [COMPLETE] 언어 변경 완료: ${lang}`);
-      
-      if (window.ReactNativeWebView) {
-        try {
-          window.ReactNativeWebView.postMessage(JSON.stringify({
-            type: 'LANGUAGE_CHANGED',
-            language: lang
-          }));
-        } catch (e) {
-          console.warn('WebView postMessage 실패:', e);
-        }
-      }
-    }, updateDelay);
+      console.log(`✅ 언어 변경 완료: ${lang}`);
+    }, 10);
   }
 
-  // ==================== 색인 모달 ====================
+  // ==================== 이미지 업로드 핸들러 (성별 선택 통합) ====================
   
+  async handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // 파일 크기 체크
+    if (file.size > 5 * 1024 * 1024) {
+      const texts = this.getTexts();
+      this.addMessage('bot', texts.errorSize);
+      return;
+    }
+
+    // 파일 타입 체크
+    if (!file.type.startsWith('image/')) {
+      const texts = this.getTexts();
+      this.addMessage('bot', texts.errorType);
+      return;
+    }
+
+    try {
+      // 이미지 미리보기 표시
+      const previewURL = URL.createObjectURL(file);
+      this.addMessage('user', `<img src="${previewURL}" alt="Uploaded Image" style="max-width:200px;border-radius:8px;">`);
+
+      // ⭐ 임시 저장
+      this.pendingImage = {
+        file: file,
+        previewURL: previewURL
+      };
+
+      // ⭐⭐⭐ 성별 선택 UI 표시 ⭐⭐⭐
+      const genderSelectionHTML = `
+        <p>Please select the gender for this hairstyle:</p>
+        <div style="display: flex; gap: 12px; margin-top: 12px;">
+          <button class="gender-select-btn" data-gender="female" style="flex: 1; padding: 12px 20px; background: linear-gradient(135deg, #E91E63, #C2185B); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; transition: all 0.3s;">
+            👩 Female
+          </button>
+          <button class="gender-select-btn" data-gender="male" style="flex: 1; padding: 12px 20px; background: linear-gradient(135deg, #2196F3, #1976D2); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; transition: all 0.3s;">
+            👨 Male
+          </button>
+        </div>
+      `;
+
+      this.addMessage('bot', genderSelectionHTML);
+      this.attachGenderButtonHandlers();
+
+    } catch (error) {
+      console.error('❌ 이미지 업로드 오류:', error);
+      this.addMessage('bot', '❌ Image upload failed.');
+    }
+
+    event.target.value = '';
+  }
+
+  // ⭐⭐⭐ 성별 선택 버튼 핸들러 ⭐⭐⭐
+  attachGenderButtonHandlers() {
+    const buttons = document.querySelectorAll('.gender-select-btn');
+    buttons.forEach(btn => {
+      if (btn.dataset.handlerAttached) return;
+      btn.dataset.handlerAttached = 'true';
+
+      btn.addEventListener('click', async (e) => {
+        const gender = e.target.dataset.gender || e.currentTarget.dataset.gender;
+        await this.processImageWithGender(gender);
+      });
+    });
+  }
+
+  // ⭐⭐⭐ 성별 선택 후 이미지 처리 ⭐⭐⭐
+  async processImageWithGender(gender) {
+    if (!this.pendingImage) {
+      this.addMessage('bot', '❌ No image found. Please upload again.');
+      return;
+    }
+
+    try {
+      const texts = this.getTexts();
+      this.addMessage('bot', `✅ Selected: ${gender === 'female' ? '👩 Female' : '👨 Male'}`);
+      this.addMessage('bot', texts.analyzing);
+
+      const base64Image = await this.core.fileToBase64(this.pendingImage.file);
+      
+      // ⭐ 성별 정보 포함하여 API 호출
+      const analysisResult = await this.core.analyzeImage(
+        base64Image, 
+        this.pendingImage.file.type, 
+        gender  // ⭐⭐⭐ 핵심: 성별 전달
+      );
+
+      console.log('📊 분석 결과:', analysisResult);
+
+      let params56;
+      if (analysisResult.success && analysisResult.data) {
+        params56 = analysisResult.data;
+      } else if (analysisResult.data) {
+        params56 = analysisResult.data;
+      } else {
+        params56 = analysisResult;
+      }
+
+      if (!params56 || !params56.length_category) {
+        throw new Error('Invalid analysis result');
+      }
+
+      const formattedAnalysis = this.core.formatParameters(params56);
+      this.replaceLastBotMessage(formattedAnalysis);
+
+      this.addMessage('bot', texts.generating);
+
+      const recipeResult = await this.core.generateRecipe(params56, this.currentLanguage);
+
+      console.log('📥 레시피 결과:', recipeResult);
+
+      let recipe = '';
+      let styles = [];
+      let parsedData = null;
+
+      if (recipeResult.success && recipeResult.data) {
+        parsedData = recipeResult.data;
+
+        // 이중 JSON 파싱
+        if (typeof parsedData.recipe === 'string' && parsedData.recipe.trim().startsWith('{')) {
+          try {
+            const innerJson = JSON.parse(parsedData.recipe);
+            if (innerJson.success === true && innerJson.data) {
+              parsedData = innerJson.data;
+            } else if (innerJson.recipe) {
+              parsedData = innerJson;
+            }
+          } catch (e) {
+            console.warn('⚠️ 이중 JSON 파싱 실패');
+          }
+        }
+
+        recipe = parsedData.recipe || '';
+        styles = parsedData.similar_styles || [];
+
+      } else if (recipeResult.data) {
+        recipe = recipeResult.data.recipe || recipeResult.data || '';
+        styles = recipeResult.data.similar_styles || [];
+      } else if (typeof recipeResult === 'string') {
+        recipe = recipeResult;
+      } else {
+        recipe = 'Recipe generation failed.';
+      }
+
+      // 레시피 렌더링
+      if (recipe && recipe.length > 0 && typeof recipe === 'string') {
+        if (recipe.trim().startsWith('{')) {
+          try {
+            const finalParse = JSON.parse(recipe);
+            if (finalParse.recipe) {
+              recipe = finalParse.recipe;
+              if (!styles || styles.length === 0) {
+                styles = finalParse.similar_styles || [];
+              }
+            }
+          } catch (e) {
+            console.warn('⚠️ 최종 파싱 실패');
+          }
+        }
+
+        let formattedRecipe = recipe.replace(/\\n/g, '\n').replace(/\n/g, '<br>');
+        const rendered = this.core.parseMarkdownWithHighlight(formattedRecipe);
+        const wrappedRecipe = `<div class="recipe-text" style="white-space: normal; word-wrap: break-word; max-width: 100%; overflow-x: hidden;">${rendered}</div>`;
+
+        this.replaceLastBotMessage(wrappedRecipe);
+      } else {
+        this.replaceLastBotMessage('⚠️ Recipe content is empty.');
+      }
+
+      // 도해도 표시
+      if (styles && Array.isArray(styles) && styles.length > 0) {
+        this.displayStyleCards(styles.slice(0, 3));
+      }
+
+      // ⭐ 임시 저장 초기화
+      this.pendingImage = null;
+
+    } catch (error) {
+      console.error('❌ 이미지 처리 오류:', error);
+      this.replaceLastBotMessage(`❌ Error: ${error.message}`);
+      this.pendingImage = null;
+    }
+  }
+
+  // ==================== 나머지 메서드들 (변경 없음) ====================
+
+  async handleTextMessage() {
+    const input = document.getElementById('chatbot-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
+
+    this.addMessage('user', message);
+    input.value = '';
+
+    this.addMessage('bot', '답변 생성 중...');
+
+    try {
+      const response = await this.core.generateResponse(message, []);
+      this.replaceLastBotMessage(response);
+    } catch (error) {
+      console.error('응답 생성 오류:', error);
+      this.replaceLastBotMessage('답변 생성에 실패했습니다.');
+    }
+  }
+
+  displayStyleCards(styles) {
+    if (!styles || !Array.isArray(styles) || styles.length === 0) return;
+
+    const cardsHTML = styles.map((style, index) => {
+      const imageUrl = style.image_url || style.main_image_url || '';
+      const hasValidImage = imageUrl && imageUrl.includes('supabase.co');
+      const name = style.name || style.style_name_ko || '이름 없음';
+      const code = style.code || style.sample_code || '';
+      const similarity = style.similarity ? `(${(style.similarity * 100).toFixed(0)}% 매칭)` : '';
+
+      return `
+        <div class="style-card">
+          ${hasValidImage ? 
+            `<img src="${imageUrl}" alt="${name}" loading="lazy">` : 
+            '<div style="height:300px;display:flex;align-items:center;justify-content:center;font-size:64px;">📄</div>'}
+          <div class="style-card-info">
+            <h4>${name} ${similarity}</h4>
+            ${code ? `<span class="style-code">${code}</span>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    this.addRawHTML(`<div class="style-cards-container">${cardsHTML}</div>`);
+    
+    setTimeout(() => {
+      this.scrollToBottom();
+    }, 100);
+  }
+
+  addMessage(sender, content) {
+    const messagesDiv = document.getElementById('chatbot-messages');
+    const messageHTML = `
+      <div class="${sender}-message">
+        <div class="message-content">${content}</div>
+      </div>
+    `;
+    messagesDiv.insertAdjacentHTML('beforeend', messageHTML);
+    
+    this.attach89TermClickHandlers();
+    this.addToHistory(sender, content);
+    this.scrollToBottom();
+  }
+
+  addRawHTML(html) {
+    const messagesDiv = document.getElementById('chatbot-messages');
+    messagesDiv.insertAdjacentHTML('beforeend', html);
+    this.scrollToBottom();
+  }
+
+  replaceLastBotMessage(newContent) {
+    const messages = document.querySelectorAll('.bot-message');
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage) {
+      lastMessage.querySelector('.message-content').innerHTML = newContent;
+      this.attach89TermClickHandlers();
+    }
+    this.scrollToBottom();
+  }
+
+  scrollToBottom() {
+    const messagesDiv = document.getElementById('chatbot-messages');
+    if (messagesDiv) {
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+  }
+
+  attach89TermClickHandlers() {
+    document.querySelectorAll('.term-89.clickable').forEach(termEl => {
+      if (termEl.dataset.listenerAttached) return;
+      termEl.dataset.listenerAttached = 'true';
+
+      const handleClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const termId = termEl.dataset.term;
+        this.showIndexModal();
+
+        setTimeout(() => {
+          const targetCard = document.querySelector(`.term-card-single[data-term-id="${termId}"]`);
+          if (targetCard) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            targetCard.style.border = '3px solid #2196F3';
+            setTimeout(() => {
+              targetCard.style.border = '';
+            }, 2000);
+          }
+        }, 300);
+      };
+
+      termEl.addEventListener('click', handleClick);
+      termEl.style.cursor = 'pointer';
+    });
+  }
+
   showIndexModal() {
     const modal = document.getElementById('index-modal');
     const body = document.getElementById('index-modal-body');
@@ -889,340 +1135,6 @@ class HairGatorChatbot {
     }, { passive: true });
   }
 
-  // ==================== 이미지 업로드 핸들러 ====================
-  
-    async handleImageUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  // ⭐ 성별 선택 값 가져오기 ⭐
-  const genderInput = document.querySelector('input[name="gender"]:checked');
-  if (!genderInput) {
-    alert('성별을 선택해주세요.');
-    return;
-  }
-  const userGender = genderInput.value; // 'female' or 'male'
-  console.log(`👤 사용자 선택 성별: ${userGender}`);
-
-  if (file.size > 5 * 1024 * 1024) {
-      const texts = this.getTexts();
-      this.addMessage('bot', texts.errorSize);
-      return;
-    }
-
-    if (!file.type.startsWith('image/')) {
-      const texts = this.getTexts();
-      this.addMessage('bot', texts.errorType);
-      return;
-    }
-
-    try {
-      const previewURL = URL.createObjectURL(file);
-      this.addMessage('user', `<img src="${previewURL}" alt="업로드 이미지" style="max-width:200px;border-radius:8px;">`);
-
-      const texts = this.getTexts();
-      this.addMessage('bot', texts.analyzing);
-
-      const base64Image = await this.core.fileToBase64(file);
-// ⭐ user_gender 파라미터 추가 ⭐
-const analysisResult = await this.core.analyzeImage(base64Image, file.type, userGender);
-
-      console.log('📊 분석 결과 전체:', analysisResult);
-      
-      let params56;
-      if (analysisResult.success && analysisResult.data) {
-        params56 = analysisResult.data;
-      } else if (analysisResult.data) {
-        params56 = analysisResult.data;
-      } else {
-        params56 = analysisResult;
-      }
-      
-      console.log('📤 추출된 params56:', params56);
-      
-      if (!params56 || !params56.length_category) {
-        throw new Error('이미지 분석 결과가 올바르지 않습니다.');
-      }
-
-      const formattedAnalysis = this.core.formatParameters(params56);
-      this.replaceLastBotMessage(formattedAnalysis);
-
-      this.addMessage('bot', texts.generating);
-
-      const recipeResult = await this.core.generateRecipe(
-        params56,
-        this.currentLanguage
-      );
-
-      console.log('📥 recipeResult 전체:', recipeResult);
-
-      // 이중 JSON 파싱
-      let recipe = '';
-      let styles = [];
-      let parsedData = null;
-
-      if (recipeResult.success && recipeResult.data) {
-        parsedData = recipeResult.data;
-        
-        // 이중 JSON 체크
-        if (typeof parsedData.recipe === 'string' && parsedData.recipe.trim().startsWith('{')) {
-          try {
-            const innerJson = JSON.parse(parsedData.recipe);
-            
-            if (innerJson.success === true && innerJson.data) {
-              parsedData = innerJson.data;
-              console.log('✅ 이중 JSON 파싱 성공');
-            } else if (innerJson.recipe) {
-              parsedData = innerJson;
-            }
-          } catch (e) {
-            console.warn('⚠️ 이중 JSON 파싱 실패, 원본 사용');
-          }
-        }
-        
-        recipe = parsedData.recipe || '';
-        styles = parsedData.similar_styles || [];
-        
-      } else if (recipeResult.data) {
-        recipe = recipeResult.data.recipe || recipeResult.data || '';
-        styles = recipeResult.data.similar_styles || [];
-      } else if (typeof recipeResult === 'string') {
-        recipe = recipeResult;
-      } else {
-        recipe = '레시피 생성에 실패했습니다.';
-      }
-
-      console.log('📝 최종 recipe 길이:', recipe.length);
-      console.log('🖼️ 최종 styles 개수:', styles?.length);
-
-      // 레시피 렌더링
-      if (recipe && recipe.length > 0 && typeof recipe === 'string') {
-        // 혹시 recipe가 여전히 JSON이라면 최종 파싱
-        if (recipe.trim().startsWith('{')) {
-          try {
-            const finalParse = JSON.parse(recipe);
-            if (finalParse.recipe) {
-              recipe = finalParse.recipe;
-              if (!styles || styles.length === 0) {
-                styles = finalParse.similar_styles || [];
-              }
-            }
-          } catch (e) {
-            console.warn('⚠️ 최종 파싱 실패, 원본 사용');
-          }
-        }
-        
-        // 마크다운 렌더링
-        let formattedRecipe = recipe.replace(/\\n/g, '\n').replace(/\n/g, '<br>');
-        const rendered = this.core.parseMarkdownWithHighlight(formattedRecipe);
-        const wrappedRecipe = `<div class="recipe-text" style="white-space: normal; word-wrap: break-word; max-width: 100%; overflow-x: hidden;">${rendered}</div>`;
-        
-        this.replaceLastBotMessage(wrappedRecipe);
-      } else {
-        this.replaceLastBotMessage('⚠️ 레시피 내용이 비어있습니다.');
-      }
-
-      // ⭐⭐⭐ 도해도 표시 ⭐⭐⭐
-      console.log('🖼️ displayStyleCards 호출 전 - styles:', styles);
-      if (styles && Array.isArray(styles) && styles.length > 0) {
-        console.log('✅ 도해도 표시 시작:', styles.length, '개');
-        this.displayStyleCards(styles.slice(0, 3));
-      } else {
-        console.warn('⚠️ 도해도가 없거나 배열이 아님');
-      }
-
-    } catch (error) {
-      console.error('❌ 이미지 처리 오류:', error);
-      this.replaceLastBotMessage(`❌ 오류 발생: ${error.message}`);
-    }
-
-    event.target.value = '';
-  }
-
-  // ==================== 텍스트 메시지 핸들러 ====================
-  
-  async handleTextMessage() {
-    const input = document.getElementById('chatbot-input');
-    const message = input.value.trim();
-    
-    if (!message) return;
-
-    this.addMessage('user', message);
-    input.value = '';
-
-    const casualKeywords = ['안녕', '반가', '고마', '감사', '도움', '뭐', '어떻게', '알려줘', '설명', '궁금', 'hello', 'hi', 'thanks', 'thank you', 'help', 'explain'];
-    const questionKeywords = ['뭐', '무엇', '어떻게', '왜', '언제', '어디', '누가', 'what', 'how', 'why', 'when', 'where', 'who'];
-    const styleKeywords = ['스타일', '헤어', '커트', '펌', '컬러', '염색', '미디움', '숏', '롱', '단발', '레이어', '그래쥬에이션', 'style', 'hair', 'cut', 'perm', 'color', 'medium', 'short', 'long', 'layer', 'graduation'];
-    
-    const isCasualChat = casualKeywords.some(keyword => message.includes(keyword)) && message.length < 30;
-    const isStyleSearch = styleKeywords.some(keyword => message.includes(keyword));
-    const isTheoryQuestion = questionKeywords.some(keyword => message.includes(keyword)) && !isStyleSearch;
-
-    if (isCasualChat || isTheoryQuestion) {
-      this.addMessage('bot', '답변 생성 중...');
-      
-      try {
-        const gptResponse = await this.core.generateResponse(message, []);
-
-        this.replaceLastBotMessage(gptResponse);
-      } catch (error) {
-        console.error('대화 오류:', error);
-        this.replaceLastBotMessage('답변 생성에 실패했습니다.');
-      }
-      return;
-    }
-
-    this.addMessage('bot', '검색 중...');
-
-    try {
-      const styles = await this.core.searchStyles(message);
-
-      if (styles.length === 0) {
-        this.replaceLastBotMessage('관련된 스타일을 찾지 못했습니다.');
-        return;
-      }
-
-      const gptResponse = await this.core.generateResponse(message, styles);
-
-      this.replaceLastBotMessage(gptResponse);
-      
-      const validStyles = this.core.filterValidStyles(styles);
-      
-      if (validStyles.length > 0) {
-        this.displayStyleCards(validStyles);
-      }
-
-    } catch (error) {
-      console.error('검색 오류:', error);
-      this.replaceLastBotMessage('검색 중 오류가 발생했습니다.');
-    }
-  }
-
-  // ==================== UI 렌더링 ====================
-  
-  displayStyleCards(styles) {
-    console.log('🎨 displayStyleCards 호출됨');
-    console.log('   - styles:', styles);
-    console.log('   - styles.length:', styles?.length);
-    
-    if (!styles || !Array.isArray(styles) || styles.length === 0) {
-      console.warn('⚠️ styles가 없거나 배열이 아니거나 비어있음');
-      return;
-    }
-    
-    const cardsHTML = styles.map((style, index) => {
-      console.log(`🖼️ 스타일 ${index}:`, style);
-      
-      const imageUrl = style.image_url || style.main_image_url || style.imageUrl || '';
-      console.log(`   이미지 URL: ${imageUrl}`);
-      
-      const hasValidImage = imageUrl && 
-                           imageUrl.trim() !== '' &&
-                           imageUrl.includes('supabase.co') &&
-                           !imageUrl.includes('temp') &&
-                           !imageUrl.includes('temporary');
-      
-      const name = style.name || style.style_name_ko || style.title || '이름 없음';
-      const code = style.code || style.sample_code || style.id || '';
-      const similarity = style.similarity ? `(${(style.similarity * 100).toFixed(0)}% 매칭)` : '';
-      
-      return `
-        <div class="style-card">
-          ${hasValidImage ? 
-            `<img src="${imageUrl}" alt="${name}" loading="lazy" onload="console.log('✅ 이미지 로드:', '${code}');" onerror="console.error('❌ 이미지 로드 실패:', '${imageUrl}'); this.parentElement.style.display='none';">` : 
-            '<div class="style-card-placeholder">📄</div>'}
-          <div class="style-card-info">
-            <h4>${name} ${similarity}</h4>
-            ${code ? `<span class="style-code">${code}</span>` : ''}
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    console.log('✅ 도해도 HTML 생성 완료, 추가 중...');
-    this.addRawHTML(`<div class="style-cards-container">${cardsHTML}</div>`);
-    console.log('✅ 도해도 HTML 추가 완료');
-    
-    // ⭐ 추가: 도해도가 추가된 후 스크롤
-    setTimeout(() => {
-      this.scrollToBottom();
-    }, 100);
-  }
-
-  addMessage(sender, content) {
-    const messagesDiv = document.getElementById('chatbot-messages');
-    const messageHTML = `
-      <div class="${sender}-message">
-        <div class="message-content">${content}</div>
-      </div>
-    `;
-    messagesDiv.insertAdjacentHTML('beforeend', messageHTML);
-    
-    this.attach89TermClickHandlers();
-    this.addToHistory(sender, content);
-    this.scrollToBottom();
-  }
-  
-  attach89TermClickHandlers() {
-    document.querySelectorAll('.term-89.clickable').forEach(termEl => {
-      if (termEl.dataset.listenerAttached) return;
-      termEl.dataset.listenerAttached = 'true';
-      
-      const handleClick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const termId = termEl.dataset.term;
-        console.log(`🔍 89용어 클릭: ${termId}번`);
-        
-        this.showIndexModal();
-        
-        setTimeout(() => {
-          const targetCard = document.querySelector(`.term-card-single[data-term-id="${termId}"]`);
-          if (targetCard) {
-            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            targetCard.style.border = '3px solid #2196F3';
-            targetCard.style.boxShadow = '0 8px 24px rgba(33, 150, 243, 0.4)';
-            
-            setTimeout(() => {
-              targetCard.style.border = '1px solid #e0e0e0';
-              targetCard.style.boxShadow = 'none';
-            }, 2000);
-          }
-        }, 300);
-      };
-      
-      termEl.addEventListener('click', handleClick);
-      termEl.addEventListener('touchstart', handleClick, { passive: false });
-      
-      termEl.style.cursor = 'pointer';
-    });
-  }
-
-  addRawHTML(html) {
-    const messagesDiv = document.getElementById('chatbot-messages');
-    messagesDiv.insertAdjacentHTML('beforeend', html);
-    this.scrollToBottom();
-  }
-
-  replaceLastBotMessage(newContent) {
-    const messages = document.querySelectorAll('.bot-message');
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage) {
-      lastMessage.querySelector('.message-content').innerHTML = newContent;
-      this.attach89TermClickHandlers();
-    }
-    this.scrollToBottom();
-  }
-
-  scrollToBottom() {
-    const messagesDiv = document.getElementById('chatbot-messages');
-    if (messagesDiv) {
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-  }
-
   reattachLanguageHandlers() {
     const self = this;
     const dropdown = document.getElementById('language-dropdown');
@@ -1348,5 +1260,5 @@ const analysisResult = await this.core.analyzeImage(base64Image, file.type, user
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR v3.1 챗봇 로드 완료 (최종 수정: 도해도 스크롤 완벽 해결)');
+  console.log('✅ HAIRGATOR v5.0 챗봇 최종 버전 로드 완료');
 });
