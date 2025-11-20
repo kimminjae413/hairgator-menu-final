@@ -1,15 +1,16 @@
 // netlify/functions/chatbot-api.js
-// HAIRGATOR v5.0 - 최종 완성 버전 (2025-01-25)
+// HAIRGATOR v5.0 - 하이브리드 검색 통합 버전 (2025-01-25)
 // 
 // 🎯 주요 기능:
 // 1. ⭐ 사용자 성별 선택 통합 (user_gender: 'male' | 'female')
 // 2. GPT-4o Vision + Function Calling (56개 파라미터)
 // 3. recipe_samples 벡터 검색 (4,719개 레시피)
-// 4. Gemini embedding (768차원)
-// 5. 도해도 15개 선별 및 반환
-// 6. 성별 필터링 (female: 2,178개 / male: 2,541개)
-// 7. 보안 필터링 (IP 보호)
-// 8. 다국어 지원 (ko/en/ja/zh/vi)
+// 4. theory_chunks 하이브리드 검색 (벡터 + 키워드) ⭐ NEW
+// 5. Gemini embedding (768차원)
+// 6. 도해도 15개 선별 및 반환
+// 7. 성별 필터링 (female: 2,178개 / male: 2,541개)
+// 8. 보안 필터링 (IP 보호)
+// 9. 다국어 지원 (ko/en/ja/zh/vi)
 // ==================== 
 
 const fetch = require('node-fetch');
@@ -889,11 +890,12 @@ function getTerms(lang) {
   return terms[lang] || terms['ko'];
 }
 
-// ==================== theory_chunks 벡터 검색 ====================
+// ==================== theory_chunks 하이브리드 검색 (벡터 + 키워드) ⭐ NEW ====================
 async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, matchCount = 5) {
   try {
-    console.log(`🔍 theory_chunks 벡터 검색: "${query}"`);
+    console.log(`🔍 theory_chunks 하이브리드 검색: "${query}"`);
     
+    // 1. Gemini 임베딩 생성
     const embeddingResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${geminiKey}`,
       {
@@ -908,13 +910,65 @@ async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, ma
 
     if (!embeddingResponse.ok) {
       console.error('❌ Gemini 임베딩 생성 실패');
-      return [];
+      return await fallbackKeywordSearch(query, supabaseUrl, supabaseKey, matchCount);
     }
 
     const embeddingData = await embeddingResponse.json();
     const queryEmbedding = embeddingData.embedding.values;
 
+    // 2. 하이브리드 RPC 호출 시도
     const rpcResponse = await fetch(
+      `${supabaseUrl}/rest/v1/rpc/hybrid_search_theory_chunks`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          query_embedding: queryEmbedding,
+          query_text: query,
+          vector_threshold: 0.55,
+          vector_count: 10,
+          keyword_count: 10,
+          final_count: matchCount
+        })
+      }
+    );
+
+    if (!rpcResponse.ok) {
+      console.warn(`⚠️ 하이브리드 검색 실패 (${rpcResponse.status}), 기존 벡터 검색으로 폴백`);
+      return await fallbackVectorSearch(queryEmbedding, supabaseUrl, supabaseKey, matchCount);
+    }
+
+    const results = await rpcResponse.json();
+    console.log(`✅ 하이브리드 검색 ${results.length}개 완료`);
+    
+    // 상위 3개 결과 로깅
+    if (results.length > 0) {
+      console.log('📊 상위 3개 결과:');
+      results.slice(0, 3).forEach((r, idx) => {
+        const vectorScore = (r.vector_similarity * 100).toFixed(1);
+        const combinedScore = (r.combined_score * 100).toFixed(1);
+        console.log(`  ${idx + 1}. 종합: ${combinedScore}% | 벡터: ${vectorScore}% | 키워드: ${r.keyword_match_count}개`);
+      });
+    }
+    
+    return results;
+
+  } catch (error) {
+    console.error('💥 theory_chunks 검색 오류:', error);
+    return [];
+  }
+}
+
+// ==================== 폴백: 기존 벡터 검색 ====================
+async function fallbackVectorSearch(queryEmbedding, supabaseUrl, supabaseKey, matchCount) {
+  try {
+    console.log('⚠️ 폴백: 기존 벡터 검색 수행');
+    
+    const response = await fetch(
       `${supabaseUrl}/rest/v1/rpc/match_theory_chunks`,
       {
         method: 'POST',
@@ -925,24 +979,76 @@ async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, ma
         },
         body: JSON.stringify({
           query_embedding: queryEmbedding,
-          match_threshold: 0.60,
+          match_threshold: 0.55,
           match_count: matchCount
         })
       }
     );
-
-    if (!rpcResponse.ok) {
-      console.error('❌ Supabase RPC 호출 실패:', rpcResponse.status);
+    
+    if (!response.ok) {
+      console.error('❌ 벡터 검색 폴백 실패');
       return [];
     }
-
-    const results = await rpcResponse.json();
-    console.log(`✅ theory_chunks ${results.length}개 검색 완료`);
     
+    const results = await response.json();
+    console.log(`✅ 벡터 검색 ${results.length}개 완료`);
     return results;
-
+    
   } catch (error) {
-    console.error('💥 theory_chunks 검색 오류:', error);
+    console.error('💥 벡터 검색 폴백 오류:', error);
+    return [];
+  }
+}
+
+// ==================== 폴백: 키워드만 검색 ====================
+async function fallbackKeywordSearch(query, supabaseUrl, supabaseKey, matchCount) {
+  try {
+    console.log('⚠️ 폴백: 키워드 검색만 수행');
+    
+    // 쿼리를 키워드로 분리
+    const keywords = query.toLowerCase().split(/\s+/).filter(k => k.length > 1);
+    
+    const response = await fetch(
+      `${supabaseUrl}/rest/v1/theory_chunks?select=*&limit=${matchCount * 2}`,
+      {
+        method: 'GET',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    if (!response.ok) {
+      console.error('❌ 키워드 검색 실패');
+      return [];
+    }
+    
+    const allData = await response.json();
+    
+    // 클라이언트 사이드에서 키워드 매칭 점수 계산
+    const scored = allData.map(item => {
+      let score = 0;
+      const itemText = `${item.content || ''} ${item.content_ko || ''} ${(item.keywords || []).join(' ')}`.toLowerCase();
+      
+      keywords.forEach(kw => {
+        if (itemText.includes(kw)) score++;
+      });
+      
+      return { ...item, keyword_score: score };
+    });
+    
+    const results = scored
+      .filter(item => item.keyword_score > 0)
+      .sort((a, b) => b.keyword_score - a.keyword_score)
+      .slice(0, matchCount);
+    
+    console.log(`✅ 키워드 검색 ${results.length}개 완료`);
+    return results;
+      
+  } catch (error) {
+    console.error('💥 키워드 검색 오류:', error);
     return [];
   }
 }
