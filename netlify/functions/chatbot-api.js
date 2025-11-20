@@ -7,6 +7,9 @@
 // 3. 얼굴형 추천 (face_shape_match) 포함
 // 4. filter_length 파라미터 추가 (도해도 검색)
 // 5. 에러 로깅 대폭 개선
+// 6. 길이 판단 로직 개선 (B Length 정확도 향상)
+// 7. 검색 쿼리 개선 (더 구체적인 텍스트)
+// 8. Threshold 0.30으로 낮춤 (더 많은 결과)
 // ==================== 
 
 const fetch = require('node-fetch');
@@ -400,10 +403,32 @@ Analyze the uploaded hairstyle image and extract ALL 56 parameters with ABSOLUTE
 - G Length (20cm): Jaw line
 - H Length (15cm): Ear level
 
-**3-STEP DECISION:**
-1. Does hair touch shoulders? → YES = D Length
-2. Longer than shoulders? → A/B/C
-3. Shorter than shoulders? → Check jaw: Above=H, At=G, Below=F, Between=E
+**CRITICAL 4-STEP LENGTH DECISION:**
+
+STEP 1: Find the LONGEST hair strand in the BACK
+- Ignore shorter face-framing layers
+- Focus on the longest length you can see
+
+STEP 2: Compare to body landmarks (CAREFULLY):
+- Below chest/near navel = A Length (65cm)
+- Mid-chest (nipple level) = B Length (50cm) ⭐ COMMON
+- Collarbone = C Length (40cm) ⭐ COMMON
+- Shoulder line = D Length (35cm) ⭐ MOST COMMON
+- 2-3cm above shoulder = E Length (30cm)
+- Below chin = F Length (25cm)
+- Jaw line = G Length (20cm)
+- Ear level = H Length (15cm)
+
+STEP 3: If between two lengths, choose the LONGER one
+- Between B and C → Choose B
+- Between C and D → Choose C
+
+STEP 4: Double-check
+- Does it clearly pass shoulders? → B or C (NOT D)
+- Exactly at shoulders? → D Length
+- Above shoulders? → E/F/G/H
+
+EXAMPLE: Hair reaching mid-chest = B Length (NOT C!)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -771,13 +796,16 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
   try {
     console.log('🍳 레시피 생성 시작:', params56.length_category, '언어:', language);
 
-    // ✅ 수정 (더 구체적으로)
-const searchQuery = `
-미디움 스타일 ${params56.length_category || ''} 레이어컷 
-${params56.fringe_type || ''} 
+    // ✅ 개선된 검색 쿼리 (더 구체적으로)
+    const searchQuery = `
+미디움 헤어스타일 ${params56.length_category || ''} 
+${params56.cut_form?.replace(/[()]/g, '') || ''} 레이어컷 
+${params56.fringe_type || ''} 앞머리
 ${params56.volume_zone || ''} 볼륨 
-${params56.curl_pattern || 'C컬'} 활용
+${params56.curl_pattern || 'C컬'} 웨이브 
+쇄골 라인 미디움 길이
 `.trim();
+
     const theoryChunks = await searchTheoryChunks(searchQuery, geminiKey, supabaseUrl, supabaseKey, 5);
     
     const allSimilarStyles = await searchSimilarStyles(
@@ -945,7 +973,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
         },
         body: JSON.stringify({
           query_embedding: queryEmbedding,
-          match_threshold: 0.30,
+          match_threshold: 0.30,  // ⭐ 0.50 → 0.30으로 낮춤
           match_count: 10,
           filter_length: lengthFilter
         })
