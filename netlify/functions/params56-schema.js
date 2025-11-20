@@ -1,78 +1,75 @@
 // params56-schema.js
-// HAIRGATOR 56개 파라미터 Structured Output 스키마
-// Gemini API용 JSON Schema 정의
-// ✅ FINAL VERSION - 얼굴형 추천 필드 추가
+// HAIRGATOR 56개 파라미터 + 42개 포뮬러 Structured Output 스키마
+// GPT-4o Function Calling용 JSON Schema 정의
+// ✅ ULTIMATE VERSION - 42개 포뮬러 자동 매칭 포함!
 
 /**
- * 56개 파라미터 + 얼굴형 추천 JSON Schema
- * Gemini Structured Output에서 사용
+ * 🎯 2WAY CUT 시스템 전체 구조
  * 
- * 🎯 얼굴형 분류 (프로젝트 3_face_design.pdf 기준):
- * - Oval (계란형) : 이상적 비율, 부드러운 턱선 → 대부분의 스타일 잘 어울림
- * - Round (둥근형) : 부드러운 곡선, 폭과 길이 비슷 → 사이드 볼륨, 레이어
- * - Square (사각형) : 각진 턱선, 강한 인상 → 부드러운 웨이브, 사이드뱅
- * - Heart (하트형) : 넓은 이마, 뾰족한 턱 → 턱선 커버, 사이드 볼륨
- * - Long (긴 얼굴형) : 세로가 가로보다 긴 비율 → 중간 볼륨, 사이드뱅
- * - Diamond (다이아몬드형) : 넓은 광대, 좁은 이마와 턱 → 광대 커버
+ * 1. 56개 파라미터: 헤어스타일 분석
+ * 2. 42개 포뮬러: 섹션별 커팅 기법 (크리스기 원장 독점)
+ * 3. 9개 매트릭스: 형태 분류 (Triangular/Square/Round x Low/Medium/High)
+ * 4. 얼굴형 추천: 6가지 얼굴형별 추천
  */
-const PARAMS_56_SCHEMA = {
+
+const PARAMS_56_PLUS_FORMULA_SCHEMA = {
   type: "object",
   properties: {
     // ===== 기본 정보 =====
     cut_category: {
       type: "string",
       enum: ["Women's Cut", "Men's Cut"],
-      description: "성별 카테고리"
+      description: "Gender category"
     },
     
     // ===== 길이 (Length) - 8개 =====
     length_category: {
       type: "string",
       enum: [
-        "A Length",  // 65cm - 가슴 아래
-        "B Length",  // 50cm - 가슴 중간
-        "C Length",  // 40cm - 쇄골 밑선
-        "D Length",  // 35cm - 어깨선 (어깨에 닿음)
-        "E Length",  // 30cm - 어깨 위 (공간 있음)
-        "F Length",  // 25cm - 턱선 밑
-        "G Length",  // 20cm - 턱선
-        "H Length"   // 15cm - 귀 중간
+        "A Length",  // 65cm - Below chest
+        "B Length",  // 50cm - Mid chest
+        "C Length",  // 40cm - Collarbone
+        "D Length",  // 35cm - Shoulder line
+        "E Length",  // 30cm - Above shoulder
+        "F Length",  // 25cm - Below chin
+        "G Length",  // 20cm - Jaw line
+        "H Length"   // 15cm - Ear level
       ],
-      description: "전체 길이 카테고리 (신체 랜드마크 기준)"
+      description: "Overall length category based on body landmarks"
     },
     
     estimated_hair_length_cm: {
       type: "string",
-      description: "추정 헤어 길이 (cm 단위, 예: '35')"
+      description: "Estimated hair length in cm (e.g., '35')"
     },
     
     front_length: {
       type: "string",
       enum: ["Very Short", "Short", "Medium", "Long", "Very Long"],
-      description: "앞머리 길이"
+      description: "Front hair length"
     },
     
     back_length: {
       type: "string",
       enum: ["Very Short", "Short", "Medium", "Long", "Very Long"],
-      description: "뒷머리 길이"
+      description: "Back hair length"
     },
     
     side_length: {
       type: "string",
       enum: ["Very Short", "Short", "Medium", "Long", "Very Long"],
-      description: "옆머리 길이"
+      description: "Side hair length"
     },
     
     // ===== 구조 (Structure) - 10개 =====
     cut_form: {
       type: "string",
       enum: [
-        "O (One Length)",    // 원렝스 - 모든 머리카락 같은 길이
-        "G (Graduation)",    // 그래쥬에이션 - 외곽 짧고 내부 김
-        "L (Layer)"          // 레이어 - 층을 두어 자름
+        "O (One Length)",
+        "G (Graduation)",
+        "L (Layer)"
       ],
-      description: "커트 형태 - 반드시 괄호 포함 형식"
+      description: "Cut form - must include parentheses"
     },
     
     structure_layer: {
@@ -87,56 +84,56 @@ const PARAMS_56_SCHEMA = {
         "Round Layer",
         "Graduated Layer"
       ],
-      description: "레이어 구조"
+      description: "Layer structure"
     },
     
     graduation_type: {
       type: "string",
       enum: ["None", "Light", "Medium", "Heavy"],
-      description: "그래쥬에이션 정도"
+      description: "Graduation level"
     },
     
     weight_distribution: {
       type: "string",
       enum: ["Top Heavy", "Balanced", "Bottom Heavy"],
-      description: "무게 분포"
+      description: "Weight distribution"
     },
     
     layer_type: {
       type: "string",
       enum: ["No Layer", "Low Layer", "Mid Layer", "High Layer", "Full Layer"],
-      description: "레이어 타입"
+      description: "Layer type"
     },
     
     // ===== 형태 (Shape) - 10개 =====
     silhouette: {
       type: "string",
       enum: ["Triangular", "Square", "Round"],
-      description: "실루엣 형태 (9개 매트릭스)"
+      description: "Overall silhouette shape (9-Matrix system)"
     },
     
     outline_shape: {
       type: "string",
       enum: ["Straight", "Curved", "Angular", "Irregular"],
-      description: "아웃라인 형태"
+      description: "Outline shape"
     },
     
     volume_zone: {
       type: "string",
       enum: ["Low", "Medium", "High"],
-      description: "볼륨 영역 (하단/중간/상단)"
+      description: "Volume zone (bottom/middle/top) - determines 9-Matrix classification"
     },
     
     volume_distribution: {
       type: "string",
       enum: ["Top", "Middle", "Bottom", "Even"],
-      description: "볼륨 분포"
+      description: "Volume distribution"
     },
     
     line_quality: {
       type: "string",
       enum: ["Sharp", "Soft", "Blended", "Disconnected"],
-      description: "라인 품질"
+      description: "Line quality"
     },
     
     // ===== 앞머리 (Fringe) - 5개 =====
@@ -149,7 +146,7 @@ const PARAMS_56_SCHEMA = {
         "Center Part",
         "No Fringe"
       ],
-      description: "앞머리 타입"
+      description: "Fringe type"
     },
     
     fringe_length: {
@@ -163,50 +160,50 @@ const PARAMS_56_SCHEMA = {
         "Chin",
         "None"
       ],
-      description: "앞머리 길이"
+      description: "Fringe length"
     },
     
     fringe_texture: {
       type: "string",
       enum: ["Blunt", "Textured", "Wispy", "Choppy"],
-      description: "앞머리 질감"
+      description: "Fringe texture"
     },
     
     // ===== 텍스처 (Texture) - 12개 =====
     surface_texture: {
       type: "string",
       enum: ["Smooth", "Textured", "Choppy", "Soft"],
-      description: "표면 질감"
+      description: "Surface texture"
     },
     
     internal_texture: {
       type: "string",
       enum: ["Blunt", "Point Cut", "Slide Cut", "Razor Cut"],
-      description: "내부 질감"
+      description: "Internal texture"
     },
     
     hair_density: {
       type: "string",
       enum: ["Thin", "Medium", "Thick"],
-      description: "모발 밀도"
+      description: "Hair density"
     },
     
     hair_texture: {
       type: "string",
       enum: ["Straight", "Wavy", "Curly", "Coily"],
-      description: "모발 질감 (자연 상태)"
+      description: "Natural hair texture"
     },
     
     movement: {
       type: "string",
       enum: ["Static", "Slight", "Moderate", "High"],
-      description: "움직임 정도"
+      description: "Movement level"
     },
     
     texture_technique: {
       type: "string",
       enum: ["None", "Point Cut", "Slide Cut", "Razor", "Texturizing"],
-      description: "텍스처 기법"
+      description: "Texturizing technique"
     },
     
     // ===== 기술 (Technique) - 16개 =====
@@ -218,44 +215,24 @@ const PARAMS_56_SCHEMA = {
         "Diagonal-Forward",
         "Diagonal-Backward"
       ],
-      description: "주요 섹션 방향"
+      description: "Primary sectioning direction"
     },
     
     lifting_range: {
       type: "array",
       items: {
         type: "string",
-        enum: [
-          "L0",  // 0° - 자연 낙하
-          "L1",  // 22.5° - 약간 들어올림
-          "L2",  // 45° - 중간 들어올림
-          "L3",  // 67.5° - 중강 들어올림
-          "L4",  // 90° - 수직
-          "L5",  // 112.5° - 역방향 시작
-          "L6",  // 135° - 역방향
-          "L7",  // 157.5° - 강한 역방향
-          "L8"   // 180° - 완전 역방향
-        ]
+        enum: ["L0", "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"]
       },
       minItems: 1,
       maxItems: 9,
-      description: "리프팅 각도 범위 (22.5도 단위, 배열로 반환)"
+      description: "Lifting angle range in 22.5° increments (array format)"
     },
     
     direction_primary: {
       type: "string",
-      enum: [
-        "D0",  // 0° - 정면
-        "D1",  // 22.5° - 전방
-        "D2",  // 45° - 전방
-        "D3",  // 67.5° - 전방
-        "D4",  // 90° - 측면
-        "D5",  // 112.5° - 후방
-        "D6",  // 135° - 후방
-        "D7",  // 157.5° - 후방
-        "D8"   // 180° - 정후방
-      ],
-      description: "주요 커팅 방향 (22.5도 단위)"
+      enum: ["D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"],
+      description: "Primary cutting direction in 22.5° increments"
     },
     
     cutting_method: {
@@ -267,35 +244,34 @@ const PARAMS_56_SCHEMA = {
         "Stroke Cut",
         "Razor Cut"
       ],
-      description: "커팅 기법"
+      description: "Cutting method"
     },
     
     styling_method: {
       type: "string",
       enum: ["Blow Dry", "Natural Dry", "Iron", "Curl", "Wave"],
-      description: "스타일링 방법"
+      description: "Styling method"
     },
     
     design_emphasis: {
       type: "string",
       enum: ["Volume", "Length", "Texture", "Shape", "Movement"],
-      description: "디자인 강조점"
+      description: "Design emphasis"
     },
     
-    // ===== 무게와 연결 =====
     weight_flow: {
       type: "string",
       enum: ["Balanced", "Forward Weighted", "Backward Weighted"],
-      description: "무게 흐름"
+      description: "Weight flow"
     },
     
     connection_type: {
       type: "string",
       enum: ["Connected", "Disconnected", "Semi-Connected"],
-      description: "연결 타입"
+      description: "Connection type"
     },
     
-    // ===== 여성 전용 카테고리 (조건부) =====
+    // ===== 여성/남성 카테고리 =====
     womens_cut_category: {
       type: "string",
       enum: [
@@ -309,10 +285,9 @@ const PARAMS_56_SCHEMA = {
         "Short Pixie",
         "Shoulder Length"
       ],
-      description: "여성 커트 카테고리 (Women's Cut일 때만)"
+      description: "Women's cut category (if Women's Cut)"
     },
     
-    // ===== 남성 전용 카테고리 (조건부) =====
     mens_cut_category: {
       type: "string",
       enum: [
@@ -324,42 +299,171 @@ const PARAMS_56_SCHEMA = {
         "Crop",
         "Mohican"
       ],
-      description: "남성 커트 카테고리 (Men's Cut일 때만)"
+      description: "Men's cut category (if Men's Cut)"
     },
     
-    // ===== ⭐ 얼굴형 추천 (FACE SHAPE MATCH) - 신규 추가! ⭐ =====
-    face_shape_match: {
+    // ===== 🔥🔥🔥 42개 포뮬러 자동 매칭 (신규!) 🔥🔥🔥 =====
+    formula_42_codes: {
       type: "array",
       items: {
         type: "string",
         enum: [
-          "Oval",      // 계란형 - 이상적 비율, 대부분 스타일 잘 어울림
-          "Round",     // 둥근형 - 사이드 볼륨, 레이어로 갸름하게
-          "Square",    // 사각형 - 부드러운 웨이브, 사이드뱅으로 각 완화
-          "Heart",     // 하트형 - 턱선 커버, 사이드 볼륨
-          "Long",      // 긴 얼굴형 - 중간 볼륨, 사이드뱅으로 비율 조정
-          "Diamond"    // 다이아몬드형 - 광대 커버, 부드러운 라인
+          // 가로섹션 (Horizontal Section) - 2개
+          "HS NO.1",  // 상단 가로섹션 기본
+          "HS NO.2",  // 상단 가로섹션 응용
+          
+          // 후대각섹션 (Diagonal Backward Section) - 9개
+          "DBS NO.1",  // 후방 대각선 기본 (낮은 각도)
+          "DBS NO.2",  // 후방 대각선 (중간 각도)
+          "DBS NO.3",  // 후방 대각선 (높은 각도) - 가장 흔함
+          "DBS NO.4",  // 후방 대각선 + 레이어
+          "DBS NO.5",  // 후방 대각선 + 그래쥬에이션
+          "DBS NO.6",  // 후방 대각선 + 높은 볼륨
+          "DBS NO.7",  // 후방 대각선 + 연결
+          "DBS NO.8",  // 후방 대각선 응용
+          "DBS NO.9",  // 후방 대각선 고급
+          
+          // 전대각섹션 (Diagonal Forward Section) - 6개
+          "DFS NO.1",  // 전방 대각선 기본
+          "DFS NO.2",  // 전방 대각선 + 앞머리
+          "DFS NO.3",  // 전방 대각선 + 사이드
+          "DFS NO.4",  // 전방 대각선 + 레이어
+          "DFS NO.5",  // 전방 대각선 응용
+          "DFS NO.6",  // 전방 대각선 고급
+          
+          // 세로섹션 (Vertical Section) - 12개
+          "VS NO.1",   // 세로섹션 기본 (중앙)
+          "VS NO.2",   // 세로섹션 + 낮은 레이어
+          "VS NO.3",   // 세로섹션 + 중간 레이어
+          "VS NO.4",   // 세로섹션 + 높은 레이어
+          "VS NO.5",   // 세로섹션 + 전체 레이어
+          "VS NO.6",   // 세로섹션 + 높은 볼륨 - 흔함
+          "VS NO.7",   // 세로섹션 + 사각 레이어
+          "VS NO.8",   // 세로섹션 + 라운드 레이어
+          "VS NO.9",   // 세로섹션 + 연결
+          "VS NO.10",  // 세로섹션 응용
+          "VS NO.11",  // 세로섹션 고급
+          "VS NO.12",  // 세로섹션 마스터
+          
+          // 업스템 (UP STEM) - 9개
+          "UP STEM NO.1",  // 정수리 기본
+          "UP STEM NO.2",  // 정수리 + 낮은 각도
+          "UP STEM NO.3",  // 정수리 + 중간 각도
+          "UP STEM NO.4",  // 정수리 + 높은 각도
+          "UP STEM NO.5",  // 정수리 + 최고 볼륨
+          "UP STEM NO.6",  // 정수리 + 레이어 조합
+          "UP STEM NO.7",  // 정수리 응용
+          "UP STEM NO.8",  // 정수리 고급
+          "UP STEM NO.9",  // 정수리 마스터
+          
+          // 네이프존 (NAPE ZONE) - 4개
+          "NAPE ZONE NO.1",  // 목덜미 기본
+          "NAPE ZONE NO.2",  // 목덜미 + 짧은 길이
+          "NAPE ZONE NO.3",  // 목덜미 + 그래쥬에이션
+          "NAPE ZONE NO.4"   // 목덜미 응용
         ]
       },
       minItems: 1,
-      maxItems: 3,
-      description: `이 헤어스타일이 어울리는 얼굴형 (1~3개 선택)
-      
-분석 기준:
-- Oval: 거의 모든 스타일 가능, 균형잡힌 헤어
-- Round: 사이드 볼륨 있는 레이어, 세로 라인 강조
-- Square: 부드러운 웨이브, 사이드뱅, 각진 라인 완화
-- Heart: 턱선 커버하는 길이, 사이드 볼륨
-- Long: 가로 볼륨 (Middle zone), 사이드뱅으로 시선 분산
-- Diamond: 광대 커버, 부드러운 곡선 라인
+      maxItems: 5,
+      description: `42 Formula Codes automatically matched based on hairstyle analysis.
 
-선택 로직:
-1. 레이어 스타일 → Oval, Round, Long 추천
-2. 사이드뱅 → Square, Long, Heart 추천
-3. 중간 볼륨 → Round, Long, Diamond 추천
-4. 부드러운 웨이브 → Square, Heart 추천
-5. 긴 길이 (A~D) → Oval, Long 추천
-6. 짧은 길이 (E~H) → Oval, Heart, Diamond 추천`
+🎯 MATCHING LOGIC:
+
+**Section Primary determines base formula:**
+- Horizontal → HS (Horizontal Section)
+- Diagonal-Backward → DBS (most common for bobs)
+- Diagonal-Forward → DFS (fringe area)
+- Vertical → VS (layered styles)
+
+**Volume Zone refines the selection:**
+- Low Volume (0-44°) → NO.1, NO.2 (lower numbers)
+- Medium Volume (45-89°) → NO.3, NO.4, NO.5
+- High Volume (90°+) → NO.6, NO.7, NO.8, NO.9
+
+**Additional formulas:**
+- UP STEM: If High Volume + Top emphasis
+- NAPE ZONE: If Short length (G/H) + Back area
+
+**Example combinations:**
+1. D Length + Diagonal-Backward + Medium Volume → ["DBS NO.3"]
+2. E Length + Layer + High Volume → ["VS NO.6", "UP STEM NO.4"]
+3. H Length + Short Bob + Low Volume → ["DBS NO.1", "NAPE ZONE NO.2"]
+
+Select 1-5 most relevant formulas!`
+    },
+    
+    // ===== 9개 매트릭스 코드 =====
+    matrix_code: {
+      type: "string",
+      enum: [
+        "TL",  // Triangular + Low Volume
+        "TM",  // Triangular + Medium Volume
+        "TH",  // Triangular + High Volume
+        "SL",  // Square + Low Volume
+        "SM",  // Square + Medium Volume
+        "SH",  // Square + High Volume
+        "RL",  // Round + Low Volume
+        "RM",  // Round + Medium Volume
+        "RH"   // Round + High Volume
+      ],
+      description: `9-Matrix Code: Silhouette (T/S/R) + Volume Zone (L/M/H)
+      
+Automatically calculated from:
+- silhouette: Triangular / Square / Round
+- volume_zone: Low / Medium / High
+
+Example: Triangular + Medium = "TM"`
+    },
+    
+    // ===== 얼굴형 추천 =====
+    face_shape_match: {
+      type: "array",
+      items: {
+        type: "string",
+        enum: ["Oval", "Round", "Square", "Heart", "Long", "Diamond"]
+      },
+      minItems: 1,
+      maxItems: 3,
+      description: `Suitable face shapes for this hairstyle (1-3 selections)
+
+🎯 MATCHING CRITERIA:
+
+**Oval (계란형):** Almost all styles work
+- Select if: Balanced style, no extreme features
+
+**Round (둥근형):** Needs vertical lines, side volume
+- Select if: Layer + Side volume + Medium/High volume
+
+**Square (사각형):** Needs soft waves, side bangs
+- Select if: Soft texture + Side bang + Curved outline
+
+**Heart (하트형):** Needs jaw coverage, side volume
+- Select if: F/E Length + Side volume + Jaw area coverage
+
+**Long (긴 얼굴형):** Needs horizontal volume, side bangs
+- Select if: Middle volume + Side bang + Horizontal emphasis
+
+**Diamond (다이아몬드형):** Needs cheekbone coverage
+- Select if: Side coverage + Soft curves + Medium length`
+    },
+    
+    // ===== 펌/컬 (옵션) =====
+    curl_pattern: {
+      type: ["string", "null"],
+      enum: ["C-Curl", "CS-Curl", "S-Curl", "SS-Curl", null],
+      description: "Curl pattern (null if none)"
+    },
+    
+    curl_strength: {
+      type: ["string", "null"],
+      enum: ["Soft", "Medium", "Strong", null],
+      description: "Curl strength (null if none)"
+    },
+    
+    perm_type: {
+      type: ["string", "null"],
+      enum: ["Wave Perm", "Digital Perm", "Heat Perm", "Iron Perm", null],
+      description: "Perm type (null if none)"
     }
   },
   
@@ -372,18 +476,22 @@ const PARAMS_56_SCHEMA = {
     "section_primary",
     "fringe_type",
     "volume_zone",
-    "face_shape_match"  // ⭐ 얼굴형 추천 필수!
-  ]
+    "formula_42_codes",  // ⭐ 42개 포뮬러 필수!
+    "matrix_code",       // ⭐ 9개 매트릭스 필수!
+    "face_shape_match"
+  ],
+  
+  additionalProperties: false
 };
 
 // CommonJS export (Node.js)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
-    PARAMS_56_SCHEMA
+    PARAMS_56_PLUS_FORMULA_SCHEMA
   };
 }
 
 // ES6 export (브라우저)
 if (typeof window !== 'undefined') {
-  window.PARAMS_56_SCHEMA = PARAMS_56_SCHEMA;
+  window.PARAMS_56_PLUS_FORMULA_SCHEMA = PARAMS_56_PLUS_FORMULA_SCHEMA;
 }
