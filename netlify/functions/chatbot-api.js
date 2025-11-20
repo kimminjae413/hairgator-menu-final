@@ -1,15 +1,14 @@
 // netlify/functions/chatbot-api.js
-// HAIRGATOR 챗봇 - ULTRA FINAL 버전 (2025-11-19)
+// HAIRGATOR 챗봇 - GPT-4o Vision 버전 (2025-11-20)
 // 
 // 🔥 최종 수정사항:
-// 1. 길이 분류 프롬프트 완전 재작성 (초정밀 기준)
-// 2. 8단계 시각적 체크리스트 추가
-// 3. 신체 부위 기준 명확화
-// 4. H/G/F/E/D 구분 강화
+// 1. Gemini 2.0 Flash → GPT-4o Vision으로 교체
+// 2. 모델명: gpt-4o-2024-11-20 (최신 안정 버전)
+// 3. 영어 프롬프트로 전환 (정확도 향상)
+// 4. JSON Schema 방식 Structured Output
 // ==================== 
 
 const fetch = require('node-fetch');
-const { PARAMS_56_SCHEMA } = require('./params56-schema.js');
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -39,15 +38,15 @@ exports.handler = async (event, context) => {
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
-    if (!GEMINI_KEY) throw new Error('Gemini API key not configured');
     if (!OPENAI_KEY) throw new Error('OpenAI API key not configured');
+    if (!GEMINI_KEY) throw new Error('Gemini API key not configured');
     if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error('Supabase credentials not configured');
 
     console.log('🔑 환경변수 확인 완료');
 
     switch (action) {
       case 'analyze_image':
-        return await analyzeImage(payload, GEMINI_KEY);
+        return await analyzeImage(payload, OPENAI_KEY);
       
       case 'generate_recipe':
        return await generateRecipe(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
@@ -78,363 +77,347 @@ exports.handler = async (event, context) => {
   }
 };
 
-// ==================== 이미지 분석 (Structured Output) - ULTRA FINAL 버전 ====================
-async function analyzeImage(payload, geminiKey) {
+// ==================== 이미지 분석 (GPT-4o Vision) ====================
+async function analyzeImage(payload, openaiKey) {
   const { image_base64, mime_type } = payload;
 
-  // ✅✅✅ 완전히 새로 작성된 초정밀 프롬프트
-  const systemPrompt = `당신은 2WAY CUT 전문 헤어 스타일리스트입니다.
-업로드된 이미지를 보고 56개 파라미터를 **절대적으로 정확하게** 분석하세요.
+  // ✅ 초정밀 영어 프롬프트 (GPT-4o 최적화)
+  const systemPrompt = `You are an expert hair stylist specializing in the 2WAY CUT system.
+Analyze the uploaded hairstyle image and extract 56 parameters with ABSOLUTE PRECISION.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔥🔥🔥 길이 분류 (LENGTH CATEGORY) - 초정밀 기준 🔥🔥🔥
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 LENGTH CATEGORY - ULTRA PRECISE CLASSIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## ⚠️ 절대 원칙
+## CRITICAL RULE
+**"WHERE does the LONGEST hair END touch the body?"**
+→ This is the ONLY thing that matters!
 
-**"머리카락의 가장 긴 끝부분이 신체 어디에 닿는가?"**
-**→ 이것만 보세요! 다른 건 신경 쓰지 마세요!**
-
-❌ 귀가 보이는지 = 중요하지 않음
-❌ 목이 얼마나 보이는지 = 중요하지 않음  
-❌ 스타일이 단발인지 = 중요하지 않음
-✅ **오직 "머리카락 끝 + 신체 부위"만 확인!**
-
----
-
-## 📏 8단계 길이 분류표 (아래로 갈수록 짧음)
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ A Length (65cm) ★★★★★★★★                      ┃
-┃                                                  ┃
-┃ 📍 머리카락 끝 위치: 가슴 아래 (배꼽 근처)        ┃
-┃ 📍 신체 기준: 유두보다 훨씬 아래                  ┃
-┃ 📍 예시: 매우 긴 생머리, 가슴 아래 웨이브          ┃
-┃                                                  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ B Length (50cm) ★★★★★★★☆                      ┃
-┃                                                  ┃
-┃ 📍 머리카락 끝 위치: 가슴 중간 (유두 높이)        ┃
-┃ 📍 신체 기준: 가슴의 가장 볼록한 지점             ┃
-┃ 📍 예시: 긴 생머리, 가슴까지 오는 웨이브          ┃
-┃                                                  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ C Length (40cm) ★★★★★★☆☆                      ┃
-┃                                                  ┃
-┃ 📍 머리카락 끝 위치: 쇄골뼈 (목 아래 움푹 뼈)     ┃
-┃ 📍 신체 기준: 목과 어깨 사이의 쇄골 라인          ┃
-┃ 📍 예시: 쇄골 단발, 긴 단발                       ┃
-┃                                                  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ D Length (35cm) ★★★★★☆☆☆ ⭐⭐⭐ 핵심 기준!      ┃
-┃                                                  ┃
-┃ 📍 머리카락 끝 위치: 어깨선 (어깨 꼭대기)         ┃
-┃ 📍 신체 기준: 목에서 팔이 시작되는 어깨 라인      ┃
-┃ 📍 예시: 일반 단발, 어깨 길이 bob                 ┃
-┃                                                  ┃
-┃ ⚠️ 중요: 어깨에 "살짝 닿음" vs "2cm 위"          ┃
-┃    → 닿으면 D / 안 닿으면 E                       ┃
-┃                                                  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ E Length (30cm) ★★★★☆☆☆☆                      ┃
-┃                                                  ┃
-┃ 📍 머리카락 끝 위치: 어깨 위 2-3cm                ┃
-┃ 📍 신체 기준: 목 아래이지만 어깨에 안 닿음        ┃
-┃ 📍 예시: 짧은 단발, 목 길이 bob                   ┃
-┃                                                  ┃
-┃ 🎯 핵심: 어깨선과 명확한 "공간" 있음!            ┃
-┃    (어깨에 닿으면 이미 D Length임)               ┃
-┃                                                  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ F Length (25cm) ★★★☆☆☆☆☆                      ┃
-┃                                                  ┃
-┃ 📍 머리카락 끝 위치: 턱뼈 바로 아래 (목 시작)     ┃
-┃ 📍 신체 기준: 턱에서 목으로 넘어가는 경계         ┃
-┃ 📍 예시: 턱 아래 bob, 짧은 단발                   ┃
-┃                                                  ┃
-┃ 🎯 핵심: 턱뼈보다 "아래" (목 방향)               ┃
-┃    턱뼈 라인이면 → G Length                      ┃
-┃    턱뼈 아래면 → F Length                        ┃
-┃                                                  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ G Length (20cm) ★★☆☆☆☆☆☆ ⭐⭐⭐ 정밀 판단!      ┃
-┃                                                  ┃
-┃ 📍 머리카락 끝 위치: 턱선 (Jaw Line, 턱뼈 각도선) ┃
-┃ 📍 신체 기준: 턱뼈의 각진 라인                    ┃
-┃ 📍 예시: 턱선 bob, 짧은 bob                       ┃
-┃                                                  ┃
-┃ 🎯 초정밀 기준:                                  ┃
-┃    - 머리카락 끝이 턱뼈 "라인"에 정확히 걸침     ┃
-┃    - 턱뼈보다 위 = H Length                      ┃
-┃    - 턱뼈 라인 = G Length ⭐                      ┃
-┃    - 턱뼈보다 아래 = F Length                    ┃
-┃                                                  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ H Length (15cm) ★☆☆☆☆☆☆☆ (가장 짧음!)         ┃
-┃                                                  ┃
-┃ 📍 머리카락 끝 위치: 귀 높이 (귀 위~귀 아래)     ┃
-┃ 📍 신체 기준: 귀 전체를 기준                      ┃
-┃ 📍 예시: 숏컷, 베리 숏, 픽시 컷                   ┃
-┃                                                  ┃
-┃ 🎯 초정밀 기준:                                  ┃
-┃    - 머리카락 끝이 귀 위쪽 ~ 귀 중간 ~ 귀 아래   ┃
-┃    - 턱선(턱뼈)보다 확실히 "위쪽"                ┃
-┃    - 매우 짧은 헤어만 해당!                      ┃
-┃                                                  ┃
-┃ ⚠️ 주의: 긴 머리를 귀 뒤로 넘겨서 귀가 보여도    ┃
-┃    머리카락 끝이 어깨 아래면 H 아님!             ┃
-┃                                                  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+❌ IGNORE: Whether ears are visible
+❌ IGNORE: How much neck is showing
+❌ IGNORE: Overall style impression
+✅ FOCUS: Where hair tips physically touch the body
 
 ---
 
-## 🎯 3단계 판단 프로세스 (절대 틀리지 않는 방법!)
+## 8-LEVEL LENGTH CLASSIFICATION
 
-### 【STEP 1】 어깨선 기준 체크 (가장 중요!)
+┌─────────────────────────────────────────────────┐
+│ A Length (65cm) ★★★★★★★★                        │
+│ 📍 Hair ends: Below chest (near navel)          │
+│ 📍 Body reference: Far below breasts            │
+└─────────────────────────────────────────────────┘
 
-**질문: "머리카락 끝이 어깨선에 닿는가?"**
+┌─────────────────────────────────────────────────┐
+│ B Length (50cm) ★★★★★★★☆                        │
+│ 📍 Hair ends: Mid chest (nipple level)          │
+│ 📍 Body reference: At the fullest part of chest │
+└─────────────────────────────────────────────────┘
 
-✅ YES (어깨선에 닿음) → **D Length 확정! 끝!**
-❌ NO (안 닿음) → STEP 2로
+┌─────────────────────────────────────────────────┐
+│ C Length (40cm) ★★★★★★☆☆                        │
+│ 📍 Hair ends: Collarbone                        │
+│ 📍 Body reference: The hollow bone below neck   │
+└─────────────────────────────────────────────────┘
 
----
+┌─────────────────────────────────────────────────┐
+│ D Length (35cm) ★★★★★☆☆☆ ⭐ KEY REFERENCE!      │
+│ 📍 Hair ends: Shoulder line (top of shoulder)   │
+│ 📍 Body reference: Where neck meets arm         │
+│ 📌 MOST COMMON bob length                       │
+│                                                 │
+│ ⚠️ Critical: "Touching shoulder" vs "2cm above" │
+│    → Touching = D / Not touching = E            │
+└─────────────────────────────────────────────────┘
 
-### 【STEP 2】 어깨보다 긴가? 짧은가?
+┌─────────────────────────────────────────────────┐
+│ E Length (30cm) ★★★★☆☆☆☆                        │
+│ 📍 Hair ends: 2-3cm ABOVE shoulder              │
+│ 📍 Body reference: Below neck but above shoulder│
+│ 📌 Clear GAP between hair and shoulder          │
+└─────────────────────────────────────────────────┘
 
-**어깨선보다 아래 (긴 쪽):**
-- 쇄골 → C Length
-- 가슴 중간 → B Length  
-- 가슴 아래 → A Length
+┌─────────────────────────────────────────────────┐
+│ F Length (25cm) ★★★☆☆☆☆☆                        │
+│ 📍 Hair ends: BELOW chin (where neck starts)    │
+│ 📍 Body reference: Transition from chin to neck │
+│ 📌 Upper neck is partially visible              │
+└─────────────────────────────────────────────────┘
 
-**어깨선보다 위 (짧은 쪽):**
-→ STEP 3으로 이동
+┌─────────────────────────────────────────────────┐
+│ G Length (20cm) ★★☆☆☆☆☆☆ ⭐ PRECISION NEEDED!   │
+│ 📍 Hair ends: Jaw line (chin bone edge)         │
+│ 📍 Body reference: Along the angular jaw bone   │
+│ 📌 Hair flows along jaw contour                 │
+│                                                 │
+│ 🎯 Ultra-precise criteria:                      │
+│    - Above jaw bone = H Length                  │
+│    - AT jaw bone line = G Length ⭐              │
+│    - Below jaw bone = F Length                  │
+└─────────────────────────────────────────────────┘
 
----
-
-### 【STEP 3】 짧은 머리 정밀 판단 (H/G/F/E 구분)
-
-**🔍 턱뼈(Jaw Line)를 기준으로 판단:**
-
-**3-1. 머리카락 끝이 턱뼈보다 위쪽인가?**
-- ✅ YES → **H Length** (가장 짧음!)
-- ❌ NO → 3-2로
-
-**3-2. 머리카락 끝이 정확히 턱뼈 라인인가?**
-- ✅ YES → **G Length** (턱선 길이!)
-- ❌ NO → 3-3으로
-
-**3-3. 머리카락 끝이 턱뼈 아래 (목 방향)인가?**
-- 목 시작 부분 → **F Length**
-- 목 중간~어깨 사이 → **E Length**
-
----
-
-## 📸 시각적 체크리스트 (이미지 보면서 확인!)
-
-```
-□ 머리카락 끝이 가슴 아래까지? → A Length
-□ 머리카락 끝이 가슴 중간까지? → B Length
-□ 머리카락 끝이 쇄골까지? → C Length
-□ 머리카락 끝이 어깨선까지? → D Length ⭐⭐⭐
-□ 머리카락 끝이 어깨 위 2-3cm? → E Length
-□ 머리카락 끝이 턱뼈 아래? → F Length
-□ 머리카락 끝이 턱뼈 라인? → G Length ⭐⭐⭐
-□ 머리카락 끝이 귀 높이? → H Length
-```
-
----
-
-## 🚫 절대 하지 말아야 할 실수들
-
-❌ **실수 1: "귀가 보이니까 H Length"**
-   → 틀림! 긴 머리도 귀 뒤로 넘기면 귀 보임
-   → 오직 "머리카락 끝 위치"만 보세요!
-
-❌ **실수 2: "목이 많이 보이니까 짧은 길이"**
-   → 위험! 목 노출은 참고만
-   → 절대 기준은 머리카락 끝!
-
-❌ **실수 3: "단발머리니까 무조건 G나 H"**
-   → 큰 오류! D/E/F Length 단발도 많음
-
-❌ **실수 4: "전체적인 느낌으로 판단"**
-   → 금지! 정확한 신체 부위 매칭 필수!
-
-✅ **정답: "머리카락 끝 + 신체 부위" 1:1 매칭!**
+┌─────────────────────────────────────────────────┐
+│ H Length (15cm) ★☆☆☆☆☆☆☆ (SHORTEST!)           │
+│ 📍 Hair ends: Ear level (above/at/below ear)    │
+│ 📍 Body reference: Around the ear area          │
+│ 📌 Very short haircut only                      │
+│                                                 │
+│ ⚠️ WARNING: Long hair can expose ears too!      │
+│    → If hair ends reach shoulder, it's NOT H!   │
+└─────────────────────────────────────────────────┘
 
 ---
 
-## 💡 애매한 경우 최종 판단 기준
+## 3-STEP DECISION PROCESS (FOOLPROOF!)
 
-**Case 1: D와 E 사이?**
-→ 어깨에 살짝이라도 닿으면 → **D Length**
-→ 명확히 안 닿으면 → **E Length**
-→ 애매하면 → **D Length** (더 긴 쪽)
+### STEP 1: Check Shoulder Line (MOST IMPORTANT!)
+**Question: "Does hair touch the shoulders?"**
 
-**Case 2: E와 F 사이?**
-→ 목 중간 정도 → **E Length**
-→ 턱 바로 아래 → **F Length**
-
-**Case 3: F와 G 사이?**
-→ 턱뼈 아래 (목 방향) → **F Length**
-→ 정확히 턱뼈 라인 → **G Length**
-→ 애매하면 → **F Length** (더 긴 쪽)
-
-**Case 4: G와 H 사이?**
-→ 턱뼈 위쪽 (귀 방향) → **H Length**
-→ 턱뼈 라인 → **G Length**
-→ 애매하면 → **G Length** (더 긴 쪽)
-
-**Case 5: 한쪽은 길고 한쪽은 짧음?**
-→ **가장 긴 부분 기준**으로 판단
+✅ YES (touching shoulders) → **D Length CONFIRMED!**
+❌ NO (not touching) → Go to STEP 2
 
 ---
 
-## ✂️ 커트 형태 (CUT FORM)
+### STEP 2: Longer or Shorter than Shoulders?
 
-**반드시 괄호 포함!**
-- **"O (One Length)"** - 모든 머리카락 같은 길이
-- **"G (Graduation)"** - 외곽 짧고 내부 긴 층
-- **"L (Layer)"** - 층이 있는 컷
+**Longer than shoulders:**
+- Collarbone → C Length
+- Mid chest → B Length
+- Below chest → A Length
 
-❌ 틀린 예: "O" / "One Length" / "O-One Length"
-✅ 올바른 예: "O (One Length)"
-
----
-
-## 📐 리프팅 각도 (LIFTING RANGE)
-
-**반드시 배열 형태!**
-- ["L0"] - 0도 (자연 낙하)
-- ["L2"] - 45도
-- ["L4"] - 90도 (수평)
-- ["L2", "L4"] - 45도 + 90도 혼합
-
-❌ 틀린 예: "L2" / "L2, L4" (문자열)
-✅ 올바른 예: ["L2", "L4"]
+**Shorter than shoulders:**
+→ Go to STEP 3
 
 ---
 
-## 🎨 질감 기법 (TEXTURE TECHNIQUE)
+### STEP 3: Precise Short Hair Classification (H/G/F/E)
 
-**반드시 배열 형태! 없으면 빈 배열!**
+**Use JAW BONE as reference:**
 
-**올바른 출력:**
+**3-1. Are hair ends ABOVE the jaw bone?**
+- ✅ YES → **H Length** (shortest!)
+- ❌ NO → Go to 3-2
+
+**3-2. Are hair ends EXACTLY AT the jaw line?**
+- ✅ YES → **G Length** (jaw-length bob!)
+- ❌ NO → Go to 3-3
+
+**3-3. Are hair ends BELOW the jaw bone?**
+- Just below (neck starts) → **F Length**
+- Between jaw and shoulder → **E Length**
+
+---
+
+## VISUAL CHECKLIST
+
+\`\`\`
+□ Below chest? → A Length
+□ Mid chest? → B Length
+□ Collarbone? → C Length
+□ Shoulder line? → D Length ⭐⭐⭐
+□ 2-3cm above shoulder? → E Length
+□ Below chin (neck)? → F Length
+□ Jaw line? → G Length ⭐⭐⭐
+□ Ear level? → H Length
+\`\`\`
+
+---
+
+## COMMON MISTAKES TO AVOID
+
+❌ **Mistake 1: "Ears are visible, so it's H Length"**
+   → WRONG! Long hair can be tucked behind ears
+   → Only check where hair ENDS touch!
+
+❌ **Mistake 2: "Lots of neck showing, so it's short"**
+   → DANGEROUS! Neck visibility is just a clue
+   → Absolute criterion = hair end position!
+
+❌ **Mistake 3: "It's a bob, so G or H"**
+   → ERROR! Bobs can be D/E/F too!
+
+❌ **Mistake 4: "Judging by overall impression"**
+   → PROHIBITED! Use precise body landmarks!
+
+✅ **CORRECT: "Hair ends + Body part" 1:1 matching!**
+
+---
+
+## AMBIGUOUS CASES - FINAL JUDGMENT
+
+**Case 1: Between D and E?**
+→ If hair even slightly touches shoulder → **D Length**
+→ If clearly not touching → **E Length**
+→ Ambiguous → Choose **D Length** (longer side)
+
+**Case 2: Between E and F?**
+→ Mid-neck → **E Length**
+→ Just below chin → **F Length**
+
+**Case 3: Between F and G?**
+→ Below jaw bone (toward neck) → **F Length**
+→ Exactly at jaw bone → **G Length**
+→ Ambiguous → Choose **F Length** (longer side)
+
+**Case 4: Between G and H?**
+→ Above jaw bone (toward ear) → **H Length**
+→ At jaw line → **G Length**
+→ Ambiguous → Choose **G Length** (longer side)
+
+**Case 5: One side short, other side long?**
+→ Use the **LONGEST part** as reference
+
+---
+
+## OTHER PARAMETERS
+
+### CUT FORM (with parentheses!)
+- **"O (One Length)"** - All hair same length
+- **"G (Graduation)"** - Shorter outside, longer inside
+- **"L (Layer)"** - Layered throughout
+
+❌ Wrong: "O" / "One Length" / "O-One Length"
+✅ Correct: "O (One Length)"
+
+---
+
+### LIFTING RANGE (must be array!)
+- ["L0"] - 0° (natural fall)
+- ["L2"] - 45°
+- ["L4"] - 90° (horizontal)
+- ["L2", "L4"] - Mixed 45° + 90°
+
+❌ Wrong: "L2" / "L2, L4" (string)
+✅ Correct: ["L2", "L4"]
+
+---
+
+### TEXTURE TECHNIQUE (must be array! Empty if none!)
+
+**Correct outputs:**
 - ["Point Cut", "Slide Cut"]
 - ["Stroke Cut"]
-- [] ← 없으면 빈 배열!
+- [] ← Empty array if none!
 
-**잘못된 출력:**
-- "Point Cut, Slide Cut" (문자열 ❌)
+**Wrong outputs:**
+- "Point Cut, Slide Cut" (string ❌)
 - null (❌)
 
 ---
 
-## 💇 펌/컬 (있는 경우만 입력)
+### PERM/CURL (only if present)
 
 **curl_pattern**: C-Curl / CS-Curl / S-Curl / SS-Curl / null
-**curl_strength**: Soft / Medium / Strong / null  
+**curl_strength**: Soft / Medium / Strong / null
 **perm_type**: Wave Perm / Digital Perm / Heat Perm / Iron Perm / null
 
-펌이 없으면 모두 null
+If no perm → all null
 
 ---
 
-## 🎯 최종 검증 체크리스트 (제출 전 필수!)
+## FINAL VALIDATION CHECKLIST
 
-```
-1. ✅ length_category는 A/B/C/D/E/F/G/H 중 하나?
-2. ✅ 어깨선이 기준점으로 명확히 고려되었는가?
-3. ✅ H/G/F/E는 턱뼈 기준으로 정밀 판단했는가?
-4. ✅ cut_form은 O/G/L + 괄호 포함?
-5. ✅ lifting_range는 배열? ["L0"] 또는 ["L2", "L4"]
-6. ✅ texture_technique는 배열? (없으면 [])
-7. ✅ 귀 노출 여부에 속지 않았는가?
-8. ✅ 목 노출 여부에 속지 않았는가?
-```
+\`\`\`
+1. ✅ length_category is one of A/B/C/D/E/F/G/H?
+2. ✅ Shoulder line was primary reference?
+3. ✅ H/G/F/E used jaw bone as precise reference?
+4. ✅ cut_form includes parentheses? O/G/L (...)
+5. ✅ lifting_range is array? ["L0"] or ["L2", "L4"]
+6. ✅ texture_technique is array? (empty [] if none)
+7. ✅ Not fooled by visible ears?
+8. ✅ Not fooled by visible neck?
+\`\`\`
 
-**모든 체크가 완료되면 JSON Schema에 맞춰 출력하세요.**`;
+**Once all checks pass, output in JSON format with this exact structure:**
+
+{
+  "length_category": "D Length",
+  "cut_form": "O (One Length)",
+  "volume_zone": "Medium",
+  "lifting_range": ["L2"],
+  "texture_technique": ["Point Cut"],
+  "fringe_type": "Side Bang",
+  "fringe_length": "Cheekbone",
+  "hair_texture": "Medium",
+  "hair_density": "Medium",
+  "curl_pattern": null,
+  "curl_strength": null,
+  "perm_type": null,
+  "cut_category": "Women's Cut"
+}`;
 
   try {
-    console.log('📸 Gemini 이미지 분석 시작 (ULTRA FINAL 프롬프트)');
+    console.log('📸 GPT-4o Vision 이미지 분석 시작');
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`,
+      'https://api.openai.com/v1/chat/completions',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Authorization': `Bearer ${openaiKey}`,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: systemPrompt },
-              {
-                inline_data: {
-                  mime_type: mime_type,
-                  data: image_base64
+          model: 'gpt-4o-2024-11-20',  // ⭐ 최신 안정 버전
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: systemPrompt
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:${mime_type};base64,${image_base64}`,
+                    detail: 'high'  // ⭐ 고해상도 분석
+                  }
                 }
-              }
-            ]
-          }],
-          generationConfig: {
-            temperature: 0.1,  // 0.2 → 0.1로 더 낮춤 (극도로 일관된 판단)
-            topP: 0.85,        // 0.90 → 0.85로 낮춤
-            topK: 20,          // 30 → 20으로 낮춤
-            maxOutputTokens: 2048,
-            responseMimeType: "application/json",
-            responseSchema: PARAMS_56_SCHEMA
-          }
+              ]
+            }
+          ],
+          response_format: { type: 'json_object' },  // ⭐ JSON 강제
+          temperature: 0.3,  // 일관된 판단
+          max_tokens: 2000
         })
       }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Gemini API Error: ${response.status} - ${errorText}`);
+      throw new Error(`GPT-4o API Error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    const text = data.choices?.[0]?.message?.content || '{}';
     const params56 = JSON.parse(text);
     
-    // ✅ 검증 로직 강화
-    console.log('🔍 길이 판단 검증:', {
-      detected: params56.length_category,
+    // ✅ 검증 로깅
+    console.log('✅ GPT-4o Vision 분석 완료:', {
+      length: params56.length_category,
       form: params56.cut_form,
-      volume: params56.volume_zone
+      volume: params56.volume_zone,
+      lifting: params56.lifting_range
     });
     
-    // Volume 자동 계산 검증
+    // Volume 검증
     if (params56.lifting_range && params56.lifting_range.length > 0) {
       const maxLifting = params56.lifting_range[params56.lifting_range.length - 1];
       const calculatedVolume = calculateVolumeFromLifting(maxLifting);
       
       if (calculatedVolume !== params56.volume_zone) {
-        console.log(`⚠️ Volume 불일치 감지: Structured=${params56.volume_zone}, Calculated=${calculatedVolume}`);
+        console.log(`⚠️ Volume 불일치: Detected=${params56.volume_zone}, Calculated=${calculatedVolume}`);
       }
     }
-
-    console.log('✅ 분석 완료 (ULTRA FINAL)');
 
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({ 
         success: true, 
-        data: params56
+        data: params56,
+        model: 'gpt-4o-2024-11-20'  // 사용된 모델 정보
       })
     };
   } catch (error) {
@@ -766,7 +749,7 @@ function getTerms(lang) {
   return terms[lang] || terms['ko'];
 }
 
-// ==================== 레시피 생성 ====================
+// ==================== 레시피 생성 (나머지는 동일) ====================
 async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
   const { params56, language = 'ko' } = payload;
 
@@ -1226,7 +1209,7 @@ async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supa
       korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀로, 원장급 이상만 접근 가능합니다.',
       english: 'I apologize, but that information is proprietary to the 2WAY CUT system.',
       japanese: '申し訳ございませんが、その情報は2WAY CUTシステムの企業秘密です。',
-      chinese: '抱歉，该信息属于2WAY CUT系统的核心商业机密。',
+      chinese: '抱歉,该信息属于2WAY CUT系统的核心商业机密。',
       vietnamese: 'Xin lỗi, thông tin đó là bí mật kinh doanh.'
     };
     
