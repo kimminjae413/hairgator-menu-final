@@ -1,14 +1,15 @@
 // netlify/functions/chatbot-api.js
-// HAIRGATOR 챗봇 - recipe_samples 벡터 검색 통합 최종 완성 버전 (2025-11-20)
+// HAIRGATOR v5.0 - 최종 완성 버전 (2025-01-25)
 // 
-// 🔥 주요 변경사항:
-// 1. recipe_samples 테이블 벡터 검색 통합 (4,719개 레시피)
-// 2. ⭐ Gemini embedding (768차원) 사용 - OpenAI에서 변경!
-// 3. 도해도 21개 배열 반환 (diagram_images)
-// 4. 성별 필터링 (female: 2,178개 / male: 2,541개)
-// 5. 중복 제거 로직 (같은 스타일은 1번만)
-// 6. 상위 15개 도해도 선별
-// 7. 기존 모든 기능 유지 (GPT-4o Vision, 보안 필터링, 다국어 등)
+// 🎯 주요 기능:
+// 1. ⭐ 사용자 성별 선택 통합 (user_gender: 'male' | 'female')
+// 2. GPT-4o Vision + Function Calling (56개 파라미터)
+// 3. recipe_samples 벡터 검색 (4,719개 레시피)
+// 4. Gemini embedding (768차원)
+// 5. 도해도 15개 선별 및 반환
+// 6. 성별 필터링 (female: 2,178개 / male: 2,541개)
+// 7. 보안 필터링 (IP 보호)
+// 8. 다국어 지원 (ko/en/ja/zh/vi)
 // ==================== 
 
 const fetch = require('node-fetch');
@@ -317,6 +318,7 @@ const PARAMS_56_SCHEMA = {
   additionalProperties: false
 };
 
+// ==================== 메인 핸들러 ====================
 exports.handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
@@ -377,12 +379,22 @@ exports.handler = async (event, context) => {
   }
 };
 
-// ==================== 이미지 분석 (GPT-4o Vision + Function Calling) ====================
+// ==================== 이미지 분석 (성별 통합!) ====================
 async function analyzeImage(payload, openaiKey) {
-  const { image_base64, mime_type } = payload;
+  const { image_base64, mime_type, user_gender } = payload;  // ⭐ user_gender 추가
+
+  console.log(`🎯 이미지 분석 시작 - 사용자 선택 성별: ${user_gender || 'unspecified'}`);
+
+  // ⭐ 성별에 따른 프롬프트 조정
+  const genderContext = user_gender === 'male' 
+    ? `\n\n⚠️ IMPORTANT: This is a MALE hairstyle. Focus on men's cut categories and techniques.\n- Use "Men's Cut" for cut_category\n- Select from mens_cut_category options\n- Consider typical male length ranges (mostly E~H Length)`
+    : user_gender === 'female'
+    ? `\n\n⚠️ IMPORTANT: This is a FEMALE hairstyle. Focus on women's cut categories and techniques.\n- Use "Women's Cut" for cut_category\n- Select from womens_cut_category options\n- Consider typical female length ranges (A~H Length)`
+    : `\n\nAnalyze the hairstyle gender and select appropriate cut_category.`;
 
   const systemPrompt = `You are an expert hair stylist specializing in the 2WAY CUT system.
 Analyze the uploaded hairstyle image and extract ALL 56 parameters with ABSOLUTE PRECISION.
+${genderContext}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🎯 CRITICAL INSTRUCTIONS
@@ -536,7 +548,18 @@ Extract ALL parameters accurately following the JSON schema!`;
     
     const params56 = JSON.parse(functionCall.arguments);
     
+    // ⭐ 성별 강제 적용 (사용자 선택 우선)
+    if (user_gender === 'male' && params56.cut_category !== "Men's Cut") {
+      console.log(`⚠️ 성별 수정: ${params56.cut_category} → Men's Cut`);
+      params56.cut_category = "Men's Cut";
+    } else if (user_gender === 'female' && params56.cut_category !== "Women's Cut") {
+      console.log(`⚠️ 성별 수정: ${params56.cut_category} → Women's Cut`);
+      params56.cut_category = "Women's Cut";
+    }
+    
     console.log('✅ GPT-4o Vision 분석 완료 (56개 파라미터):', {
+      gender: params56.cut_category,
+      user_selected: user_gender,
       length: params56.length_category,
       form: params56.cut_form,
       volume: params56.volume_zone,
@@ -559,6 +582,7 @@ Extract ALL parameters accurately following the JSON schema!`;
       body: JSON.stringify({ 
         success: true, 
         data: params56,
+        user_gender: user_gender,  // ⭐ 사용자 선택 성별 반환
         model: 'gpt-4o-2024-11-20',
         method: 'function_calling'
       })
@@ -672,13 +696,13 @@ function buildSearchQuery(params56) {
   return parts.join(', ');
 }
 
-// ==================== recipe_samples 벡터 검색 (핵심!) ====================
+// ==================== recipe_samples 벡터 검색 ====================
 async function searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, searchQuery, targetGender, lengthCategory = null) {
   try {
     console.log(`🔍 recipe_samples 검색: "${searchQuery}"`);
     console.log(`   필터: gender=${targetGender}, length=${lengthCategory}`);
     
-    // ⭐ Gemini 임베딩 생성 (768차원)
+    // Gemini 임베딩 생성 (768차원)
     const embeddingResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${geminiKey}`,
       {
@@ -712,7 +736,7 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, searchQu
         },
         body: JSON.stringify({
           query_embedding: queryEmbedding,
-          match_threshold: 0.65,  // ⭐ threshold 낮춤 (0.70 → 0.65)
+          match_threshold: 0.65,
           match_count: 30,
           filter_gender: targetGender
         })
@@ -728,7 +752,7 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, searchQu
     let results = await rpcResponse.json();
     console.log(`📊 원본 검색 결과: ${results.length}개`);
     
-    // 길이 필터링 (중요!)
+    // 길이 필터링
     if (lengthCategory) {
       const lengthPrefix = getLengthPrefix(lengthCategory);
       
@@ -764,20 +788,15 @@ function getLengthPrefix(lengthCategory) {
   return map[lengthCategory] || null;
 }
 
-// ==================== 도해도 중복 제거 및 선별 ====================
+// ==================== 도해도 선별 ====================
 function selectBestDiagrams(recipeSamples, maxDiagrams = 15) {
-  // 각 sample의 단계 번호에 해당하는 도해도만 추출
   const selectedDiagrams = [];
   
   recipeSamples.forEach(sample => {
-    // sample_code: "FCL1002_001" → styleCode: "FCL1002", step: "001"
     const parts = sample.sample_code.split('_');
     const styleCode = parts[0];
     const stepNumber = parseInt(parts[1]) || 1;
     
-    // diagram_images 배열에서 해당 단계 번호의 도해도만 추출
-    // stepNumber = 1 → index 0 (SR_FCL1002_01.png)
-    // stepNumber = 8 → index 7 (SR_FCL1002_08.png)
     const diagramIndex = stepNumber - 1;
     
     if (sample.diagram_images && 
@@ -795,25 +814,18 @@ function selectBestDiagrams(recipeSamples, maxDiagrams = 15) {
     }
   });
   
-  // 유사도 순으로 정렬
   selectedDiagrams.sort((a, b) => b.similarity - a.similarity);
   
   console.log(`📊 도해도 추출: ${recipeSamples.length}개 샘플 → ${selectedDiagrams.length}개 도해도`);
   
-  // 상위 N개만 반환
   const final = selectedDiagrams.slice(0, maxDiagrams);
   
   console.log(`✅ 최종 선택: ${final.length}개 도해도`);
-  console.log(`🎯 예시:`, final.slice(0, 3).map(d => ({
-    code: d.sample_code,
-    step: d.step_number,
-    similarity: d.similarity.toFixed(2)
-  })));
   
   return final;
 }
 
-// ==================== 언어별 용어 매핑 ====================
+// ==================== 언어별 용어 ====================
 function getTerms(lang) {
   const terms = {
     ko: {
@@ -828,12 +840,12 @@ function getTerms(lang) {
         'H Length': '귀 높이'
       },
       faceShapeDesc: {
-        'Oval': '계란형 - 대부분 스타일 잘 어울림',
-        'Round': '둥근형 - 사이드 볼륨으로 갸름하게',
-        'Square': '사각형 - 부드러운 웨이브로 각 완화',
-        'Heart': '하트형 - 턱선 커버',
-        'Long': '긴 얼굴형 - 중간 볼륨으로 비율 조정',
-        'Diamond': '다이아몬드형 - 광대 커버'
+        'Oval': '계란형',
+        'Round': '둥근형',
+        'Square': '사각형',
+        'Heart': '하트형',
+        'Long': '긴 얼굴형',
+        'Diamond': '다이아몬드형'
       },
       formDesc: {
         'O': 'One Length, 원렝스',
@@ -854,12 +866,12 @@ function getTerms(lang) {
         'G Length': 'Jaw line'
       },
       faceShapeDesc: {
-        'Oval': 'Oval - Most styles work',
-        'Round': 'Round - Side volume for slimming',
-        'Square': 'Square - Soft waves',
-        'Heart': 'Heart - Jaw coverage',
-        'Long': 'Long - Middle volume',
-        'Diamond': 'Diamond - Cheekbone coverage'
+        'Oval': 'Oval',
+        'Round': 'Round',
+        'Square': 'Square',
+        'Heart': 'Heart',
+        'Long': 'Long',
+        'Diamond': 'Diamond'
       },
       formDesc: {
         'O': 'One Length',
@@ -877,7 +889,7 @@ function getTerms(lang) {
   return terms[lang] || terms['ko'];
 }
 
-// ==================== theory_chunks 벡터 검색 (참고용) ====================
+// ==================== theory_chunks 벡터 검색 ====================
 async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, matchCount = 5) {
   try {
     console.log(`🔍 theory_chunks 벡터 검색: "${query}"`);
@@ -946,30 +958,27 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     const searchQuery = buildSearchQuery(params56);
     console.log(`🔍 검색 쿼리: "${searchQuery}"`);
     
-    // 2. recipe_samples 벡터 검색 (메인) - 도해도 먼저!
+    // 2. recipe_samples 벡터 검색
     const targetGender = params56.cut_category?.includes("Women") ? 'female' : 'male';
     const recipeSamples = await searchRecipeSamples(
       supabaseUrl,
       supabaseKey,
-      geminiKey,  // ⭐ OpenAI → Gemini로 변경
+      geminiKey,
       searchQuery,
       targetGender,
-      params56.length_category  // 길이 필터
+      params56.length_category
     );
     
-    // 3. 도해도 선별 (먼저!)
+    // 3. 도해도 선별
     const selectedDiagrams = selectBestDiagrams(recipeSamples, 15);
     console.log(`✅ 도해도 선별 완료: ${selectedDiagrams.length}개`);
     
-    // 4. 도해도 정보를 텍스트로 정리
+    // 4. 도해도 컨텍스트
     const diagramsContext = selectedDiagrams.map((d, idx) => 
       `${idx + 1}단계: ${d.sample_code} (유사도 ${(d.similarity * 100).toFixed(0)}%)\n   설명: ${d.recipe_text.substring(0, 100)}...`
     ).join('\n\n');
     
-    // 5. theory_chunks 검색 (참고용)
-    const theoryChunks = await searchTheoryChunks(searchQuery, geminiKey, supabaseUrl, supabaseKey, 5);
-    
-    // 6. 언어별 용어 준비
+    // 5. 언어별 용어
     const langTerms = getTerms(language);
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
     
@@ -977,7 +986,7 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       .map(shape => langTerms.faceShapeDesc[shape] || shape)
       .join(', ');
 
-    // 7. GPT 레시피 생성 프롬프트 (도해도 포함!)
+    // 6. GPT 프롬프트
     const enhancedPrompt = `당신은 전문 헤어 스타일리스트입니다.
 
 **분석 결과:**
@@ -1029,12 +1038,12 @@ ${selectedDiagrams.map((d, idx) => `
 
 **⚠️ 중요:**
 - 도해도 순서를 절대 바꾸지 마세요
-- 각 단계마다 구체적인 수치 포함 (각도, 비율, 간격)
+- 각 단계마다 구체적인 수치 포함
 - 총 800자 이내로 간결하게
 
 모든 내용을 **한국어로만** 작성하세요.`;
 
-    // 8. GPT 호출
+    // 7. GPT 호출
     const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -1073,9 +1082,9 @@ ${selectedDiagrams.map((d, idx) => `
         data: {
           recipe: recipe,
           params56: params56,
-          diagrams: selectedDiagrams,  // 도해도 배열
+          diagrams: selectedDiagrams,
           diagram_count: selectedDiagrams.length,
-          matched_samples: recipeSamples.slice(0, 3) // 참고용
+          matched_samples: recipeSamples.slice(0, 3)
         }
       })
     };
@@ -1119,7 +1128,7 @@ function detectLanguage(text) {
 async function searchStyles(payload, geminiKey, supabaseUrl, supabaseKey) {
   const { query } = payload;
   
-  const targetGender = null; // 필터 없음
+  const targetGender = null;
   const results = await searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, query, targetGender);
   
   return {
