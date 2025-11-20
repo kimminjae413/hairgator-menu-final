@@ -925,7 +925,7 @@ async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, ma
         },
         body: JSON.stringify({
           query_embedding: queryEmbedding,
-          match_threshold: 0.70,
+          match_threshold: 0.60,
           match_count: matchCount
         })
       }
