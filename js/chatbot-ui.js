@@ -1104,8 +1104,7 @@ class HairGatorChatbot {
       return `
         <div class="style-card">
           ${hasValidImage ? 
-            `<img src="${imageUrl}" alt="${name}" loading="lazy" onerror="console.error('이미지 로드 실패:', '${imageUrl}'); this.style.display='none'; this.nextElementSibling.style.display='flex';">
-             <div class="style-card-placeholder" style="display:none;">📄</div>` : 
+            `<img src="${imageUrl}" alt="${name}" loading="lazy" onload="console.log('✅ 이미지 로드:', '${code}');" onerror="console.error('❌ 이미지 로드 실패:', '${imageUrl}'); this.parentElement.style.display='none';">` : 
             '<div class="style-card-placeholder">📄</div>'}
           <div class="style-card-info">
             <h4>${name} ${similarity}</h4>
