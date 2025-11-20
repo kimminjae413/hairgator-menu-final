@@ -1079,12 +1079,29 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     const selectedDiagrams = selectBestDiagrams(recipeSamples, 15);
     console.log(`✅ 도해도 선별 완료: ${selectedDiagrams.length}개`);
     
-    // 4. 도해도 컨텍스트
+    // 4. theory_chunks 하이브리드 검색 (이론적 근거) ⭐ NEW
+    const theoryChunks = await searchTheoryChunks(
+      searchQuery,
+      geminiKey,
+      supabaseUrl,
+      supabaseKey,
+      5  // 5개 이론 청크
+    );
+    console.log(`✅ theory_chunks 검색 완료: ${theoryChunks.length}개`);
+    
+    // 5. 이론 컨텍스트 생성
+    const theoryContext = theoryChunks.length > 0 
+      ? theoryChunks.map((t, idx) => 
+          `${idx + 1}. ${t.section_title || '이론'}: ${(t.content_ko || t.content || '').substring(0, 100)}...`
+        ).join('\n')
+      : '(이론 참고 자료 없음)';
+    
+    // 6. 도해도 컨텍스트
     const diagramsContext = selectedDiagrams.map((d, idx) => 
       `${idx + 1}단계: ${d.sample_code} (유사도 ${(d.similarity * 100).toFixed(0)}%)\n   설명: ${d.recipe_text.substring(0, 100)}...`
     ).join('\n\n');
     
-    // 5. 언어별 용어
+    // 7. 언어별 용어
     const langTerms = getTerms(language);
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
     
@@ -1092,7 +1109,7 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       .map(shape => langTerms.faceShapeDesc[shape] || shape)
       .join(', ');
 
-    // 6. GPT 프롬프트
+    // 8. GPT 프롬프트
     const enhancedPrompt = `당신은 전문 헤어 스타일리스트입니다.
 
 **분석 결과:**
@@ -1102,13 +1119,17 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
 - 앞머리: ${params56.fringe_type || '없음'}
 - 어울리는 얼굴형: ${faceShapesKo || '모든 얼굴형'}
 
+**📚 이론적 근거 (${theoryChunks.length}개):**
+
+${theoryContext}
+
 **🎯 선별된 도해도 순서 (${selectedDiagrams.length}개):**
 
 ${diagramsContext}
 
 **📋 작성 지침:**
 
-위의 도해도 순서를 **정확히 따라서** 레시피를 작성하세요.
+위의 이론과 도해도 순서를 **정확히 따라서** 레시피를 작성하세요.
 
 ### STEP 1: 전체 개요 (2-3줄)
 이 스타일의 핵심 특징과 기대 효과를 간결하게 설명
@@ -1179,6 +1200,7 @@ ${selectedDiagrams.map((d, idx) => `
 
     console.log('✅ 레시피 생성 완료');
     console.log(`🎯 반환할 도해도: ${selectedDiagrams.length}개`);
+    console.log(`📚 참고 이론: ${theoryChunks.length}개`);
 
     return {
       statusCode: 200,
@@ -1190,7 +1212,9 @@ ${selectedDiagrams.map((d, idx) => `
           params56: params56,
           diagrams: selectedDiagrams,
           diagram_count: selectedDiagrams.length,
-          matched_samples: recipeSamples.slice(0, 3)
+          matched_samples: recipeSamples.slice(0, 3),
+          theory_chunks: theoryChunks,  // ⭐ NEW
+          theory_count: theoryChunks.length
         }
       })
     };
