@@ -395,6 +395,23 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
   
   console.log(`💬 전문 답변: "${user_query}"`);
   
+  // ⭐ 질문 정규화 (동의어 처리)
+  let normalizedQuery = user_query
+    .replace(/A\s*렝스|A\s*랭스|에이\s*렝스|에이\s*랭스|A\s*기장/gi, 'A Length')
+    .replace(/B\s*렝스|B\s*랭스|비\s*렝스|비\s*랭스|B\s*기장/gi, 'B Length')
+    .replace(/C\s*렝스|C\s*랭스|씨\s*렝스|씨\s*랭스|C\s*기장/gi, 'C Length')
+    .replace(/D\s*렝스|D\s*랭스|디\s*렝스|디\s*랭스|D\s*기장/gi, 'D Length')
+    .replace(/E\s*렝스|E\s*랭스|이\s*렝스|이\s*랭스|E\s*기장/gi, 'E Length')
+    .replace(/F\s*렝스|F\s*랭스|에프\s*렝스|에프\s*랭스|F\s*기장/gi, 'F Length')
+    .replace(/G\s*렝스|G\s*랭스|지\s*렝스|지\s*랭스|G\s*기장/gi, 'G Length')
+    .replace(/H\s*렝스|H\s*랭스|에이치\s*렝스|에이치\s*랭스|H\s*기장/gi, 'H Length')
+    .replace(/레이어|layer/gi, 'Layer')
+    .replace(/그래쥬에이션|그라데이션|graduation/gi, 'Graduation');
+  
+  if (normalizedQuery !== user_query) {
+    console.log(`📝 질문 정규화: "${user_query}" → "${normalizedQuery}"`);
+  }
+  
   // 1. 간단한 인사말 감지
   const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워', '여보세요'];
   const isSimpleGreeting = simpleGreetings.some(g => {
@@ -456,8 +473,8 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
     };
   }
   
-  // 3. theory_chunks 검색 실행
-  const theoryChunks = await searchTheoryChunks(user_query, geminiKey, supabaseUrl, supabaseKey, 10);
+  // 3. theory_chunks 검색 실행 (정규화된 쿼리 사용)
+  const theoryChunks = await searchTheoryChunks(normalizedQuery, geminiKey, supabaseUrl, supabaseKey, 10);
   
   console.log(`📚 theory_chunks 검색 결과: ${theoryChunks.length}개`);
   
@@ -472,10 +489,10 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
       return `【참고자료 ${idx+1}】${title}\n${content}`;
     }).join('\n\n');
     
-    systemPrompt = buildTheoryBasedPrompt(user_query, theoryContext, userLanguage);
+    systemPrompt = buildTheoryBasedPrompt(normalizedQuery, theoryContext, userLanguage);
   } else {
     // 일반 지식 기반 답변
-    systemPrompt = buildGeneralPrompt(user_query, userLanguage);
+    systemPrompt = buildGeneralPrompt(normalizedQuery, userLanguage);
   }
   
   // 5. GPT 답변 생성
@@ -503,12 +520,16 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
     
     const data = await response.json();
     
+    const gptResponse = data.choices[0].message.content;
+    console.log(`✅ GPT 응답 생성 완료 (${gptResponse.length}자)`);
+    console.log(`📝 응답 내용: "${gptResponse.substring(0, 100)}..."`);
+    
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({ 
         success: true, 
-        data: data.choices[0].message.content,
+        data: gptResponse,
         theory_used: theoryChunks.length > 0,
         theory_count: theoryChunks.length
       })
