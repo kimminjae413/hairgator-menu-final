@@ -737,7 +737,7 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, searchQu
         },
         body: JSON.stringify({
           query_embedding: queryEmbedding,
-          match_threshold: 0.65,
+          match_threshold: 0.55,  // 0.65 → 0.55로 낮춤
           match_count: 30,
           filter_gender: targetGender
         })
@@ -938,7 +938,16 @@ async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, ma
     );
 
     if (!rpcResponse.ok) {
-      console.warn(`⚠️ 하이브리드 검색 실패 (${rpcResponse.status}), 기존 벡터 검색으로 폴백`);
+      const errorText = await rpcResponse.text();
+      console.warn(`⚠️ 하이브리드 검색 실패 (${rpcResponse.status})`);
+      console.error('에러 상세:', errorText);
+      console.error('요청 파라미터:', {
+        query_text: query,
+        embedding_length: queryEmbedding.length,
+        vector_threshold: 0.55,
+        final_count: matchCount
+      });
+      console.warn('기존 벡터 검색으로 폴백');
       return await fallbackVectorSearch(queryEmbedding, supabaseUrl, supabaseKey, matchCount);
     }
 
