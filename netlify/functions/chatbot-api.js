@@ -672,10 +672,10 @@ function buildSearchQuery(params56) {
 }
 
 // ==================== recipe_samples 벡터 검색 (핵심!) ====================
-async function searchRecipeSamples(supabaseUrl, supabaseKey, openaiKey, searchQuery, targetGender) {
+async function searchRecipeSamples(supabaseUrl, supabaseKey, openaiKey, searchQuery, targetGender, lengthCategory = null) {
   try {
     console.log(`🔍 recipe_samples 검색: "${searchQuery}"`);
-    console.log(`   필터: gender=${targetGender}`);
+    console.log(`   필터: gender=${targetGender}, length=${lengthCategory}`);
     
     // OpenAI 임베딩 생성
     const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
@@ -712,7 +712,7 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, openaiKey, searchQu
         body: JSON.stringify({
           query_embedding: queryEmbedding,
           match_threshold: 0.70,
-          match_count: 20,
+          match_count: 30,  // 더 많이 가져옴
           filter_gender: targetGender
         })
       }
@@ -724,8 +724,21 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, openaiKey, searchQu
       return [];
     }
     
-    const results = await rpcResponse.json();
-    console.log(`✅ recipe_samples 검색 완료: ${results.length}개`);
+    let results = await rpcResponse.json();
+    console.log(`📊 원본 검색 결과: ${results.length}개`);
+    
+    // 길이 필터링 (중요!)
+    if (lengthCategory) {
+      const lengthPrefix = getLengthPrefix(lengthCategory);
+      
+      if (lengthPrefix) {
+        const beforeFilter = results.length;
+        results = results.filter(r => 
+          r.sample_code && r.sample_code.startsWith(lengthPrefix)
+        );
+        console.log(`🎯 길이 필터: ${beforeFilter}개 → ${results.length}개 (${lengthPrefix}만)`);
+      }
+    }
     
     return results;
     
@@ -735,54 +748,68 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, openaiKey, searchQu
   }
 }
 
+// 길이 카테고리 → 코드 prefix
+function getLengthPrefix(lengthCategory) {
+  const map = {
+    'A Length': 'FAL',
+    'B Length': 'FBL',
+    'C Length': 'FCL',
+    'D Length': 'FDL',
+    'E Length': 'FEL',
+    'F Length': 'FFL',
+    'G Length': 'FGL',
+    'H Length': 'FHL'
+  };
+  return map[lengthCategory] || null;
+}
+
 // ==================== 도해도 중복 제거 및 선별 ====================
 function selectBestDiagrams(recipeSamples, maxDiagrams = 15) {
-  // 중복 제거: 같은 스타일(FCL1002)은 1번만
-  const styleMap = new Map();
+  // 각 sample의 단계 번호에 해당하는 도해도만 추출
+  const selectedDiagrams = [];
   
   recipeSamples.forEach(sample => {
-    // sample_code: "FCL1002_001" → styleCode: "FCL1002"
-    const styleCode = sample.sample_code.split('_')[0];
+    // sample_code: "FCL1002_001" → styleCode: "FCL1002", step: "001"
+    const parts = sample.sample_code.split('_');
+    const styleCode = parts[0];
+    const stepNumber = parseInt(parts[1]) || 1;
     
-    if (!styleMap.has(styleCode)) {
-      styleMap.set(styleCode, {
+    // diagram_images 배열에서 해당 단계 번호의 도해도만 추출
+    // stepNumber = 1 → index 0 (SR_FCL1002_01.png)
+    // stepNumber = 8 → index 7 (SR_FCL1002_08.png)
+    const diagramIndex = stepNumber - 1;
+    
+    if (sample.diagram_images && 
+        Array.isArray(sample.diagram_images) && 
+        sample.diagram_images[diagramIndex]) {
+      
+      selectedDiagrams.push({
         style_code: styleCode,
-        gender: sample.gender,
-        diagram_images: sample.diagram_images || [],
+        step_number: stepNumber,
+        image_url: sample.diagram_images[diagramIndex],
         recipe_text: sample.recipe_full_text_ko,
-        similarity: sample.similarity
+        similarity: sample.similarity,
+        sample_code: sample.sample_code
       });
     }
   });
   
-  // 유사도 순 정렬
-  const uniqueStyles = Array.from(styleMap.values())
-    .sort((a, b) => b.similarity - a.similarity);
+  // 유사도 순으로 정렬
+  selectedDiagrams.sort((a, b) => b.similarity - a.similarity);
   
-  console.log(`📊 중복 제거: ${recipeSamples.length}개 → ${uniqueStyles.length}개 스타일`);
+  console.log(`📊 도해도 추출: ${recipeSamples.length}개 샘플 → ${selectedDiagrams.length}개 도해도`);
   
-  // 모든 도해도 URL 수집
-  const allDiagrams = [];
-  uniqueStyles.forEach(style => {
-    if (style.diagram_images && Array.isArray(style.diagram_images)) {
-      style.diagram_images.forEach((url, index) => {
-        allDiagrams.push({
-          style_code: style.style_code,
-          image_url: url,
-          diagram_number: index + 1,
-          similarity: style.similarity
-        });
-      });
-    }
-  });
+  // 상위 N개만 반환
+  const final = selectedDiagrams.slice(0, maxDiagrams);
   
-  console.log(`📸 총 도해도: ${allDiagrams.length}개`);
+  console.log(`✅ 최종 선택: ${final.length}개 도해도`);
+  console.log(`🎯 예시:`, final.slice(0, 3).map(d => ({
+    code: d.sample_code,
+    step: d.step_number,
+    similarity: d.similarity.toFixed(2)
+  })));
   
-  // 상위 15개만 반환
-  const selected = allDiagrams.slice(0, maxDiagrams);
-  console.log(`✅ 최종 선택: ${selected.length}개 도해도`);
-  
-  return selected;
+  return final;
 }
 
 // ==================== 언어별 용어 매핑 ====================
@@ -918,23 +945,30 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     const searchQuery = buildSearchQuery(params56);
     console.log(`🔍 검색 쿼리: "${searchQuery}"`);
     
-    // 2. recipe_samples 벡터 검색 (메인)
+    // 2. recipe_samples 벡터 검색 (메인) - 도해도 먼저!
     const targetGender = params56.cut_category?.includes("Women") ? 'female' : 'male';
     const recipeSamples = await searchRecipeSamples(
       supabaseUrl,
       supabaseKey,
       openaiKey,
       searchQuery,
-      targetGender
+      targetGender,
+      params56.length_category  // 길이 필터
     );
     
-    // 3. theory_chunks 검색 (참고용)
+    // 3. 도해도 선별 (먼저!)
+    const selectedDiagrams = selectBestDiagrams(recipeSamples, 15);
+    console.log(`✅ 도해도 선별 완료: ${selectedDiagrams.length}개`);
+    
+    // 4. 도해도 정보를 텍스트로 정리
+    const diagramsContext = selectedDiagrams.map((d, idx) => 
+      `${idx + 1}단계: ${d.sample_code} (유사도 ${(d.similarity * 100).toFixed(0)}%)\n   설명: ${d.recipe_text.substring(0, 100)}...`
+    ).join('\n\n');
+    
+    // 5. theory_chunks 검색 (참고용)
     const theoryChunks = await searchTheoryChunks(searchQuery, geminiKey, supabaseUrl, supabaseKey, 5);
     
-    // 4. 도해도 중복 제거 및 선별
-    const selectedDiagrams = selectBestDiagrams(recipeSamples, 15);
-    
-    // 5. 언어별 용어 준비
+    // 6. 언어별 용어 준비
     const langTerms = getTerms(language);
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
     
@@ -942,8 +976,8 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       .map(shape => langTerms.faceShapeDesc[shape] || shape)
       .join(', ');
 
-    // 6. GPT 레시피 텍스트 생성
-    const simplePrompt = `당신은 전문 헤어 스타일리스트입니다.
+    // 7. GPT 레시피 생성 프롬프트 (도해도 포함!)
+    const enhancedPrompt = `당신은 전문 헤어 스타일리스트입니다.
 
 **분석 결과:**
 - 길이: ${params56.length_category} (${langTerms.lengthDesc[params56.length_category]})
@@ -952,14 +986,54 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
 - 앞머리: ${params56.fringe_type || '없음'}
 - 어울리는 얼굴형: ${faceShapesKo || '모든 얼굴형'}
 
-**레시피 구성:**
-1. 전체 개요 (2-3줄)
-2. 주요 커팅 방법 (3-4단계)
-3. 어울리는 얼굴형별 추천 (1-2줄)
-4. 스타일링 팁 (2-3줄)
+**🎯 선별된 도해도 순서 (${selectedDiagrams.length}개):**
 
-간결하고 실용적으로 작성하세요. 총 600자 이내.`;
+${diagramsContext}
 
+**📋 작성 지침:**
+
+위의 도해도 순서를 **정확히 따라서** 레시피를 작성하세요.
+
+### STEP 1: 전체 개요 (2-3줄)
+이 스타일의 핵심 특징과 기대 효과를 간결하게 설명
+
+### STEP 2: 상세 커팅 순서 (${selectedDiagrams.length}단계)
+
+**각 도해도에 맞춰서 정확히 작성:**
+
+${selectedDiagrams.map((d, idx) => `
+**【${idx + 1}단계: ${d.sample_code}】**
+\`\`\`
+목적: ${d.recipe_text.split('.')[0]}
+분할 방법: (구체적으로)
+리프팅 각도: (명확한 각도)
+커팅 기법: (비율 포함)
+주의사항: (핵심 포인트)
+\`\`\`
+`).join('\n')}
+
+### STEP 3: 질감 처리
+- 1차 질감: 슬라이드 또는 포인트 컷 40%
+- 2차 질감: 틴닝 또는 스트록 컷 30%
+- 마무리: 디테일 20-30%
+
+### STEP 4: 스타일링 가이드
+- 드라이 방법
+- 아이론/고데기 사용법
+- 제품 추천
+
+### STEP 5: 유지 관리
+- 다듬기 주기
+- 집에서 관리법
+
+**⚠️ 중요:**
+- 도해도 순서를 절대 바꾸지 마세요
+- 각 단계마다 구체적인 수치 포함 (각도, 비율, 간격)
+- 총 800자 이내로 간결하게
+
+모든 내용을 **한국어로만** 작성하세요.`;
+
+    // 8. GPT 호출
     const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -970,7 +1044,7 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: '당신은 한국어 전문가입니다. 모든 응답을 한국어로만 작성하세요.' },
-          { role: 'user', content: simplePrompt }
+          { role: 'user', content: enhancedPrompt }
         ],
         temperature: 0.5,
         max_tokens: 2000
@@ -998,9 +1072,9 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
         data: {
           recipe: recipe,
           params56: params56,
-          diagrams: selectedDiagrams,
-          matched_samples: recipeSamples.slice(0, 3), // 참고용
-          theory_references: theoryChunks // 참고용
+          diagrams: selectedDiagrams,  // 도해도 배열
+          diagram_count: selectedDiagrams.length,
+          matched_samples: recipeSamples.slice(0, 3) // 참고용
         }
       })
     };
