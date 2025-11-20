@@ -876,11 +876,21 @@ class HairGatorChatbot {
 
   // ==================== 이미지 업로드 핸들러 ====================
   
-  async handleImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+  ync hasandleImageUpload(event) {
+    async handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
+  // ⭐ 성별 선택 값 가져오기 ⭐
+  const genderInput = document.querySelector('input[name="gender"]:checked');
+  if (!genderInput) {
+    alert('성별을 선택해주세요.');
+    return;
+  }
+  const userGender = genderInput.value; // 'female' or 'male'
+  console.log(`👤 사용자 선택 성별: ${userGender}`);
+
+  if (file.size > 5 * 1024 * 1024) {
       const texts = this.getTexts();
       this.addMessage('bot', texts.errorSize);
       return;
@@ -900,7 +910,8 @@ class HairGatorChatbot {
       this.addMessage('bot', texts.analyzing);
 
       const base64Image = await this.core.fileToBase64(file);
-      const analysisResult = await this.core.analyzeImage(base64Image, file.type);
+// ⭐ user_gender 파라미터 추가 ⭐
+const analysisResult = await this.core.analyzeImage(base64Image, file.type, userGender);
 
       console.log('📊 분석 결과 전체:', analysisResult);
       
