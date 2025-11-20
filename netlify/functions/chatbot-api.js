@@ -930,7 +930,8 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
         body: JSON.stringify({
   query_embedding: queryEmbedding,
   match_threshold: 0.50,
-  match_count: 10
+  match_count: 10,
+  filter_length: lengthCategory ? lengthCategory.charAt(0) : null  // ⭐ 추가
 })
       }
     );
