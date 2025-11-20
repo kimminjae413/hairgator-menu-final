@@ -1,7 +1,7 @@
-// js/chatbot-ui.js - HAIRGATOR v3.0 UI Module - FINAL FIX
-// ✅ UI 렌더링 & 이벤트 핸들러 전담
-// ✅ Core와 완전 분리
-// ✅ 데이터 검증 추가 (params56 undefined 방지)
+// js/chatbot-ui.js - HAIRGATOR v3.0 UI Module - FINAL FIX (2025-11-20)
+// ✅ 레시피 JSON 파싱 문제 해결
+// ✅ 이미지 URL 표시 수정
+// ✅ 마크다운 렌더링 개선
 
 import { ChatbotCore } from './chatbot-core.js';
 
@@ -797,7 +797,6 @@ class HairGatorChatbot {
       const base64Image = await this.core.fileToBase64(file);
       const analysisResult = await this.core.analyzeImage(base64Image, file.type);
 
-      // ⭐⭐⭐ 데이터 검증 추가 ⭐⭐⭐
       console.log('📊 분석 결과 전체:', analysisResult);
       
       // analysisResult 구조 확인
@@ -822,38 +821,55 @@ class HairGatorChatbot {
 
       this.addMessage('bot', texts.generating);
 
-      // ✅ 검증된 params56 전달
       const recipeResult = await this.core.generateRecipe(
         params56,
         this.currentLanguage
       );
 
-     console.log('📥 레시피 결과:', recipeResult);
+      console.log('📥 레시피 결과 전체:', recipeResult);
 
-      // ⭐ 레시피 파싱 및 표시
-      if (recipeResult && recipeResult.data && recipeResult.data.recipe) {
-        const rendered = this.core.parseMarkdownWithHighlight(recipeResult.data.recipe);
-        this.replaceLastBotMessage(rendered);
-        
-        if (recipeResult.data.similar_styles && recipeResult.data.similar_styles.length > 0) {
-          this.displayStyleCards(recipeResult.data.similar_styles);
-        }
-      } else if (recipeResult && recipeResult.recipe) {
-        const rendered = this.core.parseMarkdownWithHighlight(recipeResult.recipe);
-        this.replaceLastBotMessage(rendered);
-        
-        if (recipeResult.similar_styles && recipeResult.similar_styles.length > 0) {
-          this.displayStyleCards(recipeResult.similar_styles);
-        }
+      // ⭐⭐⭐ 레시피 파싱 수정 ⭐⭐⭐
+      let recipe = '';
+      let styles = [];
+
+      // 응답 구조 파싱
+      if (recipeResult.success && recipeResult.data) {
+        recipe = recipeResult.data.recipe || '';
+        styles = recipeResult.data.similar_styles || [];
+        console.log('✅ 파싱 성공 (success.data)');
+      } else if (recipeResult.data) {
+        recipe = recipeResult.data.recipe || recipeResult.data || '';
+        styles = recipeResult.data.similar_styles || [];
+        console.log('✅ 파싱 성공 (data)');
+      } else if (typeof recipeResult === 'string') {
+        recipe = recipeResult;
+        console.log('✅ 파싱 성공 (string)');
       } else {
-        console.error('❌ 예상치 못한 레시피 형식:', recipeResult);
-        const rawText = typeof recipeResult === 'string' ? recipeResult : JSON.stringify(recipeResult, null, 2);
-        const rendered = this.core.parseMarkdownWithHighlight(rawText);
+        console.error('❌ 예상치 못한 형식:', recipeResult);
+        recipe = '레시피 생성에 실패했습니다.';
+      }
+
+      console.log('📝 최종 레시피 길이:', recipe.length);
+      console.log('🖼️ 도해도 개수:', styles.length);
+
+      // 마크다운 렌더링
+      if (recipe && recipe.length > 0) {
+        const rendered = this.core.parseMarkdownWithHighlight(recipe);
         this.replaceLastBotMessage(rendered);
+      } else {
+        this.replaceLastBotMessage('⚠️ 레시피 내용이 비어있습니다.');
+      }
+
+      // 도해도 이미지 표시
+      if (styles && styles.length > 0) {
+        console.log('🖼️ 첫 번째 도해도:', styles[0]);
+        this.displayStyleCards(styles);
+      } else {
+        console.log('⚠️ 도해도가 없습니다.');
       }
 
     } catch (error) {
-      console.error('이미지 처리 오류:', error);
+      console.error('❌ 이미지 처리 오류:', error);
       this.replaceLastBotMessage(`❌ 오류 발생: ${error.message}`);
     }
 
@@ -922,20 +938,34 @@ class HairGatorChatbot {
   // ==================== UI 렌더링 ====================
   
   displayStyleCards(styles) {
-    const cardsHTML = styles.map(style => {
-      const hasValidImage = style.main_image_url && 
-                           !style.main_image_url.includes('hairgatorchatbot') &&
-                           !style.main_image_url.includes('temp') &&
-                           !style.main_image_url.includes('supabase.co/storage');
+    console.log('🎨 displayStyleCards 호출됨, styles:', styles);
+    
+    const cardsHTML = styles.map((style, index) => {
+      console.log(`🖼️ 스타일 ${index}:`, style);
+      
+      // 이미지 URL 찾기 (여러 필드명 시도)
+      const imageUrl = style.image_url || style.main_image_url || style.imageUrl || '';
+      
+      console.log(`   이미지 URL: ${imageUrl}`);
+      
+      const hasValidImage = imageUrl && 
+                           imageUrl.trim() !== '' &&
+                           !imageUrl.includes('temp') &&
+                           !imageUrl.includes('temporary') &&
+                           !imageUrl.includes('hairgatorchatbot');
+      
+      const name = style.name || style.style_name_ko || style.title || '이름 없음';
+      const code = style.code || style.sample_code || style.id || '';
       
       return `
-        <div class="style-card" onclick="window.location.href='#${style.code || style.sample_code}'">
+        <div class="style-card">
           ${hasValidImage ? 
-            `<img src="${style.main_image_url}" alt="${style.name || style.style_name_ko}" loading="lazy">` : 
+            `<img src="${imageUrl}" alt="${name}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+             <div class="style-card-placeholder" style="display:none;">📄</div>` : 
             '<div class="style-card-placeholder">📄</div>'}
           <div class="style-card-info">
-            <h4>${style.name || style.style_name_ko}</h4>
-            <span class="style-code">${style.code || style.sample_code}</span>
+            <h4>${name}</h4>
+            ${code ? `<span class="style-code">${code}</span>` : ''}
           </div>
         </div>
       `;
@@ -1141,5 +1171,5 @@ class HairGatorChatbot {
 // 챗봇 초기화
 document.addEventListener('DOMContentLoaded', () => {
   window.hairgatorChatbot = new HairGatorChatbot();
-  console.log('🦎 HAIRGATOR v3.0 챗봇 로드 완료 (데이터 검증 버전)');
+  console.log('🦎 HAIRGATOR v3.0 챗봇 로드 완료 (레시피 파싱 수정 버전)');
 });
