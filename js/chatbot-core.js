@@ -119,6 +119,7 @@ class ChatbotCore {
     user_gender: userGender  // ⭐ 이 줄 추가 ⭐
   }
 })
+      });  // ✅ 중괄호와 괄호 추가!
 
       const result = await response.json();
 
