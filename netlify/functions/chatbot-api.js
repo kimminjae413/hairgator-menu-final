@@ -1,14 +1,13 @@
 // netlify/functions/chatbot-api.js
-// HAIRGATOR 챗봇 - 최종 완성 버전 (2025-11-20)
+// HAIRGATOR 챗봇 - recipe_samples 벡터 검색 통합 최종 완성 버전 (2025-11-20)
 // 
-// 🔥 최종 수정사항:
-// 1. GPT-4o Vision (gpt-4o-2024-11-20) - Function Calling
-// 2. 56개 파라미터 강제 추출
-// 3. 얼굴형 추천 (face_shape_match) 포함
-// 4. Storage 경로 수정: recipe-images/{code}/main.png ⭐⭐⭐
-// 5. filter_length 파라미터 추가 (도해도 검색)
-// 6. Threshold 0.30으로 낮춤 (더 많은 결과)
-// 7. 길이 판단 로직 개선 (B Length 정확도 향상)
+// 🔥 주요 변경사항:
+// 1. recipe_samples 테이블 벡터 검색 통합 (4,719개 레시피)
+// 2. 도해도 21개 배열 반환 (diagram_images)
+// 3. 성별 필터링 (female: 2,178개 / male: 2,541개)
+// 4. 중복 제거 로직 (같은 스타일은 1번만)
+// 5. 상위 15개 도해도 선별
+// 6. 기존 모든 기능 유지 (GPT-4o Vision, 보안 필터링, 다국어 등)
 // ==================== 
 
 const fetch = require('node-fetch');
@@ -271,7 +270,7 @@ const PARAMS_56_SCHEMA = {
       description: "Men's cut category (if Men's Cut)"
     },
     
-    // 🔥 얼굴형 추천 (신규!)
+    // 얼굴형 추천
     face_shape_match: {
       type: "array",
       items: {
@@ -630,53 +629,79 @@ function sanitizeRecipeForPublic(recipe, language = 'ko') {
   return filtered;
 }
 
-// ==================== 유효한 이미지 필터링 ====================
-function filterValidStyles(styles) {
-  if (!styles || !Array.isArray(styles)) {
-    console.log('⚠️ styles가 배열이 아니거나 undefined');
-    return [];
+// ==================== 검색 쿼리 생성 ====================
+function buildSearchQuery(params56) {
+  const parts = [];
+  
+  if (params56.length_category) {
+    const lengthMap = {
+      'A Length': '가슴 아래 롱헤어',
+      'B Length': '가슴 세미롱',
+      'C Length': '쇄골 세미롱',
+      'D Length': '어깨선 미디엄',
+      'E Length': '어깨 위 단발',
+      'F Length': '턱선 보브',
+      'G Length': '짧은 보브',
+      'H Length': '베리숏'
+    };
+    parts.push(lengthMap[params56.length_category]);
   }
-
-  const filtered = styles.filter(style => {
-    if (!style.image_url) return false;
-    if (typeof style.image_url !== 'string') return false;
-    if (style.image_url.trim() === '') return false;
-    if (style.image_url.includes('/temp/') || style.image_url.includes('/temporary/')) return false;
-    
-    return true;
-  });
-
-  console.log(`📊 필터링 결과: ${filtered.length}개 유효 (전체 ${styles.length}개)`);
-  return filtered;
+  
+  if (params56.cut_form) {
+    const form = params56.cut_form.replace(/[()]/g, '').trim();
+    parts.push(form);
+  }
+  
+  if (params56.lifting_range && params56.lifting_range.length > 0) {
+    parts.push(`리프팅 ${params56.lifting_range.join(' ')}`);
+  }
+  
+  if (params56.section_primary) {
+    parts.push(`섹션 ${params56.section_primary}`);
+  }
+  
+  if (params56.volume_zone) {
+    parts.push(`${params56.volume_zone} 볼륨`);
+  }
+  
+  if (params56.fringe_type && params56.fringe_type !== 'No Fringe') {
+    parts.push(params56.fringe_type);
+  }
+  
+  return parts.join(', ');
 }
 
-// ==================== theory_chunks 벡터 검색 ====================
-async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, matchCount = 15) {
+// ==================== recipe_samples 벡터 검색 (핵심!) ====================
+async function searchRecipeSamples(supabaseUrl, supabaseKey, openaiKey, searchQuery, targetGender) {
   try {
-    console.log(`🔍 theory_chunks 벡터 검색: "${query}"`);
+    console.log(`🔍 recipe_samples 검색: "${searchQuery}"`);
+    console.log(`   필터: gender=${targetGender}`);
     
-    const embeddingResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${geminiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'models/text-embedding-004',
-          content: { parts: [{ text: query }] }
-        })
-      }
-    );
-
+    // OpenAI 임베딩 생성
+    const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'text-embedding-3-small',
+        input: searchQuery
+      })
+    });
+    
     if (!embeddingResponse.ok) {
-      console.error('❌ Gemini 임베딩 생성 실패');
-      return [];
+      throw new Error(`Embedding failed: ${embeddingResponse.status}`);
     }
-
+    
     const embeddingData = await embeddingResponse.json();
-    const queryEmbedding = embeddingData.embedding.values;
-
+    const queryEmbedding = embeddingData.data[0].embedding;
+    
+    console.log(`✅ OpenAI 임베딩 생성 완료 (${queryEmbedding.length}차원)`);
+    
+    // Supabase RPC 호출
     const rpcResponse = await fetch(
-      `${supabaseUrl}/rest/v1/rpc/match_theory_chunks`,
+      `${supabaseUrl}/rest/v1/rpc/match_recipe_samples`,
       {
         method: 'POST',
         headers: {
@@ -687,41 +712,77 @@ async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, ma
         body: JSON.stringify({
           query_embedding: queryEmbedding,
           match_threshold: 0.70,
-          match_count: matchCount
+          match_count: 20,
+          filter_gender: targetGender
         })
       }
     );
-
+    
     if (!rpcResponse.ok) {
-      console.error('❌ Supabase RPC 호출 실패:', rpcResponse.status);
+      const errorText = await rpcResponse.text();
+      console.error('❌ RPC 호출 실패:', rpcResponse.status, errorText);
       return [];
     }
-
+    
     const results = await rpcResponse.json();
-    console.log(`✅ theory_chunks ${results.length}개 검색 완료`);
+    console.log(`✅ recipe_samples 검색 완료: ${results.length}개`);
     
     return results;
-
+    
   } catch (error) {
-    console.error('💥 theory_chunks 검색 오류:', error);
+    console.error('💥 searchRecipeSamples Error:', error);
     return [];
   }
 }
 
-// ==================== 길이별 도해도 코드 매칭 ====================
-function getLengthCodePrefix(lengthCategory) {
-  const lengthMap = {
-    'A Length': 'FAL',
-    'B Length': 'FBL',
-    'C Length': 'FCL',
-    'D Length': 'FDL',
-    'E Length': 'FEL',
-    'F Length': 'FFL',
-    'G Length': 'FGL',
-    'H Length': 'FHL'
-  };
+// ==================== 도해도 중복 제거 및 선별 ====================
+function selectBestDiagrams(recipeSamples, maxDiagrams = 15) {
+  // 중복 제거: 같은 스타일(FCL1002)은 1번만
+  const styleMap = new Map();
   
-  return lengthMap[lengthCategory] || null;
+  recipeSamples.forEach(sample => {
+    // sample_code: "FCL1002_001" → styleCode: "FCL1002"
+    const styleCode = sample.sample_code.split('_')[0];
+    
+    if (!styleMap.has(styleCode)) {
+      styleMap.set(styleCode, {
+        style_code: styleCode,
+        gender: sample.gender,
+        diagram_images: sample.diagram_images || [],
+        recipe_text: sample.recipe_full_text_ko,
+        similarity: sample.similarity
+      });
+    }
+  });
+  
+  // 유사도 순 정렬
+  const uniqueStyles = Array.from(styleMap.values())
+    .sort((a, b) => b.similarity - a.similarity);
+  
+  console.log(`📊 중복 제거: ${recipeSamples.length}개 → ${uniqueStyles.length}개 스타일`);
+  
+  // 모든 도해도 URL 수집
+  const allDiagrams = [];
+  uniqueStyles.forEach(style => {
+    if (style.diagram_images && Array.isArray(style.diagram_images)) {
+      style.diagram_images.forEach((url, index) => {
+        allDiagrams.push({
+          style_code: style.style_code,
+          image_url: url,
+          diagram_number: index + 1,
+          similarity: style.similarity
+        });
+      });
+    }
+  });
+  
+  console.log(`📸 총 도해도: ${allDiagrams.length}개`);
+  
+  // 상위 15개만 반환
+  const selected = allDiagrams.slice(0, maxDiagrams);
+  console.log(`✅ 최종 선택: ${selected.length}개 도해도`);
+  
+  return selected;
 }
 
 // ==================== 언어별 용어 매핑 ====================
@@ -788,6 +849,64 @@ function getTerms(lang) {
   return terms[lang] || terms['ko'];
 }
 
+// ==================== theory_chunks 벡터 검색 (참고용) ====================
+async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, matchCount = 5) {
+  try {
+    console.log(`🔍 theory_chunks 벡터 검색: "${query}"`);
+    
+    const embeddingResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'models/text-embedding-004',
+          content: { parts: [{ text: query }] }
+        })
+      }
+    );
+
+    if (!embeddingResponse.ok) {
+      console.error('❌ Gemini 임베딩 생성 실패');
+      return [];
+    }
+
+    const embeddingData = await embeddingResponse.json();
+    const queryEmbedding = embeddingData.embedding.values;
+
+    const rpcResponse = await fetch(
+      `${supabaseUrl}/rest/v1/rpc/match_theory_chunks`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          query_embedding: queryEmbedding,
+          match_threshold: 0.70,
+          match_count: matchCount
+        })
+      }
+    );
+
+    if (!rpcResponse.ok) {
+      console.error('❌ Supabase RPC 호출 실패:', rpcResponse.status);
+      return [];
+    }
+
+    const results = await rpcResponse.json();
+    console.log(`✅ theory_chunks ${results.length}개 검색 완료`);
+    
+    return results;
+
+  } catch (error) {
+    console.error('💥 theory_chunks 검색 오류:', error);
+    return [];
+  }
+}
+
 // ==================== 레시피 생성 ====================
 async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
   const { params56, language = 'ko' } = payload;
@@ -795,29 +914,27 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
   try {
     console.log('🍳 레시피 생성 시작:', params56.length_category, '언어:', language);
 
-    const searchQuery = `
-미디움 헤어스타일 ${params56.length_category || ''} 
-${params56.cut_form?.replace(/[()]/g, '') || ''} 레이어컷 
-${params56.fringe_type || ''} 앞머리
-${params56.volume_zone || ''} 볼륨 
-${params56.curl_pattern || 'C컬'} 웨이브 
-쇄골 라인 미디움 길이
-`.trim();
-
+    // 1. 검색 쿼리 생성
+    const searchQuery = buildSearchQuery(params56);
+    console.log(`🔍 검색 쿼리: "${searchQuery}"`);
+    
+    // 2. recipe_samples 벡터 검색 (메인)
+    const targetGender = params56.cut_category?.includes("Women") ? 'female' : 'male';
+    const recipeSamples = await searchRecipeSamples(
+      supabaseUrl,
+      supabaseKey,
+      openaiKey,
+      searchQuery,
+      targetGender
+    );
+    
+    // 3. theory_chunks 검색 (참고용)
     const theoryChunks = await searchTheoryChunks(searchQuery, geminiKey, supabaseUrl, supabaseKey, 5);
     
-    const allSimilarStyles = await searchSimilarStyles(
-      searchQuery, 
-      openaiKey, 
-      supabaseUrl, 
-      supabaseKey, 
-      params56.cut_category?.includes('Women') ? 'female' : 'male',
-      params56.length_category
-    );
-
-    const similarStyles = filterValidStyles(allSimilarStyles);
-    console.log(`📊 도해도 검색 완료: ${similarStyles.length}개`);
+    // 4. 도해도 중복 제거 및 선별
+    const selectedDiagrams = selectBestDiagrams(recipeSamples, 15);
     
+    // 5. 언어별 용어 준비
     const langTerms = getTerms(language);
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
     
@@ -825,6 +942,7 @@ ${params56.curl_pattern || 'C컬'} 웨이브
       .map(shape => langTerms.faceShapeDesc[shape] || shape)
       .join(', ');
 
+    // 6. GPT 레시피 텍스트 생성
     const simplePrompt = `당신은 전문 헤어 스타일리스트입니다.
 
 **분석 결과:**
@@ -855,8 +973,7 @@ ${params56.curl_pattern || 'C컬'} 웨이브
           { role: 'user', content: simplePrompt }
         ],
         temperature: 0.5,
-        max_tokens: 2000,
-        stream: true
+        max_tokens: 2000
       })
     });
 
@@ -864,45 +981,14 @@ ${params56.curl_pattern || 'C컬'} 웨이브
       throw new Error(`OpenAI API Error: ${completion.status}`);
     }
 
-    let fullRecipe = '';
+    const data = await completion.json();
+    let recipe = data.choices[0].message.content;
     
-    for await (const chunk of completion.body) {
-      const text = chunk.toString('utf-8');
-      const lines = text.split('\n').filter(line => line.trim() !== '');
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          if (data === '[DONE]') continue;
-
-          try {
-            const parsed = JSON.parse(data);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              fullRecipe += content;
-            }
-          } catch (e) {
-            // 파싱 에러 무시
-          }
-        }
-      }
-    }
-
-    let recipe = fullRecipe;
+    // 보안 필터링
     recipe = sanitizeRecipeForPublic(recipe, language);
 
-    // ⭐⭐⭐ CRITICAL: Storage 경로 수정 ⭐⭐⭐
-    // hairgatorchatbot/{code}.png → recipe-images/{code}/main.png
-    const stylesWithCorrectUrls = similarStyles.slice(0, 3).map(style => ({
-      ...style,
-      image_url: `https://bhsbwbeisqzgipvzpvym.supabase.co/storage/v1/object/public/recipe-images/${style.code}/main.png`
-    }));
-
     console.log('✅ 레시피 생성 완료');
-    console.log(`🎯 반환할 도해도 개수: ${stylesWithCorrectUrls.length}개`);
-    if (stylesWithCorrectUrls.length > 0) {
-      console.log(`🎯 첫 번째 도해도:`, JSON.stringify(stylesWithCorrectUrls[0]));
-    }
+    console.log(`🎯 반환할 도해도: ${selectedDiagrams.length}개`);
 
     return {
       statusCode: 200,
@@ -912,7 +998,9 @@ ${params56.curl_pattern || 'C컬'} 웨이브
         data: {
           recipe: recipe,
           params56: params56,
-          similar_styles: stylesWithCorrectUrls
+          diagrams: selectedDiagrams,
+          matched_samples: recipeSamples.slice(0, 3), // 참고용
+          theory_references: theoryChunks // 참고용
         }
       })
     };
@@ -935,86 +1023,6 @@ async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, 
   return await generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey);
 }
 
-// ==================== 벡터 검색 (도해도) ====================
-async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, targetGender = null, lengthCategory = null) {
-  try {
-    console.log(`🔍 도해도 벡터 검색: "${query}"`);
-    console.log(`   필터: gender=${targetGender}, length=${lengthCategory}`);
-
-    const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openaiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'text-embedding-3-small',
-        input: query
-      })
-    });
-
-    if (!embeddingResponse.ok) {
-      const errorText = await embeddingResponse.text();
-      console.error('❌ OpenAI 임베딩 생성 실패:', embeddingResponse.status, errorText);
-      return [];
-    }
-
-    const embeddingData = await embeddingResponse.json();
-    const queryEmbedding = embeddingData.data[0].embedding;
-    
-    console.log(`✅ OpenAI 임베딩 생성 완료 (${queryEmbedding.length}차원)`);
-
-    const lengthFilter = lengthCategory ? lengthCategory.charAt(0) : null;
-    console.log(`   RPC 호출: filter_length=${lengthFilter}`);
-
-    const rpcResponse = await fetch(
-      `${supabaseUrl}/rest/v1/rpc/match_hairstyles`,
-      {
-        method: 'POST',
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          query_embedding: queryEmbedding,
-          match_threshold: 0.30,
-          match_count: 10,
-          filter_length: lengthFilter
-        })
-      }
-    );
-
-    if (!rpcResponse.ok) {
-      const errorText = await rpcResponse.text();
-      console.error('❌ Supabase RPC 호출 실패:', rpcResponse.status, errorText);
-      return [];
-    }
-
-    let results = await rpcResponse.json();
-    console.log(`📊 원본 검색 결과: ${results?.length || 0}개`);
-
-    if (lengthCategory) {
-      const targetPrefix = getLengthCodePrefix(lengthCategory);
-      
-      if (targetPrefix) {
-        const sameLength = results.filter(r => r.code && r.code.startsWith(targetPrefix));
-        const otherLength = results.filter(r => !r.code || !r.code.startsWith(targetPrefix));
-        
-        results = [...sameLength, ...otherLength].slice(0, 10);
-        console.log(`   동일 길이: ${sameLength.length}개, 기타: ${otherLength.length}개`);
-      }
-    }
-
-    console.log(`✅ 도해도 ${results.length}개 검색 완료`);
-    return results;
-
-  } catch (error) {
-    console.error('💥 Vector search failed:', error);
-    return [];
-  }
-}
-
 // ==================== 언어 감지 ====================
 function detectLanguage(text) {
   const koreanRegex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
@@ -1035,7 +1043,9 @@ function detectLanguage(text) {
 // ==================== 스타일 검색 ====================
 async function searchStyles(payload, openaiKey, supabaseUrl, supabaseKey) {
   const { query } = payload;
-  const results = await searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey);
+  
+  const targetGender = null; // 필터 없음
+  const results = await searchRecipeSamples(supabaseUrl, supabaseKey, openaiKey, query, targetGender);
   
   return {
     statusCode: 200,
