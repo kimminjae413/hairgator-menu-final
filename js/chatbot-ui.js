@@ -891,7 +891,6 @@ class HairGatorChatbot {
 
   // ==================== 이미지 업로드 핸들러 ====================
   
-  ync hasandleImageUpload(event) {
     async handleImageUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
