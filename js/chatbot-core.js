@@ -106,19 +106,19 @@ class ChatbotCore {
 
   // ==================== API 통신 ====================
 
-  async analyzeImage(base64Image, mimeType) {
+  async analyzeImage(base64Image, mimeType, userGender = null) {
     try {
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'analyze_image',
-          payload: { 
-            image_base64: base64Image,
-            mime_type: mimeType || 'image/jpeg'
-          }
-        })
-      });
+  action: 'analyze_image',
+  payload: { 
+    image_base64: base64Image,
+    mime_type: mimeType || 'image/jpeg',
+    user_gender: userGender  // ⭐ 이 줄 추가 ⭐
+  }
+})
 
       const result = await response.json();
 
