@@ -852,10 +852,18 @@ class HairGatorChatbot {
       console.log('📝 최종 레시피 길이:', recipe.length);
       console.log('🖼️ 도해도 개수:', styles.length);
 
-      // 마크다운 렌더링
+      // ⭐ 마크다운 렌더링 (줄바꿈 처리 개선)
       if (recipe && recipe.length > 0) {
-        const rendered = this.core.parseMarkdownWithHighlight(recipe);
-        this.replaceLastBotMessage(rendered);
+        // 1. \n을 <br>로 변환
+        let formattedRecipe = recipe.replace(/\n/g, '<br>');
+        
+        // 2. 마크다운 하이라이팅 적용
+        const rendered = this.core.parseMarkdownWithHighlight(formattedRecipe);
+        
+        // 3. CSS 클래스 추가 (가독성 향상)
+        const wrappedRecipe = `<div class="recipe-text" style="white-space: normal; word-wrap: break-word; max-width: 100%;">${rendered}</div>`;
+        
+        this.replaceLastBotMessage(wrappedRecipe);
       } else {
         this.replaceLastBotMessage('⚠️ 레시피 내용이 비어있습니다.');
       }
