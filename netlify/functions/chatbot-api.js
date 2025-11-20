@@ -771,7 +771,13 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
   try {
     console.log('🍳 레시피 생성 시작:', params56.length_category, '언어:', language);
 
-    const searchQuery = `${params56.length_category || ''} ${params56.cut_form || ''} ${params56.volume_zone || ''} Volume`;
+    // ✅ 수정 (더 구체적으로)
+const searchQuery = `
+미디움 스타일 ${params56.length_category || ''} 레이어컷 
+${params56.fringe_type || ''} 
+${params56.volume_zone || ''} 볼륨 
+${params56.curl_pattern || 'C컬'} 활용
+`.trim();
     const theoryChunks = await searchTheoryChunks(searchQuery, geminiKey, supabaseUrl, supabaseKey, 5);
     
     const allSimilarStyles = await searchSimilarStyles(
@@ -939,7 +945,7 @@ async function searchSimilarStyles(query, openaiKey, supabaseUrl, supabaseKey, t
         },
         body: JSON.stringify({
           query_embedding: queryEmbedding,
-          match_threshold: 0.50,
+          match_threshold: 0.30,
           match_count: 10,
           filter_length: lengthFilter
         })
