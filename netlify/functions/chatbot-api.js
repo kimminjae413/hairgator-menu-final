@@ -1,11 +1,18 @@
 // netlify/functions/chatbot-api.js
-// HAIRGATOR v5.0 - 하이브리드 검색 통합 버전 (2025-01-25)
+// HAIRGATOR v5.0 FINAL - 일반대화 제거 버전 (2025-01-25)
 // 
-// 🎯 주요 기능:
+// 🎯 주요 변경사항:
+// ❌ 일반대화 구분 완전 제거
+// ✅ 모든 텍스트 질문 → generateProfessionalResponse()
+// ✅ 간단한 인사 → 짧게 응답 + 질문 유도
+// ✅ theory_chunks 자동 검색 → 이론 기반 답변
+// ✅ 검색 결과 없으면 → 일반 지식 + 구체적 질문 유도
+// 
+// 기존 기능 유지:
 // 1. ⭐ 사용자 성별 선택 통합 (user_gender: 'male' | 'female')
 // 2. GPT-4o Vision + Function Calling (56개 파라미터)
 // 3. recipe_samples 벡터 검색 (4,719개 레시피)
-// 4. theory_chunks 하이브리드 검색 (벡터 + 키워드) ⭐ NEW
+// 4. theory_chunks 하이브리드 검색 (벡터 + 키워드)
 // 5. Gemini embedding (768차원)
 // 6. 도해도 15개 선별 및 반환
 // 7. 성별 필터링 (female: 2,178개 / male: 2,541개)
@@ -360,8 +367,9 @@ exports.handler = async (event, context) => {
       case 'search_styles':
         return await searchStyles(payload, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
       
+      // ⭐⭐⭐ 변경: generate_response → generateProfessionalResponse ⭐⭐⭐
       case 'generate_response':
-        return await generateResponse(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
+        return await generateProfessionalResponse(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
       
       default:
         return {
@@ -380,13 +388,371 @@ exports.handler = async (event, context) => {
   }
 };
 
+// ==================== 전문 답변 생성 (일반대화 통합) ⭐⭐⭐ NEW ⭐⭐⭐ ====================
+async function generateProfessionalResponse(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
+  const { user_query, search_results } = payload;
+  const userLanguage = detectLanguage(user_query);
+  
+  console.log(`💬 전문 답변: "${user_query}"`);
+  
+  // 1. 간단한 인사말 감지
+  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워', '여보세요'];
+  const isSimpleGreeting = simpleGreetings.some(g => {
+    const query = user_query.toLowerCase().trim();
+    return query === g || 
+           query === g + '하세요' || 
+           query === g + '!' ||
+           query === g + '?';
+  }) && user_query.length < 15;
+  
+  if (isSimpleGreeting) {
+    const greetingResponses = {
+      korean: '안녕하세요! 헤어스타일에 대해 무엇이든 물어보세요. 😊\n\n예시:\n• "렝스별로 설명해줘"\n• "레이어드 컷이 뭐야?"\n• "G Length가 뭐야?"\n• "얼굴형에 맞는 스타일 추천해줘"',
+      english: 'Hello! Feel free to ask anything about hairstyles. 😊\n\nExamples:\n• "Explain length categories"\n• "What is layered cut?"\n• "Recommend styles for my face shape"',
+      japanese: 'こんにちは！ヘアスタイルについて何でも聞いてください。😊',
+      chinese: '你好！请随便问关于发型的问题。😊',
+      vietnamese: 'Xin chào! Hỏi gì về kiểu tóc cũng được. 😊'
+    };
+    
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ 
+        success: true, 
+        data: greetingResponses[userLanguage] || greetingResponses['korean']
+      })
+    };
+  }
+  
+  // 2. 보안 키워드 필터링
+  const securityKeywords = [
+    '42포뮬러', '42개 포뮬러', '42 formula',
+    '9매트릭스', '9개 매트릭스', '9 matrix',
+    'DBS NO', 'DFS NO', 'VS NO', 'HS NO',
+    '42층', '7개 섹션', '7 section'
+  ];
+  
+  const isSecurityQuery = securityKeywords.some(keyword => 
+    user_query.toLowerCase().includes(keyword.toLowerCase())
+  );
+  
+  if (isSecurityQuery) {
+    const securityResponse = {
+      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"\n• "헤어 길이 분류 시스템"',
+      english: 'I apologize, but that information is proprietary to the 2WAY CUT system.\n\nHow about these questions instead?\n• "Basic principles of layer cut"\n• "Recommended styles by face shape"',
+      japanese: '申し訳ございませんが、その情報は企業秘密です。',
+      chinese: '抱歉，该信息属于核心商业机密。',
+      vietnamese: 'Xin lỗi, thông tin đó là bí mật kinh doanh.'
+    };
+    
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ 
+        success: true, 
+        data: securityResponse[userLanguage] || securityResponse['korean'],
+        security_filtered: true
+      })
+    };
+  }
+  
+  // 3. theory_chunks 검색 실행
+  const theoryChunks = await searchTheoryChunks(user_query, geminiKey, supabaseUrl, supabaseKey, 10);
+  
+  console.log(`📚 theory_chunks 검색 결과: ${theoryChunks.length}개`);
+  
+  // 4. 검색 결과에 따라 프롬프트 생성
+  let systemPrompt;
+  
+  if (theoryChunks.length > 0) {
+    // 이론 기반 답변
+    const theoryContext = theoryChunks.map((chunk, idx) => {
+      const title = chunk.section_title || '';
+      const content = (chunk.content_ko || chunk.content || '').substring(0, 500);
+      return `【참고자료 ${idx+1}】${title}\n${content}`;
+    }).join('\n\n');
+    
+    systemPrompt = buildTheoryBasedPrompt(user_query, theoryContext, userLanguage);
+  } else {
+    // 일반 지식 기반 답변
+    systemPrompt = buildGeneralPrompt(user_query, userLanguage);
+  }
+  
+  // 5. GPT 답변 생성
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: user_query }
+        ],
+        temperature: 0.7,
+        max_tokens: 1200
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`OpenAI API Error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ 
+        success: true, 
+        data: data.choices[0].message.content,
+        theory_used: theoryChunks.length > 0,
+        theory_count: theoryChunks.length
+      })
+    };
+  } catch (error) {
+    console.error('💥 GPT 호출 실패:', error);
+    
+    // 폴백: 간단한 응답
+    const fallbackResponse = {
+      korean: '죄송합니다. 답변 생성 중 오류가 발생했습니다.\n다시 시도해주시거나, 더 구체적으로 질문해주세요.',
+      english: 'Sorry, an error occurred while generating the response.\nPlease try again or ask more specifically.',
+      japanese: '申し訳ございません。エラーが発生しました。',
+      chinese: '抱歉，生成回复时出错。',
+      vietnamese: 'Xin lỗi, đã xảy ra lỗi khi tạo phản hồi.'
+    };
+    
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ 
+        success: true, 
+        data: fallbackResponse[userLanguage] || fallbackResponse['korean']
+      })
+    };
+  }
+}
+
+// ==================== 이론 기반 프롬프트 ====================
+function buildTheoryBasedPrompt(query, theoryContext, language) {
+  const prompts = {
+    korean: `당신은 HAIRGATOR의 전문 헤어 AI 어시스턴트입니다.
+
+**질문**: ${query}
+
+**📚 참고 이론 자료**:
+
+${theoryContext}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**답변 규칙**:
+1. ✅ 위 참고 자료를 기반으로 정확하고 전문적으로 답변하세요
+2. ✅ 전문 용어는 쉽게 풀어서 설명하세요 (예: "Layer = 층층이 자른 것")
+3. ✅ 구체적인 예시를 들어 이해를 도와주세요
+4. ✅ 답변은 3-5문단으로 작성하세요
+5. ⚠️ 참고 자료에 없는 내용은 "정확한 자료를 찾을 수 없지만..." 이라고 말하세요
+
+**절대 금지**:
+- ❌ 포뮬러 번호(DBS NO.3 등) 언급 금지
+- ❌ 매트릭스 코드 언급 금지
+- ❌ 각도 코드(L0, D1 등) 언급 금지
+- ❌ "89응어" 같은 이상한 단어 사용 금지
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+답변을 시작하세요 (한국어로만):`,
+    
+    english: `You are HAIRGATOR's professional hair AI assistant.
+
+**Question**: ${query}
+
+**📚 Reference Materials**:
+
+${theoryContext}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Response Rules**:
+1. ✅ Answer accurately and professionally based on the reference materials
+2. ✅ Explain technical terms in simple language
+3. ✅ Provide specific examples to help understanding
+4. ✅ Write 3-5 paragraphs
+5. ⚠️ If information is not in the materials, say "I cannot find exact data but..."
+
+**Strictly Prohibited**:
+- ❌ Mentioning formula numbers (DBS NO.3, etc.)
+- ❌ Mentioning matrix codes
+- ❌ Mentioning angle codes (L0, D1, etc.)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Begin your answer (in English only):`,
+    
+    japanese: `あなたはHAIRGATORの専門ヘアAIアシスタントです。
+
+**質問**: ${query}
+
+**📚 参考資料**:
+
+${theoryContext}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+上記の参考資料に基づいて、正確かつ専門的に答えてください。
+専門用語は分かりやすく説明してください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+日本語で回答してください:`,
+    
+    chinese: `你是HAIRGATOR的专业发型AI助手。
+
+**问题**: ${query}
+
+**📚 参考资料**:
+
+${theoryContext}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+基于以上参考资料，准确专业地回答。
+用简单语言解释专业术语。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+用中文回答:`,
+    
+    vietnamese: `Bạn là trợ lý AI chuyên nghiệp về tóc của HAIRGATOR.
+
+**Câu hỏi**: ${query}
+
+**📚 Tài liệu tham khảo**:
+
+${theoryContext}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trả lời chính xác và chuyên nghiệp dựa trên tài liệu tham khảo.
+Giải thích thuật ngữ chuyên môn bằng ngôn ngữ đơn giản.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trả lời bằng tiếng Việt:`
+  };
+  
+  return prompts[language] || prompts['korean'];
+}
+
+// ==================== 일반 프롬프트 (참고자료 없을 때) ====================
+function buildGeneralPrompt(query, language) {
+  const prompts = {
+    korean: `당신은 HAIRGATOR의 헤어 AI 어시스턴트입니다.
+
+**질문**: ${query}
+
+⚠️ 데이터베이스에서 관련 자료를 찾을 수 없었습니다.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**답변 방식**:
+1. 일반적인 헤어 지식을 바탕으로 답변하되, 정확한 자료가 없음을 밝히세요
+2. 가능하면 더 구체적인 질문으로 유도하세요
+3. 2-3문단으로 간결하게 작성하세요
+
+**예시 답변 형식**:
+"정확한 자료를 찾지 못했지만, 일반적으로...
+
+더 구체적인 답변을 원하시면 이렇게 질문해주세요:
+• [구체적 질문 예시 1]
+• [구체적 질문 예시 2]"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+답변을 시작하세요 (한국어로만):`,
+    
+    english: `You are HAIRGATOR's hair AI assistant.
+
+**Question**: ${query}
+
+⚠️ No related materials found in the database.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Response Method**:
+1. Answer based on general hair knowledge, but mention "no exact reference materials"
+2. Guide to more specific questions if possible
+3. Keep it brief in 2-3 paragraphs
+
+**Example Format**:
+"I couldn't find exact data, but generally...
+
+For more specific answers, try asking:
+• [Specific question example 1]
+• [Specific question example 2]"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Begin your answer (in English only):`,
+    
+    japanese: `あなたはHAIRGATORのヘアAIアシスタントです。
+
+**質問**: ${query}
+
+⚠️ データベースに関連資料が見つかりませんでした。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+一般的な知識で答えてください。
+より具体的な質問を提案してください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+日本語で回答してください:`,
+    
+    chinese: `你是HAIRGATOR的发型AI助手。
+
+**问题**: ${query}
+
+⚠️ 数据库中未找到相关资料。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+用一般知识回答。
+建议更具体的问题。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+用中文回答:`,
+    
+    vietnamese: `Bạn là trợ lý AI tóc của HAIRGATOR.
+
+**Câu hỏi**: ${query}
+
+⚠️ Không tìm thấy tài liệu liên quan trong cơ sở dữ liệu.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trả lời dựa trên kiến thức chung.
+Đề xuất câu hỏi cụ thể hơn.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trả lời bằng tiếng Việt:`
+  };
+  
+  return prompts[language] || prompts['korean'];
+}
+
 // ==================== 이미지 분석 (성별 통합!) ====================
 async function analyzeImage(payload, openaiKey) {
-  const { image_base64, mime_type, user_gender } = payload;  // ⭐ user_gender 추가
+  const { image_base64, mime_type, user_gender } = payload;
 
   console.log(`🎯 이미지 분석 시작 - 사용자 선택 성별: ${user_gender || 'unspecified'}`);
 
-  // ⭐ 성별에 따른 프롬프트 조정
   const genderContext = user_gender === 'male' 
     ? `\n\n⚠️ IMPORTANT: This is a MALE hairstyle. Focus on men's cut categories and techniques.\n- Use "Men's Cut" for cut_category\n- Select from mens_cut_category options\n- Consider typical male length ranges (mostly E~H Length)`
     : user_gender === 'female'
@@ -415,56 +781,10 @@ ${genderContext}
 - G Length (20cm): Jaw line
 - H Length (15cm): Ear level
 
-**CRITICAL 4-STEP LENGTH DECISION:**
-
 STEP 1: Find the LONGEST hair strand in the BACK
-- Ignore shorter face-framing layers
-- Focus on the longest length you can see
-
-STEP 2: Compare to body landmarks (CAREFULLY):
-- Below chest/near navel = A Length (65cm)
-- Mid-chest (nipple level) = B Length (50cm) ⭐ COMMON
-- Collarbone = C Length (40cm) ⭐ COMMON
-- Shoulder line = D Length (35cm) ⭐ MOST COMMON
-- 2-3cm above shoulder = E Length (30cm)
-- Below chin = F Length (25cm)
-- Jaw line = G Length (20cm)
-- Ear level = H Length (15cm)
-
+STEP 2: Compare to body landmarks CAREFULLY
 STEP 3: If between two lengths, choose the LONGER one
-- Between B and C → Choose B
-- Between C and D → Choose C
-
 STEP 4: Double-check
-- Does it clearly pass shoulders? → B or C (NOT D)
-- Exactly at shoulders? → D Length
-- Above shoulders? → E/F/G/H
-
-EXAMPLE: Hair reaching mid-chest = B Length (NOT C!)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-## FACE SHAPE MATCHING (CRITICAL!)
-
-Analyze which face shapes this hairstyle suits BEST:
-
-**Face Shape Analysis:**
-- **Oval**: Ideal proportions, most styles work
-- **Round**: Soft curves, needs vertical lines/side volume
-- **Square**: Angular jaw, needs soft waves/side bangs
-- **Heart**: Wide forehead + pointed chin, needs jaw coverage
-- **Long**: Length > width, needs horizontal volume/side bangs
-- **Diamond**: Wide cheekbones, needs cheekbone coverage
-
-**Selection Logic:**
-1. Layer styles → Oval, Round, Long
-2. Side bangs → Square, Long, Heart
-3. Middle volume → Round, Long, Diamond
-4. Soft waves → Square, Heart
-5. Long hair (A~D) → Oval, Long
-6. Short hair (E~H) → Oval, Heart, Diamond
-
-Select 1-3 most suitable face shapes!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -479,13 +799,8 @@ Select 1-3 most suitable face shapes!
 **Volume Zone:**
 - Low (0-44°) / Medium (45-89°) / High (90°+)
 
-**Fringe Type:**
-- Full Bang / See-through Bang / Side Bang / Center Part / No Fringe
-
 **Face Shape Match (1-3 selections!):**
 - ["Oval", "Round"] or ["Square", "Heart", "Long"] etc.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Extract ALL parameters accurately following the JSON schema!`;
 
@@ -541,7 +856,6 @@ Extract ALL parameters accurately following the JSON schema!`;
 
     const data = await response.json();
     
-    // Function Calling 응답 파싱
     const functionCall = data.choices?.[0]?.message?.function_call;
     if (!functionCall || !functionCall.arguments) {
       throw new Error('No function call in response');
@@ -549,7 +863,7 @@ Extract ALL parameters accurately following the JSON schema!`;
     
     const params56 = JSON.parse(functionCall.arguments);
     
-    // ⭐ 성별 강제 적용 (사용자 선택 우선)
+    // 성별 강제 적용
     if (user_gender === 'male' && params56.cut_category !== "Men's Cut") {
       console.log(`⚠️ 성별 수정: ${params56.cut_category} → Men's Cut`);
       params56.cut_category = "Men's Cut";
@@ -558,24 +872,7 @@ Extract ALL parameters accurately following the JSON schema!`;
       params56.cut_category = "Women's Cut";
     }
     
-    console.log('✅ GPT-4o Vision 분석 완료 (56개 파라미터):', {
-      gender: params56.cut_category,
-      user_selected: user_gender,
-      length: params56.length_category,
-      form: params56.cut_form,
-      volume: params56.volume_zone,
-      face_shapes: params56.face_shape_match
-    });
-    
-    // Volume 검증
-    if (params56.lifting_range && params56.lifting_range.length > 0) {
-      const maxLifting = params56.lifting_range[params56.lifting_range.length - 1];
-      const calculatedVolume = calculateVolumeFromLifting(maxLifting);
-      
-      if (calculatedVolume !== params56.volume_zone) {
-        console.log(`⚠️ Volume 불일치: Detected=${params56.volume_zone}, Calculated=${calculatedVolume}`);
-      }
-    }
+    console.log('✅ GPT-4o Vision 분석 완료 (56개 파라미터)');
 
     return {
       statusCode: 200,
@@ -583,7 +880,7 @@ Extract ALL parameters accurately following the JSON schema!`;
       body: JSON.stringify({ 
         success: true, 
         data: params56,
-        user_gender: user_gender,  // ⭐ 사용자 선택 성별 반환
+        user_gender: user_gender,
         model: 'gpt-4o-2024-11-20',
         method: 'function_calling'
       })
@@ -703,7 +1000,6 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, searchQu
     console.log(`🔍 recipe_samples 검색: "${searchQuery}"`);
     console.log(`   필터: gender=${targetGender}, length=${lengthCategory}`);
     
-    // Gemini 임베딩 생성 (768차원)
     const embeddingResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${geminiKey}`,
       {
@@ -725,7 +1021,6 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, searchQu
     
     console.log(`✅ Gemini 임베딩 생성 완료 (768차원)`);
     
-    // Supabase RPC 호출
     const rpcResponse = await fetch(
       `${supabaseUrl}/rest/v1/rpc/match_recipe_samples`,
       {
@@ -737,7 +1032,7 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, searchQu
         },
         body: JSON.stringify({
           query_embedding: queryEmbedding,
-          match_threshold: 0.55,  // 0.65 → 0.55로 낮춤
+          match_threshold: 0.55,
           match_count: 30,
           filter_gender: targetGender
         })
@@ -753,7 +1048,6 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, searchQu
     let results = await rpcResponse.json();
     console.log(`📊 원본 검색 결과: ${results.length}개`);
     
-    // 길이 필터링
     if (lengthCategory) {
       const lengthPrefix = getLengthPrefix(lengthCategory);
       
@@ -774,7 +1068,6 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, searchQu
   }
 }
 
-// 길이 카테고리 → 코드 prefix
 function getLengthPrefix(lengthCategory) {
   const map = {
     'A Length': 'FAL',
@@ -890,12 +1183,11 @@ function getTerms(lang) {
   return terms[lang] || terms['ko'];
 }
 
-// ==================== theory_chunks 하이브리드 검색 (벡터 + 키워드) ⭐ NEW ====================
+// ==================== theory_chunks 하이브리드 검색 ====================
 async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, matchCount = 5) {
   try {
     console.log(`🔍 theory_chunks 하이브리드 검색: "${query}"`);
     
-    // 1. Gemini 임베딩 생성
     const embeddingResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${geminiKey}`,
       {
@@ -916,7 +1208,6 @@ async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, ma
     const embeddingData = await embeddingResponse.json();
     const queryEmbedding = embeddingData.embedding.values;
 
-    // 2. 하이브리드 RPC 호출 시도
     const rpcResponse = await fetch(
       `${supabaseUrl}/rest/v1/rpc/hybrid_search_theory_chunks`,
       {
@@ -938,23 +1229,13 @@ async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, ma
     );
 
     if (!rpcResponse.ok) {
-      const errorText = await rpcResponse.text();
-      console.warn(`⚠️ 하이브리드 검색 실패 (${rpcResponse.status})`);
-      console.error('에러 상세:', errorText);
-      console.error('요청 파라미터:', {
-        query_text: query,
-        embedding_length: queryEmbedding.length,
-        vector_threshold: 0.55,
-        final_count: matchCount
-      });
-      console.warn('기존 벡터 검색으로 폴백');
+      console.warn(`⚠️ 하이브리드 검색 실패 (${rpcResponse.status}), 폴백 시작`);
       return await fallbackVectorSearch(queryEmbedding, supabaseUrl, supabaseKey, matchCount);
     }
 
     const results = await rpcResponse.json();
     console.log(`✅ 하이브리드 검색 ${results.length}개 완료`);
     
-    // 상위 3개 결과 로깅
     if (results.length > 0) {
       console.log('📊 상위 3개 결과:');
       results.slice(0, 3).forEach((r, idx) => {
@@ -972,7 +1253,6 @@ async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, ma
   }
 }
 
-// ==================== 폴백: 기존 벡터 검색 ====================
 async function fallbackVectorSearch(queryEmbedding, supabaseUrl, supabaseKey, matchCount) {
   try {
     console.log('⚠️ 폴백: 기존 벡터 검색 수행');
@@ -1009,12 +1289,10 @@ async function fallbackVectorSearch(queryEmbedding, supabaseUrl, supabaseKey, ma
   }
 }
 
-// ==================== 폴백: 키워드만 검색 ====================
 async function fallbackKeywordSearch(query, supabaseUrl, supabaseKey, matchCount) {
   try {
     console.log('⚠️ 폴백: 키워드 검색만 수행');
     
-    // 쿼리를 키워드로 분리
     const keywords = query.toLowerCase().split(/\s+/).filter(k => k.length > 1);
     
     const response = await fetch(
@@ -1036,7 +1314,6 @@ async function fallbackKeywordSearch(query, supabaseUrl, supabaseKey, matchCount
     
     const allData = await response.json();
     
-    // 클라이언트 사이드에서 키워드 매칭 점수 계산
     const scored = allData.map(item => {
       let score = 0;
       const itemText = `${item.content || ''} ${item.content_ko || ''} ${(item.keywords || []).join(' ')}`.toLowerCase();
@@ -1069,11 +1346,9 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
   try {
     console.log('🍳 레시피 생성 시작:', params56.length_category, '언어:', language);
 
-    // 1. 검색 쿼리 생성
     const searchQuery = buildSearchQuery(params56);
     console.log(`🔍 검색 쿼리: "${searchQuery}"`);
     
-    // 2. recipe_samples 벡터 검색
     const targetGender = params56.cut_category?.includes("Women") ? 'female' : 'male';
     const recipeSamples = await searchRecipeSamples(
       supabaseUrl,
@@ -1084,33 +1359,28 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       params56.length_category
     );
     
-    // 3. 도해도 선별
     const selectedDiagrams = selectBestDiagrams(recipeSamples, 15);
     console.log(`✅ 도해도 선별 완료: ${selectedDiagrams.length}개`);
     
-    // 4. theory_chunks 하이브리드 검색 (이론적 근거) ⭐ NEW
     const theoryChunks = await searchTheoryChunks(
       searchQuery,
       geminiKey,
       supabaseUrl,
       supabaseKey,
-      5  // 5개 이론 청크
+      5
     );
     console.log(`✅ theory_chunks 검색 완료: ${theoryChunks.length}개`);
     
-    // 5. 이론 컨텍스트 생성
     const theoryContext = theoryChunks.length > 0 
       ? theoryChunks.map((t, idx) => 
           `${idx + 1}. ${t.section_title || '이론'}: ${(t.content_ko || t.content || '').substring(0, 100)}...`
         ).join('\n')
       : '(이론 참고 자료 없음)';
     
-    // 6. 도해도 컨텍스트
     const diagramsContext = selectedDiagrams.map((d, idx) => 
       `${idx + 1}단계: ${d.sample_code} (유사도 ${(d.similarity * 100).toFixed(0)}%)\n   설명: ${d.recipe_text.substring(0, 100)}...`
     ).join('\n\n');
     
-    // 7. 언어별 용어
     const langTerms = getTerms(language);
     const volumeDesc = langTerms.volume[params56.volume_zone] || langTerms.volume['Medium'];
     
@@ -1118,7 +1388,6 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
       .map(shape => langTerms.faceShapeDesc[shape] || shape)
       .join(', ');
 
-    // 8. GPT 프롬프트
     const enhancedPrompt = `당신은 전문 헤어 스타일리스트입니다.
 
 **분석 결과:**
@@ -1141,45 +1410,13 @@ ${diagramsContext}
 위의 이론과 도해도 순서를 **정확히 따라서** 레시피를 작성하세요.
 
 ### STEP 1: 전체 개요 (2-3줄)
-이 스타일의 핵심 특징과 기대 효과를 간결하게 설명
-
 ### STEP 2: 상세 커팅 순서 (${selectedDiagrams.length}단계)
-
-**각 도해도에 맞춰서 정확히 작성:**
-
-${selectedDiagrams.map((d, idx) => `
-**【${idx + 1}단계: ${d.sample_code}】**
-\`\`\`
-목적: ${d.recipe_text.split('.')[0]}
-분할 방법: (구체적으로)
-리프팅 각도: (명확한 각도)
-커팅 기법: (비율 포함)
-주의사항: (핵심 포인트)
-\`\`\`
-`).join('\n')}
-
 ### STEP 3: 질감 처리
-- 1차 질감: 슬라이드 또는 포인트 컷 40%
-- 2차 질감: 틴닝 또는 스트록 컷 30%
-- 마무리: 디테일 20-30%
-
 ### STEP 4: 스타일링 가이드
-- 드라이 방법
-- 아이론/고데기 사용법
-- 제품 추천
-
 ### STEP 5: 유지 관리
-- 다듬기 주기
-- 집에서 관리법
 
-**⚠️ 중요:**
-- 도해도 순서를 절대 바꾸지 마세요
-- 각 단계마다 구체적인 수치 포함
-- 총 800자 이내로 간결하게
+총 800자 이내로 간결하게, 한국어로만 작성하세요.`;
 
-모든 내용을 **한국어로만** 작성하세요.`;
-
-    // 7. GPT 호출
     const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -1204,12 +1441,9 @@ ${selectedDiagrams.map((d, idx) => `
     const data = await completion.json();
     let recipe = data.choices[0].message.content;
     
-    // 보안 필터링
     recipe = sanitizeRecipeForPublic(recipe, language);
 
     console.log('✅ 레시피 생성 완료');
-    console.log(`🎯 반환할 도해도: ${selectedDiagrams.length}개`);
-    console.log(`📚 참고 이론: ${theoryChunks.length}개`);
 
     return {
       statusCode: 200,
@@ -1222,7 +1456,7 @@ ${selectedDiagrams.map((d, idx) => `
           diagrams: selectedDiagrams,
           diagram_count: selectedDiagrams.length,
           matched_samples: recipeSamples.slice(0, 3),
-          theory_chunks: theoryChunks,  // ⭐ NEW
+          theory_chunks: theoryChunks,
           theory_count: theoryChunks.length
         }
       })
@@ -1241,12 +1475,10 @@ ${selectedDiagrams.map((d, idx) => `
   }
 }
 
-// ==================== 스트리밍 레시피 생성 ====================
 async function generateRecipeStream(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
   return await generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey);
 }
 
-// ==================== 언어 감지 ====================
 function detectLanguage(text) {
   const koreanRegex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
   if (koreanRegex.test(text)) return 'korean';
@@ -1263,7 +1495,6 @@ function detectLanguage(text) {
   return 'english';
 }
 
-// ==================== 스타일 검색 ====================
 async function searchStyles(payload, geminiKey, supabaseUrl, supabaseKey) {
   const { query } = payload;
   
@@ -1274,67 +1505,5 @@ async function searchStyles(payload, geminiKey, supabaseUrl, supabaseKey) {
     statusCode: 200,
     headers,
     body: JSON.stringify({ success: true, data: results })
-  };
-}
-
-// ==================== 일반 대화 응답 ====================
-async function generateResponse(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
-  const { user_query } = payload;
-  const userLanguage = detectLanguage(user_query);
-  
-  console.log(`💬 일반 대화 응답: "${user_query}"`);
-  
-  const securityKeywords = [
-    '42포뮬러', '42개 포뮬러', '42 formula',
-    '9매트릭스', '9개 매트릭스', '9 matrix',
-    'DBS NO', 'DFS NO', 'VS NO', 'HS NO'
-  ];
-  
-  const isSecurityQuery = securityKeywords.some(keyword => 
-    user_query.toLowerCase().includes(keyword.toLowerCase())
-  );
-  
-  if (isSecurityQuery) {
-    const securityResponse = {
-      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.',
-      english: 'I apologize, but that information is proprietary.'
-    };
-    
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ 
-        success: true, 
-        data: securityResponse[userLanguage] || securityResponse['korean']
-      })
-    };
-  }
-  
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openaiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: '당신은 친근한 헤어 AI 어시스턴트입니다.' },
-        { role: 'user', content: user_query }
-      ],
-      temperature: 0.7,
-      max_tokens: 150
-    })
-  });
-  
-  const data = await response.json();
-  
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ 
-      success: true, 
-      data: data.choices[0].message.content
-    })
   };
 }
