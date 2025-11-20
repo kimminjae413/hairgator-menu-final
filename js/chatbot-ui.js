@@ -834,6 +834,12 @@ class HairGatorChatbot {
 
       // 응답 구조 파싱
       if (recipeResult.success && recipeResult.data) {
+        console.log('🔍 recipeResult.data:', recipeResult.data);
+        console.log('🔍 recipeResult.data.recipe 존재?', !!recipeResult.data.recipe);
+        console.log('🔍 recipeResult.data.similar_styles 존재?', !!recipeResult.data.similar_styles);
+        console.log('🔍 recipeResult.data.similar_styles 타입:', typeof recipeResult.data.similar_styles);
+        console.log('🔍 recipeResult.data.similar_styles 내용:', recipeResult.data.similar_styles);
+        
         recipe = recipeResult.data.recipe || '';
         styles = recipeResult.data.similar_styles || [];
         console.log('✅ 파싱 성공 (success.data)');
