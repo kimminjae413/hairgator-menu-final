@@ -833,15 +833,11 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     }
 
     let fullRecipe = '';
-    const reader = completion.body.getReader();
-    const decoder = new TextDecoder('utf-8');
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n').filter(line => line.trim() !== '');
+    
+    // ✅ Node.js 방식 스트리밍 처리
+    for await (const chunk of completion.body) {
+      const text = chunk.toString('utf-8');
+      const lines = text.split('\n').filter(line => line.trim() !== '');
 
       for (const line of lines) {
         if (line.startsWith('data: ')) {
