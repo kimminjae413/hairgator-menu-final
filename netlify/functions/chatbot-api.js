@@ -3,11 +3,12 @@
 // 
 // 🔥 주요 변경사항:
 // 1. recipe_samples 테이블 벡터 검색 통합 (4,719개 레시피)
-// 2. 도해도 21개 배열 반환 (diagram_images)
-// 3. 성별 필터링 (female: 2,178개 / male: 2,541개)
-// 4. 중복 제거 로직 (같은 스타일은 1번만)
-// 5. 상위 15개 도해도 선별
-// 6. 기존 모든 기능 유지 (GPT-4o Vision, 보안 필터링, 다국어 등)
+// 2. ⭐ Gemini embedding (768차원) 사용 - OpenAI에서 변경!
+// 3. 도해도 21개 배열 반환 (diagram_images)
+// 4. 성별 필터링 (female: 2,178개 / male: 2,541개)
+// 5. 중복 제거 로직 (같은 스타일은 1번만)
+// 6. 상위 15개 도해도 선별
+// 7. 기존 모든 기능 유지 (GPT-4o Vision, 보안 필터링, 다국어 등)
 // ==================== 
 
 const fetch = require('node-fetch');
@@ -354,7 +355,7 @@ exports.handler = async (event, context) => {
        return await generateRecipeStream(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
       
       case 'search_styles':
-        return await searchStyles(payload, OPENAI_KEY, SUPABASE_URL, SUPABASE_KEY);
+        return await searchStyles(payload, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
       
       case 'generate_response':
         return await generateResponse(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
@@ -672,32 +673,32 @@ function buildSearchQuery(params56) {
 }
 
 // ==================== recipe_samples 벡터 검색 (핵심!) ====================
-async function searchRecipeSamples(supabaseUrl, supabaseKey, openaiKey, searchQuery, targetGender, lengthCategory = null) {
+async function searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, searchQuery, targetGender, lengthCategory = null) {
   try {
     console.log(`🔍 recipe_samples 검색: "${searchQuery}"`);
     console.log(`   필터: gender=${targetGender}, length=${lengthCategory}`);
     
-    // OpenAI 임베딩 생성
-    const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openaiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'text-embedding-3-small',
-        input: searchQuery
-      })
-    });
+    // ⭐ Gemini 임베딩 생성 (768차원)
+    const embeddingResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'models/text-embedding-004',
+          content: { parts: [{ text: searchQuery }] }
+        })
+      }
+    );
     
     if (!embeddingResponse.ok) {
-      throw new Error(`Embedding failed: ${embeddingResponse.status}`);
+      throw new Error(`Gemini embedding failed: ${embeddingResponse.status}`);
     }
     
     const embeddingData = await embeddingResponse.json();
-    const queryEmbedding = embeddingData.data[0].embedding;
+    const queryEmbedding = embeddingData.embedding.values;
     
-    console.log(`✅ OpenAI 임베딩 생성 완료 (${queryEmbedding.length}차원)`);
+    console.log(`✅ Gemini 임베딩 생성 완료 (768차원)`);
     
     // Supabase RPC 호출
     const rpcResponse = await fetch(
@@ -711,8 +712,8 @@ async function searchRecipeSamples(supabaseUrl, supabaseKey, openaiKey, searchQu
         },
         body: JSON.stringify({
           query_embedding: queryEmbedding,
-          match_threshold: 0.70,
-          match_count: 30,  // 더 많이 가져옴
+          match_threshold: 0.65,  // ⭐ threshold 낮춤 (0.70 → 0.65)
+          match_count: 30,
           filter_gender: targetGender
         })
       }
@@ -950,7 +951,7 @@ async function generateRecipe(payload, openaiKey, geminiKey, supabaseUrl, supaba
     const recipeSamples = await searchRecipeSamples(
       supabaseUrl,
       supabaseKey,
-      openaiKey,
+      geminiKey,  // ⭐ OpenAI → Gemini로 변경
       searchQuery,
       targetGender,
       params56.length_category  // 길이 필터
@@ -1115,11 +1116,11 @@ function detectLanguage(text) {
 }
 
 // ==================== 스타일 검색 ====================
-async function searchStyles(payload, openaiKey, supabaseUrl, supabaseKey) {
+async function searchStyles(payload, geminiKey, supabaseUrl, supabaseKey) {
   const { query } = payload;
   
   const targetGender = null; // 필터 없음
-  const results = await searchRecipeSamples(supabaseUrl, supabaseKey, openaiKey, query, targetGender);
+  const results = await searchRecipeSamples(supabaseUrl, supabaseKey, geminiKey, query, targetGender);
   
   return {
     statusCode: 200,
