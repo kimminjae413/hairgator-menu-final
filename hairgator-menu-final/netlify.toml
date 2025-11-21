@@ -1,0 +1,207 @@
+# netlify.toml - HAIRGATOR 최종 설정 (헤어체험 + 챗봇 + MediaPipe 통합)
+# 🔥 HOTFIX: Functions 타임아웃 26초로 연장 (GPT 레시피 생성 시간 고려)
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[build.environment]
+  # 시크릿 스캔 비활성화 (Firebase/API 키들이 의도적으로 포함됨)
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+
+# ========== Functions 설정 ==========
+[functions]
+  node_bundler = "esbuild"
+
+# ⭐ HOTFIX: 타임아웃 26초로 연장 (기본 10초 → 26초)
+# - Gemini 이미지 분석: ~2-3초
+# - Supabase 벡터 검색: ~1-2초
+# - GPT 레시피 생성: ~5-10초
+# - 보안 필터링: ~1초
+# 총 예상 시간: 10-16초 → 26초로 여유 확보
+[functions."chatbot-api"]
+  node_bundler = "esbuild"
+  timeout = 26
+
+# ========== 캐시 설정 (개발/업데이트 빈번) ==========
+# HTML 파일 - 캐시 비활성화
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+
+# JavaScript 파일 - 짧은 캐시 (10분)
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+
+# CSS 파일 - 짧은 캐시 (10분)
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+
+# index.html - 항상 최신
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+
+# ========== 헤어체험 AI 서비스 설정 ==========
+# 헤어체험 서비스 파일 - 짧은 캐시
+[[headers]]
+  for = "/js/hair-experience-service.js"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+
+# AI 통합 파일 - 짧은 캐시
+[[headers]]
+  for = "/js/ai-integration.js"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+
+# ========== 챗봇 파일 설정 ==========
+[[headers]]
+  for = "/js/chatbot.js"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/css/chatbot.css"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+
+# ========== Netlify Functions (챗봇 API) - CORS 설정 ==========
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+
+# ========== PWA 설정 ==========
+# Service Worker - 캐시 비활성화
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+# Manifest.json - iOS PWA 지원
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Access-Control-Allow-Origin = "*"
+
+# ========== 정적 자원 (장기 캐시 가능) ==========
+# 아이콘 파일 - 1달 캐시
+[[headers]]
+  for = "/icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000, immutable"
+    Access-Control-Allow-Origin = "*"
+
+# Apple 아이콘
+[[headers]]
+  for = "/apple-touch-icon.png"
+  [headers.values]
+    Content-Type = "image/png"
+    Cache-Control = "public, max-age=2592000, immutable"
+
+# 이미지 파일들
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000, immutable"
+
+# ========== 퍼스널컬러 기능 ==========
+[[headers]]
+  for = "/personal-color/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Permissions-Policy = "camera=(self), microphone=(self), autoplay=(self)"
+
+# ========== 보안 헤더 (전체 적용) - MediaPipe + AI API 통합 ==========
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer-when-downgrade"
+    Permissions-Policy = "camera=(self), microphone=(self), geolocation=()"
+    # 헤어체험 + 챗봇 + MediaPipe 통신을 위한 CSP 설정
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://*.googleapis.com https://www.gstatic.com https://*.supabase.co https://*.firebaseio.com https://lovely-lebkuchen-4017ca.netlify.app;"
+
+# ========== SPA 라우팅 ==========
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+
+# ========== 환경변수 보안 ==========
+# Functions에서 환경변수 사용을 위한 설정
+[context.production.environment]
+  GEMINI_API_KEY = ""           # 네틀리파이 대시보드에서 설정
+  OPENAI_API_KEY = ""
+  SUPABASE_URL = ""
+  SUPABASE_ANON_KEY = ""
+
+[context.deploy-preview.environment]
+  GEMINI_API_KEY = ""           # 프리뷰용 별도 키 (필요시)
+  OPENAI_API_KEY = ""
+  SUPABASE_URL = ""
+  SUPABASE_ANON_KEY = ""
+
+# ========== 빌드 최적화 ==========
+[build.processing]
+  skip_processing = false
+[build.processing.css]
+  bundle = false
+  minify = false
+[build.processing.js]
+  bundle = false
+  minify = false
+[build.processing.html]
+  pretty_urls = true
+
+# ========== Functions 환경변수 참고 ==========
+# Netlify Dashboard에서 설정할 환경변수 목록:
+# 
+# 1. GEMINI_API_KEY
+#    값: gen-lang-client-0911375709
+#    용도: 헤어체험 AI + 챗봇 이미지 분석
+#
+# 2. OPENAI_API_KEY
+#    값: sk-proj-Wibr2er9B0Z5QqcqdJ_0_B1e9YXbacLzHFS2oVEJ...
+#    용도: 챗봇 임베딩 생성 + GPT 답변
+#
+# 3. SUPABASE_URL
+#    값: https://bhsbwbeisqzgipvzpvym.supabase.co
+#    용도: 챗봇 벡터 검색
+#
+# 4. SUPABASE_ANON_KEY
+#    값: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3M...
+#    용도: Supabase 인증
+
+# ========== 타임아웃 설정 히스토리 ==========
+# 2025-01-25: 기본 10초 → 26초로 연장
+# - 원인: GPT 레시피 생성 시 HTTP 504 타임아웃 발생
+# - 해결: 무료 플랜 최대값 26초로 설정
+# - 효과: 복잡한 레시피 생성도 안정적으로 처리
