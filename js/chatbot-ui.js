@@ -14,27 +14,27 @@ class HairGatorChatbot {
       supabaseUrl: 'https://bhsbwbeisqzgipvzpvym.supabase.co',
       language: this.getStoredLanguage()
     });
-    
+
     this.isOpen = false;
     this.conversationHistory = [];
     this.currentLanguage = this.core.currentLanguage;
-    
+
     // 유저별 히스토리 관리
     this.currentUserId = null;
     this.HISTORY_EXPIRE_DAYS = 30;
     this.MAX_MESSAGES_PER_USER = 100;
-    
+
     // ⭐ 이미지 업로드 임시 저장
     this.pendingImage = null;
-    
+
     this.initUserHistory();
     this.init();
-    
+
     console.log('✅ HairGatorChatbot 초기화 완료');
   }
 
   // ==================== localStorage 관리 ====================
-  
+
   getStoredLanguage() {
     try {
       return localStorage.getItem('hairgator_chatbot_lang') || 'ko';
@@ -43,7 +43,7 @@ class HairGatorChatbot {
       return 'ko';
     }
   }
-  
+
   setStoredLanguage(lang) {
     try {
       localStorage.setItem('hairgator_chatbot_lang', lang);
@@ -56,11 +56,11 @@ class HairGatorChatbot {
   }
 
   // ==================== 유저 히스토리 관리 ====================
-  
+
   initUserHistory() {
     try {
       const bullnabiUser = window.getBullnabiUser ? window.getBullnabiUser() : null;
-      
+
       if (bullnabiUser && bullnabiUser.userId) {
         this.currentUserId = bullnabiUser.userId;
         console.log(`👤 유저 ID 설정: ${this.currentUserId}`);
@@ -68,16 +68,16 @@ class HairGatorChatbot {
         this.currentUserId = this.getOrCreateAnonymousId();
         console.log(`👤 임시 유저 ID: ${this.currentUserId}`);
       }
-      
+
       this.loadUserHistory();
       this.cleanExpiredMessages();
-      
+
     } catch (e) {
       console.error('❌ 유저 히스토리 초기화 실패:', e);
       this.currentUserId = 'anonymous_' + Date.now();
     }
   }
-  
+
   getOrCreateAnonymousId() {
     try {
       let anonId = localStorage.getItem('hairgator_anonymous_id');
@@ -90,14 +90,14 @@ class HairGatorChatbot {
       return 'anon_' + Date.now();
     }
   }
-  
+
   loadUserHistory() {
     try {
       if (!this.currentUserId) return;
-      
+
       const key = `hairgator_history_${this.currentUserId}`;
       const saved = localStorage.getItem(key);
-      
+
       if (saved) {
         const history = JSON.parse(saved);
         this.conversationHistory = history;
@@ -109,54 +109,54 @@ class HairGatorChatbot {
       this.conversationHistory = [];
     }
   }
-  
+
   saveUserHistory() {
     try {
       if (!this.currentUserId) return;
-      
+
       const key = `hairgator_history_${this.currentUserId}`;
-      
+
       if (this.conversationHistory.length > this.MAX_MESSAGES_PER_USER) {
         this.conversationHistory = this.conversationHistory.slice(-this.MAX_MESSAGES_PER_USER);
       }
-      
+
       localStorage.setItem(key, JSON.stringify(this.conversationHistory));
       console.log(`💾 히스토리 저장: ${this.conversationHistory.length}개 메시지`);
-      
+
     } catch (e) {
       console.warn('⚠️ 히스토리 저장 실패 (WebView):', e);
     }
   }
-  
+
   cleanExpiredMessages() {
     try {
       if (!this.currentUserId) return;
-      
+
       const expireTime = Date.now() - (this.HISTORY_EXPIRE_DAYS * 24 * 60 * 60 * 1000);
       const originalLength = this.conversationHistory.length;
-      
+
       this.conversationHistory = this.conversationHistory.filter(msg => {
         return msg.timestamp && msg.timestamp > expireTime;
       });
-      
+
       const deleted = originalLength - this.conversationHistory.length;
       if (deleted > 0) {
         console.log(`🗑️ 만료된 메시지 ${deleted}개 삭제 (${this.HISTORY_EXPIRE_DAYS}일 이상)`);
         this.saveUserHistory();
       }
-      
+
     } catch (e) {
       console.error('❌ 만료 메시지 정리 실패:', e);
     }
   }
-  
+
   restoreHistoryToUI() {
     try {
       const messagesDiv = document.getElementById('chatbot-messages');
       if (!messagesDiv) return;
-      
+
       messagesDiv.innerHTML = '';
-      
+
       this.conversationHistory.forEach(msg => {
         const messageHTML = `
           <div class="${msg.sender}-message">
@@ -165,16 +165,16 @@ class HairGatorChatbot {
         `;
         messagesDiv.insertAdjacentHTML('beforeend', messageHTML);
       });
-      
+
       this.attach89TermClickHandlers();
       this.scrollToBottom();
       console.log('✅ UI 히스토리 복원 완료');
-      
+
     } catch (e) {
       console.error('❌ UI 복원 실패:', e);
     }
   }
-  
+
   addToHistory(sender, content) {
     try {
       const message = {
@@ -183,23 +183,23 @@ class HairGatorChatbot {
         timestamp: Date.now(),
         userId: this.currentUserId
       };
-      
+
       this.conversationHistory.push(message);
       this.saveUserHistory();
-      
+
     } catch (e) {
       console.error('❌ 히스토리 추가 실패:', e);
     }
   }
-  
+
   clearUserHistory() {
     try {
       if (!this.currentUserId) return;
-      
+
       const key = `hairgator_history_${this.currentUserId}`;
       localStorage.removeItem(key);
       this.conversationHistory = [];
-      
+
       const messagesDiv = document.getElementById('chatbot-messages');
       if (messagesDiv) {
         const texts = this.getTexts();
@@ -210,16 +210,16 @@ class HairGatorChatbot {
           </div>
         `;
       }
-      
+
       console.log('🗑️ 히스토리 전체 삭제 완료');
-      
+
     } catch (e) {
       console.error('❌ 히스토리 삭제 실패:', e);
     }
   }
 
   // ==================== 다국어 텍스트 ====================
-  
+
   getTexts() {
     const texts = {
       ko: {
@@ -282,7 +282,7 @@ class HairGatorChatbot {
   }
 
   // ==================== UI 초기화 ====================
-  
+
   init() {
     this.createChatbotUI();
     this.attachEventListeners();
@@ -388,7 +388,7 @@ class HairGatorChatbot {
     `;
 
     document.body.insertAdjacentHTML('beforeend', chatbotHTML);
-    
+
     this.addModalScrollStyles();
   }
 
@@ -471,13 +471,27 @@ class HairGatorChatbot {
         background: rgba(255, 255, 255, 0.3) !important;
         border-radius: 3px !important;
       }
+      
+      /* 타이핑 인디케이터 애니메이션 */
+      .typing-indicator {
+        display: inline-block;
+        font-weight: bold;
+        color: #2196F3;
+        animation: typing 1.4s infinite ease-in-out both;
+      }
+      
+      @keyframes typing {
+        0% { opacity: 0.2; }
+        50% { opacity: 1; }
+        100% { opacity: 0.2; }
+      }
     `;
     document.head.appendChild(style);
     console.log('✅ 모달 스크롤 스타일 추가 완료');
   }
 
   // ==================== 이벤트 리스너 ====================
-  
+
   attachEventListeners() {
     document.getElementById('chatbot-toggle').addEventListener('click', () => {
       this.toggleChatbot();
@@ -507,13 +521,13 @@ class HairGatorChatbot {
 
     const languageBtn = document.getElementById('language-btn');
     const languageDropdown = document.getElementById('language-dropdown');
-    
+
     const toggleDropdown = (e) => {
       e.stopPropagation();
       e.preventDefault();
       languageDropdown.classList.toggle('hidden');
     };
-    
+
     languageBtn.addEventListener('click', toggleDropdown);
     languageBtn.addEventListener('touchstart', toggleDropdown, { passive: false });
 
@@ -536,12 +550,12 @@ class HairGatorChatbot {
     const closeDropdownOnOutside = (e) => {
       const dropdown = document.getElementById('language-dropdown');
       const langBtn = document.getElementById('language-btn');
-      
+
       if (dropdown && !dropdown.contains(e.target) && !langBtn.contains(e.target)) {
         dropdown.classList.add('hidden');
       }
     };
-    
+
     document.addEventListener('click', closeDropdownOnOutside);
   }
 
@@ -565,7 +579,7 @@ class HairGatorChatbot {
         if (!isKeyboardVisible) {
           isKeyboardVisible = true;
           chatbotContainer.style.height = `${currentViewportHeight}px`;
-          
+
           if (messagesDiv) {
             messagesDiv.style.maxHeight = `calc(${currentViewportHeight}px - 140px)`;
           }
@@ -581,7 +595,7 @@ class HairGatorChatbot {
         if (isKeyboardVisible) {
           isKeyboardVisible = false;
           chatbotContainer.style.height = '';
-          
+
           if (messagesDiv) {
             messagesDiv.style.maxHeight = '';
           }
@@ -618,13 +632,13 @@ class HairGatorChatbot {
   }
 
   // ==================== UI 상태 관리 ====================
-  
+
   toggleChatbot() {
     const container = document.getElementById('chatbot-container');
     const toggle = document.getElementById('chatbot-toggle');
-    
+
     this.isOpen = !this.isOpen;
-    
+
     if (this.isOpen) {
       container.classList.add('active');
       toggle.classList.add('hidden');
@@ -638,22 +652,22 @@ class HairGatorChatbot {
     this.currentLanguage = lang;
     this.core.currentLanguage = lang;
     this.setStoredLanguage(lang);
-    
+
     const texts = this.getTexts();
-    
+
     setTimeout(() => {
       const titleEl = document.getElementById('chatbot-title');
       if (titleEl) titleEl.textContent = texts.title;
-      
+
       const inputEl = document.getElementById('chatbot-input');
       if (inputEl) inputEl.placeholder = texts.placeholder;
-      
+
       const indexTitleEl = document.getElementById('index-modal-title');
       if (indexTitleEl) indexTitleEl.textContent = texts.indexTitle;
-      
+
       const welcomeTextEl = document.getElementById('welcome-text');
       if (welcomeTextEl) welcomeTextEl.textContent = texts.welcome;
-      
+
       const messagesDiv = document.getElementById('chatbot-messages');
       if (messagesDiv) {
         messagesDiv.innerHTML = `
@@ -663,14 +677,14 @@ class HairGatorChatbot {
           </div>
         `;
       }
-      
+
       this.conversationHistory = [];
       console.log(`✅ 언어 변경 완료: ${lang}`);
     }, 10);
   }
 
   // ==================== 이미지 업로드 핸들러 (성별 선택 통합) ====================
-  
+
   async handleImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -751,11 +765,11 @@ class HairGatorChatbot {
       this.addMessage('bot', texts.analyzing);
 
       const base64Image = await this.core.fileToBase64(this.pendingImage.file);
-      
+
       // ⭐ 성별 정보 포함하여 API 호출
       const analysisResult = await this.core.analyzeImage(
-        base64Image, 
-        this.pendingImage.file.type, 
+        base64Image,
+        this.pendingImage.file.type,
         gender  // ⭐⭐⭐ 핵심: 성별 전달
       );
 
@@ -861,17 +875,25 @@ class HairGatorChatbot {
   async handleTextMessage() {
     const input = document.getElementById('chatbot-input');
     const message = input.value.trim();
-    
+
     if (!message) return;
 
     this.addMessage('user', message);
     input.value = '';
 
-    this.addMessage('bot', '답변 생성 중...');
+    this.addMessage('bot', '<span class="typing-indicator">...</span>');
 
     try {
-      const response = await this.core.generateResponse(message, []);
-      this.replaceLastBotMessage(response);
+      const response = await this.core.generateResponse(message, [], (partialResponse) => {
+        // 스트리밍 업데이트
+        const rendered = this.core.parseMarkdownWithHighlight(partialResponse);
+        this.replaceLastBotMessage(rendered);
+      });
+
+      // 최종 완료 (혹시 누락된 업데이트 보장)
+      const finalRendered = this.core.parseMarkdownWithHighlight(response);
+      this.replaceLastBotMessage(finalRendered);
+
     } catch (error) {
       console.error('응답 생성 오류:', error);
       this.replaceLastBotMessage('답변 생성에 실패했습니다.');
@@ -890,9 +912,9 @@ class HairGatorChatbot {
 
       return `
         <div class="style-card">
-          ${hasValidImage ? 
-            `<img src="${imageUrl}" alt="${name}" loading="lazy">` : 
-            '<div style="height:300px;display:flex;align-items:center;justify-content:center;font-size:64px;">📄</div>'}
+          ${hasValidImage ?
+          `<img src="${imageUrl}" alt="${name}" loading="lazy">` :
+          '<div style="height:300px;display:flex;align-items:center;justify-content:center;font-size:64px;">📄</div>'}
           <div class="style-card-info">
             <h4>${name} ${similarity}</h4>
             ${code ? `<span class="style-code">${code}</span>` : ''}
@@ -902,7 +924,7 @@ class HairGatorChatbot {
     }).join('');
 
     this.addRawHTML(`<div class="style-cards-container">${cardsHTML}</div>`);
-    
+
     setTimeout(() => {
       this.scrollToBottom();
     }, 100);
@@ -916,7 +938,7 @@ class HairGatorChatbot {
       </div>
     `;
     messagesDiv.insertAdjacentHTML('beforeend', messageHTML);
-    
+
     this.attach89TermClickHandlers();
     this.addToHistory(sender, content);
     this.scrollToBottom();
@@ -982,7 +1004,7 @@ class HairGatorChatbot {
       const idNum = parseInt(id);
       if (lang === 'ko') return '';
       if (lang === 'en') return ' – 1';
-      
+
       if (idNum <= 2) {
         if (lang === 'ja') return ' – 3';
         if (lang === 'zh') return ' – 2';
@@ -1001,15 +1023,15 @@ class HairGatorChatbot {
     const galleryHTML = `
       <div class="term-gallery-single-column">
         ${Object.entries(this.core.terms89Map)
-          .sort(([idA], [idB]) => parseInt(idA) - parseInt(idB))
-          .map(([id, term]) => {
-            const termName = term.en;
-            const suffix = getFileSuffix(id, this.currentLanguage);
-            const fileName = `${id}. ${termName}${suffix}.png`;
-            const imageURL = baseURL + langFolder + '/' + encodeURIComponent(fileName);
-            const displayName = term[this.currentLanguage] || term.ko || term.en;
-            
-            return `
+        .sort(([idA], [idB]) => parseInt(idA) - parseInt(idB))
+        .map(([id, term]) => {
+          const termName = term.en;
+          const suffix = getFileSuffix(id, this.currentLanguage);
+          const fileName = `${id}. ${termName}${suffix}.png`;
+          const imageURL = baseURL + langFolder + '/' + encodeURIComponent(fileName);
+          const displayName = term[this.currentLanguage] || term.ko || term.en;
+
+          return `
               <div class="term-card-single" data-term-id="${id}" onclick="window.hairgatorChatbot.openImageViewer(${parseInt(id) - 1})">
                 <img 
                   src="${imageURL}" 
@@ -1022,7 +1044,7 @@ class HairGatorChatbot {
                 </div>
               </div>
             `;
-          }).join('')}
+        }).join('')}
       </div>
     `;
 
@@ -1036,7 +1058,7 @@ class HairGatorChatbot {
         const suffix = getFileSuffix(id, this.currentLanguage);
         const fileName = `${id}. ${termName}${suffix}.png`;
         const displayName = term[this.currentLanguage] || term.ko || term.en;
-        
+
         return {
           url: baseURL + langFolder + '/' + encodeURIComponent(fileName),
           title: `${id}. ${displayName}`
@@ -1138,37 +1160,37 @@ class HairGatorChatbot {
   reattachLanguageHandlers() {
     const self = this;
     const dropdown = document.getElementById('language-dropdown');
-    
+
     if (!dropdown) {
       console.warn('⚠️ 언어 드롭다운을 찾을 수 없음');
       return;
     }
-    
+
     let isProcessing = false;
-    
-    const handleLanguageChange = function(lang) {
+
+    const handleLanguageChange = function (lang) {
       if (isProcessing) {
         console.log('⏸️ 처리 중 - 스킵');
         return;
       }
-      
+
       isProcessing = true;
       console.log('🎯 언어 선택: ' + lang);
-      
+
       dropdown.classList.add('hidden');
-      
+
       self.currentLanguage = lang;
       self.core.currentLanguage = lang;
       self.setStoredLanguage(lang);
-      
+
       const texts = self.getTexts();
-      
+
       const title = document.getElementById('chatbot-title');
       if (title) title.textContent = texts.title;
-      
+
       const input = document.getElementById('chatbot-input');
       if (input) input.placeholder = texts.placeholder;
-      
+
       const msgs = document.getElementById('chatbot-messages');
       if (msgs) {
         if (self.conversationHistory && self.conversationHistory.length > 0) {
@@ -1177,14 +1199,14 @@ class HairGatorChatbot {
           msgs.innerHTML = '<div class="welcome-message"><div class="welcome-icon">👋</div><div class="welcome-text">' + texts.welcome + '</div></div>';
         }
       }
-      
+
       console.log('✅ 언어 변경 완료: ' + lang);
-      
-      setTimeout(function() {
+
+      setTimeout(function () {
         isProcessing = false;
       }, 300);
     };
-    
+
     const style = document.createElement('style');
     style.textContent = `
       .chatbot-container {
@@ -1228,31 +1250,31 @@ class HairGatorChatbot {
       }
     `;
     document.head.appendChild(style);
-    
-    dropdown.addEventListener('click', function(e) {
+
+    dropdown.addEventListener('click', function (e) {
       const langBtn = e.target.closest('.lang-option');
-      
+
       if (langBtn) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const lang = langBtn.getAttribute('data-lang');
         handleLanguageChange(lang);
       }
     }, true);
-    
-    dropdown.addEventListener('touchend', function(e) {
+
+    dropdown.addEventListener('touchend', function (e) {
       const langBtn = e.target.closest('.lang-option');
-      
+
       if (langBtn) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const lang = langBtn.getAttribute('data-lang');
         handleLanguageChange(lang);
       }
     }, true);
-    
+
     console.log('✅ HAIRGATOR 언어 선택 시스템 초기화 완료');
   }
 }
