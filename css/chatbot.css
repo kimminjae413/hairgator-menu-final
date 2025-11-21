@@ -13,7 +13,7 @@
   border: 2px solid var(--female-color);
   color: var(--female-color);
   cursor: pointer;
-  box-shadow: 
+  box-shadow:
     0 0 20px rgba(233, 30, 99, 0.3),
     0 4px 12px rgba(0, 0, 0, 0.5);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -45,7 +45,7 @@
 
 .chatbot-toggle:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 0 30px rgba(233, 30, 99, 0.5),
     0 8px 20px rgba(0, 0, 0, 0.6);
 }
@@ -69,21 +69,38 @@
   right: 32px;
   width: 420px;
   height: 650px;
-  background: var(--background);
+  background: rgba(20, 20, 20, 0.85);
+  /* 더 진한 배경 (다크모드 기본) */
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  box-shadow: 
-    0 0 40px rgba(0, 0, 0, 0.8),
-    inset 0 0 60px rgba(255, 255, 255, 0.02);
+  border-radius: 24px;
+  /* 더 둥글게 */
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  /* 내부 테두리 효과 */
   display: flex;
   flex-direction: column;
   opacity: 0;
   transform: translateY(20px) scale(0.95);
   pointer-events: none;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* 더 부드러운 애니메이션 */
   z-index: 9999;
   overflow: hidden;
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(25px);
+  /* 블러 효과 강화 */
+}
+
+/* 태블릿 최적화 (768px 이상) */
+@media (min-width: 768px) {
+  .chatbot-container {
+    width: 550px;
+    /* 너비 증가 */
+    height: 750px;
+    /* 높이 증가 */
+    bottom: 40px;
+    right: 40px;
+  }
 }
 
 .chatbot-container.active {
@@ -99,11 +116,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  background: linear-gradient(
-    135deg,
-    rgba(233, 30, 99, 0.1),
-    rgba(33, 150, 243, 0.1)
-  );
+  background: linear-gradient(135deg,
+      rgba(233, 30, 99, 0.1),
+      rgba(33, 150, 243, 0.1));
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   flex-shrink: 0;
@@ -122,13 +137,11 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--female-color),
-    var(--male-color),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      var(--female-color),
+      var(--male-color),
+      transparent);
 }
 
 .chatbot-title {
@@ -214,6 +227,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -302,6 +316,7 @@
     opacity: 0;
     transform: translateY(15px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -330,9 +345,70 @@
 }
 
 .user-message .message-content {
-  background: rgba(255, 255, 255, 0.25);
-  color: #000000;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  /* 프리미엄 그라데이션 */
+  color: #ffffff;
+  /* 흰색 텍스트 고정 */
+  border-radius: 18px 18px 4px 18px;
+  /* 말풍선 모양 개선 */
+  box-shadow: 0 4px 15px rgba(0, 242, 254, 0.2);
+  font-weight: 500;
+}
+
+/* 라이트 모드 대응 */
+body.light-theme .chatbot-container {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+
+body.light-theme .chatbot-header {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .chatbot-title {
+  color: #333;
+}
+
+body.light-theme .chatbot-messages {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+body.light-theme .bot-message .message-content {
+  background: #ffffff;
+  color: #333;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .user-message .message-content {
+  /* 라이트 모드에서도 사용자 메시지는 잘 보이게 유지 (그라데이션) */
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 120, 255, 0.2);
+}
+
+body.light-theme .chatbot-input-area {
+  background: rgba(255, 255, 255, 0.8);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme #chatbot-input {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+body.light-theme #chatbot-input::placeholder {
+  color: #999;
+}
+
+body.light-theme .upload-btn,
+body.light-theme .send-btn,
+body.light-theme .index-btn {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #666;
 }
 
 .message-content p {
@@ -468,26 +544,61 @@
 }
 
 /* 섹션별 색상 구분 */
-.style-description { border-left-color: #E91E63; }
-.style-description .section-number { background: #E91E63; }
+.style-description {
+  border-left-color: #E91E63;
+}
 
-.style-length { border-left-color: #9C27B0; }
-.style-length .section-number { background: #9C27B0; }
+.style-description .section-number {
+  background: #E91E63;
+}
 
-.style-form { border-left-color: #673AB7; }
-.style-form .section-number { background: #673AB7; }
+.style-length {
+  border-left-color: #9C27B0;
+}
 
-.fringe-length { border-left-color: #3F51B5; }
-.fringe-length .section-number { background: #3F51B5; }
+.style-length .section-number {
+  background: #9C27B0;
+}
 
-.base-cut { border-left-color: #2196F3; }
-.base-cut .section-number { background: #2196F3; }
+.style-form {
+  border-left-color: #673AB7;
+}
 
-.texturizing { border-left-color: #00BCD4; }
-.texturizing .section-number { background: #00BCD4; }
+.style-form .section-number {
+  background: #673AB7;
+}
 
-.styling { border-left-color: #009688; }
-.styling .section-number { background: #009688; }
+.fringe-length {
+  border-left-color: #3F51B5;
+}
+
+.fringe-length .section-number {
+  background: #3F51B5;
+}
+
+.base-cut {
+  border-left-color: #2196F3;
+}
+
+.base-cut .section-number {
+  background: #2196F3;
+}
+
+.texturizing {
+  border-left-color: #00BCD4;
+}
+
+.texturizing .section-number {
+  background: #00BCD4;
+}
+
+.styling {
+  border-left-color: #009688;
+}
+
+.styling .section-number {
+  background: #009688;
+}
 
 /* ==================== 🆕 89용어 하이라이팅 ==================== */
 
@@ -618,7 +729,7 @@
   border-radius: 8px;
   font-size: 0.9em;
   font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   box-shadow: 0 2px 6px rgba(250, 112, 154, 0.4);
   line-height: 1.4;
   cursor: help;
@@ -640,7 +751,7 @@
   border-radius: 8px;
   font-size: 0.9em;
   font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   box-shadow: 0 2px 6px rgba(251, 194, 235, 0.4);
   line-height: 1.4;
   cursor: help;
@@ -662,7 +773,7 @@
   border-radius: 8px;
   font-size: 0.9em;
   font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   box-shadow: 0 2px 6px rgba(168, 237, 234, 0.4);
   line-height: 1.4;
   cursor: help;
@@ -686,6 +797,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -703,8 +815,15 @@
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
 }
 
 /* ==================== 분석 결과 스타일 ==================== */
@@ -858,7 +977,7 @@
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .gender-option {
     width: 100%;
   }
@@ -872,7 +991,8 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;  /* 성별 선택과 버튼 사이 간격 */
+  gap: 16px;
+  /* 성별 선택과 버튼 사이 간격 */
 }
 
 .input-wrapper {
@@ -1053,8 +1173,7 @@
   padding: 20px;
 }
 
-  background: rgba(233, 30, 99, 0.6);
-}
+.index-content {
   flex: 1;
   overflow-y: auto;
   padding: 24px;
@@ -1325,6 +1444,7 @@
 /* ==================== 인쇄 스타일 (선택사항) ==================== */
 
 @media print {
+
   .chatbot-toggle,
   .chatbot-close,
   .chatbot-input-area,
@@ -1362,7 +1482,8 @@
     background: #f0f0f0 !important;
     color: #000 !important;
   }
-}}
+}
+}
 
 /* ============================================================
    89용어 이미지 갤러리 추가 스타일
@@ -1420,6 +1541,7 @@
   flex: 1;
   min-width: 0;
 }
+
 .term-info {
   padding: 12px;
   display: flex;
@@ -1480,6 +1602,7 @@
     transform: scale(0.9);
     opacity: 0;
   }
+
   to {
     transform: scale(1);
     opacity: 1;
@@ -1491,7 +1614,7 @@
   max-height: 75vh;
   object-fit: contain;
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   user-select: none;
   -webkit-user-drag: none;
 }
@@ -1600,31 +1723,31 @@
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 12px;
   }
-  
+
   .term-card img {
     height: 120px;
   }
-  
+
   .image-viewer-modal .viewer-prev,
   .image-viewer-modal .viewer-next {
     font-size: 28px;
     padding: 8px 12px;
   }
-  
+
   .viewer-close {
     font-size: 32px;
     top: 10px;
     right: 10px;
   }
-  
+
   .viewer-info-box {
     padding: 12px 20px;
   }
-  
+
   .viewer-number {
     font-size: 20px;
   }
-  
+
   .viewer-name {
     font-size: 16px;
   }
@@ -1636,19 +1759,20 @@
     gap: 8px;
     padding: 8px;
   }
-  
+
   .term-card img {
     height: 100px;
   }
-  
+
   .term-info {
     padding: 8px;
   }
-  
+
   .viewer-content img {
     max-height: 60vh;
   }
 }
+
 /* ============================================================
    89용어 갤러리 모바일 반응형 (1열 배치용)
    ============================================================ */
@@ -1717,6 +1841,7 @@
 .term-gallery-single-column::-webkit-scrollbar-thumb:hover {
   background: rgba(233, 30, 99, 0.5);
 }
+
 /* ==================== 89용어 클릭 가능 스타일 ==================== */
 
 .term-89.clickable {
@@ -1754,9 +1879,12 @@
 
 /* 클릭 효과 애니메이션 */
 @keyframes termPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7);
   }
+
   50% {
     box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
   }
@@ -1768,12 +1896,12 @@
   .term-89.clickable {
     padding: 2px 4px;
   }
-  
+
   .term-89.clickable:active {
     background: rgba(102, 126, 234, 0.15);
     border-radius: 4px;
   }
-  
+
   .term-ref {
     font-size: 0.7em;
   }
