@@ -146,7 +146,7 @@
     Referrer-Policy = "no-referrer-when-downgrade"
     Permissions-Policy = "camera=(self), microphone=(self), geolocation=()"
     # 헤어체험 + 챗봇 + MediaPipe 통신을 위한 CSP 설정
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://*.googleapis.com https://www.gstatic.com https://*.supabase.co https://*.firebaseio.com https://lovely-lebkuchen-4017ca.netlify.app;"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://*.googleapis.com https://www.gstatic.com https://*.supabase.co https://*.firebaseio.com https://lovely-lebkuchen-4017ca.netlify.app https://cdn.jsdelivr.net;"
 
 # ========== SPA 라우팅 ==========
 [[redirects]]
@@ -199,9 +199,9 @@
 # 4. SUPABASE_ANON_KEY
 #    값: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3M...
 #    용도: Supabase 인증
-
-# ========== 타임아웃 설정 히스토리 ==========
-# 2025-01-25: 기본 10초 → 26초로 연장
-# - 원인: GPT 레시피 생성 시 HTTP 504 타임아웃 발생
-# - 해결: 무료 플랜 최대값 26초로 설정
-# - 효과: 복잡한 레시피 생성도 안정적으로 처리
+#
+# 203: # ========== 타임아웃 설정 히스토리 ==========
+# 204: # 2025-01-25: 기본 10초 → 26초로 연장
+# 205: # - 원인: GPT 레시피 생성 시 HTTP 504 타임아웃 발생
+# 206: # - 해결: 무료 플랜 최대값 26초로 설정
+# 207: # - 효과: 복잡한 레시피 생성도 안정적으로 처리
