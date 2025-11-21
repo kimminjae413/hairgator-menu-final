@@ -294,23 +294,25 @@ class ChatbotCore {
   }
 
   /**
-   * 텍스트 응답 생성 API 호출
+   * 텍스트 응답 생성 API 호출 (스트리밍 지원)
    * @param {string} query - 사용자 질문
    * @param {Array} searchResults - 검색 결과 (선택)
+   * @param {Function} onProgress - 스트리밍 진행 콜백
    * @returns {Promise<string>} 생성된 응답
    */
-  async generateResponse(query, searchResults = []) {
+  async generateResponse(query, searchResults = [], onProgress = null) {
     try {
-      console.log('💬 응답 생성 요청:', query);
+      console.log('💬 응답 생성 요청 (스트리밍):', query);
 
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'generate_response',
+          action: 'generate_response_stream', // 스트리밍 액션으로 변경
           payload: {
             user_query: query,
-            search_results: searchResults
+            search_results: searchResults,
+            language: this.currentLanguage
           }
         })
       });
@@ -319,14 +321,59 @@ class ChatbotCore {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const result = await response.json();
+      // 스트리밍 응답 처리
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = '';
+      let buffer = '';
 
-      if (!result.success) {
-        throw new Error(result.error || '응답 생성 실패');
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          console.log('✅ 응답 스트리밍 완료');
+          break;
+        }
+
+        const chunk = decoder.decode(value, { stream: true });
+        buffer += chunk;
+
+        // 완전한 JSON 객체를 찾아서 파싱
+        let newlineIndex;
+        while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+          const line = buffer.slice(0, newlineIndex).trim();
+          buffer = buffer.slice(newlineIndex + 1);
+
+          if (line.startsWith('data: ')) {
+            const jsonStr = line.slice(6); // 'data: ' 제거
+            
+            if (jsonStr === '[DONE]') {
+              console.log('✅ 스트리밍 종료 신호 수신');
+              break;
+            }
+
+            try {
+              const data = JSON.parse(jsonStr);
+              
+              if (data.type === 'content') {
+                fullResponse += data.content;
+                
+                // 진행 상황 콜백 호출
+                if (onProgress && typeof onProgress === 'function') {
+                  onProgress(fullResponse);
+                }
+              } else if (data.type === 'error') {
+                throw new Error(data.error || '응답 생성 중 오류 발생');
+              }
+            } catch (parseError) {
+              console.warn('⚠️ JSON 파싱 실패:', parseError, 'Line:', jsonStr);
+            }
+          }
+        }
       }
 
-      console.log('📥 응답 생성 완료');
-      return result.data;
+      console.log('📥 응답 생성 완료 (길이: ' + fullResponse.length + ')');
+      return fullResponse;
 
     } catch (error) {
       console.error('❌ 응답 생성 오류:', error);
