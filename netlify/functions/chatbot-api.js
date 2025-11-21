@@ -371,7 +371,7 @@ exports.handler = async (event, context) => {
       case 'generate_response':
         return await generateProfessionalResponse(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
 
-      // ⭐⭐⭐ NEW: 스트리밍 응답 추가 ⭐⭐⭐
+      // ⭐⭐⭐ NEW: 스트리밍 응답 ⭐⭐⭐
       case 'generate_response_stream':
         return await generateProfessionalResponseStream(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
 
@@ -1388,7 +1388,6 @@ function detectLanguage(text) {
   return 'english';
 }
 
-
 async function searchStyles(payload, geminiKey, supabaseUrl, supabaseKey) {
   const { query } = payload;
 
@@ -1402,92 +1401,29 @@ async function searchStyles(payload, geminiKey, supabaseUrl, supabaseKey) {
   };
 }
 
-// ==================== 스트리밍 응답 생성 ====================
+// ==================== 스트리밍 응답 생성 (Node.js 호환) ====================
 async function generateProfessionalResponseStream(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
-  const { user_query, search_results } = payload;
+  const { user_query } = payload;
+  console.log('🔄 스트리밍 응답 시작:', user_query);
+
   const userLanguage = detectLanguage(user_query);
 
-  // 쿼리 정규화
-  let normalizedQuery = user_query
-    .replace(/A\s*렝스|A\s*랭스|에이\s*렝스|에이\s*랭스|A\s*기장/gi, 'A Length')
-    .replace(/B\s*렝스|B\s*랭스|비\s*렝스|비\s*랭스|B\s*기장/gi, 'B Length')
-    .replace(/C\s*렝스|C\s*랭스|씨\s*렝스|씨\s*랭스|C\s*기장/gi, 'C Length')
-    .replace(/D\s*렝스|D\s*랭스|디\s*렝스|디\s*랭스|D\s*기장/gi, 'D Length')
-    .replace(/E\s*렝스|E\s*랭스|이\s*렝스|이\s*랭스|E\s*기장/gi, 'E Length')
-    .replace(/F\s*렝스|F\s*랭스|에프\s*렝스|에프\s*랭스|F\s*기장/gi, 'F Length')
-    .replace(/G\s*렝스|G\s*랭스|지\s*렝스|지\s*랭스|G\s*기장/gi, 'G Length')
-    .replace(/H\s*렝스|H\s*랭스|에이치\s*렝스|에이치\s*랭스|H\s*기장/gi, 'H Length')
-    .replace(/레이어|layer/gi, 'Layer')
-    .replace(/그래쥬에이션|그라데이션|graduation/gi, 'Graduation');
-
   // 간단한 인사말 처리
-  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워', '여보세요'];
-  const isSimpleGreeting = simpleGreetings.some(g => {
-    const query = user_query.toLowerCase().trim();
-    return query === g || query === g + '하세요' || query === g + '!' || query === g + '?';
-  }) && user_query.length < 15;
+  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이'];
+  const isGreeting = simpleGreetings.some(g => user_query.toLowerCase().trim().includes(g)) && user_query.length < 15;
 
-  if (isSimpleGreeting) {
-    const greetingResponses = {
-      korean: '안녕하세요! 헤어스타일에 대해 무엇이든 물어보세요. 😊',
-      english: 'Hello! Feel free to ask anything about hairstyles. 😊',
-      japanese: 'こんにちは！ヘアスタイルについて何でも聞いてください。😊',
-      chinese: '你好！请随便问关于发型的问题。😊',
-      vietnamese: 'Xin chào! Hỏi gì về kiểu tóc cũng được. 😊'
-    };
-    const msg = greetingResponses[userLanguage] || greetingResponses['korean'];
+  if (isGreeting) {
+    const msg = '안녕하세요! 헤어스타일에 대해 무엇이든 물어보세요. 😊';
     return {
       statusCode: 200,
       headers: { ...headers, 'Content-Type': 'text/event-stream' },
       body: `data: ${JSON.stringify({ type: 'content', content: msg })}\n\ndata: [DONE]\n\n`
     };
-  }
-
-  // 보안 키워드 체크
-  const securityKeywords = [
-    '42포뮬러', '42개 포뮬러', '42 formula',
-    '9매트릭스', '9개 매트릭스', '9 matrix',
-    'DBS NO', 'DFS NO', 'VS NO', 'HS NO',
-    '42층', '7개 섹션', '7 section'
-  ];
-  const isSecurityQuery = securityKeywords.some(keyword =>
-    user_query.toLowerCase().includes(keyword.toLowerCase())
-  );
-
-  if (isSecurityQuery) {
-    const securityResponse = {
-      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.',
-      english: 'I apologize, but that information is proprietary.',
-      japanese: '申し訳ございませんが、その情報は企業秘密です。',
-      chinese: '抱歉，该信息属于核心商业机密。',
-      vietnamese: 'Xin lỗi, thông tin đó là bí mật kinh doanh.'
-    };
-    const msg = securityResponse[userLanguage] || securityResponse['korean'];
-    return {
-      statusCode: 200,
-      headers: { ...headers, 'Content-Type': 'text/event-stream' },
-      body: `data: ${JSON.stringify({ type: 'content', content: msg })}\n\ndata: [DONE]\n\n`
-    };
-  }
-
-  // theory_chunks 검색
-  const theoryChunks = await searchTheoryChunks(normalizedQuery, geminiKey, supabaseUrl, supabaseKey, 10);
-
-  // 시스템 프롬프트 빌드
-  let systemPrompt;
-  if (theoryChunks.length > 0) {
-    const theoryContext = theoryChunks.map((chunk, idx) => {
-      const title = chunk.section_title || '';
-      const content = (chunk.content_ko || chunk.content || '').substring(0, 500);
-      return `【참고자료 ${idx + 1}】${title}\n${content}`;
-    }).join('\n\n');
-    systemPrompt = buildTheoryBasedPrompt(normalizedQuery, theoryContext, userLanguage);
-  } else {
-    systemPrompt = buildGeneralPrompt(normalizedQuery, userLanguage);
   }
 
   try {
-    // OpenAI 스트리밍 호출
+    const systemPrompt = 'You are a professional hair stylist. Answer questions concisely in Korean within 200 characters.';
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -1510,25 +1446,23 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
       throw new Error(`OpenAI API Error: ${response.status}`);
     }
 
-    // 스트리밍 응답 처리
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
+    // ✅ Node.js 스트림 처리 (for await...of 사용)
     let sseBuffer = '';
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
+    for await (const chunk of response.body) {
+      const text = chunk.toString('utf-8');
+      const lines = text.split('\n');
 
       for (const line of lines) {
         if (line.startsWith('data: ') && line !== 'data: [DONE]') {
           try {
-            const data = JSON.parse(line.slice(6));
-            const content = data.choices[0]?.delta?.content || '';
-            if (content) {
-              sseBuffer += `data: ${JSON.stringify({ type: 'content', content: content })}\n\n`;
+            const jsonData = line.slice(6);
+            if (jsonData.trim()) {
+              const data = JSON.parse(jsonData);
+              const content = data.choices?.[0]?.delta?.content || '';
+              if (content) {
+                sseBuffer += `data: ${JSON.stringify({ type: 'content', content })}\n\n`;
+              }
             }
           } catch (e) {
             // JSON 파싱 실패는 무시
@@ -1551,9 +1485,8 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
     };
 
   } catch (error) {
-    console.error('💥 GPT 스트리밍 호출 실패:', error);
+    console.error('💥 스트리밍 오류:', error);
     console.error('💥 에러 상세:', error.message);
-    console.error('💥 에러 스택:', error.stack);
     const errorMsg = `답변 생성 중 오류가 발생했습니다. (${error.message})`;
     return {
       statusCode: 200,
@@ -1561,26 +1494,4 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
       body: `data: ${JSON.stringify({ type: 'error', error: errorMsg })}\n\ndata: [DONE]\n\n`
     };
   }
-}
-
-function buildTheoryBasedPrompt(query, theoryContext, language) {
-  const prompts = {
-    korean: `당신은 전문 헤어 디자이너입니다. 다음 전문 이론을 바탕으로 질문에 답변하세요.\n\n【전문 이론 자료】\n${theoryContext}\n\n위 자료를 참고하여 사용자의 질문에 전문적이고 정확하게 답변하세요. 300자 이내로 간결하게 작성하세요.`,
-    english: `You are a professional hair designer. Answer based on the following theory.\n\n【Theory】\n${theoryContext}\n\nProvide a professional answer within 150 words.`,
-    japanese: `あなたはプロのヘアデザイナーです。次の理論に基づいて答えてください。\n\n【理論】\n${theoryContext}\n\n150文字以内で簡潔に答えてください。`,
-    chinese: `你是专业的发型设计师。基于以下理论回答问题。\n\n【理论】\n${theoryContext}\n\n请在150字以内简洁回答。`,
-    vietnamese: `Bạn là nhà thiết kế tóc chuyên nghiệp. Trả lời dựa trên lý thuyết sau.\n\n【Lý thuyết】\n${theoryContext}\n\nTrả lời trong 150 từ.`
-  };
-  return prompts[language] || prompts['korean'];
-}
-
-function buildGeneralPrompt(query, language) {
-  const prompts = {
-    korean: `당신은 친절한 헤어 스타일 상담 전문가입니다. 사용자의 질문에 대해 일반적인 헤어스타일 조언을 제공하세요. 200자 이내로 간결하게 답변하세요.`,
-    english: `You are a friendly hair styling consultant. Provide general hair advice within 100 words.`,
-    japanese: `あなたは親切なヘアスタイルコンサルタントです。一般的なアドバイスを100文字以内で提供してください。`,
-    chinese: `你是友好的发型顾问。在100字内提供一般建议。`,
-    vietnamese: `Bạn là cố vấn kiểu tóc thân thiện. Cung cấp lời khuyên trong 100 từ.`
-  };
-  return prompts[language] || prompts['korean'];
 }
