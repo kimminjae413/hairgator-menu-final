@@ -223,10 +223,10 @@ class HairGatorChatbot {
   getTexts() {
     const texts = {
       ko: {
-        title: '✂️ AI 커트 레시피',
+        title: '🤖 HAIRGATOR AI',
         welcome: '헤어스타일 이미지를 업로드하거나 질문해주세요',
         analyzing: '📊 이미지 분석 중...',
-        generating: '✂️ 커트 레시피 생성 중...',
+        generating: '🤖 답변 생성 중...',
         placeholder: '헤어스타일 검색...',
         indexTitle: '📑 색인',
         errorSize: '⚠️ 이미지 크기는 5MB 이하여야 합니다.',
@@ -234,10 +234,10 @@ class HairGatorChatbot {
         selectGender: '성별을 선택해주세요'
       },
       en: {
-        title: '✂️ AI Cut Recipe',
+        title: '🤖 HAIRGATOR AI',
         welcome: 'Upload a hairstyle image or ask a question',
         analyzing: '📊 Analyzing image...',
-        generating: '✂️ Generating cut recipe...',
+        generating: '🤖 Generating response...',
         placeholder: 'Search hairstyle...',
         indexTitle: '📑 Index',
         errorSize: '⚠️ Image size must be under 5MB.',
@@ -245,10 +245,10 @@ class HairGatorChatbot {
         selectGender: 'Please select gender'
       },
       ja: {
-        title: '✂️ AIカットレシピ',
+        title: '🤖 HAIRGATOR AI',
         welcome: 'ヘアスタイル画像をアップロードするか質問してください',
         analyzing: '📊 画像分析中...',
-        generating: '✂️ カットレシピ生成中...',
+        generating: '🤖 生成中...',
         placeholder: 'ヘアスタイル検索...',
         indexTitle: '📑 索引',
         errorSize: '⚠️ 画像サイズは5MB以下である必要があります。',
@@ -256,10 +256,10 @@ class HairGatorChatbot {
         selectGender: '性別を選択してください'
       },
       zh: {
-        title: '✂️ AI剪发配方',
+        title: '🤖 HAIRGATOR AI',
         welcome: '上传发型图片或提问',
         analyzing: '📊 正在分析图片...',
-        generating: '✂️ 正在生成剪发配方...',
+        generating: '🤖 正在生成...',
         placeholder: '搜索发型...',
         indexTitle: '📑 索引',
         errorSize: '⚠️ 图片大小必须小于5MB。',
@@ -267,10 +267,10 @@ class HairGatorChatbot {
         selectGender: '请选择性别'
       },
       vi: {
-        title: '✂️ Công Thức Cắt Tóc AI',
+        title: '🤖 HAIRGATOR AI',
         welcome: 'Tải lên hình ảnh kiểu tóc hoặc đặt câu hỏi',
         analyzing: '📊 Đang phân tích hình ảnh...',
-        generating: '✂️ Đang tạo công thức cắt...',
+        generating: '🤖 Đang tạo...',
         placeholder: 'Tìm kiếm kiểu tóc...',
         indexTitle: '📑 Mục lục',
         errorSize: '⚠️ Kích thước hình ảnh phải dưới 5MB.',
