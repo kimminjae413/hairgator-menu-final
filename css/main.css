@@ -699,57 +699,6 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 
 .sub-tab.disabled {
     opacity: 0.3;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-/* 스타일 그리드 - 태블릿 문제 해결 */
-.styles-container,
-.menu-items-container {
-    position: absolute;
-    /* 새로운 높이 계산: 헤더(50px) + 고정영역(약 260px) = 310px 정도. 여유 10px */
-    top: 320px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 10px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    background: var(--primary-dark);
-}
-
-body.light-theme .styles-container,
-body.light-theme .menu-items-container {
-    background: #ffffff;
-}
-
-.styles-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 15px;
-    padding-top: 10px;
-}
-
-/* 모바일 전용 스타일 */
-@media (max-width: 767px) {
-
-    .styles-container,
-    .menu-items-container {
-        top: 300px;
-        padding: 15px;
-    }
-
-    .styles-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        padding-top: 65px;
-    }
-}
-
-.category-description {
-    padding: 15px;
-    min-height: 60px;
 }
 
 .category-description-text {
