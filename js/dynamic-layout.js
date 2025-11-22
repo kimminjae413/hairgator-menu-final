@@ -11,8 +11,8 @@
         const width = window.innerWidth;
         
         if (width < 768) return 'mobile';
-        if (width >= 768 && width <= 1024) return 'tablet';
-        return 'desktop';
+        // 768px 이상은 모두 태블릿 레이아웃 적용 (고해상도 태블릿/데스크탑 포함)
+        return 'tablet';
     };
     
     // Pull-to-refresh 차단 (태블릿용)
