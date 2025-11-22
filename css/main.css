@@ -717,7 +717,8 @@ body.light-theme .menu-items-container {
 }
 
 /* 태블릿 전용 미디어 쿼리 - 정석적 CSS-first 해결책 */
-@media (min-width: 768px) and (max-width: 1024px) {
+/* 태블릿 전용 미디어 쿼리 - 정석적 CSS-first 해결책 */
+@media (min-width: 768px) {
     /* 태블릿 레이아웃 기본 설정 */
     body.tablet-layout {
         overflow: hidden;
