@@ -3,7 +3,7 @@
   "short_name": "HAIRGATOR",
   "description": "Professional Hair Style Menu System",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "any",
   "scope": "/",
   "background_color": "#000000",
