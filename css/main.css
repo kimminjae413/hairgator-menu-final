@@ -10,6 +10,13 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    /* 스크롤 방지 (앱처럼 동작) */
+}
+
 /* ========== CSS 변수 시스템 (다크/라이트 테마) ========== */
 :root {
     --primary-dark: #000000;
@@ -58,10 +65,8 @@ body.light-theme {
     --ai-gradient-start: #E91E63;
     --ai-gradient-end: #AD1457;
     --ai-text: #000000;
-    --ai-overlay: rgba(255, 255, 255, 0.95);
-    --ai-modal-bg: #ffffff;
-    --ai-button-hover: #c2185b;
-    --ai-shadow: rgba(233, 30, 99, 0.2);
+    font-size: 24px;
+    transition: color 0.3s ease;
 }
 
 body {
@@ -69,6 +74,36 @@ body {
     background: var(--primary-dark);
     color: var(--text-primary);
     overflow-x: hidden;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    user-select: none;
+    -webkit-user-select: none;
+    line-height: 1.4;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 헤더 */
+.header {
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(50px + env(safe-area-inset-top));
+    background: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    padding-top: env(safe-area-inset-top);
+    margin-top: 0;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+}
+
+.back-btn {
+    position: absolute;
+    left: 15px;
     width: 30px;
     height: 30px;
     background: none;
@@ -717,7 +752,7 @@ body.light-theme .menu-items-container {
 .category-description-text {
     font-size: 13px;
 }
-}
+
 
 /* ========== 스타일 카드 (텍스트 정보 표시) ========== */
 .style-card {
@@ -1428,30 +1463,6 @@ body.light-theme .loading-spinner {
     }
 }
 
-/* 토스트 메시지 완전 제거 */
-.toast {
-    display: none !important;
-}
-
-/* 스타일 상세 모달 */
-.style-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 5000;
-    padding: 20px;
-    transition: background-color 0.3s ease;
-}
-
-body.light-theme .style-modal {
-    background: rgba(255, 255, 255, 0.95);
-}
 
 .style-modal.active {
     display: flex;
@@ -1823,305 +1834,278 @@ body.light-theme .modal-action-btn.secondary:hover {
     }
 }
 
-/* 헤어체험 버튼 보이게 하기 */
-.ai-experience-modal-btn {
-    background: linear-gradient(135deg, var(--female-color), #c2185b) !important;
-    color: white !important;
-    opacity: 1 !important;
+
+.gender-btn {
+    width: 140px;
+    height: 200px;
+}
+
+.login-modal {
+    margin: 0 10px;
+    padding: 20px;
+}
+
+.style-modal-content {
+    max-width: 95%;
+}
+
+.style-modal-info {
+    padding: 20px;
+}
+
+.style-modal-name {
+    font-size: 20px;
+}
+
+.style-modal-actions {
+    flex-direction: column;
+}
+}
+
+/* ========== 스타일명 숨기기 ========== */
+.style-modal .style-name,
+#styleModal .style-name,
+#styleModalName {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+
+/* ========== 썸네일 갤러리 완전 제거 (최종) ========== */
+.thumbnail-gallery,
+.thumbnail-container,
+.thumbnail-item,
+.thumbnail-btn,
+.thumbnail-toggle,
+.gallery-btn,
+.gallery-icon,
+.gallery-toggle,
+.media-info,
+.media-summary,
+button[onclick*="thumbnail"],
+button[title*="썸네일"],
+button[title*="갤러리"],
+button[class*="thumbnail"],
+div[class*="thumbnail"],
+span[class*="thumbnail"],
+[class*="thumbnail-"],
+[id*="thumbnail"],
+.media-viewer .thumbnail-gallery,
+.style-modal .thumbnail-gallery,
+#styleModal .thumbnail-gallery {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+    overflow: hidden !important;
+}
+
+/* 전체화면 버튼은 유지 */
+.fullscreen-btn,
+button.fullscreen-btn,
+.fullscreen-modal {
+    display: flex !important;
     visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: auto !important;
 
-    /* 반응형 */
-    @media (max-width: 768px) {
-        .gender-selection {
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .gender-btn {
-            width: 140px;
-            height: 200px;
-        }
-
-        .login-modal {
-            margin: 0 10px;
-            padding: 20px;
-        }
-
-        .style-modal-content {
-            max-width: 95%;
-        }
-
-        .style-modal-info {
-            padding: 20px;
-        }
-
-        .style-modal-name {
-            font-size: 20px;
-        }
-
-        .style-modal-actions {
-            flex-direction: column;
-        }
+    body {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
-    /* ========== 스타일명 숨기기 ========== */
-    .style-modal .style-name,
-    #styleModal .style-name,
-    #styleModalName {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
+    .category-tab:active {
+        opacity: 0.7;
+        transform: scale(0.96);
+        transition: all 0.1s ease;
     }
 
-
-    /* ========== 썸네일 갤러리 완전 제거 (최종) ========== */
-    .thumbnail-gallery,
-    .thumbnail-container,
-    .thumbnail-item,
-    .thumbnail-btn,
-    .thumbnail-toggle,
-    .gallery-btn,
-    .gallery-icon,
-    .gallery-toggle,
-    .media-info,
-    .media-summary,
-    button[onclick*="thumbnail"],
-    button[title*="썸네일"],
-    button[title*="갤러리"],
-    button[class*="thumbnail"],
-    div[class*="thumbnail"],
-    span[class*="thumbnail"],
-    [class*="thumbnail-"],
-    [id*="thumbnail"],
-    .media-viewer .thumbnail-gallery,
-    .style-modal .thumbnail-gallery,
-    #styleModal .thumbnail-gallery {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        width: 0 !important;
-        height: 0 !important;
-        position: absolute !important;
-        left: -9999px !important;
-        top: -9999px !important;
-        pointer-events: none !important;
-        z-index: -1 !important;
-        overflow: hidden !important;
+    /* 사이드바 메뉴 아이템 터치 개선 */
+    .sidebar-menu-item {
+        min-height: 70px;
+        padding: 25px 30px;
+        -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
+        position: relative;
+        z-index: 100;
     }
 
-    /* 전체화면 버튼은 유지 */
-    .fullscreen-btn,
-    button.fullscreen-btn,
-    .fullscreen-modal {
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        position: relative !important;
-        z-index: auto !important;
+    .sidebar-menu-item:active {
+        background: var(--ai-bg-primary) !important;
+        transform: translateX(3px);
+        transition: all 0.1s ease;
+    }
+}
 
-        body {
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .category-tab:active {
-            opacity: 0.7;
-            transform: scale(0.96);
-            transition: all 0.1s ease;
-        }
-
-        /* 사이드바 메뉴 아이템 터치 개선 */
-        .sidebar-menu-item {
-            min-height: 70px;
-            padding: 25px 30px;
-            -webkit-tap-highlight-color: rgba(233, 30, 99, 0.3);
-            position: relative;
-            z-index: 100;
-        }
-
-        .sidebar-menu-item:active {
-            background: var(--ai-bg-primary) !important;
-            transform: translateX(3px);
-            transition: all 0.1s ease;
-        }
+/* 모바일 최적화 */
+@media (max-width: 767px) {
+    .ai-experience-btn {
+        padding: 8px 14px;
+        font-size: 12px;
     }
 
-    /* 모바일 최적화 */
-    @media (max-width: 767px) {
-        .ai-experience-btn {
-            padding: 8px 14px;
-            font-size: 12px;
-        }
-
-        .ai-modal-content {
-            margin: 10px;
-            max-width: calc(100% - 20px);
-        }
-
-        .personal-color-content {
-            width: 98%;
-            height: 98%;
-            border-radius: 15px;
-        }
-
-        .personal-color-header {
-            padding: 15px 20px;
-        }
-
-        .personal-color-header h2 {
-            font-size: 20px;
-        }
-
-        .sidebar-menu-item {
-            padding: 12px 15px;
-        }
-
-        .sidebar-title {
-            font-size: 14px;
-        }
-
-        .sidebar-subtitle {
-            font-size: 11px;
-        }
+    .ai-modal-content {
+        margin: 10px;
+        max-width: calc(100% - 20px);
     }
 
-    /* 반응형 */
-    @media (max-width: 768px) {
-        .gender-selection {
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .gender-btn {
-            width: 140px;
-            height: 200px;
-        }
-
-        .login-modal {
-            margin: 0 10px;
-            padding: 20px;
-        }
-
-        .style-modal-content {
-            max-width: 95%;
-        }
-
-        .style-modal-info {
-            padding: 20px;
-        }
-
-        .style-modal-name {
-            font-size: 20px;
-        }
-
-        .style-modal-actions {
-            flex-direction: column;
-        }
+    .personal-color-content {
+        width: 98%;
+        height: 98%;
+        border-radius: 15px;
     }
 
-    /* 헤어체험 버튼 보이게 하기 */
-    .ai-experience-modal-btn {
-        background: linear-gradient(135deg, var(--female-color), #c2185b) !important;
-        color: white !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-
-        /* 반응형 */
-        @media (max-width: 768px) {
-            .gender-selection {
-                flex-direction: column;
-                gap: 30px;
-            }
-
-            .gender-btn {
-                width: 140px;
-                height: 200px;
-            }
-
-            .login-modal {
-                margin: 0 10px;
-                padding: 20px;
-            }
-
-            .style-modal-content {
-                max-width: 95%;
-            }
-
-            .style-modal-info {
-                padding: 20px;
-            }
-
-            .style-modal-name {
-                font-size: 20px;
-            }
-
-            .style-modal-actions {
-                flex-direction: column;
-            }
-        }
-
-        /* ========== 스타일명 숨기기 ========== */
-        .style-modal .style-name,
-        #styleModal .style-name,
-        #styleModalName {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-        }
-
-
-        /* ========== 썸네일 갤러리 완전 제거 (최종) ========== */
-        .thumbnail-gallery,
-        .thumbnail-container,
-        .thumbnail-item,
-        .thumbnail-btn,
-        .thumbnail-toggle,
-        .gallery-btn,
-        .gallery-icon,
-        .gallery-toggle,
-        .media-info,
-        .media-summary,
-        button[onclick*="thumbnail"],
-        button[title*="썸네일"],
-        button[title*="갤러리"],
-        button[class*="thumbnail"],
-        div[class*="thumbnail"],
-        span[class*="thumbnail"],
-        [class*="thumbnail-"],
-        [id*="thumbnail"],
-        .media-viewer .thumbnail-gallery,
-        .style-modal .thumbnail-gallery,
-        #styleModal .thumbnail-gallery {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            width: 0 !important;
-            height: 0 !important;
-            position: absolute !important;
-            left: -9999px !important;
-            top: -9999px !important;
-            pointer-events: none !important;
-            z-index: -1 !important;
-            overflow: hidden !important;
-        }
-
-        /* 전체화면 버튼은 유지 */
-        .fullscreen-btn,
-        button.fullscreen-btn,
-        .fullscreen-modal {
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            position: relative !important;
-            z-index: auto !important;
-        }
-
-        /* ========== 전체화면 버튼 숨김 (왼쪽 하단 아이콘 제거) ========== */
-        .fullscreen-btn,
-        button.fullscreen-btn,
-        .image-display .fullscreen-btn {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-        }
+    .personal-color-header {
+        padding: 15px 20px;
     }
+
+    .personal-color-header h2 {
+        font-size: 20px;
+    }
+
+    .sidebar-menu-item {
+        padding: 12px 15px;
+    }
+
+    .sidebar-title {
+        font-size: 14px;
+    }
+
+    .sidebar-subtitle {
+        font-size: 11px;
+    }
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .gender-selection {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .gender-btn {
+        width: 140px;
+        height: 200px;
+    }
+
+    .login-modal {
+        margin: 0 10px;
+        padding: 20px;
+    }
+
+    .style-modal-content {
+        max-width: 95%;
+    }
+
+    .style-modal-info {
+        padding: 20px;
+    }
+
+    .style-modal-name {
+        font-size: 20px;
+    }
+
+    .style-modal-actions {
+        flex-direction: column;
+    }
+}
+
+.gender-btn {
+    width: 140px;
+    height: 200px;
+}
+
+.login-modal {
+    margin: 0 10px;
+    padding: 20px;
+}
+
+.style-modal-content {
+    max-width: 95%;
+}
+
+.style-modal-info {
+    padding: 20px;
+}
+
+.style-modal-name {
+    font-size: 20px;
+}
+
+.style-modal-actions {
+    flex-direction: column;
+}
+}
+
+/* ========== 스타일명 숨기기 ========== */
+.style-modal .style-name,
+#styleModal .style-name,
+#styleModalName {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+
+/* ========== 썸네일 갤러리 완전 제거 (최종) ========== */
+.thumbnail-gallery,
+.thumbnail-container,
+.thumbnail-item,
+.thumbnail-btn,
+.thumbnail-toggle,
+.gallery-btn,
+.gallery-icon,
+.gallery-toggle,
+.media-info,
+.media-summary,
+button[onclick*="thumbnail"],
+button[title*="썸네일"],
+button[title*="갤러리"],
+button[class*="thumbnail"],
+div[class*="thumbnail"],
+span[class*="thumbnail"],
+[class*="thumbnail-"],
+[id*="thumbnail"],
+.media-viewer .thumbnail-gallery,
+.style-modal .thumbnail-gallery,
+#styleModal .thumbnail-gallery {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+    overflow: hidden !important;
+}
+
+/* 전체화면 버튼은 유지 */
+.fullscreen-btn,
+button.fullscreen-btn,
+.fullscreen-modal {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: auto !important;
+}
+
+/* ========== 전체화면 버튼 숨김 (왼쪽 하단 아이콘 제거) ========== */
+.fullscreen-btn,
+button.fullscreen-btn,
+.image-display .fullscreen-btn {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+}
