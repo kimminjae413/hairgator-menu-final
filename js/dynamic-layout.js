@@ -15,41 +15,57 @@
         return 'tablet';
     };
 
-    // Pull-to-refresh 차단 (태블릿용)
+    // Pull-to-refresh 차단 (태블릿용) - 수정된 버전
     const preventPullToRefresh = () => {
         if (getDeviceType() !== 'tablet') return;
 
         console.log('태블릿 Pull-to-refresh 차단 활성화');
 
         let lastY = 0;
-        let preventPull = false;
+        let startY = 0;
 
         document.addEventListener('touchstart', function (e) {
             if (e.touches.length === 1) {
                 lastY = e.touches[0].clientY;
-                const scrollableElement = e.target.closest('.menu-items-container, .styles-grid, .style-modal-content');
-                if (scrollableElement) {
-                    preventPull = scrollableElement.scrollTop === 0;
-                } else {
-                    preventPull = window.scrollY === 0;
-                }
+                startY = lastY;
             }
-        }, { passive: false });
+        }, { passive: true });
 
         document.addEventListener('touchmove', function (e) {
-            if (!preventPull) return;
+            if (e.touches.length !== 1) return;
 
-            if (e.touches.length === 1) {
-                const currentY = e.touches[0].clientY;
-                if (currentY > lastY && window.scrollY === 0) {
+            const currentY = e.touches[0].clientY;
+            const deltaY = currentY - lastY;
+
+            // 스크롤 가능한 컨테이너 찾기
+            const scrollableElement = e.target.closest('.styles-container, .menu-items-container, .style-modal-content');
+
+            // 스크롤 컨테이너가 있는 경우, 그 컨테이너의 스크롤 위치 확인
+            if (scrollableElement) {
+                const isAtTop = scrollableElement.scrollTop === 0;
+                const isPullingDown = deltaY > 0;
+
+                // 맨 위에서 아래로 당기는 경우에만 막기
+                if (isAtTop && isPullingDown) {
+                    e.preventDefault();
+                }
+            } else {
+                // 전역 스크롤인 경우
+                const isAtTop = window.scrollY === 0;
+                const isPullingDown = deltaY > 0;
+
+                if (isAtTop && isPullingDown) {
                     e.preventDefault();
                 }
             }
+
+            lastY = currentY;
         }, { passive: false });
 
         document.addEventListener('touchend', function () {
-            preventPull = false;
-        }, { passive: false });
+            lastY = 0;
+            startY = 0;
+        }, { passive: true });
     };
 
     // 태블릿 레이아웃 적용 (CSS 클래스만 제어)
