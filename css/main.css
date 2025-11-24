@@ -13,6 +13,7 @@
 html {
     width: 100%;
     height: 100vh;
+    height: -webkit-fill-available;
     overflow: hidden;
     background-color: #000000;
 }
@@ -353,8 +354,11 @@ body.light-theme .gender-btn {
     left: 0;
     width: 100%;
     height: 100vh;
+    height: -webkit-fill-available;
+    min-height: 100vh;
     background: var(--primary-dark);
     flex-direction: column;
+    padding-bottom: env(safe-area-inset-bottom);
     z-index: 50;
 }
 
@@ -715,12 +719,13 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 .styles-container,
 .menu-items-container {
     position: absolute;
-    /* ?믪씠 ?ъ“?? ?ㅻ뜑(50) + ??쁺??~150) + ?ъ쑀 = 260px */
+    /* 높이 계산: 헤더(50) + 탭영역(~150) + 여유 = 260px */
     top: 260px;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: env(safe-area-inset-bottom, 0);
     padding: 10px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
