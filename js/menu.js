@@ -577,34 +577,67 @@ function createStyleCard(style) {
 
 // 스타일 상세 모달 열기 (헤어체험 버튼 추가)
 function openStyleModal(style) {
+    console.log('🔍 openStyleModal 호출됨:', style);
+
     const modal = document.getElementById('styleModal');
     if (!modal) {
-        console.error('styleModal 요소를 찾을 수 없습니다');
+        console.error('❌ styleModal 요소를 찾을 수 없습니다');
+        alert('모달을 열 수 없습니다');
         return;
     }
 
-    // MediaViewer를 사용하여 이미지 렌더링
-    if (window.HAIRGATOR_MEDIA_VIEWER) {
-        window.HAIRGATOR_MEDIA_VIEWER.loadMedia(style);
-    } else {
-        console.warn('MediaViewer가 초기화되지 않았습니다. 기본 이미지 표시를 사용합니다.');
-        // 폴백: 기본 이미지 표시
-        const container = document.getElementById('mediaViewerContainer');
-        if (container && style.imageUrl) {
-            container.innerHTML = `
-                <div class="media-viewer">
-                    <div class="main-display">
-                        <img src="${style.imageUrl}"
-                             alt="${style.name}"
-                             style="width: 100%; height: auto; object-fit: contain; max-height: 70vh; cursor: zoom-in;"
-                             onclick="this.style.maxHeight = this.style.maxHeight === '70vh' ? '90vh' : '70vh'; this.style.cursor = this.style.cursor === 'zoom-in' ? 'zoom-out' : 'zoom-in';">
-                    </div>
+    console.log('✅ 모달 요소 찾음');
+
+    // 이미지 컨테이너에 직접 렌더링 (MediaViewer 의존성 제거)
+    const container = document.getElementById('mediaViewerContainer');
+    if (container) {
+        console.log('✅ mediaViewerContainer 찾음');
+
+        // 확대/축소 상태 저장
+        let isZoomed = false;
+
+        container.innerHTML = `
+            <div class="media-viewer" style="width: 100%; height: auto; background: #000;">
+                <div class="main-display" style="position: relative; width: 100%; display: flex; align-items: center; justify-content: center;">
+                    <img src="${style.imageUrl || ''}"
+                         alt="${style.name || 'Style'}"
+                         class="modal-zoom-image"
+                         style="width: 100%; height: auto; object-fit: contain; max-height: 70vh; cursor: zoom-in; transition: max-height 0.3s ease, transform 0.3s ease;"
+                         onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.alt='이미지 로드 실패';">
                 </div>
-            `;
+            </div>
+        `;
+
+        // 이미지 클릭 시 확대/축소
+        const img = container.querySelector('.modal-zoom-image');
+        if (img) {
+            img.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isZoomed = !isZoomed;
+
+                if (isZoomed) {
+                    this.style.maxHeight = '90vh';
+                    this.style.cursor = 'zoom-out';
+                    this.style.transform = 'scale(1.05)';
+                } else {
+                    this.style.maxHeight = '70vh';
+                    this.style.cursor = 'zoom-in';
+                    this.style.transform = 'scale(1)';
+                }
+
+                // 햅틱 피드백
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            });
         }
+
+        console.log('✅ 이미지 렌더링 완료');
+    } else {
+        console.error('❌ mediaViewerContainer를 찾을 수 없습니다');
     }
 
-    // 모달 내용 설정 (코드/이름 등)
+    // 모달 내용 설정 (코드/이름 등) - 숨겨진 상태
     const modalCode = document.getElementById('styleModalCode');
     const modalName = document.getElementById('styleModalName');
     const modalCategory = document.getElementById('styleModalCategory');
@@ -620,18 +653,19 @@ function openStyleModal(style) {
                                  style.gender === 'female' ? '여성' : '-';
     }
 
-    // 헤어체험하기 버튼 추가/업데이트
-    // addAIButtonToModal(style);  // ⭐ 헤어체험 버튼 제거
-
     // 모달 표시
     modal.classList.add('active');
+    modal.style.display = 'flex';
+    modal.style.zIndex = '9999';
     document.body.style.overflow = 'hidden';
 
-    console.log('스타일 모달 열림:', {
+    console.log('✅ 스타일 모달 열림:', {
         code: style.code,
         name: style.name,
         category: style.mainCategory,
-        subcategory: style.subCategory
+        subcategory: style.subCategory,
+        modalDisplay: modal.style.display,
+        modalZIndex: modal.style.zIndex
     });
 }
 
