@@ -826,23 +826,6 @@ body.light-theme .style-card:hover {
 }
 
 .style-image-wrapper {
-    position: relative;
-    width: 100% !important;
-    height: 100% !important;
-}
-
-.style-image {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 10px;
-    display: block !important;
-}
-
-/* ========== AI 泥댄뿕?섍린 踰꾪듉 ?ㅻ쾭?덉씠 ========== */
-.ai-overlay {
-    position: absolute;
     top: 0;
     left: 0;
     right: 0;
