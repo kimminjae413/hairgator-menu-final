@@ -592,10 +592,10 @@ body.light-theme .category-tab:hover {
 /* ========== 移댄뀒怨좊━ ?ㅻ챸 ?곸뿭 ========== */
 .category-description {
     background: #0a0a0a;
-    padding: 20px;
+    padding: 12px 15px;
     border-bottom: 1px solid #222;
     transition: all 0.3s ease;
-    min-height: 70px;
+    min-height: 50px;
     display: flex !important;
     /* 媛뺤젣 ?쒖떆 */
     align-items: center;
@@ -609,8 +609,8 @@ body.light-theme .category-description {
 
 .category-description-text {
     color: var(--text-secondary);
-    font-size: 14px;
-    line-height: 1.6;
+    font-size: 12px;
+    line-height: 1.4;
     text-align: left !important;
     max-width: 100%;
     /* 800px?먯꽌 100%濡?蹂寃?*/
@@ -656,7 +656,7 @@ body.gender-male .category-description-text .category-name {
 /* ?쒕툕移댄뀒怨좊━ ??*/
 .sub-tabs {
     background: #0a0a0a;
-    padding: 15px;
+    padding: 10px 15px;
     display: flex !important;
     /* 媛뺤젣 ?쒖떆 */
     gap: 10px;
@@ -727,7 +727,7 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 .styles-container,
 .menu-items-container {
     position: absolute;
-    top: 260px;
+    top: 230px;
     left: 0;
     right: 0;
     bottom: env(safe-area-inset-bottom, 0);
@@ -744,7 +744,48 @@ body.light-theme .menu-items-container {
     background: #ffffff;
 }
 
-.styles-grid {    display: grid;    grid-template-columns: repeat(5, 1fr);    gap: 15px;    max-height: inherit;    width: 100%;    box-sizing: border-box;}/* 태블릿 전용 미디어 쿼리 */@media (min-width: 768px) and (max-width: 1024px) {    .styles-grid {        grid-template-columns: repeat(5, 1fr) !important;        gap: 12px;    }}@media (max-width: 767px) {    .fixed-menu-section {        padding-top: 65px;    }        .styles-container,    .menu-items-container {        top: 300px;        padding: 15px;    }        .styles-grid {        grid-template-columns: repeat(2, 1fr);        gap: 10px;    }        .category-description {        padding: 15px;        min-height: 60px;    }        .category-description-text {        font-size: 13px;    }}
+.styles-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    max-height: inherit;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 태블릿 전용 미디어 쿼리 */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .styles-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 767px) {
+    .fixed-menu-section {
+        padding-top: 65px;
+    }
+    
+    .styles-container,
+    .menu-items-container {
+        top: 270px;
+        padding: 15px;
+    }
+    
+    .styles-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .category-description {
+        padding: 10px 12px;
+        min-height: 45px;
+    }
+    
+    .category-description-text {
+        font-size: 12px;
+    }
+}
 
 .style-card:hover {
     transform: translateY(-3px);
