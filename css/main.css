@@ -88,12 +88,12 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Safe area only for mobile portrait */
-@media (max-width: 767px) and (orientation: portrait) {
-    body {
-        padding-top: env(safe-area-inset-top);
-        padding-bottom: env(safe-area-inset-bottom);
-    }
+/* Safe area for all devices and orientations */
+body {
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
 }
 
 /* 헤더 */
@@ -102,23 +102,16 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 50px;
+    height: calc(50px + env(safe-area-inset-top, 0));
     background: var(--primary-dark);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0 15px;
+    padding-top: env(safe-area-inset-top, 0);
     margin-top: 0;
     z-index: 1000;
     transition: background-color 0.3s ease;
-}
-
-/* Header safe area only for mobile portrait */
-@media (max-width: 767px) and (orientation: portrait) {
-    .header {
-        height: calc(50px + env(safe-area-inset-top));
-        padding-top: env(safe-area-inset-top);
-    }
 }
 
 .back-btn {
@@ -373,15 +366,8 @@ body.light-theme .gender-btn {
     min-height: 100vh;
     background: var(--primary-dark);
     flex-direction: column;
-    padding-bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
     z-index: 50;
-}
-
-/* Menu container safe area only for mobile portrait */
-@media (max-width: 767px) and (orientation: portrait) {
-    .menu-container {
-        padding-bottom: env(safe-area-inset-bottom);
-    }
 }
 .menu-container.active {
     display: flex;
@@ -737,28 +723,20 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 }
 
 /* ?ㅽ???洹몃━??- ?쒕툝由?臾몄젣 ?닿껐 (蹂듦뎄 諛?理쒖쟻?? */
+/* 스타일 그리드 - 스크롤 문제 해결 (복구 및 최적화) */
 .styles-container,
 .menu-items-container {
     position: absolute;
-    /* 높이 계산: 헤더(50) + 탭영역(~150) + 여유 = 260px */
     top: 260px;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: env(safe-area-inset-bottom, 0);
     padding: 10px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     background: var(--primary-dark);
-}
-
-/* Styles container safe area only for mobile portrait */
-@media (max-width: 767px) and (orientation: portrait) {
-    .styles-container,
-    .menu-items-container {
-        bottom: env(safe-area-inset-bottom, 0);
-        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
-    }
 }
 
 body.light-theme .styles-container,
