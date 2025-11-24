@@ -1259,10 +1259,18 @@ function showToast(message, type = 'info') {
 
 // 모달 닫기 함수들
 function closeStyleModal() {
+    console.log('🔍 closeStyleModal 호출됨');
+
     const modal = document.getElementById('styleModal');
     if (modal) {
         modal.classList.remove('active');
+        modal.style.display = 'none';
+        modal.style.zIndex = '';
         document.body.style.overflow = '';
+
+        console.log('✅ 스타일 모달 닫힘');
+    } else {
+        console.error('❌ styleModal 요소를 찾을 수 없습니다');
     }
 }
 
@@ -1271,19 +1279,38 @@ function closeStyleModal() {
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
     console.log('HAIRGATOR 메뉴 시스템 로드 완료 - 헤어체험 연동 최종 버전');
-    
+
+    // 엑스 버튼 클릭 이벤트 (네이티브 앱 대응)
+    const closeBtn = document.getElementById('styleModalClose');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔘 엑스 버튼 클릭됨');
+            closeStyleModal();
+        });
+        console.log('✅ 엑스 버튼 이벤트 리스너 등록 완료');
+    } else {
+        console.warn('⚠️ styleModalClose 버튼을 찾을 수 없습니다');
+    }
+
     // 모달 바깥 클릭 시 닫기
     document.addEventListener('click', function(e) {
         const styleModal = document.getElementById('styleModal');
         if (styleModal && e.target === styleModal) {
+            console.log('🔘 모달 배경 클릭됨');
             closeStyleModal();
         }
     });
-    
+
     // ESC 키로 모달 닫기
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            closeStyleModal();
+            const styleModal = document.getElementById('styleModal');
+            if (styleModal && styleModal.classList.contains('active')) {
+                console.log('⌨️ ESC 키 눌림');
+                closeStyleModal();
+            }
         }
     });
 });
