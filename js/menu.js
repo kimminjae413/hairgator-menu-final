@@ -5,37 +5,37 @@ const MALE_CATEGORIES = [
     {
         id: 'side-fringe',
         name: 'SIDE FRINGE',
-        description: '사이드 프린지는 옆으로 넘긴 앞머리 스타일로, 자연스럽고 부드러운 느낌을 줍니다.'
+        description: '앞머리를 앞으로 내려 자연스럽게 흐르는 스타일、 넓은 이마를 돌출 시킨 역삼각형 얼굴형 보완에 효과적이며、 부드럽고 감성적인 이미지를 연출'
     },
     {
         id: 'side-part',
         name: 'SIDE PART',
-        description: '사이드 파트는 정갈하고 단정한 스타일로 비즈니스맨들에게 인기가 많습니다.'
+        description: '가르마를 기준으로 나누는 스타일、 뒤로 넘기면 클래식、내리면 캐주얼、 다양한 얼굴형에 무난하고 활용도가 높음'
     },
     {
         id: 'fringe-up',
         name: 'FRINGE UP',
-        description: '프린지 업은 앞머리를 올려 이마를 드러내는 시원한 스타일입니다.'
+        description: '윗머리는 앞으로 흐르고、 앞머리 끝만 위로 올린 스타일이며、 이마를 적당히 드러내 시원하고 세련된 인상、 활동적이며 깔끔한 스타일을 연출'
     },
     {
         id: 'pushed-back',
         name: 'PUSHED BACK',
-        description: '푸시백은 머리를 뒤로 넘긴 댄디한 스타일입니다.'
+        description: '모발의 전체 흐름이 뒤쪽으로 자연스럽게 넘어가는 스타일、 이마를 드러내 단정＆클래식＆도희적 무드、 직장／포멀 룩과 잘 어울림'
     },
     {
         id: 'buzz',
         name: 'BUZZ',
-        description: '버즈컷은 짧고 깔끔한 스타일로 관리가 편합니다.'
+        description: '남성 스타일 중 가장 짧은 커트 스타일、 두상 및 윤곽이 그대로 드러나 심플하고 군더더기 없는 이미지이며 관리가 매우 쉬움'
     },
     {
         id: 'crop',
         name: 'CROP',
-        description: '크롭 스타일은 짧으면서도 스타일리시한 느낌을 줍니다.'
+        description: '버즈보다 조금 더 긴 길이이며 앞머리가 이마 상단을 가볍게 덮는 형태、 텍스처＆볼륨 표현이 가능하며 트렌디하고 시크한 느낌'
     },
     {
         id: 'mohican',
         name: 'MOHICAN',
-        description: '모히칸 스타일은 개성 있고 강한 인상을 줍니다.'
+        description: '톱（センター）부분을 위쪽으로 세워 강조하며 사이드가 상대적으로 짧아 코너 및 라인감이 또렷、 강한 개성 ＆ 에너지 ＆ 스트릿 무드 연출'
     }
 ];
 
