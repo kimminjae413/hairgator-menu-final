@@ -758,20 +758,6 @@ body.light-theme .menu-items-container {
 
 /* ========== ?ㅽ???移대뱶 (?띿뒪???뺣낫 ?쒖떆) ========== */
 .style-card {
-    background: transparent;
-    border-radius: 10px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    aspect-ratio: 3/4 !important;
-    position: relative;
-    width: 100% !important;
-    height: auto;
-}
-
-/* ========== ?ㅽ???移대뱶 NEW ?쒖떆 異붽? ========== */
-.style-card .new-indicator {
-    position: absolute;
     top: 10px;
     left: 10px;
     width: 35px;
@@ -815,18 +801,6 @@ body.light-theme .menu-items-container {
 .style-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
-}
-
-body.light-theme .style-card:hover {
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-rgba(255, 255, 255, 0.3) 50%,
-rgba(255, 255, 255, 0.8) 100%);
-}
-
-.style-card:hover .ai-overlay {
-    opacity: 1;
 }
 
 .ai-experience-btn {
