@@ -2871,16 +2871,75 @@
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
+
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.style.display = 'none';
             });
-            
+
             event.target.classList.add('active');
-            
+
             const activeContent = document.getElementById(tabName + 'Tab');
             if (activeContent) {
                 activeContent.style.display = 'block';
+            }
+
+            // 통계 탭으로 전환 시 데이터 로드
+            if (tabName === 'stats') {
+                updateStats();
+            }
+        }
+
+        // 통계 업데이트 함수
+        async function updateStats() {
+            try {
+                console.log('📊 통계 업데이트 시작...');
+
+                // 전체 스타일 수
+                const stylesSnapshot = await db.collection('hairstyles').get();
+                const totalStyles = stylesSnapshot.size;
+                document.getElementById('totalStyles').textContent = totalStyles;
+
+                // 남성/여성 스타일 수
+                let maleCount = 0;
+                let femaleCount = 0;
+                stylesSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.gender === 'male') maleCount++;
+                    if (data.gender === 'female') femaleCount++;
+                });
+                document.getElementById('totalMale').textContent = maleCount;
+                document.getElementById('totalFemale').textContent = femaleCount;
+
+                // 전체 디자이너 수
+                const designersSnapshot = await db.collection('designers').get();
+                const totalDesigners = designersSnapshot.size;
+                document.getElementById('totalDesigners').textContent = totalDesigners;
+
+                // 총 발행 토큰 계산
+                let totalTokens = 0;
+                designersSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    totalTokens += (data.tokens || 0);
+                });
+                document.getElementById('totalTokens').textContent = totalTokens;
+
+                // 전체 고객 수
+                const customersSnapshot = await db.collection('customers').get();
+                const totalCustomers = customersSnapshot.size;
+                document.getElementById('totalCustomers').textContent = totalCustomers;
+
+                console.log('✅ 통계 업데이트 완료:', {
+                    styles: totalStyles,
+                    male: maleCount,
+                    female: femaleCount,
+                    designers: totalDesigners,
+                    tokens: totalTokens,
+                    customers: totalCustomers
+                });
+
+            } catch (error) {
+                console.error('❌ 통계 업데이트 오류:', error);
+                alert('통계 로드 중 오류가 발생했습니다: ' + error.message);
             }
         }
 
