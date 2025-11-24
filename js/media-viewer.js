@@ -451,10 +451,11 @@ function enhanceStyleModal() {
 document.addEventListener('DOMContentLoaded', function() {
     // MediaViewer 인스턴스 생성
     window.mediaViewer = new MediaViewer();
-    
+    window.HAIRGATOR_MEDIA_VIEWER = window.mediaViewer; // 별칭 추가
+
     // 기존 모달 시스템과 연동
     enhanceStyleModal();
-    
+
     console.log('✅ HAIRGATOR MediaViewer 로드 완료');
 });
 

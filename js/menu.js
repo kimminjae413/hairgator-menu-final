@@ -582,43 +582,56 @@ function openStyleModal(style) {
         console.error('styleModal 요소를 찾을 수 없습니다');
         return;
     }
-    
-    // 모달 내용 설정
-    const modalImage = document.getElementById('styleModalImage');
+
+    // MediaViewer를 사용하여 이미지 렌더링
+    if (window.HAIRGATOR_MEDIA_VIEWER) {
+        window.HAIRGATOR_MEDIA_VIEWER.loadMedia(style);
+    } else {
+        console.warn('MediaViewer가 초기화되지 않았습니다. 기본 이미지 표시를 사용합니다.');
+        // 폴백: 기본 이미지 표시
+        const container = document.getElementById('mediaViewerContainer');
+        if (container && style.imageUrl) {
+            container.innerHTML = `
+                <div class="media-viewer">
+                    <div class="main-display">
+                        <img src="${style.imageUrl}"
+                             alt="${style.name}"
+                             style="width: 100%; height: auto; object-fit: contain; max-height: 70vh; cursor: zoom-in;"
+                             onclick="this.style.maxHeight = this.style.maxHeight === '70vh' ? '90vh' : '70vh'; this.style.cursor = this.style.cursor === 'zoom-in' ? 'zoom-out' : 'zoom-in';">
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // 모달 내용 설정 (코드/이름 등)
     const modalCode = document.getElementById('styleModalCode');
     const modalName = document.getElementById('styleModalName');
     const modalCategory = document.getElementById('styleModalCategory');
     const modalSubcategory = document.getElementById('styleModalSubcategory');
     const modalGender = document.getElementById('styleModalGender');
-    
-    if (modalImage) {
-        modalImage.src = style.imageUrl || '';
-        modalImage.onerror = function() {
-            this.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        };
-    }
-    
+
     if (modalCode) modalCode.textContent = style.code || 'NO CODE';
     if (modalName) modalName.textContent = style.name || '이름 없음';
     if (modalCategory) modalCategory.textContent = style.mainCategory || '-';
     if (modalSubcategory) modalSubcategory.textContent = style.subCategory || '-';
     if (modalGender) {
-        modalGender.textContent = style.gender === 'male' ? '남성' : 
+        modalGender.textContent = style.gender === 'male' ? '남성' :
                                  style.gender === 'female' ? '여성' : '-';
     }
-    
+
     // 헤어체험하기 버튼 추가/업데이트
     // addAIButtonToModal(style);  // ⭐ 헤어체험 버튼 제거
-    
+
     // 모달 표시
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-    
-    console.log('스타일 모달 열림:', { 
-        code: style.code, 
+
+    console.log('스타일 모달 열림:', {
+        code: style.code,
         name: style.name,
         category: style.mainCategory,
-        subcategory: style.subCategory 
+        subcategory: style.subCategory
     });
 }
 

@@ -287,14 +287,14 @@ body.light-theme .form-group input {
     display: none;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh - 65px);
+    min-height: 100vh;
     padding: 20px;
     gap: 80px;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100% !important;
-    height: 100% !important;
+    height: 100vh !important;
     background: var(--primary-dark) !important;
     z-index: 2000 !important;
 }
