@@ -216,12 +216,14 @@ body.gender-female .sub-tab.active {
 }
 
 .style-card {
-    background: #1a1a1a;
+    background: transparent;
     border-radius: 15px;
     overflow: hidden;
     cursor: pointer;
     transition: all 0.3s;
     border: 1px solid #333;
+    aspect-ratio: 3/4 !important;
+    position: relative;
 }
 
 .style-card:hover {
@@ -236,27 +238,21 @@ body.gender-male .style-card:hover {
 }
 
 .style-image {
-    width: 100%;
-    aspect-ratio: 3/4;
-    object-fit: cover;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
     background: #2a2a2a;
+    border-radius: 15px;
+    display: block !important;
 }
 
-.style-info {
-    padding: 12px;
-    text-align: center;
-}
-
-.style-code {
-    font-size: 11px;
-    color: #999;
-    margin-bottom: 4px;
-}
-
+/* 스타일 정보 완전 숨김 */
+.style-info,
+.style-code,
 .style-name {
-    font-size: 13px;
-    color: #fff;
-    font-weight: 500;
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
 }
 
 /* ========== 사이드 메뉴 ========== */
@@ -453,9 +449,6 @@ body.light-theme .style-card {
     border-color: #ddd;
 }
 
-body.light-theme .style-name {
-    color: #000;
-}
 
 /* ========== 빈 상태 ========== */
 .empty-state {
