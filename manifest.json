@@ -3,8 +3,8 @@
   "short_name": "HAIRGATOR",
   "description": "Professional Hair Style Menu System",
   "start_url": "/",
-  "display": "standalone",
-  "orientation": "portrait",
+  "display": "fullscreen",
+  "orientation": "any",
   "scope": "/",
   "background_color": "#000000",
   "theme_color": "#000000",
@@ -53,7 +53,10 @@
     }
   ],
   "prefer_related_applications": false,
-  "categories": ["business", "lifestyle"],
+  "categories": [
+    "business",
+    "lifestyle"
+  ],
   "lang": "ko-KR",
   "dir": "ltr"
 }
