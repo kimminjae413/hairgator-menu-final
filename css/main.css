@@ -732,20 +732,7 @@ body.light-theme .menu-items-container {
     background: #ffffff;
 }
 
-.styles-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr) !important;
-    /* 媛뺤젣 ?곸슜 */
-    gap: 15px;
-    padding-top: 10px;
-}
-
-/* 紐⑤컮???꾩슜 ?ㅽ???*/
-@media (max-width: 767px) {
-
-    .styles-container,
-    display: none !important;
-}
+.styles-grid {    display: grid;    grid-template-columns: repeat(5, 1fr);    gap: 15px;    max-height: inherit;    width: 100%;    box-sizing: border-box;}/* 태블릿 전용 미디어 쿼리 */@media (min-width: 768px) and (max-width: 1024px) {    .styles-grid {        grid-template-columns: repeat(5, 1fr) !important;        gap: 12px;    }}@media (max-width: 767px) {    .fixed-menu-section {        padding-top: 65px;    }        .styles-container,    .menu-items-container {        top: 300px;        padding: 15px;    }        .styles-grid {        grid-template-columns: repeat(2, 1fr);        gap: 10px;    }        .category-description {        padding: 15px;        min-height: 60px;    }        .category-description-text {        font-size: 13px;    }}
 
 .style-card:hover {
     transform: translateY(-3px);
