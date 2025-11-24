@@ -199,7 +199,16 @@ body.gender-female .sub-tab.active {
     gap: 15px;
 }
 
-@media (max-width: 768px) {
+/* 태블릿 (768px ~ 1024px) - 5열 유지 */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .styles-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 12px;
+    }
+}
+
+/* 모바일 (767px 이하) - 2열 */
+@media (max-width: 767px) {
     .styles-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
