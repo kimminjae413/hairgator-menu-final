@@ -224,6 +224,7 @@ body.gender-female .sub-tab.active {
     border: 1px solid #333;
     aspect-ratio: 3/4 !important;
     position: relative;
+    padding: 0;
 }
 
 .style-card:hover {
@@ -237,13 +238,22 @@ body.gender-male .style-card:hover {
     box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
 }
 
+.style-image-wrapper {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    display: block;
+    position: relative;
+}
+
 .style-image {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
     background: #2a2a2a;
-    border-radius: 15px;
     display: block !important;
+    border-radius: 0;
 }
 
 /* 스타일 정보 완전 숨김 */
