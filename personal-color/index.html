@@ -93,16 +93,24 @@
                     <!-- 카메라 영역 -->
                     <div class="camera-container">
                         <div class="video-container">
-                            <video id="ai-camera" autoplay muted playsinline></video>
-                            <canvas id="ai-face-overlay"></canvas>
+                            <video id="camera-feed" autoplay muted playsinline style="display:none;"></video>
+                            <canvas id="camera-canvas" style="width: 100%; max-width: 640px; border-radius: 8px;"></canvas>
                             <div class="face-guide" id="ai-face-guide">
-                                얼굴을 가이드라인에<br>맞춰주세요
+                                얼굴을 화면 중앙에<br>위치시켜주세요
                             </div>
                         </div>
                         <div class="camera-controls">
-                            <button class="control-btn" onclick="startAICamera()">카메라 시작</button>
-                            <button class="control-btn" onclick="analyzeAI()">AI 분석</button>
-                            <button class="control-btn" onclick="stopAICamera()">정지</button>
+                            <button class="control-btn" id="start-camera" onclick="startCamera()">📹 실시간 카메라 분석</button>
+                        </div>
+
+                        <!-- ⭐ 실시간 분석 결과 표시 -->
+                        <div class="realtime-results" style="margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px; display: none;" id="realtime-results-container">
+                            <h4 style="margin: 0 0 15px 0; color: #fff;">🎨 실시간 분석 결과</h4>
+                            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 6px; margin-bottom: 10px;">
+                                <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;" id="realtime-season">분석 중...</div>
+                                <div style="font-size: 14px; line-height: 1.6; color: #ccc;" id="realtime-skin-info"></div>
+                            </div>
+                            <div style="font-size: 14px; line-height: 1.8; color: #eee;" id="realtime-recommendation"></div>
                         </div>
                     </div>
 
