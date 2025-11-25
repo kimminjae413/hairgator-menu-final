@@ -38,11 +38,11 @@
   [headers.values]
     Cache-Control = "public, max-age=600, must-revalidate"
 
-# CSS 파일 - 짧은 캐시 (10분)
+# CSS 파일 - 짧은 캐시 (1분)
 [[headers]]
   for = "/css/*"
   [headers.values]
-    Cache-Control = "public, max-age=600, must-revalidate"
+    Cache-Control = "public, max-age=60, must-revalidate"
 
 # index.html - 항상 최신
 [[headers]]
