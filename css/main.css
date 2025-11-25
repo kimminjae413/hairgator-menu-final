@@ -778,8 +778,8 @@ body.light-theme .menu-items-container {
     }
     
     .category-description {
-        padding: 10px 12px;
-        min-height: 45px;
+        padding: 6px 12px;
+        min-height: 35px;
     }
     
     .category-description-text {
