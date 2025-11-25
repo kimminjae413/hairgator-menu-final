@@ -1,6 +1,6 @@
 // HAIRGATOR PWA Service Worker - Production Version
-const CACHE_NAME = 'hairgator-v4.0.0';
-const CACHE_VERSION = '20250905'; // 날짜 기반 버전
+const CACHE_NAME = 'hairgator-v4.1.0-20251125';
+const CACHE_VERSION = '20251125'; // 날짜 기반 버전
 
 // 캐시할 핵심 파일들
 const CORE_CACHE = [

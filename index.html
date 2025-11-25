@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HAIRGATOR - Professional Hair Style Menu</title>
 
+    <!-- ⭐ 강력한 캐시 방지 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1817,6 +1822,52 @@ function showSimpleDevelopmentToast() {
 
 <!-- ⭐ 챗봇 시스템 - ES6 Modules로 변경 -->
 <script type="module" src="js/chatbot-ui.js"></script>
+
+<!-- ⭐⭐⭐ 캐시 강제 초기화 - 스타일 업데이트 적용을 위해 -->
+<script>
+(async function forceRefreshCache() {
+    const FORCE_REFRESH_KEY = 'hairgator_force_refresh_20251125';
+
+    // 이미 초기화했는지 확인
+    if (sessionStorage.getItem(FORCE_REFRESH_KEY) === 'done') {
+        console.log('✅ 캐시 이미 초기화됨 - 스킵');
+        return;
+    }
+
+    console.log('🔄 캐시 강제 초기화 시작...');
+
+    try {
+        // 1. 모든 Service Worker 제거
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const registration of registrations) {
+                await registration.unregister();
+                console.log('✅ Service Worker 제거됨');
+            }
+        }
+
+        // 2. 모든 캐시 삭제
+        if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            for (const cacheName of cacheNames) {
+                await caches.delete(cacheName);
+                console.log('✅ 캐시 삭제됨:', cacheName);
+            }
+        }
+
+        // 3. 초기화 완료 표시
+        sessionStorage.setItem(FORCE_REFRESH_KEY, 'done');
+        console.log('✅ 캐시 초기화 완료 - 페이지 새로고침');
+
+        // 4. 페이지 강제 새로고침 (캐시 무시)
+        window.location.reload(true);
+
+    } catch (error) {
+        console.error('❌ 캐시 초기화 실패:', error);
+        // 실패해도 앱은 계속 작동
+    }
+})();
+</script>
 
 </body>
 </html>
