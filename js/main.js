@@ -401,6 +401,15 @@ document.addEventListener('DOMContentLoaded', function() {
             window.HAIRGATOR_MENU.loadMenuForGender(window.currentGender);
         }
 
+        // ⭐ 챗봇 언어도 동기화
+        if (window.hairgatorChatbot) {
+            window.hairgatorChatbot.currentLanguage = langCode;
+            if (window.hairgatorChatbot.core) {
+                window.hairgatorChatbot.core.currentLanguage = langCode;
+            }
+            console.log(`✅ 챗봇 언어 동기화: ${langCode}`);
+        }
+
         showToast('Language changed / 言語変更 / 语言已更改');
     }
 
@@ -571,7 +580,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
 
+    // ⭐ 전역 함수로 노출 (챗봇과 동기화를 위해)
     window.showToast = showToast;
+    window.changeLanguage = changeLanguage;
+    window.updateAllTexts = updateAllTexts;
 
     console.log('🚀 HAIRGATOR 메인 애플리케이션 준비 완료');
 });

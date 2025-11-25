@@ -37,7 +37,8 @@ class HairGatorChatbot {
 
   getStoredLanguage() {
     try {
-      return localStorage.getItem('hairgator_chatbot_lang') || 'ko';
+      // ⭐ 메인 앱과 동일한 키 사용
+      return localStorage.getItem('hairgator_language') || 'ko';
     } catch (e) {
       console.warn('⚠️ localStorage 접근 실패, 기본값 사용:', e);
       return 'ko';
@@ -46,8 +47,15 @@ class HairGatorChatbot {
 
   setStoredLanguage(lang) {
     try {
-      localStorage.setItem('hairgator_chatbot_lang', lang);
+      // ⭐ 메인 앱과 동일한 키 사용
+      localStorage.setItem('hairgator_language', lang);
       console.log(`✅ localStorage 저장 성공: ${lang}`);
+
+      // ⭐ 메인 앱의 언어도 동기화
+      if (window.setLanguage) {
+        window.setLanguage(lang);
+      }
+
       return true;
     } catch (e) {
       console.warn('⚠️ localStorage 저장 실패:', e);
@@ -1200,7 +1208,24 @@ class HairGatorChatbot {
         }
       }
 
-      console.log('✅ 언어 변경 완료: ' + lang);
+      // ⭐ 메인 앱 UI도 동기화
+      if (window.currentLanguage !== lang) {
+        window.currentLanguage = lang;
+      }
+
+      // ⭐ 메인 앱의 updateAllTexts 호출
+      if (typeof window.updateAllTexts === 'function') {
+        window.updateAllTexts();
+        console.log('✅ 메인 앱 UI 업데이트 완료');
+      }
+
+      // ⭐ 메뉴 리로드
+      if (window.currentGender && window.HAIRGATOR_MENU?.loadMenuForGender) {
+        window.HAIRGATOR_MENU.loadMenuForGender(window.currentGender);
+        console.log('✅ 메뉴 리로드 완료');
+      }
+
+      console.log('✅ 챗봇 언어 변경 완료 (메인 앱과 동기화): ' + lang);
 
       setTimeout(function () {
         isProcessing = false;
