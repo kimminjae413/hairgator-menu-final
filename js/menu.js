@@ -527,6 +527,20 @@ function createStyleCard(style) {
     const card = document.createElement('div');
     card.className = 'style-card';
 
+    // ⭐⭐⭐ 강제 스타일 적용 (캐시 우회) ⭐⭐⭐
+    card.style.cssText = `
+        background: transparent !important;
+        border-radius: 15px !important;
+        overflow: hidden !important;
+        cursor: pointer !important;
+        transition: all 0.3s !important;
+        border: 1px solid #333 !important;
+        aspect-ratio: 3/4 !important;
+        position: relative !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    `;
+
     // NEW 표시 조건 확인 (7일 이내)
     let isNew = false;
     if (style.createdAt) {
@@ -552,11 +566,12 @@ function createStyleCard(style) {
     }
 
     card.innerHTML = `
-        <div class="style-image-wrapper">
+        <div class="style-image-wrapper" style="width: 100% !important; height: 100% !important; position: relative !important; display: block !important; padding: 0 !important; margin: 0 !important;">
             <img class="style-image"
                  src="${style.imageUrl || ''}"
                  alt="${style.name || 'Style'}"
                  loading="lazy"
+                 style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; border-radius: 0 !important; margin: 0 !important; padding: 0 !important;"
                  onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 400%22%3E%3Crect fill=%22%23333%22 width=%22300%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23666%22 font-size=%2220%22%3ENo Image%3C/text%3E%3C/svg%3E'">
 
             ${isNew ? '<div class="new-indicator"></div>' : ''}
