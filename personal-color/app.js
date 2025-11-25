@@ -1491,6 +1491,46 @@ function goBack() {
     }
 }
 
+// ⭐ 퍼스널 컬러 모드 닫기 (메인 서비스로 돌아가기)
+function closePersonalColor() {
+    console.log('퍼스널 컬러 모드 닫기');
+
+    // 카메라가 실행 중이면 중지
+    if (videoElement && videoElement.srcObject) {
+        stopCamera();
+    }
+
+    // 1순위: 부모 창이 있으면 (iframe으로 열린 경우)
+    if (window.parent && window.parent !== window) {
+        try {
+            // 부모 창에 닫기 메시지 전송
+            window.parent.postMessage({
+                type: 'CLOSE_PERSONAL_COLOR',
+                message: '퍼스널 컬러 진단 종료'
+            }, '*');
+
+            console.log('부모 창에 닫기 메시지 전송');
+            return;
+        } catch (error) {
+            console.warn('부모 창 통신 실패:', error);
+        }
+    }
+
+    // 2순위: 히스토리가 있으면 뒤로가기
+    if (window.history.length > 1) {
+        window.history.back();
+        console.log('히스토리 뒤로가기');
+        return;
+    }
+
+    // 3순위: 상위 디렉토리로 이동
+    window.location.href = '../index.html';
+    console.log('메인 페이지로 이동');
+}
+
+// 전역으로 노출
+window.closePersonalColor = closePersonalColor;
+
 // ==========================================
 // 외부 연동 함수들 (HAIRGATOR 호환)
 // ==========================================

@@ -133,6 +133,39 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     text-align: center;
+    position: relative;
+}
+
+/* ⭐ 닫기 버튼 */
+.close-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: white;
+    font-size: 28px;
+    font-weight: 300;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    line-height: 1;
+    padding: 0;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.close-btn:active {
+    transform: translateY(-50%) scale(0.95);
 }
 
 .app-title {
@@ -932,9 +965,17 @@ body {
     .app-header {
         padding: 1rem;
     }
-    
+
+    .close-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 24px;
+        right: 10px;
+    }
+
     .app-title {
         font-size: 1.5rem;
+        padding-right: 46px; /* 닫기 버튼 공간 확보 */
     }
     
     .video-container {
