@@ -46,14 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     <!-- 메뉴 목록 -->
                     <nav class="sidebar-menu" style="padding: 10px 0;">
 
-                        <!-- 언어 선택 -->
-                        <div class="menu-item" id="languageMenu" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span style="font-size: 20px;">🌍</span>
-                                <span id="languageText" style="color: var(--text-primary, #333); font-size: 14px;">한국어</span>
-                            </div>
-                        </div>
-
                         <!-- 테마 전환 -->
                         <div class="menu-item" id="themeToggleMenu" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
@@ -121,14 +113,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ⭐ 사이드바 메뉴 이벤트 리스너 설정 (재사용 가능)
     function setupSidebarMenuListeners() {
-        const languageMenu = document.getElementById('languageMenu');
         const themeToggleMenu = document.getElementById('themeToggleMenu');
         const personalColorBtn = document.getElementById('personalColorBtn');
         const logoutBtn = document.getElementById('logoutBtn');
-
-        if (languageMenu) {
-            languageMenu.addEventListener('click', showLanguageModal);
-        }
 
         if (themeToggleMenu) {
             themeToggleMenu.addEventListener('click', toggleTheme);
@@ -179,6 +166,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (sidebarClose) {
             sidebarClose.addEventListener('click', closeSidebar);
+        }
+
+        // ⭐ 헤더의 언어 선택 버튼
+        const languageBtnHeader = document.getElementById('languageBtnHeader');
+        if (languageBtnHeader) {
+            languageBtnHeader.addEventListener('click', showLanguageModal);
         }
 
         document.addEventListener('keydown', function(e) {
@@ -415,20 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateAllTexts() {
         // 사이드바 텍스트 업데이트
-        const languageText = document.getElementById('languageText');
         const themeText = document.getElementById('themeText');
-
-        const langNames = {
-            ko: '한국어',
-            en: 'English',
-            ja: '日本語',
-            zh: '中文',
-            vi: 'Tiếng Việt'
-        };
-
-        if (languageText) {
-            languageText.textContent = langNames[currentLanguage] || '한국어';
-        }
 
         const isLight = document.body.classList.contains('light-theme');
         if (themeText) {
