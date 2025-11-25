@@ -257,7 +257,7 @@ async function createMainTabsWithSmart(categories, gender) {
     categories.forEach((category, index) => {
         const tab = document.createElement('button');
         tab.className = `category-tab main-tab ${gender}`;
-        tab.textContent = category.name;
+        tab.textContent = translateCategory(category.name); // ⭐ 번역 적용
         tab.onclick = () => selectMainTab(category, index);
         
         const categoryInfo = categoryInfos[index];
@@ -342,14 +342,14 @@ function updateCategoryDescription(category) {
     
     if (category.description) {
         descriptionText.innerHTML = `
-            <span class="category-name">${category.name}</span>
-            ${category.description}
+            <span class="category-name">${translateCategory(category.name)}</span>
+            ${translateDescription(category.name)}
         `;
         descriptionText.style.textAlign = 'left';
         descriptionText.classList.remove('empty');
         console.log(`카테고리 설명 업데이트: ${category.name}`);
     } else {
-        descriptionText.textContent = '카테고리 설명이 없습니다.';
+        descriptionText.textContent = t('ui.noStyles');
         descriptionText.style.textAlign = 'left';
         descriptionText.classList.add('empty');
     }
@@ -373,7 +373,7 @@ async function loadSmartSubTabs(categoryName) {
     SUB_CATEGORIES.forEach((subCategory, index) => {
         const tab = document.createElement('button');
         tab.className = `sub-tab ${currentGender}`;
-        tab.textContent = subCategory;
+        tab.textContent = translateSubcategory(subCategory); // ⭐ 번역 적용
         
         // 사용 가능한 서브카테고리인지 확인
         const isAvailable = subInfo.available.includes(subCategory);
@@ -681,11 +681,11 @@ function openStyleModal(style) {
 
     if (modalCode) modalCode.textContent = style.code || 'NO CODE';
     if (modalName) modalName.textContent = style.name || '이름 없음';
-    if (modalCategory) modalCategory.textContent = style.mainCategory || '-';
-    if (modalSubcategory) modalSubcategory.textContent = style.subCategory || '-';
+    if (modalCategory) modalCategory.textContent = translateCategory(style.mainCategory) || '-'; // ⭐ 번역 적용
+    if (modalSubcategory) modalSubcategory.textContent = translateSubcategory(style.subCategory) || '-'; // ⭐ 번역 적용
     if (modalGender) {
-        modalGender.textContent = style.gender === 'male' ? '남성' :
-                                 style.gender === 'female' ? '여성' : '-';
+        modalGender.textContent = style.gender === 'male' ? t('gender.male') :
+                                 style.gender === 'female' ? t('gender.female') : '-'; // ⭐ 번역 적용
     }
 
     // 모달 표시

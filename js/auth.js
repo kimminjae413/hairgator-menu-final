@@ -45,6 +45,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ⚠️ 성별 버튼 이벤트 리스너 제거 (중복 호출 방지)
     // index.html의 onclick="selectGender()" 만 사용
+
+    // ⭐ 성별 선택 화면 번역 적용
+    setTimeout(() => {
+        const maleLabelElements = document.querySelectorAll('.gender-btn.male .gender-label');
+        const femaleLabelElements = document.querySelectorAll('.gender-btn.female .gender-label');
+
+        maleLabelElements.forEach(el => {
+            if (el) el.textContent = t('gender.male');
+        });
+
+        femaleLabelElements.forEach(el => {
+            if (el) el.textContent = t('gender.female');
+        });
+
+        console.log('✅ 성별 선택 화면 번역 적용 완료');
+    }, 500);
+
     console.log('✅ 인증 시스템 초기화 완료 (불나비 자동 로그인 전용)');
 });
 
