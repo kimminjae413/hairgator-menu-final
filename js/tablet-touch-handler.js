@@ -1,20 +1,20 @@
 // HAIRGATOR 태블릿 터치 문제 완전 해결
 // index.html의 menu.js 다음에 추가하세요
 
+// ⭐ 전역 스코프로 이동 (클릭 이벤트에서도 접근 가능하도록)
+const isTouchDevice = ('ontouchstart' in window) ||
+                     (navigator.maxTouchPoints > 0) ||
+                     (navigator.msMaxTouchPoints > 0);
+
+// 태블릿 크기 감지 (768px ~ 1024px)
+const isTabletSize = () => {
+    const width = window.innerWidth;
+    return width >= 768 && width <= 1024;
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🎯 HAIRGATOR 태블릿 터치 핸들러 초기화');
-    
-    // 터치 디바이스 감지
-    const isTouchDevice = ('ontouchstart' in window) || 
-                         (navigator.maxTouchPoints > 0) || 
-                         (navigator.msMaxTouchPoints > 0);
-    
-    // 태블릿 크기 감지 (768px ~ 1024px)
-    const isTabletSize = () => {
-        const width = window.innerWidth;
-        return width >= 768 && width <= 1024;
-    };
-    
+
     if (isTouchDevice && isTabletSize()) {
         console.log('📱 태블릿 터치 환경 감지 - 최적화 적용');
         setupTabletTouchHandling();
