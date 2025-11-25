@@ -257,7 +257,7 @@ async function createMainTabsWithSmart(categories, gender) {
     categories.forEach((category, index) => {
         const tab = document.createElement('button');
         tab.className = `category-tab main-tab ${gender}`;
-        tab.textContent = translateCategory(category.name); // ⭐ 번역 적용
+        tab.textContent = category.name; // 영어로 통일
         tab.onclick = () => selectMainTab(category, index);
         
         const categoryInfo = categoryInfos[index];
@@ -342,7 +342,7 @@ function updateCategoryDescription(category) {
     
     if (category.description) {
         descriptionText.innerHTML = `
-            <span class="category-name">${translateCategory(category.name)}</span>
+            <span class="category-name">${category.name}</span>
             ${translateDescription(category.name)}
         `;
         descriptionText.style.textAlign = 'left';
@@ -373,7 +373,7 @@ async function loadSmartSubTabs(categoryName) {
     SUB_CATEGORIES.forEach((subCategory, index) => {
         const tab = document.createElement('button');
         tab.className = `sub-tab ${currentGender}`;
-        tab.textContent = translateSubcategory(subCategory); // ⭐ 번역 적용
+        tab.textContent = subCategory; // 영어로 통일
         
         // 사용 가능한 서브카테고리인지 확인
         const isAvailable = subInfo.available.includes(subCategory);
@@ -681,8 +681,8 @@ function openStyleModal(style) {
 
     if (modalCode) modalCode.textContent = style.code || 'NO CODE';
     if (modalName) modalName.textContent = style.name || '이름 없음';
-    if (modalCategory) modalCategory.textContent = translateCategory(style.mainCategory) || '-'; // ⭐ 번역 적용
-    if (modalSubcategory) modalSubcategory.textContent = translateSubcategory(style.subCategory) || '-'; // ⭐ 번역 적용
+    if (modalCategory) modalCategory.textContent = style.mainCategory || '-'; // 영어로 통일
+    if (modalSubcategory) modalSubcategory.textContent = style.subCategory || '-'; // 영어로 통일
     if (modalGender) {
         modalGender.textContent = style.gender === 'male' ? t('gender.male') :
                                  style.gender === 'female' ? t('gender.female') : '-'; // ⭐ 번역 적용
