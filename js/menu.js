@@ -526,11 +526,31 @@ async function loadStyles() {
 function createStyleCard(style) {
     const card = document.createElement('div');
     card.className = 'style-card';
-    
+
     // NEW 표시 조건 확인 (7일 이내)
-    const isNew = style.createdAt && 
-                  (new Date() - style.createdAt.toDate()) < (7 * 24 * 60 * 60 * 1000);
-    
+    let isNew = false;
+    if (style.createdAt) {
+        try {
+            const createdDate = style.createdAt.toDate();
+            const daysSinceCreated = (new Date() - createdDate) / (24 * 60 * 60 * 1000);
+            isNew = daysSinceCreated < 7;
+
+            // 디버깅 로그 (처음 3개만)
+            if (Math.random() < 0.1) { // 10% 확률로 로그 출력
+                console.log('NEW 체크:', {
+                    code: style.code,
+                    createdAt: createdDate.toLocaleString('ko-KR'),
+                    daysSince: daysSinceCreated.toFixed(1),
+                    isNew: isNew
+                });
+            }
+        } catch (error) {
+            console.warn('createdAt 변환 실패:', style.code, error);
+        }
+    } else {
+        console.warn('createdAt 없음:', style.code);
+    }
+
     card.innerHTML = `
         <div class="style-image-wrapper">
             <img class="style-image"
