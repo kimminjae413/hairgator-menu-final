@@ -172,8 +172,9 @@ body.light-theme .logo {
 }
 
 /* 濡쒓렇???붾㈃ */
+/* ========== 로그인 화면 비활성화 (불나비 자동 로그인 사용) ========== */
 .login-screen {
-    display: flex;
+    display: none; /* 기본 숨김 */
     align-items: center;
     justify-content: center;
     min-height: calc(100vh - 65px);
@@ -276,8 +277,9 @@ body.light-theme .form-group input {
 }
 
 /* ?깅퀎 ?좏깮 */
+/* ========== 성별 선택 화면 기본 표시 (불나비 자동 로그인 전용) ========== */
 .gender-selection {
-    display: none;
+    display: flex; /* 기본 표시 */
     align-items: center;
     justify-content: center;
     min-height: 100vh;

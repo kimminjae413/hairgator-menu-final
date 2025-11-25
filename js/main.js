@@ -309,23 +309,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    // ⭐⭐⭐ 최종 수정된 goBack 함수 ⭐⭐⭐
+    // ⭐⭐⭐ 최종 수정된 goBack 함수 (불나비 자동 로그인 전용) ⭐⭐⭐
     window.goBack = function() {
         console.log('🔙 goBack() 호출');
-        
+
         const menuContainer = document.getElementById('menuContainer');
         const genderSelection = document.getElementById('genderSelection');
-        const loginScreen = document.getElementById('loginScreen');
+        // const loginScreen = document.getElementById('loginScreen'); // 로그인 화면 비활성화
         const backBtn = document.getElementById('backBtn');
-        
+
         // 메뉴 → 성별 선택
         if (menuContainer && menuContainer.classList.contains('active')) {
             console.log('🔙 Step 1: 메뉴 숨김');
-            
+
             // 메뉴 완전히 숨기기
             menuContainer.classList.remove('active');
             menuContainer.style.display = 'none';  // ⭐ 핵심!
-            
+
             // 성별 선택 보이기
             if (genderSelection) {
                 genderSelection.style.display = 'flex';
@@ -333,40 +333,58 @@ document.addEventListener('DOMContentLoaded', function() {
                 genderSelection.style.opacity = '1';
                 console.log('✅ 성별 선택 표시됨');
             }
-            
+
             // 버튼 유지
             if (backBtn) {
                 backBtn.style.display = 'flex';
             }
-            
+
             // 전역 변수 리셋
             if (window.currentGender) window.currentGender = null;
             if (window.currentMainTab) window.currentMainTab = null;
             if (window.currentSubTab) window.currentSubTab = null;
-            
+
             console.log('✅ 메뉴 → 성별 완료');
             return;
         }
-        
-        // 성별 선택 → 로그인
+
+        /* ========== 성별 선택 → 로그인 (백업용 - 불나비 자동 로그인 사용으로 비활성화) ==========
         if (genderSelection && genderSelection.style.display === 'flex') {
             console.log('🔙 Step 2: 성별 숨김');
-            
+
             genderSelection.style.display = 'none';
-            
+
             if (loginScreen) {
                 loginScreen.style.display = 'flex';
                 console.log('✅ 로그인 화면 표시됨');
             }
-            
+
             if (backBtn) {
                 backBtn.style.display = 'none';
             }
-            
+
             console.log('✅ 성별 → 로그인 완료');
             return;
         }
-        
+        ========== 성별 선택 → 로그인 종료 ========== */
+
+        // 성별 선택 화면에서 뒤로가기: 앱 종료 (불나비에서 처리)
+        if (genderSelection && genderSelection.style.display === 'flex') {
+            console.log('🔙 성별 선택에서 뒤로가기 - 앱 종료 시도');
+
+            // 뒤로가기 버튼 숨김
+            if (backBtn) {
+                backBtn.style.display = 'none';
+            }
+
+            // 불나비 앱이면 앱 종료 메시지 전송
+            if (window.BullnabiBridge && window.BullnabiBridge.isInNativeApp()) {
+                window.BullnabiBridge.sendToNative({ type: 'CLOSE_APP' });
+            }
+
+            return;
+        }
+
         console.warn('⚠️ 알 수 없는 상태');
     };
 

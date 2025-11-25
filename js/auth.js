@@ -2,16 +2,16 @@
 
 // DOM 로드 완료 후 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    // 로그인 폼 처리
+    /* ========== 로그인 폼 처리 (백업용 - 불나비 자동 로그인 사용으로 비활성화) ==========
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const name = document.getElementById('designerName').value;
             const phone = document.getElementById('phoneNumber').value;
             const password = document.getElementById('password').value;
-            
+
             // 로그인 검증
             if (name && phone.length === 4 && password.length === 4) {
                 // localStorage에 저장 (24시간 유지)
@@ -19,32 +19,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem('designerPhone', phone);
                 localStorage.setItem('designerPassword', password);
                 localStorage.setItem('loginTime', new Date().getTime());
-                
+
                 // 화면 전환
                 document.getElementById('loginScreen').classList.remove('active');
                 document.getElementById('genderSelection').classList.add('active');
-                
+
                 // 디자이너 이름 표시
                 if (document.getElementById('designerNameDisplay')) {
                     document.getElementById('designerNameDisplay').textContent = name;
                 }
-                
+
                 console.log('로그인 성공:', name);
             } else {
                 alert('모든 정보를 정확히 입력해주세요');
             }
         });
     }
-    
+    ========== 로그인 폼 처리 종료 ========== */
+
     // 기존 불나비 세션이 있는지 확인
     const bullnabiUser = getBullnabiUser();
     if (bullnabiUser) {
         console.log('기존 불나비 세션 복원:', bullnabiUser.name);
     }
-    
+
     // ⚠️ 성별 버튼 이벤트 리스너 제거 (중복 호출 방지)
     // index.html의 onclick="selectGender()" 만 사용
-    console.log('✅ 인증 시스템 초기화 완료 (성별 선택 중복 방지)');
+    console.log('✅ 인증 시스템 초기화 완료 (불나비 자동 로그인 전용)');
 });
 
 // ========== 불나비 연동 기능 ==========
