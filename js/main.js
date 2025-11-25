@@ -80,39 +80,72 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     </nav>
                 `;
-                
+
                 const style = document.createElement('style');
                 style.textContent = `
                     .menu-item:hover {
                         background: rgba(128, 128, 128, 0.1) !important;
                         transition: background 0.3s ease;
                     }
-                    
+
                     .sidebar-menu {
                         max-height: calc(100vh - 200px);
                         overflow-y: auto;
                     }
-                    
+
                     body.light-theme .sidebar {
                         background: #f5f5f5;
                     }
-                    
+
                     body.light-theme .sidebar-header {
                         background: #f5f5f5;
                         border-bottom: 1px solid rgba(0,0,0,0.1);
                     }
-                    
+
                     body.light-theme .sidebar-header h3,
                     body.light-theme .sidebar-close {
                         color: #333;
                     }
                 `;
                 document.head.appendChild(style);
-                
+
                 console.log('✅ 사이드바 메뉴 복원 완료');
+
+                // ⭐ 사이드바 메뉴 이벤트 리스너 재설정
+                setupSidebarMenuListeners();
+
                 updateLoginInfo();
             }
         }
+    }
+
+    // ⭐ 사이드바 메뉴 이벤트 리스너 설정 (재사용 가능)
+    function setupSidebarMenuListeners() {
+        const languageMenu = document.getElementById('languageMenu');
+        const themeToggleMenu = document.getElementById('themeToggleMenu');
+        const personalColorBtn = document.getElementById('personalColorBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        if (languageMenu) {
+            languageMenu.addEventListener('click', showLanguageModal);
+        }
+
+        if (themeToggleMenu) {
+            themeToggleMenu.addEventListener('click', toggleTheme);
+        }
+
+        if (personalColorBtn) {
+            personalColorBtn.addEventListener('click', function() {
+                console.log('🎨 퍼스널 컬러 진단 클릭');
+                window.location.href = '/personal-color/';
+            });
+        }
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', handleLogout);
+        }
+
+        console.log('✅ 사이드바 메뉴 이벤트 리스너 설정 완료');
     }
 
     function updateLoginInfo() {
@@ -148,32 +181,6 @@ document.addEventListener('DOMContentLoaded', function() {
             sidebarClose.addEventListener('click', closeSidebar);
         }
 
-        setTimeout(() => {
-            const languageMenu = document.getElementById('languageMenu');
-            const themeToggleMenu = document.getElementById('themeToggleMenu');
-            const personalColorBtn = document.getElementById('personalColorBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
-
-            if (languageMenu) {
-                languageMenu.addEventListener('click', showLanguageModal);
-            }
-
-            if (themeToggleMenu) {
-                themeToggleMenu.addEventListener('click', toggleTheme);
-            }
-
-            if (personalColorBtn) {
-                personalColorBtn.addEventListener('click', function() {
-                    console.log('🎨 퍼스널 컬러 진단 클릭');
-                    window.location.href = '/personal-color/';
-                });
-            }
-
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', handleLogout);
-            }
-        }, 500);
-
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 if (typeof window.HAIRGATOR_MENU?.closeStyleModal === 'function') {
@@ -184,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        
+
         document.addEventListener('click', function(e) {
             if (sidebar && sidebar.classList.contains('active')) {
                 if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
