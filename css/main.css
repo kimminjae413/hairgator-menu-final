@@ -799,6 +799,7 @@ body.light-theme .menu-items-container {
     border: 1px solid #333;
     aspect-ratio: 3/4;
     position: relative;
+    padding: 0;
 }
 
 .style-card:hover {
@@ -811,6 +812,8 @@ body.light-theme .menu-items-container {
     height: 100%;
     position: relative;
     display: block;
+    padding: 0;
+    margin: 0;
 }
 
 .style-image {
@@ -818,6 +821,7 @@ body.light-theme .menu-items-container {
     height: 100%;
     object-fit: cover;
     display: block;
+    border-radius: 0;
 }
 
 .ai-experience-btn {
