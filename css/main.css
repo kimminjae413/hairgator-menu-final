@@ -592,10 +592,10 @@ body.light-theme .category-tab:hover {
 /* ========== 移댄뀒怨좊━ ?ㅻ챸 ?곸뿭 ========== */
 .category-description {
     background: #0a0a0a;
-    padding: 12px 15px;
+    padding: 6px 15px;
     border-bottom: 1px solid #222;
     transition: all 0.3s ease;
-    min-height: 50px;
+    min-height: 35px;
     display: flex !important;
     /* 媛뺤젣 ?쒖떆 */
     align-items: center;
