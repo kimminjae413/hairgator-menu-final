@@ -1458,30 +1458,38 @@ function showToast(message, type = 'info', duration = 3000) {
 
 // 모드 선택
 function selectMode(mode) {
+    console.log(`🎯 selectMode 호출: ${mode}`);
     currentMode = mode;
-    
+
     // 모든 섹션 숨기기
-    document.querySelectorAll('.mode-section').forEach(section => {
+    const allSections = document.querySelectorAll('.section');
+    console.log(`📋 전체 섹션 개수: ${allSections.length}`);
+    allSections.forEach(section => {
+        section.classList.remove('active');
         section.style.display = 'none';
     });
-    
+
+    // 모드별 섹션 ID 매핑
+    const sectionIds = {
+        'selection': 'mode-selection',
+        'ai': 'ai-analysis',
+        'draping': 'draping-mode'
+    };
+
+    const targetSectionId = sectionIds[mode] || mode;
+    console.log(`🎬 표시할 섹션 ID: ${targetSectionId}`);
+
     // 선택한 모드 표시
-    const selectedSection = document.getElementById(`${mode}-mode`);
+    const selectedSection = document.getElementById(targetSectionId);
     if (selectedSection) {
+        selectedSection.classList.add('active');
         selectedSection.style.display = 'block';
+        console.log(`✅ 섹션 표시 성공: ${targetSectionId}`);
+    } else {
+        console.error(`❌ 섹션을 찾을 수 없음: ${targetSectionId}`);
     }
-    
-    // 네비게이션 버튼 업데이트
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    const activeBtn = document.querySelector(`[onclick="selectMode('${mode}')"]`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-    }
-    
-    console.log(`모드 전환: ${mode}`);
+
+    console.log(`✅ 모드 전환 완료: ${mode}`);
 }
 
 // 뒤로 가기
@@ -1491,45 +1499,99 @@ function goBack() {
     }
 }
 
+// 홈으로 (goBack과 동일)
+function goHome() {
+    selectMode('selection');
+}
+
 // ⭐ 퍼스널 컬러 모드 닫기 (메인 서비스로 돌아가기)
 function closePersonalColor() {
-    console.log('퍼스널 컬러 모드 닫기');
+    console.log('🚪 퍼스널 컬러 모드 닫기 시작');
 
     // 카메라가 실행 중이면 중지
     if (videoElement && videoElement.srcObject) {
+        console.log('📹 카메라 중지');
         stopCamera();
     }
 
-    // 1순위: 부모 창이 있으면 (iframe으로 열린 경우)
-    if (window.parent && window.parent !== window) {
-        try {
-            // 부모 창에 닫기 메시지 전송
+    // 사용자 확인 메시지
+    const confirmed = confirm('퍼스널 컬러 진단을 종료하고 메인 화면으로 돌아가시겠습니까?');
+    if (!confirmed) {
+        console.log('❌ 사용자가 닫기 취소');
+        return;
+    }
+
+    console.log('✅ 닫기 확인됨');
+
+    // 1순위: iframe으로 열린 경우
+    try {
+        if (window.parent && window.parent !== window) {
+            console.log('📤 부모 창으로 닫기 메시지 전송');
             window.parent.postMessage({
                 type: 'CLOSE_PERSONAL_COLOR',
                 message: '퍼스널 컬러 진단 종료'
             }, '*');
 
-            console.log('부모 창에 닫기 메시지 전송');
+            // 500ms 후에도 안 닫히면 다음 방법 시도
+            setTimeout(() => {
+                console.log('⏱️ 부모 창 응답 없음, 다음 방법 시도');
+                tryAlternativeClose();
+            }, 500);
             return;
-        } catch (error) {
-            console.warn('부모 창 통신 실패:', error);
         }
+    } catch (error) {
+        console.error('❌ 부모 창 통신 오류:', error);
     }
 
-    // 2순위: 히스토리가 있으면 뒤로가기
-    if (window.history.length > 1) {
+    // iframe이 아닌 경우 바로 대안 실행
+    tryAlternativeClose();
+}
+
+// 대안 닫기 방법들
+function tryAlternativeClose() {
+    console.log('🔄 대안 닫기 방법 시도');
+
+    // 방법 1: 브라우저 뒤로가기
+    if (window.history.length > 1 && document.referrer) {
+        console.log('⬅️ 히스토리 뒤로가기 (referrer:', document.referrer, ')');
         window.history.back();
-        console.log('히스토리 뒤로가기');
         return;
     }
 
-    // 3순위: 상위 디렉토리로 이동
-    window.location.href = '../index.html';
-    console.log('메인 페이지로 이동');
+    // 방법 2: 상위 디렉토리로 이동
+    const currentPath = window.location.pathname;
+    console.log('📍 현재 경로:', currentPath);
+
+    if (currentPath.includes('/personal-color/')) {
+        const mainPath = currentPath.replace('/personal-color/index.html', '/index.html')
+                                   .replace('/personal-color/', '/');
+        console.log('🏠 메인 페이지로 이동:', mainPath);
+        window.location.href = mainPath;
+        return;
+    }
+
+    // 방법 3: 절대 경로로 이동
+    console.log('🌐 절대 경로로 메인 이동');
+    window.location.href = '/index.html';
 }
 
-// 전역으로 노출
+// ⭐ 전역 함수로 노출 (HTML onclick에서 사용)
 window.closePersonalColor = closePersonalColor;
+window.startCamera = startCamera;
+window.stopCamera = stopCamera;
+window.selectMode = selectMode;
+window.goBack = goBack;
+window.goHome = goHome;
+window.analyzePhoto = analyzePhoto;
+window.removeSavedColor = removeSavedColor;
+
+console.log('✅ 전역 함수 노출 완료:', {
+    closePersonalColor: typeof window.closePersonalColor,
+    startCamera: typeof window.startCamera,
+    stopCamera: typeof window.stopCamera,
+    selectMode: typeof window.selectMode,
+    goHome: typeof window.goHome
+});
 
 // ==========================================
 // 외부 연동 함수들 (HAIRGATOR 호환)
