@@ -789,9 +789,35 @@ body.light-theme .menu-items-container {
     }
 }
 
+/* 스타일 카드 기본 스타일 */
+.style-card {
+    background: transparent;
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid #333;
+    aspect-ratio: 3/4;
+    position: relative;
+}
+
 .style-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+}
+
+.style-image-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: block;
+}
+
+.style-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .ai-experience-btn {
