@@ -1609,20 +1609,6 @@ body.light-theme .style-detail-row {
 }
 
 .style-detail-value {
-    color: var(--text-primary);
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.style-modal-actions {
-    display: none !important;
-    /* 스타일 카드 클릭 시 액션 버튼 숨김 */
-    gap: 10px;
-}
-
-.modal-action-btn {
-    flex: 1;
-    background: var(--female-color);
     color: white;
     border: none;
     padding: 15px;
