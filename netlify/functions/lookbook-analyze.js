@@ -107,66 +107,73 @@ async function analyzeWithGemini2Flash(imageUrl, apiKey, language, providedGende
         ? `중요: 이 헤어스타일은 ${providedGender === 'male' ? '남성' : '여성'} 스타일입니다. gender 필드는 반드시 "${providedGender}"로 설정하세요.`
         : '이미지를 보고 성별을 판단해주세요.';
 
-    const prompt = `당신은 세계적인 헤어 스타일리스트이자 패션 에디터입니다. 이 헤어스타일 이미지를 분석해주세요.
+    const prompt = `당신은 세계적인 헤어 스타일리스트이자 패션 에디터입니다. 이 헤어스타일 이미지를 **실제로 보고** 분석해주세요.
 
 ${langInstruction}
 
 ${genderInstruction}
 
+⚠️ 중요 지침:
+1. 이미지에 보이는 헤어스타일을 **실제로 관찰**하고 분석하세요.
+2. **스트레이트/생머리인 경우**: 컬이나 웨이브 관련 팁을 주지 마세요. 대신 윤기, 결 정리, 볼륨 관리 등 직모에 맞는 팁을 제공하세요.
+3. **웨이브/컬 스타일인 경우**: 컬 유지, 디퓨저 사용 등의 팁을 제공하세요.
+4. 모든 분석은 **이 이미지의 헤어스타일 특성에 맞게** 작성하세요.
+5. 얼굴형 추천도 이 **특정 헤어스타일의 실루엣과 볼륨 분포**를 기반으로 작성하세요.
+
 다음 JSON 형식으로 정확히 응답해주세요:
 
 {
     "gender": "${providedGender || 'male 또는 female'}",
-    "styleName": "이 헤어스타일의 이름 (예: 히피펌, 레이어드컷, 투블럭 등)",
-    "styleDescription": "이 헤어스타일의 특징을 2-3문장으로 설명",
+    "styleName": "이 헤어스타일의 정확한 이름 (예: 히피펌, 레이어드컷, 투블럭, C컬펌, 일자컷, 시스루뱅 등)",
+    "styleDescription": "이미지에서 관찰되는 이 헤어스타일의 구체적인 특징을 2-3문장으로 설명 (앞머리 유무, 볼륨 위치, 결 방향 등 포함)",
     "characteristics": {
-        "length": "길이 (숏, 미디엄, 롱 등)",
-        "texture": "텍스처 (웨이브, 스트레이트, 컬 등)",
-        "volume": "볼륨감 (높음, 중간, 낮음)",
-        "layering": "레이어링 (많음, 중간, 없음)"
+        "length": "길이 (숏, 미디엄, 롱, 쇄골 길이 등 - 이미지에서 보이는 대로)",
+        "texture": "텍스처 (스트레이트/직모, 내추럴 웨이브, S컬, C컬, 볼륨펌 등 - 실제 이미지 관찰)",
+        "volume": "볼륨감 (높음, 중간, 낮음 - 어느 부분에 볼륨이 있는지)",
+        "layering": "레이어링 (많음, 중간, 없음 - 층이 어디서 시작하는지)"
     },
     "faceShapes": {
-        "best": ["가장 잘 어울리는 얼굴형 2-3개"],
-        "description": "왜 이 얼굴형에 어울리는지 설명"
+        "best": ["이 헤어스타일의 실루엣과 볼륨 분포를 고려해 가장 잘 어울리는 얼굴형 2-3개"],
+        "description": "이 특정 헤어스타일이 해당 얼굴형과 어울리는 구체적인 이유 (볼륨 위치, 얼굴 커버 효과 등)"
     },
     "fashionRecommendations": [
         {
-            "style": "패션 스타일명 (예: 캐주얼, 오피스룩 등)",
-            "items": ["추천 아이템 3-4개"],
-            "reason": "이 헤어스타일과 어울리는 이유"
+            "style": "이 헤어 느낌과 어울리는 패션 스타일명",
+            "items": ["구체적인 추천 아이템 3-4개 (색상이나 소재 포함)"],
+            "reason": "이 헤어스타일의 특징과 패션이 어울리는 구체적 이유"
         },
         {
             "style": "두 번째 패션 스타일",
-            "items": ["추천 아이템 3-4개"],
-            "reason": "어울리는 이유"
+            "items": ["구체적인 추천 아이템 3-4개"],
+            "reason": "어울리는 구체적 이유"
         },
         {
             "style": "세 번째 패션 스타일",
-            "items": ["추천 아이템 3-4개"],
-            "reason": "어울리는 이유"
+            "items": ["구체적인 추천 아이템 3-4개"],
+            "reason": "어울리는 구체적 이유"
         }
     ],
     "stylingTips": [
         {
-            "title": "스타일링 팁 제목",
-            "description": "상세 설명"
+            "title": "이 헤어스타일 텍스처에 맞는 스타일링 팁",
+            "description": "직모면 직모 관리법, 웨이브면 웨이브 유지법 등 구체적으로"
         },
         {
-            "title": "두 번째 팁",
-            "description": "설명"
+            "title": "볼륨/실루엣 유지 팁",
+            "description": "이 헤어스타일의 볼륨 위치를 유지하는 방법"
         },
         {
-            "title": "세 번째 팁",
-            "description": "설명"
+            "title": "데일리 관리 팁",
+            "description": "이 스타일에 맞는 일상 관리 방법"
         }
     ],
     "maintenance": {
-        "hydration": "높음/중간/낮음",
-        "trimCycle": "커트 주기 (주 단위)",
-        "products": ["추천 제품 타입 2-3개"],
-        "tips": "관리 팁 한 문장"
+        "hydration": "이 텍스처에 필요한 수분 레벨 (높음/중간/낮음)",
+        "trimCycle": "이 스타일 유지를 위한 커트 주기 (주 단위)",
+        "products": ["이 헤어 텍스처에 맞는 추천 제품 타입 2-3개"],
+        "tips": "이 특정 스타일 유지를 위한 핵심 관리 팁"
     },
-    "tags": ["관련 태그 4-5개 (예: #볼륨, #웨이브, #내추럴 등)"]
+    "tags": ["이 헤어스타일을 설명하는 태그 4-5개"]
 }
 
 JSON만 출력하고 다른 텍스트는 포함하지 마세요.`;
@@ -231,7 +238,8 @@ JSON만 출력하고 다른 텍스트는 포함하지 마세요.`;
         return analysis;
 
     } catch (error) {
-        console.error('Gemini 분석 오류:', error);
+        console.error('❌ Gemini 분석 오류:', error);
+        console.error('⚠️ 폴백 분석 결과 사용 (주의: 실제 이미지 분석이 아닙니다)');
         return getDefaultAnalysis(language);
     }
 }
@@ -269,14 +277,22 @@ async function generateWithImagen4Fast(analysis, apiKey) {
             console.log(`  ${i + 1}. ${rec.style}: ${rec.items.join(', ')} - ${rec.reason}`);
         });
 
-        // 병렬로 이미지 생성
-        const fashionResults = await Promise.allSettled(
-            fashionPrompts.map(prompt => generateImageWithImagen4(prompt, apiKey))
-        );
-
-        results.variations = fashionResults
-            .filter(r => r.status === 'fulfilled' && r.value)
-            .map(r => r.value);
+        // 순차적으로 이미지 생성 (병렬 시 일부 실패 문제 해결)
+        for (let i = 0; i < fashionPrompts.length; i++) {
+            console.log(`\n🖼️ ========== 이미지 ${i + 1}/3 생성 시작 ==========`);
+            try {
+                const image = await generateImageWithImagen4(fashionPrompts[i], apiKey, i);
+                if (image) {
+                    results.variations.push(image);
+                    console.log(`✅ 이미지 ${i + 1} 생성 성공 - variations 배열 길이: ${results.variations.length}`);
+                } else {
+                    console.warn(`⚠️ 이미지 ${i + 1} 생성 실패 - null 반환됨`);
+                }
+            } catch (imgErr) {
+                console.error(`❌ 이미지 ${i + 1} 생성 에러:`, imgErr.message);
+            }
+            console.log(`========== 이미지 ${i + 1}/3 완료 ==========\n`);
+        }
 
         console.log(`✅ 패션 스타일링 이미지 생성 완료: ${results.variations.length}장`);
 
@@ -288,8 +304,10 @@ async function generateWithImagen4Fast(analysis, apiKey) {
 }
 
 // Imagen 4 Fast API 호출
-async function generateImageWithImagen4(prompt, apiKey) {
+async function generateImageWithImagen4(prompt, apiKey, imageIndex = 0) {
     try {
+        console.log(`📝 이미지 ${imageIndex + 1} 프롬프트 (일부): ${prompt.substring(0, 100)}...`);
+
         // Imagen 4 Fast API
         const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict?key=${apiKey}`,
@@ -308,23 +326,36 @@ async function generateImageWithImagen4(prompt, apiKey) {
             }
         );
 
+        console.log(`📡 이미지 ${imageIndex + 1} API 응답 상태: ${response.status}`);
+
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Imagen 4 Fast API 오류:', response.status, errorText);
+            console.error(`❌ 이미지 ${imageIndex + 1} Imagen 4 Fast API 오류:`, response.status, errorText);
             return null;
         }
 
         const result = await response.json();
+        console.log(`📦 이미지 ${imageIndex + 1} 결과 키:`, Object.keys(result));
 
         // base64 이미지 추출
         if (result.predictions && result.predictions[0]) {
-            const imageData = result.predictions[0].bytesBase64Encoded;
-            return `data:image/png;base64,${imageData}`;
+            const prediction = result.predictions[0];
+            console.log(`📦 이미지 ${imageIndex + 1} prediction 키:`, Object.keys(prediction));
+
+            if (prediction.bytesBase64Encoded) {
+                const imageData = prediction.bytesBase64Encoded;
+                console.log(`✅ 이미지 ${imageIndex + 1} base64 데이터 길이: ${imageData.length}`);
+                return `data:image/png;base64,${imageData}`;
+            } else {
+                console.warn(`⚠️ 이미지 ${imageIndex + 1} bytesBase64Encoded 없음. prediction:`, JSON.stringify(prediction).substring(0, 200));
+                return null;
+            }
         }
 
+        console.warn(`⚠️ 이미지 ${imageIndex + 1} predictions 없음. result:`, JSON.stringify(result).substring(0, 300));
         return null;
     } catch (error) {
-        console.error('Imagen 4 Fast 호출 실패:', error);
+        console.error(`❌ 이미지 ${imageIndex + 1} Imagen 4 Fast 호출 실패:`, error.message);
         return null;
     }
 }
