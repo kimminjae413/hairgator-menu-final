@@ -97,6 +97,8 @@ const HAIRGATOR_I18N = {
     // ========== 룩북 (Lookbook) ==========
     lookbook: {
       button: '룩북',
+      noCredits: '크레딧이 부족합니다',
+      insufficientCredits: '크레딧이 부족합니다. 충전 후 이용해주세요.',
       theEdit: 'THE EDIT',
       createNew: '새로운 스타일 생성',
       trendReport: '트렌드 리포트 2025',
@@ -358,6 +360,8 @@ const HAIRGATOR_I18N = {
     // ========== Lookbook ==========
     lookbook: {
       button: 'Lookbook',
+      noCredits: 'Insufficient credits',
+      insufficientCredits: 'Insufficient credits. Please recharge to continue.',
       theEdit: 'THE EDIT',
       createNew: 'Create New Look',
       trendReport: 'Trend Report 2025',
@@ -610,6 +614,8 @@ const HAIRGATOR_I18N = {
     // ========== Lookbook (Japanese) ==========
     lookbook: {
       button: 'ルックブック',
+      noCredits: 'クレジットが不足しています',
+      insufficientCredits: 'クレジットが不足しています。チャージしてからご利用ください。',
       theEdit: 'THE EDIT',
       createNew: '新しいスタイルを作成',
       trendReport: 'トレンドレポート 2025',
@@ -862,6 +868,8 @@ const HAIRGATOR_I18N = {
     // ========== Lookbook (Chinese) ==========
     lookbook: {
       button: '造型册',
+      noCredits: '积分不足',
+      insufficientCredits: '积分不足，请充值后使用。',
       theEdit: 'THE EDIT',
       createNew: '创建新风格',
       trendReport: '趋势报告 2025',
@@ -1114,6 +1122,8 @@ const HAIRGATOR_I18N = {
     // ========== Lookbook (Vietnamese) ==========
     lookbook: {
       button: 'Lookbook',
+      noCredits: 'Không đủ tín dụng',
+      insufficientCredits: 'Không đủ tín dụng. Vui lòng nạp thêm để tiếp tục.',
       theEdit: 'THE EDIT',
       createNew: 'Tạo kiểu mới',
       trendReport: 'Báo cáo xu hướng 2025',

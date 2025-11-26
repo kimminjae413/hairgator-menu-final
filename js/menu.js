@@ -697,6 +697,28 @@ function openStyleModal(style) {
     // Lookbook 버튼 이벤트 연결 (index.html의 버튼)
     const btnLookbook = document.getElementById('btnOpenLookbook');
     if (btnLookbook) {
+        const LOOKBOOK_CREDIT_COST = 0.2; // 룩북 사용 비용
+
+        // 크레딧 확인 함수
+        const getUserCredits = () => {
+            try {
+                const bullnabiUser = localStorage.getItem('bullnabi_user');
+                if (bullnabiUser) {
+                    const user = JSON.parse(bullnabiUser);
+                    return user.remainCount || 0;
+                }
+            } catch (e) {
+                console.warn('크레딧 확인 실패:', e);
+            }
+            return 0;
+        };
+
+        // 크레딧 부족 여부 확인
+        const hasEnoughCredits = () => {
+            const credits = getUserCredits();
+            return credits >= LOOKBOOK_CREDIT_COST;
+        };
+
         // 다국어 버튼 텍스트 설정 (SVG 아이콘 유지)
         const lookbookText = t('lookbook.button') || 'Lookbook';
         const svgIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -705,8 +727,41 @@ function openStyleModal(style) {
         </svg>`;
         btnLookbook.innerHTML = `${svgIcon}<span>${lookbookText}</span>`;
 
+        // 크레딧 상태에 따라 버튼 스타일 업데이트
+        const updateButtonState = () => {
+            if (!hasEnoughCredits()) {
+                btnLookbook.style.opacity = '0.5';
+                btnLookbook.style.cursor = 'not-allowed';
+                btnLookbook.title = t('lookbook.noCredits') || '크레딧이 부족합니다';
+            } else {
+                btnLookbook.style.opacity = '1';
+                btnLookbook.style.cursor = 'pointer';
+                btnLookbook.title = '';
+            }
+        };
+
+        // 초기 상태 설정
+        updateButtonState();
+
         btnLookbook.onclick = function (e) {
             e.stopPropagation();
+
+            // 크레딧 체크
+            if (!hasEnoughCredits()) {
+                const currentCredits = getUserCredits();
+                const message = t('lookbook.insufficientCredits') ||
+                    `크레딧이 부족합니다. (현재: ${currentCredits}, 필요: ${LOOKBOOK_CREDIT_COST})`;
+
+                // 토스트 메시지 또는 알림
+                if (typeof showToast === 'function') {
+                    showToast(message, 'error');
+                } else {
+                    alert(message);
+                }
+                console.warn('💳 크레딧 부족:', { current: currentCredits, required: LOOKBOOK_CREDIT_COST });
+                return;
+            }
+
             console.log('📖 Lookbook 열기:', style.name);
 
             // lookbook.html로 이동 (URL 파라미터로 데이터 전달)
