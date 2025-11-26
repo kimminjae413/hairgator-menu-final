@@ -237,60 +237,29 @@ JSON만 출력하고 다른 텍스트는 포함하지 마세요.`;
 }
 
 // ==================== Imagen 4 Fast 이미지 생성 ====================
-// 패션 스타일링 이미지 3장 생성 (AI 분석 결과 기반, 각각 다른 모델/포즈)
+// 패션 스타일링 이미지 3장 생성 - 각각 다른 패션 착장
 async function generateWithImagen4Fast(analysis, apiKey) {
-    const { gender, styleName, styleDescription, characteristics, fashionRecommendations } = analysis;
+    const { gender, styleName, characteristics, fashionRecommendations } = analysis;
 
     // 성별에 따른 기본 설정
     const genderBase = gender === 'male' ? 'man' : 'woman';
 
-    // 다양성을 극대화하기 위한 모델 설정 - 완전히 다른 외모와 스타일링
-    const modelVariations = [
-        {
-            appearance: 'youthful Korean model with sharp jawline and small face',
-            age: 'early 20s',
-            pose: 'confident stance, looking directly at camera',
-            expression: 'cool and composed expression',
-            angle: 'straight front view',
-            lighting: 'dramatic side lighting with shadows',
-            background: 'dark gray studio backdrop'
-        },
-        {
-            appearance: 'elegant Korean model with soft feminine features and round face',
-            age: 'late 20s',
-            pose: 'relaxed three-quarter turn, one hand touching collar',
-            expression: 'warm gentle smile',
-            angle: 'three-quarter profile view',
-            lighting: 'soft natural window light',
-            background: 'cream colored minimalist interior'
-        },
-        {
-            appearance: 'mature sophisticated Korean model with defined cheekbones',
-            age: 'mid 30s',
-            pose: 'artistic pose with chin slightly tilted up',
-            expression: 'mysterious contemplative look',
-            angle: 'dramatic side angle showing profile',
-            lighting: 'golden hour warm lighting',
-            background: 'blurred urban outdoor setting'
-        }
-    ];
-
     const results = {
-        variations: [], // 패션 착장 이미지 (메인으로 사용)
-        fashion: []     // 빈 배열 (하위 호환성)
+        variations: [],
+        fashion: []
     };
 
-    // AI 분석 결과의 패션 추천을 기반으로 프롬프트 생성 - 각 이미지가 완전히 다르게
+    // 각 패션 스타일별로 구체적인 옷 프롬프트 생성
     const fashionPrompts = fashionRecommendations.slice(0, 3).map((rec, index) => {
-        const model = modelVariations[index];
         const fashionItems = rec.items.join(', ');
         const fashionStyle = rec.style;
 
-        // 헤어스타일 특징 간결하게
-        const hairDetails = `styled ${styleName} hair (${characteristics.texture}, ${characteristics.length} length)`;
+        // 헤어스타일 간결하게
+        const hairDesc = `${styleName} hairstyle`;
 
-        // 각 이미지마다 완전히 다른 프롬프트 구조
-        return `High-end fashion magazine editorial photo. UNIQUE MODEL ${index + 1}: ${model.appearance}, ${model.age}, ${genderBase}. HAIRSTYLE: ${hairDetails}. OUTFIT: ${fashionItems} in ${fashionStyle} style. POSE: ${model.pose}, ${model.expression}. CAMERA: ${model.angle}. LIGHTING: ${model.lighting}. BACKGROUND: ${model.background}. Upper body portrait, professional photography, sharp focus, 8K quality. This is model number ${index + 1} of 3 completely different people.`;
+        // 패션/옷을 최우선으로 강조하는 프롬프트
+        // 각 이미지마다 완전히 다른 옷차림이 핵심
+        return `Fashion editorial photograph of a Korean ${genderBase} wearing ${fashionItems}. The model is dressed in ${fashionStyle} style clothing. IMPORTANT: The outfit must clearly show ${fashionItems}. Hair: ${hairDesc}. Upper body portrait, fashion magazine quality, studio lighting, clean background, the clothing and fashion style is the main focus of this image.`;
     });
 
     try {
