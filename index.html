@@ -220,6 +220,194 @@
         -->
         <!-- ========== 로그인 화면 종료 ========== -->
 
+        <!-- ========== 퍼스널컬러 진단 섹션 (메인 앱 통합) ========== -->
+        <div id="personalColorView" class="personal-color-view" style="display: none;">
+            <!-- 헤더 -->
+            <div class="pc-header">
+                <button class="pc-back-btn" onclick="HAIRGATOR_PERSONAL_COLOR.backToMainApp()">← 뒤로</button>
+                <h1 class="pc-title">HAIRGATOR Personal Color</h1>
+                <div class="pc-subtitle">AI 기반 퍼스널컬러 진단 시스템</div>
+            </div>
+
+            <!-- 모드 선택 섹션 -->
+            <section class="pc-section active" id="pc-mode-selection" style="display: block;">
+                <h2 class="pc-mode-title">퍼스널컬러 진단 방법을 선택하세요</h2>
+
+                <div class="pc-mode-cards">
+                    <div class="pc-mode-card" onclick="HAIRGATOR_PERSONAL_COLOR.selectMode('ai')">
+                        <span class="pc-mode-icon">🤖</span>
+                        <h3 class="pc-mode-card-title">AI 퍼스널컬러 분석</h3>
+                        <p class="pc-mode-description">
+                            최신 AI 기술로 얼굴을 분석하여 정확한 퍼스널컬러를 진단합니다.
+                        </p>
+                        <ul class="pc-mode-features">
+                            <li>실시간 얼굴 인식 및 피부톤 추출</li>
+                            <li>LAB 색공간 기반 정밀 분석</li>
+                            <li>624개 헤어컬러와 자동 매칭</li>
+                        </ul>
+                        <button class="pc-mode-btn">AI 분석 시작</button>
+                    </div>
+
+                    <div class="pc-mode-card" onclick="HAIRGATOR_PERSONAL_COLOR.selectMode('draping')">
+                        <span class="pc-mode-icon">🎭</span>
+                        <h3 class="pc-mode-card-title">전문가 드래이핑 모드</h3>
+                        <p class="pc-mode-description">
+                            실시간 드래이핑으로 어울리는 헤어컬러를 직접 확인해보세요.
+                        </p>
+                        <ul class="pc-mode-features">
+                            <li>실시간 카메라 드래이핑</li>
+                            <li>4계절 색상 팔레트 제공</li>
+                            <li>브랜드별 제품 추천</li>
+                        </ul>
+                        <button class="pc-mode-btn">드래이핑 시작</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI 분석 모드 -->
+            <section class="pc-section" id="pc-ai-analysis" style="display: none;">
+                <div class="pc-section-nav">
+                    <button class="pc-nav-btn" onclick="HAIRGATOR_PERSONAL_COLOR.goHome()">← 홈으로</button>
+                    <h2 class="pc-section-title">AI 퍼스널컬러 분석</h2>
+                </div>
+
+                <div class="pc-analysis-grid">
+                    <!-- 카메라 영역 -->
+                    <div class="pc-camera-container">
+                        <div class="pc-video-container">
+                            <video id="pc-ai-camera" autoplay muted playsinline></video>
+                            <canvas id="pc-ai-face-overlay"></canvas>
+                            <div class="pc-face-guide" id="pc-ai-face-guide">
+                                얼굴을 가이드라인에<br>맞춰주세요
+                            </div>
+                        </div>
+                        <div class="pc-camera-controls">
+                            <button class="pc-control-btn" onclick="HAIRGATOR_PERSONAL_COLOR.startAICamera()">카메라 시작</button>
+                            <button class="pc-control-btn primary" onclick="HAIRGATOR_PERSONAL_COLOR.analyzeAI()">AI 분석</button>
+                            <button class="pc-control-btn" onclick="HAIRGATOR_PERSONAL_COLOR.stopAICamera()">정지</button>
+                        </div>
+                    </div>
+
+                    <!-- 분석 패널 -->
+                    <div class="pc-analysis-panel">
+                        <h3>AI 분석 진행상황</h3>
+                        <div class="pc-analysis-steps">
+                            <div class="pc-analysis-step" id="pc-ai-step-1">
+                                <div class="pc-step-number">1</div>
+                                <div class="pc-step-content">
+                                    <h4>얼굴 인식</h4>
+                                    <p>MediaPipe로 얼굴 영역을 감지합니다</p>
+                                </div>
+                            </div>
+                            <div class="pc-analysis-step" id="pc-ai-step-2">
+                                <div class="pc-step-number">2</div>
+                                <div class="pc-step-content">
+                                    <h4>피부톤 분석</h4>
+                                    <p>RGB → LAB 색공간 변환 및 색상 추출</p>
+                                </div>
+                            </div>
+                            <div class="pc-analysis-step" id="pc-ai-step-3">
+                                <div class="pc-step-number">3</div>
+                                <div class="pc-step-content">
+                                    <h4>Delta E 계산</h4>
+                                    <p>색차 측정 및 정확도 산출</p>
+                                </div>
+                            </div>
+                            <div class="pc-analysis-step" id="pc-ai-step-4">
+                                <div class="pc-step-number">4</div>
+                                <div class="pc-step-content">
+                                    <h4>결과 생성</h4>
+                                    <p>전문가 노하우 기반 최종 진단</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pc-analysis-results" id="pc-ai-analysis-results" style="display: none;">
+                            <h4>분석 결과</h4>
+                            <div class="pc-result-summary">
+                                <div class="pc-season-result" id="pc-ai-season-result">분석 중...</div>
+                                <div class="pc-confidence-score" id="pc-ai-confidence">-</div>
+                            </div>
+                            <div class="pc-analysis-data" id="pc-ai-analysis-data"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 드래이핑 모드 -->
+            <section class="pc-section" id="pc-draping-mode" style="display: none;">
+                <div class="pc-section-nav">
+                    <button class="pc-nav-btn" onclick="HAIRGATOR_PERSONAL_COLOR.goHome()">← 홈으로</button>
+                    <h2 class="pc-section-title">전문가 드래이핑 모드</h2>
+                </div>
+
+                <div class="pc-draping-layout">
+                    <!-- 드래이핑 카메라 -->
+                    <div class="pc-draping-camera-section">
+                        <div class="pc-video-container">
+                            <video id="pc-draping-camera" autoplay muted playsinline></video>
+                            <canvas id="pc-draping-overlay"></canvas>
+                            <div class="pc-face-guide" id="pc-draping-face-guide">
+                                얼굴을 가이드라인에<br>맞춰주세요
+                            </div>
+                        </div>
+                        <div class="pc-camera-controls">
+                            <button class="pc-control-btn" onclick="HAIRGATOR_PERSONAL_COLOR.startDrapingCamera()">카메라 시작</button>
+                            <button class="pc-control-btn" onclick="HAIRGATOR_PERSONAL_COLOR.saveCurrentColor()">색상 저장</button>
+                        </div>
+                    </div>
+
+                    <!-- 색상 팔레트 -->
+                    <div class="pc-color-palette-section">
+                        <h3>4계절 색상 팔레트</h3>
+
+                        <!-- 계절 탭 -->
+                        <div class="pc-season-tabs">
+                            <button class="pc-season-tab active" data-season="spring" onclick="HAIRGATOR_PERSONAL_COLOR.selectSeason('spring')">봄</button>
+                            <button class="pc-season-tab" data-season="summer" onclick="HAIRGATOR_PERSONAL_COLOR.selectSeason('summer')">여름</button>
+                            <button class="pc-season-tab" data-season="autumn" onclick="HAIRGATOR_PERSONAL_COLOR.selectSeason('autumn')">가을</button>
+                            <button class="pc-season-tab" data-season="winter" onclick="HAIRGATOR_PERSONAL_COLOR.selectSeason('winter')">겨울</button>
+                        </div>
+
+                        <!-- 색상 그리드 -->
+                        <div class="pc-color-grid" id="pc-color-grid"></div>
+
+                        <!-- 세부 조정 -->
+                        <div class="pc-color-adjustments">
+                            <h4>색상 세부 조정</h4>
+                            <div class="pc-adjustment-slider">
+                                <label>명도</label>
+                                <input type="range" id="pc-lightness-slider" min="-30" max="30" value="0" oninput="HAIRGATOR_PERSONAL_COLOR.adjustColor()">
+                                <span id="pc-lightness-value">0</span>
+                            </div>
+                            <div class="pc-adjustment-slider">
+                                <label>채도</label>
+                                <input type="range" id="pc-saturation-slider" min="-50" max="50" value="0" oninput="HAIRGATOR_PERSONAL_COLOR.adjustColor()">
+                                <span id="pc-saturation-value">0</span>
+                            </div>
+                            <div class="pc-adjustment-slider">
+                                <label>온도감</label>
+                                <input type="range" id="pc-warmth-slider" min="-40" max="40" value="0" oninput="HAIRGATOR_PERSONAL_COLOR.adjustColor()">
+                                <span id="pc-warmth-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 공통 결과 섹션 -->
+            <div class="pc-results-section" id="pc-results-section" style="display: none;">
+                <h3>퍼스널컬러 진단 결과</h3>
+                <div class="pc-final-results" id="pc-final-results"></div>
+
+                <div class="pc-product-recommendations" id="pc-product-recommendations">
+                    <h4>추천 헤어컬러 제품</h4>
+                    <div class="pc-brand-sections" id="pc-brand-sections"></div>
+                </div>
+            </div>
+        </div>
+        <!-- ========== 퍼스널컬러 진단 섹션 끝 ========== -->
+
         <!-- 성별 선택 화면 -->
 <div class="gender-selection" id="genderSelection">
     <button class="gender-btn male" data-gender="male" onclick="selectGender('male')">
@@ -1707,123 +1895,76 @@ if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
 }
 </script>
 
-<!-- index.html의 </body> 태그 바로 직전에 추가하세요 -->
+<!-- ⭐ 퍼스널컬러 모듈 로드 (메인 앱 통합) -->
+<script src="js/personal-color.js"></script>
 <script>
-// 퍼스널컬러 기능을 간단한 개발중 메시지로 덮어쓰기
-function handlePersonalColorAccess(event) {
-    // 이벤트 전파 중단
-    if (event) {
-        event.stopPropagation();
-        event.preventDefault();
+// 퍼스널컬러 뷰 표시 함수
+function showPersonalColorView() {
+    console.log('🎨 퍼스널컬러 뷰 활성화');
+
+    // 다른 뷰 숨기기
+    const genderSelection = document.getElementById('genderSelection');
+    if (genderSelection) genderSelection.style.display = 'none';
+
+    const menuContainer = document.getElementById('menuContainer');
+    if (menuContainer) menuContainer.classList.remove('active');
+
+    // 퍼스널컬러 뷰 표시
+    const personalColorView = document.getElementById('personalColorView');
+    if (personalColorView) {
+        personalColorView.style.display = 'block';
+
+        // 모듈 초기화
+        if (window.HAIRGATOR_PERSONAL_COLOR) {
+            HAIRGATOR_PERSONAL_COLOR.initialize().then(() => {
+                showToast('퍼스널컬러 진단 시스템이 준비되었습니다!', 'success');
+            });
+        }
     }
-    
-    console.log('퍼스널컬러 버튼 클릭됨 - 개발중 메시지 표시');
-    
-    // 사이드바 먼저 닫기
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar && sidebar.classList.contains('active')) {
-        sidebar.classList.remove('active');
-    }
-    
-    // 간단한 개발중 메시지 표시
-    showSimpleDevelopmentToast();
+
+    // 뒤로가기 버튼 표시
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) backBtn.style.display = 'flex';
 }
 
-// 간단한 개발중 토스트 메시지 함수
-function showSimpleDevelopmentToast() {
-    // 기존 토스트가 있으면 제거
-    const existingToast = document.querySelector('.dev-toast');
-    if (existingToast) {
-        existingToast.remove();
+// 퍼스널컬러 뷰 숨기기 (메인 앱 복귀)
+function hidePersonalColorView() {
+    const personalColorView = document.getElementById('personalColorView');
+    if (personalColorView) {
+        personalColorView.style.display = 'none';
     }
-    
-    // 토스트 메시지 생성
-    const toast = document.createElement('div');
-    toast.className = 'dev-toast';
-    toast.innerHTML = `
-        <div class="dev-toast-content">
-            <span class="dev-toast-icon">🔧</span>
-            <span class="dev-toast-message">개발중입니다</span>
-        </div>
-    `;
-    
-    // 토스트 스타일 적용
-    toast.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.9);
-        color: white;
-        padding: 15px 25px;
-        border-radius: 10px;
-        z-index: 10002;
-        font-size: 16px;
-        font-weight: 500;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        animation: devToastFadeIn 0.3s ease-out;
-        backdrop-filter: blur(10px);
-    `;
-    
-    // 토스트 애니메이션 CSS 추가 (한 번만)
-    if (!document.querySelector('#dev-toast-styles')) {
-        const style = document.createElement('style');
-        style.id = 'dev-toast-styles';
-        style.textContent = `
-            @keyframes devToastFadeIn {
-                from { 
-                    opacity: 0; 
-                    transform: translate(-50%, -50%) scale(0.9);
-                }
-                to { 
-                    opacity: 1; 
-                    transform: translate(-50%, -50%) scale(1);
-                }
-            }
-            @keyframes devToastFadeOut {
-                from { 
-                    opacity: 1; 
-                    transform: translate(-50%, -50%) scale(1);
-                }
-                to { 
-                    opacity: 0; 
-                    transform: translate(-50%, -50%) scale(0.9);
-                }
-            }
-            .dev-toast-content {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            .dev-toast-icon {
-                font-size: 20px;
-            }
-            .dev-toast-message {
-                font-size: 16px;
-                font-weight: 500;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    // DOM에 추가
-    document.body.appendChild(toast);
-    
-    // 2초 후 제거 (더 빠르게)
-    setTimeout(() => {
-        toast.style.animation = 'devToastFadeOut 0.3s ease-out';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
-    }, 2000);
-    
-    // 햅틱 피드백
-    if (navigator.vibrate) {
-        navigator.vibrate(100);
+
+    // 성별 선택 화면 표시
+    const genderSelection = document.getElementById('genderSelection');
+    if (genderSelection) genderSelection.style.display = 'flex';
+
+    // 카메라 리소스 정리
+    if (window.HAIRGATOR_PERSONAL_COLOR) {
+        HAIRGATOR_PERSONAL_COLOR.hide();
     }
 }
+
+// openPersonalColorModal 대신 showPersonalColorView 사용하도록 변경
+function openPersonalColorModal() {
+    showPersonalColorView();
+}
+
+// goBack 함수 확장 - 퍼스널컬러 뷰에서도 뒤로가기 가능하게
+(function() {
+    const originalGoBack = window.goBack;
+    window.goBack = function() {
+        const personalColorView = document.getElementById('personalColorView');
+        if (personalColorView && personalColorView.style.display !== 'none') {
+            hidePersonalColorView();
+            return;
+        }
+
+        // 원래 goBack 로직
+        if (typeof originalGoBack === 'function') {
+            originalGoBack();
+        }
+    };
+})();
 </script>    
 
 <!-- ⭐ 챗봇 시스템 - ES6 Modules로 변경 -->
