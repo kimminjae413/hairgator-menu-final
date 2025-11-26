@@ -344,31 +344,21 @@ async function editWithGemini25FlashImage(originalImageUrl, analysis, apiKey) {
             matchReason: '헤어스타일과 조화로운 패션'
         };
 
-        // 핵심: 헤어스타일 분석 결과를 기반으로 어울리는 패션 설명
-        return `이 이미지에서 옷(의상)만 변경해주세요.
+        // 영어 프롬프트로 이미지 생성 유도 (한국어는 텍스트만 반환하는 문제 있음)
+        return `Edit this image: Change ONLY the clothing/outfit. Generate a new image.
 
-[헤어스타일 분석 결과]
-스타일명: ${styleName}
-헤어 특징: ${characteristics.texture || '자연스러운'} 텍스처, ${characteristics.length || '미디엄'} 길이
-헤어패션감각: ${fashionStyle} (${guide.mood} 감성)
+KEEP EXACTLY THE SAME:
+- Hair (do not change hairstyle at all)
+- Face (same person, same expression)
+- Pose and angle
+- Background
 
-[이 헤어스타일에 어울리는 이유]
-${guide.matchReason}
-${fashionReason}
+CHANGE ONLY THE OUTFIT TO:
+Style: ${fashionStyle}
+Clothing: ${guide.clothingStyle}
+Specific items: ${fashionItems}
 
-[절대 변경 금지]
-- 헤어스타일: 현재 헤어스타일을 완전히 동일하게 유지 (한 올도 변경 금지)
-- 얼굴: 얼굴 형태, 표정, 피부톤 모두 그대로 유지
-- 포즈: 현재 포즈와 각도 유지
-- 배경: 현재 배경 유지
-
-[변경할 부분 - 옷만]
-패션 스타일: ${fashionStyle} (${guide.mood} 감성)
-착용 의상: ${guide.clothingStyle}
-구체적 아이템: ${fashionItems}
-
-위 헤어스타일과 완벽하게 어울리는 ${fashionStyle} 스타일의 옷으로 자연스럽게 변경해주세요.
-패션 매거진 화보 퀄리티로 옷이 선명하고 디테일하게 보이도록 해주세요.`;
+Generate a fashion magazine quality photo with the new outfit clearly visible.`;
     });
 
     try {
