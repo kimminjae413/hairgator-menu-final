@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAIRGATOR - 데이터 마이그레이션</title>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #FF1493;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: #FF1493;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            background: #FF69B4;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .log {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-item {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #333;
+            padding-left: 10px;
+        }
+        
+        .log-success {
+            border-left-color: #28a745;
+            color: #28a745;
+        }
+        
+        .log-error {
+            border-left-color: #dc3545;
+            color: #dc3545;
+        }
+        
+        .log-warning {
+            border-left-color: #ffc107;
+            color: #ffc107;
+        }
+        
+        .log-info {
+            border-left-color: #17a2b8;
+            color: #17a2b8;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background: #000;
+            color: #FF1493;
+        }
+        
+        .old-data {
+            background: rgba(255, 0, 0, 0.1);
+        }
+        
+        .new-data {
+            background: rgba(0, 255, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 HAIRGATOR 데이터 마이그레이션</h1>
+    
+    <!-- 1단계: 기존 데이터 확인 -->
+    <div class="section">
+        <h2>1️⃣ 기존 데이터 확인</h2>
+        <p>Firebase에 저장된 기존 데이터를 확인합니다.</p>
+        <button class="btn btn-warning" onclick="checkOldData()">🔍 기존 데이터 확인</button>
+        <div id="oldDataResult" class="log"></div>
+    </div>
+    
+    <!-- 2단계: 데이터 백업 -->
+    <div class="section">
+        <h2>2️⃣ 데이터 백업</h2>
+        <p>마이그레이션 전 모든 데이터를 백업합니다.</p>
+        <button class="btn" onclick="backupData()">💾 데이터 백업</button>
+        <div id="backupResult" class="log"></div>
+    </div>
+    
+    <!-- 3단계: 마이그레이션 -->
+    <div class="section">
+        <h2>3️⃣ 데이터 마이그레이션</h2>
+        <p>⚠️ 주의: 이 작업은 되돌릴 수 없습니다. 반드시 백업 후 진행하세요.</p>
+        
+        <h3>마이그레이션 옵션:</h3>
+        <button class="btn btn-success" onclick="migrateData(false)">✅ 안전 모드 (기존 데이터 유지)</button>
+        <button class="btn btn-danger" onclick="migrateData(true)">⚠️ 완전 교체 (기존 데이터 삭제)</button>
+        
+        <div id="migrationResult" class="log"></div>
+    </div>
+    
+    <!-- 4단계: 검증 -->
+    <div class="section">
+        <h2>4️⃣ 마이그레이션 검증</h2>
+        <p>새로운 구조로 데이터가 올바르게 변환되었는지 확인합니다.</p>
+        <button class="btn btn-success" onclick="verifyMigration()">✔️ 검증하기</button>
+        <div id="verifyResult" class="log"></div>
+    </div>
+    
+    <script src="js/firebase-config.js"></script>
+    <script>
+        let backupDataStore = null;
+        let oldDataList = [];
+        
+        // 기존 구조와 새 구조 매핑
+        const CATEGORY_MAPPING = {
+            'LONG': 'A Length',
+            'SEMI LONG': 'C Length',
+            'MEDIUM': 'E Length',
+            'BOB': 'F Length',
+            'SHORT': 'H Length'
+        };
+        
+        const SUBCATEGORY_MAPPING = {
+            'A Length': 'None',
+            'B Length': 'None',
+            'C Length': 'Fore Head',
+            'D Length': 'Fore Head',
+            'E Length': 'Eye Brow',
+            'F Length': 'Eye',
+            'G Length': 'Eye',
+            'H Length': 'Cheekbone'
+        };
+        
+        // 로그 추가 함수
+        function addLog(elementId, message, type = 'info') {
+            const logDiv = document.getElementById(elementId);
+            const logItem = document.createElement('div');
+            logItem.className = `log-item log-${type}`;
+            logItem.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(logItem);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // 1. 기존 데이터 확인
+        async function checkOldData() {
+            const logId = 'oldDataResult';
+            document.getElementById(logId).innerHTML = '';
+            
+            addLog(logId, '기존 데이터 확인 시작...', 'info');
+            
+            try {
+                const snapshot = await db.collection('hairstyles').get();
+                
+                if (snapshot.empty) {
+                    addLog(logId, '저장된 데이터가 없습니다.', 'warning');
+                    return;
+                }
+                
+                oldDataList = [];
+                let oldStructureCount = 0;
+                let newStructureCount = 0;
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    oldDataList.push({ id: doc.id, ...data });
+                    
+                    // 여성 데이터만 체크
+                    if (data.gender === 'female') {
+                        // 기존 구조 체크 (대분류가 LONG, MEDIUM 등)
+                        if (['LONG', 'SEMI LONG', 'MEDIUM', 'BOB', 'SHORT'].includes(data.mainCategory)) {
+                            oldStructureCount++;
+                            addLog(logId, `[구 구조] ${data.code}: ${data.mainCategory} / ${data.subCategory}`, 'warning');
+                        }
+                        // 새 구조 체크 (대분류가 A Length 등)
+                        else if (data.mainCategory && data.mainCategory.includes('Length')) {
+                            newStructureCount++;
+                            addLog(logId, `[신 구조] ${data.code}: ${data.mainCategory} / ${data.subCategory}`, 'success');
+                        }
+                    }
+                });
+                
+                addLog(logId, `총 ${snapshot.size}개 데이터 발견`, 'info');
+                addLog(logId, `구 구조 여성 데이터: ${oldStructureCount}개`, 'warning');
+                addLog(logId, `신 구조 여성 데이터: ${newStructureCount}개`, 'success');
+                
+                if (oldStructureCount > 0) {
+                    addLog(logId, '⚠️ 마이그레이션이 필요한 데이터가 있습니다!', 'error');
+                } else {
+                    addLog(logId, '✅ 모든 데이터가 새 구조를 사용하고 있습니다.', 'success');
+                }
+                
+            } catch (error) {
+                addLog(logId, `오류: ${error.message}`, 'error');
+            }
+        }
+        
+        // 2. 데이터 백업
+        async function backupData() {
+            const logId = 'backupResult';
+            document.getElementById(logId).innerHTML = '';
+            
+            addLog(logId, '백업 시작...', 'info');
+            
+            try {
+                const snapshot = await db.collection('hairstyles').get();
+                backupDataStore = [];
+                
+                snapshot.forEach(doc => {
+                    backupDataStore.push({
+                        id: doc.id,
+                        data: doc.data()
+                    });
+                });
+                
+                // JSON 파일로 다운로드
+                const dataStr = JSON.stringify(backupDataStore, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `hairgator_backup_${new Date().getTime()}.json`;
+                link.click();
+                
+                addLog(logId, `✅ ${backupDataStore.length}개 데이터 백업 완료`, 'success');
+                addLog(logId, '백업 파일이 다운로드되었습니다.', 'success');
+                
+            } catch (error) {
+                addLog(logId, `백업 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 3. 데이터 마이그레이션
+        async function migrateData(deleteOld = false) {
+            const logId = 'migrationResult';
+            document.getElementById(logId).innerHTML = '';
+            
+            if (!confirm(`정말로 마이그레이션을 진행하시겠습니까?\n모드: ${deleteOld ? '완전 교체' : '안전 모드'}`)) {
+                return;
+            }
+            
+            addLog(logId, '마이그레이션 시작...', 'info');
+            
+            try {
+                const snapshot = await db.collection('hairstyles').get();
+                let migratedCount = 0;
+                let errorCount = 0;
+                
+                for (const doc of snapshot.docs) {
+                    const data = doc.data();
+                    
+                    // 여성 데이터이고 구 구조인 경우만 처리
+                    if (data.gender === 'female' && ['LONG', 'SEMI LONG', 'MEDIUM', 'BOB', 'SHORT'].includes(data.mainCategory)) {
+                        try {
+                            // 새 구조로 변환
+                            const newMainCategory = CATEGORY_MAPPING[data.mainCategory] || 'C Length';
+                            const newSubCategory = SUBCATEGORY_MAPPING[data.subCategory] || 'None';
+                            
+                            // 새 코드 생성
+                            const lengthCode = newMainCategory.split(' ')[0];
+                            const subInitial = newSubCategory.substring(0, 1);
+                            const timestamp = Date.now().toString().slice(-3);
+                            const newCode = `F${lengthCode}${subInitial}${timestamp}`;
+                            
+                            if (deleteOld) {
+                                // 기존 문서 삭제 후 새로 생성
+                                await db.collection('hairstyles').doc(doc.id).delete();
+                                await db.collection('hairstyles').add({
+                                    ...data,
+                                    mainCategory: newMainCategory,
+                                    subCategory: newSubCategory,
+                                    code: newCode,
+                                    migratedAt: new Date(),
+                                    originalCategory: data.mainCategory,
+                                    originalSubcategory: data.subCategory
+                                });
+                                addLog(logId, `[삭제 후 생성] ${data.code} → ${newCode}`, 'success');
+                            } else {
+                                // 기존 문서 업데이트
+                                await db.collection('hairstyles').doc(doc.id).update({
+                                    mainCategory: newMainCategory,
+                                    subCategory: newSubCategory,
+                                    code: newCode,
+                                    migratedAt: new Date(),
+                                    originalCategory: data.mainCategory,
+                                    originalSubcategory: data.subCategory
+                                });
+                                addLog(logId, `[업데이트] ${data.code} → ${newCode}`, 'success');
+                            }
+                            
+                            migratedCount++;
+                        } catch (error) {
+                            errorCount++;
+                            addLog(logId, `오류: ${data.code} - ${error.message}`, 'error');
+                        }
+                    }
+                }
+                
+                addLog(logId, `✅ 마이그레이션 완료!`, 'success');
+                addLog(logId, `성공: ${migratedCount}개 / 실패: ${errorCount}개`, 'info');
+                
+            } catch (error) {
+                addLog(logId, `마이그레이션 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 4. 검증
+        async function verifyMigration() {
+            const logId = 'verifyResult';
+            document.getElementById(logId).innerHTML = '';
+            
+            addLog(logId, '검증 시작...', 'info');
+            
+            try {
+                const snapshot = await db.collection('hairstyles').get();
+                
+                let maleCount = 0;
+                let femaleCount = 0;
+                let validCount = 0;
+                let invalidCount = 0;
+                
+                const validFemaleCategories = ['A Length', 'B Length', 'C Length', 'D Length', 'E Length', 'F Length', 'G Length', 'H Length'];
+                const validSubcategories = ['None', 'Fore Head', 'Eye Brow', 'Eye', 'Cheekbone'];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    
+                    if (data.gender === 'male') {
+                        maleCount++;
+                    } else if (data.gender === 'female') {
+                        femaleCount++;
+                        
+                        // 새 구조 검증
+                        if (validFemaleCategories.includes(data.mainCategory) && 
+                            validSubcategories.includes(data.subCategory)) {
+                            validCount++;
+                            addLog(logId, `✅ [유효] ${data.code}: ${data.mainCategory} / ${data.subCategory}`, 'success');
+                        } else {
+                            invalidCount++;
+                            addLog(logId, `❌ [무효] ${data.code}: ${data.mainCategory} / ${data.subCategory}`, 'error');
+                        }
+                    }
+                });
+                
+                addLog(logId, '========== 검증 결과 ==========', 'info');
+                addLog(logId, `남성 데이터: ${maleCount}개`, 'info');
+                addLog(logId, `여성 데이터: ${femaleCount}개`, 'info');
+                addLog(logId, `유효한 여성 데이터: ${validCount}개`, 'success');
+                addLog(logId, `무효한 여성 데이터: ${invalidCount}개`, invalidCount > 0 ? 'error' : 'success');
+                
+                if (invalidCount === 0) {
+                    addLog(logId, '🎉 모든 데이터가 새 구조로 정상 마이그레이션되었습니다!', 'success');
+                } else {
+                    addLog(logId, '⚠️ 일부 데이터가 올바르지 않습니다. 확인이 필요합니다.', 'error');
+                }
+                
+            } catch (error) {
+                addLog(logId, `검증 실패: ${error.message}`, 'error');
+            }
+        }
+        
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Migration Tool Ready');
+            console.log('📱 Firebase connected:', typeof db !== 'undefined');
+        });
+    </script>
+</body>
+</html>

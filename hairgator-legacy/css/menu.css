@@ -1,0 +1,485 @@
+/* ========== 메인 메뉴 화면 ========== */
+.main-menu {
+    display: none;
+    min-height: 100vh;
+    background: #000;
+}
+
+.main-menu.active {
+    display: block;
+}
+
+/* ========== 헤더 - 로고 중앙, 흰색 ========== */
+.header {
+    background: #000;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-bottom: 1px solid #333;
+}
+
+.back-btn {
+    position: absolute;
+    left: 20px;
+    background: none;
+    border: none;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+/* 로고 - 중앙 정렬, 흰색 */
+.logo {
+    color: #fff !important;  /* 강제 흰색 */
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-align: center;
+}
+
+.header-actions {
+    position: absolute;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.theme-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    gap: 5px;
+}
+
+.menu-btn span {
+    width: 24px;
+    height: 2px;
+    background: #fff;
+    transition: all 0.3s;
+    border-radius: 2px;
+}
+
+/* ========== 대분류 탭 - 진한색 ========== */
+.main-tabs {
+    background: #000;
+    padding: 15px 10px;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.main-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.main-tab {
+    background: #1a1a1a;
+    color: #fff;
+    border: 2px solid #333;
+    padding: 12px 24px;
+    border-radius: 30px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.main-tab:hover {
+    background: #2a2a2a;
+    transform: translateY(-2px);
+}
+
+/* 남성 선택시 파란색, 여성 선택시 핑크색 */
+body.gender-male .main-tab.active {
+    background: #4A90E2;
+    color: #fff;
+    border-color: #4A90E2;
+    box-shadow: 0 5px 20px rgba(74, 144, 226, 0.4);
+}
+
+body.gender-female .main-tab.active {
+    background: #FF1493;
+    color: #fff;
+    border-color: #FF1493;
+    box-shadow: 0 5px 20px rgba(255, 20, 147, 0.4);
+}
+
+/* ========== 중분류 탭 - 성별에 따른 색상 ========== */
+.sub-tabs {
+    background: #0a0a0a;
+    padding: 15px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #222;
+}
+
+.sub-tab {
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* 남성일 때 파란색 */
+body.gender-male .sub-tab {
+    background: #4A90E2;
+}
+
+body.gender-male .sub-tab:hover {
+    background: #6BA3E5;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+}
+
+body.gender-male .sub-tab.active {
+    background: #fff;
+    color: #4A90E2;
+}
+
+/* 여성일 때 핑크색 */
+body.gender-female .sub-tab {
+    background: #FF1493;
+}
+
+body.gender-female .sub-tab:hover {
+    background: #FF69B4;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+}
+
+body.gender-female .sub-tab.active {
+    background: #fff;
+    color: #FF1493;
+}
+
+/* ========== 스타일 그리드 ========== */
+.styles-container {
+    padding: 20px;
+    min-height: calc(100vh - 200px);
+}
+
+.styles-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+}
+
+/* 태블릿 (768px ~ 1024px) - 5열 유지 */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .styles-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 12px;
+    }
+}
+
+/* 모바일 (767px 이하) - 2열 */
+@media (max-width: 767px) {
+    .styles-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
+.style-card {
+    background: transparent;
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid #333;
+    aspect-ratio: 3/4 !important;
+    position: relative;
+    padding: 0;
+}
+
+.style-card:hover {
+    transform: translateY(-5px);
+    border-color: #FF1493;
+    box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+}
+
+body.gender-male .style-card:hover {
+    border-color: #4A90E2;
+    box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
+}
+
+.style-image-wrapper {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    display: block;
+    position: relative;
+}
+
+.style-image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    background: #2a2a2a;
+    display: block !important;
+    border-radius: 0;
+}
+
+/* 스타일 정보 완전 숨김 */
+.style-info,
+.style-code,
+.style-name {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* ========== 사이드 메뉴 ========== */
+.side-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.side-menu.active {
+    right: 0;
+}
+
+.side-menu-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.side-menu-content {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 320px;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.side-menu-header {
+    padding: 25px;
+    background: #000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #FF1493;
+}
+
+body.gender-male .side-menu-header {
+    border-bottom-color: #4A90E2;
+}
+
+.side-menu-header h2 {
+    color: #FF1493;
+    font-size: 22px;
+    letter-spacing: 2px;
+    font-weight: bold;
+}
+
+body.gender-male .side-menu-header h2 {
+    color: #4A90E2;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+.side-menu-nav {
+    flex: 1;
+    padding: 30px 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 18px 25px;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.menu-item:hover {
+    background: rgba(255, 20, 147, 0.1);
+    padding-left: 35px;
+}
+
+body.gender-male .menu-item:hover {
+    background: rgba(74, 144, 226, 0.1);
+}
+
+.menu-icon {
+    font-size: 24px;
+    margin-right: 18px;
+}
+
+.menu-text {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.menu-arrow {
+    color: #666;
+    font-size: 18px;
+}
+
+.menu-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #333, transparent);
+    margin: 20px 25px;
+}
+
+.side-menu-footer {
+    padding: 25px;
+    background: #000;
+    border-top: 1px solid #333;
+}
+
+.designer-info {
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+}
+
+#designerNameDisplay {
+    color: #FF1493;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+body.gender-male #designerNameDisplay {
+    color: #4A90E2;
+}
+
+/* ========== 라이트 테마 ========== */
+body.light-theme {
+    background: #fff;
+}
+
+body.light-theme .main-menu {
+    background: #fff;
+}
+
+body.light-theme .header {
+    background: #fff;
+    border-bottom-color: #ddd;
+}
+
+body.light-theme .logo {
+    color: #000 !important;  /* 라이트 테마에서는 검은색 */
+}
+
+body.light-theme .back-btn,
+body.light-theme .theme-btn {
+    color: #000;
+}
+
+body.light-theme .menu-btn span {
+    background: #000;
+}
+
+body.light-theme .main-tabs {
+    background: #f5f5f5;
+}
+
+body.light-theme .main-tab {
+    background: #fff;
+    color: #000;
+    border-color: #ddd;
+}
+
+body.light-theme .sub-tabs {
+    background: #fff;
+    border-bottom-color: #eee;
+}
+
+body.light-theme .styles-container {
+    background: #f9f9f9;
+}
+
+body.light-theme .style-card {
+    background: #fff;
+    border-color: #ddd;
+}
+
+
+/* ========== 빈 상태 ========== */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    grid-column: 1 / -1;
+    color: #666;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.empty-title {
+    font-size: 20px;
+    color: #999;
+    margin-bottom: 10px;
+}
+
+.empty-message {
+    font-size: 14px;
+    color: #666;
+}
