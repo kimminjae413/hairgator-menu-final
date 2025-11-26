@@ -1,5 +1,106 @@
 // ========== HAIRGATOR 메뉴 시스템 - 헤어체험 연동 최종 버전 ==========
 
+// ========== 룩북 크레딧 차감 (menu.js에서 호출) ==========
+function deductLookbookCreditFromMenu(creditCost) {
+    try {
+        // 불나비 브릿지를 통해 크레딧 차감 요청
+        if (window.BullnabiBridge && typeof window.BullnabiBridge.requestCreditDeduction === 'function') {
+            window.BullnabiBridge.requestCreditDeduction('lookbook', creditCost);
+            console.log(`💳 룩북 크레딧 차감 요청 (BullnabiBridge): ${creditCost}`);
+        } else {
+            console.warn('⚠️ BullnabiBridge가 없습니다. 로컬 크레딧만 업데이트합니다.');
+        }
+
+        // 로컬 UI 업데이트 (불나비 사용자인 경우)
+        const bullnabiUser = localStorage.getItem('bullnabi_user');
+        if (bullnabiUser) {
+            try {
+                const user = JSON.parse(bullnabiUser);
+                if (user.remainCount !== undefined) {
+                    // 부동소수점 오류 방지: 소수점 첫째자리까지 반올림
+                    user.remainCount = Math.round(Math.max(0, user.remainCount - creditCost) * 10) / 10;
+                    localStorage.setItem('bullnabi_user', JSON.stringify(user));
+                    console.log(`💳 로컬 크레딧 업데이트: ${user.remainCount}`);
+
+                    // UI 실시간 업데이트
+                    if (typeof updateUserInfo === 'function') {
+                        updateUserInfo();
+                    }
+
+                    // currentDesigner 업데이트
+                    if (window.currentDesigner) {
+                        window.currentDesigner.tokens = user.remainCount;
+                    }
+                }
+            } catch (e) {
+                console.warn('로컬 크레딧 업데이트 실패:', e);
+            }
+        }
+    } catch (error) {
+        console.error('크레딧 차감 오류:', error);
+    }
+}
+
+// ========== 룩북 로딩 오버레이 ==========
+function createLookbookLoadingOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'lookbook-loading-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+        backdrop-filter: blur(5px);
+    `;
+
+    // 로딩 텍스트 (다국어)
+    const loadingText = t('lookbook.loading') || 'AI가 스타일을 분석하고 있습니다...';
+    const subText = t('lookbook.loadingSubtext') || '이미지 3장을 생성 중입니다. 잠시만 기다려주세요.';
+
+    overlay.innerHTML = `
+        <div style="text-align: center; color: white; padding: 40px;">
+            <div style="margin-bottom: 30px;">
+                <svg width="80" height="80" viewBox="0 0 100 100" style="animation: spin 2s linear infinite;">
+                    <circle cx="50" cy="50" r="40" stroke="#d4a574" stroke-width="6" fill="none" stroke-dasharray="251" stroke-dashoffset="60" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h2 style="font-size: 24px; margin-bottom: 15px; font-weight: 600; color: #d4a574;">
+                THE EDIT
+            </h2>
+            <p style="font-size: 18px; margin-bottom: 10px; opacity: 0.9;">
+                ${loadingText}
+            </p>
+            <p style="font-size: 14px; opacity: 0.6;">
+                ${subText}
+            </p>
+            <div style="margin-top: 30px; display: flex; gap: 8px; justify-content: center;">
+                <div class="loading-dot" style="width: 10px; height: 10px; background: #d4a574; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: -0.32s;"></div>
+                <div class="loading-dot" style="width: 10px; height: 10px; background: #d4a574; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: -0.16s;"></div>
+                <div class="loading-dot" style="width: 10px; height: 10px; background: #d4a574; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both;"></div>
+            </div>
+        </div>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            @keyframes bounce {
+                0%, 80%, 100% { transform: scale(0); }
+                40% { transform: scale(1); }
+            }
+        </style>
+    `;
+
+    return overlay;
+}
+
 // 남성 카테고리 (설명 포함)
 const MALE_CATEGORIES = [
     {
@@ -743,7 +844,7 @@ function openStyleModal(style) {
         // 초기 상태 설정
         updateButtonState();
 
-        btnLookbook.onclick = function (e) {
+        btnLookbook.onclick = async function (e) {
             e.stopPropagation();
 
             // 크레딧 체크
@@ -762,12 +863,59 @@ function openStyleModal(style) {
                 return;
             }
 
-            console.log('📖 Lookbook 열기:', style.name, '성별:', currentGender || window.currentGender);
-
-            // lookbook.html로 이동 (URL 파라미터로 데이터 전달 - 성별 포함)
             const genderValue = currentGender || window.currentGender || 'female';
-            const lookbookUrl = `/lookbook.html?image=${encodeURIComponent(style.imageUrl || '')}&title=${encodeURIComponent(style.name || 'Style')}&gender=${genderValue}`;
-            window.location.href = lookbookUrl;
+            console.log('📖 Lookbook 분석 시작:', style.name, '성별:', genderValue);
+
+            // 로딩 오버레이 생성 및 표시
+            const loadingOverlay = createLookbookLoadingOverlay();
+            document.body.appendChild(loadingOverlay);
+
+            try {
+                // API 호출하여 분석 및 이미지 생성
+                const response = await fetch('/.netlify/functions/lookbook-analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        imageUrl: style.imageUrl,
+                        language: window.currentLanguage || 'ko',
+                        generateImages: true,
+                        gender: genderValue
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API 오류: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('📖 Lookbook 분석 완료:', result);
+
+                // 결과를 sessionStorage에 저장
+                sessionStorage.setItem('lookbookResult', JSON.stringify(result));
+                sessionStorage.setItem('lookbookImage', style.imageUrl || '');
+                sessionStorage.setItem('lookbookTitle', style.name || 'Style');
+                sessionStorage.setItem('lookbookGender', genderValue);
+
+                // 크레딧 차감 (API 성공 시에만)
+                deductLookbookCreditFromMenu(LOOKBOOK_CREDIT_COST);
+
+                // 로딩 오버레이 제거
+                loadingOverlay.remove();
+
+                // lookbook.html로 이동 (preloaded 파라미터 추가)
+                const lookbookUrl = `/lookbook.html?preloaded=true&title=${encodeURIComponent(style.name || 'Style')}`;
+                window.location.href = lookbookUrl;
+
+            } catch (error) {
+                console.error('📖 Lookbook 분석 실패:', error);
+                loadingOverlay.remove();
+
+                if (typeof showToast === 'function') {
+                    showToast('분석 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+                } else {
+                    alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.');
+                }
+            }
         };
     }
     console.log('✅ 스타일 모달 열림:', {

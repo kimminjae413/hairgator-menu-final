@@ -711,9 +711,20 @@
     <script>
         // URL 파라미터에서 데이터 가져오기
         const urlParams = new URLSearchParams(window.location.search);
-        const imageSrc = urlParams.get('image') || '';
-        const styleTitle = decodeURIComponent(urlParams.get('title') || 'Style');
-        const genderParam = urlParams.get('gender') || ''; // 메뉴판에서 전달된 성별 (male/female)
+        const isPreloaded = urlParams.get('preloaded') === 'true'; // menu.js에서 미리 로드한 경우
+
+        // preloaded인 경우 sessionStorage에서, 아니면 URL에서
+        let imageSrc, styleTitle, genderParam;
+        if (isPreloaded) {
+            imageSrc = sessionStorage.getItem('lookbookImage') || '';
+            styleTitle = sessionStorage.getItem('lookbookTitle') || 'Style';
+            genderParam = sessionStorage.getItem('lookbookGender') || '';
+            console.log('📖 Preloaded mode - sessionStorage에서 데이터 로드');
+        } else {
+            imageSrc = urlParams.get('image') || '';
+            styleTitle = decodeURIComponent(urlParams.get('title') || 'Style');
+            genderParam = urlParams.get('gender') || ''; // 메뉴판에서 전달된 성별 (male/female)
+        }
 
         // 현재 언어 가져오기
         const currentLang = localStorage.getItem('hairgator_lang') || 'ko';
@@ -946,11 +957,40 @@
         document.addEventListener('DOMContentLoaded', () => {
             applyTranslations();
 
-            // AI 분석 시작 (이미지가 있을 경우)
-            if (imageSrc) {
-                setTimeout(() => {
-                    analyzeWithAI();
-                }, 500); // 약간의 딜레이 후 분석 시작
+            // preloaded인 경우: sessionStorage에서 미리 로드된 결과 사용
+            if (isPreloaded) {
+                const preloadedResult = sessionStorage.getItem('lookbookResult');
+                if (preloadedResult) {
+                    try {
+                        const data = JSON.parse(preloadedResult);
+                        console.log('📖 Preloaded 결과 적용:', data);
+
+                        if (data.success && data.analysis) {
+                            applyAnalysisResults(data.analysis, data.generatedImages);
+                            // 크레딧은 menu.js에서 이미 차감됨
+                        }
+
+                        // sessionStorage 정리
+                        sessionStorage.removeItem('lookbookResult');
+                        sessionStorage.removeItem('lookbookImage');
+                        sessionStorage.removeItem('lookbookTitle');
+                        sessionStorage.removeItem('lookbookGender');
+                    } catch (e) {
+                        console.error('Preloaded 결과 파싱 실패:', e);
+                        // 실패 시 다시 API 호출
+                        if (imageSrc) analyzeWithAI();
+                    }
+                } else {
+                    // preloaded인데 결과가 없으면 API 호출
+                    if (imageSrc) analyzeWithAI();
+                }
+            } else {
+                // 일반 모드: AI 분석 시작 (이미지가 있을 경우)
+                if (imageSrc) {
+                    setTimeout(() => {
+                        analyzeWithAI();
+                    }, 500); // 약간의 딜레이 후 분석 시작
+                }
             }
         });
 
