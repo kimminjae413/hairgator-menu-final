@@ -5,8 +5,8 @@ const HAIRGATOR_I18N = {
   ko: {
     // ========== 성별 ==========
     gender: {
-      male: '남성',
-      female: '여성'
+      male: 'Male',
+      female: 'Female'
     },
 
     // ========== 카테고리 이름 (남성) ==========
