@@ -945,37 +945,62 @@
             const brightness = (skinToneData.rgb.r + skinToneData.rgb.g + skinToneData.rgb.b) / 3;
             const seasonInfo = getPersonalColorSeason(skinToneData.undertone, brightness);
 
+            // 언더톤 한글 변환
+            const undertoneKorean = skinToneData.undertone === 'Warm' ? '웜톤 (따뜻한 톤)' :
+                                    skinToneData.undertone === 'Cool' ? '쿨톤 (차가운 톤)' : '뉴트럴 (중간 톤)';
+
             console.log('📊 분석 결과:', seasonInfo);
 
             // 메인 결과 컨테이너 표시
             const resultsContainer = document.getElementById('realtime-results-container');
             if (resultsContainer) {
                 resultsContainer.style.display = 'block';
+                resultsContainer.style.background = 'rgba(30, 30, 50, 0.95)';
+                resultsContainer.style.padding = '25px';
+                resultsContainer.style.borderRadius = '16px';
+                resultsContainer.style.border = '2px solid ' + seasonInfo.color;
 
-                const seasonEl = document.getElementById('realtime-season');
-                const skinInfoEl = document.getElementById('realtime-skin-info');
-                const recommendationEl = document.getElementById('realtime-recommendation');
+                resultsContainer.innerHTML = `
+                    <h4 style="margin: 0 0 20px 0; color: #fff; font-size: 18px; text-align: center;">🎨 퍼스널컬러 분석 결과</h4>
 
-                if (seasonEl) {
-                    seasonEl.innerHTML = `${seasonInfo.emoji} ${seasonInfo.season}`;
-                    seasonEl.style.color = seasonInfo.color;
-                }
-
-                if (skinInfoEl) {
-                    skinInfoEl.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                            <div style="width: 30px; height: 30px; background: ${skinToneData.hex}; border-radius: 50%; border: 2px solid white;"></div>
-                            <span>피부톤: ${skinToneData.hex}</span>
+                    <!-- 피부 분석 섹션 -->
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; margin-bottom: 15px;">
+                        <div style="font-size: 14px; color: #aaa; margin-bottom: 8px;">📍 당신의 피부 분석</div>
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px;">
+                            <div style="width: 50px; height: 50px; background: ${skinToneData.hex}; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"></div>
+                            <div>
+                                <div style="font-size: 16px; color: #fff; font-weight: bold;">피부톤: ${skinToneData.hex}</div>
+                                <div style="font-size: 14px; color: #ccc;">RGB (${skinToneData.rgb.r}, ${skinToneData.rgb.g}, ${skinToneData.rgb.b})</div>
+                            </div>
                         </div>
-                        <div>언더톤: <b style="color: ${seasonInfo.color};">${skinToneData.undertone}</b></div>
-                        <div>RGB: ${skinToneData.rgb.r}, ${skinToneData.rgb.g}, ${skinToneData.rgb.b}</div>
-                    `;
-                }
+                        <div style="font-size: 16px; color: #fff;">
+                            <span style="color: #aaa;">언더톤:</span>
+                            <b style="color: ${seasonInfo.color};">${undertoneKorean}</b>
+                        </div>
+                    </div>
 
-                if (recommendationEl) {
-                    const recommendations = getSeasonRecommendations(seasonInfo.season);
-                    recommendationEl.innerHTML = recommendations;
-                }
+                    <!-- 추천 퍼스널컬러 섹션 -->
+                    <div style="background: linear-gradient(135deg, ${seasonInfo.color}33, ${seasonInfo.color}11); padding: 20px; border-radius: 12px; border: 2px solid ${seasonInfo.color};">
+                        <div style="font-size: 14px; color: #aaa; margin-bottom: 8px;">✨ 추천 퍼스널컬러</div>
+                        <div style="font-size: 28px; font-weight: bold; color: ${seasonInfo.color}; margin-bottom: 10px;">
+                            ${seasonInfo.emoji} ${seasonInfo.season}
+                        </div>
+                        <div style="font-size: 14px; color: #eee; line-height: 1.8;">
+                            ${getSeasonDescription(seasonInfo.season)}
+                        </div>
+                    </div>
+
+                    <!-- 추천 컬러 팔레트 -->
+                    <div style="margin-top: 15px; background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px;">
+                        <div style="font-size: 14px; color: #aaa; margin-bottom: 12px;">💄 어울리는 컬러</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
+                            ${getSeasonColorPalette(seasonInfo.season)}
+                        </div>
+                        <div style="font-size: 14px; color: #eee; line-height: 1.8;">
+                            ${getSeasonRecommendations(seasonInfo.season)}
+                        </div>
+                    </div>
+                `;
             }
 
             // 오른쪽 분석 패널 업데이트
@@ -986,6 +1011,7 @@
             if (seasonResult) {
                 seasonResult.innerHTML = `${seasonInfo.emoji} ${seasonInfo.season}`;
                 seasonResult.style.color = seasonInfo.color;
+                seasonResult.style.fontSize = '20px';
             }
 
             if (confidenceEl) {
@@ -994,16 +1020,42 @@
 
             if (analysisData) {
                 analysisData.innerHTML = `
-                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 20px; height: 20px; background: ${skinToneData.hex}; border-radius: 4px; border: 1px solid #fff;"></div>
-                            <span>추출 피부톤: ${skinToneData.hex}</span>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 24px; height: 24px; background: ${skinToneData.hex}; border-radius: 6px; border: 2px solid #fff;"></div>
+                            <span style="color: #fff;">피부톤: ${skinToneData.hex}</span>
                         </div>
-                        <div>언더톤: ${skinToneData.undertone}</div>
-                        <div>밝기: ${Math.round(brightness)}</div>
+                        <div style="color: #fff;">언더톤: <b style="color: ${seasonInfo.color};">${undertoneKorean}</b></div>
                     </div>
                 `;
             }
+        }
+
+        // 시즌별 설명
+        function getSeasonDescription(season) {
+            const descriptions = {
+                '봄 웜': '밝고 화사한 이미지! 따뜻하고 맑은 컬러가 잘 어울립니다.',
+                '여름 쿨': '부드럽고 우아한 이미지! 차분하고 시원한 컬러가 잘 어울립니다.',
+                '가을 웜': '깊고 세련된 이미지! 따뜻하고 깊이 있는 컬러가 잘 어울립니다.',
+                '겨울 쿨': '선명하고 강렬한 이미지! 차갑고 선명한 컬러가 잘 어울립니다.',
+                '봄/여름 뉴트럴': '다양한 컬러가 어울리는 타입! 밝은 톤의 컬러를 추천합니다.',
+                '가을/겨울 뉴트럴': '다양한 컬러가 어울리는 타입! 깊은 톤의 컬러를 추천합니다.'
+            };
+            return descriptions[season] || '';
+        }
+
+        // 시즌별 컬러 팔레트 (색상 칩)
+        function getSeasonColorPalette(season) {
+            const palettes = {
+                '봄 웜': ['#FF6B6B', '#FFA07A', '#FFD93D', '#98D8C8', '#F7DC6F'],
+                '여름 쿨': ['#B19CD9', '#FFB6C1', '#87CEEB', '#DDA0DD', '#E6E6FA'],
+                '가을 웜': ['#CD853F', '#8B4513', '#D2691E', '#556B2F', '#B8860B'],
+                '겨울 쿨': ['#4169E1', '#DC143C', '#000000', '#FFFFFF', '#8B008B'],
+                '봄/여름 뉴트럴': ['#DDA0DD', '#FFB7C5', '#98D8C8', '#F0E68C', '#E6E6FA'],
+                '가을/겨울 뉴트럴': ['#8B4513', '#4169E1', '#556B2F', '#800000', '#2F4F4F']
+            };
+            const colors = palettes[season] || [];
+            return colors.map(c => `<div style="width: 36px; height: 36px; background: ${c}; border-radius: 8px; border: 2px solid rgba(255,255,255,0.3);"></div>`).join('');
         }
 
         function drawFullFaceMesh(ctx, landmarks) {
