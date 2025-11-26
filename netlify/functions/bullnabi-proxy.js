@@ -278,6 +278,126 @@ async function handleGetUserData(token, userId) {
     }
 }
 
+/**
+ * 크레딧 사용 (차감) 처리
+ * 1. 현재 크레딧 확인
+ * 2. aiTicketHistory에 히스토리 추가
+ * 3. _users의 remainCount 업데이트
+ */
+async function handleUseCredits(userId, uses, count) {
+    try {
+        console.log('💳 크레딧 차감 시작:', { userId, uses, count });
+
+        // 토큰 가져오기
+        let adminToken = process.env.BULLNABI_TOKEN;
+        if (!adminToken) {
+            const refreshResult = await handleRefreshToken();
+            if (!refreshResult.success) {
+                return { success: false, error: '토큰 발급 실패' };
+            }
+            adminToken = refreshResult.token;
+        }
+
+        // 1. 현재 크레딧 확인
+        const currentData = await handleGetUserData(adminToken, userId);
+        if (!currentData.success || !currentData.data || currentData.data.length === 0) {
+            return { success: false, error: '사용자 정보를 찾을 수 없습니다' };
+        }
+
+        const currentCredits = currentData.data[0].remainCount || 0;
+        const deductAmount = Math.abs(count);
+
+        if (currentCredits < deductAmount) {
+            return { success: false, error: '크레딧이 부족합니다', currentCredits };
+        }
+
+        // 2. aiTicketHistory에 히스토리 추가
+        const historyData = {
+            userJoin: { "$oid": userId },
+            uses: uses,
+            count: -deductAmount,
+            _createTime: new Date().toISOString()
+        };
+
+        const historyParams = new URLSearchParams();
+        historyParams.append('metaCode', '_users');
+        historyParams.append('collectionName', 'aiTicketHistory');
+        historyParams.append('documentJson', JSON.stringify(historyData));
+
+        const FormData = require('form-data');
+        const historyFormData = new FormData();
+
+        const historyResponse = await fetch(
+            `http://drylink.ohmyapp.io/bnb/create?${historyParams.toString()}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${adminToken}`,
+                    'Accept': 'application/json',
+                    ...historyFormData.getHeaders()
+                },
+                body: historyFormData
+            }
+        );
+
+        const historyResult = await historyResponse.json();
+        console.log('📝 히스토리 추가 결과:', historyResult);
+
+        // 3. remainCount 업데이트
+        const newRemainCount = Math.round((currentCredits - deductAmount) * 10) / 10; // 소수점 1자리
+
+        const updateData = {
+            "_id": { "$oid": userId },
+            "remainCount": newRemainCount
+        };
+
+        const updateParams = new URLSearchParams();
+        updateParams.append('metaCode', '_users');
+        updateParams.append('collectionName', '_users');
+        updateParams.append('documentJson', JSON.stringify(updateData));
+
+        const updateFormData = new FormData();
+
+        const updateResponse = await fetch(
+            `http://drylink.ohmyapp.io/bnb/update?${updateParams.toString()}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${adminToken}`,
+                    'Accept': 'application/json',
+                    ...updateFormData.getHeaders()
+                },
+                body: updateFormData
+            }
+        );
+
+        const updateResult = await updateResponse.json();
+        console.log('💾 크레딧 업데이트 결과:', updateResult);
+
+        // 성공 여부 확인
+        if (updateResult.code === '1' || updateResult.code === 1 || updateResult.success) {
+            console.log('✅ 크레딧 차감 완료:', { userId, uses, deducted: deductAmount, newRemainCount });
+            return {
+                success: true,
+                previousCredits: currentCredits,
+                deducted: deductAmount,
+                newRemainCount: newRemainCount,
+                historyAdded: true
+            };
+        }
+
+        return {
+            success: false,
+            error: '크레딧 업데이트 실패',
+            updateResult
+        };
+
+    } catch (error) {
+        console.error('❌ 크레딧 차감 오류:', error);
+        return { success: false, error: error.message };
+    }
+}
+
 // ========== 메인 핸들러 ==========
 
 exports.handler = async (event, context) => {
@@ -351,7 +471,7 @@ exports.handler = async (event, context) => {
         // 3. 토큰으로 사용자 데이터 조회
         if (action === 'getUserData') {
             console.log('📊 사용자 데이터 조회 요청 처리');
-            
+
             if (!token || !userId) {
                 return {
                     statusCode: 400,
@@ -359,8 +479,28 @@ exports.handler = async (event, context) => {
                     body: JSON.stringify({ success: false, error: 'token and userId required' })
                 };
             }
-            
+
             const result = await handleGetUserData(token, userId);
+            return {
+                statusCode: result.success ? 200 : 500,
+                headers: corsHeaders,
+                body: JSON.stringify(result)
+            };
+        }
+
+        // 4. 크레딧 사용 (차감)
+        if (action === 'useCredits') {
+            console.log('💳 크레딧 차감 요청 처리');
+
+            if (!userId || !data?.uses || data?.count === undefined) {
+                return {
+                    statusCode: 400,
+                    headers: corsHeaders,
+                    body: JSON.stringify({ success: false, error: 'userId, uses, count required' })
+                };
+            }
+
+            const result = await handleUseCredits(userId, data.uses, data.count);
             return {
                 statusCode: result.success ? 200 : 500,
                 headers: corsHeaders,

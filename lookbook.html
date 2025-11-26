@@ -1016,35 +1016,82 @@
         }
 
         // ==================== 크레딧 차감 함수 ====================
-        function deductLookbookCredit() {
+        async function deductLookbookCredit() {
             const LOOKBOOK_CREDIT_COST = 0.2; // 룩북 AI 분석 비용: 0.2 크레딧
 
             try {
-                // 불나비 브릿지를 통해 크레딧 차감 요청
-                if (window.BullnabiBridge && typeof window.BullnabiBridge.requestCreditDeduction === 'function') {
-                    window.BullnabiBridge.requestCreditDeduction('lookbook', LOOKBOOK_CREDIT_COST);
-                    console.log(`💳 룩북 크레딧 차감 요청: ${LOOKBOOK_CREDIT_COST}`);
-                } else {
-                    console.warn('⚠️ BullnabiBridge가 없어서 크레딧 차감을 건너뜁니다');
+                // 불나비 사용자 정보 확인
+                const bullnabiUser = localStorage.getItem('bullnabi_user');
+                if (!bullnabiUser) {
+                    console.warn('⚠️ 불나비 사용자 정보 없음, 크레딧 차감 건너뜀');
+                    return;
                 }
 
-                // 로컬 UI 업데이트 (불나비 사용자인 경우)
-                const bullnabiUser = localStorage.getItem('bullnabi_user');
-                if (bullnabiUser) {
-                    try {
-                        const user = JSON.parse(bullnabiUser);
-                        if (user.remainCount !== undefined) {
-                            // 부동소수점 오류 방지: 소수점 첫째자리까지 반올림
-                            user.remainCount = Math.round(Math.max(0, user.remainCount - LOOKBOOK_CREDIT_COST) * 10) / 10;
-                            localStorage.setItem('bullnabi_user', JSON.stringify(user));
-                            console.log(`💳 로컬 크레딧 업데이트: ${user.remainCount}`);
+                const user = JSON.parse(bullnabiUser);
+                const userId = user.userId || user.id;
+
+                if (!userId) {
+                    console.warn('⚠️ userId 없음, 크레딧 차감 건너뜀');
+                    return;
+                }
+
+                console.log(`💳 서버에 크레딧 차감 요청: userId=${userId}, cost=${LOOKBOOK_CREDIT_COST}`);
+
+                // 서버에 실제 크레딧 차감 API 호출
+                const response = await fetch('/.netlify/functions/bullnabi-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'useCredits',
+                        userId: userId,
+                        data: {
+                            uses: 'lookbook',
+                            count: LOOKBOOK_CREDIT_COST
                         }
-                    } catch (e) {
-                        console.warn('로컬 크레딧 업데이트 실패:', e);
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log(`✅ 서버 크레딧 차감 성공:`, result);
+
+                    // 로컬 스토리지도 동기화
+                    user.remainCount = result.newRemainCount;
+                    localStorage.setItem('bullnabi_user', JSON.stringify(user));
+                    console.log(`💳 로컬 크레딧 동기화: ${result.newRemainCount}`);
+
+                    // 네이티브 앱에도 알림 (있는 경우)
+                    if (window.BullnabiBridge && typeof window.BullnabiBridge.requestCreditDeduction === 'function') {
+                        window.BullnabiBridge.requestCreditDeduction('lookbook', LOOKBOOK_CREDIT_COST);
+                    }
+                } else {
+                    console.error('❌ 서버 크레딧 차감 실패:', result.error);
+
+                    // 실패해도 로컬은 업데이트 (나중에 동기화)
+                    if (user.remainCount !== undefined) {
+                        user.remainCount = Math.round(Math.max(0, user.remainCount - LOOKBOOK_CREDIT_COST) * 10) / 10;
+                        localStorage.setItem('bullnabi_user', JSON.stringify(user));
+                        console.log(`💳 로컬 크레딧만 업데이트 (fallback): ${user.remainCount}`);
                     }
                 }
+
             } catch (error) {
                 console.error('크레딧 차감 오류:', error);
+
+                // 예외 시에도 로컬 업데이트 시도
+                try {
+                    const bullnabiUser = localStorage.getItem('bullnabi_user');
+                    if (bullnabiUser) {
+                        const user = JSON.parse(bullnabiUser);
+                        if (user.remainCount !== undefined) {
+                            user.remainCount = Math.round(Math.max(0, user.remainCount - LOOKBOOK_CREDIT_COST) * 10) / 10;
+                            localStorage.setItem('bullnabi_user', JSON.stringify(user));
+                        }
+                    }
+                } catch (e) {
+                    console.warn('로컬 크레딧 업데이트도 실패:', e);
+                }
             }
         }
 
