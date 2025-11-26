@@ -522,6 +522,28 @@
             showToast('홈 화면으로 돌아갑니다', 'info');
         }
 
+        // X 버튼 클릭 - 퍼스널컬러 페이지 닫기
+        function closePersonalColor() {
+            console.log('🎨 퍼스널컬러 페이지 닫기');
+
+            // 카메라 리소스 정리
+            stopAICamera();
+            stopDrapingCamera();
+            cleanupCameraResources();
+
+            // 부모 창이 있으면 (iframe인 경우) 부모에게 닫기 요청
+            if (window.parent !== window) {
+                try {
+                    window.parent.postMessage({ type: 'CLOSE_PERSONAL_COLOR' }, '*');
+                } catch (e) {
+                    console.warn('부모 창 통신 실패:', e);
+                }
+            }
+
+            // 메인 페이지로 이동
+            window.location.href = '/';
+        }
+
         // AI 카메라 함수들
         async function startAICamera() {
             try {
