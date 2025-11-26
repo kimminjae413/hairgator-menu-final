@@ -627,29 +627,40 @@
                 canvasElement = document.getElementById('camera-canvas');
                 canvasCtx = canvasElement.getContext('2d', { willReadFrequently: true });
 
-                // MediaPipe Face Mesh 초기화 (선택적)
-                if (typeof FaceMesh !== 'undefined' && !faceDetectionInstance) {
+                // MediaPipe Face Mesh 초기화 또는 재사용
+                if (typeof FaceMesh !== 'undefined') {
                     try {
-                        faceDetectionInstance = new FaceMesh({
-                            locateFile: (file) => {
-                                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`;
-                            }
-                        });
+                        // Face Mesh 인스턴스가 없으면 새로 생성
+                        if (!faceDetectionInstance) {
+                            console.log('새 Face Mesh 인스턴스 생성');
+                            faceDetectionInstance = new FaceMesh({
+                                locateFile: (file) => {
+                                    return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`;
+                                }
+                            });
 
-                        faceDetectionInstance.setOptions({
-                            maxNumFaces: 1,
-                            refineLandmarks: true,
-                            minDetectionConfidence: 0.5,
-                            minTrackingConfidence: 0.5
-                        });
+                            faceDetectionInstance.setOptions({
+                                maxNumFaces: 1,
+                                refineLandmarks: true,
+                                minDetectionConfidence: 0.5,
+                                minTrackingConfidence: 0.5
+                            });
 
-                        faceDetectionInstance.onResults(onAdvancedFaceResults);
+                            faceDetectionInstance.onResults(onAdvancedFaceResults);
+                        } else {
+                            console.log('기존 Face Mesh 인스턴스 재사용');
+                        }
 
+                        // MediaPipe Camera는 항상 새로 생성
                         if (typeof Camera !== 'undefined') {
                             mediaPipeCamera = new Camera(videoElement, {
                                 onFrame: async () => {
-                                    if (faceDetectionInstance && videoElement.readyState === 4) {
-                                        await faceDetectionInstance.send({ image: videoElement });
+                                    if (faceDetectionInstance && videoElement && videoElement.readyState === 4) {
+                                        try {
+                                            await faceDetectionInstance.send({ image: videoElement });
+                                        } catch (e) {
+                                            // send 실패 시 무시 (카메라 중지 시 발생 가능)
+                                        }
                                     }
                                 },
                                 width: 640,
@@ -921,19 +932,18 @@
             console.log('카메라 리소스 정리 시작...');
 
             try {
+                // MediaPipe 카메라만 중지 (Face Mesh 인스턴스는 재사용)
                 if (mediaPipeCamera) {
-                    mediaPipeCamera.stop();
+                    try {
+                        mediaPipeCamera.stop();
+                    } catch (e) {
+                        console.warn('MediaPipe Camera stop 실패:', e);
+                    }
                     mediaPipeCamera = null;
                 }
 
-                if (faceDetectionInstance) {
-                    try {
-                        faceDetectionInstance.close();
-                    } catch (e) {
-                        console.warn('FaceDetection close 실패:', e);
-                    }
-                    faceDetectionInstance = null;
-                }
+                // ⚠️ faceDetectionInstance는 close하지 않음 - WASM 재사용 문제
+                // 페이지를 떠날 때만 정리됨
 
                 if (activeVideoStream) {
                     activeVideoStream.getTracks().forEach(track => {
@@ -959,14 +969,10 @@
                 const analysisPanel = document.getElementById('realtime-skin-analysis');
                 if (analysisPanel) analysisPanel.remove();
 
-                // 공유 Canvas 정리 추가
-                if (sharedExtractCanvas) {
-                    sharedExtractCanvas = null;
-                    sharedExtractCtx = null;
-                    console.log('공유 Canvas 정리 완료');
-                }
+                // 공유 Canvas는 유지 (재사용 가능)
+                // sharedExtractCanvas, sharedExtractCtx 유지
 
-                console.log('모든 카메라 리소스 정리 완료');
+                console.log('카메라 리소스 정리 완료 (Face Mesh 인스턴스 유지)');
 
             } catch (error) {
                 console.error('리소스 정리 중 오류:', error);
