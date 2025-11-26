@@ -327,17 +327,18 @@
             try {
                 console.log('시스템 초기화 시작...');
 
-                updateLoadingProgress(25, '헤어컬러 데이터 로드 중...');
+                updateLoadingProgress(20, '헤어컬러 데이터 로드 중...');
                 await loadHairColorData();
 
-                updateLoadingProgress(50, 'UI 컴포넌트 설정 중...');
+                updateLoadingProgress(40, 'UI 컴포넌트 설정 중...');
                 setupUI();
 
-                updateLoadingProgress(75, 'AI 엔진 준비 중...');
-                await new Promise(resolve => setTimeout(resolve, 500));
+                updateLoadingProgress(60, 'AI 얼굴 인식 엔진 준비 중...');
+                // Face Mesh 미리 초기화 (카메라 시작 시 빠르게 작동하도록)
+                await preloadFaceMesh();
 
                 updateLoadingProgress(100, '시스템 준비 완료!');
-                await new Promise(resolve => setTimeout(resolve, 800));
+                await new Promise(resolve => setTimeout(resolve, 500));
 
                 clearTimeout(timeoutId);
 
@@ -488,6 +489,45 @@
         function setupUI() {
             selectSeason('spring');
             console.log('UI 설정 완료');
+        }
+
+        // Face Mesh 미리 로드 (페이지 로드 시)
+        async function preloadFaceMesh() {
+            if (typeof FaceMesh === 'undefined') {
+                console.log('FaceMesh 라이브러리가 아직 로드되지 않음');
+                return;
+            }
+
+            if (faceDetectionInstance) {
+                console.log('Face Mesh 이미 초기화됨');
+                return;
+            }
+
+            try {
+                console.log('Face Mesh 미리 로드 시작...');
+                faceDetectionInstance = new FaceMesh({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`;
+                    }
+                });
+
+                faceDetectionInstance.setOptions({
+                    maxNumFaces: 1,
+                    refineLandmarks: true,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+
+                faceDetectionInstance.onResults(onAdvancedFaceResults);
+
+                // 초기화 완료 대기 (WASM 로드)
+                await faceDetectionInstance.initialize();
+
+                console.log('✅ Face Mesh 미리 로드 완료');
+            } catch (error) {
+                console.warn('Face Mesh 미리 로드 실패 (카메라 시작 시 재시도):', error);
+                faceDetectionInstance = null;
+            }
         }
 
         // 모드 선택 및 전환
@@ -879,40 +919,71 @@
             else return 'Neutral';
         }
 
+        // 언더톤 기반 퍼스널컬러 시즌 결정
+        function getPersonalColorSeason(undertone, brightness) {
+            // brightness: 밝기 (0-255)
+            const isBright = brightness > 140;
+
+            if (undertone === 'Warm') {
+                return isBright ? { season: '봄 웜', emoji: '🌸', color: '#FFB7C5' }
+                               : { season: '가을 웜', emoji: '🍂', color: '#D2691E' };
+            } else if (undertone === 'Cool') {
+                return isBright ? { season: '여름 쿨', emoji: '🌊', color: '#87CEEB' }
+                               : { season: '겨울 쿨', emoji: '❄️', color: '#4169E1' };
+            } else {
+                // Neutral - 밝기 기반
+                return isBright ? { season: '봄/여름 뉴트럴', emoji: '🌷', color: '#DDA0DD' }
+                               : { season: '가을/겨울 뉴트럴', emoji: '🍁', color: '#8B4513' };
+            }
+        }
+
         // ✅ 수정된 displaySkinToneAnalysis 함수
         function displaySkinToneAnalysis(skinToneData) {
             if (!skinToneData) return;
+
+            // 밝기 계산 (간단한 평균)
+            const brightness = (skinToneData.rgb.r + skinToneData.rgb.g + skinToneData.rgb.b) / 3;
+            const seasonInfo = getPersonalColorSeason(skinToneData.undertone, brightness);
 
             let analysisPanel = document.getElementById('realtime-skin-analysis');
             if (!analysisPanel) {
                 analysisPanel = document.createElement('div');
                 analysisPanel.id = 'realtime-skin-analysis';
                 analysisPanel.style.cssText = `
-                    position: absolute; 
-                    bottom: 10px; 
-                    left: 10px; 
+                    position: absolute;
+                    bottom: 10px;
+                    left: 10px;
                     right: 10px;
-                    background: linear-gradient(135deg, rgba(0,0,0,0.85), rgba(0,50,0,0.8)); 
-                    color: white; 
-                    padding: 0.4rem 0.8rem; 
-                    border-radius: 6px; 
-                    font-size: 0.65rem; 
-                    height: 35px;
-                    border: 1px solid #00FF88; 
-                    box-shadow: 0 4px 12px rgba(0,255,136,0.4);
-                    backdrop-filter: blur(5px);
+                    background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,30,60,0.85));
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 10px;
+                    font-size: 12px;
+                    border: 2px solid ${seasonInfo.color};
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+                    backdrop-filter: blur(10px);
                     z-index: 1001;
                 `;
                 document.querySelector('.video-container').appendChild(analysisPanel);
             }
 
+            // 테두리 색상 업데이트
+            analysisPanel.style.borderColor = seasonInfo.color;
+
             analysisPanel.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; height: 100%; font-size: 0.6rem;">
-                    <span style="color: #00FF88; font-weight: bold;">🔍 실시간 분석</span>
-                    <div style="width: 22px; height: 22px; background: ${skinToneData.hex}; border-radius: 4px; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>
-                    <span style="color: white;">R:${skinToneData.rgb.r} G:${skinToneData.rgb.g} B:${skinToneData.rgb.b}</span>
-                    <span style="color: #00FF88; font-weight: 600;">${skinToneData.undertone}</span>
-                    <span style="color: #4CAF50; font-weight: bold;">97%</span>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 16px; font-weight: bold;">${seasonInfo.emoji} ${seasonInfo.season}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 24px; height: 24px; background: ${skinToneData.hex}; border-radius: 50%; border: 2px solid white;"></div>
+                            <span style="color: #aaa; font-size: 10px;">${skinToneData.hex}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #ccc;">
+                        <span>언더톤: <b style="color: ${seasonInfo.color};">${skinToneData.undertone}</b></span>
+                        <span>RGB: ${skinToneData.rgb.r}, ${skinToneData.rgb.g}, ${skinToneData.rgb.b}</span>
+                        <span style="color: #4CAF50;">신뢰도: 95%</span>
+                    </div>
                 </div>
             `;
         }
