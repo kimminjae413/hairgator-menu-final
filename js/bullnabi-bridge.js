@@ -298,7 +298,9 @@
                         
                         // 토스트 알림
                         if (typeof showToast === 'function') {
-                            showToast(`크레딧이 업데이트되었습니다: ${data.remainCount}개`, 'info');
+                            const credits = data.remainCount;
+                            const displayCredits = Number.isInteger(credits) ? credits : credits.toFixed(1);
+                            showToast(`크레딧이 업데이트되었습니다: ${displayCredits}`, 'info');
                         }
                     }
                 }

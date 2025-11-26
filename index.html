@@ -877,7 +877,10 @@
                     designerPhone.textContent = `전화: ${currentDesigner.phone}`;
                 }
                 if (sessionStatus) {
-                    sessionStatus.textContent = `토큰: ${currentDesigner.tokens || 0}개`;
+                    // 소수점 첫째 자리까지 표시 (정수인 경우 소수점 없이)
+                    const credits = currentDesigner.tokens || 0;
+                    const displayCredits = Number.isInteger(credits) ? credits : credits.toFixed(1);
+                    sessionStatus.textContent = `크레딧: ${displayCredits}`;
                 }
             } else {
                 userInfo.style.display = 'none';

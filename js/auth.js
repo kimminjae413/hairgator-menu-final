@@ -148,7 +148,9 @@ function loginWithBullnabi(userInfo) {
         
         // 성공 알림
         if (typeof showToast === 'function') {
-            showToast(`${userInfo.name}님 환영합니다! (크레딧: ${userInfo.remainCount || 0}개)`, 'success');
+            const credits = userInfo.remainCount || 0;
+            const displayCredits = Number.isInteger(credits) ? credits : credits.toFixed(1);
+            showToast(`${userInfo.name}님 환영합니다! (크레딧: ${displayCredits})`, 'success');
         }
         
     } catch (error) {
