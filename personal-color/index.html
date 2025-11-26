@@ -547,20 +547,87 @@
         // AI 카메라 함수들
         async function startAICamera() {
             try {
-                showToast('AI 카메라를 시작합니다...', 'info');
+                showToast('카메라 권한을 확인합니다...', 'info');
+                console.log('🎥 카메라 시작 시도...');
+
+                // 1. mediaDevices API 지원 확인
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('NOT_SUPPORTED: 이 브라우저/앱에서 카메라를 지원하지 않습니다');
+                }
+
+                // 2. 권한 상태 확인 (지원하는 경우)
+                if (navigator.permissions && navigator.permissions.query) {
+                    try {
+                        const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+                        console.log('카메라 권한 상태:', permissionStatus.state);
+
+                        if (permissionStatus.state === 'denied') {
+                            throw new Error('PERMISSION_DENIED: 카메라 권한이 거부되었습니다. 앱 설정에서 카메라 권한을 허용해주세요.');
+                        }
+                    } catch (permErr) {
+                        console.log('권한 조회 불가 (정상일 수 있음):', permErr.message);
+                    }
+                }
 
                 cleanupCameraResources();
 
-                activeVideoStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user', width: 640, height: 480 }
+                // 3. 카메라 스트림 요청 (여러 옵션 시도)
+                let stream = null;
+                const videoConstraints = [
+                    { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+                    { facingMode: 'user' },
+                    { facingMode: { ideal: 'user' } },
+                    true  // 가장 기본적인 옵션
+                ];
+
+                for (const constraints of videoConstraints) {
+                    try {
+                        console.log('카메라 옵션 시도:', JSON.stringify(constraints));
+                        stream = await navigator.mediaDevices.getUserMedia({
+                            video: constraints,
+                            audio: false
+                        });
+                        console.log('✅ 카메라 스트림 획득 성공');
+                        break;
+                    } catch (e) {
+                        console.log('옵션 실패:', e.name, e.message);
+                        continue;
+                    }
+                }
+
+                if (!stream) {
+                    throw new Error('STREAM_FAILED: 모든 카메라 옵션이 실패했습니다');
+                }
+
+                activeVideoStream = stream;
+                videoElement = document.getElementById('ai-camera');
+
+                if (!videoElement) {
+                    throw new Error('VIDEO_ELEMENT: 비디오 요소를 찾을 수 없습니다');
+                }
+
+                videoElement.srcObject = activeVideoStream;
+                videoElement.setAttribute('playsinline', 'true');
+                videoElement.setAttribute('autoplay', 'true');
+                videoElement.muted = true;
+
+                // 비디오 재생 대기
+                await new Promise((resolve, reject) => {
+                    videoElement.onloadedmetadata = () => {
+                        videoElement.play()
+                            .then(resolve)
+                            .catch(reject);
+                    };
+                    videoElement.onerror = reject;
+                    setTimeout(() => reject(new Error('VIDEO_TIMEOUT')), 10000);
                 });
 
-                videoElement = document.getElementById('ai-camera');
-                videoElement.srcObject = activeVideoStream;
+                showToast('카메라가 시작되었습니다!', 'success');
 
                 canvasElement = document.getElementById('ai-face-overlay');
                 canvasCtx = canvasElement.getContext('2d', { willReadFrequently: true });
 
+                // MediaPipe Face Mesh 초기화 (선택적)
                 if (typeof FaceMesh !== 'undefined' && !faceDetectionInstance) {
                     try {
                         faceDetectionInstance = new FaceMesh({
@@ -592,7 +659,7 @@
                         }
 
                         console.log('MediaPipe Face Mesh 활성화');
-                        showToast('고급 얼굴 랜드마크 인식이 활성화되었습니다', 'success');
+                        showToast('얼굴 인식이 활성화되었습니다', 'success');
                     } catch (error) {
                         console.warn('Face Mesh 초기화 실패:', error);
                         showToast('기본 카메라 모드로 시작합니다', 'warning');
@@ -602,9 +669,28 @@
                 document.getElementById('ai-face-guide').style.display = 'flex';
 
             } catch (error) {
-                console.error('카메라 시작 실패:', error);
+                console.error('❌ 카메라 시작 실패:', error);
                 cleanupCameraResources();
-                showToast('카메라에 접근할 수 없습니다', 'error');
+
+                // 상세한 에러 메시지
+                let userMessage = '카메라에 접근할 수 없습니다.';
+
+                if (error.name === 'NotAllowedError' || error.message.includes('PERMISSION_DENIED')) {
+                    userMessage = '카메라 권한이 거부되었습니다.\n\n앱 설정 > 권한 > 카메라를 허용해주세요.';
+                } else if (error.name === 'NotFoundError') {
+                    userMessage = '카메라를 찾을 수 없습니다.\n\n기기에 카메라가 있는지 확인해주세요.';
+                } else if (error.name === 'NotReadableError') {
+                    userMessage = '카메라가 다른 앱에서 사용 중입니다.\n\n다른 앱을 종료하고 다시 시도해주세요.';
+                } else if (error.message.includes('NOT_SUPPORTED')) {
+                    userMessage = '이 환경에서는 카메라를 지원하지 않습니다.';
+                } else if (error.name === 'OverconstrainedError') {
+                    userMessage = '카메라 설정 오류입니다. 다시 시도해주세요.';
+                }
+
+                showToast(userMessage, 'error');
+
+                // 디버깅용 alert (개발 중에만 사용)
+                // alert(`카메라 오류 상세:\n\n이름: ${error.name}\n메시지: ${error.message}`);
             }
         }
 
