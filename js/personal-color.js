@@ -196,16 +196,24 @@ window.HAIRGATOR_PERSONAL_COLOR = (function() {
     }
 
     function hide() {
-        const section = document.getElementById('personalColorSection');
+        // personalColorView (통합 뷰) 숨기기
+        const section = document.getElementById('personalColorView');
         if (section) {
             section.style.display = 'none';
             section.classList.remove('active');
         }
 
+        // 기존 personalColorSection도 체크 (하위 호환)
+        const oldSection = document.getElementById('personalColorSection');
+        if (oldSection) {
+            oldSection.style.display = 'none';
+            oldSection.classList.remove('active');
+        }
+
         // 카메라 리소스 정리
         cleanupCameraResources();
 
-        console.log('퍼스널컬러 뷰 숨겨짐');
+        console.log('🎨 퍼스널컬러 뷰 숨겨짐');
     }
 
     function hideOtherViews() {
