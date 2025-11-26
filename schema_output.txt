@@ -1,0 +1,332 @@
+🗺️  Supabase 데이터베이스 구조 매핑 시작...
+
+================================================================================
+
+📋 1. 사용 가능한 테이블 목록:
+
+   1. recipe_samples
+   2. theory_categories
+   3. theory_formulas42
+   4. theory_chunks
+   5. hairstyles
+   6. hairstyles_stats
+   7. recipe_samples_backup
+   8. hair_terms_89
+   9. hairstyles_backup_v1
+
+
+📊 2. 각 테이블의 컬럼 구조:
+
+================================================================================
+
+🔹 테이블: recipe_samples
+--------------------------------------------------------------------------------
+   컬럼 개수: 39개
+
+   - id                             | number          | 4116
+   - sample_code                    | string          | "PB0009_27"
+   - service_type                   | string          | "cut"
+   - gender                         | string          | "male"
+   - hair_length                    | object          | NULL
+   - style_category                 | string          | "Pushed Back"
+   - formula_42                     | Array[1]        | ["DBS NO.3"]
+   - style_name_ko                  | object          | NULL
+   - style_name_en                  | object          | NULL
+   - style_name_ja                  | object          | NULL
+   - style_name_zh                  | object          | NULL
+   - style_name_vi                  | object          | NULL
+   - direction_codes                | object          | NULL
+   - main_image_url                 | string          | https://bhsbwbeisqzgipvzpvym.supabase.co/storage/v...
+   - diagram_images                 | Array[36]       | ["https://bhsbwbeisqzgipvzpvym.supabase.co/storage
+   - image_embedding                | string          | [0.01068781,0.029949445,-0.012101151,-0.022697289,...
+   - recipe_embedding               | string          | [-0.0042562606,0.074995935,-0.05906869,0.011196094...
+   - recipe_full_text_ko            | string          | PB0009 스타일 레시피: 전체적인 실루엣은 남성적인 푸쉬 백 스타일이며, 디자인은 정교...
+   - recipe_full_text_en            | object          | NULL
+   - keywords                       | Array[27]       | ["레이어","텍스처라이징","백","입","D0","D8","방향","자연스러운","디자
+   - difficulty                     | object          | NULL
+   - estimated_time                 | object          | NULL
+   - quality_score                  | number          | 0
+   - is_ground_truth                | boolean         | true
+   - verified_by                    | object          | NULL
+   - verified_at                    | object          | NULL
+   - view_count                     | number          | 0
+   - used_count                     | number          | 0
+   - user_rating                    | number          | 0
+   - created_at                     | string          | "2025-11-15T16:16:37.023865+00:00"
+   - updated_at                     | string          | "2025-11-21T09:50:31.723943+00:00"
+   - params_56                      | object          | NULL
+   - section_primary                | object          | NULL
+   - lifting_angles                 | object          | NULL
+   - volume_zone                    | object          | NULL
+   - cut_form                       | object          | NULL
+   - estimated_length_cm            | object          | NULL
+   - recipe_summary_ko              | string          | "측면과 뒷머리 짧게. 정수리 레이어. 측면 정돈된 스타일."
+   - summary_embedding              | string          | [0.00087825075,0.02897611,0.014093579,0.0064837453...
+
+🔹 테이블: theory_categories
+--------------------------------------------------------------------------------
+   컬럼 개수: 12개
+
+   - id                             | number          | 1
+   - category_code                  | string          | "hairlive_theory"
+   - category_name_ko               | string          | "헤어게이터 이론"
+   - category_name_en               | string          | "HAIRLIVE Theory"
+   - category_name_ja               | object          | NULL
+   - category_name_zh               | object          | NULL
+   - category_name_vi               | object          | NULL
+   - display_order                  | number          | 1
+   - icon_emoji                     | string          | "📚"
+   - description                    | object          | NULL
+   - created_at                     | string          | "2025-11-05T05:46:06.283609+00:00"
+   - updated_at                     | string          | "2025-11-05T05:46:06.283609+00:00"
+
+🔹 테이블: theory_formulas42
+--------------------------------------------------------------------------------
+   컬럼 개수: 23개
+
+   - id                             | number          | 1
+   - formula_code                   | string          | "H1SQ_DB1"
+   - formula_pattern                | string          | "HS NO.1(SQUARE)/DBS NO.1"
+   - formula_name_ko                | string          | "앞쪽이 긴 무거운 느낌"
+   - formula_name_en                | string          | "Heavy front weight with square outline"
+   - section_type                   | string          | "MIXED"
+   - section_name_ko                | string          | "가로+후대각섹션"
+   - section_name_en                | string          | "Horizontal + Diagonal Backward"
+   - layer_count                    | number          | 11
+   - section_structure              | object          | {"HS":2,"DBS":9}
+   - form_type                      | string          | "G"
+   - silhouette_type                | string          | "Square"
+   - description_ko                 | string          | "스퀘어 아웃라인, 앞쪽이 길고 무거운 느낌. 모량이 많고 강한 이미지에 적합."
+   - description_en                 | string          | Square outline with heavy front weight. Suitable f...
+   - face_shapes                    | Array[2]        | ["Round","Square"]
+   - hair_volumes                   | Array[2]        | ["Thick","Medium"]
+   - suitable_styles                | Array[2]        | ["Square","Volume"]
+   - book_d_page_start              | number          | 11
+   - book_d_page_end                | number          | 15
+   - difficulty                     | string          | "beginner"
+   - related_formulas               | Array[2]        | ["H1SQ_DB2","H1RD_DB1"]
+   - created_at                     | string          | "2025-11-13T06:49:06.628828+00:00"
+   - updated_at                     | string          | "2025-11-13T06:49:06.628828+00:00"
+
+🔹 테이블: theory_chunks
+--------------------------------------------------------------------------------
+   컬럼 개수: 31개
+
+   - id                             | number          | 2625
+   - category_code                  | string          | "2way_cut_books"
+   - sub_category                   | string          | "book_a_2way_system"
+   - page_number                    | number          | 1
+   - chunk_index                    | number          | 0
+   - section_title                  | string          | "Book A - Page 1"
+   - main_topic                     | object          | NULL
+   - source_filename                | string          | "A_02_0130(81)-044-page-00001.jpg"
+   - content                        | string          | - 2WAY CUTTING SYSTEM
+- 2 WAY CUT
+- 2 WAY CUT 기법은 ...
+   - content_ko                     | string          | - 2WAY CUTTING SYSTEM
+- 2 WAY CUT
+- 2 WAY CUT 기법은 ...
+   - content_length                 | object          | NULL
+   - keywords                       | Array[275]      | ["0 degree","0-44도","0°","0도","112.5 degree","112.
+   - formula_codes                  | Array[0]        | []
+   - related_89_terms               | object          | NULL
+   - has_diagram                    | boolean         | false
+   - service_type                   | string          | "cut"
+   - gender                         | string          | "all"
+   - importance_level               | string          | "medium"
+   - chunk_type                     | string          | "theory"
+   - difficulty                     | string          | "intermediate"
+   - is_verified                    | boolean         | false
+   - quality_score                  | number          | 0.8
+   - created_at                     | string          | "2025-11-10T04:08:19.712098+00:00"
+   - updated_at                     | string          | "2025-11-20T08:22:05.233032+00:00"
+   - embedding                      | string          | [0.020334406,0.048769556,-0.046080925,-0.031408433...
+   - related_terms_89               | object          | NULL
+   - lifting_codes                  | object          | NULL
+   - direction_codes                | object          | NULL
+   - section_types                  | object          | NULL
+   - image_base64                   | string          | /9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQ...
+   - image_embedding                | string          | [1.1344447,-0.16258395,0.053414088,-0.2857928,0.88...
+
+🔹 테이블: hairstyles
+--------------------------------------------------------------------------------
+   컬럼 개수: 23개
+
+   - id                             | number          | 9
+   - code                           | string          | "FBL2002"
+   - name                           | string          | CS컬을 활용한 롱 스타일!
+언더라인의 C컬과 광대 길이의 프린지, 사이드 부분의 S컬을...
+   - category                       | object          | NULL
+   - description                    | string          | 샴푸 후 모근 부분을 볼륨 위주로 드라이한 후 프린지를 굵은 롤로 와인딩하여 컬을 형성합니...
+   - recipe                         | string          | "Diagonal Backward → Diagonal Forward → Pie Sectio
+   - image_url                      | string          | https://bhsbwbeisqzgipvzpvym.supabase.co/storage/v...
+   - length_category                | string          | "B"
+   - cut_form                       | object          | NULL
+   - cut_shape                      | object          | NULL
+   - structure_layer                | object          | NULL
+   - volume_zone                    | object          | NULL
+   - fringe_type                    | object          | NULL
+   - styling_direction              | object          | NULL
+   - design_emphasis                | object          | NULL
+   - embedding                      | string          | [0.04049649,-0.03442096,-0.042613402,-0.0059802714...
+   - created_at                     | string          | "2025-10-21T06:07:49.842391+00:00"
+   - updated_at                     | string          | "2025-11-20T05:01:49.536112+00:00"
+   - terms_89                       | object          | {}
+   - formula_42                     | object          | {}
+   - params_56                      | object          | {}
+   - recipe_new_format              | object          | NULL
+   - gender                         | string          | "female"
+
+🔹 테이블: hairstyles_stats
+--------------------------------------------------------------------------------
+   컬럼 개수: 7개
+
+   - total_styles                   | number          | 70
+   - total_categories               | number          | 0
+   - female_styles                  | number          | 70
+   - male_styles                    | number          | 0
+   - styles_with_terms_89           | number          | 1
+   - styles_with_formula_42         | number          | 1
+   - styles_with_new_format         | number          | 1
+
+🔹 테이블: recipe_samples_backup
+--------------------------------------------------------------------------------
+   컬럼 개수: 34개
+
+   - id                             | number          | 1
+   - sample_code                    | string          | "FCL_001"
+   - service_type                   | string          | "cut"
+   - gender                         | string          | "female"
+   - sample_number                  | number          | 1
+   - style_name_ko                  | string          | "롱 레이어 C컬"
+   - style_name_en                  | string          | "Long Layer C-Curl"
+   - style_name_ja                  | object          | NULL
+   - style_name_zh                  | object          | NULL
+   - style_name_vi                  | object          | NULL
+   - image_url                      | object          | NULL
+   - image_base64                   | object          | NULL
+   - recipe_full_text_ko            | object          | NULL
+   - recipe_full_text_en            | object          | NULL
+   - recipe_embedding               | object          | NULL
+   - formula_code                   | string          | "H1SQ_DB2"
+   - base_section                   | string          | "Horizontal"
+   - lifting_range                  | object          | NULL
+   - direction_codes                | object          | NULL
+   - iteration_type                 | object          | NULL
+   - difficulty                     | string          | "beginner"
+   - estimated_time                 | object          | NULL
+   - keywords                       | Array[3]        | ["롱레이어","C컬","여성컷"]
+   - hair_length                    | string          | "long"
+   - is_ground_truth                | boolean         | true
+   - quality_score                  | object          | NULL
+   - verified_by                    | object          | NULL
+   - verified_at                    | object          | NULL
+   - view_count                     | number          | 0
+   - used_count                     | number          | 0
+   - user_rating                    | object          | NULL
+   - created_at                     | string          | "2025-11-11T04:07:44.595899+00:00"
+   - updated_at                     | string          | "2025-11-11T04:07:44.595899+00:00"
+   - image_embedding                | object          | NULL
+
+🔹 테이블: hair_terms_89
+--------------------------------------------------------------------------------
+   컬럼 개수: 13개
+
+   - term_id                        | number          | 1
+   - term_number                    | string          | "01"
+   - term_name_ko                   | string          | "1 Section & 2 Section"
+   - term_name_en                   | string          | "1 Section & 2 Section"
+   - category                       | string          | "Section"
+   - tier                           | number          | 1
+   - description_ko                 | string          | "1섹션은 단일 방향, 2섹션은 복합 방향"
+   - description_en                 | object          | NULL
+   - image_url                      | object          | NULL
+   - formula_42_relevance           | object          | NULL
+   - parameter_23_relevance         | object          | NULL
+   - parameter_56_relevance         | object          | NULL
+   - created_at                     | string          | "2025-10-24T03:16:09.233256"
+
+🔹 테이블: hairstyles_backup_v1
+--------------------------------------------------------------------------------
+   컬럼 개수: 22개
+
+   - id                             | number          | 2
+   - code                           | string          | "FAL3001"
+   - name                           | string          | "전체적으로 S컬을 활용한 굵은 웨이브 스타일로써, 개성있는 컬감을 연출한 롱 스타일입니다
+   - category                       | object          | NULL
+   - description                    | string          | 샴푸 후 모근 부분의 볼륨 드라이 후 원형 아이롱을 활용하여, C컬과 굵은 S컬, 강한 S...
+   - recipe                         | string          | "Diagonal Backward → Pie Section"
+   - image_url                      | string          | https://bhsbwbeisqzgipvzpvym.supabase.co/storage/v...
+   - length_category                | string          | "L"
+   - cut_form                       | object          | NULL
+   - cut_shape                      | object          | NULL
+   - structure_layer                | object          | NULL
+   - volume_zone                    | object          | NULL
+   - fringe_type                    | object          | NULL
+   - styling_direction              | object          | NULL
+   - design_emphasis                | object          | NULL
+   - embedding                      | string          | [0.039713252,-0.026761366,-0.035601195,0.003809701...
+   - created_at                     | string          | "2025-10-21T06:07:39.318719+00:00"
+   - updated_at                     | string          | "2025-10-21T06:07:39.318719+00:00"
+   - terms_89                       | object          | {}
+   - formula_42                     | object          | {}
+   - params_56                      | object          | {}
+   - recipe_new_format              | object          | NULL
+
+
+🔧 3. RPC 함수 목록:
+
+================================================================================
+   1. match_hairstyles
+   2. hybrid_search_theory_chunks
+   3. get_recipes_by_formula
+   4. search_theory_multimodal
+   5. search_similar_recipes_by_text
+   6. increment_recipe_usage
+   7. search_by_term_89
+   8. match_recipe_samples
+   9. search_theory_by_image
+   10. match_theory_chunks_hybrid
+   11. migrate_params_56
+   12. match_hairstyles_v2
+   13. match_recipe_summaries
+   14. match_theory_chunks
+   15. search_similar_recipes_by_image
+   16. integrated_search
+   17. migrate_formula_42
+
+
+🔍 4. 임베딩 관련 컬럼 검색:
+
+================================================================================
+
+🔹 recipe_samples:
+   - image_embedding: String[9380자]
+     → JSON 파싱 가능, 실제로는 Array[768차원]
+   - recipe_embedding: String[9454자]
+     → JSON 파싱 가능, 실제로는 Array[768차원]
+   - summary_embedding: String[9504자]
+     → JSON 파싱 가능, 실제로는 Array[768차원]
+
+🔹 theory_chunks:
+   - embedding: String[9457자]
+     → JSON 파싱 가능, 실제로는 Array[768차원]
+   - image_embedding: String[11040자]
+     → JSON 파싱 가능, 실제로는 Array[1024차원]
+
+🔹 hairstyles:
+   - embedding: String[19200자]
+     → JSON 파싱 가능, 실제로는 Array[1536차원]
+
+🔹 recipe_samples_backup:
+   - recipe_embedding: NULL
+   - image_embedding: NULL
+
+🔹 hairstyles_backup_v1:
+   - embedding: String[19226자]
+     → JSON 파싱 가능, 실제로는 Array[1536차원]
+
+
+================================================================================
+✅ 스키마 매핑 완료!
+

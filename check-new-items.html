@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEW 표시 확인</title>
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: monospace;
+            padding: 20px;
+        }
+        .item {
+            border: 1px solid #333;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .new { border-color: #ff4444; background: rgba(255,68,68,0.1); }
+        .old { border-color: #666; }
+        .error { color: #ff4444; }
+        .success { color: #4CAF50; }
+    </style>
+</head>
+<body>
+    <h1>NEW 표시 확인 도구</h1>
+    <div id="status">Firebase 연결 중...</div>
+    <div id="results"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <script>
+        async function checkNewItems() {
+            const status = document.getElementById('status');
+            const results = document.getElementById('results');
+
+            try {
+                status.innerHTML = '<span class="success">✓ Firebase 연결됨</span>';
+
+                // 최근 20개 항목 가져오기
+                const snapshot = await db.collection('hairstyles')
+                    .orderBy('createdAt', 'desc')
+                    .limit(20)
+                    .get();
+
+                results.innerHTML = `<h2>최근 20개 항목 확인 (총 ${snapshot.size}개)</h2>`;
+
+                const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+                let newCount = 0;
+
+                snapshot.forEach((doc, index) => {
+                    const data = doc.data();
+                    const createdAt = data.createdAt?.toDate?.();
+                    const isNew = createdAt && (createdAt.getTime() > sevenDaysAgo);
+
+                    if (isNew) newCount++;
+
+                    const div = document.createElement('div');
+                    div.className = `item ${isNew ? 'new' : 'old'}`;
+
+                    div.innerHTML = `
+                        <strong>${index + 1}. ${data.code || '코드 없음'} - ${data.name || '이름 없음'}</strong><br>
+                        성별: ${data.gender || '-'},
+                        메인: ${data.mainCategory || '-'},
+                        서브: ${data.subCategory || '-'}<br>
+                        <strong>createdAt:</strong> ${
+                            createdAt
+                                ? `${createdAt.toLocaleString('ko-KR')} ${isNew ? '<span class="success">✓ NEW</span>' : '(7일 이전)'}`
+                                : '<span class="error">❌ 필드 없음</span>'
+                        }
+                    `;
+
+                    results.appendChild(div);
+                });
+
+                results.innerHTML = `
+                    <h2>최근 20개 항목 확인</h2>
+                    <p><strong>NEW 항목:</strong> ${newCount}개</p>
+                    <p><strong>7일 기준:</strong> ${new Date(sevenDaysAgo).toLocaleString('ko-KR')} 이후</p>
+                    <hr>
+                ` + results.innerHTML;
+
+            } catch (error) {
+                status.innerHTML = `<span class="error">❌ 오류: ${error.message}</span>`;
+                console.error(error);
+            }
+        }
+
+        // Firebase 초기화 대기
+        if (typeof db !== 'undefined') {
+            checkNewItems();
+        } else {
+            setTimeout(checkNewItems, 2000);
+        }
+    </script>
+</body>
+</html>

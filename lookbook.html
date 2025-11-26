@@ -19,11 +19,47 @@
             --font-sans: 'Inter', -apple-system, sans-serif;
             --accent-pink: #ff0055;
             --accent-gold: #d4af37;
+            --accent-blue: #3498db;
             --bg-dark: #0a0a0a;
             --bg-card: #141414;
+            --bg-cream: #fdfbf7;
+            --bg-light: #f8f9fa;
             --text-primary: #ffffff;
             --text-secondary: #888888;
             --text-muted: #555555;
+        }
+
+        /* ========== THEME: STREET (Default - Dark) ========== */
+        body.theme-street {
+            --theme-bg: #0a0a0a;
+            --theme-bg-card: #141414;
+            --theme-text: #ffffff;
+            --theme-text-secondary: #888888;
+            --theme-accent: #ff0055;
+            --theme-font: 'Inter', sans-serif;
+            --hero-filter: grayscale(100%) contrast(1.1) brightness(0.7);
+        }
+
+        /* ========== THEME: CLASSIC (Warm Cream) ========== */
+        body.theme-classic {
+            --theme-bg: #fdfbf7;
+            --theme-bg-card: #f5f0e6;
+            --theme-text: #1a1a1a;
+            --theme-text-secondary: #555555;
+            --theme-accent: #d4af37;
+            --theme-font: 'Georgia', serif;
+            --hero-filter: sepia(20%) contrast(1.05) brightness(0.85);
+        }
+
+        /* ========== THEME: MODERN (Clean Blue) ========== */
+        body.theme-modern {
+            --theme-bg: #f8f9fa;
+            --theme-bg-card: #ffffff;
+            --theme-text: #2c3e50;
+            --theme-text-secondary: #7f8c8d;
+            --theme-accent: #3498db;
+            --theme-font: 'Helvetica Neue', sans-serif;
+            --hero-filter: brightness(0.9) contrast(1.1);
         }
 
         * {
@@ -33,11 +69,12 @@
         }
 
         body {
-            font-family: var(--font-sans);
-            background: var(--bg-dark);
-            color: var(--text-primary);
+            font-family: var(--theme-font, var(--font-sans));
+            background: var(--theme-bg, var(--bg-dark));
+            color: var(--theme-text, var(--text-primary));
             line-height: 1.6;
             overflow-x: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
 
         /* Navigation */
@@ -63,7 +100,7 @@
         }
 
         .nav-link {
-            color: var(--text-secondary);
+            color: var(--theme-text-secondary, var(--text-secondary));
             text-decoration: none;
             font-size: 0.85rem;
             transition: color 0.3s;
@@ -73,7 +110,11 @@
         }
 
         .nav-link:hover {
-            color: var(--accent-pink);
+            color: var(--theme-accent, var(--accent-pink));
+        }
+
+        .nav-logo {
+            color: var(--theme-text, var(--text-primary));
         }
 
         /* Hero Section - Full Screen */
@@ -91,7 +132,8 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            filter: grayscale(100%) contrast(1.1) brightness(0.7);
+            filter: var(--hero-filter, grayscale(100%) contrast(1.1) brightness(0.7));
+            transition: filter 0.5s ease;
         }
 
         .hero-overlay {
@@ -120,7 +162,7 @@
 
         .new-arrival-badge {
             display: inline-block;
-            background: var(--accent-pink);
+            background: var(--theme-accent, var(--accent-pink));
             color: white;
             padding: 8px 20px;
             font-size: 0.75rem;
@@ -130,6 +172,18 @@
             margin-bottom: 1.5rem;
             transform: rotate(-2deg);
             box-shadow: 0 4px 20px rgba(255, 0, 85, 0.4);
+            transition: background 0.3s ease;
+        }
+
+        /* Classic theme badge adjustment */
+        body.theme-classic .new-arrival-badge {
+            color: #1a1a1a;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Modern theme badge adjustment */
+        body.theme-modern .new-arrival-badge {
+            box-shadow: 0 4px 20px rgba(52, 152, 219, 0.4);
         }
 
         .hero-title {
@@ -144,9 +198,20 @@
 
         .hero-description {
             font-size: 1rem;
-            color: var(--text-secondary);
+            color: var(--theme-text-secondary, var(--text-secondary));
             max-width: 600px;
             line-height: 1.8;
+        }
+
+        /* Classic/Modern theme hero text shadow for readability */
+        body.theme-classic .hero-title,
+        body.theme-modern .hero-title {
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+        }
+
+        body.theme-classic .hero-description,
+        body.theme-modern .hero-description {
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.9);
         }
 
         /* Tags Section */
@@ -156,27 +221,29 @@
             justify-content: center;
             gap: 1rem;
             flex-wrap: wrap;
-            border-bottom: 1px solid #222;
+            border-bottom: 1px solid var(--theme-text-secondary, #222);
+            background: var(--theme-bg, transparent);
         }
 
         .tag {
             padding: 10px 24px;
-            border: 1px solid #333;
+            border: 1px solid var(--theme-text-secondary, #333);
             border-radius: 30px;
             font-size: 0.85rem;
-            color: var(--text-secondary);
+            color: var(--theme-text-secondary, var(--text-secondary));
             background: transparent;
             transition: all 0.3s;
         }
 
         .tag:hover {
-            border-color: var(--accent-pink);
-            color: var(--accent-pink);
+            border-color: var(--theme-accent, var(--accent-pink));
+            color: var(--theme-accent, var(--accent-pink));
         }
 
         /* Variations Section */
         .variations-section {
             padding: 5rem 4rem;
+            background: var(--theme-bg, inherit);
         }
 
         .section-title {
@@ -185,10 +252,11 @@
             text-align: center;
             margin-bottom: 3rem;
             font-weight: 400;
+            color: var(--theme-text, inherit);
         }
 
         .section-title span {
-            color: var(--text-muted);
+            color: var(--theme-text-secondary, var(--text-muted));
             font-size: 0.9rem;
             margin-left: 0.5rem;
         }
@@ -220,22 +288,22 @@
         }
 
         .variation-card h4 {
-            font-family: var(--font-sans);
+            font-family: var(--theme-font, var(--font-sans));
             font-size: 1rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
-            color: var(--text-primary);
+            color: var(--theme-text, var(--text-primary));
         }
 
         .variation-card p {
             font-size: 0.85rem;
-            color: var(--text-secondary);
+            color: var(--theme-text-secondary, var(--text-secondary));
         }
 
         /* Info Grid Section */
         .info-section {
             padding: 5rem 4rem;
-            background: var(--bg-card);
+            background: var(--theme-bg-card, var(--bg-card));
         }
 
         .info-grid {
@@ -252,30 +320,36 @@
             font-weight: 400;
             margin-bottom: 2rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid #333;
+            border-bottom: 2px solid var(--theme-accent, #333);
             text-transform: uppercase;
             letter-spacing: 1px;
+            color: var(--theme-text, inherit);
         }
 
         /* Face Shape Card */
         .face-shape-card .face-diagram {
-            background: #1a1a1a;
+            background: rgba(0,0,0,0.1);
             padding: 2rem;
             margin-bottom: 1.5rem;
             text-align: center;
+            border-radius: 8px;
+        }
+
+        body.theme-street .face-shape-card .face-diagram {
+            background: #1a1a1a;
         }
 
         .face-diagram-title {
             font-size: 0.7rem;
             letter-spacing: 2px;
-            color: var(--text-muted);
+            color: var(--theme-text-secondary, var(--text-muted));
             margin-bottom: 1rem;
             text-transform: uppercase;
         }
 
         .face-diagram-subtitle {
             font-size: 0.6rem;
-            color: var(--text-muted);
+            color: var(--theme-text-secondary, var(--text-muted));
             letter-spacing: 1px;
         }
 
@@ -283,11 +357,12 @@
             font-family: var(--font-display);
             font-size: 1.5rem;
             margin: 1.5rem 0 1rem;
+            color: var(--theme-text, inherit);
         }
 
         .face-shape-desc {
             font-size: 0.85rem;
-            color: var(--text-secondary);
+            color: var(--theme-text-secondary, var(--text-secondary));
             line-height: 1.8;
         }
 
@@ -306,7 +381,7 @@
         .styling-number {
             font-family: var(--font-display);
             font-size: 1.2rem;
-            color: var(--text-muted);
+            color: var(--theme-accent, var(--text-muted));
             font-weight: 600;
             min-width: 30px;
         }
@@ -316,17 +391,18 @@
             font-size: 0.95rem;
             margin-bottom: 4px;
             font-weight: 600;
+            color: var(--theme-text, inherit);
         }
 
         .styling-content p {
             font-size: 0.8rem;
-            color: var(--text-secondary);
+            color: var(--theme-text-secondary, var(--text-secondary));
         }
 
         /* Maintenance Card */
         .maintenance-desc {
             font-size: 0.85rem;
-            color: var(--text-secondary);
+            color: var(--theme-text-secondary, var(--text-secondary));
             line-height: 1.8;
             margin-bottom: 2rem;
         }
@@ -338,10 +414,16 @@
         }
 
         .stat-box {
-            background: #1a1a1a;
+            background: rgba(0,0,0,0.1);
             padding: 1.5rem;
             text-align: center;
             border-radius: 8px;
+            border: 1px solid var(--theme-text-secondary, transparent);
+        }
+
+        body.theme-street .stat-box {
+            background: #1a1a1a;
+            border: none;
         }
 
         .stat-icon {
@@ -351,7 +433,7 @@
 
         .stat-label {
             font-size: 0.75rem;
-            color: var(--text-muted);
+            color: var(--theme-text-secondary, var(--text-muted));
             display: block;
             margin-bottom: 4px;
         }
@@ -359,34 +441,36 @@
         .stat-value {
             font-weight: 600;
             font-size: 0.95rem;
+            color: var(--theme-text, inherit);
         }
 
         .stat-value.high {
-            color: #4dabf7;
+            color: var(--theme-accent, #4dabf7);
         }
 
         .stat-value.period {
-            color: var(--accent-pink);
+            color: var(--theme-accent, var(--accent-pink));
         }
 
         /* Footer */
         .lookbook-footer {
             padding: 3rem 4rem;
             text-align: center;
-            border-top: 1px solid #222;
+            border-top: 1px solid var(--theme-text-secondary, #222);
+            background: var(--theme-bg, inherit);
         }
 
         .footer-logo {
             font-family: var(--font-display);
             font-size: 1.2rem;
             letter-spacing: 3px;
-            color: var(--text-muted);
+            color: var(--theme-text-secondary, var(--text-muted));
             margin-bottom: 1rem;
         }
 
         .footer-text {
             font-size: 0.8rem;
-            color: var(--text-muted);
+            color: var(--theme-text-secondary, var(--text-muted));
         }
 
         /* Responsive */
@@ -592,30 +676,211 @@
         const imageSrc = urlParams.get('image') || '';
         const styleTitle = decodeURIComponent(urlParams.get('title') || 'Style');
 
+        // 현재 언어 가져오기
+        const currentLang = localStorage.getItem('hairgator_lang') || 'ko';
+
+        // ==================== 랜덤 테마 선택 ====================
+        const themes = ['street', 'classic', 'modern'];
+        const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+
+        // 테마 클래스 적용
+        document.body.classList.add(`theme-${selectedTheme}`);
+        console.log('🎨 Selected theme:', selectedTheme);
+
+        // 테마별 추가 스타일 조정
+        const themeConfig = {
+            street: {
+                name: 'Street',
+                badgeText: 'NEW ARRIVAL',
+                navBg: 'linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%)'
+            },
+            classic: {
+                name: 'Classic',
+                badgeText: 'EDITOR\'S PICK',
+                navBg: 'linear-gradient(to bottom, rgba(253,251,247,0.9) 0%, transparent 100%)'
+            },
+            modern: {
+                name: 'Modern',
+                badgeText: 'TRENDING NOW',
+                navBg: 'linear-gradient(to bottom, rgba(248,249,250,0.9) 0%, transparent 100%)'
+            }
+        };
+
+        // 네비게이션 배경 및 배지 텍스트 조정
+        const config = themeConfig[selectedTheme];
+        document.querySelector('.lookbook-nav').style.background = config.navBg;
+
+        // 배지 텍스트 변경 (AI 분석 전)
+        const badge = document.querySelector('.new-arrival-badge');
+        if (badge && !badge.querySelector('.loading-pulse')) {
+            badge.textContent = config.badgeText;
+        }
+
         // 데이터 적용
         document.getElementById('heroImage').src = imageSrc;
         document.getElementById('styleTitle').textContent = styleTitle.toUpperCase();
 
-        // Variation 이미지 (동일 이미지 사용, 실제로는 다른 이미지 사용 가능)
+        // Variation 이미지 (초기에는 동일 이미지, AI 생성 후 교체)
         document.getElementById('varImage1').src = imageSrc;
         document.getElementById('varImage2').src = imageSrc;
         document.getElementById('varImage3').src = imageSrc;
 
-        // 다국어 적용
+        // ==================== AI 분석 API 호출 ====================
+        async function analyzeWithAI() {
+            if (!imageSrc) {
+                console.warn('이미지 URL이 없습니다');
+                return;
+            }
+
+            // 로딩 상태 표시
+            showLoadingState();
+
+            try {
+                const response = await fetch('/.netlify/functions/lookbook-analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        imageUrl: imageSrc,
+                        language: currentLang,
+                        generateImages: true
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('✅ AI 분석 완료:', data);
+
+                if (data.success && data.analysis) {
+                    applyAnalysisResults(data.analysis, data.generatedImages);
+                }
+
+            } catch (error) {
+                console.error('AI 분석 실패:', error);
+                hideLoadingState();
+            }
+        }
+
+        // 로딩 상태 표시
+        function showLoadingState() {
+            // 성별 배지에 분석 중 표시
+            const badge = document.querySelector('.new-arrival-badge');
+            badge.innerHTML = '<span class="loading-pulse">AI ANALYZING...</span>';
+            badge.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+
+            // 카드들에 로딩 스켈레톤 효과
+            document.querySelectorAll('.variation-card img').forEach(img => {
+                img.style.filter = 'grayscale(100%) brightness(0.3)';
+            });
+        }
+
+        // 로딩 상태 해제
+        function hideLoadingState() {
+            const badge = document.querySelector('.new-arrival-badge');
+            badge.innerHTML = 'NEW ARRIVAL';
+            badge.style.background = 'var(--accent-pink)';
+
+            document.querySelectorAll('.variation-card img').forEach(img => {
+                img.style.filter = 'grayscale(20%)';
+            });
+        }
+
+        // AI 분석 결과 적용
+        function applyAnalysisResults(analysis, generatedImages) {
+            console.log('📊 분석 결과 적용:', analysis);
+
+            // 1. 성별 배지 업데이트
+            const badge = document.querySelector('.new-arrival-badge');
+            const genderText = analysis.gender === 'male' ? '👨 MALE STYLE' : '👩 FEMALE STYLE';
+            badge.innerHTML = genderText;
+            badge.style.background = analysis.gender === 'male'
+                ? 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                : 'var(--accent-pink)';
+
+            // 2. 스타일 이름 및 설명
+            document.getElementById('styleTitle').textContent = analysis.styleName?.toUpperCase() || styleTitle.toUpperCase();
+            document.getElementById('heroDescription').textContent = analysis.styleDescription || '';
+
+            // 3. 태그 업데이트
+            if (analysis.tags && analysis.tags.length > 0) {
+                const tagsSection = document.getElementById('tagsSection');
+                tagsSection.innerHTML = analysis.tags.map(tag =>
+                    `<span class="tag">${tag}</span>`
+                ).join('');
+            }
+
+            // 4. 스타일 변형 업데이트
+            if (analysis.fashionRecommendations && analysis.fashionRecommendations.length >= 3) {
+                const recs = analysis.fashionRecommendations;
+
+                document.getElementById('varTitle1').textContent = recs[0].style;
+                document.getElementById('varDesc1').textContent = recs[0].reason;
+
+                document.getElementById('varTitle2').textContent = recs[1].style;
+                document.getElementById('varDesc2').textContent = recs[1].reason;
+
+                document.getElementById('varTitle3').textContent = recs[2].style;
+                document.getElementById('varDesc3').textContent = recs[2].reason;
+            }
+
+            // 5. 생성된 이미지 적용
+            if (generatedImages) {
+                // 스타일 변형 이미지
+                if (generatedImages.variations && generatedImages.variations.length > 0) {
+                    generatedImages.variations.forEach((imgSrc, idx) => {
+                        const imgEl = document.getElementById(`varImage${idx + 1}`);
+                        if (imgEl && imgSrc) {
+                            imgEl.src = imgSrc;
+                            imgEl.style.filter = 'none';
+                        }
+                    });
+                }
+            }
+
+            // 6. 얼굴형 추천
+            if (analysis.faceShapes) {
+                const faceNames = analysis.faceShapes.best?.join(' & ') || 'Oval & Heart';
+                document.querySelector('.face-shape-name').textContent = faceNames;
+                document.getElementById('faceShapeDesc').textContent = analysis.faceShapes.description || '';
+
+                // SVG 다이어그램 제목 업데이트
+                document.querySelector('.face-diagram-title').textContent =
+                    `FACE SHAPE ANALYSIS: ${faceNames.toUpperCase()}`;
+            }
+
+            // 7. 스타일링 팁
+            if (analysis.stylingTips && analysis.stylingTips.length >= 3) {
+                const tips = analysis.stylingTips;
+
+                document.getElementById('style1Title').textContent = tips[0].title;
+                document.getElementById('style1Desc').textContent = tips[0].description;
+
+                document.getElementById('style2Title').textContent = tips[1].title;
+                document.getElementById('style2Desc').textContent = tips[1].description;
+
+                document.getElementById('style3Title').textContent = tips[2].title;
+                document.getElementById('style3Desc').textContent = tips[2].description;
+            }
+
+            // 8. 관리 정보
+            if (analysis.maintenance) {
+                document.getElementById('maintenanceDesc').textContent = analysis.maintenance.tips || '';
+                document.getElementById('hydrationValue').textContent = analysis.maintenance.hydration || '높음';
+                document.getElementById('trimValue').textContent =
+                    (analysis.maintenance.trimCycle || '8') + (currentLang === 'ko' ? '주' : ' weeks');
+            }
+
+            // 로딩 상태 해제
+            hideLoadingState();
+        }
+
+        // 다국어 적용 (기본 레이블)
         function applyTranslations() {
             if (typeof t === 'function') {
                 // Navigation
                 document.getElementById('navBackText').textContent = t('lookbook.createNew') || '새로운 스타일 생성';
-
-                // Tags
-                const tags = [
-                    t('lookbook.tags.vintage') || '#빈티지',
-                    t('lookbook.tags.bohemian') || '#보헤미안',
-                    t('lookbook.tags.volume') || '#볼륨감',
-                    t('lookbook.tags.lovely') || '#러블리'
-                ];
-                const tagsSection = document.getElementById('tagsSection');
-                tagsSection.innerHTML = tags.map(tag => `<span class="tag">${tag}</span>`).join('');
 
                 // Section titles
                 document.getElementById('variationsTitle').innerHTML =
@@ -627,17 +892,22 @@
                 document.getElementById('maintenanceTitle').textContent =
                     t('lookbook.maintenance') || '관리 및 유지';
 
-                // Stats
+                // Stats labels
                 document.getElementById('hydrationLabel').textContent = t('lookbook.hydration') || '수분 공급';
-                document.getElementById('hydrationValue').textContent = t('lookbook.high') || '높음';
                 document.getElementById('trimLabel').textContent = t('lookbook.trim') || '커트 주기';
-                document.getElementById('trimValue').textContent = '8 ' + (t('lookbook.weeks') || '주');
             }
         }
 
         // 초기화
         document.addEventListener('DOMContentLoaded', () => {
             applyTranslations();
+
+            // AI 분석 시작 (이미지가 있을 경우)
+            if (imageSrc) {
+                setTimeout(() => {
+                    analyzeWithAI();
+                }, 500); // 약간의 딜레이 후 분석 시작
+            }
         });
 
         // 뒤로가기
@@ -649,7 +919,19 @@
             }
         }
 
-        console.log('📖 Lookbook loaded:', { title: styleTitle, image: imageSrc });
+        console.log('📖 Lookbook loaded:', { title: styleTitle, image: imageSrc, lang: currentLang, theme: selectedTheme });
     </script>
+
+    <style>
+        /* 로딩 펄스 애니메이션 */
+        .loading-pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
 </body>
 </html>
