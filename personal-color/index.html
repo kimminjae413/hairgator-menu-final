@@ -700,7 +700,11 @@
             canvasElement.width = videoElement.videoWidth || 640;
             canvasElement.height = videoElement.videoHeight || 480;
 
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            // 먼저 비디오 프레임을 캔버스에 그림 (배경)
+            canvasCtx.save();
+            canvasCtx.scale(-1, 1); // 거울 모드 (좌우 반전)
+            canvasCtx.drawImage(videoElement, -canvasElement.width, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.restore();
 
             if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                 const landmarks = results.multiFaceLandmarks[0];
@@ -734,7 +738,8 @@
 
             ctx.fillStyle = '#00FF88';
             landmarks.forEach((landmark, index) => {
-                const x = landmark.x * canvasElement.width;
+                // 좌우 반전 (거울 모드)
+                const x = (1 - landmark.x) * canvasElement.width;
                 const y = landmark.y * canvasElement.height;
 
                 ctx.beginPath();
@@ -752,9 +757,10 @@
                     const start = landmarks[startIdx];
                     const end = landmarks[endIdx];
 
-                    const startX = start.x * canvasElement.width;
+                    // 좌우 반전 (거울 모드)
+                    const startX = (1 - start.x) * canvasElement.width;
                     const startY = start.y * canvasElement.height;
-                    const endX = end.x * canvasElement.width;
+                    const endX = (1 - end.x) * canvasElement.width;
                     const endY = end.y * canvasElement.height;
 
                     ctx.beginPath();
@@ -777,7 +783,8 @@
             skinPoints.forEach((point) => {
                 if (landmarks[point.index]) {
                     const landmark = landmarks[point.index];
-                    const x = landmark.x * canvasElement.width;
+                    // 좌우 반전 (거울 모드)
+                    const x = (1 - landmark.x) * canvasElement.width;
                     const y = landmark.y * canvasElement.height;
 
                     ctx.strokeStyle = point.color;
