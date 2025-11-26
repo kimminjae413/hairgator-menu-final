@@ -16,6 +16,12 @@
         src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script>
 
     <link rel="stylesheet" href="styles.css">
+    <style>
+        @keyframes flashFade {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
 </head>
 
 <body>
@@ -103,12 +109,19 @@
                             </div>
                         </div>
                         <div class="camera-controls">
-                            <button class="control-btn" id="start-camera" onclick="startAICamera()">📹 실시간 카메라 분석</button>
+                            <button class="control-btn" id="start-camera" onclick="startAICamera()">📹 카메라 시작</button>
+                            <button class="control-btn" id="capture-btn" onclick="captureAndAnalyze()" style="display: none; background: linear-gradient(135deg, #FF6B6B, #FF8E53);">📸 촬영하기</button>
+                            <button class="control-btn" id="retry-btn" onclick="retryCapture()" style="display: none; background: linear-gradient(135deg, #6B7FFF, #53A8FF);">🔄 다시 촬영</button>
                         </div>
 
-                        <!-- ⭐ 실시간 분석 결과 표시 -->
+                        <!-- 촬영 안내 메시지 -->
+                        <div id="capture-guide" style="display: none; margin-top: 15px; padding: 12px; background: rgba(255,180,0,0.15); border: 1px solid rgba(255,180,0,0.3); border-radius: 8px; text-align: center;">
+                            <span style="color: #FFB400; font-size: 14px;">✨ 얼굴이 인식되었습니다! <b>촬영하기</b> 버튼을 눌러주세요</span>
+                        </div>
+
+                        <!-- ⭐ 분석 결과 표시 (촬영 후) -->
                         <div class="realtime-results" style="margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px; display: none;" id="realtime-results-container">
-                            <h4 style="margin: 0 0 15px 0; color: #fff;">🎨 실시간 분석 결과</h4>
+                            <h4 style="margin: 0 0 15px 0; color: #fff;">🎨 퍼스널컬러 분석 결과</h4>
                             <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 6px; margin-bottom: 10px;">
                                 <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;" id="realtime-season">분석 중...</div>
                                 <div style="font-size: 14px; line-height: 1.6; color: #ccc;" id="realtime-skin-info"></div>
@@ -782,27 +795,214 @@
             if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                 const landmarks = results.multiFaceLandmarks[0];
 
+                // 현재 랜드마크 저장 (촬영 시 사용)
+                currentLandmarks = landmarks;
+
                 drawFullFaceMesh(canvasCtx, landmarks);
                 drawSkinTonePoints(canvasCtx, landmarks);
 
-                const skinToneData = extractSkinTone(landmarks);
-                if (frameCount % 30 === 1) {
-                    console.log('🧪 피부톤 데이터:', skinToneData);
-                }
-                displaySkinToneAnalysis(skinToneData);
+                // 촬영 모드가 아닐 때만 촬영 버튼 표시
+                if (!isCaptured) {
+                    if (!faceDetected) {
+                        faceDetected = true;
+                        document.getElementById('ai-face-guide').style.display = 'none';
 
-                if (!faceDetected) {
-                    faceDetected = true;
-                    document.getElementById('ai-face-guide').style.display = 'none';
-                    console.log('✅ 얼굴 인식 완료!');
-                    showToast('얼굴 인식 완료! 실시간 분석 중...', 'success');
+                        // 촬영 버튼 표시
+                        document.getElementById('capture-btn').style.display = 'inline-block';
+                        document.getElementById('capture-guide').style.display = 'block';
+
+                        console.log('✅ 얼굴 인식 완료! 촬영 대기 중...');
+                        showToast('얼굴이 인식되었습니다! 촬영 버튼을 눌러주세요', 'success');
+                    }
                 }
             } else {
-                if (faceDetected) {
+                if (faceDetected && !isCaptured) {
                     faceDetected = false;
                     document.getElementById('ai-face-guide').style.display = 'flex';
-                    clearSkinToneDisplay();
+
+                    // 촬영 버튼 숨기기
+                    document.getElementById('capture-btn').style.display = 'none';
+                    document.getElementById('capture-guide').style.display = 'none';
                 }
+            }
+        }
+
+        // 현재 랜드마크 저장용 변수
+        let currentLandmarks = null;
+        let isCaptured = false;
+
+        // 촬영하기 함수
+        function captureAndAnalyze() {
+            if (!currentLandmarks) {
+                showToast('얼굴을 먼저 인식해주세요', 'warning');
+                return;
+            }
+
+            console.log('📸 촬영 시작!');
+            isCaptured = true;
+
+            // 버튼 상태 변경
+            document.getElementById('capture-btn').style.display = 'none';
+            document.getElementById('capture-guide').style.display = 'none';
+            document.getElementById('retry-btn').style.display = 'inline-block';
+
+            // 촬영 효과 (플래시)
+            const flash = document.createElement('div');
+            flash.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: white;
+                z-index: 9999;
+                animation: flashFade 0.3s ease-out forwards;
+            `;
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 300);
+
+            // 피부톤 분석
+            const skinToneData = extractSkinTone(currentLandmarks);
+            console.log('🧪 촬영된 피부톤 데이터:', skinToneData);
+
+            // 분석 결과 표시
+            displayCapturedAnalysis(skinToneData);
+
+            // 분석 진행 단계 애니메이션
+            animateAnalysisSteps();
+
+            showToast('촬영 완료! 분석 결과를 확인하세요', 'success');
+        }
+
+        // 다시 촬영 함수
+        function retryCapture() {
+            console.log('🔄 다시 촬영');
+            isCaptured = false;
+            currentLandmarks = null;
+            faceDetected = false;
+
+            // 버튼 상태 초기화
+            document.getElementById('retry-btn').style.display = 'none';
+            document.getElementById('capture-btn').style.display = 'none';
+            document.getElementById('capture-guide').style.display = 'none';
+            document.getElementById('ai-face-guide').style.display = 'flex';
+
+            // 결과 숨기기
+            document.getElementById('realtime-results-container').style.display = 'none';
+            document.getElementById('ai-analysis-results').style.display = 'none';
+
+            // 분석 단계 초기화
+            resetAnalysisSteps();
+
+            showToast('다시 얼굴을 화면에 맞춰주세요', 'info');
+        }
+
+        // 분석 단계 애니메이션
+        function animateAnalysisSteps() {
+            const steps = ['ai-step-1', 'ai-step-2', 'ai-step-3', 'ai-step-4'];
+            let delay = 0;
+
+            steps.forEach((stepId, index) => {
+                setTimeout(() => {
+                    const step = document.getElementById(stepId);
+                    if (step) {
+                        step.classList.add('active');
+                        step.style.background = 'rgba(76, 175, 80, 0.2)';
+                        step.style.borderColor = '#4CAF50';
+                    }
+
+                    // 마지막 단계 완료 시 결과 표시
+                    if (index === steps.length - 1) {
+                        setTimeout(() => {
+                            document.getElementById('ai-analysis-results').style.display = 'block';
+                        }, 300);
+                    }
+                }, delay);
+                delay += 400;
+            });
+        }
+
+        // 분석 단계 초기화
+        function resetAnalysisSteps() {
+            const steps = ['ai-step-1', 'ai-step-2', 'ai-step-3', 'ai-step-4'];
+            steps.forEach(stepId => {
+                const step = document.getElementById(stepId);
+                if (step) {
+                    step.classList.remove('active');
+                    step.style.background = '';
+                    step.style.borderColor = '';
+                }
+            });
+        }
+
+        // 촬영된 분석 결과 표시
+        function displayCapturedAnalysis(skinToneData) {
+            if (!skinToneData) {
+                console.log('❌ 피부톤 데이터가 없음');
+                return;
+            }
+
+            const brightness = (skinToneData.rgb.r + skinToneData.rgb.g + skinToneData.rgb.b) / 3;
+            const seasonInfo = getPersonalColorSeason(skinToneData.undertone, brightness);
+
+            console.log('📊 분석 결과:', seasonInfo);
+
+            // 메인 결과 컨테이너 표시
+            const resultsContainer = document.getElementById('realtime-results-container');
+            if (resultsContainer) {
+                resultsContainer.style.display = 'block';
+
+                const seasonEl = document.getElementById('realtime-season');
+                const skinInfoEl = document.getElementById('realtime-skin-info');
+                const recommendationEl = document.getElementById('realtime-recommendation');
+
+                if (seasonEl) {
+                    seasonEl.innerHTML = `${seasonInfo.emoji} ${seasonInfo.season}`;
+                    seasonEl.style.color = seasonInfo.color;
+                }
+
+                if (skinInfoEl) {
+                    skinInfoEl.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <div style="width: 30px; height: 30px; background: ${skinToneData.hex}; border-radius: 50%; border: 2px solid white;"></div>
+                            <span>피부톤: ${skinToneData.hex}</span>
+                        </div>
+                        <div>언더톤: <b style="color: ${seasonInfo.color};">${skinToneData.undertone}</b></div>
+                        <div>RGB: ${skinToneData.rgb.r}, ${skinToneData.rgb.g}, ${skinToneData.rgb.b}</div>
+                    `;
+                }
+
+                if (recommendationEl) {
+                    const recommendations = getSeasonRecommendations(seasonInfo.season);
+                    recommendationEl.innerHTML = recommendations;
+                }
+            }
+
+            // 오른쪽 분석 패널 업데이트
+            const seasonResult = document.getElementById('ai-season-result');
+            const confidenceEl = document.getElementById('ai-confidence');
+            const analysisData = document.getElementById('ai-analysis-data');
+
+            if (seasonResult) {
+                seasonResult.innerHTML = `${seasonInfo.emoji} ${seasonInfo.season}`;
+                seasonResult.style.color = seasonInfo.color;
+            }
+
+            if (confidenceEl) {
+                confidenceEl.innerHTML = '신뢰도: <b style="color: #4CAF50;">95%</b>';
+            }
+
+            if (analysisData) {
+                analysisData.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 20px; height: 20px; background: ${skinToneData.hex}; border-radius: 4px; border: 1px solid #fff;"></div>
+                            <span>추출 피부톤: ${skinToneData.hex}</span>
+                        </div>
+                        <div>언더톤: ${skinToneData.undertone}</div>
+                        <div>밝기: ${Math.round(brightness)}</div>
+                    </div>
+                `;
             }
         }
 
@@ -963,112 +1163,7 @@
             }
         }
 
-        // ✅ 수정된 displaySkinToneAnalysis 함수 - 두 가지 방식으로 결과 표시
-        function displaySkinToneAnalysis(skinToneData) {
-            if (!skinToneData) {
-                console.log('❌ displaySkinToneAnalysis: skinToneData가 없음');
-                return;
-            }
-
-            console.log('🎨 displaySkinToneAnalysis 호출됨:', skinToneData);
-
-            // 밝기 계산 (간단한 평균)
-            const brightness = (skinToneData.rgb.r + skinToneData.rgb.g + skinToneData.rgb.b) / 3;
-            const seasonInfo = getPersonalColorSeason(skinToneData.undertone, brightness);
-
-            console.log('📊 시즌 분석 결과:', seasonInfo);
-
-            // 방법 1: 기존 결과 컨테이너 사용 (카메라 아래)
-            const resultsContainer = document.getElementById('realtime-results-container');
-            if (resultsContainer) {
-                resultsContainer.style.display = 'block';
-
-                const seasonEl = document.getElementById('realtime-season');
-                const skinInfoEl = document.getElementById('realtime-skin-info');
-                const recommendationEl = document.getElementById('realtime-recommendation');
-
-                if (seasonEl) {
-                    seasonEl.innerHTML = `${seasonInfo.emoji} ${seasonInfo.season}`;
-                    seasonEl.style.color = seasonInfo.color;
-                }
-
-                if (skinInfoEl) {
-                    skinInfoEl.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                            <div style="width: 30px; height: 30px; background: ${skinToneData.hex}; border-radius: 50%; border: 2px solid white;"></div>
-                            <span>피부톤: ${skinToneData.hex}</span>
-                        </div>
-                        <div>언더톤: <b style="color: ${seasonInfo.color};">${skinToneData.undertone}</b></div>
-                        <div>RGB: ${skinToneData.rgb.r}, ${skinToneData.rgb.g}, ${skinToneData.rgb.b}</div>
-                    `;
-                }
-
-                if (recommendationEl) {
-                    const recommendations = getSeasonRecommendations(seasonInfo.season);
-                    recommendationEl.innerHTML = recommendations;
-                }
-
-                console.log('✅ 결과 컨테이너 업데이트 완료');
-            } else {
-                console.log('⚠️ realtime-results-container를 찾을 수 없음');
-            }
-
-            // 방법 2: 비디오 위에 오버레이 패널 (AI 섹션의 video-container만 선택)
-            let analysisPanel = document.getElementById('realtime-skin-analysis');
-            if (!analysisPanel) {
-                analysisPanel = document.createElement('div');
-                analysisPanel.id = 'realtime-skin-analysis';
-                analysisPanel.style.cssText = `
-                    position: absolute;
-                    bottom: 10px;
-                    left: 10px;
-                    right: 10px;
-                    background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,30,60,0.85));
-                    color: white;
-                    padding: 8px 12px;
-                    border-radius: 10px;
-                    font-size: 12px;
-                    border: 2px solid ${seasonInfo.color};
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-                    backdrop-filter: blur(10px);
-                    z-index: 1001;
-                `;
-                // AI 분석 섹션의 video-container만 선택 (첫 번째 것)
-                const aiVideoContainer = document.querySelector('#ai-analysis .video-container') ||
-                                          document.querySelector('.camera-container .video-container');
-                if (aiVideoContainer) {
-                    aiVideoContainer.style.position = 'relative'; // position 설정
-                    aiVideoContainer.appendChild(analysisPanel);
-                    console.log('✅ 오버레이 패널 추가됨');
-                } else {
-                    console.log('⚠️ AI video-container를 찾을 수 없음');
-                }
-            }
-
-            if (analysisPanel) {
-                // 테두리 색상 업데이트
-                analysisPanel.style.borderColor = seasonInfo.color;
-
-                analysisPanel.innerHTML = `
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <span style="font-size: 16px; font-weight: bold;">${seasonInfo.emoji} ${seasonInfo.season}</span>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div style="width: 24px; height: 24px; background: ${skinToneData.hex}; border-radius: 50%; border: 2px solid white;"></div>
-                                <span style="color: #aaa; font-size: 10px;">${skinToneData.hex}</span>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #ccc;">
-                            <span>언더톤: <b style="color: ${seasonInfo.color};">${skinToneData.undertone}</b></span>
-                            <span>RGB: ${skinToneData.rgb.r}, ${skinToneData.rgb.g}, ${skinToneData.rgb.b}</span>
-                            <span style="color: #4CAF50;">신뢰도: 95%</span>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        // 시즌별 추천 정보
+        // 시즌별 추천 정보 (displayCapturedAnalysis에서 사용)
         function getSeasonRecommendations(season) {
             const recs = {
                 '봄 웜': '💄 추천 컬러: 코랄, 피치, 아이보리, 웜베이지<br>💎 추천 메탈: 골드, 로즈골드',
