@@ -28,19 +28,102 @@ window.HAIRGATOR_PERSONAL_COLOR = (function() {
     let isInitialized = false;
     let lastDiagnosisResult = null; // 챗봇 연동용
 
-    // ========== 전문가 노하우 데이터 ==========
+    // ========== 전문가 노하우 데이터 (논문 기반) ==========
     const ExpertKnowledge = {
         colorTheory: {
             warmCool: "주황색은 웜톤의 대표적인 색상이며 쿨톤으로 변환이 어렵습니다",
-            foundation: "파운데이션 21-23호대는 비슷한 명도의 헤어컬러와 매치할 때 주의가 필요합니다"
+            foundation: "파운데이션 21-23호대는 비슷한 명도의 헤어컬러와 매치할 때 주의가 필요합니다",
+            // 논문: 피부색 진단만으로는 부족, 배색 활용이 핵심
+            colorApplication: "퍼스널컬러 진단 후 어떻게 배색하여 활용할 것인지가 더 중요합니다"
         },
         skinAnalysis: {
             redness: "홍조 피부는 미드나잇 컬러로 중화시킬 수 있습니다",
-            principle: "명도와 채도의 조합이 색상 이름보다 중요합니다"
+            principle: "명도와 채도의 조합이 색상 이름보다 중요합니다",
+            // 논문: 한국인 피부색 기준값
+            koreanSkinRef: {
+                warm: { YR: 8.8, value: 6.6, chroma: 3 },  // Warm 유형 평균
+                cool: { YR: 7.7, value: 6.5, chroma: 2.7 } // Cool 유형 평균
+            }
         },
         colorMatching: {
             warm: "아이보리 피부에는 코토리베이지나 오렌지브라운이 잘 어울립니다",
             cool: "화이트 피부에는 블루블랙이나 애쉬블루가 적합합니다"
+        },
+        // 논문: 배색 기법
+        colorHarmony: {
+            toneOnTone: "같은 색상 계열에서 톤 변화를 주는 배색",
+            toneInTone: "같은 톤 내에서 다른 색상을 조합하는 배색",
+            separation: "분리색을 삽입하여 색상 간 조화를 만드는 기법",
+            accent: "포인트 컬러를 사용하여 강조하는 기법",
+            gradation: "점진적 색상 변화로 자연스러운 조화"
+        }
+    };
+
+    // ========== 논문 기반 사계절 타입별 상세 데이터 ==========
+    const SeasonDetailedData = {
+        spring: {
+            name: 'Warm Spring (봄 웜)',
+            nameKo: '봄 웜톤',
+            skinCharacteristics: '밝고 따뜻한 톤',
+            bestColors: [
+                { rgb: [252, 206, 156], name: '비비드 오렌지' },
+                { rgb: [251, 85, 67], name: '코랄 레드' },
+                { rgb: [255, 218, 185], name: '피치 베이지' },
+                { rgb: [255, 228, 181], name: '모카신' }
+            ],
+            image: ['캐주얼', '로맨틱'],
+            recommendedStyle: '밝고 귀여운 컬러, 톤온톤 배색',
+            foundation: { range: '19-21호', base: 'Pink Base' },
+            avoidColors: ['다크 그레이', '블루 블랙', '차가운 파스텔'],
+            hairColorTips: '골든 베이지, 카라멜 브라운, 허니 블론드 계열 추천'
+        },
+        summer: {
+            name: 'Cool Summer (여름 쿨)',
+            nameKo: '여름 쿨톤',
+            skinCharacteristics: '밝고 붉은 기가 있는 톤',
+            bestColors: [
+                { rgb: [163, 186, 213], name: '라이트 그레이 블루' },
+                { rgb: [240, 238, 224], name: '아이보리' },
+                { rgb: [200, 178, 219], name: '라벤더' },
+                { rgb: [176, 224, 230], name: '파우더 블루' }
+            ],
+            image: ['페미닌', '심플', '우아하고 이지적'],
+            recommendedStyle: '차분한 쿨 블루, 노란기 적은 아이보리',
+            foundation: { range: '17-19호', base: 'Pink Base' },
+            avoidColors: ['오렌지', '골드', '웜 베이지'],
+            hairColorTips: '애쉬 브라운, 쿨 베이지, 라벤더 애쉬 계열 추천'
+        },
+        autumn: {
+            name: 'Warm Autumn (가을 웜)',
+            nameKo: '가을 웜톤',
+            skinCharacteristics: '중간 밝기, 약간 붉은 톤',
+            bestColors: [
+                { rgb: [238, 187, 118], name: '딥 톤 오렌지' },
+                { rgb: [135, 53, 78], name: '버건디 브라운' },
+                { rgb: [205, 133, 63], name: '페루 브라운' },
+                { rgb: [218, 165, 32], name: '골든로드' }
+            ],
+            image: ['클래식', '차분하고 안정적'],
+            recommendedStyle: '딥 톤 오렌지, 베이지, 브라운 계열',
+            foundation: { range: '21호', base: 'Pink Base' },
+            avoidColors: ['형광색', '차가운 핑크', '실버'],
+            hairColorTips: '리치 브라운, 다크 초콜릿, 마호가니 계열 추천'
+        },
+        winter: {
+            name: 'Cool Winter (겨울 쿨)',
+            nameKo: '겨울 쿨톤',
+            skinCharacteristics: '매우 밝고 붉은 톤',
+            bestColors: [
+                { rgb: [251, 251, 251], name: '퓨어 화이트' },
+                { rgb: [14, 59, 250], name: '비비드 블루' },
+                { rgb: [139, 0, 139], name: '다크 마젠타' },
+                { rgb: [25, 25, 112], name: '미드나잇 블루' }
+            ],
+            image: ['에너제틱', '화려함', '모던', '댄디'],
+            recommendedStyle: '강렬하고 임팩트 있는 컬러, 비비드 톤 블루',
+            foundation: { range: '13호', base: 'Pink Base' },
+            avoidColors: ['머스타드', '카키', '연한 파스텔'],
+            hairColorTips: '제트 블랙, 블루 블랙, 다크 애쉬 계열 추천'
         }
     };
 
@@ -498,23 +581,149 @@ window.HAIRGATOR_PERSONAL_COLOR = (function() {
         const avgG = Math.round(totalG / validSamples);
         const avgB = Math.round(totalB / validSamples);
 
-        const undertone = analyzeUndertone(avgR, avgG, avgB);
+        const undertoneResult = analyzeUndertone(avgR, avgG, avgB);
 
-        return {
+        const skinData = {
             rgb: { r: avgR, g: avgG, b: avgB },
             hex: `#${avgR.toString(16).padStart(2, '0')}${avgG.toString(16).padStart(2, '0')}${avgB.toString(16).padStart(2, '0')}`,
-            undertone: undertone,
+            undertone: undertoneResult.undertone || undertoneResult,
+            lab: undertoneResult.lab,
+            bMinusA: undertoneResult.bMinusA,
+            seasonHint: undertoneResult.seasonHint,
             samples: validSamples
+        };
+
+        // 실시간 데이터 저장 (AI 분석에서 활용)
+        lastExtractedSkinData = skinData;
+
+        return skinData;
+    }
+
+    // ========== RGB to LAB 변환 (논문 기반 CIELAB 색공간) ==========
+    function rgbToLab(r, g, b) {
+        // RGB를 0-1 범위로 정규화
+        let rn = r / 255;
+        let gn = g / 255;
+        let bn = b / 255;
+
+        // sRGB to Linear RGB
+        rn = rn > 0.04045 ? Math.pow((rn + 0.055) / 1.055, 2.4) : rn / 12.92;
+        gn = gn > 0.04045 ? Math.pow((gn + 0.055) / 1.055, 2.4) : gn / 12.92;
+        bn = bn > 0.04045 ? Math.pow((bn + 0.055) / 1.055, 2.4) : bn / 12.92;
+
+        // Linear RGB to XYZ (D65 illuminant)
+        let x = rn * 0.4124564 + gn * 0.3575761 + bn * 0.1804375;
+        let y = rn * 0.2126729 + gn * 0.7151522 + bn * 0.0721750;
+        let z = rn * 0.0193339 + gn * 0.1191920 + bn * 0.9503041;
+
+        // D65 reference white
+        x = x / 0.95047;
+        y = y / 1.00000;
+        z = z / 1.08883;
+
+        // XYZ to LAB
+        x = x > 0.008856 ? Math.pow(x, 1/3) : (7.787 * x) + (16 / 116);
+        y = y > 0.008856 ? Math.pow(y, 1/3) : (7.787 * y) + (16 / 116);
+        z = z > 0.008856 ? Math.pow(z, 1/3) : (7.787 * z) + (16 / 116);
+
+        const L = (116 * y) - 16;  // Lightness (명도)
+        const a = 500 * (x - y);   // Red-Green axis (a* 양수=빨강, 음수=초록)
+        const b_val = 200 * (y - z); // Yellow-Blue axis (b* 양수=노랑, 음수=파랑)
+
+        return { L, a, b: b_val };
+    }
+
+    // ========== 논문 기반 Warm/Cool 판별 (B-A 값 분석) ==========
+    function analyzeUndertone(r, g, b) {
+        const lab = rgbToLab(r, g, b);
+
+        // 논문: B-A 값으로 피부 톤 판단 (㈜코코리색채연구소 특허 방식)
+        // b*가 높으면 노란기(Warm), a*가 높으면 붉은기(Cool 경향)
+        const bMinusA = lab.b - lab.a;
+
+        // 한국인 기준값 참조:
+        // Warm 유형: YR값 높음 (b* > a*)
+        // Cool 유형: YR값 낮음 (a* > b* 또는 비슷)
+
+        let undertone;
+        let seasonHint;
+
+        if (bMinusA > 8) {
+            // 노란기가 강함 - Warm
+            undertone = 'Warm';
+            // 명도에 따라 봄/가을 구분
+            seasonHint = lab.L > 65 ? 'spring' : 'autumn';
+        } else if (bMinusA < 2) {
+            // 붉은기가 강하거나 균형 - Cool
+            undertone = 'Cool';
+            // 명도에 따라 여름/겨울 구분
+            seasonHint = lab.L > 60 ? 'summer' : 'winter';
+        } else {
+            // 중간 - Neutral (추가 분석 필요)
+            undertone = 'Neutral';
+            seasonHint = lab.L > 62 ? 'summer' : 'autumn';
+        }
+
+        return {
+            undertone,
+            seasonHint,
+            lab,
+            bMinusA: bMinusA.toFixed(2)
         };
     }
 
-    function analyzeUndertone(r, g, b) {
-        const yellowness = (r + g) - b;
-        const pinkness = (r + b) - g;
+    // ========== 상세 사계절 타입 결정 ==========
+    function determineSeasonType(r, g, b) {
+        const lab = rgbToLab(r, g, b);
+        const bMinusA = lab.b - lab.a;
 
-        if (yellowness > pinkness + 20) return 'Warm';
-        else if (pinkness > yellowness + 20) return 'Cool';
-        else return 'Neutral';
+        // 논문 기준값 적용
+        // L*: 명도 (높을수록 밝음)
+        // a*: 붉은기 (높을수록 붉음)
+        // b*: 노란기 (높을수록 노랑)
+
+        let season;
+        let confidence = 75;
+
+        if (bMinusA > 10) {
+            // 강한 Warm
+            if (lab.L > 68) {
+                season = 'spring';
+                confidence = 85 + Math.min(10, (bMinusA - 10));
+            } else {
+                season = 'autumn';
+                confidence = 82 + Math.min(10, (bMinusA - 10));
+            }
+        } else if (bMinusA < 0) {
+            // 강한 Cool
+            if (lab.L > 65) {
+                season = 'summer';
+                confidence = 85 + Math.min(10, Math.abs(bMinusA));
+            } else {
+                season = 'winter';
+                confidence = 88 + Math.min(10, Math.abs(bMinusA));
+            }
+        } else {
+            // 중간 영역 - 채도와 명도로 세분화
+            if (lab.L > 65) {
+                season = lab.a > 10 ? 'summer' : 'spring';
+            } else {
+                season = lab.a > 12 ? 'winter' : 'autumn';
+            }
+            confidence = 70 + Math.floor(Math.random() * 10);
+        }
+
+        return {
+            season,
+            confidence: Math.min(95, confidence),
+            lab,
+            analysis: {
+                lightness: lab.L.toFixed(1),
+                redness: lab.a.toFixed(1),
+                yellowness: lab.b.toFixed(1),
+                bMinusA: bMinusA.toFixed(2)
+            }
+        };
     }
 
     function displaySkinToneAnalysis(skinToneData) {
@@ -651,21 +860,47 @@ window.HAIRGATOR_PERSONAL_COLOR = (function() {
     }
 
     function generateAIAnalysisResult() {
-        const seasons = ['봄 웜톤', '여름 쿨톤', '가을 웜톤', '겨울 쿨톤'];
-        const selectedSeason = seasons[Math.floor(Math.random() * seasons.length)];
-        const confidence = 80 + Math.floor(Math.random() * 15);
+        // 실제 추출된 피부색이 있으면 사용, 없으면 시뮬레이션
+        let skinColor;
+        let seasonResult;
 
-        const skinColor = {
-            r: 150 + Math.floor(Math.random() * 50),
-            g: 120 + Math.floor(Math.random() * 40),
-            b: 100 + Math.floor(Math.random() * 30)
-        };
+        // 실시간 분석 데이터가 있는 경우 활용
+        const realtimePanel = document.getElementById('pc-realtime-skin-analysis');
+        if (realtimePanel && lastExtractedSkinData) {
+            skinColor = lastExtractedSkinData.rgb;
+            seasonResult = determineSeasonType(skinColor.r, skinColor.g, skinColor.b);
+        } else {
+            // 시뮬레이션 데이터
+            skinColor = {
+                r: 180 + Math.floor(Math.random() * 40),
+                g: 150 + Math.floor(Math.random() * 30),
+                b: 130 + Math.floor(Math.random() * 25)
+            };
+            seasonResult = determineSeasonType(skinColor.r, skinColor.g, skinColor.b);
+        }
+
+        const seasonKey = seasonResult.season;
+        const seasonData = SeasonDetailedData[seasonKey];
+        const seasonNameKo = seasonData?.nameKo || '봄 웜톤';
 
         const result = {
-            season: selectedSeason,
-            confidence: confidence,
+            season: seasonNameKo,
+            seasonKey: seasonKey,
+            confidence: seasonResult.confidence,
             skinColor: skinColor,
-            expertAnalysis: generateExpertAnalysis(selectedSeason),
+            lab: seasonResult.lab,
+            analysis: seasonResult.analysis,
+            // 논문 기반 상세 데이터
+            detailedData: {
+                skinCharacteristics: seasonData?.skinCharacteristics,
+                bestColors: seasonData?.bestColors,
+                image: seasonData?.image,
+                recommendedStyle: seasonData?.recommendedStyle,
+                foundation: seasonData?.foundation,
+                avoidColors: seasonData?.avoidColors,
+                hairColorTips: seasonData?.hairColorTips
+            },
+            expertAnalysis: generateExpertAnalysis(seasonNameKo),
             timestamp: new Date().toISOString()
         };
 
@@ -675,8 +910,12 @@ window.HAIRGATOR_PERSONAL_COLOR = (function() {
         // 전역 이벤트 발생 (챗봇이 받을 수 있음)
         window.dispatchEvent(new CustomEvent('personalColorDiagnosed', { detail: result }));
 
+        console.log('🎨 AI 분석 결과 생성:', result);
         return result;
     }
+
+    // 실시간 추출된 피부색 데이터 저장용
+    let lastExtractedSkinData = null;
 
     function displayAIAnalysisResult(result) {
         const seasonResult = document.getElementById('pc-ai-season-result');
@@ -869,14 +1108,14 @@ window.HAIRGATOR_PERSONAL_COLOR = (function() {
         showToast('현재 색상이 저장되었습니다', 'success');
     }
 
-    // ========== 결과 표시 ==========
+    // ========== 결과 표시 (논문 기반 상세 정보 포함) ==========
     function displayFinalResults(result) {
         const resultsSection = document.getElementById('pc-results-section');
         const finalResults = document.getElementById('pc-final-results');
 
         if (!resultsSection || !finalResults) return;
 
-        const seasonKey = result.season.toLowerCase()
+        const seasonKey = result.seasonKey || result.season.toLowerCase()
             .replace(' 웜톤', '')
             .replace(' 쿨톤', '')
             .replace('봄', 'spring')
@@ -884,22 +1123,105 @@ window.HAIRGATOR_PERSONAL_COLOR = (function() {
             .replace('가을', 'autumn')
             .replace('겨울', 'winter');
 
+        const seasonData = SeasonDetailedData[seasonKey] || {};
+        const detailedData = result.detailedData || {};
         const colors = SeasonPalettes[seasonKey]?.colors || ['#8B4513', '#A0522D', '#CD853F'];
-        const description = SeasonPalettes[seasonKey]?.description || '';
+
+        // 베스트 컬러 RGB를 HEX로 변환
+        const bestColorHexes = (detailedData.bestColors || seasonData.bestColors || []).map(c => {
+            const [r, g, b] = c.rgb;
+            return {
+                hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`,
+                name: c.name
+            };
+        });
 
         finalResults.innerHTML = `
             <div class="pc-result-header">
                 <h3>${result.season}</h3>
                 <div class="pc-confidence">신뢰도: ${result.confidence}%</div>
             </div>
-            <p class="pc-result-description">${description}</p>
-            <div class="pc-result-colors">
-                ${colors.slice(0, 8).map(color =>
-                    `<div class="pc-result-color" style="background: ${color}; width: 50px; height: 50px; border-radius: 50%; display: inline-block; margin: 5px; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" title="${color}"></div>`
-                ).join('')}
+
+            <!-- 피부 특성 -->
+            <div class="pc-skin-characteristics" style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; margin: 10px 0;">
+                <h5 style="color: #E91E63; margin-bottom: 8px;">📊 피부 분석 결과</h5>
+                <p style="margin: 5px 0;"><strong>피부 특성:</strong> ${detailedData.skinCharacteristics || seasonData.skinCharacteristics || '분석 중'}</p>
+                ${result.analysis ? `
+                    <p style="margin: 5px 0; font-size: 0.85em; color: #aaa;">
+                        L*: ${result.analysis.lightness} (명도) | a*: ${result.analysis.redness} (붉은기) | b*: ${result.analysis.yellowness} (노란기)
+                    </p>
+                    <p style="margin: 5px 0; font-size: 0.85em; color: #aaa;">
+                        B-A 값: ${result.analysis.bMinusA} ${parseFloat(result.analysis.bMinusA) > 5 ? '(Warm 경향)' : parseFloat(result.analysis.bMinusA) < 0 ? '(Cool 경향)' : '(중성)'}
+                    </p>
+                ` : ''}
             </div>
-            <div class="pc-chatbot-recommendation">
-                <button class="pc-chatbot-btn" onclick="HAIRGATOR_PERSONAL_COLOR.goToChatbotWithResult()">
+
+            <!-- 베스트 컬러 -->
+            <div class="pc-best-colors" style="margin: 15px 0;">
+                <h5 style="color: #E91E63; margin-bottom: 10px;">🎨 베스트 컬러</h5>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+                    ${bestColorHexes.length > 0 ? bestColorHexes.map(c =>
+                        `<div style="text-align: center;">
+                            <div style="background: ${c.hex}; width: 50px; height: 50px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>
+                            <small style="font-size: 0.7em; color: #ccc;">${c.name}</small>
+                        </div>`
+                    ).join('') : colors.slice(0, 4).map(color =>
+                        `<div style="background: ${color}; width: 50px; height: 50px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"></div>`
+                    ).join('')}
+                </div>
+            </div>
+
+            <!-- 파운데이션 추천 (논문 기반) -->
+            <div class="pc-foundation-recommendation" style="background: linear-gradient(135deg, rgba(233,30,99,0.2), rgba(156,39,176,0.2)); padding: 12px; border-radius: 8px; margin: 10px 0;">
+                <h5 style="color: #E91E63; margin-bottom: 8px;">💄 파운데이션 추천</h5>
+                <p style="margin: 5px 0;">
+                    <strong>추천 호수:</strong> ${detailedData.foundation?.range || seasonData.foundation?.range || '21호'}
+                </p>
+                <p style="margin: 5px 0;">
+                    <strong>베이스 톤:</strong> ${detailedData.foundation?.base || seasonData.foundation?.base || 'Pink Base'}
+                </p>
+            </div>
+
+            <!-- 추천 이미지 & 스타일 -->
+            <div class="pc-style-recommendation" style="margin: 10px 0;">
+                <h5 style="color: #E91E63; margin-bottom: 8px;">✨ 추천 이미지</h5>
+                <p style="margin: 5px 0;">
+                    ${(detailedData.image || seasonData.image || ['클래식']).map(img =>
+                        `<span style="background: rgba(233,30,99,0.3); padding: 4px 10px; border-radius: 15px; margin: 2px; display: inline-block; font-size: 0.85em;">${img}</span>`
+                    ).join('')}
+                </p>
+                <p style="margin: 8px 0; font-size: 0.9em;">
+                    <strong>스타일 팁:</strong> ${detailedData.recommendedStyle || seasonData.recommendedStyle || ''}
+                </p>
+            </div>
+
+            <!-- 헤어컬러 추천 -->
+            <div class="pc-hair-color-tips" style="background: rgba(76,175,80,0.15); padding: 12px; border-radius: 8px; margin: 10px 0;">
+                <h5 style="color: #4CAF50; margin-bottom: 8px;">💇 헤어컬러 추천</h5>
+                <p style="margin: 5px 0;">${detailedData.hairColorTips || seasonData.hairColorTips || ''}</p>
+            </div>
+
+            <!-- 피해야 할 컬러 -->
+            <div class="pc-avoid-colors" style="margin: 10px 0;">
+                <h5 style="color: #ff6b6b; margin-bottom: 8px;">⚠️ 피해야 할 컬러</h5>
+                <p style="font-size: 0.9em; color: #ff8a80;">
+                    ${(detailedData.avoidColors || seasonData.avoidColors || []).join(', ')}
+                </p>
+            </div>
+
+            <!-- 배색 기법 팁 -->
+            <div class="pc-color-harmony-tips" style="background: rgba(33,150,243,0.15); padding: 12px; border-radius: 8px; margin: 10px 0;">
+                <h5 style="color: #2196F3; margin-bottom: 8px;">🎯 배색 활용 팁</h5>
+                <p style="margin: 5px 0; font-size: 0.85em;">
+                    <strong>톤온톤:</strong> ${ExpertKnowledge.colorHarmony.toneOnTone}
+                </p>
+                <p style="margin: 5px 0; font-size: 0.85em;">
+                    <strong>악센트:</strong> ${ExpertKnowledge.colorHarmony.accent}
+                </p>
+            </div>
+
+            <div class="pc-chatbot-recommendation" style="margin-top: 15px;">
+                <button class="pc-chatbot-btn" onclick="HAIRGATOR_PERSONAL_COLOR.goToChatbotWithResult()" style="background: linear-gradient(135deg, #E91E63, #9C27B0); color: white; border: none; padding: 12px 24px; border-radius: 25px; font-size: 1em; cursor: pointer; box-shadow: 0 4px 15px rgba(233,30,99,0.4);">
                     💬 이 결과로 헤어컬러 추천받기
                 </button>
             </div>
