@@ -1057,38 +1057,72 @@
 계정 문제나 패스워드 재설정에 대해 문의해주세요.`);
             }
         }
-// ========== 퍼스널컬러 모달 기능 ==========
+// ========== 퍼스널컬러 기능 (통합 뷰 버전) ==========
 
         function openPersonalColorModal() {
-            console.log('🎨 퍼스널컬러 모달 열기');
+            console.log('🎨 퍼스널컬러 통합 뷰 열기');
+            showPersonalColorView();
+        }
 
-            const modal = document.getElementById('personalColorModal');
-            if (!modal) {
-                console.error('퍼스널컬러 모달을 찾을 수 없습니다');
-                return;
+        function closePersonalColorModal() {
+            console.log('🎨 퍼스널컬러 통합 뷰 닫기');
+            hidePersonalColorView();
+        }
+
+        function showPersonalColorView() {
+            console.log('🎨 퍼스널컬러 뷰 활성화');
+
+            // 다른 뷰 숨기기
+            const genderSelection = document.getElementById('genderSelection');
+            if (genderSelection) genderSelection.style.display = 'none';
+
+            const menuContainer = document.getElementById('menuContainer');
+            if (menuContainer) menuContainer.classList.remove('active');
+
+            // 기존 iframe 모달 숨기기
+            const oldModal = document.getElementById('personalColorModal');
+            if (oldModal) oldModal.classList.remove('active');
+
+            // 퍼스널컬러 뷰 표시
+            const personalColorView = document.getElementById('personalColorView');
+            if (personalColorView) {
+                personalColorView.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+
+                // 모듈 초기화
+                if (window.HAIRGATOR_PERSONAL_COLOR) {
+                    HAIRGATOR_PERSONAL_COLOR.initialize().then(() => {
+                        showToast('퍼스널컬러 진단 시스템이 준비되었습니다!', 'success');
+                    });
+                }
             }
 
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-
-            // 사이드바 닫기
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar && sidebar.classList.contains('active')) {
-                sidebar.classList.remove('active');
-            }
+            // 뒤로가기 버튼 표시
+            const backBtn = document.getElementById('backBtn');
+            if (backBtn) backBtn.style.display = 'flex';
 
             if (navigator.vibrate) {
                 navigator.vibrate(50);
             }
         }
 
-        function closePersonalColorModal() {
-            console.log('🎨 퍼스널컬러 모달 닫기');
+        function hidePersonalColorView() {
+            console.log('🎨 퍼스널컬러 뷰 숨기기');
 
-            const modal = document.getElementById('personalColorModal');
-            if (modal) {
-                modal.classList.remove('active');
-                document.body.style.overflow = '';
+            const personalColorView = document.getElementById('personalColorView');
+            if (personalColorView) {
+                personalColorView.style.display = 'none';
+            }
+
+            document.body.style.overflow = '';
+
+            // 성별 선택 화면 표시
+            const genderSelection = document.getElementById('genderSelection');
+            if (genderSelection) genderSelection.style.display = 'flex';
+
+            // 카메라 리소스 정리
+            if (window.HAIRGATOR_PERSONAL_COLOR) {
+                HAIRGATOR_PERSONAL_COLOR.hide();
             }
         }
 
@@ -1899,57 +1933,6 @@ if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
 <!-- ⭐ 퍼스널컬러 모듈 로드 (메인 앱 통합) -->
 <script src="js/personal-color.js"></script>
 <script>
-// 퍼스널컬러 뷰 표시 함수
-function showPersonalColorView() {
-    console.log('🎨 퍼스널컬러 뷰 활성화');
-
-    // 다른 뷰 숨기기
-    const genderSelection = document.getElementById('genderSelection');
-    if (genderSelection) genderSelection.style.display = 'none';
-
-    const menuContainer = document.getElementById('menuContainer');
-    if (menuContainer) menuContainer.classList.remove('active');
-
-    // 퍼스널컬러 뷰 표시
-    const personalColorView = document.getElementById('personalColorView');
-    if (personalColorView) {
-        personalColorView.style.display = 'block';
-
-        // 모듈 초기화
-        if (window.HAIRGATOR_PERSONAL_COLOR) {
-            HAIRGATOR_PERSONAL_COLOR.initialize().then(() => {
-                showToast('퍼스널컬러 진단 시스템이 준비되었습니다!', 'success');
-            });
-        }
-    }
-
-    // 뒤로가기 버튼 표시
-    const backBtn = document.getElementById('backBtn');
-    if (backBtn) backBtn.style.display = 'flex';
-}
-
-// 퍼스널컬러 뷰 숨기기 (메인 앱 복귀)
-function hidePersonalColorView() {
-    const personalColorView = document.getElementById('personalColorView');
-    if (personalColorView) {
-        personalColorView.style.display = 'none';
-    }
-
-    // 성별 선택 화면 표시
-    const genderSelection = document.getElementById('genderSelection');
-    if (genderSelection) genderSelection.style.display = 'flex';
-
-    // 카메라 리소스 정리
-    if (window.HAIRGATOR_PERSONAL_COLOR) {
-        HAIRGATOR_PERSONAL_COLOR.hide();
-    }
-}
-
-// openPersonalColorModal 대신 showPersonalColorView 사용하도록 변경
-function openPersonalColorModal() {
-    showPersonalColorView();
-}
-
 // goBack 함수 확장 - 퍼스널컬러 뷰에서도 뒤로가기 가능하게
 (function() {
     const originalGoBack = window.goBack;
