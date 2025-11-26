@@ -3,16 +3,15 @@
 //
 // 모델 구성:
 // - 분석: Gemini 2.0 Flash ($0.10/1M input, $0.40/1M output) → ~1원/회
-// - 이미지 생성: Imagen 4 Fast ($0.02/장) → ~162원/6장
-// - 총 비용: ~165원/회
+// - 이미지 생성: Imagen 4 Fast ($0.02/장) → ~81원/3장
+// - 총 비용: ~82원/회
 //
 // 기능:
 // 1. 성별 분석 (남성/여성)
 // 2. 헤어스타일 특징 분석
 // 3. 어울리는 얼굴형 분석
-// 4. 패션 추천 + 이미지 생성
-// 5. 스타일 변형 이미지 생성
-// 6. 스타일링 가이드
+// 4. 패션 추천 + 이미지 생성 (3장: 각각 다른 모델, 포즈, 패션 스타일)
+// 5. 스타일링 가이드
 
 const fetch = require('node-fetch');
 
@@ -230,49 +229,55 @@ JSON만 출력하고 다른 텍스트는 포함하지 마세요.`;
 }
 
 // ==================== Imagen 4 Fast 이미지 생성 ====================
+// 패션 스타일링 이미지 3장 생성 (AI 분석 결과 기반, 각각 다른 모델/포즈)
 async function generateWithImagen4Fast(analysis, apiKey) {
-    const { gender, styleName, characteristics, fashionRecommendations } = analysis;
-    const genderText = gender === 'male' ? 'handsome Asian male model' : 'beautiful Asian female model';
+    const { gender, styleName, styleDescription, characteristics, fashionRecommendations } = analysis;
 
-    const results = {
-        variations: [],
-        fashion: []
-    };
+    // 성별에 따른 기본 설정
+    const genderBase = gender === 'male' ? 'male' : 'female';
 
-    // 스타일 변형 이미지 생성 프롬프트 (3장)
-    const variationPrompts = [
-        `Professional fashion photography of a ${genderText} with ${styleName} hairstyle, ${characteristics.texture} texture, ${characteristics.length} length, front view, studio lighting, high fashion editorial, black and white`,
-        `Professional fashion photography of a ${genderText} with ${styleName} hairstyle, side profile view, dramatic lighting, editorial style`,
-        `Professional fashion photography of a ${genderText} with ${styleName} hairstyle, casual outdoor setting, natural lighting, lifestyle photography`
+    // 다양성을 위한 모델/포즈 설정
+    const modelVariations = [
+        { age: '20s', pose: 'looking directly at camera with confident expression', angle: 'front view' },
+        { age: 'early 30s', pose: 'slight side angle with gentle smile', angle: 'three-quarter view' },
+        { age: 'mid 20s', pose: 'thoughtful expression, hand near face', angle: 'slight tilt' }
     ];
 
-    // 패션 추천 이미지 생성 프롬프트 (3장)
-    const fashionPrompts = fashionRecommendations.slice(0, 3).map(rec => {
-        const items = rec.items.join(', ');
-        return `Fashion photography of a ${genderText} wearing ${items}, ${rec.style} style outfit, matching ${styleName} hairstyle, full body shot, editorial fashion photography`;
+    const results = {
+        variations: [], // 패션 착장 이미지 (메인으로 사용)
+        fashion: []     // 빈 배열 (하위 호환성)
+    };
+
+    // AI 분석 결과의 패션 추천을 기반으로 프롬프트 생성
+    const fashionPrompts = fashionRecommendations.slice(0, 3).map((rec, index) => {
+        const model = modelVariations[index];
+        const fashionItems = rec.items.join(', ');
+        const fashionStyle = rec.style;
+        const fashionReason = rec.reason; // AI가 분석한 "왜 어울리는지" 이유
+
+        // 헤어스타일 특징 상세 설명
+        const hairDetails = `${styleName} hairstyle with ${characteristics.texture} texture, ${characteristics.length} length, ${characteristics.volume} volume, ${characteristics.layering} layering`;
+
+        return `Professional fashion editorial photography, upper body portrait of a Korean ${genderBase} model in ${model.age} with ${hairDetails}, wearing ${fashionItems} (${fashionStyle} style fashion), ${model.pose}, ${model.angle}, the outfit complements the hairstyle because: ${fashionReason}, soft diffused studio lighting, clean minimal background, high-end fashion magazine quality, sharp focus on face and hair, 4K resolution, photorealistic`;
     });
 
     try {
+        console.log('🎨 Imagen 4 Fast 패션 스타일링 이미지 생성');
+        console.log('📋 AI 분석 기반 패션 추천:');
+        fashionRecommendations.slice(0, 3).forEach((rec, i) => {
+            console.log(`  ${i + 1}. ${rec.style}: ${rec.items.join(', ')} - ${rec.reason}`);
+        });
+
         // 병렬로 이미지 생성
-        console.log('🎨 Imagen 4 Fast로 이미지 생성 시작...');
-
-        const variationResults = await Promise.allSettled(
-            variationPrompts.map(prompt => generateImageWithImagen4(prompt, apiKey))
-        );
-
-        results.variations = variationResults
-            .filter(r => r.status === 'fulfilled' && r.value)
-            .map(r => r.value);
-
         const fashionResults = await Promise.allSettled(
             fashionPrompts.map(prompt => generateImageWithImagen4(prompt, apiKey))
         );
 
-        results.fashion = fashionResults
+        results.variations = fashionResults
             .filter(r => r.status === 'fulfilled' && r.value)
             .map(r => r.value);
 
-        console.log(`✅ 이미지 생성 완료: 변형 ${results.variations.length}장, 패션 ${results.fashion.length}장`);
+        console.log(`✅ 패션 스타일링 이미지 생성 완료: ${results.variations.length}장`);
 
     } catch (error) {
         console.error('이미지 생성 오류:', error);
