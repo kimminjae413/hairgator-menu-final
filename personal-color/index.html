@@ -786,6 +786,9 @@
                 drawSkinTonePoints(canvasCtx, landmarks);
 
                 const skinToneData = extractSkinTone(landmarks);
+                if (frameCount % 30 === 1) {
+                    console.log('🧪 피부톤 데이터:', skinToneData);
+                }
                 displaySkinToneAnalysis(skinToneData);
 
                 if (!faceDetected) {
@@ -960,14 +963,57 @@
             }
         }
 
-        // ✅ 수정된 displaySkinToneAnalysis 함수
+        // ✅ 수정된 displaySkinToneAnalysis 함수 - 두 가지 방식으로 결과 표시
         function displaySkinToneAnalysis(skinToneData) {
-            if (!skinToneData) return;
+            if (!skinToneData) {
+                console.log('❌ displaySkinToneAnalysis: skinToneData가 없음');
+                return;
+            }
+
+            console.log('🎨 displaySkinToneAnalysis 호출됨:', skinToneData);
 
             // 밝기 계산 (간단한 평균)
             const brightness = (skinToneData.rgb.r + skinToneData.rgb.g + skinToneData.rgb.b) / 3;
             const seasonInfo = getPersonalColorSeason(skinToneData.undertone, brightness);
 
+            console.log('📊 시즌 분석 결과:', seasonInfo);
+
+            // 방법 1: 기존 결과 컨테이너 사용 (카메라 아래)
+            const resultsContainer = document.getElementById('realtime-results-container');
+            if (resultsContainer) {
+                resultsContainer.style.display = 'block';
+
+                const seasonEl = document.getElementById('realtime-season');
+                const skinInfoEl = document.getElementById('realtime-skin-info');
+                const recommendationEl = document.getElementById('realtime-recommendation');
+
+                if (seasonEl) {
+                    seasonEl.innerHTML = `${seasonInfo.emoji} ${seasonInfo.season}`;
+                    seasonEl.style.color = seasonInfo.color;
+                }
+
+                if (skinInfoEl) {
+                    skinInfoEl.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <div style="width: 30px; height: 30px; background: ${skinToneData.hex}; border-radius: 50%; border: 2px solid white;"></div>
+                            <span>피부톤: ${skinToneData.hex}</span>
+                        </div>
+                        <div>언더톤: <b style="color: ${seasonInfo.color};">${skinToneData.undertone}</b></div>
+                        <div>RGB: ${skinToneData.rgb.r}, ${skinToneData.rgb.g}, ${skinToneData.rgb.b}</div>
+                    `;
+                }
+
+                if (recommendationEl) {
+                    const recommendations = getSeasonRecommendations(seasonInfo.season);
+                    recommendationEl.innerHTML = recommendations;
+                }
+
+                console.log('✅ 결과 컨테이너 업데이트 완료');
+            } else {
+                console.log('⚠️ realtime-results-container를 찾을 수 없음');
+            }
+
+            // 방법 2: 비디오 위에 오버레이 패널 (AI 섹션의 video-container만 선택)
             let analysisPanel = document.getElementById('realtime-skin-analysis');
             if (!analysisPanel) {
                 analysisPanel = document.createElement('div');
@@ -987,28 +1033,52 @@
                     backdrop-filter: blur(10px);
                     z-index: 1001;
                 `;
-                document.querySelector('.video-container').appendChild(analysisPanel);
+                // AI 분석 섹션의 video-container만 선택 (첫 번째 것)
+                const aiVideoContainer = document.querySelector('#ai-analysis .video-container') ||
+                                          document.querySelector('.camera-container .video-container');
+                if (aiVideoContainer) {
+                    aiVideoContainer.style.position = 'relative'; // position 설정
+                    aiVideoContainer.appendChild(analysisPanel);
+                    console.log('✅ 오버레이 패널 추가됨');
+                } else {
+                    console.log('⚠️ AI video-container를 찾을 수 없음');
+                }
             }
 
-            // 테두리 색상 업데이트
-            analysisPanel.style.borderColor = seasonInfo.color;
+            if (analysisPanel) {
+                // 테두리 색상 업데이트
+                analysisPanel.style.borderColor = seasonInfo.color;
 
-            analysisPanel.innerHTML = `
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-size: 16px; font-weight: bold;">${seasonInfo.emoji} ${seasonInfo.season}</span>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 24px; height: 24px; background: ${skinToneData.hex}; border-radius: 50%; border: 2px solid white;"></div>
-                            <span style="color: #aaa; font-size: 10px;">${skinToneData.hex}</span>
+                analysisPanel.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span style="font-size: 16px; font-weight: bold;">${seasonInfo.emoji} ${seasonInfo.season}</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 24px; height: 24px; background: ${skinToneData.hex}; border-radius: 50%; border: 2px solid white;"></div>
+                                <span style="color: #aaa; font-size: 10px;">${skinToneData.hex}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #ccc;">
+                            <span>언더톤: <b style="color: ${seasonInfo.color};">${skinToneData.undertone}</b></span>
+                            <span>RGB: ${skinToneData.rgb.r}, ${skinToneData.rgb.g}, ${skinToneData.rgb.b}</span>
+                            <span style="color: #4CAF50;">신뢰도: 95%</span>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #ccc;">
-                        <span>언더톤: <b style="color: ${seasonInfo.color};">${skinToneData.undertone}</b></span>
-                        <span>RGB: ${skinToneData.rgb.r}, ${skinToneData.rgb.g}, ${skinToneData.rgb.b}</span>
-                        <span style="color: #4CAF50;">신뢰도: 95%</span>
-                    </div>
-                </div>
-            `;
+                `;
+            }
+        }
+
+        // 시즌별 추천 정보
+        function getSeasonRecommendations(season) {
+            const recs = {
+                '봄 웜': '💄 추천 컬러: 코랄, 피치, 아이보리, 웜베이지<br>💎 추천 메탈: 골드, 로즈골드',
+                '여름 쿨': '💄 추천 컬러: 라벤더, 로즈핑크, 소프트블루<br>💎 추천 메탈: 실버, 화이트골드',
+                '가을 웜': '💄 추천 컬러: 테라코타, 버건디, 머스타드, 카키<br>💎 추천 메탈: 골드, 앤틱골드',
+                '겨울 쿨': '💄 추천 컬러: 와인, 퓨시아, 퓨어화이트, 블랙<br>💎 추천 메탈: 실버, 플래티넘',
+                '봄/여름 뉴트럴': '💄 추천 컬러: 소프트코랄, 더스티핑크<br>💎 추천 메탈: 로즈골드',
+                '가을/겨울 뉴트럴': '💄 추천 컬러: 머브, 토프, 다크브라운<br>💎 추천 메탈: 혼합 메탈'
+            };
+            return recs[season] || '분석 중...';
         }
 
         function clearSkinToneDisplay() {
