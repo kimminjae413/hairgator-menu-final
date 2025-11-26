@@ -1557,20 +1557,6 @@ body.light-theme .style-modal-close:hover {
 
 #mediaViewerContainer img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.style-modal-info {
-    padding: 30px;
-    text-align: center;
-    /* display: none !important; 제거됨 - Lookbook 버튼 표시를 위해 */
-}
-
-.style-modal-code {
-    color: var(--text-secondary);
-    font-size: 14px;
     margin-bottom: 10px;
     letter-spacing: 1px;
     transition: color 0.3s ease;
