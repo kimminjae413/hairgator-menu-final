@@ -808,7 +808,11 @@
                     applyAnalysisResults(data.analysis, data.generatedImages);
 
                     // 크레딧 0.2 차감 (불나비 서버로 전송)
-                    deductLookbookCredit();
+                    try {
+                        await deductLookbookCredit();
+                    } catch (creditError) {
+                        console.error('크레딧 차감 중 오류:', creditError);
+                    }
                 }
 
             } catch (error) {
