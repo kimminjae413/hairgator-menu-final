@@ -209,7 +209,8 @@ body.light-theme .logo {
 /* 濡쒓렇???붾㈃ */
 /* ========== 로그인 화면 비활성화 (불나비 자동 로그인 사용) ========== */
 .login-screen {
-    display: none; /* 기본 숨김 */
+    display: none;
+    /* 기본 숨김 */
     align-items: center;
     justify-content: center;
     min-height: calc(100vh - 65px);
@@ -314,7 +315,8 @@ body.light-theme .form-group input {
 /* ?깅퀎 ?좏깮 */
 /* ========== 성별 선택 화면 기본 표시 (불나비 자동 로그인 전용) ========== */
 .gender-selection {
-    display: flex; /* 기본 표시 */
+    display: flex;
+    /* 기본 표시 */
     align-items: center;
     justify-content: center;
     min-height: 100vh;
@@ -406,6 +408,7 @@ body.light-theme .gender-btn {
     padding-bottom: env(safe-area-inset-bottom, 0);
     z-index: 50;
 }
+
 .menu-container.active {
     display: flex;
     z-index: 500;
@@ -802,23 +805,23 @@ body.light-theme .menu-items-container {
     .fixed-menu-section {
         padding-top: 65px;
     }
-    
+
     .styles-container,
     .menu-items-container {
         top: 270px;
         padding: 15px;
     }
-    
+
     .styles-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
-    
+
     .category-description {
         padding: 6px 12px;
         min-height: 35px;
     }
-    
+
     .category-description-text {
         font-size: 12px;
     }
@@ -1539,7 +1542,18 @@ body.light-theme .style-modal-close:hover {
 }
 
 /* mediaViewerContainer ?ㅽ???異붽? */
-#mediaViewerContainer {    width: 100%;    max-height: 90vh;    overflow: visible;    background: #000;    border-radius: 18px 18px 0 0;    display: flex;    align-items: center;    justify-content: center;    min-height: 300px;    position: relative;}
+#mediaViewerContainer {
+    width: 100%;
+    max-height: 90vh;
+    overflow: visible;
+    background: #000;
+    border-radius: 18px 18px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    position: relative;
+}
 
 #mediaViewerContainer img {
     width: 100%;
@@ -1551,7 +1565,7 @@ body.light-theme .style-modal-close:hover {
 .style-modal-info {
     padding: 30px;
     text-align: center;
-    display: none !important; /* 스타일 카드 클릭 시 코드/이름 숨김 */
+    /* display: none !important; 제거됨 - Lookbook 버튼 표시를 위해 */
 }
 
 .style-modal-code {
@@ -1615,7 +1629,8 @@ body.light-theme .style-detail-row {
 }
 
 .style-modal-actions {
-    display: none !important; /* 스타일 카드 클릭 시 액션 버튼 숨김 */
+    display: none !important;
+    /* 스타일 카드 클릭 시 액션 버튼 숨김 */
     gap: 10px;
 }
 
@@ -2033,7 +2048,7 @@ body.light-theme .modal-action-btn.secondary:hover {
 }
 
 .pc-back-btn {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     border: none;
     color: white;
     padding: 0.5rem 1rem;
@@ -2044,11 +2059,11 @@ body.light-theme .modal-action-btn.secondary:hover {
 }
 
 .pc-back-btn:hover {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .pc-close-btn {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     border: none;
     color: white;
     width: 36px;
@@ -2064,7 +2079,7 @@ body.light-theme .modal-action-btn.secondary:hover {
 }
 
 .pc-close-btn:hover {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
     transform: rotate(90deg);
 }
 
@@ -2479,7 +2494,7 @@ body.light-theme .modal-action-btn.secondary:hover {
     cursor: pointer;
     border: 3px solid transparent;
     transition: all 0.3s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .pc-color-item:hover {
