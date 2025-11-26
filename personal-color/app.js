@@ -993,12 +993,18 @@ async function startCamera() {
                 startBtn.textContent = '📹 카메라 중지';
                 startBtn.disabled = false;
                 startBtn.onclick = stopCamera;
-                
+
+                // ⭐ 실시간 결과 컨테이너 표시
+                const resultsContainer = document.getElementById('realtime-results-container');
+                if (resultsContainer) {
+                    resultsContainer.style.display = 'block';
+                }
+
                 // 실시간 분석 시작
                 if (faceDetection) {
                     startRealTimeAnalysis();
                 }
-                
+
                 showToast('실시간 카메라 분석이 시작되었습니다!', 'success');
             };
         }
@@ -1110,6 +1116,12 @@ function stopCamera() {
         console.log('캔버스 정리 완료');
     }
     
+    // ⭐ 실시간 결과 컨테이너 숨기기
+    const resultsContainer = document.getElementById('realtime-results-container');
+    if (resultsContainer) {
+        resultsContainer.style.display = 'none';
+    }
+
     // UI 업데이트
     const startBtn = document.getElementById('start-camera');
     if (startBtn) {
@@ -1117,7 +1129,7 @@ function stopCamera() {
         startBtn.onclick = startCamera;
         startBtn.disabled = false;
     }
-    
+
     console.log('카메라 완전 중지 완료');
     showToast('카메라가 중지되었습니다.', 'info');
 }
@@ -1176,32 +1188,210 @@ function startRealTimeAnalysis() {
 // MediaPipe 얼굴 인식 결과 처리
 function onFaceDetectionResults(results) {
     if (!canvasCtx) return;
-    
+
     canvasCtx.save();
     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-    
+
     if (results.detections && results.detections.length > 0) {
-        results.detections.forEach(detection => {
-            // 얼굴 영역 표시
-            const box = detection.boundingBox;
-            const x = box.xCenter * canvasElement.width - (box.width * canvasElement.width) / 2;
-            const y = box.yCenter * canvasElement.height - (box.height * canvasElement.height) / 2;
-            const width = box.width * canvasElement.width;
-            const height = box.height * canvasElement.height;
-            
-            canvasCtx.strokeStyle = '#00FF00';
-            canvasCtx.lineWidth = 2;
-            canvasCtx.strokeRect(x, y, width, height);
-            
-            // 신뢰도 표시
-            canvasCtx.fillStyle = '#00FF00';
-            canvasCtx.font = '16px Arial';
-            canvasCtx.fillText(`${Math.round(detection.score * 100)}%`, x, y - 10);
-        });
+        const detection = results.detections[0]; // 첫 번째 얼굴 사용
+
+        // 얼굴 영역 표시
+        const box = detection.boundingBox;
+        const x = box.xCenter * canvasElement.width - (box.width * canvasElement.width) / 2;
+        const y = box.yCenter * canvasElement.height - (box.height * canvasElement.height) / 2;
+        const width = box.width * canvasElement.width;
+        const height = box.height * canvasElement.height;
+
+        canvasCtx.strokeStyle = '#00FF00';
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeRect(x, y, width, height);
+
+        // 신뢰도 표시
+        canvasCtx.fillStyle = '#00FF00';
+        canvasCtx.font = '16px Arial';
+        canvasCtx.fillText(`${Math.round(detection.score * 100)}%`, x, y - 10);
+
+        // ⭐ 피부톤 추출 영역 (이마/양볼)
+        const foreheadX = x + width * 0.3;
+        const foreheadY = y + height * 0.2;
+        const foreheadWidth = width * 0.4;
+        const foreheadHeight = height * 0.15;
+
+        // 피부톤 샘플링 영역 표시
+        canvasCtx.strokeStyle = '#FFD700';
+        canvasCtx.lineWidth = 1;
+        canvasCtx.strokeRect(foreheadX, foreheadY, foreheadWidth, foreheadHeight);
+
+        // ⭐ 피부톤 추출
+        try {
+            const skinToneData = extractSkinToneFromRegion(
+                canvasElement,
+                foreheadX,
+                foreheadY,
+                foreheadWidth,
+                foreheadHeight
+            );
+
+            if (skinToneData && skinToneData.samples > 0) {
+                // 전역 변수에 저장
+                window.lastSkinToneData = skinToneData;
+
+                // 피부톤 색상 표시
+                const rgb = skinToneData.rgb;
+                canvasCtx.fillStyle = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+                canvasCtx.fillRect(x + width + 10, y, 60, 60);
+
+                canvasCtx.strokeStyle = '#FFD700';
+                canvasCtx.lineWidth = 2;
+                canvasCtx.strokeRect(x + width + 10, y, 60, 60);
+
+                canvasCtx.fillStyle = '#FFFFFF';
+                canvasCtx.font = '12px Arial';
+                canvasCtx.fillText('피부톤', x + width + 15, y + 75);
+
+                // RGB 값 표시
+                canvasCtx.font = '10px Arial';
+                canvasCtx.fillText(`R:${rgb.r} G:${rgb.g}`, x + width + 12, y + 90);
+                canvasCtx.fillText(`B:${rgb.b}`, x + width + 12, y + 100);
+
+                // ⭐ 실시간 퍼스널 컬러 분석
+                performRealtimeAnalysis(skinToneData);
+            }
+        } catch (error) {
+            console.error('피부톤 추출 오류:', error);
+        }
+    } else {
+        // 얼굴 미감지 시 안내
+        canvasCtx.fillStyle = '#FF4444';
+        canvasCtx.font = '16px Arial';
+        canvasCtx.fillText('얼굴을 화면 중앙에 위치시켜주세요', 10, 30);
     }
-    
+
     canvasCtx.restore();
+}
+
+// ⭐ 피부톤 추출 함수 (새로 추가)
+function extractSkinToneFromRegion(canvas, x, y, width, height) {
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(x, y, width, height);
+    const data = imageData.data;
+
+    let rSum = 0, gSum = 0, bSum = 0;
+    let validSamples = 0;
+
+    // 모든 픽셀 샘플링
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        // 피부톤 범위 필터링 (너무 어둡거나 밝은 픽셀 제외)
+        if (r > 50 && r < 250 && g > 40 && g < 220 && b > 30 && b < 200) {
+            rSum += r;
+            gSum += g;
+            bSum += b;
+            validSamples++;
+        }
+    }
+
+    if (validSamples === 0) {
+        return null;
+    }
+
+    return {
+        rgb: {
+            r: Math.round(rSum / validSamples),
+            g: Math.round(gSum / validSamples),
+            b: Math.round(bSum / validSamples)
+        },
+        samples: validSamples
+    };
+}
+
+// ⭐ 실시간 분석 함수 (디바운싱 포함)
+let realtimeAnalysisTimeout = null;
+let lastRealtimeResult = null;
+
+function performRealtimeAnalysis(skinToneData) {
+    // 디바운싱: 1초마다 한 번만 실행
+    if (realtimeAnalysisTimeout) {
+        clearTimeout(realtimeAnalysisTimeout);
+    }
+
+    realtimeAnalysisTimeout = setTimeout(() => {
+        try {
+            // RGB → LAB 변환
+            const rgb = skinToneData.rgb;
+            const lab = rgbToLab(rgb.r, rgb.g, rgb.b);
+
+            // 계절 분류
+            const season = classifySeasonByLab(lab);
+
+            // 결과가 이전과 다를 때만 UI 업데이트
+            if (!lastRealtimeResult || lastRealtimeResult.season !== season) {
+                lastRealtimeResult = { season, lab, rgb };
+
+                // UI 업데이트
+                updateRealtimeDisplay(season, lab, rgb);
+
+                console.log(`🎨 실시간 분석: ${season} (L:${lab.L.toFixed(1)}, a:${lab.a.toFixed(1)}, b:${lab.b.toFixed(1)})`);
+            }
+        } catch (error) {
+            console.error('실시간 분석 오류:', error);
+        }
+    }, 1000);
+}
+
+// ⭐ 실시간 분석 결과 UI 업데이트
+function updateRealtimeDisplay(season, lab, rgb) {
+    // 계절 결과 표시
+    const seasonResult = document.getElementById('realtime-season');
+    if (seasonResult) {
+        const seasonNames = {
+            'Spring': '🌸 봄 웜톤',
+            'Summer': '🌊 여름 쿨톤',
+            'Autumn': '🍂 가을 웜톤',
+            'Winter': '❄️ 겨울 쿨톤'
+        };
+        seasonResult.textContent = seasonNames[season] || season;
+        seasonResult.style.color = getSeasonColor(season);
+    }
+
+    // 피부톤 정보 표시
+    const skinInfo = document.getElementById('realtime-skin-info');
+    if (skinInfo) {
+        const undertone = lab.b > 0 ? '웜톤' : '쿨톤';
+        const brightness = lab.L > 60 ? '밝은' : '깊은';
+        skinInfo.innerHTML = `
+            <div><strong>피부 특성:</strong> ${undertone}, ${brightness} 타입</div>
+            <div><strong>RGB:</strong> ${rgb.r}, ${rgb.g}, ${rgb.b}</div>
+            <div><strong>명도:</strong> ${lab.L.toFixed(1)}</div>
+        `;
+    }
+
+    // 추천 설명 표시
+    const recommendation = document.getElementById('realtime-recommendation');
+    if (recommendation) {
+        const recommendations = {
+            'Spring': '밝고 따뜻한 색상이 잘 어울립니다. 생기 있고 화사한 헤어컬러를 추천합니다.',
+            'Summer': '부드럽고 시원한 색상이 잘 어울립니다. 우아하고 세련된 헤어컬러를 추천합니다.',
+            'Autumn': '깊고 따뜻한 색상이 잘 어울립니다. 고급스럽고 차분한 헤어컬러를 추천합니다.',
+            'Winter': '진하고 시원한 색상이 잘 어울립니다. 강렬하고 명확한 헤어컬러를 추천합니다.'
+        };
+        recommendation.textContent = recommendations[season] || '';
+    }
+}
+
+// 계절별 색상 반환
+function getSeasonColor(season) {
+    const colors = {
+        'Spring': '#FFB6C1',
+        'Summer': '#B0E0E6',
+        'Autumn': '#CD853F',
+        'Winter': '#4B0082'
+    };
+    return colors[season] || '#666';
 }
 
 // ==========================================
@@ -1268,30 +1458,38 @@ function showToast(message, type = 'info', duration = 3000) {
 
 // 모드 선택
 function selectMode(mode) {
+    console.log(`🎯 selectMode 호출: ${mode}`);
     currentMode = mode;
-    
+
     // 모든 섹션 숨기기
-    document.querySelectorAll('.mode-section').forEach(section => {
+    const allSections = document.querySelectorAll('.section');
+    console.log(`📋 전체 섹션 개수: ${allSections.length}`);
+    allSections.forEach(section => {
+        section.classList.remove('active');
         section.style.display = 'none';
     });
-    
+
+    // 모드별 섹션 ID 매핑
+    const sectionIds = {
+        'selection': 'mode-selection',
+        'ai': 'ai-analysis',
+        'draping': 'draping-mode'
+    };
+
+    const targetSectionId = sectionIds[mode] || mode;
+    console.log(`🎬 표시할 섹션 ID: ${targetSectionId}`);
+
     // 선택한 모드 표시
-    const selectedSection = document.getElementById(`${mode}-mode`);
+    const selectedSection = document.getElementById(targetSectionId);
     if (selectedSection) {
+        selectedSection.classList.add('active');
         selectedSection.style.display = 'block';
+        console.log(`✅ 섹션 표시 성공: ${targetSectionId}`);
+    } else {
+        console.error(`❌ 섹션을 찾을 수 없음: ${targetSectionId}`);
     }
-    
-    // 네비게이션 버튼 업데이트
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    const activeBtn = document.querySelector(`[onclick="selectMode('${mode}')"]`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-    }
-    
-    console.log(`모드 전환: ${mode}`);
+
+    console.log(`✅ 모드 전환 완료: ${mode}`);
 }
 
 // 뒤로 가기
@@ -1300,6 +1498,100 @@ function goBack() {
         selectMode('selection');
     }
 }
+
+// 홈으로 (goBack과 동일)
+function goHome() {
+    selectMode('selection');
+}
+
+// ⭐ 퍼스널 컬러 모드 닫기 (메인 서비스로 돌아가기)
+function closePersonalColor() {
+    console.log('🚪 퍼스널 컬러 모드 닫기 시작');
+
+    // 카메라가 실행 중이면 중지
+    if (videoElement && videoElement.srcObject) {
+        console.log('📹 카메라 중지');
+        stopCamera();
+    }
+
+    // 사용자 확인 메시지
+    const confirmed = confirm('퍼스널 컬러 진단을 종료하고 메인 화면으로 돌아가시겠습니까?');
+    if (!confirmed) {
+        console.log('❌ 사용자가 닫기 취소');
+        return;
+    }
+
+    console.log('✅ 닫기 확인됨');
+
+    // 1순위: iframe으로 열린 경우
+    try {
+        if (window.parent && window.parent !== window) {
+            console.log('📤 부모 창으로 닫기 메시지 전송');
+            window.parent.postMessage({
+                type: 'CLOSE_PERSONAL_COLOR',
+                message: '퍼스널 컬러 진단 종료'
+            }, '*');
+
+            // 500ms 후에도 안 닫히면 다음 방법 시도
+            setTimeout(() => {
+                console.log('⏱️ 부모 창 응답 없음, 다음 방법 시도');
+                tryAlternativeClose();
+            }, 500);
+            return;
+        }
+    } catch (error) {
+        console.error('❌ 부모 창 통신 오류:', error);
+    }
+
+    // iframe이 아닌 경우 바로 대안 실행
+    tryAlternativeClose();
+}
+
+// 대안 닫기 방법들
+function tryAlternativeClose() {
+    console.log('🔄 대안 닫기 방법 시도');
+
+    // 방법 1: 브라우저 뒤로가기
+    if (window.history.length > 1 && document.referrer) {
+        console.log('⬅️ 히스토리 뒤로가기 (referrer:', document.referrer, ')');
+        window.history.back();
+        return;
+    }
+
+    // 방법 2: 상위 디렉토리로 이동
+    const currentPath = window.location.pathname;
+    console.log('📍 현재 경로:', currentPath);
+
+    if (currentPath.includes('/personal-color/')) {
+        const mainPath = currentPath.replace('/personal-color/index.html', '/index.html')
+                                   .replace('/personal-color/', '/');
+        console.log('🏠 메인 페이지로 이동:', mainPath);
+        window.location.href = mainPath;
+        return;
+    }
+
+    // 방법 3: 절대 경로로 이동
+    console.log('🌐 절대 경로로 메인 이동');
+    window.location.href = '/index.html';
+}
+
+// ⭐ 전역 함수로 노출 (HTML onclick에서 사용)
+window.closePersonalColor = closePersonalColor;
+window.startCamera = startCamera;
+window.stopCamera = stopCamera;
+window.selectMode = selectMode;
+window.goBack = goBack;
+window.goHome = goHome;
+window.analyzePhoto = analyzePhoto;
+window.removeSavedColor = removeSavedColor;
+
+console.log('✅ 전역 함수 노출 완료:', {
+    closePersonalColor: typeof window.closePersonalColor,
+    startCamera: typeof window.startCamera,
+    stopCamera: typeof window.stopCamera,
+    selectMode: typeof window.selectMode,
+    goHome: typeof window.goHome
+});
 
 // ==========================================
 // 외부 연동 함수들 (HAIRGATOR 호환)

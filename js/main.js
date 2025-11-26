@@ -36,21 +36,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     <!-- 로그인 정보 -->
                     <div class="login-info" style="padding: 20px; border-bottom: 1px solid rgba(128,128,128,0.2);">
                         <div class="login-status" id="loginStatus" style="color: #4A90E2; font-size: 14px; margin-bottom: 10px;">
-                            로그인: 확인중...
+                            ${t('ui.loginStatus')}: ${t('ui.loading')}
                         </div>
                         <div style="color: var(--text-secondary, #aaa); font-size: 12px;">
-                            크레딧: <span id="creditDisplay" style="color: #4A90E2; font-weight: bold;">-</span>
+                            ${t('ui.credit')}: <span id="creditDisplay" style="color: #4A90E2; font-weight: bold;">-</span>
                         </div>
                     </div>
 
                     <!-- 메뉴 목록 -->
                     <nav class="sidebar-menu" style="padding: 10px 0;">
-                        
+
                         <!-- 테마 전환 -->
                         <div class="menu-item" id="themeToggleMenu" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <span id="themeIcon" style="font-size: 20px;">🌙</span>
-                                <span id="themeText" style="color: var(--text-primary, #333); font-size: 14px;">다크 모드</span>
+                                <span id="themeText" style="color: var(--text-primary, #333); font-size: 14px;">${t('ui.darkMode')}</span>
                             </div>
                         </div>
 
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="menu-item" id="personalColorBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <span style="font-size: 20px;">🎨</span>
-                                <span style="color: var(--text-primary, #333); font-size: 14px;">퍼스널 컬러 진단</span>
+                                <span style="color: var(--text-primary, #333); font-size: 14px;">${t('ui.personalColor')}</span>
                             </div>
                         </div>
 
@@ -66,45 +66,73 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="menu-item" id="logoutBtn" style="padding: 15px 20px; cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <span style="font-size: 20px;">🚪</span>
-                                <span style="color: #ff4444; font-size: 14px;">로그아웃</span>
+                                <span style="color: #ff4444; font-size: 14px;">${t('ui.logout')}</span>
                             </div>
                         </div>
 
                     </nav>
                 `;
-                
+
                 const style = document.createElement('style');
                 style.textContent = `
                     .menu-item:hover {
                         background: rgba(128, 128, 128, 0.1) !important;
                         transition: background 0.3s ease;
                     }
-                    
+
                     .sidebar-menu {
                         max-height: calc(100vh - 200px);
                         overflow-y: auto;
                     }
-                    
+
                     body.light-theme .sidebar {
                         background: #f5f5f5;
                     }
-                    
+
                     body.light-theme .sidebar-header {
                         background: #f5f5f5;
                         border-bottom: 1px solid rgba(0,0,0,0.1);
                     }
-                    
+
                     body.light-theme .sidebar-header h3,
                     body.light-theme .sidebar-close {
                         color: #333;
                     }
                 `;
                 document.head.appendChild(style);
-                
+
                 console.log('✅ 사이드바 메뉴 복원 완료');
+
+                // ⭐ 사이드바 메뉴 이벤트 리스너 재설정
+                setupSidebarMenuListeners();
+
                 updateLoginInfo();
             }
         }
+    }
+
+    // ⭐ 사이드바 메뉴 이벤트 리스너 설정 (재사용 가능)
+    function setupSidebarMenuListeners() {
+        const themeToggleMenu = document.getElementById('themeToggleMenu');
+        const personalColorBtn = document.getElementById('personalColorBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        if (themeToggleMenu) {
+            themeToggleMenu.addEventListener('click', toggleTheme);
+        }
+
+        if (personalColorBtn) {
+            personalColorBtn.addEventListener('click', function() {
+                console.log('🎨 퍼스널 컬러 진단 클릭');
+                window.location.href = '/personal-color/';
+            });
+        }
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', handleLogout);
+        }
+
+        console.log('✅ 사이드바 메뉴 이벤트 리스너 설정 완료');
     }
 
     function updateLoginInfo() {
@@ -113,15 +141,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
         if (bullnabiUser) {
-            if (loginStatus) loginStatus.textContent = `로그인: ${bullnabiUser.name}`;
+            if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${bullnabiUser.name}`;
             if (creditDisplay) creditDisplay.textContent = bullnabiUser.remainCount || 0;
         } else {
             const designerName = localStorage.getItem('designerName');
             if (designerName) {
-                if (loginStatus) loginStatus.textContent = `로그인: ${designerName}`;
+                if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${designerName}`;
                 if (creditDisplay) creditDisplay.textContent = '∞';
             } else {
-                if (loginStatus) loginStatus.textContent = '로그인: 게스트';
+                if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${t('ui.guest')}`;
                 if (creditDisplay) creditDisplay.textContent = '0';
             }
         }
@@ -140,26 +168,11 @@ document.addEventListener('DOMContentLoaded', function() {
             sidebarClose.addEventListener('click', closeSidebar);
         }
 
-        setTimeout(() => {
-            const themeToggleMenu = document.getElementById('themeToggleMenu');
-            const personalColorBtn = document.getElementById('personalColorBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
-            
-            if (themeToggleMenu) {
-                themeToggleMenu.addEventListener('click', toggleTheme);
-            }
-            
-            if (personalColorBtn) {
-                personalColorBtn.addEventListener('click', function() {
-                    console.log('🎨 퍼스널 컬러 진단 클릭');
-                    window.location.href = '/personal-color/';
-                });
-            }
-            
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', handleLogout);
-            }
-        }, 500);
+        // ⭐ 헤더의 언어 선택 버튼
+        const languageBtnHeader = document.getElementById('languageBtnHeader');
+        if (languageBtnHeader) {
+            languageBtnHeader.addEventListener('click', showLanguageModal);
+        }
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
@@ -171,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        
+
         document.addEventListener('click', function(e) {
             if (sidebar && sidebar.classList.contains('active')) {
                 if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
@@ -221,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const themeText = document.getElementById('themeText');
             
             if (themeIcon) themeIcon.textContent = isLight ? '☀️' : '🌙';
-            if (themeText) themeText.textContent = isLight ? '라이트 모드' : '다크 모드';
+            if (themeText) themeText.textContent = isLight ? t('ui.lightMode') : t('ui.darkMode');
         }, 100);
         
         console.log(`🎨 테마 로드: ${savedTheme}`);
@@ -235,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const themeText = document.getElementById('themeText');
         
         if (themeIcon) themeIcon.textContent = isLight ? '☀️' : '🌙';
-        if (themeText) themeText.textContent = isLight ? '라이트 모드' : '다크 모드';
+        if (themeText) themeText.textContent = isLight ? t('ui.lightMode') : t('ui.darkMode');
         
         localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
         console.log(`🎨 테마 변경: ${isLight ? 'light' : 'dark'}`);
@@ -256,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function handleLogout() {
-        if (confirm('로그아웃 하시겠습니까?')) {
+        if (confirm(t('ui.logoutConfirm') || '로그아웃 하시겠습니까?')) {
             try {
                 localStorage.removeItem('bullnabi_user');
                 localStorage.removeItem('bullnabi_login_time');
@@ -265,14 +278,158 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.removeItem('designerPassword');
                 localStorage.removeItem('loginTime');
                 sessionStorage.clear();
-                
+
                 console.log('✅ 로그아웃 완료');
                 location.reload();
             } catch (error) {
                 console.error('❌ 로그아웃 오류:', error);
-                showToast('로그아웃 실패: ' + error.message);
+                showToast(t('ui.logoutFailed') || '로그아웃 실패: ' + error.message);
             }
         }
+    }
+
+    // ⭐⭐⭐ 언어 선택 함수 ⭐⭐⭐
+    function showLanguageModal() {
+        const languages = [
+            { code: 'ko', name: '한국어', flag: '🇰🇷' },
+            { code: 'en', name: 'English', flag: '🇺🇸' },
+            { code: 'ja', name: '日本語', flag: '🇯🇵' },
+            { code: 'zh', name: '中文', flag: '🇨🇳' },
+            { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' }
+        ];
+
+        const currentLang = loadLanguage();
+
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+
+        const content = document.createElement('div');
+        content.style.cssText = `
+            background: var(--bg-primary, #1a1a1a);
+            border-radius: 15px;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        `;
+
+        content.innerHTML = `
+            <h3 style="color: var(--text-primary, #fff); margin-bottom: 15px; font-size: 18px;">🌍 언어 선택 / Select Language</h3>
+            <div id="languageOptions"></div>
+        `;
+
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+
+        const optionsContainer = content.querySelector('#languageOptions');
+
+        languages.forEach(lang => {
+            const option = document.createElement('div');
+            option.style.cssText = `
+                padding: 15px;
+                margin: 5px 0;
+                background: ${currentLang === lang.code ? '#4A90E2' : 'rgba(255, 255, 255, 0.05)'};
+                border-radius: 10px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                transition: all 0.2s;
+            `;
+
+            option.innerHTML = `
+                <span style="font-size: 24px;">${lang.flag}</span>
+                <span style="color: #fff; font-size: 16px;">${lang.name}</span>
+                ${currentLang === lang.code ? '<span style="margin-left: auto; color: #fff;">✓</span>' : ''}
+            `;
+
+            option.addEventListener('mouseenter', () => {
+                if (currentLang !== lang.code) {
+                    option.style.background = 'rgba(255, 255, 255, 0.1)';
+                }
+            });
+
+            option.addEventListener('mouseleave', () => {
+                if (currentLang !== lang.code) {
+                    option.style.background = 'rgba(255, 255, 255, 0.05)';
+                }
+            });
+
+            option.addEventListener('click', () => {
+                changeLanguage(lang.code);
+                modal.remove();
+                closeSidebar();
+            });
+
+            optionsContainer.appendChild(option);
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    function changeLanguage(langCode) {
+        console.log(`🌍 언어 변경: ${langCode}`);
+        setLanguage(langCode);
+
+        // UI 텍스트 업데이트
+        updateAllTexts();
+
+        // 메뉴 리로드 (현재 성별이 있으면)
+        if (window.currentGender && typeof window.HAIRGATOR_MENU?.loadMenuForGender === 'function') {
+            window.HAIRGATOR_MENU.loadMenuForGender(window.currentGender);
+        }
+
+        // ⭐ 챗봇 언어도 동기화
+        if (window.hairgatorChatbot) {
+            window.hairgatorChatbot.currentLanguage = langCode;
+            if (window.hairgatorChatbot.core) {
+                window.hairgatorChatbot.core.currentLanguage = langCode;
+            }
+            console.log(`✅ 챗봇 언어 동기화: ${langCode}`);
+        }
+
+        showToast('Language changed / 言語変更 / 语言已更改');
+    }
+
+    function updateAllTexts() {
+        // 사이드바 텍스트 업데이트
+        const themeText = document.getElementById('themeText');
+
+        const isLight = document.body.classList.contains('light-theme');
+        if (themeText) {
+            themeText.textContent = isLight ? t('ui.lightMode') : t('ui.darkMode');
+        }
+
+        // 사이드바 재생성
+        setupSidebar();
+        updateLoginInfo();
+
+        // 성별 선택 화면 재번역
+        const maleLabelElements = document.querySelectorAll('.gender-btn.male .gender-label');
+        const femaleLabelElements = document.querySelectorAll('.gender-btn.female .gender-label');
+
+        maleLabelElements.forEach(el => {
+            if (el) el.textContent = t('gender.male');
+        });
+
+        femaleLabelElements.forEach(el => {
+            if (el) el.textContent = t('gender.female');
+        });
     }
 
     function showToast(message) {
@@ -403,7 +560,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
 
+    // ⭐ 전역 함수로 노출 (챗봇과 동기화를 위해)
     window.showToast = showToast;
+    window.changeLanguage = changeLanguage;
+    window.updateAllTexts = updateAllTexts;
 
     console.log('🚀 HAIRGATOR 메인 애플리케이션 준비 완료');
 });
