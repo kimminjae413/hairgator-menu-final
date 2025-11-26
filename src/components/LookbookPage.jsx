@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../styles/magazine.css';
 
 const LookbookPage = ({ imageSrc, title, onReset }) => {
+    console.log('LookbookPage rendering...');
     const [currentLayout, setCurrentLayout] = useState('classic');
     const [lang, setLang] = useState(window.loadLanguage ? window.loadLanguage() : 'ko');
     const [randomTheme, setRandomTheme] = useState({
@@ -79,7 +80,7 @@ const LookbookPage = ({ imageSrc, title, onReset }) => {
                 </p>
                 {/* Demo Disclaimer */}
                 <div style={{ marginTop: '1rem', padding: '0.5rem', background: '#f0f0f0', borderRadius: '4px', fontSize: '0.8rem', color: '#666', display: 'inline-block' }}>
-                    ℹ️ Demo Mode: Analysis result is simulated.
+                    Demo Mode: Analysis result is simulated.
                 </div>
             </div>
             <div className="col-span-7" style={{ position: 'relative' }}>
@@ -111,7 +112,7 @@ const LookbookPage = ({ imageSrc, title, onReset }) => {
                 </p>
                 {/* Demo Disclaimer */}
                 <div style={{ marginTop: '1rem', padding: '0.5rem', background: '#eee', borderRadius: '4px', fontSize: '0.8rem', color: '#666', display: 'inline-block' }}>
-                    ℹ️ Demo Mode: Analysis result is simulated.
+                    Demo Mode: Analysis result is simulated.
                 </div>
             </div>
             <div style={{ position: 'relative' }}>
@@ -150,7 +151,7 @@ const LookbookPage = ({ imageSrc, title, onReset }) => {
                 </p>
                 {/* Demo Disclaimer */}
                 <div style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(255,255,255,0.2)', borderRadius: '4px', fontSize: '0.8rem', color: '#fff', display: 'inline-block' }}>
-                    ℹ️ Demo Mode: Analysis result is simulated.
+                    Demo Mode: Analysis result is simulated.
                 </div>
             </div>
             <div style={{ position: 'absolute', top: '2rem', right: '2rem', transform: 'rotate(5deg)' }}>
