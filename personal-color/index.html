@@ -16,10 +16,35 @@
         src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script>
 
     <link rel="stylesheet" href="styles.css">
+    <!-- 다국어 시스템 -->
+    <script src="../js/i18n.js"></script>
     <style>
         @keyframes flashFade {
             0% { opacity: 1; }
             100% { opacity: 0; }
+        }
+        /* 언어 선택기 스타일 */
+        .language-selector {
+            display: flex;
+            gap: 5px;
+            margin-left: 15px;
+        }
+        .lang-btn {
+            padding: 5px 10px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .lang-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .lang-btn.active {
+            background: rgba(138, 43, 226, 0.6);
+            border-color: rgba(138, 43, 226, 0.8);
         }
     </style>
 </head>
@@ -42,10 +67,18 @@
         <header class="app-header">
             <div class="header-content">
                 <div class="app-title-section">
-                    <h1 class="app-title">HAIRGATOR Personal Color</h1>
-                    <div class="app-subtitle">AI 기반 퍼스널컬러 진단 시스템</div>
+                    <h1 class="app-title" data-i18n="personalColor.title">HAIRGATOR Personal Color</h1>
+                    <div class="app-subtitle" data-i18n="personalColor.subtitle">AI 기반 퍼스널컬러 진단 시스템</div>
                 </div>
-                <button class="close-btn" onclick="closePersonalColor()" title="닫기">
+                <!-- 언어 선택기 -->
+                <div class="language-selector">
+                    <button class="lang-btn active" onclick="changeLanguage('ko')">KO</button>
+                    <button class="lang-btn" onclick="changeLanguage('en')">EN</button>
+                    <button class="lang-btn" onclick="changeLanguage('ja')">JA</button>
+                    <button class="lang-btn" onclick="changeLanguage('zh')">ZH</button>
+                    <button class="lang-btn" onclick="changeLanguage('vi')">VI</button>
+                </div>
+                <button class="close-btn" onclick="closePersonalColor()" data-i18n-title="personalColor.close" title="닫기">
                     ×
                 </button>
             </div>
@@ -54,39 +87,39 @@
         <main class="main-content">
             <!-- 모드 선택 섹션 -->
             <section class="section active" id="mode-selection">
-                <h2 class="mode-title">퍼스널컬러 진단 방법을 선택하세요</h2>
+                <h2 class="mode-title" data-i18n="personalColor.modeSelect">퍼스널컬러 진단 방법을 선택하세요</h2>
 
                 <div class="mode-cards">
                     <div class="mode-card" onclick="selectMode('ai')">
                         <span class="mode-icon">🤖</span>
-                        <h3 class="mode-card-title">AI 퍼스널컬러 분석</h3>
-                        <p class="mode-description">
+                        <h3 class="mode-card-title" data-i18n="personalColor.aiMode.title">AI 퍼스널컬러 분석</h3>
+                        <p class="mode-description" data-i18n="personalColor.aiMode.description">
                             최신 AI 기술로 얼굴을 분석하여 정확한 퍼스널컬러를 진단합니다.
                             MediaPipe 얼굴 인식과 Delta E 2000 색차 측정을 활용합니다.
                         </p>
                         <ul class="mode-features">
-                            <li>실시간 얼굴 인식 및 피부톤 추출</li>
-                            <li>LAB 색공간 기반 정밀 분석</li>
-                            <li>전문가 노하우 데이터베이스 활용</li>
-                            <li>624개 헤어컬러와 자동 매칭</li>
+                            <li data-i18n="personalColor.aiMode.feature1">실시간 얼굴 인식 및 피부톤 추출</li>
+                            <li data-i18n="personalColor.aiMode.feature2">LAB 색공간 기반 정밀 분석</li>
+                            <li data-i18n="personalColor.aiMode.feature3">전문가 노하우 데이터베이스 활용</li>
+                            <li data-i18n="personalColor.aiMode.feature4">624개 헤어컬러와 자동 매칭</li>
                         </ul>
-                        <button class="mode-btn">AI 분석 시작</button>
+                        <button class="mode-btn" data-i18n="personalColor.aiMode.startBtn">AI 분석 시작</button>
                     </div>
 
                     <div class="mode-card" onclick="selectMode('draping')">
                         <span class="mode-icon">🎭</span>
-                        <h3 class="mode-card-title">전문가 드래이핑 모드</h3>
-                        <p class="mode-description">
+                        <h3 class="mode-card-title" data-i18n="personalColor.drapingMode.title">전문가 드래이핑 모드</h3>
+                        <p class="mode-description" data-i18n="personalColor.drapingMode.description">
                             전문가 노하우를 바탕으로 실시간 드래이핑을 통해
                             가장 어울리는 헤어컬러를 직접 확인해보세요.
                         </p>
                         <ul class="mode-features">
-                            <li>실시간 카메라 드래이핑</li>
-                            <li>4계절 색상 팔레트 제공</li>
-                            <li>Before/After 즉시 비교</li>
-                            <li>브랜드별 제품 추천</li>
+                            <li data-i18n="personalColor.drapingMode.feature1">실시간 카메라 드래이핑</li>
+                            <li data-i18n="personalColor.drapingMode.feature2">4계절 색상 팔레트 제공</li>
+                            <li data-i18n="personalColor.drapingMode.feature3">Before/After 즉시 비교</li>
+                            <li data-i18n="personalColor.drapingMode.feature4">브랜드별 제품 추천</li>
                         </ul>
-                        <button class="mode-btn">드래이핑 시작</button>
+                        <button class="mode-btn" data-i18n="personalColor.drapingMode.startBtn">드래이핑 시작</button>
                     </div>
                 </div>
             </section>
@@ -94,8 +127,8 @@
             <!-- AI 분석 모드 -->
             <section class="section" id="ai-analysis">
                 <div class="section-nav">
-                    <button class="nav-btn" onclick="goHome()">← 홈으로</button>
-                    <h2 class="section-title">AI 퍼스널컬러 분석</h2>
+                    <button class="nav-btn" onclick="goHome()" data-i18n="personalColor.aiMode.backHome">← 홈으로</button>
+                    <h2 class="section-title" data-i18n="personalColor.aiMode.title">AI 퍼스널컬러 분석</h2>
                 </div>
 
                 <div class="analysis-grid">
@@ -104,19 +137,19 @@
                         <div class="video-container">
                             <video id="camera-feed" autoplay muted playsinline style="display:none;"></video>
                             <canvas id="camera-canvas" style="width: 100%; max-width: 640px; border-radius: 8px;"></canvas>
-                            <div class="face-guide" id="ai-face-guide">
+                            <div class="face-guide" id="ai-face-guide" data-i18n-html="personalColor.aiMode.faceGuide">
                                 얼굴을 화면 중앙에<br>위치시켜주세요
                             </div>
                         </div>
                         <div class="camera-controls">
-                            <button class="control-btn" id="start-camera" onclick="startAICamera()">📹 카메라 시작</button>
-                            <button class="control-btn" id="capture-btn" onclick="captureAndAnalyze()" style="display: none; background: linear-gradient(135deg, #FF6B6B, #FF8E53);">📸 촬영하기</button>
-                            <button class="control-btn" id="retry-btn" onclick="retryCapture()" style="display: none; background: linear-gradient(135deg, #6B7FFF, #53A8FF);">🔄 다시 촬영</button>
+                            <button class="control-btn" id="start-camera" onclick="startAICamera()" data-i18n="personalColor.aiMode.startCamera">📹 카메라 시작</button>
+                            <button class="control-btn" id="capture-btn" onclick="captureAndAnalyze()" style="display: none; background: linear-gradient(135deg, #FF6B6B, #FF8E53);" data-i18n="personalColor.aiMode.capture">📸 촬영하기</button>
+                            <button class="control-btn" id="retry-btn" onclick="retryCapture()" style="display: none; background: linear-gradient(135deg, #6B7FFF, #53A8FF);" data-i18n="personalColor.aiMode.retry">🔄 다시 촬영</button>
                         </div>
 
                         <!-- 촬영 안내 메시지 -->
                         <div id="capture-guide" style="display: none; margin-top: 15px; padding: 12px; background: rgba(255,180,0,0.15); border: 1px solid rgba(255,180,0,0.3); border-radius: 8px; text-align: center;">
-                            <span style="color: #FFB400; font-size: 14px;">✨ 얼굴이 인식되었습니다! <b>촬영하기</b> 버튼을 눌러주세요</span>
+                            <span style="color: #FFB400; font-size: 14px;" data-i18n-html="personalColor.aiMode.captureGuide">✨ 얼굴이 인식되었습니다! <b>촬영하기</b> 버튼을 눌러주세요</span>
                         </div>
 
                         <!-- ⭐ 분석 결과 표시 (촬영 후) -->
@@ -132,37 +165,37 @@
 
                     <!-- 분석 패널 -->
                     <div class="analysis-panel">
-                        <h3>AI 분석 진행상황</h3>
+                        <h3 data-i18n="personalColor.aiMode.steps.title">AI 분석 진행상황</h3>
                         <div class="analysis-steps">
                             <div class="analysis-step" id="ai-step-1">
                                 <div class="step-number">1</div>
                                 <div class="step-content">
-                                    <h4>얼굴 인식</h4>
-                                    <p>MediaPipe로 얼굴 영역을 감지합니다</p>
+                                    <h4 data-i18n="personalColor.aiMode.steps.step1">얼굴 인식</h4>
+                                    <p data-i18n="personalColor.aiMode.steps.step1Desc">MediaPipe로 얼굴 영역을 감지합니다</p>
                                 </div>
                             </div>
 
                             <div class="analysis-step" id="ai-step-2">
                                 <div class="step-number">2</div>
                                 <div class="step-content">
-                                    <h4>피부톤 분석</h4>
-                                    <p>RGB → LAB 색공간 변환 및 색상 추출</p>
+                                    <h4 data-i18n="personalColor.aiMode.steps.step2">피부톤 분석</h4>
+                                    <p data-i18n="personalColor.aiMode.steps.step2Desc">RGB → LAB 색공간 변환 및 색상 추출</p>
                                 </div>
                             </div>
 
                             <div class="analysis-step" id="ai-step-3">
                                 <div class="step-number">3</div>
                                 <div class="step-content">
-                                    <h4>Delta E 계산</h4>
-                                    <p>색차 측정 및 정확도 산출</p>
+                                    <h4 data-i18n="personalColor.aiMode.steps.step3">Delta E 계산</h4>
+                                    <p data-i18n="personalColor.aiMode.steps.step3Desc">색차 측정 및 정확도 산출</p>
                                 </div>
                             </div>
 
                             <div class="analysis-step" id="ai-step-4">
                                 <div class="step-number">4</div>
                                 <div class="step-content">
-                                    <h4>결과 생성</h4>
-                                    <p>전문가 노하우 기반 최종 진단</p>
+                                    <h4 data-i18n="personalColor.aiMode.steps.step4">결과 생성</h4>
+                                    <p data-i18n="personalColor.aiMode.steps.step4Desc">전문가 노하우 기반 최종 진단</p>
                                 </div>
                             </div>
                         </div>
@@ -812,7 +845,8 @@
                         document.getElementById('capture-guide').style.display = 'block';
 
                         console.log('✅ 얼굴 인식 완료! 촬영 대기 중...');
-                        showToast('얼굴이 인식되었습니다! 촬영 버튼을 눌러주세요', 'success');
+                        const pc = HAIRGATOR_I18N[currentLang]?.personalColor?.aiMode;
+                        showToast(pc?.faceDetected || '얼굴이 인식되었습니다! 촬영 버튼을 눌러주세요', 'success');
                     }
                 }
             } else {
@@ -834,7 +868,8 @@
         // 촬영하기 함수
         function captureAndAnalyze() {
             if (!currentLandmarks) {
-                showToast('얼굴을 먼저 인식해주세요', 'warning');
+                const pc = HAIRGATOR_I18N[currentLang]?.personalColor?.aiMode;
+                showToast(pc?.faceGuide || '얼굴을 먼저 인식해주세요', 'warning');
                 return;
             }
 
@@ -871,7 +906,8 @@
             // 분석 진행 단계 애니메이션
             animateAnalysisSteps();
 
-            showToast('촬영 완료! 분석 결과를 확인하세요', 'success');
+            const pc = HAIRGATOR_I18N[currentLang]?.personalColor?.aiMode;
+            showToast(pc?.captureComplete || '촬영 완료! 분석 결과를 확인하세요', 'success');
         }
 
         // 다시 촬영 함수
@@ -894,7 +930,8 @@
             // 분석 단계 초기화
             resetAnalysisSteps();
 
-            showToast('다시 얼굴을 화면에 맞춰주세요', 'info');
+            const pc = HAIRGATOR_I18N[currentLang]?.personalColor?.aiMode;
+            showToast(pc?.retryMessage || '다시 얼굴을 화면에 맞춰주세요', 'info');
         }
 
         // 분석 단계 애니메이션
@@ -947,9 +984,12 @@
             const chroma = skinToneData.chroma || 50;
             const seasonInfo = getPersonalColorSeason(skinToneData.undertone, brightness, chroma);
 
-            // 언더톤 한글 변환
-            const undertoneKorean = skinToneData.undertone === 'Warm' ? '웜톤 (따뜻한 톤)' :
-                                    skinToneData.undertone === 'Cool' ? '쿨톤 (차가운 톤)' : '뉴트럴 (중간 톤)';
+            // i18n 텍스트 가져오기
+            const undertoneText = getUndertoneText(skinToneData.undertone);
+            const seasonText = getSeasonText(seasonInfo.season);
+            const seasonDescText = getSeasonDescriptionText(seasonInfo.season);
+            const seasonRecommendText = getSeasonRecommendationText(seasonInfo.season);
+            const resultTexts = getResultTexts();
 
             console.log('📊 분석 결과:', seasonInfo);
 
@@ -963,43 +1003,43 @@
                 resultsContainer.style.border = '2px solid ' + seasonInfo.color;
 
                 resultsContainer.innerHTML = `
-                    <h4 style="margin: 0 0 20px 0; color: #fff; font-size: 18px; text-align: center;">🎨 퍼스널컬러 분석 결과</h4>
+                    <h4 style="margin: 0 0 20px 0; color: #fff; font-size: 18px; text-align: center;">🎨 ${resultTexts.title}</h4>
 
                     <!-- 피부 분석 섹션 -->
                     <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; margin-bottom: 15px;">
-                        <div style="font-size: 14px; color: #aaa; margin-bottom: 8px;">📍 당신의 피부 분석</div>
+                        <div style="font-size: 14px; color: #aaa; margin-bottom: 8px;">📍 ${resultTexts.skinAnalysis}</div>
                         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px;">
                             <div style="width: 50px; height: 50px; background: ${skinToneData.hex}; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"></div>
                             <div>
-                                <div style="font-size: 16px; color: #fff; font-weight: bold;">피부톤: ${skinToneData.hex}</div>
+                                <div style="font-size: 16px; color: #fff; font-weight: bold;">${resultTexts.skinTone}: ${skinToneData.hex}</div>
                                 <div style="font-size: 14px; color: #ccc;">RGB (${skinToneData.rgb.r}, ${skinToneData.rgb.g}, ${skinToneData.rgb.b})</div>
                             </div>
                         </div>
                         <div style="font-size: 16px; color: #fff;">
-                            <span style="color: #aaa;">언더톤:</span>
-                            <b style="color: ${seasonInfo.color};">${undertoneKorean}</b>
+                            <span style="color: #aaa;">${resultTexts.undertone}:</span>
+                            <b style="color: ${seasonInfo.color};">${undertoneText}</b>
                         </div>
                     </div>
 
                     <!-- 추천 퍼스널컬러 섹션 -->
                     <div style="background: linear-gradient(135deg, ${seasonInfo.color}33, ${seasonInfo.color}11); padding: 20px; border-radius: 12px; border: 2px solid ${seasonInfo.color};">
-                        <div style="font-size: 14px; color: #aaa; margin-bottom: 8px;">✨ 추천 퍼스널컬러</div>
+                        <div style="font-size: 14px; color: #aaa; margin-bottom: 8px;">✨ ${resultTexts.recommended}</div>
                         <div style="font-size: 28px; font-weight: bold; color: ${seasonInfo.color}; margin-bottom: 10px;">
-                            ${seasonInfo.emoji} ${seasonInfo.season}
+                            ${seasonInfo.emoji} ${seasonText}
                         </div>
                         <div style="font-size: 14px; color: #eee; line-height: 1.8;">
-                            ${getSeasonDescription(seasonInfo.season)}
+                            ${seasonDescText}
                         </div>
                     </div>
 
                     <!-- 추천 컬러 팔레트 -->
                     <div style="margin-top: 15px; background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px;">
-                        <div style="font-size: 14px; color: #aaa; margin-bottom: 12px;">💄 어울리는 컬러</div>
+                        <div style="font-size: 14px; color: #aaa; margin-bottom: 12px;">💄 ${resultTexts.matchingColors}</div>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
                             ${getSeasonColorPalette(seasonInfo.season)}
                         </div>
                         <div style="font-size: 14px; color: #eee; line-height: 1.8;">
-                            ${getSeasonRecommendations(seasonInfo.season)}
+                            ${seasonRecommendText}
                         </div>
                     </div>
                 `;
@@ -1011,13 +1051,13 @@
             const analysisData = document.getElementById('ai-analysis-data');
 
             if (seasonResult) {
-                seasonResult.innerHTML = `${seasonInfo.emoji} ${seasonInfo.season}`;
+                seasonResult.innerHTML = `${seasonInfo.emoji} ${seasonText}`;
                 seasonResult.style.color = seasonInfo.color;
                 seasonResult.style.fontSize = '20px';
             }
 
             if (confidenceEl) {
-                confidenceEl.innerHTML = '신뢰도: <b style="color: #4CAF50;">95%</b>';
+                confidenceEl.innerHTML = `${resultTexts.confidence}: <b style="color: #4CAF50;">95%</b>`;
             }
 
             if (analysisData) {
@@ -1025,9 +1065,9 @@
                     <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <div style="width: 24px; height: 24px; background: ${skinToneData.hex}; border-radius: 6px; border: 2px solid #fff;"></div>
-                            <span style="color: #fff;">피부톤: ${skinToneData.hex}</span>
+                            <span style="color: #fff;">${resultTexts.skinTone}: ${skinToneData.hex}</span>
                         </div>
-                        <div style="color: #fff;">언더톤: <b style="color: ${seasonInfo.color};">${undertoneKorean}</b></div>
+                        <div style="color: #fff;">${resultTexts.undertone}: <b style="color: ${seasonInfo.color};">${undertoneText}</b></div>
                     </div>
                 `;
             }
@@ -1912,7 +1952,207 @@
             stopDrapingCamera();
         });
 
-        console.log('HAIRGATOR Personal Color - 최종 수정 버전 로드 완료');
+        // ========== 다국어 시스템 ==========
+
+        // 현재 언어
+        let currentLang = 'ko';
+
+        // 언어 변경 함수
+        function changeLanguage(lang) {
+            currentLang = lang;
+            if (typeof setLanguage === 'function') {
+                setLanguage(lang);
+            }
+
+            // 버튼 활성화 상태 업데이트
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === lang.toUpperCase()) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // 모든 번역 적용
+            applyTranslations();
+            console.log(`🌍 언어 변경: ${lang}`);
+        }
+
+        // 번역 적용 함수
+        function applyTranslations() {
+            const pc = HAIRGATOR_I18N[currentLang]?.personalColor;
+            if (!pc) return;
+
+            // data-i18n 속성으로 번역 적용
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const text = getNestedValue(HAIRGATOR_I18N[currentLang], key);
+                if (text) el.textContent = text;
+            });
+
+            // data-i18n-html 속성으로 HTML 번역 적용
+            document.querySelectorAll('[data-i18n-html]').forEach(el => {
+                const key = el.getAttribute('data-i18n-html');
+                const text = getNestedValue(HAIRGATOR_I18N[currentLang], key);
+                if (text) el.innerHTML = text;
+            });
+
+            // 헤더
+            updateText('.app-title', pc.title);
+            updateText('.app-subtitle', pc.subtitle);
+
+            // 로딩 텍스트
+            updateText('#loading-text', pc.loading);
+
+            // AI 분석 모드
+            updateText('#ai-analysis .section-title', pc.aiMode.title);
+            updateText('#ai-analysis .nav-btn', pc.aiMode.backHome);
+            updateText('#start-camera', pc.aiMode.startCamera);
+            updateText('#capture-btn', pc.aiMode.capture);
+            updateText('#retry-btn', pc.aiMode.retry);
+
+            // 분석 단계
+            const steps = pc.aiMode.steps;
+            updateText('.analysis-panel > h3', steps.title);
+            updateStepText('ai-step-1', steps.step1, steps.step1Desc);
+            updateStepText('ai-step-2', steps.step2, steps.step2Desc);
+            updateStepText('ai-step-3', steps.step3, steps.step3Desc);
+            updateStepText('ai-step-4', steps.step4, steps.step4Desc);
+
+            // 드래이핑 모드
+            updateText('#draping-mode .section-title', pc.drapingMode.title);
+            updateText('.season-tabs [data-season="spring"]', pc.drapingMode.spring);
+            updateText('.season-tabs [data-season="summer"]', pc.drapingMode.summer);
+            updateText('.season-tabs [data-season="autumn"]', pc.drapingMode.autumn);
+            updateText('.season-tabs [data-season="winter"]', pc.drapingMode.winter);
+
+            // 얼굴 가이드 텍스트
+            const faceGuide = document.getElementById('ai-face-guide');
+            if (faceGuide) {
+                faceGuide.innerHTML = pc.aiMode.faceGuide;
+            }
+
+            const drapingGuide = document.getElementById('draping-face-guide');
+            if (drapingGuide) {
+                drapingGuide.innerHTML = pc.drapingMode.faceGuide;
+            }
+
+            // 캡처 가이드
+            const captureGuide = document.getElementById('capture-guide');
+            if (captureGuide) {
+                captureGuide.innerHTML = `<span style="color: #FFB400; font-size: 14px;">${pc.aiMode.captureGuide}</span>`;
+            }
+        }
+
+        // 중첩 객체 값 가져오기
+        function getNestedValue(obj, path) {
+            return path.split('.').reduce((current, key) => current?.[key], obj);
+        }
+
+        // 텍스트 업데이트 헬퍼
+        function updateText(selector, text) {
+            const el = document.querySelector(selector);
+            if (el && text) el.textContent = text;
+        }
+
+        // 단계별 텍스트 업데이트
+        function updateStepText(stepId, title, desc) {
+            const step = document.getElementById(stepId);
+            if (step) {
+                const h4 = step.querySelector('h4');
+                const p = step.querySelector('p');
+                if (h4 && title) h4.textContent = title;
+                if (p && desc) p.textContent = desc;
+            }
+        }
+
+        // 시즌 이름을 키로 변환
+        function seasonToKey(season) {
+            const mapping = {
+                '봄 웜 브라이트': 'springWarmBright',
+                '봄 웜 라이트': 'springWarmLight',
+                '가을 웜 딥': 'autumnWarmDeep',
+                '가을 웜 뮤트': 'autumnWarmMuted',
+                '여름 쿨 브라이트': 'summerCoolBright',
+                '여름 쿨 라이트': 'summerCoolLight',
+                '겨울 쿨 딥': 'winterCoolDeep',
+                '겨울 쿨 뮤트': 'winterCoolMuted',
+                '뉴트럴 라이트': 'neutralLight',
+                '뉴트럴 딥': 'neutralDeep'
+            };
+            return mapping[season] || season;
+        }
+
+        // 언더톤 번역 가져오기
+        function getUndertoneText(undertone) {
+            const pc = HAIRGATOR_I18N[currentLang]?.personalColor;
+            if (!pc) return undertone;
+
+            if (undertone === 'Warm') return pc.undertones.warm;
+            if (undertone === 'Cool') return pc.undertones.cool;
+            return pc.undertones.neutral;
+        }
+
+        // 시즌 이름 번역 가져오기
+        function getSeasonText(season) {
+            const pc = HAIRGATOR_I18N[currentLang]?.personalColor;
+            if (!pc) return season;
+
+            const key = seasonToKey(season);
+            return pc.seasons[key] || season;
+        }
+
+        // 시즌 설명 번역 가져오기
+        function getSeasonDescriptionText(season) {
+            const pc = HAIRGATOR_I18N[currentLang]?.personalColor;
+            if (!pc) return '';
+
+            const key = seasonToKey(season);
+            return pc.seasonDescriptions[key] || '';
+        }
+
+        // 시즌 추천 번역 가져오기
+        function getSeasonRecommendationText(season) {
+            const pc = HAIRGATOR_I18N[currentLang]?.personalColor;
+            if (!pc) return '';
+
+            const key = seasonToKey(season);
+            return pc.seasonRecommendations[key]?.replace(/\n/g, '<br>') || '';
+        }
+
+        // 결과 텍스트 가져오기
+        function getResultTexts() {
+            const pc = HAIRGATOR_I18N[currentLang]?.personalColor;
+            if (!pc) return {
+                title: '🎨 퍼스널컬러 분석 결과',
+                skinAnalysis: '📍 당신의 피부 분석',
+                skinTone: '피부톤',
+                undertone: '언더톤',
+                recommendedSeason: '✨ 추천 퍼스널컬러',
+                matchingColors: '💄 어울리는 컬러',
+                confidence: '신뢰도'
+            };
+            return pc.aiMode.result;
+        }
+
+        // 초기화 시 저장된 언어 불러오기
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof loadLanguage === 'function') {
+                currentLang = loadLanguage();
+
+                // 버튼 활성화 상태 업데이트
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent === currentLang.toUpperCase()) {
+                        btn.classList.add('active');
+                    }
+                });
+
+                // 번역 적용
+                setTimeout(applyTranslations, 100);
+            }
+        });
+
+        console.log('HAIRGATOR Personal Color - 다국어 지원 버전 로드 완료');
     </script>
 </body>
 
