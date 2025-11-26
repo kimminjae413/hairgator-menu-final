@@ -1591,7 +1591,11 @@ window.HAIRGATOR_MENU = {
     // 전역 변수 getter 추가
     getCurrentGender: () => currentGender,
     getCurrentMainTab: () => currentMainTab,
-    getCurrentSubTab: () => currentSubTab
+    getCurrentSubTab: () => currentSubTab,
+    // 카테고리 데이터 getter 추가 (tablet-touch-handler.js에서 사용)
+    getCategories: (gender) => gender === 'male' ? MALE_CATEGORIES : FEMALE_CATEGORIES,
+    getMaleCategories: () => MALE_CATEGORIES,
+    getFemaleCategories: () => FEMALE_CATEGORIES
 };
 
 // HTML에서 직접 호출되는 전역 함수 추가

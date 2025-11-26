@@ -157,9 +157,18 @@ function handleTabletTabSelection(tabElement) {
 
     // window.HAIRGATOR_MENU을 통해 기존 함수 호출
     if (window.HAIRGATOR_MENU && typeof window.HAIRGATOR_MENU.selectMainTab === 'function') {
-        // 원본 배열에서 카테고리 객체 찾기 (핵심 수정 부분)
+        // HAIRGATOR_MENU.getCategories()를 통해 카테고리 데이터 접근
         const currentGender = window.currentGender || 'female';
-        const categories = currentGender === 'male' ? MALE_CATEGORIES : FEMALE_CATEGORIES;
+
+        // menu.js에서 노출한 getCategories 함수 사용
+        let categories;
+        if (typeof window.HAIRGATOR_MENU.getCategories === 'function') {
+            categories = window.HAIRGATOR_MENU.getCategories(currentGender);
+        } else {
+            console.error('❌ HAIRGATOR_MENU.getCategories 함수를 찾을 수 없습니다');
+            return;
+        }
+
         const category = categories.find(c => c.name === tabText);
 
         if (!category) {
@@ -194,9 +203,12 @@ window.debugTabletTouch = function () {
         console.log(`탭 ${index}: "${tab.textContent}" - 위치: ${rect.top}x${rect.left}, 크기: ${rect.width}x${rect.height}`);
     });
 
-    // 카테고리 데이터 상태 확인
+    // 카테고리 데이터 상태 확인 (HAIRGATOR_MENU를 통해 접근)
     const currentGender = window.currentGender || 'female';
-    const categories = currentGender === 'male' ? MALE_CATEGORIES : FEMALE_CATEGORIES;
+    let categories = [];
+    if (window.HAIRGATOR_MENU && typeof window.HAIRGATOR_MENU.getCategories === 'function') {
+        categories = window.HAIRGATOR_MENU.getCategories(currentGender);
+    }
     console.log(`현재 성별: ${currentGender}`);
     console.log('카테고리 데이터:', categories);
 };

@@ -1155,7 +1155,11 @@
             setupLoginForm();
             setupModalHandlers();
 
-            loginScreen.style.display = 'flex';
+            // loginScreen이 null이 아닌지 확인 후 스타일 적용
+            const loginScreenEl = document.getElementById('loginScreen');
+            if (loginScreenEl) {
+                loginScreenEl.style.display = 'flex';
+            }
             
             // updateUserInfo를 약간 지연시켜 DOM이 완전히 로드된 후 실행
             setTimeout(() => {
