@@ -409,9 +409,9 @@ async function editImageWithGemini25(imageBase64, editPrompt, apiKey, imageIndex
     try {
         console.log(`📝 이미지 ${imageIndex + 1} 편집 프롬프트 (일부): ${editPrompt.substring(0, 80)}...`);
 
-        // Gemini 2.5 Flash Image API (정식 프로덕션 버전)
+        // Gemini 2.5 Flash Image API (정식 버전)
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-image-generation:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
