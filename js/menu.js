@@ -697,9 +697,13 @@ function openStyleModal(style) {
     // Lookbook 버튼 이벤트 연결 (index.html의 버튼)
     const btnLookbook = document.getElementById('btnOpenLookbook');
     if (btnLookbook) {
-        // 다국어 버튼 텍스트 설정
+        // 다국어 버튼 텍스트 설정 (SVG 아이콘 유지)
         const lookbookText = t('lookbook.button') || 'Lookbook';
-        btnLookbook.innerHTML = `📖 ${lookbookText}`;
+        const svgIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>`;
+        btnLookbook.innerHTML = `${svgIcon}<span>${lookbookText}</span>`;
 
         btnLookbook.onclick = function (e) {
             e.stopPropagation();
