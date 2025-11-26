@@ -1984,12 +1984,6 @@ body.light-theme .modal-action-btn.secondary:hover {
     .style-modal-name {
         font-size: 20px;
     }
-
-    .style-modal-actions {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-    }
 }
 
 /* ========== 퍼스널컬러 진단 섹션 스타일 (메인 앱 통합) ========== */
