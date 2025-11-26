@@ -8,7 +8,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <!-- i18n -->
     <script src="js/i18n.js"></script>
@@ -17,6 +17,13 @@
         :root {
             --font-display: 'Playfair Display', Georgia, serif;
             --font-sans: 'Inter', -apple-system, sans-serif;
+            --accent-pink: #ff0055;
+            --accent-gold: #d4af37;
+            --bg-dark: #0a0a0a;
+            --bg-card: #141414;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --text-muted: #555555;
         }
 
         * {
@@ -27,371 +34,524 @@
 
         body {
             font-family: var(--font-sans);
+            background: var(--bg-dark);
+            color: var(--text-primary);
             line-height: 1.6;
-            transition: background-color 0.5s ease, color 0.5s ease;
-        }
-
-        .lookbook-container {
-            min-height: 100vh;
-            animation: fadeIn 0.6s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            overflow-x: hidden;
         }
 
         /* Navigation */
         .lookbook-nav {
-            padding: 1.5rem 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem 3rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
         }
 
-        .lookbook-nav .logo {
+        .nav-logo {
             font-family: var(--font-display);
-            font-size: 1.5rem;
-            font-weight: bold;
-            letter-spacing: 2px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+            color: var(--text-primary);
         }
 
-        .back-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-family: var(--font-sans);
-            font-size: 0.95rem;
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s;
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 25px;
-            transition: all 0.3s ease;
+            gap: 6px;
         }
 
-        .back-btn:hover {
-            background: rgba(0,0,0,0.05);
+        .nav-link:hover {
+            color: var(--accent-pink);
         }
 
-        /* Hero Section */
+        /* Hero Section - Full Screen */
         .hero-section {
-            padding: 4rem 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .hero-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 4rem;
-            align-items: center;
-        }
-
-        .hero-content .trend-label {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero-content h1 {
-            font-family: var(--font-display);
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero-content .description {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            margin-bottom: 2rem;
-            opacity: 0.8;
-        }
-
-        .hero-image-wrapper {
             position: relative;
-        }
-
-        .hero-image-wrapper::before {
-            content: '';
-            position: absolute;
-            top: -15px;
-            right: -15px;
-            width: 100%;
-            height: 100%;
-            border: 2px solid;
-            border-radius: 8px;
-            z-index: 0;
+            height: 100vh;
+            min-height: 700px;
+            overflow: hidden;
         }
 
         .hero-image {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 500px;
+            height: 100%;
             object-fit: cover;
-            border-radius: 8px;
-            position: relative;
-            z-index: 1;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            filter: grayscale(100%) contrast(1.1) brightness(0.7);
         }
 
-        /* Tags */
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(0,0,0,0.3) 0%,
+                rgba(0,0,0,0.1) 40%,
+                rgba(0,0,0,0.7) 70%,
+                rgba(10,10,10,1) 100%
+            );
+        }
+
+        .hero-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 4rem;
+            z-index: 10;
+        }
+
+        .new-arrival-badge {
+            display: inline-block;
+            background: var(--accent-pink);
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            transform: rotate(-2deg);
+            box-shadow: 0 4px 20px rgba(255, 0, 85, 0.4);
+        }
+
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+        }
+
+        .hero-description {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            line-height: 1.8;
+        }
+
+        /* Tags Section */
         .tags-section {
+            padding: 3rem 4rem;
             display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
             justify-content: center;
-            padding: 3rem 2rem;
-            max-width: 800px;
-            margin: 0 auto;
+            gap: 1rem;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #222;
         }
 
         .tag {
-            padding: 8px 20px;
-            border-radius: 25px;
+            padding: 10px 24px;
+            border: 1px solid #333;
+            border-radius: 30px;
             font-size: 0.85rem;
-            border: 1px solid;
-            transition: all 0.3s ease;
+            color: var(--text-secondary);
+            background: transparent;
+            transition: all 0.3s;
         }
 
         .tag:hover {
-            transform: translateY(-2px);
+            border-color: var(--accent-pink);
+            color: var(--accent-pink);
         }
 
-        /* Info Grid */
+        /* Variations Section */
+        .variations-section {
+            padding: 5rem 4rem;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            font-weight: 400;
+        }
+
+        .section-title span {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-left: 0.5rem;
+        }
+
+        .variations-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .variation-card {
+            text-align: center;
+        }
+
+        .variation-card img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            margin-bottom: 1.5rem;
+            filter: grayscale(20%);
+            transition: filter 0.3s, transform 0.3s;
+        }
+
+        .variation-card:hover img {
+            filter: grayscale(0%);
+            transform: scale(1.02);
+        }
+
+        .variation-card h4 {
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .variation-card p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Info Grid Section */
+        .info-section {
+            padding: 5rem 4rem;
+            background: var(--bg-card);
+        }
+
         .info-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 3rem;
-            padding: 4rem 2rem;
-            max-width: 1400px;
+            gap: 4rem;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
         .info-card h3 {
             font-family: var(--font-display);
-            font-size: 1.3rem;
+            font-size: 1.1rem;
+            font-weight: 400;
+            margin-bottom: 2rem;
             padding-bottom: 1rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid;
+            border-bottom: 1px solid #333;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .info-card p {
+        /* Face Shape Card */
+        .face-shape-card .face-diagram {
+            background: #1a1a1a;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .face-diagram-title {
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .face-diagram-subtitle {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .face-shape-name {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem;
+        }
+
+        .face-shape-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
             line-height: 1.8;
-            opacity: 0.8;
+        }
+
+        /* Styling Guide Card */
+        .styling-list {
+            list-style: none;
+        }
+
+        .styling-list li {
+            display: flex;
+            gap: 1.2rem;
+            margin-bottom: 1.8rem;
+            align-items: flex-start;
+        }
+
+        .styling-number {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            min-width: 30px;
+        }
+
+        .styling-content strong {
+            display: block;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .styling-content p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Maintenance Card */
+        .maintenance-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 2rem;
         }
 
         .stat-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
-            margin-top: 1.5rem;
         }
 
         .stat-box {
-            padding: 1.2rem;
+            background: #1a1a1a;
+            padding: 1.5rem;
             text-align: center;
-            border: 1px solid;
             border-radius: 8px;
         }
 
-        .stat-box .icon {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
+        .stat-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.8rem;
         }
 
-        .stat-box .label {
-            font-size: 0.8rem;
-            opacity: 0.7;
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
             display: block;
             margin-bottom: 4px;
         }
 
-        .stat-box .value {
+        .stat-value {
             font-weight: 600;
+            font-size: 0.95rem;
         }
 
-        /* Style List */
-        .style-list {
-            list-style: none;
+        .stat-value.high {
+            color: #4dabf7;
         }
 
-        .style-list li {
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+        .stat-value.period {
+            color: var(--accent-pink);
         }
 
-        .style-list .num {
+        /* Footer */
+        .lookbook-footer {
+            padding: 3rem 4rem;
+            text-align: center;
+            border-top: 1px solid #222;
+        }
+
+        .footer-logo {
             font-family: var(--font-display);
-            font-size: 1.5rem;
-            font-weight: bold;
-            opacity: 0.5;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
         }
 
-        .style-list strong {
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .style-list p {
-            font-size: 0.9rem;
-            opacity: 0.7;
+        .footer-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
         }
 
         /* Responsive */
         @media (max-width: 1024px) {
-            .hero-grid {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-
-            .hero-image {
-                height: 400px;
-            }
-
+            .variations-grid,
             .info-grid {
                 grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .variation-card img {
+                height: 300px;
+            }
+
+            .hero-content {
+                padding: 2rem;
+            }
+
+            .lookbook-nav {
+                padding: 1rem 1.5rem;
             }
         }
 
         @media (max-width: 600px) {
-            .hero-section {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .tags-section {
                 padding: 2rem 1rem;
             }
 
-            .hero-content h1 {
-                font-size: 2rem;
+            .variations-section,
+            .info-section {
+                padding: 3rem 1.5rem;
             }
 
-            .hero-image {
-                height: 300px;
-            }
-
-            .lookbook-nav {
-                padding: 1rem;
+            .stat-grid {
+                grid-template-columns: 1fr;
             }
         }
 
-        /* Theme: Classic (default) */
-        .theme-classic {
-            background: #fff;
-            color: #1a1a1a;
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .theme-classic .trend-label { background: #d4af37; color: #fff; }
-        .theme-classic .hero-image-wrapper::before { border-color: #d4af37; }
-        .theme-classic .tag { border-color: #ccc; color: #333; }
-        .theme-classic .info-card h3 { border-color: #d4af37; }
-        .theme-classic .stat-box { border-color: #ddd; }
-        .theme-classic .back-btn { color: #333; }
-        .theme-classic .lookbook-nav { border-color: #eee; }
 
-        /* Theme: Modern */
-        .theme-modern {
-            background: #f8f9fa;
-            color: #2c3e50;
+        .animate-in {
+            animation: fadeInUp 0.8s ease forwards;
         }
-        .theme-modern .trend-label { background: #3498db; color: #fff; }
-        .theme-modern .hero-image-wrapper::before { border-color: #3498db; }
-        .theme-modern .tag { border-color: #7f8c8d; color: #2c3e50; }
-        .theme-modern .info-card h3 { border-color: #3498db; }
-        .theme-modern .stat-box { border-color: #ccc; }
-        .theme-modern .back-btn { color: #2c3e50; }
-        .theme-modern .lookbook-nav { border-color: #ddd; }
 
-        /* Theme: Street */
-        .theme-street {
-            background: #111;
-            color: #fff;
-        }
-        .theme-street .trend-label { background: #E91E63; color: #fff; }
-        .theme-street .hero-image-wrapper::before { border-color: #E91E63; }
-        .theme-street .tag { border-color: #444; color: #fff; background: rgba(255,255,255,0.1); }
-        .theme-street .info-card h3 { border-color: #E91E63; }
-        .theme-street .stat-box { border-color: #333; background: #1a1a1a; }
-        .theme-street .back-btn { color: #fff; }
-        .theme-street .back-btn:hover { background: rgba(255,255,255,0.1); }
-        .theme-street .lookbook-nav { border-color: #333; }
-        .theme-street .hero-image { filter: grayscale(30%) contrast(1.1); }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
     </style>
 </head>
 <body>
-    <div id="lookbook-root" class="lookbook-container theme-classic">
-        <!-- Navigation -->
-        <nav class="lookbook-nav">
-            <div class="logo">THE EDIT</div>
-            <button class="back-btn" onclick="goBack()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-                <span id="backText">돌아가기</span>
-            </button>
-        </nav>
+    <!-- Navigation -->
+    <nav class="lookbook-nav">
+        <div class="nav-logo">THE EDIT</div>
+        <a href="/" class="nav-link" onclick="goBack(); return false;">
+            <span>↻</span>
+            <span id="navBackText">새로운 스타일 생성</span>
+        </a>
+    </nav>
 
-        <!-- Hero Section -->
-        <section class="hero-section">
-            <div class="hero-grid">
-                <div class="hero-content">
-                    <span class="trend-label" id="trendLabel">TREND 2025</span>
-                    <h1 id="styleTitle">Loading...</h1>
-                    <p class="description" id="styleDescription">
-                        이 스타일은 자연스러운 볼륨감과 부드러운 웨이브가 특징입니다.
-                        다양한 얼굴형에 어울리며, 트렌디하면서도 클래식한 느낌을 연출합니다.
-                    </p>
-                </div>
-                <div class="hero-image-wrapper">
-                    <img id="heroImage" class="hero-image" src="" alt="Style Image">
-                </div>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <img id="heroImage" class="hero-image" src="" alt="Style Image">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="new-arrival-badge">NEW ARRIVAL</div>
+            <h1 class="hero-title animate-in" id="styleTitle">Loading...</h1>
+            <p class="hero-description animate-in delay-1" id="heroDescription">
+                혼돈 속의 조화. 이 스타일은 현대적인 스타일링에 자유분방한 보헤미안 정신을 불어넣습니다.
+                단순한 헤어스타일이 아닌, 하나의 태도입니다.
+            </p>
+        </div>
+    </section>
+
+    <!-- Tags -->
+    <section class="tags-section" id="tagsSection">
+        <span class="tag">#빈티지</span>
+        <span class="tag">#보헤미안</span>
+        <span class="tag">#볼륨감</span>
+        <span class="tag">#러블리</span>
+    </section>
+
+    <!-- Variations -->
+    <section class="variations-section">
+        <h2 class="section-title" id="variationsTitle">스타일 변형 <span>(VARIATIONS)</span></h2>
+        <div class="variations-grid">
+            <div class="variation-card animate-in">
+                <img id="varImage1" src="" alt="Variation 1">
+                <h4 id="varTitle1">시크 스트럭처</h4>
+                <p id="varDesc1">볼륨감과 대비되는 날렵한 테일러링.</p>
             </div>
-        </section>
+            <div class="variation-card animate-in delay-1">
+                <img id="varImage2" src="" alt="Variation 2">
+                <h4 id="varTitle2">로맨틱 보호</h4>
+                <p id="varDesc2">몽환적인 미학을 위한 부드러운 패브릭.</p>
+            </div>
+            <div class="variation-card animate-in delay-2">
+                <img id="varImage3" src="" alt="Variation 3">
+                <h4 id="varTitle3">데일리 캐주얼</h4>
+                <p id="varDesc3">데님과 티셔츠로 완성하는 무심한 듯한 멋.</p>
+            </div>
+        </div>
+    </section>
 
-        <!-- Tags -->
-        <section class="tags-section" id="tagsSection">
-            <span class="tag">#Trendy</span>
-            <span class="tag">#Natural</span>
-            <span class="tag">#Volume</span>
-            <span class="tag">#2025</span>
-        </section>
-
-        <!-- Info Grid -->
-        <section class="info-grid">
+    <!-- Info Grid -->
+    <section class="info-section">
+        <div class="info-grid">
             <!-- Face Shape -->
-            <div class="info-card">
-                <h3 id="faceShapeTitle">추천 얼굴형</h3>
-                <p id="faceShapeDesc">
-                    계란형, 하트형 얼굴에 특히 잘 어울립니다.
-                    볼륨감이 얼굴의 각진 부분을 부드럽게 커버해줍니다.
+            <div class="info-card face-shape-card">
+                <h3 id="faceShapeTitle">추천 얼굴형 (BEST MATCH)</h3>
+                <div class="face-diagram">
+                    <div class="face-diagram-title">FACE SHAPE ANALYSIS: OVAL</div>
+                    <svg width="120" height="150" viewBox="0 0 120 150" style="margin: 1rem 0;">
+                        <ellipse cx="60" cy="75" rx="45" ry="60" fill="none" stroke="#444" stroke-width="1"/>
+                        <line x1="60" y1="15" x2="60" y2="135" stroke="#333" stroke-width="1" stroke-dasharray="4"/>
+                        <line x1="15" y1="75" x2="105" y2="75" stroke="#333" stroke-width="1" stroke-dasharray="4"/>
+                        <circle cx="40" cy="60" r="8" fill="none" stroke="#555" stroke-width="1"/>
+                        <circle cx="80" cy="60" r="8" fill="none" stroke="#555" stroke-width="1"/>
+                        <path d="M45 95 Q60 110 75 95" fill="none" stroke="#555" stroke-width="1"/>
+                    </svg>
+                    <div class="face-diagram-subtitle">CLINICAL | HIGH-FASHION | AESTHETIC</div>
+                </div>
+                <h4 class="face-shape-name">Oval & Heart</h4>
+                <p class="face-shape-desc" id="faceShapeDesc">
+                    이 헤어스타일의 풍성한 사이드 볼륨은 하트형 얼굴의 좁은 턱선을 보완하여 밸런스를 맞춰주며,
+                    계란형 얼굴의 부드러운 윤곽을 더욱 돋보이게 하여 장점을 극대화합니다.
                 </p>
             </div>
 
             <!-- Styling Guide -->
             <div class="info-card">
                 <h3 id="stylingTitle">스타일링 가이드</h3>
-                <ul class="style-list">
+                <ul class="styling-list">
                     <li>
-                        <span class="num">01</span>
-                        <div>
-                            <strong id="style1Title">드라이 후 무스</strong>
-                            <p id="style1Desc">젖은 머리에 무스를 바르고 자연 건조</p>
+                        <span class="styling-number">01</span>
+                        <div class="styling-content">
+                            <strong id="style1Title">오버사이즈 블레이저</strong>
+                            <p id="style1Desc">와일드한 헤어와 구조적인 테일러링의 대비.</p>
                         </div>
                     </li>
                     <li>
-                        <span class="num">02</span>
-                        <div>
-                            <strong id="style2Title">디퓨저 사용</strong>
-                            <p id="style2Desc">웨이브를 살리기 위해 디퓨저로 건조</p>
+                        <span class="styling-number">02</span>
+                        <div class="styling-content">
+                            <strong id="style2Title">플로럴 원피스</strong>
+                            <p id="style2Desc">빈티지 감의 미학을 극대화하세요.</p>
                         </div>
                     </li>
                     <li>
-                        <span class="num">03</span>
-                        <div>
-                            <strong id="style3Title">오일 마무리</strong>
-                            <p id="style3Desc">끝부분에 오일을 발라 윤기 추가</p>
+                        <span class="styling-number">03</span>
+                        <div class="styling-content">
+                            <strong id="style3Title">볼드 이어링</strong>
+                            <p id="style3Desc">얼굴 밑라인은 청키한 스테이트먼트 주얼리.</p>
                         </div>
                     </li>
                 </ul>
@@ -399,25 +559,32 @@
 
             <!-- Maintenance -->
             <div class="info-card">
-                <h3 id="maintenanceTitle">관리 & 유지</h3>
-                <p id="maintenanceDesc">
-                    정기적인 트리트먼트와 적절한 수분 공급이 중요합니다.
+                <h3 id="maintenanceTitle">관리 및 유지</h3>
+                <p class="maintenance-desc" id="maintenanceDesc">
+                    이 스타일의 매력은 "낮은 유지보수"에 있습니다. 헝클어 질수록 더 멋스럽습니다.
+                    하지만 "지푸라기"처럼 보이지 않으려면 수분 공급이 핵심입니다.
                 </p>
                 <div class="stat-grid">
                     <div class="stat-box">
-                        <div class="icon">💧</div>
-                        <span class="label" id="hydrationLabel">수분 공급</span>
-                        <span class="value" id="hydrationValue">높음</span>
+                        <div class="stat-icon">💧</div>
+                        <span class="stat-label" id="hydrationLabel">수분 공급</span>
+                        <span class="stat-value high" id="hydrationValue">높음</span>
                     </div>
                     <div class="stat-box">
-                        <div class="icon">✂️</div>
-                        <span class="label" id="trimLabel">커트 주기</span>
-                        <span class="value" id="trimValue">8주</span>
+                        <div class="stat-icon">✂️</div>
+                        <span class="stat-label" id="trimLabel">커트 주기</span>
+                        <span class="stat-value period" id="trimValue">8주</span>
                     </div>
                 </div>
             </div>
-        </section>
-    </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="lookbook-footer">
+        <div class="footer-logo">HAIRGATOR</div>
+        <p class="footer-text">AI-Powered Hair Style Analysis</p>
+    </footer>
 
     <script>
         // URL 파라미터에서 데이터 가져오기
@@ -425,40 +592,46 @@
         const imageSrc = urlParams.get('image') || '';
         const styleTitle = decodeURIComponent(urlParams.get('title') || 'Style');
 
-        // 테마 랜덤 선택
-        const themes = ['classic', 'modern', 'street'];
-        const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
-
-        // 테마 적용
-        const container = document.getElementById('lookbook-root');
-        container.className = `lookbook-container theme-${selectedTheme}`;
-
         // 데이터 적용
         document.getElementById('heroImage').src = imageSrc;
-        document.getElementById('styleTitle').textContent = styleTitle;
+        document.getElementById('styleTitle').textContent = styleTitle.toUpperCase();
+
+        // Variation 이미지 (동일 이미지 사용, 실제로는 다른 이미지 사용 가능)
+        document.getElementById('varImage1').src = imageSrc;
+        document.getElementById('varImage2').src = imageSrc;
+        document.getElementById('varImage3').src = imageSrc;
 
         // 다국어 적용
         function applyTranslations() {
             if (typeof t === 'function') {
-                document.getElementById('trendLabel').textContent = t('lookbook.trendReport') || 'TREND 2025';
-                document.getElementById('backText').textContent = t('lookbook.createNew') || '돌아가기';
-                document.getElementById('faceShapeTitle').textContent = t('lookbook.faceShape') || '추천 얼굴형';
-                document.getElementById('stylingTitle').textContent = t('lookbook.styleLook') || '스타일링 가이드';
-                document.getElementById('maintenanceTitle').textContent = t('lookbook.maintenance') || '관리 & 유지';
+                // Navigation
+                document.getElementById('navBackText').textContent = t('lookbook.createNew') || '새로운 스타일 생성';
+
+                // Tags
+                const tags = [
+                    t('lookbook.tags.vintage') || '#빈티지',
+                    t('lookbook.tags.bohemian') || '#보헤미안',
+                    t('lookbook.tags.volume') || '#볼륨감',
+                    t('lookbook.tags.lovely') || '#러블리'
+                ];
+                const tagsSection = document.getElementById('tagsSection');
+                tagsSection.innerHTML = tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+
+                // Section titles
+                document.getElementById('variationsTitle').innerHTML =
+                    (t('lookbook.variations') || '스타일 변형') + ' <span>(VARIATIONS)</span>';
+                document.getElementById('faceShapeTitle').textContent =
+                    t('lookbook.faceShape') || '추천 얼굴형 (BEST MATCH)';
+                document.getElementById('stylingTitle').textContent =
+                    t('lookbook.styleLook') || '스타일링 가이드';
+                document.getElementById('maintenanceTitle').textContent =
+                    t('lookbook.maintenance') || '관리 및 유지';
+
+                // Stats
                 document.getElementById('hydrationLabel').textContent = t('lookbook.hydration') || '수분 공급';
                 document.getElementById('hydrationValue').textContent = t('lookbook.high') || '높음';
                 document.getElementById('trimLabel').textContent = t('lookbook.trim') || '커트 주기';
                 document.getElementById('trimValue').textContent = '8 ' + (t('lookbook.weeks') || '주');
-
-                // Tags
-                const tags = [
-                    t('lookbook.tags.vintage') || '#Vintage',
-                    t('lookbook.tags.bohemian') || '#Bohemian',
-                    t('lookbook.tags.volume') || '#Volume',
-                    t('lookbook.tags.lovely') || '#Lovely'
-                ];
-                const tagsSection = document.getElementById('tagsSection');
-                tagsSection.innerHTML = tags.map(tag => `<span class="tag">${tag}</span>`).join('');
             }
         }
 
@@ -476,7 +649,7 @@
             }
         }
 
-        console.log('📖 Lookbook loaded:', { theme: selectedTheme, title: styleTitle, image: imageSrc });
+        console.log('📖 Lookbook loaded:', { title: styleTitle, image: imageSrc });
     </script>
 </body>
 </html>
