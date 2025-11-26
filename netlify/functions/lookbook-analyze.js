@@ -457,11 +457,13 @@ async function editImageWithGemini25(imageBase64, editPrompt, apiKey, imageIndex
         }
 
         // 응답에서 이미지 추출
+        // API 응답은 camelCase (inlineData)를 사용함
         const parts = result.candidates?.[0]?.content?.parts || [];
         for (const part of parts) {
-            if (part.inline_data && part.inline_data.data) {
-                const imageData = part.inline_data.data;
-                const mimeType = part.inline_data.mime_type || 'image/png';
+            // camelCase: inlineData (REST API 응답 형식)
+            if (part.inlineData && part.inlineData.data) {
+                const imageData = part.inlineData.data;
+                const mimeType = part.inlineData.mimeType || 'image/png';
                 console.log(`📊 이미지 ${imageIndex + 1} 원본 크기: ${(imageData.length / 1024 / 1024).toFixed(2)}MB`);
 
                 // 압축
