@@ -32,11 +32,11 @@
     Pragma = "no-cache"
     Expires = "0"
 
-# JavaScript 파일 - 짧은 캐시 (10분)
+# JavaScript 파일 - 캐시 비활성화 (개발 중)
 [[headers]]
   for = "/js/*"
   [headers.values]
-    Cache-Control = "public, max-age=600, must-revalidate"
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
 # CSS 파일 - 짧은 캐시 (1분)
 [[headers]]
