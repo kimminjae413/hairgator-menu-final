@@ -15,22 +15,30 @@ const isTabletSize = () => {
 document.addEventListener('DOMContentLoaded', function () {
     console.log('🎯 HAIRGATOR 태블릿 터치 핸들러 초기화');
 
+    // 터치 디바이스이면서 태블릿 크기인 경우에만 터치 핸들러 적용
+    // 일반 웹 브라우저(마우스 사용)에서는 기본 onclick 유지
     if (isTouchDevice && isTabletSize()) {
-        console.log('📱 태블릿 터치 환경 감지 - 최적화 적용');
+        console.log('📱 태블릿 터치 환경 감지 - 터치 최적화 적용');
         setupTabletTouchHandling();
+    } else if (isTabletSize() && !isTouchDevice) {
+        console.log('🖥️ 태블릿 크기 웹 브라우저 감지 - 클릭 핸들러 적용');
+        setupTabletClickHandling();
     }
 });
 
 // 태블릿 전용 터치 핸들링 설정
 function setupTabletTouchHandling() {
-    // 기존 onclick 이벤트를 모두 제거하고 터치 이벤트로 교체
+    // 터치 이벤트 추가 (기존 onclick은 유지 - 폴백용)
     const replaceTabClickHandlers = () => {
         const categoryTabs = document.querySelectorAll('.category-tab, .main-tab');
 
         categoryTabs.forEach((tab, index) => {
-            // 기존 onclick 제거
-            tab.onclick = null;
-            tab.removeAttribute('onclick');
+            // ⚠️ 기존 onclick 유지 (터치가 안 될 때 폴백용)
+            // tab.onclick = null;
+            // tab.removeAttribute('onclick');
+
+            // 이미 터치 핸들러가 추가되었으면 건너뜀
+            if (tab._touchHandlerAdded) return;
 
             // 터치 이벤트 추가
             let touchStartTime = 0;
@@ -94,16 +102,11 @@ function setupTabletTouchHandling() {
                 isValidTouch = false;
             }, { passive: false });
 
-            // 클릭 이벤트는 막기 (중복 실행 방지) - ⚠️ 문제 발생으로 비활성화
-            /* 
-            tab.addEventListener('click', function(e) {
-                if (isTouchDevice && isTabletSize()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('🚫 클릭 이벤트 차단 (터치로 처리됨)');
-                }
-            });
-            */
+            // 클릭 이벤트는 유지 (터치가 안 될 때 폴백)
+            // onclick은 menu.js에서 이미 설정되어 있음
+
+            // 터치 핸들러 추가 완료 플래그
+            tab._touchHandlerAdded = true;
         });
     };
 
@@ -138,6 +141,60 @@ function setupTabletTouchHandling() {
     window.addEventListener('resize', function () {
         if (isTouchDevice && isTabletSize()) {
             setTimeout(replaceTabClickHandlers, 100);
+        }
+    });
+}
+
+// ========== 웹 브라우저(마우스)용 클릭 핸들러 ==========
+// 태블릿 크기이지만 터치가 아닌 경우 (일반 웹 브라우저)
+function setupTabletClickHandling() {
+    const addClickHandlersToTabs = () => {
+        const categoryTabs = document.querySelectorAll('.category-tab, .main-tab');
+
+        categoryTabs.forEach((tab) => {
+            // 이미 클릭 핸들러가 있으면 건너뜀 (menu.js에서 설정한 onclick 유지)
+            if (tab._webClickHandlerAdded) return;
+
+            // 추가 클릭 이벤트 리스너 (기존 onclick과 함께 동작)
+            tab.addEventListener('click', function (e) {
+                console.log(`🖱️ 웹 브라우저 탭 클릭: ${this.textContent.trim()}`);
+
+                // menu.js의 onclick이 이미 처리했으면 추가 처리 불필요
+                // 하지만 혹시 onclick이 없는 경우 대비
+                if (!this.onclick) {
+                    handleTabletTabSelection(this);
+                }
+            });
+
+            tab._webClickHandlerAdded = true;
+        });
+    };
+
+    // MutationObserver로 동적으로 생성되는 탭들도 처리
+    const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            if (mutation.type === 'childList') {
+                const addedNodes = Array.from(mutation.addedNodes);
+                addedNodes.forEach(node => {
+                    if (node.nodeType === 1 && node.classList && node.classList.contains('category-tab')) {
+                        console.log('🔄 새로운 탭 감지 - 웹 클릭 핸들러 적용');
+                        setTimeout(addClickHandlersToTabs, 100);
+                    }
+                });
+            }
+        });
+    });
+
+    const tabContainer = document.querySelector('.category-tabs') || document.body;
+    observer.observe(tabContainer, { childList: true, subtree: true });
+
+    // 초기 실행
+    addClickHandlersToTabs();
+
+    // 창 크기 변경 시 재확인
+    window.addEventListener('resize', function () {
+        if (isTabletSize() && !isTouchDevice) {
+            setTimeout(addClickHandlersToTabs, 100);
         }
     });
 }
