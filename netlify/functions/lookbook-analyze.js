@@ -272,12 +272,15 @@ async function generateWithImagen4Fast(analysis, apiKey) {
         const fashionItems = rec.items.join(', ');
         const fashionStyle = rec.style;
 
-        // 헤어스타일 상세 설명
-        const hairDesc = `beautiful ${styleName} hairstyle, ${characteristics.texture || 'natural'} texture, ${characteristics.length || 'medium'} length`;
+        // 핵심: 패션 룩북이므로 옷이 주인공, 헤어는 보조
+        // 허리까지 보이는 상반신 샷으로 옷을 확실히 보여줌
+        return `Fashion lookbook photo of a Korean ${genderBase} model, shot from head to waist (upper body).
 
-        // 상반신 촬영 + 헤어스타일 + 패션 모두 보이도록
-        // CRITICAL: 머리부터 가슴까지만 보이는 상반신 클로즈업
-        return `Close-up portrait photo from head to chest of a Korean ${genderBase} model. HAIR: ${hairDesc} - hair must be fully visible and styled beautifully. OUTFIT: wearing ${fashionStyle} style - ${fashionItems}. Framing: head and shoulders shot, face and hair clearly visible, chest level crop. Studio lighting, clean white or gray background, fashion magazine quality, sharp focus on hair and face. The hairstyle and clothing style (${fashionStyle}) must match perfectly.`;
+OUTFIT (MAIN FOCUS): Wearing ${fashionStyle} style outfit - ${fashionItems}. The clothing must be clearly visible and styled beautifully. Show the complete top/jacket/shirt clearly.
+
+HAIR: ${styleName} hairstyle with ${characteristics.texture || 'natural'} texture.
+
+COMPOSITION: Upper body shot showing head to waist, model facing camera or slightly angled. Clean studio background (white or light gray). Fashion magazine editorial quality. The outfit and styling should be the main focus of the image.`;
     });
 
     try {
