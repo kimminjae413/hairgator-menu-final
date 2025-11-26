@@ -3,14 +3,14 @@
 //
 // 모델 구성:
 // - 분석: Gemini 2.0 Flash ($0.10/1M input, $0.40/1M output) → ~1원/회
-// - 이미지 생성: Imagen 4 Fast ($0.02/장) → ~81원/3장
-// - 총 비용: ~82원/회
+// - 이미지 편집: Gemini 2.5 Flash Image (원본 헤어 유지, 옷만 변경)
+// - 총 비용: ~30원/회
 //
 // 기능:
 // 1. 성별 분석 (남성/여성)
 // 2. 헤어스타일 특징 분석
 // 3. 어울리는 얼굴형 분석
-// 4. 패션 추천 + 이미지 생성 (3장: 각각 다른 모델, 포즈, 패션 스타일)
+// 4. 패션 추천 + 이미지 편집 (3장: 원본 이미지 기반으로 옷만 변경)
 // 5. 스타일링 가이드
 
 // Node 18+ 에서는 fetch가 기본 내장되어 있음 (node-fetch 불필요)
@@ -53,19 +53,19 @@ exports.handler = async (event) => {
             throw new Error('Gemini API key not configured');
         }
 
-        console.log('📖 Lookbook 분석 시작 (Gemini 2.0 Flash + Imagen 4 Fast)');
+        console.log('📖 Lookbook 분석 시작 (Gemini 2.0 Flash + Gemini 2.5 Flash Image)');
         console.log('📋 전달된 성별:', gender || '없음 (AI가 판단)');
 
         // 1단계: Gemini 2.0 Flash로 헤어스타일 분석
         const analysisResult = await analyzeWithGemini2Flash(imageUrl, GEMINI_KEY, language, gender);
 
-        // 2단계: Imagen 4 Fast로 이미지 생성 (옵션)
+        // 2단계: Gemini 2.5 Flash Image로 이미지 편집 (원본 이미지 기반, 옷만 변경)
         let generatedImages = null;
         if (generateImages) {
             try {
-                generatedImages = await generateWithImagen4Fast(analysisResult, GEMINI_KEY);
+                generatedImages = await editWithGemini25FlashImage(imageUrl, analysisResult, GEMINI_KEY);
             } catch (imgError) {
-                console.warn('이미지 생성 실패, 분석 결과만 반환:', imgError.message);
+                console.warn('이미지 편집 실패, 분석 결과만 반환:', imgError.message);
             }
         }
 
@@ -155,22 +155,22 @@ ${genderInstruction}
     },
     "fashionRecommendations": [
         {
-            "style": "8가지 헤어패션감각 중 이 헤어와 가장 자연스러운 감각 선택: 섹시(Sexy)/아방가르드(Avant-garde)/내추럴(Natural)/소피스티케이트(Sophisticate)/엘레강스(Elegance)/로맨틱프리티(Romantic Pretty)/스포티(Sporty)/에스닉(Ethnic)",
-            "styleDescription": "해당 패션감각의 특징 설명 (예: 섹시-성숙하고 매력적, 내추럴-자연스럽고 소박한, 엘레강스-우아하고 고급스러운 등)",
-            "items": ["이 패션감각에 맞는 구체적인 아이템 4개 - 소재/컬러 포함"],
-            "reason": "이 헤어스타일의 어떤 특징(길이, 웨이브, 볼륨, 질감)이 이 패션감각과 조화를 이루는지"
+            "style": "8가지 헤어패션감각 중 이 헤어와 가장 자연스러운 감각 1개만 선택 (섹시/아방가르드/내추럴/소피스티케이트/엘레강스/로맨틱프리티/스포티/에스닉)",
+            "styleDescription": "해당 패션감각의 무드와 분위기 설명",
+            "items": ["이 패션감각에 맞는 구체적인 옷 아이템 4개 - 반드시 소재와 컬러 포함 (예: '아이보리 린넨 셔츠', '블랙 실크 슬립 드레스')"],
+            "reason": "이 헤어스타일의 구체적 특징(길이/웨이브형태/볼륨위치/질감)이 이 패션감각의 어떤 요소와 시너지를 내는지 2-3문장으로 설명. 예: '어깨를 타고 흐르는 S컬 웨이브가 바디컨셔스 실루엣의 곡선미와 조화를 이루어 성숙한 섹시미를 배가시킵니다.'"
         },
         {
-            "style": "두 번째로 어울리는 헤어패션감각",
-            "styleDescription": "해당 패션감각의 특징 설명",
-            "items": ["구체적인 아이템 4개"],
-            "reason": "조화 포인트 설명"
+            "style": "두 번째로 어울리는 헤어패션감각 1개",
+            "styleDescription": "해당 패션감각의 무드와 분위기 설명",
+            "items": ["구체적인 옷 아이템 4개 - 소재와 컬러 포함"],
+            "reason": "이 헤어스타일과 두 번째 패션감각이 어울리는 구체적 이유 2-3문장"
         },
         {
-            "style": "세 번째 - 새로운 변신을 위한 도전적인 패션감각 추천",
-            "styleDescription": "해당 패션감각의 특징 설명",
-            "items": ["구체적인 아이템 4개"],
-            "reason": "이 헤어스타일을 어떻게 조정하면 이 감각을 연출할 수 있는지 팁 포함"
+            "style": "세 번째 - 도전적인 변신을 위한 헤어패션감각 1개",
+            "styleDescription": "해당 패션감각의 무드와 분위기 설명",
+            "items": ["구체적인 옷 아이템 4개 - 소재와 컬러 포함"],
+            "reason": "현재 헤어스타일로도 이 감각을 연출할 수 있는 이유와 스타일링 팁 포함 2-3문장"
         }
     ],
     "stylingTips": [
@@ -264,71 +264,124 @@ JSON만 출력하세요.`;
     }
 }
 
-// ==================== Imagen 4 Fast 이미지 생성 ====================
-// 패션 스타일링 이미지 3장 생성 - 각각 다른 패션 착장
-async function generateWithImagen4Fast(analysis, apiKey) {
+// ==================== Gemini 2.5 Flash Image 이미지 편집 ====================
+// 원본 헤어스타일 이미지를 기반으로 옷만 변경하여 3장 생성
+async function editWithGemini25FlashImage(originalImageUrl, analysis, apiKey) {
     const { gender, styleName, characteristics, fashionRecommendations } = analysis;
-
-    // 성별에 따른 기본 설정
-    const genderBase = gender === 'male' ? 'man' : 'woman';
 
     const results = {
         variations: [],
         fashion: []
     };
 
-    // 8가지 헤어패션감각별 스타일링 가이드
-    const fashionSenseGuide = {
-        '섹시': { en: 'Sexy', mood: 'sensual, mature, alluring', clothing: 'fitted silhouettes, deep necklines, sleek fabrics, body-conscious cuts' },
-        'Sexy': { en: 'Sexy', mood: 'sensual, mature, alluring', clothing: 'fitted silhouettes, deep necklines, sleek fabrics, body-conscious cuts' },
-        '아방가르드': { en: 'Avant-garde', mood: 'experimental, artistic, unconventional', clothing: 'asymmetrical designs, bold patterns, unusual textures, statement pieces' },
-        'Avant-garde': { en: 'Avant-garde', mood: 'experimental, artistic, unconventional', clothing: 'asymmetrical designs, bold patterns, unusual textures, statement pieces' },
-        '내추럴': { en: 'Natural', mood: 'effortless, organic, relaxed', clothing: 'earth tones, linen/cotton fabrics, minimal accessories, comfortable fits' },
-        'Natural': { en: 'Natural', mood: 'effortless, organic, relaxed', clothing: 'earth tones, linen/cotton fabrics, minimal accessories, comfortable fits' },
-        '소피스티케이트': { en: 'Sophisticate', mood: 'refined, urban, polished', clothing: 'tailored blazers, clean lines, monochrome palette, structured pieces' },
-        'Sophisticate': { en: 'Sophisticate', mood: 'refined, urban, polished', clothing: 'tailored blazers, clean lines, monochrome palette, structured pieces' },
-        '엘레강스': { en: 'Elegance', mood: 'graceful, luxurious, timeless', clothing: 'flowing fabrics, soft draping, pearls/gold accessories, feminine cuts' },
-        'Elegance': { en: 'Elegance', mood: 'graceful, luxurious, timeless', clothing: 'flowing fabrics, soft draping, pearls/gold accessories, feminine cuts' },
-        '로맨틱프리티': { en: 'Romantic Pretty', mood: 'sweet, youthful, charming', clothing: 'floral prints, ruffles, pastel colors, ribbons, lace details' },
-        'Romantic Pretty': { en: 'Romantic Pretty', mood: 'sweet, youthful, charming', clothing: 'floral prints, ruffles, pastel colors, ribbons, lace details' },
-        '스포티': { en: 'Sporty', mood: 'energetic, active, fresh', clothing: 'athletic wear, sneakers, casual layers, functional pieces' },
-        'Sporty': { en: 'Sporty', mood: 'energetic, active, fresh', clothing: 'athletic wear, sneakers, casual layers, functional pieces' },
-        '에스닉': { en: 'Ethnic', mood: 'traditional, cultural, elegant simplicity', clothing: 'traditional-inspired pieces, natural fabrics, minimal embellishments, classic silhouettes' },
-        'Ethnic': { en: 'Ethnic', mood: 'traditional, cultural, elegant simplicity', clothing: 'traditional-inspired pieces, natural fabrics, minimal embellishments, classic silhouettes' }
+    // 원본 이미지 Base64로 가져오기
+    const originalImageBase64 = await fetchImageAsBase64(originalImageUrl);
+
+    // 헤어패션감각별 어울리는 패션 스타일 가이드 (논문 기반)
+    // "헤어패션감각과 토탈패션감각은 상관관계가 있다" - 안현경·조규화(2006)
+    const hairFashionToClothingGuide = {
+        '섹시': {
+            mood: '성숙하고 매혹적인',
+            hairFeature: '길고 굵은 웨이브/스트레이트, 층과 볼륨이 많거나 촉촉하고 젖은 듯한 이미지',
+            clothingStyle: '바디컨셔스 실루엣, 깊은 V넥/오프숄더, 광택 있는 실크/새틴 소재, 슬릿 디테일',
+            matchReason: '섹시한 헤어스타일의 관능적 웨이브와 볼륨감이 바디컨셔스 의상의 곡선과 조화를 이룸'
+        },
+        '아방가르드': {
+            mood: '실험적이고 전위적인',
+            hairFeature: '이색적·실험적 스타일, 독특한 염색이나 비대칭 커트',
+            clothingStyle: '비대칭 디자인, 대담한 컬러블로킹, 해체주의적 실루엣, 오버사이즈 구조물',
+            matchReason: '실험적인 헤어의 개성이 전위적 패션과 만나 완성도 높은 아방가르드 룩을 완성'
+        },
+        '내추럴': {
+            mood: '자연스럽고 소박한',
+            hairFeature: '매끄러운 질감의 긴 생머리, 단순하게 묶은 스타일',
+            clothingStyle: '어스톤(베이지/카키/브라운), 린넨/코튼 소재, 편안한 핏, 미니멀한 디자인',
+            matchReason: '자연스러운 생머리의 단순미가 편안한 내추럴 룩의 소박함과 완벽히 어울림'
+        },
+        '소피스티케이트': {
+            mood: '세련되고 도시적인',
+            hairFeature: '매끈한 스트레이트, 층이 없거나 적은 깔끔한 스타일',
+            clothingStyle: '테일러드 블레이저, 깔끔한 라인, 모노크롬(블랙/화이트/그레이), 구조적인 핏',
+            matchReason: '매끈한 헤어라인의 깔끔함이 테일러드 슈트의 정돈된 실루엣과 세련된 도시적 이미지 연출'
+        },
+        '엘레강스': {
+            mood: '우아하고 고급스러운',
+            hairFeature: '웨이브와 볼륨의 업스타일, 중간 질감과 볼륨',
+            clothingStyle: '흐르는 시폰/실크 소재, 부드러운 드레이핑, 진주/골드 액세서리, 여성스러운 A라인',
+            matchReason: '우아한 웨이브 업스타일이 흐르는 드레스 라인과 고급스러운 조화를 이룸'
+        },
+        '로맨틱프리티': {
+            mood: '사랑스럽고 소녀다운',
+            hairFeature: '굵은 웨이브, 땋은 머리, 핀·리본 사용',
+            clothingStyle: '플로럴 프린트, 러플/프릴 디테일, 파스텔 컬러(핑크/라벤더), 리본 포인트',
+            matchReason: '사랑스러운 웨이브와 리본의 귀여움이 플로럴/러플 디테일과 로맨틱한 감성 완성'
+        },
+        '스포티': {
+            mood: '활동적이고 경쾌한',
+            hairFeature: '짧은 머리, 단순하고 경쾌한 스타일',
+            clothingStyle: '애슬레틱 웨어, 스니커즈, 후드/집업, 캐주얼 레이어드, 밝은 액센트 컬러',
+            matchReason: '경쾌한 숏컷의 활동성이 스포티한 캐주얼 룩의 에너지와 시너지 발휘'
+        },
+        '에스닉': {
+            mood: '전통적이고 단아한',
+            hairFeature: '가운데 가르마/쪽머리, 볼륨 없고 매끄러운 질감',
+            clothingStyle: '전통 영감 자수 디테일, 천연 소재(린넨/면), 차분한 컬러, 클래식 실루엣',
+            matchReason: '단아한 가르마 스타일이 전통적 영감의 의상과 만나 품격 있는 에스닉 무드 완성'
+        }
     };
 
-    // 각 패션 스타일별로 구체적인 옷 프롬프트 생성
-    const fashionPrompts = fashionRecommendations.slice(0, 3).map((rec, index) => {
+    // 각 패션 스타일별 편집 프롬프트 생성
+    const editPrompts = fashionRecommendations.slice(0, 3).map((rec, index) => {
         const fashionItems = rec.items.join(', ');
         const fashionStyle = rec.style;
+        const fashionReason = rec.reason || '';
 
-        // 패션감각 가이드에서 매칭되는 스타일 찾기
-        const senseKey = Object.keys(fashionSenseGuide).find(key => fashionStyle.includes(key));
-        const senseGuide = senseKey ? fashionSenseGuide[senseKey] : { en: fashionStyle, mood: 'stylish', clothing: fashionItems };
+        // 패션감각 가이드에서 매칭
+        const senseKey = Object.keys(hairFashionToClothingGuide).find(key => fashionStyle.includes(key));
+        const guide = senseKey ? hairFashionToClothingGuide[senseKey] : {
+            mood: '스타일리시한',
+            clothingStyle: fashionItems,
+            matchReason: '헤어스타일과 조화로운 패션'
+        };
 
-        // 핵심: 패션 룩북이므로 옷이 주인공, 헤어는 보조
-        // 허리까지 보이는 상반신 샷으로 옷을 확실히 보여줌
-        return `Fashion lookbook photo of a Korean ${genderBase} model, shot from head to waist (upper body).
+        // 핵심: 헤어스타일 분석 결과를 기반으로 어울리는 패션 설명
+        return `이 이미지에서 옷(의상)만 변경해주세요.
 
-FASHION SENSE: ${senseGuide.en} style - ${senseGuide.mood} aesthetic.
-OUTFIT (MAIN FOCUS): Wearing ${senseGuide.clothing}. Specific items: ${fashionItems}. The clothing must be clearly visible and styled beautifully. Show the complete top/jacket/shirt clearly.
+[헤어스타일 분석 결과]
+스타일명: ${styleName}
+헤어 특징: ${characteristics.texture || '자연스러운'} 텍스처, ${characteristics.length || '미디엄'} 길이
+헤어패션감각: ${fashionStyle} (${guide.mood} 감성)
 
-HAIR: ${styleName} hairstyle with ${characteristics.texture || 'natural'} texture.
+[이 헤어스타일에 어울리는 이유]
+${guide.matchReason}
+${fashionReason}
 
-COMPOSITION: Upper body shot showing head to waist, model facing camera or slightly angled. Clean studio background (white or light gray). Fashion magazine editorial quality. The outfit and styling should be the main focus of the image.`;
+[절대 변경 금지]
+- 헤어스타일: 현재 헤어스타일을 완전히 동일하게 유지 (한 올도 변경 금지)
+- 얼굴: 얼굴 형태, 표정, 피부톤 모두 그대로 유지
+- 포즈: 현재 포즈와 각도 유지
+- 배경: 현재 배경 유지
+
+[변경할 부분 - 옷만]
+패션 스타일: ${fashionStyle} (${guide.mood} 감성)
+착용 의상: ${guide.clothingStyle}
+구체적 아이템: ${fashionItems}
+
+위 헤어스타일과 완벽하게 어울리는 ${fashionStyle} 스타일의 옷으로 자연스럽게 변경해주세요.
+패션 매거진 화보 퀄리티로 옷이 선명하고 디테일하게 보이도록 해주세요.`;
     });
 
     try {
-        console.log('🎨 Imagen 4 Fast 패션 스타일링 이미지 생성');
+        console.log('🎨 Gemini 2.5 Flash Image 패션 스타일링 이미지 편집');
         console.log('📋 AI 분석 기반 패션 추천:');
         fashionRecommendations.slice(0, 3).forEach((rec, i) => {
             console.log(`  ${i + 1}. ${rec.style}: ${rec.items.join(', ')} - ${rec.reason}`);
         });
 
-        // 병렬로 이미지 3장 동시 생성 (더 빠름)
-        console.log('🚀 이미지 3장 병렬 생성 시작...');
-        const imagePromises = fashionPrompts.map((prompt, i) =>
-            generateImageWithImagen4(prompt, apiKey, i)
+        // 병렬로 이미지 3장 동시 편집
+        console.log('🚀 이미지 3장 병렬 편집 시작...');
+        const imagePromises = editPrompts.map((prompt, i) =>
+            editImageWithGemini25(originalImageBase64, prompt, apiKey, i)
         );
 
         const imageResults = await Promise.allSettled(imagePromises);
@@ -336,39 +389,47 @@ COMPOSITION: Upper body shot showing head to waist, model facing camera or sligh
         imageResults.forEach((result, i) => {
             if (result.status === 'fulfilled' && result.value) {
                 results.variations.push(result.value);
-                console.log(`✅ 이미지 ${i + 1} 생성 성공`);
+                console.log(`✅ 이미지 ${i + 1} 편집 성공`);
             } else {
-                console.warn(`⚠️ 이미지 ${i + 1} 생성 실패:`, result.reason?.message || 'null 반환');
+                console.warn(`⚠️ 이미지 ${i + 1} 편집 실패:`, result.reason?.message || 'null 반환');
             }
         });
 
-        console.log(`✅ 패션 스타일링 이미지 생성 완료: ${results.variations.length}장`);
+        console.log(`✅ 패션 스타일링 이미지 편집 완료: ${results.variations.length}장`);
 
     } catch (error) {
-        console.error('이미지 생성 오류:', error);
+        console.error('이미지 편집 오류:', error);
     }
 
     return results;
 }
 
-// Imagen 4 Fast API 호출
-async function generateImageWithImagen4(prompt, apiKey, imageIndex = 0) {
+// Gemini 2.5 Flash Image API 호출 - 이미지 편집
+async function editImageWithGemini25(imageBase64, editPrompt, apiKey, imageIndex = 0) {
     try {
-        console.log(`📝 이미지 ${imageIndex + 1} 프롬프트 (일부): ${prompt.substring(0, 100)}...`);
+        console.log(`📝 이미지 ${imageIndex + 1} 편집 프롬프트 (일부): ${editPrompt.substring(0, 80)}...`);
 
-        // Imagen 4 Fast API
+        // Gemini 2.5 Flash Image API
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    instances: [{ prompt }],
-                    parameters: {
-                        sampleCount: 1,
-                        aspectRatio: "3:4",
-                        safetyFilterLevel: "block_only_high",
-                        personGeneration: "allow_adult"
+                    contents: [{
+                        parts: [
+                            { text: editPrompt },
+                            {
+                                inline_data: {
+                                    mime_type: "image/jpeg",
+                                    data: imageBase64
+                                }
+                            }
+                        ]
+                    }],
+                    generationConfig: {
+                        responseModalities: ["TEXT", "IMAGE"],
+                        temperature: 0.4
                     }
                 })
             }
@@ -378,37 +439,39 @@ async function generateImageWithImagen4(prompt, apiKey, imageIndex = 0) {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error(`❌ 이미지 ${imageIndex + 1} Imagen 4 Fast API 오류:`, response.status, errorText);
+            console.error(`❌ 이미지 ${imageIndex + 1} Gemini 2.5 Flash Image API 오류:`, response.status, errorText);
             return null;
         }
 
         const result = await response.json();
         console.log(`📦 이미지 ${imageIndex + 1} 결과 키:`, Object.keys(result));
 
-        // base64 이미지 추출 및 압축
-        if (result.predictions && result.predictions[0]) {
-            const prediction = result.predictions[0];
-            console.log(`📦 이미지 ${imageIndex + 1} prediction 키:`, Object.keys(prediction));
-
-            if (prediction.bytesBase64Encoded) {
-                const imageData = prediction.bytesBase64Encoded;
+        // 응답에서 이미지 추출
+        const parts = result.candidates?.[0]?.content?.parts || [];
+        for (const part of parts) {
+            if (part.inline_data && part.inline_data.data) {
+                const imageData = part.inline_data.data;
+                const mimeType = part.inline_data.mime_type || 'image/png';
                 console.log(`📊 이미지 ${imageIndex + 1} 원본 크기: ${(imageData.length / 1024 / 1024).toFixed(2)}MB`);
 
-                // PNG를 JPEG로 변환하여 크기 줄이기 (약 70% 감소)
+                // 압축
                 const compressedImage = await compressBase64Image(imageData);
                 console.log(`✅ 이미지 ${imageIndex + 1} 압축 후 크기: ${(compressedImage.length / 1024 / 1024).toFixed(2)}MB`);
 
                 return `data:image/jpeg;base64,${compressedImage}`;
-            } else {
-                console.warn(`⚠️ 이미지 ${imageIndex + 1} bytesBase64Encoded 없음. prediction:`, JSON.stringify(prediction).substring(0, 200));
-                return null;
             }
         }
 
-        console.warn(`⚠️ 이미지 ${imageIndex + 1} predictions 없음. result:`, JSON.stringify(result).substring(0, 300));
+        // 텍스트 응답만 있는 경우 로그
+        const textPart = parts.find(p => p.text);
+        if (textPart) {
+            console.log(`📝 이미지 ${imageIndex + 1} 텍스트 응답:`, textPart.text.substring(0, 200));
+        }
+
+        console.warn(`⚠️ 이미지 ${imageIndex + 1} 이미지 데이터 없음`);
         return null;
     } catch (error) {
-        console.error(`❌ 이미지 ${imageIndex + 1} Imagen 4 Fast 호출 실패:`, error.message);
+        console.error(`❌ 이미지 ${imageIndex + 1} Gemini 2.5 Flash Image 호출 실패:`, error.message);
         return null;
     }
 }
