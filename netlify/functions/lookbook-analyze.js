@@ -407,6 +407,7 @@ async function editImageWithGemini25(imageBase64, editPrompt, apiKey, imageIndex
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{
+                        role: "user",
                         parts: [
                             { text: editPrompt },
                             {
@@ -418,8 +419,7 @@ async function editImageWithGemini25(imageBase64, editPrompt, apiKey, imageIndex
                         ]
                     }],
                     generationConfig: {
-                        responseModalities: ["TEXT", "IMAGE"],
-                        temperature: 0.4
+                        responseModalities: ["TEXT", "IMAGE"]
                     }
                 })
             }
