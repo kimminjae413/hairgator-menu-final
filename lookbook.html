@@ -958,7 +958,7 @@
         }
 
         // 초기화
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             applyTranslations();
 
             // preloaded인 경우: sessionStorage에서 미리 로드된 결과 사용
@@ -971,7 +971,13 @@
 
                         if (data.success && data.analysis) {
                             applyAnalysisResults(data.analysis, data.generatedImages);
-                            // 크레딧은 menu.js에서 이미 차감됨
+
+                            // 크레딧 서버 차감 (menu.js는 로컬만 업데이트함)
+                            try {
+                                await deductLookbookCredit();
+                            } catch (creditError) {
+                                console.error('크레딧 차감 중 오류:', creditError);
+                            }
                         }
 
                         // sessionStorage 정리
