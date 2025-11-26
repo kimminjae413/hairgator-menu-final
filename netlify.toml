@@ -148,7 +148,24 @@
     # 헤어체험 + 챗봇 + MediaPipe 통신을 위한 CSP 설정
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://*.googleapis.com https://www.gstatic.com https://*.supabase.co https://*.firebaseio.com https://lovely-lebkuchen-4017ca.netlify.app https://cdn.jsdelivr.net;"
 
+# ========== 룩북 앱 설정 ==========
+[[headers]]
+  for = "/lookbook.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/src/*"
+  [headers.values]
+    Cache-Control = "public, max-age=600, must-revalidate"
+
 # ========== SPA 라우팅 ==========
+# 룩북 페이지
+[[redirects]]
+  from = "/lookbook"
+  to = "/lookbook.html"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
