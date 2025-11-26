@@ -23,6 +23,14 @@
   node_bundler = "esbuild"
   timeout = 26
 
+# ⭐ Lookbook AI 분석 + 이미지 3장 생성
+# - Gemini 분석: ~3-5초
+# - Imagen 4 Fast 이미지 생성: ~5-8초 x 3장 = 15-24초
+# 총 예상 시간: 20-30초 → 26초로 설정 (무료 플랜 최대)
+[functions."lookbook-analyze"]
+  node_bundler = "esbuild"
+  timeout = 26
+
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
 [[headers]]
