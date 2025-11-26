@@ -14,6 +14,7 @@
 // 5. 스타일링 가이드
 
 // Node 18+ 에서는 fetch가 기본 내장되어 있음 (node-fetch 불필요)
+const sharp = require('sharp');
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -346,15 +347,20 @@ async function generateImageWithImagen4(prompt, apiKey, imageIndex = 0) {
         const result = await response.json();
         console.log(`📦 이미지 ${imageIndex + 1} 결과 키:`, Object.keys(result));
 
-        // base64 이미지 추출
+        // base64 이미지 추출 및 압축
         if (result.predictions && result.predictions[0]) {
             const prediction = result.predictions[0];
             console.log(`📦 이미지 ${imageIndex + 1} prediction 키:`, Object.keys(prediction));
 
             if (prediction.bytesBase64Encoded) {
                 const imageData = prediction.bytesBase64Encoded;
-                console.log(`✅ 이미지 ${imageIndex + 1} base64 데이터 길이: ${imageData.length}`);
-                return `data:image/png;base64,${imageData}`;
+                console.log(`📊 이미지 ${imageIndex + 1} 원본 크기: ${(imageData.length / 1024 / 1024).toFixed(2)}MB`);
+
+                // PNG를 JPEG로 변환하여 크기 줄이기 (약 70% 감소)
+                const compressedImage = await compressBase64Image(imageData);
+                console.log(`✅ 이미지 ${imageIndex + 1} 압축 후 크기: ${(compressedImage.length / 1024 / 1024).toFixed(2)}MB`);
+
+                return `data:image/jpeg;base64,${compressedImage}`;
             } else {
                 console.warn(`⚠️ 이미지 ${imageIndex + 1} bytesBase64Encoded 없음. prediction:`, JSON.stringify(prediction).substring(0, 200));
                 return null;
@@ -379,6 +385,30 @@ async function fetchImageAsBase64(imageUrl) {
     } catch (error) {
         console.error('이미지 fetch 오류:', error);
         throw new Error('Failed to fetch image');
+    }
+}
+
+// PNG Base64를 JPEG로 압축 (크기 약 70% 감소)
+async function compressBase64Image(base64Data) {
+    try {
+        // Base64 → Buffer
+        const inputBuffer = Buffer.from(base64Data, 'base64');
+
+        // Sharp로 JPEG 변환 (품질 75%, 리사이즈 800px)
+        const compressedBuffer = await sharp(inputBuffer)
+            .resize(800, 1067, { // 3:4 비율 유지
+                fit: 'inside',
+                withoutEnlargement: true
+            })
+            .jpeg({ quality: 75 })
+            .toBuffer();
+
+        // Buffer → Base64
+        return compressedBuffer.toString('base64');
+    } catch (error) {
+        console.error('이미지 압축 실패:', error.message);
+        // 압축 실패 시 원본 반환 (PNG 그대로)
+        return base64Data;
     }
 }
 
