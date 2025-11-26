@@ -709,17 +709,9 @@ function openStyleModal(style) {
             e.stopPropagation();
             console.log('📖 Lookbook 열기:', style.name);
 
-            // React 앱으로 이벤트 발송
-            const event = new CustomEvent('OPEN_LOOKBOOK', {
-                detail: {
-                    imageSrc: style.imageUrl,
-                    title: style.name
-                }
-            });
-            window.dispatchEvent(event);
-
-            // 모달 닫기
-            closeStyleModal();
+            // lookbook.html로 이동 (URL 파라미터로 데이터 전달)
+            const lookbookUrl = `/lookbook.html?image=${encodeURIComponent(style.imageUrl || '')}&title=${encodeURIComponent(style.name || 'Style')}`;
+            window.location.href = lookbookUrl;
         };
     }
     console.log('✅ 스타일 모달 열림:', {

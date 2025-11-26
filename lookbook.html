@@ -3,19 +3,480 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HAIRGATOR Lookbook - AI 헤어스타일 분석</title>
-    <meta name="description" content="AI가 분석한 당신만의 헤어스타일 룩북">
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/images/hairgator-logo.png">
+    <title>HAIRGATOR Lookbook</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- i18n -->
+    <script src="js/i18n.js"></script>
+
+    <style>
+        :root {
+            --font-display: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .lookbook-container {
+            min-height: 100vh;
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Navigation */
+        .lookbook-nav {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .lookbook-nav .logo {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-content .trend-label {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-content h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-content .description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        .hero-image-wrapper {
+            position: relative;
+        }
+
+        .hero-image-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            width: 100%;
+            height: 100%;
+            border: 2px solid;
+            border-radius: 8px;
+            z-index: 0;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 500px;
+            object-fit: cover;
+            border-radius: 8px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        /* Tags */
+        .tags-section {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 3rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tag {
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            border: 1px solid;
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .info-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid;
+        }
+
+        .info-card p {
+            line-height: 1.8;
+            opacity: 0.8;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-box {
+            padding: 1.2rem;
+            text-align: center;
+            border: 1px solid;
+            border-radius: 8px;
+        }
+
+        .stat-box .icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-box .label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .stat-box .value {
+            font-weight: 600;
+        }
+
+        /* Style List */
+        .style-list {
+            list-style: none;
+        }
+
+        .style-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .style-list .num {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: bold;
+            opacity: 0.5;
+        }
+
+        .style-list strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .style-list p {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .hero-image {
+                height: 400px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero-section {
+                padding: 2rem 1rem;
+            }
+
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .hero-image {
+                height: 300px;
+            }
+
+            .lookbook-nav {
+                padding: 1rem;
+            }
+        }
+
+        /* Theme: Classic (default) */
+        .theme-classic {
+            background: #fff;
+            color: #1a1a1a;
+        }
+        .theme-classic .trend-label { background: #d4af37; color: #fff; }
+        .theme-classic .hero-image-wrapper::before { border-color: #d4af37; }
+        .theme-classic .tag { border-color: #ccc; color: #333; }
+        .theme-classic .info-card h3 { border-color: #d4af37; }
+        .theme-classic .stat-box { border-color: #ddd; }
+        .theme-classic .back-btn { color: #333; }
+        .theme-classic .lookbook-nav { border-color: #eee; }
+
+        /* Theme: Modern */
+        .theme-modern {
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+        .theme-modern .trend-label { background: #3498db; color: #fff; }
+        .theme-modern .hero-image-wrapper::before { border-color: #3498db; }
+        .theme-modern .tag { border-color: #7f8c8d; color: #2c3e50; }
+        .theme-modern .info-card h3 { border-color: #3498db; }
+        .theme-modern .stat-box { border-color: #ccc; }
+        .theme-modern .back-btn { color: #2c3e50; }
+        .theme-modern .lookbook-nav { border-color: #ddd; }
+
+        /* Theme: Street */
+        .theme-street {
+            background: #111;
+            color: #fff;
+        }
+        .theme-street .trend-label { background: #E91E63; color: #fff; }
+        .theme-street .hero-image-wrapper::before { border-color: #E91E63; }
+        .theme-street .tag { border-color: #444; color: #fff; background: rgba(255,255,255,0.1); }
+        .theme-street .info-card h3 { border-color: #E91E63; }
+        .theme-street .stat-box { border-color: #333; background: #1a1a1a; }
+        .theme-street .back-btn { color: #fff; }
+        .theme-street .back-btn:hover { background: rgba(255,255,255,0.1); }
+        .theme-street .lookbook-nav { border-color: #333; }
+        .theme-street .hero-image { filter: grayscale(30%) contrast(1.1); }
+    </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <div id="lookbook-root" class="lookbook-container theme-classic">
+        <!-- Navigation -->
+        <nav class="lookbook-nav">
+            <div class="logo">THE EDIT</div>
+            <button class="back-btn" onclick="goBack()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                <span id="backText">돌아가기</span>
+            </button>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-grid">
+                <div class="hero-content">
+                    <span class="trend-label" id="trendLabel">TREND 2025</span>
+                    <h1 id="styleTitle">Loading...</h1>
+                    <p class="description" id="styleDescription">
+                        이 스타일은 자연스러운 볼륨감과 부드러운 웨이브가 특징입니다.
+                        다양한 얼굴형에 어울리며, 트렌디하면서도 클래식한 느낌을 연출합니다.
+                    </p>
+                </div>
+                <div class="hero-image-wrapper">
+                    <img id="heroImage" class="hero-image" src="" alt="Style Image">
+                </div>
+            </div>
+        </section>
+
+        <!-- Tags -->
+        <section class="tags-section" id="tagsSection">
+            <span class="tag">#Trendy</span>
+            <span class="tag">#Natural</span>
+            <span class="tag">#Volume</span>
+            <span class="tag">#2025</span>
+        </section>
+
+        <!-- Info Grid -->
+        <section class="info-grid">
+            <!-- Face Shape -->
+            <div class="info-card">
+                <h3 id="faceShapeTitle">추천 얼굴형</h3>
+                <p id="faceShapeDesc">
+                    계란형, 하트형 얼굴에 특히 잘 어울립니다.
+                    볼륨감이 얼굴의 각진 부분을 부드럽게 커버해줍니다.
+                </p>
+            </div>
+
+            <!-- Styling Guide -->
+            <div class="info-card">
+                <h3 id="stylingTitle">스타일링 가이드</h3>
+                <ul class="style-list">
+                    <li>
+                        <span class="num">01</span>
+                        <div>
+                            <strong id="style1Title">드라이 후 무스</strong>
+                            <p id="style1Desc">젖은 머리에 무스를 바르고 자연 건조</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="num">02</span>
+                        <div>
+                            <strong id="style2Title">디퓨저 사용</strong>
+                            <p id="style2Desc">웨이브를 살리기 위해 디퓨저로 건조</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="num">03</span>
+                        <div>
+                            <strong id="style3Title">오일 마무리</strong>
+                            <p id="style3Desc">끝부분에 오일을 발라 윤기 추가</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Maintenance -->
+            <div class="info-card">
+                <h3 id="maintenanceTitle">관리 & 유지</h3>
+                <p id="maintenanceDesc">
+                    정기적인 트리트먼트와 적절한 수분 공급이 중요합니다.
+                </p>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <div class="icon">💧</div>
+                        <span class="label" id="hydrationLabel">수분 공급</span>
+                        <span class="value" id="hydrationValue">높음</span>
+                    </div>
+                    <div class="stat-box">
+                        <div class="icon">✂️</div>
+                        <span class="label" id="trimLabel">커트 주기</span>
+                        <span class="value" id="trimValue">8주</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // URL 파라미터에서 데이터 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        const imageSrc = urlParams.get('image') || '';
+        const styleTitle = decodeURIComponent(urlParams.get('title') || 'Style');
+
+        // 테마 랜덤 선택
+        const themes = ['classic', 'modern', 'street'];
+        const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+
+        // 테마 적용
+        const container = document.getElementById('lookbook-root');
+        container.className = `lookbook-container theme-${selectedTheme}`;
+
+        // 데이터 적용
+        document.getElementById('heroImage').src = imageSrc;
+        document.getElementById('styleTitle').textContent = styleTitle;
+
+        // 다국어 적용
+        function applyTranslations() {
+            if (typeof t === 'function') {
+                document.getElementById('trendLabel').textContent = t('lookbook.trendReport') || 'TREND 2025';
+                document.getElementById('backText').textContent = t('lookbook.createNew') || '돌아가기';
+                document.getElementById('faceShapeTitle').textContent = t('lookbook.faceShape') || '추천 얼굴형';
+                document.getElementById('stylingTitle').textContent = t('lookbook.styleLook') || '스타일링 가이드';
+                document.getElementById('maintenanceTitle').textContent = t('lookbook.maintenance') || '관리 & 유지';
+                document.getElementById('hydrationLabel').textContent = t('lookbook.hydration') || '수분 공급';
+                document.getElementById('hydrationValue').textContent = t('lookbook.high') || '높음';
+                document.getElementById('trimLabel').textContent = t('lookbook.trim') || '커트 주기';
+                document.getElementById('trimValue').textContent = '8 ' + (t('lookbook.weeks') || '주');
+
+                // Tags
+                const tags = [
+                    t('lookbook.tags.vintage') || '#Vintage',
+                    t('lookbook.tags.bohemian') || '#Bohemian',
+                    t('lookbook.tags.volume') || '#Volume',
+                    t('lookbook.tags.lovely') || '#Lovely'
+                ];
+                const tagsSection = document.getElementById('tagsSection');
+                tagsSection.innerHTML = tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+            }
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTranslations();
+        });
+
+        // 뒤로가기
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = '/';
+            }
+        }
+
+        console.log('📖 Lookbook loaded:', { theme: selectedTheme, title: styleTitle, image: imageSrc });
+    </script>
 </body>
 </html>
