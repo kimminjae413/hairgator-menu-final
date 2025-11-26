@@ -600,7 +600,7 @@
                 }
 
                 activeVideoStream = stream;
-                videoElement = document.getElementById('ai-camera');
+                videoElement = document.getElementById('camera-feed');
 
                 if (!videoElement) {
                     throw new Error('VIDEO_ELEMENT: 비디오 요소를 찾을 수 없습니다');
@@ -624,7 +624,7 @@
 
                 showToast('카메라가 시작되었습니다!', 'success');
 
-                canvasElement = document.getElementById('ai-face-overlay');
+                canvasElement = document.getElementById('camera-canvas');
                 canvasCtx = canvasElement.getContext('2d', { willReadFrequently: true });
 
                 // MediaPipe Face Mesh 초기화 (선택적)
