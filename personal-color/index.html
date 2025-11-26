@@ -518,29 +518,43 @@
             }
         }
 
-        // 모드 선택 및 전환
+        // 모드 선택 및 전환 - 전체화면으로 변경
         function selectMode(mode) {
             console.log('모드 선택:', mode);
             currentMode = mode;
 
+            // 모드 선택 화면 완전히 숨기기
+            document.getElementById('mode-selection').style.display = 'none';
+
+            // 모든 섹션 비활성화
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
             });
 
             if (mode === 'ai') {
-                document.getElementById('ai-analysis').classList.add('active');
+                const aiSection = document.getElementById('ai-analysis');
+                aiSection.classList.add('active');
+                aiSection.style.display = 'block';
                 showToast('AI 퍼스널컬러 분석 모드가 활성화되었습니다', 'success');
             } else if (mode === 'draping') {
-                document.getElementById('draping-mode').classList.add('active');
+                const drapingSection = document.getElementById('draping-mode');
+                drapingSection.classList.add('active');
+                drapingSection.style.display = 'block';
                 showToast('전문가 드래이핑 모드가 활성화되었습니다', 'success');
             }
         }
 
         function goHome() {
+            // 모든 섹션 비활성화 및 숨기기
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
+                section.style.display = '';  // 스타일 초기화
             });
-            document.getElementById('mode-selection').classList.add('active');
+
+            // 모드 선택 화면 다시 표시
+            const modeSelection = document.getElementById('mode-selection');
+            modeSelection.style.display = '';  // 스타일 초기화
+            modeSelection.classList.add('active');
 
             stopAICamera();
             stopDrapingCamera();
