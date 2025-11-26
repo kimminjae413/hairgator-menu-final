@@ -689,7 +689,12 @@
                             faceDetectionInstance.onResults(onAdvancedFaceResults);
                         } else {
                             console.log('기존 Face Mesh 인스턴스 재사용');
+                            // 기존 인스턴스에도 onResults 다시 설정
+                            faceDetectionInstance.onResults(onAdvancedFaceResults);
                         }
+
+                        // 프레임 카운터 리셋
+                        frameCount = 0;
 
                         // MediaPipe Camera는 항상 새로 생성
                         if (typeof Camera !== 'undefined') {
@@ -745,8 +750,25 @@
             }
         }
 
+        // 프레임 카운터 (디버깅용)
+        let frameCount = 0;
+
         function onAdvancedFaceResults(results) {
-            if (!canvasCtx || !videoElement) return;
+            frameCount++;
+
+            // 10프레임마다 로그 (너무 많은 로그 방지)
+            if (frameCount % 30 === 1) {
+                console.log(`🎯 Face Results 수신 #${frameCount}`, {
+                    hasCanvas: !!canvasCtx,
+                    hasVideo: !!videoElement,
+                    hasFaces: results?.multiFaceLandmarks?.length > 0
+                });
+            }
+
+            if (!canvasCtx || !videoElement) {
+                console.warn('캔버스 또는 비디오 없음');
+                return;
+            }
 
             canvasElement.width = videoElement.videoWidth || 640;
             canvasElement.height = videoElement.videoHeight || 480;
@@ -769,7 +791,8 @@
                 if (!faceDetected) {
                     faceDetected = true;
                     document.getElementById('ai-face-guide').style.display = 'none';
-                    showToast('고급 468포인트 Face Mesh 인식 완료!', 'success');
+                    console.log('✅ 얼굴 인식 완료!');
+                    showToast('얼굴 인식 완료! 실시간 분석 중...', 'success');
                 }
             } else {
                 if (faceDetected) {
