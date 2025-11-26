@@ -53,7 +53,7 @@ exports.handler = async (event) => {
             throw new Error('Gemini API key not configured');
         }
 
-        console.log('📖 Lookbook 분석 시작 (Gemini 2.0 Flash + Gemini 2.5 Flash Image)');
+        console.log('📖 Lookbook 분석 시작 (Gemini 2.0 Flash 분석 + Gemini 2.5 Flash Image 편집)');
         console.log('📋 전달된 성별:', gender || '없음 (AI가 판단)');
 
         // 1단계: Gemini 2.0 Flash로 헤어스타일 분석
@@ -398,8 +398,11 @@ Generate a fashion magazine quality photo with the new outfit clearly visible.`;
 async function editImageWithGemini25(imageBase64, editPrompt, apiKey, imageIndex = 0) {
     try {
         console.log(`📝 이미지 ${imageIndex + 1} 편집 프롬프트 (일부): ${editPrompt.substring(0, 80)}...`);
+        console.log(`📏 이미지 ${imageIndex + 1} Base64 길이: ${imageBase64.length} 문자`);
 
-        // Gemini 2.5 Flash Image API (정식 버전)
+        // Gemini 2.5 Flash Image API (이미지 생성/편집)
+        // 공식 모델명: gemini-2.5-flash-image
+        // responseModalities: ["IMAGE"] - 이미지만 반환하도록 설정
         const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`,
             {
@@ -407,7 +410,6 @@ async function editImageWithGemini25(imageBase64, editPrompt, apiKey, imageIndex
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{
-                        role: "user",
                         parts: [
                             { text: editPrompt },
                             {
@@ -419,7 +421,7 @@ async function editImageWithGemini25(imageBase64, editPrompt, apiKey, imageIndex
                         ]
                     }],
                     generationConfig: {
-                        responseModalities: ["TEXT", "IMAGE"]
+                        responseModalities: ["IMAGE"]
                     }
                 })
             }
@@ -435,6 +437,24 @@ async function editImageWithGemini25(imageBase64, editPrompt, apiKey, imageIndex
 
         const result = await response.json();
         console.log(`📦 이미지 ${imageIndex + 1} 결과 키:`, Object.keys(result));
+
+        // 상세 응답 로깅
+        if (result.candidates && result.candidates[0]) {
+            const candidate = result.candidates[0];
+            console.log(`📋 이미지 ${imageIndex + 1} candidate 키:`, Object.keys(candidate));
+            if (candidate.content) {
+                console.log(`📋 이미지 ${imageIndex + 1} content 키:`, Object.keys(candidate.content));
+                if (candidate.content.parts) {
+                    console.log(`📋 이미지 ${imageIndex + 1} parts 개수:`, candidate.content.parts.length);
+                    candidate.content.parts.forEach((p, i) => {
+                        console.log(`📋 이미지 ${imageIndex + 1} part[${i}] 키:`, Object.keys(p));
+                    });
+                }
+            }
+            if (candidate.finishReason) {
+                console.log(`📋 이미지 ${imageIndex + 1} finishReason:`, candidate.finishReason);
+            }
+        }
 
         // 응답에서 이미지 추출
         const parts = result.candidates?.[0]?.content?.parts || [];
