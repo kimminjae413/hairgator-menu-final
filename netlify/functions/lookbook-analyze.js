@@ -344,21 +344,25 @@ async function editWithGemini25FlashImage(originalImageUrl, analysis, apiKey) {
             matchReason: '헤어스타일과 조화로운 패션'
         };
 
-        // 영어 프롬프트로 이미지 생성 유도 (한국어는 텍스트만 반환하는 문제 있음)
-        return `Edit this image: Change ONLY the clothing/outfit. Generate a new image.
+        // 전신샷 프롬프트: 헤어스타일 + 얼굴 + 전체 패션 코디
+        return `Generate a FULL BODY fashion photo of this person wearing a new outfit.
 
-KEEP EXACTLY THE SAME:
-- Hair (do not change hairstyle at all)
-- Face (same person, same expression)
-- Pose and angle
-- Background
+CRITICAL REQUIREMENTS:
+1. FULL BODY SHOT: Show the complete person from head to toe (hair, face, body, legs, feet)
+2. SAME PERSON: Keep the exact same face and hairstyle from the reference image
+3. SAME HAIRSTYLE: The hair must be IDENTICAL - same length, color, texture, style, waves/curls
+4. NEW OUTFIT: Dress the person in the following fashion style
 
-CHANGE ONLY THE OUTFIT TO:
-Style: ${fashionStyle}
-Clothing: ${guide.clothingStyle}
-Specific items: ${fashionItems}
+FASHION STYLE: ${fashionStyle}
+OUTFIT DETAILS: ${guide.clothingStyle}
+SPECIFIC ITEMS: ${fashionItems}
 
-Generate a fashion magazine quality photo with the new outfit clearly visible.`;
+OUTPUT FORMAT:
+- Full body portrait shot (head to toe visible)
+- Fashion magazine editorial quality
+- Clean background (white or light gray)
+- Professional lighting
+- The hairstyle from the original image must be clearly visible and unchanged`;
     });
 
     try {
