@@ -92,6 +92,51 @@ const HAIRGATOR_I18N = {
       credit: '크레딧',
       loginStatus: '로그인',
       guest: '게스트'
+    },
+
+    // ========== 룩북 (Lookbook) ==========
+    lookbook: {
+      theEdit: 'THE EDIT',
+      createNew: '새로운 스타일 생성',
+      trendReport: '트렌드 리포트 2025',
+      analysis: 'AI 분석 결과',
+      variations: '스타일 변형 (Variations)',
+      faceShape: '추천 얼굴형 (Best Match)',
+      styleLook: '스타일링 가이드',
+      maintenance: '관리 및 유지',
+      hydration: '수분 공급',
+      trim: '커트 주기',
+      weeks: '주',
+      high: '높음',
+      low: '낮음',
+      medium: '보통',
+      tags: {
+        vintage: '#빈티지',
+        bohemian: '#보헤미안',
+        volume: '#볼륨감',
+        lovely: '#러블리'
+      },
+      descriptions: {
+        main: '혼돈 속의 조화. 이 스타일은 현대적인 스타일링에 자유분방한 보헤미안 정신을 불어넣습니다. 단순한 헤어스타일이 아닌, 하나의 태도입니다.',
+        faceShape: '이 헤어스타일의 **풍성한 사이드 볼륨**은 하트형 얼굴의 좁은 턱선을 보완하여 밸런스를 맞춰주며, 계란형 얼굴의 부드러운 윤곽을 더욱 돋보이게 하여 장점을 극대화합니다.',
+        maintenance: '이 스타일의 매력은 **낮은 유지보수**에 있습니다. 헝클어질수록 더 멋스럽습니다. 하지만 "지푸라기"처럼 보이지 않으려면 수분 공급이 핵심입니다.'
+      },
+      styleVariations: {
+        chic: '시크 스트럭처',
+        chicDesc: '볼륨감과 대비되는 날렵한 테일러링.',
+        boho: '로맨틱 보호',
+        bohoDesc: '몽환적인 미학을 위한 부드러운 패브릭.',
+        casual: '데일리 캐주얼',
+        casualDesc: '데님과 티셔츠로 완성하는 무심한 듯한 멋.'
+      },
+      styling: {
+        item1: '오버사이즈 블레이저',
+        desc1: '와일드한 헤어와 구조적인 테일러링의 대비.',
+        item2: '플로럴 원피스',
+        desc2: '코티지 코어 미학을 극대화하세요.',
+        item3: '볼드 이어링',
+        desc3: '얇은 링보다는 청키한 스테이트먼트 주얼리.'
+      }
     }
   },
 
@@ -178,6 +223,51 @@ const HAIRGATOR_I18N = {
       credit: 'Credit',
       loginStatus: 'Login',
       guest: 'Guest'
+    },
+
+    // ========== Lookbook ==========
+    lookbook: {
+      theEdit: 'THE EDIT',
+      createNew: 'Create New Look',
+      trendReport: 'Trend Report 2025',
+      analysis: 'Analysis',
+      variations: 'Style Variations',
+      faceShape: 'Recommended Face Shape',
+      styleLook: 'Style The Look',
+      maintenance: 'Maintenance',
+      hydration: 'Hydration',
+      trim: 'Trim',
+      weeks: 'Weeks',
+      high: 'High',
+      low: 'Low',
+      medium: 'Medium',
+      tags: {
+        vintage: '#Vintage',
+        bohemian: '#Bohemian',
+        volume: '#Volume',
+        lovely: '#Lovely'
+      },
+      descriptions: {
+        main: 'Embrace the chaos. This style brings a carefree, bohemian spirit to modern styling. It\'s not just a hairstyle; it\'s an attitude.',
+        faceShape: 'The **rich side volume** of this style complements the narrow jawline of heart-shaped faces, creating balance, while maximizing the advantages of oval faces by highlighting their soft contours.',
+        maintenance: 'The beauty of this style lies in its **low maintenance**. The messier, the better. However, hydration is key to preventing a \'straw-like\' appearance.'
+      },
+      styleVariations: {
+        chic: 'The Chic Structured',
+        chicDesc: 'Contrast volume with sharp tailoring.',
+        boho: 'The Romantic Boho',
+        bohoDesc: 'Soft fabrics for a dreamy aesthetic.',
+        casual: 'The Daily Casual',
+        casualDesc: 'Effortless vibes with denim and tees.'
+      },
+      styling: {
+        item1: 'Oversized Blazers',
+        desc1: 'Contrast the wild hair with structured tailoring.',
+        item2: 'Floral Dresses',
+        desc2: 'Lean into the cottage-core aesthetic.',
+        item3: 'Bold Earrings',
+        desc3: 'Gold hoops get lost; go for chunky statements.'
+      }
     }
   },
 
@@ -264,6 +354,51 @@ const HAIRGATOR_I18N = {
       credit: 'クレジット',
       loginStatus: 'ログイン',
       guest: 'ゲスト'
+    },
+
+    // ========== Lookbook (Japanese) ==========
+    lookbook: {
+      theEdit: 'THE EDIT',
+      createNew: '新しいスタイルを作成',
+      trendReport: 'トレンドレポート 2025',
+      analysis: 'AI分析結果',
+      variations: 'スタイルバリエーション',
+      faceShape: 'おすすめの顔型 (Best Match)',
+      styleLook: 'スタイリングガイド',
+      maintenance: 'メンテナンス',
+      hydration: '保湿',
+      trim: 'カット周期',
+      weeks: '週間',
+      high: '高い',
+      low: '低い',
+      medium: '普通',
+      tags: {
+        vintage: '#ヴィンテージ',
+        bohemian: '#ボヘミアン',
+        volume: '#ボリューム',
+        lovely: '#ラブリー'
+      },
+      descriptions: {
+        main: 'カオスを受け入れて。このスタイルは、現代のスタイリングに自由奔放なボヘミアン精神をもたらします。単なる髪型ではなく、一つの態度です。',
+        faceShape: 'このヘアスタイルの**豊かなサイドボリューム**は、ハート型顔の細い顎のラインを補完してバランスを取り、卵型顔の柔らかい輪郭をさらに引き立てて長所を最大化します。',
+        maintenance: 'このスタイルの美しさは**手入れのしやすさ**にあります。無造作であるほど良いのです。ただし、「わら」のように見えないように保湿が重要です。'
+      },
+      styleVariations: {
+        chic: 'シック・ストラクチャード',
+        chicDesc: 'ボリュームと対照的なシャープなテーラリング。',
+        boho: 'ロマンティック・ボーホー',
+        bohoDesc: '夢のような美学のための柔らかい生地。',
+        casual: 'デイリー・カジュアル',
+        casualDesc: 'デニムとTシャツでエフォートレスな雰囲気を。'
+      },
+      styling: {
+        item1: 'オーバーサイズブレザー',
+        desc1: 'ワイルドな髪と構築的なテーラリングの対比。',
+        item2: '花柄ワンピース',
+        desc2: 'コテージコアの美学を取り入れて。',
+        item3: '大胆なイヤリング',
+        desc3: '華奢なものは埋もれてしまいます。大ぶりなものを。'
+      }
     }
   },
 
@@ -350,6 +485,51 @@ const HAIRGATOR_I18N = {
       credit: '积分',
       loginStatus: '登录',
       guest: '访客'
+    },
+
+    // ========== Lookbook (Chinese) ==========
+    lookbook: {
+      theEdit: 'THE EDIT',
+      createNew: '创建新风格',
+      trendReport: '趋势报告 2025',
+      analysis: 'AI分析结果',
+      variations: '风格变体',
+      faceShape: '推荐脸型 (Best Match)',
+      styleLook: '造型指南',
+      maintenance: '保养与维护',
+      hydration: '保湿',
+      trim: '修剪周期',
+      weeks: '周',
+      high: '高',
+      low: '低',
+      medium: '中',
+      tags: {
+        vintage: '#复古',
+        bohemian: '#波希米亚',
+        volume: '#蓬松感',
+        lovely: '#可爱'
+      },
+      descriptions: {
+        main: '拥抱混乱。这种风格为现代造型带来了无忧无虑的波希米亚精神。这不仅仅是一种发型，更是一种态度。',
+        faceShape: '这款发型的**丰富侧面发量**弥补了心形脸下巴窄的缺点，平衡了比例，同时突出了鹅蛋脸柔和的轮廓，最大化了优点。',
+        maintenance: '这种风格的美在于**低维护**。越凌乱越好。然而，保湿是防止看起来像“稻草”的关键。'
+      },
+      styleVariations: {
+        chic: '别致结构',
+        chicDesc: '蓬松感与利落剪裁的对比。',
+        boho: '浪漫波希米亚',
+        bohoDesc: '梦幻美学的柔软面料。',
+        casual: '日常休闲',
+        casualDesc: '牛仔裤和T恤的轻松氛围。'
+      },
+      styling: {
+        item1: '超大西装外套',
+        desc1: '狂野发型与结构化剪裁的对比。',
+        item2: '碎花连衣裙',
+        desc2: '融入田园风格美学。',
+        item3: '大胆耳环',
+        desc3: '金圈耳环会被淹没；选择厚重的声明首饰。'
+      }
     }
   },
 
@@ -436,6 +616,51 @@ const HAIRGATOR_I18N = {
       credit: 'Tín dụng',
       loginStatus: 'Đăng nhập',
       guest: 'Khách'
+    },
+
+    // ========== Lookbook (Vietnamese) ==========
+    lookbook: {
+      theEdit: 'THE EDIT',
+      createNew: 'Tạo kiểu mới',
+      trendReport: 'Báo cáo xu hướng 2025',
+      analysis: 'Kết quả phân tích AI',
+      variations: 'Biến thể phong cách',
+      faceShape: 'Khuôn mặt phù hợp (Best Match)',
+      styleLook: 'Hướng dẫn phối đồ',
+      maintenance: 'Bảo dưỡng',
+      hydration: 'Dưỡng ẩm',
+      trim: 'Chu kỳ cắt',
+      weeks: 'Tuần',
+      high: 'Cao',
+      low: 'Thấp',
+      medium: 'Trung bình',
+      tags: {
+        vintage: '#CổĐiển',
+        bohemian: '#Bohemian',
+        volume: '#Phồng',
+        lovely: '#ĐángYêu'
+      },
+      descriptions: {
+        main: 'Đón nhận sự hỗn loạn. Phong cách này mang tinh thần bohemian tự do vào phong cách hiện đại. Nó không chỉ là một kiểu tóc; đó là một thái độ.',
+        faceShape: 'Độ phồng hai bên phong phú của kiểu tóc này bổ sung cho đường hàm hẹp của khuôn mặt trái tim, tạo sự cân bằng, đồng thời làm nổi bật các đường nét mềm mại của khuôn mặt trái xoan để tối đa hóa ưu điểm.',
+        maintenance: 'Vẻ đẹp của phong cách này nằm ở việc **ít bảo dưỡng**. Càng rối càng tốt. Tuy nhiên, dưỡng ẩm là chìa khóa để ngăn ngừa vẻ ngoài như "rơm".'
+      },
+      styleVariations: {
+        chic: 'Cấu trúc sang trọng',
+        chicDesc: 'Tương phản độ phồng với đường may sắc sảo.',
+        boho: 'Boho lãng mạn',
+        bohoDesc: 'Vải mềm cho thẩm mỹ mộng mơ.',
+        casual: 'Thường ngày',
+        casualDesc: 'Cảm giác thoải mái với denim và áo phông.'
+      },
+      styling: {
+        item1: 'Áo khoác Blazer quá khổ',
+        desc1: 'Tương phản tóc hoang dã với đường may cấu trúc.',
+        item2: 'Váy hoa',
+        desc2: 'Hòa mình vào thẩm mỹ cottage-core.',
+        item3: 'Bông tai đậm',
+        desc3: 'Khuyên vàng sẽ bị chìm; hãy chọn trang sức to bản.'
+      }
     }
   }
 };
@@ -450,6 +675,7 @@ function setLanguage(lang) {
     currentLanguage = lang;
     localStorage.setItem('hairgator_language', lang);
     console.log(`✅ 언어 변경: ${lang}`);
+    window.dispatchEvent(new CustomEvent('languageChanged', { detail: lang }));
     return true;
   }
   console.warn(`⚠️ 지원하지 않는 언어: ${lang}`);
