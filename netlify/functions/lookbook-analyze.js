@@ -13,7 +13,7 @@
 // 4. 패션 추천 + 이미지 생성 (3장: 각각 다른 모델, 포즈, 패션 스타일)
 // 5. 스타일링 가이드
 
-const fetch = require('node-fetch');
+// Node 18+ 에서는 fetch가 기본 내장되어 있음 (node-fetch 불필요)
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
