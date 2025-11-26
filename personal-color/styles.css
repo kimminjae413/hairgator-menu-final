@@ -214,8 +214,21 @@ body {
 /* ========== 메인 콘텐츠 ========== */
 .main-content {
     padding: 2rem;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* 모드 선택 화면일 때 */
+#mode-selection {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 4rem);
 }
 
 /* ========== 섹션 ========== */
@@ -224,8 +237,21 @@ body {
 }
 
 .section.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
     animation: slideIn 0.3s ease;
+}
+
+#mode-selection.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#ai-analysis.active,
+#draping-mode.active {
+    display: block;
 }
 
 @keyframes slideIn {
@@ -287,24 +313,84 @@ body {
     letter-spacing: -0.5px;
 }
 
+/* 플로팅 닫기 버튼 */
+.close-btn-floating {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.close-btn-floating:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1);
+}
+
 .mode-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 2.5rem;
-    margin-bottom: 3rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 0;
+    padding: 0;
 }
 
 .mode-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    background: transparent;
     border: none;
-    border-radius: 24px;
-    padding: 3rem 2.5rem;
+    border-radius: 16px;
+    padding: 0;
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     text-align: center;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
+    box-shadow: none;
+}
+
+/* 이미지 기반 모드 카드 */
+.mode-card-image {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: transparent;
+    padding: 0;
+}
+
+.mode-card-img-wrapper {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    margin-bottom: 1.5rem;
+}
+
+.mode-card-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.mode-card-image:hover .mode-card-img {
+    transform: scale(1.03);
+}
+
+.mode-card-image .mode-btn {
+    width: 80%;
+    max-width: 250px;
 }
 
 .mode-card::before {
@@ -1205,42 +1291,44 @@ body {
     .main-content {
         padding: 1rem;
     }
-    
+
+    .mode-cards {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
     .mode-card {
-        padding: 2rem;
-    }
-    
-    .app-header {
-        padding: 1rem;
+        padding: 0;
     }
 
-    .close-btn {
-        width: 36px;
-        height: 36px;
-        font-size: 24px;
+    .mode-card-image .mode-btn {
+        width: 100%;
+        max-width: none;
+    }
+
+    .close-btn-floating {
+        top: 10px;
         right: 10px;
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
     }
 
-    .app-title {
-        font-size: 1.5rem;
-        padding-right: 46px; /* 닫기 버튼 공간 확보 */
-    }
-    
     .video-container {
         height: 300px;
     }
-    
+
     .season-tabs {
         grid-template-columns: 1fr;
         gap: 0.5rem;
     }
-    
+
     .section-nav {
         flex-direction: column;
         text-align: center;
         gap: 1rem;
     }
-    
+
     .camera-controls,
     .comparison-controls {
         flex-direction: column;
