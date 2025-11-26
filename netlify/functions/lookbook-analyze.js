@@ -286,22 +286,22 @@ async function generateWithImagen4Fast(analysis, apiKey) {
             console.log(`  ${i + 1}. ${rec.style}: ${rec.items.join(', ')} - ${rec.reason}`);
         });
 
-        // 순차적으로 이미지 생성 (병렬 시 일부 실패 문제 해결)
-        for (let i = 0; i < fashionPrompts.length; i++) {
-            console.log(`\n🖼️ ========== 이미지 ${i + 1}/3 생성 시작 ==========`);
-            try {
-                const image = await generateImageWithImagen4(fashionPrompts[i], apiKey, i);
-                if (image) {
-                    results.variations.push(image);
-                    console.log(`✅ 이미지 ${i + 1} 생성 성공 - variations 배열 길이: ${results.variations.length}`);
-                } else {
-                    console.warn(`⚠️ 이미지 ${i + 1} 생성 실패 - null 반환됨`);
-                }
-            } catch (imgErr) {
-                console.error(`❌ 이미지 ${i + 1} 생성 에러:`, imgErr.message);
+        // 병렬로 이미지 3장 동시 생성 (더 빠름)
+        console.log('🚀 이미지 3장 병렬 생성 시작...');
+        const imagePromises = fashionPrompts.map((prompt, i) =>
+            generateImageWithImagen4(prompt, apiKey, i)
+        );
+
+        const imageResults = await Promise.allSettled(imagePromises);
+
+        imageResults.forEach((result, i) => {
+            if (result.status === 'fulfilled' && result.value) {
+                results.variations.push(result.value);
+                console.log(`✅ 이미지 ${i + 1} 생성 성공`);
+            } else {
+                console.warn(`⚠️ 이미지 ${i + 1} 생성 실패:`, result.reason?.message || 'null 반환');
             }
-            console.log(`========== 이미지 ${i + 1}/3 완료 ==========\n`);
-        }
+        });
 
         console.log(`✅ 패션 스타일링 이미지 생성 완료: ${results.variations.length}장`);
 
