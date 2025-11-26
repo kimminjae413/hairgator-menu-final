@@ -23,29 +23,6 @@
             0% { opacity: 1; }
             100% { opacity: 0; }
         }
-        /* 언어 선택기 스타일 */
-        .language-selector {
-            display: flex;
-            gap: 5px;
-            margin-left: 15px;
-        }
-        .lang-btn {
-            padding: 5px 10px;
-            border: 1px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        .lang-btn:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        .lang-btn.active {
-            background: rgba(138, 43, 226, 0.6);
-            border-color: rgba(138, 43, 226, 0.8);
-        }
     </style>
 </head>
 
@@ -69,14 +46,6 @@
                 <div class="app-title-section">
                     <h1 class="app-title" data-i18n="personalColor.title">HAIRGATOR Personal Color</h1>
                     <div class="app-subtitle" data-i18n="personalColor.subtitle">AI 기반 퍼스널컬러 진단 시스템</div>
-                </div>
-                <!-- 언어 선택기 -->
-                <div class="language-selector">
-                    <button class="lang-btn active" onclick="changeLanguage('ko')">KO</button>
-                    <button class="lang-btn" onclick="changeLanguage('en')">EN</button>
-                    <button class="lang-btn" onclick="changeLanguage('ja')">JA</button>
-                    <button class="lang-btn" onclick="changeLanguage('zh')">ZH</button>
-                    <button class="lang-btn" onclick="changeLanguage('vi')">VI</button>
                 </div>
                 <button class="close-btn" onclick="closePersonalColor()" data-i18n-title="personalColor.close" title="닫기">
                     ×
@@ -1954,27 +1923,15 @@
 
         // ========== 다국어 시스템 ==========
 
-        // 현재 언어
-        let currentLang = 'ko';
+        // 메인에서 저장된 언어 설정 가져오기 (localStorage)
+        let currentLang = localStorage.getItem('hairgator_language') || 'ko';
 
-        // 언어 변경 함수
-        function changeLanguage(lang) {
-            currentLang = lang;
-            if (typeof setLanguage === 'function') {
-                setLanguage(lang);
-            }
-
-            // 버튼 활성화 상태 업데이트
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.textContent === lang.toUpperCase()) {
-                    btn.classList.add('active');
-                }
-            });
-
-            // 모든 번역 적용
+        // 페이지 로드 시 메인에서 설정한 언어 적용
+        function initLanguage() {
+            const savedLang = localStorage.getItem('hairgator_language') || 'ko';
+            currentLang = savedLang;
             applyTranslations();
-            console.log(`🌍 언어 변경: ${lang}`);
+            console.log(`🌍 메인에서 설정된 언어 적용: ${savedLang}`);
         }
 
         // 번역 적용 함수
@@ -2134,22 +2091,10 @@
             return pc.aiMode.result;
         }
 
-        // 초기화 시 저장된 언어 불러오기
+        // 초기화 시 메인에서 저장된 언어 불러오기
         document.addEventListener('DOMContentLoaded', function() {
-            if (typeof loadLanguage === 'function') {
-                currentLang = loadLanguage();
-
-                // 버튼 활성화 상태 업데이트
-                document.querySelectorAll('.lang-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                    if (btn.textContent === currentLang.toUpperCase()) {
-                        btn.classList.add('active');
-                    }
-                });
-
-                // 번역 적용
-                setTimeout(applyTranslations, 100);
-            }
+            // localStorage에서 메인에서 설정한 언어 가져오기
+            initLanguage();
         });
 
         console.log('HAIRGATOR Personal Color - 다국어 지원 버전 로드 완료');
