@@ -639,6 +639,28 @@ function openStyleModal(style) {
                          class="modal-zoom-image"
                          style="width: 100%; height: auto; object-fit: contain; max-height: 70vh; cursor: zoom-in; transition: max-height 0.3s ease, transform 0.3s ease;"
                          onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.alt='이미지 로드 실패';">
+                    
+                    <!-- Lookbook Overlay Button -->
+                    <button id="btnOverlayLookbook" style="
+                        position: absolute;
+                        bottom: 20px;
+                        right: 20px;
+                        background: rgba(212, 175, 55, 0.9);
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 25px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        z-index: 100;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        backdrop-filter: blur(5px);
+                    ">
+                        <span>📖</span> Lookbook
+                    </button>
                 </div>
             </div>
         `;
@@ -689,31 +711,6 @@ function openStyleModal(style) {
     }
 
     // 모달 표시
-    modal.classList.add('active');
-    modal.style.display = 'flex';
-    modal.style.zIndex = '9999';
-    document.body.style.overflow = 'hidden';
-
-    // Lookbook 버튼 이벤트 연결
-    const btnLookbook = document.getElementById('btnOpenLookbook');
-    if (btnLookbook) {
-        btnLookbook.onclick = function () {
-            console.log('📖 Lookbook 열기:', style.name);
-
-            // React 앱으로 이벤트 발송
-            const event = new CustomEvent('OPEN_LOOKBOOK', {
-                detail: {
-                    imageSrc: style.imageUrl,
-                    title: style.name
-                }
-            });
-            window.dispatchEvent(event);
-
-            // 모달 닫기
-            closeStyleModal();
-        };
-    }
-
     console.log('✅ 스타일 모달 열림:', {
         code: style.code,
         name: style.name,
