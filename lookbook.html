@@ -992,7 +992,8 @@
                     try {
                         const user = JSON.parse(bullnabiUser);
                         if (user.remainCount !== undefined) {
-                            user.remainCount = Math.max(0, user.remainCount - LOOKBOOK_CREDIT_COST);
+                            // 부동소수점 오류 방지: 소수점 첫째자리까지 반올림
+                            user.remainCount = Math.round(Math.max(0, user.remainCount - LOOKBOOK_CREDIT_COST) * 10) / 10;
                             localStorage.setItem('bullnabi_user', JSON.stringify(user));
                             console.log(`💳 로컬 크레딧 업데이트: ${user.remainCount}`);
                         }
