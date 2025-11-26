@@ -143,24 +143,34 @@ ${genderInstruction}
         "layering": "레이어 상세 (예: '광대뼈 라인에서 시작하는 페이스 프레이밍 레이어', '레이어 없는 원랭스' 등)"
     },
     "faceShapes": {
-        "best": ["가장 잘 어울리는 얼굴형 2-3개"],
-        "description": "왜 이 얼굴형에 어울리는지 헤어 디자이너 관점에서 구체적으로 설명. 예: '광대뼈 라인의 레이어가 각진 턱선을 부드럽게 감싸주고, 정수리 볼륨이 긴 얼굴을 보완해줍니다'"
+        "best": ["이 헤어스타일이 자연스럽게 잘 맞는 얼굴형 1-2개 (계란형/원형/긴형/사각형/역삼각형 중)"],
+        "description": "이 얼굴형에 자연스럽게 어울리는 이유를 헤어 디자이너 관점에서 설명",
+        "adjustments": {
+            "oval": "계란형: 이상적 기본형이므로 이 스타일을 그대로 연출 가능. 윤곽을 드러내는 방향으로",
+            "round": "원형: 두정부(정수리) 볼륨을 더 살려 세로 길이감 강조, 양쪽 뺨을 살짝 가리는 방향으로 조정",
+            "oblong": "긴형: 양옆 볼륨을 추가하고, 앞머리를 내려 이마를 덮어 세로 길이 완화. 어깨 아래 긴 머리는 피하는 것이 좋음",
+            "square": "사각형: 옆머리로 뺨과 턱 라인을 부드럽게 감싸고, 정수리 볼륨과 웨이브로 각진 인상 완화",
+            "heart": "역삼각형: 이마 양쪽을 덮고 턱 부분에 볼륨을 주어 좁은 턱선을 보완, 여성스러운 실루엣 강조"
+        }
     },
     "fashionRecommendations": [
         {
-            "style": "이 헤어와 어울리는 패션 무드 (예: 로맨틱 페미닌, 캐주얼 시크, 오피스 엘레강스 등)",
-            "items": ["구체적인 아이템 4개 - 브랜드명이나 소재/컬러 포함 (예: '아이보리 캐시미어 니트', '하이웨이스트 와이드 데님', '베이지 트렌치코트')"],
-            "reason": "이 헤어스타일의 어떤 특징이 이 패션과 조화를 이루는지 구체적으로"
+            "style": "8가지 헤어패션감각 중 이 헤어와 가장 자연스러운 감각 선택: 섹시(Sexy)/아방가르드(Avant-garde)/내추럴(Natural)/소피스티케이트(Sophisticate)/엘레강스(Elegance)/로맨틱프리티(Romantic Pretty)/스포티(Sporty)/에스닉(Ethnic)",
+            "styleDescription": "해당 패션감각의 특징 설명 (예: 섹시-성숙하고 매력적, 내추럴-자연스럽고 소박한, 엘레강스-우아하고 고급스러운 등)",
+            "items": ["이 패션감각에 맞는 구체적인 아이템 4개 - 소재/컬러 포함"],
+            "reason": "이 헤어스타일의 어떤 특징(길이, 웨이브, 볼륨, 질감)이 이 패션감각과 조화를 이루는지"
         },
         {
-            "style": "두 번째 패션 무드",
+            "style": "두 번째로 어울리는 헤어패션감각",
+            "styleDescription": "해당 패션감각의 특징 설명",
             "items": ["구체적인 아이템 4개"],
             "reason": "조화 포인트 설명"
         },
         {
-            "style": "세 번째 패션 무드",
+            "style": "세 번째 - 새로운 변신을 위한 도전적인 패션감각 추천",
+            "styleDescription": "해당 패션감각의 특징 설명",
             "items": ["구체적인 아이템 4개"],
-            "reason": "조화 포인트 설명"
+            "reason": "이 헤어스타일을 어떻게 조정하면 이 감각을 연출할 수 있는지 팁 포함"
         }
     ],
     "stylingTips": [
@@ -267,16 +277,41 @@ async function generateWithImagen4Fast(analysis, apiKey) {
         fashion: []
     };
 
+    // 8가지 헤어패션감각별 스타일링 가이드
+    const fashionSenseGuide = {
+        '섹시': { en: 'Sexy', mood: 'sensual, mature, alluring', clothing: 'fitted silhouettes, deep necklines, sleek fabrics, body-conscious cuts' },
+        'Sexy': { en: 'Sexy', mood: 'sensual, mature, alluring', clothing: 'fitted silhouettes, deep necklines, sleek fabrics, body-conscious cuts' },
+        '아방가르드': { en: 'Avant-garde', mood: 'experimental, artistic, unconventional', clothing: 'asymmetrical designs, bold patterns, unusual textures, statement pieces' },
+        'Avant-garde': { en: 'Avant-garde', mood: 'experimental, artistic, unconventional', clothing: 'asymmetrical designs, bold patterns, unusual textures, statement pieces' },
+        '내추럴': { en: 'Natural', mood: 'effortless, organic, relaxed', clothing: 'earth tones, linen/cotton fabrics, minimal accessories, comfortable fits' },
+        'Natural': { en: 'Natural', mood: 'effortless, organic, relaxed', clothing: 'earth tones, linen/cotton fabrics, minimal accessories, comfortable fits' },
+        '소피스티케이트': { en: 'Sophisticate', mood: 'refined, urban, polished', clothing: 'tailored blazers, clean lines, monochrome palette, structured pieces' },
+        'Sophisticate': { en: 'Sophisticate', mood: 'refined, urban, polished', clothing: 'tailored blazers, clean lines, monochrome palette, structured pieces' },
+        '엘레강스': { en: 'Elegance', mood: 'graceful, luxurious, timeless', clothing: 'flowing fabrics, soft draping, pearls/gold accessories, feminine cuts' },
+        'Elegance': { en: 'Elegance', mood: 'graceful, luxurious, timeless', clothing: 'flowing fabrics, soft draping, pearls/gold accessories, feminine cuts' },
+        '로맨틱프리티': { en: 'Romantic Pretty', mood: 'sweet, youthful, charming', clothing: 'floral prints, ruffles, pastel colors, ribbons, lace details' },
+        'Romantic Pretty': { en: 'Romantic Pretty', mood: 'sweet, youthful, charming', clothing: 'floral prints, ruffles, pastel colors, ribbons, lace details' },
+        '스포티': { en: 'Sporty', mood: 'energetic, active, fresh', clothing: 'athletic wear, sneakers, casual layers, functional pieces' },
+        'Sporty': { en: 'Sporty', mood: 'energetic, active, fresh', clothing: 'athletic wear, sneakers, casual layers, functional pieces' },
+        '에스닉': { en: 'Ethnic', mood: 'traditional, cultural, elegant simplicity', clothing: 'traditional-inspired pieces, natural fabrics, minimal embellishments, classic silhouettes' },
+        'Ethnic': { en: 'Ethnic', mood: 'traditional, cultural, elegant simplicity', clothing: 'traditional-inspired pieces, natural fabrics, minimal embellishments, classic silhouettes' }
+    };
+
     // 각 패션 스타일별로 구체적인 옷 프롬프트 생성
     const fashionPrompts = fashionRecommendations.slice(0, 3).map((rec, index) => {
         const fashionItems = rec.items.join(', ');
         const fashionStyle = rec.style;
 
+        // 패션감각 가이드에서 매칭되는 스타일 찾기
+        const senseKey = Object.keys(fashionSenseGuide).find(key => fashionStyle.includes(key));
+        const senseGuide = senseKey ? fashionSenseGuide[senseKey] : { en: fashionStyle, mood: 'stylish', clothing: fashionItems };
+
         // 핵심: 패션 룩북이므로 옷이 주인공, 헤어는 보조
         // 허리까지 보이는 상반신 샷으로 옷을 확실히 보여줌
         return `Fashion lookbook photo of a Korean ${genderBase} model, shot from head to waist (upper body).
 
-OUTFIT (MAIN FOCUS): Wearing ${fashionStyle} style outfit - ${fashionItems}. The clothing must be clearly visible and styled beautifully. Show the complete top/jacket/shirt clearly.
+FASHION SENSE: ${senseGuide.en} style - ${senseGuide.mood} aesthetic.
+OUTFIT (MAIN FOCUS): Wearing ${senseGuide.clothing}. Specific items: ${fashionItems}. The clothing must be clearly visible and styled beautifully. Show the complete top/jacket/shirt clearly.
 
 HAIR: ${styleName} hairstyle with ${characteristics.texture || 'natural'} texture.
 
@@ -432,38 +467,60 @@ function getDefaultAnalysis(language) {
             layering: isKorean ? "중간" : "Medium"
         },
         faceShapes: {
-            best: isKorean ? ["계란형", "하트형", "긴 얼굴형"] : ["Oval", "Heart", "Long"],
+            best: isKorean ? ["계란형", "역삼각형"] : ["Oval", "Heart"],
             description: isKorean
                 ? "볼륨감이 얼굴의 각진 부분을 부드럽게 감싸줍니다."
-                : "The volume softly wraps around angular parts of the face."
+                : "The volume softly wraps around angular parts of the face.",
+            adjustments: isKorean ? {
+                oval: "계란형: 이상적 기본형이므로 이 스타일을 그대로 연출 가능. 윤곽을 드러내는 방향으로",
+                round: "원형: 두정부 볼륨을 더 살려 세로 길이감 강조, 양쪽 뺨을 살짝 가리는 방향으로 조정",
+                oblong: "긴형: 양옆 볼륨을 추가하고, 앞머리를 내려 이마를 덮어 세로 길이 완화",
+                square: "사각형: 옆머리로 뺨과 턱 라인을 부드럽게 감싸고, 웨이브로 각진 인상 완화",
+                heart: "역삼각형: 이마 양쪽을 덮고 턱 부분에 볼륨을 주어 좁은 턱선 보완"
+            } : {
+                oval: "Oval: Ideal face shape, can style as-is. Highlight facial contours",
+                round: "Round: Add crown volume for vertical length, cover cheeks slightly",
+                oblong: "Oblong: Add side volume, use bangs to cover forehead",
+                square: "Square: Soften jaw with side hair, add waves to reduce angular look",
+                heart: "Heart: Cover forehead sides, add volume at chin level"
+            }
         },
         fashionRecommendations: [
             {
-                style: isKorean ? "캐주얼" : "Casual",
+                style: isKorean ? "내추럴" : "Natural",
+                styleDescription: isKorean
+                    ? "자연스럽고 소박한 감성, 편안하면서도 정돈된 느낌"
+                    : "Effortless, organic, relaxed aesthetic",
                 items: isKorean
-                    ? ["데님 재킷", "화이트 티셔츠", "와이드 팬츠"]
-                    : ["Denim Jacket", "White T-shirt", "Wide Pants"],
+                    ? ["베이지 리넨 셔츠", "화이트 코튼 티셔츠", "내추럴 톤 와이드 팬츠", "가죽 샌들"]
+                    : ["Beige Linen Shirt", "White Cotton T-shirt", "Natural Tone Wide Pants", "Leather Sandals"],
                 reason: isKorean
-                    ? "자연스러운 웨이브와 편안한 캐주얼의 조화"
-                    : "Harmony of natural waves with comfortable casual wear"
+                    ? "자연스러운 웨이브와 편안한 내추럴 룩의 완벽한 조화"
+                    : "Perfect harmony of natural waves with relaxed natural look"
             },
             {
-                style: isKorean ? "로맨틱" : "Romantic",
+                style: isKorean ? "로맨틱프리티" : "Romantic Pretty",
+                styleDescription: isKorean
+                    ? "귀엽고 소녀다운 감성, 사랑스럽고 여성스러운 느낌"
+                    : "Sweet, youthful, charming aesthetic",
                 items: isKorean
-                    ? ["플로럴 원피스", "카디건", "메리제인 슈즈"]
-                    : ["Floral Dress", "Cardigan", "Mary Jane Shoes"],
+                    ? ["플로럴 프린트 원피스", "아이보리 카디건", "리본 헤어핀", "메리제인 슈즈"]
+                    : ["Floral Print Dress", "Ivory Cardigan", "Ribbon Hair Pin", "Mary Jane Shoes"],
                 reason: isKorean
-                    ? "부드러운 웨이브가 여성스러운 룩을 완성"
-                    : "Soft waves complete the feminine look"
+                    ? "부드러운 웨이브가 여성스럽고 사랑스러운 룩을 완성"
+                    : "Soft waves complete the feminine and lovely look"
             },
             {
-                style: isKorean ? "시크" : "Chic",
+                style: isKorean ? "소피스티케이트" : "Sophisticate",
+                styleDescription: isKorean
+                    ? "세련되고 도시적인 감성, 정돈되고 고급스러운 느낌"
+                    : "Refined, urban, polished aesthetic",
                 items: isKorean
-                    ? ["오버사이즈 블레이저", "슬랙스", "로퍼"]
-                    : ["Oversized Blazer", "Slacks", "Loafers"],
+                    ? ["블랙 테일러드 블레이저", "화이트 실크 블라우스", "하이웨이스트 슬랙스", "포인티드 토 힐"]
+                    : ["Black Tailored Blazer", "White Silk Blouse", "High-waist Slacks", "Pointed Toe Heels"],
                 reason: isKorean
-                    ? "구조적인 패션과 유연한 헤어의 대비"
-                    : "Contrast between structured fashion and flexible hair"
+                    ? "구조적인 패션과 유연한 웨이브 헤어의 세련된 대비"
+                    : "Sophisticated contrast between structured fashion and flowing waves"
             }
         ],
         stylingTips: [
