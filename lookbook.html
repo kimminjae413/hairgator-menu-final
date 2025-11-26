@@ -113,6 +113,36 @@
             color: var(--theme-accent, var(--accent-pink));
         }
 
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .nav-close-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--theme-accent, var(--accent-pink));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .nav-close-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 0, 85, 0.4);
+        }
+
+        body.theme-classic .nav-close-btn {
+            color: #1a1a1a;
+        }
+
         .nav-logo {
             color: var(--theme-text, var(--text-primary));
         }
@@ -538,10 +568,16 @@
     <!-- Navigation -->
     <nav class="lookbook-nav">
         <div class="nav-logo">THE EDIT</div>
-        <a href="/" class="nav-link" onclick="goBack(); return false;">
-            <span>↻</span>
-            <span id="navBackText">새로운 스타일 생성</span>
-        </a>
+        <div class="nav-buttons">
+            <a href="/" class="nav-link" onclick="goBack(); return false;">
+                <span>↻</span>
+                <span id="navBackText">새로운 스타일 생성</span>
+            </a>
+            <button class="nav-close-btn" onclick="closeToMenu();" title="닫기">
+                <span>✕</span>
+                <span id="navCloseText">닫기</span>
+            </button>
+        </div>
     </nav>
 
     <!-- Hero Section -->
@@ -675,6 +711,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const imageSrc = urlParams.get('image') || '';
         const styleTitle = decodeURIComponent(urlParams.get('title') || 'Style');
+        const genderParam = urlParams.get('gender') || ''; // 메뉴판에서 전달된 성별 (male/female)
 
         // 현재 언어 가져오기
         const currentLang = localStorage.getItem('hairgator_lang') || 'ko';
@@ -742,7 +779,8 @@
                     body: JSON.stringify({
                         imageUrl: imageSrc,
                         language: currentLang,
-                        generateImages: true
+                        generateImages: true,
+                        gender: genderParam // 메뉴판에서 전달된 성별 정보
                     })
                 });
 
@@ -884,6 +922,7 @@
             if (typeof t === 'function') {
                 // Navigation
                 document.getElementById('navBackText').textContent = t('lookbook.createNew') || '새로운 스타일 생성';
+                document.getElementById('navCloseText').textContent = t('lookbook.close') || '닫기';
 
                 // Section titles
                 document.getElementById('variationsTitle').innerHTML =
@@ -922,6 +961,18 @@
             }
         }
 
+        // 메뉴판으로 닫기
+        function closeToMenu() {
+            // 앱 내 웹뷰인 경우 브릿지로 닫기
+            if (window.BullnabiBridge && typeof window.BullnabiBridge.closeLookbook === 'function') {
+                window.BullnabiBridge.closeLookbook();
+            } else if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = '/';
+            }
+        }
+
         // ==================== 크레딧 차감 함수 ====================
         function deductLookbookCredit() {
             const LOOKBOOK_CREDIT_COST = 0.2; // 룩북 AI 분석 비용: 0.2 크레딧
@@ -954,7 +1005,7 @@
             }
         }
 
-        console.log('📖 Lookbook loaded:', { title: styleTitle, image: imageSrc, lang: currentLang, theme: selectedTheme });
+        console.log('📖 Lookbook loaded:', { title: styleTitle, image: imageSrc, lang: currentLang, theme: selectedTheme, gender: genderParam });
     </script>
 
     <style>

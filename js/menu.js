@@ -762,10 +762,11 @@ function openStyleModal(style) {
                 return;
             }
 
-            console.log('📖 Lookbook 열기:', style.name);
+            console.log('📖 Lookbook 열기:', style.name, '성별:', currentGender || window.currentGender);
 
-            // lookbook.html로 이동 (URL 파라미터로 데이터 전달)
-            const lookbookUrl = `/lookbook.html?image=${encodeURIComponent(style.imageUrl || '')}&title=${encodeURIComponent(style.name || 'Style')}`;
+            // lookbook.html로 이동 (URL 파라미터로 데이터 전달 - 성별 포함)
+            const genderValue = currentGender || window.currentGender || 'female';
+            const lookbookUrl = `/lookbook.html?image=${encodeURIComponent(style.imageUrl || '')}&title=${encodeURIComponent(style.name || 'Style')}&gender=${genderValue}`;
             window.location.href = lookbookUrl;
         };
     }

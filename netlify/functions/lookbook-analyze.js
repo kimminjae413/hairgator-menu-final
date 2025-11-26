@@ -37,7 +37,7 @@ exports.handler = async (event) => {
     }
 
     try {
-        const { imageUrl, language = 'ko', generateImages = true } = JSON.parse(event.body);
+        const { imageUrl, language = 'ko', generateImages = true, gender = '' } = JSON.parse(event.body);
 
         if (!imageUrl) {
             return {
@@ -53,9 +53,10 @@ exports.handler = async (event) => {
         }
 
         console.log('📖 Lookbook 분석 시작 (Gemini 2.0 Flash + Imagen 4 Fast)');
+        console.log('📋 전달된 성별:', gender || '없음 (AI가 판단)');
 
         // 1단계: Gemini 2.0 Flash로 헤어스타일 분석
-        const analysisResult = await analyzeWithGemini2Flash(imageUrl, GEMINI_KEY, language);
+        const analysisResult = await analyzeWithGemini2Flash(imageUrl, GEMINI_KEY, language, gender);
 
         // 2단계: Imagen 4 Fast로 이미지 생성 (옵션)
         let generatedImages = null;
@@ -90,7 +91,7 @@ exports.handler = async (event) => {
 };
 
 // ==================== Gemini 2.0 Flash 분석 ====================
-async function analyzeWithGemini2Flash(imageUrl, apiKey, language) {
+async function analyzeWithGemini2Flash(imageUrl, apiKey, language, providedGender = '') {
     const languageInstructions = {
         ko: '한국어로 답변해주세요.',
         en: 'Please respond in English.',
@@ -101,14 +102,21 @@ async function analyzeWithGemini2Flash(imageUrl, apiKey, language) {
 
     const langInstruction = languageInstructions[language] || languageInstructions.ko;
 
+    // 성별이 전달된 경우 해당 성별로 고정
+    const genderInstruction = providedGender
+        ? `중요: 이 헤어스타일은 ${providedGender === 'male' ? '남성' : '여성'} 스타일입니다. gender 필드는 반드시 "${providedGender}"로 설정하세요.`
+        : '이미지를 보고 성별을 판단해주세요.';
+
     const prompt = `당신은 세계적인 헤어 스타일리스트이자 패션 에디터입니다. 이 헤어스타일 이미지를 분석해주세요.
 
 ${langInstruction}
 
+${genderInstruction}
+
 다음 JSON 형식으로 정확히 응답해주세요:
 
 {
-    "gender": "male 또는 female",
+    "gender": "${providedGender || 'male 또는 female'}",
     "styleName": "이 헤어스타일의 이름 (예: 히피펌, 레이어드컷, 투블럭 등)",
     "styleDescription": "이 헤어스타일의 특징을 2-3문장으로 설명",
     "characteristics": {
@@ -234,13 +242,37 @@ async function generateWithImagen4Fast(analysis, apiKey) {
     const { gender, styleName, styleDescription, characteristics, fashionRecommendations } = analysis;
 
     // 성별에 따른 기본 설정
-    const genderBase = gender === 'male' ? 'male' : 'female';
+    const genderBase = gender === 'male' ? 'man' : 'woman';
 
-    // 다양성을 위한 모델/포즈 설정
+    // 다양성을 극대화하기 위한 모델 설정 - 완전히 다른 외모와 스타일링
     const modelVariations = [
-        { age: '20s', pose: 'looking directly at camera with confident expression', angle: 'front view' },
-        { age: 'early 30s', pose: 'slight side angle with gentle smile', angle: 'three-quarter view' },
-        { age: 'mid 20s', pose: 'thoughtful expression, hand near face', angle: 'slight tilt' }
+        {
+            appearance: 'youthful Korean model with sharp jawline and small face',
+            age: 'early 20s',
+            pose: 'confident stance, looking directly at camera',
+            expression: 'cool and composed expression',
+            angle: 'straight front view',
+            lighting: 'dramatic side lighting with shadows',
+            background: 'dark gray studio backdrop'
+        },
+        {
+            appearance: 'elegant Korean model with soft feminine features and round face',
+            age: 'late 20s',
+            pose: 'relaxed three-quarter turn, one hand touching collar',
+            expression: 'warm gentle smile',
+            angle: 'three-quarter profile view',
+            lighting: 'soft natural window light',
+            background: 'cream colored minimalist interior'
+        },
+        {
+            appearance: 'mature sophisticated Korean model with defined cheekbones',
+            age: 'mid 30s',
+            pose: 'artistic pose with chin slightly tilted up',
+            expression: 'mysterious contemplative look',
+            angle: 'dramatic side angle showing profile',
+            lighting: 'golden hour warm lighting',
+            background: 'blurred urban outdoor setting'
+        }
     ];
 
     const results = {
@@ -248,17 +280,17 @@ async function generateWithImagen4Fast(analysis, apiKey) {
         fashion: []     // 빈 배열 (하위 호환성)
     };
 
-    // AI 분석 결과의 패션 추천을 기반으로 프롬프트 생성
+    // AI 분석 결과의 패션 추천을 기반으로 프롬프트 생성 - 각 이미지가 완전히 다르게
     const fashionPrompts = fashionRecommendations.slice(0, 3).map((rec, index) => {
         const model = modelVariations[index];
         const fashionItems = rec.items.join(', ');
         const fashionStyle = rec.style;
-        const fashionReason = rec.reason; // AI가 분석한 "왜 어울리는지" 이유
 
-        // 헤어스타일 특징 상세 설명
-        const hairDetails = `${styleName} hairstyle with ${characteristics.texture} texture, ${characteristics.length} length, ${characteristics.volume} volume, ${characteristics.layering} layering`;
+        // 헤어스타일 특징 간결하게
+        const hairDetails = `styled ${styleName} hair (${characteristics.texture}, ${characteristics.length} length)`;
 
-        return `Professional fashion editorial photography, upper body portrait of a Korean ${genderBase} model in ${model.age} with ${hairDetails}, wearing ${fashionItems} (${fashionStyle} style fashion), ${model.pose}, ${model.angle}, the outfit complements the hairstyle because: ${fashionReason}, soft diffused studio lighting, clean minimal background, high-end fashion magazine quality, sharp focus on face and hair, 4K resolution, photorealistic`;
+        // 각 이미지마다 완전히 다른 프롬프트 구조
+        return `High-end fashion magazine editorial photo. UNIQUE MODEL ${index + 1}: ${model.appearance}, ${model.age}, ${genderBase}. HAIRSTYLE: ${hairDetails}. OUTFIT: ${fashionItems} in ${fashionStyle} style. POSE: ${model.pose}, ${model.expression}. CAMERA: ${model.angle}. LIGHTING: ${model.lighting}. BACKGROUND: ${model.background}. Upper body portrait, professional photography, sharp focus, 8K quality. This is model number ${index + 1} of 3 completely different people.`;
     });
 
     try {
