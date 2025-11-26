@@ -480,30 +480,28 @@
             <!-- 동적으로 생성됨: 이미지 갤러리 + 동영상 플레이어 -->
         </div>
         
-        <div class="style-modal-info">
-            <div class="style-modal-code" id="styleModalCode">CODE</div>
-            <div class="style-modal-name" id="styleModalName">Style Name</div>
+        <!-- 숨겨진 데이터 (JS에서 사용) -->
+        <div style="display: none;">
+            <span id="styleModalCode"></span>
+            <span id="styleModalName"></span>
+            <span id="styleModalCategory"></span>
+            <span id="styleModalSubcategory"></span>
+            <span id="styleModalGender"></span>
+        </div>
 
-            <div class="style-modal-details">
-                <div class="style-detail-row">
-                    <span class="style-detail-label">카테고리</span>
-                    <span class="style-detail-value" id="styleModalCategory">-</span>
-                </div>
-                <div class="style-detail-row">
-                    <span class="style-detail-label">서브카테고리</span>
-                    <span class="style-detail-value" id="styleModalSubcategory">-</span>
-                </div>
-                <div class="style-detail-row">
-                    <span class="style-detail-label">성별</span>
-                    <span class="style-detail-value" id="styleModalGender">-</span>
-                </div>
-            </div>
-
-            <div class="style-modal-actions">
-                <button class="modal-action-btn secondary" onclick="closeStyleModal()">닫기</button>
-                <button class="modal-action-btn" id="btnOpenLookbook" style="background: #d4af37; border-color: #d4af37; color: #fff;">Lookbook</button>
-                <button class="modal-action-btn">선택하기</button>
-            </div>
+        <!-- 룩북 버튼만 표시 -->
+        <div class="style-modal-actions" style="padding: 15px; background: rgba(0,0,0,0.8);">
+            <button class="modal-action-btn" id="btnOpenLookbook" data-i18n="lookbook.button" style="
+                background: linear-gradient(135deg, #d4af37, #f5d67a);
+                border: none;
+                color: #000;
+                font-weight: bold;
+                padding: 12px 40px;
+                border-radius: 25px;
+                font-size: 16px;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            ">📖 Lookbook</button>
         </div>
     </div>
 </div>

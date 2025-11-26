@@ -639,28 +639,6 @@ function openStyleModal(style) {
                          class="modal-zoom-image"
                          style="width: 100%; height: auto; object-fit: contain; max-height: 70vh; cursor: zoom-in; transition: max-height 0.3s ease, transform 0.3s ease;"
                          onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.alt='이미지 로드 실패';">
-                    
-                    <!-- Lookbook Overlay Button -->
-                    <button id="btnOverlayLookbook" style="
-                        position: absolute;
-                        bottom: 20px;
-                        right: 20px;
-                        background: rgba(212, 175, 55, 0.9);
-                        color: white;
-                        border: none;
-                        padding: 10px 20px;
-                        border-radius: 25px;
-                        font-weight: bold;
-                        cursor: pointer;
-                        z-index: 100;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        backdrop-filter: blur(5px);
-                    ">
-                        <span>📖</span> Lookbook
-                    </button>
                 </div>
             </div>
         `;
@@ -716,12 +694,16 @@ function openStyleModal(style) {
     modal.style.zIndex = '9999';
     document.body.style.overflow = 'hidden';
 
-    // Lookbook 버튼 이벤트 연결 (Overlay 버튼)
-    const btnLookbook = document.getElementById('btnOverlayLookbook');
+    // Lookbook 버튼 이벤트 연결 (index.html의 버튼)
+    const btnLookbook = document.getElementById('btnOpenLookbook');
     if (btnLookbook) {
+        // 다국어 버튼 텍스트 설정
+        const lookbookText = t('lookbook.button') || 'Lookbook';
+        btnLookbook.innerHTML = `📖 ${lookbookText}`;
+
         btnLookbook.onclick = function (e) {
-            e.stopPropagation(); // 이미지 클릭 이벤트 전파 방지
-            console.log('📖 Lookbook 열기 (Overlay):', style.name);
+            e.stopPropagation();
+            console.log('📖 Lookbook 열기:', style.name);
 
             // React 앱으로 이벤트 발송
             const event = new CustomEvent('OPEN_LOOKBOOK', {

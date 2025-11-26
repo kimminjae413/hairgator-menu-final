@@ -96,6 +96,7 @@ const HAIRGATOR_I18N = {
 
     // ========== 룩북 (Lookbook) ==========
     lookbook: {
+      button: '룩북',
       theEdit: 'THE EDIT',
       createNew: '새로운 스타일 생성',
       trendReport: '트렌드 리포트 2025',
@@ -356,6 +357,7 @@ const HAIRGATOR_I18N = {
 
     // ========== Lookbook ==========
     lookbook: {
+      button: 'Lookbook',
       theEdit: 'THE EDIT',
       createNew: 'Create New Look',
       trendReport: 'Trend Report 2025',
@@ -607,6 +609,7 @@ const HAIRGATOR_I18N = {
 
     // ========== Lookbook (Japanese) ==========
     lookbook: {
+      button: 'ルックブック',
       theEdit: 'THE EDIT',
       createNew: '新しいスタイルを作成',
       trendReport: 'トレンドレポート 2025',
@@ -858,6 +861,7 @@ const HAIRGATOR_I18N = {
 
     // ========== Lookbook (Chinese) ==========
     lookbook: {
+      button: '造型册',
       theEdit: 'THE EDIT',
       createNew: '创建新风格',
       trendReport: '趋势报告 2025',
@@ -1109,6 +1113,7 @@ const HAIRGATOR_I18N = {
 
     // ========== Lookbook (Vietnamese) ==========
     lookbook: {
+      button: 'Lookbook',
       theEdit: 'THE EDIT',
       createNew: 'Tạo kiểu mới',
       trendReport: 'Báo cáo xu hướng 2025',
