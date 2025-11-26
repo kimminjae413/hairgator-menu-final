@@ -254,12 +254,12 @@ async function generateWithImagen4Fast(analysis, apiKey) {
         const fashionItems = rec.items.join(', ');
         const fashionStyle = rec.style;
 
-        // 헤어스타일 간결하게
-        const hairDesc = `${styleName} hairstyle`;
+        // 헤어스타일 상세 설명
+        const hairDesc = `beautiful ${styleName} hairstyle, ${characteristics.texture || 'natural'} texture, ${characteristics.length || 'medium'} length`;
 
-        // 패션/옷을 최우선으로 강조하는 프롬프트
-        // 각 이미지마다 완전히 다른 옷차림이 핵심
-        return `Fashion editorial photograph of a Korean ${genderBase} wearing ${fashionItems}. The model is dressed in ${fashionStyle} style clothing. IMPORTANT: The outfit must clearly show ${fashionItems}. Hair: ${hairDesc}. Upper body portrait, fashion magazine quality, studio lighting, clean background, the clothing and fashion style is the main focus of this image.`;
+        // 상반신 촬영 + 헤어스타일 + 패션 모두 보이도록
+        // CRITICAL: 머리부터 가슴까지만 보이는 상반신 클로즈업
+        return `Close-up portrait photo from head to chest of a Korean ${genderBase} model. HAIR: ${hairDesc} - hair must be fully visible and styled beautifully. OUTFIT: wearing ${fashionStyle} style - ${fashionItems}. Framing: head and shoulders shot, face and hair clearly visible, chest level crop. Studio lighting, clean white or gray background, fashion magazine quality, sharp focus on hair and face. The hairstyle and clothing style (${fashionStyle}) must match perfectly.`;
     });
 
     try {
