@@ -711,6 +711,31 @@ function openStyleModal(style) {
     }
 
     // 모달 표시
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+    modal.style.zIndex = '9999';
+    document.body.style.overflow = 'hidden';
+
+    // Lookbook 버튼 이벤트 연결 (Overlay 버튼)
+    const btnLookbook = document.getElementById('btnOverlayLookbook');
+    if (btnLookbook) {
+        btnLookbook.onclick = function (e) {
+            e.stopPropagation(); // 이미지 클릭 이벤트 전파 방지
+            console.log('📖 Lookbook 열기 (Overlay):', style.name);
+
+            // React 앱으로 이벤트 발송
+            const event = new CustomEvent('OPEN_LOOKBOOK', {
+                detail: {
+                    imageSrc: style.imageUrl,
+                    title: style.name
+                }
+            });
+            window.dispatchEvent(event);
+
+            // 모달 닫기
+            closeStyleModal();
+        };
+    }
     console.log('✅ 스타일 모달 열림:', {
         code: style.code,
         name: style.name,
