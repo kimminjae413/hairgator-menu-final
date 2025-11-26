@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import HeroUploader from './components/HeroUploader';
 import LookbookPage from './components/LookbookPage';
+import './App.css';
 import './styles/magazine.css';
 
 function App() {
@@ -32,13 +33,14 @@ function App() {
         return () => window.removeEventListener('OPEN_LOOKBOOK', handleOpenLookbook);
     }, []);
 
+    // 이미지가 없으면 아무것도 렌더링하지 않음 (메인 앱 UI 유지)
+    if (!uploadedImage) {
+        return null;
+    }
+
     return (
         <div className="App">
-            {!uploadedImage ? (
-                <HeroUploader onUpload={handleUpload} onTitleChange={setStyleTitle} />
-            ) : (
-                <LookbookPage imageSrc={uploadedImage} title={styleTitle} onReset={handleReset} />
-            )}
+            <LookbookPage imageSrc={uploadedImage} title={styleTitle} onReset={handleReset} />
         </div>
     );
 }
