@@ -1361,3 +1361,81 @@ body {
         page-break-inside: avoid;
     }
 }
+
+/* ========== 분석 결과 패널 텍스트 색상 ========== */
+.analysis-results h4 {
+    color: #333 !important;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.analysis-results .season-result,
+.analysis-results #ai-season-result {
+    color: #333 !important;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.analysis-results .confidence-score,
+.analysis-results #ai-confidence {
+    color: #333 !important;
+}
+
+.analysis-results #ai-analysis-data {
+    color: #333 !important;
+}
+
+.analysis-results #ai-analysis-data span,
+.analysis-results #ai-analysis-data div {
+    color: #333 !important;
+}
+
+/* ========== 태블릿 가로모드 (landscape) ========== */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    .mode-cards {
+        grid-template-columns: repeat(2, 1fr) !important;
+        max-width: 100% !important;
+        margin: 0 0 3rem 0 !important;
+        gap: 2rem;
+    }
+
+    .mode-card {
+        padding: 2rem;
+    }
+
+    .analysis-grid,
+    .draping-layout {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1.5rem;
+    }
+
+    .camera-container {
+        min-width: 0;
+    }
+
+    .analysis-panel {
+        min-width: 0;
+    }
+}
+
+/* ========== 태블릿 세로모드 및 큰 태블릿 ========== */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .mode-cards {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 100%;
+        margin: 0 0 3rem 0;
+    }
+}
+
+/* ========== 큰 태블릿 가로모드 ========== */
+@media (min-width: 1024px) and (max-width: 1366px) {
+    .mode-cards {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 100%;
+    }
+
+    .analysis-grid,
+    .draping-layout {
+        grid-template-columns: 1fr 1fr;
+    }
+}

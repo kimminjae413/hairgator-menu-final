@@ -992,7 +992,7 @@
 
                     <!-- 추천 퍼스널컬러 섹션 -->
                     <div style="background: linear-gradient(135deg, ${seasonInfo.color}33, ${seasonInfo.color}11); padding: 20px; border-radius: 12px; border: 2px solid ${seasonInfo.color};">
-                        <div style="font-size: 14px; color: #aaa; margin-bottom: 8px;">✨ ${resultTexts.recommended}</div>
+                        <div style="font-size: 14px; color: #aaa; margin-bottom: 8px;">${resultTexts.recommendedSeason || '✨ 추천 퍼스널컬러'}</div>
                         <div style="font-size: 28px; font-weight: bold; color: ${seasonInfo.color}; margin-bottom: 10px;">
                             ${seasonInfo.emoji} ${seasonText}
                         </div>
@@ -1033,10 +1033,10 @@
                 analysisData.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 24px; height: 24px; background: ${skinToneData.hex}; border-radius: 6px; border: 2px solid #fff;"></div>
-                            <span style="color: #fff;">${resultTexts.skinTone}: ${skinToneData.hex}</span>
+                            <div style="width: 24px; height: 24px; background: ${skinToneData.hex}; border-radius: 6px; border: 2px solid #333;"></div>
+                            <span style="color: #333;">${resultTexts.skinTone}: ${skinToneData.hex}</span>
                         </div>
-                        <div style="color: #fff;">${resultTexts.undertone}: <b style="color: ${seasonInfo.color};">${undertoneText}</b></div>
+                        <div style="color: #333;">${resultTexts.undertone}: <b style="color: ${seasonInfo.color};">${undertoneText}</b></div>
                     </div>
                 `;
             }
