@@ -1411,6 +1411,25 @@
                 <button class="btn btn-danger" onclick="clearAllData()">모든 데이터 삭제</button>
                 <button class="btn" onclick="exportData()">데이터 내보내기</button>
             </div>
+
+            <!-- 썸네일 일괄 생성 -->
+            <div class="section" style="margin-top: 20px;">
+                <h2 class="section-title">썸네일 일괄 생성</h2>
+                <p style="color: #888; margin-bottom: 15px;">
+                    썸네일이 없는 기존 스타일들에 대해 썸네일을 자동 생성합니다.<br>
+                    (이미지 최적화로 로딩 속도가 향상됩니다)
+                </p>
+                <div style="margin-bottom: 10px;">
+                    <span id="thumbnailStatus">대기 중...</span>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <div style="background: #333; border-radius: 8px; height: 20px; overflow: hidden;">
+                        <div id="thumbnailProgress" style="background: linear-gradient(90deg, #6366f1, #8b5cf6); height: 100%; width: 0%; transition: width 0.3s;"></div>
+                    </div>
+                </div>
+                <button class="btn" onclick="checkThumbnailStatus()" style="margin-right: 10px;">상태 확인</button>
+                <button class="btn" onclick="generateAllThumbnails()" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">썸네일 일괄 생성</button>
+            </div>
         </div>
     </div>
     
@@ -1532,16 +1551,58 @@
     <!-- JavaScript -->
     <script>
         // ========== ImageKit 이미지 최적화 ==========
-        const IMAGEKIT_URL = 'https://ik.imagekit.io/igr5bmqfxm';
+        /**
+         * 이미지 파일로부터 썸네일 생성 (Canvas 사용)
+         * @param {File} file - 원본 이미지 파일
+         * @param {number} maxWidth - 최대 너비 (기본: 300)
+         * @param {number} maxHeight - 최대 높이 (기본: 375)
+         * @param {number} quality - JPEG 품질 (기본: 0.85)
+         * @returns {Promise<Blob>} - 썸네일 Blob
+         */
+        async function createThumbnailBlob(file, maxWidth = 300, maxHeight = 375, quality = 0.85) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    // 비율 유지하면서 리사이즈
+                    let width = img.width;
+                    let height = img.height;
 
-        function getThumbnailUrl(url) {
-            if (!url || typeof url !== 'string') return url;
-            if (!url.includes('firebasestorage.googleapis.com') && !url.includes('firebase')) {
-                return url;
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    if (height > maxHeight) {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob(
+                        (blob) => resolve(blob),
+                        'image/jpeg',
+                        quality
+                    );
+                };
+                img.onerror = reject;
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        /**
+         * 썸네일 URL 반환 (DB에 저장된 thumbnailUrl 사용, 없으면 원본 반환)
+         */
+        function getThumbnailUrl(style) {
+            if (style.thumbnailUrl) {
+                return style.thumbnailUrl;
             }
-            const transforms = 'tr:w-300,h-375,fo-auto,q-85,f-auto';
-            // Absolute URL fetch 형식 - URL 인코딩 없이 그대로 사용
-            return `${IMAGEKIT_URL}/${transforms}/${url}`;
+            // thumbnailUrl이 없으면 원본 imageUrl 반환
+            return style.imageUrl || (style.media && style.media.images && style.media.images[0]) || '';
         }
 
         // Firebase 설정
@@ -2006,24 +2067,43 @@
                 if (selectedImages.length > 0) {
                     showToast('이미지 업로드 중...');
                     const uploadedUrls = [];
-                    
+                    const uploadedThumbnails = [];
+
                     for (let i = 0; i < selectedImages.length; i++) {
                         const file = selectedImages[i];
-                        const filename = `${Date.now()}_${i}_${file.name}`;
+                        const timestamp = Date.now();
+                        const baseName = file.name.replace(/\.[^/.]+$/, ''); // 확장자 제거
+
+                        // 원본 이미지 업로드
+                        const filename = `${timestamp}_${i}_${file.name}`;
                         const storageRef = storage.ref().child(`hairstyles/${filename}`);
-                        
                         const uploadTask = await storageRef.put(file);
                         const downloadUrl = await uploadTask.ref.getDownloadURL();
                         uploadedUrls.push(downloadUrl);
+
+                        // 썸네일 생성 및 업로드
+                        try {
+                            const thumbnailBlob = await createThumbnailBlob(file);
+                            const thumbFilename = `${timestamp}_${i}_${baseName}_thumb.jpg`;
+                            const thumbRef = storage.ref().child(`hairstyles/thumbnails/${thumbFilename}`);
+                            const thumbUpload = await thumbRef.put(thumbnailBlob);
+                            const thumbnailUrl = await thumbUpload.ref.getDownloadURL();
+                            uploadedThumbnails.push(thumbnailUrl);
+                        } catch (thumbError) {
+                            console.warn('썸네일 생성 실패:', thumbError);
+                            uploadedThumbnails.push(null);
+                        }
                     }
                     
                     // 기존 이미지와 새 이미지 통합
                     if (currentEditingStyleId && mediaData.images.length > 0) {
                         // 수정 모드: 기존 이미지 + 새 이미지
                         mediaData.images = [...mediaData.images, ...uploadedUrls];
+                        mediaData.thumbnails = [...(mediaData.thumbnails || []), ...uploadedThumbnails];
                     } else {
                         // 새 추가 모드: 새 이미지만
                         mediaData.images = uploadedUrls;
+                        mediaData.thumbnails = uploadedThumbnails;
                         mediaData.mainImageIndex = mainImageIndex;
                     }
                 }
@@ -2057,6 +2137,10 @@
                 // 기존 단일 이미지 호환성을 위해 대표 이미지 URL도 저장
                 if (mediaData.images.length > 0) {
                     styleData.imageUrl = mediaData.images[mediaData.mainImageIndex];
+                    // 대표 썸네일 URL도 저장
+                    if (mediaData.thumbnails && mediaData.thumbnails[mediaData.mainImageIndex]) {
+                        styleData.thumbnailUrl = mediaData.thumbnails[mediaData.mainImageIndex];
+                    }
                 }
                 
                 if (currentEditingStyleId) {
@@ -2809,8 +2893,8 @@
                 imageUrl = data.imageUrl;
             }
 
-            // ImageKit 썸네일 URL 생성
-            const thumbnailUrl = getThumbnailUrl(imageUrl);
+            // 썸네일 URL 결정 (저장된 썸네일 우선, 없으면 원본)
+            const thumbnailUrl = getThumbnailUrl(data) || imageUrl;
 
             card.innerHTML = `
                 <div class="style-actions">
@@ -2885,6 +2969,162 @@
             loadDefaultTokens();
             refreshPasswordRequests();
             refreshDesigners();
+        }
+
+        // ========== 썸네일 일괄 생성 기능 ==========
+
+        // URL에서 이미지를 가져와 썸네일 생성
+        async function createThumbnailFromUrl(imageUrl, maxWidth = 300, maxHeight = 375, quality = 0.85) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    if (height > maxHeight) {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob(
+                        (blob) => resolve(blob),
+                        'image/jpeg',
+                        quality
+                    );
+                };
+
+                img.onerror = () => reject(new Error('이미지 로드 실패'));
+                img.src = imageUrl;
+            });
+        }
+
+        // 썸네일 상태 확인
+        async function checkThumbnailStatus() {
+            const statusEl = document.getElementById('thumbnailStatus');
+            const progressEl = document.getElementById('thumbnailProgress');
+
+            statusEl.textContent = '확인 중...';
+
+            try {
+                const snapshot = await db.collection('hairstyles').get();
+                let total = 0;
+                let withThumbnail = 0;
+                let withoutThumbnail = 0;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.imageUrl || (data.media && data.media.images && data.media.images.length > 0)) {
+                        total++;
+                        if (data.thumbnailUrl) {
+                            withThumbnail++;
+                        } else {
+                            withoutThumbnail++;
+                        }
+                    }
+                });
+
+                const percentage = total > 0 ? Math.round((withThumbnail / total) * 100) : 0;
+                progressEl.style.width = percentage + '%';
+                statusEl.innerHTML = `총 <b>${total}</b>개 중 <b>${withThumbnail}</b>개 썸네일 완료 (<b style="color: #ff9800;">${withoutThumbnail}개 미완료</b>)`;
+
+            } catch (error) {
+                console.error('상태 확인 오류:', error);
+                statusEl.textContent = '상태 확인 실패: ' + error.message;
+            }
+        }
+
+        // 썸네일 일괄 생성
+        async function generateAllThumbnails() {
+            const statusEl = document.getElementById('thumbnailStatus');
+            const progressEl = document.getElementById('thumbnailProgress');
+
+            if (!confirm('썸네일이 없는 모든 스타일에 대해 썸네일을 생성합니다.\n시간이 오래 걸릴 수 있습니다. 계속하시겠습니까?')) {
+                return;
+            }
+
+            statusEl.textContent = '데이터 로드 중...';
+
+            try {
+                // 썸네일이 없는 스타일 목록 가져오기
+                const snapshot = await db.collection('hairstyles').get();
+                const stylesToProcess = [];
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const imageUrl = data.imageUrl || (data.media && data.media.images && data.media.images[data.media.mainImageIndex || 0]);
+
+                    if (imageUrl && !data.thumbnailUrl) {
+                        stylesToProcess.push({
+                            id: doc.id,
+                            imageUrl: imageUrl,
+                            name: data.name || doc.id
+                        });
+                    }
+                });
+
+                if (stylesToProcess.length === 0) {
+                    statusEl.textContent = '모든 스타일에 썸네일이 있습니다!';
+                    progressEl.style.width = '100%';
+                    return;
+                }
+
+                statusEl.textContent = `${stylesToProcess.length}개 스타일 처리 시작...`;
+
+                let processed = 0;
+                let success = 0;
+                let failed = 0;
+
+                for (const style of stylesToProcess) {
+                    try {
+                        statusEl.textContent = `처리 중: ${style.name} (${processed + 1}/${stylesToProcess.length})`;
+
+                        // 썸네일 생성
+                        const thumbnailBlob = await createThumbnailFromUrl(style.imageUrl);
+
+                        // Firebase Storage에 업로드
+                        const timestamp = Date.now();
+                        const thumbFilename = `${timestamp}_${style.id}_thumb.jpg`;
+                        const thumbRef = storage.ref().child(`hairstyles/thumbnails/${thumbFilename}`);
+                        const thumbUpload = await thumbRef.put(thumbnailBlob);
+                        const thumbnailUrl = await thumbUpload.ref.getDownloadURL();
+
+                        // Firestore 업데이트
+                        await db.collection('hairstyles').doc(style.id).update({
+                            thumbnailUrl: thumbnailUrl
+                        });
+
+                        success++;
+                    } catch (error) {
+                        console.error(`썸네일 생성 실패 (${style.name}):`, error);
+                        failed++;
+                    }
+
+                    processed++;
+                    const percentage = Math.round((processed / stylesToProcess.length) * 100);
+                    progressEl.style.width = percentage + '%';
+                }
+
+                statusEl.innerHTML = `완료! <b style="color: #4caf50;">${success}개 성공</b>, <b style="color: #f44336;">${failed}개 실패</b>`;
+                showToast(`썸네일 생성 완료: ${success}개 성공, ${failed}개 실패`);
+
+            } catch (error) {
+                console.error('썸네일 일괄 생성 오류:', error);
+                statusEl.textContent = '오류 발생: ' + error.message;
+                showToast('썸네일 생성 중 오류 발생');
+            }
         }
         </script>
     </body>
