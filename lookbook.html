@@ -229,10 +229,12 @@
         }
 
         .hero-description {
-            font-size: 1rem;
-            color: var(--theme-text-secondary, var(--text-secondary));
+            font-size: 1.05rem;
+            color: var(--theme-text, rgba(255, 255, 255, 0.95));
             max-width: 600px;
-            line-height: 1.8;
+            line-height: 1.9;
+            font-weight: 400;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 1px 3px rgba(0, 0, 0, 0.9);
         }
 
         /* Classic/Modern theme hero text shadow for readability */
@@ -309,6 +311,7 @@
             width: 100%;
             height: 400px;
             object-fit: cover;
+            object-position: top center;
             margin-bottom: 1.5rem;
             filter: grayscale(20%);
             transition: filter 0.3s, transform 0.3s;
@@ -321,15 +324,16 @@
 
         .variation-card h4 {
             font-family: var(--theme-font, var(--font-sans));
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
             color: var(--theme-text, var(--text-primary));
         }
 
         .variation-card p {
-            font-size: 0.85rem;
-            color: var(--theme-text-secondary, var(--text-secondary));
+            font-size: 0.95rem;
+            color: var(--theme-text, rgba(255, 255, 255, 0.85));
+            line-height: 1.6;
         }
 
         /* Info Grid Section */
@@ -393,9 +397,9 @@
         }
 
         .face-shape-desc {
-            font-size: 0.85rem;
-            color: var(--theme-text-secondary, var(--text-secondary));
-            line-height: 1.8;
+            font-size: 0.95rem;
+            color: var(--theme-text, rgba(255, 255, 255, 0.85));
+            line-height: 1.9;
         }
 
         /* Styling Guide Card */
@@ -427,15 +431,16 @@
         }
 
         .styling-content p {
-            font-size: 0.8rem;
-            color: var(--theme-text-secondary, var(--text-secondary));
+            font-size: 0.9rem;
+            color: var(--theme-text, rgba(255, 255, 255, 0.8));
+            line-height: 1.6;
         }
 
         /* Maintenance Card */
         .maintenance-desc {
-            font-size: 0.85rem;
-            color: var(--theme-text-secondary, var(--text-secondary));
-            line-height: 1.8;
+            font-size: 0.95rem;
+            color: var(--theme-text, rgba(255, 255, 255, 0.85));
+            line-height: 1.9;
             margin-bottom: 2rem;
         }
 
@@ -514,7 +519,12 @@
             }
 
             .variation-card img {
-                height: 300px;
+                height: auto;
+                max-height: 500px;
+                aspect-ratio: 3/4;
+                object-fit: contain;
+                object-position: top center;
+                background: var(--theme-bg-card, #141414);
             }
 
             .hero-content {

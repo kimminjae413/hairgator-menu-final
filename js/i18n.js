@@ -94,6 +94,27 @@ const HAIRGATOR_I18N = {
       guest: '게스트'
     },
 
+    // ========== 헤어체험 ==========
+    hairTry: {
+      button: '헤어체험',
+      title: '헤어체험',
+      subtitle: 'AI로 새로운 헤어스타일을 미리 체험해보세요',
+      uploadPhoto: '사진 업로드',
+      takePhoto: '사진 촬영',
+      or: '또는',
+      selectFromGallery: '갤러리에서 선택',
+      processing: 'AI가 헤어스타일을 적용하고 있습니다...',
+      processingSubtext: '최상의 결과를 위해 잠시만 기다려주세요',
+      result: '체험 결과',
+      retry: '다시 시도',
+      save: '저장하기',
+      share: '공유하기',
+      noCredits: '크레딧이 부족합니다',
+      insufficientCredits: '크레딧이 부족합니다. 충전 후 이용해주세요.',
+      photoGuide: '정면 사진을 사용하면 더 정확한 결과를 얻을 수 있습니다',
+      error: '처리 중 오류가 발생했습니다. 다시 시도해주세요.'
+    },
+
     // ========== 룩북 (Lookbook) ==========
     lookbook: {
       button: '룩북',
@@ -360,6 +381,27 @@ const HAIRGATOR_I18N = {
       guest: 'Guest'
     },
 
+    // ========== Hair Try ==========
+    hairTry: {
+      button: 'Hair Try',
+      title: 'Hair Try',
+      subtitle: 'Preview a new hairstyle with AI',
+      uploadPhoto: 'Upload Photo',
+      takePhoto: 'Take Photo',
+      or: 'or',
+      selectFromGallery: 'Select from Gallery',
+      processing: 'AI is applying the hairstyle...',
+      processingSubtext: 'Please wait for the best results',
+      result: 'Try Result',
+      retry: 'Retry',
+      save: 'Save',
+      share: 'Share',
+      noCredits: 'Insufficient credits',
+      insufficientCredits: 'Insufficient credits. Please recharge to continue.',
+      photoGuide: 'Using a front-facing photo will give more accurate results',
+      error: 'An error occurred. Please try again.'
+    },
+
     // ========== Lookbook ==========
     lookbook: {
       button: 'Lookbook',
@@ -615,6 +657,27 @@ const HAIRGATOR_I18N = {
       credit: 'クレジット',
       loginStatus: 'ログイン',
       guest: 'ゲスト'
+    },
+
+    // ========== ヘアトライ ==========
+    hairTry: {
+      button: 'ヘアトライ',
+      title: 'ヘアトライ',
+      subtitle: 'AIで新しいヘアスタイルを事前に体験',
+      uploadPhoto: '写真をアップロード',
+      takePhoto: '写真を撮る',
+      or: 'または',
+      selectFromGallery: 'ギャラリーから選択',
+      processing: 'AIがヘアスタイルを適用しています...',
+      processingSubtext: '最高の結果を得るためにお待ちください',
+      result: '体験結果',
+      retry: 'やり直す',
+      save: '保存する',
+      share: '共有する',
+      noCredits: 'クレジットが不足しています',
+      insufficientCredits: 'クレジットが不足しています。チャージしてからご利用ください。',
+      photoGuide: '正面写真を使用するとより正確な結果が得られます',
+      error: 'エラーが発生しました。もう一度お試しください。'
     },
 
     // ========== Lookbook (Japanese) ==========
@@ -874,6 +937,27 @@ const HAIRGATOR_I18N = {
       guest: '访客'
     },
 
+    // ========== 发型体验 ==========
+    hairTry: {
+      button: '发型体验',
+      title: '发型体验',
+      subtitle: '用AI预览新发型',
+      uploadPhoto: '上传照片',
+      takePhoto: '拍照',
+      or: '或',
+      selectFromGallery: '从相册选择',
+      processing: 'AI正在应用发型...',
+      processingSubtext: '请稍候以获得最佳效果',
+      result: '体验结果',
+      retry: '重试',
+      save: '保存',
+      share: '分享',
+      noCredits: '积分不足',
+      insufficientCredits: '积分不足，请充值后使用。',
+      photoGuide: '使用正面照片可获得更准确的结果',
+      error: '处理出错，请重试。'
+    },
+
     // ========== Lookbook (Chinese) ==========
     lookbook: {
       button: '造型册',
@@ -1131,6 +1215,27 @@ const HAIRGATOR_I18N = {
       guest: 'Khách'
     },
 
+    // ========== Thử kiểu tóc ==========
+    hairTry: {
+      button: 'Thử kiểu tóc',
+      title: 'Thử kiểu tóc',
+      subtitle: 'Xem trước kiểu tóc mới với AI',
+      uploadPhoto: 'Tải ảnh lên',
+      takePhoto: 'Chụp ảnh',
+      or: 'hoặc',
+      selectFromGallery: 'Chọn từ thư viện',
+      processing: 'AI đang áp dụng kiểu tóc...',
+      processingSubtext: 'Vui lòng đợi để có kết quả tốt nhất',
+      result: 'Kết quả thử',
+      retry: 'Thử lại',
+      save: 'Lưu',
+      share: 'Chia sẻ',
+      noCredits: 'Không đủ tín dụng',
+      insufficientCredits: 'Không đủ tín dụng. Vui lòng nạp thêm để tiếp tục.',
+      photoGuide: 'Sử dụng ảnh chính diện sẽ cho kết quả chính xác hơn',
+      error: 'Đã xảy ra lỗi. Vui lòng thử lại.'
+    },
+
     // ========== Lookbook (Vietnamese) ==========
     lookbook: {
       button: 'Sổ phong cách',
@@ -1370,6 +1475,16 @@ window.t = t;
 window.translateCategory = translateCategory;
 window.translateDescription = translateDescription;
 window.translateSubcategory = translateSubcategory;
+
+// currentLanguage를 window에서 접근 가능하도록 getter로 노출
+Object.defineProperty(window, 'currentLanguage', {
+    get: function() { return currentLanguage; },
+    set: function(val) {
+        if (HAIRGATOR_I18N[val]) {
+            currentLanguage = val;
+        }
+    }
+});
 
 console.log('🌍 HAIRGATOR 다국어 시스템 로드 완료 (5개 언어 지원)');
 console.log('사용법: t("ui.close"), translateCategory("SIDE FRINGE"), setLanguage("en")');

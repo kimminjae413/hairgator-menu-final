@@ -939,6 +939,81 @@ function openStyleModal(style) {
             }
         };
     }
+
+    // 헤어체험 버튼 이벤트 연결 (index.html의 버튼)
+    const btnHairTry = document.getElementById('btnHairTry');
+    if (btnHairTry) {
+        const HAIR_TRY_CREDIT_COST = 0.3; // 헤어체험 사용 비용
+
+        // 크레딧 확인 함수
+        const getUserCredits = () => {
+            try {
+                const bullnabiUser = localStorage.getItem('bullnabi_user');
+                if (bullnabiUser) {
+                    const user = JSON.parse(bullnabiUser);
+                    return user.remainCount || 0;
+                }
+            } catch (e) {
+                console.warn('크레딧 확인 실패:', e);
+            }
+            return 0;
+        };
+
+        // 크레딧 부족 여부 확인
+        const hasEnoughCredits = () => {
+            const credits = getUserCredits();
+            return credits >= HAIR_TRY_CREDIT_COST;
+        };
+
+        // 다국어 버튼 텍스트 설정 (SVG 아이콘 유지)
+        const hairTryText = t('hairTry.button') || '헤어체험';
+        const svgIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+        </svg>`;
+        btnHairTry.innerHTML = `${svgIcon}<span>${hairTryText}</span>`;
+
+        // 크레딧 상태에 따라 버튼 스타일 업데이트
+        const updateHairTryButtonState = () => {
+            if (!hasEnoughCredits()) {
+                btnHairTry.style.opacity = '0.5';
+                btnHairTry.style.cursor = 'not-allowed';
+                btnHairTry.title = t('hairTry.noCredits') || '크레딧이 부족합니다';
+            } else {
+                btnHairTry.style.opacity = '1';
+                btnHairTry.style.cursor = 'pointer';
+                btnHairTry.title = '';
+            }
+        };
+
+        // 초기 상태 설정
+        updateHairTryButtonState();
+
+        btnHairTry.onclick = function (e) {
+            e.stopPropagation();
+
+            // 크레딧 체크
+            if (!hasEnoughCredits()) {
+                const currentCredits = getUserCredits();
+                const message = t('hairTry.insufficientCredits') ||
+                    `크레딧이 부족합니다. (현재: ${currentCredits}, 필요: ${HAIR_TRY_CREDIT_COST})`;
+
+                if (typeof showToast === 'function') {
+                    showToast(message, 'error');
+                } else {
+                    alert(message);
+                }
+                console.warn('💳 크레딧 부족:', { current: currentCredits, required: HAIR_TRY_CREDIT_COST });
+                return;
+            }
+
+            console.log('💇 헤어체험 버튼 클릭:', style.name);
+
+            // 헤어체험 모달 열기
+            openAIPhotoModal(style.id, style.name, style.imageUrl);
+        };
+    }
+
     console.log('✅ 스타일 모달 열림:', {
         code: style.code,
         name: style.name,
@@ -1203,6 +1278,393 @@ function closePhotoUploadModal() {
             document.body.style.overflow = '';
         }, 300);
     }
+}
+
+// 헤어체험 AI 처리 - API 호출
+async function processAIFaceSwap() {
+    const customerPhoto = window.uploadedCustomerPhoto;
+    const styleImageUrl = window.currentAIStyleImage;
+    const styleName = window.currentAIStyleName;
+
+    if (!customerPhoto) {
+        showToast(t('hairTry.error') || '사진을 먼저 업로드해주세요', 'error');
+        return;
+    }
+
+    if (!styleImageUrl) {
+        showToast(t('hairTry.error') || '스타일 이미지가 없습니다', 'error');
+        return;
+    }
+
+    console.log('💇 헤어체험 AI 처리 시작:', styleName);
+
+    // 처리 버튼 비활성화
+    const processBtn = document.getElementById('processBtn');
+    if (processBtn) {
+        processBtn.disabled = true;
+        processBtn.innerHTML = `<span class="ai-icon">⏳</span><span>${t('hairTry.processing') || '처리 중...'}</span>`;
+    }
+
+    // 로딩 오버레이 표시
+    const loadingOverlay = createHairTryLoadingOverlay();
+    document.body.appendChild(loadingOverlay);
+
+    try {
+        const genderValue = currentGender || window.currentGender || 'female';
+
+        // API 호출
+        const response = await fetch('/.netlify/functions/hair-change', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                customerPhotoBase64: customerPhoto,
+                styleImageUrl: styleImageUrl,
+                gender: genderValue
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `API 오류: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('💇 헤어체험 API 응답:', result);
+
+        if (!result.success || !result.resultImageUrl) {
+            throw new Error('결과 이미지를 받지 못했습니다');
+        }
+
+        // 로딩 오버레이 제거
+        loadingOverlay.remove();
+
+        // 업로드 모달 닫기
+        closePhotoUploadModal();
+
+        // 결과 모달 표시
+        showHairTryResult(result.resultImageUrl, styleName);
+
+        // 크레딧 차감
+        const HAIR_TRY_CREDIT_COST = 0.3;
+        deductLookbookCreditFromMenu(HAIR_TRY_CREDIT_COST);
+
+    } catch (error) {
+        console.error('💇 헤어체험 API 오류:', error);
+        loadingOverlay.remove();
+
+        // 버튼 복구
+        if (processBtn) {
+            processBtn.disabled = false;
+            processBtn.innerHTML = `<span class="ai-icon">✨</span><span>${t('hairTry.button') || '헤어체험 시작'}</span>`;
+        }
+
+        showToast(t('hairTry.error') || '처리 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+    }
+}
+
+// 헤어체험 로딩 오버레이 생성
+function createHairTryLoadingOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'hair-try-loading-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+        backdrop-filter: blur(5px);
+    `;
+
+    const loadingText = t('hairTry.processing') || 'AI가 헤어스타일을 적용하고 있습니다...';
+    const subText = t('hairTry.processingSubtext') || '최상의 결과를 위해 잠시만 기다려주세요';
+
+    overlay.innerHTML = `
+        <div style="text-align: center; color: white; padding: 40px;">
+            <div style="margin-bottom: 30px;">
+                <svg width="80" height="80" viewBox="0 0 100 100" style="animation: spin 2s linear infinite;">
+                    <circle cx="50" cy="50" r="40" stroke="#7C4DFF" stroke-width="6" fill="none" stroke-dasharray="251" stroke-dashoffset="60" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h2 style="font-size: 24px; margin-bottom: 15px; font-weight: 600; color: #7C4DFF;">
+                💇 ${t('hairTry.title') || '헤어체험'}
+            </h2>
+            <p style="font-size: 18px; margin-bottom: 10px; opacity: 0.9;">
+                ${loadingText}
+            </p>
+            <p style="font-size: 14px; opacity: 0.6;">
+                ${subText}
+            </p>
+            <div style="margin-top: 30px; display: flex; gap: 8px; justify-content: center;">
+                <div class="loading-dot" style="width: 10px; height: 10px; background: #7C4DFF; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: -0.32s;"></div>
+                <div class="loading-dot" style="width: 10px; height: 10px; background: #7C4DFF; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: -0.16s;"></div>
+                <div class="loading-dot" style="width: 10px; height: 10px; background: #7C4DFF; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both;"></div>
+            </div>
+        </div>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            @keyframes bounce {
+                0%, 80%, 100% { transform: scale(0); }
+                40% { transform: scale(1); }
+            }
+        </style>
+    `;
+
+    return overlay;
+}
+
+// 헤어체험 결과 모달 표시
+function showHairTryResult(resultImageUrl, styleName) {
+    // 기존 결과 모달 제거
+    const existingModal = document.querySelector('.hair-try-result-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    const modal = document.createElement('div');
+    modal.className = 'hair-try-result-modal';
+    modal.innerHTML = `
+        <div class="hair-try-result-content">
+            <div class="hair-try-result-header">
+                <h3>✨ ${t('hairTry.result') || '체험 결과'}</h3>
+                <p>${styleName}</p>
+                <button class="close-result-btn" onclick="closeHairTryResult()">×</button>
+            </div>
+
+            <div class="hair-try-result-body">
+                <img src="${resultImageUrl}" alt="Hair Try Result" class="result-image">
+            </div>
+
+            <div class="hair-try-result-actions">
+                <button class="result-action-btn retry-btn" onclick="retryHairTry()">
+                    <span>🔄</span>
+                    <span>${t('hairTry.retry') || '다시 시도'}</span>
+                </button>
+                <button class="result-action-btn save-btn" onclick="saveHairTryResult('${resultImageUrl}')">
+                    <span>💾</span>
+                    <span>${t('hairTry.save') || '저장하기'}</span>
+                </button>
+            </div>
+        </div>
+        <div class="hair-try-result-overlay" onclick="closeHairTryResult()"></div>
+    `;
+
+    // 스타일 추가
+    addHairTryResultStyles();
+
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+
+    // 애니메이션
+    setTimeout(() => {
+        modal.classList.add('active');
+    }, 10);
+
+    console.log('💇 헤어체험 결과 표시 완료');
+}
+
+// 헤어체험 결과 모달 닫기
+function closeHairTryResult() {
+    const modal = document.querySelector('.hair-try-result-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.remove();
+            document.body.style.overflow = '';
+        }, 300);
+    }
+}
+
+// 헤어체험 다시 시도
+function retryHairTry() {
+    closeHairTryResult();
+    // 현재 스타일로 다시 업로드 모달 열기
+    if (window.currentAIStyleImage && window.currentAIStyleName) {
+        openAIPhotoModal(null, window.currentAIStyleName, window.currentAIStyleImage);
+    }
+}
+
+// 헤어체험 결과 저장
+function saveHairTryResult(imageUrl) {
+    // 이미지 다운로드
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.download = `hair-try-result-${Date.now()}.png`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast(t('hairTry.save') || '이미지가 저장되었습니다', 'success');
+}
+
+// 헤어체험 결과 모달 스타일
+function addHairTryResultStyles() {
+    if (document.getElementById('hair-try-result-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'hair-try-result-styles';
+    style.textContent = `
+        .hair-try-result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .hair-try-result-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .hair-try-result-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: -1;
+        }
+
+        .hair-try-result-content {
+            position: relative;
+            background: var(--primary-dark, #1a1a1a);
+            border-radius: 20px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(124, 77, 255, 0.3);
+            border: 1px solid rgba(124, 77, 255, 0.3);
+        }
+
+        .hair-try-result-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color, #333);
+            position: relative;
+        }
+
+        .hair-try-result-header h3 {
+            margin: 0 0 5px 0;
+            color: #7C4DFF;
+            font-size: 20px;
+        }
+
+        .hair-try-result-header p {
+            margin: 0;
+            color: var(--text-secondary, #888);
+            font-size: 14px;
+        }
+
+        .close-result-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-secondary, #888);
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-result-btn:hover {
+            color: #fff;
+        }
+
+        .hair-try-result-body {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 60vh;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .hair-try-result-actions {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            border-top: 1px solid var(--border-color, #333);
+            justify-content: center;
+        }
+
+        .result-action-btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .retry-btn {
+            background: var(--text-secondary, #666);
+            color: white;
+        }
+
+        .retry-btn:hover {
+            background: #888;
+            transform: translateY(-2px);
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #7C4DFF 0%, #651FFF 100%);
+            color: white;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(124, 77, 255, 0.4);
+        }
+
+        @media (max-width: 767px) {
+            .hair-try-result-content {
+                max-width: 95vw;
+                margin: 10px;
+            }
+
+            .hair-try-result-actions {
+                flex-direction: column;
+            }
+
+            .result-action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // 헤어체험 업로드 모달 스타일 추가
@@ -1659,6 +2121,10 @@ window.changeCustomerPhoto = changeCustomerPhoto;
 window.closePhotoUploadModal = closePhotoUploadModal;
 window.selectPhotoFromGallery = selectPhotoFromGallery;
 window.takePhotoWithCamera = takePhotoWithCamera;
+window.processAIFaceSwap = processAIFaceSwap;
+window.closeHairTryResult = closeHairTryResult;
+window.retryHairTry = retryHairTry;
+window.saveHairTryResult = saveHairTryResult;
 
 // 디버깅용 전역 함수
 window.debugHAIRGATOR = function () {
