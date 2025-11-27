@@ -603,11 +603,21 @@ async function loadStyles() {
             throw new Error('Firebase가 초기화되지 않았습니다');
         }
 
+        // 서버에서 최신 데이터 강제 로드 (캐시 우회)
         const querySnapshot = await db.collection('hairstyles')
             .where('gender', '==', currentGender)
             .where('mainCategory', '==', dbMainCategoryName)
             .where('subCategory', '==', subCategoryName)
-            .get();
+            .get({ source: 'server' })
+            .catch(() => {
+                // 서버 연결 실패 시 캐시에서 로드
+                console.log('서버 연결 실패, 캐시에서 로드');
+                return db.collection('hairstyles')
+                    .where('gender', '==', currentGender)
+                    .where('mainCategory', '==', dbMainCategoryName)
+                    .where('subCategory', '==', subCategoryName)
+                    .get();
+            });
 
         if (querySnapshot.empty) {
             console.log(`스타일 없음: ${mainCategoryName} - ${subCategoryName}`);
