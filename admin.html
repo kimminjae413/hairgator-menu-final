@@ -1582,10 +1582,10 @@
          * @param {File} file - 원본 이미지 파일
          * @param {number} maxWidth - 최대 너비 (기본: 300)
          * @param {number} maxHeight - 최대 높이 (기본: 375)
-         * @param {number} quality - JPEG 품질 (기본: 0.85)
+         * @param {number} quality - JPEG 품질 (기본: 0.75)
          * @returns {Promise<Blob>} - 썸네일 Blob
          */
-        async function createThumbnailBlob(file, maxWidth = 300, maxHeight = 375, quality = 0.85) {
+        async function createThumbnailBlob(file, maxWidth = 300, maxHeight = 375, quality = 0.75) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
                 img.onload = () => {
@@ -2999,13 +2999,23 @@
 
         // ========== 썸네일 일괄 생성 기능 ==========
 
-        // URL에서 이미지를 가져와 썸네일 생성
+        // URL에서 이미지를 가져와 썸네일 생성 (fetch 사용으로 CORS 우회)
         async function createThumbnailFromUrl(imageUrl, maxWidth = 300, maxHeight = 375, quality = 0.85) {
+            // fetch로 이미지 blob 가져오기
+            const response = await fetch(imageUrl);
+            if (!response.ok) {
+                throw new Error('이미지 다운로드 실패: ' + response.status);
+            }
+            const blob = await response.blob();
+
+            // blob을 Image로 변환
             return new Promise((resolve, reject) => {
                 const img = new Image();
-                img.crossOrigin = 'anonymous';
+                const objectUrl = URL.createObjectURL(blob);
 
                 img.onload = () => {
+                    URL.revokeObjectURL(objectUrl); // 메모리 해제
+
                     let width = img.width;
                     let height = img.height;
 
@@ -3032,8 +3042,11 @@
                     );
                 };
 
-                img.onerror = () => reject(new Error('이미지 로드 실패'));
-                img.src = imageUrl;
+                img.onerror = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    reject(new Error('이미지 로드 실패'));
+                };
+                img.src = objectUrl;
             });
         }
 

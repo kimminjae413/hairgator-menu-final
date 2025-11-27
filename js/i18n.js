@@ -1133,7 +1133,7 @@ const HAIRGATOR_I18N = {
 
     // ========== Lookbook (Vietnamese) ==========
     lookbook: {
-      button: 'Lookbook',
+      button: 'Sổ phong cách',
       noCredits: 'Không đủ tín dụng',
       insufficientCredits: 'Không đủ tín dụng. Vui lòng nạp thêm để tiếp tục.',
       loading: 'AI đang phân tích phong cách của bạn...',

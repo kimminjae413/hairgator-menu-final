@@ -726,8 +726,8 @@
             genderParam = urlParams.get('gender') || ''; // 메뉴판에서 전달된 성별 (male/female)
         }
 
-        // 현재 언어 가져오기
-        const currentLang = localStorage.getItem('hairgator_lang') || 'ko';
+        // 현재 언어 가져오기 (i18n.js와 동일한 키 사용)
+        const currentLang = localStorage.getItem('hairgator_language') || 'ko';
 
         // ==================== 랜덤 테마 선택 ====================
         const themes = ['street', 'classic', 'modern'];
@@ -927,7 +927,7 @@
                 document.getElementById('maintenanceDesc').textContent = analysis.maintenance.tips || '';
                 document.getElementById('hydrationValue').textContent = analysis.maintenance.hydration || '높음';
                 document.getElementById('trimValue').textContent =
-                    (analysis.maintenance.trimCycle || '8') + (currentLang === 'ko' ? '주' : ' weeks');
+                    (analysis.maintenance.trimCycle || '8') + ' ' + (t('lookbook.weeks') || 'weeks');
             }
 
             // 로딩 상태 해제
@@ -959,6 +959,10 @@
 
         // 초기화
         document.addEventListener('DOMContentLoaded', async () => {
+            // 저장된 언어 설정 로드
+            if (typeof loadLanguage === 'function') {
+                loadLanguage();
+            }
             applyTranslations();
 
             // preloaded인 경우: sessionStorage에서 미리 로드된 결과 사용
