@@ -1185,15 +1185,314 @@ function selectPhotoFromGallery() {
     }
 }
 
-// 카메라로 사진 촬영
+// 카메라로 사진 촬영 (거울모드 지원)
 function takePhotoWithCamera() {
-    console.log('카메라 버튼 클릭');
-    const cameraInput = document.getElementById('customerPhotoCamera');
-    if (cameraInput) {
-        cameraInput.click();
-    } else {
-        console.error('customerPhotoCamera 요소를 찾을 수 없음');
+    console.log('카메라 버튼 클릭 - 거울모드 카메라 열기');
+    openMirrorCamera();
+}
+
+// 거울모드 카메라 모달 열기
+function openMirrorCamera() {
+    // 기존 카메라 모달 제거
+    const existingModal = document.querySelector('.camera-modal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'camera-modal';
+    modal.innerHTML = `
+        <div class="camera-modal-content">
+            <div class="camera-header">
+                <h3>📸 고객 사진 촬영</h3>
+                <button class="camera-close-btn" onclick="closeCameraModal()">✕</button>
+            </div>
+            <div class="camera-body">
+                <video id="cameraPreview" autoplay playsinline muted></video>
+                <div class="camera-guide">
+                    <div class="face-guide-circle"></div>
+                    <p>얼굴을 원 안에 맞춰주세요</p>
+                </div>
+            </div>
+            <div class="camera-controls">
+                <button class="camera-switch-btn" onclick="switchCamera()" title="카메라 전환">
+                    🔄
+                </button>
+                <button class="camera-capture-btn" onclick="capturePhoto()">
+                    <span class="capture-icon"></span>
+                </button>
+                <div class="camera-spacer"></div>
+            </div>
+        </div>
+    `;
+
+    // 카메라 모달 스타일 추가
+    addCameraModalStyles();
+
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+
+    // 카메라 시작 (전면 카메라 기본)
+    setTimeout(() => {
+        modal.classList.add('active');
+        startCamera('user'); // 'user' = 전면 카메라
+    }, 10);
+}
+
+// 현재 카메라 방향 저장
+let currentFacingMode = 'user';
+let currentStream = null;
+
+// 카메라 시작
+async function startCamera(facingMode = 'user') {
+    currentFacingMode = facingMode;
+    const video = document.getElementById('cameraPreview');
+
+    if (!video) return;
+
+    // 기존 스트림 정리
+    if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
     }
+
+    try {
+        const constraints = {
+            video: {
+                facingMode: facingMode,
+                width: { ideal: 1280 },
+                height: { ideal: 1280 }
+            },
+            audio: false
+        };
+
+        currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = currentStream;
+
+        // 전면 카메라일 때 거울모드 적용
+        if (facingMode === 'user') {
+            video.style.transform = 'scaleX(-1)';
+        } else {
+            video.style.transform = 'scaleX(1)';
+        }
+
+        console.log('📹 카메라 시작:', facingMode === 'user' ? '전면(거울모드)' : '후면');
+    } catch (error) {
+        console.error('카메라 접근 오류:', error);
+        showToast('카메라에 접근할 수 없습니다. 권한을 확인해주세요.', 'error');
+        closeCameraModal();
+    }
+}
+
+// 카메라 전환 (전면 ↔ 후면)
+function switchCamera() {
+    const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+    startCamera(newFacingMode);
+}
+
+// 사진 촬영
+function capturePhoto() {
+    const video = document.getElementById('cameraPreview');
+    if (!video || !currentStream) return;
+
+    // 캔버스 생성
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+
+    // 전면 카메라일 때 거울모드로 캡처 (좌우 반전)
+    if (currentFacingMode === 'user') {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+    }
+
+    ctx.drawImage(video, 0, 0);
+
+    // 이미지 데이터 추출
+    const imageData = canvas.toDataURL('image/jpeg', 0.9);
+
+    // 카메라 정리 및 모달 닫기
+    closeCameraModal();
+
+    // 업로드 처리
+    window.uploadedCustomerPhoto = imageData;
+    showCustomerPhotoPreview(imageData);
+
+    // 처리 버튼 활성화
+    const processBtn = document.getElementById('processBtn');
+    if (processBtn) {
+        processBtn.disabled = false;
+    }
+
+    console.log('📸 사진 촬영 완료');
+    showToast('사진이 촬영되었습니다', 'success');
+}
+
+// 카메라 모달 닫기
+function closeCameraModal() {
+    // 스트림 정리
+    if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+    }
+
+    const modal = document.querySelector('.camera-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.remove();
+            document.body.style.overflow = '';
+        }, 300);
+    }
+}
+
+// 카메라 모달 스타일
+function addCameraModalStyles() {
+    if (document.getElementById('camera-modal-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'camera-modal-styles';
+    style.textContent = `
+        .camera-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .camera-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .camera-modal-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+        }
+        .camera-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        .camera-header h3 {
+            color: #fff;
+            font-size: 18px;
+            margin: 0;
+        }
+        .camera-close-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        .camera-body {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #cameraPreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .camera-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+        }
+        .face-guide-circle {
+            width: 250px;
+            height: 320px;
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+        }
+        .camera-guide p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+        .camera-controls {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 30px 20px;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        .camera-switch-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .camera-switch-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .camera-capture-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #fff;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .camera-capture-btn:hover {
+            transform: scale(1.05);
+        }
+        .camera-capture-btn:active {
+            transform: scale(0.95);
+        }
+        .capture-icon {
+            display: block;
+            width: 60px;
+            height: 60px;
+            background: #ff4081;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .camera-spacer {
+            width: 50px;
+        }
+        @media (min-width: 768px) {
+            .camera-modal-content {
+                max-width: 500px;
+                max-height: 90vh;
+                border-radius: 20px;
+                overflow: hidden;
+            }
+            .face-guide-circle {
+                width: 200px;
+                height: 260px;
+            }
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // 고객 사진 업로드 처리
@@ -2199,6 +2498,9 @@ window.takePhotoWithCamera = takePhotoWithCamera;
 window.processAIFaceSwap = processAIFaceSwap;
 window.closeHairTryResult = closeHairTryResult;
 window.retryHairTry = retryHairTry;
+window.closeCameraModal = closeCameraModal;
+window.switchCamera = switchCamera;
+window.capturePhoto = capturePhoto;
 window.saveHairTryResult = saveHairTryResult;
 
 // 디버깅용 전역 함수
