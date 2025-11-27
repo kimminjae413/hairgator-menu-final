@@ -3226,15 +3226,20 @@
                         // Firebase Storage에 업로드
                         const timestamp = Date.now();
                         const thumbFilename = `${timestamp}_${style.id}_thumb.jpg`;
-                        const thumbRef = storage.ref().child(`hairstyles/thumbnails/${thumbFilename}`);
+                        const thumbPath = `hairstyles/thumbnails/${thumbFilename}`;
+                        console.log('📤 업로드 시도:', thumbPath);
+
+                        const thumbRef = storage.ref().child(thumbPath);
                         const thumbUpload = await thumbRef.put(thumbnailBlob);
                         const thumbnailUrl = await thumbUpload.ref.getDownloadURL();
+                        console.log('✅ 업로드 성공:', thumbnailUrl.substring(0, 80) + '...');
 
                         // Firestore 업데이트 (updatedAt도 함께 업데이트하여 캐시 우회)
                         await db.collection('hairstyles').doc(style.id).update({
                             thumbnailUrl: thumbnailUrl,
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
+                        console.log('✅ Firestore 업데이트 완료:', style.id);
 
                         // 기존 썸네일 삭제 시도 (선택사항)
                         if (style.oldThumbnailUrl) {
