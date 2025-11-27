@@ -1,8 +1,8 @@
 // netlify/functions/hair-change.js
 // HAIRGATOR Hair Change API (헤어체험)
 //
-// 외부 API를 통해 사용자 사진에 헤어스타일을 적용합니다.
-// Vmodel이라는 명칭은 사용하지 않습니다.
+// Vmodel Tasks API를 통해 사용자 사진에 헤어스타일을 적용합니다.
+// 비동기 방식: Task 생성 → 폴링으로 결과 확인
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -10,6 +10,9 @@ const headers = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Content-Type': 'application/json'
 };
+
+// Hair Swap 모델 버전 ID (Vmodel에서 제공)
+const HAIR_SWAP_VERSION = process.env.VMODEL_HAIR_SWAP_VERSION || '';
 
 exports.handler = async (event) => {
     // CORS preflight
@@ -27,16 +30,15 @@ exports.handler = async (event) => {
 
     try {
         const {
-            customerPhotoBase64,   // 고객 사진 (base64)
+            customerPhotoUrl,      // 고객 사진 URL (Firebase Storage 등)
             styleImageUrl,         // 적용할 헤어스타일 이미지 URL
-            gender = 'female'      // 성별
         } = JSON.parse(event.body);
 
-        if (!customerPhotoBase64) {
+        if (!customerPhotoUrl) {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'customerPhotoBase64 is required' })
+                body: JSON.stringify({ error: 'customerPhotoUrl is required' })
             };
         }
 
@@ -51,31 +53,39 @@ exports.handler = async (event) => {
         // API 키 확인
         const API_KEY = process.env.VMODEL_API_KEY;
         if (!API_KEY) {
-            throw new Error('Hair change API key not configured');
+            throw new Error('API key not configured');
+        }
+
+        if (!HAIR_SWAP_VERSION) {
+            throw new Error('Hair swap model version not configured');
         }
 
         console.log('💇 헤어체험 API 호출 시작');
-        console.log('📋 성별:', gender);
+        console.log('📋 고객 사진:', customerPhotoUrl);
         console.log('📋 스타일 이미지:', styleImageUrl);
 
-        // base64 데이터에서 헤더 제거 (있는 경우)
-        let cleanBase64 = customerPhotoBase64;
-        if (customerPhotoBase64.includes(',')) {
-            cleanBase64 = customerPhotoBase64.split(',')[1];
+        // 1. Task 생성
+        const taskId = await createTask(customerPhotoUrl, styleImageUrl, API_KEY);
+        console.log('📝 Task 생성됨:', taskId);
+
+        // 2. 결과 폴링 (최대 60초 대기)
+        const result = await pollTaskResult(taskId, API_KEY, 60000);
+        console.log('✅ Task 완료:', result.status);
+
+        if (result.status === 'succeeded' && result.output && result.output.length > 0) {
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({
+                    success: true,
+                    resultImageUrl: result.output[0],
+                    taskId: taskId,
+                    message: 'Hair change completed successfully'
+                })
+            };
+        } else {
+            throw new Error(result.error || 'Task failed without output');
         }
-
-        // 외부 헤어 체인지 API 호출
-        const result = await callHairChangeAPI(cleanBase64, styleImageUrl, gender, API_KEY);
-
-        return {
-            statusCode: 200,
-            headers,
-            body: JSON.stringify({
-                success: true,
-                resultImageUrl: result.resultImageUrl,
-                message: 'Hair change completed successfully'
-            })
-        };
 
     } catch (error) {
         console.error('💇 헤어체험 API 오류:', error);
@@ -91,61 +101,88 @@ exports.handler = async (event) => {
 };
 
 /**
- * 외부 헤어 체인지 API 호출
- * @param {string} customerPhotoBase64 - 고객 사진 (base64, 헤더 제거됨)
- * @param {string} styleImageUrl - 적용할 헤어스타일 이미지 URL
- * @param {string} gender - 성별 (male/female)
+ * Vmodel Task 생성
+ * @param {string} customerPhotoUrl - 고객 사진 URL
+ * @param {string} styleImageUrl - 헤어스타일 이미지 URL
  * @param {string} apiKey - API 키
- * @returns {Object} - { resultImageUrl: string }
+ * @returns {string} - task_id
  */
-async function callHairChangeAPI(customerPhotoBase64, styleImageUrl, gender, apiKey) {
-    // Vmodel Hair Change API 호출
-    // API 문서: https://docs.vmodel.ai/api-reference/hair-change
-
-    const apiUrl = 'https://developer.vmodel.ai/api/model/hair-change';
-
-    const requestBody = {
-        face_image: customerPhotoBase64,      // 고객 얼굴 사진 (base64)
-        hair_image_url: styleImageUrl,         // 헤어스타일 이미지 URL
-        gender: gender === 'male' ? 'man' : 'woman'  // Vmodel API는 man/woman 사용
-    };
-
-    console.log('📤 헤어체험 API 요청 전송...');
-
-    const response = await fetch(apiUrl, {
+async function createTask(customerPhotoUrl, styleImageUrl, apiKey) {
+    const response = await fetch('https://api.vmodel.ai/api/tasks/v1/create', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({
+            version: HAIR_SWAP_VERSION,
+            input: {
+                swap_image: styleImageUrl,    // 적용할 헤어스타일 (source)
+                target_image: customerPhotoUrl // 고객 사진 (target)
+            }
+        })
     });
 
     if (!response.ok) {
         const errorText = await response.text();
-        console.error('API 오류 응답:', response.status, errorText);
-        throw new Error(`Hair change API error: ${response.status} - ${errorText}`);
+        console.error('Task 생성 오류:', response.status, errorText);
+        throw new Error(`Task creation failed: ${response.status}`);
     }
 
     const result = await response.json();
-    console.log('📥 헤어체험 API 응답:', JSON.stringify(result).substring(0, 200) + '...');
+    console.log('Task 생성 응답:', JSON.stringify(result));
 
-    // API 응답에서 결과 이미지 URL 추출
-    // Vmodel API 응답 형식에 따라 조정 필요
-    if (result.result && result.result.output_image_url) {
-        return {
-            resultImageUrl: result.result.output_image_url
-        };
-    } else if (result.output_image_url) {
-        return {
-            resultImageUrl: result.output_image_url
-        };
-    } else if (result.data && result.data.output_image_url) {
-        return {
-            resultImageUrl: result.data.output_image_url
-        };
+    if (result.code === 200 && result.result && result.result.task_id) {
+        return result.result.task_id;
     } else {
-        console.error('예상치 못한 API 응답 형식:', result);
-        throw new Error('Unexpected API response format');
+        throw new Error(result.message?.en || 'Task creation failed');
     }
+}
+
+/**
+ * Task 결과 폴링
+ * @param {string} taskId - Task ID
+ * @param {string} apiKey - API 키
+ * @param {number} timeout - 최대 대기 시간 (ms)
+ * @returns {Object} - Task 결과
+ */
+async function pollTaskResult(taskId, apiKey, timeout = 60000) {
+    const startTime = Date.now();
+    const pollInterval = 2000; // 2초마다 폴링
+
+    while (Date.now() - startTime < timeout) {
+        const response = await fetch(`https://api.vmodel.ai/api/tasks/v1/get/${taskId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Task 조회 오류:', response.status, errorText);
+            throw new Error(`Task query failed: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.code === 200 && result.result) {
+            const task = result.result;
+            console.log(`📊 Task 상태: ${task.status} (${Math.round((Date.now() - startTime) / 1000)}초 경과)`);
+
+            if (task.status === 'succeeded') {
+                return task;
+            } else if (task.status === 'failed') {
+                throw new Error(task.error || 'Task failed');
+            } else if (task.status === 'canceled') {
+                throw new Error('Task was canceled');
+            }
+            // starting, processing 상태면 계속 폴링
+        }
+
+        // 다음 폴링까지 대기
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+
+    throw new Error('Task timeout - exceeded maximum wait time');
 }
