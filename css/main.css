@@ -2708,6 +2708,17 @@ body.light-theme .modal-action-btn.secondary:hover {
 
 /* 태블릿 가로모드 (네이티브 앱 풀스크린) */
 @media (min-width: 768px) and (orientation: landscape) {
+    /* 뒤로가기, 지구본 버튼을 로고 왼쪽으로 이동 (X버튼과 겹침 방지) */
+    .back-btn {
+        left: auto;
+        right: 140px;
+    }
+
+    .language-btn {
+        left: auto;
+        right: 95px;
+    }
+
     /* 스타일 그리드 위치 아래로 조정 */
     .styles-container,
     .menu-items-container {
