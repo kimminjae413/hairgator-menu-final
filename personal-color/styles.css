@@ -1567,10 +1567,15 @@ body {
 @media (min-width: 768px) and (orientation: landscape) {
     #ai-analysis,
     #draping-mode {
-        padding-top: 60px;
+        padding-top: 80px !important;
+        margin-top: 20px !important;
     }
 
     .section-nav {
+        margin-top: 30px !important;
+    }
+
+    .analysis-grid {
         margin-top: 20px;
     }
 }
