@@ -1998,8 +1998,8 @@ function addHairTryResultStyles() {
             display: flex;
             align-items: flex-start;
             gap: 8px;
-            background: rgba(255, 193, 7, 0.15);
-            border: 1px solid rgba(255, 193, 7, 0.3);
+            background: #FFF3CD;
+            border: 1px solid #FFD93D;
             border-radius: 10px;
             padding: 12px 15px;
             max-width: 100%;
@@ -2012,7 +2012,7 @@ function addHairTryResultStyles() {
 
         .hair-try-disclaimer span:last-child {
             font-size: 12px;
-            color: rgba(255, 255, 255, 0.8);
+            color: #664D03;
             line-height: 1.5;
         }
 
