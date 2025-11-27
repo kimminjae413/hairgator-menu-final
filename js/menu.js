@@ -943,7 +943,7 @@ function openStyleModal(style) {
     // 헤어체험 버튼 이벤트 연결 (index.html의 버튼)
     const btnHairTry = document.getElementById('btnHairTry');
     if (btnHairTry) {
-        const HAIR_TRY_CREDIT_COST = 0.3; // 헤어체험 사용 비용
+        const HAIR_TRY_CREDIT_COST = 0.2; // 헤어체험 사용 비용 (룩북과 동일)
 
         // 크레딧 확인 함수
         const getUserCredits = () => {
@@ -1655,7 +1655,7 @@ async function processAIFaceSwap() {
         showHairTryResult(result.resultImageUrl, styleName);
 
         // 크레딧 차감
-        const HAIR_TRY_CREDIT_COST = 0.3;
+        const HAIR_TRY_CREDIT_COST = 0.2;
         deductLookbookCreditFromMenu(HAIR_TRY_CREDIT_COST);
 
     } catch (error) {
@@ -1803,6 +1803,8 @@ function showHairTryResult(resultImageUrl, styleName) {
         existingModal.remove();
     }
 
+    const disclaimerText = t('hairTry.disclaimer') || '가상 결과입니다. 헤어 느낌을 미리 파악해보는 정도의 의미로만 사용해 주세요. 실제와 다를 수 있습니다.';
+
     const modal = document.createElement('div');
     modal.className = 'hair-try-result-modal';
     modal.innerHTML = `
@@ -1815,6 +1817,10 @@ function showHairTryResult(resultImageUrl, styleName) {
 
             <div class="hair-try-result-body">
                 <img src="${resultImageUrl}" alt="Hair Try Result" class="result-image">
+                <div class="hair-try-disclaimer">
+                    <span class="disclaimer-icon">ℹ️</span>
+                    <span>${disclaimerText}</span>
+                </div>
             </div>
 
             <div class="hair-try-result-actions">
@@ -1970,8 +1976,32 @@ function addHairTryResultStyles() {
         .hair-try-result-body {
             padding: 20px;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
+            gap: 15px;
+        }
+
+        .hair-try-disclaimer {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            background: rgba(255, 193, 7, 0.15);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 10px;
+            padding: 12px 15px;
+            max-width: 100%;
+        }
+
+        .hair-try-disclaimer .disclaimer-icon {
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+
+        .hair-try-disclaimer span:last-child {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.5;
         }
 
         .result-image {
