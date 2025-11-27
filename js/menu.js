@@ -1206,7 +1206,8 @@ function openMirrorCamera() {
                 <button class="camera-close-btn" onclick="closeCameraModal()">✕</button>
             </div>
             <div class="camera-body">
-                <video id="cameraPreview" autoplay playsinline webkit-playsinline muted></video>
+                <video id="cameraPreview" autoplay playsinline webkit-playsinline muted style="display:none;"></video>
+                <canvas id="cameraCanvas"></canvas>
                 <div class="camera-guide">
                     <div class="face-guide-circle"></div>
                     <p>얼굴을 원 안에 맞춰주세요</p>
@@ -1240,15 +1241,21 @@ function openMirrorCamera() {
 // 현재 카메라 방향 저장
 let currentFacingMode = 'user';
 let currentStream = null;
+let cameraAnimationId = null;
 
 // 카메라 시작
 async function startCamera(facingMode = 'user') {
     currentFacingMode = facingMode;
     const video = document.getElementById('cameraPreview');
+    const canvas = document.getElementById('cameraCanvas');
 
-    if (!video) return;
+    if (!video || !canvas) return;
 
-    // 기존 스트림 정리
+    // 기존 스트림 및 애니메이션 정리
+    if (cameraAnimationId) {
+        cancelAnimationFrame(cameraAnimationId);
+        cameraAnimationId = null;
+    }
     if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
     }
@@ -1266,14 +1273,52 @@ async function startCamera(facingMode = 'user') {
         currentStream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = currentStream;
 
-        // 전면 카메라일 때 거울모드 적용 (iOS 호환)
-        if (facingMode === 'user') {
-            video.style.cssText += 'transform: scaleX(-1); -webkit-transform: scaleX(-1);';
-        } else {
-            video.style.cssText += 'transform: scaleX(1); -webkit-transform: scaleX(1);';
-        }
+        // 비디오 메타데이터 로드 후 캔버스 렌더링 시작
+        video.onloadedmetadata = () => {
+            video.play();
 
-        console.log('📹 카메라 시작:', facingMode === 'user' ? '전면(거울모드)' : '후면');
+            // 캔버스 크기 설정
+            const cameraBody = canvas.parentElement;
+            canvas.width = cameraBody.clientWidth;
+            canvas.height = cameraBody.clientHeight;
+
+            const ctx = canvas.getContext('2d');
+            const isMirror = (facingMode === 'user');
+
+            // 실시간 비디오를 캔버스에 그리기
+            function drawFrame() {
+                if (!currentStream) return;
+
+                const vw = video.videoWidth;
+                const vh = video.videoHeight;
+                const cw = canvas.width;
+                const ch = canvas.height;
+
+                // Cover 방식으로 계산
+                const scale = Math.max(cw / vw, ch / vh);
+                const sw = cw / scale;
+                const sh = ch / scale;
+                const sx = (vw - sw) / 2;
+                const sy = (vh - sh) / 2;
+
+                ctx.save();
+
+                // 거울모드 적용
+                if (isMirror) {
+                    ctx.translate(cw, 0);
+                    ctx.scale(-1, 1);
+                }
+
+                ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
+                ctx.restore();
+
+                cameraAnimationId = requestAnimationFrame(drawFrame);
+            }
+
+            drawFrame();
+            console.log('📹 카메라 시작:', facingMode === 'user' ? '전면(거울모드)' : '후면');
+        };
+
     } catch (error) {
         console.error('카메라 접근 오류:', error);
         showToast('카메라에 접근할 수 없습니다. 권한을 확인해주세요.', 'error');
@@ -1289,24 +1334,10 @@ function switchCamera() {
 
 // 사진 촬영
 function capturePhoto() {
-    const video = document.getElementById('cameraPreview');
-    if (!video || !currentStream) return;
+    const canvas = document.getElementById('cameraCanvas');
+    if (!canvas || !currentStream) return;
 
-    // 캔버스 생성
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-
-    // 전면 카메라일 때 거울모드로 캡처 (좌우 반전)
-    if (currentFacingMode === 'user') {
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-    }
-
-    ctx.drawImage(video, 0, 0);
-
-    // 이미지 데이터 추출
+    // 캔버스에서 직접 이미지 추출 (이미 거울모드 적용됨)
     const imageData = canvas.toDataURL('image/jpeg', 0.9);
 
     // 카메라 정리 및 모달 닫기
@@ -1328,6 +1359,12 @@ function capturePhoto() {
 
 // 카메라 모달 닫기
 function closeCameraModal() {
+    // 애니메이션 프레임 정리
+    if (cameraAnimationId) {
+        cancelAnimationFrame(cameraAnimationId);
+        cameraAnimationId = null;
+    }
+
     // 스트림 정리
     if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
@@ -1403,10 +1440,9 @@ function addCameraModalStyles() {
             overflow: hidden;
             background: #000;
         }
-        #cameraPreview {
+        #cameraCanvas {
             width: 100%;
             height: 100%;
-            object-fit: cover;
             display: block;
         }
         .camera-guide {
