@@ -1268,11 +1268,9 @@ async function startCamera(facingMode = 'user') {
 
         // 전면 카메라일 때 거울모드 적용 (iOS 호환)
         if (facingMode === 'user') {
-            video.style.transform = 'scaleX(-1) translateZ(0)';
-            video.style.webkitTransform = 'scaleX(-1) translateZ(0)';
+            video.style.cssText += 'transform: scaleX(-1); -webkit-transform: scaleX(-1);';
         } else {
-            video.style.transform = 'scaleX(1) translateZ(0)';
-            video.style.webkitTransform = 'scaleX(1) translateZ(0)';
+            video.style.cssText += 'transform: scaleX(1); -webkit-transform: scaleX(1);';
         }
 
         console.log('📹 카메라 시작:', facingMode === 'user' ? '전면(거울모드)' : '후면');
@@ -1403,43 +1401,45 @@ function addCameraModalStyles() {
             flex: 1;
             position: relative;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: #000;
         }
         #cameraPreview {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            -webkit-transform: translateZ(0);
+            display: block;
         }
         .camera-guide {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            -webkit-transform: translate(-50%, -50%);
-            text-align: center;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             pointer-events: none;
-            z-index: 10;
+            background: transparent;
         }
         .face-guide-circle {
             width: 250px;
             height: 320px;
-            border: 3px dashed rgba(255, 255, 255, 0.8);
+            border: 4px dashed #fff;
             border-radius: 50%;
-            margin: 0 auto 15px;
+            margin-bottom: 15px;
             background: transparent;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            -webkit-box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
         }
         .camera-guide p {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 14px;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
         }
         .camera-controls {
             display: flex;
@@ -1491,6 +1491,7 @@ function addCameraModalStyles() {
         .camera-spacer {
             width: 50px;
         }
+        /* 태블릿/데스크탑 세로 모드 */
         @media (min-width: 768px) {
             .camera-modal-content {
                 max-width: 500px;
@@ -1501,6 +1502,89 @@ function addCameraModalStyles() {
             .face-guide-circle {
                 width: 200px;
                 height: 260px;
+            }
+        }
+
+        /* 태블릿 가로모드 (landscape) */
+        @media (min-width: 768px) and (orientation: landscape) {
+            .camera-modal-content {
+                flex-direction: row;
+                max-width: 90vw;
+                max-height: 85vh;
+            }
+            .camera-header {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 20;
+                background: rgba(0, 0, 0, 0.6);
+            }
+            .camera-body {
+                flex: 1;
+                height: 100%;
+            }
+            .camera-controls {
+                flex-direction: column;
+                width: 120px;
+                height: 100%;
+                padding: 80px 20px 30px;
+                justify-content: center;
+            }
+            .face-guide-circle {
+                width: 180px;
+                height: 230px;
+            }
+        }
+
+        /* 모바일 가로모드 */
+        @media (max-width: 767px) and (orientation: landscape) {
+            .camera-modal-content {
+                flex-direction: row;
+            }
+            .camera-header {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 20;
+                background: rgba(0, 0, 0, 0.6);
+                padding: 10px 15px;
+            }
+            .camera-header h3 {
+                font-size: 14px;
+            }
+            .camera-body {
+                flex: 1;
+                height: 100%;
+            }
+            .camera-controls {
+                flex-direction: column;
+                width: 100px;
+                height: 100%;
+                padding: 60px 15px 20px;
+                justify-content: center;
+            }
+            .face-guide-circle {
+                width: 120px;
+                height: 160px;
+            }
+            .camera-capture-btn {
+                width: 60px;
+                height: 60px;
+            }
+            .capture-icon {
+                width: 45px;
+                height: 45px;
+            }
+            .camera-switch-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+            .camera-guide p {
+                font-size: 12px;
+                padding: 5px 10px;
             }
         }
     `;
