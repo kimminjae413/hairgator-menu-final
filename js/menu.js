@@ -1,5 +1,63 @@
 // ========== HAIRGATOR 메뉴 시스템 - 헤어체험 연동 최종 버전 ==========
 
+// ========== ImageKit 이미지 최적화 ==========
+const IMAGEKIT_URL = 'https://ik.imagekit.io/igr5bmqfxm';
+
+/**
+ * Firebase Storage URL을 ImageKit 최적화 URL로 변환
+ * @param {string} url - 원본 이미지 URL
+ * @param {object} options - 변환 옵션
+ * @param {number} options.width - 너비 (기본: 원본)
+ * @param {number} options.height - 높이 (기본: 원본)
+ * @param {string} options.quality - 품질 (기본: 80)
+ * @param {boolean} options.thumbnail - 썸네일 모드 (200x250)
+ * @returns {string} - 최적화된 URL
+ */
+function getOptimizedImageUrl(url, options = {}) {
+    if (!url || typeof url !== 'string') return url;
+
+    // Firebase Storage URL인지 확인
+    if (!url.includes('firebasestorage.googleapis.com') && !url.includes('firebase')) {
+        return url;
+    }
+
+    // 변환 파라미터 생성
+    let transforms = [];
+
+    if (options.thumbnail) {
+        // 썸네일 모드 (목록용)
+        transforms.push('w-200', 'h-250', 'fo-auto', 'q-70');
+    } else {
+        if (options.width) transforms.push(`w-${options.width}`);
+        if (options.height) transforms.push(`h-${options.height}`);
+        transforms.push(`q-${options.quality || 80}`);
+    }
+
+    // 자동 포맷 (WebP 등)
+    transforms.push('f-auto');
+
+    const transformStr = transforms.length > 0 ? `tr:${transforms.join(',')}` : '';
+
+    // URL 인코딩
+    const encodedUrl = encodeURIComponent(url);
+
+    return `${IMAGEKIT_URL}/${transformStr}/${encodedUrl}`;
+}
+
+/**
+ * 썸네일 URL 생성 (스타일 카드용)
+ */
+function getThumbnailUrl(url) {
+    return getOptimizedImageUrl(url, { thumbnail: true });
+}
+
+/**
+ * 중간 크기 URL 생성 (상세 모달용)
+ */
+function getMediumImageUrl(url) {
+    return getOptimizedImageUrl(url, { width: 600, quality: 85 });
+}
+
 // ========== 룩북 크레딧 차감 (menu.js에서 호출) ==========
 function deductLookbookCreditFromMenu(creditCost) {
     try {
@@ -666,10 +724,14 @@ function createStyleCard(style) {
         console.warn('createdAt 없음:', style.code);
     }
 
+    // ImageKit 썸네일 URL 생성 (목록용 최적화)
+    const thumbnailUrl = getThumbnailUrl(style.imageUrl);
+
     card.innerHTML = `
         <div class="style-image-wrapper" style="width: 100% !important; height: 100% !important; position: relative !important; display: block !important; padding: 0 !important; margin: 0 !important;">
             <img class="style-image"
-                 src="${style.imageUrl || ''}"
+                 src="${thumbnailUrl || ''}"
+                 data-original="${style.imageUrl || ''}"
                  alt="${style.name || 'Style'}"
                  loading="lazy"
                  style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; border-radius: 0 !important; margin: 0 !important; padding: 0 !important;"

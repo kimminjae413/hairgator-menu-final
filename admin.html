@@ -1531,6 +1531,19 @@
     
     <!-- JavaScript -->
     <script>
+        // ========== ImageKit 이미지 최적화 ==========
+        const IMAGEKIT_URL = 'https://ik.imagekit.io/igr5bmqfxm';
+
+        function getThumbnailUrl(url) {
+            if (!url || typeof url !== 'string') return url;
+            if (!url.includes('firebasestorage.googleapis.com') && !url.includes('firebase')) {
+                return url;
+            }
+            const transforms = 'tr:w-200,h-250,fo-auto,q-70,f-auto';
+            const encodedUrl = encodeURIComponent(url);
+            return `${IMAGEKIT_URL}/${transforms}/${encodedUrl}`;
+        }
+
         // Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyBeTlHZwgx36hR-F35QPtGG2xvE5EY0XmY",
@@ -2784,7 +2797,7 @@
         function createStyleCard(docId, data) {
             const card = document.createElement('div');
             card.className = 'style-card';
-            
+
             // 대표 이미지 결정
             let imageUrl = '';
             if (data.media && data.media.images && data.media.images.length > 0) {
@@ -2795,15 +2808,18 @@
                 // 기존 단일 이미지 형식
                 imageUrl = data.imageUrl;
             }
-            
+
+            // ImageKit 썸네일 URL 생성
+            const thumbnailUrl = getThumbnailUrl(imageUrl);
+
             card.innerHTML = `
                 <div class="style-actions">
                     <button class="action-btn" onclick="editStyle('${docId}')" title="수정">✏️</button>
                     <button class="action-btn delete" onclick="deleteStyle('${docId}', '${data.name}')" title="삭제">🗑️</button>
                 </div>
                 <div class="style-image-container">
-                    ${imageUrl ? 
-                        `<img src="${imageUrl}" alt="${data.name}" class="style-image">` :
+                    ${imageUrl ?
+                        `<img src="${thumbnailUrl}" alt="${data.name}" class="style-image" loading="lazy">` :
                         `<div class="no-image-text">이미지 없음</div>`
                     }
                 </div>
@@ -2812,7 +2828,7 @@
                     <div class="style-name">${data.name}</div>
                 </div>
             `;
-            
+
             return card;
         }
         
