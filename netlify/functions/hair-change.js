@@ -11,8 +11,8 @@ const headers = {
     'Content-Type': 'application/json'
 };
 
-// Hair Swap 모델 버전 ID (Vmodel에서 제공)
-const HAIR_SWAP_VERSION = process.env.VMODEL_HAIR_SWAP_VERSION || '';
+// AI Hairstyle 모델 버전 ID
+const HAIR_SWAP_VERSION = '5c0440717a995b0bbd93377bd65dbb4fe360f67967c506aa6bd8f6b660733a7e';
 
 exports.handler = async (event) => {
     // CORS preflight
@@ -56,9 +56,6 @@ exports.handler = async (event) => {
             throw new Error('API key not configured');
         }
 
-        if (!HAIR_SWAP_VERSION) {
-            throw new Error('Hair swap model version not configured');
-        }
 
         console.log('💇 헤어체험 API 호출 시작');
         console.log('📋 고객 사진:', customerPhotoUrl);
@@ -117,8 +114,8 @@ async function createTask(customerPhotoUrl, styleImageUrl, apiKey) {
         body: JSON.stringify({
             version: HAIR_SWAP_VERSION,
             input: {
-                swap_image: styleImageUrl,    // 적용할 헤어스타일 (source)
-                target_image: customerPhotoUrl // 고객 사진 (target)
+                source: styleImageUrl,     // 헤어스타일 참조 이미지 (적용할 헤어)
+                target: customerPhotoUrl   // 바꾸고 싶은 사람 사진 (고객 사진)
             }
         })
     });

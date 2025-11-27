@@ -1310,16 +1310,18 @@ async function processAIFaceSwap() {
     document.body.appendChild(loadingOverlay);
 
     try {
-        const genderValue = currentGender || window.currentGender || 'female';
+        // 1. 고객 사진을 Firebase Storage에 임시 업로드하여 URL 획득
+        console.log('📤 고객 사진 임시 업로드 중...');
+        const customerPhotoUrl = await uploadCustomerPhotoToStorage(customerPhoto);
+        console.log('✅ 고객 사진 URL:', customerPhotoUrl);
 
-        // API 호출
+        // 2. API 호출
         const response = await fetch('/.netlify/functions/hair-change', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                customerPhotoBase64: customerPhoto,
-                styleImageUrl: styleImageUrl,
-                gender: genderValue
+                customerPhotoUrl: customerPhotoUrl,
+                styleImageUrl: styleImageUrl
             })
         });
 
@@ -1360,6 +1362,50 @@ async function processAIFaceSwap() {
 
         showToast(t('hairTry.error') || '처리 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
     }
+}
+
+// 고객 사진을 Firebase Storage에 임시 업로드
+async function uploadCustomerPhotoToStorage(base64Data) {
+    // Firebase Storage 참조 확인
+    if (typeof storage === 'undefined') {
+        throw new Error('Firebase Storage가 초기화되지 않았습니다');
+    }
+
+    // base64 데이터에서 Blob 생성
+    let base64Content = base64Data;
+    let mimeType = 'image/jpeg';
+
+    if (base64Data.includes(',')) {
+        const parts = base64Data.split(',');
+        const mimeMatch = parts[0].match(/data:([^;]+);/);
+        if (mimeMatch) {
+            mimeType = mimeMatch[1];
+        }
+        base64Content = parts[1];
+    }
+
+    // base64를 Blob으로 변환
+    const byteCharacters = atob(base64Content);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: mimeType });
+
+    // 고유한 파일명 생성 (임시 폴더에 저장)
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 8);
+    const extension = mimeType.split('/')[1] || 'jpg';
+    const filename = `hair-try-temp/${timestamp}_${randomId}.${extension}`;
+
+    // Firebase Storage에 업로드
+    const storageRef = storage.ref().child(filename);
+    const uploadTask = await storageRef.put(blob);
+    const downloadUrl = await uploadTask.ref.getDownloadURL();
+
+    console.log('📤 임시 업로드 완료:', filename);
+    return downloadUrl;
 }
 
 // 헤어체험 로딩 오버레이 생성
