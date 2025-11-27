@@ -2761,11 +2761,19 @@ body.fullscreen-mode .language-btn {
         top: 12px;
     }
 
-    body.fullscreen-mode .menu-items-container {
+    body.fullscreen-mode .menu-items-container,
+    body.fullscreen-mode .styles-container {
+        top: 280px;
         padding-top: 15px;
     }
 
     body.fullscreen-mode .sub-tabs {
         margin-bottom: 15px;
     }
+}
+
+/* 풀스크린 모드 스타일 영역 위치 조정 */
+body.fullscreen-mode .styles-container,
+body.fullscreen-mode .menu-items-container {
+    top: 280px;
 }
