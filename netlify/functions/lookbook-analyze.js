@@ -38,7 +38,15 @@ exports.handler = async (event) => {
     }
 
     try {
-        const { imageUrl, language = 'ko', generateImages = true, gender = '' } = JSON.parse(event.body);
+        const {
+            imageUrl,
+            language = 'ko',
+            generateImages = true,
+            gender = '',
+            category = '',
+            subcategory = '',
+            styleName = ''
+        } = JSON.parse(event.body);
 
         if (!imageUrl) {
             return {
@@ -53,8 +61,18 @@ exports.handler = async (event) => {
             throw new Error('Gemini API key not configured');
         }
 
+        // 헤어스타일 정보 객체 생성
+        const hairInfo = {
+            gender,
+            category,
+            subcategory,
+            styleName
+        };
+
         console.log('📖 Lookbook 분석 시작 (Gemini 2.0 Flash 분석 + Gemini 2.5 Flash Image 편집)');
         console.log('📋 전달된 성별:', gender || '없음 (AI가 판단)');
+        console.log('📋 헤어 카테고리:', category || '없음', '/', subcategory || '없음');
+        console.log('📋 스타일명:', styleName || '없음');
 
         // 1단계: Gemini 2.0 Flash로 헤어스타일 분석
         const analysisResult = await analyzeWithGemini2Flash(imageUrl, GEMINI_KEY, language, gender);
@@ -63,7 +81,7 @@ exports.handler = async (event) => {
         let generatedImages = null;
         if (generateImages) {
             try {
-                generatedImages = await editWithGemini25FlashImage(imageUrl, analysisResult, GEMINI_KEY);
+                generatedImages = await editWithGemini25FlashImage(imageUrl, analysisResult, GEMINI_KEY, hairInfo);
             } catch (imgError) {
                 console.warn('이미지 편집 실패, 분석 결과만 반환:', imgError.message);
             }
@@ -164,8 +182,45 @@ async function analyzeWithGemini2Flash(imageUrl, apiKey, language, providedGende
 
 // ==================== Gemini 2.5 Flash Image 이미지 편집 ====================
 // 원본 헤어스타일 이미지를 기반으로 옷만 변경하여 3장 생성
-async function editWithGemini25FlashImage(originalImageUrl, analysis, apiKey) {
+async function editWithGemini25FlashImage(originalImageUrl, analysis, apiKey, hairInfo = {}) {
     const { gender, styleName, characteristics, fashionRecommendations } = analysis;
+
+    // 헤어스타일 정보 구성 (메뉴판에서 전달받은 정보 우선 사용)
+    const hairCategory = hairInfo.category || '';
+    const hairSubcategory = hairInfo.subcategory || '';
+    const hairStyleName = hairInfo.styleName || styleName || '';
+    const hairGender = hairInfo.gender || gender || 'female';
+
+    // 헤어 길이/스타일 설명 생성
+    let hairLengthDesc = '';
+    if (hairGender === 'male') {
+        // 남성 카테고리별 헤어 설명
+        const maleHairDesc = {
+            'SIDE FRINGE': 'short side-swept fringe, short back and sides',
+            'SIDE PART': 'short side-parted hair, clean cut',
+            'FRINGE UP': 'short hair with upswept fringe, textured top',
+            'PUSHED BACK': 'short slicked-back hair, neat and tidy',
+            'BUZZ': 'very short buzz cut, almost shaved',
+            'CROP': 'short cropped hair with textured fringe',
+            'MOHICAN': 'short mohawk style, shaved sides'
+        };
+        hairLengthDesc = maleHairDesc[hairCategory] || 'short male hairstyle';
+    } else {
+        // 여성 카테고리별 헤어 설명
+        const femaleHairDesc = {
+            'A LENGTH': 'very long hair below chest',
+            'B LENGTH': 'long hair between chest and collarbone',
+            'C LENGTH': 'medium-long hair below collarbone',
+            'D LENGTH': 'shoulder-length hair',
+            'E LENGTH': 'short bob above shoulder',
+            'F LENGTH': 'chin-length bob',
+            'G LENGTH': 'jaw-length mini bob',
+            'H LENGTH': 'very short pixie cut'
+        };
+        hairLengthDesc = femaleHairDesc[hairCategory] || 'medium length hairstyle';
+    }
+
+    console.log('📋 헤어 정보:', { hairCategory, hairSubcategory, hairStyleName, hairGender, hairLengthDesc });
 
     const results = {
         variations: [],
@@ -245,11 +300,21 @@ async function editWithGemini25FlashImage(originalImageUrl, analysis, apiKey) {
         // 전신샷 프롬프트: 헤어스타일 + 얼굴 + 전체 패션 코디
         return `Generate a FULL BODY fashion photo of this person wearing a new outfit.
 
+⚠️ ABSOLUTE HAIR REQUIREMENTS - DO NOT CHANGE THE HAIR:
+- Gender: ${hairGender.toUpperCase()}
+- Hair Category: ${hairCategory || 'as shown in image'}
+- Hair Style: ${hairStyleName || 'as shown in image'}
+- Hair Description: ${hairLengthDesc}
+- THE HAIR MUST BE EXACTLY THE SAME AS THE REFERENCE IMAGE
+- ${hairGender === 'male' ? 'DO NOT make the hair longer. Keep it SHORT as shown.' : 'Keep the same hair length as the reference.'}
+- DO NOT change hair length, color, texture, or style
+- If the reference shows short hair, the output MUST have short hair
+
 CRITICAL REQUIREMENTS:
-1. FULL BODY SHOT: Show the complete person from head to toe (hair, face, body, legs, feet)
-2. SAME PERSON: Keep the exact same face and hairstyle from the reference image
-3. SAME HAIRSTYLE: The hair must be IDENTICAL - same length, color, texture, style, waves/curls
-4. NEW OUTFIT: Dress the person in the following fashion style
+1. FULL BODY SHOT: Show the complete person from head to toe
+2. SAME FACE: Keep the exact same face from the reference image
+3. SAME HAIRSTYLE: Hair must be IDENTICAL - ${hairLengthDesc}
+4. NEW OUTFIT ONLY: Only change the clothes, nothing else
 
 FASHION STYLE: ${fashionStyle}
 OUTFIT DETAILS: ${guide.clothingStyle}
@@ -260,7 +325,7 @@ OUTPUT FORMAT:
 - Fashion magazine editorial quality
 - Clean background (white or light gray)
 - Professional lighting
-- The hairstyle from the original image must be clearly visible and unchanged`;
+- Hair MUST match the reference image exactly`;
     });
 
     try {

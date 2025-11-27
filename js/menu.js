@@ -897,7 +897,10 @@ function openStyleModal(style) {
                         imageUrl: style.imageUrl,
                         language: window.currentLanguage || 'ko',
                         generateImages: true,
-                        gender: genderValue
+                        gender: genderValue,
+                        category: style.mainCategory || '',
+                        subcategory: style.subCategory || '',
+                        styleName: style.name || ''
                     })
                 });
 
