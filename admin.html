@@ -9,6 +9,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         /* 기본 스타일 */
@@ -941,7 +944,127 @@
             color: #999;
             padding: 20px;
         }
-        
+
+        /* 차트 컨테이너 */
+        .chart-container {
+            background: #000;
+            border-radius: 10px;
+            padding: 20px;
+            height: 300px;
+            position: relative;
+        }
+
+        .chart-container-small {
+            background: #000;
+            border-radius: 10px;
+            padding: 20px;
+            height: 250px;
+            max-width: 400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* 남녀별 카드 색상 */
+        .stat-card.male-card {
+            border-color: #4A90D9;
+        }
+
+        .stat-card.male-card .stat-number {
+            color: #4A90D9;
+        }
+
+        .stat-card.female-card {
+            border-color: #FF1493;
+        }
+
+        .stat-card.female-card .stat-number {
+            color: #FF1493;
+        }
+
+        /* 히트맵 테이블 */
+        .heatmap-container {
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        .heatmap-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .heatmap-table th {
+            background: #1a1a1a;
+            color: #FF1493;
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid #333;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+
+        .heatmap-table th.gender-header {
+            background: #2a2a2a;
+        }
+
+        .heatmap-table th.male-header {
+            color: #4A90D9;
+        }
+
+        .heatmap-table th.female-header {
+            color: #FF1493;
+        }
+
+        .heatmap-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #333;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .heatmap-table td.category-name {
+            background: #1a1a1a;
+            color: #ccc;
+            text-align: left;
+            padding-left: 15px;
+            font-weight: normal;
+        }
+
+        .heatmap-table td.male-cell {
+            background: rgba(74, 144, 217, 0.1);
+            color: #4A90D9;
+        }
+
+        .heatmap-table td.female-cell {
+            background: rgba(255, 20, 147, 0.1);
+            color: #FF1493;
+        }
+
+        /* 히트맵 색상 강도 */
+        .heatmap-table td.heat-0 { background: rgba(100, 100, 100, 0.1); color: #666; }
+        .heatmap-table td.heat-1 { background: rgba(255, 20, 147, 0.2); }
+        .heatmap-table td.heat-2 { background: rgba(255, 20, 147, 0.35); }
+        .heatmap-table td.heat-3 { background: rgba(255, 20, 147, 0.5); }
+        .heatmap-table td.heat-4 { background: rgba(255, 20, 147, 0.65); }
+        .heatmap-table td.heat-5 { background: rgba(255, 20, 147, 0.8); color: white; }
+
+        .heatmap-table td.male-heat-1 { background: rgba(74, 144, 217, 0.2); }
+        .heatmap-table td.male-heat-2 { background: rgba(74, 144, 217, 0.35); }
+        .heatmap-table td.male-heat-3 { background: rgba(74, 144, 217, 0.5); }
+        .heatmap-table td.male-heat-4 { background: rgba(74, 144, 217, 0.65); }
+        .heatmap-table td.male-heat-5 { background: rgba(74, 144, 217, 0.8); color: white; }
+
+        .heatmap-table tr:hover td {
+            filter: brightness(1.2);
+        }
+
+        .heatmap-row-total {
+            background: #2a2a2a !important;
+            font-weight: bold !important;
+        }
+
         /* 데이터 테이블 */
         .data-table {
             width: 100%;
@@ -1219,37 +1342,64 @@
         
         <!-- 통계 탭 -->
         <div id="statsTab" class="tab-content" style="display: none;">
+            <!-- 전체 요약 -->
             <div class="section">
-                <h2 class="section-title">전체 통계</h2>
+                <h2 class="section-title">전체 통계 요약</h2>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-number" id="totalStyles">0</div>
                         <div class="stat-label">전체 스타일</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card male-card">
                         <div class="stat-number" id="totalMale">0</div>
-                        <div class="stat-label">남성 스타일</div>
+                        <div class="stat-label">👨 남성 스타일</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card female-card">
                         <div class="stat-number" id="totalFemale">0</div>
-                        <div class="stat-label">여성 스타일</div>
+                        <div class="stat-label">👩 여성 스타일</div>
                     </div>
                 </div>
             </div>
 
-            <!-- 남성 대분류별 통계 -->
+            <!-- 남녀 비율 도넛 차트 -->
             <div class="section">
-                <h2 class="section-title">👨 남성 - 대분류별 통계</h2>
-                <div id="maleMainCategoryStats" class="category-stats-container">
+                <h2 class="section-title">남녀 비율</h2>
+                <div class="chart-container-small">
+                    <canvas id="genderPieChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 남성 대분류별 바 차트 -->
+            <div class="section">
+                <h2 class="section-title">👨 남성 - 대분류별 스타일 수</h2>
+                <div class="chart-container">
+                    <canvas id="maleBarChart"></canvas>
+                </div>
+                <!-- 클릭하면 상세 보기 -->
+                <div id="maleMainCategoryStats" class="category-stats-container" style="margin-top: 20px;">
                     <!-- 동적 생성 -->
                 </div>
             </div>
 
-            <!-- 여성 대분류별 통계 -->
+            <!-- 여성 대분류별 바 차트 -->
             <div class="section">
-                <h2 class="section-title">👩 여성 - 대분류별 통계</h2>
-                <div id="femaleMainCategoryStats" class="category-stats-container">
+                <h2 class="section-title">👩 여성 - 대분류별 스타일 수</h2>
+                <div class="chart-container">
+                    <canvas id="femaleBarChart"></canvas>
+                </div>
+                <!-- 클릭하면 상세 보기 -->
+                <div id="femaleMainCategoryStats" class="category-stats-container" style="margin-top: 20px;">
                     <!-- 동적 생성 -->
+                </div>
+            </div>
+
+            <!-- 중분류별 히트맵 스타일 테이블 -->
+            <div class="section">
+                <h2 class="section-title">중분류별 전체 현황 (히트맵)</h2>
+                <div class="heatmap-container">
+                    <table class="heatmap-table" id="heatmapTable">
+                        <!-- 동적 생성 -->
+                    </table>
                 </div>
             </div>
         </div>
@@ -2117,6 +2267,11 @@
             }
         }
 
+        // 차트 인스턴스 저장용
+        let genderPieChart = null;
+        let maleBarChart = null;
+        let femaleBarChart = null;
+
         // 통계 업데이트 함수
         async function updateStats() {
             try {
@@ -2186,6 +2341,14 @@
                 document.getElementById('totalMale').textContent = maleCount;
                 document.getElementById('totalFemale').textContent = femaleCount;
 
+                // 차트 렌더링
+                renderGenderPieChart(maleCount, femaleCount);
+                renderMaleBarChart(stats.male);
+                renderFemaleBarChart(stats.female);
+
+                // 히트맵 렌더링
+                renderHeatmap(stats);
+
                 // 남성 카테고리별 통계 렌더링
                 renderCategoryStats('male', stats.male);
 
@@ -2204,6 +2367,238 @@
                 document.getElementById('maleMainCategoryStats').innerHTML = '<div class="stats-loading" style="color: #ff4444;">로드 실패</div>';
                 document.getElementById('femaleMainCategoryStats').innerHTML = '<div class="stats-loading" style="color: #ff4444;">로드 실패</div>';
             }
+        }
+
+        // 남녀 비율 도넛 차트
+        function renderGenderPieChart(maleCount, femaleCount) {
+            const ctx = document.getElementById('genderPieChart').getContext('2d');
+
+            if (genderPieChart) {
+                genderPieChart.destroy();
+            }
+
+            genderPieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['👨 남성', '👩 여성'],
+                    datasets: [{
+                        data: [maleCount, femaleCount],
+                        backgroundColor: ['#4A90D9', '#FF1493'],
+                        borderColor: ['#3A80C9', '#E01483'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#fff',
+                                font: { size: 14 },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = maleCount + femaleCount;
+                                    const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
+                                    return `${context.label}: ${context.raw}개 (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 남성 대분류별 바 차트
+        function renderMaleBarChart(maleStats) {
+            const ctx = document.getElementById('maleBarChart').getContext('2d');
+
+            if (maleBarChart) {
+                maleBarChart.destroy();
+            }
+
+            const labels = CATEGORIES.male;
+            const data = labels.map(cat => maleStats[cat] ? maleStats[cat].total : 0);
+
+            maleBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '스타일 수',
+                        data: data,
+                        backgroundColor: 'rgba(74, 144, 217, 0.7)',
+                        borderColor: '#4A90D9',
+                        borderWidth: 2,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.raw}개`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#999' }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#4A90D9', font: { weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 여성 대분류별 바 차트
+        function renderFemaleBarChart(femaleStats) {
+            const ctx = document.getElementById('femaleBarChart').getContext('2d');
+
+            if (femaleBarChart) {
+                femaleBarChart.destroy();
+            }
+
+            const labels = CATEGORIES.female;
+            const data = labels.map(cat => femaleStats[cat] ? femaleStats[cat].total : 0);
+
+            femaleBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '스타일 수',
+                        data: data,
+                        backgroundColor: 'rgba(255, 20, 147, 0.7)',
+                        borderColor: '#FF1493',
+                        borderWidth: 2,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.raw}개`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#999' }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#FF1493', font: { weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 히트맵 렌더링
+        function renderHeatmap(stats) {
+            const table = document.getElementById('heatmapTable');
+
+            // 최대값 계산 (히트맵 강도용)
+            let maxValue = 0;
+            SUBCATEGORIES.forEach(sub => {
+                CATEGORIES.male.forEach(cat => {
+                    const val = stats.male[cat]?.subcategories[sub] || 0;
+                    if (val > maxValue) maxValue = val;
+                });
+                CATEGORIES.female.forEach(cat => {
+                    const val = stats.female[cat]?.subcategories[sub] || 0;
+                    if (val > maxValue) maxValue = val;
+                });
+            });
+
+            // 헤더 생성
+            let headerHtml = '<thead><tr><th rowspan="2">중분류</th>';
+            headerHtml += `<th colspan="${CATEGORIES.male.length}" class="gender-header male-header">👨 남성</th>`;
+            headerHtml += `<th colspan="${CATEGORIES.female.length}" class="gender-header female-header">👩 여성</th>`;
+            headerHtml += '</tr><tr>';
+
+            CATEGORIES.male.forEach(cat => {
+                headerHtml += `<th class="male-header">${cat}</th>`;
+            });
+            CATEGORIES.female.forEach(cat => {
+                headerHtml += `<th class="female-header">${cat}</th>`;
+            });
+            headerHtml += '</tr></thead>';
+
+            // 바디 생성
+            let bodyHtml = '<tbody>';
+            SUBCATEGORIES.forEach(sub => {
+                bodyHtml += `<tr><td class="category-name">${sub}</td>`;
+
+                // 남성 카테고리별
+                CATEGORIES.male.forEach(cat => {
+                    const count = stats.male[cat]?.subcategories[sub] || 0;
+                    const heatLevel = getHeatLevel(count, maxValue);
+                    const heatClass = count === 0 ? 'heat-0' : `male-heat-${heatLevel}`;
+                    bodyHtml += `<td class="male-cell ${heatClass}">${count}</td>`;
+                });
+
+                // 여성 카테고리별
+                CATEGORIES.female.forEach(cat => {
+                    const count = stats.female[cat]?.subcategories[sub] || 0;
+                    const heatLevel = getHeatLevel(count, maxValue);
+                    const heatClass = count === 0 ? 'heat-0' : `heat-${heatLevel}`;
+                    bodyHtml += `<td class="female-cell ${heatClass}">${count}</td>`;
+                });
+
+                bodyHtml += '</tr>';
+            });
+
+            // 합계 행
+            bodyHtml += '<tr class="heatmap-row-total"><td class="category-name" style="font-weight: bold;">합계</td>';
+            CATEGORIES.male.forEach(cat => {
+                const total = stats.male[cat]?.total || 0;
+                bodyHtml += `<td class="male-cell" style="font-weight: bold;">${total}</td>`;
+            });
+            CATEGORIES.female.forEach(cat => {
+                const total = stats.female[cat]?.total || 0;
+                bodyHtml += `<td class="female-cell" style="font-weight: bold;">${total}</td>`;
+            });
+            bodyHtml += '</tr></tbody>';
+
+            table.innerHTML = headerHtml + bodyHtml;
+        }
+
+        // 히트맵 강도 계산 (1-5)
+        function getHeatLevel(value, maxValue) {
+            if (value === 0 || maxValue === 0) return 0;
+            const ratio = value / maxValue;
+            if (ratio <= 0.2) return 1;
+            if (ratio <= 0.4) return 2;
+            if (ratio <= 0.6) return 3;
+            if (ratio <= 0.8) return 4;
+            return 5;
         }
 
         // 카테고리별 통계 렌더링
