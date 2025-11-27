@@ -2564,7 +2564,14 @@ function detectFullscreenMode() {
     const isFullscreen = window.matchMedia('(display-mode: fullscreen)').matches;
     const isNativeFullscreen = window.isFullscreen === true || window.webkit?.messageHandlers?.fullscreen;
 
-    if (isStandalone || isFullscreen || isNativeFullscreen) {
+    // iOS WebView 감지 (네이티브 앱 내에서 실행 중인지)
+    const isIOSWebView = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(navigator.userAgent) ||
+                         (window.webkit && window.webkit.messageHandlers);
+
+    // 태블릿 가로모드 감지
+    const isTabletLandscape = window.innerWidth >= 768 && window.innerWidth > window.innerHeight;
+
+    if (isStandalone || isFullscreen || isNativeFullscreen || (isIOSWebView && isTabletLandscape)) {
         document.body.classList.add('fullscreen-mode');
         console.log('📱 전체화면 모드 감지됨 - 레이아웃 조정 적용');
     }
@@ -2583,6 +2590,17 @@ function detectFullscreenMode() {
             document.body.classList.add('fullscreen-mode');
         } else {
             document.body.classList.remove('fullscreen-mode');
+        }
+    });
+
+    // 화면 회전/리사이즈 시 재감지
+    window.addEventListener('resize', () => {
+        const isIOSWebView = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(navigator.userAgent) ||
+                             (window.webkit && window.webkit.messageHandlers);
+        const isTabletLandscape = window.innerWidth >= 768 && window.innerWidth > window.innerHeight;
+
+        if (isIOSWebView && isTabletLandscape) {
+            document.body.classList.add('fullscreen-mode');
         }
     });
 }
