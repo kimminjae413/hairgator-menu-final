@@ -818,7 +818,7 @@
             gap: 20px;
             margin-top: 20px;
         }
-        
+
         .stat-card {
             background: #000;
             border: 1px solid #333;
@@ -826,16 +826,120 @@
             padding: 20px;
             text-align: center;
         }
-        
+
         .stat-number {
             font-size: 36px;
             color: #FF1493;
             font-weight: bold;
         }
-        
+
         .stat-label {
             color: #999;
             margin-top: 10px;
+        }
+
+        /* 카테고리별 통계 스타일 */
+        .category-stats-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .category-stat-card {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 15px 20px;
+            transition: all 0.3s;
+        }
+
+        .category-stat-card:hover {
+            border-color: #FF1493;
+            transform: translateX(5px);
+        }
+
+        .category-stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        .category-stat-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #FF1493;
+        }
+
+        .category-stat-total {
+            background: #FF1493;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .category-stat-total.zero {
+            background: #444;
+            color: #999;
+        }
+
+        .subcategory-stats {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #333;
+        }
+
+        .subcategory-stats.show {
+            display: block;
+        }
+
+        .subcategory-stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .subcategory-stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .subcategory-stat-name {
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        .subcategory-stat-count {
+            color: #FF69B4;
+            font-weight: bold;
+            font-size: 14px;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        .subcategory-stat-count.zero {
+            color: #666;
+        }
+
+        .expand-icon {
+            color: #999;
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+
+        .expand-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .stats-loading {
+            text-align: center;
+            color: #999;
+            padding: 20px;
         }
         
         /* 데이터 테이블 */
@@ -1130,6 +1234,22 @@
                         <div class="stat-number" id="totalFemale">0</div>
                         <div class="stat-label">여성 스타일</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- 남성 대분류별 통계 -->
+            <div class="section">
+                <h2 class="section-title">👨 남성 - 대분류별 통계</h2>
+                <div id="maleMainCategoryStats" class="category-stats-container">
+                    <!-- 동적 생성 -->
+                </div>
+            </div>
+
+            <!-- 여성 대분류별 통계 -->
+            <div class="section">
+                <h2 class="section-title">👩 여성 - 대분류별 통계</h2>
+                <div id="femaleMainCategoryStats" class="category-stats-container">
+                    <!-- 동적 생성 -->
                 </div>
             </div>
         </div>
@@ -2002,31 +2122,146 @@
             try {
                 console.log('📊 통계 업데이트 시작...');
 
+                // 로딩 표시
+                document.getElementById('maleMainCategoryStats').innerHTML = '<div class="stats-loading">로딩 중...</div>';
+                document.getElementById('femaleMainCategoryStats').innerHTML = '<div class="stats-loading">로딩 중...</div>';
+
                 // 전체 스타일 수
                 const stylesSnapshot = await db.collection('hairstyles').get();
                 const totalStyles = stylesSnapshot.size;
                 document.getElementById('totalStyles').textContent = totalStyles;
 
-                // 남성/여성 스타일 수
+                // 통계 데이터 구조 초기화
+                const stats = {
+                    male: {},
+                    female: {}
+                };
+
+                // 남성 대분류 초기화
+                CATEGORIES.male.forEach(cat => {
+                    stats.male[cat] = { total: 0, subcategories: {} };
+                    SUBCATEGORIES.forEach(sub => {
+                        stats.male[cat].subcategories[sub] = 0;
+                    });
+                });
+
+                // 여성 대분류 초기화
+                CATEGORIES.female.forEach(cat => {
+                    stats.female[cat] = { total: 0, subcategories: {} };
+                    SUBCATEGORIES.forEach(sub => {
+                        stats.female[cat].subcategories[sub] = 0;
+                    });
+                });
+
+                // 남성/여성 스타일 수 & 카테고리별 집계
                 let maleCount = 0;
                 let femaleCount = 0;
+
                 stylesSnapshot.forEach(doc => {
                     const data = doc.data();
-                    if (data.gender === 'male') maleCount++;
-                    if (data.gender === 'female') femaleCount++;
+                    const gender = data.gender;
+                    const mainCategory = data.mainCategory;
+                    const subCategory = data.subCategory;
+
+                    if (gender === 'male') {
+                        maleCount++;
+                        if (stats.male[mainCategory]) {
+                            stats.male[mainCategory].total++;
+                            if (stats.male[mainCategory].subcategories[subCategory] !== undefined) {
+                                stats.male[mainCategory].subcategories[subCategory]++;
+                            }
+                        }
+                    }
+                    if (gender === 'female') {
+                        femaleCount++;
+                        if (stats.female[mainCategory]) {
+                            stats.female[mainCategory].total++;
+                            if (stats.female[mainCategory].subcategories[subCategory] !== undefined) {
+                                stats.female[mainCategory].subcategories[subCategory]++;
+                            }
+                        }
+                    }
                 });
+
                 document.getElementById('totalMale').textContent = maleCount;
                 document.getElementById('totalFemale').textContent = femaleCount;
+
+                // 남성 카테고리별 통계 렌더링
+                renderCategoryStats('male', stats.male);
+
+                // 여성 카테고리별 통계 렌더링
+                renderCategoryStats('female', stats.female);
 
                 console.log('✅ 통계 업데이트 완료:', {
                     styles: totalStyles,
                     male: maleCount,
-                    female: femaleCount
+                    female: femaleCount,
+                    stats: stats
                 });
 
             } catch (error) {
                 console.error('❌ 통계 업데이트 오류:', error);
-                alert('통계 로드 중 오류가 발생했습니다: ' + error.message);
+                document.getElementById('maleMainCategoryStats').innerHTML = '<div class="stats-loading" style="color: #ff4444;">로드 실패</div>';
+                document.getElementById('femaleMainCategoryStats').innerHTML = '<div class="stats-loading" style="color: #ff4444;">로드 실패</div>';
+            }
+        }
+
+        // 카테고리별 통계 렌더링
+        function renderCategoryStats(gender, categoryStats) {
+            const containerId = gender === 'male' ? 'maleMainCategoryStats' : 'femaleMainCategoryStats';
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            const categories = CATEGORIES[gender];
+
+            categories.forEach((category, index) => {
+                const catStat = categoryStats[category];
+                const total = catStat ? catStat.total : 0;
+
+                const card = document.createElement('div');
+                card.className = 'category-stat-card';
+                card.id = `${gender}-${index}`;
+
+                // 중분류 통계 HTML 생성
+                let subcategoryHtml = '';
+                SUBCATEGORIES.forEach(sub => {
+                    const count = catStat && catStat.subcategories[sub] !== undefined ? catStat.subcategories[sub] : 0;
+                    subcategoryHtml += `
+                        <div class="subcategory-stat-row">
+                            <span class="subcategory-stat-name">${sub}</span>
+                            <span class="subcategory-stat-count ${count === 0 ? 'zero' : ''}">${count}개</span>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="category-stat-header" onclick="toggleSubcategoryStats('${gender}-${index}')">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="category-stat-name">${category}</span>
+                            <span class="expand-icon" id="icon-${gender}-${index}">▼</span>
+                        </div>
+                        <span class="category-stat-total ${total === 0 ? 'zero' : ''}">${total}개</span>
+                    </div>
+                    <div class="subcategory-stats" id="sub-${gender}-${index}">
+                        ${subcategoryHtml}
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // 중분류 통계 토글
+        function toggleSubcategoryStats(cardId) {
+            const subContainer = document.getElementById(`sub-${cardId}`);
+            const icon = document.getElementById(`icon-${cardId}`);
+
+            if (subContainer.classList.contains('show')) {
+                subContainer.classList.remove('show');
+                icon.classList.remove('rotated');
+            } else {
+                subContainer.classList.add('show');
+                icon.classList.add('rotated');
             }
         }
 
