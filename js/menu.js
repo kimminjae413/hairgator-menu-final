@@ -6,12 +6,23 @@
  * @returns {string} - 썸네일 URL (없으면 원본 imageUrl)
  */
 function getThumbnailUrl(style) {
+    let url = '';
+
     // thumbnailUrl이 있으면 우선 사용
     if (style.thumbnailUrl) {
-        return style.thumbnailUrl;
+        url = style.thumbnailUrl;
+    } else {
+        // 없으면 원본 imageUrl 반환
+        url = style.imageUrl || (style.media && style.media.images && style.media.images[0]) || '';
     }
-    // 없으면 원본 imageUrl 반환
-    return style.imageUrl || (style.media && style.media.images && style.media.images[0]) || '';
+
+    // 캐시 우회: updatedAt 또는 현재 날짜를 캐시 버스터로 사용
+    if (url && style.updatedAt) {
+        const cacheBuster = style.updatedAt.seconds || style.updatedAt;
+        url += (url.includes('?') ? '&' : '?') + 'v=' + cacheBuster;
+    }
+
+    return url;
 }
 
 // ========== 룩북 크레딧 차감 (menu.js에서 호출) ==========

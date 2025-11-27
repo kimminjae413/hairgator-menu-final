@@ -3147,9 +3147,10 @@
                         const thumbUpload = await thumbRef.put(thumbnailBlob);
                         const thumbnailUrl = await thumbUpload.ref.getDownloadURL();
 
-                        // Firestore 업데이트
+                        // Firestore 업데이트 (updatedAt도 함께 업데이트하여 캐시 우회)
                         await db.collection('hairstyles').doc(style.id).update({
-                            thumbnailUrl: thumbnailUrl
+                            thumbnailUrl: thumbnailUrl,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
 
                         success++;
@@ -3229,9 +3230,10 @@
                         const thumbUpload = await thumbRef.put(thumbnailBlob);
                         const thumbnailUrl = await thumbUpload.ref.getDownloadURL();
 
-                        // Firestore 업데이트
+                        // Firestore 업데이트 (updatedAt도 함께 업데이트하여 캐시 우회)
                         await db.collection('hairstyles').doc(style.id).update({
-                            thumbnailUrl: thumbnailUrl
+                            thumbnailUrl: thumbnailUrl,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
 
                         // 기존 썸네일 삭제 시도 (선택사항)
