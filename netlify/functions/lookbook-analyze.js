@@ -297,35 +297,28 @@ async function editWithGemini25FlashImage(originalImageUrl, analysis, apiKey, ha
             matchReason: '헤어스타일과 조화로운 패션'
         };
 
-        // 전신샷 프롬프트: 헤어스타일 + 얼굴 + 전체 패션 코디
-        return `Generate a FULL BODY fashion photo of this person wearing a new outfit.
+        // 전신샷 프롬프트: 헤어스타일 유지 + 패션 코디
+        return `Generate a FULL BODY fashion photo of a ${hairGender} model with the EXACT SAME HAIRSTYLE as the reference image.
 
-⚠️ ABSOLUTE HAIR REQUIREMENTS - DO NOT CHANGE THE HAIR:
+⚠️ CRITICAL - HAIRSTYLE MUST BE PRESERVED EXACTLY:
 - Gender: ${hairGender.toUpperCase()}
-- Hair Category: ${hairCategory || 'as shown in image'}
-- Hair Style: ${hairStyleName || 'as shown in image'}
-- Hair Description: ${hairLengthDesc}
-- THE HAIR MUST BE EXACTLY THE SAME AS THE REFERENCE IMAGE
-- ${hairGender === 'male' ? 'DO NOT make the hair longer. Keep it SHORT as shown.' : 'Keep the same hair length as the reference.'}
-- DO NOT change hair length, color, texture, or style
-- If the reference shows short hair, the output MUST have short hair
+- Hairstyle: ${hairLengthDesc}
+${hairCategory ? `- Hair Category: ${hairCategory}` : ''}
+${hairStyleName ? `- Style Name: ${hairStyleName}` : ''}
+- COPY THE EXACT HAIRSTYLE from the reference: same length, same cut, same texture, same color
+- ${hairGender === 'male' ? '⚠️ THIS IS SHORT MALE HAIR - DO NOT generate long hair! Keep it SHORT!' : ''}
+- The hairstyle is the MOST IMPORTANT element to preserve
 
-CRITICAL REQUIREMENTS:
-1. FULL BODY SHOT: Show the complete person from head to toe
-2. SAME FACE: Keep the exact same face from the reference image
-3. SAME HAIRSTYLE: Hair must be IDENTICAL - ${hairLengthDesc}
-4. NEW OUTFIT ONLY: Only change the clothes, nothing else
+FASHION OUTFIT TO WEAR:
+- Style: ${fashionStyle}
+- Clothing: ${guide.clothingStyle}
+- Items: ${fashionItems}
 
-FASHION STYLE: ${fashionStyle}
-OUTFIT DETAILS: ${guide.clothingStyle}
-SPECIFIC ITEMS: ${fashionItems}
-
-OUTPUT FORMAT:
-- Full body portrait shot (head to toe visible)
-- Fashion magazine editorial quality
-- Clean background (white or light gray)
-- Professional lighting
-- Hair MUST match the reference image exactly`;
+OUTPUT:
+- Full body shot (head to toe)
+- Fashion editorial quality
+- Clean background
+- The model can look different, but the HAIRSTYLE must be IDENTICAL to the reference`;
     });
 
     try {
