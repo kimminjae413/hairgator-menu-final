@@ -668,7 +668,7 @@ ${genderInstruction}
     ],
     "maintenance": {
         "hydration": "높음/중간/낮음",
-        "trimCycle": "숫자 (주 단위)",
+        "trimCycle": "숫자만 (커트 주기 가이드: 남성 버즈/크롭컷 3-4주, 남성 일반 숏컷 4-5주, 여성 숏컷 4-6주, 여성 미디엄 6-8주, 여성 롱헤어 8-12주)",
         "products": ["제품 3개"],
         "tips": "관리 팁"
     },
@@ -738,7 +738,7 @@ Respond in the following JSON format:
     ],
     "maintenance": {
         "hydration": "High/Medium/Low",
-        "trimCycle": "number only (in weeks)",
+        "trimCycle": "number only (Trim guide: male buzz/crop 3-4wks, male short 4-5wks, female short 4-6wks, female medium 6-8wks, female long 8-12wks)",
         "products": ["3 products"],
         "tips": "maintenance tip"
     },
@@ -804,7 +804,7 @@ ${genderInstruction}
     ],
     "maintenance": {
         "hydration": "高い/中程度/低い",
-        "trimCycle": "数字のみ（週単位）",
+        "trimCycle": "数字のみ（カット周期ガイド：男性バズ/クロップ3-4週、男性ショート4-5週、女性ショート4-6週、女性ミディアム6-8週、女性ロング8-12週）",
         "products": ["製品3つ"],
         "tips": "ケアのヒント"
     },
@@ -870,7 +870,7 @@ ${genderInstruction}
     ],
     "maintenance": {
         "hydration": "高/中/低",
-        "trimCycle": "仅数字（周为单位）",
+        "trimCycle": "仅数字（剪发周期指南：男性寸头/短碎3-4周、男性短发4-5周、女性短发4-6周、女性中发6-8周、女性长发8-12周）",
         "products": ["产品3个"],
         "tips": "护理技巧"
     },
@@ -936,7 +936,7 @@ Vui lòng trả lời theo định dạng JSON sau：
     ],
     "maintenance": {
         "hydration": "Cao/Trung bình/Thấp",
-        "trimCycle": "chỉ số (đơn vị tuần)",
+        "trimCycle": "chỉ số (Hướng dẫn cắt: nam buzz/crop 3-4 tuần, nam ngắn 4-5 tuần, nữ ngắn 4-6 tuần, nữ trung 6-8 tuần, nữ dài 8-12 tuần)",
         "products": ["3 sản phẩm"],
         "tips": "mẹo chăm sóc"
     },
