@@ -2708,29 +2708,10 @@ body.light-theme .modal-action-btn.secondary:hover {
 
 /* 태블릿 가로모드 (네이티브 앱 풀스크린) */
 @media (min-width: 768px) and (orientation: landscape) {
-    /* 뒤로가기, 언어 버튼을 오른쪽으로 이동 */
-    .back-btn {
-        left: auto;
-        right: 100px;
-        top: 15px;
-    }
-
-    .language-btn {
-        left: auto;
-        right: 55px;
-        top: 12px;
-    }
-
     /* 스타일 그리드 위치 아래로 조정 */
     .styles-container,
     .menu-items-container {
-        top: 330px !important;
-        padding-top: 15px;
-    }
-
-    /* 중분류 탭 하단 여백 추가 */
-    .sub-tabs {
-        margin-bottom: 15px;
+        top: 270px !important;
     }
 }
 
@@ -2750,31 +2731,14 @@ body.fullscreen-mode .language-btn {
 
 /* 태블릿 가로모드 + fullscreen-mode 클래스 */
 @media (min-width: 768px) and (orientation: landscape) {
-    body.fullscreen-mode .back-btn {
-        left: auto;
-        right: 100px;
-        top: 15px;
-    }
-
-    body.fullscreen-mode .language-btn {
-        left: auto;
-        right: 55px;
-        top: 12px;
-    }
-
     body.fullscreen-mode .menu-items-container,
     body.fullscreen-mode .styles-container {
-        top: 330px !important;
-        padding-top: 15px;
-    }
-
-    body.fullscreen-mode .sub-tabs {
-        margin-bottom: 15px;
+        top: 270px !important;
     }
 }
 
 /* 풀스크린 모드 스타일 영역 위치 조정 */
 body.fullscreen-mode .styles-container,
 body.fullscreen-mode .menu-items-container {
-    top: 330px !important;
+    top: 270px !important;
 }
