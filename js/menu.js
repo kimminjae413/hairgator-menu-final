@@ -2552,11 +2552,60 @@ function closeStyleModal() {
     }
 }
 
+// ========== 전체화면 모드 감지 ==========
+
+/**
+ * 전체화면 모드 감지 (네이티브 앱에서 전체화면일 때 레이아웃 조정)
+ * - display-mode: fullscreen/standalone 미디어 쿼리
+ * - 또는 네이티브 앱에서 window.isFullscreen 변수 전달
+ */
+function detectFullscreenMode() {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isFullscreen = window.matchMedia('(display-mode: fullscreen)').matches;
+    const isNativeFullscreen = window.isFullscreen === true || window.webkit?.messageHandlers?.fullscreen;
+
+    if (isStandalone || isFullscreen || isNativeFullscreen) {
+        document.body.classList.add('fullscreen-mode');
+        console.log('📱 전체화면 모드 감지됨 - 레이아웃 조정 적용');
+    }
+
+    // 전체화면 상태 변경 감지
+    window.matchMedia('(display-mode: fullscreen)').addEventListener('change', (e) => {
+        if (e.matches) {
+            document.body.classList.add('fullscreen-mode');
+        } else {
+            document.body.classList.remove('fullscreen-mode');
+        }
+    });
+
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
+        if (e.matches) {
+            document.body.classList.add('fullscreen-mode');
+        } else {
+            document.body.classList.remove('fullscreen-mode');
+        }
+    });
+}
+
+// 네이티브 앱에서 호출 가능한 전체화면 모드 설정 함수
+window.setFullscreenMode = function(isFullscreen) {
+    if (isFullscreen) {
+        document.body.classList.add('fullscreen-mode');
+        console.log('📱 전체화면 모드 활성화 (네이티브 호출)');
+    } else {
+        document.body.classList.remove('fullscreen-mode');
+        console.log('📱 전체화면 모드 비활성화 (네이티브 호출)');
+    }
+};
+
 // ========== 이벤트 리스너 ==========
 
 // DOM 로드 완료 시 초기화
 document.addEventListener('DOMContentLoaded', function () {
     console.log('HAIRGATOR 메뉴 시스템 로드 완료 - 헤어체험 연동 최종 버전');
+
+    // 전체화면 모드 감지 (네이티브 앱)
+    detectFullscreenMode();
 
     // 엑스 버튼 클릭 이벤트 (네이티브 앱 대응)
     const closeBtn = document.getElementById('styleModalClose');

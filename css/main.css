@@ -2681,3 +2681,91 @@ body.light-theme .modal-action-btn.secondary:hover {
         grid-template-columns: repeat(4, 1fr);
     }
 }
+
+/* ========== 전체화면 모드 레이아웃 조정 (네이티브 앱) ========== */
+/* 전체화면 모드: display-mode standalone 또는 fullscreen 감지 */
+@media (display-mode: fullscreen), (display-mode: standalone) {
+    /* 헤더 상단 여백 추가 (네이티브 X 버튼 공간) */
+    .header {
+        padding-top: 50px;
+        height: calc(50px + 50px);
+    }
+
+    /* 뒤로가기, 언어 버튼 위치 조정 */
+    .back-btn {
+        top: 50px;
+    }
+
+    .language-btn {
+        top: calc(50px + 7px);
+    }
+
+    /* 메뉴 컨테이너 시작 위치 조정 */
+    .menu-container {
+        padding-top: 50px;
+    }
+}
+
+/* 태블릿 가로모드 + 전체화면 모드 */
+@media (min-width: 768px) and (orientation: landscape) and (display-mode: fullscreen),
+       (min-width: 768px) and (orientation: landscape) and (display-mode: standalone) {
+    /* 뒤로가기, 언어 버튼을 오른쪽으로 이동 */
+    .back-btn {
+        left: auto;
+        right: 100px;
+        top: 15px;
+    }
+
+    .language-btn {
+        left: auto;
+        right: 55px;
+        top: 12px;
+    }
+
+    /* 스타일 그리드 상단 여백 추가 */
+    .menu-items-container {
+        padding-top: 15px;
+    }
+
+    /* 중분류 탭 하단 여백 추가 */
+    .sub-tabs {
+        margin-bottom: 15px;
+    }
+}
+
+/* body.fullscreen-mode 클래스로도 지원 (JS에서 추가) */
+body.fullscreen-mode .header {
+    padding-top: 50px;
+    height: calc(50px + 50px);
+}
+
+body.fullscreen-mode .back-btn {
+    top: 50px;
+}
+
+body.fullscreen-mode .language-btn {
+    top: calc(50px + 7px);
+}
+
+/* 태블릿 가로모드 + fullscreen-mode 클래스 */
+@media (min-width: 768px) and (orientation: landscape) {
+    body.fullscreen-mode .back-btn {
+        left: auto;
+        right: 100px;
+        top: 15px;
+    }
+
+    body.fullscreen-mode .language-btn {
+        left: auto;
+        right: 55px;
+        top: 12px;
+    }
+
+    body.fullscreen-mode .menu-items-container {
+        padding-top: 15px;
+    }
+
+    body.fullscreen-mode .sub-tabs {
+        margin-bottom: 15px;
+    }
+}
