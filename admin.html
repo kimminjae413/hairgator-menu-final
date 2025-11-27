@@ -1539,7 +1539,7 @@
             if (!url.includes('firebasestorage.googleapis.com') && !url.includes('firebase')) {
                 return url;
             }
-            const transforms = 'tr:w-200,h-250,fo-auto,q-70,f-auto';
+            const transforms = 'tr:w-300,h-375,fo-auto,q-85,f-auto';
             // Absolute URL fetch 형식 - URL 인코딩 없이 그대로 사용
             return `${IMAGEKIT_URL}/${transforms}/${url}`;
         }

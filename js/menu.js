@@ -25,8 +25,8 @@ function getOptimizedImageUrl(url, options = {}) {
     let transforms = [];
 
     if (options.thumbnail) {
-        // 썸네일 모드 (목록용)
-        transforms.push('w-200', 'h-250', 'fo-auto', 'q-70');
+        // 썸네일 모드 (목록용) - 카드 크기에 맞춘 고품질
+        transforms.push('w-300', 'h-375', 'fo-auto', 'q-85');
     } else {
         if (options.width) transforms.push(`w-${options.width}`);
         if (options.height) transforms.push(`h-${options.height}`);
