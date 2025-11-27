@@ -1540,8 +1540,8 @@
                 return url;
             }
             const transforms = 'tr:w-200,h-250,fo-auto,q-70,f-auto';
-            const encodedUrl = encodeURIComponent(url);
-            return `${IMAGEKIT_URL}/${transforms}/${encodedUrl}`;
+            // Absolute URL fetch 형식 - URL 인코딩 없이 그대로 사용
+            return `${IMAGEKIT_URL}/${transforms}/${url}`;
         }
 
         // Firebase 설정

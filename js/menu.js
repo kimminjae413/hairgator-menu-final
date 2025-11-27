@@ -38,10 +38,8 @@ function getOptimizedImageUrl(url, options = {}) {
 
     const transformStr = transforms.length > 0 ? `tr:${transforms.join(',')}` : '';
 
-    // URL 인코딩
-    const encodedUrl = encodeURIComponent(url);
-
-    return `${IMAGEKIT_URL}/${transformStr}/${encodedUrl}`;
+    // Absolute URL fetch 형식 - URL 인코딩 없이 그대로 사용
+    return `${IMAGEKIT_URL}/${transformStr}/${url}`;
 }
 
 /**
