@@ -1562,3 +1562,15 @@ body {
         grid-template-columns: 1fr 1fr;
     }
 }
+
+/* ========== 태블릿 가로모드 AI 분석 섹션 위치 조정 ========== */
+@media (min-width: 768px) and (orientation: landscape) {
+    #ai-analysis,
+    #draping-mode {
+        padding-top: 60px;
+    }
+
+    .section-nav {
+        margin-top: 20px;
+    }
+}
