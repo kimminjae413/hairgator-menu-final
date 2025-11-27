@@ -1206,7 +1206,7 @@ function openMirrorCamera() {
                 <button class="camera-close-btn" onclick="closeCameraModal()">✕</button>
             </div>
             <div class="camera-body">
-                <video id="cameraPreview" autoplay playsinline muted></video>
+                <video id="cameraPreview" autoplay playsinline webkit-playsinline muted></video>
                 <div class="camera-guide">
                     <div class="face-guide-circle"></div>
                     <p>얼굴을 원 안에 맞춰주세요</p>
@@ -1266,11 +1266,13 @@ async function startCamera(facingMode = 'user') {
         currentStream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = currentStream;
 
-        // 전면 카메라일 때 거울모드 적용
+        // 전면 카메라일 때 거울모드 적용 (iOS 호환)
         if (facingMode === 'user') {
-            video.style.transform = 'scaleX(-1)';
+            video.style.transform = 'scaleX(-1) translateZ(0)';
+            video.style.webkitTransform = 'scaleX(-1) translateZ(0)';
         } else {
-            video.style.transform = 'scaleX(1)';
+            video.style.transform = 'scaleX(1) translateZ(0)';
+            video.style.webkitTransform = 'scaleX(1) translateZ(0)';
         }
 
         console.log('📹 카메라 시작:', facingMode === 'user' ? '전면(거울모드)' : '후면');
@@ -1409,25 +1411,35 @@ function addCameraModalStyles() {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            -webkit-transform: translateZ(0);
         }
         .camera-guide {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            -webkit-transform: translate(-50%, -50%);
             text-align: center;
             pointer-events: none;
+            z-index: 10;
         }
         .face-guide-circle {
             width: 250px;
             height: 320px;
-            border: 3px dashed rgba(255, 255, 255, 0.5);
+            border: 3px dashed rgba(255, 255, 255, 0.8);
             border-radius: 50%;
             margin: 0 auto 15px;
+            background: transparent;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
         }
         .camera-guide p {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.9);
             font-size: 14px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
         }
         .camera-controls {
             display: flex;
