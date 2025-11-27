@@ -1309,10 +1309,14 @@ async function processAIFaceSwap() {
     const loadingOverlay = createHairTryLoadingOverlay();
     document.body.appendChild(loadingOverlay);
 
+    let tempStoragePath = null; // 임시 파일 경로 저장
+
     try {
         // 1. 고객 사진을 Firebase Storage에 임시 업로드하여 URL 획득
         console.log('📤 고객 사진 임시 업로드 중...');
-        const customerPhotoUrl = await uploadCustomerPhotoToStorage(customerPhoto);
+        const uploadResult = await uploadCustomerPhotoToStorage(customerPhoto);
+        const customerPhotoUrl = uploadResult.url;
+        tempStoragePath = uploadResult.path; // 삭제용 경로 저장
         console.log('✅ 고객 사진 URL:', customerPhotoUrl);
 
         // 2. API 호출
@@ -1337,6 +1341,11 @@ async function processAIFaceSwap() {
             throw new Error('결과 이미지를 받지 못했습니다');
         }
 
+        // 3. 임시 파일 삭제 (결과 받은 후 즉시)
+        if (tempStoragePath) {
+            deleteTemporaryFile(tempStoragePath);
+        }
+
         // 로딩 오버레이 제거
         loadingOverlay.remove();
 
@@ -1351,6 +1360,10 @@ async function processAIFaceSwap() {
         deductLookbookCreditFromMenu(HAIR_TRY_CREDIT_COST);
 
     } catch (error) {
+        // 에러 발생 시에도 임시 파일 삭제 시도
+        if (tempStoragePath) {
+            deleteTemporaryFile(tempStoragePath);
+        }
         console.error('💇 헤어체험 API 오류:', error);
         loadingOverlay.remove();
 
@@ -1397,15 +1410,31 @@ async function uploadCustomerPhotoToStorage(base64Data) {
     const timestamp = Date.now();
     const randomId = Math.random().toString(36).substring(2, 8);
     const extension = mimeType.split('/')[1] || 'jpg';
-    const filename = `hair-try-temp/${timestamp}_${randomId}.${extension}`;
+    const filePath = `hair-try-temp/${timestamp}_${randomId}.${extension}`;
 
     // Firebase Storage에 업로드
-    const storageRef = storage.ref().child(filename);
+    const storageRef = storage.ref().child(filePath);
     const uploadTask = await storageRef.put(blob);
     const downloadUrl = await uploadTask.ref.getDownloadURL();
 
-    console.log('📤 임시 업로드 완료:', filename);
-    return downloadUrl;
+    console.log('📤 임시 업로드 완료:', filePath);
+    return { url: downloadUrl, path: filePath };
+}
+
+// 임시 파일 삭제 (비동기, 실패해도 무시)
+function deleteTemporaryFile(filePath) {
+    if (!filePath || typeof storage === 'undefined') return;
+
+    try {
+        const fileRef = storage.ref().child(filePath);
+        fileRef.delete().then(() => {
+            console.log('🗑️ 임시 파일 삭제 완료:', filePath);
+        }).catch((err) => {
+            console.warn('🗑️ 임시 파일 삭제 실패 (무시됨):', err.message);
+        });
+    } catch (e) {
+        console.warn('🗑️ 임시 파일 삭제 중 오류:', e);
+    }
 }
 
 // 헤어체험 로딩 오버레이 생성
