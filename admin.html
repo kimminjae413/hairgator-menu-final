@@ -1419,6 +1419,31 @@
                     썸네일이 없는 기존 스타일들에 대해 썸네일을 자동 생성합니다.<br>
                     (이미지 최적화로 로딩 속도가 향상됩니다)
                 </p>
+
+                <!-- 화질 선택 -->
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">썸네일 화질 선택</label>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 8px 12px; background: #333; border-radius: 6px; border: 2px solid transparent;" class="quality-option">
+                            <input type="radio" name="thumbnailQuality" value="0.85" checked style="accent-color: #6366f1;">
+                            <span>85% (고화질)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 8px 12px; background: #333; border-radius: 6px; border: 2px solid transparent;" class="quality-option">
+                            <input type="radio" name="thumbnailQuality" value="0.80" style="accent-color: #6366f1;">
+                            <span>80% (권장)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 8px 12px; background: #333; border-radius: 6px; border: 2px solid transparent;" class="quality-option">
+                            <input type="radio" name="thumbnailQuality" value="0.75" style="accent-color: #6366f1;">
+                            <span>75% (중간)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 8px 12px; background: #333; border-radius: 6px; border: 2px solid transparent;" class="quality-option">
+                            <input type="radio" name="thumbnailQuality" value="0.70" style="accent-color: #6366f1;">
+                            <span>70% (빠른로딩)</span>
+                        </label>
+                    </div>
+                    <p style="color: #666; font-size: 12px; margin-top: 8px;">* 화질이 낮을수록 파일 크기가 작아져 로딩이 빨라집니다</p>
+                </div>
+
                 <div style="margin-bottom: 10px;">
                     <span id="thumbnailStatus">대기 중...</span>
                 </div>
@@ -1428,7 +1453,8 @@
                     </div>
                 </div>
                 <button class="btn" onclick="checkThumbnailStatus()" style="margin-right: 10px;">상태 확인</button>
-                <button class="btn" onclick="generateAllThumbnails()" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">썸네일 일괄 생성</button>
+                <button class="btn" onclick="generateAllThumbnails()" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); margin-right: 10px;">썸네일 일괄 생성 (미완료만)</button>
+                <button class="btn" onclick="regenerateAllThumbnails()" style="background: linear-gradient(135deg, #f59e0b, #d97706);">전체 재생성 (화질 변경)</button>
             </div>
         </div>
     </div>
@@ -3046,12 +3072,19 @@
             }
         }
 
-        // 썸네일 일괄 생성
+        // 선택한 화질 값 가져오기
+        function getSelectedQuality() {
+            const selected = document.querySelector('input[name="thumbnailQuality"]:checked');
+            return selected ? parseFloat(selected.value) : 0.85;
+        }
+
+        // 썸네일 일괄 생성 (미완료만)
         async function generateAllThumbnails() {
             const statusEl = document.getElementById('thumbnailStatus');
             const progressEl = document.getElementById('thumbnailProgress');
+            const quality = getSelectedQuality();
 
-            if (!confirm('썸네일이 없는 모든 스타일에 대해 썸네일을 생성합니다.\n시간이 오래 걸릴 수 있습니다. 계속하시겠습니까?')) {
+            if (!confirm(`썸네일이 없는 스타일에 대해 ${Math.round(quality * 100)}% 화질로 썸네일을 생성합니다.\n시간이 오래 걸릴 수 있습니다. 계속하시겠습니까?`)) {
                 return;
             }
 
@@ -3081,7 +3114,7 @@
                     return;
                 }
 
-                statusEl.textContent = `${stylesToProcess.length}개 스타일 처리 시작...`;
+                statusEl.textContent = `${stylesToProcess.length}개 스타일 처리 시작... (${Math.round(quality * 100)}% 화질)`;
 
                 let processed = 0;
                 let success = 0;
@@ -3091,8 +3124,8 @@
                     try {
                         statusEl.textContent = `처리 중: ${style.name} (${processed + 1}/${stylesToProcess.length})`;
 
-                        // 썸네일 생성
-                        const thumbnailBlob = await createThumbnailFromUrl(style.imageUrl);
+                        // 썸네일 생성 (선택한 화질 적용)
+                        const thumbnailBlob = await createThumbnailFromUrl(style.imageUrl, 300, 375, quality);
 
                         // Firebase Storage에 업로드
                         const timestamp = Date.now();
@@ -3124,6 +3157,98 @@
                 console.error('썸네일 일괄 생성 오류:', error);
                 statusEl.textContent = '오류 발생: ' + error.message;
                 showToast('썸네일 생성 중 오류 발생');
+            }
+        }
+
+        // 전체 썸네일 재생성 (화질 변경 시)
+        async function regenerateAllThumbnails() {
+            const statusEl = document.getElementById('thumbnailStatus');
+            const progressEl = document.getElementById('thumbnailProgress');
+            const quality = getSelectedQuality();
+
+            if (!confirm(`모든 스타일의 썸네일을 ${Math.round(quality * 100)}% 화질로 다시 생성합니다.\n\n⚠️ 기존 썸네일이 모두 교체됩니다.\n⚠️ 시간이 오래 걸릴 수 있습니다.\n\n계속하시겠습니까?`)) {
+                return;
+            }
+
+            statusEl.textContent = '데이터 로드 중...';
+            progressEl.style.width = '0%';
+
+            try {
+                const snapshot = await db.collection('hairstyles').get();
+                const stylesToProcess = [];
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const imageUrl = data.imageUrl || (data.media && data.media.images && data.media.images[data.media.mainImageIndex || 0]);
+
+                    if (imageUrl) {
+                        stylesToProcess.push({
+                            id: doc.id,
+                            imageUrl: imageUrl,
+                            name: data.name || doc.id,
+                            oldThumbnailUrl: data.thumbnailUrl
+                        });
+                    }
+                });
+
+                if (stylesToProcess.length === 0) {
+                    statusEl.textContent = '처리할 스타일이 없습니다.';
+                    return;
+                }
+
+                statusEl.textContent = `${stylesToProcess.length}개 스타일 재생성 시작... (${Math.round(quality * 100)}% 화질)`;
+
+                let processed = 0;
+                let success = 0;
+                let failed = 0;
+
+                for (const style of stylesToProcess) {
+                    try {
+                        statusEl.textContent = `재생성 중: ${style.name} (${processed + 1}/${stylesToProcess.length})`;
+
+                        // 새 썸네일 생성 (선택한 화질 적용)
+                        const thumbnailBlob = await createThumbnailFromUrl(style.imageUrl, 300, 375, quality);
+
+                        // Firebase Storage에 업로드
+                        const timestamp = Date.now();
+                        const thumbFilename = `${timestamp}_${style.id}_thumb.jpg`;
+                        const thumbRef = storage.ref().child(`hairstyles/thumbnails/${thumbFilename}`);
+                        const thumbUpload = await thumbRef.put(thumbnailBlob);
+                        const thumbnailUrl = await thumbUpload.ref.getDownloadURL();
+
+                        // Firestore 업데이트
+                        await db.collection('hairstyles').doc(style.id).update({
+                            thumbnailUrl: thumbnailUrl
+                        });
+
+                        // 기존 썸네일 삭제 시도 (선택사항)
+                        if (style.oldThumbnailUrl) {
+                            try {
+                                const oldRef = storage.refFromURL(style.oldThumbnailUrl);
+                                await oldRef.delete();
+                            } catch (delError) {
+                                console.warn('기존 썸네일 삭제 실패 (무시):', delError);
+                            }
+                        }
+
+                        success++;
+                    } catch (error) {
+                        console.error(`썸네일 재생성 실패 (${style.name}):`, error);
+                        failed++;
+                    }
+
+                    processed++;
+                    const percentage = Math.round((processed / stylesToProcess.length) * 100);
+                    progressEl.style.width = percentage + '%';
+                }
+
+                statusEl.innerHTML = `재생성 완료! <b style="color: #4caf50;">${success}개 성공</b>, <b style="color: #f44336;">${failed}개 실패</b> (${Math.round(quality * 100)}% 화질)`;
+                showToast(`썸네일 재생성 완료: ${success}개 성공, ${failed}개 실패`);
+
+            } catch (error) {
+                console.error('썸네일 재생성 오류:', error);
+                statusEl.textContent = '오류 발생: ' + error.message;
+                showToast('썸네일 재생성 중 오류 발생');
             }
         }
         </script>
