@@ -626,10 +626,23 @@ ${genderInstruction}
 - 먼저 이미지를 꼼꼼히 살펴보세요: 길이, 결, 볼륨 위치, 앞머리 형태, 레이어 유무, 컬/웨이브 패턴
 - 이 헤어스타일만의 고유한 특징을 찾아내세요
 
-【텍스처별 맞춤 조언】
-- 직모/스트레이트: 윤기 관리, 정전기 방지, 볼륨 루트, 엉킴 방지 등
-- 웨이브/컬: 컬 패턴 유지, 프리즈 방지, 디퓨저 활용, 수분 밸런스 등
-- 펌 스타일: 펌 유지 기간, 리터치 시기, 손상 관리 등
+【헤어스타일 → 패션감각 매칭 가이드 (논문 기반)】
+헤어스타일 특성에 따라 어울리는 패션감각을 추천하세요:
+- 길고 굵은 웨이브/스트레이트, 볼륨 많음, 촉촉한 이미지 → 섹시
+- 이색적/실험적 스타일, 독특한 염색, 비대칭 → 아방가르드
+- 매끄러운 긴 생머리, 단순하게 묶은 스타일 → 내추럴
+- 매끈한 스트레이트, 층 없거나 적음, 깔끔함 → 소피스티케이트
+- 웨이브 업스타일, 중간 질감과 볼륨 → 엘레강스
+- 굵은 웨이브, 땋은 머리, 핀/리본 사용 → 로맨틱프리티
+- 짧은 머리, 단순하고 경쾌함 → 스포티
+- 가운데 가르마, 볼륨 없고 매끄러움 → 에스닉
+
+【얼굴형별 추천 포인트】
+- 계란형: 어떤 스타일도 가능, 윤곽 드러내기
+- 원형: 두정부 볼륨으로 길이 강조, 양쪽 뺨 가림 → 내추럴/소피스티케이트 추천
+- 긴형: 양옆 볼륨, 앞머리로 세로 길이 완화 → 엘레강스/소피스티케이트 추천
+- 사각형: 옆머리로 뺨 가림, 웨이브로 부드럽게 → 로맨틱프리티/스포티 추천
+- 역삼각형: 이마 양쪽 덮고 턱 부분 볼륨 → 섹시/에스닉 추천
 
 【전문가다운 구체적 조언】
 - "수분이 필요합니다" (X) → "모발 중간~끝 부분의 푸석함을 줄이려면 주 2회 헤어 마스크를 권장합니다" (O)
@@ -696,10 +709,23 @@ ${genderInstruction}
 - Carefully examine the image: length, texture, volume placement, bangs style, layering, curl/wave patterns
 - Identify unique characteristics of this hairstyle
 
-【Texture-Specific Advice】
-- Straight hair: shine management, anti-static, root volume, detangling
-- Waves/Curls: curl pattern maintenance, anti-frizz, diffuser use, moisture balance
-- Permed styles: perm longevity, retouch timing, damage care
+【Hairstyle → Fashion Sense Matching Guide (Research-based)】
+Recommend fashion senses based on hairstyle characteristics:
+- Long voluminous waves/straight, wet look → Sexy
+- Experimental/unique style, unusual colors, asymmetric → Avant-garde
+- Smooth long straight hair, simple tied style → Natural
+- Sleek straight, minimal layers, clean look → Sophisticate
+- Wave updo, medium texture and volume → Elegance
+- Bold waves, braids, pins/ribbons → Romantic Pretty
+- Short hair, simple and energetic → Sporty
+- Center part, no volume, smooth texture → Ethnic
+
+【Face Shape Recommendations】
+- Oval: Any style works, highlight contours
+- Round: Crown volume for length, cover cheeks → Natural/Sophisticate recommended
+- Oblong: Side volume, bangs to reduce length → Elegance/Sophisticate recommended
+- Square: Side hair to soften jaw, waves → Romantic Pretty/Sporty recommended
+- Heart: Cover forehead sides, chin volume → Sexy/Ethnic recommended
 
 【Professional Specific Advice】
 - Instead of "needs moisture" → "To reduce dryness at mid-lengths to ends, we recommend a hair mask twice weekly"
@@ -766,10 +792,23 @@ ${genderInstruction}
 - 画像を注意深く確認：長さ、質感、ボリュームの位置、前髪の形、レイヤーの有無、カール/ウェーブパターン
 - このヘアスタイル独自の特徴を見つけてください
 
-【テクスチャー別アドバイス】
-- ストレートヘア：ツヤ管理、静電気防止、根元ボリューム、絡まり防止
-- ウェーブ/カール：カールパターン維持、フリッズ防止、ディフューザー活用、水分バランス
-- パーマスタイル：パーマ持続期間、リタッチ時期、ダメージケア
+【ヘアスタイル→ファッション感覚マッチングガイド（論文基盤）】
+ヘアスタイルの特徴に基づいてファッション感覚を推奨：
+- 長くボリュームのあるウェーブ/ストレート、ウェットルック → セクシー
+- 実験的/ユニークなスタイル、独特な色、非対称 → アバンギャルド
+- なめらかなロングストレート、シンプルなまとめ髪 → ナチュラル
+- 艶やかストレート、レイヤー少なめ、クリーンな印象 → ソフィスティケート
+- ウェーブアップスタイル、ミディアム質感とボリューム → エレガンス
+- 大きなウェーブ、編み込み、ピン/リボン使用 → ロマンティック
+- ショートヘア、シンプルで活発 → スポーティー
+- センターパート、ボリュームなし、なめらかな質感 → エスニック
+
+【顔型別推奨ポイント】
+- 卵型：どんなスタイルもOK、輪郭を強調
+- 丸型：頭頂部ボリュームで長さ強調、頬をカバー → ナチュラル/ソフィスティケート推奨
+- 面長：サイドボリューム、前髪で縦の長さ緩和 → エレガンス/ソフィスティケート推奨
+- 四角型：サイドヘアで顎をソフトに、ウェーブで → ロマンティック/スポーティー推奨
+- 逆三角形：額の両側をカバー、顎にボリューム → セクシー/エスニック推奨
 
 以下のJSON形式で回答してください：
 
@@ -832,10 +871,23 @@ ${genderInstruction}
 - 仔细观察图片：长度、质地、蓬松位置、刘海形状、层次有无、卷/波浪图案
 - 找出这个发型的独特特征
 
-【质地针对性建议】
-- 直发：光泽管理、防静电、发根蓬松、防缠结
-- 波浪/卷发：卷发图案保持、防毛躁、扩散器使用、水分平衡
-- 烫发造型：烫发持久期、补烫时机、损伤护理
+【发型→时尚感匹配指南（研究基础）】
+根据发型特征推荐时尚感：
+- 长而丰盈的波浪/直发、湿润感 → 性感
+- 实验性/独特风格、特殊发色、不对称 → 前卫
+- 光滑的长直发、简单的扎发 → 自然
+- 光亮直发、少层次、干净利落 → 精致
+- 波浪盘发、中等质感和蓬松度 → 优雅
+- 大波浪、编发、发夹/蝴蝶结 → 浪漫
+- 短发、简单活泼 → 运动
+- 中分、无蓬松、光滑质感 → 民族
+
+【脸型推荐要点】
+- 椭圆形：任何风格都适合，突出轮廓
+- 圆形：头顶蓬松增加长度感，遮盖脸颊 → 推荐自然/精致
+- 长形：两侧蓬松，刘海减少纵向长度 → 推荐优雅/精致
+- 方形：侧发柔化下颌，波浪 → 推荐浪漫/运动
+- 心形：遮盖额头两侧，下巴处增加蓬松 → 推荐性感/民族
 
 请按以下JSON格式回答：
 
@@ -898,10 +950,23 @@ ${genderInstruction}
 - Kiểm tra kỹ hình ảnh: độ dài, kết cấu, vị trí phồng, kiểu mái, có lớp không, kiểu xoăn/sóng
 - Xác định đặc điểm riêng biệt của kiểu tóc này
 
-【Lời khuyên theo kết cấu tóc】
-- Tóc thẳng: quản lý độ bóng, chống tĩnh điện, phồng chân tóc, chống rối
-- Tóc xoăn/sóng: duy trì kiểu xoăn, chống xù, sử dụng máy khuếch tán, cân bằng độ ẩm
-- Tóc uốn: thời gian giữ uốn, thời điểm chỉnh lại, chăm sóc hư tổn
+【Hướng dẫn kết hợp Kiểu tóc → Phong cách thời trang (Dựa trên nghiên cứu)】
+Đề xuất phong cách thời trang dựa trên đặc điểm kiểu tóc:
+- Sóng/thẳng dài bồng bềnh, vẻ ướt át → Quyến rũ
+- Phong cách thử nghiệm/độc đáo, màu lạ, bất đối xứng → Tiên phong
+- Tóc thẳng dài mượt, buộc đơn giản → Tự nhiên
+- Thẳng bóng mượt, ít tầng, gọn gàng → Tinh tế
+- Búi tóc xoăn, kết cấu và độ phồng trung bình → Thanh lịch
+- Sóng lớn, tết tóc, kẹp/nơ → Lãng mạn
+- Tóc ngắn, đơn giản năng động → Thể thao
+- Ngôi giữa, không phồng, kết cấu mượt → Dân tộc
+
+【Gợi ý theo hình dạng khuôn mặt】
+- Hình trứng: Mọi phong cách đều phù hợp, làm nổi bật đường nét
+- Tròn: Phồng đỉnh đầu tăng chiều dài, che má → Đề xuất Tự nhiên/Tinh tế
+- Dài: Phồng hai bên, mái che bớt chiều dọc → Đề xuất Thanh lịch/Tinh tế
+- Vuông: Tóc bên làm mềm hàm, xoăn sóng → Đề xuất Lãng mạn/Thể thao
+- Trái tim: Che hai bên trán, phồng ở cằm → Đề xuất Quyến rũ/Dân tộc
 
 Vui lòng trả lời theo định dạng JSON sau：
 
