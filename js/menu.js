@@ -704,6 +704,16 @@ function createStyleCard(style) {
     // 썸네일 URL 가져오기 (저장된 thumbnailUrl 우선, 없으면 원본)
     const thumbnailUrl = getThumbnailUrl(style);
 
+    // 디버깅: 썸네일 URL 확인 (처음 3개만)
+    if (Math.random() < 0.05) {
+        console.log('🖼️ 썸네일 URL 확인:', {
+            code: style.code,
+            thumbnailUrl: style.thumbnailUrl ? style.thumbnailUrl.substring(0, 80) + '...' : 'none',
+            updatedAt: style.updatedAt ? (style.updatedAt.seconds || style.updatedAt) : 'none',
+            finalUrl: thumbnailUrl.substring(0, 80) + '...'
+        });
+    }
+
     card.innerHTML = `
         <div class="style-image-wrapper" style="width: 100% !important; height: 100% !important; position: relative !important; display: block !important; padding: 0 !important; margin: 0 !important;">
             <img class="style-image"
