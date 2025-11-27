@@ -93,110 +93,8 @@ exports.handler = async (event) => {
 
 // ==================== Gemini 2.0 Flash 분석 ====================
 async function analyzeWithGemini2Flash(imageUrl, apiKey, language, providedGender = '') {
-    const languageInstructions = {
-        ko: '한국어로 답변해주세요.',
-        en: 'Please respond in English.',
-        ja: '日本語で回答してください。',
-        zh: '请用中文回答。',
-        vi: 'Vui lòng trả lời bằng tiếng Việt.'
-    };
-
-    const langInstruction = languageInstructions[language] || languageInstructions.ko;
-
-    // 성별이 전달된 경우 해당 성별로 고정
-    const genderInstruction = providedGender
-        ? `중요: 이 헤어스타일은 ${providedGender === 'male' ? '남성' : '여성'} 스타일입니다. gender 필드는 반드시 "${providedGender}"로 설정하세요.`
-        : '이미지를 보고 성별을 판단해주세요.';
-
-    const prompt = `당신은 20년 경력의 최고급 헤어살롱 수석 디자이너이자 보그(Vogue) 매거진 뷰티 에디터입니다.
-고객에게 직접 컨설팅하듯 이 헤어스타일 이미지를 전문가의 눈으로 세밀하게 분석해주세요.
-
-${langInstruction}
-
-${genderInstruction}
-
-📋 분석 가이드라인:
-
-【이미지 관찰 필수】
-- 먼저 이미지를 꼼꼼히 살펴보세요: 길이, 결, 볼륨 위치, 앞머리 형태, 레이어 유무, 컬/웨이브 패턴
-- 이 헤어스타일만의 고유한 특징을 찾아내세요
-
-【텍스처별 맞춤 조언】
-- 직모/스트레이트: 윤기 관리, 정전기 방지, 볼륨 루트, 엉킴 방지 등
-- 웨이브/컬: 컬 패턴 유지, 프리즈 방지, 디퓨저 활용, 수분 밸런스 등
-- 펌 스타일: 펌 유지 기간, 리터치 시기, 손상 관리 등
-
-【전문가다운 구체적 조언】
-- "수분이 필요합니다" (X) → "모발 중간~끝 부분의 푸석함을 줄이려면 주 2회 헤어 마스크를 권장합니다" (O)
-- "볼륨을 살리세요" (X) → "정수리 부분에 볼륨 스프레이를 뿌리고 드라이기 바람을 아래에서 위로 넣어주세요" (O)
-
-다음 JSON 형식으로 응답해주세요:
-
-{
-    "gender": "${providedGender || 'male 또는 female'}",
-    "styleName": "정확한 스타일명 (예: 레이어드 미디엄 C컬펌, 시스루뱅 롱 스트레이트, 투블럭 댄디컷 등)",
-    "styleDescription": "이 헤어스타일의 핵심 특징을 마치 고객에게 설명하듯 자연스럽게 3-4문장으로 서술. 앞머리 형태, 볼륨 포인트, 결의 흐름, 전체적인 실루엣을 포함하여 이 스타일이 주는 무드와 느낌까지 표현",
-    "characteristics": {
-        "length": "구체적 길이 (예: '쇄골 아래 5cm', '턱선 라인', '어깨에 닿는 미디엄' 등)",
-        "texture": "정확한 텍스처 (예: '자연스러운 S컬 웨이브', '볼륨감 있는 C컬', '차분한 직모', '끝단 살짝 말림' 등)",
-        "volume": "볼륨 위치와 정도 (예: '정수리에서 귀 라인까지 자연스러운 볼륨', '전체적으로 가벼운 에어리함' 등)",
-        "layering": "레이어 상세 (예: '광대뼈 라인에서 시작하는 페이스 프레이밍 레이어', '레이어 없는 원랭스' 등)"
-    },
-    "faceShapes": {
-        "best": ["이 헤어스타일이 자연스럽게 잘 맞는 얼굴형 1-2개 (계란형/원형/긴형/사각형/역삼각형 중)"],
-        "description": "이 얼굴형에 자연스럽게 어울리는 이유를 헤어 디자이너 관점에서 설명",
-        "adjustments": {
-            "oval": "계란형: 이상적 기본형이므로 이 스타일을 그대로 연출 가능. 윤곽을 드러내는 방향으로",
-            "round": "원형: 두정부(정수리) 볼륨을 더 살려 세로 길이감 강조, 양쪽 뺨을 살짝 가리는 방향으로 조정",
-            "oblong": "긴형: 양옆 볼륨을 추가하고, 앞머리를 내려 이마를 덮어 세로 길이 완화. 어깨 아래 긴 머리는 피하는 것이 좋음",
-            "square": "사각형: 옆머리로 뺨과 턱 라인을 부드럽게 감싸고, 정수리 볼륨과 웨이브로 각진 인상 완화",
-            "heart": "역삼각형: 이마 양쪽을 덮고 턱 부분에 볼륨을 주어 좁은 턱선을 보완, 여성스러운 실루엣 강조"
-        }
-    },
-    "fashionRecommendations": [
-        {
-            "style": "8가지 헤어패션감각 중 이 헤어와 가장 자연스러운 감각 1개만 선택 (섹시/아방가르드/내추럴/소피스티케이트/엘레강스/로맨틱프리티/스포티/에스닉)",
-            "styleDescription": "해당 패션감각의 무드와 분위기 설명",
-            "items": ["이 패션감각에 맞는 구체적인 옷 아이템 4개 - 반드시 소재와 컬러 포함 (예: '아이보리 린넨 셔츠', '블랙 실크 슬립 드레스')"],
-            "reason": "이 헤어스타일의 구체적 특징(길이/웨이브형태/볼륨위치/질감)이 이 패션감각의 어떤 요소와 시너지를 내는지 2-3문장으로 설명. 예: '어깨를 타고 흐르는 S컬 웨이브가 바디컨셔스 실루엣의 곡선미와 조화를 이루어 성숙한 섹시미를 배가시킵니다.'"
-        },
-        {
-            "style": "두 번째로 어울리는 헤어패션감각 1개",
-            "styleDescription": "해당 패션감각의 무드와 분위기 설명",
-            "items": ["구체적인 옷 아이템 4개 - 소재와 컬러 포함"],
-            "reason": "이 헤어스타일과 두 번째 패션감각이 어울리는 구체적 이유 2-3문장"
-        },
-        {
-            "style": "세 번째 - 도전적인 변신을 위한 헤어패션감각 1개",
-            "styleDescription": "해당 패션감각의 무드와 분위기 설명",
-            "items": ["구체적인 옷 아이템 4개 - 소재와 컬러 포함"],
-            "reason": "현재 헤어스타일로도 이 감각을 연출할 수 있는 이유와 스타일링 팁 포함 2-3문장"
-        }
-    ],
-    "stylingTips": [
-        {
-            "title": "아침 스타일링 루틴",
-            "description": "이 헤어스타일을 살리는 구체적인 스타일링 방법. 도구, 제품, 순서를 포함해서 실제로 따라할 수 있게 작성"
-        },
-        {
-            "title": "볼륨 & 실루엣 유지법",
-            "description": "이 스타일의 핵심인 볼륨 위치나 실루엣을 하루 종일 유지하는 실전 팁"
-        },
-        {
-            "title": "손상 방지 & 윤기 관리",
-            "description": "이 텍스처/길이의 모발이 특히 주의해야 할 점과 윤기를 유지하는 방법"
-        }
-    ],
-    "maintenance": {
-        "hydration": "높음/중간/낮음 중 선택",
-        "trimCycle": "숫자만 (예: 6, 8, 12 등 - 주 단위)",
-        "products": ["이 스타일에 꼭 필요한 제품 타입 3개 (예: '열보호 스프레이', '볼륨 무스', '실크 세럼' 등)"],
-        "tips": "이 스타일을 오래 유지하기 위한 살롱급 핵심 관리 팁 한 문장"
-    },
-    "tags": ["이 스타일의 키워드 5개 (예: #레이어드컷, #볼륨펌, #페이스프레이밍, #여신머리, #내추럴웨이브)"]
-}
-
-JSON만 출력하세요.`;
+    // 언어별 프롬프트 생성
+    const prompt = getLocalizedPrompt(language, providedGender);
 
     try {
         const imageBase64 = await fetchImageAsBase64(imageUrl);
@@ -636,4 +534,356 @@ function getDefaultAnalysis(language) {
             ? ["#내추럴", "#웨이브", "#볼륨", "#여성스러움", "#데일리"]
             : ["#Natural", "#Wave", "#Volume", "#Feminine", "#Daily"]
     };
+}
+
+// ==================== 다국어 프롬프트 생성 ====================
+function getLocalizedPrompt(language, providedGender = '') {
+    // 언어별 프롬프트 템플릿
+    const prompts = {
+        ko: getKoreanPrompt(providedGender),
+        en: getEnglishPrompt(providedGender),
+        ja: getJapanesePrompt(providedGender),
+        zh: getChinesePrompt(providedGender),
+        vi: getVietnamesePrompt(providedGender)
+    };
+
+    return prompts[language] || prompts.ko;
+}
+
+function getKoreanPrompt(providedGender) {
+    const genderInstruction = providedGender
+        ? `중요: 이 헤어스타일은 ${providedGender === 'male' ? '남성' : '여성'} 스타일입니다. gender 필드는 반드시 "${providedGender}"로 설정하세요.`
+        : '이미지를 보고 성별을 판단해주세요.';
+
+    return `당신은 20년 경력의 최고급 헤어살롱 수석 디자이너이자 보그(Vogue) 매거진 뷰티 에디터입니다.
+고객에게 직접 컨설팅하듯 이 헤어스타일 이미지를 전문가의 눈으로 세밀하게 분석해주세요.
+
+한국어로 답변해주세요.
+
+${genderInstruction}
+
+📋 분석 가이드라인:
+
+【이미지 관찰 필수】
+- 먼저 이미지를 꼼꼼히 살펴보세요: 길이, 결, 볼륨 위치, 앞머리 형태, 레이어 유무, 컬/웨이브 패턴
+- 이 헤어스타일만의 고유한 특징을 찾아내세요
+
+【텍스처별 맞춤 조언】
+- 직모/스트레이트: 윤기 관리, 정전기 방지, 볼륨 루트, 엉킴 방지 등
+- 웨이브/컬: 컬 패턴 유지, 프리즈 방지, 디퓨저 활용, 수분 밸런스 등
+- 펌 스타일: 펌 유지 기간, 리터치 시기, 손상 관리 등
+
+【전문가다운 구체적 조언】
+- "수분이 필요합니다" (X) → "모발 중간~끝 부분의 푸석함을 줄이려면 주 2회 헤어 마스크를 권장합니다" (O)
+- "볼륨을 살리세요" (X) → "정수리 부분에 볼륨 스프레이를 뿌리고 드라이기 바람을 아래에서 위로 넣어주세요" (O)
+
+다음 JSON 형식으로 응답해주세요:
+
+{
+    "gender": "${providedGender || 'male 또는 female'}",
+    "styleName": "정확한 스타일명 (예: 레이어드 미디엄 C컬펌, 시스루뱅 롱 스트레이트, 투블럭 댄디컷 등)",
+    "styleDescription": "이 헤어스타일의 핵심 특징을 마치 고객에게 설명하듯 자연스럽게 3-4문장으로 서술",
+    "characteristics": {
+        "length": "구체적 길이",
+        "texture": "정확한 텍스처",
+        "volume": "볼륨 위치와 정도",
+        "layering": "레이어 상세"
+    },
+    "faceShapes": {
+        "best": ["추천 얼굴형 1-2개"],
+        "description": "어울리는 이유 설명"
+    },
+    "fashionRecommendations": [
+        {
+            "style": "패션감각 (섹시/아방가르드/내추럴/소피스티케이트/엘레강스/로맨틱프리티/스포티/에스닉)",
+            "styleDescription": "패션감각 설명",
+            "items": ["옷 아이템 4개"],
+            "reason": "어울리는 이유"
+        },
+        { "style": "두 번째 패션감각", "styleDescription": "설명", "items": ["아이템"], "reason": "이유" },
+        { "style": "세 번째 패션감각", "styleDescription": "설명", "items": ["아이템"], "reason": "이유" }
+    ],
+    "stylingTips": [
+        { "title": "스타일링 팁 1", "description": "설명" },
+        { "title": "스타일링 팁 2", "description": "설명" },
+        { "title": "스타일링 팁 3", "description": "설명" }
+    ],
+    "maintenance": {
+        "hydration": "높음/중간/낮음",
+        "trimCycle": "숫자 (주 단위)",
+        "products": ["제품 3개"],
+        "tips": "관리 팁"
+    },
+    "tags": ["#키워드 5개"]
+}
+
+JSON만 출력하세요.`;
+}
+
+function getEnglishPrompt(providedGender) {
+    const genderInstruction = providedGender
+        ? `Important: This hairstyle is for ${providedGender === 'male' ? 'male' : 'female'}. Set the gender field to "${providedGender}".`
+        : 'Please determine the gender from the image.';
+
+    return `You are a senior hair designer with 20 years of experience at a top-tier salon and a beauty editor for Vogue magazine.
+Analyze this hairstyle image with professional expertise as if you were consulting directly with a client.
+
+Please respond in English.
+
+${genderInstruction}
+
+📋 Analysis Guidelines:
+
+【Image Observation Required】
+- Carefully examine the image: length, texture, volume placement, bangs style, layering, curl/wave patterns
+- Identify unique characteristics of this hairstyle
+
+【Texture-Specific Advice】
+- Straight hair: shine management, anti-static, root volume, detangling
+- Waves/Curls: curl pattern maintenance, anti-frizz, diffuser use, moisture balance
+- Permed styles: perm longevity, retouch timing, damage care
+
+【Professional Specific Advice】
+- Instead of "needs moisture" → "To reduce dryness at mid-lengths to ends, we recommend a hair mask twice weekly"
+- Instead of "add volume" → "Apply volume spray at the crown and blow dry from underneath"
+
+Respond in the following JSON format:
+
+{
+    "gender": "${providedGender || 'male or female'}",
+    "styleName": "Exact style name (e.g., Layered Medium C-curl Perm, See-through Bangs Long Straight)",
+    "styleDescription": "Describe key features naturally in 3-4 sentences as if explaining to a client",
+    "characteristics": {
+        "length": "Specific length",
+        "texture": "Exact texture",
+        "volume": "Volume placement and degree",
+        "layering": "Layering details"
+    },
+    "faceShapes": {
+        "best": ["1-2 recommended face shapes"],
+        "description": "Why it suits these face shapes"
+    },
+    "fashionRecommendations": [
+        {
+            "style": "Fashion sense (Sexy/Avant-garde/Natural/Sophisticate/Elegance/Romantic Pretty/Sporty/Ethnic)",
+            "styleDescription": "Fashion sense description",
+            "items": ["4 clothing items with material and color"],
+            "reason": "Why this fashion matches the hairstyle"
+        },
+        { "style": "Second fashion sense", "styleDescription": "description", "items": ["items"], "reason": "reason" },
+        { "style": "Third fashion sense", "styleDescription": "description", "items": ["items"], "reason": "reason" }
+    ],
+    "stylingTips": [
+        { "title": "Styling tip 1", "description": "description" },
+        { "title": "Styling tip 2", "description": "description" },
+        { "title": "Styling tip 3", "description": "description" }
+    ],
+    "maintenance": {
+        "hydration": "High/Medium/Low",
+        "trimCycle": "number only (in weeks)",
+        "products": ["3 products"],
+        "tips": "maintenance tip"
+    },
+    "tags": ["#5 keywords"]
+}
+
+Output JSON only.`;
+}
+
+function getJapanesePrompt(providedGender) {
+    const genderInstruction = providedGender
+        ? `重要：このヘアスタイルは${providedGender === 'male' ? '男性' : '女性'}向けです。genderフィールドは必ず"${providedGender}"に設定してください。`
+        : '画像から性別を判断してください。';
+
+    return `あなたは20年の経験を持つ一流ヘアサロンのシニアデザイナーであり、Vogueマガジンのビューティーエディターです。
+お客様に直接カウンセリングするように、このヘアスタイル画像を専門家の目で詳細に分析してください。
+
+日本語で回答してください。
+
+${genderInstruction}
+
+📋 分析ガイドライン：
+
+【画像観察必須】
+- 画像を注意深く確認：長さ、質感、ボリュームの位置、前髪の形、レイヤーの有無、カール/ウェーブパターン
+- このヘアスタイル独自の特徴を見つけてください
+
+【テクスチャー別アドバイス】
+- ストレートヘア：ツヤ管理、静電気防止、根元ボリューム、絡まり防止
+- ウェーブ/カール：カールパターン維持、フリッズ防止、ディフューザー活用、水分バランス
+- パーマスタイル：パーマ持続期間、リタッチ時期、ダメージケア
+
+以下のJSON形式で回答してください：
+
+{
+    "gender": "${providedGender || 'male または female'}",
+    "styleName": "正確なスタイル名（例：レイヤードミディアムCカールパーマ）",
+    "styleDescription": "このヘアスタイルの主な特徴を3-4文で自然に説明",
+    "characteristics": {
+        "length": "具体的な長さ",
+        "texture": "正確なテクスチャー",
+        "volume": "ボリュームの位置と程度",
+        "layering": "レイヤーの詳細"
+    },
+    "faceShapes": {
+        "best": ["おすすめの顔型1-2個"],
+        "description": "似合う理由の説明"
+    },
+    "fashionRecommendations": [
+        {
+            "style": "ファッション感覚（セクシー/アバンギャルド/ナチュラル/ソフィスティケート/エレガンス/ロマンティック/スポーティー/エスニック）",
+            "styleDescription": "ファッション感覚の説明",
+            "items": ["服アイテム4つ"],
+            "reason": "合う理由"
+        },
+        { "style": "2番目", "styleDescription": "説明", "items": ["アイテム"], "reason": "理由" },
+        { "style": "3番目", "styleDescription": "説明", "items": ["アイテム"], "reason": "理由" }
+    ],
+    "stylingTips": [
+        { "title": "スタイリングヒント1", "description": "説明" },
+        { "title": "スタイリングヒント2", "description": "説明" },
+        { "title": "スタイリングヒント3", "description": "説明" }
+    ],
+    "maintenance": {
+        "hydration": "高い/中程度/低い",
+        "trimCycle": "数字のみ（週単位）",
+        "products": ["製品3つ"],
+        "tips": "ケアのヒント"
+    },
+    "tags": ["#キーワード5つ"]
+}
+
+JSONのみ出力してください。`;
+}
+
+function getChinesePrompt(providedGender) {
+    const genderInstruction = providedGender
+        ? `重要：这个发型是${providedGender === 'male' ? '男性' : '女性'}风格。gender字段必须设置为"${providedGender}"。`
+        : '请根据图片判断性别。';
+
+    return `您是一位拥有20年经验的顶级沙龙首席发型设计师，同时也是Vogue杂志的美容编辑。
+请像直接为客户咨询一样，用专业的眼光详细分析这张发型图片。
+
+请用中文回答。
+
+${genderInstruction}
+
+📋 分析指南：
+
+【图片观察必需】
+- 仔细观察图片：长度、质地、蓬松位置、刘海形状、层次有无、卷/波浪图案
+- 找出这个发型的独特特征
+
+【质地针对性建议】
+- 直发：光泽管理、防静电、发根蓬松、防缠结
+- 波浪/卷发：卷发图案保持、防毛躁、扩散器使用、水分平衡
+- 烫发造型：烫发持久期、补烫时机、损伤护理
+
+请按以下JSON格式回答：
+
+{
+    "gender": "${providedGender || 'male 或 female'}",
+    "styleName": "准确的发型名称（例如：层次中长C卷烫）",
+    "styleDescription": "用3-4句话自然地描述这个发型的主要特点",
+    "characteristics": {
+        "length": "具体长度",
+        "texture": "准确的质地",
+        "volume": "蓬松位置和程度",
+        "layering": "层次细节"
+    },
+    "faceShapes": {
+        "best": ["推荐脸型1-2个"],
+        "description": "适合的原因说明"
+    },
+    "fashionRecommendations": [
+        {
+            "style": "时尚感（性感/前卫/自然/精致/优雅/浪漫/运动/民族）",
+            "styleDescription": "时尚感说明",
+            "items": ["服装单品4件"],
+            "reason": "搭配原因"
+        },
+        { "style": "第二个", "styleDescription": "说明", "items": ["单品"], "reason": "原因" },
+        { "style": "第三个", "styleDescription": "说明", "items": ["单品"], "reason": "原因" }
+    ],
+    "stylingTips": [
+        { "title": "造型技巧1", "description": "说明" },
+        { "title": "造型技巧2", "description": "说明" },
+        { "title": "造型技巧3", "description": "说明" }
+    ],
+    "maintenance": {
+        "hydration": "高/中/低",
+        "trimCycle": "仅数字（周为单位）",
+        "products": ["产品3个"],
+        "tips": "护理技巧"
+    },
+    "tags": ["#关键词5个"]
+}
+
+只输出JSON。`;
+}
+
+function getVietnamesePrompt(providedGender) {
+    const genderInstruction = providedGender
+        ? `Quan trọng: Kiểu tóc này dành cho ${providedGender === 'male' ? 'nam' : 'nữ'}. Trường gender phải được đặt là "${providedGender}".`
+        : 'Vui lòng xác định giới tính từ hình ảnh.';
+
+    return `Bạn là nhà thiết kế tóc cao cấp với 20 năm kinh nghiệm tại salon hàng đầu và biên tập viên làm đẹp của tạp chí Vogue.
+Hãy phân tích hình ảnh kiểu tóc này với chuyên môn như đang tư vấn trực tiếp cho khách hàng.
+
+Vui lòng trả lời bằng tiếng Việt.
+
+${genderInstruction}
+
+📋 Hướng dẫn phân tích：
+
+【Quan sát hình ảnh bắt buộc】
+- Kiểm tra kỹ hình ảnh: độ dài, kết cấu, vị trí phồng, kiểu mái, có lớp không, kiểu xoăn/sóng
+- Xác định đặc điểm riêng biệt của kiểu tóc này
+
+【Lời khuyên theo kết cấu tóc】
+- Tóc thẳng: quản lý độ bóng, chống tĩnh điện, phồng chân tóc, chống rối
+- Tóc xoăn/sóng: duy trì kiểu xoăn, chống xù, sử dụng máy khuếch tán, cân bằng độ ẩm
+- Tóc uốn: thời gian giữ uốn, thời điểm chỉnh lại, chăm sóc hư tổn
+
+Vui lòng trả lời theo định dạng JSON sau：
+
+{
+    "gender": "${providedGender || 'male hoặc female'}",
+    "styleName": "Tên kiểu tóc chính xác (ví dụ: Uốn xoăn C tầng trung)",
+    "styleDescription": "Mô tả tự nhiên các đặc điểm chính trong 3-4 câu",
+    "characteristics": {
+        "length": "Độ dài cụ thể",
+        "texture": "Kết cấu chính xác",
+        "volume": "Vị trí và mức độ phồng",
+        "layering": "Chi tiết lớp"
+    },
+    "faceShapes": {
+        "best": ["1-2 hình dạng khuôn mặt được đề xuất"],
+        "description": "Giải thích tại sao phù hợp"
+    },
+    "fashionRecommendations": [
+        {
+            "style": "Phong cách thời trang (Quyến rũ/Tiên phong/Tự nhiên/Tinh tế/Thanh lịch/Lãng mạn/Thể thao/Dân tộc)",
+            "styleDescription": "Mô tả phong cách",
+            "items": ["4 món đồ quần áo"],
+            "reason": "Lý do phù hợp"
+        },
+        { "style": "Thứ hai", "styleDescription": "mô tả", "items": ["món đồ"], "reason": "lý do" },
+        { "style": "Thứ ba", "styleDescription": "mô tả", "items": ["món đồ"], "reason": "lý do" }
+    ],
+    "stylingTips": [
+        { "title": "Mẹo tạo kiểu 1", "description": "mô tả" },
+        { "title": "Mẹo tạo kiểu 2", "description": "mô tả" },
+        { "title": "Mẹo tạo kiểu 3", "description": "mô tả" }
+    ],
+    "maintenance": {
+        "hydration": "Cao/Trung bình/Thấp",
+        "trimCycle": "chỉ số (đơn vị tuần)",
+        "products": ["3 sản phẩm"],
+        "tips": "mẹo chăm sóc"
+    },
+    "tags": ["#5 từ khóa"]
+}
+
+Chỉ xuất JSON.`;
 }
