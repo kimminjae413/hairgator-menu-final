@@ -648,6 +648,15 @@ ${genderInstruction}
 - "수분이 필요합니다" (X) → "모발 중간~끝 부분의 푸석함을 줄이려면 주 2회 헤어 마스크를 권장합니다" (O)
 - "볼륨을 살리세요" (X) → "정수리 부분에 볼륨 스프레이를 뿌리고 드라이기 바람을 아래에서 위로 넣어주세요" (O)
 
+【⚠️ 패션 아이템 필수 가이드 - 2024-2025 트렌드】
+옷 추천 시 반드시 현실적이고 트렌디한 아이템으로:
+- ❌ 피해야 할 표현: "시폰 블라우스", "새틴 드레스", "테일러드 슬랙스", "클래식 펌프스" (너무 올드함)
+- ✅ 사용할 표현:
+  · 여성: 크롭가디건, 와이드팬츠, 발레코어, 미니스커트, 오버핏후드, 레이어드탑, 플리츠스커트, 메리제인슈즈, 청바지, 카고팬츠
+  · 남성: 오버핏셔츠, 와이드데님, 스트릿후드, 트랙팬츠, 레이어드, 뉴발란스/아식스, 볼캡, 크로스백
+- 무신사, 자라, 유니클로, 에이블리 등에서 실제 구매 가능한 스타일로
+- "2024 F/W", "요즘 유행하는", "MZ세대" 같은 표현 활용
+
 다음 JSON 형식으로 응답해주세요:
 
 {
@@ -668,11 +677,11 @@ ${genderInstruction}
         {
             "style": "패션감각 (섹시/아방가르드/내추럴/소피스티케이트/엘레강스/로맨틱프리티/스포티/에스닉)",
             "styleDescription": "패션감각 설명",
-            "items": ["옷 아이템 4개"],
+            "items": ["2024-2025 트렌드 반영한 현실적인 옷 4개 - 무신사/자라/유니클로에서 살 수 있는 아이템으로 (예: 오버핏 크롭 가디건, 와이드 데님, 발레코어 플랫슈즈, 미니백)"],
             "reason": "어울리는 이유"
         },
-        { "style": "두 번째 패션감각", "styleDescription": "설명", "items": ["아이템"], "reason": "이유" },
-        { "style": "세 번째 패션감각", "styleDescription": "설명", "items": ["아이템"], "reason": "이유" }
+        { "style": "두 번째 패션감각", "styleDescription": "설명", "items": ["트렌디하고 현실적인 아이템"], "reason": "이유" },
+        { "style": "세 번째 패션감각", "styleDescription": "설명", "items": ["트렌디하고 현실적인 아이템"], "reason": "이유" }
     ],
     "stylingTips": [
         { "title": "스타일링 팁 1", "description": "설명" },
@@ -731,6 +740,15 @@ Recommend fashion senses based on hairstyle characteristics:
 - Instead of "needs moisture" → "To reduce dryness at mid-lengths to ends, we recommend a hair mask twice weekly"
 - Instead of "add volume" → "Apply volume spray at the crown and blow dry from underneath"
 
+【⚠️ Fashion Items Guide - 2024-2025 Trends】
+Recommend realistic, trendy items you can actually buy:
+- ❌ Avoid: "chiffon blouse", "satin dress", "tailored slacks", "classic pumps" (too outdated)
+- ✅ Use instead:
+  · Women: crop cardigan, wide leg pants, balletcore flats, mini skirt, oversized hoodie, layered tops, pleated skirt, Mary Janes, denim, cargo pants
+  · Men: oversized shirt, wide denim, streetwear hoodie, track pants, layered look, New Balance/Asics sneakers, cap, crossbody bag
+- Items available at Zara, Uniqlo, H&M, ASOS
+- Use terms like "2024 F/W trend", "Gen-Z style", "currently trending"
+
 Respond in the following JSON format:
 
 {
@@ -751,11 +769,11 @@ Respond in the following JSON format:
         {
             "style": "Fashion sense (Sexy/Avant-garde/Natural/Sophisticate/Elegance/Romantic Pretty/Sporty/Ethnic)",
             "styleDescription": "Fashion sense description",
-            "items": ["4 clothing items with material and color"],
+            "items": ["4 trendy, realistic items from 2024-2025 (e.g., crop cardigan, wide denim, chunky sneakers, mini bag)"],
             "reason": "Why this fashion matches the hairstyle"
         },
-        { "style": "Second fashion sense", "styleDescription": "description", "items": ["items"], "reason": "reason" },
-        { "style": "Third fashion sense", "styleDescription": "description", "items": ["items"], "reason": "reason" }
+        { "style": "Second fashion sense", "styleDescription": "description", "items": ["trendy realistic items"], "reason": "reason" },
+        { "style": "Third fashion sense", "styleDescription": "description", "items": ["trendy realistic items"], "reason": "reason" }
     ],
     "stylingTips": [
         { "title": "Styling tip 1", "description": "description" },
@@ -809,6 +827,15 @@ ${genderInstruction}
 - 面長：サイドボリューム、前髪で縦の長さ緩和 → エレガンス/ソフィスティケート推奨
 - 四角型：サイドヘアで顎をソフトに、ウェーブで → ロマンティック/スポーティー推奨
 - 逆三角形：額の両側をカバー、顎にボリューム → セクシー/エスニック推奨
+
+【⚠️ ファッションアイテムガイド - 2024-2025トレンド】
+実際に購入できるトレンディなアイテムを推奨：
+- ❌ 避ける表現：「シフォンブラウス」「サテンドレス」「テーラードスラックス」（古臭い）
+- ✅ 使う表現：
+  · 女性：クロップカーディガン、ワイドパンツ、バレエコア、ミニスカート、オーバーサイズパーカー、レイヤードトップス
+  · 男性：オーバーサイズシャツ、ワイドデニム、ストリートパーカー、トラックパンツ、ニューバランス/アシックス
+- ZARA、ユニクロ、GUで実際に買えるスタイルで
+- 「2024 F/W」「今流行りの」「Z世代」などの表現を活用
 
 以下のJSON形式で回答してください：
 
@@ -889,6 +916,15 @@ ${genderInstruction}
 - 方形：侧发柔化下颌，波浪 → 推荐浪漫/运动
 - 心形：遮盖额头两侧，下巴处增加蓬松 → 推荐性感/民族
 
+【⚠️ 时尚单品指南 - 2024-2025趋势】
+推荐实际可购买的潮流单品：
+- ❌ 避免：「雪纺衬衫」「缎面连衣裙」「西装裤」（太老气）
+- ✅ 使用：
+  · 女性：短款开衫、阔腿裤、芭蕾风平底鞋、迷你裙、oversize卫衣、叠穿上衣、百褶裙、玛丽珍鞋
+  · 男性：宽松衬衫、阔腿牛仔裤、街头卫衣、运动裤、New Balance/亚瑟士球鞋、棒球帽、斜挎包
+- ZARA、优衣库、H&M可以买到的款式
+- 使用「2024秋冬」「当下流行」「Z世代」等表达
+
 请按以下JSON格式回答：
 
 {
@@ -967,6 +1003,15 @@ ${genderInstruction}
 - Dài: Phồng hai bên, mái che bớt chiều dọc → Đề xuất Thanh lịch/Tinh tế
 - Vuông: Tóc bên làm mềm hàm, xoăn sóng → Đề xuất Lãng mạn/Thể thao
 - Trái tim: Che hai bên trán, phồng ở cằm → Đề xuất Quyến rũ/Dân tộc
+
+【⚠️ Hướng dẫn đồ thời trang - Xu hướng 2024-2025】
+Đề xuất món đồ thực tế, hợp xu hướng:
+- ❌ Tránh: "áo voan", "váy lụa satin", "quần tây" (quá cũ)
+- ✅ Sử dụng:
+  · Nữ: áo cardigan croptop, quần ống rộng, giày ballet, chân váy mini, hoodie oversize, áo layer, chân váy xếp ly, giày Mary Jane
+  · Nam: áo sơ mi oversize, quần jean ống rộng, hoodie streetwear, quần track, giày New Balance/Asics, nón lưỡi trai, túi đeo chéo
+- Đồ có thể mua ở Zara, Uniqlo, H&M
+- Sử dụng "xu hướng 2024", "đang hot", "Gen Z"
 
 Vui lòng trả lời theo định dạng JSON sau：
 
