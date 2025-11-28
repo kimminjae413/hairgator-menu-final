@@ -74,6 +74,7 @@ const HAIRGATOR_I18N = {
       // 사이드바
       personalColor: '퍼스널 컬러 진단',
       personalColorDesc: '614개 헤어컬러 데이터 기반 분석',
+      brandSetting: '상호 설정',
 
       // 메시지
       loginSuccess: '로그인 성공',
@@ -373,6 +374,7 @@ const HAIRGATOR_I18N = {
 
       personalColor: 'Personal Color Analysis',
       personalColorDesc: 'Analysis based on 614 hair color data',
+      brandSetting: 'Brand Setting',
 
       loginSuccess: 'Login successful',
       logoutSuccess: 'Logged out',
@@ -660,6 +662,7 @@ const HAIRGATOR_I18N = {
 
       personalColor: 'パーソナルカラー診断',
       personalColorDesc: '614個のヘアカラーデータ基盤分析',
+      brandSetting: '店名設定',
 
       loginSuccess: 'ログイン成功',
       logoutSuccess: 'ログアウトしました',
@@ -947,6 +950,7 @@ const HAIRGATOR_I18N = {
 
       personalColor: '个人色彩分析',
       personalColorDesc: '基于614个染发数据的分析',
+      brandSetting: '店名设置',
 
       loginSuccess: '登录成功',
       logoutSuccess: '已登出',
@@ -1234,6 +1238,7 @@ const HAIRGATOR_I18N = {
 
       personalColor: 'Phân tích màu cá nhân',
       personalColorDesc: 'Phân tích dựa trên 614 dữ liệu màu tóc',
+      brandSetting: 'Cài đặt tên cửa hàng',
 
       loginSuccess: 'Đăng nhập thành công',
       logoutSuccess: 'Đã đăng xuất',

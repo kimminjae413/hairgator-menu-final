@@ -62,6 +62,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
 
+                        <!-- 상호 설정 -->
+                        <div class="menu-item" id="brandSettingBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 20px;">✏️</span>
+                                <span style="color: var(--text-primary, #333); font-size: 14px;">${t('ui.brandSetting') || '상호 설정'}</span>
+                            </div>
+                        </div>
+
                         <!-- 로그아웃 -->
                         <div class="menu-item" id="logoutBtn" style="padding: 15px 20px; cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
@@ -115,6 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupSidebarMenuListeners() {
         const themeToggleMenu = document.getElementById('themeToggleMenu');
         const personalColorBtn = document.getElementById('personalColorBtn');
+        const brandSettingBtn = document.getElementById('brandSettingBtn');
         const logoutBtn = document.getElementById('logoutBtn');
 
         if (themeToggleMenu) {
@@ -126,6 +135,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('🎨 퍼스널 컬러 진단 클릭');
                 const gender = window.currentGender || 'female';
                 window.location.href = `/personal-color/?gender=${gender}`;
+            });
+        }
+
+        if (brandSettingBtn) {
+            brandSettingBtn.addEventListener('click', function() {
+                console.log('✏️ 상호 설정 클릭');
+                showBrandSettingModal();
+                closeSidebar();
             });
         }
 
@@ -590,4 +607,256 @@ window.addEventListener('load', function() {
         }
     `;
     document.head.appendChild(style);
+
+    // 저장된 상호명 적용
+    applyCustomBrand();
 });
+
+// ========== 상호 설정 기능 ==========
+
+// 폰트 옵션
+const FONT_OPTIONS = [
+    { id: 'default', name: '기본', fontFamily: "'Pretendard', -apple-system, sans-serif", nameEn: 'Default' },
+    { id: 'noto-sans', name: '노토 산스', fontFamily: "'Noto Sans KR', sans-serif", nameEn: 'Noto Sans' },
+    { id: 'nanum-gothic', name: '나눔 고딕', fontFamily: "'Nanum Gothic', sans-serif", nameEn: 'Nanum Gothic' },
+    { id: 'spoqa', name: '스포카 한 산스', fontFamily: "'Spoqa Han Sans Neo', sans-serif", nameEn: 'Spoqa Han Sans' },
+    { id: 'montserrat', name: 'Montserrat', fontFamily: "'Montserrat', sans-serif", nameEn: 'Montserrat' },
+    { id: 'playfair', name: 'Playfair', fontFamily: "'Playfair Display', serif", nameEn: 'Playfair Display' },
+    { id: 'dancing', name: 'Dancing Script', fontFamily: "'Dancing Script', cursive", nameEn: 'Dancing Script' },
+    { id: 'bebas', name: 'Bebas Neue', fontFamily: "'Bebas Neue', sans-serif", nameEn: 'Bebas Neue' }
+];
+
+function showBrandSettingModal() {
+    // 기존 모달 제거
+    const existingModal = document.getElementById('brand-setting-modal');
+    if (existingModal) existingModal.remove();
+
+    // 저장된 설정 불러오기
+    const savedBrand = localStorage.getItem('hairgator_brand_name') || '';
+    const savedFont = localStorage.getItem('hairgator_brand_font') || 'default';
+
+    const modal = document.createElement('div');
+    modal.id = 'brand-setting-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(3px);
+    `;
+
+    const fontOptionsHtml = FONT_OPTIONS.map(font => `
+        <label class="font-option ${savedFont === font.id ? 'selected' : ''}" data-font-id="${font.id}">
+            <input type="radio" name="brandFont" value="${font.id}" ${savedFont === font.id ? 'checked' : ''} style="display: none;">
+            <span class="font-preview" style="font-family: ${font.fontFamily};">Aa 가나</span>
+            <span class="font-name">${font.name}</span>
+        </label>
+    `).join('');
+
+    modal.innerHTML = `
+        <div style="
+            background: var(--bg-primary, #1a1a1a);
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 420px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: var(--text-primary, #fff); font-size: 18px; margin: 0;">✏️ 상호 설정</h3>
+                <button id="closeBrandModal" style="
+                    background: none;
+                    border: none;
+                    color: var(--text-primary, #fff);
+                    font-size: 24px;
+                    cursor: pointer;
+                    padding: 0;
+                    line-height: 1;
+                ">×</button>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 8px;">
+                    상호명 (비워두면 HAIRGATOR 표시)
+                </label>
+                <input type="text" id="brandNameInput" value="${savedBrand}" placeholder="예: SALON BEAUTY" maxlength="20" style="
+                    width: 100%;
+                    padding: 12px 16px;
+                    border: 1px solid rgba(255,255,255,0.2);
+                    border-radius: 8px;
+                    background: rgba(255,255,255,0.05);
+                    color: var(--text-primary, #fff);
+                    font-size: 16px;
+                    box-sizing: border-box;
+                ">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 12px;">
+                    폰트 선택
+                </label>
+                <div id="fontOptions" style="
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 10px;
+                ">
+                    ${fontOptionsHtml}
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 8px;">
+                    미리보기
+                </label>
+                <div id="brandPreview" style="
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: var(--text-primary, #fff);
+                    text-align: center;
+                    padding: 10px;
+                    font-family: ${FONT_OPTIONS.find(f => f.id === savedFont)?.fontFamily || 'inherit'};
+                ">${savedBrand || 'HAIRGATOR'}</div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button id="resetBrandBtn" style="
+                    flex: 1;
+                    padding: 12px;
+                    border: 1px solid rgba(255,255,255,0.2);
+                    background: transparent;
+                    color: var(--text-secondary, #aaa);
+                    border-radius: 8px;
+                    font-size: 14px;
+                    cursor: pointer;
+                ">초기화</button>
+                <button id="saveBrandBtn" style="
+                    flex: 2;
+                    padding: 12px;
+                    border: none;
+                    background: linear-gradient(135deg, #E91E63, #C2185B);
+                    color: #fff;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                ">저장</button>
+            </div>
+        </div>
+
+        <style>
+            .font-option {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 12px 8px;
+                border: 2px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .font-option:hover {
+                border-color: rgba(255,255,255,0.3);
+            }
+            .font-option.selected {
+                border-color: #E91E63;
+                background: rgba(233, 30, 99, 0.1);
+            }
+            .font-preview {
+                font-size: 18px;
+                color: var(--text-primary, #fff);
+                margin-bottom: 4px;
+            }
+            .font-name {
+                font-size: 10px;
+                color: var(--text-secondary, #aaa);
+            }
+        </style>
+    `;
+
+    document.body.appendChild(modal);
+
+    // 이벤트 리스너
+    const closeBtn = document.getElementById('closeBrandModal');
+    const saveBtn = document.getElementById('saveBrandBtn');
+    const resetBtn = document.getElementById('resetBrandBtn');
+    const brandInput = document.getElementById('brandNameInput');
+    const fontOptions = document.querySelectorAll('.font-option');
+    const preview = document.getElementById('brandPreview');
+
+    // 닫기
+    closeBtn.onclick = () => modal.remove();
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+    // 입력 시 미리보기 업데이트
+    brandInput.oninput = () => {
+        preview.textContent = brandInput.value || 'HAIRGATOR';
+    };
+
+    // 폰트 선택
+    fontOptions.forEach(option => {
+        option.onclick = () => {
+            fontOptions.forEach(o => o.classList.remove('selected'));
+            option.classList.add('selected');
+            option.querySelector('input').checked = true;
+            const fontId = option.dataset.fontId;
+            const font = FONT_OPTIONS.find(f => f.id === fontId);
+            if (font) {
+                preview.style.fontFamily = font.fontFamily;
+            }
+        };
+    });
+
+    // 초기화
+    resetBtn.onclick = () => {
+        brandInput.value = '';
+        preview.textContent = 'HAIRGATOR';
+        preview.style.fontFamily = FONT_OPTIONS[0].fontFamily;
+        fontOptions.forEach(o => o.classList.remove('selected'));
+        fontOptions[0].classList.add('selected');
+        fontOptions[0].querySelector('input').checked = true;
+    };
+
+    // 저장
+    saveBtn.onclick = () => {
+        const brandName = brandInput.value.trim();
+        const selectedFont = document.querySelector('input[name="brandFont"]:checked')?.value || 'default';
+
+        localStorage.setItem('hairgator_brand_name', brandName);
+        localStorage.setItem('hairgator_brand_font', selectedFont);
+
+        applyCustomBrand();
+        modal.remove();
+
+        if (window.showToast) {
+            window.showToast('상호 설정이 저장되었습니다.');
+        }
+    };
+}
+
+// 저장된 상호명 적용
+function applyCustomBrand() {
+    const brandName = localStorage.getItem('hairgator_brand_name');
+    const brandFont = localStorage.getItem('hairgator_brand_font') || 'default';
+
+    const logoElement = document.querySelector('.logo');
+    if (logoElement) {
+        logoElement.textContent = brandName || 'HAIRGATOR';
+
+        const font = FONT_OPTIONS.find(f => f.id === brandFont);
+        if (font) {
+            logoElement.style.fontFamily = font.fontFamily;
+        }
+    }
+}
+
+// 전역 함수로 노출
+window.showBrandSettingModal = showBrandSettingModal;
+window.applyCustomBrand = applyCustomBrand;
