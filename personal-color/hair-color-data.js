@@ -6,21 +6,23 @@
 
 console.log('🎨 614개 헤어컬러 데이터 로드 중...');
 
-// 톤별 시즌 매핑 및 베이스 컬러 정의 (피드백 반영)
+// 톤별 시즌 매핑 및 베이스 컬러 정의 (미세 조정 버전)
+// - 쿨톤: 푸른기(B값) 강조, 채도 낮춤 → Summer/Winter 매칭 극대화
+// - 웜톤: 붉은기/노란기(R값) 강조 → Spring/Autumn 매칭 극대화
 const TONE_CONFIG = {
-    'Natural': { seasons: ['spring', 'summer', 'autumn', 'winter'], base: {r: 100, g: 85, b: 70} },
-    'Ash': { seasons: ['summer', 'winter'], base: {r: 95, g: 100, b: 115} },
-    'Golden': { seasons: ['spring', 'autumn'], base: {r: 150, g: 120, b: 60} },
-    'Copper': { seasons: ['spring', 'autumn'], base: {r: 170, g: 95, b: 55} },
-    'Red': { seasons: ['autumn', 'winter'], base: {r: 155, g: 55, b: 55} },
-    'Violet': { seasons: ['summer', 'winter'], base: {r: 125, g: 85, b: 130} },
-    'Matt': { seasons: ['autumn', 'summer'], base: {r: 95, g: 115, b: 75} },
-    'Mahogany': { seasons: ['autumn', 'winter'], base: {r: 130, g: 50, b: 50} },
-    'Beige': { seasons: ['spring', 'autumn'], base: {r: 140, g: 120, b: 95} },
-    'Cool Beige': { seasons: ['summer', 'winter'], base: {r: 130, g: 120, b: 115} },
-    'Blue': { seasons: ['summer', 'winter'], base: {r: 70, g: 90, b: 130} },
-    'Orange': { seasons: ['spring', 'autumn'], base: {r: 180, g: 100, b: 45} },
-    'Brown': { seasons: ['autumn', 'winter'], base: {r: 110, g: 75, b: 55} }
+    'Natural': { seasons: ['spring', 'summer', 'autumn', 'winter'], base: {r: 95, g: 80, b: 65} },
+    'Ash': { seasons: ['summer', 'winter'], base: {r: 80, g: 90, b: 115} },           // 푸른기 강조
+    'Golden': { seasons: ['spring', 'autumn'], base: {r: 160, g: 125, b: 50} },       // 노란기 강조
+    'Copper': { seasons: ['spring', 'autumn'], base: {r: 175, g: 90, b: 45} },        // 주황기 강조
+    'Red': { seasons: ['autumn', 'winter'], base: {r: 160, g: 45, b: 50} },           // 붉은기 강조
+    'Violet': { seasons: ['summer', 'winter'], base: {r: 115, g: 80, b: 135} },       // 보라기 강조
+    'Matt': { seasons: ['autumn', 'summer'], base: {r: 90, g: 115, b: 70} },          // 올리브/녹색기 강조
+    'Mahogany': { seasons: ['autumn', 'winter'], base: {r: 135, g: 45, b: 50} },      // 와인 레드
+    'Beige': { seasons: ['spring', 'autumn'], base: {r: 145, g: 120, b: 90} },        // 웜베이지
+    'Cool Beige': { seasons: ['summer', 'winter'], base: {r: 120, g: 115, b: 120} },  // 쿨베이지 (회색빛)
+    'Blue': { seasons: ['summer', 'winter'], base: {r: 65, g: 85, b: 135} },          // 블루 강조
+    'Orange': { seasons: ['spring', 'autumn'], base: {r: 185, g: 95, b: 40} },        // 오렌지 강조
+    'Brown': { seasons: ['autumn', 'winter'], base: {r: 105, g: 70, b: 50} }          // 브라운
 };
 
 // RGB를 HEX로 변환
