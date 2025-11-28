@@ -1639,48 +1639,25 @@ body {
     .camera-container {
         position: relative;
         max-height: calc(100vh - 180px);
-        overflow-y: auto;
+        overflow-y: scroll !important; /* 항상 스크롤바 표시 */
         overflow-x: hidden;
-        padding-right: 8px;
+        -webkit-overflow-scrolling: touch;
     }
 
-    /* 커스텀 스크롤바 */
+    /* iOS/웹킷 스크롤바 항상 표시 */
     .camera-container::-webkit-scrollbar {
-        width: 6px;
+        width: 8px;
+        -webkit-appearance: none;
     }
 
     .camera-container::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
     }
 
     .camera-container::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, var(--primary-color), var(--primary-dark));
-        border-radius: 3px;
-    }
-
-    .camera-container::-webkit-scrollbar-thumb:hover {
-        background: var(--primary-light);
-    }
-
-    /* 하단 페이드 그라데이션 (더 있음 표시) */
-    .camera-container::after {
-        content: '';
-        position: sticky;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 40px;
-        background: linear-gradient(to top, rgba(30, 30, 30, 0.95), transparent);
-        pointer-events: none;
-        display: block;
-        margin-top: -40px;
-        opacity: 1;
-        transition: opacity 0.3s ease;
-    }
-
-    /* 스크롤이 끝에 도달하면 그라데이션 숨김 */
-    .camera-container.scroll-end::after {
-        opacity: 0;
+        background: var(--primary-color);
+        border-radius: 4px;
+        min-height: 40px;
     }
 }
