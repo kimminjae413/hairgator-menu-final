@@ -129,13 +129,19 @@
                         </div>
 
                         <!-- ⭐ 분석 결과 표시 (촬영 후) -->
-                        <div class="realtime-results" style="margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px; display: none;" id="realtime-results-container">
-                            <h4 style="margin: 0 0 15px 0; color: #fff;">🎨 퍼스널컬러 분석 결과</h4>
-                            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 6px; margin-bottom: 10px;">
-                                <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;" id="realtime-season">분석 중...</div>
-                                <div style="font-size: 14px; line-height: 1.6; color: #ccc;" id="realtime-skin-info"></div>
+                        <div class="realtime-results-wrapper" style="display: none;" id="realtime-results-wrapper">
+                            <div class="realtime-results" id="realtime-results-container">
+                                <h4 style="margin: 0 0 15px 0; color: #fff;">🎨 퍼스널컬러 분석 결과</h4>
+                                <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 6px; margin-bottom: 10px;">
+                                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;" id="realtime-season">분석 중...</div>
+                                    <div style="font-size: 14px; line-height: 1.6; color: #ccc;" id="realtime-skin-info"></div>
+                                </div>
+                                <div style="font-size: 14px; line-height: 1.8; color: #eee;" id="realtime-recommendation"></div>
                             </div>
-                            <div style="font-size: 14px; line-height: 1.8; color: #eee;" id="realtime-recommendation"></div>
+                            <!-- 분석결과 커스텀 스크롤바 (흰색) -->
+                            <div class="results-scrollbar" id="results-scrollbar">
+                                <div class="results-scrollbar-thumb" id="results-scrollbar-thumb"></div>
+                            </div>
                         </div>
                     </div>
                     <!-- 커스텀 스크롤바 (태블릿용) -->
@@ -1866,7 +1872,7 @@
             document.getElementById('ai-face-guide').style.display = 'flex';
 
             // 결과 숨기기
-            document.getElementById('realtime-results-container').style.display = 'none';
+            document.getElementById('realtime-results-wrapper').style.display = 'none';
             document.getElementById('ai-analysis-results').style.display = 'none';
 
             // 분석 단계 초기화
@@ -1949,15 +1955,13 @@
             const expertFeedbackHTML = generateExpertFeedbackHTML(pc);
 
             // 메인 결과 컨테이너 표시
+            const resultsWrapper = document.getElementById('realtime-results-wrapper');
             const resultsContainer = document.getElementById('realtime-results-container');
-            if (resultsContainer) {
-                resultsContainer.style.display = 'block';
-                resultsContainer.style.background = 'rgba(30, 30, 50, 0.95)';
-                resultsContainer.style.padding = '25px';
-                resultsContainer.style.borderRadius = '16px';
-                resultsContainer.style.border = '2px solid ' + pc.color;
-                resultsContainer.style.maxHeight = '70vh';
-                resultsContainer.style.overflowY = 'auto';
+            if (resultsWrapper && resultsContainer) {
+                resultsWrapper.style.display = 'block';
+                resultsWrapper.style.border = '2px solid ' + pc.color;
+                resultsWrapper.style.borderRadius = '16px';
+                resultsWrapper.style.background = 'rgba(30, 30, 50, 0.95)';
 
                 // ✅ 조명 낮을 때 명시적 경고 배너
                 const lightingWarningBanner = lm.lightingQuality < 0.4 ? `
@@ -3312,7 +3316,73 @@
                 if (container) {
                     container.dispatchEvent(new Event('scroll'));
                 }
+                // 분석결과 스크롤바도 업데이트
+                initResultsScrollbar();
             }, 100);
+        }
+
+        // 분석결과 영역 흰색 스크롤바
+        function initResultsScrollbar() {
+            const container = document.getElementById('realtime-results-container');
+            const scrollbar = document.getElementById('results-scrollbar');
+            const thumb = document.getElementById('results-scrollbar-thumb');
+
+            if (!container || !scrollbar || !thumb) return;
+
+            function updateScrollbar() {
+                const scrollHeight = container.scrollHeight;
+                const clientHeight = container.clientHeight;
+                const scrollTop = container.scrollTop;
+
+                if (scrollHeight <= clientHeight) {
+                    scrollbar.classList.add('hidden');
+                    return;
+                }
+
+                scrollbar.classList.remove('hidden');
+
+                const thumbHeight = Math.max((clientHeight / scrollHeight) * clientHeight, 30);
+                thumb.style.height = thumbHeight + 'px';
+
+                const maxScrollTop = scrollHeight - clientHeight;
+                const maxThumbTop = clientHeight - thumbHeight;
+                const thumbTop = (scrollTop / maxScrollTop) * maxThumbTop;
+                thumb.style.top = thumbTop + 'px';
+            }
+
+            container.addEventListener('scroll', updateScrollbar);
+            setTimeout(updateScrollbar, 100);
+
+            // 터치 드래그
+            let isDragging = false;
+            let startY = 0;
+            let startScrollTop = 0;
+
+            thumb.addEventListener('touchstart', function(e) {
+                isDragging = true;
+                startY = e.touches[0].clientY;
+                startScrollTop = container.scrollTop;
+                thumb.classList.add('active');
+                e.preventDefault();
+            });
+
+            document.addEventListener('touchmove', function(e) {
+                if (!isDragging) return;
+                const deltaY = e.touches[0].clientY - startY;
+                const scrollHeight = container.scrollHeight;
+                const clientHeight = container.clientHeight;
+                const thumbHeight = thumb.offsetHeight;
+                const maxThumbTop = clientHeight - thumbHeight;
+                const scrollRatio = (scrollHeight - clientHeight) / maxThumbTop;
+                container.scrollTop = startScrollTop + (deltaY * scrollRatio);
+            });
+
+            document.addEventListener('touchend', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    thumb.classList.remove('active');
+                }
+            });
         }
 
         // ========== 다국어 시스템 ==========

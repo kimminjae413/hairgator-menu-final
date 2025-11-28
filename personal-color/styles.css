@@ -1700,4 +1700,59 @@ body {
     .custom-scrollbar.hidden {
         display: none;
     }
+
+    /* ===== 분석결과 영역 스크롤바 (흰색) ===== */
+    .realtime-results-wrapper {
+        position: relative;
+        margin-top: 20px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 8px;
+    }
+
+    .realtime-results {
+        padding: 20px;
+        padding-right: 16px;
+        max-height: 350px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .realtime-results::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* 흰색 스크롤바 트랙 */
+    .results-scrollbar {
+        position: absolute;
+        right: 6px;
+        top: 15px;
+        bottom: 15px;
+        width: 5px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 3px;
+        z-index: 50;
+    }
+
+    /* 흰색 스크롤바 썸 */
+    .results-scrollbar-thumb {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        min-height: 30px;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 3px;
+        transition: background 0.2s;
+    }
+
+    .results-scrollbar-thumb:hover,
+    .results-scrollbar-thumb.active {
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .results-scrollbar.hidden {
+        display: none;
+    }
 }
