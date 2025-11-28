@@ -655,15 +655,26 @@ window.addEventListener('load', function() {
     // localStorage에 있으면 먼저 적용
     applyCustomBrand();
 
-    // Firebase에서도 로드 시도 (앱용 - localStorage가 초기화되는 경우 대비)
-    setTimeout(async () => {
+    // Firebase에서 브랜드 로드 (앱용 - 여러 번 시도)
+    async function tryLoadBrandFromFirebase(attempt = 1) {
+        const maxAttempts = 5;
+        const delay = attempt * 1000; // 1초, 2초, 3초, 4초, 5초
+
+        console.log(`🏷️ Firebase 브랜드 로드 시도 ${attempt}/${maxAttempts}`);
+
         const firebaseBrand = await loadBrandFromFirebase();
         if (firebaseBrand) {
-            console.log('🏷️ Firebase에서 브랜드 로드 후 재적용');
+            console.log('🏷️ Firebase에서 브랜드 로드 성공!');
             applyCustomBrand();
             applyProfileImage();
+        } else if (attempt < maxAttempts) {
+            // 로그인 정보가 아직 없으면 다시 시도
+            setTimeout(() => tryLoadBrandFromFirebase(attempt + 1), delay);
         }
-    }, 1000);
+    }
+
+    // 1초 후 첫 시도
+    setTimeout(() => tryLoadBrandFromFirebase(1), 1000);
 });
 
 // ========== 상호 설정 기능 ==========
