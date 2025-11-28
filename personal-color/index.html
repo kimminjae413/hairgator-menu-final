@@ -3239,6 +3239,8 @@
         });
 
         // ========== 태블릿용 커스텀 스크롤바 ==========
+        let mainScrollbarInitialized = false;
+
         function initScrollIndicator() {
             const container = document.getElementById('camera-container');
             const scrollbar = document.getElementById('custom-scrollbar');
@@ -3246,67 +3248,71 @@
 
             if (!container || !scrollbar || !thumb) return;
 
-            function updateScrollbar() {
+            function updateMainScrollbar() {
                 const scrollHeight = container.scrollHeight;
                 const clientHeight = container.clientHeight;
                 const scrollTop = container.scrollTop;
+                const trackHeight = scrollbar.clientHeight;
 
                 // 스크롤이 필요한지 확인
-                if (scrollHeight <= clientHeight) {
+                if (scrollHeight <= clientHeight + 10) {
                     scrollbar.classList.add('hidden');
                     return;
                 }
 
                 scrollbar.classList.remove('hidden');
 
-                // 썸 크기 계산
-                const thumbHeight = Math.max((clientHeight / scrollHeight) * clientHeight, 40);
+                // 썸 크기 계산 (트랙 높이 기준)
+                const thumbHeight = Math.max((clientHeight / scrollHeight) * trackHeight, 40);
                 thumb.style.height = thumbHeight + 'px';
 
                 // 썸 위치 계산
                 const maxScrollTop = scrollHeight - clientHeight;
-                const maxThumbTop = clientHeight - thumbHeight;
-                const thumbTop = (scrollTop / maxScrollTop) * maxThumbTop;
+                const maxThumbTop = trackHeight - thumbHeight;
+                const thumbTop = maxScrollTop > 0 ? (scrollTop / maxScrollTop) * maxThumbTop : 0;
                 thumb.style.top = thumbTop + 'px';
             }
 
-            // 스크롤 이벤트
-            container.addEventListener('scroll', updateScrollbar);
+            // 이벤트 리스너 중복 등록 방지
+            if (!mainScrollbarInitialized) {
+                mainScrollbarInitialized = true;
 
-            // 리사이즈 이벤트
-            window.addEventListener('resize', updateScrollbar);
+                container.addEventListener('scroll', updateMainScrollbar);
+                window.addEventListener('resize', updateMainScrollbar);
+
+                // 썸 드래그
+                let isDragging = false;
+                let startY = 0;
+                let startScrollTop = 0;
+
+                thumb.addEventListener('touchstart', function(e) {
+                    isDragging = true;
+                    startY = e.touches[0].clientY;
+                    startScrollTop = container.scrollTop;
+                    thumb.classList.add('active');
+                    e.preventDefault();
+                });
+
+                document.addEventListener('touchmove', function(e) {
+                    if (!isDragging) return;
+                    const deltaY = e.touches[0].clientY - startY;
+                    const scrollHeight = container.scrollHeight;
+                    const clientHeight = container.clientHeight;
+                    const trackHeight = scrollbar.clientHeight;
+                    const thumbHeight = thumb.offsetHeight;
+                    const maxThumbTop = trackHeight - thumbHeight;
+                    const scrollRatio = (scrollHeight - clientHeight) / maxThumbTop;
+                    container.scrollTop = startScrollTop + (deltaY * scrollRatio);
+                });
+
+                document.addEventListener('touchend', function() {
+                    isDragging = false;
+                    thumb.classList.remove('active');
+                });
+            }
 
             // 초기화
-            setTimeout(updateScrollbar, 100);
-
-            // 썸 드래그
-            let isDragging = false;
-            let startY = 0;
-            let startScrollTop = 0;
-
-            thumb.addEventListener('touchstart', function(e) {
-                isDragging = true;
-                startY = e.touches[0].clientY;
-                startScrollTop = container.scrollTop;
-                thumb.classList.add('active');
-                e.preventDefault();
-            });
-
-            document.addEventListener('touchmove', function(e) {
-                if (!isDragging) return;
-                const deltaY = e.touches[0].clientY - startY;
-                const scrollHeight = container.scrollHeight;
-                const clientHeight = container.clientHeight;
-                const thumbHeight = thumb.offsetHeight;
-                const maxThumbTop = clientHeight - thumbHeight;
-                const scrollRatio = (scrollHeight - clientHeight) / maxThumbTop;
-                container.scrollTop = startScrollTop + (deltaY * scrollRatio);
-            });
-
-            document.addEventListener('touchend', function() {
-                isDragging = false;
-                thumb.classList.remove('active');
-            });
+            setTimeout(updateMainScrollbar, 100);
         }
 
         // 결과가 표시될 때 스크롤바 업데이트
@@ -3322,6 +3328,8 @@
         }
 
         // 분석결과 영역 흰색 스크롤바
+        let resultsScrollbarInitialized = false;
+
         function initResultsScrollbar() {
             const container = document.getElementById('realtime-results-container');
             const scrollbar = document.getElementById('results-scrollbar');
@@ -3329,60 +3337,73 @@
 
             if (!container || !scrollbar || !thumb) return;
 
-            function updateScrollbar() {
+            function updateResultsScrollbar() {
                 const scrollHeight = container.scrollHeight;
                 const clientHeight = container.clientHeight;
                 const scrollTop = container.scrollTop;
+                const trackHeight = scrollbar.clientHeight;
 
-                if (scrollHeight <= clientHeight) {
+                // 스크롤이 필요 없으면 숨김
+                if (scrollHeight <= clientHeight + 10) {
                     scrollbar.classList.add('hidden');
                     return;
                 }
 
                 scrollbar.classList.remove('hidden');
 
-                const thumbHeight = Math.max((clientHeight / scrollHeight) * clientHeight, 30);
+                // 썸 크기 계산 (트랙 높이 기준)
+                const thumbHeight = Math.max((clientHeight / scrollHeight) * trackHeight, 30);
                 thumb.style.height = thumbHeight + 'px';
 
+                // 썸 위치 계산
                 const maxScrollTop = scrollHeight - clientHeight;
-                const maxThumbTop = clientHeight - thumbHeight;
-                const thumbTop = (scrollTop / maxScrollTop) * maxThumbTop;
+                const maxThumbTop = trackHeight - thumbHeight;
+                const thumbTop = maxScrollTop > 0 ? (scrollTop / maxScrollTop) * maxThumbTop : 0;
                 thumb.style.top = thumbTop + 'px';
             }
 
-            container.addEventListener('scroll', updateScrollbar);
-            setTimeout(updateScrollbar, 100);
+            // 이벤트 리스너 중복 등록 방지
+            if (!resultsScrollbarInitialized) {
+                resultsScrollbarInitialized = true;
 
-            // 터치 드래그
-            let isDragging = false;
-            let startY = 0;
-            let startScrollTop = 0;
+                container.addEventListener('scroll', updateResultsScrollbar);
+                window.addEventListener('resize', updateResultsScrollbar);
 
-            thumb.addEventListener('touchstart', function(e) {
-                isDragging = true;
-                startY = e.touches[0].clientY;
-                startScrollTop = container.scrollTop;
-                thumb.classList.add('active');
-                e.preventDefault();
-            });
+                // 터치 드래그
+                let isDragging = false;
+                let startY = 0;
+                let startScrollTop = 0;
 
-            document.addEventListener('touchmove', function(e) {
-                if (!isDragging) return;
-                const deltaY = e.touches[0].clientY - startY;
-                const scrollHeight = container.scrollHeight;
-                const clientHeight = container.clientHeight;
-                const thumbHeight = thumb.offsetHeight;
-                const maxThumbTop = clientHeight - thumbHeight;
-                const scrollRatio = (scrollHeight - clientHeight) / maxThumbTop;
-                container.scrollTop = startScrollTop + (deltaY * scrollRatio);
-            });
+                thumb.addEventListener('touchstart', function(e) {
+                    isDragging = true;
+                    startY = e.touches[0].clientY;
+                    startScrollTop = container.scrollTop;
+                    thumb.classList.add('active');
+                    e.preventDefault();
+                });
 
-            document.addEventListener('touchend', function() {
-                if (isDragging) {
-                    isDragging = false;
-                    thumb.classList.remove('active');
-                }
-            });
+                document.addEventListener('touchmove', function(e) {
+                    if (!isDragging) return;
+                    const deltaY = e.touches[0].clientY - startY;
+                    const scrollHeight = container.scrollHeight;
+                    const clientHeight = container.clientHeight;
+                    const trackHeight = scrollbar.clientHeight;
+                    const thumbHeight = thumb.offsetHeight;
+                    const maxThumbTop = trackHeight - thumbHeight;
+                    const scrollRatio = (scrollHeight - clientHeight) / maxThumbTop;
+                    container.scrollTop = startScrollTop + (deltaY * scrollRatio);
+                });
+
+                document.addEventListener('touchend', function() {
+                    if (isDragging) {
+                        isDragging = false;
+                        thumb.classList.remove('active');
+                    }
+                });
+            }
+
+            // 초기화 및 업데이트
+            setTimeout(updateResultsScrollbar, 200);
         }
 
         // ========== 다국어 시스템 ==========
