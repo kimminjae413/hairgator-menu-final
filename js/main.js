@@ -500,6 +500,11 @@ document.addEventListener('DOMContentLoaded', function() {
         setupSidebar();
         updateLoginInfo();
 
+        // 프로필 사진 다시 적용
+        if (typeof applyProfileImage === 'function') {
+            applyProfileImage();
+        }
+
         // 성별 선택 화면 재번역
         const maleLabelElements = document.querySelectorAll('.gender-btn.male .gender-label');
         const femaleLabelElements = document.querySelectorAll('.gender-btn.female .gender-label');
