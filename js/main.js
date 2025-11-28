@@ -1656,16 +1656,53 @@ function selectLanguage(langCode) {
         flagElement.textContent = getLanguageFlag(langCode);
     }
 
-    // 페이지 새로고침하여 번역 적용
+    // 토스트 메시지
     if (window.showToast) {
         const langName = LANGUAGE_OPTIONS.find(l => l.id === langCode)?.name || langCode;
         window.showToast(`${langName} ${getLanguageFlag(langCode)}`, 'success');
     }
 
-    // 잠시 후 페이지 새로고침 (번역 전체 적용)
-    setTimeout(() => {
-        location.reload();
-    }, 500);
+    // 동적으로 UI 텍스트 업데이트 (새로고침 없이)
+    applyLanguageToUI();
+}
+
+// 동적으로 UI에 언어 적용 (새로고침 없이)
+function applyLanguageToUI() {
+    // 사이드바 메뉴 텍스트 업데이트
+    const themeText = document.getElementById('themeText');
+    if (themeText) {
+        const isDark = document.body.classList.contains('light-theme') ? false : true;
+        themeText.textContent = isDark ? t('ui.darkMode') : t('ui.lightMode');
+    }
+
+    // 로그인 상태 텍스트
+    const loginStatus = document.getElementById('loginStatus');
+    if (loginStatus && loginStatus.textContent.includes('로딩')) {
+        loginStatus.textContent = t('ui.loading');
+    }
+
+    // 성별 선택 화면 번역
+    const maleLabelElements = document.querySelectorAll('.gender-btn.male .gender-label');
+    const femaleLabelElements = document.querySelectorAll('.gender-btn.female .gender-label');
+    maleLabelElements.forEach(el => {
+        if (el) el.textContent = t('gender.male');
+    });
+    femaleLabelElements.forEach(el => {
+        if (el) el.textContent = t('gender.female');
+    });
+
+    // 카테고리 탭 번역 (있는 경우)
+    const categoryTabs = document.querySelectorAll('.category-tab');
+    categoryTabs.forEach(tab => {
+        const categoryName = tab.dataset.category;
+        if (categoryName) {
+            const translated = translateCategory(categoryName);
+            const nameEl = tab.querySelector('.category-name');
+            if (nameEl) nameEl.textContent = translated;
+        }
+    });
+
+    console.log('✅ 언어 UI 적용 완료:', window.currentLanguage);
 }
 
 // 페이지 로드 시 저장된 언어의 국기 표시
@@ -1682,6 +1719,7 @@ window.getLanguageFlag = getLanguageFlag;
 window.showLanguageModal = showLanguageModal;
 window.selectLanguage = selectLanguage;
 window.updateLanguageFlag = updateLanguageFlag;
+window.applyLanguageToUI = applyLanguageToUI;
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
