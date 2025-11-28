@@ -268,7 +268,7 @@ const HAIRGATOR_I18N = {
           skinTone: '피부톤',
           undertone: '언더톤',
           recommendedSeason: '✨ 추천 퍼스널컬러',
-          matchingColors: '💄 어울리는 컬러',
+          matchingColors: '💄 메이크업 & 패션 컬러',
           confidence: '신뢰도'
         }
       },
@@ -673,7 +673,7 @@ const HAIRGATOR_I18N = {
           skinTone: 'Skin Tone',
           undertone: 'Undertone',
           recommendedSeason: '✨ Recommended Personal Color',
-          matchingColors: '💄 Matching Colors',
+          matchingColors: '💄 Makeup & Fashion Colors',
           confidence: 'Confidence'
         }
       },
@@ -1070,7 +1070,7 @@ const HAIRGATOR_I18N = {
           skinTone: '肌トーン',
           undertone: 'アンダートーン',
           recommendedSeason: '✨ おすすめパーソナルカラー',
-          matchingColors: '💄 似合う色',
+          matchingColors: '💄 メイク＆ファッションカラー',
           confidence: '信頼度'
         }
       },
@@ -1467,7 +1467,7 @@ const HAIRGATOR_I18N = {
           skinTone: '肤色',
           undertone: '底色调',
           recommendedSeason: '✨ 推荐个人色彩',
-          matchingColors: '💄 适合的颜色',
+          matchingColors: '💄 彩妆与时尚色彩',
           confidence: '置信度'
         }
       },
@@ -1864,7 +1864,7 @@ const HAIRGATOR_I18N = {
           skinTone: 'Tông da',
           undertone: 'Undertone',
           recommendedSeason: '✨ Màu cá nhân đề xuất',
-          matchingColors: '💄 Màu phù hợp',
+          matchingColors: '💄 Màu trang điểm & thời trang',
           confidence: 'Độ tin cậy'
         }
       },

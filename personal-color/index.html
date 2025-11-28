@@ -2001,8 +2001,8 @@
             if (!hairRec.recommended1st || hairRec.recommended1st.length === 0) {
                 return `
                     <div style="margin-top: 15px; background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px;">
-                        <div style="font-size: 14px; color: #aaa;">💇 추천 헤어컬러</div>
-                        <div style="color: #ccc; font-size: 13px; margin-top: 10px;">헤어컬러 데이터를 불러오는 중...</div>
+                        <div style="font-size: 14px; color: #aaa;">💇 추천 염색 컬러</div>
+                        <div style="color: #ccc; font-size: 13px; margin-top: 10px;">염색 컬러 데이터를 불러오는 중...</div>
                     </div>
                 `;
             }
@@ -2049,7 +2049,7 @@
             let html = `
                 <div style="margin-top: 15px; background: rgba(76,175,80,0.1); padding: 20px; border-radius: 12px; border: 1px solid rgba(76,175,80,0.3);">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                        <div style="font-size: 15px; color: #4CAF50; font-weight: bold;">💇 1순위 추천 헤어컬러</div>
+                        <div style="font-size: 15px; color: #4CAF50; font-weight: bold;">💇 추천 염색 컬러 (1순위)</div>
                         <div style="font-size: 11px; color: #81C784; background: rgba(76,175,80,0.2); padding: 3px 8px; border-radius: 10px;">강추천</div>
                     </div>
                     ${hairRec.recommended1st.map((c, i) => renderColorItemAdvanced(c, i+1)).join('')}
@@ -2060,7 +2060,7 @@
                 html += `
                     <div style="margin-top: 15px; background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px;">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                            <div style="font-size: 15px; color: #aaa; font-weight: bold;">💇 2순위 추천 헤어컬러</div>
+                            <div style="font-size: 15px; color: #aaa; font-weight: bold;">💇 추천 염색 컬러 (2순위)</div>
                             <div style="font-size: 11px; color: #888; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 10px;">무난함</div>
                         </div>
                         ${hairRec.recommended2nd.map((c, i) => renderColorItemAdvanced(c, i+4)).join('')}
@@ -3230,7 +3230,7 @@
                 skinTone: '피부톤',
                 undertone: '언더톤',
                 recommendedSeason: '✨ 추천 퍼스널컬러',
-                matchingColors: '💄 어울리는 컬러',
+                matchingColors: '💄 메이크업 & 패션 컬러',
                 confidence: '신뢰도'
             };
             return pc.aiMode.result;
