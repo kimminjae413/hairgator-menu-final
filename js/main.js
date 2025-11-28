@@ -661,6 +661,7 @@ window.addEventListener('load', function() {
         if (firebaseBrand) {
             console.log('🏷️ Firebase에서 브랜드 로드 후 재적용');
             applyCustomBrand();
+            applyProfileImage();
         }
     }, 1000);
 });
@@ -1116,13 +1117,14 @@ async function loadBrandFromFirebase() {
 
         if (doc.exists) {
             const data = doc.data();
-            console.log('🏷️ Firebase에서 브랜드 로드 성공:', data);
+            console.log('🏷️ Firebase에서 브랜드 로드 성공:', data.brandName);
 
             // localStorage에도 동기화
             if (data.brandName !== undefined) localStorage.setItem('hairgator_brand_name', data.brandName);
             if (data.brandFont) localStorage.setItem('hairgator_brand_font', data.brandFont);
             if (data.brandColorLight) localStorage.setItem('hairgator_brand_color_light', data.brandColorLight);
             if (data.brandColorDark) localStorage.setItem('hairgator_brand_color_dark', data.brandColorDark);
+            if (data.profileImage !== undefined) localStorage.setItem('hairgator_profile_image', data.profileImage);
 
             return data;
         }
@@ -1287,8 +1289,9 @@ function showProfileImageModal() {
 
     const removeBtn = document.getElementById('removeProfileBtn');
     if (removeBtn) {
-        removeBtn.onclick = () => {
+        removeBtn.onclick = async () => {
             localStorage.removeItem('hairgator_profile_image');
+            await saveProfileImageToFirebase(''); // Firebase에서도 삭제
             applyProfileImage();
             modal.remove();
             if (window.showToast) window.showToast('프로필 사진이 삭제되었습니다.');
@@ -1302,7 +1305,7 @@ function showProfileImageModal() {
             reader.onload = (event) => {
                 // 이미지 리사이즈 (200x200)
                 const img = new Image();
-                img.onload = () => {
+                img.onload = async () => {
                     const canvas = document.createElement('canvas');
                     const size = 200;
                     canvas.width = size;
@@ -1318,6 +1321,7 @@ function showProfileImageModal() {
                     const resizedImage = canvas.toDataURL('image/jpeg', 0.8);
 
                     localStorage.setItem('hairgator_profile_image', resizedImage);
+                    await saveProfileImageToFirebase(resizedImage); // Firebase에도 저장
                     applyProfileImage();
                     modal.remove();
                     if (window.showToast) window.showToast('프로필 사진이 저장되었습니다.');
@@ -1327,6 +1331,27 @@ function showProfileImageModal() {
             reader.readAsDataURL(file);
         }
     };
+}
+
+// Firebase에 프로필 이미지 저장
+async function saveProfileImageToFirebase(imageData) {
+    try {
+        const userInfo = getUserInfo();
+        if (!window.db || !userInfo) {
+            console.log('📷 Firebase 프로필 저장 스킵 (로그인 정보 없음)');
+            return;
+        }
+
+        const docId = `${userInfo.name}_${userInfo.phone}`;
+        await window.db.collection('brandSettings').doc(docId).set({
+            profileImage: imageData,
+            updatedAt: Date.now()
+        }, { merge: true });
+
+        console.log('📷 Firebase 프로필 이미지 저장 완료');
+    } catch (e) {
+        console.error('📷 Firebase 프로필 저장 실패:', e);
+    }
 }
 
 // 프로필 이미지 적용
