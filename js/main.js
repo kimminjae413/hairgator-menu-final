@@ -463,6 +463,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // UI 텍스트 업데이트
         updateAllTexts();
 
+        // 국기 업데이트
+        if (typeof updateLanguageFlag === 'function') {
+            updateLanguageFlag();
+        }
+
         // 메뉴 리로드 (현재 성별이 있으면)
         if (window.currentGender && typeof window.HAIRGATOR_MENU?.loadMenuForGender === 'function') {
             window.HAIRGATOR_MENU.loadMenuForGender(window.currentGender);
@@ -477,7 +482,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log(`✅ 챗봇 언어 동기화: ${langCode}`);
         }
 
-        showToast('Language changed / 言語変更 / 语言已更改');
+        const langName = window.LANGUAGE_OPTIONS?.find(l => l.id === langCode)?.name || langCode;
+        const langFlag = typeof getLanguageFlag === 'function' ? getLanguageFlag(langCode) : '';
+        showToast(`${langName} ${langFlag}`);
     }
 
     function updateAllTexts() {
@@ -539,6 +546,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 3000);
     }
+
+    // ⭐ 언어 선택 모달을 전역에 노출
+    window.showLanguageModal = showLanguageModal;
 
     // ⭐⭐⭐ 최종 수정된 goBack 함수 (불나비 자동 로그인 전용) ⭐⭐⭐
     window.goBack = function() {
@@ -1531,7 +1541,7 @@ window.showProfileImageModal = showProfileImageModal;
 window.applyProfileImage = applyProfileImage;
 window.showIdleScreen = showIdleScreen;
 
-// ========== 언어 선택 기능 ==========
+// ========== 언어 선택 기능 (국기 표시용) ==========
 
 const LANGUAGE_OPTIONS = [
     { id: 'ko', name: '한국어', flag: '🇰🇷' },
@@ -1547,164 +1557,6 @@ function getLanguageFlag(langCode) {
     return lang ? lang.flag : '🇰🇷';
 }
 
-// 언어 선택 모달 표시
-function showLanguageModal() {
-    // 기존 모달 제거
-    const existingModal = document.getElementById('language-modal');
-    if (existingModal) existingModal.remove();
-
-    const currentLang = window.currentLanguage || 'ko';
-
-    const modal = document.createElement('div');
-    modal.id = 'language-modal';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(3px);
-    `;
-
-    const languageOptionsHtml = LANGUAGE_OPTIONS.map(lang => `
-        <div class="language-option ${currentLang === lang.id ? 'selected' : ''}" data-lang="${lang.id}" style="
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px 20px;
-            cursor: pointer;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            ${currentLang === lang.id ? 'background: rgba(233, 30, 99, 0.15); border: 2px solid #E91E63;' : 'background: rgba(255,255,255,0.05); border: 2px solid transparent;'}
-        ">
-            <span style="font-size: 32px;">${lang.flag}</span>
-            <span style="color: var(--text-primary, #fff); font-size: 16px; font-weight: ${currentLang === lang.id ? '600' : '400'};">${lang.name}</span>
-            ${currentLang === lang.id ? '<span style="margin-left: auto; color: #E91E63; font-size: 18px;">✓</span>' : ''}
-        </div>
-    `).join('');
-
-    modal.innerHTML = `
-        <div style="
-            background: var(--bg-primary, #1a1a1a);
-            border-radius: 16px;
-            padding: 24px;
-            width: 90%;
-            max-width: 340px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        ">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="color: var(--text-primary, #fff); font-size: 18px; margin: 0;">🌐 언어 선택</h3>
-                <button id="closeLanguageModal" style="
-                    background: none;
-                    border: none;
-                    color: var(--text-primary, #fff);
-                    font-size: 24px;
-                    cursor: pointer;
-                    padding: 0;
-                    line-height: 1;
-                ">×</button>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                ${languageOptionsHtml}
-            </div>
-        </div>
-
-        <style>
-            .language-option:hover {
-                background: rgba(255,255,255,0.1) !important;
-            }
-            .language-option.selected:hover {
-                background: rgba(233, 30, 99, 0.2) !important;
-            }
-        </style>
-    `;
-
-    document.body.appendChild(modal);
-
-    // 이벤트 리스너
-    document.getElementById('closeLanguageModal').onclick = () => modal.remove();
-    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-
-    // 언어 선택
-    modal.querySelectorAll('.language-option').forEach(option => {
-        option.onclick = () => {
-            const langId = option.dataset.lang;
-            selectLanguage(langId);
-            modal.remove();
-        };
-    });
-}
-
-// 언어 선택 처리
-function selectLanguage(langCode) {
-    if (typeof setLanguage === 'function') {
-        setLanguage(langCode);
-    } else {
-        window.currentLanguage = langCode;
-        localStorage.setItem('hairgator_language', langCode);
-    }
-
-    // 국기 업데이트
-    const flagElement = document.getElementById('currentLanguageFlag');
-    if (flagElement) {
-        flagElement.textContent = getLanguageFlag(langCode);
-    }
-
-    // 토스트 메시지
-    if (window.showToast) {
-        const langName = LANGUAGE_OPTIONS.find(l => l.id === langCode)?.name || langCode;
-        window.showToast(`${langName} ${getLanguageFlag(langCode)}`, 'success');
-    }
-
-    // 동적으로 UI 텍스트 업데이트 (새로고침 없이)
-    applyLanguageToUI();
-}
-
-// 동적으로 UI에 언어 적용 (새로고침 없이)
-function applyLanguageToUI() {
-    // 사이드바 메뉴 텍스트 업데이트
-    const themeText = document.getElementById('themeText');
-    if (themeText) {
-        const isDark = document.body.classList.contains('light-theme') ? false : true;
-        themeText.textContent = isDark ? t('ui.darkMode') : t('ui.lightMode');
-    }
-
-    // 로그인 상태 텍스트
-    const loginStatus = document.getElementById('loginStatus');
-    if (loginStatus && loginStatus.textContent.includes('로딩')) {
-        loginStatus.textContent = t('ui.loading');
-    }
-
-    // 성별 선택 화면 번역
-    const maleLabelElements = document.querySelectorAll('.gender-btn.male .gender-label');
-    const femaleLabelElements = document.querySelectorAll('.gender-btn.female .gender-label');
-    maleLabelElements.forEach(el => {
-        if (el) el.textContent = t('gender.male');
-    });
-    femaleLabelElements.forEach(el => {
-        if (el) el.textContent = t('gender.female');
-    });
-
-    // 카테고리 탭 번역 (있는 경우)
-    const categoryTabs = document.querySelectorAll('.category-tab');
-    categoryTabs.forEach(tab => {
-        const categoryName = tab.dataset.category;
-        if (categoryName) {
-            const translated = translateCategory(categoryName);
-            const nameEl = tab.querySelector('.category-name');
-            if (nameEl) nameEl.textContent = translated;
-        }
-    });
-
-    console.log('✅ 언어 UI 적용 완료:', window.currentLanguage);
-}
-
 // 페이지 로드 시 저장된 언어의 국기 표시
 function updateLanguageFlag() {
     const currentLang = window.currentLanguage || localStorage.getItem('hairgator_language') || 'ko';
@@ -1716,10 +1568,8 @@ function updateLanguageFlag() {
 
 // 전역 함수 노출
 window.getLanguageFlag = getLanguageFlag;
-window.showLanguageModal = showLanguageModal;
-window.selectLanguage = selectLanguage;
 window.updateLanguageFlag = updateLanguageFlag;
-window.applyLanguageToUI = applyLanguageToUI;
+window.LANGUAGE_OPTIONS = LANGUAGE_OPTIONS;
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
