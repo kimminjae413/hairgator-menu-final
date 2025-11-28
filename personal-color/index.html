@@ -966,6 +966,42 @@
                 seasonalAdvice: '겨울 쿨 뮤트는 무채색 계열이 잘 어울려요. 화려한 색은 피하세요.',
                 consultingTip: '세련되고 차분한 분위기를 연출해주세요.'
             },
+            'winter-bright': {
+                toneKeyword: ['퓨어블랙', '와인', '트루레드', '로얄블루'],
+                recommendLevel: '3~5레벨',
+                undercoatTip: '쿨톤 베이스 유지, 노란기 완전 제거 필수',
+                textureTip: '선명하고 광택 있는 마무리',
+                avoidColors: ['베이지', '골드', '오렌지', '브라운'],
+                seasonalAdvice: '겨울 쿨 브라이트는 강렬하고 선명한 대비가 핵심! 탁한 색은 피하세요.',
+                consultingTip: '화려하고 임팩트 있는 이미지를 살려주세요.'
+            },
+            'summer-muted': {
+                toneKeyword: ['더스티로즈', '그레이쉬라벤더', '소프트모브', '쿨그레이'],
+                recommendLevel: '6~8레벨',
+                undercoatTip: '애쉬~그레이 베이스, 채도 낮게 유지',
+                textureTip: '부드럽고 차분한 질감, 광택 최소화',
+                avoidColors: ['골드', '오렌지', '비비드 레드'],
+                seasonalAdvice: '여름 쿨 뮤트는 탁하고 부드러운 쿨톤이 어울려요. 선명한 색은 피하세요.',
+                consultingTip: '차분하고 우아한 분위기를 연출해주세요.'
+            },
+            'neutral-muted': {
+                toneKeyword: ['그레이베이지', '토프', '더스티모카', '소프트브라운'],
+                recommendLevel: '5~7레벨',
+                undercoatTip: '뉴트럴~쿨 베이지 베이스, 채도 낮게',
+                textureTip: '자연스럽고 차분한 질감',
+                avoidColors: ['비비드 오렌지', '네온', '퓨어블랙'],
+                seasonalAdvice: '뉴트럴 뮤트는 차분하고 자연스러운 색이 잘 어울려요.',
+                consultingTip: '세련되고 편안한 느낌을 연출해주세요.'
+            },
+            'neutral-soft': {
+                toneKeyword: ['밀크모카', '로즈브라운', '소프트베이지', '더스티핑크'],
+                recommendLevel: '6~8레벨',
+                undercoatTip: '뉴트럴 베이지 베이스, 부드러운 그라데이션',
+                textureTip: '부드럽고 자연스러운 광택',
+                avoidColors: ['블루블랙', '비비드 레드', '애쉬그레이'],
+                seasonalAdvice: '뉴트럴 소프트는 부드럽고 은은한 색이 잘 어울려요.',
+                consultingTip: '따뜻하면서도 차분한 분위기를 연출해주세요.'
+            },
             'neutral-light': {
                 toneKeyword: ['밀크티', '로즈베이지', '라이트모카', '더스티핑크'],
                 recommendLevel: '7~9레벨',
@@ -1031,28 +1067,36 @@
             const skinL = personalColorResult.lab?.L || 60;
             const colorLevel = color.level || 6;
 
-            // 탈색 필요 여부 (일반적으로 7레벨 이상은 탈색 필요)
-            const needsBleaching = colorLevel >= 7;
-
-            // 난이도 계산
+            // 난이도 계산 (High Lift Color로 8~10레벨 가능, 11레벨 이상 탈색 필요)
             let difficulty = 'easy';
             let difficultyLabel = '손쉬움';
             let difficultyIcon = '✅';
             let difficultyTip = '';
+            let needsBleaching = false;
 
-            if (needsBleaching) {
-                if (colorLevel >= 9) {
-                    difficulty = 'hard';
-                    difficultyLabel = '고난도';
-                    difficultyIcon = '⚠️';
-                    difficultyTip = '2회 이상 탈색 필요, 모발 손상 주의';
-                } else {
-                    difficulty = 'medium';
-                    difficultyLabel = '탈색 필요';
-                    difficultyIcon = '🔆';
-                    difficultyTip = '1회 탈색 후 염색';
-                }
+            if (colorLevel >= 11) {
+                // 11레벨 이상: 확실히 탈색 필요
+                difficulty = 'hard';
+                difficultyLabel = '고난도';
+                difficultyIcon = '⚠️';
+                difficultyTip = '2회 이상 탈색 필요, 모발 손상 주의';
+                needsBleaching = true;
+            } else if (colorLevel >= 9) {
+                // 9~10레벨: 탈색 또는 하이리프트 염색
+                difficulty = 'medium';
+                difficultyLabel = '톤업 필요';
+                difficultyIcon = '🔆';
+                difficultyTip = '탈색 또는 하이리프트 염색 권장';
+                needsBleaching = true;
+            } else if (colorLevel >= 7) {
+                // 7~8레벨: 하이리프트 염색으로 가능
+                difficulty = 'light';
+                difficultyLabel = '하이리프트';
+                difficultyIcon = '💡';
+                difficultyTip = '하이리프트 염색으로 톤업 가능';
+                needsBleaching = false;
             } else {
+                // 6레벨 이하: 바로 적용
                 difficultyTip = '탈색 없이 바로 적용 가능';
             }
 
@@ -1932,7 +1976,8 @@
 
                 // 난이도에 따른 배경색
                 const diffBgColor = difficulty.difficulty === 'hard' ? 'rgba(255,87,34,0.15)' :
-                                    difficulty.difficulty === 'medium' ? 'rgba(255,152,0,0.15)' : 'rgba(76,175,80,0.1)';
+                                    difficulty.difficulty === 'medium' ? 'rgba(255,152,0,0.15)' :
+                                    difficulty.difficulty === 'light' ? 'rgba(255,235,59,0.12)' : 'rgba(76,175,80,0.1)';
 
                 return `
                 <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 10px; border-left: 3px solid ${badge.color};">
