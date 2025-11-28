@@ -491,56 +491,140 @@ function rgbToLab(r, g, b) {
 }
 
 // ========================================
-// 📊 논문 기반 계절 분류 로직
+// 📊 개선된 계절 분류 로직 (PCCS 톤 + a/b 비율 기반)
 // ========================================
 
 function classifySeasonByLab(lab) {
-    console.log('🧠 고급 계절 분류 시스템 실행...');
-    
-    // 논문 기반 기본 분류
-    const isWarmTone = lab.b > 0;  // b > 0 = 노란 언더톤 (warm)
-    const brightness = lab.L;       // 명도 (밝기)
-    const saturation = Math.sqrt(lab.a * lab.a + lab.b * lab.b); // 채도
-    
-    // 논문 검증된 파운데이션 대응 기준 (21호/23호)
-    const isBright = brightness > 55; // 논문 기반 임계값 조정
-    
-    // 고급 분류 로직 (논문 + GPT 매칭)
-    let season;
-    let confidence = 0;
-    
-    if (isWarmTone) {
-        if (isBright && saturation > 20) {
-            season = 'Spring';  // 밝고 따뜻하고 선명함
-            confidence = 90;
-        } else if (!isBright && saturation > 15) {
-            season = 'Autumn';  // 어둡고 따뜻하고 깊음
-            confidence = 85;
-        } else {
-            season = brightness > 50 ? 'Spring' : 'Autumn';
-            confidence = 70;
-        }
-    } else {
-        if (isBright && saturation < 25) {
-            season = 'Summer';  // 밝고 차갑고 부드러움
-            confidence = 88;
-        } else if (!isBright && saturation > 20) {
-            season = 'Winter';  // 어둡고 차갑고 강렬함
-            confidence = 92;
-        } else {
-            season = brightness > 50 ? 'Summer' : 'Winter';
-            confidence = 75;
+    console.log('🧠 개선된 계절 분류 시스템 실행...');
+
+    const L = lab.L;  // 명도
+    const a = lab.a;  // 빨강-녹색 (양수: 빨강, 음수: 녹색)
+    const b = lab.b;  // 노랑-파랑 (양수: 노랑, 음수: 파랑)
+
+    // 채도 계산 (Chroma)
+    const C = Math.sqrt(a * a + b * b);
+
+    // ========================================
+    // 1. 웜/쿨 판단 (Yellow Index 활용)
+    // b값이 a값보다 현저히 높으면 웜톤
+    // ========================================
+    let warmCoolRatio = b / Math.max(0.1, Math.abs(a));
+
+    // 입술색 데이터가 있으면 보조 판단에 활용
+    const skinData = window.lastSkinToneData;
+    if (skinData && skinData.lipColor) {
+        const lipWarm = skinData.lipColor.isWarm;
+        // 입술색이 피부톤과 다르면 가중치 조정
+        if (lipWarm && warmCoolRatio < 1) {
+            warmCoolRatio += 0.3;  // 웜톤 방향으로 보정
+            console.log('👄 입술색 보정: 웜톤 경향 추가');
+        } else if (!lipWarm && warmCoolRatio > 1) {
+            warmCoolRatio -= 0.3;  // 쿨톤 방향으로 보정
+            console.log('👄 입술색 보정: 쿨톤 경향 추가');
         }
     }
-    
-    console.log(`계절 분류 결과: ${season} (신뢰도: ${confidence}%)`);
-    console.log(`분석값 - 웜톤: ${isWarmTone}, 밝기: ${brightness.toFixed(1)}, 채도: ${saturation.toFixed(1)}`);
-    
+
+    // 홍조가 있으면 a값 영향 감소 (볼 빨간기 보정)
+    if (skinData && skinData.multiRegion && skinData.multiRegion.analysis) {
+        if (skinData.multiRegion.analysis.hasRedness) {
+            const rednessLevel = skinData.multiRegion.analysis.rednessLevel;
+            console.log(`👁️ 홍조 보정 적용 (레벨: ${rednessLevel})`);
+            // 홍조로 인한 a값 영향을 줄임
+        }
+    }
+
+    // 뉴트럴 톤 범위 정의 (-5 ~ 5 사이의 b값)
+    const isNeutral = Math.abs(b) < 5 && Math.abs(warmCoolRatio) < 1.5;
+    const isWarm = warmCoolRatio > 1.2 || b > 8;
+    const isCool = warmCoolRatio < 0.8 && b < 5;
+
+    // ========================================
+    // 2. PCCS 톤 기반 세부 분류
+    // ========================================
+    let season;
+    let subType = '';
+    let confidence = 0;
+
+    if (isNeutral) {
+        // 뉴트럴 톤: 명도에 따라 판단
+        if (L > 60) {
+            season = 'Summer';
+            subType = 'Light';
+            confidence = 75;
+        } else if (L > 45) {
+            season = C > 15 ? 'Spring' : 'Summer';
+            subType = 'Muted';
+            confidence = 70;
+        } else {
+            season = C > 18 ? 'Winter' : 'Autumn';
+            subType = 'Deep';
+            confidence = 72;
+        }
+        console.log('🎯 뉴트럴 톤 감지');
+    } else if (isWarm) {
+        // 웜톤 로직
+        if (L > 60 && C > 15) {
+            season = 'Spring';
+            subType = 'Bright';
+            confidence = 92;
+        } else if (L > 55 && C <= 15) {
+            season = 'Spring';
+            subType = 'Light';
+            confidence = 88;
+        } else if (L <= 55 && C > 12) {
+            season = 'Autumn';
+            subType = L < 45 ? 'Deep' : 'Muted';
+            confidence = 90;
+        } else {
+            season = L > 50 ? 'Spring' : 'Autumn';
+            subType = 'Soft';
+            confidence = 78;
+        }
+    } else {
+        // 쿨톤 로직
+        if (L > 60 && C < 20) {
+            season = 'Summer';
+            subType = 'Light';
+            confidence = 90;
+        } else if (L > 50 && C >= 10 && C < 25) {
+            season = 'Summer';
+            subType = 'Muted';
+            confidence = 85;
+        } else if (L < 45 || C > 22) {
+            season = 'Winter';
+            subType = C > 25 ? 'Bright' : 'Deep';
+            confidence = 92;
+        } else {
+            season = L > 50 ? 'Summer' : 'Winter';
+            subType = 'Soft';
+            confidence = 80;
+        }
+    }
+
+    // 결과를 전역에 저장 (세부 타입 포함)
+    window.lastSeasonAnalysis = {
+        season,
+        subType,
+        confidence,
+        warmCoolRatio: warmCoolRatio.toFixed(2),
+        isNeutral,
+        isWarm,
+        isCool,
+        L: L.toFixed(1),
+        C: C.toFixed(1),
+        a: a.toFixed(1),
+        b: b.toFixed(1)
+    };
+
+    console.log(`계절 분류 결과: ${season} ${subType} (신뢰도: ${confidence}%)`);
+    console.log(`분석값 - 웜쿨비율: ${warmCoolRatio.toFixed(2)}, 명도(L): ${L.toFixed(1)}, 채도(C): ${C.toFixed(1)}`);
+    console.log(`상세 - a: ${a.toFixed(1)}, b: ${b.toFixed(1)}, 뉴트럴: ${isNeutral}, 웜: ${isWarm}, 쿨: ${isCool}`);
+
     return season;
 }
 
 // ========================================
-// 🎯 실제 헤어컬러 매칭 (ΔE 기반)
+// 🎯 개선된 헤어컬러 매칭 (조화도/대비 점수 기반)
 // ========================================
 
 function findBestMatchingColors(skinLab, season) {
@@ -548,10 +632,16 @@ function findBestMatchingColors(skinLab, season) {
         console.warn('헤어컬러 데이터가 없습니다');
         return [];
     }
-    
-    // 계절별 필터링 후 ΔE 계산
+
+    console.log('🎨 개선된 헤어컬러 매칭 시작...');
+
+    // 계절별 필터링
     const seasonColors = hairColorData.filter(color => color.season === season);
-    
+
+    // 세부 타입 정보 가져오기
+    const seasonAnalysis = window.lastSeasonAnalysis || {};
+    const subType = seasonAnalysis.subType || '';
+
     const matchedColors = seasonColors.map(color => {
         // 헤어컬러 Lab 값 계산 (캐싱)
         if (!color.lab) {
@@ -560,24 +650,133 @@ function findBestMatchingColors(skinLab, season) {
                 color.lab = rgbToLab(rgb.r, rgb.g, rgb.b);
             }
         }
-        
-        // ΔE2000 계산 (GPT 제공 완전한 구현)
-const deltaE = color.lab ? deltaE2000(skinLab, color.lab) : 100;
-        
-        // 실제 신뢰도 계산 (ΔE 기반)
-        const reliability = Math.max(0, Math.min(100, 100 - (deltaE * 2)));
-        
+
+        if (!color.lab) {
+            return { ...color, harmonyScore: 0, reliability: 0, deltaE: 100 };
+        }
+
+        // ========================================
+        // 1. 대비 점수 (Contrast Score)
+        // 피부와 헤어 명도 차이가 적당해야 좋음
+        // ========================================
+        const lightnessDiff = Math.abs(skinLab.L - color.lab.L);
+        let contrastScore = 0;
+
+        // 명도 대비가 15-35 사이면 최적
+        if (lightnessDiff >= 15 && lightnessDiff <= 35) {
+            contrastScore = 30;  // 최대 점수
+        } else if (lightnessDiff >= 10 && lightnessDiff <= 45) {
+            contrastScore = 20;  // 양호
+        } else if (lightnessDiff < 10) {
+            contrastScore = 5;   // 대비 부족 (얼굴이 묻힘)
+        } else {
+            contrastScore = 10;  // 대비 과다
+        }
+
+        // ========================================
+        // 2. 톤 안정성 점수 (Tone Stability)
+        // 웜톤 피부에는 웜톤 헤어, 쿨톤에는 쿨톤
+        // ========================================
+        const skinWarmCool = skinLab.b;  // 양수: 웜, 음수: 쿨
+        const hairWarmCool = color.lab.b;
+
+        let toneScore = 0;
+        const toneMatch = (skinWarmCool > 0 && hairWarmCool > 0) ||
+                          (skinWarmCool < 0 && hairWarmCool < 0);
+
+        if (toneMatch) {
+            toneScore = 25;  // 톤 일치
+        } else if (Math.abs(skinWarmCool) < 5 || Math.abs(hairWarmCool) < 5) {
+            toneScore = 15;  // 뉴트럴 범위
+        } else {
+            toneScore = 5;   // 톤 불일치
+        }
+
+        // ========================================
+        // 3. 채도 조화 점수 (Saturation Harmony)
+        // ========================================
+        const skinChroma = Math.sqrt(skinLab.a * skinLab.a + skinLab.b * skinLab.b);
+        const hairChroma = Math.sqrt(color.lab.a * color.lab.a + color.lab.b * color.lab.b);
+        const chromaDiff = Math.abs(skinChroma - hairChroma);
+
+        let saturationScore = 0;
+        if (chromaDiff < 10) {
+            saturationScore = 20;  // 채도 유사
+        } else if (chromaDiff < 20) {
+            saturationScore = 15;  // 양호
+        } else {
+            saturationScore = 8;   // 채도 차이 큼
+        }
+
+        // ========================================
+        // 4. 세부 타입 보너스 (SubType Bonus)
+        // ========================================
+        let subTypeBonus = 0;
+        const hairLevel = color.level || 5;
+
+        if (subType === 'Bright' && hairChroma > 20) {
+            subTypeBonus = 10;  // Bright 타입에 채도 높은 컬러
+        } else if (subType === 'Light' && color.lab.L > 50) {
+            subTypeBonus = 10;  // Light 타입에 밝은 컬러
+        } else if (subType === 'Muted' && hairChroma < 20) {
+            subTypeBonus = 10;  // Muted 타입에 저채도 컬러
+        } else if (subType === 'Deep' && color.lab.L < 40) {
+            subTypeBonus = 10;  // Deep 타입에 어두운 컬러
+        } else if (subType === 'Soft' && chromaDiff < 15) {
+            subTypeBonus = 10;  // Soft 타입에 부드러운 컬러
+        }
+
+        // ========================================
+        // 5. 브랜드 가중치 (Brand Weight)
+        // ========================================
+        let brandBonus = 0;
+        const brandName = (color.brand || '').toLowerCase();
+
+        if (brandName.includes('milbon') || brandName.includes('밀본')) {
+            brandBonus = 5;  // 프리미엄 브랜드
+        } else if (brandName.includes('wella') || brandName.includes('웰라')) {
+            brandBonus = 4;
+        } else if (brandName.includes('loreal') || brandName.includes('로레알')) {
+            brandBonus = 3;
+        }
+
+        // ========================================
+        // 총합 점수 계산 (100점 만점)
+        // ========================================
+        const harmonyScore = contrastScore + toneScore + saturationScore + subTypeBonus + brandBonus;
+
+        // Delta E도 참고용으로 계산 (낮을수록 유사)
+        const deltaE = deltaE2000(skinLab, color.lab);
+
+        // 최종 신뢰도는 조화도 점수 기반
+        const reliability = Math.min(99, Math.max(60, harmonyScore + 10));
+
         return {
             ...color,
+            harmonyScore: Math.round(harmonyScore),
+            contrastScore,
+            toneScore,
+            saturationScore,
+            subTypeBonus,
+            brandBonus,
             deltaE: Math.round(deltaE * 100) / 100,
             reliability: Math.round(reliability)
         };
     });
-    
-    // ΔE 낮은 순으로 정렬 (색차가 작을수록 좋음)
-    return matchedColors
-        .sort((a, b) => a.deltaE - b.deltaE)
+
+    // 조화도 점수 높은 순으로 정렬
+    const sortedColors = matchedColors
+        .filter(c => c.harmonyScore > 0)
+        .sort((a, b) => b.harmonyScore - a.harmonyScore)
         .slice(0, 5);
+
+    console.log('🎨 매칭 결과 상위 5개:', sortedColors.map(c => ({
+        name: c.name,
+        harmonyScore: c.harmonyScore,
+        deltaE: c.deltaE
+    })));
+
+    return sortedColors;
 }
 
 // ========================================
@@ -635,13 +834,110 @@ function getCurrentSkinToneData() {
     };
 }
 
-function applySkinToneCorrection(rgb) {
-    // 간단한 화이트밸런스 보정 (GPT 제안 단순화)
-    const factor = 0.95; // 약간의 보정
+// ========================================
+// ⚖️ Gray World 화이트밸런스 보정
+// ========================================
+
+function applySkinToneCorrection(rgb, imageData = null) {
+    console.log('⚖️ Gray World 화이트밸런스 보정 시작...');
+
+    // imageData가 있으면 전체 이미지 기반 보정
+    if (imageData && imageData.data) {
+        return applyGrayWorldCorrection(rgb, imageData);
+    }
+
+    // imageData가 없으면 피부톤 자체 기반 간이 보정
+    return applySimplifiedCorrection(rgb);
+}
+
+// Gray World Assumption 기반 보정
+function applyGrayWorldCorrection(skinRgb, imageData) {
+    const data = imageData.data;
+    let rSum = 0, gSum = 0, bSum = 0;
+    let pixelCount = 0;
+
+    // 전체 이미지 평균 RGB 계산
+    for (let i = 0; i < data.length; i += 4) {
+        rSum += data[i];
+        gSum += data[i + 1];
+        bSum += data[i + 2];
+        pixelCount++;
+    }
+
+    if (pixelCount === 0) {
+        return applySimplifiedCorrection(skinRgb);
+    }
+
+    const avgR = rSum / pixelCount;
+    const avgG = gSum / pixelCount;
+    const avgB = bSum / pixelCount;
+
+    // Gray World: 이상적인 그레이 값 (128)
+    const grayTarget = 128;
+
+    // 보정 계수 계산
+    const scaleR = avgR > 0 ? grayTarget / avgR : 1;
+    const scaleG = avgG > 0 ? grayTarget / avgG : 1;
+    const scaleB = avgB > 0 ? grayTarget / avgB : 1;
+
+    // 피부톤에 보정 적용 (과보정 방지를 위해 0.5 가중)
+    const correctionStrength = 0.5;
+    const correctedR = skinRgb.r * (1 + (scaleR - 1) * correctionStrength);
+    const correctedG = skinRgb.g * (1 + (scaleG - 1) * correctionStrength);
+    const correctedB = skinRgb.b * (1 + (scaleB - 1) * correctionStrength);
+
+    const result = {
+        r: Math.min(255, Math.max(0, Math.round(correctedR))),
+        g: Math.min(255, Math.max(0, Math.round(correctedG))),
+        b: Math.min(255, Math.max(0, Math.round(correctedB)))
+    };
+
+    console.log(`⚖️ Gray World 보정: 원본(${skinRgb.r},${skinRgb.g},${skinRgb.b}) → 보정(${result.r},${result.g},${result.b})`);
+    console.log(`⚖️ 이미지 평균 RGB: (${avgR.toFixed(1)}, ${avgG.toFixed(1)}, ${avgB.toFixed(1)})`);
+
+    return result;
+}
+
+// 간이 화이트밸런스 보정 (imageData 없을 때)
+function applySimplifiedCorrection(rgb) {
+    // 피부톤 특성 기반 간이 보정
+    // 일반적으로 실내 조명은 따뜻한 톤이므로 약간 쿨하게 보정
+
+    // R/G 비율로 조명 색온도 추정
+    const rgRatio = rgb.r / Math.max(1, rgb.g);
+
+    let correctedRgb;
+
+    if (rgRatio > 1.15) {
+        // 따뜻한 조명 (노란/주황빛) - 쿨하게 보정
+        correctedRgb = {
+            r: Math.round(rgb.r * 0.95),
+            g: Math.round(rgb.g * 1.0),
+            b: Math.round(rgb.b * 1.05)
+        };
+        console.log('⚖️ 따뜻한 조명 감지 → 쿨 보정');
+    } else if (rgRatio < 0.95) {
+        // 차가운 조명 (형광등) - 웜하게 보정
+        correctedRgb = {
+            r: Math.round(rgb.r * 1.05),
+            g: Math.round(rgb.g * 1.0),
+            b: Math.round(rgb.b * 0.95)
+        };
+        console.log('⚖️ 차가운 조명 감지 → 웜 보정');
+    } else {
+        // 중립적 조명 - 최소 보정
+        correctedRgb = {
+            r: rgb.r,
+            g: rgb.g,
+            b: rgb.b
+        };
+        console.log('⚖️ 중립 조명 → 보정 최소화');
+    }
+
     return {
-        r: Math.min(255, Math.max(0, Math.round(rgb.r * factor))),
-        g: Math.min(255, Math.max(0, Math.round(rgb.g * factor))),
-        b: Math.min(255, Math.max(0, Math.round(rgb.b * factor)))
+        r: Math.min(255, Math.max(0, correctedRgb.r)),
+        g: Math.min(255, Math.max(0, correctedRgb.g)),
+        b: Math.min(255, Math.max(0, correctedRgb.b))
     };
 }
 
@@ -1212,33 +1508,40 @@ function onFaceDetectionResults(results) {
         canvasCtx.font = '16px Arial';
         canvasCtx.fillText(`${Math.round(detection.score * 100)}%`, x, y - 10);
 
-        // ⭐ 피부톤 추출 영역 (이마/양볼)
-        const foreheadX = x + width * 0.3;
-        const foreheadY = y + height * 0.2;
-        const foreheadWidth = width * 0.4;
-        const foreheadHeight = height * 0.15;
+        // ⭐ 멀티 영역 피부톤 추출 (개선됨)
+        const faceBox = { x, y, width, height };
 
-        // 피부톤 샘플링 영역 표시
+        // 피부톤 샘플링 영역들 표시
         canvasCtx.strokeStyle = '#FFD700';
         canvasCtx.lineWidth = 1;
-        canvasCtx.strokeRect(foreheadX, foreheadY, foreheadWidth, foreheadHeight);
 
-        // ⭐ 피부톤 추출
+        // 이마 영역
+        canvasCtx.strokeRect(x + width * 0.3, y + height * 0.1, width * 0.4, height * 0.15);
+        // 왼쪽 볼
+        canvasCtx.strokeRect(x + width * 0.1, y + height * 0.4, width * 0.25, height * 0.2);
+        // 오른쪽 볼
+        canvasCtx.strokeRect(x + width * 0.65, y + height * 0.4, width * 0.25, height * 0.2);
+
+        // ⭐ 피부톤 추출 (멀티 영역 사용)
         try {
-            const skinToneData = extractSkinToneFromRegion(
-                canvasElement,
-                foreheadX,
-                foreheadY,
-                foreheadWidth,
-                foreheadHeight
-            );
+            const multiRegionData = extractMultiRegionSkinTone(canvasElement, faceBox);
 
-            if (skinToneData && skinToneData.samples > 0) {
-                // 전역 변수에 저장
-                window.lastSkinToneData = skinToneData;
+            if (multiRegionData && multiRegionData.rgb) {
+                // 전역 변수에 저장 (기존 형식 호환)
+                window.lastSkinToneData = {
+                    rgb: multiRegionData.rgb,
+                    samples: multiRegionData.totalWeight * 100,
+                    multiRegion: multiRegionData
+                };
+
+                // 입술색도 추출 시도 (보조 판단용)
+                const lipData = extractLipColor(canvasElement, faceBox);
+                if (lipData) {
+                    window.lastSkinToneData.lipColor = lipData;
+                }
 
                 // 피부톤 색상 표시
-                const rgb = skinToneData.rgb;
+                const rgb = multiRegionData.rgb;
                 canvasCtx.fillStyle = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
                 canvasCtx.fillRect(x + width + 10, y, 60, 60);
 
@@ -1255,8 +1558,15 @@ function onFaceDetectionResults(results) {
                 canvasCtx.fillText(`R:${rgb.r} G:${rgb.g}`, x + width + 12, y + 90);
                 canvasCtx.fillText(`B:${rgb.b}`, x + width + 12, y + 100);
 
+                // 홍조 표시 (있을 경우)
+                if (multiRegionData.analysis && multiRegionData.analysis.hasRedness) {
+                    canvasCtx.fillStyle = '#FF6B6B';
+                    canvasCtx.font = '10px Arial';
+                    canvasCtx.fillText('홍조 감지', x + width + 12, y + 115);
+                }
+
                 // ⭐ 실시간 퍼스널 컬러 분석
-                performRealtimeAnalysis(skinToneData);
+                performRealtimeAnalysis(window.lastSkinToneData);
             }
         } catch (error) {
             console.error('피부톤 추출 오류:', error);
@@ -1306,6 +1616,186 @@ function extractSkinToneFromRegion(canvas, x, y, width, height) {
             b: Math.round(bSum / validSamples)
         },
         samples: validSamples
+    };
+}
+
+// ========================================
+// 👁️ 멀티 영역 피부톤 분석 (정확도 향상)
+// ========================================
+
+function extractMultiRegionSkinTone(canvas, faceBox) {
+    console.log('👁️ 멀티 영역 피부톤 분석 시작...');
+
+    const ctx = canvas.getContext('2d');
+    const x = faceBox.x;
+    const y = faceBox.y;
+    const width = faceBox.width;
+    const height = faceBox.height;
+
+    // 여러 영역에서 샘플링
+    const regions = {
+        // 이마 (상단 중앙)
+        forehead: {
+            x: x + width * 0.3,
+            y: y + height * 0.1,
+            w: width * 0.4,
+            h: height * 0.15
+        },
+        // 왼쪽 볼
+        leftCheek: {
+            x: x + width * 0.1,
+            y: y + height * 0.4,
+            w: width * 0.25,
+            h: height * 0.2
+        },
+        // 오른쪽 볼
+        rightCheek: {
+            x: x + width * 0.65,
+            y: y + height * 0.4,
+            w: width * 0.25,
+            h: height * 0.2
+        },
+        // 턱 (선택적 - 피부톤 확인용)
+        chin: {
+            x: x + width * 0.35,
+            y: y + height * 0.75,
+            w: width * 0.3,
+            h: height * 0.1
+        }
+    };
+
+    const samples = {};
+    let totalR = 0, totalG = 0, totalB = 0;
+    let totalWeight = 0;
+
+    // 각 영역에서 피부톤 추출
+    for (const [regionName, region] of Object.entries(regions)) {
+        const skinData = extractSkinToneFromRegion(
+            canvas,
+            region.x, region.y, region.w, region.h
+        );
+
+        if (skinData && skinData.samples > 10) {
+            // 영역별 가중치 (볼이 가장 정확)
+            let weight = 1;
+            if (regionName === 'leftCheek' || regionName === 'rightCheek') {
+                weight = 1.5;  // 볼 영역 가중치 높임
+            } else if (regionName === 'forehead') {
+                weight = 1.2;  // 이마도 중요
+            }
+
+            samples[regionName] = {
+                rgb: skinData.rgb,
+                samples: skinData.samples,
+                weight: weight
+            };
+
+            totalR += skinData.rgb.r * weight;
+            totalG += skinData.rgb.g * weight;
+            totalB += skinData.rgb.b * weight;
+            totalWeight += weight;
+
+            console.log(`👁️ ${regionName}: RGB(${skinData.rgb.r}, ${skinData.rgb.g}, ${skinData.rgb.b})`);
+        }
+    }
+
+    if (totalWeight === 0) {
+        console.warn('⚠️ 유효한 피부톤 영역을 찾을 수 없음');
+        return null;
+    }
+
+    // 가중 평균 계산
+    const avgSkinTone = {
+        rgb: {
+            r: Math.round(totalR / totalWeight),
+            g: Math.round(totalG / totalWeight),
+            b: Math.round(totalB / totalWeight)
+        },
+        regionSamples: samples,
+        totalWeight: totalWeight
+    };
+
+    // 영역 간 색차 분석 (홍조 등 감지)
+    if (samples.leftCheek && samples.rightCheek && samples.forehead) {
+        const cheekAvgB = (samples.leftCheek.rgb.b + samples.rightCheek.rgb.b) / 2;
+        const foreheadB = samples.forehead.rgb.b;
+        const rednessIndicator = samples.leftCheek.rgb.r - samples.forehead.rgb.r;
+
+        avgSkinTone.analysis = {
+            // 볼과 이마의 차이로 홍조 감지
+            hasRedness: rednessIndicator > 15,
+            rednessLevel: rednessIndicator,
+            // 균일도 점수
+            uniformity: 100 - Math.abs(cheekAvgB - foreheadB)
+        };
+
+        if (avgSkinTone.analysis.hasRedness) {
+            console.log('👁️ 홍조 감지됨 - 보정 적용 권장');
+        }
+    }
+
+    console.log(`👁️ 최종 피부톤: RGB(${avgSkinTone.rgb.r}, ${avgSkinTone.rgb.g}, ${avgSkinTone.rgb.b})`);
+
+    return avgSkinTone;
+}
+
+// 입술 색상 추출 (선택적 - 쿨톤/웜톤 보조 판단용)
+function extractLipColor(canvas, faceBox) {
+    const x = faceBox.x;
+    const y = faceBox.y;
+    const width = faceBox.width;
+    const height = faceBox.height;
+
+    // 입술 영역 (얼굴 하단 중앙)
+    const lipRegion = {
+        x: x + width * 0.35,
+        y: y + height * 0.7,
+        w: width * 0.3,
+        h: height * 0.1
+    };
+
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(lipRegion.x, lipRegion.y, lipRegion.w, lipRegion.h);
+    const data = imageData.data;
+
+    let rSum = 0, gSum = 0, bSum = 0;
+    let validSamples = 0;
+
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        // 입술색 범위 (분홍~빨강 계열)
+        if (r > 100 && r > g && r > b) {
+            rSum += r;
+            gSum += g;
+            bSum += b;
+            validSamples++;
+        }
+    }
+
+    if (validSamples < 10) {
+        return null;
+    }
+
+    const lipRgb = {
+        r: Math.round(rSum / validSamples),
+        g: Math.round(gSum / validSamples),
+        b: Math.round(bSum / validSamples)
+    };
+
+    // 입술색으로 웜/쿨 보조 판단
+    // 오렌지빛 입술 = 웜톤, 핑크빛 입술 = 쿨톤
+    const lipLab = rgbToLab(lipRgb.r, lipRgb.g, lipRgb.b);
+    const isWarmLip = lipLab.b > 10;  // 노란기가 있으면 웜
+
+    console.log(`👄 입술색: RGB(${lipRgb.r}, ${lipRgb.g}, ${lipRgb.b}) - ${isWarmLip ? '웜톤' : '쿨톤'} 경향`);
+
+    return {
+        rgb: lipRgb,
+        lab: lipLab,
+        isWarm: isWarmLip
     };
 }
 
