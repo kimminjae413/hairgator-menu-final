@@ -926,12 +926,12 @@ function openStyleModal(style) {
         let isZoomed = false;
 
         container.innerHTML = `
-            <div class="media-viewer" style="width: 100%; height: auto; background: #000;">
-                <div class="main-display" style="position: relative; width: 100%; display: flex; align-items: center; justify-content: center;">
+            <div class="media-viewer" style="width: 100%; background: transparent;">
+                <div class="main-display" style="position: relative; width: 100%; display: flex; align-items: center; justify-content: center; line-height: 0;">
                     <img src="${style.imageUrl || ''}"
                          alt="${style.name || 'Style'}"
                          class="modal-zoom-image"
-                         style="width: 100%; height: auto; object-fit: contain; max-height: 70vh; cursor: zoom-in; transition: max-height 0.3s ease, transform 0.3s ease;"
+                         style="width: 100%; height: auto; object-fit: cover; max-height: 70vh; cursor: zoom-in; transition: max-height 0.3s ease, transform 0.3s ease; display: block; border-radius: 18px 18px 0 0;"
                          onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.alt='이미지 로드 실패';">
                 </div>
             </div>
