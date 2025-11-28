@@ -417,6 +417,7 @@ body {
     color: #333;
     text-align: center;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+    white-space: pre-line;
 }
 
 /* 말풍선 꼬리 (위쪽 방향) */
