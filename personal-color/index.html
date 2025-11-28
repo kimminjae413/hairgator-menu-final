@@ -278,11 +278,29 @@
     </div>
 
     <script>
+        // 현재 언어 가져오기 (부모 창 우선, 그 다음 localStorage)
+        function getCurrentLanguage() {
+            try {
+                // 1. 부모 창의 currentLanguage 확인 (iframe인 경우)
+                if (parent && parent !== window && parent.currentLanguage) {
+                    return parent.currentLanguage;
+                }
+                // 2. 부모 창의 localStorage 확인
+                if (parent && parent !== window && parent.localStorage) {
+                    const parentLang = parent.localStorage.getItem('hairgator_language');
+                    if (parentLang) return parentLang;
+                }
+            } catch (e) {
+                // cross-origin 접근 오류 무시
+            }
+            // 3. 현재 창의 localStorage 확인
+            return localStorage.getItem('hairgator_language') || 'ko';
+        }
+
         // 번역 함수 - HAIRGATOR_I18N에서 직접 번역 가져오기
         function t(key) {
             try {
-                // localStorage에서 현재 언어 가져오기
-                const lang = localStorage.getItem('hairgator_language') || 'ko';
+                const lang = getCurrentLanguage();
 
                 // HAIRGATOR_I18N이 로드되었는지 확인
                 if (typeof HAIRGATOR_I18N === 'undefined' || !HAIRGATOR_I18N[lang]) {
