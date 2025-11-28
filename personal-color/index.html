@@ -331,17 +331,17 @@
             try {
                 console.log('시스템 초기화 시작...');
 
-                updateLoadingProgress(20, '헤어컬러 데이터 로드 중...');
+                updateLoadingProgress(20, t('personalColor.loadingSteps.hairColorData') || '헤어컬러 데이터 로드 중...');
                 await loadHairColorData();
 
-                updateLoadingProgress(40, 'UI 컴포넌트 설정 중...');
+                updateLoadingProgress(40, t('personalColor.loadingSteps.uiSetup') || 'UI 컴포넌트 설정 중...');
                 setupUI();
 
-                updateLoadingProgress(60, 'AI 얼굴 인식 엔진 준비 중...');
+                updateLoadingProgress(60, t('personalColor.loadingSteps.aiEngine') || 'AI 얼굴 인식 엔진 준비 중...');
                 // Face Mesh 미리 초기화 (카메라 시작 시 빠르게 작동하도록)
                 await preloadFaceMesh();
 
-                updateLoadingProgress(100, '시스템 준비 완료!');
+                updateLoadingProgress(100, t('personalColor.loadingSteps.ready') || '시스템 준비 완료!');
                 await new Promise(resolve => setTimeout(resolve, 500));
 
                 clearTimeout(timeoutId);
@@ -350,7 +350,7 @@
                 document.getElementById('main-app').classList.add('loaded');
 
                 console.log('HAIRGATOR Personal Color 준비 완료');
-                showToast('퍼스널컬러 시스템이 준비되었습니다!', 'success');
+                showToast(t('personalColor.loadingSteps.readyToast') || '퍼스널컬러 시스템이 준비되었습니다!', 'success');
 
             } catch (error) {
                 clearTimeout(timeoutId);
@@ -358,7 +358,7 @@
 
                 document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('main-app').classList.add('loaded');
-                showToast('일부 기능에 제한이 있을 수 있습니다.', 'warning');
+                showToast(t('personalColor.loadingSteps.partialError') || '일부 기능에 제한이 있을 수 있습니다.', 'warning');
             }
         }
 

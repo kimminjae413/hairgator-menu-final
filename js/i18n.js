@@ -211,6 +211,16 @@ const HAIRGATOR_I18N = {
       close: '닫기',
       modeSelect: '퍼스널컬러 진단 방법을 선택하세요',
 
+      // 로딩 화면
+      loadingSteps: {
+        hairColorData: '헤어컬러 데이터 로드 중...',
+        uiSetup: 'UI 컴포넌트 설정 중...',
+        aiEngine: 'AI 얼굴 인식 엔진 준비 중...',
+        ready: '시스템 준비 완료!',
+        readyToast: '퍼스널컬러 시스템이 준비되었습니다!',
+        partialError: '일부 기능에 제한이 있을 수 있습니다.'
+      },
+
       // 메인 메뉴
       mainMenu: {
         aiAnalysis: 'AI 퍼스널컬러 분석',
@@ -570,6 +580,16 @@ const HAIRGATOR_I18N = {
       close: 'Close',
       modeSelect: 'Choose your personal color analysis method',
 
+      // Loading screen
+      loadingSteps: {
+        hairColorData: 'Loading hair color data...',
+        uiSetup: 'Setting up UI components...',
+        aiEngine: 'Preparing AI face recognition engine...',
+        ready: 'System ready!',
+        readyToast: 'Personal Color system is ready!',
+        partialError: 'Some features may be limited.'
+      },
+
       mainMenu: {
         aiAnalysis: 'AI Personal Color Analysis',
         aiAnalysisDesc: 'Real-time skin tone analysis with camera',
@@ -916,6 +936,16 @@ const HAIRGATOR_I18N = {
       loading: 'システム初期化中...',
       close: '閉じる',
       modeSelect: 'パーソナルカラー診断方法を選択してください',
+
+      // ロード画面
+      loadingSteps: {
+        hairColorData: 'ヘアカラーデータを読み込み中...',
+        uiSetup: 'UIコンポーネントを設定中...',
+        aiEngine: 'AI顔認識エンジンを準備中...',
+        ready: 'システム準備完了！',
+        readyToast: 'パーソナルカラーシステムの準備ができました！',
+        partialError: '一部の機能が制限される場合があります。'
+      },
 
       mainMenu: {
         aiAnalysis: 'AI パーソナルカラー分析',
@@ -1264,6 +1294,16 @@ const HAIRGATOR_I18N = {
       close: '关闭',
       modeSelect: '请选择个人色彩诊断方法',
 
+      // 加载界面
+      loadingSteps: {
+        hairColorData: '正在加载发色数据...',
+        uiSetup: '正在设置UI组件...',
+        aiEngine: '正在准备AI人脸识别引擎...',
+        ready: '系统准备完成！',
+        readyToast: '个人色彩系统已准备就绪！',
+        partialError: '部分功能可能受限。'
+      },
+
       mainMenu: {
         aiAnalysis: 'AI个人色彩分析',
         aiAnalysisDesc: '相机实时肤色分析',
@@ -1610,6 +1650,16 @@ const HAIRGATOR_I18N = {
       loading: 'Đang khởi tạo hệ thống...',
       close: 'Đóng',
       modeSelect: 'Chọn phương pháp chẩn đoán màu cá nhân',
+
+      // Màn hình tải
+      loadingSteps: {
+        hairColorData: 'Đang tải dữ liệu màu tóc...',
+        uiSetup: 'Đang thiết lập giao diện...',
+        aiEngine: 'Đang chuẩn bị AI nhận diện khuôn mặt...',
+        ready: 'Hệ thống sẵn sàng!',
+        readyToast: 'Hệ thống màu cá nhân đã sẵn sàng!',
+        partialError: 'Một số tính năng có thể bị hạn chế.'
+      },
 
       mainMenu: {
         aiAnalysis: 'Phân tích màu cá nhân AI',
