@@ -27,6 +27,16 @@
 </head>
 
 <body>
+    <script>
+        // URL 파라미터에서 성별 읽어서 테마 적용
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const gender = urlParams.get('gender');
+            if (gender === 'male') {
+                document.body.classList.add('male-theme');
+            }
+        })();
+    </script>
     <!-- 로딩 화면 -->
     <div class="loading-screen" id="loading-screen">
         <div class="loading-content">

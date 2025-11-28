@@ -2,6 +2,9 @@
 
 /* ========== HAIRGATOR 색상 변수 ========== */
 :root {
+    --primary-color: #E91E63;
+    --primary-dark: #C2185B;
+    --primary-light: #F43D7A;
     --primary-pink: #E91E63;
     --secondary-rose: #8E24AA;
     --light-pink: #FCE4EC;
@@ -19,6 +22,15 @@
     --shadow: 0 2px 8px rgba(0,0,0,0.1);
     --shadow-lg: 0 4px 16px rgba(0,0,0,0.15);
     --border-radius: 8px;
+}
+
+/* 남성 테마 (블루) */
+body.male-theme {
+    --primary-color: #4A90E2;
+    --primary-dark: #3A7BC8;
+    --primary-light: #5BA0F2;
+    --primary-pink: #4A90E2;
+    --dark-rose: #3A7BC8;
 }
 
 /* ========== 기본 스타일 ========== */
@@ -104,7 +116,7 @@ body {
 
 .loading-bar {
     height: 100%;
-    background: linear-gradient(90deg, #ff0066, #cc0066);
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
     width: 0%;
     transition: width 0.3s ease;
     border-radius: 1px;
@@ -414,7 +426,7 @@ body {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
     transform: scaleX(0);
     transition: transform 0.4s ease;
 }
@@ -424,7 +436,7 @@ body {
 }
 
 .mode-card:hover {
-    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.25);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
     transform: translateY(-12px);
 }
 
@@ -472,7 +484,7 @@ body {
 }
 
 .mode-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
     color: white;
     border: none;
     padding: 1rem 2.5rem;
@@ -483,12 +495,12 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-transform: none;
     letter-spacing: 0.3px;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 .mode-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
 }
 
 .mode-btn:active {

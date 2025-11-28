@@ -124,7 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (personalColorBtn) {
             personalColorBtn.addEventListener('click', function() {
                 console.log('🎨 퍼스널 컬러 진단 클릭');
-                window.location.href = '/personal-color/';
+                const gender = window.currentGender || 'female';
+                window.location.href = `/personal-color/?gender=${gender}`;
             });
         }
 
