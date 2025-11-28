@@ -3343,7 +3343,7 @@
             const scrollHeight = container.scrollHeight;
             const clientHeight = container.clientHeight;
             const scrollTop = container.scrollTop;
-            const trackHeight = scrollbar.clientHeight;
+            const trackHeight = scrollbar.offsetHeight || scrollbar.clientHeight;
 
             // 스크롤이 필요 없으면 숨김
             if (scrollHeight <= clientHeight + 10) {

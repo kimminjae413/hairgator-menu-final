@@ -1645,24 +1645,38 @@ body {
 
 /* 태블릿에서만 표시 */
 @media (min-width: 768px) and (max-width: 1366px) {
+    /* 왼쪽/오른쪽 패널 높이 맞추기 */
+    .analysis-grid {
+        align-items: stretch;
+    }
+
     .camera-wrapper {
         display: flex;
         position: relative;
         flex: 1;
+        height: calc(100vh - 180px);
     }
 
     .camera-container {
         flex: 1;
+        height: 100%;
         max-height: calc(100vh - 180px);
         overflow-y: auto;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none; /* IE */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
     }
 
     .camera-container::-webkit-scrollbar {
-        display: none; /* 기본 스크롤바 숨김 */
+        display: none;
+    }
+
+    .analysis-panel {
+        height: calc(100vh - 180px);
+        max-height: calc(100vh - 180px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     /* 커스텀 스크롤바 트랙 */
@@ -1696,7 +1710,6 @@ body {
         opacity: 1;
     }
 
-    /* 스크롤이 필요 없을 때 숨김 */
     .custom-scrollbar.hidden {
         display: none;
     }
@@ -1711,9 +1724,9 @@ body {
 
     .realtime-results {
         padding: 20px;
-        padding-right: 16px;
-        max-height: 350px;
-        overflow-y: auto;
+        padding-right: 20px;
+        max-height: 400px;
+        overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         -ms-overflow-style: none;
@@ -1730,9 +1743,9 @@ body {
         top: 15px;
         bottom: 15px;
         width: 5px;
-        background: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.2);
         border-radius: 3px;
-        z-index: 50;
+        z-index: 100;
     }
 
     /* 흰색 스크롤바 썸 */
@@ -1742,14 +1755,14 @@ body {
         left: 0;
         width: 100%;
         min-height: 30px;
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.8);
         border-radius: 3px;
-        transition: background 0.2s;
+        transition: background 0.2s, top 0.1s ease-out;
     }
 
     .results-scrollbar-thumb:hover,
     .results-scrollbar-thumb.active {
-        background: rgba(255, 255, 255, 0.9);
+        background: #fff;
     }
 
     .results-scrollbar.hidden {
