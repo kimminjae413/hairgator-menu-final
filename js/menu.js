@@ -224,7 +224,7 @@ function createLookbookLoadingOverlay() {
 
     // 로딩 텍스트 (다국어)
     const loadingText = t('lookbook.loading') || 'AI가 스타일을 분석하고 있습니다...';
-    const subText = t('lookbook.loadingSubtext') || '이미지 3장을 생성 중입니다. 잠시만 기다려주세요.';
+    const subText = t('lookbook.loadingSubtext') || 'AI가 이 스타일에 어울리는 룩북 상세페이지를 생성하고 있습니다.';
 
     overlay.innerHTML = `
         <div style="text-align: center; padding: 40px;">
