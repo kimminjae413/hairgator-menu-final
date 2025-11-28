@@ -963,11 +963,16 @@ function applyCustomBrand() {
 
     console.log('🏷️ applyCustomBrand 호출:', { brandName, brandFont, brandColor });
 
-    const logoElement = document.querySelector('h1.logo');
-    if (logoElement) {
+    // 모든 .logo 요소 찾기 (h1.logo, .logo 등)
+    const logoElements = document.querySelectorAll('.logo, h1.logo');
+    console.log('🏷️ 찾은 로고 요소 개수:', logoElements.length);
+
+    logoElements.forEach((logoElement, index) => {
+        console.log(`🏷️ 로고[${index}] 업데이트:`, logoElement.tagName, logoElement.className);
+
+        // 자식 요소 제거 후 텍스트만 설정
         logoElement.innerHTML = '';
         logoElement.textContent = brandName || 'HAIRGATOR';
-        console.log('🏷️ 로고 업데이트:', logoElement.textContent);
 
         const font = FONT_OPTIONS.find(f => f.id === brandFont);
         if (font) {
@@ -980,7 +985,7 @@ function applyCustomBrand() {
             logoElement.style.webkitTextStroke = `1px ${color.stroke}`;
             logoElement.style.textShadow = `0 0 2px ${color.stroke}`;
         }
-    }
+    });
 }
 
 // 전역 함수로 노출
