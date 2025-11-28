@@ -2774,6 +2774,18 @@ function detectFullscreenMode() {
     if (isStandalone || isFullscreen || isNativeFullscreen || (isIOSWebView && isTabletLandscape)) {
         document.body.classList.add('fullscreen-mode');
         console.log('📱 전체화면 모드 감지됨 - 레이아웃 조정 적용');
+
+        // 전체화면 감지 시 Firebase에서 브랜드 설정 로드
+        setTimeout(async () => {
+            if (typeof window.loadBrandFromFirebase === 'function') {
+                const firebaseBrand = await window.loadBrandFromFirebase();
+                if (firebaseBrand) {
+                    if (typeof applyCustomBrand === 'function') applyCustomBrand();
+                    if (typeof applyProfileImage === 'function') applyProfileImage();
+                    console.log('📱 전체화면 감지 - 브랜드 설정 로드 완료');
+                }
+            }
+        }, 1000);
     }
 
     // 전체화면 상태 변경 감지
@@ -2810,6 +2822,18 @@ window.setFullscreenMode = function(isFullscreen) {
     if (isFullscreen) {
         document.body.classList.add('fullscreen-mode');
         console.log('📱 전체화면 모드 활성화 (네이티브 호출)');
+
+        // 전체화면 전환 시 Firebase에서 브랜드 설정 다시 로드
+        setTimeout(async () => {
+            if (typeof loadBrandFromFirebase === 'function') {
+                const firebaseBrand = await loadBrandFromFirebase();
+                if (firebaseBrand) {
+                    if (typeof applyCustomBrand === 'function') applyCustomBrand();
+                    if (typeof applyProfileImage === 'function') applyProfileImage();
+                    console.log('📱 전체화면 모드 - 브랜드 설정 재적용 완료');
+                }
+            }
+        }, 500);
     } else {
         document.body.classList.remove('fullscreen-mode');
         console.log('📱 전체화면 모드 비활성화 (네이티브 호출)');
