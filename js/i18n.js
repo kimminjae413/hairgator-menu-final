@@ -341,6 +341,43 @@ const HAIRGATOR_I18N = {
         neutralDeep: '💄 추천 컬러: 토프, 머브, 다크브라운, 올리브\n💎 추천 메탈: 혼합 메탈, 앤틱 실버'
       },
 
+      // 전문가 가이드 UI
+      expertGuide: {
+        title: '👩‍🎨 디자이너 전문가 가이드',
+        toneKeywords: '🎨 추천 톤 키워드',
+        recommendLevel: '📊 추천 레벨',
+        skinBrightness: '💡 피부 밝기 기준',
+        treatmentTips: '🧴 시술 팁',
+        undercoat: '언더코트',
+        texture: '마무리 질감',
+        consultingPoint: '💬 컨설팅 포인트',
+        avoidTones: '⛔ 피해야 할 톤',
+        brightSkin: '밝은 피부톤이시네요. 레벨을 조금 높여도 자연스러워요.',
+        mediumSkin: '중간 밝기 피부톤이에요. 추천 레벨 범위가 가장 잘 어울려요.',
+        darkSkin: '어두운 피부톤이시네요. 너무 밝은 레벨은 부자연스러울 수 있어요.'
+      },
+
+      // 시술 난이도
+      difficulty: {
+        easy: '손쉬움',
+        easyTip: '탈색 없이 바로 적용 가능',
+        highLift: '하이리프트',
+        highLiftTip: '하이리프트 염색으로 톤업 가능',
+        toneUp: '톤업 필요',
+        toneUpTip: '탈색 또는 하이리프트 염색 권장',
+        hard: '고난도',
+        hardTip: '2회 이상 탈색 필요, 모발 손상 주의'
+      },
+
+      // 우선순위 뱃지
+      priority: {
+        bestMatch: 'Best Match',
+        levelOk: 'Level OK',
+        toneOk: 'Tone OK',
+        good: 'Good',
+        option: 'Option'
+      },
+
       // 토스트 메시지
       toast: {
         ready: 'HAIRGATOR Personal Color 시스템이 준비되었습니다!',
@@ -701,6 +738,43 @@ const HAIRGATOR_I18N = {
         neutralDeep: '💄 Colors: Taupe, Mauve, Dark Brown, Olive\n💎 Metals: Mixed Metals, Antique Silver'
       },
 
+      // Expert Guide UI
+      expertGuide: {
+        title: '👩‍🎨 Designer Expert Guide',
+        toneKeywords: '🎨 Recommended Tone Keywords',
+        recommendLevel: '📊 Recommended Level',
+        skinBrightness: '💡 Skin Brightness Guide',
+        treatmentTips: '🧴 Treatment Tips',
+        undercoat: 'Undercoat',
+        texture: 'Finish Texture',
+        consultingPoint: '💬 Consulting Points',
+        avoidTones: '⛔ Tones to Avoid',
+        brightSkin: 'You have bright skin. Higher levels will look natural.',
+        mediumSkin: 'Medium skin brightness. Recommended level range suits you best.',
+        darkSkin: 'You have darker skin. Very bright levels may look unnatural.'
+      },
+
+      // Treatment Difficulty
+      difficulty: {
+        easy: 'Easy',
+        easyTip: 'Can be applied without bleaching',
+        highLift: 'High Lift',
+        highLiftTip: 'Tone up possible with high lift color',
+        toneUp: 'Tone Up Needed',
+        toneUpTip: 'Bleaching or high lift color recommended',
+        hard: 'Advanced',
+        hardTip: '2+ bleaching sessions required, hair damage caution'
+      },
+
+      // Priority Badges
+      priority: {
+        bestMatch: 'Best Match',
+        levelOk: 'Level OK',
+        toneOk: 'Tone OK',
+        good: 'Good',
+        option: 'Option'
+      },
+
       toast: {
         ready: 'HAIRGATOR Personal Color system is ready!',
         systemReady: 'System ready',
@@ -1056,6 +1130,43 @@ const HAIRGATOR_I18N = {
         winterCoolMuted: '💄 おすすめカラー: チャコール、ネイビー、バーガンディ、ダークグレー\n💎 おすすめメタル: シルバー、ガンメタル',
         neutralLight: '💄 おすすめカラー: ダスティピンク、ソフトベージュ、ライトモーヴ\n💎 おすすめメタル: ローズゴールド、ソフトシルバー',
         neutralDeep: '💄 おすすめカラー: トープ、モーヴ、ダークブラウン、オリーブ\n💎 おすすめメタル: ミックスメタル、アンティークシルバー'
+      },
+
+      // エキスパートガイドUI
+      expertGuide: {
+        title: '👩‍🎨 デザイナー専門家ガイド',
+        toneKeywords: '🎨 おすすめトーンキーワード',
+        recommendLevel: '📊 おすすめレベル',
+        skinBrightness: '💡 肌の明るさ基準',
+        treatmentTips: '🧴 施術ヒント',
+        undercoat: 'アンダーコート',
+        texture: '仕上げテクスチャー',
+        consultingPoint: '💬 コンサルティングポイント',
+        avoidTones: '⛔ 避けるべきトーン',
+        brightSkin: '明るい肌トーンです。レベルを少し上げても自然です。',
+        mediumSkin: '中間の明るさの肌トーンです。おすすめレベル範囲が最適です。',
+        darkSkin: '暗めの肌トーンです。明るすぎるレベルは不自然に見える場合があります。'
+      },
+
+      // 施術難易度
+      difficulty: {
+        easy: '簡単',
+        easyTip: 'ブリーチなしで適用可能',
+        highLift: 'ハイリフト',
+        highLiftTip: 'ハイリフトカラーでトーンアップ可能',
+        toneUp: 'トーンアップ必要',
+        toneUpTip: 'ブリーチまたはハイリフトカラー推奨',
+        hard: '高難度',
+        hardTip: '2回以上のブリーチが必要、髪ダメージ注意'
+      },
+
+      // 優先順位バッジ
+      priority: {
+        bestMatch: 'ベストマッチ',
+        levelOk: 'レベルOK',
+        toneOk: 'トーンOK',
+        good: 'グッド',
+        option: 'オプション'
       },
 
       toast: {
@@ -1415,6 +1526,43 @@ const HAIRGATOR_I18N = {
         neutralDeep: '💄 推荐颜色: 灰褐、紫红、深棕、橄榄\n💎 推荐金属: 混合金属、古银'
       },
 
+      // 专家指南UI
+      expertGuide: {
+        title: '👩‍🎨 设计师专家指南',
+        toneKeywords: '🎨 推荐色调关键词',
+        recommendLevel: '📊 推荐等级',
+        skinBrightness: '💡 肤色亮度参考',
+        treatmentTips: '🧴 护理技巧',
+        undercoat: '底色',
+        texture: '质感处理',
+        consultingPoint: '💬 咨询要点',
+        avoidTones: '⛔ 应避免的色调',
+        brightSkin: '您是亮肤色。稍高的等级也会很自然。',
+        mediumSkin: '中等亮度肤色。推荐的等级范围最适合您。',
+        darkSkin: '您是深肤色。太亮的等级可能会不自然。'
+      },
+
+      // 施术难度
+      difficulty: {
+        easy: '简单',
+        easyTip: '无需漂发可直接应用',
+        highLift: '高提升',
+        highLiftTip: '可用高提升染发剂提亮',
+        toneUp: '需要提亮',
+        toneUpTip: '建议漂发或使用高提升染发剂',
+        hard: '高难度',
+        hardTip: '需要2次以上漂发，注意头发损伤'
+      },
+
+      // 优先级徽章
+      priority: {
+        bestMatch: '最佳匹配',
+        levelOk: '等级OK',
+        toneOk: '色调OK',
+        good: '良好',
+        option: '选项'
+      },
+
       toast: {
         ready: 'HAIRGATOR Personal Color系统已准备就绪！',
         systemReady: '系统准备完成',
@@ -1770,6 +1918,43 @@ const HAIRGATOR_I18N = {
         winterCoolMuted: '💄 Màu: Than, Hải quân, Đỏ rượu, Xám đậm\n💎 Kim loại: Bạc, Kim loại súng',
         neutralLight: '💄 Màu: Hồng bụi, Beige nhạt, Tím nhạt\n💎 Kim loại: Vàng hồng, Bạc mềm',
         neutralDeep: '💄 Màu: Nâu xám, Tím, Nâu đậm, Oliu\n💎 Kim loại: Kim loại hỗn hợp, Bạc cổ'
+      },
+
+      // Hướng dẫn chuyên gia UI
+      expertGuide: {
+        title: '👩‍🎨 Hướng dẫn chuyên gia thiết kế',
+        toneKeywords: '🎨 Từ khóa tông màu đề xuất',
+        recommendLevel: '📊 Cấp độ đề xuất',
+        skinBrightness: '💡 Tham chiếu độ sáng da',
+        treatmentTips: '🧴 Mẹo xử lý',
+        undercoat: 'Lớp nền',
+        texture: 'Kết cấu hoàn thiện',
+        consultingPoint: '💬 Điểm tư vấn',
+        avoidTones: '⛔ Tông màu cần tránh',
+        brightSkin: 'Bạn có làn da sáng. Cấp độ cao hơn cũng sẽ trông tự nhiên.',
+        mediumSkin: 'Độ sáng da trung bình. Phạm vi cấp độ đề xuất phù hợp nhất với bạn.',
+        darkSkin: 'Bạn có làn da tối. Cấp độ quá sáng có thể trông không tự nhiên.'
+      },
+
+      // Độ khó xử lý
+      difficulty: {
+        easy: 'Dễ dàng',
+        easyTip: 'Có thể áp dụng mà không cần tẩy',
+        highLift: 'Nâng cao',
+        highLiftTip: 'Có thể nâng tông bằng thuốc nhuộm nâng cao',
+        toneUp: 'Cần nâng tông',
+        toneUpTip: 'Khuyến nghị tẩy hoặc thuốc nhuộm nâng cao',
+        hard: 'Nâng cao',
+        hardTip: 'Cần tẩy 2+ lần, chú ý tổn thương tóc'
+      },
+
+      // Huy hiệu ưu tiên
+      priority: {
+        bestMatch: 'Phù hợp nhất',
+        levelOk: 'Cấp độ OK',
+        toneOk: 'Tông OK',
+        good: 'Tốt',
+        option: 'Tùy chọn'
       },
 
       toast: {
