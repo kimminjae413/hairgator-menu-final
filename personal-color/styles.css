@@ -257,19 +257,17 @@ body {
     box-sizing: border-box;
 }
 
-/* 전체화면 모드일 때 섹션 네비게이션 */
+/* 전체화면 모드일 때 섹션 네비게이션 - 스크롤해도 콘텐츠가 비치지 않도록 */
 #ai-analysis.active .section-nav,
 #draping-mode.active .section-nav {
     position: sticky;
     top: 0;
     z-index: 10;
-    background: linear-gradient(135deg, #1a1c2e 0%, #2d1f3d 50%, #1a1c2e 100%);
-    backdrop-filter: blur(10px);
-    margin: 0 -20px 20px -20px;
-    padding: 20px 20px;
+    background: linear-gradient(180deg, #1a1c2e 0%, #1a1c2e 70%, #2d1f3d 100%);
+    margin: 0 -20px 0 -20px;
+    padding: 25px 20px 40px 20px;
     border-radius: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border-bottom: none;
 }
 
 #ai-analysis.active .section-title,
