@@ -214,13 +214,12 @@ function createLookbookLoadingOverlay() {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.85);
+        background: #ffffff;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         z-index: 99999;
-        backdrop-filter: blur(5px);
     `;
 
     // 로딩 텍스트 (다국어)
@@ -228,35 +227,42 @@ function createLookbookLoadingOverlay() {
     const subText = t('lookbook.loadingSubtext') || '이미지 3장을 생성 중입니다. 잠시만 기다려주세요.';
 
     overlay.innerHTML = `
-        <div style="text-align: center; color: white; padding: 40px;">
-            <div style="margin-bottom: 30px;">
-                <svg width="80" height="80" viewBox="0 0 100 100" style="animation: spin 2s linear infinite;">
-                    <circle cx="50" cy="50" r="40" stroke="#d4a574" stroke-width="6" fill="none" stroke-dasharray="251" stroke-dashoffset="60" stroke-linecap="round"/>
-                </svg>
+        <div style="text-align: center; padding: 40px;">
+            <div class="logo-container" style="margin-bottom: 32px;">
+                <img src="/로고.png" alt="HAIRGATOR" class="loading-logo" style="width: 100px; height: 100px; object-fit: contain;">
             </div>
-            <h2 style="font-size: 24px; margin-bottom: 15px; font-weight: 600; color: #d4a574;">
-                THE EDIT
+            <h2 style="font-size: 12px; margin-bottom: 24px; font-weight: 500; color: #333; letter-spacing: 3px; text-transform: uppercase;">
+                HAIRGATOR
             </h2>
-            <p style="font-size: 18px; margin-bottom: 10px; opacity: 0.9;">
+            <p style="font-size: 14px; margin-bottom: 6px; color: #555; font-weight: 400;">
                 ${loadingText}
             </p>
-            <p style="font-size: 14px; opacity: 0.6;">
+            <p style="font-size: 12px; color: #999;">
                 ${subText}
             </p>
-            <div style="margin-top: 30px; display: flex; gap: 8px; justify-content: center;">
-                <div class="loading-dot" style="width: 10px; height: 10px; background: #d4a574; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: -0.32s;"></div>
-                <div class="loading-dot" style="width: 10px; height: 10px; background: #d4a574; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; animation-delay: -0.16s;"></div>
-                <div class="loading-dot" style="width: 10px; height: 10px; background: #d4a574; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both;"></div>
+            <div class="loading-bar-container" style="margin-top: 28px; width: 180px; height: 2px; background: #eee; border-radius: 1px; overflow: hidden; margin-left: auto; margin-right: auto;">
+                <div class="loading-bar"></div>
             </div>
         </div>
         <style>
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+            .loading-logo {
+                animation: logoPulse 2s ease-in-out infinite;
             }
-            @keyframes bounce {
-                0%, 80%, 100% { transform: scale(0); }
-                40% { transform: scale(1); }
+            @keyframes logoPulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.08); opacity: 0.85; }
+            }
+            .loading-bar {
+                width: 30%;
+                height: 100%;
+                background: linear-gradient(90deg, #ff0066, #cc0066);
+                border-radius: 1px;
+                animation: loadingProgress 1.8s ease-in-out infinite;
+            }
+            @keyframes loadingProgress {
+                0% { width: 0%; margin-left: 0%; }
+                50% { width: 50%; margin-left: 25%; }
+                100% { width: 0%; margin-left: 100%; }
             }
         </style>
     `;

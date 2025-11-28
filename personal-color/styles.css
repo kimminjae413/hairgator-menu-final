@@ -37,98 +37,77 @@ body {
     overflow-x: hidden;
 }
 
-/* ========== 로딩 화면 (세련된 디자인) ========== */
+/* ========== 로딩 화면 (HAIRGATOR 로고 스타일) ========== */
 .loading-screen {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #333;
     z-index: 9999;
     flex-direction: column;
     overflow: hidden;
-}
-
-.loading-screen::before {
-    content: '';
-    position: absolute;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
-    background-size: 50px 50px;
-    animation: loading-bg-move 20s linear infinite;
-}
-
-@keyframes loading-bg-move {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(50px, 50px); }
 }
 
 .loading-content {
     text-align: center;
     position: relative;
     z-index: 1;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
     padding: 3rem 4rem;
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 .loading-logo {
-    font-size: 5rem;
+    width: 100px;
+    height: 100px;
     margin-bottom: 1.5rem;
-    animation: loading-float 3s ease-in-out infinite;
-    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+    object-fit: contain;
+    animation: logoPulse 2s ease-in-out infinite;
 }
 
-@keyframes loading-float {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    25% { transform: translateY(-15px) rotate(-5deg); }
-    75% { transform: translateY(-5px) rotate(5deg); }
+@keyframes logoPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.08); opacity: 0.85; }
+}
+
+.loading-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
 }
 
 .loading-text {
-    font-size: 1.1rem;
-    margin-bottom: 2rem;
+    font-size: 14px;
+    margin-bottom: 8px;
     font-weight: 400;
-    letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.95);
+    color: #555;
+}
+
+.loading-subtext {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 24px;
 }
 
 .loading-progress {
-    width: 300px;
-    height: 4px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 8px;
+    width: 180px;
+    height: 2px;
+    background: #eee;
+    border-radius: 1px;
     overflow: hidden;
     margin: 0 auto;
 }
 
 .loading-bar {
     height: 100%;
-    background: white;
+    background: linear-gradient(90deg, #ff0066, #cc0066);
     width: 0%;
     transition: width 0.3s ease;
-    border-radius: 3px;
-}
-
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-top: 3px solid white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-top: 1rem;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    border-radius: 1px;
 }
 
 /* ========== 메인 앱 ========== */
