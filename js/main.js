@@ -563,8 +563,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    // ⭐ 언어 선택 모달을 전역에 노출
+    // ⭐ 전역에 노출
     window.showLanguageModal = showLanguageModal;
+    window.setupSidebar = setupSidebar;
 
     // ⭐⭐⭐ 최종 수정된 goBack 함수 (불나비 자동 로그인 전용) ⭐⭐⭐
     window.goBack = function() {
