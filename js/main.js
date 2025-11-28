@@ -663,14 +663,14 @@ const FONT_OPTIONS = [
 
 // 색상 옵션
 const COLOR_OPTIONS = [
-    { id: 'white', name: '화이트', color: '#FFFFFF' },
-    { id: 'black', name: '블랙', color: '#000000' },
-    { id: 'gold', name: '골드', color: '#D4AF37' },
-    { id: 'silver', name: '실버', color: '#C0C0C0' },
-    { id: 'pink', name: '핑크', color: '#E91E63' },
-    { id: 'blue', name: '블루', color: '#4A90E2' },
-    { id: 'red', name: '레드', color: '#E53935' },
-    { id: 'green', name: '그린', color: '#43A047' }
+    { id: 'white', name: '화이트', color: '#FFFFFF', stroke: '#000000' },
+    { id: 'black', name: '블랙', color: '#000000', stroke: '#FFFFFF' },
+    { id: 'gold', name: '골드', color: '#D4AF37', stroke: '#1a1a1a' },
+    { id: 'silver', name: '실버', color: '#C0C0C0', stroke: '#1a1a1a' },
+    { id: 'pink', name: '핑크', color: '#E91E63', stroke: '#FFFFFF' },
+    { id: 'blue', name: '블루', color: '#4A90E2', stroke: '#FFFFFF' },
+    { id: 'red', name: '레드', color: '#E53935', stroke: '#FFFFFF' },
+    { id: 'green', name: '그린', color: '#43A047', stroke: '#FFFFFF' }
 ];
 
 function showBrandSettingModal() {
@@ -792,6 +792,8 @@ function showBrandSettingModal() {
                     text-align: center;
                     padding: 10px;
                     font-family: ${FONT_OPTIONS.find(f => f.id === savedFont)?.fontFamily || 'inherit'};
+                    -webkit-text-stroke: 1px ${COLOR_OPTIONS.find(c => c.id === savedColor)?.stroke || '#000000'};
+                    text-shadow: 0 0 2px ${COLOR_OPTIONS.find(c => c.id === savedColor)?.stroke || '#000000'};
                 ">${savedBrand || 'HAIRGATOR'}</div>
             </div>
 
@@ -912,6 +914,8 @@ function showBrandSettingModal() {
             const color = COLOR_OPTIONS.find(c => c.id === colorId);
             if (color) {
                 preview.style.color = color.color;
+                preview.style.webkitTextStroke = `1px ${color.stroke}`;
+                preview.style.textShadow = `0 0 2px ${color.stroke}`;
             }
         };
     });
@@ -922,6 +926,8 @@ function showBrandSettingModal() {
         preview.textContent = 'HAIRGATOR';
         preview.style.fontFamily = FONT_OPTIONS[0].fontFamily;
         preview.style.color = '#FFFFFF';
+        preview.style.webkitTextStroke = `1px ${COLOR_OPTIONS[0].stroke}`;
+        preview.style.textShadow = `0 0 2px ${COLOR_OPTIONS[0].stroke}`;
         fontOptions.forEach(o => o.classList.remove('selected'));
         fontOptions[0].classList.add('selected');
         fontOptions[0].querySelector('input').checked = true;
@@ -967,6 +973,8 @@ function applyCustomBrand() {
         const color = COLOR_OPTIONS.find(c => c.id === brandColor);
         if (color) {
             logoElement.style.color = color.color;
+            logoElement.style.webkitTextStroke = `1px ${color.stroke}`;
+            logoElement.style.textShadow = `0 0 2px ${color.stroke}`;
         }
     }
 }
@@ -1246,6 +1254,8 @@ function showIdleScreen() {
             letter-spacing: 2px;
             animation: idleFade 4s ease-in-out infinite;
             text-align: center;
+            -webkit-text-stroke: 1px ${color?.stroke || '#000'};
+            text-shadow: 0 0 3px ${color?.stroke || '#000'};
         ">${brandName}</h1>
 
         <p style="
