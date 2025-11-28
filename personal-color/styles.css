@@ -1631,3 +1631,60 @@ body {
         margin-top: 20px;
     }
 }
+
+/* ========== 태블릿용 스크롤 유도 화살표 ========== */
+.scroll-indicator {
+    display: none; /* 기본적으로 숨김 */
+}
+
+/* 태블릿 가로 모드에서만 표시 */
+@media screen and (min-width: 768px) and (max-width: 1200px) and (orientation: landscape) {
+    .scroll-indicator {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: sticky;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        margin-top: 15px;
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    .scroll-arrow {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        border-radius: 50%;
+        font-size: 18px;
+        box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+        animation: bounceArrow 1.5s ease-in-out infinite;
+        pointer-events: auto;
+        cursor: pointer;
+    }
+
+    .scroll-arrow:hover {
+        transform: scale(1.1);
+    }
+
+    @keyframes bounceArrow {
+        0%, 100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        50% {
+            transform: translateY(8px);
+            opacity: 0.7;
+        }
+    }
+
+    /* 스크롤이 끝에 도달하면 화살표 숨김 */
+    .scroll-indicator.hidden {
+        display: none;
+    }
+}
