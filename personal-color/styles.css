@@ -1426,6 +1426,11 @@ body {
     .brand-sections {
         grid-template-columns: 1fr;
     }
+
+    /* 분석 결과 2단 그리드 → 모바일에서 1단 */
+    .results-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1585,6 +1590,13 @@ body {
         grid-template-columns: repeat(2, 1fr);
         max-width: 100%;
         margin: 0 0 3rem 0;
+    }
+}
+
+/* ========== 태블릿 세로모드: 분석 결과 1단 레이아웃 ========== */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+    .results-grid {
+        grid-template-columns: 1fr !important;
     }
 }
 

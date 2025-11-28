@@ -1093,6 +1093,50 @@
             };
         }
 
+        // 색상 이름 → HEX 매핑 (피해야 할 컬러 스와치용)
+        const COLOR_NAME_TO_HEX = {
+            // 웜톤 계열
+            "골드": "#D4AF37",
+            "노란기가 강한 골드": "#FFD700",
+            "오렌지": "#FF8C00",
+            "비비드 오렌지": "#FF6600",
+            "구리빛": "#B87333",
+            "코랄": "#FF7F50",
+            "머스타드": "#E1AD01",
+            "베이지": "#D2B48C",
+            "탁한 브라운": "#8B7355",
+            "탁한 카키": "#8B8860",
+            "어중간한 갈색": "#A67B5B",
+            "노란기가 도는 웜 브라운": "#9E7B4F",
+            // 쿨톤 계열
+            "블랙": "#1A1A1A",
+            "퓨어블랙": "#000000",
+            "블루 블랙": "#0D0D3D",
+            "블루블랙": "#0D0D3D",
+            "애쉬블루": "#7B98B2",
+            "애쉬그레이": "#8E9AA0",
+            "회색빛이 많이 도는 애쉬": "#9EA5AB",
+            "창백한 애쉬": "#C0C5C9",
+            "다크 애쉬": "#4A4E52",
+            // 특수 컬러
+            "형광기가 도는 핑크": "#FF69B4",
+            "차가운 블루 블랙": "#1C2331",
+            "비비드 레드": "#FF0033",
+            "비비드 핑크": "#FF1493",
+            "강렬한 버건디": "#800020",
+            "네온": "#39FF14",
+            "플래티넘": "#E5E4E2",
+            "쨍한 비비드 컬러": "#FF00FF",
+            "검은색에 가까운 다크함": "#1A1A2E",
+            "너무 어두운 다크 브라운": "#3D2914",
+            "너무 가벼운 파스텔 톤": "#FFE4E1"
+        };
+
+        // 색상 이름으로 HEX 가져오기 (없으면 기본색 반환)
+        function getColorHex(colorName) {
+            return COLOR_NAME_TO_HEX[colorName] || "#888888";
+        }
+
         // 헤어컬러 시술 난이도 판정 함수 (다국어 지원)
         function getColorDifficulty(color, personalColorResult) {
             const skinL = personalColorResult.lab?.L || 60;
@@ -1901,68 +1945,80 @@
                 ` : '';
 
                 resultsContainer.innerHTML = `
-                    <h4 style="margin: 0 0 20px 0; color: #fff; font-size: 18px; text-align: center;">🎨 ${resultTexts.title}</h4>
+                    <h4 style="margin: 0 0 15px 0; color: #fff; font-size: 18px; text-align: center;">🎨 ${resultTexts.title}</h4>
 
                     <!-- ✅ 조명 경고 배너 (조명 나쁠 때만 표시) -->
                     ${lightingWarningBanner}
 
                     <!-- 조명 상태 표시 -->
-                    <div style="background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="color: #aaa; font-size: 13px;">💡 조명 안정도</span>
-                        <span style="color: ${lightingColor}; font-weight: bold; font-size: 13px;">${lightingQualityText} (${Math.round(lm.lightingQuality * 100)}%)</span>
+                    <div style="background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #aaa; font-size: 12px;">💡 조명 안정도</span>
+                        <span style="color: ${lightingColor}; font-weight: bold; font-size: 12px;">${lightingQualityText} (${Math.round(lm.lightingQuality * 100)}%)</span>
                     </div>
 
-                    <!-- 피부 분석 섹션 -->
-                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; margin-bottom: 15px;">
-                        <div style="font-size: 14px; color: #aaa; margin-bottom: 8px;">📍 ${resultTexts.skinAnalysis}</div>
-                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px;">
-                            <div style="width: 50px; height: 50px; background: ${skinToneData.hex}; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"></div>
-                            <div>
-                                <div style="font-size: 16px; color: #fff; font-weight: bold;">${resultTexts.skinTone}: ${skinToneData.hex}</div>
-                                <div style="font-size: 13px; color: #ccc;">L: ${pc.lab.L.toFixed(1)} / C: ${pc.chroma}</div>
+                    <!-- 🔥 2단 그리드 레이아웃 -->
+                    <div class="results-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+
+                        <!-- ===== 왼쪽 컬럼: 퍼스널컬러 분석 ===== -->
+                        <div class="results-column-left" style="display: flex; flex-direction: column; gap: 12px;">
+
+                            <!-- 피부 분석 섹션 -->
+                            <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px;">
+                                <div style="font-size: 13px; color: #aaa; margin-bottom: 8px;">📍 ${resultTexts.skinAnalysis}</div>
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                                    <div style="width: 40px; height: 40px; background: ${skinToneData.hex}; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); flex-shrink: 0;"></div>
+                                    <div style="min-width: 0;">
+                                        <div style="font-size: 14px; color: #fff; font-weight: bold;">${skinToneData.hex}</div>
+                                        <div style="font-size: 11px; color: #ccc;">L: ${pc.lab.L.toFixed(1)} / C: ${pc.chroma}</div>
+                                    </div>
+                                </div>
+                                <div style="font-size: 14px; color: #fff;">
+                                    <span style="color: #aaa;">${resultTexts.undertone}:</span>
+                                    <b style="color: ${pc.color};">${undertoneText}</b>
+                                </div>
+                            </div>
+
+                            <!-- 추천 퍼스널컬러 섹션 -->
+                            <div style="background: linear-gradient(135deg, ${pc.color}33, ${pc.color}11); padding: 15px; border-radius: 12px; border: 2px solid ${pc.color};">
+                                <div style="font-size: 12px; color: #aaa; margin-bottom: 6px;">${resultTexts.recommendedSeason || '✨ 추천 퍼스널컬러'}</div>
+                                <div style="font-size: 22px; font-weight: bold; color: ${pc.color}; margin-bottom: 8px;">
+                                    ${pc.emoji} ${seasonText}
+                                </div>
+                                <div style="font-size: 13px; color: #eee; line-height: 1.7;">
+                                    ${seasonDescText}
+                                </div>
+                                ${pc.isReference ? '<div style="margin-top: 8px; padding: 6px; background: rgba(255,152,0,0.2); border-radius: 6px; font-size: 11px; color: #FFB74D;">⚠️ 조명이 불안정하여 참고용으로만 활용해주세요</div>' : ''}
+                            </div>
+
+                            <!-- 추천 컬러 팔레트 -->
+                            <div style="background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px;">
+                                <div style="font-size: 13px; color: #aaa; margin-bottom: 10px;">💄 ${resultTexts.matchingColors}</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+                                    ${getSeasonColorPalette(pc.fullSeason)}
+                                </div>
+                                <div style="font-size: 12px; color: #eee; line-height: 1.7;">
+                                    ${seasonRecommendText}
+                                </div>
                             </div>
                         </div>
-                        <div style="font-size: 16px; color: #fff;">
-                            <span style="color: #aaa;">${resultTexts.undertone}:</span>
-                            <b style="color: ${pc.color};">${undertoneText}</b>
-                        </div>
-                    </div>
 
-                    <!-- 추천 퍼스널컬러 섹션 -->
-                    <div style="background: linear-gradient(135deg, ${pc.color}33, ${pc.color}11); padding: 20px; border-radius: 12px; border: 2px solid ${pc.color};">
-                        <div style="font-size: 14px; color: #aaa; margin-bottom: 8px;">${resultTexts.recommendedSeason || '✨ 추천 퍼스널컬러'}</div>
-                        <div style="font-size: 26px; font-weight: bold; color: ${pc.color}; margin-bottom: 10px;">
-                            ${pc.emoji} ${seasonText}
-                        </div>
-                        <div style="font-size: 14px; color: #eee; line-height: 1.8;">
-                            ${seasonDescText}
-                        </div>
-                        ${pc.isReference ? '<div style="margin-top: 10px; padding: 8px; background: rgba(255,152,0,0.2); border-radius: 6px; font-size: 12px; color: #FFB74D;">⚠️ 조명이 불안정하여 참고용으로만 활용해주세요</div>' : ''}
-                    </div>
+                        <!-- ===== 오른쪽 컬럼: 헤어 & 전문가 가이드 ===== -->
+                        <div class="results-column-right" style="display: flex; flex-direction: column; gap: 12px;">
 
-                    <!-- 추천 컬러 팔레트 -->
-                    <div style="margin-top: 15px; background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px;">
-                        <div style="font-size: 14px; color: #aaa; margin-bottom: 12px;">💄 ${resultTexts.matchingColors}</div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
-                            ${getSeasonColorPalette(pc.fullSeason)}
+                            <!-- 💇 헤어컬러 추천 섹션 -->
+                            ${hairRecommendHTML}
+
+                            <!-- 👩‍🎨 디자이너 전문가 가이드 섹션 -->
+                            ${expertFeedbackHTML}
+
+                            <!-- ⚠️ 피해야 할 컬러 -->
+                            <div style="background: rgba(244,67,54,0.1); padding: 12px; border-radius: 12px; border: 1px solid rgba(244,67,54,0.3);">
+                                <div style="font-size: 13px; color: #F44336; margin-bottom: 8px; font-weight: bold;">⚠️ 피해야 할 컬러</div>
+                                <ul style="margin: 0; padding-left: 18px; color: #ffcdd2; font-size: 12px; line-height: 1.7;">
+                                    ${hairRec.avoidRules.map(rule => `<li>${rule}</li>`).join('')}
+                                </ul>
+                            </div>
                         </div>
-                        <div style="font-size: 14px; color: #eee; line-height: 1.8;">
-                            ${seasonRecommendText}
-                        </div>
-                    </div>
-
-                    <!-- 💇 헤어컬러 추천 섹션 -->
-                    ${hairRecommendHTML}
-
-                    <!-- 👩‍🎨 디자이너 전문가 가이드 섹션 -->
-                    ${expertFeedbackHTML}
-
-                    <!-- ⚠️ 피해야 할 컬러 -->
-                    <div style="margin-top: 15px; background: rgba(244,67,54,0.1); padding: 15px; border-radius: 12px; border: 1px solid rgba(244,67,54,0.3);">
-                        <div style="font-size: 14px; color: #F44336; margin-bottom: 10px; font-weight: bold;">⚠️ 피해야 할 컬러</div>
-                        <ul style="margin: 0; padding-left: 20px; color: #ffcdd2; font-size: 13px; line-height: 1.8;">
-                            ${hairRec.avoidRules.map(rule => `<li>${rule}</li>`).join('')}
-                        </ul>
                     </div>
                 `;
             }
@@ -2018,39 +2074,39 @@
                                     difficulty.difficulty === 'light' ? 'rgba(255,235,59,0.12)' : 'rgba(76,175,80,0.1)';
 
                 return `
-                <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 10px; border-left: 3px solid ${badge.color};">
+                <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid ${badge.color};">
                     <!-- 상단: 컬러 스와치 + 정보 -->
-                    <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="position: relative; flex-shrink: 0;">
-                            <div style="width: 45px; height: 45px; background: ${color.hex}; border-radius: 10px; border: 2px solid rgba(255,255,255,0.3);"></div>
+                            <div style="width: 38px; height: 38px; background: ${color.hex}; border-radius: 8px; border: 2px solid rgba(255,255,255,0.3);"></div>
                             <!-- 우선순위 뱃지 -->
-                            <span style="position: absolute; top: -6px; right: -6px; font-size: 14px;" title="${badge.label}">${badge.icon}</span>
+                            <span style="position: absolute; top: -5px; right: -5px; font-size: 12px;" title="${badge.label}">${badge.icon}</span>
                         </div>
                         <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 14px; color: #fff; font-weight: 600; margin-bottom: 2px;">${color.name || '컬러'}</div>
-                            <div style="font-size: 11px; color: #aaa;">${color.brand || ''} ${color.line || ''} ${color.code || ''}</div>
-                            ${color.level ? `<div style="font-size: 10px; color: #888; margin-top: 2px;">Level ${color.level}</div>` : ''}
+                            <div style="font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 1px;">${color.name || '컬러'}</div>
+                            <div style="font-size: 10px; color: #aaa;">${color.brand || ''} ${color.line || ''} ${color.code || ''}</div>
+                            ${color.level ? `<div style="font-size: 9px; color: #888; margin-top: 1px;">Level ${color.level}</div>` : ''}
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-size: 13px; color: #4CAF50; font-weight: bold;">${color.harmonyScore}점</div>
-                            <div style="font-size: 10px; color: ${badge.color};">${badge.label}</div>
+                            <div style="font-size: 12px; color: #4CAF50; font-weight: bold;">${color.harmonyScore}점</div>
+                            <div style="font-size: 9px; color: ${badge.color};">${badge.label}</div>
                         </div>
                     </div>
                     <!-- 하단: 시술 난이도 -->
-                    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: ${diffBgColor}; border-radius: 6px;">
-                        <span style="font-size: 14px;">${difficulty.icon}</span>
-                        <span style="font-size: 11px; color: #ddd; font-weight: 500;">${difficulty.label}</span>
-                        <span style="font-size: 10px; color: #999; flex: 1;">${difficulty.tip}</span>
+                    <div style="display: flex; align-items: center; gap: 6px; padding: 5px 8px; background: ${diffBgColor}; border-radius: 5px;">
+                        <span style="font-size: 12px;">${difficulty.icon}</span>
+                        <span style="font-size: 10px; color: #ddd; font-weight: 500;">${difficulty.label}</span>
+                        <span style="font-size: 9px; color: #999; flex: 1;">${difficulty.tip}</span>
                     </div>
                 </div>
             `;
             };
 
             let html = `
-                <div style="margin-top: 15px; background: rgba(76,175,80,0.1); padding: 20px; border-radius: 12px; border: 1px solid rgba(76,175,80,0.3);">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                        <div style="font-size: 15px; color: #4CAF50; font-weight: bold;">💇 추천 염색 컬러 (1순위)</div>
-                        <div style="font-size: 11px; color: #81C784; background: rgba(76,175,80,0.2); padding: 3px 8px; border-radius: 10px;">강추천</div>
+                <div style="background: rgba(76,175,80,0.1); padding: 15px; border-radius: 12px; border: 1px solid rgba(76,175,80,0.3);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <div style="font-size: 14px; color: #4CAF50; font-weight: bold;">💇 추천 염색 컬러 (1순위)</div>
+                        <div style="font-size: 10px; color: #81C784; background: rgba(76,175,80,0.2); padding: 2px 6px; border-radius: 10px;">강추천</div>
                     </div>
                     ${hairRec.recommended1st.map((c, i) => renderColorItemAdvanced(c, i+1)).join('')}
                 </div>
@@ -2058,10 +2114,10 @@
 
             if (hairRec.recommended2nd && hairRec.recommended2nd.length > 0) {
                 html += `
-                    <div style="margin-top: 15px; background: rgba(255,255,255,0.08); padding: 20px; border-radius: 12px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                            <div style="font-size: 15px; color: #aaa; font-weight: bold;">💇 추천 염색 컬러 (2순위)</div>
-                            <div style="font-size: 11px; color: #888; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 10px;">무난함</div>
+                    <div style="margin-top: 12px; background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                            <div style="font-size: 14px; color: #aaa; font-weight: bold;">💇 추천 염색 컬러 (2순위)</div>
+                            <div style="font-size: 10px; color: #888; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 10px;">무난함</div>
                         </div>
                         ${hairRec.recommended2nd.map((c, i) => renderColorItemAdvanced(c, i+4)).join('')}
                     </div>
@@ -2097,70 +2153,73 @@
             };
 
             return `
-                <div style="margin-top: 15px; background: linear-gradient(135deg, rgba(156,39,176,0.15), rgba(103,58,183,0.15)); padding: 20px; border-radius: 12px; border: 1px solid rgba(156,39,176,0.3);">
-                    <div style="font-size: 15px; color: #CE93D8; margin-bottom: 15px; font-weight: bold;">
+                <div style="background: linear-gradient(135deg, rgba(156,39,176,0.15), rgba(103,58,183,0.15)); padding: 15px; border-radius: 12px; border: 1px solid rgba(156,39,176,0.3);">
+                    <div style="font-size: 14px; color: #CE93D8; margin-bottom: 12px; font-weight: bold;">
                         ${labels.title}
                     </div>
 
                     <!-- 1. 톤 & 이미지 + 패션 스타일 -->
-                    <div style="margin-bottom: 12px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
-                        <div style="font-size: 12px; color: #B39DDB; margin-bottom: 6px;">${labels.toneKeywords}</div>
-                        <div style="font-size: 13px; color: #E1BEE7; line-height: 1.6; margin-bottom: 10px;">
+                    <div style="margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+                        <div style="font-size: 11px; color: #B39DDB; margin-bottom: 4px;">${labels.toneKeywords}</div>
+                        <div style="font-size: 12px; color: #E1BEE7; line-height: 1.5; margin-bottom: 8px;">
                             ${feedback.toneKeywords}
                         </div>
                         ${feedback.fashionVibe ? `
-                        <div style="font-size: 12px; color: #B39DDB; margin-bottom: 4px;">${labels.fashionVibe}</div>
-                        <div style="font-size: 12px; color: #ddd; line-height: 1.5;">${feedback.fashionVibe}</div>
+                        <div style="font-size: 11px; color: #B39DDB; margin-bottom: 3px;">${labels.fashionVibe}</div>
+                        <div style="font-size: 11px; color: #ddd; line-height: 1.4;">${feedback.fashionVibe}</div>
                         ` : ''}
                     </div>
 
                     <!-- 2. 추천 레벨 & 피부 밝기 -->
-                    <div style="display: flex; gap: 15px; margin-bottom: 12px; flex-wrap: wrap;">
-                        <div style="flex: 1; min-width: 120px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
-                            <div style="font-size: 11px; color: #B39DDB; margin-bottom: 4px;">${labels.recommendLevel}</div>
-                            <div style="font-size: 14px; color: #fff; font-weight: bold;">${feedback.levelTip}</div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 100px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+                            <div style="font-size: 10px; color: #B39DDB; margin-bottom: 3px;">${labels.recommendLevel}</div>
+                            <div style="font-size: 13px; color: #fff; font-weight: bold;">${feedback.levelTip}</div>
                         </div>
                         ${feedback.brightnessAdvice ? `
-                        <div style="flex: 1; min-width: 150px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
-                            <div style="font-size: 11px; color: #B39DDB; margin-bottom: 4px;">${labels.skinBrightness}</div>
-                            <div style="font-size: 12px; color: #ddd;">${feedback.brightnessAdvice}</div>
+                        <div style="flex: 1; min-width: 120px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+                            <div style="font-size: 10px; color: #B39DDB; margin-bottom: 3px;">${labels.skinBrightness}</div>
+                            <div style="font-size: 11px; color: #ddd;">${feedback.brightnessAdvice}</div>
                         </div>
                         ` : ''}
                     </div>
 
                     <!-- 3. 헤어 시술 팁 (언더코트 & 질감) -->
-                    <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                        <div style="font-size: 12px; color: #B39DDB; margin-bottom: 6px;">${labels.treatmentTips}</div>
-                        <div style="font-size: 12px; color: #ddd; line-height: 1.7;">
-                            <div style="margin-bottom: 4px;"><b style="color: #CE93D8;">${labels.undercoat}:</b> ${feedback.undercoatTip}</div>
+                    <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                        <div style="font-size: 11px; color: #B39DDB; margin-bottom: 4px;">${labels.treatmentTips}</div>
+                        <div style="font-size: 11px; color: #ddd; line-height: 1.5;">
+                            <div style="margin-bottom: 3px;"><b style="color: #CE93D8;">${labels.undercoat}:</b> ${feedback.undercoatTip}</div>
                             <div><b style="color: #CE93D8;">${labels.texture}:</b> ${feedback.textureTip}</div>
                         </div>
                     </div>
 
                     <!-- 4. 토탈 뷰티 팁 (메이크업) -->
                     ${feedback.makeupBase ? `
-                    <div style="background: linear-gradient(135deg, rgba(233,30,99,0.15), rgba(255,64,129,0.1)); padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid rgba(233,30,99,0.2);">
-                        <div style="font-size: 12px; color: #F48FB1; margin-bottom: 6px;">${labels.totalBeautyTip}</div>
-                        <div style="font-size: 12px; color: #FCE4EC; line-height: 1.7;">
+                    <div style="background: linear-gradient(135deg, rgba(233,30,99,0.15), rgba(255,64,129,0.1)); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid rgba(233,30,99,0.2);">
+                        <div style="font-size: 11px; color: #F48FB1; margin-bottom: 4px;">${labels.totalBeautyTip}</div>
+                        <div style="font-size: 11px; color: #FCE4EC; line-height: 1.5;">
                             <b style="color: #F48FB1;">${labels.makeupBase}:</b> ${feedback.makeupBase}
                         </div>
                     </div>
                     ` : ''}
 
                     <!-- 5. 컨설팅 조언 -->
-                    <div style="background: rgba(103,58,183,0.2); padding: 12px; border-radius: 8px;">
-                        <div style="font-size: 12px; color: #B39DDB; margin-bottom: 6px;">${labels.consultingPoint}</div>
-                        <div style="font-size: 12px; color: #E1BEE7; line-height: 1.7;">${feedback.consultingTip}</div>
-                        <div style="font-size: 11px; color: #9575CD; margin-top: 8px; font-style: italic;">"${feedback.seasonalAdvice}"</div>
+                    <div style="background: rgba(103,58,183,0.2); padding: 10px; border-radius: 8px;">
+                        <div style="font-size: 11px; color: #B39DDB; margin-bottom: 4px;">${labels.consultingPoint}</div>
+                        <div style="font-size: 11px; color: #E1BEE7; line-height: 1.5;">${feedback.consultingTip}</div>
+                        <div style="font-size: 10px; color: #9575CD; margin-top: 6px; font-style: italic;">"${feedback.seasonalAdvice}"</div>
                     </div>
 
                     <!-- 6. 피해야 할 톤 -->
                     ${feedback.avoidColors && feedback.avoidColors.length > 0 ? `
-                    <div style="margin-top: 12px; padding: 10px; background: rgba(244,67,54,0.1); border-radius: 8px; border: 1px solid rgba(244,67,54,0.2);">
-                        <div style="font-size: 11px; color: #EF9A9A; margin-bottom: 6px;">${labels.avoidTones}</div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                    <div style="margin-top: 10px; padding: 8px; background: rgba(244,67,54,0.1); border-radius: 8px; border: 1px solid rgba(244,67,54,0.2);">
+                        <div style="font-size: 10px; color: #EF9A9A; margin-bottom: 4px;">${labels.avoidTones}</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                             ${feedback.avoidColors.map(c => `
-                                <span style="background: rgba(244,67,54,0.2); color: #FFCDD2; padding: 3px 8px; border-radius: 10px; font-size: 11px;">${c}</span>
+                                <div style="display: flex; align-items: center; gap: 4px; background: rgba(244,67,54,0.15); padding: 3px 8px 3px 4px; border-radius: 12px;">
+                                    <div style="width: 14px; height: 14px; background: ${getColorHex(c)}; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></div>
+                                    <span style="color: #FFCDD2; font-size: 10px;">${c}</span>
+                                </div>
                             `).join('')}
                         </div>
                     </div>
@@ -2192,28 +2251,99 @@
             return descriptions[season] || '';
         }
 
-        // 시즌별 컬러 팔레트 (개선된 8타입)
+        // 시즌별 컬러 팔레트 (개선된 8타입) - 색상명 포함
         function getSeasonColorPalette(season) {
             const palettes = {
                 // 봄 웜
-                '봄 웜 브라이트': ['#FF6347', '#FF7F50', '#FFD700', '#00CED1', '#FF69B4'],
-                '봄 웜 라이트': ['#FFDAB9', '#FFE4B5', '#F5DEB3', '#98FB98', '#FFB6C1'],
+                '봄 웜 브라이트': [
+                    { hex: '#FF6347', name: '토마토' },
+                    { hex: '#FF7F50', name: '코랄' },
+                    { hex: '#FFD700', name: '골드' },
+                    { hex: '#00CED1', name: '터콰이즈' },
+                    { hex: '#FF69B4', name: '핫핑크' }
+                ],
+                '봄 웜 라이트': [
+                    { hex: '#FFDAB9', name: '피치' },
+                    { hex: '#FFE4B5', name: '모카신' },
+                    { hex: '#F5DEB3', name: '밀색' },
+                    { hex: '#98FB98', name: '민트' },
+                    { hex: '#FFB6C1', name: '라이트핑크' }
+                ],
                 // 가을 웜
-                '가을 웜 딥': ['#8B4513', '#A0522D', '#800000', '#556B2F', '#8B0000'],
-                '가을 웜 뮤트': ['#CD853F', '#D2691E', '#BDB76B', '#808000', '#BC8F8F'],
-                '가을 웜 소프트': ['#C4A484', '#D2B48C', '#DEB887', '#8B7355', '#A67B5B'],
+                '가을 웜 딥': [
+                    { hex: '#8B4513', name: '새들브라운' },
+                    { hex: '#A0522D', name: '시에나' },
+                    { hex: '#800000', name: '마룬' },
+                    { hex: '#556B2F', name: '올리브' },
+                    { hex: '#8B0000', name: '다크레드' }
+                ],
+                '가을 웜 뮤트': [
+                    { hex: '#CD853F', name: '페루' },
+                    { hex: '#D2691E', name: '초콜릿' },
+                    { hex: '#BDB76B', name: '카키' },
+                    { hex: '#808000', name: '올리브' },
+                    { hex: '#BC8F8F', name: '로지브라운' }
+                ],
+                '가을 웜 소프트': [
+                    { hex: '#C4A484', name: '탄' },
+                    { hex: '#D2B48C', name: '탠' },
+                    { hex: '#DEB887', name: '벌리우드' },
+                    { hex: '#8B7355', name: '버프' },
+                    { hex: '#A67B5B', name: '코코아' }
+                ],
                 // 여름 쿨
-                '여름 쿨 브라이트': ['#FF69B4', '#9370DB', '#00CED1', '#20B2AA', '#BA55D3'],
-                '여름 쿨 라이트': ['#E6E6FA', '#D8BFD8', '#B0E0E6', '#AFEEEE', '#FFB6C1'],
+                '여름 쿨 브라이트': [
+                    { hex: '#FF69B4', name: '핫핑크' },
+                    { hex: '#9370DB', name: '퍼플' },
+                    { hex: '#00CED1', name: '시안' },
+                    { hex: '#20B2AA', name: '틸' },
+                    { hex: '#BA55D3', name: '오키드' }
+                ],
+                '여름 쿨 라이트': [
+                    { hex: '#E6E6FA', name: '라벤더' },
+                    { hex: '#D8BFD8', name: '시슬' },
+                    { hex: '#B0E0E6', name: '파우더블루' },
+                    { hex: '#AFEEEE', name: '페일터콰이즈' },
+                    { hex: '#FFB6C1', name: '라이트핑크' }
+                ],
                 // 겨울 쿨
-                '겨울 쿨 딥': ['#000080', '#8B008B', '#006400', '#C71585', '#000000'],
-                '겨울 쿨 뮤트': ['#708090', '#778899', '#2F4F4F', '#696969', '#4682B4'],
+                '겨울 쿨 딥': [
+                    { hex: '#000080', name: '네이비' },
+                    { hex: '#8B008B', name: '다크마젠타' },
+                    { hex: '#006400', name: '다크그린' },
+                    { hex: '#C71585', name: '마젠타' },
+                    { hex: '#000000', name: '블랙' }
+                ],
+                '겨울 쿨 뮤트': [
+                    { hex: '#708090', name: '슬레이트' },
+                    { hex: '#778899', name: '라이트슬레이트' },
+                    { hex: '#2F4F4F', name: '다크슬레이트' },
+                    { hex: '#696969', name: '딤그레이' },
+                    { hex: '#4682B4', name: '스틸블루' }
+                ],
                 // 뉴트럴
-                '뉴트럴 라이트': ['#DDA0DD', '#FFB7C5', '#E6E6FA', '#FFDEAD', '#B0E0E6'],
-                '뉴트럴 딥': ['#8B4513', '#4169E1', '#556B2F', '#800000', '#483D8B']
+                '뉴트럴 라이트': [
+                    { hex: '#DDA0DD', name: '플럼' },
+                    { hex: '#FFB7C5', name: '체리블로섬' },
+                    { hex: '#E6E6FA', name: '라벤더' },
+                    { hex: '#FFDEAD', name: '나바호화이트' },
+                    { hex: '#B0E0E6', name: '파우더블루' }
+                ],
+                '뉴트럴 딥': [
+                    { hex: '#8B4513', name: '새들브라운' },
+                    { hex: '#4169E1', name: '로얄블루' },
+                    { hex: '#556B2F', name: '올리브드랍' },
+                    { hex: '#800000', name: '마룬' },
+                    { hex: '#483D8B', name: '다크슬레이트블루' }
+                ]
             };
             const colors = palettes[season] || [];
-            return colors.map(c => `<div style="width: 36px; height: 36px; background: ${c}; border-radius: 8px; border: 2px solid rgba(255,255,255,0.3);"></div>`).join('');
+            return colors.map(c => `
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;">
+                    <div style="width: 32px; height: 32px; background: ${c.hex}; border-radius: 8px; border: 2px solid rgba(255,255,255,0.3);"></div>
+                    <span style="font-size: 9px; color: #aaa;">${c.name}</span>
+                </div>
+            `).join('');
         }
 
         function drawFullFaceMesh(ctx, landmarks) {
