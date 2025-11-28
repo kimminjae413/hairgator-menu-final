@@ -143,9 +143,18 @@ function loginWithBullnabi(userInfo) {
         if (typeof updateUserInfo === 'function') {
             updateUserInfo();
         }
-        
+
         console.log('불나비 자동 로그인 완료:', userInfo.name);
-        
+
+        // ⭐ Firebase에서 사용자 설정 (테마, 언어) 로드
+        if (typeof window.loadUserSettingsFromFirebase === 'function') {
+            window.loadUserSettingsFromFirebase().then(settings => {
+                if (settings) {
+                    console.log('⚙️ 사용자 설정 복원 완료:', settings);
+                }
+            });
+        }
+
         // 성공 알림
         if (typeof showToast === 'function') {
             const credits = userInfo.remainCount || 0;

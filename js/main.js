@@ -312,6 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function toggleTheme() {
         document.body.classList.toggle('light-theme');
         const isLight = document.body.classList.contains('light-theme');
+        const theme = isLight ? 'light' : 'dark';
 
         const themeIcon = document.getElementById('themeIcon');
         const themeText = document.getElementById('themeText');
@@ -319,8 +320,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (themeIcon) themeIcon.textContent = isLight ? '☀️' : '🌙';
         if (themeText) themeText.textContent = isLight ? t('ui.lightMode') : t('ui.darkMode');
 
-        localStorage.setItem('hairgator_theme', isLight ? 'light' : 'dark');
-        console.log(`🎨 테마 변경: ${isLight ? 'light' : 'dark'}`);
+        localStorage.setItem('hairgator_theme', theme);
+        console.log(`🎨 테마 변경: ${theme}`);
+
+        // Firebase에 테마 저장
+        if (typeof saveThemeToFirebase === 'function') {
+            saveThemeToFirebase(theme);
+        }
 
         // 테마에 맞는 브랜드 색상 적용
         if (typeof applyCustomBrand === 'function') {
@@ -466,6 +472,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // 국기 업데이트
         if (typeof updateLanguageFlag === 'function') {
             updateLanguageFlag();
+        }
+
+        // Firebase에 언어 저장
+        if (typeof saveLanguageToFirebase === 'function') {
+            saveLanguageToFirebase(langCode);
         }
 
         // 메뉴 리로드 (현재 성별이 있으면)
@@ -1179,6 +1190,105 @@ async function loadBrandFromFirebase() {
 
 // 전역 함수로 노출
 window.loadBrandFromFirebase = loadBrandFromFirebase;
+
+// ========== 사용자 설정 (테마, 언어) Firebase 저장/로드 ==========
+
+// Firebase에 사용자 설정 저장
+async function saveUserSettingsToFirebase(settings) {
+    try {
+        const userInfo = getUserInfo();
+
+        if (!window.db || !userInfo) {
+            console.log('⚙️ Firebase 설정 저장 스킵 (로그인 정보 없음)');
+            return;
+        }
+
+        const docId = `${userInfo.name}_${userInfo.phone}`;
+        await window.db.collection('userSettings').doc(docId).set({
+            ...settings,
+            designerName: userInfo.name,
+            designerPhone: userInfo.phone,
+            updatedAt: Date.now()
+        }, { merge: true });
+
+        console.log('⚙️ Firebase 사용자 설정 저장 완료:', docId, settings);
+    } catch (e) {
+        console.error('⚙️ Firebase 사용자 설정 저장 실패:', e);
+    }
+}
+
+// Firebase에서 사용자 설정 로드
+async function loadUserSettingsFromFirebase() {
+    try {
+        const userInfo = getUserInfo();
+
+        if (!window.db || !userInfo) {
+            console.log('⚙️ Firebase 설정 로드 스킵 (로그인 정보 없음)');
+            return null;
+        }
+
+        const docId = `${userInfo.name}_${userInfo.phone}`;
+        console.log('⚙️ Firebase 사용자 설정 로드 시도:', docId);
+
+        const doc = await window.db.collection('userSettings').doc(docId).get();
+
+        if (doc.exists) {
+            const data = doc.data();
+            console.log('⚙️ Firebase에서 사용자 설정 로드 성공:', data);
+
+            // 테마 적용
+            if (data.theme) {
+                localStorage.setItem('hairgator_theme', data.theme);
+                if (data.theme === 'light') {
+                    document.body.classList.add('light-theme');
+                } else {
+                    document.body.classList.remove('light-theme');
+                }
+                // 테마 아이콘/텍스트 업데이트
+                const themeIcon = document.getElementById('themeIcon');
+                const themeText = document.getElementById('themeText');
+                if (themeIcon) themeIcon.textContent = data.theme === 'light' ? '☀️' : '🌙';
+                if (themeText) themeText.textContent = data.theme === 'light' ? t('ui.lightMode') : t('ui.darkMode');
+            }
+
+            // 언어 적용
+            if (data.language) {
+                localStorage.setItem('hairgator_language', data.language);
+                if (typeof setLanguage === 'function') {
+                    setLanguage(data.language);
+                }
+                window.currentLanguage = data.language;
+                // 국기 업데이트
+                if (typeof updateLanguageFlag === 'function') {
+                    setTimeout(() => updateLanguageFlag(), 100);
+                }
+            }
+
+            return data;
+        }
+        console.log('⚙️ Firebase에 저장된 사용자 설정 없음');
+        return null;
+    } catch (e) {
+        console.error('⚙️ Firebase 사용자 설정 로드 실패:', e);
+        return null;
+    }
+}
+
+// 테마 변경 시 Firebase에 저장
+function saveThemeToFirebase(theme) {
+    saveUserSettingsToFirebase({ theme: theme });
+}
+
+// 언어 변경 시 Firebase에 저장
+function saveLanguageToFirebase(language) {
+    saveUserSettingsToFirebase({ language: language });
+}
+
+// 전역 함수로 노출
+window.saveUserSettingsToFirebase = saveUserSettingsToFirebase;
+window.loadUserSettingsFromFirebase = loadUserSettingsFromFirebase;
+window.saveThemeToFirebase = saveThemeToFirebase;
+window.saveLanguageToFirebase = saveLanguageToFirebase;
 
 // 저장된 상호명 적용
 function applyCustomBrand() {
