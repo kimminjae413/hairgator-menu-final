@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 transition: background 0.2s ease;
                             ">
                                 <span id="currentLanguageFlag" style="font-size: 24px;">${getLanguageFlag(window.currentLanguage || 'ko')}</span>
-                                <span style="font-size: 10px; color: var(--text-secondary, #aaa);">언어</span>
+                                <span style="font-size: 10px; color: var(--text-secondary, #aaa);">Language</span>
                             </div>
                         </div>
                     </div>
