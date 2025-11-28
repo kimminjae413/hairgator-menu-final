@@ -860,6 +860,9 @@ body.light-theme .menu-items-container {
     object-fit: cover;
     display: block;
     border-radius: 0;
+    filter: contrast(1.03) saturate(1.08) brightness(1.02);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
 }
 
 .ai-experience-btn {
