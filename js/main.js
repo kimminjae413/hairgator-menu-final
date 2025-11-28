@@ -650,20 +650,19 @@ window.addEventListener('load', function() {
 
     // 저장된 상호명 적용
     const savedBrandOnLoad = localStorage.getItem('hairgator_brand_name');
-    console.log('🏷️ 페이지 로드 시 저장된 브랜드:', savedBrandOnLoad);
+    console.log('🏷️ 페이지 로드 시 저장된 브랜드 (localStorage):', savedBrandOnLoad);
 
-    // 앱 디버깅용 - 페이지 로드 시 저장된 값 표시
-    setTimeout(() => {
-        alert(`페이지 로드!\n저장된 상호: "${savedBrandOnLoad || '없음'}"`);
-    }, 1000);
-
+    // localStorage에 있으면 먼저 적용
     applyCustomBrand();
 
-    // 약간의 딜레이 후 다시 적용 (앱에서 로딩 타이밍 이슈 대응)
-    setTimeout(() => {
-        console.log('🏷️ 딜레이 후 브랜드 재적용');
-        applyCustomBrand();
-    }, 500);
+    // Firebase에서도 로드 시도 (앱용 - localStorage가 초기화되는 경우 대비)
+    setTimeout(async () => {
+        const firebaseBrand = await loadBrandFromFirebase();
+        if (firebaseBrand) {
+            console.log('🏷️ Firebase에서 브랜드 로드 후 재적용');
+            applyCustomBrand();
+        }
+    }, 1000);
 });
 
 // ========== 상호 설정 기능 ==========
@@ -1022,7 +1021,7 @@ function showBrandSettingModal() {
     };
 
     // 저장
-    saveBtn.onclick = () => {
+    saveBtn.onclick = async () => {
         const brandName = brandInput.value.trim();
         const selectedFont = document.querySelector('input[name="brandFont"]:checked')?.value || 'default';
         const selectedColorLight = document.querySelector('input[name="brandColorLight"]:checked')?.value || 'black';
@@ -1031,17 +1030,19 @@ function showBrandSettingModal() {
         console.log('💾 상호 저장 시도:', { brandName, selectedFont, selectedColorLight, selectedColorDark });
 
         try {
+            // localStorage에도 저장 (웹용)
             localStorage.setItem('hairgator_brand_name', brandName);
             localStorage.setItem('hairgator_brand_font', selectedFont);
             localStorage.setItem('hairgator_brand_color_light', selectedColorLight);
             localStorage.setItem('hairgator_brand_color_dark', selectedColorDark);
 
-            // 저장 확인
-            const savedName = localStorage.getItem('hairgator_brand_name');
-            console.log('💾 저장 확인:', savedName);
-
-            // 앱 디버깅용 - 저장 결과 표시
-            alert(`저장 완료!\n입력값: "${brandName}"\n저장된 값: "${savedName}"`);
+            // Firebase에 저장 (앱용)
+            await saveBrandToFirebase({
+                brandName,
+                brandFont: selectedFont,
+                brandColorLight: selectedColorLight,
+                brandColorDark: selectedColorDark
+            });
 
             applyCustomBrand();
             modal.remove();
@@ -1055,6 +1056,86 @@ function showBrandSettingModal() {
         }
     };
 }
+
+// 사용자 정보 가져오기 (불나비 또는 localStorage)
+function getUserInfo() {
+    // 불나비 사용자 우선
+    const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
+    if (bullnabiUser && bullnabiUser.name && bullnabiUser.phone) {
+        return { name: bullnabiUser.name, phone: bullnabiUser.phone };
+    }
+
+    // localStorage에서 가져오기
+    const designerName = localStorage.getItem('designerName');
+    const designerPhone = localStorage.getItem('designerPhone');
+    if (designerName && designerPhone) {
+        return { name: designerName, phone: designerPhone };
+    }
+
+    return null;
+}
+
+// Firebase에 브랜드 설정 저장
+async function saveBrandToFirebase(brandSettings) {
+    try {
+        const userInfo = getUserInfo();
+
+        if (!window.db || !userInfo) {
+            console.log('💾 Firebase 저장 스킵 (로그인 정보 없음)');
+            return;
+        }
+
+        const docId = `${userInfo.name}_${userInfo.phone}`;
+        await window.db.collection('brandSettings').doc(docId).set({
+            ...brandSettings,
+            designerName: userInfo.name,
+            designerPhone: userInfo.phone,
+            updatedAt: Date.now()
+        }, { merge: true });
+
+        console.log('💾 Firebase 저장 완료:', docId);
+    } catch (e) {
+        console.error('💾 Firebase 저장 실패:', e);
+    }
+}
+
+// Firebase에서 브랜드 설정 로드
+async function loadBrandFromFirebase() {
+    try {
+        const userInfo = getUserInfo();
+
+        if (!window.db || !userInfo) {
+            console.log('🏷️ Firebase 로드 스킵 (로그인 정보 없음)');
+            return null;
+        }
+
+        const docId = `${userInfo.name}_${userInfo.phone}`;
+        console.log('🏷️ Firebase 브랜드 로드 시도:', docId);
+
+        const doc = await window.db.collection('brandSettings').doc(docId).get();
+
+        if (doc.exists) {
+            const data = doc.data();
+            console.log('🏷️ Firebase에서 브랜드 로드 성공:', data);
+
+            // localStorage에도 동기화
+            if (data.brandName !== undefined) localStorage.setItem('hairgator_brand_name', data.brandName);
+            if (data.brandFont) localStorage.setItem('hairgator_brand_font', data.brandFont);
+            if (data.brandColorLight) localStorage.setItem('hairgator_brand_color_light', data.brandColorLight);
+            if (data.brandColorDark) localStorage.setItem('hairgator_brand_color_dark', data.brandColorDark);
+
+            return data;
+        }
+        console.log('🏷️ Firebase에 저장된 브랜드 없음');
+        return null;
+    } catch (e) {
+        console.error('🏷️ Firebase 로드 실패:', e);
+        return null;
+    }
+}
+
+// 전역 함수로 노출
+window.loadBrandFromFirebase = loadBrandFromFirebase;
 
 // 저장된 상호명 적용
 function applyCustomBrand() {
