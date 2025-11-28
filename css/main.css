@@ -2749,13 +2749,8 @@ body.light-theme .modal-action-btn.secondary:hover {
 
 /* 태블릿 가로모드 (네이티브 앱 풀스크린) */
 @media (min-width: 768px) and (orientation: landscape) {
-    /* 뒤로가기, 지구본 버튼을 X버튼 오른쪽으로 이동 */
+    /* 뒤로가기 버튼을 X버튼 오른쪽으로 더 이동 (지구본 버튼 있던 위치) */
     .back-btn {
-        left: 55px;
-        right: auto;
-    }
-
-    .language-btn {
         left: 100px;
         right: auto;
     }
