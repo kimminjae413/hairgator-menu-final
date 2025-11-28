@@ -3329,6 +3329,40 @@
 
         // 분석결과 영역 흰색 스크롤바
         let resultsScrollbarInitialized = false;
+        let resultsScrollDragging = false;
+        let resultsStartY = 0;
+        let resultsStartScrollTop = 0;
+
+        function updateResultsScrollbar() {
+            const container = document.getElementById('realtime-results-container');
+            const scrollbar = document.getElementById('results-scrollbar');
+            const thumb = document.getElementById('results-scrollbar-thumb');
+
+            if (!container || !scrollbar || !thumb) return;
+
+            const scrollHeight = container.scrollHeight;
+            const clientHeight = container.clientHeight;
+            const scrollTop = container.scrollTop;
+            const trackHeight = scrollbar.clientHeight;
+
+            // 스크롤이 필요 없으면 숨김
+            if (scrollHeight <= clientHeight + 10) {
+                scrollbar.classList.add('hidden');
+                return;
+            }
+
+            scrollbar.classList.remove('hidden');
+
+            // 썸 크기 계산 (트랙 높이 기준)
+            const thumbHeight = Math.max((clientHeight / scrollHeight) * trackHeight, 30);
+            thumb.style.height = thumbHeight + 'px';
+
+            // 썸 위치 계산
+            const maxScrollTop = scrollHeight - clientHeight;
+            const maxThumbTop = trackHeight - thumbHeight;
+            const thumbTop = maxScrollTop > 0 ? (scrollTop / maxScrollTop) * maxThumbTop : 0;
+            thumb.style.top = thumbTop + 'px';
+        }
 
         function initResultsScrollbar() {
             const container = document.getElementById('realtime-results-container');
@@ -3336,31 +3370,6 @@
             const thumb = document.getElementById('results-scrollbar-thumb');
 
             if (!container || !scrollbar || !thumb) return;
-
-            function updateResultsScrollbar() {
-                const scrollHeight = container.scrollHeight;
-                const clientHeight = container.clientHeight;
-                const scrollTop = container.scrollTop;
-                const trackHeight = scrollbar.clientHeight;
-
-                // 스크롤이 필요 없으면 숨김
-                if (scrollHeight <= clientHeight + 10) {
-                    scrollbar.classList.add('hidden');
-                    return;
-                }
-
-                scrollbar.classList.remove('hidden');
-
-                // 썸 크기 계산 (트랙 높이 기준)
-                const thumbHeight = Math.max((clientHeight / scrollHeight) * trackHeight, 30);
-                thumb.style.height = thumbHeight + 'px';
-
-                // 썸 위치 계산
-                const maxScrollTop = scrollHeight - clientHeight;
-                const maxThumbTop = trackHeight - thumbHeight;
-                const thumbTop = maxScrollTop > 0 ? (scrollTop / maxScrollTop) * maxThumbTop : 0;
-                thumb.style.top = thumbTop + 'px';
-            }
 
             // 이벤트 리스너 중복 등록 방지
             if (!resultsScrollbarInitialized) {
@@ -3370,34 +3379,36 @@
                 window.addEventListener('resize', updateResultsScrollbar);
 
                 // 터치 드래그
-                let isDragging = false;
-                let startY = 0;
-                let startScrollTop = 0;
-
                 thumb.addEventListener('touchstart', function(e) {
-                    isDragging = true;
-                    startY = e.touches[0].clientY;
-                    startScrollTop = container.scrollTop;
+                    resultsScrollDragging = true;
+                    resultsStartY = e.touches[0].clientY;
+                    resultsStartScrollTop = container.scrollTop;
                     thumb.classList.add('active');
                     e.preventDefault();
                 });
 
                 document.addEventListener('touchmove', function(e) {
-                    if (!isDragging) return;
-                    const deltaY = e.touches[0].clientY - startY;
+                    if (!resultsScrollDragging) return;
+                    const container = document.getElementById('realtime-results-container');
+                    const scrollbar = document.getElementById('results-scrollbar');
+                    const thumb = document.getElementById('results-scrollbar-thumb');
+                    if (!container || !scrollbar || !thumb) return;
+
+                    const deltaY = e.touches[0].clientY - resultsStartY;
                     const scrollHeight = container.scrollHeight;
                     const clientHeight = container.clientHeight;
                     const trackHeight = scrollbar.clientHeight;
                     const thumbHeight = thumb.offsetHeight;
                     const maxThumbTop = trackHeight - thumbHeight;
                     const scrollRatio = (scrollHeight - clientHeight) / maxThumbTop;
-                    container.scrollTop = startScrollTop + (deltaY * scrollRatio);
+                    container.scrollTop = resultsStartScrollTop + (deltaY * scrollRatio);
                 });
 
                 document.addEventListener('touchend', function() {
-                    if (isDragging) {
-                        isDragging = false;
-                        thumb.classList.remove('active');
+                    if (resultsScrollDragging) {
+                        resultsScrollDragging = false;
+                        const thumb = document.getElementById('results-scrollbar-thumb');
+                        if (thumb) thumb.classList.remove('active');
                     }
                 });
             }
