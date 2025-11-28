@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <!-- 퍼스널 컬러 진단 -->
                         <div class="menu-item" id="personalColorBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <img src="/color.png" alt="퍼스널컬러" style="width: 20px; height: 20px; object-fit: contain;">
+                                <span style="font-size: 20px;">🌈</span>
                                 <span style="color: var(--text-primary, #333); font-size: 14px;">${t('ui.personalColor')}</span>
                             </div>
                         </div>
