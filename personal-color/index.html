@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>HAIRGATOR Personal Color</title>
 
     <!-- MediaPipe CDN -->
@@ -24,15 +24,16 @@
             100% { opacity: 0; }
         }
 
-        /* 앱용 헤더 스타일 - 캐시 문제 방지 */
-        #ai-analysis.active .section-nav,
-        #draping-mode.active .section-nav {
+        /* 앱용 헤더 스타일 */
+        #ai-analysis .section-nav,
+        #draping-mode .section-nav {
             position: sticky !important;
             top: 0 !important;
             z-index: 100 !important;
             background: #1a1c2e !important;
             margin: 0 -20px 0 -20px !important;
-            padding: 50px 20px 25px 20px !important;
+            padding: 70px 20px 25px 20px !important;
+            padding-top: calc(70px + env(safe-area-inset-top, 0px)) !important;
             border-radius: 0 !important;
             border-bottom: 2px solid #2d1f3d !important;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
