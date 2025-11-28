@@ -649,7 +649,14 @@ window.addEventListener('load', function() {
     document.head.appendChild(style);
 
     // 저장된 상호명 적용
-    console.log('🏷️ 페이지 로드 시 저장된 브랜드:', localStorage.getItem('hairgator_brand_name'));
+    const savedBrandOnLoad = localStorage.getItem('hairgator_brand_name');
+    console.log('🏷️ 페이지 로드 시 저장된 브랜드:', savedBrandOnLoad);
+
+    // 앱 디버깅용 - 페이지 로드 시 저장된 값 표시
+    setTimeout(() => {
+        alert(`페이지 로드!\n저장된 상호: "${savedBrandOnLoad || '없음'}"`);
+    }, 1000);
+
     applyCustomBrand();
 
     // 약간의 딜레이 후 다시 적용 (앱에서 로딩 타이밍 이슈 대응)
@@ -1032,6 +1039,9 @@ function showBrandSettingModal() {
             // 저장 확인
             const savedName = localStorage.getItem('hairgator_brand_name');
             console.log('💾 저장 확인:', savedName);
+
+            // 앱 디버깅용 - 저장 결과 표시
+            alert(`저장 완료!\n입력값: "${brandName}"\n저장된 값: "${savedName}"`);
 
             applyCustomBrand();
             modal.remove();
