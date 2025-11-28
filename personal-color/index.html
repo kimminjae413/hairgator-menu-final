@@ -1289,25 +1289,35 @@
 
         async function loadExternalHairColorData() {
             try {
-                const script = document.createElement('script');
-                script.src = 'hair-color-data.js';
-                script.onload = () => {
-                    if (typeof HAIR_COLOR_614_DATA !== 'undefined') {
-                        hairColorData = HAIR_COLOR_614_DATA;
-                        console.log('외부 스크립트에서 614개 데이터 로드');
-                    }
-                };
-                script.onerror = () => {
-                    console.warn('외부 헤어컬러 데이터 스크립트 로드 실패');
-                    hairColorData = generateDefaultHairColors();
-                };
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'hair-color-data.js';
+                    script.onload = () => {
+                        if (typeof HAIR_COLOR_614_DATA !== 'undefined') {
+                            hairColorData = HAIR_COLOR_614_DATA;
+                            console.log('✅ 외부 스크립트에서 614개 데이터 로드 완료');
+                        } else {
+                            console.warn('스크립트 로드됐지만 데이터 없음');
+                            hairColorData = generateDefaultHairColors();
+                        }
+                        resolve();
+                    };
+                    script.onerror = () => {
+                        console.warn('외부 헤어컬러 데이터 스크립트 로드 실패');
+                        hairColorData = generateDefaultHairColors();
+                        resolve(); // reject 대신 resolve로 계속 진행
+                    };
+                    document.head.appendChild(script);
 
-                document.head.appendChild(script);
-                await new Promise(resolve => setTimeout(resolve, 3000));
-
-                if (hairColorData.length === 0) {
-                    hairColorData = generateDefaultHairColors();
-                }
+                    // 5초 타임아웃
+                    setTimeout(() => {
+                        if (hairColorData.length === 0) {
+                            console.warn('타임아웃 - 기본 데이터 사용');
+                            hairColorData = generateDefaultHairColors();
+                        }
+                        resolve();
+                    }, 5000);
+                });
 
             } catch (error) {
                 console.error('외부 데이터 로드 오류:', error);
