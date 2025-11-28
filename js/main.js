@@ -33,13 +33,48 @@ document.addEventListener('DOMContentLoaded', function() {
             const content = sidebar.querySelector('.sidebar-content');
             if (content) {
                 content.innerHTML = `
-                    <!-- 로그인 정보 -->
-                    <div class="login-info" style="padding: 20px; border-bottom: 1px solid rgba(128,128,128,0.2);">
-                        <div class="login-status" id="loginStatus" style="color: #4A90E2; font-size: 14px; margin-bottom: 10px;">
-                            ${t('ui.loginStatus')}: ${t('ui.loading')}
-                        </div>
-                        <div style="color: var(--text-secondary, #aaa); font-size: 12px;">
-                            ${t('ui.credit')}: <span id="creditDisplay" style="color: #4A90E2; font-weight: bold;">-</span>
+                    <!-- 프로필 정보 -->
+                    <div class="profile-info" style="padding: 20px; border-bottom: 1px solid rgba(128,128,128,0.2);">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <!-- 프로필 사진 -->
+                            <div id="profileImageContainer" style="position: relative; cursor: pointer;" onclick="showProfileImageModal()">
+                                <div id="profileImage" style="
+                                    width: 60px;
+                                    height: 60px;
+                                    border-radius: 50%;
+                                    background: linear-gradient(135deg, #4A90E2, #357ABD);
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 24px;
+                                    color: #fff;
+                                    overflow: hidden;
+                                ">
+                                    <span id="profileInitial">👤</span>
+                                </div>
+                                <div style="
+                                    position: absolute;
+                                    bottom: 0;
+                                    right: 0;
+                                    width: 20px;
+                                    height: 20px;
+                                    background: rgba(0,0,0,0.6);
+                                    border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 10px;
+                                ">📷</div>
+                            </div>
+                            <!-- 이름 & 토큰 -->
+                            <div style="flex: 1;">
+                                <div class="login-status" id="loginStatus" style="color: #4A90E2; font-size: 14px; font-weight: 600; margin-bottom: 6px;">
+                                    ${t('ui.loading')}
+                                </div>
+                                <div style="color: var(--text-secondary, #aaa); font-size: 12px;">
+                                    ${t('ui.credit')}: <span id="creditDisplay" style="color: #4A90E2; font-weight: bold;">-</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -939,3 +974,293 @@ function applyCustomBrand() {
 // 전역 함수로 노출
 window.showBrandSettingModal = showBrandSettingModal;
 window.applyCustomBrand = applyCustomBrand;
+
+// ========== 프로필 이미지 기능 ==========
+
+function showProfileImageModal() {
+    const existingModal = document.getElementById('profile-image-modal');
+    if (existingModal) existingModal.remove();
+
+    const savedImage = localStorage.getItem('hairgator_profile_image');
+
+    const modal = document.createElement('div');
+    modal.id = 'profile-image-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(3px);
+    `;
+
+    modal.innerHTML = `
+        <div style="
+            background: var(--bg-primary, #1a1a1a);
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 360px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        ">
+            <h3 style="color: var(--text-primary, #fff); font-size: 18px; margin-bottom: 20px;">📷 프로필 사진</h3>
+
+            <div id="previewContainer" style="
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                margin: 0 auto 20px;
+                overflow: hidden;
+                background: linear-gradient(135deg, #4A90E2, #357ABD);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">
+                ${savedImage
+                    ? `<img src="${savedImage}" style="width: 100%; height: 100%; object-fit: cover;">`
+                    : `<span style="font-size: 48px; color: #fff;">👤</span>`}
+            </div>
+
+            <input type="file" id="profileFileInput" accept="image/*" style="display: none;">
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button onclick="document.getElementById('profileFileInput').click()" style="
+                    padding: 12px;
+                    border: none;
+                    background: linear-gradient(135deg, #4A90E2, #357ABD);
+                    color: #fff;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                ">사진 선택</button>
+                ${savedImage ? `
+                <button id="removeProfileBtn" style="
+                    padding: 12px;
+                    border: 1px solid rgba(255,255,255,0.2);
+                    background: transparent;
+                    color: #ff4444;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    cursor: pointer;
+                ">사진 삭제</button>
+                ` : ''}
+                <button id="closeProfileModal" style="
+                    padding: 12px;
+                    border: 1px solid rgba(255,255,255,0.2);
+                    background: transparent;
+                    color: var(--text-secondary, #aaa);
+                    border-radius: 8px;
+                    font-size: 14px;
+                    cursor: pointer;
+                ">닫기</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // 이벤트
+    document.getElementById('closeProfileModal').onclick = () => modal.remove();
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+    const removeBtn = document.getElementById('removeProfileBtn');
+    if (removeBtn) {
+        removeBtn.onclick = () => {
+            localStorage.removeItem('hairgator_profile_image');
+            applyProfileImage();
+            modal.remove();
+            if (window.showToast) window.showToast('프로필 사진이 삭제되었습니다.');
+        };
+    }
+
+    document.getElementById('profileFileInput').onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                // 이미지 리사이즈 (200x200)
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const size = 200;
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+
+                    // 중앙 크롭
+                    const minDim = Math.min(img.width, img.height);
+                    const sx = (img.width - minDim) / 2;
+                    const sy = (img.height - minDim) / 2;
+
+                    ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+                    const resizedImage = canvas.toDataURL('image/jpeg', 0.8);
+
+                    localStorage.setItem('hairgator_profile_image', resizedImage);
+                    applyProfileImage();
+                    modal.remove();
+                    if (window.showToast) window.showToast('프로필 사진이 저장되었습니다.');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+}
+
+// 프로필 이미지 적용
+function applyProfileImage() {
+    const savedImage = localStorage.getItem('hairgator_profile_image');
+    const profileImage = document.getElementById('profileImage');
+    const profileInitial = document.getElementById('profileInitial');
+
+    if (profileImage) {
+        if (savedImage) {
+            profileImage.innerHTML = `<img src="${savedImage}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        } else {
+            profileImage.innerHTML = `<span id="profileInitial">👤</span>`;
+        }
+    }
+}
+
+// ========== 대기화면 (스크린세이버) 기능 ==========
+
+let idleTimeout = null;
+const IDLE_TIME = 3 * 60 * 1000; // 3분
+
+function initIdleScreen() {
+    resetIdleTimer();
+
+    // 터치/마우스/키보드 이벤트 감지
+    ['touchstart', 'mousedown', 'mousemove', 'keydown', 'scroll'].forEach(event => {
+        document.addEventListener(event, resetIdleTimer, { passive: true });
+    });
+}
+
+function resetIdleTimer() {
+    if (idleTimeout) {
+        clearTimeout(idleTimeout);
+    }
+
+    // 대기화면이 표시 중이면 닫기
+    const idleScreen = document.getElementById('idle-screen');
+    if (idleScreen) {
+        idleScreen.remove();
+    }
+
+    // 새 타이머 시작
+    idleTimeout = setTimeout(showIdleScreen, IDLE_TIME);
+}
+
+function showIdleScreen() {
+    // 이미 대기화면이 있으면 무시
+    if (document.getElementById('idle-screen')) return;
+
+    const savedImage = localStorage.getItem('hairgator_profile_image');
+    const brandName = localStorage.getItem('hairgator_brand_name') || 'HAIRGATOR';
+    const brandFont = localStorage.getItem('hairgator_brand_font') || 'default';
+    const brandColor = localStorage.getItem('hairgator_brand_color') || 'white';
+
+    const font = FONT_OPTIONS.find(f => f.id === brandFont);
+    const color = COLOR_OPTIONS.find(c => c.id === brandColor);
+
+    const idleScreen = document.createElement('div');
+    idleScreen.id = 'idle-screen';
+    idleScreen.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    `;
+
+    idleScreen.innerHTML = `
+        <style>
+            @keyframes idlePulse {
+                0%, 100% { transform: scale(1); opacity: 0.9; }
+                50% { transform: scale(1.02); opacity: 1; }
+            }
+            @keyframes idleGlow {
+                0%, 100% { box-shadow: 0 0 30px rgba(255,255,255,0.1); }
+                50% { box-shadow: 0 0 60px rgba(255,255,255,0.2); }
+            }
+            @keyframes idleFade {
+                0%, 100% { opacity: 0.7; }
+                50% { opacity: 1; }
+            }
+        </style>
+
+        ${savedImage ? `
+            <div style="
+                width: 200px;
+                height: 200px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin-bottom: 40px;
+                animation: idlePulse 4s ease-in-out infinite, idleGlow 4s ease-in-out infinite;
+            ">
+                <img src="${savedImage}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+        ` : `
+            <div style="
+                width: 150px;
+                height: 150px;
+                margin-bottom: 40px;
+                animation: idlePulse 4s ease-in-out infinite;
+            ">
+                <img src="/로고.png" style="width: 100%; height: 100%; object-fit: contain; filter: brightness(0.9);">
+            </div>
+        `}
+
+        <h1 style="
+            font-family: ${font?.fontFamily || 'inherit'};
+            color: ${color?.color || '#fff'};
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            animation: idleFade 4s ease-in-out infinite;
+            text-align: center;
+        ">${brandName}</h1>
+
+        <p style="
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            margin-top: 60px;
+            animation: idleFade 3s ease-in-out infinite;
+        ">화면을 터치하세요</p>
+    `;
+
+    document.body.appendChild(idleScreen);
+
+    // 터치하면 대기화면 닫기
+    idleScreen.onclick = () => {
+        idleScreen.remove();
+        resetIdleTimer();
+    };
+}
+
+// 전역 함수 노출
+window.showProfileImageModal = showProfileImageModal;
+window.applyProfileImage = applyProfileImage;
+window.showIdleScreen = showIdleScreen;
+
+// 페이지 로드 시 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        applyProfileImage();
+        initIdleScreen();
+    }, 1000);
+});
