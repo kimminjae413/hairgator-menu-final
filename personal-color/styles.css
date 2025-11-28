@@ -262,12 +262,13 @@ body {
 #draping-mode.active .section-nav {
     position: sticky;
     top: 0;
-    z-index: 10;
-    background: linear-gradient(180deg, #1a1c2e 0%, #1a1c2e 70%, #2d1f3d 100%);
+    z-index: 100;
+    background: #1a1c2e;
     margin: 0 -20px 0 -20px;
-    padding: 25px 20px 40px 20px;
+    padding: 20px 20px 20px 20px;
     border-radius: 0;
-    border-bottom: none;
+    border-bottom: 2px solid #2d1f3d;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 #ai-analysis.active .section-title,
@@ -1596,12 +1597,14 @@ body {
 @media (min-width: 768px) and (orientation: landscape) {
     #ai-analysis,
     #draping-mode {
-        padding-top: 80px !important;
-        margin-top: 20px !important;
+        padding-top: 0 !important;
+        margin-top: 0 !important;
     }
 
-    .section-nav {
-        margin-top: 30px !important;
+    #ai-analysis.active .section-nav,
+    #draping-mode.active .section-nav {
+        margin-top: 0 !important;
+        padding-top: 25px;
     }
 
     .analysis-grid {
