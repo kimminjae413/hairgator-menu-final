@@ -1534,137 +1534,9 @@ function applyProfileImage() {
     }
 }
 
-// ========== 대기화면 (스크린세이버) 기능 ==========
-
-let idleTimeout = null;
-const IDLE_TIME = 3 * 60 * 1000; // 3분
-
-function initIdleScreen() {
-    resetIdleTimer();
-
-    // 터치/마우스/키보드 이벤트 감지
-    ['touchstart', 'mousedown', 'mousemove', 'keydown', 'scroll'].forEach(event => {
-        document.addEventListener(event, resetIdleTimer, { passive: true });
-    });
-}
-
-function resetIdleTimer() {
-    if (idleTimeout) {
-        clearTimeout(idleTimeout);
-    }
-
-    // 대기화면이 표시 중이면 닫기
-    const idleScreen = document.getElementById('idle-screen');
-    if (idleScreen) {
-        idleScreen.remove();
-    }
-
-    // 새 타이머 시작
-    idleTimeout = setTimeout(showIdleScreen, IDLE_TIME);
-}
-
-function showIdleScreen() {
-    // 이미 대기화면이 있으면 무시
-    if (document.getElementById('idle-screen')) return;
-
-    const savedImage = localStorage.getItem('hairgator_profile_image');
-    const brandName = localStorage.getItem('hairgator_brand_name') || 'HAIRGATOR';
-    const brandFont = localStorage.getItem('hairgator_brand_font') || 'default';
-    // 대기 화면은 어두운 배경이므로 다크 모드 색상 사용
-    const brandColorDark = localStorage.getItem('hairgator_brand_color_dark') || 'white';
-
-    const font = FONT_OPTIONS.find(f => f.id === brandFont);
-    const color = COLOR_OPTIONS.find(c => c.id === brandColorDark);
-
-    const idleScreen = document.createElement('div');
-    idleScreen.id = 'idle-screen';
-    idleScreen.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: #000;
-        z-index: 99999;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-    `;
-
-    idleScreen.innerHTML = `
-        <style>
-            @keyframes idlePulse {
-                0%, 100% { transform: scale(1); opacity: 0.9; }
-                50% { transform: scale(1.02); opacity: 1; }
-            }
-            @keyframes idleGlow {
-                0%, 100% { box-shadow: 0 0 30px rgba(255,255,255,0.1); }
-                50% { box-shadow: 0 0 60px rgba(255,255,255,0.2); }
-            }
-            @keyframes idleFade {
-                0%, 100% { opacity: 0.7; }
-                50% { opacity: 1; }
-            }
-        </style>
-
-        ${savedImage ? `
-            <div style="
-                width: 60vmin;
-                height: 60vmin;
-                max-width: 500px;
-                max-height: 500px;
-                border-radius: 20px;
-                overflow: hidden;
-                margin-bottom: 40px;
-                animation: idlePulse 4s ease-in-out infinite, idleGlow 4s ease-in-out infinite;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            ">
-                <img src="${savedImage}" style="width: 100%; height: 100%; object-fit: cover; image-rendering: -webkit-optimize-contrast; image-rendering: high-quality;">
-            </div>
-        ` : `
-            <div style="
-                width: 150px;
-                height: 150px;
-                margin-bottom: 40px;
-                animation: idlePulse 4s ease-in-out infinite;
-            ">
-                <img src="/로고.png" style="width: 100%; height: 100%; object-fit: contain; filter: brightness(0.9);">
-            </div>
-        `}
-
-        <h1 style="
-            font-family: ${font?.fontFamily || 'inherit'};
-            color: ${color?.color || '#fff'};
-            font-size: 32px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            animation: idleFade 4s ease-in-out infinite;
-            text-align: center;
-        ">${brandName}</h1>
-
-        <p style="
-            color: rgba(255,255,255,0.4);
-            font-size: 14px;
-            margin-top: 60px;
-            animation: idleFade 3s ease-in-out infinite;
-        ">${t('ui.touchToReturn')}</p>
-    `;
-
-    document.body.appendChild(idleScreen);
-
-    // 터치하면 대기화면 닫기
-    idleScreen.onclick = () => {
-        idleScreen.remove();
-        resetIdleTimer();
-    };
-}
-
 // 전역 함수 노출
 window.showProfileImageModal = showProfileImageModal;
 window.applyProfileImage = applyProfileImage;
-window.showIdleScreen = showIdleScreen;
 
 // ========== 언어 선택 기능 (국기 표시용) ==========
 
@@ -1700,7 +1572,6 @@ window.LANGUAGE_OPTIONS = LANGUAGE_OPTIONS;
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         applyProfileImage();
-        initIdleScreen();
         updateLanguageFlag();
     }, 1000);
 });
