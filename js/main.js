@@ -1015,7 +1015,7 @@ function showProfileImageModal() {
                 width: 120px;
                 height: 120px;
                 border-radius: 50%;
-                margin: 0 auto 20px;
+                margin: 0 auto 16px;
                 overflow: hidden;
                 background: linear-gradient(135deg, #4A90E2, #357ABD);
                 display: flex;
@@ -1025,6 +1025,19 @@ function showProfileImageModal() {
                 ${savedImage
                     ? `<img src="${savedImage}" style="width: 100%; height: 100%; object-fit: cover;">`
                     : `<span style="font-size: 48px; color: #fff;">👤</span>`}
+            </div>
+
+            <div style="
+                background: rgba(74, 144, 226, 0.1);
+                border: 1px solid rgba(74, 144, 226, 0.3);
+                border-radius: 8px;
+                padding: 12px;
+                margin-bottom: 20px;
+            ">
+                <p style="color: var(--text-secondary, #aaa); font-size: 12px; line-height: 1.5; margin: 0;">
+                    💡 이 사진은 3분간 화면 조작이 없을 때<br>
+                    <span style="color: #4A90E2;">대기 화면</span>으로 표시됩니다.
+                </p>
             </div>
 
             <input type="file" id="profileFileInput" accept="image/*" style="display: none;">
