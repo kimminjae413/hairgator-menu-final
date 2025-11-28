@@ -66,6 +66,144 @@ function deductLookbookCreditFromMenu(creditCost) {
     }
 }
 
+// ========== 토큰 차감 확인 다이얼로그 ==========
+function showTokenConfirmDialog(type) {
+    return new Promise((resolve) => {
+        // type: 'lookbook' 또는 'hairTry'
+        const title = t(`${type}.confirmTitle`) || '토큰 차감 안내';
+        const message = t(`${type}.confirmMessage`) || '0.2토큰이 차감됩니다.\n계속하시겠습니까?';
+        const confirmText = t(`${type}.confirmButton`) || '동의';
+        const cancelText = t(`${type}.cancelButton`) || '취소';
+
+        // 기존 다이얼로그가 있으면 제거
+        const existingDialog = document.getElementById('token-confirm-dialog');
+        if (existingDialog) {
+            existingDialog.remove();
+        }
+
+        // 다이얼로그 생성
+        const overlay = document.createElement('div');
+        overlay.id = 'token-confirm-dialog';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100000;
+            backdrop-filter: blur(3px);
+        `;
+
+        const dialog = document.createElement('div');
+        dialog.style.cssText = `
+            background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+            border-radius: 16px;
+            padding: 28px 32px;
+            max-width: 340px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(212, 165, 116, 0.2);
+            text-align: center;
+            animation: dialogSlideIn 0.3s ease-out;
+        `;
+
+        dialog.innerHTML = `
+            <style>
+                @keyframes dialogSlideIn {
+                    from {
+                        opacity: 0;
+                        transform: scale(0.9) translateY(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: scale(1) translateY(0);
+                    }
+                }
+            </style>
+            <div style="margin-bottom: 16px;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d4a574" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 16v-4"></path>
+                    <path d="M12 8h.01"></path>
+                </svg>
+            </div>
+            <h3 style="color: #d4a574; font-size: 18px; font-weight: 600; margin-bottom: 12px;">${title}</h3>
+            <p style="color: #e0e0e0; font-size: 14px; line-height: 1.6; margin-bottom: 24px; white-space: pre-line;">${message}</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="tokenConfirmCancel" style="
+                    flex: 1;
+                    padding: 12px 20px;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    background: transparent;
+                    color: #999;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">${cancelText}</button>
+                <button id="tokenConfirmOk" style="
+                    flex: 1;
+                    padding: 12px 20px;
+                    border: none;
+                    background: linear-gradient(135deg, #d4a574, #c49464);
+                    color: #1a1a1a;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">${confirmText}</button>
+            </div>
+        `;
+
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+
+        // 버튼 이벤트
+        const confirmBtn = document.getElementById('tokenConfirmOk');
+        const cancelBtn = document.getElementById('tokenConfirmCancel');
+
+        confirmBtn.onclick = () => {
+            overlay.remove();
+            resolve(true);
+        };
+
+        cancelBtn.onclick = () => {
+            overlay.remove();
+            resolve(false);
+        };
+
+        // 배경 클릭시 취소
+        overlay.onclick = (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+                resolve(false);
+            }
+        };
+
+        // 호버 효과
+        confirmBtn.onmouseenter = () => {
+            confirmBtn.style.transform = 'scale(1.02)';
+            confirmBtn.style.boxShadow = '0 4px 15px rgba(212, 165, 116, 0.4)';
+        };
+        confirmBtn.onmouseleave = () => {
+            confirmBtn.style.transform = 'scale(1)';
+            confirmBtn.style.boxShadow = 'none';
+        };
+        cancelBtn.onmouseenter = () => {
+            cancelBtn.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+            cancelBtn.style.color = '#ccc';
+        };
+        cancelBtn.onmouseleave = () => {
+            cancelBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            cancelBtn.style.color = '#999';
+        };
+    });
+}
+
 // ========== 룩북 로딩 오버레이 ==========
 function createLookbookLoadingOverlay() {
     const overlay = document.createElement('div');
@@ -912,6 +1050,13 @@ function openStyleModal(style) {
                 return;
             }
 
+            // 토큰 차감 확인 다이얼로그 표시
+            const confirmed = await showTokenConfirmDialog('lookbook');
+            if (!confirmed) {
+                console.log('📖 Lookbook 사용자가 취소함');
+                return;
+            }
+
             const genderValue = currentGender || window.currentGender || 'female';
             console.log('📖 Lookbook 분석 시작:', style.name, '성별:', genderValue);
 
@@ -1020,7 +1165,7 @@ function openStyleModal(style) {
         // 초기 상태 설정
         updateHairTryButtonState();
 
-        btnHairTry.onclick = function (e) {
+        btnHairTry.onclick = async function (e) {
             e.stopPropagation();
 
             // 크레딧 체크
@@ -1035,6 +1180,13 @@ function openStyleModal(style) {
                     alert(message);
                 }
                 console.warn('💳 크레딧 부족:', { current: currentCredits, required: HAIR_TRY_CREDIT_COST });
+                return;
+            }
+
+            // 토큰 차감 확인 다이얼로그 표시
+            const confirmed = await showTokenConfirmDialog('hairTry');
+            if (!confirmed) {
+                console.log('💇 헤어체험 사용자가 취소함');
                 return;
             }
 
