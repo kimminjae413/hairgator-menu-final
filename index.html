@@ -100,6 +100,125 @@
 </head>
 <body>
 
+    <!-- 모바일 감지 안내 모달 -->
+    <div id="mobileNoticeModal" class="mobile-notice-modal" style="display: none;">
+        <div class="mobile-notice-content">
+            <div class="mobile-notice-icon">
+                <img src="/로고.png" alt="HAIRGATOR" style="width: 80px; height: 80px; object-fit: contain;">
+            </div>
+            <h2 class="mobile-notice-title">태블릿 최적화 서비스</h2>
+            <p class="mobile-notice-desc">
+                HAIRGATOR는 태블릿에 최적화된 서비스입니다.<br>
+                더 나은 경험을 위해 태블릿에서 이용해주세요.
+            </p>
+            <div class="mobile-notice-buttons">
+                <button class="mobile-notice-btn primary" onclick="closeMobileNotice(true)">
+                    태블릿에서 앱 다운로드
+                </button>
+                <button class="mobile-notice-btn secondary" onclick="closeMobileNotice(false)">
+                    그래도 계속하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .mobile-notice-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mobile-notice-content {
+            text-align: center;
+            padding: 40px 30px;
+            max-width: 320px;
+        }
+        .mobile-notice-icon {
+            margin-bottom: 24px;
+        }
+        .mobile-notice-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+        .mobile-notice-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+        .mobile-notice-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .mobile-notice-btn {
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .mobile-notice-btn.primary {
+            background: linear-gradient(135deg, #ff0066, #cc0066);
+            color: white;
+        }
+        .mobile-notice-btn.primary:active {
+            transform: scale(0.98);
+        }
+        .mobile-notice-btn.secondary {
+            background: transparent;
+            color: #999;
+            border: 1px solid #ddd;
+        }
+        .mobile-notice-btn.secondary:active {
+            background: #f5f5f5;
+        }
+    </style>
+
+    <script>
+        (function() {
+            // 모바일 감지 (태블릿 제외)
+            function isMobilePhone() {
+                const ua = navigator.userAgent.toLowerCase();
+                const isMobile = /iphone|ipod|android.*mobile|windows phone|blackberry/i.test(ua);
+                const isTablet = /ipad|android(?!.*mobile)|tablet/i.test(ua);
+                const screenWidth = window.innerWidth;
+
+                // 모바일이면서 태블릿이 아니고, 화면 너비가 768px 미만
+                return isMobile && !isTablet && screenWidth < 768;
+            }
+
+            // 세션에서 이미 본 적 있는지 확인
+            const hasSeenNotice = sessionStorage.getItem('mobileNoticeShown');
+
+            if (isMobilePhone() && !hasSeenNotice) {
+                document.getElementById('mobileNoticeModal').style.display = 'flex';
+            }
+        })();
+
+        function closeMobileNotice(showDownload) {
+            document.getElementById('mobileNoticeModal').style.display = 'none';
+            sessionStorage.setItem('mobileNoticeShown', 'true');
+
+            if (showDownload) {
+                // 앱 다운로드 안내 (앱스토어 또는 안내 페이지로 이동)
+                alert('태블릿에서 HAIRGATOR를 검색하여 다운로드해주세요.');
+            }
+        }
+    </script>
+
     <!-- 사이드바 -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
