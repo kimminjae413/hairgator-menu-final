@@ -9,7 +9,8 @@ let isAnalyzing = false;
 let analysisCount = 0;
 let selectedSeason = 'Spring';
 let uploadedImage = null;
-window.lastSkinToneData = null;  // 이 줄만 추가
+window.lastSkinToneData = null;
+window.lastFullImageData = null;  // Gray World 화이트밸런스용 전체 이미지 데이터
 
 // MediaPipe 관련 변수
 let faceDetection = null;
@@ -389,9 +390,10 @@ async function performPersonalColorAnalysis() {
         }
         
         console.log('📊 피부톤 RGB:', currentSkinData.rgb);
-        
-        // 2. 화이트밸런스 보정 적용 (GPT 제안)
-        const correctedRgb = applySkinToneCorrection(currentSkinData.rgb);
+
+        // 2. 화이트밸런스 보정 적용 (Gray World 알고리즘)
+        // 전체 이미지 데이터가 있으면 사용, 없으면 간이 보정
+        const correctedRgb = applySkinToneCorrection(currentSkinData.rgb, window.lastFullImageData);
         console.log('⚖️ 보정된 RGB:', correctedRgb);
         
         // 3. RGB → CIE Lab 변환 (GPT 제공 + 논문 표준)
@@ -491,13 +493,13 @@ function rgbToLab(r, g, b) {
 }
 
 // ========================================
-// 📊 개선된 계절 분류 로직 (PCCS 톤 + a/b 비율 기반)
+// 📊 개선된 계절 분류 로직 (엄격한 기준 적용)
 // ========================================
 
 function classifySeasonByLab(lab) {
     console.log('🧠 개선된 계절 분류 시스템 실행...');
 
-    const L = lab.L;  // 명도
+    const L = lab.L;  // 명도 (0-100)
     const a = lab.a;  // 빨강-녹색 (양수: 빨강, 음수: 녹색)
     const b = lab.b;  // 노랑-파랑 (양수: 노랑, 음수: 파랑)
 
@@ -505,101 +507,152 @@ function classifySeasonByLab(lab) {
     const C = Math.sqrt(a * a + b * b);
 
     // ========================================
-    // 1. 웜/쿨 판단 (Yellow Index 활용)
-    // b값이 a값보다 현저히 높으면 웜톤
+    // 1. 웜/쿨 판단 (더 엄격한 기준)
     // ========================================
-    let warmCoolRatio = b / Math.max(0.1, Math.abs(a));
+
+    // Yellow Index: b값이 높을수록 웜톤
+    // 한국인 피부 기준: b > 15면 확실한 웜톤, b < 8이면 쿨톤 경향
+    let warmScore = 0;
+
+    // b값 기반 (가장 중요한 지표)
+    if (b > 18) warmScore += 40;       // 확실한 웜톤
+    else if (b > 15) warmScore += 30;  // 웜톤
+    else if (b > 12) warmScore += 20;  // 웜톤 경향
+    else if (b > 8) warmScore += 10;   // 약간 웜톤
+    else if (b < 5) warmScore -= 20;   // 쿨톤 경향
+    else if (b < 2) warmScore -= 30;   // 쿨톤
+
+    // a값 보조 (빨간기가 강하면 웜톤 경향)
+    if (a > 15) warmScore += 15;
+    else if (a > 10) warmScore += 10;
+    else if (a < 5) warmScore -= 5;
 
     // 입술색 데이터가 있으면 보조 판단에 활용
     const skinData = window.lastSkinToneData;
     if (skinData && skinData.lipColor) {
         const lipWarm = skinData.lipColor.isWarm;
-        // 입술색이 피부톤과 다르면 가중치 조정
-        if (lipWarm && warmCoolRatio < 1) {
-            warmCoolRatio += 0.3;  // 웜톤 방향으로 보정
-            console.log('👄 입술색 보정: 웜톤 경향 추가');
-        } else if (!lipWarm && warmCoolRatio > 1) {
-            warmCoolRatio -= 0.3;  // 쿨톤 방향으로 보정
-            console.log('👄 입술색 보정: 쿨톤 경향 추가');
+        if (lipWarm) {
+            warmScore += 10;
+            console.log('👄 입술색 보정: 웜톤 +10');
+        } else {
+            warmScore -= 10;
+            console.log('👄 입술색 보정: 쿨톤 -10');
         }
     }
 
-    // 홍조가 있으면 a값 영향 감소 (볼 빨간기 보정)
+    // 홍조 보정 (홍조가 있으면 a값 영향 감소)
     if (skinData && skinData.multiRegion && skinData.multiRegion.analysis) {
         if (skinData.multiRegion.analysis.hasRedness) {
             const rednessLevel = skinData.multiRegion.analysis.rednessLevel;
-            console.log(`👁️ 홍조 보정 적용 (레벨: ${rednessLevel})`);
-            // 홍조로 인한 a값 영향을 줄임
+            // 홍조로 인한 웜톤 과대평가 보정
+            warmScore -= Math.min(15, rednessLevel * 0.5);
+            console.log(`👁️ 홍조 보정 적용: -${Math.min(15, rednessLevel * 0.5).toFixed(1)}`);
         }
     }
 
-    // 뉴트럴 톤 범위 정의 (-5 ~ 5 사이의 b값)
-    const isNeutral = Math.abs(b) < 5 && Math.abs(warmCoolRatio) < 1.5;
-    const isWarm = warmCoolRatio > 1.2 || b > 8;
-    const isCool = warmCoolRatio < 0.8 && b < 5;
+    // ========================================
+    // 2. 웜/쿨/뉴트럴 최종 판정 (엄격한 범위)
+    // ========================================
+
+    // 뉴트럴: warmScore가 -5 ~ 15 사이 (좁은 범위)
+    // 기존에는 너무 넓어서 웜톤도 뉴트럴로 빠짐
+    const isNeutral = warmScore >= -5 && warmScore <= 15 && Math.abs(b - 10) < 5;
+    const isWarm = warmScore > 15;
+    const isCool = warmScore < -5;
+
+    console.log(`🌡️ 웜톤 점수: ${warmScore} (웜:${isWarm}, 쿨:${isCool}, 뉴트럴:${isNeutral})`);
 
     // ========================================
-    // 2. PCCS 톤 기반 세부 분류
+    // 3. 명도 기반 세부 분류 (엄격한 기준)
+    // Light: L >= 70 (고명도)
+    // Bright: C > 20 (고채도)
+    // Muted: C < 15 (저채도)
+    // Deep: L < 55 (저명도)
     // ========================================
     let season;
     let subType = '';
     let confidence = 0;
 
+    // 조명 불확실성 감안한 신뢰도 기본값 (실내 조명에서는 낮게 시작)
+    let baseConfidence = 65;
+
     if (isNeutral) {
-        // 뉴트럴 톤: 명도에 따라 판단
-        if (L > 60) {
+        // 뉴트럴 톤: 웜도 쿨도 아닌 중간 영역
+        console.log('🎯 뉴트럴 톤 감지 (좁은 범위 통과)');
+
+        if (L >= 70) {
             season = 'Summer';
             subType = 'Light';
-            confidence = 75;
-        } else if (L > 45) {
+            confidence = baseConfidence + 5;
+        } else if (L >= 60) {
+            // L=60-70 구간: Soft 또는 Muted
             season = C > 15 ? 'Spring' : 'Summer';
+            subType = 'Soft';
+            confidence = baseConfidence;
+        } else if (L >= 50) {
+            season = C > 18 ? 'Autumn' : 'Summer';
             subType = 'Muted';
-            confidence = 70;
+            confidence = baseConfidence;
         } else {
-            season = C > 18 ? 'Winter' : 'Autumn';
+            season = 'Autumn';
             subType = 'Deep';
-            confidence = 72;
+            confidence = baseConfidence + 5;
         }
-        console.log('🎯 뉴트럴 톤 감지');
     } else if (isWarm) {
-        // 웜톤 로직
-        if (L > 60 && C > 15) {
+        // 웜톤 로직 (Spring / Autumn)
+        if (L >= 70 && C > 18) {
             season = 'Spring';
             subType = 'Bright';
-            confidence = 92;
-        } else if (L > 55 && C <= 15) {
+            confidence = baseConfidence + 15;
+        } else if (L >= 70) {
             season = 'Spring';
             subType = 'Light';
-            confidence = 88;
-        } else if (L <= 55 && C > 12) {
+            confidence = baseConfidence + 12;
+        } else if (L >= 60 && C > 15) {
+            season = 'Spring';
+            subType = 'Bright';
+            confidence = baseConfidence + 10;
+        } else if (L >= 55) {
+            // L=55-60: 봄 Soft 또는 가을 Muted
+            season = C > 18 ? 'Spring' : 'Autumn';
+            subType = C > 18 ? 'Soft' : 'Muted';
+            confidence = baseConfidence + 5;
+        } else if (L >= 45) {
             season = 'Autumn';
-            subType = L < 45 ? 'Deep' : 'Muted';
-            confidence = 90;
+            subType = 'Muted';
+            confidence = baseConfidence + 10;
         } else {
-            season = L > 50 ? 'Spring' : 'Autumn';
-            subType = 'Soft';
-            confidence = 78;
+            season = 'Autumn';
+            subType = 'Deep';
+            confidence = baseConfidence + 12;
         }
     } else {
-        // 쿨톤 로직
-        if (L > 60 && C < 20) {
+        // 쿨톤 로직 (Summer / Winter)
+        if (L >= 70 && C < 18) {
             season = 'Summer';
             subType = 'Light';
-            confidence = 90;
-        } else if (L > 50 && C >= 10 && C < 25) {
-            season = 'Summer';
-            subType = 'Muted';
-            confidence = 85;
-        } else if (L < 45 || C > 22) {
+            confidence = baseConfidence + 15;
+        } else if (L >= 70 && C >= 18) {
             season = 'Winter';
-            subType = C > 25 ? 'Bright' : 'Deep';
-            confidence = 92;
+            subType = 'Bright';
+            confidence = baseConfidence + 12;
+        } else if (L >= 60) {
+            season = 'Summer';
+            subType = C < 15 ? 'Muted' : 'Soft';
+            confidence = baseConfidence + 8;
+        } else if (L >= 50) {
+            season = C > 20 ? 'Winter' : 'Summer';
+            subType = C > 20 ? 'Bright' : 'Muted';
+            confidence = baseConfidence + 5;
         } else {
-            season = L > 50 ? 'Summer' : 'Winter';
-            subType = 'Soft';
-            confidence = 80;
+            season = 'Winter';
+            subType = C > 22 ? 'Bright' : 'Deep';
+            confidence = baseConfidence + 10;
         }
     }
+
+    // 최종 신뢰도 조정 (최대 85%, 조명 변수 고려)
+    confidence = Math.min(85, Math.max(55, confidence));
 
     // 결과를 전역에 저장 (세부 타입 포함)
     window.lastSeasonAnalysis = {
@@ -1489,6 +1542,13 @@ function onFaceDetectionResults(results) {
     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
+    // ⭐ Gray World 화이트밸런스용 전체 이미지 데이터 저장
+    try {
+        window.lastFullImageData = canvasCtx.getImageData(0, 0, canvasElement.width, canvasElement.height);
+    } catch (e) {
+        console.warn('전체 이미지 데이터 저장 실패:', e);
+    }
+
     if (results.detections && results.detections.length > 0) {
         const detection = results.detections[0]; // 첫 번째 얼굴 사용
 
@@ -1811,21 +1871,29 @@ function performRealtimeAnalysis(skinToneData) {
 
     realtimeAnalysisTimeout = setTimeout(() => {
         try {
-            // RGB → LAB 변환
-            const rgb = skinToneData.rgb;
-            const lab = rgbToLab(rgb.r, rgb.g, rgb.b);
+            // ⭐ Gray World 화이트밸런스 적용
+            const originalRgb = skinToneData.rgb;
+            const correctedRgb = applySkinToneCorrection(originalRgb, window.lastFullImageData);
+
+            // RGB → LAB 변환 (보정된 RGB 사용)
+            const lab = rgbToLab(correctedRgb.r, correctedRgb.g, correctedRgb.b);
 
             // 계절 분류
             const season = classifySeasonByLab(lab);
 
+            // 세부 타입 정보 가져오기
+            const seasonAnalysis = window.lastSeasonAnalysis || {};
+            const subType = seasonAnalysis.subType || '';
+            const confidence = seasonAnalysis.confidence || 70;
+
             // 결과가 이전과 다를 때만 UI 업데이트
-            if (!lastRealtimeResult || lastRealtimeResult.season !== season) {
-                lastRealtimeResult = { season, lab, rgb };
+            if (!lastRealtimeResult || lastRealtimeResult.season !== season || lastRealtimeResult.subType !== subType) {
+                lastRealtimeResult = { season, subType, confidence, lab, rgb: correctedRgb, originalRgb };
 
                 // UI 업데이트
-                updateRealtimeDisplay(season, lab, rgb);
+                updateRealtimeDisplay(season, lab, correctedRgb, subType, confidence);
 
-                console.log(`🎨 실시간 분석: ${season} (L:${lab.L.toFixed(1)}, a:${lab.a.toFixed(1)}, b:${lab.b.toFixed(1)})`);
+                console.log(`🎨 실시간 분석: ${season} ${subType} (신뢰도:${confidence}%, L:${lab.L.toFixed(1)}, a:${lab.a.toFixed(1)}, b:${lab.b.toFixed(1)})`);
             }
         } catch (error) {
             console.error('실시간 분석 오류:', error);
@@ -1834,7 +1902,7 @@ function performRealtimeAnalysis(skinToneData) {
 }
 
 // ⭐ 실시간 분석 결과 UI 업데이트
-function updateRealtimeDisplay(season, lab, rgb) {
+function updateRealtimeDisplay(season, lab, rgb, subType = '', confidence = 70) {
     // 계절 결과 표시
     const seasonResult = document.getElementById('realtime-season');
     if (seasonResult) {
@@ -1844,19 +1912,40 @@ function updateRealtimeDisplay(season, lab, rgb) {
             'Autumn': '🍂 가을 웜톤',
             'Winter': '❄️ 겨울 쿨톤'
         };
-        seasonResult.textContent = seasonNames[season] || season;
+        const subTypeNames = {
+            'Bright': '브라이트',
+            'Light': '라이트',
+            'Muted': '뮤트',
+            'Soft': '소프트',
+            'Deep': '딥'
+        };
+        const subTypeKor = subTypeNames[subType] || subType;
+        seasonResult.textContent = `${seasonNames[season] || season} ${subTypeKor}`;
         seasonResult.style.color = getSeasonColor(season);
     }
 
     // 피부톤 정보 표시
     const skinInfo = document.getElementById('realtime-skin-info');
     if (skinInfo) {
-        const undertone = lab.b > 0 ? '웜톤' : '쿨톤';
-        const brightness = lab.L > 60 ? '밝은' : '깊은';
+        // 더 정확한 명도 분류
+        let brightnessDesc;
+        if (lab.L >= 70) brightnessDesc = '밝은 (Light)';
+        else if (lab.L >= 60) brightnessDesc = '중간 밝기';
+        else if (lab.L >= 50) brightnessDesc = '중간';
+        else brightnessDesc = '깊은 (Deep)';
+
+        // 웜/쿨 판단은 b값 기준
+        let undertoneDesc;
+        if (lab.b > 15) undertoneDesc = '웜톤 (확실)';
+        else if (lab.b > 8) undertoneDesc = '웜톤 경향';
+        else if (lab.b < 5) undertoneDesc = '쿨톤 경향';
+        else undertoneDesc = '뉴트럴';
+
         skinInfo.innerHTML = `
-            <div><strong>피부 특성:</strong> ${undertone}, ${brightness} 타입</div>
-            <div><strong>RGB:</strong> ${rgb.r}, ${rgb.g}, ${rgb.b}</div>
-            <div><strong>명도:</strong> ${lab.L.toFixed(1)}</div>
+            <div><strong>피부 특성:</strong> ${undertoneDesc}, ${brightnessDesc}</div>
+            <div><strong>보정 RGB:</strong> ${rgb.r}, ${rgb.g}, ${rgb.b}</div>
+            <div><strong>명도(L):</strong> ${lab.L.toFixed(1)} / <strong>b값:</strong> ${lab.b.toFixed(1)}</div>
+            <div><strong>신뢰도:</strong> ${confidence}% <span style="font-size:10px;color:#888;">(조명에 따라 변동)</span></div>
         `;
     }
 
