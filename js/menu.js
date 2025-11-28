@@ -75,6 +75,12 @@ function showTokenConfirmDialog(type) {
         const confirmText = t(`${type}.confirmButton`) || '동의';
         const cancelText = t(`${type}.cancelButton`) || '취소';
 
+        // 성별에 따른 테마 색상
+        const isMale = window.currentGender === 'male';
+        const primaryColor = isMale ? '#4A90E2' : '#E91E63';
+        const primaryColorLight = isMale ? '#5BA0F2' : '#F43D7A';
+        const primaryColorDark = isMale ? '#3A7BC8' : '#C2185B';
+
         // 기존 다이얼로그가 있으면 제거
         const existingDialog = document.getElementById('token-confirm-dialog');
         if (existingDialog) {
@@ -105,7 +111,7 @@ function showTokenConfirmDialog(type) {
             padding: 28px 32px;
             max-width: 340px;
             width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(212, 165, 116, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px ${primaryColor}33;
             text-align: center;
             animation: dialogSlideIn 0.3s ease-out;
         `;
@@ -124,13 +130,13 @@ function showTokenConfirmDialog(type) {
                 }
             </style>
             <div style="margin-bottom: 16px;">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d4a574" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="${primaryColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <path d="M12 16v-4"></path>
                     <path d="M12 8h.01"></path>
                 </svg>
             </div>
-            <h3 style="color: #d4a574; font-size: 18px; font-weight: 600; margin-bottom: 12px;">${title}</h3>
+            <h3 style="color: ${primaryColor}; font-size: 18px; font-weight: 600; margin-bottom: 12px;">${title}</h3>
             <p style="color: #e0e0e0; font-size: 14px; line-height: 1.6; margin-bottom: 24px; white-space: pre-line;">${message}</p>
             <div style="display: flex; gap: 12px; justify-content: center;">
                 <button id="tokenConfirmCancel" style="
@@ -148,8 +154,8 @@ function showTokenConfirmDialog(type) {
                     flex: 1;
                     padding: 12px 20px;
                     border: none;
-                    background: linear-gradient(135deg, #d4a574, #c49464);
-                    color: #1a1a1a;
+                    background: linear-gradient(135deg, ${primaryColor}, ${primaryColorDark});
+                    color: #ffffff;
                     border-radius: 8px;
                     font-size: 14px;
                     font-weight: 600;
@@ -226,6 +232,11 @@ function createLookbookLoadingOverlay() {
     const loadingText = t('lookbook.loading') || 'AI가 스타일을 분석하고 있습니다...';
     const subText = t('lookbook.loadingSubtext') || 'AI가 이 스타일에 어울리는 룩북 상세페이지를 생성하고 있습니다.';
 
+    // 성별에 따른 테마 색상
+    const isMale = window.currentGender === 'male';
+    const barColor1 = isMale ? '#4A90E2' : '#E91E63';
+    const barColor2 = isMale ? '#3A7BC8' : '#C2185B';
+
     overlay.innerHTML = `
         <div style="text-align: center; padding: 40px;">
             <div class="logo-container" style="margin-bottom: 32px;">
@@ -255,7 +266,7 @@ function createLookbookLoadingOverlay() {
             .loading-bar {
                 width: 30%;
                 height: 100%;
-                background: linear-gradient(90deg, #ff0066, #cc0066);
+                background: linear-gradient(90deg, ${barColor1}, ${barColor2});
                 border-radius: 1px;
                 animation: loadingProgress 1.8s ease-in-out infinite;
             }
