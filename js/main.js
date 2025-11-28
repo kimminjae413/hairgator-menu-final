@@ -649,7 +649,14 @@ window.addEventListener('load', function() {
     document.head.appendChild(style);
 
     // 저장된 상호명 적용
+    console.log('🏷️ 페이지 로드 시 저장된 브랜드:', localStorage.getItem('hairgator_brand_name'));
     applyCustomBrand();
+
+    // 약간의 딜레이 후 다시 적용 (앱에서 로딩 타이밍 이슈 대응)
+    setTimeout(() => {
+        console.log('🏷️ 딜레이 후 브랜드 재적용');
+        applyCustomBrand();
+    }, 500);
 });
 
 // ========== 상호 설정 기능 ==========
@@ -1014,16 +1021,27 @@ function showBrandSettingModal() {
         const selectedColorLight = document.querySelector('input[name="brandColorLight"]:checked')?.value || 'black';
         const selectedColorDark = document.querySelector('input[name="brandColorDark"]:checked')?.value || 'white';
 
-        localStorage.setItem('hairgator_brand_name', brandName);
-        localStorage.setItem('hairgator_brand_font', selectedFont);
-        localStorage.setItem('hairgator_brand_color_light', selectedColorLight);
-        localStorage.setItem('hairgator_brand_color_dark', selectedColorDark);
+        console.log('💾 상호 저장 시도:', { brandName, selectedFont, selectedColorLight, selectedColorDark });
 
-        applyCustomBrand();
-        modal.remove();
+        try {
+            localStorage.setItem('hairgator_brand_name', brandName);
+            localStorage.setItem('hairgator_brand_font', selectedFont);
+            localStorage.setItem('hairgator_brand_color_light', selectedColorLight);
+            localStorage.setItem('hairgator_brand_color_dark', selectedColorDark);
 
-        if (window.showToast) {
-            window.showToast('상호 설정이 저장되었습니다.');
+            // 저장 확인
+            const savedName = localStorage.getItem('hairgator_brand_name');
+            console.log('💾 저장 확인:', savedName);
+
+            applyCustomBrand();
+            modal.remove();
+
+            if (window.showToast) {
+                window.showToast('상호 설정이 저장되었습니다.');
+            }
+        } catch (e) {
+            console.error('💾 저장 실패:', e);
+            alert('저장에 실패했습니다: ' + e.message);
         }
     };
 }
