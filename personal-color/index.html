@@ -278,41 +278,30 @@
     </div>
 
     <script>
-        // i18n.js에서 window.t가 이미 정의되어 있으므로 직접 사용
-        // 이 파일의 t() 함수는 window.t()의 래퍼입니다
-        const _i18nT = window.t; // i18n.js의 t 함수 저장
-
+        // 번역 함수 - HAIRGATOR_I18N에서 직접 번역 가져오기
         function t(key) {
             try {
-                // i18n.js의 t 함수 사용
-                if (_i18nT && typeof _i18nT === 'function') {
-                    const result = _i18nT(key);
-                    // i18n.js의 t()는 키를 찾지 못하면 키 자체를 반환
-                    // null을 반환해서 fallback이 작동하도록 함
-                    if (result === key) {
+                // localStorage에서 현재 언어 가져오기
+                const lang = localStorage.getItem('hairgator_language') || 'ko';
+
+                // HAIRGATOR_I18N이 로드되었는지 확인
+                if (typeof HAIRGATOR_I18N === 'undefined' || !HAIRGATOR_I18N[lang]) {
+                    return null;
+                }
+
+                // 키 경로로 번역 찾기 (예: 'personalColor.toast.aiModeActivated')
+                const keys = key.split('.');
+                let result = HAIRGATOR_I18N[lang];
+
+                for (const k of keys) {
+                    if (result && typeof result === 'object' && k in result) {
+                        result = result[k];
+                    } else {
                         return null;
                     }
-                    return result;
                 }
-                // 부모 창의 t 함수 사용 (iframe인 경우)
-                if (parent && parent !== window && parent.t && typeof parent.t === 'function') {
-                    return parent.t(key);
-                }
-                // 자체 HAIRGATOR_I18N 사용 - localStorage에서 직접 언어 가져오기
-                const lang = localStorage.getItem('hairgator_language') || 'ko';
-                if (typeof HAIRGATOR_I18N !== 'undefined' && HAIRGATOR_I18N[lang]) {
-                    const keys = key.split('.');
-                    let result = HAIRGATOR_I18N[lang];
-                    for (const k of keys) {
-                        if (result && result[k]) {
-                            result = result[k];
-                        } else {
-                            return null;
-                        }
-                    }
-                    return typeof result === 'string' ? result : null;
-                }
-                return null;
+
+                return typeof result === 'string' ? result : null;
             } catch (e) {
                 console.error('t() error:', e);
                 return null;
