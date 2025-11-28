@@ -961,9 +961,13 @@ function applyCustomBrand() {
     const brandFont = localStorage.getItem('hairgator_brand_font') || 'default';
     const brandColor = localStorage.getItem('hairgator_brand_color') || 'white';
 
-    const logoElement = document.querySelector('.logo');
+    console.log('🏷️ applyCustomBrand 호출:', { brandName, brandFont, brandColor });
+
+    const logoElement = document.querySelector('h1.logo');
     if (logoElement) {
+        logoElement.innerHTML = '';
         logoElement.textContent = brandName || 'HAIRGATOR';
+        console.log('🏷️ 로고 업데이트:', logoElement.textContent);
 
         const font = FONT_OPTIONS.find(f => f.id === brandFont);
         if (font) {
