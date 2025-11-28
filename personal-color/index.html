@@ -486,38 +486,34 @@
 
             // 조명에 따른 b값 보정 (조명 나쁘면 노란기 과대평가 방지)
             const effectiveB = lab.b * (0.6 + 0.4 * lq);
+            // a값도 조명 보정 (일관성 유지)
+            const effectiveA = lab.a * (0.8 + 0.2 * lq);
 
-            // warmScore 계산
-            let warmScore = 0;
+            // ✅ 개선: LAB 기반 점수에 더 높은 가중치 (미용실 조명은 주로 노란색이므로 LAB이 더 신뢰성 높음)
+            let labScore = 0;  // LAB 기반 점수 (가중치 높음)
+            let rgbScore = 0;  // RGB 기반 점수 (보조)
 
-            // LAB 기반 (effectiveB 사용)
-            const labWarmScore = effectiveB - (lab.a * 0.5);
-            if (labWarmScore > 10) warmScore += 3;
-            else if (labWarmScore > 5) warmScore += 2;
-            else if (labWarmScore > 0) warmScore += 1;
-            else if (labWarmScore < -5) warmScore -= 2;
-            else if (labWarmScore < 0) warmScore -= 1;
+            // LAB 기반 점수 (effectiveB, effectiveA 사용)
+            const labWarmScore = effectiveB - (effectiveA * 0.5);
+            if (labWarmScore > 12) labScore = 4;
+            else if (labWarmScore > 8) labScore = 3;
+            else if (labWarmScore > 4) labScore = 2;
+            else if (labWarmScore > 0) labScore = 1;
+            else if (labWarmScore < -8) labScore = -3;
+            else if (labWarmScore < -4) labScore = -2;
+            else if (labWarmScore < 0) labScore = -1;
 
-            // RGB 비율 기반
-            const total = correctedRgb.r + correctedRgb.g + correctedRgb.b;
+            // RGB 비율 기반 (보조 점수, 가중치 낮춤)
             const yellowIndex = (correctedRgb.r * 0.5 + correctedRgb.g) - correctedRgb.b * 1.2;
             const pinkIndex = (correctedRgb.r + correctedRgb.b * 0.8) - correctedRgb.g * 1.1;
 
-            if (yellowIndex > pinkIndex + 30) warmScore += 2;
-            else if (yellowIndex > pinkIndex + 15) warmScore += 1;
-            else if (pinkIndex > yellowIndex + 30) warmScore -= 2;
-            else if (pinkIndex > yellowIndex + 15) warmScore -= 1;
+            if (yellowIndex > pinkIndex + 35) rgbScore = 2;
+            else if (yellowIndex > pinkIndex + 20) rgbScore = 1;
+            else if (pinkIndex > yellowIndex + 35) rgbScore = -2;
+            else if (pinkIndex > yellowIndex + 20) rgbScore = -1;
 
-            // 골든/로지 비율
-            const goldenRatio = (correctedRgb.r - correctedRgb.b) / (correctedRgb.r + correctedRgb.b + 1);
-            if (goldenRatio > 0.12) warmScore += 1;
-            if (goldenRatio < 0.05) warmScore -= 1;
-
-            // 언더톤 결정
-            let undertone;
-            if (warmScore >= 2) undertone = 'Warm';
-            else if (warmScore <= -2) undertone = 'Cool';
-            else undertone = 'Neutral';
+            // ✅ 최종 warmScore: LAB 70% + RGB 30% 가중 합산
+            const warmScore = Math.round(labScore * 0.7 + rgbScore * 0.3);
 
             // 채도 계산
             const max = Math.max(correctedRgb.r, correctedRgb.g, correctedRgb.b);
@@ -527,47 +523,64 @@
             // 시즌 및 서브타입 결정
             const L = lab.L;
             const C = chroma;
-            let season, subtype, seasonKr, emoji, color;
+            let season, subtype, seasonKr, emoji, color, undertone;
 
+            // ✅ 개선: 언더톤 결정 (뉴트럴 처리 개선)
+            if (warmScore >= 2) {
+                undertone = 'Warm';
+            } else if (warmScore <= -2) {
+                undertone = 'Cool';
+            } else {
+                // ✅ 뉴트럴: warmScore 방향성에 따라 웜뉴트럴/쿨뉴트럴로 유도
+                // (완전 뉴트럴한 염색약은 드물기 때문에 실용적 분류)
+                undertone = warmScore >= 0 ? 'WarmNeutral' : 'CoolNeutral';
+            }
+
+            // 시즌 결정
             if (undertone === 'Warm') {
                 if (L >= 70) {
                     season = 'spring'; seasonKr = '봄 웜';
-                    if (C > 50) { subtype = 'bright'; emoji = '🌸'; color = '#FF6B6B'; }
+                    if (C > 45) { subtype = 'bright'; emoji = '🌸'; color = '#FF6B6B'; }
                     else { subtype = 'light'; emoji = '🌷'; color = '#FFB7C5'; }
                 } else if (L >= 60) {
                     season = 'autumn'; seasonKr = '가을 웜';
-                    if (C > 50) { subtype = 'soft'; emoji = '🍂'; color = '#CD853F'; }
+                    if (C > 45) { subtype = 'soft'; emoji = '🍂'; color = '#CD853F'; }
                     else { subtype = 'muted'; emoji = '🍁'; color = '#D2691E'; }
                 } else {
                     season = 'autumn'; seasonKr = '가을 웜';
-                    if (C > 50) { subtype = 'deep'; emoji = '🍂'; color = '#8B4513'; }
+                    if (C > 45) { subtype = 'deep'; emoji = '🍂'; color = '#8B4513'; }
                     else { subtype = 'muted'; emoji = '🍁'; color = '#A0522D'; }
                 }
             } else if (undertone === 'Cool') {
                 if (L >= 65) {
                     season = 'summer'; seasonKr = '여름 쿨';
-                    if (C > 45) { subtype = 'bright'; emoji = '🌊'; color = '#4169E1'; }
+                    if (C > 40) { subtype = 'bright'; emoji = '🌊'; color = '#4169E1'; }
                     else { subtype = 'light'; emoji = '💜'; color = '#87CEEB'; }
                 } else if (L >= 50) {
                     season = 'summer'; seasonKr = '여름 쿨';
                     subtype = 'muted'; emoji = '🌙'; color = '#9370DB';
                 } else {
                     season = 'winter'; seasonKr = '겨울 쿨';
-                    if (C > 45) { subtype = 'deep'; emoji = '❄️'; color = '#191970'; }
+                    if (C > 40) { subtype = 'deep'; emoji = '❄️'; color = '#191970'; }
                     else { subtype = 'muted'; emoji = '🌙'; color = '#4169E1'; }
                 }
+            } else if (undertone === 'WarmNeutral') {
+                // ✅ 웜뉴트럴: Autumn Muted 계열로 유도 (실용적)
+                season = 'autumn'; seasonKr = '뉴트럴 웜';
+                if (L >= 65) { subtype = 'soft'; emoji = '🍂'; color = '#C4A484'; }
+                else { subtype = 'muted'; emoji = '🍁'; color = '#BC8F8F'; }
+                undertone = 'Neutral'; // 표시용
             } else {
-                // Neutral
-                season = L >= 65 ? 'spring' : 'autumn';
-                seasonKr = '뉴트럴';
-                subtype = L >= 65 ? 'light' : 'soft';
-                emoji = L >= 65 ? '🌷' : '🍁';
-                color = L >= 65 ? '#DDA0DD' : '#BC8F8F';
+                // ✅ 쿨뉴트럴: Summer Muted 계열로 유도 (실용적)
+                season = 'summer'; seasonKr = '뉴트럴 쿨';
+                if (L >= 60) { subtype = 'light'; emoji = '💜'; color = '#B0C4DE'; }
+                else { subtype = 'muted'; emoji = '🌙'; color = '#9370DB'; }
+                undertone = 'Neutral'; // 표시용
             }
 
             // confidence 계산 (조명 품질 반영)
             let baseConfidence = 65;
-            baseConfidence += Math.abs(warmScore) * 3; // 확신도에 따라 증가
+            baseConfidence += Math.abs(labScore) * 4; // LAB 확신도에 따라 증가
             baseConfidence = baseConfidence * (0.6 + 0.4 * lq); // 조명 품질 반영
 
             // 조명 나쁘면 참고용 플래그
@@ -579,13 +592,14 @@
             const fullSeason = `${seasonKr} ${subtype === 'bright' ? '브라이트' : subtype === 'light' ? '라이트' : subtype === 'soft' ? '소프트' : subtype === 'muted' ? '뮤트' : '딥'}`;
 
             console.log('🎨 분류 결과:', {
-                undertone, warmScore, L: L.toFixed(1), C,
+                undertone, labScore, rgbScore, warmScore, L: L.toFixed(1), C,
                 season, subtype, confidence, isReference
             });
 
             return {
                 undertone,
                 warmScore,
+                labScore,
                 season,
                 seasonKr,
                 subtype,
@@ -593,6 +607,7 @@
                 emoji,
                 color,
                 lab,
+                effectiveB,
                 chroma: C,
                 confidence,
                 isReference,
@@ -601,17 +616,18 @@
         }
 
         // ========== 3단계: 헤어컬러 매핑 규칙 ==========
+        // ✅ chromaMin 완화: 필터링 조건이 아닌 보너스 점수로만 사용
         const HAIR_COLOR_MAPPING_RULES = {
-            'spring-bright': { levelRange: [7, 10], tones: ['warm', 'gold', 'orange', 'copper'], chromaMin: 40 },
-            'spring-light': { levelRange: [8, 10], tones: ['warm', 'gold', 'beige', 'honey'], chromaMin: 20 },
-            'autumn-soft': { levelRange: [5, 8], tones: ['warm', 'beige', 'caramel', 'brown'], chromaMin: 20 },
-            'autumn-muted': { levelRange: [4, 7], tones: ['warm', 'olive', 'khaki', 'brown'], chromaMin: 15 },
-            'autumn-deep': { levelRange: [3, 6], tones: ['warm', 'red', 'copper', 'chocolate'], chromaMin: 30 },
-            'summer-bright': { levelRange: [6, 9], tones: ['cool', 'ash', 'pink', 'lavender'], chromaMin: 35 },
-            'summer-light': { levelRange: [7, 10], tones: ['cool', 'ash', 'beige', 'pink'], chromaMin: 15 },
-            'summer-muted': { levelRange: [5, 8], tones: ['cool', 'ash', 'gray', 'lavender'], chromaMin: 10 },
-            'winter-deep': { levelRange: [1, 4], tones: ['cool', 'ash', 'blue', 'violet'], chromaMin: 40 },
-            'winter-muted': { levelRange: [2, 5], tones: ['cool', 'ash', 'gray', 'charcoal'], chromaMin: 15 }
+            'spring-bright': { levelRange: [7, 10], tones: ['warm', 'gold', 'orange', 'copper'], chromaBonus: 30 },
+            'spring-light': { levelRange: [8, 10], tones: ['warm', 'gold', 'beige', 'honey'], chromaBonus: 20 },
+            'autumn-soft': { levelRange: [5, 8], tones: ['warm', 'beige', 'caramel', 'brown'], chromaBonus: 15 },
+            'autumn-muted': { levelRange: [4, 7], tones: ['warm', 'olive', 'khaki', 'brown', 'neutral'], chromaBonus: 10 },
+            'autumn-deep': { levelRange: [3, 6], tones: ['warm', 'red', 'copper', 'chocolate'], chromaBonus: 25 },
+            'summer-bright': { levelRange: [6, 9], tones: ['cool', 'ash', 'pink', 'lavender'], chromaBonus: 25 },
+            'summer-light': { levelRange: [7, 10], tones: ['cool', 'ash', 'beige', 'pink'], chromaBonus: 15 },
+            'summer-muted': { levelRange: [5, 8], tones: ['cool', 'ash', 'gray', 'lavender', 'neutral'], chromaBonus: 10 },
+            'winter-deep': { levelRange: [1, 4], tones: ['cool', 'ash', 'blue', 'violet'], chromaBonus: 30 },
+            'winter-muted': { levelRange: [2, 5], tones: ['cool', 'ash', 'gray', 'charcoal'], chromaBonus: 15 }
         };
 
         // 인접 시즌 정의
@@ -634,34 +650,54 @@
                 return { primary: hairColors.slice(0, 10), secondary: [] };
             }
 
-            const primary = []; // 1순위 (같은 시즌)
-            const secondary = []; // 2순위 (인접 시즌)
+            const primary = [];   // 같은 시즌
+            const secondary = []; // 인접 시즌
             const adjacentSeasons = ADJACENT_SEASONS[season] || [];
 
             hairColors.forEach(color => {
-                // 레벨 추출 (hex에서 밝기로 추정하거나 level 속성 사용)
                 const level = color.level || estimateLevelFromHex(color.hex);
                 const toneTag = color.toneTag || guessToneFromName(color.name);
                 const colorSeason = color.season || guessSeasonFromHex(color.hex);
 
-                // 1차: 같은 시즌
+                // 레벨 매칭 체크
+                const levelMatch = level >= rule.levelRange[0] && level <= rule.levelRange[1];
+                const levelNear = level >= rule.levelRange[0] - 1 && level <= rule.levelRange[1] + 1; // ±1 허용
+                // 톤 매칭 체크
+                const toneMatch = rule.tones.some(t => toneTag.includes(t));
+
+                // ✅ 개선된 우선순위 체계
+                // 1순위: Level O + Tone O (Best)
+                // 2순위: Level O + Tone X (명도는 맞으니 얼굴 밝기는 살려줌)
+                // 3순위: Level △(±1) + Tone O (톤은 맞으니 분위기는 살려줌)
+                // 4순위: 인접 시즌
+                // 5순위: 그 외
+
                 if (colorSeason === season) {
-                    // 2차: 레벨 범위 체크
-                    if (level >= rule.levelRange[0] && level <= rule.levelRange[1]) {
-                        // 3차: 톤 매칭 (있으면 보너스)
-                        const toneMatch = rule.tones.some(t => toneTag.includes(t));
-                        primary.push({ ...color, level, toneTag, toneMatch, priority: 1 });
-                    } else {
-                        primary.push({ ...color, level, toneTag, toneMatch: false, priority: 2 });
+                    if (levelMatch && toneMatch) {
+                        // 1순위: 레벨 O + 톤 O
+                        primary.push({ ...color, level, toneTag, toneMatch: true, levelMatch: true, priority: 1 });
+                    } else if (levelMatch && !toneMatch) {
+                        // 2순위: 레벨 O + 톤 X
+                        primary.push({ ...color, level, toneTag, toneMatch: false, levelMatch: true, priority: 2 });
+                    } else if (levelNear && toneMatch) {
+                        // 3순위: 레벨 △ + 톤 O
+                        primary.push({ ...color, level, toneTag, toneMatch: true, levelMatch: false, priority: 3 });
+                    } else if (levelNear) {
+                        // 레벨 근접은 포함
+                        primary.push({ ...color, level, toneTag, toneMatch: false, levelMatch: false, priority: 4 });
                     }
-                }
-                // 인접 시즌
-                else if (adjacentSeasons.includes(colorSeason)) {
-                    secondary.push({ ...color, level, toneTag, priority: 3 });
+                } else if (adjacentSeasons.includes(colorSeason)) {
+                    // 4순위: 인접 시즌
+                    secondary.push({ ...color, level, toneTag, toneMatch, levelMatch: levelNear, priority: 5 });
                 }
             });
 
-            console.log(`💇 1순위: ${primary.length}개, 2순위: ${secondary.length}개`);
+            // 우선순위별 정렬
+            primary.sort((a, b) => a.priority - b.priority);
+            secondary.sort((a, b) => a.priority - b.priority);
+
+            console.log(`💇 같은 시즌: ${primary.length}개, 인접 시즌: ${secondary.length}개`);
+            console.log(`💇 우선순위 분포: P1=${primary.filter(c=>c.priority===1).length}, P2=${primary.filter(c=>c.priority===2).length}, P3=${primary.filter(c=>c.priority===3).length}`);
 
             return { primary, secondary };
         }
@@ -1542,8 +1578,25 @@
                 resultsContainer.style.maxHeight = '70vh';
                 resultsContainer.style.overflowY = 'auto';
 
+                // ✅ 조명 낮을 때 명시적 경고 배너
+                const lightingWarningBanner = lm.lightingQuality < 0.4 ? `
+                    <div style="background: linear-gradient(135deg, #FF5722, #E64A19); padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(255,87,34,0.3);">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span style="font-size: 24px;">⚠️</span>
+                            <span style="color: #fff; font-weight: bold; font-size: 15px;">조명 환경 주의</span>
+                        </div>
+                        <p style="color: rgba(255,255,255,0.9); font-size: 13px; margin: 0; line-height: 1.6;">
+                            현재 조명이 어둡거나 색온도가 불안정하여 <b>분석 정확도가 떨어질 수 있습니다.</b><br>
+                            더 밝은 자연광 또는 주광색 조명에서 다시 촬영하는 것을 권장합니다.
+                        </p>
+                    </div>
+                ` : '';
+
                 resultsContainer.innerHTML = `
                     <h4 style="margin: 0 0 20px 0; color: #fff; font-size: 18px; text-align: center;">🎨 ${resultTexts.title}</h4>
+
+                    <!-- ✅ 조명 경고 배너 (조명 나쁠 때만 표시) -->
+                    ${lightingWarningBanner}
 
                     <!-- 조명 상태 표시 -->
                     <div style="background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
