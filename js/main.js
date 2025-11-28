@@ -1258,10 +1258,19 @@ async function loadUserSettingsFromFirebase() {
                     setLanguage(data.language);
                 }
                 window.currentLanguage = data.language;
-                // 국기 업데이트
-                if (typeof updateLanguageFlag === 'function') {
-                    setTimeout(() => updateLanguageFlag(), 100);
-                }
+
+                // 사이드바 다시 그리기 (언어 적용)
+                setTimeout(() => {
+                    if (typeof setupSidebar === 'function') {
+                        setupSidebar();
+                    }
+                    if (typeof updateLanguageFlag === 'function') {
+                        updateLanguageFlag();
+                    }
+                    if (typeof applyProfileImage === 'function') {
+                        applyProfileImage();
+                    }
+                }, 100);
             }
 
             return data;
