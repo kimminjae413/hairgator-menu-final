@@ -25,8 +25,8 @@
         }
 
         /* 앱용 헤더 스타일 */
-        #ai-analysis .section-nav,
-        #draping-mode .section-nav {
+        #ai-analysis.active .section-nav,
+        #draping-mode.active .section-nav {
             position: sticky !important;
             top: 0 !important;
             z-index: 100 !important;
@@ -1070,17 +1070,22 @@
             }
 
             if (confidenceEl) {
-                confidenceEl.innerHTML = `${resultTexts.confidence}: <b style="color: #4CAF50;">95%</b>`;
+                // 실제 신뢰도 계산 (피부톤 분석 품질 기반)
+                const baseConfidence = 75;
+                const brightnessBonus = Math.min(15, Math.abs(50 - skinToneData.lab.L) < 20 ? 15 : 5);
+                const chromaBonus = Math.min(10, skinToneData.lab.a > 5 || skinToneData.lab.b > 10 ? 10 : 5);
+                const calculatedConfidence = Math.min(98, baseConfidence + brightnessBonus + chromaBonus);
+                confidenceEl.innerHTML = `${resultTexts.confidence}: <b style="color: #4CAF50;">${calculatedConfidence}%</b>`;
             }
 
             if (analysisData) {
                 analysisData.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 24px; height: 24px; background: ${skinToneData.hex}; border-radius: 6px; border: 2px solid #333;"></div>
-                            <span style="color: #333;">${resultTexts.skinTone}: ${skinToneData.hex}</span>
+                            <div style="width: 24px; height: 24px; background: ${skinToneData.hex}; border-radius: 6px; border: 2px solid #fff;"></div>
+                            <span style="color: #fff;">${resultTexts.skinTone}: ${skinToneData.hex}</span>
                         </div>
-                        <div style="color: #333;">${resultTexts.undertone}: <b style="color: ${seasonInfo.color};">${undertoneText}</b></div>
+                        <div style="color: #fff;">${resultTexts.undertone}: <b style="color: ${seasonInfo.color};">${undertoneText}</b></div>
                     </div>
                 `;
             }
@@ -1095,6 +1100,7 @@
                 // 가을 웜
                 '가을 웜 딥': '깊고 고급스러운 이미지! 진하고 풍부한 웜톤 컬러가 잘 어울립니다.',
                 '가을 웜 뮤트': '내추럴하고 세련된 이미지! 차분하고 자연스러운 웜톤 컬러가 잘 어울립니다.',
+                '가을 웜 소프트': '부드럽고 따뜻한 이미지! 은은하고 자연스러운 웜톤 컬러가 잘 어울립니다.',
                 // 여름 쿨
                 '여름 쿨 브라이트': '청아하고 시원한 이미지! 선명하고 깨끗한 쿨톤 컬러가 잘 어울립니다.',
                 '여름 쿨 라이트': '우아하고 부드러운 이미지! 파스텔톤의 쿨 컬러가 잘 어울립니다.',
@@ -1117,6 +1123,7 @@
                 // 가을 웜
                 '가을 웜 딥': ['#8B4513', '#A0522D', '#800000', '#556B2F', '#8B0000'],
                 '가을 웜 뮤트': ['#CD853F', '#D2691E', '#BDB76B', '#808000', '#BC8F8F'],
+                '가을 웜 소프트': ['#C4A484', '#D2B48C', '#DEB887', '#8B7355', '#A67B5B'],
                 // 여름 쿨
                 '여름 쿨 브라이트': ['#FF69B4', '#9370DB', '#00CED1', '#20B2AA', '#BA55D3'],
                 '여름 쿨 라이트': ['#E6E6FA', '#D8BFD8', '#B0E0E6', '#AFEEEE', '#FFB6C1'],
@@ -1491,6 +1498,7 @@
                 // 가을 웜 타입
                 '가을 웜 딥': '💄 추천 컬러: 버건디, 초콜릿브라운, 딥 테라코타<br>💎 추천 메탈: 앤틱 골드, 브론즈',
                 '가을 웜 뮤트': '💄 추천 컬러: 머스타드, 올리브, 카키, 테라코타<br>💎 추천 메탈: 골드, 브라스',
+                '가을 웜 소프트': '💄 추천 컬러: 카멜, 베이지브라운, 코코아, 웜베이지<br>💎 추천 메탈: 로즈골드, 샴페인골드',
                 // 여름 쿨 타입
                 '여름 쿨 브라이트': '💄 추천 컬러: 로즈핑크, 라벤더, 스카이블루<br>💎 추천 메탈: 화이트골드, 로즈골드',
                 '여름 쿨 라이트': '💄 추천 컬러: 소프트 핑크, 라일락, 파우더블루<br>💎 추천 메탈: 실버, 화이트골드',
