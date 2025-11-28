@@ -75,6 +75,21 @@ document.addEventListener('DOMContentLoaded', function() {
                                     ${t('ui.credit')}: <span id="creditDisplay" style="color: #4A90E2; font-weight: bold;">-</span>
                                 </div>
                             </div>
+                            <!-- 언어 선택 버튼 -->
+                            <div id="languageSelectorBtn" onclick="showLanguageModal()" style="
+                                cursor: pointer;
+                                padding: 8px;
+                                border-radius: 8px;
+                                background: rgba(128,128,128,0.1);
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                gap: 2px;
+                                transition: background 0.2s ease;
+                            ">
+                                <span id="currentLanguageFlag" style="font-size: 24px;">${getLanguageFlag(window.currentLanguage || 'ko')}</span>
+                                <span style="font-size: 10px; color: var(--text-secondary, #aaa);">언어</span>
+                            </div>
                         </div>
                     </div>
 
@@ -767,7 +782,7 @@ function showBrandSettingModal() {
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         ">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="color: var(--text-primary, #fff); font-size: 18px; margin: 0;">✏️ 상호 설정</h3>
+                <h3 style="color: var(--text-primary, #fff); font-size: 18px; margin: 0;">✏️ ${t('ui.brandSetting')}</h3>
                 <button id="closeBrandModal" style="
                     background: none;
                     border: none;
@@ -781,9 +796,9 @@ function showBrandSettingModal() {
 
             <div style="margin-bottom: 20px;">
                 <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 8px;">
-                    상호명 (비워두면 HAIRGATOR 표시)
+                    ${t('ui.brandNameLabel')}
                 </label>
-                <input type="text" id="brandNameInput" value="${savedBrand}" placeholder="예: SALON BEAUTY" maxlength="20" style="
+                <input type="text" id="brandNameInput" value="${savedBrand}" placeholder="${t('ui.brandNamePlaceholder')}" maxlength="20" style="
                     width: 100%;
                     padding: 12px 16px;
                     border: 1px solid rgba(255,255,255,0.2);
@@ -797,7 +812,7 @@ function showBrandSettingModal() {
 
             <div style="margin-bottom: 20px;">
                 <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 12px;">
-                    폰트 선택
+                    ${t('ui.fontSelect')}
                 </label>
                 <div id="fontOptions" style="
                     display: grid;
@@ -810,7 +825,7 @@ function showBrandSettingModal() {
 
             <div style="margin-bottom: 20px;">
                 <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 12px;">
-                    ☀️ 라이트 모드 폰트 색상
+                    ${t('ui.fontColorLight')}
                 </label>
                 <div id="colorOptionsLight" style="
                     display: flex;
@@ -824,7 +839,7 @@ function showBrandSettingModal() {
 
             <div style="margin-bottom: 20px;">
                 <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 12px;">
-                    🌙 다크 모드 폰트 색상
+                    ${t('ui.fontColorDark')}
                 </label>
                 <div id="colorOptionsDark" style="
                     display: flex;
@@ -838,11 +853,11 @@ function showBrandSettingModal() {
 
             <div style="margin-bottom: 20px;">
                 <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 8px;">
-                    미리보기
+                    ${t('ui.preview')}
                 </label>
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1; padding: 16px; background: #ffffff; border-radius: 8px;">
-                        <div style="font-size: 10px; color: #666; margin-bottom: 6px; text-align: center;">☀️ 라이트</div>
+                        <div style="font-size: 10px; color: #666; margin-bottom: 6px; text-align: center;">${t('ui.previewLight')}</div>
                         <div id="brandPreviewLight" style="
                             font-size: 20px;
                             font-weight: bold;
@@ -852,7 +867,7 @@ function showBrandSettingModal() {
                         ">${savedBrand || 'HAIRGATOR'}</div>
                     </div>
                     <div style="flex: 1; padding: 16px; background: #1a1a1a; border-radius: 8px;">
-                        <div style="font-size: 10px; color: #888; margin-bottom: 6px; text-align: center;">🌙 다크</div>
+                        <div style="font-size: 10px; color: #888; margin-bottom: 6px; text-align: center;">${t('ui.previewDark')}</div>
                         <div id="brandPreviewDark" style="
                             font-size: 20px;
                             font-weight: bold;
@@ -874,7 +889,7 @@ function showBrandSettingModal() {
                     border-radius: 8px;
                     font-size: 14px;
                     cursor: pointer;
-                ">초기화</button>
+                ">${t('ui.reset')}</button>
                 <button id="saveBrandBtn" style="
                     flex: 2;
                     padding: 12px;
@@ -885,7 +900,7 @@ function showBrandSettingModal() {
                     font-size: 14px;
                     font-weight: 600;
                     cursor: pointer;
-                ">저장</button>
+                ">${t('ui.save')}</button>
             </div>
         </div>
 
@@ -1060,11 +1075,11 @@ function showBrandSettingModal() {
             modal.remove();
 
             if (window.showToast) {
-                window.showToast('상호 설정이 저장되었습니다.');
+                window.showToast(t('ui.brandSaved'));
             }
         } catch (e) {
             console.error('💾 저장 실패:', e);
-            alert('저장에 실패했습니다: ' + e.message);
+            alert(t('ui.saveFailed') + ': ' + e.message);
         }
     };
 }
@@ -1224,7 +1239,7 @@ function showProfileImageModal() {
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             text-align: center;
         ">
-            <h3 style="color: var(--text-primary, #fff); font-size: 18px; margin-bottom: 20px;">📷 프로필 사진</h3>
+            <h3 style="color: var(--text-primary, #fff); font-size: 18px; margin-bottom: 20px;">${t('ui.profilePhoto')}</h3>
 
             <div id="previewContainer" style="
                 width: 120px;
@@ -1250,8 +1265,8 @@ function showProfileImageModal() {
                 margin-bottom: 20px;
             ">
                 <p style="color: var(--text-secondary, #aaa); font-size: 12px; line-height: 1.5; margin: 0;">
-                    💡 이 사진은 3분간 화면 조작이 없을 때<br>
-                    <span style="color: #4A90E2;">대기 화면</span>으로 표시됩니다.
+                    ${t('ui.profilePhotoHint')}<br>
+                    <span style="color: #4A90E2;">${t('ui.profilePhotoHint2')}</span>${t('ui.profilePhotoHint3')}
                 </p>
             </div>
 
@@ -1267,7 +1282,7 @@ function showProfileImageModal() {
                     font-size: 14px;
                     font-weight: 600;
                     cursor: pointer;
-                ">사진 선택</button>
+                ">${t('ui.selectPhoto')}</button>
                 ${savedImage ? `
                 <button id="removeProfileBtn" style="
                     padding: 12px;
@@ -1277,7 +1292,7 @@ function showProfileImageModal() {
                     border-radius: 8px;
                     font-size: 14px;
                     cursor: pointer;
-                ">사진 삭제</button>
+                ">${t('ui.deletePhoto')}</button>
                 ` : ''}
                 <button id="closeProfileModal" style="
                     padding: 12px;
@@ -1287,7 +1302,7 @@ function showProfileImageModal() {
                     border-radius: 8px;
                     font-size: 14px;
                     cursor: pointer;
-                ">닫기</button>
+                ">${t('ui.close')}</button>
             </div>
         </div>
     `;
@@ -1305,7 +1320,7 @@ function showProfileImageModal() {
             await saveProfileImageToFirebase(''); // Firebase에서도 삭제
             applyProfileImage();
             modal.remove();
-            if (window.showToast) window.showToast('프로필 사진이 삭제되었습니다.');
+            if (window.showToast) window.showToast(t('ui.profileDeleted'));
         };
     }
 
@@ -1314,14 +1329,18 @@ function showProfileImageModal() {
         if (file) {
             const reader = new FileReader();
             reader.onload = (event) => {
-                // 이미지 리사이즈 (200x200)
+                // 이미지 리사이즈 (고화질 500x500)
                 const img = new Image();
                 img.onload = async () => {
                     const canvas = document.createElement('canvas');
-                    const size = 200;
+                    const size = 500; // 대기 화면에서 사용할 크기에 맞춤
                     canvas.width = size;
                     canvas.height = size;
                     const ctx = canvas.getContext('2d');
+
+                    // 이미지 스무딩 고화질 설정
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
 
                     // 중앙 크롭
                     const minDim = Math.min(img.width, img.height);
@@ -1329,13 +1348,13 @@ function showProfileImageModal() {
                     const sy = (img.height - minDim) / 2;
 
                     ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
-                    const resizedImage = canvas.toDataURL('image/jpeg', 0.8);
+                    const resizedImage = canvas.toDataURL('image/jpeg', 0.92); // 화질 향상
 
                     localStorage.setItem('hairgator_profile_image', resizedImage);
                     await saveProfileImageToFirebase(resizedImage); // Firebase에도 저장
                     applyProfileImage();
                     modal.remove();
-                    if (window.showToast) window.showToast('프로필 사진이 저장되었습니다.');
+                    if (window.showToast) window.showToast(t('ui.profileSaved'));
                 };
                 img.src = event.target.result;
             };
@@ -1457,17 +1476,17 @@ function showIdleScreen() {
 
         ${savedImage ? `
             <div style="
-                width: 50vmin;
-                height: 50vmin;
-                max-width: 400px;
-                max-height: 400px;
-                border-radius: 16px;
+                width: 60vmin;
+                height: 60vmin;
+                max-width: 500px;
+                max-height: 500px;
+                border-radius: 20px;
                 overflow: hidden;
                 margin-bottom: 40px;
                 animation: idlePulse 4s ease-in-out infinite, idleGlow 4s ease-in-out infinite;
                 box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             ">
-                <img src="${savedImage}" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="${savedImage}" style="width: 100%; height: 100%; object-fit: cover; image-rendering: -webkit-optimize-contrast; image-rendering: high-quality;">
             </div>
         ` : `
             <div style="
@@ -1495,7 +1514,7 @@ function showIdleScreen() {
             font-size: 14px;
             margin-top: 60px;
             animation: idleFade 3s ease-in-out infinite;
-        ">화면을 터치하세요</p>
+        ">${t('ui.touchToReturn')}</p>
     `;
 
     document.body.appendChild(idleScreen);
@@ -1512,10 +1531,163 @@ window.showProfileImageModal = showProfileImageModal;
 window.applyProfileImage = applyProfileImage;
 window.showIdleScreen = showIdleScreen;
 
+// ========== 언어 선택 기능 ==========
+
+const LANGUAGE_OPTIONS = [
+    { id: 'ko', name: '한국어', flag: '🇰🇷' },
+    { id: 'en', name: 'English', flag: '🇺🇸' },
+    { id: 'ja', name: '日本語', flag: '🇯🇵' },
+    { id: 'zh', name: '中文', flag: '🇨🇳' },
+    { id: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' }
+];
+
+// 언어 코드로 국기 이모지 반환
+function getLanguageFlag(langCode) {
+    const lang = LANGUAGE_OPTIONS.find(l => l.id === langCode);
+    return lang ? lang.flag : '🇰🇷';
+}
+
+// 언어 선택 모달 표시
+function showLanguageModal() {
+    // 기존 모달 제거
+    const existingModal = document.getElementById('language-modal');
+    if (existingModal) existingModal.remove();
+
+    const currentLang = window.currentLanguage || 'ko';
+
+    const modal = document.createElement('div');
+    modal.id = 'language-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(3px);
+    `;
+
+    const languageOptionsHtml = LANGUAGE_OPTIONS.map(lang => `
+        <div class="language-option ${currentLang === lang.id ? 'selected' : ''}" data-lang="${lang.id}" style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            ${currentLang === lang.id ? 'background: rgba(233, 30, 99, 0.15); border: 2px solid #E91E63;' : 'background: rgba(255,255,255,0.05); border: 2px solid transparent;'}
+        ">
+            <span style="font-size: 32px;">${lang.flag}</span>
+            <span style="color: var(--text-primary, #fff); font-size: 16px; font-weight: ${currentLang === lang.id ? '600' : '400'};">${lang.name}</span>
+            ${currentLang === lang.id ? '<span style="margin-left: auto; color: #E91E63; font-size: 18px;">✓</span>' : ''}
+        </div>
+    `).join('');
+
+    modal.innerHTML = `
+        <div style="
+            background: var(--bg-primary, #1a1a1a);
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 340px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: var(--text-primary, #fff); font-size: 18px; margin: 0;">🌐 언어 선택</h3>
+                <button id="closeLanguageModal" style="
+                    background: none;
+                    border: none;
+                    color: var(--text-primary, #fff);
+                    font-size: 24px;
+                    cursor: pointer;
+                    padding: 0;
+                    line-height: 1;
+                ">×</button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                ${languageOptionsHtml}
+            </div>
+        </div>
+
+        <style>
+            .language-option:hover {
+                background: rgba(255,255,255,0.1) !important;
+            }
+            .language-option.selected:hover {
+                background: rgba(233, 30, 99, 0.2) !important;
+            }
+        </style>
+    `;
+
+    document.body.appendChild(modal);
+
+    // 이벤트 리스너
+    document.getElementById('closeLanguageModal').onclick = () => modal.remove();
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+    // 언어 선택
+    modal.querySelectorAll('.language-option').forEach(option => {
+        option.onclick = () => {
+            const langId = option.dataset.lang;
+            selectLanguage(langId);
+            modal.remove();
+        };
+    });
+}
+
+// 언어 선택 처리
+function selectLanguage(langCode) {
+    if (typeof setLanguage === 'function') {
+        setLanguage(langCode);
+    } else {
+        window.currentLanguage = langCode;
+        localStorage.setItem('hairgator_language', langCode);
+    }
+
+    // 국기 업데이트
+    const flagElement = document.getElementById('currentLanguageFlag');
+    if (flagElement) {
+        flagElement.textContent = getLanguageFlag(langCode);
+    }
+
+    // 페이지 새로고침하여 번역 적용
+    if (window.showToast) {
+        const langName = LANGUAGE_OPTIONS.find(l => l.id === langCode)?.name || langCode;
+        window.showToast(`${langName} ${getLanguageFlag(langCode)}`, 'success');
+    }
+
+    // 잠시 후 페이지 새로고침 (번역 전체 적용)
+    setTimeout(() => {
+        location.reload();
+    }, 500);
+}
+
+// 페이지 로드 시 저장된 언어의 국기 표시
+function updateLanguageFlag() {
+    const currentLang = window.currentLanguage || localStorage.getItem('hairgator_language') || 'ko';
+    const flagElement = document.getElementById('currentLanguageFlag');
+    if (flagElement) {
+        flagElement.textContent = getLanguageFlag(currentLang);
+    }
+}
+
+// 전역 함수 노출
+window.getLanguageFlag = getLanguageFlag;
+window.showLanguageModal = showLanguageModal;
+window.selectLanguage = selectLanguage;
+window.updateLanguageFlag = updateLanguageFlag;
+
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         applyProfileImage();
         initIdleScreen();
+        updateLanguageFlag();
     }, 1000);
 });

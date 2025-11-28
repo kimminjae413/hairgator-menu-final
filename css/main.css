@@ -1193,9 +1193,47 @@ body.light-theme .user-info {
     border: 1px solid var(--border-color);
 }
 
+.user-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
 .user-info h4 {
     color: var(--female-color);
-    margin-bottom: 10px;
+    margin: 0;
+}
+
+.language-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.language-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.light-theme .language-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+body.light-theme .language-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+#currentLanguageFlag {
+    font-size: 16px;
 }
 
 .user-info p {

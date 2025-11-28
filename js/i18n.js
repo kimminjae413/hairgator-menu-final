@@ -76,6 +76,33 @@ const HAIRGATOR_I18N = {
       personalColorDesc: '614개 헤어컬러 데이터 기반 분석',
       brandSetting: '상호 설정',
 
+      // 상호 설정 모달
+      brandNameLabel: '상호명 (비워두면 HAIRGATOR 표시)',
+      brandNamePlaceholder: '예: SALON BEAUTY',
+      fontSelect: '폰트 선택',
+      fontColorLight: '☀️ 라이트 모드 폰트 색상',
+      fontColorDark: '🌙 다크 모드 폰트 색상',
+      preview: '미리보기',
+      previewLight: '☀️ 라이트',
+      previewDark: '🌙 다크',
+      reset: '초기화',
+      save: '저장',
+      brandSaved: '상호 설정이 저장되었습니다.',
+      saveFailed: '저장에 실패했습니다',
+
+      // 프로필 사진
+      profilePhoto: '📷 프로필 사진',
+      profilePhotoHint: '💡 이 사진은 3분간 화면 조작이 없을 때',
+      profilePhotoHint2: '대기 화면',
+      profilePhotoHint3: '으로 표시됩니다.',
+      selectPhoto: '사진 선택',
+      deletePhoto: '사진 삭제',
+      profileDeleted: '프로필 사진이 삭제되었습니다.',
+      profileSaved: '프로필 사진이 저장되었습니다.',
+
+      // 대기 화면
+      touchToReturn: '화면을 터치하세요',
+
       // 메시지
       loginSuccess: '로그인 성공',
       logoutSuccess: '로그아웃되었습니다',
@@ -376,6 +403,33 @@ const HAIRGATOR_I18N = {
       personalColorDesc: 'Analysis based on 614 hair color data',
       brandSetting: 'Brand Setting',
 
+      // Brand setting modal
+      brandNameLabel: 'Brand Name (Leave empty for HAIRGATOR)',
+      brandNamePlaceholder: 'e.g., SALON BEAUTY',
+      fontSelect: 'Select Font',
+      fontColorLight: '☀️ Light Mode Font Color',
+      fontColorDark: '🌙 Dark Mode Font Color',
+      preview: 'Preview',
+      previewLight: '☀️ Light',
+      previewDark: '🌙 Dark',
+      reset: 'Reset',
+      save: 'Save',
+      brandSaved: 'Brand settings saved.',
+      saveFailed: 'Save failed',
+
+      // Profile photo
+      profilePhoto: '📷 Profile Photo',
+      profilePhotoHint: '💡 This photo will be displayed as',
+      profilePhotoHint2: 'standby screen',
+      profilePhotoHint3: 'after 3 min of inactivity.',
+      selectPhoto: 'Select Photo',
+      deletePhoto: 'Delete Photo',
+      profileDeleted: 'Profile photo deleted.',
+      profileSaved: 'Profile photo saved.',
+
+      // Idle screen
+      touchToReturn: 'Touch to return',
+
       loginSuccess: 'Login successful',
       logoutSuccess: 'Logged out',
       loginFailed: 'Login failed',
@@ -663,6 +717,33 @@ const HAIRGATOR_I18N = {
       personalColor: 'パーソナルカラー診断',
       personalColorDesc: '614個のヘアカラーデータ基盤分析',
       brandSetting: '店名設定',
+
+      // 店名設定モーダル
+      brandNameLabel: '店名（空欄の場合はHAIRGATOR表示）',
+      brandNamePlaceholder: '例：SALON BEAUTY',
+      fontSelect: 'フォント選択',
+      fontColorLight: '☀️ ライトモードフォント色',
+      fontColorDark: '🌙 ダークモードフォント色',
+      preview: 'プレビュー',
+      previewLight: '☀️ ライト',
+      previewDark: '🌙 ダーク',
+      reset: 'リセット',
+      save: '保存',
+      brandSaved: '店名設定が保存されました。',
+      saveFailed: '保存に失敗しました',
+
+      // プロフィール写真
+      profilePhoto: '📷 プロフィール写真',
+      profilePhotoHint: '💡 この写真は3分間操作がない場合',
+      profilePhotoHint2: '待機画面',
+      profilePhotoHint3: 'として表示されます。',
+      selectPhoto: '写真を選択',
+      deletePhoto: '写真を削除',
+      profileDeleted: 'プロフィール写真が削除されました。',
+      profileSaved: 'プロフィール写真が保存されました。',
+
+      // 待機画面
+      touchToReturn: '画面をタッチしてください',
 
       loginSuccess: 'ログイン成功',
       logoutSuccess: 'ログアウトしました',
@@ -952,6 +1033,33 @@ const HAIRGATOR_I18N = {
       personalColorDesc: '基于614个染发数据的分析',
       brandSetting: '店名设置',
 
+      // 店名设置弹窗
+      brandNameLabel: '店名（留空则显示HAIRGATOR）',
+      brandNamePlaceholder: '例如：SALON BEAUTY',
+      fontSelect: '选择字体',
+      fontColorLight: '☀️ 浅色模式字体颜色',
+      fontColorDark: '🌙 深色模式字体颜色',
+      preview: '预览',
+      previewLight: '☀️ 浅色',
+      previewDark: '🌙 深色',
+      reset: '重置',
+      save: '保存',
+      brandSaved: '店名设置已保存。',
+      saveFailed: '保存失败',
+
+      // 个人照片
+      profilePhoto: '📷 个人照片',
+      profilePhotoHint: '💡 此照片将在3分钟无操作后',
+      profilePhotoHint2: '待机画面',
+      profilePhotoHint3: '显示。',
+      selectPhoto: '选择照片',
+      deletePhoto: '删除照片',
+      profileDeleted: '个人照片已删除。',
+      profileSaved: '个人照片已保存。',
+
+      // 待机画面
+      touchToReturn: '触摸屏幕返回',
+
       loginSuccess: '登录成功',
       logoutSuccess: '已登出',
       loginFailed: '登录失败',
@@ -1239,6 +1347,33 @@ const HAIRGATOR_I18N = {
       personalColor: 'Phân tích màu cá nhân',
       personalColorDesc: 'Phân tích dựa trên 614 dữ liệu màu tóc',
       brandSetting: 'Cài đặt tên cửa hàng',
+
+      // Hộp thoại cài đặt tên cửa hàng
+      brandNameLabel: 'Tên cửa hàng (Để trống sẽ hiển thị HAIRGATOR)',
+      brandNamePlaceholder: 'VD: SALON BEAUTY',
+      fontSelect: 'Chọn phông chữ',
+      fontColorLight: '☀️ Màu chữ chế độ sáng',
+      fontColorDark: '🌙 Màu chữ chế độ tối',
+      preview: 'Xem trước',
+      previewLight: '☀️ Sáng',
+      previewDark: '🌙 Tối',
+      reset: 'Đặt lại',
+      save: 'Lưu',
+      brandSaved: 'Đã lưu cài đặt tên cửa hàng.',
+      saveFailed: 'Lưu thất bại',
+
+      // Ảnh hồ sơ
+      profilePhoto: '📷 Ảnh hồ sơ',
+      profilePhotoHint: '💡 Ảnh này sẽ hiển thị như',
+      profilePhotoHint2: 'màn hình chờ',
+      profilePhotoHint3: 'sau 3 phút không hoạt động.',
+      selectPhoto: 'Chọn ảnh',
+      deletePhoto: 'Xóa ảnh',
+      profileDeleted: 'Đã xóa ảnh hồ sơ.',
+      profileSaved: 'Đã lưu ảnh hồ sơ.',
+
+      // Màn hình chờ
+      touchToReturn: 'Chạm để quay lại',
 
       loginSuccess: 'Đăng nhập thành công',
       logoutSuccess: 'Đã đăng xuất',
