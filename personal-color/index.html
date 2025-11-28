@@ -107,8 +107,9 @@
                 </div>
 
                 <div class="analysis-grid">
-                    <!-- 카메라 영역 -->
-                    <div class="camera-container">
+                    <!-- 카메라 영역 + 커스텀 스크롤바 -->
+                    <div class="camera-wrapper">
+                    <div class="camera-container" id="camera-container">
                         <div class="video-container">
                             <video id="camera-feed" autoplay muted playsinline style="display:none;"></video>
                             <canvas id="camera-canvas" style="width: 100%; max-width: 640px; border-radius: 8px;"></canvas>
@@ -136,6 +137,11 @@
                             </div>
                             <div style="font-size: 14px; line-height: 1.8; color: #eee;" id="realtime-recommendation"></div>
                         </div>
+                    </div>
+                    <!-- 커스텀 스크롤바 (태블릿용) -->
+                    <div class="custom-scrollbar" id="custom-scrollbar">
+                        <div class="scrollbar-thumb" id="scrollbar-thumb"></div>
+                    </div>
                     </div>
 
                     <!-- 분석 패널 -->
@@ -3228,28 +3234,85 @@
             stopDrapingCamera(true); // silent = true
         });
 
-        // ========== 태블릿용 스크롤 인디케이터 ==========
+        // ========== 태블릿용 커스텀 스크롤바 ==========
         function initScrollIndicator() {
-            const cameraContainer = document.querySelector('.camera-container');
-            if (!cameraContainer) return;
+            const container = document.getElementById('camera-container');
+            const scrollbar = document.getElementById('custom-scrollbar');
+            const thumb = document.getElementById('scrollbar-thumb');
 
-            // 스크롤 감지해서 끝에 도달하면 그라데이션 숨김
-            cameraContainer.addEventListener('scroll', function() {
-                const isAtBottom = cameraContainer.scrollHeight - cameraContainer.scrollTop <= cameraContainer.clientHeight + 50;
-                if (isAtBottom) {
-                    cameraContainer.classList.add('scroll-end');
-                } else {
-                    cameraContainer.classList.remove('scroll-end');
+            if (!container || !scrollbar || !thumb) return;
+
+            function updateScrollbar() {
+                const scrollHeight = container.scrollHeight;
+                const clientHeight = container.clientHeight;
+                const scrollTop = container.scrollTop;
+
+                // 스크롤이 필요한지 확인
+                if (scrollHeight <= clientHeight) {
+                    scrollbar.classList.add('hidden');
+                    return;
                 }
+
+                scrollbar.classList.remove('hidden');
+
+                // 썸 크기 계산
+                const thumbHeight = Math.max((clientHeight / scrollHeight) * clientHeight, 40);
+                thumb.style.height = thumbHeight + 'px';
+
+                // 썸 위치 계산
+                const maxScrollTop = scrollHeight - clientHeight;
+                const maxThumbTop = clientHeight - thumbHeight;
+                const thumbTop = (scrollTop / maxScrollTop) * maxThumbTop;
+                thumb.style.top = thumbTop + 'px';
+            }
+
+            // 스크롤 이벤트
+            container.addEventListener('scroll', updateScrollbar);
+
+            // 리사이즈 이벤트
+            window.addEventListener('resize', updateScrollbar);
+
+            // 초기화
+            setTimeout(updateScrollbar, 100);
+
+            // 썸 드래그
+            let isDragging = false;
+            let startY = 0;
+            let startScrollTop = 0;
+
+            thumb.addEventListener('touchstart', function(e) {
+                isDragging = true;
+                startY = e.touches[0].clientY;
+                startScrollTop = container.scrollTop;
+                thumb.classList.add('active');
+                e.preventDefault();
+            });
+
+            document.addEventListener('touchmove', function(e) {
+                if (!isDragging) return;
+                const deltaY = e.touches[0].clientY - startY;
+                const scrollHeight = container.scrollHeight;
+                const clientHeight = container.clientHeight;
+                const thumbHeight = thumb.offsetHeight;
+                const maxThumbTop = clientHeight - thumbHeight;
+                const scrollRatio = (scrollHeight - clientHeight) / maxThumbTop;
+                container.scrollTop = startScrollTop + (deltaY * scrollRatio);
+            });
+
+            document.addEventListener('touchend', function() {
+                isDragging = false;
+                thumb.classList.remove('active');
             });
         }
 
-        // 결과가 표시될 때 스크롤 상태 초기화
+        // 결과가 표시될 때 스크롤바 업데이트
         function showScrollIndicator() {
-            const cameraContainer = document.querySelector('.camera-container');
-            if (cameraContainer) {
-                cameraContainer.classList.remove('scroll-end');
-            }
+            setTimeout(function() {
+                const container = document.getElementById('camera-container');
+                if (container) {
+                    container.dispatchEvent(new Event('scroll'));
+                }
+            }, 100);
         }
 
         // ========== 다국어 시스템 ==========

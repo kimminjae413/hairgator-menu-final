@@ -1632,32 +1632,72 @@ body {
     }
 }
 
-/* ========== 태블릿용 스크롤 인디케이터 (바 형태) ========== */
+/* ========== 태블릿용 커스텀 스크롤바 ========== */
 
-/* 태블릿에서 왼쪽 카메라 컨테이너 스크롤 가능하게 */
+/* 기본적으로 숨김 */
+.camera-wrapper {
+    display: contents;
+}
+
+.custom-scrollbar {
+    display: none;
+}
+
+/* 태블릿에서만 표시 */
 @media (min-width: 768px) and (max-width: 1366px) {
-    .camera-container {
+    .camera-wrapper {
+        display: flex;
         position: relative;
+        flex: 1;
+    }
+
+    .camera-container {
+        flex: 1;
         max-height: calc(100vh - 180px);
-        overflow-y: scroll !important; /* 항상 스크롤바 표시 */
+        overflow-y: auto;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE */
     }
 
-    /* iOS/웹킷 스크롤바 항상 표시 */
     .camera-container::-webkit-scrollbar {
-        width: 8px;
-        -webkit-appearance: none;
+        display: none; /* 기본 스크롤바 숨김 */
     }
 
-    .camera-container::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 4px;
+    /* 커스텀 스크롤바 트랙 */
+    .custom-scrollbar {
+        display: block;
+        position: absolute;
+        right: 4px;
+        top: 10px;
+        bottom: 10px;
+        width: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        z-index: 50;
     }
 
-    .camera-container::-webkit-scrollbar-thumb {
-        background: var(--primary-color);
-        border-radius: 4px;
+    /* 커스텀 스크롤바 썸 */
+    .scrollbar-thumb {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
         min-height: 40px;
+        background: var(--primary-color);
+        border-radius: 3px;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+
+    .scrollbar-thumb:hover,
+    .scrollbar-thumb.active {
+        opacity: 1;
+    }
+
+    /* 스크롤이 필요 없을 때 숨김 */
+    .custom-scrollbar.hidden {
+        display: none;
     }
 }
