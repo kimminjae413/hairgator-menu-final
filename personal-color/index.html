@@ -1454,7 +1454,7 @@
         }
 
         function setupUI() {
-            selectSeason('spring');
+            selectSeason('spring', true); // silent = true (초기화 시 토스트 표시 안함)
             console.log('UI 설정 완료');
         }
 
@@ -1535,8 +1535,9 @@
             modeSelection.style.display = '';  // 스타일 초기화
             modeSelection.classList.add('active');
 
-            stopAICamera();
-            stopDrapingCamera();
+            // 카메라 정지 (silent = true, 홈으로 돌아갈 때 카메라 정지 토스트 불필요)
+            stopAICamera(true);
+            stopDrapingCamera(true);
             cleanupCameraResources();
 
             currentMode = null;
@@ -1547,9 +1548,9 @@
         function closePersonalColor() {
             console.log('🎨 퍼스널컬러 페이지 닫기');
 
-            // 카메라 리소스 정리
-            stopAICamera();
-            stopDrapingCamera();
+            // 카메라 리소스 정리 (silent = true, 닫을 때 토스트 표시 안함)
+            stopAICamera(true);
+            stopDrapingCamera(true);
             cleanupCameraResources();
 
             // 부모 창이 있으면 (iframe인 경우) 부모에게 닫기 요청
@@ -2747,10 +2748,12 @@
             if (panel) panel.remove();
         }
 
-        function stopAICamera() {
+        function stopAICamera(silent = false) {
             console.log('AI 카메라 중지 요청');
             cleanupCameraResources();
-            showToast(t('personalColor.toast.aiCameraStopped') || 'AI 카메라가 정지되었습니다', 'info');
+            if (!silent) {
+                showToast(t('personalColor.toast.aiCameraStopped') || 'AI 카메라가 정지되었습니다', 'info');
+            }
         }
 
         function cleanupCameraResources() {
@@ -2905,18 +2908,20 @@
             }
         }
 
-        function stopDrapingCamera() {
+        function stopDrapingCamera(silent = false) {
             const drapingVideo = document.getElementById('draping-camera');
             if (drapingVideo && drapingVideo.srcObject) {
                 const tracks = drapingVideo.srcObject.getTracks();
                 tracks.forEach(track => track.stop());
                 drapingVideo.srcObject = null;
-            }
 
-            showToast(t('personalColor.toast.drapingCameraStopped') || '드래이핑 카메라가 정지되었습니다', 'info');
+                if (!silent) {
+                    showToast(t('personalColor.toast.drapingCameraStopped') || '드래이핑 카메라가 정지되었습니다', 'info');
+                }
+            }
         }
 
-        function selectSeason(season) {
+        function selectSeason(season, silent = false) {
             currentSeason = season;
 
             document.querySelectorAll('.season-tab').forEach(tab => {
@@ -2926,7 +2931,9 @@
 
             updateColorGrid(season);
 
-            showToast(t('personalColor.toast.seasonSelected') || '계절 색상을 선택했습니다', 'info');
+            if (!silent) {
+                showToast(t('personalColor.toast.seasonSelected') || '계절 색상을 선택했습니다', 'info');
+            }
         }
 
         function updateColorGrid(season) {
@@ -3215,7 +3222,7 @@
         // 페이지 언로드 시 정리
         window.addEventListener('beforeunload', function () {
             cleanupCameraResources();
-            stopDrapingCamera();
+            stopDrapingCamera(true); // silent = true
         });
 
         // ========== 다국어 시스템 ==========
