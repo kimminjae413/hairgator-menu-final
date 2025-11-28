@@ -1189,15 +1189,15 @@
         function getPriorityBadge(priority) {
             switch(priority) {
                 case 1:
-                    return { icon: '⭐', label: t('personalColor.priority.bestMatch') || 'Best Match', color: '#FFD700' };
+                    return { icon: '⭐', label: t('personalColor.priority.bestMatch') || '최적 매칭', color: '#FFD700' };
                 case 2:
-                    return { icon: '☀️', label: t('personalColor.priority.levelOk') || 'Level OK', color: '#FF9800' };
+                    return { icon: '☀️', label: t('personalColor.priority.levelOk') || '레벨 적합', color: '#FF9800' };
                 case 3:
-                    return { icon: '🎨', label: t('personalColor.priority.toneOk') || 'Tone OK', color: '#4CAF50' };
+                    return { icon: '🎨', label: t('personalColor.priority.toneOk') || '톤 적합', color: '#4CAF50' };
                 case 4:
-                    return { icon: '👍', label: t('personalColor.priority.good') || 'Good', color: '#2196F3' };
+                    return { icon: '👍', label: t('personalColor.priority.good') || '좋음', color: '#2196F3' };
                 default:
-                    return { icon: '💫', label: t('personalColor.priority.option') || 'Option', color: '#9E9E9E' };
+                    return { icon: '💫', label: t('personalColor.priority.option') || '옵션', color: '#9E9E9E' };
             }
         }
 
@@ -1260,7 +1260,7 @@
                 console.warn('로딩 타임아웃 - 강제로 앱 표시');
                 document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('main-app').classList.add('loaded');
-                showToast(t('personalColor.loadingSteps.ready') || 'System ready!', 'warning');
+                showToast(t('personalColor.loadingSteps.ready') || '시스템 준비 완료!', 'warning');
             }, 5000);
 
             try {
@@ -1496,12 +1496,12 @@
                 const aiSection = document.getElementById('ai-analysis');
                 aiSection.classList.add('active');
                 aiSection.style.display = 'block';
-                showToast(t('personalColor.toast.aiModeActivated') || 'AI Personal Color Analysis mode activated', 'success');
+                showToast(t('personalColor.toast.aiModeActivated') || 'AI 퍼스널컬러 분석 모드가 활성화되었습니다', 'success');
             } else if (mode === 'draping') {
                 const drapingSection = document.getElementById('draping-mode');
                 drapingSection.classList.add('active');
                 drapingSection.style.display = 'block';
-                showToast(t('personalColor.toast.drapingModeActivated') || 'Expert Draping mode activated', 'success');
+                showToast(t('personalColor.toast.drapingModeActivated') || '전문가 드래이핑 모드가 활성화되었습니다', 'success');
             }
         }
 
@@ -1522,7 +1522,7 @@
             cleanupCameraResources();
 
             currentMode = null;
-            showToast(t('personalColor.toast.returningHome') || 'Returning to home', 'info');
+            showToast(t('personalColor.toast.returningHome') || '홈 화면으로 돌아갑니다', 'info');
         }
 
         // X 버튼 클릭 - 퍼스널컬러 페이지 닫기
@@ -1550,7 +1550,7 @@
         // AI 카메라 함수들
         async function startAICamera() {
             try {
-                showToast(t('personalColor.toast.checkingPermission') || 'Checking camera permission...', 'info');
+                showToast(t('personalColor.toast.checkingPermission') || '카메라 권한을 확인합니다...', 'info');
                 console.log('🎥 카메라 시작 시도...');
 
                 // 1. mediaDevices API 지원 확인
@@ -1625,7 +1625,7 @@
                     setTimeout(() => reject(new Error('VIDEO_TIMEOUT')), 10000);
                 });
 
-                showToast(t('personalColor.toast.cameraStarted') || 'Camera started!', 'success');
+                showToast(t('personalColor.toast.cameraStarted') || '카메라가 시작되었습니다!', 'success');
 
                 canvasElement = document.getElementById('camera-canvas');
                 canvasCtx = canvasElement.getContext('2d', { willReadFrequently: true });
@@ -1678,10 +1678,10 @@
                         }
 
                         console.log('MediaPipe Face Mesh 활성화');
-                        showToast(t('personalColor.toast.faceRecognitionEnabled') || 'Face recognition enabled', 'success');
+                        showToast(t('personalColor.toast.faceRecognitionEnabled') || '얼굴 인식이 활성화되었습니다', 'success');
                     } catch (error) {
                         console.warn('Face Mesh 초기화 실패:', error);
-                        showToast(t('personalColor.toast.basicCameraMode') || 'Starting in basic camera mode', 'warning');
+                        showToast(t('personalColor.toast.basicCameraMode') || '기본 카메라 모드로 시작합니다', 'warning');
                     }
                 }
 
@@ -2732,7 +2732,7 @@
         function stopAICamera() {
             console.log('AI 카메라 중지 요청');
             cleanupCameraResources();
-            showToast(t('personalColor.toast.aiCameraStopped') || 'AI camera stopped', 'info');
+            showToast(t('personalColor.toast.aiCameraStopped') || 'AI 카메라가 정지되었습니다', 'info');
         }
 
         function cleanupCameraResources() {
@@ -2789,12 +2789,12 @@
             if (analysisInProgress) return;
 
             if (!videoElement || videoElement.readyState !== 4) {
-                showToast(t('personalColor.toast.startCameraFirst') || 'Please start camera first', 'warning');
+                showToast(t('personalColor.toast.startCameraFirst') || '먼저 카메라를 시작해주세요', 'warning');
                 return;
             }
 
             analysisInProgress = true;
-            showToast(t('personalColor.toast.startingAiAnalysis') || 'Starting AI analysis...', 'info');
+            showToast(t('personalColor.toast.startingAiAnalysis') || 'AI 분석을 시작합니다...', 'info');
 
             await performAIAnalysisSteps();
 
@@ -2862,13 +2862,13 @@
 
             displayFinalResults(result);
 
-            showToast(`${t('personalColor.toast.aiAnalysisComplete') || 'AI analysis complete'}: ${result.season}`, 'success');
+            showToast(`${t('personalColor.toast.aiAnalysisComplete') || 'AI 분석 완료'}: ${result.season}`, 'success');
         }
 
         // 드래이핑 모드 함수들
         async function startDrapingCamera() {
             try {
-                showToast(t('personalColor.toast.startingDrapingCamera') || 'Starting draping camera...', 'info');
+                showToast(t('personalColor.toast.startingDrapingCamera') || '드래이핑 카메라를 시작합니다...', 'info');
 
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: 'user', width: 640, height: 480 }
@@ -2879,11 +2879,11 @@
 
                 document.getElementById('draping-face-guide').style.display = 'flex';
 
-                showToast(t('personalColor.toast.drapingCameraStarted') || 'Draping camera started', 'success');
+                showToast(t('personalColor.toast.drapingCameraStarted') || '드래이핑 카메라가 시작되었습니다', 'success');
 
             } catch (error) {
                 console.error('드래이핑 카메라 시작 실패:', error);
-                showToast(t('personalColor.toast.cameraAccessDenied') || 'Cannot access camera', 'error');
+                showToast(t('personalColor.toast.cameraAccessDenied') || '카메라에 접근할 수 없습니다', 'error');
             }
         }
 
@@ -2895,7 +2895,7 @@
                 drapingVideo.srcObject = null;
             }
 
-            showToast(t('personalColor.toast.drapingCameraStopped') || 'Draping camera stopped', 'info');
+            showToast(t('personalColor.toast.drapingCameraStopped') || '드래이핑 카메라가 정지되었습니다', 'info');
         }
 
         function selectSeason(season) {
@@ -2908,7 +2908,7 @@
 
             updateColorGrid(season);
 
-            showToast(t('personalColor.toast.seasonSelected') || 'Season color selected', 'info');
+            showToast(t('personalColor.toast.seasonSelected') || '계절 색상을 선택했습니다', 'info');
         }
 
         function updateColorGrid(season) {
@@ -3027,7 +3027,7 @@
 
         function saveCurrentColor() {
             if (!selectedColor) {
-                showToast(t('personalColor.toast.selectColorFirst') || 'Please select a color first', 'warning');
+                showToast(t('personalColor.toast.selectColorFirst') || '먼저 색상을 선택해주세요', 'warning');
                 return;
             }
 
@@ -3039,7 +3039,7 @@
 
             savedColors.push(colorData);
 
-            showToast(t('personalColor.toast.colorSaved') || 'Current color saved', 'success');
+            showToast(t('personalColor.toast.colorSaved') || '현재 색상이 저장되었습니다', 'success');
         }
 
         // 공통 결과 표시
