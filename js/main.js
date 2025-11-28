@@ -142,7 +142,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
         if (bullnabiUser) {
             if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${bullnabiUser.name}`;
-            if (creditDisplay) creditDisplay.textContent = bullnabiUser.remainCount || 0;
+            const credit = parseFloat(bullnabiUser.remainCount) || 0;
+            if (creditDisplay) creditDisplay.textContent = credit.toFixed(2);
         } else {
             const designerName = localStorage.getItem('designerName');
             if (designerName) {
