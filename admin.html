@@ -1580,12 +1580,12 @@
         /**
          * 이미지 파일로부터 썸네일 생성 (Canvas 사용)
          * @param {File} file - 원본 이미지 파일
-         * @param {number} maxWidth - 최대 너비 (기본: 300)
-         * @param {number} maxHeight - 최대 높이 (기본: 375)
+         * @param {number} maxWidth - 최대 너비 (기본: 500)
+         * @param {number} maxHeight - 최대 높이 (기본: 625)
          * @param {number} quality - JPEG 품질 (기본: 0.75)
          * @returns {Promise<Blob>} - 썸네일 Blob
          */
-        async function createThumbnailBlob(file, maxWidth = 300, maxHeight = 375, quality = 0.75) {
+        async function createThumbnailBlob(file, maxWidth = 500, maxHeight = 625, quality = 0.75) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
                 img.onload = () => {
@@ -3000,7 +3000,7 @@
         // ========== 썸네일 일괄 생성 기능 ==========
 
         // URL에서 이미지를 가져와 썸네일 생성 (fetch 사용으로 CORS 우회)
-        async function createThumbnailFromUrl(imageUrl, maxWidth = 300, maxHeight = 375, quality = 0.85) {
+        async function createThumbnailFromUrl(imageUrl, maxWidth = 500, maxHeight = 625, quality = 0.85) {
             // fetch로 이미지 blob 가져오기
             const response = await fetch(imageUrl);
             if (!response.ok) {
@@ -3138,7 +3138,7 @@
                         statusEl.textContent = `처리 중: ${style.name} (${processed + 1}/${stylesToProcess.length})`;
 
                         // 썸네일 생성 (선택한 화질 적용)
-                        const thumbnailBlob = await createThumbnailFromUrl(style.imageUrl, 300, 375, quality);
+                        const thumbnailBlob = await createThumbnailFromUrl(style.imageUrl, 500, 625, quality);
 
                         // Firebase Storage에 업로드
                         const timestamp = Date.now();
@@ -3221,7 +3221,7 @@
                         statusEl.textContent = `재생성 중: ${style.name} (${processed + 1}/${stylesToProcess.length})`;
 
                         // 새 썸네일 생성 (선택한 화질 적용)
-                        const thumbnailBlob = await createThumbnailFromUrl(style.imageUrl, 300, 375, quality);
+                        const thumbnailBlob = await createThumbnailFromUrl(style.imageUrl, 500, 625, quality);
 
                         // Firebase Storage에 업로드
                         const timestamp = Date.now();
