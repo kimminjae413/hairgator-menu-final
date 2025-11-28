@@ -367,7 +367,7 @@ const HAIRGATOR_I18N = {
         highLift: '하이리프트',
         highLiftTip: '하이리프트 염색으로 톤업 가능',
         toneUp: '톤업 필요',
-        toneUpTip: '탈색 또는 하이리프트 염색 권장',
+        toneUpTip: '리프트력 강한 염색제(12~14Lv) 또는 탈색 1회 권장',
         hard: '고난도',
         hardTip: '2회 이상 탈색 필요, 모발 손상 주의'
       },
@@ -767,7 +767,7 @@ const HAIRGATOR_I18N = {
         highLift: 'High Lift',
         highLiftTip: 'Tone up possible with high lift color',
         toneUp: 'Tone Up Needed',
-        toneUpTip: 'Bleaching or high lift color recommended',
+        toneUpTip: 'High lift dye (12-14Lv) or 1 bleaching session recommended',
         hard: 'Advanced',
         hardTip: '2+ bleaching sessions required, hair damage caution'
       },
@@ -1164,7 +1164,7 @@ const HAIRGATOR_I18N = {
         highLift: 'ハイリフト',
         highLiftTip: 'ハイリフトカラーでトーンアップ可能',
         toneUp: 'トーンアップ必要',
-        toneUpTip: 'ブリーチまたはハイリフトカラー推奨',
+        toneUpTip: 'リフト力の強い染料(12-14Lv)または1回のブリーチ推奨',
         hard: '高難度',
         hardTip: '2回以上のブリーチが必要、髪ダメージ注意'
       },
@@ -1561,7 +1561,7 @@ const HAIRGATOR_I18N = {
         highLift: '高提升',
         highLiftTip: '可用高提升染发剂提亮',
         toneUp: '需要提亮',
-        toneUpTip: '建议漂发或使用高提升染发剂',
+        toneUpTip: '建议使用高提升染发剂(12-14Lv)或漂发1次',
         hard: '高难度',
         hardTip: '需要2次以上漂发，注意头发损伤'
       },
@@ -1958,8 +1958,8 @@ const HAIRGATOR_I18N = {
         highLift: 'Nâng cao',
         highLiftTip: 'Có thể nâng tông bằng thuốc nhuộm nâng cao',
         toneUp: 'Cần nâng tông',
-        toneUpTip: 'Khuyến nghị tẩy hoặc thuốc nhuộm nâng cao',
-        hard: 'Nâng cao',
+        toneUpTip: 'Khuyến nghị thuốc nhuộm nâng cao (12-14Lv) hoặc tẩy 1 lần',
+        hard: 'Khó',
         hardTip: 'Cần tẩy 2+ lần, chú ý tổn thương tóc'
       },
 

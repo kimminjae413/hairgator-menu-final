@@ -1103,19 +1103,19 @@
             let difficultyTip = t('personalColor.difficulty.easyTip') || '탈색 없이 바로 적용 가능';
             let needsBleaching = false;
 
-            if (colorLevel >= 11) {
-                // 11레벨 이상: 확실히 탈색 필요
+            if (colorLevel >= 12) {
+                // 12레벨 이상: 확실히 2회 탈색 필요
                 difficulty = 'hard';
                 difficultyLabel = t('personalColor.difficulty.hard') || '고난도';
                 difficultyIcon = '⚠️';
                 difficultyTip = t('personalColor.difficulty.hardTip') || '2회 이상 탈색 필요, 모발 손상 주의';
                 needsBleaching = true;
             } else if (colorLevel >= 9) {
-                // 9~10레벨: 탈색 또는 하이리프트 염색
+                // 9~11레벨: 모질에 따라 탈색 또는 최고 리프트력 염색제 필요
                 difficulty = 'medium';
                 difficultyLabel = t('personalColor.difficulty.toneUp') || '톤업 필요';
                 difficultyIcon = '🔆';
-                difficultyTip = t('personalColor.difficulty.toneUpTip') || '탈색 또는 하이리프트 염색 권장';
+                difficultyTip = t('personalColor.difficulty.toneUpTip') || '리프트력 강한 염색제(12~14Lv) 또는 탈색 1회 권장';
                 needsBleaching = true;
             } else if (colorLevel >= 7) {
                 // 7~8레벨: 하이리프트 염색으로 가능
