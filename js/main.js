@@ -626,6 +626,18 @@ const FONT_OPTIONS = [
     { id: 'bebas', name: 'Bebas Neue', fontFamily: "'Bebas Neue', sans-serif", nameEn: 'Bebas Neue' }
 ];
 
+// 색상 옵션
+const COLOR_OPTIONS = [
+    { id: 'white', name: '화이트', color: '#FFFFFF' },
+    { id: 'black', name: '블랙', color: '#000000' },
+    { id: 'gold', name: '골드', color: '#D4AF37' },
+    { id: 'silver', name: '실버', color: '#C0C0C0' },
+    { id: 'pink', name: '핑크', color: '#E91E63' },
+    { id: 'blue', name: '블루', color: '#4A90E2' },
+    { id: 'red', name: '레드', color: '#E53935' },
+    { id: 'green', name: '그린', color: '#43A047' }
+];
+
 function showBrandSettingModal() {
     // 기존 모달 제거
     const existingModal = document.getElementById('brand-setting-modal');
@@ -634,6 +646,7 @@ function showBrandSettingModal() {
     // 저장된 설정 불러오기
     const savedBrand = localStorage.getItem('hairgator_brand_name') || '';
     const savedFont = localStorage.getItem('hairgator_brand_font') || 'default';
+    const savedColor = localStorage.getItem('hairgator_brand_color') || 'white';
 
     const modal = document.createElement('div');
     modal.id = 'brand-setting-modal';
@@ -656,6 +669,13 @@ function showBrandSettingModal() {
             <input type="radio" name="brandFont" value="${font.id}" ${savedFont === font.id ? 'checked' : ''} style="display: none;">
             <span class="font-preview" style="font-family: ${font.fontFamily};">Aa 가나</span>
             <span class="font-name">${font.name}</span>
+        </label>
+    `).join('');
+
+    const colorOptionsHtml = COLOR_OPTIONS.map(color => `
+        <label class="color-option ${savedColor === color.id ? 'selected' : ''}" data-color-id="${color.id}">
+            <input type="radio" name="brandColor" value="${color.id}" ${savedColor === color.id ? 'checked' : ''} style="display: none;">
+            <span class="color-circle" style="background: ${color.color}; ${color.id === 'white' ? 'border: 1px solid #666;' : ''}"></span>
         </label>
     `).join('');
 
@@ -712,6 +732,20 @@ function showBrandSettingModal() {
                 </div>
             </div>
 
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 12px;">
+                    폰트 색상
+                </label>
+                <div id="colorOptions" style="
+                    display: flex;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                ">
+                    ${colorOptionsHtml}
+                </div>
+            </div>
+
             <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 8px;">
                 <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 8px;">
                     미리보기
@@ -719,7 +753,7 @@ function showBrandSettingModal() {
                 <div id="brandPreview" style="
                     font-size: 24px;
                     font-weight: bold;
-                    color: var(--text-primary, #fff);
+                    color: ${COLOR_OPTIONS.find(c => c.id === savedColor)?.color || '#FFFFFF'};
                     text-align: center;
                     padding: 10px;
                     font-family: ${FONT_OPTIONS.find(f => f.id === savedFont)?.fontFamily || 'inherit'};
@@ -778,6 +812,24 @@ function showBrandSettingModal() {
                 font-size: 10px;
                 color: var(--text-secondary, #aaa);
             }
+            .color-option {
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .color-option .color-circle {
+                display: block;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                transition: all 0.2s;
+            }
+            .color-option:hover .color-circle {
+                transform: scale(1.1);
+            }
+            .color-option.selected .color-circle {
+                box-shadow: 0 0 0 3px #E91E63;
+                transform: scale(1.1);
+            }
         </style>
     `;
 
@@ -789,6 +841,7 @@ function showBrandSettingModal() {
     const resetBtn = document.getElementById('resetBrandBtn');
     const brandInput = document.getElementById('brandNameInput');
     const fontOptions = document.querySelectorAll('.font-option');
+    const colorOptions = document.querySelectorAll('.color-option');
     const preview = document.getElementById('brandPreview');
 
     // 닫기
@@ -814,23 +867,43 @@ function showBrandSettingModal() {
         };
     });
 
+    // 색상 선택
+    colorOptions.forEach(option => {
+        option.onclick = () => {
+            colorOptions.forEach(o => o.classList.remove('selected'));
+            option.classList.add('selected');
+            option.querySelector('input').checked = true;
+            const colorId = option.dataset.colorId;
+            const color = COLOR_OPTIONS.find(c => c.id === colorId);
+            if (color) {
+                preview.style.color = color.color;
+            }
+        };
+    });
+
     // 초기화
     resetBtn.onclick = () => {
         brandInput.value = '';
         preview.textContent = 'HAIRGATOR';
         preview.style.fontFamily = FONT_OPTIONS[0].fontFamily;
+        preview.style.color = '#FFFFFF';
         fontOptions.forEach(o => o.classList.remove('selected'));
         fontOptions[0].classList.add('selected');
         fontOptions[0].querySelector('input').checked = true;
+        colorOptions.forEach(o => o.classList.remove('selected'));
+        colorOptions[0].classList.add('selected');
+        colorOptions[0].querySelector('input').checked = true;
     };
 
     // 저장
     saveBtn.onclick = () => {
         const brandName = brandInput.value.trim();
         const selectedFont = document.querySelector('input[name="brandFont"]:checked')?.value || 'default';
+        const selectedColor = document.querySelector('input[name="brandColor"]:checked')?.value || 'white';
 
         localStorage.setItem('hairgator_brand_name', brandName);
         localStorage.setItem('hairgator_brand_font', selectedFont);
+        localStorage.setItem('hairgator_brand_color', selectedColor);
 
         applyCustomBrand();
         modal.remove();
@@ -845,6 +918,7 @@ function showBrandSettingModal() {
 function applyCustomBrand() {
     const brandName = localStorage.getItem('hairgator_brand_name');
     const brandFont = localStorage.getItem('hairgator_brand_font') || 'default';
+    const brandColor = localStorage.getItem('hairgator_brand_color') || 'white';
 
     const logoElement = document.querySelector('.logo');
     if (logoElement) {
@@ -853,6 +927,11 @@ function applyCustomBrand() {
         const font = FONT_OPTIONS.find(f => f.id === brandFont);
         if (font) {
             logoElement.style.fontFamily = font.fontFamily;
+        }
+
+        const color = COLOR_OPTIONS.find(c => c.id === brandColor);
+        if (color) {
+            logoElement.style.color = color.color;
         }
     }
 }
