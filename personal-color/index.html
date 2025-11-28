@@ -1075,7 +1075,7 @@
                 const brightnessBonus = Math.min(15, Math.abs(50 - skinToneData.lab.L) < 20 ? 15 : 5);
                 const chromaBonus = Math.min(10, skinToneData.lab.a > 5 || skinToneData.lab.b > 10 ? 10 : 5);
                 const calculatedConfidence = Math.min(98, baseConfidence + brightnessBonus + chromaBonus);
-                confidenceEl.innerHTML = `${resultTexts.confidence}: <b style="color: #4CAF50;">${calculatedConfidence}%</b>`;
+                confidenceEl.innerHTML = `${resultTexts.confidence}: <b style="color: #00E676;">${calculatedConfidence}%</b>`;
             }
 
             if (analysisData) {
