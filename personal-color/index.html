@@ -184,10 +184,6 @@
                             <div class="color-analysis-data" id="ai-analysis-data">
                                 <!-- 상세 데이터가 여기에 표시됩니다 -->
                             </div>
-                            <!-- 태블릿용 스크롤 유도 화살표 -->
-                            <div class="scroll-indicator" id="scroll-indicator">
-                                <span class="scroll-arrow">▼</span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -3232,37 +3228,27 @@
             stopDrapingCamera(true); // silent = true
         });
 
-        // ========== 태블릿용 스크롤 유도 화살표 ==========
+        // ========== 태블릿용 스크롤 인디케이터 ==========
         function initScrollIndicator() {
-            const resultsContainer = document.getElementById('ai-analysis-results');
-            const scrollIndicator = document.getElementById('scroll-indicator');
+            const cameraContainer = document.querySelector('.camera-container');
+            if (!cameraContainer) return;
 
-            if (!resultsContainer || !scrollIndicator) return;
-
-            // 화살표 클릭 시 스크롤
-            scrollIndicator.addEventListener('click', function() {
-                resultsContainer.scrollBy({
-                    top: 200,
-                    behavior: 'smooth'
-                });
-            });
-
-            // 스크롤 감지해서 끝에 도달하면 화살표 숨김
-            resultsContainer.addEventListener('scroll', function() {
-                const isAtBottom = resultsContainer.scrollHeight - resultsContainer.scrollTop <= resultsContainer.clientHeight + 50;
+            // 스크롤 감지해서 끝에 도달하면 그라데이션 숨김
+            cameraContainer.addEventListener('scroll', function() {
+                const isAtBottom = cameraContainer.scrollHeight - cameraContainer.scrollTop <= cameraContainer.clientHeight + 50;
                 if (isAtBottom) {
-                    scrollIndicator.classList.add('hidden');
+                    cameraContainer.classList.add('scroll-end');
                 } else {
-                    scrollIndicator.classList.remove('hidden');
+                    cameraContainer.classList.remove('scroll-end');
                 }
             });
         }
 
-        // 결과가 표시될 때 스크롤 인디케이터 초기화
+        // 결과가 표시될 때 스크롤 상태 초기화
         function showScrollIndicator() {
-            const scrollIndicator = document.getElementById('scroll-indicator');
-            if (scrollIndicator) {
-                scrollIndicator.classList.remove('hidden');
+            const cameraContainer = document.querySelector('.camera-container');
+            if (cameraContainer) {
+                cameraContainer.classList.remove('scroll-end');
             }
         }
 

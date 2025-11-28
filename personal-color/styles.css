@@ -1632,73 +1632,55 @@ body {
     }
 }
 
-/* ========== 태블릿용 스크롤 유도 화살표 ========== */
-.scroll-indicator {
-    display: none; /* 기본적으로 숨김 */
-}
+/* ========== 태블릿용 스크롤 인디케이터 (바 형태) ========== */
 
-/* 태블릿에서 표시 (768px ~ 1366px, 높이가 너비보다 작을 때 = 가로 모드) */
+/* 태블릿에서 왼쪽 카메라 컨테이너 스크롤 가능하게 */
 @media (min-width: 768px) and (max-width: 1366px) {
-    .scroll-indicator {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    .camera-container {
+        position: relative;
+        max-height: calc(100vh - 180px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 8px;
+    }
+
+    /* 커스텀 스크롤바 */
+    .camera-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .camera-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+
+    .camera-container::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--primary-color), var(--primary-dark));
+        border-radius: 3px;
+    }
+
+    .camera-container::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-light);
+    }
+
+    /* 하단 페이드 그라데이션 (더 있음 표시) */
+    .camera-container::after {
+        content: '';
         position: sticky;
-        bottom: 20px;
+        bottom: 0;
         left: 0;
         right: 0;
-        margin-top: 20px;
-        z-index: 100;
+        height: 40px;
+        background: linear-gradient(to top, rgba(30, 30, 30, 0.95), transparent);
         pointer-events: none;
-    }
-
-    .scroll-arrow {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 44px;
-        height: 44px;
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        color: white;
-        border-radius: 50%;
-        font-size: 20px;
-        box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
-        animation: bounceArrow 1.5s ease-in-out infinite;
-        pointer-events: auto;
-        cursor: pointer;
-    }
-
-    .scroll-arrow:hover {
-        transform: scale(1.1);
-    }
-
-    /* 스크롤이 끝에 도달하면 화살표 숨김 */
-    .scroll-indicator.hidden {
-        display: none !important;
-    }
-}
-
-@keyframes bounceArrow {
-    0%, 100% {
-        transform: translateY(0);
+        display: block;
+        margin-top: -40px;
         opacity: 1;
+        transition: opacity 0.3s ease;
     }
-    50% {
-        transform: translateY(8px);
-        opacity: 0.7;
-    }
-}
 
-/* 모바일에서는 숨김 */
-@media (max-width: 767px) {
-    .scroll-indicator {
-        display: none !important;
-    }
-}
-
-/* 데스크톱에서는 숨김 */
-@media (min-width: 1367px) {
-    .scroll-indicator {
-        display: none !important;
+    /* 스크롤이 끝에 도달하면 그라데이션 숨김 */
+    .camera-container.scroll-end::after {
+        opacity: 0;
     }
 }
