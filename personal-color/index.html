@@ -1367,17 +1367,20 @@
             const min = Math.min(r, g, b);
             const chroma = max - min;
 
-            // 최종 판정
+            // 최종 판정 (더 엄격한 기준 - 뉴트럴 범위 축소)
             const scoreDiff = warmScore - coolScore;
             let undertone, score;
 
-            if (scoreDiff >= 3) {
+            // 기존: >=3 웜, <=-3 쿨, 나머지 뉴트럴 (너무 넓음)
+            // 개선: >=2 웜, <=-2 쿨, -1~1만 뉴트럴 (좁은 범위)
+            if (scoreDiff >= 2) {
                 undertone = 'Warm';
                 score = scoreDiff;
-            } else if (scoreDiff <= -3) {
+            } else if (scoreDiff <= -2) {
                 undertone = 'Cool';
                 score = Math.abs(scoreDiff);
             } else {
+                // 정말 애매한 경우만 뉴트럴
                 undertone = 'Neutral';
                 score = Math.abs(scoreDiff);
             }

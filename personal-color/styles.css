@@ -263,12 +263,13 @@ body {
     position: sticky;
     top: 0;
     z-index: 10;
-    background: rgba(26, 28, 46, 0.95);
+    background: linear-gradient(135deg, #1a1c2e 0%, #2d1f3d 50%, #1a1c2e 100%);
     backdrop-filter: blur(10px);
     margin: 0 -20px 20px -20px;
-    padding: 15px 20px;
+    padding: 20px 20px;
     border-radius: 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 #ai-analysis.active .section-title,
