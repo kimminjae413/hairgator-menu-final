@@ -289,7 +289,34 @@ const HAIRGATOR_I18N = {
         feature2: '4계절 색상 팔레트 제공',
         feature3: 'Before/After 즉시 비교',
         feature4: '브랜드별 제품 추천',
-        startBtn: '드래이핑 시작'
+        startBtn: '드래이핑 시작',
+        colorAdjust: '색상 세부 조정',
+        lightness: '명도',
+        saturation: '채도',
+        warmth: '온도감',
+        recommendProducts: '추천 헤어컬러 제품'
+      },
+
+      // 토스트 메시지
+      toast: {
+        returningHome: '홈 화면으로 돌아갑니다',
+        aiModeActivated: 'AI 퍼스널컬러 분석 모드가 활성화되었습니다',
+        drapingModeActivated: '전문가 드래이핑 모드가 활성화되었습니다',
+        checkingPermission: '카메라 권한을 확인합니다...',
+        cameraStarted: '카메라가 시작되었습니다!',
+        faceRecognitionEnabled: '얼굴 인식이 활성화되었습니다',
+        basicCameraMode: '기본 카메라 모드로 시작합니다',
+        aiCameraStopped: 'AI 카메라가 정지되었습니다',
+        startCameraFirst: '먼저 카메라를 시작해주세요',
+        startingAiAnalysis: 'AI 분석을 시작합니다...',
+        aiAnalysisComplete: 'AI 분석 완료',
+        startingDrapingCamera: '드래이핑 카메라를 시작합니다...',
+        drapingCameraStarted: '드래이핑 카메라가 시작되었습니다',
+        cameraAccessDenied: '카메라에 접근할 수 없습니다',
+        drapingCameraStopped: '드래이핑 카메라가 정지되었습니다',
+        seasonSelected: '계절 색상을 선택했습니다',
+        selectColorFirst: '먼저 색상을 선택해주세요',
+        colorSaved: '현재 색상이 저장되었습니다'
       },
 
       // 언더톤
@@ -693,7 +720,33 @@ const HAIRGATOR_I18N = {
         feature2: '4 season color palette provided',
         feature3: 'Instant Before/After comparison',
         feature4: 'Brand-specific product recommendations',
-        startBtn: 'Start Draping'
+        startBtn: 'Start Draping',
+        colorAdjust: 'Color Adjustment',
+        lightness: 'Lightness',
+        saturation: 'Saturation',
+        warmth: 'Warmth',
+        recommendProducts: 'Recommended Hair Color Products'
+      },
+
+      toast: {
+        returningHome: 'Returning to home',
+        aiModeActivated: 'AI Personal Color Analysis mode activated',
+        drapingModeActivated: 'Expert Draping mode activated',
+        checkingPermission: 'Checking camera permission...',
+        cameraStarted: 'Camera started!',
+        faceRecognitionEnabled: 'Face recognition enabled',
+        basicCameraMode: 'Starting in basic camera mode',
+        aiCameraStopped: 'AI camera stopped',
+        startCameraFirst: 'Please start camera first',
+        startingAiAnalysis: 'Starting AI analysis...',
+        aiAnalysisComplete: 'AI analysis complete',
+        startingDrapingCamera: 'Starting draping camera...',
+        drapingCameraStarted: 'Draping camera started',
+        cameraAccessDenied: 'Cannot access camera',
+        drapingCameraStopped: 'Draping camera stopped',
+        seasonSelected: 'Season color selected',
+        selectColorFirst: 'Please select a color first',
+        colorSaved: 'Current color saved'
       },
 
       undertones: {
@@ -1090,7 +1143,33 @@ const HAIRGATOR_I18N = {
         feature2: '4シーズンカラーパレット提供',
         feature3: 'Before/After即時比較',
         feature4: 'ブランド別商品推薦',
-        startBtn: 'ドレーピング開始'
+        startBtn: 'ドレーピング開始',
+        colorAdjust: '色の詳細調整',
+        lightness: '明度',
+        saturation: '彩度',
+        warmth: '温度感',
+        recommendProducts: 'おすすめヘアカラー製品'
+      },
+
+      toast: {
+        returningHome: 'ホーム画面に戻ります',
+        aiModeActivated: 'AIパーソナルカラー分析モードが有効になりました',
+        drapingModeActivated: 'エキスパートドレーピングモードが有効になりました',
+        checkingPermission: 'カメラ権限を確認しています...',
+        cameraStarted: 'カメラが開始されました！',
+        faceRecognitionEnabled: '顔認識が有効になりました',
+        basicCameraMode: '基本カメラモードで開始します',
+        aiCameraStopped: 'AIカメラが停止しました',
+        startCameraFirst: '先にカメラを開始してください',
+        startingAiAnalysis: 'AI分析を開始します...',
+        aiAnalysisComplete: 'AI分析完了',
+        startingDrapingCamera: 'ドレーピングカメラを開始します...',
+        drapingCameraStarted: 'ドレーピングカメラが開始されました',
+        cameraAccessDenied: 'カメラにアクセスできません',
+        drapingCameraStopped: 'ドレーピングカメラが停止しました',
+        seasonSelected: 'シーズンカラーを選択しました',
+        selectColorFirst: '先に色を選択してください',
+        colorSaved: '現在の色が保存されました'
       },
 
       undertones: {
@@ -1487,7 +1566,33 @@ const HAIRGATOR_I18N = {
         feature2: '四季色彩调色板提供',
         feature3: '即时Before/After对比',
         feature4: '品牌产品推荐',
-        startBtn: '开始披巾测试'
+        startBtn: '开始披巾测试',
+        colorAdjust: '颜色详细调整',
+        lightness: '明度',
+        saturation: '饱和度',
+        warmth: '温度感',
+        recommendProducts: '推荐发色产品'
+      },
+
+      toast: {
+        returningHome: '返回主页',
+        aiModeActivated: 'AI个人色彩分析模式已激活',
+        drapingModeActivated: '专家披巾测试模式已激活',
+        checkingPermission: '正在检查相机权限...',
+        cameraStarted: '相机已启动！',
+        faceRecognitionEnabled: '人脸识别已启用',
+        basicCameraMode: '以基本相机模式启动',
+        aiCameraStopped: 'AI相机已停止',
+        startCameraFirst: '请先启动相机',
+        startingAiAnalysis: '正在开始AI分析...',
+        aiAnalysisComplete: 'AI分析完成',
+        startingDrapingCamera: '正在启动披巾测试相机...',
+        drapingCameraStarted: '披巾测试相机已启动',
+        cameraAccessDenied: '无法访问相机',
+        drapingCameraStopped: '披巾测试相机已停止',
+        seasonSelected: '已选择季节颜色',
+        selectColorFirst: '请先选择颜色',
+        colorSaved: '当前颜色已保存'
       },
 
       undertones: {
@@ -1884,7 +1989,33 @@ const HAIRGATOR_I18N = {
         feature2: 'Cung cấp bảng màu 4 mùa',
         feature3: 'So sánh Before/After tức thì',
         feature4: 'Đề xuất sản phẩm theo thương hiệu',
-        startBtn: 'Bắt đầu Draping'
+        startBtn: 'Bắt đầu Draping',
+        colorAdjust: 'Điều chỉnh màu chi tiết',
+        lightness: 'Độ sáng',
+        saturation: 'Độ bão hòa',
+        warmth: 'Độ ấm',
+        recommendProducts: 'Sản phẩm màu tóc đề xuất'
+      },
+
+      toast: {
+        returningHome: 'Đang quay về trang chủ',
+        aiModeActivated: 'Chế độ phân tích màu cá nhân AI đã được kích hoạt',
+        drapingModeActivated: 'Chế độ Draping chuyên gia đã được kích hoạt',
+        checkingPermission: 'Đang kiểm tra quyền camera...',
+        cameraStarted: 'Camera đã bắt đầu!',
+        faceRecognitionEnabled: 'Nhận diện khuôn mặt đã được bật',
+        basicCameraMode: 'Bắt đầu ở chế độ camera cơ bản',
+        aiCameraStopped: 'Camera AI đã dừng',
+        startCameraFirst: 'Vui lòng bắt đầu camera trước',
+        startingAiAnalysis: 'Đang bắt đầu phân tích AI...',
+        aiAnalysisComplete: 'Phân tích AI hoàn tất',
+        startingDrapingCamera: 'Đang bắt đầu camera draping...',
+        drapingCameraStarted: 'Camera draping đã bắt đầu',
+        cameraAccessDenied: 'Không thể truy cập camera',
+        drapingCameraStopped: 'Camera draping đã dừng',
+        seasonSelected: 'Đã chọn màu theo mùa',
+        selectColorFirst: 'Vui lòng chọn màu trước',
+        colorSaved: 'Màu hiện tại đã được lưu'
       },
 
       undertones: {

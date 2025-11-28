@@ -69,7 +69,7 @@
     <!-- 메인 애플리케이션 -->
     <div class="main-app" id="main-app">
         <!-- 닫기 버튼만 (헤더 제거) -->
-        <button class="close-btn-floating" onclick="closePersonalColor()" title="닫기" data-i18n="common.close">닫기</button>
+        <button class="close-btn-floating" onclick="closePersonalColor()" title="Close">Close</button>
 
         <main class="main-content">
             <!-- 모드 선택 섹션 -->
@@ -176,9 +176,9 @@
                         </div>
 
                         <div class="analysis-results" id="ai-analysis-results" style="display: none;">
-                            <h4>분석 결과</h4>
+                            <h4 data-i18n="personalColor.aiMode.result.title">Analysis Result</h4>
                             <div class="result-summary">
-                                <div class="season-result" id="ai-season-result">분석 중...</div>
+                                <div class="season-result" id="ai-season-result">Analyzing...</div>
                                 <div class="confidence-score" id="ai-confidence">-</div>
                             </div>
                             <div class="color-analysis-data" id="ai-analysis-data">
@@ -192,8 +192,8 @@
             <!-- 드래이핑 모드 -->
             <section class="section" id="draping-mode">
                 <div class="section-nav">
-                    <button class="nav-btn" onclick="goHome()">← 홈으로</button>
-                    <h2 class="section-title">전문가 드래이핑 모드</h2>
+                    <button class="nav-btn" onclick="goHome()" data-i18n="personalColor.aiMode.backHome">← Home</button>
+                    <h2 class="section-title" data-i18n="personalColor.drapingMode.title">Expert Draping Mode</h2>
                 </div>
 
                 <div class="draping-layout">
@@ -202,28 +202,28 @@
                         <div class="video-container">
                             <video id="draping-camera" autoplay muted playsinline></video>
                             <canvas id="draping-overlay"></canvas>
-                            <div class="face-guide" id="draping-face-guide">
-                                얼굴을 가이드라인에<br>맞춰주세요
+                            <div class="face-guide" id="draping-face-guide" data-i18n-html="personalColor.drapingMode.faceGuide">
+                                Align your face<br>with the guideline
                             </div>
                         </div>
 
                         <div class="camera-controls">
-                            <button class="control-btn" onclick="startDrapingCamera()">카메라 시작</button>
-                            <button class="control-btn" onclick="saveCurrentColor()">현재 색상 저장</button>
+                            <button class="control-btn" onclick="startDrapingCamera()" data-i18n="personalColor.drapingMode.startCamera">Start Camera</button>
+                            <button class="control-btn" onclick="saveCurrentColor()" data-i18n="personalColor.drapingMode.saveColor">Save Current Color</button>
                         </div>
                     </div>
 
                     <!-- 색상 팔레트 -->
                     <div class="color-palette-section">
-                        <h3>4계절 색상 팔레트</h3>
+                        <h3 data-i18n="personalColor.drapingMode.seasonPalette">4 Season Color Palette</h3>
 
                         <!-- 계절 탭 -->
                         <div class="season-tabs">
                             <button class="season-tab active" data-season="spring"
-                                onclick="selectSeason('spring')">봄</button>
-                            <button class="season-tab" data-season="summer" onclick="selectSeason('summer')">여름</button>
-                            <button class="season-tab" data-season="autumn" onclick="selectSeason('autumn')">가을</button>
-                            <button class="season-tab" data-season="winter" onclick="selectSeason('winter')">겨울</button>
+                                onclick="selectSeason('spring')" data-i18n="personalColor.drapingMode.spring">Spring</button>
+                            <button class="season-tab" data-season="summer" onclick="selectSeason('summer')" data-i18n="personalColor.drapingMode.summer">Summer</button>
+                            <button class="season-tab" data-season="autumn" onclick="selectSeason('autumn')" data-i18n="personalColor.drapingMode.autumn">Autumn</button>
+                            <button class="season-tab" data-season="winter" onclick="selectSeason('winter')" data-i18n="personalColor.drapingMode.winter">Winter</button>
                         </div>
 
                         <!-- 색상 그리드 -->
@@ -233,24 +233,24 @@
 
                         <!-- 세부 조정 -->
                         <div class="color-adjustments">
-                            <h4>색상 세부 조정</h4>
+                            <h4 data-i18n="personalColor.drapingMode.colorAdjust">Color Adjustment</h4>
 
                             <div class="adjustment-slider">
-                                <label>명도</label>
+                                <label data-i18n="personalColor.drapingMode.lightness">Lightness</label>
                                 <input type="range" id="lightness-slider" min="-30" max="30" value="0"
                                     oninput="adjustColor()">
                                 <span id="lightness-value">0</span>
                             </div>
 
                             <div class="adjustment-slider">
-                                <label>채도</label>
+                                <label data-i18n="personalColor.drapingMode.saturation">Saturation</label>
                                 <input type="range" id="saturation-slider" min="-50" max="50" value="0"
                                     oninput="adjustColor()">
                                 <span id="saturation-value">0</span>
                             </div>
 
                             <div class="adjustment-slider">
-                                <label>온도감</label>
+                                <label data-i18n="personalColor.drapingMode.warmth">Warmth</label>
                                 <input type="range" id="warmth-slider" min="-40" max="40" value="0"
                                     oninput="adjustColor()">
                                 <span id="warmth-value">0</span>
@@ -262,13 +262,13 @@
 
             <!-- 공통 결과 섹션 -->
             <div class="results-section" id="results-section" style="display: none;">
-                <h3>퍼스널컬러 진단 결과</h3>
+                <h3 data-i18n="personalColor.aiMode.result.title">Personal Color Analysis Result</h3>
                 <div class="final-results" id="final-results">
                     <!-- 결과 내용이 여기에 표시됩니다 -->
                 </div>
 
                 <div class="product-recommendations" id="product-recommendations">
-                    <h4>추천 헤어컬러 제품</h4>
+                    <h4 data-i18n="personalColor.drapingMode.recommendProducts">Recommended Hair Color Products</h4>
                     <div class="brand-sections" id="brand-sections">
                         <!-- 브랜드별 제품 추천이 여기에 표시됩니다 -->
                     </div>
@@ -1256,7 +1256,7 @@
                 console.warn('로딩 타임아웃 - 강제로 앱 표시');
                 document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('main-app').classList.add('loaded');
-                showToast('시스템이 준비되었습니다', 'warning');
+                showToast(t('personalColor.loadingSteps.ready') || 'System ready!', 'warning');
             }, 5000);
 
             try {
@@ -1492,12 +1492,12 @@
                 const aiSection = document.getElementById('ai-analysis');
                 aiSection.classList.add('active');
                 aiSection.style.display = 'block';
-                showToast('AI 퍼스널컬러 분석 모드가 활성화되었습니다', 'success');
+                showToast(t('personalColor.toast.aiModeActivated') || 'AI Personal Color Analysis mode activated', 'success');
             } else if (mode === 'draping') {
                 const drapingSection = document.getElementById('draping-mode');
                 drapingSection.classList.add('active');
                 drapingSection.style.display = 'block';
-                showToast('전문가 드래이핑 모드가 활성화되었습니다', 'success');
+                showToast(t('personalColor.toast.drapingModeActivated') || 'Expert Draping mode activated', 'success');
             }
         }
 
@@ -1518,7 +1518,7 @@
             cleanupCameraResources();
 
             currentMode = null;
-            showToast('홈 화면으로 돌아갑니다', 'info');
+            showToast(t('personalColor.toast.returningHome') || 'Returning to home', 'info');
         }
 
         // X 버튼 클릭 - 퍼스널컬러 페이지 닫기
@@ -1546,7 +1546,7 @@
         // AI 카메라 함수들
         async function startAICamera() {
             try {
-                showToast('카메라 권한을 확인합니다...', 'info');
+                showToast(t('personalColor.toast.checkingPermission') || 'Checking camera permission...', 'info');
                 console.log('🎥 카메라 시작 시도...');
 
                 // 1. mediaDevices API 지원 확인
@@ -1621,7 +1621,7 @@
                     setTimeout(() => reject(new Error('VIDEO_TIMEOUT')), 10000);
                 });
 
-                showToast('카메라가 시작되었습니다!', 'success');
+                showToast(t('personalColor.toast.cameraStarted') || 'Camera started!', 'success');
 
                 canvasElement = document.getElementById('camera-canvas');
                 canvasCtx = canvasElement.getContext('2d', { willReadFrequently: true });
@@ -1674,10 +1674,10 @@
                         }
 
                         console.log('MediaPipe Face Mesh 활성화');
-                        showToast('얼굴 인식이 활성화되었습니다', 'success');
+                        showToast(t('personalColor.toast.faceRecognitionEnabled') || 'Face recognition enabled', 'success');
                     } catch (error) {
                         console.warn('Face Mesh 초기화 실패:', error);
-                        showToast('기본 카메라 모드로 시작합니다', 'warning');
+                        showToast(t('personalColor.toast.basicCameraMode') || 'Starting in basic camera mode', 'warning');
                     }
                 }
 
@@ -2728,7 +2728,7 @@
         function stopAICamera() {
             console.log('AI 카메라 중지 요청');
             cleanupCameraResources();
-            showToast('AI 카메라가 정지되었습니다', 'info');
+            showToast(t('personalColor.toast.aiCameraStopped') || 'AI camera stopped', 'info');
         }
 
         function cleanupCameraResources() {
@@ -2785,12 +2785,12 @@
             if (analysisInProgress) return;
 
             if (!videoElement || videoElement.readyState !== 4) {
-                showToast('먼저 카메라를 시작해주세요', 'warning');
+                showToast(t('personalColor.toast.startCameraFirst') || 'Please start camera first', 'warning');
                 return;
             }
 
             analysisInProgress = true;
-            showToast('AI 분석을 시작합니다...', 'info');
+            showToast(t('personalColor.toast.startingAiAnalysis') || 'Starting AI analysis...', 'info');
 
             await performAIAnalysisSteps();
 
@@ -2858,13 +2858,13 @@
 
             displayFinalResults(result);
 
-            showToast(`AI 분석 완료: ${result.season}`, 'success');
+            showToast(`${t('personalColor.toast.aiAnalysisComplete') || 'AI analysis complete'}: ${result.season}`, 'success');
         }
 
         // 드래이핑 모드 함수들
         async function startDrapingCamera() {
             try {
-                showToast('드래이핑 카메라를 시작합니다...', 'info');
+                showToast(t('personalColor.toast.startingDrapingCamera') || 'Starting draping camera...', 'info');
 
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: 'user', width: 640, height: 480 }
@@ -2875,11 +2875,11 @@
 
                 document.getElementById('draping-face-guide').style.display = 'flex';
 
-                showToast('드래이핑 카메라가 시작되었습니다', 'success');
+                showToast(t('personalColor.toast.drapingCameraStarted') || 'Draping camera started', 'success');
 
             } catch (error) {
                 console.error('드래이핑 카메라 시작 실패:', error);
-                showToast('카메라에 접근할 수 없습니다', 'error');
+                showToast(t('personalColor.toast.cameraAccessDenied') || 'Cannot access camera', 'error');
             }
         }
 
@@ -2891,7 +2891,7 @@
                 drapingVideo.srcObject = null;
             }
 
-            showToast('드래이핑 카메라가 정지되었습니다', 'info');
+            showToast(t('personalColor.toast.drapingCameraStopped') || 'Draping camera stopped', 'info');
         }
 
         function selectSeason(season) {
@@ -2904,7 +2904,7 @@
 
             updateColorGrid(season);
 
-            showToast(`${season} 계절 색상을 선택했습니다`, 'info');
+            showToast(t('personalColor.toast.seasonSelected') || 'Season color selected', 'info');
         }
 
         function updateColorGrid(season) {
@@ -3023,7 +3023,7 @@
 
         function saveCurrentColor() {
             if (!selectedColor) {
-                showToast('먼저 색상을 선택해주세요', 'warning');
+                showToast(t('personalColor.toast.selectColorFirst') || 'Please select a color first', 'warning');
                 return;
             }
 
@@ -3035,7 +3035,7 @@
 
             savedColors.push(colorData);
 
-            showToast('현재 색상이 저장되었습니다', 'success');
+            showToast(t('personalColor.toast.colorSaved') || 'Current color saved', 'success');
         }
 
         // 공통 결과 표시
