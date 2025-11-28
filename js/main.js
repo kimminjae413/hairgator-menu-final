@@ -1446,12 +1446,15 @@ function showIdleScreen() {
 
         ${savedImage ? `
             <div style="
-                width: 200px;
-                height: 200px;
-                border-radius: 50%;
+                width: 50vmin;
+                height: 50vmin;
+                max-width: 400px;
+                max-height: 400px;
+                border-radius: 16px;
                 overflow: hidden;
                 margin-bottom: 40px;
                 animation: idlePulse 4s ease-in-out infinite, idleGlow 4s ease-in-out infinite;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             ">
                 <img src="${savedImage}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
