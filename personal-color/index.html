@@ -261,6 +261,32 @@
     </div>
 
     <script>
+        // 부모 창에서 t() 함수 가져오기
+        function t(key) {
+            try {
+                // 부모 창의 t 함수 사용
+                if (parent && parent.t && typeof parent.t === 'function') {
+                    return parent.t(key);
+                }
+                // 자체 HAIRGATOR_I18N 사용
+                if (typeof HAIRGATOR_I18N !== 'undefined' && currentLang) {
+                    const keys = key.split('.');
+                    let result = HAIRGATOR_I18N[currentLang];
+                    for (const k of keys) {
+                        if (result && result[k]) {
+                            result = result[k];
+                        } else {
+                            return null;
+                        }
+                    }
+                    return typeof result === 'string' ? result : null;
+                }
+                return null;
+            } catch (e) {
+                return null;
+            }
+        }
+
         // 전역 변수 정의
         let currentMode = null;
         let analysisInProgress = false;
