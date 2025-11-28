@@ -97,42 +97,42 @@ async function initializeSystem() {
         console.warn('⚠️ 로딩 타임아웃 - 강제로 앱 표시');
         document.getElementById('loading-screen').style.display = 'none';
         document.getElementById('main-app').classList.add('loaded');
-        updateDataStatus('타임아웃으로 강제 시작', 'warning');
-        showToast('시스템이 준비되었습니다 (일부 기능 제한)', 'warning');
+        updateDataStatus(t('personalColor.toast.timeoutStart') || '타임아웃으로 강제 시작', 'warning');
+        showToast(t('personalColor.toast.systemReadyLimited') || '시스템이 준비되었습니다 (일부 기능 제한)', 'warning');
     }, 5000);
-    
+
     try {
         console.log('시스템 초기화 시작...');
-        
+
         // 1단계: 헤어컬러 데이터 로드
         console.log('1단계: 헤어컬러 데이터 로드');
         await loadHairColorData();
-        
+
         // 2단계: UI 설정
         console.log('2단계: UI 설정');
         setupFileUpload();
         setupDrapingMode();
-        
+
         console.log('초기화 완료, 로딩 화면 제거...');
-        
+
         // 로딩 화면 제거
         clearTimeout(timeoutId);
         document.getElementById('loading-screen').style.display = 'none';
         document.getElementById('main-app').classList.add('loaded');
-        updateDataStatus('시스템 준비 완료 (MediaPipe는 카메라 시작 시 로드)', 'success');
-        
-        showToast('HAIRGATOR Personal Color 시스템이 준비되었습니다!', 'success');
+        updateDataStatus(t('personalColor.toast.systemReady') || '시스템 준비 완료', 'success');
+
+        showToast(t('personalColor.toast.ready') || 'HAIRGATOR Personal Color 시스템이 준비되었습니다!', 'success');
         console.log('✅ HAIRGATOR Personal Color 준비 완료');
-        
+
     } catch (error) {
         clearTimeout(timeoutId);
         console.error('❌ 시스템 초기화 실패:', error);
-        
+
         // 오류가 발생해도 앱은 표시
         document.getElementById('loading-screen').style.display = 'none';
         document.getElementById('main-app').classList.add('loaded');
-        updateDataStatus('오류 발생, 기본 모드로 동작', 'error');
-        showToast('일부 기능에 제한이 있을 수 있습니다.', 'warning');
+        updateDataStatus(t('personalColor.toast.errorMode') || '오류 발생, 기본 모드로 동작', 'error');
+        showToast(t('personalColor.toast.limitedFeatures') || '일부 기능에 제한이 있을 수 있습니다.', 'warning');
     }
 }
 
@@ -278,71 +278,71 @@ function setupFileUpload() {
 function handleFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
-    
+
     if (!file.type.startsWith('image/')) {
-        showToast('이미지 파일만 업로드 가능합니다.', 'error');
+        showToast(t('personalColor.toast.imageOnly') || '이미지 파일만 업로드 가능합니다.', 'error');
         return;
     }
-    
+
     const reader = new FileReader();
     reader.onload = function(e) {
         uploadedImage = e.target.result;
-        
+
         // 업로드된 이미지 표시
         const preview = document.getElementById('uploaded-preview');
         if (preview) {
             preview.src = uploadedImage;
             preview.style.display = 'block';
         }
-        
+
         // 분석 버튼 활성화
         const analyzeBtn = document.getElementById('analyze-photo');
         if (analyzeBtn) {
             analyzeBtn.disabled = false;
-            analyzeBtn.textContent = '🤖 AI 퍼스널컬러 분석 시작';
+            analyzeBtn.textContent = t('personalColor.buttons.startAnalysis') || '🤖 AI 퍼스널컬러 분석 시작';
         }
-        
-        showToast('이미지가 업로드되었습니다. 분석을 시작하세요!', 'success');
+
+        showToast(t('personalColor.toast.imageUploaded') || '이미지가 업로드되었습니다. 분석을 시작하세요!', 'success');
     };
-    
+
     reader.readAsDataURL(file);
 }
 
 // AI 사진 분석
 async function analyzePhoto() {
     if (!uploadedImage || isAnalyzing) return;
-    
+
     isAnalyzing = true;
     const analyzeBtn = document.getElementById('analyze-photo');
-    
+
     try {
         // UI 업데이트
         if (analyzeBtn) {
             analyzeBtn.disabled = true;
-            analyzeBtn.textContent = '🔄 AI 분석 중...';
+            analyzeBtn.textContent = t('personalColor.buttons.analyzing') || '🔄 AI 분석 중...';
         }
-        
+
         // 분석 단계별 진행
         await simulateAnalysisSteps();
-        
+
         // 분석 결과 생성
         const result = await performPersonalColorAnalysis();
-        
+
         // 결과 표시
         displayAnalysisResults(result);
-        
+
         analysisCount++;
-        
-        showToast(`${result.season} 타입으로 분석되었습니다!`, 'success');
-        
+
+        showToast(`${result.season} ${t('personalColor.toast.analysisComplete') || '타입으로 분석되었습니다!'}`, 'success');
+
     } catch (error) {
         console.error('❌ 분석 실패:', error);
-        showToast('분석 중 오류가 발생했습니다.', 'error');
+        showToast(t('personalColor.toast.analysisError') || '분석 중 오류가 발생했습니다.', 'error');
     } finally {
         isAnalyzing = false;
         if (analyzeBtn) {
             analyzeBtn.disabled = false;
-            analyzeBtn.textContent = '🤖 AI 퍼스널컬러 분석 시작';
+            analyzeBtn.textContent = t('personalColor.buttons.startAnalysis') || '🤖 AI 퍼스널컬러 분석 시작';
         }
     }
 }

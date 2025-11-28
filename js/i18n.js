@@ -329,6 +329,41 @@ const HAIRGATOR_I18N = {
         winterCoolMuted: '💄 추천 컬러: 차콜, 네이비, 버건디, 다크그레이\n💎 추천 메탈: 실버, 건메탈',
         neutralLight: '💄 추천 컬러: 더스티 핑크, 소프트 베이지, 라이트 모브\n💎 추천 메탈: 로즈골드, 소프트 실버',
         neutralDeep: '💄 추천 컬러: 토프, 머브, 다크브라운, 올리브\n💎 추천 메탈: 혼합 메탈, 앤틱 실버'
+      },
+
+      // 토스트 메시지
+      toast: {
+        ready: 'HAIRGATOR Personal Color 시스템이 준비되었습니다!',
+        systemReady: '시스템 준비 완료',
+        systemReadyLimited: '시스템이 준비되었습니다 (일부 기능 제한)',
+        timeoutStart: '타임아웃으로 강제 시작',
+        errorMode: '오류 발생, 기본 모드로 동작',
+        limitedFeatures: '일부 기능에 제한이 있을 수 있습니다.',
+        imageOnly: '이미지 파일만 업로드 가능합니다.',
+        imageUploaded: '이미지가 업로드되었습니다. 분석을 시작하세요!',
+        analysisComplete: '타입으로 분석되었습니다!',
+        analysisError: '분석 중 오류가 발생했습니다.',
+        colorSaved: '색상이 저장되었습니다!',
+        colorRemoved: '저장된 색상이 제거되었습니다.',
+        cameraReady: '카메라를 준비하고 있습니다...',
+        cameraStarted: '실시간 카메라 분석이 시작되었습니다!',
+        cameraStopped: '카메라가 중지되었습니다.',
+        selectPhoto: '사진을 선택하여 AI 분석을 시작하세요!'
+      },
+
+      // 버튼 텍스트
+      buttons: {
+        startAnalysis: '🤖 AI 퍼스널컬러 분석 시작',
+        analyzing: '🔄 AI 분석 중...'
+      },
+
+      // 분석 단계
+      analysisSteps: {
+        step1: '얼굴 영역 검출 중...',
+        step2: '피부톤 색상 추출 중...',
+        step3: 'LAB 색공간 변환 중...',
+        step4: 'Delta E 계산 중...',
+        step5: '퍼스널컬러 분석 중...'
       }
     }
   },
@@ -644,6 +679,38 @@ const HAIRGATOR_I18N = {
         winterCoolMuted: '💄 Colors: Charcoal, Navy, Burgundy, Dark Gray\n💎 Metals: Silver, Gunmetal',
         neutralLight: '💄 Colors: Dusty Pink, Soft Beige, Light Mauve\n💎 Metals: Rose Gold, Soft Silver',
         neutralDeep: '💄 Colors: Taupe, Mauve, Dark Brown, Olive\n💎 Metals: Mixed Metals, Antique Silver'
+      },
+
+      toast: {
+        ready: 'HAIRGATOR Personal Color system is ready!',
+        systemReady: 'System ready',
+        systemReadyLimited: 'System ready (some features limited)',
+        timeoutStart: 'Forced start due to timeout',
+        errorMode: 'Error occurred, running in basic mode',
+        limitedFeatures: 'Some features may be limited.',
+        imageOnly: 'Only image files can be uploaded.',
+        imageUploaded: 'Image uploaded. Start the analysis!',
+        analysisComplete: 'type analysis complete!',
+        analysisError: 'Error occurred during analysis.',
+        colorSaved: 'Color saved!',
+        colorRemoved: 'Saved color removed.',
+        cameraReady: 'Preparing camera...',
+        cameraStarted: 'Real-time camera analysis started!',
+        cameraStopped: 'Camera stopped.',
+        selectPhoto: 'Select a photo to start AI analysis!'
+      },
+
+      buttons: {
+        startAnalysis: '🤖 Start AI Personal Color Analysis',
+        analyzing: '🔄 Analyzing...'
+      },
+
+      analysisSteps: {
+        step1: 'Detecting face area...',
+        step2: 'Extracting skin tone...',
+        step3: 'Converting to LAB color space...',
+        step4: 'Calculating Delta E...',
+        step5: 'Analyzing personal color...'
       }
     }
   },
@@ -959,6 +1026,38 @@ const HAIRGATOR_I18N = {
         winterCoolMuted: '💄 おすすめカラー: チャコール、ネイビー、バーガンディ、ダークグレー\n💎 おすすめメタル: シルバー、ガンメタル',
         neutralLight: '💄 おすすめカラー: ダスティピンク、ソフトベージュ、ライトモーヴ\n💎 おすすめメタル: ローズゴールド、ソフトシルバー',
         neutralDeep: '💄 おすすめカラー: トープ、モーヴ、ダークブラウン、オリーブ\n💎 おすすめメタル: ミックスメタル、アンティークシルバー'
+      },
+
+      toast: {
+        ready: 'HAIRGATOR Personal Colorシステムの準備が完了しました！',
+        systemReady: 'システム準備完了',
+        systemReadyLimited: 'システムの準備が完了しました（一部機能制限）',
+        timeoutStart: 'タイムアウトにより強制起動',
+        errorMode: 'エラー発生、基本モードで動作',
+        limitedFeatures: '一部の機能が制限される場合があります。',
+        imageOnly: '画像ファイルのみアップロード可能です。',
+        imageUploaded: '画像がアップロードされました。分析を開始してください！',
+        analysisComplete: 'タイプで分析されました！',
+        analysisError: '分析中にエラーが発生しました。',
+        colorSaved: 'カラーが保存されました！',
+        colorRemoved: '保存されたカラーが削除されました。',
+        cameraReady: 'カメラを準備しています...',
+        cameraStarted: 'リアルタイムカメラ分析が開始されました！',
+        cameraStopped: 'カメラが停止しました。',
+        selectPhoto: '写真を選択してAI分析を開始してください！'
+      },
+
+      buttons: {
+        startAnalysis: '🤖 AIパーソナルカラー分析開始',
+        analyzing: '🔄 AI分析中...'
+      },
+
+      analysisSteps: {
+        step1: '顔領域を検出中...',
+        step2: '肌色を抽出中...',
+        step3: 'LAB色空間に変換中...',
+        step4: 'Delta Eを計算中...',
+        step5: 'パーソナルカラーを分析中...'
       }
     }
   },
@@ -1274,6 +1373,38 @@ const HAIRGATOR_I18N = {
         winterCoolMuted: '💄 推荐颜色: 炭灰、海军蓝、酒红、深灰\n💎 推荐金属: 银色、枪色',
         neutralLight: '💄 推荐颜色: 灰粉、柔和米色、浅紫\n💎 推荐金属: 玫瑰金、柔银',
         neutralDeep: '💄 推荐颜色: 灰褐、紫红、深棕、橄榄\n💎 推荐金属: 混合金属、古银'
+      },
+
+      toast: {
+        ready: 'HAIRGATOR Personal Color系统已准备就绪！',
+        systemReady: '系统准备完成',
+        systemReadyLimited: '系统已准备就绪（部分功能受限）',
+        timeoutStart: '超时强制启动',
+        errorMode: '发生错误，以基本模式运行',
+        limitedFeatures: '部分功能可能受限。',
+        imageOnly: '只能上传图片文件。',
+        imageUploaded: '图片已上传。开始分析吧！',
+        analysisComplete: '类型分析完成！',
+        analysisError: '分析过程中发生错误。',
+        colorSaved: '颜色已保存！',
+        colorRemoved: '已删除保存的颜色。',
+        cameraReady: '正在准备相机...',
+        cameraStarted: '实时相机分析已启动！',
+        cameraStopped: '相机已停止。',
+        selectPhoto: '选择照片开始AI分析！'
+      },
+
+      buttons: {
+        startAnalysis: '🤖 开始AI个人色彩分析',
+        analyzing: '🔄 AI分析中...'
+      },
+
+      analysisSteps: {
+        step1: '正在检测面部区域...',
+        step2: '正在提取肤色...',
+        step3: '正在转换为LAB色彩空间...',
+        step4: '正在计算Delta E...',
+        step5: '正在分析个人色彩...'
       }
     }
   },
@@ -1589,6 +1720,38 @@ const HAIRGATOR_I18N = {
         winterCoolMuted: '💄 Màu: Than, Hải quân, Đỏ rượu, Xám đậm\n💎 Kim loại: Bạc, Kim loại súng',
         neutralLight: '💄 Màu: Hồng bụi, Beige nhạt, Tím nhạt\n💎 Kim loại: Vàng hồng, Bạc mềm',
         neutralDeep: '💄 Màu: Nâu xám, Tím, Nâu đậm, Oliu\n💎 Kim loại: Kim loại hỗn hợp, Bạc cổ'
+      },
+
+      toast: {
+        ready: 'Hệ thống HAIRGATOR Personal Color đã sẵn sàng!',
+        systemReady: 'Hệ thống sẵn sàng',
+        systemReadyLimited: 'Hệ thống đã sẵn sàng (một số tính năng bị giới hạn)',
+        timeoutStart: 'Khởi động bắt buộc do hết thời gian',
+        errorMode: 'Lỗi xảy ra, chạy ở chế độ cơ bản',
+        limitedFeatures: 'Một số tính năng có thể bị giới hạn.',
+        imageOnly: 'Chỉ có thể tải lên tệp hình ảnh.',
+        imageUploaded: 'Hình ảnh đã được tải lên. Hãy bắt đầu phân tích!',
+        analysisComplete: 'Phân tích loại hoàn tất!',
+        analysisError: 'Đã xảy ra lỗi trong quá trình phân tích.',
+        colorSaved: 'Màu đã được lưu!',
+        colorRemoved: 'Màu đã lưu đã bị xóa.',
+        cameraReady: 'Đang chuẩn bị camera...',
+        cameraStarted: 'Phân tích camera thời gian thực đã bắt đầu!',
+        cameraStopped: 'Camera đã dừng.',
+        selectPhoto: 'Chọn ảnh để bắt đầu phân tích AI!'
+      },
+
+      buttons: {
+        startAnalysis: '🤖 Bắt đầu phân tích màu cá nhân AI',
+        analyzing: '🔄 Đang phân tích AI...'
+      },
+
+      analysisSteps: {
+        step1: 'Đang phát hiện vùng mặt...',
+        step2: 'Đang trích xuất tông màu da...',
+        step3: 'Đang chuyển đổi sang không gian màu LAB...',
+        step4: 'Đang tính toán Delta E...',
+        step5: 'Đang phân tích màu cá nhân...'
       }
     }
   }
