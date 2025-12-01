@@ -2885,3 +2885,23 @@ body.fullscreen-mode .styles-container,
 body.fullscreen-mode .menu-items-container {
     top: 270px !important;
 }
+
+/* ========== High-End 타이포그래피 위계 강화 ========== */
+.category-description-text {
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.3px !important;
+}
+
+body.light-theme .category-description-text {
+    color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.category-description-text .category-name {
+    font-weight: 700 !important;
+    font-size: 15px !important;
+    letter-spacing: 0.8px !important;
+    text-transform: uppercase !important;
+}
