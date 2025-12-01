@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="menu-item" id="themeToggleMenu" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <span id="themeIcon" style="font-size: 20px;">🌙</span>
-                                <span id="themeText" style="color: var(--text-primary, #333); font-size: 14px;">${t('ui.darkMode')}</span>
+                                <span id="themeText" class="sidebar-menu-text" style="font-size: 14px;">${t('ui.darkMode')}</span>
                             </div>
                         </div>
 
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="menu-item" id="personalColorBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <span style="font-size: 20px;">🌈</span>
-                                <span style="color: var(--text-primary, #333); font-size: 14px;">${t('ui.personalColor')}</span>
+                                <span class="sidebar-menu-text" style="font-size: 14px;">${t('ui.personalColor')}</span>
                             </div>
                         </div>
 
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="menu-item" id="brandSettingBtn" style="padding: 15px 20px; border-bottom: 1px solid rgba(128,128,128,0.1); cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 12px;">
                                 <span style="font-size: 20px;">✏️</span>
-                                <span style="color: var(--text-primary, #333); font-size: 14px;">${t('ui.brandSetting') || '상호 설정'}</span>
+                                <span class="sidebar-menu-text" style="font-size: 14px;">${t('ui.brandSetting') || '상호 설정'}</span>
                             </div>
                         </div>
 
@@ -141,6 +141,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     .sidebar-menu {
                         max-height: calc(100vh - 200px);
                         overflow-y: auto;
+                    }
+
+                    /* 사이드바 메뉴 텍스트 색상 - 다크모드 */
+                    .sidebar-menu-text {
+                        color: #ffffff;
+                    }
+
+                    /* 사이드바 메뉴 텍스트 색상 - 라이트모드 */
+                    body.light-theme .sidebar-menu-text {
+                        color: #333333;
                     }
 
                     body.light-theme .sidebar {
