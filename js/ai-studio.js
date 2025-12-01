@@ -227,8 +227,8 @@ class AIStudio {
 
   // ==================== Message Handling ====================
 
-  async sendMessage() {
-    const text = this.chatInput.value.trim();
+  async sendMessage(directText = null) {
+    const text = directText || this.chatInput.value.trim();
     if (!text) return;
 
     // Clear input
@@ -762,12 +762,8 @@ function sendMessage() {
 }
 
 function quickAction(query) {
-  const input = document.getElementById('chat-input');
-  if (input) {
-    input.value = query;
-  }
   if (window.aiStudio && typeof window.aiStudio.sendMessage === 'function') {
-    window.aiStudio.sendMessage();
+    window.aiStudio.sendMessage(query);
   } else {
     console.error('❌ aiStudio가 초기화되지 않았습니다');
   }
