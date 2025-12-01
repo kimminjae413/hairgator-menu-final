@@ -46,11 +46,6 @@ class AIStudio {
       }
     });
 
-    // Image Upload
-    this.imageUpload.addEventListener('change', (e) => {
-      this.handleImageUpload(e);
-    });
-
     // Canvas Tabs
     document.querySelectorAll('.canvas-tab').forEach(tab => {
       tab.addEventListener('click', (e) => {
@@ -753,9 +748,10 @@ function clearChat() {
   }
 }
 
-function uploadImage() {
-  document.getElementById('image-upload').click();
-}
+// 이미지 업로드 비활성화 - 멀티모달 정확도 개선 후 복구 예정
+// function uploadImage() {
+//   document.getElementById('image-upload').click();
+// }
 
 function sendMessage() {
   window.aiStudio.sendMessage();
