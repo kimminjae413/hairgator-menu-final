@@ -697,10 +697,12 @@ body.ai-studio-page {
 .diagram-nav.next { right: var(--space-sm); }
 
 /* Specs Box */
-.specs-box {
+.specs-box,
+.specs-box-full {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  margin-bottom: var(--space-lg);
 }
 
 .spec-item {

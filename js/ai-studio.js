@@ -512,39 +512,34 @@ class AIStudio {
           </div>
         </div>
 
-        <div class="recipe-grid">
-          <div class="diagram-box">
-            <img src="images/diagrams/default-diagram.png" alt="도해도" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2212%22>도해도</text></svg>'">
-            ${specs.lifting ? `<div class="diagram-overlay">📐 ${specs.lifting} Lifting</div>` : ''}
-          </div>
-
-          <div class="specs-box">
-            ${specs.length ? `
-              <div class="spec-item highlight">
-                <label>Length</label>
-                <span>${specs.length}</span>
-              </div>
-            ` : ''}
-            ${specs.form ? `
-              <div class="spec-item">
-                <label>Form</label>
-                <span>${specs.form}</span>
-              </div>
-            ` : ''}
-            ${specs.section ? `
-              <div class="spec-item">
-                <label>Section</label>
-                <span>${specs.section}</span>
-              </div>
-            ` : ''}
-            ${specs.lifting ? `
-              <div class="spec-item">
-                <label>Lifting</label>
-                <span>${specs.lifting}</span>
-              </div>
-            ` : ''}
-          </div>
+        ${Object.keys(specs).length > 0 ? `
+        <div class="specs-box-full">
+          ${specs.length ? `
+            <div class="spec-item highlight">
+              <label>Length</label>
+              <span>${specs.length}</span>
+            </div>
+          ` : ''}
+          ${specs.form ? `
+            <div class="spec-item">
+              <label>Form</label>
+              <span>${specs.form}</span>
+            </div>
+          ` : ''}
+          ${specs.section ? `
+            <div class="spec-item">
+              <label>Section</label>
+              <span>${specs.section}</span>
+            </div>
+          ` : ''}
+          ${specs.lifting ? `
+            <div class="spec-item">
+              <label>Lifting</label>
+              <span>${specs.lifting}</span>
+            </div>
+          ` : ''}
         </div>
+        ` : ''}
 
         <div class="guide-section">
           <h3>💡 상세 가이드</h3>
