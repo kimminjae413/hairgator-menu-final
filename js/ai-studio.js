@@ -754,12 +754,23 @@ function clearChat() {
 // }
 
 function sendMessage() {
-  window.aiStudio.sendMessage();
+  if (window.aiStudio && typeof window.aiStudio.sendMessage === 'function') {
+    window.aiStudio.sendMessage();
+  } else {
+    console.error('❌ aiStudio가 초기화되지 않았습니다');
+  }
 }
 
 function quickAction(query) {
-  document.getElementById('chat-input').value = query;
-  window.aiStudio.sendMessage();
+  const input = document.getElementById('chat-input');
+  if (input) {
+    input.value = query;
+  }
+  if (window.aiStudio && typeof window.aiStudio.sendMessage === 'function') {
+    window.aiStudio.sendMessage();
+  } else {
+    console.error('❌ aiStudio가 초기화되지 않았습니다');
+  }
 }
 
 function hideCanvas() {
