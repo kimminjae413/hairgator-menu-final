@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>HAIRGATOR AI Studio - Pro Workstation</title>
+
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HAIRGATOR AI">
+
+    <!-- Icons -->
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/ai-studio.css?v=20251201-2100">
+</head>
+<body class="ai-studio-page">
+    <div class="ai-studio-container">
+        <!-- ==================== Left Panel: Chat ==================== -->
+        <section class="chat-panel">
+            <!-- Header -->
+            <header class="chat-header">
+                <div class="chat-header-left">
+                    <button class="back-to-menu" onclick="goBack()" title="메뉴로 돌아가기">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <div class="chat-header-title">
+                        <h1>HAIRGATOR AI</h1>
+                        <span class="status">
+                            <span class="status-dot"></span>
+                            Pro Workstation
+                        </span>
+                    </div>
+                </div>
+                <div class="chat-header-actions">
+                    <button class="header-btn" onclick="clearChat()" title="대화 초기화">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Messages -->
+            <div class="chat-messages" id="chat-messages">
+                <!-- Welcome Message -->
+                <div class="message bot">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <p><strong>안녕하세요! HAIRGATOR AI입니다.</strong></p>
+                        <p>헤어스타일 사진을 업로드하거나 질문해주세요. 2WAY CUT 시스템 기반으로 전문적인 분석과 레시피를 제공해드립니다.</p>
+                        <div class="message-actions">
+                            <button class="action-btn" onclick="quickAction('A Length가 뭐야?')">A Length란?</button>
+                            <button class="action-btn" onclick="quickAction('레이어와 그래쥬에이션 차이')">Layer vs Graduation</button>
+                            <button class="action-btn" onclick="quickAction('리프팅 각도 설명해줘')">Lifting 설명</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <button class="input-btn camera" onclick="uploadImage()" title="이미지 업로드">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                    </button>
+                    <input type="text" id="chat-input" placeholder="질문을 입력하세요..." autocomplete="off">
+                    <button class="send-btn" onclick="sendMessage()" id="send-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                    </button>
+                </div>
+                <input type="file" id="image-upload" accept="image/*" style="display: none;">
+            </div>
+        </section>
+
+        <!-- ==================== Right Panel: Canvas ==================== -->
+        <section class="canvas-panel" id="canvas-panel">
+            <!-- Canvas Header -->
+            <header class="canvas-header">
+                <div style="display: flex; align-items: center;">
+                    <button class="canvas-back-btn" onclick="hideCanvas()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <div class="canvas-tabs">
+                        <button class="canvas-tab active" data-tab="result">결과</button>
+                        <button class="canvas-tab" data-tab="history">히스토리</button>
+                    </div>
+                </div>
+                <div class="canvas-actions">
+                    <button class="header-btn" onclick="saveResult()" title="저장">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                    </button>
+                    <button class="header-btn" onclick="shareResult()" title="공유">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="18" cy="5" r="3"/>
+                            <circle cx="6" cy="12" r="3"/>
+                            <circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Canvas Content -->
+            <div class="canvas-content" id="canvas-content">
+                <!-- Empty State (default) -->
+                <div class="canvas-empty" id="canvas-empty">
+                    <div class="canvas-empty-icon">✨</div>
+                    <h2>솔루션 캔버스</h2>
+                    <p>이미지를 업로드하거나 질문하시면<br>분석 결과와 레시피가 여기에 표시됩니다.</p>
+                </div>
+
+                <!-- Result Container (hidden by default) -->
+                <div id="canvas-result" class="hidden">
+                    <!-- Dynamic content will be inserted here -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <!-- AI Studio Script -->
+    <script src="js/ai-studio.js?v=20251201-2100"></script>
+</body>
+</html>
