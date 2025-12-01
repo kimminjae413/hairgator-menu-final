@@ -132,14 +132,22 @@ body {
     transition: all 0.3s ease;
 }
 
+.back-btn::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 2px;
+    background: #ffffff;
+}
+
 .back-btn::after {
     content: '';
-    width: 12px;
-    height: 12px;
-    border-left: 2.5px solid #ffffff;
-    border-bottom: 2.5px solid #ffffff;
-    transform: rotate(45deg) translateX(2px);
-    display: block;
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-left: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    transform: rotate(45deg) translateX(3px);
 }
 
 .back-btn:hover {
@@ -151,6 +159,10 @@ body {
 body.light-theme .back-btn {
     background: #e5e5ea;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+body.light-theme .back-btn::before {
+    background: #3a3a3c;
 }
 
 body.light-theme .back-btn::after {
