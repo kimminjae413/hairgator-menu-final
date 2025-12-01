@@ -280,6 +280,8 @@ class AIStudio {
   }
 
   async callAPI(query) {
+    console.log('📤 API 호출:', query);
+
     const response = await fetch(this.apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -292,49 +294,67 @@ class AIStudio {
       })
     });
 
+    console.log('📥 API 응답 상태:', response.status);
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
 
-    // Parse SSE response
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
+    // 응답 텍스트 전체 읽기
+    const responseText = await response.text();
+    console.log('📥 API 원본 응답:', responseText.substring(0, 500));
+
+    // SSE 형식 파싱
     let fullContent = '';
-    let buffer = '';
+    const lines = responseText.split('\n');
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const jsonStr = line.slice(6).trim();
+        if (jsonStr === '[DONE]') continue;
 
-      const chunk = decoder.decode(value, { stream: true });
-      buffer += chunk;
-
-      let newlineIndex;
-      while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
-        const line = buffer.slice(0, newlineIndex).trim();
-        buffer = buffer.slice(newlineIndex + 1);
-
-        if (line.startsWith('data: ')) {
-          const jsonStr = line.slice(6);
-          if (jsonStr === '[DONE]') break;
-
-          try {
-            const data = JSON.parse(jsonStr);
-            if (data.type === 'content') {
-              fullContent += data.content;
-            }
-          } catch (e) {
-            // Skip parse errors
+        try {
+          const data = JSON.parse(jsonStr);
+          if (data.type === 'content' && data.content) {
+            fullContent += data.content;
+          } else if (data.content) {
+            fullContent += data.content;
+          } else if (typeof data === 'string') {
+            fullContent += data;
+          }
+        } catch (e) {
+          // JSON이 아닌 경우 그냥 텍스트로 추가
+          if (jsonStr && jsonStr !== '[DONE]') {
+            fullContent += jsonStr;
           }
         }
       }
     }
 
+    // SSE 파싱 실패시 원본 텍스트 사용
+    if (!fullContent && responseText) {
+      // JSON 응답인 경우
+      try {
+        const jsonResponse = JSON.parse(responseText);
+        if (jsonResponse.content) {
+          fullContent = jsonResponse.content;
+        } else if (jsonResponse.data && jsonResponse.data.content) {
+          fullContent = jsonResponse.data.content;
+        } else if (jsonResponse.message) {
+          fullContent = jsonResponse.message;
+        }
+      } catch (e) {
+        fullContent = responseText;
+      }
+    }
+
+    console.log('📥 파싱된 내용:', fullContent.substring(0, 200));
+
     // Check if response contains recipe-like content
     const hasRecipeData = this.detectRecipeContent(fullContent);
 
     return {
-      content: fullContent,
+      content: fullContent || '응답을 받지 못했습니다. 다시 시도해주세요.',
       canvasData: hasRecipeData ? this.parseRecipeData(fullContent) : null
     };
   }
