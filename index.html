@@ -29,11 +29,88 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Nanum+Gothic:wght@400;700&family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@400;600;700&family=Dancing+Script:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 
     <!-- External CSS -->
-<link rel="stylesheet" href="css/main.css?v=20251125-1036">
-<link rel="stylesheet" href="css/chatbot.css?v=20251125-1036">  <!-- ⭐ 이 줄 추가 -->
+<link rel="stylesheet" href="css/main.css?v=20251201-1600">
+<link rel="stylesheet" href="css/menu.css?v=20251201-1600">
+<link rel="stylesheet" href="css/chatbot.css?v=20251201-1600">
 
-    <!-- ⭐ 스타일 카드 High-End UI (글래스모피즘, 소프트섀도우) -->
+    <!-- ⭐ High-End UI (글래스모피즘, 소프트섀도우) -->
     <style>
+        /* 카테고리 탭 - 글래스모피즘 */
+        .category-tabs {
+            background: rgba(17, 17, 17, 0.85) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        body.light-theme .category-tabs {
+            background: rgba(255, 255, 255, 0.85) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+        }
+
+        /* 카테고리 탭 버튼 */
+        .category-tab {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: rgba(255, 255, 255, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 25px !important;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+        }
+        body.light-theme .category-tab {
+            background: rgba(0, 0, 0, 0.03) !important;
+            color: rgba(0, 0, 0, 0.5) !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        }
+        .category-tab.active {
+            border: none !important;
+        }
+        .category-tab.active.male {
+            background: linear-gradient(135deg, #4A90E2, #357ABD) !important;
+            color: white !important;
+            box-shadow: 0 4px 20px rgba(74, 144, 226, 0.4) !important;
+        }
+        .category-tab.active.female {
+            background: linear-gradient(135deg, #E91E63, #C2185B) !important;
+            color: white !important;
+            box-shadow: 0 4px 20px rgba(233, 30, 99, 0.4) !important;
+        }
+
+        /* 서브 탭 - 글래스모피즘 */
+        .sub-tabs {
+            background: rgba(10, 10, 10, 0.6) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        }
+        body.light-theme .sub-tabs {
+            background: rgba(255, 255, 255, 0.8) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+        }
+        .sub-tab {
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: rgba(255, 255, 255, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 20px !important;
+        }
+        body.light-theme .sub-tab {
+            background: rgba(0, 0, 0, 0.04) !important;
+            color: rgba(0, 0, 0, 0.5) !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        }
+        .sub-tab.active {
+            border: none !important;
+        }
+        .sub-tab.active.male {
+            background: linear-gradient(135deg, #4A90E2, #357ABD) !important;
+            color: white !important;
+            box-shadow: 0 4px 16px rgba(74, 144, 226, 0.35) !important;
+        }
+        .sub-tab.active.female {
+            background: linear-gradient(135deg, #E91E63, #C2185B) !important;
+            color: white !important;
+            box-shadow: 0 4px 16px rgba(233, 30, 99, 0.35) !important;
+        }
+
+        /* 스타일 카드 */
         .style-card {
             background: #1a1a1a !important;
             border-radius: 20px !important;
