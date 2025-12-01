@@ -444,9 +444,11 @@ class HairGatorChatbot {
   }
 
   async checkAndCreateButton() {
-    // 유저 ID 확인
+    // 유저 ID 확인 (URL 파라미터 우선)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlUserId = urlParams.get('userId');
     const bullnabiUser = window.getBullnabiUser ? window.getBullnabiUser() : null;
-    const userId = bullnabiUser?.userId || null;
+    const userId = urlUserId || bullnabiUser?.userId || null;
 
     console.log('👤 현재 유저 ID:', userId);
 
