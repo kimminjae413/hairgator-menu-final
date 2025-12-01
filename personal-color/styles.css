@@ -316,22 +316,53 @@ body {
 }
 
 .nav-btn {
-    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #3a3a3c;
     border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 10px;
     cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    padding: 0;
+    font-size: 0;
+    color: transparent;
+    position: relative;
+}
+
+.nav-btn::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-left: 2.5px solid #ffffff;
+    border-bottom: 2.5px solid #ffffff;
+    transform: rotate(45deg) translateX(2px);
+    display: block;
 }
 
 .nav-btn:hover {
-    background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    background: #4a4a4c;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Male theme (라이트모드) */
+body.male-theme .nav-btn {
+    background: #e5e5ea;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+body.male-theme .nav-btn::after {
+    border-left-color: #3a3a3c;
+    border-bottom-color: #3a3a3c;
+}
+
+body.male-theme .nav-btn:hover {
+    background: #d1d1d6;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 /* ========== 모드 선택 ========== */
