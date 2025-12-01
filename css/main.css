@@ -117,17 +117,49 @@ body {
 .back-btn {
     position: absolute;
     left: 15px;
-    width: 30px;
-    height: 30px;
-    background: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #3a3a3c;
     border: none;
     cursor: pointer;
     display: none;
     align-items: center;
     justify-content: center;
-    color: var(--text-primary);
-    font-size: 24px;
-    transition: color 0.3s ease;
+    font-size: 0;
+    color: transparent;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.back-btn::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-left: 2.5px solid #ffffff;
+    border-bottom: 2.5px solid #ffffff;
+    transform: rotate(45deg) translateX(2px);
+    display: block;
+}
+
+.back-btn:hover {
+    background: #4a4a4c;
+    transform: scale(1.05);
+}
+
+/* Light theme back button */
+body.light-theme .back-btn {
+    background: #e5e5ea;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+body.light-theme .back-btn::after {
+    border-left-color: #3a3a3c;
+    border-bottom-color: #3a3a3c;
+}
+
+body.light-theme .back-btn:hover {
+    background: #d1d1d6;
 }
 
 .language-btn {
