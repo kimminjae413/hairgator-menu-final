@@ -29,9 +29,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Nanum+Gothic:wght@400;700&family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@400;600;700&family=Dancing+Script:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 
     <!-- External CSS -->
-<link rel="stylesheet" href="css/main.css?v=20251201-1600">
-<link rel="stylesheet" href="css/menu.css?v=20251201-1600">
-<link rel="stylesheet" href="css/chatbot.css?v=20251201-1600">
+<link rel="stylesheet" href="css/main.css?v=20251201-1700">
+<link rel="stylesheet" href="css/menu.css?v=20251201-1700">
+<link rel="stylesheet" href="css/chatbot.css?v=20251201-1700">
 
     <!-- ⭐ High-End UI (글래스모피즘, 소프트섀도우) -->
     <style>
@@ -54,16 +54,20 @@
             color: #3a3a3c !important;
         }
 
-        /* 카테고리 탭 - 글래스모피즘 */
+        /* 카테고리 탭 - 글래스모피즘 (투명도 높임) */
         .category-tabs {
-            background: rgba(17, 17, 17, 0.85) !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background: rgba(20, 20, 20, 0.5) !important;
+            backdrop-filter: blur(24px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
         }
         body.light-theme .category-tabs {
-            background: rgba(255, 255, 255, 0.85) !important;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+            background: rgba(255, 255, 255, 0.5) !important;
+            backdrop-filter: blur(24px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05) !important;
         }
 
         /* 카테고리 탭 버튼 */
@@ -93,16 +97,20 @@
             box-shadow: 0 4px 20px rgba(233, 30, 99, 0.4) !important;
         }
 
-        /* 서브 탭 - 글래스모피즘 */
+        /* 서브 탭 - 글래스모피즘 (투명도 높임) */
         .sub-tabs {
-            background: rgba(10, 10, 10, 0.6) !important;
-            backdrop-filter: blur(10px) !important;
-            -webkit-backdrop-filter: blur(10px) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+            background: rgba(15, 15, 15, 0.4) !important;
+            backdrop-filter: blur(20px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08) !important;
         }
         body.light-theme .sub-tabs {
-            background: rgba(255, 255, 255, 0.8) !important;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+            background: rgba(255, 255, 255, 0.4) !important;
+            backdrop-filter: blur(20px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.03) !important;
         }
         .sub-tab {
             background: rgba(255, 255, 255, 0.08) !important;

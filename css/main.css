@@ -451,14 +451,15 @@ body.gender-selecting .menu-container {
 
 /* ========== 移댄뀒怨좊━ ??(?쒕툝由??곗튂 臾몄젣 ?꾩쟾 ?닿껐 理쒖쥌 踰꾩쟾) ========== */
 .category-tabs {
-    background: rgba(17, 17, 17, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(20, 20, 20, 0.5) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
     padding: 15px 20px;
     display: flex;
     gap: 10px;
     overflow-x: auto;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     scrollbar-width: none;
     transition: all 0.3s ease;
     -webkit-overflow-scrolling: touch;
@@ -468,10 +469,11 @@ body.gender-selecting .menu-container {
 }
 
 body.light-theme .category-tabs {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.5) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
 }
 
 .category-tabs::-webkit-scrollbar {
