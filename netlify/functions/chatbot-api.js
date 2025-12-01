@@ -1630,7 +1630,7 @@ async function searchStyles(payload, geminiKey, supabaseUrl, supabaseKey) {
   };
 }
 
-// ==================== 스트리밍 응답 생성 (Supabase 이론 검색 포함) ====================
+// ==================== 스트리밍 응답 생성 (확장 검색 + 시스템 지식 주입) ====================
 async function generateProfessionalResponseStream(payload, openaiKey, geminiKey, supabaseUrl, supabaseKey) {
   const { user_query } = payload;
   console.log('🔄 스트리밍 응답 시작:', user_query);
@@ -1651,10 +1651,21 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
     .replace(/그래쥬에이션|그라데이션|graduation/gi, 'Graduation');
 
   // 간단한 인사말 처리
-  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이'];
-  const isGreeting = simpleGreetings.some(g => user_query.toLowerCase().trim().includes(g)) && user_query.length < 15;
+  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워', '여보세요'];
+  const isGreeting = simpleGreetings.some(g => {
+    const query = user_query.toLowerCase().trim();
+    return query === g || query === g + '하세요' || query === g + '!' || query === g + '?';
+  }) && user_query.length < 15;
+
   if (isGreeting) {
-    const msg = '안녕하세요! 헤어스타일에 대해 무엇이든 물어보세요. 😊';
+    const greetingResponses = {
+      korean: '안녕하세요! 헤어스타일에 대해 무엇이든 물어보세요. 😊\n\n예시:\n• "렝스별로 설명해줘"\n• "레이어드 컷이 뭐야?"\n• "G Length가 뭐야?"\n• "얼굴형에 맞는 스타일 추천해줘"',
+      english: 'Hello! Feel free to ask anything about hairstyles. 😊\n\nExamples:\n• "Explain length categories"\n• "What is layered cut?"\n• "Recommend styles for my face shape"',
+      japanese: 'こんにちは！ヘアスタイルについて何でも聞いてください。😊',
+      chinese: '你好！请随便问关于发型的问题。😊',
+      vietnamese: 'Xin chào! Hỏi gì về kiểu tóc cũng được. 😊'
+    };
+    const msg = greetingResponses[userLanguage] || greetingResponses['korean'];
     return {
       statusCode: 200,
       headers: { ...headers, 'Content-Type': 'text/event-stream' },
@@ -1666,7 +1677,11 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
   const securityKeywords = ['42포뮬러', '42개 포뮬러', '42 formula', '9매트릭스', '9개 매트릭스', '9 matrix', 'DBS NO', 'DFS NO', 'VS NO', 'HS NO', '42층', '7개 섹션', '7 section'];
   const isSecurityQuery = securityKeywords.some(keyword => user_query.toLowerCase().includes(keyword.toLowerCase()));
   if (isSecurityQuery) {
-    const msg = '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.';
+    const securityResponse = {
+      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"\n• "헤어 길이 분류 시스템"',
+      english: 'I apologize, but that information is proprietary to the 2WAY CUT system.\n\nHow about these questions instead?\n• "Basic principles of layer cut"\n• "Recommended styles by face shape"'
+    };
+    const msg = securityResponse[userLanguage] || securityResponse['korean'];
     return {
       statusCode: 200,
       headers: { ...headers, 'Content-Type': 'text/event-stream' },
@@ -1674,28 +1689,23 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
     };
   }
 
-  // ⭐⭐⭐ Supabase theory_chunks 검색 ⭐⭐⭐
-  console.log('🔍 Supabase 이론 검색 시작:', normalizedQuery);
-  const theoryChunks = await searchTheoryChunks(normalizedQuery, geminiKey, supabaseUrl, supabaseKey, 10);
+  // ⭐⭐⭐ 확장 검색 (연관 개념 포함) ⭐⭐⭐
+  console.log('🔍 확장 이론 검색 시작:', normalizedQuery);
+  const theoryChunks = await searchTheoryChunksEnhanced(normalizedQuery, geminiKey, supabaseUrl, supabaseKey);
   console.log(`📚 검색된 이론: ${theoryChunks.length}개`);
 
-  // 시스템 프롬프트 빌드
+  // ⭐ 유사도 필터링 (낮은 점수 제거)
+  const filteredChunks = theoryChunks.filter(chunk =>
+    (chunk.combined_score || chunk.vector_similarity || 0) > 0.5
+  );
+  console.log(`🎯 필터링 후: ${filteredChunks.length}개`);
+
+  // 시스템 프롬프트 빌드 (개선된 버전 사용)
   let systemPrompt;
-  if (theoryChunks.length > 0) {
-    const theoryContext = theoryChunks.map((chunk, idx) => {
-      const title = chunk.section_title || '';
-      const content = (chunk.content_ko || chunk.content || '').substring(0, 500);
-      return `【참고자료 ${idx + 1}】${title}\n${content}`;
-    }).join('\n\n');
-
-    systemPrompt = `당신은 전문 헤어 디자이너입니다. 다음 전문 이론을 바탕으로 질문에 답변하세요.
-
-【전문 이론 자료】
-${theoryContext}
-
-위 자료를 참고하여 사용자의 질문에 전문적이고 정확하게 답변하세요. 300자 이내로 간결하게 작성하세요.`;
+  if (filteredChunks.length > 0) {
+    systemPrompt = buildTheoryBasedPrompt(normalizedQuery, filteredChunks, userLanguage);
   } else {
-    systemPrompt = '당신은 친절한 헤어 스타일 상담 전문가입니다. 사용자의 질문에 대해 일반적인 헤어스타일 조언을 제공하세요. 200자 이내로 간결하게 답변하세요.';
+    systemPrompt = buildGeneralPrompt(normalizedQuery, userLanguage);
   }
 
   try {
@@ -1705,33 +1715,51 @@ ${theoryContext}
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: user_query }],
-        temperature: 0.3,
-        max_tokens: 300,
+        temperature: 0.5,         // ⬆️ 0.3 → 0.5
+        max_tokens: 1200,         // ⬆️ 300 → 1200
+        top_p: 0.9,               // ➕ 추가
+        presence_penalty: 0.1,    // ➕ 추가
         stream: true
       })
     });
 
     if (!response.ok) throw new Error(`OpenAI API Error: ${response.status}`);
 
-    // Node.js 스트림 처리
+    // ⭐ Web Streams API로 처리 (Netlify Functions 호환)
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
     let sseBuffer = '';
-    for await (const chunk of response.body) {
-      const text = chunk.toString('utf-8');
-      const lines = text.split('\n');
+    let streamBuffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      streamBuffer += decoder.decode(value, { stream: true });
+      const lines = streamBuffer.split('\n');
+      streamBuffer = lines.pop() || ''; // 마지막 불완전한 라인 보관
+
       for (const line of lines) {
-        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+        const trimmedLine = line.trim();
+        if (trimmedLine.startsWith('data: ') && trimmedLine !== 'data: [DONE]') {
           try {
-            const jsonData = line.slice(6);
+            const jsonData = trimmedLine.slice(6);
             if (jsonData.trim()) {
               const data = JSON.parse(jsonData);
               const content = data.choices?.[0]?.delta?.content || '';
-              if (content) sseBuffer += `data: ${JSON.stringify({ type: 'content', content })}\n\n`;
+              if (content) {
+                sseBuffer += `data: ${JSON.stringify({ type: 'content', content })}\n\n`;
+              }
             }
-          } catch (e) { }
+          } catch (e) {
+            // JSON 파싱 실패 무시
+          }
         }
       }
     }
     sseBuffer += 'data: [DONE]\n\n';
+
+    console.log(`✅ 스트리밍 응답 완료 (버퍼 길이: ${sseBuffer.length})`);
 
     return {
       statusCode: 200,
