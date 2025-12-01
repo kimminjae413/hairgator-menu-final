@@ -839,9 +839,8 @@ function createStyleCard(style, index = 0) {
     const card = document.createElement('div');
     card.className = 'style-card';
 
-    // ⭐⭐⭐ High-End UI 스타일 적용 + 스태거 애니메이션 ⭐⭐⭐
+    // ⭐⭐⭐ High-End UI 스타일 적용 ⭐⭐⭐
     const isLightTheme = document.body.classList.contains('light-theme');
-    const animationDelay = Math.min(index * 0.05, 0.5); // 최대 0.5초
     card.style.cssText = `
         background: ${isLightTheme ? '#ffffff' : '#1a1a1a'} !important;
         border-radius: 20px !important;
@@ -854,10 +853,6 @@ function createStyleCard(style, index = 0) {
         padding: 0 !important;
         margin: 0 !important;
         box-shadow: ${isLightTheme ? '0 10px 40px rgba(0, 0, 0, 0.08)' : '0 8px 32px rgba(0, 0, 0, 0.3)'} !important;
-        opacity: 0 !important;
-        transform: translateY(20px) !important;
-        animation: cardFadeIn 0.5s ease forwards !important;
-        animation-delay: ${animationDelay}s !important;
     `;
 
     // NEW 표시 조건 확인 (7일 이내)
