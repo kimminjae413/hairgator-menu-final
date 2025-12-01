@@ -46,11 +46,11 @@
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
-# CSS 파일 - 짧은 캐시 (1분)
+# CSS 파일 - 캐시 비활성화 (개발 중)
 [[headers]]
   for = "/css/*"
   [headers.values]
-    Cache-Control = "public, max-age=60, must-revalidate"
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
 # index.html - 항상 최신
 [[headers]]
