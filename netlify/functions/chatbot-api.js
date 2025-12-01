@@ -368,11 +368,18 @@ exports.handler = async (event, context) => {
       case 'search_styles':
         return await searchStyles(payload, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
 
-      // ⭐⭐⭐ 변경: generate_response → generateProfessionalResponse ⭐⭐⭐
+      // ⭐⭐⭐ Gemini File Search 기반 응답 (NEW!) ⭐⭐⭐
       case 'generate_response':
-        return await generateProfessionalResponse(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
+        return await generateGeminiFileSearchResponse(payload, GEMINI_KEY);
 
       case 'generate_response_stream':
+        return await generateGeminiFileSearchResponseStream(payload, GEMINI_KEY);
+
+      // 폴백: 기존 Supabase 기반 응답
+      case 'generate_response_supabase':
+        return await generateProfessionalResponse(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
+
+      case 'generate_response_stream_supabase':
         return await generateProfessionalResponseStream(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
 
       default:
@@ -1768,6 +1775,257 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
     };
   } catch (error) {
     console.error('💥 스트리밍 오류:', error.message);
+    return {
+      statusCode: 200,
+      headers: { ...headers, 'Content-Type': 'text/event-stream' },
+      body: `data: ${JSON.stringify({ type: 'error', error: `답변 생성 중 오류: ${error.message}` })}\n\ndata: [DONE]\n\n`
+    };
+  }
+}
+
+// ==================== Gemini File Search 기반 응답 (NEW!) ====================
+// 14개 PDF가 업로드된 File Search Store 사용
+const GEMINI_FILE_SEARCH_STORE = "fileSearchStores/hairgator2waycutstore-md6skhedgag7";
+
+// 시스템 프롬프트
+function buildGeminiSystemPrompt(userLanguage) {
+  const prompts = {
+    korean: `당신은 2WAY CUT 시스템을 완벽히 이해한 20년차 헤어 전문가입니다.
+
+제공된 PDF 자료를 참고하여 다음 형식으로 답변하세요:
+
+1. **핵심 답변**: 질문에 대한 직접적인 답변 (1-2문장)
+2. **상세 설명**: 구체적인 내용 (3-5개 항목)
+3. **실무 팁**: 적용 시 주의사항이나 팁 (선택사항)
+
+답변 지침:
+- 전문 용어는 한국어(영어) 형식으로 병기 (예: 원렝스(One Length))
+- 수치와 각도는 정확하게 명시
+- 관련 개념이 있으면 함께 언급
+- 친절하고 전문적인 톤 유지
+- 출처는 적지 않아도 됨`,
+
+    english: `You are a 20-year veteran hair expert who completely understands the 2WAY CUT system.
+
+Please answer based on the provided PDF materials in the following format:
+
+1. **Direct Answer**: Concise response to the question (1-2 sentences)
+2. **Details**: Specific information (3-5 items)
+3. **Pro Tips**: Application tips (optional)
+
+Guidelines:
+- Provide technical terms in both English and Korean (e.g., One Length (원렝스))
+- Be precise with measurements and angles
+- Mention related concepts when relevant
+- Maintain a friendly and professional tone`
+  };
+
+  return prompts[userLanguage] || prompts['korean'];
+}
+
+// 일반 응답 (비스트리밍)
+async function generateGeminiFileSearchResponse(payload, geminiKey) {
+  const { user_query } = payload;
+  const userLanguage = detectLanguage(user_query);
+
+  console.log(`🔍 Gemini File Search 응답: "${user_query}"`);
+
+  // 간단한 인사말 처리
+  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워'];
+  const isGreeting = simpleGreetings.some(g => {
+    const query = user_query.toLowerCase().trim();
+    return query === g || query === g + '하세요' || query === g + '!' || query === g + '?';
+  }) && user_query.length < 15;
+
+  if (isGreeting) {
+    const msg = userLanguage === 'english'
+      ? 'Hello! Feel free to ask anything about hairstyles. 😊\n\nExamples:\n• "What is A Length?"\n• "Explain Zone division"\n• "Difference between Layer and Graduation"'
+      : '안녕하세요! 헤어스타일에 대해 무엇이든 물어보세요. 😊\n\n예시:\n• "A Length가 뭐야?"\n• "존 구분을 어떻게해?"\n• "Layer와 Graduation 차이는?"';
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ success: true, data: msg })
+    };
+  }
+
+  // 보안 키워드 체크
+  const securityKeywords = ['42포뮬러', '42개 포뮬러', '42 formula', '9매트릭스', 'DBS NO', 'DFS NO', 'VS NO', 'HS NO'];
+  const isSecurityQuery = securityKeywords.some(keyword => user_query.toLowerCase().includes(keyword.toLowerCase()));
+
+  if (isSecurityQuery) {
+    const msg = '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"\n• "헤어 길이 분류 시스템"';
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ success: true, data: msg, security_filtered: true })
+    };
+  }
+
+  try {
+    // Gemini File Search API 호출
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            role: 'user',
+            parts: [{ text: user_query }]
+          }],
+          systemInstruction: {
+            parts: [{ text: buildGeminiSystemPrompt(userLanguage) }]
+          },
+          tools: [{
+            fileSearch: {
+              fileSearchStoreNames: [GEMINI_FILE_SEARCH_STORE]
+            }
+          }],
+          generationConfig: {
+            temperature: 0.5,
+            maxOutputTokens: 2048,
+            topP: 0.9
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Gemini API Error:', response.status, errorText);
+      throw new Error(`Gemini API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || '답변을 생성할 수 없습니다.';
+
+    console.log(`✅ Gemini 응답 완료 (${answer.length}자)`);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: answer,
+        method: 'gemini_file_search'
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 Gemini File Search 오류:', error.message);
+
+    // 에러 시 간단한 폴백 메시지
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: '죄송합니다. 답변 생성 중 오류가 발생했습니다. 다시 시도해주세요.',
+        error: error.message
+      })
+    };
+  }
+}
+
+// 스트리밍 응답
+async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
+  const { user_query } = payload;
+  const userLanguage = detectLanguage(user_query);
+
+  console.log(`🔍 Gemini File Search 스트리밍: "${user_query}"`);
+
+  // 간단한 인사말 처리
+  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워'];
+  const isGreeting = simpleGreetings.some(g => {
+    const query = user_query.toLowerCase().trim();
+    return query === g || query === g + '하세요' || query === g + '!' || query === g + '?';
+  }) && user_query.length < 15;
+
+  if (isGreeting) {
+    const msg = userLanguage === 'english'
+      ? 'Hello! Feel free to ask anything about hairstyles. 😊\n\nExamples:\n• "What is A Length?"\n• "Explain Zone division"\n• "Difference between Layer and Graduation"'
+      : '안녕하세요! 헤어스타일에 대해 무엇이든 물어보세요. 😊\n\n예시:\n• "A Length가 뭐야?"\n• "존 구분을 어떻게해?"\n• "Layer와 Graduation 차이는?"';
+
+    return {
+      statusCode: 200,
+      headers: { ...headers, 'Content-Type': 'text/event-stream' },
+      body: `data: ${JSON.stringify({ type: 'content', content: msg })}\n\ndata: [DONE]\n\n`
+    };
+  }
+
+  // 보안 키워드 체크
+  const securityKeywords = ['42포뮬러', '42개 포뮬러', '42 formula', '9매트릭스', 'DBS NO', 'DFS NO', 'VS NO', 'HS NO'];
+  const isSecurityQuery = securityKeywords.some(keyword => user_query.toLowerCase().includes(keyword.toLowerCase()));
+
+  if (isSecurityQuery) {
+    const msg = '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"';
+
+    return {
+      statusCode: 200,
+      headers: { ...headers, 'Content-Type': 'text/event-stream' },
+      body: `data: ${JSON.stringify({ type: 'content', content: msg })}\n\ndata: [DONE]\n\n`
+    };
+  }
+
+  try {
+    // Gemini File Search API 호출 (비스트리밍으로 전체 받아서 SSE로 변환)
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            role: 'user',
+            parts: [{ text: user_query }]
+          }],
+          systemInstruction: {
+            parts: [{ text: buildGeminiSystemPrompt(userLanguage) }]
+          },
+          tools: [{
+            fileSearch: {
+              fileSearchStoreNames: [GEMINI_FILE_SEARCH_STORE]
+            }
+          }],
+          generationConfig: {
+            temperature: 0.5,
+            maxOutputTokens: 2048,
+            topP: 0.9
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Gemini API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || '답변을 생성할 수 없습니다.';
+
+    console.log(`✅ Gemini 응답 완료 (${answer.length}자)`);
+
+    // SSE 형식으로 변환 (청크 단위로 전송)
+    let sseBuffer = '';
+    const chunkSize = 50; // 50자씩 청크
+
+    for (let i = 0; i < answer.length; i += chunkSize) {
+      const chunk = answer.substring(i, i + chunkSize);
+      sseBuffer += `data: ${JSON.stringify({ type: 'content', content: chunk })}\n\n`;
+    }
+    sseBuffer += 'data: [DONE]\n\n';
+
+    return {
+      statusCode: 200,
+      headers: { ...headers, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
+      body: sseBuffer
+    };
+
+  } catch (error) {
+    console.error('💥 Gemini File Search 스트리밍 오류:', error.message);
+
     return {
       statusCode: 200,
       headers: { ...headers, 'Content-Type': 'text/event-stream' },

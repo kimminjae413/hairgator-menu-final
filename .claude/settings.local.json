@@ -4,7 +4,8 @@
       "Bash(git push:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(python scripts/split-pdf.py:*)"
     ],
     "deny": [],
     "ask": []
