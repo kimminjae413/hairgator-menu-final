@@ -95,7 +95,8 @@
 }
 
 /* ========== 대분류 탭 - 글래스모피즘 ========== */
-.main-tabs {
+.main-tabs,
+.category-tabs {
     background: rgba(0, 0, 0, 0.6) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
@@ -106,11 +107,13 @@
     scrollbar-width: none;
 }
 
-.main-tabs::-webkit-scrollbar {
+.main-tabs::-webkit-scrollbar,
+.category-tabs::-webkit-scrollbar {
     display: none;
 }
 
-.main-tab {
+.main-tab,
+.category-tab {
     background: rgba(255, 255, 255, 0.08) !important;
     backdrop-filter: blur(10px) !important;
     -webkit-backdrop-filter: blur(10px) !important;
@@ -125,24 +128,27 @@
     font-weight: 600;
 }
 
-.main-tab:hover {
+.main-tab:hover,
+.category-tab:hover {
     background: rgba(255, 255, 255, 0.15) !important;
     transform: translateY(-2px);
 }
 
 /* 남성 선택시 파란색, 여성 선택시 핑크색 */
-body.gender-male .main-tab.active {
-    background: #4A90E2;
-    color: #fff;
-    border-color: #4A90E2;
-    box-shadow: 0 5px 20px rgba(74, 144, 226, 0.4);
+body.gender-male .main-tab.active,
+body.gender-male .category-tab.active {
+    background: linear-gradient(135deg, #4A90E2, #357ABD) !important;
+    color: #fff !important;
+    border: none !important;
+    box-shadow: 0 5px 20px rgba(74, 144, 226, 0.4) !important;
 }
 
-body.gender-female .main-tab.active {
-    background: #FF1493;
-    color: #fff;
-    border-color: #FF1493;
-    box-shadow: 0 5px 20px rgba(255, 20, 147, 0.4);
+body.gender-female .main-tab.active,
+body.gender-female .category-tab.active {
+    background: linear-gradient(135deg, #FF1493, #C2185B) !important;
+    color: #fff !important;
+    border: none !important;
+    box-shadow: 0 5px 20px rgba(255, 20, 147, 0.4) !important;
 }
 
 /* ========== 중분류 탭 - 글래스모피즘 ========== */
@@ -483,13 +489,15 @@ body.light-theme .menu-btn span {
     background: #000;
 }
 
-body.light-theme .main-tabs {
+body.light-theme .main-tabs,
+body.light-theme .category-tabs {
     background: rgba(245, 245, 245, 0.7) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
 }
 
-body.light-theme .main-tab {
+body.light-theme .main-tab,
+body.light-theme .category-tab {
     background: rgba(255, 255, 255, 0.6) !important;
     backdrop-filter: blur(10px) !important;
     -webkit-backdrop-filter: blur(10px) !important;
