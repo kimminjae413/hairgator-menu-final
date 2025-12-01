@@ -446,11 +446,11 @@ class HairGatorChatbot {
         width: 60px;
         height: 60px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #E91E63, #C2185B);
+        background: linear-gradient(135deg, #3a3a3a, #2d2d2d);
         border: none;
         color: white;
         cursor: pointer;
-        box-shadow: 0 4px 20px rgba(233, 30, 99, 0.4);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         z-index: 9999;
         display: flex;
         align-items: center;
@@ -469,11 +469,11 @@ class HairGatorChatbot {
     if (btn) {
       btn.addEventListener('mouseenter', () => {
         btn.style.transform = 'scale(1.1)';
-        btn.style.boxShadow = '0 6px 30px rgba(233, 30, 99, 0.5)';
+        btn.style.boxShadow = '0 6px 30px rgba(0, 0, 0, 0.4)';
       });
       btn.addEventListener('mouseleave', () => {
         btn.style.transform = 'scale(1)';
-        btn.style.boxShadow = '0 4px 20px rgba(233, 30, 99, 0.4)';
+        btn.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
       });
     }
 
