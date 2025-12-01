@@ -832,7 +832,7 @@ function showBrandSettingModal() {
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 8px;">
+                <label style="display: block; color: #aaa; font-size: 12px; margin-bottom: 8px;">
                     ${t('ui.brandNameLabel')}
                 </label>
                 <input type="text" id="brandNameInput" value="${savedBrand}" placeholder="${t('ui.brandNamePlaceholder')}" maxlength="20" style="
@@ -848,7 +848,7 @@ function showBrandSettingModal() {
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 12px;">
+                <label style="display: block; color: #aaa; font-size: 12px; margin-bottom: 12px;">
                     ${t('ui.fontSelect')}
                 </label>
                 <div id="fontOptions" style="
@@ -861,7 +861,7 @@ function showBrandSettingModal() {
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 12px;">
+                <label style="display: block; color: #aaa; font-size: 12px; margin-bottom: 12px;">
                     ${t('ui.fontColorLight')}
                 </label>
                 <div id="colorOptionsLight" style="
@@ -875,7 +875,7 @@ function showBrandSettingModal() {
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 12px;">
+                <label style="display: block; color: #aaa; font-size: 12px; margin-bottom: 12px;">
                     ${t('ui.fontColorDark')}
                 </label>
                 <div id="colorOptionsDark" style="
@@ -889,7 +889,7 @@ function showBrandSettingModal() {
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label style="display: block; color: var(--text-secondary, #aaa); font-size: 12px; margin-bottom: 8px;">
+                <label style="display: block; color: #aaa; font-size: 12px; margin-bottom: 8px;">
                     ${t('ui.preview')}
                 </label>
                 <div style="display: flex; gap: 10px;">
