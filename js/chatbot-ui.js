@@ -446,7 +446,7 @@ class HairGatorChatbot {
         width: 60px;
         height: 60px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #E91E63, #9C27B0);
+        background: linear-gradient(135deg, #E91E63, #C2185B);
         border: none;
         color: white;
         cursor: pointer;

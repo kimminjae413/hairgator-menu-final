@@ -5,21 +5,23 @@
 
 /* ==================== CSS Variables ==================== */
 :root {
-  /* Brand Colors */
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --accent-gradient: linear-gradient(135deg, #E91E63 0%, #9C27B0 100%);
+  /* Brand Colors - 메인 서비스와 동일 */
+  --primary-pink: #E91E63;
+  --primary-pink-dark: #C2185B;
+  --primary-gradient: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
+  --accent-gradient: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
   --accent-gold: #c9a85c;
 
   /* Backgrounds */
-  --bg-app: #f0f2f5;
+  --bg-app: #f5f5f5;
   --bg-glass: rgba(255, 255, 255, 0.85);
   --bg-glass-dark: rgba(255, 255, 255, 0.95);
-  --bg-canvas: #f8fafc;
+  --bg-canvas: #fafafa;
 
   /* Text */
-  --text-primary: #1a202c;
-  --text-secondary: #718096;
-  --text-muted: #a0aec0;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --text-muted: #999999;
 
   /* Borders */
   --border-light: rgba(0, 0, 0, 0.08);
@@ -29,8 +31,8 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.1);
-  --shadow-float: 0 20px 40px rgba(118, 75, 162, 0.15);
-  --shadow-glow: 0 0 30px rgba(102, 126, 234, 0.3);
+  --shadow-float: 0 20px 40px rgba(233, 30, 99, 0.2);
+  --shadow-glow: 0 0 30px rgba(233, 30, 99, 0.3);
 
   /* Spacing */
   --space-xs: 4px;
@@ -279,10 +281,10 @@ body.ai-studio-page {
 
 .action-btn {
   padding: 8px 16px;
-  background: rgba(102, 126, 234, 0.1);
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  background: rgba(233, 30, 99, 0.1);
+  border: 1px solid rgba(233, 30, 99, 0.2);
   border-radius: var(--radius-full);
-  color: #667eea;
+  color: #E91E63;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -290,8 +292,8 @@ body.ai-studio-page {
 }
 
 .action-btn:hover {
-  background: rgba(102, 126, 234, 0.2);
-  border-color: rgba(102, 126, 234, 0.4);
+  background: rgba(233, 30, 99, 0.2);
+  border-color: rgba(233, 30, 99, 0.4);
 }
 
 /* Canvas Preview Button (in message) */
@@ -301,10 +303,10 @@ body.ai-studio-page {
   gap: var(--space-sm);
   margin-top: var(--space-md);
   padding: var(--space-md);
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-  border: 1px dashed rgba(102, 126, 234, 0.3);
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.1), rgba(194, 24, 91, 0.1));
+  border: 1px dashed rgba(233, 30, 99, 0.3);
   border-radius: var(--radius-md);
-  color: #667eea;
+  color: #E91E63;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -312,7 +314,7 @@ body.ai-studio-page {
 }
 
 .view-canvas-btn:hover {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.15), rgba(194, 24, 91, 0.15));
   border-style: solid;
 }
 
@@ -365,8 +367,8 @@ body.ai-studio-page {
 }
 
 .input-wrapper:focus-within {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #E91E63;
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
 }
 
 .input-btn {
@@ -527,7 +529,7 @@ body.ai-studio-page {
   width: 120px;
   height: 120px;
   margin-bottom: var(--space-xl);
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.1), rgba(194, 24, 91, 0.1));
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -593,7 +595,7 @@ body.ai-studio-page {
 }
 
 .badge.length {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #E91E63, #C2185B);
   color: #ffffff;
 }
 
@@ -724,12 +726,12 @@ body.ai-studio-page {
 }
 
 .spec-item.highlight {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-  border-color: rgba(102, 126, 234, 0.2);
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.1), rgba(194, 24, 91, 0.1));
+  border-color: rgba(233, 30, 99, 0.2);
 }
 
 .spec-item.highlight span {
-  color: #667eea;
+  color: #E91E63;
 }
 
 /* Guide Text */
