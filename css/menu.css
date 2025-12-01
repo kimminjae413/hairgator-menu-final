@@ -23,16 +23,34 @@
 .back-btn {
     position: absolute;
     left: 20px;
-    background: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #3a3a3c;
     border: none;
-    color: #fff;
-    width: 40px;
-    height: 40px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    font-size: 24px;
+    font-size: 0;
+    color: transparent;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.back-btn::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-left: 2.5px solid #ffffff;
+    border-bottom: 2.5px solid #ffffff;
+    transform: rotate(45deg) translateX(2px);
+    display: block;
+}
+
+.back-btn:hover {
+    background: #4a4a4c;
+    transform: scale(1.05);
 }
 
 /* 로고 - 중앙 정렬, 흰색 */
@@ -426,7 +444,20 @@ body.light-theme .logo {
     color: #000 !important;  /* 라이트 테마에서는 검은색 */
 }
 
-body.light-theme .back-btn,
+body.light-theme .back-btn {
+    background: #e5e5ea;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+body.light-theme .back-btn::after {
+    border-left-color: #3a3a3c;
+    border-bottom-color: #3a3a3c;
+}
+
+body.light-theme .back-btn:hover {
+    background: #d1d1d6;
+}
+
 body.light-theme .theme-btn {
     color: #000;
 }
