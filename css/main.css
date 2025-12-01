@@ -801,14 +801,26 @@ body.light-theme .sub-tab:hover:not(.disabled) {
 
 /* ?ㅽ???洹몃━??- ?쒕툝由?臾몄젣 ?닿껐 (蹂듦뎄 諛?理쒖쟻?? */
 /* 스타일 그리드 - 스크롤 문제 해결 (복구 및 최적화) */
+/* ========== 탭 헤더 영역 - 글래스모피즘을 위해 fixed ========== */
+.tablet-fixed-header {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: transparent;
+}
+
+/* 스타일 그리드 - 글래스모피즘 효과를 위해 탭 뒤로 스크롤 */
 .styles-container,
 .menu-items-container {
     position: absolute;
-    top: 230px;
+    top: 70px;
     left: 0;
     right: 0;
     bottom: env(safe-area-inset-bottom, 0);
     padding: 10px;
+    padding-top: 170px;
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
     overflow-y: auto;
     overflow-x: hidden;
@@ -845,8 +857,9 @@ body.light-theme .menu-items-container {
 
     .styles-container,
     .menu-items-container {
-        top: 270px;
+        top: 60px;
         padding: 15px;
+        padding-top: 220px;
     }
 
     .styles-grid {
@@ -2853,10 +2866,11 @@ body.light-theme .modal-action-btn.secondary:hover {
         right: auto;
     }
 
-    /* 스타일 그리드 위치 아래로 조정 */
+    /* 스타일 그리드 - 글래스모피즘 효과를 위해 */
     .styles-container,
     .menu-items-container {
-        top: 270px !important;
+        top: 70px !important;
+        padding-top: 210px !important;
     }
 }
 
@@ -2878,14 +2892,16 @@ body.fullscreen-mode .language-btn {
 @media (min-width: 768px) and (orientation: landscape) {
     body.fullscreen-mode .menu-items-container,
     body.fullscreen-mode .styles-container {
-        top: 270px !important;
+        top: 100px !important;
+        padding-top: 180px !important;
     }
 }
 
 /* 풀스크린 모드 스타일 영역 위치 조정 */
 body.fullscreen-mode .styles-container,
 body.fullscreen-mode .menu-items-container {
-    top: 270px !important;
+    top: 100px !important;
+    padding-top: 180px !important;
 }
 
 /* ========== High-End 타이포그래피 위계 강화 ========== */
