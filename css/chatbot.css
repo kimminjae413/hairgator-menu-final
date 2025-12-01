@@ -63,18 +63,17 @@
 }
 
 /* ==================== 챗봇 컨테이너 ==================== */
+/* 챗봇은 항상 화이트(라이트) 모드로 고정 */
 .chatbot-container {
   position: fixed;
   bottom: 32px;
   right: 32px;
   width: 420px;
   height: 650px;
-  background: var(--background);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 20px;
-  box-shadow:
-    0 0 40px rgba(0, 0, 0, 0.8),
-    inset 0 0 60px rgba(255, 255, 255, 0.02);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
   opacity: 0;
@@ -83,7 +82,6 @@
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 9999;
   overflow: hidden;
-  backdrop-filter: blur(20px);
 }
 
 .chatbot-container.active {
@@ -99,11 +97,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  background: linear-gradient(135deg,
-      rgba(233, 30, 99, 0.1),
-      rgba(33, 150, 243, 0.1));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, #E91E63, #9C27B0);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
 }
 
@@ -113,31 +108,17 @@
   gap: 8px;
 }
 
-.chatbot-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-      transparent,
-      var(--female-color),
-      var(--male-color),
-      transparent);
-}
-
 .chatbot-title {
   font-weight: 600;
   font-size: 16px;
-  color: var(--text-primary);
+  color: #ffffff;
   letter-spacing: 0.5px;
 }
 
 .chatbot-close {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
@@ -150,111 +131,13 @@
 }
 
 .chatbot-close:hover {
-  background: rgba(233, 30, 99, 0.2);
-  border-color: var(--female-color);
-  color: var(--female-color);
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .chatbot-close svg {
   width: 18px;
   height: 18px;
-}
-
-/* ==================== 언어 선택 드롭다운 ==================== */
-.language-selector {
-  position: relative;
-}
-
-.language-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-}
-
-.language-btn:hover {
-  background: rgba(33, 150, 243, 0.2);
-  border-color: var(--male-color);
-  color: var(--male-color);
-}
-
-.language-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
-.language-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  z-index: 10000;
-  min-width: 140px;
-  animation: dropdownSlide 0.2s ease-out;
-}
-
-@keyframes dropdownSlide {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.language-dropdown.hidden {
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-10px);
-  transition: visibility 0s 0.2s, opacity 0.2s ease-out, transform 0.2s ease-out;
-}
-
-/* 드롭다운이 보일 때 */
-.language-dropdown:not(.hidden) {
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
-  transition: visibility 0s 0s, opacity 0.2s ease-out, transform 0.2s ease-out;
-}
-
-.lang-option {
-  width: 100%;
-  padding: 10px 16px;
-  background: transparent;
-  border: none;
-  color: #000000;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.lang-option:hover {
-  background: rgba(33, 150, 243, 0.1);
-  color: var(--male-color);
-}
-
-.lang-option:not(:last-child) {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 /* ==================== 메시지 영역 ==================== */
@@ -265,25 +148,52 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  background: var(--background);
+  background: #f8f9fa;
   min-height: 0;
 }
 
 .chatbot-messages::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .chatbot-messages::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f0f0f0;
+  border-radius: 3px;
 }
 
 .chatbot-messages::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  background: #ccc;
+  border-radius: 3px;
 }
 
 .chatbot-messages::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: #aaa;
+}
+
+/* ==================== 날짜 구분선 ==================== */
+.chat-date-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0;
+  position: relative;
+}
+
+.chat-date-divider::before,
+.chat-date-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.chat-date-divider span {
+  padding: 4px 16px;
+  font-size: 12px;
+  color: #888888;
+  background: #f8f9fa;
+  border-radius: 12px;
+  white-space: nowrap;
 }
 
 /* ==================== 메시지 스타일 ==================== */
@@ -308,22 +218,24 @@
 
 .message-content {
   flex: 1;
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
   padding: 12px 16px;
   border-radius: 12px;
-  color: var(--text-primary);
-  line-height: 1.5;
+  color: #333333;
+  line-height: 1.6;
   word-wrap: break-word;
   word-break: break-word;
   overflow-wrap: anywhere;
   max-width: 100%;
   font-size: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .bot-message .message-content {
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px 12px 12px 12px;
+  background: #ffffff;
+  border-left: 3px solid #E91E63;
 }
 
 .user-message {
@@ -331,9 +243,10 @@
 }
 
 .user-message .message-content {
-  background: rgba(255, 255, 255, 0.25);
-  color: #000000;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #E91E63, #9C27B0);
+  color: #ffffff;
+  border-radius: 12px 4px 12px 12px;
+  border: none;
 }
 
 .message-content p {
@@ -346,12 +259,12 @@
 }
 
 .message-content strong {
-  color: var(--female-color);
-  font-weight: 500;
+  color: #E91E63;
+  font-weight: 600;
 }
 
 .user-message .message-content strong {
-  color: #000000;
+  color: #ffffff;
   font-weight: 600;
 }
 
@@ -369,7 +282,7 @@
 .recipe-v2 {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.7;
-  color: var(--text-primary);
+  color: #333333;
   padding: 8px 0;
 }
 
@@ -377,13 +290,13 @@
   margin-bottom: 1.2rem;
   padding: 14px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border-left: 3px solid var(--female-color);
+  background: #fafafa;
+  border-left: 3px solid #E91E63;
   transition: all 0.3s ease;
 }
 
 .recipe-section:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: #f5f5f5;
   transform: translateX(3px);
 }
 
@@ -394,7 +307,7 @@
   margin: 0 0 10px 0;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--female-color);
+  color: #E91E63;
 }
 
 .section-number {
@@ -414,6 +327,7 @@
   padding-left: 0;
   font-size: 13px;
   line-height: 1.8;
+  color: #444444;
 }
 
 .section-content p {
@@ -441,7 +355,7 @@
   content: "•";
   position: absolute;
   left: 0;
-  color: var(--female-color);
+  color: #E91E63;
   font-weight: bold;
   font-size: 18px;
   line-height: 1;
@@ -449,14 +363,14 @@
 
 /* 강조 텍스트 */
 .section-content strong {
-  color: var(--female-color);
+  color: #E91E63;
   font-weight: 600;
 }
 
 /* 화살표 스타일 */
 .section-content .arrow,
 .arrow {
-  color: var(--female-color);
+  color: #E91E63;
   font-weight: bold;
   margin: 0 4px;
 }
@@ -465,7 +379,7 @@
 .recipe-text {
   margin: 8px 0;
   line-height: 1.7;
-  color: var(--text-primary);
+  color: #444444;
 }
 
 /* 섹션별 색상 구분 */
@@ -910,14 +824,13 @@
 
 /* ==================== 입력 영역 ==================== */
 .chatbot-input-area {
-  padding: 20px 24px;
-  background: rgba(255, 255, 255, 0.02);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 16px 20px;
+  background: #ffffff;
+  border-top: 1px solid #e0e0e0;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  /* 성별 선택과 버튼 사이 간격 */
+  gap: 12px;
 }
 
 .input-wrapper {
@@ -929,9 +842,9 @@
 .upload-btn,
 .send-btn,
 .index-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  color: #666666;
   cursor: pointer;
   padding: 10px;
   border-radius: 10px;
@@ -944,15 +857,20 @@
 
 .upload-btn:hover,
 .index-btn:hover {
-  background: rgba(233, 30, 99, 0.2);
-  border-color: var(--female-color);
-  color: var(--female-color);
+  background: #fce4ec;
+  border-color: #E91E63;
+  color: #E91E63;
+}
+
+.send-btn {
+  background: linear-gradient(135deg, #E91E63, #9C27B0);
+  border: none;
+  color: #ffffff;
 }
 
 .send-btn:hover {
-  background: rgba(33, 150, 243, 0.2);
-  border-color: var(--male-color);
-  color: var(--male-color);
+  opacity: 0.9;
+  transform: scale(1.02);
 }
 
 .upload-btn svg,
@@ -964,9 +882,9 @@
 
 #chatbot-input {
   flex: 1;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  color: #333333;
   padding: 12px 16px;
   border-radius: 10px;
   font-size: 14px;
@@ -975,13 +893,13 @@
 }
 
 #chatbot-input:focus {
-  border-color: var(--female-color);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: #E91E63;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
 }
 
 #chatbot-input::placeholder {
-  color: var(--text-secondary);
-  opacity: 0.6;
+  color: #999999;
 }
 
 /* ==================== 색인 모달 ==================== */
@@ -1240,6 +1158,40 @@ line-height: 1.8;
   opacity: 1;
 }
 
+/* ==================== 태블릿 반응형 (큰 사이즈) ==================== */
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  .chatbot-container {
+    width: 520px;
+    height: 720px;
+    bottom: 24px;
+    right: 24px;
+  }
+
+  .chatbot-messages {
+    padding: 28px;
+    gap: 24px;
+  }
+
+  .message-content {
+    font-size: 15px;
+    padding: 14px 18px;
+  }
+
+  .chatbot-input-area {
+    padding: 20px 24px;
+  }
+
+  #chatbot-input {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+
+  .section-content {
+    font-size: 14px;
+  }
+}
+
 /* ==================== 모바일 반응형 ==================== */
 
 @media (max-width: 768px) {
@@ -1279,8 +1231,8 @@ line-height: 1.8;
   }
 
   .message-content {
-    font-size: 13px;
-    padding: 10px 14px;
+    font-size: 14px;
+    padding: 12px 16px;
   }
 
   .chatbot-input-area {
@@ -1375,7 +1327,6 @@ line-height: 1.8;
   .chatbot-toggle,
   .chatbot-close,
   .chatbot-input-area,
-  .language-selector,
   .index-btn {
     display: none !important;
   }

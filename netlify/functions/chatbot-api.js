@@ -1889,12 +1889,22 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
     };
   }
 
-  // 보안 키워드 체크
-  const securityKeywords = ['42포뮬러', '42개 포뮬러', '42 formula', '9매트릭스', 'DBS NO', 'DFS NO', 'VS NO', 'HS NO'];
+  // 보안 키워드 체크 (42포뮬러 원리 관련 질문 차단)
+  const securityKeywords = [
+    // 42포뮬러 관련
+    '42포뮬러', '42개 포뮬러', '42 formula', '42공식', '42가지', '42개의',
+    'forty two', 'fortytwo', '포뮬러 원리', 'formula 원리', '공식 원리',
+    '42가지 공식', '42개 공식', '42종', '42종류',
+    // 9매트릭스 관련
+    '9매트릭스', '9 matrix', '나인매트릭스', 'nine matrix',
+    // 섹션 NO 조합 (영업 기밀)
+    'DBS NO', 'DFS NO', 'VS NO', 'HS NO',
+    'dbs no', 'dfs no', 'vs no', 'hs no'
+  ];
   const isSecurityQuery = securityKeywords.some(keyword => user_query.toLowerCase().includes(keyword.toLowerCase()));
 
   if (isSecurityQuery) {
-    const msg = '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"\n• "헤어 길이 분류 시스템"';
+    const msg = '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n이 내용은 정규 교육과정에서만 배울 수 있습니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"\n• "헤어 길이 분류 시스템"';
 
     return {
       statusCode: 200,
@@ -1995,12 +2005,22 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     };
   }
 
-  // 보안 키워드 체크
-  const securityKeywords = ['42포뮬러', '42개 포뮬러', '42 formula', '9매트릭스', 'DBS NO', 'DFS NO', 'VS NO', 'HS NO'];
+  // 보안 키워드 체크 (42포뮬러 원리 관련 질문 차단)
+  const securityKeywords = [
+    // 42포뮬러 관련
+    '42포뮬러', '42개 포뮬러', '42 formula', '42공식', '42가지', '42개의',
+    'forty two', 'fortytwo', '포뮬러 원리', 'formula 원리', '공식 원리',
+    '42가지 공식', '42개 공식', '42종', '42종류',
+    // 9매트릭스 관련
+    '9매트릭스', '9 matrix', '나인매트릭스', 'nine matrix',
+    // 섹션 NO 조합 (영업 기밀)
+    'DBS NO', 'DFS NO', 'VS NO', 'HS NO',
+    'dbs no', 'dfs no', 'vs no', 'hs no'
+  ];
   const isSecurityQuery = securityKeywords.some(keyword => user_query.toLowerCase().includes(keyword.toLowerCase()));
 
   if (isSecurityQuery) {
-    const msg = '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"';
+    const msg = '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n이 내용은 정규 교육과정에서만 배울 수 있습니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"';
 
     return {
       statusCode: 200,

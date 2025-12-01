@@ -19,10 +19,10 @@ class HairGatorChatbot {
     this.conversationHistory = [];
     this.currentLanguage = this.core.currentLanguage;
 
-    // 유저별 히스토리 관리
+    // 유저별 히스토리 관리 (7일 보관 후 자동 삭제)
     this.currentUserId = null;
-    this.HISTORY_EXPIRE_DAYS = 30;
-    this.MAX_MESSAGES_PER_USER = 100;
+    this.HISTORY_EXPIRE_DAYS = 7;  // 7일 후 자동 삭제
+    this.MAX_MESSAGES_PER_USER = 200;  // 최대 200개 메시지 보관
 
     // ⭐ 이미지 업로드 임시 저장
     this.pendingImage = null;
@@ -63,22 +63,30 @@ class HairGatorChatbot {
     }
   }
 
-  // ==================== 유저 히스토리 관리 ====================
+  // ==================== Firebase 기반 유저 히스토리 관리 ====================
 
-  initUserHistory() {
+  async initUserHistory() {
     try {
+      // 불나비 유저 또는 Firebase Auth 유저 확인
       const bullnabiUser = window.getBullnabiUser ? window.getBullnabiUser() : null;
+      const firebaseUser = firebase.auth ? firebase.auth().currentUser : null;
 
       if (bullnabiUser && bullnabiUser.userId) {
         this.currentUserId = bullnabiUser.userId;
-        console.log(`👤 유저 ID 설정: ${this.currentUserId}`);
+        console.log(`👤 불나비 유저 ID: ${this.currentUserId}`);
+      } else if (firebaseUser && firebaseUser.uid) {
+        this.currentUserId = firebaseUser.uid;
+        console.log(`👤 Firebase 유저 ID: ${this.currentUserId}`);
       } else {
         this.currentUserId = this.getOrCreateAnonymousId();
         console.log(`👤 임시 유저 ID: ${this.currentUserId}`);
       }
 
-      this.loadUserHistory();
-      this.cleanExpiredMessages();
+      // Firebase에서 히스토리 로드
+      await this.loadUserHistoryFromFirebase();
+
+      // 7일 지난 메시지 삭제
+      await this.cleanExpiredMessagesFromFirebase();
 
     } catch (e) {
       console.error('❌ 유저 히스토리 초기화 실패:', e);
@@ -99,62 +107,129 @@ class HairGatorChatbot {
     }
   }
 
-  loadUserHistory() {
+  // Firebase에서 대화 기록 로드
+  async loadUserHistoryFromFirebase() {
     try {
-      if (!this.currentUserId) return;
+      if (!this.currentUserId || !window.db) {
+        console.warn('⚠️ Firebase 또는 유저 ID 없음, 로컬 폴백');
+        this.loadUserHistoryFromLocal();
+        return;
+      }
 
+      const expireTime = Date.now() - (this.HISTORY_EXPIRE_DAYS * 24 * 60 * 60 * 1000);
+
+      const snapshot = await window.db
+        .collection('chatHistory')
+        .doc(this.currentUserId)
+        .collection('messages')
+        .where('timestamp', '>', expireTime)
+        .orderBy('timestamp', 'asc')
+        .limit(this.MAX_MESSAGES_PER_USER)
+        .get();
+
+      this.conversationHistory = [];
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        this.conversationHistory.push({
+          id: doc.id,
+          sender: data.sender,
+          content: data.content,
+          timestamp: data.timestamp
+        });
+      });
+
+      console.log(`📚 Firebase 히스토리 로드: ${this.conversationHistory.length}개 메시지`);
+
+      if (this.conversationHistory.length > 0) {
+        this.restoreHistoryToUI();
+      }
+
+    } catch (e) {
+      console.error('❌ Firebase 히스토리 로드 실패:', e);
+      // 로컬 폴백
+      this.loadUserHistoryFromLocal();
+    }
+  }
+
+  // 로컬 스토리지 폴백
+  loadUserHistoryFromLocal() {
+    try {
       const key = `hairgator_history_${this.currentUserId}`;
       const saved = localStorage.getItem(key);
 
       if (saved) {
-        const history = JSON.parse(saved);
-        this.conversationHistory = history;
-        console.log(`📚 히스토리 로드: ${history.length}개 메시지`);
+        this.conversationHistory = JSON.parse(saved);
+        console.log(`📚 로컬 히스토리 로드: ${this.conversationHistory.length}개 메시지`);
         this.restoreHistoryToUI();
       }
     } catch (e) {
-      console.error('❌ 히스토리 로드 실패:', e);
+      console.error('❌ 로컬 히스토리 로드 실패:', e);
       this.conversationHistory = [];
     }
   }
 
-  saveUserHistory() {
+  // Firebase에 메시지 저장
+  async saveMessageToFirebase(sender, content) {
     try {
-      if (!this.currentUserId) return;
-
-      const key = `hairgator_history_${this.currentUserId}`;
-
-      if (this.conversationHistory.length > this.MAX_MESSAGES_PER_USER) {
-        this.conversationHistory = this.conversationHistory.slice(-this.MAX_MESSAGES_PER_USER);
+      if (!this.currentUserId || !window.db) {
+        console.warn('⚠️ Firebase 없음, 로컬에만 저장');
+        return;
       }
 
-      localStorage.setItem(key, JSON.stringify(this.conversationHistory));
-      console.log(`💾 히스토리 저장: ${this.conversationHistory.length}개 메시지`);
+      const message = {
+        sender: sender,
+        content: content,
+        timestamp: Date.now(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      await window.db
+        .collection('chatHistory')
+        .doc(this.currentUserId)
+        .collection('messages')
+        .add(message);
+
+      console.log(`💾 Firebase 메시지 저장 완료`);
 
     } catch (e) {
-      console.warn('⚠️ 히스토리 저장 실패 (WebView):', e);
+      console.error('❌ Firebase 저장 실패:', e);
     }
   }
 
-  cleanExpiredMessages() {
+  // 7일 지난 메시지 삭제 (Firebase)
+  async cleanExpiredMessagesFromFirebase() {
     try {
-      if (!this.currentUserId) return;
+      if (!this.currentUserId || !window.db) return;
 
       const expireTime = Date.now() - (this.HISTORY_EXPIRE_DAYS * 24 * 60 * 60 * 1000);
-      const originalLength = this.conversationHistory.length;
 
-      this.conversationHistory = this.conversationHistory.filter(msg => {
-        return msg.timestamp && msg.timestamp > expireTime;
-      });
+      const snapshot = await window.db
+        .collection('chatHistory')
+        .doc(this.currentUserId)
+        .collection('messages')
+        .where('timestamp', '<', expireTime)
+        .get();
 
-      const deleted = originalLength - this.conversationHistory.length;
-      if (deleted > 0) {
-        console.log(`🗑️ 만료된 메시지 ${deleted}개 삭제 (${this.HISTORY_EXPIRE_DAYS}일 이상)`);
-        this.saveUserHistory();
+      if (snapshot.empty) {
+        console.log('🗑️ 삭제할 만료 메시지 없음');
+        return;
       }
 
+      // 배치 삭제 (최대 500개씩)
+      const batch = window.db.batch();
+      let deleteCount = 0;
+
+      snapshot.forEach(doc => {
+        batch.delete(doc.ref);
+        deleteCount++;
+      });
+
+      await batch.commit();
+      console.log(`🗑️ Firebase에서 ${deleteCount}개 만료 메시지 삭제 (${this.HISTORY_EXPIRE_DAYS}일 이상)`);
+
     } catch (e) {
-      console.error('❌ 만료 메시지 정리 실패:', e);
+      console.error('❌ Firebase 만료 메시지 삭제 실패:', e);
     }
   }
 
@@ -165,7 +240,29 @@ class HairGatorChatbot {
 
       messagesDiv.innerHTML = '';
 
+      // 날짜별로 그룹화하여 표시
+      let lastDate = null;
+
       this.conversationHistory.forEach(msg => {
+        // 날짜 구분선 추가
+        if (msg.timestamp) {
+          const msgDate = new Date(msg.timestamp).toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+
+          if (msgDate !== lastDate) {
+            const dateDivider = `
+              <div class="chat-date-divider">
+                <span>${msgDate}</span>
+              </div>
+            `;
+            messagesDiv.insertAdjacentHTML('beforeend', dateDivider);
+            lastDate = msgDate;
+          }
+        }
+
         const messageHTML = `
           <div class="${msg.sender}-message">
             <div class="message-content">${msg.content}</div>
@@ -193,17 +290,60 @@ class HairGatorChatbot {
       };
 
       this.conversationHistory.push(message);
-      this.saveUserHistory();
+
+      // Firebase에 저장 (비동기)
+      this.saveMessageToFirebase(sender, content);
+
+      // 로컬에도 백업 저장
+      this.saveUserHistoryToLocal();
 
     } catch (e) {
       console.error('❌ 히스토리 추가 실패:', e);
     }
   }
 
-  clearUserHistory() {
+  // 로컬 백업 저장
+  saveUserHistoryToLocal() {
     try {
       if (!this.currentUserId) return;
 
+      const key = `hairgator_history_${this.currentUserId}`;
+
+      if (this.conversationHistory.length > this.MAX_MESSAGES_PER_USER) {
+        this.conversationHistory = this.conversationHistory.slice(-this.MAX_MESSAGES_PER_USER);
+      }
+
+      localStorage.setItem(key, JSON.stringify(this.conversationHistory));
+
+    } catch (e) {
+      console.warn('⚠️ 로컬 백업 저장 실패:', e);
+    }
+  }
+
+  // 대화 기록 전체 삭제 (Firebase + 로컬)
+  async clearUserHistory() {
+    try {
+      if (!this.currentUserId) return;
+
+      // Firebase에서 삭제
+      if (window.db) {
+        const snapshot = await window.db
+          .collection('chatHistory')
+          .doc(this.currentUserId)
+          .collection('messages')
+          .get();
+
+        if (!snapshot.empty) {
+          const batch = window.db.batch();
+          snapshot.forEach(doc => {
+            batch.delete(doc.ref);
+          });
+          await batch.commit();
+          console.log(`🗑️ Firebase에서 ${snapshot.size}개 메시지 삭제`);
+        }
+      }
+
+      // 로컬에서도 삭제
       const key = `hairgator_history_${this.currentUserId}`;
       localStorage.removeItem(key);
       this.conversationHistory = [];
@@ -310,22 +450,6 @@ class HairGatorChatbot {
         <div class="chatbot-header">
           <span class="chatbot-title" id="chatbot-title">${texts.title}</span>
           <div class="header-actions">
-            <div class="language-selector">
-              <button id="language-btn" class="language-btn" title="Language">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="2" y1="12" x2="22" y2="12"></line>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                </svg>
-              </button>
-              <div id="language-dropdown" class="language-dropdown hidden">
-                <button class="lang-option" data-lang="ko">🇰🇷 한국어</button>
-                <button class="lang-option" data-lang="en">🇺🇸 English</button>
-                <button class="lang-option" data-lang="ja">🇯🇵 日本語</button>
-                <button class="lang-option" data-lang="zh">🇨🇳 中文</button>
-                <button class="lang-option" data-lang="vi">🇻🇳 Tiếng Việt</button>
-              </div>
-            </div>
             <button id="chatbot-close" class="chatbot-close" aria-label="닫기">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -527,20 +651,6 @@ class HairGatorChatbot {
       }
     });
 
-    const languageBtn = document.getElementById('language-btn');
-    const languageDropdown = document.getElementById('language-dropdown');
-
-    const toggleDropdown = (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      languageDropdown.classList.toggle('hidden');
-    };
-
-    languageBtn.addEventListener('click', toggleDropdown);
-    languageBtn.addEventListener('touchstart', toggleDropdown, { passive: false });
-
-    this.reattachLanguageHandlers();
-
     document.getElementById('index-btn').addEventListener('click', () => {
       this.showIndexModal();
     });
@@ -554,17 +664,6 @@ class HairGatorChatbot {
         this.closeIndexModal();
       }
     });
-
-    const closeDropdownOnOutside = (e) => {
-      const dropdown = document.getElementById('language-dropdown');
-      const langBtn = document.getElementById('language-btn');
-
-      if (dropdown && !dropdown.contains(e.target) && !langBtn.contains(e.target)) {
-        dropdown.classList.add('hidden');
-      }
-    };
-
-    document.addEventListener('click', closeDropdownOnOutside);
   }
 
   initKeyboardHandler() {
@@ -1163,144 +1262,6 @@ class HairGatorChatbot {
         }
       }
     }, { passive: true });
-  }
-
-  reattachLanguageHandlers() {
-    const self = this;
-    const dropdown = document.getElementById('language-dropdown');
-
-    if (!dropdown) {
-      console.warn('⚠️ 언어 드롭다운을 찾을 수 없음');
-      return;
-    }
-
-    let isProcessing = false;
-
-    const handleLanguageChange = function (lang) {
-      if (isProcessing) {
-        console.log('⏸️ 처리 중 - 스킵');
-        return;
-      }
-
-      isProcessing = true;
-      console.log('🎯 언어 선택: ' + lang);
-
-      dropdown.classList.add('hidden');
-
-      self.currentLanguage = lang;
-      self.core.currentLanguage = lang;
-      self.setStoredLanguage(lang);
-
-      const texts = self.getTexts();
-
-      const title = document.getElementById('chatbot-title');
-      if (title) title.textContent = texts.title;
-
-      const input = document.getElementById('chatbot-input');
-      if (input) input.placeholder = texts.placeholder;
-
-      const msgs = document.getElementById('chatbot-messages');
-      if (msgs) {
-        if (self.conversationHistory && self.conversationHistory.length > 0) {
-          self.restoreHistoryToUI();
-        } else {
-          msgs.innerHTML = '<div class="welcome-message"><div class="welcome-icon">👋</div><div class="welcome-text">' + texts.welcome + '</div></div>';
-        }
-      }
-
-      // ⭐ 메인 앱 UI도 동기화
-      if (window.currentLanguage !== lang) {
-        window.currentLanguage = lang;
-      }
-
-      // ⭐ 메인 앱의 updateAllTexts 호출
-      if (typeof window.updateAllTexts === 'function') {
-        window.updateAllTexts();
-        console.log('✅ 메인 앱 UI 업데이트 완료');
-      }
-
-      // ⭐ 메뉴 리로드
-      if (window.currentGender && window.HAIRGATOR_MENU?.loadMenuForGender) {
-        window.HAIRGATOR_MENU.loadMenuForGender(window.currentGender);
-        console.log('✅ 메뉴 리로드 완료');
-      }
-
-      console.log('✅ 챗봇 언어 변경 완료 (메인 앱과 동기화): ' + lang);
-
-      setTimeout(function () {
-        isProcessing = false;
-      }, 300);
-    };
-
-    const style = document.createElement('style');
-    style.textContent = `
-      .chatbot-container {
-        overflow: visible !important;
-        z-index: 9999 !important;
-      }
-      
-      .chatbot-header {
-        overflow: visible !important;
-        z-index: 10000 !important;
-      }
-      
-      .language-selector {
-        z-index: 10002 !important;
-        position: relative !important;
-      }
-      
-      .language-dropdown {
-        display: block !important;
-        position: absolute !important;
-        z-index: 999999 !important;
-      }
-      
-      .language-dropdown.hidden {
-        visibility: hidden !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-      }
-      
-      .language-dropdown:not(.hidden) {
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-      }
-      
-      .lang-option {
-        pointer-events: auto !important;
-        cursor: pointer !important;
-        min-height: 44px !important;
-        z-index: 1000000 !important;
-      }
-    `;
-    document.head.appendChild(style);
-
-    dropdown.addEventListener('click', function (e) {
-      const langBtn = e.target.closest('.lang-option');
-
-      if (langBtn) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const lang = langBtn.getAttribute('data-lang');
-        handleLanguageChange(lang);
-      }
-    }, true);
-
-    dropdown.addEventListener('touchend', function (e) {
-      const langBtn = e.target.closest('.lang-option');
-
-      if (langBtn) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const lang = langBtn.getAttribute('data-lang');
-        handleLanguageChange(lang);
-      }
-    }, true);
-
-    console.log('✅ HAIRGATOR 언어 선택 시스템 초기화 완료');
   }
 }
 
