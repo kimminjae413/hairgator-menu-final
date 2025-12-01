@@ -431,9 +431,32 @@ class HairGatorChatbot {
 
   // ==================== UI 초기화 ====================
 
+  // 허용된 유저 ID 목록
+  ALLOWED_USER_IDS = [
+    '691ceee09d868b5736d22007',
+    '6536474789a3ad49553b46d7',
+    '687ae7d51f31a788ab417e2d'
+  ];
+
   init() {
-    // AI Studio로 리다이렉트하는 플로팅 버튼만 생성
-    this.createAIStudioButton();
+    // 허용된 유저인지 확인 후 버튼 생성
+    this.checkAndCreateButton();
+  }
+
+  async checkAndCreateButton() {
+    // 유저 ID 확인
+    const bullnabiUser = window.getBullnabiUser ? window.getBullnabiUser() : null;
+    const userId = bullnabiUser?.userId || null;
+
+    console.log('👤 현재 유저 ID:', userId);
+
+    // 허용된 유저만 버튼 표시
+    if (userId && this.ALLOWED_USER_IDS.includes(userId)) {
+      this.createAIStudioButton();
+      console.log('✅ AI Studio 버튼 활성화 (허용된 유저)');
+    } else {
+      console.log('⚠️ AI Studio 버튼 비활성화 (허용되지 않은 유저)');
+    }
   }
 
   // AI Studio 이동 버튼 생성
