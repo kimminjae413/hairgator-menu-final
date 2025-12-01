@@ -1390,8 +1390,8 @@ async function fallbackVectorSearch(queryEmbedding, supabaseUrl, supabaseKey, ma
         },
         body: JSON.stringify({
           query_embedding: queryEmbedding,
-          match_threshold: 0.55,
-          match_count: matchCount
+          match_threshold: 0.3,      // ⬇️ 0.55 → 0.3 (더 관대하게)
+          match_count: matchCount * 2  // ⬆️ 더 많이 가져오기
         })
       }
     );
