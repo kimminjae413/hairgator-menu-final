@@ -476,23 +476,24 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
     };
   }
 
-  // 3. theory_chunks 검색 실행 (정규화된 쿼리 사용)
-  const theoryChunks = await searchTheoryChunks(normalizedQuery, geminiKey, supabaseUrl, supabaseKey, 10);
+  // 3. theory_chunks 검색 실행 (검색 개수 증가)
+  const theoryChunks = await searchTheoryChunks(normalizedQuery, geminiKey, supabaseUrl, supabaseKey, 15);
 
   console.log(`📚 theory_chunks 검색 결과: ${theoryChunks.length}개`);
+
+  // ⭐ 유사도 필터링 (낮은 점수 제거)
+  const filteredChunks = theoryChunks.filter(chunk =>
+    (chunk.combined_score || chunk.vector_similarity || 0) > 0.5
+  );
+
+  console.log(`🎯 필터링 후: ${filteredChunks.length}개`);
 
   // 4. 검색 결과에 따라 프롬프트 생성
   let systemPrompt;
 
-  if (theoryChunks.length > 0) {
-    // 이론 기반 답변
-    const theoryContext = theoryChunks.map((chunk, idx) => {
-      const title = chunk.section_title || '';
-      const content = (chunk.content_ko || chunk.content || '').substring(0, 500);
-      return `【참고자료 ${idx + 1}】${title}\n${content}`;
-    }).join('\n\n');
-
-    systemPrompt = buildTheoryBasedPrompt(normalizedQuery, theoryContext, userLanguage);
+  if (filteredChunks.length > 0) {
+    // ⭐ 청크 배열 직접 전달
+    systemPrompt = buildTheoryBasedPrompt(normalizedQuery, filteredChunks, userLanguage);
   } else {
     // 일반 지식 기반 답변
     systemPrompt = buildGeneralPrompt(normalizedQuery, userLanguage);
@@ -512,8 +513,10 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
           { role: 'system', content: systemPrompt },
           { role: 'user', content: user_query }
         ],
-        temperature: 0.3,  // 0.7 → 0.3 (더 일관된 답변)
-        max_tokens: 300    // 1200 → 300 (간결한 답변, 빠른 응답)
+        temperature: 0.5,        // ⬆️ 0.3 → 0.5
+        max_tokens: 1200,        // ⬆️ 300 → 1200
+        top_p: 0.9,              // ➕ 추가
+        presence_penalty: 0.1    // ➕ 추가
       })
     });
 
@@ -533,8 +536,8 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
       body: JSON.stringify({
         success: true,
         data: gptResponse,
-        theory_used: theoryChunks.length > 0,
-        theory_count: theoryChunks.length
+        theory_used: filteredChunks.length > 0,
+        theory_count: filteredChunks.length
       })
     };
   } catch (error) {
@@ -560,43 +563,111 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
   }
 }
 
-// ==================== 이론 기반 프롬프트 ====================
-function buildTheoryBasedPrompt(query, theoryContext, language) {
+// ==================== 이론 기반 프롬프트 (개선됨) ====================
+function buildTheoryBasedPrompt(query, theoryChunks, language) {
+  // ⭐ 전체 컨텍스트 활용 (500자 제한 제거!)
+  const contextText = theoryChunks.map((chunk, idx) => {
+    const title = chunk.section_title || '이론 자료';
+    const category = chunk.category_code ? `[${chunk.category_code}/${chunk.sub_category || ''}]` : '';
+    const page = chunk.page_number ? `(p.${chunk.page_number})` : '';
+    const content = chunk.content_ko || chunk.content || '';
+    const similarity = chunk.vector_similarity ? `(${(chunk.vector_similarity * 100).toFixed(1)}% 매칭)` : '';
+    const keywords = chunk.keywords?.slice(0, 5).join(', ') || '';
+
+    return `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【참고 ${idx + 1}】${category} ${title} ${page} ${similarity}
+${keywords ? `🔑 키워드: ${keywords}` : ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${content}
+    `;
+  }).join('\n\n');
+
   const prompts = {
-    korean: `질문: ${query}
+    korean: `당신은 2WAY CUT 시스템 전문가입니다.
 
-참고:
-${theoryContext.substring(0, 500)}
+사용자 질문: "${query}"
 
-2문장으로 간단히 답변하세요.`,
+다음은 2WAY CUT 자료에서 검색한 전문 이론입니다:
 
-    english: `Question: ${query}
+${contextText}
 
-Reference:
-${theoryContext.substring(0, 500)}
+답변 작성 지침:
+1. 위 자료를 **정확히** 참고하여 답변
+2. 페이지 번호와 카테고리 인용 (예: "[book_d_advanced] p.47에 따르면...")
+3. 3-5개 단락으로 구조화
+4. 기술 용어는 설명 추가
+5. 자료에 없는 내용은 "추가 자료 필요"라고 명시
 
-Answer briefly in 2 sentences.`,
+한국어로 전문적이고 명확하게 답변하세요.`,
 
-    japanese: `質問: ${query}
+    english: `You are a 2WAY CUT system expert.
 
-参考:
-${theoryContext.substring(0, 500)}
+Question: "${query}"
 
-2文で簡潔に答えてください。`,
+Reference materials from 2WAY CUT database:
 
-    chinese: `问题: ${query}
+${contextText}
 
-参考:
-${theoryContext.substring(0, 500)}
+Guidelines:
+1. Answer accurately based on the materials above
+2. Cite page numbers and categories (e.g., "According to [book_d_advanced] p.47...")
+3. Structure in 3-5 paragraphs
+4. Define technical terms
+5. State "additional materials needed" if data is insufficient
 
-用2句话简短回答。`,
+Answer professionally in English.`,
 
-    vietnamese: `Câu hỏi: ${query}
+    japanese: `あなたは2WAY CUTシステムの専門家です。
 
-Tham khảo:
-${theoryContext.substring(0, 500)}
+質問: "${query}"
 
-Trả lời ngắn gọn trong 2 câu.`
+2WAY CUTデータベースからの参考資料:
+
+${contextText}
+
+ガイドライン:
+1. 上記の資料を正確に参考にして回答
+2. ページ番号とカテゴリを引用
+3. 3-5段落で構成
+4. 専門用語は説明を追加
+5. 資料にない内容は「追加資料が必要」と明記
+
+日本語で専門的に回答してください。`,
+
+    chinese: `您是2WAY CUT系统专家。
+
+问题: "${query}"
+
+来自2WAY CUT数据库的参考资料:
+
+${contextText}
+
+指南:
+1. 根据上述材料准确回答
+2. 引用页码和类别
+3. 结构化为3-5段
+4. 定义技术术语
+5. 如果数据不足，请注明"需要额外资料"
+
+用中文专业回答。`,
+
+    vietnamese: `Bạn là chuyên gia hệ thống 2WAY CUT.
+
+Câu hỏi: "${query}"
+
+Tài liệu tham khảo từ cơ sở dữ liệu 2WAY CUT:
+
+${contextText}
+
+Hướng dẫn:
+1. Trả lời chính xác dựa trên tài liệu trên
+2. Trích dẫn số trang và danh mục
+3. Cấu trúc thành 3-5 đoạn
+4. Định nghĩa thuật ngữ kỹ thuật
+5. Nêu "cần thêm tài liệu" nếu dữ liệu không đủ
+
+Trả lời chuyên nghiệp bằng tiếng Việt.`
   };
 
   return prompts[language] || prompts['korean'];
@@ -1112,10 +1183,10 @@ async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, ma
         body: JSON.stringify({
           query_embedding: queryEmbedding,
           query_text: query,
-          vector_threshold: 0.55,
-          vector_count: 10,
-          keyword_count: 10,
-          final_count: matchCount
+          vector_threshold: 0.60,    // ⬆️ 0.55 → 0.60 (더 엄격)
+          vector_count: 20,          // ⬆️ 10 → 20
+          keyword_count: 20,         // ⬆️ 10 → 20
+          final_count: matchCount * 2  // ⬆️ 더 많이 가져오기
         })
       }
     );
