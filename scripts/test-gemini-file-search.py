@@ -13,7 +13,7 @@ from google import genai
 from google.genai import types
 
 # 설정
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY') or "AIzaSyCPxlp_iGO-53g7PT65OQ1pMabN3lXNMJ4"
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')  # 환경변수에서만 로드
 STORE_NAME = "fileSearchStores/hairgator2waycutstore-md6skhedgag7"
 
 # 테스트 질문들
