@@ -476,10 +476,10 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
     };
   }
 
-  // 3. theory_chunks 검색 실행 (검색 개수 증가)
-  const theoryChunks = await searchTheoryChunks(normalizedQuery, geminiKey, supabaseUrl, supabaseKey, 15);
+  // 3. theory_chunks 확장 검색 실행 (연관 개념 포함)
+  const theoryChunks = await searchTheoryChunksEnhanced(normalizedQuery, geminiKey, supabaseUrl, supabaseKey);
 
-  console.log(`📚 theory_chunks 검색 결과: ${theoryChunks.length}개`);
+  console.log(`📚 theory_chunks 확장 검색 결과: ${theoryChunks.length}개`);
 
   // ⭐ 유사도 필터링 (낮은 점수 제거)
   const filteredChunks = theoryChunks.filter(chunk =>
@@ -563,7 +563,7 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
   }
 }
 
-// ==================== 이론 기반 프롬프트 (개선됨) ====================
+// ==================== 이론 기반 프롬프트 (시스템 지식 주입) ====================
 function buildTheoryBasedPrompt(query, theoryChunks, language) {
   // ⭐ 전체 컨텍스트 활용 (500자 제한 제거!)
   const contextText = theoryChunks.map((chunk, idx) => {
@@ -583,91 +583,163 @@ ${content}
     `;
   }).join('\n\n');
 
+  // ⭐ 2WAY CUT 시스템 전체 지식 주입
+  const systemKnowledge = `
+【2WAY CUT 시스템 기초 지식】
+
+1. 길이 체계 (8단계):
+   - A Length (65cm, 가슴 아래) → Long 스타일
+   - B Length (50cm, 가슴 중간) → Semi-Long
+   - C Length (40cm, 쇄골) → Semi-Long
+   - D Length (35cm, 어깨선) ⭐ 가장 많이 사용
+   - E Length (30cm, 어깨 위) → Medium/Bob
+   - F Length (25cm, 턱 아래) → Bob
+   - G Length (20cm, 턱선) → Short Bob
+   - H Length (15cm, 귀) → Very Short
+
+2. 컷 폼 (3가지):
+   - O (One Length): 원렝스, 같은 길이, 0도 리프팅
+   - G (Graduation): 그래쥬에이션, 하단 무게, 0~89도
+   - L (Layer): 레이어, 전체 움직임, 90도 이상
+
+3. 섹션 체계 (4가지):
+   - HS (Horizontal Section): 가로 섹션, 원렝스/그래쥬에이션
+   - DFS (Diagonal Forward Section): 전대각, 앞으로 흐르는 형태
+   - DBS (Diagonal Backward Section): 후대각, 뒤로 흐르는 형태
+   - VS (Vertical Section): 세로 섹션, 레이어
+
+4. 리프팅 각도 (9단계):
+   - L0 (0°) → 원렝스
+   - L1 (22.5°) → 약간 그래쥬에이션
+   - L2 (45°) → Low 그래쥬에이션
+   - L3 (67.5°) → Mid 그래쥬에이션
+   - L4 (90°) ⭐ 기본 레이어
+   - L5 (112.5°) → High 레이어
+   - L6 (135°) → Very High 레이어
+   - L7 (157.5°) → 정수리 레이어
+   - L8 (180°) → 완전 수직
+
+5. 볼륨 존 (각도 기반):
+   - Low Volume: 0~44° (하단 무게)
+   - Medium Volume: 45~89° (중단 볼륨)
+   - High Volume: 90°+ (상단 볼륨)
+  `;
+
   const prompts = {
-    korean: `당신은 2WAY CUT 시스템 전문가입니다.
+    korean: `당신은 2WAY CUT 시스템을 **완벽히 이해한 20년차 전문가**입니다.
 
+${systemKnowledge}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 사용자 질문: "${query}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-다음은 2WAY CUT 자료에서 검색한 전문 이론입니다:
+다음은 질문과 관련된 상세 자료입니다:
 
 ${contextText}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 답변 작성 지침:
-1. 위 자료를 **정확히** 참고하여 답변
-2. 페이지 번호와 카테고리 인용 (예: "[book_d_advanced] p.47에 따르면...")
-3. 3-5개 단락으로 구조화
-4. 기술 용어는 설명 추가
-5. 자료에 없는 내용은 "추가 자료 필요"라고 명시
+1. **위 기초 지식을 바탕으로** 질문을 해석
+2. **검색된 자료로 뒷받침**하며 답변
+3. **연관 개념을 함께 설명** (예: A Length → B Length와 비교, Layer 기법 연결)
+4. **실무 관점 추가** (얼굴형, 난이도, 주의사항)
+5. **구조화된 답변** (3-5개 단락)
 
-한국어로 전문적이고 명확하게 답변하세요.`,
+전문가처럼 깊이 있고 맥락을 이해한 답변을 작성하세요.`,
 
-    english: `You are a 2WAY CUT system expert.
+    english: `You are a 20-year veteran expert who **completely understands** the 2WAY CUT system.
 
-Question: "${query}"
+${systemKnowledge}
 
-Reference materials from 2WAY CUT database:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+User Question: "${query}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Related detailed materials:
 
 ${contextText}
 
-Guidelines:
-1. Answer accurately based on the materials above
-2. Cite page numbers and categories (e.g., "According to [book_d_advanced] p.47...")
-3. Structure in 3-5 paragraphs
-4. Define technical terms
-5. State "additional materials needed" if data is insufficient
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Answer professionally in English.`,
+Answer Guidelines:
+1. **Interpret the question based on foundational knowledge**
+2. **Support with retrieved materials**
+3. **Explain related concepts** (e.g., A Length → compare with B Length, connect to Layer techniques)
+4. **Add practical insights** (face shapes, difficulty, precautions)
+5. **Structured answer** (3-5 paragraphs)
 
-    japanese: `あなたは2WAY CUTシステムの専門家です。
+Answer like a deep-thinking expert who understands the full context.`,
 
+    japanese: `あなたは2WAY CUTシステムを**完全に理解した20年のベテラン専門家**です。
+
+${systemKnowledge}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 質問: "${query}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-2WAY CUTデータベースからの参考資料:
+関連資料:
 
 ${contextText}
 
-ガイドライン:
-1. 上記の資料を正確に参考にして回答
-2. ページ番号とカテゴリを引用
-3. 3-5段落で構成
-4. 専門用語は説明を追加
-5. 資料にない内容は「追加資料が必要」と明記
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-日本語で専門的に回答してください。`,
+回答ガイドライン:
+1. **基礎知識に基づいて**質問を解釈
+2. **検索資料で裏付け**ながら回答
+3. **関連概念を一緒に説明**
+4. **実務観点を追加** (顔型、難易度、注意事項)
+5. **構造化された回答** (3-5段落)
 
-    chinese: `您是2WAY CUT系统专家。
+専門家のように深い回答を作成してください。`,
 
+    chinese: `您是**完全理解**2WAY CUT系统的20年资深专家。
+
+${systemKnowledge}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 问题: "${query}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-来自2WAY CUT数据库的参考资料:
+相关资料:
 
 ${contextText}
 
-指南:
-1. 根据上述材料准确回答
-2. 引用页码和类别
-3. 结构化为3-5段
-4. 定义技术术语
-5. 如果数据不足，请注明"需要额外资料"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-用中文专业回答。`,
+回答指南:
+1. **基于基础知识**理解问题
+2. **用检索资料支持**回答
+3. **解释相关概念**
+4. **添加实务观点** (脸型、难度、注意事项)
+5. **结构化回答** (3-5段)
 
-    vietnamese: `Bạn là chuyên gia hệ thống 2WAY CUT.
+像专家一样深入回答。`,
 
+    vietnamese: `Bạn là chuyên gia 20 năm kinh nghiệm **hoàn toàn hiểu** hệ thống 2WAY CUT.
+
+${systemKnowledge}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Câu hỏi: "${query}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Tài liệu tham khảo từ cơ sở dữ liệu 2WAY CUT:
+Tài liệu liên quan:
 
 ${contextText}
 
-Hướng dẫn:
-1. Trả lời chính xác dựa trên tài liệu trên
-2. Trích dẫn số trang và danh mục
-3. Cấu trúc thành 3-5 đoạn
-4. Định nghĩa thuật ngữ kỹ thuật
-5. Nêu "cần thêm tài liệu" nếu dữ liệu không đủ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Trả lời chuyên nghiệp bằng tiếng Việt.`
+Hướng dẫn trả lời:
+1. **Dựa trên kiến thức cơ bản** để hiểu câu hỏi
+2. **Hỗ trợ bằng tài liệu tìm được**
+3. **Giải thích khái niệm liên quan**
+4. **Thêm quan điểm thực tế** (hình dạng khuôn mặt, độ khó, lưu ý)
+5. **Câu trả lời có cấu trúc** (3-5 đoạn)
+
+Trả lời như chuyên gia hiểu sâu.`
   };
 
   return prompts[language] || prompts['korean'];
@@ -1214,6 +1286,92 @@ async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, ma
     console.error('💥 theory_chunks 검색 오류:', error);
     return [];
   }
+}
+
+// ============ 연관 개념 추출 ============
+function extractRelatedConcepts(query) {
+  const expansions = [];
+  const lowerQuery = query.toLowerCase();
+
+  // 길이 관련
+  if (/[a-h]\s*(length|렝스|랭스|기장)/i.test(query)) {
+    expansions.push('길이 분류 체계', 'Length Category System');
+  }
+
+  // 컷 폼 관련
+  if (/layer|레이어/i.test(query)) {
+    expansions.push('Graduation 그래쥬에이션', 'One Length 원렝스', 'Cut Form');
+  }
+  if (/graduation|그래쥬에이션/i.test(query)) {
+    expansions.push('Layer 레이어', 'One Length 원렝스', 'Cut Form');
+  }
+  if (/one\s*length|원렝스/i.test(query)) {
+    expansions.push('Layer 레이어', 'Graduation 그래쥬에이션', 'Cut Form');
+  }
+
+  // 섹션 관련
+  if (/dfs|diagonal\s*forward/i.test(query)) {
+    expansions.push('DBS Diagonal Backward', 'Sectioning System', '전대각섹션');
+  }
+  if (/dbs|diagonal\s*backward/i.test(query)) {
+    expansions.push('DFS Diagonal Forward', 'Sectioning System', '후대각섹션');
+  }
+  if (/\bvs\b|vertical\s*section/i.test(query)) {
+    expansions.push('HS Horizontal', 'Sectioning System', '세로섹션');
+  }
+  if (/\bhs\b|horizontal\s*section/i.test(query)) {
+    expansions.push('VS Vertical', 'Sectioning System', '가로섹션');
+  }
+
+  // 리프팅/각도 관련
+  if (/l[0-8]|lifting|리프팅|각도/i.test(query)) {
+    expansions.push('Volume Zone 볼륨존', 'Lifting Range', '리프팅 각도');
+  }
+
+  // 볼륨 관련
+  if (/volume|볼륨/i.test(query)) {
+    expansions.push('Lifting Angle 리프팅각도', 'Volume Zone', '볼륨 분류');
+  }
+
+  return expansions.slice(0, 2); // 최대 2개
+}
+
+// ============ 확장 검색 (연관 개념 포함) ============
+async function searchTheoryChunksEnhanced(query, geminiKey, supabaseUrl, supabaseKey) {
+  console.log(`🔍 확장 검색: "${query}"`);
+
+  // 1. 메인 검색
+  const mainResults = await searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, 10);
+  console.log(`📊 메인 검색: ${mainResults.length}개`);
+
+  // 2. 연관 개념 검색
+  const relatedQueries = extractRelatedConcepts(query);
+  console.log(`🔗 연관 검색: ${relatedQueries.join(', ')}`);
+
+  let expandedResults = [];
+  for (const relatedQuery of relatedQueries) {
+    const results = await searchTheoryChunks(relatedQuery, geminiKey, supabaseUrl, supabaseKey, 5);
+    expandedResults = expandedResults.concat(results);
+  }
+  console.log(`📚 확장 검색: ${expandedResults.length}개`);
+
+  // 3. 병합 및 중복 제거
+  const allResults = [...mainResults, ...expandedResults];
+  const uniqueResults = Array.from(
+    new Map(allResults.map(r => [r.id, r])).values()
+  );
+
+  // 4. 점수 재정렬
+  const sorted = uniqueResults
+    .sort((a, b) => {
+      const scoreA = a.combined_score || a.vector_similarity || 0;
+      const scoreB = b.combined_score || b.vector_similarity || 0;
+      return scoreB - scoreA;
+    })
+    .slice(0, 15);
+
+  console.log(`✅ 최종 결과: ${sorted.length}개 (유니크)`);
+  return sorted;
 }
 
 async function fallbackVectorSearch(queryEmbedding, supabaseUrl, supabaseKey, matchCount) {
