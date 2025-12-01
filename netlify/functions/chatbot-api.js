@@ -20,7 +20,8 @@
 // 9. 다국어 지원 (ko/en/ja/zh/vi)
 // ==================== 
 
-const fetch = require('node-fetch');
+// Node.js 18+ 내장 fetch 사용 (node-fetch 불필요)
+// const fetch = require('node-fetch'); // 제거됨
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
