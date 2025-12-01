@@ -1985,6 +1985,7 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
   const userLanguage = detectLanguage(user_query);
 
   console.log(`🔍 Gemini File Search 스트리밍: "${user_query}"`);
+  console.log(`🔑 Gemini Key 앞 15자: ${geminiKey ? geminiKey.substring(0, 15) : 'MISSING'}...`);
 
   // 간단한 인사말 처리
   const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워'];
@@ -2059,7 +2060,9 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     );
 
     if (!response.ok) {
-      throw new Error(`Gemini API Error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('❌ Gemini API Error:', response.status, errorText);
+      throw new Error(`Gemini API Error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
