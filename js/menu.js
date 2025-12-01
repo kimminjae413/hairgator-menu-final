@@ -1,5 +1,26 @@
 // ========== HAIRGATOR 메뉴 시스템 - 헤어체험 연동 최종 버전 ==========
 
+// ⭐ 스태거 애니메이션 keyframes 동적 추가
+(function() {
+    if (!document.getElementById('hairgator-card-animations')) {
+        const style = document.createElement('style');
+        style.id = 'hairgator-card-animations';
+        style.textContent = `
+            @keyframes cardFadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+})();
+
 /**
  * 스타일 데이터에서 썸네일 URL 반환
  * @param {object} style - 스타일 데이터 (thumbnailUrl, imageUrl 등 포함)
@@ -791,14 +812,14 @@ async function loadStyles() {
             return;
         }
 
-        // 스타일 카드 생성
+        // 스타일 카드 생성 (스태거 애니메이션 포함)
         stylesGrid.innerHTML = '';
         const fragment = document.createDocumentFragment();
 
         let styleCount = 0;
         querySnapshot.forEach(doc => {
             const style = { ...doc.data(), id: doc.id };
-            const card = createStyleCard(style);
+            const card = createStyleCard(style, styleCount);
             fragment.appendChild(card);
             styleCount++;
         });
@@ -813,13 +834,14 @@ async function loadStyles() {
     }
 }
 
-// 스타일 카드 생성 (NEW 표시 포함)
-function createStyleCard(style) {
+// 스타일 카드 생성 (NEW 표시 + 스태거 애니메이션 포함)
+function createStyleCard(style, index = 0) {
     const card = document.createElement('div');
     card.className = 'style-card';
 
-    // ⭐⭐⭐ High-End UI 스타일 적용 ⭐⭐⭐
+    // ⭐⭐⭐ High-End UI 스타일 적용 + 스태거 애니메이션 ⭐⭐⭐
     const isLightTheme = document.body.classList.contains('light-theme');
+    const animationDelay = Math.min(index * 0.05, 0.5); // 최대 0.5초
     card.style.cssText = `
         background: ${isLightTheme ? '#ffffff' : '#1a1a1a'} !important;
         border-radius: 20px !important;
@@ -832,6 +854,10 @@ function createStyleCard(style) {
         padding: 0 !important;
         margin: 0 !important;
         box-shadow: ${isLightTheme ? '0 10px 40px rgba(0, 0, 0, 0.08)' : '0 8px 32px rgba(0, 0, 0, 0.3)'} !important;
+        opacity: 0 !important;
+        transform: translateY(20px) !important;
+        animation: cardFadeIn 0.5s ease forwards !important;
+        animation-delay: ${animationDelay}s !important;
     `;
 
     // NEW 표시 조건 확인 (7일 이내)
