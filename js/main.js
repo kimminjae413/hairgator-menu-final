@@ -809,7 +809,7 @@ function showBrandSettingModal() {
 
     modal.innerHTML = `
         <div style="
-            background: var(--bg-primary, #1a1a1a);
+            background: #1a1a1a;
             border-radius: 16px;
             padding: 24px;
             width: 90%;
@@ -819,11 +819,11 @@ function showBrandSettingModal() {
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         ">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="color: var(--text-primary, #fff); font-size: 18px; margin: 0;">✏️ ${t('ui.brandSetting')}</h3>
+                <h3 style="color: #fff; font-size: 18px; margin: 0;">✏️ ${t('ui.brandSetting')}</h3>
                 <button id="closeBrandModal" style="
                     background: none;
                     border: none;
-                    color: var(--text-primary, #fff);
+                    color: #fff;
                     font-size: 24px;
                     cursor: pointer;
                     padding: 0;
@@ -841,7 +841,7 @@ function showBrandSettingModal() {
                     border: 1px solid rgba(255,255,255,0.2);
                     border-radius: 8px;
                     background: rgba(255,255,255,0.05);
-                    color: var(--text-primary, #fff);
+                    color: #fff;
                     font-size: 16px;
                     box-sizing: border-box;
                 ">

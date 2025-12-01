@@ -5,7 +5,9 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "WebSearch",
-      "Bash(python scripts/split-pdf.py:*)"
+      "Bash(python scripts/split-pdf.py:*)",
+      "Bash(git -C \"C:\\Users\\김민재\\Desktop\\Hairgator_chatbot\" commit -m \"$(cat <<''EOF''\nFix brand setting modal label visibility in light theme\n\n모달 내부가 항상 다크 배경인데 라이트 테마에서 CSS 변수가\n어두운 색으로 적용되어 라벨이 안 보이던 문제 수정\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C \"C:\\Users\\김민재\\Desktop\\Hairgator_chatbot\" log --oneline -3)"
     ],
     "deny": [],
     "ask": []
