@@ -432,15 +432,59 @@ class HairGatorChatbot {
   // ==================== UI 초기화 ====================
 
   init() {
-    this.createChatbotUI();
-    this.attachEventListeners();
-    this.initKeyboardHandler();
+    // AI Studio로 리다이렉트하는 플로팅 버튼만 생성
+    this.createAIStudioButton();
   }
 
-  createChatbotUI() {
+  // AI Studio 이동 버튼 생성
+  createAIStudioButton() {
+    const buttonHTML = `
+      <button id="chatbot-toggle" class="chatbot-toggle" aria-label="AI Studio" onclick="window.location.href='ai-studio.html'" style="
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #E91E63, #9C27B0);
+        border: none;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(233, 30, 99, 0.4);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      ">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </button>
+    `;
+    document.body.insertAdjacentHTML('beforeend', buttonHTML);
+
+    // 호버 효과
+    const btn = document.getElementById('chatbot-toggle');
+    if (btn) {
+      btn.addEventListener('mouseenter', () => {
+        btn.style.transform = 'scale(1.1)';
+        btn.style.boxShadow = '0 6px 30px rgba(233, 30, 99, 0.5)';
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'scale(1)';
+        btn.style.boxShadow = '0 4px 20px rgba(233, 30, 99, 0.4)';
+      });
+    }
+
+    console.log('✅ AI Studio 버튼 생성 완료');
+  }
+
+  // 기존 코드 유지 (사용되지 않음)
+  createChatbotUI_DISABLED() {
     const texts = this.getTexts();
     const chatbotHTML = `
-      <button id="chatbot-toggle" class="chatbot-toggle" aria-label="AI 헤어 상담">
+      <button id="chatbot-toggle-old" class="chatbot-toggle" aria-label="AI 헤어 상담">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
@@ -519,9 +563,9 @@ class HairGatorChatbot {
       </div>
     `;
 
-    document.body.insertAdjacentHTML('beforeend', chatbotHTML);
-
-    this.addModalScrollStyles();
+    // 비활성화됨 - AI Studio로 대체
+    // document.body.insertAdjacentHTML('beforeend', chatbotHTML);
+    // this.addModalScrollStyles();
   }
 
   addModalScrollStyles() {
@@ -625,6 +669,12 @@ class HairGatorChatbot {
   // ==================== 이벤트 리스너 ====================
 
   attachEventListeners() {
+    // 비활성화됨 - AI Studio로 대체
+    // 기존 챗봇 팝업 UI가 없으므로 이벤트 리스너 불필요
+    console.log('⚠️ attachEventListeners 비활성화됨 - AI Studio 사용');
+  }
+
+  attachEventListeners_DISABLED() {
     document.getElementById('chatbot-toggle').addEventListener('click', () => {
       this.toggleChatbot();
     });
