@@ -1445,6 +1445,61 @@ body.ai-studio-page {
   text-align: center;
 }
 
+/* 42 Formula Parameters Section */
+.formula-params-section {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.08) 0%, rgba(139, 195, 74, 0.08) 100%);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.formula-params-section h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-md);
+}
+
+.formula-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-sm);
+}
+
+.formula-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--bg-glass);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+.formula-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.formula-value {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.formula-value.highlight {
+  color: #4CAF50;
+  font-weight: 700;
+}
+
+.analysis-tags .tag.primary {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+}
+
 /* Custom Recipe Section */
 .custom-recipe-section {
   background: var(--bg-glass);
@@ -1507,6 +1562,18 @@ body.ai-studio-page {
   .diagrams-grid-large {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: var(--space-sm);
+  }
+
+  .formula-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .formula-label {
+    font-size: 0.6rem;
+  }
+
+  .formula-value {
+    font-size: 0.75rem;
   }
 }
 

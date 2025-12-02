@@ -843,7 +843,10 @@ class AIStudio {
     this.canvasEmpty.classList.add('hidden');
     this.canvasResult.classList.remove('hidden');
 
-    const { analysis, targetSeries, referenceStyles, customRecipe, mainDiagrams } = data;
+    const { analysis, targetSeries, referenceStyles, customRecipe, mainDiagrams, params56 } = data;
+
+    // 42포뮬러 핵심 파라미터 추출
+    const liftingStr = Array.isArray(analysis.liftingRange) ? analysis.liftingRange.join(', ') : (analysis.liftingRange || 'L4');
 
     this.canvasResult.innerHTML = `
       <div class="custom-recipe-canvas">
@@ -856,9 +859,48 @@ class AIStudio {
           <div class="analysis-summary">
             <h2>🎯 맞춤 레시피</h2>
             <div class="analysis-tags">
-              <span class="tag">${analysis.form}</span>
-              <span class="tag">${analysis.hasBangs ? analysis.bangsType : '앞머리 없음'}</span>
-              <span class="tag">${analysis.volumePosition} 볼륨</span>
+              <span class="tag primary">${analysis.form}</span>
+              <span class="tag">${liftingStr}</span>
+              <span class="tag">${analysis.sectionPrimary || 'Diagonal-Backward'}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 42포뮬러 핵심 파라미터 -->
+        <div class="formula-params-section">
+          <h3>📋 42포뮬러 분석</h3>
+          <div class="formula-grid">
+            <div class="formula-item">
+              <span class="formula-label">Length</span>
+              <span class="formula-value">${analysis.lengthName}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">Cut Form</span>
+              <span class="formula-value">${analysis.form}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">Lifting</span>
+              <span class="formula-value highlight">${liftingStr}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">Section</span>
+              <span class="formula-value">${analysis.sectionPrimary || 'Diagonal-Backward'}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">Volume</span>
+              <span class="formula-value">${analysis.volumePosition}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">Weight</span>
+              <span class="formula-value">${analysis.weightDistribution || 'Balanced'}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">Fringe</span>
+              <span class="formula-value">${analysis.hasBangs ? analysis.bangsType : 'No Fringe'}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">Connection</span>
+              <span class="formula-value">${analysis.connectionType || 'Connected'}</span>
             </div>
           </div>
         </div>
