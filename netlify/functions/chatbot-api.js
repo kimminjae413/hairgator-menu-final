@@ -346,14 +346,11 @@ exports.handler = async (event, context) => {
 
     const OPENAI_KEY = process.env.OPENAI_API_KEY;
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
-    const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
     if (!OPENAI_KEY) throw new Error('OpenAI API key not configured');
     if (!GEMINI_KEY) throw new Error('Gemini API key not configured');
-    if (!SUPABASE_URL || !SUPABASE_KEY) throw new Error('Supabase credentials not configured');
 
-    console.log('🔑 환경변수 확인 완료');
+    console.log('🔑 환경변수 확인 완료 (Firebase 기반)');
 
     switch (action) {
       case 'analyze_image':
@@ -363,36 +360,24 @@ exports.handler = async (event, context) => {
       case 'analyze_image_with_question':
         return await analyzeImageWithQuestion(payload, GEMINI_KEY);
 
-      case 'generate_recipe':
-        return await generateRecipe(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
-
-      case 'generate_recipe_stream':
-        return await generateRecipeStream(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
-
-      case 'search_styles':
-        return await searchStyles(payload, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
-
-      // ⭐⭐⭐ Gemini File Search 기반 응답 (NEW!) ⭐⭐⭐
+      // ⭐ Gemini File Search 기반 응답
       case 'generate_response':
         return await generateGeminiFileSearchResponse(payload, GEMINI_KEY);
 
       case 'generate_response_stream':
         return await generateGeminiFileSearchResponseStream(payload, GEMINI_KEY);
 
-      // 폴백: 기존 Supabase 기반 응답
-      case 'generate_response_supabase':
-        return await generateProfessionalResponse(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
-
-      case 'generate_response_stream_supabase':
-        return await generateProfessionalResponseStream(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
-
-      // ⭐⭐⭐ Firestore 스타일 검색 (임베딩 기반 Top-3) ⭐⭐⭐
+      // ⭐ Firestore 스타일 검색 (임베딩 기반 Top-3)
       case 'search_firestore_styles':
         return await searchFirestoreStyles(payload, GEMINI_KEY);
 
       // ⭐⭐⭐ 이미지 분석 + 최적 레시피 매칭 (NEW!) ⭐⭐⭐
       case 'analyze_and_match_recipe':
         return await analyzeAndMatchRecipe(payload, GEMINI_KEY);
+
+      // ⭐ 파라미터 기반 커스텀 레시피 생성 (Firebase 기반)
+      case 'generate_custom_recipe':
+        return await generateCustomRecipeFromParams(payload, GEMINI_KEY);
 
       default:
         return {
@@ -3608,6 +3593,91 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
         success: false,
         error: error.message
       })
+    };
+  }
+}
+
+// ==================== 파라미터 기반 커스텀 레시피 생성 (Firebase 기반) ====================
+async function generateCustomRecipeFromParams(payload, geminiKey) {
+  const { params56, language } = payload;
+
+  try {
+    console.log('📋 파라미터 기반 레시피 생성 (Firebase):', params56?.length_category);
+
+    // 1. Length 코드로 시리즈 결정
+    const lengthCode = params56?.length_category?.charAt(0) || 'E';
+    const targetGender = params56?.gender || 'female';
+    const targetSeries = targetGender === 'male'
+      ? `M${lengthCode}L`
+      : `F${lengthCode}L`;
+
+    // 2. Firestore에서 해당 시리즈 스타일 검색
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles`;
+    const firebaseKey = process.env.FIREBASE_API_KEY || geminiKey;
+
+    const response = await fetch(`${url}?key=${firebaseKey}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Firestore 조회 실패: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const documents = data.documents || [];
+
+    // 3. 시리즈 필터링
+    const seriesStyles = documents
+      .map(doc => parseFirestoreDocument(doc))
+      .filter(style => style && style.series === targetSeries);
+
+    console.log(`🎯 ${targetSeries} 시리즈: ${seriesStyles.length}개 스타일`);
+
+    // 4. 42포뮬러 기반 스코어링
+    const stylesWithScores = seriesStyles.map(style => {
+      const score = calculate42FormulaScore(style, params56);
+      return { ...style, ...score };
+    });
+
+    // 5. Top-3 선정
+    const top3 = stylesWithScores
+      .sort((a, b) => b.totalScore - a.totalScore)
+      .slice(0, 3);
+
+    // 6. 커스텀 레시피 생성
+    const customRecipe = await generateCustomRecipe(params56, top3, geminiKey);
+
+    // 7. 스트리밍 응답 형식으로 반환
+    const headers = {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*'
+    };
+
+    // 레시피를 청크로 분할하여 스트리밍
+    const chunks = customRecipe.match(/.{1,100}/g) || [customRecipe];
+    let streamBody = '';
+
+    for (const chunk of chunks) {
+      streamBody += `data: ${JSON.stringify({ type: 'content', content: chunk })}\n`;
+    }
+    streamBody += 'data: [DONE]\n';
+
+    return {
+      statusCode: 200,
+      headers,
+      body: streamBody
+    };
+
+  } catch (error) {
+    console.error('❌ 파라미터 기반 레시피 생성 오류:', error);
+
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'text/event-stream', 'Access-Control-Allow-Origin': '*' },
+      body: `data: ${JSON.stringify({ type: 'error', error: error.message })}\n`
     };
   }
 }

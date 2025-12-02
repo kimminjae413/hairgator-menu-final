@@ -4,12 +4,11 @@
 class ChatbotCore {
   constructor(config) {
     this.apiEndpoint = config.apiEndpoint || '/.netlify/functions/chatbot-api';
-    this.supabaseUrl = config.supabaseUrl || 'https://bhsbwbeisqzgipvzpvym.supabase.co';
     this.currentLanguage = config.language || 'ko';
-    
+
     this.terms89Map = this.init89TermsMap();
-    
-    console.log('✅ ChatbotCore 초기화 완료:', {
+
+    console.log('✅ ChatbotCore 초기화 완료 (Firebase 기반):', {
       apiEndpoint: this.apiEndpoint,
       language: this.currentLanguage
     });
@@ -177,7 +176,7 @@ class ChatbotCore {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'generate_recipe_stream',
+          action: 'generate_custom_recipe',  // Firebase 기반 레시피 생성
           payload: {
             params56: params56,
             language: language
@@ -269,7 +268,7 @@ class ChatbotCore {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'search_styles',
+          action: 'search_firestore_styles',  // Firebase Firestore 검색
           payload: { query: query }
         })
       });
@@ -601,12 +600,11 @@ class ChatbotCore {
     if (!styles || !Array.isArray(styles)) return [];
 
     return styles.filter(style => {
-      // 유효한 이미지 URL 체크
-      const hasValidImage = style.main_image_url && 
-                           !style.main_image_url.includes('hairgatorchatbot') &&
-                           !style.main_image_url.includes('temp') &&
-                           !style.main_image_url.includes('supabase.co/storage');
-      
+      // Firebase Storage 기반 유효한 이미지 URL 체크
+      const hasValidImage = style.main_image_url &&
+                           (style.main_image_url.includes('firebasestorage.googleapis.com') ||
+                            style.main_image_url.includes('storage.googleapis.com'));
+
       return hasValidImage;
     });
   }

@@ -8,10 +8,9 @@ import { ChatbotCore } from './chatbot-core.js';
 
 class HairGatorChatbot {
   constructor() {
-    // Core 모듈 초기화
+    // Core 모듈 초기화 (Firebase 기반)
     this.core = new ChatbotCore({
       apiEndpoint: '/.netlify/functions/chatbot-api',
-      supabaseUrl: 'https://bhsbwbeisqzgipvzpvym.supabase.co',
       language: this.getStoredLanguage()
     });
 
@@ -1087,7 +1086,7 @@ class HairGatorChatbot {
 
     const cardsHTML = styles.map((style, index) => {
       const imageUrl = style.image_url || style.main_image_url || '';
-      const hasValidImage = imageUrl && imageUrl.includes('supabase.co');
+      const hasValidImage = imageUrl && (imageUrl.includes('firebasestorage.googleapis.com') || imageUrl.includes('storage.googleapis.com'));
       const name = style.name || style.style_name_ko || '이름 없음';
       const code = style.code || style.sample_code || '';
       const similarity = style.similarity ? `(${(style.similarity * 100).toFixed(0)}% 매칭)` : '';
