@@ -2627,10 +2627,30 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 3. 머리카락이 턱선에 있는가? → G Length!
 4. 어깨에 전혀 닿지 않는가? → F, G, H 중 하나!
 
+【CRITICAL LENGTH CHECK - 보브/미디엄 판별】⭐⭐⭐
+아래 순서대로 체크하세요:
+
+1. 턱(CHIN)을 찾으세요
+2. 어깨 끝점(SHOULDER TOP)을 찾으세요
+3. 머리카락 끝(HAIR ENDS)이 어디에 있는지 관찰:
+
+| 머리 끝 위치 | Length 분류 |
+|------------|-----------|
+| 턱 위에 있음 | G 또는 H Length (숏컷) |
+| 턱 아래, 어깨에 닿지 않음 | F Length (보브) |
+| 어깨 위에 닿거나 얹혀있음 | E Length (미디엄) |
+| 어깨/쇄골 아래로 확실히 넘어감 | D Length (세미롱) |
+
+🔍 현재 이미지 체크 포인트:
+- 목이 보이는가? (예 = F 또는 G일 가능성 높음)
+- 머리가 쇄골을 넘어가는가? (아니오 = D Length 아님!)
+- 어깨에 머리가 닿는가? (닿으면 E, 안 닿으면 F)
+
 ❌ 흔한 실수:
 - 귀 높이 숏컷을 E로 분류 (틀림! → H가 정답)
 - 턱선 보브를 E로 분류 (틀림! → G가 정답)
 - 목이 보이는 짧은 머리를 E, F로 분류 (틀림! → G 또는 H)
+- 어깨에 닿지 않는 보브를 E로 분류 (틀림! → F가 정답)
 
 【CUT FORM】
 - L (Layer): 90도 이상 리프팅, 전체적으로 가벼움, 층 많음
@@ -2665,6 +2685,49 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 - Low: 하단 볼륨 (0~44도, 무게감 있는 스타일)
 - Medium: 중단 볼륨 (45~89도)
 - High: 상단 볼륨 (90도 이상, 가볍고 풍성)
+
+【OUTLINE SHAPE - 아웃라인 형태】⭐⭐ 중요!
+헤어스타일 외곽선(Hemline/Perimeter)의 형태를 정확히 판단:
+
+| 형태 | 설명 | 대표 스타일 |
+|-----|------|----------|
+| Round | 부드러운 곡선, 여성스러운 느낌 (ㅇ) | 여성 숏컷, 레이어 보브 |
+| Square | 일자/각진 라인, 블런트 느낌 (ㅁ) | 남성컷, 블런트 보브 |
+| Curved | 자연스러운 곡선 | 자연스러운 레이어 |
+| Asymmetric | 비대칭 아웃라인 | 어시메트릭 컷 |
+| Pointed | 뾰족한 포인트 | V라인, 포인티드 컷 |
+
+⚠️ 판단 기준:
+- 여성 숏컷/레이어 스타일 → 대부분 "Round" 또는 "Curved"
+- 남성컷, 투블록, 엣지 스타일 → "Square"
+- 목덜미가 둥글게 처리됨 → "Round"
+- 목덜미가 일자로 커팅됨 → "Square"
+
+❌ 흔한 오류:
+- 부드러운 여성 숏컷을 "Square"로 분류 (틀림! → Round가 정답)
+- 레이어 스타일의 자연스러운 곡선을 "Square"로 분류 (틀림!)
+
+【FRINGE LENGTH - 앞머리 길이】⭐⭐ 중요!
+앞머리의 **가장 긴 부분**이 어디까지 내려오는지 판단:
+
+| 길이 | 신체 기준 | 설명 |
+|-----|---------|------|
+| Forehead | 이마 중간 | 매우 짧은 앞머리 |
+| Eyebrow | 눈썹 라인 | 풀뱅, 일자 앞머리 |
+| Eye | 눈 덮음 | 긴 앞머리, 시스루뱅 |
+| Cheekbone | 광대뼈 | 사이드뱅, 페이스프레이밍 |
+| Chin | 턱선 | 긴 사이드뱅, 커튼뱅 |
+| Ear | 귀 높이 | 귀를 덮는 긴 앞머리 |
+
+⚠️ 판단 기준:
+- 사이드뱅(Side Bang): 가운데는 짧고 **양쪽은 광대~턱까지** → "Cheekbone" 또는 "Chin"
+- 커튼뱅(Curtain Bang): 양쪽으로 갈라지며 턱선까지 → "Chin"
+- 시스루뱅(See-through Bang): 눈썹~눈 사이 → "Eyebrow" 또는 "Eye"
+- 풀뱅(Full Bang): 눈썹 라인 → "Eyebrow"
+
+❌ 흔한 오류:
+- 사이드뱅의 측면 길이를 무시하고 "Eyebrow"로 분류 (틀림!)
+- 광대까지 내려오는 앞머리를 "Eyebrow"로 분류 (틀림! → Cheekbone)
 
 【WEIGHT DISTRIBUTION】
 - Top Heavy: 상단에 무게 (레이어)
@@ -3375,6 +3438,11 @@ async function generateCustomRecipe(params56, top3Styles, geminiKey) {
 - **Hair Texture**: ${params56.hair_texture || 'Straight'}
 - **Surface Texture**: ${params56.surface_texture || 'Textured'}
 
+### 아웃라인/형태
+- **Outline Shape**: ${params56.outline_shape || 'Round'}
+- **Silhouette**: ${params56.silhouette || 'Round'}
+- **Line Quality**: ${params56.line_quality || 'Soft'}
+
 ### 얼굴형 매칭
 - **추천 얼굴형**: ${Array.isArray(params56.face_shape_match) ? params56.face_shape_match.join(', ') : 'Oval'}
 
@@ -3384,8 +3452,26 @@ ${params56.description || '고객 요청 스타일'}
 ## 📚 참고 레시피 (Top-3)
 ${recipeTexts}
 
+## ⚠️ 중요 규칙 - Outline Shape
+- **Women's Cut + Layer/Graduation** → 반드시 "Round" 또는 "Curved" 아웃라인 사용!
+- **Men's Cut** 또는 **블런트/에지 스타일** → "Square" 아웃라인 가능
+- 부드러운 여성 스타일에 "Square"를 적용하면 안 됩니다!
+
+## ⚠️ 중요 규칙 - Fringe Length (얼굴형별 추천)
+| 얼굴형 | 추천 앞머리 | 효과 |
+|-------|-----------|-----|
+| Round | Cheekbone~Chin | 긴 사이드뱅으로 얼굴 좁게 |
+| Square | Eyebrow~Eye | 부드러운 앞머리로 각진 인상 완화 |
+| Long | Eyebrow | 짧은 앞머리로 얼굴 단축 |
+| Oval | Eye~Cheekbone | 다양하게 어울림 |
+| Heart | Cheekbone | 광대 커버 |
+
+- Side Bang은 가운데가 짧아도 **양쪽은 광대~턱까지** 흘러내리는 게 정석!
+- "Eyebrow" 길이만 언급하면 안 됩니다 - 사이드 길이도 명시!
+
 ## ✨ 요청사항
 위 56파라미터와 참고 레시피들의 장점을 조합하여, 고객 요청 스타일에 최적화된 커스텀 레시피를 작성해주세요.
+⚠️ Outline Shape와 Fringe Length 규칙을 반드시 준수하세요!
 
 다음 형식으로 작성:
 
