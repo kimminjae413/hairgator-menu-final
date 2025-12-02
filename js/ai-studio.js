@@ -905,17 +905,25 @@ class AIStudio {
           </div>
         </div>
 
-        <!-- 도해도 - 기술 매칭 기반 선별 -->
+        <!-- 도해도 - 56파라미터 L/D/Section 매칭 기반 선별 -->
         <div class="diagrams-section large">
           <h3>📐 기술 매칭 도해도 (${mainDiagrams.length}장)</h3>
           <div class="diagrams-grid-large">
-            ${mainDiagrams.map((d, idx) => `
-              <div class="diagram-item-large ${d.matchedFeatures && d.matchedFeatures.length > 0 ? 'matched' : ''}" onclick="window.open('${d.url}', '_blank')">
-                <img src="${d.url}" alt="Step ${d.step}" title="${d.styleId} Step ${d.step}${d.matchedFeatures && d.matchedFeatures.length > 0 ? ' - ' + d.matchedFeatures.join(', ') : ''}">
-                <span class="step-label">${d.styleId ? d.styleId.substring(0, 7) : ''} #${d.step}</span>
-                ${d.matchedFeatures && d.matchedFeatures.length > 0 ? `<span class="match-badge">${d.matchedFeatures[0]}</span>` : ''}
+            ${mainDiagrams.map((d, idx) => {
+              // 정확한 매칭 확인 (✓ 표시가 있는 경우)
+              const hasExactMatch = d.matchedFeatures && d.matchedFeatures.some(f => f.includes('✓'));
+              // L/D/S 메타데이터 표시용
+              const ldsInfo = [d.lifting, d.direction, d.section].filter(Boolean).join(' ');
+              return `
+              <div class="diagram-item-large ${hasExactMatch ? 'matched exact' : d.matchedFeatures && d.matchedFeatures.length > 0 ? 'matched' : ''}" onclick="window.open('${d.url}', '_blank')">
+                <img src="${d.url}" alt="Step ${d.step}" title="${d.styleId} Step ${d.step} - ${ldsInfo || '분석중'}">
+                <div class="diagram-info">
+                  <span class="step-label">${d.styleId ? d.styleId.substring(0, 7) : ''} #${d.step}</span>
+                  ${ldsInfo ? `<span class="lds-badge">${ldsInfo}</span>` : ''}
+                </div>
+                ${hasExactMatch ? `<span class="match-badge exact">✓ 정확</span>` : d.matchedFeatures && d.matchedFeatures.length > 0 ? `<span class="match-badge">유사</span>` : ''}
               </div>
-            `).join('')}
+            `}).join('')}
           </div>
         </div>
 
