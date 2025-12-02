@@ -936,11 +936,18 @@ async function analyzeImageWithQuestion(payload, geminiKey) {
   }
 }
 
-// ==================== 이미지 분석 (성별 통합!) ====================
+// ==================== 이미지 분석 (Gemini 2.0 Flash Vision) ====================
 async function analyzeImage(payload, openaiKey) {
   const { image_base64, mime_type, user_gender } = payload;
 
-  console.log(`🎯 이미지 분석 시작 - 사용자 선택 성별: ${user_gender || 'unspecified'}`);
+  // Gemini API 키 가져오기
+  const GEMINI_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_KEY) {
+    console.error('❌ GEMINI_API_KEY not configured');
+    throw new Error('Gemini API key not configured');
+  }
+
+  console.log(`🎯 이미지 분석 시작 (Gemini 2.0 Flash) - 사용자 선택 성별: ${user_gender || 'unspecified'}`);
 
   const genderContext = user_gender === 'male'
     ? `\n\n⚠️ IMPORTANT: This is a MALE hairstyle. Focus on men's cut categories and techniques.\n- Use "Men's Cut" for cut_category\n- Select from mens_cut_category options\n- Consider typical male length ranges (mostly E~H Length)`
@@ -991,66 +998,117 @@ STEP 4: Double-check
 **Face Shape Match (1-3 selections!):**
 - ["Oval", "Round"] or ["Square", "Heart", "Long"] etc.
 
-Extract ALL parameters accurately following the JSON schema!`;
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## OUTPUT FORMAT - MUST BE VALID JSON!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Return ONLY a valid JSON object with these exact fields:
+{
+  "cut_category": "Women's Cut" or "Men's Cut",
+  "womens_cut_category": "Layer Cut" or "Graduation Cut" or "One Length" or "Combination Cut",
+  "mens_cut_category": "Two Block" or "Dandy Cut" or "Pomade Style" or "Textured Crop" or "Classic Cut" or "Fade Cut" or "Undercut" or "Comma Hair" or null,
+  "length_category": "A Length (65cm)" or "B Length (50cm)" or "C Length (40cm)" or "D Length (35cm)" or "E Length (30cm)" or "F Length (25cm)" or "G Length (20cm)" or "H Length (15cm)",
+  "cut_form": "O (One Length)" or "G (Graduation)" or "L (Layer)",
+  "texture_type": "Straight" or "Wavy" or "Curly" or "Coily",
+  "hair_density": "Thin" or "Medium" or "Thick",
+  "hair_thickness": "Fine" or "Medium" or "Coarse",
+  "face_shape_match": ["Oval", "Round", "Square", "Heart", "Long", "Diamond"],
+  "style_mood": "Natural" or "Modern" or "Classic" or "Trendy" or "Elegant" or "Casual" or "Edgy" or "Romantic",
+  "age_group_target": "10s" or "20s" or "30s" or "40s" or "50s+",
+  "maintenance_level": "Low" or "Medium" or "High",
+  "styling_difficulty": "Easy" or "Medium" or "Hard",
+  "bangs_style": "No Bangs" or "Full Bangs" or "Side Bangs" or "See-through Bangs" or "Curtain Bangs" or "Baby Bangs" or "Wispy Bangs",
+  "parting_style": "Center Part" or "Side Part" or "No Part" or "Zigzag Part" or "Deep Side Part",
+  "overall_silhouette": "Round" or "Oval" or "Square" or "A-line" or "V-line" or "Asymmetric",
+  "weight_line_position": "High" or "Medium" or "Low",
+  "graduation_degree": "None" or "Low (15-30°)" or "Medium (31-45°)" or "High (46-60°)",
+  "layer_type": "None" or "Surface Layer" or "Internal Layer" or "Disconnected Layer" or "Uniform Layer",
+  "volume_zone": "Low" or "Medium" or "High",
+  "lifting_range": ["L0", "L2", "L4", "L6", "L8"],
+  "crown_volume": "Flat" or "Natural" or "Boosted" or "Maximum",
+  "nape_treatment": "Tapered" or "Rounded" or "Square" or "V-shape" or "Disconnected",
+  "perimeter_line": "Blunt" or "Textured" or "Feathered" or "Razored" or "Point Cut",
+  "interior_texture": "Solid" or "Sliced" or "Chunky" or "Wispy",
+  "outline_shape": "Straight" or "Curved" or "Asymmetric" or "Disconnected",
+  "recommended_styling_products": ["Wax", "Mousse", "Serum", "Spray", "Pomade", "Gel", "Cream", "Oil"],
+  "heat_styling_required": true or false,
+  "recommended_tools": ["Round Brush", "Flat Iron", "Curling Iron", "Diffuser", "Blow Dryer", "Hot Rollers"],
+  "color_recommendation": "Natural" or "Warm Tones" or "Cool Tones" or "Vivid" or "Pastel" or "Balayage" or "Highlights" or "Ombre",
+  "scalp_visibility": "None" or "Minimal" or "Moderate" or "High",
+  "suitability_for_thinning_hair": "Good" or "Moderate" or "Poor",
+  "seasonal_recommendation": ["Spring", "Summer", "Fall", "Winter"],
+  "occasion_match": ["Daily" or "Office" or "Date" or "Party" or "Wedding" or "Interview"],
+  "back_view_shape": "U-shape" or "V-shape" or "Straight" or "Rounded" or "Layered",
+  "side_profile_volume": "Flat" or "Natural" or "Full" or "Dramatic",
+  "front_framing": "Face Framing" or "Curtain" or "Blunt" or "Layered" or "None",
+  "ear_exposure": "Full" or "Partial" or "None",
+  "neck_exposure": "Full" or "Partial" or "None",
+  "versatility_score": 1-10,
+  "trend_score": 1-10,
+  "celebrity_reference": "string or null",
+  "similar_style_keywords": ["keyword1", "keyword2", "keyword3"],
+  "contradicted_styles": ["style1", "style2"],
+  "grow_out_maintenance_weeks": 4-12,
+  "difficulty_for_stylist": "Beginner" or "Intermediate" or "Advanced" or "Expert",
+  "consultation_notes": "string",
+  "key_cutting_points": ["point1", "point2", "point3"],
+  "potential_issues": ["issue1", "issue2"],
+  "client_home_care_tips": ["tip1", "tip2", "tip3"]
+}
+
+Return ONLY the JSON object, no markdown, no explanation, no code blocks!`;
 
   try {
-    console.log('📸 GPT-4o Vision 분석 시작 (Function Calling)');
+    console.log('📸 Gemini 2.0 Flash Vision 분석 시작');
 
     const response = await fetch(
-      'https://api.openai.com/v1/chat/completions',
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${openaiKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'gpt-4o-2024-11-20',
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: systemPrompt
-                },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: `data:${mime_type};base64,${image_base64}`,
-                    detail: 'high'
-                  }
+          contents: [{
+            parts: [
+              {
+                inline_data: {
+                  mime_type: mime_type,
+                  data: image_base64
                 }
-              ]
-            }
-          ],
-          functions: [
-            {
-              name: 'extract_hair_parameters',
-              description: 'Extract all 56 hair analysis parameters',
-              parameters: PARAMS_56_SCHEMA
-            }
-          ],
-          function_call: { name: 'extract_hair_parameters' },
-          temperature: 0.3,
-          max_tokens: 4000
+              },
+              {
+                text: systemPrompt
+              }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 4000
+          }
         })
       }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`GPT-4o API Error: ${response.status} - ${errorText}`);
+      console.error('Gemini API Error Response:', errorText);
+      throw new Error(`Gemini API Error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
 
-    const functionCall = data.choices?.[0]?.message?.function_call;
-    if (!functionCall || !functionCall.arguments) {
-      throw new Error('No function call in response');
+    // Gemini 응답에서 텍스트 추출
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!responseText) {
+      throw new Error('No response text from Gemini');
     }
 
-    const params56 = JSON.parse(functionCall.arguments);
+    // JSON 파싱 (마크다운 코드 블록 제거)
+    let cleanedText = responseText.trim();
+    cleanedText = cleanedText.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+
+    const params56 = JSON.parse(cleanedText);
 
     // 성별 강제 적용
     if (user_gender === 'male' && params56.cut_category !== "Men's Cut") {
@@ -1061,7 +1119,7 @@ Extract ALL parameters accurately following the JSON schema!`;
       params56.cut_category = "Women's Cut";
     }
 
-    console.log('✅ GPT-4o Vision 분석 완료 (56개 파라미터)');
+    console.log('✅ Gemini 2.0 Flash Vision 분석 완료 (56개 파라미터)');
 
     return {
       statusCode: 200,
@@ -1070,8 +1128,8 @@ Extract ALL parameters accurately following the JSON schema!`;
         success: true,
         data: params56,
         user_gender: user_gender,
-        model: 'gpt-4o-2024-11-20',
-        method: 'function_calling'
+        model: 'gemini-2.0-flash',
+        method: 'vision_analysis'
       })
     };
   } catch (error) {
