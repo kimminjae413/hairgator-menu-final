@@ -866,9 +866,9 @@ class AIStudio {
           </div>
         </div>
 
-        <!-- 42포뮬러 핵심 파라미터 -->
+        <!-- 이미지 주요 분석 -->
         <div class="formula-params-section">
-          <h3>📋 42포뮬러 분석</h3>
+          <h3>📋 이미지 주요 분석</h3>
           <div class="formula-grid">
             <div class="formula-item">
               <span class="formula-label">Length</span>
@@ -991,17 +991,6 @@ class AIStudio {
             </div>
           `).join('')}
         </div>
-
-        <!-- 자막 영역 -->
-        <div class="diagram-caption" id="diagram-caption">
-          <div class="diagram-caption-header">
-            <span class="diagram-caption-step" id="caption-step">Step ${firstDiagram.step || 1}</span>
-            ${ldsInfo ? `<span class="diagram-caption-lds" id="caption-lds">${ldsInfo}</span>` : '<span class="diagram-caption-lds" id="caption-lds"></span>'}
-          </div>
-          <div class="diagram-caption-text" id="caption-text">
-            ${firstDiagram.caption || firstDiagram.notes || '이 단계의 설명이 없습니다.'}
-          </div>
-        </div>
       </div>
     `;
   }
@@ -1036,7 +1025,6 @@ class AIStudio {
 
     this.currentDiagramIndex = index;
     const diagram = this.currentDiagrams[index];
-    const ldsInfo = [diagram.lifting, diagram.direction, diagram.section].filter(Boolean).join(' ');
 
     // 메인 이미지 업데이트
     const mainImage = document.getElementById('diagram-main-image');
@@ -1057,16 +1045,6 @@ class AIStudio {
     if (activeThumb && thumbnailsContainer) {
       activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }
-
-    // 자막 업데이트
-    const captionStep = document.getElementById('caption-step');
-    if (captionStep) captionStep.textContent = `Step ${diagram.step || index + 1}`;
-
-    const captionLds = document.getElementById('caption-lds');
-    if (captionLds) captionLds.textContent = ldsInfo;
-
-    const captionText = document.getElementById('caption-text');
-    if (captionText) captionText.textContent = diagram.caption || diagram.notes || '이 단계의 설명이 없습니다.';
 
     // 네비게이션 버튼 상태 업데이트
     this.updateNavButtons();
@@ -1117,25 +1095,68 @@ class AIStudio {
     }
   }
 
-  // 레시피 내용 포맷팅
+  // 레시피 내용 포맷팅 (세련된 HTML로 변환)
   formatRecipeContent(content) {
-    if (!content) return '<p>레시피를 불러올 수 없습니다.</p>';
+    if (!content) return '<p class="recipe-empty">레시피를 불러올 수 없습니다.</p>';
 
-    // 마크다운 기본 변환
-    let formatted = content
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n- /g, '</p><li>')
-      .replace(/\n(\d+)\. /g, '</p><li class="numbered">')
-      .replace(/\n/g, '<br>');
+    let formatted = content;
 
-    // 리스트 래핑
-    if (formatted.includes('<li>')) {
-      formatted = formatted.replace(/<li>/g, '</ul><ul><li>').replace('</ul><ul>', '<ul>');
-      formatted += '</ul>';
+    // 마크다운 헤더 제거 및 변환 (##, ###, ####)
+    formatted = formatted
+      .replace(/^####\s*(.+)$/gm, '<h5 class="recipe-h5">$1</h5>')
+      .replace(/^###\s*(.+)$/gm, '<h4 class="recipe-h4">$1</h4>')
+      .replace(/^##\s*(.+)$/gm, '<h3 class="recipe-h3">$1</h3>')
+      .replace(/^#\s*(.+)$/gm, '<h2 class="recipe-h2">$1</h2>');
+
+    // 굵은 글씨 **text**
+    formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+    // 기울임 *text*
+    formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+    // 번호 리스트 (1. 2. 3.)
+    formatted = formatted.replace(/^(\d+)\.\s+(.+)$/gm, '<li class="numbered-item"><span class="num">$1</span>$2</li>');
+
+    // 불릿 리스트 (- item)
+    formatted = formatted.replace(/^-\s+(.+)$/gm, '<li class="bullet-item">$1</li>');
+
+    // 연속된 li들을 ul로 감싸기
+    formatted = formatted.replace(/(<li class="numbered-item">[\s\S]*?<\/li>)(\n?<li class="numbered-item">)/g, '$1$2');
+    formatted = formatted.replace(/(<li class="bullet-item">[\s\S]*?<\/li>)(\n?<li class="bullet-item">)/g, '$1$2');
+
+    // 리스트 그룹화
+    let inList = false;
+    const lines = formatted.split('\n');
+    const result = [];
+
+    for (let line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('<li')) {
+        if (!inList) {
+          result.push('<ul class="recipe-list">');
+          inList = true;
+        }
+        result.push(trimmed);
+      } else {
+        if (inList) {
+          result.push('</ul>');
+          inList = false;
+        }
+        if (trimmed && !trimmed.startsWith('<h')) {
+          result.push(`<p class="recipe-para">${trimmed}</p>`);
+        } else {
+          result.push(trimmed);
+        }
+      }
     }
+    if (inList) result.push('</ul>');
 
-    return `<p>${formatted}</p>`;
+    // 빈 p 태그 제거
+    formatted = result.join('\n')
+      .replace(/<p class="recipe-para"><\/p>/g, '')
+      .replace(/<p class="recipe-para">\s*<\/p>/g, '');
+
+    return `<div class="recipe-formatted">${formatted}</div>`;
   }
 }
 
