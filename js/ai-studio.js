@@ -736,6 +736,106 @@ class AIStudio {
       alert('공유 기능을 지원하지 않는 브라우저입니다.');
     }
   }
+
+  // ==================== Firestore 스타일 검색 (임베딩 기반) ====================
+
+  async searchSimilarStyles(query, topK = 3) {
+    try {
+      console.log(`🔍 유사 스타일 검색: "${query}"`);
+
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'search_firestore_styles',
+          payload: {
+            query: query,
+            top_k: topK
+          }
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        console.log(`✅ 스타일 검색 완료: ${result.data.results.length}개`);
+        return result.data;
+      } else {
+        console.error('❌ 스타일 검색 실패:', result.error);
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ 스타일 검색 오류:', error);
+      return null;
+    }
+  }
+
+  // 스타일 검색 결과를 캔버스에 표시
+  showStyleSearchResults(searchData) {
+    if (!searchData || !searchData.results || searchData.results.length === 0) {
+      return;
+    }
+
+    this.canvasEmpty.classList.add('hidden');
+    this.canvasResult.classList.remove('hidden');
+
+    const results = searchData.results;
+
+    this.canvasResult.innerHTML = `
+      <div class="style-search-results">
+        <div class="search-header">
+          <h2>🎯 추천 스타일 Top-${results.length}</h2>
+          <p class="search-query">"${searchData.query}" 검색 결과</p>
+        </div>
+
+        <div class="style-cards">
+          ${results.map((style, idx) => `
+            <div class="style-card" onclick="window.aiStudio.showStyleDetail('${style.styleId}')">
+              <div class="style-rank">${idx + 1}</div>
+              <div class="style-info">
+                <h3>${style.styleId}</h3>
+                <span class="series-badge">${style.seriesName || style.series}</span>
+                <div class="similarity-bar">
+                  <div class="similarity-fill" style="width: ${(style.similarity * 100).toFixed(0)}%"></div>
+                  <span class="similarity-text">${(style.similarity * 100).toFixed(1)}%</span>
+                </div>
+              </div>
+              ${style.resultImage ? `
+                <img src="${style.resultImage}" class="style-thumb" alt="${style.styleId}">
+              ` : `
+                <div class="style-thumb-placeholder">📷</div>
+              `}
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="diagrams-preview">
+          <h3>📐 도해도 미리보기</h3>
+          <div class="diagrams-grid">
+            ${results[0].diagrams.slice(0, 6).map(d => `
+              <img src="${d.url}" alt="Step ${d.step}" class="diagram-thumb"
+                   onclick="window.open('${d.url}', '_blank')">
+            `).join('')}
+          </div>
+          ${results[0].diagramCount > 6 ? `
+            <p class="more-diagrams">+${results[0].diagramCount - 6}장 더보기</p>
+          ` : ''}
+        </div>
+      </div>
+    `;
+
+    // Mobile: Show canvas panel
+    if (window.innerWidth <= 1024) {
+      this.canvasPanel.classList.add('active');
+    }
+  }
+
+  // 스타일 상세 보기
+  async showStyleDetail(styleId) {
+    console.log(`📋 스타일 상세: ${styleId}`);
+    // TODO: 스타일 상세 모달 또는 페이지로 이동
+    alert(`스타일 ${styleId} 상세 보기 기능 준비 중`);
+  }
 }
 
 // ==================== Global Functions ====================
@@ -933,6 +1033,47 @@ function quickAction(query) {
     window.aiStudio.sendMessage(query);
   } else {
     console.error('❌ aiStudio가 초기화되지 않았습니다');
+  }
+}
+
+// 스타일 검색 데모 함수
+async function searchStylesDemo(query) {
+  if (!window.aiStudio) {
+    console.error('❌ aiStudio가 초기화되지 않았습니다');
+    return;
+  }
+
+  // 사용자 메시지 표시
+  window.aiStudio.addMessageToUI('user', `🔍 유사 스타일 검색: "${query}"`);
+
+  // 타이핑 표시
+  window.aiStudio.showTypingIndicator();
+
+  try {
+    // 스타일 검색 API 호출
+    const searchData = await window.aiStudio.searchSimilarStyles(query, 3);
+
+    window.aiStudio.hideTypingIndicator();
+
+    if (searchData && searchData.results && searchData.results.length > 0) {
+      // 결과 메시지 표시
+      const resultMsg = `✅ **${searchData.results.length}개의 유사 스타일을 찾았습니다!**\n\n` +
+        searchData.results.map((s, i) =>
+          `${i + 1}. **${s.styleId}** (${s.seriesName}) - 유사도 ${(s.similarity * 100).toFixed(1)}%`
+        ).join('\n') +
+        `\n\n👉 오른쪽 캔버스에서 상세 정보를 확인하세요.`;
+
+      window.aiStudio.addMessageToUI('bot', resultMsg);
+
+      // 캔버스에 결과 표시
+      window.aiStudio.showStyleSearchResults(searchData);
+    } else {
+      window.aiStudio.addMessageToUI('bot', '죄송합니다. 유사한 스타일을 찾지 못했습니다. 다른 검색어를 시도해보세요.');
+    }
+  } catch (error) {
+    window.aiStudio.hideTypingIndicator();
+    window.aiStudio.addMessageToUI('bot', '스타일 검색 중 오류가 발생했습니다.');
+    console.error('❌ 스타일 검색 오류:', error);
   }
 }
 

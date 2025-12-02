@@ -386,6 +386,10 @@ exports.handler = async (event, context) => {
       case 'generate_response_stream_supabase':
         return await generateProfessionalResponseStream(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
 
+      // ⭐⭐⭐ Firestore 스타일 검색 (임베딩 기반 Top-3) ⭐⭐⭐
+      case 'search_firestore_styles':
+        return await searchFirestoreStyles(payload, GEMINI_KEY);
+
       default:
         return {
           statusCode: 400,
@@ -2308,6 +2312,200 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
       statusCode: 200,
       headers: { ...headers, 'Content-Type': 'text/event-stream' },
       body: `data: ${JSON.stringify({ type: 'error', error: `답변 생성 중 오류: ${error.message}` })}\n\ndata: [DONE]\n\n`
+    };
+  }
+}
+
+// ==================== Firestore 스타일 검색 (임베딩 기반 Top-3) ⭐⭐⭐ ====================
+
+// Firebase 프로젝트 설정
+const FIREBASE_PROJECT_ID = 'hairgatormenu-4a43e';
+
+/**
+ * Firestore REST API로 모든 스타일 가져오기
+ */
+async function getFirestoreStyles() {
+  const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Firestore API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const styles = [];
+
+    if (data.documents) {
+      for (const doc of data.documents) {
+        const fields = doc.fields;
+        const styleId = doc.name.split('/').pop();
+
+        // 임베딩 배열 추출
+        let embedding = null;
+        if (fields.embedding && fields.embedding.arrayValue && fields.embedding.arrayValue.values) {
+          embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
+        }
+
+        // 도해도 배열 추출
+        let diagrams = [];
+        if (fields.diagrams && fields.diagrams.arrayValue && fields.diagrams.arrayValue.values) {
+          diagrams = fields.diagrams.arrayValue.values.map(v => {
+            const mapValue = v.mapValue?.fields || {};
+            return {
+              step: parseInt(mapValue.step?.integerValue || 0),
+              url: mapValue.url?.stringValue || ''
+            };
+          });
+        }
+
+        styles.push({
+          styleId: styleId,
+          series: fields.series?.stringValue || '',
+          seriesName: fields.seriesName?.stringValue || '',
+          resultImage: fields.resultImage?.stringValue || null,
+          diagrams: diagrams,
+          diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
+          captionUrl: fields.captionUrl?.stringValue || null,
+          embedding: embedding
+        });
+      }
+    }
+
+    console.log(`📚 Firestore에서 ${styles.length}개 스타일 로드`);
+    return styles;
+
+  } catch (error) {
+    console.error('❌ Firestore 스타일 로드 실패:', error);
+    return [];
+  }
+}
+
+/**
+ * Gemini 임베딩 생성
+ */
+async function generateQueryEmbedding(query, geminiKey) {
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/embedding-001:embedContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'models/embedding-001',
+          content: { parts: [{ text: query }] },
+          taskType: 'RETRIEVAL_QUERY'
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Embedding API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.embedding?.values || null;
+
+  } catch (error) {
+    console.error('❌ 임베딩 생성 실패:', error);
+    return null;
+  }
+}
+
+/**
+ * 코사인 유사도 계산
+ */
+function cosineSimilarity(vecA, vecB) {
+  if (!vecA || !vecB || vecA.length !== vecB.length) return 0;
+
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+
+  const magnitude = Math.sqrt(normA) * Math.sqrt(normB);
+  return magnitude === 0 ? 0 : dotProduct / magnitude;
+}
+
+/**
+ * Firestore 스타일 검색 (임베딩 기반 Top-3)
+ */
+async function searchFirestoreStyles(payload, geminiKey) {
+  const { query, top_k = 3 } = payload;
+
+  console.log(`🔍 Firestore 스타일 검색: "${query}"`);
+
+  try {
+    // 1. 쿼리 임베딩 생성
+    const queryEmbedding = await generateQueryEmbedding(query, geminiKey);
+    if (!queryEmbedding) {
+      throw new Error('쿼리 임베딩 생성 실패');
+    }
+
+    console.log(`✅ 쿼리 임베딩 생성 완료 (${queryEmbedding.length}차원)`);
+
+    // 2. Firestore에서 모든 스타일 가져오기
+    const styles = await getFirestoreStyles();
+    if (styles.length === 0) {
+      throw new Error('스타일 데이터 없음');
+    }
+
+    // 3. 유사도 계산 및 정렬
+    const scoredStyles = styles
+      .filter(style => style.embedding && style.embedding.length > 0)
+      .map(style => ({
+        ...style,
+        similarity: cosineSimilarity(queryEmbedding, style.embedding)
+      }))
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, top_k);
+
+    console.log(`🎯 Top-${top_k} 스타일 검색 완료`);
+    scoredStyles.forEach((s, i) => {
+      console.log(`  ${i + 1}. ${s.styleId} (유사도: ${(s.similarity * 100).toFixed(1)}%)`);
+    });
+
+    // 4. 결과 반환 (임베딩 제외)
+    const results = scoredStyles.map(style => ({
+      styleId: style.styleId,
+      series: style.series,
+      seriesName: style.seriesName,
+      resultImage: style.resultImage,
+      diagrams: style.diagrams.slice(0, 10), // 도해도 10장까지만
+      diagramCount: style.diagramCount,
+      captionUrl: style.captionUrl,
+      similarity: style.similarity
+    }));
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          query: query,
+          results: results,
+          total_styles: styles.length,
+          styles_with_embedding: styles.filter(s => s.embedding).length
+        }
+      })
+    };
+
+  } catch (error) {
+    console.error('❌ Firestore 스타일 검색 오류:', error);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: error.message
+      })
     };
   }
 }
