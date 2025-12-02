@@ -1,0 +1,79 @@
+{
+  "styleId": "FHL2001",
+  "series": "FHL",
+  "length": {
+    "code": "H",
+    "ko": "엑스트라 롱",
+    "en": "EXTRA_LONG",
+    "order": 8
+  },
+  "shape": {
+    "ko": "디스커넥션",
+    "en": "DISCONNECTION"
+  },
+  "texture": null,
+  "bangs": null,
+  "difficulty": null,
+  "caption": "B존은 후대각섹션과 천체축 각도 75도, 다이렉션 D2~반대쪽 D6기점까지 이동 디자인라인을 활용하여 진행한다. C존은 후대각 섹션과 천체축 각도 75도 디스커넥션, 변이분배, 다이렉션 D4~D8기점까지 이동 디자인라인을 화용하여 진행한다.",
+  "files": {
+    "result": "아트보드 – 28.png",
+    "diagrams": [
+      "SR_FHL2001_01.png",
+      "SR_FHL2001_02.png",
+      "SR_FHL2001_03.png",
+      "SR_FHL2001_04.png",
+      "SR_FHL2001_05.png",
+      "SR_FHL2001_06.png",
+      "SR_FHL2001_07.png",
+      "SR_FHL2001_08.png",
+      "SR_FHL2001_09.png",
+      "SR_FHL2001_10.png",
+      "SR_FHL2001_11.png",
+      "SR_FHL2001_12.png",
+      "SR_FHL2001_13.png",
+      "SR_FHL2001_14.png",
+      "SR_FHL2001_15.png",
+      "SR_FHL2001_16.png",
+      "SR_FHL2001_17.png",
+      "SR_FHL2001_18.png",
+      "SR_FHL2001_19.png",
+      "SR_FHL2001_20.png",
+      "SR_FHL2001_21.png",
+      "SR_FHL2001_22.png",
+      "SR_FHL2001_23.png",
+      "SR_FHL2001_24.png"
+    ],
+    "caption": "FHL2001(자막).txt"
+  },
+  "gcsUrls": {
+    "result": "gs://hairgator-styles/FHL/FHL2001/아트보드 – 28.png",
+    "diagrams": [
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_01.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_02.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_03.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_04.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_05.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_06.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_07.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_08.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_09.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_10.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_11.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_12.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_13.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_14.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_15.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_16.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_17.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_18.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_19.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_20.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_21.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_22.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_23.png",
+      "gs://hairgator-styles/FHL/FHL2001/SR_FHL2001_24.png"
+    ]
+  },
+  "createdAt": "2025-12-02T12:04:30.686480",
+  "embedding": null
+}

@@ -1,0 +1,264 @@
+{
+  "version": "1.0",
+  "createdAt": "2025-12-02",
+  "description": "HAIRGATOR 42포뮬러 + 89용어 통합 데이터",
+
+  "formulas42": {
+    "description": "42개 포뮬러 체계 (Book D 기반)",
+    "groups": {
+      "HS_DBS": {
+        "name": "HS + DBS 조합",
+        "count": 14,
+        "formulas": [
+          {"code": "H1SQ_DB1", "pattern": "HS NO.1(SQUARE)/DBS NO.1", "desc": "앞쪽이 긴 무거운 느낌, 스퀘어 아웃라인"},
+          {"code": "H1SQ_DB2", "pattern": "HS NO.1(SQUARE)/DBS NO.2", "desc": "무게감과 층의 흐름이 뒤쪽으로 이동"},
+          {"code": "H1SQ_DB3", "pattern": "HS NO.1(SQUARE)/DBS NO.3", "desc": "점진적으로 부드러워 보임"},
+          {"code": "H1SQ_DB4", "pattern": "HS NO.1(SQUARE)/DBS NO.4", "desc": "뒤쪽 무게감 증가"},
+          {"code": "H1SQ_DB5", "pattern": "HS NO.1(SQUARE)/DBS NO.5", "desc": "스퀘어 강조, 모량 많은 경우 효과적"},
+          {"code": "H1SQ_DB6", "pattern": "HS NO.1(SQUARE)/DBS NO.6", "desc": "중간 층 흐름 강조"},
+          {"code": "H1SQ_DB7", "pattern": "HS NO.1(SQUARE)/DBS NO.7", "desc": "최대 뒤쪽 무게감"},
+          {"code": "H1RD_DB1", "pattern": "HS NO.1(ROUND)/DBS NO.1", "desc": "부드러운 라운드 아웃라인"},
+          {"code": "H1RD_DB2", "pattern": "HS NO.1(ROUND)/DBS NO.2", "desc": "더욱 많이 부드러워 보임"},
+          {"code": "H1RD_DB3", "pattern": "HS NO.1(ROUND)/DBS NO.3", "desc": "완경사 라운드, 작고 각진 마른 형, 모량 많음"},
+          {"code": "H1RD_DB4", "pattern": "HS NO.1(ROUND)/DBS NO.4", "desc": "급경사 라운드, 크고 각진 마른 형, 모량 많음"},
+          {"code": "H1RD_DB5", "pattern": "HS NO.1(ROUND)/DBS NO.5", "desc": "라운드 강조"},
+          {"code": "H1RD_DB6", "pattern": "HS NO.1(ROUND)/DBS NO.6", "desc": "중간 라운드 층"},
+          {"code": "H1RD_DB7", "pattern": "HS NO.1(ROUND)/DBS NO.7", "desc": "최대 라운드 무게감"}
+        ]
+      },
+      "HS_DBS_VS": {
+        "name": "HS + DBS + VS 조합",
+        "count": 10,
+        "formulas": [
+          {"code": "H1SQ_DB1_V1", "pattern": "HS NO.1(SQUARE)/DBS NO.1/VS NO.1", "desc": "앞쪽 길고 무거움, 측면 볼륨 최소"},
+          {"code": "H1SQ_DB1_V2", "pattern": "HS NO.1(SQUARE)/DBS NO.1/VS NO.2", "desc": "측면 볼륨 약간 증가"},
+          {"code": "H1SQ_DB1_V6", "pattern": "HS NO.1(SQUARE)/DBS NO.1/VS NO.6", "desc": "부피감 축소, 더욱 부드러움"},
+          {"code": "H1SQ_DB1_V10", "pattern": "HS NO.1(SQUARE)/DBS NO.1/VS NO.10", "desc": "측면 최대 볼륨"},
+          {"code": "H1SQ_DB2_V1", "pattern": "HS NO.1(SQUARE)/DBS NO.2/VS NO.1", "desc": "뒤쪽 무게 이동, 측면 최소"},
+          {"code": "H1SQ_DB2_V6", "pattern": "HS NO.1(SQUARE)/DBS NO.2/VS NO.6", "desc": "중간 층 흐름"},
+          {"code": "H1SQ_DB3_V1", "pattern": "HS NO.1(SQUARE)/DBS NO.3/VS NO.1", "desc": "후대각 중간 무게"},
+          {"code": "H1SQ_DB3_V6", "pattern": "VS NO.6/DBS NO.3", "desc": "V존 강조 조합"},
+          {"code": "H1SQ_DB4_V1", "pattern": "HS NO.1(SQUARE)/DBS NO.4/VS NO.1", "desc": "후대각 최대 무게"},
+          {"code": "H1SQ_DB4_V6", "pattern": "VS NO.6/DBS NO.4", "desc": "V존 최대 조합"}
+        ]
+      },
+      "DFS_STYLE": {
+        "name": "DFS + 스타일 변형",
+        "count": 9,
+        "formulas": [
+          {"code": "DF1_JCRL", "pattern": "DFS NO.1/J CURL", "desc": "어깨선에서 사이드 부분만 바깥으로 뻗치는 라운드 레이어"},
+          {"code": "DF1_SQRE", "pattern": "DFS NO.1/SQUARE", "desc": "사이드 부피 플랫하게 줄어드는 탑 스퀘어 커트"},
+          {"code": "DF1_SLIM", "pattern": "DFS NO.1/SLIM", "desc": "사이드 부드러운 라운드 레이어"},
+          {"code": "DF4_JCRL", "pattern": "DFS NO.4/J CURL", "desc": "DFS NO.4 + J CURL 조합"},
+          {"code": "DF5_SQRE", "pattern": "DFS NO.5/SQUARE", "desc": "DFS NO.5 + 스퀘어 강조"},
+          {"code": "DF5_SLIM", "pattern": "DFS NO.5/SLIM", "desc": "DFS NO.5 + 슬림 레이어"},
+          {"code": "DF6_JCRL", "pattern": "DFS NO.6/J CURL", "desc": "DFS NO.6 + J CURL"},
+          {"code": "DF6_SQRE", "pattern": "DFS NO.6/SQUARE", "desc": "DFS NO.6 + 스퀘어"},
+          {"code": "DF6_SLIM", "pattern": "DFS NO.6/SLIM", "desc": "DFS NO.6 + 슬림"}
+        ]
+      },
+      "SPECIAL": {
+        "name": "특수 포뮬러",
+        "count": 9,
+        "formulas": [
+          {"code": "DB7_V12_JCRL_SLIM_UD4", "pattern": "DBS NO.7/VS NO.12/J CURL/SLIM/UD NO.4", "desc": "프로파일 라인 최고 조합"},
+          {"code": "SHORT_BACK", "pattern": "SHORT HAIR (START FROM BACK)", "desc": "뒤에서 시작하는 숏헤어"},
+          {"code": "SHORT_SIDE", "pattern": "SHORT HAIR (START FROM SIDE)", "desc": "옆에서 시작하는 숏헤어"},
+          {"code": "SHORT_FRONT", "pattern": "SHORT HAIR (START FROM FRONT/TOP)", "desc": "앞/정수리에서 시작하는 숏헤어"},
+          {"code": "DFS6A_DBS1", "pattern": "DFS NO.6 A/DBS NO.1", "desc": "트라이앵글러 아웃라인"},
+          {"code": "DFS6A_DBS2", "pattern": "DFS NO.6 A/DBS NO.2", "desc": "스퀘어 아웃라인"},
+          {"code": "DFS6B_DBS3", "pattern": "DFS NO.6 B/DBS NO.3", "desc": "라운드 완경사"},
+          {"code": "DFS6B_DBS4", "pattern": "DFS NO.6 B/DBS NO.4", "desc": "라운드 급경사"},
+          {"code": "H1SQ_JCRL", "pattern": "HS NO.1(SQUARE)/J CURL", "desc": "가로섹션 + 제이컬 단순 조합"}
+        ]
+      }
+    },
+    "sectionTypes": {
+      "HS": {"name": "Horizontal Section", "ko": "가로섹션", "count": 2},
+      "DBS": {"name": "Diagonal Backward Section", "ko": "후대각섹션", "count": 7},
+      "VS": {"name": "Vertical Section", "ko": "세로섹션", "count": 12},
+      "DFS": {"name": "Diagonal Forward Section", "ko": "전대각섹션", "count": 6}
+    }
+  },
+
+  "terms89": {
+    "description": "89개 헤어 용어 인덱스",
+    "categories": {
+      "section": {
+        "name": "섹션 구조",
+        "terms": [
+          {"id": 1, "en": "1 Section & 2 Section", "ko": "1섹션과 2섹션", "tier": 1},
+          {"id": 3, "en": "2 Section", "ko": "2섹션 상세", "tier": 1},
+          {"id": 70, "en": "Section", "ko": "섹션 기본 3종", "tier": 1},
+          {"id": 71, "en": "Section Application", "ko": "섹션 적용법", "tier": 2},
+          {"id": 72, "en": "Section Control", "ko": "섹션 컨트롤", "tier": 2},
+          {"id": 73, "en": "Section Off", "ko": "섹션 오프", "tier": 3},
+          {"id": 78, "en": "Subsequent Section", "ko": "후속 섹션", "tier": 3}
+        ]
+      },
+      "angle": {
+        "name": "각도 시스템",
+        "terms": [
+          {"id": 54, "en": "Lifting Angle", "ko": "리프팅 각도", "tier": 1, "values": ["L0:0°", "L1:22.5°", "L2:45°", "L3:67.5°", "L4:90°", "L5:112.5°", "L6:135°", "L7:157.5°", "L8:180°"]},
+          {"id": 33, "en": "Direction", "ko": "방향", "tier": 1, "values": ["D0:정면", "D1:우전방45°", "D2:우측면90°", "D3:우후방135°", "D4:정후방180°", "D5:좌후방225°", "D6:좌측면270°", "D7:좌전방315°", "D8:전체360°"]},
+          {"id": 6, "en": "Angle", "ko": "앵글", "tier": 2},
+          {"id": 30, "en": "Degree", "ko": "디그리", "tier": 2},
+          {"id": 36, "en": "Elevation", "ko": "엘레베이션", "tier": 2},
+          {"id": 39, "en": "Fingers Angle", "ko": "핑거스 앵글", "tier": 2},
+          {"id": 4, "en": "210 Degree Panel Control", "ko": "210도 패널 컨트롤", "tier": 2}
+        ]
+      },
+      "zone": {
+        "name": "존 시스템",
+        "terms": [
+          {"id": 5, "en": "A Zone & V Zone", "ko": "A존과 V존", "tier": 1},
+          {"id": 89, "en": "Zone", "ko": "구역 (C존/B존/A존)", "tier": 1},
+          {"id": 82, "en": "Texturizing Zone", "ko": "텍스쳐라이징 존", "tier": 2},
+          {"id": 86, "en": "Volume", "ko": "볼륨", "tier": 1},
+          {"id": 87, "en": "Volume Location by Section", "ko": "섹션별 볼륨 위치", "tier": 2}
+        ]
+      },
+      "layer": {
+        "name": "레이어 구조",
+        "terms": [
+          {"id": 52, "en": "Layer", "ko": "레이어", "tier": 1, "types": ["Round Layer", "Square Layer"]},
+          {"id": 44, "en": "Graduation", "ko": "그래쥬에이션", "tier": 1, "types": ["Decreasing", "Increasing", "Parallel"]},
+          {"id": 45, "en": "Graduation & Layer", "ko": "그래쥬에이션 & 레이어", "tier": 1},
+          {"id": 53, "en": "Layer & Weight", "ko": "레이어 & 웨이트", "tier": 2},
+          {"id": 88, "en": "Weight Sit Area", "ko": "웨이트 싯 에리어", "tier": 2}
+        ]
+      },
+      "cutting": {
+        "name": "커팅 기법",
+        "terms": [
+          {"id": 19, "en": "Blunt Cut", "ko": "블런트 컷", "tier": 1},
+          {"id": 8, "en": "Bais Cut", "ko": "바이어스 컷", "tier": 2},
+          {"id": 16, "en": "Block Cut", "ko": "블록 컷", "tier": 3},
+          {"id": 20, "en": "Brick Cut", "ko": "브릭 컷", "tier": 2},
+          {"id": 22, "en": "Channel Cut", "ko": "채널 컷", "tier": 2},
+          {"id": 23, "en": "Clipper Cut", "ko": "클리퍼 컷", "tier": 2},
+          {"id": 24, "en": "Clipper Over Comb", "ko": "클리퍼 오버 콤", "tier": 2},
+          {"id": 69, "en": "Scissor Over Comb", "ko": "시저 오버 콤", "tier": 2},
+          {"id": 41, "en": "Freehands Cut", "ko": "프리핸즈 컷", "tier": 2},
+          {"id": 81, "en": "Texturizing", "ko": "텍스쳐라이징", "tier": 2},
+          {"id": 83, "en": "Trimming", "ko": "트리밍", "tier": 3},
+          {"id": 84, "en": "Under Cut", "ko": "언더 컷", "tier": 2},
+          {"id": 14, "en": "Bevel", "ko": "베벨", "tier": 3},
+          {"id": 15, "en": "Bevel Off", "ko": "베벨 오프", "tier": 3},
+          {"id": 26, "en": "Corner Off", "ko": "코너 오프", "tier": 3}
+        ]
+      },
+      "guide": {
+        "name": "가이드 & 디렉션",
+        "terms": [
+          {"id": 2, "en": "1Way Cut & 2Way Cut", "ko": "1웨이컷 & 2웨이컷", "tier": 1},
+          {"id": 62, "en": "Over Direction", "ko": "오버 디렉션", "tier": 1},
+          {"id": 35, "en": "Distribution", "ko": "디스트리뷰션", "tier": 1, "types": ["Natural", "Perpendicular", "Shifted"]},
+          {"id": 31, "en": "Design Line", "ko": "디자인 라인", "tier": 1, "types": ["Stationary", "Mobile", "Combination"]},
+          {"id": 11, "en": "Base Control", "ko": "베이스 컨트롤", "tier": 1},
+          {"id": 13, "en": "Base Position", "ko": "베이스 포지션", "tier": 2},
+          {"id": 10, "en": "Base", "ko": "베이스", "tier": 2},
+          {"id": 12, "en": "Base Line", "ko": "베이스 라인", "tier": 2},
+          {"id": 64, "en": "Perimeter Line", "ko": "페리미터 라인", "tier": 2},
+          {"id": 49, "en": "Hemline", "ko": "헴라인", "tier": 2}
+        ]
+      },
+      "form": {
+        "name": "형태 & 실루엣",
+        "terms": [
+          {"id": 29, "en": "Cut Form", "ko": "컷 폼", "tier": 2},
+          {"id": 40, "en": "Form", "ko": "폼", "tier": 2},
+          {"id": 77, "en": "Style Form", "ko": "스타일 폼", "tier": 3},
+          {"id": 75, "en": "Silhouette", "ko": "실루엣", "tier": 2},
+          {"id": 43, "en": "Geometric Shape", "ko": "기하학적 형태", "tier": 3},
+          {"id": 28, "en": "Curved Shape", "ko": "곡선 형태", "tier": 3},
+          {"id": 21, "en": "C Curvature", "ko": "C 커브쳐", "tier": 3},
+          {"id": 25, "en": "Convex Line & Concave Line", "ko": "볼록선 & 오목선", "tier": 3},
+          {"id": 60, "en": "Outline Long Form", "ko": "아웃라인 롱 폼", "tier": 2},
+          {"id": 61, "en": "Outline Medium Form", "ko": "아웃라인 미디엄 폼", "tier": 2},
+          {"id": 59, "en": "One Length", "ko": "원 렝스", "tier": 2},
+          {"id": 51, "en": "Inner Length", "ko": "이너 렝스", "tier": 2}
+        ]
+      },
+      "face": {
+        "name": "얼굴 & 두상 구조",
+        "terms": [
+          {"id": 38, "en": "Face Shape", "ko": "페이스 셰이프", "tier": 2},
+          {"id": 37, "en": "Face Line", "ko": "페이스 라인", "tier": 2},
+          {"id": 76, "en": "Skull Structure", "ko": "스컬 스트럭쳐", "tier": 2},
+          {"id": 47, "en": "Head Point", "ko": "헤드 포인트", "tier": 2},
+          {"id": 48, "en": "Head Position", "ko": "헤드 포지션", "tier": 3},
+          {"id": 57, "en": "Occipital Bone", "ko": "후두골", "tier": 2},
+          {"id": 67, "en": "Recession Area", "ko": "리세션 에리어", "tier": 3},
+          {"id": 68, "en": "Recession Type", "ko": "리세션 타입", "tier": 3},
+          {"id": 80, "en": "Temple Area", "ko": "템플 에리어", "tier": 3}
+        ]
+      },
+      "fringe": {
+        "name": "프린지 & 헤어라인",
+        "terms": [
+          {"id": 42, "en": "Fringe", "ko": "프린지", "tier": 2},
+          {"id": 27, "en": "Cowlick Parting", "ko": "카울릭 파팅", "tier": 3},
+          {"id": 56, "en": "Natural Parting", "ko": "내츄럴 파팅", "tier": 3},
+          {"id": 55, "en": "Natural Inversion", "ko": "내츄럴 인버전", "tier": 3}
+        ]
+      },
+      "design": {
+        "name": "디자인 원리",
+        "terms": [
+          {"id": 9, "en": "Balance", "ko": "밸런스", "tier": 1},
+          {"id": 85, "en": "Visual Balance", "ko": "비주얼 밸런스", "tier": 2},
+          {"id": 79, "en": "Symmetry", "ko": "시메트리", "tier": 3},
+          {"id": 7, "en": "Asymmetry", "ko": "어시메트리", "tier": 3},
+          {"id": 66, "en": "Proportion", "ko": "프로포션", "tier": 3},
+          {"id": 65, "en": "Personalizing", "ko": "퍼스널라이징", "tier": 3},
+          {"id": 34, "en": "Disconnection", "ko": "디스커넥션", "tier": 2},
+          {"id": 74, "en": "Separation", "ko": "세퍼레이션", "tier": 3}
+        ]
+      }
+    },
+    "tier1Essential": [1, 2, 5, 9, 11, 19, 31, 33, 35, 44, 52, 54, 62, 70, 89]
+  },
+
+  "recommendations": {
+    "byFaceShape": {
+      "round": {
+        "ko": "둥근 얼굴",
+        "formulas": ["H1SQ_DB1", "DFS6A_DBS1", "DF1_SQRE"],
+        "reason": "스퀘어 아웃라인으로 각도 강조, 트라이앵글러로 시각적 길이감"
+      },
+      "square": {
+        "ko": "각진 얼굴",
+        "formulas": ["H1RD_DB3", "DF6_SLIM", "DFS6B_DBS3"],
+        "reason": "라운드 아웃라인으로 부드러움, 슬림 레이어로 각 완화"
+      },
+      "long": {
+        "ko": "긴 얼굴",
+        "formulas": ["H1SQ_DB1_V6", "DF1_JCRL"],
+        "reason": "측면 볼륨으로 가로 확장, J CURL로 옆 볼륨 강조"
+      },
+      "small": {
+        "ko": "작은 얼굴",
+        "formulas": ["DFS6A_DBS2", "SHORT_BACK"],
+        "reason": "스퀘어 강조로 강한 이미지, 숏헤어로 비율 조정"
+      }
+    },
+    "byHairVolume": {
+      "thick": {
+        "ko": "모량 많음",
+        "formulas": ["H1RD_DB3", "H1RD_DB4", "DFS6B_DBS3"],
+        "reason": "완경사/급경사 라운드로 무게 분산"
+      },
+      "thin": {
+        "ko": "모량 적음",
+        "formulas": ["H1SQ_DB1", "DF1_SQRE", "H1SQ_DB1_V1"],
+        "reason": "무게감 유지, 스퀘어로 볼륨 착시"
+      },
+      "medium": {
+        "ko": "모량 중간",
+        "formulas": ["H1SQ_DB2", "DF5_SLIM"],
+        "reason": "균형잡힌 층 흐름, 자연스러운 레이어"
+      }
+    }
+  }
+}

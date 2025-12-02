@@ -1,0 +1,67 @@
+{
+  "styleId": "FBL0001",
+  "series": "FBL",
+  "length": {
+    "code": "B",
+    "ko": "미디엄 숏",
+    "en": "MEDIUM_SHORT",
+    "order": 2
+  },
+  "shape": {
+    "ko": "원랭스",
+    "en": "ONE_LENGTH"
+  },
+  "texture": null,
+  "bangs": null,
+  "difficulty": null,
+  "caption": "아웃라인을 가로섹션을 활용하여 BL스퀘어라인으로 설정하고 천체축 각도0도와 고정 디자인 라인을 활용하여 원랭스로 진행",
+  "files": {
+    "result": "아트보드 – 23.png",
+    "diagrams": [
+      "SR_FBL0001_01.png",
+      "SR_FBL0001_02.png",
+      "SR_FBL0001_03.png",
+      "SR_FBL0001_04.png",
+      "SR_FBL0001_05.png",
+      "SR_FBL0001_06.png",
+      "SR_FBL0001_07.png",
+      "SR_FBL0001_08.png",
+      "SR_FBL0001_09.png",
+      "SR_FBL0001_10.png",
+      "SR_FBL0001_11.png",
+      "SR_FBL0001_12.png",
+      "SR_FBL0001_13.png",
+      "SR_FBL0001_14.png",
+      "SR_FBL0001_15.png",
+      "SR_FBL0001_16.png",
+      "SR_FBL0001_17.png",
+      "SR_FBL0001_18.png"
+    ],
+    "caption": "FBL0001(자막).txt"
+  },
+  "gcsUrls": {
+    "result": "gs://hairgator-styles/FBL/FBL0001/아트보드 – 23.png",
+    "diagrams": [
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_01.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_02.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_03.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_04.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_05.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_06.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_07.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_08.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_09.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_10.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_11.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_12.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_13.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_14.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_15.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_16.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_17.png",
+      "gs://hairgator-styles/FBL/FBL0001/SR_FBL0001_18.png"
+    ]
+  },
+  "createdAt": "2025-12-02T12:04:30.579387",
+  "embedding": null
+}

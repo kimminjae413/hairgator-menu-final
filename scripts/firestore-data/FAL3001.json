@@ -1,0 +1,70 @@
+{
+  "styleId": "FAL3001",
+  "series": "FAL",
+  "length": {
+    "code": "A",
+    "ko": "숏",
+    "en": "SHORT",
+    "order": 1
+  },
+  "shape": null,
+  "texture": null,
+  "bangs": null,
+  "difficulty": null,
+  "caption": "먼저 아웃라인을 AL스퀘어로 설정한다. 후대각 섹션을 활용한다. 천체축 각도 75도~135도까지 다이렉션 D0 기점으로 이동 디자인 라인을 활용하여 진행한다. 후대각 섹션을 이용하여 섹션과 비평행, 이동 디자인 라인으로 진행한다. 파이섹션을 활용하여 진행한다. 천체축 각도 135도로 진행하며, 다이렉션 D8~D4기점까지 이동 디자인 라인으로 진행하며, 나머지 사이드 부분은 다이렉션 D4기점을 축으로 고정 디자인 라인으로 진행한다.",
+  "files": {
+    "result": "1.png",
+    "diagrams": [
+      "SR_FAL3001_01.png",
+      "SR_FAL3001_02.png",
+      "SR_FAL3001_03.png",
+      "SR_FAL3001_04.png",
+      "SR_FAL3001_05.png",
+      "SR_FAL3001_06.png",
+      "SR_FAL3001_07.png",
+      "SR_FAL3001_08.png",
+      "SR_FAL3001_09.png",
+      "SR_FAL3001_10.png",
+      "SR_FAL3001_11.png",
+      "SR_FAL3001_12.png",
+      "SR_FAL3001_13.png",
+      "SR_FAL3001_14.png",
+      "SR_FAL3001_15.png",
+      "SR_FAL3001_16.png",
+      "SR_FAL3001_17.png",
+      "SR_FAL3001_18.png",
+      "SR_FAL3001_19.png",
+      "SR_FAL3001_20.png",
+      "SR_FAL3001_21.png"
+    ],
+    "caption": "FAL3001(자막).txt"
+  },
+  "gcsUrls": {
+    "result": "gs://hairgator-styles/FAL/FAL3001/1.png",
+    "diagrams": [
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_01.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_02.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_03.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_04.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_05.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_06.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_07.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_08.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_09.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_10.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_11.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_12.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_13.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_14.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_15.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_16.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_17.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_18.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_19.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_20.png",
+      "gs://hairgator-styles/FAL/FAL3001/SR_FAL3001_21.png"
+    ]
+  },
+  "createdAt": "2025-12-02T12:04:30.574385",
+  "embedding": null
+}

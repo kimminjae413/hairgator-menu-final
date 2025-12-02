@@ -1,0 +1,68 @@
+{
+  "styleId": "FEL2001",
+  "series": "FEL",
+  "length": {
+    "code": "E",
+    "ko": "롱",
+    "en": "LONG",
+    "order": 5
+  },
+  "shape": null,
+  "texture": null,
+  "bangs": null,
+  "difficulty": null,
+  "caption": "아웃라이너을 EL스퀘어라인으로 정리한다. 후대각 섹션과 천체축 각도 75도, 135도~157.5도까지 다이렉션 D0기점으로 이동 디자인라인으로 진행한다.",
+  "files": {
+    "result": "아트보드 – 26.png",
+    "diagrams": [
+      "SR_FEL2001_01.png",
+      "SR_FEL2001_02.png",
+      "SR_FEL2001_03.png",
+      "SR_FEL2001_04.png",
+      "SR_FEL2001_05.png",
+      "SR_FEL2001_06.png",
+      "SR_FEL2001_07.png",
+      "SR_FEL2001_08.png",
+      "SR_FEL2001_09.png",
+      "SR_FEL2001_10.png",
+      "SR_FEL2001_11.png",
+      "SR_FEL2001_12.png",
+      "SR_FEL2001_13.png",
+      "SR_FEL2001_14.png",
+      "SR_FEL2001_15.png",
+      "SR_FEL2001_16.png",
+      "SR_FEL2001_17.png",
+      "SR_FEL2001_18.png",
+      "SR_FEL2001_19.png",
+      "SR_FEL2001_20.png"
+    ],
+    "caption": "FEL2001(자막).txt"
+  },
+  "gcsUrls": {
+    "result": "gs://hairgator-styles/FEL/FEL2001/아트보드 – 26.png",
+    "diagrams": [
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_01.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_02.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_03.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_04.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_05.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_06.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_07.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_08.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_09.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_10.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_11.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_12.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_13.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_14.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_15.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_16.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_17.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_18.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_19.png",
+      "gs://hairgator-styles/FEL/FEL2001/SR_FEL2001_20.png"
+    ]
+  },
+  "createdAt": "2025-12-02T12:04:30.622066",
+  "embedding": null
+}

@@ -1,0 +1,66 @@
+{
+  "styleId": "FDL1001",
+  "series": "FDL",
+  "length": {
+    "code": "D",
+    "ko": "미디엄 롱",
+    "en": "MEDIUM_LONG",
+    "order": 4
+  },
+  "shape": null,
+  "texture": null,
+  "bangs": null,
+  "difficulty": null,
+  "caption": "아웃라인을 DL스퀘어 라인으로 진행한다. 후대각 섹션과 천체축 각도 75도 다이렉션 D0기점을 축으로 첫패널은 섹션과 비평행으로 진행한다. 두번째 패널부터 천체축 각도 157.5도와 리프팅 L7기점을 축으로 섹션과 비평행 이동 디자인라인으로 진행한다.",
+  "files": {
+    "result": "아트보드 – 25.png",
+    "diagrams": [
+      "SR_FDL1001_01.png",
+      "SR_FDL1001_02.png",
+      "SR_FDL1001_03.png",
+      "SR_FDL1001_04.png",
+      "SR_FDL1001_05.png",
+      "SR_FDL1001_06.png",
+      "SR_FDL1001_07.png",
+      "SR_FDL1001_08.png",
+      "SR_FDL1001_09.png",
+      "SR_FDL1001_10.png",
+      "SR_FDL1001_11.png",
+      "SR_FDL1001_12.png",
+      "SR_FDL1001_13.png",
+      "SR_FDL1001_14.png",
+      "SR_FDL1001_15.png",
+      "SR_FDL1001_16.png",
+      "SR_FDL1001_17.png",
+      "SR_FDL1001_18.png",
+      "SR_FDL1001_19.png"
+    ],
+    "caption": "FDL1001(자막).txt"
+  },
+  "gcsUrls": {
+    "result": "gs://hairgator-styles/FDL/FDL1001/아트보드 – 25.png",
+    "diagrams": [
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_01.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_02.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_03.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_04.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_05.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_06.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_07.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_08.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_09.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_10.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_11.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_12.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_13.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_14.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_15.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_16.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_17.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_18.png",
+      "gs://hairgator-styles/FDL/FDL1001/SR_FDL1001_19.png"
+    ]
+  },
+  "createdAt": "2025-12-02T12:04:30.605990",
+  "embedding": null
+}

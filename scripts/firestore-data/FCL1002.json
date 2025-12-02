@@ -1,0 +1,70 @@
+{
+  "styleId": "FCL1002",
+  "series": "FCL",
+  "length": {
+    "code": "C",
+    "ko": "미디엄",
+    "en": "MEDIUM",
+    "order": 3
+  },
+  "shape": null,
+  "texture": null,
+  "bangs": null,
+  "difficulty": null,
+  "caption": "먼저 아웃라인을 CL스퀘어로 진행한다. 후대각섹션과 천체축 각도 45도, 다이렉션 D0기점으로 고정 디자인라인을 활용하여 포인트컷으로 진행한다. 후대각 섹션과 천체축 각도75도, 다이렉션 D0 기점을 축으로 고정 디자인라인을 활용하여 진행한다.",
+  "files": {
+    "result": "아트보드 – 25.png",
+    "diagrams": [
+      "SR_FCL1002_01.png",
+      "SR_FCL1002_02.png",
+      "SR_FCL1002_03.png",
+      "SR_FCL1002_04.png",
+      "SR_FCL1002_05.png",
+      "SR_FCL1002_06.png",
+      "SR_FCL1002_07.png",
+      "SR_FCL1002_08.png",
+      "SR_FCL1002_09.png",
+      "SR_FCL1002_10.png",
+      "SR_FCL1002_11.png",
+      "SR_FCL1002_12.png",
+      "SR_FCL1002_13.png",
+      "SR_FCL1002_14.png",
+      "SR_FCL1002_15.png",
+      "SR_FCL1002_16.png",
+      "SR_FCL1002_17.png",
+      "SR_FCL1002_18.png",
+      "SR_FCL1002_19.png",
+      "SR_FCL1002_20.png",
+      "SR_FCL1002_21.png"
+    ],
+    "caption": "FCL1002(자막).txt"
+  },
+  "gcsUrls": {
+    "result": "gs://hairgator-styles/FCL/FCL1002/아트보드 – 25.png",
+    "diagrams": [
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_01.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_02.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_03.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_04.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_05.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_06.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_07.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_08.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_09.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_10.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_11.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_12.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_13.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_14.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_15.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_16.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_17.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_18.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_19.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_20.png",
+      "gs://hairgator-styles/FCL/FCL1002/SR_FCL1002_21.png"
+    ]
+  },
+  "createdAt": "2025-12-02T12:04:30.596990",
+  "embedding": null
+}
