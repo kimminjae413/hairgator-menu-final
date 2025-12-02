@@ -905,26 +905,10 @@ class AIStudio {
           </div>
         </div>
 
-        <!-- 도해도 - 56파라미터 L/D/Section 매칭 기반 선별 -->
+        <!-- 도해도 뷰어 (스크린샷 참고 UI) -->
         <div class="diagrams-section large">
           <h3>📐 기술 매칭 도해도 (${mainDiagrams.length}장)</h3>
-          <div class="diagrams-grid-large">
-            ${mainDiagrams.map((d, idx) => {
-              // 정확한 매칭 확인 (✓ 표시가 있는 경우)
-              const hasExactMatch = d.matchedFeatures && d.matchedFeatures.some(f => f.includes('✓'));
-              // L/D/S 메타데이터 표시용
-              const ldsInfo = [d.lifting, d.direction, d.section].filter(Boolean).join(' ');
-              return `
-              <div class="diagram-item-large ${hasExactMatch ? 'matched exact' : d.matchedFeatures && d.matchedFeatures.length > 0 ? 'matched' : ''}" onclick="window.open('${d.url}', '_blank')">
-                <img src="${d.url}" alt="Step ${d.step}" title="${d.styleId} Step ${d.step} - ${ldsInfo || '분석중'}">
-                <div class="diagram-info">
-                  <span class="step-label">${d.styleId ? d.styleId.substring(0, 7) : ''} #${d.step}</span>
-                  ${ldsInfo ? `<span class="lds-badge">${ldsInfo}</span>` : ''}
-                </div>
-                ${hasExactMatch ? `<span class="match-badge exact">✓ 정확</span>` : d.matchedFeatures && d.matchedFeatures.length > 0 ? `<span class="match-badge">유사</span>` : ''}
-              </div>
-            `}).join('')}
-          </div>
+          ${this.generateDiagramViewer(mainDiagrams)}
         </div>
 
         <!-- 생성된 맞춤 레시피 -->
@@ -940,6 +924,196 @@ class AIStudio {
     // Mobile: Show canvas panel
     if (window.innerWidth <= 1024) {
       this.canvasPanel.classList.add('active');
+    }
+
+    // 도해도 뷰어 초기화
+    this.initDiagramViewer(mainDiagrams);
+  }
+
+  // ==================== 도해도 뷰어 ====================
+
+  // 도해도 뷰어 HTML 생성
+  generateDiagramViewer(diagrams) {
+    if (!diagrams || diagrams.length === 0) {
+      return '<p style="color: #999; text-align: center;">도해도가 없습니다.</p>';
+    }
+
+    const firstDiagram = diagrams[0];
+    const ldsInfo = [firstDiagram.lifting, firstDiagram.direction, firstDiagram.section].filter(Boolean).join(' ');
+
+    return `
+      <div class="diagram-viewer" id="diagram-viewer">
+        <!-- 메인 이미지 영역 -->
+        <div class="diagram-viewer-main">
+          <span class="diagram-step-indicator" id="diagram-step-indicator">Step 1 / ${diagrams.length}</span>
+          <button class="diagram-nav-btn prev" onclick="window.aiStudio.prevDiagram()" id="diagram-prev-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+          <img src="${firstDiagram.url}" alt="Step ${firstDiagram.step}" id="diagram-main-image">
+          <button class="diagram-nav-btn next" onclick="window.aiStudio.nextDiagram()" id="diagram-next-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 재생 컨트롤 -->
+        <div class="diagram-playback">
+          <button onclick="window.aiStudio.prevDiagram()" title="이전">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="19 20 9 12 19 4 19 20"></polygon>
+              <line x1="5" y1="19" x2="5" y2="5"></line>
+            </svg>
+          </button>
+          <button class="play-btn" onclick="window.aiStudio.toggleAutoPlay()" id="diagram-play-btn" title="자동 재생">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </button>
+          <button onclick="window.aiStudio.nextDiagram()" title="다음">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 4 15 12 5 20 5 4"></polygon>
+              <line x1="19" y1="5" x2="19" y2="19"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 썸네일 스트립 -->
+        <div class="diagram-thumbnails-strip" id="diagram-thumbnails">
+          ${diagrams.map((d, idx) => `
+            <div class="diagram-thumb-item ${idx === 0 ? 'active' : ''}"
+                 onclick="window.aiStudio.selectDiagram(${idx})"
+                 data-index="${idx}">
+              <img src="${d.url}" alt="Step ${d.step}">
+              <span class="thumb-step">${d.step || idx + 1}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- 자막 영역 -->
+        <div class="diagram-caption" id="diagram-caption">
+          <div class="diagram-caption-header">
+            <span class="diagram-caption-step" id="caption-step">Step ${firstDiagram.step || 1}</span>
+            ${ldsInfo ? `<span class="diagram-caption-lds" id="caption-lds">${ldsInfo}</span>` : '<span class="diagram-caption-lds" id="caption-lds"></span>'}
+          </div>
+          <div class="diagram-caption-text" id="caption-text">
+            ${firstDiagram.caption || firstDiagram.notes || '이 단계의 설명이 없습니다.'}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // 도해도 뷰어 초기화
+  initDiagramViewer(diagrams) {
+    this.currentDiagrams = diagrams;
+    this.currentDiagramIndex = 0;
+    this.autoPlayInterval = null;
+
+    // 초기 버튼 상태 설정
+    this.updateNavButtons();
+  }
+
+  // 이전 도해도
+  prevDiagram() {
+    if (this.currentDiagramIndex > 0) {
+      this.selectDiagram(this.currentDiagramIndex - 1);
+    }
+  }
+
+  // 다음 도해도
+  nextDiagram() {
+    if (this.currentDiagramIndex < this.currentDiagrams.length - 1) {
+      this.selectDiagram(this.currentDiagramIndex + 1);
+    }
+  }
+
+  // 특정 도해도 선택
+  selectDiagram(index) {
+    if (!this.currentDiagrams || index < 0 || index >= this.currentDiagrams.length) return;
+
+    this.currentDiagramIndex = index;
+    const diagram = this.currentDiagrams[index];
+    const ldsInfo = [diagram.lifting, diagram.direction, diagram.section].filter(Boolean).join(' ');
+
+    // 메인 이미지 업데이트
+    const mainImage = document.getElementById('diagram-main-image');
+    if (mainImage) mainImage.src = diagram.url;
+
+    // Step indicator 업데이트
+    const stepIndicator = document.getElementById('diagram-step-indicator');
+    if (stepIndicator) stepIndicator.textContent = `Step ${index + 1} / ${this.currentDiagrams.length}`;
+
+    // 썸네일 active 상태 업데이트
+    document.querySelectorAll('.diagram-thumb-item').forEach((thumb, i) => {
+      thumb.classList.toggle('active', i === index);
+    });
+
+    // 선택된 썸네일이 보이도록 스크롤
+    const thumbnailsContainer = document.getElementById('diagram-thumbnails');
+    const activeThumb = thumbnailsContainer?.querySelector('.diagram-thumb-item.active');
+    if (activeThumb && thumbnailsContainer) {
+      activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+
+    // 자막 업데이트
+    const captionStep = document.getElementById('caption-step');
+    if (captionStep) captionStep.textContent = `Step ${diagram.step || index + 1}`;
+
+    const captionLds = document.getElementById('caption-lds');
+    if (captionLds) captionLds.textContent = ldsInfo;
+
+    const captionText = document.getElementById('caption-text');
+    if (captionText) captionText.textContent = diagram.caption || diagram.notes || '이 단계의 설명이 없습니다.';
+
+    // 네비게이션 버튼 상태 업데이트
+    this.updateNavButtons();
+  }
+
+  // 네비게이션 버튼 상태 업데이트
+  updateNavButtons() {
+    const prevBtn = document.getElementById('diagram-prev-btn');
+    const nextBtn = document.getElementById('diagram-next-btn');
+
+    if (prevBtn) prevBtn.disabled = this.currentDiagramIndex === 0;
+    if (nextBtn) nextBtn.disabled = this.currentDiagramIndex >= this.currentDiagrams.length - 1;
+  }
+
+  // 자동 재생 토글
+  toggleAutoPlay() {
+    const playBtn = document.getElementById('diagram-play-btn');
+
+    if (this.autoPlayInterval) {
+      // 정지
+      clearInterval(this.autoPlayInterval);
+      this.autoPlayInterval = null;
+      if (playBtn) {
+        playBtn.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+        `;
+      }
+    } else {
+      // 재생
+      if (playBtn) {
+        playBtn.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+          </svg>
+        `;
+      }
+      this.autoPlayInterval = setInterval(() => {
+        if (this.currentDiagramIndex < this.currentDiagrams.length - 1) {
+          this.nextDiagram();
+        } else {
+          // 끝에 도달하면 처음으로
+          this.selectDiagram(0);
+        }
+      }, 3000); // 3초마다 전환
     }
   }
 
