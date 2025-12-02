@@ -38,11 +38,12 @@ class AIStudio {
   }
 
   setupEventListeners() {
-    // Send Message
+    // Send Message - Enter 키 이벤트
     this.chatInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        this.sendMessage();
+        // 전역 sendMessage 호출 (이미지 체크 포함)
+        sendMessage();
       }
     });
 
@@ -807,6 +808,7 @@ function handleImageSelect(event) {
   };
 
   console.log('📷 이미지 선택됨:', file.name);
+  console.log('📷 pendingImageData 설정됨:', pendingImageData);
 
   // 파일 입력 초기화
   event.target.value = '';
@@ -908,13 +910,17 @@ async function sendImageWithQuestion() {
 }
 
 async function sendMessage() {
+  console.log('🔍 sendMessage 호출됨, pendingImageData:', pendingImageData);
+
   // 이미지가 있으면 이미지와 함께 전송
-  if (pendingImageData) {
+  if (pendingImageData && pendingImageData.file) {
+    console.log('📷 이미지와 함께 전송 시작');
     await sendImageWithQuestion();
     return;
   }
 
   // 텍스트만 전송
+  console.log('📝 텍스트만 전송');
   if (window.aiStudio && typeof window.aiStudio.sendMessage === 'function') {
     window.aiStudio.sendMessage();
   } else {
