@@ -2732,6 +2732,114 @@ async function fetchCaptionContent(captionUrl) {
 }
 
 /**
+ * 자막 텍스트에서 기술 키워드 기반 도해도 선별
+ * @param {Array} top3Styles - 42포뮬러 기반 Top-3 스타일 (captionText 포함)
+ * @param {Object} params56 - 56파라미터 분석 결과
+ * @param {number} maxDiagrams - 최대 도해도 수
+ * @returns {Array} 기술 매칭 점수 순으로 정렬된 도해도 배열
+ */
+function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20) {
+  const targetLifting = params56.lifting_range || ['L4'];
+  const targetSection = params56.section_primary || 'Diagonal-Backward';
+  const targetVolume = params56.volume_zone || 'Medium';
+
+  // Lifting 코드 → 각도 매핑
+  const liftingToAngle = {
+    'L0': ['0도', '0°', '원렝스'],
+    'L1': ['22.5도', '22도', '22.5°'],
+    'L2': ['45도', '45°', '그래쥬에이션'],
+    'L3': ['67.5도', '67도', '68도'],
+    'L4': ['90도', '90°', '기본 레이어'],
+    'L5': ['112.5도', '112도', '113도'],
+    'L6': ['135도', '135°', '하이레이어'],
+    'L7': ['157.5도', '157도', '158도'],
+    'L8': ['180도', '180°', '극단 레이어']
+  };
+
+  // Section 영문 → 한글/약어 매핑
+  const sectionKeywords = {
+    'Horizontal': ['가로', 'HS', 'horizontal', '수평'],
+    'Diagonal-Backward': ['후대각', 'DBS', 'diagonal back', '뒤쪽'],
+    'Diagonal-Forward': ['전대각', 'DFS', 'diagonal forward', '앞쪽'],
+    'Vertical': ['세로', 'VS', 'vertical', '수직']
+  };
+
+  const scoredDiagrams = [];
+
+  top3Styles.forEach((style, styleRank) => {
+    const captionText = (style.captionText || '').toLowerCase();
+
+    style.diagrams.forEach((diagram, idx) => {
+      const stepNumber = diagram.step || (idx + 1);
+      let techScore = 0;
+      const matchedFeatures = [];
+
+      // 1. Lifting 키워드 매칭 (40점)
+      targetLifting.forEach(lifting => {
+        const angleKeywords = liftingToAngle[lifting] || [];
+        if (angleKeywords.some(kw => captionText.includes(kw.toLowerCase()))) {
+          techScore += 40;
+          matchedFeatures.push(lifting);
+        }
+        // 직접 L코드도 체크
+        if (captionText.includes(lifting.toLowerCase())) {
+          techScore += 40;
+          if (!matchedFeatures.includes(lifting)) matchedFeatures.push(lifting);
+        }
+      });
+
+      // 2. Section 키워드 매칭 (30점)
+      const sectionKws = sectionKeywords[targetSection] || [];
+      if (sectionKws.some(kw => captionText.includes(kw.toLowerCase()))) {
+        techScore += 30;
+        matchedFeatures.push(targetSection.split('-')[0]); // "Diagonal" 부분만
+      }
+
+      // 3. Volume 키워드 매칭 (20점)
+      const volumeMap = {
+        'High': ['정수리', '상단', 'top', 'crown', '볼륨'],
+        'Medium': ['중단', 'middle', '균형'],
+        'Low': ['하단', '무게', 'bottom', 'nape']
+      };
+      const volumeKws = volumeMap[targetVolume] || [];
+      if (volumeKws.some(kw => captionText.includes(kw.toLowerCase()))) {
+        techScore += 20;
+        matchedFeatures.push(targetVolume + ' Volume');
+      }
+
+      // 4. 스타일 순위 보너스 (1등: 15점, 2등: 10점, 3등: 5점)
+      techScore += (15 - styleRank * 5);
+
+      // 5. 앞쪽 단계 보너스 (step 1~5에 추가 점수)
+      if (stepNumber <= 5) {
+        techScore += (6 - stepNumber) * 2;
+      }
+
+      scoredDiagrams.push({
+        styleId: style.styleId,
+        step: stepNumber,
+        url: diagram.url,
+        techScore: techScore,
+        matchedFeatures: matchedFeatures,
+        styleRank: styleRank + 1
+      });
+    });
+  });
+
+  // 기술 점수 순으로 정렬
+  scoredDiagrams.sort((a, b) => b.techScore - a.techScore);
+
+  const selected = scoredDiagrams.slice(0, maxDiagrams);
+
+  console.log(`🎯 기술 기반 도해도 선별 (${selected.length}장):`);
+  selected.slice(0, 5).forEach((d, i) => {
+    console.log(`  ${i+1}. ${d.styleId} step${d.step} (${d.techScore}점) - ${d.matchedFeatures.join(', ') || '기본매칭'}`);
+  });
+
+  return selected;
+}
+
+/**
  * 특성 기반 스타일 점수 계산 - 42포뮬러 기반 (8가지 기준, 150점 만점)
  */
 function calculateFeatureScore(style, params56, captionText) {
@@ -3116,7 +3224,10 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     // 6. Top-3를 참고하여 맞춤 레시피 생성 (56파라미터 전달)
     const customRecipe = await generateCustomRecipe(params56, top3, geminiKey);
 
-    // 7. 결과 구성 - 56파라미터 전체 포함
+    // 7. 기술 기반 도해도 선별 (lifting/section/volume 키워드 매칭)
+    const selectedDiagrams = selectDiagramsByTechnique(top3, params56, 15);
+
+    // 8. 결과 구성 - 56파라미터 전체 포함
     const result = {
       // 56개 파라미터 전체 (프론트엔드에서 활용 가능)
       params56: params56,
@@ -3160,8 +3271,14 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       // 생성된 맞춤 레시피
       customRecipe: customRecipe,
 
-      // 대표 도해도 (Top-1의 도해도)
-      mainDiagrams: top3[0]?.diagrams || []
+      // 기술 기반 선별된 도해도 (lifting/section 매칭)
+      mainDiagrams: selectedDiagrams.map(d => ({
+        step: d.step,
+        url: d.url,
+        styleId: d.styleId,
+        techScore: d.techScore,
+        matchedFeatures: d.matchedFeatures
+      }))
     };
 
     console.log(`✅ 맞춤 레시피 생성 완료 (56파라미터 + 42포뮬러 기반)`);

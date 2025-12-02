@@ -905,14 +905,15 @@ class AIStudio {
           </div>
         </div>
 
-        <!-- 도해도 - 크게 표시 -->
+        <!-- 도해도 - 기술 매칭 기반 선별 -->
         <div class="diagrams-section large">
-          <h3>📐 도해도 (${mainDiagrams.length}장)</h3>
+          <h3>📐 기술 매칭 도해도 (${mainDiagrams.length}장)</h3>
           <div class="diagrams-grid-large">
             ${mainDiagrams.map((d, idx) => `
-              <div class="diagram-item-large" onclick="window.open('${d.url}', '_blank')">
-                <img src="${d.url}" alt="Step ${d.step}" title="Step ${d.step}">
-                <span class="step-label">Step ${d.step}</span>
+              <div class="diagram-item-large ${d.matchedFeatures && d.matchedFeatures.length > 0 ? 'matched' : ''}" onclick="window.open('${d.url}', '_blank')">
+                <img src="${d.url}" alt="Step ${d.step}" title="${d.styleId} Step ${d.step}${d.matchedFeatures && d.matchedFeatures.length > 0 ? ' - ' + d.matchedFeatures.join(', ') : ''}">
+                <span class="step-label">${d.styleId ? d.styleId.substring(0, 7) : ''} #${d.step}</span>
+                ${d.matchedFeatures && d.matchedFeatures.length > 0 ? `<span class="match-badge">${d.matchedFeatures[0]}</span>` : ''}
               </div>
             `).join('')}
           </div>
