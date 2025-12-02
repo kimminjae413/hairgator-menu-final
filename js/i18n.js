@@ -92,9 +92,9 @@ const HAIRGATOR_I18N = {
 
       // 프로필 사진
       profilePhoto: '📷 프로필 사진',
-      profilePhotoHint: '💡 이 사진은 3분간 화면 조작이 없을 때',
-      profilePhotoHint2: '대기 화면',
-      profilePhotoHint3: '으로 표시됩니다.',
+      profilePhotoHint: '',
+      profilePhotoHint2: '',
+      profilePhotoHint3: '',
       selectPhoto: '사진 선택',
       deletePhoto: '사진 삭제',
       profileDeleted: '프로필 사진이 삭제되었습니다.',
@@ -531,9 +531,9 @@ const HAIRGATOR_I18N = {
 
       // Profile photo
       profilePhoto: '📷 Profile Photo',
-      profilePhotoHint: '💡 This photo will be displayed as',
-      profilePhotoHint2: 'standby screen',
-      profilePhotoHint3: 'after 3 min of inactivity.',
+      profilePhotoHint: '',
+      profilePhotoHint2: '',
+      profilePhotoHint3: '',
       selectPhoto: 'Select Photo',
       deletePhoto: 'Delete Photo',
       profileDeleted: 'Profile photo deleted.',
@@ -954,9 +954,9 @@ const HAIRGATOR_I18N = {
 
       // プロフィール写真
       profilePhoto: '📷 プロフィール写真',
-      profilePhotoHint: '💡 この写真は3分間操作がない場合',
-      profilePhotoHint2: '待機画面',
-      profilePhotoHint3: 'として表示されます。',
+      profilePhotoHint: '',
+      profilePhotoHint2: '',
+      profilePhotoHint3: '',
       selectPhoto: '写真を選択',
       deletePhoto: '写真を削除',
       profileDeleted: 'プロフィール写真が削除されました。',
@@ -1377,9 +1377,9 @@ const HAIRGATOR_I18N = {
 
       // 个人照片
       profilePhoto: '📷 个人照片',
-      profilePhotoHint: '💡 此照片将在3分钟无操作后',
-      profilePhotoHint2: '待机画面',
-      profilePhotoHint3: '显示。',
+      profilePhotoHint: '',
+      profilePhotoHint2: '',
+      profilePhotoHint3: '',
       selectPhoto: '选择照片',
       deletePhoto: '删除照片',
       profileDeleted: '个人照片已删除。',
@@ -1800,9 +1800,9 @@ const HAIRGATOR_I18N = {
 
       // Ảnh hồ sơ
       profilePhoto: '📷 Ảnh hồ sơ',
-      profilePhotoHint: '💡 Ảnh này sẽ hiển thị như',
-      profilePhotoHint2: 'màn hình chờ',
-      profilePhotoHint3: 'sau 3 phút không hoạt động.',
+      profilePhotoHint: '',
+      profilePhotoHint2: '',
+      profilePhotoHint3: '',
       selectPhoto: 'Chọn ảnh',
       deletePhoto: 'Xóa ảnh',
       profileDeleted: 'Đã xóa ảnh hồ sơ.',

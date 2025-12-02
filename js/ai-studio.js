@@ -23,30 +23,47 @@ class AIStudio {
     this.canvasEmpty = document.getElementById('canvas-empty');
     this.canvasResult = document.getElementById('canvas-result');
 
-    // 불나비 사용자 프로필 사진 가져오기
-    this.loadUserPhoto();
-
     this.init();
   }
 
-  // 사용자 프로필 사진 로드 (Firebase Auth 또는 불나비)
-  loadUserPhoto() {
+  // 사용자 프로필 사진 로드 (Firebase userSettings → localStorage → 불나비)
+  async loadUserPhoto() {
     try {
-      // 1. Firebase Auth에서 프로필 사진 가져오기
-      if (firebase && firebase.auth && firebase.auth().currentUser) {
-        const firebaseUser = firebase.auth().currentUser;
-        if (firebaseUser.photoURL) {
-          this.userPhotoUrl = firebaseUser.photoURL;
-          console.log('👤 Firebase 프로필 사진 로드됨');
-          return;
+      // 1. Firebase userSettings에서 프로필 사진 가져오기
+      if (window.db) {
+        const userStr = localStorage.getItem('bullnabi_user');
+        if (userStr) {
+          const userInfo = JSON.parse(userStr);
+          const docId = `${userInfo.name}_${userInfo.phone || '0000'}`;
+
+          try {
+            const doc = await window.db.collection('userSettings').doc(docId).get();
+            if (doc.exists) {
+              const data = doc.data();
+              if (data.profileImage) {
+                this.userPhotoUrl = data.profileImage;
+                console.log('👤 Firebase userSettings 프로필 사진 로드됨');
+                return;
+              }
+            }
+          } catch (fbError) {
+            console.warn('Firebase 프로필 사진 로드 실패:', fbError);
+          }
         }
       }
 
-      // 2. 불나비 사용자 정보에서 프로필 사진 가져오기
+      // 2. localStorage에서 프로필 사진 가져오기 (캐시)
+      const savedProfileImage = localStorage.getItem('hairgator_profile_image');
+      if (savedProfileImage) {
+        this.userPhotoUrl = savedProfileImage;
+        console.log('👤 localStorage 프로필 사진 로드됨');
+        return;
+      }
+
+      // 3. 불나비 사용자 정보에서 프로필 사진 가져오기
       const userStr = localStorage.getItem('bullnabi_user');
       if (userStr) {
         const userInfo = JSON.parse(userStr);
-        // 불나비에서 제공하는 프로필 사진 URL (다양한 키 체크)
         this.userPhotoUrl = userInfo.photoUrl || userInfo.profileImage || userInfo.photo || userInfo.profilePhoto || userInfo.image || null;
         if (this.userPhotoUrl) {
           console.log('👤 불나비 프로필 사진 로드됨');
@@ -80,6 +97,9 @@ class AIStudio {
 
     // Firebase Auth 리스너 설정 (프로필 사진 업데이트용)
     this.setupAuthListener();
+
+    // 사용자 프로필 사진 로드 (Firebase userSettings에서)
+    await this.loadUserPhoto();
 
     // User History
     await this.initUserHistory();
