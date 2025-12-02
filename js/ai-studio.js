@@ -9,6 +9,7 @@ class AIStudio {
     this.currentLanguage = this.getStoredLanguage();
     this.conversationHistory = [];
     this.currentUserId = null;
+    this.userPhotoUrl = null; // 사용자 프로필 사진 URL
     this.HISTORY_EXPIRE_DAYS = 7;
     this.MAX_MESSAGES = 200;
 
@@ -22,7 +23,25 @@ class AIStudio {
     this.canvasEmpty = document.getElementById('canvas-empty');
     this.canvasResult = document.getElementById('canvas-result');
 
+    // 불나비 사용자 프로필 사진 가져오기
+    this.loadUserPhoto();
+
     this.init();
+  }
+
+  // 불나비 사용자 프로필 사진 로드
+  loadUserPhoto() {
+    try {
+      const userStr = localStorage.getItem('bullnabi_user');
+      if (userStr) {
+        const userInfo = JSON.parse(userStr);
+        // 불나비에서 제공하는 프로필 사진 URL (photoUrl, profileImage, photo 등 다양한 키 체크)
+        this.userPhotoUrl = userInfo.photoUrl || userInfo.profileImage || userInfo.photo || userInfo.profilePhoto || userInfo.image || null;
+        console.log('👤 사용자 프로필 사진:', this.userPhotoUrl ? '로드됨' : '없음');
+      }
+    } catch (e) {
+      console.warn('프로필 사진 로드 실패:', e);
+    }
   }
 
   async init() {
@@ -595,7 +614,18 @@ class AIStudio {
     messageDiv.className = `message ${sender}`;
     if (animate) messageDiv.style.animation = 'messageSlide 0.3s ease';
 
-    const avatar = sender === 'bot' ? '🤖' : '👤';
+    // 아바타: 봇은 이모지, 사용자는 프로필 사진 또는 기본 아이콘
+    let avatarHtml;
+    if (sender === 'bot') {
+      avatarHtml = `<div class="message-avatar">🤖</div>`;
+    } else {
+      // 사용자 프로필 사진이 있으면 이미지로, 없으면 기본 아이콘
+      if (this.userPhotoUrl) {
+        avatarHtml = `<div class="message-avatar user-photo"><img src="${this.userPhotoUrl}" alt="프로필" onerror="this.parentElement.innerHTML='👤'"></div>`;
+      } else {
+        avatarHtml = `<div class="message-avatar">👤</div>`;
+      }
+    }
 
     let canvasButton = '';
     if (canvasData) {
@@ -611,7 +641,7 @@ class AIStudio {
     }
 
     messageDiv.innerHTML = `
-      <div class="message-avatar">${avatar}</div>
+      ${avatarHtml}
       <div class="message-content">
         ${this.formatMessage(content)}
         ${canvasButton}

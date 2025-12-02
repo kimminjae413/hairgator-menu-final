@@ -250,6 +250,20 @@ body.ai-studio-page {
   background: #f0f0f0;
 }
 
+/* 사용자 프로필 사진 */
+.message-avatar.user-photo {
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.message-avatar.user-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
 .message-content {
   padding: var(--space-md);
   border-radius: var(--radius-lg);
