@@ -2669,17 +2669,40 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 - ["L7"]: 157.5도 (Very High Layer)
 - ["L8"]: 180도 (Extreme Layer)
 
-🎯 판단 기준:
-- 뒷머리가 뾰족하게 들어올려짐 → L6~L8 (High Layer)
-- 층이 자연스럽게 흐름 → L4~L5 (Mid Layer)
-- 하단에 무게감, 층 살짝 → L2~L3 (Graduation)
+🎯 판단 기준 (무게감 기반):
+- 뒷머리가 뾰족하게 들어올려짐, 매우 가벼움 → L6~L8 (High Layer)
+- 층이 많지만 전체적으로 가벼움 → L4~L5 (Mid Layer)
+- **층이 있지만 무게감 유지** → L2~L3 (Low Layer/Graduation) ⭐
 - 무게선이 일자로 명확함 → L0~L1 (One Length)
 
-【SECTION PRIMARY】
+⚠️ 무게감 있는 레이어 (Low Layer) 판별:
+- 하단에 무게감이 있으면서 층이 살짝 → **L2 (45°) ~ L3 (67.5°)**
+- 끝이 무겁게 떨어지는 스타일 → L4(90°)가 아닌 **L2~L3**!
+- 윈드컷, 허쉬컷 같은 차분한 레이어 → **L2~L3 권장**
+
+❌ 흔한 오류:
+- 무게감 있는 미디엄 레이어를 모두 L4(90°)로 분류 (틀림!)
+- 차분하게 흘러내리는 스타일을 High Layer로 분류 (틀림!)
+
+【SECTION PRIMARY - 존별 적용】⭐⭐ 중요!
+섹션은 **존(Zone)별로 다르게 적용**됩니다:
+
+| 존 | 권장 섹션 | 설명 |
+|-----|---------|------|
+| Back | DBS (Diagonal-Backward) | 볼륨 형성, 층 형성 |
+| Side | VS (Vertical) | 얼굴 라인 유지, A라인 형성 |
+| Top | DBS or VS | 볼륨에 따라 선택 |
+| Fringe | HS (Horizontal) | 앞머리 라인 정리 |
+
 - Horizontal: 가로 섹션 (원렝스/그래쥬에이션 기본)
-- Diagonal-Backward: 후대각 (뒤로 흐르는 층)
+- Diagonal-Backward: 후대각 (뒤로 흐르는 층, **Back 존에 적합**)
 - Diagonal-Forward: 전대각 (앞으로 흐르는 층)
-- Vertical: 세로 섹션 (레이어 기본)
+- Vertical: 세로 섹션 (레이어 기본, **Side 존에 적합**)
+
+⚠️ 섹션 선택 규칙:
+- Back → DBS (볼륨과 층)
+- Side → **VS 권장** (얼굴 라인 유지, DBS는 과도하게 가벼워짐)
+- Top → 볼륨 원하면 DBS, 자연스러우면 VS
 
 【VOLUME ZONE】
 - Low: 하단 볼륨 (0~44도, 무게감 있는 스타일)
@@ -3469,9 +3492,47 @@ ${recipeTexts}
 - Side Bang은 가운데가 짧아도 **양쪽은 광대~턱까지** 흘러내리는 게 정석!
 - "Eyebrow" 길이만 언급하면 안 됩니다 - 사이드 길이도 명시!
 
+## ⚠️ 중요 규칙 - 존별 섹션/리프팅/디렉션 ⭐⭐⭐
+**❌ L4(90°) + DBS 남발 금지! 존별로 다르게 적용하세요!**
+
+### 섹션 (Section) - 존별 적용
+| 존 | 권장 섹션 | 이유 |
+|-----|---------|------|
+| Back | DBS (Diagonal-Backward) | 볼륨과 층 형성 |
+| Side | **VS (Vertical)** | 얼굴 라인 유지, A라인 형성 |
+| Top | DBS or VS | 볼륨에 따라 선택 |
+| Fringe | HS (Horizontal) | 앞머리 라인 정리 |
+
+⚠️ Side에 DBS 사용 시 얼굴쪽이 과도하게 가벼워지거나 파먹을 위험!
+
+### 리프팅 (Lifting) - 무게감 기반 ⭐
+| 스타일 특성 | 권장 각도 | 설명 |
+|-----------|---------|------|
+| High Layer (가벼움) | L6~L8 (135°~180°) | 뒷머리 뾰족, 볼륨 최대 |
+| Mid Layer (보통) | L4~L5 (90°~112.5°) | 일반적인 레이어 |
+| **Low Layer (무게감)** | **L2~L3 (45°~67.5°)** | 차분하게 흘러내림 ⭐ |
+| One Length | L0~L1 (0°~22.5°) | 무게선 명확 |
+
+⚠️ 윈드컷, 허쉬컷 등 **무게감 있는 레이어**는 L2~L3 사용!
+❌ 모든 레이어에 L4(90°) 적용하면 안 됩니다!
+
+### 디렉션 (Direction) - 얼굴 감싸기 ⭐
+| 존 | 권장 방향 | 효과 |
+|-----|---------|------|
+| Back | D4 (On Base) | 수평 층 형성 |
+| Side | **D8 (Over-direction)** | 앞이 길어지며 얼굴 감싸기 |
+| Top | D4 | 자연스러운 볼륨 |
+
+⚠️ Side에 D4만 사용하면 앞머리가 너무 짧아집니다!
+→ **D8 (뒤로 당겨서 자름)**을 적용해야 A라인으로 얼굴을 예쁘게 감쌉니다!
+
 ## ✨ 요청사항
 위 56파라미터와 참고 레시피들의 장점을 조합하여, 고객 요청 스타일에 최적화된 커스텀 레시피를 작성해주세요.
-⚠️ Outline Shape와 Fringe Length 규칙을 반드시 준수하세요!
+
+⚠️ **반드시 준수할 규칙:**
+1. Outline Shape 규칙 (여성 레이어 = Round/Curved)
+2. Fringe Length 규칙 (사이드 길이 명시)
+3. **존별 Section/Lifting/Direction 규칙** (L4+DBS 남발 금지!)
 
 다음 형식으로 작성:
 
@@ -3481,15 +3542,15 @@ ${recipeTexts}
 ### 2. 42포뮬러 요약
 - Length: ${params56.length_category}
 - Cut Form: ${params56.cut_form}
-- Lifting: ${liftingStr}
-- Section: ${params56.section_primary}
+- Outline: ${params56.outline_shape || 'Round'}
 - Weight: ${params56.weight_distribution}
 
-### 3. 커트 순서
-- **Step 1**: 베이스 라인 설정 (섹션, 각도 명시)
-- **Step 2**: ...
-- **Step 3**: ...
-(필요한 만큼, 각 단계별 리프팅 각도와 섹션 명시)
+### 3. 커트 순서 (존별 Section/Lifting/Direction 명시!)
+- **Step 1: Back 존** - Section: DBS, Lifting: L2~L3(45~67.5°), Direction: D4
+- **Step 2: Side 존** - Section: **VS**, Lifting: L3(67.5°), Direction: **D8** ⭐
+- **Step 3: Top 존** - Section: DBS/VS, Lifting: L4(90°), Direction: D4
+- **Step 4: Fringe** - Section: HS, 길이/스타일 명시
+(각 단계에서 존, 섹션, 리프팅 각도, 디렉션을 **모두** 명시하세요!)
 
 ### 4. 핵심 포인트 (3가지)
 1. ...
