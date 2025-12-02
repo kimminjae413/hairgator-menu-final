@@ -10,7 +10,6 @@ const CORE_CACHE = [
   '/css/main.css',
   '/js/menu.js',
   '/js/password-recovery.js',
-  '/js/face-swap-backend.js',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
 ];
