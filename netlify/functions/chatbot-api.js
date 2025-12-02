@@ -2618,19 +2618,34 @@ const LENGTH_TO_SERIES = {
  * Gemini Vision으로 이미지 분석 - 56개 파라미터 + 42포뮬러 기반 추출
  */
 async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
-  const systemPrompt = `당신은 2WAY CUT 시스템 전문가입니다.
+  const systemPrompt = `당신은 "HAIRGATOR AI", 20년 경력의 2WAY CUT 시스템 전문가입니다.
 이미지 속 헤어스타일을 **56개 파라미터**로 분석하여 JSON 형식으로 출력하세요.
 
-【LENGTH 분류】⭐ 가장 중요!
-뒷머리 가장 긴 부분이 신체의 어느 위치까지 닿는지:
-- A: 가슴 아래~허리 (65cm, 매우 긴 머리)
-- B: 가슴 중간 (50cm, 롱헤어)
-- C: 쇄골~가슴 위 (40cm, 미디엄 롱)
-- D: 어깨선 (35cm, 어깨에 닿는 중단발) ⭐ 가장 많이 사용
-- E: 어깨 위 2~3cm (30cm, 단발)
-- F: 턱 아래~목 (25cm, 보브컷)
-- G: 턱선 (20cm, 숏보브)
-- H: 귀~턱 위 (15cm, 숏컷/픽시)
+【LENGTH 분류 - Body Landmark 기반】⭐⭐⭐ 가장 중요!
+
+**신체 부위(Body Landmark)를 기준으로 가장 긴 머리카락 끝이 어디에 닿는지 판단:**
+
+| 코드 | 신체 기준점 | 설명 |
+|-----|-----------|------|
+| H | 귀볼(EAR LOBE) 높이 또는 위 | 숏컷, 픽시컷, 네이프 완전 노출 |
+| G | 턱선(JAWLINE/CHIN) | 숏보브, 목 완전히 보임 |
+| F | 턱 아래, 어깨 위 | 보브컷, 목 일부 가림 |
+| E | 어깨선/쇄골(SHOULDER/COLLARBONE) | 어깨에 닿는 단발 |
+| D | 쇄골 아래, 겨드랑이 위 | 중단발 |
+| C | 겨드랑이/가슴선(ARMPIT/CHEST) | 롱헤어 |
+| B | 가슴 아래, 중간 등(MID-BACK) | 매우 긴 머리 |
+| A | 허리/배꼽(WAIST/NAVEL) 이하 | 초장발 |
+
+⚠️ 숏컷 판별 필수 체크:
+1. 목(NECK)이 완전히 보이는가? → G 또는 H!
+2. 머리카락이 귀 높이 또는 그 위인가? → H Length!
+3. 머리카락이 턱선에 있는가? → G Length!
+4. 어깨에 전혀 닿지 않는가? → F, G, H 중 하나!
+
+❌ 흔한 실수:
+- 귀 높이 숏컷을 E로 분류 (틀림! → H가 정답)
+- 턱선 보브를 E로 분류 (틀림! → G가 정답)
+- 목이 보이는 짧은 머리를 E, F로 분류 (틀림! → G 또는 H)
 
 【CUT FORM】
 - L (Layer): 90도 이상 리프팅, 전체적으로 가벼움, 층 많음
