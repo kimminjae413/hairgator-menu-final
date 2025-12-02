@@ -359,6 +359,10 @@ exports.handler = async (event, context) => {
       case 'analyze_image':
         return await analyzeImage(payload, OPENAI_KEY);
 
+      // ⭐ 이미지+질문 분석 (Gemini Vision)
+      case 'analyze_image_with_question':
+        return await analyzeImageWithQuestion(payload, GEMINI_KEY);
+
       case 'generate_recipe':
         return await generateRecipe(payload, OPENAI_KEY, GEMINI_KEY, SUPABASE_URL, SUPABASE_KEY);
 
@@ -788,6 +792,140 @@ Answer in 2 sentences:`,
   };
 
   return prompts[language] || prompts['korean'];
+}
+
+// ==================== 이미지+질문 분석 (Gemini Vision) ====================
+async function analyzeImageWithQuestion(payload, geminiKey) {
+  const { image_base64, mime_type, question, language } = payload;
+
+  console.log(`📸 Gemini Vision 이미지 분석 시작`);
+  console.log(`📝 질문: ${question}`);
+
+  const systemPrompt = `당신은 CHRISKI 2WAY CUT 시스템을 완벽히 이해한 헤어 전문가입니다.
+
+## 내부 분석 (전문 용어 사용)
+이미지를 보고 다음을 정확히 분석하세요:
+
+### 🎯 LENGTH 분류 (가장 중요!)
+머리카락이 **신체의 어느 위치까지 닿는지** 확인:
+- A Length (5cm): 이마선 - 픽시컷, 매우 짧은 커트
+- B Length (10cm): 눈썹선 - 짧은 숏컷
+- C Length (15cm): 입술선 - 숏밥, 턱선 위
+- D Length (25cm): 턱선 - 단발, 보브컷 ⭐ 기준점
+- E Length (35cm): 어깨선 - 미디엄, 어깨에 닿는 길이
+- F Length (40cm): 쇄골 - 미디엄롱, 가슴 위
+- G Length (50cm): 가슴 중간 - 롱헤어
+- H Length (65cm): 가슴 아래 - 허리까지 오는 긴 머리
+
+### 분석 순서:
+1. 뒷머리 가장 긴 부분이 어디까지 닿는지 확인
+2. 신체 랜드마크(턱, 어깨, 쇄골)와 비교
+3. 턱선 = D Length, 어깨선 = E Length 기준
+
+### 형태(Cut Form):
+- O (One Length/원렝스): 무게선이 있는 일자 커트
+- G (Graduation/그래쥬에이션): 0-89도, 층이 살짝 있음
+- L (Layer/레이어): 90도 이상, 가벼운 층
+
+## 외부 응답 (자연어로!)
+❌ 금지: "H1SQ_DB1", "L4", "DBS NO.2" 같은 코드
+✅ 필수: "턱선 길이의 단정한 보브", "어깨선까지 오는 미디엄"
+
+## 응답 형식
+**📏 길이 분석**
+- (A~H 중 하나) Length: (구체적 설명)
+
+**✂️ 형태 분석**
+- (O/G/L 중 하나): (특징 설명)
+
+**💇 스타일 특징**
+- (볼륨, 질감, 앞머리 등)
+
+**💡 추천 포인트**
+- (이 스타일이 어울리는 얼굴형, 관리법 등)`;
+
+  const userPrompt = question || '이 헤어스타일을 분석해주세요.';
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: systemPrompt + '\n\n사용자 질문: ' + userPrompt },
+                {
+                  inline_data: {
+                    mime_type: mime_type,
+                    data: image_base64
+                  }
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 2000
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Gemini API Error:', response.status, errorText);
+      throw new Error(`Gemini API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    console.log('✅ Gemini Vision 분석 완료');
+    console.log('📝 응답 미리보기:', responseText.substring(0, 200));
+
+    // Length 추출
+    const lengthMatch = responseText.match(/([A-H])\s*Length/i);
+    const extractedLength = lengthMatch ? lengthMatch[1].toUpperCase() + ' Length' : null;
+
+    // 형태 추출
+    let extractedForm = null;
+    if (responseText.includes('One Length') || responseText.includes('원렝스')) {
+      extractedForm = 'O (One Length)';
+    } else if (responseText.includes('Graduation') || responseText.includes('그래쥬에이션')) {
+      extractedForm = 'G (Graduation)';
+    } else if (responseText.includes('Layer') || responseText.includes('레이어')) {
+      extractedForm = 'L (Layer)';
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          response: responseText,
+          parameters: {
+            length_category: extractedLength,
+            cut_form: extractedForm
+          }
+        }
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 analyzeImageWithQuestion Error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: error.message
+      })
+    };
+  }
 }
 
 // ==================== 이미지 분석 (성별 통합!) ====================

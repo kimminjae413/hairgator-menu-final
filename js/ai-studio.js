@@ -768,12 +768,153 @@ function clearChat() {
   }
 }
 
-// 이미지 업로드 비활성화 - 멀티모달 정확도 개선 후 복구 예정
-// function uploadImage() {
-//   document.getElementById('image-upload').click();
-// }
+// ==================== 이미지 업로드 함수들 ====================
 
-function sendMessage() {
+// 대기 중인 이미지 저장
+let pendingImageData = null;
+
+function triggerImageUpload() {
+  document.getElementById('image-upload').click();
+}
+
+function handleImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // 유효성 검사
+  if (!file.type.startsWith('image/')) {
+    alert('이미지 파일만 업로드 가능합니다.');
+    return;
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    alert('이미지 크기는 10MB 이하여야 합니다.');
+    return;
+  }
+
+  // 미리보기 표시
+  const imageUrl = URL.createObjectURL(file);
+  const previewArea = document.getElementById('image-preview-area');
+  const previewImage = document.getElementById('preview-image');
+
+  previewImage.src = imageUrl;
+  previewArea.style.display = 'block';
+
+  // 파일 데이터 저장
+  pendingImageData = {
+    file: file,
+    url: imageUrl
+  };
+
+  console.log('📷 이미지 선택됨:', file.name);
+
+  // 파일 입력 초기화
+  event.target.value = '';
+}
+
+function removePreviewImage() {
+  const previewArea = document.getElementById('image-preview-area');
+  const previewImage = document.getElementById('preview-image');
+
+  if (pendingImageData && pendingImageData.url) {
+    URL.revokeObjectURL(pendingImageData.url);
+  }
+
+  previewImage.src = '';
+  previewArea.style.display = 'none';
+  pendingImageData = null;
+
+  console.log('🗑️ 이미지 제거됨');
+}
+
+async function sendImageWithQuestion() {
+  if (!pendingImageData) return false;
+
+  const textInput = document.getElementById('chat-input');
+  const question = textInput.value.trim() || '이 헤어스타일을 분석해주세요';
+
+  // 사용자 메시지 표시 (이미지 + 텍스트)
+  window.aiStudio.addMessageToUI('user', `
+    <img src="${pendingImageData.url}" style="max-width: 200px; border-radius: 8px; margin-bottom: 8px;" alt="업로드된 이미지">
+    <p>${question}</p>
+  `);
+
+  // 미리보기 숨기기
+  document.getElementById('image-preview-area').style.display = 'none';
+
+  // 입력창 초기화
+  textInput.value = '';
+
+  // 타이핑 표시
+  window.aiStudio.showTypingIndicator();
+
+  try {
+    // Base64 변환
+    const base64 = await window.aiStudio.fileToBase64(pendingImageData.file);
+
+    console.log('📤 이미지 분석 API 호출...');
+
+    // API 호출 - Gemini Vision
+    const response = await fetch(window.aiStudio.apiEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'analyze_image_with_question',
+        payload: {
+          image_base64: base64,
+          mime_type: pendingImageData.file.type,
+          question: question,
+          language: window.aiStudio.currentLanguage
+        }
+      })
+    });
+
+    const result = await response.json();
+    console.log('📥 API 응답:', result);
+
+    window.aiStudio.hideTypingIndicator();
+
+    if (result.success && result.data) {
+      // 응답 표시
+      const responseContent = result.data.response || result.data.analysis || JSON.stringify(result.data);
+      window.aiStudio.addMessageToUI('bot', responseContent, true, {
+        type: 'analysis',
+        imageUrl: pendingImageData.url,
+        params: result.data.parameters || result.data
+      });
+
+      // 캔버스에 표시
+      window.aiStudio.showCanvas({
+        type: 'analysis',
+        imageUrl: pendingImageData.url,
+        params: result.data.parameters || result.data,
+        rawContent: responseContent
+      });
+
+    } else {
+      window.aiStudio.addMessageToUI('bot', result.error || '이미지 분석에 실패했습니다. 다시 시도해주세요.');
+    }
+
+  } catch (error) {
+    window.aiStudio.hideTypingIndicator();
+    window.aiStudio.addMessageToUI('bot', '이미지 분석 중 오류가 발생했습니다.');
+    console.error('❌ 이미지 분석 오류:', error);
+  }
+
+  // 이미지 데이터 초기화
+  pendingImageData = null;
+
+  return true;
+}
+
+async function sendMessage() {
+  // 이미지가 있으면 이미지와 함께 전송
+  if (pendingImageData) {
+    await sendImageWithQuestion();
+    return;
+  }
+
+  // 텍스트만 전송
   if (window.aiStudio && typeof window.aiStudio.sendMessage === 'function') {
     window.aiStudio.sendMessage();
   } else {
