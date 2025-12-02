@@ -52,8 +52,186 @@ class AIStudio {
       tab.addEventListener('click', (e) => {
         document.querySelectorAll('.canvas-tab').forEach(t => t.classList.remove('active'));
         e.target.classList.add('active');
+
+        const tabName = e.target.dataset.tab;
+        this.switchCanvasTab(tabName);
       });
     });
+  }
+
+  // 캔버스 탭 전환
+  switchCanvasTab(tabName) {
+    const resultContainer = document.getElementById('canvas-result');
+    const historyContainer = document.getElementById('canvas-history');
+    const emptyState = document.getElementById('canvas-empty');
+
+    if (tabName === 'result') {
+      // 결과 탭
+      if (historyContainer) historyContainer.classList.add('hidden');
+      // 결과가 있으면 결과 보여주고, 없으면 empty state
+      if (resultContainer && resultContainer.innerHTML.trim()) {
+        resultContainer.classList.remove('hidden');
+        if (emptyState) emptyState.classList.add('hidden');
+      } else {
+        if (resultContainer) resultContainer.classList.add('hidden');
+        if (emptyState) emptyState.classList.remove('hidden');
+      }
+    } else if (tabName === 'history') {
+      // 히스토리 탭
+      if (resultContainer) resultContainer.classList.add('hidden');
+      if (emptyState) emptyState.classList.add('hidden');
+      if (historyContainer) historyContainer.classList.remove('hidden');
+      this.loadHistoryToCanvas();
+    }
+  }
+
+  // 히스토리를 캔버스에 로드
+  async loadHistoryToCanvas() {
+    const historyList = document.getElementById('history-list');
+    const historyEmpty = document.getElementById('history-empty');
+
+    if (!historyList) return;
+
+    // Firebase에서 분석 히스토리 가져오기
+    try {
+      const analysisHistory = await this.getAnalysisHistory();
+
+      if (analysisHistory.length === 0) {
+        historyList.style.display = 'none';
+        if (historyEmpty) historyEmpty.style.display = 'flex';
+        return;
+      }
+
+      historyList.style.display = 'block';
+      if (historyEmpty) historyEmpty.style.display = 'none';
+
+      historyList.innerHTML = analysisHistory.map((item, idx) => `
+        <div class="history-item" onclick="window.aiStudio.showHistoryDetail(${idx})">
+          <div class="history-item-thumb">
+            ${item.imageUrl ? `<img src="${item.imageUrl}" alt="분석 이미지">` : '<span>📷</span>'}
+          </div>
+          <div class="history-item-info">
+            <div class="history-item-title">${item.title || '이미지 분석'}</div>
+            <div class="history-item-meta">
+              <span>${item.length || ''}</span>
+              <span>${item.form || ''}</span>
+            </div>
+            <div class="history-item-date">${this.formatDate(item.timestamp)}</div>
+          </div>
+          <button class="history-item-delete" onclick="event.stopPropagation(); window.aiStudio.deleteHistoryItem(${idx})" title="삭제">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+            </svg>
+          </button>
+        </div>
+      `).join('');
+
+    } catch (e) {
+      console.error('❌ 히스토리 로드 실패:', e);
+      historyList.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">히스토리를 불러올 수 없습니다.</p>';
+    }
+  }
+
+  // 분석 히스토리 가져오기 (canvasData가 있는 메시지만)
+  async getAnalysisHistory() {
+    const history = [];
+
+    // conversationHistory에서 canvasData가 있는 항목 필터링
+    this.conversationHistory.forEach((msg, idx) => {
+      if (msg.canvasData && msg.sender === 'bot') {
+        history.push({
+          index: idx,
+          imageUrl: msg.canvasData.imageUrl || null,
+          title: msg.canvasData.type === 'analysis' ? '이미지 분석' : '맞춤 레시피',
+          length: msg.canvasData.analysis?.lengthName || msg.canvasData.params?.length_category || '',
+          form: msg.canvasData.analysis?.form || msg.canvasData.params?.cut_form || '',
+          timestamp: msg.timestamp,
+          canvasData: msg.canvasData
+        });
+      }
+    });
+
+    return history.reverse(); // 최신순
+  }
+
+  // 히스토리 상세 보기
+  showHistoryDetail(idx) {
+    const history = [];
+    this.conversationHistory.forEach((msg, i) => {
+      if (msg.canvasData && msg.sender === 'bot') {
+        history.push({ ...msg, originalIndex: i });
+      }
+    });
+
+    const reversedHistory = history.reverse();
+    const item = reversedHistory[idx];
+
+    if (item && item.canvasData) {
+      // 결과 탭으로 전환하고 해당 결과 표시
+      document.querySelectorAll('.canvas-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.canvas-tab[data-tab="result"]')?.classList.add('active');
+
+      if (item.canvasData.type === 'analysis') {
+        this.showCanvas(item.canvasData);
+      } else if (item.canvasData.customRecipe) {
+        // 맞춤 레시피 결과
+        this.showCustomRecipeCanvas(item.canvasData, item.canvasData.uploadedImageUrl || '');
+      } else {
+        this.showCanvas(item.canvasData);
+      }
+    }
+  }
+
+  // 히스토리 항목 삭제
+  async deleteHistoryItem(idx) {
+    if (!confirm('이 기록을 삭제하시겠습니까?')) return;
+
+    const history = [];
+    this.conversationHistory.forEach((msg, i) => {
+      if (msg.canvasData && msg.sender === 'bot') {
+        history.push({ ...msg, originalIndex: i });
+      }
+    });
+
+    const reversedHistory = history.reverse();
+    const item = reversedHistory[idx];
+
+    if (item && item.id) {
+      try {
+        // Firebase에서 삭제
+        await window.db
+          .collection('chatHistory')
+          .doc(this.currentUserId)
+          .collection('messages')
+          .doc(item.id)
+          .delete();
+
+        // 로컬에서도 삭제
+        this.conversationHistory = this.conversationHistory.filter(m => m.id !== item.id);
+
+        // UI 새로고침
+        this.loadHistoryToCanvas();
+
+      } catch (e) {
+        console.error('❌ 삭제 실패:', e);
+        alert('삭제에 실패했습니다.');
+      }
+    }
+  }
+
+  // 날짜 포맷
+  formatDate(timestamp) {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+
+    if (diff < 60000) return '방금 전';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}분 전`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}시간 전`;
+    if (diff < 604800000) return `${Math.floor(diff / 86400000)}일 전`;
+
+    return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
   }
 
   // ==================== Language ====================
