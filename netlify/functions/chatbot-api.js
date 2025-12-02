@@ -963,24 +963,36 @@ ${genderContext}
 🎯 CRITICAL INSTRUCTIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## LENGTH CLASSIFICATION (MOST IMPORTANT!)
+## LENGTH CLASSIFICATION (MOST IMPORTANT!) ⭐⭐⭐
 
 **"WHERE does the LONGEST hair END touch the body?"**
 
-8 Length Categories:
-- A Length (65cm): Below chest (near navel)
-- B Length (50cm): Mid chest (nipple level)
-- C Length (40cm): Collarbone
-- D Length (35cm): Shoulder line ⭐ KEY REFERENCE
-- E Length (30cm): 2-3cm ABOVE shoulder
-- F Length (25cm): Below chin (neck starts)
-- G Length (20cm): Jaw line
-- H Length (15cm): Ear level
+🔴 CRITICAL: A = LONGEST hair, H = SHORTEST hair!
 
-STEP 1: Find the LONGEST hair strand in the BACK
-STEP 2: Compare to body landmarks CAREFULLY
-STEP 3: If between two lengths, choose the LONGER one
-STEP 4: Double-check
+8 Length Categories (A→H = Long→Short):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| A Length | 가슴 아래 (Below chest, near waist/navel) | ⭐ LONGEST |
+| B Length | 가슴 중간 (Mid chest area)                |            |
+| C Length | 쇄골 아래 (Below collarbone)              |            |
+| D Length | 어깨선 (Shoulder line - hair touches shoulder) |       |
+| E Length | 어깨 위 (2-3cm ABOVE shoulder)            |            |
+| F Length | 턱 아래 (Below chin, neck area)           |            |
+| G Length | 턱선 (Jaw line)                           |            |
+| H Length | 귀 높이 (Ear level, short hair)           | ⭐ SHORTEST |
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 HOW TO DETERMINE LENGTH:
+1. Look at the BACK of the head - find the LONGEST strand
+2. See where it ENDS on the body:
+   - Past chest → A or B Length (LONG hair!)
+   - Collarbone to shoulder → C or D Length
+   - Above shoulder to chin → E or F Length
+   - Jaw to ear → G or H Length (SHORT hair!)
+3. If hair reaches BELOW CHEST = A Length (가장 긴 머리!)
+4. If hair is very short near ears = H Length (숏헤어!)
+
+⚠️ COMMON MISTAKE: Do NOT confuse D (shoulder) with A (below chest)!
+- If hair goes past the shoulders and reaches chest/below = A or B, NOT D!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
