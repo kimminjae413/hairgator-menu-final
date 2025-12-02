@@ -971,28 +971,41 @@ ${genderContext}
 
 8 Length Categories (A→H = Long→Short):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-| A Length | 가슴 아래 (Below chest, near waist/navel) | ⭐ LONGEST |
-| B Length | 가슴 중간 (Mid chest area)                |            |
-| C Length | 쇄골 아래 (Below collarbone)              |            |
-| D Length | 어깨선 (Shoulder line - hair touches shoulder) |       |
-| E Length | 어깨 위 (2-3cm ABOVE shoulder)            |            |
-| F Length | 턱 아래 (Below chin, neck area)           |            |
-| G Length | 턱선 (Jaw line)                           |            |
-| H Length | 귀 높이 (Ear level, short hair)           | ⭐ SHORTEST |
+| A Length | 가슴 아래 (Below chest, near waist) | ~65cm | ⭐ LONGEST |
+| B Length | 가슴 중간 (Mid chest/nipple level)  | ~50cm |            |
+| C Length | 쇄골 아래 (Below collarbone)        | ~40cm |            |
+| D Length | 어깨선 (Shoulder line)              | ~35cm |            |
+| E Length | 어깨 위 (Above shoulder, neck)      | ~30cm |            |
+| F Length | 턱 아래 (Below chin/jawline)        | ~25cm |            |
+| G Length | 턱선~귀밑 (Jaw to below ear)        | ~20cm |            |
+| H Length | 귀 위~귀 높이 (At/above ear level)  | ~15cm | ⭐ SHORTEST |
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🎯 HOW TO DETERMINE LENGTH:
-1. Look at the BACK of the head - find the LONGEST strand
-2. See where it ENDS on the body:
-   - Past chest → A or B Length (LONG hair!)
-   - Collarbone to shoulder → C or D Length
-   - Above shoulder to chin → E or F Length
-   - Jaw to ear → G or H Length (SHORT hair!)
-3. If hair reaches BELOW CHEST = A Length (가장 긴 머리!)
-4. If hair is very short near ears = H Length (숏헤어!)
+🎯 STEP-BY-STEP LENGTH DETERMINATION:
 
-⚠️ COMMON MISTAKE: Do NOT confuse D (shoulder) with A (below chest)!
-- If hair goes past the shoulders and reaches chest/below = A or B, NOT D!
+**STEP 1: Is this SHORT HAIR (숏컷/숏헤어)?**
+- Does the hair NOT cover the neck at all? → G or H Length!
+- Is the longest hair at or above ear level? → H Length (숏컷)!
+- Is the hair around jaw/chin level? → F or G Length!
+
+**STEP 2: Is this MEDIUM hair?**
+- Does hair touch shoulders? → D Length
+- Is hair between chin and shoulder? → E or F Length
+
+**STEP 3: Is this LONG hair?**
+- Does hair go past shoulders? → C, B, or A Length
+- Does hair reach chest or below? → A or B Length
+
+⚠️ COMMON MISTAKES TO AVOID:
+1. SHORT PIXIE CUT or BOB at EAR LEVEL = H Length, NOT E or F!
+2. Hair that doesn't cover neck = G or H Length!
+3. If you can see ears clearly and hair is short = H Length!
+4. E Length = hair clearly goes down to NECK area (above shoulder)
+
+🔥 KEY VISUAL CHECK FOR SHORT HAIR:
+- Can you see the person's NECK clearly?
+- Is the hair above or at EAR level?
+- YES to both → This is H Length (숏헤어)!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
