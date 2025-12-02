@@ -2691,56 +2691,125 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 - Disconnected: 단절된 층 (투블록, 언더컷)
 - Semi-Connected: 반연결
 
-【OUTPUT JSON】
+【PERM 파라미터】⭐ 펌이 있으면 분석!
+- perm_applied: true/false (펌 여부)
+- perm_type: "Digital Perm", "Cold Perm", "Volume Perm", "Setting Perm", "Body Perm", "Air Perm", null
+- perm_rod_size: "Small (6-10mm)", "Medium (12-16mm)", "Large (18-24mm)", "Jumbo (26mm+)", null
+- perm_technique: "Spiral", "Stack", "Piggyback", "Brick", "Directional", "Root Perm", null
+- curl_pattern: "S-Wave", "C-Curl", "J-Curl", "Spiral", "Beach Wave", "Body Wave", null
+- curl_strength: "Tight", "Medium", "Loose", "Subtle", null
+- curl_direction: "Inward", "Outward", "Alternating", "Random", null
+- wave_type: "Regular Wave", "Irregular Wave", "S-Wave", "Body Wave", null
+
+🎯 펌 판단 기준:
+- 전체적으로 웨이브/컬이 규칙적 → perm_applied: true
+- 자연스러운 웨이브/스트레이트 → perm_applied: false
+- 끝만 컬링 → perm_type: "Setting Perm" 또는 스타일링
+- 볼륨감 있는 루트 → perm_type: "Volume Perm" 또는 "Root Perm"
+
+【COLOR 파라미터】⭐ 염색이 있으면 분석!
+- color_applied: true/false (염색 여부)
+- base_color: "Black", "Dark Brown", "Brown", "Light Brown", "Ash Brown", "Blonde", "Red", "Burgundy", null
+- color_level: 1-10 (1=가장 어두움, 10=가장 밝음), null
+- color_tone: "Warm", "Cool", "Neutral", "Ash", "Golden", "Red", "Violet", null
+- highlight_applied: true/false
+- highlight_color: "Blonde", "Caramel", "Honey", "Ash", "Platinum", null
+- highlight_technique: "Foil", "Balayage", "Baby Lights", "Face Framing", null
+- lowlight_applied: true/false
+- lowlight_color: "Dark Brown", "Chocolate", "Espresso", null
+- balayage_applied: true/false
+- ombre_applied: true/false
+- color_placement: "All Over", "Roots Only", "Ends Only", "Partial", "Face Framing", null
+
+🎯 컬러 판단 기준:
+- 자연스러운 검정/흑갈색 → color_applied: false
+- 밝은 갈색 이상/금발/레드 등 → color_applied: true
+- 그라데이션 있음 → ombre_applied: true 또는 balayage_applied: true
+- 포인트 하이라이트 → highlight_applied: true
+
+【CUTTING ZONE & GUIDE】
+- cutting_zone: "Crown", "Top", "Side", "Back", "Nape", "Fringe", "Perimeter"
+- guide_type: "Stationary" (고정 가이드), "Traveling" (이동 가이드)
+- over_direction: true/false (오버 디렉션 여부)
+
+【OUTPUT JSON - 56개 파라미터 전체】
 {
+  // === 기장 & 카테고리 (5개) ===
   "cut_category": "Women's Cut",
   "length_category": "D Length",
   "estimated_hair_length_cm": "35",
   "front_length": "Medium",
   "back_length": "Long",
-  "side_length": "Medium",
 
+  // === 구조 & 폼 (5개) ===
   "cut_form": "L (Layer)",
   "structure_layer": "Mid Layer",
   "graduation_type": "None",
   "weight_distribution": "Balanced",
   "layer_type": "Mid Layer",
 
+  // === 실루엣 & 볼륨 (5개) ===
   "silhouette": "Round",
   "outline_shape": "Curved",
   "volume_zone": "Medium",
   "volume_distribution": "Middle",
   "line_quality": "Soft",
 
+  // === 앞머리 (3개) ===
   "fringe_type": "Side Bang",
   "fringe_length": "Eyebrow",
   "fringe_texture": "Textured",
 
+  // === 텍스처 & 질감 (5개) ===
   "surface_texture": "Textured",
-  "internal_texture": "Point Cut",
   "hair_density": "Medium",
   "hair_texture": "Wavy",
   "movement": "Moderate",
   "texture_technique": "Point Cut",
 
+  // === 기술 파라미터 (8개) ===
   "section_primary": "Diagonal-Backward",
   "lifting_range": ["L4"],
   "direction_primary": "D4",
   "cutting_method": "Point Cut",
-  "styling_method": "Blow Dry",
-  "design_emphasis": "Volume",
-  "weight_flow": "Balanced",
+  "cutting_zone": "Back",
+  "guide_type": "Traveling",
+  "over_direction": false,
   "connection_type": "Connected",
 
-  "womens_cut_category": "Shoulder Length",
+  // === 스타일링 & 디자인 (3개) ===
+  "styling_method": "Blow Dry",
+  "design_emphasis": "Volume",
   "face_shape_match": ["Oval", "Round"],
 
+  // === 펌 파라미터 (8개) ===
+  "perm_applied": false,
+  "perm_type": null,
+  "perm_rod_size": null,
+  "perm_technique": null,
   "curl_pattern": null,
   "curl_strength": null,
-  "perm_type": null,
+  "curl_direction": null,
+  "wave_type": null,
 
+  // === 컬러 파라미터 (12개) ===
+  "color_applied": false,
+  "base_color": null,
+  "color_level": null,
+  "color_tone": null,
+  "highlight_applied": false,
+  "highlight_color": null,
+  "highlight_technique": null,
+  "lowlight_applied": false,
+  "lowlight_color": null,
+  "balayage_applied": false,
+  "ombre_applied": false,
+  "color_placement": null,
+
+  // === 설명 (1개) ===
   "description": "스타일 설명 1-2문장"
 }
+// 총 55개 파라미터 + description = 56개
 
 ⚠️ 주의사항:
 1. lifting_range는 반드시 배열로! ["L4"] 또는 ["L2", "L4"]
@@ -2789,29 +2858,81 @@ JSON만 반환하세요.`;
       form: params56.cut_form,
       lifting: params56.lifting_range,
       section: params56.section_primary,
-      volume: params56.volume_zone
+      volume: params56.volume_zone,
+      perm: params56.perm_applied ? params56.perm_type : 'None',
+      color: params56.color_applied ? params56.base_color : 'None'
     });
 
     return params56;
 
   } catch (error) {
     console.error('❌ 이미지 분석 실패:', error);
-    // 기본값 반환 (최소한의 정보)
+    // 기본값 반환 (56개 파라미터 전체)
     return {
+      // 기장 & 카테고리 (5개)
       cut_category: "Women's Cut",
       length_category: "D Length",
       estimated_hair_length_cm: "35",
+      front_length: "Medium",
+      back_length: "Long",
+      // 구조 & 폼 (5개)
       cut_form: "L (Layer)",
-      lifting_range: ["L4"],
-      section_primary: "Diagonal-Backward",
-      volume_zone: "Medium",
+      structure_layer: "Mid Layer",
+      graduation_type: "None",
       weight_distribution: "Balanced",
-      fringe_type: "No Fringe",
-      silhouette: "Round",
-      hair_texture: "Straight",
       layer_type: "Mid Layer",
+      // 실루엣 & 볼륨 (5개)
+      silhouette: "Round",
+      outline_shape: "Curved",
+      volume_zone: "Medium",
+      volume_distribution: "Middle",
+      line_quality: "Soft",
+      // 앞머리 (3개)
+      fringe_type: "No Fringe",
+      fringe_length: null,
+      fringe_texture: null,
+      // 텍스처 & 질감 (5개)
+      surface_texture: "Natural",
+      hair_density: "Medium",
+      hair_texture: "Straight",
+      movement: "Minimal",
+      texture_technique: null,
+      // 기술 파라미터 (8개)
+      section_primary: "Diagonal-Backward",
+      lifting_range: ["L4"],
+      direction_primary: "D4",
+      cutting_method: "Blunt",
+      cutting_zone: "Back",
+      guide_type: "Traveling",
+      over_direction: false,
       connection_type: "Connected",
+      // 스타일링 & 디자인 (3개)
+      styling_method: "Natural Dry",
+      design_emphasis: "Shape",
       face_shape_match: ["Oval"],
+      // 펌 파라미터 (8개)
+      perm_applied: false,
+      perm_type: null,
+      perm_rod_size: null,
+      perm_technique: null,
+      curl_pattern: null,
+      curl_strength: null,
+      curl_direction: null,
+      wave_type: null,
+      // 컬러 파라미터 (12개)
+      color_applied: false,
+      base_color: null,
+      color_level: null,
+      color_tone: null,
+      highlight_applied: false,
+      highlight_color: null,
+      highlight_technique: null,
+      lowlight_applied: false,
+      lowlight_color: null,
+      balayage_applied: false,
+      ombre_applied: false,
+      color_placement: null,
+      // 설명 (1개)
       description: "분석 실패 - 기본값 사용"
     };
   }
@@ -3227,6 +3348,22 @@ async function generateCustomRecipe(params56, top3Styles, geminiKey) {
           contents: [{
             parts: [{
               text: `당신은 2WAY CUT 시스템 전문가입니다. 고객 요청 스타일의 56개 파라미터와 참고 레시피 3개를 바탕으로 최적의 맞춤 레시피를 생성해주세요.
+
+## ⚠️ 2WAY CUT 리프팅 각도 (절대 기준!) ⭐
+| 코드 | 각도 | 설명 |
+|------|------|------|
+| L0 | 0° | 원렝스 (Natural Fall) |
+| L1 | 22.5° | Low Graduation |
+| L2 | 45° | Mid Graduation |
+| L3 | 67.5° | High Graduation |
+| L4 | 90° | 기본 레이어 (Square Layer) ⭐ |
+| L5 | 112.5° | High Layer |
+| L6 | 135° | Very High Layer |
+| L7 | 157.5° | 정수리 레이어 |
+| L8 | 180° | 완전 수직 (On Base) |
+
+❗ 중요: L4는 90도입니다! 45도가 아닙니다!
+❗ 레시피에서 리프팅 각도를 언급할 때 반드시 위 표를 참조하세요.
 
 ## 🎯 고객 요청 스타일 - 56파라미터 분석
 
