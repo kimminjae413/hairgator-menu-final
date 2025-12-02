@@ -847,8 +847,8 @@ class AIStudio {
 
     this.canvasResult.innerHTML = `
       <div class="custom-recipe-canvas">
-        <!-- 헤더: 업로드 이미지 + 분석 결과 -->
-        <div class="recipe-header">
+        <!-- 헤더: 업로드 이미지 + 분석 결과 (컴팩트) -->
+        <div class="recipe-header compact">
           <div class="uploaded-image-section">
             <img src="${uploadedImageUrl}" alt="업로드한 이미지" class="uploaded-image">
             <div class="analysis-badge">${analysis.lengthName}</div>
@@ -859,38 +859,21 @@ class AIStudio {
               <span class="tag">${analysis.form}</span>
               <span class="tag">${analysis.hasBangs ? analysis.bangsType : '앞머리 없음'}</span>
               <span class="tag">${analysis.volumePosition} 볼륨</span>
-              <span class="tag">${analysis.texture}</span>
             </div>
-            <p class="series-info">📁 ${targetSeries.code} 시리즈 기반</p>
           </div>
         </div>
 
-        <!-- 참고 스타일 Top-3 -->
-        <div class="reference-styles-section">
-          <h3>📚 참고 스타일</h3>
-          <div class="reference-cards">
-            ${referenceStyles.map((style, idx) => `
-              <div class="reference-card ${idx === 0 ? 'primary' : ''}">
-                <div class="ref-rank">${idx + 1}</div>
-                <div class="ref-info">
-                  <strong>${style.styleId}</strong>
-                  <span class="ref-reasons">${style.featureReasons.join(', ') || '기본 매칭'}</span>
-                </div>
+        <!-- 도해도 - 크게 표시 -->
+        <div class="diagrams-section large">
+          <h3>📐 도해도 (${mainDiagrams.length}장)</h3>
+          <div class="diagrams-grid-large">
+            ${mainDiagrams.map((d, idx) => `
+              <div class="diagram-item-large" onclick="window.open('${d.url}', '_blank')">
+                <img src="${d.url}" alt="Step ${d.step}" title="Step ${d.step}">
+                <span class="step-label">Step ${d.step}</span>
               </div>
             `).join('')}
           </div>
-        </div>
-
-        <!-- 도해도 미리보기 -->
-        <div class="diagrams-section">
-          <h3>📐 도해도 (${mainDiagrams.length}장)</h3>
-          <div class="diagrams-scroll">
-            ${mainDiagrams.slice(0, 10).map((d, idx) => `
-              <img src="${d.url}" alt="Step ${d.step}" class="diagram-item"
-                   onclick="window.open('${d.url}', '_blank')" title="Step ${d.step}">
-            `).join('')}
-          </div>
-          ${mainDiagrams.length > 10 ? `<p class="more-link">+${mainDiagrams.length - 10}장 더보기</p>` : ''}
         </div>
 
         <!-- 생성된 맞춤 레시피 -->

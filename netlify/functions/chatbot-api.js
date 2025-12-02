@@ -2548,21 +2548,31 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
                 }
               },
               {
-                text: `이 여성 헤어스타일 이미지를 분석하여 다음 정보를 JSON 형식으로 반환해주세요:
+                text: `이 여성 헤어스타일 이미지를 분석하여 다음 정보를 JSON 형식으로 반환해주세요.
+
+**[중요] 기장(Length) 판단 - 머리카락 가장 긴 부분이 어디에 닿는지 확인:**
+- A: 귀 위 (픽시컷, 아주 짧은 숏컷)
+- B: 귀~턱선 (숏보브, 턱선 단발)
+- C: 턱 아래~어깨 위 (단발, 쇄골 위 보브)
+- D: 어깨선~쇄골 (어깨에 닿거나 쇄골 근처, 중단발)
+- E: 쇄골 아래~가슴 위 (미디엄 롱)
+- F: 가슴선 (롱헤어)
+- G: 가슴~가슴 아래 (롱헤어)
+- H: 허리 (매우 긴 머리)
 
 {
-  "length": "A~H 중 하나 (A=숏컷/귀 위, B=귀~턱, C=턱~어깨, D=어깨, E=쇄골, F=가슴 위, G=가슴, H=가슴 아래)",
+  "length": "A/B/C/D/E/F/G/H 중 하나만",
   "form": "Layer / Graduation / One Length 중 하나",
-  "hasBangs": true/false (앞머리 유무),
+  "hasBangs": true 또는 false,
   "bangsType": "풀뱅 / 시스루뱅 / 사이드뱅 / 없음",
   "volumePosition": "상단 / 중단 / 하단",
   "silhouette": "라운드 / 스퀘어 / 트라이앵글",
   "texture": "스트레이트 / 웨이브 / 컬",
   "layerLevel": "하이레이어 / 미들레이어 / 로우레이어 / 없음",
-  "description": "전체적인 스타일 설명 1-2문장"
+  "description": "스타일 설명 1-2문장"
 }
 
-반드시 유효한 JSON만 반환하세요.`
+JSON만 반환하세요.`
               }
             ]
           }],
