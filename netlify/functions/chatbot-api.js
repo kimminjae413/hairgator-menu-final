@@ -2957,13 +2957,17 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20) {
     });
   });
 
-  // 기술 점수 순으로 정렬 (동점이면 step 순)
-  scoredDiagrams.sort((a, b) => {
-    if (b.techScore !== a.techScore) return b.techScore - a.techScore;
+  // 기술 점수로 먼저 필터링 (상위 도해도 선별)
+  scoredDiagrams.sort((a, b) => b.techScore - a.techScore);
+  const topScored = scoredDiagrams.slice(0, maxDiagrams);
+
+  // 선별된 도해도를 커트 순서(step)대로 정렬
+  const selected = topScored.sort((a, b) => {
+    // 같은 스타일이면 step 순서로
+    if (a.styleId === b.styleId) return a.step - b.step;
+    // 다른 스타일이면 step 순서로 (커트 진행 순서)
     return a.step - b.step;
   });
-
-  const selected = scoredDiagrams.slice(0, maxDiagrams);
 
   console.log(`📊 56파라미터 기반 도해도 선별 (${selected.length}장):`);
   selected.slice(0, 5).forEach((d, i) => {
