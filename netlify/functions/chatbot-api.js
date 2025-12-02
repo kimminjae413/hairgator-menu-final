@@ -847,9 +847,8 @@ async function analyzeImageWithQuestion(payload, geminiKey) {
   const userPrompt = question || '이 헤어스타일을 분석해주세요.';
 
   try {
-    // gemini-2.0-flash-exp 또는 gemini-1.5-flash-latest 사용
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
