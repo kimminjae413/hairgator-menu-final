@@ -29,18 +29,46 @@ class AIStudio {
     this.init();
   }
 
-  // 불나비 사용자 프로필 사진 로드
+  // 사용자 프로필 사진 로드 (Firebase Auth 또는 불나비)
   loadUserPhoto() {
     try {
+      // 1. Firebase Auth에서 프로필 사진 가져오기
+      if (firebase && firebase.auth && firebase.auth().currentUser) {
+        const firebaseUser = firebase.auth().currentUser;
+        if (firebaseUser.photoURL) {
+          this.userPhotoUrl = firebaseUser.photoURL;
+          console.log('👤 Firebase 프로필 사진 로드됨');
+          return;
+        }
+      }
+
+      // 2. 불나비 사용자 정보에서 프로필 사진 가져오기
       const userStr = localStorage.getItem('bullnabi_user');
       if (userStr) {
         const userInfo = JSON.parse(userStr);
-        // 불나비에서 제공하는 프로필 사진 URL (photoUrl, profileImage, photo 등 다양한 키 체크)
+        // 불나비에서 제공하는 프로필 사진 URL (다양한 키 체크)
         this.userPhotoUrl = userInfo.photoUrl || userInfo.profileImage || userInfo.photo || userInfo.profilePhoto || userInfo.image || null;
-        console.log('👤 사용자 프로필 사진:', this.userPhotoUrl ? '로드됨' : '없음');
+        if (this.userPhotoUrl) {
+          console.log('👤 불나비 프로필 사진 로드됨');
+          return;
+        }
       }
+
+      console.log('👤 프로필 사진 없음 - 기본 아이콘 사용');
     } catch (e) {
       console.warn('프로필 사진 로드 실패:', e);
+    }
+  }
+
+  // Firebase Auth 상태 변경 시 프로필 사진 업데이트
+  setupAuthListener() {
+    if (firebase && firebase.auth) {
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user && user.photoURL) {
+          this.userPhotoUrl = user.photoURL;
+          console.log('👤 Firebase Auth 프로필 사진 업데이트됨');
+        }
+      });
     }
   }
 
@@ -49,6 +77,9 @@ class AIStudio {
 
     // Event Listeners
     this.setupEventListeners();
+
+    // Firebase Auth 리스너 설정 (프로필 사진 업데이트용)
+    this.setupAuthListener();
 
     // User History
     await this.initUserHistory();
