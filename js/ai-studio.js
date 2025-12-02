@@ -668,7 +668,7 @@ class AIStudio {
     // 아바타: 봇은 이모지, 사용자는 프로필 사진 또는 기본 아이콘
     let avatarHtml;
     if (sender === 'bot') {
-      avatarHtml = `<div class="message-avatar">🤖</div>`;
+      avatarHtml = `<div class="message-avatar bot-logo"><img src="icons/icon-72.png" alt="H"></div>`;
     } else {
       // 사용자 프로필 사진이 있으면 이미지로, 없으면 기본 아이콘
       if (this.userPhotoUrl) {
@@ -724,7 +724,7 @@ class AIStudio {
     typing.className = 'message bot';
     typing.id = 'typing-indicator';
     typing.innerHTML = `
-      <div class="message-avatar">🤖</div>
+      <div class="message-avatar bot-logo"><img src="icons/icon-72.png" alt="H"></div>
       <div class="message-content">
         <div class="typing-indicator">
           <span class="typing-dot"></span>
@@ -1435,7 +1435,7 @@ function clearChat() {
     const messages = document.getElementById('chat-messages');
     messages.innerHTML = `
       <div class="message bot">
-        <div class="message-avatar">🤖</div>
+        <div class="message-avatar bot-logo"><img src="icons/icon-72.png" alt="H"></div>
         <div class="message-content">
           <p><strong>대화가 초기화되었습니다.</strong></p>
           <p>새로운 질문을 입력해주세요.</p>
