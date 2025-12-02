@@ -836,6 +836,99 @@ class AIStudio {
     // TODO: 스타일 상세 모달 또는 페이지로 이동
     alert(`스타일 ${styleId} 상세 보기 기능 준비 중`);
   }
+
+  // ==================== 맞춤 레시피 캔버스 표시 ====================
+
+  showCustomRecipeCanvas(data, uploadedImageUrl) {
+    this.canvasEmpty.classList.add('hidden');
+    this.canvasResult.classList.remove('hidden');
+
+    const { analysis, targetSeries, referenceStyles, customRecipe, mainDiagrams } = data;
+
+    this.canvasResult.innerHTML = `
+      <div class="custom-recipe-canvas">
+        <!-- 헤더: 업로드 이미지 + 분석 결과 -->
+        <div class="recipe-header">
+          <div class="uploaded-image-section">
+            <img src="${uploadedImageUrl}" alt="업로드한 이미지" class="uploaded-image">
+            <div class="analysis-badge">${analysis.lengthName}</div>
+          </div>
+          <div class="analysis-summary">
+            <h2>🎯 맞춤 레시피</h2>
+            <div class="analysis-tags">
+              <span class="tag">${analysis.form}</span>
+              <span class="tag">${analysis.hasBangs ? analysis.bangsType : '앞머리 없음'}</span>
+              <span class="tag">${analysis.volumePosition} 볼륨</span>
+              <span class="tag">${analysis.texture}</span>
+            </div>
+            <p class="series-info">📁 ${targetSeries.code} 시리즈 기반</p>
+          </div>
+        </div>
+
+        <!-- 참고 스타일 Top-3 -->
+        <div class="reference-styles-section">
+          <h3>📚 참고 스타일</h3>
+          <div class="reference-cards">
+            ${referenceStyles.map((style, idx) => `
+              <div class="reference-card ${idx === 0 ? 'primary' : ''}">
+                <div class="ref-rank">${idx + 1}</div>
+                <div class="ref-info">
+                  <strong>${style.styleId}</strong>
+                  <span class="ref-reasons">${style.featureReasons.join(', ') || '기본 매칭'}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- 도해도 미리보기 -->
+        <div class="diagrams-section">
+          <h3>📐 도해도 (${mainDiagrams.length}장)</h3>
+          <div class="diagrams-scroll">
+            ${mainDiagrams.slice(0, 10).map((d, idx) => `
+              <img src="${d.url}" alt="Step ${d.step}" class="diagram-item"
+                   onclick="window.open('${d.url}', '_blank')" title="Step ${d.step}">
+            `).join('')}
+          </div>
+          ${mainDiagrams.length > 10 ? `<p class="more-link">+${mainDiagrams.length - 10}장 더보기</p>` : ''}
+        </div>
+
+        <!-- 생성된 맞춤 레시피 -->
+        <div class="custom-recipe-section">
+          <h3>✨ AI 생성 맞춤 레시피</h3>
+          <div class="recipe-content">
+            ${this.formatRecipeContent(customRecipe)}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Mobile: Show canvas panel
+    if (window.innerWidth <= 1024) {
+      this.canvasPanel.classList.add('active');
+    }
+  }
+
+  // 레시피 내용 포맷팅
+  formatRecipeContent(content) {
+    if (!content) return '<p>레시피를 불러올 수 없습니다.</p>';
+
+    // 마크다운 기본 변환
+    let formatted = content
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n- /g, '</p><li>')
+      .replace(/\n(\d+)\. /g, '</p><li class="numbered">')
+      .replace(/\n/g, '<br>');
+
+    // 리스트 래핑
+    if (formatted.includes('<li>')) {
+      formatted = formatted.replace(/<li>/g, '</ul><ul><li>').replace('</ul><ul>', '<ul>');
+      formatted += '</ul>';
+    }
+
+    return `<p>${formatted}</p>`;
+  }
 }
 
 // ==================== Global Functions ====================
@@ -933,7 +1026,7 @@ async function sendImageWithQuestion() {
   if (!pendingImageData) return false;
 
   const textInput = document.getElementById('chat-input');
-  const question = textInput.value.trim() || '이 헤어스타일을 분석해주세요';
+  const question = textInput.value.trim() || '이 헤어스타일에 맞는 레시피를 만들어주세요';
 
   // 사용자 메시지 표시 (이미지 + 텍스트)
   window.aiStudio.addMessageToUI('user', `
@@ -954,19 +1047,17 @@ async function sendImageWithQuestion() {
     // Base64 변환
     const base64 = await window.aiStudio.fileToBase64(pendingImageData.file);
 
-    console.log('📤 이미지 분석 API 호출...');
+    console.log('📤 맞춤 레시피 생성 API 호출...');
 
-    // API 호출 - Gemini Vision
+    // API 호출 - 이미지 분석 + 맞춤 레시피 생성
     const response = await fetch(window.aiStudio.apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action: 'analyze_image_with_question',
+        action: 'analyze_and_match_recipe',
         payload: {
           image_base64: base64,
-          mime_type: pendingImageData.file.type,
-          question: question,
-          language: window.aiStudio.currentLanguage
+          mime_type: pendingImageData.file.type
         }
       })
     });
@@ -977,30 +1068,37 @@ async function sendImageWithQuestion() {
     window.aiStudio.hideTypingIndicator();
 
     if (result.success && result.data) {
-      // 응답 표시
-      const responseContent = result.data.response || result.data.analysis || JSON.stringify(result.data);
-      window.aiStudio.addMessageToUI('bot', responseContent, true, {
-        type: 'analysis',
-        imageUrl: pendingImageData.url,
-        params: result.data.parameters || result.data
-      });
+      const data = result.data;
 
-      // 캔버스에 표시
-      window.aiStudio.showCanvas({
-        type: 'analysis',
-        imageUrl: pendingImageData.url,
-        params: result.data.parameters || result.data,
-        rawContent: responseContent
-      });
+      // 분석 결과 메시지 표시
+      const analysisMsg = `**📊 스타일 분석 완료!**
+
+📏 **기장**: ${data.analysis.lengthName}
+✂️ **형태**: ${data.analysis.form}
+💇 **앞머리**: ${data.analysis.hasBangs ? data.analysis.bangsType : '없음'}
+📐 **볼륨**: ${data.analysis.volumePosition}
+🎨 **텍스처**: ${data.analysis.texture}
+
+📁 **대상 시리즈**: ${data.targetSeries.code} (${data.targetSeries.totalStyles}개 스타일)
+
+🎯 **참고 스타일 Top-3**:
+${data.referenceStyles.map((s, i) => `  ${i+1}. ${s.styleId} - ${s.featureReasons.join(', ')}`).join('\n')}
+
+👉 **오른쪽 캔버스에서 맞춤 레시피를 확인하세요!**`;
+
+      window.aiStudio.addMessageToUI('bot', analysisMsg);
+
+      // 캔버스에 맞춤 레시피 표시
+      window.aiStudio.showCustomRecipeCanvas(data, pendingImageData.url);
 
     } else {
-      window.aiStudio.addMessageToUI('bot', result.error || '이미지 분석에 실패했습니다. 다시 시도해주세요.');
+      window.aiStudio.addMessageToUI('bot', result.error || '레시피 생성에 실패했습니다. 다시 시도해주세요.');
     }
 
   } catch (error) {
     window.aiStudio.hideTypingIndicator();
-    window.aiStudio.addMessageToUI('bot', '이미지 분석 중 오류가 발생했습니다.');
-    console.error('❌ 이미지 분석 오류:', error);
+    window.aiStudio.addMessageToUI('bot', '레시피 생성 중 오류가 발생했습니다.');
+    console.error('❌ 레시피 생성 오류:', error);
   }
 
   // 이미지 데이터 초기화

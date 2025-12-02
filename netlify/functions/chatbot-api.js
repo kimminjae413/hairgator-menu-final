@@ -390,6 +390,10 @@ exports.handler = async (event, context) => {
       case 'search_firestore_styles':
         return await searchFirestoreStyles(payload, GEMINI_KEY);
 
+      // ⭐⭐⭐ 이미지 분석 + 최적 레시피 매칭 (NEW!) ⭐⭐⭐
+      case 'analyze_and_match_recipe':
+        return await analyzeAndMatchRecipe(payload, GEMINI_KEY);
+
       default:
         return {
           statusCode: 400,
@@ -2498,6 +2502,369 @@ async function searchFirestoreStyles(payload, geminiKey) {
 
   } catch (error) {
     console.error('❌ Firestore 스타일 검색 오류:', error);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: error.message
+      })
+    };
+  }
+}
+
+// ==================== 이미지 분석 + 맞춤 레시피 생성 ⭐⭐⭐ ====================
+
+// 기장별 시리즈 매핑
+const LENGTH_TO_SERIES = {
+  'A': 'FAL',
+  'B': 'FBL',
+  'C': 'FCL',
+  'D': 'FDL',
+  'E': 'FEL',
+  'F': 'FFL',
+  'G': 'FGL',
+  'H': 'FHL'
+};
+
+/**
+ * Gemini Vision으로 이미지 분석 - 구조화된 특성 추출
+ */
+async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              {
+                inline_data: {
+                  mime_type: mimeType,
+                  data: imageBase64
+                }
+              },
+              {
+                text: `이 여성 헤어스타일 이미지를 분석하여 다음 정보를 JSON 형식으로 반환해주세요:
+
+{
+  "length": "A~H 중 하나 (A=숏컷/귀 위, B=귀~턱, C=턱~어깨, D=어깨, E=쇄골, F=가슴 위, G=가슴, H=가슴 아래)",
+  "form": "Layer / Graduation / One Length 중 하나",
+  "hasBangs": true/false (앞머리 유무),
+  "bangsType": "풀뱅 / 시스루뱅 / 사이드뱅 / 없음",
+  "volumePosition": "상단 / 중단 / 하단",
+  "silhouette": "라운드 / 스퀘어 / 트라이앵글",
+  "texture": "스트레이트 / 웨이브 / 컬",
+  "layerLevel": "하이레이어 / 미들레이어 / 로우레이어 / 없음",
+  "description": "전체적인 스타일 설명 1-2문장"
+}
+
+반드시 유효한 JSON만 반환하세요.`
+              }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 800
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Vision API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // JSON 파싱
+    text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const analysis = JSON.parse(text);
+
+    console.log(`📷 이미지 분석 완료:`, analysis);
+    return analysis;
+
+  } catch (error) {
+    console.error('❌ 이미지 분석 실패:', error);
+    // 기본값 반환
+    return {
+      length: 'C',
+      form: 'Layer',
+      hasBangs: false,
+      bangsType: '없음',
+      volumePosition: '중단',
+      silhouette: '라운드',
+      texture: '스트레이트',
+      layerLevel: '미들레이어',
+      description: '분석 실패'
+    };
+  }
+}
+
+/**
+ * 자막 파일(레시피) 가져오기
+ */
+async function fetchCaptionContent(captionUrl) {
+  try {
+    if (!captionUrl) return null;
+    const response = await fetch(captionUrl);
+    if (!response.ok) return null;
+    return await response.text();
+  } catch (error) {
+    console.error('❌ 자막 가져오기 실패:', error);
+    return null;
+  }
+}
+
+/**
+ * 특성 기반 스타일 점수 계산
+ */
+function calculateFeatureScore(style, analysis, captionText) {
+  let score = 0;
+  const reasons = [];
+
+  if (!captionText) return { score: 0, reasons: ['자막 없음'] };
+
+  const caption = captionText.toLowerCase();
+
+  // 앞머리 매칭
+  if (analysis.hasBangs) {
+    if (caption.includes('앞머리') || caption.includes('뱅') || caption.includes('fringe')) {
+      score += 30;
+      reasons.push('앞머리 있음');
+    }
+  } else {
+    if (!caption.includes('앞머리') && !caption.includes('뱅')) {
+      score += 20;
+      reasons.push('앞머리 없음');
+    }
+  }
+
+  // 레이어 레벨 매칭
+  if (analysis.layerLevel) {
+    if (analysis.layerLevel.includes('하이') && (caption.includes('하이') || caption.includes('high'))) {
+      score += 25;
+      reasons.push('하이레이어');
+    } else if (analysis.layerLevel.includes('로우') && (caption.includes('로우') || caption.includes('low'))) {
+      score += 25;
+      reasons.push('로우레이어');
+    } else if (analysis.layerLevel.includes('미들') && (caption.includes('미들') || caption.includes('middle'))) {
+      score += 25;
+      reasons.push('미들레이어');
+    }
+  }
+
+  // 볼륨 위치 매칭
+  if (analysis.volumePosition === '상단' && (caption.includes('볼륨') && caption.includes('상'))) {
+    score += 20;
+    reasons.push('상단 볼륨');
+  } else if (analysis.volumePosition === '하단' && (caption.includes('볼륨') && caption.includes('하'))) {
+    score += 20;
+    reasons.push('하단 볼륨');
+  }
+
+  // 텍스처 매칭
+  if (analysis.texture === '웨이브' && caption.includes('웨이브')) {
+    score += 15;
+    reasons.push('웨이브');
+  } else if (analysis.texture === '컬' && caption.includes('컬')) {
+    score += 15;
+    reasons.push('컬');
+  }
+
+  return { score, reasons };
+}
+
+/**
+ * Gemini로 맞춤 레시피 생성
+ */
+async function generateCustomRecipe(analysis, top3Styles, geminiKey) {
+  try {
+    // Top-3 스타일의 레시피 텍스트 준비
+    const recipeTexts = top3Styles.map((s, i) =>
+      `[참고 스타일 ${i+1}: ${s.styleId}]\n${s.captionText || '레시피 없음'}`
+    ).join('\n\n');
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `당신은 전문 헤어 디자이너입니다. 고객 요청 스타일과 유사한 참고 레시피 3개를 바탕으로 최적의 맞춤 레시피를 생성해주세요.
+
+## 고객 요청 스타일 분석
+- 기장: ${analysis.length} Length
+- 형태: ${analysis.form}
+- 앞머리: ${analysis.hasBangs ? analysis.bangsType : '없음'}
+- 볼륨 위치: ${analysis.volumePosition}
+- 실루엣: ${analysis.silhouette}
+- 텍스처: ${analysis.texture}
+- 레이어: ${analysis.layerLevel}
+- 설명: ${analysis.description}
+
+## 참고 레시피 (Top-3)
+${recipeTexts}
+
+## 요청사항
+위 참고 레시피들의 장점을 조합하여, 고객 요청 스타일에 최적화된 커스텀 레시피를 작성해주세요.
+
+다음 형식으로 작성:
+1. **스타일 개요**: 완성될 스타일 설명 (2-3문장)
+2. **커트 순서**:
+   - Step 1: ...
+   - Step 2: ...
+   (필요한 만큼)
+3. **핵심 포인트**: 이 스타일의 핵심 기술 3가지
+4. **참고한 스타일**: 어떤 스타일에서 어떤 요소를 참고했는지`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2000
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Recipe generation failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '레시피 생성 실패';
+
+  } catch (error) {
+    console.error('❌ 레시피 생성 실패:', error);
+    return '레시피 생성 중 오류가 발생했습니다.';
+  }
+}
+
+/**
+ * 이미지 분석 → 시리즈 필터링 → Top-3 참고 → 맞춤 레시피 생성
+ */
+async function analyzeAndMatchRecipe(payload, geminiKey) {
+  const { image_base64, mime_type } = payload;
+
+  console.log('🎯 이미지 분석 + 맞춤 레시피 생성 시작...');
+
+  try {
+    // 1. 이미지 분석 (구조화된 특성 추출)
+    const analysis = await analyzeImageStructured(image_base64, mime_type, geminiKey);
+    console.log(`📊 분석 결과: ${analysis.length} Length, ${analysis.form}, 앞머리: ${analysis.hasBangs}`);
+
+    // 2. 기장에 해당하는 시리즈 결정
+    const targetSeries = LENGTH_TO_SERIES[analysis.length] || 'FCL';
+    console.log(`📁 대상 시리즈: ${targetSeries}`);
+
+    // 3. Firestore에서 해당 시리즈 스타일만 필터링
+    const allStyles = await getFirestoreStyles();
+    const seriesStyles = allStyles.filter(s => s.series === targetSeries);
+
+    console.log(`📚 ${targetSeries} 시리즈: ${seriesStyles.length}개 스타일`);
+
+    if (seriesStyles.length === 0) {
+      throw new Error(`${targetSeries} 시리즈 스타일이 없습니다`);
+    }
+
+    // 4. 각 스타일의 자막(레시피) 가져오기 + 특성 점수 계산
+    const stylesWithScores = await Promise.all(
+      seriesStyles.map(async (style) => {
+        const captionText = await fetchCaptionContent(style.captionUrl);
+        const { score, reasons } = calculateFeatureScore(style, analysis, captionText);
+
+        // 임베딩 유사도도 함께 고려
+        let embeddingSimilarity = 0;
+        if (style.embedding && analysis.description) {
+          const queryEmb = await generateQueryEmbedding(analysis.description, geminiKey);
+          if (queryEmb) {
+            embeddingSimilarity = cosineSimilarity(queryEmb, style.embedding);
+          }
+        }
+
+        return {
+          ...style,
+          captionText,
+          featureScore: score,
+          featureReasons: reasons,
+          embeddingSimilarity,
+          totalScore: score + (embeddingSimilarity * 50) // 특성 점수 + 임베딩 유사도
+        };
+      })
+    );
+
+    // 5. 총점 기준 Top-3 선정
+    const top3 = stylesWithScores
+      .sort((a, b) => b.totalScore - a.totalScore)
+      .slice(0, 3);
+
+    console.log(`🎯 Top-3 참고 스타일:`);
+    top3.forEach((s, i) => {
+      console.log(`  ${i+1}. ${s.styleId} (점수: ${s.totalScore.toFixed(1)}, 이유: ${s.featureReasons.join(', ')})`);
+    });
+
+    // 6. Top-3를 참고하여 맞춤 레시피 생성
+    const customRecipe = await generateCustomRecipe(analysis, top3, geminiKey);
+
+    // 7. 결과 구성
+    const result = {
+      // 이미지 분석 결과
+      analysis: {
+        length: analysis.length,
+        lengthName: `${analysis.length} Length`,
+        form: analysis.form,
+        hasBangs: analysis.hasBangs,
+        bangsType: analysis.bangsType,
+        volumePosition: analysis.volumePosition,
+        silhouette: analysis.silhouette,
+        texture: analysis.texture,
+        layerLevel: analysis.layerLevel,
+        description: analysis.description
+      },
+
+      // 대상 시리즈
+      targetSeries: {
+        code: targetSeries,
+        name: `${analysis.length} Layer`,
+        totalStyles: seriesStyles.length
+      },
+
+      // Top-3 참고 스타일
+      referenceStyles: top3.map(s => ({
+        styleId: s.styleId,
+        series: s.series,
+        totalScore: s.totalScore,
+        featureReasons: s.featureReasons,
+        diagrams: s.diagrams.slice(0, 5), // 도해도 5장
+        diagramCount: s.diagramCount
+      })),
+
+      // 생성된 맞춤 레시피
+      customRecipe: customRecipe,
+
+      // 대표 도해도 (Top-1의 도해도)
+      mainDiagrams: top3[0]?.diagrams || []
+    };
+
+    console.log(`✅ 맞춤 레시피 생성 완료`);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: result
+      })
+    };
+
+  } catch (error) {
+    console.error('❌ 레시피 매칭 오류:', error);
 
     return {
       statusCode: 200,
