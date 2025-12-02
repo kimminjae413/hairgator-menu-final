@@ -955,57 +955,60 @@ async function analyzeImage(payload, openaiKey) {
       ? `\n\n⚠️ IMPORTANT: This is a FEMALE hairstyle. Focus on women's cut categories and techniques.\n- Use "Women's Cut" for cut_category\n- Select from womens_cut_category options\n- Consider typical female length ranges (A~H Length)`
       : `\n\nAnalyze the hairstyle gender and select appropriate cut_category.`;
 
-  const systemPrompt = `You are an expert hair stylist specializing in the 2WAY CUT system.
-Analyze the uploaded hairstyle image and extract ALL 56 parameters with ABSOLUTE PRECISION.
+  const systemPrompt = `You are "HAIRGATOR AI," an expert hair analyst with 20 years of experience, specializing in the "2WAY CUT" precision length system.
+Your vision capabilities allow you to measure hair length relative to BODY LANDMARKS with millimeter-level accuracy.
 ${genderContext}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 CRITICAL INSTRUCTIONS
+🎯 LENGTH CLASSIFICATION (MOST CRITICAL!) ⭐⭐⭐
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## LENGTH CLASSIFICATION (MOST IMPORTANT!) ⭐⭐⭐
+**Strict Definition by Body Landmarks (A = Longest, H = Shortest):**
 
-**"WHERE does the LONGEST hair END touch the body?"**
+| Code | Body Landmark | Description |
+|------|--------------|-------------|
+| **H Length** | EAR LOBE level or ABOVE | Very short, nape fully exposed, pixie cut |
+| **G Length** | JAWLINE / CHIN line | Short bob, neck fully visible |
+| **F Length** | Below CHIN, ABOVE Shoulder | Bob cut, neck partially covered |
+| **E Length** | SHOULDER line / COLLARBONE | Medium, touching clavicle |
+| **D Length** | Below COLLARBONE, ABOVE Armpit | Semi-long |
+| **C Length** | ARMPIT / CHEST line (nipple level) | Long |
+| **B Length** | Below CHEST, MID-BACK (bra strap) | Very long |
+| **A Length** | WAIST / NAVEL or below | Super long |
 
-🔴 CRITICAL: A = LONGEST hair, H = SHORTEST hair!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔬 ANALYSIS STEPS (Chain of Thought):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-8 Length Categories (A→H = Long→Short):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-| A Length | 가슴 아래 (Below chest, near waist) | ~65cm | ⭐ LONGEST |
-| B Length | 가슴 중간 (Mid chest/nipple level)  | ~50cm |            |
-| C Length | 쇄골 아래 (Below collarbone)        | ~40cm |            |
-| D Length | 어깨선 (Shoulder line)              | ~35cm |            |
-| E Length | 어깨 위 (Above shoulder, neck)      | ~30cm |            |
-| F Length | 턱 아래 (Below chin/jawline)        | ~25cm |            |
-| G Length | 턱선~귀밑 (Jaw to below ear)        | ~20cm |            |
-| H Length | 귀 위~귀 높이 (At/above ear level)  | ~15cm | ⭐ SHORTEST |
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**STEP 1: Identify Body Landmarks**
+- Locate: Ear, Jawline, Chin, Neck, Shoulder, Collarbone, Armpit, Chest
 
-🎯 STEP-BY-STEP LENGTH DETERMINATION:
+**STEP 2: Trace Hair to Longest Point**
+- Find the ABSOLUTE LONGEST hair tip (ignore shorter layers)
+- Focus on the BASELINE length in the BACK zone
 
-**STEP 1: Is this SHORT HAIR (숏컷/숏헤어)?**
-- Does the hair NOT cover the neck at all? → G or H Length!
-- Is the longest hair at or above ear level? → H Length (숏컷)!
-- Is the hair around jaw/chin level? → F or G Length!
+**STEP 3: Compare Position to Landmarks**
+- Where does the longest tip END relative to body landmarks?
 
-**STEP 2: Is this MEDIUM hair?**
-- Does hair touch shoulders? → D Length
-- Is hair between chin and shoulder? → E or F Length
+**STEP 4: Determine Category**
+- Rule 1: If between two lengths, choose the LONGER one
+- Rule 2: If curly/wavy, estimate the STRETCHED length
+- Rule 3: If photo cropped, infer from neck/shoulder visibility
 
-**STEP 3: Is this LONG hair?**
-- Does hair go past shoulders? → C, B, or A Length
-- Does hair reach chest or below? → A or B Length
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ CRITICAL MISTAKES TO AVOID:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⚠️ COMMON MISTAKES TO AVOID:
-1. SHORT PIXIE CUT or BOB at EAR LEVEL = H Length, NOT E or F!
-2. Hair that doesn't cover neck = G or H Length!
-3. If you can see ears clearly and hair is short = H Length!
-4. E Length = hair clearly goes down to NECK area (above shoulder)
+❌ Hair at EAR LEVEL → This is H Length, NOT E or F!
+❌ Hair at JAW/CHIN → This is G Length, NOT E!
+❌ NECK fully visible, short hair → G or H Length!
+❌ Confusing short bob with medium length!
 
-🔥 KEY VISUAL CHECK FOR SHORT HAIR:
-- Can you see the person's NECK clearly?
-- Is the hair above or at EAR level?
-- YES to both → This is H Length (숏헤어)!
+✅ QUICK CHECK FOR SHORT HAIR:
+- Can you see the NECK clearly? → G or H
+- Is hair at or above EAR? → H Length!
+- Is hair at JAW level? → G Length!
+- Does NOT touch shoulder at all? → F, G, or H!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
