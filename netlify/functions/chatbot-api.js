@@ -592,37 +592,49 @@ ${content}
   const systemKnowledge = `
 【2WAY CUT 시스템 기초 지식】
 
-1. 길이 체계 (8단계):
-   - A Length (65cm, 가슴 아래) → Long 스타일
-   - B Length (50cm, 가슴 중간) → Semi-Long
-   - C Length (40cm, 쇄골) → Semi-Long
-   - D Length (35cm, 어깨선) ⭐ 가장 많이 사용
-   - E Length (30cm, 어깨 위) → Medium/Bob
-   - F Length (25cm, 턱 아래) → Bob
-   - G Length (20cm, 턱선) → Short Bob
-   - H Length (15cm, 귀) → Very Short
+1. 길이 체계 (8단계) - Body Landmark 기준 ⭐
+   | 코드 | 신체 기준점 | 설명 |
+   |-----|-----------|------|
+   | H | 귀볼(EAR LOBE) 높이 또는 위 | Very Short, 픽시컷 |
+   | G | 턱선(JAWLINE/CHIN) | Short Bob, 목 완전히 보임 |
+   | F | 턱 아래, 어깨 위 | Bob, 목 일부 가림 |
+   | E | 어깨선/쇄골(SHOULDER) | Medium, 어깨에 닿음 |
+   | D | 쇄골 아래, 겨드랑이 위 | Semi-Long |
+   | C | 겨드랑이/가슴선(CHEST) | Long |
+   | B | 가슴 아래, 중간 등 | Very Long |
+   | A | 허리/배꼽 이하 | Super Long |
+
+   ⚠️ 판단 순서:
+   1. 머리카락 끝이 턱 위? → H 또는 G
+   2. 턱 아래, 어깨 안 닿음? → F (Bob)
+   3. 어깨에 닿음? → E (Medium)
+   4. 쇄골 아래로 넘어감? → D 이하
 
 2. 컷 폼 (3가지):
    - O (One Length): 원렝스, 같은 길이, 0도 리프팅
    - G (Graduation): 그래쥬에이션, 하단 무게, 0~89도
    - L (Layer): 레이어, 전체 움직임, 90도 이상
 
-3. 섹션 체계 (4가지):
-   - HS (Horizontal Section): 가로 섹션, 원렝스/그래쥬에이션
-   - DFS (Diagonal Forward Section): 전대각, 앞으로 흐르는 형태
-   - DBS (Diagonal Backward Section): 후대각, 뒤로 흐르는 형태
-   - VS (Vertical Section): 세로 섹션, 레이어
+3. 섹션 체계 - 존별 적용:
+   | 존 | 권장 섹션 | 설명 |
+   |-----|---------|------|
+   | Back | DBS | 볼륨/층 형성 |
+   | Side | VS | 얼굴 라인 유지 |
+   | Top | DBS/VS | 볼륨에 따라 |
+   | Fringe | HS | 앞머리 정리 |
 
-4. 리프팅 각도 (9단계):
-   - L0 (0°) → 원렝스
-   - L1 (22.5°) → 약간 그래쥬에이션
-   - L2 (45°) → Low 그래쥬에이션
-   - L3 (67.5°) → Mid 그래쥬에이션
-   - L4 (90°) ⭐ 기본 레이어
-   - L5 (112.5°) → High 레이어
-   - L6 (135°) → Very High 레이어
+4. 리프팅 각도 (9단계) ⭐:
+   - L0 (0°) → 원렝스 (Natural Fall)
+   - L1 (22.5°) → Low Graduation
+   - L2 (45°) → Mid Graduation (무게감 있는 층)
+   - L3 (67.5°) → High Graduation
+   - L4 (90°) ⭐ Square Layer (기본 레이어)
+   - L5 (112.5°) → High Layer
+   - L6 (135°) → Very High Layer
    - L7 (157.5°) → 정수리 레이어
-   - L8 (180°) → 완전 수직
+   - L8 (180°) → On Base (완전 수직)
+
+   ⚠️ 무게감 있는 레이어 → L2~L3 (L4 아님!)
 
 5. 볼륨 존 (각도 기반):
    - Low Volume: 0~44° (하단 무게)
@@ -1096,8 +1108,9 @@ Return ONLY the JSON object, no markdown, no explanation, no code blocks!`;
             ]
           }],
           generationConfig: {
-            temperature: 0.3,
-            maxOutputTokens: 4000
+            temperature: 0.2,  // 더 낮춰서 일관성 향상
+            maxOutputTokens: 4000,
+            responseMimeType: "application/json"  // JSON 출력 강제
           }
         })
       }
@@ -2904,8 +2917,9 @@ JSON만 반환하세요.`;
             ]
           }],
           generationConfig: {
-            temperature: 0.3,
-            maxOutputTokens: 2000
+            temperature: 0.2,  // 더 낮춰서 일관성 향상
+            maxOutputTokens: 2000,
+            responseMimeType: "application/json"  // JSON 출력 강제
           }
         })
       }
