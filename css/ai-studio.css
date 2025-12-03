@@ -2171,6 +2171,89 @@ body.ai-studio-page {
   }
 }
 
+/* ==================== Style Correction Section ==================== */
+.style-correction-section {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+  border: 1px solid #ffc107;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.correction-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  font-size: 0.9rem;
+  color: #856404;
+  font-weight: 500;
+}
+
+.correction-icon {
+  font-size: 1.1rem;
+}
+
+.correction-controls {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.style-select {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #d4a012;
+  border-radius: var(--radius-sm);
+  background: white;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  outline: none;
+}
+
+.style-select:focus {
+  border-color: #b38600;
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.3);
+}
+
+.correction-btn {
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.correction-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+  transform: translateY(-1px);
+}
+
+.correction-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .correction-controls {
+    flex-direction: column;
+  }
+
+  .style-select {
+    width: 100%;
+  }
+
+  .correction-btn {
+    width: 100%;
+  }
+}
+
 /* ==================== Utilities ==================== */
 .hidden { display: none !important; }
 .sr-only {

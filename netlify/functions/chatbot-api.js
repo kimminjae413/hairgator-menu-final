@@ -388,6 +388,10 @@ exports.handler = async (event, context) => {
       case 'analyze_and_match_recipe':
         return await analyzeAndMatchRecipe(payload, GEMINI_KEY);
 
+      // ⭐ 남자 스타일 수정 재분석 (사용자가 스타일 코드 변경)
+      case 'regenerate_male_recipe':
+        return await regenerateMaleRecipeWithStyle(payload, GEMINI_KEY);
+
       // ⭐ 파라미터 기반 커스텀 레시피 생성 (Firebase 기반)
       case 'generate_custom_recipe':
         return await generateCustomRecipeFromParams(payload, GEMINI_KEY);
@@ -4032,6 +4036,157 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
 
   } catch (error) {
     console.error('❌ 남자 레시피 생성 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: error.message
+      })
+    };
+  }
+}
+
+// ==================== 남자 스타일 수정 재분석 ====================
+async function regenerateMaleRecipeWithStyle(payload, geminiKey) {
+  const { style_code, original_analysis } = payload;
+  const startTime = Date.now();
+
+  console.log(`🔄 남자 스타일 재분석 시작 - 새 스타일: ${style_code}`);
+
+  try {
+    // 1. 새 스타일 코드로 분석 데이터 수정
+    const styleInfo = MALE_STYLE_TERMS[style_code] || { ko: style_code, subStyles: [] };
+    const styleName = styleInfo.en || style_code;
+    const subStyleName = styleInfo.subStyles?.[0] || styleInfo.ko;
+
+    // 기존 분석 데이터 복사 및 스타일 코드 변경
+    const maleParams = {
+      ...original_analysis,
+      style_category: style_code,
+      style_name: styleName,
+      sub_style: subStyleName
+    };
+
+    // 2. Firestore에서 남자 스타일 가져오기
+    const menStylesUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/men_styles`;
+    const menStylesResponse = await fetch(menStylesUrl);
+    const menStylesData = await menStylesResponse.json();
+
+    const allMenStyles = (menStylesData.documents || []).map(doc => {
+      const fields = doc.fields;
+      const styleId = doc.name.split('/').pop();
+
+      let embedding = null;
+      if (fields.embedding?.arrayValue?.values) {
+        embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
+      }
+
+      let diagrams = [];
+      if (fields.diagrams?.arrayValue?.values) {
+        diagrams = fields.diagrams.arrayValue.values.map(v => {
+          const map = v.mapValue?.fields || {};
+          return {
+            step: parseInt(map.step?.integerValue || 0),
+            url: map.url?.stringValue || '',
+            lifting: map.lifting?.stringValue || null,
+            direction: map.direction?.stringValue || null,
+            section: map.section?.stringValue || null,
+            zone: map.zone?.stringValue || null,
+            cutting_method: map.cutting_method?.stringValue || null
+          };
+        });
+      }
+
+      return {
+        styleId,
+        series: fields.series?.stringValue || '',
+        seriesName: fields.seriesName?.stringValue || '',
+        resultImage: fields.resultImage?.stringValue || null,
+        diagrams,
+        diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
+        captionUrl: fields.captionUrl?.stringValue || null,
+        embedding
+      };
+    });
+
+    // 3. 새 스타일 코드로 필터링
+    const filteredStyles = allMenStyles.filter(s =>
+      s.styleId.startsWith(style_code) || s.series === style_code
+    );
+
+    console.log(`🎯 ${style_code} 스타일: ${filteredStyles.length}개`);
+
+    const targetStyles = filteredStyles.length > 0 ? filteredStyles : allMenStyles.slice(0, 10);
+
+    // 4. 임베딩 기반 유사도 검색
+    const searchQuery = `${styleName} ${maleParams.topLength || ''} ${maleParams.fadeType || ''} ${maleParams.texture || ''}`.trim();
+    const queryEmbedding = await generateQueryEmbedding(searchQuery, geminiKey);
+
+    const stylesWithSimilarity = targetStyles.map(style => {
+      let similarity = 0;
+      if (style.embedding && queryEmbedding) {
+        similarity = cosineSimilarity(queryEmbedding, style.embedding);
+      }
+      return { ...style, similarity };
+    });
+
+    const top3 = stylesWithSimilarity
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, 3);
+
+    console.log(`🎯 Top-3 참고 스타일:`);
+    top3.forEach((s, i) => {
+      console.log(`  ${i+1}. ${s.styleId} (유사도: ${(s.similarity * 100).toFixed(1)}%)`);
+    });
+
+    // 5. 레시피 재생성
+    const maleRecipe = await generateMaleCustomRecipe(maleParams, top3, geminiKey);
+
+    // 6. 도해도 선별
+    const selectedDiagrams = selectMaleDiagramsByTechnique(top3, maleParams, 15);
+
+    console.log(`⏱️ 재분석 완료: ${Date.now() - startTime}ms`);
+
+    // 7. 결과 반환
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          gender: 'male',
+          analysis: {
+            styleCode: style_code,
+            styleName: styleInfo.ko || styleName,
+            subStyle: subStyleName,
+            topLength: maleParams.topLength || 'Medium',
+            sideLength: maleParams.sideLength || 'Short',
+            fadeType: maleParams.fadeType || 'None',
+            texture: maleParams.texture || 'Smooth',
+            productType: maleParams.productType || 'Wax',
+            stylingDirection: maleParams.stylingDirection || 'Forward'
+          },
+          targetSeries: {
+            code: style_code,
+            name: styleInfo.ko || styleName,
+            subStyles: styleInfo.subStyles || [],
+            totalStyles: filteredStyles.length
+          },
+          referenceStyles: top3.map(s => ({
+            styleId: s.styleId,
+            similarity: s.similarity,
+            resultImage: s.resultImage
+          })),
+          recipe: maleRecipe,
+          diagrams: selectedDiagrams,
+          processingTime: Date.now() - startTime
+        }
+      })
+    };
+
+  } catch (error) {
+    console.error('❌ 남자 스타일 재분석 오류:', error);
     return {
       statusCode: 500,
       headers,

@@ -1202,6 +1202,9 @@ class AIStudio {
     const { analysis, targetSeries, referenceStyles, recipe, diagrams } = data;
     const subStyleDisplay = analysis.subStyle || analysis.styleName;
 
+    // 현재 분석 데이터 저장 (재분석용)
+    this.currentMaleAnalysis = { data, uploadedImageUrl };
+
     this.canvasResult.innerHTML = `
       <div class="custom-recipe-canvas male">
         <!-- 헤더: 업로드 이미지 + 분석 결과 -->
@@ -1217,6 +1220,29 @@ class AIStudio {
               <span class="tag">${analysis.fadeType || 'No Fade'}</span>
               <span class="tag">${analysis.texture || 'Smooth'}</span>
             </div>
+          </div>
+        </div>
+
+        <!-- 스타일 수정 섹션 -->
+        <div class="style-correction-section">
+          <div class="correction-header">
+            <span class="correction-icon">⚠️</span>
+            <span>AI 분석이 틀렸나요? 스타일을 수정하세요</span>
+          </div>
+          <div class="correction-controls">
+            <select id="style-correction-select" class="style-select">
+              <option value="" disabled>스타일 선택...</option>
+              <option value="SF" ${analysis.styleCode === 'SF' ? 'selected' : ''}>SF - 사이드 프린지 (댄디컷)</option>
+              <option value="SP" ${analysis.styleCode === 'SP' ? 'selected' : ''}>SP - 사이드 파트 (가르마)</option>
+              <option value="FU" ${analysis.styleCode === 'FU' ? 'selected' : ''}>FU - 프린지 업</option>
+              <option value="PB" ${analysis.styleCode === 'PB' ? 'selected' : ''}>PB - 푸시드 백 (슬릭백)</option>
+              <option value="BZ" ${analysis.styleCode === 'BZ' ? 'selected' : ''}>BZ - 버즈컷</option>
+              <option value="CP" ${analysis.styleCode === 'CP' ? 'selected' : ''}>CP - 크롭컷</option>
+              <option value="MC" ${analysis.styleCode === 'MC' ? 'selected' : ''}>MC - 모히칸</option>
+            </select>
+            <button class="correction-btn" onclick="window.aiStudio.reanalyzeWithStyle()">
+              🔄 재분석
+            </button>
           </div>
         </div>
 
@@ -1449,6 +1475,61 @@ class AIStudio {
           this.selectDiagram(0);
         }
       }, 3000); // 3초마다 전환
+    }
+  }
+
+  // ==================== 스타일 수정 재분석 ====================
+
+  async reanalyzeWithStyle() {
+    const selectEl = document.getElementById('style-correction-select');
+    if (!selectEl) return;
+
+    const newStyleCode = selectEl.value;
+    if (!newStyleCode) {
+      alert('스타일을 선택해주세요.');
+      return;
+    }
+
+    // 현재 분석 데이터가 없으면 리턴
+    if (!this.currentMaleAnalysis || !this.pendingImageBase64) {
+      alert('재분석할 이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.');
+      return;
+    }
+
+    // 버튼 로딩 상태
+    const btn = document.querySelector('.correction-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ 재분석 중...';
+    btn.disabled = true;
+
+    try {
+      // 수정된 스타일 코드로 레시피 재생성 요청
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'regenerate_male_recipe',
+          style_code: newStyleCode,
+          image_base64: this.pendingImageBase64,
+          mime_type: this.pendingMimeType || 'image/jpeg',
+          original_analysis: this.currentMaleAnalysis.data.analysis
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        // 새 데이터로 캔버스 업데이트
+        this.showMaleRecipeCanvas(result.data, this.currentMaleAnalysis.uploadedImageUrl);
+        this.addBotMessage(`✅ **${newStyleCode}** 스타일로 재분석 완료!`);
+      } else {
+        throw new Error(result.error || '재분석 실패');
+      }
+    } catch (error) {
+      console.error('재분석 오류:', error);
+      alert('재분석 중 오류가 발생했습니다: ' + error.message);
+      btn.innerHTML = originalText;
+      btn.disabled = false;
     }
   }
 
