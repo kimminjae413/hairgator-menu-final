@@ -49,59 +49,48 @@ NO markdown, NO explanation, NO code blocks!`;
 // NOTE: chatbot-api.js의 analyzeManImageVision 함수에서 별도 프롬프트 사용 중
 // 이 프롬프트는 lib 모듈용 백업으로 유지
 function getMaleVisionPrompt() {
-  return `You are an expert men's hairstyle analyst. Your PRIMARY task is detecting PART LINES.
+  return `You are a men's hairstyle classifier.
 
-## ⚠️⚠️⚠️ CRITICAL: PART LINE DETECTION ⚠️⚠️⚠️
+## 🚨 MOST IMPORTANT: Check for VISIBLE PART LINE first! 🚨
 
-A PART LINE (가르마) exists when:
-1. Hair flows in TWO DIFFERENT DIRECTIONS from a point/line
-2. Hair is swept/combed to ONE SIDE (not straight down)
-3. There's a natural division where hair separates
-4. Even SUBTLE/SOFT part lines count! (은은한 가르마도 가르마임)
+STEP 1: Look at the scalp/head top area.
+- Can you see a CLEAR LINE where hair divides? (두피가 보이는 가르마)
+- Is there a visible separation where scalp shows through?
 
-**PART LINE = SP (Side Part)**
-**NO PART LINE + hair falls STRAIGHT DOWN = SF (Side Fringe)**
+If NO visible part line → style_category = "SF"
+If YES visible part line → style_category = "SP"
 
-## KEY DIFFERENCE: SP vs SF
+## SF (Side Fringe) - 90% of natural Korean men's styles
+- Bangs fall onto forehead (앞머리가 이마로 내려옴)
+- Hair may be textured, messy, or slightly flowing
+- NO visible scalp line dividing the hair
+- 댄디컷, 시스루컷, 자연스러운 앞머리 = ALL SF
 
-SP (Side Part) - 사이드 파트/가르마:
-- Hair is DIVIDED and flows to the side
-- Hair is SWEPT or COMBED sideways
-- You can see where hair SEPARATES (even subtly)
-- Examples: 가일컷, 시스루 가르마컷, 포마드컷
+## SP (Side Part) - ONLY with visible part line
+- You MUST see the scalp through a clear part line
+- Hair clearly divided into two directions from the part
+- 가르마가 눈에 보여야만 SP
 
-SF (Side Fringe) - 사이드 프린지/댄디컷:
-- Hair falls STRAIGHT DOWN onto forehead
-- NO division, NO parting, NO sideways sweep
-- Bangs hang naturally without being styled to a side
-- Examples: 댄디컷, 슬릭컷
+## Other styles
+- FU: Fringe styled UP (앞머리 위로)
+- PB: ALL hair pushed back, forehead exposed
+- BZ: Buzz cut (very short clipper)
+- CP: Crop cut (short textured top)
+- MC: Mohawk
 
-## STYLE CATEGORIES
-
-| Code | Key Feature |
-|------|-------------|
-| SP | Hair parted/swept to side (가르마 있음) |
-| SF | Bangs fall straight down (가르마 없이 앞머리만 내려옴) |
-| FU | Fringe points upward |
-| PB | All hair swept backward |
-| BZ | Very short clipper cut |
-| CP | Short textured fringe |
-| MC | Mohawk center stands up |
-
-## OUTPUT (JSON only, no markdown)
+## OUTPUT (JSON only)
 {
-  "has_part_line": true/false,
-  "hair_direction": "sideways" or "straight_down",
-  "style_category": "SP|SF|FU|PB|BZ|CP|MC",
-  "style_name": "English name",
-  "sub_style": "Korean name (가일컷/댄디컷/etc)",
-  "top_length": "Very Short|Short|Medium|Long",
-  "side_length": "Skin|Very Short|Short|Medium",
-  "fade_type": "None|Low Fade|Mid Fade|High Fade|Skin Fade|Taper",
-  "texture": "Smooth|Textured|Messy|Spiky"
+  "has_part_line": false,
+  "style_category": "SF",
+  "style_name": "Side Fringe",
+  "sub_style": "댄디컷",
+  "top_length": "Medium",
+  "side_length": "Short",
+  "fade_type": "None",
+  "texture": "Textured"
 }
 
-RULE: If hair is swept/parted to side → SP. Only straight-down bangs → SF.`;
+⚠️ DEFAULT TO SF unless you clearly see a part line on scalp!`;
 }
 
 // ==================== 여자 이미지 분석 ====================
