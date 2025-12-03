@@ -1104,6 +1104,11 @@ Return ONLY the JSON object, no markdown, no explanation, no code blocks!`;
 
     const params56 = JSON.parse(cleanedText);
 
+    // 🔍 Gemini 원본 응답 로깅 (디버깅용)
+    console.log('🔍 Gemini 원본 length_category:', params56.length_category);
+    console.log('🔍 Gemini 원본 cut_form:', params56.cut_form);
+    console.log('🔍 Gemini 전체 응답:', JSON.stringify(params56).substring(0, 500));
+
     // 성별 강제 적용
     if (user_gender === 'male' && params56.cut_category !== "Men's Cut") {
       console.log(`⚠️ 성별 수정: ${params56.cut_category} → Men's Cut`);
