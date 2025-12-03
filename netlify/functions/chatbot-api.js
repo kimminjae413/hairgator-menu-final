@@ -206,9 +206,22 @@ const PARAMS_56_SCHEMA = {
       type: "string",
       enum: [
         "Horizontal", "Vertical",
-        "Diagonal-Forward", "Diagonal-Backward"
+        "Diagonal-Forward", "Diagonal-Backward",
+        "Vertical+Horizontal", "Diagonal-Backward+Vertical"
       ],
-      description: "Primary sectioning direction"
+      description: "Primary sectioning direction (can be mixed like 'Vertical+Horizontal')"
+    },
+
+    // 존별 섹션 (선택사항)
+    section_by_zone: {
+      type: "object",
+      properties: {
+        back: { type: "string", description: "Back zone section" },
+        side: { type: "string", description: "Side zone section" },
+        top: { type: "string", description: "Top zone section" },
+        fringe: { type: "string", description: "Fringe zone section" }
+      },
+      description: "Section by zone (optional, for detailed analysis)"
     },
 
     lifting_range: {
@@ -2817,7 +2830,8 @@ Q4. 머리카락이 어깨선에 닿는가?
   "hair_texture": "Straight/Wavy/Curly 중 선택",
   "movement": "None/Minimal/Moderate/Maximum 중 선택",
   "texture_technique": "Blunt Cut/Point Cut/Slide Cut/Razor Cut/None 중 선택",
-  "section_primary": "Horizontal/Vertical/Diagonal-Forward/Diagonal-Backward 중 선택",
+  "section_primary": "Horizontal/Vertical/Diagonal-Forward/Diagonal-Backward 또는 혼합(예: Vertical+Horizontal)",
+  "section_by_zone": {"back": "섹션", "side": "섹션", "top": "섹션", "fringe": "섹션"} (존별 섹션 - 선택사항),
   "lifting_range": ["L0"~"L8" 중 해당하는 것들을 배열로"],
   "direction_primary": "D0~D8 중 선택",
   "cutting_method": "Blunt/Point Cut/Slide Cut/Razor 중 선택",
@@ -3532,8 +3546,8 @@ ${recipeTexts}
             }]
           }],
           generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 2500
+            temperature: 0.5,  // ⚡ 최적화: 0.7 → 0.5로 낮춰 일관성 향상 & 속도 개선
+            maxOutputTokens: 1800  // ⚡ 최적화: 2500 → 1800으로 줄여 응답 시간 단축
           }
         })
       }
@@ -3558,12 +3572,15 @@ ${recipeTexts}
  */
 async function analyzeAndMatchRecipe(payload, geminiKey) {
   const { image_base64, mime_type } = payload;
+  const startTime = Date.now();
 
   console.log('🎯 이미지 분석 + 맞춤 레시피 생성 시작 (56파라미터 기반)...');
 
   try {
     // 1. 이미지 분석 - 56개 파라미터 추출
+    const t1 = Date.now();
     const params56 = await analyzeImageStructured(image_base64, mime_type, geminiKey);
+    console.log(`⏱️ [1] 이미지 분석: ${Date.now() - t1}ms`);
 
     // Length 코드 추출 (예: "D Length" → "D")
     const lengthCode = params56.length_category ? params56.length_category.charAt(0) : 'D';
@@ -3572,17 +3589,23 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     console.log(`   - Length: ${params56.length_category}`);
     console.log(`   - Cut Form: ${params56.cut_form}`);
     console.log(`   - Lifting: ${Array.isArray(params56.lifting_range) ? params56.lifting_range.join(', ') : params56.lifting_range}`);
-    console.log(`   - Section: ${params56.section_primary}`);
+    console.log(`   - Section: ${params56.section_primary}${params56.section_by_zone ? ` (존별: Back=${params56.section_by_zone.back || '-'}, Side=${params56.section_by_zone.side || '-'})` : ''}`);
     console.log(`   - Volume: ${params56.volume_zone}`);
     console.log(`   - Weight: ${params56.weight_distribution}`);
+    console.log(`   - Fringe: ${params56.fringe_type || 'No Fringe'} (${params56.fringe_length || 'N/A'})`);
+    console.log(`   - Outline: ${params56.outline_shape || 'N/A'}`);
+    console.log(`   - Texture: ${params56.hair_texture || 'N/A'}`);
+    console.log(`   - Silhouette: ${params56.silhouette || 'N/A'}`);
 
     // 2. 기장에 해당하는 시리즈 결정
     const targetSeries = LENGTH_TO_SERIES[lengthCode] || 'FDL';
     console.log(`📁 대상 시리즈: ${targetSeries}`);
 
     // 3. Firestore에서 해당 시리즈 스타일만 필터링
+    const t2 = Date.now();
     const allStyles = await getFirestoreStyles();
     const seriesStyles = allStyles.filter(s => s.series === targetSeries);
+    console.log(`⏱️ [2] Firestore 조회: ${Date.now() - t2}ms`);
 
     console.log(`📚 ${targetSeries} 시리즈: ${seriesStyles.length}개 스타일`);
 
@@ -3590,36 +3613,58 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       throw new Error(`${targetSeries} 시리즈 스타일이 없습니다`);
     }
 
-    // 4. 각 스타일의 자막(레시피) 가져오기 + 42포뮬러 기반 점수 계산
+    // ⚡ 최적화: 임베딩을 루프 밖에서 1번만 생성 (기존: N번 호출 → 1번으로 감소)
+    const t3 = Date.now();
+    let queryEmbedding = null;
+    if (params56.description) {
+      queryEmbedding = await generateQueryEmbedding(params56.description, geminiKey);
+      console.log(`⏱️ [3] 임베딩 생성: ${Date.now() - t3}ms`);
+    }
+
+    // 4. 1차 필터링: 자막 없이 특성 점수 + 임베딩 유사도 계산 (빠름)
+    const stylesWithQuickScore = seriesStyles.map(style => {
+      // 자막 없이도 계산 가능한 특성 점수 (메타데이터 기반)
+      const { score, reasons } = calculateFeatureScore(style, params56, '');
+
+      // 임베딩 유사도 (사전 계산된 queryEmbedding 사용)
+      let embeddingSimilarity = 0;
+      if (style.embedding && queryEmbedding) {
+        embeddingSimilarity = cosineSimilarity(queryEmbedding, style.embedding);
+      }
+
+      return {
+        ...style,
+        featureScore: score,
+        featureReasons: reasons,
+        embeddingSimilarity,
+        quickScore: score + (embeddingSimilarity * 30)
+      };
+    });
+
+    // ⚡ 최적화: 상위 5개만 자막 fetch (기존: 모든 스타일 → 5개로 감소)
+    const topCandidates = stylesWithQuickScore
+      .sort((a, b) => b.quickScore - a.quickScore)
+      .slice(0, 5);
+
+    // 5. 상위 후보만 자막 가져와서 최종 점수 계산
     const stylesWithScores = await Promise.all(
-      seriesStyles.map(async (style) => {
+      topCandidates.map(async (style) => {
         const captionText = await fetchCaptionContent(style.captionUrl);
 
-        // 42포뮬러 기반 특성 점수 계산 (150점 만점)
-        const { score, reasons } = calculateFeatureScore(style, params56, captionText);
-
-        // 임베딩 유사도도 함께 고려 (보조 지표)
-        let embeddingSimilarity = 0;
-        if (style.embedding && params56.description) {
-          const queryEmb = await generateQueryEmbedding(params56.description, geminiKey);
-          if (queryEmb) {
-            embeddingSimilarity = cosineSimilarity(queryEmb, style.embedding);
-          }
-        }
+        // 자막이 있으면 점수 재계산 (더 정확)
+        const { score, reasons } = calculateFeatureScore(style, params56, captionText || '');
 
         return {
           ...style,
           captionText,
           featureScore: score,
           featureReasons: reasons,
-          embeddingSimilarity,
-          // 특성 점수 우선 (150점 만점) + 임베딩 유사도 보조 (30점)
-          totalScore: score + (embeddingSimilarity * 30)
+          totalScore: score + (style.embeddingSimilarity * 30)
         };
       })
     );
 
-    // 5. 총점 기준 Top-3 선정
+    // 6. 총점 기준 Top-3 선정
     const top3 = stylesWithScores
       .sort((a, b) => b.totalScore - a.totalScore)
       .slice(0, 3);
@@ -3629,13 +3674,17 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       console.log(`  ${i+1}. ${s.styleId} (${s.totalScore.toFixed(1)}점) - ${s.featureReasons.join(', ')}`);
     });
 
-    // 6. Top-3를 참고하여 맞춤 레시피 생성 (56파라미터 전달)
+    // 7. Top-3를 참고하여 맞춤 레시피 생성 (56파라미터 전달)
+    const t4 = Date.now();
     const customRecipe = await generateCustomRecipe(params56, top3, geminiKey);
+    console.log(`⏱️ [4] 레시피 생성: ${Date.now() - t4}ms`);
 
-    // 7. 기술 기반 도해도 선별 (lifting/section/volume 키워드 매칭)
+    // 8. 기술 기반 도해도 선별 (lifting/section/volume 키워드 매칭)
     const selectedDiagrams = selectDiagramsByTechnique(top3, params56, 15);
 
-    // 8. 결과 구성 - 56파라미터 전체 포함
+    console.log(`⏱️ 총 처리 시간: ${Date.now() - startTime}ms`);
+
+    // 9. 결과 구성 - 56파라미터 전체 포함
     const result = {
       // 56개 파라미터 전체 (프론트엔드에서 활용 가능)
       params56: params56,
