@@ -5,16 +5,51 @@ const { searchFirestoreStyles, selectBestDiagrams, getMenStyles } = require('./e
 const { sanitizeRecipeForPublic, getMaleStyleCode } = require('./utils');
 const { MALE_STYLE_CATEGORIES } = require('./schemas');
 
-// ==================== 남자 스타일 용어 ====================
+// ==================== 남자 스타일 용어 (PDF 기반 상세 분류) ====================
 const MALE_TERMS = {
   style: {
-    'SF': { ko: '사이드 프린지', en: 'Side Fringe', desc: '앞머리를 앞으로 내려 자연스럽게 흐르는 스타일' },
-    'SP': { ko: '사이드 파트', en: 'Side Part', desc: '가르마를 기준으로 나누는 스타일' },
-    'FU': { ko: '프린지 업', en: 'Fringe Up', desc: '앞머리 끝만 위로 올린 스타일' },
-    'PB': { ko: '푸시드 백', en: 'Pushed Back', desc: '모발 전체가 뒤쪽으로 넘어가는 스타일' },
-    'BZ': { ko: '버즈 컷', en: 'Buzz Cut', desc: '가장 짧은 남자 커트' },
-    'CP': { ko: '크롭 컷', en: 'Crop Cut', desc: '버즈보다 조금 더 긴 트렌디한 스타일' },
-    'MC': { ko: '모히칸', en: 'Mohican', desc: '센터 부분을 위쪽으로 세워 강조하는 스타일' }
+    'SF': {
+      ko: '사이드 프린지',
+      en: 'Side Fringe',
+      desc: '앞머리를 앞으로 내려 자연스럽게 흐르는 스타일',
+      subStyles: ['댄디컷', '시스루 댄디컷', '슬릭컷']
+    },
+    'SP': {
+      ko: '사이드 파트',
+      en: 'Side Part',
+      desc: '가르마를 기준으로 나누는 스타일',
+      subStyles: ['가일컷', '시스루 가일컷', '시스루 가르마컷', '플랫컷', '리프컷', '포마드컷', '드롭컷', '하프컷', '숏가일컷', '리젠트컷', '시스루 애즈컷']
+    },
+    'FU': {
+      ko: '프린지 업',
+      en: 'Fringe Up',
+      desc: '앞머리 끝만 위로 올린 스타일',
+      subStyles: ['아이비리그컷', '크랙컷']
+    },
+    'PB': {
+      ko: '푸시드 백',
+      en: 'Pushed Back',
+      desc: '모발 전체가 뒤쪽으로 넘어가는 스타일',
+      subStyles: ['폼파도르컷', '슬릭백', '슬릭백 언더컷']
+    },
+    'BZ': {
+      ko: '버즈 컷',
+      en: 'Buzz Cut',
+      desc: '가장 짧은 남자 커트',
+      subStyles: ['버즈컷']
+    },
+    'CP': {
+      ko: '크롭 컷',
+      en: 'Crop Cut',
+      desc: '버즈보다 조금 더 긴 트렌디한 스타일',
+      subStyles: ['크롭컷', '스왓컷']
+    },
+    'MC': {
+      ko: '모히칸',
+      en: 'Mohican',
+      desc: '센터 부분을 위쪽으로 세워 강조하는 스타일',
+      subStyles: ['모히칸컷']
+    }
   },
   fade: {
     'None': '페이드 없음',
@@ -41,11 +76,13 @@ const MALE_TERMS = {
 // ==================== 남자 레시피 프롬프트 빌드 ====================
 function buildMaleRecipePrompt(params, diagrams, language = 'ko') {
   const styleCode = params.style_category;
-  const styleInfo = MALE_TERMS.style[styleCode] || { ko: params.style_name, desc: '' };
+  const styleInfo = MALE_TERMS.style[styleCode] || { ko: params.style_name, desc: '', subStyles: [] };
+  const subStyleName = params.sub_style || styleInfo.subStyles?.[0] || styleInfo.ko;
   const fadeDesc = MALE_TERMS.fade[params.fade_type] || params.fade_type;
   const textureDesc = MALE_TERMS.texture[params.texture] || params.texture;
 
   const faceShapesKo = (params.face_shape_match || []).join(', ');
+  const availableSubStyles = styleInfo.subStyles?.join(', ') || '';
 
   const diagramsContext = diagrams.map((d, idx) =>
     `Step ${d.step_number}: ${d.style_id}\n` +
@@ -59,7 +96,9 @@ function buildMaleRecipePrompt(params, diagrams, language = 'ko') {
   return `당신은 남자 헤어컷 전문 스타일리스트입니다.
 
 **📊 분석 결과:**
-- 스타일: ${styleInfo.ko} (${styleCode})
+- 카테고리: ${styleInfo.ko} (${styleCode})
+- 구체적 스타일: ${subStyleName}
+- 관련 스타일: ${availableSubStyles}
 - 스타일 설명: ${styleInfo.desc}
 - 탑 길이: ${params.top_length || 'Medium'}
 - 사이드 길이: ${params.side_length || 'Short'}
@@ -74,7 +113,7 @@ ${diagramsContext}
 **📋 레시피 작성 지침:**
 
 ### STEP 1: 스타일 개요 (2-3줄)
-- ${styleInfo.ko} 스타일의 핵심 특징
+- ${subStyleName} 스타일의 핵심 특징
 - 이 스타일이 어울리는 고객 유형
 
 ### STEP 2: 사이드/백 커팅 (클리퍼 작업)

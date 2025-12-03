@@ -1200,6 +1200,7 @@ class AIStudio {
 
   showMaleRecipeCanvas(data, uploadedImageUrl) {
     const { analysis, targetSeries, referenceStyles, recipe, diagrams } = data;
+    const subStyleDisplay = analysis.subStyle || analysis.styleName;
 
     this.canvasResult.innerHTML = `
       <div class="custom-recipe-canvas male">
@@ -1212,7 +1213,7 @@ class AIStudio {
           <div class="analysis-summary">
             <h2>👨 맞춤 레시피</h2>
             <div class="analysis-tags">
-              <span class="tag primary">${analysis.styleName}</span>
+              <span class="tag primary">${subStyleDisplay}</span>
               <span class="tag">${analysis.fadeType || 'No Fade'}</span>
               <span class="tag">${analysis.texture || 'Smooth'}</span>
             </div>
@@ -1224,8 +1225,12 @@ class AIStudio {
           <h3>📋 스타일 분석</h3>
           <div class="formula-grid">
             <div class="formula-item">
+              <span class="formula-label">카테고리</span>
+              <span class="formula-value">${analysis.styleName}</span>
+            </div>
+            <div class="formula-item">
               <span class="formula-label">스타일</span>
-              <span class="formula-value highlight">${analysis.styleName}</span>
+              <span class="formula-value highlight">${subStyleDisplay}</span>
             </div>
             <div class="formula-item">
               <span class="formula-label">코드</span>
@@ -1246,10 +1251,6 @@ class AIStudio {
             <div class="formula-item">
               <span class="formula-label">텍스처</span>
               <span class="formula-value">${analysis.texture || 'Smooth'}</span>
-            </div>
-            <div class="formula-item">
-              <span class="formula-label">제품</span>
-              <span class="formula-value">${analysis.productType || 'Wax'}</span>
             </div>
             <div class="formula-item">
               <span class="formula-label">스타일링</span>

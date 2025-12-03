@@ -3993,6 +3993,7 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
     console.log(`⏱️ 총 처리 시간: ${Date.now() - startTime}ms`);
 
     // 7. 결과 반환
+    const subStyleName = maleParams.sub_style || MALE_STYLE_TERMS[styleCode]?.subStyles?.[0] || styleName;
     return {
       statusCode: 200,
       headers,
@@ -4002,7 +4003,8 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
           gender: 'male',
           analysis: {
             styleCode: styleCode,
-            styleName: styleName,
+            styleName: MALE_STYLE_TERMS[styleCode]?.ko || styleName,
+            subStyle: subStyleName,
             topLength: maleParams.top_length || 'Medium',
             sideLength: maleParams.side_length || 'Short',
             fadeType: maleParams.fade_type || 'None',
@@ -4013,6 +4015,7 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
           targetSeries: {
             code: styleCode,
             name: MALE_STYLE_TERMS[styleCode]?.ko || styleName,
+            subStyles: MALE_STYLE_TERMS[styleCode]?.subStyles || [],
             totalStyles: filteredStyles.length
           },
           referenceStyles: top3.map(s => ({
@@ -4040,15 +4043,43 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
   }
 }
 
-// 남자 스타일 용어
+// 남자 스타일 용어 (PDF 기반 상세 분류)
 const MALE_STYLE_TERMS = {
-  'SF': { ko: '사이드 프린지', en: 'Side Fringe' },
-  'SP': { ko: '사이드 파트', en: 'Side Part' },
-  'FU': { ko: '프린지 업', en: 'Fringe Up' },
-  'PB': { ko: '푸시드 백', en: 'Pushed Back' },
-  'BZ': { ko: '버즈 컷', en: 'Buzz Cut' },
-  'CP': { ko: '크롭 컷', en: 'Crop Cut' },
-  'MC': { ko: '모히칸', en: 'Mohican' }
+  'SF': {
+    ko: '사이드 프린지',
+    en: 'Side Fringe',
+    subStyles: ['댄디컷', '시스루 댄디컷', '슬릭컷']
+  },
+  'SP': {
+    ko: '사이드 파트',
+    en: 'Side Part',
+    subStyles: ['가일컷', '시스루 가일컷', '시스루 가르마컷', '플랫컷', '리프컷', '포마드컷', '드롭컷', '하프컷', '숏가일컷', '리젠트컷', '시스루 애즈컷']
+  },
+  'FU': {
+    ko: '프린지 업',
+    en: 'Fringe Up',
+    subStyles: ['아이비리그컷', '크랙컷']
+  },
+  'PB': {
+    ko: '푸시드 백',
+    en: 'Pushed Back',
+    subStyles: ['폼파도르컷', '슬릭백', '슬릭백 언더컷']
+  },
+  'BZ': {
+    ko: '버즈 컷',
+    en: 'Buzz Cut',
+    subStyles: ['버즈컷']
+  },
+  'CP': {
+    ko: '크롭 컷',
+    en: 'Crop Cut',
+    subStyles: ['크롭컷', '스왓컷']
+  },
+  'MC': {
+    ko: '모히칸',
+    en: 'Mohican',
+    subStyles: ['모히칸컷']
+  }
 };
 
 // 남자 이미지 Vision 분석
@@ -4057,30 +4088,31 @@ async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
 
 ## STYLE CLASSIFICATION (스타일 기반 분류) ⭐ CRITICAL!
 
-| Code | Style Name | Description |
-|------|-----------|-------------|
-| SF | Side Fringe | 앞머리를 앞으로 내려 자연스럽게 흐르는 스타일 |
-| SP | Side Part | 가르마를 기준으로 나누는 스타일 |
-| FU | Fringe Up | 앞머리 끝만 위로 올린 스타일 |
-| PB | Pushed Back | 모발 전체가 뒤쪽으로 넘어가는 스타일 |
-| BZ | Buzz Cut | 가장 짧은 남자 커트 |
-| CP | Crop Cut | 버즈보다 조금 더 긴 트렌디한 스타일 |
-| MC | Mohican | 센터 부분을 위쪽으로 세워 강조하는 스타일 |
+| Code | Style Name | Sub-Styles (한국어) | Description |
+|------|-----------|---------------------|-------------|
+| SF | Side Fringe | 댄디컷, 시스루 댄디컷, 슬릭컷 | 앞머리를 앞으로 내려 자연스럽게 흐르는 스타일 |
+| SP | Side Part | 가일컷, 시스루 가일컷, 시스루 가르마컷, 플랫컷, 리프컷, 포마드컷, 드롭컷, 하프컷, 숏가일컷, 리젠트컷, 시스루 애즈컷 | 가르마를 기준으로 나누는 스타일 |
+| FU | Fringe Up | 아이비리그컷, 크랙컷 | 앞머리 끝만 위로 올린 스타일 |
+| PB | Pushed Back | 폼파도르컷, 슬릭백, 슬릭백 언더컷 | 모발 전체가 뒤쪽으로 넘어가는 스타일 |
+| BZ | Buzz Cut | 버즈컷 | 가장 짧은 남자 커트 |
+| CP | Crop Cut | 크롭컷, 스왓컷 | 버즈보다 조금 더 긴 트렌디한 스타일 |
+| MC | Mohican | 모히칸컷 | 센터 부분을 위쪽으로 세워 강조하는 스타일 |
 
 ## STYLE IDENTIFICATION RULES:
-1. 앞머리가 이마에 내려옴 → SF (Side Fringe)
-2. 가르마가 명확히 있음 → SP (Side Part)
-3. 앞머리 끝이 위로 올라감 → FU (Fringe Up)
-4. 전체가 뒤로 넘김 → PB (Pushed Back)
-5. 매우 짧은 전체 버즈 → BZ (Buzz Cut)
-6. 짧지만 질감 있음 → CP (Crop Cut)
-7. 센터가 세워짐 → MC (Mohican)
+1. 앞머리가 이마에 내려옴 → SF (Side Fringe) - 댄디컷, 시스루 댄디컷, 슬릭컷
+2. 가르마가 명확히 있음 → SP (Side Part) - 가일컷, 포마드컷, 리젠트컷 등
+3. 앞머리 끝이 위로 올라감 → FU (Fringe Up) - 아이비리그컷, 크랙컷
+4. 전체가 뒤로 넘김 → PB (Pushed Back) - 폼파도르컷, 슬릭백
+5. 매우 짧은 전체 버즈 → BZ (Buzz Cut) - 버즈컷
+6. 짧지만 질감 있음 → CP (Crop Cut) - 크롭컷, 스왓컷
+7. 센터가 세워짐 → MC (Mohican) - 모히칸컷
 
 ## OUTPUT - MUST BE VALID JSON!
 Return ONLY a valid JSON object:
 {
   "style_category": "SF|SP|FU|PB|BZ|CP|MC",
   "style_name": "스타일 영문명",
+  "sub_style": "구체적인 한국어 스타일명 (댄디컷, 가일컷 등)",
   "top_length": "Very Short|Short|Medium|Long",
   "side_length": "Skin|Very Short|Short|Medium",
   "fade_type": "None|Low Fade|Mid Fade|High Fade|Skin Fade|Taper",
@@ -4131,6 +4163,7 @@ NO markdown, NO explanation, NO code blocks!`;
 // 남자 커스텀 레시피 생성
 async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
   const styleInfo = MALE_STYLE_TERMS[params.style_category] || { ko: params.style_name, en: params.style_name };
+  const subStyleName = params.sub_style || styleInfo.subStyles?.[0] || styleInfo.ko;
 
   const diagramsContext = top3Styles.flatMap(style =>
     (style.diagrams || []).slice(0, 5).map(d =>
@@ -4141,7 +4174,8 @@ async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
   const systemPrompt = `당신은 남자 헤어컷 전문가입니다. 모든 응답을 한국어로만 작성하세요. 클리퍼 가드 사이즈, 페이드 기법 등 실무적인 내용을 포함하세요.`;
 
   const userPrompt = `**📊 분석 결과:**
-- 스타일: ${styleInfo.ko} (${params.style_category})
+- 카테고리: ${styleInfo.ko} (${params.style_category})
+- 구체적 스타일: ${subStyleName}
 - 탑 길이: ${params.top_length || 'Medium'}
 - 사이드 길이: ${params.side_length || 'Short'}
 - 페이드: ${params.fade_type || 'None'}
@@ -4154,7 +4188,7 @@ ${diagramsContext}
 **📋 레시피 작성 지침:**
 
 ### STEP 1: 스타일 개요 (2-3줄)
-- ${styleInfo.ko} 스타일의 핵심 특징
+- ${subStyleName} 스타일의 핵심 특징
 - 이 스타일이 어울리는 고객 유형
 
 ### STEP 2: 사이드/백 커팅 (클리퍼 작업)
