@@ -996,45 +996,28 @@ ${genderContext}
 **STEP 4: Determine Category**
 - Rule 1: Match the EXACT body landmark where hair ends
 - Rule 2: If curly/wavy, estimate the STRETCHED length
-- Rule 3: When uncertain, choose the SHORTER category (closer to H)
+- Rule 3: Always trace the LONGEST strand to its endpoint
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚨 MOST COMMON ERROR: Classifying short hair as long!
+🎯 SIMPLE LENGTH CHECK (Use this flowchart!):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**FIRST: Check these SHORT HAIR indicators:**
-□ Is the NECK/NAPE fully visible? → G or H Length!
-□ Is hair at or ABOVE the EAR? → H Length!
-□ Is hair at JAW/CHIN level? → G Length!
-□ Does hair NOT touch shoulder? → Must be F, G, or H!
+**Look at where the LONGEST hair tip ends (back view preferred):**
 
-**THEN: Check these LONG HAIR indicators:**
-□ Does hair reach BELOW the chest/armpit? → B or A Length
-□ Does hair touch or pass the waist? → A Length
-□ Is hair at mid-back (bra strap level)? → B Length
+1. Hair at/above NAPE (목덜미)? → **H Length**
+2. Hair at base of NECK (목 아래)? → **G Length**
+3. Hair between NECK and SHOULDER? → **F Length**
+4. Hair at SHOULDER line? → **E Length**
+5. Hair BELOW shoulder but ABOVE armpit? → **D Length**
+6. Hair at ARMPIT level (겨드랑이)? → **C Length**
+7. Hair at MID-CHEST (가슴 중간, 브라 라인)? → **B Length**
+8. Hair BELOW chest toward WAIST? → **A Length**
 
-⚠️ CRITICAL MISTAKES TO AVOID:
-❌ H Length (ear level) misclassified as E Length - VERY COMMON ERROR!
-❌ G Length (jaw/chin) misclassified as E Length
-❌ B Length (mid-back) misclassified as D Length
-❌ If neck is visible, it CANNOT be D, C, B, or A Length!
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📸 PHOTO ANALYSIS EXAMPLES:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Example 1: Pixie cut, hair at nape level, neck fully exposed → H Length (Short)
-Example 2: Short bob, hair at base of neck → G Length (Bob upper)
-Example 3: Bob/Lob ending between neck and shoulder, NOT touching shoulder → F Length (Bob lower)
-Example 4: Hair clearly TOUCHING the shoulder line → E Length (Medium upper)
-Example 5: Hair below shoulder, covering collarbone → D Length (Medium lower)
-Example 6: Hair at armpit level → C Length (Semi Long)
-Example 7: Hair at mid-chest level → B Length (Long upper)
-Example 8: Hair below chest, toward waist → A Length (Long lower)
-
-🔑 E vs F Decision Tree:
-Q: Does hair TOUCH the shoulder?
-- YES → E Length
-- NO (floats above) → F Length
+⚠️ COMMON MISTAKES:
+- B Length (가슴 중간) → D Length로 잘못 분류하지 마세요!
+- B는 가슴 중간까지 오는 긴 머리입니다
+- D는 어깨 아래~겨드랑이 위 사이입니다
+- 가슴까지 오면 무조건 B 또는 A입니다!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
