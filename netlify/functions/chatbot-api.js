@@ -962,16 +962,22 @@ ${genderContext}
 
 **Strict Definition by Body Landmarks (A = Longest, H = Shortest):**
 
-| Code | Body Landmark | Description |
-|------|--------------|-------------|
-| **H Length** | EAR LOBE level or ABOVE | Very short, nape fully exposed, pixie cut |
-| **G Length** | JAWLINE / CHIN line | Short bob, neck fully visible |
-| **F Length** | Below CHIN, ABOVE Shoulder | Bob cut, neck partially covered |
-| **E Length** | SHOULDER line / COLLARBONE | Medium, touching clavicle |
-| **D Length** | Below COLLARBONE, ABOVE Armpit | Semi-long |
-| **C Length** | ARMPIT / CHEST line (nipple level) | Long |
-| **B Length** | Below CHEST, MID-BACK (bra strap) | Very long |
-| **A Length** | WAIST / NAVEL or below | Super long |
+| Code | Body Landmark | Style Category |
+|------|--------------|----------------|
+| **H Length** | NAPE of neck (후두부/목덜미) | Short - 픽시컷, 베리숏 |
+| **G Length** | Base of NECK (목 아래) | Bob 상단 - 짧은 단발 |
+| **F Length** | Between NECK and SHOULDER | Bob 하단 - 턱선~어깨 사이 단발 |
+| **E Length** | SHOULDER line (어깨선) | Medium 상단 - 어깨에 닿는 길이 |
+| **D Length** | Below SHOULDER (어깨 아래) | Medium 하단 - 쇄골 덮는 길이 |
+| **C Length** | ARMPIT level (겨드랑이선) | Semi Long - 겨드랑이 높이 |
+| **B Length** | MID-CHEST (가슴 중간) | Long 상단 - 가슴 중간 |
+| **A Length** | BELOW CHEST (가슴 아래) | Long 하단 - 가슴 아래~허리 |
+
+⚠️ KEY DISTINCTION (E vs F):
+- F Length: Hair ends ABOVE shoulder, between neck and shoulder
+- E Length: Hair TOUCHES or reaches the shoulder line
+- If hair is clearly ON the shoulder → E Length!
+- If hair floats above shoulder, not touching → F Length!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔬 ANALYSIS STEPS (Chain of Thought):
@@ -1016,13 +1022,19 @@ ${genderContext}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📸 PHOTO ANALYSIS EXAMPLES:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Example 1: Pixie cut, ears fully visible, neck exposed → H Length
-Example 2: Bob cut ending at jawline, neck visible → G Length
-Example 3: Lob ending between chin and shoulder → F Length
-Example 4: Hair touching shoulders/collarbone → E Length
-Example 5: Hair at armpit/chest level → C Length
-Example 6: Hair reaching mid-back → B Length
-Example 7: Hair at waist level → A Length
+Example 1: Pixie cut, hair at nape level, neck fully exposed → H Length (Short)
+Example 2: Short bob, hair at base of neck → G Length (Bob upper)
+Example 3: Bob/Lob ending between neck and shoulder, NOT touching shoulder → F Length (Bob lower)
+Example 4: Hair clearly TOUCHING the shoulder line → E Length (Medium upper)
+Example 5: Hair below shoulder, covering collarbone → D Length (Medium lower)
+Example 6: Hair at armpit level → C Length (Semi Long)
+Example 7: Hair at mid-chest level → B Length (Long upper)
+Example 8: Hair below chest, toward waist → A Length (Long lower)
+
+🔑 E vs F Decision Tree:
+Q: Does hair TOUCH the shoulder?
+- YES → E Length
+- NO (floats above) → F Length
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
