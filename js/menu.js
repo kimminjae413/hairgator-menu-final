@@ -1208,6 +1208,12 @@ function openStyleModal(style) {
         btnHairTry.onclick = async function (e) {
             e.stopPropagation();
 
+            // 남자만 헤어체험 활성화 (여자는 개발 중)
+            if (window.currentGender !== 'male') {
+                alert('개발중입니다');
+                return;
+            }
+
             // 크레딧 체크
             if (!hasEnoughCredits()) {
                 const currentCredits = getUserCredits();
