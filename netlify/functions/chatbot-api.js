@@ -2790,92 +2790,72 @@ Q4. 머리카락이 어깨선에 닿는가?
 - guide_type: "Stationary" (고정 가이드), "Traveling" (이동 가이드)
 - over_direction: true/false (오버 디렉션 여부)
 
-【OUTPUT JSON - 56개 파라미터 전체】
-⚠️ 아래는 예시 형식입니다. length_category는 실제 이미지를 보고 판단하세요!
-⚠️ 가슴까지 오는 머리 = B Length, 어깨 아래~겨드랑이 위 = D Length
+【OUTPUT JSON 형식】
+⚠️ 모든 값은 이미지를 분석하여 결정하세요! 아래 예시값을 그대로 복사하지 마세요!
+
 {
-  // === 기장 & 카테고리 (5개) ===
-  "cut_category": "Women's Cut",
-  "length_category": "이미지 분석 후 결정 (A~H 중 선택)",
-  "estimated_hair_length_cm": "이미지에 맞게",
-  "front_length": "Medium",
-  "back_length": "Long",
-
-  // === 구조 & 폼 (5개) ===
-  "cut_form": "L (Layer)",
-  "structure_layer": "Mid Layer",
-  "graduation_type": "None",
-  "weight_distribution": "Balanced",
-  "layer_type": "Mid Layer",
-
-  // === 실루엣 & 볼륨 (5개) ===
-  "silhouette": "Round",
-  "outline_shape": "Curved",
-  "volume_zone": "Medium",
-  "volume_distribution": "Middle",
-  "line_quality": "Soft",
-
-  // === 앞머리 (3개) ===
-  "fringe_type": "Side Bang",
-  "fringe_length": "Eyebrow",
-  "fringe_texture": "Textured",
-
-  // === 텍스처 & 질감 (5개) ===
-  "surface_texture": "Textured",
-  "hair_density": "Medium",
-  "hair_texture": "Wavy",
-  "movement": "Moderate",
-  "texture_technique": "Point Cut",
-
-  // === 기술 파라미터 (8개) ===
-  "section_primary": "Diagonal-Backward",
-  "lifting_range": ["L4"],
-  "direction_primary": "D4",
-  "cutting_method": "Point Cut",
-  "cutting_zone": "Back",
-  "guide_type": "Traveling",
-  "over_direction": false,
-  "connection_type": "Connected",
-
-  // === 스타일링 & 디자인 (3개) ===
-  "styling_method": "Blow Dry",
-  "design_emphasis": "Volume",
-  "face_shape_match": ["Oval", "Round"],
-
-  // === 펌 파라미터 (8개) ===
-  "perm_applied": false,
-  "perm_type": null,
-  "perm_rod_size": null,
-  "perm_technique": null,
-  "curl_pattern": null,
-  "curl_strength": null,
-  "curl_direction": null,
-  "wave_type": null,
-
-  // === 컬러 파라미터 (12개) ===
-  "color_applied": false,
-  "base_color": null,
-  "color_level": null,
-  "color_tone": null,
-  "highlight_applied": false,
-  "highlight_color": null,
-  "highlight_technique": null,
-  "lowlight_applied": false,
-  "lowlight_color": null,
-  "balayage_applied": false,
-  "ombre_applied": false,
-  "color_placement": null,
-
-  // === 설명 (1개) ===
-  "description": "스타일 설명 1-2문장"
+  "cut_category": "Women's Cut 또는 Men's Cut",
+  "length_category": "A~H 중 이미지에 맞는 것 (가슴=B, 어깨아래=D, 어깨=E)",
+  "estimated_hair_length_cm": "숫자",
+  "front_length": "Very Short/Short/Medium/Long/Very Long 중 선택",
+  "back_length": "Very Short/Short/Medium/Long/Very Long 중 선택",
+  "cut_form": "O (One Length) 또는 G (Graduation) 또는 L (Layer)",
+  "structure_layer": "No Layer/Low Layer/Mid Layer/High Layer 중 선택",
+  "graduation_type": "None/Low/Medium/High 중 선택",
+  "weight_distribution": "Top Heavy/Balanced/Bottom Heavy 중 선택",
+  "layer_type": "No Layer/Low Layer/Mid Layer/High Layer 중 선택",
+  "silhouette": "Round/Oval/Square/A-line/V-line 중 선택",
+  "outline_shape": "Round/Square/Curved/Asymmetric/Pointed 중 선택",
+  "volume_zone": "Low/Medium/High 중 선택",
+  "volume_distribution": "Top/Middle/Bottom/All Over 중 선택",
+  "line_quality": "Soft/Hard/Mixed 중 선택",
+  "fringe_type": "Full Bang/See-through Bang/Side Bang/Curtain Bang/No Fringe 중 선택",
+  "fringe_length": "Forehead/Eyebrow/Eye/Cheekbone/Chin/Ear/None 중 선택",
+  "fringe_texture": "Blunt/Textured/Wispy/None 중 선택",
+  "surface_texture": "Smooth/Textured/Layered 중 선택",
+  "hair_density": "Thin/Medium/Thick 중 선택",
+  "hair_texture": "Straight/Wavy/Curly 중 선택",
+  "movement": "None/Minimal/Moderate/Maximum 중 선택",
+  "texture_technique": "Blunt Cut/Point Cut/Slide Cut/Razor Cut/None 중 선택",
+  "section_primary": "Horizontal/Vertical/Diagonal-Forward/Diagonal-Backward 중 선택",
+  "lifting_range": ["L0"~"L8" 중 해당하는 것들을 배열로"],
+  "direction_primary": "D0~D8 중 선택",
+  "cutting_method": "Blunt/Point Cut/Slide Cut/Razor 중 선택",
+  "cutting_zone": "Crown/Top/Side/Back/Nape/Fringe/Perimeter 중 선택",
+  "guide_type": "Stationary/Traveling 중 선택",
+  "over_direction": true 또는 false,
+  "connection_type": "Connected/Disconnected/Semi-Connected 중 선택",
+  "styling_method": "Blow Dry/Air Dry/Iron/Curling 중 선택",
+  "design_emphasis": "Volume/Texture/Shape/Movement 중 선택",
+  "face_shape_match": ["어울리는 얼굴형 배열"],
+  "perm_applied": true 또는 false (이미지에 펌이 있으면 true),
+  "perm_type": "펌 종류 또는 null",
+  "perm_rod_size": "롯드 사이즈 또는 null",
+  "perm_technique": "펌 기법 또는 null",
+  "curl_pattern": "컬 패턴 또는 null",
+  "curl_strength": "컬 강도 또는 null",
+  "curl_direction": "컬 방향 또는 null",
+  "wave_type": "웨이브 타입 또는 null",
+  "color_applied": true 또는 false (염색이 있으면 true),
+  "base_color": "베이스 컬러 또는 null",
+  "color_level": 1-10 또는 null,
+  "color_tone": "톤 또는 null",
+  "highlight_applied": true 또는 false,
+  "highlight_color": "하이라이트 컬러 또는 null",
+  "highlight_technique": "하이라이트 기법 또는 null",
+  "lowlight_applied": true 또는 false,
+  "lowlight_color": "로우라이트 컬러 또는 null",
+  "balayage_applied": true 또는 false,
+  "ombre_applied": true 또는 false,
+  "color_placement": "컬러 배치 또는 null",
+  "description": "이 스타일에 대한 1-2문장 설명"
 }
-// 총 55개 파라미터 + description = 56개
 
-⚠️ 주의사항:
-1. lifting_range는 반드시 배열로! ["L4"] 또는 ["L2", "L4"]
+⚠️ 필수 규칙:
+1. lifting_range는 반드시 배열! ["L2"] 또는 ["L2", "L4"]
 2. cut_form은 괄호 포함! "L (Layer)" 형식
-3. 추정이 어려우면 중간값 선택 (예: "Medium", "Mid Layer")
-4. fringe_type: "Full Bang", "See-through Bang", "Side Bang", "No Fringe" 중 선택
+3. length_category: 가슴까지=B, 겨드랑이=C, 어깨아래=D, 어깨=E
+4. 모든 값은 이미지를 보고 판단! 예시를 그대로 복사하지 마세요!
 
 JSON만 반환하세요.`;
 
@@ -2893,7 +2873,7 @@ JSON만 반환하세요.`;
             ]
           }],
           generationConfig: {
-            temperature: 0.2,  // 더 낮춰서 일관성 향상
+            temperature: 0,  // 완전 결정적 출력
             maxOutputTokens: 2000,
             responseMimeType: "application/json"  // JSON 출력 강제
           }
