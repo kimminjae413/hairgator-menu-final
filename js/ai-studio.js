@@ -1102,6 +1102,13 @@ class AIStudio {
     this.canvasEmpty.classList.add('hidden');
     this.canvasResult.classList.remove('hidden');
 
+    // 남자/여자 분기 처리
+    if (data.gender === 'male') {
+      this.showMaleRecipeCanvas(data, uploadedImageUrl);
+      return;
+    }
+
+    // 여자 스타일 (기존 로직)
     const { analysis, targetSeries, referenceStyles, customRecipe, mainDiagrams, params56 } = data;
 
     // 42포뮬러 핵심 파라미터 추출
@@ -1116,7 +1123,7 @@ class AIStudio {
             <div class="analysis-badge">${analysis.lengthName}</div>
           </div>
           <div class="analysis-summary">
-            <h2>🎯 맞춤 레시피</h2>
+            <h2>👩 맞춤 레시피</h2>
             <div class="analysis-tags">
               <span class="tag primary">${analysis.form}</span>
               <span class="tag">${liftingStr}</span>
@@ -1166,8 +1173,8 @@ class AIStudio {
 
         <!-- 도해도 뷰어 (스크린샷 참고 UI) -->
         <div class="diagrams-section large">
-          <h3>📐 기술 매칭 도해도 (${mainDiagrams.length}장)</h3>
-          ${this.generateDiagramViewer(mainDiagrams)}
+          <h3>📐 기술 매칭 도해도 (${mainDiagrams ? mainDiagrams.length : 0}장)</h3>
+          ${this.generateDiagramViewer(mainDiagrams || [])}
         </div>
 
         <!-- 생성된 맞춤 레시피 -->
@@ -1186,7 +1193,94 @@ class AIStudio {
     }
 
     // 도해도 뷰어 초기화
-    this.initDiagramViewer(mainDiagrams);
+    this.initDiagramViewer(mainDiagrams || []);
+  }
+
+  // ==================== 남자 맞춤 레시피 캔버스 표시 ====================
+
+  showMaleRecipeCanvas(data, uploadedImageUrl) {
+    const { analysis, targetSeries, referenceStyles, recipe, diagrams } = data;
+
+    this.canvasResult.innerHTML = `
+      <div class="custom-recipe-canvas male">
+        <!-- 헤더: 업로드 이미지 + 분석 결과 -->
+        <div class="recipe-header compact">
+          <div class="uploaded-image-section">
+            <img src="${uploadedImageUrl}" alt="업로드한 이미지" class="uploaded-image">
+            <div class="analysis-badge male">${analysis.styleCode}</div>
+          </div>
+          <div class="analysis-summary">
+            <h2>👨 맞춤 레시피</h2>
+            <div class="analysis-tags">
+              <span class="tag primary">${analysis.styleName}</span>
+              <span class="tag">${analysis.fadeType || 'No Fade'}</span>
+              <span class="tag">${analysis.texture || 'Smooth'}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 남자 스타일 분석 -->
+        <div class="formula-params-section">
+          <h3>📋 스타일 분석</h3>
+          <div class="formula-grid">
+            <div class="formula-item">
+              <span class="formula-label">스타일</span>
+              <span class="formula-value highlight">${analysis.styleName}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">코드</span>
+              <span class="formula-value">${analysis.styleCode}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">탑 길이</span>
+              <span class="formula-value">${analysis.topLength || 'Medium'}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">사이드 길이</span>
+              <span class="formula-value">${analysis.sideLength || 'Short'}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">페이드</span>
+              <span class="formula-value">${analysis.fadeType || 'None'}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">텍스처</span>
+              <span class="formula-value">${analysis.texture || 'Smooth'}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">제품</span>
+              <span class="formula-value">${analysis.productType || 'Wax'}</span>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label">스타일링</span>
+              <span class="formula-value">${analysis.stylingDirection || 'Forward'}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 도해도 뷰어 -->
+        <div class="diagrams-section large">
+          <h3>📐 기술 매칭 도해도 (${diagrams ? diagrams.length : 0}장)</h3>
+          ${this.generateDiagramViewer(diagrams || [])}
+        </div>
+
+        <!-- 생성된 맞춤 레시피 -->
+        <div class="custom-recipe-section">
+          <h3>✨ AI 생성 맞춤 레시피</h3>
+          <div class="recipe-content">
+            ${this.formatRecipeContent(recipe)}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Mobile: Show canvas panel
+    if (window.innerWidth <= 1024) {
+      this.canvasPanel.classList.add('active');
+    }
+
+    // 도해도 뷰어 초기화
+    this.initDiagramViewer(diagrams || []);
   }
 
   // ==================== 도해도 뷰어 ====================

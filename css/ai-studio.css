@@ -1333,6 +1333,11 @@ body.ai-studio-page {
   white-space: nowrap;
 }
 
+/* 남자 스타일 배지 (파란색) */
+.analysis-badge.male {
+  background: linear-gradient(135deg, #4A90E2, #357ABD);
+}
+
 .analysis-summary {
   flex: 1;
 }
