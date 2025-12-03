@@ -48,7 +48,7 @@ const PARAMS_56_SCHEMA = {
         "A Length", "B Length", "C Length", "D Length",
         "E Length", "F Length", "G Length", "H Length"
       ],
-      description: "Overall length category based on body landmarks"
+      description: "CRITICAL: A=below chest/waist, B=mid-chest(bra line), C=armpit, D=below shoulder ONLY, E=shoulder, F/G/H=short. If hair reaches CHEST level, MUST be B or A, NEVER D!"
     },
 
     estimated_hair_length_cm: {
@@ -955,37 +955,25 @@ async function analyzeImage(payload, openaiKey) {
   const systemPrompt = `You are "HAIRGATOR AI," an expert hair analyst.
 ${genderContext}
 
-🚨🚨🚨 CRITICAL LENGTH RULES - READ FIRST! 🚨🚨🚨
+## LENGTH CLASSIFICATION EXAMPLES (FOLLOW EXACTLY):
 
-Hair reaches CHEST (가슴/브라라인) = B Length or A Length
-Hair reaches ARMPIT (겨드랑이) = C Length
-Hair is BELOW SHOULDER but ABOVE armpit = D Length
-Hair at SHOULDER = E Length
+Example 1: Hair ends at mid-chest, covers the bra line area
+→ Correct: "B Length"  ❌ Wrong: "D Length"
 
-❌ NEVER classify chest-length hair as D Length!
-❌ D Length is ONLY for hair between shoulder and armpit!
+Example 2: Hair ends at armpit level
+→ Correct: "C Length"
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-LENGTH CATEGORIES (A=longest, H=shortest):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Example 3: Hair ends below shoulder but above armpit (collarbone area)
+→ Correct: "D Length"
 
-H Length = NAPE (목덜미) - pixie, very short
-G Length = BASE OF NECK (목 아래) - short bob
-F Length = NECK TO SHOULDER gap - bob/lob
-E Length = SHOULDER LINE (어깨선) - medium
-D Length = BELOW SHOULDER, ABOVE ARMPIT - semi-long
-C Length = ARMPIT LEVEL (겨드랑이) - semi-long
-B Length = MID-CHEST (가슴 중간, 브라라인) - long
-A Length = BELOW CHEST (가슴 아래~허리) - very long
+Example 4: Hair ends at shoulder line
+→ Correct: "E Length"
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-BEFORE YOU OUTPUT length_category, CHECK:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## LENGTH DEFINITION:
+- B Length = MID-CHEST (가슴 중간, 브라라인) = LONG HAIR
+- D Length = BELOW SHOULDER, ABOVE ARMPIT = MEDIUM-LONG (NOT chest level!)
 
-1. Is hair at CHEST level? → Output "B Length" (NOT D!)
-2. Is hair at ARMPIT level? → Output "C Length"
-3. Is hair below shoulder but above armpit? → Output "D Length"
-4. Is hair at shoulder? → Output "E Length"
+If you see long hair reaching the chest area, output "B Length".
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1088,7 +1076,7 @@ Return ONLY the JSON object, no markdown, no explanation, no code blocks!`;
             ]
           }],
           generationConfig: {
-            temperature: 0.2,  // 더 낮춰서 일관성 향상
+            temperature: 0,  // 완전 결정적 출력
             maxOutputTokens: 4000,
             responseMimeType: "application/json"  // JSON 출력 강제
           }
