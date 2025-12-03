@@ -999,25 +999,35 @@ ${genderContext}
 - Rule 3: Always trace the LONGEST strand to its endpoint
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 SIMPLE LENGTH CHECK (Use this flowchart!):
+🚨 MANDATORY LENGTH CHECK - ANSWER THESE QUESTIONS:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Look at where the LONGEST hair tip ends (back view preferred):**
+Before outputting length_category, you MUST check:
 
-1. Hair at/above NAPE (목덜미)? → **H Length**
-2. Hair at base of NECK (목 아래)? → **G Length**
-3. Hair between NECK and SHOULDER? → **F Length**
-4. Hair at SHOULDER line? → **E Length**
-5. Hair BELOW shoulder but ABOVE armpit? → **D Length**
-6. Hair at ARMPIT level (겨드랑이)? → **C Length**
-7. Hair at MID-CHEST (가슴 중간, 브라 라인)? → **B Length**
-8. Hair BELOW chest toward WAIST? → **A Length**
+**Q1: Does hair reach the CHEST area (가슴)?**
+- YES → B Length or A Length (NEVER D!)
+- NO → Continue to Q2
 
-⚠️ COMMON MISTAKES:
-- B Length (가슴 중간) → D Length로 잘못 분류하지 마세요!
-- B는 가슴 중간까지 오는 긴 머리입니다
-- D는 어깨 아래~겨드랑이 위 사이입니다
-- 가슴까지 오면 무조건 B 또는 A입니다!
+**Q2: Does hair reach the ARMPIT area (겨드랑이)?**
+- YES → C Length
+- NO → Continue to Q3
+
+**Q3: Does hair reach BELOW the SHOULDER?**
+- YES → D Length
+- NO → Continue to Q4
+
+**Q4: Does hair touch the SHOULDER LINE?**
+- YES → E Length
+- NO → F, G, or H Length (short hair)
+
+⚠️ CRITICAL ERROR TO AVOID:
+❌ WRONG: Hair at chest level → "D Length"
+✅ CORRECT: Hair at chest level → "B Length"
+
+D Length = 어깨 아래 ~ 겨드랑이 위 (ABOVE armpit)
+B Length = 가슴 중간 (MID-CHEST, bra line)
+
+If hair is clearly at CHEST level, it MUST be B or A, NEVER D!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
