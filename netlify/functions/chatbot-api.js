@@ -1054,7 +1054,7 @@ Return ONLY a valid JSON object with these exact fields:
   "cut_category": "Women's Cut" or "Men's Cut",
   "womens_cut_category": "Layer Cut" or "Graduation Cut" or "One Length" or "Combination Cut",
   "mens_cut_category": "Two Block" or "Dandy Cut" or "Pomade Style" or "Textured Crop" or "Classic Cut" or "Fade Cut" or "Undercut" or "Comma Hair" or null,
-  "length_category": "A Length (65cm)" or "B Length (50cm)" or "C Length (40cm)" or "D Length (35cm)" or "E Length (30cm)" or "F Length (25cm)" or "G Length (20cm)" or "H Length (15cm)",
+  "length_category": "A Length" or "B Length" or "C Length" or "D Length" or "E Length" or "F Length" or "G Length" or "H Length",
   "cut_form": "O (One Length)" or "G (Graduation)" or "L (Layer)",
   "texture_type": "Straight" or "Wavy" or "Curly" or "Coily",
   "hair_density": "Thin" or "Medium" or "Thick",
