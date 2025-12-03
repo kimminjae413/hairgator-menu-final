@@ -28,3 +28,27 @@ dist-ssr
 .env.local
 .env.*
 data_base/
+
+# Local Netlify folder
+.netlify
+
+# Firebase credentials (보안)
+*firebase-adminsdk*.json
+
+# Legacy data folder
+data/
+
+# Scripts (로컬 전용)
+scripts/
+
+# Installer files
+*.exe
+
+# Image files in root
+*.png
+
+# Claude local settings
+.claude/settings.local.json
+
+# Null file
+nul
