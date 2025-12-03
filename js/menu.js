@@ -1259,8 +1259,8 @@ function openAIPhotoModal(styleId, styleName, styleImageUrl) {
         status: 'ACTIVE'
     });
 
-    // 여자 헤어체험은 개발 중 (남자만 활성화)
-    if (window.currentGender === 'female') {
+    // 남자만 헤어체험 활성화 (여자는 개발 중)
+    if (window.currentGender !== 'male') {
         alert('개발중입니다');
         return;
     }
