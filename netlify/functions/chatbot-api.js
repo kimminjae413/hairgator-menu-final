@@ -4084,50 +4084,47 @@ const MALE_STYLE_TERMS = {
 
 // 남자 이미지 Vision 분석
 async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
-  const prompt = `You are a men's hairstyle classifier.
+  const prompt = `You are a men's hairstyle classifier. Classify accurately based on hair direction.
 
-## 🚨 MOST IMPORTANT: Check for VISIBLE PART LINE first! 🚨
+## SF (Side Fringe / 사이드 프린지)
+- Bangs fall STRAIGHT DOWN onto forehead (앞머리가 이마로 수직 낙하)
+- Hair covers forehead without any sideways sweep
+- NO parting, hair just hangs down naturally
+- Examples: 댄디컷, 시스루컷 (without part)
 
-STEP 1: Look at the scalp/head top area.
-- Can you see a CLEAR LINE where hair divides? (두피가 보이는 가르마)
-- Is there a visible separation where scalp shows through?
+## SP (Side Part / 사이드 파트)
+- Hair is SWEPT/COMBED to one side (머리가 한쪽으로 넘어감)
+- Hair flows SIDEWAYS, not straight down
+- Part line may or may not be clearly visible
+- Even subtle side-swept styles = SP
+- Examples: 가일컷, 시스루가르마, 포마드컷
 
-If NO visible part line → style_category = "SF"
-If YES visible part line → style_category = "SP"
+## Key Question: Where does the hair GO?
+- Hair falls DOWN onto forehead → SF
+- Hair flows SIDEWAYS to left or right → SP
 
-## SF (Side Fringe) - 90% of natural Korean men's styles
-- Bangs fall onto forehead (앞머리가 이마로 내려옴)
-- Hair may be textured, messy, or slightly flowing
-- NO visible scalp line dividing the hair
-- 댄디컷, 시스루컷, 자연스러운 앞머리 = ALL SF
+## Other Categories
+| Code | Feature |
+|------|---------|
+| FU | Fringe styled UPWARD |
+| PB | ALL hair swept backward |
+| BZ | Very short buzz cut |
+| CP | Short textured crop |
+| MC | Mohawk style |
 
-## SP (Side Part) - ONLY with visible part line
-- You MUST see the scalp through a clear part line
-- Hair clearly divided into two directions from the part
-- 가르마가 눈에 보여야만 SP
-
-## Other styles
-- FU: Fringe styled UP (앞머리 위로)
-- PB: ALL hair pushed back, forehead exposed
-- BZ: Buzz cut (very short clipper)
-- CP: Crop cut (short textured top)
-- MC: Mohawk
-
-## OUTPUT (JSON only)
+## OUTPUT (JSON only, no markdown)
 {
-  "has_part_line": false,
-  "style_category": "SF",
-  "style_name": "Side Fringe",
-  "sub_style": "댄디컷",
-  "top_length": "Medium",
-  "side_length": "Short",
-  "fade_type": "None",
-  "texture": "Textured",
-  "product_type": "Wax",
-  "styling_direction": "Forward"
-}
-
-⚠️ DEFAULT TO SF unless you clearly see a part line on scalp!`;
+  "has_part_line": true or false,
+  "style_category": "SF or SP or FU or PB or BZ or CP or MC",
+  "style_name": "English name",
+  "sub_style": "Korean name",
+  "top_length": "Very Short|Short|Medium|Long",
+  "side_length": "Skin|Very Short|Short|Medium",
+  "fade_type": "None|Low Fade|Mid Fade|High Fade|Skin Fade|Taper",
+  "texture": "Smooth|Textured|Messy|Spiky",
+  "product_type": "Wax|Pomade|Clay|Gel",
+  "styling_direction": "Forward|Backward|Side|Up"
+}`;
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
