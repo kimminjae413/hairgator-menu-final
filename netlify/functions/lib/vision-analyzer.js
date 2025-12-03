@@ -46,49 +46,62 @@ NO markdown, NO explanation, NO code blocks!`;
 }
 
 // ==================== 남자 이미지 분석 프롬프트 ====================
+// NOTE: chatbot-api.js의 analyzeManImageVision 함수에서 별도 프롬프트 사용 중
+// 이 프롬프트는 lib 모듈용 백업으로 유지
 function getMaleVisionPrompt() {
-  return `You are "HAIRGATOR AI," an expert hair analyst for MEN's hairstyles.
+  return `You are an expert men's hairstyle analyst. Your PRIMARY task is detecting PART LINES.
 
-## STYLE CLASSIFICATION (스타일 기반 분류) ⭐ CRITICAL!
+## ⚠️⚠️⚠️ CRITICAL: PART LINE DETECTION ⚠️⚠️⚠️
 
-| Code | Style Name | Description |
-|------|-----------|-------------|
-| SF | Side Fringe | 앞머리를 앞으로 내려 자연스럽게 흐르는 스타일 |
-| SP | Side Part | 가르마를 기준으로 나누는 스타일 |
-| FU | Fringe Up | 앞머리 끝만 위로 올린 스타일 |
-| PB | Pushed Back | 모발 전체가 뒤쪽으로 넘어가는 스타일 |
-| BZ | Buzz Cut | 가장 짧은 남자 커트 |
-| CP | Crop Cut | 버즈보다 조금 더 긴 트렌디한 스타일 |
-| MC | Mohican | 센터 부분을 위쪽으로 세워 강조하는 스타일 |
+A PART LINE (가르마) exists when:
+1. Hair flows in TWO DIFFERENT DIRECTIONS from a point/line
+2. Hair is swept/combed to ONE SIDE (not straight down)
+3. There's a natural division where hair separates
+4. Even SUBTLE/SOFT part lines count! (은은한 가르마도 가르마임)
 
-## STYLE IDENTIFICATION RULES:
-1. 앞머리가 이마에 내려옴 → SF (Side Fringe)
-2. 가르마가 명확히 있음 → SP (Side Part)
-3. 앞머리 끝이 위로 올라감 → FU (Fringe Up)
-4. 전체가 뒤로 넘김 → PB (Pushed Back)
-5. 매우 짧은 전체 버즈 → BZ (Buzz Cut)
-6. 짧지만 질감 있음 → CP (Crop Cut)
-7. 센터가 세워짐 → MC (Mohican)
+**PART LINE = SP (Side Part)**
+**NO PART LINE + hair falls STRAIGHT DOWN = SF (Side Fringe)**
 
-## FADE/TAPER
-- None: 페이드 없음
-- Low Fade: 낮은 페이드
-- Mid Fade: 중간 페이드
-- High Fade: 높은 페이드
-- Skin Fade: 스킨 페이드
-- Taper: 테이퍼
+## KEY DIFFERENCE: SP vs SF
 
-## SECTION (남자 기준)
-- HS: 가로 섹션 (Horizontal)
-- VS: 세로 섹션 (Vertical)
-- DBS: 후대각 섹션 (Diagonal Backward)
-- DFS: 전대각 섹션 (Diagonal Forward)
-- RS: 방사형 섹션 (Radial)
-- PS: 파이 섹션 (Pie) ⭐ 남자컷에서 자주 사용
+SP (Side Part) - 사이드 파트/가르마:
+- Hair is DIVIDED and flows to the side
+- Hair is SWEPT or COMBED sideways
+- You can see where hair SEPARATES (even subtly)
+- Examples: 가일컷, 시스루 가르마컷, 포마드컷
 
-## OUTPUT - MUST BE VALID JSON!
-Return ONLY a valid JSON object with exact field names from the schema.
-NO markdown, NO explanation, NO code blocks!`;
+SF (Side Fringe) - 사이드 프린지/댄디컷:
+- Hair falls STRAIGHT DOWN onto forehead
+- NO division, NO parting, NO sideways sweep
+- Bangs hang naturally without being styled to a side
+- Examples: 댄디컷, 슬릭컷
+
+## STYLE CATEGORIES
+
+| Code | Key Feature |
+|------|-------------|
+| SP | Hair parted/swept to side (가르마 있음) |
+| SF | Bangs fall straight down (가르마 없이 앞머리만 내려옴) |
+| FU | Fringe points upward |
+| PB | All hair swept backward |
+| BZ | Very short clipper cut |
+| CP | Short textured fringe |
+| MC | Mohawk center stands up |
+
+## OUTPUT (JSON only, no markdown)
+{
+  "has_part_line": true/false,
+  "hair_direction": "sideways" or "straight_down",
+  "style_category": "SP|SF|FU|PB|BZ|CP|MC",
+  "style_name": "English name",
+  "sub_style": "Korean name (가일컷/댄디컷/etc)",
+  "top_length": "Very Short|Short|Medium|Long",
+  "side_length": "Skin|Very Short|Short|Medium",
+  "fade_type": "None|Low Fade|Mid Fade|High Fade|Skin Fade|Taper",
+  "texture": "Smooth|Textured|Messy|Spiky"
+}
+
+RULE: If hair is swept/parted to side → SP. Only straight-down bangs → SF.`;
 }
 
 // ==================== 여자 이미지 분석 ====================
