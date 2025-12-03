@@ -2238,8 +2238,51 @@ if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
 })();
 </script>    
 
-<!-- ⭐ 챗봇 시스템 - ES6 Modules로 변경 -->
-<script type="module" src="js/chatbot-ui.js"></script>
+<!-- ⭐ AI Studio 플로팅 버튼 -->
+<script>
+(function() {
+  // AI Studio 이동 플로팅 버튼 생성
+  const buttonHTML = `
+    <button id="chatbot-toggle" aria-label="AI Studio" onclick="window.location.href='ai-studio.html'" style="
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3a3a3a, #2d2d2d);
+      border: none;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    ">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    </button>
+  `;
+  document.body.insertAdjacentHTML('beforeend', buttonHTML);
+
+  // 호버 효과
+  const btn = document.getElementById('chatbot-toggle');
+  if (btn) {
+    btn.addEventListener('mouseenter', () => {
+      btn.style.transform = 'scale(1.1)';
+      btn.style.boxShadow = '0 6px 30px rgba(0, 0, 0, 0.4)';
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = 'scale(1)';
+      btn.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
+    });
+  }
+  console.log('✅ AI Studio 플로팅 버튼 생성 완료');
+})();
+</script>
 
 <!-- ⭐⭐⭐ 캐시 강제 초기화 - 스타일 업데이트 적용을 위해 -->
 <script>
