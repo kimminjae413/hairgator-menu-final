@@ -988,24 +988,41 @@ ${genderContext}
 - Where does the longest tip END relative to body landmarks?
 
 **STEP 4: Determine Category**
-- Rule 1: If between two lengths, choose the LONGER one
+- Rule 1: Match the EXACT body landmark where hair ends
 - Rule 2: If curly/wavy, estimate the STRETCHED length
-- Rule 3: If photo cropped, infer from neck/shoulder visibility
+- Rule 3: When uncertain, choose the SHORTER category (closer to H)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 MOST COMMON ERROR: Classifying short hair as long!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**FIRST: Check these SHORT HAIR indicators:**
+□ Is the NECK/NAPE fully visible? → G or H Length!
+□ Is hair at or ABOVE the EAR? → H Length!
+□ Is hair at JAW/CHIN level? → G Length!
+□ Does hair NOT touch shoulder? → Must be F, G, or H!
+
+**THEN: Check these LONG HAIR indicators:**
+□ Does hair reach BELOW the chest/armpit? → B or A Length
+□ Does hair touch or pass the waist? → A Length
+□ Is hair at mid-back (bra strap level)? → B Length
+
 ⚠️ CRITICAL MISTAKES TO AVOID:
+❌ H Length (ear level) misclassified as E Length - VERY COMMON ERROR!
+❌ G Length (jaw/chin) misclassified as E Length
+❌ B Length (mid-back) misclassified as D Length
+❌ If neck is visible, it CANNOT be D, C, B, or A Length!
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-❌ Hair at EAR LEVEL → This is H Length, NOT E or F!
-❌ Hair at JAW/CHIN → This is G Length, NOT E!
-❌ NECK fully visible, short hair → G or H Length!
-❌ Confusing short bob with medium length!
-
-✅ QUICK CHECK FOR SHORT HAIR:
-- Can you see the NECK clearly? → G or H
-- Is hair at or above EAR? → H Length!
-- Is hair at JAW level? → G Length!
-- Does NOT touch shoulder at all? → F, G, or H!
+📸 PHOTO ANALYSIS EXAMPLES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Example 1: Pixie cut, ears fully visible, neck exposed → H Length
+Example 2: Bob cut ending at jawline, neck visible → G Length
+Example 3: Lob ending between chin and shoulder → F Length
+Example 4: Hair touching shoulders/collarbone → E Length
+Example 5: Hair at armpit/chest level → C Length
+Example 6: Hair reaching mid-back → B Length
+Example 7: Hair at waist level → A Length
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
