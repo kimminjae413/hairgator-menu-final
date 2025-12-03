@@ -3,6 +3,24 @@
 // Split View Layout + Firebase Integration
 // ============================================================
 
+// ⭐ Pull-to-Refresh 비활성화 (웹뷰용)
+(function() {
+    let lastY = 0;
+    document.addEventListener('touchstart', function(e) {
+        lastY = e.touches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', function(e) {
+        const currentY = e.touches[0].clientY;
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+        // 맨 위에서 아래로 당길 때만 막기
+        if (scrollTop <= 0 && currentY > lastY) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+})();
+
 class AIStudio {
   constructor() {
     this.apiEndpoint = '/.netlify/functions/chatbot-api';

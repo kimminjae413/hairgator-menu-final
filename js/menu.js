@@ -1,5 +1,23 @@
 // ========== HAIRGATOR 메뉴 시스템 - 헤어체험 연동 최종 버전 ==========
 
+// ⭐ Pull-to-Refresh 비활성화 (웹뷰용)
+(function() {
+    let lastY = 0;
+    document.addEventListener('touchstart', function(e) {
+        lastY = e.touches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', function(e) {
+        const currentY = e.touches[0].clientY;
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+        // 맨 위에서 아래로 당길 때만 막기
+        if (scrollTop <= 0 && currentY > lastY) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+})();
+
 // ⭐ 스태거 애니메이션 keyframes 동적 추가
 (function() {
     if (!document.getElementById('hairgator-card-animations')) {
