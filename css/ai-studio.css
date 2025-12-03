@@ -2240,6 +2240,32 @@ body.ai-studio-page {
   cursor: not-allowed;
 }
 
+/* 여자 스타일 수정 컨트롤 (3개 요소) */
+.correction-controls.female {
+  flex-wrap: wrap;
+}
+
+.correction-controls.female .style-select {
+  flex: 1 1 calc(50% - var(--space-sm));
+  min-width: 150px;
+}
+
+.correction-controls.female .correction-btn {
+  flex: 1 1 100%;
+  margin-top: var(--space-xs);
+}
+
+@media (min-width: 600px) {
+  .correction-controls.female .style-select {
+    flex: 1 1 auto;
+  }
+
+  .correction-controls.female .correction-btn {
+    flex: 0 0 auto;
+    margin-top: 0;
+  }
+}
+
 @media (max-width: 480px) {
   .correction-controls {
     flex-direction: column;

@@ -1111,8 +1111,15 @@ class AIStudio {
     // 여자 스타일 (기존 로직)
     const { analysis, targetSeries, referenceStyles, customRecipe, mainDiagrams, params56 } = data;
 
+    // 현재 분석 데이터 저장 (재분석용)
+    this.currentFemaleAnalysis = { data, uploadedImageUrl };
+
     // 42포뮬러 핵심 파라미터 추출
     const liftingStr = Array.isArray(analysis.liftingRange) ? analysis.liftingRange.join(', ') : (analysis.liftingRange || 'L4');
+
+    // Length 코드 추출 (A~H)
+    const currentLengthCode = analysis.lengthName ? analysis.lengthName.charAt(0) : 'E';
+    const currentForm = analysis.form || 'Layer';
 
     this.canvasResult.innerHTML = `
       <div class="custom-recipe-canvas">
@@ -1129,6 +1136,36 @@ class AIStudio {
               <span class="tag">${liftingStr}</span>
               <span class="tag">${analysis.sectionPrimary || 'Diagonal-Backward'}</span>
             </div>
+          </div>
+        </div>
+
+        <!-- 스타일 수정 섹션 -->
+        <div class="style-correction-section female">
+          <div class="correction-header">
+            <span class="correction-icon">⚠️</span>
+            <span>AI 분석이 틀렸나요? 길이/형태를 수정하세요</span>
+          </div>
+          <div class="correction-controls female">
+            <select id="length-correction-select" class="style-select">
+              <option value="" disabled>길이 선택...</option>
+              <option value="H" ${currentLengthCode === 'H' ? 'selected' : ''}>H - 귀/목덜미 (Very Short)</option>
+              <option value="G" ${currentLengthCode === 'G' ? 'selected' : ''}>G - 턱선 (Short Bob)</option>
+              <option value="F" ${currentLengthCode === 'F' ? 'selected' : ''}>F - 턱~어깨 (Bob)</option>
+              <option value="E" ${currentLengthCode === 'E' ? 'selected' : ''}>E - 어깨선 (Medium)</option>
+              <option value="D" ${currentLengthCode === 'D' ? 'selected' : ''}>D - 어깨~겨드랑이 (Semi-Long)</option>
+              <option value="C" ${currentLengthCode === 'C' ? 'selected' : ''}>C - 겨드랑이/가슴 (Long)</option>
+              <option value="B" ${currentLengthCode === 'B' ? 'selected' : ''}>B - 가슴 중간 (Very Long)</option>
+              <option value="A" ${currentLengthCode === 'A' ? 'selected' : ''}>A - 가슴 아래/허리 (Super Long)</option>
+            </select>
+            <select id="form-correction-select" class="style-select">
+              <option value="" disabled>형태 선택...</option>
+              <option value="One Length" ${currentForm.includes('One') ? 'selected' : ''}>One Length (원렝스)</option>
+              <option value="Graduation" ${currentForm.includes('Graduation') ? 'selected' : ''}>Graduation (그래쥬에이션)</option>
+              <option value="Layer" ${currentForm.includes('Layer') ? 'selected' : ''}>Layer (레이어)</option>
+            </select>
+            <button class="correction-btn" onclick="window.aiStudio.reanalyzeFemaleWithStyle()">
+              🔄 재분석
+            </button>
           </div>
         </div>
 
@@ -1527,6 +1564,65 @@ class AIStudio {
       }
     } catch (error) {
       console.error('재분석 오류:', error);
+      alert('재분석 중 오류가 발생했습니다: ' + error.message);
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  }
+
+  // 여자 스타일 재분석 (길이/형태 수정)
+  async reanalyzeFemaleWithStyle() {
+    const lengthSelect = document.getElementById('length-correction-select');
+    const formSelect = document.getElementById('form-correction-select');
+
+    if (!lengthSelect || !formSelect) return;
+
+    const newLengthCode = lengthSelect.value;
+    const newForm = formSelect.value;
+
+    if (!newLengthCode || !newForm) {
+      alert('길이와 형태를 모두 선택해주세요.');
+      return;
+    }
+
+    // 현재 분석 데이터가 없으면 리턴
+    if (!this.currentFemaleAnalysis || !this.pendingImageBase64) {
+      alert('재분석할 이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.');
+      return;
+    }
+
+    // 버튼 로딩 상태
+    const btn = document.querySelector('.style-correction-section.female .correction-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ 재분석 중...';
+    btn.disabled = true;
+
+    try {
+      // 수정된 길이/형태로 레시피 재생성 요청
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'regenerate_female_recipe',
+          length_code: newLengthCode,
+          cut_form: newForm,
+          image_base64: this.pendingImageBase64,
+          mime_type: this.pendingMimeType || 'image/jpeg',
+          original_analysis: this.currentFemaleAnalysis.data.analysis
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        // 새 데이터로 캔버스 업데이트
+        this.showCustomRecipeCanvas(result.data, this.currentFemaleAnalysis.uploadedImageUrl);
+        this.addBotMessage(`✅ **${newLengthCode} Length + ${newForm}**로 재분석 완료!`);
+      } else {
+        throw new Error(result.error || '재분석 실패');
+      }
+    } catch (error) {
+      console.error('여자 스타일 재분석 오류:', error);
       alert('재분석 중 오류가 발생했습니다: ' + error.message);
       btn.innerHTML = originalText;
       btn.disabled = false;

@@ -392,6 +392,10 @@ exports.handler = async (event, context) => {
       case 'regenerate_male_recipe':
         return await regenerateMaleRecipeWithStyle(payload, GEMINI_KEY);
 
+      // ⭐ 여자 스타일 수정 재분석 (사용자가 길이/형태 변경)
+      case 'regenerate_female_recipe':
+        return await regenerateFemaleRecipeWithStyle(payload, GEMINI_KEY);
+
       // ⭐ 파라미터 기반 커스텀 레시피 생성 (Firebase 기반)
       case 'generate_custom_recipe':
         return await generateCustomRecipeFromParams(payload, GEMINI_KEY);
@@ -4036,6 +4040,190 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
 
   } catch (error) {
     console.error('❌ 남자 레시피 생성 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: error.message
+      })
+    };
+  }
+}
+
+// ==================== 여자 스타일 수정 재분석 ====================
+async function regenerateFemaleRecipeWithStyle(payload, geminiKey) {
+  const { length_code, cut_form, original_analysis } = payload;
+  const startTime = Date.now();
+
+  console.log(`🔄 여자 스타일 재분석 시작 - 길이: ${length_code}, 형태: ${cut_form}`);
+
+  try {
+    // 1. 새 길이/형태로 분석 데이터 수정
+    const lengthDescriptions = {
+      'H': 'Very Short - 귀/목덜미',
+      'G': 'Short Bob - 턱선',
+      'F': 'Bob - 턱~어깨',
+      'E': 'Medium - 어깨선',
+      'D': 'Semi-Long - 어깨~겨드랑이',
+      'C': 'Long - 겨드랑이/가슴',
+      'B': 'Very Long - 가슴 중간',
+      'A': 'Super Long - 가슴 아래/허리'
+    };
+
+    const lengthName = `${length_code} Length`;
+    const lengthDescription = lengthDescriptions[length_code] || lengthName;
+
+    // Lifting 범위 결정 (형태에 따라)
+    let liftingRange = ['L4'];
+    if (cut_form === 'One Length') {
+      liftingRange = ['L0', 'L1'];
+    } else if (cut_form === 'Graduation') {
+      liftingRange = ['L2', 'L3'];
+    } else if (cut_form === 'Layer') {
+      liftingRange = ['L4', 'L5'];
+    }
+
+    // 수정된 params56 생성
+    const params56 = {
+      ...original_analysis,
+      length_category: lengthName,
+      cut_form: cut_form,
+      lifting_range: liftingRange
+    };
+
+    // 2. Firestore에서 여자 스타일 가져오기
+    const targetSeries = `F${length_code}L`;
+    const stylesUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles`;
+    const stylesResponse = await fetch(stylesUrl);
+    const stylesData = await stylesResponse.json();
+
+    const allStyles = (stylesData.documents || []).map(doc => {
+      const fields = doc.fields;
+      const styleId = doc.name.split('/').pop();
+
+      let embedding = null;
+      if (fields.embedding?.arrayValue?.values) {
+        embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
+      }
+
+      let diagrams = [];
+      if (fields.diagrams?.arrayValue?.values) {
+        diagrams = fields.diagrams.arrayValue.values.map(v => {
+          const map = v.mapValue?.fields || {};
+          return {
+            step: parseInt(map.step?.integerValue || 0),
+            url: map.url?.stringValue || '',
+            lifting: map.lifting?.stringValue || null,
+            direction: map.direction?.stringValue || null,
+            section: map.section?.stringValue || null,
+            zone: map.zone?.stringValue || null,
+            cutting_method: map.cutting_method?.stringValue || null
+          };
+        });
+      }
+
+      return {
+        styleId,
+        series: fields.series?.stringValue || '',
+        seriesName: fields.seriesName?.stringValue || '',
+        resultImage: fields.resultImage?.stringValue || null,
+        captionUrl: fields.captionUrl?.stringValue || null,
+        diagrams,
+        diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
+        embedding
+      };
+    });
+
+    // 3. 새 길이 코드로 필터링 (시리즈 매칭)
+    const seriesStyles = allStyles.filter(s =>
+      s.series === targetSeries || s.styleId.includes(length_code)
+    );
+
+    console.log(`🎯 ${targetSeries} 시리즈: ${seriesStyles.length}개`);
+
+    const targetStyles = seriesStyles.length > 0 ? seriesStyles : allStyles.slice(0, 10);
+
+    // 4. 임베딩 기반 유사도 검색
+    const searchQuery = `${lengthName} ${cut_form} ${params56.fringe_type || ''} ${params56.volume_zone || ''}`.trim();
+    const queryEmbedding = await generateQueryEmbedding(searchQuery, geminiKey);
+
+    const stylesWithSimilarity = targetStyles.map(style => {
+      let similarity = 0;
+      if (style.embedding && queryEmbedding) {
+        similarity = cosineSimilarity(queryEmbedding, style.embedding);
+      }
+      return { ...style, similarity, embeddingSimilarity: similarity };
+    });
+
+    const top3 = stylesWithSimilarity
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, 3);
+
+    console.log(`🎯 Top-3 참고 스타일:`);
+    top3.forEach((s, i) => {
+      console.log(`  ${i+1}. ${s.styleId} (유사도: ${(s.similarity * 100).toFixed(1)}%)`);
+    });
+
+    // 5. 레시피 재생성
+    const customRecipe = await generateCustomRecipe(params56, top3, geminiKey);
+
+    // 6. 도해도 선별
+    const selectedDiagrams = selectDiagramsByTechnique(top3, params56, 15);
+
+    console.log(`⏱️ 여자 재분석 완료: ${Date.now() - startTime}ms`);
+
+    // 7. 결과 반환
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          gender: 'female',
+          params56: params56,
+          analysis: {
+            length: length_code,
+            lengthName: lengthName,
+            form: cut_form,
+            hasBangs: params56.fringe_type !== 'No Fringe',
+            bangsType: params56.fringe_type || 'No Fringe',
+            volumePosition: params56.volume_zone || 'Medium',
+            silhouette: params56.silhouette || 'Round',
+            texture: params56.hair_texture || 'Straight',
+            layerLevel: params56.layer_type || 'Mid Layer',
+            liftingRange: liftingRange,
+            sectionPrimary: params56.section_primary || 'Diagonal-Backward',
+            weightDistribution: params56.weight_distribution || 'Balanced',
+            connectionType: params56.connection_type || 'Connected'
+          },
+          targetSeries: {
+            code: targetSeries,
+            name: `${lengthName} Series`,
+            totalStyles: seriesStyles.length
+          },
+          referenceStyles: top3.map(s => ({
+            styleId: s.styleId,
+            series: s.series,
+            similarity: s.similarity,
+            diagrams: s.diagrams.slice(0, 5),
+            diagramCount: s.diagramCount
+          })),
+          customRecipe: customRecipe,
+          mainDiagrams: selectedDiagrams.map(d => ({
+            step: d.step,
+            url: d.url,
+            styleId: d.styleId,
+            techScore: d.techScore,
+            matchedFeatures: d.matchedFeatures
+          })),
+          processingTime: Date.now() - startTime
+        }
+      })
+    };
+
+  } catch (error) {
+    console.error('❌ 여자 스타일 재분석 오류:', error);
     return {
       statusCode: 500,
       headers,
