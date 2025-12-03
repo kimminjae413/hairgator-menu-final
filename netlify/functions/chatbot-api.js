@@ -1343,7 +1343,7 @@ function getLengthPrefix(lengthCategory) {
 
 // ==================== 도해도 선별 ====================
 function selectBestDiagrams(recipeSamples, maxDiagrams = 15) {
-  const selectedDiagrams = [];
+  const allDiagrams = [];
 
   recipeSamples.forEach(sample => {
     const parts = sample.sample_code.split('_');
@@ -1356,7 +1356,7 @@ function selectBestDiagrams(recipeSamples, maxDiagrams = 15) {
       Array.isArray(sample.diagram_images) &&
       sample.diagram_images[diagramIndex]) {
 
-      selectedDiagrams.push({
+      allDiagrams.push({
         style_code: styleCode,
         step_number: stepNumber,
         image_url: sample.diagram_images[diagramIndex],
@@ -1367,13 +1367,28 @@ function selectBestDiagrams(recipeSamples, maxDiagrams = 15) {
     }
   });
 
-  selectedDiagrams.sort((a, b) => b.similarity - a.similarity);
+  // 유사도 순으로 정렬
+  allDiagrams.sort((a, b) => b.similarity - a.similarity);
 
-  console.log(`📊 도해도 추출: ${recipeSamples.length}개 샘플 → ${selectedDiagrams.length}개 도해도`);
+  // step_number 중복 제거 (같은 step이면 유사도 높은 것만 유지)
+  const seenSteps = new Set();
+  const selectedDiagrams = [];
+
+  for (const diagram of allDiagrams) {
+    if (!seenSteps.has(diagram.step_number)) {
+      seenSteps.add(diagram.step_number);
+      selectedDiagrams.push(diagram);
+    }
+  }
+
+  // step_number 순서대로 정렬
+  selectedDiagrams.sort((a, b) => a.step_number - b.step_number);
+
+  console.log(`📊 도해도 추출: ${recipeSamples.length}개 샘플 → ${allDiagrams.length}개 → 중복제거 ${selectedDiagrams.length}개`);
 
   const final = selectedDiagrams.slice(0, maxDiagrams);
 
-  console.log(`✅ 최종 선택: ${final.length}개 도해도`);
+  console.log(`✅ 최종 선택: ${final.length}개 도해도 (step: ${final.map(d => d.step_number).join(',')})`);
 
   return final;
 }

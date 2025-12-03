@@ -1255,8 +1255,15 @@ function openAIPhotoModal(styleId, styleName, styleImageUrl) {
     console.log('헤어체험하기 클릭:', {
         styleId: styleId,
         styleName: styleName,
+        gender: window.currentGender,
         status: 'ACTIVE'
     });
+
+    // 여자 헤어체험은 개발 중 (남자만 활성화)
+    if (window.currentGender === 'female') {
+        alert('개발중입니다');
+        return;
+    }
 
     // 현재 선택된 스타일 정보 저장 (기존 변수명 유지)
     window.currentAIStyleImage = styleImageUrl;
