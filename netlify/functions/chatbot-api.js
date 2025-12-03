@@ -4084,42 +4084,58 @@ const MALE_STYLE_TERMS = {
 
 // 남자 이미지 Vision 분석
 async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
-  const prompt = `You are "HAIRGATOR AI," an expert hair analyst for MEN's hairstyles.
+  const prompt = `You are an expert men's hairstyle analyst.
 
-## ⭐⭐⭐ CRITICAL: SP vs SF 구분 (가장 중요!) ⭐⭐⭐
+## ⚠️⚠️⚠️ MANDATORY FIRST CHECK: LOOK FOR PART LINE! ⚠️⚠️⚠️
 
-**가르마(Part Line)가 보이면 반드시 SP (Side Part)입니다!**
-- 가르마 = 머리카락이 좌우로 나뉘는 선 (두피가 보이는 선)
-- 가르마가 있으면 → SP (Side Part) - 가일컷, 포마드컷 등
-- 가르마가 없고 앞머리만 내려옴 → SF (Side Fringe) - 댄디컷 등
+BEFORE classifying the style, you MUST check:
+**Does the hair have a PART LINE (가르마)?**
 
-## STYLE CLASSIFICATION
+A PART LINE is:
+- A visible line where hair is divided/separated
+- Hair flows in two different directions from this line
+- Often shows scalp along the dividing line
+- Hair is combed/styled to one side from this line
 
-| Code | Style Name | Sub-Styles | Key Feature |
-|------|-----------|------------|-------------|
-| SP | Side Part | 가일컷, 시스루 가일컷, 시스루 가르마컷, 플랫컷, 리프컷, 포마드컷, 드롭컷, 하프컷, 숏가일컷, 리젠트컷, 시스루 애즈컷 | ⭐ 가르마(Part Line)가 있음 - 머리가 좌우로 나뉨 |
-| SF | Side Fringe | 댄디컷, 시스루 댄디컷, 슬릭컷 | 가르마 없이 앞머리만 이마로 내려옴 |
-| FU | Fringe Up | 아이비리그컷, 크랙컷 | 앞머리 끝이 위로 올라감 |
-| PB | Pushed Back | 폼파도르컷, 슬릭백, 슬릭백 언더컷 | 전체 머리가 뒤로 넘어감 |
-| BZ | Buzz Cut | 버즈컷 | 전체가 매우 짧음 (클리퍼 사용) |
-| CP | Crop Cut | 크롭컷, 스왓컷 | 짧지만 앞머리에 질감이 있음 |
-| MC | Mohican | 모히칸컷 | 센터가 세워짐, 양 사이드 짧음 |
+**IF YOU SEE ANY PART LINE → style_category MUST BE "SP"**
+**ONLY if there is NO part line and bangs just fall forward → "SF"**
 
-## IDENTIFICATION PRIORITY (순서대로 확인):
-1. ⭐ 가르마(Part Line)가 보임 → SP (Side Part)
-2. 가르마 없이 앞머리만 내려옴 → SF (Side Fringe)
-3. 앞머리가 위로 솟아있음 → FU (Fringe Up)
-4. 전체가 뒤로 넘어감 → PB (Pushed Back)
-5. 전체가 1cm 이하로 짧음 → BZ (Buzz Cut)
-6. 앞머리 짧고 질감 있음 → CP (Crop Cut)
-7. 센터만 길고 세워짐 → MC (Mohican)
+## STYLE CATEGORIES
 
-## OUTPUT - MUST BE VALID JSON!
+| Code | Name | How to Identify |
+|------|------|-----------------|
+| SP | Side Part | ⭐ Hair has a PART LINE (hair divided to sides). Examples: 가일컷, 포마드컷, 리젠트컷 |
+| SF | Side Fringe | NO part line, fringe/bangs just fall down on forehead. Examples: 댄디컷 |
+| FU | Fringe Up | Fringe tips point upward |
+| PB | Pushed Back | All hair swept backward |
+| BZ | Buzz Cut | Very short all over (clipper cut) |
+| CP | Crop Cut | Short with textured fringe |
+| MC | Mohican | Center is long and stands up |
+
+## DECISION TREE (Follow this order!)
+
+Step 1: Is there a PART LINE visible?
+  → YES → "SP" (Side Part)
+  → NO → Go to Step 2
+
+Step 2: Does hair fall forward onto forehead without parting?
+  → YES → "SF" (Side Fringe)
+  → NO → Go to Step 3
+
+Step 3: Is fringe pointing upward?
+  → YES → "FU" (Fringe Up)
+  → NO → Go to Step 4
+
+Step 4: Is all hair swept back?
+  → YES → "PB" (Pushed Back)
+  → NO → Check for BZ, CP, MC
+
+## OUTPUT FORMAT (JSON only)
 {
-  "style_category": "SF|SP|FU|PB|BZ|CP|MC",
-  "style_name": "스타일 영문명",
-  "sub_style": "구체적인 한국어 스타일명 (댄디컷, 가일컷 등)",
-  "has_part_line": true/false,
+  "has_part_line": true or false,
+  "style_category": "SP|SF|FU|PB|BZ|CP|MC",
+  "style_name": "English style name",
+  "sub_style": "Korean style name (가일컷, 댄디컷, etc.)",
   "top_length": "Very Short|Short|Medium|Long",
   "side_length": "Skin|Very Short|Short|Medium",
   "fade_type": "None|Low Fade|Mid Fade|High Fade|Skin Fade|Taper",
@@ -4128,7 +4144,7 @@ async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
   "styling_direction": "Forward|Backward|Side|Up"
 }
 
-NO markdown, NO explanation, NO code blocks!`;
+IMPORTANT: If has_part_line is true, style_category MUST be "SP"!`;
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
