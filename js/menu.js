@@ -1,6 +1,6 @@
 // ========== HAIRGATOR 메뉴 시스템 - 헤어체험 연동 최종 버전 ==========
 
-// ⭐ Pull-to-Refresh 비활성화 (웹뷰용)
+// ⭐ Pull-to-Refresh 비활성화 (웹뷰용) - 스크롤 가능 영역 제외
 (function() {
     let lastY = 0;
     document.addEventListener('touchstart', function(e) {
@@ -9,9 +9,21 @@
 
     document.addEventListener('touchmove', function(e) {
         const currentY = e.touches[0].clientY;
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
 
-        // 맨 위에서 아래로 당길 때만 막기
+        // 스크롤 가능한 컨테이너 내부인지 확인
+        let el = e.target;
+        while (el && el !== document.body) {
+            const style = window.getComputedStyle(el);
+            const overflowY = style.overflowY;
+            if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
+                // 스크롤 가능한 영역 내부면 기본 동작 허용
+                return;
+            }
+            el = el.parentElement;
+        }
+
+        // 페이지 최상단에서 아래로 당길 때만 막기
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
         if (scrollTop <= 0 && currentY > lastY) {
             e.preventDefault();
         }
