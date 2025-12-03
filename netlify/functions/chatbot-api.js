@@ -4084,58 +4084,62 @@ const MALE_STYLE_TERMS = {
 
 // 남자 이미지 Vision 분석
 async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
-  const prompt = `You are an expert men's hairstyle analyst.
+  const prompt = `You are an expert men's hairstyle analyst. Your PRIMARY task is detecting PART LINES.
 
-## ⚠️⚠️⚠️ MANDATORY FIRST CHECK: LOOK FOR PART LINE! ⚠️⚠️⚠️
+## ⚠️⚠️⚠️ CRITICAL: PART LINE DETECTION ⚠️⚠️⚠️
 
-BEFORE classifying the style, you MUST check:
-**Does the hair have a PART LINE (가르마)?**
+A PART LINE (가르마) exists when:
+1. Hair flows in TWO DIFFERENT DIRECTIONS from a point/line
+2. Hair is swept/combed to ONE SIDE (not straight down)
+3. There's a natural division where hair separates
+4. Even SUBTLE/SOFT part lines count! (은은한 가르마도 가르마임)
 
-A PART LINE is:
-- A visible line where hair is divided/separated
-- Hair flows in two different directions from this line
-- Often shows scalp along the dividing line
-- Hair is combed/styled to one side from this line
+**PART LINE = SP (Side Part)**
+**NO PART LINE + hair falls STRAIGHT DOWN = SF (Side Fringe)**
 
-**IF YOU SEE ANY PART LINE → style_category MUST BE "SP"**
-**ONLY if there is NO part line and bangs just fall forward → "SF"**
+## KEY DIFFERENCE: SP vs SF
+
+SP (Side Part) - 사이드 파트/가르마:
+- Hair is DIVIDED and flows to the side
+- Hair is SWEPT or COMBED sideways
+- You can see where hair SEPARATES (even subtly)
+- Examples: 가일컷, 시스루 가르마컷, 포마드컷
+
+SF (Side Fringe) - 사이드 프린지/댄디컷:
+- Hair falls STRAIGHT DOWN onto forehead
+- NO division, NO parting, NO sideways sweep
+- Bangs hang naturally without being styled to a side
+- Examples: 댄디컷, 슬릭컷
+
+## VISUAL CHECK (Do this first!)
+
+Look at the TOP of the head:
+- Is hair going in ONE direction (to the side)? → SP
+- Is hair falling STRAIGHT DOWN with no direction? → SF
+
+Look at the FOREHEAD area:
+- Is fringe swept to one side? → SP
+- Is fringe hanging straight down? → SF
 
 ## STYLE CATEGORIES
 
-| Code | Name | How to Identify |
-|------|------|-----------------|
-| SP | Side Part | ⭐ Hair has a PART LINE (hair divided to sides). Examples: 가일컷, 포마드컷, 리젠트컷 |
-| SF | Side Fringe | NO part line, fringe/bangs just fall down on forehead. Examples: 댄디컷 |
-| FU | Fringe Up | Fringe tips point upward |
-| PB | Pushed Back | All hair swept backward |
-| BZ | Buzz Cut | Very short all over (clipper cut) |
-| CP | Crop Cut | Short with textured fringe |
-| MC | Mohican | Center is long and stands up |
+| Code | Key Feature |
+|------|-------------|
+| SP | Hair parted/swept to side (가르마 있음) |
+| SF | Bangs fall straight down (가르마 없이 앞머리만 내려옴) |
+| FU | Fringe points upward |
+| PB | All hair swept backward |
+| BZ | Very short clipper cut |
+| CP | Short textured fringe |
+| MC | Mohawk center stands up |
 
-## DECISION TREE (Follow this order!)
-
-Step 1: Is there a PART LINE visible?
-  → YES → "SP" (Side Part)
-  → NO → Go to Step 2
-
-Step 2: Does hair fall forward onto forehead without parting?
-  → YES → "SF" (Side Fringe)
-  → NO → Go to Step 3
-
-Step 3: Is fringe pointing upward?
-  → YES → "FU" (Fringe Up)
-  → NO → Go to Step 4
-
-Step 4: Is all hair swept back?
-  → YES → "PB" (Pushed Back)
-  → NO → Check for BZ, CP, MC
-
-## OUTPUT FORMAT (JSON only)
+## OUTPUT (JSON only, no markdown)
 {
-  "has_part_line": true or false,
+  "has_part_line": true/false,
+  "hair_direction": "sideways" or "straight_down",
   "style_category": "SP|SF|FU|PB|BZ|CP|MC",
-  "style_name": "English style name",
-  "sub_style": "Korean style name (가일컷, 댄디컷, etc.)",
+  "style_name": "English name",
+  "sub_style": "Korean name (가일컷/댄디컷/etc)",
   "top_length": "Very Short|Short|Medium|Long",
   "side_length": "Skin|Very Short|Short|Medium",
   "fade_type": "None|Low Fade|Mid Fade|High Fade|Skin Fade|Taper",
@@ -4144,7 +4148,7 @@ Step 4: Is all hair swept back?
   "styling_direction": "Forward|Backward|Side|Up"
 }
 
-IMPORTANT: If has_part_line is true, style_category MUST be "SP"!`;
+RULE: If hair is swept/parted to side → SP. Only straight-down bangs → SF.`;
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
