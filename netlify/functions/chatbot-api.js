@@ -2598,34 +2598,35 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 
 | 코드 | 신체 기준점 | 설명 |
 |-----|-----------|------|
-| H | 귀볼(EAR LOBE) 높이 또는 위 | 숏컷, 픽시컷, 네이프 완전 노출 |
-| G | 턱선(JAWLINE/CHIN) | 숏보브, 목 완전히 보임 |
-| F | 턱 아래, 어깨 위 | 보브컷, 목 일부 가림 |
-| E | 어깨선/쇄골(SHOULDER/COLLARBONE) | 어깨에 닿는 단발 |
-| D | 쇄골 아래, 겨드랑이 위 | 중단발 |
-| C | 겨드랑이/가슴선(ARMPIT/CHEST) | 롱헤어 |
-| B | 가슴 아래, 중간 등(MID-BACK) | 매우 긴 머리 |
-| A | 허리/배꼽(WAIST/NAVEL) 이하 | 초장발 |
+| H | 목덜미/후두부(NAPE) | Short - 픽시컷, 베리숏 |
+| G | 목 아래(BASE OF NECK) | Bob 상단 - 짧은 단발 |
+| F | 목~어깨 사이(NECK TO SHOULDER) | Bob 하단 - 어깨 안 닿음 |
+| E | 어깨선(SHOULDER LINE) | Medium - 어깨에 닿음 |
+| D | 어깨 아래~겨드랑이 위(BELOW SHOULDER) | Medium - 쇄골 덮음 |
+| C | 겨드랑이선(ARMPIT LEVEL) | Semi Long |
+| B | 가슴 중간/브라라인(MID-CHEST) | Long - 가슴 중간 ⭐ |
+| A | 가슴 아래~허리(BELOW CHEST) | Very Long |
 
-⚠️ 숏컷 판별 필수 체크:
-1. 목(NECK)이 완전히 보이는가? → G 또는 H!
-2. 머리카락이 귀 높이 또는 그 위인가? → H Length!
-3. 머리카락이 턱선에 있는가? → G Length!
-4. 어깨에 전혀 닿지 않는가? → F, G, H 중 하나!
+🚨🚨🚨 B Length vs D Length 구분 (매우 중요!) 🚨🚨🚨
 
-【CRITICAL LENGTH CHECK - 보브/미디엄 판별】⭐⭐⭐
-아래 순서대로 체크하세요:
+❌ 흔한 오류: 가슴까지 오는 긴 머리를 D Length로 분류
+✅ 올바른 분류:
+- 머리가 가슴(CHEST/브라라인)까지 옴 → B Length!
+- 머리가 어깨 아래~겨드랑이 위 → D Length
 
-1. 턱(CHIN)을 찾으세요
-2. 어깨 끝점(SHOULDER TOP)을 찾으세요
-3. 머리카락 끝(HAIR ENDS)이 어디에 있는지 관찰:
+**체크리스트:**
+Q1. 머리카락이 가슴(브라라인) 높이까지 오는가?
+- YES → B Length (절대 D가 아님!)
+- NO → 다음 체크
 
-| 머리 끝 위치 | Length 분류 |
-|------------|-----------|
-| 턱 위에 있음 | G 또는 H Length (숏컷) |
-| 턱 아래, 어깨에 닿지 않음 | F Length (보브) |
-| 어깨 위에 닿거나 얹혀있음 | E Length (미디엄) |
-| 어깨/쇄골 아래로 확실히 넘어감 | D Length (세미롱) |
+Q2. 머리카락이 겨드랑이 높이인가?
+- YES → C Length
+
+Q3. 머리카락이 어깨 아래~겨드랑이 위인가?
+- YES → D Length
+
+Q4. 머리카락이 어깨선에 닿는가?
+- YES → E Length
 
 🔍 현재 이미지 체크 포인트:
 - 목이 보이는가? (예 = F 또는 G일 가능성 높음)
@@ -2790,11 +2791,13 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 - over_direction: true/false (오버 디렉션 여부)
 
 【OUTPUT JSON - 56개 파라미터 전체】
+⚠️ 아래는 예시 형식입니다. length_category는 실제 이미지를 보고 판단하세요!
+⚠️ 가슴까지 오는 머리 = B Length, 어깨 아래~겨드랑이 위 = D Length
 {
   // === 기장 & 카테고리 (5개) ===
   "cut_category": "Women's Cut",
-  "length_category": "D Length",
-  "estimated_hair_length_cm": "35",
+  "length_category": "이미지 분석 후 결정 (A~H 중 선택)",
+  "estimated_hair_length_cm": "이미지에 맞게",
   "front_length": "Medium",
   "back_length": "Long",
 
@@ -2929,8 +2932,8 @@ JSON만 반환하세요.`;
     return {
       // 기장 & 카테고리 (5개)
       cut_category: "Women's Cut",
-      length_category: "D Length",
-      estimated_hair_length_cm: "35",
+      length_category: "E Length",  // 기본값을 E(어깨)로 변경
+      estimated_hair_length_cm: "30",
       front_length: "Medium",
       back_length: "Long",
       // 구조 & 폼 (5개)
