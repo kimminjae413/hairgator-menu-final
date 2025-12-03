@@ -1455,6 +1455,29 @@ function clearChat() {
 // 대기 중인 이미지 저장
 let pendingImageData = null;
 
+// 선택된 성별 저장
+let selectedGender = null;
+
+// 성별 선택 함수
+function selectGender(gender) {
+  selectedGender = gender;
+
+  // 버튼 UI 업데이트
+  const femaleBtn = document.getElementById('gender-female');
+  const maleBtn = document.getElementById('gender-male');
+
+  femaleBtn.classList.remove('selected');
+  maleBtn.classList.remove('selected');
+
+  if (gender === 'female') {
+    femaleBtn.classList.add('selected');
+  } else if (gender === 'male') {
+    maleBtn.classList.add('selected');
+  }
+
+  console.log(`🎯 성별 선택: ${gender}`);
+}
+
 function triggerImageUpload() {
   document.getElementById('image-upload').click();
 }
@@ -1507,18 +1530,33 @@ function removePreviewImage() {
   previewArea.style.display = 'none';
   pendingImageData = null;
 
+  // 성별 선택 초기화
+  selectedGender = null;
+  document.getElementById('gender-female').classList.remove('selected');
+  document.getElementById('gender-male').classList.remove('selected');
+
   console.log('🗑️ 이미지 제거됨');
 }
 
 async function sendImageWithQuestion() {
   if (!pendingImageData) return false;
 
+  // 성별 선택 검증
+  if (!selectedGender) {
+    alert('성별을 선택해주세요.');
+    return false;
+  }
+
   const textInput = document.getElementById('chat-input');
   const question = textInput.value.trim() || '이 헤어스타일에 맞는 레시피를 만들어주세요';
 
-  // 사용자 메시지 표시 (이미지 + 텍스트)
+  // 성별 표시 텍스트
+  const genderText = selectedGender === 'male' ? '👨 남자' : '👩 여자';
+
+  // 사용자 메시지 표시 (이미지 + 성별 + 텍스트)
   window.aiStudio.addMessageToUI('user', `
     <img src="${pendingImageData.url}" style="max-width: 200px; border-radius: 8px; margin-bottom: 8px;" alt="업로드된 이미지">
+    <p><strong>${genderText}</strong></p>
     <p>${question}</p>
   `);
 
@@ -1535,9 +1573,9 @@ async function sendImageWithQuestion() {
     // Base64 변환
     const base64 = await window.aiStudio.fileToBase64(pendingImageData.file);
 
-    console.log('📤 맞춤 레시피 생성 API 호출...');
+    console.log(`📤 맞춤 레시피 생성 API 호출... (성별: ${selectedGender})`);
 
-    // API 호출 - 이미지 분석 + 맞춤 레시피 생성
+    // API 호출 - 이미지 분석 + 맞춤 레시피 생성 (성별 포함)
     const response = await fetch(window.aiStudio.apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1545,7 +1583,8 @@ async function sendImageWithQuestion() {
         action: 'analyze_and_match_recipe',
         payload: {
           image_base64: base64,
-          mime_type: pendingImageData.file.type
+          mime_type: pendingImageData.file.type,
+          gender: selectedGender
         }
       })
     });
@@ -1557,9 +1596,29 @@ async function sendImageWithQuestion() {
 
     if (result.success && result.data) {
       const data = result.data;
+      let analysisMsg;
 
-      // 분석 결과 메시지 표시
-      const analysisMsg = `**📊 스타일 분석 완료!**
+      // 남자/여자에 따라 분석 결과 메시지 분기
+      if (data.gender === 'male') {
+        // 남자 스타일 분석 결과
+        analysisMsg = `**👨 남자 스타일 분석 완료!**
+
+💇 **스타일**: ${data.analysis.styleName} (${data.analysis.styleCode})
+📏 **탑 길이**: ${data.analysis.topLength}
+📐 **사이드 길이**: ${data.analysis.sideLength}
+✂️ **페이드**: ${data.analysis.fadeType}
+🎨 **텍스처**: ${data.analysis.texture}
+💆 **스타일링 제품**: ${data.analysis.productType}
+
+📁 **대상 시리즈**: ${data.targetSeries.code} - ${data.targetSeries.name} (${data.targetSeries.totalStyles}개 스타일)
+
+🎯 **참고 스타일 Top-3**:
+${data.referenceStyles.map((s, i) => `  ${i+1}. ${s.styleId} (유사도: ${(s.similarity * 100).toFixed(1)}%)`).join('\n')}
+
+👉 **오른쪽 캔버스에서 맞춤 레시피를 확인하세요!**`;
+      } else {
+        // 여자 스타일 분석 결과 (기존 로직)
+        analysisMsg = `**👩 여자 스타일 분석 완료!**
 
 📏 **기장**: ${data.analysis.lengthName}
 ✂️ **형태**: ${data.analysis.form}
@@ -1570,9 +1629,10 @@ async function sendImageWithQuestion() {
 📁 **대상 시리즈**: ${data.targetSeries.code} (${data.targetSeries.totalStyles}개 스타일)
 
 🎯 **참고 스타일 Top-3**:
-${data.referenceStyles.map((s, i) => `  ${i+1}. ${s.styleId} - ${s.featureReasons.join(', ')}`).join('\n')}
+${data.referenceStyles.map((s, i) => `  ${i+1}. ${s.styleId} - ${s.featureReasons ? s.featureReasons.join(', ') : `유사도 ${(s.similarity * 100).toFixed(1)}%`}`).join('\n')}
 
 👉 **오른쪽 캔버스에서 맞춤 레시피를 확인하세요!**`;
+      }
 
       window.aiStudio.addMessageToUI('bot', analysisMsg);
 
@@ -1589,8 +1649,9 @@ ${data.referenceStyles.map((s, i) => `  ${i+1}. ${s.styleId} - ${s.featureReason
     console.error('❌ 레시피 생성 오류:', error);
   }
 
-  // 이미지 데이터 초기화
+  // 이미지 데이터 및 성별 선택 초기화
   pendingImageData = null;
+  selectedGender = null;
 
   return true;
 }

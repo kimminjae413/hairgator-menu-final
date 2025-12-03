@@ -3586,11 +3586,17 @@ ${recipeTexts}
  * 56파라미터 + 42포뮬러 기반
  */
 async function analyzeAndMatchRecipe(payload, geminiKey) {
-  const { image_base64, mime_type } = payload;
+  const { image_base64, mime_type, gender } = payload;
   const startTime = Date.now();
 
-  console.log('🎯 이미지 분석 + 맞춤 레시피 생성 시작 (56파라미터 기반)...');
+  console.log(`🎯 이미지 분석 + 맞춤 레시피 생성 시작 (성별: ${gender || 'female'})...`);
 
+  // 남자 스타일인 경우 별도 처리
+  if (gender === 'male') {
+    return await analyzeAndMatchMaleRecipe(payload, geminiKey);
+  }
+
+  // 여자 스타일 기본 처리 (기존 로직)
   try {
     // 1. 이미지 분석 - 56개 파라미터 추출
     const t1 = Date.now();
@@ -3861,4 +3867,383 @@ async function generateCustomRecipeFromParams(payload, geminiKey) {
       body: `data: ${JSON.stringify({ type: 'error', error: error.message })}\n`
     };
   }
+}
+
+// ==================== 남자 이미지 분석 + 맞춤 레시피 생성 ====================
+/**
+ * 남자 스타일: 스타일 코드 기반 (SF, SP, FU, PB, BZ, CP, MC)
+ */
+async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
+  const { image_base64, mime_type } = payload;
+  const startTime = Date.now();
+
+  console.log('👨 남자 이미지 분석 + 맞춤 레시피 생성 시작...');
+
+  try {
+    // 1. Gemini Vision으로 남자 스타일 분석
+    const t1 = Date.now();
+    const maleParams = await analyzeManImageVision(image_base64, mime_type, geminiKey);
+    console.log(`⏱️ [1] 남자 이미지 분석: ${Date.now() - t1}ms`);
+
+    const styleCode = maleParams.style_category || 'SF';
+    const styleName = maleParams.style_name || 'Side Fringe';
+
+    console.log(`📊 남자 스타일 분석 완료:`);
+    console.log(`   - 스타일 코드: ${styleCode}`);
+    console.log(`   - 스타일명: ${styleName}`);
+    console.log(`   - Top 길이: ${maleParams.top_length || 'Medium'}`);
+    console.log(`   - Side 길이: ${maleParams.side_length || 'Short'}`);
+    console.log(`   - Fade: ${maleParams.fade_type || 'None'}`);
+    console.log(`   - Texture: ${maleParams.texture || 'Smooth'}`);
+
+    // 2. Firestore men_styles 컬렉션에서 검색
+    const t2 = Date.now();
+    const menStylesUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/men_styles`;
+
+    const firebaseResponse = await fetch(menStylesUrl);
+    if (!firebaseResponse.ok) {
+      throw new Error(`Firestore men_styles 조회 실패: ${firebaseResponse.status}`);
+    }
+
+    const firebaseData = await firebaseResponse.json();
+    const allMenStyles = (firebaseData.documents || []).map(doc => {
+      const fields = doc.fields || {};
+      const styleId = doc.name.split('/').pop();
+
+      // 임베딩 추출
+      let embedding = null;
+      if (fields.embedding?.arrayValue?.values) {
+        embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
+      }
+
+      // 도해도 추출
+      let diagrams = [];
+      if (fields.diagrams?.arrayValue?.values) {
+        diagrams = fields.diagrams.arrayValue.values.map(v => {
+          const map = v.mapValue?.fields || {};
+          return {
+            step: parseInt(map.step?.integerValue || 0),
+            url: map.url?.stringValue || '',
+            lifting: map.lifting?.stringValue || null,
+            direction: map.direction?.stringValue || null,
+            section: map.section?.stringValue || null,
+            zone: map.zone?.stringValue || null,
+            cutting_method: map.cutting_method?.stringValue || null
+          };
+        });
+      }
+
+      return {
+        styleId,
+        series: fields.series?.stringValue || '',
+        seriesName: fields.seriesName?.stringValue || '',
+        resultImage: fields.resultImage?.stringValue || null,
+        diagrams,
+        diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
+        captionUrl: fields.captionUrl?.stringValue || null,
+        embedding
+      };
+    });
+
+    console.log(`⏱️ [2] Firestore men_styles 조회: ${Date.now() - t2}ms (${allMenStyles.length}개)`);
+
+    // 3. 스타일 코드로 필터링
+    const filteredStyles = allMenStyles.filter(s =>
+      s.styleId.startsWith(styleCode) || s.series === styleCode
+    );
+
+    console.log(`🎯 ${styleCode} 스타일: ${filteredStyles.length}개`);
+
+    // 필터 결과 없으면 전체에서 Top-3
+    const targetStyles = filteredStyles.length > 0 ? filteredStyles : allMenStyles.slice(0, 10);
+
+    // 4. 임베딩 기반 유사도 검색
+    const t3 = Date.now();
+    const searchQuery = `${styleName} ${maleParams.top_length || ''} ${maleParams.fade_type || ''} ${maleParams.texture || ''}`.trim();
+    const queryEmbedding = await generateQueryEmbedding(searchQuery, geminiKey);
+    console.log(`⏱️ [3] 임베딩 생성: ${Date.now() - t3}ms`);
+
+    // 유사도 계산
+    const stylesWithSimilarity = targetStyles.map(style => {
+      let similarity = 0;
+      if (style.embedding && queryEmbedding) {
+        similarity = cosineSimilarity(queryEmbedding, style.embedding);
+      }
+      return { ...style, similarity };
+    });
+
+    // Top-3 선정
+    const top3 = stylesWithSimilarity
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, 3);
+
+    console.log(`🎯 Top-3 참고 스타일:`);
+    top3.forEach((s, i) => {
+      console.log(`  ${i+1}. ${s.styleId} (유사도: ${(s.similarity * 100).toFixed(1)}%)`);
+    });
+
+    // 5. 남자 레시피 생성 (GPT)
+    const t4 = Date.now();
+    const maleRecipe = await generateMaleCustomRecipe(maleParams, top3, geminiKey);
+    console.log(`⏱️ [4] 레시피 생성: ${Date.now() - t4}ms`);
+
+    // 6. 도해도 선별 (최대 15개)
+    const selectedDiagrams = selectMaleDiagramsByTechnique(top3, maleParams, 15);
+
+    console.log(`⏱️ 총 처리 시간: ${Date.now() - startTime}ms`);
+
+    // 7. 결과 반환
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          gender: 'male',
+          analysis: {
+            styleCode: styleCode,
+            styleName: styleName,
+            topLength: maleParams.top_length || 'Medium',
+            sideLength: maleParams.side_length || 'Short',
+            fadeType: maleParams.fade_type || 'None',
+            texture: maleParams.texture || 'Smooth',
+            productType: maleParams.product_type || 'Wax',
+            stylingDirection: maleParams.styling_direction || 'Forward'
+          },
+          targetSeries: {
+            code: styleCode,
+            name: MALE_STYLE_TERMS[styleCode]?.ko || styleName,
+            totalStyles: filteredStyles.length
+          },
+          referenceStyles: top3.map(s => ({
+            styleId: s.styleId,
+            similarity: s.similarity,
+            resultImage: s.resultImage
+          })),
+          recipe: maleRecipe,
+          diagrams: selectedDiagrams,
+          processingTime: Date.now() - startTime
+        }
+      })
+    };
+
+  } catch (error) {
+    console.error('❌ 남자 레시피 생성 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: error.message
+      })
+    };
+  }
+}
+
+// 남자 스타일 용어
+const MALE_STYLE_TERMS = {
+  'SF': { ko: '사이드 프린지', en: 'Side Fringe' },
+  'SP': { ko: '사이드 파트', en: 'Side Part' },
+  'FU': { ko: '프린지 업', en: 'Fringe Up' },
+  'PB': { ko: '푸시드 백', en: 'Pushed Back' },
+  'BZ': { ko: '버즈 컷', en: 'Buzz Cut' },
+  'CP': { ko: '크롭 컷', en: 'Crop Cut' },
+  'MC': { ko: '모히칸', en: 'Mohican' }
+};
+
+// 남자 이미지 Vision 분석
+async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
+  const prompt = `You are "HAIRGATOR AI," an expert hair analyst for MEN's hairstyles.
+
+## STYLE CLASSIFICATION (스타일 기반 분류) ⭐ CRITICAL!
+
+| Code | Style Name | Description |
+|------|-----------|-------------|
+| SF | Side Fringe | 앞머리를 앞으로 내려 자연스럽게 흐르는 스타일 |
+| SP | Side Part | 가르마를 기준으로 나누는 스타일 |
+| FU | Fringe Up | 앞머리 끝만 위로 올린 스타일 |
+| PB | Pushed Back | 모발 전체가 뒤쪽으로 넘어가는 스타일 |
+| BZ | Buzz Cut | 가장 짧은 남자 커트 |
+| CP | Crop Cut | 버즈보다 조금 더 긴 트렌디한 스타일 |
+| MC | Mohican | 센터 부분을 위쪽으로 세워 강조하는 스타일 |
+
+## STYLE IDENTIFICATION RULES:
+1. 앞머리가 이마에 내려옴 → SF (Side Fringe)
+2. 가르마가 명확히 있음 → SP (Side Part)
+3. 앞머리 끝이 위로 올라감 → FU (Fringe Up)
+4. 전체가 뒤로 넘김 → PB (Pushed Back)
+5. 매우 짧은 전체 버즈 → BZ (Buzz Cut)
+6. 짧지만 질감 있음 → CP (Crop Cut)
+7. 센터가 세워짐 → MC (Mohican)
+
+## OUTPUT - MUST BE VALID JSON!
+Return ONLY a valid JSON object:
+{
+  "style_category": "SF|SP|FU|PB|BZ|CP|MC",
+  "style_name": "스타일 영문명",
+  "top_length": "Very Short|Short|Medium|Long",
+  "side_length": "Skin|Very Short|Short|Medium",
+  "fade_type": "None|Low Fade|Mid Fade|High Fade|Skin Fade|Taper",
+  "texture": "Smooth|Textured|Messy|Spiky",
+  "product_type": "Wax|Pomade|Clay|Gel",
+  "styling_direction": "Forward|Backward|Side|Up"
+}
+
+NO markdown, NO explanation, NO code blocks!`;
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { inline_data: { mime_type: mimeType, data: imageBase64 } },
+            { text: prompt }
+          ]
+        }],
+        generationConfig: {
+          temperature: 0,
+          maxOutputTokens: 1000,
+          responseMimeType: "application/json"
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Gemini Vision API Error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  if (!responseText) {
+    throw new Error('No response from Gemini Vision');
+  }
+
+  // JSON 파싱
+  let cleanedText = responseText.trim().replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+  return JSON.parse(cleanedText);
+}
+
+// 남자 커스텀 레시피 생성
+async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
+  const styleInfo = MALE_STYLE_TERMS[params.style_category] || { ko: params.style_name, en: params.style_name };
+
+  const diagramsContext = top3Styles.flatMap(style =>
+    (style.diagrams || []).slice(0, 5).map(d =>
+      `- ${style.styleId} Step ${d.step}: Zone=${d.zone || 'N/A'}, Lifting=${d.lifting || 'N/A'}, Section=${d.section || 'N/A'}`
+    )
+  ).join('\n');
+
+  const systemPrompt = `당신은 남자 헤어컷 전문가입니다. 모든 응답을 한국어로만 작성하세요. 클리퍼 가드 사이즈, 페이드 기법 등 실무적인 내용을 포함하세요.`;
+
+  const userPrompt = `**📊 분석 결과:**
+- 스타일: ${styleInfo.ko} (${params.style_category})
+- 탑 길이: ${params.top_length || 'Medium'}
+- 사이드 길이: ${params.side_length || 'Short'}
+- 페이드: ${params.fade_type || 'None'}
+- 텍스처: ${params.texture || 'Smooth'}
+- 스타일링 제품: ${params.product_type || 'Wax'}
+
+**🎯 참고 도해도:**
+${diagramsContext}
+
+**📋 레시피 작성 지침:**
+
+### STEP 1: 스타일 개요 (2-3줄)
+- ${styleInfo.ko} 스타일의 핵심 특징
+- 이 스타일이 어울리는 고객 유형
+
+### STEP 2: 사이드/백 커팅 (클리퍼 작업)
+- 페이드 시작 위치와 높이
+- 클리퍼 가드 사이즈 순서 (예: 0.5mm → 3mm → 6mm)
+- 블렌딩 포인트
+
+### STEP 3: 탑/크라운 커팅 (가위 작업)
+- 기준선 설정 (Guide Line)
+- 텍스처 기법 (Point Cut, Slide Cut 등)
+
+### STEP 4: 연결 작업 (블렌딩)
+- 사이드와 탑 연결 부분 처리
+- 자연스러운 그라데이션 방법
+
+### STEP 5: 마무리 & 스타일링
+- 아웃라인 정리 (귀 주변, 목덜미)
+- 추천 스타일링 제품과 방법
+
+총 800자 이내로 간결하게 작성하세요.`;
+
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if (!openaiKey) {
+    throw new Error('OpenAI API key not configured');
+  }
+
+  const completion = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openaiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      temperature: 0.5,
+      max_tokens: 2000
+    })
+  });
+
+  if (!completion.ok) {
+    throw new Error(`OpenAI API Error: ${completion.status}`);
+  }
+
+  const data = await completion.json();
+  return data.choices[0].message.content;
+}
+
+// 남자 도해도 선별
+function selectMaleDiagramsByTechnique(styles, params, maxDiagrams = 15) {
+  const allDiagrams = [];
+
+  styles.forEach(style => {
+    if (style.diagrams && Array.isArray(style.diagrams)) {
+      style.diagrams.forEach(diagram => {
+        allDiagrams.push({
+          style_id: style.styleId,
+          step_number: diagram.step,
+          image_url: diagram.url,
+          lifting: diagram.lifting,
+          direction: diagram.direction,
+          section: diagram.section,
+          zone: diagram.zone,
+          cutting_method: diagram.cutting_method,
+          similarity: style.similarity || 0
+        });
+      });
+    }
+  });
+
+  // step_number 중복 제거
+  const seenSteps = new Set();
+  const selectedDiagrams = [];
+
+  // 유사도 순 정렬 후 중복 제거
+  allDiagrams.sort((a, b) => b.similarity - a.similarity);
+
+  for (const diagram of allDiagrams) {
+    if (!seenSteps.has(diagram.step_number)) {
+      seenSteps.add(diagram.step_number);
+      selectedDiagrams.push(diagram);
+    }
+  }
+
+  // step 순서대로 정렬
+  selectedDiagrams.sort((a, b) => a.step_number - b.step_number);
+
+  return selectedDiagrams.slice(0, maxDiagrams);
 }
