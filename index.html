@@ -2238,48 +2238,71 @@ if (window.innerWidth >= 768 && window.innerWidth <= 1024) {
 })();
 </script>    
 
-<!-- ⭐ AI Studio 플로팅 버튼 -->
+<!-- ⭐ AI Studio 플로팅 버튼 (그라데이션 + AI 아이콘) -->
+<style>
+  @keyframes ai-sparkle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.08); }
+  }
+  @keyframes ai-glow {
+    0%, 100% { box-shadow: 0 4px 20px rgba(139, 92, 246, 0.5), 0 0 40px rgba(236, 72, 153, 0.25); }
+    50% { box-shadow: 0 6px 30px rgba(139, 92, 246, 0.7), 0 0 60px rgba(236, 72, 153, 0.4); }
+  }
+  @keyframes gradient-rotate {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  #ai-studio-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 50%, #F97316 100%);
+    border: none;
+    color: white;
+    cursor: pointer;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+    animation: ai-glow 3s ease-in-out infinite;
+  }
+  #ai-studio-btn:hover {
+    transform: scale(1.15) rotate(5deg);
+    box-shadow: 0 8px 40px rgba(139, 92, 246, 0.7), 0 0 80px rgba(236, 72, 153, 0.5);
+  }
+  #ai-studio-btn svg {
+    animation: ai-sparkle 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+  }
+  #ai-studio-btn::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8B5CF6, #EC4899, #F97316, #8B5CF6);
+    background-size: 300% 300%;
+    animation: gradient-rotate 4s linear infinite;
+    z-index: -1;
+    opacity: 0.6;
+  }
+</style>
 <script>
 (function() {
-  // AI Studio 이동 플로팅 버튼 생성
   const buttonHTML = `
-    <button id="chatbot-toggle" aria-label="AI Studio" onclick="window.location.href='ai-studio.html'" style="
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #3a3a3a, #2d2d2d);
-      border: none;
-      color: white;
-      cursor: pointer;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    ">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    <button id="ai-studio-btn" aria-label="AI Studio" onclick="window.location.href='ai-studio.html'">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="rgba(255,255,255,0.3)"/>
+        <circle cx="12" cy="12" r="3" fill="white" opacity="0.95"/>
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke-width="1.5" opacity="0.7"/>
       </svg>
     </button>
   `;
   document.body.insertAdjacentHTML('beforeend', buttonHTML);
-
-  // 호버 효과
-  const btn = document.getElementById('chatbot-toggle');
-  if (btn) {
-    btn.addEventListener('mouseenter', () => {
-      btn.style.transform = 'scale(1.1)';
-      btn.style.boxShadow = '0 6px 30px rgba(0, 0, 0, 0.4)';
-    });
-    btn.addEventListener('mouseleave', () => {
-      btn.style.transform = 'scale(1)';
-      btn.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
-    });
-  }
   console.log('✅ AI Studio 플로팅 버튼 생성 완료');
 })();
 </script>
