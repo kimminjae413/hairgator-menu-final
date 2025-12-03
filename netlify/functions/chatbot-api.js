@@ -952,82 +952,40 @@ async function analyzeImage(payload, openaiKey) {
       ? `\n\n⚠️ IMPORTANT: This is a FEMALE hairstyle. Focus on women's cut categories and techniques.\n- Use "Women's Cut" for cut_category\n- Select from womens_cut_category options\n- Consider typical female length ranges (A~H Length)`
       : `\n\nAnalyze the hairstyle gender and select appropriate cut_category.`;
 
-  const systemPrompt = `You are "HAIRGATOR AI," an expert hair analyst with 20 years of experience, specializing in the "2WAY CUT" precision length system.
-Your vision capabilities allow you to measure hair length relative to BODY LANDMARKS with millimeter-level accuracy.
+  const systemPrompt = `You are "HAIRGATOR AI," an expert hair analyst.
 ${genderContext}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 LENGTH CLASSIFICATION (MOST CRITICAL!) ⭐⭐⭐
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨🚨🚨 CRITICAL LENGTH RULES - READ FIRST! 🚨🚨🚨
 
-**Strict Definition by Body Landmarks (A = Longest, H = Shortest):**
+Hair reaches CHEST (가슴/브라라인) = B Length or A Length
+Hair reaches ARMPIT (겨드랑이) = C Length
+Hair is BELOW SHOULDER but ABOVE armpit = D Length
+Hair at SHOULDER = E Length
 
-| Code | Body Landmark | Style Category |
-|------|--------------|----------------|
-| **H Length** | NAPE of neck (후두부/목덜미) | Short - 픽시컷, 베리숏 |
-| **G Length** | Base of NECK (목 아래) | Bob 상단 - 짧은 단발 |
-| **F Length** | Between NECK and SHOULDER | Bob 하단 - 턱선~어깨 사이 단발 |
-| **E Length** | SHOULDER line (어깨선) | Medium 상단 - 어깨에 닿는 길이 |
-| **D Length** | Below SHOULDER (어깨 아래) | Medium 하단 - 쇄골 덮는 길이 |
-| **C Length** | ARMPIT level (겨드랑이선) | Semi Long - 겨드랑이 높이 |
-| **B Length** | MID-CHEST (가슴 중간) | Long 상단 - 가슴 중간 |
-| **A Length** | BELOW CHEST (가슴 아래) | Long 하단 - 가슴 아래~허리 |
-
-⚠️ KEY DISTINCTION (E vs F):
-- F Length: Hair ends ABOVE shoulder, between neck and shoulder
-- E Length: Hair TOUCHES or reaches the shoulder line
-- If hair is clearly ON the shoulder → E Length!
-- If hair floats above shoulder, not touching → F Length!
+❌ NEVER classify chest-length hair as D Length!
+❌ D Length is ONLY for hair between shoulder and armpit!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔬 ANALYSIS STEPS (Chain of Thought):
+LENGTH CATEGORIES (A=longest, H=shortest):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**STEP 1: Identify Body Landmarks**
-- Locate: Ear, Jawline, Chin, Neck, Shoulder, Collarbone, Armpit, Chest
-
-**STEP 2: Trace Hair to Longest Point**
-- Find the ABSOLUTE LONGEST hair tip (ignore shorter layers)
-- Focus on the BASELINE length in the BACK zone
-
-**STEP 3: Compare Position to Landmarks**
-- Where does the longest tip END relative to body landmarks?
-
-**STEP 4: Determine Category**
-- Rule 1: Match the EXACT body landmark where hair ends
-- Rule 2: If curly/wavy, estimate the STRETCHED length
-- Rule 3: Always trace the LONGEST strand to its endpoint
+H Length = NAPE (목덜미) - pixie, very short
+G Length = BASE OF NECK (목 아래) - short bob
+F Length = NECK TO SHOULDER gap - bob/lob
+E Length = SHOULDER LINE (어깨선) - medium
+D Length = BELOW SHOULDER, ABOVE ARMPIT - semi-long
+C Length = ARMPIT LEVEL (겨드랑이) - semi-long
+B Length = MID-CHEST (가슴 중간, 브라라인) - long
+A Length = BELOW CHEST (가슴 아래~허리) - very long
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚨 MANDATORY LENGTH CHECK - ANSWER THESE QUESTIONS:
+BEFORE YOU OUTPUT length_category, CHECK:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Before outputting length_category, you MUST check:
-
-**Q1: Does hair reach the CHEST area (가슴)?**
-- YES → B Length or A Length (NEVER D!)
-- NO → Continue to Q2
-
-**Q2: Does hair reach the ARMPIT area (겨드랑이)?**
-- YES → C Length
-- NO → Continue to Q3
-
-**Q3: Does hair reach BELOW the SHOULDER?**
-- YES → D Length
-- NO → Continue to Q4
-
-**Q4: Does hair touch the SHOULDER LINE?**
-- YES → E Length
-- NO → F, G, or H Length (short hair)
-
-⚠️ CRITICAL ERROR TO AVOID:
-❌ WRONG: Hair at chest level → "D Length"
-✅ CORRECT: Hair at chest level → "B Length"
-
-D Length = 어깨 아래 ~ 겨드랑이 위 (ABOVE armpit)
-B Length = 가슴 중간 (MID-CHEST, bra line)
-
-If hair is clearly at CHEST level, it MUST be B or A, NEVER D!
+1. Is hair at CHEST level? → Output "B Length" (NOT D!)
+2. Is hair at ARMPIT level? → Output "C Length"
+3. Is hair below shoulder but above armpit? → Output "D Length"
+4. Is hair at shoulder? → Output "E Length"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
