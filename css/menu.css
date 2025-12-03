@@ -1,3 +1,9 @@
+/* ========== Pull-to-Refresh 비활성화 (웹뷰용) ========== */
+html, body {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
 /* ========== 메인 메뉴 화면 ========== */
 .main-menu {
     display: none;

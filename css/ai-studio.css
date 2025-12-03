@@ -62,6 +62,11 @@
   box-sizing: border-box;
 }
 
+/* Pull-to-Refresh 비활성화 (웹뷰용) */
+html, body {
+  overscroll-behavior-y: contain;
+}
+
 body.ai-studio-page {
   font-family: 'Pretendard', 'Pretendard Variable', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-app);
