@@ -4086,33 +4086,40 @@ const MALE_STYLE_TERMS = {
 async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
   const prompt = `You are "HAIRGATOR AI," an expert hair analyst for MEN's hairstyles.
 
-## STYLE CLASSIFICATION (스타일 기반 분류) ⭐ CRITICAL!
+## ⭐⭐⭐ CRITICAL: SP vs SF 구분 (가장 중요!) ⭐⭐⭐
 
-| Code | Style Name | Sub-Styles (한국어) | Description |
-|------|-----------|---------------------|-------------|
-| SF | Side Fringe | 댄디컷, 시스루 댄디컷, 슬릭컷 | 앞머리를 앞으로 내려 자연스럽게 흐르는 스타일 |
-| SP | Side Part | 가일컷, 시스루 가일컷, 시스루 가르마컷, 플랫컷, 리프컷, 포마드컷, 드롭컷, 하프컷, 숏가일컷, 리젠트컷, 시스루 애즈컷 | 가르마를 기준으로 나누는 스타일 |
-| FU | Fringe Up | 아이비리그컷, 크랙컷 | 앞머리 끝만 위로 올린 스타일 |
-| PB | Pushed Back | 폼파도르컷, 슬릭백, 슬릭백 언더컷 | 모발 전체가 뒤쪽으로 넘어가는 스타일 |
-| BZ | Buzz Cut | 버즈컷 | 가장 짧은 남자 커트 |
-| CP | Crop Cut | 크롭컷, 스왓컷 | 버즈보다 조금 더 긴 트렌디한 스타일 |
-| MC | Mohican | 모히칸컷 | 센터 부분을 위쪽으로 세워 강조하는 스타일 |
+**가르마(Part Line)가 보이면 반드시 SP (Side Part)입니다!**
+- 가르마 = 머리카락이 좌우로 나뉘는 선 (두피가 보이는 선)
+- 가르마가 있으면 → SP (Side Part) - 가일컷, 포마드컷 등
+- 가르마가 없고 앞머리만 내려옴 → SF (Side Fringe) - 댄디컷 등
 
-## STYLE IDENTIFICATION RULES:
-1. 앞머리가 이마에 내려옴 → SF (Side Fringe) - 댄디컷, 시스루 댄디컷, 슬릭컷
-2. 가르마가 명확히 있음 → SP (Side Part) - 가일컷, 포마드컷, 리젠트컷 등
-3. 앞머리 끝이 위로 올라감 → FU (Fringe Up) - 아이비리그컷, 크랙컷
-4. 전체가 뒤로 넘김 → PB (Pushed Back) - 폼파도르컷, 슬릭백
-5. 매우 짧은 전체 버즈 → BZ (Buzz Cut) - 버즈컷
-6. 짧지만 질감 있음 → CP (Crop Cut) - 크롭컷, 스왓컷
-7. 센터가 세워짐 → MC (Mohican) - 모히칸컷
+## STYLE CLASSIFICATION
+
+| Code | Style Name | Sub-Styles | Key Feature |
+|------|-----------|------------|-------------|
+| SP | Side Part | 가일컷, 시스루 가일컷, 시스루 가르마컷, 플랫컷, 리프컷, 포마드컷, 드롭컷, 하프컷, 숏가일컷, 리젠트컷, 시스루 애즈컷 | ⭐ 가르마(Part Line)가 있음 - 머리가 좌우로 나뉨 |
+| SF | Side Fringe | 댄디컷, 시스루 댄디컷, 슬릭컷 | 가르마 없이 앞머리만 이마로 내려옴 |
+| FU | Fringe Up | 아이비리그컷, 크랙컷 | 앞머리 끝이 위로 올라감 |
+| PB | Pushed Back | 폼파도르컷, 슬릭백, 슬릭백 언더컷 | 전체 머리가 뒤로 넘어감 |
+| BZ | Buzz Cut | 버즈컷 | 전체가 매우 짧음 (클리퍼 사용) |
+| CP | Crop Cut | 크롭컷, 스왓컷 | 짧지만 앞머리에 질감이 있음 |
+| MC | Mohican | 모히칸컷 | 센터가 세워짐, 양 사이드 짧음 |
+
+## IDENTIFICATION PRIORITY (순서대로 확인):
+1. ⭐ 가르마(Part Line)가 보임 → SP (Side Part)
+2. 가르마 없이 앞머리만 내려옴 → SF (Side Fringe)
+3. 앞머리가 위로 솟아있음 → FU (Fringe Up)
+4. 전체가 뒤로 넘어감 → PB (Pushed Back)
+5. 전체가 1cm 이하로 짧음 → BZ (Buzz Cut)
+6. 앞머리 짧고 질감 있음 → CP (Crop Cut)
+7. 센터만 길고 세워짐 → MC (Mohican)
 
 ## OUTPUT - MUST BE VALID JSON!
-Return ONLY a valid JSON object:
 {
   "style_category": "SF|SP|FU|PB|BZ|CP|MC",
   "style_name": "스타일 영문명",
   "sub_style": "구체적인 한국어 스타일명 (댄디컷, 가일컷 등)",
+  "has_part_line": true/false,
   "top_length": "Very Short|Short|Medium|Long",
   "side_length": "Skin|Very Short|Short|Medium",
   "fade_type": "None|Low Fade|Mid Fade|High Fade|Skin Fade|Taper",

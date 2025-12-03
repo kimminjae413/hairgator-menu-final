@@ -1293,6 +1293,9 @@ class AIStudio {
     }
 
     const firstDiagram = diagrams[0];
+    // 여자/남자 API 응답 형식 모두 지원
+    const getUrl = (d) => d.url || d.image_url;
+    const getStep = (d) => d.step || d.step_number;
     const ldsInfo = [firstDiagram.lifting, firstDiagram.direction, firstDiagram.section].filter(Boolean).join(' ');
 
     return `
@@ -1305,7 +1308,7 @@ class AIStudio {
               <path d="M15 18l-6-6 6-6"/>
             </svg>
           </button>
-          <img src="${firstDiagram.url}" alt="Step ${firstDiagram.step}" id="diagram-main-image">
+          <img src="${getUrl(firstDiagram)}" alt="Step ${getStep(firstDiagram)}" id="diagram-main-image">
           <button class="diagram-nav-btn next" onclick="window.aiStudio.nextDiagram()" id="diagram-next-btn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 18l6-6-6-6"/>
@@ -1340,8 +1343,8 @@ class AIStudio {
             <div class="diagram-thumb-item ${idx === 0 ? 'active' : ''}"
                  onclick="window.aiStudio.selectDiagram(${idx})"
                  data-index="${idx}">
-              <img src="${d.url}" alt="Step ${d.step}">
-              <span class="thumb-step">${d.step || idx + 1}</span>
+              <img src="${getUrl(d)}" alt="Step ${getStep(d)}">
+              <span class="thumb-step">${getStep(d) || idx + 1}</span>
             </div>
           `).join('')}
         </div>
@@ -1380,9 +1383,9 @@ class AIStudio {
     this.currentDiagramIndex = index;
     const diagram = this.currentDiagrams[index];
 
-    // 메인 이미지 업데이트
+    // 메인 이미지 업데이트 (여자/남자 API 형식 모두 지원)
     const mainImage = document.getElementById('diagram-main-image');
-    if (mainImage) mainImage.src = diagram.url;
+    if (mainImage) mainImage.src = diagram.url || diagram.image_url;
 
     // Step indicator 업데이트
     const stepIndicator = document.getElementById('diagram-step-indicator');
