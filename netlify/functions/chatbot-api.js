@@ -3405,7 +3405,7 @@ function calculateFeatureScore(style, params56, captionText) {
 }
 
 /**
- * Gemini로 맞춤 레시피 생성 - 56파라미터 + 42포뮬러 기반
+ * Gemini로 맞춤 레시피 생성 - 56파라미터 + 42포뮬러 기반 + abcde 북 참조
  */
 async function generateCustomRecipe(params56, top3Styles, geminiKey) {
   try {
@@ -3417,8 +3417,10 @@ async function generateCustomRecipe(params56, top3Styles, geminiKey) {
     // 42포뮬러 핵심 파라미터 추출
     const liftingStr = Array.isArray(params56.lifting_range) ? params56.lifting_range.join(', ') : 'L4';
 
+    console.log('📚 abcde 북 참조하여 레시피 생성 중...');
+
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3426,6 +3428,8 @@ async function generateCustomRecipe(params56, top3Styles, geminiKey) {
           contents: [{
             parts: [{
               text: `당신은 2WAY CUT 시스템 전문가입니다. 고객 요청 스타일의 56개 파라미터와 참고 레시피 3개를 바탕으로 최적의 맞춤 레시피를 생성해주세요.
+
+⭐ 중요: 업로드된 2WAY CUT 교재(abcde 북)의 이론과 기법을 참고하여 레시피를 작성하세요.
 
 ## ⚠️ 2WAY CUT 리프팅 각도 (절대 기준!) ⭐
 | 코드 | 각도 | 설명 |
@@ -3568,19 +3572,27 @@ ${recipeTexts}
 드라이/아이론 등 마무리 방법`
             }]
           }],
+          tools: [{
+            fileSearch: {
+              fileSearchStoreNames: [GEMINI_FILE_SEARCH_STORE]
+            }
+          }],
           generationConfig: {
-            temperature: 0.5,  // ⚡ 최적화: 0.7 → 0.5로 낮춰 일관성 향상 & 속도 개선
-            maxOutputTokens: 1800  // ⚡ 최적화: 2500 → 1800으로 줄여 응답 시간 단축
+            temperature: 0.5,
+            maxOutputTokens: 2000
           }
         })
       }
     );
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Recipe API Error:', response.status, errorText);
       throw new Error(`Recipe generation failed: ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('✅ abcde 북 참조 레시피 생성 완료');
     return data.candidates?.[0]?.content?.parts?.[0]?.text || '레시피 생성 실패';
 
   } catch (error) {
@@ -4517,7 +4529,58 @@ async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
     )
   ).join('\n');
 
-  const systemPrompt = `당신은 남자 헤어컷 전문가입니다. 모든 응답을 한국어로만 작성하세요. 클리퍼 가드 사이즈, 페이드 기법 등 실무적인 내용을 포함하세요.`;
+  // ⭐ abcde 북에서 남자 커트 이론 조회
+  console.log('📚 abcde 북에서 남자 커트 이론 조회 중...');
+  let theoryContext = '';
+  try {
+    const searchQuery = `${params.style_name || ''} ${params.style_category || ''} ${params.fade_type || ''} 남자 커트 기법`;
+    const theoryResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            role: 'user',
+            parts: [{
+              text: `다음 남자 헤어 스타일에 대한 커팅 이론과 테크닉을 설명해주세요: ${searchQuery}
+
+핵심 내용만 간결하게 3-5문장으로 요약해주세요.
+- 클리퍼 작업 순서와 가드 사이즈
+- 페이드 블렌딩 기법
+- 탑/크라운 커팅 각도
+- 텍스처 처리 방법`
+            }]
+          }],
+          tools: [{
+            fileSearch: {
+              fileSearchStoreNames: [GEMINI_FILE_SEARCH_STORE]
+            }
+          }],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 500,
+            topP: 0.8
+          }
+        })
+      }
+    );
+    if (theoryResponse.ok) {
+      const theoryData = await theoryResponse.json();
+      theoryContext = theoryData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (theoryContext) {
+        console.log(`✅ 남자 커트 이론 조회 완료 (${theoryContext.length}자)`);
+      }
+    }
+  } catch (err) {
+    console.warn('⚠️ 이론 조회 실패 (계속 진행):', err.message);
+  }
+
+  const theorySection = theoryContext
+    ? `\n**📚 참고 이론 (2WAY CUT 교재):**\n${theoryContext}\n`
+    : '';
+
+  const systemPrompt = `당신은 남자 헤어컷 전문가입니다. 모든 응답을 한국어로만 작성하세요. 클리퍼 가드 사이즈, 페이드 기법 등 실무적인 내용을 포함하세요.${theoryContext ? ' 참고 이론의 내용을 레시피에 자연스럽게 반영하세요.' : ''}`;
 
   const userPrompt = `**📊 분석 결과:**
 - 카테고리: ${styleInfo.ko} (${params.style_category})
@@ -4527,7 +4590,7 @@ async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
 - 페이드: ${params.fade_type || 'None'}
 - 텍스처: ${params.texture || 'Smooth'}
 - 스타일링 제품: ${params.product_type || 'Wax'}
-
+${theorySection}
 **🎯 참고 도해도:**
 ${diagramsContext}
 
