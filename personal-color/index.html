@@ -3760,6 +3760,9 @@
             console.log('🎨 헤어컬러 시뮬레이션 모드 진입');
             simulatePreviousSection = fromSection;
 
+            // 카메라 리소스 정리 (백그라운드 실행 방지)
+            cleanupCameraResources();
+
             // 추천 색상 저장
             simulateRecommendedColors = recommendedColors.length > 0 ? recommendedColors : getDefaultSimulateColors();
 
