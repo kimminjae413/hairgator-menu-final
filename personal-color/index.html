@@ -500,6 +500,19 @@
                             b: Math.min(255, Math.round(correctedRgb.b * 1.08))  // 파란기 더함
                         };
                     }
+
+                    // 🟢 녹색기(형광등) 조명 감지 및 보정 (PDF COLOR CONTROL 이론 적용)
+                    // avgG가 avgR, avgB보다 유독 높으면 → Magenta(보라+빨강) 필터로 보정
+                    const greenDominance = avgG - (avgR + avgB) / 2;
+                    if (greenDominance > 8) {
+                        console.log('⚖️ [강화 보정] 녹색기 조명(형광등) 감지 → Magenta 밸런싱 적용');
+                        correctedRgb = {
+                            r: Math.min(255, Math.round(correctedRgb.r * 1.04)),  // 붉은기 보강
+                            g: Math.round(correctedRgb.g * 0.96),  // 녹색기 감소
+                            b: Math.min(255, Math.round(correctedRgb.b * 1.02))   // 파란기 약간 보강
+                        };
+                        lightingMeta.colorTemp = 'green';  // 녹색 조명 표시
+                    }
                 }
             }
 
@@ -550,8 +563,14 @@
             else if (pinkIndex > yellowIndex + 35) rgbScore = -2;
             else if (pinkIndex > yellowIndex + 20) rgbScore = -1;
 
-            // ✅ 최종 warmScore: LAB 70% + RGB 30% 가중 합산
-            const warmScore = Math.round(labScore * 0.7 + rgbScore * 0.3);
+            // 🟢 붉은기(a값) 가중치 추가 (PDF 멜라닌 이론 적용)
+            // 한국인은 붉은 웜톤이 많음 - effectiveA가 높으면 웜톤 점수 추가
+            let redWarmBonus = 0;
+            if (effectiveA > 18) redWarmBonus = 2;      // 매우 강한 붉은기 → 웜톤 보너스
+            else if (effectiveA > 12) redWarmBonus = 1; // 중간 붉은기 → 웜톤 보너스
+
+            // ✅ 최종 warmScore: LAB 60% + RGB 20% + 붉은기 보너스 20%
+            const warmScore = Math.round(labScore * 0.6 + rgbScore * 0.2 + redWarmBonus);
 
             // 채도 계산
             const max = Math.max(correctedRgb.r, correctedRgb.g, correctedRgb.b);
@@ -889,11 +908,47 @@
                 const colorC = Math.sqrt(colorLab.a*colorLab.a + colorLab.b*colorLab.b);
                 if (Math.abs(skinC - colorC) < 30) harmonyScore += 5;
 
-                // 4. 우선순위 보너스
+                // 🟢 보색 중화(Neutralization) 로직 - PDF COLOR CONTROL 이론 적용
+                // 피부 단점을 커버해주는 전문적인 추천
+                const colorTone = (color.tone || color.colorFamily || '').toLowerCase();
+
+                // 4-1. 피부의 붉은기(a)가 너무 높으면(홍조) → Green/Matte 계열 점수 UP
+                if (skinLab.a > 18) {
+                    if (colorTone.includes('matte') || colorTone.includes('green') ||
+                        colorTone.includes('ash') || colorTone.includes('올리브') || colorTone.includes('매트')) {
+                        harmonyScore += 15; // 붉은기 중화 보너스
+                        console.log(`🩹 [보색 중화] ${color.name}: 붉은기 중화 보너스 +15`);
+                    }
+                    if (colorTone.includes('red') || colorTone.includes('pink') ||
+                        colorTone.includes('레드') || colorTone.includes('핑크')) {
+                        harmonyScore -= 10; // 붉은기 강조 감점
+                        console.log(`⚠️ [보색 중화] ${color.name}: 붉은기 강조 감점 -10`);
+                    }
+                }
+
+                // 4-2. 피부가 너무 노랗다면(b > 25) → Purple/Violet 계열 점수 UP
+                if (skinLab.b > 25) {
+                    if (colorTone.includes('violet') || colorTone.includes('purple') ||
+                        colorTone.includes('바이올렛') || colorTone.includes('보라')) {
+                        harmonyScore += 15; // 노란기 중화
+                        console.log(`🩹 [보색 중화] ${color.name}: 노란기 중화 보너스 +15`);
+                    }
+                }
+
+                // 4-3. 피부가 창백하다면(L > 70, a < 8) → 약간의 붉은기가 있는 컬러로 혈색 보정
+                if (skinLab.L > 70 && skinLab.a < 8) {
+                    if (colorTone.includes('rose') || colorTone.includes('coral') ||
+                        colorTone.includes('로즈') || colorTone.includes('코랄')) {
+                        harmonyScore += 10; // 혈색 보정 보너스
+                        console.log(`🩹 [보색 중화] ${color.name}: 혈색 보정 보너스 +10`);
+                    }
+                }
+
+                // 5. 우선순위 보너스
                 if (color.priority === 1) harmonyScore += 20;
                 else if (color.priority === 2) harmonyScore += 10;
 
-                // 5. 브랜드 신뢰도 (있으면)
+                // 6. 브랜드 신뢰도 (있으면)
                 if (color.brand && ['로레알', '웰라', 'Shiseido', '밀본'].includes(color.brand)) {
                     harmonyScore += 5;
                 }
