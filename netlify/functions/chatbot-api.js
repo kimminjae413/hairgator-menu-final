@@ -5407,32 +5407,31 @@ async function generateCardNews(payload) {
       const pageNum = i + 1;
 
       // HAIRGATOR 브랜드 스타일 카드뉴스 프롬프트 (각 장별)
-      const cardNewsPrompt = `Create a professional Instagram card news image for HAIRGATOR - a Korean hair education & styling app for hair designers.
+      const cardNewsPrompt = `Create a professional Instagram card news image for HAIRGATOR.
 
-CARD NEWS INFO:
-- Series Title: "${title || '헤어 트렌드'}"
-- This is Page ${pageNum} of ${numToGenerate}
-- Page ${pageNum} Content: "${pageContent || '(자유 디자인)'}"
+⚠️ CRITICAL - KOREAN TEXT RULE:
+- You MUST copy the user's Korean text EXACTLY as provided below
+- DO NOT translate, modify, or generate any Korean text yourself
+- If you cannot render Korean text perfectly, leave text area blank or use simple shapes instead
 
-BRAND STYLE GUIDE (MUST FOLLOW):
-- Background: Clean WHITE background (primary)
-- Accent Color: Magenta Pink (#E91E63) for important highlights, buttons, text emphasis
-- Secondary: Subtle pink gradients or pink accents
-- Typography: Modern, clean Korean sans-serif fonts
-- Overall Feel: Premium, professional, clean, minimal yet impactful
+USER'S EXACT TEXT TO USE:
+- Title: "${title || ''}"
+- Page Content: "${pageContent || ''}"
+
+COPY THESE TEXTS EXACTLY - character by character, no changes!
+
+BRAND STYLE GUIDE:
+- Background: Clean WHITE background
+- Accent Color: Magenta Pink (#E91E63) for highlights
+- Typography: If using text, copy user's Korean text EXACTLY as-is
+- Overall Feel: Premium, professional, clean, minimal
 
 IMAGE REQUIREMENTS:
 - Format: ${sizeText}
-- Target Audience: Professional hair designers / hairstylists (헤어디자이너)
-- Purpose: Instagram carousel post for hair industry professionals
-- Include page number indicator if this is a multi-page series (${pageNum}/${numToGenerate})
-- Language: Use Korean text for all text elements
-- Quality: High resolution, visually stunning, professional design level
-- Style: Clean white space with strategic pink (#E91E63) accent points
-- NO cluttered designs - embrace whitespace
+- Page indicator: ${pageNum}/${numToGenerate}
 - NO watermarks
-
-The design should look like it was created by a premium Korean beauty brand's design team. Make the content "${pageContent}" visually engaging and easy to read.`;
+- Focus on visual design, icons, illustrations
+- Any text shown MUST be copied exactly from user input above`;
 
       // parts 구성
       const parts = [];
