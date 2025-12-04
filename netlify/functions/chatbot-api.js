@@ -1783,7 +1783,7 @@ ${diagramsContext}
 ### STEP 4: 스타일링 가이드
 ### STEP 5: 유지 관리
 
-총 800자 이내로 간결하게, 한국어로만 작성하세요.`;
+💡 설명을 포함하여 충분히 상세하게 작성하세요. 한국어로만 작성하세요.`;
 
     const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -1798,7 +1798,7 @@ ${diagramsContext}
           { role: 'user', content: enhancedPrompt }
         ],
         temperature: 0.5,
-        max_tokens: 2000
+        max_tokens: 3000
       })
     });
 
@@ -4669,7 +4669,7 @@ ${diagramsContext}
 - Point Cut (포인트 컷)
   💡 가위 끝으로 찔러서 자르는 방식이에요. 끝이 뾰족해져서 자연스러운 질감이 나와요
 
-총 800자 이내로 간결하게 작성하세요.`;
+💡 설명을 포함하여 충분히 상세하게 작성하세요.`;
 
   const openaiKey = process.env.OPENAI_API_KEY;
   if (!openaiKey) {
@@ -4689,7 +4689,7 @@ ${diagramsContext}
         { role: 'user', content: userPrompt }
       ],
       temperature: 0.5,
-      max_tokens: 2000
+      max_tokens: 3000
     })
   });
 
