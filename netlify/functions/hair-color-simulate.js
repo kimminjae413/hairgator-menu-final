@@ -121,7 +121,8 @@ function getColorDescription(hairColor, hairColorName) {
  * Gemini 2.0 Flash로 헤어컬러 변경 이미지 생성
  */
 async function generateHairColorImage(imageBase64, colorDescription, apiKey) {
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+    // Gemini 2.0 Flash 이미지 생성 모델 사용
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${apiKey}`;
 
     const prompt = `Edit this photo to change ONLY the hair color to ${colorDescription}.
 Keep everything else exactly the same - same face, same expression, same clothes, same background, same pose.
@@ -142,8 +143,7 @@ Generate a high-quality, photorealistic result.`;
             ]
         }],
         generationConfig: {
-            responseModalities: ['image', 'text'],
-            responseMimeType: 'image/jpeg'
+            responseModalities: ['Text', 'Image']
         }
     };
 
@@ -164,18 +164,21 @@ Generate a high-quality, photorealistic result.`;
     }
 
     const result = await response.json();
-    console.log('📥 Gemini 응답 수신');
+    console.log('📥 Gemini 응답 수신:', JSON.stringify(result).substring(0, 500));
 
     // 응답에서 이미지 추출
     if (result.candidates && result.candidates[0]?.content?.parts) {
         for (const part of result.candidates[0].content.parts) {
             if (part.inlineData && part.inlineData.data) {
+                const mimeType = part.inlineData.mimeType || 'image/png';
                 return {
-                    imageBase64: `data:image/jpeg;base64,${part.inlineData.data}`
+                    imageBase64: `data:${mimeType};base64,${part.inlineData.data}`
                 };
             }
         }
     }
 
+    // 오류 상세 정보 출력
+    console.error('응답 구조:', JSON.stringify(result, null, 2));
     throw new Error('No image generated in response');
 }
