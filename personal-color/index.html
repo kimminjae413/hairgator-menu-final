@@ -3292,8 +3292,8 @@
             ctx.fillStyle = gradient;
             ctx.beginPath();
 
-            // 케이프 시작점 (턱 라인을 따라)
-            const neckWidth = faceWidth * 0.6;
+            // 케이프 시작점 (턱 라인을 따라) - 목 부분 넓게
+            const neckWidth = faceWidth * 0.95;
             ctx.moveTo(chinX - neckWidth / 2, capeStartY);
 
             // 왼쪽 곡선 (부채꼴 왼쪽)
