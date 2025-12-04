@@ -1479,24 +1479,24 @@ body.male-theme .nav-btn:hover {
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
-        scrollbar-color: rgba(255,255,255,0.5) rgba(255,255,255,0.1);
+        scrollbar-color: #ffffff rgba(255,255,255,0.3);
     }
 
     .realtime-results::-webkit-scrollbar,
     #realtime-results-container::-webkit-scrollbar {
-        width: 6px;
+        width: 8px;
     }
 
     .realtime-results::-webkit-scrollbar-track,
     #realtime-results-container::-webkit-scrollbar-track {
-        background: rgba(255,255,255,0.1);
-        border-radius: 3px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 4px;
     }
 
     .realtime-results::-webkit-scrollbar-thumb,
     #realtime-results-container::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.5);
-        border-radius: 3px;
+        background: #ffffff;
+        border-radius: 4px;
     }
 
     /* 분석 패널도 스크롤 가능 */
@@ -1801,25 +1801,25 @@ body.male-theme .nav-btn:hover {
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
-        scrollbar-color: rgba(255,255,255,0.5) rgba(255,255,255,0.1);
+        scrollbar-color: #ffffff rgba(255,255,255,0.3);
     }
 
     .realtime-results::-webkit-scrollbar {
-        width: 6px;
+        width: 8px;
     }
 
     .realtime-results::-webkit-scrollbar-track {
-        background: rgba(255,255,255,0.1);
-        border-radius: 3px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 4px;
     }
 
     .realtime-results::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.5);
-        border-radius: 3px;
+        background: #ffffff;
+        border-radius: 4px;
     }
 
     .realtime-results::-webkit-scrollbar-thumb:hover {
-        background: rgba(255,255,255,0.7);
+        background: #ffffff;
     }
 
     /* 흰색 스크롤바 트랙 */
