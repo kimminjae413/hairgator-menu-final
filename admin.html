@@ -2007,8 +2007,8 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-generate" id="generateBtn" onclick="generateWithZImage()">
-                        🎨 z-image로 생성하기
+                    <button class="btn btn-generate" id="generateBtn" onclick="generateWithGemini()">
+                        🎨 Gemini로 생성하기
                     </button>
                 </div>
 
@@ -4083,7 +4083,7 @@
         }
 
         // z-image로 이미지 생성
-        async function generateWithZImage() {
+        async function generateWithGemini() {
             if (!currentStyleAnalysis) {
                 showToast('먼저 스타일을 분석해주세요');
                 return;
@@ -4123,7 +4123,7 @@
                 showToast('생성 실패: ' + error.message);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '🎨 z-image로 생성하기';
+                btn.innerHTML = '🎨 Gemini로 생성하기';
             }
         }
 

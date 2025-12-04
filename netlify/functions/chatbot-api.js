@@ -4927,52 +4927,96 @@ Be specific and visual. Focus on what makes this hairstyle unique.`;
   }
 }
 
-// ==================== 어드민: z-image로 헤어스타일 이미지 생성 ====================
+// ==================== 어드민: Gemini로 헤어스타일 이미지 생성 ====================
 async function generateHairstyleImage(payload) {
   const { analysis, num_images, image_size } = payload;
 
-  console.log('🎨 z-image 이미지 생성 시작');
+  // 어드민 전용 Gemini API 키
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
-  const FAL_KEY = process.env.FAL_KEY;
-  if (!FAL_KEY) {
+  console.log('🎨 Gemini 이미지 생성 시작');
+
+  if (!ADMIN_GEMINI_KEY) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ success: false, error: 'FAL_KEY not configured' })
+      body: JSON.stringify({ success: false, error: 'GEMINI_API_KEY not configured' })
     };
   }
 
   try {
     // 분석 결과로 프롬프트 생성
     const genderWord = analysis.gender === 'male' ? 'man' : 'woman';
-    const prompt = `Professional salon photography of a beautiful ${genderWord} with ${analysis.color || 'natural'} ${analysis.length || 'medium'} ${analysis.texture || 'smooth'} hair in ${analysis.style || 'modern'} style. ${analysis.bangs !== 'None' ? analysis.bangs + ' bangs.' : ''} ${analysis.description || ''} High-end fashion magazine quality, soft studio lighting, clean background, sharp focus on hair details, 8k resolution.`;
+    const genderKo = analysis.gender === 'male' ? '남성' : '여성';
+
+    const prompt = `Create a professional hair salon photograph of a beautiful Korean ${genderWord} model showcasing this hairstyle:
+- Hair Length: ${analysis.length || 'medium'}
+- Hair Style: ${analysis.style || 'modern'}
+- Hair Color: ${analysis.color || 'natural dark brown'}
+- Hair Texture: ${analysis.texture || 'smooth'}
+- Bangs: ${analysis.bangs || 'none'}
+
+Style details: ${analysis.description || ''}
+
+Requirements:
+- Professional salon photography quality
+- Soft, flattering studio lighting
+- Clean, neutral background
+- Sharp focus on hair details and texture
+- Model facing slightly to the side to show hair dimension
+- High-end fashion magazine aesthetic
+- Photorealistic, 8K quality`;
 
     console.log('📝 생성 프롬프트:', prompt);
 
-    // fal.ai z-image API 호출
-    const response = await fetch('https://fal.run/fal-ai/z-image/turbo', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${FAL_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        prompt: prompt,
-        image_size: image_size || 'portrait_4_3',
-        num_images: num_images || 4,
-        num_inference_steps: 8,
-        enable_safety_checker: true,
-        output_format: 'png'
-      })
-    });
+    // 이미지 생성 (num_images 만큼 반복)
+    const numToGenerate = Math.min(num_images || 4, 4);
+    const generatedImages = [];
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`z-image API Error: ${response.status} - ${errorText}`);
+    for (let i = 0; i < numToGenerate; i++) {
+      console.log(`🖼️ 이미지 ${i + 1}/${numToGenerate} 생성 중...`);
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${ADMIN_GEMINI_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: prompt }]
+            }],
+            generationConfig: {
+              responseModalities: ['TEXT', 'IMAGE']
+            }
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Gemini API Error: ${response.status}`, errorText);
+        continue; // 실패해도 다음 이미지 시도
+      }
+
+      const result = await response.json();
+
+      // 이미지 데이터 추출
+      const parts = result.candidates?.[0]?.content?.parts || [];
+      for (const part of parts) {
+        if (part.inlineData) {
+          generatedImages.push({
+            url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+            mimeType: part.inlineData.mimeType
+          });
+        }
+      }
     }
 
-    const result = await response.json();
-    console.log('✅ z-image 생성 완료:', result.images?.length || 0, '개');
+    console.log('✅ Gemini 이미지 생성 완료:', generatedImages.length, '개');
+
+    if (generatedImages.length === 0) {
+      throw new Error('이미지 생성에 실패했습니다. 다시 시도해주세요.');
+    }
 
     return {
       statusCode: 200,
@@ -4980,15 +5024,15 @@ async function generateHairstyleImage(payload) {
       body: JSON.stringify({
         success: true,
         data: {
-          images: result.images || [],
+          images: generatedImages,
           prompt: prompt,
-          seed: result.seed
+          count: generatedImages.length
         }
       })
     };
 
   } catch (error) {
-    console.error('💥 z-image 생성 오류:', error);
+    console.error('💥 Gemini 이미지 생성 오류:', error);
     return {
       statusCode: 500,
       headers,
