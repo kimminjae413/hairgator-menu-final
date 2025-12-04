@@ -5361,11 +5361,11 @@ THE HAIRSTYLE MUST BE VISUALLY IDENTICAL TO THE REFERENCE. Only the model's face
 
 // ==================== 어드민: AI 카드뉴스 생성 ====================
 async function generateCardNews(payload) {
-  const { prompt, aspect_ratio, num_images, reference_image, mime_type, tone, target } = payload;
+  const { prompt, aspect_ratio, num_images, reference_image, mime_type } = payload;
 
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
-  console.log('📰 카드뉴스 생성 시작:', { prompt: prompt?.substring(0, 50), aspect_ratio, num_images, tone, target });
+  console.log('📰 카드뉴스 생성 시작:', { prompt: prompt?.substring(0, 50), aspect_ratio, num_images });
 
   if (!ADMIN_GEMINI_KEY) {
     return {
@@ -5391,47 +5391,31 @@ async function generateCardNews(payload) {
       '9:16': 'story/reels format (9:16 ratio, 1080x1920)'
     };
 
-    // 톤앤매너 매핑
-    const toneGuide = {
-      'luxurious': 'luxurious, high-end, premium, elegant, sophisticated',
-      'trendy': 'trendy, modern, stylish, Instagram-worthy, aesthetic',
-      'natural': 'natural, soft, organic, calm, earthy tones',
-      'cute': 'cute, playful, pastel colors, friendly, approachable',
-      'minimal': 'minimal, clean, simple, whitespace, sleek',
-      'vibrant': 'vibrant, colorful, bold, energetic, eye-catching'
-    };
-
-    // 타겟 고객 매핑 (미용사용 마케팅)
-    const targetGuide = {
-      'all': 'general audience',
-      '20s_female': 'targeting 20s women - youthful, trendy, K-beauty style',
-      '30s_female': 'targeting 30s women - elegant, sophisticated, professional',
-      '20s_male': 'targeting 20s men - sharp, modern, masculine grooming',
-      '30s_male': 'targeting 30s men - refined, professional, classic style',
-      'student': 'targeting students - affordable, trendy, youthful vibe',
-      'office': 'targeting office workers - professional, polished, time-efficient'
-    };
-
     const sizeText = ratioGuide[aspect_ratio] || ratioGuide['1:1'];
-    const toneText = toneGuide[tone] || toneGuide['luxurious'];
-    const targetText = targetGuide[target] || targetGuide['all'];
 
-    // 카드뉴스 프롬프트 구성
-    const cardNewsPrompt = `Create a professional Instagram card news image for a Korean hair salon.
+    // HAIRGATOR 브랜드 스타일 카드뉴스 프롬프트
+    const cardNewsPrompt = `Create a professional Instagram card news image for HAIRGATOR - a Korean hair education & styling app for hair designers.
 
 USER REQUEST: ${prompt}
 
+BRAND STYLE GUIDE (MUST FOLLOW):
+- Background: Clean WHITE background (primary)
+- Accent Color: Magenta Pink (#E91E63) for important highlights, buttons, text emphasis
+- Secondary: Subtle pink gradients or pink accents
+- Typography: Modern, clean sans-serif fonts
+- Overall Feel: Premium, professional, clean, minimal yet impactful
+
 IMAGE REQUIREMENTS:
 - Format: ${sizeText}
-- Tone & Style: ${toneText}
-- Target Audience: ${targetText}
-- Purpose: Instagram feed post for hair salon marketing (미용실 SNS 마케팅용)
-- Language: Use Korean text if any text is included
-- Quality: High resolution, visually stunning, professional photography level
-- Design: Modern Korean beauty aesthetic, appealing to both hairstylists and customers
-- NO watermarks or logos
+- Target Audience: Professional hair designers / hairstylists (헤어디자이너)
+- Purpose: Instagram marketing for hair industry professionals
+- Language: Korean text preferred for any text elements
+- Quality: High resolution, visually stunning, professional design level
+- Style: Clean white space with strategic pink (#E91E63) accent points
+- NO cluttered designs - embrace whitespace
+- NO watermarks
 
-Make it look like a professionally designed Instagram post created by a top Korean hair salon's marketing team.`;
+The design should look like it was created by a premium Korean beauty brand's design team, targeting professional hairstylists who want sophisticated, clean marketing materials.`;
 
     const numToGenerate = Math.min(num_images || 2, 8);
     const generatedImages = [];

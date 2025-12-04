@@ -1938,29 +1938,14 @@
                         <option value="8">8장</option>
                     </select>
                 </div>
-                <div class="gen-option-item">
-                    <label style="color: #ccc; font-size: 13px;">톤앤매너</label>
-                    <select id="cardNewsTone" style="background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 6px; min-width: 150px;">
-                        <option value="luxurious" selected>고급스러운 (Luxurious)</option>
-                        <option value="trendy">트렌디한 (Trendy)</option>
-                        <option value="natural">내추럴한 (Natural)</option>
-                        <option value="cute">귀여운 (Cute)</option>
-                        <option value="minimal">미니멀한 (Minimal)</option>
-                        <option value="vibrant">화려한 (Vibrant)</option>
-                    </select>
-                </div>
-                <div class="gen-option-item">
-                    <label style="color: #ccc; font-size: 13px;">타겟 고객</label>
-                    <select id="cardNewsTarget" style="background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 6px; min-width: 150px;">
-                        <option value="all" selected>전체</option>
-                        <option value="20s_female">20대 여성</option>
-                        <option value="30s_female">30대 여성</option>
-                        <option value="20s_male">20대 남성</option>
-                        <option value="30s_male">30대 남성</option>
-                        <option value="student">학생/대학생</option>
-                        <option value="office">직장인</option>
-                    </select>
-                </div>
+            </div>
+
+            <!-- 브랜드 스타일 안내 -->
+            <div style="margin-top: 16px; padding: 12px 16px; background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.3); border-radius: 8px;">
+                <p style="color: #E91E63; font-size: 13px; margin: 0;">
+                    <strong>📌 HAIRGATOR 브랜드 스타일 적용</strong><br>
+                    <span style="color: #aaa;">화이트 바탕 + 핑크(#E91E63) 포인트 컬러 | 타겟: 헤어디자이너</span>
+                </p>
             </div>
 
             <!-- 생성 버튼 -->
@@ -4008,16 +3993,12 @@
 
             const ratio = document.getElementById('cardNewsRatio').value;
             const count = parseInt(document.getElementById('cardNewsCount').value);
-            const tone = document.getElementById('cardNewsTone').value;
-            const target = document.getElementById('cardNewsTarget').value;
 
             try {
                 const payload = {
                     prompt: prompt,
                     aspect_ratio: ratio,
-                    num_images: count,
-                    tone: tone,
-                    target: target
+                    num_images: count
                 };
 
                 // 참고 이미지가 있으면 추가
