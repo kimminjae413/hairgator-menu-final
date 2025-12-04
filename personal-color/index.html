@@ -195,6 +195,101 @@
                 <div class="section-nav">
                     <button class="nav-btn" onclick="goHome()" data-i18n="personalColor.aiMode.backHome">← Home</button>
                     <h2 class="section-title" data-i18n="personalColor.drapingMode.title">Expert Draping Mode</h2>
+                    <button class="nav-btn" onclick="openDrapingGuide()" style="background: linear-gradient(135deg, #9C27B0, #673AB7); margin-left: auto;">📖 GUIDE</button>
+                </div>
+
+                <!-- 드래이핑 가이드 모달 -->
+                <div id="draping-guide-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 10000; overflow-y: auto; padding: 20px;">
+                    <div style="max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 16px; padding: 24px; border: 1px solid rgba(156,39,176,0.3);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="color: #CE93D8; font-size: 20px; margin: 0;" data-i18n="personalColor.drapingGuide.title">🎨 4계절 드래이핑 진단 가이드</h2>
+                            <button onclick="closeDrapingGuide()" style="background: rgba(244,67,54,0.3); border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 16px;">✕</button>
+                        </div>
+
+                        <!-- 드래이핑 원리 -->
+                        <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                            <h3 style="color: #B39DDB; font-size: 16px; margin: 0 0 10px 0;" data-i18n="personalColor.drapingGuide.principleTitle">💡 드래이핑의 원리</h3>
+                            <p style="color: #E1BEE7; font-size: 14px; line-height: 1.7; margin: 0;" data-i18n="personalColor.drapingGuide.principleText">특정 색상의 천을 얼굴 밑에 댔을 때, 그 색이 얼굴에 반사되면서 안색, 다크서클, 주름, 잡티 등이 어떻게 변하는지를 관찰하여 베스트(Best)와 워스트(Worst)를 가려내는 방법입니다.</p>
+                        </div>
+
+                        <!-- 봄 웜톤 -->
+                        <div style="background: linear-gradient(135deg, rgba(255,152,0,0.15), rgba(255,87,34,0.1)); padding: 16px; border-radius: 12px; margin-bottom: 16px; border-left: 4px solid #FF9800;">
+                            <h3 style="color: #FFCC80; font-size: 17px; margin: 0 0 10px 0;">🌸 <span data-i18n="personalColor.drapingGuide.spring.title">봄 웜톤 (Spring Warm)</span></h3>
+                            <p style="color: #FFE0B2; font-size: 13px; margin: 0 0 10px 0;" data-i18n="personalColor.drapingGuide.spring.image">이미지: 생동감, 비타민, 과즙, 투명함, 귀여움</p>
+                            <p style="color: #FFCC80; font-size: 13px; margin: 0 0 12px 0;" data-i18n="personalColor.drapingGuide.spring.attribute">핵심: 고명도(밝음), 고채도(선명함), 옐로우 베이스</p>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+                                <span style="background: #FF6347; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: white;">토마토 레드</span>
+                                <span style="background: #FFD700; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: #333;">개나리색</span>
+                                <span style="background: #90EE90; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: #333;">연두색</span>
+                                <span style="background: #87CEEB; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: #333;">아쿠아 블루</span>
+                            </div>
+                            <div style="background: rgba(76,175,80,0.2); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                                <b style="color: #81C784;">✅ Best:</b> <span style="color: #C8E6C9; font-size: 13px;" data-i18n="personalColor.drapingGuide.spring.best">피부에 혈색이 돌고 투명해 보임. 다크서클이 옅어지고 눈동자가 반짝임.</span>
+                            </div>
+                            <div style="background: rgba(244,67,54,0.2); padding: 10px; border-radius: 8px;">
+                                <b style="color: #E57373;">❌ Worst:</b> <span style="color: #FFCDD2; font-size: 13px;" data-i18n="personalColor.drapingGuide.spring.worst">쿨톤 천: 얼굴이 창백해져 아파 보임. 어두운 천: 그림자가 지고 나이 들어 보임.</span>
+                            </div>
+                        </div>
+
+                        <!-- 여름 쿨톤 -->
+                        <div style="background: linear-gradient(135deg, rgba(33,150,243,0.15), rgba(156,39,176,0.1)); padding: 16px; border-radius: 12px; margin-bottom: 16px; border-left: 4px solid #64B5F6;">
+                            <h3 style="color: #90CAF9; font-size: 17px; margin: 0 0 10px 0;">🌊 <span data-i18n="personalColor.drapingGuide.summer.title">여름 쿨톤 (Summer Cool)</span></h3>
+                            <p style="color: #BBDEFB; font-size: 13px; margin: 0 0 10px 0;" data-i18n="personalColor.drapingGuide.summer.image">이미지: 청순함, 우아함, 깨끗함, 비 오는 날의 수채화</p>
+                            <p style="color: #90CAF9; font-size: 13px; margin: 0 0 12px 0;" data-i18n="personalColor.drapingGuide.summer.attribute">핵심: 고명도(밝음), 저채도(부드러움), 블루 베이스</p>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+                                <span style="background: #FFB6C1; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: #333;">딸기우유 핑크</span>
+                                <span style="background: #E6E6FA; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: #333;">라벤더</span>
+                                <span style="background: #98FB98; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: #333;">민트 그린</span>
+                                <span style="background: #87CEEB; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: #333;">스카이 블루</span>
+                            </div>
+                            <div style="background: rgba(76,175,80,0.2); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                                <b style="color: #81C784;">✅ Best:</b> <span style="color: #C8E6C9; font-size: 13px;" data-i18n="personalColor.drapingGuide.summer.best">얼굴의 홍조가 차분하게 잡힘. 피부톤이 균일해지고 뽀얗게 정돈됨.</span>
+                            </div>
+                            <div style="background: rgba(244,67,54,0.2); padding: 10px; border-radius: 8px;">
+                                <b style="color: #E57373;">❌ Worst:</b> <span style="color: #FFCDD2; font-size: 13px;" data-i18n="personalColor.drapingGuide.summer.worst">웜톤(오렌지/골드) 천: 얼굴이 누렇게 뜨거나 더워 보임. 선명한 원색: 촌스러워 보임.</span>
+                            </div>
+                        </div>
+
+                        <!-- 가을 웜톤 -->
+                        <div style="background: linear-gradient(135deg, rgba(121,85,72,0.2), rgba(255,152,0,0.1)); padding: 16px; border-radius: 12px; margin-bottom: 16px; border-left: 4px solid #A1887F;">
+                            <h3 style="color: #FFAB91; font-size: 17px; margin: 0 0 10px 0;">🍂 <span data-i18n="personalColor.drapingGuide.autumn.title">가을 웜톤 (Autumn Warm)</span></h3>
+                            <p style="color: #FFCCBC; font-size: 13px; margin: 0 0 10px 0;" data-i18n="personalColor.drapingGuide.autumn.image">이미지: 그윽함, 성숙함, 고급스러움, 낙엽, 노을</p>
+                            <p style="color: #FFAB91; font-size: 13px; margin: 0 0 12px 0;" data-i18n="personalColor.drapingGuide.autumn.attribute">핵심: 저명도(어두움), 저채도(탁함), 옐로우/골드 베이스</p>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+                                <span style="background: #B22222; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: white;">벽돌색</span>
+                                <span style="background: #DAA520; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: #333;">머스터드</span>
+                                <span style="background: #6B8E23; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: white;">올리브 그린</span>
+                                <span style="background: #008B8B; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: white;">틸 블루</span>
+                            </div>
+                            <div style="background: rgba(76,175,80,0.2); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                                <b style="color: #81C784;">✅ Best:</b> <span style="color: #C8E6C9; font-size: 13px;" data-i18n="personalColor.drapingGuide.autumn.best">피부의 요철이 매끈해 보임. 얼굴 윤곽이 또렷해지고 깊이감이 생김.</span>
+                            </div>
+                            <div style="background: rgba(244,67,54,0.2); padding: 10px; border-radius: 8px;">
+                                <b style="color: #E57373;">❌ Worst:</b> <span style="color: #FFCDD2; font-size: 13px;" data-i18n="personalColor.drapingGuide.autumn.worst">쿨톤(파스텔/형광) 천: 얼굴이 거무튀튀해 보임. 쨍한 핑크: 입 주변이 푸르딩딩.</span>
+                            </div>
+                        </div>
+
+                        <!-- 겨울 쿨톤 -->
+                        <div style="background: linear-gradient(135deg, rgba(103,58,183,0.15), rgba(33,33,33,0.2)); padding: 16px; border-radius: 12px; margin-bottom: 16px; border-left: 4px solid #B39DDB;">
+                            <h3 style="color: #CE93D8; font-size: 17px; margin: 0 0 10px 0;">❄️ <span data-i18n="personalColor.drapingGuide.winter.title">겨울 쿨톤 (Winter Cool)</span></h3>
+                            <p style="color: #E1BEE7; font-size: 13px; margin: 0 0 10px 0;" data-i18n="personalColor.drapingGuide.winter.image">이미지: 카리스마, 도시적, 모던함, 차가움, 백설공주</p>
+                            <p style="color: #CE93D8; font-size: 13px; margin: 0 0 12px 0;" data-i18n="personalColor.drapingGuide.winter.attribute">핵심: 고채도(쨍함), 블루 베이스, 강한 대비</p>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+                                <span style="background: #FF1493; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: white;">핫 핑크</span>
+                                <span style="background: #4169E1; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: white;">로얄 블루</span>
+                                <span style="background: #50C878; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: white;">에메랄드</span>
+                                <span style="background: #000000; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: white;">퓨어 블랙</span>
+                            </div>
+                            <div style="background: rgba(76,175,80,0.2); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                                <b style="color: #81C784;">✅ Best:</b> <span style="color: #C8E6C9; font-size: 13px;" data-i18n="personalColor.drapingGuide.winter.best">이목구비가 선명하고 또렷해짐. 얼굴과 머리카락의 대비가 극대화.</span>
+                            </div>
+                            <div style="background: rgba(244,67,54,0.2); padding: 10px; border-radius: 8px;">
+                                <b style="color: #E57373;">❌ Worst:</b> <span style="color: #FFCDD2; font-size: 13px;" data-i18n="personalColor.drapingGuide.winter.worst">가을 웜(황토색/카키) 천: 얼굴이 늙어 보이거나 아파 보임. 탁한 색: 생기 사라짐.</span>
+                            </div>
+                        </div>
+
+                        <button onclick="closeDrapingGuide()" style="width: 100%; padding: 14px; border: none; border-radius: 8px; background: linear-gradient(135deg, #9C27B0, #673AB7); color: white; font-size: 16px; font-weight: bold; cursor: pointer;" data-i18n="personalColor.drapingGuide.closeBtn">닫기</button>
+                    </div>
                 </div>
 
                 <div class="draping-layout">
@@ -1868,6 +1963,17 @@
                 drapingSection.style.display = 'block';
                 showToast(t('personalColor.toast.drapingModeActivated') || '전문가 드래이핑 모드가 활성화되었습니다', 'success');
             }
+        }
+
+        // 드래이핑 가이드 모달 열기/닫기
+        function openDrapingGuide() {
+            document.getElementById('draping-guide-modal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDrapingGuide() {
+            document.getElementById('draping-guide-modal').style.display = 'none';
+            document.body.style.overflow = '';
         }
 
         function goHome() {

@@ -441,6 +441,42 @@ const HAIRGATOR_I18N = {
         step3: 'LAB 색공간 변환 중...',
         step4: 'Delta E 계산 중...',
         step5: '퍼스널컬러 분석 중...'
+      },
+
+      // 드래이핑 가이드
+      drapingGuide: {
+        title: '4계절 드래이핑 진단 가이드',
+        principleTitle: '드래이핑 진단 원리',
+        principleText: '드래이핑 진단은 피부 멜라닌의 언더톤(표피 멜라닌 vs 진피 헤모글로빈)에 따라 어울리는 색상의 명도/채도/색온도 범위가 달라진다는 원리를 기반으로 합니다.\n\n천 색이 피부 보색을 중화하면 피부가 맑아 보이고, 반대의 경우 피부가 칙칙하거나 붉어 보입니다.',
+        spring: {
+          title: '봄 웜톤 (Spring Warm)',
+          image: '밝고 따뜻한 노란 기운',
+          attribute: '고명도 + 중~고채도 + 웜(황색)',
+          best: '코랄, 피치, 아이보리, 밝은 오렌지',
+          worst: '회색빛 핑크, 버건디, 네이비'
+        },
+        summer: {
+          title: '여름 쿨톤 (Summer Cool)',
+          image: '부드럽고 시원한 회색/핑크 기운',
+          attribute: '중명도 + 저~중채도 + 쿨(회청)',
+          best: '라벤더, 로즈핑크, 스카이블루, 소프트 화이트',
+          worst: '오렌지, 카키, 머스타드'
+        },
+        autumn: {
+          title: '가을 웜톤 (Autumn Warm)',
+          image: '깊고 풍부한 황갈색 기운',
+          attribute: '저~중명도 + 저~중채도 + 웜(황금)',
+          best: '카키, 테라코타, 머스타드, 올리브',
+          worst: '연핑크, 파스텔 블루, 비비드 레드'
+        },
+        winter: {
+          title: '겨울 쿨톤 (Winter Cool)',
+          image: '선명하고 차가운 청자색 기운',
+          attribute: '극저/극고명도 + 고채도 + 쿨(청자)',
+          best: '순백, 블랙, 로열블루, 버건디, 핫핑크',
+          worst: '베이지, 오렌지, 연한 카키'
+        },
+        closeBtn: '닫기'
       }
     }
   },
@@ -864,6 +900,42 @@ const HAIRGATOR_I18N = {
         step3: 'Converting to LAB color space...',
         step4: 'Calculating Delta E...',
         step5: 'Analyzing personal color...'
+      },
+
+      // Draping Guide
+      drapingGuide: {
+        title: '4-Season Draping Diagnosis Guide',
+        principleTitle: 'Draping Diagnosis Principle',
+        principleText: 'Draping diagnosis is based on the principle that the suitable brightness/saturation/color temperature range varies according to the undertone of skin melanin (epidermal melanin vs dermal hemoglobin).\n\nWhen the cloth color neutralizes the skin\'s complementary colors, the skin appears clearer; otherwise, the skin may look dull or reddish.',
+        spring: {
+          title: 'Spring Warm',
+          image: 'Bright and warm yellow undertone',
+          attribute: 'High brightness + Medium-high saturation + Warm (yellow)',
+          best: 'Coral, Peach, Ivory, Bright Orange',
+          worst: 'Grayish Pink, Burgundy, Navy'
+        },
+        summer: {
+          title: 'Summer Cool',
+          image: 'Soft and cool gray/pink undertone',
+          attribute: 'Medium brightness + Low-medium saturation + Cool (gray-blue)',
+          best: 'Lavender, Rose Pink, Sky Blue, Soft White',
+          worst: 'Orange, Khaki, Mustard'
+        },
+        autumn: {
+          title: 'Autumn Warm',
+          image: 'Deep and rich golden-brown undertone',
+          attribute: 'Low-medium brightness + Low-medium saturation + Warm (golden)',
+          best: 'Khaki, Terracotta, Mustard, Olive',
+          worst: 'Light Pink, Pastel Blue, Vivid Red'
+        },
+        winter: {
+          title: 'Winter Cool',
+          image: 'Vivid and cool blue-purple undertone',
+          attribute: 'Very low/high brightness + High saturation + Cool (blue-purple)',
+          best: 'Pure White, Black, Royal Blue, Burgundy, Hot Pink',
+          worst: 'Beige, Orange, Light Khaki'
+        },
+        closeBtn: 'Close'
       }
     }
   },
@@ -1287,6 +1359,42 @@ const HAIRGATOR_I18N = {
         step3: 'LAB色空間に変換中...',
         step4: 'Delta Eを計算中...',
         step5: 'パーソナルカラーを分析中...'
+      },
+
+      // ドレーピングガイド
+      drapingGuide: {
+        title: '4シーズンドレーピング診断ガイド',
+        principleTitle: 'ドレーピング診断の原理',
+        principleText: 'ドレーピング診断は、肌のメラニンのアンダートーン（表皮メラニン vs 真皮ヘモグロビン）によって似合う色の明度/彩度/色温度の範囲が異なるという原理に基づいています。\n\n布の色が肌の補色を中和すると肌が透明に見え、逆の場合は肌がくすんだり赤く見えたりします。',
+        spring: {
+          title: 'スプリングウォーム',
+          image: '明るく暖かい黄色のアンダートーン',
+          attribute: '高明度 + 中〜高彩度 + ウォーム（イエロー）',
+          best: 'コーラル、ピーチ、アイボリー、明るいオレンジ',
+          worst: 'グレーがかったピンク、バーガンディ、ネイビー'
+        },
+        summer: {
+          title: 'サマークール',
+          image: '柔らかく涼しげなグレー/ピンクのアンダートーン',
+          attribute: '中明度 + 低〜中彩度 + クール（グレーブルー）',
+          best: 'ラベンダー、ローズピンク、スカイブルー、ソフトホワイト',
+          worst: 'オレンジ、カーキ、マスタード'
+        },
+        autumn: {
+          title: 'オータムウォーム',
+          image: '深く豊かなゴールデンブラウンのアンダートーン',
+          attribute: '低〜中明度 + 低〜中彩度 + ウォーム（ゴールド）',
+          best: 'カーキ、テラコッタ、マスタード、オリーブ',
+          worst: 'ライトピンク、パステルブルー、ビビッドレッド'
+        },
+        winter: {
+          title: 'ウィンタークール',
+          image: '鮮やかでクールなブルーパープルのアンダートーン',
+          attribute: '極低/極高明度 + 高彩度 + クール（ブルーパープル）',
+          best: 'ピュアホワイト、ブラック、ロイヤルブルー、バーガンディ、ホットピンク',
+          worst: 'ベージュ、オレンジ、ライトカーキ'
+        },
+        closeBtn: '閉じる'
       }
     }
   },
@@ -1710,6 +1818,42 @@ const HAIRGATOR_I18N = {
         step3: '正在转换为LAB色彩空间...',
         step4: '正在计算Delta E...',
         step5: '正在分析个人色彩...'
+      },
+
+      // 披巾测试指南
+      drapingGuide: {
+        title: '四季披巾测试诊断指南',
+        principleTitle: '披巾测试诊断原理',
+        principleText: '披巾测试诊断基于以下原理：根据皮肤黑色素的底色调（表皮黑色素 vs 真皮血红蛋白），适合的颜色明度/饱和度/色温范围会有所不同。\n\n当布料颜色中和皮肤的互补色时，皮肤会显得更加透亮；反之，皮肤可能看起来暗沉或泛红。',
+        spring: {
+          title: '春季暖色型',
+          image: '明亮温暖的黄色底色调',
+          attribute: '高明度 + 中高饱和度 + 暖色（黄色）',
+          best: '珊瑚色、桃色、象牙白、明亮橙色',
+          worst: '灰粉色、酒红色、海军蓝'
+        },
+        summer: {
+          title: '夏季冷色型',
+          image: '柔和清凉的灰色/粉色底色调',
+          attribute: '中明度 + 低中饱和度 + 冷色（灰蓝）',
+          best: '薰衣草紫、玫瑰粉、天蓝色、柔白色',
+          worst: '橙色、卡其色、芥末黄'
+        },
+        autumn: {
+          title: '秋季暖色型',
+          image: '深沉丰富的金棕色底色调',
+          attribute: '低中明度 + 低中饱和度 + 暖色（金色）',
+          best: '卡其色、陶土色、芥末黄、橄榄绿',
+          worst: '浅粉色、粉彩蓝、鲜艳红'
+        },
+        winter: {
+          title: '冬季冷色型',
+          image: '鲜艳清冷的蓝紫色底色调',
+          attribute: '极低/极高明度 + 高饱和度 + 冷色（蓝紫）',
+          best: '纯白、黑色、皇家蓝、酒红、亮粉红',
+          worst: '米色、橙色、浅卡其'
+        },
+        closeBtn: '关闭'
       }
     }
   },
@@ -2133,6 +2277,42 @@ const HAIRGATOR_I18N = {
         step3: 'Đang chuyển đổi sang không gian màu LAB...',
         step4: 'Đang tính toán Delta E...',
         step5: 'Đang phân tích màu cá nhân...'
+      },
+
+      // Hướng dẫn Draping
+      drapingGuide: {
+        title: 'Hướng dẫn chẩn đoán Draping 4 mùa',
+        principleTitle: 'Nguyên lý chẩn đoán Draping',
+        principleText: 'Chẩn đoán draping dựa trên nguyên lý rằng phạm vi độ sáng/độ bão hòa/nhiệt độ màu phù hợp thay đổi theo undertone của melanin da (melanin biểu bì vs hemoglobin hạ bì).\n\nKhi màu vải trung hòa màu bổ sung của da, da sẽ trông trong trẻo hơn; ngược lại, da có thể trông xỉn màu hoặc đỏ.',
+        spring: {
+          title: 'Xuân Ấm',
+          image: 'Undertone vàng ấm và sáng',
+          attribute: 'Độ sáng cao + Độ bão hòa trung-cao + Ấm (vàng)',
+          best: 'San hô, Đào, Ngà, Cam sáng',
+          worst: 'Hồng xám, Đỏ rượu, Xanh hải quân'
+        },
+        summer: {
+          title: 'Hạ Lạnh',
+          image: 'Undertone xám/hồng mềm mại và mát mẻ',
+          attribute: 'Độ sáng trung bình + Độ bão hòa thấp-trung + Lạnh (xám xanh)',
+          best: 'Oải hương, Hồng hoa hồng, Xanh da trời, Trắng mềm',
+          worst: 'Cam, Kaki, Mù tạt'
+        },
+        autumn: {
+          title: 'Thu Ấm',
+          image: 'Undertone nâu vàng sâu và đậm',
+          attribute: 'Độ sáng thấp-trung + Độ bão hòa thấp-trung + Ấm (vàng kim)',
+          best: 'Kaki, Đất nung, Mù tạt, Oliu',
+          worst: 'Hồng nhạt, Xanh pastel, Đỏ rực'
+        },
+        winter: {
+          title: 'Đông Lạnh',
+          image: 'Undertone xanh tím sống động và mát',
+          attribute: 'Độ sáng cực thấp/cao + Độ bão hòa cao + Lạnh (xanh tím)',
+          best: 'Trắng tinh, Đen, Xanh hoàng gia, Đỏ rượu, Hồng nóng',
+          worst: 'Be, Cam, Kaki nhạt'
+        },
+        closeBtn: 'Đóng'
       }
     }
   }
