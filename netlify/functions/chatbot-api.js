@@ -4473,44 +4473,64 @@ const MALE_STYLE_TERMS = {
 
 // 남자 이미지 Vision 분석
 async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
-  const prompt = `You are a men's hairstyle classifier. Classify accurately based on hair direction.
+  const prompt = `You are a professional men's hairstyle analyst. Analyze the image using cutting technique parameters.
 
-## SF (Side Fringe / 사이드 프린지)
-- Bangs fall STRAIGHT DOWN onto forehead (앞머리가 이마로 수직 낙하)
-- Hair covers forehead without any sideways sweep
-- NO parting, hair just hangs down naturally
-- Examples: 댄디컷, 시스루컷 (without part)
+## 스타일 카테고리 (Style Category)
+| Code | Name | Feature |
+|------|------|---------|
+| SF | Side Fringe | 앞머리가 이마로 자연스럽게 내려옴 |
+| SP | Side Part | 가르마를 기준으로 한쪽으로 넘김 |
+| FU | Fringe Up | 앞머리 끝을 위로 올림 |
+| PB | Pushed Back | 전체 모발을 뒤로 넘김 |
+| BZ | Buzz Cut | 매우 짧은 버즈컷 |
+| CP | Crop Cut | 짧은 크롭 스타일 |
+| MC | Mohican | 센터를 세운 모히칸 |
 
-## SP (Side Part / 사이드 파트)
-- Hair is SWEPT/COMBED to one side (머리가 한쪽으로 넘어감)
-- Hair flows SIDEWAYS, not straight down
-- Part line may or may not be clearly visible
-- Even subtle side-swept styles = SP
-- Examples: 가일컷, 시스루가르마, 포마드컷
+## 커팅 파라미터 (42 Formula Based)
 
-## Key Question: Where does the hair GO?
-- Hair falls DOWN onto forehead → SF
-- Hair flows SIDEWAYS to left or right → SP
+【CUT FORM】
+- L (Layer): 층이 많고 가벼움, 텍스처 있음
+- G (Graduation): 하단에 무게감, 층 적음
+- O (One Length): 일자 무게선
 
-## Other Categories
-| Code | Feature |
-|------|---------|
-| FU | Fringe styled UPWARD |
-| PB | ALL hair swept backward |
-| BZ | Very short buzz cut |
-| CP | Short textured crop |
-| MC | Mohawk style |
+【LIFTING RANGE】
+- L0: 0° (원렝스)
+- L1: 22.5° (Low Graduation)
+- L2: 45° (Mid Graduation)
+- L3: 67.5° (High Graduation)
+- L4: 90° (기본 Layer)
+- L5: 112.5° (Mid-High Layer)
+- L6: 135° (High Layer)
+- L7: 157.5° (Very High Layer)
+- L8: 180° (Extreme Layer)
 
-## OUTPUT (JSON only, no markdown)
+【SECTION】
+- DBS: Diagonal-Backward Section (대각선 뒤)
+- DFS: Diagonal-Forward Section (대각선 앞)
+- VS: Vertical Section (수직)
+- HS: Horizontal Section (수평)
+
+【DIRECTION】
+- D0~D3: Under-direction (앞이 짧아짐)
+- D4: On Base (자연스러운 낙하)
+- D5~D8: Over-direction (앞이 길어짐)
+
+## OUTPUT (JSON only)
 {
-  "has_part_line": true or false,
-  "style_category": "SF or SP or FU or PB or BZ or CP or MC",
-  "style_name": "English name",
-  "sub_style": "Korean name",
+  "style_category": "SF|SP|FU|PB|BZ|CP|MC",
+  "style_name": "English style name",
+  "sub_style": "Korean sub-style name",
+  "cut_form": "L|G|O",
+  "lifting_range": ["L3", "L4"],
+  "section_primary": "DBS|DFS|VS|HS",
+  "direction_primary": "D4|D5|D6|D7|D8",
   "top_length": "Very Short|Short|Medium|Long",
   "side_length": "Skin|Very Short|Short|Medium",
   "fade_type": "None|Low Fade|Mid Fade|High Fade|Skin Fade|Taper",
   "texture": "Smooth|Textured|Messy|Spiky",
+  "volume_zone": "High|Medium|Low",
+  "weight_distribution": "Top Heavy|Balanced|Bottom Heavy",
+  "connection_type": "Connected|Disconnected",
   "product_type": "Wax|Pomade|Clay|Gel",
   "styling_direction": "Forward|Backward|Side|Up"
 }`;
@@ -4639,6 +4659,9 @@ async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
 
   const systemPrompt = `당신은 남자 헤어컷 전문가입니다. 모든 응답을 한국어로만 작성하세요. 클리퍼 가드 사이즈, 페이드 기법 등 실무적인 내용을 포함하세요.${theoryContext ? ' 참고 이론의 내용을 레시피에 자연스럽게 반영하세요.' : ''}${captionContext ? ' 참고 스타일 레시피의 테크닉과 순서를 참고하세요.' : ''}`;
 
+  // 42포뮬러 핵심 파라미터 추출
+  const liftingStr = Array.isArray(params.lifting_range) ? params.lifting_range.join(', ') : 'L4';
+
   const userPrompt = `**📊 분석 결과:**
 - 카테고리: ${styleInfo.ko} (${params.style_category})
 - 구체적 스타일: ${subStyleName}
@@ -4647,9 +4670,51 @@ async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
 - 페이드: ${params.fade_type || 'None'}
 - 텍스처: ${params.texture || 'Smooth'}
 - 스타일링 제품: ${params.product_type || 'Wax'}
+
+### 핵심 커팅 파라미터 ⭐
+- **Cut Form**: ${params.cut_form || 'L (Layer)'}
+- **Lifting Range**: ${liftingStr}
+- **Section Primary**: ${params.section_primary || 'VS'}
+- **Direction**: ${params.direction_primary || 'D4'}
+- **Volume Zone**: ${params.volume_zone || 'Medium'}
+- **Weight Distribution**: ${params.weight_distribution || 'Top Heavy'}
+- **Connection Type**: ${params.connection_type || 'Connected'}
+
 ${theorySection}${captionSection}
 **🎯 참고 도해도:**
 ${diagramsContext}
+
+## ⚠️ 리프팅 각도 기준표 (매우 중요!)
+| 코드 | 각도 | 설명 |
+|-----|-----|------|
+| L0 | 0° | 원렝스 (무게선 명확) |
+| L1 | 22.5° | Low Graduation |
+| L2 | 45° | Mid Graduation |
+| L3 | 67.5° | High Graduation |
+| L4 | 90° | 기본 Layer |
+| L5 | 112.5° | Mid-High Layer |
+| L6 | 135° | High Layer |
+| L7 | 157.5° | Very High Layer |
+| L8 | 180° | Extreme Layer |
+
+❗ 중요: L4는 90도입니다! 45도가 아닙니다!
+
+## ⚠️ 존별 Section/Lifting/Direction 규칙
+**남자 커트에서도 존별로 다르게 적용하세요!**
+
+### 섹션 (Section)
+| 존 | 권장 섹션 | 이유 |
+|-----|---------|------|
+| Side | VS (Vertical) | 페이드 블렌딩에 효과적 |
+| Top | DBS or VS | 볼륨에 따라 선택 |
+| Back | HS (Horizontal) | 클리퍼 작업 기준선 |
+
+### 디렉션 (Direction)
+| 존 | 권장 방향 | 효과 |
+|-----|---------|------|
+| Side | D4 (On Base) | 자연스러운 낙하 |
+| Top | D4~D6 | 볼륨과 흐름 방향에 따라 |
+| Crown | D5~D7 | 정수리 볼륨 형성 |
 
 **📋 레시피 작성 지침:**
 
@@ -4661,13 +4726,16 @@ ${diagramsContext}
 - 페이드 시작 위치와 높이
 - 클리퍼 가드 사이즈 순서 (예: 0.5mm → 3mm → 6mm)
 - 블렌딩 포인트
+- **Section, Lifting 명시!**
 
 ### STEP 3: 탑/크라운 커팅 (가위 작업)
 - 기준선 설정 (Guide Line)
+- **Lifting 각도와 Section 타입 명시!**
 - 텍스처 기법 (Point Cut, Slide Cut 등)
 
 ### STEP 4: 연결 작업 (블렌딩)
 - 사이드와 탑 연결 부분 처리
+- **Direction 명시!**
 - 자연스러운 그라데이션 방법
 
 ### STEP 5: 마무리 & 스타일링
@@ -4678,14 +4746,18 @@ ${diagramsContext}
 **모든 전문용어 뒤에는 💡로 시작하는 쉬운 설명을 추가하세요!**
 
 예시 형식:
+- Lifting: L4 (90°)
+  💡 머리카락을 두피에서 직각(90도)으로 들어올려서 자르는 각도예요
+- Section: VS (Vertical Section)
+  💡 머리를 수직으로 나눠서 잡는 방식이에요. 페이드 작업할 때 주로 써요
+- Direction: D5 (Over-direction)
+  💡 모발을 살짝 뒤로 당겨서 자르면, 놓았을 때 앞쪽이 조금 더 길어져요
 - Low Fade (로우 페이드)
   💡 귀 아래쪽에서만 짧아지는 그라데이션이에요. 자연스럽고 직장인에게 좋아요
 - 클리퍼 가드 1.5mm
   💡 손톱 두께 정도로 아주 짧게 밀리는 길이예요
 - 블렌딩 (Blending)
   💡 짧은 부분과 긴 부분이 자연스럽게 연결되도록 섞어주는 기법이에요
-- Point Cut (포인트 컷)
-  💡 가위 끝으로 찔러서 자르는 방식이에요. 끝이 뾰족해져서 자연스러운 질감이 나와요
 
 💡 설명을 포함하여 충분히 상세하게 작성하세요.`;
 
