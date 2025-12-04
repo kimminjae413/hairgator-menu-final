@@ -594,14 +594,6 @@ body.male-theme .nav-btn:hover {
     margin-bottom: 2rem;
 }
 
-/* 카메라(왼쪽→오른쪽)와 분석패널(오른쪽→왼쪽) 순서 바꾸기 */
-.analysis-grid > .camera-wrapper {
-    order: 2;
-}
-
-.analysis-grid > .analysis-panel {
-    order: 1;
-}
 
 .camera-container {
     background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
@@ -711,15 +703,16 @@ body.male-theme .nav-btn:hover {
     box-shadow: none;
 }
 
-/* ========== 분석 패널 ========== */
+/* ========== 분석 패널 (오른쪽) ========== */
 .analysis-panel {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    background: linear-gradient(135deg, #1a1c2e 0%, #2d1f3d 100%);
     border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.12);
+    padding: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     border: none;
     position: relative;
-    overflow: hidden;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
 }
 
 .analysis-panel::before {
