@@ -404,7 +404,11 @@ exports.handler = async (event, context) => {
       case 'analyze_style_for_generation':
         return await analyzeStyleForGeneration(payload, GEMINI_KEY);
 
-      // ⭐ 어드민: z-image로 헤어스타일 이미지 생성
+      // ⭐ 어드민: URL에서 이미지 가져와서 분석
+      case 'analyze_style_from_url':
+        return await analyzeStyleFromUrl(payload, GEMINI_KEY);
+
+      // ⭐ 어드민: Gemini로 헤어스타일 이미지 생성
       case 'generate_hairstyle_image':
         return await generateHairstyleImage(payload);
 
@@ -4919,6 +4923,113 @@ Be specific and visual. Focus on what makes this hairstyle unique.`;
 
   } catch (error) {
     console.error('💥 스타일 분석 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 어드민: URL에서 이미지 가져와서 분석 ====================
+async function analyzeStyleFromUrl(payload, geminiKey) {
+  const { image_url } = payload;
+
+  // 어드민 전용 Gemini API 키
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || geminiKey;
+
+  console.log('🔗 URL 이미지 분석 시작:', image_url);
+
+  try {
+    // 1. URL에서 이미지 가져오기
+    const imageResponse = await fetch(image_url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+
+    if (!imageResponse.ok) {
+      throw new Error(`이미지를 가져올 수 없습니다: ${imageResponse.status}`);
+    }
+
+    const imageBuffer = await imageResponse.arrayBuffer();
+    const base64Image = Buffer.from(imageBuffer).toString('base64');
+    const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+
+    console.log('📷 이미지 가져오기 완료:', contentType);
+
+    // 2. Gemini Vision으로 분석
+    const prompt = `Analyze this hairstyle image for AI image generation.
+
+Return ONLY a JSON object with these fields:
+{
+  "gender": "male" or "female",
+  "length": "Short/Medium/Long/Very Long",
+  "form": "Layer/Graduation/One Length/Textured",
+  "color": "Black/Brown/Blonde/Red/etc (include highlights if any)",
+  "style": "Bob/Pixie/Wolf Cut/Shag/etc",
+  "texture": "Straight/Wavy/Curly/Permed",
+  "bangs": "None/Full/Side/Curtain/Wispy",
+  "description": "Brief 1-2 sentence description in Korean focusing on key visual features for image generation"
+}
+
+Be specific and visual. Focus on what makes this hairstyle unique.`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${ADMIN_GEMINI_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              {
+                inline_data: {
+                  mime_type: contentType,
+                  data: base64Image
+                }
+              },
+              { text: prompt }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 1000
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Gemini API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // JSON 파싱
+    const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('JSON 파싱 실패');
+    }
+
+    const analysis = JSON.parse(jsonMatch[0]);
+    console.log('✅ URL 이미지 분석 완료:', analysis);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          analysis: analysis,
+          image_base64: base64Image
+        }
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 URL 이미지 분석 오류:', error);
     return {
       statusCode: 500,
       headers,

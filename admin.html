@@ -1938,9 +1938,20 @@
 
             <div class="style-gen-options">
                 <div class="gen-option-card">
+                    <div class="gen-option-icon">🔗</div>
+                    <h4>URL로 분석</h4>
+                    <p>인스타그램 게시물 URL을 입력하여 스타일 분석</p>
+                    <input type="url" id="igPostUrlInput" placeholder="https://www.instagram.com/p/..." class="gen-input">
+                    <div id="urlImagePreview" class="style-image-preview" style="display: none;">
+                        <img id="urlPreviewImg" src="" alt="미리보기">
+                    </div>
+                    <button class="btn" id="analyzeUrlBtn" onclick="analyzeFromUrl()">URL 분석하기</button>
+                </div>
+
+                <div class="gen-option-card">
                     <div class="gen-option-icon">📷</div>
                     <h4>이미지 업로드로 분석</h4>
-                    <p>인스타그램 등에서 저장한 헤어스타일 이미지를 업로드</p>
+                    <p>저장한 헤어스타일 이미지를 직접 업로드</p>
                     <input type="file" id="styleImageInput" accept="image/*" class="gen-input-file" onchange="previewStyleImage(event)">
                     <div id="styleImagePreview" class="style-image-preview" style="display: none;">
                         <img id="previewImg" src="" alt="미리보기">
@@ -4007,6 +4018,62 @@
         // ==================== 스타일 분석 & 생성 ====================
         let currentStyleAnalysis = null;
         let currentImageBase64 = null;
+        let currentImageMimeType = 'image/jpeg';
+
+        // URL로 분석하기
+        async function analyzeFromUrl() {
+            const urlInput = document.getElementById('igPostUrlInput');
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                showToast('URL을 입력해주세요');
+                return;
+            }
+
+            const btn = document.getElementById('analyzeUrlBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>이미지 가져오는 중...';
+
+            try {
+                // 백엔드에서 URL 이미지 가져오기 및 분석
+                const response = await fetch('/.netlify/functions/chatbot-api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'analyze_style_from_url',
+                        payload: {
+                            image_url: url
+                        }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    currentStyleAnalysis = result.data.analysis;
+                    currentImageBase64 = result.data.image_base64;
+
+                    // 미리보기 표시
+                    if (result.data.image_base64) {
+                        const preview = document.getElementById('urlImagePreview');
+                        const img = document.getElementById('urlPreviewImg');
+                        img.src = `data:image/jpeg;base64,${result.data.image_base64}`;
+                        preview.style.display = 'block';
+                    }
+
+                    displayAnalysisResult(result.data.analysis);
+                    showToast('스타일 분석 완료!');
+                } else {
+                    throw new Error(result.error || '분석 실패');
+                }
+            } catch (error) {
+                console.error('URL 분석 오류:', error);
+                showToast('분석 실패: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'URL 분석하기';
+            }
+        }
 
         // 이미지 미리보기
         function previewStyleImage(event) {
