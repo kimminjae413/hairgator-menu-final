@@ -211,6 +211,46 @@
                         <div class="camera-controls">
                             <button class="control-btn" onclick="startDrapingCamera()" data-i18n="personalColor.drapingMode.startCamera">Start Camera</button>
                             <button class="control-btn" onclick="saveCurrentColor()" data-i18n="personalColor.drapingMode.saveColor">Save Current Color</button>
+                            <button class="control-btn" onclick="toggleCompareMode()" id="compare-mode-btn" style="background: linear-gradient(135deg, #E91E63, #9C27B0);">🔀 비교 모드</button>
+                        </div>
+
+                        <!-- 비교 모드 UI -->
+                        <div id="compare-mode-panel" style="display: none; margin-top: 15px; padding: 15px; background: linear-gradient(135deg, rgba(233,30,99,0.15), rgba(156,39,176,0.15)); border-radius: 12px; border: 1px solid rgba(233,30,99,0.3);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <span style="font-size: 16px; color: #E91E63; font-weight: bold;">🔥 웜 vs 쿨 비교</span>
+                                <span id="compare-progress" style="font-size: 14px; color: #CE93D8;">1/4</span>
+                            </div>
+
+                            <div id="compare-colors-display" style="display: flex; gap: 10px; margin-bottom: 12px;">
+                                <div style="flex: 1; text-align: center; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                                    <div id="compare-left-swatch" style="width: 50px; height: 50px; border-radius: 50%; margin: 0 auto 8px; border: 3px solid white;"></div>
+                                    <div id="compare-left-name" style="font-size: 14px; color: #fff;"></div>
+                                    <div id="compare-left-season" style="font-size: 12px; color: #F48FB1;"></div>
+                                </div>
+                                <div style="display: flex; align-items: center; font-size: 20px; color: #E91E63;">VS</div>
+                                <div style="flex: 1; text-align: center; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                                    <div id="compare-right-swatch" style="width: 50px; height: 50px; border-radius: 50%; margin: 0 auto 8px; border: 3px solid white;"></div>
+                                    <div id="compare-right-name" style="font-size: 14px; color: #fff;"></div>
+                                    <div id="compare-right-season" style="font-size: 12px; color: #90CAF9;"></div>
+                                </div>
+                            </div>
+
+                            <div style="text-align: center; margin-bottom: 12px; font-size: 15px; color: #E1BEE7;">어느 쪽이 더 어울리나요?</div>
+
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="selectCompareColor('left')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #FF9800, #FF5722); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">👈 왼쪽</button>
+                                <button onclick="selectCompareColor('right')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #2196F3, #673AB7); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">오른쪽 👉</button>
+                            </div>
+
+                            <div id="compare-score-display" style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; display: none;">
+                                <div style="font-size: 14px; color: #CE93D8; margin-bottom: 8px; font-weight: bold;">📊 현재 점수</div>
+                                <div style="display: flex; justify-content: space-around;">
+                                    <span style="color: #FFCC80;">🌸 봄: <b id="score-spring">0</b></span>
+                                    <span style="color: #90CAF9;">🌊 여름: <b id="score-summer">0</b></span>
+                                    <span style="color: #FFAB91;">🍂 가을: <b id="score-autumn">0</b></span>
+                                    <span style="color: #B39DDB;">❄️ 겨울: <b id="score-winter">0</b></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -3331,6 +3371,270 @@
             }
 
             ctx.restore();
+        }
+
+        // ========== 비교 모드 기능 ==========
+        let isCompareMode = false;
+        let compareIndex = 0;
+        let seasonScores = { spring: 0, summer: 0, autumn: 0, winter: 0 };
+
+        // 극단적 색상 비교 프리셋
+        const comparePresets = [
+            {
+                left: { hex: '#FF8C00', name: '오렌지', season: 'spring', label: '봄 웜' },
+                right: { hex: '#FF1493', name: '핫핑크', season: 'winter', label: '겨울 쿨' }
+            },
+            {
+                left: { hex: '#6B8E23', name: '카키', season: 'autumn', label: '가을 웜' },
+                right: { hex: '#87CEEB', name: '스카이블루', season: 'summer', label: '여름 쿨' }
+            },
+            {
+                left: { hex: '#FFD700', name: '골드', season: 'spring', label: '봄 웜' },
+                right: { hex: '#C0C0C0', name: '실버그레이', season: 'winter', label: '겨울 쿨' }
+            },
+            {
+                left: { hex: '#E2725B', name: '테라코타', season: 'autumn', label: '가을 웜' },
+                right: { hex: '#E6E6FA', name: '라벤더', season: 'summer', label: '여름 쿨' }
+            },
+            {
+                left: { hex: '#FF6347', name: '토마토레드', season: 'spring', label: '봄 웜' },
+                right: { hex: '#4169E1', name: '로얄블루', season: 'winter', label: '겨울 쿨' }
+            },
+            {
+                left: { hex: '#D2691E', name: '초콜릿브라운', season: 'autumn', label: '가을 웜' },
+                right: { hex: '#DDA0DD', name: '플럼', season: 'summer', label: '여름 쿨' }
+            }
+        ];
+
+        function toggleCompareMode() {
+            isCompareMode = !isCompareMode;
+            const panel = document.getElementById('compare-mode-panel');
+            const btn = document.getElementById('compare-mode-btn');
+
+            if (isCompareMode) {
+                panel.style.display = 'block';
+                btn.textContent = '❌ 비교 종료';
+                btn.style.background = 'linear-gradient(135deg, #f44336, #E91E63)';
+                compareIndex = 0;
+                seasonScores = { spring: 0, summer: 0, autumn: 0, winter: 0 };
+                document.getElementById('compare-score-display').style.display = 'none';
+                updateCompareDisplay();
+                showToast('비교 모드가 시작되었습니다. 두 색상 중 더 어울리는 쪽을 선택하세요!', 'info');
+            } else {
+                panel.style.display = 'none';
+                btn.textContent = '🔀 비교 모드';
+                btn.style.background = 'linear-gradient(135deg, #E91E63, #9C27B0)';
+                // 비교 모드 종료 시 일반 케이프로 복귀
+                if (lastFaceLandmarks && selectedColor) {
+                    drawDrapingCape();
+                }
+            }
+        }
+
+        function updateCompareDisplay() {
+            const preset = comparePresets[compareIndex];
+
+            // 좌우 색상 스와치 업데이트
+            document.getElementById('compare-left-swatch').style.background = preset.left.hex;
+            document.getElementById('compare-left-name').textContent = preset.left.name;
+            document.getElementById('compare-left-season').textContent = preset.left.label;
+
+            document.getElementById('compare-right-swatch').style.background = preset.right.hex;
+            document.getElementById('compare-right-name').textContent = preset.right.name;
+            document.getElementById('compare-right-season').textContent = preset.right.label;
+
+            // 진행 상황 업데이트
+            document.getElementById('compare-progress').textContent = `${compareIndex + 1}/${comparePresets.length}`;
+
+            // 분할 케이프 그리기
+            if (lastFaceLandmarks) {
+                drawSplitCape(preset.left.hex, preset.right.hex);
+            }
+        }
+
+        function drawSplitCape(leftColor, rightColor) {
+            const overlay = document.getElementById('draping-overlay');
+            const ctx = overlay.getContext('2d');
+            const w = overlay.width;
+            const h = overlay.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            if (!lastFaceLandmarks) return;
+
+            const chin = lastFaceLandmarks[152];
+            const leftJaw = lastFaceLandmarks[234];
+            const rightJaw = lastFaceLandmarks[454];
+
+            const chinX = chin.x * w;
+            const chinY = chin.y * h;
+            const leftJawX = leftJaw.x * w;
+            const rightJawX = rightJaw.x * w;
+            const faceWidth = Math.abs(rightJawX - leftJawX);
+
+            const capeStartY = chinY + 10;
+            const capeEndY = h + 50;
+            const spreadAngle = 0.7;
+            const neckWidth = faceWidth * 0.95;
+
+            ctx.save();
+
+            // 왼쪽 케이프 (웜톤)
+            const leftGradient = ctx.createLinearGradient(chinX, capeStartY, chinX, capeEndY);
+            leftGradient.addColorStop(0, leftColor + 'FF');
+            leftGradient.addColorStop(0.3, leftColor + 'EE');
+            leftGradient.addColorStop(1, leftColor + 'CC');
+
+            ctx.fillStyle = leftGradient;
+            ctx.beginPath();
+            ctx.moveTo(chinX, capeStartY);
+            ctx.lineTo(chinX - neckWidth / 2, capeStartY);
+            const leftEndX = chinX - (capeEndY - capeStartY) * Math.tan(spreadAngle) - neckWidth / 2;
+            ctx.quadraticCurveTo(chinX - neckWidth / 2 - 30, (capeStartY + capeEndY) / 2, leftEndX, capeEndY);
+            ctx.lineTo(chinX, capeEndY);
+            ctx.closePath();
+            ctx.fill();
+
+            // 오른쪽 케이프 (쿨톤)
+            const rightGradient = ctx.createLinearGradient(chinX, capeStartY, chinX, capeEndY);
+            rightGradient.addColorStop(0, rightColor + 'FF');
+            rightGradient.addColorStop(0.3, rightColor + 'EE');
+            rightGradient.addColorStop(1, rightColor + 'CC');
+
+            ctx.fillStyle = rightGradient;
+            ctx.beginPath();
+            ctx.moveTo(chinX, capeStartY);
+            ctx.lineTo(chinX + neckWidth / 2, capeStartY);
+            const rightEndX = chinX + (capeEndY - capeStartY) * Math.tan(spreadAngle) + neckWidth / 2;
+            ctx.quadraticCurveTo(chinX + neckWidth / 2 + 30, (capeStartY + capeEndY) / 2, rightEndX, capeEndY);
+            ctx.lineTo(chinX, capeEndY);
+            ctx.closePath();
+            ctx.fill();
+
+            // 중앙 분할선
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(chinX, capeStartY);
+            ctx.lineTo(chinX, capeEndY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.restore();
+        }
+
+        function selectCompareColor(side) {
+            const preset = comparePresets[compareIndex];
+            const selectedSeason = side === 'left' ? preset.left.season : preset.right.season;
+            const selectedName = side === 'left' ? preset.left.name : preset.right.name;
+
+            // 점수 추가
+            seasonScores[selectedSeason]++;
+
+            // 점수 표시 업데이트
+            document.getElementById('compare-score-display').style.display = 'block';
+            document.getElementById('score-spring').textContent = seasonScores.spring;
+            document.getElementById('score-summer').textContent = seasonScores.summer;
+            document.getElementById('score-autumn').textContent = seasonScores.autumn;
+            document.getElementById('score-winter').textContent = seasonScores.winter;
+
+            showToast(`${selectedName}(${side === 'left' ? preset.left.label : preset.right.label}) 선택!`, 'success');
+
+            // 다음 비교로
+            compareIndex++;
+
+            if (compareIndex >= comparePresets.length) {
+                // 비교 완료
+                showCompareResult();
+            } else {
+                updateCompareDisplay();
+            }
+        }
+
+        function showCompareResult() {
+            // 최고 점수 시즌 찾기
+            const maxScore = Math.max(...Object.values(seasonScores));
+            const topSeasons = Object.entries(seasonScores)
+                .filter(([_, score]) => score === maxScore)
+                .map(([season, _]) => season);
+
+            const seasonNames = {
+                spring: '🌸 봄 웜톤',
+                summer: '🌊 여름 쿨톤',
+                autumn: '🍂 가을 웜톤',
+                winter: '❄️ 겨울 쿨톤'
+            };
+
+            const resultText = topSeasons.map(s => seasonNames[s]).join(' / ');
+
+            // 결과 표시
+            const panel = document.getElementById('compare-mode-panel');
+            panel.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 24px; margin-bottom: 15px;">🎉 비교 완료!</div>
+                    <div style="font-size: 18px; color: #E91E63; margin-bottom: 15px;">당신에게 어울리는 톤:</div>
+                    <div style="font-size: 22px; color: #fff; font-weight: bold; margin-bottom: 20px;">${resultText}</div>
+                    <div style="display: flex; justify-content: space-around; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                        <span style="color: #FFCC80;">🌸 봄: ${seasonScores.spring}점</span>
+                        <span style="color: #90CAF9;">🌊 여름: ${seasonScores.summer}점</span>
+                        <span style="color: #FFAB91;">🍂 가을: ${seasonScores.autumn}점</span>
+                        <span style="color: #B39DDB;">❄️ 겨울: ${seasonScores.winter}점</span>
+                    </div>
+                    <button onclick="resetCompareMode()" style="padding: 12px 24px; border: none; border-radius: 8px; background: linear-gradient(135deg, #E91E63, #9C27B0); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">🔄 다시 비교하기</button>
+                    <button onclick="toggleCompareMode()" style="margin-left: 10px; padding: 12px 24px; border: none; border-radius: 8px; background: rgba(255,255,255,0.2); color: white; font-size: 15px; cursor: pointer;">닫기</button>
+                </div>
+            `;
+
+            showToast(`비교 결과: ${resultText}`, 'success');
+        }
+
+        function resetCompareMode() {
+            compareIndex = 0;
+            seasonScores = { spring: 0, summer: 0, autumn: 0, winter: 0 };
+
+            // 패널 원래대로 복구
+            const panel = document.getElementById('compare-mode-panel');
+            panel.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="font-size: 16px; color: #E91E63; font-weight: bold;">🔥 웜 vs 쿨 비교</span>
+                    <span id="compare-progress" style="font-size: 14px; color: #CE93D8;">1/${comparePresets.length}</span>
+                </div>
+
+                <div id="compare-colors-display" style="display: flex; gap: 10px; margin-bottom: 12px;">
+                    <div style="flex: 1; text-align: center; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                        <div id="compare-left-swatch" style="width: 50px; height: 50px; border-radius: 50%; margin: 0 auto 8px; border: 3px solid white;"></div>
+                        <div id="compare-left-name" style="font-size: 14px; color: #fff;"></div>
+                        <div id="compare-left-season" style="font-size: 12px; color: #F48FB1;"></div>
+                    </div>
+                    <div style="display: flex; align-items: center; font-size: 20px; color: #E91E63;">VS</div>
+                    <div style="flex: 1; text-align: center; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                        <div id="compare-right-swatch" style="width: 50px; height: 50px; border-radius: 50%; margin: 0 auto 8px; border: 3px solid white;"></div>
+                        <div id="compare-right-name" style="font-size: 14px; color: #fff;"></div>
+                        <div id="compare-right-season" style="font-size: 12px; color: #90CAF9;"></div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 12px; font-size: 15px; color: #E1BEE7;">어느 쪽이 더 어울리나요?</div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="selectCompareColor('left')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #FF9800, #FF5722); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">👈 왼쪽</button>
+                    <button onclick="selectCompareColor('right')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #2196F3, #673AB7); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">오른쪽 👉</button>
+                </div>
+
+                <div id="compare-score-display" style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; display: none;">
+                    <div style="font-size: 14px; color: #CE93D8; margin-bottom: 8px; font-weight: bold;">📊 현재 점수</div>
+                    <div style="display: flex; justify-content: space-around;">
+                        <span style="color: #FFCC80;">🌸 봄: <b id="score-spring">0</b></span>
+                        <span style="color: #90CAF9;">🌊 여름: <b id="score-summer">0</b></span>
+                        <span style="color: #FFAB91;">🍂 가을: <b id="score-autumn">0</b></span>
+                        <span style="color: #B39DDB;">❄️ 겨울: <b id="score-winter">0</b></span>
+                    </div>
+                </div>
+            `;
+
+            updateCompareDisplay();
+            showToast('비교를 다시 시작합니다!', 'info');
         }
 
         function stopDrapingCamera(silent = false) {
