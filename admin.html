@@ -1727,6 +1727,7 @@
             <button class="tab" onclick="switchTab('stats')">통계</button>
             <button class="tab" onclick="switchTab('settings')">설정</button>
             <button class="tab" onclick="switchTab('cardNews')">카드뉴스 생성</button>
+            <button class="tab" onclick="switchTab('videoGen')">영상 생성</button>
         </div>
         
         <!-- 스타일 관리 탭 -->
@@ -1986,6 +1987,96 @@
                 </div>
                 <div id="cardNewsHistoryList" style="display: flex; flex-direction: column; gap: 16px;">
                     <!-- 동적 생성 -->
+                    <p style="color: #666; text-align: center; padding: 40px;">히스토리가 없습니다</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 영상 생성 탭 -->
+    <div id="videoGenTab" class="tab-content" style="display: none;">
+        <div class="section">
+            <h2 class="section-title">🎬 AI 숏폼 영상 생성기</h2>
+            <p style="color: #888; font-size: 13px; margin-bottom: 24px;">Veo 3.1 모델을 활용한 유튜브/인스타그램 숏폼 영상을 생성합니다.</p>
+
+            <!-- 영상 프롬프트 입력 -->
+            <div style="margin-bottom: 20px;">
+                <label style="color: #fff; font-weight: 600; margin-bottom: 10px; display: block;">
+                    영상 설명 (프롬프트)
+                </label>
+                <textarea id="videoPrompt" placeholder="예: 미용실에서 레이어드컷 시술하는 장면, 가위로 머리카락을 자르는 클로즈업..."
+                    style="width: 100%; height: 120px; background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 14px; border-radius: 10px; font-size: 14px; resize: vertical;"></textarea>
+            </div>
+
+            <!-- 참고 이미지 업로드 (선택) -->
+            <div style="margin-bottom: 20px;">
+                <label style="color: #fff; font-weight: 600; margin-bottom: 10px; display: block;">
+                    참고 이미지 (선택)
+                    <span style="color: #888; font-weight: 400; font-size: 12px; margin-left: 8px;">이미지를 기반으로 영상 생성</span>
+                </label>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <label style="cursor: pointer; background: #333; border: 1px dashed #555; padding: 12px 20px; border-radius: 8px; color: #aaa; font-size: 13px;">
+                        📷 이미지 선택
+                        <input type="file" id="videoRefImage" accept="image/*" style="display: none;" onchange="previewVideoRefImage(event)">
+                    </label>
+                    <div id="videoRefImagePreview" style="display: none; align-items: center; gap: 8px;">
+                        <img id="videoRefImg" src="" style="height: 60px; border-radius: 6px;">
+                        <button onclick="clearVideoRefImage()" style="background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 18px;">✕</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 옵션 선택 -->
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
+                <div>
+                    <label style="color: #ccc; font-size: 13px; display: block; margin-bottom: 6px;">영상 길이</label>
+                    <select id="videoDuration" style="background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 10px 14px; border-radius: 6px; min-width: 140px;">
+                        <option value="5">5초</option>
+                        <option value="8" selected>8초</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="color: #ccc; font-size: 13px; display: block; margin-bottom: 6px;">화면 비율</label>
+                    <select id="videoAspectRatio" style="background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 10px 14px; border-radius: 6px; min-width: 160px;">
+                        <option value="9:16" selected>세로형 9:16 (릴스/숏츠)</option>
+                        <option value="16:9">가로형 16:9 (유튜브)</option>
+                        <option value="1:1">정사각형 1:1</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 브랜드 안내 -->
+            <div style="margin-bottom: 20px; padding: 12px 16px; background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.3); border-radius: 8px;">
+                <p style="color: #E91E63; font-size: 13px; margin: 0;">
+                    <strong>📌 HAIRGATOR 브랜드 스타일</strong><br>
+                    <span style="color: #aaa;">헤어디자이너 타겟 | 전문적이고 세련된 미용실 분위기</span>
+                </p>
+            </div>
+
+            <!-- 생성 버튼 -->
+            <button id="generateVideoBtn" onclick="generateVideo()" style="width: 100%; background: linear-gradient(135deg, #9c27b0, #673ab7); border: none; color: white; padding: 16px 24px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                🎬 영상 생성하기
+            </button>
+
+            <!-- 생성된 영상 결과 -->
+            <div id="videoResultSection" style="display: none; margin-top: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="color: #fff; font-size: 16px; margin: 0;">🎥 생성된 영상</h3>
+                </div>
+                <div id="videoResultContainer" style="background: #2a2a2a; border-radius: 12px; padding: 16px; border: 1px solid #444;">
+                    <!-- 동적 생성 -->
+                </div>
+            </div>
+
+            <!-- 히스토리 섹션 -->
+            <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="color: #fff; font-size: 18px; margin: 0;">📜 생성 히스토리</h3>
+                    <button onclick="clearVideoHistory()" style="background: #dc3545; border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                        🗑️ 전체 삭제
+                    </button>
+                </div>
+                <div id="videoHistoryList" style="display: flex; flex-direction: column; gap: 16px;">
                     <p style="color: #666; text-align: center; padding: 40px;">히스토리가 없습니다</p>
                 </div>
             </div>
@@ -4190,6 +4281,177 @@
                 showToast('복사 실패');
             });
         }
+
+        // ==================== 영상 생성 (Veo 3.1) ====================
+        let videoRefImageBase64 = null;
+        let videoRefImageMimeType = 'image/jpeg';
+
+        function previewVideoRefImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                videoRefImageBase64 = base64.split(',')[1];
+                videoRefImageMimeType = file.type || 'image/jpeg';
+                document.getElementById('videoRefImg').src = base64;
+                document.getElementById('videoRefImagePreview').style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearVideoRefImage() {
+            videoRefImageBase64 = null;
+            document.getElementById('videoRefImage').value = '';
+            document.getElementById('videoRefImagePreview').style.display = 'none';
+            document.getElementById('videoRefImg').src = '';
+        }
+
+        async function generateVideo() {
+            const prompt = document.getElementById('videoPrompt').value.trim();
+            if (!prompt) {
+                showToast('영상 설명을 입력해주세요');
+                return;
+            }
+
+            const btn = document.getElementById('generateVideoBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>영상 생성 중... (약 1-3분 소요)';
+
+            const duration = document.getElementById('videoDuration').value;
+            const aspectRatio = document.getElementById('videoAspectRatio').value;
+
+            try {
+                const payload = {
+                    prompt: prompt,
+                    duration: duration,
+                    aspect_ratio: aspectRatio
+                };
+
+                if (videoRefImageBase64) {
+                    payload.reference_image = videoRefImageBase64;
+                    payload.mime_type = videoRefImageMimeType;
+                }
+
+                const response = await fetch('/.netlify/functions/chatbot-api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'generate_video',
+                        payload: payload
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    displayVideoResult(result.data);
+                    saveVideoHistory(prompt, result.data);
+                    showToast('영상 생성 완료!');
+                } else {
+                    throw new Error(result.error || '영상 생성 실패');
+                }
+            } catch (error) {
+                console.error('영상 생성 오류:', error);
+                showToast('생성 실패: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🎬 영상 생성하기';
+            }
+        }
+
+        function displayVideoResult(data) {
+            const container = document.getElementById('videoResultContainer');
+            container.innerHTML = `
+                <video controls style="width: 100%; max-width: 400px; border-radius: 8px; margin: 0 auto; display: block;">
+                    <source src="${data.video_url}" type="video/mp4">
+                    브라우저가 비디오를 지원하지 않습니다.
+                </video>
+                <div style="margin-top: 16px; text-align: center;">
+                    <a href="${data.video_url}" download="hairgator_video_${Date.now()}.mp4"
+                       style="background: #4CAF50; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                        ⬇️ 다운로드
+                    </a>
+                </div>
+            `;
+            document.getElementById('videoResultSection').style.display = 'block';
+        }
+
+        // ==================== 영상 히스토리 ====================
+        function saveVideoHistory(prompt, data) {
+            const history = JSON.parse(localStorage.getItem('videoHistory') || '[]');
+            const newEntry = {
+                id: Date.now(),
+                prompt: prompt.substring(0, 50) + (prompt.length > 50 ? '...' : ''),
+                video_url: data.video_url,
+                createdAt: new Date().toISOString()
+            };
+            history.unshift(newEntry);
+            if (history.length > 10) history.pop();
+            localStorage.setItem('videoHistory', JSON.stringify(history));
+            renderVideoHistory();
+        }
+
+        function renderVideoHistory() {
+            const container = document.getElementById('videoHistoryList');
+            const history = JSON.parse(localStorage.getItem('videoHistory') || '[]');
+
+            if (history.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">히스토리가 없습니다</p>';
+                return;
+            }
+
+            container.innerHTML = history.map(entry => {
+                const date = new Date(entry.createdAt);
+                const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+                return `
+                    <div style="background: #2a2a2a; border-radius: 12px; padding: 16px; border: 1px solid #444;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div style="flex: 1;">
+                                <p style="color: #fff; margin: 0 0 4px 0; font-size: 14px;">${entry.prompt}</p>
+                                <span style="color: #888; font-size: 12px;">${dateStr}</span>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="loadVideoHistory('${entry.video_url}')" style="background: #9c27b0; border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                    보기
+                                </button>
+                                <button onclick="deleteVideoHistory(${entry.id})" style="background: #444; border: none; color: #aaa; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                    삭제
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadVideoHistory(videoUrl) {
+            displayVideoResult({ video_url: videoUrl });
+            document.getElementById('videoResultSection').scrollIntoView({ behavior: 'smooth' });
+            showToast('히스토리를 불러왔습니다');
+        }
+
+        function deleteVideoHistory(id) {
+            if (!confirm('이 히스토리를 삭제하시겠습니까?')) return;
+            let history = JSON.parse(localStorage.getItem('videoHistory') || '[]');
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem('videoHistory', JSON.stringify(history));
+            renderVideoHistory();
+            showToast('삭제되었습니다');
+        }
+
+        function clearVideoHistory() {
+            if (!confirm('모든 히스토리를 삭제하시겠습니까?')) return;
+            localStorage.removeItem('videoHistory');
+            renderVideoHistory();
+            showToast('모든 히스토리가 삭제되었습니다');
+        }
+
+        // 페이지 로드 시 영상 히스토리 렌더링
+        document.addEventListener('DOMContentLoaded', function() {
+            renderVideoHistory();
+        });
 
         // ==================== 카드뉴스 히스토리 ====================
         function saveCardNewsHistory(title, pages, images) {

@@ -423,6 +423,10 @@ exports.handler = async (event, context) => {
       case 'generate_cardnews_keywords':
         return await generateCardNewsKeywords(payload);
 
+      // ⭐ 어드민: Veo 3.1 영상 생성
+      case 'generate_video':
+        return await generateVideo(payload);
+
       default:
         return {
           statusCode: 400,
@@ -5615,6 +5619,147 @@ async function generateCardNewsKeywords(payload) {
 
   } catch (error) {
     console.error('💥 키워드 생성 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 어드민: Veo 3.1 영상 생성 ====================
+async function generateVideo(payload) {
+  const { prompt, duration, aspect_ratio, reference_image, mime_type } = payload;
+
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
+
+  console.log('🎬 영상 생성 시작:', { prompt: prompt?.substring(0, 50), duration, aspect_ratio });
+
+  if (!ADMIN_GEMINI_KEY) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: 'GEMINI_API_KEY not configured' })
+    };
+  }
+
+  if (!prompt) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ success: false, error: '영상 설명을 입력해주세요' })
+    };
+  }
+
+  try {
+    // HAIRGATOR 브랜드 스타일 프롬프트 강화
+    const enhancedPrompt = `Professional hair salon video for HAIRGATOR brand. ${prompt}.
+Style: Premium, professional Korean hair salon atmosphere. Clean, modern interior with soft lighting.
+Target audience: Professional hair designers and stylists.`;
+
+    // Veo 3.1 API 요청 구성
+    const requestBody = {
+      instances: [{
+        prompt: enhancedPrompt
+      }],
+      parameters: {
+        aspectRatio: aspect_ratio || '9:16',
+        durationSeconds: parseInt(duration) || 8
+      }
+    };
+
+    // 참고 이미지가 있으면 추가
+    if (reference_image) {
+      requestBody.instances[0].image = {
+        bytesBase64Encoded: reference_image,
+        mimeType: mime_type || 'image/jpeg'
+      };
+    }
+
+    // Veo 3.1 Long Running Operation 시작
+    const startResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning?key=${ADMIN_GEMINI_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      }
+    );
+
+    if (!startResponse.ok) {
+      const errorText = await startResponse.text();
+      console.error('Veo API 시작 오류:', startResponse.status, errorText);
+      throw new Error(`Veo API 오류 (${startResponse.status}): ${errorText.substring(0, 200)}`);
+    }
+
+    const operationData = await startResponse.json();
+    const operationName = operationData.name;
+
+    console.log('🎬 영상 생성 작업 시작:', operationName);
+
+    // 작업 완료까지 폴링 (최대 5분)
+    const maxAttempts = 30;
+    const pollInterval = 10000; // 10초
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+
+      const pollResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/${operationName}?key=${ADMIN_GEMINI_KEY}`,
+        { method: 'GET' }
+      );
+
+      if (!pollResponse.ok) {
+        console.error('폴링 오류:', pollResponse.status);
+        continue;
+      }
+
+      const pollData = await pollResponse.json();
+
+      if (pollData.done) {
+        console.log('✅ 영상 생성 완료!');
+
+        if (pollData.error) {
+          throw new Error(pollData.error.message || '영상 생성 실패');
+        }
+
+        // 생성된 비디오 URL 추출
+        const videoData = pollData.response?.generatedVideos?.[0];
+        if (!videoData) {
+          throw new Error('생성된 영상이 없습니다');
+        }
+
+        // base64 비디오 데이터를 data URL로 변환
+        let videoUrl;
+        if (videoData.video?.uri) {
+          videoUrl = videoData.video.uri;
+        } else if (videoData.video?.bytesBase64Encoded) {
+          videoUrl = `data:video/mp4;base64,${videoData.video.bytesBase64Encoded}`;
+        } else {
+          throw new Error('비디오 데이터를 찾을 수 없습니다');
+        }
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            success: true,
+            data: {
+              video_url: videoUrl,
+              duration: duration,
+              aspect_ratio: aspect_ratio
+            }
+          })
+        };
+      }
+
+      console.log(`⏳ 영상 생성 중... (${attempt + 1}/${maxAttempts})`);
+    }
+
+    throw new Error('영상 생성 시간 초과 (5분)');
+
+  } catch (error) {
+    console.error('💥 영상 생성 오류:', error);
     return {
       statusCode: 500,
       headers,
