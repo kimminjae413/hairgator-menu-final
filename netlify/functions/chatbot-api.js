@@ -3592,8 +3592,24 @@ ${recipeTexts}
     }
 
     const data = await response.json();
+
+    // File Search 응답에서 텍스트 추출 (여러 parts가 있을 수 있음)
+    let recipeText = '';
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    for (const part of parts) {
+      if (part.text) {
+        recipeText += part.text;
+      }
+    }
+
+    if (!recipeText) {
+      console.error('❌ 레시피 텍스트 없음, 응답 구조:', JSON.stringify(data).substring(0, 500));
+      throw new Error('레시피 텍스트를 찾을 수 없습니다');
+    }
+
     console.log('✅ abcde 북 참조 레시피 생성 완료');
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || '레시피 생성 실패';
+    console.log(`📝 레시피 길이: ${recipeText.length}자`);
+    return recipeText;
 
   } catch (error) {
     console.error('❌ 레시피 생성 실패:', error);
