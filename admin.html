@@ -1272,6 +1272,244 @@
                 flex-direction: column;
             }
         }
+
+        /* 인스타그램 계정 관리 스타일 */
+        .ig-add-form {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .ig-input-group {
+            margin-bottom: 15px;
+        }
+
+        .ig-input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .ig-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        .ig-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ig-at-symbol {
+            background: #333;
+            color: #FF1493;
+            padding: 10px 15px;
+            border-radius: 8px 0 0 8px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .ig-input-row input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #333;
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            background: #222;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .ig-input-group > input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #222;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .ig-input-row input:focus,
+        .ig-input-group > input:focus {
+            outline: none;
+            border-color: #FF1493;
+        }
+
+        .ig-account-count {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .ig-account-count span {
+            color: #FF1493;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .ig-accounts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .ig-account-card {
+            background: linear-gradient(135deg, #1a1a1a, #222);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+        }
+
+        .ig-account-card:hover {
+            border-color: #FF1493;
+            transform: translateY(-2px);
+        }
+
+        .ig-account-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .ig-account-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ig-account-name {
+            font-weight: bold;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .ig-account-name a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .ig-account-name a:hover {
+            color: #FF1493;
+        }
+
+        .ig-account-memo {
+            color: #888;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ig-account-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .ig-btn-delete {
+            background: transparent;
+            border: 1px solid #dc3545;
+            color: #dc3545;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .ig-btn-delete:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .ig-empty-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            border: 2px dashed #333;
+        }
+
+        /* 스타일 분석 & 생성 옵션 */
+        .style-gen-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .gen-option-card {
+            background: linear-gradient(135deg, #1a1a1a, #222);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .gen-option-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .gen-option-card h4 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .gen-option-card p {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .gen-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #222;
+            color: #fff;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .gen-input:focus {
+            outline: none;
+            border-color: #FF1493;
+        }
+
+        .gen-input-file {
+            width: 100%;
+            padding: 10px;
+            border: 1px dashed #333;
+            border-radius: 8px;
+            background: #1a1a1a;
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -1297,6 +1535,7 @@
             <button class="tab active" onclick="switchTab('styles')">헤어스타일 관리</button>
             <button class="tab" onclick="switchTab('stats')">통계</button>
             <button class="tab" onclick="switchTab('settings')">설정</button>
+            <button class="tab" onclick="switchTab('hairGen')">헤어스타일 생성</button>
         </div>
         
         <!-- 스타일 관리 탭 -->
@@ -1458,7 +1697,74 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- 헤어스타일 생성 탭 -->
+    <div id="hairGenTab" class="tab-content" style="display: none;">
+        <!-- 인스타그램 계정 관리 섹션 -->
+        <div class="section">
+            <h2 class="section-title">📸 참고 인스타그램 계정 관리</h2>
+            <p style="color: #888; margin-bottom: 20px;">
+                최대 20개의 인스타그램 계정을 등록하여 헤어스타일 트렌드를 참고할 수 있습니다.<br>
+                등록된 계정의 인기 게시물을 분석하여 AI 헤어스타일 이미지를 생성합니다.
+            </p>
+
+            <!-- 계정 추가 폼 -->
+            <div class="ig-add-form">
+                <div class="ig-input-group">
+                    <label>인스타그램 계정명</label>
+                    <div class="ig-input-row">
+                        <span class="ig-at-symbol">@</span>
+                        <input type="text" id="igAccountInput" placeholder="username" maxlength="30">
+                        <button class="btn" onclick="addInstagramAccount()">추가</button>
+                    </div>
+                </div>
+                <div class="ig-input-group">
+                    <label>메모 (선택)</label>
+                    <input type="text" id="igAccountMemo" placeholder="예: 남성 숏컷 전문, 유명 살롱 등" maxlength="50">
+                </div>
+            </div>
+
+            <!-- 등록된 계정 수 -->
+            <div class="ig-account-count">
+                등록된 계정: <span id="igAccountCount">0</span> / 20
+            </div>
+
+            <!-- 계정 목록 -->
+            <div class="ig-accounts-grid" id="igAccountsGrid">
+                <!-- 동적 생성 -->
+                <div class="ig-empty-message" id="igEmptyMessage">
+                    등록된 계정이 없습니다. 위에서 계정을 추가해주세요.
+                </div>
+            </div>
+        </div>
+
+        <!-- 스타일 분석 섹션 (추후 확장) -->
+        <div class="section" style="margin-top: 30px;">
+            <h2 class="section-title">🎨 스타일 분석 & 생성</h2>
+            <p style="color: #888; margin-bottom: 20px;">
+                등록된 계정의 게시물 URL 또는 이미지를 업로드하여 스타일을 분석하고 생성합니다.
+            </p>
+
+            <div class="style-gen-options">
+                <div class="gen-option-card">
+                    <div class="gen-option-icon">🔗</div>
+                    <h4>URL로 분석</h4>
+                    <p>인스타그램 게시물 URL을 입력하여 스타일 분석</p>
+                    <input type="url" id="igPostUrlInput" placeholder="https://www.instagram.com/p/..." class="gen-input">
+                    <button class="btn" onclick="analyzeFromUrl()" disabled>분석하기 (준비중)</button>
+                </div>
+
+                <div class="gen-option-card">
+                    <div class="gen-option-icon">📷</div>
+                    <h4>이미지 업로드</h4>
+                    <p>저장한 이미지를 직접 업로드하여 스타일 분석</p>
+                    <input type="file" id="styleImageInput" accept="image/*" class="gen-input-file">
+                    <button class="btn" onclick="analyzeFromImage()" disabled>분석하기 (준비중)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 스타일 추가 모달 -->
     <div id="addStyleModal" class="modal">
         <div class="modal-content">
@@ -3270,6 +3576,175 @@
                 statusEl.textContent = '오류 발생: ' + error.message;
                 showToast('썸네일 재생성 중 오류 발생');
             }
+        }
+
+        // ==================== 인스타그램 계정 관리 ====================
+        const MAX_IG_ACCOUNTS = 20;
+
+        // 인스타그램 계정 로드
+        async function loadInstagramAccounts() {
+            try {
+                const snapshot = await db.collection('instagram_accounts').orderBy('createdAt', 'desc').get();
+                const accounts = [];
+                snapshot.forEach(doc => {
+                    accounts.push({ id: doc.id, ...doc.data() });
+                });
+                renderInstagramAccounts(accounts);
+            } catch (error) {
+                console.error('인스타그램 계정 로드 오류:', error);
+                showToast('계정 목록 로드 실패');
+            }
+        }
+
+        // 인스타그램 계정 렌더링
+        function renderInstagramAccounts(accounts) {
+            const grid = document.getElementById('igAccountsGrid');
+            const countEl = document.getElementById('igAccountCount');
+            const emptyMsg = document.getElementById('igEmptyMessage');
+
+            countEl.textContent = accounts.length;
+
+            if (accounts.length === 0) {
+                grid.innerHTML = `
+                    <div class="ig-empty-message">
+                        등록된 계정이 없습니다. 위에서 계정을 추가해주세요.
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = accounts.map(account => `
+                <div class="ig-account-card" data-id="${account.id}">
+                    <div class="ig-account-avatar">${account.username.charAt(0).toUpperCase()}</div>
+                    <div class="ig-account-info">
+                        <div class="ig-account-name">
+                            <a href="https://www.instagram.com/${account.username}" target="_blank">@${account.username}</a>
+                        </div>
+                        <div class="ig-account-memo">${account.memo || '메모 없음'}</div>
+                    </div>
+                    <div class="ig-account-actions">
+                        <button class="ig-btn-delete" onclick="deleteInstagramAccount('${account.id}', '${account.username}')">삭제</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 인스타그램 계정 추가
+        async function addInstagramAccount() {
+            const usernameInput = document.getElementById('igAccountInput');
+            const memoInput = document.getElementById('igAccountMemo');
+
+            let username = usernameInput.value.trim();
+            const memo = memoInput.value.trim();
+
+            // @ 제거
+            if (username.startsWith('@')) {
+                username = username.substring(1);
+            }
+
+            // 유효성 검사
+            if (!username) {
+                showToast('계정명을 입력해주세요');
+                return;
+            }
+
+            // 인스타그램 username 형식 검사
+            const usernameRegex = /^[a-zA-Z0-9._]{1,30}$/;
+            if (!usernameRegex.test(username)) {
+                showToast('올바른 인스타그램 계정명을 입력해주세요');
+                return;
+            }
+
+            try {
+                // 현재 계정 수 확인
+                const snapshot = await db.collection('instagram_accounts').get();
+                if (snapshot.size >= MAX_IG_ACCOUNTS) {
+                    showToast(`최대 ${MAX_IG_ACCOUNTS}개까지만 등록할 수 있습니다`);
+                    return;
+                }
+
+                // 중복 확인
+                const existingQuery = await db.collection('instagram_accounts')
+                    .where('username', '==', username.toLowerCase())
+                    .get();
+
+                if (!existingQuery.empty) {
+                    showToast('이미 등록된 계정입니다');
+                    return;
+                }
+
+                // 저장
+                await db.collection('instagram_accounts').add({
+                    username: username.toLowerCase(),
+                    memo: memo,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast(`@${username} 계정이 추가되었습니다`);
+                usernameInput.value = '';
+                memoInput.value = '';
+                loadInstagramAccounts();
+
+            } catch (error) {
+                console.error('계정 추가 오류:', error);
+                showToast('계정 추가 실패: ' + error.message);
+            }
+        }
+
+        // 인스타그램 계정 삭제
+        async function deleteInstagramAccount(id, username) {
+            if (!confirm(`@${username} 계정을 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            try {
+                await db.collection('instagram_accounts').doc(id).delete();
+                showToast(`@${username} 계정이 삭제되었습니다`);
+                loadInstagramAccounts();
+            } catch (error) {
+                console.error('계정 삭제 오류:', error);
+                showToast('계정 삭제 실패: ' + error.message);
+            }
+        }
+
+        // 헤어스타일 생성 탭 전환 시 계정 로드
+        const originalSwitchTab = switchTab;
+        switchTab = function(tabName) {
+            // 기존 탭 전환 로직 실행
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+
+            event.target.classList.add('active');
+
+            const activeContent = document.getElementById(tabName + 'Tab');
+            if (activeContent) {
+                activeContent.style.display = 'block';
+            }
+
+            // 통계 탭으로 전환 시 데이터 로드
+            if (tabName === 'stats') {
+                updateStats();
+            }
+
+            // 헤어스타일 생성 탭으로 전환 시 계정 로드
+            if (tabName === 'hairGen') {
+                loadInstagramAccounts();
+            }
+        };
+
+        // URL 분석 (준비중)
+        function analyzeFromUrl() {
+            showToast('URL 분석 기능은 준비 중입니다');
+        }
+
+        // 이미지 분석 (준비중)
+        function analyzeFromImage() {
+            showToast('이미지 분석 기능은 준비 중입니다');
         }
         </script>
     </body>
