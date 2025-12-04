@@ -3182,6 +3182,10 @@
         }
 
         // 드래이핑 모드 함수들
+        let drapingFaceMesh = null;
+        let drapingAnimationId = null;
+        let lastFaceLandmarks = null;
+
         async function startDrapingCamera() {
             try {
                 showToast(t('personalColor.toast.startingDrapingCamera') || '드래이핑 카메라를 시작합니다...', 'info');
@@ -3193,7 +3197,29 @@
                 const drapingVideo = document.getElementById('draping-camera');
                 drapingVideo.srcObject = stream;
 
-                document.getElementById('draping-face-guide').style.display = 'flex';
+                // Face Mesh 초기화
+                if (!drapingFaceMesh) {
+                    drapingFaceMesh = new FaceMesh({
+                        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+                    });
+                    drapingFaceMesh.setOptions({
+                        maxNumFaces: 1,
+                        refineLandmarks: true,
+                        minDetectionConfidence: 0.5,
+                        minTrackingConfidence: 0.5
+                    });
+                    drapingFaceMesh.onResults(onDrapingFaceResults);
+                }
+
+                // 비디오 준비되면 Face Mesh 시작
+                drapingVideo.onloadeddata = () => {
+                    const overlay = document.getElementById('draping-overlay');
+                    overlay.width = drapingVideo.videoWidth || 640;
+                    overlay.height = drapingVideo.videoHeight || 480;
+
+                    document.getElementById('draping-face-guide').style.display = 'none';
+                    startDrapingLoop();
+                };
 
                 showToast(t('personalColor.toast.drapingCameraStarted') || '드래이핑 카메라가 시작되었습니다', 'success');
 
@@ -3203,12 +3229,129 @@
             }
         }
 
+        function startDrapingLoop() {
+            const drapingVideo = document.getElementById('draping-camera');
+
+            async function loop() {
+                if (drapingVideo.srcObject && drapingFaceMesh) {
+                    await drapingFaceMesh.send({ image: drapingVideo });
+                }
+                drapingAnimationId = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        function onDrapingFaceResults(results) {
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                lastFaceLandmarks = results.multiFaceLandmarks[0];
+                drawDrapingCape();
+            }
+        }
+
+        function drawDrapingCape() {
+            const overlay = document.getElementById('draping-overlay');
+            const ctx = overlay.getContext('2d');
+            const w = overlay.width;
+            const h = overlay.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            if (!lastFaceLandmarks || !selectedColor) return;
+
+            // 턱 중앙 (landmark 152)
+            const chin = lastFaceLandmarks[152];
+            // 왼쪽 턱 (landmark 234)
+            const leftJaw = lastFaceLandmarks[234];
+            // 오른쪽 턱 (landmark 454)
+            const rightJaw = lastFaceLandmarks[454];
+
+            const chinX = chin.x * w;
+            const chinY = chin.y * h;
+            const leftJawX = leftJaw.x * w;
+            const rightJawX = rightJaw.x * w;
+
+            // 얼굴 너비 계산
+            const faceWidth = Math.abs(rightJawX - leftJawX);
+
+            // 부채꼴 케이프 그리기 (턱 아래에서 시작, 아래로 펼쳐짐)
+            ctx.save();
+
+            // 부채꼴 시작점 (턱 약간 아래)
+            const capeStartY = chinY + 10;
+            const capeEndY = h + 50; // 화면 아래까지
+
+            // 부채꼴 각도 (좌우로 퍼지는 정도)
+            const spreadAngle = 0.7; // 라디안 (약 40도씩 좌우로)
+
+            // 그라데이션 생성 (위에서 아래로)
+            const gradient = ctx.createLinearGradient(chinX, capeStartY, chinX, capeEndY);
+            gradient.addColorStop(0, selectedColor + 'FF');  // 위쪽: 불투명
+            gradient.addColorStop(0.3, selectedColor + 'EE');
+            gradient.addColorStop(1, selectedColor + 'CC');  // 아래쪽: 약간 투명
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+
+            // 케이프 시작점 (턱 라인을 따라)
+            const neckWidth = faceWidth * 0.6;
+            ctx.moveTo(chinX - neckWidth / 2, capeStartY);
+
+            // 왼쪽 곡선 (부채꼴 왼쪽)
+            const leftEndX = chinX - (capeEndY - capeStartY) * Math.tan(spreadAngle) - neckWidth / 2;
+            ctx.quadraticCurveTo(
+                chinX - neckWidth / 2 - 30, (capeStartY + capeEndY) / 2,
+                leftEndX, capeEndY
+            );
+
+            // 아래쪽 직선
+            const rightEndX = chinX + (capeEndY - capeStartY) * Math.tan(spreadAngle) + neckWidth / 2;
+            ctx.lineTo(rightEndX, capeEndY);
+
+            // 오른쪽 곡선 (부채꼴 오른쪽)
+            ctx.quadraticCurveTo(
+                chinX + neckWidth / 2 + 30, (capeStartY + capeEndY) / 2,
+                chinX + neckWidth / 2, capeStartY
+            );
+
+            ctx.closePath();
+            ctx.fill();
+
+            // 케이프 상단에 약간의 주름/접힌 효과
+            ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+            ctx.lineWidth = 2;
+            for (let i = 1; i <= 3; i++) {
+                const foldY = capeStartY + i * 25;
+                const foldWidth = neckWidth / 2 + i * 40;
+                ctx.beginPath();
+                ctx.moveTo(chinX - foldWidth, foldY);
+                ctx.quadraticCurveTo(chinX, foldY + 8, chinX + foldWidth, foldY);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
         function stopDrapingCamera(silent = false) {
+            // 애니메이션 루프 정지
+            if (drapingAnimationId) {
+                cancelAnimationFrame(drapingAnimationId);
+                drapingAnimationId = null;
+            }
+
             const drapingVideo = document.getElementById('draping-camera');
             if (drapingVideo && drapingVideo.srcObject) {
                 const tracks = drapingVideo.srcObject.getTracks();
                 tracks.forEach(track => track.stop());
                 drapingVideo.srcObject = null;
+
+                // 캔버스 초기화
+                const overlay = document.getElementById('draping-overlay');
+                if (overlay) {
+                    const ctx = overlay.getContext('2d');
+                    ctx.clearRect(0, 0, overlay.width, overlay.height);
+                }
+
+                lastFaceLandmarks = null;
 
                 if (!silent) {
                     showToast(t('personalColor.toast.drapingCameraStopped') || '드래이핑 카메라가 정지되었습니다', 'info');
@@ -3292,20 +3435,28 @@
         }
 
         function applyDrapingColor(color) {
-            const overlay = document.getElementById('draping-overlay');
-            const ctx = overlay.getContext('2d');
+            // 얼굴이 감지되어 있으면 케이프 다시 그리기
+            if (lastFaceLandmarks) {
+                drawDrapingCape();
+            } else {
+                // 얼굴 감지 전이면 기본 오버레이 표시
+                const overlay = document.getElementById('draping-overlay');
+                const ctx = overlay.getContext('2d');
 
-            if (overlay.width === 0) {
-                overlay.width = 640;
-                overlay.height = 480;
+                if (overlay.width === 0) {
+                    overlay.width = 640;
+                    overlay.height = 480;
+                }
+
+                ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+                // 하단에 케이프 미리보기
+                const gradient = ctx.createLinearGradient(0, overlay.height * 0.6, 0, overlay.height);
+                gradient.addColorStop(0, color + 'DD');
+                gradient.addColorStop(1, color + 'AA');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, overlay.height * 0.6, overlay.width, overlay.height * 0.4);
             }
-
-            ctx.clearRect(0, 0, overlay.width, overlay.height);
-
-            ctx.fillStyle = color;
-            ctx.globalAlpha = 0.8;
-            ctx.fillRect(0, 0, overlay.width, overlay.height / 4);
-            ctx.globalAlpha = 1.0;
         }
 
         function adjustColor() {
@@ -3345,15 +3496,26 @@
         //     showToast('미리보기가 토글되었습니다', 'info');
         // }
 
+        // 선택된 색상의 상세 정보 저장용
+        let lastSelectedColorData = null;
+
         function saveCurrentColor() {
             if (!selectedColor) {
                 showToast(t('personalColor.toast.selectColorFirst') || '먼저 색상을 선택해주세요', 'warning');
                 return;
             }
 
+            // 색상 데이터에서 추가 정보 가져오기
+            const matchingColor = hairColorData.find(c => c.hex === selectedColor);
+
             const colorData = {
                 color: selectedColor,
                 season: currentSeason,
+                name: matchingColor?.name || getColorNameFromHex(selectedColor),
+                brand: matchingColor?.brand || '',
+                code: matchingColor?.code || '',
+                level: matchingColor?.level || '',
+                tone: matchingColor?.tone || '',
                 timestamp: new Date().toISOString()
             };
 
@@ -3361,11 +3523,37 @@
 
             showToast(t('personalColor.toast.colorSaved') || '현재 색상이 저장되었습니다', 'success');
 
-            // 저장된 색상 표시 및 AR 체험 버튼 추가
+            // 저장된 색상 표시 및 제조 방법 표시
             displayDrapingSavedColors();
         }
 
-        // 드래이핑 모드 저장된 색상 표시 + AR 버튼
+        // Hex에서 간단한 색상명 추출
+        function getColorNameFromHex(hex) {
+            const r = parseInt(hex.substr(1, 2), 16);
+            const g = parseInt(hex.substr(3, 2), 16);
+            const b = parseInt(hex.substr(5, 2), 16);
+
+            if (r > 150 && g < 100 && b < 100) return '레드 계열';
+            if (r > 150 && g > 100 && b < 100) return '오렌지/골드 계열';
+            if (r > 100 && g > 80 && b < 80) return '브라운 계열';
+            if (r < 100 && g < 100 && b > 100) return '애쉬/블루 계열';
+            if (r > 100 && g < 80 && b > 100) return '바이올렛 계열';
+            if (r < 80 && g < 80 && b < 80) return '다크 계열';
+            return '내추럴 계열';
+        }
+
+        // 시즌을 EXPERT_GUIDE_DB 키로 변환
+        function seasonToExpertKey(season) {
+            const mapping = {
+                'spring': 'spring-bright',
+                'summer': 'summer-light',
+                'autumn': 'autumn-muted',
+                'winter': 'winter-deep'
+            };
+            return mapping[season.toLowerCase()] || 'autumn-muted';
+        }
+
+        // 드래이핑 모드 저장된 색상 표시 + 전문가 제조 방법
         function displayDrapingSavedColors() {
             // 저장된 색상 목록 컨테이너 찾기/생성
             let savedSection = document.getElementById('draping-saved-section');
@@ -3386,20 +3574,68 @@
                 }
             }
 
-            // 저장된 색상 목록 HTML
-            const savedColorsHTML = savedColors.map((colorData, index) => `
-                <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(255,255,255,0.1); border-radius: 8px; margin: 4px;">
-                    <div style="width: 24px; height: 24px; background: ${colorData.color}; border-radius: 50%; border: 2px solid white;"></div>
-                    <span style="color: #fff; font-size: 12px;">${colorData.season}</span>
+            // 저장된 색상 카드 HTML (EXPERT_GUIDE_DB 사용)
+            const savedColorsHTML = savedColors.map((colorData, index) => {
+                // EXPERT_GUIDE_DB에서 해당 시즌의 전문가 정보 가져오기
+                const expertKey = seasonToExpertKey(colorData.season);
+                const expertData = EXPERT_GUIDE_DB[expertKey] || EXPERT_GUIDE_DB['autumn-muted'];
+
+                // 첫 번째 레시피 사용 (또는 랜덤)
+                const recipe = expertData.recipes ? expertData.recipes[index % expertData.recipes.length] : null;
+                const colorScience = expertData.colorScience;
+
+                return `
+                <div style="background: linear-gradient(135deg, rgba(233,30,99,0.15), rgba(156,39,176,0.1)); padding: 18px; border-radius: 12px; margin-bottom: 14px; border: 1px solid rgba(233,30,99,0.3);">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                        <div style="width: 55px; height: 55px; background: ${colorData.color}; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>
+                        <div>
+                            <div style="font-size: 18px; color: #fff; font-weight: bold;">${colorData.name}</div>
+                            <div style="font-size: 15px; color: #E91E63;">${colorData.season.toUpperCase()} ${colorData.brand ? '• ' + colorData.brand : ''}</div>
+                        </div>
+                    </div>
+
+                    ${colorScience ? `
+                    <div style="background: linear-gradient(135deg, rgba(63,81,181,0.15), rgba(48,63,159,0.1)); padding: 14px; border-radius: 8px; margin-bottom: 12px; border: 1px solid rgba(63,81,181,0.3);">
+                        <div style="font-size: 15px; color: #7986CB; margin-bottom: 8px; font-weight: bold;">🧬 컬러 사이언스</div>
+                        <div style="font-size: 14px; color: #C5CAE9; line-height: 1.6;">
+                            <div style="margin-bottom: 4px;"><b style="color: #9FA8DA;">멜라닌:</b> ${colorScience.melaninType}</div>
+                            <div><b style="color: #9FA8DA;">중화 전략:</b> ${colorScience.neutralizationStrategy}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    ${recipe ? `
+                    <div style="background: linear-gradient(135deg, rgba(0,150,136,0.15), rgba(0,188,212,0.1)); padding: 14px; border-radius: 8px; border: 1px solid rgba(0,150,136,0.3);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div style="font-size: 16px; color: #4DB6AC; font-weight: bold;">💊 ${recipe.styleName}</div>
+                            <span style="background: rgba(0,150,136,0.3); color: #80CBC4; font-size: 13px; padding: 4px 10px; border-radius: 12px;">${recipe.brand}</span>
+                        </div>
+                        <div style="font-size: 14px; color: #B2DFDB; margin-bottom: 10px; font-style: italic;">"${recipe.vibe}" - ${recipe.reason}</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                                <div style="font-size: 12px; color: #80CBC4; margin-bottom: 4px; font-weight: bold;">MIX RECIPE</div>
+                                <div style="font-size: 14px; color: #E0F2F1; font-weight: 600;">${recipe.mixRatio}</div>
+                                <div style="font-size: 12px; color: #80CBC4; margin-top: 3px;">${recipe.line}</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                                <div style="font-size: 12px; color: #80CBC4; margin-bottom: 4px; font-weight: bold;">OXIDANT</div>
+                                <div style="font-size: 14px; color: #E0F2F1; font-weight: 600;">${recipe.oxidant}</div>
+                                <div style="font-size: 12px; color: #80CBC4; margin-top: 3px;">⏱️ ${recipe.processingTime}</div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
             savedSection.innerHTML = `
-                <h4 style="color: #E91E63; margin: 0 0 15px 0; font-size: 16px;">🎨 저장된 색상 (${savedColors.length}개)</h4>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    ${savedColorsHTML}
-                </div>
+                <h4 style="color: #E91E63; margin: 0 0 15px 0; font-size: 18px;">🎨 저장된 색상 & 전문가 제조 가이드 (${savedColors.length}개)</h4>
+                ${savedColorsHTML}
             `;
+
+            // 저장 섹션으로 스크롤
+            savedSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         // 공통 결과 표시
