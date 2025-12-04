@@ -964,6 +964,8 @@
         }
 
         // ========== 전문가 피드백 함수 (논문 기반 감성 이미지 & 토탈 뷰티 컨설팅) ==========
+        // ========== 전문가용 컬러 사이언스 데이터베이스 ==========
+        // PDF 색채학 이론 + 브랜드별 레시피 정보 통합
         const EXPERT_GUIDE_DB = {
             'spring-bright': {
                 toneKeyword: "생기 있고 비비드한(Active/Cute) 봄의 에너지",
@@ -974,7 +976,36 @@
                 textureTip: "무거운 라인보다는 끝이 가벼운 레이어드 컷",
                 avoidColors: ["탁한 카키", "회색빛이 많이 도는 애쉬", "블랙"],
                 seasonalAdvice: "채도가 높은 오렌지 브라운, 골드 브라운은 고객님의 생동감 있는 이미지를 극대화합니다.",
-                consultingTip: "얼굴의 혈색을 살려주는 고채도 컬러가 베스트입니다."
+                consultingTip: "얼굴의 혈색을 살려주는 고채도 컬러가 베스트입니다.",
+                // 🔬 컬러 사이언스 분석
+                colorScience: {
+                    melaninType: "페오멜라닌 우세 (Pheomelanin Dominant)",
+                    undercoatPrediction: "탈색 시 Yellow-Orange 언더코트 예상",
+                    neutralizationStrategy: "노란기 활용, 바이올렛 보색 최소화"
+                },
+                // 💊 전문 시술 레시피
+                recipes: [
+                    {
+                        styleName: "오렌지 골드 브라운",
+                        vibe: "화사하고 생기있는",
+                        reason: "봄 웜 브라이트의 높은 채도와 밝은 피부톤을 극대화",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "8/34 (Gold Red) : 8/03 (Natural Gold) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35분"
+                    },
+                    {
+                        styleName: "선셋 코랄",
+                        vibe: "따뜻하고 활력있는",
+                        reason: "피부의 노란 베이스와 조화로운 따뜻한 코랄톤",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "9-OR (Orange) : 9-BE (Beige) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30분"
+                    }
+                ]
             },
             'spring-light': {
                 toneKeyword: "투명하고 사랑스러운(Romantic/Clear) 봄의 햇살",
@@ -985,7 +1016,34 @@
                 textureTip: "바람에 날리는 듯한 굵은 웨이브 펌",
                 avoidColors: ["너무 어두운 다크 브라운", "강렬한 버건디"],
                 seasonalAdvice: "밀크티 베이지나 피치 베이지처럼 부드러운 우유 섞인 색감이 피부 투명도를 높여줍니다.",
-                consultingTip: "탁한 느낌을 피하고 '맑음'을 유지하는 것이 핵심입니다."
+                consultingTip: "탁한 느낌을 피하고 '맑음'을 유지하는 것이 핵심입니다.",
+                colorScience: {
+                    melaninType: "페오멜라닌 우세, 밝은 피부 (Light Pheomelanin)",
+                    undercoatPrediction: "탈색 시 Pale Yellow 언더코트, 빠른 리프팅 예상",
+                    neutralizationStrategy: "붉은기 최소화, 연한 바이올렛으로 노란기 조절"
+                },
+                recipes: [
+                    {
+                        styleName: "밀크티 베이지",
+                        vibe: "투명하고 청순한",
+                        reason: "맑은 피부톤을 더욱 투명하게, 부드러운 느낌 극대화",
+                        brand: "Milbon",
+                        line: "Ordeve Beaute",
+                        mixRatio: "10-BE (Beige) : 10-MT (Matte) = 3:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30분"
+                    },
+                    {
+                        styleName: "피치 블론드",
+                        vibe: "로맨틱하고 사랑스러운",
+                        reason: "피치 언더톤과 조화, 화사하면서 부드러운 인상",
+                        brand: "Wella",
+                        line: "Illumina Color",
+                        mixRatio: "10/36 (Gold Violet) : 10/05 (Natural Mahogany) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35분"
+                    }
+                ]
             },
             'summer-light': {
                 toneKeyword: "청초하고 깨끗한(Pure/Clean) 여름의 물결",
@@ -996,7 +1054,34 @@
                 textureTip: "슬릭한 생머리나 C컬로 결정돈 강조",
                 avoidColors: ["노란기가 강한 골드", "오렌지", "구리빛"],
                 seasonalAdvice: "애쉬 블론드나 라벤더 애쉬처럼 차가운 파스텔 톤이 피부를 더욱 하얗게 보이게 합니다.",
-                consultingTip: "노란 조명 아래서는 칙칙해 보일 수 있으니, 자연광에서의 투명함을 강조해주세요."
+                consultingTip: "노란 조명 아래서는 칙칙해 보일 수 있으니, 자연광에서의 투명함을 강조해주세요.",
+                colorScience: {
+                    melaninType: "유멜라닌 우세, 쿨 피부 (Eumelanin Cool)",
+                    undercoatPrediction: "탈색 시 Yellow 언더코트, 바이올렛 보색 필수",
+                    neutralizationStrategy: "바이올렛/애쉬로 노란기 완전 중화"
+                },
+                recipes: [
+                    {
+                        styleName: "라벤더 애쉬",
+                        vibe: "청초하고 신비로운",
+                        reason: "쿨톤 피부의 투명함을 극대화, 노란기 완전 제거",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "9-Vi (Violet) : 9-A (Ash) = 1:2",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30분"
+                    },
+                    {
+                        styleName: "로즈 브라운",
+                        vibe: "우아하고 여성스러운",
+                        reason: "핑크 언더톤과 조화, 차갑지 않으면서 청순한 느낌",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "8/65 (Violet Mahogany) : 8/1 (Ash) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35분"
+                    }
+                ]
             },
             'summer-bright': {
                 toneKeyword: "시원하고 청량한(Fresh/Cool) 여름의 바다",
@@ -1029,7 +1114,34 @@
                 textureTip: "히피펌이나 내추럴한 웨이브",
                 avoidColors: ["형광기가 도는 핑크", "차가운 블루 블랙"],
                 seasonalAdvice: "매트 브라운, 올리브 브라운은 피부의 홍조를 가려주고 차분한 분위기를 줍니다.",
-                consultingTip: "튀는 색보다는 머릿결의 질감을 살려주는 부드러운 브라운이 좋습니다."
+                consultingTip: "튀는 색보다는 머릿결의 질감을 살려주는 부드러운 브라운이 좋습니다.",
+                colorScience: {
+                    melaninType: "혼합형 멜라닌, 저채도 피부 (Mixed Melanin, Low Chroma)",
+                    undercoatPrediction: "탈색 시 Orange-Yellow 언더코트, 매트 보색으로 중화 필요",
+                    neutralizationStrategy: "Green(매트)로 붉은기 중화, 탁함 방지"
+                },
+                recipes: [
+                    {
+                        styleName: "올리브 매트 브라운",
+                        vibe: "차분하고 세련된",
+                        reason: "피부의 붉은기를 중화하여 깨끗하고 차분한 인상 연출",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "7-MT (Matte) : 7-NB (Natural Brown) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35분"
+                    },
+                    {
+                        styleName: "카키 베이지",
+                        vibe: "내추럴하고 편안한",
+                        reason: "자연스러운 어스톤으로 부드러운 분위기 연출",
+                        brand: "L'Oreal",
+                        line: "Majirel",
+                        mixRatio: "7.8 (Mocha) : 7.13 (Beige) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35분"
+                    }
+                ]
             },
             'autumn-soft': {
                 toneKeyword: "포근하고 따뜻한(Warm/Cozy) 가을의 오후",
@@ -1040,7 +1152,34 @@
                 textureTip: "볼륨 레이어드, 소프트 웨이브",
                 avoidColors: ["블랙", "애쉬블루", "비비드 오렌지"],
                 seasonalAdvice: "밀크초코, 모카 브라운처럼 부드럽고 따뜻한 색이 편안한 분위기를 만듭니다.",
-                consultingTip: "극단적인 색보다 은은하고 자연스러운 그라데이션이 좋습니다."
+                consultingTip: "극단적인 색보다 은은하고 자연스러운 그라데이션이 좋습니다.",
+                colorScience: {
+                    melaninType: "페오멜라닌 우세, 중간 피부톤 (Warm Pheomelanin)",
+                    undercoatPrediction: "탈색 시 Orange 언더코트, 따뜻한 톤 유지",
+                    neutralizationStrategy: "오렌지 활용, 매트로 부드럽게 조절"
+                },
+                recipes: [
+                    {
+                        styleName: "밀크 초코 브라운",
+                        vibe: "포근하고 따뜻한",
+                        reason: "부드러운 웜톤으로 편안하고 친근한 이미지 연출",
+                        brand: "Wella",
+                        line: "Softouch",
+                        mixRatio: "S7/37 (Gold Brown) : S7/03 (Natural Gold) = 1:1",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "30분"
+                    },
+                    {
+                        styleName: "허니 베이지",
+                        vibe: "달콤하고 부드러운",
+                        reason: "꿀빛 윤기로 건강하고 화사한 느낌",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "8-BE (Beige) : 8-GO (Gold) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30분"
+                    }
+                ]
             },
             'autumn-deep': {
                 toneKeyword: "그윽하고 고급스러운(Gorgeous/Ethnic) 가을의 깊이",
@@ -1051,7 +1190,34 @@
                 textureTip: "풍성한 글램펌이나 무게감 있는 태슬컷",
                 avoidColors: ["너무 가벼운 파스텔 톤", "창백한 애쉬"],
                 seasonalAdvice: "다크 초콜릿, 카퍼 브라운처럼 깊이감 있는 웜톤 컬러가 이목구비를 또렷하게 해줍니다.",
-                consultingTip: "밝기보다는 '윤기'와 '색감의 깊이'에 집중하세요."
+                consultingTip: "밝기보다는 '윤기'와 '색감의 깊이'에 집중하세요.",
+                colorScience: {
+                    melaninType: "페오멜라닌 풍부, 깊은 피부톤 (Rich Pheomelanin)",
+                    undercoatPrediction: "탈색 시 Red-Orange 언더코트, 붉은기 강하게 발현",
+                    neutralizationStrategy: "카퍼/골드로 붉은기 활용, 깊이감 강조"
+                },
+                recipes: [
+                    {
+                        styleName: "다크 초콜릿",
+                        vibe: "깊고 고급스러운",
+                        reason: "피부톤과의 대비로 이목구비를 또렷하게, 성숙한 매력",
+                        brand: "L'Oreal",
+                        line: "Majirel",
+                        mixRatio: "5.35 (Chocolate) : 5.52 (Mahogany) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "40분"
+                    },
+                    {
+                        styleName: "카퍼 마호가니",
+                        vibe: "풍부하고 화려한",
+                        reason: "구리빛 윤기로 고급스럽고 깊이 있는 인상",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "5/43 (Red Gold) : 5/75 (Brown Mahogany) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "40분"
+                    }
+                ]
             },
             'winter-deep': {
                 toneKeyword: "도시적이고 카리스마 있는(Modern/Chic) 겨울의 밤",
@@ -1062,7 +1228,34 @@
                 textureTip: "칼단발, 스트레이트, 엣지 있는 숏컷",
                 avoidColors: ["어중간한 갈색", "노란기가 도는 웜 브라운"],
                 seasonalAdvice: "블루 블랙, 다크 네이비 같이 차갑고 어두운 컬러가 고객님의 카리스마를 극대화합니다.",
-                consultingTip: "머리색과 피부색의 '대비(Contrast)'가 클수록 얼굴이 작아 보입니다."
+                consultingTip: "머리색과 피부색의 '대비(Contrast)'가 클수록 얼굴이 작아 보입니다.",
+                colorScience: {
+                    melaninType: "유멜라닌 우세, 높은 대비 (Strong Eumelanin, High Contrast)",
+                    undercoatPrediction: "자연모 유지 또는 블루-바이올렛 반사빛 추가",
+                    neutralizationStrategy: "탈색 불필요, 블루/바이올렛 광택만 추가"
+                },
+                recipes: [
+                    {
+                        styleName: "블루 블랙",
+                        vibe: "카리스마 있고 도시적인",
+                        reason: "피부와의 강한 대비로 이목구비를 또렷하게, 모던한 느낌",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "3-NV (Navy) : 3-A (Ash) = 2:1",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "25분"
+                    },
+                    {
+                        styleName: "다크 바이올렛",
+                        vibe: "신비롭고 세련된",
+                        reason: "깊은 보라빛으로 고급스럽고 독특한 매력 연출",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "3/66 (Intense Violet) : 3/0 (Natural) = 1:2",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "30분"
+                    }
+                ]
             },
             'winter-bright': {
                 toneKeyword: "화려하고 강렬한(Vivid/Dramatic) 겨울의 다이아몬드",
@@ -1156,18 +1349,21 @@
                 }
             }
 
-            // 3. 결과 반환 (fashionVibe, makeupBase 추가)
+            // 3. 결과 반환 (colorScience, recipes 추가)
             return {
                 toneKeywords: guide.toneKeyword,
                 levelTip: guide.recommendLevel,
                 undercoatTip: guide.undercoatTip,
                 textureTip: guide.textureTip,
-                fashionVibe: guide.fashionVibe,     // NEW: 패션 스타일
-                makeupBase: guide.makeupBase,       // NEW: 메이크업 베이스
+                fashionVibe: guide.fashionVibe,
+                makeupBase: guide.makeupBase,
                 avoidColors: guide.avoidColors,
                 seasonalAdvice: guide.seasonalAdvice,
                 consultingTip: guide.consultingTip,
-                brightnessAdvice
+                brightnessAdvice,
+                // NEW: 컬러 사이언스 & 레시피
+                colorScience: guide.colorScience || null,
+                recipes: guide.recipes || null
             };
         }
 
@@ -2160,7 +2356,7 @@
             return html;
         }
 
-        // 전문가 피드백 HTML 생성 함수 (다국어 지원)
+        // 전문가 피드백 HTML 생성 함수 (전문가용 진단 보고서 스타일)
         function generateExpertFeedbackHTML(personalColorResult) {
             const { season, subtype, lab } = personalColorResult;
             const feedback = generateAdvancedExpertFeedback(season, subtype, lab);
@@ -2169,84 +2365,118 @@
                 return '';
             }
 
-            // 다국어 레이블
-            const labels = {
-                title: t('personalColor.expertGuide.title') || '👩‍🎨 디자이너 전문가 가이드',
-                toneKeywords: t('personalColor.expertGuide.toneKeywords') || '🎨 톤 & 이미지',
-                fashionVibe: t('personalColor.expertGuide.fashionVibe') || '👗 패션 스타일',
-                recommendLevel: t('personalColor.expertGuide.recommendLevel') || '📊 추천 레벨',
-                skinBrightness: t('personalColor.expertGuide.skinBrightness') || '💡 피부 밝기 기준',
-                treatmentTips: t('personalColor.expertGuide.treatmentTips') || '✂️ 헤어 시술 팁',
-                undercoat: t('personalColor.expertGuide.undercoat') || '언더코트',
-                texture: t('personalColor.expertGuide.texture') || '마무리 질감',
-                totalBeautyTip: t('personalColor.expertGuide.totalBeautyTip') || '💄 토탈 뷰티 팁',
-                makeupBase: t('personalColor.expertGuide.makeupBase') || '메이크업 베이스',
-                consultingPoint: t('personalColor.expertGuide.consultingPoint') || '💬 컨설팅 포인트',
-                avoidTones: t('personalColor.expertGuide.avoidTones') || '⛔ 피해야 할 톤'
-            };
+            // 레시피 카드 HTML 생성
+            const recipeCardsHTML = feedback.recipes ? feedback.recipes.map((recipe, idx) => `
+                <div style="background: linear-gradient(135deg, rgba(0,150,136,0.15), rgba(0,188,212,0.1)); padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid rgba(0,150,136,0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div style="font-size: 13px; color: #4DB6AC; font-weight: bold;">
+                            💊 ${recipe.styleName}
+                        </div>
+                        <span style="background: rgba(0,150,136,0.3); color: #80CBC4; font-size: 9px; padding: 2px 8px; border-radius: 10px;">
+                            ${recipe.brand}
+                        </span>
+                    </div>
+                    <div style="font-size: 10px; color: #B2DFDB; margin-bottom: 8px; font-style: italic;">
+                        "${recipe.vibe}" - ${recipe.reason}
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+                            <div style="font-size: 9px; color: #80CBC4; margin-bottom: 3px;">MIX RECIPE</div>
+                            <div style="font-size: 11px; color: #E0F2F1; font-weight: 500;">${recipe.mixRatio}</div>
+                            <div style="font-size: 9px; color: #80CBC4; margin-top: 2px;">${recipe.line}</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+                            <div style="font-size: 9px; color: #80CBC4; margin-bottom: 3px;">OXIDANT</div>
+                            <div style="font-size: 11px; color: #E0F2F1; font-weight: 500;">${recipe.oxidant}</div>
+                            <div style="font-size: 9px; color: #80CBC4; margin-top: 2px;">⏱️ ${recipe.processingTime}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '';
 
             return `
                 <div style="background: linear-gradient(135deg, rgba(156,39,176,0.15), rgba(103,58,183,0.15)); padding: 15px; border-radius: 12px; border: 1px solid rgba(156,39,176,0.3);">
                     <div style="font-size: 14px; color: #CE93D8; margin-bottom: 12px; font-weight: bold;">
-                        ${labels.title}
+                        📋 AI 헤어 컨설턴트 리포트
                     </div>
 
-                    <!-- 1. 톤 & 이미지 + 패션 스타일 -->
-                    <div style="margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
-                        <div style="font-size: 11px; color: #B39DDB; margin-bottom: 4px;">${labels.toneKeywords}</div>
-                        <div style="font-size: 12px; color: #E1BEE7; line-height: 1.5; margin-bottom: 8px;">
+                    <!-- 섹션 A: 퍼스널 컬러 정밀 진단 -->
+                    <div style="margin-bottom: 12px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border-left: 3px solid #CE93D8;">
+                        <div style="font-size: 11px; color: #B39DDB; margin-bottom: 6px; font-weight: bold;">🔬 SECTION A: 정밀 진단</div>
+                        <div style="font-size: 12px; color: #E1BEE7; line-height: 1.6; margin-bottom: 6px;">
                             ${feedback.toneKeywords}
                         </div>
-                        ${feedback.fashionVibe ? `
-                        <div style="font-size: 11px; color: #B39DDB; margin-bottom: 3px;">${labels.fashionVibe}</div>
-                        <div style="font-size: 11px; color: #ddd; line-height: 1.4;">${feedback.fashionVibe}</div>
-                        ` : ''}
-                    </div>
-
-                    <!-- 2. 추천 레벨 & 피부 밝기 -->
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-                        <div style="flex: 1; min-width: 100px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
-                            <div style="font-size: 10px; color: #B39DDB; margin-bottom: 3px;">${labels.recommendLevel}</div>
-                            <div style="font-size: 13px; color: #fff; font-weight: bold;">${feedback.levelTip}</div>
-                        </div>
-                        ${feedback.brightnessAdvice ? `
-                        <div style="flex: 1; min-width: 120px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
-                            <div style="font-size: 10px; color: #B39DDB; margin-bottom: 3px;">${labels.skinBrightness}</div>
-                            <div style="font-size: 11px; color: #ddd;">${feedback.brightnessAdvice}</div>
-                        </div>
-                        ` : ''}
-                    </div>
-
-                    <!-- 3. 헤어 시술 팁 (언더코트 & 질감) -->
-                    <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-                        <div style="font-size: 11px; color: #B39DDB; margin-bottom: 4px;">${labels.treatmentTips}</div>
-                        <div style="font-size: 11px; color: #ddd; line-height: 1.5;">
-                            <div style="margin-bottom: 3px;"><b style="color: #CE93D8;">${labels.undercoat}:</b> ${feedback.undercoatTip}</div>
-                            <div><b style="color: #CE93D8;">${labels.texture}:</b> ${feedback.textureTip}</div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <span style="background: rgba(156,39,176,0.2); color: #E1BEE7; font-size: 10px; padding: 3px 8px; border-radius: 12px;">
+                                📊 추천 레벨: ${feedback.levelTip}
+                            </span>
+                            ${feedback.brightnessAdvice ? `
+                            <span style="background: rgba(156,39,176,0.2); color: #E1BEE7; font-size: 10px; padding: 3px 8px; border-radius: 12px;">
+                                💡 ${feedback.brightnessAdvice.substring(0, 30)}...
+                            </span>
+                            ` : ''}
                         </div>
                     </div>
 
-                    <!-- 4. 토탈 뷰티 팁 (메이크업) -->
-                    ${feedback.makeupBase ? `
-                    <div style="background: linear-gradient(135deg, rgba(233,30,99,0.15), rgba(255,64,129,0.1)); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid rgba(233,30,99,0.2);">
-                        <div style="font-size: 11px; color: #F48FB1; margin-bottom: 4px;">${labels.totalBeautyTip}</div>
-                        <div style="font-size: 11px; color: #FCE4EC; line-height: 1.5;">
-                            <b style="color: #F48FB1;">${labels.makeupBase}:</b> ${feedback.makeupBase}
+                    <!-- 섹션 B: 컬러 사이언스 분석 -->
+                    ${feedback.colorScience ? `
+                    <div style="margin-bottom: 12px; background: linear-gradient(135deg, rgba(63,81,181,0.15), rgba(48,63,159,0.1)); padding: 12px; border-radius: 8px; border: 1px solid rgba(63,81,181,0.3);">
+                        <div style="font-size: 11px; color: #7986CB; margin-bottom: 8px; font-weight: bold;">🧬 SECTION B: 컬러 사이언스</div>
+                        <div style="font-size: 11px; color: #C5CAE9; line-height: 1.6;">
+                            <div style="margin-bottom: 5px;">
+                                <b style="color: #9FA8DA;">멜라닌 분석:</b> ${feedback.colorScience.melaninType}
+                            </div>
+                            <div style="margin-bottom: 5px;">
+                                <b style="color: #9FA8DA;">언더코트 예측:</b> ${feedback.colorScience.undercoatPrediction}
+                            </div>
+                            <div>
+                                <b style="color: #9FA8DA;">중화 전략:</b> ${feedback.colorScience.neutralizationStrategy}
+                            </div>
                         </div>
                     </div>
                     ` : ''}
 
-                    <!-- 5. 컨설팅 조언 -->
-                    <div style="background: rgba(103,58,183,0.2); padding: 10px; border-radius: 8px;">
-                        <div style="font-size: 11px; color: #B39DDB; margin-bottom: 4px;">${labels.consultingPoint}</div>
-                        <div style="font-size: 11px; color: #E1BEE7; line-height: 1.5;">${feedback.consultingTip}</div>
-                        <div style="font-size: 10px; color: #9575CD; margin-top: 6px; font-style: italic;">"${feedback.seasonalAdvice}"</div>
+                    <!-- 섹션 C: 시술 레시피 (처방전) -->
+                    ${recipeCardsHTML ? `
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 11px; color: #4DB6AC; margin-bottom: 8px; font-weight: bold;">💊 SECTION C: 시술 레시피</div>
+                        ${recipeCardsHTML}
+                    </div>
+                    ` : ''}
+
+                    <!-- 헤어 시술 팁 -->
+                    <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                        <div style="font-size: 11px; color: #B39DDB; margin-bottom: 4px;">✂️ 시술 포인트</div>
+                        <div style="font-size: 11px; color: #ddd; line-height: 1.5;">
+                            <div style="margin-bottom: 3px;"><b style="color: #CE93D8;">언더코트:</b> ${feedback.undercoatTip}</div>
+                            <div><b style="color: #CE93D8;">마무리 질감:</b> ${feedback.textureTip}</div>
+                        </div>
                     </div>
 
-                    <!-- 6. 피해야 할 톤 -->
+                    <!-- 토탈 뷰티 팁 -->
+                    ${feedback.makeupBase ? `
+                    <div style="background: linear-gradient(135deg, rgba(233,30,99,0.15), rgba(255,64,129,0.1)); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid rgba(233,30,99,0.2);">
+                        <div style="font-size: 11px; color: #F48FB1; margin-bottom: 4px;">💄 토탈 뷰티</div>
+                        <div style="font-size: 11px; color: #FCE4EC; line-height: 1.5;">
+                            ${feedback.fashionVibe ? `<div style="margin-bottom: 3px;"><b style="color: #F48FB1;">패션:</b> ${feedback.fashionVibe}</div>` : ''}
+                            <div><b style="color: #F48FB1;">메이크업:</b> ${feedback.makeupBase}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- 컨설팅 포인트 -->
+                    <div style="background: rgba(103,58,183,0.2); padding: 10px; border-radius: 8px;">
+                        <div style="font-size: 11px; color: #B39DDB; margin-bottom: 4px;">💬 컨설팅 포인트</div>
+                        <div style="font-size: 11px; color: #E1BEE7; line-height: 1.5;">${feedback.consultingTip}</div>
+                        <div style="font-size: 10px; color: #9575CD; margin-top: 6px; font-style: italic; background: rgba(0,0,0,0.2); padding: 6px 8px; border-radius: 6px;">
+                            💡 "${feedback.seasonalAdvice}"
+                        </div>
+                    </div>
+
+                    <!-- 피해야 할 톤 -->
                     ${feedback.avoidColors && feedback.avoidColors.length > 0 ? `
                     <div style="margin-top: 10px; padding: 8px; background: rgba(244,67,54,0.1); border-radius: 8px; border: 1px solid rgba(244,67,54,0.2);">
-                        <div style="font-size: 10px; color: #EF9A9A; margin-bottom: 4px;">${labels.avoidTones}</div>
+                        <div style="font-size: 10px; color: #EF9A9A; margin-bottom: 4px;">⛔ 피해야 할 톤</div>
                         <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                             ${feedback.avoidColors.map(c => `
                                 <div style="display: flex; align-items: center; gap: 4px; background: rgba(244,67,54,0.15); padding: 3px 8px 3px 4px; border-radius: 12px;">
