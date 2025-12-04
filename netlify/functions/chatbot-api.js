@@ -5409,7 +5409,7 @@ IMAGE REQUIREMENTS:
 
 Make it look like a professionally designed Instagram post that would attract customers to a hair salon.`;
 
-    const numToGenerate = Math.min(num_images || 2, 4);
+    const numToGenerate = Math.min(num_images || 2, 8);
     const generatedImages = [];
 
     for (let i = 0; i < numToGenerate; i++) {
