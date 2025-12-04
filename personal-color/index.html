@@ -2055,11 +2055,29 @@
                         <span style="color: ${lightingColor}; font-weight: bold; font-size: 12px;">${lightingQualityText} (${Math.round(lm.lightingQuality * 100)}%)</span>
                     </div>
 
-                    <!-- 🔥 2단 그리드 레이아웃 -->
+                    <!-- 🔥 2단 그리드 레이아웃 (헤어추천 왼쪽, 퍼스널컬러 오른쪽) -->
                     <div class="results-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
 
-                        <!-- ===== 왼쪽 컬럼: 퍼스널컬러 분석 ===== -->
+                        <!-- ===== 왼쪽 컬럼: 헤어 & 전문가 가이드 ===== -->
                         <div class="results-column-left" style="display: flex; flex-direction: column; gap: 12px;">
+
+                            <!-- 💇 헤어컬러 추천 섹션 -->
+                            ${hairRecommendHTML}
+
+                            <!-- 👩‍🎨 디자이너 전문가 가이드 섹션 -->
+                            ${expertFeedbackHTML}
+
+                            <!-- ⚠️ 피해야 할 컬러 -->
+                            <div style="background: rgba(244,67,54,0.1); padding: 12px; border-radius: 12px; border: 1px solid rgba(244,67,54,0.3);">
+                                <div style="font-size: 13px; color: #F44336; margin-bottom: 8px; font-weight: bold;">⚠️ 피해야 할 컬러</div>
+                                <ul style="margin: 0; padding-left: 18px; color: #ffcdd2; font-size: 12px; line-height: 1.7;">
+                                    ${hairRec.avoidRules.map(rule => `<li>${rule}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- ===== 오른쪽 컬럼: 퍼스널컬러 분석 ===== -->
+                        <div class="results-column-right" style="display: flex; flex-direction: column; gap: 12px;">
 
                             <!-- 피부 분석 섹션 -->
                             <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px;">
@@ -2098,24 +2116,6 @@
                                 <div style="font-size: 12px; color: #eee; line-height: 1.7;">
                                     ${seasonRecommendText}
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- ===== 오른쪽 컬럼: 헤어 & 전문가 가이드 ===== -->
-                        <div class="results-column-right" style="display: flex; flex-direction: column; gap: 12px;">
-
-                            <!-- 💇 헤어컬러 추천 섹션 -->
-                            ${hairRecommendHTML}
-
-                            <!-- 👩‍🎨 디자이너 전문가 가이드 섹션 -->
-                            ${expertFeedbackHTML}
-
-                            <!-- ⚠️ 피해야 할 컬러 -->
-                            <div style="background: rgba(244,67,54,0.1); padding: 12px; border-radius: 12px; border: 1px solid rgba(244,67,54,0.3);">
-                                <div style="font-size: 13px; color: #F44336; margin-bottom: 8px; font-weight: bold;">⚠️ 피해야 할 컬러</div>
-                                <ul style="margin: 0; padding-left: 18px; color: #ffcdd2; font-size: 12px; line-height: 1.7;">
-                                    ${hairRec.avoidRules.map(rule => `<li>${rule}</li>`).join('')}
-                                </ul>
                             </div>
                         </div>
                     </div>
