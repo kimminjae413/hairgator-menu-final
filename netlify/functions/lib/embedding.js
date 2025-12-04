@@ -184,6 +184,96 @@ async function searchStylesByCode(codePrefix, gender = 'female') {
   return filtered;
 }
 
+// ==================== Gemini File Search 이론 조회 (abcde 북) ====================
+const GEMINI_FILE_SEARCH_STORE = "fileSearchStores/hairgator2waycutstore-md6skhedgag7";
+
+/**
+ * abcde 북에서 레시피 관련 이론 조회
+ * @param {Object} params - 분석된 스타일 파라미터
+ * @param {string} geminiKey - Gemini API 키
+ * @param {string} gender - 'male' | 'female'
+ * @returns {string} - 관련 이론 텍스트
+ */
+async function queryFileSearchForTheory(params, geminiKey, gender = 'female') {
+  console.log('📚 abcde 북 이론 조회 시작');
+
+  try {
+    // 검색 쿼리 생성 (스타일 파라미터 기반)
+    let searchQuery = '';
+
+    if (gender === 'female') {
+      const parts = [];
+      if (params.length_category) parts.push(`${params.length_category} 기장`);
+      if (params.cut_form) parts.push(`${params.cut_form} 커트`);
+      if (params.volume_zone) parts.push(`${params.volume_zone} 볼륨`);
+      if (params.fringe_type) parts.push(`${params.fringe_type} 앞머리`);
+      searchQuery = parts.join(' ') + ' 커팅 기법 테크닉';
+    } else {
+      const parts = [];
+      if (params.style_name) parts.push(params.style_name);
+      if (params.style_category) parts.push(params.style_category);
+      if (params.fade_type && params.fade_type !== 'None') parts.push(`${params.fade_type} 페이드`);
+      if (params.top_length) parts.push(`탑 ${params.top_length}`);
+      searchQuery = parts.join(' ') + ' 남자 커트 기법';
+    }
+
+    console.log(`🔍 File Search 쿼리: "${searchQuery}"`);
+
+    // Gemini File Search API 호출
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            role: 'user',
+            parts: [{
+              text: `다음 헤어 스타일에 대한 커팅 이론과 테크닉을 설명해주세요: ${searchQuery}
+
+핵심 내용만 간결하게 3-5문장으로 요약해주세요.
+- Zone 구분 및 커팅 순서
+- Lifting 각도와 방향
+- 주요 커팅 기법 (Layer, Graduation 등)
+- 질감 처리 방법`
+            }]
+          }],
+          tools: [{
+            fileSearch: {
+              fileSearchStoreNames: [GEMINI_FILE_SEARCH_STORE]
+            }
+          }],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 500,
+            topP: 0.8
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ File Search API Error:', response.status, errorText);
+      return null;
+    }
+
+    const data = await response.json();
+    const theoryText = data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+
+    if (theoryText) {
+      console.log(`✅ 이론 조회 완료 (${theoryText.length}자)`);
+      return theoryText;
+    }
+
+    return null;
+
+  } catch (error) {
+    console.error('❌ File Search 이론 조회 실패:', error.message);
+    return null;
+  }
+}
+
 // ==================== 도해도 선별 (중복 제거) ====================
 function selectBestDiagrams(styles, maxDiagrams = 15) {
   const allDiagrams = [];
@@ -237,5 +327,7 @@ module.exports = {
   searchFirestoreStyles,
   searchStylesByCode,
   selectBestDiagrams,
-  FIREBASE_PROJECT_ID
+  queryFileSearchForTheory,
+  FIREBASE_PROJECT_ID,
+  GEMINI_FILE_SEARCH_STORE
 };

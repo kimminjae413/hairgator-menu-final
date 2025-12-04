@@ -1,11 +1,11 @@
 // lib/female-recipe.js
 // 여자 커트 레시피 생성 모듈 (기장별 분류: A~H Length)
 
-const { searchFirestoreStyles, selectBestDiagrams } = require('./embedding');
+const { searchFirestoreStyles, selectBestDiagrams, queryFileSearchForTheory } = require('./embedding');
 const { getTerms, buildSearchQuery, sanitizeRecipeForPublic, getLengthPrefix } = require('./utils');
 
 // ==================== 여자 레시피 프롬프트 빌드 ====================
-function buildFemaleRecipePrompt(params, diagrams, language = 'ko') {
+function buildFemaleRecipePrompt(params, diagrams, theoryContext = null, language = 'ko') {
   const langTerms = getTerms(language);
   const volumeDesc = langTerms.volume[params.volume_zone] || langTerms.volume['Medium'];
 
@@ -21,6 +21,11 @@ function buildFemaleRecipePrompt(params, diagrams, language = 'ko') {
     `  - Zone: ${d.zone || 'N/A'}`
   ).join('\n\n');
 
+  // 이론 컨텍스트 섹션 (abcde 북 참조)
+  const theorySection = theoryContext
+    ? `\n**📚 참고 이론 (2WAY CUT 교재):**\n${theoryContext}\n`
+    : '';
+
   return `당신은 전문 헤어 스타일리스트입니다.
 
 **분석 결과:**
@@ -29,7 +34,7 @@ function buildFemaleRecipePrompt(params, diagrams, language = 'ko') {
 - 볼륨: ${params.volume_zone} (${volumeDesc})
 - 앞머리: ${params.fringe_type || '없음'}
 - 어울리는 얼굴형: ${faceShapesKo || '모든 얼굴형'}
-
+${theorySection}
 **🎯 선별된 도해도 순서 (${diagrams.length}개):**
 
 ${diagramsContext}
@@ -37,6 +42,7 @@ ${diagramsContext}
 **📋 작성 지침:**
 
 위의 도해도 순서를 **정확히 따라서** 레시피를 작성하세요.
+${theoryContext ? '참고 이론의 커팅 기법과 원리를 레시피에 자연스럽게 반영하세요.' : ''}
 
 ### STEP 1: 전체 개요 (2-3줄)
 - 이 스타일의 핵심 특징과 목표를 설명
@@ -88,10 +94,16 @@ async function generateFemaleRecipe(params, geminiKey, language = 'ko') {
     const selectedDiagrams = selectBestDiagrams(filteredStyles, 15);
     console.log(`✅ 도해도 선별 완료: ${selectedDiagrams.length}개`);
 
-    // 4. 레시피 프롬프트 생성
-    const recipePrompt = buildFemaleRecipePrompt(params, selectedDiagrams, language);
+    // 4. ⭐ abcde 북에서 관련 이론 조회 (NEW!)
+    const theoryContext = await queryFileSearchForTheory(params, geminiKey, 'female');
+    if (theoryContext) {
+      console.log(`📚 이론 컨텍스트 추가됨`);
+    }
 
-    // 5. GPT로 레시피 생성
+    // 5. 레시피 프롬프트 생성 (이론 컨텍스트 포함)
+    const recipePrompt = buildFemaleRecipePrompt(params, selectedDiagrams, theoryContext, language);
+
+    // 6. GPT로 레시피 생성
     const openaiKey = process.env.OPENAI_API_KEY;
     if (!openaiKey) {
       throw new Error('OpenAI API key not configured');
@@ -121,7 +133,7 @@ async function generateFemaleRecipe(params, geminiKey, language = 'ko') {
     const data = await completion.json();
     let recipe = data.choices[0].message.content;
 
-    // 6. 보안 필터링
+    // 7. 보안 필터링
     recipe = sanitizeRecipeForPublic(recipe, language);
 
     console.log('✅ 여자 레시피 생성 완료');

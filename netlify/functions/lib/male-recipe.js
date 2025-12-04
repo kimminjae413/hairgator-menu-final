@@ -1,7 +1,7 @@
 // lib/male-recipe.js
 // 남자 커트 레시피 생성 모듈 (스타일별 분류: SF, SP, FU, PB, BZ, CP, MC)
 
-const { searchFirestoreStyles, selectBestDiagrams, getMenStyles } = require('./embedding');
+const { searchFirestoreStyles, selectBestDiagrams, getMenStyles, queryFileSearchForTheory } = require('./embedding');
 const { sanitizeRecipeForPublic, getMaleStyleCode } = require('./utils');
 const { MALE_STYLE_CATEGORIES } = require('./schemas');
 
@@ -74,7 +74,7 @@ const MALE_TERMS = {
 };
 
 // ==================== 남자 레시피 프롬프트 빌드 ====================
-function buildMaleRecipePrompt(params, diagrams, language = 'ko') {
+function buildMaleRecipePrompt(params, diagrams, theoryContext = null, language = 'ko') {
   const styleCode = params.style_category;
   const styleInfo = MALE_TERMS.style[styleCode] || { ko: params.style_name, desc: '', subStyles: [] };
   const subStyleName = params.sub_style || styleInfo.subStyles?.[0] || styleInfo.ko;
@@ -93,6 +93,11 @@ function buildMaleRecipePrompt(params, diagrams, language = 'ko') {
     `  - Cutting Method: ${d.cutting_method || 'N/A'}`
   ).join('\n\n');
 
+  // 이론 컨텍스트 섹션 (abcde 북 참조)
+  const theorySection = theoryContext
+    ? `\n**📚 참고 이론 (2WAY CUT 교재):**\n${theoryContext}\n`
+    : '';
+
   return `당신은 남자 헤어컷 전문 스타일리스트입니다.
 
 **📊 분석 결과:**
@@ -105,12 +110,13 @@ function buildMaleRecipePrompt(params, diagrams, language = 'ko') {
 - 페이드: ${fadeDesc}
 - 텍스처: ${textureDesc}
 - 어울리는 얼굴형: ${faceShapesKo || '모든 얼굴형'}
-
+${theorySection}
 **🎯 도해도 분석 결과 (${diagrams.length}개):**
 
 ${diagramsContext}
 
 **📋 레시피 작성 지침:**
+${theoryContext ? '참고 이론의 커팅 기법과 원리를 레시피에 자연스럽게 반영하세요.' : ''}
 
 ### STEP 1: 스타일 개요 (2-3줄)
 - ${subStyleName} 스타일의 핵심 특징
@@ -182,10 +188,16 @@ async function generateMaleRecipe(params, geminiKey, language = 'ko') {
     const selectedDiagrams = selectBestDiagrams(filteredStyles, 15);
     console.log(`✅ 도해도 선별 완료: ${selectedDiagrams.length}개`);
 
-    // 5. 레시피 프롬프트 생성
-    const recipePrompt = buildMaleRecipePrompt(params, selectedDiagrams, language);
+    // 5. ⭐ abcde 북에서 관련 이론 조회 (NEW!)
+    const theoryContext = await queryFileSearchForTheory(params, geminiKey, 'male');
+    if (theoryContext) {
+      console.log(`📚 이론 컨텍스트 추가됨`);
+    }
 
-    // 6. GPT로 레시피 생성
+    // 6. 레시피 프롬프트 생성 (이론 컨텍스트 포함)
+    const recipePrompt = buildMaleRecipePrompt(params, selectedDiagrams, theoryContext, language);
+
+    // 7. GPT로 레시피 생성
     const openaiKey = process.env.OPENAI_API_KEY;
     if (!openaiKey) {
       throw new Error('OpenAI API key not configured');
@@ -215,7 +227,7 @@ async function generateMaleRecipe(params, geminiKey, language = 'ko') {
     const data = await completion.json();
     let recipe = data.choices[0].message.content;
 
-    // 7. 보안 필터링
+    // 8. 보안 필터링
     recipe = sanitizeRecipeForPublic(recipe, language);
 
     console.log('✅ 남자 레시피 생성 완료');
