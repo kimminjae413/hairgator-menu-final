@@ -1907,9 +1907,21 @@
 
             <!-- 각 장별 내용 입력 -->
             <div class="cardnews-pages-section" style="margin-top: 20px;">
-                <label style="color: #fff; font-weight: 600; margin-bottom: 10px; display: block;">📝 각 장별 내용</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <label style="color: #fff; font-weight: 600;">📝 각 장별 내용</label>
+                    <span id="cardNewsPageCount" style="color: #E91E63; font-size: 13px;">1장</span>
+                </div>
                 <div id="cardNewsPagesContainer">
                     <!-- 동적으로 생성됨 -->
+                </div>
+                <!-- 장 추가/삭제 버튼 -->
+                <div style="display: flex; gap: 10px; margin-top: 12px;">
+                    <button onclick="addCardNewsPage()" style="flex: 1; background: #E91E63; border: none; color: white; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                        ➕ 장 추가
+                    </button>
+                    <button onclick="removeCardNewsPage()" id="removePageBtn" style="flex: 1; background: #444; border: none; color: #aaa; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; display: none;">
+                        ➖ 장 삭제
+                    </button>
                 </div>
             </div>
 
@@ -1934,16 +1946,6 @@
                         <option value="1:1" selected>정사각형 (1:1)</option>
                         <option value="4:5">세로형 (4:5) - 피드 추천</option>
                         <option value="9:16">스토리/릴스 (9:16)</option>
-                    </select>
-                </div>
-                <div class="gen-option-item">
-                    <label style="color: #ccc; font-size: 13px;">생성 개수</label>
-                    <select id="cardNewsCount" style="background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 6px; min-width: 100px;" onchange="updateCardNewsPages()">
-                        <option value="1">1장</option>
-                        <option value="2" selected>2장</option>
-                        <option value="4">4장</option>
-                        <option value="6">6장</option>
-                        <option value="8">8장</option>
                     </select>
                 </div>
             </div>
@@ -3970,14 +3972,18 @@
         let cardNewsImageBase64 = null;
         let cardNewsImageMimeType = 'image/jpeg';
 
-        // 페이지 입력창 동적 생성
-        function updateCardNewsPages() {
-            const count = parseInt(document.getElementById('cardNewsCount').value);
+        // 현재 카드뉴스 페이지 수
+        let cardNewsPageNum = 1;
+
+        // 페이지 입력창 렌더링
+        function renderCardNewsPages() {
             const container = document.getElementById('cardNewsPagesContainer');
+            const countSpan = document.getElementById('cardNewsPageCount');
+            const removeBtn = document.getElementById('removePageBtn');
 
             container.innerHTML = '';
 
-            for (let i = 1; i <= count; i++) {
+            for (let i = 1; i <= cardNewsPageNum; i++) {
                 const pageDiv = document.createElement('div');
                 pageDiv.style.cssText = 'margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;';
                 pageDiv.innerHTML = `
@@ -3987,11 +3993,34 @@
                 `;
                 container.appendChild(pageDiv);
             }
+
+            // 카운트 표시
+            countSpan.textContent = `${cardNewsPageNum}장`;
+
+            // 삭제 버튼 표시/숨김 (1장 이상일 때만)
+            removeBtn.style.display = cardNewsPageNum > 1 ? 'block' : 'none';
+        }
+
+        // 장 추가
+        function addCardNewsPage() {
+            if (cardNewsPageNum >= 10) {
+                showToast('최대 10장까지 추가할 수 있습니다');
+                return;
+            }
+            cardNewsPageNum++;
+            renderCardNewsPages();
+        }
+
+        // 장 삭제
+        function removeCardNewsPage() {
+            if (cardNewsPageNum <= 1) return;
+            cardNewsPageNum--;
+            renderCardNewsPages();
         }
 
         // 페이지 로드 시 초기 입력창 생성
         document.addEventListener('DOMContentLoaded', function() {
-            updateCardNewsPages();
+            renderCardNewsPages();
         });
 
         // 카드뉴스 이미지 미리보기
@@ -4026,7 +4055,7 @@
         // 카드뉴스 생성
         async function generateCardNews() {
             const title = document.getElementById('cardNewsTitle').value.trim();
-            const count = parseInt(document.getElementById('cardNewsCount').value);
+            const count = cardNewsPageNum;
 
             // 각 장별 내용 수집
             const pages = [];
