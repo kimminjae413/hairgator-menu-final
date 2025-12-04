@@ -845,20 +845,20 @@ async function analyzeImageWithQuestion(payload, geminiKey) {
 이미지를 보고 다음을 정확히 분석하세요:
 
 ### 🎯 LENGTH 분류 (가장 중요!)
-머리카락이 **신체의 어느 위치까지 닿는지** 확인:
-- A Length (5cm): 이마선 - 픽시컷, 매우 짧은 커트
-- B Length (10cm): 눈썹선 - 짧은 숏컷
-- C Length (15cm): 입술선 - 숏밥, 턱선 위
-- D Length (25cm): 턱선 - 단발, 보브컷 ⭐ 기준점
-- E Length (35cm): 어깨선 - 미디엄, 어깨에 닿는 길이
-- F Length (40cm): 쇄골 - 미디엄롱, 가슴 위
-- G Length (50cm): 가슴 중간 - 롱헤어
-- H Length (65cm): 가슴 아래 - 허리까지 오는 긴 머리
+뒷머리 가장 긴 부분이 **신체의 어느 위치까지 닿는지** 확인:
+- H Length: 후두부/목덜미 - Short (픽시컷, 베리숏)
+- G Length: 목 상단 - Bob (짧은 단발)
+- F Length: 목 하단 - Bob (단발)
+- E Length: 어깨선 상단 - Medium (어깨에 닿음)
+- D Length: 어깨선 하단 - Medium (어깨 아래)
+- C Length: 겨드랑이/가슴 상단 - Semi Long
+- B Length: 가슴 중간 - Long (롱헤어)
+- A Length: 가슴 하단/허리 - Long (슈퍼롱)
 
 ### 분석 순서:
 1. 뒷머리 가장 긴 부분이 어디까지 닿는지 확인
-2. 신체 랜드마크(턱, 어깨, 쇄골)와 비교
-3. 턱선 = D Length, 어깨선 = E Length 기준
+2. 목에서 끝나면 G/F (Bob), 어깨면 E/D (Medium)
+3. 겨드랑이 아래로 내려가면 C 이하 (Semi Long~Long)
 
 ### 형태(Cut Form):
 - O (One Length/원렝스): 무게선이 있는 일자 커트
@@ -988,25 +988,31 @@ async function analyzeImage(payload, openaiKey) {
   const systemPrompt = `You are "HAIRGATOR AI," an expert hair analyst.
 ${genderContext}
 
-## LENGTH CLASSIFICATION EXAMPLES (FOLLOW EXACTLY):
+## LENGTH CLASSIFICATION (Body Landmark - VERY IMPORTANT!):
 
-Example 1: Hair ends at mid-chest, covers the bra line area
-→ Correct: "B Length"  ❌ Wrong: "D Length"
+| Code | Body Position | Category |
+|------|--------------|----------|
+| H | Nape/Occipital | Short |
+| G | Upper Neck | Bob |
+| F | Lower Neck | Bob |
+| E | Upper Shoulder | Medium |
+| D | Lower Shoulder | Medium |
+| C | Armpit/Upper Chest | Semi Long |
+| B | Mid Chest | Long |
+| A | Lower Chest/Waist | Long |
 
-Example 2: Hair ends at armpit level
-→ Correct: "C Length"
+## HOW TO DETERMINE LENGTH:
+1. Find where the LONGEST part of back hair ends
+2. Check which body landmark it touches:
+   - Ends at nape/neck → H or G (Short/Bob)
+   - Touches shoulder → E or D (Medium)
+   - Below armpit → C (Semi Long)
+   - Mid chest or below → B or A (Long)
 
-Example 3: Hair ends below shoulder but above armpit (collarbone area)
-→ Correct: "D Length"
-
-Example 4: Hair ends at shoulder line
-→ Correct: "E Length"
-
-## LENGTH DEFINITION:
-- B Length = MID-CHEST (가슴 중간, 브라라인) = LONG HAIR
-- D Length = BELOW SHOULDER, ABOVE ARMPIT = MEDIUM-LONG (NOT chest level!)
-
-If you see long hair reaching the chest area, output "B Length".
+⚠️ IMPORTANT:
+- If neck is fully visible → H or G
+- If hair doesn't touch shoulder → F or above (NOT E, D, C, B, A!)
+- If hair touches shoulder → E or D
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1237,14 +1243,14 @@ function buildSearchQuery(params56) {
 
   if (params56.length_category) {
     const lengthMap = {
-      'A Length': '가슴 아래 롱헤어',
-      'B Length': '가슴 세미롱',
-      'C Length': '쇄골 세미롱',
-      'D Length': '어깨선 미디엄',
-      'E Length': '어깨 위 단발',
-      'F Length': '턱선 보브',
+      'H Length': '픽시컷 숏',
       'G Length': '짧은 보브',
-      'H Length': '베리숏'
+      'F Length': '보브 단발',
+      'E Length': '어깨선 미디엄',
+      'D Length': '어깨 아래 미디엄',
+      'C Length': '세미롱',
+      'B Length': '가슴 롱헤어',
+      'A Length': '허리 롱헤어'
     };
     parts.push(lengthMap[params56.length_category]);
   }
@@ -1418,14 +1424,14 @@ function getTerms(lang) {
   const terms = {
     ko: {
       lengthDesc: {
-        'A Length': '가슴 아래 밑선',
-        'B Length': '가슴 상단~중간',
-        'C Length': '쇄골 밑선',
-        'D Length': '어깨선',
-        'E Length': '어깨 위 2-3cm',
-        'F Length': '턱뼈 아래',
-        'G Length': '턱선',
-        'H Length': '귀 높이'
+        'H Length': '후두부/목덜미 (Short)',
+        'G Length': '목 상단 (Bob)',
+        'F Length': '목 하단 (Bob)',
+        'E Length': '어깨선 상단 (Medium)',
+        'D Length': '어깨선 하단 (Medium)',
+        'C Length': '겨드랑이/가슴 상단 (Semi Long)',
+        'B Length': '가슴 중간 (Long)',
+        'A Length': '가슴 하단/허리 (Long)'
       },
       faceShapeDesc: {
         'Oval': '계란형',
@@ -1448,10 +1454,14 @@ function getTerms(lang) {
     },
     en: {
       lengthDesc: {
-        'A Length': 'Below chest',
-        'D Length': 'Shoulder line',
-        'E Length': '2-3cm above shoulder',
-        'G Length': 'Jaw line'
+        'H Length': 'Nape/Occipital (Short)',
+        'G Length': 'Upper Neck (Bob)',
+        'F Length': 'Lower Neck (Bob)',
+        'E Length': 'Upper Shoulder (Medium)',
+        'D Length': 'Lower Shoulder (Medium)',
+        'C Length': 'Armpit/Upper Chest (Semi Long)',
+        'B Length': 'Mid Chest (Long)',
+        'A Length': 'Lower Chest/Waist (Long)'
       },
       faceShapeDesc: {
         'Oval': 'Oval',
@@ -2079,24 +2089,24 @@ function buildGeminiSystemPrompt(userLanguage) {
 
 ■ 계층 4: 70개 스타일 (실전 구현)
 [시리즈별 구성]
-- FAL: 숏 (A Length)
-- FBL: 미디엄 숏 (B Length)
-- FCL: 미디엄 (C Length)
-- FDL: 미디엄 롱 (D Length)
-- FEL: 롱 (E Length)
-- FFL: 세미롱 (F Length)
-- FGL: 롱 (G Length)
-- FHL: 엑스트라 롱 (H Length)
+- FHL: Short (H Length) - 픽시컷, 베리숏
+- FGL: Bob (G Length) - 짧은 단발
+- FFL: Bob (F Length) - 단발
+- FEL: Medium (E Length) - 어깨선 상단
+- FDL: Medium (D Length) - 어깨선 하단
+- FCL: Semi Long (C Length) - 겨드랑이/가슴 상단
+- FBL: Long (B Length) - 가슴 중간
+- FAL: Long (A Length) - 가슴 하단/허리
 
-■ 길이(Length) 체계
-- A Length: 5cm, 이마선 (가장 짧음) → FAL 시리즈
-- B Length: 10cm, 눈썹선
-- C Length: 15cm, 입술선
-- D Length: 25cm, 턱선
-- E Length: 35cm, 어깨선
-- F Length: 40cm, 쇄골
-- G Length: 50cm, 가슴 중간
-- H Length: 65cm, 가슴 아래 (가장 김)
+■ 길이(Length) 체계 - Body Landmark 기준
+- H Length: 후두부/목덜미 (Short) → FHL 시리즈
+- G Length: 목 상단 (Bob)
+- F Length: 목 하단 (Bob)
+- E Length: 어깨선 상단 (Medium)
+- D Length: 어깨선 하단 (Medium)
+- C Length: 겨드랑이/가슴 상단 (Semi Long)
+- B Length: 가슴 중간 (Long)
+- A Length: 가슴 하단/허리 (Long, 가장 김)
 
 ■ 컬러(Color) / 펌(Perm) 이론
 - PDF 자료에서 검색하여 답변
@@ -2642,50 +2652,32 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 
 【LENGTH 분류 - Body Landmark 기반】⭐⭐⭐ 가장 중요!
 
-**신체 부위(Body Landmark)를 기준으로 가장 긴 머리카락 끝이 어디에 닿는지 판단:**
+**뒷머리 가장 긴 부분이 신체 어디에 닿는지 확인:**
 
-| 코드 | 신체 기준점 | 설명 |
-|-----|-----------|------|
-| H | 목덜미/후두부(NAPE) | Short - 픽시컷, 베리숏 |
-| G | 목 아래(BASE OF NECK) | Bob 상단 - 짧은 단발 |
-| F | 목~어깨 사이(NECK TO SHOULDER) | Bob 하단 - 어깨 안 닿음 |
-| E | 어깨선(SHOULDER LINE) | Medium - 어깨에 닿음 |
-| D | 어깨 아래~겨드랑이 위(BELOW SHOULDER) | Medium - 쇄골 덮음 |
-| C | 겨드랑이선(ARMPIT LEVEL) | Semi Long |
-| B | 가슴 중간/브라라인(MID-CHEST) | Long - 가슴 중간 ⭐ |
-| A | 가슴 아래~허리(BELOW CHEST) | Very Long |
+| 코드 | 신체 기준점 | 카테고리 |
+|-----|-----------|----------|
+| H | 후두부/목덜미 (NAPE) | Short |
+| G | 목 상단 (UPPER NECK) | Bob |
+| F | 목 하단 (LOWER NECK) | Bob |
+| E | 어깨선 상단 (UPPER SHOULDER) | Medium |
+| D | 어깨선 하단 (LOWER SHOULDER) | Medium |
+| C | 겨드랑이/가슴 상단 (ARMPIT/UPPER CHEST) | Semi Long |
+| B | 가슴 중간 (MID CHEST) | Long |
+| A | 가슴 하단/허리 (LOWER CHEST/WAIST) | Long |
 
-🚨🚨🚨 B Length vs D Length 구분 (매우 중요!) 🚨🚨🚨
+🚨 판단 순서 (위에서 아래로):
+1. 머리가 목덜미/후두부에서 끝남? → H (Short)
+2. 머리가 목에서 끝남? → G 또는 F (Bob)
+3. 머리가 어깨선에 닿음? → E 또는 D (Medium)
+4. 머리가 겨드랑이/가슴 상단까지? → C (Semi Long)
+5. 머리가 가슴 중간까지? → B (Long)
+6. 머리가 가슴 하단/허리까지? → A (Long)
 
-❌ 흔한 오류: 가슴까지 오는 긴 머리를 D Length로 분류
-✅ 올바른 분류:
-- 머리가 가슴(CHEST/브라라인)까지 옴 → B Length!
-- 머리가 어깨 아래~겨드랑이 위 → D Length
-
-**체크리스트:**
-Q1. 머리카락이 가슴(브라라인) 높이까지 오는가?
-- YES → B Length (절대 D가 아님!)
-- NO → 다음 체크
-
-Q2. 머리카락이 겨드랑이 높이인가?
-- YES → C Length
-
-Q3. 머리카락이 어깨 아래~겨드랑이 위인가?
-- YES → D Length
-
-Q4. 머리카락이 어깨선에 닿는가?
-- YES → E Length
-
-🔍 현재 이미지 체크 포인트:
-- 목이 보이는가? (예 = F 또는 G일 가능성 높음)
-- 머리가 쇄골을 넘어가는가? (아니오 = D Length 아님!)
-- 어깨에 머리가 닿는가? (닿으면 E, 안 닿으면 F)
-
-❌ 흔한 실수:
-- 귀 높이 숏컷을 E로 분류 (틀림! → H가 정답)
-- 턱선 보브를 E로 분류 (틀림! → G가 정답)
-- 목이 보이는 짧은 머리를 E, F로 분류 (틀림! → G 또는 H)
-- 어깨에 닿지 않는 보브를 E로 분류 (틀림! → F가 정답)
+⚠️ 중요:
+- 목이 완전히 보이면 → H 또는 G
+- 어깨에 안 닿으면 → F 이상 (E, D, C, B, A 아님!)
+- 어깨에 닿으면 → E 또는 D
+- 겨드랑이 아래로 내려가면 → C 이하
 
 【CUT FORM】
 - L (Layer): 90도 이상 리프팅, 전체적으로 가벼움, 층 많음
