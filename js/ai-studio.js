@@ -906,6 +906,10 @@ class AIStudio {
     // Convert to base64
     const base64 = await this.fileToBase64(file);
 
+    // 재분석용 이미지 데이터 저장
+    this.pendingImageBase64 = base64;
+    this.pendingMimeType = file.type;
+
     // Show typing
     this.showTypingIndicator();
 
@@ -1884,6 +1888,10 @@ async function sendImageWithQuestion() {
   try {
     // Base64 변환
     const base64 = await window.aiStudio.fileToBase64(pendingImageData.file);
+
+    // 재분석용 이미지 데이터 저장
+    window.aiStudio.pendingImageBase64 = base64;
+    window.aiStudio.pendingMimeType = pendingImageData.file.type;
 
     console.log(`📤 맞춤 레시피 생성 API 호출... (성별: ${selectedGender})`);
 
