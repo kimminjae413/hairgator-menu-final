@@ -1975,6 +1975,20 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 히스토리 섹션 -->
+            <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="color: #fff; font-size: 18px; margin: 0;">📜 생성 히스토리</h3>
+                    <button onclick="clearCardNewsHistory()" style="background: #dc3545; border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                        🗑️ 전체 삭제
+                    </button>
+                </div>
+                <div id="cardNewsHistoryList" style="display: flex; flex-direction: column; gap: 16px;">
+                    <!-- 동적 생성 -->
+                    <p style="color: #666; text-align: center; padding: 40px;">히스토리가 없습니다</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -4120,6 +4134,9 @@
                     displayCardNewsResults(result.data.images);
                     showToast(`${result.data.images.length}개 카드뉴스 생성 완료!`);
 
+                    // 히스토리에 저장
+                    saveCardNewsHistory(title, pages, result.data.images);
+
                     // 키워드 추천 요청
                     generateKeywords(title, pages);
                 } else {
@@ -4173,6 +4190,100 @@
                 showToast('복사 실패');
             });
         }
+
+        // ==================== 카드뉴스 히스토리 ====================
+        function saveCardNewsHistory(title, pages, images) {
+            const history = JSON.parse(localStorage.getItem('cardNewsHistory') || '[]');
+            const newEntry = {
+                id: Date.now(),
+                title: title || '제목 없음',
+                pages: pages,
+                images: images.map(img => img.url),
+                createdAt: new Date().toISOString()
+            };
+            history.unshift(newEntry);
+            // 최대 20개까지만 저장
+            if (history.length > 20) history.pop();
+            localStorage.setItem('cardNewsHistory', JSON.stringify(history));
+            renderCardNewsHistory();
+        }
+
+        function renderCardNewsHistory() {
+            const container = document.getElementById('cardNewsHistoryList');
+            const history = JSON.parse(localStorage.getItem('cardNewsHistory') || '[]');
+
+            if (history.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">히스토리가 없습니다</p>';
+                return;
+            }
+
+            container.innerHTML = history.map(entry => {
+                const date = new Date(entry.createdAt);
+                const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                const thumbnails = entry.images.slice(0, 4).map(url =>
+                    `<img src="${url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;">`
+                ).join('');
+
+                return `
+                    <div style="background: #2a2a2a; border-radius: 12px; padding: 16px; border: 1px solid #444;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <h4 style="color: #fff; margin: 0 0 4px 0; font-size: 15px;">${entry.title}</h4>
+                                <span style="color: #888; font-size: 12px;">${dateStr} · ${entry.images.length}장</span>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="loadCardNewsHistory(${entry.id})" style="background: #E91E63; border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                    보기
+                                </button>
+                                <button onclick="deleteCardNewsHistory(${entry.id})" style="background: #444; border: none; color: #aaa; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                                    삭제
+                                </button>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            ${thumbnails}
+                            ${entry.images.length > 4 ? `<div style="width: 60px; height: 60px; background: #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 12px;">+${entry.images.length - 4}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadCardNewsHistory(id) {
+            const history = JSON.parse(localStorage.getItem('cardNewsHistory') || '[]');
+            const entry = history.find(h => h.id === id);
+            if (!entry) return;
+
+            // 이미지를 결과 영역에 표시
+            const images = entry.images.map(url => ({ url }));
+            generatedCardNewsImages = images;
+            displayCardNewsResults(images);
+            showToast('히스토리를 불러왔습니다');
+
+            // 스크롤 이동
+            document.getElementById('cardNewsResultSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function deleteCardNewsHistory(id) {
+            if (!confirm('이 히스토리를 삭제하시겠습니까?')) return;
+            let history = JSON.parse(localStorage.getItem('cardNewsHistory') || '[]');
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem('cardNewsHistory', JSON.stringify(history));
+            renderCardNewsHistory();
+            showToast('삭제되었습니다');
+        }
+
+        function clearCardNewsHistory() {
+            if (!confirm('모든 히스토리를 삭제하시겠습니까?')) return;
+            localStorage.removeItem('cardNewsHistory');
+            renderCardNewsHistory();
+            showToast('모든 히스토리가 삭제되었습니다');
+        }
+
+        // 페이지 로드 시 히스토리 렌더링
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCardNewsHistory();
+        });
 
         // 카드뉴스 결과 표시 (호버 효과 추가)
         function displayCardNewsResults(images) {
