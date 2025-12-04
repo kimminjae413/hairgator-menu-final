@@ -365,7 +365,7 @@ body.male-theme .nav-btn:hover {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* GUIDE 버튼 스타일 - 텍스트 표시 */
+/* GUIDE 버튼 스타일 - 쨍한 핑크색 */
 .nav-btn.guide-btn {
     width: auto;
     height: auto;
@@ -374,8 +374,9 @@ body.male-theme .nav-btn:hover {
     font-size: 13px;
     font-weight: 600;
     color: #ffffff;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: #ff1493;
+    border: none;
+    box-shadow: 0 2px 8px rgba(255, 20, 147, 0.4);
 }
 
 .nav-btn.guide-btn::after {
@@ -384,17 +385,18 @@ body.male-theme .nav-btn:hover {
 }
 
 .nav-btn.guide-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: #ff69b4;
+    box-shadow: 0 4px 12px rgba(255, 20, 147, 0.5);
 }
 
 body.male-theme .nav-btn.guide-btn {
-    background: rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    color: #333;
+    background: #ff1493;
+    border: none;
+    color: #ffffff;
 }
 
 body.male-theme .nav-btn.guide-btn:hover {
-    background: rgba(0, 0, 0, 0.12);
+    background: #ff69b4;
 }
 
 /* ========== 모드 선택 ========== */
