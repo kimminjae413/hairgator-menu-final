@@ -412,6 +412,9 @@ exports.handler = async (event, context) => {
       case 'generate_hairstyle_image':
         return await generateHairstyleImage(payload);
 
+      case 'generate_hairstyle_direct':
+        return await generateHairstyleDirect(payload);
+
       default:
         return {
           statusCode: 400,
@@ -4849,21 +4852,29 @@ async function analyzeStyleForGeneration(payload, geminiKey) {
   console.log('📷 이미지 데이터 길이:', image_base64?.length, 'mime_type:', mime_type);
 
   try {
-    const prompt = `Analyze this hairstyle image for AI image generation.
+    const prompt = `Analyze this hairstyle image in EXTREME DETAIL for image replication.
+
+You must extract every visual detail so another AI can recreate the EXACT same hairstyle.
 
 Return ONLY a JSON object with these fields:
 {
   "gender": "male" or "female",
-  "length": "Short/Medium/Long/Very Long",
-  "form": "Layer/Graduation/One Length/Textured",
-  "color": "Black/Brown/Blonde/Red/etc (include highlights if any)",
-  "style": "Bob/Pixie/Wolf Cut/Shag/etc",
-  "texture": "Straight/Wavy/Curly/Permed",
-  "bangs": "None/Full/Side/Curtain/Wispy",
-  "description": "Brief 1-2 sentence description in Korean focusing on key visual features for image generation"
+  "length": "Describe exactly where hair ends (e.g., 'chin-length', 'mid-chest', 'shoulder-length')",
+  "length_cm": "Estimated length in cm (e.g., '25cm', '40cm')",
+  "form": "Layer/Graduation/One Length/Textured - describe the layering pattern",
+  "color": "Exact color with details (e.g., 'dark chocolate brown with subtle caramel highlights')",
+  "style": "Specific style name (e.g., 'Korean wolf cut', 'layered bob with face-framing')",
+  "texture": "Describe texture (e.g., 'soft waves with slight curl at ends', 'straight with natural body')",
+  "bangs": "Detailed bang description (e.g., 'curtain bangs parted in center, reaching cheekbones')",
+  "parting": "Center/Left/Right/None - describe the parting",
+  "volume": "Describe volume distribution (e.g., 'voluminous at roots, tapered ends')",
+  "silhouette": "Describe overall shape (e.g., 'A-line', 'rounded', 'V-shaped at back')",
+  "face_framing": "Describe face-framing layers if any",
+  "styling": "How the hair is styled (e.g., 'blow-dried with inward curl', 'natural air-dried')",
+  "description": "Detailed 2-3 sentence description in Korean capturing the complete look"
 }
 
-Be specific and visual. Focus on what makes this hairstyle unique.`;
+Be EXTREMELY specific. Every detail matters for accurate replication.`;
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${ADMIN_GEMINI_KEY}`;
     console.log('🌐 API 호출 URL:', apiUrl.replace(ADMIN_GEMINI_KEY, 'API_KEY_HIDDEN'));
@@ -5074,28 +5085,36 @@ async function generateHairstyleImage(payload) {
           pose: 'front-facing or slightly angled, natural soft expression'
         };
 
-    const prompt = `Look at this reference hairstyle image carefully. Generate a new professional salon photograph with a SIMILAR hairstyle on a different Korean ${genderWord} model.
+    const prompt = `🚨 CRITICAL: You MUST replicate the EXACT hairstyle from this reference image.
 
-The hairstyle should match:
-- Hair Length: ${analysis.length || 'medium'}
-- Hair Style: ${analysis.style || 'modern'}
-- Hair Color: ${analysis.color || 'natural dark brown'}
-- Hair Texture: ${analysis.texture || 'smooth'}
+Study the reference image and COPY these hairstyle details EXACTLY:
+1. EXACT hair length (where the hair ends on the body)
+2. EXACT layering pattern and cut structure
+3. EXACT hair volume and silhouette shape
+4. EXACT bang/fringe style and length
+5. EXACT hair texture and wave pattern
+6. EXACT hair parting position
+
+Analyzed hairstyle details:
+- Length: ${analysis.length || 'medium'}
+- Style: ${analysis.style || 'layered'}
+- Color: ${analysis.color || 'dark brown'}
+- Texture: ${analysis.texture || 'natural'}
 - Bangs: ${analysis.bangs || 'none'}
-- Overall vibe: ${analysis.description || ''}
+- Description: ${analysis.description || ''}
 
-STRICT STYLE REQUIREMENTS:
+Generate a NEW photo of a Korean ${genderWord} model with THE IDENTICAL HAIRSTYLE.
+
+Photo requirements:
+- Model: Young Korean ${genderWord}, different face from reference
 - Clothing: ${styleGuide.clothing}
 - Background: ${styleGuide.background}
 - Pose: ${styleGuide.pose}
-- Lighting: Soft, even studio lighting with no harsh shadows
-- Composition: Head and shoulders portrait, centered
+- Lighting: Soft studio lighting
+- Composition: Head and shoulders, centered
 
-IMPORTANT:
-- Keep the SAME hairstyle shape, layers, and styling as the reference image
-- The model should wear simple white/cream clothing ONLY
-- Background must be plain and light-colored
-- Professional Korean hair salon portfolio style`;
+⚠️ THE HAIRSTYLE MUST BE A NEAR-EXACT COPY OF THE REFERENCE IMAGE.
+Only the model's face should be different. The hair MUST look the same.`;
 
     console.log('📝 생성 프롬프트 (참고 이미지 포함)');
 
@@ -5175,6 +5194,141 @@ IMPORTANT:
 
   } catch (error) {
     console.error('💥 Gemini 이미지 생성 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 어드민: 이미지-to-이미지 직접 생성 (분석 단계 없음) ====================
+async function generateHairstyleDirect(payload) {
+  const { reference_image, mime_type, num_images, gender } = payload;
+
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
+
+  console.log('🎨 이미지-to-이미지 직접 생성 시작');
+
+  if (!ADMIN_GEMINI_KEY) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: 'GEMINI_API_KEY not configured' })
+    };
+  }
+
+  if (!reference_image) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ success: false, error: '참조 이미지가 필요합니다' })
+    };
+  }
+
+  try {
+    const genderWord = gender === 'male' ? 'man' : 'woman';
+    const styleGuide = gender === 'male'
+      ? {
+          clothing: 'plain white t-shirt',
+          background: 'clean white or light gray studio background'
+        }
+      : {
+          clothing: 'white or beige/cream colored simple top',
+          background: 'soft white or warm cream studio background'
+        };
+
+    const prompt = `Look at this reference hairstyle photo carefully.
+
+Create a NEW professional salon photograph with the EXACT SAME HAIRSTYLE on a different Korean ${genderWord} model.
+
+CRITICAL - The new image MUST have:
+✅ IDENTICAL hair length (same position where hair ends)
+✅ IDENTICAL layering and cut structure
+✅ IDENTICAL hair texture and wave pattern
+✅ IDENTICAL bang/fringe style and length
+✅ IDENTICAL hair parting position
+✅ IDENTICAL overall silhouette and volume
+
+Photo requirements:
+- Model: Young Korean ${genderWord}, attractive, different person from reference
+- Clothing: ${styleGuide.clothing}
+- Background: ${styleGuide.background}
+- Lighting: Soft, even studio lighting
+- Pose: Front-facing or slightly angled
+- Quality: High resolution, professional hair salon portfolio style
+
+THE HAIRSTYLE MUST BE VISUALLY IDENTICAL TO THE REFERENCE. Only the model's face should differ.`;
+
+    const numToGenerate = Math.min(num_images || 4, 4);
+    const generatedImages = [];
+
+    for (let i = 0; i < numToGenerate; i++) {
+      console.log(`🖼️ 직접 생성 ${i + 1}/${numToGenerate}...`);
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${ADMIN_GEMINI_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                {
+                  inline_data: {
+                    mime_type: mime_type || 'image/jpeg',
+                    data: reference_image
+                  }
+                },
+                { text: prompt }
+              ]
+            }],
+            generationConfig: {
+              responseModalities: ['TEXT', 'IMAGE']
+            }
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Gemini API Error: ${response.status}`, errorText);
+        continue;
+      }
+
+      const result = await response.json();
+      const responseParts = result.candidates?.[0]?.content?.parts || [];
+
+      for (const part of responseParts) {
+        if (part.inlineData) {
+          generatedImages.push({
+            url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+            mimeType: part.inlineData.mimeType
+          });
+        }
+      }
+    }
+
+    console.log('✅ 직접 생성 완료:', generatedImages.length, '개');
+
+    if (generatedImages.length === 0) {
+      throw new Error('이미지 생성에 실패했습니다. 다시 시도해주세요.');
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          images: generatedImages,
+          count: generatedImages.length
+        }
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 직접 생성 오류:', error);
     return {
       statusCode: 500,
       headers,

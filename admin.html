@@ -1995,9 +1995,37 @@
                     <p id="resultDescription">-</p>
                 </div>
 
-                <!-- z-image 생성 버튼 -->
-                <div class="generate-section">
-                    <h3 class="section-subtitle">✨ AI 이미지 생성</h3>
+                <!-- 직접 생성 (분석 없이) -->
+                <div class="generate-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #333;">
+                    <h3 class="section-subtitle">⚡ 직접 생성 (분석 단계 생략)</h3>
+                    <p style="color: #888; margin-bottom: 15px;">이미지를 직접 참조하여 동일한 헤어스타일을 생성합니다. 분석 없이 바로 생성!</p>
+
+                    <div class="gen-options-row">
+                        <div class="gen-option-item">
+                            <label>생성 개수</label>
+                            <select id="directGenCount">
+                                <option value="1">1장</option>
+                                <option value="2">2장</option>
+                                <option value="4" selected>4장</option>
+                            </select>
+                        </div>
+                        <div class="gen-option-item">
+                            <label>성별</label>
+                            <select id="directGenGender">
+                                <option value="female" selected>여성</option>
+                                <option value="male">남성</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success btn-generate" id="directGenerateBtn" onclick="generateDirectly()" style="background: #28a745;">
+                        ⚡ 바로 생성하기
+                    </button>
+                </div>
+
+                <!-- 기존 분석 후 생성 -->
+                <div class="generate-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #333;">
+                    <h3 class="section-subtitle">✨ 분석 후 생성</h3>
                     <p style="color: #888; margin-bottom: 15px;">분석된 스타일을 바탕으로 새로운 헤어스타일 이미지를 생성합니다.</p>
 
                     <div class="gen-options-row">
@@ -2020,7 +2048,7 @@
                     </div>
 
                     <button class="btn btn-generate" id="generateBtn" onclick="generateWithGemini()">
-                        🎨 Gemini로 생성하기
+                        🎨 분석 기반 생성하기
                     </button>
                 </div>
 
@@ -4192,7 +4220,55 @@
                 showToast('생성 실패: ' + error.message);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '🎨 Gemini로 생성하기';
+                btn.innerHTML = '🎨 분석 기반 생성하기';
+            }
+        }
+
+        // ⚡ 직접 생성 (분석 단계 없이 이미지-to-이미지)
+        async function generateDirectly() {
+            if (!currentImageBase64) {
+                showToast('이미지를 먼저 업로드해주세요');
+                return;
+            }
+
+            const btn = document.getElementById('directGenerateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>생성 중... (약 10-30초 소요)';
+
+            const numImages = parseInt(document.getElementById('directGenCount').value);
+            const gender = document.getElementById('directGenGender').value;
+            const fileInput = document.getElementById('styleImageInput');
+            const mimeType = fileInput.files[0]?.type || 'image/jpeg';
+
+            try {
+                const response = await fetch('/.netlify/functions/chatbot-api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'generate_hairstyle_direct',
+                        payload: {
+                            reference_image: currentImageBase64,
+                            mime_type: mimeType,
+                            num_images: numImages,
+                            gender: gender
+                        }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.images) {
+                    displayGeneratedImages(result.data.images);
+                    showToast(`${result.data.images.length}개 이미지 생성 완료!`);
+                } else {
+                    throw new Error(result.error || '이미지 생성 실패');
+                }
+            } catch (error) {
+                console.error('직접 생성 오류:', error);
+                showToast('생성 실패: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '⚡ 바로 생성하기';
             }
         }
 
