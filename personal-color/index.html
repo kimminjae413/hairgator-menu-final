@@ -2422,51 +2422,51 @@
 
             // 레시피 카드 HTML 생성 (폰트 크기 확대)
             const recipeCardsHTML = feedback.recipes ? feedback.recipes.map((recipe, idx) => `
-                <div style="background: linear-gradient(135deg, rgba(0,150,136,0.15), rgba(0,188,212,0.1)); padding: 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(0,150,136,0.3);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div style="font-size: 17px; color: #4DB6AC; font-weight: bold;">
+                <div style="background: linear-gradient(135deg, rgba(0,150,136,0.15), rgba(0,188,212,0.1)); padding: 18px; border-radius: 12px; margin-bottom: 14px; border: 1px solid rgba(0,150,136,0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <div style="font-size: 19px; color: #4DB6AC; font-weight: bold;">
                             💊 ${recipe.styleName}
                         </div>
-                        <span style="background: rgba(0,150,136,0.3); color: #80CBC4; font-size: 13px; padding: 4px 12px; border-radius: 12px;">
+                        <span style="background: rgba(0,150,136,0.3); color: #80CBC4; font-size: 15px; padding: 5px 14px; border-radius: 12px;">
                             ${recipe.brand}
                         </span>
                     </div>
-                    <div style="font-size: 14px; color: #B2DFDB; margin-bottom: 12px; font-style: italic;">
+                    <div style="font-size: 16px; color: #B2DFDB; margin-bottom: 14px; font-style: italic;">
                         "${recipe.vibe}" - ${recipe.reason}
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;">
-                            <div style="font-size: 12px; color: #80CBC4; margin-bottom: 5px; font-weight: bold;">MIX RECIPE</div>
-                            <div style="font-size: 14px; color: #E0F2F1; font-weight: 600;">${recipe.mixRatio}</div>
-                            <div style="font-size: 12px; color: #80CBC4; margin-top: 4px;">${recipe.line}</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 8px;">
+                            <div style="font-size: 14px; color: #80CBC4; margin-bottom: 6px; font-weight: bold;">MIX RECIPE</div>
+                            <div style="font-size: 16px; color: #E0F2F1; font-weight: 600;">${recipe.mixRatio}</div>
+                            <div style="font-size: 14px; color: #80CBC4; margin-top: 5px;">${recipe.line}</div>
                         </div>
-                        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;">
-                            <div style="font-size: 12px; color: #80CBC4; margin-bottom: 5px; font-weight: bold;">OXIDANT</div>
-                            <div style="font-size: 14px; color: #E0F2F1; font-weight: 600;">${recipe.oxidant}</div>
-                            <div style="font-size: 12px; color: #80CBC4; margin-top: 4px;">⏱️ ${recipe.processingTime}</div>
+                        <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 8px;">
+                            <div style="font-size: 14px; color: #80CBC4; margin-bottom: 6px; font-weight: bold;">OXIDANT</div>
+                            <div style="font-size: 16px; color: #E0F2F1; font-weight: 600;">${recipe.oxidant}</div>
+                            <div style="font-size: 14px; color: #80CBC4; margin-top: 5px;">⏱️ ${recipe.processingTime}</div>
                         </div>
                     </div>
                 </div>
             `).join('') : '';
 
             return `
-                <div style="background: linear-gradient(135deg, rgba(156,39,176,0.15), rgba(103,58,183,0.15)); padding: 18px; border-radius: 12px; border: 1px solid rgba(156,39,176,0.3);">
-                    <div style="font-size: 18px; color: #CE93D8; margin-bottom: 15px; font-weight: bold;">
+                <div style="background: linear-gradient(135deg, rgba(156,39,176,0.15), rgba(103,58,183,0.15)); padding: 20px; border-radius: 12px; border: 1px solid rgba(156,39,176,0.3);">
+                    <div style="font-size: 20px; color: #CE93D8; margin-bottom: 16px; font-weight: bold;">
                         📋 AI 헤어 컨설턴트 리포트
                     </div>
 
                     <!-- 섹션 A: 퍼스널 컬러 정밀 진단 -->
-                    <div style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 14px; border-radius: 8px; border-left: 3px solid #CE93D8;">
-                        <div style="font-size: 15px; color: #B39DDB; margin-bottom: 8px; font-weight: bold;">🔬 SECTION A: 정밀 진단</div>
-                        <div style="font-size: 15px; color: #E1BEE7; line-height: 1.7; margin-bottom: 8px;">
+                    <div style="margin-bottom: 16px; background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; border-left: 3px solid #CE93D8;">
+                        <div style="font-size: 17px; color: #B39DDB; margin-bottom: 10px; font-weight: bold;">🔬 SECTION A: 정밀 진단</div>
+                        <div style="font-size: 16px; color: #E1BEE7; line-height: 1.7; margin-bottom: 10px;">
                             ${feedback.toneKeywords}
                         </div>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <span style="background: rgba(156,39,176,0.2); color: #E1BEE7; font-size: 13px; padding: 5px 12px; border-radius: 12px;">
+                            <span style="background: rgba(156,39,176,0.2); color: #E1BEE7; font-size: 15px; padding: 6px 14px; border-radius: 12px;">
                                 📊 추천 레벨: ${feedback.levelTip}
                             </span>
                             ${feedback.brightnessAdvice ? `
-                            <span style="background: rgba(156,39,176,0.2); color: #E1BEE7; font-size: 13px; padding: 5px 12px; border-radius: 12px;">
+                            <span style="background: rgba(156,39,176,0.2); color: #E1BEE7; font-size: 15px; padding: 6px 14px; border-radius: 12px;">
                                 💡 ${feedback.brightnessAdvice.substring(0, 30)}...
                             </span>
                             ` : ''}
@@ -2475,13 +2475,13 @@
 
                     <!-- 섹션 B: 컬러 사이언스 분석 -->
                     ${feedback.colorScience ? `
-                    <div style="margin-bottom: 15px; background: linear-gradient(135deg, rgba(63,81,181,0.15), rgba(48,63,159,0.1)); padding: 14px; border-radius: 8px; border: 1px solid rgba(63,81,181,0.3);">
-                        <div style="font-size: 15px; color: #7986CB; margin-bottom: 10px; font-weight: bold;">🧬 SECTION B: 컬러 사이언스</div>
-                        <div style="font-size: 14px; color: #C5CAE9; line-height: 1.7;">
-                            <div style="margin-bottom: 8px;">
+                    <div style="margin-bottom: 16px; background: linear-gradient(135deg, rgba(63,81,181,0.15), rgba(48,63,159,0.1)); padding: 16px; border-radius: 8px; border: 1px solid rgba(63,81,181,0.3);">
+                        <div style="font-size: 17px; color: #7986CB; margin-bottom: 12px; font-weight: bold;">🧬 SECTION B: 컬러 사이언스</div>
+                        <div style="font-size: 16px; color: #C5CAE9; line-height: 1.7;">
+                            <div style="margin-bottom: 10px;">
                                 <b style="color: #9FA8DA;">멜라닌 분석:</b> ${feedback.colorScience.melaninType}
                             </div>
-                            <div style="margin-bottom: 8px;">
+                            <div style="margin-bottom: 10px;">
                                 <b style="color: #9FA8DA;">언더코트 예측:</b> ${feedback.colorScience.undercoatPrediction}
                             </div>
                             <div>
@@ -2493,50 +2493,50 @@
 
                     <!-- 섹션 C: 시술 레시피 (처방전) -->
                     ${recipeCardsHTML ? `
-                    <div style="margin-bottom: 15px;">
-                        <div style="font-size: 15px; color: #4DB6AC; margin-bottom: 10px; font-weight: bold;">💊 SECTION C: 시술 레시피</div>
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 17px; color: #4DB6AC; margin-bottom: 12px; font-weight: bold;">💊 SECTION C: 시술 레시피</div>
                         ${recipeCardsHTML}
                     </div>
                     ` : ''}
 
                     <!-- 헤어 시술 팁 -->
-                    <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: 8px; margin-bottom: 12px;">
-                        <div style="font-size: 14px; color: #B39DDB; margin-bottom: 6px; font-weight: bold;">✂️ 시술 포인트</div>
-                        <div style="font-size: 14px; color: #ddd; line-height: 1.6;">
-                            <div style="margin-bottom: 5px;"><b style="color: #CE93D8;">언더코트:</b> ${feedback.undercoatTip}</div>
+                    <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; margin-bottom: 14px;">
+                        <div style="font-size: 16px; color: #B39DDB; margin-bottom: 8px; font-weight: bold;">✂️ 시술 포인트</div>
+                        <div style="font-size: 16px; color: #ddd; line-height: 1.7;">
+                            <div style="margin-bottom: 6px;"><b style="color: #CE93D8;">언더코트:</b> ${feedback.undercoatTip}</div>
                             <div><b style="color: #CE93D8;">마무리 질감:</b> ${feedback.textureTip}</div>
                         </div>
                     </div>
 
                     <!-- 토탈 뷰티 팁 -->
                     ${feedback.makeupBase ? `
-                    <div style="background: linear-gradient(135deg, rgba(233,30,99,0.15), rgba(255,64,129,0.1)); padding: 14px; border-radius: 8px; margin-bottom: 12px; border: 1px solid rgba(233,30,99,0.2);">
-                        <div style="font-size: 14px; color: #F48FB1; margin-bottom: 6px; font-weight: bold;">💄 토탈 뷰티</div>
-                        <div style="font-size: 14px; color: #FCE4EC; line-height: 1.6;">
-                            ${feedback.fashionVibe ? `<div style="margin-bottom: 5px;"><b style="color: #F48FB1;">패션:</b> ${feedback.fashionVibe}</div>` : ''}
+                    <div style="background: linear-gradient(135deg, rgba(233,30,99,0.15), rgba(255,64,129,0.1)); padding: 16px; border-radius: 8px; margin-bottom: 14px; border: 1px solid rgba(233,30,99,0.2);">
+                        <div style="font-size: 16px; color: #F48FB1; margin-bottom: 8px; font-weight: bold;">💄 토탈 뷰티</div>
+                        <div style="font-size: 16px; color: #FCE4EC; line-height: 1.7;">
+                            ${feedback.fashionVibe ? `<div style="margin-bottom: 6px;"><b style="color: #F48FB1;">패션:</b> ${feedback.fashionVibe}</div>` : ''}
                             <div><b style="color: #F48FB1;">메이크업:</b> ${feedback.makeupBase}</div>
                         </div>
                     </div>
                     ` : ''}
 
                     <!-- 컨설팅 포인트 -->
-                    <div style="background: rgba(103,58,183,0.2); padding: 14px; border-radius: 8px;">
-                        <div style="font-size: 14px; color: #B39DDB; margin-bottom: 6px; font-weight: bold;">💬 컨설팅 포인트</div>
-                        <div style="font-size: 14px; color: #E1BEE7; line-height: 1.6;">${feedback.consultingTip}</div>
-                        <div style="font-size: 13px; color: #9575CD; margin-top: 8px; font-style: italic; background: rgba(0,0,0,0.2); padding: 8px 10px; border-radius: 6px;">
+                    <div style="background: rgba(103,58,183,0.2); padding: 16px; border-radius: 8px;">
+                        <div style="font-size: 16px; color: #B39DDB; margin-bottom: 8px; font-weight: bold;">💬 컨설팅 포인트</div>
+                        <div style="font-size: 16px; color: #E1BEE7; line-height: 1.7;">${feedback.consultingTip}</div>
+                        <div style="font-size: 15px; color: #9575CD; margin-top: 10px; font-style: italic; background: rgba(0,0,0,0.2); padding: 10px 12px; border-radius: 6px;">
                             💡 "${feedback.seasonalAdvice}"
                         </div>
                     </div>
 
                     <!-- 피해야 할 톤 -->
                     ${feedback.avoidColors && feedback.avoidColors.length > 0 ? `
-                    <div style="margin-top: 12px; padding: 12px; background: rgba(244,67,54,0.1); border-radius: 8px; border: 1px solid rgba(244,67,54,0.2);">
-                        <div style="font-size: 14px; color: #EF9A9A; margin-bottom: 6px; font-weight: bold;">⛔ 피해야 할 톤</div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <div style="margin-top: 14px; padding: 14px; background: rgba(244,67,54,0.1); border-radius: 8px; border: 1px solid rgba(244,67,54,0.2);">
+                        <div style="font-size: 16px; color: #EF9A9A; margin-bottom: 8px; font-weight: bold;">⛔ 피해야 할 톤</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                             ${feedback.avoidColors.map(c => `
-                                <div style="display: flex; align-items: center; gap: 5px; background: rgba(244,67,54,0.15); padding: 5px 10px 5px 6px; border-radius: 12px;">
-                                    <div style="width: 16px; height: 16px; background: ${getColorHex(c)}; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></div>
-                                    <span style="color: #FFCDD2; font-size: 13px;">${c}</span>
+                                <div style="display: flex; align-items: center; gap: 6px; background: rgba(244,67,54,0.15); padding: 6px 12px 6px 8px; border-radius: 12px;">
+                                    <div style="width: 18px; height: 18px; background: ${getColorHex(c)}; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></div>
+                                    <span style="color: #FFCDD2; font-size: 15px;">${c}</span>
                                 </div>
                             `).join('')}
                         </div>
