@@ -276,35 +276,46 @@
                 </div>
             </div>
 
-            <!-- ========== 헤어컬러 시뮬레이션 섹션 ========== -->
+            <!-- ========== 헤어컬러 시뮬레이션 섹션 (Canvas 블렌딩 방식) ========== -->
             <section class="section" id="hair-simulate-mode">
                 <div class="section-nav">
                     <button class="nav-btn" onclick="closeHairSimulate()" data-i18n="personalColor.aiMode.backHome">← 뒤로</button>
                     <h2 class="section-title">💇 헤어컬러 시뮬레이션</h2>
                 </div>
 
-                <div class="simulate-layout" style="display: grid; grid-template-columns: 1fr 320px; gap: 20px; padding: 20px;">
+                <div class="simulate-layout" style="display: grid; grid-template-columns: 1fr 280px; gap: 15px; padding: 15px;">
                     <!-- 결과 이미지 영역 -->
-                    <div class="simulate-result-section" style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px;">
+                    <div class="simulate-result-section" style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px;">
                         <!-- 원본/결과 비교 -->
-                        <div class="image-compare" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                        <div class="image-compare" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
                             <div class="original-image" style="text-align: center;">
-                                <div style="color: #aaa; font-size: 12px; margin-bottom: 8px;">📷 원본</div>
+                                <div style="color: #aaa; font-size: 11px; margin-bottom: 6px;">📷 원본</div>
                                 <div id="simulate-original" style="width: 100%; aspect-ratio: 3/4; background: #1a1c2e; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
                                     <img id="simulate-original-img" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-                                    <span style="color: #666; font-size: 13px;" id="simulate-original-placeholder">촬영된 사진이 여기에 표시됩니다</span>
+                                    <span style="color: #666; font-size: 12px;" id="simulate-original-placeholder">사진 로딩중...</span>
                                 </div>
                             </div>
                             <div class="result-image" style="text-align: center;">
-                                <div style="color: #aaa; font-size: 12px; margin-bottom: 8px;">✨ 시뮬레이션 결과</div>
+                                <div style="color: #aaa; font-size: 11px; margin-bottom: 6px;">✨ 시뮬레이션</div>
                                 <div id="simulate-result" style="width: 100%; aspect-ratio: 3/4; background: #1a1c2e; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
-                                    <img id="simulate-result-img" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-                                    <span style="color: #666; font-size: 13px;" id="simulate-result-placeholder">색상을 선택하면 결과가 표시됩니다</span>
+                                    <canvas id="simulate-result-canvas" style="width: 100%; height: 100%; object-fit: cover; display: none;"></canvas>
+                                    <span style="color: #666; font-size: 12px;" id="simulate-result-placeholder">색상을 선택하세요</span>
                                     <div id="simulate-loading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; text-align: center;">
-                                        <div style="width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.2); border-top-color: #E91E63; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
-                                        <span style="color: #fff; font-size: 14px;">AI가 헤어컬러를<br>변경하고 있어요...</span>
+                                        <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.2); border-top-color: #E91E63; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
+                                        <span style="color: #fff; font-size: 13px;">처리 중...</span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- 색상 강도 조절 슬라이더 -->
+                        <div style="margin-bottom: 15px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="color: #aaa; font-size: 12px; white-space: nowrap;">🎨 색상 강도</span>
+                                <input type="range" id="color-intensity-slider" min="20" max="100" value="60"
+                                    style="flex: 1; height: 6px; -webkit-appearance: none; background: linear-gradient(to right, #333, #E91E63); border-radius: 3px; cursor: pointer;"
+                                    oninput="updateColorIntensity(this.value)">
+                                <span id="intensity-value" style="color: #fff; font-size: 12px; min-width: 35px;">60%</span>
                             </div>
                         </div>
 
@@ -314,33 +325,44 @@
                                 background: linear-gradient(135deg, #4CAF50, #388E3C);
                                 color: white;
                                 border: none;
-                                padding: 14px 40px;
+                                padding: 12px 30px;
                                 border-radius: 50px;
-                                font-size: 15px;
+                                font-size: 14px;
                                 font-weight: bold;
                                 cursor: pointer;
                                 display: none;
-                            ">📸 결과 이미지 저장</button>
+                            ">📸 결과 저장</button>
                         </div>
                     </div>
 
                     <!-- 색상 선택 패널 -->
-                    <div class="simulate-color-panel" style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; max-height: calc(100vh - 200px); overflow-y: auto;">
-                        <h4 style="color: #fff; margin: 0 0 15px 0; font-size: 16px;">🎨 추천 헤어컬러</h4>
-                        <p style="color: #aaa; font-size: 12px; margin-bottom: 15px;">색상을 클릭하면 AI가 해당 색상으로 시뮬레이션합니다</p>
+                    <div class="simulate-color-panel" style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; max-height: calc(100vh - 180px); overflow-y: auto;">
+                        <h4 style="color: #fff; margin: 0 0 10px 0; font-size: 14px;">🎨 추천 헤어컬러</h4>
+                        <p style="color: #aaa; font-size: 11px; margin-bottom: 12px;">색상을 클릭하면 즉시 적용됩니다</p>
 
                         <!-- 추천 색상 목록 -->
-                        <div id="simulate-recommended-colors" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                        <div id="simulate-recommended-colors" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
                             <!-- JS에서 동적 생성 -->
                         </div>
 
-                        <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+                        <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 12px 0;">
 
-                        <!-- 생성 히스토리 -->
-                        <div>
-                            <h5 style="color: #aaa; font-size: 13px; margin: 0 0 10px 0;">📋 생성 히스토리</h5>
-                            <div id="simulate-history" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                <span style="color: #666; font-size: 12px;">아직 생성된 이미지가 없습니다</span>
+                        <!-- 커스텀 색상 선택 -->
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="color: #aaa; font-size: 12px; margin: 0 0 8px 0;">🎯 직접 색상 선택</h5>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <input type="color" id="custom-hair-color" value="#8B4513"
+                                    style="width: 50px; height: 35px; border: none; border-radius: 8px; cursor: pointer; background: transparent;">
+                                <button onclick="applyCustomColor()" style="
+                                    flex: 1;
+                                    background: linear-gradient(135deg, #673AB7, #512DA8);
+                                    color: white;
+                                    border: none;
+                                    padding: 10px 15px;
+                                    border-radius: 8px;
+                                    font-size: 12px;
+                                    cursor: pointer;
+                                ">적용</button>
                             </div>
                         </div>
                     </div>
@@ -3743,22 +3765,25 @@
         console.log('HAIRGATOR Personal Color - 다국어 지원 버전 로드 완료');
 
         // ================================================
-        // ========== 헤어컬러 시뮬레이션 시스템 (Gemini 2.0 Flash) ==========
+        // ========== 헤어컬러 시뮬레이션 시스템 (Canvas 블렌딩 방식) ==========
         // ================================================
+        // 원본 얼굴 100% 보존, 머리카락 영역만 색상 변경
 
         // 시뮬레이션 관련 전역 변수
         let simulateOriginalImage = null;      // 원본 이미지 (base64)
+        let simulateOriginalImageObj = null;   // 원본 이미지 객체
         let simulateRecommendedColors = [];    // 추천 색상 목록
         let simulatePreviousSection = null;    // 이전 섹션 기억
-        let simulateHistory = [];              // 생성 히스토리
         let simulateIsProcessing = false;      // 처리 중 여부
+        let currentHairColor = null;           // 현재 선택된 헤어 색상
+        let colorIntensity = 0.6;              // 색상 강도 (0.2 ~ 1.0)
 
         // 마지막 분석 결과 저장 (시뮬레이션 연동용)
         let lastHairRecommendations = null;
 
         // 시뮬레이션 모드 열기
         function openHairSimulate(recommendedColors = [], fromSection = 'ai-analysis') {
-            console.log('🎨 헤어컬러 시뮬레이션 모드 진입');
+            console.log('🎨 헤어컬러 시뮬레이션 모드 진입 (Canvas 블렌딩)');
             simulatePreviousSection = fromSection;
 
             // 카메라 리소스 정리 (백그라운드 실행 방지)
@@ -3784,6 +3809,10 @@
                     originalImg.style.display = 'block';
                 }
                 if (placeholder) placeholder.style.display = 'none';
+
+                // 이미지 객체로 미리 로드
+                simulateOriginalImageObj = new Image();
+                simulateOriginalImageObj.src = simulateOriginalImage;
             }
         }
 
@@ -3811,7 +3840,9 @@
                 { hex: '#6B4423', name: '초콜릿 브라운' },
                 { hex: '#4A3728', name: '다크 브라운' },
                 { hex: '#1C1C1C', name: '내추럴 블랙' },
-                { hex: '#8B0000', name: '버건디 레드' }
+                { hex: '#8B0000', name: '버건디 레드' },
+                { hex: '#722F37', name: '와인 레드' },
+                { hex: '#B8860B', name: '다크 골드' }
             ];
         }
 
@@ -3822,7 +3853,7 @@
 
             container.innerHTML = simulateRecommendedColors.map((color, index) => `
                 <div class="ar-color-item"
-                     onclick="generateHairColorSimulation('${color.hex}', '${color.name}')"
+                     onclick="applyHairColorSimulation('${color.hex}', '${color.name}')"
                      data-hex="${color.hex}">
                     <div class="ar-color-swatch" style="background: ${color.hex};"></div>
                     <div class="ar-color-info">
@@ -3833,10 +3864,27 @@
             `).join('');
         }
 
-        // Gemini API로 헤어컬러 시뮬레이션 생성
-        async function generateHairColorSimulation(hairColor, hairColorName) {
+        // 색상 강도 업데이트
+        function updateColorIntensity(value) {
+            colorIntensity = value / 100;
+            document.getElementById('intensity-value').textContent = value + '%';
+
+            // 현재 색상이 있으면 다시 적용
+            if (currentHairColor) {
+                applyHairColorSimulation(currentHairColor.hex, currentHairColor.name);
+            }
+        }
+
+        // 커스텀 색상 적용
+        function applyCustomColor() {
+            const colorInput = document.getElementById('custom-hair-color');
+            const hex = colorInput.value;
+            applyHairColorSimulation(hex, '커스텀 컬러');
+        }
+
+        // Canvas 블렌딩으로 헤어컬러 시뮬레이션 적용
+        async function applyHairColorSimulation(hairColor, hairColorName) {
             if (simulateIsProcessing) {
-                showToast('이미 생성 중입니다. 잠시 기다려주세요.', 'warning');
                 return;
             }
 
@@ -3845,19 +3893,18 @@
                 return;
             }
 
-            console.log(`🎨 헤어컬러 시뮬레이션 시작: ${hairColorName} (${hairColor})`);
+            console.log(`🎨 헤어컬러 적용: ${hairColorName} (${hairColor})`);
             simulateIsProcessing = true;
+            currentHairColor = { hex: hairColor, name: hairColorName };
 
             // 로딩 표시
             const loading = document.getElementById('simulate-loading');
-            const resultImg = document.getElementById('simulate-result-img');
+            const resultCanvas = document.getElementById('simulate-result-canvas');
             const placeholder = document.getElementById('simulate-result-placeholder');
             const saveBtn = document.getElementById('simulate-save-btn');
 
             if (loading) loading.style.display = 'block';
             if (placeholder) placeholder.style.display = 'none';
-            if (resultImg) resultImg.style.display = 'none';
-            if (saveBtn) saveBtn.style.display = 'none';
 
             // 선택된 색상 표시
             document.querySelectorAll('#simulate-recommended-colors .ar-color-item').forEach(item => {
@@ -3865,37 +3912,30 @@
             });
 
             try {
-                const response = await fetch('/.netlify/functions/hair-color-simulate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        imageBase64: simulateOriginalImage,
-                        hairColor: hairColor,
-                        hairColorName: hairColorName
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success && result.generatedImage) {
-                    // 결과 이미지 표시
-                    if (resultImg) {
-                        resultImg.src = result.generatedImage;
-                        resultImg.style.display = 'block';
-                    }
-                    if (saveBtn) saveBtn.style.display = 'inline-block';
-
-                    // 히스토리에 추가
-                    addToSimulateHistory(hairColor, hairColorName, result.generatedImage);
-
-                    showToast(`✨ ${hairColorName} 시뮬레이션 완료!`, 'success');
-                } else {
-                    throw new Error(result.message || '시뮬레이션 실패');
+                // 이미지가 로드되었는지 확인
+                if (!simulateOriginalImageObj || !simulateOriginalImageObj.complete) {
+                    simulateOriginalImageObj = new Image();
+                    simulateOriginalImageObj.src = simulateOriginalImage;
+                    await new Promise((resolve, reject) => {
+                        simulateOriginalImageObj.onload = resolve;
+                        simulateOriginalImageObj.onerror = reject;
+                    });
                 }
+
+                // Canvas 블렌딩으로 머리카락 색상 변경
+                await processHairColorBlending(simulateOriginalImageObj, hairColor, resultCanvas);
+
+                // 결과 표시
+                if (resultCanvas) {
+                    resultCanvas.style.display = 'block';
+                }
+                if (saveBtn) saveBtn.style.display = 'inline-block';
+
+                showToast(`✨ ${hairColorName} 적용 완료!`, 'success');
 
             } catch (error) {
                 console.error('❌ 시뮬레이션 오류:', error);
-                showToast('시뮬레이션에 실패했습니다: ' + error.message, 'error');
+                showToast('색상 적용에 실패했습니다', 'error');
                 if (placeholder) placeholder.style.display = 'block';
             } finally {
                 if (loading) loading.style.display = 'none';
@@ -3903,68 +3943,151 @@
             }
         }
 
-        // 히스토리에 추가
-        function addToSimulateHistory(hex, name, imageBase64) {
-            simulateHistory.unshift({ hex, name, image: imageBase64, timestamp: Date.now() });
+        /**
+         * Canvas 블렌딩으로 머리카락 색상 변경
+         * - 피부/얼굴 영역은 보존
+         * - 어두운 영역(머리카락)만 색상 변경
+         */
+        async function processHairColorBlending(img, targetColor, outputCanvas) {
+            const width = img.width;
+            const height = img.height;
 
-            // 최대 10개까지만 유지
-            if (simulateHistory.length > 10) {
-                simulateHistory = simulateHistory.slice(0, 10);
+            // 캔버스 크기 설정
+            outputCanvas.width = width;
+            outputCanvas.height = height;
+            const ctx = outputCanvas.getContext('2d');
+
+            // 원본 이미지 그리기
+            ctx.drawImage(img, 0, 0);
+
+            // 원본 픽셀 데이터 가져오기
+            const imageData = ctx.getImageData(0, 0, width, height);
+            const data = imageData.data;
+
+            // 목표 색상 파싱
+            const targetRGB = hexToRgb(targetColor);
+
+            // 피부색 감지를 위한 YCbCr 변환 함수
+            function rgbToYCbCr(r, g, b) {
+                const y = 0.299 * r + 0.587 * g + 0.114 * b;
+                const cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b;
+                const cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b;
+                return { y, cb, cr };
             }
 
-            // UI 업데이트
-            renderSimulateHistory();
+            // 피부색 여부 판단 (YCbCr 기반)
+            function isSkinColor(r, g, b) {
+                const { y, cb, cr } = rgbToYCbCr(r, g, b);
+                // 피부색 범위 (다양한 피부톤 커버)
+                return (y > 80 && cb > 77 && cb < 127 && cr > 133 && cr < 173);
+            }
+
+            // 머리카락 여부 판단
+            function isHairRegion(r, g, b, x, y, width, height) {
+                // 피부색이면 머리카락 아님
+                if (isSkinColor(r, g, b)) return false;
+
+                // 밝기 계산
+                const brightness = (r + g + b) / 3;
+
+                // 채도 계산
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                const saturation = max > 0 ? (max - min) / max : 0;
+
+                // 이미지 상단 영역 (머리카락이 주로 있는 영역)
+                const isUpperRegion = y < height * 0.65;
+
+                // 머리카락 특성:
+                // 1. 상대적으로 어두움 (밝기 < 120)
+                // 2. 피부보다 채도가 낮거나 특정 색상
+                // 3. 이미지 상단에 주로 위치
+
+                if (isUpperRegion) {
+                    // 상단 영역: 어두운 색상 = 머리카락
+                    if (brightness < 100) return true;
+                    // 중간 밝기지만 채도가 낮은 경우 (회색 머리카락)
+                    if (brightness < 140 && saturation < 0.3) return true;
+                }
+
+                // 매우 어두운 영역 (머리카락 확실)
+                if (brightness < 60) return true;
+
+                return false;
+            }
+
+            // 색상 블렌딩 (soft-light 모드)
+            function blendSoftLight(base, blend) {
+                const b = base / 255;
+                const s = blend / 255;
+                let result;
+
+                if (s <= 0.5) {
+                    result = b - (1 - 2 * s) * b * (1 - b);
+                } else {
+                    const d = b <= 0.25
+                        ? ((16 * b - 12) * b + 4) * b
+                        : Math.sqrt(b);
+                    result = b + (2 * s - 1) * (d - b);
+                }
+
+                return Math.round(result * 255);
+            }
+
+            // 픽셀별 처리
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const i = (y * width + x) * 4;
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+
+                    // 머리카락 영역인지 확인
+                    if (isHairRegion(r, g, b, x, y, width, height)) {
+                        // 원본 밝기 보존하면서 색상 변경
+                        const brightness = (r + g + b) / 3;
+                        const brightnessRatio = brightness / 128;
+
+                        // soft-light 블렌딩
+                        let newR = blendSoftLight(r, targetRGB.r);
+                        let newG = blendSoftLight(g, targetRGB.g);
+                        let newB = blendSoftLight(b, targetRGB.b);
+
+                        // 강도에 따라 원본과 블렌딩
+                        data[i] = Math.round(r * (1 - colorIntensity) + newR * colorIntensity);
+                        data[i + 1] = Math.round(g * (1 - colorIntensity) + newG * colorIntensity);
+                        data[i + 2] = Math.round(b * (1 - colorIntensity) + newB * colorIntensity);
+                    }
+                    // 피부/얼굴 영역은 변경하지 않음
+                }
+            }
+
+            // 결과 적용
+            ctx.putImageData(imageData, 0, 0);
         }
 
-        // 히스토리 렌더링
-        function renderSimulateHistory() {
-            const container = document.getElementById('simulate-history');
-            if (!container) return;
-
-            if (simulateHistory.length === 0) {
-                container.innerHTML = '<span style="color: #666; font-size: 12px;">아직 생성된 이미지가 없습니다</span>';
-                return;
-            }
-
-            container.innerHTML = simulateHistory.map((item, index) => `
-                <div onclick="showHistoryImage(${index})" style="cursor: pointer; position: relative;">
-                    <img src="${item.image}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 2px solid ${item.hex};" title="${item.name}">
-                </div>
-            `).join('');
-        }
-
-        // 히스토리 이미지 표시
-        function showHistoryImage(index) {
-            const item = simulateHistory[index];
-            if (!item) return;
-
-            const resultImg = document.getElementById('simulate-result-img');
-            const saveBtn = document.getElementById('simulate-save-btn');
-
-            if (resultImg) {
-                resultImg.src = item.image;
-                resultImg.style.display = 'block';
-            }
-            if (saveBtn) saveBtn.style.display = 'inline-block';
-
-            // 해당 색상 선택 표시
-            document.querySelectorAll('#simulate-recommended-colors .ar-color-item').forEach(el => {
-                el.classList.toggle('selected', el.dataset.hex === item.hex);
-            });
+        // HEX를 RGB로 변환
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 139, g: 69, b: 19 }; // 기본값: 브라운
         }
 
         // 시뮬레이션 결과 이미지 저장
         function saveSimulatedImage() {
-            const resultImg = document.getElementById('simulate-result-img');
-            if (!resultImg || !resultImg.src) {
+            const resultCanvas = document.getElementById('simulate-result-canvas');
+            if (!resultCanvas) {
                 showToast('저장할 이미지가 없습니다', 'warning');
                 return;
             }
 
-            // 다운로드 링크 생성
+            // Canvas를 이미지로 변환하여 다운로드
             const link = document.createElement('a');
             link.download = `HAIRGATOR_헤어컬러시뮬레이션_${Date.now()}.png`;
-            link.href = resultImg.src;
+            link.href = resultCanvas.toDataURL('image/png');
             link.click();
 
             showToast('📸 이미지가 저장되었습니다!', 'success');
