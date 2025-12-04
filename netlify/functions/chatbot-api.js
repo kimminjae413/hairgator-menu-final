@@ -4853,6 +4853,8 @@ async function analyzeStyleForGeneration(payload, geminiKey) {
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || geminiKey;
 
   console.log('🎨 스타일 분석 (이미지 생성용) 시작');
+  console.log('🔑 ADMIN_GEMINI_KEY 존재:', !!ADMIN_GEMINI_KEY, '길이:', ADMIN_GEMINI_KEY?.length);
+  console.log('📷 이미지 데이터 길이:', image_base64?.length, 'mime_type:', mime_type);
 
   try {
     const prompt = `Analyze this hairstyle image for AI image generation.
