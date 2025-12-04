@@ -594,6 +594,15 @@ body.male-theme .nav-btn:hover {
     margin-bottom: 2rem;
 }
 
+/* 카메라(왼쪽→오른쪽)와 분석패널(오른쪽→왼쪽) 순서 바꾸기 */
+.analysis-grid > .camera-wrapper {
+    order: 2;
+}
+
+.analysis-grid > .analysis-panel {
+    order: 1;
+}
+
 .camera-container {
     background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
     border-radius: 20px;
