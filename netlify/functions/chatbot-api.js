@@ -4845,6 +4845,9 @@ function selectMaleDiagramsByTechnique(styles, params, maxDiagrams = 15) {
 async function analyzeStyleForGeneration(payload, geminiKey) {
   const { image_base64, mime_type } = payload;
 
+  // 어드민 전용 Gemini API 키 (분리 사용)
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || geminiKey;
+
   console.log('🎨 스타일 분석 (이미지 생성용) 시작');
 
   try {
@@ -4865,7 +4868,7 @@ Return ONLY a JSON object with these fields:
 Be specific and visual. Focus on what makes this hairstyle unique.`;
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${ADMIN_GEMINI_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
