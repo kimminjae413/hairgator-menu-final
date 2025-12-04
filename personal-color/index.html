@@ -739,16 +739,18 @@
         // ========== 3단계: 헤어컬러 매핑 규칙 ==========
         // ✅ chromaMin 완화: 필터링 조건이 아닌 보너스 점수로만 사용
         const HAIR_COLOR_MAPPING_RULES = {
-            'spring-bright': { levelRange: [7, 10], tones: ['warm', 'gold', 'orange', 'copper'], chromaBonus: 30 },
-            'spring-light': { levelRange: [8, 10], tones: ['warm', 'gold', 'beige', 'honey'], chromaBonus: 20 },
-            'autumn-soft': { levelRange: [5, 8], tones: ['warm', 'beige', 'caramel', 'brown'], chromaBonus: 15 },
-            'autumn-muted': { levelRange: [4, 7], tones: ['warm', 'olive', 'khaki', 'brown', 'neutral'], chromaBonus: 10 },
-            'autumn-deep': { levelRange: [3, 6], tones: ['warm', 'red', 'copper', 'chocolate'], chromaBonus: 25 },
-            'summer-bright': { levelRange: [6, 9], tones: ['cool', 'ash', 'pink', 'lavender'], chromaBonus: 25 },
-            'summer-light': { levelRange: [7, 10], tones: ['cool', 'ash', 'beige', 'pink'], chromaBonus: 15 },
-            'summer-muted': { levelRange: [5, 8], tones: ['cool', 'ash', 'gray', 'lavender', 'neutral'], chromaBonus: 10 },
-            'winter-deep': { levelRange: [1, 4], tones: ['cool', 'ash', 'blue', 'violet'], chromaBonus: 30 },
-            'winter-muted': { levelRange: [2, 5], tones: ['cool', 'ash', 'gray', 'charcoal'], chromaBonus: 15 }
+            'spring-bright': { levelRange: [7, 10], tones: ['gold', 'orange', 'copper', 'warm'], chromaBonus: 30 },
+            'spring-light': { levelRange: [8, 12], tones: ['beige', 'honey', 'milk-tea', 'coral'], chromaBonus: 20 },
+            // 🔴 autumn-soft: warm 제거, 부드러운 톤만 허용
+            'autumn-soft': { levelRange: [6, 9], tones: ['beige', 'ash-brown', 'mocha', 'milk-brown', 'neutral', 'brown'], chromaBonus: 15 },
+            // 🔴 autumn-muted: warm 제거
+            'autumn-muted': { levelRange: [5, 8], tones: ['olive', 'khaki', 'ash-brown', 'matt', 'neutral', 'brown'], chromaBonus: 10 },
+            'autumn-deep': { levelRange: [3, 6], tones: ['copper', 'red-brown', 'chocolate', 'dark-brown', 'warm', 'red'], chromaBonus: 25 },
+            'summer-bright': { levelRange: [6, 9], tones: ['cool', 'pink', 'rose', 'berry'], chromaBonus: 25 },
+            'summer-light': { levelRange: [7, 10], tones: ['ash-blonde', 'lavender', 'baby-pink', 'cool-beige', 'ash'], chromaBonus: 15 },
+            'summer-muted': { levelRange: [5, 8], tones: ['ash', 'gray', 'mauve', 'soft-violet', 'cool'], chromaBonus: 10 },
+            'winter-deep': { levelRange: [1, 4], tones: ['blue-black', 'dark-ash', 'plum', 'cool', 'blue'], chromaBonus: 30 },
+            'winter-muted': { levelRange: [3, 6], tones: ['charcoal', 'dark-gray', 'navy', 'cool', 'ash'], chromaBonus: 15 }
         };
 
         // 인접 시즌 정의
@@ -834,12 +836,33 @@
         function guessToneFromName(name) {
             if (!name) return 'neutral';
             const n = name.toLowerCase();
+
+            // 🚫 고채도 키워드 감지 (Soft/Mute 타입에서 제외용)
+            if (n.includes('intense') || n.includes('인텐스') || n.includes('vivid') || n.includes('비비드') || n.includes('clear') || n.includes('클리어')) {
+                if (n.includes('레드') || n.includes('red')) return 'vivid,warm,red';
+                if (n.includes('오렌지') || n.includes('orange') || n.includes('쿠퍼') || n.includes('copper')) return 'vivid,warm,copper';
+                return 'vivid,warm';
+            }
+
+            // 쿨톤 계열
             if (n.includes('애쉬') || n.includes('ash') || n.includes('그레이') || n.includes('gray')) return 'cool,ash';
-            if (n.includes('골드') || n.includes('gold') || n.includes('honey')) return 'warm,gold';
-            if (n.includes('레드') || n.includes('red') || n.includes('copper')) return 'warm,red';
-            if (n.includes('베이지') || n.includes('beige')) return 'warm,beige';
+            if (n.includes('블루') || n.includes('blue') || n.includes('바이올렛') || n.includes('violet')) return 'cool,blue';
+            if (n.includes('라벤더') || n.includes('lavender') || n.includes('핑크') || n.includes('pink')) return 'cool,pink';
+
+            // 매트/올리브/카키 계열
+            if (n.includes('매트') || n.includes('matt') || n.includes('올리브') || n.includes('olive') || n.includes('카키') || n.includes('khaki')) return 'warm,matt,olive';
+
+            // 웜톤 계열
+            if (n.includes('골드') || n.includes('gold') || n.includes('허니') || n.includes('honey')) return 'warm,gold';
+            if (n.includes('쿠퍼') || n.includes('copper') || n.includes('오렌지') || n.includes('orange')) return 'warm,copper';
+            if (n.includes('레드') || n.includes('red') || n.includes('와인') || n.includes('wine')) return 'warm,red';
+
+            // 뉴트럴/소프트 계열
+            if (n.includes('베이지') || n.includes('beige') || n.includes('밀크') || n.includes('milk')) return 'neutral,beige';
+            if (n.includes('모카') || n.includes('mocha') || n.includes('초코') || n.includes('choco')) return 'neutral,mocha,brown';
+            if (n.includes('라이트') || n.includes('light')) return 'neutral,beige,brown';
             if (n.includes('브라운') || n.includes('brown')) return 'neutral,brown';
-            if (n.includes('블루') || n.includes('blue') || n.includes('바이올렛')) return 'cool,blue';
+
             return 'neutral';
         }
 
