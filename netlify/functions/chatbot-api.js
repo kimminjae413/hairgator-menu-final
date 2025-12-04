@@ -415,6 +415,10 @@ exports.handler = async (event, context) => {
       case 'generate_hairstyle_direct':
         return await generateHairstyleDirect(payload);
 
+      // ⭐ 어드민: AI 카드뉴스 생성
+      case 'generate_cardnews':
+        return await generateCardNews(payload);
+
       default:
         return {
           statusCode: 400,
@@ -5347,6 +5351,142 @@ THE HAIRSTYLE MUST BE VISUALLY IDENTICAL TO THE REFERENCE. Only the model's face
 
   } catch (error) {
     console.error('💥 직접 생성 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 어드민: AI 카드뉴스 생성 ====================
+async function generateCardNews(payload) {
+  const { prompt, aspect_ratio, num_images, reference_image, mime_type } = payload;
+
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
+
+  console.log('📰 카드뉴스 생성 시작:', { prompt: prompt?.substring(0, 50), aspect_ratio, num_images });
+
+  if (!ADMIN_GEMINI_KEY) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: 'GEMINI_API_KEY not configured' })
+    };
+  }
+
+  if (!prompt) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ success: false, error: '프롬프트를 입력해주세요' })
+    };
+  }
+
+  try {
+    // 비율에 따른 사이즈 가이드
+    const ratioGuide = {
+      '1:1': 'square format (1:1 ratio, 1080x1080)',
+      '4:5': 'vertical format (4:5 ratio, 1080x1350)',
+      '9:16': 'story/reels format (9:16 ratio, 1080x1920)'
+    };
+
+    const sizeText = ratioGuide[aspect_ratio] || ratioGuide['1:1'];
+
+    // 카드뉴스 프롬프트 구성
+    const cardNewsPrompt = `Create a professional Instagram card news image for a Korean hair salon.
+
+USER REQUEST: ${prompt}
+
+IMAGE REQUIREMENTS:
+- Format: ${sizeText}
+- Style: Modern, clean, professional Korean beauty/hair salon aesthetic
+- Purpose: Instagram feed post for hair salon marketing
+- Language: Use Korean text if any text is included
+- Quality: High resolution, visually appealing
+- Colors: Trendy, eye-catching but professional
+- NO watermarks or logos
+
+Make it look like a professionally designed Instagram post that would attract customers to a hair salon.`;
+
+    const numToGenerate = Math.min(num_images || 2, 4);
+    const generatedImages = [];
+
+    for (let i = 0; i < numToGenerate; i++) {
+      console.log(`🖼️ 카드뉴스 생성 ${i + 1}/${numToGenerate}...`);
+
+      // parts 구성
+      const parts = [];
+
+      // 참고 이미지가 있으면 추가
+      if (reference_image) {
+        parts.push({
+          inline_data: {
+            mime_type: mime_type || 'image/jpeg',
+            data: reference_image
+          }
+        });
+        parts.push({ text: `Use this reference image as inspiration. ${cardNewsPrompt}` });
+      } else {
+        parts.push({ text: cardNewsPrompt });
+      }
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${ADMIN_GEMINI_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: parts
+            }],
+            generationConfig: {
+              responseModalities: ['TEXT', 'IMAGE']
+            }
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Gemini API Error: ${response.status}`, errorText);
+        continue;
+      }
+
+      const result = await response.json();
+      const responseParts = result.candidates?.[0]?.content?.parts || [];
+
+      for (const part of responseParts) {
+        if (part.inlineData) {
+          generatedImages.push({
+            url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+            mimeType: part.inlineData.mimeType
+          });
+        }
+      }
+    }
+
+    console.log('✅ 카드뉴스 생성 완료:', generatedImages.length, '개');
+
+    if (generatedImages.length === 0) {
+      throw new Error('카드뉴스 생성에 실패했습니다. 다시 시도해주세요.');
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          images: generatedImages,
+          prompt: prompt,
+          count: generatedImages.length
+        }
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 카드뉴스 생성 오류:', error);
     return {
       statusCode: 500,
       headers,

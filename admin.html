@@ -1726,7 +1726,7 @@
             <button class="tab active" onclick="switchTab('styles')">헤어스타일 관리</button>
             <button class="tab" onclick="switchTab('stats')">통계</button>
             <button class="tab" onclick="switchTab('settings')">설정</button>
-            <button class="tab" onclick="switchTab('hairGen')">헤어스타일 생성</button>
+            <button class="tab" onclick="switchTab('cardNews')">카드뉴스 생성</button>
         </div>
         
         <!-- 스타일 관리 탭 -->
@@ -1889,175 +1889,65 @@
         </div>
     </div>
 
-    <!-- 헤어스타일 생성 탭 -->
-    <div id="hairGenTab" class="tab-content" style="display: none;">
-        <!-- 인스타그램 계정 관리 섹션 -->
+    <!-- 카드뉴스 생성 탭 -->
+    <div id="cardNewsTab" class="tab-content" style="display: none;">
         <div class="section">
-            <h2 class="section-title">📸 참고 인스타그램 계정 관리</h2>
+            <h2 class="section-title">📰 AI 카드뉴스 생성기</h2>
             <p style="color: #888; margin-bottom: 20px;">
-                최대 20개의 인스타그램 계정을 등록하여 헤어스타일 트렌드를 참고할 수 있습니다.<br>
-                등록된 계정의 인기 게시물을 분석하여 AI 헤어스타일 이미지를 생성합니다.
+                프롬프트를 입력하면 AI가 인스타그램용 카드뉴스 이미지를 생성합니다.<br>
+                참고 이미지를 업로드하면 해당 이미지를 기반으로 생성합니다.
             </p>
 
-            <!-- 계정 추가 폼 -->
-            <div class="ig-add-form">
-                <div class="ig-input-group">
-                    <label>인스타그램 계정명 또는 URL</label>
-                    <div class="ig-input-row">
-                        <span class="ig-at-symbol">@</span>
-                        <input type="text" id="igAccountInput" placeholder="username 또는 instagram.com/username" maxlength="100">
-                        <button class="btn" onclick="addInstagramAccount()">추가</button>
-                    </div>
-                </div>
-                <div class="ig-input-group">
-                    <label>메모 (선택)</label>
-                    <input type="text" id="igAccountMemo" placeholder="예: 남성 숏컷 전문, 유명 살롱 등" maxlength="50">
+            <!-- 프롬프트 입력 -->
+            <div class="cardnews-input-section">
+                <label style="color: #fff; font-weight: 600; margin-bottom: 10px; display: block;">프롬프트 입력</label>
+                <textarea id="cardNewsPrompt" placeholder="예: 봄 시즌 할인 이벤트, 벚꽃 배경에 여성 헤어스타일 강조, 세련된 느낌으로&#10;&#10;예: 남성 투블럭 컷 전후 비교, 깔끔하고 모던한 느낌&#10;&#10;예: 미용실 오픈 기념 이벤트, 화려한 색상과 파티 분위기"
+                    style="width: 100%; height: 120px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; padding: 12px; font-size: 14px; resize: vertical;"></textarea>
+            </div>
+
+            <!-- 참고 이미지 업로드 (선택) -->
+            <div class="cardnews-upload-section" style="margin-top: 20px;">
+                <label style="color: #fff; font-weight: 600; margin-bottom: 10px; display: block;">
+                    참고 이미지 (선택)
+                    <span style="color: #888; font-weight: 400; font-size: 12px; margin-left: 8px;">업로드하면 이 이미지를 참고하여 생성</span>
+                </label>
+                <input type="file" id="cardNewsImageInput" accept="image/*" class="gen-input-file" onchange="previewCardNewsImage(event)">
+                <div id="cardNewsImagePreview" style="display: none; margin-top: 10px;">
+                    <img id="cardNewsPreviewImg" src="" alt="미리보기" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #444;">
+                    <button onclick="clearCardNewsImage()" style="display: block; margin-top: 8px; background: #dc3545; border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">이미지 제거</button>
                 </div>
             </div>
 
-            <!-- 등록된 계정 수 -->
-            <div class="ig-account-count">
-                등록된 계정: <span id="igAccountCount">0</span> / 20
-            </div>
-
-            <!-- 계정 목록 -->
-            <div class="ig-accounts-grid" id="igAccountsGrid">
-                <!-- 동적 생성 -->
-                <div class="ig-empty-message" id="igEmptyMessage">
-                    등록된 계정이 없습니다. 위에서 계정을 추가해주세요.
+            <!-- 옵션 선택 -->
+            <div class="cardnews-options" style="margin-top: 20px; display: flex; gap: 20px; flex-wrap: wrap;">
+                <div class="gen-option-item">
+                    <label style="color: #ccc; font-size: 13px;">이미지 비율</label>
+                    <select id="cardNewsRatio" style="background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 6px; min-width: 150px;">
+                        <option value="1:1" selected>정사각형 (1:1)</option>
+                        <option value="4:5">세로형 (4:5) - 피드 추천</option>
+                        <option value="9:16">스토리/릴스 (9:16)</option>
+                    </select>
                 </div>
-            </div>
-        </div>
-
-        <!-- 스타일 분석 섹션 -->
-        <div class="section" style="margin-top: 30px;">
-            <h2 class="section-title">🎨 스타일 분석 & 생성</h2>
-            <p style="color: #888; margin-bottom: 20px;">
-                이미지를 업로드하여 헤어스타일을 분석하고, AI로 유사한 스타일 이미지를 생성합니다.
-            </p>
-
-            <div class="style-gen-options">
-                <div class="gen-option-card">
-                    <div class="gen-option-icon">🔗</div>
-                    <h4>이미지 URL로 분석</h4>
-                    <p>직접 이미지 URL 입력 (.jpg, .png 등)</p>
-                    <input type="url" id="igPostUrlInput" placeholder="https://example.com/image.jpg" class="gen-input">
-                    <div style="color: #f59e0b; font-size: 11px; margin-bottom: 10px;">⚠️ 인스타그램 URL은 지원되지 않습니다. 이미지를 저장 후 업로드해주세요.</div>
-                    <div id="urlImagePreview" class="style-image-preview" style="display: none;">
-                        <img id="urlPreviewImg" src="" alt="미리보기">
-                    </div>
-                    <button class="btn" id="analyzeUrlBtn" onclick="analyzeFromUrl()">URL 분석하기</button>
-                </div>
-
-                <div class="gen-option-card" style="border: 2px solid #22c55e;">
-                    <div class="gen-option-icon">📷</div>
-                    <h4>이미지 업로드로 분석 ✅ 권장</h4>
-                    <p>저장한 헤어스타일 이미지를 직접 업로드</p>
-                    <input type="file" id="styleImageInput" accept="image/*" class="gen-input-file" onchange="previewStyleImage(event)">
-                    <div id="styleImagePreview" class="style-image-preview" style="display: none;">
-                        <img id="previewImg" src="" alt="미리보기">
-                    </div>
-                    <button class="btn" id="analyzeImageBtn" onclick="analyzeStyleImage()">스타일 분석하기</button>
+                <div class="gen-option-item">
+                    <label style="color: #ccc; font-size: 13px;">생성 개수</label>
+                    <select id="cardNewsCount" style="background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 6px; min-width: 100px;">
+                        <option value="1">1장</option>
+                        <option value="2" selected>2장</option>
+                        <option value="4">4장</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- 분석 결과 영역 -->
-            <div id="analysisResultSection" class="analysis-result-section" style="display: none;">
-                <h3 class="section-subtitle">📊 분석 결과</h3>
-                <div class="analysis-result-grid">
-                    <div class="analysis-item">
-                        <span class="analysis-label">성별</span>
-                        <span class="analysis-value" id="resultGender">-</span>
-                    </div>
-                    <div class="analysis-item">
-                        <span class="analysis-label">기장</span>
-                        <span class="analysis-value" id="resultLength">-</span>
-                    </div>
-                    <div class="analysis-item">
-                        <span class="analysis-label">형태</span>
-                        <span class="analysis-value" id="resultForm">-</span>
-                    </div>
-                    <div class="analysis-item">
-                        <span class="analysis-label">컬러</span>
-                        <span class="analysis-value" id="resultColor">-</span>
-                    </div>
-                    <div class="analysis-item">
-                        <span class="analysis-label">스타일</span>
-                        <span class="analysis-value" id="resultStyle">-</span>
-                    </div>
-                    <div class="analysis-item">
-                        <span class="analysis-label">텍스처</span>
-                        <span class="analysis-value" id="resultTexture">-</span>
-                    </div>
-                </div>
-                <div class="analysis-description">
-                    <span class="analysis-label">상세 설명</span>
-                    <p id="resultDescription">-</p>
-                </div>
+            <!-- 생성 버튼 -->
+            <button id="generateCardNewsBtn" onclick="generateCardNews()" style="margin-top: 24px; width: 100%; background: linear-gradient(135deg, #e91e63, #9c27b0); border: none; color: white; padding: 16px 24px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                🎨 카드뉴스 생성하기
+            </button>
 
-                <!-- 직접 생성 (분석 없이) -->
-                <div class="generate-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #333;">
-                    <h3 class="section-subtitle">⚡ 직접 생성 (분석 단계 생략)</h3>
-                    <p style="color: #888; margin-bottom: 15px;">이미지를 직접 참조하여 동일한 헤어스타일을 생성합니다. 분석 없이 바로 생성!</p>
-
-                    <div class="gen-options-row">
-                        <div class="gen-option-item">
-                            <label>생성 개수</label>
-                            <select id="directGenCount">
-                                <option value="1">1장</option>
-                                <option value="2">2장</option>
-                                <option value="4" selected>4장</option>
-                            </select>
-                        </div>
-                        <div class="gen-option-item">
-                            <label>성별</label>
-                            <select id="directGenGender">
-                                <option value="female" selected>여성</option>
-                                <option value="male">남성</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-success btn-generate" id="directGenerateBtn" onclick="generateDirectly()" style="background: #28a745;">
-                        ⚡ 바로 생성하기
-                    </button>
-                </div>
-
-                <!-- 기존 분석 후 생성 -->
-                <div class="generate-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #333;">
-                    <h3 class="section-subtitle">✨ 분석 후 생성</h3>
-                    <p style="color: #888; margin-bottom: 15px;">분석된 스타일을 바탕으로 새로운 헤어스타일 이미지를 생성합니다.</p>
-
-                    <div class="gen-options-row">
-                        <div class="gen-option-item">
-                            <label>생성 개수</label>
-                            <select id="genImageCount">
-                                <option value="1">1장</option>
-                                <option value="2">2장</option>
-                                <option value="4" selected>4장</option>
-                            </select>
-                        </div>
-                        <div class="gen-option-item">
-                            <label>이미지 비율</label>
-                            <select id="genImageRatio">
-                                <option value="square">정사각형 (1:1)</option>
-                                <option value="portrait_4_3" selected>세로형 (3:4)</option>
-                                <option value="landscape_4_3">가로형 (4:3)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-generate" id="generateBtn" onclick="generateWithGemini()">
-                        🎨 분석 기반 생성하기
-                    </button>
-                </div>
-
-                <!-- 생성된 이미지 결과 -->
-                <div id="generatedImagesSection" class="generated-images-section" style="display: none;">
-                    <h3 class="section-subtitle">🖼️ 생성된 이미지</h3>
-                    <div id="generatedImagesGrid" class="generated-images-grid">
-                        <!-- 동적 생성 -->
-                    </div>
+            <!-- 생성된 이미지 결과 -->
+            <div id="cardNewsResultSection" style="display: none; margin-top: 30px;">
+                <h3 style="color: #fff; font-size: 16px; margin-bottom: 15px;">🖼️ 생성된 카드뉴스</h3>
+                <div id="cardNewsResultGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
+                    <!-- 동적 생성 -->
                 </div>
             </div>
         </div>
@@ -4038,13 +3928,128 @@
                 updateStats();
             }
 
-            // 헤어스타일 생성 탭으로 전환 시 계정 로드
-            if (tabName === 'hairGen') {
-                loadInstagramAccounts();
-            }
         };
 
-        // ==================== 스타일 분석 & 생성 ====================
+        // ==================== 카드뉴스 생성 ====================
+        let cardNewsImageBase64 = null;
+        let cardNewsImageMimeType = 'image/jpeg';
+
+        // 카드뉴스 이미지 미리보기
+        function previewCardNewsImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            cardNewsImageMimeType = file.type || 'image/jpeg';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                cardNewsImageBase64 = base64.split(',')[1]; // data:image/...;base64, 부분 제거
+
+                document.getElementById('cardNewsPreviewImg').src = base64;
+                document.getElementById('cardNewsImagePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 카드뉴스 이미지 제거
+        function clearCardNewsImage() {
+            cardNewsImageBase64 = null;
+            document.getElementById('cardNewsImageInput').value = '';
+            document.getElementById('cardNewsImagePreview').style.display = 'none';
+            document.getElementById('cardNewsPreviewImg').src = '';
+        }
+
+        // 카드뉴스 생성
+        async function generateCardNews() {
+            const prompt = document.getElementById('cardNewsPrompt').value.trim();
+
+            if (!prompt) {
+                showToast('프롬프트를 입력해주세요');
+                return;
+            }
+
+            const btn = document.getElementById('generateCardNewsBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span>생성 중... (약 10-30초 소요)';
+
+            const ratio = document.getElementById('cardNewsRatio').value;
+            const count = parseInt(document.getElementById('cardNewsCount').value);
+
+            try {
+                const payload = {
+                    prompt: prompt,
+                    aspect_ratio: ratio,
+                    num_images: count
+                };
+
+                // 참고 이미지가 있으면 추가
+                if (cardNewsImageBase64) {
+                    payload.reference_image = cardNewsImageBase64;
+                    payload.mime_type = cardNewsImageMimeType;
+                }
+
+                const response = await fetch('/.netlify/functions/chatbot-api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'generate_cardnews',
+                        payload: payload
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.images) {
+                    displayCardNewsResults(result.data.images);
+                    showToast(`${result.data.images.length}개 카드뉴스 생성 완료!`);
+                } else {
+                    throw new Error(result.error || '카드뉴스 생성 실패');
+                }
+            } catch (error) {
+                console.error('카드뉴스 생성 오류:', error);
+                showToast('생성 실패: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🎨 카드뉴스 생성하기';
+            }
+        }
+
+        // 카드뉴스 결과 표시
+        function displayCardNewsResults(images) {
+            const grid = document.getElementById('cardNewsResultGrid');
+            grid.innerHTML = images.map((img, idx) => `
+                <div style="background: #2a2a2a; border-radius: 12px; overflow: hidden; border: 1px solid #444;">
+                    <img src="${img.url}" alt="카드뉴스 ${idx + 1}" style="width: 100%; display: block;">
+                    <div style="padding: 12px; display: flex; gap: 8px;">
+                        <button onclick="downloadCardNews('${img.url}', 'cardnews_${Date.now()}_${idx + 1}.png')" style="flex: 1; background: #4CAF50; border: none; color: white; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                            다운로드
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('cardNewsResultSection').style.display = 'block';
+        }
+
+        // 카드뉴스 다운로드
+        async function downloadCardNews(url, filename) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                link.click();
+                URL.revokeObjectURL(link.href);
+                showToast('다운로드 완료!');
+            } catch (error) {
+                console.error('다운로드 오류:', error);
+                showToast('다운로드 실패');
+            }
+        }
+
+        // ==================== 스타일 분석 & 생성 (레거시) ====================
         let currentStyleAnalysis = null;
         let currentImageBase64 = null;
         let currentImageMimeType = 'image/jpeg';
