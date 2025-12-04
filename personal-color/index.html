@@ -129,13 +129,15 @@
                         </div>
 
                         <!-- ⭐ 분석 결과 표시 (촬영 후) -->
-                        <div class="realtime-results" style="margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px; display: none;" id="realtime-results-container">
-                            <h4 style="margin: 0 0 15px 0; color: #fff;">🎨 퍼스널컬러 분석 결과</h4>
-                            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 6px; margin-bottom: 10px;">
-                                <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;" id="realtime-season">분석 중...</div>
-                                <div style="font-size: 14px; line-height: 1.6; color: #ccc;" id="realtime-skin-info"></div>
+                        <div class="realtime-results-wrapper" id="realtime-results-wrapper" style="margin-top: 20px; display: none;">
+                            <div class="realtime-results" style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px;" id="realtime-results-container">
+                                <h4 style="margin: 0 0 15px 0; color: #fff;">🎨 퍼스널컬러 분석 결과</h4>
+                                <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 6px; margin-bottom: 10px;">
+                                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px;" id="realtime-season">분석 중...</div>
+                                    <div style="font-size: 14px; line-height: 1.6; color: #ccc;" id="realtime-skin-info"></div>
+                                </div>
+                                <div style="font-size: 14px; line-height: 1.8; color: #eee;" id="realtime-recommendation"></div>
                             </div>
-                            <div style="font-size: 14px; line-height: 1.8; color: #eee;" id="realtime-recommendation"></div>
                         </div>
                     </div>
                     <!-- 커스텀 스크롤바 (태블릿용) -->
