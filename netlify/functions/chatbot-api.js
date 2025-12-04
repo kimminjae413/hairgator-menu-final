@@ -5439,25 +5439,26 @@ IMAGE REQUIREMENTS:
       // 해당 장의 참고 이미지가 있으면 추가
       const pageImageData = page_images?.[pageNum];
       if (pageImageData && pageImageData.data) {
-        // 이미지 맥락 분석 후 카드뉴스 생성 프롬프트
-        const imageContextPrompt = `IMPORTANT - CONTEXT-AWARE IMAGE GENERATION:
+        // 업로드 이미지를 그대로 유지하면서 카드뉴스 프레임 추가
+        const imageContextPrompt = `⚠️ CRITICAL RULE - DO NOT MODIFY THE UPLOADED IMAGE:
 
-1. First, ANALYZE the uploaded image:
-   - What is this image showing? (app screenshot, salon scene, hairstyle photo, etc.)
-   - What is the PURPOSE or USE CASE of what's shown?
-   - What story or message does this image convey?
+You MUST keep the uploaded image EXACTLY as it is - no changes, no modifications, no alterations.
 
-2. Then, COMBINE your analysis with the text content:
-   - Text content for this page: "${pageContent || '(자유 디자인)'}"
-   - Understand the CONNECTION between the image and the text
-   - Example: If image shows a hair menu app + text says "고객 상담에 도움" → Create a scene of stylist consulting with client using tablet
+YOUR TASK:
+1. Place the uploaded image as the MAIN VISUAL in the center
+2. Add card news FRAME/BORDER around it with:
+   - White background frame
+   - Pink (#E91E63) accent decorations
+   - Page indicator: ${pageNum}/${numToGenerate}
+3. Add the user's text AROUND the image (not on top of it):
+   - Title: "${title || ''}"
+   - Content: "${pageContent || ''}"
+   - Copy text EXACTLY as provided
 
-3. Finally, CREATE a card news image that:
-   - Visually represents the COMBINED meaning of image + text
-   - Shows a realistic, relatable scene for hair designers
-   - NOT just copying the uploaded image, but creating NEW visual that captures the essence
-
-${cardNewsPrompt}`;
+IMPORTANT:
+- The uploaded image must remain 100% UNCHANGED
+- Only add decorative frame and text around it
+- Format: ${sizeText}`;
 
         parts.push({
           inline_data: {
