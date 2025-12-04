@@ -5490,10 +5490,12 @@ ${cardNewsPrompt}`;
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Gemini API Error: ${response.status}`, errorText);
-        continue;
+        throw new Error(`Gemini API 오류 (${response.status}): ${errorText.substring(0, 300)}`);
       }
 
       const result = await response.json();
+      console.log('Gemini 응답 구조:', JSON.stringify(result).substring(0, 500));
+
       const responseParts = result.candidates?.[0]?.content?.parts || [];
 
       for (const part of responseParts) {
@@ -5503,6 +5505,12 @@ ${cardNewsPrompt}`;
             mimeType: part.inlineData.mimeType
           });
         }
+      }
+
+      // 이미지가 없으면 로그
+      if (responseParts.length > 0 && !responseParts.some(p => p.inlineData)) {
+        const textOnly = responseParts.map(p => p.text || '').join('');
+        console.log('⚠️ 이미지 없이 텍스트만 반환:', textOnly.substring(0, 200));
       }
     }
 
