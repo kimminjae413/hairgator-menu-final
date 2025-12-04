@@ -5059,6 +5059,19 @@ async function generateHairstyleImage(payload) {
     // 분석 결과로 프롬프트 생성
     const genderWord = analysis.gender === 'male' ? 'man' : 'woman';
 
+    // 성별에 따른 톤앤매너 설정
+    const styleGuide = analysis.gender === 'male'
+      ? {
+          clothing: 'plain white t-shirt or white crew neck shirt',
+          background: 'clean white or light gray studio background',
+          pose: 'front-facing or slightly angled, neutral expression'
+        }
+      : {
+          clothing: 'white or beige/cream colored top, simple and elegant',
+          background: 'soft white or warm cream/beige studio background',
+          pose: 'front-facing or slightly angled, natural soft expression'
+        };
+
     const prompt = `Look at this reference hairstyle image carefully. Generate a new professional salon photograph with a SIMILAR hairstyle on a different Korean ${genderWord} model.
 
 The hairstyle should match:
@@ -5069,13 +5082,18 @@ The hairstyle should match:
 - Bangs: ${analysis.bangs || 'none'}
 - Overall vibe: ${analysis.description || ''}
 
-IMPORTANT: Keep the SAME hairstyle shape, layers, and styling as the reference image.
-Generate a professional salon photo with:
-- Different face/model but SAME hair style
-- Clean studio background
-- Soft professional lighting
-- High-end fashion magazine quality
-- Sharp focus on hair details`;
+STRICT STYLE REQUIREMENTS:
+- Clothing: ${styleGuide.clothing}
+- Background: ${styleGuide.background}
+- Pose: ${styleGuide.pose}
+- Lighting: Soft, even studio lighting with no harsh shadows
+- Composition: Head and shoulders portrait, centered
+
+IMPORTANT:
+- Keep the SAME hairstyle shape, layers, and styling as the reference image
+- The model should wear simple white/cream clothing ONLY
+- Background must be plain and light-colored
+- Professional Korean hair salon portfolio style`;
 
     console.log('📝 생성 프롬프트 (참고 이미지 포함)');
 
