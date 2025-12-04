@@ -1600,6 +1600,120 @@ body.male-theme .nav-btn:hover {
     }
 }
 
+/* ========== Hair AR 체험 섹션 스타일 ========== */
+#hair-ar-mode.active {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1c2e 0%, #2d1f3d 50%, #1a1c2e 100%);
+    z-index: 100;
+    overflow-y: auto;
+    padding-top: calc(env(safe-area-inset-top, 0px));
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(20px + env(safe-area-inset-left, 0px));
+    padding-right: calc(20px + env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+}
+
+#hair-ar-mode.active .section-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #1a1c2e;
+    margin: 0 -20px 0 -20px;
+    padding: calc(50px + env(safe-area-inset-top, 0px)) 20px 25px 20px;
+    border-radius: 0;
+    border-bottom: 2px solid #2d1f3d;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+#hair-ar-mode.active .section-title {
+    color: #fff;
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: #fff;
+    background-clip: unset;
+}
+
+/* AR 색상 아이템 */
+.ar-color-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.ar-color-item:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateX(5px);
+}
+
+.ar-color-item.selected {
+    border-color: #E91E63;
+    background: rgba(233, 30, 99, 0.15);
+}
+
+.ar-color-swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    flex-shrink: 0;
+}
+
+.ar-color-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.ar-color-name {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ar-color-hex {
+    color: #aaa;
+    font-size: 11px;
+}
+
+/* AR 스피너 애니메이션 */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* AR 모바일 반응형 */
+@media (max-width: 768px) {
+    #hair-ar-mode .ar-layout {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+
+    #hair-ar-mode .ar-color-panel {
+        max-height: 300px !important;
+    }
+
+    #hair-ar-mode .ar-video-container {
+        aspect-ratio: 3/4 !important;
+    }
+}
+
 /* ========== 분석 결과 패널 텍스트 색상 ========== */
 .analysis-results h4 {
     color: #333 !important;
