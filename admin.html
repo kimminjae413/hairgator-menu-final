@@ -3975,52 +3975,56 @@
         // 현재 카드뉴스 페이지 수
         let cardNewsPageNum = 1;
 
-        // 페이지 입력창 렌더링
-        function renderCardNewsPages() {
-            const container = document.getElementById('cardNewsPagesContainer');
-            const countSpan = document.getElementById('cardNewsPageCount');
-            const removeBtn = document.getElementById('removePageBtn');
-
-            container.innerHTML = '';
-
-            for (let i = 1; i <= cardNewsPageNum; i++) {
-                const pageDiv = document.createElement('div');
-                pageDiv.style.cssText = 'margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;';
-                pageDiv.innerHTML = `
-                    <span style="color: #E91E63; font-weight: 600; min-width: 50px; padding-top: 10px;">${i}장</span>
-                    <textarea id="cardNewsPage${i}" placeholder="예: 올 봄 트렌드는 자연스러운 웨이브! 볼륨감 있는 레이어드 컷으로 세련된 느낌을..."
-                        style="flex: 1; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; padding: 10px; font-size: 13px; min-height: 60px; resize: vertical;"></textarea>
-                `;
-                container.appendChild(pageDiv);
-            }
-
-            // 카운트 표시
-            countSpan.textContent = `${cardNewsPageNum}장`;
-
-            // 삭제 버튼 표시/숨김 (1장 이상일 때만)
-            removeBtn.style.display = cardNewsPageNum > 1 ? 'block' : 'none';
-        }
-
-        // 장 추가
+        // 장 추가 (기존 내용 유지)
         function addCardNewsPage() {
             if (cardNewsPageNum >= 10) {
                 showToast('최대 10장까지 추가할 수 있습니다');
                 return;
             }
             cardNewsPageNum++;
-            renderCardNewsPages();
+
+            const container = document.getElementById('cardNewsPagesContainer');
+            const pageDiv = document.createElement('div');
+            pageDiv.id = `cardNewsPageDiv${cardNewsPageNum}`;
+            pageDiv.style.cssText = 'margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;';
+            pageDiv.innerHTML = `
+                <span style="color: #E91E63; font-weight: 600; min-width: 50px; padding-top: 10px;">${cardNewsPageNum}장</span>
+                <textarea id="cardNewsPage${cardNewsPageNum}" placeholder="예: 올 봄 트렌드는 자연스러운 웨이브! 볼륨감 있는 레이어드 컷으로 세련된 느낌을..."
+                    style="flex: 1; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; padding: 10px; font-size: 13px; min-height: 60px; resize: vertical;"></textarea>
+            `;
+            container.appendChild(pageDiv);
+
+            updatePageCount();
         }
 
-        // 장 삭제
+        // 장 삭제 (마지막 장만)
         function removeCardNewsPage() {
             if (cardNewsPageNum <= 1) return;
+
+            const pageDiv = document.getElementById(`cardNewsPageDiv${cardNewsPageNum}`);
+            if (pageDiv) pageDiv.remove();
+
             cardNewsPageNum--;
-            renderCardNewsPages();
+            updatePageCount();
+        }
+
+        // 페이지 카운트 업데이트
+        function updatePageCount() {
+            document.getElementById('cardNewsPageCount').textContent = `${cardNewsPageNum}장`;
+            document.getElementById('removePageBtn').style.display = cardNewsPageNum > 1 ? 'block' : 'none';
         }
 
         // 페이지 로드 시 초기 입력창 생성
         document.addEventListener('DOMContentLoaded', function() {
-            renderCardNewsPages();
+            const container = document.getElementById('cardNewsPagesContainer');
+            container.innerHTML = `
+                <div id="cardNewsPageDiv1" style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                    <span style="color: #E91E63; font-weight: 600; min-width: 50px; padding-top: 10px;">1장</span>
+                    <textarea id="cardNewsPage1" placeholder="예: 올 봄 트렌드는 자연스러운 웨이브! 볼륨감 있는 레이어드 컷으로 세련된 느낌을..."
+                        style="flex: 1; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; padding: 10px; font-size: 13px; min-height: 60px; resize: vertical;"></textarea>
+                </div>
+            `;
+            updatePageCount();
         });
 
         // 카드뉴스 이미지 미리보기
