@@ -6,28 +6,42 @@
 // ⭐ Pull-to-Refresh 비활성화 (웹뷰용) - 스크롤 가능 영역 제외
 (function() {
     let lastY = 0;
+    let scrollableParent = null;
+
     document.addEventListener('touchstart', function(e) {
         lastY = e.touches[0].clientY;
-    }, { passive: true });
 
-    document.addEventListener('touchmove', function(e) {
-        const currentY = e.touches[0].clientY;
-
-        // 스크롤 가능한 컨테이너 내부인지 확인
+        // 터치 시작 시 스크롤 가능한 부모 요소 찾기
+        scrollableParent = null;
         let el = e.target;
         while (el && el !== document.body) {
             const style = window.getComputedStyle(el);
             const overflowY = style.overflowY;
             if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
-                // 스크롤 가능한 영역 내부면 기본 동작 허용
-                return;
+                scrollableParent = el;
+                break;
             }
             el = el.parentElement;
         }
+    }, { passive: true });
 
-        // 페이지 최상단에서 아래로 당길 때만 막기
+    document.addEventListener('touchmove', function(e) {
+        const currentY = e.touches[0].clientY;
+        const isPullingDown = currentY > lastY;
+
+        // 스크롤 가능한 컨테이너 내부인 경우
+        if (scrollableParent) {
+            // 스크롤이 최상단이고 아래로 당기는 경우에만 막기
+            if (scrollableParent.scrollTop <= 0 && isPullingDown) {
+                e.preventDefault();
+            }
+            // 그 외의 경우 (위로 스크롤하거나, 아래에 스크롤 여유가 있을 때)는 허용
+            return;
+        }
+
+        // 스크롤 가능한 컨테이너 밖에서 페이지 최상단에서 아래로 당길 때만 막기
         const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        if (scrollTop <= 0 && currentY > lastY) {
+        if (scrollTop <= 0 && isPullingDown) {
             e.preventDefault();
         }
     }, { passive: false });
