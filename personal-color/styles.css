@@ -365,6 +365,38 @@ body.male-theme .nav-btn:hover {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
+/* GUIDE 버튼 스타일 - 텍스트 표시 */
+.nav-btn.guide-btn {
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.nav-btn.guide-btn::after {
+    content: none;
+    display: none;
+}
+
+.nav-btn.guide-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+body.male-theme .nav-btn.guide-btn {
+    background: rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: #333;
+}
+
+body.male-theme .nav-btn.guide-btn:hover {
+    background: rgba(0, 0, 0, 0.12);
+}
+
 /* ========== 모드 선택 ========== */
 .mode-title {
     font-size: 2.2rem;
