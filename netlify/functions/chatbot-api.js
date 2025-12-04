@@ -400,6 +400,14 @@ exports.handler = async (event, context) => {
       case 'generate_custom_recipe':
         return await generateCustomRecipeFromParams(payload, GEMINI_KEY);
 
+      // ⭐ 어드민: 스타일 분석 (이미지 생성용)
+      case 'analyze_style_for_generation':
+        return await analyzeStyleForGeneration(payload, GEMINI_KEY);
+
+      // ⭐ 어드민: z-image로 헤어스타일 이미지 생성
+      case 'generate_hairstyle_image':
+        return await generateHairstyleImage(payload);
+
       default:
         return {
           statusCode: 400,
@@ -4831,4 +4839,157 @@ function selectMaleDiagramsByTechnique(styles, params, maxDiagrams = 15) {
   selectedDiagrams.sort((a, b) => a.step_number - b.step_number);
 
   return selectedDiagrams.slice(0, maxDiagrams);
+}
+
+// ==================== 어드민: 스타일 분석 (이미지 생성용) ====================
+async function analyzeStyleForGeneration(payload, geminiKey) {
+  const { image_base64, mime_type } = payload;
+
+  console.log('🎨 스타일 분석 (이미지 생성용) 시작');
+
+  try {
+    const prompt = `Analyze this hairstyle image for AI image generation.
+
+Return ONLY a JSON object with these fields:
+{
+  "gender": "male" or "female",
+  "length": "Short/Medium/Long/Very Long",
+  "form": "Layer/Graduation/One Length/Textured",
+  "color": "Black/Brown/Blonde/Red/etc (include highlights if any)",
+  "style": "Bob/Pixie/Wolf Cut/Shag/etc",
+  "texture": "Straight/Wavy/Curly/Permed",
+  "bangs": "None/Full/Side/Curtain/Wispy",
+  "description": "Brief 1-2 sentence description in Korean focusing on key visual features for image generation"
+}
+
+Be specific and visual. Focus on what makes this hairstyle unique.`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              {
+                inline_data: {
+                  mime_type: mime_type || 'image/jpeg',
+                  data: image_base64
+                }
+              },
+              { text: prompt }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 1000
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Gemini API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // JSON 파싱
+    const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('JSON 파싱 실패');
+    }
+
+    const analysis = JSON.parse(jsonMatch[0]);
+    console.log('✅ 스타일 분석 완료:', analysis);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: analysis
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 스타일 분석 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 어드민: z-image로 헤어스타일 이미지 생성 ====================
+async function generateHairstyleImage(payload) {
+  const { analysis, num_images, image_size } = payload;
+
+  console.log('🎨 z-image 이미지 생성 시작');
+
+  const FAL_KEY = process.env.FAL_KEY;
+  if (!FAL_KEY) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: 'FAL_KEY not configured' })
+    };
+  }
+
+  try {
+    // 분석 결과로 프롬프트 생성
+    const genderWord = analysis.gender === 'male' ? 'man' : 'woman';
+    const prompt = `Professional salon photography of a beautiful ${genderWord} with ${analysis.color || 'natural'} ${analysis.length || 'medium'} ${analysis.texture || 'smooth'} hair in ${analysis.style || 'modern'} style. ${analysis.bangs !== 'None' ? analysis.bangs + ' bangs.' : ''} ${analysis.description || ''} High-end fashion magazine quality, soft studio lighting, clean background, sharp focus on hair details, 8k resolution.`;
+
+    console.log('📝 생성 프롬프트:', prompt);
+
+    // fal.ai z-image API 호출
+    const response = await fetch('https://fal.run/fal-ai/z-image/turbo', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Key ${FAL_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        image_size: image_size || 'portrait_4_3',
+        num_images: num_images || 4,
+        num_inference_steps: 8,
+        enable_safety_checker: true,
+        output_format: 'png'
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`z-image API Error: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ z-image 생성 완료:', result.images?.length || 0, '개');
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          images: result.images || [],
+          prompt: prompt,
+          seed: result.seed
+        }
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 z-image 생성 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
 }
