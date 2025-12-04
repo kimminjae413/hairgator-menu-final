@@ -2869,10 +2869,19 @@ body.light-theme .modal-action-btn.secondary:hover {
         right: auto;
     }
 
+    /* ⭐ Android 태블릿 가로모드 - 탭 헤더 고정 위치 조정 */
+    .tablet-fixed-header {
+        top: 50px !important;
+        position: fixed !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 100 !important;
+    }
+
     /* 스타일 그리드 - 글래스모피즘 효과를 위해 */
     .styles-container,
     .menu-items-container {
-        top: 70px !important;
+        top: 50px !important;
         padding-top: 210px !important;
     }
 }
@@ -2893,10 +2902,35 @@ body.fullscreen-mode .language-btn {
 
 /* 태블릿 가로모드 + fullscreen-mode 클래스 */
 @media (min-width: 768px) and (orientation: landscape) {
+    body.fullscreen-mode .tablet-fixed-header {
+        top: 100px !important;
+    }
+
     body.fullscreen-mode .menu-items-container,
     body.fullscreen-mode .styles-container {
         top: 100px !important;
         padding-top: 180px !important;
+    }
+}
+
+/* ⭐ Android 태블릿 전체화면 모드 - display-mode 감지 */
+@media (display-mode: fullscreen), (display-mode: standalone) {
+    .tablet-fixed-header {
+        top: 100px !important;
+    }
+}
+
+/* 태블릿 가로모드 + 전체화면 */
+@media (min-width: 768px) and (orientation: landscape) and (display-mode: fullscreen),
+       (min-width: 768px) and (orientation: landscape) and (display-mode: standalone) {
+    .tablet-fixed-header {
+        top: 100px !important;
+    }
+
+    .styles-container,
+    .menu-items-container {
+        top: 100px !important;
+        padding-top: 220px !important;
     }
 }
 
