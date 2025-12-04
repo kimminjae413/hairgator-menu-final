@@ -3256,7 +3256,9 @@
 
             ctx.clearRect(0, 0, w, h);
 
-            if (!lastFaceLandmarks || !selectedColor) return;
+            // 조정된 색상 또는 선택된 색상 사용
+            const displayColor = currentDisplayColor || selectedColor;
+            if (!lastFaceLandmarks || !displayColor) return;
 
             // 턱 중앙 (landmark 152)
             const chin = lastFaceLandmarks[152];
@@ -3285,9 +3287,9 @@
 
             // 그라데이션 생성 (위에서 아래로)
             const gradient = ctx.createLinearGradient(chinX, capeStartY, chinX, capeEndY);
-            gradient.addColorStop(0, selectedColor + 'FF');  // 위쪽: 불투명
-            gradient.addColorStop(0.3, selectedColor + 'EE');
-            gradient.addColorStop(1, selectedColor + 'CC');  // 아래쪽: 약간 투명
+            gradient.addColorStop(0, displayColor + 'FF');  // 위쪽: 불투명
+            gradient.addColorStop(0.3, displayColor + 'EE');
+            gradient.addColorStop(1, displayColor + 'CC');  // 아래쪽: 약간 투명
 
             ctx.fillStyle = gradient;
             ctx.beginPath();
@@ -3417,6 +3419,15 @@
 
         function selectColor(color, colorData = null) {
             selectedColor = color;
+            currentDisplayColor = color;  // 슬라이더 초기화 시 기본값으로 설정
+
+            // 슬라이더 리셋
+            document.getElementById('lightness-slider').value = 0;
+            document.getElementById('saturation-slider').value = 0;
+            document.getElementById('warmth-slider').value = 0;
+            document.getElementById('lightness-value').textContent = '0';
+            document.getElementById('saturation-value').textContent = '0';
+            document.getElementById('warmth-value').textContent = '0';
 
             document.querySelectorAll('.color-item').forEach(item => {
                 item.style.border = '3px solid transparent';
@@ -3459,6 +3470,9 @@
             }
         }
 
+        // 현재 적용 중인 색상 (슬라이더 조정 반영)
+        let currentDisplayColor = null;
+
         function adjustColor() {
             if (!selectedColor) return;
 
@@ -3471,7 +3485,14 @@
             document.getElementById('warmth-value').textContent = warmth;
 
             const adjustedColor = adjustColorValues(selectedColor, lightness, saturation, warmth);
-            applyDrapingColor(adjustedColor);
+            currentDisplayColor = adjustedColor;
+
+            // 케이프 실시간 업데이트
+            if (lastFaceLandmarks) {
+                drawDrapingCape();
+            } else {
+                applyDrapingColor(adjustedColor);
+            }
         }
 
         function adjustColorValues(hexColor, lightness, saturation, warmth) {
