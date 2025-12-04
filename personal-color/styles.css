@@ -1438,22 +1438,22 @@ body.male-theme .nav-btn:hover {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .control-btn,
     .comparison-btn {
         width: 100%;
     }
-    
+
     .analysis-steps {
         gap: 0.8rem;
     }
-    
+
     .analysis-step {
         padding: 0.8rem;
         flex-direction: column;
         text-align: center;
     }
-    
+
     .brand-sections {
         grid-template-columns: 1fr;
     }
@@ -1461,6 +1461,23 @@ body.male-theme .nav-btn:hover {
     /* 분석 결과 2단 그리드 → 모바일에서 1단 */
     .results-grid {
         grid-template-columns: 1fr !important;
+    }
+
+    /* 모바일에서 카메라 컨테이너 스크롤 가능하도록 */
+    .camera-container {
+        overflow: visible !important;
+    }
+
+    /* 모바일에서 분석 결과 표시 */
+    #realtime-results-container {
+        display: block !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    /* 분석 패널도 스크롤 가능 */
+    .analysis-panel {
+        overflow: visible !important;
     }
 }
 
