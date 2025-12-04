@@ -4563,6 +4563,19 @@ async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
     )
   ).join('\n');
 
+  // ⭐ 자막 파일(레시피) 가져오기 - 참고 스타일의 실제 레시피 텍스트
+  console.log('📝 참고 스타일 자막(레시피) 가져오는 중...');
+  const captionTexts = await Promise.all(
+    top3Styles.map(async (style) => {
+      const captionText = await fetchCaptionContent(style.captionUrl);
+      return captionText ? `[${style.styleId} 레시피]\n${captionText}` : null;
+    })
+  );
+  const captionContext = captionTexts.filter(Boolean).join('\n\n');
+  if (captionContext) {
+    console.log(`✅ 자막(레시피) ${captionTexts.filter(Boolean).length}개 로드 완료`);
+  }
+
   // ⭐ abcde 북에서 남자 커트 이론 조회
   console.log('📚 abcde 북에서 남자 커트 이론 조회 중...');
   let theoryContext = '';
@@ -4619,7 +4632,12 @@ async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
     ? `\n**📚 참고 이론 (2WAY CUT 교재):**\n${theoryContext}\n`
     : '';
 
-  const systemPrompt = `당신은 남자 헤어컷 전문가입니다. 모든 응답을 한국어로만 작성하세요. 클리퍼 가드 사이즈, 페이드 기법 등 실무적인 내용을 포함하세요.${theoryContext ? ' 참고 이론의 내용을 레시피에 자연스럽게 반영하세요.' : ''}`;
+  // 자막(레시피) 섹션 추가
+  const captionSection = captionContext
+    ? `\n**📝 참고 스타일 레시피:**\n${captionContext}\n`
+    : '';
+
+  const systemPrompt = `당신은 남자 헤어컷 전문가입니다. 모든 응답을 한국어로만 작성하세요. 클리퍼 가드 사이즈, 페이드 기법 등 실무적인 내용을 포함하세요.${theoryContext ? ' 참고 이론의 내용을 레시피에 자연스럽게 반영하세요.' : ''}${captionContext ? ' 참고 스타일 레시피의 테크닉과 순서를 참고하세요.' : ''}`;
 
   const userPrompt = `**📊 분석 결과:**
 - 카테고리: ${styleInfo.ko} (${params.style_category})
@@ -4629,7 +4647,7 @@ async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
 - 페이드: ${params.fade_type || 'None'}
 - 텍스처: ${params.texture || 'Smooth'}
 - 스타일링 제품: ${params.product_type || 'Wax'}
-${theorySection}
+${theorySection}${captionSection}
 **🎯 참고 도해도:**
 ${diagramsContext}
 
