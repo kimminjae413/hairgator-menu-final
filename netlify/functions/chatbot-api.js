@@ -3579,7 +3579,10 @@ ${recipeTexts}
           }],
           generationConfig: {
             temperature: 0.5,
-            maxOutputTokens: 2000
+            maxOutputTokens: 4000,
+            thinkingConfig: {
+              thinkingBudget: 0
+            }
           }
         })
       }
@@ -4575,15 +4578,20 @@ async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
           }],
           generationConfig: {
             temperature: 0.3,
-            maxOutputTokens: 500,
-            topP: 0.8
+            maxOutputTokens: 1000,
+            topP: 0.8,
+            thinkingConfig: {
+              thinkingBudget: 0
+            }
           }
         })
       }
     );
     if (theoryResponse.ok) {
       const theoryData = await theoryResponse.json();
-      theoryContext = theoryData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      // 여러 parts에서 텍스트 추출
+      const parts = theoryData.candidates?.[0]?.content?.parts || [];
+      theoryContext = parts.map(p => p.text || '').join('');
       if (theoryContext) {
         console.log(`✅ 남자 커트 이론 조회 완료 (${theoryContext.length}자)`);
       }
