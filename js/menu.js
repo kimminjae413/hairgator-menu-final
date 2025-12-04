@@ -1,5 +1,19 @@
 // ========== HAIRGATOR 메뉴 시스템 - 헤어체험 연동 최종 버전 ==========
 
+// ⭐ Android 소프트 키보드 대응 - 동적 뷰포트 높이 설정
+(function() {
+    function setViewportHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+
+    setViewportHeight();
+    window.addEventListener('resize', setViewportHeight);
+    window.addEventListener('orientationchange', function() {
+        setTimeout(setViewportHeight, 100);
+    });
+})();
+
 // ⭐ Pull-to-Refresh 비활성화 (웹뷰용) - 스크롤 가능 영역 제외
 (function() {
     let lastY = 0;

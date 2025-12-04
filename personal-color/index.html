@@ -45,6 +45,35 @@
 
 <body>
     <script>
+        // ⭐ Android 환경 감지 유틸리티
+        const DeviceDetection = {
+            isAndroid: () => /Android/.test(navigator.userAgent),
+            isIOS: () => /iPhone|iPad|iPod/.test(navigator.userAgent),
+            isWebView: () => {
+                const ua = navigator.userAgent;
+                // Android WebView 감지 (Chrome이 아닌 Android)
+                if (/Android/.test(ua)) {
+                    // wv는 WebView 표시, Chrome 없으면 WebView
+                    if (/wv/.test(ua) || !/Chrome/.test(ua)) return true;
+                    // Chrome 버전이 매우 낮으면 WebView
+                    const chromeMatch = ua.match(/Chrome\/(\d+)/);
+                    if (chromeMatch && parseInt(chromeMatch[1]) < 50) return true;
+                }
+                return false;
+            },
+            isSamsungBrowser: () => /SamsungBrowser/.test(navigator.userAgent),
+            getInfo: () => ({
+                isAndroid: DeviceDetection.isAndroid(),
+                isIOS: DeviceDetection.isIOS(),
+                isWebView: DeviceDetection.isWebView(),
+                isSamsungBrowser: DeviceDetection.isSamsungBrowser(),
+                userAgent: navigator.userAgent
+            })
+        };
+
+        // 초기화 시 환경 정보 로깅
+        console.log('📱 Device Info:', DeviceDetection.getInfo());
+
         // URL 파라미터에서 성별 읽어서 테마 적용
         (function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -2063,6 +2092,12 @@
                 canvasCtx = canvasElement.getContext('2d', { willReadFrequently: true });
 
                 // MediaPipe Face Mesh 초기화 또는 재사용
+                // ⭐ WebView 환경 감지 및 경고
+                const isWebViewEnv = typeof DeviceDetection !== 'undefined' && DeviceDetection.isWebView();
+                if (isWebViewEnv) {
+                    console.warn('⚠️ Android WebView 환경 감지 - MediaPipe 기능이 제한될 수 있습니다');
+                }
+
                 if (typeof FaceMesh !== 'undefined') {
                     try {
                         // Face Mesh 인스턴스가 없으면 새로 생성
@@ -2113,7 +2148,18 @@
                         showToast(t('personalColor.toast.faceRecognitionEnabled') || '얼굴 인식이 활성화되었습니다', 'success');
                     } catch (error) {
                         console.warn('Face Mesh 초기화 실패:', error);
-                        showToast(t('personalColor.toast.basicCameraMode') || '기본 카메라 모드로 시작합니다', 'warning');
+                        // WebView에서 실패 시 더 상세한 메시지
+                        if (isWebViewEnv) {
+                            showToast('WebView 환경에서는 얼굴 인식이 제한됩니다. Chrome 브라우저를 사용해주세요.', 'warning');
+                        } else {
+                            showToast(t('personalColor.toast.basicCameraMode') || '기본 카메라 모드로 시작합니다', 'warning');
+                        }
+                    }
+                } else {
+                    // MediaPipe 라이브러리 자체가 로드되지 않은 경우
+                    console.warn('⚠️ MediaPipe FaceMesh 라이브러리가 로드되지 않았습니다');
+                    if (isWebViewEnv) {
+                        showToast('WebView 환경에서는 얼굴 인식이 지원되지 않습니다', 'warning');
                     }
                 }
 
@@ -2123,25 +2169,39 @@
                 console.error('❌ 카메라 시작 실패:', error);
                 cleanupCameraResources();
 
-                // 상세한 에러 메시지
+                // ⭐ Android/iOS 환경별 상세 에러 메시지
+                const isAndroidEnv = typeof DeviceDetection !== 'undefined' && DeviceDetection.isAndroid();
+                const isIOSEnv = typeof DeviceDetection !== 'undefined' && DeviceDetection.isIOS();
+                const isWebViewEnv = typeof DeviceDetection !== 'undefined' && DeviceDetection.isWebView();
+
                 let userMessage = '카메라에 접근할 수 없습니다.';
 
                 if (error.name === 'NotAllowedError' || error.message.includes('PERMISSION_DENIED')) {
-                    userMessage = '카메라 권한이 거부되었습니다.\n\n앱 설정 > 권한 > 카메라를 허용해주세요.';
+                    if (isAndroidEnv) {
+                        userMessage = '카메라 권한이 거부되었습니다.\n\n설정 > 앱 > HAIRGATOR > 권한 > 카메라를 허용해주세요.';
+                    } else if (isIOSEnv) {
+                        userMessage = '카메라 권한이 거부되었습니다.\n\n설정 > HAIRGATOR > 카메라를 허용해주세요.';
+                    } else {
+                        userMessage = '카메라 권한이 거부되었습니다.\n\n브라우저 설정에서 카메라 권한을 허용해주세요.';
+                    }
                 } else if (error.name === 'NotFoundError') {
                     userMessage = '카메라를 찾을 수 없습니다.\n\n기기에 카메라가 있는지 확인해주세요.';
                 } else if (error.name === 'NotReadableError') {
                     userMessage = '카메라가 다른 앱에서 사용 중입니다.\n\n다른 앱을 종료하고 다시 시도해주세요.';
                 } else if (error.message.includes('NOT_SUPPORTED')) {
-                    userMessage = '이 환경에서는 카메라를 지원하지 않습니다.';
+                    if (isWebViewEnv) {
+                        userMessage = 'WebView에서는 카메라가 지원되지 않을 수 있습니다.\n\nChrome 브라우저에서 열어주세요.';
+                    } else {
+                        userMessage = '이 환경에서는 카메라를 지원하지 않습니다.';
+                    }
                 } else if (error.name === 'OverconstrainedError') {
                     userMessage = '카메라 설정 오류입니다. 다시 시도해주세요.';
+                } else if (error.name === 'SecurityError') {
+                    userMessage = '보안 오류가 발생했습니다.\n\nHTTPS 환경에서만 카메라를 사용할 수 있습니다.';
                 }
 
+                console.log('📱 카메라 오류 환경:', { isAndroidEnv, isIOSEnv, isWebViewEnv, errorName: error.name });
                 showToast(userMessage, 'error');
-
-                // 디버깅용 alert (개발 중에만 사용)
-                // alert(`카메라 오류 상세:\n\n이름: ${error.name}\n메시지: ${error.message}`);
             }
         }
 
@@ -3331,7 +3391,29 @@
 
             } catch (error) {
                 console.error('드래이핑 카메라 시작 실패:', error);
-                showToast(t('personalColor.toast.cameraAccessDenied') || '카메라에 접근할 수 없습니다', 'error');
+
+                // ⭐ Android/iOS 환경별 상세 에러 메시지
+                const isAndroidEnv = typeof DeviceDetection !== 'undefined' && DeviceDetection.isAndroid();
+                const isIOSEnv = typeof DeviceDetection !== 'undefined' && DeviceDetection.isIOS();
+                const isWebViewEnv = typeof DeviceDetection !== 'undefined' && DeviceDetection.isWebView();
+
+                let userMessage = t('personalColor.toast.cameraAccessDenied') || '카메라에 접근할 수 없습니다';
+
+                if (error.name === 'NotAllowedError') {
+                    if (isAndroidEnv) {
+                        userMessage = '카메라 권한이 필요합니다.\n\n설정 > 앱 > HAIRGATOR > 권한에서 카메라를 허용해주세요.';
+                    } else if (isIOSEnv) {
+                        userMessage = '카메라 권한이 필요합니다.\n\n설정 > HAIRGATOR > 카메라를 허용해주세요.';
+                    } else {
+                        userMessage = '카메라 권한이 필요합니다.\n\n브라우저에서 카메라 권한을 허용해주세요.';
+                    }
+                } else if (error.name === 'NotFoundError') {
+                    userMessage = '카메라를 찾을 수 없습니다.';
+                } else if (error.name === 'NotReadableError') {
+                    userMessage = '카메라가 다른 앱에서 사용 중입니다.';
+                }
+
+                showToast(userMessage, 'error');
             }
         }
 
