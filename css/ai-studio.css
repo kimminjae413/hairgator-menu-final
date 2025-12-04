@@ -1073,10 +1073,20 @@ body.ai-studio-page {
   }
 }
 
-/* Desktop: Hide mobile back button */
+/* Desktop: Hide mobile-only buttons */
 @media (min-width: 1025px) {
   .canvas-back-btn {
     display: none;
+  }
+  .mobile-history-btn {
+    display: none;
+  }
+}
+
+/* Mobile: Show history button */
+@media (max-width: 1024px) {
+  .mobile-history-btn {
+    display: flex;
   }
 }
 

@@ -512,7 +512,8 @@ class AIStudio {
         }
       }
 
-      this.addMessageToUI(msg.sender, msg.content, false);
+      // canvasData가 있으면 함께 복원
+      this.addMessageToUI(msg.sender, msg.content, false, msg.canvasData || null);
     });
 
     this.scrollToBottom();
@@ -1763,8 +1764,56 @@ function goBack() {
   }
 }
 
+// 모바일에서 히스토리 패널 표시
+function showHistoryPanel() {
+  const canvasPanel = document.getElementById('canvas-panel');
+  canvasPanel.classList.add('active');
+
+  // 히스토리 탭 활성화
+  document.querySelectorAll('.canvas-tab').forEach(tab => tab.classList.remove('active'));
+  const historyTab = document.querySelector('.canvas-tab[data-tab="history"]');
+  if (historyTab) historyTab.classList.add('active');
+
+  // 히스토리 로드
+  window.aiStudio.switchCanvasTab('history');
+}
+
+// 새 채팅 시작 (기존 대화는 유지, 새로운 대화 시작)
+function startNewChat() {
+  const messages = document.getElementById('chat-messages');
+  messages.innerHTML = `
+    <div class="message bot">
+      <div class="message-avatar bot-logo"><img src="icons/icon-72.png" alt="H"></div>
+      <div class="message-content">
+        <p><strong>안녕하세요! HAIRGATOR AI입니다.</strong></p>
+        <p>헤어스타일 사진을 업로드하거나 질문해주세요. 2WAY CUT 시스템 기반으로 전문적인 분석과 레시피를 제공해드립니다.</p>
+        <div class="message-actions">
+          <button class="action-btn" onclick="quickAction('A Length가 뭐야?')">A Length란?</button>
+          <button class="action-btn" onclick="quickAction('레이어와 그래쥬에이션 차이')">Layer vs Graduation</button>
+          <button class="action-btn" onclick="quickAction('리프팅 각도 설명해줘')">Lifting 설명</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 히스토리는 유지하되, 현재 세션 메모리만 초기화
+  // Firebase 히스토리는 삭제하지 않음 (히스토리 탭에서 볼 수 있도록)
+
+  // 캔버스 초기화
+  const canvasResult = document.getElementById('canvas-result');
+  const canvasEmpty = document.getElementById('canvas-empty');
+  if (canvasResult) canvasResult.classList.add('hidden');
+  if (canvasEmpty) canvasEmpty.classList.remove('hidden');
+
+  // 이미지 프리뷰 초기화
+  removePreviewImage();
+
+  console.log('🆕 새 채팅 시작');
+}
+
+// 대화 내용 완전 삭제
 function clearChat() {
-  if (confirm('대화 내용을 모두 삭제하시겠습니까?')) {
+  if (confirm('대화 내용을 모두 삭제하시겠습니까?\n(히스토리도 함께 삭제됩니다)')) {
     window.aiStudio.conversationHistory = [];
     const messages = document.getElementById('chat-messages');
     messages.innerHTML = `
@@ -1781,6 +1830,12 @@ function clearChat() {
     if (window.aiStudio.currentUserId && window.db) {
       window.aiStudio.clearFirebaseHistory();
     }
+
+    // 캔버스 초기화
+    const canvasResult = document.getElementById('canvas-result');
+    const canvasEmpty = document.getElementById('canvas-empty');
+    if (canvasResult) canvasResult.classList.add('hidden');
+    if (canvasEmpty) canvasEmpty.classList.remove('hidden');
   }
 }
 
