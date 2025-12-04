@@ -1817,14 +1817,10 @@
         function onAdvancedFaceResults(results) {
             frameCount++;
 
-            // 10프레임마다 로그 (너무 많은 로그 방지)
-            if (frameCount % 30 === 1) {
-                console.log(`🎯 Face Results 수신 #${frameCount}`, {
-                    hasCanvas: !!canvasCtx,
-                    hasVideo: !!videoElement,
-                    hasFaces: results?.multiFaceLandmarks?.length > 0
-                });
-            }
+            // 디버그 로그 비활성화 (필요시 주석 해제)
+            // if (frameCount % 300 === 1) {
+            //     console.log(`🎯 Face Results #${frameCount}`);
+            // }
 
             if (!canvasCtx || !videoElement) {
                 console.warn('캔버스 또는 비디오 없음');
