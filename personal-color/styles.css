@@ -1468,11 +1468,35 @@ body.male-theme .nav-btn:hover {
         overflow: visible !important;
     }
 
-    /* 모바일에서 분석 결과 표시 */
+    /* 모바일에서 분석 결과 표시 + 스크롤바 */
+    .realtime-results-wrapper {
+        margin-top: 20px;
+    }
+
+    .realtime-results,
     #realtime-results-container {
-        display: block !important;
-        max-height: none !important;
-        overflow: visible !important;
+        max-height: 50vh;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.5) rgba(255,255,255,0.1);
+    }
+
+    .realtime-results::-webkit-scrollbar,
+    #realtime-results-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .realtime-results::-webkit-scrollbar-track,
+    #realtime-results-container::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+    }
+
+    .realtime-results::-webkit-scrollbar-thumb,
+    #realtime-results-container::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.5);
+        border-radius: 3px;
     }
 
     /* 분석 패널도 스크롤 가능 */
@@ -1772,16 +1796,30 @@ body.male-theme .nav-btn:hover {
 
     .realtime-results {
         padding: 20px;
-        padding-right: 20px;
+        padding-right: 12px;
         max-height: 400px;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.5) rgba(255,255,255,0.1);
     }
 
     .realtime-results::-webkit-scrollbar {
-        display: none;
+        width: 6px;
+    }
+
+    .realtime-results::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.1);
+        border-radius: 3px;
+    }
+
+    .realtime-results::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.5);
+        border-radius: 3px;
+    }
+
+    .realtime-results::-webkit-scrollbar-thumb:hover {
+        background: rgba(255,255,255,0.7);
     }
 
     /* 흰색 스크롤바 트랙 */
