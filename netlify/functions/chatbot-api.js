@@ -5040,12 +5040,12 @@ Be specific and visual. Focus on what makes this hairstyle unique.`;
 
 // ==================== 어드민: Gemini로 헤어스타일 이미지 생성 ====================
 async function generateHairstyleImage(payload) {
-  const { analysis, num_images, image_size } = payload;
+  const { analysis, reference_image, num_images, image_size } = payload;
 
   // 어드민 전용 Gemini API 키
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
-  console.log('🎨 Gemini 이미지 생성 시작');
+  console.log('🎨 Gemini 이미지 생성 시작 (참고 이미지 포함)');
 
   if (!ADMIN_GEMINI_KEY) {
     return {
@@ -5058,27 +5058,26 @@ async function generateHairstyleImage(payload) {
   try {
     // 분석 결과로 프롬프트 생성
     const genderWord = analysis.gender === 'male' ? 'man' : 'woman';
-    const genderKo = analysis.gender === 'male' ? '남성' : '여성';
 
-    const prompt = `Create a professional hair salon photograph of a beautiful Korean ${genderWord} model showcasing this hairstyle:
+    const prompt = `Look at this reference hairstyle image carefully. Generate a new professional salon photograph with a SIMILAR hairstyle on a different Korean ${genderWord} model.
+
+The hairstyle should match:
 - Hair Length: ${analysis.length || 'medium'}
 - Hair Style: ${analysis.style || 'modern'}
 - Hair Color: ${analysis.color || 'natural dark brown'}
 - Hair Texture: ${analysis.texture || 'smooth'}
 - Bangs: ${analysis.bangs || 'none'}
+- Overall vibe: ${analysis.description || ''}
 
-Style details: ${analysis.description || ''}
+IMPORTANT: Keep the SAME hairstyle shape, layers, and styling as the reference image.
+Generate a professional salon photo with:
+- Different face/model but SAME hair style
+- Clean studio background
+- Soft professional lighting
+- High-end fashion magazine quality
+- Sharp focus on hair details`;
 
-Requirements:
-- Professional salon photography quality
-- Soft, flattering studio lighting
-- Clean, neutral background
-- Sharp focus on hair details and texture
-- Model facing slightly to the side to show hair dimension
-- High-end fashion magazine aesthetic
-- Photorealistic, 8K quality`;
-
-    console.log('📝 생성 프롬프트:', prompt);
+    console.log('📝 생성 프롬프트 (참고 이미지 포함)');
 
     // 이미지 생성 (num_images 만큼 반복)
     const numToGenerate = Math.min(num_images || 4, 4);
@@ -5087,6 +5086,18 @@ Requirements:
     for (let i = 0; i < numToGenerate; i++) {
       console.log(`🖼️ 이미지 ${i + 1}/${numToGenerate} 생성 중...`);
 
+      // 참고 이미지가 있으면 함께 전송
+      const parts = [];
+      if (reference_image) {
+        parts.push({
+          inline_data: {
+            mime_type: 'image/jpeg',
+            data: reference_image
+          }
+        });
+      }
+      parts.push({ text: prompt });
+
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${ADMIN_GEMINI_KEY}`,
         {
@@ -5094,7 +5105,7 @@ Requirements:
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{
-              parts: [{ text: prompt }]
+              parts: parts
             }],
             generationConfig: {
               responseModalities: ['TEXT', 'IMAGE']
