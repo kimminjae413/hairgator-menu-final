@@ -1600,8 +1600,8 @@ body.male-theme .nav-btn:hover {
     }
 }
 
-/* ========== Hair AR 체험 섹션 스타일 ========== */
-#hair-ar-mode.active {
+/* ========== 헤어컬러 시뮬레이션 섹션 스타일 ========== */
+#hair-simulate-mode.active {
     display: block;
     position: fixed;
     top: 0;
@@ -1620,7 +1620,7 @@ body.male-theme .nav-btn:hover {
     box-sizing: border-box;
 }
 
-#hair-ar-mode.active .section-nav {
+#hair-simulate-mode.active .section-nav {
     position: sticky;
     top: 0;
     z-index: 100;
@@ -1632,7 +1632,7 @@ body.male-theme .nav-btn:hover {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
-#hair-ar-mode.active .section-title {
+#hair-simulate-mode.active .section-title {
     color: #fff;
     background: none;
     -webkit-background-clip: unset;
@@ -1640,7 +1640,7 @@ body.male-theme .nav-btn:hover {
     background-clip: unset;
 }
 
-/* AR 색상 아이템 */
+/* 시뮬레이션 색상 아이템 */
 .ar-color-item {
     display: flex;
     align-items: center;
@@ -1692,25 +1692,25 @@ body.male-theme .nav-btn:hover {
     font-size: 11px;
 }
 
-/* AR 스피너 애니메이션 */
+/* 스피너 애니메이션 */
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
-/* AR 모바일 반응형 */
+/* 시뮬레이션 모바일 반응형 */
 @media (max-width: 768px) {
-    #hair-ar-mode .ar-layout {
+    #hair-simulate-mode .simulate-layout {
         grid-template-columns: 1fr !important;
         gap: 15px !important;
     }
 
-    #hair-ar-mode .ar-color-panel {
+    #hair-simulate-mode .simulate-color-panel {
         max-height: 300px !important;
     }
 
-    #hair-ar-mode .ar-video-container {
-        aspect-ratio: 3/4 !important;
+    #hair-simulate-mode .image-compare {
+        grid-template-columns: 1fr !important;
     }
 }
 

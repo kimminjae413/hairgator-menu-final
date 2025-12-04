@@ -14,9 +14,6 @@
         src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <script crossorigin="anonymous"
         src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script>
-    <!-- MediaPipe Selfie Segmentation (Hair AR용) -->
-    <script crossorigin="anonymous"
-        src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
 
     <link rel="stylesheet" href="styles.css">
     <!-- 헤어컬러 614개 데이터 -->
@@ -286,90 +283,72 @@
                 </div>
             </div>
 
-            <!-- ========== Hair Color AR 체험 섹션 ========== -->
-            <section class="section" id="hair-ar-mode">
+            <!-- ========== 헤어컬러 시뮬레이션 섹션 ========== -->
+            <section class="section" id="hair-simulate-mode">
                 <div class="section-nav">
-                    <button class="nav-btn" onclick="closeHairAR()" data-i18n="personalColor.aiMode.backHome">← 뒤로</button>
-                    <h2 class="section-title">💇 헤어컬러 AR 체험</h2>
+                    <button class="nav-btn" onclick="closeHairSimulate()" data-i18n="personalColor.aiMode.backHome">← 뒤로</button>
+                    <h2 class="section-title">💇 헤어컬러 시뮬레이션</h2>
                 </div>
 
-                <div class="ar-layout" style="display: grid; grid-template-columns: 1fr 300px; gap: 20px; padding: 20px;">
-                    <!-- AR 카메라 영역 -->
-                    <div class="ar-camera-section" style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; position: relative;">
-                        <div class="ar-video-container" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #1a1c2e; border-radius: 12px; overflow: hidden;">
-                            <video id="ar-camera" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
-                            <canvas id="ar-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
-                            <div id="ar-loading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; display: none;">
-                                <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #E91E63; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
-                                <span>AR 로딩 중...</span>
+                <div class="simulate-layout" style="display: grid; grid-template-columns: 1fr 320px; gap: 20px; padding: 20px;">
+                    <!-- 결과 이미지 영역 -->
+                    <div class="simulate-result-section" style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px;">
+                        <!-- 원본/결과 비교 -->
+                        <div class="image-compare" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div class="original-image" style="text-align: center;">
+                                <div style="color: #aaa; font-size: 12px; margin-bottom: 8px;">📷 원본</div>
+                                <div id="simulate-original" style="width: 100%; aspect-ratio: 3/4; background: #1a1c2e; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                    <img id="simulate-original-img" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                    <span style="color: #666; font-size: 13px;" id="simulate-original-placeholder">촬영된 사진이 여기에 표시됩니다</span>
+                                </div>
+                            </div>
+                            <div class="result-image" style="text-align: center;">
+                                <div style="color: #aaa; font-size: 12px; margin-bottom: 8px;">✨ 시뮬레이션 결과</div>
+                                <div id="simulate-result" style="width: 100%; aspect-ratio: 3/4; background: #1a1c2e; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
+                                    <img id="simulate-result-img" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                    <span style="color: #666; font-size: 13px;" id="simulate-result-placeholder">색상을 선택하면 결과가 표시됩니다</span>
+                                    <div id="simulate-loading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; text-align: center;">
+                                        <div style="width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.2); border-top-color: #E91E63; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
+                                        <span style="color: #fff; font-size: 14px;">AI가 헤어컬러를<br>변경하고 있어요...</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- AR 컨트롤 버튼 -->
-                        <div class="ar-controls" style="display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
-                            <button class="control-btn" id="ar-start-btn" onclick="startHairAR()" style="background: linear-gradient(135deg, #E91E63, #C2185B);">
-                                📹 AR 시작
-                            </button>
-                            <button class="control-btn" id="ar-capture-btn" onclick="captureARPhoto()" style="display: none; background: linear-gradient(135deg, #4CAF50, #388E3C);">
-                                📸 사진 저장
-                            </button>
-                            <button class="control-btn" id="ar-stop-btn" onclick="stopHairAR()" style="display: none; background: linear-gradient(135deg, #757575, #616161);">
-                                ⏹ AR 중지
-                            </button>
-                        </div>
-
-                        <!-- 현재 선택된 색상 표시 -->
-                        <div id="ar-current-color" style="margin-top: 15px; text-align: center; display: none;">
-                            <span style="color: #aaa; font-size: 13px;">현재 적용 중인 색상:</span>
-                            <div style="display: inline-flex; align-items: center; gap: 10px; margin-left: 10px;">
-                                <div id="ar-color-preview" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>
-                                <span id="ar-color-name" style="color: #fff; font-weight: bold;"></span>
-                            </div>
+                        <!-- 저장 버튼 -->
+                        <div style="text-align: center;">
+                            <button id="simulate-save-btn" onclick="saveSimulatedImage()" style="
+                                background: linear-gradient(135deg, #4CAF50, #388E3C);
+                                color: white;
+                                border: none;
+                                padding: 14px 40px;
+                                border-radius: 50px;
+                                font-size: 15px;
+                                font-weight: bold;
+                                cursor: pointer;
+                                display: none;
+                            ">📸 결과 이미지 저장</button>
                         </div>
                     </div>
 
                     <!-- 색상 선택 패널 -->
-                    <div class="ar-color-panel" style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; max-height: calc(100vh - 200px); overflow-y: auto;">
+                    <div class="simulate-color-panel" style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; max-height: calc(100vh - 200px); overflow-y: auto;">
                         <h4 style="color: #fff; margin: 0 0 15px 0; font-size: 16px;">🎨 추천 헤어컬러</h4>
+                        <p style="color: #aaa; font-size: 12px; margin-bottom: 15px;">색상을 클릭하면 AI가 해당 색상으로 시뮬레이션합니다</p>
 
-                        <!-- 추천 색상 목록 (동적으로 채워짐) -->
-                        <div id="ar-recommended-colors" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                        <!-- 추천 색상 목록 -->
+                        <div id="simulate-recommended-colors" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
                             <!-- JS에서 동적 생성 -->
                         </div>
 
                         <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
 
-                        <!-- 색상 강도 조절 -->
-                        <div style="margin-bottom: 15px;">
-                            <label style="color: #aaa; font-size: 13px; display: block; margin-bottom: 8px;">색상 강도</label>
-                            <input type="range" id="ar-intensity-slider" min="20" max="100" value="60"
-                                style="width: 100%; accent-color: #E91E63;"
-                                oninput="updateARIntensity(this.value)">
-                            <div style="display: flex; justify-content: space-between; color: #666; font-size: 11px; margin-top: 4px;">
-                                <span>자연스럽게</span>
-                                <span>선명하게</span>
-                            </div>
-                        </div>
-
-                        <!-- 블렌드 모드 선택 -->
-                        <div style="margin-bottom: 15px;">
-                            <label style="color: #aaa; font-size: 13px; display: block; margin-bottom: 8px;">블렌드 모드</label>
-                            <select id="ar-blend-mode" onchange="updateARBlendMode(this.value)"
-                                style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);">
-                                <option value="overlay" selected>오버레이 (자연스러운)</option>
-                                <option value="multiply">멀티플라이 (깊은)</option>
-                                <option value="soft-light">소프트 라이트 (부드러운)</option>
-                            </select>
-                        </div>
-
-                        <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
-
-                        <!-- 커스텀 색상 선택 -->
+                        <!-- 생성 히스토리 -->
                         <div>
-                            <label style="color: #aaa; font-size: 13px; display: block; margin-bottom: 8px;">커스텀 색상</label>
-                            <input type="color" id="ar-custom-color" value="#8B4513"
-                                style="width: 100%; height: 40px; border: none; border-radius: 8px; cursor: pointer;"
-                                onchange="applyCustomARColor(this.value)">
+                            <h5 style="color: #aaa; font-size: 13px; margin: 0 0 10px 0;">📋 생성 히스토리</h5>
+                            <div id="simulate-history" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                <span style="color: #666; font-size: 12px;">아직 생성된 이미지가 없습니다</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3767,62 +3746,63 @@
         console.log('HAIRGATOR Personal Color - 다국어 지원 버전 로드 완료');
 
         // ================================================
-        // ========== Hair Color AR 시스템 ==========
+        // ========== 헤어컬러 시뮬레이션 시스템 (Gemini 2.0 Flash) ==========
         // ================================================
 
-        // AR 관련 전역 변수
-        let arVideoElement = null;
-        let arCanvasElement = null;
-        let arCanvasCtx = null;
-        let arStream = null;
-        let selfieSegmentation = null;
-        let arCamera = null;
-        let arIsRunning = false;
-        let arCurrentColor = '#8B4513';  // 기본 브라운
-        let arColorName = '내추럴 브라운';
-        let arIntensity = 0.6;           // 60%
-        let arBlendMode = 'overlay';
-        let arRecommendedColors = [];    // 추천 색상 목록
-        let arPreviousSection = null;    // 이전 섹션 기억
+        // 시뮬레이션 관련 전역 변수
+        let simulateOriginalImage = null;      // 원본 이미지 (base64)
+        let simulateRecommendedColors = [];    // 추천 색상 목록
+        let simulatePreviousSection = null;    // 이전 섹션 기억
+        let simulateHistory = [];              // 생성 히스토리
+        let simulateIsProcessing = false;      // 처리 중 여부
 
-        // AR 모드 열기 (추천 색상 포함)
-        function openHairAR(recommendedColors = [], fromSection = 'ai-analysis') {
-            console.log('🎨 Hair AR 모드 진입');
-            arPreviousSection = fromSection;
+        // 마지막 분석 결과 저장 (시뮬레이션 연동용)
+        let lastHairRecommendations = null;
+
+        // 시뮬레이션 모드 열기
+        function openHairSimulate(recommendedColors = [], fromSection = 'ai-analysis') {
+            console.log('🎨 헤어컬러 시뮬레이션 모드 진입');
+            simulatePreviousSection = fromSection;
 
             // 추천 색상 저장
-            arRecommendedColors = recommendedColors.length > 0 ? recommendedColors : getDefaultARColors();
+            simulateRecommendedColors = recommendedColors.length > 0 ? recommendedColors : getDefaultSimulateColors();
 
-            // 이전 섹션 숨기고 AR 섹션 표시
+            // 이전 섹션 숨기고 시뮬레이션 섹션 표시
             document.querySelectorAll('.section.active').forEach(s => s.classList.remove('active'));
-            document.getElementById('hair-ar-mode').classList.add('active');
+            document.getElementById('hair-simulate-mode').classList.add('active');
 
             // 추천 색상 UI 렌더링
-            renderARColorList();
+            renderSimulateColorList();
 
-            // 첫 번째 색상 자동 선택
-            if (arRecommendedColors.length > 0) {
-                selectARColor(arRecommendedColors[0].hex, arRecommendedColors[0].name);
+            // 원본 이미지 설정 (촬영된 이미지 사용)
+            if (window.lastCapturedImage) {
+                simulateOriginalImage = window.lastCapturedImage;
+                const originalImg = document.getElementById('simulate-original-img');
+                const placeholder = document.getElementById('simulate-original-placeholder');
+                if (originalImg) {
+                    originalImg.src = simulateOriginalImage;
+                    originalImg.style.display = 'block';
+                }
+                if (placeholder) placeholder.style.display = 'none';
             }
         }
 
-        // AR 모드 닫기
-        function closeHairAR() {
-            console.log('🔙 Hair AR 모드 종료');
-            stopHairAR();
+        // 시뮬레이션 모드 닫기
+        function closeHairSimulate() {
+            console.log('🔙 헤어컬러 시뮬레이션 모드 종료');
 
-            // AR 섹션 숨기고 이전 섹션 표시
-            document.getElementById('hair-ar-mode').classList.remove('active');
+            // 시뮬레이션 섹션 숨기고 이전 섹션 표시
+            document.getElementById('hair-simulate-mode').classList.remove('active');
 
-            if (arPreviousSection) {
-                document.getElementById(arPreviousSection).classList.add('active');
+            if (simulatePreviousSection) {
+                document.getElementById(simulatePreviousSection).classList.add('active');
             } else {
                 document.getElementById('mode-selection').classList.add('active');
             }
         }
 
-        // 기본 AR 색상
-        function getDefaultARColors() {
+        // 기본 시뮬레이션 색상
+        function getDefaultSimulateColors() {
             return [
                 { hex: '#8B4513', name: '내추럴 브라운' },
                 { hex: '#A0522D', name: '시에나 브라운' },
@@ -3835,14 +3815,14 @@
             ];
         }
 
-        // AR 색상 목록 렌더링
-        function renderARColorList() {
-            const container = document.getElementById('ar-recommended-colors');
+        // 색상 목록 렌더링
+        function renderSimulateColorList() {
+            const container = document.getElementById('simulate-recommended-colors');
             if (!container) return;
 
-            container.innerHTML = arRecommendedColors.map((color, index) => `
-                <div class="ar-color-item ${index === 0 ? 'selected' : ''}"
-                     onclick="selectARColor('${color.hex}', '${color.name}')"
+            container.innerHTML = simulateRecommendedColors.map((color, index) => `
+                <div class="ar-color-item"
+                     onclick="generateHairColorSimulation('${color.hex}', '${color.name}')"
                      data-hex="${color.hex}">
                     <div class="ar-color-swatch" style="background: ${color.hex};"></div>
                     <div class="ar-color-info">
@@ -3853,448 +3833,157 @@
             `).join('');
         }
 
-        // AR 색상 선택
-        function selectARColor(hex, name) {
-            arCurrentColor = hex;
-            arColorName = name;
-
-            // UI 업데이트
-            document.querySelectorAll('.ar-color-item').forEach(item => {
-                item.classList.toggle('selected', item.dataset.hex === hex);
-            });
-
-            // 현재 색상 표시 업데이트
-            const preview = document.getElementById('ar-color-preview');
-            const nameEl = document.getElementById('ar-color-name');
-            if (preview) preview.style.background = hex;
-            if (nameEl) nameEl.textContent = name;
-
-            console.log(`🎨 AR 색상 선택: ${name} (${hex})`);
-        }
-
-        // 커스텀 색상 적용
-        function applyCustomARColor(hex) {
-            selectARColor(hex, '커스텀 색상');
-        }
-
-        // AR 강도 업데이트
-        function updateARIntensity(value) {
-            arIntensity = value / 100;
-            console.log(`🎚 AR 강도: ${value}%`);
-        }
-
-        // AR 블렌드 모드 업데이트
-        function updateARBlendMode(mode) {
-            arBlendMode = mode;
-            console.log(`🔄 AR 블렌드 모드: ${mode}`);
-        }
-
-        // Selfie Segmentation 초기화
-        async function initSelfieSegmentation() {
-            if (selfieSegmentation) return selfieSegmentation;
-
-            console.log('🔧 Selfie Segmentation 초기화 중...');
-
-            try {
-                selfieSegmentation = new SelfieSegmentation({
-                    locateFile: (file) => {
-                        return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`;
-                    }
-                });
-
-                selfieSegmentation.setOptions({
-                    modelSelection: 1,  // 1 = 풀 모델 (머리카락 구분 더 정확)
-                    selfieMode: true
-                });
-
-                selfieSegmentation.onResults(onARResults);
-
-                await selfieSegmentation.initialize();
-                console.log('✅ Selfie Segmentation 초기화 완료');
-
-                return selfieSegmentation;
-            } catch (error) {
-                console.error('❌ Selfie Segmentation 초기화 실패:', error);
-                throw error;
-            }
-        }
-
-        // AR 시작
-        async function startHairAR() {
-            if (arIsRunning) return;
-
-            console.log('🚀 Hair AR 시작...');
-
-            // 로딩 표시
-            document.getElementById('ar-loading').style.display = 'block';
-
-            try {
-                // 카메라 시작
-                arVideoElement = document.getElementById('ar-camera');
-                arCanvasElement = document.getElementById('ar-canvas');
-                arCanvasCtx = arCanvasElement.getContext('2d', { willReadFrequently: true });
-
-                arStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
-                });
-
-                arVideoElement.srcObject = arStream;
-                await arVideoElement.play();
-
-                // 캔버스 크기 설정
-                arCanvasElement.width = arVideoElement.videoWidth;
-                arCanvasElement.height = arVideoElement.videoHeight;
-
-                // Selfie Segmentation 초기화
-                await initSelfieSegmentation();
-
-                // MediaPipe Camera 시작
-                arCamera = new Camera(arVideoElement, {
-                    onFrame: async () => {
-                        if (selfieSegmentation && arIsRunning) {
-                            await selfieSegmentation.send({ image: arVideoElement });
-                        }
-                    },
-                    width: 640,
-                    height: 480
-                });
-
-                await arCamera.start();
-                arIsRunning = true;
-
-                // UI 업데이트
-                document.getElementById('ar-loading').style.display = 'none';
-                document.getElementById('ar-start-btn').style.display = 'none';
-                document.getElementById('ar-capture-btn').style.display = 'inline-block';
-                document.getElementById('ar-stop-btn').style.display = 'inline-block';
-                document.getElementById('ar-current-color').style.display = 'block';
-
-                showToast('AR 헤어컬러 체험을 시작합니다!', 'success');
-                console.log('✅ Hair AR 시작됨');
-
-            } catch (error) {
-                console.error('❌ AR 시작 실패:', error);
-                document.getElementById('ar-loading').style.display = 'none';
-                showToast('AR 시작에 실패했습니다: ' + error.message, 'error');
-            }
-        }
-
-        // AR 중지
-        function stopHairAR() {
-            console.log('⏹ Hair AR 중지...');
-
-            arIsRunning = false;
-
-            if (arCamera) {
-                try { arCamera.stop(); } catch (e) {}
-                arCamera = null;
-            }
-
-            if (arStream) {
-                arStream.getTracks().forEach(track => track.stop());
-                arStream = null;
-            }
-
-            if (arVideoElement) {
-                arVideoElement.srcObject = null;
-            }
-
-            if (arCanvasCtx && arCanvasElement) {
-                arCanvasCtx.clearRect(0, 0, arCanvasElement.width, arCanvasElement.height);
-            }
-
-            // UI 업데이트
-            document.getElementById('ar-start-btn').style.display = 'inline-block';
-            document.getElementById('ar-capture-btn').style.display = 'none';
-            document.getElementById('ar-stop-btn').style.display = 'none';
-            document.getElementById('ar-current-color').style.display = 'none';
-
-            console.log('✅ Hair AR 중지됨');
-        }
-
-        // AR용 조명 분석 (프레임마다 업데이트)
-        let arLightingInfo = { avgR: 128, avgG: 128, avgB: 128, colorTemp: 'neutral', brightnessOffset: 0 };
-
-        // 조명 분석 함수
-        function analyzeARLighting(pixels, width, height) {
-            let rSum = 0, gSum = 0, bSum = 0;
-            let sampleCount = 0;
-
-            // 상단 30% 영역 샘플링 (배경/조명 영향 측정)
-            const sampleEndY = Math.floor(height * 0.3);
-            for (let y = 0; y < sampleEndY; y += 5) {
-                for (let x = 0; x < width; x += 5) {
-                    const i = (y * width + x) * 4;
-                    rSum += pixels[i];
-                    gSum += pixels[i + 1];
-                    bSum += pixels[i + 2];
-                    sampleCount++;
-                }
-            }
-
-            if (sampleCount > 0) {
-                const avgR = rSum / sampleCount;
-                const avgG = gSum / sampleCount;
-                const avgB = bSum / sampleCount;
-                const avgBrightness = (avgR + avgG + avgB) / 3;
-
-                // 색온도 판단
-                let colorTemp = 'neutral';
-                if (avgR > avgB + 20) colorTemp = 'warm';      // 노란/주황 조명
-                else if (avgB > avgR + 15) colorTemp = 'cool'; // 파란/형광 조명
-
-                // 밝기 오프셋 계산 (정상 조명 기준 128과의 차이)
-                const brightnessOffset = avgBrightness - 128;
-
-                arLightingInfo = { avgR, avgG, avgB, colorTemp, brightnessOffset };
-            }
-
-            return arLightingInfo;
-        }
-
-        // Selfie Segmentation 결과 처리 (머리카락 색상 적용)
-        function onARResults(results) {
-            if (!arCanvasCtx || !arCanvasElement) return;
-
-            const width = arCanvasElement.width;
-            const height = arCanvasElement.height;
-
-            // 원본 이미지 그리기 (좌우 반전)
-            arCanvasCtx.save();
-            arCanvasCtx.scale(-1, 1);
-            arCanvasCtx.drawImage(results.image, -width, 0, width, height);
-            arCanvasCtx.restore();
-
-            // 세그멘테이션 마스크가 없으면 종료
-            if (!results.segmentationMask) return;
-
-            // 마스크 데이터 가져오기
-            const maskCanvas = document.createElement('canvas');
-            maskCanvas.width = width;
-            maskCanvas.height = height;
-            const maskCtx = maskCanvas.getContext('2d');
-
-            // 마스크 좌우 반전해서 그리기
-            maskCtx.save();
-            maskCtx.scale(-1, 1);
-            maskCtx.drawImage(results.segmentationMask, -width, 0, width, height);
-            maskCtx.restore();
-
-            const maskData = maskCtx.getImageData(0, 0, width, height);
-
-            // 원본 이미지 데이터 가져오기
-            const imageData = arCanvasCtx.getImageData(0, 0, width, height);
-            const pixels = imageData.data;
-
-            // 🔆 조명 분석 (매 프레임)
-            analyzeARLighting(pixels, width, height);
-            const lighting = arLightingInfo;
-
-            // 조명에 따른 밝기 임계값 조정
-            // 노란 조명(warm)에서는 전체적으로 밝게 보이므로 임계값 상향
-            // 어두운 환경에서는 임계값 하향
-            let brightThreshold = 80;
-            if (lighting.colorTemp === 'warm') {
-                brightThreshold = 100 + (lighting.brightnessOffset * 0.3); // 노란 조명 보정
-            } else if (lighting.colorTemp === 'cool') {
-                brightThreshold = 70 + (lighting.brightnessOffset * 0.2);  // 형광등 보정
-            } else {
-                brightThreshold = 80 + (lighting.brightnessOffset * 0.25);
-            }
-            brightThreshold = Math.max(50, Math.min(150, brightThreshold)); // 50~150 범위 제한
-
-            // 선택된 색상 RGB 파싱
-            const targetColor = hexToRgb(arCurrentColor);
-            if (!targetColor) return;
-
-            // 각 픽셀에 대해 머리카락 영역에만 색상 적용
-            for (let i = 0; i < pixels.length; i += 4) {
-                const pixelIndex = i / 4;
-                const x = pixelIndex % width;
-                const y = Math.floor(pixelIndex / width);
-
-                const maskValue = maskData.data[i];  // 세그멘테이션 값 (0-255)
-
-                const r = pixels[i];
-                const g = pixels[i + 1];
-                const b = pixels[i + 2];
-
-                // 조명 보정된 밝기 계산
-                // 노란 조명에서는 R,G가 높아지므로 보정
-                let correctedR = r, correctedG = g, correctedB = b;
-                if (lighting.colorTemp === 'warm' && lighting.avgR > 140) {
-                    // 노란 조명 보정: R,G를 약간 낮춤
-                    const warmFactor = Math.min(0.15, (lighting.avgR - 128) / 500);
-                    correctedR = r * (1 - warmFactor);
-                    correctedG = g * (1 - warmFactor * 0.5);
-                } else if (lighting.colorTemp === 'cool' && lighting.avgB > 140) {
-                    // 푸른 조명 보정: B를 약간 낮춤
-                    const coolFactor = Math.min(0.1, (lighting.avgB - 128) / 500);
-                    correctedB = b * (1 - coolFactor);
-                }
-
-                const brightness = (correctedR + correctedG + correctedB) / 3;
-
-                // ===== 머리카락 감지 조건 (조명 보정 적용) =====
-
-                // 1. 사람 영역이어야 함
-                const isPersonArea = maskValue > 200;
-
-                // 2. 화면 상단 60% 영역만
-                const isUpperArea = y < height * 0.6;
-
-                // 3. 어두운 영역 (조명 보정된 임계값 사용)
-                const isDarkEnough = brightness < brightThreshold;
-
-                // 4. 피부색 제외 (조명 보정된 값으로 판단)
-                const rMinusG = correctedR - correctedG;
-                const rMinusB = correctedR - correctedB;
-                // 노란 조명에서는 피부 감지 범위 확대
-                const skinRangeExpand = lighting.colorTemp === 'warm' ? 15 : 0;
-                const isSkinTone = (correctedR > (100 - skinRangeExpand) &&
-                                   correctedG > (60 - skinRangeExpand) &&
-                                   correctedB > 40 &&
-                                   rMinusG > -10 && rMinusG < (40 + skinRangeExpand) &&
-                                   rMinusB > 10 && rMinusB < (80 + skinRangeExpand));
-
-                // 5. 옷/몸통 제외
-                const isBodyArea = y > height * 0.55;
-
-                // 6. 머리카락 색상 패턴 (채도 낮음)
-                const colorVariance = Math.max(correctedR, correctedG, correctedB) -
-                                     Math.min(correctedR, correctedG, correctedB);
-                // 조명이 강하면 채도 허용 범위 확대
-                const varianceThreshold = 50 + Math.abs(lighting.brightnessOffset) * 0.3;
-                const isHairColorPattern = colorVariance < varianceThreshold;
-
-                // 7. 너무 밝은 영역 제외
-                const isHighlight = brightness > 180;
-
-                // 최종 머리카락 판정
-                const isHairCandidate = isPersonArea &&
-                                       isUpperArea &&
-                                       isDarkEnough &&
-                                       !isSkinTone &&
-                                       !isBodyArea &&
-                                       isHairColorPattern &&
-                                       !isHighlight;
-
-                if (isHairCandidate) {
-                    // 블렌드 모드에 따라 색상 적용
-                    const blended = blendHairColor(r, g, b, targetColor, arIntensity, arBlendMode);
-                    pixels[i] = blended.r;
-                    pixels[i + 1] = blended.g;
-                    pixels[i + 2] = blended.b;
-                }
-            }
-
-            // 결과 이미지 그리기
-            arCanvasCtx.putImageData(imageData, 0, 0);
-        }
-
-        // 하이라이트 영역 감지 (너무 밝은 곳은 머리카락 아님)
-        function isHighlightArea(r, g, b) {
-            return (r > 200 && g > 200 && b > 200);
-        }
-
-        // 헤어 컬러 블렌딩
-        function blendHairColor(r, g, b, targetColor, intensity, mode) {
-            let newR, newG, newB;
-
-            switch (mode) {
-                case 'multiply':
-                    // 멀티플라이: 어두운 색상 강조
-                    newR = (r * targetColor.r) / 255;
-                    newG = (g * targetColor.g) / 255;
-                    newB = (b * targetColor.b) / 255;
-                    break;
-
-                case 'soft-light':
-                    // 소프트 라이트: 부드러운 블렌딩
-                    newR = softLight(r, targetColor.r);
-                    newG = softLight(g, targetColor.g);
-                    newB = softLight(b, targetColor.b);
-                    break;
-
-                case 'overlay':
-                default:
-                    // 오버레이: 자연스러운 블렌딩 (기본)
-                    newR = overlay(r, targetColor.r);
-                    newG = overlay(g, targetColor.g);
-                    newB = overlay(b, targetColor.b);
-                    break;
-            }
-
-            // 강도에 따라 원본과 블렌딩
-            return {
-                r: Math.round(r + (newR - r) * intensity),
-                g: Math.round(g + (newG - g) * intensity),
-                b: Math.round(b + (newB - b) * intensity)
-            };
-        }
-
-        // 오버레이 블렌드 모드
-        function overlay(base, blend) {
-            if (base < 128) {
-                return (2 * base * blend) / 255;
-            } else {
-                return 255 - (2 * (255 - base) * (255 - blend)) / 255;
-            }
-        }
-
-        // 소프트 라이트 블렌드 모드
-        function softLight(base, blend) {
-            if (blend < 128) {
-                return base - (1 - 2 * blend / 255) * base * (1 - base / 255);
-            } else {
-                const d = base < 64 ? ((16 * base / 255 - 12) * base / 255 + 4) * base / 255 : Math.sqrt(base / 255);
-                return base + (2 * blend / 255 - 1) * (d * 255 - base);
-            }
-        }
-
-        // AR 사진 캡처
-        function captureARPhoto() {
-            if (!arCanvasElement) {
-                showToast('캡처할 수 있는 화면이 없습니다', 'warning');
+        // Gemini API로 헤어컬러 시뮬레이션 생성
+        async function generateHairColorSimulation(hairColor, hairColorName) {
+            if (simulateIsProcessing) {
+                showToast('이미 생성 중입니다. 잠시 기다려주세요.', 'warning');
                 return;
             }
 
-            // 캡처 효과 (플래시)
-            const flash = document.createElement('div');
-            flash.style.cssText = `
-                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                background: white; z-index: 9999;
-                animation: flashFade 0.3s ease-out forwards;
-            `;
-            document.body.appendChild(flash);
-            setTimeout(() => flash.remove(), 300);
+            if (!simulateOriginalImage) {
+                showToast('원본 이미지가 없습니다. 먼저 사진을 촬영해주세요.', 'warning');
+                return;
+            }
 
-            // 캔버스를 이미지로 변환
-            const dataURL = arCanvasElement.toDataURL('image/png');
+            console.log(`🎨 헤어컬러 시뮬레이션 시작: ${hairColorName} (${hairColor})`);
+            simulateIsProcessing = true;
+
+            // 로딩 표시
+            const loading = document.getElementById('simulate-loading');
+            const resultImg = document.getElementById('simulate-result-img');
+            const placeholder = document.getElementById('simulate-result-placeholder');
+            const saveBtn = document.getElementById('simulate-save-btn');
+
+            if (loading) loading.style.display = 'block';
+            if (placeholder) placeholder.style.display = 'none';
+            if (resultImg) resultImg.style.display = 'none';
+            if (saveBtn) saveBtn.style.display = 'none';
+
+            // 선택된 색상 표시
+            document.querySelectorAll('#simulate-recommended-colors .ar-color-item').forEach(item => {
+                item.classList.toggle('selected', item.dataset.hex === hairColor);
+            });
+
+            try {
+                const response = await fetch('/.netlify/functions/hair-color-simulate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        imageBase64: simulateOriginalImage,
+                        hairColor: hairColor,
+                        hairColorName: hairColorName
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.generatedImage) {
+                    // 결과 이미지 표시
+                    if (resultImg) {
+                        resultImg.src = result.generatedImage;
+                        resultImg.style.display = 'block';
+                    }
+                    if (saveBtn) saveBtn.style.display = 'inline-block';
+
+                    // 히스토리에 추가
+                    addToSimulateHistory(hairColor, hairColorName, result.generatedImage);
+
+                    showToast(`✨ ${hairColorName} 시뮬레이션 완료!`, 'success');
+                } else {
+                    throw new Error(result.message || '시뮬레이션 실패');
+                }
+
+            } catch (error) {
+                console.error('❌ 시뮬레이션 오류:', error);
+                showToast('시뮬레이션에 실패했습니다: ' + error.message, 'error');
+                if (placeholder) placeholder.style.display = 'block';
+            } finally {
+                if (loading) loading.style.display = 'none';
+                simulateIsProcessing = false;
+            }
+        }
+
+        // 히스토리에 추가
+        function addToSimulateHistory(hex, name, imageBase64) {
+            simulateHistory.unshift({ hex, name, image: imageBase64, timestamp: Date.now() });
+
+            // 최대 10개까지만 유지
+            if (simulateHistory.length > 10) {
+                simulateHistory = simulateHistory.slice(0, 10);
+            }
+
+            // UI 업데이트
+            renderSimulateHistory();
+        }
+
+        // 히스토리 렌더링
+        function renderSimulateHistory() {
+            const container = document.getElementById('simulate-history');
+            if (!container) return;
+
+            if (simulateHistory.length === 0) {
+                container.innerHTML = '<span style="color: #666; font-size: 12px;">아직 생성된 이미지가 없습니다</span>';
+                return;
+            }
+
+            container.innerHTML = simulateHistory.map((item, index) => `
+                <div onclick="showHistoryImage(${index})" style="cursor: pointer; position: relative;">
+                    <img src="${item.image}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 2px solid ${item.hex};" title="${item.name}">
+                </div>
+            `).join('');
+        }
+
+        // 히스토리 이미지 표시
+        function showHistoryImage(index) {
+            const item = simulateHistory[index];
+            if (!item) return;
+
+            const resultImg = document.getElementById('simulate-result-img');
+            const saveBtn = document.getElementById('simulate-save-btn');
+
+            if (resultImg) {
+                resultImg.src = item.image;
+                resultImg.style.display = 'block';
+            }
+            if (saveBtn) saveBtn.style.display = 'inline-block';
+
+            // 해당 색상 선택 표시
+            document.querySelectorAll('#simulate-recommended-colors .ar-color-item').forEach(el => {
+                el.classList.toggle('selected', el.dataset.hex === item.hex);
+            });
+        }
+
+        // 시뮬레이션 결과 이미지 저장
+        function saveSimulatedImage() {
+            const resultImg = document.getElementById('simulate-result-img');
+            if (!resultImg || !resultImg.src) {
+                showToast('저장할 이미지가 없습니다', 'warning');
+                return;
+            }
 
             // 다운로드 링크 생성
             const link = document.createElement('a');
-            link.download = `HAIRGATOR_AR_${arColorName.replace(/\s+/g, '_')}_${Date.now()}.png`;
-            link.href = dataURL;
+            link.download = `HAIRGATOR_헤어컬러시뮬레이션_${Date.now()}.png`;
+            link.href = resultImg.src;
             link.click();
 
-            showToast('📸 사진이 저장되었습니다!', 'success');
+            showToast('📸 이미지가 저장되었습니다!', 'success');
         }
 
-        // 마지막 분석 결과 저장 (AR 연동용)
-        let lastHairRecommendations = null;
-
-        // AI 분석 결과의 추천 색상으로 AR 열기
+        // AI 분석 결과의 추천 색상으로 시뮬레이션 열기
         function openARWithRecommendedColors() {
-            console.log('🎨 AI 분석 결과로 AR 열기');
+            console.log('🎨 AI 분석 결과로 시뮬레이션 열기');
+
+            // 촬영된 이미지 저장
+            captureCurrentFrameForSimulation();
 
             // 저장된 헤어 추천 결과가 있는지 확인
             if (lastHairRecommendations && lastHairRecommendations.recommended1st) {
-                const arColors = [];
+                const colors = [];
 
                 // 1순위 추천 색상들 추가
                 lastHairRecommendations.recommended1st.slice(0, 5).forEach(color => {
-                    arColors.push({
+                    colors.push({
                         hex: color.hex || '#8B4513',
                         name: color.name || '추천 컬러'
                     });
@@ -4303,35 +3992,53 @@
                 // 2순위 추천 색상들 추가 (있다면)
                 if (lastHairRecommendations.recommended2nd) {
                     lastHairRecommendations.recommended2nd.slice(0, 3).forEach(color => {
-                        arColors.push({
+                        colors.push({
                             hex: color.hex || '#A0522D',
                             name: color.name || '대안 컬러'
                         });
                     });
                 }
 
-                // AR 모드 열기
-                openHairAR(arColors, 'ai-analysis');
+                openHairSimulate(colors, 'ai-analysis');
             } else {
-                // 추천 결과가 없으면 기본 색상으로 열기
                 console.log('⚠️ 저장된 추천 결과가 없어 기본 색상 사용');
-                openHairAR([], 'ai-analysis');
+                openHairSimulate([], 'ai-analysis');
             }
         }
 
-        // 드래이핑 모드에서 저장된 색상으로 AR 열기
+        // 드래이핑 모드에서 저장된 색상으로 시뮬레이션 열기
         function openARWithDrapingColors() {
-            console.log('🎨 드래이핑 저장 색상으로 AR 열기');
+            console.log('🎨 드래이핑 저장 색상으로 시뮬레이션 열기');
 
             if (savedColors.length > 0) {
-                const arColors = savedColors.map(colorData => ({
+                const colors = savedColors.map(colorData => ({
                     hex: colorData.color,
                     name: `${colorData.season} 컬러`
                 }));
 
-                openHairAR(arColors, 'draping-mode');
+                openHairSimulate(colors, 'draping-mode');
             } else {
                 showToast('먼저 색상을 저장해주세요', 'warning');
+            }
+        }
+
+        // 현재 프레임을 시뮬레이션용으로 캡처
+        function captureCurrentFrameForSimulation() {
+            // AI 분석에서 사용한 비디오에서 이미지 캡처
+            if (videoElement && videoElement.readyState === 4) {
+                const captureCanvas = document.createElement('canvas');
+                captureCanvas.width = videoElement.videoWidth;
+                captureCanvas.height = videoElement.videoHeight;
+                const ctx = captureCanvas.getContext('2d');
+
+                // 좌우 반전해서 그리기 (거울 모드)
+                ctx.save();
+                ctx.scale(-1, 1);
+                ctx.drawImage(videoElement, -captureCanvas.width, 0);
+                ctx.restore();
+
+                window.lastCapturedImage = captureCanvas.toDataURL('image/jpeg', 0.9);
+                console.log('📸 시뮬레이션용 이미지 캡처 완료');
             }
         }
     </script>
