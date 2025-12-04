@@ -1672,6 +1672,12 @@ class AIStudio {
       .replace(/^##\s*(.+)$/gm, '<h3 class="recipe-h3">$1</h3>')
       .replace(/^#\s*(.+)$/gm, '<h2 class="recipe-h2">$1</h2>');
 
+    // 💡 초보자 설명 처리 (전문용어 뒤의 쉬운 설명)
+    // 💡로 시작하는 라인을 beginner-tip 클래스로 감싸기
+    formatted = formatted.replace(/^💡\s*(.+)$/gm, '<span class="beginner-tip">💡 $1</span>');
+    // 인라인 💡 설명 처리 (라인 중간에 있는 경우)
+    formatted = formatted.replace(/\s*💡\s*([^<\n]+)/g, '<span class="beginner-tip">💡 $1</span>');
+
     // 굵은 글씨 **text**
     formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
@@ -1706,7 +1712,8 @@ class AIStudio {
           result.push('</ul>');
           inList = false;
         }
-        if (trimmed && !trimmed.startsWith('<h')) {
+        // beginner-tip은 그대로 유지, 다른 텍스트만 p로 감싸기
+        if (trimmed && !trimmed.startsWith('<h') && !trimmed.startsWith('<span class="beginner-tip">')) {
           result.push(`<p class="recipe-para">${trimmed}</p>`);
         } else {
           result.push(trimmed);

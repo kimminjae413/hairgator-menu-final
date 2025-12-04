@@ -1,22 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git push:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "WebSearch",
-      "Bash(python scripts/split-pdf.py:*)",
-      "Bash(git -C \"C:\\Users\\김민재\\Desktop\\Hairgator_chatbot\" commit -m \"$(cat <<''EOF''\nFix brand setting modal label visibility in light theme\n\n모달 내부가 항상 다크 배경인데 라이트 테마에서 CSS 변수가\n어두운 색으로 적용되어 라벨이 안 보이던 문제 수정\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git -C \"C:\\Users\\김민재\\Desktop\\Hairgator_chatbot\" log --oneline -3)",
-      "Bash(rm:*)",
-      "Bash(python scripts/create-recipe-subtitles.py:*)",
-      "Bash(python scripts/validate-hair-dataset.py:*)",
-      "Bash(dir \"C:\\Users\\김민재\\Desktop\\2. 헤어게이터_이론-20251105T045428Z-1-001\\women_cut_recipe\\FGL\\FGL1013\")",
-      "Bash(python scripts/parse-captions.py:*)",
-      "Bash(type \"C:\\Users\\김민재\\Desktop\\2. 헤어게이터_이론-20251105T045428Z-1-001\\women_cut_recipe\\FAL\\FAL0001\\FAL0001(자막).txt\")",
-      "Bash(python scripts/generate-metadata.py:*)",
-      "Bash(copy:*)",
-      "Bash(cmd /c \"mkdir C:\\Users\\김민재\\Desktop\\Hairgator_chatbot\\data 2>nul & copy C:\\Users\\김민재\\Desktop\\Hairgator_chatbot\\scripts\\hairgator-theory-data.json C:\\Users\\김민재\\Desktop\\Hairgator_chatbot\\data\"\")"
+      "Bash(git push:*)",
+      "Bash(done)",
+      "Bash(python:*)",
+      "Bash(npx netlify:*)"
     ],
     "deny": [],
     "ask": []

@@ -1934,6 +1934,35 @@ body.ai-studio-page {
   color: var(--text-primary);
 }
 
+/* 💡 초보자 설명 스타일 */
+.recipe-formatted .beginner-tip,
+.recipe-content .beginner-tip {
+  display: block;
+  margin: 6px 0 12px 0;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  border-left: 3px solid #4CAF50;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.85rem;
+  color: #2e7d32;
+  line-height: 1.6;
+}
+
+.recipe-formatted .beginner-tip::before,
+.recipe-content .beginner-tip::before {
+  content: '💡 ';
+}
+
+/* 다크모드 지원 */
+@media (prefers-color-scheme: dark) {
+  .recipe-formatted .beginner-tip,
+  .recipe-content .beginner-tip {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(139, 195, 74, 0.1) 100%);
+    color: #a5d6a7;
+    border-left-color: #66bb6a;
+  }
+}
+
 .recipe-formatted .recipe-list {
   margin: 10px 0;
   padding: 0;

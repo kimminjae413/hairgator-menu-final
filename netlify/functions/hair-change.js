@@ -65,8 +65,8 @@ exports.handler = async (event) => {
         const taskId = await createTask(customerPhotoUrl, styleImageUrl, API_KEY);
         console.log('📝 Task 생성됨:', taskId);
 
-        // 2. 결과 폴링 (최대 60초 대기)
-        const result = await pollTaskResult(taskId, API_KEY, 60000);
+        // 2. 결과 폴링 (최대 24초 대기 - Netlify 26초 타임아웃 고려)
+        const result = await pollTaskResult(taskId, API_KEY, 24000);
         console.log('✅ Task 완료:', result.status);
 
         if (result.status === 'succeeded' && result.output && result.output.length > 0) {
@@ -143,7 +143,7 @@ async function createTask(customerPhotoUrl, styleImageUrl, apiKey) {
  * @param {number} timeout - 최대 대기 시간 (ms)
  * @returns {Object} - Task 결과
  */
-async function pollTaskResult(taskId, apiKey, timeout = 60000) {
+async function pollTaskResult(taskId, apiKey, timeout = 24000) {
     const startTime = Date.now();
     const pollInterval = 2000; // 2초마다 폴링
 

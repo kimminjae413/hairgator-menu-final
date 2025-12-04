@@ -3545,6 +3545,19 @@ ${recipeTexts}
 2. Fringe Length 규칙 (사이드 길이 명시)
 3. **존별 Section/Lifting/Direction 규칙** (L4+DBS 남발 금지!)
 
+## 📚 초보자 친화적 설명 규칙 (매우 중요!)
+**모든 전문용어 뒤에는 💡로 시작하는 쉬운 설명을 추가하세요!**
+
+예시 형식:
+- Section: DBS (Diagonal-Backward Section)
+  💡 머리를 대각선 뒤쪽 방향으로 나눠서 잡는 방식이에요
+- Lifting: L3 (67.5°)
+  💡 머리카락을 약 70도 각도로 들어올려요. 손가락 두 마디 정도 두피에서 띄우면 대략 이 각도예요
+- Direction: D8 (Over-direction)
+  💡 모발을 뒤쪽으로 당겨서 자르면, 놓았을 때 앞쪽이 더 길어져서 얼굴을 감싸는 효과가 나요
+
+**💡 설명은 반드시 다음 줄에 작성하고, 초보자도 바로 이해할 수 있게 일상적인 말로 풀어주세요!**
+
 다음 형식으로 작성:
 
 ### 1. 스타일 개요
@@ -3557,11 +3570,13 @@ ${recipeTexts}
 - Weight: ${params56.weight_distribution}
 
 ### 3. 커트 순서 (존별 Section/Lifting/Direction 명시!)
-- **Step 1: Back 존** - Section: DBS, Lifting: L2~L3(45~67.5°), Direction: D4
-- **Step 2: Side 존** - Section: **VS**, Lifting: L3(67.5°), Direction: **D8** ⭐
-- **Step 3: Top 존** - Section: DBS/VS, Lifting: L4(90°), Direction: D4
-- **Step 4: Fringe** - Section: HS, 길이/스타일 명시
-(각 단계에서 존, 섹션, 리프팅 각도, 디렉션을 **모두** 명시하세요!)
+각 Step마다 전문용어와 함께 💡 초보자 설명을 꼭 넣어주세요!
+
+- **Step 1: Back 존** - Section, Lifting, Direction + 💡설명
+- **Step 2: Side 존** - Section, Lifting, Direction + 💡설명
+- **Step 3: Top 존** - Section, Lifting, Direction + 💡설명
+- **Step 4: Fringe** - Section, 길이/스타일 + 💡설명
+- **Step 5: Outline & Texture** - 마무리 기법 + 💡설명
 
 ### 4. 핵심 포인트 (3가지)
 1. ...
@@ -3569,7 +3584,7 @@ ${recipeTexts}
 3. ...
 
 ### 5. 스타일링 팁
-드라이/아이론 등 마무리 방법`
+드라이/아이론/제품 등 마무리 방법 (💡 쉬운 설명 포함)`
             }]
           }],
           tools: [{

@@ -31,6 +31,14 @@
   node_bundler = "esbuild"
   timeout = 26
 
+# ⭐ 헤어체험 AI (Vmodel API)
+# - Task 생성: ~1-2초
+# - AI 처리 및 폴링: ~10-20초
+# 총 예상 시간: 15-25초 → 26초로 설정 (무료 플랜 최대)
+[functions."hair-change"]
+  node_bundler = "esbuild"
+  timeout = 26
+
 # ========== 캐시 설정 (개발/업데이트 빈번) ==========
 # HTML 파일 - 캐시 비활성화
 [[headers]]
