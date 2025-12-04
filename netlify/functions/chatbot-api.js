@@ -5629,11 +5629,11 @@ async function generateCardNewsKeywords(payload) {
 
 // ==================== 어드민: Veo 3.1 영상 생성 ====================
 async function generateVideo(payload) {
-  const { prompt, duration, aspect_ratio, reference_image, mime_type } = payload;
+  const { prompt, duration, aspect_ratio, reference_images } = payload;
 
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
-  console.log('🎬 영상 생성 시작:', { prompt: prompt?.substring(0, 50), duration, aspect_ratio });
+  console.log('🎬 영상 생성 시작:', { prompt: prompt?.substring(0, 50), duration, aspect_ratio, refImageCount: reference_images?.length || 0 });
 
   if (!ADMIN_GEMINI_KEY) {
     return {
@@ -5668,12 +5668,14 @@ Target audience: Professional hair designers and stylists.`;
       }
     };
 
-    // 참고 이미지가 있으면 추가
-    if (reference_image) {
-      requestBody.instances[0].image = {
-        bytesBase64Encoded: reference_image,
-        mimeType: mime_type || 'image/jpeg'
-      };
+    // 참고 이미지가 있으면 추가 (최대 3개)
+    if (reference_images && reference_images.length > 0) {
+      requestBody.instances[0].referenceImages = reference_images.slice(0, 3).map(img => ({
+        image: {
+          bytesBase64Encoded: img.data,
+          mimeType: img.mimeType || 'image/jpeg'
+        }
+      }));
     }
 
     // Veo 3.1 Long Running Operation 시작

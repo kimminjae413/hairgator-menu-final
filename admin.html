@@ -2008,20 +2008,19 @@
                     style="width: 100%; height: 120px; background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 14px; border-radius: 10px; font-size: 14px; resize: vertical;"></textarea>
             </div>
 
-            <!-- 참고 이미지 업로드 (선택) -->
+            <!-- 참고 이미지 업로드 (선택, 최대 3개) -->
             <div style="margin-bottom: 20px;">
                 <label style="color: #fff; font-weight: 600; margin-bottom: 10px; display: block;">
-                    참고 이미지 (선택)
+                    참고 이미지 (선택, 최대 3개)
                     <span style="color: #888; font-weight: 400; font-size: 12px; margin-left: 8px;">이미지를 기반으로 영상 생성</span>
                 </label>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <label style="cursor: pointer; background: #333; border: 1px dashed #555; padding: 12px 20px; border-radius: 8px; color: #aaa; font-size: 13px;">
-                        📷 이미지 선택
-                        <input type="file" id="videoRefImage" accept="image/*" style="display: none;" onchange="previewVideoRefImage(event)">
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <label id="videoRefImageAddBtn" style="cursor: pointer; background: #333; border: 1px dashed #555; padding: 12px 20px; border-radius: 8px; color: #aaa; font-size: 13px;">
+                        📷 이미지 추가
+                        <input type="file" id="videoRefImageInput" accept="image/*" style="display: none;" onchange="addVideoRefImage(event)">
                     </label>
-                    <div id="videoRefImagePreview" style="display: none; align-items: center; gap: 8px;">
-                        <img id="videoRefImg" src="" style="height: 60px; border-radius: 6px;">
-                        <button onclick="clearVideoRefImage()" style="background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 18px;">✕</button>
+                    <div id="videoRefImagesContainer" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <!-- 동적 생성 -->
                     </div>
                 </div>
             </div>
@@ -4283,28 +4282,68 @@
         }
 
         // ==================== 영상 생성 (Veo 3.1) ====================
-        let videoRefImageBase64 = null;
-        let videoRefImageMimeType = 'image/jpeg';
+        let videoRefImages = []; // 최대 3개
 
-        function previewVideoRefImage(event) {
+        function addVideoRefImage(event) {
             const file = event.target.files[0];
             if (!file) return;
+
+            if (videoRefImages.length >= 3) {
+                showToast('참고 이미지는 최대 3개까지 추가할 수 있습니다');
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = function(e) {
-                const base64 = e.target.result;
-                videoRefImageBase64 = base64.split(',')[1];
-                videoRefImageMimeType = file.type || 'image/jpeg';
-                document.getElementById('videoRefImg').src = base64;
-                document.getElementById('videoRefImagePreview').style.display = 'flex';
+                const base64Full = e.target.result;
+                const base64Data = base64Full.split(',')[1];
+                const imageId = Date.now();
+
+                videoRefImages.push({
+                    id: imageId,
+                    data: base64Data,
+                    mimeType: file.type || 'image/jpeg',
+                    preview: base64Full
+                });
+
+                renderVideoRefImages();
+                updateVideoRefAddBtn();
             };
             reader.readAsDataURL(file);
+
+            // input 초기화 (같은 파일 다시 선택 가능하도록)
+            event.target.value = '';
         }
 
-        function clearVideoRefImage() {
-            videoRefImageBase64 = null;
-            document.getElementById('videoRefImage').value = '';
-            document.getElementById('videoRefImagePreview').style.display = 'none';
-            document.getElementById('videoRefImg').src = '';
+        function renderVideoRefImages() {
+            const container = document.getElementById('videoRefImagesContainer');
+            container.innerHTML = videoRefImages.map(img => `
+                <div style="position: relative; display: inline-block;">
+                    <img src="${img.preview}" style="height: 60px; border-radius: 6px; border: 1px solid #555;">
+                    <button onclick="removeVideoRefImage(${img.id})" style="position: absolute; top: -8px; right: -8px; background: #ff6b6b; border: none; color: white; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 12px; line-height: 1;">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function removeVideoRefImage(imageId) {
+            videoRefImages = videoRefImages.filter(img => img.id !== imageId);
+            renderVideoRefImages();
+            updateVideoRefAddBtn();
+        }
+
+        function updateVideoRefAddBtn() {
+            const addBtn = document.getElementById('videoRefImageAddBtn');
+            if (videoRefImages.length >= 3) {
+                addBtn.style.display = 'none';
+            } else {
+                addBtn.style.display = 'block';
+            }
+        }
+
+        function clearAllVideoRefImages() {
+            videoRefImages = [];
+            renderVideoRefImages();
+            updateVideoRefAddBtn();
         }
 
         async function generateVideo() {
@@ -4328,9 +4367,12 @@
                     aspect_ratio: aspectRatio
                 };
 
-                if (videoRefImageBase64) {
-                    payload.reference_image = videoRefImageBase64;
-                    payload.mime_type = videoRefImageMimeType;
+                // 참고 이미지 배열 전송 (최대 3개)
+                if (videoRefImages.length > 0) {
+                    payload.reference_images = videoRefImages.map(img => ({
+                        data: img.data,
+                        mimeType: img.mimeType
+                    }));
                 }
 
                 const response = await fetch('/.netlify/functions/chatbot-api', {
