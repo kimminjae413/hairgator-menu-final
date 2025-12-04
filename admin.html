@@ -1711,10 +1711,10 @@
             <!-- 계정 추가 폼 -->
             <div class="ig-add-form">
                 <div class="ig-input-group">
-                    <label>인스타그램 계정명</label>
+                    <label>인스타그램 계정명 또는 URL</label>
                     <div class="ig-input-row">
                         <span class="ig-at-symbol">@</span>
-                        <input type="text" id="igAccountInput" placeholder="username" maxlength="30">
+                        <input type="text" id="igAccountInput" placeholder="username 또는 instagram.com/username" maxlength="100">
                         <button class="btn" onclick="addInstagramAccount()">추가</button>
                     </div>
                 </div>
@@ -3637,10 +3637,19 @@
             let username = usernameInput.value.trim();
             const memo = memoInput.value.trim();
 
+            // URL에서 계정명 추출 (instagram.com/username 형식)
+            const urlMatch = username.match(/instagram\.com\/([a-zA-Z0-9._]+)/);
+            if (urlMatch) {
+                username = urlMatch[1];
+            }
+
             // @ 제거
             if (username.startsWith('@')) {
                 username = username.substring(1);
             }
+
+            // 끝의 슬래시나 쿼리 파라미터 제거
+            username = username.split('/')[0].split('?')[0];
 
             // 유효성 검사
             if (!username) {
