@@ -4012,6 +4012,46 @@
             console.log('✅ Hair AR 중지됨');
         }
 
+        // AR용 조명 분석 (프레임마다 업데이트)
+        let arLightingInfo = { avgR: 128, avgG: 128, avgB: 128, colorTemp: 'neutral', brightnessOffset: 0 };
+
+        // 조명 분석 함수
+        function analyzeARLighting(pixels, width, height) {
+            let rSum = 0, gSum = 0, bSum = 0;
+            let sampleCount = 0;
+
+            // 상단 30% 영역 샘플링 (배경/조명 영향 측정)
+            const sampleEndY = Math.floor(height * 0.3);
+            for (let y = 0; y < sampleEndY; y += 5) {
+                for (let x = 0; x < width; x += 5) {
+                    const i = (y * width + x) * 4;
+                    rSum += pixels[i];
+                    gSum += pixels[i + 1];
+                    bSum += pixels[i + 2];
+                    sampleCount++;
+                }
+            }
+
+            if (sampleCount > 0) {
+                const avgR = rSum / sampleCount;
+                const avgG = gSum / sampleCount;
+                const avgB = bSum / sampleCount;
+                const avgBrightness = (avgR + avgG + avgB) / 3;
+
+                // 색온도 판단
+                let colorTemp = 'neutral';
+                if (avgR > avgB + 20) colorTemp = 'warm';      // 노란/주황 조명
+                else if (avgB > avgR + 15) colorTemp = 'cool'; // 파란/형광 조명
+
+                // 밝기 오프셋 계산 (정상 조명 기준 128과의 차이)
+                const brightnessOffset = avgBrightness - 128;
+
+                arLightingInfo = { avgR, avgG, avgB, colorTemp, brightnessOffset };
+            }
+
+            return arLightingInfo;
+        }
+
         // Selfie Segmentation 결과 처리 (머리카락 색상 적용)
         function onARResults(results) {
             if (!arCanvasCtx || !arCanvasElement) return;
@@ -4046,6 +4086,23 @@
             const imageData = arCanvasCtx.getImageData(0, 0, width, height);
             const pixels = imageData.data;
 
+            // 🔆 조명 분석 (매 프레임)
+            analyzeARLighting(pixels, width, height);
+            const lighting = arLightingInfo;
+
+            // 조명에 따른 밝기 임계값 조정
+            // 노란 조명(warm)에서는 전체적으로 밝게 보이므로 임계값 상향
+            // 어두운 환경에서는 임계값 하향
+            let brightThreshold = 80;
+            if (lighting.colorTemp === 'warm') {
+                brightThreshold = 100 + (lighting.brightnessOffset * 0.3); // 노란 조명 보정
+            } else if (lighting.colorTemp === 'cool') {
+                brightThreshold = 70 + (lighting.brightnessOffset * 0.2);  // 형광등 보정
+            } else {
+                brightThreshold = 80 + (lighting.brightnessOffset * 0.25);
+            }
+            brightThreshold = Math.max(50, Math.min(150, brightThreshold)); // 50~150 범위 제한
+
             // 선택된 색상 RGB 파싱
             const targetColor = hexToRgb(arCurrentColor);
             if (!targetColor) return;
@@ -4061,35 +4118,56 @@
                 const r = pixels[i];
                 const g = pixels[i + 1];
                 const b = pixels[i + 2];
-                const brightness = (r + g + b) / 3;
 
-                // ===== 머리카락 감지 조건 (엄격하게) =====
+                // 조명 보정된 밝기 계산
+                // 노란 조명에서는 R,G가 높아지므로 보정
+                let correctedR = r, correctedG = g, correctedB = b;
+                if (lighting.colorTemp === 'warm' && lighting.avgR > 140) {
+                    // 노란 조명 보정: R,G를 약간 낮춤
+                    const warmFactor = Math.min(0.15, (lighting.avgR - 128) / 500);
+                    correctedR = r * (1 - warmFactor);
+                    correctedG = g * (1 - warmFactor * 0.5);
+                } else if (lighting.colorTemp === 'cool' && lighting.avgB > 140) {
+                    // 푸른 조명 보정: B를 약간 낮춤
+                    const coolFactor = Math.min(0.1, (lighting.avgB - 128) / 500);
+                    correctedB = b * (1 - coolFactor);
+                }
 
-                // 1. 사람 영역이어야 함 (mask > 200 = 확실한 사람 영역)
+                const brightness = (correctedR + correctedG + correctedB) / 3;
+
+                // ===== 머리카락 감지 조건 (조명 보정 적용) =====
+
+                // 1. 사람 영역이어야 함
                 const isPersonArea = maskValue > 200;
 
-                // 2. 화면 상단 60% 영역만 (머리카락은 보통 위쪽에 있음)
+                // 2. 화면 상단 60% 영역만
                 const isUpperArea = y < height * 0.6;
 
-                // 3. 어두운 영역 (머리카락은 보통 어두움) - 밝기 < 80
-                const isDarkEnough = brightness < 80;
+                // 3. 어두운 영역 (조명 보정된 임계값 사용)
+                const isDarkEnough = brightness < brightThreshold;
 
-                // 4. 피부색 제외 (피부는 R > G > B 패턴, 따뜻한 톤)
-                // 피부색 특징: R이 높고, R-G 차이가 작고, R-B 차이가 큼
-                const rMinusG = r - g;
-                const rMinusB = r - b;
-                const isSkinTone = (r > 100 && g > 60 && b > 40 &&
-                                   rMinusG > -10 && rMinusG < 40 &&
-                                   rMinusB > 10 && rMinusB < 80);
+                // 4. 피부색 제외 (조명 보정된 값으로 판단)
+                const rMinusG = correctedR - correctedG;
+                const rMinusB = correctedR - correctedB;
+                // 노란 조명에서는 피부 감지 범위 확대
+                const skinRangeExpand = lighting.colorTemp === 'warm' ? 15 : 0;
+                const isSkinTone = (correctedR > (100 - skinRangeExpand) &&
+                                   correctedG > (60 - skinRangeExpand) &&
+                                   correctedB > 40 &&
+                                   rMinusG > -10 && rMinusG < (40 + skinRangeExpand) &&
+                                   rMinusB > 10 && rMinusB < (80 + skinRangeExpand));
 
-                // 5. 옷/몸통 제외 (화면 하단 40% 이하는 옷일 가능성 높음)
+                // 5. 옷/몸통 제외
                 const isBodyArea = y > height * 0.55;
 
-                // 6. 머리카락 색상 패턴 (R≈G≈B이거나 약간 따뜻한 톤의 어두운 색)
-                const colorVariance = Math.max(r, g, b) - Math.min(r, g, b);
-                const isHairColorPattern = colorVariance < 50; // 머리카락은 채도가 낮음
+                // 6. 머리카락 색상 패턴 (채도 낮음)
+                const colorVariance = Math.max(correctedR, correctedG, correctedB) -
+                                     Math.min(correctedR, correctedG, correctedB);
+                // 조명이 강하면 채도 허용 범위 확대
+                const varianceThreshold = 50 + Math.abs(lighting.brightnessOffset) * 0.3;
+                const isHairColorPattern = colorVariance < varianceThreshold;
 
-                // 7. 너무 밝은 영역 제외 (하이라이트)
+                // 7. 너무 밝은 영역 제외
                 const isHighlight = brightness > 180;
 
                 // 최종 머리카락 판정
