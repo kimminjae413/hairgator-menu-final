@@ -1594,7 +1594,7 @@ class AIStudio {
       if (result.success && result.data) {
         // 새 데이터로 캔버스 업데이트
         this.showMaleRecipeCanvas(result.data, this.currentMaleAnalysis.uploadedImageUrl);
-        this.addBotMessage(`✅ **${newStyleCode}** 스타일로 재분석 완료!`);
+        console.log(`✅ ${newStyleCode} 스타일로 재분석 완료!`);
       } else {
         throw new Error(result.error || '재분석 실패');
       }
@@ -1655,7 +1655,7 @@ class AIStudio {
       if (result.success && result.data) {
         // 새 데이터로 캔버스 업데이트
         this.showCustomRecipeCanvas(result.data, this.currentFemaleAnalysis.uploadedImageUrl);
-        this.addBotMessage(`✅ **${newLengthCode} Length + ${newForm}**로 재분석 완료!`);
+        console.log(`✅ ${newLengthCode} Length + ${newForm}로 재분석 완료!`);
       } else {
         throw new Error(result.error || '재분석 실패');
       }
