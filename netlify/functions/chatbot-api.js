@@ -5361,11 +5361,11 @@ THE HAIRSTYLE MUST BE VISUALLY IDENTICAL TO THE REFERENCE. Only the model's face
 
 // ==================== 어드민: AI 카드뉴스 생성 ====================
 async function generateCardNews(payload) {
-  const { prompt, aspect_ratio, num_images, reference_image, mime_type } = payload;
+  const { title, pages, aspect_ratio, num_images, reference_image, mime_type } = payload;
 
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
-  console.log('📰 카드뉴스 생성 시작:', { prompt: prompt?.substring(0, 50), aspect_ratio, num_images });
+  console.log('📰 카드뉴스 생성 시작:', { title, pageCount: pages?.length, aspect_ratio });
 
   if (!ADMIN_GEMINI_KEY) {
     return {
@@ -5375,11 +5375,11 @@ async function generateCardNews(payload) {
     };
   }
 
-  if (!prompt) {
+  if (!title && (!pages || !pages[0])) {
     return {
       statusCode: 400,
       headers,
-      body: JSON.stringify({ success: false, error: '프롬프트를 입력해주세요' })
+      body: JSON.stringify({ success: false, error: '제목 또는 내용을 입력해주세요' })
     };
   }
 
@@ -5392,36 +5392,43 @@ async function generateCardNews(payload) {
     };
 
     const sizeText = ratioGuide[aspect_ratio] || ratioGuide['1:1'];
+    const numToGenerate = Math.min(num_images || pages?.length || 2, 8);
+    const generatedImages = [];
 
-    // HAIRGATOR 브랜드 스타일 카드뉴스 프롬프트
-    const cardNewsPrompt = `Create a professional Instagram card news image for HAIRGATOR - a Korean hair education & styling app for hair designers.
+    for (let i = 0; i < numToGenerate; i++) {
+      console.log(`🖼️ 카드뉴스 생성 ${i + 1}/${numToGenerate}...`);
 
-USER REQUEST: ${prompt}
+      // 각 장별 내용 가져오기
+      const pageContent = pages?.[i] || '';
+      const pageNum = i + 1;
+
+      // HAIRGATOR 브랜드 스타일 카드뉴스 프롬프트 (각 장별)
+      const cardNewsPrompt = `Create a professional Instagram card news image for HAIRGATOR - a Korean hair education & styling app for hair designers.
+
+CARD NEWS INFO:
+- Series Title: "${title || '헤어 트렌드'}"
+- This is Page ${pageNum} of ${numToGenerate}
+- Page ${pageNum} Content: "${pageContent || '(자유 디자인)'}"
 
 BRAND STYLE GUIDE (MUST FOLLOW):
 - Background: Clean WHITE background (primary)
 - Accent Color: Magenta Pink (#E91E63) for important highlights, buttons, text emphasis
 - Secondary: Subtle pink gradients or pink accents
-- Typography: Modern, clean sans-serif fonts
+- Typography: Modern, clean Korean sans-serif fonts
 - Overall Feel: Premium, professional, clean, minimal yet impactful
 
 IMAGE REQUIREMENTS:
 - Format: ${sizeText}
 - Target Audience: Professional hair designers / hairstylists (헤어디자이너)
-- Purpose: Instagram marketing for hair industry professionals
-- Language: Korean text preferred for any text elements
+- Purpose: Instagram carousel post for hair industry professionals
+- Include page number indicator if this is a multi-page series (${pageNum}/${numToGenerate})
+- Language: Use Korean text for all text elements
 - Quality: High resolution, visually stunning, professional design level
 - Style: Clean white space with strategic pink (#E91E63) accent points
 - NO cluttered designs - embrace whitespace
 - NO watermarks
 
-The design should look like it was created by a premium Korean beauty brand's design team, targeting professional hairstylists who want sophisticated, clean marketing materials.`;
-
-    const numToGenerate = Math.min(num_images || 2, 8);
-    const generatedImages = [];
-
-    for (let i = 0; i < numToGenerate; i++) {
-      console.log(`🖼️ 카드뉴스 생성 ${i + 1}/${numToGenerate}...`);
+The design should look like it was created by a premium Korean beauty brand's design team. Make the content "${pageContent}" visually engaging and easy to read.`;
 
       // parts 구성
       const parts = [];
@@ -5434,7 +5441,7 @@ The design should look like it was created by a premium Korean beauty brand's de
             data: reference_image
           }
         });
-        parts.push({ text: `Use this reference image as inspiration. ${cardNewsPrompt}` });
+        parts.push({ text: `Use this reference image as style inspiration. ${cardNewsPrompt}` });
       } else {
         parts.push({ text: cardNewsPrompt });
       }

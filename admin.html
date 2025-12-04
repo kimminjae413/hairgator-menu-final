@@ -1898,11 +1898,19 @@
                 참고 이미지를 업로드하면 해당 이미지를 기반으로 생성합니다.
             </p>
 
-            <!-- 프롬프트 입력 -->
+            <!-- 제목 입력 -->
             <div class="cardnews-input-section">
-                <label style="color: #fff; font-weight: 600; margin-bottom: 10px; display: block;">프롬프트 입력</label>
-                <textarea id="cardNewsPrompt" placeholder="예: 봄 시즌 할인 이벤트, 벚꽃 배경에 여성 헤어스타일 강조, 세련된 느낌으로&#10;&#10;예: 남성 투블럭 컷 전후 비교, 깔끔하고 모던한 느낌&#10;&#10;예: 미용실 오픈 기념 이벤트, 화려한 색상과 파티 분위기"
-                    style="width: 100%; height: 120px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; padding: 12px; font-size: 14px; resize: vertical;"></textarea>
+                <label style="color: #fff; font-weight: 600; margin-bottom: 10px; display: block;">📌 카드뉴스 제목</label>
+                <input type="text" id="cardNewsTitle" placeholder="예: 2025 봄 시즌 헤어 트렌드"
+                    style="width: 100%; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; padding: 12px; font-size: 14px;">
+            </div>
+
+            <!-- 각 장별 내용 입력 -->
+            <div class="cardnews-pages-section" style="margin-top: 20px;">
+                <label style="color: #fff; font-weight: 600; margin-bottom: 10px; display: block;">📝 각 장별 내용</label>
+                <div id="cardNewsPagesContainer">
+                    <!-- 동적으로 생성됨 -->
+                </div>
             </div>
 
             <!-- 참고 이미지 업로드 (선택) -->
@@ -1930,7 +1938,7 @@
                 </div>
                 <div class="gen-option-item">
                     <label style="color: #ccc; font-size: 13px;">생성 개수</label>
-                    <select id="cardNewsCount" style="background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 6px; min-width: 100px;">
+                    <select id="cardNewsCount" style="background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 6px; min-width: 100px;" onchange="updateCardNewsPages()">
                         <option value="1">1장</option>
                         <option value="2" selected>2장</option>
                         <option value="4">4장</option>
@@ -3949,6 +3957,30 @@
         let cardNewsImageBase64 = null;
         let cardNewsImageMimeType = 'image/jpeg';
 
+        // 페이지 입력창 동적 생성
+        function updateCardNewsPages() {
+            const count = parseInt(document.getElementById('cardNewsCount').value);
+            const container = document.getElementById('cardNewsPagesContainer');
+
+            container.innerHTML = '';
+
+            for (let i = 1; i <= count; i++) {
+                const pageDiv = document.createElement('div');
+                pageDiv.style.cssText = 'margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;';
+                pageDiv.innerHTML = `
+                    <span style="color: #E91E63; font-weight: 600; min-width: 50px; padding-top: 10px;">${i}장</span>
+                    <textarea id="cardNewsPage${i}" placeholder="예: 올 봄 트렌드는 자연스러운 웨이브! 볼륨감 있는 레이어드 컷으로 세련된 느낌을..."
+                        style="flex: 1; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; padding: 10px; font-size: 13px; min-height: 60px; resize: vertical;"></textarea>
+                `;
+                container.appendChild(pageDiv);
+            }
+        }
+
+        // 페이지 로드 시 초기 입력창 생성
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCardNewsPages();
+        });
+
         // 카드뉴스 이미지 미리보기
         function previewCardNewsImage(event) {
             const file = event.target.files[0];
@@ -3980,10 +4012,19 @@
 
         // 카드뉴스 생성
         async function generateCardNews() {
-            const prompt = document.getElementById('cardNewsPrompt').value.trim();
+            const title = document.getElementById('cardNewsTitle').value.trim();
+            const count = parseInt(document.getElementById('cardNewsCount').value);
 
-            if (!prompt) {
-                showToast('프롬프트를 입력해주세요');
+            // 각 장별 내용 수집
+            const pages = [];
+            for (let i = 1; i <= count; i++) {
+                const pageContent = document.getElementById(`cardNewsPage${i}`)?.value.trim() || '';
+                pages.push(pageContent);
+            }
+
+            // 최소 제목 또는 첫 번째 장 내용이 있어야 함
+            if (!title && !pages[0]) {
+                showToast('제목 또는 1장 내용을 입력해주세요');
                 return;
             }
 
@@ -3992,11 +4033,11 @@
             btn.innerHTML = '<span class="loading-spinner"></span>생성 중... (약 10-30초 소요)';
 
             const ratio = document.getElementById('cardNewsRatio').value;
-            const count = parseInt(document.getElementById('cardNewsCount').value);
 
             try {
                 const payload = {
-                    prompt: prompt,
+                    title: title,
+                    pages: pages,
                     aspect_ratio: ratio,
                     num_images: count
                 };
