@@ -1925,19 +1925,6 @@
                 </div>
             </div>
 
-            <!-- 참고 이미지 업로드 (선택) -->
-            <div class="cardnews-upload-section" style="margin-top: 20px;">
-                <label style="color: #fff; font-weight: 600; margin-bottom: 10px; display: block;">
-                    참고 이미지 (선택)
-                    <span style="color: #888; font-weight: 400; font-size: 12px; margin-left: 8px;">업로드하면 이 이미지를 참고하여 생성</span>
-                </label>
-                <input type="file" id="cardNewsImageInput" accept="image/*" class="gen-input-file" onchange="previewCardNewsImage(event)">
-                <div id="cardNewsImagePreview" style="display: none; margin-top: 10px;">
-                    <img id="cardNewsPreviewImg" src="" alt="미리보기" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #444;">
-                    <button onclick="clearCardNewsImage()" style="display: block; margin-top: 8px; background: #dc3545; border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">이미지 제거</button>
-                </div>
-            </div>
-
             <!-- 옵션 선택 -->
             <div class="cardnews-options" style="margin-top: 20px; display: flex; gap: 20px; flex-wrap: wrap;">
                 <div class="gen-option-item">
@@ -3969,11 +3956,34 @@
         };
 
         // ==================== 카드뉴스 생성 ====================
-        let cardNewsImageBase64 = null;
-        let cardNewsImageMimeType = 'image/jpeg';
+        // 각 장별 이미지 저장
+        let cardNewsPageImages = {};
 
         // 현재 카드뉴스 페이지 수
         let cardNewsPageNum = 1;
+
+        // 페이지 HTML 생성 함수
+        function createPageHTML(pageNum) {
+            return `
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <span style="color: #E91E63; font-weight: 600; min-width: 50px; padding-top: 10px;">${pageNum}장</span>
+                    <div style="flex: 1;">
+                        <textarea id="cardNewsPage${pageNum}" placeholder="예: 올 봄 트렌드는 자연스러운 웨이브! 볼륨감 있는 레이어드 컷으로 세련된 느낌을..."
+                            style="width: 100%; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; padding: 10px; font-size: 13px; min-height: 60px; resize: vertical; box-sizing: border-box;"></textarea>
+                        <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px;">
+                            <label style="cursor: pointer; background: #333; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #aaa; display: inline-flex; align-items: center; gap: 4px;">
+                                📷 참고 이미지
+                                <input type="file" accept="image/*" style="display: none;" onchange="previewPageImage(${pageNum}, event)">
+                            </label>
+                            <div id="cardNewsPageImgPreview${pageNum}" style="display: none; align-items: center;">
+                                <img id="cardNewsPageImg${pageNum}" src="" style="height: 40px; border-radius: 4px;">
+                                <button onclick="clearPageImage(${pageNum})" style="background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 16px; margin-left: 4px;">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
 
         // 장 추가 (기존 내용 유지)
         function addCardNewsPage() {
@@ -3986,12 +3996,8 @@
             const container = document.getElementById('cardNewsPagesContainer');
             const pageDiv = document.createElement('div');
             pageDiv.id = `cardNewsPageDiv${cardNewsPageNum}`;
-            pageDiv.style.cssText = 'margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;';
-            pageDiv.innerHTML = `
-                <span style="color: #E91E63; font-weight: 600; min-width: 50px; padding-top: 10px;">${cardNewsPageNum}장</span>
-                <textarea id="cardNewsPage${cardNewsPageNum}" placeholder="예: 올 봄 트렌드는 자연스러운 웨이브! 볼륨감 있는 레이어드 컷으로 세련된 느낌을..."
-                    style="flex: 1; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; padding: 10px; font-size: 13px; min-height: 60px; resize: vertical;"></textarea>
-            `;
+            pageDiv.style.cssText = 'margin-bottom: 16px; padding: 12px; background: #1a1a1a; border-radius: 10px; border: 1px solid #333;';
+            pageDiv.innerHTML = createPageHTML(cardNewsPageNum);
             container.appendChild(pageDiv);
 
             updatePageCount();
@@ -4000,6 +4006,9 @@
         // 장 삭제 (마지막 장만)
         function removeCardNewsPage() {
             if (cardNewsPageNum <= 1) return;
+
+            // 해당 페이지 이미지도 삭제
+            delete cardNewsPageImages[cardNewsPageNum];
 
             const pageDiv = document.getElementById(`cardNewsPageDiv${cardNewsPageNum}`);
             if (pageDiv) pageDiv.remove();
@@ -4014,44 +4023,42 @@
             document.getElementById('removePageBtn').style.display = cardNewsPageNum > 1 ? 'block' : 'none';
         }
 
-        // 페이지 로드 시 초기 입력창 생성
-        document.addEventListener('DOMContentLoaded', function() {
-            const container = document.getElementById('cardNewsPagesContainer');
-            container.innerHTML = `
-                <div id="cardNewsPageDiv1" style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
-                    <span style="color: #E91E63; font-weight: 600; min-width: 50px; padding-top: 10px;">1장</span>
-                    <textarea id="cardNewsPage1" placeholder="예: 올 봄 트렌드는 자연스러운 웨이브! 볼륨감 있는 레이어드 컷으로 세련된 느낌을..."
-                        style="flex: 1; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; padding: 10px; font-size: 13px; min-height: 60px; resize: vertical;"></textarea>
-                </div>
-            `;
-            updatePageCount();
-        });
-
-        // 카드뉴스 이미지 미리보기
-        function previewCardNewsImage(event) {
+        // 각 장별 이미지 미리보기
+        function previewPageImage(pageNum, event) {
             const file = event.target.files[0];
             if (!file) return;
-
-            cardNewsImageMimeType = file.type || 'image/jpeg';
 
             const reader = new FileReader();
             reader.onload = function(e) {
                 const base64 = e.target.result;
-                cardNewsImageBase64 = base64.split(',')[1]; // data:image/...;base64, 부분 제거
+                cardNewsPageImages[pageNum] = {
+                    data: base64.split(',')[1],
+                    mimeType: file.type || 'image/jpeg'
+                };
 
-                document.getElementById('cardNewsPreviewImg').src = base64;
-                document.getElementById('cardNewsImagePreview').style.display = 'block';
+                document.getElementById(`cardNewsPageImg${pageNum}`).src = base64;
+                document.getElementById(`cardNewsPageImgPreview${pageNum}`).style.display = 'flex';
             };
             reader.readAsDataURL(file);
         }
 
-        // 카드뉴스 이미지 제거
-        function clearCardNewsImage() {
-            cardNewsImageBase64 = null;
-            document.getElementById('cardNewsImageInput').value = '';
-            document.getElementById('cardNewsImagePreview').style.display = 'none';
-            document.getElementById('cardNewsPreviewImg').src = '';
+        // 각 장별 이미지 제거
+        function clearPageImage(pageNum) {
+            delete cardNewsPageImages[pageNum];
+            document.getElementById(`cardNewsPageImgPreview${pageNum}`).style.display = 'none';
+            document.getElementById(`cardNewsPageImg${pageNum}`).src = '';
         }
+
+        // 페이지 로드 시 초기 입력창 생성
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('cardNewsPagesContainer');
+            container.innerHTML = `
+                <div id="cardNewsPageDiv1" style="margin-bottom: 16px; padding: 12px; background: #1a1a1a; border-radius: 10px; border: 1px solid #333;">
+                    ${createPageHTML(1)}
+                </div>
+            `;
+            updatePageCount();
+        });
 
         // 생성된 카드뉴스 이미지 저장 (일괄 다운로드용)
         let generatedCardNewsImages = [];
@@ -4081,18 +4088,21 @@
             const ratio = document.getElementById('cardNewsRatio').value;
 
             try {
+                // 각 장별 이미지 수집
+                const pageImages = {};
+                for (let i = 1; i <= count; i++) {
+                    if (cardNewsPageImages[i]) {
+                        pageImages[i] = cardNewsPageImages[i];
+                    }
+                }
+
                 const payload = {
                     title: title,
                     pages: pages,
                     aspect_ratio: ratio,
-                    num_images: count
+                    num_images: count,
+                    page_images: pageImages
                 };
-
-                // 참고 이미지가 있으면 추가
-                if (cardNewsImageBase64) {
-                    payload.reference_image = cardNewsImageBase64;
-                    payload.mime_type = cardNewsImageMimeType;
-                }
 
                 const response = await fetch('/.netlify/functions/chatbot-api', {
                     method: 'POST',

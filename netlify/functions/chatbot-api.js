@@ -5365,11 +5365,11 @@ THE HAIRSTYLE MUST BE VISUALLY IDENTICAL TO THE REFERENCE. Only the model's face
 
 // ==================== 어드민: AI 카드뉴스 생성 ====================
 async function generateCardNews(payload) {
-  const { title, pages, aspect_ratio, num_images, reference_image, mime_type } = payload;
+  const { title, pages, aspect_ratio, num_images, page_images } = payload;
 
   const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
 
-  console.log('📰 카드뉴스 생성 시작:', { title, pageCount: pages?.length, aspect_ratio });
+  console.log('📰 카드뉴스 생성 시작:', { title, pageCount: pages?.length, aspect_ratio, hasPageImages: !!page_images });
 
   if (!ADMIN_GEMINI_KEY) {
     return {
@@ -5437,15 +5437,36 @@ The design should look like it was created by a premium Korean beauty brand's de
       // parts 구성
       const parts = [];
 
-      // 참고 이미지가 있으면 추가
-      if (reference_image) {
+      // 해당 장의 참고 이미지가 있으면 추가
+      const pageImageData = page_images?.[pageNum];
+      if (pageImageData && pageImageData.data) {
+        // 이미지 맥락 분석 후 카드뉴스 생성 프롬프트
+        const imageContextPrompt = `IMPORTANT - CONTEXT-AWARE IMAGE GENERATION:
+
+1. First, ANALYZE the uploaded image:
+   - What is this image showing? (app screenshot, salon scene, hairstyle photo, etc.)
+   - What is the PURPOSE or USE CASE of what's shown?
+   - What story or message does this image convey?
+
+2. Then, COMBINE your analysis with the text content:
+   - Text content for this page: "${pageContent || '(자유 디자인)'}"
+   - Understand the CONNECTION between the image and the text
+   - Example: If image shows a hair menu app + text says "고객 상담에 도움" → Create a scene of stylist consulting with client using tablet
+
+3. Finally, CREATE a card news image that:
+   - Visually represents the COMBINED meaning of image + text
+   - Shows a realistic, relatable scene for hair designers
+   - NOT just copying the uploaded image, but creating NEW visual that captures the essence
+
+${cardNewsPrompt}`;
+
         parts.push({
           inline_data: {
-            mime_type: mime_type || 'image/jpeg',
-            data: reference_image
+            mime_type: pageImageData.mimeType || 'image/jpeg',
+            data: pageImageData.data
           }
         });
-        parts.push({ text: `Use this reference image as style inspiration. ${cardNewsPrompt}` });
+        parts.push({ text: imageContextPrompt });
       } else {
         parts.push({ text: cardNewsPrompt });
       }
@@ -5498,7 +5519,7 @@ The design should look like it was created by a premium Korean beauty brand's de
         success: true,
         data: {
           images: generatedImages,
-          prompt: prompt,
+          title: title,
           count: generatedImages.length
         }
       })
