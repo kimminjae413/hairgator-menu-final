@@ -2322,7 +2322,7 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
 
 // 스트리밍 응답
 async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
-  const { user_query } = payload;
+  const { user_query, chat_history } = payload;
   const userLanguage = detectLanguage(user_query);
 
   console.log(`🔍 Gemini File Search 스트리밍: "${user_query}"`);
@@ -2372,6 +2372,27 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
   }
 
   try {
+    // 대화 히스토리를 Gemini 형식으로 변환
+    const contents = [];
+
+    // 이전 대화 히스토리 추가 (있으면)
+    if (chat_history && Array.isArray(chat_history) && chat_history.length > 0) {
+      console.log(`📜 대화 히스토리 ${chat_history.length}개 포함`);
+
+      for (const msg of chat_history) {
+        contents.push({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.content }]
+        });
+      }
+    }
+
+    // 현재 사용자 질문 추가
+    contents.push({
+      role: 'user',
+      parts: [{ text: user_query }]
+    });
+
     // Gemini File Search API 호출 (비스트리밍으로 전체 받아서 SSE로 변환)
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
@@ -2379,10 +2400,7 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{
-            role: 'user',
-            parts: [{ text: user_query }]
-          }],
+          contents: contents,
           systemInstruction: {
             parts: [{ text: buildGeminiSystemPrompt(userLanguage) }]
           },

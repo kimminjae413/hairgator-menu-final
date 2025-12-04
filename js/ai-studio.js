@@ -576,6 +576,14 @@ class AIStudio {
   async callAPI(query) {
     console.log('📤 API 호출:', query);
 
+    // 최근 대화 히스토리 (최대 10개) - 맥락 유지용
+    const recentHistory = this.conversationHistory
+      .slice(-10)
+      .map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      }));
+
     const response = await fetch(this.apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -583,7 +591,8 @@ class AIStudio {
         action: 'generate_response_stream',
         payload: {
           user_query: query,
-          language: this.currentLanguage
+          language: this.currentLanguage,
+          chat_history: recentHistory
         }
       })
     });
