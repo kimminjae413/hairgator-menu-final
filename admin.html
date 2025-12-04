@@ -1972,6 +1972,19 @@
                 <div id="cardNewsResultGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
                     <!-- 동적 생성 -->
                 </div>
+
+                <!-- 추천 키워드/해시태그 -->
+                <div id="cardNewsKeywordsSection" style="margin-top: 24px; padding: 16px; background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.3); border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="color: #E91E63; font-size: 14px; margin: 0;">#️⃣ 추천 해시태그</h4>
+                        <button onclick="copyKeywords()" style="background: #E91E63; border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                            📋 복사
+                        </button>
+                    </div>
+                    <div id="cardNewsKeywords" style="color: #fff; font-size: 13px; line-height: 1.8; word-break: keep-all;">
+                        <!-- 동적 생성 -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -4063,6 +4076,9 @@
                     generatedCardNewsImages = result.data.images; // 일괄 다운로드용 저장
                     displayCardNewsResults(result.data.images);
                     showToast(`${result.data.images.length}개 카드뉴스 생성 완료!`);
+
+                    // 키워드 추천 요청
+                    generateKeywords(title, pages);
                 } else {
                     throw new Error(result.error || '카드뉴스 생성 실패');
                 }
@@ -4073,6 +4089,46 @@
                 btn.disabled = false;
                 btn.innerHTML = '🎨 카드뉴스 생성하기';
             }
+        }
+
+        // 키워드/해시태그 추천 생성
+        async function generateKeywords(title, pages) {
+            const keywordsDiv = document.getElementById('cardNewsKeywords');
+            keywordsDiv.innerHTML = '<span style="color: #888;">해시태그 생성 중...</span>';
+
+            try {
+                const response = await fetch('/.netlify/functions/chatbot-api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'generate_cardnews_keywords',
+                        payload: { title, pages }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.keywords) {
+                    keywordsDiv.innerHTML = result.data.keywords;
+                } else {
+                    keywordsDiv.innerHTML = '<span style="color: #888;">해시태그 생성 실패</span>';
+                }
+            } catch (error) {
+                console.error('키워드 생성 오류:', error);
+                keywordsDiv.innerHTML = '<span style="color: #888;">해시태그 생성 실패</span>';
+            }
+        }
+
+        // 키워드 복사
+        function copyKeywords() {
+            const keywordsDiv = document.getElementById('cardNewsKeywords');
+            const text = keywordsDiv.innerText;
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('해시태그가 복사되었습니다!');
+            }).catch(() => {
+                showToast('복사 실패');
+            });
         }
 
         // 카드뉴스 결과 표시 (호버 효과 추가)

@@ -419,6 +419,10 @@ exports.handler = async (event, context) => {
       case 'generate_cardnews':
         return await generateCardNews(payload);
 
+      // ⭐ 어드민: 카드뉴스 키워드/해시태그 추천
+      case 'generate_cardnews_keywords':
+        return await generateCardNewsKeywords(payload);
+
       default:
         return {
           statusCode: 400,
@@ -5502,6 +5506,86 @@ The design should look like it was created by a premium Korean beauty brand's de
 
   } catch (error) {
     console.error('💥 카드뉴스 생성 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 어드민: 카드뉴스 키워드/해시태그 추천 ====================
+async function generateCardNewsKeywords(payload) {
+  const { title, pages } = payload;
+
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
+
+  if (!ADMIN_GEMINI_KEY) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: 'GEMINI_API_KEY not configured' })
+    };
+  }
+
+  try {
+    // 모든 페이지 내용 합치기
+    const allContent = [title, ...(pages || [])].filter(Boolean).join(' ');
+
+    const prompt = `당신은 인스타그램 마케팅 전문가입니다. 아래 헤어살롱/미용 관련 카드뉴스 콘텐츠를 분석하고, 인스타그램에서 높은 도달률과 참여율을 얻을 수 있는 해시태그를 추천해주세요.
+
+콘텐츠:
+제목: ${title || '(제목 없음)'}
+내용: ${pages?.join(' | ') || '(내용 없음)'}
+
+요구사항:
+1. 총 15-20개의 해시태그를 추천해주세요
+2. 대형 해시태그 (100만+ 게시물): 5개
+3. 중형 해시태그 (10만-100만 게시물): 7개
+4. 소형/니치 해시태그 (1만-10만 게시물): 5개
+5. 헤어디자이너/미용사 타겟 해시태그 포함 필수
+6. 한국어 해시태그 위주로 (일부 영어 가능)
+7. HAIRGATOR 브랜드 해시태그 포함: #헤어게이터 #HAIRGATOR
+
+출력 형식:
+해시태그만 공백으로 구분해서 한 줄로 출력 (설명 없이)
+예: #헤어스타일 #미용사 #헤어디자이너 ...`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${ADMIN_GEMINI_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 500
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Gemini API 오류');
+    }
+
+    const result = await response.json();
+    const keywords = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+
+    console.log('✅ 키워드 생성 완료:', keywords.substring(0, 100));
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: { keywords }
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 키워드 생성 오류:', error);
     return {
       statusCode: 500,
       headers,
