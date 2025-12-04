@@ -5151,8 +5151,8 @@ IMPORTANT:
       const result = await response.json();
 
       // 이미지 데이터 추출
-      const parts = result.candidates?.[0]?.content?.parts || [];
-      for (const part of parts) {
+      const responseParts = result.candidates?.[0]?.content?.parts || [];
+      for (const part of responseParts) {
         if (part.inlineData) {
           generatedImages.push({
             url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
