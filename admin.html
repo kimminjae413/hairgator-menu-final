@@ -1938,6 +1938,29 @@
                         <option value="8">8장</option>
                     </select>
                 </div>
+                <div class="gen-option-item">
+                    <label style="color: #ccc; font-size: 13px;">톤앤매너</label>
+                    <select id="cardNewsTone" style="background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 6px; min-width: 150px;">
+                        <option value="luxurious" selected>고급스러운 (Luxurious)</option>
+                        <option value="trendy">트렌디한 (Trendy)</option>
+                        <option value="natural">내추럴한 (Natural)</option>
+                        <option value="cute">귀여운 (Cute)</option>
+                        <option value="minimal">미니멀한 (Minimal)</option>
+                        <option value="vibrant">화려한 (Vibrant)</option>
+                    </select>
+                </div>
+                <div class="gen-option-item">
+                    <label style="color: #ccc; font-size: 13px;">타겟 고객</label>
+                    <select id="cardNewsTarget" style="background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 6px; min-width: 150px;">
+                        <option value="all" selected>전체</option>
+                        <option value="20s_female">20대 여성</option>
+                        <option value="30s_female">30대 여성</option>
+                        <option value="20s_male">20대 남성</option>
+                        <option value="30s_male">30대 남성</option>
+                        <option value="student">학생/대학생</option>
+                        <option value="office">직장인</option>
+                    </select>
+                </div>
             </div>
 
             <!-- 생성 버튼 -->
@@ -1947,7 +1970,12 @@
 
             <!-- 생성된 이미지 결과 -->
             <div id="cardNewsResultSection" style="display: none; margin-top: 30px;">
-                <h3 style="color: #fff; font-size: 16px; margin-bottom: 15px;">🖼️ 생성된 카드뉴스</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="color: #fff; font-size: 16px; margin: 0;">🖼️ 생성된 카드뉴스</h3>
+                    <button onclick="downloadAllCardNews()" style="background: #4CAF50; border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                        📦 전체 다운로드
+                    </button>
+                </div>
                 <div id="cardNewsResultGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
                     <!-- 동적 생성 -->
                 </div>
@@ -3962,6 +3990,9 @@
             document.getElementById('cardNewsPreviewImg').src = '';
         }
 
+        // 생성된 카드뉴스 이미지 저장 (일괄 다운로드용)
+        let generatedCardNewsImages = [];
+
         // 카드뉴스 생성
         async function generateCardNews() {
             const prompt = document.getElementById('cardNewsPrompt').value.trim();
@@ -3977,12 +4008,16 @@
 
             const ratio = document.getElementById('cardNewsRatio').value;
             const count = parseInt(document.getElementById('cardNewsCount').value);
+            const tone = document.getElementById('cardNewsTone').value;
+            const target = document.getElementById('cardNewsTarget').value;
 
             try {
                 const payload = {
                     prompt: prompt,
                     aspect_ratio: ratio,
-                    num_images: count
+                    num_images: count,
+                    tone: tone,
+                    target: target
                 };
 
                 // 참고 이미지가 있으면 추가
@@ -4003,6 +4038,7 @@
                 const result = await response.json();
 
                 if (result.success && result.data && result.data.images) {
+                    generatedCardNewsImages = result.data.images; // 일괄 다운로드용 저장
                     displayCardNewsResults(result.data.images);
                     showToast(`${result.data.images.length}개 카드뉴스 생성 완료!`);
                 } else {
@@ -4017,15 +4053,15 @@
             }
         }
 
-        // 카드뉴스 결과 표시
+        // 카드뉴스 결과 표시 (호버 효과 추가)
         function displayCardNewsResults(images) {
             const grid = document.getElementById('cardNewsResultGrid');
             grid.innerHTML = images.map((img, idx) => `
-                <div style="background: #2a2a2a; border-radius: 12px; overflow: hidden; border: 1px solid #444;">
+                <div class="cardnews-item" style="background: #2a2a2a; border-radius: 12px; overflow: hidden; border: 1px solid #444; position: relative; transition: transform 0.3s, box-shadow 0.3s;" onmouseenter="this.style.transform='scale(1.02)'; this.style.boxShadow='0 8px 25px rgba(233,30,99,0.3)'" onmouseleave="this.style.transform='scale(1)'; this.style.boxShadow='none'">
                     <img src="${img.url}" alt="카드뉴스 ${idx + 1}" style="width: 100%; display: block;">
                     <div style="padding: 12px; display: flex; gap: 8px;">
-                        <button onclick="downloadCardNews('${img.url}', 'cardnews_${Date.now()}_${idx + 1}.png')" style="flex: 1; background: #4CAF50; border: none; color: white; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px;">
-                            다운로드
+                        <button onclick="downloadCardNews('${img.url}', 'cardnews_${Date.now()}_${idx + 1}.png')" style="flex: 1; background: #4CAF50; border: none; color: white; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: background 0.2s;" onmouseenter="this.style.background='#45a049'" onmouseleave="this.style.background='#4CAF50'">
+                            ⬇️ 저장
                         </button>
                     </div>
                 </div>
@@ -4037,6 +4073,16 @@
         // 카드뉴스 다운로드
         async function downloadCardNews(url, filename) {
             try {
+                // data:image URL인 경우 직접 처리
+                if (url.startsWith('data:')) {
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename;
+                    link.click();
+                    showToast('다운로드 완료!');
+                    return;
+                }
+
                 const response = await fetch(url);
                 const blob = await response.blob();
                 const link = document.createElement('a');
@@ -4049,6 +4095,45 @@
                 console.error('다운로드 오류:', error);
                 showToast('다운로드 실패');
             }
+        }
+
+        // 전체 다운로드
+        async function downloadAllCardNews() {
+            if (generatedCardNewsImages.length === 0) {
+                showToast('다운로드할 이미지가 없습니다');
+                return;
+            }
+
+            showToast(`${generatedCardNewsImages.length}개 이미지 다운로드 시작...`);
+
+            for (let i = 0; i < generatedCardNewsImages.length; i++) {
+                const img = generatedCardNewsImages[i];
+                const filename = `cardnews_${Date.now()}_${i + 1}.png`;
+
+                try {
+                    if (img.url.startsWith('data:')) {
+                        const link = document.createElement('a');
+                        link.href = img.url;
+                        link.download = filename;
+                        link.click();
+                    } else {
+                        const response = await fetch(img.url);
+                        const blob = await response.blob();
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = filename;
+                        link.click();
+                        URL.revokeObjectURL(link.href);
+                    }
+
+                    // 브라우저가 여러 다운로드를 처리할 수 있도록 약간의 딜레이
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                } catch (error) {
+                    console.error(`다운로드 오류 (${i + 1}):`, error);
+                }
+            }
+
+            showToast('전체 다운로드 완료!');
         }
 
         // ==================== 스타일 분석 & 생성 (레거시) ====================
