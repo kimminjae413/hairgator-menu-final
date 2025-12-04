@@ -1580,10 +1580,12 @@ class AIStudio {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'regenerate_male_recipe',
-          style_code: newStyleCode,
-          image_base64: this.pendingImageBase64,
-          mime_type: this.pendingMimeType || 'image/jpeg',
-          original_analysis: this.currentMaleAnalysis.data.analysis
+          payload: {
+            style_code: newStyleCode,
+            image_base64: this.pendingImageBase64,
+            mime_type: this.pendingMimeType || 'image/jpeg',
+            original_analysis: this.currentMaleAnalysis.data.analysis
+          }
         })
       });
 
@@ -1638,11 +1640,13 @@ class AIStudio {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'regenerate_female_recipe',
-          length_code: newLengthCode,
-          cut_form: newForm,
-          image_base64: this.pendingImageBase64,
-          mime_type: this.pendingMimeType || 'image/jpeg',
-          original_analysis: this.currentFemaleAnalysis.data.analysis
+          payload: {
+            length_code: newLengthCode,
+            cut_form: newForm,
+            image_base64: this.pendingImageBase64,
+            mime_type: this.pendingMimeType || 'image/jpeg',
+            original_analysis: this.currentFemaleAnalysis.data.analysis
+          }
         })
       });
 
