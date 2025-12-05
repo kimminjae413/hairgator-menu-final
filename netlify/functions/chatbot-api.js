@@ -5065,6 +5065,13 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       // 스타일 파라미터 전체 (프론트엔드에서 활용 가능)
       params56: params56,
 
+      // 대상 시리즈 정보
+      targetSeries: {
+        code: targetSeries,
+        name: `${lengthName} Series`,
+        totalStyles: seriesStyles.length
+      },
+
       // 분석 요약 (UI 표시용) - 2WAY CUT SYSTEM 전체 파라미터
       analysis: {
         // 기본 정보
