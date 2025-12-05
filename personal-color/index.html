@@ -301,8 +301,9 @@
                     <!-- 드래이핑 카메라 -->
                     <div class="draping-camera-section">
                         <div class="video-container">
-                            <video id="draping-camera" autoplay muted playsinline webkit-playsinline="true" x5-playsinline="true" style="object-fit: cover;"></video>
-                            <canvas id="draping-overlay"></canvas>
+                            <video id="draping-camera" autoplay muted playsinline webkit-playsinline="true" style="display:none;"></video>
+                            <canvas id="draping-canvas" style="width: 100%; max-width: 640px; border-radius: 8px; transform: scaleX(-1);"></canvas>
+                            <canvas id="draping-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
                             <div class="face-guide" id="draping-face-guide" data-i18n-html="personalColor.drapingMode.faceGuide">
                                 Align your face<br>with the guideline
                             </div>
@@ -3368,6 +3369,10 @@
         let drapingAnimationId = null;
         let lastFaceLandmarks = null;
 
+        // 드래이핑 캔버스 컨텍스트
+        let drapingCanvasCtx = null;
+        let drapingVideoStream = null;
+
         async function startDrapingCamera() {
             try {
                 showToast(t('personalColor.toast.startingDrapingCamera') || '드래이핑 카메라를 시작합니다...', 'info');
@@ -3397,6 +3402,7 @@
                     throw new Error('카메라 스트림을 가져올 수 없습니다');
                 }
 
+                drapingVideoStream = stream;
                 const drapingVideo = document.getElementById('draping-camera');
 
                 // ⭐ iOS에서 전체화면 방지를 위한 필수 속성
@@ -3417,6 +3423,12 @@
                     drapingVideo.onerror = reject;
                     setTimeout(() => reject(new Error('VIDEO_TIMEOUT')), 10000);
                 });
+
+                // ⭐ 메인 캔버스 설정 (video 대신 canvas에 표시)
+                const drapingCanvas = document.getElementById('draping-canvas');
+                drapingCanvas.width = drapingVideo.videoWidth || 640;
+                drapingCanvas.height = drapingVideo.videoHeight || 480;
+                drapingCanvasCtx = drapingCanvas.getContext('2d');
 
                 // Face Mesh 초기화
                 if (!drapingFaceMesh) {
@@ -3472,10 +3484,23 @@
 
         function startDrapingLoop() {
             const drapingVideo = document.getElementById('draping-camera');
+            const drapingCanvas = document.getElementById('draping-canvas');
 
             async function loop() {
-                if (drapingVideo.srcObject && drapingFaceMesh) {
-                    await drapingFaceMesh.send({ image: drapingVideo });
+                if (drapingVideo.srcObject && drapingVideo.readyState === 4) {
+                    // ⭐ 비디오를 캔버스에 그리기 (CSS transform으로 거울 모드 적용됨)
+                    if (drapingCanvasCtx) {
+                        drapingCanvasCtx.drawImage(drapingVideo, 0, 0, drapingCanvas.width, drapingCanvas.height);
+                    }
+
+                    // Face Mesh 전송
+                    if (drapingFaceMesh) {
+                        try {
+                            await drapingFaceMesh.send({ image: drapingVideo });
+                        } catch (e) {
+                            // send 실패 시 무시
+                        }
+                    }
                 }
                 drapingAnimationId = requestAnimationFrame(loop);
             }
