@@ -3451,18 +3451,36 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
       if (diagSection === targetSectionCode) {
         sectionScore = 100; // 정확히 매칭
       } else if (diagSection && targetSectionCode) {
-        // 비슷한 섹션 그룹 체크 (예: 가로분할 vs 세로분할)
-        const horizontalSections = ['H', 'HD', 'HU'];
-        const verticalSections = ['V', 'VL', 'VR'];
-        const diagonalSections = ['DF', 'DB', 'D'];
-        if (
-          (horizontalSections.includes(diagSection) && horizontalSections.includes(targetSectionCode)) ||
-          (verticalSections.includes(diagSection) && verticalSections.includes(targetSectionCode)) ||
-          (diagonalSections.includes(diagSection) && diagonalSections.includes(targetSectionCode))
+        // 비슷한 섹션 그룹 체크 (확장된 매핑)
+        const horizontalSections = ['H', 'HD', 'HU', 'HS', 'Horizontal'];
+        const verticalSections = ['V', 'VL', 'VR', 'VS', 'Vertical'];
+        const diagonalForwardSections = ['DF', 'DFS', 'Diagonal-Forward', 'Diagonal_Fwd'];
+        const diagonalBackwardSections = ['DB', 'DBS', 'Diagonal-Backward', 'Diagonal_Bkwd'];
+        const radialSections = ['R', 'RS', 'Radial', 'Pie'];
+
+        // 정확한 섹션 그룹 매칭
+        const getDiagGroup = (sec) => {
+          if (horizontalSections.some(s => sec.toUpperCase().includes(s.toUpperCase()))) return 'horizontal';
+          if (verticalSections.some(s => sec.toUpperCase().includes(s.toUpperCase()))) return 'vertical';
+          if (diagonalForwardSections.some(s => sec.toUpperCase().includes(s.toUpperCase()))) return 'dfs';
+          if (diagonalBackwardSections.some(s => sec.toUpperCase().includes(s.toUpperCase()))) return 'dbs';
+          if (radialSections.some(s => sec.toUpperCase().includes(s.toUpperCase()))) return 'radial';
+          return 'other';
+        };
+
+        const diagGroup = getDiagGroup(diagSection);
+        const targetGroup = getDiagGroup(targetSectionCode);
+
+        if (diagGroup === targetGroup) {
+          sectionScore = 100; // 같은 섹션 그룹
+        } else if (
+          // DFS와 DBS는 대각선 계열로 어느 정도 유사
+          (diagGroup === 'dfs' && targetGroup === 'dbs') ||
+          (diagGroup === 'dbs' && targetGroup === 'dfs')
         ) {
-          sectionScore = 70; // 같은 그룹
+          sectionScore = 60; // 대각선 계열 (방향만 다름)
         } else {
-          sectionScore = 30; // 다른 그룹
+          sectionScore = 30; // 완전히 다른 그룹
         }
       } else {
         sectionScore = 50; // 정보 없음
@@ -3489,13 +3507,16 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
         }
       }
 
-      // === 종합 점수 (가중 평균) ===
+      // === 종합 점수 (가중 평균) - 리프팅 강화! ===
       const totalScore = (
-        liftingScore * 0.40 +    // 리프팅 40%
+        liftingScore * 0.50 +    // 리프팅 50% (강화!)
         sectionScore * 0.25 +    // 섹션 25%
-        zoneScore * 0.20 +       // 존 20%
-        directionScore * 0.15    // 디렉션 15%
+        zoneScore * 0.15 +       // 존 15%
+        directionScore * 0.10    // 디렉션 10%
       );
+
+      // ⭐ 정확한 리프팅 매칭 보너스 (타겟 리프팅과 정확히 일치하면 +20점)
+      const exactLiftingBonus = targetLiftingRange.includes(diagLifting) ? 20 : 0;
 
       return {
         ...diagram,
@@ -3509,16 +3530,23 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
         sectionScore,
         zoneScore,
         directionScore,
-        totalScore
+        exactLiftingBonus,
+        totalScore: totalScore + exactLiftingBonus  // 보너스 포함!
       };
     });
 
-    // 종합 점수 + step 순서로 정렬
+    // 종합 점수 + 리프팅 정확도 + step 순서로 정렬
     scoredDiagrams.sort((a, b) => {
+      // 1차: 종합 점수 (보너스 포함)
       if (b.totalScore !== a.totalScore) {
-        return b.totalScore - a.totalScore; // 종합 점수 높은 순
+        return b.totalScore - a.totalScore;
       }
-      return (a.step || 0) - (b.step || 0); // step 순서
+      // 2차: 정확한 리프팅 매칭 우선
+      if (b.exactLiftingBonus !== a.exactLiftingBonus) {
+        return b.exactLiftingBonus - a.exactLiftingBonus;
+      }
+      // 3차: step 순서
+      return (a.step || 0) - (b.step || 0);
     });
 
     // 매칭되는 도해도와 안 되는 도해도 분리 (종합 점수 50점 기준)
