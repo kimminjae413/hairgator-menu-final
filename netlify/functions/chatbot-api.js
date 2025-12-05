@@ -3860,6 +3860,136 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
     }
   }
 
+  // ==================== 리프팅/디렉션 도해도 Fallback (시리즈 무관) ====================
+  // 리프팅/디렉션은 FAL/FBL 등 시리즈 상관없이 동일하므로, 없으면 아무 스타일에서나 가져옴
+
+  const coveredDirections = new Set(selectedDiagrams.map(d => d.direction).filter(Boolean));
+  const needsDirection = targetDirectionCode && !coveredDirections.has(targetDirectionCode);
+
+  // 리프팅 Fallback: 타겟 리프팅이 커버되지 않았으면 시리즈 무관 검색
+  const missingLiftingsAfterSupplement = targetLiftingRange.filter(l => !coveredLiftings.has(l));
+
+  if (missingLiftingsAfterSupplement.length > 0 && selectedDiagrams.length < maxDiagrams && allStyles) {
+    console.log(`\n🔄 리프팅 ${missingLiftingsAfterSupplement.join(',')} 도해도 없음 → 시리즈 무관 검색...`);
+
+    const liftingCandidates = [];
+
+    for (const style of allStyles) {
+      if (!style || !style.diagrams) continue;
+
+      for (const diagram of style.diagrams) {
+        const urlKey = diagram.url ? diagram.url.split('/').pop() : `${style.styleId}_${diagram.step}`;
+        if (usedUrls.has(urlKey)) continue;
+
+        const diagLifting = diagram.lifting || '';
+        if (missingLiftingsAfterSupplement.includes(diagLifting)) {
+          liftingCandidates.push({
+            styleId: style.styleId,
+            step: diagram.step || 99,
+            url: diagram.url,
+            urlKey: urlKey,
+            lifting: diagLifting,
+            direction: diagram.direction || null,
+            section: diagram.section || null,
+            zone: diagram.zone || null,
+            cuttingMethod: diagram.cutting_method || null
+          });
+        }
+      }
+    }
+
+    console.log(`   🔍 리프팅 ${missingLiftingsAfterSupplement.join(',')} 도해도 후보: ${liftingCandidates.length}개`);
+
+    // 각 리프팅당 최대 2개까지 보충
+    const addedLiftings = new Set();
+    for (const candidate of liftingCandidates) {
+      if (selectedDiagrams.length >= maxDiagrams) break;
+      if (usedUrls.has(candidate.urlKey)) continue;
+
+      // 같은 리프팅은 2개까지만
+      const sameCount = selectedDiagrams.filter(d => d.lifting === candidate.lifting && d.source === 'Lifting-Fallback').length;
+      if (sameCount >= 2) continue;
+
+      usedUrls.add(candidate.urlKey);
+      coveredLiftings.add(candidate.lifting);
+      addedLiftings.add(candidate.lifting);
+
+      selectedDiagrams.push({
+        styleId: candidate.styleId,
+        step: candidate.step,
+        url: candidate.url,
+        styleRank: 3,
+        source: 'Lifting-Fallback',
+        supplementReason: `리프팅:${candidate.lifting}`,
+        lifting: candidate.lifting,
+        direction: candidate.direction,
+        section: candidate.section,
+        zone: candidate.zone,
+        cuttingMethod: candidate.cuttingMethod
+      });
+
+      console.log(`      ✅ ${candidate.styleId} step${candidate.step} (리프팅:${candidate.lifting})`);
+    }
+  }
+
+  if (needsDirection && selectedDiagrams.length < maxDiagrams && allStyles) {
+    console.log(`\n🔄 디렉션 ${targetDirectionCode} 도해도 없음 → 시리즈 무관 검색...`);
+
+    // 전체 스타일에서 디렉션 도해도 찾기 (시리즈 무관)
+    const directionCandidates = [];
+
+    for (const style of allStyles) {
+      if (!style || !style.diagrams) continue;
+
+      for (const diagram of style.diagrams) {
+        const urlKey = diagram.url ? diagram.url.split('/').pop() : `${style.styleId}_${diagram.step}`;
+        if (usedUrls.has(urlKey)) continue;
+
+        const diagDirection = diagram.direction || '';
+        if (diagDirection === targetDirectionCode) {
+          directionCandidates.push({
+            styleId: style.styleId,
+            step: diagram.step || 99,
+            url: diagram.url,
+            urlKey: urlKey,
+            direction: diagDirection,
+            lifting: diagram.lifting || null,
+            section: diagram.section || null,
+            zone: diagram.zone || null,
+            cuttingMethod: diagram.cutting_method || null
+          });
+        }
+      }
+    }
+
+    console.log(`   🔍 ${targetDirectionCode} 도해도 후보: ${directionCandidates.length}개`);
+
+    // 최대 2개까지 디렉션 도해도 보충
+    for (const candidate of directionCandidates.slice(0, 2)) {
+      if (selectedDiagrams.length >= maxDiagrams) break;
+      if (usedUrls.has(candidate.urlKey)) continue;
+
+      usedUrls.add(candidate.urlKey);
+      coveredDirections.add(candidate.direction);
+
+      selectedDiagrams.push({
+        styleId: candidate.styleId,
+        step: candidate.step,
+        url: candidate.url,
+        styleRank: 3, // fallback이므로 3순위
+        source: 'Direction-Fallback',
+        supplementReason: `디렉션:${candidate.direction}`,
+        lifting: candidate.lifting,
+        direction: candidate.direction,
+        section: candidate.section,
+        zone: candidate.zone,
+        cuttingMethod: candidate.cuttingMethod
+      });
+
+      console.log(`      ✅ ${candidate.styleId} step${candidate.step} (디렉션:${candidate.direction})`);
+    }
+  }
+
   // ==================== 최종 정렬 (스타일 순위 → step 순서, 앞머리는 마지막) ====================
 
   const finalDiagrams = selectedDiagrams.sort((a, b) => {
