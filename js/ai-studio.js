@@ -2077,19 +2077,26 @@ async function sendImageWithQuestion() {
       const data = result.data;
       let analysisMsg;
 
+      // 필수 데이터 확인
+      if (!data.targetSeries || !data.analysis || !data.referenceStyles) {
+        console.error('❌ API 응답 데이터 불완전:', data);
+        window.aiStudio.addMessageToUI('bot', '분석 결과가 불완전합니다. 다시 시도해주세요.');
+        return;
+      }
+
       // 남자/여자에 따라 분석 결과 메시지 분기
       if (data.gender === 'male') {
         // 남자 스타일 분석 결과
         analysisMsg = `**👨 남자 스타일 분석 완료!**
 
-💇 **스타일**: ${data.analysis.styleName} (${data.analysis.styleCode})
-📏 **탑 길이**: ${data.analysis.topLength}
-📐 **사이드 길이**: ${data.analysis.sideLength}
-✂️ **페이드**: ${data.analysis.fadeType}
-🎨 **텍스처**: ${data.analysis.texture}
-💆 **스타일링 제품**: ${data.analysis.productType}
+💇 **스타일**: ${data.analysis.styleName || '분석중'} (${data.analysis.styleCode || '-'})
+📏 **탑 길이**: ${data.analysis.topLength || '-'}
+📐 **사이드 길이**: ${data.analysis.sideLength || '-'}
+✂️ **페이드**: ${data.analysis.fadeType || 'None'}
+🎨 **텍스처**: ${data.analysis.texture || '-'}
+💆 **스타일링 제품**: ${data.analysis.productType || '-'}
 
-📁 **대상 시리즈**: ${data.targetSeries.code} - ${data.targetSeries.name} (${data.targetSeries.totalStyles}개 스타일)
+📁 **대상 시리즈**: ${data.targetSeries.code || '-'} - ${data.targetSeries.name || ''} (${data.targetSeries.totalStyles || 0}개 스타일)
 
 🎯 **참고 스타일 Top-3**:
 ${data.referenceStyles.map((s, i) => `  ${i+1}. ${s.styleId} (유사도: ${(s.similarity * 100).toFixed(1)}%)`).join('\n')}
@@ -2099,13 +2106,13 @@ ${data.referenceStyles.map((s, i) => `  ${i+1}. ${s.styleId} (유사도: ${(s.si
         // 여자 스타일 분석 결과 (기존 로직)
         analysisMsg = `**👩 여자 스타일 분석 완료!**
 
-📏 **기장**: ${data.analysis.lengthName}
-✂️ **형태**: ${data.analysis.form}
+📏 **기장**: ${data.analysis.lengthName || '-'}
+✂️ **형태**: ${data.analysis.form || '-'}
 💇 **앞머리**: ${data.analysis.hasBangs ? data.analysis.bangsType : '없음'}
-📐 **볼륨**: ${data.analysis.volumePosition}
-🎨 **텍스처**: ${data.analysis.texture}
+📐 **볼륨**: ${data.analysis.volumePosition || '-'}
+🎨 **텍스처**: ${data.analysis.texture || '-'}
 
-📁 **대상 시리즈**: ${data.targetSeries.code} (${data.targetSeries.totalStyles}개 스타일)
+📁 **대상 시리즈**: ${data.targetSeries.code || '-'} (${data.targetSeries.totalStyles || 0}개 스타일)
 
 🎯 **참고 스타일 Top-3**:
 ${data.referenceStyles.map((s, i) => `  ${i+1}. ${s.styleId} - ${s.featureReasons ? s.featureReasons.join(', ') : `유사도 ${(s.similarity * 100).toFixed(1)}%`}`).join('\n')}
