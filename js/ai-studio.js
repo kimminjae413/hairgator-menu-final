@@ -1208,8 +1208,7 @@ class AIStudio {
             <!-- 커스텀 기장 드롭다운 (이미지 포함) -->
             <div class="custom-length-dropdown" style="position: relative; flex: 1;">
               <button type="button" id="length-dropdown-btn" class="style-select"
-                      style="width: 100%; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
-                      onclick="document.getElementById('length-dropdown-content').style.display = document.getElementById('length-dropdown-content').style.display === 'block' ? 'none' : 'block'">
+                      style="width: 100%; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
                 <span id="length-dropdown-text">${currentLengthCode ? currentLengthCode + ' Length' : '길이 선택...'}</span>
                 <span>▼</span>
               </button>
@@ -1259,24 +1258,6 @@ class AIStudio {
             </button>
           </div>
         </div>
-
-        <script>
-          // 기장 드롭다운 옵션 클릭 이벤트
-          document.querySelectorAll('.length-option').forEach(opt => {
-            opt.addEventListener('click', function() {
-              const value = this.dataset.value;
-              document.getElementById('length-correction-select').value = value;
-              document.getElementById('length-dropdown-text').textContent = value + ' Length';
-              document.getElementById('length-dropdown-content').style.display = 'none';
-            });
-          });
-          // 외부 클릭 시 드롭다운 닫기
-          document.addEventListener('click', function(e) {
-            if (!e.target.closest('.custom-length-dropdown')) {
-              document.getElementById('length-dropdown-content').style.display = 'none';
-            }
-          });
-        </script>
 
         <!-- 이미지 주요 분석 -->
         <div class="formula-params-section">
@@ -1338,8 +1319,48 @@ class AIStudio {
       this.canvasPanel.classList.add('active');
     }
 
+    // ⭐ 기장 드롭다운 이벤트 리스너 등록 (innerHTML 삽입 후)
+    this.initLengthDropdown();
+
     // 도해도 뷰어 초기화
     this.initDiagramViewer(mainDiagrams || []);
+  }
+
+  // ⭐ 기장 드롭다운 이벤트 초기화
+  initLengthDropdown() {
+    // 옵션 클릭 이벤트
+    document.querySelectorAll('.length-option').forEach(opt => {
+      opt.addEventListener('click', function() {
+        const value = this.dataset.value;
+        const selectInput = document.getElementById('length-correction-select');
+        const textSpan = document.getElementById('length-dropdown-text');
+        const content = document.getElementById('length-dropdown-content');
+
+        if (selectInput) selectInput.value = value;
+        if (textSpan) textSpan.textContent = value + ' Length';
+        if (content) content.style.display = 'none';
+      });
+    });
+
+    // 버튼 클릭 이벤트 (드롭다운 토글)
+    const dropdownBtn = document.getElementById('length-dropdown-btn');
+    if (dropdownBtn) {
+      dropdownBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const content = document.getElementById('length-dropdown-content');
+        if (content) {
+          content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        }
+      });
+    }
+
+    // 외부 클릭 시 드롭다운 닫기
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.custom-length-dropdown')) {
+        const content = document.getElementById('length-dropdown-content');
+        if (content) content.style.display = 'none';
+      }
+    });
   }
 
   // ==================== 남자 맞춤 레시피 캔버스 표시 ====================
