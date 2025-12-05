@@ -889,21 +889,34 @@ async function analyzeImageWithQuestion(payload, geminiKey) {
 ## 내부 분석 (전문 용어 사용)
 이미지를 보고 다음을 정확히 분석하세요:
 
-### 🎯 LENGTH 분류 (가장 중요!)
-뒷머리 가장 긴 부분이 **신체의 어느 위치까지 닿는지** 확인:
-- H Length: 후두부/목덜미 - Short (픽시컷, 베리숏)
-- G Length: 목 상단 - Bob (짧은 단발)
-- F Length: 목 하단 - Bob (단발)
-- E Length: 어깨선 상단 - Medium (어깨에 닿음)
-- D Length: 어깨선 하단 - Medium (어깨 아래)
-- C Length: 겨드랑이/가슴 상단 - Semi Long
-- B Length: 가슴 중간 - Long (롱헤어)
-- A Length: 가슴 하단/허리 - Long (슈퍼롱)
+### 🎯 LENGTH 분류 (가장 중요!) ⭐⭐⭐⭐⭐
 
-### 분석 순서:
-1. 뒷머리 가장 긴 부분이 어디까지 닿는지 확인
-2. 목에서 끝나면 G/F (Bob), 어깨면 E/D (Medium)
-3. 겨드랑이 아래로 내려가면 C 이하 (Semi Long~Long)
+🚨🚨🚨 **판단 전 필수 단계:** 🚨🚨🚨
+1. 이미지에서 뒷머리(후면) 가장 긴 부분 찾기
+2. 그 끝이 닿는 **신체 부위**를 정확히 식별
+3. 아래 표에서 해당 부위 찾아 코드 결정
+
+| 코드 | 신체 부위 | 약 cm | 설명 |
+|------|----------|-------|-----|
+| **H** | 후두부/목덜미 | ~10cm | 목 시작점 |
+| **G** | 목 상단 | ~15cm | 목 위쪽 |
+| **F** | 목 하단 | ~20cm | 목 아래쪽 |
+| **E** | 어깨선 상단 | ~25cm | 어깨 바로 위 |
+| **D** | 어깨선 하단 | ~30cm | 어깨에서 끝 |
+| **C** | 겨드랑이 | ~40cm | 겨드랑이 높이 |
+| **B** | 가슴 중간 | ~50cm | 가슴 중간 ⭐ |
+| **A** | 가슴 하단/허리 | 60cm+ | 허리까지 |
+
+🔴🔴🔴 **핵심 구분법:**
+- 머리가 **가슴에 닿으면** → 무조건 **B 또는 A** (절대 D 아님!)
+- 머리가 **겨드랑이까지 내려오면** → **C** (절대 D 아님!)
+- 머리가 **어깨에만 닿으면** → **D 또는 E**
+- 머리가 **목에서 끝나면** → **F, G, H**
+
+❌❌❌ **흔한 오류 (절대 금지!):**
+1. 가슴까지 오는 긴 머리를 D로 분류 → **틀림! B가 정답**
+2. 겨드랑이까지 오는데 D로 분류 → **틀림! C가 정답**
+3. 50cm 이상 긴 머리를 어깨 길이(30cm)로 판단 → **틀림!**
 
 ### 형태(Cut Form):
 - O (One Length/원렝스): 무게선이 있는 일자 커트
@@ -1033,31 +1046,34 @@ async function analyzeImage(payload, openaiKey) {
   const systemPrompt = `You are "HAIRGATOR AI," an expert hair analyst.
 ${genderContext}
 
-## LENGTH CLASSIFICATION (Body Landmark - VERY IMPORTANT!):
+## LENGTH CLASSIFICATION (Body Landmark) ⭐⭐⭐⭐⭐ MOST CRITICAL!
 
-| Code | Body Position | Category |
-|------|--------------|----------|
-| H | Nape/Occipital | Short |
-| G | Upper Neck | Bob |
-| F | Lower Neck | Bob |
-| E | Upper Shoulder | Medium |
-| D | Lower Shoulder | Medium |
-| C | Armpit/Upper Chest | Semi Long |
-| B | Mid Chest | Long |
-| A | Lower Chest/Waist | Long |
+🚨🚨🚨 **MANDATORY STEPS BEFORE CLASSIFICATION:** 🚨🚨🚨
+1. Find the LONGEST part of BACK hair (not front/side)
+2. Identify EXACTLY which BODY PART the hair tip touches
+3. Match to the table below
 
-## HOW TO DETERMINE LENGTH:
-1. Find where the LONGEST part of back hair ends
-2. Check which body landmark it touches:
-   - Ends at nape/neck → H or G (Short/Bob)
-   - Touches shoulder → E or D (Medium)
-   - Below armpit → C (Semi Long)
-   - Mid chest or below → B or A (Long)
+| Code | Body Part | ~cm | Description |
+|------|-----------|-----|-------------|
+| **H** | Nape/Occipital | ~10cm | Hair ends at neck start |
+| **G** | Upper Neck | ~15cm | Upper neck area |
+| **F** | Lower Neck | ~20cm | Lower neck area |
+| **E** | Upper Shoulder | ~25cm | Just above shoulder |
+| **D** | Lower Shoulder | ~30cm | Shoulder level |
+| **C** | Armpit | ~40cm | Armpit level |
+| **B** | Mid Chest | ~50cm | Mid chest ⭐ |
+| **A** | Lower Chest/Waist | 60cm+ | Below chest to waist |
 
-⚠️ IMPORTANT:
-- If neck is fully visible → H or G
-- If hair doesn't touch shoulder → F or above (NOT E, D, C, B, A!)
-- If hair touches shoulder → E or D
+🔴🔴🔴 **CRITICAL DISTINCTION:**
+- Hair reaches **CHEST** → ALWAYS **B or A** (NEVER D!)
+- Hair reaches **ARMPIT** → ALWAYS **C** (NEVER D!)
+- Hair ends at **SHOULDER ONLY** → **D or E**
+- Hair ends at **NECK** → **F, G, or H**
+
+❌❌❌ **COMMON ERRORS TO AVOID (ABSOLUTELY FORBIDDEN!):**
+1. Classifying chest-length hair as D → WRONG! Answer is **B**
+2. Classifying armpit-length hair as D → WRONG! Answer is **C**
+3. Classifying 50cm+ hair as shoulder-length (30cm) → WRONG!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -2728,34 +2744,40 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 
 🚨🚨🚨 **경고: 기장 분류가 가장 중요합니다!** 🚨🚨🚨
 
-**판단 순서:**
-1. 이미지에서 뒷머리 끝이 신체 어느 위치에 닿는지 확인
-2. 아래 표에서 해당 위치 찾기
-3. 해당 코드 선택
+**⭐⭐⭐ 필수 3단계 (반드시 순서대로!):**
+1. 이미지에서 **뒷머리(Back hair)** 가장 긴 부분 찾기
+2. 그 끝이 **정확히 어느 신체 부위**에 닿는지 확인
+3. 아래 표에서 해당 부위 → 코드 결정
 
 **신체 기준점별 기장 코드:**
 
-| 코드 | 신체 위치 | 판단 기준 |
-|------|----------|----------|
-| **H** | 후두부/목덜미 | 머리카락이 목 시작 부분에서 끝남 |
-| **G** | 목 상단 | 목 위쪽에서 끝남 |
-| **F** | 목 하단 | 목 아래쪽에서 끝남 |
-| **E** | 어깨선 상단 | 어깨 바로 위에서 끝남 |
-| **D** | 어깨선 하단 | 어깨에서 끝남 (어깨를 덮음) |
-| **C** | 겨드랑이 | 겨드랑이/가슴 상단까지 내려옴 |
-| **B** | 가슴 중간 | 가슴 중간까지 내려옴 ⭐ |
-| **A** | 가슴 하단/허리 | 가슴 아래~허리까지 내려옴 |
+| 코드 | 신체 위치 | 약 cm | 시각적 판단 |
+|------|----------|-------|-----------|
+| **H** | 후두부/목덜미 | ~10cm | 목이 완전히 보임 |
+| **G** | 목 상단 | ~15cm | 목 위쪽 일부 가림 |
+| **F** | 목 하단 | ~20cm | 목 아래까지 |
+| **E** | 어깨선 상단 | ~25cm | 어깨 바로 위 |
+| **D** | 어깨선 하단 | ~30cm | 어깨에서 끝 (어깨선) |
+| **C** | 겨드랑이 | ~40cm | 겨드랑이 높이 |
+| **B** | 가슴 중간 | ~50cm | 가슴 중간 ⭐⭐⭐ |
+| **A** | 가슴 하단/허리 | 60cm+ | 허리까지 닿음 |
 
-🔴 **핵심 판단 기준:**
-- 머리카락이 **가슴에 닿으면** → 무조건 **B 또는 A**
-- 머리카락이 **겨드랑이에 닿으면** → **C**
-- 머리카락이 **어깨에만 닿으면** → **D 또는 E**
-- 머리카락이 **목에서 끝나면** → **F, G, H**
+🔴🔴🔴 **핵심 구분법 (암기!):**
+- 머리가 **가슴에 닿으면** → 무조건 **B 또는 A** (절대 D 아님!)
+- 머리가 **겨드랑이까지 내려오면** → **C** (절대 D 아님!)
+- 머리가 **어깨에만 닿으면** → **D 또는 E**
+- 머리가 **목에서 끝나면** → **F, G, H**
 
 ❌❌❌ **절대 하지 말 것 (흔한 오류):**
 1. 가슴까지 내려오는 긴 머리를 D로 분류 → **틀림! B가 정답**
 2. 겨드랑이까지 오는데 D로 분류 → **틀림! C가 정답**
-3. 긴 머리를 짧게 판단하는 오류 주의!
+3. 50cm 이상 긴 머리를 어깨 길이(30cm)로 판단 → **틀림!**
+4. 앞머리 길이로 기장 판단 → **틀림! 뒷머리 기준!**
+
+📏 **길이 퀵 체크:**
+- 머리끝이 어깨 아래로 10cm 이상 → C 이하 (세미롱~롱)
+- 머리끝이 어깨 아래로 20cm 이상 → B 이하 (롱)
+- 머리끝이 허리까지 → A (슈퍼롱)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 【2. CUT FORM & CELESTIAL ANGLE】⭐⭐⭐ 핵심!
