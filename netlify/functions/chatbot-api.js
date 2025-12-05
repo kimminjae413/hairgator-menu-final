@@ -3571,6 +3571,9 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
         exactLiftingBonus = 20; // 범위 내 매칭
       }
 
+      // ⭐ 디렉션 정확 매칭 보너스 (+15점)
+      const exactDirectionBonus = (diagDirection === targetDirectionCode) ? 15 : 0;
+
       return {
         ...diagram,
         idx,
@@ -3581,12 +3584,14 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
         diagDirection,
         zoneTargetLifting, // 디버깅용
         exactZoneMatch,    // 존별 정확 매칭 여부
+        exactDirectionMatch: diagDirection === targetDirectionCode, // 디렉션 정확 매칭
         liftingScore,
         sectionScore,
         zoneScore,
         directionScore,
         exactLiftingBonus,
-        totalScore: totalScore + exactLiftingBonus  // 보너스 포함!
+        exactDirectionBonus,
+        totalScore: totalScore + exactLiftingBonus + exactDirectionBonus  // 리프팅+디렉션 보너스 포함!
       };
     });
 
@@ -3617,9 +3622,17 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
       const top5 = scoredDiagrams.slice(0, 5);
       top5.forEach((d, i) => {
         const zoneMatch = d.exactZoneMatch ? '⭐존매칭' : '';
+        const dirMatch = d.exactDirectionMatch ? '🎯D매칭' : '';
         const zoneLift = d.zoneTargetLifting ? `타겟:${d.zoneTargetLifting}` : '';
-        console.log(`      ${i+1}위: step${d.step || d.idx+1} [${d.diagLifting}/${d.diagZone}] - 총${d.totalScore.toFixed(0)}점 ${zoneMatch} ${zoneLift}`);
+        console.log(`      ${i+1}위: step${d.step || d.idx+1} [${d.diagLifting}/${d.diagDirection || '-'}/${d.diagZone}] - 총${d.totalScore.toFixed(0)}점 ${zoneMatch} ${dirMatch} ${zoneLift}`);
       });
+    }
+
+    // D4(온베이스) 매칭된 도해도가 있는지 체크
+    const hasD4Diagram = scoredDiagrams.some(d => d.diagDirection === targetDirectionCode);
+    console.log(`   📌 ${targetDirectionCode} 도해도: ${hasD4Diagram ? '있음' : '없음 → Fallback 필요'}`);
+    if (!hasD4Diagram) {
+      console.log(`   ⚠️ Top-1에 ${targetDirectionCode} 도해도 없음 - 시리즈 무관 Fallback 예정`);
     }
 
     // 매칭된 도해도 먼저 추가 (step 순서 유지)
