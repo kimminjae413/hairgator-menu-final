@@ -301,7 +301,7 @@
                     <!-- 드래이핑 카메라 -->
                     <div class="draping-camera-section">
                         <div class="video-container">
-                            <video id="draping-camera" autoplay muted playsinline></video>
+                            <video id="draping-camera" autoplay muted playsinline webkit-playsinline="true" x5-playsinline="true" style="object-fit: cover;"></video>
                             <canvas id="draping-overlay"></canvas>
                             <div class="face-guide" id="draping-face-guide" data-i18n-html="personalColor.drapingMode.faceGuide">
                                 Align your face<br>with the guideline
@@ -3372,12 +3372,51 @@
             try {
                 showToast(t('personalColor.toast.startingDrapingCamera') || '드래이핑 카메라를 시작합니다...', 'info');
 
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user', width: 640, height: 480 }
-                });
+                // 카메라 스트림 요청 (여러 옵션 시도)
+                let stream = null;
+                const videoConstraints = [
+                    { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+                    { facingMode: 'user' },
+                    { facingMode: { ideal: 'user' } },
+                    true
+                ];
+
+                for (const constraints of videoConstraints) {
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia({
+                            video: constraints,
+                            audio: false
+                        });
+                        break;
+                    } catch (e) {
+                        continue;
+                    }
+                }
+
+                if (!stream) {
+                    throw new Error('카메라 스트림을 가져올 수 없습니다');
+                }
 
                 const drapingVideo = document.getElementById('draping-camera');
+
+                // ⭐ iOS에서 전체화면 방지를 위한 필수 속성
+                drapingVideo.setAttribute('playsinline', 'true');
+                drapingVideo.setAttribute('webkit-playsinline', 'true');
+                drapingVideo.setAttribute('autoplay', 'true');
+                drapingVideo.muted = true;
+
                 drapingVideo.srcObject = stream;
+
+                // 비디오 재생 대기
+                await new Promise((resolve, reject) => {
+                    drapingVideo.onloadedmetadata = () => {
+                        drapingVideo.play()
+                            .then(resolve)
+                            .catch(reject);
+                    };
+                    drapingVideo.onerror = reject;
+                    setTimeout(() => reject(new Error('VIDEO_TIMEOUT')), 10000);
+                });
 
                 // Face Mesh 초기화
                 if (!drapingFaceMesh) {
@@ -3393,15 +3432,13 @@
                     drapingFaceMesh.onResults(onDrapingFaceResults);
                 }
 
-                // 비디오 준비되면 Face Mesh 시작
-                drapingVideo.onloadeddata = () => {
-                    const overlay = document.getElementById('draping-overlay');
-                    overlay.width = drapingVideo.videoWidth || 640;
-                    overlay.height = drapingVideo.videoHeight || 480;
+                // 오버레이 캔버스 크기 설정
+                const overlay = document.getElementById('draping-overlay');
+                overlay.width = drapingVideo.videoWidth || 640;
+                overlay.height = drapingVideo.videoHeight || 480;
 
-                    document.getElementById('draping-face-guide').style.display = 'none';
-                    startDrapingLoop();
-                };
+                document.getElementById('draping-face-guide').style.display = 'none';
+                startDrapingLoop();
 
                 showToast(t('personalColor.toast.drapingCameraStarted') || '드래이핑 카메라가 시작되었습니다', 'success');
 
