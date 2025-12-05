@@ -5250,6 +5250,7 @@ function parseFirestoreDocument(doc) {
       diagrams: diagrams,
       diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
       captionUrl: fields.captionUrl?.stringValue || null,
+      textRecipe: fields.textRecipe?.stringValue || null,  // ⭐ 텍스트 레시피 추가
       embedding: embedding
     };
   } catch (error) {
