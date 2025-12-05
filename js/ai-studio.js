@@ -1217,7 +1217,7 @@ class AIStudio {
               <div id="length-dropdown-content" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-height: 400px; overflow-y: auto;">
                 <!-- 기장 가이드 이미지 -->
                 <div style="padding: 10px; border-bottom: 1px solid #eee; text-align: center; background: #f9f9f9;">
-                  <img src="./images/length-guide.png" alt="기장 가이드" style="max-width: 100%; height: auto; border-radius: 4px;" onerror="this.style.display='none'">
+                  <img src="${window.location.origin}/images/length-guide.png" alt="기장 가이드" style="max-width: 100%; height: auto; border-radius: 4px;" onerror="this.parentElement.style.display='none'">
                 </div>
                 <!-- 옵션들 -->
                 <div class="length-option" data-value="H" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
