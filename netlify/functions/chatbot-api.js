@@ -3310,19 +3310,66 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
     seriesPrefix = styleIdMatch ? styleIdMatch[1] : '';
     console.log(`   시리즈: ${seriesPrefix}`);
 
-    // Top-1 도해도를 step 순서대로 정렬
-    const sortedDiagrams = [...topStyle.diagrams].sort((a, b) => {
-      const stepA = a.step || 0;
-      const stepB = b.step || 0;
-      return stepA - stepB;
+    // ⭐ 리프팅 값을 각도로 변환 (L2=45°, L4=90° 등)
+    const liftingToAngle = {
+      'L0': 0, 'L1': 22.5, 'L2': 45, 'L3': 67.5, 'L4': 90,
+      'L5': 112.5, 'L6': 135, 'L7': 157.5, 'L8': 180
+    };
+    const targetLiftingAngles = targetLiftingRange.map(l => liftingToAngle[l] || 90);
+    const maxTargetAngle = Math.max(...targetLiftingAngles);
+    const minTargetAngle = Math.min(...targetLiftingAngles);
+
+    console.log(`   🎯 타겟 리프팅: ${targetLiftingRange.join(', ')} (${minTargetAngle}°~${maxTargetAngle}°)`);
+
+    // Top-1 도해도를 리프팅 매칭 점수로 정렬
+    const scoredDiagrams = topStyle.diagrams.map((diagram, idx) => {
+      const diagLifting = diagram.lifting || 'L4';
+      const diagAngle = liftingToAngle[diagLifting] || 90;
+
+      // 리프팅 매칭 점수 계산
+      let liftingScore = 0;
+      if (targetLiftingRange.includes(diagLifting)) {
+        liftingScore = 100; // 정확히 매칭
+      } else if (diagAngle >= minTargetAngle && diagAngle <= maxTargetAngle) {
+        liftingScore = 80; // 범위 내
+      } else {
+        // 범위 벗어난 정도에 따라 감점
+        const angleDiff = Math.min(
+          Math.abs(diagAngle - minTargetAngle),
+          Math.abs(diagAngle - maxTargetAngle)
+        );
+        liftingScore = Math.max(0, 60 - angleDiff);
+      }
+
+      return {
+        ...diagram,
+        idx,
+        diagLifting,
+        diagAngle,
+        liftingScore
+      };
     });
 
-    // Top-1 도해도 모두 추가 (step 순서 유지)
-    sortedDiagrams.forEach((diagram, idx) => {
-      if (selectedDiagrams.length >= maxDiagrams) return;
+    // 리프팅 점수 + step 순서로 정렬 (리프팅 점수 우선, 같으면 step 순서)
+    scoredDiagrams.sort((a, b) => {
+      if (b.liftingScore !== a.liftingScore) {
+        return b.liftingScore - a.liftingScore; // 리프팅 점수 높은 순
+      }
+      return (a.step || 0) - (b.step || 0); // step 순서
+    });
+
+    // 매칭되는 도해도와 안 되는 도해도 분리
+    const matchedDiagrams = scoredDiagrams.filter(d => d.liftingScore >= 60);
+    const unmatchedDiagrams = scoredDiagrams.filter(d => d.liftingScore < 60);
+
+    console.log(`   📊 리프팅 매칭: ${matchedDiagrams.length}장 매칭, ${unmatchedDiagrams.length}장 미매칭`);
+
+    // 매칭된 도해도 먼저 추가 (step 순서 유지)
+    const addDiagram = (diagram, idx) => {
+      if (selectedDiagrams.length >= maxDiagrams) return false;
 
       const urlKey = diagram.url ? diagram.url.split('/').pop() : `${topStyle.styleId}_${idx}`;
-      if (usedUrls.has(urlKey)) return;
+      if (usedUrls.has(urlKey)) return false;
 
       // 앞머리 도해도 체크
       const diagZone = diagram.zone || '';
@@ -3341,20 +3388,28 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
         url: diagram.url,
         styleRank: 1,
         source: 'Top-1',
-        // 도해도 메타데이터
         lifting: diagram.lifting || null,
         direction: diagram.direction || null,
         section: diagram.section || null,
         zone: diagram.zone || null,
         cuttingMethod: diagram.cutting_method || null,
-        // 2WAY CUT 확장 메타데이터
         celestialAngle: diagram.celestial_angle || null,
         guideLine: diagram.guide_line || null,
-        isFringe: isFringeDiagram
+        isFringe: isFringeDiagram,
+        liftingScore: diagram.liftingScore || 0
       });
-    });
+      return true;
+    };
 
-    console.log(`   → Top-1에서 ${selectedDiagrams.length}장 선별`);
+    // 1) 리프팅 매칭된 도해도 먼저 (step 순서로)
+    matchedDiagrams.sort((a, b) => (a.step || 0) - (b.step || 0));
+    matchedDiagrams.forEach((d, i) => addDiagram(d, d.idx));
+
+    // 2) 남은 자리에 미매칭 도해도 (step 순서로)
+    unmatchedDiagrams.sort((a, b) => (a.step || 0) - (b.step || 0));
+    unmatchedDiagrams.forEach((d, i) => addDiagram(d, d.idx));
+
+    console.log(`   → Top-1에서 ${selectedDiagrams.length}장 선별 (리프팅 매칭 ${matchedDiagrams.length}장 우선)`);
     console.log(`   → Top-1 앞머리 도해도: ${top1HasFringe ? '있음' : '없음'}`);
   }
 
