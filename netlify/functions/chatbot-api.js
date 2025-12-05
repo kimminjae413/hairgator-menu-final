@@ -2714,21 +2714,33 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 이미지 속 헤어스타일을 **2WAY CUT SYSTEM 스키마**에 맞게 분석하여 JSON 형식으로 출력하세요.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-【1. LENGTH 분류 - Body Landmark 기반】⭐⭐⭐ 가장 중요!
+【1. LENGTH 분류 - Body Landmark 기반】⭐⭐⭐⭐⭐ 최우선!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**뒷머리 가장 긴 부분이 신체 어디에 닿는지 확인:**
+🚨 **반드시 뒷머리 가장 긴 부분의 위치를 정확히 확인하세요!**
 
-| 코드 | 신체 기준점 | 카테고리 |
-|-----|-----------|----------|
-| H | 후두부/목덜미 (NAPE) | Short |
-| G | 목 상단 (UPPER NECK) | Bob |
-| F | 목 하단 (LOWER NECK) | Bob |
-| E | 어깨선 상단 (UPPER SHOULDER) | Medium |
-| D | 어깨선 하단 (LOWER SHOULDER) | Medium |
-| C | 겨드랑이/가슴 상단 (ARMPIT/UPPER CHEST) | Semi Long |
-| B | 가슴 중간 (MID CHEST) | Long |
-| A | 가슴 하단/허리 (LOWER CHEST/WAIST) | Long |
+**신체 기준점별 기장 코드 (위→아래 순서):**
+
+| 코드 | 신체 위치 | 카테고리 | 대략적 길이 |
+|------|----------|----------|------------|
+| **H** | 후두부/목덜미 (NAPE) | **Short** | ~10cm |
+| **G** | 목 상단 (UPPER NECK) | **Bob** | ~15cm |
+| **F** | 목 하단 (LOWER NECK) | **Bob** | ~20cm |
+| **E** | 어깨선 상단 (UPPER SHOULDER) | **Medium** | ~25cm |
+| **D** | 어깨선 하단 (LOWER SHOULDER) | **Medium** | ~30cm |
+| **C** | 겨드랑이/가슴 상단 (ARMPIT) | **Semi Long** | ~35cm |
+| **B** | 가슴 중간 (MID CHEST) | **Long** | ~45cm |
+| **A** | 가슴 하단/허리 (WAIST) | **Long** | ~55cm+ |
+
+⚠️ **흔한 오류 방지:**
+- 가슴까지 내려오면 → **B 또는 A** (Long)
+- 어깨선 아래 = D, 어깨선 위 = E
+- 목덜미~목 = H/G/F (Short/Bob)
+- 겨드랑이/가슴 상단 = C (Semi Long)
+
+❌ **절대 하지 말 것:**
+- 가슴 중간까지 오는데 D로 분류 (틀림! → B가 정답)
+- 긴 머리를 짧게 판단하지 마세요!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 【2. CUT FORM & CELESTIAL ANGLE】⭐⭐⭐ 핵심!
@@ -4415,23 +4427,69 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       // 스타일 파라미터 전체 (프론트엔드에서 활용 가능)
       params56: params56,
 
-      // 분석 요약 (UI 표시용)
+      // 분석 요약 (UI 표시용) - 2WAY CUT SYSTEM 전체 파라미터
       analysis: {
+        // 기본 정보
         length: lengthCode,
         lengthName: params56.length_category || `${lengthCode} Length`,
         form: params56.cut_form || 'L (Layer)',
         hasBangs: params56.fringe_type !== 'No Fringe',
         bangsType: params56.fringe_type || 'No Fringe',
-        volumePosition: params56.volume_zone || 'Medium',
-        silhouette: params56.silhouette || 'Round',
-        texture: params56.hair_texture || 'Straight',
-        layerLevel: params56.layer_type || 'Mid Layer',
-        description: params56.description || '',
-        // 핵심 기술 파라미터
-        liftingRange: params56.lifting_range || ['L4'],
-        sectionPrimary: params56.section_primary || 'Diagonal-Backward',
+        fringeLength: params56.fringe_length || 'None',
+
+        // 볼륨 & 무게
+        volumeZone: params56.volume_zone || 'Medium',
+        volumePosition: params56.volume_position || ['Back'],
+        weightZone: params56.weight_zone || 'Zone_B',
         weightDistribution: params56.weight_distribution || 'Balanced',
-        connectionType: params56.connection_type || 'Connected'
+
+        // 실루엣 & 라인
+        silhouette: params56.silhouette || 'Round',
+        shapeOfLine: params56.shape_of_line || 'Round',
+        outlineShape: params56.outline_shape || 'Round',
+
+        // 텍스처
+        texture: params56.hair_texture || 'Straight',
+        surfaceTexture: params56.surface_texture || 'Smooth',
+        internalTexture: params56.internal_texture || 'Blunt',
+
+        // 레이어 & 그래쥬에이션
+        layerType: params56.layer_type || 'Mid Layer',
+        graduationType: params56.graduation_type || 'None',
+        celestialAngle: params56.celestial_angle || 90,
+        graduationAngle: params56.graduation_angle || null,
+
+        // ⭐ 핵심 기술 파라미터 (2WAY CUT)
+        liftingRange: params56.lifting_range || ['L4'],
+        liftingDegree: params56.lifting_degree || 90,
+        directionPrimary: params56.direction_primary || 'D4',
+        sectionPrimary: params56.section_primary || 'Diagonal-Backward',
+        sectionAngle: params56.section_angle || 45,
+        sectionByZone: params56.section_by_zone || null,
+
+        // 2WAY CUT 핵심 변수
+        headPosition: params56.head_position || 'Upright',
+        distribution: params56.distribution || 'Natural',
+        guideLine: params56.guide_line || 'Traveling',
+        fingerPosition: params56.finger_position || 'Parallel',
+        directionFlow: params56.direction_flow || 'Out_to_In',
+
+        // 기준점
+        targetPoint: params56.target_point || 'G_P',
+        focusPoints: params56.focus_points || ['G_P', 'N_S_P'],
+
+        // 연결 & 질감
+        connectionType: params56.connection_type || 'Connected',
+        lineQuality: params56.line_quality || 'Soft',
+
+        // 펌 & 컬러
+        permApplied: params56.perm_applied || false,
+        permType: params56.perm_type || null,
+        colorApplied: params56.color_applied || false,
+        baseColor: params56.base_color || null,
+
+        // 설명
+        description: params56.description || ''
       },
 
       // 대상 시리즈
