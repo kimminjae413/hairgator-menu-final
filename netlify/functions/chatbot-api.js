@@ -4640,9 +4640,13 @@ async function generateCustomRecipe(params56, top3Styles, geminiKey) {
     // Top-3 스타일의 레시피 텍스트 준비 (textRecipe 우선, 없으면 captionText 사용)
     const recipeTexts = top3Styles.map((s, i) => {
       // textRecipe가 있으면 우선 사용 (Firestore에 저장된 정제된 레시피)
+      const hasTextRecipe = !!s.textRecipe;
       const recipeContent = s.textRecipe || s.captionText || '레시피 없음';
+      console.log(`   📝 ${s.styleId}: textRecipe=${hasTextRecipe ? '있음' : '없음'} (${recipeContent.length}자)`);
       return `[참고 스타일 ${i+1}: ${s.styleId}]\n${recipeContent}`;
     }).join('\n\n');
+
+    console.log(`📚 참고 레시피 총 길이: ${recipeTexts.length}자`);
 
     // 핵심 파라미터 추출
     const liftingStr = Array.isArray(params56.lifting_range) ? params56.lifting_range.join(', ') : 'L4';
@@ -4657,7 +4661,14 @@ async function generateCustomRecipe(params56, top3Styles, geminiKey) {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `당신은 2WAY CUT 시스템 전문가입니다. 고객 요청 스타일의 분석 결과와 참고 레시피 3개를 바탕으로 최적의 맞춤 레시피를 생성해주세요.
+              text: `당신은 2WAY CUT 시스템 전문가입니다.
+
+## ⭐⭐⭐ 최우선 규칙: 참고 레시피 기반 작성 ⭐⭐⭐
+아래 "참고 레시피 (Top-3)"에 있는 **textRecipe 내용을 기반으로** 맞춤 레시피를 작성하세요.
+- 참고 레시피의 **존별 커팅 순서, 섹션, 리프팅, 디렉션 정보를 최대한 유지**하세요.
+- 고객 요청 파라미터와 다른 부분만 **살짝 조정**하세요.
+- 참고 레시피에 있는 전문 용어 설명(괄호 안 쉬운 설명)을 **그대로 활용**하세요.
+- **새로운 내용을 지어내지 말고**, 참고 레시피 내용을 기반으로 다듬으세요.
 
 ⭐ 중요: 업로드된 2WAY CUT 교재(abcde 북)의 이론과 기법을 참고하여 레시피를 작성하세요.
 
@@ -4713,8 +4724,14 @@ async function generateCustomRecipe(params56, top3Styles, geminiKey) {
 ### 스타일 설명
 ${params56.description || '고객 요청 스타일'}
 
-## 📚 참고 레시피 (Top-3)
+## 📚 참고 레시피 (Top-3) ⭐⭐⭐ 이 내용을 기반으로 작성하세요! ⭐⭐⭐
+**아래 레시피 내용을 최대한 그대로 사용하고, 고객 파라미터에 맞게 살짝만 조정하세요.**
+
 ${recipeTexts}
+
+---
+위 참고 레시피의 존별 작업 순서와 기법 설명을 **기반으로** 맞춤 레시피를 작성하세요.
+---
 
 ## ⚠️ 중요 규칙 - Outline Shape
 - **Women's Cut + Layer/Graduation** → 반드시 "Round" 또는 "Curved" 아웃라인 사용!
