@@ -1204,27 +1204,50 @@ class AIStudio {
             <span>AI 분석이 틀렸나요? 길이/형태를 수정하세요</span>
           </div>
 
-          <!-- 기장 가이드 이미지 -->
-          <div class="length-guide-container" style="margin: 10px 0; text-align: center;">
-            <img src="/images/length-guide.png" alt="기장 가이드" class="length-guide-image"
-                 style="max-width: 200px; height: auto; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
-                 onclick="this.style.maxWidth = this.style.maxWidth === '200px' ? '100%' : '200px'"
-                 title="클릭하여 확대/축소">
-            <p style="font-size: 11px; color: #888; margin-top: 5px;">👆 클릭하여 확대</p>
-          </div>
-
           <div class="correction-controls female">
-            <select id="length-correction-select" class="style-select">
-              <option value="" disabled>길이 선택...</option>
-              <option value="H" ${currentLengthCode === 'H' ? 'selected' : ''}>H - 후두부/목덜미 (Short)</option>
-              <option value="G" ${currentLengthCode === 'G' ? 'selected' : ''}>G - 목 상단 (Bob)</option>
-              <option value="F" ${currentLengthCode === 'F' ? 'selected' : ''}>F - 목 하단 (Bob)</option>
-              <option value="E" ${currentLengthCode === 'E' ? 'selected' : ''}>E - 어깨선 상단 (Medium)</option>
-              <option value="D" ${currentLengthCode === 'D' ? 'selected' : ''}>D - 어깨선 하단 (Medium)</option>
-              <option value="C" ${currentLengthCode === 'C' ? 'selected' : ''}>C - 겨드랑이 (Semi Long)</option>
-              <option value="B" ${currentLengthCode === 'B' ? 'selected' : ''}>B - 가슴 중간 (Long)</option>
-              <option value="A" ${currentLengthCode === 'A' ? 'selected' : ''}>A - 가슴 하단/허리 (Long)</option>
-            </select>
+            <!-- 커스텀 기장 드롭다운 (이미지 포함) -->
+            <div class="custom-length-dropdown" style="position: relative; flex: 1;">
+              <button type="button" id="length-dropdown-btn" class="style-select"
+                      style="width: 100%; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
+                      onclick="document.getElementById('length-dropdown-content').style.display = document.getElementById('length-dropdown-content').style.display === 'block' ? 'none' : 'block'">
+                <span id="length-dropdown-text">${currentLengthCode ? currentLengthCode + ' Length' : '길이 선택...'}</span>
+                <span>▼</span>
+              </button>
+              <input type="hidden" id="length-correction-select" value="${currentLengthCode || ''}">
+
+              <div id="length-dropdown-content" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-height: 400px; overflow-y: auto;">
+                <!-- 기장 가이드 이미지 -->
+                <div style="padding: 10px; border-bottom: 1px solid #eee; text-align: center; background: #f9f9f9;">
+                  <img src="/images/length-guide.png" alt="기장 가이드" style="max-width: 100%; height: auto; border-radius: 4px;">
+                </div>
+                <!-- 옵션들 -->
+                <div class="length-option" data-value="H" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #FF9500;">H</strong> - 후두부/목덜미 (Short)
+                </div>
+                <div class="length-option" data-value="G" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #FFCC00;">G</strong> - 목 상단 (Bob)
+                </div>
+                <div class="length-option" data-value="F" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #4CD964;">F</strong> - 목 하단 (Bob)
+                </div>
+                <div class="length-option" data-value="E" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #5AC8FA;">E</strong> - 어깨선 상단 (Medium)
+                </div>
+                <div class="length-option" data-value="D" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #007AFF;">D</strong> - 어깨선 하단 (Medium)
+                </div>
+                <div class="length-option" data-value="C" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #5856D6;">C</strong> - 겨드랑이 (Semi Long)
+                </div>
+                <div class="length-option" data-value="B" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #AF52DE;">B</strong> - 가슴 중간 (Long)
+                </div>
+                <div class="length-option" data-value="A" style="padding: 10px 15px; cursor: pointer;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #FF2D55;">A</strong> - 가슴 하단/허리 (Long)
+                </div>
+              </div>
+            </div>
+
             <select id="form-correction-select" class="style-select">
               <option value="" disabled>형태 선택...</option>
               <option value="One Length" ${currentForm.includes('One') ? 'selected' : ''}>One Length (원렝스)</option>
@@ -1236,6 +1259,24 @@ class AIStudio {
             </button>
           </div>
         </div>
+
+        <script>
+          // 기장 드롭다운 옵션 클릭 이벤트
+          document.querySelectorAll('.length-option').forEach(opt => {
+            opt.addEventListener('click', function() {
+              const value = this.dataset.value;
+              document.getElementById('length-correction-select').value = value;
+              document.getElementById('length-dropdown-text').textContent = value + ' Length';
+              document.getElementById('length-dropdown-content').style.display = 'none';
+            });
+          });
+          // 외부 클릭 시 드롭다운 닫기
+          document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-length-dropdown')) {
+              document.getElementById('length-dropdown-content').style.display = 'none';
+            }
+          });
+        </script>
 
         <!-- 이미지 주요 분석 -->
         <div class="formula-params-section">
