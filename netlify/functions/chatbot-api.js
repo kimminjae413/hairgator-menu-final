@@ -4998,6 +4998,10 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     }
 
     // 3. 전체 스타일 점수 계산 (자막 없이 빠른 1차 필터링)
+    // ⭐ 분석된 기장과 같은 시리즈 우선!
+    const targetSeriesCode = `F${lengthCode}L`;
+    console.log(`🎯 타겟 시리즈: ${targetSeriesCode} (${lengthCode} Length)`);
+
     const stylesWithQuickScore = allStyles.map(style => {
       const { score, reasons } = calculateFeatureScore(style, params56, '');
 
@@ -5006,12 +5010,17 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
         embeddingSimilarity = cosineSimilarity(queryEmbedding, style.embedding);
       }
 
+      // ⭐ 같은 시리즈(기장) 보너스 +50점
+      const seriesBonus = (style.series === targetSeriesCode ||
+                          style.styleId.startsWith(targetSeriesCode)) ? 50 : 0;
+
       return {
         ...style,
         featureScore: score,
         featureReasons: reasons,
         embeddingSimilarity,
-        quickScore: score + (embeddingSimilarity * 30)
+        seriesBonus,
+        quickScore: score + (embeddingSimilarity * 30) + seriesBonus
       };
     });
 
@@ -5030,7 +5039,7 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
           captionText,
           featureScore: score,
           featureReasons: reasons,
-          totalScore: score + (style.embeddingSimilarity * 30)
+          totalScore: score + (style.embeddingSimilarity * 30) + (style.seriesBonus || 0)
         };
       })
     );
