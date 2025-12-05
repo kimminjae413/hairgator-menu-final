@@ -4075,10 +4075,16 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
   const coveredDirections = new Set(selectedDiagrams.map(d => d.direction).filter(Boolean));
   const needsDirection = targetDirectionCode && !coveredDirections.has(targetDirectionCode);
 
-  // 리프팅 Fallback: 타겟 리프팅이 커버되지 않았으면 시리즈 무관 검색
-  const missingLiftingsAfterSupplement = targetLiftingRange.filter(l => !coveredLiftings.has(l));
+  // 리프팅 Fallback: 타겟 리프팅 + 존별 리프팅이 커버되지 않았으면 시리즈 무관 검색
+  // ⭐ 존별 리프팅(L3, L5, L6 등)도 포함!
+  const allZoneLiftings = hasZoneLiftings ? Object.values(liftingByZone).filter(Boolean) : [];
+  const allNeededLiftingsForFallback = [...new Set([...targetLiftingRange, ...allZoneLiftings])];
+  const missingLiftingsAfterSupplement = allNeededLiftingsForFallback.filter(l => !coveredLiftings.has(l));
 
-  if (missingLiftingsAfterSupplement.length > 0 && selectedDiagrams.length < maxDiagrams && allStyles) {
+  // ⭐ 존별 리프팅 누락 시에는 maxDiagrams 제한 없이 Fallback!
+  const canLiftingFallback = selectedDiagrams.length < maxDiagrams || hasZoneLiftingGap;
+
+  if (missingLiftingsAfterSupplement.length > 0 && canLiftingFallback && allStyles) {
     console.log(`\n🔄 리프팅 ${missingLiftingsAfterSupplement.join(',')} 도해도 없음 → 시리즈 무관 검색...`);
 
     const liftingCandidates = [];
@@ -4109,10 +4115,12 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
 
     console.log(`   🔍 리프팅 ${missingLiftingsAfterSupplement.join(',')} 도해도 후보: ${liftingCandidates.length}개`);
 
-    // 각 리프팅당 최대 2개까지 보충
+    // 각 리프팅당 최대 2개까지 보충 (존별 리프팅 누락 시에는 제한 완화)
     const addedLiftings = new Set();
     for (const candidate of liftingCandidates) {
-      if (selectedDiagrams.length >= maxDiagrams) break;
+      // 존별 리프팅 누락 시에는 maxDiagrams 제한 완화 (최대 20장까지)
+      if (selectedDiagrams.length >= maxDiagrams + 5 && !hasZoneLiftingGap) break;
+      if (selectedDiagrams.length >= maxDiagrams && !hasZoneLiftingGap) break;
       if (usedUrls.has(candidate.urlKey)) continue;
 
       // 같은 리프팅은 2개까지만
