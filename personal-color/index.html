@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HAIRGATOR Personal Color</title>
 
     <!-- MediaPipe CDN -->
@@ -39,6 +39,22 @@
             border-radius: 0 !important;
             border-bottom: 2px solid #2d1f3d !important;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        /* 안드로이드 모바일 최적화 */
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>

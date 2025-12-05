@@ -47,6 +47,8 @@ body {
     color: var(--text);
     line-height: 1.6;
     overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
 }
 
 /* ========== 로딩 화면 (HAIRGATOR 로고 스타일) ========== */
@@ -444,6 +446,9 @@ body.male-theme .nav-btn.guide-btn:hover {
     gap: 1.5rem;
     margin-bottom: 0;
     padding: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .mode-card {
@@ -470,10 +475,12 @@ body.male-theme .nav-btn.guide-btn:hover {
 
 .mode-card-img-wrapper {
     width: 100%;
+    max-width: 100%;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
     margin-bottom: 1rem;
+    box-sizing: border-box;
 }
 
 /* 말풍선 스타일 설명글 */
@@ -518,9 +525,11 @@ body.male-theme .nav-btn.guide-btn:hover {
 
 .mode-card-img {
     width: 100%;
+    max-width: 100%;
     height: auto;
     display: block;
     transition: transform 0.4s ease;
+    object-fit: contain;
 }
 
 .mode-card-image:hover .mode-card-img {
@@ -1414,13 +1423,67 @@ body.male-theme .nav-btn.guide-btn:hover {
 }
 
 /* ========== 반응형 디자인 ========== */
+
+/* 모바일 우선: 작은 화면에서 1단 레이아웃 */
+@media (max-width: 600px) {
+    .mode-cards {
+        grid-template-columns: 1fr !important;
+        max-width: 100% !important;
+        margin: 0 auto 2rem !important;
+        padding: 0 !important;
+        gap: 1.5rem !important;
+    }
+
+    .mode-card-image {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .mode-card-img-wrapper {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .mode-card-img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+    }
+
+    .main-content {
+        padding: 1rem;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    #mode-selection {
+        min-height: auto;
+        padding: 1rem 0;
+    }
+
+    .mode-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .mode-description-bubble {
+        font-size: 12px;
+        padding: 10px 12px;
+    }
+
+    .mode-btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+
 @media (max-width: 1024px) {
     .analysis-grid,
     .draping-layout {
         grid-template-columns: 1fr;
         gap: 1.5rem;
     }
-    
+
     .mode-cards {
         grid-template-columns: 1fr;
         max-width: 500px;
