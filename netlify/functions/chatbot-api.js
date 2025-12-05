@@ -3682,6 +3682,32 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
   const coveredZones = new Set(selectedDiagrams.map(d => d.zone).filter(Boolean));
   const coveredLiftings = new Set(selectedDiagrams.map(d => d.lifting).filter(Boolean));
 
+  // ⭐ 존별 리프팅에서 커버 여부 확인 (더 정확한 매칭!)
+  // 각 존의 도해도가 해당 존의 타겟 리프팅과 일치하는지 체크
+  const coveredZoneLiftings = {};
+  if (hasZoneLiftings) {
+    for (const diagram of selectedDiagrams) {
+      const dZone = (diagram.zone || '').toLowerCase();
+      const dLift = diagram.lifting;
+      if (dZone.includes('back') || dZone.includes('nape')) {
+        if (dLift === liftingByZone.back) coveredZoneLiftings.back = true;
+      } else if (dZone.includes('side')) {
+        if (dLift === liftingByZone.side) coveredZoneLiftings.side = true;
+      } else if (dZone.includes('top') || dZone.includes('crown')) {
+        if (dLift === liftingByZone.top) coveredZoneLiftings.top = true;
+      } else if (dZone.includes('fringe') || dZone.includes('front') || dZone.includes('bang')) {
+        if (dLift === liftingByZone.fringe) coveredZoneLiftings.fringe = true;
+      }
+    }
+  }
+
+  // ⭐ 필요한 리프팅 = 전체 범위 + 존별 리프팅 (중복 제거)
+  const allNeededLiftings = new Set([
+    ...targetLiftingRange,
+    ...(hasZoneLiftings ? Object.values(liftingByZone).filter(Boolean) : [])
+  ]);
+  const missingLiftingsArray = [...allNeededLiftings].filter(l => !coveredLiftings.has(l));
+
   // 유저 이미지 분석 결과에서 필요한 기법/존 도출
   const requiredFeatures = {
     // 앞머리
@@ -3693,8 +3719,15 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
     needsBack: targetZones.includes('Back') && !coveredZones.has('Back'),
     needsSide: targetZones.includes('Side') && !coveredZones.has('Side'),
     needsCrown: targetZones.includes('Crown') && !coveredZones.has('Crown') && !coveredZones.has('Top'),
-    // 리프팅
-    missingLiftings: targetLiftingRange.filter(l => !coveredLiftings.has(l))
+    // 리프팅 (전체 범위 + 존별 리프팅 포함!)
+    missingLiftings: missingLiftingsArray,
+    // ⭐ 존별 리프팅 누락 체크 (새로 추가)
+    missingZoneLiftings: hasZoneLiftings ? {
+      back: liftingByZone.back && !coveredZoneLiftings.back ? liftingByZone.back : null,
+      side: liftingByZone.side && !coveredZoneLiftings.side ? liftingByZone.side : null,
+      top: liftingByZone.top && !coveredZoneLiftings.top ? liftingByZone.top : null,
+      fringe: liftingByZone.fringe && !coveredZoneLiftings.fringe ? liftingByZone.fringe : null
+    } : {}
   };
 
   // 보충이 필요한지 확인
@@ -3715,6 +3748,16 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
     if (requiredFeatures.needsSide) console.log(`   - 존: Side`);
     if (requiredFeatures.needsCrown) console.log(`   - 존: Crown/Top`);
     if (requiredFeatures.missingLiftings.length > 0) console.log(`   - 리프팅: ${requiredFeatures.missingLiftings.join(', ')}`);
+    // ⭐ 존별 누락 리프팅 출력
+    if (requiredFeatures.missingZoneLiftings) {
+      const mzl = requiredFeatures.missingZoneLiftings;
+      const missing = [];
+      if (mzl.back) missing.push(`Back:${mzl.back}`);
+      if (mzl.side) missing.push(`Side:${mzl.side}`);
+      if (mzl.top) missing.push(`Top:${mzl.top}`);
+      if (mzl.fringe) missing.push(`Fringe:${mzl.fringe}`);
+      if (missing.length > 0) console.log(`   - 존별 리프팅 미매칭: ${missing.join(', ')}`);
+    }
 
     // 검색 대상: allStyles (전체 스타일) > top3Styles
     const seriesToSearch = allStyles || top3Styles;
@@ -3792,6 +3835,30 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
           supplementScore += 25;
           reasons.push(`리프팅:${diagLifting}`);
           category = 'lifting';
+        }
+
+        // ⭐ 5. 존별 리프팅 정확 매칭 보너스 (최우선!)
+        // 도해도의 존과 리프팅이 타겟과 정확히 일치하면 +40점
+        const mzl = requiredFeatures.missingZoneLiftings || {};
+        if (mzl.back && (diagZone.includes('back') || diagZone.includes('nape')) && diagLifting === mzl.back) {
+          supplementScore += 40;
+          reasons.push(`Back존+${diagLifting}정확매칭`);
+          category = 'zone_lifting';
+        }
+        if (mzl.side && diagZone.includes('side') && diagLifting === mzl.side) {
+          supplementScore += 40;
+          reasons.push(`Side존+${diagLifting}정확매칭`);
+          category = 'zone_lifting';
+        }
+        if (mzl.top && (diagZone.includes('top') || diagZone.includes('crown')) && diagLifting === mzl.top) {
+          supplementScore += 40;
+          reasons.push(`Top존+${diagLifting}정확매칭`);
+          category = 'zone_lifting';
+        }
+        if (mzl.fringe && (diagZone.includes('fringe') || diagZone.includes('front') || diagZone.includes('bang')) && diagLifting === mzl.fringe) {
+          supplementScore += 40;
+          reasons.push(`Fringe존+${diagLifting}정확매칭`);
+          category = 'zone_lifting';
         }
 
         // 보충 점수가 있는 경우만 후보에 추가
