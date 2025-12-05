@@ -53,6 +53,9 @@ const {
   determineDirectionMode
 } = require('./lib/schemas');
 
+// 기장 가이드 이미지 Base64 (Vision API에 참조 이미지로 전송)
+const LENGTH_GUIDE_BASE64 = require('./lib/length-guide-base64');
+
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -2736,6 +2739,13 @@ const LENGTH_TO_SERIES = {
  */
 async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
   const systemPrompt = `당신은 "HAIRGATOR AI", 20년 경력의 2WAY CUT 시스템 전문가입니다.
+
+📌 **분석 대상**: 2개의 이미지가 제공됩니다.
+1. **첫 번째 이미지 (기장 가이드)**: 신체 부위별 기장 코드(H~A) 참조표
+2. **두 번째 이미지 (고객 사진)**: 실제 분석할 헤어스타일
+
+⚠️ **반드시 첫 번째 가이드 이미지를 참고하여 두 번째 고객 이미지의 기장을 정확히 판단하세요!**
+
 이미지 속 헤어스타일을 **2WAY CUT SYSTEM 스키마**에 맞게 분석하여 JSON 형식으로 출력하세요.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2744,25 +2754,29 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 
 🚨🚨🚨 **경고: 기장 분류가 가장 중요합니다!** 🚨🚨🚨
 
-**⭐⭐⭐ 필수 3단계 (반드시 순서대로!):**
-1. 이미지에서 **뒷머리(Back hair)** 가장 긴 부분 찾기
-2. 그 끝이 **정확히 어느 신체 부위**에 닿는지 확인
-3. 아래 표에서 해당 부위 → 코드 결정
+**⭐⭐⭐ 첫 번째 가이드 이미지를 반드시 참조하세요! ⭐⭐⭐**
+가이드 이미지에 표시된 신체 위치(Short→Bob→Medium→Semi Long→Long)와
+기장 코드(H~A)를 고객 사진과 비교하여 정확히 판단하세요.
 
-**신체 기준점별 기장 코드:**
+**⭐⭐⭐ 필수 3단계 (반드시 순서대로!):**
+1. 두 번째 고객 이미지에서 **뒷머리(Back hair)** 가장 긴 부분 찾기
+2. 그 끝이 **정확히 어느 신체 부위**에 닿는지 확인
+3. **첫 번째 가이드 이미지**와 비교하여 해당 코드 결정
+
+**신체 기준점별 기장 코드 (가이드 이미지 참조!):**
 
 | 코드 | 신체 위치 | 약 cm | 시각적 판단 |
 |------|----------|-------|-----------|
-| **H** | 후두부/목덜미 | ~10cm | 목이 완전히 보임 |
-| **G** | 목 상단 | ~15cm | 목 위쪽 일부 가림 |
-| **F** | 목 하단 | ~20cm | 목 아래까지 |
-| **E** | 어깨선 상단 | ~25cm | 어깨 바로 위 |
-| **D** | 어깨선 하단 | ~30cm | 어깨에서 끝 (어깨선) |
-| **C** | 겨드랑이 | ~40cm | 겨드랑이 높이 |
-| **B** | 가슴 중간 | ~50cm | 가슴 중간 ⭐⭐⭐ |
-| **A** | 가슴 하단/허리 | 60cm+ | 허리까지 닿음 |
+| **H** | 후두부/목덜미 (Short) | ~10cm | 목이 완전히 보임 |
+| **G** | 목 상단 (Short) | ~15cm | 목 위쪽 일부 가림 |
+| **F** | 목 하단 (Bob) | ~20cm | 목 아래까지 |
+| **E** | 어깨선 상단 (Medium) | ~25cm | 어깨 바로 위 |
+| **D** | 어깨선 하단 (Medium) | ~30cm | 어깨에서 끝 (어깨선) |
+| **C** | 겨드랑이 (Semi Long) | ~40cm | 겨드랑이 높이 |
+| **B** | 가슴 중간 (Long) | ~50cm | 가슴 중간 ⭐⭐⭐ |
+| **A** | 가슴 하단/허리 (Long) | 60cm+ | 허리까지 닿음 |
 
-🔴🔴🔴 **핵심 구분법 (암기!):**
+🔴🔴🔴 **핵심 구분법 (가이드 이미지와 비교!):**
 - 머리가 **가슴에 닿으면** → 무조건 **B 또는 A** (절대 D 아님!)
 - 머리가 **겨드랑이까지 내려오면** → **C** (절대 D 아님!)
 - 머리가 **어깨에만 닿으면** → **D 또는 E**
@@ -3103,6 +3117,7 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 JSON만 반환하세요.`;
 
   try {
+    // 기장 가이드 이미지 + 고객 이미지를 함께 전송
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
       {
@@ -3111,7 +3126,11 @@ JSON만 반환하세요.`;
         body: JSON.stringify({
           contents: [{
             parts: [
+              // 1. 기장 가이드 이미지 (참조용)
+              { inline_data: { mime_type: 'image/png', data: LENGTH_GUIDE_BASE64 } },
+              // 2. 고객 업로드 이미지 (분석 대상)
               { inline_data: { mime_type: mimeType, data: imageBase64 } },
+              // 3. 프롬프트
               { text: systemPrompt }
             ]
           }],
