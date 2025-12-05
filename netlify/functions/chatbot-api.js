@@ -2529,14 +2529,23 @@ async function getFirestoreStyles() {
           embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
         }
 
-        // 도해도 배열 추출
+        // 도해도 배열 추출 (메타데이터 포함)
         let diagrams = [];
         if (fields.diagrams && fields.diagrams.arrayValue && fields.diagrams.arrayValue.values) {
           diagrams = fields.diagrams.arrayValue.values.map(v => {
             const mapValue = v.mapValue?.fields || {};
             return {
               step: parseInt(mapValue.step?.integerValue || 0),
-              url: mapValue.url?.stringValue || ''
+              url: mapValue.url?.stringValue || '',
+              // ⭐ 도해도 메타데이터 추가
+              lifting: mapValue.lifting?.stringValue || null,
+              lifting_angle: parseInt(mapValue.lifting_angle?.integerValue || 0),
+              direction: mapValue.direction?.stringValue || null,
+              section: mapValue.section?.stringValue || null,
+              zone: mapValue.zone?.stringValue || null,
+              cutting_method: mapValue.cutting_method?.stringValue || null,
+              over_direction: mapValue.over_direction?.booleanValue || false,
+              notes: mapValue.notes?.stringValue || null
             };
           });
         }
@@ -4689,6 +4698,55 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
         error: error.message
       })
     };
+  }
+}
+
+// ==================== Firestore Document 파싱 (메타데이터 포함) ====================
+function parseFirestoreDocument(doc) {
+  try {
+    const fields = doc.fields;
+    const styleId = doc.name.split('/').pop();
+
+    // 임베딩 배열 추출
+    let embedding = null;
+    if (fields.embedding && fields.embedding.arrayValue && fields.embedding.arrayValue.values) {
+      embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
+    }
+
+    // 도해도 배열 추출 (메타데이터 포함)
+    let diagrams = [];
+    if (fields.diagrams && fields.diagrams.arrayValue && fields.diagrams.arrayValue.values) {
+      diagrams = fields.diagrams.arrayValue.values.map(v => {
+        const mapValue = v.mapValue?.fields || {};
+        return {
+          step: parseInt(mapValue.step?.integerValue || 0),
+          url: mapValue.url?.stringValue || '',
+          // ⭐ 도해도 메타데이터
+          lifting: mapValue.lifting?.stringValue || null,
+          lifting_angle: parseInt(mapValue.lifting_angle?.integerValue || 0),
+          direction: mapValue.direction?.stringValue || null,
+          section: mapValue.section?.stringValue || null,
+          zone: mapValue.zone?.stringValue || null,
+          cutting_method: mapValue.cutting_method?.stringValue || null,
+          over_direction: mapValue.over_direction?.booleanValue || false,
+          notes: mapValue.notes?.stringValue || null
+        };
+      });
+    }
+
+    return {
+      styleId: styleId,
+      series: fields.series?.stringValue || '',
+      seriesName: fields.seriesName?.stringValue || '',
+      resultImage: fields.resultImage?.stringValue || null,
+      diagrams: diagrams,
+      diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
+      captionUrl: fields.captionUrl?.stringValue || null,
+      embedding: embedding
+    };
+  } catch (error) {
+    console.error('parseFirestoreDocument 오류:', error);
+    return null;
   }
 }
 
