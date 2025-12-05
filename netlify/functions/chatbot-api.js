@@ -3137,8 +3137,30 @@ JSON만 반환하세요.`;
     text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const params56 = JSON.parse(text);
 
+    // ⭐⭐⭐ 기장 검증 및 보정: estimated_hair_length_cm 기반
+    const estimatedCm = parseInt(params56.estimated_hair_length_cm) || 0;
+    const declaredLength = params56.length_category?.charAt(0) || 'E';
+
+    // cm 기준 → 올바른 기장 코드
+    let correctLength = declaredLength;
+    if (estimatedCm >= 60) correctLength = 'A';
+    else if (estimatedCm >= 50) correctLength = 'B';
+    else if (estimatedCm >= 40) correctLength = 'C';
+    else if (estimatedCm >= 30) correctLength = 'D';
+    else if (estimatedCm >= 25) correctLength = 'E';
+    else if (estimatedCm >= 20) correctLength = 'F';
+    else if (estimatedCm >= 15) correctLength = 'G';
+    else if (estimatedCm >= 10) correctLength = 'H';
+
+    // 불일치 시 보정
+    if (correctLength !== declaredLength) {
+      console.log(`⚠️ 기장 보정: ${declaredLength} → ${correctLength} (${estimatedCm}cm 기준)`);
+      params56.length_category = `${correctLength} Length`;
+    }
+
     console.log(`📷 스타일 분석 완료:`, {
       length: params56.length_category,
+      estimatedCm: estimatedCm,
       form: params56.cut_form,
       lifting: params56.lifting_range,
       section: params56.section_primary,
