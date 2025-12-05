@@ -1203,17 +1203,27 @@ class AIStudio {
             <span class="correction-icon">⚠️</span>
             <span>AI 분석이 틀렸나요? 길이/형태를 수정하세요</span>
           </div>
+
+          <!-- 기장 가이드 이미지 -->
+          <div class="length-guide-container" style="margin: 10px 0; text-align: center;">
+            <img src="/images/length-guide.png" alt="기장 가이드" class="length-guide-image"
+                 style="max-width: 200px; height: auto; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+                 onclick="this.style.maxWidth = this.style.maxWidth === '200px' ? '100%' : '200px'"
+                 title="클릭하여 확대/축소">
+            <p style="font-size: 11px; color: #888; margin-top: 5px;">👆 클릭하여 확대</p>
+          </div>
+
           <div class="correction-controls female">
             <select id="length-correction-select" class="style-select">
               <option value="" disabled>길이 선택...</option>
-              <option value="H" ${currentLengthCode === 'H' ? 'selected' : ''}>H - 귀/목덜미 (Very Short)</option>
-              <option value="G" ${currentLengthCode === 'G' ? 'selected' : ''}>G - 턱선 (Short Bob)</option>
-              <option value="F" ${currentLengthCode === 'F' ? 'selected' : ''}>F - 턱~어깨 (Bob)</option>
-              <option value="E" ${currentLengthCode === 'E' ? 'selected' : ''}>E - 어깨선 (Medium)</option>
-              <option value="D" ${currentLengthCode === 'D' ? 'selected' : ''}>D - 어깨~겨드랑이 (Semi-Long)</option>
-              <option value="C" ${currentLengthCode === 'C' ? 'selected' : ''}>C - 겨드랑이/가슴 (Long)</option>
-              <option value="B" ${currentLengthCode === 'B' ? 'selected' : ''}>B - 가슴 중간 (Very Long)</option>
-              <option value="A" ${currentLengthCode === 'A' ? 'selected' : ''}>A - 가슴 아래/허리 (Super Long)</option>
+              <option value="H" ${currentLengthCode === 'H' ? 'selected' : ''}>H - 후두부/목덜미 (Short)</option>
+              <option value="G" ${currentLengthCode === 'G' ? 'selected' : ''}>G - 목 상단 (Bob)</option>
+              <option value="F" ${currentLengthCode === 'F' ? 'selected' : ''}>F - 목 하단 (Bob)</option>
+              <option value="E" ${currentLengthCode === 'E' ? 'selected' : ''}>E - 어깨선 상단 (Medium)</option>
+              <option value="D" ${currentLengthCode === 'D' ? 'selected' : ''}>D - 어깨선 하단 (Medium)</option>
+              <option value="C" ${currentLengthCode === 'C' ? 'selected' : ''}>C - 겨드랑이 (Semi Long)</option>
+              <option value="B" ${currentLengthCode === 'B' ? 'selected' : ''}>B - 가슴 중간 (Long)</option>
+              <option value="A" ${currentLengthCode === 'A' ? 'selected' : ''}>A - 가슴 하단/허리 (Long)</option>
             </select>
             <select id="form-correction-select" class="style-select">
               <option value="" disabled>형태 선택...</option>
