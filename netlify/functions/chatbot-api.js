@@ -4636,10 +4636,12 @@ function calculateFeatureScore(style, params56, captionText) {
  */
 async function generateCustomRecipe(params56, top3Styles, geminiKey) {
   try {
-    // Top-3 스타일의 레시피 텍스트 준비
-    const recipeTexts = top3Styles.map((s, i) =>
-      `[참고 스타일 ${i+1}: ${s.styleId}]\n${s.captionText || '레시피 없음'}`
-    ).join('\n\n');
+    // Top-3 스타일의 레시피 텍스트 준비 (textRecipe 우선, 없으면 captionText 사용)
+    const recipeTexts = top3Styles.map((s, i) => {
+      // textRecipe가 있으면 우선 사용 (Firestore에 저장된 정제된 레시피)
+      const recipeContent = s.textRecipe || s.captionText || '레시피 없음';
+      return `[참고 스타일 ${i+1}: ${s.styleId}]\n${recipeContent}`;
+    }).join('\n\n');
 
     // 핵심 파라미터 추출
     const liftingStr = Array.isArray(params56.lifting_range) ? params56.lifting_range.join(', ') : 'L4';
@@ -4866,6 +4868,79 @@ ${recipeTexts}
  * 이미지 분석 → 시리즈 필터링 → Top-3 참고 → 맞춤 레시피 생성
  * 스타일 분석 기반
  */
+
+// ==================== 차이점 분석 함수 (Top-1 매칭 vs 유저 이미지) ====================
+function analyzeDifferences(userParams, matchedStyle) {
+  const differences = [];
+
+  // 1. 앞머리 차이
+  const userHasBangs = userParams.fringe_type && userParams.fringe_type !== 'No Fringe';
+  const styleHasBangs = matchedStyle.captionText &&
+    (matchedStyle.captionText.includes('프린지') || matchedStyle.captionText.includes('앞머리') || matchedStyle.captionText.includes('뱅'));
+
+  if (userHasBangs && !styleHasBangs) {
+    differences.push({
+      feature: 'fringe',
+      description: '앞머리 있음 (매칭 스타일에는 없음)',
+      userValue: userParams.fringe_type,
+      styleValue: 'No Fringe',
+      suggestion: '앞머리 커트는 별도 프린지 도해도 참고'
+    });
+  } else if (!userHasBangs && styleHasBangs) {
+    differences.push({
+      feature: 'fringe',
+      description: '앞머리 없음 (매칭 스타일에는 있음)',
+      userValue: 'No Fringe',
+      styleValue: 'With Fringe',
+      suggestion: '프린지 부분 생략 가능'
+    });
+  }
+
+  // 2. 길이 차이
+  const userLength = userParams.length_category ? userParams.length_category.charAt(0) : null;
+  const styleLength = matchedStyle.series ? matchedStyle.series.charAt(1) : null;
+
+  if (userLength && styleLength && userLength !== styleLength) {
+    differences.push({
+      feature: 'length',
+      description: `길이 차이: ${userLength} Length → ${styleLength} Length`,
+      userValue: userLength,
+      styleValue: styleLength,
+      suggestion: `기본 형태는 동일, 길이만 ${userLength} Length로 조절`
+    });
+  }
+
+  // 3. 볼륨 위치 차이
+  if (userParams.volume_zone && matchedStyle.captionText) {
+    const userVolumeZone = userParams.volume_zone.toLowerCase();
+    const captionLower = matchedStyle.captionText.toLowerCase();
+
+    if (userVolumeZone.includes('top') && !captionLower.includes('탑') && !captionLower.includes('정수리')) {
+      differences.push({
+        feature: 'volume',
+        description: '탑 볼륨 필요 (매칭 스타일은 다른 위치)',
+        userValue: userParams.volume_zone,
+        suggestion: '정수리 부분 리프팅 각도 높임'
+      });
+    }
+  }
+
+  // 4. 텍스처 차이 (직모 vs 웨이브)
+  if (userParams.hair_texture) {
+    const userTexture = userParams.hair_texture.toLowerCase();
+    if (userTexture.includes('wave') || userTexture.includes('curl')) {
+      differences.push({
+        feature: 'texture',
+        description: '웨이브/컬 텍스처',
+        userValue: userParams.hair_texture,
+        suggestion: '펌 또는 스타일링으로 텍스처 연출 필요'
+      });
+    }
+  }
+
+  return differences;
+}
+
 async function analyzeAndMatchRecipe(payload, geminiKey) {
   const { image_base64, mime_type, gender } = payload;
   const startTime = Date.now();
@@ -4904,23 +4979,17 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     console.log(`   - Texture: ${params56.hair_texture || 'N/A'}`);
     console.log(`   - Silhouette: ${params56.silhouette || 'N/A'}`);
 
-    // 2. 기장에 해당하는 시리즈 결정
-    const targetSeries = LENGTH_TO_SERIES[lengthCode] || 'FDL';
-    console.log(`📁 대상 시리즈: ${targetSeries}`);
-
-    // 3. Firestore에서 해당 시리즈 스타일만 필터링
+    // 2. 전체 스타일에서 검색 (시리즈 제한 없이 전체에서 Top-1)
     const t2 = Date.now();
     const allStyles = await getFirestoreStyles();
-    const seriesStyles = allStyles.filter(s => s.series === targetSeries);
     console.log(`⏱️ [2] Firestore 조회: ${Date.now() - t2}ms`);
+    console.log(`📚 전체 ${allStyles.length}개 스타일에서 Top-1 검색`);
 
-    console.log(`📚 ${targetSeries} 시리즈: ${seriesStyles.length}개 스타일`);
-
-    if (seriesStyles.length === 0) {
-      throw new Error(`${targetSeries} 시리즈 스타일이 없습니다`);
+    if (allStyles.length === 0) {
+      throw new Error('스타일 데이터가 없습니다');
     }
 
-    // ⚡ 최적화: 임베딩을 루프 밖에서 1번만 생성 (기존: N번 호출 → 1번으로 감소)
+    // ⚡ 임베딩 1번만 생성
     const t3 = Date.now();
     let queryEmbedding = null;
     if (params56.description) {
@@ -4928,12 +4997,10 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       console.log(`⏱️ [3] 임베딩 생성: ${Date.now() - t3}ms`);
     }
 
-    // 4. 1차 필터링: 자막 없이 특성 점수 + 임베딩 유사도 계산 (빠름)
-    const stylesWithQuickScore = seriesStyles.map(style => {
-      // 자막 없이도 계산 가능한 특성 점수 (메타데이터 기반)
+    // 3. 전체 스타일 점수 계산 (자막 없이 빠른 1차 필터링)
+    const stylesWithQuickScore = allStyles.map(style => {
       const { score, reasons } = calculateFeatureScore(style, params56, '');
 
-      // 임베딩 유사도 (사전 계산된 queryEmbedding 사용)
       let embeddingSimilarity = 0;
       if (style.embedding && queryEmbedding) {
         embeddingSimilarity = cosineSimilarity(queryEmbedding, style.embedding);
@@ -4948,17 +5015,14 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       };
     });
 
-    // ⚡ 최적화: 상위 5개만 자막 fetch (기존: 모든 스타일 → 5개로 감소)
+    // 4. 상위 5개만 자막 fetch 후 최종 점수 계산
     const topCandidates = stylesWithQuickScore
       .sort((a, b) => b.quickScore - a.quickScore)
       .slice(0, 5);
 
-    // 5. 상위 후보만 자막 가져와서 최종 점수 계산
     const stylesWithScores = await Promise.all(
       topCandidates.map(async (style) => {
         const captionText = await fetchCaptionContent(style.captionUrl);
-
-        // 자막이 있으면 점수 재계산 (더 정확)
         const { score, reasons } = calculateFeatureScore(style, params56, captionText || '');
 
         return {
@@ -4971,15 +5035,19 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       })
     );
 
-    // 6. 총점 기준 Top-3 선정
-    const top3 = stylesWithScores
-      .sort((a, b) => b.totalScore - a.totalScore)
-      .slice(0, 3);
+    // 5. 총점 기준 Top-1 선정 (Top-3은 레시피 생성용)
+    const sortedStyles = stylesWithScores.sort((a, b) => b.totalScore - a.totalScore);
+    const top1 = sortedStyles[0];
+    const top3 = sortedStyles.slice(0, 3);
 
-    console.log(`🎯 Top-3 참고 스타일:`);
-    top3.forEach((s, i) => {
-      console.log(`  ${i+1}. ${s.styleId} (${s.totalScore.toFixed(1)}점) - ${s.featureReasons.join(', ')}`);
-    });
+    // ⭐ 차이점 분석 (유저 이미지 vs 매칭된 스타일)
+    const differences = analyzeDifferences(params56, top1);
+
+    console.log(`🎯 Top-1 매칭: ${top1.styleId} (${top1.totalScore.toFixed(1)}점)`);
+    console.log(`   매칭 이유: ${top1.featureReasons.join(', ')}`);
+    if (differences.length > 0) {
+      console.log(`📝 차이점: ${differences.map(d => d.feature).join(', ')}`);
+    }
 
     // 7. Top-3를 참고하여 맞춤 레시피 생성
     const t4 = Date.now();
@@ -5062,14 +5130,22 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
         description: params56.description || ''
       },
 
-      // 대상 시리즈
-      targetSeries: {
-        code: targetSeries,
-        name: `${lengthCode} Length Series`,
-        totalStyles: seriesStyles.length
+      // ⭐ Top-1 매칭 스타일
+      matchedStyle: {
+        styleId: top1.styleId,
+        series: top1.series,
+        seriesName: top1.seriesName,
+        totalScore: top1.totalScore,
+        featureReasons: top1.featureReasons,
+        diagrams: top1.diagrams,
+        diagramCount: top1.diagramCount,
+        captionText: top1.captionText
       },
 
-      // Top-3 참고 스타일
+      // ⭐ 차이점 (유저 이미지 vs 매칭 스타일)
+      differences: differences,
+
+      // Top-3 참고 스타일 (레시피 생성용)
       referenceStyles: top3.map(s => ({
         styleId: s.styleId,
         series: s.series,
