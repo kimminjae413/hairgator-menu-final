@@ -3771,7 +3771,7 @@ function calculateFeatureScore(style, params56, captionText) {
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // ⭐⭐⭐ 1. CELESTIAL ANGLE 매칭 (40점) - 핵심!
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  const targetAngle = params56.celestial_angle || params56.graduation_angle || null;
+  // targetAngle은 위에서 이미 선언됨 (3707)
   if (targetAngle !== null) {
     // 자막에서 각도 추출
     const anglePatterns = [
