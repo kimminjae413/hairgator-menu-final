@@ -268,6 +268,18 @@ const PARAMS_56_SCHEMA = {
       description: "Lifting angle range (array format)"
     },
 
+    // ⭐ 존별 리프팅 - 스텝별 도해도 매칭에 중요!
+    lifting_by_zone: {
+      type: "object",
+      properties: {
+        back: { type: "string", enum: ["L0", "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"], description: "Back zone lifting (Step 1)" },
+        side: { type: "string", enum: ["L0", "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"], description: "Side zone lifting (Step 2)" },
+        top: { type: "string", enum: ["L0", "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"], description: "Top zone lifting (Step 3)" },
+        fringe: { type: "string", enum: ["L0", "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8"], description: "Fringe zone lifting (Step 4)" }
+      },
+      description: "Lifting by zone for step-based diagram matching"
+    },
+
     direction_primary: {
       type: "string",
       enum: ["D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"],
@@ -3059,6 +3071,7 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
   "section_by_zone": {"back": "섹션", "side": "섹션", "top": "섹션", "fringe": "섹션"},
 
   "lifting_range": ["L0"~"L8" 배열],
+  "lifting_by_zone": {"back": "L0~L8", "side": "L0~L8", "top": "L0~L8", "fringe": "L0~L8"},
   "lifting_degree": 0~180 사이 숫자 (주요 리프팅 각도),
   "angle_sequence": [각도 배열] (예: [45, 135, 112.5]),
   "direction_primary": "D0~D8",
@@ -3118,15 +3131,21 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 
 ⚠️ 필수 규칙:
 1. lifting_range는 반드시 배열! ["L2"] 또는 ["L2", "L4"]
-2. cut_form은 괄호 포함! "L (Layer)" 형식
-3. ⭐⭐⭐ length_category 판단법:
+2. ⭐⭐ lifting_by_zone 필수! 존별로 다른 리프팅 적용:
+   - Back 존: 보통 L2~L3 (무게감 있게)
+   - Side 존: L4~L5 (볼륨)
+   - Top 존: L4~L6 (더 높은 볼륨)
+   - Fringe 존: L0~L2 (낮은 각도)
+   예: {"back": "L2", "side": "L4", "top": "L5", "fringe": "L1"}
+3. cut_form은 괄호 포함! "L (Layer)" 형식
+4. ⭐⭐⭐ length_category 판단법:
    - 머리끝이 가슴에 닿음 → "B Length" 또는 "A Length"
    - 머리끝이 겨드랑이에 닿음 → "C Length"
    - 머리끝이 어깨에만 닿음 → "D Length" 또는 "E Length"
    - 머리끝이 목에서 끝남 → "F Length", "G Length", "H Length"
-4. ⭐ 2WAY CUT 핵심 변수 필수: head_position, distribution, guide_line, celestial_angle, shape_of_line, outline_shape
-5. 섹션 각도(section_angle)는 볼륨 위치를 결정! 15=Low, 45=Medium, 75=High
-6. 모든 값은 이미지를 보고 판단! 예시를 그대로 복사하지 마세요!
+5. ⭐ 2WAY CUT 핵심 변수 필수: head_position, distribution, guide_line, celestial_angle, shape_of_line, outline_shape
+6. 섹션 각도(section_angle)는 볼륨 위치를 결정! 15=Low, 45=Medium, 75=High
+7. 모든 값은 이미지를 보고 판단! 예시를 그대로 복사하지 마세요!
 
 🚨 중요: length_category를 결정할 때 머리카락 끝이 신체 어디에 닿는지 반드시 확인하세요!
 가슴까지 내려오는 긴 머리를 D Length로 분류하면 안 됩니다! 그건 B Length입니다!
@@ -3336,8 +3355,15 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
   const targetGuideLine = params56.guide_line || 'Fixed';
   const targetDistribution = params56.distribution || 'Natural';
 
-  // Lifting Range
+  // Lifting Range (전체)
   const targetLiftingRange = params56.lifting_range || ['L4'];
+
+  // ⭐ 존별 리프팅 (스텝별 정확한 매칭에 사용!)
+  const liftingByZone = params56.lifting_by_zone || {};
+  const hasZoneLiftings = Object.keys(liftingByZone).length > 0;
+  if (hasZoneLiftings) {
+    console.log(`   ⭐ 존별 리프팅: Back=${liftingByZone.back || '-'}, Side=${liftingByZone.side || '-'}, Top=${liftingByZone.top || '-'}`);
+  }
 
   // 기존 호환성
   const targetDirection = params56.direction_primary || 'D4';
@@ -3432,12 +3458,32 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
       const diagDirection = diagram.direction || 'D2';
       const diagDirAngle = directionToAngle[diagDirection] ?? 90;
 
-      // === 1. 리프팅 점수 (0~100, 가중치 40%) ===
+      // ⭐ 도해도의 존에 맞는 타겟 리프팅 결정
+      let zoneTargetLifting = null;
+      if (hasZoneLiftings) {
+        if (diagZone.includes('back') || diagZone.includes('nape')) {
+          zoneTargetLifting = liftingByZone.back;
+        } else if (diagZone.includes('side')) {
+          zoneTargetLifting = liftingByZone.side;
+        } else if (diagZone.includes('top') || diagZone.includes('crown')) {
+          zoneTargetLifting = liftingByZone.top;
+        } else if (diagZone.includes('fringe') || diagZone.includes('front') || diagZone.includes('bang')) {
+          zoneTargetLifting = liftingByZone.fringe;
+        }
+      }
+
+      // === 1. 리프팅 점수 (0~100, 가중치 50%) - 존별 리프팅 우선! ===
       let liftingScore = 0;
-      if (targetLiftingRange.includes(diagLifting)) {
-        liftingScore = 100; // 정확히 매칭
+      let exactZoneMatch = false;
+
+      // ⭐ 존별 리프팅이 있으면 정확히 매칭 (최우선!)
+      if (zoneTargetLifting && diagLifting === zoneTargetLifting) {
+        liftingScore = 100;
+        exactZoneMatch = true;
+      } else if (targetLiftingRange.includes(diagLifting)) {
+        liftingScore = 100; // 범위 내 매칭
       } else if (diagAngle >= minTargetAngle && diagAngle <= maxTargetAngle) {
-        liftingScore = 80; // 범위 내
+        liftingScore = 80; // 각도 범위 내
       } else {
         const angleDiff = Math.min(
           Math.abs(diagAngle - minTargetAngle),
@@ -3515,8 +3561,15 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
         directionScore * 0.10    // 디렉션 10%
       );
 
-      // ⭐ 정확한 리프팅 매칭 보너스 (타겟 리프팅과 정확히 일치하면 +20점)
-      const exactLiftingBonus = targetLiftingRange.includes(diagLifting) ? 20 : 0;
+      // ⭐⭐ 존별 정확한 리프팅 매칭 보너스 (최우선!)
+      // - 존별 리프팅과 정확히 일치: +30점 (예: Back 존 도해도가 Back 리프팅 L2와 일치)
+      // - 타겟 범위 내 일치: +20점
+      let exactLiftingBonus = 0;
+      if (exactZoneMatch) {
+        exactLiftingBonus = 30; // 존별 정확한 매칭 (최고 우선순위!)
+      } else if (targetLiftingRange.includes(diagLifting)) {
+        exactLiftingBonus = 20; // 범위 내 매칭
+      }
 
       return {
         ...diagram,
@@ -3526,6 +3579,8 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
         diagSection,
         diagZone,
         diagDirection,
+        zoneTargetLifting, // 디버깅용
+        exactZoneMatch,    // 존별 정확 매칭 여부
         liftingScore,
         sectionScore,
         zoneScore,
@@ -3535,17 +3590,21 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
       };
     });
 
-    // 종합 점수 + 리프팅 정확도 + step 순서로 정렬
+    // 종합 점수 + 존별 정확 매칭 + 리프팅 정확도 + step 순서로 정렬
     scoredDiagrams.sort((a, b) => {
-      // 1차: 종합 점수 (보너스 포함)
+      // 1차: 존별 정확 매칭 우선!
+      if (a.exactZoneMatch !== b.exactZoneMatch) {
+        return b.exactZoneMatch ? 1 : -1;
+      }
+      // 2차: 종합 점수 (보너스 포함)
       if (b.totalScore !== a.totalScore) {
         return b.totalScore - a.totalScore;
       }
-      // 2차: 정확한 리프팅 매칭 우선
+      // 3차: 정확한 리프팅 매칭 우선
       if (b.exactLiftingBonus !== a.exactLiftingBonus) {
         return b.exactLiftingBonus - a.exactLiftingBonus;
       }
-      // 3차: step 순서
+      // 4차: step 순서
       return (a.step || 0) - (b.step || 0);
     });
 
@@ -3555,9 +3614,11 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
 
     console.log(`   📊 종합 매칭: ${matchedDiagrams.length}장 매칭 (≥50점), ${unmatchedDiagrams.length}장 미매칭`);
     if (scoredDiagrams.length > 0) {
-      const top3 = scoredDiagrams.slice(0, 3);
-      top3.forEach((d, i) => {
-        console.log(`      ${i+1}위: step${d.step || d.idx+1} - 총${d.totalScore.toFixed(0)}점 (L:${d.liftingScore} S:${d.sectionScore} Z:${d.zoneScore} D:${d.directionScore})`);
+      const top5 = scoredDiagrams.slice(0, 5);
+      top5.forEach((d, i) => {
+        const zoneMatch = d.exactZoneMatch ? '⭐존매칭' : '';
+        const zoneLift = d.zoneTargetLifting ? `타겟:${d.zoneTargetLifting}` : '';
+        console.log(`      ${i+1}위: step${d.step || d.idx+1} [${d.diagLifting}/${d.diagZone}] - 총${d.totalScore.toFixed(0)}점 ${zoneMatch} ${zoneLift}`);
       });
     }
 
@@ -4726,6 +4787,11 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     console.log(`   - Length: ${params56.length_category}`);
     console.log(`   - Cut Form: ${params56.cut_form}`);
     console.log(`   - Lifting: ${Array.isArray(params56.lifting_range) ? params56.lifting_range.join(', ') : params56.lifting_range}`);
+    // ⭐ 존별 리프팅 출력
+    if (params56.lifting_by_zone) {
+      const lbz = params56.lifting_by_zone;
+      console.log(`   - Lifting by Zone: Back=${lbz.back || '-'}, Side=${lbz.side || '-'}, Top=${lbz.top || '-'}, Fringe=${lbz.fringe || '-'}`);
+    }
     console.log(`   - Section: ${params56.section_primary}${params56.section_by_zone ? ` (존별: Back=${params56.section_by_zone.back || '-'}, Side=${params56.section_by_zone.side || '-'})` : ''}`);
     console.log(`   - Volume: ${params56.volume_zone}`);
     console.log(`   - Weight: ${params56.weight_distribution}`);
