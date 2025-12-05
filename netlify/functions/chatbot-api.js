@@ -3700,6 +3700,40 @@ function calculateFeatureScore(style, params56, captionText) {
   const styleLiftingAngles = [...new Set(diagrams.map(d => d.lifting_angle).filter(a => a !== null && a !== undefined))];
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 🚫 필수 조건 필터링 - 핵심 변수 불일치 시 제외
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  // 1. Celestial Angle (리프팅 각도) 필수 매칭
+  const targetAngle = params56.celestial_angle || params56.graduation_angle || null;
+  if (targetAngle !== null && styleLiftingAngles.length > 0) {
+    // 허용 범위: 정확히 일치하거나 ±15도 이내
+    const hasMatchingAngle = styleLiftingAngles.some(angle =>
+      angle === targetAngle || Math.abs(angle - targetAngle) <= 15
+    );
+    if (!hasMatchingAngle) {
+      // 각도가 완전히 다르면 제외 (예: 90도 요청인데 0도 도해도)
+      return { score: -1000, reasons: ['각도 불일치 제외'], excluded: true };
+    }
+  }
+
+  // 2. Section 타입 필수 매칭 (메타데이터가 있는 경우)
+  const targetSection = determineSectionType(params56);
+  if (targetSection && styleSections.length > 0) {
+    // 관련 섹션도 허용 (HS↔VS는 다르지만, DFS↔DBS는 대각선으로 유사)
+    const relatedSections = {
+      'HS': ['HS'],
+      'VS': ['VS'],
+      'DFS': ['DFS', 'DBS'],  // 대각선끼리는 허용
+      'DBS': ['DBS', 'DFS']
+    };
+    const allowedSections = relatedSections[targetSection] || [targetSection];
+    const hasMatchingSection = styleSections.some(s => allowedSections.includes(s));
+    if (!hasMatchingSection) {
+      return { score: -1000, reasons: ['섹션 불일치 제외'], excluded: true };
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // ⭐⭐⭐ 0. 9 Matrix 매칭 (30점) - 라인 형태 기반
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   try {
@@ -5088,9 +5122,9 @@ const MALE_STYLE_TERMS = {
   }
 };
 
-// 남자 이미지 Vision 분석
+// 남자 이미지 Vision 분석 - 2WAY CUT SYSTEM 반영
 async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
-  const prompt = `You are a professional men's hairstyle analyst. Analyze the image using cutting technique parameters.
+  const prompt = `You are a professional men's hairstyle analyst using the 2WAY CUT SYSTEM methodology.
 
 ## 스타일 카테고리 (Style Category)
 | Code | Name | Feature |
@@ -5103,7 +5137,15 @@ async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
 | CP | Crop Cut | 짧은 크롭 스타일 |
 | MC | Mohican | 센터를 세운 모히칸 |
 
-## 커팅 파라미터 (42 Formula Based)
+## 2WAY CUT SYSTEM 변수
+
+【CELESTIAL ANGLE (천체각)】- 볼륨/무게감 결정
+- 0°: One Length (최대 무게감)
+- 15°: Low Graduation
+- 45°: Medium Graduation
+- 75°: High Graduation
+- 90°: Layer
+- 135°: High Layer (최대 가벼움)
 
 【CUT FORM】
 - L (Layer): 층이 많고 가벼움, 텍스처 있음
@@ -5111,21 +5153,25 @@ async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
 - O (One Length): 일자 무게선
 
 【LIFTING RANGE】
-- L0: 0° (원렝스)
-- L1: 22.5° (Low Graduation)
-- L2: 45° (Mid Graduation)
-- L3: 67.5° (High Graduation)
-- L4: 90° (기본 Layer)
-- L5: 112.5° (Mid-High Layer)
-- L6: 135° (High Layer)
-- L7: 157.5° (Very High Layer)
-- L8: 180° (Extreme Layer)
+- L0: 0° (원렝스) | L1: 22.5° | L2: 45° | L3: 67.5°
+- L4: 90° (기본 Layer) | L5: 112.5° | L6: 135° | L7: 157.5° | L8: 180°
 
-【SECTION】
-- DBS: Diagonal-Backward Section (대각선 뒤)
-- DFS: Diagonal-Forward Section (대각선 앞)
-- VS: Vertical Section (수직)
-- HS: Horizontal Section (수평)
+【SECTION TYPE & ANGLE】
+- HS: Horizontal Section (가로)
+- VS: Vertical Section (세로)
+- DFS: Diagonal-Forward Section (전대각) - 볼륨 위치 결정
+- DBS: Diagonal-Backward Section (후대각)
+- Section Angle: 15° (Low), 45° (Medium), 75° (High)
+
+【DISTRIBUTION (분배 방식)】
+- Natural: 자연 빗질
+- Perpendicular: 수직 분배
+- Variable: 변이 분배 (빗질 각도 비틀기)
+- Directional: 방향성 분배
+
+【GUIDE LINE】
+- Fixed: 고정 디자인 라인 (한 곳으로 당김)
+- Traveling: 이동 디자인 라인 (가이드가 따라감)
 
 【DIRECTION】
 - D0~D3: Under-direction (앞이 짧아짐)
@@ -5138,9 +5184,13 @@ async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
   "style_name": "English style name",
   "sub_style": "Korean sub-style name",
   "cut_form": "L|G|O",
+  "celestial_angle": 0|15|45|75|90|135,
   "lifting_range": ["L3", "L4"],
-  "section_primary": "DBS|DFS|VS|HS",
-  "direction_primary": "D4|D5|D6|D7|D8",
+  "section_primary": "HS|VS|DFS|DBS",
+  "section_angle": 15|45|75,
+  "distribution": "Natural|Perpendicular|Variable|Directional",
+  "guide_line": "Fixed|Traveling",
+  "direction_primary": "D0|D1|D2|D3|D4|D5|D6|D7|D8",
   "top_length": "Very Short|Short|Medium|Long",
   "side_length": "Skin|Very Short|Short|Medium",
   "fade_type": "None|Low Fade|Mid Fade|High Fade|Skin Fade|Taper",
