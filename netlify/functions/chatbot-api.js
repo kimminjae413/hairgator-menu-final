@@ -1,16 +1,14 @@
 // netlify/functions/chatbot-api.js
-// HAIRGATOR v5.0 FINAL - 일반대화 제거 버전 (2025-01-25)
-// 
+// HAIRGATOR v5.1 - 9 Matrix 기반 스타일 매칭 (2025-12-05)
+//
 // 🎯 주요 변경사항:
-// ❌ 일반대화 구분 완전 제거
-// ✅ 모든 텍스트 질문 → generateProfessionalResponse()
-// ✅ 간단한 인사 → 짧게 응답 + 질문 유도
-// ✅ theory_chunks 자동 검색 → 이론 기반 답변
-// ✅ 검색 결과 없으면 → 일반 지식 + 구체적 질문 유도
-// 
+// ✅ 9 Matrix (3x3) 기반 스타일 매칭 추가
+// ✅ 도해도 중복 제거 로직 개선
+// ✅ 스타일 파라미터 기반 매칭 강화
+//
 // 기존 기능 유지:
 // 1. ⭐ 사용자 성별 선택 통합 (user_gender: 'male' | 'female')
-// 2. GPT-4o Vision + Function Calling (56개 파라미터)
+// 2. GPT-4o Vision + Function Calling
 // 3. recipe_samples 벡터 검색 (4,719개 레시피)
 // 4. theory_chunks 하이브리드 검색 (벡터 + 키워드)
 // 5. Gemini embedding (768차원)
@@ -23,6 +21,38 @@
 // Node.js 18+ 내장 fetch 사용 (node-fetch 불필요)
 // const fetch = require('node-fetch'); // 제거됨
 
+// 스타일 매칭 함수 import - 2WAY CUT SYSTEM 전체 스키마
+const {
+  // 스키마
+  FEMALE_PARAMS_SCHEMA,
+  MALE_PARAMS_SCHEMA,
+  // 카테고리 정보
+  MALE_STYLE_CATEGORIES,
+  FEMALE_LENGTH_CATEGORIES,
+  // 공통 변수 & 좌표
+  GLOBAL_VARIABLES,
+  REFERENCE_POINTS,
+  SECTIONING_VECTORS,
+  WEIGHT_ZONES,
+  // 모듈 정의
+  MODULE_A_OUTLINE,
+  MODULE_B_DFS,
+  MODULE_C_DBS,
+  MODULE_D_VS,
+  // 매트릭스
+  MATRIX_9,
+  // 함수들
+  selectMatrix,
+  determineSectionType,
+  determineTechniqueNumber,
+  matchStyleFromParams,
+  // 상세 기법 함수들
+  determineDFSTechnique,
+  determineDBSTechnique,
+  determineVSTechnique,
+  determineDirectionMode
+} = require('./lib/schemas');
+
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -30,7 +60,7 @@ const headers = {
   'Content-Type': 'application/json'
 };
 
-// ==================== 56개 파라미터 스키마 ====================
+// ==================== 스타일 분석 파라미터 스키마 ====================
 const PARAMS_56_SCHEMA = {
   type: "object",
   properties: {
@@ -1172,7 +1202,7 @@ Return ONLY the JSON object, no markdown, no explanation, no code blocks!`;
       params56.cut_category = "Women's Cut";
     }
 
-    console.log('✅ Gemini 2.0 Flash Vision 분석 완료 (56개 파라미터)');
+    console.log('✅ Gemini 2.0 Flash Vision 분석 완료');
 
     return {
       statusCode: 200,
@@ -2677,13 +2707,15 @@ const LENGTH_TO_SERIES = {
 };
 
 /**
- * Gemini Vision으로 이미지 분석 - 56개 파라미터 + 42포뮬러 기반 추출
+ * Gemini Vision으로 이미지 분석 - 2WAY CUT SYSTEM 스키마 기반 파라미터 추출
  */
 async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
   const systemPrompt = `당신은 "HAIRGATOR AI", 20년 경력의 2WAY CUT 시스템 전문가입니다.
-이미지 속 헤어스타일을 **56개 파라미터**로 분석하여 JSON 형식으로 출력하세요.
+이미지 속 헤어스타일을 **2WAY CUT SYSTEM 스키마**에 맞게 분석하여 JSON 형식으로 출력하세요.
 
-【LENGTH 분류 - Body Landmark 기반】⭐⭐⭐ 가장 중요!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【1. LENGTH 분류 - Body Landmark 기반】⭐⭐⭐ 가장 중요!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **뒷머리 가장 긴 부분이 신체 어디에 닿는지 확인:**
 
@@ -2698,76 +2730,132 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 | B | 가슴 중간 (MID CHEST) | Long |
 | A | 가슴 하단/허리 (LOWER CHEST/WAIST) | Long |
 
-🚨 판단 순서 (위에서 아래로):
-1. 머리가 목덜미/후두부에서 끝남? → H (Short)
-2. 머리가 목에서 끝남? → G 또는 F (Bob)
-3. 머리가 어깨선에 닿음? → E 또는 D (Medium)
-4. 머리가 겨드랑이/가슴 상단까지? → C (Semi Long)
-5. 머리가 가슴 중간까지? → B (Long)
-6. 머리가 가슴 하단/허리까지? → A (Long)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【2. CUT FORM & CELESTIAL ANGLE】⭐⭐⭐ 핵심!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⚠️ 중요:
-- 목이 완전히 보이면 → H 또는 G
-- 어깨에 안 닿으면 → F 이상 (E, D, C, B, A 아님!)
-- 어깨에 닿으면 → E 또는 D
-- 겨드랑이 아래로 내려가면 → C 이하
-
-【CUT FORM】
-- L (Layer): 90도 이상 리프팅, 전체적으로 가벼움, 층 많음
-- G (Graduation): 45~89도, 하단에 무게감, 층 적음
+**CUT FORM (컷 형태):**
 - O (One Length): 0도, 일자 무게선, 층 없음
+- G (Graduation): 15~75도, 하단에 무게감, 층 적음
+- L (Layer): 90도 이상 리프팅, 전체적으로 가벼움, 층 많음
 
-【LIFTING RANGE】⭐ 핵심 파라미터!
-리프팅 각도를 배열로 반환:
-- ["L0"]: 0도 (원렝스, 무게선 명확)
-- ["L1"]: 22.5도 (Low Graduation)
-- ["L2"]: 45도 (Mid Graduation)
-- ["L3"]: 67.5도 (High Graduation)
-- ["L4"]: 90도 (기본 Layer)
-- ["L5"]: 112.5도 (Mid-High Layer)
-- ["L6"]: 135도 (High Layer)
-- ["L7"]: 157.5도 (Very High Layer)
-- ["L8"]: 180도 (Extreme Layer)
+**CELESTIAL ANGLE (천체축 각도):** ⭐ 새 필수 파라미터!
+| 각도 | 형태 | 무게감 |
+|-----|------|-------|
+| 0 | One Length | 최대 (무거움) |
+| 15 | Low Graduation | 높음 |
+| 45 | Medium Graduation | 중간 |
+| 75 | High Graduation | 낮음 |
+| 90 | Layer | 가벼움 |
+| 135 | High Layer | 매우 가벼움 |
 
-🎯 판단 기준 (무게감 기반):
-- 뒷머리가 뾰족하게 들어올려짐, 매우 가벼움 → L6~L8 (High Layer)
-- 층이 많지만 전체적으로 가벼움 → L4~L5 (Mid Layer)
-- **층이 있지만 무게감 유지** → L2~L3 (Low Layer/Graduation) ⭐
-- 무게선이 일자로 명확함 → L0~L1 (One Length)
+**GRADUATION ANGLE (그래쥬에이션 각도):**
+- 그래쥬에이션 스타일일 때 각도 (15, 30, 45, 60, 75)
 
-⚠️ 무게감 있는 레이어 (Low Layer) 판별:
-- 하단에 무게감이 있으면서 층이 살짝 → **L2 (45°) ~ L3 (67.5°)**
-- 끝이 무겁게 떨어지는 스타일 → L4(90°)가 아닌 **L2~L3**!
-- 윈드컷, 허쉬컷 같은 차분한 레이어 → **L2~L3 권장**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【3. 2WAY CUT 핵심 변수】⭐⭐⭐ 가장 중요!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-❌ 흔한 오류:
-- 무게감 있는 미디엄 레이어를 모두 L4(90°)로 분류 (틀림!)
-- 차분하게 흘러내리는 스타일을 High Layer로 분류 (틀림!)
+**HEAD POSITION (두상 자세):**
+- Upright: 정자세 (기본)
+- Tilt_15: 15도 숙임 (네이프 속머리 빠짐 방지)
+- Tilt_30: 30도 숙임 (스퀘어 유지)
 
-【SECTION PRIMARY - 존별 적용】⭐⭐ 중요!
-섹션은 **존(Zone)별로 다르게 적용**됩니다:
+**DISTRIBUTION (분배/빗질 방향):** ⭐⭐ 매우 중요!
+- Natural: 자연빗질 (기본)
+- Perpendicular: 수직분배 (두피에 수직으로 빗질)
+- Variable: 변이분배 (빗질 각도 비틀기) → **DFS의 핵심!**
+- Directional: 방향성 분배
 
-| 존 | 권장 섹션 | 설명 |
-|-----|---------|------|
-| Back | DBS (Diagonal-Backward) | 볼륨 형성, 층 형성 |
-| Side | VS (Vertical) | 얼굴 라인 유지, A라인 형성 |
-| Top | DBS or VS | 볼륨에 따라 선택 |
-| Fringe | HS (Horizontal) | 앞머리 라인 정리 |
+**GUIDE LINE (가이드 라인):**
+- Fixed: 고정 (한곳으로 당김) → 무게감 유지
+- Traveling: 이동 (가이드가 따라감) → 균일한 층
 
-- Horizontal: 가로 섹션 (원렝스/그래쥬에이션 기본)
-- Diagonal-Backward: 후대각 (뒤로 흐르는 층, **Back 존에 적합**)
-- Diagonal-Forward: 전대각 (앞으로 흐르는 층)
-- Vertical: 세로 섹션 (레이어 기본, **Side 존에 적합**)
+**FINGER POSITION (손가락 위치):**
+- Parallel: 섹션과 평행
+- Non_Parallel: 섹션과 비평행 → **DBS NO.1 핵심!**
 
-⚠️ 섹션 선택 규칙:
-- Back → DBS (볼륨과 층)
-- Side → **VS 권장** (얼굴 라인 유지, DBS는 과도하게 가벼워짐)
-- Top → 볼륨 원하면 DBS, 자연스러우면 VS
+**DIRECTION FLOW (방향 흐름):**
+- Out_to_In: 바깥→안 (사이드 Long 유지, 네이프 타이트)
+- In_to_Out: 안→바깥 (전체적으로 가벼움)
 
-【VOLUME ZONE】
-- Low: 하단 볼륨 (0~44도, 무게감 있는 스타일)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【4. SECTION & LIFTING】
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**SECTION TYPE (섹션 타입):**
+- Horizontal: 가로 섹션 (HS)
+- Vertical: 세로 섹션 (VS)
+- Diagonal_Fwd: 전대각 (DFS) → **볼륨 위치 결정의 핵심!**
+- Diagonal_Bkwd: 후대각 (DBS)
+- Pie: 파이 섹션
+- Radial: 방사선 섹션
+
+**SECTION ANGLE (섹션 각도):** ⭐ DFS 핵심!
+- 15: Low (완만한 전대각) → N.S.P 오목, 좁은 네이프
+- 45: Medium (이상적인 달걀형)
+- 75: High (가파른 전대각) → 플랫한 두상 보정
+
+**LIFTING RANGE (리프팅 각도):**
+- L0=0°, L1=22.5°, L2=45°, L3=67.5°, L4=90°, L5=112.5°, L6=135°, L7=157.5°, L8=180°
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【5. 라인 형태 & 실루엣 (3x3 Matrix)】
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**SHAPE OF LINE (라인 형태):** ⭐ 3x3 매트릭스 결정!
+- Triangular: 삼각형 라인 (OG, GO, LO)
+- Square: 사각형 라인 (OL, GL, LG)
+- Round: 둥근 라인 (OGL, LGO, GOL)
+
+**OUTLINE SHAPE (아웃라인 형태):**
+- Square: 사각 (일자/각진 라인)
+- Round: 둥근 (부드러운 곡선)
+- Triangle: 삼각 (뾰족한 라인)
+
+**SILHOUETTE (실루엣):**
+- Graduation Silhouette: 그래쥬에이션 실루엣
+- Expanded Shape: 확장된 형태
+- Combination: 복합
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【6. 볼륨 & 무게】
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**VOLUME ZONE:**
+- Low: 하단 볼륨 (0~44도, 무게감)
 - Medium: 중단 볼륨 (45~89도)
-- High: 상단 볼륨 (90도 이상, 가볍고 풍성)
+- High: 상단 볼륨 (90도 이상, 가벼움)
+
+**VOLUME POSITION (볼륨 위치):** 배열로 선택
+- Crown, Top, Side, Back, Nape, Front, Bang
+
+**WEIGHT ZONE (무게 영역):**
+- Zone_A: Nape (기초 무게감)
+- Zone_B: Middle (볼륨 형성)
+- Zone_C: Top (표면 질감/율동감)
+
+**WEIGHT DISTRIBUTION:**
+- Top Heavy: 상단 무게 (레이어)
+- Balanced: 균형
+- Bottom Heavy: 하단 무게 (그래쥬에이션/원렝스)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【7. 두상 좌표 기준점】
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**TARGET POINT (주요 기준점):**
+- C_P: Center Point (정중선)
+- T_P: Top Point (정수리)
+- G_P: Golden Point (2WAY 볼륨 중심) ⭐
+- B_P: Back Point (후두부)
+- N_P: Nape Point (목덜미)
+- E_P: Ear Point (귀)
+- F_S_P: Front Side Point (앞 사이드)
+- S_P: Side Point (사이드)
+- N_S_P: Neck Side Point (목 옆점) ⭐ 핵심!
+
+**FOCUS POINTS:** 커트 시 집중할 기준점들 (배열)
 
 【OUTLINE SHAPE - 아웃라인 형태】⭐⭐ 중요!
 헤어스타일 외곽선(Hemline/Perimeter)의 형태를 정확히 판단:
@@ -2868,68 +2956,93 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 
 {
   "cut_category": "Women's Cut 또는 Men's Cut",
-  "length_category": "A~H 중 이미지에 맞는 것 (가슴=B, 어깨아래=D, 어깨=E)",
+  "length_category": "A~H Length 형식 (예: D Length)",
   "estimated_hair_length_cm": "숫자",
-  "front_length": "Very Short/Short/Medium/Long/Very Long 중 선택",
-  "back_length": "Very Short/Short/Medium/Long/Very Long 중 선택",
+  "front_length": "Very Short/Short/Medium/Long/Very Long",
+  "back_length": "Very Short/Short/Medium/Long/Very Long",
+
   "cut_form": "O (One Length) 또는 G (Graduation) 또는 L (Layer)",
-  "structure_layer": "No Layer/Low Layer/Mid Layer/High Layer 중 선택",
-  "graduation_type": "None/Low/Medium/High 중 선택",
-  "weight_distribution": "Top Heavy/Balanced/Bottom Heavy 중 선택",
-  "layer_type": "No Layer/Low Layer/Mid Layer/High Layer 중 선택",
-  "silhouette": "Round/Oval/Square/A-line/V-line 중 선택",
-  "outline_shape": "Round/Square/Curved/Asymmetric/Pointed 중 선택",
-  "volume_zone": "Low/Medium/High 중 선택",
-  "volume_distribution": "Top/Middle/Bottom/All Over 중 선택",
-  "line_quality": "Soft/Hard/Mixed 중 선택",
-  "fringe_type": "Full Bang/See-through Bang/Side Bang/Curtain Bang/No Fringe 중 선택",
-  "fringe_length": "Forehead/Eyebrow/Eye/Cheekbone/Chin/Ear/None 중 선택",
-  "fringe_texture": "Blunt/Textured/Wispy/None 중 선택",
-  "surface_texture": "Smooth/Textured/Layered 중 선택",
-  "hair_density": "Thin/Medium/Thick 중 선택",
-  "hair_texture": "Straight/Wavy/Curly 중 선택",
-  "movement": "None/Minimal/Moderate/Maximum 중 선택",
-  "texture_technique": "Blunt Cut/Point Cut/Slide Cut/Razor Cut/None 중 선택",
-  "section_primary": "Horizontal/Vertical/Diagonal-Forward/Diagonal-Backward 또는 혼합(예: Vertical+Horizontal)",
-  "section_by_zone": {"back": "섹션", "side": "섹션", "top": "섹션", "fringe": "섹션"} (존별 섹션 - 선택사항),
-  "lifting_range": ["L0"~"L8" 중 해당하는 것들을 배열로"],
-  "direction_primary": "D0~D8 중 선택",
-  "cutting_method": "Blunt/Point Cut/Slide Cut/Razor 중 선택",
-  "cutting_zone": "Crown/Top/Side/Back/Nape/Fringe/Perimeter 중 선택",
-  "guide_type": "Stationary/Traveling 중 선택",
-  "over_direction": true 또는 false,
-  "connection_type": "Connected/Disconnected/Semi-Connected 중 선택",
-  "styling_method": "Blow Dry/Air Dry/Iron/Curling 중 선택",
-  "design_emphasis": "Volume/Texture/Shape/Movement 중 선택",
-  "face_shape_match": ["어울리는 얼굴형 배열"],
-  "perm_applied": true 또는 false (이미지에 펌이 있으면 true),
-  "perm_type": "펌 종류 또는 null",
-  "perm_rod_size": "롯드 사이즈 또는 null",
-  "perm_technique": "펌 기법 또는 null",
-  "curl_pattern": "컬 패턴 또는 null",
-  "curl_strength": "컬 강도 또는 null",
-  "curl_direction": "컬 방향 또는 null",
-  "wave_type": "웨이브 타입 또는 null",
-  "color_applied": true 또는 false (염색이 있으면 true),
-  "base_color": "베이스 컬러 또는 null",
+  "structure_layer": "No Layer/Low Layer/Mid Layer/High Layer/Full Layer",
+  "graduation_type": "None/Light/Medium/Heavy",
+  "graduation_angle": 0~90 사이 숫자 (그래쥬에이션 각도),
+  "celestial_angle": 0/15/45/75/90/135 중 선택 ⭐필수,
+
+  "head_position": "Upright/Tilt_15/Tilt_30" ⭐필수,
+  "distribution": "Natural/Perpendicular/Variable/Directional" ⭐필수,
+  "guide_line": "Fixed/Traveling" ⭐필수,
+  "finger_position": "Parallel/Non_Parallel",
+  "direction_flow": "Out_to_In/In_to_Out",
+
+  "section_type": "Horizontal/Vertical/Diagonal_Fwd/Diagonal_Bkwd/Pie/Radial",
+  "section_primary": "Horizontal/Vertical/Diagonal-Forward/Diagonal-Backward/Pie/Radial",
+  "section_angle": 15/45/75 중 선택 (전대각 각도),
+  "section_by_zone": {"back": "섹션", "side": "섹션", "top": "섹션", "fringe": "섹션"},
+
+  "lifting_range": ["L0"~"L8" 배열],
+  "lifting_degree": 0~180 사이 숫자 (주요 리프팅 각도),
+  "angle_sequence": [각도 배열] (예: [45, 135, 112.5]),
+  "direction_primary": "D0~D8",
+
+  "shape_of_line": "Triangular/Square/Round" ⭐필수 (3x3 매트릭스),
+  "outline_shape": "Square/Round/Triangle" ⭐필수,
+  "silhouette": "Graduation Silhouette/Expanded Shape/Combination",
+
+  "volume_zone": "Low/Medium/High",
+  "volume_position": ["Crown", "Top", "Side", "Back", "Nape", "Front", "Bang"] 배열,
+  "volume_distribution": "Top/Middle/Bottom/Even",
+  "weight_zone": "Zone_A/Zone_B/Zone_C",
+  "weight_distribution": "Top Heavy/Balanced/Bottom Heavy",
+  "weight_line_position": "Nape/Jaw/Chin/Shoulder/Chest",
+
+  "target_point": "C_P/T_P/G_P/B_P/N_P/E_P/F_S_P/S_P/N_S_P",
+  "focus_points": ["기준점 배열"],
+
+  "layer_type": "No Layer/Low Layer/Mid Layer/High Layer/Full Layer",
+  "line_quality": "Sharp/Soft/Blended/Disconnected",
+  "connection_type": "Connected/Disconnected/Semi-Connected",
+
+  "fringe_type": "Full Bang/See-through Bang/Side Bang/Center Part/No Fringe",
+  "fringe_length": "Forehead/Eyebrow/Eye/Cheekbone/Lip/Chin/None",
+  "fringe_texture": "Blunt/Textured/Wispy/Choppy",
+
+  "surface_texture": "Smooth/Textured/Choppy/Soft",
+  "internal_texture": "Blunt/Point Cut/Slide Cut/Razor Cut",
+  "hair_density": "Thin/Medium/Thick",
+  "hair_texture": "Straight/Wavy/Curly/Coily",
+  "movement": "Static/Slight/Moderate/High",
+  "texture_technique": "None/Point Cut/Slide Cut/Razor/Texturizing",
+
+  "cutting_method": "Blunt Cut/Point Cut/Slide Cut/Stroke Cut/Razor Cut",
+  "cutting_zone": "Crown/Top/Side/Back/Nape/Fringe/Perimeter",
+  "over_direction": true/false,
+
+  "styling_method": "Blow Dry/Natural Dry/Iron/Curl/Wave",
+  "design_emphasis": "Volume/Length/Texture/Shape/Movement",
+  "weight_flow": "Balanced/Forward Weighted/Backward Weighted",
+  "face_shape_match": ["Oval", "Round", "Square", "Heart", "Long", "Diamond"] 배열,
+
+  "perm_applied": true/false,
+  "perm_type": "Wave Perm/Digital Perm/Heat Perm/Iron Perm 또는 null",
+  "curl_pattern": "C-Curl/CS-Curl/S-Curl/SS-Curl 또는 null",
+  "curl_strength": "Soft/Medium/Strong 또는 null",
+
+  "color_applied": true/false,
+  "base_color": "컬러명 또는 null",
   "color_level": 1-10 또는 null,
-  "color_tone": "톤 또는 null",
-  "highlight_applied": true 또는 false,
-  "highlight_color": "하이라이트 컬러 또는 null",
-  "highlight_technique": "하이라이트 기법 또는 null",
-  "lowlight_applied": true 또는 false,
-  "lowlight_color": "로우라이트 컬러 또는 null",
-  "balayage_applied": true 또는 false,
-  "ombre_applied": true 또는 false,
-  "color_placement": "컬러 배치 또는 null",
+  "highlight_applied": true/false,
+  "balayage_applied": true/false,
+  "ombre_applied": true/false,
+
   "description": "이 스타일에 대한 1-2문장 설명"
 }
 
 ⚠️ 필수 규칙:
 1. lifting_range는 반드시 배열! ["L2"] 또는 ["L2", "L4"]
 2. cut_form은 괄호 포함! "L (Layer)" 형식
-3. length_category: 가슴까지=B, 겨드랑이=C, 어깨아래=D, 어깨=E
-4. 모든 값은 이미지를 보고 판단! 예시를 그대로 복사하지 마세요!
+3. length_category: 가슴까지=B Length, 겨드랑이=C Length, 어깨아래=D Length
+4. ⭐ 2WAY CUT 핵심 변수 필수: head_position, distribution, guide_line, celestial_angle, shape_of_line, outline_shape
+5. 섹션 각도(section_angle)는 볼륨 위치를 결정! 15=Low, 45=Medium, 75=High
+6. 모든 값은 이미지를 보고 판단! 예시를 그대로 복사하지 마세요!
 
 JSON만 반환하세요.`;
 
@@ -2968,7 +3081,7 @@ JSON만 반환하세요.`;
     text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const params56 = JSON.parse(text);
 
-    console.log(`📷 56개 파라미터 분석 완료:`, {
+    console.log(`📷 스타일 분석 완료:`, {
       length: params56.length_category,
       form: params56.cut_form,
       lifting: params56.lifting_range,
@@ -2982,7 +3095,7 @@ JSON만 반환하세요.`;
 
   } catch (error) {
     console.error('❌ 이미지 분석 실패:', error);
-    // 기본값 반환 (56개 파라미터 전체)
+    // 기본값 반환
     return {
       // 기장 & 카테고리 (5개)
       cut_category: "Women's Cut",
@@ -3069,28 +3182,58 @@ async function fetchCaptionContent(captionUrl) {
 }
 
 /**
- * 56파라미터 기반 정확한 L/D/Section 매칭으로 도해도 선별
- * Firestore에 저장된 도해도 메타데이터(lifting, direction, section)를 사용
- * @param {Array} top3Styles - 42포뮬러 기반 Top-3 스타일 (diagrams에 메타데이터 포함)
- * @param {Object} params56 - 56파라미터 분석 결과
- * @param {number} maxDiagrams - 최대 도해도 수
- * @returns {Array} 기술 매칭 점수 순으로 정렬된 도해도 배열
+ * 도해도 선별 함수 - 2WAY CUT SYSTEM 기반 (Top-1 우선, 시리즈 내 보충)
+ *
+ * ⭐ 핵심 원칙:
+ * 1. Top-1 스타일의 도해도를 step 순서대로 완전히 반환
+ * 2. Top-1에 앞머리 도해도가 없는데 유저 이미지에 앞머리가 있으면 → 같은 시리즈에서 보충
+ * 3. 시리즈 일관성 유지 (FAL → FAL, MAL → MAL)
+ * 4. 각 스타일 내 도해도는 반드시 step 순서 유지
+ *
+ * @param {Array} top3Styles - 매칭된 Top-3 스타일 배열
+ * @param {Object} params56 - 분석된 스타일 파라미터 (2WAY CUT 변수 포함)
+ * @param {number} maxDiagrams - 최대 반환 도해도 수 (기본 20장)
+ * @param {Array} allStyles - 전체 스타일 목록 (같은 시리즈에서 보충용)
  */
-function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20) {
-  // 타겟 파라미터 추출
-  const targetLiftingRange = params56.lifting_range || ['L4'];
+function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allStyles = null) {
+  // 입력 유효성 검사
+  if (!top3Styles || top3Styles.length === 0) {
+    console.log('⚠️ selectDiagramsByTechnique: 스타일 없음');
+    return [];
+  }
+
+  // ==================== 타겟 파라미터 추출 (2WAY CUT SYSTEM 기반) ====================
+
+  // Celestial Angle (천체각) - 핵심 매칭 기준
+  const targetCelestialAngle = params56.celestial_angle || 45;
+
+  // Section 관련
   const targetSection = params56.section_primary || 'Diagonal-Backward';
+  const targetSectionAngle = params56.section_angle || 45;
+
+  // Guide Line & Distribution
+  const targetGuideLine = params56.guide_line || 'Fixed';
+  const targetDistribution = params56.distribution || 'Natural';
+
+  // Lifting Range
+  const targetLiftingRange = params56.lifting_range || ['L4'];
+
+  // 기존 호환성
   const targetDirection = params56.direction_primary || 'D4';
-  const targetVolume = params56.volume_zone || 'Medium';
   const targetZone = params56.cutting_zone || 'Back';
 
-  // Section 영문 → 약어 매핑
+  // ⭐ 앞머리(Fringe) 타겟 - 핵심!
+  const targetFringeType = params56.fringe_type || 'No Fringe';
+  const userHasFringe = targetFringeType && targetFringeType !== 'No Fringe' && targetFringeType !== 'None';
+
+  // Section 영문 → 약어 매핑 (확장)
   const sectionToCode = {
     'Horizontal': 'HS',
     'Diagonal-Backward': 'DBS',
     'Diagonal-Forward': 'DFS',
     'Vertical': 'VS',
-    'Radial': 'RS'
+    'Radial': 'RS',
+    'Pie': 'PIE'
   };
   const targetSectionCode = sectionToCode[targetSection] || 'VS';
 
@@ -3108,333 +3251,769 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20) {
   };
   const targetDirectionCode = directionToCode[targetDirection] || targetDirection;
 
-  // Zone 매핑
+  // Zone 매핑 (Weight Zones 반영)
   const zoneMapping = {
-    'Crown': ['Crown', 'Top'],
-    'Top': ['Top', 'Crown'],
-    'Side': ['Side'],
-    'Back': ['Back', 'Nape'],
-    'Nape': ['Nape', 'Back'],
-    'Fringe': ['Fringe', 'Perimeter']
+    'Crown': ['Crown', 'Top', 'Zone_C'],
+    'Top': ['Top', 'Crown', 'Zone_C'],
+    'Side': ['Side', 'Zone_B'],
+    'Back': ['Back', 'Nape', 'Zone_A', 'Zone_B'],
+    'Nape': ['Nape', 'Back', 'Zone_A'],
+    'Fringe': ['Fringe', 'Perimeter', 'Zone_C', 'Front']
   };
   const targetZones = zoneMapping[targetZone] || [targetZone];
 
-  const scoredDiagrams = [];
+  console.log(`🎯 도해도 매칭 타겟 (2WAY CUT):`);
+  console.log(`   Celestial: ${targetCelestialAngle}°, Section: ${targetSectionCode}, Guide: ${targetGuideLine}`);
+  console.log(`   Lifting: [${targetLiftingRange.join(',')}], Direction: ${targetDirectionCode}, Zone: ${targetZone}`);
+  console.log(`   Fringe: ${targetFringeType} (유저 앞머리: ${userHasFringe ? '있음' : '없음'})`);
 
-  console.log(`🎯 도해도 매칭 타겟: L=[${targetLiftingRange.join(',')}], D=${targetDirectionCode}, S=${targetSectionCode}, Zone=${targetZone}`);
+  // ==================== Top-1 스타일 도해도 우선 선별 ====================
 
-  top3Styles.forEach((style, styleRank) => {
-    style.diagrams.forEach((diagram, idx) => {
-      const stepNumber = diagram.step || (idx + 1);
-      let techScore = 0;
-      const matchedFeatures = [];
+  const selectedDiagrams = [];
+  const usedUrls = new Set();
 
-      // 도해도 메타데이터 추출 (Firestore에서 분석된 값)
-      const diagLifting = diagram.lifting || null;       // "L4"
-      const diagDirection = diagram.direction || null;   // "D4"
-      const diagSection = diagram.section || null;       // "VS"
-      const diagZone = diagram.zone || null;             // "Back"
-      const diagCuttingMethod = diagram.cutting_method || null;
+  // Top-1 스타일 처리
+  const topStyle = top3Styles[0];
+  let top1HasFringe = false;  // Top-1에 앞머리 도해도가 있는지
+  let seriesPrefix = '';      // 시리즈 접두사 (FAL, MAL 등)
 
-      // ⭐⭐⭐ 1. LIFTING 정확 매칭 (50점) - 가장 중요!
-      if (diagLifting) {
-        // 정확히 일치하는 경우
-        if (targetLiftingRange.includes(diagLifting)) {
-          techScore += 50;
-          matchedFeatures.push(`L:${diagLifting}✓`);
-        } else {
-          // 근접 매칭 (1단계 차이)
-          const liftingNum = parseInt(diagLifting.replace('L', ''));
-          const isClose = targetLiftingRange.some(target => {
-            const targetNum = parseInt(target.replace('L', ''));
-            return Math.abs(liftingNum - targetNum) === 1;
-          });
-          if (isClose) {
-            techScore += 25;
-            matchedFeatures.push(`L:${diagLifting}~`);
-          }
-        }
+  if (topStyle && topStyle.diagrams && topStyle.diagrams.length > 0) {
+    console.log(`📊 Top-1 스타일 (${topStyle.styleId}): ${topStyle.diagrams.length}장 도해도`);
+
+    // 시리즈 접두사 추출 (FAL0023 → FAL)
+    const styleIdMatch = topStyle.styleId.match(/^([A-Z]+)/);
+    seriesPrefix = styleIdMatch ? styleIdMatch[1] : '';
+    console.log(`   시리즈: ${seriesPrefix}`);
+
+    // Top-1 도해도를 step 순서대로 정렬
+    const sortedDiagrams = [...topStyle.diagrams].sort((a, b) => {
+      const stepA = a.step || 0;
+      const stepB = b.step || 0;
+      return stepA - stepB;
+    });
+
+    // Top-1 도해도 모두 추가 (step 순서 유지)
+    sortedDiagrams.forEach((diagram, idx) => {
+      if (selectedDiagrams.length >= maxDiagrams) return;
+
+      const urlKey = diagram.url ? diagram.url.split('/').pop() : `${topStyle.styleId}_${idx}`;
+      if (usedUrls.has(urlKey)) return;
+
+      // 앞머리 도해도 체크
+      const diagZone = diagram.zone || '';
+      const isFringeDiagram = diagZone.toLowerCase().includes('fringe') ||
+                              diagZone.toLowerCase().includes('bang') ||
+                              diagZone.toLowerCase().includes('front') ||
+                              (diagram.cutting_method || '').toLowerCase().includes('fringe');
+      if (isFringeDiagram) {
+        top1HasFringe = true;
       }
 
-      // ⭐⭐ 2. DIRECTION 정확 매칭 (35점)
-      if (diagDirection) {
-        if (diagDirection === targetDirectionCode) {
-          techScore += 35;
-          matchedFeatures.push(`D:${diagDirection}✓`);
-        } else {
-          // 근접 매칭 (1단계 차이)
-          const dirNum = parseInt(diagDirection.replace('D', ''));
-          const targetNum = parseInt(targetDirectionCode.replace('D', ''));
-          if (Math.abs(dirNum - targetNum) === 1) {
-            techScore += 17;
-            matchedFeatures.push(`D:${diagDirection}~`);
-          }
-        }
-      }
-
-      // ⭐ 3. SECTION 정확 매칭 (25점)
-      if (diagSection) {
-        if (diagSection === targetSectionCode) {
-          techScore += 25;
-          matchedFeatures.push(`S:${diagSection}✓`);
-        } else {
-          // 관련 섹션 부분 점수
-          const relatedSections = {
-            'DBS': ['VS', 'HS'],
-            'DFS': ['VS', 'HS'],
-            'VS': ['DBS', 'DFS'],
-            'HS': ['DBS', 'DFS'],
-            'RS': ['VS', 'HS']
-          };
-          if (relatedSections[targetSectionCode]?.includes(diagSection)) {
-            techScore += 12;
-            matchedFeatures.push(`S:${diagSection}~`);
-          }
-        }
-      }
-
-      // 4. ZONE 매칭 (15점)
-      if (diagZone && targetZones.includes(diagZone)) {
-        techScore += 15;
-        matchedFeatures.push(`Zone:${diagZone}`);
-      }
-
-      // 5. 스타일 순위 보너스 (1등: 10점, 2등: 6점, 3등: 3점)
-      techScore += Math.max(10 - styleRank * 4, 3);
-
-      // 6. 핵심 스텝 보너스 (step 3~8 커팅 핵심 구간에 추가 점수)
-      if (stepNumber >= 3 && stepNumber <= 8) {
-        techScore += 5;
-      }
-
-      scoredDiagrams.push({
-        styleId: style.styleId,
-        step: stepNumber,
+      usedUrls.add(urlKey);
+      selectedDiagrams.push({
+        styleId: topStyle.styleId,
+        step: diagram.step || (idx + 1),
         url: diagram.url,
-        techScore: techScore,
-        matchedFeatures: matchedFeatures,
-        styleRank: styleRank + 1,
-        // 프론트엔드에서 표시할 메타데이터
-        lifting: diagLifting,
-        direction: diagDirection,
-        section: diagSection,
-        zone: diagZone,
-        cuttingMethod: diagCuttingMethod
+        styleRank: 1,
+        source: 'Top-1',
+        // 도해도 메타데이터
+        lifting: diagram.lifting || null,
+        direction: diagram.direction || null,
+        section: diagram.section || null,
+        zone: diagram.zone || null,
+        cuttingMethod: diagram.cutting_method || null,
+        // 2WAY CUT 확장 메타데이터
+        celestialAngle: diagram.celestial_angle || null,
+        guideLine: diagram.guide_line || null,
+        isFringe: isFringeDiagram
       });
     });
-  });
 
-  // 기술 점수로 먼저 필터링 (상위 도해도 선별)
-  scoredDiagrams.sort((a, b) => b.techScore - a.techScore);
-  const topScored = scoredDiagrams.slice(0, maxDiagrams);
+    console.log(`   → Top-1에서 ${selectedDiagrams.length}장 선별`);
+    console.log(`   → Top-1 앞머리 도해도: ${top1HasFringe ? '있음' : '없음'}`);
+  }
 
-  // 선별된 도해도를 커트 순서(step)대로 정렬
-  const selected = topScored.sort((a, b) => {
-    // 같은 스타일이면 step 순서로
-    if (a.styleId === b.styleId) return a.step - b.step;
-    // 다른 스타일이면 step 순서로 (커트 진행 순서)
+  // ==================== 누락된 기법/존 분석 및 같은 시리즈에서 보충 ====================
+
+  // Top-1에서 커버된 기법/존 확인
+  const coveredSections = new Set(selectedDiagrams.map(d => d.section).filter(Boolean));
+  const coveredZones = new Set(selectedDiagrams.map(d => d.zone).filter(Boolean));
+  const coveredLiftings = new Set(selectedDiagrams.map(d => d.lifting).filter(Boolean));
+
+  // 유저 이미지 분석 결과에서 필요한 기법/존 도출
+  const requiredFeatures = {
+    // 앞머리
+    needsFringe: userHasFringe && !coveredZones.has('Fringe') && !coveredZones.has('Front'),
+    // 섹션 기법
+    needsTargetSection: !coveredSections.has(targetSectionCode),
+    // 존 (Zone)
+    needsNape: targetZones.includes('Nape') && !coveredZones.has('Nape'),
+    needsBack: targetZones.includes('Back') && !coveredZones.has('Back'),
+    needsSide: targetZones.includes('Side') && !coveredZones.has('Side'),
+    needsCrown: targetZones.includes('Crown') && !coveredZones.has('Crown') && !coveredZones.has('Top'),
+    // 리프팅
+    missingLiftings: targetLiftingRange.filter(l => !coveredLiftings.has(l))
+  };
+
+  // 보충이 필요한지 확인
+  const needsSupplement = requiredFeatures.needsFringe ||
+                          requiredFeatures.needsTargetSection ||
+                          requiredFeatures.needsNape ||
+                          requiredFeatures.needsBack ||
+                          requiredFeatures.needsSide ||
+                          requiredFeatures.needsCrown ||
+                          requiredFeatures.missingLiftings.length > 0;
+
+  if (needsSupplement && seriesPrefix && selectedDiagrams.length < maxDiagrams) {
+    console.log(`\n⚠️ 누락된 기법/존 보충 필요 (${seriesPrefix} 시리즈 우선):`);
+    if (requiredFeatures.needsFringe) console.log(`   - 앞머리 (Fringe)`);
+    if (requiredFeatures.needsTargetSection) console.log(`   - 섹션: ${targetSectionCode}`);
+    if (requiredFeatures.needsNape) console.log(`   - 존: Nape`);
+    if (requiredFeatures.needsBack) console.log(`   - 존: Back`);
+    if (requiredFeatures.needsSide) console.log(`   - 존: Side`);
+    if (requiredFeatures.needsCrown) console.log(`   - 존: Crown/Top`);
+    if (requiredFeatures.missingLiftings.length > 0) console.log(`   - 리프팅: ${requiredFeatures.missingLiftings.join(', ')}`);
+
+    // 검색 대상: allStyles (전체 스타일) > top3Styles
+    const seriesToSearch = allStyles || top3Styles;
+
+    // 같은 시리즈 스타일만 필터링 (Top-1 제외)
+    const sameSeriesStyles = seriesToSearch.filter(style =>
+      style && style.styleId &&
+      style.styleId.startsWith(seriesPrefix) &&
+      style.styleId !== topStyle.styleId &&
+      style.diagrams && style.diagrams.length > 0
+    );
+
+    console.log(`   📂 같은 시리즈 스타일: ${sameSeriesStyles.length}개`);
+
+    // 각 스타일에서 누락된 기법/존 도해도 찾기
+    const supplementCandidates = [];
+
+    for (const style of sameSeriesStyles) {
+      for (const diagram of style.diagrams) {
+        const urlKey = diagram.url ? diagram.url.split('/').pop() : `${style.styleId}_${diagram.step}`;
+        if (usedUrls.has(urlKey)) continue;
+
+        let supplementScore = 0;
+        const reasons = [];
+        let category = 'general'; // 분류: fringe, section, zone, lifting
+
+        const diagZone = (diagram.zone || '').toLowerCase();
+        const diagSection = diagram.section || '';
+        const diagLifting = diagram.lifting || '';
+        const diagMethod = (diagram.cutting_method || '').toLowerCase();
+
+        // 1. 앞머리 보충 (최우선)
+        if (requiredFeatures.needsFringe) {
+          const isFringeDiagram = diagZone.includes('fringe') || diagZone.includes('bang') ||
+                                  diagZone.includes('front') || diagMethod.includes('fringe') ||
+                                  diagMethod.includes('bang');
+          if (isFringeDiagram) {
+            supplementScore += 50;
+            reasons.push('앞머리');
+            category = 'fringe';
+          }
+        }
+
+        // 2. 섹션 기법 보충
+        if (requiredFeatures.needsTargetSection && diagSection === targetSectionCode) {
+          supplementScore += 40;
+          reasons.push(`섹션:${diagSection}`);
+          category = 'section';
+        }
+
+        // 3. 존(Zone) 보충
+        if (requiredFeatures.needsNape && (diagZone.includes('nape') || diagZone === 'zone_a')) {
+          supplementScore += 35;
+          reasons.push('Nape존');
+          category = 'zone';
+        }
+        if (requiredFeatures.needsBack && diagZone.includes('back')) {
+          supplementScore += 30;
+          reasons.push('Back존');
+          category = 'zone';
+        }
+        if (requiredFeatures.needsSide && diagZone.includes('side')) {
+          supplementScore += 30;
+          reasons.push('Side존');
+          category = 'zone';
+        }
+        if (requiredFeatures.needsCrown && (diagZone.includes('crown') || diagZone.includes('top') || diagZone === 'zone_c')) {
+          supplementScore += 30;
+          reasons.push('Crown존');
+          category = 'zone';
+        }
+
+        // 4. 리프팅 보충
+        if (requiredFeatures.missingLiftings.includes(diagLifting)) {
+          supplementScore += 25;
+          reasons.push(`리프팅:${diagLifting}`);
+          category = 'lifting';
+        }
+
+        // 보충 점수가 있는 경우만 후보에 추가
+        if (supplementScore > 0) {
+          supplementCandidates.push({
+            styleId: style.styleId,
+            step: diagram.step || 99,
+            url: diagram.url,
+            urlKey: urlKey,
+            supplementScore: supplementScore,
+            category: category,
+            reasons: reasons,
+            // 메타데이터
+            lifting: diagram.lifting || null,
+            direction: diagram.direction || null,
+            section: diagram.section || null,
+            zone: diagram.zone || null,
+            cuttingMethod: diagram.cutting_method || null,
+            isFringe: category === 'fringe'
+          });
+        }
+      }
+    }
+
+    // 점수순 정렬 후 보충
+    supplementCandidates.sort((a, b) => b.supplementScore - a.supplementScore);
+
+    console.log(`   🔍 보충 후보: ${supplementCandidates.length}개`);
+
+    // 카테고리별 보충 (각 카테고리에서 최소 1개씩 보충 시도)
+    const addedCategories = new Set();
+
+    for (const supp of supplementCandidates) {
+      if (selectedDiagrams.length >= maxDiagrams) break;
+      if (usedUrls.has(supp.urlKey)) continue;
+
+      // 같은 카테고리에서 너무 많이 보충하지 않도록 (최대 3개)
+      const categoryCount = selectedDiagrams.filter(d => d.supplementCategory === supp.category).length;
+      if (categoryCount >= 3) continue;
+
+      usedUrls.add(supp.urlKey);
+
+      // 커버된 기법/존 업데이트
+      if (supp.section) coveredSections.add(supp.section);
+      if (supp.zone) coveredZones.add(supp.zone);
+      if (supp.lifting) coveredLiftings.add(supp.lifting);
+      if (supp.isFringe) {
+        coveredZones.add('Fringe');
+        coveredZones.add('Front');
+      }
+
+      selectedDiagrams.push({
+        styleId: supp.styleId,
+        step: supp.step,
+        url: supp.url,
+        styleRank: 2, // 보충이므로 2순위
+        source: `${seriesPrefix}-보충`,
+        supplementReason: supp.reasons.join(', '),
+        supplementCategory: supp.category,
+        lifting: supp.lifting,
+        direction: supp.direction,
+        section: supp.section,
+        zone: supp.zone,
+        cuttingMethod: supp.cuttingMethod,
+        isFringe: supp.isFringe
+      });
+
+      addedCategories.add(supp.category);
+      console.log(`      ✅ ${supp.styleId} step${supp.step} (${supp.reasons.join(', ')})`);
+    }
+
+    // 보충 요약
+    if (addedCategories.size > 0) {
+      console.log(`   → 보충 완료: ${Array.from(addedCategories).join(', ')}`);
+    } else {
+      console.log(`   ⚠️ ${seriesPrefix} 시리즈에서 적합한 보충 도해도를 찾지 못함`);
+    }
+  }
+
+  // ==================== 추가 보충 (Top-2, Top-3에서 - 시리즈 외) ====================
+
+  // 아직 누락된 기법/존이 있고, 같은 시리즈에서 못 찾은 경우 Top-2, Top-3에서 보충
+  if (selectedDiagrams.length < maxDiagrams && top3Styles.length > 1) {
+    const stillMissing = {
+      sections: !coveredSections.has(targetSectionCode),
+      zones: targetZones.some(z => !coveredZones.has(z)),
+      liftings: targetLiftingRange.some(l => !coveredLiftings.has(l))
+    };
+
+    if (stillMissing.sections || stillMissing.zones || stillMissing.liftings) {
+      console.log(`\n   🔍 Top-2, Top-3에서 추가 보충 검토...`);
+
+      for (let rank = 1; rank < Math.min(top3Styles.length, 3); rank++) {
+        if (selectedDiagrams.length >= maxDiagrams) break;
+
+        const style = top3Styles[rank];
+        if (!style || !style.diagrams) continue;
+
+        // 이미 같은 시리즈면 스킵 (위에서 처리됨)
+        if (seriesPrefix && style.styleId.startsWith(seriesPrefix)) continue;
+
+        const supplementDiagrams = [];
+
+        style.diagrams.forEach((diagram, idx) => {
+          const urlKey = diagram.url ? diagram.url.split('/').pop() : `${style.styleId}_${idx}`;
+          if (usedUrls.has(urlKey)) return;
+
+          let supplementScore = 0;
+          const reasons = [];
+
+          const diagSection = diagram.section;
+          const diagZone = diagram.zone;
+          const diagLifting = diagram.lifting;
+
+          // 누락된 섹션
+          if (stillMissing.sections && diagSection === targetSectionCode) {
+            supplementScore += 30;
+            reasons.push(`섹션:${diagSection}`);
+          }
+
+          // 누락된 존
+          if (diagZone && !coveredZones.has(diagZone) && targetZones.includes(diagZone)) {
+            supplementScore += 20;
+            reasons.push(`존:${diagZone}`);
+          }
+
+          // 누락된 리프팅
+          if (diagLifting && !coveredLiftings.has(diagLifting) && targetLiftingRange.includes(diagLifting)) {
+            supplementScore += 25;
+            reasons.push(`리프팅:${diagLifting}`);
+          }
+
+          if (supplementScore > 0) {
+            supplementDiagrams.push({
+              styleId: style.styleId,
+              step: diagram.step || (idx + 1),
+              url: diagram.url,
+              urlKey: urlKey,
+              supplementScore: supplementScore,
+              styleRank: rank + 1,
+              reasons: reasons,
+              lifting: diagLifting,
+              direction: diagram.direction || null,
+              section: diagSection,
+              zone: diagZone,
+              cuttingMethod: diagram.cutting_method || null
+            });
+          }
+        });
+
+        supplementDiagrams.sort((a, b) => b.supplementScore - a.supplementScore);
+
+        for (const supp of supplementDiagrams.slice(0, 3)) { // 각 스타일에서 최대 3개
+          if (selectedDiagrams.length >= maxDiagrams) break;
+          if (usedUrls.has(supp.urlKey)) continue;
+
+          usedUrls.add(supp.urlKey);
+          if (supp.section) coveredSections.add(supp.section);
+          if (supp.zone) coveredZones.add(supp.zone);
+          if (supp.lifting) coveredLiftings.add(supp.lifting);
+
+          selectedDiagrams.push({
+            styleId: supp.styleId,
+            step: supp.step,
+            url: supp.url,
+            styleRank: supp.styleRank,
+            source: `Top-${rank + 1}`,
+            supplementReason: supp.reasons.join(', '),
+            lifting: supp.lifting,
+            direction: supp.direction,
+            section: supp.section,
+            zone: supp.zone,
+            cuttingMethod: supp.cuttingMethod
+          });
+
+          console.log(`      + ${supp.styleId} step${supp.step} (${supp.reasons.join(', ')})`);
+        }
+      }
+    }
+  }
+
+  // ==================== 최종 정렬 (스타일 순위 → step 순서, 앞머리는 마지막) ====================
+
+  const finalDiagrams = selectedDiagrams.sort((a, b) => {
+    // 앞머리는 마지막으로
+    if (a.isFringe && !b.isFringe) return 1;
+    if (!a.isFringe && b.isFringe) return -1;
+
+    // 1차: 스타일 순위 (Top-1 → 보충)
+    if (a.styleRank !== b.styleRank) {
+      return a.styleRank - b.styleRank;
+    }
+    // 2차: 같은 스타일 내에서 step 순서
     return a.step - b.step;
   });
 
-  console.log(`📊 56파라미터 기반 도해도 선별 (${selected.length}장):`);
-  selected.slice(0, 5).forEach((d, i) => {
-    console.log(`  ${i+1}. ${d.styleId} step${d.step} (${d.techScore}점) - ${d.matchedFeatures.join(', ') || '기본매칭'}`);
+  // ==================== 결과 로그 ====================
+
+  console.log(`\n📊 최종 도해도 선별 결과: ${finalDiagrams.length}장`);
+
+  // 스타일별 통계
+  const styleStats = {};
+  let fringeCount = 0;
+  finalDiagrams.forEach(d => {
+    if (!styleStats[d.styleId]) {
+      styleStats[d.styleId] = { count: 0, rank: d.styleRank };
+    }
+    styleStats[d.styleId].count++;
+    if (d.isFringe) fringeCount++;
   });
 
-  return selected;
+  Object.entries(styleStats).forEach(([styleId, stat]) => {
+    console.log(`   ${styleId} (${stat.rank === 1 ? 'Top-1' : '보충'}): ${stat.count}장`);
+  });
+
+  if (fringeCount > 0) {
+    console.log(`   📌 앞머리 도해도: ${fringeCount}장`);
+  }
+
+  // 상위 5개 도해도 상세
+  console.log(`\n   상위 도해도:`);
+  finalDiagrams.slice(0, 5).forEach((d, i) => {
+    const meta = [d.lifting, d.section, d.zone].filter(Boolean).join('/');
+    const fringeTag = d.isFringe ? ' [앞머리]' : '';
+    console.log(`   ${i+1}. ${d.styleId} step${d.step} [${meta || '-'}] (${d.source})${fringeTag}`);
+  });
+
+  return finalDiagrams;
 }
 
 /**
- * 특성 기반 스타일 점수 계산 - 42포뮬러 기반 (8가지 기준, 150점 만점)
+ * 특성 기반 스타일 점수 계산 - 2WAY CUT SYSTEM 기반 (모듈별 기법 매칭, 250점 만점)
+ * 자막(caption) 키워드 대신 구조화된 메타데이터와 스키마 함수 활용
  */
 function calculateFeatureScore(style, params56, captionText) {
   let score = 0;
   const reasons = [];
 
-  if (!captionText) return { score: 0, reasons: ['자막 없음'] };
+  // 자막 (보조용)
+  const caption = (captionText || '').toLowerCase();
 
-  const caption = captionText.toLowerCase();
+  // ⭐ Firestore 도해도 메타데이터 추출 (구조화된 데이터 우선!)
+  const diagrams = style.diagrams || [];
+  const styleLiftings = [...new Set(diagrams.map(d => d.lifting).filter(Boolean))];
+  const styleSections = [...new Set(diagrams.map(d => d.section).filter(Boolean))];
+  const styleZones = [...new Set(diagrams.map(d => d.zone).filter(Boolean))];
+  const styleDirections = [...new Set(diagrams.map(d => d.direction).filter(Boolean))];
+  const styleLiftingAngles = [...new Set(diagrams.map(d => d.lifting_angle).filter(a => a !== null && a !== undefined))];
 
-  // ⭐⭐⭐ 1. CUT FORM 매칭 (35점) - 가장 중요!
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ⭐⭐⭐ 0. 9 Matrix 매칭 (30점) - 라인 형태 기반
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  try {
+    const analysisMatch = matchStyleFromParams(params56);
+
+    // 스타일에 저장된 shape_of_line과 비교
+    if (style.shape_of_line && params56.shape_of_line) {
+      if (style.shape_of_line === params56.shape_of_line) {
+        score += 30;
+        reasons.push(`라인형태: ${params56.shape_of_line}`);
+      } else {
+        // 자막에서 라인 형태 키워드 검색
+        const lineTypeKw = {
+          'Triangular': ['삼각', 'triangle', 'triangular', '뾰족', 'a-line'],
+          'Square': ['사각', 'square', '각진', '네모', '박스', '스퀘어'],
+          'Round': ['둥근', 'round', '곡선', '라운드', '부드러운']
+        };
+        const keywords = lineTypeKw[params56.shape_of_line] || [];
+        if (keywords.some(kw => caption.includes(kw))) {
+          score += 20;
+          reasons.push(`${params56.shape_of_line} (자막매칭)`);
+        }
+      }
+    }
+
+    // 매트릭스 코드 매칭 (OG, GO, LO, OL, GL, LG, OGL, LGO, GOL)
+    if (analysisMatch.matrix && caption.includes(analysisMatch.matrix.toLowerCase())) {
+      score += 10;
+      reasons.push(`Matrix: ${analysisMatch.matrix}`);
+    }
+  } catch (e) {
+    // 매트릭스 매칭 실패 시 무시
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ⭐⭐⭐ 1. CELESTIAL ANGLE 매칭 (40점) - 핵심!
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const targetAngle = params56.celestial_angle || params56.graduation_angle || null;
+  if (targetAngle !== null) {
+    // 자막에서 각도 추출
+    const anglePatterns = [
+      { angle: 0, keywords: ['0도', '0°', '원렝스', 'one length', '천체축 각도 0'] },
+      { angle: 15, keywords: ['15도', '15°', 'low grad', '로우 그래쥬'] },
+      { angle: 45, keywords: ['45도', '45°', 'mid grad', '미디엄', '중간'] },
+      { angle: 75, keywords: ['75도', '75°', 'high grad', '하이 그래쥬'] },
+      { angle: 90, keywords: ['90도', '90°', 'layer', '레이어'] },
+      { angle: 135, keywords: ['135도', '135°', 'high layer', '하이레이어'] }
+    ];
+
+    for (const pattern of anglePatterns) {
+      if (pattern.keywords.some(kw => caption.includes(kw))) {
+        if (pattern.angle === targetAngle) {
+          score += 40;
+          reasons.push(`Celestial Angle ${targetAngle}° 정확매칭`);
+        } else if (Math.abs(pattern.angle - targetAngle) <= 15) {
+          score += 20;
+          reasons.push(`Celestial Angle 근접 (${pattern.angle}°)`);
+        }
+        break;
+      }
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ⭐⭐⭐ 2. GUIDE LINE 매칭 (25점) - Fixed vs Traveling
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  if (params56.guide_line) {
+    const guideKeywords = {
+      'Fixed': ['고정', 'fixed', 'stationary', '고정 디자인 라인', '고정 가이드'],
+      'Traveling': ['이동', 'traveling', 'mobile', '이동 가이드', '따라감']
+    };
+    const keywords = guideKeywords[params56.guide_line] || [];
+    if (keywords.some(kw => caption.includes(kw))) {
+      score += 25;
+      reasons.push(`Guide: ${params56.guide_line}`);
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ⭐⭐ 3. DISTRIBUTION 매칭 (25점) - 분배 방식
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  if (params56.distribution) {
+    const distKeywords = {
+      'Natural': ['자연', 'natural', '자연빗질'],
+      'Perpendicular': ['수직', 'perpendicular', '수직분배', '수직 분배'],
+      'Variable': ['변이', 'variable', '변이분배', '변이 분배', '비틀'],
+      'Directional': ['방향', 'directional', '방향성']
+    };
+    const keywords = distKeywords[params56.distribution] || [];
+    if (keywords.some(kw => caption.includes(kw))) {
+      score += 25;
+      reasons.push(`Distribution: ${params56.distribution}`);
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ⭐⭐ 4. SECTION 매칭 (30점) - 구조화된 데이터 우선!
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const sectionType = determineSectionType(params56);
+
+  // ⭐ 도해도 메타데이터에서 직접 섹션 매칭 (20점)
+  if (styleSections.length > 0) {
+    if (styleSections.includes(sectionType)) {
+      score += 20;
+      reasons.push(`Section: ${sectionType} (메타데이터)`);
+    } else {
+      // 관련 섹션 부분 점수
+      const relatedSections = {
+        'HS': ['VS'],
+        'VS': ['HS'],
+        'DBS': ['VS', 'DFS'],
+        'DFS': ['VS', 'DBS']
+      };
+      if (relatedSections[sectionType]?.some(s => styleSections.includes(s))) {
+        score += 10;
+        reasons.push(`Section 관련: ${styleSections.join(',')}`);
+      }
+    }
+  } else {
+    // 도해도 메타데이터 없으면 자막 기반 (fallback)
+    const sectionKeywords = {
+      'HS': ['가로', 'horizontal', 'hs', '수평', '가로섹션'],
+      'DBS': ['후대각', 'diagonal back', 'dbs', '뒤쪽', '후대각섹션'],
+      'DFS': ['전대각', 'diagonal forward', 'dfs', '앞쪽', '전대각섹션'],
+      'VS': ['세로', 'vertical', 'vs', '수직', '세로섹션'],
+      'PS': ['파이', 'pie', '파이섹션'],
+      'RS': ['방사', 'radial', '방사섹션']
+    };
+    const sectionKws = sectionKeywords[sectionType] || [];
+    if (sectionKws.some(kw => caption.includes(kw))) {
+      score += 15;
+      reasons.push(`Section: ${sectionType} (자막)`);
+    }
+  }
+
+  // ⭐ Lifting Angle 직접 매칭 (10점) - 도해도의 lifting_angle 활용
+  if (styleLiftingAngles.length > 0) {
+    const targetAngleFromLifting = params56.celestial_angle || params56.graduation_angle || 45;
+    // 정확히 일치하는 각도가 있는지
+    if (styleLiftingAngles.includes(targetAngleFromLifting)) {
+      score += 10;
+      reasons.push(`Lifting Angle ${targetAngleFromLifting}° 매칭`);
+    } else if (styleLiftingAngles.some(a => Math.abs(a - targetAngleFromLifting) <= 15)) {
+      score += 5;
+      reasons.push(`Lifting Angle 근접`);
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ⭐⭐ 5. 모듈별 기법 매칭 (DFS/DBS/VS) (30점)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  try {
+    if (sectionType === 'DFS') {
+      const dfsTech = determineDFSTechnique(params56);
+      // DFS NO.1, NO.2, NO.3 매칭
+      if (caption.includes(`dfs no.${dfsTech.number}`) || caption.includes(`전대각 no.${dfsTech.number}`)) {
+        score += 30;
+        reasons.push(`DFS NO.${dfsTech.number}`);
+      } else if (caption.includes(dfsTech.name.toLowerCase())) {
+        score += 20;
+        reasons.push(`DFS: ${dfsTech.name}`);
+      }
+    } else if (sectionType === 'DBS') {
+      const dbsTech = determineDBSTechnique(params56);
+      if (caption.includes(`dbs no.${dbsTech.number}`) || caption.includes(`후대각 no.${dbsTech.number}`)) {
+        score += 30;
+        reasons.push(`DBS NO.${dbsTech.number}`);
+      } else if (dbsTech.name && caption.includes(dbsTech.name.toLowerCase())) {
+        score += 20;
+        reasons.push(`DBS: ${dbsTech.name}`);
+      }
+    } else if (sectionType === 'VS') {
+      const vsTech = determineVSTechnique(params56);
+      if (caption.includes(`vs no.${vsTech.number}`) || caption.includes(`세로 no.${vsTech.number}`)) {
+        score += 30;
+        reasons.push(`VS NO.${vsTech.number}`);
+      }
+    }
+  } catch (e) {
+    // 기법 매칭 실패 시 무시
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 6. CUT FORM 매칭 (20점)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (params56.cut_form) {
-    const form = params56.cut_form.charAt(0); // "L", "G", "O"
-
-    if (form === 'L' && (caption.includes('레이어') || caption.includes('layer'))) {
-      score += 35;
-      reasons.push('Layer 매칭');
-    } else if (form === 'G' && (caption.includes('그래쥬에이션') || caption.includes('graduation') || caption.includes('그라데이션'))) {
-      score += 35;
-      reasons.push('Graduation 매칭');
-    } else if (form === 'O' && (caption.includes('원렝스') || caption.includes('one length') || caption.includes('일자'))) {
-      score += 35;
-      reasons.push('One Length 매칭');
+    const form = params56.cut_form.charAt(0);
+    const formKeywords = {
+      'L': ['레이어', 'layer'],
+      'G': ['그래쥬에이션', 'graduation', '그라데이션'],
+      'O': ['원렝스', 'one length', '일자']
+    };
+    const kws = formKeywords[form] || [];
+    if (kws.some(kw => caption.includes(kw))) {
+      score += 20;
+      reasons.push(`${form === 'L' ? 'Layer' : form === 'G' ? 'Graduation' : 'One Length'}`);
     }
   }
 
-  // ⭐⭐ 2. LIFTING RANGE 매칭 (30점)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 7. LIFTING RANGE 매칭 (25점) - 구조화된 데이터 우선!
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (params56.lifting_range && Array.isArray(params56.lifting_range)) {
-    const liftingCodes = params56.lifting_range.join(' '); // "L2 L4"
-
-    // 높은 각도 (L5~L8) - High Layer
-    if (/L[5-8]/.test(liftingCodes)) {
-      if (caption.includes('하이레이어') || caption.includes('high layer') || caption.includes('하이 레이어') ||
-          caption.includes('135') || caption.includes('157') || caption.includes('180')) {
-        score += 30;
-        reasons.push('High Lifting (L5-L8)');
-      } else if (caption.includes('레이어') || caption.includes('layer')) {
-        score += 15; // 부분 점수
-        reasons.push('Layer (부분매칭)');
-      }
-    }
-    // 중간 각도 (L3~L4) - Mid Layer
-    else if (/L[3-4]/.test(liftingCodes)) {
-      if (caption.includes('미들레이어') || caption.includes('mid layer') || caption.includes('미드레이어') ||
-          caption.includes('90도') || caption.includes('90°')) {
-        score += 30;
-        reasons.push('Mid Lifting (L3-L4)');
-      } else if (caption.includes('레이어') || caption.includes('layer')) {
-        score += 20; // 부분 점수
-        reasons.push('Layer (부분매칭)');
-      }
-    }
-    // 낮은 각도 (L1~L2) - Graduation
-    else if (/L[1-2]/.test(liftingCodes)) {
-      if (caption.includes('로우') || caption.includes('low') || caption.includes('그래쥬') ||
-          caption.includes('45도') || caption.includes('45°')) {
-        score += 30;
-        reasons.push('Low Lifting (L1-L2)');
-      } else if (caption.includes('무게') || caption.includes('weight')) {
-        score += 15;
-        reasons.push('무게감 (부분매칭)');
-      }
-    }
-    // 0도 (L0) - One Length
-    else if (/L0/.test(liftingCodes)) {
-      if (caption.includes('원렝스') || caption.includes('one length') || caption.includes('0도') ||
-          caption.includes('일자')) {
-        score += 30;
-        reasons.push('Zero Lifting (L0)');
+    // ⭐ 도해도 메타데이터에서 직접 lifting 매칭
+    if (styleLiftings.length > 0) {
+      const matchCount = params56.lifting_range.filter(l => styleLiftings.includes(l)).length;
+      if (matchCount > 0) {
+        const liftingScore = Math.min(matchCount * 8, 25);
+        score += liftingScore;
+        reasons.push(`Lifting ${params56.lifting_range.filter(l => styleLiftings.includes(l)).join(',')} 매칭`);
       }
     }
   }
 
-  // ⭐ 3. VOLUME ZONE 매칭 (20점)
-  if (params56.volume_zone) {
-    if (params56.volume_zone === 'High') {
-      if (caption.includes('정수리') || caption.includes('상단') || caption.includes('top') ||
-          caption.includes('crown') || caption.includes('볼륨')) {
-        score += 20;
-        reasons.push('High Volume');
-      }
-    } else if (params56.volume_zone === 'Low') {
-      if (caption.includes('하단') || caption.includes('무게') || caption.includes('bottom') ||
-          caption.includes('weight') || caption.includes('네이프')) {
-        score += 20;
-        reasons.push('Low Volume');
-      }
-    } else if (params56.volume_zone === 'Medium') {
-      if (caption.includes('중단') || caption.includes('middle') || caption.includes('균형')) {
-        score += 15;
-        reasons.push('Medium Volume');
-      } else {
-        score += 10; // 중간값은 기본 점수
-        reasons.push('Balanced');
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 7-1. ZONE 매칭 (15점) - 도해도 zone 메타데이터 활용
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  if (styleZones.length > 0) {
+    // 타겟 존 (분석된 볼륨 위치 기반)
+    const targetZones = [];
+    if (params56.volume_position) {
+      targetZones.push(...(Array.isArray(params56.volume_position) ? params56.volume_position : [params56.volume_position]));
+    }
+    if (params56.cutting_zone) {
+      targetZones.push(params56.cutting_zone);
+    }
+    // 기본 존 추가
+    if (targetZones.length === 0) {
+      targetZones.push('Back', 'Side', 'Nape');
+    }
+
+    const zoneMatchCount = targetZones.filter(z =>
+      styleZones.some(sz => sz.toLowerCase().includes(z.toLowerCase()) || z.toLowerCase().includes(sz.toLowerCase()))
+    ).length;
+
+    if (zoneMatchCount > 0) {
+      score += Math.min(zoneMatchCount * 5, 15);
+      reasons.push(`Zone 매칭: ${zoneMatchCount}개`);
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 7-2. DIRECTION 매칭 (10점) - 도해도 direction 메타데이터 활용
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  if (styleDirections.length > 0 && params56.direction_primary) {
+    if (styleDirections.includes(params56.direction_primary)) {
+      score += 10;
+      reasons.push(`Direction: ${params56.direction_primary}`);
+    } else {
+      // 인접 방향 부분 점수 (D3 ↔ D4 등)
+      const targetDir = parseInt(params56.direction_primary.replace('D', ''));
+      const hasAdjacentDir = styleDirections.some(d => {
+        const dirNum = parseInt(d.replace('D', ''));
+        return Math.abs(dirNum - targetDir) === 1;
+      });
+      if (hasAdjacentDir) {
+        score += 5;
+        reasons.push(`Direction 인접`);
       }
     }
   }
 
-  // 4. SECTION 매칭 (15점)
-  if (params56.section_primary) {
-    const sectionMap = {
-      'Horizontal': ['가로', 'horizontal', 'hs', '수평'],
-      'Diagonal-Backward': ['후대각', 'diagonal back', 'dbs', '뒤쪽'],
-      'Diagonal-Forward': ['전대각', 'diagonal forward', 'dfs', '앞쪽'],
-      'Vertical': ['세로', 'vertical', 'vs', '수직']
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 8. OUTLINE SHAPE 매칭 (15점)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  if (params56.outline_shape) {
+    const outlineKw = {
+      'Square': ['스퀘어', 'square', '사각', '일자'],
+      'Round': ['라운드', 'round', '둥근', '곡선'],
+      'Triangle': ['삼각', 'triangle', '뾰족', 'a라인']
     };
-
-    const keywords = sectionMap[params56.section_primary] || [];
-    if (keywords.some(kw => caption.includes(kw))) {
+    const kws = outlineKw[params56.outline_shape] || [];
+    if (kws.some(kw => caption.includes(kw))) {
       score += 15;
-      reasons.push(`${params56.section_primary} Section`);
+      reasons.push(`Outline: ${params56.outline_shape}`);
     }
   }
 
-  // 5. WEIGHT DISTRIBUTION 매칭 (15점)
-  if (params56.weight_distribution) {
-    if (params56.weight_distribution === 'Bottom Heavy') {
-      if (caption.includes('하단') || caption.includes('무게감') || caption.includes('bottom') ||
-          caption.includes('heavy')) {
-        score += 15;
-        reasons.push('Bottom Heavy');
-      }
-    } else if (params56.weight_distribution === 'Top Heavy') {
-      if (caption.includes('상단') || caption.includes('볼륨') || caption.includes('top') ||
-          caption.includes('가벼')) {
-        score += 15;
-        reasons.push('Top Heavy');
-      }
-    } else if (params56.weight_distribution === 'Balanced') {
-      score += 10; // 균형은 기본 점수
-      reasons.push('Balanced Weight');
-    }
-  }
-
-  // 6. CONNECTION TYPE 매칭 (10점)
-  if (params56.connection_type) {
-    if (params56.connection_type === 'Disconnected') {
-      if (caption.includes('단절') || caption.includes('disconnect') || caption.includes('투블록') ||
-          caption.includes('언더컷')) {
-        score += 10;
-        reasons.push('Disconnected');
-      }
-    } else if (params56.connection_type === 'Connected') {
-      if (caption.includes('연결') || caption.includes('connect') || caption.includes('자연스러')) {
-        score += 10;
-        reasons.push('Connected');
-      } else {
-        score += 5; // 기본 점수
-      }
-    }
-  }
-
-  // 7. FRINGE (앞머리) 매칭 (15점)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 9. FRINGE (앞머리) 매칭 (15점) - 구조화된 데이터 우선!
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   if (params56.fringe_type) {
-    const hasFringe = params56.fringe_type !== 'No Fringe';
-    const captionHasFringe = caption.includes('앞머리') || caption.includes('뱅') || caption.includes('bang') || caption.includes('fringe');
+    const userHasFringe = params56.fringe_type !== 'No Fringe' && params56.fringe_type !== 'None';
 
-    if (hasFringe && captionHasFringe) {
+    // ⭐ 도해도 zone에서 Fringe/Front/Bang 체크
+    const styleHasFringe = styleZones.some(z =>
+      z.toLowerCase().includes('fringe') ||
+      z.toLowerCase().includes('bang') ||
+      z.toLowerCase() === 'front'
+    );
+
+    // 정확히 일치 (둘 다 있거나 둘 다 없거나)
+    if (userHasFringe === styleHasFringe) {
       score += 15;
-      reasons.push('Fringe 있음');
-
-      // 앞머리 타입 세부 매칭 (보너스 5점)
-      if (params56.fringe_type === 'Full Bang' && (caption.includes('풀뱅') || caption.includes('full'))) {
-        score += 5;
-        reasons.push('Full Bang');
-      } else if (params56.fringe_type === 'See-through Bang' && (caption.includes('시스루') || caption.includes('see-through'))) {
-        score += 5;
-        reasons.push('See-through Bang');
-      } else if (params56.fringe_type === 'Side Bang' && (caption.includes('사이드') || caption.includes('side'))) {
-        score += 5;
-        reasons.push('Side Bang');
-      }
-    } else if (!hasFringe && !captionHasFringe) {
-      score += 10;
-      reasons.push('No Fringe');
+      reasons.push(userHasFringe ? 'Fringe 매칭' : 'No Fringe 매칭');
+    } else if (userHasFringe && !styleHasFringe) {
+      // 유저는 앞머리 있는데 스타일에 없음 → 감점 아닌 0점
+      reasons.push('Fringe 미매칭');
     }
   }
 
-  // 8. TEXTURE 매칭 (10점)
-  if (params56.hair_texture) {
-    const textureMap = {
-      'Wavy': ['웨이브', 'wave', '웨이비'],
-      'Curly': ['컬', 'curl', '곱슬'],
-      'Straight': ['스트레이트', 'straight', '생머리', '직모']
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 10. WEIGHT/VOLUME 매칭 (10점)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  if (params56.weight_distribution) {
+    const weightKw = {
+      'Bottom Heavy': ['무게감', 'heavy', '하단', '무거'],
+      'Top Heavy': ['가벼', 'light', '상단', '볼륨'],
+      'Balanced': ['균형', 'balance', '중간']
     };
-
-    const keywords = textureMap[params56.hair_texture] || [];
-    if (keywords.some(kw => caption.includes(kw))) {
+    const kws = weightKw[params56.weight_distribution] || [];
+    if (kws.some(kw => caption.includes(kw))) {
       score += 10;
-      reasons.push(`${params56.hair_texture} Texture`);
+      reasons.push(`Weight: ${params56.weight_distribution}`);
     }
   }
 
@@ -3442,7 +4021,7 @@ function calculateFeatureScore(style, params56, captionText) {
 }
 
 /**
- * Gemini로 맞춤 레시피 생성 - 56파라미터 + 42포뮬러 기반 + abcde 북 참조
+ * Gemini로 맞춤 레시피 생성 - 스타일 분석 기반 + abcde 북 참조
  */
 async function generateCustomRecipe(params56, top3Styles, geminiKey) {
   try {
@@ -3451,7 +4030,7 @@ async function generateCustomRecipe(params56, top3Styles, geminiKey) {
       `[참고 스타일 ${i+1}: ${s.styleId}]\n${s.captionText || '레시피 없음'}`
     ).join('\n\n');
 
-    // 42포뮬러 핵심 파라미터 추출
+    // 핵심 파라미터 추출
     const liftingStr = Array.isArray(params56.lifting_range) ? params56.lifting_range.join(', ') : 'L4';
 
     console.log('📚 abcde 북 참조하여 레시피 생성 중...');
@@ -3464,7 +4043,7 @@ async function generateCustomRecipe(params56, top3Styles, geminiKey) {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `당신은 2WAY CUT 시스템 전문가입니다. 고객 요청 스타일의 56개 파라미터와 참고 레시피 3개를 바탕으로 최적의 맞춤 레시피를 생성해주세요.
+              text: `당신은 2WAY CUT 시스템 전문가입니다. 고객 요청 스타일의 분석 결과와 참고 레시피 3개를 바탕으로 최적의 맞춤 레시피를 생성해주세요.
 
 ⭐ 중요: 업로드된 2WAY CUT 교재(abcde 북)의 이론과 기법을 참고하여 레시피를 작성하세요.
 
@@ -3674,7 +4253,7 @@ ${recipeTexts}
 
 /**
  * 이미지 분석 → 시리즈 필터링 → Top-3 참고 → 맞춤 레시피 생성
- * 56파라미터 + 42포뮬러 기반
+ * 스타일 분석 기반
  */
 async function analyzeAndMatchRecipe(payload, geminiKey) {
   const { image_base64, mime_type, gender } = payload;
@@ -3689,7 +4268,7 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
 
   // 여자 스타일 기본 처리 (기존 로직)
   try {
-    // 1. 이미지 분석 - 56개 파라미터 추출
+    // 1. 이미지 분석 - 스타일 파라미터 추출
     const t1 = Date.now();
     const params56 = await analyzeImageStructured(image_base64, mime_type, geminiKey);
     console.log(`⏱️ [1] 이미지 분석: ${Date.now() - t1}ms`);
@@ -3697,7 +4276,7 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     // Length 코드 추출 (예: "D Length" → "D")
     const lengthCode = params56.length_category ? params56.length_category.charAt(0) : 'D';
 
-    console.log(`📊 56파라미터 분석 완료:`);
+    console.log(`📊 스타일 분석 완료:`);
     console.log(`   - Length: ${params56.length_category}`);
     console.log(`   - Cut Form: ${params56.cut_form}`);
     console.log(`   - Lifting: ${Array.isArray(params56.lifting_range) ? params56.lifting_range.join(', ') : params56.lifting_range}`);
@@ -3781,24 +4360,25 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       .sort((a, b) => b.totalScore - a.totalScore)
       .slice(0, 3);
 
-    console.log(`🎯 Top-3 참고 스타일 (42포뮬러 기반):`);
+    console.log(`🎯 Top-3 참고 스타일:`);
     top3.forEach((s, i) => {
       console.log(`  ${i+1}. ${s.styleId} (${s.totalScore.toFixed(1)}점) - ${s.featureReasons.join(', ')}`);
     });
 
-    // 7. Top-3를 참고하여 맞춤 레시피 생성 (56파라미터 전달)
+    // 7. Top-3를 참고하여 맞춤 레시피 생성
     const t4 = Date.now();
     const customRecipe = await generateCustomRecipe(params56, top3, geminiKey);
     console.log(`⏱️ [4] 레시피 생성: ${Date.now() - t4}ms`);
 
-    // 8. 기술 기반 도해도 선별 (lifting/section/volume 키워드 매칭)
-    const selectedDiagrams = selectDiagramsByTechnique(top3, params56, 15);
+    // 8. 기술 기반 도해도 선별 (Top-1 우선, 시리즈 내 앞머리 보충)
+    // allStyles로 전체 후보 전달하여 같은 시리즈에서 앞머리 보충 가능
+    const selectedDiagrams = selectDiagramsByTechnique(top3, params56, 15, stylesWithScores);
 
     console.log(`⏱️ 총 처리 시간: ${Date.now() - startTime}ms`);
 
-    // 9. 결과 구성 - 56파라미터 전체 포함
+    // 9. 결과 구성 - 스타일 파라미터 전체 포함
     const result = {
-      // 56개 파라미터 전체 (프론트엔드에서 활용 가능)
+      // 스타일 파라미터 전체 (프론트엔드에서 활용 가능)
       params56: params56,
 
       // 분석 요약 (UI 표시용)
@@ -3813,7 +4393,7 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
         texture: params56.hair_texture || 'Straight',
         layerLevel: params56.layer_type || 'Mid Layer',
         description: params56.description || '',
-        // 42포뮬러 핵심
+        // 핵심 기술 파라미터
         liftingRange: params56.lifting_range || ['L4'],
         sectionPrimary: params56.section_primary || 'Diagonal-Backward',
         weightDistribution: params56.weight_distribution || 'Balanced',
@@ -3850,7 +4430,7 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       }))
     };
 
-    console.log(`✅ 맞춤 레시피 생성 완료 (56파라미터 + 42포뮬러 기반)`);
+    console.log(`✅ 맞춤 레시피 생성 완료`);
 
     return {
       statusCode: 200,
@@ -3912,7 +4492,7 @@ async function generateCustomRecipeFromParams(payload, geminiKey) {
 
     console.log(`🎯 ${targetSeries} 시리즈: ${seriesStyles.length}개 스타일`);
 
-    // 4. 42포뮬러 기반 스코어링
+    // 4. 스타일 스코어링
     const stylesWithScores = seriesStyles.map(style => {
       const score = calculate42FormulaScore(style, params56);
       return { ...style, ...score };
@@ -4251,8 +4831,8 @@ async function regenerateFemaleRecipeWithStyle(payload, geminiKey) {
     // 5. 레시피 재생성
     const customRecipe = await generateCustomRecipe(params56, top3, geminiKey);
 
-    // 6. 도해도 선별
-    const selectedDiagrams = selectDiagramsByTechnique(top3, params56, 15);
+    // 6. 도해도 선별 (시리즈 내 앞머리 보충 포함)
+    const selectedDiagrams = selectDiagramsByTechnique(top3, params56, 15, stylesWithSimilarity);
 
     console.log(`⏱️ 여자 재분석 완료: ${Date.now() - startTime}ms`);
 
@@ -4696,7 +5276,7 @@ async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
 
   const systemPrompt = `당신은 남자 헤어컷 전문가입니다. 모든 응답을 한국어로만 작성하세요. 클리퍼 가드 사이즈, 페이드 기법 등 실무적인 내용을 포함하세요.${theoryContext ? ' 참고 이론의 내용을 레시피에 자연스럽게 반영하세요.' : ''}${captionContext ? ' 참고 스타일 레시피의 테크닉과 순서를 참고하세요.' : ''}`;
 
-  // 42포뮬러 핵심 파라미터 추출
+  // 핵심 파라미터 추출
   const liftingStr = Array.isArray(params.lifting_range) ? params.lifting_range.join(', ') : 'L4';
 
   const userPrompt = `**📊 분석 결과:**
