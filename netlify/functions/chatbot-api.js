@@ -3319,21 +3319,30 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
     const maxTargetAngle = Math.max(...targetLiftingAngles);
     const minTargetAngle = Math.min(...targetLiftingAngles);
 
-    console.log(`   🎯 타겟 리프팅: ${targetLiftingRange.join(', ')} (${minTargetAngle}°~${maxTargetAngle}°)`);
+    // ⭐ 디렉션 값을 각도로 변환
+    const directionToAngle = {
+      'D0': 0, 'D1': 45, 'D2': 90, 'D3': 135, 'D4': 180
+    };
+    const targetDirAngle = directionToAngle[targetDirectionCode] ?? 90;
 
-    // Top-1 도해도를 리프팅 매칭 점수로 정렬
+    console.log(`   🎯 타겟: 리프팅 ${targetLiftingRange.join(',')} (${minTargetAngle}°~${maxTargetAngle}°), 디렉션 ${targetDirectionCode}, 섹션 ${targetSectionCode}, 존 ${targetZone}`);
+
+    // Top-1 도해도를 종합 매칭 점수로 정렬 (리프팅, 섹션, 존, 디렉션 모두 고려)
     const scoredDiagrams = topStyle.diagrams.map((diagram, idx) => {
       const diagLifting = diagram.lifting || 'L4';
       const diagAngle = liftingToAngle[diagLifting] || 90;
+      const diagSection = diagram.section || '';
+      const diagZone = (diagram.zone || '').toLowerCase();
+      const diagDirection = diagram.direction || 'D2';
+      const diagDirAngle = directionToAngle[diagDirection] ?? 90;
 
-      // 리프팅 매칭 점수 계산
+      // === 1. 리프팅 점수 (0~100, 가중치 40%) ===
       let liftingScore = 0;
       if (targetLiftingRange.includes(diagLifting)) {
         liftingScore = 100; // 정확히 매칭
       } else if (diagAngle >= minTargetAngle && diagAngle <= maxTargetAngle) {
         liftingScore = 80; // 범위 내
       } else {
-        // 범위 벗어난 정도에 따라 감점
         const angleDiff = Math.min(
           Math.abs(diagAngle - minTargetAngle),
           Math.abs(diagAngle - maxTargetAngle)
@@ -3341,28 +3350,92 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
         liftingScore = Math.max(0, 60 - angleDiff);
       }
 
+      // === 2. 섹션 점수 (0~100, 가중치 25%) ===
+      let sectionScore = 0;
+      if (diagSection === targetSectionCode) {
+        sectionScore = 100; // 정확히 매칭
+      } else if (diagSection && targetSectionCode) {
+        // 비슷한 섹션 그룹 체크 (예: 가로분할 vs 세로분할)
+        const horizontalSections = ['H', 'HD', 'HU'];
+        const verticalSections = ['V', 'VL', 'VR'];
+        const diagonalSections = ['DF', 'DB', 'D'];
+        if (
+          (horizontalSections.includes(diagSection) && horizontalSections.includes(targetSectionCode)) ||
+          (verticalSections.includes(diagSection) && verticalSections.includes(targetSectionCode)) ||
+          (diagonalSections.includes(diagSection) && diagonalSections.includes(targetSectionCode))
+        ) {
+          sectionScore = 70; // 같은 그룹
+        } else {
+          sectionScore = 30; // 다른 그룹
+        }
+      } else {
+        sectionScore = 50; // 정보 없음
+      }
+
+      // === 3. 존(Zone) 점수 (0~100, 가중치 20%) ===
+      let zoneScore = 50; // 기본값
+      if (diagZone) {
+        const zoneMatches = targetZones.some(tz =>
+          diagZone.includes(tz.toLowerCase()) ||
+          tz.toLowerCase().includes(diagZone)
+        );
+        zoneScore = zoneMatches ? 100 : 30;
+      }
+
+      // === 4. 디렉션 점수 (0~100, 가중치 15%) ===
+      let directionScore = 50; // 기본값
+      if (diagDirection && targetDirectionCode) {
+        if (diagDirection === targetDirectionCode) {
+          directionScore = 100;
+        } else {
+          const dirDiff = Math.abs(diagDirAngle - targetDirAngle);
+          directionScore = Math.max(0, 100 - dirDiff);
+        }
+      }
+
+      // === 종합 점수 (가중 평균) ===
+      const totalScore = (
+        liftingScore * 0.40 +    // 리프팅 40%
+        sectionScore * 0.25 +    // 섹션 25%
+        zoneScore * 0.20 +       // 존 20%
+        directionScore * 0.15    // 디렉션 15%
+      );
+
       return {
         ...diagram,
         idx,
         diagLifting,
         diagAngle,
-        liftingScore
+        diagSection,
+        diagZone,
+        diagDirection,
+        liftingScore,
+        sectionScore,
+        zoneScore,
+        directionScore,
+        totalScore
       };
     });
 
-    // 리프팅 점수 + step 순서로 정렬 (리프팅 점수 우선, 같으면 step 순서)
+    // 종합 점수 + step 순서로 정렬
     scoredDiagrams.sort((a, b) => {
-      if (b.liftingScore !== a.liftingScore) {
-        return b.liftingScore - a.liftingScore; // 리프팅 점수 높은 순
+      if (b.totalScore !== a.totalScore) {
+        return b.totalScore - a.totalScore; // 종합 점수 높은 순
       }
       return (a.step || 0) - (b.step || 0); // step 순서
     });
 
-    // 매칭되는 도해도와 안 되는 도해도 분리
-    const matchedDiagrams = scoredDiagrams.filter(d => d.liftingScore >= 60);
-    const unmatchedDiagrams = scoredDiagrams.filter(d => d.liftingScore < 60);
+    // 매칭되는 도해도와 안 되는 도해도 분리 (종합 점수 50점 기준)
+    const matchedDiagrams = scoredDiagrams.filter(d => d.totalScore >= 50);
+    const unmatchedDiagrams = scoredDiagrams.filter(d => d.totalScore < 50);
 
-    console.log(`   📊 리프팅 매칭: ${matchedDiagrams.length}장 매칭, ${unmatchedDiagrams.length}장 미매칭`);
+    console.log(`   📊 종합 매칭: ${matchedDiagrams.length}장 매칭 (≥50점), ${unmatchedDiagrams.length}장 미매칭`);
+    if (scoredDiagrams.length > 0) {
+      const top3 = scoredDiagrams.slice(0, 3);
+      top3.forEach((d, i) => {
+        console.log(`      ${i+1}위: step${d.step || d.idx+1} - 총${d.totalScore.toFixed(0)}점 (L:${d.liftingScore} S:${d.sectionScore} Z:${d.zoneScore} D:${d.directionScore})`);
+      });
+    }
 
     // 매칭된 도해도 먼저 추가 (step 순서 유지)
     const addDiagram = (diagram, idx) => {
@@ -3396,12 +3469,16 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
         celestialAngle: diagram.celestial_angle || null,
         guideLine: diagram.guide_line || null,
         isFringe: isFringeDiagram,
-        liftingScore: diagram.liftingScore || 0
+        totalScore: diagram.totalScore || 0,
+        liftingScore: diagram.liftingScore || 0,
+        sectionScore: diagram.sectionScore || 0,
+        zoneScore: diagram.zoneScore || 0,
+        directionScore: diagram.directionScore || 0
       });
       return true;
     };
 
-    // 1) 리프팅 매칭된 도해도 먼저 (step 순서로)
+    // 1) 종합 점수 매칭된 도해도 먼저 (step 순서로)
     matchedDiagrams.sort((a, b) => (a.step || 0) - (b.step || 0));
     matchedDiagrams.forEach((d, i) => addDiagram(d, d.idx));
 
@@ -3409,7 +3486,7 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
     unmatchedDiagrams.sort((a, b) => (a.step || 0) - (b.step || 0));
     unmatchedDiagrams.forEach((d, i) => addDiagram(d, d.idx));
 
-    console.log(`   → Top-1에서 ${selectedDiagrams.length}장 선별 (리프팅 매칭 ${matchedDiagrams.length}장 우선)`);
+    console.log(`   → Top-1에서 ${selectedDiagrams.length}장 선별 (종합 매칭 ${matchedDiagrams.length}장 우선)`);
     console.log(`   → Top-1 앞머리 도해도: ${top1HasFringe ? '있음' : '없음'}`);
   }
 
