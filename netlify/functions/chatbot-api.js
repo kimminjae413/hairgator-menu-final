@@ -3761,7 +3761,10 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
                           requiredFeatures.missingLiftings.length > 0 ||
                           hasZoneLiftingGap;  // ⭐ 존별 리프팅 누락도 보충!
 
-  if (needsSupplement && seriesPrefix && selectedDiagrams.length < maxDiagrams) {
+  // ⭐ 존별 리프팅 누락 시에는 maxDiagrams 제한 없이 보충!
+  const canSupplement = selectedDiagrams.length < maxDiagrams || hasZoneLiftingGap;
+
+  if (needsSupplement && seriesPrefix && canSupplement) {
     console.log(`\n⚠️ 누락된 기법/존 보충 필요 (${seriesPrefix} 시리즈 우선):`);
     if (requiredFeatures.needsFringe) console.log(`   - 앞머리 (Fringe)`);
     if (requiredFeatures.needsTargetSection) console.log(`   - 섹션: ${targetSectionCode}`);
@@ -3914,12 +3917,16 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
     const addedCategories = new Set();
 
     for (const supp of supplementCandidates) {
-      if (selectedDiagrams.length >= maxDiagrams) break;
+      // ⭐ zone_lifting 카테고리는 maxDiagrams 제한 무시! (정확한 존별 리프팅 매칭 중요)
+      const isZoneLiftingMatch = supp.category === 'zone_lifting';
+      if (selectedDiagrams.length >= maxDiagrams && !isZoneLiftingMatch) break;
+
       if (usedUrls.has(supp.urlKey)) continue;
 
-      // 같은 카테고리에서 너무 많이 보충하지 않도록 (최대 3개)
+      // 같은 카테고리에서 너무 많이 보충하지 않도록 (zone_lifting은 각 존당 1개씩, 일반은 최대 3개)
       const categoryCount = selectedDiagrams.filter(d => d.supplementCategory === supp.category).length;
-      if (categoryCount >= 3) continue;
+      if (isZoneLiftingMatch && categoryCount >= 4) continue; // 존별 최대 4개 (back/side/top/fringe)
+      if (!isZoneLiftingMatch && categoryCount >= 3) continue;
 
       usedUrls.add(supp.urlKey);
 
