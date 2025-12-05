@@ -2589,6 +2589,7 @@ async function getFirestoreStyles() {
           diagrams: diagrams,
           diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
           captionUrl: fields.captionUrl?.stringValue || null,
+          textRecipe: fields.textRecipe?.stringValue || null,
           embedding: embedding
         });
       }
@@ -5416,6 +5417,7 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
         diagrams,
         diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
         captionUrl: fields.captionUrl?.stringValue || null,
+        textRecipe: fields.textRecipe?.stringValue || null,
         embedding
       };
     });
@@ -5596,6 +5598,7 @@ async function regenerateFemaleRecipeWithStyle(payload, geminiKey) {
         seriesName: fields.seriesName?.stringValue || '',
         resultImage: fields.resultImage?.stringValue || null,
         captionUrl: fields.captionUrl?.stringValue || null,
+        textRecipe: fields.textRecipe?.stringValue || null,
         diagrams,
         diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
         embedding
@@ -5761,6 +5764,7 @@ async function regenerateMaleRecipeWithStyle(payload, geminiKey) {
         diagrams,
         diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
         captionUrl: fields.captionUrl?.stringValue || null,
+        textRecipe: fields.textRecipe?.stringValue || null,
         embedding
       };
     });
