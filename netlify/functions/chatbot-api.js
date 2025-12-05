@@ -3057,10 +3057,17 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
 ⚠️ 필수 규칙:
 1. lifting_range는 반드시 배열! ["L2"] 또는 ["L2", "L4"]
 2. cut_form은 괄호 포함! "L (Layer)" 형식
-3. length_category: 가슴까지=B Length, 겨드랑이=C Length, 어깨아래=D Length
+3. ⭐⭐⭐ length_category 판단법:
+   - 머리끝이 가슴에 닿음 → "B Length" 또는 "A Length"
+   - 머리끝이 겨드랑이에 닿음 → "C Length"
+   - 머리끝이 어깨에만 닿음 → "D Length" 또는 "E Length"
+   - 머리끝이 목에서 끝남 → "F Length", "G Length", "H Length"
 4. ⭐ 2WAY CUT 핵심 변수 필수: head_position, distribution, guide_line, celestial_angle, shape_of_line, outline_shape
 5. 섹션 각도(section_angle)는 볼륨 위치를 결정! 15=Low, 45=Medium, 75=High
 6. 모든 값은 이미지를 보고 판단! 예시를 그대로 복사하지 마세요!
+
+🚨 중요: length_category를 결정할 때 머리카락 끝이 신체 어디에 닿는지 반드시 확인하세요!
+가슴까지 내려오는 긴 머리를 D Length로 분류하면 안 됩니다! 그건 B Length입니다!
 
 JSON만 반환하세요.`;
 
