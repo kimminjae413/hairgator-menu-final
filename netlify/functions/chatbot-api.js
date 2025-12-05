@@ -4080,12 +4080,13 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
     console.log(`   📌 앞머리 도해도: ${fringeCount}장`);
   }
 
-  // 상위 5개 도해도 상세
+  // 상위 5개 도해도 상세 (URL 포함)
   console.log(`\n   상위 도해도:`);
   finalDiagrams.slice(0, 5).forEach((d, i) => {
     const meta = [d.lifting, d.section, d.zone].filter(Boolean).join('/');
     const fringeTag = d.isFringe ? ' [앞머리]' : '';
     console.log(`   ${i+1}. ${d.styleId} step${d.step} [${meta || '-'}] (${d.source})${fringeTag}`);
+    console.log(`      URL: ${d.url || 'N/A'}`);
   });
 
   return finalDiagrams;
