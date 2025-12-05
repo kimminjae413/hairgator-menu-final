@@ -371,7 +371,7 @@ const PARAMS_56_SCHEMA = {
 };
 
 // ==================== 메인 핸들러 ====================
-export const handler = async (event, context) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
   }
