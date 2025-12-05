@@ -3743,14 +3743,23 @@ function selectDiagramsByTechnique(top3Styles, params56, maxDiagrams = 20, allSt
     } : {}
   };
 
-  // 보충이 필요한지 확인
+  // ⭐ 존별 리프팅 누락 여부 체크
+  const hasZoneLiftingGap = requiredFeatures.missingZoneLiftings && (
+    requiredFeatures.missingZoneLiftings.back ||
+    requiredFeatures.missingZoneLiftings.side ||
+    requiredFeatures.missingZoneLiftings.top ||
+    requiredFeatures.missingZoneLiftings.fringe
+  );
+
+  // 보충이 필요한지 확인 (존별 리프팅 누락 포함!)
   const needsSupplement = requiredFeatures.needsFringe ||
                           requiredFeatures.needsTargetSection ||
                           requiredFeatures.needsNape ||
                           requiredFeatures.needsBack ||
                           requiredFeatures.needsSide ||
                           requiredFeatures.needsCrown ||
-                          requiredFeatures.missingLiftings.length > 0;
+                          requiredFeatures.missingLiftings.length > 0 ||
+                          hasZoneLiftingGap;  // ⭐ 존별 리프팅 누락도 보충!
 
   if (needsSupplement && seriesPrefix && selectedDiagrams.length < maxDiagrams) {
     console.log(`\n⚠️ 누락된 기법/존 보충 필요 (${seriesPrefix} 시리즈 우선):`);
