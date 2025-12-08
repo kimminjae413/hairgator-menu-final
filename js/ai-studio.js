@@ -1151,18 +1151,17 @@ class AIStudio {
 
         <div class="style-cards">
           ${results.map((style, idx) => `
-            <div class="style-card" onclick="window.aiStudio.showStyleDetail('${style.styleId}')">
+            <div class="style-card">
               <div class="style-rank">${idx + 1}</div>
               <div class="style-info">
-                <h3>${style.styleId}</h3>
-                <span class="series-badge">${style.seriesName || style.series}</span>
+                <h3>${style.seriesName || '스타일'}</h3>
                 <div class="similarity-bar">
                   <div class="similarity-fill" style="width: ${(style.similarity * 100).toFixed(0)}%"></div>
                   <span class="similarity-text">${(style.similarity * 100).toFixed(1)}%</span>
                 </div>
               </div>
               ${style.resultImage ? `
-                <img src="${style.resultImage}" class="style-thumb" alt="${style.styleId}">
+                <img src="${style.resultImage}" class="style-thumb" alt="스타일 이미지">
               ` : `
                 <div class="style-thumb-placeholder">📷</div>
               `}
@@ -1191,11 +1190,10 @@ class AIStudio {
     }
   }
 
-  // 스타일 상세 보기
-  async showStyleDetail(styleId) {
-    console.log(`📋 스타일 상세: ${styleId}`);
+  // 스타일 상세 보기 (내부용)
+  async showStyleDetail(styleName) {
+    console.log(`📋 스타일 상세: ${styleName}`);
     // TODO: 스타일 상세 모달 또는 페이지로 이동
-    alert(`스타일 ${styleId} 상세 보기 기능 준비 중`);
   }
 
   // ==================== 맞춤 레시피 캔버스 표시 ====================
@@ -2708,23 +2706,19 @@ async function sendImageWithQuestion() {
 
       // 남자/여자에 따라 분석 결과 메시지 분기
       if (data.gender === 'male') {
-        // 남자 스타일 분석 결과
+        // 남자 스타일 분석 결과 (스타일 코드 숨김)
         analysisMsg = `**👨 남자 스타일 분석 완료!**
 
-💇 **스타일**: ${data.analysis.styleName || '분석중'} (${data.analysis.styleCode || '-'})
+💇 **스타일**: ${data.analysis.styleName || '분석중'}
 📏 **탑 길이**: ${data.analysis.topLength || '-'}
 📐 **사이드 길이**: ${data.analysis.sideLength || '-'}
 ✂️ **페이드**: ${data.analysis.fadeType || 'None'}
 🎨 **텍스처**: ${data.analysis.texture || '-'}
 💆 **스타일링 제품**: ${data.analysis.productType || '-'}
 
-📁 **대상 시리즈**: ${data.targetSeries.code || '-'} - ${data.targetSeries.name || ''} (${data.targetSeries.totalStyles || 0}개 스타일)
-
-🎯 **매칭 스타일**: ${data.referenceStyles[0]?.styleId || '-'}
-
 👉 **오른쪽 캔버스에서 맞춤 레시피를 확인하세요!**`;
       } else {
-        // 여자 스타일 분석 결과 (기존 로직)
+        // 여자 스타일 분석 결과 (스타일 코드 숨김)
         analysisMsg = `**👩 여자 스타일 분석 완료!**
 
 📏 **기장**: ${data.analysis.lengthName || '-'}
@@ -2732,10 +2726,6 @@ async function sendImageWithQuestion() {
 💇 **앞머리**: ${data.analysis.hasBangs ? data.analysis.bangsType : '없음'}
 📐 **볼륨**: ${data.analysis.volumePosition || '-'}
 🎨 **텍스처**: ${data.analysis.texture || '-'}
-
-📁 **대상 시리즈**: ${data.targetSeries.code || '-'} (${data.targetSeries.totalStyles || 0}개 스타일)
-
-🎯 **매칭 스타일**: ${data.referenceStyles[0]?.styleId || '-'}
 
 👉 **오른쪽 캔버스에서 맞춤 레시피를 확인하세요!**`;
       }
@@ -2863,10 +2853,10 @@ async function searchStylesDemo(query) {
     window.aiStudio.hideTypingIndicator();
 
     if (searchData && searchData.results && searchData.results.length > 0) {
-      // 결과 메시지 표시
+      // 결과 메시지 표시 (스타일 코드 숨김, 시리즈명만 표시)
       const resultMsg = `✅ **${searchData.results.length}개의 유사 스타일을 찾았습니다!**\n\n` +
         searchData.results.map((s, i) =>
-          `${i + 1}. **${s.styleId}** (${s.seriesName}) - 유사도 ${(s.similarity * 100).toFixed(1)}%`
+          `${i + 1}. **${s.seriesName || '스타일'}** - 유사도 ${(s.similarity * 100).toFixed(1)}%`
         ).join('\n') +
         `\n\n👉 오른쪽 캔버스에서 상세 정보를 확인하세요.`;
 
