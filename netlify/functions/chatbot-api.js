@@ -5828,7 +5828,7 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
             code: styleCode,
             name: MALE_STYLE_TERMS[styleCode]?.ko || maleParams.style_name || styleCode,
             subStyles: MALE_STYLE_TERMS[styleCode]?.subStyles || [],
-            totalStyles: filteredStyles.length
+            totalStyles: filteredStylesAll.length
           },
           // ⭐⭐⭐ Top-1 매칭 스타일 (Vision 직접 선택)
           matchedStyle: {
