@@ -5732,14 +5732,22 @@ async function selectBestStyleByVision(userImageBase64, mimeType, candidateStyle
       const series = style.series || style.styleId.substring(0, 3);
       const feature = STYLE_FEATURES[series] || { name: series, desc: '레이어 스타일' };
 
-      // 1:1 비교 프롬프트
-      const prompt = `헤어 스타일리스트로서 두 이미지 유사도를 평가하세요.
+      // 1:1 비교 프롬프트 (컬/웨이브 판단 강화)
+      const prompt = `헤어 스타일리스트로서 두 이미지의 유사도를 엄격하게 평가하세요.
 [이미지1] 고객 레퍼런스 [이미지2] ${style.styleId} - ${feature.name}
 
-평가 기준:
-1. 실루엣(30점) 2. 볼륨위치(25점) 3. 레이어(20점) 4. 앞머리(15점) 5. 끝선(10점)
+⚠️ 중요: 컬/웨이브 유무가 다르면 50점 이하로 평가!
+- 이미지1이 컬/웨이브가 있는데 이미지2가 직모면 → 40점 이하
+- 이미지1이 직모인데 이미지2가 컬/웨이브면 → 40점 이하
 
-JSON만: {"total_score":<0-100>,"reason":"<1문장>"}`;
+평가 기준 (100점):
+1. 컬/웨이브 일치(30점): 둘 다 직모, 둘 다 C컬, 둘 다 S컬 등 일치해야 고득점
+2. 실루엣 형태(25점): 전체적인 머리 모양
+3. 볼륨 위치(20점): 볼륨이 어디에 있는지
+4. 레이어 정도(15점): 레이어 양과 위치
+5. 앞머리/끝선(10점): 앞머리 유무, 끝 처리
+
+JSON만: {"total_score":<0-100>,"curl_match":<true/false>,"reason":"<1문장>"}`;
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
