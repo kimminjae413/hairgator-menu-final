@@ -1,5 +1,9 @@
 // ========== HAIRGATOR 메뉴 시스템 - 헤어체험 연동 최종 버전 ==========
 
+// ⭐ 모달 슬라이딩용 전역 변수
+let currentCategoryStyles = [];  // 현재 카테고리의 모든 스타일
+let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
+
 // ⭐ Android 소프트 키보드 대응 - 동적 뷰포트 높이 설정
 (function() {
     function setViewportHeight() {
@@ -860,9 +864,13 @@ async function loadStyles() {
         stylesGrid.innerHTML = '';
         const fragment = document.createDocumentFragment();
 
+        // ⭐ 전역 배열 초기화 (모달 슬라이딩용)
+        currentCategoryStyles = [];
+
         let styleCount = 0;
         querySnapshot.forEach(doc => {
             const style = { ...doc.data(), id: doc.id };
+            currentCategoryStyles.push(style);  // ⭐ 전역 배열에 저장
             const card = createStyleCard(style, styleCount);
             fragment.appendChild(card);
             styleCount++;
@@ -870,7 +878,7 @@ async function loadStyles() {
 
         stylesGrid.appendChild(fragment);
 
-        console.log(`${styleCount}개 스타일 로드 완료: ${mainCategoryName} - ${subCategoryName}`);
+        console.log(`${styleCount}개 스타일 로드 완료: ${mainCategoryName} - ${subCategoryName} (슬라이딩용 저장)`);
 
     } catch (error) {
         console.error('스타일 로드 오류:', error);
@@ -995,6 +1003,11 @@ function openStyleModal(style) {
 
     console.log('✅ 모달 요소 찾음');
 
+    // ⭐ 현재 스타일의 인덱스 찾기 (슬라이딩용)
+    currentStyleIndex = currentCategoryStyles.findIndex(s => s.id === style.id);
+    if (currentStyleIndex === -1) currentStyleIndex = 0;
+    console.log(`📍 현재 인덱스: ${currentStyleIndex + 1}/${currentCategoryStyles.length}`);
+
     // 이미지 컨테이너에 직접 렌더링 (MediaViewer 의존성 제거)
     const container = document.getElementById('mediaViewerContainer');
     if (container) {
@@ -1003,13 +1016,25 @@ function openStyleModal(style) {
         // 확대/축소 상태 저장
         let isZoomed = false;
 
+        // ⭐ 페이지 인디케이터만 표시 (스타일이 2개 이상일 때만, 버튼 없이 스와이프만)
+        const showIndicator = currentCategoryStyles.length > 1;
+        const navIndicatorHTML = showIndicator ? `
+            <div class="modal-nav-indicator" style="
+                position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+                background: rgba(0,0,0,0.6); color: white; padding: 6px 14px;
+                border-radius: 15px; font-size: 13px; z-index: 10;
+                pointer-events: none;
+            ">${currentStyleIndex + 1} / ${currentCategoryStyles.length}</div>
+        ` : '';
+
         container.innerHTML = `
             <div class="media-viewer" style="width: 100%; background: transparent;">
                 <div class="main-display" style="position: relative; width: 100%; display: flex; align-items: center; justify-content: center; line-height: 0;">
+                    ${navIndicatorHTML}
                     <img src="${style.imageUrl || ''}"
                          alt="${style.name || 'Style'}"
                          class="modal-zoom-image"
-                         style="width: 100%; height: auto; object-fit: cover; max-height: 70vh; cursor: zoom-in; transition: max-height 0.3s ease, transform 0.3s ease; display: block; border-radius: 18px 18px 0 0;"
+                         style="width: 100%; height: auto; object-fit: cover; max-height: 70vh; cursor: zoom-in; transition: max-height 0.3s ease, transform 0.3s ease, opacity 0.2s ease; display: block; border-radius: 18px 18px 0 0;"
                          onerror="this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.alt='이미지 로드 실패';">
                 </div>
             </div>
@@ -1037,9 +1062,37 @@ function openStyleModal(style) {
                     navigator.vibrate(50);
                 }
             });
+
+            // ⭐ 스와이프 제스처 지원 (터치)
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            img.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            img.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const diff = touchStartX - touchEndX;
+
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // 왼쪽으로 스와이프 -> 다음
+                        navigateModalStyle(1);
+                    } else {
+                        // 오른쪽으로 스와이프 -> 이전
+                        navigateModalStyle(-1);
+                    }
+                }
+            }
         }
 
-        console.log('✅ 이미지 렌더링 완료');
+        console.log('✅ 이미지 렌더링 완료 (슬라이딩 지원)');
     } else {
         console.error('❌ mediaViewerContainer를 찾을 수 없습니다');
     }
@@ -2829,6 +2882,70 @@ function closeStyleModal() {
         console.log('✅ 스타일 모달 닫힘');
     } else {
         console.error('❌ styleModal 요소를 찾을 수 없습니다');
+    }
+}
+
+// ⭐ 모달 내 스타일 네비게이션 (좌우 슬라이딩)
+function navigateModalStyle(direction) {
+    if (currentCategoryStyles.length <= 1) return;
+
+    // 새 인덱스 계산 (순환)
+    currentStyleIndex += direction;
+    if (currentStyleIndex < 0) {
+        currentStyleIndex = currentCategoryStyles.length - 1;
+    } else if (currentStyleIndex >= currentCategoryStyles.length) {
+        currentStyleIndex = 0;
+    }
+
+    const newStyle = currentCategoryStyles[currentStyleIndex];
+    console.log(`🔄 슬라이딩: ${currentStyleIndex + 1}/${currentCategoryStyles.length} - ${newStyle.name || newStyle.id}`);
+
+    // 햅틱 피드백
+    if (navigator.vibrate) {
+        navigator.vibrate(30);
+    }
+
+    // 이미지 페이드 효과로 전환
+    const container = document.getElementById('mediaViewerContainer');
+    const img = container?.querySelector('.modal-zoom-image');
+    const indicator = container?.querySelector('.modal-nav-indicator');
+
+    if (img) {
+        // 페이드 아웃
+        img.style.opacity = '0.3';
+
+        setTimeout(() => {
+            // 새 이미지로 교체
+            img.src = newStyle.imageUrl || '';
+            img.alt = newStyle.name || 'Style';
+
+            // 페이드 인
+            img.style.opacity = '1';
+
+            // 인디케이터 업데이트
+            if (indicator) {
+                indicator.textContent = `${currentStyleIndex + 1} / ${currentCategoryStyles.length}`;
+            }
+        }, 150);
+    }
+
+    // 모달 하단 정보도 업데이트
+    const modalCode = document.getElementById('styleModalCode');
+    const modalName = document.getElementById('styleModalName');
+    const modalCategory = document.getElementById('styleModalCategory');
+    const modalSubcategory = document.getElementById('styleModalSubcategory');
+
+    if (modalCode) modalCode.textContent = newStyle.code || 'NO CODE';
+    if (modalName) modalName.textContent = newStyle.name || '이름 없음';
+    if (modalCategory) modalCategory.textContent = newStyle.mainCategory || '-';
+    if (modalSubcategory) modalSubcategory.textContent = newStyle.subCategory || '-';
+
+    // Lookbook 버튼 데이터도 업데이트
+    const btnLookbook = document.getElementById('btnOpenLookbook');
+    if (btnLookbook) {
+        btnLookbook.onclick = function() {
+            openAIPhotoModal(newStyle.id, newStyle.name, newStyle.imageUrl);
+        };
     }
 }
 
