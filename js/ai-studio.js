@@ -2451,13 +2451,13 @@ const FEMALE_CATEGORIES = [
 
 // 남자 스타일 카테고리
 const MALE_CATEGORIES = [
-  { code: 'SF', name: 'Side Fringe', series: 'SF' },
-  { code: 'SP', name: 'Side Part', series: 'SP' },
-  { code: 'FU', name: 'Fringe Up', series: 'FU' },
-  { code: 'PB', name: 'Pushed Back', series: 'PB' },
-  { code: 'BZ', name: 'Buzz', series: 'BZ' },
-  { code: 'CP', name: 'Crop', series: 'CP' },
-  { code: 'MC', name: 'Mohican', series: 'MC' }
+  { code: 'SF', name: 'Side Fringe (내린머리)', series: 'SF' },
+  { code: 'SP', name: 'Side Part (가르마)', series: 'SP' },
+  { code: 'FU', name: 'Fringe Up (올린머리)', series: 'FU' },
+  { code: 'PB', name: 'Pushed Back (넘긴머리)', series: 'PB' },
+  { code: 'BZ', name: 'Buzz (삭발형)', series: 'BZ' },
+  { code: 'CP', name: 'Crop (크롭)', series: 'CP' },
+  { code: 'MC', name: 'Mohican (모히칸)', series: 'MC' }
 ];
 
 // 성별 선택 함수
