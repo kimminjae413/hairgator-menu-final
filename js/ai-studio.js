@@ -2600,8 +2600,7 @@ async function sendImageWithQuestion() {
 
 📁 **대상 시리즈**: ${data.targetSeries.code || '-'} - ${data.targetSeries.name || ''} (${data.targetSeries.totalStyles || 0}개 스타일)
 
-🎯 **참고 스타일 Top-3**:
-${data.referenceStyles.map((s, i) => `  ${i+1}. ${s.styleId} (유사도: ${(s.similarity * 100).toFixed(1)}%)`).join('\n')}
+🎯 **매칭 스타일**: ${data.referenceStyles[0]?.styleId || '-'}
 
 👉 **오른쪽 캔버스에서 맞춤 레시피를 확인하세요!**`;
       } else {
@@ -2616,8 +2615,7 @@ ${data.referenceStyles.map((s, i) => `  ${i+1}. ${s.styleId} (유사도: ${(s.si
 
 📁 **대상 시리즈**: ${data.targetSeries.code || '-'} (${data.targetSeries.totalStyles || 0}개 스타일)
 
-🎯 **참고 스타일 Top-3**:
-${data.referenceStyles.map((s, i) => `  ${i+1}. ${s.styleId} - ${s.featureReasons ? s.featureReasons.join(', ') : `유사도 ${(s.similarity * 100).toFixed(1)}%`}`).join('\n')}
+🎯 **매칭 스타일**: ${data.referenceStyles[0]?.styleId || '-'}
 
 👉 **오른쪽 캔버스에서 맞춤 레시피를 확인하세요!**`;
       }
