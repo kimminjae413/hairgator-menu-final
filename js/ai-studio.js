@@ -549,17 +549,26 @@ class AIStudio {
       // Remove typing indicator
       this.hideTypingIndicator();
 
+      // ⭐ 가이드 이미지가 있으면 콘텐츠에 추가
+      let finalContent = response.content;
+      if (response.guideImage) {
+        finalContent += `\n\n<div class="guide-image-container">
+          <img src="${response.guideImage.url}" alt="${response.guideImage.title}" class="guide-image" onclick="window.aiStudio.showFullImage('${response.guideImage.url}', '${response.guideImage.title}')">
+          <span class="guide-image-caption">${response.guideImage.title}</span>
+        </div>`;
+      }
+
       // Add bot response
-      this.addMessageToUI('bot', response.content, true, response.canvasData);
+      this.addMessageToUI('bot', finalContent, true, response.canvasData);
 
       // Save bot response
       this.conversationHistory.push({
         sender: 'bot',
-        content: response.content,
+        content: finalContent,
         timestamp: Date.now(),
         canvasData: response.canvasData
       });
-      this.saveMessageToFirebase('bot', response.content, response.canvasData);
+      this.saveMessageToFirebase('bot', finalContent, response.canvasData);
 
       // If canvas data exists, show canvas
       if (response.canvasData) {
@@ -617,6 +626,7 @@ class AIStudio {
 
     // SSE 형식 파싱
     let fullContent = '';
+    let guideImage = null; // ⭐ 가이드 이미지
     const lines = responseText.split('\n');
 
     for (const line of lines) {
@@ -628,6 +638,13 @@ class AIStudio {
           const data = JSON.parse(jsonStr);
           if (data.type === 'content' && data.content) {
             fullContent += data.content;
+          } else if (data.type === 'guide_image') {
+            // ⭐ 가이드 이미지 이벤트 처리
+            guideImage = {
+              url: data.imageUrl,
+              title: data.title
+            };
+            console.log('📸 가이드 이미지 수신:', guideImage.title);
           } else if (data.content) {
             fullContent += data.content;
           } else if (typeof data === 'string') {
@@ -666,7 +683,8 @@ class AIStudio {
 
     return {
       content: fullContent || '응답을 받지 못했습니다. 다시 시도해주세요.',
-      canvasData: hasRecipeData ? this.parseRecipeData(fullContent) : null
+      canvasData: hasRecipeData ? this.parseRecipeData(fullContent) : null,
+      guideImage: guideImage // ⭐ 가이드 이미지 반환
     };
   }
 
@@ -912,6 +930,24 @@ class AIStudio {
 
   hideCanvas() {
     this.canvasPanel.classList.remove('active');
+  }
+
+  // ==================== 가이드 이미지 전체화면 ====================
+  showFullImage(imageUrl, title) {
+    // 오버레이 생성
+    const overlay = document.createElement('div');
+    overlay.className = 'full-image-overlay';
+    overlay.innerHTML = `
+      <div class="full-image-container">
+        <button class="full-image-close" onclick="this.parentElement.parentElement.remove()">✕</button>
+        <img src="${imageUrl}" alt="${title}">
+        <div class="full-image-title">${title}</div>
+      </div>
+    `;
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.remove();
+    });
+    document.body.appendChild(overlay);
   }
 
   // ==================== Image Upload ====================

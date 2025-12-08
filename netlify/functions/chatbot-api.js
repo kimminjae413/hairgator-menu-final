@@ -2553,6 +2553,12 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
 
     console.log(`✅ Gemini 응답 완료 (${answer.length}자)`);
 
+    // ⭐ 가이드 이미지 감지
+    const guideImage = detectGuideImageForQuery(user_query);
+    if (guideImage) {
+      console.log(`📸 가이드 이미지 감지: ${guideImage.title}`);
+    }
+
     // SSE 형식으로 변환 (청크 단위로 전송)
     let sseBuffer = '';
     const chunkSize = 50; // 50자씩 청크
@@ -2561,6 +2567,16 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
       const chunk = answer.substring(i, i + chunkSize);
       sseBuffer += `data: ${JSON.stringify({ type: 'content', content: chunk })}\n\n`;
     }
+
+    // ⭐ 가이드 이미지가 있으면 마지막에 이미지 이벤트 전송
+    if (guideImage) {
+      sseBuffer += `data: ${JSON.stringify({
+        type: 'guide_image',
+        imageUrl: guideImage.url,
+        title: guideImage.title
+      })}\n\n`;
+    }
+
     sseBuffer += 'data: [DONE]\n\n';
 
     return {
@@ -2578,6 +2594,44 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
       body: `data: ${JSON.stringify({ type: 'error', error: `답변 생성 중 오류: ${error.message}` })}\n\ndata: [DONE]\n\n`
     };
   }
+}
+
+// ==================== 가이드 이미지 URL (Firestore guide_images 컬렉션) ====================
+const GUIDE_IMAGES = {
+  female_length: {
+    id: 'female_length_guide',
+    url: 'https://storage.googleapis.com/hairgatormenu-4a43e.firebasestorage.app/guides/female_length_guide.png',
+    title: '여자 기장 가이드',
+    keywords: ['기장', '길이', 'length', '렝스', '랭스', 'a length', 'b length', 'c length', 'd length', 'e length', 'f length', 'g length', 'h length', '여자 기장', '여성 기장', '머리 길이', 'short', 'bob', 'medium', 'long', 'semi long']
+  },
+  male_style: {
+    id: 'male_style_guide',
+    url: 'https://storage.googleapis.com/hairgatormenu-4a43e.firebasestorage.app/guides/male_style_guide.png',
+    title: '남자 스타일 가이드',
+    keywords: ['남자', '남성', '스타일', 'side fringe', 'side part', 'fringe up', 'pushed back', 'buzz', 'crop', 'mohican', '내린머리', '가르마', '올린머리', '넘긴머리', '삭발', '크롭', '모히칸', 'sf', 'sp', 'fu', 'pb', 'bz', 'cp', 'mc', '남자 스타일', '남성 스타일', '앞머리']
+  }
+};
+
+/**
+ * 질문에 맞는 가이드 이미지 찾기
+ */
+function detectGuideImageForQuery(query) {
+  const lowerQuery = query.toLowerCase();
+
+  // 여자 기장 관련 키워드
+  if (GUIDE_IMAGES.female_length.keywords.some(k => lowerQuery.includes(k.toLowerCase()))) {
+    // 남자 관련 키워드가 있으면 제외
+    if (!lowerQuery.includes('남자') && !lowerQuery.includes('남성') && !lowerQuery.includes('male')) {
+      return GUIDE_IMAGES.female_length;
+    }
+  }
+
+  // 남자 스타일 관련 키워드
+  if (GUIDE_IMAGES.male_style.keywords.some(k => lowerQuery.includes(k.toLowerCase()))) {
+    return GUIDE_IMAGES.male_style;
+  }
+
+  return null;
 }
 
 // ==================== Firestore 스타일 검색 (임베딩 기반 Top-3) ⭐⭐⭐ ====================
