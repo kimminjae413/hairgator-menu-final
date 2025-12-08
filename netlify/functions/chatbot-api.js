@@ -2630,96 +2630,25 @@ const GUIDE_IMAGES = {
   }
 };
 
-// ==================== 이론 인덱스 키워드 매핑 (89개 이론) ====================
-const THEORY_INDEX_KEYWORDS = {
-  // 섹션/존 관련
-  "section": { term: "Section", keywords: ["섹션", "section", "구획", "나누기", "분할"] },
-  "zone": { term: "Zone", keywords: ["존", "zone", "구역", "영역", "a존", "b존", "c존"] },
-  "a_zone_and_v_zone": { term: "A Zone & V Zone", keywords: ["a존", "v존", "에이존", "브이존", "anterior", "vertex"] },
-  "blocking": { term: "Blocking", keywords: ["블로킹", "blocking", "구역 나누기"] },
-  "separation": { term: "Separation", keywords: ["세퍼레이션", "separation", "분리"] },
-
-  // 리프팅/디렉션 관련 (2WAY CUT)
-  "lifting": { term: "Lifting", keywords: ["리프팅", "lifting", "들어올림", "l0", "l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8"] },
-  "direction": { term: "Direction", keywords: ["디렉션", "direction", "방향", "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8"] },
-  "over_direction": { term: "Over Direction", keywords: ["오버 디렉션", "over direction", "과도 방향"] },
-  "elevation": { term: "Elevation", keywords: ["엘리베이션", "elevation", "들어올림 각도"] },
-  "angle": { term: "Angle", keywords: ["앵글", "angle", "각도", "기울기"] },
-  "degree": { term: "Degree", keywords: ["디그리", "degree", "도수", "각도 단위"] },
-
-  // 커팅 형태
-  "cut_form": { term: "Cut Form", keywords: ["컷폼", "cut form", "커팅 형태", "원렝스", "그라데이션", "레이어"] },
-  "layer": { term: "Layer", keywords: ["레이어", "layer", "층", "레이어드", "레이어 컷"] },
-  "graduation": { term: "Graduation", keywords: ["그라데이션", "graduation", "그래듀에이션", "단계"] },
-  "graduation_and_layer": { term: "Graduation & Layer", keywords: ["그라데이션 레이어", "graduation layer", "층 차이"] },
-  "one_length": { term: "One Length", keywords: ["원렝스", "one length", "원랭스", "같은 길이", "블런트"] },
-  "blunt_cut": { term: "Blunt Cut", keywords: ["블런트", "blunt cut", "일자 컷", "직선 컷"] },
-
-  // 디자인 라인
-  "design_line": { term: "Design Line", keywords: ["디자인 라인", "design line", "가이드 라인", "고정 디자인라인", "이동 디자인라인"] },
-  "base_line": { term: "Base Line", keywords: ["베이스 라인", "base line", "기준선"] },
-  "perimeter_line": { term: "Perimeter Line", keywords: ["페리미터", "perimeter line", "경계선", "아웃라인"] },
-  "hemline": { term: "Hemline", keywords: ["헴라인", "hemline", "끝선", "마무리선"] },
-
-  // 디스커넥션/연결
-  "disconnection": { term: "Disconnection", keywords: ["디스커넥션", "disconnection", "단절", "분리", "연결 끊기"] },
-
-  // 베이스 관련
-  "base": { term: "Base", keywords: ["베이스", "base", "기준면"] },
-  "base_control": { term: "Base Control", keywords: ["베이스 컨트롤", "base control"] },
-  "base_position": { term: "Base Position", keywords: ["베이스 포지션", "base position", "온베이스", "오프베이스"] },
-
-  // 형태/실루엣
-  "form": { term: "Form", keywords: ["폼", "form", "형태"] },
-  "silhouette": { term: "Silhouette", keywords: ["실루엣", "silhouette", "윤곽", "외형"] },
-  "curved_shape": { term: "Curved Shape", keywords: ["커브드", "curved shape", "곡선 형태"] },
-  "geometric_shape": { term: "Geometric Shape", keywords: ["지오메트릭", "geometric", "기하학적"] },
-
-  // 볼륨/무게
-  "volume": { term: "Volume", keywords: ["볼륨", "volume", "풍성함", "부피"] },
-  "weight_sit_area": { term: "Weight Sit Area", keywords: ["웨이트", "weight sit", "무게감 위치"] },
-  "layer_and_weight": { term: "Layer & Weight", keywords: ["레이어 웨이트", "layer weight", "층 무게감"] },
-
-  // 얼굴형
-  "face_shape": { term: "Face Shape", keywords: ["페이스 쉐입", "face shape", "얼굴형", "둥근얼굴", "긴얼굴", "각진얼굴"] },
-  "face_line": { term: "Face Line", keywords: ["페이스 라인", "face line", "얼굴 라인"] },
-  "visual_balance": { term: "Visual Balance", keywords: ["비주얼 밸런스", "visual balance", "시각적 균형"] },
-
-  // 텍스처
-  "texturizing": { term: "Texturizing", keywords: ["텍스처라이징", "texturizing", "질감", "포인트컷", "슬라이싱"] },
-  "texturizing_zone": { term: "Texturizing Zone", keywords: ["텍스처라이징 존", "texturizing zone"] },
-
-  // 앞머리
-  "fringe": { term: "Fringe", keywords: ["프린지", "fringe", "앞머리", "뱅", "bang"] },
-
-  // 두상 구조
-  "skull_structure": { term: "Skull Structure", keywords: ["스컬", "skull structure", "두상 구조", "머리뼈"] },
-  "head_point": { term: "Head Point", keywords: ["헤드 포인트", "head point", "두상 기준점"] },
-  "occipital_bone": { term: "Occipital Bone", keywords: ["옥시피탈", "occipital bone", "후두골", "뒤통수"] },
-  "recession_area": { term: "Recession Area", keywords: ["리세션", "recession", "측두부", "귀 위"] },
-  "temple_area": { term: "Temple Area", keywords: ["템플", "temple area", "관자놀이"] },
-
-  // 균형/비율
-  "balance": { term: "Balance", keywords: ["밸런스", "balance", "균형"] },
-  "proportion": { term: "Proportion", keywords: ["프로포션", "proportion", "비율"] },
-  "symmetry": { term: "Symmetry", keywords: ["시메트리", "symmetry", "대칭"] },
-  "asymmetry": { term: "Asymmetry", keywords: ["어심메트리", "asymmetry", "비대칭"] },
-
-  // 기타 테크닉
-  "panel": { term: "Panel", keywords: ["패널", "panel", "모발 묶음"] },
-  "distribution": { term: "Distribution", keywords: ["디스트리뷰션", "distribution", "분배"] },
-  "personalizing": { term: "Personalizing", keywords: ["퍼스널라이징", "personalizing", "맞춤화"] },
-  "trimming": { term: "Trimming", keywords: ["트리밍", "trimming", "다듬기"] },
-  "under_cut": { term: "Under Cut", keywords: ["언더컷", "undercut", "투블록"] },
-  "clipper_cut": { term: "Clipper Cut", keywords: ["클리퍼", "clipper", "바리깡"] },
-  "scissor_over_comb": { term: "Scissor Over Comb", keywords: ["시저 오버 콤", "scissor over comb"] },
-  "bevel": { term: "Bevel", keywords: ["베벨", "bevel", "경사 컷"] },
-  "natural_parting": { term: "Natural Parting", keywords: ["내추럴 파팅", "natural parting", "자연 가르마", "가르마"] },
-  "cowlick_parting": { term: "Cowlick Parting", keywords: ["카울릭", "cowlick", "모류"] },
-
-  // 1WAY/2WAY CUT
-  "1way_cut_and_2way_cut": { term: "1Way Cut & 2Way Cut", keywords: ["1웨이", "2웨이", "1way", "2way", "원웨이", "투웨이", "커팅 시스템"] }
-};
+// ==================== 이론 인덱스 키워드 매핑 (핵심 용어만) ====================
+const THEORY_KEYWORDS = [
+  ["lifting", "Lifting", ["리프팅", "lifting", "l0", "l4", "l8"]],
+  ["direction", "Direction", ["디렉션", "direction", "d0", "d4", "d8"]],
+  ["section", "Section", ["섹션", "section"]],
+  ["zone", "Zone", ["존", "zone", "a존", "b존", "c존"]],
+  ["layer", "Layer", ["레이어", "layer", "층"]],
+  ["graduation", "Graduation", ["그라데이션", "graduation"]],
+  ["one_length", "One Length", ["원렝스", "one length"]],
+  ["disconnection", "Disconnection", ["디스커넥션", "disconnection"]],
+  ["volume", "Volume", ["볼륨", "volume"]],
+  ["silhouette", "Silhouette", ["실루엣", "silhouette"]],
+  ["face_shape", "Face Shape", ["얼굴형", "face shape"]],
+  ["fringe", "Fringe", ["프린지", "fringe", "앞머리"]],
+  ["texturizing", "Texturizing", ["텍스처", "texturizing", "질감"]],
+  ["cut_form", "Cut Form", ["컷폼", "cut form"]],
+  ["design_line", "Design Line", ["디자인 라인", "design line"]],
+  ["blocking", "Blocking", ["블로킹", "blocking"]]
+];
 
 /**
  * 질문에 맞는 가이드 이미지 찾기
@@ -2744,55 +2673,20 @@ function detectGuideImageForQuery(query) {
 }
 
 /**
- * 질문에 맞는 이론 이미지 찾기 (Firestore theory_indexes)
+ * 질문에 맞는 이론 이미지 찾기 (간소화된 키워드 매칭)
  */
-async function detectTheoryImageForQuery(query, language = 'ko') {
+function detectTheoryImageForQuery(query, language = 'ko') {
   const lowerQuery = query.toLowerCase();
 
   // 키워드 매칭으로 이론 찾기
-  for (const [docId, data] of Object.entries(THEORY_INDEX_KEYWORDS)) {
-    if (data.keywords.some(k => lowerQuery.includes(k.toLowerCase()))) {
-      // Firestore에서 이론 데이터 가져오기
-      try {
-        const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/theory_indexes/${docId}`;
-        const response = await fetch(url);
-
-        if (response.ok) {
-          const doc = await response.json();
-          const fields = doc.fields;
-
-          // 해당 언어 이미지 URL 추출
-          let imageUrl = null;
-          if (fields.images?.mapValue?.fields?.[language]?.stringValue) {
-            imageUrl = fields.images.mapValue.fields[language].stringValue;
-          } else if (fields.images?.mapValue?.fields?.ko?.stringValue) {
-            // 해당 언어 없으면 한국어 폴백
-            imageUrl = fields.images.mapValue.fields.ko.stringValue;
-          }
-
-          if (imageUrl) {
-            return {
-              url: imageUrl,
-              title: fields.title_ko?.stringValue || data.term,
-              term: data.term,
-              description: fields.description?.stringValue || '',
-              category: fields.category?.stringValue || '',
-              related: fields.related?.arrayValue?.values?.map(v => v.stringValue) || []
-            };
-          }
-        }
-      } catch (error) {
-        console.error(`이론 이미지 검색 오류 (${docId}):`, error.message);
-      }
-
-      // Firestore 실패 시 직접 URL 구성
-      const termForUrl = data.term.replace(/ /g, '_').replace(/&/g, 'and');
+  for (const [docId, term, keywords] of THEORY_KEYWORDS) {
+    if (keywords.some(k => lowerQuery.includes(k.toLowerCase()))) {
+      // 직접 URL 구성 (Firestore 호출 없이 빠르게)
+      const termForUrl = term.replace(/ /g, '_').replace(/&/g, 'and');
       return {
         url: `https://storage.googleapis.com/hairgatormenu-4a43e.firebasestorage.app/theory_indexes/${language}/${termForUrl}.png`,
-        title: data.term,
-        term: data.term,
-        description: '',
-        category: ''
+        title: term,
+        term: term
       };
     }
   }
