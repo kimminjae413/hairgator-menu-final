@@ -1197,6 +1197,27 @@ class AIStudio {
           </div>
         </div>
 
+        <!-- 📐 레시피 오버레이 이미지 -->
+        <div class="recipe-overlay-section" id="recipeOverlaySection">
+          <div class="recipe-overlay-header">
+            <h3>📐 AI 레시피 시각화</h3>
+            <button class="toggle-overlay-btn" id="toggleOverlayBtn" onclick="window.aiStudio.toggleRecipeOverlay()">
+              👁️ 수치 표시
+            </button>
+          </div>
+          <div class="recipe-overlay-container" id="recipeOverlayContainer">
+            <img src="${uploadedImageUrl}" alt="분석 이미지" class="overlay-base-image" id="overlayBaseImage">
+            <div class="recipe-overlay-labels" id="recipeOverlayLabels" style="display: none;">
+              <!-- 동적으로 생성될 레시피 수치 라벨들 -->
+            </div>
+          </div>
+          <div class="overlay-legend">
+            <span class="legend-item"><span class="legend-color lifting"></span> Lifting (각도)</span>
+            <span class="legend-item"><span class="legend-color length"></span> Length (길이)</span>
+            <span class="legend-item"><span class="legend-color section"></span> Section (섹션)</span>
+          </div>
+        </div>
+
         <!-- 🔄 각도별 AI 이미지 갤러리 -->
         <div class="angle-views-section" id="angleViewsSection">
           <div class="angle-views-header">
@@ -1339,6 +1360,9 @@ class AIStudio {
 
     // 도해도 뷰어 초기화
     this.initDiagramViewer(mainDiagrams || []);
+
+    // 📐 레시피 오버레이 라벨 생성
+    this.generateRecipeOverlayLabels(analysis, 'female');
   }
 
   // ⭐ 기장 드롭다운 이벤트 초기화
@@ -1402,6 +1426,27 @@ class AIStudio {
               <span class="tag">${analysis.fadeType || 'No Fade'}</span>
               <span class="tag">${analysis.texture || 'Smooth'}</span>
             </div>
+          </div>
+        </div>
+
+        <!-- 📐 레시피 오버레이 이미지 -->
+        <div class="recipe-overlay-section" id="recipeOverlaySection">
+          <div class="recipe-overlay-header">
+            <h3>📐 AI 레시피 시각화</h3>
+            <button class="toggle-overlay-btn" id="toggleOverlayBtn" onclick="window.aiStudio.toggleRecipeOverlay()">
+              👁️ 수치 표시
+            </button>
+          </div>
+          <div class="recipe-overlay-container" id="recipeOverlayContainer">
+            <img src="${uploadedImageUrl}" alt="분석 이미지" class="overlay-base-image" id="overlayBaseImage">
+            <div class="recipe-overlay-labels" id="recipeOverlayLabels" style="display: none;">
+              <!-- 동적으로 생성될 레시피 수치 라벨들 -->
+            </div>
+          </div>
+          <div class="overlay-legend">
+            <span class="legend-item"><span class="legend-color lifting"></span> Lifting (각도)</span>
+            <span class="legend-item"><span class="legend-color length"></span> Length (길이)</span>
+            <span class="legend-item"><span class="legend-color section"></span> Section (섹션)</span>
           </div>
         </div>
 
@@ -1505,6 +1550,9 @@ class AIStudio {
 
     // 도해도 뷰어 초기화
     this.initDiagramViewer(diagrams || []);
+
+    // 📐 레시피 오버레이 라벨 생성
+    this.generateRecipeOverlayLabels(analysis, 'male');
   }
 
   // ==================== 도해도 뷰어 ====================
@@ -1672,6 +1720,165 @@ class AIStudio {
           this.selectDiagram(0);
         }
       }, 3000); // 3초마다 전환
+    }
+  }
+
+  // ==================== 레시피 오버레이 시각화 ====================
+
+  // 레시피 오버레이 라벨 생성
+  generateRecipeOverlayLabels(analysis, gender) {
+    const labelsContainer = document.getElementById('recipeOverlayLabels');
+    if (!labelsContainer) return;
+
+    let labels = [];
+
+    if (gender === 'female') {
+      // 여자 스타일 - 42 포뮬러 기반 라벨
+      const liftingRange = Array.isArray(analysis.liftingRange) ? analysis.liftingRange : [analysis.liftingRange || 'L4'];
+
+      // Lifting 각도 라벨들 (머리 윗부분에 배치)
+      const liftingAngles = {
+        'L1': '0°', 'L2': '30°', 'L3': '45°', 'L4': '90°', 'L5': '120°', 'L6': '180°'
+      };
+
+      liftingRange.forEach((lift, idx) => {
+        const angle = liftingAngles[lift] || '90°';
+        labels.push({
+          type: 'lifting',
+          text: angle,
+          subText: lift,
+          position: { top: 15 + (idx * 12), left: 30 + (idx * 15) }
+        });
+      });
+
+      // Section 라벨 (측면에 배치)
+      if (analysis.sectionPrimary) {
+        labels.push({
+          type: 'section',
+          text: analysis.sectionPrimary.replace('Diagonal-', 'D-'),
+          subText: 'Section',
+          position: { top: 40, right: 10 }
+        });
+      }
+
+      // Length 라벨 (하단에 배치)
+      if (analysis.lengthName) {
+        labels.push({
+          type: 'length',
+          text: analysis.lengthName,
+          subText: 'Length',
+          position: { bottom: 25, left: 10 }
+        });
+      }
+
+      // Volume 라벨
+      if (analysis.volumePosition) {
+        labels.push({
+          type: 'section',
+          text: analysis.volumePosition,
+          subText: 'Volume',
+          position: { top: 55, right: 10 }
+        });
+      }
+
+      // Connection 라벨
+      if (analysis.connectionType) {
+        labels.push({
+          type: 'length',
+          text: analysis.connectionType,
+          subText: '',
+          position: { bottom: 10, right: 10 }
+        });
+      }
+
+    } else {
+      // 남자 스타일 라벨
+      // Top Length
+      if (analysis.topLength) {
+        labels.push({
+          type: 'length',
+          text: analysis.topLength,
+          subText: 'Top',
+          position: { top: 15, left: 40 }
+        });
+      }
+
+      // Side Length
+      if (analysis.sideLength) {
+        labels.push({
+          type: 'length',
+          text: analysis.sideLength,
+          subText: 'Side',
+          position: { top: 45, left: 10 }
+        });
+      }
+
+      // Fade Type
+      if (analysis.fadeType && analysis.fadeType !== 'None') {
+        labels.push({
+          type: 'lifting',
+          text: analysis.fadeType,
+          subText: 'Fade',
+          position: { top: 60, left: 10 }
+        });
+      }
+
+      // Texture
+      if (analysis.texture) {
+        labels.push({
+          type: 'section',
+          text: analysis.texture,
+          subText: 'Texture',
+          position: { top: 30, right: 10 }
+        });
+      }
+
+      // Style Code
+      if (analysis.styleCode) {
+        labels.push({
+          type: 'lifting',
+          text: analysis.styleCode,
+          subText: analysis.styleName || '',
+          position: { bottom: 15, right: 10 }
+        });
+      }
+    }
+
+    // 라벨 HTML 생성
+    labelsContainer.innerHTML = labels.map(label => {
+      let posStyle = '';
+      if (label.position.top !== undefined) posStyle += `top: ${label.position.top}%;`;
+      if (label.position.bottom !== undefined) posStyle += `bottom: ${label.position.bottom}%;`;
+      if (label.position.left !== undefined) posStyle += `left: ${label.position.left}%;`;
+      if (label.position.right !== undefined) posStyle += `right: ${label.position.right}%;`;
+
+      return `
+        <div class="overlay-label ${label.type}" style="${posStyle}">
+          <span class="label-main">${label.text}</span>
+          ${label.subText ? `<span class="label-sub">${label.subText}</span>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    // 저장 (토글용)
+    this.overlayLabelsData = labels;
+  }
+
+  // 오버레이 토글
+  toggleRecipeOverlay() {
+    const labelsContainer = document.getElementById('recipeOverlayLabels');
+    const btn = document.getElementById('toggleOverlayBtn');
+
+    if (!labelsContainer) return;
+
+    const isVisible = labelsContainer.style.display !== 'none';
+
+    if (isVisible) {
+      labelsContainer.style.display = 'none';
+      if (btn) btn.innerHTML = '👁️ 수치 표시';
+    } else {
+      labelsContainer.style.display = 'block';
+      if (btn) btn.innerHTML = '👁️‍🗨️ 수치 숨기기';
     }
   }
 
