@@ -6310,6 +6310,60 @@ Return ONLY a JSON object:
   }
 }
 
+// ==================== ⭐ 사용자 이미지 페이드 레벨 사전 분석 ====================
+async function analyzeUserFadeLevel(userImageBase64, mimeType, geminiKey) {
+  console.log(`🔍 사용자 이미지 페이드 레벨 사전 분석...`);
+
+  const prompt = `이 남성 헤어스타일 이미지에서 사이드/뒷머리의 페이드(Fade) 레벨을 분석하세요.
+
+페이드 레벨 정의:
+- none: 페이드 없음, 자연스러운 연결, 옆머리가 길게 내려옴
+- low: 로우 페이드, 귀 아래 부분만 짧게, 위쪽은 자연스럽게 연결
+- mid: 미드 페이드, 귀 위쪽까지 그라데이션, 중간 높이에서 짧아짐
+- high: 하이 페이드, 관자놀이/측두부까지 짧게, 높은 위치까지 그라데이션
+- skin: 스킨 페이드, 피부가 보일 정도로 매우 짧게 밀림
+
+분석 포인트:
+1. 사이드(옆머리)가 어디까지 짧은지
+2. 피부가 보이는지
+3. 그라데이션의 시작 높이
+
+JSON만 응답: {"fade_level": "<none/low/mid/high/skin>", "confidence": "<high/medium/low>"}`;
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: mimeType, data: userImageBase64 } },
+              { text: prompt }
+            ]
+          }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 100 }
+        })
+      }
+    );
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    const jsonMatch = text.match(/\{[\s\S]*?\}/);
+    if (jsonMatch) {
+      const result = JSON.parse(jsonMatch[0]);
+      console.log(`✅ 사용자 페이드 레벨: ${result.fade_level} (신뢰도: ${result.confidence})`);
+      return result.fade_level || 'none';
+    }
+  } catch (error) {
+    console.log(`⚠️ 페이드 분석 오류:`, error.message);
+  }
+
+  return 'none';
+}
+
 // ==================== ⭐⭐⭐ 남자 스타일 Vision 병렬 비교 (타임아웃 방지) ====================
 async function selectBestMaleStyleByVision(userImageBase64, mimeType, candidateStyles, geminiKey) {
   console.log(`🔍 남자 Vision 병렬 비교 시작: ${candidateStyles.length}개 스타일`);
@@ -6324,6 +6378,15 @@ async function selectBestMaleStyleByVision(userImageBase64, mimeType, candidateS
     'CP': { name: 'Crop', desc: '짧은 탑 + 페이드', fadeImportance: 'critical' },
     'MC': { name: 'Mohican', desc: '중앙 긴 스타일', fadeImportance: 'critical' }
   };
+
+  // ⭐ 먼저 사용자 이미지의 페이드 레벨을 1회만 분석
+  const styleCode = candidateStyles[0]?.styleId?.substring(0, 2) || '';
+  const isFadeCriticalStyle = ['BZ', 'CP', 'MC'].includes(styleCode);
+
+  let userFadeLevel = 'none';
+  if (isFadeCriticalStyle) {
+    userFadeLevel = await analyzeUserFadeLevel(userImageBase64, mimeType, geminiKey);
+  }
 
   // 🚀 병렬 처리: 모든 스타일 동시에 비교
   const compareStyle = async (style) => {
@@ -6343,46 +6406,37 @@ async function selectBestMaleStyleByVision(userImageBase64, mimeType, candidateS
       const styleImageBase64 = Buffer.from(imgBuffer).toString('base64');
       const styleMimeType = imgResponse.headers.get('content-type') || 'image/png';
 
-      const styleCode = style.styleId.substring(0, 2);
-      const feature = MALE_STYLE_FEATURES[styleCode] || { name: styleCode, desc: '남성 스타일', fadeImportance: 'low' };
+      const styleCodeInner = style.styleId.substring(0, 2);
+      const feature = MALE_STYLE_FEATURES[styleCodeInner] || { name: styleCodeInner, desc: '남성 스타일', fadeImportance: 'low' };
       const isFadeCritical = feature.fadeImportance === 'critical'; // BZ, CP, MC
       const dbFadeLevel = style.fadeLevel || 'none'; // DB에 저장된 페이드 레벨
+
+      // 사전 분석된 사용자 페이드와 DB 페이드 일치 여부 (BZ/CP/MC만)
+      const fadeMatched = isFadeCritical ? (userFadeLevel === dbFadeLevel) : null;
 
       // 스타일별 프롬프트 분기 (짧은 머리는 페이드 중요!)
       let prompt;
       if (isFadeCritical) {
         // BZ(버즈), CP(크롭), MC(모히칸) - 페이드가 핵심!
-        prompt = `남성 헤어 스타일리스트로서 두 이미지의 유사도를 매우 엄격하게 평가하세요.
-[이미지1] 고객 레퍼런스 [이미지2] ${style.styleId} - ${feature.name} (${feature.desc})
-📋 이미지2의 DB 페이드 레벨: ${dbFadeLevel}
+        // ⭐ 페이드는 이미 사전 분석됨! Gemini는 탑 길이/형태만 평가
+        prompt = `남성 헤어 스타일리스트로서 두 이미지의 유사도를 평가하세요.
+[이미지1] 고객 레퍼런스 (페이드: ${userFadeLevel})
+[이미지2] ${style.styleId} - ${feature.name} (페이드: ${dbFadeLevel})
 
-⚠️ 짧은 스타일 평가 - 페이드가 핵심!
+📋 페이드 정보 (이미 분석됨):
+- 고객 이미지 페이드: ${userFadeLevel}
+- 스타일 DB 페이드: ${dbFadeLevel}
+- 페이드 일치 여부: ${fadeMatched ? '✓ 일치' : '✗ 불일치'}
 
-🚨 필수 패널티:
-1. 페이드 정도가 다르면 → 40점 이하!
-   - 스킨페이드(피부 보임) vs 로우페이드 = 완전히 다른 스타일!
-   - 하이페이드(높이 올라감) vs 미드페이드/로우페이드 = 다른 스타일!
-   - 페이드 있음 vs 페이드 없음(자연스러운 연결) = 완전히 다른 스타일!
-2. 탑 길이가 다르면 → 60점 이하
-   - 버즈처럼 매우 짧음 vs 크롭처럼 약간 길음 = 다른 스타일!
-3. 탑 형태가 다르면 → 70점 이하
-   - 평평함 vs 텍스처/스파이키 = 다른 스타일!
+${fadeMatched ? '' : '⚠️ 페이드가 다르므로 기본 점수 50점에서 시작!'}
 
-페이드 레벨 구분:
-- none: 페이드 없음, 자연스러운 연결
-- low: 로우 페이드 (귀 아래만)
-- mid: 미드 페이드 (귀 위쪽까지)
-- high: 하이 페이드 (관자놀이까지)
-- skin: 스킨 페이드 (피부가 보임)
+평가 기준 (${fadeMatched ? '100점 만점' : '50점 만점 - 페이드 불일치 패널티'}):
+1. 탑 길이(${fadeMatched ? '35' : '20'}점): 탑 머리 길이감 일치
+2. 탑 형태(${fadeMatched ? '35' : '15'}점): 평평/텍스처/스파이키
+3. 전체 실루엣(${fadeMatched ? '20' : '10'}점): 머리 전체 형태
+4. 라인/디테일(${fadeMatched ? '10' : '5'}점): 라인업, 디자인 유무
 
-평가 기준 (100점):
-1. 페이드 일치(35점): 이미지1의 페이드와 이미지2(${dbFadeLevel})가 같아야 고득점
-2. 탑 길이(25점): 탑 머리 길이감
-3. 탑 형태(20점): 평평/텍스처/스파이키
-4. 전체 실루엣(10점): 머리 전체 형태
-5. 라인/디테일(10점): 라인업, 디자인 유무
-
-JSON만: {"total_score":<0-100>,"fade_match":<true/false>,"user_fade_level":"<none/low/mid/high/skin>","reason":"<1문장>"}`;
+JSON만: {"total_score":<0-100>,"reason":"<1문장>"}`;
       } else {
         // SF, SP, FU, PB - 앞머리 방향이 핵심, 페이드는 참고
         prompt = `남성 헤어 스타일리스트로서 두 이미지의 유사도를 매우 엄격하게 평가하세요.
@@ -6441,16 +6495,16 @@ JSON만: {"total_score":<0-100>,"fringe_match":<true/false>,"volume_match":<true
         const score = parseInt(result.total_score) || 0;
         const fringeMatch = result.fringe_match === true;
         const volumeMatch = result.volume_match === true;
-        const fadeMatch = result.fade_match === true;
-        const userFadeLevel = result.user_fade_level || 'none'; // 사용자 이미지의 페이드 레벨
+        // BZ/CP/MC: 사전 분석된 fadeMatched 사용, 일반 스타일: Gemini 응답 사용
+        const fadeMatchResult = isFadeCritical ? fadeMatched : (result.fade_match === true);
 
         // 스타일에 따라 다른 로그 출력
         if (isFadeCritical) {
-          console.log(`  📊 ${style.styleId}(DB:${dbFadeLevel}): ${score}점 (페이드일치: ${fadeMatch ? '✓' : '✗'}, 유저: ${userFadeLevel})`);
+          console.log(`  📊 ${style.styleId}(DB:${dbFadeLevel}): ${score}점 (페이드일치: ${fadeMatched ? '✓' : '✗'})`);
         } else {
-          console.log(`  📊 ${style.styleId}(DB:${dbFadeLevel}): ${score}점 (앞머리: ${fringeMatch ? '✓' : '✗'}, 볼륨: ${volumeMatch ? '✓' : '✗'}, 페이드: ${fadeMatch ? '✓' : '✗'})`);
+          console.log(`  📊 ${style.styleId}(DB:${dbFadeLevel}): ${score}점 (앞머리: ${fringeMatch ? '✓' : '✗'}, 볼륨: ${volumeMatch ? '✓' : '✗'}, 페이드: ${fadeMatchResult ? '✓' : '✗'})`);
         }
-        return { styleId: style.styleId, score, fringeMatch, volumeMatch, fadeMatch, dbFadeLevel, userFadeLevel, isFadeCritical, reason: result.reason || '' };
+        return { styleId: style.styleId, score, fringeMatch, volumeMatch, fadeMatch: fadeMatchResult, dbFadeLevel, userFadeLevel, isFadeCritical, reason: result.reason || '' };
       }
       return null;
     } catch (error) {
@@ -6463,12 +6517,10 @@ JSON만: {"total_score":<0-100>,"fringe_match":<true/false>,"volume_match":<true
   const results = await Promise.all(candidateStyles.map(compareStyle));
   const scoreResults = results.filter(r => r !== null);
 
-  // 사용자 이미지의 페이드 레벨 추출 (가장 많이 나온 값)
-  const userFadeLevels = scoreResults.map(r => r.userFadeLevel).filter(Boolean);
-  const userFadeCount = {};
-  userFadeLevels.forEach(level => { userFadeCount[level] = (userFadeCount[level] || 0) + 1; });
-  const detectedUserFade = Object.entries(userFadeCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'none';
-  console.log(`\n👤 사용자 이미지 페이드 감지: ${detectedUserFade}`);
+  // 사전 분석된 사용자 페이드 레벨 출력 (BZ/CP/MC만)
+  if (isFadeCriticalStyle) {
+    console.log(`\n👤 사용자 이미지 페이드 (사전분석): ${userFadeLevel}`);
+  }
 
   // 스타일 유형에 따라 다른 정렬 로직
   const hasFadeCritical = scoreResults.some(r => r.isFadeCritical);
