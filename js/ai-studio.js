@@ -1358,6 +1358,23 @@ class AIStudio {
           </div>
         </div>
 
+        <!-- ⭐ 어울리는 얼굴형 섹션 (이론 기반) -->
+        ${analysis.suitableFaceShapes && analysis.suitableFaceShapes.length > 0 ? `
+        <div class="face-shape-section">
+          <h3>👤 어울리는 얼굴형</h3>
+          <div class="face-shapes-grid">
+            ${analysis.suitableFaceShapes.map((shape, idx) => `
+              <div class="face-shape-card">
+                <span class="face-shape-icon">${this.getFaceShapeIcon(shape)}</span>
+                <span class="face-shape-name">${shape}</span>
+                ${analysis.faceShapeReasons && analysis.faceShapeReasons[idx] ?
+                  `<span class="face-shape-reason">${analysis.faceShapeReasons[idx]}</span>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+
         <!-- 도해도 뷰어 (스크린샷 참고 UI) -->
         <div class="diagrams-section large">
           <h3>📐 기술 매칭 도해도 (${mainDiagrams ? mainDiagrams.length : 0}장)</h3>
@@ -1532,6 +1549,23 @@ class AIStudio {
             </div>
           </div>
         </div>
+
+        <!-- ⭐ 어울리는 얼굴형 섹션 (이론 기반) -->
+        ${analysis.suitableFaceShapes && analysis.suitableFaceShapes.length > 0 ? `
+        <div class="face-shape-section">
+          <h3>👤 어울리는 얼굴형</h3>
+          <div class="face-shapes-grid">
+            ${analysis.suitableFaceShapes.map((shape, idx) => `
+              <div class="face-shape-card">
+                <span class="face-shape-icon">${this.getFaceShapeIcon(shape)}</span>
+                <span class="face-shape-name">${shape}</span>
+                ${analysis.faceShapeReasons && analysis.faceShapeReasons[idx] ?
+                  `<span class="face-shape-reason">${analysis.faceShapeReasons[idx]}</span>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
 
         <!-- 도해도 뷰어 -->
         <div class="diagrams-section large">
@@ -2313,6 +2347,15 @@ class AIStudio {
     // --- 구분선을 hr 태그로 변환 (먼저 처리)
     formatted = formatted.replace(/^---+$/gm, '<hr class="recipe-divider">');
 
+    // ⭐ [엑스터널 부분], [인터널 부분] 등 섹션 헤더를 예쁜 카드로 변환
+    formatted = formatted.replace(/\[엑스터널\s*부분\]\s*\([^)]*\)/gi,
+      '<div class="recipe-section external"><span class="section-icon">🔵</span><span class="section-title">엑스터널 (External)</span><span class="section-desc">머리 바깥쪽, 겉으로 보이는 부분</span></div>');
+    formatted = formatted.replace(/\[인터널\s*부분\]\s*\([^)]*\)/gi,
+      '<div class="recipe-section internal"><span class="section-icon">🟣</span><span class="section-title">인터널 (Internal)</span><span class="section-desc">머리 안쪽, 겉으로 잘 보이지 않는 부분</span></div>');
+
+    // [텍스트] 형태의 다른 섹션 헤더들
+    formatted = formatted.replace(/\[([^\]]+)\]/g, '<div class="recipe-section-simple"><span class="section-badge">$1</span></div>');
+
     // 마크다운 헤더 제거 및 변환 (##, ###, ####)
     formatted = formatted
       .replace(/^####\s*(.+)$/gm, '<h5 class="recipe-h5">$1</h5>')
@@ -2321,26 +2364,28 @@ class AIStudio {
       .replace(/^#\s*(.+)$/gm, '<h2 class="recipe-h2">$1</h2>');
 
     // 💡 초보자 설명 처리 (전문용어 뒤의 쉬운 설명)
-    // 💡로 시작하는 라인을 beginner-tip 클래스로 감싸기
     formatted = formatted.replace(/^💡\s*(.+)$/gm, '<span class="beginner-tip">💡 $1</span>');
-    // 인라인 💡 설명 처리 (라인 중간에 있는 경우)
     formatted = formatted.replace(/\s*💡\s*([^<\n]+)/g, '<span class="beginner-tip">💡 $1</span>');
+
+    // ⭐ 키워드 강조: 섹션, 다이렉션, 천체축, 리프팅, 디자인라인 등
+    formatted = formatted.replace(/\*\s*(섹션|Section)\s*\(([^)]+)\)\s*([^:]*?):/gi,
+      '<div class="recipe-keyword"><span class="keyword-label">✂️ 섹션</span> <span class="keyword-value">$2</span></div><p class="recipe-step">');
+    formatted = formatted.replace(/\*\s*(천체축\s*각도|Celestial\s*axis\s*angle)\s*([^:]*?):/gi,
+      '<div class="recipe-keyword"><span class="keyword-label">📐 천체축 각도</span></div><p class="recipe-step">');
+    formatted = formatted.replace(/\*\s*(다이렉션|Direction)\s*및\s*(디자인라인|Design\s*line)\s*([^:]*?):/gi,
+      '<div class="recipe-keyword"><span class="keyword-label">➡️ 다이렉션 & 디자인라인</span></div><p class="recipe-step">');
 
     // 굵은 글씨 **text**
     formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
-    // 기울임 *text*
-    formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // 기울임 *text* (단, 이미 처리된 * 제외)
+    formatted = formatted.replace(/(?<![<*])\*([^*<]+)\*(?![>*])/g, '<em>$1</em>');
 
     // 번호 리스트 (1. 2. 3.)
     formatted = formatted.replace(/^(\d+)\.\s+(.+)$/gm, '<li class="numbered-item"><span class="num">$1</span>$2</li>');
 
-    // 불릿 리스트 (- item)
+    // 불릿 리스트 (- item) - 단 이미 처리된 것 제외
     formatted = formatted.replace(/^-\s+(.+)$/gm, '<li class="bullet-item">$1</li>');
-
-    // 연속된 li들을 ul로 감싸기
-    formatted = formatted.replace(/(<li class="numbered-item">[\s\S]*?<\/li>)(\n?<li class="numbered-item">)/g, '$1$2');
-    formatted = formatted.replace(/(<li class="bullet-item">[\s\S]*?<\/li>)(\n?<li class="bullet-item">)/g, '$1$2');
 
     // 리스트 그룹화
     let inList = false;
@@ -2360,9 +2405,16 @@ class AIStudio {
           result.push('</ul>');
           inList = false;
         }
-        // hr, h태그, beginner-tip은 그대로 유지, 다른 텍스트만 p로 감싸기
-        if (trimmed && !trimmed.startsWith('<h') && !trimmed.startsWith('<hr') && !trimmed.startsWith('<span class="beginner-tip">')) {
-          result.push(`<p class="recipe-para">${trimmed}</p>`);
+        // 섹션, hr, h태그, beginner-tip, keyword는 그대로 유지
+        if (trimmed &&
+            !trimmed.startsWith('<h') &&
+            !trimmed.startsWith('<hr') &&
+            !trimmed.startsWith('<div class="recipe-') &&
+            !trimmed.startsWith('<span class="beginner-tip">')) {
+          // 빈 문장이 아니면 p로 감싸기
+          if (trimmed.length > 0) {
+            result.push(`<p class="recipe-para">${trimmed}</p>`);
+          }
         } else {
           result.push(trimmed);
         }
@@ -2370,12 +2422,31 @@ class AIStudio {
     }
     if (inList) result.push('</ul>');
 
-    // 빈 p 태그 제거
+    // 빈 p 태그 및 불필요한 태그 정리
     formatted = result.join('\n')
       .replace(/<p class="recipe-para"><\/p>/g, '')
-      .replace(/<p class="recipe-para">\s*<\/p>/g, '');
+      .replace(/<p class="recipe-para">\s*<\/p>/g, '')
+      .replace(/<p class="recipe-para">\s*<p class="recipe-step">/g, '<p class="recipe-step">')
+      .replace(/<\/p>\s*<\/p>/g, '</p>');
 
     return `<div class="recipe-formatted">${formatted}</div>`;
+  }
+
+  // ⭐ 얼굴형별 아이콘 반환 (이론 기반)
+  getFaceShapeIcon(shape) {
+    const shapeLower = (shape || '').toLowerCase();
+
+    if (shapeLower.includes('round') || shapeLower.includes('둥근')) return '🔵';
+    if (shapeLower.includes('oval') || shapeLower.includes('달걀')) return '🥚';
+    if (shapeLower.includes('long') || shapeLower.includes('긴')) return '📏';
+    if (shapeLower.includes('square') || shapeLower.includes('각진') || shapeLower.includes('사각')) return '⬜';
+    if (shapeLower.includes('heart') || shapeLower.includes('하트')) return '💗';
+    if (shapeLower.includes('diamond') || shapeLower.includes('다이아')) return '💎';
+    if (shapeLower.includes('이마')) return '👁️';
+    if (shapeLower.includes('짧은')) return '📐';
+    if (shapeLower.includes('균형') || shapeLower.includes('두상')) return '⭕';
+
+    return '👤';  // 기본 아이콘
   }
 }
 

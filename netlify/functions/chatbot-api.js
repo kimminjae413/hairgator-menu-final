@@ -1567,6 +1567,163 @@ function getTerms(lang) {
   return terms[lang] || terms['ko'];
 }
 
+// ==================== 얼굴형-스타일 매칭 (이론 기반) ====================
+/**
+ * 2WAY CUT 이론에 기반한 얼굴형-스타일 매칭
+ *
+ * 이론 출처: general_theory.md
+ * - WARM (둥근형/Round): Graduation, Round Form, 부드러운 곡선
+ * - NEUTRAL (달걀형/Oval, 하트형/Heart, 땅콩형/Peanut): Graduation & Layer 혼합, Square Form
+ * - COOL (각진형/Hexagon, 긴형/Bomb): Layer, Triangular Form, 직선적 실루엣
+ */
+function getSuitableFaceShapes(form, silhouette, outlineShape) {
+  const suitableFaces = [];
+  const reasons = [];
+
+  // Form 기반 매칭 (O=One Length, G=Graduation, L=Layer)
+  const formCode = (form || '').charAt(0).toUpperCase();
+
+  // Silhouette/Outline 기반 매칭
+  const sil = (silhouette || '').toLowerCase();
+  const outline = (outlineShape || '').toLowerCase();
+
+  // ========== Graduation (G) 스타일 ==========
+  if (formCode === 'G' || formCode === 'O') {
+    // Graduation: 둥근형(Round), 달걀형(Oval)에 잘 어울림
+    suitableFaces.push('둥근형 (Round)');
+    reasons.push('그래쥬에이션의 부드러운 볼륨감이 둥근 얼굴의 귀여움을 살려줍니다');
+
+    suitableFaces.push('달걀형 (Oval)');
+    reasons.push('균형잡힌 달걀형 얼굴에 자연스러운 볼륨을 더해줍니다');
+
+    if (sil.includes('round') || outline.includes('round')) {
+      suitableFaces.push('하트형 (Heart)');
+      reasons.push('라운드 실루엣이 좁은 턱선을 부드럽게 보완해줍니다');
+    }
+  }
+
+  // ========== Layer (L) 스타일 ==========
+  if (formCode === 'L') {
+    // Layer: 긴 얼굴형, 각진형에 잘 어울림
+    suitableFaces.push('긴 얼굴형 (Long)');
+    reasons.push('레이어의 옆 볼륨이 긴 얼굴을 가로로 넓어보이게 해줍니다');
+
+    suitableFaces.push('각진형 (Square)');
+    reasons.push('레이어의 자연스러운 움직임이 각진 윤곽을 부드럽게 만들어줍니다');
+
+    suitableFaces.push('달걀형 (Oval)');
+    reasons.push('어떤 스타일도 잘 소화하는 달걀형에 세련미를 더해줍니다');
+
+    if (sil.includes('triangular') || outline.includes('triangular')) {
+      suitableFaces.push('하트형 (Heart)');
+      reasons.push('트라이앵귤러 라인이 이마의 넓이와 조화를 이룹니다');
+    }
+  }
+
+  // ========== Silhouette 추가 매칭 ==========
+  if (sil.includes('square') || outline.includes('square')) {
+    if (!suitableFaces.includes('둥근형 (Round)')) {
+      suitableFaces.push('둥근형 (Round)');
+      reasons.push('스퀘어 라인이 둥근 얼굴에 세련된 구조감을 더해줍니다');
+    }
+  }
+
+  if (sil.includes('triangular') || outline.includes('triangular')) {
+    if (!suitableFaces.includes('긴 얼굴형 (Long)')) {
+      suitableFaces.push('긴 얼굴형 (Long)');
+      reasons.push('앞쪽이 강조되는 트라이앵귤러 라인이 얼굴 길이를 분산시킵니다');
+    }
+  }
+
+  // 기본값 (모든 얼굴형)
+  if (suitableFaces.length === 0) {
+    suitableFaces.push('달걀형 (Oval)', '둥근형 (Round)', '긴 얼굴형 (Long)');
+    reasons.push('다양한 얼굴형에 두루 어울리는 스타일입니다');
+  }
+
+  return {
+    faceShapes: [...new Set(suitableFaces)].slice(0, 3),  // 중복 제거, 최대 3개
+    reasons: [...new Set(reasons)].slice(0, 3)
+  };
+}
+
+/**
+ * 남자 스타일 코드 기반 얼굴형 매칭 (이론 기반)
+ *
+ * 이론 출처: general_theory.md, design_theory.md
+ * - SF (Side Fringe, 내린머리): 이마를 가려 긴 얼굴/넓은 이마에 적합
+ * - SP (Side Part, 가르마): 균형감 있어 달걀형/긴형에 적합
+ * - FU (Fringe Up, 올린머리): 이마가 보여 둥근형/짧은형에 적합
+ * - PB (Pushed Back, 넘긴머리): 세련된 느낌, 각진형/달걀형에 적합
+ * - BZ (Buzz, 삭발): 두상 형태 그대로, 둥근 두상/달걀형에 적합
+ * - CP (Crop, 크롭): 텍스처로 볼륨 조절, 둥근형/긴형에 적합
+ * - MC (Mohican, 모히칸): 세로 길이 강조, 둥근형/사각형에 적합
+ */
+function getMaleSuitableFaceShapes(styleCode) {
+  const code = (styleCode || 'SF').toUpperCase();
+
+  const styleMapping = {
+    'SF': {
+      faceShapes: ['긴 얼굴형 (Long)', '각진형 (Square)', '넓은 이마형'],
+      reasons: [
+        '옆으로 내린 앞머리가 긴 얼굴 길이를 분산시켜줍니다',
+        '이마를 가려 얼굴 비율을 조절해줍니다',
+        '부드러운 라인이 각진 윤곽을 완화해줍니다'
+      ]
+    },
+    'SP': {
+      faceShapes: ['달걀형 (Oval)', '긴 얼굴형 (Long)', '하트형 (Heart)'],
+      reasons: [
+        '가르마 라인이 얼굴에 세로 균형감을 더해줍니다',
+        '깔끔한 분배가 달걀형의 균형미를 살려줍니다',
+        '사이드 볼륨으로 좁은 턱선을 보완해줍니다'
+      ]
+    },
+    'FU': {
+      faceShapes: ['둥근형 (Round)', '짧은 얼굴형', '달걀형 (Oval)'],
+      reasons: [
+        '올린 앞머리가 얼굴을 세로로 길어보이게 해줍니다',
+        '이마가 드러나면서 시원하고 활동적인 이미지를 줍니다',
+        '볼륨감이 둥근 얼굴에 세련미를 더해줍니다'
+      ]
+    },
+    'PB': {
+      faceShapes: ['각진형 (Square)', '달걀형 (Oval)', '긴 얼굴형 (Long)'],
+      reasons: [
+        '뒤로 넘긴 스타일이 강한 턱선과 조화를 이룹니다',
+        '깔끔하고 세련된 인상을 강조해줍니다',
+        '이마를 드러내 자신감 있는 이미지를 연출합니다'
+      ]
+    },
+    'BZ': {
+      faceShapes: ['달걀형 (Oval)', '둥근형 (Round)', '균형잡힌 두상'],
+      reasons: [
+        '짧은 커트로 두상 형태가 그대로 보여 균형잡힌 두상에 적합합니다',
+        '깔끔하고 남성적인 이미지를 강조해줍니다',
+        '관리가 쉽고 시원한 인상을 줍니다'
+      ]
+    },
+    'CP': {
+      faceShapes: ['둥근형 (Round)', '긴 얼굴형 (Long)', '달걀형 (Oval)'],
+      reasons: [
+        '텍스처 있는 앞머리가 둥근 얼굴에 입체감을 더해줍니다',
+        '짧고 깔끔한 라인이 모던한 느낌을 줍니다',
+        '윗부분 볼륨으로 얼굴 비율을 조절할 수 있습니다'
+      ]
+    },
+    'MC': {
+      faceShapes: ['둥근형 (Round)', '각진형 (Square)', '짧은 얼굴형'],
+      reasons: [
+        '중앙의 높이가 둥근 얼굴을 길어보이게 해줍니다',
+        '강렬한 실루엣이 개성 있는 인상을 만들어줍니다',
+        '사이드를 짧게 해 얼굴 너비를 좁아보이게 합니다'
+      ]
+    }
+  };
+
+  return styleMapping[code] || styleMapping['SF'];
+}
+
 // ==================== theory_chunks 하이브리드 검색 ====================
 async function searchTheoryChunks(query, geminiKey, supabaseUrl, supabaseKey, matchCount = 5) {
   try {
@@ -5374,6 +5531,13 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
     const top1Params = extractRecipeParamsFromStyle(top1);
 
+    // ⭐ 이론 기반 어울리는 얼굴형 분석
+    const formValue = params56.cut_form || 'L (Layer)';
+    const silhouetteValue = params56.silhouette || 'Round';
+    const outlineValue = params56.outline_shape || 'Round';
+    const faceShapeMatch = getSuitableFaceShapes(formValue, silhouetteValue, outlineValue);
+    console.log(`👤 어울리는 얼굴형: ${faceShapeMatch.faceShapes.join(', ')}`);
+
     console.log(`⏱️ 총 처리 시간: ${Date.now() - startTime}ms`);
 
     // 7. 결과 구성 - Top-1 레시피 그대로 반환
@@ -5404,7 +5568,10 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
         celestialAngle: params56.celestial_angle || 90,
         liftingRange: top1Params.liftingRange,  // ⭐ Top-1 스타일 수치
         sectionPrimary: top1Params.sectionPrimary,  // ⭐ Top-1 스타일 수치
-        description: params56.description || ''
+        description: params56.description || '',
+        // ⭐ 어울리는 얼굴형 추가 (이론 기반)
+        suitableFaceShapes: faceShapeMatch.faceShapes,
+        faceShapeReasons: faceShapeMatch.reasons
       },
 
       // ⭐⭐⭐ Top-1 매칭 스타일 (Vision 직접 선택)
@@ -5993,6 +6160,10 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
     // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
     const top1Params = extractRecipeParamsFromStyle(top1);
 
+    // ⭐ 남자 스타일 코드 기반 어울리는 얼굴형 분석 (이론 기반)
+    const maleFaceShapeMatch = getMaleSuitableFaceShapes(styleCode);
+    console.log(`👤 남자 어울리는 얼굴형: ${maleFaceShapeMatch.faceShapes.join(', ')}`);
+
     console.log(`⏱️ 총 처리 시간: ${Date.now() - startTime}ms`);
 
     // 8. 결과 반환 - Top-1 레시피 그대로
@@ -6018,7 +6189,10 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
             // ⭐ Top-1 스타일에서 추출한 실제 수치
             liftingRange: top1Params.liftingRange,
             sectionPrimary: top1Params.sectionPrimary,
-            volumePosition: top1Params.volumePosition
+            volumePosition: top1Params.volumePosition,
+            // ⭐ 어울리는 얼굴형 추가 (이론 기반)
+            suitableFaceShapes: maleFaceShapeMatch.faceShapes,
+            faceShapeReasons: maleFaceShapeMatch.reasons
           },
           targetSeries: {
             code: styleCode,
