@@ -5147,7 +5147,7 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       targetSeries: {
         code: targetSeriesCode,
         name: `${lengthCode} Length Series`,
-        totalStyles: seriesStyles.length
+        totalStyles: seriesStylesAll.length
       },
 
       // 분석 요약 (UI 표시용)
