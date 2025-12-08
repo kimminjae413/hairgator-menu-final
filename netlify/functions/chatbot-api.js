@@ -2717,7 +2717,10 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     }
 
     // ⭐ 이론 이미지 감지 (89개 이론 인덱스)
-    const theoryImage = await detectTheoryImageForQuery(user_query, userLanguage === 'korean' ? 'ko' : 'en');
+    // 언어별 이론 인덱스 매핑: korean→ko, english→en, japanese→ja, chinese→zh, vietnamese→vi
+    const langCodeMap = { korean: 'ko', english: 'en', japanese: 'ja', chinese: 'zh', vietnamese: 'vi' };
+    const theoryLang = langCodeMap[userLanguage] || 'ko';
+    const theoryImage = await detectTheoryImageForQuery(user_query, theoryLang);
     if (theoryImage) {
       console.log(`📚 이론 이미지 감지: ${theoryImage.title} (${theoryImage.term})`);
     }
