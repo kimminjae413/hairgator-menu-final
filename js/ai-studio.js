@@ -2852,12 +2852,28 @@ ${data.recipe ? `\n생성된 레시피:\n${data.recipe}` : ''}`;
 ${data.customRecipe ? `\n생성된 레시피:\n${data.customRecipe}` : ''}`;
       }
 
+      // ⭐ 캔버스 데이터 구성 (히스토리 복원용)
+      const canvasData = {
+        type: 'customRecipe',
+        customRecipe: true,
+        gender: data.gender,
+        analysis: data.analysis,
+        referenceStyles: data.referenceStyles,
+        recipe: data.gender === 'male' ? data.recipe : data.customRecipe,
+        imageUrl: pendingImageData.url,
+        uploadedImageUrl: pendingImageData.url
+      };
+
       window.aiStudio.conversationHistory.push({
         sender: 'bot',
         content: recipeContext,
         timestamp: Date.now(),
-        isRecipeContext: true  // 레시피 컨텍스트 표시
+        isRecipeContext: true,  // 레시피 컨텍스트 표시
+        canvasData: canvasData  // ⭐ 캔버스 데이터 포함
       });
+
+      // ⭐ Firebase에도 캔버스 데이터 저장
+      window.aiStudio.saveMessageToFirebase('bot', recipeContext, canvasData);
 
       // ⭐ 현재 활성 레시피 컨텍스트 저장 (API 호출 시 사용)
       window.aiStudio.currentRecipeContext = {
