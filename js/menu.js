@@ -1071,49 +1071,70 @@ function openStyleModal(style) {
         console.error('❌ mediaViewerContainer를 찾을 수 없습니다');
     }
 
-    // ⭐⭐⭐ 모달 스와이프 이벤트 - 한 번만 등록!
-    if (!modalSwipeInitialized) {
-        console.log('🔧 모달 스와이프 이벤트 등록 시작...');
+    // ⭐⭐⭐ 모달 컨텐츠 영역에 스와이프 이벤트 등록
+    const modalContent = modal.querySelector('.style-modal-content');
+    if (!modalSwipeInitialized && modalContent) {
+        console.log('🔧 모달 스와이프 이벤트 등록 시작 (style-modal-content)');
         console.log(`📊 현재 카테고리 스타일 수: ${currentCategoryStyles.length}`);
 
         let modalTouchStartX = 0;
         let modalTouchEndX = 0;
         let modalTouchStartY = 0;
         let modalTouchEndY = 0;
+        let isSwiping = false;
 
-        modal.addEventListener('touchstart', function(e) {
-            modalTouchStartX = e.changedTouches[0].screenX;
-            modalTouchStartY = e.changedTouches[0].screenY;
-            console.log(`👆 터치 시작: X=${modalTouchStartX}`);
+        modalContent.addEventListener('touchstart', function(e) {
+            modalTouchStartX = e.touches[0].clientX;
+            modalTouchStartY = e.touches[0].clientY;
+            isSwiping = true;
+            console.log(`👆 터치 시작: X=${modalTouchStartX}, Y=${modalTouchStartY}`);
         }, { passive: true });
 
-        modal.addEventListener('touchend', function(e) {
-            modalTouchEndX = e.changedTouches[0].screenX;
-            modalTouchEndY = e.changedTouches[0].screenY;
-            console.log(`👆 터치 끝: X=${modalTouchEndX}`);
+        modalContent.addEventListener('touchmove', function(e) {
+            if (!isSwiping) return;
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const diffX = modalTouchStartX - currentX;
+            const diffY = modalTouchStartY - currentY;
 
-            const swipeThreshold = 30;  // 감도 높임 (50 → 30)
+            // 수평 스와이프가 더 큰 경우 스크롤 방지
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
+                // e.preventDefault();  // passive true라서 주석 처리
+            }
+        }, { passive: true });
+
+        modalContent.addEventListener('touchend', function(e) {
+            if (!isSwiping) return;
+            isSwiping = false;
+
+            modalTouchEndX = e.changedTouches[0].clientX;
+            modalTouchEndY = e.changedTouches[0].clientY;
+            console.log(`👆 터치 끝: X=${modalTouchEndX}, Y=${modalTouchEndY}`);
+
+            const swipeThreshold = 50;
             const diffX = modalTouchStartX - modalTouchEndX;
             const diffY = modalTouchStartY - modalTouchEndY;
 
-            console.log(`📐 스와이프: diffX=${diffX}, diffY=${diffY}, threshold=${swipeThreshold}`);
+            console.log(`📐 스와이프: diffX=${diffX}, diffY=${diffY}`);
             console.log(`📊 스타일 수: ${currentCategoryStyles.length}, 현재 인덱스: ${currentStyleIndex}`);
 
-            // 수평 스와이프가 수직보다 큰 경우에만 처리 (스크롤과 구분)
+            // 수평 스와이프가 수직보다 큰 경우에만 처리
             if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
-                console.log(`✅ 스와이프 인식됨! 방향: ${diffX > 0 ? '왼쪽(다음)' : '오른쪽(이전)'}`);
+                console.log(`✅ 스와이프 인식! 방향: ${diffX > 0 ? '다음' : '이전'}`);
                 if (diffX > 0) {
                     navigateModalStyle(1);
                 } else {
                     navigateModalStyle(-1);
                 }
             } else {
-                console.log(`❌ 스와이프 조건 미충족`);
+                console.log(`❌ 스와이프 미인식 (threshold: ${swipeThreshold})`);
             }
         }, { passive: true });
 
         modalSwipeInitialized = true;
-        console.log('✅ 모달 스와이프 이벤트 초기화 완료');
+        console.log('✅ 모달 스와이프 이벤트 등록 완료!');
+    } else if (!modalContent) {
+        console.error('❌ style-modal-content를 찾을 수 없음');
     } else {
         console.log(`🔄 스와이프 이미 초기화됨. 스타일 수: ${currentCategoryStyles.length}`);
     }
