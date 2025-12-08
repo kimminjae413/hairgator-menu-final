@@ -2724,6 +2724,235 @@ body.ai-studio-page {
   display: block;
 }
 
+/* ==================== 헤어 메쉬 스캐닝 애니메이션 ==================== */
+.hair-mesh-scanner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* 스캔 라인 (위에서 아래로) */
+.scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0, 255, 200, 0.3) 20%,
+    rgba(0, 255, 200, 0.8) 50%,
+    rgba(0, 255, 200, 0.3) 80%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 20px rgba(0, 255, 200, 0.8),
+    0 0 40px rgba(0, 255, 200, 0.4);
+  animation: scanDown 2s ease-in-out infinite;
+}
+
+@keyframes scanDown {
+  0% { top: 0%; opacity: 1; }
+  100% { top: 100%; opacity: 0.3; }
+}
+
+/* 메쉬 그리드 오버레이 */
+.mesh-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    linear-gradient(rgba(0, 255, 200, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 200, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0;
+  animation: meshFadeIn 0.5s ease 0.3s forwards;
+}
+
+@keyframes meshFadeIn {
+  to { opacity: 1; }
+}
+
+/* 헤어 영역 탐지 포인트 */
+.detection-point {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(0, 255, 200, 0.9);
+  border-radius: 50%;
+  background: rgba(0, 255, 200, 0.3);
+  transform: translate(-50%, -50%) scale(0);
+  animation: pointPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  box-shadow:
+    0 0 10px rgba(0, 255, 200, 0.8),
+    inset 0 0 5px rgba(0, 255, 200, 0.5);
+}
+
+.detection-point::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  background: #00ffc8;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.detection-point::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(0, 255, 200, 0.5);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pointRipple 1.5s ease-out infinite;
+}
+
+@keyframes pointPop {
+  0% { transform: translate(-50%, -50%) scale(0); }
+  70% { transform: translate(-50%, -50%) scale(1.2); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes pointRipple {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+/* 연결선 (점들 사이) */
+.connection-line {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0, 255, 200, 0.8), rgba(0, 255, 200, 0.2));
+  transform-origin: left center;
+  opacity: 0;
+  animation: lineGrow 0.5s ease forwards;
+}
+
+@keyframes lineGrow {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scaleX(1);
+  }
+}
+
+/* 영역 라벨 (스캔 중 표시) */
+.region-label {
+  position: absolute;
+  font-size: 9px;
+  font-weight: 600;
+  color: #00ffc8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2px 6px;
+  border-radius: 3px;
+  transform: translate(-50%, -150%);
+  opacity: 0;
+  animation: labelSlideUp 0.3s ease forwards;
+  white-space: nowrap;
+  text-shadow: 0 0 10px rgba(0, 255, 200, 0.8);
+}
+
+@keyframes labelSlideUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -150%);
+  }
+}
+
+/* 스캔 완료 상태 */
+.hair-mesh-scanner.completed .scan-line {
+  animation: none;
+  opacity: 0;
+}
+
+.hair-mesh-scanner.completed .mesh-grid {
+  animation: meshFadeOut 0.5s ease forwards;
+}
+
+@keyframes meshFadeOut {
+  to { opacity: 0; }
+}
+
+.hair-mesh-scanner.completed .detection-point {
+  animation: pointFadeOut 0.3s ease forwards;
+}
+
+@keyframes pointFadeOut {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+}
+
+/* 스캔 진행률 표시 */
+.scan-progress {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  color: #00ffc8;
+  animation: progressFadeIn 0.3s ease;
+}
+
+.scan-progress-bar {
+  width: 60px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.scan-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffc8, #00d4aa);
+  border-radius: 2px;
+  width: 0%;
+  animation: progressFill 2s ease-in-out forwards;
+}
+
+@keyframes progressFadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes progressFill {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
 .recipe-overlay-labels {
   position: absolute;
   top: 0;

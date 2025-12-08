@@ -1853,27 +1853,143 @@ class AIStudio {
       }
     }
 
-    // 라벨 HTML 생성 (순차 애니메이션용 delay 추가)
-    labelsContainer.innerHTML = labels.map((label, idx) => {
-      let posStyle = '';
-      if (label.position.top !== undefined) posStyle += `top: ${label.position.top}%;`;
-      if (label.position.bottom !== undefined) posStyle += `bottom: ${label.position.bottom}%;`;
-      if (label.position.left !== undefined) posStyle += `left: ${label.position.left}%;`;
-      if (label.position.right !== undefined) posStyle += `right: ${label.position.right}%;`;
-
-      // 순차적 애니메이션 딜레이 (0.3초 간격)
-      const delay = idx * 0.3;
-
-      return `
-        <div class="overlay-label ${label.type}" style="${posStyle}; animation-delay: ${delay}s;">
-          <span class="label-main">${label.text}</span>
-          ${label.subText ? `<span class="label-sub">${label.subText}</span>` : ''}
-        </div>
-      `;
-    }).join('');
-
     // 저장
     this.overlayLabelsData = labels;
+
+    // 🎬 헤어 메쉬 스캐닝 애니메이션 실행
+    this.runHairMeshScanAnimation(regions, labels, labelsContainer);
+  }
+
+  // ==================== 헤어 메쉬 스캐닝 애니메이션 ====================
+  runHairMeshScanAnimation(regions, labels, labelsContainer) {
+    const container = document.getElementById('recipeOverlayContainer');
+    if (!container) return;
+
+    // 기존 스캐너 제거
+    const existingScanner = container.querySelector('.hair-mesh-scanner');
+    if (existingScanner) existingScanner.remove();
+
+    // 스캐너 오버레이 생성
+    const scanner = document.createElement('div');
+    scanner.className = 'hair-mesh-scanner';
+    scanner.innerHTML = `
+      <div class="mesh-grid"></div>
+      <div class="scan-line"></div>
+      <div class="scan-progress">
+        <span>Scanning</span>
+        <div class="scan-progress-bar">
+          <div class="scan-progress-fill"></div>
+        </div>
+      </div>
+    `;
+    container.appendChild(scanner);
+
+    // 기본 좌표 (AI 감지 실패 시)
+    const defaultRegions = {
+      top: { x: 50, y: 10 },
+      crown: { x: 50, y: 20 },
+      side_left: { x: 20, y: 35 },
+      side_right: { x: 80, y: 35 },
+      fringe: { x: 50, y: 25 },
+      nape: { x: 50, y: 70 },
+      length_end: { x: 50, y: 85 }
+    };
+
+    // 탐지 포인트 순서 (위에서 아래로)
+    const regionOrder = ['top', 'crown', 'fringe', 'side_left', 'side_right', 'nape', 'length_end'];
+    const regionLabels = {
+      top: 'TOP',
+      crown: 'CROWN',
+      fringe: 'FRINGE',
+      side_left: 'SIDE L',
+      side_right: 'SIDE R',
+      nape: 'NAPE',
+      length_end: 'LENGTH'
+    };
+
+    // 포인트들 순차적으로 표시
+    let pointDelay = 500; // 스캔 시작 후 0.5초 뒤부터
+    const detectionPoints = [];
+
+    regionOrder.forEach((regionKey, idx) => {
+      const coord = regions[regionKey] || defaultRegions[regionKey];
+      if (!coord) return;
+
+      setTimeout(() => {
+        // 탐지 포인트 생성
+        const point = document.createElement('div');
+        point.className = 'detection-point';
+        point.style.left = `${coord.x}%`;
+        point.style.top = `${coord.y}%`;
+        point.style.animationDelay = '0s';
+        scanner.appendChild(point);
+        detectionPoints.push(point);
+
+        // 영역 라벨 생성
+        const label = document.createElement('div');
+        label.className = 'region-label';
+        label.style.left = `${coord.x}%`;
+        label.style.top = `${coord.y}%`;
+        label.textContent = regionLabels[regionKey];
+        label.style.animationDelay = '0.2s';
+        scanner.appendChild(label);
+
+        // 이전 포인트와 연결선 그리기
+        if (detectionPoints.length > 1) {
+          const prevPoint = detectionPoints[detectionPoints.length - 2];
+          const prevRect = { x: parseFloat(prevPoint.style.left), y: parseFloat(prevPoint.style.top) };
+          const currRect = { x: coord.x, y: coord.y };
+
+          // 두 점 사이 거리와 각도 계산
+          const dx = currRect.x - prevRect.x;
+          const dy = currRect.y - prevRect.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+          const line = document.createElement('div');
+          line.className = 'connection-line';
+          line.style.left = `${prevRect.x}%`;
+          line.style.top = `${prevRect.y}%`;
+          line.style.width = `${distance}%`;
+          line.style.transform = `rotate(${angle}deg)`;
+          scanner.appendChild(line);
+        }
+      }, pointDelay + (idx * 250)); // 각 포인트 0.25초 간격
+    });
+
+    // 스캔 완료 후 라벨 표시
+    const scanDuration = pointDelay + (regionOrder.length * 250) + 500;
+
+    setTimeout(() => {
+      // 스캐너 완료 상태로 전환
+      scanner.classList.add('completed');
+
+      // 라벨 HTML 생성 (순차 애니메이션용 delay 추가)
+      setTimeout(() => {
+        labelsContainer.innerHTML = labels.map((label, idx) => {
+          let posStyle = '';
+          if (label.position.top !== undefined) posStyle += `top: ${label.position.top}%;`;
+          if (label.position.bottom !== undefined) posStyle += `bottom: ${label.position.bottom}%;`;
+          if (label.position.left !== undefined) posStyle += `left: ${label.position.left}%;`;
+          if (label.position.right !== undefined) posStyle += `right: ${label.position.right}%;`;
+
+          // 순차적 애니메이션 딜레이 (0.3초 간격)
+          const delay = idx * 0.3;
+
+          return `
+            <div class="overlay-label ${label.type}" style="${posStyle}; animation-delay: ${delay}s;">
+              <span class="label-main">${label.text}</span>
+              ${label.subText ? `<span class="label-sub">${label.subText}</span>` : ''}
+            </div>
+          `;
+        }).join('');
+
+        // 스캐너 제거
+        setTimeout(() => {
+          scanner.remove();
+        }, 500);
+      }, 300);
+    }, scanDuration);
   }
 
   // ==================== 각도별 AI 이미지 생성 ====================
