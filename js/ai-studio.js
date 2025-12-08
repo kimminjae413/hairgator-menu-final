@@ -2310,6 +2310,9 @@ class AIStudio {
 
     let formatted = content;
 
+    // --- 구분선을 hr 태그로 변환 (먼저 처리)
+    formatted = formatted.replace(/^---+$/gm, '<hr class="recipe-divider">');
+
     // 마크다운 헤더 제거 및 변환 (##, ###, ####)
     formatted = formatted
       .replace(/^####\s*(.+)$/gm, '<h5 class="recipe-h5">$1</h5>')
@@ -2357,8 +2360,8 @@ class AIStudio {
           result.push('</ul>');
           inList = false;
         }
-        // beginner-tip은 그대로 유지, 다른 텍스트만 p로 감싸기
-        if (trimmed && !trimmed.startsWith('<h') && !trimmed.startsWith('<span class="beginner-tip">')) {
+        // hr, h태그, beginner-tip은 그대로 유지, 다른 텍스트만 p로 감싸기
+        if (trimmed && !trimmed.startsWith('<h') && !trimmed.startsWith('<hr') && !trimmed.startsWith('<span class="beginner-tip">')) {
           result.push(`<p class="recipe-para">${trimmed}</p>`);
         } else {
           result.push(trimmed);
