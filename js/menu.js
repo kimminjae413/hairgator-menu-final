@@ -1073,6 +1073,9 @@ function openStyleModal(style) {
 
     // ⭐⭐⭐ 모달 스와이프 이벤트 - 한 번만 등록!
     if (!modalSwipeInitialized) {
+        console.log('🔧 모달 스와이프 이벤트 등록 시작...');
+        console.log(`📊 현재 카테고리 스타일 수: ${currentCategoryStyles.length}`);
+
         let modalTouchStartX = 0;
         let modalTouchEndX = 0;
         let modalTouchStartY = 0;
@@ -1081,30 +1084,38 @@ function openStyleModal(style) {
         modal.addEventListener('touchstart', function(e) {
             modalTouchStartX = e.changedTouches[0].screenX;
             modalTouchStartY = e.changedTouches[0].screenY;
+            console.log(`👆 터치 시작: X=${modalTouchStartX}`);
         }, { passive: true });
 
         modal.addEventListener('touchend', function(e) {
             modalTouchEndX = e.changedTouches[0].screenX;
             modalTouchEndY = e.changedTouches[0].screenY;
+            console.log(`👆 터치 끝: X=${modalTouchEndX}`);
 
-            const swipeThreshold = 50;
+            const swipeThreshold = 30;  // 감도 높임 (50 → 30)
             const diffX = modalTouchStartX - modalTouchEndX;
             const diffY = modalTouchStartY - modalTouchEndY;
 
+            console.log(`📐 스와이프: diffX=${diffX}, diffY=${diffY}, threshold=${swipeThreshold}`);
+            console.log(`📊 스타일 수: ${currentCategoryStyles.length}, 현재 인덱스: ${currentStyleIndex}`);
+
             // 수평 스와이프가 수직보다 큰 경우에만 처리 (스크롤과 구분)
             if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
+                console.log(`✅ 스와이프 인식됨! 방향: ${diffX > 0 ? '왼쪽(다음)' : '오른쪽(이전)'}`);
                 if (diffX > 0) {
-                    // 왼쪽으로 스와이프 -> 다음
                     navigateModalStyle(1);
                 } else {
-                    // 오른쪽으로 스와이프 -> 이전
                     navigateModalStyle(-1);
                 }
+            } else {
+                console.log(`❌ 스와이프 조건 미충족`);
             }
         }, { passive: true });
 
         modalSwipeInitialized = true;
         console.log('✅ 모달 스와이프 이벤트 초기화 완료');
+    } else {
+        console.log(`🔄 스와이프 이미 초기화됨. 스타일 수: ${currentCategoryStyles.length}`);
     }
 
     // 모달 내용 설정 (코드/이름 등) - 숨겨진 상태
