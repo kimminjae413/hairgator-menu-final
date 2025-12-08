@@ -5068,35 +5068,67 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     const targetSeriesCode = `F${lengthCode}L`;
     const allStyles = await getFirestoreStyles();
 
-    // 해당 시리즈 스타일 필터링 (resultImage가 있는 것만)
-    const seriesStyles = allStyles.filter(s =>
-      (s.series === targetSeriesCode || s.styleId.startsWith(targetSeriesCode)) &&
-      s.resultImage
+    // 해당 시리즈 스타일 필터링
+    const seriesStylesAll = allStyles.filter(s =>
+      s.series === targetSeriesCode || s.styleId.startsWith(targetSeriesCode)
     );
+
+    // 대표이미지가 있는 스타일
+    const seriesStylesWithImage = seriesStylesAll.filter(s => s.resultImage);
 
     console.log(`⏱️ [2] Firestore 조회: ${Date.now() - t2}ms`);
-    console.log(`📚 ${targetSeriesCode} 시리즈: ${seriesStyles.length}개 스타일 (대표이미지 있음)`);
+    console.log(`📚 ${targetSeriesCode} 시리즈: 전체 ${seriesStylesAll.length}개, 대표이미지 ${seriesStylesWithImage.length}개`);
 
-    if (seriesStyles.length === 0) {
-      throw new Error(`${targetSeriesCode} 시리즈에 대표이미지가 있는 스타일이 없습니다`);
+    if (seriesStylesAll.length === 0) {
+      throw new Error(`${targetSeriesCode} 시리즈에 스타일이 없습니다`);
     }
 
-    // 3. ⭐⭐⭐ Gemini Vision으로 대표이미지와 직접 비교하여 Top-1 선택
+    let top1;
+    let visionResult = { selectedStyleId: '', confidence: 'low', reason: '' };
+
+    // 3. 대표이미지가 있으면 Vision 비교, 없으면 임베딩 기반 매칭
     const t3 = Date.now();
-    const visionResult = await selectBestStyleByVision(
-      image_base64,
-      mime_type,
-      seriesStyles,
-      geminiKey
-    );
-    console.log(`⏱️ [3] Gemini Vision 직접 비교: ${Date.now() - t3}ms`);
-    console.log(`🎯 Vision 선택: ${visionResult.selectedStyleId} (신뢰도: ${visionResult.confidence})`);
-    console.log(`   선택 이유: ${visionResult.reason}`);
+    if (seriesStylesWithImage.length > 0) {
+      // ⭐⭐⭐ Gemini Vision으로 대표이미지와 직접 비교하여 Top-1 선택
+      visionResult = await selectBestStyleByVision(
+        image_base64,
+        mime_type,
+        seriesStylesWithImage,
+        geminiKey
+      );
+      console.log(`⏱️ [3] Gemini Vision 직접 비교: ${Date.now() - t3}ms`);
+      console.log(`🎯 Vision 선택: ${visionResult.selectedStyleId} (신뢰도: ${visionResult.confidence})`);
+      console.log(`   선택 이유: ${visionResult.reason}`);
 
-    // 4. 선택된 스타일 찾기
-    const top1 = seriesStyles.find(s => s.styleId === visionResult.selectedStyleId) || seriesStyles[0];
+      top1 = seriesStylesWithImage.find(s => s.styleId === visionResult.selectedStyleId) || seriesStylesWithImage[0];
+    } else {
+      // 대표이미지 없으면 임베딩 기반 매칭 (기존 방식)
+      console.log(`⚠️ 대표이미지 없음, 임베딩 기반 매칭 사용`);
+      const params56Temp = await analyzeImageStructured(image_base64, mime_type, geminiKey);
+      let queryEmbedding = null;
+      if (params56Temp.description) {
+        queryEmbedding = await generateQueryEmbedding(params56Temp.description, geminiKey);
+      }
 
-    // 5. 기본 파라미터 분석 (UI 표시용)
+      const stylesWithScore = seriesStylesAll.map(style => {
+        let similarity = 0;
+        if (style.embedding && queryEmbedding) {
+          similarity = cosineSimilarity(queryEmbedding, style.embedding);
+        }
+        return { ...style, similarity };
+      });
+
+      top1 = stylesWithScore.sort((a, b) => b.similarity - a.similarity)[0];
+      visionResult = {
+        selectedStyleId: top1.styleId,
+        confidence: 'medium',
+        reason: '임베딩 기반 유사도 매칭 (대표이미지 없음)'
+      };
+      console.log(`⏱️ [3] 임베딩 매칭: ${Date.now() - t3}ms`);
+      console.log(`🎯 임베딩 선택: ${top1.styleId} (유사도: ${(top1.similarity * 100).toFixed(1)}%)`);
+    }
+
+    // 4. 상세 파라미터 분석 (UI 표시용)
     const t4 = Date.now();
     const params56 = await analyzeImageStructured(image_base64, mime_type, geminiKey);
     console.log(`⏱️ [4] 상세 파라미터 분석: ${Date.now() - t4}ms`);
@@ -5581,36 +5613,68 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
 
     console.log(`⏱️ [2] Firestore men_styles 조회: ${Date.now() - t2}ms (${allMenStyles.length}개)`);
 
-    // 3. 스타일 코드로 필터링 (resultImage가 있는 것만)
-    const filteredStyles = allMenStyles.filter(s =>
-      (s.styleId.startsWith(styleCode) || s.series === styleCode) && s.resultImage
+    // 3. 스타일 코드로 필터링
+    const filteredStylesAll = allMenStyles.filter(s =>
+      s.styleId.startsWith(styleCode) || s.series === styleCode
     );
 
-    console.log(`🎯 ${styleCode} 스타일: ${filteredStyles.length}개 (대표이미지 있음)`);
+    // 대표이미지가 있는 스타일
+    const filteredStylesWithImage = filteredStylesAll.filter(s => s.resultImage);
 
-    // 필터 결과 없으면 전체에서 resultImage 있는 것만
-    const targetStyles = filteredStyles.length > 0
-      ? filteredStyles
+    console.log(`🎯 ${styleCode} 스타일: 전체 ${filteredStylesAll.length}개, 대표이미지 ${filteredStylesWithImage.length}개`);
+
+    // 스타일이 없으면 전체에서 검색
+    const targetStylesAll = filteredStylesAll.length > 0 ? filteredStylesAll : allMenStyles;
+    const targetStylesWithImage = filteredStylesWithImage.length > 0
+      ? filteredStylesWithImage
       : allMenStyles.filter(s => s.resultImage).slice(0, 10);
 
-    if (targetStyles.length === 0) {
-      throw new Error('대표이미지가 있는 남자 스타일이 없습니다');
+    if (targetStylesAll.length === 0) {
+      throw new Error('남자 스타일이 없습니다');
     }
 
-    // 4. ⭐⭐⭐ Gemini Vision으로 대표이미지와 직접 비교하여 Top-1 선택
-    const t3 = Date.now();
-    const visionResult = await selectBestMaleStyleByVision(
-      image_base64,
-      mime_type,
-      targetStyles,
-      geminiKey
-    );
-    console.log(`⏱️ [3] Gemini Vision 직접 비교: ${Date.now() - t3}ms`);
-    console.log(`🎯 Vision 선택: ${visionResult.selectedStyleId} (신뢰도: ${visionResult.confidence})`);
-    console.log(`   선택 이유: ${visionResult.reason}`);
+    let top1;
+    let visionResult = { selectedStyleId: '', confidence: 'low', reason: '' };
 
-    // 5. 선택된 스타일 찾기
-    const top1 = targetStyles.find(s => s.styleId === visionResult.selectedStyleId) || targetStyles[0];
+    // 4. 대표이미지가 있으면 Vision 비교, 없으면 임베딩 기반 매칭
+    const t3 = Date.now();
+    if (targetStylesWithImage.length > 0) {
+      // ⭐⭐⭐ Gemini Vision으로 대표이미지와 직접 비교하여 Top-1 선택
+      visionResult = await selectBestMaleStyleByVision(
+        image_base64,
+        mime_type,
+        targetStylesWithImage,
+        geminiKey
+      );
+      console.log(`⏱️ [3] Gemini Vision 직접 비교: ${Date.now() - t3}ms`);
+      console.log(`🎯 Vision 선택: ${visionResult.selectedStyleId} (신뢰도: ${visionResult.confidence})`);
+      console.log(`   선택 이유: ${visionResult.reason}`);
+
+      top1 = targetStylesWithImage.find(s => s.styleId === visionResult.selectedStyleId) || targetStylesWithImage[0];
+    } else {
+      // 대표이미지 없으면 임베딩 기반 매칭 (기존 방식)
+      console.log(`⚠️ 대표이미지 없음, 임베딩 기반 매칭 사용`);
+      const maleParamsTemp = await analyzeManImageVision(image_base64, mime_type, geminiKey);
+      const searchQuery = `${maleParamsTemp.style_name || ''} ${maleParamsTemp.top_length || ''} ${maleParamsTemp.texture || ''}`.trim();
+      const queryEmbedding = await generateQueryEmbedding(searchQuery, geminiKey);
+
+      const stylesWithScore = targetStylesAll.map(style => {
+        let similarity = 0;
+        if (style.embedding && queryEmbedding) {
+          similarity = cosineSimilarity(queryEmbedding, style.embedding);
+        }
+        return { ...style, similarity };
+      });
+
+      top1 = stylesWithScore.sort((a, b) => b.similarity - a.similarity)[0];
+      visionResult = {
+        selectedStyleId: top1.styleId,
+        confidence: 'medium',
+        reason: '임베딩 기반 유사도 매칭 (대표이미지 없음)'
+      };
+      console.log(`⏱️ [3] 임베딩 매칭: ${Date.now() - t3}ms`);
+      console.log(`🎯 임베딩 선택: ${top1.styleId} (유사도: ${(top1.similarity * 100).toFixed(1)}%)`);
+    }
 
     // 6. 상세 파라미터 분석 (UI 표시용)
     const t4 = Date.now();
