@@ -3081,16 +3081,26 @@ document.addEventListener('DOMContentLoaded', function () {
     // 전체화면 모드 감지 (네이티브 앱)
     detectFullscreenMode();
 
-    // 엑스 버튼 클릭 이벤트 (네이티브 앱 대응)
+    // 엑스 버튼 클릭/터치 이벤트 (네이티브 앱 대응)
     const closeBtn = document.getElementById('styleModalClose');
     if (closeBtn) {
+        // 클릭 이벤트
         closeBtn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
             console.log('🔘 엑스 버튼 클릭됨');
             closeStyleModal();
         });
-        console.log('✅ 엑스 버튼 이벤트 리스너 등록 완료');
+
+        // ⭐ 터치 이벤트도 추가 (태블릿 대응)
+        closeBtn.addEventListener('touchend', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔘 엑스 버튼 터치됨');
+            closeStyleModal();
+        });
+
+        console.log('✅ 엑스 버튼 이벤트 리스너 등록 완료 (click + touchend)');
     } else {
         console.warn('⚠️ styleModalClose 버튼을 찾을 수 없습니다');
     }
