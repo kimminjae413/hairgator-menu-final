@@ -5364,6 +5364,9 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     // 스타일ID 언급 제거 (사용자에게 보이지 않도록)
     originalRecipe = originalRecipe.replace(/\b[FM]?[A-Z]{2,3}\d{4}\b/g, '').replace(/\s{2,}/g, ' ').trim();
 
+    // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
+    const top1Params = extractRecipeParamsFromStyle(top1);
+
     console.log(`⏱️ 총 처리 시간: ${Date.now() - startTime}ms`);
 
     // 7. 결과 구성 - Top-1 레시피 그대로 반환
@@ -5378,22 +5381,22 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
         totalStyles: seriesStylesAll.length
       },
 
-      // 분석 요약 (UI 표시용) - ⭐ 사용자 선택 기장 우선!
+      // 분석 요약 (UI 표시용) - ⭐⭐⭐ Top-1 스타일의 실제 수치 사용! (AI 분석 아님)
       analysis: {
         length: lengthCode,
-        lengthName: `${lengthCode} Length`,  // 사용자가 선택한 기장 사용 (AI 분석 무시)
+        lengthName: `${lengthCode} Length`,  // 사용자가 선택한 기장 유지
         form: params56.cut_form || 'L (Layer)',
         hasBangs: params56.fringe_type !== 'No Fringe',
         bangsType: params56.fringe_type || 'No Fringe',
         fringeLength: params56.fringe_length || 'None',
-        volumeZone: params56.volume_zone || 'Medium',
+        volumePosition: top1Params.volumePosition,  // ⭐ Top-1 스타일 수치
         silhouette: params56.silhouette || 'Round',
         outlineShape: params56.outline_shape || 'Round',
         texture: params56.hair_texture || 'Straight',
         layerType: params56.layer_type || 'Mid Layer',
         celestialAngle: params56.celestial_angle || 90,
-        liftingRange: params56.lifting_range || ['L4'],
-        sectionPrimary: params56.section_primary || 'Diagonal-Backward',
+        liftingRange: top1Params.liftingRange,  // ⭐ Top-1 스타일 수치
+        sectionPrimary: top1Params.sectionPrimary,  // ⭐ Top-1 스타일 수치
         description: params56.description || ''
       },
 
@@ -5682,6 +5685,75 @@ function parseFirestoreDocument(doc) {
   }
 }
 
+// ==================== Top-1 스타일에서 레시피 파라미터 추출 (애니메이션용) ====================
+/**
+ * 매칭된 Top-1 스타일의 도해도 데이터에서 실제 레시피 파라미터 추출
+ * AI 분석값이 아닌 실제 스타일의 수치를 애니메이션에 표시하기 위함
+ * @param {Object} style - Top-1 매칭 스타일 객체
+ * @returns {Object} - 추출된 레시피 파라미터 (liftingRange, sectionPrimary, volumePosition 등)
+ */
+function extractRecipeParamsFromStyle(style) {
+  const diagrams = style.diagrams || [];
+
+  // Lifting 수집 (중복 제거)
+  const liftingSet = new Set();
+  const sectionSet = new Set();
+  const zoneSet = new Set();
+  const directionSet = new Set();
+
+  diagrams.forEach(d => {
+    if (d.lifting) liftingSet.add(d.lifting);
+    if (d.section) sectionSet.add(d.section);
+    if (d.zone) zoneSet.add(d.zone);
+    if (d.direction) directionSet.add(d.direction);
+  });
+
+  // Lifting을 L 코드로 변환 (예: "90" → "L4", "45" → "L2")
+  const angleToLiftingCode = {
+    '0': 'L0', '22.5': 'L1', '45': 'L2', '67.5': 'L3',
+    '90': 'L4', '112.5': 'L5', '135': 'L6', '157.5': 'L7', '180': 'L8'
+  };
+
+  const liftingCodes = Array.from(liftingSet).map(lift => {
+    // 이미 L코드 형식이면 그대로
+    if (lift.startsWith('L')) return lift;
+    // 숫자만 있으면 변환
+    const angle = lift.replace(/[^0-9.]/g, '');
+    return angleToLiftingCode[angle] || `L${Math.round(parseFloat(angle) / 22.5)}`;
+  }).filter(Boolean);
+
+  // Section 정리 (주요 섹션 추출)
+  const sections = Array.from(sectionSet);
+  const primarySection = sections.find(s =>
+    s.includes('Diagonal') || s.includes('Horizontal') || s.includes('Vertical') || s.includes('Pivot')
+  ) || sections[0] || 'Diagonal-Backward';
+
+  // Zone에서 볼륨 위치 추출
+  const zones = Array.from(zoneSet);
+  let volumePosition = 'Medium';
+  if (zones.some(z => z.toLowerCase().includes('top') || z.toLowerCase().includes('crown'))) {
+    volumePosition = 'Top';
+  } else if (zones.some(z => z.toLowerCase().includes('side') || z.toLowerCase().includes('parietal'))) {
+    volumePosition = 'Side';
+  } else if (zones.some(z => z.toLowerCase().includes('nape') || z.toLowerCase().includes('back'))) {
+    volumePosition = 'Back';
+  }
+
+  console.log(`📊 Top-1 스타일 파라미터 추출:`);
+  console.log(`   Lifting: ${liftingCodes.join(', ') || '없음'}`);
+  console.log(`   Section: ${primarySection}`);
+  console.log(`   Volume: ${volumePosition}`);
+  console.log(`   Zones: ${zones.join(', ') || '없음'}`);
+
+  return {
+    liftingRange: liftingCodes.length > 0 ? liftingCodes : ['L4'],
+    sectionPrimary: primarySection,
+    volumePosition: volumePosition,
+    zones: zones,
+    directions: Array.from(directionSet)
+  };
+}
+
 // ==================== 파라미터 기반 커스텀 레시피 생성 (Firebase 기반) ====================
 async function generateCustomRecipeFromParams(payload, geminiKey) {
   const { params56, language } = payload;
@@ -5907,6 +5979,9 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
     // 스타일ID 언급 제거 (사용자에게 보이지 않도록)
     originalRecipe = originalRecipe.replace(/\b[FM]?[A-Z]{2,3}\d{4}\b/g, '').replace(/\s{2,}/g, ' ').trim();
 
+    // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
+    const top1Params = extractRecipeParamsFromStyle(top1);
+
     console.log(`⏱️ 총 처리 시간: ${Date.now() - startTime}ms`);
 
     // 8. 결과 반환 - Top-1 레시피 그대로
@@ -5918,6 +5993,7 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
         success: true,
         data: {
           gender: 'male',
+          // ⭐⭐⭐ Top-1 스타일의 실제 수치 사용! (AI 분석 아님)
           analysis: {
             styleCode: styleCode,
             styleName: MALE_STYLE_TERMS[styleCode]?.ko || maleParams.style_name || styleCode,
@@ -5927,7 +6003,11 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
             fadeType: maleParams.fade_type || 'None',
             texture: maleParams.texture || 'Smooth',
             productType: maleParams.product_type || 'Wax',
-            stylingDirection: maleParams.styling_direction || 'Forward'
+            stylingDirection: maleParams.styling_direction || 'Forward',
+            // ⭐ Top-1 스타일에서 추출한 실제 수치
+            liftingRange: top1Params.liftingRange,
+            sectionPrimary: top1Params.sectionPrimary,
+            volumePosition: top1Params.volumePosition
           },
           targetSeries: {
             code: styleCode,
