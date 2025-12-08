@@ -3131,8 +3131,32 @@ async function analyzeImageStructured(imageBase64, mimeType, geminiKey) {
   "balayage_applied": true/false,
   "ombre_applied": true/false,
 
-  "description": "이 스타일에 대한 1-2문장 설명"
+  "description": "이 스타일에 대한 1-2문장 설명",
+
+  "hair_regions": {
+    "top": {"x": 0-100, "y": 0-100},
+    "crown": {"x": 0-100, "y": 0-100},
+    "side_left": {"x": 0-100, "y": 0-100},
+    "side_right": {"x": 0-100, "y": 0-100},
+    "back": {"x": 0-100, "y": 0-100},
+    "fringe": {"x": 0-100, "y": 0-100},
+    "nape": {"x": 0-100, "y": 0-100},
+    "length_end": {"x": 0-100, "y": 0-100}
+  }
 }
+
+⭐⭐⭐ **hair_regions 필수! (UI 오버레이용)** ⭐⭐⭐
+이미지에서 각 헤어 영역의 **중심 좌표**를 0~100% 범위로 반환하세요.
+- x: 이미지 왼쪽 기준 0%, 오른쪽 100%
+- y: 이미지 상단 기준 0%, 하단 100%
+- top: 정수리 위치 (보통 x:50, y:5~15)
+- crown: 크라운 영역 (보통 x:50, y:15~25)
+- side_left: 왼쪽 사이드 머리 (보통 x:15~25, y:30~40)
+- side_right: 오른쪽 사이드 머리 (보통 x:75~85, y:30~40)
+- back: 뒷머리 영역 (보이는 경우, 안보이면 null)
+- fringe: 앞머리 영역 (있는 경우, 없으면 null)
+- nape: 목덜미 영역 (보이는 경우, 안보이면 null)
+- length_end: 머리카락 끝 위치 (가장 긴 부분의 끝)
 
 ⚠️ 필수 규칙:
 1. lifting_range는 반드시 배열! ["L2"] 또는 ["L2", "L4"]
@@ -5533,7 +5557,9 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
           })),
           recipe: maleRecipe,
           diagrams: selectedDiagrams,
-          processingTime: Date.now() - startTime
+          processingTime: Date.now() - startTime,
+          // ⭐ 전체 분석 파라미터 (hair_regions 포함)
+          params56: maleParams
         }
       })
     };
@@ -6004,8 +6030,23 @@ async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
   "weight_distribution": "Top Heavy|Balanced|Bottom Heavy",
   "connection_type": "Connected|Disconnected",
   "product_type": "Wax|Pomade|Clay|Gel",
-  "styling_direction": "Forward|Backward|Side|Up"
-}`;
+  "styling_direction": "Forward|Backward|Side|Up",
+  "hair_regions": {
+    "top": {"x": 0-100, "y": 0-100},
+    "crown": {"x": 0-100, "y": 0-100},
+    "side_left": {"x": 0-100, "y": 0-100},
+    "side_right": {"x": 0-100, "y": 0-100},
+    "back": {"x": 0-100, "y": 0-100} or null,
+    "fringe": {"x": 0-100, "y": 0-100} or null,
+    "nape": {"x": 0-100, "y": 0-100}
+  }
+}
+
+⭐ **hair_regions 필수! (UI 오버레이용)**
+이미지에서 각 헤어 영역의 중심 좌표를 0~100% 범위로 반환:
+- x: 왼쪽 0%, 오른쪽 100%
+- y: 상단 0%, 하단 100%
+- 보이지 않는 영역은 null`;
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,

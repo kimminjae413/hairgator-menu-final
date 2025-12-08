@@ -1343,8 +1343,8 @@ class AIStudio {
     // 도해도 뷰어 초기화
     this.initDiagramViewer(mainDiagrams || []);
 
-    // 📐 레시피 오버레이 라벨 생성
-    this.generateRecipeOverlayLabels(analysis, 'female');
+    // 📐 레시피 오버레이 라벨 생성 (hair_regions 좌표 사용)
+    this.generateRecipeOverlayLabels(analysis, 'female', params56);
   }
 
   // ⭐ 기장 드롭다운 이벤트 초기화
@@ -1387,7 +1387,7 @@ class AIStudio {
   // ==================== 남자 맞춤 레시피 캔버스 표시 ====================
 
   showMaleRecipeCanvas(data, uploadedImageUrl) {
-    const { analysis, targetSeries, referenceStyles, recipe, diagrams } = data;
+    const { analysis, targetSeries, referenceStyles, recipe, diagrams, params56 } = data;
     const subStyleDisplay = analysis.subStyle || analysis.styleName;
 
     // 현재 분석 데이터 저장 (재분석용)
@@ -1515,8 +1515,8 @@ class AIStudio {
     // 도해도 뷰어 초기화
     this.initDiagramViewer(diagrams || []);
 
-    // 📐 레시피 오버레이 라벨 생성
-    this.generateRecipeOverlayLabels(analysis, 'male');
+    // 📐 레시피 오버레이 라벨 생성 (hair_regions 좌표 사용)
+    this.generateRecipeOverlayLabels(analysis, 'male', params56);
   }
 
   // ==================== 도해도 뷰어 ====================
@@ -1690,120 +1690,165 @@ class AIStudio {
   // ==================== 레시피 오버레이 시각화 ====================
 
   // 레시피 오버레이 라벨 생성
-  generateRecipeOverlayLabels(analysis, gender) {
+  generateRecipeOverlayLabels(analysis, gender, params56) {
     const labelsContainer = document.getElementById('recipeOverlayLabels');
     if (!labelsContainer) return;
+
+    // 📍 AI가 감지한 헤어 영역 좌표 (Gemini Vision 결과)
+    const regions = params56?.hair_regions || {};
+
+    // 기본 좌표 (AI 감지 실패 시 폴백)
+    const defaultRegions = {
+      top: { x: 50, y: 10 },
+      crown: { x: 50, y: 20 },
+      side_left: { x: 20, y: 35 },
+      side_right: { x: 80, y: 35 },
+      back: null,
+      fringe: { x: 50, y: 25 },
+      nape: { x: 50, y: 70 },
+      length_end: { x: 50, y: 85 }
+    };
+
+    // AI 좌표와 기본값 병합
+    const getCoord = (key) => regions[key] || defaultRegions[key];
 
     let labels = [];
 
     if (gender === 'female') {
-      // 여자 스타일 - 42 포뮬러 기반 라벨
+      // 여자 스타일 - 42 포뮬러 기반 라벨 (실제 헤어 위치에 배치)
       const liftingRange = Array.isArray(analysis.liftingRange) ? analysis.liftingRange : [analysis.liftingRange || 'L4'];
 
-      // Lifting 각도 라벨들 (머리 윗부분에 배치)
+      // Lifting 각도 라벨 (정수리/크라운 영역에 배치)
       const liftingAngles = {
-        'L1': '0°', 'L2': '30°', 'L3': '45°', 'L4': '90°', 'L5': '120°', 'L6': '180°'
+        'L0': '0°', 'L1': '22.5°', 'L2': '45°', 'L3': '67.5°',
+        'L4': '90°', 'L5': '112.5°', 'L6': '135°', 'L7': '157.5°', 'L8': '180°'
       };
 
-      liftingRange.forEach((lift, idx) => {
-        const angle = liftingAngles[lift] || '90°';
+      const topCoord = getCoord('top');
+      const crownCoord = getCoord('crown');
+
+      if (liftingRange.length > 0 && topCoord) {
+        const mainLift = liftingRange[0];
+        const angle = liftingAngles[mainLift] || '90°';
         labels.push({
           type: 'lifting',
           text: angle,
-          subText: lift,
-          position: { top: 15 + (idx * 12), left: 30 + (idx * 15) }
+          subText: mainLift,
+          position: { top: topCoord.y, left: topCoord.x }
         });
-      });
+      }
 
-      // Section 라벨 (측면에 배치)
-      if (analysis.sectionPrimary) {
+      // 추가 Lifting (크라운에)
+      if (liftingRange.length > 1 && crownCoord) {
+        const subLift = liftingRange[1];
+        const angle = liftingAngles[subLift] || '90°';
+        labels.push({
+          type: 'lifting',
+          text: angle,
+          subText: subLift,
+          position: { top: crownCoord.y, left: crownCoord.x }
+        });
+      }
+
+      // Section 라벨 (오른쪽 사이드에 배치)
+      const sideRightCoord = getCoord('side_right');
+      if (analysis.sectionPrimary && sideRightCoord) {
         labels.push({
           type: 'section',
           text: analysis.sectionPrimary.replace('Diagonal-', 'D-'),
           subText: 'Section',
-          position: { top: 40, right: 10 }
+          position: { top: sideRightCoord.y, left: sideRightCoord.x }
         });
       }
 
-      // Length 라벨 (하단에 배치)
-      if (analysis.lengthName) {
+      // Length 라벨 (머리카락 끝 위치에 배치)
+      const lengthEndCoord = getCoord('length_end');
+      if (analysis.lengthName && lengthEndCoord) {
         labels.push({
           type: 'length',
           text: analysis.lengthName,
           subText: 'Length',
-          position: { bottom: 25, left: 10 }
+          position: { top: lengthEndCoord.y, left: lengthEndCoord.x }
         });
       }
 
-      // Volume 라벨
-      if (analysis.volumePosition) {
+      // Volume 라벨 (왼쪽 사이드)
+      const sideLeftCoord = getCoord('side_left');
+      if (analysis.volumePosition && sideLeftCoord) {
         labels.push({
           type: 'section',
-          text: analysis.volumePosition,
+          text: Array.isArray(analysis.volumePosition) ? analysis.volumePosition[0] : analysis.volumePosition,
           subText: 'Volume',
-          position: { top: 55, right: 10 }
+          position: { top: sideLeftCoord.y, left: sideLeftCoord.x }
         });
       }
 
-      // Connection 라벨
-      if (analysis.connectionType) {
+      // Fringe/앞머리 라벨 (앞머리 위치)
+      const fringeCoord = getCoord('fringe');
+      if (analysis.bangsType && analysis.bangsType !== 'No Fringe' && fringeCoord) {
         labels.push({
           type: 'length',
-          text: analysis.connectionType,
-          subText: '',
-          position: { bottom: 10, right: 10 }
+          text: analysis.bangsType,
+          subText: 'Fringe',
+          position: { top: fringeCoord.y, left: fringeCoord.x }
         });
       }
 
     } else {
-      // 남자 스타일 라벨
-      // Top Length
-      if (analysis.topLength) {
+      // 남자 스타일 라벨 (실제 헤어 위치에 배치)
+      const topCoord = getCoord('top');
+      const sideLeftCoord = getCoord('side_left');
+      const sideRightCoord = getCoord('side_right');
+      const napeCoord = getCoord('nape');
+
+      // Top Length (정수리에)
+      if (analysis.topLength && topCoord) {
         labels.push({
           type: 'length',
           text: analysis.topLength,
           subText: 'Top',
-          position: { top: 15, left: 40 }
+          position: { top: topCoord.y, left: topCoord.x }
         });
       }
 
-      // Side Length
-      if (analysis.sideLength) {
+      // Side Length (왼쪽 사이드에)
+      if (analysis.sideLength && sideLeftCoord) {
         labels.push({
           type: 'length',
           text: analysis.sideLength,
           subText: 'Side',
-          position: { top: 45, left: 10 }
+          position: { top: sideLeftCoord.y, left: sideLeftCoord.x }
         });
       }
 
-      // Fade Type
-      if (analysis.fadeType && analysis.fadeType !== 'None') {
+      // Fade Type (목덜미에)
+      if (analysis.fadeType && analysis.fadeType !== 'None' && napeCoord) {
         labels.push({
           type: 'lifting',
           text: analysis.fadeType,
           subText: 'Fade',
-          position: { top: 60, left: 10 }
+          position: { top: napeCoord.y, left: napeCoord.x }
         });
       }
 
-      // Texture
-      if (analysis.texture) {
+      // Texture (오른쪽 사이드에)
+      if (analysis.texture && sideRightCoord) {
         labels.push({
           type: 'section',
           text: analysis.texture,
           subText: 'Texture',
-          position: { top: 30, right: 10 }
+          position: { top: sideRightCoord.y, left: sideRightCoord.x }
         });
       }
 
-      // Style Code
-      if (analysis.styleCode) {
+      // Style Code (크라운에)
+      const crownCoord = getCoord('crown');
+      if (analysis.styleCode && crownCoord) {
         labels.push({
           type: 'lifting',
           text: analysis.styleCode,
           subText: analysis.styleName || '',
-          position: { bottom: 15, right: 10 }
+          position: { top: crownCoord.y + 10, left: crownCoord.x }
         });
       }
     }
