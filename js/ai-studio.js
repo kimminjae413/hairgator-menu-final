@@ -584,6 +584,13 @@ class AIStudio {
         content: msg.content
       }));
 
+    // ⭐ 현재 활성 레시피 컨텍스트 (5분 이내면 유효)
+    let recipeContext = null;
+    if (this.currentRecipeContext && (Date.now() - this.currentRecipeContext.timestamp) < 5 * 60 * 1000) {
+      recipeContext = this.currentRecipeContext;
+      console.log('📋 레시피 컨텍스트 포함:', recipeContext.analysis?.styleCode || recipeContext.analysis?.lengthName);
+    }
+
     const response = await fetch(this.apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -592,7 +599,8 @@ class AIStudio {
         payload: {
           user_query: query,
           language: this.currentLanguage,
-          chat_history: recentHistory
+          chat_history: recentHistory,
+          recipe_context: recipeContext  // ⭐ 레시피 컨텍스트 추가
         }
       })
     });
@@ -2615,6 +2623,60 @@ ${data.referenceStyles.map((s, i) => `  ${i+1}. ${s.styleId} - ${s.featureReason
       }
 
       window.aiStudio.addMessageToUI('bot', analysisMsg);
+
+      // ⭐ 레시피 분석 결과를 대화 히스토리에 저장 (후속 질문 컨텍스트용)
+      window.aiStudio.conversationHistory.push({
+        sender: 'user',
+        content: `[이미지 업로드] ${genderText} 헤어스타일 레시피 생성 요청`,
+        timestamp: Date.now()
+      });
+
+      // ⭐ 분석 결과를 상세하게 히스토리에 저장
+      let recipeContext;
+      if (data.gender === 'male') {
+        recipeContext = `[레시피 분석 결과]
+성별: 남자
+스타일 코드: ${data.analysis.styleCode || '-'}
+스타일명: ${data.analysis.styleName || '-'}
+서브스타일: ${data.analysis.subStyle || '-'}
+탑 길이: ${data.analysis.topLength || '-'}
+사이드 길이: ${data.analysis.sideLength || '-'}
+페이드: ${data.analysis.fadeType || 'None'}
+텍스처: ${data.analysis.texture || '-'}
+스타일링 방향: ${data.analysis.stylingDirection || '-'}
+추천 제품: ${data.analysis.productType || '-'}
+참고 스타일: ${data.referenceStyles.map(s => s.styleId).join(', ')}
+${data.recipe ? `\n생성된 레시피:\n${data.recipe}` : ''}`;
+      } else {
+        recipeContext = `[레시피 분석 결과]
+성별: 여자
+기장: ${data.analysis.lengthName || '-'}
+형태: ${data.analysis.form || '-'}
+앞머리: ${data.analysis.hasBangs ? data.analysis.bangsType : '없음'}
+볼륨 위치: ${Array.isArray(data.analysis.volumePosition) ? data.analysis.volumePosition.join(', ') : data.analysis.volumePosition || '-'}
+텍스처: ${data.analysis.texture || '-'}
+리프팅: ${Array.isArray(data.analysis.liftingRange) ? data.analysis.liftingRange.join(', ') : data.analysis.liftingRange || '-'}
+섹션: ${data.analysis.sectionPrimary || '-'}
+연결: ${data.analysis.connectionType || '-'}
+참고 스타일: ${data.referenceStyles.map(s => s.styleId).join(', ')}
+${data.customRecipe ? `\n생성된 레시피:\n${data.customRecipe}` : ''}`;
+      }
+
+      window.aiStudio.conversationHistory.push({
+        sender: 'bot',
+        content: recipeContext,
+        timestamp: Date.now(),
+        isRecipeContext: true  // 레시피 컨텍스트 표시
+      });
+
+      // ⭐ 현재 활성 레시피 컨텍스트 저장 (API 호출 시 사용)
+      window.aiStudio.currentRecipeContext = {
+        gender: data.gender,
+        analysis: data.analysis,
+        referenceStyles: data.referenceStyles,
+        recipe: data.gender === 'male' ? data.recipe : data.customRecipe,
+        timestamp: Date.now()
+      };
 
       // 캔버스에 맞춤 레시피 표시
       window.aiStudio.showCustomRecipeCanvas(data, pendingImageData.url);

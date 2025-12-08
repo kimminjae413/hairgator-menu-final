@@ -2399,11 +2399,16 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
 
 // 스트리밍 응답
 async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
-  const { user_query, chat_history } = payload;
+  const { user_query, chat_history, recipe_context } = payload;
   const userLanguage = detectLanguage(user_query);
 
   console.log(`🔍 Gemini File Search 스트리밍: "${user_query}"`);
   console.log(`🔑 Gemini Key 앞 15자: ${geminiKey ? geminiKey.substring(0, 15) : 'MISSING'}...`);
+
+  // ⭐ 레시피 컨텍스트 로깅
+  if (recipe_context) {
+    console.log(`📋 레시피 컨텍스트 있음:`, recipe_context.analysis?.styleCode || recipe_context.analysis?.lengthName);
+  }
 
   // 간단한 인사말 처리
   const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워'];
@@ -2470,6 +2475,48 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
       parts: [{ text: user_query }]
     });
 
+    // ⭐ 시스템 프롬프트 생성 (레시피 컨텍스트 포함)
+    let systemPrompt = buildGeminiSystemPrompt(userLanguage);
+
+    // ⭐ 레시피 컨텍스트가 있으면 추가
+    if (recipe_context && recipe_context.analysis) {
+      const ctx = recipe_context;
+      let recipeInfo = '';
+
+      if (ctx.gender === 'male') {
+        recipeInfo = `
+【현재 분석된 레시피 컨텍스트 - 남자 스타일】
+사용자가 방금 이미지를 업로드하여 레시피를 생성했습니다. 다음은 분석 결과입니다:
+- 스타일 코드: ${ctx.analysis.styleCode || '-'} (예: CP=크롭컷, SF=사이드프린지, SP=사이드파트, FU=프린지업, PB=푸시드백, BZ=버즈컷, MC=모히칸)
+- 스타일명: ${ctx.analysis.styleName || '-'}
+- 서브스타일: ${ctx.analysis.subStyle || '-'}
+- 탑 길이: ${ctx.analysis.topLength || '-'}
+- 사이드 길이: ${ctx.analysis.sideLength || '-'}
+- 페이드: ${ctx.analysis.fadeType || 'None'}
+- 텍스처: ${ctx.analysis.texture || '-'}
+- 스타일링 방향: ${ctx.analysis.stylingDirection || '-'}
+
+사용자가 "왜 CP야?", "크롭이 뭐야?", "페이드가 뭐야?" 등 분석 결과에 대해 질문하면 위 컨텍스트를 참조하여 답변하세요.`;
+      } else {
+        recipeInfo = `
+【현재 분석된 레시피 컨텍스트 - 여자 스타일】
+사용자가 방금 이미지를 업로드하여 레시피를 생성했습니다. 다음은 분석 결과입니다:
+- 기장: ${ctx.analysis.lengthName || '-'} (A~H Length: A=허리, B=가슴, C=겨드랑이, D=어깨아래, E=어깨, F=턱, G=목, H=귀)
+- 형태: ${ctx.analysis.form || '-'} (L=Layer, G=Graduation, O=One Length)
+- 앞머리: ${ctx.analysis.hasBangs ? ctx.analysis.bangsType : '없음'}
+- 볼륨 위치: ${Array.isArray(ctx.analysis.volumePosition) ? ctx.analysis.volumePosition.join(', ') : ctx.analysis.volumePosition || '-'}
+- 텍스처: ${ctx.analysis.texture || '-'}
+- 리프팅: ${Array.isArray(ctx.analysis.liftingRange) ? ctx.analysis.liftingRange.join(', ') : ctx.analysis.liftingRange || '-'}
+- 섹션: ${ctx.analysis.sectionPrimary || '-'}
+- 연결: ${ctx.analysis.connectionType || '-'}
+
+사용자가 "왜 D Length야?", "레이어가 뭐야?", "리프팅이 뭐야?" 등 분석 결과에 대해 질문하면 위 컨텍스트를 참조하여 답변하세요.`;
+      }
+
+      systemPrompt = systemPrompt + '\n\n' + recipeInfo;
+      console.log(`📋 레시피 컨텍스트를 시스템 프롬프트에 추가함`);
+    }
+
     // Gemini File Search API 호출 (비스트리밍으로 전체 받아서 SSE로 변환)
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
@@ -2479,7 +2526,7 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
         body: JSON.stringify({
           contents: contents,
           systemInstruction: {
-            parts: [{ text: buildGeminiSystemPrompt(userLanguage) }]
+            parts: [{ text: systemPrompt }]
           },
           tools: [{
             fileSearch: {
