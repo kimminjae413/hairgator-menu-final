@@ -3137,15 +3137,22 @@ window.HAIRGATOR_MENU = {
     updateCategoryDescription,
     showToast,
     checkSubcategoriesAndNew,
+    navigateModalStyle,  // ⭐ 모달 스와이프용 추가
     // 전역 변수 getter 추가
     getCurrentGender: () => currentGender,
     getCurrentMainTab: () => currentMainTab,
     getCurrentSubTab: () => currentSubTab,
+    // 모달 슬라이딩용 getter/setter
+    getCategoryStyles: () => currentCategoryStyles,
+    getStyleIndex: () => currentStyleIndex,
     // 카테고리 데이터 getter 추가 (tablet-touch-handler.js에서 사용)
     getCategories: (gender) => gender === 'male' ? MALE_CATEGORIES : FEMALE_CATEGORIES,
     getMaleCategories: () => MALE_CATEGORIES,
     getFemaleCategories: () => FEMALE_CATEGORIES
 };
+
+// ⭐ 전역 함수로도 노출 (스와이프 이벤트에서 직접 호출용)
+window.navigateModalStyle = navigateModalStyle;
 
 // HTML에서 직접 호출되는 전역 함수 추가
 window.selectGender = function (gender) {
