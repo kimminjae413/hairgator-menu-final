@@ -2943,6 +2943,20 @@ body.fullscreen-mode .menu-items-container {
     padding-top: 180px !important;
 }
 
+/* 풀스크린 모드 대분류 탭 NEW 표시 잘림 방지 */
+body.fullscreen-mode .category-tabs,
+.fullscreen-mode .category-tabs {
+    padding-top: 20px !important;
+    overflow-y: visible !important;
+}
+
+@media (display-mode: fullscreen), (display-mode: standalone) {
+    .category-tabs {
+        padding-top: 20px !important;
+        overflow-y: visible !important;
+    }
+}
+
 /* ========== High-End 타이포그래피 위계 강화 ========== */
 .category-description-text {
     color: rgba(255, 255, 255, 0.6) !important;
