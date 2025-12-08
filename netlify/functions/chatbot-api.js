@@ -5055,239 +5055,128 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     return await analyzeAndMatchMaleRecipe(payload, geminiKey);
   }
 
-  // 여자 스타일 기본 처리 (기존 로직)
+  // ⭐⭐⭐ 새로운 방식: Gemini Vision 직접 비교 ⭐⭐⭐
   try {
-    // 1. 이미지 분석 - 스타일 파라미터 추출
+    // 1. 먼저 기장(Length)만 빠르게 분석
     const t1 = Date.now();
-    const params56 = await analyzeImageStructured(image_base64, mime_type, geminiKey);
-    console.log(`⏱️ [1] 이미지 분석: ${Date.now() - t1}ms`);
+    const lengthAnalysis = await analyzeImageLengthOnly(image_base64, mime_type, geminiKey);
+    const lengthCode = lengthAnalysis.length_code || 'D';
+    console.log(`⏱️ [1] 기장 분석: ${Date.now() - t1}ms → ${lengthCode} Length`);
 
-    // Length 코드 추출 (예: "D Length" → "D")
-    const lengthCode = params56.length_category ? params56.length_category.charAt(0) : 'D';
-
-    console.log(`📊 스타일 분석 완료:`);
-    console.log(`   - Length: ${params56.length_category}`);
-    console.log(`   - Cut Form: ${params56.cut_form}`);
-    console.log(`   - Lifting: ${Array.isArray(params56.lifting_range) ? params56.lifting_range.join(', ') : params56.lifting_range}`);
-    // ⭐ 존별 리프팅 출력
-    if (params56.lifting_by_zone) {
-      const lbz = params56.lifting_by_zone;
-      console.log(`   - Lifting by Zone: Back=${lbz.back || '-'}, Side=${lbz.side || '-'}, Top=${lbz.top || '-'}, Fringe=${lbz.fringe || '-'}`);
-    }
-    console.log(`   - Section: ${params56.section_primary}${params56.section_by_zone ? ` (존별: Back=${params56.section_by_zone.back || '-'}, Side=${params56.section_by_zone.side || '-'})` : ''}`);
-    console.log(`   - Volume: ${params56.volume_zone}`);
-    console.log(`   - Weight: ${params56.weight_distribution}`);
-    console.log(`   - Fringe: ${params56.fringe_type || 'No Fringe'} (${params56.fringe_length || 'N/A'})`);
-    console.log(`   - Outline: ${params56.outline_shape || 'N/A'}`);
-    console.log(`   - Texture: ${params56.hair_texture || 'N/A'}`);
-    console.log(`   - Silhouette: ${params56.silhouette || 'N/A'}`);
-
-    // 2. 전체 스타일에서 검색 (시리즈 제한 없이 전체에서 Top-1)
+    // 2. Firestore에서 해당 시리즈 스타일만 가져오기
     const t2 = Date.now();
-    const allStyles = await getFirestoreStyles();
-    console.log(`⏱️ [2] Firestore 조회: ${Date.now() - t2}ms`);
-    console.log(`📚 전체 ${allStyles.length}개 스타일에서 Top-1 검색`);
-
-    if (allStyles.length === 0) {
-      throw new Error('스타일 데이터가 없습니다');
-    }
-
-    // ⚡ 임베딩 1번만 생성
-    const t3 = Date.now();
-    let queryEmbedding = null;
-    if (params56.description) {
-      queryEmbedding = await generateQueryEmbedding(params56.description, geminiKey);
-      console.log(`⏱️ [3] 임베딩 생성: ${Date.now() - t3}ms`);
-    }
-
-    // 3. 전체 스타일 점수 계산 (자막 없이 빠른 1차 필터링)
-    // ⭐ 분석된 기장과 같은 시리즈 우선!
     const targetSeriesCode = `F${lengthCode}L`;
-    console.log(`🎯 타겟 시리즈: ${targetSeriesCode} (${lengthCode} Length)`);
+    const allStyles = await getFirestoreStyles();
 
-    const stylesWithQuickScore = allStyles.map(style => {
-      const { score, reasons } = calculateFeatureScore(style, params56, '');
-
-      let embeddingSimilarity = 0;
-      if (style.embedding && queryEmbedding) {
-        embeddingSimilarity = cosineSimilarity(queryEmbedding, style.embedding);
-      }
-
-      // ⭐ 같은 시리즈(기장) 보너스 +50점
-      const seriesBonus = (style.series === targetSeriesCode ||
-                          style.styleId.startsWith(targetSeriesCode)) ? 50 : 0;
-
-      return {
-        ...style,
-        featureScore: score,
-        featureReasons: reasons,
-        embeddingSimilarity,
-        seriesBonus,
-        quickScore: score + (embeddingSimilarity * 30) + seriesBonus
-      };
-    });
-
-    // 4. 상위 5개만 자막 fetch 후 최종 점수 계산
-    const topCandidates = stylesWithQuickScore
-      .sort((a, b) => b.quickScore - a.quickScore)
-      .slice(0, 5);
-
-    const stylesWithScores = await Promise.all(
-      topCandidates.map(async (style) => {
-        const captionText = await fetchCaptionContent(style.captionUrl);
-        const { score, reasons } = calculateFeatureScore(style, params56, captionText || '');
-
-        return {
-          ...style,
-          captionText,
-          featureScore: score,
-          featureReasons: reasons,
-          totalScore: score + (style.embeddingSimilarity * 30) + (style.seriesBonus || 0)
-        };
-      })
+    // 해당 시리즈 스타일 필터링 (resultImage가 있는 것만)
+    const seriesStyles = allStyles.filter(s =>
+      (s.series === targetSeriesCode || s.styleId.startsWith(targetSeriesCode)) &&
+      s.resultImage
     );
 
-    // 5. 총점 기준 Top-1 선정 (Top-3은 레시피 생성용)
-    const sortedStyles = stylesWithScores.sort((a, b) => b.totalScore - a.totalScore);
-    const top1 = sortedStyles[0];
-    const top3 = sortedStyles.slice(0, 3);
+    console.log(`⏱️ [2] Firestore 조회: ${Date.now() - t2}ms`);
+    console.log(`📚 ${targetSeriesCode} 시리즈: ${seriesStyles.length}개 스타일 (대표이미지 있음)`);
 
-    // ⭐ 차이점 분석 (유저 이미지 vs 매칭된 스타일)
-    const differences = analyzeDifferences(params56, top1);
-
-    console.log(`🎯 Top-1 매칭: ${top1.styleId} (${top1.totalScore.toFixed(1)}점)`);
-    console.log(`   매칭 이유: ${top1.featureReasons.join(', ')}`);
-    if (differences.length > 0) {
-      console.log(`📝 차이점: ${differences.map(d => d.feature).join(', ')}`);
+    if (seriesStyles.length === 0) {
+      throw new Error(`${targetSeriesCode} 시리즈에 대표이미지가 있는 스타일이 없습니다`);
     }
 
-    // 7. Top-3를 참고하여 맞춤 레시피 생성
-    const t4 = Date.now();
-    const customRecipe = await generateCustomRecipe(params56, top3, geminiKey);
-    console.log(`⏱️ [4] 레시피 생성: ${Date.now() - t4}ms`);
+    // 3. ⭐⭐⭐ Gemini Vision으로 대표이미지와 직접 비교하여 Top-1 선택
+    const t3 = Date.now();
+    const visionResult = await selectBestStyleByVision(
+      image_base64,
+      mime_type,
+      seriesStyles,
+      geminiKey
+    );
+    console.log(`⏱️ [3] Gemini Vision 직접 비교: ${Date.now() - t3}ms`);
+    console.log(`🎯 Vision 선택: ${visionResult.selectedStyleId} (신뢰도: ${visionResult.confidence})`);
+    console.log(`   선택 이유: ${visionResult.reason}`);
 
-    // 8. 기술 기반 도해도 선별 (Top-1 우선, 시리즈 내 앞머리 보충)
-    // allStyles로 전체 후보 전달하여 같은 시리즈에서 앞머리 보충 가능
-    const selectedDiagrams = selectDiagramsByTechnique(top3, params56, 15, stylesWithScores);
+    // 4. 선택된 스타일 찾기
+    const top1 = seriesStyles.find(s => s.styleId === visionResult.selectedStyleId) || seriesStyles[0];
+
+    // 5. 기본 파라미터 분석 (UI 표시용)
+    const t4 = Date.now();
+    const params56 = await analyzeImageStructured(image_base64, mime_type, geminiKey);
+    console.log(`⏱️ [4] 상세 파라미터 분석: ${Date.now() - t4}ms`);
+
+    // 6. Top-1 스타일의 textRecipe 가져오기 (보충 레시피 없이 원본 사용)
+    const originalRecipe = top1.textRecipe || '';
 
     console.log(`⏱️ 총 처리 시간: ${Date.now() - startTime}ms`);
 
-    // 9. 결과 구성 - 스타일 파라미터 전체 포함
+    // 7. 결과 구성 - Top-1 레시피 그대로 반환
     const result = {
-      // 스타일 파라미터 전체 (프론트엔드에서 활용 가능)
+      // 스타일 파라미터 전체
       params56: params56,
 
-      // 대상 시리즈 정보 (Top-1 매칭 스타일의 시리즈)
+      // 대상 시리즈 정보
       targetSeries: {
-        code: top1.series || `F${lengthCode}L`,
-        name: top1.seriesName || `${lengthCode} Length Series`,
-        totalStyles: allStyles.filter(s => s.series === top1.series).length
+        code: targetSeriesCode,
+        name: `${lengthCode} Length Series`,
+        totalStyles: seriesStyles.length
       },
 
-      // 분석 요약 (UI 표시용) - 2WAY CUT SYSTEM 전체 파라미터
+      // 분석 요약 (UI 표시용)
       analysis: {
-        // 기본 정보
         length: lengthCode,
         lengthName: params56.length_category || `${lengthCode} Length`,
         form: params56.cut_form || 'L (Layer)',
         hasBangs: params56.fringe_type !== 'No Fringe',
         bangsType: params56.fringe_type || 'No Fringe',
         fringeLength: params56.fringe_length || 'None',
-
-        // 볼륨 & 무게
         volumeZone: params56.volume_zone || 'Medium',
-        volumePosition: params56.volume_position || ['Back'],
-        weightZone: params56.weight_zone || 'Zone_B',
-        weightDistribution: params56.weight_distribution || 'Balanced',
-
-        // 실루엣 & 라인
         silhouette: params56.silhouette || 'Round',
-        shapeOfLine: params56.shape_of_line || 'Round',
         outlineShape: params56.outline_shape || 'Round',
-
-        // 텍스처
         texture: params56.hair_texture || 'Straight',
-        surfaceTexture: params56.surface_texture || 'Smooth',
-        internalTexture: params56.internal_texture || 'Blunt',
-
-        // 레이어 & 그래쥬에이션
         layerType: params56.layer_type || 'Mid Layer',
-        graduationType: params56.graduation_type || 'None',
         celestialAngle: params56.celestial_angle || 90,
-        graduationAngle: params56.graduation_angle || null,
-
-        // ⭐ 핵심 기술 파라미터 (2WAY CUT)
         liftingRange: params56.lifting_range || ['L4'],
-        liftingDegree: params56.lifting_degree || 90,
-        directionPrimary: params56.direction_primary || 'D4',
         sectionPrimary: params56.section_primary || 'Diagonal-Backward',
-        sectionAngle: params56.section_angle || 45,
-        sectionByZone: params56.section_by_zone || null,
-
-        // 2WAY CUT 핵심 변수
-        headPosition: params56.head_position || 'Upright',
-        distribution: params56.distribution || 'Natural',
-        guideLine: params56.guide_line || 'Traveling',
-        fingerPosition: params56.finger_position || 'Parallel',
-        directionFlow: params56.direction_flow || 'Out_to_In',
-
-        // 기준점
-        targetPoint: params56.target_point || 'G_P',
-        focusPoints: params56.focus_points || ['G_P', 'N_S_P'],
-
-        // 연결 & 질감
-        connectionType: params56.connection_type || 'Connected',
-        lineQuality: params56.line_quality || 'Soft',
-
-        // 펌 & 컬러
-        permApplied: params56.perm_applied || false,
-        permType: params56.perm_type || null,
-        colorApplied: params56.color_applied || false,
-        baseColor: params56.base_color || null,
-
-        // 설명
         description: params56.description || ''
       },
 
-      // ⭐ Top-1 매칭 스타일
+      // ⭐⭐⭐ Top-1 매칭 스타일 (Vision 직접 선택)
       matchedStyle: {
         styleId: top1.styleId,
         series: top1.series,
         seriesName: top1.seriesName,
-        totalScore: top1.totalScore,
-        featureReasons: top1.featureReasons,
+        resultImage: top1.resultImage,
         diagrams: top1.diagrams,
         diagramCount: top1.diagramCount,
-        captionText: top1.captionText
+        // Vision 선택 정보
+        visionConfidence: visionResult.confidence,
+        visionReason: visionResult.reason
       },
 
-      // ⭐ 차이점 (유저 이미지 vs 매칭 스타일)
-      differences: differences,
+      // 차이점 없음 (Top-1 그대로 사용)
+      differences: [],
 
-      // Top-3 참고 스타일 (레시피 생성용)
-      referenceStyles: top3.map(s => ({
-        styleId: s.styleId,
-        series: s.series,
-        totalScore: s.totalScore,
-        featureReasons: s.featureReasons,
-        diagrams: s.diagrams.slice(0, 5),
-        diagramCount: s.diagramCount
-      })),
+      // 참고 스타일 (Top-1만)
+      referenceStyles: [{
+        styleId: top1.styleId,
+        series: top1.series,
+        resultImage: top1.resultImage,
+        diagrams: top1.diagrams.slice(0, 10),
+        diagramCount: top1.diagramCount
+      }],
 
-      // 생성된 맞춤 레시피
-      customRecipe: customRecipe,
+      // ⭐⭐⭐ 원본 레시피 그대로 반환 (보충 없음)
+      customRecipe: originalRecipe,
 
-      // 기술 기반 선별된 도해도 (lifting/section 매칭)
-      mainDiagrams: selectedDiagrams.map(d => ({
-        step: d.step,
+      // 도해도 (Top-1 스타일의 도해도만)
+      mainDiagrams: top1.diagrams.map((d, idx) => ({
+        step: d.step || idx + 1,
         url: d.url,
-        styleId: d.styleId,
-        techScore: d.techScore,
-        matchedFeatures: d.matchedFeatures
+        styleId: top1.styleId,
+        lifting: d.lifting,
+        section: d.section,
+        direction: d.direction
       }))
     };
 
-    console.log(`✅ 맞춤 레시피 생성 완료`);
+    console.log(`✅ Top-1 레시피 매칭 완료: ${top1.styleId}`);
 
     return {
       statusCode: 200,
@@ -5308,6 +5197,183 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
         success: false,
         error: error.message
       })
+    };
+  }
+}
+
+// ==================== 기장(Length)만 빠르게 분석 ====================
+async function analyzeImageLengthOnly(imageBase64, mimeType, geminiKey) {
+  const prompt = `Analyze this hairstyle image and determine the hair LENGTH only.
+
+Hair Length Categories (measure from crown to hair ends):
+- A Length: Above ear (very short, pixie cut level)
+- B Length: Ear to chin level (bob cut level)
+- C Length: Chin to shoulder level
+- D Length: Shoulder level (touching shoulders)
+- E Length: Below shoulder to mid-back
+- F Length: Mid-back level
+- G Length: Lower back level
+- H Length: Waist level or longer
+
+Return ONLY a JSON object:
+{
+  "length_code": "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H",
+  "confidence": "high" | "medium" | "low"
+}`;
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: prompt },
+              { inline_data: { mime_type: mimeType, data: imageBase64 } }
+            ]
+          }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 100 }
+        })
+      }
+    );
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // JSON 추출
+    const jsonMatch = text.match(/\{[\s\S]*?\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+
+    // 기본값
+    return { length_code: 'D', confidence: 'low' };
+  } catch (error) {
+    console.error('기장 분석 오류:', error);
+    return { length_code: 'D', confidence: 'low' };
+  }
+}
+
+// ==================== ⭐⭐⭐ Gemini Vision으로 대표이미지 직접 비교 ====================
+async function selectBestStyleByVision(userImageBase64, mimeType, candidateStyles, geminiKey) {
+  // 최대 10개 스타일만 비교 (토큰 제한)
+  const stylesToCompare = candidateStyles.slice(0, 10);
+
+  // 대표이미지 URL 목록 생성
+  const styleInfo = stylesToCompare.map((s, idx) => ({
+    index: idx + 1,
+    styleId: s.styleId,
+    resultImage: s.resultImage
+  }));
+
+  const styleListText = styleInfo.map(s =>
+    `${s.index}. ${s.styleId}`
+  ).join('\n');
+
+  const prompt = `You are a professional hairstylist AI. Compare the USER'S REFERENCE IMAGE with the CANDIDATE STYLE IMAGES below.
+
+Your task: Select the ONE style that is MOST SIMILAR to the user's reference image.
+
+Focus on these visual features (in order of importance):
+1. Overall SILHOUETTE and SHAPE (round, triangular, square)
+2. VOLUME distribution (where is the fullness?)
+3. LAYER structure (high layer, low layer, one-length)
+4. BANGS/FRINGE style (presence, length, shape)
+5. OUTLINE shape (hemline - round, blunt, textured)
+6. Hair TEXTURE and MOVEMENT
+
+CANDIDATE STYLES:
+${styleListText}
+
+IMPORTANT:
+- The user image is the FIRST image
+- Candidate style images follow in order (1, 2, 3...)
+- Select based on VISUAL SIMILARITY, not just length
+
+Return ONLY a JSON object:
+{
+  "selected_index": <number 1-${stylesToCompare.length}>,
+  "selected_style_id": "<styleId>",
+  "confidence": "high" | "medium" | "low",
+  "reason": "<2-3 sentences explaining why this style matches best, focusing on silhouette, volume, layers, bangs>"
+}`;
+
+  try {
+    // 이미지 parts 구성: 유저 이미지 + 대표이미지들
+    const imageParts = [
+      { text: "USER'S REFERENCE IMAGE:" },
+      { inline_data: { mime_type: mimeType, data: userImageBase64 } },
+      { text: "\n\nCANDIDATE STYLE IMAGES:" }
+    ];
+
+    // 대표이미지들 추가 (URL에서 fetch)
+    for (const style of styleInfo) {
+      if (style.resultImage) {
+        try {
+          // URL에서 이미지 가져오기
+          const imgResponse = await fetch(style.resultImage, {
+            headers: { 'User-Agent': 'Mozilla/5.0' }
+          });
+
+          if (imgResponse.ok) {
+            const imgBuffer = await imgResponse.arrayBuffer();
+            const imgBase64 = Buffer.from(imgBuffer).toString('base64');
+            const imgMimeType = imgResponse.headers.get('content-type') || 'image/jpeg';
+
+            imageParts.push({ text: `\n${style.index}. ${style.styleId}:` });
+            imageParts.push({ inline_data: { mime_type: imgMimeType, data: imgBase64 } });
+          }
+        } catch (imgError) {
+          console.log(`⚠️ 이미지 로드 실패: ${style.styleId}`);
+        }
+      }
+    }
+
+    imageParts.push({ text: `\n\n${prompt}` });
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: imageParts }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 500 }
+        })
+      }
+    );
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    console.log('🔍 Vision 응답:', text.substring(0, 300));
+
+    // JSON 추출
+    const jsonMatch = text.match(/\{[\s\S]*?\}/);
+    if (jsonMatch) {
+      const result = JSON.parse(jsonMatch[0]);
+      return {
+        selectedStyleId: result.selected_style_id || stylesToCompare[0].styleId,
+        confidence: result.confidence || 'medium',
+        reason: result.reason || 'Vision 분석 기반 선택'
+      };
+    }
+
+    // 기본값: 첫 번째 스타일
+    return {
+      selectedStyleId: stylesToCompare[0].styleId,
+      confidence: 'low',
+      reason: 'Vision 분석 실패, 기본 스타일 선택'
+    };
+
+  } catch (error) {
+    console.error('Vision 비교 오류:', error);
+    return {
+      selectedStyleId: stylesToCompare[0].styleId,
+      confidence: 'low',
+      reason: `오류 발생: ${error.message}`
     };
   }
 }
@@ -5450,6 +5516,7 @@ async function generateCustomRecipeFromParams(payload, geminiKey) {
 // ==================== 남자 이미지 분석 + 맞춤 레시피 생성 ====================
 /**
  * 남자 스타일: 스타일 코드 기반 (SF, SP, FU, PB, BZ, CP, MC)
+ * ⭐⭐⭐ 새로운 방식: Gemini Vision으로 대표이미지 직접 비교 ⭐⭐⭐
  */
 async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
   const { image_base64, mime_type } = payload;
@@ -5458,21 +5525,11 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
   console.log('👨 남자 이미지 분석 + 맞춤 레시피 생성 시작...');
 
   try {
-    // 1. Gemini Vision으로 남자 스타일 분석
+    // 1. 먼저 스타일 코드만 빠르게 분석
     const t1 = Date.now();
-    const maleParams = await analyzeManImageVision(image_base64, mime_type, geminiKey);
-    console.log(`⏱️ [1] 남자 이미지 분석: ${Date.now() - t1}ms`);
-
-    const styleCode = maleParams.style_category || 'SF';
-    const styleName = maleParams.style_name || 'Side Fringe';
-
-    console.log(`📊 남자 스타일 분석 완료:`);
-    console.log(`   - 스타일 코드: ${styleCode}`);
-    console.log(`   - 스타일명: ${styleName}`);
-    console.log(`   - Top 길이: ${maleParams.top_length || 'Medium'}`);
-    console.log(`   - Side 길이: ${maleParams.side_length || 'Short'}`);
-    console.log(`   - Fade: ${maleParams.fade_type || 'None'}`);
-    console.log(`   - Texture: ${maleParams.texture || 'Smooth'}`);
+    const styleAnalysis = await analyzeMaleStyleCodeOnly(image_base64, mime_type, geminiKey);
+    const styleCode = styleAnalysis.style_code || 'SF';
+    console.log(`⏱️ [1] 스타일 코드 분석: ${Date.now() - t1}ms → ${styleCode}`);
 
     // 2. Firestore men_styles 컬렉션에서 검색
     const t2 = Date.now();
@@ -5488,13 +5545,11 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
       const fields = doc.fields || {};
       const styleId = doc.name.split('/').pop();
 
-      // 임베딩 추출
       let embedding = null;
       if (fields.embedding?.arrayValue?.values) {
         embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
       }
 
-      // 도해도 추출
       let diagrams = [];
       if (fields.diagrams?.arrayValue?.values) {
         diagrams = fields.diagrams.arrayValue.values.map(v => {
@@ -5526,53 +5581,49 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
 
     console.log(`⏱️ [2] Firestore men_styles 조회: ${Date.now() - t2}ms (${allMenStyles.length}개)`);
 
-    // 3. 스타일 코드로 필터링
+    // 3. 스타일 코드로 필터링 (resultImage가 있는 것만)
     const filteredStyles = allMenStyles.filter(s =>
-      s.styleId.startsWith(styleCode) || s.series === styleCode
+      (s.styleId.startsWith(styleCode) || s.series === styleCode) && s.resultImage
     );
 
-    console.log(`🎯 ${styleCode} 스타일: ${filteredStyles.length}개`);
+    console.log(`🎯 ${styleCode} 스타일: ${filteredStyles.length}개 (대표이미지 있음)`);
 
-    // 필터 결과 없으면 전체에서 Top-3
-    const targetStyles = filteredStyles.length > 0 ? filteredStyles : allMenStyles.slice(0, 10);
+    // 필터 결과 없으면 전체에서 resultImage 있는 것만
+    const targetStyles = filteredStyles.length > 0
+      ? filteredStyles
+      : allMenStyles.filter(s => s.resultImage).slice(0, 10);
 
-    // 4. 임베딩 기반 유사도 검색
+    if (targetStyles.length === 0) {
+      throw new Error('대표이미지가 있는 남자 스타일이 없습니다');
+    }
+
+    // 4. ⭐⭐⭐ Gemini Vision으로 대표이미지와 직접 비교하여 Top-1 선택
     const t3 = Date.now();
-    const searchQuery = `${styleName} ${maleParams.top_length || ''} ${maleParams.fade_type || ''} ${maleParams.texture || ''}`.trim();
-    const queryEmbedding = await generateQueryEmbedding(searchQuery, geminiKey);
-    console.log(`⏱️ [3] 임베딩 생성: ${Date.now() - t3}ms`);
+    const visionResult = await selectBestMaleStyleByVision(
+      image_base64,
+      mime_type,
+      targetStyles,
+      geminiKey
+    );
+    console.log(`⏱️ [3] Gemini Vision 직접 비교: ${Date.now() - t3}ms`);
+    console.log(`🎯 Vision 선택: ${visionResult.selectedStyleId} (신뢰도: ${visionResult.confidence})`);
+    console.log(`   선택 이유: ${visionResult.reason}`);
 
-    // 유사도 계산
-    const stylesWithSimilarity = targetStyles.map(style => {
-      let similarity = 0;
-      if (style.embedding && queryEmbedding) {
-        similarity = cosineSimilarity(queryEmbedding, style.embedding);
-      }
-      return { ...style, similarity };
-    });
+    // 5. 선택된 스타일 찾기
+    const top1 = targetStyles.find(s => s.styleId === visionResult.selectedStyleId) || targetStyles[0];
 
-    // Top-3 선정
-    const top3 = stylesWithSimilarity
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, 3);
-
-    console.log(`🎯 Top-3 참고 스타일:`);
-    top3.forEach((s, i) => {
-      console.log(`  ${i+1}. ${s.styleId} (유사도: ${(s.similarity * 100).toFixed(1)}%)`);
-    });
-
-    // 5. 남자 레시피 생성 (GPT)
+    // 6. 상세 파라미터 분석 (UI 표시용)
     const t4 = Date.now();
-    const maleRecipe = await generateMaleCustomRecipe(maleParams, top3, geminiKey);
-    console.log(`⏱️ [4] 레시피 생성: ${Date.now() - t4}ms`);
+    const maleParams = await analyzeManImageVision(image_base64, mime_type, geminiKey);
+    console.log(`⏱️ [4] 상세 파라미터 분석: ${Date.now() - t4}ms`);
 
-    // 6. 도해도 선별 (최대 15개)
-    const selectedDiagrams = selectMaleDiagramsByTechnique(top3, maleParams, 15);
+    // 7. Top-1 스타일의 textRecipe 가져오기 (보충 레시피 없이 원본 사용)
+    const originalRecipe = top1.textRecipe || '';
 
     console.log(`⏱️ 총 처리 시간: ${Date.now() - startTime}ms`);
 
-    // 7. 결과 반환
-    const subStyleName = maleParams.sub_style || MALE_STYLE_TERMS[styleCode]?.subStyles?.[0] || styleName;
+    // 8. 결과 반환 - Top-1 레시피 그대로
+    const subStyleName = maleParams.sub_style || MALE_STYLE_TERMS[styleCode]?.subStyles?.[0] || maleParams.style_name;
     return {
       statusCode: 200,
       headers,
@@ -5582,7 +5633,7 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
           gender: 'male',
           analysis: {
             styleCode: styleCode,
-            styleName: MALE_STYLE_TERMS[styleCode]?.ko || styleName,
+            styleName: MALE_STYLE_TERMS[styleCode]?.ko || maleParams.style_name || styleCode,
             subStyle: subStyleName,
             topLength: maleParams.top_length || 'Medium',
             sideLength: maleParams.side_length || 'Short',
@@ -5593,19 +5644,40 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
           },
           targetSeries: {
             code: styleCode,
-            name: MALE_STYLE_TERMS[styleCode]?.ko || styleName,
+            name: MALE_STYLE_TERMS[styleCode]?.ko || maleParams.style_name || styleCode,
             subStyles: MALE_STYLE_TERMS[styleCode]?.subStyles || [],
             totalStyles: filteredStyles.length
           },
-          referenceStyles: top3.map(s => ({
-            styleId: s.styleId,
-            similarity: s.similarity,
-            resultImage: s.resultImage
+          // ⭐⭐⭐ Top-1 매칭 스타일 (Vision 직접 선택)
+          matchedStyle: {
+            styleId: top1.styleId,
+            series: top1.series,
+            seriesName: top1.seriesName,
+            resultImage: top1.resultImage,
+            diagrams: top1.diagrams,
+            diagramCount: top1.diagramCount,
+            visionConfidence: visionResult.confidence,
+            visionReason: visionResult.reason
+          },
+          // 참고 스타일 (Top-1만)
+          referenceStyles: [{
+            styleId: top1.styleId,
+            resultImage: top1.resultImage,
+            diagrams: top1.diagrams.slice(0, 10),
+            diagramCount: top1.diagramCount
+          }],
+          // ⭐⭐⭐ 원본 레시피 그대로 반환 (보충 없음)
+          recipe: originalRecipe,
+          // 도해도 (Top-1 스타일의 도해도만)
+          diagrams: top1.diagrams.map((d, idx) => ({
+            step: d.step || idx + 1,
+            url: d.url,
+            styleId: top1.styleId,
+            lifting: d.lifting,
+            section: d.section,
+            direction: d.direction
           })),
-          recipe: maleRecipe,
-          diagrams: selectedDiagrams,
           processingTime: Date.now() - startTime,
-          // ⭐ 전체 분석 파라미터 (hair_regions 포함)
           params56: maleParams
         }
       })
@@ -5620,6 +5692,171 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
         success: false,
         error: error.message
       })
+    };
+  }
+}
+
+// ==================== 남자 스타일 코드만 빠르게 분석 ====================
+async function analyzeMaleStyleCodeOnly(imageBase64, mimeType, geminiKey) {
+  const prompt = `Analyze this men's hairstyle image and determine the STYLE CATEGORY only.
+
+Men's Style Categories:
+- SF (Side Fringe): 옆으로 내린 앞머리, 이마를 가리는 스타일
+- SP (Side Part): 가르마를 탄 스타일, 7:3 또는 6:4 분배
+- FU (Fringe Up): 앞머리를 올린 스타일, 이마가 보임
+- PB (Pushed Back): 뒤로 넘긴 스타일, 슬릭백
+- BZ (Buzz): 매우 짧은 컷, 버즈컷
+- CP (Crop): 크롭컷, 짧은 앞머리와 텍스처
+- MC (Mohican): 모히칸, 중앙이 긴 스타일
+
+Return ONLY a JSON object:
+{
+  "style_code": "SF" | "SP" | "FU" | "PB" | "BZ" | "CP" | "MC",
+  "confidence": "high" | "medium" | "low"
+}`;
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: prompt },
+              { inline_data: { mime_type: mimeType, data: imageBase64 } }
+            ]
+          }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 100 }
+        })
+      }
+    );
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    const jsonMatch = text.match(/\{[\s\S]*?\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+
+    return { style_code: 'SF', confidence: 'low' };
+  } catch (error) {
+    console.error('남자 스타일 코드 분석 오류:', error);
+    return { style_code: 'SF', confidence: 'low' };
+  }
+}
+
+// ==================== ⭐⭐⭐ 남자 스타일 Vision 직접 비교 ====================
+async function selectBestMaleStyleByVision(userImageBase64, mimeType, candidateStyles, geminiKey) {
+  const stylesToCompare = candidateStyles.slice(0, 10);
+
+  const styleInfo = stylesToCompare.map((s, idx) => ({
+    index: idx + 1,
+    styleId: s.styleId,
+    resultImage: s.resultImage
+  }));
+
+  const styleListText = styleInfo.map(s => `${s.index}. ${s.styleId}`).join('\n');
+
+  const prompt = `You are a professional men's hairstylist AI. Compare the USER'S REFERENCE IMAGE with the CANDIDATE STYLE IMAGES below.
+
+Your task: Select the ONE style that is MOST SIMILAR to the user's reference image.
+
+Focus on these visual features for MEN'S HAIRSTYLES (in order of importance):
+1. Overall SILHOUETTE and SHAPE
+2. FRINGE/BANGS direction and length (up, down, side)
+3. TOP hair length and volume
+4. SIDE length and fade level
+5. TEXTURE (smooth, textured, wavy)
+6. STYLING direction (forward, back, side)
+
+CANDIDATE STYLES:
+${styleListText}
+
+IMPORTANT:
+- The user image is the FIRST image
+- Candidate style images follow in order (1, 2, 3...)
+- Select based on VISUAL SIMILARITY of the hairstyle
+
+Return ONLY a JSON object:
+{
+  "selected_index": <number 1-${stylesToCompare.length}>,
+  "selected_style_id": "<styleId>",
+  "confidence": "high" | "medium" | "low",
+  "reason": "<2-3 sentences explaining why this style matches best>"
+}`;
+
+  try {
+    const imageParts = [
+      { text: "USER'S REFERENCE IMAGE:" },
+      { inline_data: { mime_type: mimeType, data: userImageBase64 } },
+      { text: "\n\nCANDIDATE STYLE IMAGES:" }
+    ];
+
+    for (const style of styleInfo) {
+      if (style.resultImage) {
+        try {
+          const imgResponse = await fetch(style.resultImage, {
+            headers: { 'User-Agent': 'Mozilla/5.0' }
+          });
+
+          if (imgResponse.ok) {
+            const imgBuffer = await imgResponse.arrayBuffer();
+            const imgBase64 = Buffer.from(imgBuffer).toString('base64');
+            const imgMimeType = imgResponse.headers.get('content-type') || 'image/jpeg';
+
+            imageParts.push({ text: `\n${style.index}. ${style.styleId}:` });
+            imageParts.push({ inline_data: { mime_type: imgMimeType, data: imgBase64 } });
+          }
+        } catch (imgError) {
+          console.log(`⚠️ 이미지 로드 실패: ${style.styleId}`);
+        }
+      }
+    }
+
+    imageParts.push({ text: `\n\n${prompt}` });
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: imageParts }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 500 }
+        })
+      }
+    );
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    console.log('🔍 남자 Vision 응답:', text.substring(0, 300));
+
+    const jsonMatch = text.match(/\{[\s\S]*?\}/);
+    if (jsonMatch) {
+      const result = JSON.parse(jsonMatch[0]);
+      return {
+        selectedStyleId: result.selected_style_id || stylesToCompare[0].styleId,
+        confidence: result.confidence || 'medium',
+        reason: result.reason || 'Vision 분석 기반 선택'
+      };
+    }
+
+    return {
+      selectedStyleId: stylesToCompare[0].styleId,
+      confidence: 'low',
+      reason: 'Vision 분석 실패, 기본 스타일 선택'
+    };
+
+  } catch (error) {
+    console.error('남자 Vision 비교 오류:', error);
+    return {
+      selectedStyleId: stylesToCompare[0].styleId,
+      confidence: 'low',
+      reason: `오류 발생: ${error.message}`
     };
   }
 }
