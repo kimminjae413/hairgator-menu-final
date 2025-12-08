@@ -2324,6 +2324,347 @@ body.ai-studio-page {
   }
 }
 
+/* ==================== 각도별 AI 이미지 갤러리 ==================== */
+.angle-views-section {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.angle-views-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.angle-views-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.generate-angles-btn {
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.generate-angles-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+.generate-angles-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.angle-views-gallery {
+  min-height: 180px;
+}
+
+.angle-views-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: var(--radius-md);
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+}
+
+.angle-views-placeholder p {
+  color: var(--text-muted);
+  font-size: 14px;
+  text-align: center;
+  margin: 0;
+  padding: 0 20px;
+}
+
+/* 가로 스크롤 갤러리 */
+.angle-views-scroll {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--space-sm) 0;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  cursor: grab;
+}
+
+.angle-views-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.angle-views-scroll.grabbing {
+  cursor: grabbing;
+}
+
+.angle-view-item {
+  flex: 0 0 auto;
+  width: 200px;
+  scroll-snap-align: start;
+  background: #fff;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+}
+
+.angle-view-item:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+
+.angle-view-item.error {
+  opacity: 0.6;
+}
+
+.angle-view-image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.angle-view-image:hover {
+  transform: scale(1.05);
+}
+
+.angle-view-label {
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  color: #fff;
+  text-align: center;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.angle-view-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 250px;
+  background: #f5f5f5;
+  color: var(--text-muted);
+}
+
+.angle-view-error span {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.angle-view-error p {
+  font-size: 12px;
+  margin: 0;
+}
+
+.angle-views-nav {
+  text-align: center;
+  padding-top: var(--space-sm);
+}
+
+.nav-hint {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* 로딩 상태 */
+.angle-views-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  gap: var(--space-sm);
+}
+
+.angle-views-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(139, 92, 246, 0.2);
+  border-top-color: #8B5CF6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.angle-views-loading p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+  text-align: center;
+}
+
+.angle-views-loading .loading-sub {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* 에러 상태 */
+.angle-views-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  gap: var(--space-sm);
+}
+
+.angle-views-error p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+  text-align: center;
+}
+
+.angle-views-error .error-detail {
+  color: #e74c3c;
+  font-size: 12px;
+}
+
+.angle-views-error .retry-btn {
+  background: var(--primary-gradient);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.angle-views-error .retry-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* 각도 이미지 모달 */
+.angle-view-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.angle-view-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.angle-view-modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-float);
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.angle-view-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.angle-view-modal-close:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
+}
+
+.angle-view-modal-content img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(90vh - 50px);
+  object-fit: contain;
+}
+
+.angle-view-modal-label {
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  color: #fff;
+  text-align: center;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .angle-views-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .generate-angles-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .angle-view-item {
+    width: 160px;
+  }
+
+  .angle-view-image {
+    height: 200px;
+  }
+}
+
 /* ==================== Utilities ==================== */
 .hidden { display: none !important; }
 .sr-only {

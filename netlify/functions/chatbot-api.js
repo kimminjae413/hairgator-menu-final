@@ -472,6 +472,10 @@ exports.handler = async (event, context) => {
       case 'generate_video':
         return await generateVideo(payload);
 
+      // ⭐ 헤어스타일 각도별 이미지 생성 (앞/옆/뒤/대각선)
+      case 'generate_angle_views':
+        return await generateAngleViews(payload);
+
       default:
         return {
           statusCode: 400,
@@ -7193,6 +7197,182 @@ Target audience: Professional hair designers and stylists.`;
 
   } catch (error) {
     console.error('💥 영상 생성 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 헤어스타일 각도별 이미지 생성 (앞/옆/뒤/대각선) ====================
+async function generateAngleViews(payload) {
+  const { reference_image, mime_type, gender, analysis } = payload;
+
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
+
+  console.log('🔄 각도별 이미지 생성 시작:', { gender, hasAnalysis: !!analysis });
+
+  if (!ADMIN_GEMINI_KEY) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: 'GEMINI_API_KEY not configured' })
+    };
+  }
+
+  if (!reference_image) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ success: false, error: '참조 이미지가 필요합니다' })
+    };
+  }
+
+  try {
+    const genderWord = gender === 'male' ? 'man' : 'woman';
+    const genderKr = gender === 'male' ? '남성' : '여성';
+
+    // 분석 정보가 있으면 활용
+    const hairDescription = analysis ? `
+Hair details from analysis:
+- Length: ${analysis.lengthName || analysis.length || 'medium'}
+- Style/Form: ${analysis.form || analysis.styleName || 'layered'}
+- Volume Position: ${analysis.volumePosition || 'mid'}
+- Bangs: ${analysis.hasBangs ? (analysis.bangsType || 'with bangs') : 'no bangs'}
+- Texture: ${analysis.texture || 'natural'}
+` : '';
+
+    // 4가지 각도 정의
+    const angles = [
+      { name: '정면', nameEn: 'Front', prompt: 'front view, facing camera directly, symmetrical face visible' },
+      { name: '측면', nameEn: 'Side', prompt: 'side profile view, 90 degree angle, showing ear and side of face' },
+      { name: '후면', nameEn: 'Back', prompt: 'back view, showing the back of the head and hair, nape visible' },
+      { name: '대각선', nameEn: '3/4 View', prompt: '3/4 angle view, 45 degree angle, showing both eye and ear partially' }
+    ];
+
+    const generatedImages = [];
+
+    // 각 각도별로 이미지 생성
+    for (const angle of angles) {
+      console.log(`🖼️ ${angle.name} 각도 이미지 생성 중...`);
+
+      const prompt = `Look at this reference hairstyle photo carefully.
+You must generate the EXACT SAME HAIRSTYLE from a different angle.
+
+${hairDescription}
+
+Generate a professional salon photograph of the SAME hairstyle from a ${angle.prompt}.
+
+CRITICAL REQUIREMENTS:
+✅ SAME person/model as in the reference image
+✅ IDENTICAL hair length, layering, and cut structure
+✅ IDENTICAL hair color and texture
+✅ IDENTICAL bang/fringe style
+✅ The pose/angle should be: ${angle.prompt}
+✅ Professional hair salon lighting
+✅ Clean white or light gray background
+✅ High quality, sharp focus on hair details
+
+This is showing the same hairstyle from the ${angle.nameEn} angle.
+The model should be the same Korean ${genderWord} from the reference photo.`;
+
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${ADMIN_GEMINI_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  {
+                    inline_data: {
+                      mime_type: mime_type || 'image/jpeg',
+                      data: reference_image
+                    }
+                  },
+                  { text: prompt }
+                ]
+              }],
+              generationConfig: {
+                responseModalities: ['TEXT', 'IMAGE']
+              }
+            })
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`${angle.name} 생성 오류:`, response.status, errorText.substring(0, 200));
+          // 실패해도 계속 진행, placeholder 추가
+          generatedImages.push({
+            angle: angle.name,
+            angleEn: angle.nameEn,
+            url: null,
+            error: true
+          });
+          continue;
+        }
+
+        const result = await response.json();
+        const responseParts = result.candidates?.[0]?.content?.parts || [];
+
+        let imageFound = false;
+        for (const part of responseParts) {
+          if (part.inlineData) {
+            generatedImages.push({
+              angle: angle.name,
+              angleEn: angle.nameEn,
+              url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+              mimeType: part.inlineData.mimeType
+            });
+            imageFound = true;
+            break;
+          }
+        }
+
+        if (!imageFound) {
+          generatedImages.push({
+            angle: angle.name,
+            angleEn: angle.nameEn,
+            url: null,
+            error: true
+          });
+        }
+
+        // API 부하 방지를 위한 딜레이
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+      } catch (angleError) {
+        console.error(`${angle.name} 생성 중 오류:`, angleError.message);
+        generatedImages.push({
+          angle: angle.name,
+          angleEn: angle.nameEn,
+          url: null,
+          error: true
+        });
+      }
+    }
+
+    const successCount = generatedImages.filter(img => img.url).length;
+    console.log(`✅ 각도별 이미지 생성 완료: ${successCount}/4개 성공`);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          images: generatedImages,
+          successCount,
+          totalCount: 4
+        }
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 각도별 이미지 생성 오류:', error);
     return {
       statusCode: 500,
       headers,

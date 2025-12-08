@@ -1197,6 +1197,21 @@ class AIStudio {
           </div>
         </div>
 
+        <!-- 🔄 각도별 AI 이미지 갤러리 -->
+        <div class="angle-views-section" id="angleViewsSection">
+          <div class="angle-views-header">
+            <h3>🔄 각도별 AI 추론 이미지</h3>
+            <button class="generate-angles-btn" id="generateAnglesBtn" onclick="window.aiStudio.generateAngleViews('female')">
+              ✨ 각도별 이미지 생성
+            </button>
+          </div>
+          <div class="angle-views-gallery" id="angleViewsGallery">
+            <div class="angle-views-placeholder">
+              <p>버튼을 클릭하면 AI가 정면/측면/후면/대각선 이미지를 생성합니다</p>
+            </div>
+          </div>
+        </div>
+
         <!-- 스타일 수정 섹션 -->
         <div class="style-correction-section female">
           <div class="correction-header">
@@ -1386,6 +1401,21 @@ class AIStudio {
               <span class="tag primary">${subStyleDisplay}</span>
               <span class="tag">${analysis.fadeType || 'No Fade'}</span>
               <span class="tag">${analysis.texture || 'Smooth'}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🔄 각도별 AI 이미지 갤러리 -->
+        <div class="angle-views-section" id="angleViewsSection">
+          <div class="angle-views-header">
+            <h3>🔄 각도별 AI 추론 이미지</h3>
+            <button class="generate-angles-btn" id="generateAnglesBtn" onclick="window.aiStudio.generateAngleViews('male')">
+              ✨ 각도별 이미지 생성
+            </button>
+          </div>
+          <div class="angle-views-gallery" id="angleViewsGallery">
+            <div class="angle-views-placeholder">
+              <p>버튼을 클릭하면 AI가 정면/측면/후면/대각선 이미지를 생성합니다</p>
             </div>
           </div>
         </div>
@@ -1643,6 +1673,153 @@ class AIStudio {
         }
       }, 3000); // 3초마다 전환
     }
+  }
+
+  // ==================== 각도별 AI 이미지 생성 ====================
+
+  async generateAngleViews(gender) {
+    const gallery = document.getElementById('angleViewsGallery');
+    const btn = document.getElementById('generateAnglesBtn');
+
+    if (!gallery || !btn) return;
+
+    // 이미지 데이터 확인
+    if (!this.pendingImageBase64) {
+      alert('이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.');
+      return;
+    }
+
+    // 버튼 로딩 상태
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ AI 이미지 생성 중...';
+    btn.disabled = true;
+
+    // 갤러리에 로딩 표시
+    gallery.innerHTML = `
+      <div class="angle-views-loading">
+        <div class="loading-spinner"></div>
+        <p>AI가 정면/측면/후면/대각선 이미지를 생성하고 있습니다...</p>
+        <p class="loading-sub">약 30초~1분 소요됩니다</p>
+      </div>
+    `;
+
+    try {
+      // 분석 데이터 가져오기
+      const analysisData = gender === 'male'
+        ? this.currentMaleAnalysis?.data?.analysis
+        : this.currentFemaleAnalysis?.data?.analysis;
+
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'generate_angle_views',
+          payload: {
+            reference_image: this.pendingImageBase64,
+            mime_type: this.pendingMimeType || 'image/jpeg',
+            gender: gender,
+            analysis: analysisData
+          }
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data?.images) {
+        const images = result.data.images;
+
+        // 갤러리 HTML 생성
+        gallery.innerHTML = `
+          <div class="angle-views-scroll">
+            ${images.map((img, idx) => `
+              <div class="angle-view-item ${img.error ? 'error' : ''}">
+                ${img.url
+                  ? `<img src="${img.url}" alt="${img.angle}" class="angle-view-image" onclick="window.aiStudio.openAngleViewModal('${img.url}', '${img.angle}')">`
+                  : `<div class="angle-view-error">
+                      <span>⚠️</span>
+                      <p>생성 실패</p>
+                    </div>`
+                }
+                <div class="angle-view-label">${img.angle}</div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="angle-views-nav">
+            <span class="nav-hint">← 스와이프하여 각도별 이미지 확인 →</span>
+          </div>
+        `;
+
+        // 터치 스크롤 초기화
+        this.initAngleViewsScroll();
+
+        console.log(`✅ 각도별 이미지 ${result.data.successCount}/${result.data.totalCount}개 생성 완료`);
+        btn.innerHTML = '✅ 생성 완료';
+      } else {
+        throw new Error(result.error || '이미지 생성 실패');
+      }
+    } catch (error) {
+      console.error('각도별 이미지 생성 오류:', error);
+      gallery.innerHTML = `
+        <div class="angle-views-error">
+          <p>⚠️ 이미지 생성 중 오류가 발생했습니다</p>
+          <p class="error-detail">${error.message}</p>
+          <button class="retry-btn" onclick="window.aiStudio.generateAngleViews('${gender}')">다시 시도</button>
+        </div>
+      `;
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  }
+
+  // 각도별 이미지 스크롤 초기화
+  initAngleViewsScroll() {
+    const scrollContainer = document.querySelector('.angle-views-scroll');
+    if (!scrollContainer) return;
+
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    scrollContainer.addEventListener('mousedown', (e) => {
+      isDown = true;
+      scrollContainer.classList.add('grabbing');
+      startX = e.pageX - scrollContainer.offsetLeft;
+      scrollLeft = scrollContainer.scrollLeft;
+    });
+
+    scrollContainer.addEventListener('mouseleave', () => {
+      isDown = false;
+      scrollContainer.classList.remove('grabbing');
+    });
+
+    scrollContainer.addEventListener('mouseup', () => {
+      isDown = false;
+      scrollContainer.classList.remove('grabbing');
+    });
+
+    scrollContainer.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - scrollContainer.offsetLeft;
+      const walk = (x - startX) * 2;
+      scrollContainer.scrollLeft = scrollLeft - walk;
+    });
+  }
+
+  // 각도 이미지 모달 열기
+  openAngleViewModal(imageUrl, angleLabel) {
+    // 간단한 이미지 모달
+    const modal = document.createElement('div');
+    modal.className = 'angle-view-modal';
+    modal.innerHTML = `
+      <div class="angle-view-modal-overlay" onclick="this.parentElement.remove()"></div>
+      <div class="angle-view-modal-content">
+        <button class="angle-view-modal-close" onclick="this.closest('.angle-view-modal').remove()">×</button>
+        <img src="${imageUrl}" alt="${angleLabel}">
+        <div class="angle-view-modal-label">${angleLabel}</div>
+      </div>
+    `;
+    document.body.appendChild(modal);
   }
 
   // ==================== 스타일 수정 재분석 ====================
