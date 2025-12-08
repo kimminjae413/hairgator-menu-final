@@ -1197,39 +1197,21 @@ class AIStudio {
           </div>
         </div>
 
-        <!-- 📐 레시피 오버레이 이미지 -->
+        <!-- 📐 레시피 오버레이 이미지 (자동 표시) -->
         <div class="recipe-overlay-section" id="recipeOverlaySection">
           <div class="recipe-overlay-header">
             <h3>📐 AI 레시피 시각화</h3>
-            <button class="toggle-overlay-btn" id="toggleOverlayBtn" onclick="window.aiStudio.toggleRecipeOverlay()">
-              👁️ 수치 표시
-            </button>
           </div>
           <div class="recipe-overlay-container" id="recipeOverlayContainer">
             <img src="${uploadedImageUrl}" alt="분석 이미지" class="overlay-base-image" id="overlayBaseImage">
-            <div class="recipe-overlay-labels" id="recipeOverlayLabels" style="display: none;">
-              <!-- 동적으로 생성될 레시피 수치 라벨들 -->
+            <div class="recipe-overlay-labels" id="recipeOverlayLabels">
+              <!-- 동적으로 생성될 레시피 수치 라벨들 (순차 애니메이션) -->
             </div>
           </div>
           <div class="overlay-legend">
             <span class="legend-item"><span class="legend-color lifting"></span> Lifting (각도)</span>
             <span class="legend-item"><span class="legend-color length"></span> Length (길이)</span>
             <span class="legend-item"><span class="legend-color section"></span> Section (섹션)</span>
-          </div>
-        </div>
-
-        <!-- 🔄 각도별 AI 이미지 갤러리 -->
-        <div class="angle-views-section" id="angleViewsSection">
-          <div class="angle-views-header">
-            <h3>🔄 각도별 AI 추론 이미지</h3>
-            <button class="generate-angles-btn" id="generateAnglesBtn" onclick="window.aiStudio.generateAngleViews('female')">
-              ✨ 각도별 이미지 생성
-            </button>
-          </div>
-          <div class="angle-views-gallery" id="angleViewsGallery">
-            <div class="angle-views-placeholder">
-              <p>버튼을 클릭하면 AI가 정면/측면/후면/대각선 이미지를 생성합니다</p>
-            </div>
           </div>
         </div>
 
@@ -1429,39 +1411,21 @@ class AIStudio {
           </div>
         </div>
 
-        <!-- 📐 레시피 오버레이 이미지 -->
+        <!-- 📐 레시피 오버레이 이미지 (자동 표시) -->
         <div class="recipe-overlay-section" id="recipeOverlaySection">
           <div class="recipe-overlay-header">
             <h3>📐 AI 레시피 시각화</h3>
-            <button class="toggle-overlay-btn" id="toggleOverlayBtn" onclick="window.aiStudio.toggleRecipeOverlay()">
-              👁️ 수치 표시
-            </button>
           </div>
           <div class="recipe-overlay-container" id="recipeOverlayContainer">
             <img src="${uploadedImageUrl}" alt="분석 이미지" class="overlay-base-image" id="overlayBaseImage">
-            <div class="recipe-overlay-labels" id="recipeOverlayLabels" style="display: none;">
-              <!-- 동적으로 생성될 레시피 수치 라벨들 -->
+            <div class="recipe-overlay-labels" id="recipeOverlayLabels">
+              <!-- 동적으로 생성될 레시피 수치 라벨들 (순차 애니메이션) -->
             </div>
           </div>
           <div class="overlay-legend">
             <span class="legend-item"><span class="legend-color lifting"></span> Lifting (각도)</span>
             <span class="legend-item"><span class="legend-color length"></span> Length (길이)</span>
             <span class="legend-item"><span class="legend-color section"></span> Section (섹션)</span>
-          </div>
-        </div>
-
-        <!-- 🔄 각도별 AI 이미지 갤러리 -->
-        <div class="angle-views-section" id="angleViewsSection">
-          <div class="angle-views-header">
-            <h3>🔄 각도별 AI 추론 이미지</h3>
-            <button class="generate-angles-btn" id="generateAnglesBtn" onclick="window.aiStudio.generateAngleViews('male')">
-              ✨ 각도별 이미지 생성
-            </button>
-          </div>
-          <div class="angle-views-gallery" id="angleViewsGallery">
-            <div class="angle-views-placeholder">
-              <p>버튼을 클릭하면 AI가 정면/측면/후면/대각선 이미지를 생성합니다</p>
-            </div>
           </div>
         </div>
 
@@ -1844,42 +1808,27 @@ class AIStudio {
       }
     }
 
-    // 라벨 HTML 생성
-    labelsContainer.innerHTML = labels.map(label => {
+    // 라벨 HTML 생성 (순차 애니메이션용 delay 추가)
+    labelsContainer.innerHTML = labels.map((label, idx) => {
       let posStyle = '';
       if (label.position.top !== undefined) posStyle += `top: ${label.position.top}%;`;
       if (label.position.bottom !== undefined) posStyle += `bottom: ${label.position.bottom}%;`;
       if (label.position.left !== undefined) posStyle += `left: ${label.position.left}%;`;
       if (label.position.right !== undefined) posStyle += `right: ${label.position.right}%;`;
 
+      // 순차적 애니메이션 딜레이 (0.3초 간격)
+      const delay = idx * 0.3;
+
       return `
-        <div class="overlay-label ${label.type}" style="${posStyle}">
+        <div class="overlay-label ${label.type}" style="${posStyle}; animation-delay: ${delay}s;">
           <span class="label-main">${label.text}</span>
           ${label.subText ? `<span class="label-sub">${label.subText}</span>` : ''}
         </div>
       `;
     }).join('');
 
-    // 저장 (토글용)
+    // 저장
     this.overlayLabelsData = labels;
-  }
-
-  // 오버레이 토글
-  toggleRecipeOverlay() {
-    const labelsContainer = document.getElementById('recipeOverlayLabels');
-    const btn = document.getElementById('toggleOverlayBtn');
-
-    if (!labelsContainer) return;
-
-    const isVisible = labelsContainer.style.display !== 'none';
-
-    if (isVisible) {
-      labelsContainer.style.display = 'none';
-      if (btn) btn.innerHTML = '👁️ 수치 표시';
-    } else {
-      labelsContainer.style.display = 'block';
-      if (btn) btn.innerHTML = '👁️‍🗨️ 수치 숨기기';
-    }
   }
 
   // ==================== 각도별 AI 이미지 생성 ====================
