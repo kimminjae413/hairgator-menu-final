@@ -2439,14 +2439,14 @@ let selectedCategory = null;
 
 // 여자 기장 카테고리 (H~A) - H가 가장 짧고 A가 가장 긺
 const FEMALE_CATEGORIES = [
-  { code: 'H', name: 'H - Short (목덜미)', series: 'FHL' },
+  { code: 'H', name: 'H - Short (턱선 위)', series: 'FHL' },
   { code: 'G', name: 'G - Bob (턱선)', series: 'FGL' },
-  { code: 'F', name: 'F - Bob (턱~어깨)', series: 'FFL' },
-  { code: 'E', name: 'E - Medium (어깨위)', series: 'FEL' },
-  { code: 'D', name: 'D - Medium (어깨아래)', series: 'FDL' },
-  { code: 'C', name: 'C - Semi Long (겨드랑이)', series: 'FCL' },
+  { code: 'F', name: 'F - Bob (턱선 아래)', series: 'FFL' },
+  { code: 'E', name: 'E - Medium (어깨 위)', series: 'FEL' },
+  { code: 'D', name: 'D - Medium (어깨선)', series: 'FDL' },
+  { code: 'C', name: 'C - Semi Long (쇄골 아래)', series: 'FCL' },
   { code: 'B', name: 'B - Long (가슴)', series: 'FBL' },
-  { code: 'A', name: 'A - Long (가슴아래)', series: 'FAL' }
+  { code: 'A', name: 'A - Long (가슴 아래)', series: 'FAL' }
 ];
 
 // 남자 스타일 카테고리
