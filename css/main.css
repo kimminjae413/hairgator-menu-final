@@ -457,10 +457,11 @@ body.gender-selecting .menu-container {
     background: rgba(20, 20, 20, 0.5) !important;
     backdrop-filter: blur(24px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-    padding: 15px 20px;
+    padding: 20px 20px 15px 20px; /* 상단 패딩 증가: NEW 표시가 잘리지 않도록 */
     display: flex;
     gap: 10px;
     overflow-x: auto;
+    overflow-y: visible; /* NEW 표시가 위로 튀어나올 수 있도록 */
     border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     scrollbar-width: none;
@@ -843,6 +844,7 @@ body.light-theme .menu-items-container {
     max-height: inherit;
     width: 100%;
     box-sizing: border-box;
+    padding-top: 10px; /* 스타일 카드 첫 줄 NEW 표시가 잘리지 않도록 */
 }
 
 /* 태블릿 전용 미디어 쿼리 */

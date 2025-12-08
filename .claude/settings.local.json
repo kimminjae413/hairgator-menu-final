@@ -6,7 +6,10 @@
       "Bash(git push:*)",
       "Bash(done)",
       "Bash(python:*)",
-      "Bash(npx netlify:*)"
+      "Bash(npx netlify:*)",
+      "Bash(npm install:*)",
+      "Bash(PYTHONIOENCODING=utf-8 python:*)",
+      "Bash(PYTHONIOENCODING=utf-8 PYTHONUNBUFFERED=1 python:*)"
     ],
     "deny": [],
     "ask": []
