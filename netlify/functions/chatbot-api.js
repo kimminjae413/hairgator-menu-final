@@ -5354,7 +5354,10 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     // 4. 상세 파라미터 분석 (UI 표시용)
     const t4 = Date.now();
     const params56 = await analyzeImageStructured(image_base64, mime_type, geminiKey);
-    console.log(`⏱️ [4] 상세 파라미터 분석: ${Date.now() - t4}ms`);
+
+    // ⭐⭐⭐ 사용자가 선택한 기장으로 강제 덮어쓰기 (AI 분석 결과 무시!)
+    params56.length_category = `${lengthCode} Length`;
+    console.log(`⏱️ [4] 상세 파라미터 분석: ${Date.now() - t4}ms (기장 강제: ${lengthCode} Length)`);
 
     // 6. Top-1 스타일의 textRecipe 가져오기 (보충 레시피 없이 원본 사용)
     let originalRecipe = top1.textRecipe || '';
@@ -5375,10 +5378,10 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
         totalStyles: seriesStylesAll.length
       },
 
-      // 분석 요약 (UI 표시용)
+      // 분석 요약 (UI 표시용) - ⭐ 사용자 선택 기장 우선!
       analysis: {
         length: lengthCode,
-        lengthName: params56.length_category || `${lengthCode} Length`,
+        lengthName: `${lengthCode} Length`,  // 사용자가 선택한 기장 사용 (AI 분석 무시)
         form: params56.cut_form || 'L (Layer)',
         hasBangs: params56.fringe_type !== 'No Fringe',
         bangsType: params56.fringe_type || 'No Fringe',
