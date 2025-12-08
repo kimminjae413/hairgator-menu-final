@@ -2673,26 +2673,34 @@ async function sendImageWithQuestion() {
     window.aiStudio.pendingImageBase64 = base64;
     window.aiStudio.pendingMimeType = pendingImageData.file.type;
 
-    console.log(`📤 맞춤 레시피 생성 API 호출... (성별: ${selectedGender}, 카테고리: ${selectedCategory.series})`);
+    // ⭐⭐⭐ 전송 데이터 로그 (디버깅용)
+    console.log(`📤 맞춤 레시피 생성 API 호출...`);
+    console.log(`   - 성별: ${selectedGender}`);
+    console.log(`   - category (기장코드): ${selectedCategory.code}`);
+    console.log(`   - series: ${selectedCategory.series}`);
+
+    const requestPayload = {
+      action: 'analyze_and_match_recipe',
+      payload: {
+        image_base64: base64,
+        mime_type: pendingImageData.file.type,
+        gender: selectedGender,
+        category: selectedCategory.code,
+        series: selectedCategory.series
+      }
+    };
 
     // API 호출 - 이미지 분석 + 맞춤 레시피 생성 (성별 + 카테고리 포함)
     const response = await fetch(window.aiStudio.apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'analyze_and_match_recipe',
-        payload: {
-          image_base64: base64,
-          mime_type: pendingImageData.file.type,
-          gender: selectedGender,
-          category: selectedCategory.code,
-          series: selectedCategory.series
-        }
-      })
+      body: JSON.stringify(requestPayload)
     });
 
     const result = await response.json();
     console.log('📥 API 응답:', result);
+    console.log(`   - 응답 기장: ${result.data?.analysis?.lengthName}`);
+    console.log(`   - 응답 시리즈: ${result.data?.targetSeries?.code}`);
 
     window.aiStudio.hideTypingIndicator();
 
