@@ -5365,7 +5365,11 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     // 6. Top-1 스타일의 textRecipe 가져오기 (보충 레시피 없이 원본 사용)
     let originalRecipe = top1.textRecipe || '';
     // 스타일ID 언급 제거 (사용자에게 보이지 않도록)
-    originalRecipe = originalRecipe.replace(/\b[FM]?[A-Z]{2,3}\d{4}\b/g, '').replace(/\s{2,}/g, ' ').trim();
+    originalRecipe = originalRecipe
+      .replace(/\[?[FM]?[A-Z]{2,3}\d{4}\]?/g, '')  // 스타일ID 제거 (괄호 포함)
+      .replace(/\[\s*\]/g, '')  // 빈 괄호 [] 제거
+      .replace(/\s{2,}/g, ' ')  // 연속 공백 정리
+      .trim();
 
     // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
     const top1Params = extractRecipeParamsFromStyle(top1);
@@ -5980,7 +5984,11 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
     // 7. Top-1 스타일의 textRecipe 가져오기 (보충 레시피 없이 원본 사용)
     let originalRecipe = top1.textRecipe || '';
     // 스타일ID 언급 제거 (사용자에게 보이지 않도록)
-    originalRecipe = originalRecipe.replace(/\b[FM]?[A-Z]{2,3}\d{4}\b/g, '').replace(/\s{2,}/g, ' ').trim();
+    originalRecipe = originalRecipe
+      .replace(/\[?[FM]?[A-Z]{2,3}\d{4}\]?/g, '')  // 스타일ID 제거 (괄호 포함)
+      .replace(/\[\s*\]/g, '')  // 빈 괄호 [] 제거
+      .replace(/\s{2,}/g, ' ')  // 연속 공백 정리
+      .trim();
 
     // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
     const top1Params = extractRecipeParamsFromStyle(top1);
