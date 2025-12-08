@@ -813,7 +813,7 @@ body.light-theme .sub-tab:hover:not(.disabled) {
     right: 0;
     z-index: 100;
     background: transparent;
-    padding-top: 10px; /* NEW 표시가 잘리지 않도록 상단 여백 추가 */
+    padding-top: 20px; /* NEW 표시가 잘리지 않도록 상단 여백 추가 */
 }
 
 /* 스타일 그리드 - 글래스모피즘 효과를 위해 탭 뒤로 스크롤 */
