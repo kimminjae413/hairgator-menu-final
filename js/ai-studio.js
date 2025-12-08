@@ -2434,10 +2434,36 @@ let pendingImageData = null;
 
 // 선택된 성별 저장
 let selectedGender = null;
+// 선택된 카테고리 저장
+let selectedCategory = null;
+
+// 여자 기장 카테고리 (A~H)
+const FEMALE_CATEGORIES = [
+  { code: 'A', name: 'A (턱선)', series: 'FAL' },
+  { code: 'B', name: 'B (턱~어깨)', series: 'FBL' },
+  { code: 'C', name: 'C (어깨)', series: 'FCL' },
+  { code: 'D', name: 'D (쇄골)', series: 'FDL' },
+  { code: 'E', name: 'E (가슴위)', series: 'FEL' },
+  { code: 'F', name: 'F (가슴)', series: 'FFL' },
+  { code: 'G', name: 'G (가슴~배)', series: 'FGL' },
+  { code: 'H', name: 'H (허리)', series: 'FHL' }
+];
+
+// 남자 스타일 카테고리
+const MALE_CATEGORIES = [
+  { code: 'SF', name: 'Side Fringe', series: 'SF' },
+  { code: 'SP', name: 'Side Part', series: 'SP' },
+  { code: 'FU', name: 'Fringe Up', series: 'FU' },
+  { code: 'PB', name: 'Pushed Back', series: 'PB' },
+  { code: 'BZ', name: 'Buzz', series: 'BZ' },
+  { code: 'CP', name: 'Crop', series: 'CP' },
+  { code: 'MC', name: 'Mohican', series: 'MC' }
+];
 
 // 성별 선택 함수
 function selectGender(gender) {
   selectedGender = gender;
+  selectedCategory = null; // 카테고리 초기화
 
   // 버튼 UI 업데이트
   const femaleBtn = document.getElementById('gender-female');
@@ -2452,7 +2478,51 @@ function selectGender(gender) {
     maleBtn.classList.add('selected');
   }
 
+  // 카테고리 선택 UI 표시
+  showCategorySelection(gender);
+
   console.log(`🎯 성별 선택: ${gender}`);
+}
+
+// 카테고리 선택 UI 표시
+function showCategorySelection(gender) {
+  const categorySelection = document.getElementById('category-selection');
+  const categoryLabel = document.getElementById('category-label');
+  const categoryButtons = document.getElementById('category-buttons');
+
+  // 카테고리 목록 결정
+  const categories = gender === 'female' ? FEMALE_CATEGORIES : MALE_CATEGORIES;
+  const labelText = gender === 'female' ? '기장 선택:' : '스타일 선택:';
+  const categoryClass = gender === 'female' ? 'female-category' : 'male-category';
+
+  // 라벨 업데이트
+  categoryLabel.textContent = labelText;
+
+  // 버튼 생성
+  categoryButtons.innerHTML = categories.map(cat => `
+    <button class="category-btn ${categoryClass}" data-code="${cat.code}" data-series="${cat.series}" onclick="selectCategory('${cat.code}', '${cat.series}')">
+      ${cat.name}
+    </button>
+  `).join('');
+
+  // 표시
+  categorySelection.style.display = 'flex';
+}
+
+// 카테고리 선택 함수
+function selectCategory(code, series) {
+  selectedCategory = { code, series };
+
+  // 버튼 UI 업데이트
+  const buttons = document.querySelectorAll('.category-btn');
+  buttons.forEach(btn => btn.classList.remove('selected'));
+
+  const selectedBtn = document.querySelector(`.category-btn[data-code="${code}"]`);
+  if (selectedBtn) {
+    selectedBtn.classList.add('selected');
+  }
+
+  console.log(`📂 카테고리 선택: ${code} (시리즈: ${series})`);
 }
 
 function triggerImageUpload() {
@@ -2509,8 +2579,10 @@ function removePreviewImage() {
 
   // 성별 선택 초기화
   selectedGender = null;
+  selectedCategory = null;
   document.getElementById('gender-female').classList.remove('selected');
   document.getElementById('gender-male').classList.remove('selected');
+  document.getElementById('category-selection').style.display = 'none';
 
   console.log('🗑️ 이미지 제거됨');
 }
@@ -2524,16 +2596,26 @@ async function sendImageWithQuestion() {
     return false;
   }
 
+  // 카테고리 선택 검증
+  if (!selectedCategory) {
+    const categoryType = selectedGender === 'female' ? '기장' : '스타일';
+    alert(`${categoryType}을(를) 선택해주세요.`);
+    return false;
+  }
+
   const textInput = document.getElementById('chat-input');
   const question = textInput.value.trim() || '이 헤어스타일에 맞는 레시피를 만들어주세요';
 
-  // 성별 표시 텍스트
+  // 성별 + 카테고리 표시 텍스트
   const genderText = selectedGender === 'male' ? '👨 남자' : '👩 여자';
+  const categoryText = selectedGender === 'female'
+    ? `${selectedCategory.code} 기장`
+    : selectedCategory.code;
 
-  // 사용자 메시지 표시 (이미지 + 성별 + 텍스트)
+  // 사용자 메시지 표시 (이미지 + 성별 + 카테고리 + 텍스트)
   window.aiStudio.addMessageToUI('user', `
     <img src="${pendingImageData.url}" style="max-width: 200px; border-radius: 8px; margin-bottom: 8px;" alt="업로드된 이미지">
-    <p><strong>${genderText}</strong></p>
+    <p><strong>${genderText} | ${categoryText}</strong></p>
     <p>${question}</p>
   `);
 
@@ -2554,9 +2636,9 @@ async function sendImageWithQuestion() {
     window.aiStudio.pendingImageBase64 = base64;
     window.aiStudio.pendingMimeType = pendingImageData.file.type;
 
-    console.log(`📤 맞춤 레시피 생성 API 호출... (성별: ${selectedGender})`);
+    console.log(`📤 맞춤 레시피 생성 API 호출... (성별: ${selectedGender}, 카테고리: ${selectedCategory.series})`);
 
-    // API 호출 - 이미지 분석 + 맞춤 레시피 생성 (성별 포함)
+    // API 호출 - 이미지 분석 + 맞춤 레시피 생성 (성별 + 카테고리 포함)
     const response = await fetch(window.aiStudio.apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2565,7 +2647,9 @@ async function sendImageWithQuestion() {
         payload: {
           image_base64: base64,
           mime_type: pendingImageData.file.type,
-          gender: selectedGender
+          gender: selectedGender,
+          category: selectedCategory.code,
+          series: selectedCategory.series
         }
       })
     });

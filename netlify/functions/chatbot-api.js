@@ -5045,27 +5045,26 @@ function analyzeDifferences(userParams, matchedStyle) {
 }
 
 async function analyzeAndMatchRecipe(payload, geminiKey) {
-  const { image_base64, mime_type, gender } = payload;
+  const { image_base64, mime_type, gender, category, series } = payload;
   const startTime = Date.now();
 
-  console.log(`🎯 이미지 분석 + 맞춤 레시피 생성 시작 (성별: ${gender || 'female'})...`);
+  console.log(`🎯 이미지 분석 + 맞춤 레시피 생성 시작 (성별: ${gender || 'female'}, 카테고리: ${category || 'auto'}, 시리즈: ${series || 'auto'})...`);
 
   // 남자 스타일인 경우 별도 처리
   if (gender === 'male') {
     return await analyzeAndMatchMaleRecipe(payload, geminiKey);
   }
 
-  // ⭐⭐⭐ 새로운 방식: Gemini Vision 직접 비교 ⭐⭐⭐
+  // ⭐⭐⭐ 사용자가 선택한 시리즈 사용 (AI 분석 X) ⭐⭐⭐
   try {
-    // 1. 먼저 기장(Length)만 빠르게 분석
+    // 1. 사용자가 선택한 시리즈 사용 (기장 분석 생략)
     const t1 = Date.now();
-    const lengthAnalysis = await analyzeImageLengthOnly(image_base64, mime_type, geminiKey);
-    const lengthCode = lengthAnalysis.length_code || 'D';
-    console.log(`⏱️ [1] 기장 분석: ${Date.now() - t1}ms → ${lengthCode} Length`);
+    const lengthCode = category || 'D'; // 사용자가 선택한 기장
+    const targetSeriesCode = series || `F${lengthCode}L`;
+    console.log(`⏱️ [1] 사용자 선택 시리즈: ${targetSeriesCode} (${Date.now() - t1}ms)`);
 
     // 2. Firestore에서 해당 시리즈 스타일만 가져오기
     const t2 = Date.now();
-    const targetSeriesCode = `F${lengthCode}L`;
     const allStyles = await getFirestoreStyles();
 
     // 해당 시리즈 스타일 필터링
@@ -5134,7 +5133,9 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     console.log(`⏱️ [4] 상세 파라미터 분석: ${Date.now() - t4}ms`);
 
     // 6. Top-1 스타일의 textRecipe 가져오기 (보충 레시피 없이 원본 사용)
-    const originalRecipe = top1.textRecipe || '';
+    let originalRecipe = top1.textRecipe || '';
+    // 스타일ID 언급 제거 (사용자에게 보이지 않도록)
+    originalRecipe = originalRecipe.replace(/\b[FM]?[A-Z]{2,3}\d{4}\b/g, '').replace(/\s{2,}/g, ' ').trim();
 
     console.log(`⏱️ 총 처리 시간: ${Date.now() - startTime}ms`);
 
@@ -5545,17 +5546,16 @@ async function generateCustomRecipeFromParams(payload, geminiKey) {
  * ⭐⭐⭐ 새로운 방식: Gemini Vision으로 대표이미지 직접 비교 ⭐⭐⭐
  */
 async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
-  const { image_base64, mime_type } = payload;
+  const { image_base64, mime_type, category, series } = payload;
   const startTime = Date.now();
 
-  console.log('👨 남자 이미지 분석 + 맞춤 레시피 생성 시작...');
+  console.log(`👨 남자 이미지 분석 + 맞춤 레시피 생성 시작... (카테고리: ${category || 'auto'}, 시리즈: ${series || 'auto'})`);
 
   try {
-    // 1. 먼저 스타일 코드만 빠르게 분석
+    // 1. 사용자가 선택한 스타일 코드 사용 (AI 분석 X)
     const t1 = Date.now();
-    const styleAnalysis = await analyzeMaleStyleCodeOnly(image_base64, mime_type, geminiKey);
-    const styleCode = styleAnalysis.style_code || 'SF';
-    console.log(`⏱️ [1] 스타일 코드 분석: ${Date.now() - t1}ms → ${styleCode}`);
+    const styleCode = series || category || 'SF'; // 사용자가 선택한 스타일
+    console.log(`⏱️ [1] 사용자 선택 스타일: ${styleCode} (${Date.now() - t1}ms)`);
 
     // 2. Firestore men_styles 컬렉션에서 검색
     const t2 = Date.now();
@@ -5676,7 +5676,9 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
     console.log(`⏱️ [4] 상세 파라미터 분석: ${Date.now() - t4}ms`);
 
     // 7. Top-1 스타일의 textRecipe 가져오기 (보충 레시피 없이 원본 사용)
-    const originalRecipe = top1.textRecipe || '';
+    let originalRecipe = top1.textRecipe || '';
+    // 스타일ID 언급 제거 (사용자에게 보이지 않도록)
+    originalRecipe = originalRecipe.replace(/\b[FM]?[A-Z]{2,3}\d{4}\b/g, '').replace(/\s{2,}/g, ' ').trim();
 
     console.log(`⏱️ 총 처리 시간: ${Date.now() - startTime}ms`);
 
