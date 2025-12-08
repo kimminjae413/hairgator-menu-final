@@ -992,7 +992,7 @@ function createStyleCard(style, index = 0) {
 // ========== 스타일 상세 모달 (헤어체험 버튼 포함) ==========
 
 // 스타일 상세 모달 열기 (헤어체험 버튼 추가)
-function openStyleModal(style) {
+async function openStyleModal(style) {
     console.log('🔍 openStyleModal 호출됨:', style);
 
     const modal = document.getElementById('styleModal');
@@ -1003,6 +1003,37 @@ function openStyleModal(style) {
     }
 
     console.log('✅ 모달 요소 찾음');
+
+    // ⭐⭐⭐ currentCategoryStyles가 비어있거나 현재 스타일이 없으면 Firebase에서 로드
+    const styleInList = currentCategoryStyles.find(s => s.id === style.id);
+    if (currentCategoryStyles.length === 0 || !styleInList) {
+        console.log('🔄 같은 카테고리 스타일 로드 중...');
+
+        // 현재 스타일의 카테고리 정보로 같은 카테고리 스타일들 로드
+        if (style.gender && style.mainCategory && style.subCategory && window.db) {
+            try {
+                const snapshot = await window.db.collection('styles')
+                    .where('gender', '==', style.gender)
+                    .where('mainCategory', '==', style.mainCategory)
+                    .where('subCategory', '==', style.subCategory)
+                    .get();
+
+                currentCategoryStyles = [];
+                snapshot.forEach(doc => {
+                    currentCategoryStyles.push({ ...doc.data(), id: doc.id });
+                });
+                console.log(`✅ 같은 카테고리 스타일 ${currentCategoryStyles.length}개 로드됨`);
+            } catch (error) {
+                console.warn('⚠️ 같은 카테고리 스타일 로드 실패:', error);
+                // 실패해도 최소한 현재 스타일은 추가
+                currentCategoryStyles = [style];
+            }
+        } else {
+            // 카테고리 정보가 없으면 현재 스타일만 추가
+            currentCategoryStyles = [style];
+            console.log('⚠️ 카테고리 정보 없음, 단일 스타일로 설정');
+        }
+    }
 
     // ⭐ 현재 스타일의 인덱스 찾기 (슬라이딩용)
     currentStyleIndex = currentCategoryStyles.findIndex(s => s.id === style.id);
