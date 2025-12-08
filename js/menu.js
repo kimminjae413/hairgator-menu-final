@@ -1063,38 +1063,45 @@ function openStyleModal(style) {
                 }
             });
 
-            // ⭐ 스와이프 제스처 지원 (터치)
-            let touchStartX = 0;
-            let touchEndX = 0;
-
-            img.addEventListener('touchstart', function(e) {
-                touchStartX = e.changedTouches[0].screenX;
-            }, { passive: true });
-
-            img.addEventListener('touchend', function(e) {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
-            }, { passive: true });
-
-            function handleSwipe() {
-                const swipeThreshold = 50;
-                const diff = touchStartX - touchEndX;
-
-                if (Math.abs(diff) > swipeThreshold) {
-                    if (diff > 0) {
-                        // 왼쪽으로 스와이프 -> 다음
-                        navigateModalStyle(1);
-                    } else {
-                        // 오른쪽으로 스와이프 -> 이전
-                        navigateModalStyle(-1);
-                    }
-                }
-            }
         }
 
-        console.log('✅ 이미지 렌더링 완료 (슬라이딩 지원)');
+        console.log('✅ 이미지 렌더링 완료');
     } else {
         console.error('❌ mediaViewerContainer를 찾을 수 없습니다');
+    }
+
+    // ⭐⭐⭐ 모달 전체에 스와이프 제스처 지원 (이미지뿐 아니라 모달 어디서든)
+    let modalTouchStartX = 0;
+    let modalTouchEndX = 0;
+    let modalTouchStartY = 0;
+    let modalTouchEndY = 0;
+
+    modal.addEventListener('touchstart', function(e) {
+        modalTouchStartX = e.changedTouches[0].screenX;
+        modalTouchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    modal.addEventListener('touchend', function(e) {
+        modalTouchEndX = e.changedTouches[0].screenX;
+        modalTouchEndY = e.changedTouches[0].screenY;
+        handleModalSwipe();
+    }, { passive: true });
+
+    function handleModalSwipe() {
+        const swipeThreshold = 50;
+        const diffX = modalTouchStartX - modalTouchEndX;
+        const diffY = modalTouchStartY - modalTouchEndY;
+
+        // 수평 스와이프가 수직보다 큰 경우에만 처리 (스크롤과 구분)
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
+            if (diffX > 0) {
+                // 왼쪽으로 스와이프 -> 다음
+                navigateModalStyle(1);
+            } else {
+                // 오른쪽으로 스와이프 -> 이전
+                navigateModalStyle(-1);
+            }
+        }
     }
 
     // 모달 내용 설정 (코드/이름 등) - 숨겨진 상태
