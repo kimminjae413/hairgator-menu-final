@@ -5283,9 +5283,10 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
   try {
     // 1. 사용자가 선택한 시리즈 사용 (기장 분석 생략)
     const t1 = Date.now();
+    console.log(`🔍 [DEBUG] 수신된 category: "${category}", series: "${series}"`);
     const lengthCode = category || 'D'; // 사용자가 선택한 기장
     const targetSeriesCode = series || `F${lengthCode}L`;
-    console.log(`⏱️ [1] 사용자 선택 시리즈: ${targetSeriesCode} (${Date.now() - t1}ms)`);
+    console.log(`⏱️ [1] 사용자 선택 시리즈: ${targetSeriesCode}, 기장코드: ${lengthCode} (${Date.now() - t1}ms)`);
 
     // 2. Firestore에서 해당 시리즈 스타일만 가져오기
     const t2 = Date.now();
@@ -5356,8 +5357,10 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     const params56 = await analyzeImageStructured(image_base64, mime_type, geminiKey);
 
     // ⭐⭐⭐ 사용자가 선택한 기장으로 강제 덮어쓰기 (AI 분석 결과 무시!)
+    console.log(`🔍 [DEBUG] AI 분석 기장: "${params56.length_category}" → 강제 변경: "${lengthCode} Length"`);
     params56.length_category = `${lengthCode} Length`;
     console.log(`⏱️ [4] 상세 파라미터 분석: ${Date.now() - t4}ms (기장 강제: ${lengthCode} Length)`);
+    console.log(`🔍 [DEBUG] 매칭 스타일: ${top1.styleId}, 시리즈: ${top1.series}`);
 
     // 6. Top-1 스타일의 textRecipe 가져오기 (보충 레시피 없이 원본 사용)
     let originalRecipe = top1.textRecipe || '';
