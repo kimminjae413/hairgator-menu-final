@@ -6344,23 +6344,28 @@ async function selectBestMaleStyleByVision(userImageBase64, mimeType, candidateS
       const styleCode = style.styleId.substring(0, 2);
       const feature = MALE_STYLE_FEATURES[styleCode] || { name: styleCode, desc: '남성 스타일' };
 
-      // 남자 스타일 특화 프롬프트 (앞머리 방향 + 사이드 처리 중심)
-      const prompt = `남성 헤어 스타일리스트로서 두 이미지의 유사도를 엄격하게 평가하세요.
+      // 남자 스타일 특화 프롬프트 (앞머리 방향 + 볼륨 높이 + 사이드 처리 중심)
+      const prompt = `남성 헤어 스타일리스트로서 두 이미지의 유사도를 매우 엄격하게 평가하세요.
 [이미지1] 고객 레퍼런스 [이미지2] ${style.styleId} - ${feature.name} (${feature.desc})
 
-⚠️ 중요: 앞머리 방향이 다르면 50점 이하로 평가!
-- 이미지1이 앞머리를 내렸는데 이미지2가 올렸으면 → 40점 이하
-- 이미지1이 앞머리를 올렸는데 이미지2가 내렸으면 → 40점 이하
-- 이미지1이 가르마인데 이미지2가 가르마 아니면 → 40점 이하
+⚠️ 중요 패널티 (하나라도 다르면 감점!):
+1. 앞머리 방향이 다르면 → 40점 이하
+   - 내림 vs 올림 = 완전히 다른 스타일!
+   - 가르마 vs 가르마 아님 = 완전히 다른 스타일!
+2. 탑 볼륨 높이가 다르면 → 60점 이하
+   - 눌린 스타일(이마에 붙음) vs 볼륨 있는 스타일(위로 솟음) = 다른 스타일!
+   - 앞머리가 이마에 자연스럽게 내려옴 vs 앞머리가 위로 올라감 = 다른 스타일!
+3. 사이드 처리가 다르면 → 70점 이하
+   - 자연스러운 연결 vs 투블럭/페이드 = 다른 스타일!
 
 평가 기준 (100점):
-1. 앞머리 방향 일치(30점): 내림(Fringe Down)/올림(Fringe Up)/가르마(Part)/뒤로넘김(Pushed Back) 일치 필수
-2. 사이드 처리(25점): 투블럭/페이드/테이퍼/자연스러운 연결 등
-3. 탑 길이와 볼륨(20점): 탑 길이감, 볼륨 위치
-4. 전체 실루엣(15점): 머리 전체 형태
-5. 텍스처(10점): 직모/펌/웨이브 여부
+1. 앞머리 방향(25점): 내림/올림/가르마/뒤로넘김 일치 필수
+2. 탑 볼륨 높이(25점): 눌린 스타일 vs 볼륨 있는 스타일, 앞머리가 이마에 붙는지 vs 위로 솟는지
+3. 사이드 처리(20점): 투블럭/페이드/테이퍼/자연스러운 연결
+4. 전체 실루엣(15점): 머리 전체 형태와 길이감
+5. 텍스처(15점): 직모/펌/웨이브, 머릿결 방향
 
-JSON만: {"total_score":<0-100>,"fringe_match":<true/false>,"reason":"<1문장>"}`;
+JSON만: {"total_score":<0-100>,"fringe_match":<true/false>,"volume_match":<true/false>,"reason":"<1문장>"}`;
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
@@ -6388,8 +6393,9 @@ JSON만: {"total_score":<0-100>,"fringe_match":<true/false>,"reason":"<1문장>"
         const result = JSON.parse(jsonMatch[0]);
         const score = parseInt(result.total_score) || 0;
         const fringeMatch = result.fringe_match === true;
-        console.log(`  📊 ${style.styleId}: ${score}점 (앞머리일치: ${fringeMatch ? '✓' : '✗'})`);
-        return { styleId: style.styleId, score, fringeMatch, reason: result.reason || '' };
+        const volumeMatch = result.volume_match === true;
+        console.log(`  📊 ${style.styleId}: ${score}점 (앞머리: ${fringeMatch ? '✓' : '✗'}, 볼륨: ${volumeMatch ? '✓' : '✗'})`);
+        return { styleId: style.styleId, score, fringeMatch, volumeMatch, reason: result.reason || '' };
       }
       return null;
     } catch (error) {
@@ -6402,18 +6408,21 @@ JSON만: {"total_score":<0-100>,"fringe_match":<true/false>,"reason":"<1문장>"
   const results = await Promise.all(candidateStyles.map(compareStyle));
   const scoreResults = results.filter(r => r !== null);
 
-  // 점수 기준 정렬 (앞머리 일치 우선, 그 다음 점수)
+  // 점수 기준 정렬 (앞머리 일치 > 볼륨 일치 > 점수)
   scoreResults.sort((a, b) => {
-    // 앞머리 일치 여부 우선
+    // 1. 앞머리 일치 여부 우선
     if (a.fringeMatch && !b.fringeMatch) return -1;
     if (!a.fringeMatch && b.fringeMatch) return 1;
-    // 동일하면 점수순
+    // 2. 볼륨 일치 여부
+    if (a.volumeMatch && !b.volumeMatch) return -1;
+    if (!a.volumeMatch && b.volumeMatch) return 1;
+    // 3. 동일하면 점수순
     return b.score - a.score;
   });
 
   console.log(`\n🏆 남자 최종 순위:`);
   scoreResults.slice(0, 3).forEach((r, i) => {
-    console.log(`  ${i + 1}. ${r.styleId}: ${r.score}점 (앞머리: ${r.fringeMatch ? '✓' : '✗'})`);
+    console.log(`  ${i + 1}. ${r.styleId}: ${r.score}점 (앞머리: ${r.fringeMatch ? '✓' : '✗'}, 볼륨: ${r.volumeMatch ? '✓' : '✗'})`);
   });
 
   if (scoreResults.length > 0) {
