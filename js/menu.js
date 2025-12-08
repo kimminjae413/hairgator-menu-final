@@ -3,6 +3,7 @@
 // ⭐ 모달 슬라이딩용 전역 변수
 let currentCategoryStyles = [];  // 현재 카테고리의 모든 스타일
 let currentStyleIndex = 0;       // 현재 표시 중인 스타일 인덱스
+let modalSwipeInitialized = false;  // 스와이프 이벤트 초기화 여부
 
 // ⭐ Android 소프트 키보드 대응 - 동적 뷰포트 높이 설정
 (function() {
@@ -1070,38 +1071,40 @@ function openStyleModal(style) {
         console.error('❌ mediaViewerContainer를 찾을 수 없습니다');
     }
 
-    // ⭐⭐⭐ 모달 전체에 스와이프 제스처 지원 (이미지뿐 아니라 모달 어디서든)
-    let modalTouchStartX = 0;
-    let modalTouchEndX = 0;
-    let modalTouchStartY = 0;
-    let modalTouchEndY = 0;
+    // ⭐⭐⭐ 모달 스와이프 이벤트 - 한 번만 등록!
+    if (!modalSwipeInitialized) {
+        let modalTouchStartX = 0;
+        let modalTouchEndX = 0;
+        let modalTouchStartY = 0;
+        let modalTouchEndY = 0;
 
-    modal.addEventListener('touchstart', function(e) {
-        modalTouchStartX = e.changedTouches[0].screenX;
-        modalTouchStartY = e.changedTouches[0].screenY;
-    }, { passive: true });
+        modal.addEventListener('touchstart', function(e) {
+            modalTouchStartX = e.changedTouches[0].screenX;
+            modalTouchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
 
-    modal.addEventListener('touchend', function(e) {
-        modalTouchEndX = e.changedTouches[0].screenX;
-        modalTouchEndY = e.changedTouches[0].screenY;
-        handleModalSwipe();
-    }, { passive: true });
+        modal.addEventListener('touchend', function(e) {
+            modalTouchEndX = e.changedTouches[0].screenX;
+            modalTouchEndY = e.changedTouches[0].screenY;
 
-    function handleModalSwipe() {
-        const swipeThreshold = 50;
-        const diffX = modalTouchStartX - modalTouchEndX;
-        const diffY = modalTouchStartY - modalTouchEndY;
+            const swipeThreshold = 50;
+            const diffX = modalTouchStartX - modalTouchEndX;
+            const diffY = modalTouchStartY - modalTouchEndY;
 
-        // 수평 스와이프가 수직보다 큰 경우에만 처리 (스크롤과 구분)
-        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
-            if (diffX > 0) {
-                // 왼쪽으로 스와이프 -> 다음
-                navigateModalStyle(1);
-            } else {
-                // 오른쪽으로 스와이프 -> 이전
-                navigateModalStyle(-1);
+            // 수평 스와이프가 수직보다 큰 경우에만 처리 (스크롤과 구분)
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
+                if (diffX > 0) {
+                    // 왼쪽으로 스와이프 -> 다음
+                    navigateModalStyle(1);
+                } else {
+                    // 오른쪽으로 스와이프 -> 이전
+                    navigateModalStyle(-1);
+                }
             }
-        }
+        }, { passive: true });
+
+        modalSwipeInitialized = true;
+        console.log('✅ 모달 스와이프 이벤트 초기화 완료');
     }
 
     // 모달 내용 설정 (코드/이름 등) - 숨겨진 상태
