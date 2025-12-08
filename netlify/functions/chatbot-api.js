@@ -5304,11 +5304,9 @@ async function selectBestStyleByVision(userImageBase64, mimeType, candidateStyle
     'FHL': { name: 'H Length (허리)', desc: '허리 길이, 매우 긴 레이어, 가벼운 끝처리' }
   };
 
-  const scoreResults = [];
-
-  // 1:1 순차 비교
-  for (const style of candidateStyles) {
-    if (!style.resultImage) continue;
+  // 🚀 병렬 처리: 모든 스타일 동시에 비교 (타임아웃 방지)
+  const compareStyle = async (style) => {
+    if (!style.resultImage) return null;
 
     try {
       // 대표이미지 fetch
@@ -5318,7 +5316,7 @@ async function selectBestStyleByVision(userImageBase64, mimeType, candidateStyle
 
       if (!imgResponse.ok) {
         console.log(`⚠️ 이미지 로드 실패: ${style.styleId}`);
-        continue;
+        return null;
       }
 
       const imgBuffer = await imgResponse.arrayBuffer();
@@ -5330,38 +5328,13 @@ async function selectBestStyleByVision(userImageBase64, mimeType, candidateStyle
       const feature = STYLE_FEATURES[series] || { name: series, desc: '레이어 스타일' };
 
       // 1:1 비교 프롬프트
-      const prompt = `당신은 전문 헤어 스타일리스트입니다. 두 이미지를 비교하세요.
+      const prompt = `헤어 스타일리스트로서 두 이미지 유사도를 평가하세요.
+[이미지1] 고객 레퍼런스 [이미지2] ${style.styleId} - ${feature.name}
 
-[이미지 1] 고객이 원하는 스타일 (레퍼런스)
-[이미지 2] ${style.styleId} - ${feature.name}: ${feature.desc}
+평가 기준:
+1. 실루엣(30점) 2. 볼륨위치(25점) 3. 레이어(20점) 4. 앞머리(15점) 5. 끝선(10점)
 
-다음 기준으로 유사도를 0~100점으로 평가하세요:
-
-1. 실루엣/형태 (30점): 전체적인 머리 모양이 얼마나 비슷한가?
-   - 둥근형, 삼각형, 사각형 등 형태 비교
-
-2. 볼륨 위치 (25점): 볼륨이 어디에 집중되어 있는가?
-   - 위쪽(크라운), 중간, 아래쪽 비교
-
-3. 레이어 구조 (20점): 층의 위치와 양이 비슷한가?
-   - 하이레이어, 로우레이어, 원랭스 비교
-
-4. 앞머리/프린지 (15점): 앞머리 스타일이 비슷한가?
-   - 유무, 길이, 형태 비교
-
-5. 끝선/아웃라인 (10점): 머리끝 라인이 비슷한가?
-   - 뭉툭한, 둥근, 텍스처 비교
-
-JSON만 반환:
-{
-  "total_score": <0-100>,
-  "silhouette": <0-30>,
-  "volume": <0-25>,
-  "layer": <0-20>,
-  "bangs": <0-15>,
-  "outline": <0-10>,
-  "reason": "<왜 이 점수인지 2문장으로>"
-}`;
+JSON만: {"total_score":<0-100>,"reason":"<1문장>"}`;
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
@@ -5371,14 +5344,12 @@ JSON만 반환:
           body: JSON.stringify({
             contents: [{
               parts: [
-                { text: "[이미지 1] 고객 레퍼런스:" },
                 { inline_data: { mime_type: mimeType, data: userImageBase64 } },
-                { text: `\n\n[이미지 2] ${style.styleId}:` },
                 { inline_data: { mime_type: styleMimeType, data: styleImageBase64 } },
-                { text: `\n\n${prompt}` }
+                { text: prompt }
               ]
             }],
-            generationConfig: { temperature: 0.1, maxOutputTokens: 300 }
+            generationConfig: { temperature: 0.1, maxOutputTokens: 150 }
           })
         }
       );
@@ -5386,35 +5357,23 @@ JSON만 반환:
       const data = await response.json();
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-      // JSON 파싱
       const jsonMatch = text.match(/\{[\s\S]*?\}/);
       if (jsonMatch) {
         const result = JSON.parse(jsonMatch[0]);
         const score = parseInt(result.total_score) || 0;
-
-        scoreResults.push({
-          styleId: style.styleId,
-          score: score,
-          details: {
-            silhouette: result.silhouette || 0,
-            volume: result.volume || 0,
-            layer: result.layer || 0,
-            bangs: result.bangs || 0,
-            outline: result.outline || 0
-          },
-          reason: result.reason || ''
-        });
-
-        console.log(`  📊 ${style.styleId}: ${score}점 - ${result.reason?.substring(0, 50)}`);
+        console.log(`  📊 ${style.styleId}: ${score}점`);
+        return { styleId: style.styleId, score, reason: result.reason || '' };
       }
-
-      // API 호출 간격
-      await new Promise(r => setTimeout(r, 100));
-
+      return null;
     } catch (error) {
       console.log(`⚠️ ${style.styleId} 비교 오류:`, error.message);
+      return null;
     }
-  }
+  };
+
+  // 모든 스타일 병렬 비교
+  const results = await Promise.all(candidateStyles.map(compareStyle));
+  const scoreResults = results.filter(r => r !== null);
 
   // 점수 기준 정렬
   scoreResults.sort((a, b) => b.score - a.score);
@@ -5432,9 +5391,8 @@ JSON만 반환:
       selectedStyleId: best.styleId,
       confidence: confidence,
       score: best.score,
-      details: best.details,
       reason: best.reason,
-      allScores: scoreResults.slice(0, 5) // 상위 5개 점수
+      allScores: scoreResults.slice(0, 5)
     };
   }
 
@@ -5848,79 +5806,49 @@ Return ONLY a JSON object:
   }
 }
 
-// ==================== ⭐⭐⭐ 남자 스타일 Vision 1:1 순차 비교 (정확도 향상) ====================
+// ==================== ⭐⭐⭐ 남자 스타일 Vision 병렬 비교 (타임아웃 방지) ====================
 async function selectBestMaleStyleByVision(userImageBase64, mimeType, candidateStyles, geminiKey) {
-  console.log(`🔍 남자 Vision 1:1 비교 시작: ${candidateStyles.length}개 스타일`);
+  console.log(`🔍 남자 Vision 병렬 비교 시작: ${candidateStyles.length}개 스타일`);
 
   // 남자 스타일별 특징 설명
   const MALE_STYLE_FEATURES = {
-    'SF': { name: 'Side Fringe (사이드 프린지)', desc: '앞머리가 옆으로 내려오는 스타일, 이마 일부 가림, 자연스러운 볼륨' },
-    'SP': { name: 'Side Part (사이드 파트)', desc: '가르마가 있는 정돈된 스타일, 깔끔한 실루엣, 비즈니스 캐주얼' },
-    'FU': { name: 'Fringe Up (프린지 업)', desc: '앞머리를 위로 올린 스타일, 이마 노출, 볼륨감 있는 탑' },
-    'PB': { name: 'Pushed Back (푸시드 백)', desc: '전체적으로 뒤로 넘긴 스타일, 이마 완전 노출, 세련된 느낌' },
-    'BZ': { name: 'Buzz (버즈컷)', desc: '매우 짧은 스타일, 거의 동일한 길이, 깔끔하고 단정함' },
-    'CP': { name: 'Crop (크롭)', desc: '짧은 탑과 더 짧은 사이드, 텍스처 있는 앞머리, 모던한 느낌' },
-    'MC': { name: 'Mohican (모히칸)', desc: '중앙 부분이 긴 스타일, 사이드 페이드, 개성 있는 실루엣' }
+    'SF': { name: 'Side Fringe', desc: '앞머리 옆으로 내림' },
+    'SP': { name: 'Side Part', desc: '가르마 스타일' },
+    'FU': { name: 'Fringe Up', desc: '앞머리 위로 올림' },
+    'PB': { name: 'Pushed Back', desc: '뒤로 넘김' },
+    'BZ': { name: 'Buzz', desc: '매우 짧은 컷' },
+    'CP': { name: 'Crop', desc: '짧은 탑 + 페이드' },
+    'MC': { name: 'Mohican', desc: '중앙 긴 스타일' }
   };
 
-  const scoreResults = [];
-
-  // 1:1 순차 비교
-  for (const style of candidateStyles) {
-    if (!style.resultImage) continue;
+  // 🚀 병렬 처리: 모든 스타일 동시에 비교
+  const compareStyle = async (style) => {
+    if (!style.resultImage) return null;
 
     try {
-      // 대표이미지 fetch
       const imgResponse = await fetch(style.resultImage, {
         headers: { 'User-Agent': 'Mozilla/5.0' }
       });
 
       if (!imgResponse.ok) {
         console.log(`⚠️ 이미지 로드 실패: ${style.styleId}`);
-        continue;
+        return null;
       }
 
       const imgBuffer = await imgResponse.arrayBuffer();
       const styleImageBase64 = Buffer.from(imgBuffer).toString('base64');
       const styleMimeType = imgResponse.headers.get('content-type') || 'image/png';
 
-      // 스타일 코드 추출 (SF, SP, FU 등)
       const styleCode = style.styleId.substring(0, 2);
-      const feature = MALE_STYLE_FEATURES[styleCode] || { name: styleCode, desc: '남성 헤어스타일' };
+      const feature = MALE_STYLE_FEATURES[styleCode] || { name: styleCode, desc: '남성 스타일' };
 
-      // 1:1 비교 프롬프트
-      const prompt = `당신은 전문 남성 헤어 스타일리스트입니다. 두 이미지를 비교하세요.
+      const prompt = `남성 헤어 스타일리스트로서 두 이미지 유사도를 평가하세요.
+[이미지1] 고객 레퍼런스 [이미지2] ${style.styleId} - ${feature.name}
 
-[이미지 1] 고객이 원하는 스타일 (레퍼런스)
-[이미지 2] ${style.styleId} - ${feature.name}: ${feature.desc}
+평가 기준:
+1. 실루엣(25점) 2. 앞머리방향(25점) 3. 탑볼륨(20점) 4. 사이드(15점) 5. 텍스처(15점)
 
-다음 기준으로 유사도를 0~100점으로 평가하세요:
-
-1. 전체 실루엣 (25점): 머리 전체 모양이 얼마나 비슷한가?
-   - 둥근, 각진, 뾰족한 등 형태 비교
-
-2. 앞머리 방향 (25점): 앞머리가 어느 방향인가?
-   - 내림(down), 올림(up), 옆(side), 뒤(back) 비교
-
-3. 탑 볼륨 (20점): 정수리 부분 길이와 볼륨이 비슷한가?
-   - 짧음, 중간, 높음 비교
-
-4. 사이드 길이 (15점): 옆머리 길이가 비슷한가?
-   - 페이드, 짧음, 중간 비교
-
-5. 텍스처/질감 (15점): 머리 질감이 비슷한가?
-   - 매끄러움, 텍스처, 웨이브 비교
-
-JSON만 반환:
-{
-  "total_score": <0-100>,
-  "silhouette": <0-25>,
-  "fringe_direction": <0-25>,
-  "top_volume": <0-20>,
-  "side_length": <0-15>,
-  "texture": <0-15>,
-  "reason": "<왜 이 점수인지 2문장으로>"
-}`;
+JSON만: {"total_score":<0-100>,"reason":"<1문장>"}`;
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
@@ -5930,14 +5858,12 @@ JSON만 반환:
           body: JSON.stringify({
             contents: [{
               parts: [
-                { text: "[이미지 1] 고객 레퍼런스:" },
                 { inline_data: { mime_type: mimeType, data: userImageBase64 } },
-                { text: `\n\n[이미지 2] ${style.styleId}:` },
                 { inline_data: { mime_type: styleMimeType, data: styleImageBase64 } },
-                { text: `\n\n${prompt}` }
+                { text: prompt }
               ]
             }],
-            generationConfig: { temperature: 0.1, maxOutputTokens: 300 }
+            generationConfig: { temperature: 0.1, maxOutputTokens: 150 }
           })
         }
       );
@@ -5945,35 +5871,23 @@ JSON만 반환:
       const data = await response.json();
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-      // JSON 파싱
       const jsonMatch = text.match(/\{[\s\S]*?\}/);
       if (jsonMatch) {
         const result = JSON.parse(jsonMatch[0]);
         const score = parseInt(result.total_score) || 0;
-
-        scoreResults.push({
-          styleId: style.styleId,
-          score: score,
-          details: {
-            silhouette: result.silhouette || 0,
-            fringe_direction: result.fringe_direction || 0,
-            top_volume: result.top_volume || 0,
-            side_length: result.side_length || 0,
-            texture: result.texture || 0
-          },
-          reason: result.reason || ''
-        });
-
-        console.log(`  📊 ${style.styleId}: ${score}점 - ${result.reason?.substring(0, 50)}`);
+        console.log(`  📊 ${style.styleId}: ${score}점`);
+        return { styleId: style.styleId, score, reason: result.reason || '' };
       }
-
-      // API 호출 간격
-      await new Promise(r => setTimeout(r, 100));
-
+      return null;
     } catch (error) {
       console.log(`⚠️ ${style.styleId} 비교 오류:`, error.message);
+      return null;
     }
-  }
+  };
+
+  // 모든 스타일 병렬 비교
+  const results = await Promise.all(candidateStyles.map(compareStyle));
+  const scoreResults = results.filter(r => r !== null);
 
   // 점수 기준 정렬
   scoreResults.sort((a, b) => b.score - a.score);
@@ -5991,7 +5905,6 @@ JSON만 반환:
       selectedStyleId: best.styleId,
       confidence: confidence,
       score: best.score,
-      details: best.details,
       reason: best.reason,
       allScores: scoreResults.slice(0, 5)
     };
