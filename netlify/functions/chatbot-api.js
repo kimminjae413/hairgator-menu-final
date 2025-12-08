@@ -2799,25 +2799,87 @@ const GUIDE_IMAGES = {
   }
 };
 
-// ==================== 이론 인덱스 키워드 매핑 (핵심 용어만) ====================
-const THEORY_KEYWORDS = [
-  ["lifting", "Lifting", ["리프팅", "lifting", "l0", "l4", "l8"]],
-  ["direction", "Direction", ["디렉션", "direction", "d0", "d4", "d8"]],
-  ["section", "Section", ["섹션", "section"]],
-  ["zone", "Zone", ["존", "zone", "a존", "b존", "c존"]],
-  ["layer", "Layer", ["레이어", "layer", "층"]],
-  ["graduation", "Graduation", ["그라데이션", "graduation"]],
-  ["one_length", "One Length", ["원렝스", "one length"]],
-  ["disconnection", "Disconnection", ["디스커넥션", "disconnection"]],
-  ["volume", "Volume", ["볼륨", "volume"]],
-  ["silhouette", "Silhouette", ["실루엣", "silhouette"]],
-  ["face_shape", "Face Shape", ["얼굴형", "face shape"]],
-  ["fringe", "Fringe", ["프린지", "fringe", "앞머리"]],
-  ["texturizing", "Texturizing", ["텍스처", "texturizing", "질감"]],
-  ["cut_form", "Cut Form", ["컷폼", "cut form"]],
-  ["design_line", "Design Line", ["디자인 라인", "design line"]],
-  ["blocking", "Blocking", ["블로킹", "blocking"]]
-];
+// ==================== 이론 인덱스 캐시 (Firestore에서 동적 로드) ====================
+let theoryIndexCache = null;
+let theoryIndexCacheTime = 0;
+const THEORY_CACHE_TTL = 30 * 60 * 1000; // 30분 캐시
+
+/**
+ * Firestore에서 89개 이론 인덱스 로드 (캐시 적용)
+ */
+async function loadTheoryIndexes() {
+  // 캐시가 유효하면 재사용
+  if (theoryIndexCache && (Date.now() - theoryIndexCacheTime < THEORY_CACHE_TTL)) {
+    return theoryIndexCache;
+  }
+
+  try {
+    const url = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/theory_indexes?pageSize=100`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      console.error('❌ 이론 인덱스 로드 실패:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    const indexes = [];
+
+    if (data.documents) {
+      for (const doc of data.documents) {
+        const fields = doc.fields;
+        const docId = doc.name.split('/').pop();
+
+        // 키워드 배열 추출
+        const keywords = [];
+        if (fields.keywords?.arrayValue?.values) {
+          fields.keywords.arrayValue.values.forEach(v => {
+            if (v.stringValue) keywords.push(v.stringValue.toLowerCase());
+          });
+        }
+
+        // term 추가 (영문명도 키워드로)
+        if (fields.term?.stringValue) {
+          keywords.push(fields.term.stringValue.toLowerCase());
+        }
+
+        // title_ko 추가 (한글명도 키워드로)
+        if (fields.title_ko?.stringValue) {
+          keywords.push(fields.title_ko.stringValue.toLowerCase());
+        }
+
+        // 이미지 URL 맵 추출
+        const images = {};
+        if (fields.images?.mapValue?.fields) {
+          const imgFields = fields.images.mapValue.fields;
+          ['ko', 'en', 'ja', 'zh', 'vi'].forEach(lang => {
+            if (imgFields[lang]?.stringValue) {
+              images[lang] = imgFields[lang].stringValue;
+            }
+          });
+        }
+
+        indexes.push({
+          docId,
+          term: fields.term?.stringValue || docId,
+          title_ko: fields.title_ko?.stringValue || '',
+          keywords,
+          images,
+          description: fields.description?.stringValue || ''
+        });
+      }
+    }
+
+    theoryIndexCache = indexes;
+    theoryIndexCacheTime = Date.now();
+    console.log(`📚 이론 인덱스 ${indexes.length}개 로드 완료`);
+
+    return indexes;
+  } catch (e) {
+    console.error('❌ 이론 인덱스 로드 오류:', e);
+    return null;
+  }
+}
 
 /**
  * 질문에 맞는 가이드 이미지 찾기
@@ -2842,20 +2904,47 @@ function detectGuideImageForQuery(query) {
 }
 
 /**
- * 질문에 맞는 이론 이미지 찾기 (간소화된 키워드 매칭)
+ * 질문에 맞는 이론 이미지 찾기 (Firestore 89개 인덱스 동적 매칭)
  */
-function detectTheoryImageForQuery(query, language = 'ko') {
+async function detectTheoryImageForQuery(query, language = 'ko') {
   const lowerQuery = query.toLowerCase();
 
-  // 키워드 매칭으로 이론 찾기
-  for (const [docId, term, keywords] of THEORY_KEYWORDS) {
-    if (keywords.some(k => lowerQuery.includes(k.toLowerCase()))) {
-      // 직접 URL 구성 (Firestore 호출 없이 빠르게)
-      const termForUrl = term.replace(/ /g, '_').replace(/&/g, 'and');
+  // Firestore에서 이론 인덱스 로드
+  const indexes = await loadTheoryIndexes();
+  if (!indexes || indexes.length === 0) {
+    return null;
+  }
+
+  // 키워드 매칭으로 이론 찾기 (가장 많이 매칭되는 것 우선)
+  let bestMatch = null;
+  let bestMatchCount = 0;
+
+  for (const index of indexes) {
+    let matchCount = 0;
+
+    for (const keyword of index.keywords) {
+      if (lowerQuery.includes(keyword)) {
+        matchCount++;
+      }
+    }
+
+    if (matchCount > bestMatchCount) {
+      bestMatchCount = matchCount;
+      bestMatch = index;
+    }
+  }
+
+  if (bestMatch && bestMatchCount > 0) {
+    // 언어별 이미지 URL 반환
+    const imageUrl = bestMatch.images[language] || bestMatch.images['ko'] || bestMatch.images['en'];
+
+    if (imageUrl) {
+      console.log(`📚 이론 인덱스 매칭: "${bestMatch.term}" (${bestMatchCount}개 키워드 일치)`);
       return {
-        url: `https://storage.googleapis.com/hairgatormenu-4a43e.firebasestorage.app/theory_indexes/${language}/${termForUrl}.png`,
-        title: term,
-        term: term
+        url: imageUrl,
+        title: bestMatch.title_ko || bestMatch.term,
+        term: bestMatch.term,
+        description: bestMatch.description
       };
     }
   }
