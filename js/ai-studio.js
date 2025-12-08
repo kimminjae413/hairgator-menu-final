@@ -576,17 +576,17 @@ class AIStudio {
   async callAPI(query) {
     console.log('📤 API 호출:', query);
 
-    // 최근 대화 히스토리 (최대 10개) - 맥락 유지용
+    // 최근 대화 히스토리 (최대 30개) - 맥락 유지용
     const recentHistory = this.conversationHistory
-      .slice(-10)
+      .slice(-30)
       .map(msg => ({
-        role: msg.sender === 'user' ? 'user' : 'assistant',
+        role: msg.sender === 'user' ? 'user' : 'model',
         content: msg.content
       }));
 
-    // ⭐ 현재 활성 레시피 컨텍스트 (5분 이내면 유효)
+    // ⭐ 현재 활성 레시피 컨텍스트 (30분 이내면 유효)
     let recipeContext = null;
-    if (this.currentRecipeContext && (Date.now() - this.currentRecipeContext.timestamp) < 5 * 60 * 1000) {
+    if (this.currentRecipeContext && (Date.now() - this.currentRecipeContext.timestamp) < 30 * 60 * 1000) {
       recipeContext = this.currentRecipeContext;
       console.log('📋 레시피 컨텍스트 포함:', recipeContext.analysis?.styleCode || recipeContext.analysis?.lengthName);
     }
