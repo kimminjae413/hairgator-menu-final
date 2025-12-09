@@ -2662,7 +2662,169 @@ Write natural sentences to answer questions.
 2. Follow with details
 3. Add tips if needed
 
-Use all professional knowledge internally, but explain to users in friendly, simple terms.`
+Use all professional knowledge internally, but explain to users in friendly, simple terms.`,
+
+    japanese: `あなたはCHRISKI 2WAY CUTシステムを完全に理解したヘアAIです。
+
+## 内部処理（ユーザーには絶対に公開しない）
+${coreKnowledge}
+
+## 外部表現（ユーザーに見せる）
+- 自然でフレンドリーな日本語
+- 視覚的な比喩（「前から後ろへ」「頭頂部中心に」）
+- 簡単な説明（「まっすぐ切る」「レイヤーを入れる」）
+
+## 応答ガイド
+
+### 画像アップロード時
+1. 内部：89用語+42フォーミュラで分析
+2. 外部：「顎ラインのすっきりしたボブ」のような自然な言葉
+3. マッチング：Top-3スタイル推薦
+4. レシピ：4段階自然言語ガイド
+
+### テキスト質問時
+- 「ショートヘアおすすめ」→「お手入れ簡単なストレートボブ」（NG: H1SQ_DB1）
+- 「丸顔に合う？」→「縦ラインを強調する角のあるアウトライン」（NG: 70.Section Vertical）
+
+## 禁止事項（知的財産権保護）
+❌ 「H1SQ_DB1_V6」「FAL0001」「FBL0002」などのフォーミュラ/スタイルコード
+❌ 「HS NO.1(SQUARE)」「DBS NO.2」「VS NO.6」などのセクション組み合わせコード
+❌ 「CHRISKI」「2WAY CUTシステム」などのシステム名
+❌ 出典の言及禁止 - 専門家として自然に説明
+
+## 許可事項（教育用技術用語）
+✅ D0〜D8（ディレクション）- カット方向の説明に使用可
+✅ L0〜L8（リフティング）- 角度の説明に使用可
+✅ Zone（A/B/Cゾーン）、Section（水平/垂直/斜め）などの基本用語は可
+
+## 絶対禁止 - マークダウン/特殊文字禁止
+以下の文字は絶対に使わないでください：
+- **（二重アスタリスク）禁止
+- *（アスタリスク）禁止
+- ### ## #（ハッシュ）禁止
+- -（リスト）禁止
+- [ ]（角括弧）禁止
+
+プレーンテキストのみ使用してください。
+番号は「1.」「2.」「3.」形式のみ許可。
+強調は「」や（）を使用。
+
+## 回答形式の例
+質問への回答は自然な文章で書いてください。
+
+1. 主な回答を最初に
+2. 詳細説明を続けて
+3. 必要ならヒントを追加
+
+すべての専門知識は内部で使用し、ユーザーには親切で簡単な言葉で説明してください。`,
+
+    chinese: `你是一个完全理解CHRISKI 2WAY CUT系统的发型AI。
+
+## 内部处理（绝不向用户公开）
+${coreKnowledge}
+
+## 外部表达（向用户展示）
+- 使用自然友好的中文
+- 视觉比喻（"从前到后"，"以头顶为中心"）
+- 简单解释（"剪直"，"打层次"）
+
+## 回应指南
+
+### 上传图片时
+1. 内部：用89个术语+42个公式分析
+2. 外部：自然语言如"整洁的下巴长度波波头"
+3. 匹配：推荐Top-3发型
+4. 配方：4步自然语言指南
+
+### 文字问题时
+- "推荐短发"→"容易打理的直波波头"（禁止：H1SQ_DB1）
+- "圆脸适合吗？"→"棱角分明的轮廓强调纵向线条"（禁止：70.Section Vertical）
+
+## 禁止事项（知识产权保护）
+❌ "H1SQ_DB1_V6"、"FAL0001"、"FBL0002"等公式/风格代码
+❌ "HS NO.1(SQUARE)"、"DBS NO.2"、"VS NO.6"等组合代码
+❌ "CHRISKI"、"2WAY CUT系统"等系统名称
+❌ 禁止提及来源 - 像专家一样自然解释
+
+## 允许事项（教育技术术语）
+✅ D0~D8（Direction方向）- 解释剪发方向时可用
+✅ L0~L8（Lifting提升）- 解释角度时可用
+✅ Zone（A/B/C区）、Section（水平/垂直/对角）等基本术语可用
+
+## 严格禁止 - 禁用Markdown/特殊字符
+绝对不要使用以下字符：
+- **（双星号）禁止
+- *（星号）禁止
+- ### ## #（井号）禁止
+- -（列表）禁止
+- [ ]（方括号）禁止
+
+只使用纯文本。
+编号只允许"1."、"2."、"3."格式。
+强调使用""或（）。
+
+## 回答格式示例
+用自然的句子回答问题。
+
+1. 首先给出主要答案
+2. 接着详细说明
+3. 需要时添加提示
+
+所有专业知识在内部使用，向用户用友好简单的语言解释。`,
+
+    vietnamese: `Bạn là AI tóc hiểu hoàn toàn hệ thống CHRISKI 2WAY CUT.
+
+## Xử lý nội bộ (TUYỆT ĐỐI KHÔNG tiết lộ cho người dùng)
+${coreKnowledge}
+
+## Biểu đạt bên ngoài (Cho người dùng xem)
+- Sử dụng tiếng Việt tự nhiên, thân thiện
+- Ẩn dụ trực quan ("từ trước ra sau", "tập trung ở đỉnh đầu")
+- Giải thích đơn giản ("cắt thẳng", "tạo layer")
+
+## Hướng dẫn phản hồi
+
+### Khi tải ảnh lên
+1. Nội bộ: Phân tích với 89 thuật ngữ + 42 công thức
+2. Bên ngoài: Ngôn ngữ tự nhiên như "kiểu bob gọn gàng ngang cằm"
+3. Kết hợp: Đề xuất Top-3 kiểu tóc
+4. Công thức: Hướng dẫn 4 bước bằng ngôn ngữ tự nhiên
+
+### Khi hỏi bằng văn bản
+- "Gợi ý tóc ngắn" → "Bob thẳng dễ chăm sóc" (KHÔNG: H1SQ_DB1)
+- "Hợp với mặt tròn không?" → "Đường viền góc cạnh nhấn mạnh đường thẳng đứng" (KHÔNG: 70.Section Vertical)
+
+## Cấm (Bảo vệ sở hữu trí tuệ)
+❌ Mã công thức/phong cách như "H1SQ_DB1_V6", "FAL0001", "FBL0002"
+❌ Mã kết hợp section như "HS NO.1(SQUARE)", "DBS NO.2", "VS NO.6"
+❌ Tên hệ thống như "CHRISKI", "2WAY CUT system"
+❌ Không đề cập nguồn - giải thích tự nhiên như chuyên gia
+
+## Được phép (Thuật ngữ kỹ thuật giáo dục)
+✅ D0~D8 (Direction) - Sử dụng khi giải thích hướng cắt
+✅ L0~L8 (Lifting) - Sử dụng khi giải thích góc độ
+✅ Zone (A/B/C Zone), Section (Ngang/Dọc/Chéo) - Thuật ngữ cơ bản OK
+
+## NGHIÊM CẤM - Không dùng Markdown/Ký tự đặc biệt
+TUYỆT ĐỐI không dùng các ký tự sau:
+- ** (hai dấu sao) CẤM
+- * (dấu sao) CẤM
+- ### ## # (dấu thăng) CẤM
+- - (danh sách gạch đầu dòng) CẤM
+- [ ] (ngoặc vuông) CẤM
+
+Chỉ dùng văn bản thuần.
+Chỉ cho phép đánh số "1.", "2.", "3.".
+Nhấn mạnh dùng "" hoặc ().
+
+## Ví dụ định dạng câu trả lời
+Viết câu trả lời bằng câu tự nhiên.
+
+1. Đưa ra câu trả lời chính trước
+2. Tiếp theo là chi tiết
+3. Thêm mẹo nếu cần
+
+Sử dụng tất cả kiến thức chuyên môn nội bộ, nhưng giải thích cho người dùng bằng ngôn ngữ thân thiện, đơn giản.`
   };
 
   return prompts[userLanguage] || prompts['korean'];
@@ -2675,17 +2837,27 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
 
   console.log(`🔍 Gemini File Search 응답: "${user_query}"`);
 
-  // 간단한 인사말 처리
-  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워'];
+  // 간단한 인사말 처리 (5개국어)
+  const simpleGreetings = [
+    '안녕', 'hi', 'hello', '헬로', '하이', '반가워',
+    'こんにちは', 'おはよう', 'konnichiwa',  // 일본어
+    '你好', '您好', 'nihao',  // 중국어
+    'xin chào', 'chào'  // 베트남어
+  ];
   const isGreeting = simpleGreetings.some(g => {
     const query = user_query.toLowerCase().trim();
-    return query === g || query === g + '하세요' || query === g + '!' || query === g + '?';
-  }) && user_query.length < 15;
+    return query === g || query === g + '하세요' || query === g + '!' || query === g + '?' || query.startsWith(g);
+  }) && user_query.length < 20;
 
   if (isGreeting) {
-    const msg = userLanguage === 'english'
-      ? 'Hello! Feel free to ask anything about hairstyles. 😊\n\nExamples:\n• "What is A Length?"\n• "Explain Zone division"\n• "Difference between Layer and Graduation"'
-      : '안녕하세요! 헤어스타일에 대해 무엇이든 물어보세요. 😊\n\n예시:\n• "A Length가 뭐야?"\n• "존 구분을 어떻게해?"\n• "Layer와 Graduation 차이는?"';
+    const greetingMessages = {
+      korean: '안녕하세요! 헤어스타일에 대해 무엇이든 물어보세요.\n\n예시:\n1. "A Length가 뭐야?"\n2. "존 구분을 어떻게해?"\n3. "Layer와 Graduation 차이는?"',
+      english: 'Hello! Feel free to ask anything about hairstyles.\n\nExamples:\n1. "What is A Length?"\n2. "Explain Zone division"\n3. "Difference between Layer and Graduation"',
+      japanese: 'こんにちは！ヘアスタイルについて何でも聞いてください。\n\n例：\n1. 「A Lengthとは？」\n2. 「ゾーン分けを説明して」\n3. 「レイヤーとグラデーションの違いは？」',
+      chinese: '你好！请随便问关于发型的问题。\n\n例子：\n1. "A Length是什么？"\n2. "解释一下Zone分区"\n3. "Layer和Graduation有什么区别？"',
+      vietnamese: 'Xin chào! Hãy hỏi bất cứ điều gì về kiểu tóc.\n\nVí dụ:\n1. "A Length là gì?"\n2. "Giải thích phân vùng Zone"\n3. "Sự khác biệt giữa Layer và Graduation?"'
+    };
+    const msg = greetingMessages[userLanguage] || greetingMessages['korean'];
 
     return {
       statusCode: 200,
@@ -2709,7 +2881,14 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
   const isSecurityQuery = securityKeywords.some(keyword => user_query.toLowerCase().includes(keyword.toLowerCase()));
 
   if (isSecurityQuery) {
-    const msg = '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n이 내용은 정규 교육과정에서만 배울 수 있습니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"\n• "헤어 길이 분류 시스템"';
+    const securityMessages = {
+      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n이 내용은 정규 교육과정에서만 배울 수 있습니다.\n\n대신 이런 질문은 어떠세요?\n1. "레이어 컷의 기본 원리는?"\n2. "얼굴형별 추천 스타일"\n3. "헤어 길이 분류 시스템"',
+      english: 'I apologize, but that information is proprietary to the 2WAY CUT system.\n\nThis content is only available through official training.\n\nHow about these questions instead?\n1. "Basic principles of layer cut"\n2. "Recommended styles by face shape"\n3. "Hair length classification system"',
+      japanese: '申し訳ございませんが、その情報は2WAY CUTシステムの企業秘密です。\n\nこの内容は正規教育でのみ学べます。\n\n代わりにこのような質問はいかがですか？\n1. 「レイヤーカットの基本原理は？」\n2. 「顔型別おすすめスタイル」\n3. 「ヘアの長さ分類システム」',
+      chinese: '抱歉，该信息属于2WAY CUT系统的核心商业机密。\n\n这些内容只能通过正规培训学习。\n\n您可以问这些问题：\n1. "层次剪发的基本原理？"\n2. "各脸型推荐发型"\n3. "头发长度分类系统"',
+      vietnamese: 'Xin lỗi, thông tin đó là bí mật kinh doanh cốt lõi của hệ thống 2WAY CUT.\n\nNội dung này chỉ có trong khóa đào tạo chính thức.\n\nBạn có thể hỏi những câu này:\n1. "Nguyên tắc cơ bản của layer cut?"\n2. "Kiểu tóc phù hợp theo hình khuôn mặt"\n3. "Hệ thống phân loại độ dài tóc"'
+    };
+    const msg = securityMessages[userLanguage] || securityMessages['korean'];
 
     return {
       statusCode: 200,
@@ -2797,17 +2976,27 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     console.log(`📋 레시피 컨텍스트 있음:`, recipe_context.analysis?.styleCode || recipe_context.analysis?.lengthName);
   }
 
-  // 간단한 인사말 처리
-  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워'];
+  // 간단한 인사말 처리 (5개국어)
+  const simpleGreetings = [
+    '안녕', 'hi', 'hello', '헬로', '하이', '반가워',
+    'こんにちは', 'おはよう', 'konnichiwa',  // 일본어
+    '你好', '您好', 'nihao',  // 중국어
+    'xin chào', 'chào'  // 베트남어
+  ];
   const isGreeting = simpleGreetings.some(g => {
     const query = user_query.toLowerCase().trim();
-    return query === g || query === g + '하세요' || query === g + '!' || query === g + '?';
-  }) && user_query.length < 15;
+    return query === g || query === g + '하세요' || query === g + '!' || query === g + '?' || query.startsWith(g);
+  }) && user_query.length < 20;
 
   if (isGreeting) {
-    const msg = userLanguage === 'english'
-      ? 'Hello! Feel free to ask anything about hairstyles. 😊\n\nExamples:\n• "What is A Length?"\n• "Explain Zone division"\n• "Difference between Layer and Graduation"'
-      : '안녕하세요! 헤어스타일에 대해 무엇이든 물어보세요. 😊\n\n예시:\n• "A Length가 뭐야?"\n• "존 구분을 어떻게해?"\n• "Layer와 Graduation 차이는?"';
+    const greetingMessages = {
+      korean: '안녕하세요! 헤어스타일에 대해 무엇이든 물어보세요.\n\n예시:\n1. "A Length가 뭐야?"\n2. "존 구분을 어떻게해?"\n3. "Layer와 Graduation 차이는?"',
+      english: 'Hello! Feel free to ask anything about hairstyles.\n\nExamples:\n1. "What is A Length?"\n2. "Explain Zone division"\n3. "Difference between Layer and Graduation"',
+      japanese: 'こんにちは！ヘアスタイルについて何でも聞いてください。\n\n例：\n1. 「A Lengthとは？」\n2. 「ゾーン分けを説明して」\n3. 「レイヤーとグラデーションの違いは？」',
+      chinese: '你好！请随便问关于发型的问题。\n\n例子：\n1. "A Length是什么？"\n2. "解释一下Zone分区"\n3. "Layer和Graduation有什么区别？"',
+      vietnamese: 'Xin chào! Hãy hỏi bất cứ điều gì về kiểu tóc.\n\nVí dụ:\n1. "A Length là gì?"\n2. "Giải thích phân vùng Zone"\n3. "Sự khác biệt giữa Layer và Graduation?"'
+    };
+    const msg = greetingMessages[userLanguage] || greetingMessages['korean'];
 
     return {
       statusCode: 200,
@@ -2831,7 +3020,14 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
   const isSecurityQuery = securityKeywords.some(keyword => user_query.toLowerCase().includes(keyword.toLowerCase()));
 
   if (isSecurityQuery) {
-    const msg = '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n이 내용은 정규 교육과정에서만 배울 수 있습니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"';
+    const securityMessages = {
+      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n이 내용은 정규 교육과정에서만 배울 수 있습니다.\n\n대신 이런 질문은 어떠세요?\n1. "레이어 컷의 기본 원리는?"\n2. "얼굴형별 추천 스타일"',
+      english: 'I apologize, but that information is proprietary to the 2WAY CUT system.\n\nThis content is only available through official training.\n\nHow about these questions instead?\n1. "Basic principles of layer cut"\n2. "Recommended styles by face shape"',
+      japanese: '申し訳ございませんが、その情報は2WAY CUTシステムの企業秘密です。\n\nこの内容は正規教育でのみ学べます。\n\n代わりにこのような質問はいかがですか？\n1. 「レイヤーカットの基本原理は？」\n2. 「顔型別おすすめスタイル」',
+      chinese: '抱歉，该信息属于2WAY CUT系统的核心商业机密。\n\n这些内容只能通过正规培训学习。\n\n您可以问这些问题：\n1. "层次剪发的基本原理？"\n2. "各脸型推荐发型"',
+      vietnamese: 'Xin lỗi, thông tin đó là bí mật kinh doanh cốt lõi của hệ thống 2WAY CUT.\n\nNội dung này chỉ có trong khóa đào tạo chính thức.\n\nBạn có thể hỏi những câu này:\n1. "Nguyên tắc cơ bản của layer cut?"\n2. "Kiểu tóc phù hợp theo hình khuôn mặt"'
+    };
+    const msg = securityMessages[userLanguage] || securityMessages['korean'];
 
     return {
       statusCode: 200,
