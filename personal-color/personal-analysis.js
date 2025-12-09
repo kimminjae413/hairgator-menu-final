@@ -339,18 +339,31 @@ function paSubmitAnalysis() {
 
   console.log('✅ Personal Analysis 완료:', customerProfile);
 
-  // 결과 생성
-  const result = paGenerateAnalysisResult();
-
   // 모달 닫기
   closePersonalAnalysisModal();
 
-  // 결과 표시
-  paDisplayResult(result);
+  showToast('고객 정보 입력 완료! AI 분석을 시작합니다.', 'success');
 
-  showToast('Personal Analysis 완료! 맞춤 추천이 업데이트되었습니다.', 'success');
+  // AI 분석 화면으로 이동
+  proceedToAIAnalysis();
+}
 
-  return result;
+// AI 분석 화면으로 이동 (고객 정보 입력 완료 후)
+function proceedToAIAnalysis() {
+  // 모드 선택 화면 숨기기
+  document.getElementById('mode-selection').style.display = 'none';
+
+  // 모든 섹션 비활성화
+  document.querySelectorAll('.section').forEach(section => {
+    section.classList.remove('active');
+  });
+
+  // AI 분석 섹션 활성화
+  const aiSection = document.getElementById('ai-analysis');
+  aiSection.classList.add('active');
+  aiSection.style.display = 'block';
+
+  console.log('🎥 AI 분석 화면으로 이동');
 }
 
 // 분석 결과 생성

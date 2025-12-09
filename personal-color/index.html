@@ -56,6 +56,40 @@
             max-width: 100%;
             height: auto;
         }
+
+        /* Personal Analysis 모달 버튼 선택 스타일 */
+        .pa-height-btn.selected,
+        .pa-current-length-btn.selected,
+        .pa-desired-length-btn.selected,
+        .pa-fringe-btn.selected,
+        .pa-skin-btn.selected,
+        .pa-curl-btn.selected {
+            border-color: #E91E63 !important;
+            background: linear-gradient(135deg, rgba(233,30,99,0.1), rgba(194,24,91,0.1)) !important;
+            color: #E91E63 !important;
+        }
+
+        .pa-step-indicator.active {
+            background: #E91E63 !important;
+            color: #fff !important;
+        }
+
+        .pa-step-indicator.completed {
+            background: #C2185B !important;
+            color: #fff !important;
+        }
+
+        #pa-step-1:not(.active),
+        #pa-step-2:not(.active),
+        #pa-step-3:not(.active) {
+            display: none !important;
+        }
+
+        #pa-step-1.active,
+        #pa-step-2.active,
+        #pa-step-3.active {
+            display: block !important;
+        }
     </style>
 </head>
 
@@ -110,7 +144,7 @@
 
             <!-- Progress -->
             <div style="display: flex; align-items: center; justify-content: center; padding: 20px; gap: 8px;">
-                <div class="pa-step-indicator active" style="width: 32px; height: 32px; border-radius: 50%; background: #667eea; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">1</div>
+                <div class="pa-step-indicator active" style="width: 32px; height: 32px; border-radius: 50%; background: #E91E63; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">1</div>
                 <div style="width: 40px; height: 2px; background: #e0e0e0;"></div>
                 <div class="pa-step-indicator" style="width: 32px; height: 32px; border-radius: 50%; background: #f5f5f5; color: #999; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">2</div>
                 <div style="width: 40px; height: 2px; background: #e0e0e0;"></div>
@@ -119,7 +153,7 @@
 
             <!-- Step 1 -->
             <div id="pa-step-1" class="active" style="padding: 0 24px 20px;">
-                <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid #667eea; display: inline-block;">Step 1: 기본 정보</div>
+                <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid #E91E63; display: inline-block;">Step 1: 기본 정보</div>
 
                 <div style="margin-bottom: 24px;">
                     <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px;">키 (cm)</label>
@@ -157,7 +191,7 @@
 
             <!-- Step 2 -->
             <div id="pa-step-2" style="display: none; padding: 0 24px 20px;">
-                <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid #667eea; display: inline-block;">Step 2: 원하는 스타일</div>
+                <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid #E91E63; display: inline-block;">Step 2: 원하는 스타일</div>
 
                 <div style="margin-bottom: 24px;">
                     <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px;">원하는 기장</label>
@@ -212,7 +246,7 @@
 
             <!-- Step 3 -->
             <div id="pa-step-3" style="display: none; padding: 0 24px 20px;">
-                <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid #667eea; display: inline-block;">Step 3: 피부 & 컬 선호</div>
+                <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid #E91E63; display: inline-block;">Step 3: 피부 & 컬 선호</div>
 
                 <div style="margin-bottom: 24px;">
                     <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px;">피부 타입</label>
@@ -248,7 +282,7 @@
             <!-- Navigation -->
             <div style="display: flex; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e0e0e0; background: #f9f9f9;">
                 <button id="pa-prev-btn" onclick="paPrevStep()" style="display: none; padding: 12px 20px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; cursor: pointer; font-weight: 600; color: #666;">← 이전</button>
-                <button id="pa-next-btn" onclick="paNextStep()" style="margin-left: auto; padding: 12px 24px; background: #667eea; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">다음 →</button>
+                <button id="pa-next-btn" onclick="paNextStep()" style="margin-left: auto; padding: 12px 24px; background: linear-gradient(135deg, #E91E63, #C2185B); color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">다음 →</button>
                 <button id="pa-submit-btn" onclick="paSubmitAnalysis()" style="display: none; margin-left: auto; padding: 12px 24px; background: #10b981; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">분석 완료 ✓</button>
             </div>
         </div>
@@ -367,15 +401,6 @@
                                 왼쪽에서 카메라를 시작하고<br>
                                 얼굴을 촬영하면 AI가 분석합니다
                             </p>
-                        </div>
-
-                        <!-- Personal Analysis 버튼 -->
-                        <div id="pa-trigger-area" style="display: none; padding: 15px; border-bottom: 1px solid #e0e0e0;">
-                            <button onclick="openPersonalAnalysisModal()" style="width: 100%; padding: 14px 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <span style="font-size: 18px;">📋</span>
-                                Personal Analysis (고객 정보 입력)
-                            </button>
-                            <p style="font-size: 12px; color: #888; text-align: center; margin-top: 8px;">키, 기장, 피부타입 등 추가 정보를 입력하면 더 정확한 추천을 받을 수 있습니다</p>
                         </div>
 
                         <!-- Personal Analysis 결과 표시 영역 -->
@@ -2128,10 +2153,9 @@
             });
 
             if (mode === 'ai') {
-                const aiSection = document.getElementById('ai-analysis');
-                aiSection.classList.add('active');
-                aiSection.style.display = 'block';
-                showToast(t('personalColor.toast.aiModeActivated') || 'AI 퍼스널컬러 분석 모드가 활성화되었습니다', 'success');
+                // 고객 정보 입력 먼저 받기
+                openPersonalAnalysisModal();
+                return; // 모달에서 완료 후 proceedToAIAnalysis() 호출
             } else if (mode === 'draping') {
                 const drapingSection = document.getElementById('draping-mode');
                 drapingSection.classList.add('active');
@@ -2658,12 +2682,7 @@
 
                 `;
 
-                // Personal Analysis 버튼 표시
-                const paTrigger = document.getElementById('pa-trigger-area');
-                if (paTrigger) {
-                    paTrigger.style.display = 'block';
-                }
-            }
+                            }
 
             // 오른쪽 분석 패널 업데이트
             const seasonResult = document.getElementById('ai-season-result');
