@@ -3189,7 +3189,7 @@ function detectGuideImageForQuery(query) {
 }
 
 /**
- * 질문에 맞는 이론 이미지 찾기 (Firestore 89개 인덱스 동적 매칭)
+ * 질문에 맞는 이론 이미지 찾기 (커트/펌 인덱스만, 키워드 정확 매칭 필수)
  */
 async function detectTheoryImageForQuery(query, language = 'ko') {
   const lowerQuery = query.toLowerCase();
@@ -3202,46 +3202,50 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
     return null;
   }
 
+  // ⭐ 커트/펌 인덱스만 필터링 (이미지가 있는 것만)
+  const imageIndexes = indexes.filter(idx => {
+    // type이 'cut' 또는 'perm'인 것만 (personal analysis 등 제외)
+    const hasType = idx.type === 'cut' || idx.type === 'perm';
+    // 이미지가 있는지 확인
+    const hasImage = idx.images && (idx.images[language] || idx.images['ko'] || idx.images['en']);
+    return hasType && hasImage;
+  });
+
   // 키워드 매칭으로 이론 찾기 (가장 많이 매칭되는 것 우선)
   let bestMatch = null;
   let bestMatchCount = 0;
+  let exactKeywordMatch = false; // 키워드 정확 매칭 여부
 
-  for (const index of indexes) {
+  for (const index of imageIndexes) {
     let matchCount = 0;
+    let hasExactMatch = false;
 
-    // 1. 키워드 매칭 (공백/조사 무시)
+    // 키워드 매칭 (공백/조사 무시)
     for (const keyword of index.keywords) {
-      const normalizedKeyword = keyword.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
-      // 일반 매칭 또는 정규화된 매칭
-      if (lowerQuery.includes(keyword) || normalizedQuery.includes(normalizedKeyword)) {
+      const kwLower = keyword.toLowerCase();
+      const normalizedKeyword = kwLower.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
+
+      // 키워드가 쿼리에 포함되어 있는지 (정확 매칭)
+      if (lowerQuery.includes(kwLower) || normalizedQuery.includes(normalizedKeyword)) {
         matchCount++;
+        hasExactMatch = true;
       }
     }
 
-    // 2. textContent 기반 매칭 (키워드 매칭 실패 시 보조)
-    if (matchCount === 0 && index.textContent) {
-      const textLower = index.textContent.toLowerCase();
-      // 쿼리의 주요 단어들이 textContent에 포함되어 있는지 확인
-      const queryWords = lowerQuery.split(/\s+/).filter(w => w.length >= 2);
-      for (const word of queryWords) {
-        if (textLower.includes(word)) {
-          matchCount += 0.5; // textContent 매칭은 가중치를 낮게
-        }
-      }
-    }
-
-    if (matchCount > bestMatchCount) {
+    // ⭐ 키워드 정확 매칭이 있을 때만 후보로 인정 (textContent 매칭 제거)
+    if (hasExactMatch && matchCount > bestMatchCount) {
       bestMatchCount = matchCount;
       bestMatch = index;
+      exactKeywordMatch = true;
     }
   }
 
-  if (bestMatch && bestMatchCount > 0) {
-    // 언어별 이미지 URL 반환
+  // ⭐ 키워드 정확 매칭이 있고, 최소 1개 이상 매칭될 때만 이미지 반환
+  if (bestMatch && exactKeywordMatch && bestMatchCount >= 1) {
     const imageUrl = bestMatch.images[language] || bestMatch.images['ko'] || bestMatch.images['en'];
 
     if (imageUrl) {
-      console.log(`📚 이론 인덱스 매칭: "${bestMatch.term}" (${bestMatchCount}개 키워드 일치)`);
+      console.log(`📚 이론 인덱스 이미지 매칭: "${bestMatch.term}" (${bestMatchCount}개 키워드 일치)`);
       return {
         url: imageUrl,
         title: bestMatch.title_ko || bestMatch.term,
@@ -3251,6 +3255,8 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
     }
   }
 
+  // 관련 없으면 이미지 없이 반환
+  console.log(`📚 이론 이미지 없음 (키워드 매칭 부족 또는 커트/펌 인덱스 아님)`);
   return null;
 }
 
