@@ -584,11 +584,42 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
   console.log(`📚 theory_chunks 확장 검색 결과: ${theoryChunks.length}개`);
 
   // ⭐ 유사도 필터링 (낮은 점수 제거)
-  const filteredChunks = theoryChunks.filter(chunk =>
+  let filteredChunks = theoryChunks.filter(chunk =>
     (chunk.combined_score || chunk.vector_similarity || 0) > 0.5
   );
 
   console.log(`🎯 필터링 후: ${filteredChunks.length}개`);
+
+  // ⭐ theory_indexes의 textContent 병합 (키워드 매칭)
+  const theoryIndexes = await loadTheoryIndexes();
+  if (theoryIndexes && theoryIndexes.length > 0) {
+    const queryLower = normalizedQuery.toLowerCase();
+    const normalizedQueryNoSpace = queryLower.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
+
+    for (const idx of theoryIndexes) {
+      if (!idx.textContent || idx.textContent.length < 50) continue;
+
+      // 키워드 매칭 확인
+      const matched = idx.keywords.some(kw => {
+        const kwNormalized = kw.toLowerCase().replace(/\s+/g, '');
+        return queryLower.includes(kw) || normalizedQueryNoSpace.includes(kwNormalized);
+      });
+
+      if (matched) {
+        // theory_chunks 형식으로 변환하여 추가
+        filteredChunks.push({
+          section_title: idx.title_ko || idx.term,
+          category_code: idx.category || idx.type,
+          content_ko: idx.textContent,
+          content: idx.textContent,
+          vector_similarity: 0.85,
+          combined_score: 0.85,
+          source: 'theory_indexes'
+        });
+        console.log(`📎 theory_indexes 매칭: ${idx.term} (${idx.textContent.length}자)`);
+      }
+    }
+  }
 
   // 4. 검색 결과에 따라 프롬프트 생성
   let systemPrompt;
@@ -2330,10 +2361,41 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
   console.log(`📚 검색된 이론: ${theoryChunks.length}개`);
 
   // ⭐ 유사도 필터링 (낮은 점수 제거)
-  const filteredChunks = theoryChunks.filter(chunk =>
+  let filteredChunks = theoryChunks.filter(chunk =>
     (chunk.combined_score || chunk.vector_similarity || 0) > 0.5
   );
   console.log(`🎯 필터링 후: ${filteredChunks.length}개`);
+
+  // ⭐ theory_indexes의 textContent 병합 (키워드 매칭)
+  const theoryIndexes = await loadTheoryIndexes();
+  if (theoryIndexes && theoryIndexes.length > 0) {
+    const queryLower = normalizedQuery.toLowerCase();
+    const normalizedQueryNoSpace = queryLower.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
+
+    for (const idx of theoryIndexes) {
+      if (!idx.textContent || idx.textContent.length < 50) continue;
+
+      // 키워드 매칭 확인
+      const matched = idx.keywords.some(kw => {
+        const kwNormalized = kw.toLowerCase().replace(/\s+/g, '');
+        return queryLower.includes(kw) || normalizedQueryNoSpace.includes(kwNormalized);
+      });
+
+      if (matched) {
+        // theory_chunks 형식으로 변환하여 추가
+        filteredChunks.push({
+          section_title: idx.title_ko || idx.term,
+          category_code: idx.category || idx.type,
+          content_ko: idx.textContent,
+          content: idx.textContent,
+          vector_similarity: 0.85,
+          combined_score: 0.85,
+          source: 'theory_indexes'
+        });
+        console.log(`📎 theory_indexes 매칭: ${idx.term} (${idx.textContent.length}자)`);
+      }
+    }
+  }
 
   // 시스템 프롬프트 빌드 (개선된 버전 사용)
   let systemPrompt;
