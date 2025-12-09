@@ -1003,8 +1003,32 @@
             if (effectiveA > 18) redWarmBonus = 2;      // 매우 강한 붉은기 → 웜톤 보너스
             else if (effectiveA > 12) redWarmBonus = 1; // 중간 붉은기 → 웜톤 보너스
 
-            // ✅ 최종 warmScore: LAB 60% + RGB 20% + 붉은기 보너스 20%
-            const warmScore = Math.round(labScore * 0.6 + rgbScore * 0.2 + redWarmBonus);
+            // 🔴 입술색 보정 (app.js 알고리즘 통합)
+            let lipBonus = 0;
+            const skinData = window.lastSkinToneData;
+            if (skinData && skinData.lipColor) {
+                if (skinData.lipColor.isWarm) {
+                    lipBonus = 1;
+                    console.log('👄 입술색 보정: 웜톤 +1');
+                } else {
+                    lipBonus = -1;
+                    console.log('👄 입술색 보정: 쿨톤 -1');
+                }
+            }
+
+            // 🔴 홍조 보정 (app.js 알고리즘 통합)
+            // 홍조가 있으면 a값(붉은기) 영향 감소 → 웜톤 과대평가 방지
+            let rednessCorrection = 0;
+            if (skinData && skinData.multiRegion && skinData.multiRegion.analysis) {
+                if (skinData.multiRegion.analysis.hasRedness) {
+                    const rednessLevel = skinData.multiRegion.analysis.rednessLevel || 0;
+                    rednessCorrection = -Math.min(1, rednessLevel * 0.03);
+                    console.log(`👁️ 홍조 보정: ${rednessCorrection.toFixed(2)}`);
+                }
+            }
+
+            // ✅ 최종 warmScore: LAB 60% + RGB 20% + 붉은기 보너스 + 입술색 + 홍조 보정
+            const warmScore = Math.round(labScore * 0.6 + rgbScore * 0.2 + redWarmBonus + lipBonus + rednessCorrection);
 
             // 채도 계산
             const max = Math.max(correctedRgb.r, correctedRgb.g, correctedRgb.b);
