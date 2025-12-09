@@ -588,7 +588,7 @@ function displayCustomerSummary(mediaPipeData) {
           <div style="width: 14px; height: 14px; background: ${skinHex}; border-radius: 3px; border: 1px solid #ddd;"></div>
           <span>${skinHex}</span>
         </div>
-        <div><span style="color: #888;">언더톤:</span> <b style="color: ${aiUndertone === 'Warm' ? '#FF6B35' : aiUndertone === 'Cool' ? '#4A90E2' : '#8E8E93'};">${aiUndertone}</b></div>
+        <div><span style="color: #888;">언더톤:</span> <b style="color: ${aiUndertone === 'Warm' ? '#D84315' : aiUndertone === 'Cool' ? '#1565C0' : '#616161'};">${aiUndertone}</b></div>
         <div><span style="color: #888;">시즌:</span> <b>${aiSeason}</b> (${aiConfidence}%)</div>
       </div>
     </div>
@@ -694,7 +694,7 @@ function generateIntegratedResultHTML(integrated, personalColor) {
   const difficultyScore = changeAmount + (hasCurl ? 1 : 0);
   // 0~1: 쉬움, 2~3: 보통, 4+: 어려움
   const difficultyText = difficultyScore <= 1 ? '쉬움' : difficultyScore <= 3 ? '보통' : '어려움';
-  const difficultyColor = difficultyScore <= 1 ? '#4CAF50' : difficultyScore <= 3 ? '#FF9800' : '#F44336';
+  const difficultyColor = difficultyScore <= 1 ? '#2E7D32' : difficultyScore <= 3 ? '#1565C0' : '#C62828';
 
   // 톤 분석 결과 스타일 (대결이 아닌 보완 구조)
   const toneMatchStyle = analysis.toneMatch
