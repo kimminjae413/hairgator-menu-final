@@ -2487,8 +2487,8 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
 }
 
 // ==================== Gemini File Search 기반 응답 (NEW!) ====================
-// 14개 PDF가 업로드된 File Search Store 사용
-const GEMINI_FILE_SEARCH_STORE = "fileSearchStores/hairgator2waycutstore-md6skhedgag7";
+// HAIRGATOR Theory Final 2025 - 모든 PDF 자료가 업로드된 File Search Store
+const GEMINI_FILE_SEARCH_STORE = "fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2";
 
 // 시스템 프롬프트 (CHRISKI 2WAY CUT 4계층 시스템 통합)
 function buildGeminiSystemPrompt(userLanguage) {
