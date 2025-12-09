@@ -4694,61 +4694,71 @@ let customerProfile = {
 
 // 남성 헤어 스타일 데이터 (PDF 기반)
 const PA_MALE_STYLE_DATA = {
-  'sports-cut': {
-    name: '스포츠컷',
-    desc: '1~3cm 매우 짧은 컷',
+  // WARM 톤 스타일 (둥근 얼굴형 Round)
+  'buzz': {
+    name: '버즈컷',
+    nameEn: 'Buzz Cut',
+    desc: '클리퍼로 짧게 밀기',
     tone: 'WARM',
+    faceShape: 'Round',
     lengthEquivalent: 'H+',
     levelRange: [2, 4]
   },
-  'two-block': {
-    name: '투블럭',
-    desc: '사이드 짧게, 탑 볼륨',
-    tone: 'NEUTRAL',
+  'crop': {
+    name: '크롭컷',
+    nameEn: 'Crop Cut',
+    desc: '짧은 앞머리 + 페이드',
+    tone: 'WARM',
+    faceShape: 'Round',
     lengthEquivalent: 'G-H',
     levelRange: [2, 5]
   },
-  'undercut': {
-    name: '언더컷',
-    desc: '페이드 + 탑 길게',
-    tone: 'COOL',
-    lengthEquivalent: 'F-G',
-    levelRange: [2, 4]
-  },
-  'dandy-cut': {
-    name: '댄디컷',
-    desc: '전체 균일, 정돈된 느낌',
+  // NEUTRAL 톤 스타일 (사각 얼굴형 Square)
+  'fringe-up': {
+    name: '프린지 업',
+    nameEn: 'Fringe Up',
+    desc: '앞머리를 위로 올림, 아이비리그컷',
     tone: 'NEUTRAL',
+    faceShape: 'Square',
     lengthEquivalent: 'F-G',
     levelRange: [3, 6]
   },
-  'center-perm': {
-    name: '센터펌',
-    desc: '앞머리 중앙, 볼륨펌',
-    tone: 'WARM',
-    lengthEquivalent: 'E-F',
-    levelRange: [4, 7]
-  },
-  'regent': {
-    name: '리젠트',
-    desc: '뒤로 넘김, 고급스러움',
+  // COOL 톤 스타일 (삼각 얼굴형 Triangular)
+  'side-fringe': {
+    name: '사이드 프린지',
+    nameEn: 'Side Fringe',
+    desc: '앞머리 옆으로 내림',
     tone: 'COOL',
+    faceShape: 'Triangular',
+    lengthEquivalent: 'F-G',
+    levelRange: [3, 6]
+  },
+  'side-part': {
+    name: '사이드 파트',
+    nameEn: 'Side Part',
+    desc: '가르마로 나누기',
+    tone: 'COOL',
+    faceShape: 'Triangular',
     lengthEquivalent: 'E-F',
+    levelRange: [3, 6]
+  },
+  'pushed-back': {
+    name: '푸시드 백',
+    nameEn: 'Pushed Back',
+    desc: '전체를 뒤로 넘김',
+    tone: 'COOL',
+    faceShape: 'Triangular',
+    lengthEquivalent: 'E-F',
+    levelRange: [2, 5]
+  },
+  'mohican': {
+    name: '모히칸',
+    nameEn: 'Mohican',
+    desc: '정수리 볼륨 강조',
+    tone: 'COOL',
+    faceShape: 'Triangular',
+    lengthEquivalent: 'F-G',
     levelRange: [2, 4]
-  },
-  'ez-perm': {
-    name: '애즈펌',
-    desc: '자연스러운 웨이브',
-    tone: 'NEUTRAL',
-    lengthEquivalent: 'D-E',
-    levelRange: [4, 7]
-  },
-  'long-hair': {
-    name: '장발',
-    desc: '어깨 이상 긴 머리',
-    tone: 'COOL',
-    lengthEquivalent: 'C-D',
-    levelRange: [3, 8]
   }
 };
 

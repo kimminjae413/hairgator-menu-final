@@ -344,78 +344,93 @@
                         💈 <b>원하는 헤어 스타일</b>을 선택하면 체형과 톤에 맞는 <b>컬러</b>를 추천합니다.
                     </p>
 
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 10px;">헤어 스타일</label>
+                    <!-- WARM 톤 스타일 (둥근 얼굴형) -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #FF8A65; margin-bottom: 10px;">
+                            <span style="background: #FF8A65; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px;">WARM</span>
+                            둥근 얼굴형에 추천
+                        </label>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                            <button class="pa-male-style-btn" data-style="sports-cut" onclick="paSelectMaleStyle('sports-cut')" style="padding: 14px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; text-align: left; cursor: pointer;">
+                            <button class="pa-male-style-btn" data-style="buzz" onclick="paSelectMaleStyle('buzz')" style="padding: 14px; border: 2px solid #FFCCBC; background: linear-gradient(135deg, #FFF3E0, #FFE0B2); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <div style="font-size: 24px;">✂️</div>
                                     <div>
-                                        <div style="font-weight: 600; font-size: 13px;">스포츠컷</div>
-                                        <div style="font-size: 10px; color: #888;">1~3cm, 짧고 깔끔</div>
+                                        <div style="font-weight: 600; font-size: 13px;">버즈컷 (Buzz)</div>
+                                        <div style="font-size: 10px; color: #666;">클리퍼로 짧게 밀기</div>
                                     </div>
                                 </div>
                             </button>
-                            <button class="pa-male-style-btn" data-style="two-block" onclick="paSelectMaleStyle('two-block')" style="padding: 14px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; text-align: left; cursor: pointer;">
+                            <button class="pa-male-style-btn" data-style="crop" onclick="paSelectMaleStyle('crop')" style="padding: 14px; border: 2px solid #FFCCBC; background: linear-gradient(135deg, #FFF3E0, #FFE0B2); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <div style="font-size: 24px;">💈</div>
                                     <div>
-                                        <div style="font-weight: 600; font-size: 13px;">투블럭</div>
-                                        <div style="font-size: 10px; color: #888;">사이드 짧게</div>
+                                        <div style="font-weight: 600; font-size: 13px;">크롭컷 (Crop)</div>
+                                        <div style="font-size: 10px; color: #666;">짧은 앞머리 + 페이드</div>
                                     </div>
                                 </div>
                             </button>
-                            <button class="pa-male-style-btn" data-style="undercut" onclick="paSelectMaleStyle('undercut')" style="padding: 14px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; text-align: left; cursor: pointer;">
+                        </div>
+                    </div>
+
+                    <!-- NEUTRAL 톤 스타일 (사각 얼굴형) -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #78909C; margin-bottom: 10px;">
+                            <span style="background: #78909C; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px;">NEUTRAL</span>
+                            사각 얼굴형에 추천
+                        </label>
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                            <button class="pa-male-style-btn" data-style="fringe-up" onclick="paSelectMaleStyle('fringe-up')" style="padding: 14px; border: 2px solid #CFD8DC; background: linear-gradient(135deg, #ECEFF1, #CFD8DC); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="font-size: 24px;">🔪</div>
+                                    <div style="font-size: 24px;">⬆️</div>
                                     <div>
-                                        <div style="font-weight: 600; font-size: 13px;">언더컷</div>
-                                        <div style="font-size: 10px; color: #888;">페이드 + 탑 길게</div>
+                                        <div style="font-weight: 600; font-size: 13px;">프린지 업 (Fringe Up)</div>
+                                        <div style="font-size: 10px; color: #666;">앞머리를 위로 올림, 아이비리그컷</div>
                                     </div>
                                 </div>
                             </button>
-                            <button class="pa-male-style-btn" data-style="dandy-cut" onclick="paSelectMaleStyle('dandy-cut')" style="padding: 14px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; text-align: left; cursor: pointer;">
+                        </div>
+                    </div>
+
+                    <!-- COOL 톤 스타일 (삼각 얼굴형) -->
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5C6BC0; margin-bottom: 10px;">
+                            <span style="background: #5C6BC0; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px;">COOL</span>
+                            삼각 얼굴형에 추천
+                        </label>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                            <button class="pa-male-style-btn" data-style="side-fringe" onclick="paSelectMaleStyle('side-fringe')" style="padding: 14px; border: 2px solid #C5CAE9; background: linear-gradient(135deg, #E8EAF6, #C5CAE9); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="font-size: 24px;">👔</div>
+                                    <div style="font-size: 24px;">↘️</div>
                                     <div>
-                                        <div style="font-weight: 600; font-size: 13px;">댄디컷</div>
-                                        <div style="font-size: 10px; color: #888;">전체 균일, 정돈</div>
+                                        <div style="font-weight: 600; font-size: 13px;">사이드 프린지</div>
+                                        <div style="font-size: 10px; color: #666;">앞머리 옆으로 내림</div>
                                     </div>
                                 </div>
                             </button>
-                            <button class="pa-male-style-btn" data-style="center-perm" onclick="paSelectMaleStyle('center-perm')" style="padding: 14px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; text-align: left; cursor: pointer;">
+                            <button class="pa-male-style-btn" data-style="side-part" onclick="paSelectMaleStyle('side-part')" style="padding: 14px; border: 2px solid #C5CAE9; background: linear-gradient(135deg, #E8EAF6, #C5CAE9); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="font-size: 24px;">🌀</div>
+                                    <div style="font-size: 24px;">↔️</div>
                                     <div>
-                                        <div style="font-weight: 600; font-size: 13px;">센터펌</div>
-                                        <div style="font-size: 10px; color: #888;">앞머리 볼륨</div>
+                                        <div style="font-weight: 600; font-size: 13px;">사이드 파트</div>
+                                        <div style="font-size: 10px; color: #666;">가르마로 나누기</div>
                                     </div>
                                 </div>
                             </button>
-                            <button class="pa-male-style-btn" data-style="regent" onclick="paSelectMaleStyle('regent')" style="padding: 14px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; text-align: left; cursor: pointer;">
+                            <button class="pa-male-style-btn" data-style="pushed-back" onclick="paSelectMaleStyle('pushed-back')" style="padding: 14px; border: 2px solid #C5CAE9; background: linear-gradient(135deg, #E8EAF6, #C5CAE9); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="font-size: 24px;">🎩</div>
+                                    <div style="font-size: 24px;">⬅️</div>
                                     <div>
-                                        <div style="font-weight: 600; font-size: 13px;">리젠트</div>
-                                        <div style="font-size: 10px; color: #888;">뒤로 넘김</div>
+                                        <div style="font-weight: 600; font-size: 13px;">푸시드 백</div>
+                                        <div style="font-size: 10px; color: #666;">전체를 뒤로 넘김</div>
                                     </div>
                                 </div>
                             </button>
-                            <button class="pa-male-style-btn" data-style="ez-perm" onclick="paSelectMaleStyle('ez-perm')" style="padding: 14px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; text-align: left; cursor: pointer;">
+                            <button class="pa-male-style-btn" data-style="mohican" onclick="paSelectMaleStyle('mohican')" style="padding: 14px; border: 2px solid #C5CAE9; background: linear-gradient(135deg, #E8EAF6, #C5CAE9); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="font-size: 24px;">〰️</div>
+                                    <div style="font-size: 24px;">🔝</div>
                                     <div>
-                                        <div style="font-weight: 600; font-size: 13px;">애즈펌</div>
-                                        <div style="font-size: 10px; color: #888;">자연 웨이브</div>
-                                    </div>
-                                </div>
-                            </button>
-                            <button class="pa-male-style-btn" data-style="long-hair" onclick="paSelectMaleStyle('long-hair')" style="padding: 14px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; text-align: left; cursor: pointer;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="font-size: 24px;">🧔</div>
-                                    <div>
-                                        <div style="font-weight: 600; font-size: 13px;">장발</div>
-                                        <div style="font-size: 10px; color: #888;">어깨 이상</div>
+                                        <div style="font-weight: 600; font-size: 13px;">모히칸</div>
+                                        <div style="font-size: 10px; color: #666;">정수리 볼륨 강조</div>
                                     </div>
                                 </div>
                             </button>
@@ -878,7 +893,7 @@
 
 
     <!-- Main Application Script -->
-    <script src="app.js?v=20251209-2130"></script>
+    <script src="app.js?v=20251209-2200"></script>
 </body>
 
 </html>
