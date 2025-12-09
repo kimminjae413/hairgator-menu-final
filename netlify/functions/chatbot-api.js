@@ -2589,23 +2589,24 @@ ${coreKnowledge}
 ✅ L0~L8 (Lifting 리프팅) - 각도 설명 시 사용 가능
 ✅ Zone (A존/B존/C존), Section (수평/수직/대각) 등 기본 용어 사용 가능
 
-## 서식 금지 (깔끔한 텍스트 출력)
-❌ 마크다운 사용 금지: **굵게**, *기울임*, ### 제목, - 리스트 등 금지
-❌ 특수기호 남용 금지: **, ##, *, -, [ ], 등
-✅ 일반 텍스트로만 작성
-✅ 줄바꿈과 들여쓰기로 가독성 확보
-✅ 자연스러운 문장 형태로 설명
+## ⚠️ 절대 금지 - 마크다운/특수문자 사용 금지 ⚠️
+절대로 다음 문자를 사용하지 마세요:
+- ** (별표 두개) 사용 금지
+- * (별표) 사용 금지
+- ### ## # (샵) 사용 금지
+- - (대시로 시작하는 리스트) 사용 금지
+- [ ] (대괄호) 사용 금지
 
-## 필수 포함 (자연어 변환)
-✅ "앞쪽 기준선에서 뒤로 진행" (1Way Backward 대체)
-✅ "정수리 중심으로 양쪽" (2Way Cut 대체)
-✅ "자연스럽게 떨어지는 각도" (Lifting 대체)
-✅ "일자로 자르기" / "층 내기" (Blunt/Layer 대체)
+반드시 일반 텍스트로만 작성하세요.
+번호 매기기는 "1.", "2.", "3." 형식만 허용됩니다.
+강조는 따옴표("")나 괄호()로 하세요.
 
-답변 형식:
-1. **추천 스타일**: 질문에 대한 직접적인 추천 (1-2문장)
-2. **특징 설명**: 쉬운 말로 구체적 설명 (3-5개 항목)
-3. **실무 팁**: 관리법이나 주의사항 (선택)
+## 답변 형식 예시
+질문에 대한 답변을 자연스러운 문장으로 작성하세요.
+
+1. 핵심 답변을 먼저 말하고
+2. 세부 설명을 이어서 하고
+3. 필요하면 팁을 추가하세요
 
 모든 전문 지식은 내부에서만 사용하고, 유저에게는 친절하고 쉬운 말로 설명하세요.`,
 
@@ -2642,16 +2643,24 @@ ${coreKnowledge}
 ✅ L0~L8 (Lifting) - Use when explaining angles
 ✅ Zone (A/B/C Zone), Section (Horizontal/Vertical/Diagonal) - Basic terms OK
 
-## Required (Natural Language Conversion)
-✅ "Progress from front guideline to back" (replaces 1Way Backward)
-✅ "Work from crown outward both sides" (replaces 2Way Cut)
-✅ "Natural falling angle" (replaces Lifting)
-✅ "Cut straight" / "Add layers" (replaces technical terms)
+## STRICTLY FORBIDDEN - No Markdown/Special Characters
+NEVER use these characters:
+- ** (double asterisks) FORBIDDEN
+- * (asterisk) FORBIDDEN
+- ### ## # (hash symbols) FORBIDDEN
+- - (dash lists) FORBIDDEN
+- [ ] (brackets) FORBIDDEN
 
-Answer format:
-1. **Recommendation**: Direct answer (1-2 sentences)
-2. **Features**: Easy explanation (3-5 items)
-3. **Pro Tips**: Care tips or considerations (optional)
+Use ONLY plain text.
+Only "1.", "2.", "3." numbering is allowed.
+Use quotes ("") or parentheses () for emphasis.
+
+## Answer Format Example
+Write natural sentences to answer questions.
+
+1. Give the main answer first
+2. Follow with details
+3. Add tips if needed
 
 Use all professional knowledge internally, but explain to users in friendly, simple terms.`
   };
