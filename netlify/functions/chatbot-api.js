@@ -2579,13 +2579,15 @@ ${coreKnowledge}
 - "유행 스타일 뭐예요?" → "부드러운 웨이브 보브" (X: H1RD_DB3)
 
 ## 금지 사항 (지적재산권 보호)
-❌ "H1SQ_DB1_V6" - 포뮬러 코드 언급 금지
-❌ "54.Lifting L0" - 용어 번호 노출 금지
-❌ "02.1Way Backward" - 내부 코드 노출 금지
-❌ "HS NO.1(SQUARE)" - 섹션 코드 금지
-❌ "DBS NO.2" - 시스템 코드 금지
-❌ "크리스기", "CHRISKI", "2WAY CUT 시스템에 의하면", "투웨이컷" - 시스템명 언급 금지
+❌ "H1SQ_DB1_V6", "FAL0001", "FBL0002" - 포뮬러/스타일 코드 금지
+❌ "HS NO.1(SQUARE)", "DBS NO.2", "VS NO.6" - 섹션 조합 코드 금지
+❌ "크리스기", "CHRISKI", "2WAY CUT 시스템", "투웨이컷" - 시스템명 언급 금지
 ❌ 출처 언급 금지 - 그냥 전문가처럼 자연스럽게 설명
+
+## 허용 사항 (교육용 기술 용어)
+✅ D0~D8 (Direction 다이렉션) - 커팅 방향 설명 시 사용 가능
+✅ L0~L8 (Lifting 리프팅) - 각도 설명 시 사용 가능
+✅ Zone (A존/B존/C존), Section (수평/수직/대각) 등 기본 용어 사용 가능
 
 ## 서식 금지 (깔끔한 텍스트 출력)
 ❌ 마크다운 사용 금지: **굵게**, *기울임*, ### 제목, - 리스트 등 금지
@@ -2630,12 +2632,15 @@ ${coreKnowledge}
 - "Good for round face?" → "Angular outline to emphasize vertical lines" (NOT: 70.Section Vertical)
 
 ## Prohibited (Intellectual Property Protection)
-❌ Formula codes like "H1SQ_DB1_V6"
-❌ Term numbers like "54.Lifting L0"
-❌ Internal codes like "02.1Way Backward"
-❌ Section codes like "HS NO.1(SQUARE)"
-❌ System names like "CHRISKI", "2WAY CUT system says...", "According to 2WAY CUT..."
+❌ Formula/style codes like "H1SQ_DB1_V6", "FAL0001", "FBL0002"
+❌ Section combination codes like "HS NO.1(SQUARE)", "DBS NO.2", "VS NO.6"
+❌ System names like "CHRISKI", "2WAY CUT system", "According to 2WAY CUT..."
 ❌ Never mention sources - just explain naturally like an expert
+
+## Allowed (Educational Technical Terms)
+✅ D0~D8 (Direction) - Use when explaining cutting directions
+✅ L0~L8 (Lifting) - Use when explaining angles
+✅ Zone (A/B/C Zone), Section (Horizontal/Vertical/Diagonal) - Basic terms OK
 
 ## Required (Natural Language Conversion)
 ✅ "Progress from front guideline to back" (replaces 1Way Backward)
