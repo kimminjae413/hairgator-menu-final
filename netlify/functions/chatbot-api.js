@@ -1655,14 +1655,42 @@ function getSuitableFaceShapes(form, silhouette, outlineShape) {
 /**
  * 남자 스타일 코드 기반 얼굴형 매칭 (이론 기반)
  *
- * 이론 출처: general_theory.md, design_theory.md
- * - SF (Side Fringe, 내린머리): 이마를 가려 긴 얼굴/넓은 이마에 적합
- * - SP (Side Part, 가르마): 균형감 있어 달걀형/긴형에 적합
- * - FU (Fringe Up, 올린머리): 이마가 보여 둥근형/짧은형에 적합
- * - PB (Pushed Back, 넘긴머리): 세련된 느낌, 각진형/달걀형에 적합
- * - BZ (Buzz, 삭발): 두상 형태 그대로, 둥근 두상/달걀형에 적합
- * - CP (Crop, 크롭): 텍스처로 볼륨 조절, 둥근형/긴형에 적합
- * - MC (Mohican, 모히칸): 세로 길이 강조, 둥근형/사각형에 적합
+ * 【7개 대분류 상세 설명】
+ *
+ * SF (Side Fringe, 사이드 프린지)
+ * - 핵심: 이마를 자연스럽게 덮고 한쪽 방향으로 흐르는 스타일
+ * - 특징: 동안 이미지, 내추럴, 이마 노출 부담 없음
+ * - 얼굴형: 긴 얼굴/넓은 이마에 적합 (이마를 가려 비율 조절)
+ *
+ * SP (Side Part, 사이드 파트)
+ * - 핵심: 또렷한 가르마 라인이 핵심인 클래식 스타일
+ * - 특징: 단정하고 신뢰감, 비즈니스/프로페셔널 이미지
+ * - 얼굴형: 달걀형/긴형에 적합 (균형감 있는 분배)
+ *
+ * FU (Fringe Up, 프린지 업)
+ * - 핵심: 앞머리를 위로 올려 이마를 완전히 드러내는 스타일
+ * - 특징: 시원하고 남성적, 자신감/카리스마
+ * - 얼굴형: 둥근형/짧은형에 적합 (세로 길이 강조)
+ *
+ * PB (Pushed Back, 푸시드 백)
+ * - 핵심: 상단 전체를 뒤로 넘기는 스타일 (볼륨백/슬릭백)
+ * - 특징: 성숙하고 세련됨, 고급스러움, 이목구비 드러남
+ * - 얼굴형: 각진형/달걀형에 적합 (강한 턱선과 조화)
+ *
+ * BZ (Buzz Cut, 버즈 컷)
+ * - 핵심: 클리퍼로 두피에 가깝게 밀어내는 초단발
+ * - 특징: 강인함, 미니멀, 관리 매우 쉬움
+ * - 얼굴형: 둥근 두상/달걀형에 적합 (두상 형태 그대로 노출)
+ *
+ * CP (Crop Cut, 크롭 컷)
+ * - 핵심: 상단 짧게 커트 + 앞쪽으로 떨어뜨리는 모던 스타일
+ * - 특징: 트렌디함, 스트리트 감성, 초저관리형
+ * - 얼굴형: 둥근형/긴형에 적합 (텍스처로 볼륨 조절)
+ *
+ * MC (Mohican, 모히칸)
+ * - 핵심: 사이드 짧게, 중앙만 길게 세우는 강한 대비 스타일
+ * - 특징: 스포티, 개성 강함, 카리스마
+ * - 얼굴형: 둥근형/사각형에 적합 (세로 길이 강조)
  */
 function getMaleSuitableFaceShapes(styleCode) {
   const code = (styleCode || 'SF').toUpperCase();
@@ -1674,7 +1702,10 @@ function getMaleSuitableFaceShapes(styleCode) {
         '옆으로 내린 앞머리가 긴 얼굴 길이를 분산시켜줍니다',
         '이마를 가려 얼굴 비율을 조절해줍니다',
         '부드러운 라인이 각진 윤곽을 완화해줍니다'
-      ]
+      ],
+      styleInfo: '이마를 자연스럽게 덮고 한쪽으로 흐르는 스타일. 동안/내추럴 이미지.',
+      styling: '드라이로 앞쪽으로 말린 후, 소량의 왁스로 질감 정리',
+      targetCustomer: ['이마 넓은 분', '이마 노출 부담스러운 분', '동안 이미지 원하는 분']
     },
     'SP': {
       faceShapes: ['달걀형 (Oval)', '긴 얼굴형 (Long)', '하트형 (Heart)'],
@@ -1682,7 +1713,10 @@ function getMaleSuitableFaceShapes(styleCode) {
         '가르마 라인이 얼굴에 세로 균형감을 더해줍니다',
         '깔끔한 분배가 달걀형의 균형미를 살려줍니다',
         '사이드 볼륨으로 좁은 턱선을 보완해줍니다'
-      ]
+      ],
+      styleInfo: '또렷한 가르마 라인이 핵심인 클래식 스타일. 단정하고 신뢰감 있는 이미지.',
+      styling: '왁스나 포마드로 볼륨과 윤기감을 살려 완성',
+      targetCustomer: ['직장인', '비즈니스룩', '프로페셔널 이미지 원하는 분']
     },
     'FU': {
       faceShapes: ['둥근형 (Round)', '짧은 얼굴형', '달걀형 (Oval)'],
@@ -1690,7 +1724,10 @@ function getMaleSuitableFaceShapes(styleCode) {
         '올린 앞머리가 얼굴을 세로로 길어보이게 해줍니다',
         '이마가 드러나면서 시원하고 활동적인 이미지를 줍니다',
         '볼륨감이 둥근 얼굴에 세련미를 더해줍니다'
-      ]
+      ],
+      styleInfo: '앞머리를 위로 올려 이마 완전 노출. 시원하고 자신감 있는 남성미.',
+      styling: '드라이로 앞머리 위로 세운 뒤 왁스/스프레이로 고정',
+      targetCustomer: ['활동적/스포티한 이미지', '강한 남성미/카리스마 원하는 분']
     },
     'PB': {
       faceShapes: ['각진형 (Square)', '달걀형 (Oval)', '긴 얼굴형 (Long)'],
@@ -1698,7 +1735,10 @@ function getMaleSuitableFaceShapes(styleCode) {
         '뒤로 넘긴 스타일이 강한 턱선과 조화를 이룹니다',
         '깔끔하고 세련된 인상을 강조해줍니다',
         '이마를 드러내 자신감 있는 이미지를 연출합니다'
-      ]
+      ],
+      styleInfo: '상단 전체를 뒤로 넘기는 스타일. 볼륨백 또는 슬릭백. 성숙하고 세련된 이미지.',
+      styling: '고정력 강한 포마드/왁스로 뒤 방향 흐름 만든 후 고정',
+      targetCustomer: ['클래식한 스타일 선호', '정장/댄디/포멀룩', '성숙한 이미지 원하는 분']
     },
     'BZ': {
       faceShapes: ['달걀형 (Oval)', '둥근형 (Round)', '균형잡힌 두상'],
@@ -1706,7 +1746,10 @@ function getMaleSuitableFaceShapes(styleCode) {
         '짧은 커트로 두상 형태가 그대로 보여 균형잡힌 두상에 적합합니다',
         '깔끔하고 남성적인 이미지를 강조해줍니다',
         '관리가 쉽고 시원한 인상을 줍니다'
-      ]
+      ],
+      styleInfo: '클리퍼로 두피에 가깝게 밀어내는 초단발. 강인하고 미니멀한 이미지.',
+      styling: '별도 스타일링 불필요. 샴푸만 하고 바로 외출 가능.',
+      targetCustomer: ['손질 귀찮은 분', '운동 많이 하는 분', '두상 좋은 분', '강한 이미지']
     },
     'CP': {
       faceShapes: ['둥근형 (Round)', '긴 얼굴형 (Long)', '달걀형 (Oval)'],
@@ -1714,7 +1757,10 @@ function getMaleSuitableFaceShapes(styleCode) {
         '텍스처 있는 앞머리가 둥근 얼굴에 입체감을 더해줍니다',
         '짧고 깔끔한 라인이 모던한 느낌을 줍니다',
         '윗부분 볼륨으로 얼굴 비율을 조절할 수 있습니다'
-      ]
+      ],
+      styleInfo: '상단 짧게 커트 + 앞쪽으로 떨어뜨리는 모던 스타일. 트렌디하고 초저관리형.',
+      styling: '손질 거의 불필요. 단정하면서도 트렌디한 스타일.',
+      targetCustomer: ['여름철/활동량 많은 분', '트렌디하면서 관리 쉬운 스타일', '스트리트 감성']
     },
     'MC': {
       faceShapes: ['둥근형 (Round)', '각진형 (Square)', '짧은 얼굴형'],
@@ -1722,7 +1768,10 @@ function getMaleSuitableFaceShapes(styleCode) {
         '중앙의 높이가 둥근 얼굴을 길어보이게 해줍니다',
         '강렬한 실루엣이 개성 있는 인상을 만들어줍니다',
         '사이드를 짧게 해 얼굴 너비를 좁아보이게 합니다'
-      ]
+      ],
+      styleInfo: '사이드 짧게, 중앙만 길게 세우는 강한 대비 스타일. 스포티하고 개성 강한 이미지.',
+      styling: '고정력 강한 왁스/스프레이로 상단을 위로 세워 고정. 관리 난이도 중~상.',
+      targetCustomer: ['개성 강한 스타일', '스포티/퍼포먼스 이미지', '확실한 존재감 원하는 분']
     }
   };
 
@@ -2650,10 +2699,25 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
       let recipeInfo = '';
 
       if (ctx.gender === 'male') {
+        // 스타일 코드에 따른 상세 설명 가져오기
+        const styleCode = ctx.analysis.styleCode || 'SF';
+        const maleStyleInfo = {
+          'SF': { name: '사이드 프린지', desc: '이마를 자연스럽게 덮고 한쪽 방향으로 흐르는 스타일. 동안/내추럴 이미지. 이마 노출 부담 없음.', target: '이마 넓은 분, 동안 이미지 선호' },
+          'SP': { name: '사이드 파트', desc: '또렷한 가르마 라인이 핵심인 클래식 스타일. 단정하고 신뢰감 있는 이미지.', target: '직장인, 비즈니스룩, 프로페셔널 이미지' },
+          'FU': { name: '프린지 업', desc: '앞머리를 위로 올려 이마 완전 노출. 시원하고 자신감 있는 남성미.', target: '활동적/스포티한 이미지, 강한 남성미' },
+          'PB': { name: '푸시드 백', desc: '상단 전체를 뒤로 넘기는 스타일. 볼륨백 또는 슬릭백. 성숙하고 세련된 이미지.', target: '클래식/댄디/포멀룩, 성숙한 이미지' },
+          'BZ': { name: '버즈 컷', desc: '클리퍼로 두피에 가깝게 밀어내는 초단발. 강인하고 미니멀한 이미지. 관리 매우 쉬움.', target: '손질 귀찮은 분, 운동 많이 하는 분, 두상 좋은 분' },
+          'CP': { name: '크롭 컷', desc: '상단 짧게 커트 + 앞쪽으로 떨어뜨리는 모던 스타일. 트렌디하고 초저관리형.', target: '여름철/활동량 많은 분, 스트리트 감성' },
+          'MC': { name: '모히칸', desc: '사이드 짧게, 중앙만 길게 세우는 강한 대비 스타일. 스포티하고 개성 강한 이미지.', target: '개성 강한 스타일, 퍼포먼스/스포티 이미지' }
+        };
+        const currentStyle = maleStyleInfo[styleCode] || maleStyleInfo['SF'];
+
         recipeInfo = `
 【현재 분석된 레시피 컨텍스트 - 남자 스타일】
 사용자가 방금 이미지를 업로드하여 레시피를 생성했습니다. 다음은 분석 결과입니다:
-- 스타일 코드: ${ctx.analysis.styleCode || '-'} (예: CP=크롭컷, SF=사이드프린지, SP=사이드파트, FU=프린지업, PB=푸시드백, BZ=버즈컷, MC=모히칸)
+- 스타일 코드: ${styleCode} (${currentStyle.name})
+- 스타일 설명: ${currentStyle.desc}
+- 추천 대상: ${currentStyle.target}
 - 스타일명: ${ctx.analysis.styleName || '-'}
 - 서브스타일: ${ctx.analysis.subStyle || '-'}
 - 탑 길이: ${ctx.analysis.topLength || '-'}
@@ -2662,7 +2726,16 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
 - 텍스처: ${ctx.analysis.texture || '-'}
 - 스타일링 방향: ${ctx.analysis.stylingDirection || '-'}
 
-사용자가 "왜 CP야?", "크롭이 뭐야?", "페이드가 뭐야?" 등 분석 결과에 대해 질문하면 위 컨텍스트를 참조하여 답변하세요.`;
+【7개 남자 스타일 대분류 참고】
+- SF (사이드 프린지): 이마 덮고 옆으로 흐름, 동안/내추럴
+- SP (사이드 파트): 가르마 클래식, 단정/비즈니스
+- FU (프린지 업): 앞머리 위로 올림, 시원/자신감
+- PB (푸시드 백): 뒤로 넘김, 성숙/세련
+- BZ (버즈 컷): 초단발, 강인/미니멀
+- CP (크롭 컷): 짧은 탑 + 앞으로 떨어뜨림, 트렌디/스트리트
+- MC (모히칸): 중앙만 세움, 스포티/개성
+
+사용자가 "왜 ${styleCode}야?", "${currentStyle.name}이 뭐야?", "페이드가 뭐야?" 등 분석 결과에 대해 질문하면 위 컨텍스트를 참조하여 답변하세요.`;
       } else {
         recipeInfo = `
 【현재 분석된 레시피 컨텍스트 - 여자 스타일】
@@ -6363,14 +6436,42 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
 async function analyzeMaleStyleCodeOnly(imageBase64, mimeType, geminiKey) {
   const prompt = `Analyze this men's hairstyle image and determine the STYLE CATEGORY only.
 
-Men's Style Categories:
-- SF (Side Fringe): 옆으로 내린 앞머리, 이마를 가리는 스타일
-- SP (Side Part): 가르마를 탄 스타일, 7:3 또는 6:4 분배
-- FU (Fringe Up): 앞머리를 올린 스타일, 이마가 보임
-- PB (Pushed Back): 뒤로 넘긴 스타일, 슬릭백
-- BZ (Buzz): 매우 짧은 컷, 버즈컷
-- CP (Crop): 크롭컷, 짧은 앞머리와 텍스처
-- MC (Mohican): 모히칸, 중앙이 긴 스타일
+Men's Style Categories (7개 대분류):
+
+SF (Side Fringe, 사이드 프린지):
+- 이마를 자연스럽게 덮고 한쪽 방향으로 흐르는 스타일
+- 앞머리가 이마를 가리고 옆으로 흐름
+- 동안 이미지, 내추럴한 느낌
+
+SP (Side Part, 사이드 파트):
+- 또렷한 가르마 라인이 핵심인 클래식 스타일
+- 가르마 기준으로 상단을 뒤/옆으로 넘김
+- 단정하고 신뢰감 있는 이미지
+
+FU (Fringe Up, 프린지 업):
+- 앞머리를 이마 위로 올리는 스타일
+- 이마 완전 노출, 세로 볼륨
+- 시원하고 자신감 있는 남성미
+
+PB (Pushed Back, 푸시드 백):
+- 상단 전체를 뒤로 넘기는 스타일
+- 볼륨백(자연스럽게) 또는 슬릭백(밀착)
+- 성숙하고 세련된 이미지
+
+BZ (Buzz Cut, 버즈 컷):
+- 클리퍼로 두피에 가깝게 밀어내는 초단발
+- 전체 같은 길이 또는 상단만 살짝 길게
+- 강인하고 미니멀한 이미지
+
+CP (Crop Cut, 크롭 컷):
+- 상단 짧게 커트 + 앞쪽으로 떨어뜨리는 모던 스타일
+- 짧고 텍스처 있는 탑, 짧은 프린지
+- 트렌디하고 스트리트 감성
+
+MC (Mohican, 모히칸):
+- 사이드 짧게, 중앙만 길게 세우는 강한 대비
+- 중앙 라인 위로 강하게 세움, 피크 형태
+- 스포티하고 개성 강한 이미지
 
 Return ONLY a JSON object:
 {
@@ -6469,15 +6570,71 @@ JSON만 응답: {"fade_level": "<none/low/mid/high/skin>", "confidence": "<high/
 async function selectBestMaleStyleByVision(userImageBase64, mimeType, candidateStyles, geminiKey) {
   console.log(`🔍 남자 Vision 병렬 비교 시작: ${candidateStyles.length}개 스타일`);
 
-  // 남자 스타일별 특징 설명 + 페이드 중요도
+  // 남자 스타일별 특징 설명 + 페이드 중요도 + 상세 정보
   const MALE_STYLE_FEATURES = {
-    'SF': { name: 'Side Fringe', desc: '앞머리 옆으로 내림', fadeImportance: 'low' },
-    'SP': { name: 'Side Part', desc: '가르마 스타일', fadeImportance: 'low' },
-    'FU': { name: 'Fringe Up', desc: '앞머리 위로 올림', fadeImportance: 'low' },
-    'PB': { name: 'Pushed Back', desc: '뒤로 넘김', fadeImportance: 'low' },
-    'BZ': { name: 'Buzz', desc: '매우 짧은 컷', fadeImportance: 'critical' },
-    'CP': { name: 'Crop', desc: '짧은 탑 + 페이드', fadeImportance: 'critical' },
-    'MC': { name: 'Mohican', desc: '중앙 긴 스타일', fadeImportance: 'critical' }
+    'SF': {
+      name: 'Side Fringe',
+      desc: '앞머리 옆으로 내림',
+      fadeImportance: 'low',
+      detail: '이마를 자연스럽게 덮고 한쪽 방향으로 흐르는 스타일. 부드럽고 동안 이미지. 이마 노출 부담 없음.',
+      topFeature: '앞머리가 이마를 덮고 옆으로 흐름, 자연스러운 볼륨',
+      sideFeature: '사이드/백 짧고 깔끔하게 정리',
+      targetCustomer: '이마 넓은 분, 동안/내추럴 이미지 선호'
+    },
+    'SP': {
+      name: 'Side Part',
+      desc: '가르마 스타일',
+      fadeImportance: 'low',
+      detail: '한쪽으로 또렷한 가르마 라인이 핵심인 클래식 스타일. 단정하고 신뢰감 있는 이미지.',
+      topFeature: '가르마 기준 긴 상단을 뒤/옆으로 넘김, 포마드로 윤기와 볼륨',
+      sideFeature: '사이드 짧게 트리밍, 상단과 대비',
+      targetCustomer: '직장인, 비즈니스룩, 프로페셔널 이미지 선호'
+    },
+    'FU': {
+      name: 'Fringe Up',
+      desc: '앞머리 위로 올림',
+      fadeImportance: 'low',
+      detail: '앞머리를 이마 위로 또렷하게 올리는 스타일. 시원하고 자신감 있는 남성미.',
+      topFeature: '앞머리 세로 볼륨 확실히 올림, 이마 완전 노출',
+      sideFeature: '투블럭/페이드로 짧게, 상단 볼륨 강조',
+      targetCustomer: '활동적/스포티한 이미지, 강한 남성미 원하는 분'
+    },
+    'PB': {
+      name: 'Pushed Back',
+      desc: '뒤로 넘김',
+      fadeImportance: 'low',
+      detail: '상단 전체를 이마에서 뒤로 넘기는 스타일. 성숙하고 세련된 이미지.',
+      topFeature: '볼륨백(자연스럽게 뒤로) 또는 슬릭백(밀착시켜 클래식하게)',
+      sideFeature: '페이드/투블럭으로 짧게, 뒤로 흐르는 실루엣 강조',
+      targetCustomer: '정장/댄디룩, 성숙하고 고급스러운 이미지 선호'
+    },
+    'BZ': {
+      name: 'Buzz',
+      desc: '매우 짧은 컷',
+      fadeImportance: 'critical',
+      detail: '클리퍼로 두피에 가깝게 밀어내는 가장 단순한 스타일. 강인하고 미니멀한 이미지.',
+      topFeature: '전체 같은 길이 또는 상단만 살짝 길게, 두상 형태 그대로 노출',
+      sideFeature: '페이드로 면도 수준까지 정리, 스킨 보이는 초정돈',
+      targetCustomer: '손질 귀찮은 분, 운동 많이 하는 분, 두상 좋은 분'
+    },
+    'CP': {
+      name: 'Crop',
+      desc: '짧은 탑 + 페이드',
+      fadeImportance: 'critical',
+      detail: '상단 짧게 커트하고 앞쪽으로 떨어뜨리는 모던 스타일. 초저관리형 트렌디 컷.',
+      topFeature: '짧고 텍스처 있는 탑, 이마 살짝 덮는 짧은 프린지',
+      sideFeature: '페이드 또는 극단적으로 짧게, 강한 대비',
+      targetCustomer: '여름철, 활동량 많은 분, 트렌디하면서 관리 쉬운 스타일 원하는 분'
+    },
+    'MC': {
+      name: 'Mohican',
+      desc: '중앙 긴 스타일',
+      fadeImportance: 'critical',
+      detail: '사이드 짧게, 상단 중앙만 길게 남겨 위로 세우는 강한 대비 스타일. 스포티하고 개성 강한 이미지.',
+      topFeature: '중앙 라인 위로 강하게 세움, 피크(뾰족) 형태가 포인트',
+      sideFeature: '투블럭/페이드로 짧게, 모히칸 특유의 카리스마 강조',
+      targetCustomer: '개성 강한 스타일, 스포티/퍼포먼스 이미지 원하는 분'
+    }
   };
 
   // ⭐ 먼저 사용자 이미지의 페이드 레벨을 1회만 분석
@@ -7019,42 +7176,98 @@ async function regenerateMaleRecipeWithStyle(payload, geminiKey) {
   }
 }
 
-// 남자 스타일 용어 (PDF 기반 상세 분류)
+// 남자 스타일 용어 (PDF 기반 상세 분류) + 대분류 상세 설명
 const MALE_STYLE_TERMS = {
   'SF': {
     ko: '사이드 프린지',
     en: 'Side Fringe',
-    subStyles: ['댄디컷', '시스루 댄디컷', '슬릭컷']
+    subStyles: ['댄디컷', '시스루 댄디컷', '슬릭컷'],
+    description: {
+      core: '이마를 자연스럽게 덮고 한쪽 방향으로 흐르듯 연출하는 스타일. 답답하지 않으면서 부드러운 인상.',
+      frontDesign: '이마를 덮되 살짝 옆으로 흐르게 커트. 무겁지 않고 자연스러운 볼륨감 유지.',
+      sideBack: '사이드와 백은 짧고 깔끔하게 정리. 상단 모발의 질감과 흐름이 또렷하게 살아남.',
+      impression: '동안 이미지, 내추럴한 이미지',
+      styling: '드라이 시 앞쪽으로 말리듯 말린 후, 소량의 왁스로 앞머리 질감만 가볍게 정리. 데일리 스타일로 적합.',
+      targetCustomer: ['이마가 넓어 고민인 분', '이마 노출이 부담스러운 분', '얼굴을 더 작고 부드럽게 보이고 싶은 분', '동안/내추럴 이미지 선호']
+    }
   },
   'SP': {
     ko: '사이드 파트',
     en: 'Side Part',
-    subStyles: ['가일컷', '시스루 가일컷', '시스루 가르마컷', '플랫컷', '리프컷', '포마드컷', '드롭컷', '하프컷', '숏가일컷', '리젠트컷', '시스루 애즈컷']
+    subStyles: ['가일컷', '시스루 가일컷', '시스루 가르마컷', '플랫컷', '리프컷', '포마드컷', '드롭컷', '하프컷', '숏가일컷', '리젠트컷', '시스루 애즈컷'],
+    description: {
+      core: '한쪽으로 또렷하게 나뉘는 가르마 라인이 가장 중요한 클래식 스타일. 단정하고 정돈된 이미지.',
+      frontDesign: '가르마를 기준으로 긴 상단 모발을 뒤로 넘기거나 옆으로 자연스럽게 흐르듯 연출. 왁스나 포마드로 볼륨과 윤기감.',
+      sideBack: '사이드는 아주 짧게 커트하거나 깔끔하게 트리밍. 상단 볼륨과 대비로 세련된 실루엣.',
+      impression: '깔끔하고 신뢰감 있는 이미지. 성숙하고 고급스러운 분위기.',
+      styling: '왁스나 포마드로 볼륨과 윤기감을 살려 스타일 완성.',
+      targetCustomer: ['단정한 인상 선호', '직장인, 면접, 정장 착용이 잦은 고객', '클래식/신뢰감/프로페셔널 이미지']
+    }
   },
   'FU': {
     ko: '프린지 업',
     en: 'Fringe Up',
-    subStyles: ['아이비리그컷', '크랙컷']
+    subStyles: ['아이비리그컷', '크랙컷'],
+    description: {
+      core: '앞머리를 이마 위로 또렷하게 들어 올리는 스타일. 이마를 완전히 드러내 시원하고 깔끔한 인상.',
+      frontDesign: '앞머리에 세로 방향 볼륨을 확실하게 살리는 것이 핵심. 이마 전부 노출로 활동적이고 자신감 있는 분위기.',
+      sideBack: '투블럭 또는 페이드 컷처럼 짧고 깔끔하게 정리. 상단 볼륨이 더욱 강조되며 입체적인 실루엣.',
+      impression: '시원하고 남성적인 이미지. 자신감 있고 샤프한 남성미. 얼굴이 더 길고 날렵해 보이는 효과.',
+      styling: '왁스, 스프레이 등 스타일링 제품 사용 필수. 드라이로 앞머리를 위로 세운 뒤 제품으로 고정.',
+      targetCustomer: ['이마 노출이 잘 어울리는 얼굴형', '활동적/스포티한 느낌 원하는 분', '강한 남성미/카리스마 원하는 고객']
+    }
   },
   'PB': {
     ko: '푸시드 백',
     en: 'Pushed Back',
-    subStyles: ['폼파도르컷', '슬릭백', '슬릭백 언더컷']
+    subStyles: ['폼파도르컷', '슬릭백', '슬릭백 언더컷'],
+    description: {
+      core: '상단 모발 전체를 이마에서 뒤쪽으로 깔끔하게 넘기는 스타일. 앞에서 뒤로 흐르는 모발 방향성과 라인이 핵심.',
+      frontDesign: '볼륨 백(자연스럽게 뒤로 넘김) 또는 슬릭 백(윤기 있게 밀착시켜 클래식하게). 모발 결 따라 흐르는 라인이 완성도 좌우.',
+      sideBack: '페이드 또는 투블럭으로 짧고 깔끔하게 정리. 상단의 정돈된 라인과 뒤로 흐르는 실루엣 강조.',
+      impression: '성숙하고 자신감 있는 이미지. 차분하면서도 고급스럽고 세련된 분위기. 이목구비가 시원하게 드러남.',
+      styling: '고정력 강한 포마드 또는 왁스 사용 필수. 드라이로 뒤 방향 흐름 만든 후 제품으로 고정.',
+      targetCustomer: ['클래식한 스타일 선호', '정장/댄디/포멀룩이 잦은 고객', '성숙하고 남성적인 이미지 강조']
+    }
   },
   'BZ': {
     ko: '버즈 컷',
     en: 'Buzz Cut',
-    subStyles: ['버즈컷']
+    subStyles: ['버즈컷'],
+    description: {
+      core: '클리퍼로 두피에 가깝게 짧게 밀어내는 가장 단순한 스타일. 남성 헤어스타일 중 가장 깔끔하고 관리 쉬운 컷.',
+      frontDesign: '전체를 같은 길이로 미는 방식 또는 상단만 살짝 더 길게 남기는 방식. 군더더기 없는 초단발 실루엣.',
+      sideBack: '페이드로 매우 짧게 면도 수준까지 정리. 귀 라인, 네이프 라인이 깨끗하게 드러남. 스킨이 보이는 초정돈.',
+      impression: '강인하고 단단한 이미지. 군인 같은 강한 남성미. 미니멀하고 시크한 분위기.',
+      styling: '별도 스타일링 불필요. 왁스, 드라이 전혀 필요 없음. 샴푸만 하고 바로 외출 가능.',
+      targetCustomer: ['손질이 귀찮은 분', '운동 자주 하거나 땀 많은 고객', '두상에 자신 있는 분', '강하고 담백한 이미지']
+    }
   },
   'CP': {
     ko: '크롭 컷',
     en: 'Crop Cut',
-    subStyles: ['크롭컷', '스왓컷']
+    subStyles: ['크롭컷', '스왓컷'],
+    description: {
+      core: '상단을 짧게 커트하고 앞쪽으로 자연스럽게 떨어뜨리는 모던 스타일. 사이드와 확실한 대비가 포인트.',
+      frontDesign: '짧고 텍스처가 살아 있는 커트. 앞머리는 이마를 살짝 덮는 짧은 프린지 형태.',
+      sideBack: '페이드 또는 극단적으로 짧은 길이로 정리. 깔끔한 윤곽과 강한 남성적 라인.',
+      impression: '깔끔함 + 강인함 + 트렌디함. 군더더기 없는 스트리트 감성의 현대적인 남성 이미지.',
+      styling: '손질이 거의 필요 없는 초저관리형 스타일. 단정하면서도 트렌디하고 남성적.',
+      targetCustomer: ['여름철, 활동량 많은 고객', '트렌디하면서 관리 쉬운 스타일', '스트리트/모던 감성']
+    }
   },
   'MC': {
     ko: '모히칸',
     en: 'Mohican',
-    subStyles: ['모히칸컷']
+    subStyles: ['모히칸컷'],
+    description: {
+      core: '사이드는 매우 짧게, 상단 중앙 라인만 길게 남겨 위로 세우는 강한 대비 스타일. 중앙 피크(peak) 형태가 포인트.',
+      frontDesign: '중앙 라인을 중심으로 모발을 위쪽으로 강하게 세워 연출. 볼륨보다 수직 라인과 각이 핵심.',
+      sideBack: '투블럭 또는 페이드 기법으로 짧고 깔끔하게 정리. 상단과 대비되어 모히칸 특유의 카리스마 강조.',
+      impression: '스포티하고 강한 남성미. 자신감 있고 공격적인 이미지. 얼굴 윤곽이 더 또렷하고 샤프한 인상.',
+      styling: '고정력 강한 왁스 또는 스프레이 필수. 드라이로 상단을 위로 세운 뒤 제품으로 단단하게 고정. 관리 난이도 중~상.',
+      targetCustomer: ['개성 강한 스타일 원하는 고객', '스포티/퍼포먼스 직군', '평범한 스타일보다 확실한 존재감']
+    }
   }
 };
 
@@ -7062,16 +7275,56 @@ const MALE_STYLE_TERMS = {
 async function analyzeManImageVision(imageBase64, mimeType, geminiKey) {
   const prompt = `You are a professional men's hairstyle analyst using the 2WAY CUT SYSTEM methodology.
 
-## 스타일 카테고리 (Style Category)
-| Code | Name | Feature |
-|------|------|---------|
-| SF | Side Fringe | 앞머리가 이마로 자연스럽게 내려옴 |
-| SP | Side Part | 가르마를 기준으로 한쪽으로 넘김 |
-| FU | Fringe Up | 앞머리 끝을 위로 올림 |
-| PB | Pushed Back | 전체 모발을 뒤로 넘김 |
-| BZ | Buzz Cut | 매우 짧은 버즈컷 |
-| CP | Crop Cut | 짧은 크롭 스타일 |
-| MC | Mohican | 센터를 세운 모히칸 |
+## 스타일 카테고리 (Style Category) - 7개 대분류 상세
+
+### SF (Side Fringe) - 사이드 프린지
+- 핵심: 이마를 자연스럽게 덮고 한쪽 방향으로 흐르는 스타일
+- 앞머리: 이마를 덮되 살짝 옆으로 흐르게, 자연스러운 볼륨
+- 사이드/백: 짧고 깔끔하게 정리
+- 인상: 동안 이미지, 부드럽고 내추럴
+- 추천: 이마 넓은 분, 이마 노출 부담스러운 분
+
+### SP (Side Part) - 사이드 파트
+- 핵심: 한쪽으로 또렷한 가르마 라인이 가장 중요한 클래식 스타일
+- 앞머리: 가르마 기준 상단을 뒤/옆으로 넘김, 포마드로 윤기
+- 사이드/백: 아주 짧게 트리밍, 상단과 대비
+- 인상: 단정하고 신뢰감, 성숙하고 고급스러움
+- 추천: 직장인, 비즈니스룩, 프로페셔널 이미지
+
+### FU (Fringe Up) - 프린지 업
+- 핵심: 앞머리를 이마 위로 또렷하게 올리는 스타일
+- 앞머리: 세로 방향 볼륨, 이마 완전 노출
+- 사이드/백: 투블럭/페이드로 짧게, 상단 볼륨 강조
+- 인상: 시원하고 남성적, 자신감/카리스마
+- 추천: 활동적/스포티한 이미지, 강한 남성미 원하는 분
+
+### PB (Pushed Back) - 푸시드 백
+- 핵심: 상단 전체를 뒤로 넘기는 스타일 (볼륨백/슬릭백)
+- 앞머리: 앞에서 뒤로 흐르는 방향성과 라인
+- 사이드/백: 페이드/투블럭으로 짧게
+- 인상: 성숙하고 세련됨, 고급스러움
+- 추천: 클래식/댄디/포멀룩, 정장 착용 잦은 분
+
+### BZ (Buzz Cut) - 버즈 컷
+- 핵심: 클리퍼로 두피에 가깝게 밀어내는 초단발
+- 전체: 같은 길이로 밀거나 상단만 살짝 길게
+- 사이드/백: 페이드로 면도 수준까지, 스킨 보이는 초정돈
+- 인상: 강인함, 미니멀, 군인 같은 남성미
+- 추천: 손질 귀찮은 분, 운동 많이 하는 분, 두상 좋은 분
+
+### CP (Crop Cut) - 크롭 컷
+- 핵심: 상단 짧게 커트 + 앞쪽으로 떨어뜨리는 모던 스타일
+- 앞머리: 짧고 텍스처 있는 탑, 짧은 프린지로 이마 살짝 덮음
+- 사이드/백: 페이드로 극단적으로 짧게, 강한 대비
+- 인상: 깔끔함 + 트렌디함, 스트리트 감성
+- 추천: 여름철, 활동량 많은 분, 초저관리 원하는 분
+
+### MC (Mohican) - 모히칸
+- 핵심: 사이드 짧게, 중앙만 길게 남겨 위로 세우는 강한 대비
+- 앞머리: 중앙 라인 위로 강하게 세움, 피크(뾰족) 형태
+- 사이드/백: 투블럭/페이드로 짧게, 카리스마 강조
+- 인상: 스포티, 공격적, 얼굴 윤곽 또렷
+- 추천: 개성 강한 스타일, 퍼포먼스/스포티 이미지
 
 ## 2WAY CUT SYSTEM 변수
 
@@ -7275,7 +7528,20 @@ async function generateMaleCustomRecipe(params, top3Styles, geminiKey) {
     ? `\n**📝 참고 스타일 레시피:**\n${captionContext}\n`
     : '';
 
-  const systemPrompt = `당신은 남자 헤어컷 전문가입니다. 모든 응답을 한국어로만 작성하세요. 클리퍼 가드 사이즈, 페이드 기법 등 실무적인 내용을 포함하세요.${theoryContext ? ' 참고 이론의 내용을 레시피에 자연스럽게 반영하세요.' : ''}${captionContext ? ' 참고 스타일 레시피의 테크닉과 순서를 참고하세요.' : ''}`;
+  // 스타일별 상세 설명 가져오기
+  const styleDesc = styleInfo.description || {};
+  const styleDetailText = styleDesc.core ? `
+【${styleInfo.ko} (${params.style_category}) 스타일 특징】
+- 핵심: ${styleDesc.core}
+- 앞머리/탑: ${styleDesc.frontDesign || '-'}
+- 사이드/백: ${styleDesc.sideBack || '-'}
+- 인상: ${styleDesc.impression || '-'}
+- 스타일링: ${styleDesc.styling || '-'}
+- 추천 대상: ${Array.isArray(styleDesc.targetCustomer) ? styleDesc.targetCustomer.join(', ') : '-'}
+` : '';
+
+  const systemPrompt = `당신은 남자 헤어컷 전문가입니다. 모든 응답을 한국어로만 작성하세요. 클리퍼 가드 사이즈, 페이드 기법 등 실무적인 내용을 포함하세요.${theoryContext ? ' 참고 이론의 내용을 레시피에 자연스럽게 반영하세요.' : ''}${captionContext ? ' 참고 스타일 레시피의 테크닉과 순서를 참고하세요.' : ''}
+${styleDetailText}`;
 
   // 핵심 파라미터 추출
   const liftingStr = Array.isArray(params.lifting_range) ? params.lifting_range.join(', ') : 'L4';
