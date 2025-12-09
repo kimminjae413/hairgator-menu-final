@@ -2614,8 +2614,12 @@
             const skinToneData = extractSkinTone(currentLandmarks);
             console.log('🧪 촬영된 피부톤 데이터:', skinToneData);
 
+            // 얼굴 기하학적 측정 (눈썹간 거리 등)
+            const faceGeometry = analyzeFaceGeometry(currentLandmarks);
+            console.log('📐 얼굴 측정 데이터:', faceGeometry);
+
             // 분석 결과 표시
-            displayCapturedAnalysis(skinToneData);
+            displayCapturedAnalysis(skinToneData, faceGeometry);
 
             // 분석 진행 단계 애니메이션
             animateAnalysisSteps();
@@ -2687,7 +2691,7 @@
         }
 
         // 촬영된 분석 결과 표시 (새 파이프라인 사용)
-        function displayCapturedAnalysis(skinToneData) {
+        function displayCapturedAnalysis(skinToneData, faceGeometry) {
             if (!skinToneData) {
                 console.log('❌ 피부톤 데이터가 없음');
                 return;
@@ -2698,6 +2702,9 @@
             const pc = pipelineResult.personalColor;
             const hairRec = pipelineResult.hairRecommendations;
             const lm = pipelineResult.lightingMeta;
+
+            // 얼굴 측정 데이터 파이프라인에 추가
+            pipelineResult.faceGeometry = faceGeometry;
 
             // AR 연동을 위해 헤어 추천 결과 저장
             lastHairRecommendations = hairRec;
@@ -2733,6 +2740,9 @@
 
             // 전문가 피드백 HTML 생성
             const expertFeedbackHTML = generateExpertFeedbackHTML(pc);
+
+            // 얼굴 측정 결과 HTML 생성 (눈썹간 거리 등)
+            const faceGeometryHTML = generateFaceGeometryHTML(faceGeometry);
 
             // 메인 결과 컨테이너 표시
             const resultsWrapper = document.getElementById('realtime-results-wrapper');
@@ -2781,6 +2791,9 @@
 
                     ${lightingWarningBanner}
 
+                    <!-- 📐 얼굴 측정 결과 (눈썹간 거리 등) -->
+                    ${faceGeometryHTML}
+
                     <!-- 💇 헤어컬러 추천 -->
                     ${hairRecommendHTML}
 
@@ -2826,6 +2839,77 @@
                     </div>
                 `;
             }
+        }
+
+        // 얼굴 측정 결과 HTML 생성 (눈썹간 거리 등)
+        function generateFaceGeometryHTML(faceGeometry) {
+            if (!faceGeometry) {
+                return ''; // 측정 데이터 없으면 빈 문자열
+            }
+
+            // 미간 레벨에 따른 색상 및 아이콘
+            const levelColors = {
+                narrow: { bg: '#FFF3E0', border: '#FF9800', text: '#E65100', icon: '◀️▶️' },
+                balanced: { bg: '#E8F5E9', border: '#4CAF50', text: '#2E7D32', icon: '✅' },
+                wide: { bg: '#E3F2FD', border: '#2196F3', text: '#1565C0', icon: '▶️◀️' }
+            };
+            const levelStyle = levelColors[faceGeometry.eyebrowGapLevel] || levelColors.balanced;
+
+            // 눈썹 대 눈 비율 시각화 (1.0이 이상적)
+            const ratio = faceGeometry.eyebrowToEyeRatio;
+            const ratioPercent = Math.min(100, Math.max(0, ratio * 50)); // 0~2 범위를 0~100%로
+
+            return `
+                <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 14px; border-radius: 12px; border: 1px solid #dee2e6; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <span style="font-size: 16px;">📐</span>
+                        <span style="font-size: 13px; font-weight: 700; color: #333;">얼굴 비율 분석</span>
+                    </div>
+
+                    <!-- 미간 거리 결과 -->
+                    <div style="background: ${levelStyle.bg}; padding: 12px; border-radius: 10px; border: 1px solid ${levelStyle.border}; margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 12px; font-weight: 600; color: ${levelStyle.text};">
+                                ${levelStyle.icon} 미간(눈썹간 거리)
+                            </span>
+                            <span style="font-size: 11px; background: ${levelStyle.border}; color: #fff; padding: 2px 8px; border-radius: 10px;">
+                                ${ratio.toFixed(2)} : 1
+                            </span>
+                        </div>
+                        <div style="font-size: 11px; color: #555; line-height: 1.5;">
+                            ${faceGeometry.eyebrowGapEvaluation}
+                        </div>
+                        <div style="margin-top: 8px; font-size: 11px; color: ${levelStyle.text}; font-weight: 500;">
+                            💡 ${faceGeometry.styleRecommendation}
+                        </div>
+                    </div>
+
+                    <!-- 비율 게이지 -->
+                    <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <div style="font-size: 11px; color: #666; margin-bottom: 6px;">미간:눈 비율 (1.0 = 이상적)</div>
+                        <div style="position: relative; height: 8px; background: linear-gradient(to right, #FF9800, #4CAF50, #2196F3); border-radius: 4px;">
+                            <div style="position: absolute; left: ${ratioPercent}%; top: -3px; width: 14px; height: 14px; background: #333; border-radius: 50%; border: 2px solid #fff; transform: translateX(-50%);"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 9px; color: #999; margin-top: 4px;">
+                            <span>좁음</span>
+                            <span>적정</span>
+                            <span>넓음</span>
+                        </div>
+                    </div>
+
+                    <!-- 추가 측정값 -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+                        <div style="background: #fff; padding: 8px; border-radius: 6px; border: 1px solid #e0e0e0; text-align: center;">
+                            <div style="font-size: 10px; color: #888;">얼굴 비율</div>
+                            <div style="font-size: 14px; font-weight: 700; color: #333;">${faceGeometry.faceRatioPercent}%</div>
+                        </div>
+                        <div style="background: #fff; padding: 8px; border-radius: 6px; border: 1px solid #e0e0e0; text-align: center;">
+                            <div style="font-size: 10px; color: #888;">눈 사이 거리</div>
+                            <div style="font-size: 14px; font-weight: 700; color: #333;">${faceGeometry.eyeInnerDistancePercent}%</div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // 헤어컬러 추천 HTML 생성
@@ -3326,6 +3410,125 @@
                 chroma: undertoneAnalysis.chroma,
                 samples: samples.length
             };
+        }
+
+        // ========== 얼굴 기하학적 측정 함수 ==========
+        function analyzeFaceGeometry(landmarks) {
+            if (!landmarks || landmarks.length < 468) {
+                console.log('❌ 랜드마크 데이터 부족');
+                return null;
+            }
+
+            // MediaPipe Face Mesh 랜드마크 인덱스
+            // 눈썹 관련
+            const LEFT_EYEBROW_INNER = 107;   // 왼쪽 눈썹 안쪽 끝
+            const RIGHT_EYEBROW_INNER = 336;  // 오른쪽 눈썹 안쪽 끝
+            const LEFT_EYEBROW_OUTER = 70;    // 왼쪽 눈썹 바깥쪽 끝
+            const RIGHT_EYEBROW_OUTER = 300;  // 오른쪽 눈썹 바깥쪽 끝
+
+            // 눈 관련
+            const LEFT_EYE_INNER = 133;       // 왼쪽 눈 안쪽
+            const RIGHT_EYE_INNER = 362;      // 오른쪽 눈 안쪽
+            const LEFT_EYE_OUTER = 33;        // 왼쪽 눈 바깥쪽
+            const RIGHT_EYE_OUTER = 263;      // 오른쪽 눈 바깥쪽
+
+            // 얼굴 기준점
+            const FOREHEAD_TOP = 10;          // 이마 상단
+            const CHIN_BOTTOM = 152;          // 턱 끝
+            const LEFT_CHEEK = 234;           // 왼쪽 광대
+            const RIGHT_CHEEK = 454;          // 오른쪽 광대
+            const NOSE_TIP = 1;               // 코 끝
+
+            // 거리 계산 함수
+            const getDistance = (idx1, idx2) => {
+                const p1 = landmarks[idx1];
+                const p2 = landmarks[idx2];
+                if (!p1 || !p2) return null;
+                return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+            };
+
+            // 얼굴 너비 (광대 기준) - 정규화 기준
+            const faceWidth = getDistance(LEFT_CHEEK, RIGHT_CHEEK);
+            if (!faceWidth || faceWidth === 0) return null;
+
+            // 얼굴 높이
+            const faceHeight = getDistance(FOREHEAD_TOP, CHIN_BOTTOM);
+
+            // 1. 눈썹간 거리 (미간)
+            const eyebrowDistance = getDistance(LEFT_EYEBROW_INNER, RIGHT_EYEBROW_INNER);
+            const eyebrowDistanceRatio = eyebrowDistance / faceWidth;
+
+            // 2. 눈썹 길이
+            const leftEyebrowLength = getDistance(LEFT_EYEBROW_INNER, LEFT_EYEBROW_OUTER);
+            const rightEyebrowLength = getDistance(RIGHT_EYEBROW_INNER, RIGHT_EYEBROW_OUTER);
+            const avgEyebrowLength = (leftEyebrowLength + rightEyebrowLength) / 2;
+            const eyebrowLengthRatio = avgEyebrowLength / faceWidth;
+
+            // 3. 눈 사이 거리 (양쪽 눈 안쪽 끝)
+            const eyeInnerDistance = getDistance(LEFT_EYE_INNER, RIGHT_EYE_INNER);
+            const eyeInnerDistanceRatio = eyeInnerDistance / faceWidth;
+
+            // 4. 눈 너비 (각 눈의 가로 길이)
+            const leftEyeWidth = getDistance(LEFT_EYE_INNER, LEFT_EYE_OUTER);
+            const rightEyeWidth = getDistance(RIGHT_EYE_INNER, RIGHT_EYE_OUTER);
+            const avgEyeWidth = (leftEyeWidth + rightEyeWidth) / 2;
+            const eyeWidthRatio = avgEyeWidth / faceWidth;
+
+            // 5. 얼굴 비율 (세로/가로)
+            const faceRatio = faceHeight / faceWidth;
+
+            // 눈썹간 거리 평가 (미간 넓이)
+            // 일반적으로 눈 하나 너비와 비슷하면 이상적
+            // 눈썹간 거리 / 눈 너비 비율로 평가
+            const eyebrowToEyeRatio = eyebrowDistance / avgEyeWidth;
+            let eyebrowGapEvaluation = '';
+            let eyebrowGapLevel = '';
+
+            if (eyebrowToEyeRatio < 0.85) {
+                eyebrowGapEvaluation = '좁은 미간 - 눈 사이가 가까워 보임';
+                eyebrowGapLevel = 'narrow';
+            } else if (eyebrowToEyeRatio > 1.15) {
+                eyebrowGapEvaluation = '넓은 미간 - 눈 사이가 멀어 보임';
+                eyebrowGapLevel = 'wide';
+            } else {
+                eyebrowGapEvaluation = '균형잡힌 미간 - 이상적인 비율';
+                eyebrowGapLevel = 'balanced';
+            }
+
+            // 스타일 추천
+            let styleRecommendation = '';
+            if (eyebrowGapLevel === 'narrow') {
+                styleRecommendation = '눈썹 안쪽을 정리하여 시원한 인상 연출 추천';
+            } else if (eyebrowGapLevel === 'wide') {
+                styleRecommendation = '눈썹 안쪽을 채워 또렷한 인상 연출 추천';
+            } else {
+                styleRecommendation = '현재 눈썹 모양 유지 추천';
+            }
+
+            const result = {
+                // 절대값 (정규화된 비율)
+                eyebrowDistance: eyebrowDistanceRatio,
+                eyebrowLength: eyebrowLengthRatio,
+                eyeInnerDistance: eyeInnerDistanceRatio,
+                eyeWidth: eyeWidthRatio,
+                faceRatio: faceRatio,
+
+                // 비교 비율
+                eyebrowToEyeRatio: eyebrowToEyeRatio,
+
+                // 평가
+                eyebrowGapLevel: eyebrowGapLevel,
+                eyebrowGapEvaluation: eyebrowGapEvaluation,
+                styleRecommendation: styleRecommendation,
+
+                // 퍼센트 (UI 표시용)
+                eyebrowDistancePercent: Math.round(eyebrowDistanceRatio * 100),
+                eyeInnerDistancePercent: Math.round(eyeInnerDistanceRatio * 100),
+                faceRatioPercent: Math.round(faceRatio * 100)
+            };
+
+            console.log('📐 얼굴 기하학적 측정 결과:', result);
+            return result;
         }
 
         // RGB를 LAB 색공간으로 변환 (더 정확한 색상 분석용)
