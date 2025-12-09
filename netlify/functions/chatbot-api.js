@@ -1504,19 +1504,95 @@ function selectBestDiagrams(recipeSamples, maxDiagrams = 15) {
   return final;
 }
 
+// ==================== 여성 기장(Length) 상세 설명 ====================
+const FEMALE_LENGTH_DETAILS = {
+  'A': {
+    code: 'A Length',
+    ko: '허리 롱헤어',
+    en: 'Waist Long',
+    position: '가슴 하단/허리',
+    description: '가장 긴 기장. 허리선까지 내려오는 롱헤어. 무게감이 많고 볼륨 조절이 중요.',
+    characteristics: ['무게감 최대', '레이어로 볼륨 조절 필수', '관리 난이도 높음'],
+    suitableFor: ['풍성한 머릿결', '여성스러운 이미지 강조', '다양한 업스타일 가능']
+  },
+  'B': {
+    code: 'B Length',
+    ko: '가슴 롱헤어',
+    en: 'Chest Long',
+    position: '가슴 중간',
+    description: '가슴 중간까지 내려오는 롱헤어. 가장 대중적인 롱헤어 길이.',
+    characteristics: ['대중적인 롱헤어', '레이어/그라데이션 다양하게 적용', '스타일링 다양'],
+    suitableFor: ['기본 롱헤어 선호', '웨이브/컬 스타일링', '다양한 묶음 스타일']
+  },
+  'C': {
+    code: 'C Length',
+    ko: '세미롱',
+    en: 'Semi Long',
+    position: '겨드랑이/가슴 상단',
+    description: '겨드랑이에서 가슴 상단 사이. 롱과 미디엄의 중간 길이로 활용도 높음.',
+    characteristics: ['롱과 미디엄 중간', '관리 용이', '다양한 스타일 가능'],
+    suitableFor: ['관리 편한 롱헤어', '직장인/활동적인 분', '묶음/풀기 모두 가능']
+  },
+  'D': {
+    code: 'D Length',
+    ko: '어깨 아래 미디엄',
+    en: 'Below Shoulder Medium',
+    position: '어깨선 하단',
+    description: '어깨선에 닿아 밖으로 뻗치기 쉬운 길이. 컬이나 웨이브로 뻗침 보완 필요.',
+    characteristics: ['어깨에 닿아 뻗치기 쉬움', '컬/웨이브 권장', '그라데이션으로 무게 조절'],
+    suitableFor: ['펌 스타일 선호', '볼륨감 원하는 분', '세미롱으로 기르는 중간 단계']
+  },
+  'E': {
+    code: 'E Length',
+    ko: '어깨선 미디엄',
+    en: 'Shoulder Medium',
+    position: '어깨선 상단',
+    description: '어깨선 길이보다 조금 짧은 길이. 뻗침이 적고 단정한 미디엄 스타일.',
+    characteristics: ['어깨 위 단정한 길이', 'D보다 뻗침 적음', '보브와 미디엄 중간'],
+    suitableFor: ['단정한 이미지', '직장인/면접', '관리 쉬운 중간 길이']
+  },
+  'F': {
+    code: 'F Length',
+    ko: '보브 단발',
+    en: 'Bob',
+    position: '턱선 아래',
+    description: '턱선 아래 목까지의 보브 길이. 클래식한 단발 스타일.',
+    characteristics: ['클래식 보브', '턱선 아래~목', '세련된 단발'],
+    suitableFor: ['세련된 이미지', '얼굴형 보완', '관리 용이한 단발']
+  },
+  'G': {
+    code: 'G Length',
+    ko: '짧은 보브',
+    en: 'Short Bob',
+    position: '턱선 위',
+    description: '턱선 위까지의 짧은 보브. 얼굴이 더 드러나고 시원한 느낌.',
+    characteristics: ['짧은 보브', '턱선 위', '얼굴 노출 많음'],
+    suitableFor: ['시원한 이미지', '개성 있는 스타일', '여름철/활동적인 분']
+  },
+  'H': {
+    code: 'H Length',
+    ko: '픽시컷 숏',
+    en: 'Pixie Short',
+    position: '후두부/목덜미',
+    description: '숏 헤어. 픽시컷, 베리숏 등 가장 짧은 여성 기장.',
+    characteristics: ['숏 헤어/픽시컷', '가장 짧은 기장', '개성 강한 스타일'],
+    suitableFor: ['개성 강한 이미지', '관리 최소화', '시원하고 활동적인 스타일']
+  }
+};
+
 // ==================== 언어별 용어 ====================
 function getTerms(lang) {
   const terms = {
     ko: {
       lengthDesc: {
-        'H Length': '후두부/목덜미 (Short)',
-        'G Length': '목 상단 (Bob)',
-        'F Length': '목 하단 (Bob)',
-        'E Length': '어깨선 상단 (Medium)',
-        'D Length': '어깨선 하단 (Medium)',
-        'C Length': '겨드랑이/가슴 상단 (Semi Long)',
-        'B Length': '가슴 중간 (Long)',
-        'A Length': '가슴 하단/허리 (Long)'
+        'H Length': FEMALE_LENGTH_DETAILS['H'].position + ' (Short)',
+        'G Length': FEMALE_LENGTH_DETAILS['G'].position + ' (Bob)',
+        'F Length': FEMALE_LENGTH_DETAILS['F'].position + ' (Bob)',
+        'E Length': FEMALE_LENGTH_DETAILS['E'].position + ' (Medium)',
+        'D Length': FEMALE_LENGTH_DETAILS['D'].position + ' (Medium)',
+        'C Length': FEMALE_LENGTH_DETAILS['C'].position + ' (Semi Long)',
+        'B Length': FEMALE_LENGTH_DETAILS['B'].position + ' (Long)',
+        'A Length': FEMALE_LENGTH_DETAILS['A'].position + ' (Long)'
       },
       faceShapeDesc: {
         'Oval': '계란형',

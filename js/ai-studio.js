@@ -2546,15 +2546,24 @@ let selectedGender = null;
 let selectedCategory = null;
 
 // 여자 기장 카테고리 (H~A) - H가 가장 짧고 A가 가장 긺
+// 상세 설명 추가: position(신체 위치), description(특징 설명)
 const FEMALE_CATEGORIES = [
-  { code: 'H', name: 'H - Short (턱선 위)', series: 'FHL' },
-  { code: 'G', name: 'G - Bob (턱선)', series: 'FGL' },
-  { code: 'F', name: 'F - Bob (턱선 아래)', series: 'FFL' },
-  { code: 'E', name: 'E - Medium (어깨 위)', series: 'FEL' },
-  { code: 'D', name: 'D - Medium (어깨선)', series: 'FDL' },
-  { code: 'C', name: 'C - Semi Long (쇄골 아래)', series: 'FCL' },
-  { code: 'B', name: 'B - Long (가슴)', series: 'FBL' },
-  { code: 'A', name: 'A - Long (가슴 아래)', series: 'FAL' }
+  { code: 'H', name: 'H - Short (숏헤어)', series: 'FHL',
+    position: '후두부/목덜미', description: '숏 헤어. 픽시컷, 베리숏 등 가장 짧은 여성 기장.' },
+  { code: 'G', name: 'G - Bob (턱선 위)', series: 'FGL',
+    position: '턱선 위', description: '턱선 위까지의 짧은 보브. 얼굴이 더 드러나고 시원한 느낌.' },
+  { code: 'F', name: 'F - Bob (턱선 아래)', series: 'FFL',
+    position: '턱선 아래', description: '턱선 아래 목까지의 보브 길이. 클래식한 단발 스타일.' },
+  { code: 'E', name: 'E - Medium (어깨 위)', series: 'FEL',
+    position: '어깨선 상단', description: '어깨선 길이보다 조금 짧은 길이. 뻗침이 적고 단정한 미디엄 스타일.' },
+  { code: 'D', name: 'D - Medium (어깨선)', series: 'FDL',
+    position: '어깨선 하단', description: '어깨선에 닿아 밖으로 뻗치기 쉬운 길이. 컬이나 웨이브로 뻗침 보완 필요.' },
+  { code: 'C', name: 'C - Semi Long (쇄골 아래)', series: 'FCL',
+    position: '겨드랑이/가슴 상단', description: '겨드랑이에서 가슴 상단 사이. 롱과 미디엄의 중간 길이로 활용도 높음.' },
+  { code: 'B', name: 'B - Long (가슴)', series: 'FBL',
+    position: '가슴 중간', description: '가슴 중간까지 내려오는 롱헤어. 가장 대중적인 롱헤어 길이.' },
+  { code: 'A', name: 'A - Long (가슴 아래)', series: 'FAL',
+    position: '가슴 하단/허리', description: '가장 긴 기장. 허리선까지 내려오는 롱헤어. 무게감이 많고 볼륨 조절이 중요.' }
 ];
 
 // 남자 스타일 카테고리
@@ -2606,12 +2615,15 @@ function showCategorySelection(gender) {
   // 라벨 업데이트
   categoryLabel.textContent = labelText;
 
-  // 버튼 생성
-  categoryButtons.innerHTML = categories.map(cat => `
-    <button class="category-btn ${categoryClass}" data-code="${cat.code}" data-series="${cat.series}" onclick="selectCategory('${cat.code}', '${cat.series}')">
+  // 버튼 생성 (여성: 상세 설명 툴팁 포함)
+  categoryButtons.innerHTML = categories.map(cat => {
+    const tooltip = cat.description ? `title="${cat.position}: ${cat.description}"` : '';
+    return `
+    <button class="category-btn ${categoryClass}" data-code="${cat.code}" data-series="${cat.series}" ${tooltip} onclick="selectCategory('${cat.code}', '${cat.series}')">
       ${cat.name}
     </button>
-  `).join('');
+  `;
+  }).join('');
 
   // 표시
   categorySelection.style.display = 'flex';
