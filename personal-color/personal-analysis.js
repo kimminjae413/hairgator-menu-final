@@ -593,12 +593,12 @@ function displayCustomerSummary(mediaPipeData) {
       </div>
     </div>
 
-    <!-- 연계 분석 결과 -->
+    <!-- 통합 분석 결과 -->
     <div style="grid-column: 1 / -1; background: linear-gradient(135deg, ${themeColor}15, ${themeColor}08); padding: 10px; border-radius: 8px; border: 1px solid ${themeColor}30; margin-top: 4px;">
-      <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 6px; font-size: 11px;">🔗 연계 분석</div>
+      <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 6px; font-size: 11px;">🔗 통합 분석</div>
       <div style="display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #333;">
-        <div>${manualTone === aiTone ? '✅' : '⚠️'} 수동(${manualTone}) vs AI(${aiTone}) ${manualTone === aiTone ? '일치' : '불일치'}</div>
-        <div>${isLengthRecommended ? '✅' : '💡'} ${p.desiredLength} 기장 ${isLengthRecommended ? '적합' : `(추천: ${recommendedLengths.join(',')})`}</div>
+        <div>${manualTone === aiTone ? '✅' : '🔍'} 디자이너(${manualTone}) + AI(${aiTone}) ${manualTone === aiTone ? '→ 신뢰도 높음' : '→ 종합 적용'}</div>
+        <div>${isLengthRecommended ? '✅' : '💡'} ${p.desiredLength} 기장 ${isLengthRecommended ? '체형 적합' : `(추천: ${recommendedLengths.join(',')})`}</div>
       </div>
     </div>
   `;
@@ -696,14 +696,14 @@ function generateIntegratedResultHTML(integrated, personalColor) {
   const difficultyText = difficultyScore <= 1 ? '쉬움' : difficultyScore <= 3 ? '보통' : '어려움';
   const difficultyColor = difficultyScore <= 1 ? '#4CAF50' : difficultyScore <= 3 ? '#FF9800' : '#F44336';
 
-  // 톤 매칭 여부에 따른 스타일
+  // 톤 분석 결과 스타일 (대결이 아닌 보완 구조)
   const toneMatchStyle = analysis.toneMatch
     ? 'background: rgba(76,175,80,0.15); border-color: rgba(76,175,80,0.3); color: #2E7D32;'
-    : 'background: rgba(255,152,0,0.15); border-color: rgba(255,152,0,0.3); color: #E65100;';
-  const toneMatchIcon = analysis.toneMatch ? '✅' : '⚠️';
+    : 'background: rgba(103,58,183,0.12); border-color: rgba(103,58,183,0.3); color: #5E35B1;';
+  const toneMatchIcon = analysis.toneMatch ? '✅' : '🔍';
   const toneMatchText = analysis.toneMatch
-    ? '수동 입력과 AI 분석 결과가 일치합니다'
-    : `수동(${c.manualTone}) ≠ AI(${a.tone}) → AI 결과 우선 적용`;
+    ? `디자이너 판단 + AI 분석 일치 → 신뢰도 높음`
+    : `디자이너(${c.manualTone}) + AI(${a.tone}) 종합 분석 적용`;
 
   // 기장 추천 여부
   const lengthMatchStyle = analysis.isLengthRecommended
