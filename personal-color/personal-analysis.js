@@ -708,7 +708,7 @@ function generateIntegratedResultHTML(integrated, personalColor) {
   // 기장 추천 여부
   const lengthMatchStyle = analysis.isLengthRecommended
     ? 'color: #2E7D32;'
-    : 'color: #E65100;';
+    : 'color: #5E35B1;';
   const lengthMatchIcon = analysis.isLengthRecommended ? '✅' : '💡';
   const lengthMatchText = analysis.isLengthRecommended
     ? `${c.desiredLength} Length 체형 적합!`
