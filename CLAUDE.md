@@ -40,8 +40,31 @@
 - GitHub: `kimminjae413/hairgator-menu-final`
 - Netlify: 자동 배포 (push하면 1-2분 후 적용)
 
+## 다국어 지원 (5개국어)
+- 지원 언어: 한국어(ko), 영어(en), 일본어(ja), 중국어(zh), 베트남어(vi)
+- `detectLanguage()` 함수: 사용자 입력 언어 자동 감지
+- `buildGeminiSystemPrompt()`: 각 언어별 전체 시스템 프롬프트 존재
+- 인사말/보안 응답 메시지: 5개국어 전체 지원
+- 인사말 키워드: 안녕, hello, こんにちは, 你好, xin chào 등
+
+## scripts 폴더 (로컬 전용, .gitignore됨)
+- `upload-all-to-file-search.py`: Gemini File Search Store에 PDF 업로드
+- `upload-color-theory.py`: 컬러 이론 이미지 분석 후 Firestore 저장
+- `extract-personal-analysis-text.py`: 퍼스널 분석 이미지 텍스트 추출
+- `upload-personal-analysis-image.py`: Firebase Storage에 이미지 업로드
+
 ## 최근 작업 이력
+- 2024-12-09: 5개국어 RAG 시스템 프롬프트 완전 지원 추가
+  - buildGeminiSystemPrompt에 일본어/중국어/베트남어 프롬프트 추가
+  - 인사말/보안 응답 메시지 5개국어 지원
 - 2024-12: File Search Store에 38개 문서 import 완료
 - maxOutputTokens: 8000으로 증가
 - 마크다운 금지 규칙 강화
 - 이미지 매칭 로직 개선 (일반 키워드 제외)
+
+## 핵심 함수 위치 (chatbot-api.js)
+- `generateGeminiFileSearchResponse()`: 라인 ~2834 (비스트리밍 RAG 응답)
+- `generateGeminiFileSearchResponseStream()`: 라인 ~2962 (스트리밍 RAG 응답)
+- `buildGeminiSystemPrompt()`: 라인 ~2500 (5개국어 시스템 프롬프트)
+- `detectLanguage()`: 라인 ~2277 (언어 감지)
+- `detectTheoryImageForQuery()`: 라인 ~3230 (이미지 매칭)
