@@ -101,6 +101,25 @@ function closePersonalAnalysisModal() {
   if (modal) {
     modal.style.display = 'none';
     console.log('📋 Personal Analysis 모달 닫힘');
+
+    // 프로필 초기화 및 첫 화면으로 이동
+    paResetProfile();
+
+    // 모드 선택 화면으로 돌아가기
+    if (typeof goHome === 'function') {
+      goHome();
+    } else {
+      // goHome이 없을 경우 직접 처리
+      const modeSelection = document.getElementById('mode-selection');
+      if (modeSelection) {
+        document.querySelectorAll('.section').forEach(section => {
+          section.classList.remove('active');
+          section.style.display = '';
+        });
+        modeSelection.style.display = '';
+        modeSelection.classList.add('active');
+      }
+    }
   }
 }
 
@@ -529,16 +548,30 @@ function displayCustomerSummary(mediaPipeData) {
   const isMale = document.body.classList.contains('male-theme');
   const themeColor = isMale ? '#4A90E2' : '#E91E63';
 
+  // 체형 분류
+  let heightCategory = 'medium';
+  if (p.height <= 158) heightCategory = 'short';
+  else if (p.height >= 168) heightCategory = 'tall';
+  const heightCatKr = { short: '작은 편', medium: '보통', tall: '큰 편' };
+
+  // 톤 매핑
+  const toneMap = { 'Warm': 'WARM', 'Cool': 'COOL', 'Neutral': 'NEUTRAL' };
+  const aiTone = toneMap[aiUndertone] || 'NEUTRAL';
+  const manualTone = PA_SKIN_TYPE_DATA[p.skinType]?.tone || 'NEUTRAL';
+
+  // 추천 기장
+  const recommendedLengths = PA_HEIGHT_RECOMMENDATIONS[aiTone]?.[heightCategory] || ['C', 'D', 'E'];
+  const isLengthRecommended = recommendedLengths.includes(p.desiredLength);
+
   content.innerHTML = `
     <!-- 수동 입력 섹션 -->
     <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0;">
       <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 8px; font-size: 11px;">✍️ 수동 입력</div>
-      <div style="display: flex; flex-direction: column; gap: 4px; color: #333;">
-        <div><span style="color: #888;">키:</span> ${p.height || '-'}cm</div>
-        <div><span style="color: #888;">현재:</span> ${lengthNames[p.currentLength] || '-'}</div>
-        <div><span style="color: #888;">희망:</span> ${p.desiredLength || '-'} Length</div>
+      <div style="display: flex; flex-direction: column; gap: 4px; color: #333; font-size: 11px;">
+        <div><span style="color: #888;">키:</span> ${p.height || '-'}cm (${heightCatKr[heightCategory]})</div>
+        <div><span style="color: #888;">현재→희망:</span> ${lengthNames[p.currentLength] || '-'} → <b>${p.desiredLength || '-'}</b></div>
         <div><span style="color: #888;">앞머리:</span> ${fringeNames[p.fringePreference] || '-'}</div>
-        <div><span style="color: #888;">피부:</span> ${skinTypeNames[p.skinType] || '-'}</div>
+        <div><span style="color: #888;">피부타입:</span> ${skinTypeNames[p.skinType] || '-'}</div>
         <div><span style="color: #888;">컬:</span> ${curlNames[p.curlPreference] || '-'}</div>
       </div>
     </div>
@@ -546,15 +579,23 @@ function displayCustomerSummary(mediaPipeData) {
     <!-- AI 분석 섹션 -->
     <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0;">
       <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 8px; font-size: 11px;">🤖 AI 분석</div>
-      <div style="display: flex; flex-direction: column; gap: 4px; color: #333;">
+      <div style="display: flex; flex-direction: column; gap: 4px; color: #333; font-size: 11px;">
         <div style="display: flex; align-items: center; gap: 6px;">
           <span style="color: #888;">피부톤:</span>
-          <div style="width: 16px; height: 16px; background: ${skinHex}; border-radius: 4px; border: 1px solid #ddd;"></div>
+          <div style="width: 14px; height: 14px; background: ${skinHex}; border-radius: 3px; border: 1px solid #ddd;"></div>
           <span>${skinHex}</span>
         </div>
         <div><span style="color: #888;">언더톤:</span> <b style="color: ${aiUndertone === 'Warm' ? '#FF6B35' : aiUndertone === 'Cool' ? '#4A90E2' : '#8E8E93'};">${aiUndertone}</b></div>
-        <div><span style="color: #888;">시즌:</span> <b>${aiSeason}</b></div>
-        <div><span style="color: #888;">신뢰도:</span> ${aiConfidence}%</div>
+        <div><span style="color: #888;">시즌:</span> <b>${aiSeason}</b> (${aiConfidence}%)</div>
+      </div>
+    </div>
+
+    <!-- 연계 분석 결과 -->
+    <div style="grid-column: 1 / -1; background: linear-gradient(135deg, ${themeColor}15, ${themeColor}08); padding: 10px; border-radius: 8px; border: 1px solid ${themeColor}30; margin-top: 4px;">
+      <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 6px; font-size: 11px;">🔗 연계 분석</div>
+      <div style="display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #333;">
+        <div>${manualTone === aiTone ? '✅' : '⚠️'} 수동(${manualTone}) vs AI(${aiTone}) ${manualTone === aiTone ? '일치' : '불일치'}</div>
+        <div>${isLengthRecommended ? '✅' : '💡'} ${p.desiredLength} 기장 ${isLengthRecommended ? '적합' : `(추천: ${recommendedLengths.join(',')})`}</div>
       </div>
     </div>
   `;
@@ -633,6 +674,20 @@ function generateIntegratedResultHTML(integrated, personalColor) {
   const curlNames = { straight: '스트레이트', C: 'C컬', S: 'S컬', CS: 'C+S컬', SS: 'SS컬', none: '선호없음' };
   const fringeNames = { forehead: '이마선', eyebrow: '눈썹선', eye: '눈선', cheekbone: '광대선', lips: '입술선', none: '없음' };
 
+  // 기장 변화량 계산
+  const lengthOrder = ['H', 'G', 'F', 'E', 'D', 'C', 'B', 'A'];
+  const currentLengthIdx = { short: 6, medium: 4, long: 1 }; // short=G위치, medium=E위치, long=B위치
+  const desiredIdx = lengthOrder.indexOf(c.desiredLength);
+  const currentIdx = currentLengthIdx[c.currentLength] || 4;
+  const lengthChange = currentIdx - desiredIdx;
+  const lengthChangeText = lengthChange > 0 ? `${Math.abs(lengthChange)}단계 길게` : lengthChange < 0 ? `${Math.abs(lengthChange)}단계 짧게` : '유지';
+  const lengthChangeIcon = lengthChange === 0 ? '➡️' : lengthChange > 0 ? '📏⬆️' : '✂️⬇️';
+
+  // 시술 난이도 계산
+  const difficultyScore = Math.abs(lengthChange) + (c.curlPreference !== 'straight' && c.curlPreference !== 'none' ? 1 : 0);
+  const difficultyText = difficultyScore <= 1 ? '쉬움' : difficultyScore <= 3 ? '보통' : '어려움';
+  const difficultyColor = difficultyScore <= 1 ? '#4CAF50' : difficultyScore <= 3 ? '#FF9800' : '#F44336';
+
   // 톤 매칭 여부에 따른 스타일
   const toneMatchStyle = analysis.toneMatch
     ? 'background: rgba(76,175,80,0.15); border-color: rgba(76,175,80,0.3); color: #2E7D32;'
@@ -640,7 +695,7 @@ function generateIntegratedResultHTML(integrated, personalColor) {
   const toneMatchIcon = analysis.toneMatch ? '✅' : '⚠️';
   const toneMatchText = analysis.toneMatch
     ? '수동 입력과 AI 분석 결과가 일치합니다'
-    : `수동 입력(${c.manualTone})과 AI 분석(${a.tone}) 결과가 다릅니다. AI 분석 결과를 우선 적용합니다.`;
+    : `수동(${c.manualTone}) ≠ AI(${a.tone}) → AI 결과 우선 적용`;
 
   // 기장 추천 여부
   const lengthMatchStyle = analysis.isLengthRecommended
@@ -648,14 +703,18 @@ function generateIntegratedResultHTML(integrated, personalColor) {
     : 'color: #E65100;';
   const lengthMatchIcon = analysis.isLengthRecommended ? '✅' : '💡';
   const lengthMatchText = analysis.isLengthRecommended
-    ? `${c.desiredLength} Length는 고객님 체형에 잘 어울립니다!`
-    : `추천 기장: ${analysis.recommendedLengths.join(', ')} (선택: ${c.desiredLength})`;
+    ? `${c.desiredLength} Length 체형 적합!`
+    : `추천: ${analysis.recommendedLengths.join(', ')} (선택: ${c.desiredLength})`;
 
   // 성별에 따른 테마 색상
   const isMale = document.body.classList.contains('male-theme');
   const themeGradient = isMale
     ? 'linear-gradient(135deg, #4A90E2, #3A7BC8)'
     : 'linear-gradient(135deg, #E91E63, #C2185B)';
+  const themeColor = isMale ? '#4A90E2' : '#E91E63';
+
+  // 컬 추천 텍스트
+  const curlRecommendText = getCurlRecommendation(c.curlPreference, a.season);
 
   return `
     <!-- 🎯 통합 분석 결과 -->
@@ -670,11 +729,21 @@ function generateIntegratedResultHTML(integrated, personalColor) {
         <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">👤 고객 프로필</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px;">
           <div>키: <b>${c.height}cm</b> (${heightCatKr[c.heightCategory]})</div>
-          <div>현재 기장: <b>${lengthNames[c.currentLength]}</b></div>
+          <div>피부톤: <b>${a.tone}</b></div>
           <div>희망 기장: <b>${c.desiredLength} Length</b></div>
           <div>앞머리: <b>${fringeNames[c.fringePreference]}</b></div>
           <div>컬 선호: <b>${curlNames[c.curlPreference]}</b></div>
           <div>시즌: <b>${a.season}</b></div>
+        </div>
+      </div>
+
+      <!-- 기장 변화 정보 -->
+      <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+          <div>${lengthChangeIcon} <b>${lengthNames[c.currentLength]} → ${c.desiredLength}</b> (${lengthChangeText})</div>
+          <div style="background: ${difficultyColor}; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;">
+            난이도: ${difficultyText}
+          </div>
         </div>
       </div>
 
@@ -688,7 +757,39 @@ function generateIntegratedResultHTML(integrated, personalColor) {
         </div>
       </div>
     </div>
+
+    <!-- 💇 스타일 추천 -->
+    <div style="background: linear-gradient(135deg, ${themeColor}15, ${themeColor}08); padding: 14px; border-radius: 12px; border: 1px solid ${themeColor}30; margin-bottom: 14px;">
+      <div style="font-size: 13px; font-weight: 600; color: ${themeColor}; margin-bottom: 10px;">💇 맞춤 스타일 추천</div>
+      <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #333;">
+        <div style="display: flex; align-items: flex-start; gap: 8px;">
+          <span style="color: ${themeColor};">●</span>
+          <span><b>${c.desiredLength} Length</b> + <b>${fringeNames[c.fringePreference]}</b> 앞머리 조합</span>
+        </div>
+        <div style="display: flex; align-items: flex-start; gap: 8px;">
+          <span style="color: ${themeColor};">●</span>
+          <span>${curlRecommendText}</span>
+        </div>
+        <div style="display: flex; align-items: flex-start; gap: 8px;">
+          <span style="color: ${themeColor};">●</span>
+          <span>${a.season} 시즌 컬러와 조화되는 염색 추천</span>
+        </div>
+      </div>
+    </div>
   `;
+}
+
+// 컬 추천 텍스트 생성
+function getCurlRecommendation(curlPref, season) {
+  const curlDesc = {
+    straight: '스트레이트로 깔끔하고 단정한 이미지 연출',
+    C: 'C컬로 자연스러운 볼륨감과 여성스러운 분위기',
+    S: 'S컬로 풍성한 웨이브와 화려한 스타일',
+    CS: 'C+S컬 믹스로 입체적이고 세련된 느낌',
+    SS: 'SS컬로 강한 컬감과 개성있는 스타일',
+    none: '고객 선호에 따라 다양한 컬 스타일 가능'
+  };
+  return curlDesc[curlPref] || curlDesc.none;
 }
 
 // 전역 함수로 노출
