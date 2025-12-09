@@ -2875,7 +2875,16 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
           `\n【참고 자료: ${ctx.title}】\n${ctx.content.substring(0, 8000)}`
         ).join('\n\n');
 
-        systemPrompt += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⚠️ 중요: 아래 참고 자료가 질문과 관련이 있다면, 반드시 이 내용을 기반으로 답변하세요! 일반 상식이 아닌 자료의 구체적 수치/기준을 인용하세요.\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━${contextSection}`;
+        systemPrompt += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️⚠️⚠️ 절대 중요 ⚠️⚠️⚠️
+아래 참고 자료는 당신이 속한 헤어 시스템의 공식 이론입니다.
+이 자료에 나온 내용은 "사실"입니다. 일반 상식이나 외부 지식으로 반박하지 마세요!
+
+예: 자료에 "키와 퍼스널 톤이 연관있다"고 되어있으면, "연관 없다"고 답하면 안 됩니다.
+자료의 구체적 수치(150cm, 160~170cm, 180cm 등)를 그대로 인용하세요.
+
+⚠️ 금지: "일반적으로 연관이 없습니다", "과학적으로 관계 없습니다" 등의 부정적 답변
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━${contextSection}`;
         console.log(`✅ theory_indexes ${matchedContexts.length}개 컨텍스트 추가 완료`);
       }
     }
