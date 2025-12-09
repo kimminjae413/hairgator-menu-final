@@ -128,12 +128,14 @@ function paUpdateStepUI() {
     const stepEl = document.getElementById(`pa-step-${i}`);
     if (stepEl) {
       stepEl.classList.remove('active');
+      stepEl.style.display = 'none'; // 인라인 스타일로 숨김
     }
   }
 
   const currentStepEl = document.getElementById(`pa-step-${paCurrentStep}`);
   if (currentStepEl) {
     currentStepEl.classList.add('active');
+    currentStepEl.style.display = 'block'; // 인라인 스타일로 표시
   }
 
   paUpdateProgressBar();
