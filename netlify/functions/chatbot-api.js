@@ -2844,6 +2844,42 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     // ⭐ 시스템 프롬프트 생성 (레시피 컨텍스트 포함)
     let systemPrompt = buildGeminiSystemPrompt(userLanguage);
 
+    // ⭐ theory_indexes의 textContent 병합 (키워드 매칭)
+    const theoryIndexes = await loadTheoryIndexes();
+    if (theoryIndexes && theoryIndexes.length > 0) {
+      const queryLower = user_query.toLowerCase();
+      const normalizedQueryNoSpace = queryLower.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
+
+      const matchedContexts = [];
+      for (const idx of theoryIndexes) {
+        if (!idx.textContent || idx.textContent.length < 50) continue;
+
+        // 키워드 매칭 확인
+        const matched = idx.keywords.some(kw => {
+          const kwNormalized = kw.toLowerCase().replace(/\s+/g, '');
+          return queryLower.includes(kw) || normalizedQueryNoSpace.includes(kwNormalized);
+        });
+
+        if (matched) {
+          matchedContexts.push({
+            title: idx.title_ko || idx.term,
+            content: idx.textContent
+          });
+          console.log(`📎 theory_indexes textContent 매칭: ${idx.term} (${idx.textContent.length}자)`);
+        }
+      }
+
+      // 매칭된 컨텍스트를 시스템 프롬프트에 추가
+      if (matchedContexts.length > 0) {
+        const contextSection = matchedContexts.map(ctx =>
+          `\n【참고 자료: ${ctx.title}】\n${ctx.content.substring(0, 8000)}`
+        ).join('\n\n');
+
+        systemPrompt += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⚠️ 중요: 아래 참고 자료가 질문과 관련이 있다면, 반드시 이 내용을 기반으로 답변하세요! 일반 상식이 아닌 자료의 구체적 수치/기준을 인용하세요.\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━${contextSection}`;
+        console.log(`✅ theory_indexes ${matchedContexts.length}개 컨텍스트 추가 완료`);
+      }
+    }
+
     // ⭐ 레시피 컨텍스트가 있으면 추가
     if (recipe_context && recipe_context.analysis) {
       const ctx = recipe_context;
