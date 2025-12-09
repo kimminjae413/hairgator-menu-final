@@ -500,6 +500,185 @@ function paDisplayResult(result) {
   container.style.display = 'block';
 }
 
+// ========== 고객 요약 패널 표시 (왼쪽 하단) ==========
+function displayCustomerSummary(mediaPipeData) {
+  const panel = document.getElementById('customer-summary-panel');
+  const content = document.getElementById('customer-summary-content');
+  if (!panel || !content) return;
+
+  // 수동 입력 데이터
+  const p = customerProfile;
+  const lengthNames = { short: '숏', medium: '미디엄', long: '롱' };
+  const skinTypeNames = { TP: 'TP (투명)', NP: 'NP (중성)', BP: 'BP (베이스)' };
+  const curlNames = { straight: '스트레이트', C: 'C컬', S: 'S컬', CS: 'C+S컬', SS: 'SS컬', none: '선호없음' };
+  const fringeNames = { forehead: '이마선', eyebrow: '눈썹선', eye: '눈선', cheekbone: '광대선', lips: '입술선', none: '없음' };
+
+  // MediaPipe 데이터 저장
+  customerProfile.mediaPipeData = mediaPipeData;
+
+  // AI 분석 데이터
+  const aiUndertone = mediaPipeData?.personalColor?.undertone || '-';
+  const aiSeason = mediaPipeData?.personalColor?.season || '-';
+  const aiConfidence = mediaPipeData?.personalColor?.confidence || 0;
+  const skinHex = mediaPipeData?.correctedRgb ?
+    `#${mediaPipeData.correctedRgb.r.toString(16).padStart(2,'0')}${mediaPipeData.correctedRgb.g.toString(16).padStart(2,'0')}${mediaPipeData.correctedRgb.b.toString(16).padStart(2,'0')}` : '#999';
+
+  content.innerHTML = `
+    <!-- 수동 입력 섹션 -->
+    <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0;">
+      <div style="font-weight: 600; color: #E91E63; margin-bottom: 8px; font-size: 11px;">✍️ 수동 입력</div>
+      <div style="display: flex; flex-direction: column; gap: 4px; color: #333;">
+        <div><span style="color: #888;">키:</span> ${p.height || '-'}cm</div>
+        <div><span style="color: #888;">현재:</span> ${lengthNames[p.currentLength] || '-'}</div>
+        <div><span style="color: #888;">희망:</span> ${p.desiredLength || '-'} Length</div>
+        <div><span style="color: #888;">앞머리:</span> ${fringeNames[p.fringePreference] || '-'}</div>
+        <div><span style="color: #888;">피부:</span> ${skinTypeNames[p.skinType] || '-'}</div>
+        <div><span style="color: #888;">컬:</span> ${curlNames[p.curlPreference] || '-'}</div>
+      </div>
+    </div>
+
+    <!-- AI 분석 섹션 -->
+    <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0;">
+      <div style="font-weight: 600; color: #E91E63; margin-bottom: 8px; font-size: 11px;">🤖 AI 분석</div>
+      <div style="display: flex; flex-direction: column; gap: 4px; color: #333;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="color: #888;">피부톤:</span>
+          <div style="width: 16px; height: 16px; background: ${skinHex}; border-radius: 4px; border: 1px solid #ddd;"></div>
+          <span>${skinHex}</span>
+        </div>
+        <div><span style="color: #888;">언더톤:</span> <b style="color: ${aiUndertone === 'Warm' ? '#FF6B35' : aiUndertone === 'Cool' ? '#4A90E2' : '#8E8E93'};">${aiUndertone}</b></div>
+        <div><span style="color: #888;">시즌:</span> <b>${aiSeason}</b></div>
+        <div><span style="color: #888;">신뢰도:</span> ${aiConfidence}%</div>
+      </div>
+    </div>
+  `;
+
+  panel.style.display = 'block';
+  console.log('📋 고객 요약 패널 표시 완료');
+}
+
+// ========== 통합 분석 결과 생성 ==========
+function generateIntegratedAnalysis(mediaPipeData) {
+  const p = customerProfile;
+
+  // 피부타입과 AI 언더톤 비교
+  const manualTone = PA_SKIN_TYPE_DATA[p.skinType]?.tone || 'NEUTRAL';
+  const aiUndertone = mediaPipeData?.personalColor?.undertone || 'Neutral';
+
+  // 톤 매칭 여부
+  const toneMap = { 'Warm': 'WARM', 'Cool': 'COOL', 'Neutral': 'NEUTRAL' };
+  const aiTone = toneMap[aiUndertone] || 'NEUTRAL';
+  const toneMatch = manualTone === aiTone;
+
+  // 키에 따른 체형 분류
+  let heightCategory = 'medium';
+  if (p.height <= 158) heightCategory = 'short';
+  else if (p.height >= 168) heightCategory = 'tall';
+
+  // 추천 기장 확인
+  const recommendedLengths = PA_HEIGHT_RECOMMENDATIONS[aiTone]?.[heightCategory] || ['C', 'D', 'E'];
+  const isLengthRecommended = recommendedLengths.includes(p.desiredLength);
+
+  // 통합 결과 객체
+  const integrated = {
+    customer: {
+      height: p.height,
+      heightCategory,
+      currentLength: p.currentLength,
+      desiredLength: p.desiredLength,
+      fringePreference: p.fringePreference,
+      curlPreference: p.curlPreference,
+      manualSkinType: p.skinType,
+      manualTone
+    },
+    ai: {
+      undertone: aiUndertone,
+      tone: aiTone,
+      season: mediaPipeData?.personalColor?.season,
+      confidence: mediaPipeData?.personalColor?.confidence,
+      skinRgb: mediaPipeData?.correctedRgb
+    },
+    analysis: {
+      toneMatch,
+      finalTone: toneMatch ? aiTone : aiTone, // AI 우선
+      recommendedLengths,
+      isLengthRecommended,
+      hairRecommendations: mediaPipeData?.hairRecommendations
+    }
+  };
+
+  console.log('🔗 통합 분석 결과:', integrated);
+  return integrated;
+}
+
+// ========== 통합 분석 결과 HTML 생성 (오른쪽 패널) ==========
+function generateIntegratedResultHTML(integrated, personalColor) {
+  if (!integrated || !customerProfile.analysisComplete) {
+    return ''; // 고객 정보 미입력 시 빈 문자열 반환
+  }
+
+  const c = integrated.customer;
+  const a = integrated.ai;
+  const analysis = integrated.analysis;
+
+  // 체형 카테고리 한글
+  const heightCatKr = { short: '작은 편', medium: '보통', tall: '큰 편' };
+  const lengthNames = { short: '숏', medium: '미디엄', long: '롱' };
+  const curlNames = { straight: '스트레이트', C: 'C컬', S: 'S컬', CS: 'C+S컬', SS: 'SS컬', none: '선호없음' };
+  const fringeNames = { forehead: '이마선', eyebrow: '눈썹선', eye: '눈선', cheekbone: '광대선', lips: '입술선', none: '없음' };
+
+  // 톤 매칭 여부에 따른 스타일
+  const toneMatchStyle = analysis.toneMatch
+    ? 'background: rgba(76,175,80,0.15); border-color: rgba(76,175,80,0.3); color: #2E7D32;'
+    : 'background: rgba(255,152,0,0.15); border-color: rgba(255,152,0,0.3); color: #E65100;';
+  const toneMatchIcon = analysis.toneMatch ? '✅' : '⚠️';
+  const toneMatchText = analysis.toneMatch
+    ? '수동 입력과 AI 분석 결과가 일치합니다'
+    : `수동 입력(${c.manualTone})과 AI 분석(${a.tone}) 결과가 다릅니다. AI 분석 결과를 우선 적용합니다.`;
+
+  // 기장 추천 여부
+  const lengthMatchStyle = analysis.isLengthRecommended
+    ? 'color: #2E7D32;'
+    : 'color: #E65100;';
+  const lengthMatchIcon = analysis.isLengthRecommended ? '✅' : '💡';
+  const lengthMatchText = analysis.isLengthRecommended
+    ? `${c.desiredLength} Length는 고객님 체형에 잘 어울립니다!`
+    : `추천 기장: ${analysis.recommendedLengths.join(', ')} (선택: ${c.desiredLength})`;
+
+  return `
+    <!-- 🎯 통합 분석 결과 -->
+    <div style="background: linear-gradient(135deg, #E91E63, #C2185B); padding: 16px; border-radius: 14px; margin-bottom: 14px; color: #fff;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+        <span style="font-size: 20px;">🎯</span>
+        <span style="font-size: 16px; font-weight: 700;">Personal Analysis 종합 결과</span>
+      </div>
+
+      <!-- 고객 프로필 요약 -->
+      <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; margin-bottom: 10px;">
+        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">👤 고객 프로필</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px;">
+          <div>키: <b>${c.height}cm</b> (${heightCatKr[c.heightCategory]})</div>
+          <div>현재 기장: <b>${lengthNames[c.currentLength]}</b></div>
+          <div>희망 기장: <b>${c.desiredLength} Length</b></div>
+          <div>앞머리: <b>${fringeNames[c.fringePreference]}</b></div>
+          <div>컬 선호: <b>${curlNames[c.curlPreference]}</b></div>
+          <div>시즌: <b>${a.season}</b></div>
+        </div>
+      </div>
+
+      <!-- 분석 매칭 결과 -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="padding: 10px; border-radius: 8px; font-size: 12px; ${toneMatchStyle}">
+          <span>${toneMatchIcon}</span> ${toneMatchText}
+        </div>
+        <div style="padding: 10px; border-radius: 8px; font-size: 12px; background: rgba(255,255,255,0.9); ${lengthMatchStyle}">
+          <span>${lengthMatchIcon}</span> ${lengthMatchText}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 // 전역 함수로 노출
 window.openPersonalAnalysisModal = openPersonalAnalysisModal;
 window.closePersonalAnalysisModal = closePersonalAnalysisModal;
@@ -513,3 +692,6 @@ window.paNextStep = paNextStep;
 window.paPrevStep = paPrevStep;
 window.paSubmitAnalysis = paSubmitAnalysis;
 window.customerProfile = customerProfile;
+window.displayCustomerSummary = displayCustomerSummary;
+window.generateIntegratedAnalysis = generateIntegratedAnalysis;
+window.generateIntegratedResultHTML = generateIntegratedResultHTML;

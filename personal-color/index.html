@@ -384,6 +384,16 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- ===== 고객 정보 요약 (수동입력 + AI 분석) ===== -->
+                            <div id="customer-summary-panel" style="display: none; margin-top: 15px; padding: 15px; background: linear-gradient(135deg, #fff5f8, #fff0f5); border-radius: 12px; border: 1px solid rgba(233,30,99,0.2);">
+                                <div style="font-size: 14px; font-weight: 600; color: #E91E63; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                                    <span>📋</span> 고객 분석 요약
+                                </div>
+                                <div id="customer-summary-content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
+                                    <!-- JS에서 동적 생성 -->
+                                </div>
+                            </div>
                         </div>
                         <!-- 커스텀 스크롤바 (태블릿용) -->
                         <div class="custom-scrollbar" id="custom-scrollbar">
@@ -2612,6 +2622,17 @@
 
             console.log('📊 파이프라인 분석 결과:', pipelineResult);
 
+            // ===== 고객 요약 패널 표시 (왼쪽 하단) =====
+            if (typeof displayCustomerSummary === 'function') {
+                displayCustomerSummary(pipelineResult);
+            }
+
+            // ===== 통합 분석 결과 생성 =====
+            let integratedResult = null;
+            if (typeof generateIntegratedAnalysis === 'function') {
+                integratedResult = generateIntegratedAnalysis(pipelineResult);
+            }
+
             // 조명 품질 표시 텍스트
             const lightingQualityText = lm.lightingQuality >= 0.7 ? '좋음' :
                                         lm.lightingQuality >= 0.5 ? '보통' : '낮음 (참고용)';
@@ -2648,8 +2669,13 @@
                     </div>
                 ` : '';
 
+                // 통합 분석 결과 HTML 생성
+                const integratedHTML = integratedResult ? generateIntegratedResultHTML(integratedResult, pc) : '';
+
                 // 1단 레이아웃 (오른쪽 패널에 맞게)
                 resultsContainer.innerHTML = `
+                    ${integratedHTML}
+
                     <!-- 퍼스널컬러 결과 요약 -->
                     <div style="background: linear-gradient(135deg, ${pc.color}33, ${pc.color}11); padding: 12px; border-radius: 12px; border: 2px solid ${pc.color}; margin-bottom: 12px;">
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
