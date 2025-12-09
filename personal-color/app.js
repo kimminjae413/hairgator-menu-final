@@ -5191,7 +5191,8 @@ function generateIntegratedAnalysis(mediaPipeData) {
       recommendedLengths,
       isLengthRecommended,
       hairRecommendations: mediaPipeData?.hairRecommendations
-    }
+    },
+    faceGeometry: mediaPipeData?.faceGeometry || null
   };
 
   console.log('🔗 통합 분석 결과:', integrated);
@@ -5321,6 +5322,56 @@ function generateIntegratedResultHTML(integrated, personalColor) {
         </div>
       </div>
     </div>
+
+    ${generateFaceGeometryIntegratedHTML(integrated.faceGeometry, themeColor)}
+  `;
+}
+
+// 얼굴형 분석 결과 HTML (통합 결과용)
+function generateFaceGeometryIntegratedHTML(faceGeometry, themeColor) {
+  if (!faceGeometry) {
+    return ''; // 측정 데이터 없으면 빈 문자열
+  }
+
+  // 눈썹간 거리 레벨에 따른 스타일
+  const levelColors = {
+    narrow: { bg: '#FFF3E0', border: '#FF9800', text: '#E65100', icon: '◀️▶️', label: '좁은 미간' },
+    balanced: { bg: '#E8F5E9', border: '#4CAF50', text: '#2E7D32', icon: '✅', label: '균형 미간' },
+    wide: { bg: '#E3F2FD', border: '#1976D2', text: '#0D47A1', icon: '▶️◀️', label: '넓은 미간' }
+  };
+  const levelStyle = levelColors[faceGeometry.eyebrowGapLevel] || levelColors.balanced;
+
+  return `
+    <!-- 📐 얼굴형 분석 -->
+    <div style="background: linear-gradient(135deg, #f5f5f5, #e8e8e8); padding: 14px; border-radius: 12px; border: 1px solid #ddd;">
+      <div style="font-size: 13px; font-weight: 600; color: #555; margin-bottom: 10px;">📐 얼굴형 분석</div>
+
+      <!-- 미간 분석 -->
+      <div style="background: ${levelStyle.bg}; padding: 10px; border-radius: 8px; border: 1px solid ${levelStyle.border}; margin-bottom: 10px;">
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+          <span style="font-size: 14px;">${levelStyle.icon}</span>
+          <span style="font-size: 12px; font-weight: 600; color: ${levelStyle.text};">${levelStyle.label}</span>
+        </div>
+        <div style="font-size: 11px; color: #555; line-height: 1.4;">
+          ${faceGeometry.eyebrowGapEvaluation}
+        </div>
+        <div style="margin-top: 6px; font-size: 11px; color: ${levelStyle.text}; font-weight: 500;">
+          💡 ${faceGeometry.styleRecommendation}
+        </div>
+      </div>
+
+      <!-- 측정값 그리드 -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div style="background: #fff; padding: 8px; border-radius: 6px; border: 1px solid #e0e0e0; text-align: center;">
+          <div style="font-size: 10px; color: #888;">얼굴 비율</div>
+          <div style="font-size: 14px; font-weight: 700; color: #333;">${faceGeometry.faceRatioPercent}%</div>
+        </div>
+        <div style="background: #fff; padding: 8px; border-radius: 6px; border: 1px solid #e0e0e0; text-align: center;">
+          <div style="font-size: 10px; color: #888;">눈 사이 거리</div>
+          <div style="font-size: 14px; font-weight: 700; color: #333;">${faceGeometry.eyeInnerDistancePercent}%</div>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -5353,3 +5404,4 @@ window.customerProfile = customerProfile;
 window.displayCustomerSummary = displayCustomerSummary;
 window.generateIntegratedAnalysis = generateIntegratedAnalysis;
 window.generateIntegratedResultHTML = generateIntegratedResultHTML;
+window.generateFaceGeometryIntegratedHTML = generateFaceGeometryIntegratedHTML;
