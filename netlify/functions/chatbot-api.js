@@ -3066,6 +3066,8 @@ function detectGuideImageForQuery(query) {
  */
 async function detectTheoryImageForQuery(query, language = 'ko') {
   const lowerQuery = query.toLowerCase();
+  // 공백 및 한국어 조사 제거한 정규화 버전
+  const normalizedQuery = lowerQuery.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
 
   // Firestore에서 이론 인덱스 로드
   const indexes = await loadTheoryIndexes();
@@ -3080,9 +3082,11 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
   for (const index of indexes) {
     let matchCount = 0;
 
-    // 1. 키워드 매칭
+    // 1. 키워드 매칭 (공백/조사 무시)
     for (const keyword of index.keywords) {
-      if (lowerQuery.includes(keyword)) {
+      const normalizedKeyword = keyword.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
+      // 일반 매칭 또는 정규화된 매칭
+      if (lowerQuery.includes(keyword) || normalizedQuery.includes(normalizedKeyword)) {
         matchCount++;
       }
     }
