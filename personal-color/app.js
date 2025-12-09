@@ -4431,6 +4431,51 @@
             if (captureGuide) {
                 captureGuide.innerHTML = `<span style="color: #FFB400; font-size: 14px;">${pc.aiMode.captureGuide}</span>`;
             }
+
+            // Personal Analysis 모달 번역
+            const pa = pc.personalAnalysis;
+            if (pa) {
+                // Step 제목
+                const stepTitles = document.querySelectorAll('.pa-step-title');
+                if (stepTitles[0]) stepTitles[0].textContent = `Step 1: ${pa.step1Title}`;
+                if (stepTitles[1]) stepTitles[1].textContent = `Step 2: ${pa.step2Title}`;
+                if (stepTitles[2]) stepTitles[2].textContent = `Step 3: ${pa.step3Title}`;
+
+                // 기장 버튼 텍스트
+                document.querySelectorAll('.pa-current-length-btn').forEach(btn => {
+                    const length = btn.dataset.length;
+                    const textEl = btn.querySelector('div:last-child');
+                    if (textEl && pa[`length${length.charAt(0).toUpperCase() + length.slice(1)}`]) {
+                        textEl.textContent = pa[`length${length.charAt(0).toUpperCase() + length.slice(1)}`];
+                    }
+                });
+
+                // 앞머리 버튼 텍스트
+                document.querySelectorAll('.pa-fringe-btn').forEach(btn => {
+                    const fringe = btn.dataset.fringe;
+                    const key = `fringe${fringe.charAt(0).toUpperCase() + fringe.slice(1)}`;
+                    if (pa[key]) btn.textContent = pa[key];
+                });
+
+                // 피부 타입 버튼 텍스트
+                document.querySelectorAll('.pa-skin-btn').forEach(btn => {
+                    const skin = btn.dataset.skin;
+                    const labelEl = btn.querySelector('span:nth-child(2)');
+                    if (labelEl && pa[`skin${skin}`]) {
+                        const coolWarmText = skin === 'TP' ? '(COOL)' : skin === 'BP' ? '(WARM)' : '(NEUTRAL)';
+                        labelEl.textContent = pa[`skin${skin}`].replace(/\([^)]+\)/, coolWarmText);
+                    }
+                });
+
+                // 컬 버튼 텍스트
+                document.querySelectorAll('.pa-curl-btn').forEach(btn => {
+                    const curl = btn.dataset.curl;
+                    const textEl = btn.querySelector('div:last-child');
+                    const key = curl === 'straight' ? 'curlStraight' :
+                                curl === 'none' ? 'curlNone' : `curl${curl.toUpperCase()}`;
+                    if (textEl && pa[key]) textEl.textContent = pa[key];
+                });
+            }
         }
 
         // 중첩 객체 값 가져오기
@@ -4759,33 +4804,33 @@ function paValidateCurrentStep() {
   switch (paCurrentStep) {
     case 1:
       if (!customerProfile.height) {
-        showToast('키를 선택해주세요.', 'warning');
+        showToast(t('personalColor.personalAnalysis.selectHeight') || '키를 선택해주세요.', 'warning');
         return false;
       }
       if (!customerProfile.currentLength) {
-        showToast('현재 기장을 선택해주세요.', 'warning');
+        showToast(t('personalColor.personalAnalysis.selectCurrentLength') || '현재 기장을 선택해주세요.', 'warning');
         return false;
       }
       return true;
 
     case 2:
       if (!customerProfile.desiredLength) {
-        showToast('원하는 기장을 선택해주세요.', 'warning');
+        showToast(t('personalColor.personalAnalysis.selectDesiredLength') || '원하는 기장을 선택해주세요.', 'warning');
         return false;
       }
       if (!customerProfile.fringePreference) {
-        showToast('앞머리 선호도를 선택해주세요.', 'warning');
+        showToast(t('personalColor.personalAnalysis.selectFringe') || '앞머리 선호도를 선택해주세요.', 'warning');
         return false;
       }
       return true;
 
     case 3:
       if (!customerProfile.skinType) {
-        showToast('피부 타입을 선택해주세요.', 'warning');
+        showToast(t('personalColor.personalAnalysis.selectSkinType') || '피부 타입을 선택해주세요.', 'warning');
         return false;
       }
       if (!customerProfile.curlPreference) {
-        showToast('컬 선호도를 선택해주세요.', 'warning');
+        showToast(t('personalColor.personalAnalysis.selectCurl') || '컬 선호도를 선택해주세요.', 'warning');
         return false;
       }
       return true;
@@ -4903,7 +4948,7 @@ function paSubmitAnalysis() {
     modal.style.display = 'none';
   }
 
-  showToast('고객 정보 입력 완료! AI 분석을 시작합니다.', 'success');
+  showToast(t('personalColor.personalAnalysis.inputComplete') || '고객 정보 입력 완료! AI 분석을 시작합니다.', 'success');
 
   // AI 분석 화면으로 이동
   proceedToAIAnalysis();
