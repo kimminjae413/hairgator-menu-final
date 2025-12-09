@@ -344,12 +344,13 @@
                         💈 <b>원하는 헤어 스타일</b>을 선택하면 체형과 톤에 맞는 <b>컬러</b>를 추천합니다.
                     </p>
 
-                    <!-- WARM 톤 스타일 (둥근 얼굴형) -->
+                    <!-- WARM 톤 스타일 (둥근 형태) -->
                     <div style="margin-bottom: 16px;">
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #FF8A65; margin-bottom: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #FF8A65; margin-bottom: 6px;">
                             <span style="background: #FF8A65; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px;">WARM</span>
-                            둥근 얼굴형에 추천
+                            둥근 형태 - 각지거나 사각형 얼굴 추천
                         </label>
+                        <p style="font-size: 11px; color: #666; margin: 0 0 10px 0; line-height: 1.5; padding-left: 4px;">둥근 헤어 라인과 부드러운 곡선이 강한 턱 선을 중화시켜 인상을 훨씬 부드럽고 친근하게 만들어 줍니다.</p>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
                             <button class="pa-male-style-btn" data-style="buzz" onclick="paSelectMaleStyle('buzz')" style="padding: 14px; border: 2px solid #FFCCBC; background: linear-gradient(135deg, #FFF3E0, #FFE0B2); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -372,12 +373,13 @@
                         </div>
                     </div>
 
-                    <!-- NEUTRAL 톤 스타일 (사각 얼굴형) -->
+                    <!-- NEUTRAL 톤 스타일 (사각 형태) -->
                     <div style="margin-bottom: 16px;">
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #78909C; margin-bottom: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #78909C; margin-bottom: 6px;">
                             <span style="background: #78909C; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px;">NEUTRAL</span>
-                            사각 얼굴형에 추천
+                            사각 형태 - 둥글거나 계란형 얼굴 추천
                         </label>
+                        <p style="font-size: 11px; color: #666; margin: 0 0 10px 0; line-height: 1.5; padding-left: 4px;">사각형의 실루엣이 둥근 얼굴에 각을 더해주어, 이목구비를 뚜렷하게 하고 남성적인 느낌을 줍니다.</p>
                         <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
                             <button class="pa-male-style-btn" data-style="fringe-up" onclick="paSelectMaleStyle('fringe-up')" style="padding: 14px; border: 2px solid #CFD8DC; background: linear-gradient(135deg, #ECEFF1, #CFD8DC); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -391,12 +393,13 @@
                         </div>
                     </div>
 
-                    <!-- COOL 톤 스타일 (삼각 얼굴형) -->
+                    <!-- COOL 톤 스타일 (삼각 형태) -->
                     <div style="margin-bottom: 20px;">
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5C6BC0; margin-bottom: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5C6BC0; margin-bottom: 6px;">
                             <span style="background: #5C6BC0; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px;">COOL</span>
-                            삼각 얼굴형에 추천
+                            삼각 형태 - 길이가 짧거나 옆으로 넓은 얼굴 추천
                         </label>
+                        <p style="font-size: 11px; color: #666; margin: 0 0 10px 0; line-height: 1.5; padding-left: 4px;">위로 솟은 볼륨과 날렵한 각도가 시선을 위로 끌어올려, 얼굴을 더 길고 갸름해 보이게 하는 효과가 있습니다.</p>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
                             <button class="pa-male-style-btn" data-style="side-fringe" onclick="paSelectMaleStyle('side-fringe')" style="padding: 14px; border: 2px solid #C5CAE9; background: linear-gradient(135deg, #E8EAF6, #C5CAE9); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -538,8 +541,8 @@
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
                         <button class="pa-curl-btn" data-curl="straight" onclick="paSelectCurl('straight')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">스트레이트</button>
                         <button class="pa-curl-btn" data-curl="C" onclick="paSelectCurl('C')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">C컬</button>
+                        <button class="pa-curl-btn" data-curl="CS" onclick="paSelectCurl('CS')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">CS컬</button>
                         <button class="pa-curl-btn" data-curl="S" onclick="paSelectCurl('S')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">S컬</button>
-                        <button class="pa-curl-btn" data-curl="CS" onclick="paSelectCurl('CS')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">C+S컬</button>
                         <button class="pa-curl-btn" data-curl="SS" onclick="paSelectCurl('SS')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">SS컬</button>
                         <button class="pa-curl-btn" data-curl="none" onclick="paSelectCurl('none')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">선호 없음</button>
                     </div>
