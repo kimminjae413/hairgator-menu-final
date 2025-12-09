@@ -52,3 +52,6 @@ scripts/
 
 # Null file
 nul
+
+# Exports folder (Gemini upload용 로컬 파일)
+exports/
