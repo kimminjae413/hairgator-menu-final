@@ -6376,7 +6376,13 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
             volumePosition: top1Params.volumePosition,
             // ⭐ 어울리는 얼굴형 추가 (이론 기반)
             suitableFaceShapes: maleFaceShapeMatch.faceShapes,
-            faceShapeReasons: maleFaceShapeMatch.reasons
+            faceShapeReasons: maleFaceShapeMatch.reasons,
+            // ⭐ 스타일 상세 설명 추가 (MALE_STYLE_TERMS에서)
+            styleDescription: MALE_STYLE_TERMS[styleCode]?.description || null,
+            // ⭐ 얼굴형 매칭 추가 정보
+            styleInfo: maleFaceShapeMatch.styleInfo || null,
+            recommendedStyling: maleFaceShapeMatch.styling || null,
+            targetCustomer: maleFaceShapeMatch.targetCustomer || null
           },
           targetSeries: {
             code: styleCode,
@@ -6681,6 +6687,11 @@ async function selectBestMaleStyleByVision(userImageBase64, mimeType, candidateS
 [이미지1] 고객 레퍼런스 (페이드: ${userFadeLevel})
 [이미지2] ${style.styleId} - ${feature.name} (페이드: ${dbFadeLevel})
 
+📋 스타일 특징:
+- 설명: ${feature.detail}
+- 탑 특징: ${feature.topFeature}
+- 사이드 특징: ${feature.sideFeature}
+
 📋 페이드 정보 (이미 분석됨):
 - 고객 이미지 페이드: ${userFadeLevel}
 - 스타일 DB 페이드: ${dbFadeLevel}
@@ -6699,6 +6710,13 @@ JSON만: {"total_score":<0-100>,"reason":"<1문장>"}`;
         // SF, SP, FU, PB - 앞머리 방향이 핵심, 페이드는 참고
         prompt = `남성 헤어 스타일리스트로서 두 이미지의 유사도를 매우 엄격하게 평가하세요.
 [이미지1] 고객 레퍼런스 [이미지2] ${style.styleId} - ${feature.name} (${feature.desc})
+
+📋 스타일 특징:
+- 설명: ${feature.detail}
+- 탑 특징: ${feature.topFeature}
+- 사이드 특징: ${feature.sideFeature}
+- 추천 대상: ${feature.targetCustomer}
+
 📋 이미지2의 DB 페이드 레벨: ${dbFadeLevel}
 
 ⚠️ 중요 패널티 (하나라도 다르면 감점!):
