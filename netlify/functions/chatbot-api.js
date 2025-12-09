@@ -592,10 +592,14 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
 
   // ⭐ theory_indexes의 textContent 병합 (키워드 매칭)
   const theoryIndexes = await loadTheoryIndexes();
+  console.log(`📚 theory_indexes 로드: ${theoryIndexes ? theoryIndexes.length : 0}개`);
+
   if (theoryIndexes && theoryIndexes.length > 0) {
     const queryLower = normalizedQuery.toLowerCase();
     const normalizedQueryNoSpace = queryLower.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
+    console.log(`🔎 매칭 시도: queryLower="${queryLower}", noSpace="${normalizedQueryNoSpace}"`);
 
+    let matchCount = 0;
     for (const idx of theoryIndexes) {
       if (!idx.textContent || idx.textContent.length < 50) continue;
 
@@ -606,6 +610,7 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
       });
 
       if (matched) {
+        matchCount++;
         // theory_chunks 형식으로 변환하여 추가
         filteredChunks.push({
           section_title: idx.title_ko || idx.term,
@@ -619,6 +624,7 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
         console.log(`📎 theory_indexes 매칭: ${idx.term} (${idx.textContent.length}자)`);
       }
     }
+    console.log(`✅ theory_indexes 총 매칭: ${matchCount}개, filteredChunks 총: ${filteredChunks.length}개`);
   }
 
   // 4. 검색 결과에 따라 프롬프트 생성
@@ -2368,10 +2374,14 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
 
   // ⭐ theory_indexes의 textContent 병합 (키워드 매칭)
   const theoryIndexes = await loadTheoryIndexes();
+  console.log(`📚 theory_indexes 로드: ${theoryIndexes ? theoryIndexes.length : 0}개`);
+
   if (theoryIndexes && theoryIndexes.length > 0) {
     const queryLower = normalizedQuery.toLowerCase();
     const normalizedQueryNoSpace = queryLower.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
+    console.log(`🔎 매칭 시도: queryLower="${queryLower}", noSpace="${normalizedQueryNoSpace}"`);
 
+    let matchCount = 0;
     for (const idx of theoryIndexes) {
       if (!idx.textContent || idx.textContent.length < 50) continue;
 
@@ -2382,6 +2392,7 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
       });
 
       if (matched) {
+        matchCount++;
         // theory_chunks 형식으로 변환하여 추가
         filteredChunks.push({
           section_title: idx.title_ko || idx.term,
@@ -2395,6 +2406,7 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
         console.log(`📎 theory_indexes 매칭: ${idx.term} (${idx.textContent.length}자)`);
       }
     }
+    console.log(`✅ theory_indexes 총 매칭: ${matchCount}개, filteredChunks 총: ${filteredChunks.length}개`);
   }
 
   // 시스템 프롬프트 빌드 (개선된 버전 사용)
