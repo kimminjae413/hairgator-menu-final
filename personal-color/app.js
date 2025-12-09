@@ -625,6 +625,19 @@
 
             const allCandidates = [...(candidates.primary || []), ...(candidates.secondary || [])];
 
+            // ✅ Personal Analysis 데이터 가져오기
+            const profile = window.customerProfile || {};
+            const hasProfile = profile.analysisComplete === true;
+            if (hasProfile) {
+                console.log('👤 Personal Analysis 데이터 적용:', {
+                    키: profile.height,
+                    희망기장: profile.desiredLength,
+                    앞머리: profile.fringePreference,
+                    피부타입: profile.skinType,
+                    컬선호: profile.curlPreference
+                });
+            }
+
             allCandidates.forEach(color => {
                 const colorRgb = hexToRgb(color.hex);
                 if (!colorRgb) return;
@@ -691,11 +704,77 @@
                     }
                 }
 
-                // 5. 우선순위 보너스
+                // ========== ✅ 신규: Personal Analysis 가중치 ==========
+                if (hasProfile) {
+                    // 5-1. 키 기반 명도 조정
+                    if (profile.height) {
+                        if (profile.height <= 158 && color.level >= 8) {
+                            harmonyScore += 10;  // 작은 키는 밝은 컬러로 얼굴 화사하게
+                        } else if (profile.height >= 170 && color.level <= 6) {
+                            harmonyScore += 8;   // 큰 키는 어두운 컬러로 세련되게
+                        }
+                    }
+
+                    // 5-2. 희망 기장에 따른 레벨 조정
+                    if (profile.desiredLength) {
+                        const shortLengths = ['G', 'H'];  // 숏컷
+                        const longLengths = ['A', 'B', 'C'];  // 롱헤어
+
+                        if (shortLengths.includes(profile.desiredLength)) {
+                            // 숏컷은 밝고 입체감 있는 컬러
+                            if (color.level >= 7) harmonyScore += 8;
+                            if (colorTone.includes('beige') || colorTone.includes('베이지')) harmonyScore += 5;
+                        } else if (longLengths.includes(profile.desiredLength)) {
+                            // 롱헤어는 중~저명도로 풍성함 강조
+                            if (color.level >= 4 && color.level <= 7) harmonyScore += 8;
+                        }
+                    }
+
+                    // 5-3. 앞머리 유무에 따른 조정
+                    if (profile.fringePreference && profile.fringePreference !== 'none') {
+                        // 앞머리 있으면 얼굴이 작아보이므로 밝은 컬러 추천
+                        if (color.level >= 7) harmonyScore += 6;
+                        // 눈선/눈썹선 앞머리는 눈이 강조되므로 소프트 톤
+                        if ((profile.fringePreference === 'eye' || profile.fringePreference === 'eyebrow') &&
+                            (colorTone.includes('soft') || colorTone.includes('muted'))) {
+                            harmonyScore += 5;
+                        }
+                    }
+
+                    // 5-4. 컬 선호에 따른 조정
+                    if (profile.curlPreference && profile.curlPreference !== 'straight' && profile.curlPreference !== 'none') {
+                        // 컬이 있으면 입체감이 있어서 다양한 톤 허용
+                        harmonyScore += 3;
+
+                        // SS컬, C+S컬처럼 강한 컬은 매트/소프트 톤 추천
+                        if ((profile.curlPreference === 'SS' || profile.curlPreference === 'CS') &&
+                            (colorTone.includes('muted') || colorTone.includes('soft') || colorTone.includes('matt'))) {
+                            harmonyScore += 8;
+                        }
+                        // C컬은 자연스러운 베이지/브라운
+                        if (profile.curlPreference === 'C' &&
+                            (colorTone.includes('beige') || colorTone.includes('brown') || colorTone.includes('베이지') || colorTone.includes('브라운'))) {
+                            harmonyScore += 6;
+                        }
+                    }
+
+                    // 5-5. 피부 타입별 세부 조정
+                    if (profile.skinType) {
+                        if (profile.skinType === 'TP' && color.level >= 8) {
+                            harmonyScore += 10;  // 투명 피부(COOL)는 하이톤
+                        } else if (profile.skinType === 'BP' && color.level <= 6) {
+                            harmonyScore += 10;  // 베이스 피부(WARM)는 로우톤
+                        } else if (profile.skinType === 'NP') {
+                            harmonyScore += 3;   // 뉴트럴은 전체적으로 보너스
+                        }
+                    }
+                }
+
+                // 6. 우선순위 보너스
                 if (color.priority === 1) harmonyScore += 20;
                 else if (color.priority === 2) harmonyScore += 10;
 
-                // 6. 브랜드 신뢰도 (있으면)
+                // 7. 브랜드 신뢰도 (있으면)
                 if (color.brand && ['로레알', '웰라', 'Shiseido', '밀본'].includes(color.brand)) {
                     harmonyScore += 5;
                 }
@@ -726,10 +805,10 @@
             // 피해야 할 컬러 규칙
             const avoidRules = getAvoidColorRules(personalColorResult);
 
-            console.log('🏆 추천 완료:', {
-                '1순위': recommended1st.length,
+            console.log('🏆 추천 완료 (Personal Analysis 반영):', {
+                '1순위': recommended1st.map(c => `${c.name}(${c.harmonyScore}점)`).join(', '),
                 '2순위': recommended2nd.length,
-                '피해야할': avoidRules
+                '프로필적용': hasProfile
             });
 
             return {
