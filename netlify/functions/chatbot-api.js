@@ -3227,24 +3227,36 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
     return !isPersonal && isCutOrPerm && hasImage;
   });
 
+  // ⭐ 너무 일반적인 키워드 제외 (이미지 매칭 오류 방지)
+  const excludeKeywords = ['가로', '세로', '수평', '수직', '대각', '방향', '각도', '기법', '기술', '스타일'];
+
   // 키워드 매칭으로 이론 찾기 (가장 많이 매칭되는 것 우선)
   let bestMatch = null;
   let bestMatchCount = 0;
   let exactKeywordMatch = false; // 키워드 정확 매칭 여부
+  let matchedKeywords = []; // 디버깅용
 
   for (const index of imageIndexes) {
     let matchCount = 0;
     let hasExactMatch = false;
+    let currentMatched = [];
 
     // 키워드 매칭 (공백/조사 무시)
     for (const keyword of index.keywords) {
       const kwLower = keyword.toLowerCase();
+
+      // ⭐ 너무 짧은 키워드(2글자 이하) 또는 제외 키워드는 스킵
+      if (kwLower.length <= 2 || excludeKeywords.includes(kwLower)) {
+        continue;
+      }
+
       const normalizedKeyword = kwLower.replace(/\s+/g, '').replace(/[의은는이가을를에서로와과]/g, '');
 
       // 키워드가 쿼리에 포함되어 있는지 (정확 매칭)
       if (lowerQuery.includes(kwLower) || normalizedQuery.includes(normalizedKeyword)) {
         matchCount++;
         hasExactMatch = true;
+        currentMatched.push(kwLower);
       }
     }
 
@@ -3253,11 +3265,13 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
       bestMatchCount = matchCount;
       bestMatch = index;
       exactKeywordMatch = true;
+      matchedKeywords = currentMatched;
     }
   }
 
   // ⭐ 키워드 정확 매칭이 있고, 최소 1개 이상 매칭될 때만 이미지 반환
   if (bestMatch && exactKeywordMatch && bestMatchCount >= 1) {
+    console.log(`📚 매칭된 키워드: [${matchedKeywords.join(', ')}]`);
     const imageUrl = bestMatch.images[language] || bestMatch.images['ko'] || bestMatch.images['en'];
 
     if (imageUrl) {
