@@ -13,7 +13,8 @@
       "Bash(curl:*)",
       "Bash(node scripts/upload-male-style-theory.js:*)",
       "WebFetch(domain:ai.google.dev)",
-      "Bash(git revert:*)"
+      "Bash(git revert:*)",
+      "Bash(dir \"C:\\Users\\김민재\\Desktop\\2. 헤어게이터_이론-20251105T045428Z-1-001\\personal_analysis\")"
     ],
     "deny": [],
     "ask": []

@@ -6161,12 +6161,15 @@ function normalizeRecipeFormat(recipe) {
   // 다양한 형식을 [External] (Under Zone)으로 통일
   normalized = normalized
     .replace(/\[엑스터널\s*부분\]/gi, '[External] (Under Zone)')
+    .replace(/\[익스터널\s*부분\]/gi, '[External] (Under Zone)')
     .replace(/\[External\s*부분\]/gi, '[External] (Under Zone)')
     .replace(/\[외부\s*부분\]/gi, '[External] (Under Zone)')
     .replace(/\[Under\s*Zone\]/gi, '[External] (Under Zone)')
     .replace(/\[아웃라인\s*설정\]/gi, '[External] (Under Zone)')
     .replace(/\*\*\[엑스터널\s*부분\]\*\*/gi, '**[External] (Under Zone)**')
-    .replace(/\*\*엑스터널\s*부분\*\*/gi, '**[External] (Under Zone)**');
+    .replace(/\*\*\[익스터널\s*부분\]\*\*/gi, '**[External] (Under Zone)**')
+    .replace(/\*\*엑스터널\s*부분\*\*/gi, '**[External] (Under Zone)**')
+    .replace(/\*\*익스터널\s*부분\*\*/gi, '**[External] (Under Zone)**');
 
   // 다양한 형식을 [Internal] (Over Zone)으로 통일
   normalized = normalized
@@ -6178,8 +6181,28 @@ function normalizeRecipeFormat(recipe) {
     .replace(/\*\*\[인터널\s*부분\]\*\*/gi, '**[Internal] (Over Zone)**')
     .replace(/\*\*인터널\s*부분\*\*/gi, '**[Internal] (Over Zone)**');
 
-  // [전체 과정] 형식인 경우 그대로 유지 (여자 레시피 일부)
-  // 필요시 zone 기반으로 분리 가능
+  // [전체 과정] 형식인 경우 External/Internal 헤더 추가
+  if (!normalized.includes('[External]') && !normalized.includes('[Internal]')) {
+    // D4, D8 기점 기반으로 External/Internal 구분 추가
+    normalized = '[External] (Under Zone)\n\n' + normalized;
+
+    // 인터널 관련 키워드가 있으면 그 앞에 Internal 헤더 삽입
+    const internalKeywords = ['인터널 부분', '파이 섹션', '스퀘어 레이어', '라운드 레이어', 'D8 ~ D4', 'D8에서 D4'];
+    for (const keyword of internalKeywords) {
+      if (normalized.includes(keyword)) {
+        const idx = normalized.indexOf(keyword);
+        // 해당 문장의 시작 부분 찾기
+        let sentenceStart = normalized.lastIndexOf('.', idx);
+        if (sentenceStart === -1) sentenceStart = normalized.lastIndexOf('\n', idx);
+        if (sentenceStart === -1) sentenceStart = 0;
+        else sentenceStart += 1;
+
+        // Internal 헤더 삽입
+        normalized = normalized.slice(0, sentenceStart) + '\n\n[Internal] (Over Zone)\n\n' + normalized.slice(sentenceStart);
+        break;
+      }
+    }
+  }
 
   return normalized;
 }
