@@ -3204,11 +3204,13 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
 
   // ⭐ 커트/펌 인덱스만 필터링 (이미지가 있는 것만)
   const imageIndexes = indexes.filter(idx => {
-    // type이 'cut' 또는 'perm'인 것만 (personal analysis 등 제외)
-    const hasType = idx.type === 'cut' || idx.type === 'perm';
+    // type이 'perm' 또는 빈값(커트 인덱스)인 것만 (personal_* 등 제외)
+    // personal analysis 문서들은 term이 'personal_'로 시작
+    const isPersonal = idx.term && idx.term.toLowerCase().startsWith('personal');
+    const isCutOrPerm = idx.type === 'perm' || idx.type === 'cut' || idx.type === '' || !idx.type;
     // 이미지가 있는지 확인
     const hasImage = idx.images && (idx.images[language] || idx.images['ko'] || idx.images['en']);
-    return hasType && hasImage;
+    return !isPersonal && isCutOrPerm && hasImage;
   });
 
   // 키워드 매칭으로 이론 찾기 (가장 많이 매칭되는 것 우선)
