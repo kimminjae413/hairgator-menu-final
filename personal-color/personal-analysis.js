@@ -360,8 +360,11 @@ function paSubmitAnalysis() {
 
   console.log('✅ Personal Analysis 완료:', customerProfile);
 
-  // 모달 닫기
-  closePersonalAnalysisModal();
+  // 모달만 닫기 (프로필 초기화 X, goHome X)
+  const modal = document.getElementById('personal-analysis-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
 
   showToast('고객 정보 입력 완료! AI 분석을 시작합니다.', 'success');
 
