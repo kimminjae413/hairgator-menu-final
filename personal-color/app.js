@@ -4667,13 +4667,21 @@
 
 // 고객 프로필 데이터
 let customerProfile = {
-  // 헤어디자이너 수동 입력 (MediaPipe 불가)
+  // 공통 정보
+  gender: null,              // 성별 (female/male)
   height: null,              // 키 (150-190cm)
+  skinType: null,            // 피부 타입 (TP/NP/BP)
+
+  // 여성 전용
   currentLength: null,       // 현재 기장 (short/medium/long)
   desiredLength: null,       // 원하는 기장 (A-H)
   fringePreference: null,    // 앞머리 선호 (forehead/eyebrow/eye/cheekbone/lips/none)
-  skinType: null,            // 피부 타입 (TP/NP/BP)
   curlPreference: null,      // 컬 선호 (straight/C/S/CS/SS/none)
+
+  // 남성 전용
+  maleHairStyle: null,       // 스타일 유형 (sports-cut/two-block/undercut/dandy-cut/center-perm/regent/ez-perm/long-hair)
+  sideProcessing: null,      // 사이드 처리 (fade/under/natural)
+  frontDirection: null,      // 앞머리 방향 (all-back/side-part/center-down/see-through)
 
   // MediaPipe 자동 분석 (Personal Color 기존 기능 활용)
   faceShape: null,           // 얼굴형
@@ -4682,6 +4690,66 @@ let customerProfile = {
   season: null,              // 4계절 (Spring/Summer/Autumn/Winter)
 
   analysisComplete: false    // 분석 완료 여부
+};
+
+// 남성 헤어 스타일 데이터 (PDF 기반)
+const PA_MALE_STYLE_DATA = {
+  'sports-cut': {
+    name: '스포츠컷',
+    desc: '1~3cm 매우 짧은 컷',
+    tone: 'WARM',
+    lengthEquivalent: 'H+',
+    levelRange: [2, 4]
+  },
+  'two-block': {
+    name: '투블럭',
+    desc: '사이드 짧게, 탑 볼륨',
+    tone: 'NEUTRAL',
+    lengthEquivalent: 'G-H',
+    levelRange: [2, 5]
+  },
+  'undercut': {
+    name: '언더컷',
+    desc: '페이드 + 탑 길게',
+    tone: 'COOL',
+    lengthEquivalent: 'F-G',
+    levelRange: [2, 4]
+  },
+  'dandy-cut': {
+    name: '댄디컷',
+    desc: '전체 균일, 정돈된 느낌',
+    tone: 'NEUTRAL',
+    lengthEquivalent: 'F-G',
+    levelRange: [3, 6]
+  },
+  'center-perm': {
+    name: '센터펌',
+    desc: '앞머리 중앙, 볼륨펌',
+    tone: 'WARM',
+    lengthEquivalent: 'E-F',
+    levelRange: [4, 7]
+  },
+  'regent': {
+    name: '리젠트',
+    desc: '뒤로 넘김, 고급스러움',
+    tone: 'COOL',
+    lengthEquivalent: 'E-F',
+    levelRange: [2, 4]
+  },
+  'ez-perm': {
+    name: '애즈펌',
+    desc: '자연스러운 웨이브',
+    tone: 'NEUTRAL',
+    lengthEquivalent: 'D-E',
+    levelRange: [4, 7]
+  },
+  'long-hair': {
+    name: '장발',
+    desc: '어깨 이상 긴 머리',
+    tone: 'COOL',
+    lengthEquivalent: 'C-D',
+    levelRange: [3, 8]
+  }
 };
 
 // 현재 단계
@@ -4787,12 +4855,20 @@ function closePersonalAnalysisModal() {
 // 프로필 초기화
 function paResetProfile() {
   customerProfile = {
+    // 공통 정보
+    gender: null,
     height: null,
+    skinType: null,
+    curlPreference: null,
+    // 여성 전용
     currentLength: null,
     desiredLength: null,
     fringePreference: null,
-    skinType: null,
-    curlPreference: null,
+    // 남성 전용
+    maleHairStyle: null,
+    sideProcessing: null,
+    frontDirection: null,
+    // MediaPipe 자동 분석
     faceShape: null,
     faceShapeKr: null,
     undertone: null,
@@ -4800,6 +4876,22 @@ function paResetProfile() {
     analysisComplete: false
   };
   paCurrentStep = 1;
+
+  // UI 초기화
+  document.querySelectorAll('.pa-gender-btn, .pa-male-style-btn, .pa-side-btn, .pa-front-btn').forEach(btn => {
+    btn.classList.remove('selected');
+  });
+
+  // 남성 테마 제거
+  document.body.classList.remove('male-theme');
+
+  // Step 2 콘텐츠 초기화 (여성용 표시)
+  const femaleStyle = document.getElementById('pa-female-style');
+  const maleStyle = document.getElementById('pa-male-style');
+  const maleDetail = document.getElementById('pa-male-detail');
+  if (femaleStyle) femaleStyle.style.display = 'block';
+  if (maleStyle) maleStyle.style.display = 'none';
+  if (maleDetail) maleDetail.style.display = 'none';
 }
 
 // 단계 UI 업데이트
@@ -4816,6 +4908,21 @@ function paUpdateStepUI() {
   if (currentStepEl) {
     currentStepEl.classList.add('active');
     currentStepEl.style.display = 'block'; // 인라인 스타일로 표시
+  }
+
+  // Step 2일 때 성별에 따라 콘텐츠 토글
+  if (paCurrentStep === 2) {
+    const femaleStyle = document.getElementById('pa-female-style');
+    const maleStyle = document.getElementById('pa-male-style');
+    const isMale = customerProfile.gender === 'male';
+
+    if (isMale) {
+      if (femaleStyle) femaleStyle.style.display = 'none';
+      if (maleStyle) maleStyle.style.display = 'block';
+    } else {
+      if (femaleStyle) femaleStyle.style.display = 'block';
+      if (maleStyle) maleStyle.style.display = 'none';
+    }
   }
 
   paUpdateProgressBar();
@@ -4880,26 +4987,50 @@ function paPrevStep() {
 
 // 현재 단계 유효성 검사
 function paValidateCurrentStep() {
+  const isMale = customerProfile.gender === 'male';
+
   switch (paCurrentStep) {
     case 1:
-      if (!customerProfile.height) {
-        showToast(t('personalColor.personalAnalysis.selectHeight') || '키를 선택해주세요.', 'warning');
+      // 성별 필수
+      if (!customerProfile.gender) {
+        showToast('성별을 선택해주세요.', 'warning');
         return false;
       }
-      if (!customerProfile.currentLength) {
-        showToast(t('personalColor.personalAnalysis.selectCurrentLength') || '현재 기장을 선택해주세요.', 'warning');
+      // 키 필수
+      if (!customerProfile.height) {
+        showToast(t('personalColor.personalAnalysis.selectHeight') || '키를 선택해주세요.', 'warning');
         return false;
       }
       return true;
 
     case 2:
-      if (!customerProfile.desiredLength) {
-        showToast(t('personalColor.personalAnalysis.selectDesiredLength') || '원하는 기장을 선택해주세요.', 'warning');
-        return false;
-      }
-      if (!customerProfile.fringePreference) {
-        showToast(t('personalColor.personalAnalysis.selectFringe') || '앞머리 선호도를 선택해주세요.', 'warning');
-        return false;
+      if (isMale) {
+        // 남성: 스타일 필수
+        if (!customerProfile.maleHairStyle) {
+          showToast('헤어 스타일을 선택해주세요.', 'warning');
+          return false;
+        }
+        // 사이드 처리 필수
+        if (!customerProfile.sideProcessing) {
+          showToast('사이드 처리 방식을 선택해주세요.', 'warning');
+          return false;
+        }
+        // 앞머리 방향 필수
+        if (!customerProfile.frontDirection) {
+          showToast('앞머리 방향을 선택해주세요.', 'warning');
+          return false;
+        }
+      } else {
+        // 여성: 원하는 기장 필수
+        if (!customerProfile.desiredLength) {
+          showToast(t('personalColor.personalAnalysis.selectDesiredLength') || '원하는 기장을 선택해주세요.', 'warning');
+          return false;
+        }
+        // 앞머리 선호 필수
+        if (!customerProfile.fringePreference) {
+          showToast(t('personalColor.personalAnalysis.selectFringe') || '앞머리 선호도를 선택해주세요.', 'warning');
+          return false;
+        }
       }
       return true;
 
@@ -4917,6 +5048,92 @@ function paValidateCurrentStep() {
     default:
       return true;
   }
+}
+
+// ==================== 성별 선택 ====================
+function paSelectGender(gender) {
+  customerProfile.gender = gender;
+
+  // 버튼 UI 업데이트
+  document.querySelectorAll('.pa-gender-btn').forEach(btn => {
+    btn.classList.remove('selected');
+    if (btn.dataset.gender === gender) {
+      btn.classList.add('selected');
+    }
+  });
+
+  // 테마 전환
+  if (gender === 'male') {
+    document.body.classList.add('male-theme');
+  } else {
+    document.body.classList.remove('male-theme');
+  }
+
+  // Step 2 콘텐츠 토글
+  const femaleStyle = document.getElementById('pa-female-style');
+  const maleStyle = document.getElementById('pa-male-style');
+
+  if (gender === 'male') {
+    if (femaleStyle) femaleStyle.style.display = 'none';
+    if (maleStyle) maleStyle.style.display = 'block';
+  } else {
+    if (femaleStyle) femaleStyle.style.display = 'block';
+    if (maleStyle) maleStyle.style.display = 'none';
+  }
+
+  console.log(`👤 성별 선택: ${gender}`);
+}
+
+// ==================== 남성용 스타일 선택 ====================
+function paSelectMaleStyle(style) {
+  customerProfile.maleHairStyle = style;
+
+  // 버튼 UI 업데이트
+  document.querySelectorAll('.pa-male-style-btn').forEach(btn => {
+    btn.classList.remove('selected');
+    if (btn.dataset.style === style) {
+      btn.classList.add('selected');
+    }
+  });
+
+  // 디테일 옵션 패널 표시
+  const detailPanel = document.getElementById('pa-male-detail');
+  if (detailPanel) {
+    detailPanel.style.display = 'block';
+  }
+
+  const styleInfo = PA_MALE_STYLE_DATA[style];
+  console.log(`💈 남성 스타일 선택: ${styleInfo?.name || style}`);
+}
+
+// 사이드 처리 선택
+function paSelectSide(side) {
+  customerProfile.sideProcessing = side;
+
+  document.querySelectorAll('.pa-side-btn').forEach(btn => {
+    btn.classList.remove('selected');
+    if (btn.dataset.side === side) {
+      btn.classList.add('selected');
+    }
+  });
+
+  const sideNames = { fade: '페이드', under: '언더', natural: '자연' };
+  console.log(`✂️ 사이드 처리 선택: ${sideNames[side] || side}`);
+}
+
+// 앞머리 방향 선택
+function paSelectFront(front) {
+  customerProfile.frontDirection = front;
+
+  document.querySelectorAll('.pa-front-btn').forEach(btn => {
+    btn.classList.remove('selected');
+    if (btn.dataset.front === front) {
+      btn.classList.add('selected');
+    }
+  });
+
+  const frontNames = { 'all-back': '올백', 'side-part': '사이드파팅', 'center-down': '센터다운', 'see-through': '시스루' };
+  console.log(`💇‍♂️ 앞머리 방향 선택: ${frontNames[front] || front}`);
 }
 
 // 키 선택
@@ -5515,12 +5732,16 @@ function getCurlRecommendation(curlPref, season) {
 // 전역 함수로 노출
 window.openPersonalAnalysisModal = openPersonalAnalysisModal;
 window.closePersonalAnalysisModal = closePersonalAnalysisModal;
+window.paSelectGender = paSelectGender;
 window.paSelectHeight = paSelectHeight;
 window.paSelectCurrentLength = paSelectCurrentLength;
 window.paSelectDesiredLength = paSelectDesiredLength;
 window.paSelectFringe = paSelectFringe;
 window.paSelectSkinType = paSelectSkinType;
 window.paSelectCurl = paSelectCurl;
+window.paSelectMaleStyle = paSelectMaleStyle;
+window.paSelectSide = paSelectSide;
+window.paSelectFront = paSelectFront;
 window.paNextStep = paNextStep;
 window.paPrevStep = paPrevStep;
 window.paSubmitAnalysis = paSubmitAnalysis;
