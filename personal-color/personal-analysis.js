@@ -678,16 +678,21 @@ function generateIntegratedResultHTML(integrated, personalColor) {
   const fringeNames = { forehead: '이마선', eyebrow: '눈썹선', eye: '눈선', cheekbone: '광대선', lips: '입술선', none: '없음' };
 
   // 기장 변화량 계산
+  // lengthOrder: 짧은 순 → 긴 순 (H가 가장 짧고, A가 가장 김)
   const lengthOrder = ['H', 'G', 'F', 'E', 'D', 'C', 'B', 'A'];
-  const currentLengthIdx = { short: 6, medium: 4, long: 1 }; // short=G위치, medium=E위치, long=B위치
+  // 현재 기장을 대략적인 Length로 매핑 (short=G(1), medium=E(3), long=B(6))
+  const currentLengthIdx = { short: 1, medium: 3, long: 6 };
   const desiredIdx = lengthOrder.indexOf(c.desiredLength);
-  const currentIdx = currentLengthIdx[c.currentLength] || 4;
-  const lengthChange = currentIdx - desiredIdx;
+  const currentIdx = currentLengthIdx[c.currentLength] ?? 3;
+  const lengthChange = desiredIdx - currentIdx; // 양수면 길게, 음수면 짧게
   const lengthChangeText = lengthChange > 0 ? `${Math.abs(lengthChange)}단계 길게` : lengthChange < 0 ? `${Math.abs(lengthChange)}단계 짧게` : '유지';
   const lengthChangeIcon = lengthChange === 0 ? '➡️' : lengthChange > 0 ? '📏⬆️' : '✂️⬇️';
 
-  // 시술 난이도 계산
-  const difficultyScore = Math.abs(lengthChange) + (c.curlPreference !== 'straight' && c.curlPreference !== 'none' ? 1 : 0);
+  // 시술 난이도 계산 (변화량 + 컬 추가 시 +1)
+  const changeAmount = Math.abs(lengthChange);
+  const hasCurl = c.curlPreference !== 'straight' && c.curlPreference !== 'none';
+  const difficultyScore = changeAmount + (hasCurl ? 1 : 0);
+  // 0~1: 쉬움, 2~3: 보통, 4+: 어려움
   const difficultyText = difficultyScore <= 1 ? '쉬움' : difficultyScore <= 3 ? '보통' : '어려움';
   const difficultyColor = difficultyScore <= 1 ? '#4CAF50' : difficultyScore <= 3 ? '#FF9800' : '#F44336';
 
