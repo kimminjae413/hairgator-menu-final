@@ -2954,7 +2954,7 @@ let theoryIndexCacheTime = 0;
 const THEORY_CACHE_TTL = 30 * 60 * 1000; // 30분 캐시
 
 /**
- * Firestore에서 89개 이론 인덱스 로드 (캐시 적용)
+ * Firestore에서 이론 인덱스 로드 (커트 89개 + 펌 46개 = 135개, 캐시 적용)
  */
 async function loadTheoryIndexes() {
   // 캐시가 유효하면 재사용
@@ -2963,7 +2963,7 @@ async function loadTheoryIndexes() {
   }
 
   try {
-    const url = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/theory_indexes?pageSize=100`;
+    const url = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/theory_indexes?pageSize=200`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -3008,20 +3008,25 @@ async function loadTheoryIndexes() {
           });
         }
 
+        // type 추출 (perm: 펌 이론, 없으면 커트 이론)
+        const theoryType = fields.type?.stringValue || 'cut';
+
         indexes.push({
           docId,
           term: fields.term?.stringValue || docId,
           title_ko: fields.title_ko?.stringValue || '',
           keywords,
           images,
-          description: fields.description?.stringValue || ''
+          description: fields.description?.stringValue || '',
+          type: theoryType,
+          category: fields.category?.stringValue || ''
         });
       }
     }
 
     theoryIndexCache = indexes;
     theoryIndexCacheTime = Date.now();
-    console.log(`📚 이론 인덱스 ${indexes.length}개 로드 완료`);
+    console.log(`📚 이론 인덱스 ${indexes.length}개 로드 완료 (커트 + 펌)`);
 
     return indexes;
   } catch (e) {
