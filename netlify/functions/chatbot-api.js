@@ -3011,6 +3011,9 @@ async function loadTheoryIndexes() {
         // type 추출 (perm: 펌 이론, 없으면 커트 이론)
         const theoryType = fields.type?.stringValue || 'cut';
 
+        // textContent 추출 (언어별)
+        const textContent = fields.textContent?.stringValue || '';
+
         indexes.push({
           docId,
           term: fields.term?.stringValue || docId,
@@ -3019,7 +3022,8 @@ async function loadTheoryIndexes() {
           images,
           description: fields.description?.stringValue || '',
           type: theoryType,
-          category: fields.category?.stringValue || ''
+          category: fields.category?.stringValue || '',
+          textContent
         });
       }
     }
@@ -3076,9 +3080,22 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
   for (const index of indexes) {
     let matchCount = 0;
 
+    // 1. 키워드 매칭
     for (const keyword of index.keywords) {
       if (lowerQuery.includes(keyword)) {
         matchCount++;
+      }
+    }
+
+    // 2. textContent 기반 매칭 (키워드 매칭 실패 시 보조)
+    if (matchCount === 0 && index.textContent) {
+      const textLower = index.textContent.toLowerCase();
+      // 쿼리의 주요 단어들이 textContent에 포함되어 있는지 확인
+      const queryWords = lowerQuery.split(/\s+/).filter(w => w.length >= 2);
+      for (const word of queryWords) {
+        if (textLower.includes(word)) {
+          matchCount += 0.5; // textContent 매칭은 가중치를 낮게
+        }
       }
     }
 
