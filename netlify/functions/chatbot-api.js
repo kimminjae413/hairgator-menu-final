@@ -5807,6 +5807,8 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
       .replace(/\[\s*\]/g, '')  // 빈 괄호 [] 제거
       .replace(/\s{2,}/g, ' ')  // 연속 공백 정리
       .trim();
+    // ⭐ External/Internal 형식으로 통일
+    originalRecipe = normalizeRecipeFormat(originalRecipe);
 
     // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
     const top1Params = extractRecipeParamsFromStyle(top1);
@@ -6147,12 +6149,43 @@ function parseFirestoreDocument(doc) {
   }
 }
 
-// ==================== Top-1 스타일에서 레시피 파라미터 추출 (애니메이션용) ====================
+// ==================== 레시피 형식 통일 ====================
 /**
- * 매칭된 Top-1 스타일의 도해도 데이터에서 실제 레시피 파라미터 추출
- * AI 분석값이 아닌 실제 스타일의 수치를 애니메이션에 표시하기 위함
- * @param {Object} style - Top-1 매칭 스타일 객체
- * @returns {Object} - 추출된 레시피 파라미터 (liftingRange, sectionPrimary, volumePosition 등)
+ * 레시피 텍스트를 [External] (Under Zone) / [Internal] (Over Zone) 형식으로 통일
+ */
+function normalizeRecipeFormat(recipe) {
+  if (!recipe) return recipe;
+
+  let normalized = recipe;
+
+  // 다양한 형식을 [External] (Under Zone)으로 통일
+  normalized = normalized
+    .replace(/\[엑스터널\s*부분\]/gi, '[External] (Under Zone)')
+    .replace(/\[External\s*부분\]/gi, '[External] (Under Zone)')
+    .replace(/\[외부\s*부분\]/gi, '[External] (Under Zone)')
+    .replace(/\[Under\s*Zone\]/gi, '[External] (Under Zone)')
+    .replace(/\[아웃라인\s*설정\]/gi, '[External] (Under Zone)')
+    .replace(/\*\*\[엑스터널\s*부분\]\*\*/gi, '**[External] (Under Zone)**')
+    .replace(/\*\*엑스터널\s*부분\*\*/gi, '**[External] (Under Zone)**');
+
+  // 다양한 형식을 [Internal] (Over Zone)으로 통일
+  normalized = normalized
+    .replace(/\[인터널\s*부분\]/gi, '[Internal] (Over Zone)')
+    .replace(/\[Internal\s*부분\]/gi, '[Internal] (Over Zone)')
+    .replace(/\[내부\s*부분\]/gi, '[Internal] (Over Zone)')
+    .replace(/\[Over\s*Zone\]/gi, '[Internal] (Over Zone)')
+    .replace(/\[인터널\s*레이어\]/gi, '[Internal] (Over Zone)')
+    .replace(/\*\*\[인터널\s*부분\]\*\*/gi, '**[Internal] (Over Zone)**')
+    .replace(/\*\*인터널\s*부분\*\*/gi, '**[Internal] (Over Zone)**');
+
+  // [전체 과정] 형식인 경우 그대로 유지 (여자 레시피 일부)
+  // 필요시 zone 기반으로 분리 가능
+
+  return normalized;
+}
+
+/**
+ * Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
  */
 function extractRecipeParamsFromStyle(style) {
   const diagrams = style.diagrams || [];
@@ -6446,6 +6479,8 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
       .replace(/\[\s*\]/g, '')  // 빈 괄호 [] 제거
       .replace(/\s{2,}/g, ' ')  // 연속 공백 정리
       .trim();
+    // ⭐ External/Internal 형식으로 통일
+    originalRecipe = normalizeRecipeFormat(originalRecipe);
 
     // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
     const top1Params = extractRecipeParamsFromStyle(top1);
