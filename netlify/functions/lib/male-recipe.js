@@ -118,7 +118,7 @@ ${diagramsContext}
 **📋 레시피 작성 지침:**
 ${theoryContext ? '참고 이론의 커팅 기법과 원리를 레시피에 자연스럽게 반영하세요.' : ''}
 
-⚠️ 중요: 반드시 [엑스터널 부분]과 [인터널 부분]으로 구분하여 작성하세요!
+⚠️ 중요: 반드시 [External] (Under Zone)과 [Internal] (Over Zone)으로 구분하여 작성하세요!
 
 ---
 
@@ -128,7 +128,7 @@ ${theoryContext ? '참고 이론의 커팅 기법과 원리를 레시피에 자�
 
 ---
 
-[엑스터널 부분] (머리 바깥쪽, 겉으로 보이는 부분)
+[External] (Under Zone)
 
 ### 1. 사이드 커팅
 - 페이드 종류: ${fadeDesc}
@@ -145,7 +145,7 @@ ${theoryContext ? '참고 이론의 커팅 기법과 원리를 레시피에 자�
 
 ---
 
-[인터널 부분] (머리 안쪽, 겉으로 잘 보이지 않는 부분)
+[Internal] (Over Zone)
 
 ### 4. 탑(상단) 커팅
 - 탑 길이: ${params.top_length || 'Medium'}

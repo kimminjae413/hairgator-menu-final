@@ -2347,11 +2347,17 @@ class AIStudio {
     // --- 구분선을 hr 태그로 변환 (먼저 처리)
     formatted = formatted.replace(/^---+$/gm, '<hr class="recipe-divider">');
 
-    // ⭐ [엑스터널 부분], [인터널 부분] 등 섹션 헤더를 예쁜 카드로 변환
+    // ⭐ [External], [Internal] 섹션 헤더를 예쁜 카드로 변환 (남녀 통일)
+    formatted = formatted.replace(/\[External\]\s*\(Under\s*Zone\)/gi,
+      '<div class="recipe-section external"><span class="section-icon">🔵</span><span class="section-title">External</span><span class="section-desc">Under Zone</span></div>');
+    formatted = formatted.replace(/\[Internal\]\s*\(Over\s*Zone\)/gi,
+      '<div class="recipe-section internal"><span class="section-icon">🟣</span><span class="section-title">Internal</span><span class="section-desc">Over Zone</span></div>');
+
+    // 기존 한글 형식도 지원 (호환성)
     formatted = formatted.replace(/\[엑스터널\s*부분\]\s*\([^)]*\)/gi,
-      '<div class="recipe-section external"><span class="section-icon">🔵</span><span class="section-title">엑스터널 (External)</span><span class="section-desc">머리 바깥쪽, 겉으로 보이는 부분</span></div>');
+      '<div class="recipe-section external"><span class="section-icon">🔵</span><span class="section-title">External</span><span class="section-desc">Under Zone</span></div>');
     formatted = formatted.replace(/\[인터널\s*부분\]\s*\([^)]*\)/gi,
-      '<div class="recipe-section internal"><span class="section-icon">🟣</span><span class="section-title">인터널 (Internal)</span><span class="section-desc">머리 안쪽, 겉으로 잘 보이지 않는 부분</span></div>');
+      '<div class="recipe-section internal"><span class="section-icon">🟣</span><span class="section-title">Internal</span><span class="section-desc">Over Zone</span></div>');
 
     // [텍스트] 형태의 다른 섹션 헤더들
     formatted = formatted.replace(/\[([^\]]+)\]/g, '<div class="recipe-section-simple"><span class="section-badge">$1</span></div>');
