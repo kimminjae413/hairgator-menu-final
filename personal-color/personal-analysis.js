@@ -523,10 +523,14 @@ function displayCustomerSummary(mediaPipeData) {
   const skinHex = mediaPipeData?.correctedRgb ?
     `#${mediaPipeData.correctedRgb.r.toString(16).padStart(2,'0')}${mediaPipeData.correctedRgb.g.toString(16).padStart(2,'0')}${mediaPipeData.correctedRgb.b.toString(16).padStart(2,'0')}` : '#999';
 
+  // 성별에 따른 테마 색상
+  const isMale = document.body.classList.contains('male-theme');
+  const themeColor = isMale ? '#4A90E2' : '#E91E63';
+
   content.innerHTML = `
     <!-- 수동 입력 섹션 -->
     <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0;">
-      <div style="font-weight: 600; color: #E91E63; margin-bottom: 8px; font-size: 11px;">✍️ 수동 입력</div>
+      <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 8px; font-size: 11px;">✍️ 수동 입력</div>
       <div style="display: flex; flex-direction: column; gap: 4px; color: #333;">
         <div><span style="color: #888;">키:</span> ${p.height || '-'}cm</div>
         <div><span style="color: #888;">현재:</span> ${lengthNames[p.currentLength] || '-'}</div>
@@ -539,7 +543,7 @@ function displayCustomerSummary(mediaPipeData) {
 
     <!-- AI 분석 섹션 -->
     <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0;">
-      <div style="font-weight: 600; color: #E91E63; margin-bottom: 8px; font-size: 11px;">🤖 AI 분석</div>
+      <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 8px; font-size: 11px;">🤖 AI 분석</div>
       <div style="display: flex; flex-direction: column; gap: 4px; color: #333;">
         <div style="display: flex; align-items: center; gap: 6px;">
           <span style="color: #888;">피부톤:</span>
@@ -645,9 +649,15 @@ function generateIntegratedResultHTML(integrated, personalColor) {
     ? `${c.desiredLength} Length는 고객님 체형에 잘 어울립니다!`
     : `추천 기장: ${analysis.recommendedLengths.join(', ')} (선택: ${c.desiredLength})`;
 
+  // 성별에 따른 테마 색상
+  const isMale = document.body.classList.contains('male-theme');
+  const themeGradient = isMale
+    ? 'linear-gradient(135deg, #4A90E2, #3A7BC8)'
+    : 'linear-gradient(135deg, #E91E63, #C2185B)';
+
   return `
     <!-- 🎯 통합 분석 결과 -->
-    <div style="background: linear-gradient(135deg, #E91E63, #C2185B); padding: 16px; border-radius: 14px; margin-bottom: 14px; color: #fff;">
+    <div style="background: ${themeGradient}; padding: 16px; border-radius: 14px; margin-bottom: 14px; color: #fff;">
       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
         <span style="font-size: 20px;">🎯</span>
         <span style="font-size: 16px; font-weight: 700;">Personal Analysis 종합 결과</span>

@@ -57,26 +57,46 @@
             height: auto;
         }
 
-        /* Personal Analysis 모달 버튼 선택 스타일 */
+        /* Personal Analysis 모달 버튼 선택 스타일 (여성: 핑크) */
         .pa-height-btn.selected,
         .pa-current-length-btn.selected,
         .pa-desired-length-btn.selected,
         .pa-fringe-btn.selected,
         .pa-skin-btn.selected,
         .pa-curl-btn.selected {
-            border-color: #E91E63 !important;
+            border-color: var(--primary-color, #E91E63) !important;
             background: linear-gradient(135deg, rgba(233,30,99,0.1), rgba(194,24,91,0.1)) !important;
-            color: #E91E63 !important;
+            color: var(--primary-color, #E91E63) !important;
+        }
+
+        /* 남성 테마 선택 스타일 (블루) */
+        body.male-theme .pa-height-btn.selected,
+        body.male-theme .pa-current-length-btn.selected,
+        body.male-theme .pa-desired-length-btn.selected,
+        body.male-theme .pa-fringe-btn.selected,
+        body.male-theme .pa-skin-btn.selected,
+        body.male-theme .pa-curl-btn.selected {
+            border-color: #4A90E2 !important;
+            background: linear-gradient(135deg, rgba(74,144,226,0.1), rgba(58,123,200,0.1)) !important;
+            color: #4A90E2 !important;
         }
 
         .pa-step-indicator.active {
-            background: #E91E63 !important;
+            background: var(--primary-color, #E91E63) !important;
             color: #fff !important;
         }
 
         .pa-step-indicator.completed {
-            background: #C2185B !important;
+            background: var(--primary-dark, #C2185B) !important;
             color: #fff !important;
+        }
+
+        /* 남성 테마 step indicator */
+        body.male-theme .pa-step-indicator.active {
+            background: #4A90E2 !important;
+        }
+        body.male-theme .pa-step-indicator.completed {
+            background: #3A7BC8 !important;
         }
 
         #pa-step-1:not(.active),
@@ -89,6 +109,51 @@
         #pa-step-2.active,
         #pa-step-3.active {
             display: block !important;
+        }
+
+        /* Step 제목 밑줄 */
+        .pa-step-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--primary-color, #E91E63);
+            display: inline-block;
+        }
+        body.male-theme .pa-step-title {
+            border-bottom-color: #4A90E2;
+        }
+
+        /* 다음 버튼 */
+        .pa-next-btn {
+            margin-left: auto;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary-color, #E91E63), var(--primary-dark, #C2185B));
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        body.male-theme .pa-next-btn {
+            background: linear-gradient(135deg, #4A90E2, #3A7BC8);
+        }
+
+        /* 고객 요약 패널 */
+        .pa-summary-panel {
+            background: linear-gradient(135deg, #fff5f8, #fff0f5);
+            border: 1px solid rgba(233,30,99,0.2);
+        }
+        body.male-theme .pa-summary-panel {
+            background: linear-gradient(135deg, #f0f7ff, #e8f4fd);
+            border-color: rgba(74,144,226,0.2);
+        }
+        .pa-summary-title {
+            color: var(--primary-color, #E91E63);
+        }
+        body.male-theme .pa-summary-title {
+            color: #4A90E2;
         }
     </style>
 </head>
@@ -153,7 +218,7 @@
 
             <!-- Step 1 -->
             <div id="pa-step-1" class="active" style="padding: 0 24px 20px;">
-                <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid #E91E63; display: inline-block;">Step 1: 기본 정보</div>
+                <div class="pa-step-title">Step 1: 기본 정보</div>
 
                 <div style="margin-bottom: 24px;">
                     <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px;">키 (cm)</label>
@@ -191,7 +256,7 @@
 
             <!-- Step 2 -->
             <div id="pa-step-2" style="display: none; padding: 0 24px 20px;">
-                <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid #E91E63; display: inline-block;">Step 2: 원하는 스타일</div>
+                <div class="pa-step-title">Step 2: 원하는 스타일</div>
 
                 <div style="margin-bottom: 24px;">
                     <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px;">원하는 기장</label>
@@ -246,7 +311,7 @@
 
             <!-- Step 3 -->
             <div id="pa-step-3" style="display: none; padding: 0 24px 20px;">
-                <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid #E91E63; display: inline-block;">Step 3: 피부 & 컬 선호</div>
+                <div class="pa-step-title">Step 3: 피부 & 컬 선호</div>
 
                 <div style="margin-bottom: 24px;">
                     <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px;">피부 타입</label>
@@ -282,7 +347,7 @@
             <!-- Navigation -->
             <div style="display: flex; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e0e0e0; background: #f9f9f9;">
                 <button id="pa-prev-btn" onclick="paPrevStep()" style="display: none; padding: 12px 20px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; cursor: pointer; font-weight: 600; color: #666;">← 이전</button>
-                <button id="pa-next-btn" onclick="paNextStep()" style="margin-left: auto; padding: 12px 24px; background: linear-gradient(135deg, #E91E63, #C2185B); color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">다음 →</button>
+                <button id="pa-next-btn" class="pa-next-btn" onclick="paNextStep()">다음 →</button>
                 <button id="pa-submit-btn" onclick="paSubmitAnalysis()" style="display: none; margin-left: auto; padding: 12px 24px; background: #10b981; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">분석 완료 ✓</button>
             </div>
         </div>
@@ -386,8 +451,8 @@
                             </div>
 
                             <!-- ===== 고객 정보 요약 (수동입력 + AI 분석) ===== -->
-                            <div id="customer-summary-panel" style="display: none; margin-top: 15px; padding: 15px; background: linear-gradient(135deg, #fff5f8, #fff0f5); border-radius: 12px; border: 1px solid rgba(233,30,99,0.2);">
-                                <div style="font-size: 14px; font-weight: 600; color: #E91E63; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                            <div id="customer-summary-panel" class="pa-summary-panel" style="display: none; margin-top: 15px; padding: 15px; border-radius: 12px;">
+                                <div class="pa-summary-title" style="font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
                                     <span>📋</span> 고객 분석 요약
                                 </div>
                                 <div id="customer-summary-content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
