@@ -2731,7 +2731,7 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
           }],
           generationConfig: {
             temperature: 0.5,
-            maxOutputTokens: 4000,  // ⬆️ 2048 → 4000 (긴 응답 지원)
+            maxOutputTokens: 8000,  // ⬆️ 4000 → 8000 (긴 이론 설명 지원)
             topP: 0.9
           }
         })
@@ -2982,7 +2982,7 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
           }],
           generationConfig: {
             temperature: 0.5,
-            maxOutputTokens: 4000,  // ⬆️ 2048 → 4000 (긴 레시피/응답 지원)
+            maxOutputTokens: 8000,  // ⬆️ 4000 → 8000 (긴 이론 설명 지원)
             topP: 0.9
           }
         })
