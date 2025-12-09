@@ -151,134 +151,6 @@ class AIStudio {
     console.log('✅ AI Studio 초기화 완료');
   }
 
-  // Personal Analysis 결과 핸들러
-  handlePersonalAnalysisResult(result) {
-    console.log('📋 Personal Analysis 결과 수신:', result);
-
-    if (!result || !result.profile) {
-      console.warn('Personal Analysis 결과 없음');
-      return;
-    }
-
-    // 프로필 정보 저장
-    this.customerProfile = result.profile;
-    this.personalAnalysisResult = result;
-
-    // 캔버스에 결과 표시
-    this.showPersonalAnalysisCanvas(result);
-
-    // 채팅에 요약 메시지 추가
-    const summaryMsg = this.formatPersonalAnalysisSummary(result);
-    this.addMessageToUI('bot', summaryMsg);
-
-    // Firebase에 저장
-    this.saveMessageToFirebase('bot', summaryMsg, {
-      type: 'personal_analysis',
-      profile: result.profile,
-      analysis: result.analysis
-    });
-  }
-
-  // Personal Analysis 결과 포맷팅
-  formatPersonalAnalysisSummary(result) {
-    const p = result.profile;
-    const a = result.analysis;
-
-    let summary = `<strong>Personal Analysis 완료</strong>\n\n`;
-    summary += `<strong>고객 정보</strong>\n`;
-    summary += `- 키: ${p.height}cm\n`;
-    summary += `- 현재 기장: ${p.currentLength === 'short' ? '숏' : p.currentLength === 'medium' ? '미디엄' : '롱'}\n`;
-    summary += `- 희망 기장: ${p.desiredLength} Length\n`;
-    summary += `- 피부 톤: ${a.skinInfo.name} (${a.tone})\n\n`;
-
-    summary += `<strong>분석 결과</strong>\n`;
-    if (a.isLengthRecommended) {
-      summary += `✅ ${p.desiredLength} 기장은 체형에 잘 어울립니다.\n`;
-    } else {
-      summary += `⚠️ 추천 기장: ${a.recommendedLengths.join(', ')}\n`;
-    }
-
-    return summary;
-  }
-
-  // Personal Analysis 캔버스 표시
-  showPersonalAnalysisCanvas(result) {
-    const canvasResult = document.getElementById('canvas-result');
-    const canvasEmpty = document.getElementById('canvas-empty');
-
-    if (!canvasResult) return;
-
-    const p = result.profile;
-    const a = result.analysis;
-
-    canvasResult.innerHTML = `
-      <div class="pa-result-card">
-        <div class="pa-result-header">
-          <h3>Personal Analysis</h3>
-          <span class="pa-result-badge ${a.tone.toLowerCase()}">${a.tone}</span>
-        </div>
-
-        <div class="pa-result-section">
-          <h4>고객 정보</h4>
-          <div class="pa-result-grid">
-            <div class="pa-result-item">
-              <label>키</label>
-              <span>${p.height}cm (${a.heightCategory === 'short' ? '작은 편' : a.heightCategory === 'tall' ? '큰 편' : '보통'})</span>
-            </div>
-            <div class="pa-result-item">
-              <label>현재 기장</label>
-              <span>${p.currentLength === 'short' ? '숏' : p.currentLength === 'medium' ? '미디엄' : '롱'}</span>
-            </div>
-            <div class="pa-result-item">
-              <label>피부 타입</label>
-              <span>${a.skinInfo.name}</span>
-            </div>
-            <div class="pa-result-item">
-              <label>톤</label>
-              <span>${a.tone}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="pa-result-section">
-          <h4>희망 스타일</h4>
-          <div class="pa-result-grid">
-            <div class="pa-result-item">
-              <label>원하는 기장</label>
-              <span>${p.desiredLength} Length (${a.lengthInfo.position})</span>
-            </div>
-            <div class="pa-result-item">
-              <label>앞머리</label>
-              <span>${a.fringeInfo.name}</span>
-            </div>
-            <div class="pa-result-item">
-              <label>컬</label>
-              <span>${a.curlInfo.name}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="pa-result-section pa-recommendation">
-          <h4>분석 결과</h4>
-          ${a.isLengthRecommended
-            ? `<div class="pa-rec-good">✅ ${p.desiredLength} 기장은 고객님 체형에 잘 어울립니다!</div>`
-            : `<div class="pa-rec-warning">⚠️ 추천 기장: ${a.recommendedLengths.join(', ')}</div>`
-          }
-          <p class="pa-rec-detail">${result.recommendation}</p>
-        </div>
-      </div>
-    `;
-
-    canvasResult.classList.remove('hidden');
-    if (canvasEmpty) canvasEmpty.classList.add('hidden');
-
-    // 모바일에서 캔버스 패널 표시
-    const canvasPanel = document.getElementById('canvas-panel');
-    if (canvasPanel && window.innerWidth < 768) {
-      canvasPanel.classList.add('visible');
-    }
-  }
-
   setupEventListeners() {
     // Send Message - Enter 키 이벤트
     this.chatInput.addEventListener('keypress', (e) => {
@@ -2809,11 +2681,6 @@ function handleImageSelect(event) {
   console.log('📷 이미지 선택됨:', file.name);
   console.log('📷 pendingImageData 설정됨:', pendingImageData);
 
-  // Personal Analysis 버튼 표시 (여성 선택 시)
-  if (typeof showPersonalAnalysisButton === 'function') {
-    showPersonalAnalysisButton();
-  }
-
   // 파일 입력 초기화
   event.target.value = '';
 }
@@ -2836,10 +2703,6 @@ function removePreviewImage() {
   document.getElementById('gender-female').classList.remove('selected');
   document.getElementById('gender-male').classList.remove('selected');
   document.getElementById('category-selection').style.display = 'none';
-
-  // Personal Analysis 버튼 제거
-  const paBtn = document.getElementById('personal-analysis-trigger');
-  if (paBtn) paBtn.remove();
 
   console.log('🗑️ 이미지 제거됨');
 }
