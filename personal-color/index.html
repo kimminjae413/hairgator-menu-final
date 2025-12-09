@@ -424,44 +424,46 @@
 
                     <!-- 남성용 디테일 옵션 (스타일 선택 후 표시) -->
                     <div id="pa-male-detail" style="display: none;">
-                        <!-- 사이드 처리 -->
+                        <!-- 사이드 처리 설명 -->
                         <div style="margin-bottom: 16px;">
-                            <label style="display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 8px;">사이드 처리</label>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="pa-side-btn" data-side="fade" onclick="paSelectSide('fade')" style="flex: 1; padding: 10px; border: 2px solid #e0e0e0; background: #fff; border-radius: 8px; cursor: pointer;">
-                                    <div style="font-weight: 600; font-size: 12px;">페이드</div>
-                                    <div style="font-size: 10px; color: #888;">그라데이션</div>
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">🔹 사이드(옆머리) 처리 방식</label>
+                            <p style="font-size: 11px; color: #666; margin: 0 0 10px 0; line-height: 1.5;">귀 옆과 뒷머리 아래쪽을 어떻게 정리할지 선택하세요</p>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <button class="pa-side-btn" data-side="fade" onclick="paSelectSide('fade')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: left;">
+                                    <div style="font-weight: 600; font-size: 13px; margin-bottom: 4px;">페이드 (Fade)</div>
+                                    <div style="font-size: 11px; color: #666; line-height: 1.4;">아래에서 위로 자연스럽게 길어지는 그라데이션 기법. 세련된 느낌</div>
                                 </button>
-                                <button class="pa-side-btn" data-side="under" onclick="paSelectSide('under')" style="flex: 1; padding: 10px; border: 2px solid #e0e0e0; background: #fff; border-radius: 8px; cursor: pointer;">
-                                    <div style="font-weight: 600; font-size: 12px;">언더</div>
-                                    <div style="font-size: 10px; color: #888;">짧게</div>
+                                <button class="pa-side-btn" data-side="under" onclick="paSelectSide('under')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: left;">
+                                    <div style="font-weight: 600; font-size: 13px; margin-bottom: 4px;">언더 (Undercut)</div>
+                                    <div style="font-size: 11px; color: #666; line-height: 1.4;">옆머리를 클리퍼로 짧게 밀어 위와 대비를 주는 스타일. 시원한 느낌</div>
                                 </button>
-                                <button class="pa-side-btn" data-side="natural" onclick="paSelectSide('natural')" style="flex: 1; padding: 10px; border: 2px solid #e0e0e0; background: #fff; border-radius: 8px; cursor: pointer;">
-                                    <div style="font-weight: 600; font-size: 12px;">자연</div>
-                                    <div style="font-size: 10px; color: #888;">균일</div>
+                                <button class="pa-side-btn" data-side="natural" onclick="paSelectSide('natural')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: left;">
+                                    <div style="font-weight: 600; font-size: 13px; margin-bottom: 4px;">자연스럽게</div>
+                                    <div style="font-size: 11px; color: #666; line-height: 1.4;">전체적으로 균일한 길이. 가위로 자연스럽게 커팅</div>
                                 </button>
                             </div>
                         </div>
 
                         <!-- 앞머리 방향 -->
                         <div style="margin-bottom: 16px;">
-                            <label style="display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 8px;">앞머리 방향</label>
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">🔹 앞머리 스타일링 방향</label>
+                            <p style="font-size: 11px; color: #666; margin: 0 0 10px 0; line-height: 1.5;">앞머리를 어떤 방향으로 스타일링할지 선택하세요</p>
                             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
-                                <button class="pa-front-btn" data-front="all-back" onclick="paSelectFront('all-back')" style="padding: 10px; border: 2px solid #e0e0e0; background: #fff; border-radius: 8px; cursor: pointer;">
+                                <button class="pa-front-btn" data-front="all-back" onclick="paSelectFront('all-back')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: left;">
                                     <div style="font-weight: 600; font-size: 12px;">올백</div>
-                                    <div style="font-size: 10px; color: #888;">뒤로 넘김</div>
+                                    <div style="font-size: 10px; color: #666;">앞머리를 뒤로 넘김</div>
                                 </button>
-                                <button class="pa-front-btn" data-front="side-part" onclick="paSelectFront('side-part')" style="padding: 10px; border: 2px solid #e0e0e0; background: #fff; border-radius: 8px; cursor: pointer;">
+                                <button class="pa-front-btn" data-front="side-part" onclick="paSelectFront('side-part')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: left;">
                                     <div style="font-weight: 600; font-size: 12px;">사이드파팅</div>
-                                    <div style="font-size: 10px; color: #888;">7:3 가르마</div>
+                                    <div style="font-size: 10px; color: #666;">7:3 가르마로 옆으로</div>
                                 </button>
-                                <button class="pa-front-btn" data-front="center-down" onclick="paSelectFront('center-down')" style="padding: 10px; border: 2px solid #e0e0e0; background: #fff; border-radius: 8px; cursor: pointer;">
+                                <button class="pa-front-btn" data-front="center-down" onclick="paSelectFront('center-down')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: left;">
                                     <div style="font-weight: 600; font-size: 12px;">센터다운</div>
-                                    <div style="font-size: 10px; color: #888;">앞으로 내림</div>
+                                    <div style="font-size: 10px; color: #666;">이마 방향으로 내림</div>
                                 </button>
-                                <button class="pa-front-btn" data-front="see-through" onclick="paSelectFront('see-through')" style="padding: 10px; border: 2px solid #e0e0e0; background: #fff; border-radius: 8px; cursor: pointer;">
+                                <button class="pa-front-btn" data-front="see-through" onclick="paSelectFront('see-through')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: left;">
                                     <div style="font-weight: 600; font-size: 12px;">시스루</div>
-                                    <div style="font-size: 10px; color: #888;">가볍게</div>
+                                    <div style="font-size: 10px; color: #666;">가볍고 얇게 내림</div>
                                 </button>
                             </div>
                         </div>
@@ -477,33 +479,40 @@
                 </p>
 
                 <div style="margin-bottom: 24px;">
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px;">피부 타입</label>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">🎨 피부 타입</label>
+                    <p style="font-size: 11px; color: #666; margin: 0 0 12px 0; line-height: 1.5;">손목 안쪽 혈관 색상과 피부 특징을 확인하고 선택하세요</p>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <button class="pa-skin-btn" data-skin="TP" onclick="paSelectSkinType('TP')" style="padding: 14px 16px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; cursor: pointer; text-align: left;">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                                 <span style="font-size: 16px; font-weight: 700; color: #5C6BC0;">TP</span>
-                                <span style="font-size: 13px; font-weight: 600; color: #333;">투명 피부 (COOL)</span>
+                                <span style="font-size: 14px; font-weight: 600; color: #333;">투명 피부 (쿨톤)</span>
                             </div>
-                            <div style="font-size: 11px; color: #888; line-height: 1.4; padding-left: 2px;">
-                                혈관이 비치는 얇은 피부 · 핑크/블루 언더톤 · 여름/겨울 타입에 해당
+                            <div style="font-size: 12px; color: #555; line-height: 1.6; padding-left: 2px;">
+                                <div style="margin-bottom: 4px;">✓ <b>혈관 색상:</b> 파란색/보라색 계열</div>
+                                <div style="margin-bottom: 4px;">✓ <b>피부 특징:</b> 얇고 투명한 피부, 혈관이 잘 비침</div>
+                                <div>✓ <b>잘 어울리는 컬러:</b> 은색 액세서리, 핑크/블루 계열</div>
                             </div>
                         </button>
                         <button class="pa-skin-btn" data-skin="NP" onclick="paSelectSkinType('NP')" style="padding: 14px 16px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; cursor: pointer; text-align: left;">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                                 <span style="font-size: 16px; font-weight: 700; color: #78909C;">NP</span>
-                                <span style="font-size: 13px; font-weight: 600; color: #333;">중성 피부 (NEUTRAL)</span>
+                                <span style="font-size: 14px; font-weight: 600; color: #333;">중성 피부 (뉴트럴)</span>
                             </div>
-                            <div style="font-size: 11px; color: #888; line-height: 1.4; padding-left: 2px;">
-                                웜/쿨 구분이 모호한 피부 · 올리브/베이지 톤 · 다양한 컬러 소화 가능
+                            <div style="font-size: 12px; color: #555; line-height: 1.6; padding-left: 2px;">
+                                <div style="margin-bottom: 4px;">✓ <b>혈관 색상:</b> 초록색/파란색+초록색 혼합</div>
+                                <div style="margin-bottom: 4px;">✓ <b>피부 특징:</b> 올리브톤 또는 베이지, 쿨/웜 구분이 모호함</div>
+                                <div>✓ <b>잘 어울리는 컬러:</b> 금/은 모두 잘 어울림, 다양한 컬러 소화</div>
                             </div>
                         </button>
                         <button class="pa-skin-btn" data-skin="BP" onclick="paSelectSkinType('BP')" style="padding: 14px 16px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; cursor: pointer; text-align: left;">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                                 <span style="font-size: 16px; font-weight: 700; color: #FF8A65;">BP</span>
-                                <span style="font-size: 13px; font-weight: 600; color: #333;">베이스 피부 (WARM)</span>
+                                <span style="font-size: 14px; font-weight: 600; color: #333;">베이스 피부 (웜톤)</span>
                             </div>
-                            <div style="font-size: 11px; color: #888; line-height: 1.4; padding-left: 2px;">
-                                황색/골드 언더톤 · 두꺼운 피부결 · 봄/가을 타입에 해당
+                            <div style="font-size: 12px; color: #555; line-height: 1.6; padding-left: 2px;">
+                                <div style="margin-bottom: 4px;">✓ <b>혈관 색상:</b> 초록색/황록색 계열</div>
+                                <div style="margin-bottom: 4px;">✓ <b>피부 특징:</b> 노란기 있는 피부, 두꺼운 피부결</div>
+                                <div>✓ <b>잘 어울리는 컬러:</b> 금색 액세서리, 오렌지/브라운 계열</div>
                             </div>
                         </button>
                     </div>
@@ -869,7 +878,7 @@
 
 
     <!-- Main Application Script -->
-    <script src="app.js?v=20251209-2100"></script>
+    <script src="app.js?v=20251209-2130"></script>
 </body>
 
 </html>
