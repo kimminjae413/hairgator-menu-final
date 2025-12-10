@@ -178,7 +178,7 @@
             if (translated && translated !== key) return translated;
 
             // 영어인 경우 현재 언어가 한국어가 아니면 영어 매핑 사용
-            const lang = window.HAIRGATOR_LANG || 'ko';
+            const lang = window.currentLanguage || window.HAIRGATOR_LANG || 'ko';
             if (lang === 'ko') return koreanName;
 
             // 한국어 → 영어 매핑 (fallback)
@@ -2758,7 +2758,8 @@
 
         // ========== 언어에 따라 적절한 DB 선택하는 함수 ==========
         function getExpertGuideDB() {
-            const lang = window.HAIRGATOR_LANG || 'ko';
+            const lang = window.currentLanguage || window.HAIRGATOR_LANG || 'ko';
+            console.log('🌍 getExpertGuideDB 호출 - 현재 언어:', lang, '| window.currentLanguage:', window.currentLanguage);
             switch(lang) {
                 case 'en': return EXPERT_GUIDE_DB_EN;
                 case 'ja': return EXPERT_GUIDE_DB_JA;

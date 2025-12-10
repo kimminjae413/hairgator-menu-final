@@ -3649,5 +3649,9 @@ Object.defineProperty(window, 'currentLanguage', {
     }
 });
 
+// 초기화 시 저장된 언어 자동 로드
+loadLanguage();
+
 console.log('🌍 HAIRGATOR 다국어 시스템 로드 완료 (5개 언어 지원)');
+console.log(`현재 언어: ${currentLanguage}`);
 console.log('사용법: t("ui.close"), translateCategory("SIDE FRINGE"), setLanguage("en")');
