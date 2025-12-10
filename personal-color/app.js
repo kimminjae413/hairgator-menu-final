@@ -5500,10 +5500,32 @@ function displayCustomerSummary(mediaPipeData) {
 
   // 수동 입력 데이터
   const p = customerProfile;
-  const lengthNames = { short: '숏', medium: '미디엄', long: '롱' };
-  const skinTypeNames = { TP: 'TP (투명)', NP: 'NP (중성)', BP: 'BP (베이스)' };
-  const curlNames = { straight: '스트레이트', C: 'C컬', S: 'S컬', CS: 'C+S컬', SS: 'SS컬', none: '선호없음' };
-  const fringeNames = { forehead: '이마선', eyebrow: '눈썹선', eye: '눈선', cheekbone: '광대선', lips: '입술선', none: '없음' };
+  const lengthNames = {
+    short: t('personalColor.personalAnalysis.lengthShort') || 'Short',
+    medium: t('personalColor.personalAnalysis.lengthMedium') || 'Medium',
+    long: t('personalColor.personalAnalysis.lengthLong') || 'Long'
+  };
+  const skinTypeNames = {
+    TP: t('personalColor.personalAnalysis.skinTP') || 'TP (Transparent)',
+    NP: t('personalColor.personalAnalysis.skinNP') || 'NP (Neutral)',
+    BP: t('personalColor.personalAnalysis.skinBP') || 'BP (Base)'
+  };
+  const curlNames = {
+    straight: t('personalColor.personalAnalysis.curlStraight') || 'Straight',
+    C: t('personalColor.personalAnalysis.curlC') || 'C-Curl',
+    S: t('personalColor.personalAnalysis.curlS') || 'S-Curl',
+    CS: t('personalColor.personalAnalysis.curlCS') || 'CS-Curl',
+    SS: t('personalColor.personalAnalysis.curlSS') || 'SS-Curl',
+    none: t('personalColor.personalAnalysis.curlNone') || 'No Preference'
+  };
+  const fringeNames = {
+    forehead: t('personalColor.personalAnalysis.fringeForehead') || 'Forehead',
+    eyebrow: t('personalColor.personalAnalysis.fringeEyebrow') || 'Eyebrow',
+    eye: t('personalColor.personalAnalysis.fringeEye') || 'Eye',
+    cheekbone: t('personalColor.personalAnalysis.fringeCheekbone') || 'Cheekbone',
+    lips: t('personalColor.personalAnalysis.fringeLips') || 'Lips',
+    none: t('personalColor.personalAnalysis.fringeNone') || 'None'
+  };
 
   // MediaPipe 데이터 저장
   customerProfile.mediaPipeData = mediaPipeData;
@@ -5523,7 +5545,11 @@ function displayCustomerSummary(mediaPipeData) {
   let heightCategory = 'medium';
   if (p.height <= 158) heightCategory = 'short';
   else if (p.height >= 168) heightCategory = 'tall';
-  const heightCatKr = { short: '작은 편', medium: '보통', tall: '큰 편' };
+  const heightCatKr = {
+    short: t('personalColor.personalAnalysis.heightShort') || 'Short',
+    medium: t('personalColor.personalAnalysis.heightMedium') || 'Medium',
+    tall: t('personalColor.personalAnalysis.heightTall') || 'Tall'
+  };
 
   // 톤 매핑
   const toneMap = { 'Warm': 'WARM', 'Cool': 'COOL', 'Neutral': 'NEUTRAL' };
@@ -5537,36 +5563,36 @@ function displayCustomerSummary(mediaPipeData) {
   content.innerHTML = `
     <!-- 수동 입력 섹션 -->
     <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0;">
-      <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 8px; font-size: 11px;">✍️ 수동 입력</div>
+      <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 8px; font-size: 11px;">✍️ ${t('personalColor.personalAnalysis.manualInput') || 'Manual Input'}</div>
       <div style="display: flex; flex-direction: column; gap: 4px; color: #333; font-size: 11px;">
-        <div><span style="color: #888;">키:</span> ${p.height || '-'}cm (${heightCatKr[heightCategory]})</div>
-        <div><span style="color: #888;">현재→희망:</span> ${lengthNames[p.currentLength] || '-'} → <b>${p.desiredLength || '-'}</b></div>
-        <div><span style="color: #888;">앞머리:</span> ${fringeNames[p.fringePreference] || '-'}</div>
-        <div><span style="color: #888;">피부타입:</span> ${skinTypeNames[p.skinType] || '-'}</div>
-        <div><span style="color: #888;">컬:</span> ${curlNames[p.curlPreference] || '-'}</div>
+        <div><span style="color: #888;">${t('personalColor.personalAnalysis.labelHeight') || 'Height'}:</span> ${p.height || '-'}cm (${heightCatKr[heightCategory]})</div>
+        <div><span style="color: #888;">${t('personalColor.personalAnalysis.labelCurrentDesired') || 'Current→Desired'}:</span> ${lengthNames[p.currentLength] || '-'} → <b>${p.desiredLength || '-'}</b></div>
+        <div><span style="color: #888;">${t('personalColor.personalAnalysis.labelFringe') || 'Fringe'}:</span> ${fringeNames[p.fringePreference] || '-'}</div>
+        <div><span style="color: #888;">${t('personalColor.personalAnalysis.labelSkinType') || 'Skin Type'}:</span> ${skinTypeNames[p.skinType] || '-'}</div>
+        <div><span style="color: #888;">${t('personalColor.personalAnalysis.labelCurl') || 'Curl'}:</span> ${curlNames[p.curlPreference] || '-'}</div>
       </div>
     </div>
 
     <!-- AI 분석 섹션 -->
     <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0;">
-      <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 8px; font-size: 11px;">🤖 AI 분석</div>
+      <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 8px; font-size: 11px;">🤖 ${t('personalColor.personalAnalysis.aiAnalysis') || 'AI Analysis'}</div>
       <div style="display: flex; flex-direction: column; gap: 4px; color: #333; font-size: 11px;">
         <div style="display: flex; align-items: center; gap: 6px;">
-          <span style="color: #888;">피부톤:</span>
+          <span style="color: #888;">${t('personalColor.personalAnalysis.labelSkinTone') || 'Skin Tone'}:</span>
           <div style="width: 14px; height: 14px; background: ${skinHex}; border-radius: 3px; border: 1px solid #ddd;"></div>
           <span>${skinHex}</span>
         </div>
-        <div><span style="color: #888;">언더톤:</span> <b style="color: ${aiUndertone === 'Warm' ? '#D84315' : aiUndertone === 'Cool' ? '#1565C0' : '#616161'};">${aiUndertone}</b></div>
-        <div><span style="color: #888;">시즌:</span> <b>${aiSeason}</b> (${aiConfidence}%)</div>
+        <div><span style="color: #888;">${t('personalColor.personalAnalysis.labelUndertone') || 'Undertone'}:</span> <b style="color: ${aiUndertone === 'Warm' ? '#D84315' : aiUndertone === 'Cool' ? '#1565C0' : '#616161'};">${aiUndertone}</b></div>
+        <div><span style="color: #888;">${t('personalColor.personalAnalysis.labelSeason') || 'Season'}:</span> <b>${aiSeason}</b> (${aiConfidence}%)</div>
       </div>
     </div>
 
     <!-- 통합 분석 결과 -->
     <div style="grid-column: 1 / -1; background: linear-gradient(135deg, ${themeColor}15, ${themeColor}08); padding: 10px; border-radius: 8px; border: 1px solid ${themeColor}30; margin-top: 4px;">
-      <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 6px; font-size: 11px;">🔗 통합 분석</div>
+      <div style="font-weight: 600; color: ${themeColor}; margin-bottom: 6px; font-size: 11px;">🔗 ${t('personalColor.personalAnalysis.integratedAnalysis') || 'Integrated Analysis'}</div>
       <div style="display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #333;">
-        <div>${manualTone === aiTone ? '✅' : '🔍'} 디자이너(${manualTone}) + AI(${aiTone}) ${manualTone === aiTone ? '→ 신뢰도 높음' : '→ 종합 적용'}</div>
-        <div>${isLengthRecommended ? '✅' : '💡'} ${p.desiredLength} 기장 ${isLengthRecommended ? '체형 적합' : `(추천: ${recommendedLengths.join(',')})`}</div>
+        <div>${manualTone === aiTone ? '✅' : '🔍'} Designer(${manualTone}) + AI(${aiTone}) ${manualTone === aiTone ? '→ ' + (t('personalColor.personalAnalysis.designerAiMatch') || 'High confidence') : '→ ' + (t('personalColor.personalAnalysis.designerAiCombined') || 'Combined')}</div>
+        <div>${isLengthRecommended ? '✅' : '💡'} ${p.desiredLength} ${isLengthRecommended ? (t('personalColor.personalAnalysis.lengthFit') || 'Body type fit') : `(${t('personalColor.personalAnalysis.lengthRecommend') || 'Recommend'}: ${recommendedLengths.join(',')})`}</div>
       </div>
     </div>
   `;
@@ -5626,7 +5652,7 @@ function generateIntegratedAnalysis(mediaPipeData) {
     faceGeometry: mediaPipeData?.faceGeometry || null
   };
 
-  console.log('🔗 통합 분석 결과:', integrated);
+  console.log('🔗 ${t('personalColor.personalAnalysis.integratedAnalysis') || 'Integrated Analysis'} 결과:', integrated);
   return integrated;
 }
 
@@ -5641,10 +5667,32 @@ function generateIntegratedResultHTML(integrated, personalColor) {
   const analysis = integrated.analysis;
 
   // 체형 카테고리 한글
-  const heightCatKr = { short: '작은 편', medium: '보통', tall: '큰 편' };
-  const lengthNames = { short: '숏', medium: '미디엄', long: '롱' };
-  const curlNames = { straight: '스트레이트', C: 'C컬', S: 'S컬', CS: 'C+S컬', SS: 'SS컬', none: '선호없음' };
-  const fringeNames = { forehead: '이마선', eyebrow: '눈썹선', eye: '눈선', cheekbone: '광대선', lips: '입술선', none: '없음' };
+  const heightCatKr = {
+    short: t('personalColor.personalAnalysis.heightShort') || 'Short',
+    medium: t('personalColor.personalAnalysis.heightMedium') || 'Medium',
+    tall: t('personalColor.personalAnalysis.heightTall') || 'Tall'
+  };
+  const lengthNames = {
+    short: t('personalColor.personalAnalysis.lengthShort') || 'Short',
+    medium: t('personalColor.personalAnalysis.lengthMedium') || 'Medium',
+    long: t('personalColor.personalAnalysis.lengthLong') || 'Long'
+  };
+  const curlNames = {
+    straight: t('personalColor.personalAnalysis.curlStraight') || 'Straight',
+    C: t('personalColor.personalAnalysis.curlC') || 'C-Curl',
+    S: t('personalColor.personalAnalysis.curlS') || 'S-Curl',
+    CS: t('personalColor.personalAnalysis.curlCS') || 'CS-Curl',
+    SS: t('personalColor.personalAnalysis.curlSS') || 'SS-Curl',
+    none: t('personalColor.personalAnalysis.curlNone') || 'No Preference'
+  };
+  const fringeNames = {
+    forehead: t('personalColor.personalAnalysis.fringeForehead') || 'Forehead',
+    eyebrow: t('personalColor.personalAnalysis.fringeEyebrow') || 'Eyebrow',
+    eye: t('personalColor.personalAnalysis.fringeEye') || 'Eye',
+    cheekbone: t('personalColor.personalAnalysis.fringeCheekbone') || 'Cheekbone',
+    lips: t('personalColor.personalAnalysis.fringeLips') || 'Lips',
+    none: t('personalColor.personalAnalysis.fringeNone') || 'None'
+  };
 
   // 기장 변화량 계산
   // lengthOrder: 짧은 순 → 긴 순 (H가 가장 짧고, A가 가장 김)
@@ -5654,7 +5702,7 @@ function generateIntegratedResultHTML(integrated, personalColor) {
   const desiredIdx = lengthOrder.indexOf(c.desiredLength);
   const currentIdx = currentLengthIdx[c.currentLength] ?? 3;
   const lengthChange = desiredIdx - currentIdx; // 양수면 길게, 음수면 짧게
-  const lengthChangeText = lengthChange > 0 ? `${Math.abs(lengthChange)}단계 길게` : lengthChange < 0 ? `${Math.abs(lengthChange)}단계 짧게` : '유지';
+  const lengthChangeText = lengthChange > 0 ? `${Math.abs(lengthChange)} ${t('personalColor.personalAnalysis.stepsLonger') || 'steps longer'}` : lengthChange < 0 ? `${Math.abs(lengthChange)} ${t('personalColor.personalAnalysis.stepsShorter') || 'steps shorter'}` : (t('personalColor.personalAnalysis.maintain') || 'Maintain');
   const lengthChangeIcon = lengthChange === 0 ? '➡️' : lengthChange > 0 ? '📏⬆️' : '✂️⬇️';
 
   // 시술 난이도 계산 (변화량 + 컬 추가 시 +1)
@@ -5662,7 +5710,7 @@ function generateIntegratedResultHTML(integrated, personalColor) {
   const hasCurl = c.curlPreference !== 'straight' && c.curlPreference !== 'none';
   const difficultyScore = changeAmount + (hasCurl ? 1 : 0);
   // 0~1: 쉬움, 2~3: 보통, 4+: 어려움
-  const difficultyText = difficultyScore <= 1 ? '쉬움' : difficultyScore <= 3 ? '보통' : '어려움';
+  const difficultyText = difficultyScore <= 1 ? (t('personalColor.personalAnalysis.difficultyEasy') || 'Easy') : difficultyScore <= 3 ? (t('personalColor.personalAnalysis.difficultyMedium') || 'Medium') : (t('personalColor.personalAnalysis.difficultyHard') || 'Hard');
   const difficultyColor = difficultyScore <= 1 ? '#2E7D32' : difficultyScore <= 3 ? '#1565C0' : '#C62828';
 
   // 톤 분석 결과 스타일 (대결이 아닌 보완 구조)
@@ -5671,8 +5719,8 @@ function generateIntegratedResultHTML(integrated, personalColor) {
     : 'background: rgba(103,58,183,0.12); border-color: rgba(103,58,183,0.3); color: #5E35B1;';
   const toneMatchIcon = analysis.toneMatch ? '✅' : '🔍';
   const toneMatchText = analysis.toneMatch
-    ? `디자이너 판단 + AI 분석 일치 → 신뢰도 높음`
-    : `디자이너(${c.manualTone}) + AI(${a.tone}) 종합 분석 적용`;
+    ? (t('personalColor.personalAnalysis.designerAiMatch') || 'Designer + AI match → High confidence')
+    : `Designer(${c.manualTone}) + AI(${a.tone}) ${t('personalColor.personalAnalysis.designerAiCombined') || 'Combined analysis'}`;
 
   // 기장 추천 여부
   const lengthMatchStyle = analysis.isLengthRecommended
@@ -5680,8 +5728,8 @@ function generateIntegratedResultHTML(integrated, personalColor) {
     : 'color: #5E35B1;';
   const lengthMatchIcon = analysis.isLengthRecommended ? '✅' : '💡';
   const lengthMatchText = analysis.isLengthRecommended
-    ? `${c.desiredLength} Length 체형 적합!`
-    : `추천: ${analysis.recommendedLengths.join(', ')} (선택: ${c.desiredLength})`;
+    ? `${c.desiredLength} Length ${t('personalColor.personalAnalysis.lengthFit') || 'Body type fit'}!`
+    : `${t('personalColor.personalAnalysis.lengthRecommend') || 'Recommend'}: ${analysis.recommendedLengths.join(', ')} (${t('personalColor.personalAnalysis.selected') || 'Selected'}: ${c.desiredLength})`;
 
   // 성별에 따른 테마 색상
   const isMale = document.body.classList.contains('male-theme');
@@ -5698,18 +5746,18 @@ function generateIntegratedResultHTML(integrated, personalColor) {
     <div style="background: ${themeGradient}; padding: 16px; border-radius: 14px; margin-bottom: 14px; color: #fff;">
       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
         <span style="font-size: 20px;">🎯</span>
-        <span style="font-size: 16px; font-weight: 700;">Personal Analysis 종합 결과</span>
+        <span style="font-size: 16px; font-weight: 700;">${t('personalColor.personalAnalysis.integratedResult') || 'Personal Analysis Result'}</span>
       </div>
 
       <!-- 고객 프로필 요약 -->
       <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; margin-bottom: 10px;">
-        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">👤 고객 프로필</div>
+        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">👤 ${t('personalColor.personalAnalysis.customerProfile') || 'Customer Profile'}</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px;">
-          <div>키: <b>${c.height}cm</b> (${heightCatKr[c.heightCategory]})</div>
-          <div>피부톤: <b>${a.tone}</b></div>
-          <div>희망 기장: <b>${c.desiredLength} Length</b></div>
-          <div>앞머리: <b>${fringeNames[c.fringePreference]}</b></div>
-          <div>컬 선호: <b>${curlNames[c.curlPreference]}</b></div>
+          <div>${t('personalColor.personalAnalysis.labelHeight') || 'Height'}: <b>${c.height}cm</b> (${heightCatKr[c.heightCategory]})</div>
+          <div>${t('personalColor.personalAnalysis.labelSkinType') || 'Skin Type'}: <b>${a.tone}</b></div>
+          <div>${t('personalColor.personalAnalysis.desiredLength') || 'Desired Length'}: <b>${c.desiredLength} Length</b></div>
+          <div>${t('personalColor.personalAnalysis.labelFringe') || 'Fringe'}: <b>${fringeNames[c.fringePreference]}</b></div>
+          <div>${t('personalColor.personalAnalysis.labelCurl') || 'Curl'}: <b>${curlNames[c.curlPreference]}</b></div>
           <div>시즌: <b>${a.season}</b></div>
         </div>
       </div>
