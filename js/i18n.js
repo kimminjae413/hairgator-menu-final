@@ -608,7 +608,7 @@ const HAIRGATOR_I18N = {
         customerProfile: '고객 프로필',
         desiredLength: '희망 기장',
         selected: '선택'
-      }
+      },
       // Face Analysis
       faceAnalysis: {
         narrowGapDesc: '좁은 미간 - 눈 사이가 가까워 보임',
