@@ -7556,6 +7556,33 @@ JSON만: {"total_score":<0-100>,"fringe_match":<true/false>,"volume_match":<true
     console.log(`\n👤 사용자 이미지 페이드 (사전분석): ${userFadeLevel}`);
   }
 
+  // ⭐ 캡션 기반 기법 매칭 점수 추가 (여자 스타일과 동일)
+  console.log(`\n🔬 남자 캡션 기반 기법 매칭:`);
+  const candidateStyleMap = new Map(candidateStyles.map(s => [s.styleId, s]));
+
+  // 남자용 기법 분석 (단순화 버전 - 페이드/텍스처 위주)
+  const analyzeRequiredMaleTechnique = () => {
+    // BZ/CP/MC 스타일은 페이드가 핵심이므로 caption 매칭 비중 낮음
+    return {
+      needs_fade: isFadeCriticalStyle,
+      fade_level: userFadeLevel,
+      complexity: isFadeCriticalStyle ? 'simple' : 'medium'
+    };
+  };
+
+  const requiredMaleTechnique = analyzeRequiredMaleTechnique();
+
+  for (const result of scoreResults) {
+    const recipe = candidateStyleMap.get(result.styleId);
+    // 남자도 캡션 기반 매칭 점수 계산
+    const techniqueScore = calculateTechniqueMatchScore(requiredMaleTechnique, recipe);
+    result.visionScore = result.score;  // 원본 Vision 점수 보존
+    result.techniqueScore = techniqueScore;
+    // 최종 점수: Vision 70% + 캡션 기법 30% (남자는 Vision 비중 높음)
+    result.score = Math.round(result.visionScore * 0.7 + techniqueScore * 0.3);
+    console.log(`  📊 ${result.styleId}: Vision ${result.visionScore}점 + 캡션 ${techniqueScore}점 = 최종 ${result.score}점`);
+  }
+
   // 스타일 유형에 따라 다른 정렬 로직
   const hasFadeCritical = scoreResults.some(r => r.isFadeCritical);
 
@@ -7585,12 +7612,12 @@ JSON만: {"total_score":<0-100>,"fringe_match":<true/false>,"volume_match":<true
     });
   }
 
-  console.log(`\n🏆 남자 최종 순위:`);
+  console.log(`\n🏆 남자 최종 순위 (Vision + 캡션 기법):`);
   scoreResults.slice(0, 3).forEach((r, i) => {
     if (r.isFadeCritical) {
-      console.log(`  ${i + 1}. ${r.styleId}(DB:${r.dbFadeLevel}): ${r.score}점 (페이드일치: ${r.fadeMatch ? '✓' : '✗'})`);
+      console.log(`  ${i + 1}. ${r.styleId}(DB:${r.dbFadeLevel}): ${r.score}점 (V:${r.visionScore} + T:${r.techniqueScore}) (페이드일치: ${r.fadeMatch ? '✓' : '✗'})`);
     } else {
-      console.log(`  ${i + 1}. ${r.styleId}(DB:${r.dbFadeLevel}): ${r.score}점 (앞머리: ${r.fringeMatch ? '✓' : '✗'}, 볼륨: ${r.volumeMatch ? '✓' : '✗'}, 페이드: ${r.fadeMatch ? '✓' : '✗'})`);
+      console.log(`  ${i + 1}. ${r.styleId}(DB:${r.dbFadeLevel}): ${r.score}점 (V:${r.visionScore} + T:${r.techniqueScore}) (앞머리: ${r.fringeMatch ? '✓' : '✗'}, 볼륨: ${r.volumeMatch ? '✓' : '✗'}, 페이드: ${r.fadeMatch ? '✓' : '✗'})`);
     }
   });
 
@@ -7602,6 +7629,8 @@ JSON만: {"total_score":<0-100>,"fringe_match":<true/false>,"volume_match":<true
       selectedStyleId: best.styleId,
       confidence: confidence,
       score: best.score,
+      visionScore: best.visionScore,
+      techniqueScore: best.techniqueScore,
       reason: best.reason,
       allScores: scoreResults.slice(0, 5)
     };
