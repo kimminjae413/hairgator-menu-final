@@ -2413,7 +2413,7 @@
                         <div style="background: rgba(0,150,136,0.08); padding: 14px; border-radius: 8px;">
                             <div style="font-size: 14px; color: #00897B; margin-bottom: 6px; font-weight: bold;">OXIDANT</div>
                             <div style="font-size: 16px; color: #333; font-weight: 600;">${recipe.oxidant}</div>
-                            <div style="font-size: 14px; color: #00897B; margin-top: 5px;">⏱️ ${recipe.processingTime}</div>
+                            <div style="font-size: 14px; color: #00897B; margin-top: 5px;">⏱️ ${recipe.processingTime.replace('분', t('personalColor.aiMode.result.minute') || 'min')}</div>
                         </div>
                     </div>
                 </div>
@@ -4077,7 +4077,7 @@
                             <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
                                 <div style="font-size: 12px; color: #80CBC4; margin-bottom: 4px; font-weight: bold;">OXIDANT</div>
                                 <div style="font-size: 14px; color: #E0F2F1; font-weight: 600;">${recipe.oxidant}</div>
-                                <div style="font-size: 12px; color: #80CBC4; margin-top: 3px;">⏱️ ${recipe.processingTime}</div>
+                                <div style="font-size: 12px; color: #80CBC4; margin-top: 3px;">⏱️ ${recipe.processingTime.replace('분', t('personalColor.aiMode.result.minute') || 'min')}</div>
                             </div>
                         </div>
                     </div>
@@ -5758,7 +5758,7 @@ function generateIntegratedResultHTML(integrated, personalColor) {
           <div>${t('personalColor.personalAnalysis.desiredLength') || 'Desired Length'}: <b>${c.desiredLength} Length</b></div>
           <div>${t('personalColor.personalAnalysis.labelFringe') || 'Fringe'}: <b>${fringeNames[c.fringePreference]}</b></div>
           <div>${t('personalColor.personalAnalysis.labelCurl') || 'Curl'}: <b>${curlNames[c.curlPreference]}</b></div>
-          <div>시즌: <b>${a.season}</b></div>
+          <div>${t('personalColor.personalAnalysis.labelSeason') || '시즌'}: <b>${a.season}</b></div>
         </div>
       </div>
 
@@ -5767,7 +5767,7 @@ function generateIntegratedResultHTML(integrated, personalColor) {
         <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
           <div>${lengthChangeIcon} <b>${lengthNames[c.currentLength]} → ${c.desiredLength}</b> (${lengthChangeText})</div>
           <div style="background: ${difficultyColor}; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;">
-            난이도: ${difficultyText}
+            ${t('personalColor.aiMode.result.difficulty') || '난이도'}: ${difficultyText}
           </div>
         </div>
       </div>
