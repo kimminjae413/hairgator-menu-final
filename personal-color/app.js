@@ -2311,8 +2311,8 @@
             if (!hairRec.recommended1st || hairRec.recommended1st.length === 0) {
                 return `
                     <div style="margin-top: 15px; background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0;">
-                        <div style="font-size: 14px; color: #666;">💇 추천 염색 컬러</div>
-                        <div style="color: #888; font-size: 13px; margin-top: 10px;">염색 컬러 데이터를 불러오는 중...</div>
+                        <div style="font-size: 14px; color: #666;">${t('personalColor.aiMode.result.recommendedHairColor')}</div>
+                        <div style="color: #888; font-size: 13px; margin-top: 10px;">${t('personalColor.aiMode.result.loadingColors')}</div>
                     </div>
                 `;
             }
@@ -2342,7 +2342,7 @@
                             ${color.level ? `<div style="font-size: 9px; color: #888; margin-top: 1px;">Level ${color.level}</div>` : ''}
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-size: 12px; color: #4CAF50; font-weight: bold;">${color.harmonyScore}점</div>
+                            <div style="font-size: 12px; color: #4CAF50; font-weight: bold;">${color.harmonyScore}${t('personalColor.aiMode.result.score')}</div>
                             <div style="font-size: 9px; color: ${badge.color};">${badge.label}</div>
                         </div>
                     </div>
@@ -2359,8 +2359,8 @@
             let html = `
                 <div style="background: rgba(76,175,80,0.1); padding: 15px; border-radius: 12px; border: 1px solid rgba(76,175,80,0.3);">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                        <div style="font-size: 14px; color: #4CAF50; font-weight: bold;">💇 추천 염색 컬러 (1순위)</div>
-                        <div style="font-size: 10px; color: #81C784; background: rgba(76,175,80,0.2); padding: 2px 6px; border-radius: 10px;">강추천</div>
+                        <div style="font-size: 14px; color: #4CAF50; font-weight: bold;">${t('personalColor.aiMode.result.recommendedHairColor1st')}</div>
+                        <div style="font-size: 10px; color: #81C784; background: rgba(76,175,80,0.2); padding: 2px 6px; border-radius: 10px;">${t('personalColor.aiMode.result.highlyRecommended')}</div>
                     </div>
                     ${hairRec.recommended1st.map((c, i) => renderColorItemAdvanced(c, i+1)).join('')}
                 </div>
@@ -2370,8 +2370,8 @@
                 html += `
                     <div style="margin-top: 12px; background: #f8f9fa; padding: 15px; border-radius: 12px; border: 1px solid #e0e0e0;">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                            <div style="font-size: 14px; color: #666; font-weight: bold;">💇 추천 염색 컬러 (2순위)</div>
-                            <div style="font-size: 10px; color: #888; background: #e0e0e0; padding: 2px 6px; border-radius: 10px;">무난함</div>
+                            <div style="font-size: 14px; color: #666; font-weight: bold;">${t('personalColor.aiMode.result.recommendedHairColor2nd')}</div>
+                            <div style="font-size: 10px; color: #888; background: #e0e0e0; padding: 2px 6px; border-radius: 10px;">${t('personalColor.aiMode.result.safeChoice')}</div>
                         </div>
                         ${hairRec.recommended2nd.map((c, i) => renderColorItemAdvanced(c, i+4)).join('')}
                     </div>
@@ -2422,18 +2422,18 @@
             return `
                 <div style="background: linear-gradient(135deg, rgba(156,39,176,0.08), rgba(103,58,183,0.05)); padding: 20px; border-radius: 12px; border: 1px solid rgba(156,39,176,0.3);">
                     <div style="font-size: 20px; color: #7B1FA2; margin-bottom: 16px; font-weight: bold;">
-                        📋 AI 헤어 컨설턴트 리포트
+                        ${t('personalColor.aiMode.result.aiHairConsultantReport')}
                     </div>
 
                     <!-- 섹션 A: 퍼스널 컬러 정밀 진단 -->
                     <div style="margin-bottom: 16px; background: #f8f9fa; padding: 16px; border-radius: 8px; border-left: 3px solid #9C27B0;">
-                        <div style="font-size: 17px; color: #7B1FA2; margin-bottom: 10px; font-weight: bold;">🔬 SECTION A: 정밀 진단</div>
+                        <div style="font-size: 17px; color: #7B1FA2; margin-bottom: 10px; font-weight: bold;">${t('personalColor.aiMode.result.sectionAPreciseDiagnosis')}</div>
                         <div style="font-size: 16px; color: #333; line-height: 1.7; margin-bottom: 10px;">
                             ${feedback.toneKeywords}
                         </div>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <span style="background: rgba(156,39,176,0.15); color: #6A1B9A; font-size: 15px; padding: 6px 14px; border-radius: 12px;">
-                                📊 추천 레벨: ${feedback.levelTip}
+                                ${t('personalColor.aiMode.result.recommendedLevel')}: ${feedback.levelTip}
                             </span>
                             ${feedback.brightnessAdvice ? `
                             <span style="background: rgba(156,39,176,0.15); color: #6A1B9A; font-size: 15px; padding: 6px 14px; border-radius: 12px;">
@@ -2446,16 +2446,16 @@
                     <!-- 섹션 B: 컬러 사이언스 분석 -->
                     ${feedback.colorScience ? `
                     <div style="margin-bottom: 16px; background: linear-gradient(135deg, rgba(63,81,181,0.08), rgba(48,63,159,0.05)); padding: 16px; border-radius: 8px; border: 1px solid rgba(63,81,181,0.3);">
-                        <div style="font-size: 17px; color: #3949AB; margin-bottom: 12px; font-weight: bold;">🧬 SECTION B: 컬러 사이언스</div>
+                        <div style="font-size: 17px; color: #3949AB; margin-bottom: 12px; font-weight: bold;">${t('personalColor.aiMode.result.sectionBColorScience')}</div>
                         <div style="font-size: 16px; color: #333; line-height: 1.7;">
                             <div style="margin-bottom: 10px;">
-                                <b style="color: #3F51B5;">멜라닌 분석:</b> ${feedback.colorScience.melaninType}
+                                <b style="color: #3F51B5;">${t('personalColor.aiMode.result.melaninAnalysis')}:</b> ${feedback.colorScience.melaninType}
                             </div>
                             <div style="margin-bottom: 10px;">
-                                <b style="color: #3F51B5;">언더코트 예측:</b> ${feedback.colorScience.undercoatPrediction}
+                                <b style="color: #3F51B5;">${t('personalColor.aiMode.result.undercoatPrediction')}:</b> ${feedback.colorScience.undercoatPrediction}
                             </div>
                             <div>
-                                <b style="color: #3F51B5;">중화 전략:</b> ${feedback.colorScience.neutralizationStrategy}
+                                <b style="color: #3F51B5;">${t('personalColor.aiMode.result.neutralizationStrategy')}:</b> ${feedback.colorScience.neutralizationStrategy}
                             </div>
                         </div>
                     </div>
@@ -2464,34 +2464,34 @@
                     <!-- 섹션 C: 시술 레시피 (처방전) -->
                     ${recipeCardsHTML ? `
                     <div style="margin-bottom: 16px;">
-                        <div style="font-size: 17px; color: #00897B; margin-bottom: 12px; font-weight: bold;">💊 SECTION C: ${t('personalColor.result.treatmentRecipe') || 'Treatment Recipe'}</div>
+                        <div style="font-size: 17px; color: #00897B; margin-bottom: 12px; font-weight: bold;">${t('personalColor.aiMode.result.sectionCTreatmentRecipe')}</div>
                         ${recipeCardsHTML}
                     </div>
                     ` : ''}
 
                     <!-- 헤어 시술 팁 -->
                     <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 14px; border: 1px solid #e0e0e0;">
-                        <div style="font-size: 16px; color: #7B1FA2; margin-bottom: 8px; font-weight: bold;">✂️ ${t('personalColor.result.treatmentPoints') || 'Treatment Points'}</div>
+                        <div style="font-size: 16px; color: #7B1FA2; margin-bottom: 8px; font-weight: bold;">${t('personalColor.aiMode.result.treatmentTips')}</div>
                         <div style="font-size: 16px; color: #333; line-height: 1.7;">
-                            <div style="margin-bottom: 6px;"><b style="color: #9C27B0;">언더코트:</b> ${feedback.undercoatTip}</div>
-                            <div><b style="color: #9C27B0;">마무리 질감:</b> ${feedback.textureTip}</div>
+                            <div style="margin-bottom: 6px;"><b style="color: #9C27B0;">${t('personalColor.aiMode.result.undercoat')}:</b> ${feedback.undercoatTip}</div>
+                            <div><b style="color: #9C27B0;">${t('personalColor.aiMode.result.finishTexture')}:</b> ${feedback.textureTip}</div>
                         </div>
                     </div>
 
                     <!-- 토탈 뷰티 팁 -->
                     ${feedback.makeupBase ? `
                     <div style="background: linear-gradient(135deg, rgba(233,30,99,0.08), rgba(255,64,129,0.05)); padding: 16px; border-radius: 8px; margin-bottom: 14px; border: 1px solid rgba(233,30,99,0.2);">
-                        <div style="font-size: 16px; color: #C2185B; margin-bottom: 8px; font-weight: bold;">💄 토탈 뷰티</div>
+                        <div style="font-size: 16px; color: #C2185B; margin-bottom: 8px; font-weight: bold;">${t('personalColor.aiMode.result.totalBeauty')}</div>
                         <div style="font-size: 16px; color: #333; line-height: 1.7;">
-                            ${feedback.fashionVibe ? `<div style="margin-bottom: 6px;"><b style="color: #E91E63;">패션:</b> ${feedback.fashionVibe}</div>` : ''}
-                            <div><b style="color: #E91E63;">메이크업:</b> ${feedback.makeupBase}</div>
+                            ${feedback.fashionVibe ? `<div style="margin-bottom: 6px;"><b style="color: #E91E63;">${t('personalColor.aiMode.result.fashion')}:</b> ${feedback.fashionVibe}</div>` : ''}
+                            <div><b style="color: #E91E63;">${t('personalColor.aiMode.result.makeup')}:</b> ${feedback.makeupBase}</div>
                         </div>
                     </div>
                     ` : ''}
 
                     <!-- 컨설팅 포인트 -->
                     <div style="background: rgba(103,58,183,0.1); padding: 16px; border-radius: 8px;">
-                        <div style="font-size: 16px; color: #5E35B1; margin-bottom: 8px; font-weight: bold;">💬 컨설팅 포인트</div>
+                        <div style="font-size: 16px; color: #5E35B1; margin-bottom: 8px; font-weight: bold;">${t('personalColor.aiMode.result.consultingPoint')}</div>
                         <div style="font-size: 16px; color: #333; line-height: 1.7;">${feedback.consultingTip}</div>
                         <div style="font-size: 15px; color: #512DA8; margin-top: 10px; font-style: italic; background: rgba(103,58,183,0.08); padding: 10px 12px; border-radius: 6px;">
                             💡 "${feedback.seasonalAdvice}"
@@ -2501,7 +2501,7 @@
                     <!-- 피해야 할 톤 -->
                     ${feedback.avoidColors && feedback.avoidColors.length > 0 ? `
                     <div style="margin-top: 14px; padding: 14px; background: rgba(244,67,54,0.08); border-radius: 8px; border: 1px solid rgba(244,67,54,0.2);">
-                        <div style="font-size: 16px; color: #C62828; margin-bottom: 8px; font-weight: bold;">⛔ 피해야 할 톤</div>
+                        <div style="font-size: 16px; color: #C62828; margin-bottom: 8px; font-weight: bold;">${t('personalColor.expertGuide.avoidTones')}</div>
                         <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                             ${feedback.avoidColors.map(c => `
                                 <div style="display: flex; align-items: center; gap: 6px; background: rgba(244,67,54,0.1); padding: 6px 12px 6px 8px; border-radius: 12px;">
@@ -5785,11 +5785,11 @@ function generateIntegratedResultHTML(integrated, personalColor) {
 
     <!-- 💇 스타일 추천 -->
     <div style="background: linear-gradient(135deg, ${themeColor}15, ${themeColor}08); padding: 14px; border-radius: 12px; border: 1px solid ${themeColor}30; margin-bottom: 14px;">
-      <div style="font-size: 13px; font-weight: 600; color: ${themeColor}; margin-bottom: 10px;">💇 맞춤 스타일 추천</div>
+      <div style="font-size: 13px; font-weight: 600; color: ${themeColor}; margin-bottom: 10px;">${t('personalColor.aiMode.result.customStyleRecommend')}</div>
       <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #333;">
         <div style="display: flex; align-items: flex-start; gap: 8px;">
           <span style="color: ${themeColor};">●</span>
-          <span><b>${c.desiredLength} Length</b> + <b>${fringeNames[c.fringePreference]}</b> 앞머리 조합</span>
+          <span><b>${c.desiredLength} Length</b> + <b>${fringeNames[c.fringePreference]}</b> ${t('personalColor.aiMode.result.fringeCombo')}</span>
         </div>
         <div style="display: flex; align-items: flex-start; gap: 8px;">
           <span style="color: ${themeColor};">●</span>
@@ -5797,7 +5797,7 @@ function generateIntegratedResultHTML(integrated, personalColor) {
         </div>
         <div style="display: flex; align-items: flex-start; gap: 8px;">
           <span style="color: ${themeColor};">●</span>
-          <span>${a.season} 시즌 컬러와 조화되는 염색 추천</span>
+          <span>${a.season} ${t('personalColor.aiMode.result.seasonColorHarmony')}</span>
         </div>
       </div>
     </div>
@@ -5823,7 +5823,7 @@ function generateFaceGeometryIntegratedHTML(faceGeometry, themeColor) {
   return `
     <!-- 📐 얼굴형 분석 -->
     <div style="background: linear-gradient(135deg, #f5f5f5, #e8e8e8); padding: 14px; border-radius: 12px; border: 1px solid #ddd;">
-      <div style="font-size: 13px; font-weight: 600; color: #555; margin-bottom: 10px;">📐 얼굴형 분석</div>
+      <div style="font-size: 13px; font-weight: 600; color: #555; margin-bottom: 10px;">${t('personalColor.aiMode.result.faceShapeAnalysis')}</div>
 
       <!-- 미간 분석 -->
       <div style="background: ${levelStyle.bg}; padding: 10px; border-radius: 8px; border: 1px solid ${levelStyle.border}; margin-bottom: 10px;">
@@ -5842,11 +5842,11 @@ function generateFaceGeometryIntegratedHTML(faceGeometry, themeColor) {
       <!-- 측정값 그리드 -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
         <div style="background: #fff; padding: 8px; border-radius: 6px; border: 1px solid #e0e0e0; text-align: center;">
-          <div style="font-size: 10px; color: #888;">얼굴 비율</div>
+          <div style="font-size: 10px; color: #888;">${t('personalColor.aiMode.result.faceRatio')}</div>
           <div style="font-size: 14px; font-weight: 700; color: #333;">${faceGeometry.faceRatioPercent}%</div>
         </div>
         <div style="background: #fff; padding: 8px; border-radius: 6px; border: 1px solid #e0e0e0; text-align: center;">
-          <div style="font-size: 10px; color: #888;">눈 사이 거리</div>
+          <div style="font-size: 10px; color: #888;">${t('personalColor.aiMode.result.eyeDistance')}</div>
           <div style="font-size: 14px; font-weight: 700; color: #333;">${faceGeometry.eyeInnerDistancePercent}%</div>
         </div>
       </div>
