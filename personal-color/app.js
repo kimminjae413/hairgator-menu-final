@@ -5854,15 +5854,15 @@ function generateFaceGeometryIntegratedHTML(faceGeometry, themeColor) {
   `;
 }
 
-// 컬 추천 텍스트 생성
+// 컬 추천 텍스트 생성 (다국어 지원)
 function getCurlRecommendation(curlPref, season) {
   const curlDesc = {
-    straight: '스트레이트로 깔끔하고 단정한 이미지 연출',
-    C: 'C컬로 자연스러운 볼륨감과 여성스러운 분위기',
-    S: 'S컬로 풍성한 웨이브와 화려한 스타일',
-    CS: 'C+S컬 믹스로 입체적이고 세련된 느낌',
-    SS: 'SS컬로 강한 컬감과 개성있는 스타일',
-    none: '고객 선호에 따라 다양한 컬 스타일 가능'
+    straight: t('personalColor.aiMode.result.curlStraightDesc') || '스트레이트로 깔끔하고 단정한 이미지 연출',
+    C: t('personalColor.aiMode.result.curlCDesc') || 'C컬로 자연스러운 볼륨감과 여성스러운 분위기',
+    S: t('personalColor.aiMode.result.curlSDesc') || 'S컬로 풍성한 웨이브와 화려한 스타일',
+    CS: t('personalColor.aiMode.result.curlCSDesc') || 'C+S컬 믹스로 입체적이고 세련된 느낌',
+    SS: t('personalColor.aiMode.result.curlSSDesc') || 'SS컬로 강한 컬감과 개성있는 스타일',
+    none: t('personalColor.aiMode.result.curlNoneDesc') || '고객 선호에 따라 다양한 컬 스타일 가능'
   };
   return curlDesc[curlPref] || curlDesc.none;
 }

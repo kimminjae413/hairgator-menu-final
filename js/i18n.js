@@ -316,7 +316,26 @@ const HAIRGATOR_I18N = {
           makeup: '메이크업',
           consultingPoint: '💬 컨설팅 포인트',
           score: '점',
-          close: '닫기'
+          close: '닫기',
+          // 추가 분석 결과 키
+          difficulty: '난이도',
+          minute: '분',
+          faceRatioAnalysis: '얼굴 비율 분석',
+          eyebrowGapDistance: '미간(눈썹간 거리)',
+          eyeToEyeRatio: '미간:눈 비율 (1.0 = 이상적)',
+          narrow: '좁음',
+          optimal: '적정',
+          wide: '넓음',
+          currentEyebrowKeep: '현재 눈썹 모양 유지 추천',
+          // 컬 추천 텍스트
+          curlStraightDesc: '스트레이트로 깔끔하고 단정한 이미지 연출',
+          curlCDesc: 'C컬로 자연스러운 볼륨감과 여성스러운 분위기',
+          curlSDesc: 'S컬로 풍성한 웨이브와 화려한 스타일',
+          curlCSDesc: 'C+S컬 믹스로 입체적이고 세련된 느낌',
+          curlSSDesc: 'SS컬로 강한 컬감과 개성있는 스타일',
+          curlNoneDesc: '고객 선호에 따라 다양한 컬 스타일 가능',
+          // 시즌명 (통합 결과용)
+          neutralWarmDeep: '뉴트럴 웜 딥'
         }
       },
 
@@ -996,7 +1015,26 @@ const HAIRGATOR_I18N = {
           makeup: 'Makeup',
           consultingPoint: '💬 Consulting Point',
           score: 'pts',
-          close: 'Close'
+          close: 'Close',
+          // Additional analysis result keys
+          difficulty: 'Difficulty',
+          minute: 'min',
+          faceRatioAnalysis: 'Face Ratio Analysis',
+          eyebrowGapDistance: 'Eyebrow Gap Distance',
+          eyeToEyeRatio: 'Eye:Gap Ratio (1.0 = Ideal)',
+          narrow: 'Narrow',
+          optimal: 'Optimal',
+          wide: 'Wide',
+          currentEyebrowKeep: 'Keep current eyebrow shape recommended',
+          // Curl recommendation text
+          curlStraightDesc: 'Straight style for a neat and tidy image',
+          curlCDesc: 'C-curl for natural volume and feminine vibe',
+          curlSDesc: 'S-curl for lush waves and glamorous style',
+          curlCSDesc: 'C+S curl mix for dimensional and sophisticated look',
+          curlSSDesc: 'SS-curl for strong curls and unique personality',
+          curlNoneDesc: 'Various curl styles available based on preference',
+          // Season name
+          neutralWarmDeep: 'Neutral Warm Deep'
         }
       },
 
@@ -1654,7 +1692,26 @@ const HAIRGATOR_I18N = {
           makeup: 'メイクアップ',
           consultingPoint: '💬 コンサルティングポイント',
           score: '点',
-          close: '閉じる'
+          close: '閉じる',
+          // 追加分析結果キー
+          difficulty: '難易度',
+          minute: '分',
+          faceRatioAnalysis: '顔比率分析',
+          eyebrowGapDistance: '眉間（眉毛間距離）',
+          eyeToEyeRatio: '眉間:目比率 (1.0 = 理想的)',
+          narrow: '狭い',
+          optimal: '適正',
+          wide: '広い',
+          currentEyebrowKeep: '現在の眉毛の形を維持することをお勧めします',
+          // カール推奨テキスト
+          curlStraightDesc: 'ストレートできれいで整ったイメージ演出',
+          curlCDesc: 'Cカールで自然なボリュームと女性らしい雰囲気',
+          curlSDesc: 'Sカールで豊かなウェーブと華やかなスタイル',
+          curlCSDesc: 'C+Sカールミックスで立体的で洗練された雰囲気',
+          curlSSDesc: 'SSカールで強いカール感と個性的なスタイル',
+          curlNoneDesc: 'お客様のお好みに合わせて様々なカールスタイルが可能',
+          // シーズン名
+          neutralWarmDeep: 'ニュートラルウォームディープ'
         }
       },
 
@@ -2313,7 +2370,26 @@ const HAIRGATOR_I18N = {
           makeup: '彩妆',
           consultingPoint: '💬 咨询要点',
           score: '分',
-          close: '关闭'
+          close: '关闭',
+          // 附加分析结果键
+          difficulty: '难度',
+          minute: '分钟',
+          faceRatioAnalysis: '脸部比例分析',
+          eyebrowGapDistance: '眉间（眉毛间距）',
+          eyeToEyeRatio: '眉间:眼比例 (1.0 = 理想)',
+          narrow: '窄',
+          optimal: '适中',
+          wide: '宽',
+          currentEyebrowKeep: '建议保持当前眉形',
+          // 卷度推荐文本
+          curlStraightDesc: '直发打造干净整洁的形象',
+          curlCDesc: 'C卷展现自然蓬松和女性魅力',
+          curlSDesc: 'S卷呈现丰富波浪和华丽风格',
+          curlCSDesc: 'C+S卷混合打造立体精致感',
+          curlSSDesc: 'SS卷展现强烈卷度和独特个性',
+          curlNoneDesc: '可根据客户喜好选择多种卷度风格',
+          // 季节名称
+          neutralWarmDeep: '中性暖深色'
         }
       },
 
@@ -2959,7 +3035,26 @@ const HAIRGATOR_I18N = {
           makeup: 'Trang điểm',
           consultingPoint: '💬 Điểm tư vấn',
           score: 'điểm',
-          close: 'Đóng'
+          close: 'Đóng',
+          // Khóa kết quả phân tích bổ sung
+          difficulty: 'Độ khó',
+          minute: 'phút',
+          faceRatioAnalysis: 'Phân tích tỷ lệ khuôn mặt',
+          eyebrowGapDistance: 'Khoảng cách lông mày',
+          eyeToEyeRatio: 'Tỷ lệ lông mày:mắt (1.0 = Lý tưởng)',
+          narrow: 'Hẹp',
+          optimal: 'Tối ưu',
+          wide: 'Rộng',
+          currentEyebrowKeep: 'Nên giữ nguyên hình dáng lông mày hiện tại',
+          // Văn bản đề xuất xoăn
+          curlStraightDesc: 'Tóc thẳng tạo hình ảnh gọn gàng và ngăn nắp',
+          curlCDesc: 'Xoăn C tạo độ phồng tự nhiên và vẻ nữ tính',
+          curlSDesc: 'Xoăn S tạo sóng phong phú và phong cách quyến rũ',
+          curlCSDesc: 'Kết hợp xoăn C+S tạo vẻ lập thể và tinh tế',
+          curlSSDesc: 'Xoăn SS tạo độ xoăn mạnh và cá tính riêng',
+          curlNoneDesc: 'Có thể chọn nhiều kiểu xoăn theo sở thích',
+          // Tên mùa
+          neutralWarmDeep: 'Trung tính ấm đậm'
         }
       },
 
