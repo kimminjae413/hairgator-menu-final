@@ -4124,9 +4124,9 @@
                                 ${t('personalColor.aiMode.result.recommendedLevel')}: ${feedback.levelTip}
                             </span>
                             ${feedback.brightnessAdvice ? `
-                            <span style="background: rgba(156,39,176,0.15); color: #6A1B9A; font-size: 15px; padding: 6px 14px; border-radius: 12px;">
-                                💡 ${feedback.brightnessAdvice.substring(0, 30)}...
-                            </span>
+                            <div style="width: 100%; margin-top: 8px; background: rgba(156,39,176,0.1); color: #6A1B9A; font-size: 14px; padding: 10px 14px; border-radius: 10px; line-height: 1.5;">
+                                💡 ${feedback.brightnessAdvice}
+                            </div>
                             ` : ''}
                         </div>
                     </div>
