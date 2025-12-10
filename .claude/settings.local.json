@@ -18,7 +18,8 @@
       "Bash(ls -la \"C:\\Users\\김민재\\Desktop\\2. 헤어게이터_이론-20251105T045428Z-1-001\\4.2way cut books\"\" 2>/dev/null || find \"C:Users김민재Desktop2. 헤어게이터_이론-20251105T045428Z-1-0014.2way cut books\" -name \"*.pdf \")",
       "WebSearch",
       "Bash(python3:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(node -c:*)"
     ],
     "deny": [],
     "ask": []

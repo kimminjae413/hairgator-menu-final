@@ -3209,7 +3209,7 @@
         async function performAIAnalysisSteps() {
             const steps = [
                 { id: 'ai-step-1', message: '얼굴 영역 감지 중...' },
-                { id: 'ai-step-2', message: '${t('personalColor.aiMode.analyzingSkinTone') || 'Analyzing skin tone...'}' },
+                { id: 'ai-step-2', message: '피부톤 색상 분석 중...' },
                 { id: 'ai-step-3', message: 'Delta E 2000 계산 중...' },
                 { id: 'ai-step-4', message: '최종 결과 생성 중...' }
             ];
