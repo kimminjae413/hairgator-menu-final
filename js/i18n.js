@@ -353,7 +353,21 @@ const HAIRGATOR_I18N = {
           light: '라이트',
           soft: '소프트',
           muted: '뮤트',
-          deep: '딥'
+          deep: '딥',
+          // 시즌 설명 (seasonDesc)
+          seasonDesc: {
+            springWarmBright: '생기 넘치고 화사한 이미지! 선명하고 밝은 웜톤 컬러가 잘 어울립니다.',
+            springWarmLight: '맑고 청순한 이미지! 연하고 부드러운 웜톤 컬러가 잘 어울립니다.',
+            autumnWarmDeep: '깊고 고급스러운 이미지! 진하고 풍부한 웜톤 컬러가 잘 어울립니다.',
+            autumnWarmMuted: '내추럴하고 세련된 이미지! 차분하고 자연스러운 웜톤 컬러가 잘 어울립니다.',
+            autumnWarmSoft: '부드럽고 따뜻한 이미지! 은은하고 자연스러운 웜톤 컬러가 잘 어울립니다.',
+            summerCoolBright: '청아하고 시원한 이미지! 선명하고 깨끗한 쿨톤 컬러가 잘 어울립니다.',
+            summerCoolLight: '우아하고 부드러운 이미지! 파스텔톤의 쿨 컬러가 잘 어울립니다.',
+            winterCoolDeep: '강렬하고 도시적인 이미지! 선명하고 진한 쿨톤 컬러가 잘 어울립니다.',
+            winterCoolMuted: '차분하고 세련된 이미지! 무채색 계열과 저채도 쿨 컬러가 잘 어울립니다.',
+            neutralLight: '다양한 컬러가 어울리는 타입! 밝은 톤의 부드러운 컬러를 추천합니다.',
+            neutralDeep: '다양한 컬러가 어울리는 타입! 깊은 톤의 세련된 컬러를 추천합니다.'
+          }
         }
       },
 
@@ -1070,7 +1084,21 @@ const HAIRGATOR_I18N = {
           light: 'Light',
           soft: 'Soft',
           muted: 'Muted',
-          deep: 'Deep'
+          deep: 'Deep',
+          // Season descriptions
+          seasonDesc: {
+            springWarmBright: 'Vibrant and radiant image! Bright, clear warm tone colors suit you best.',
+            springWarmLight: 'Fresh and pure image! Soft, light warm tone colors suit you best.',
+            autumnWarmDeep: 'Deep and luxurious image! Rich, deep warm tone colors suit you best.',
+            autumnWarmMuted: 'Natural and sophisticated image! Calm, natural warm tone colors suit you best.',
+            autumnWarmSoft: 'Soft and warm image! Subtle, natural warm tone colors suit you best.',
+            summerCoolBright: 'Clear and refreshing image! Vivid, clean cool tone colors suit you best.',
+            summerCoolLight: 'Elegant and soft image! Pastel cool colors suit you best.',
+            winterCoolDeep: 'Bold and urban image! Vivid, deep cool tone colors suit you best.',
+            winterCoolMuted: 'Calm and refined image! Achromatic and low-saturation cool colors suit you best.',
+            neutralLight: 'Versatile type! Bright, soft tones are recommended.',
+            neutralDeep: 'Versatile type! Deep, sophisticated tones are recommended.'
+          }
         }
       },
 
@@ -1765,7 +1793,21 @@ const HAIRGATOR_I18N = {
           light: 'ライト',
           soft: 'ソフト',
           muted: 'ミュート',
-          deep: 'ディープ'
+          deep: 'ディープ',
+          // シーズン説明
+          seasonDesc: {
+            springWarmBright: '生き生きと華やかなイメージ！鮮やかで明るいウォームトーンカラーが似合います。',
+            springWarmLight: '清楚で清純なイメージ！柔らかく優しいウォームトーンカラーが似合います。',
+            autumnWarmDeep: '深く高級感のあるイメージ！濃くて豊かなウォームトーンカラーが似合います。',
+            autumnWarmMuted: 'ナチュラルで洗練されたイメージ！落ち着いた自然なウォームトーンカラーが似合います。',
+            autumnWarmSoft: '柔らかく温かいイメージ！ほんのりと自然なウォームトーンカラーが似合います。',
+            summerCoolBright: '清涼で爽やかなイメージ！鮮明でクリアなクールトーンカラーが似合います。',
+            summerCoolLight: '優雅で柔らかなイメージ！パステルトーンのクールカラーが似合います。',
+            winterCoolDeep: '強烈で都会的なイメージ！鮮やかで深いクールトーンカラーが似合います。',
+            winterCoolMuted: '落ち着いて洗練されたイメージ！無彩色系と低彩度のクールカラーが似合います。',
+            neutralLight: '様々なカラーが似合うタイプ！明るくソフトなトーンがおすすめです。',
+            neutralDeep: '様々なカラーが似合うタイプ！深く洗練されたトーンがおすすめです。'
+          }
         }
       },
 
@@ -2461,7 +2503,21 @@ const HAIRGATOR_I18N = {
           light: '浅色',
           soft: '柔和',
           muted: '哑光',
-          deep: '深色'
+          deep: '深色',
+          // 季节描述
+          seasonDesc: {
+            springWarmBright: '活力四射、明艳动人！鲜艳明亮的暖色调最适合您。',
+            springWarmLight: '清新纯净的形象！柔和淡雅的暖色调最适合您。',
+            autumnWarmDeep: '深邃高贵的形象！浓郁深沉的暖色调最适合您。',
+            autumnWarmMuted: '自然优雅的形象！沉稳自然的暖色调最适合您。',
+            autumnWarmSoft: '柔和温暖的形象！含蓄自然的暖色调最适合您。',
+            summerCoolBright: '清新爽朗的形象！鲜明清澈的冷色调最适合您。',
+            summerCoolLight: '优雅柔美的形象！粉彩冷色调最适合您。',
+            winterCoolDeep: '强烈都市感！鲜艳深邃的冷色调最适合您。',
+            winterCoolMuted: '沉稳精致的形象！无彩色系和低饱和度冷色调最适合您。',
+            neutralLight: '百搭类型！推荐明亮柔和的色调。',
+            neutralDeep: '百搭类型！推荐深邃精致的色调。'
+          }
         }
       },
 
@@ -3144,7 +3200,21 @@ const HAIRGATOR_I18N = {
           light: 'Nhạt',
           soft: 'Dịu',
           muted: 'Trầm',
-          deep: 'Đậm'
+          deep: 'Đậm',
+          // Mô tả mùa
+          seasonDesc: {
+            springWarmBright: 'Hình ảnh tràn đầy sức sống! Màu ấm tươi sáng rất hợp với bạn.',
+            springWarmLight: 'Hình ảnh trong sáng thuần khiết! Màu ấm nhẹ nhàng rất hợp với bạn.',
+            autumnWarmDeep: 'Hình ảnh sâu lắng sang trọng! Màu ấm đậm phong phú rất hợp với bạn.',
+            autumnWarmMuted: 'Hình ảnh tự nhiên tinh tế! Màu ấm trầm tự nhiên rất hợp với bạn.',
+            autumnWarmSoft: 'Hình ảnh dịu dàng ấm áp! Màu ấm nhẹ nhàng tự nhiên rất hợp với bạn.',
+            summerCoolBright: 'Hình ảnh trong trẻo mát mẻ! Màu mát sáng rõ rất hợp với bạn.',
+            summerCoolLight: 'Hình ảnh thanh lịch dịu dàng! Màu mát pastel rất hợp với bạn.',
+            winterCoolDeep: 'Hình ảnh mạnh mẽ đô thị! Màu mát sâu đậm rất hợp với bạn.',
+            winterCoolMuted: 'Hình ảnh điềm đạm tinh tế! Màu trung tính và màu mát độ bão hòa thấp rất hợp với bạn.',
+            neutralLight: 'Loại đa năng! Đề xuất tông màu sáng dịu.',
+            neutralDeep: 'Loại đa năng! Đề xuất tông màu đậm tinh tế.'
+          }
         }
       },
 

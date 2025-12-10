@@ -4025,27 +4025,57 @@
             `;
         }
 
-        // 시즌별 설명 (개선된 8타입)
+        // 시즌별 설명 (개선된 8타입) - 다국어 지원
         function getSeasonDescription(season) {
-            const descriptions = {
-                // 봄 웜
+            // 한국어 키를 영어 키로 변환하는 매핑
+            const keyMapping = {
+                '봄 웜 브라이트': 'springWarmBright',
+                '봄 웜 라이트': 'springWarmLight',
+                '가을 웜 딥': 'autumnWarmDeep',
+                '가을 웜 뮤트': 'autumnWarmMuted',
+                '가을 웜 소프트': 'autumnWarmSoft',
+                '여름 쿨 브라이트': 'summerCoolBright',
+                '여름 쿨 라이트': 'summerCoolLight',
+                '겨울 쿨 딥': 'winterCoolDeep',
+                '겨울 쿨 뮤트': 'winterCoolMuted',
+                '뉴트럴 라이트': 'neutralLight',
+                '뉴트럴 딥': 'neutralDeep',
+                // 다국어 키도 지원
+                'Spring Warm Bright': 'springWarmBright',
+                'Spring Warm Light': 'springWarmLight',
+                'Autumn Warm Deep': 'autumnWarmDeep',
+                'Autumn Warm Muted': 'autumnWarmMuted',
+                'Autumn Warm Soft': 'autumnWarmSoft',
+                'Summer Cool Bright': 'summerCoolBright',
+                'Summer Cool Light': 'summerCoolLight',
+                'Winter Cool Deep': 'winterCoolDeep',
+                'Winter Cool Muted': 'winterCoolMuted',
+                'Neutral Light': 'neutralLight',
+                'Neutral Deep': 'neutralDeep'
+            };
+
+            // 영어 키로 i18n 조회
+            const englishKey = keyMapping[season];
+            if (englishKey) {
+                const translated = t(`personalColor.aiMode.result.seasonDesc.${englishKey}`);
+                if (translated) return translated;
+            }
+
+            // fallback: 기본 한국어 설명
+            const defaultDescriptions = {
                 '봄 웜 브라이트': '생기 넘치고 화사한 이미지! 선명하고 밝은 웜톤 컬러가 잘 어울립니다.',
                 '봄 웜 라이트': '맑고 청순한 이미지! 연하고 부드러운 웜톤 컬러가 잘 어울립니다.',
-                // 가을 웜
                 '가을 웜 딥': '깊고 고급스러운 이미지! 진하고 풍부한 웜톤 컬러가 잘 어울립니다.',
                 '가을 웜 뮤트': '내추럴하고 세련된 이미지! 차분하고 자연스러운 웜톤 컬러가 잘 어울립니다.',
                 '가을 웜 소프트': '부드럽고 따뜻한 이미지! 은은하고 자연스러운 웜톤 컬러가 잘 어울립니다.',
-                // 여름 쿨
                 '여름 쿨 브라이트': '청아하고 시원한 이미지! 선명하고 깨끗한 쿨톤 컬러가 잘 어울립니다.',
                 '여름 쿨 라이트': '우아하고 부드러운 이미지! 파스텔톤의 쿨 컬러가 잘 어울립니다.',
-                // 겨울 쿨
                 '겨울 쿨 딥': '강렬하고 도시적인 이미지! 선명하고 진한 쿨톤 컬러가 잘 어울립니다.',
                 '겨울 쿨 뮤트': '차분하고 세련된 이미지! 무채색 계열과 저채도 쿨 컬러가 잘 어울립니다.',
-                // 뉴트럴
                 '뉴트럴 라이트': '다양한 컬러가 어울리는 타입! 밝은 톤의 부드러운 컬러를 추천합니다.',
                 '뉴트럴 딥': '다양한 컬러가 어울리는 타입! 깊은 톤의 세련된 컬러를 추천합니다.'
             };
-            return descriptions[season] || '';
+            return defaultDescriptions[season] || '';
         }
 
         // 시즌별 컬러 팔레트 (개선된 8타입) - 색상명 포함
