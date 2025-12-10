@@ -1853,7 +1853,7 @@
                         console.warn('Face Mesh 초기화 실패:', error);
                         // WebView에서 실패 시 더 상세한 메시지
                         if (isWebViewEnv) {
-                            showToast('WebView 환경에서는 얼굴 인식이 제한됩니다. Chrome 브라우저를 사용해주세요.', 'warning');
+                            showToast(t('personalColor.toast.webviewFaceLimit') || 'WebView 환경에서는 얼굴 인식이 제한됩니다. Chrome 브라우저를 사용해주세요.', 'warning');
                         } else {
                             showToast(t('personalColor.toast.basicCameraMode') || '기본 카메라 모드로 시작합니다', 'warning');
                         }
@@ -1862,7 +1862,7 @@
                     // MediaPipe 라이브러리 자체가 로드되지 않은 경우
                     console.warn('⚠️ MediaPipe FaceMesh 라이브러리가 로드되지 않았습니다');
                     if (isWebViewEnv) {
-                        showToast('WebView 환경에서는 얼굴 인식이 지원되지 않습니다', 'warning');
+                        showToast(t('personalColor.toast.webviewNoFace') || 'WebView 환경에서는 얼굴 인식이 지원되지 않습니다', 'warning');
                     }
                 }
 
@@ -3551,7 +3551,7 @@
                 seasonScores = { spring: 0, summer: 0, autumn: 0, winter: 0 };
                 document.getElementById('compare-score-display').style.display = 'none';
                 updateCompareDisplay();
-                showToast('비교 모드가 시작되었습니다. 두 색상 중 더 어울리는 쪽을 선택하세요!', 'info');
+                showToast(t('personalColor.toast.compareModeStarted') || '비교 모드가 시작되었습니다. 두 색상 중 더 어울리는 쪽을 선택하세요!', 'info');
             } else {
                 panel.style.display = 'none';
                 btn.textContent = '🔀 비교 모드';
@@ -3671,7 +3671,7 @@
             document.getElementById('score-autumn').textContent = seasonScores.autumn;
             document.getElementById('score-winter').textContent = seasonScores.winter;
 
-            showToast(`${selectedName}(${side === 'left' ? preset.left.label : preset.right.label}) 선택!`, 'success');
+            showToast(`${selectedName}(${side === 'left' ? preset.left.label : preset.right.label}) ${t('personalColor.toast.selected') || '선택!'}`, 'success');
 
             // 다음 비교로
             compareIndex++;
@@ -3718,7 +3718,7 @@
                 </div>
             `;
 
-            showToast(`비교 결과: ${resultText}`, 'success');
+            showToast(`${t('personalColor.toast.compareResult') || '비교 결과'}: ${resultText}`, 'success');
         }
 
         function resetCompareMode() {
@@ -3766,7 +3766,7 @@
             `;
 
             updateCompareDisplay();
-            showToast('비교를 다시 시작합니다!', 'info');
+            showToast(t('personalColor.toast.compareRestart') || '비교를 다시 시작합니다!', 'info');
         }
 
         function stopDrapingCamera(silent = false) {

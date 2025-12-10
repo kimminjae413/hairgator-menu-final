@@ -333,7 +333,13 @@ const HAIRGATOR_I18N = {
         drapingCameraStopped: '드래이핑 카메라가 정지되었습니다',
         seasonSelected: '계절 색상을 선택했습니다',
         selectColorFirst: '먼저 색상을 선택해주세요',
-        colorSaved: '현재 색상이 저장되었습니다'
+        colorSaved: '현재 색상이 저장되었습니다',
+        webviewFaceLimit: 'WebView 환경에서는 얼굴 인식이 제한됩니다. Chrome 브라우저를 사용해주세요.',
+        webviewNoFace: 'WebView 환경에서는 얼굴 인식이 지원되지 않습니다',
+        compareModeStarted: '비교 모드가 시작되었습니다. 두 색상 중 더 어울리는 쪽을 선택하세요!',
+        selected: '선택!',
+        compareResult: '비교 결과',
+        compareRestart: '비교를 다시 시작합니다!'
       },
 
       // 언더톤
@@ -978,7 +984,13 @@ const HAIRGATOR_I18N = {
         selectColorFirst: 'Please select a color first',
         colorSaved: 'Current color saved',
         compareAgain: 'Compare Again',
-        savedColorsGuide: 'Saved Colors & Expert Guide'
+        savedColorsGuide: 'Saved Colors & Expert Guide',
+        webviewFaceLimit: 'Face recognition is limited in WebView. Please use Chrome browser.',
+        webviewNoFace: 'Face recognition is not supported in WebView',
+        compareModeStarted: 'Compare mode started. Choose the color that suits you better!',
+        selected: 'Selected!',
+        compareResult: 'Compare result',
+        compareRestart: 'Restarting comparison!'
       },
 
       undertones: {
@@ -1596,7 +1608,13 @@ const HAIRGATOR_I18N = {
         drapingCameraStopped: 'ドレーピングカメラが停止しました',
         seasonSelected: 'シーズンカラーを選択しました',
         selectColorFirst: '先に色を選択してください',
-        colorSaved: '現在の色が保存されました'
+        colorSaved: '現在の色が保存されました',
+        webviewFaceLimit: 'WebView環境では顔認識が制限されます。Chromeブラウザをご使用ください。',
+        webviewNoFace: 'WebView環境では顔認識がサポートされていません',
+        compareModeStarted: '比較モードが開始されました。似合う色を選んでください！',
+        selected: '選択！',
+        compareResult: '比較結果',
+        compareRestart: '比較を再開します！'
       },
 
       undertones: {
@@ -2219,7 +2237,13 @@ const HAIRGATOR_I18N = {
         drapingCameraStopped: '披巾测试相机已停止',
         seasonSelected: '已选择季节颜色',
         selectColorFirst: '请先选择颜色',
-        colorSaved: '当前颜色已保存'
+        colorSaved: '当前颜色已保存',
+        webviewFaceLimit: 'WebView环境下人脸识别受限。请使用Chrome浏览器。',
+        webviewNoFace: 'WebView环境不支持人脸识别',
+        compareModeStarted: '比较模式已开始。请选择更适合您的颜色！',
+        selected: '已选择！',
+        compareResult: '比较结果',
+        compareRestart: '重新开始比较！'
       },
 
       undertones: {
@@ -2826,7 +2850,13 @@ const HAIRGATOR_I18N = {
         drapingCameraStopped: 'Camera draping đã dừng',
         seasonSelected: 'Đã chọn màu theo mùa',
         selectColorFirst: 'Vui lòng chọn màu trước',
-        colorSaved: 'Màu hiện tại đã được lưu'
+        colorSaved: 'Màu hiện tại đã được lưu',
+        webviewFaceLimit: 'Nhận diện khuôn mặt bị hạn chế trong WebView. Vui lòng dùng Chrome.',
+        webviewNoFace: 'WebView không hỗ trợ nhận diện khuôn mặt',
+        compareModeStarted: 'Chế độ so sánh đã bắt đầu. Chọn màu phù hợp với bạn hơn!',
+        selected: 'Đã chọn!',
+        compareResult: 'Kết quả so sánh',
+        compareRestart: 'Bắt đầu lại so sánh!'
       },
 
       undertones: {
