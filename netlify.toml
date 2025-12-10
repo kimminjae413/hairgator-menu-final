@@ -48,14 +48,6 @@
     Pragma = "no-cache"
     Expires = "0"
 
-# personal-color 하위 파일 - 캐시 비활성화
-[[headers]]
-  for = "/personal-color/*"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Pragma = "no-cache"
-    Expires = "0"
-
 # JavaScript 파일 - 캐시 비활성화 (개발 중)
 [[headers]]
   for = "/js/*"

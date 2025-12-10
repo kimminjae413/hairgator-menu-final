@@ -707,34 +707,19 @@ body.male-theme .nav-btn.guide-btn:hover {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 200px;
-    height: 260px;
-    border: none;
+    height: 250px;
+    border: 3px dashed var(--primary-pink);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #E91E63;
+    color: var(--primary-pink);
     font-weight: 600;
-    background: transparent;
+    background: rgba(255,255,255,0.1);
     text-align: center;
+    padding: 1rem;
     font-size: 0.9rem;
-    z-index: 15;
-    pointer-events: none;
-}
-
-/* 가이드 텍스트 */
-.face-guide .guide-text {
-    position: relative;
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 12px 20px;
-    border-radius: 25px;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #E91E63;
-    font-weight: 600;
-    box-shadow: 0 4px 15px rgba(233, 30, 99, 0.2);
-    pointer-events: auto;
+    z-index: 5;
 }
 
 .camera-controls {

@@ -617,11 +617,9 @@
                             <div class="video-container">
                                 <video id="camera-feed" autoplay muted playsinline style="display:none;"></video>
                                 <canvas id="camera-canvas" style="width: 100%; max-width: 640px; border-radius: 8px;"></canvas>
-                                <div class="face-guide" id="ai-face-guide">
-                                    <span class="guide-text" data-i18n-html="personalColor.aiMode.faceGuide">얼굴을 화면 중앙에<br>위치시켜주세요</span>
+                                <div class="face-guide" id="ai-face-guide" data-i18n-html="personalColor.aiMode.faceGuide">
+                                    얼굴을 화면 중앙에<br>위치시켜주세요
                                 </div>
-                                <!-- FaceMesh 애니메이션 캔버스 -->
-                                <canvas id="facemesh-animation" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 6;"></canvas>
                             </div>
                             <div class="camera-controls">
                                 <button class="control-btn" id="start-camera" onclick="startAICamera()" data-i18n="personalColor.aiMode.startCamera">📹 카메라 시작</button>
