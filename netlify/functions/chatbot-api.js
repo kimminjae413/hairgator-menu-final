@@ -3215,9 +3215,15 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     // 언어별 이론 인덱스 매핑: korean→ko, english→en, japanese→ja, chinese→zh, vietnamese→vi
     const langCodeMap = { korean: 'ko', english: 'en', japanese: 'ja', chinese: 'zh', vietnamese: 'vi' };
     const theoryLang = langCodeMap[userLanguage] || 'ko';
-    const theoryImage = await detectTheoryImageForQuery(user_query, theoryLang);
-    if (theoryImage) {
-      console.log(`📚 이론 이미지 감지: ${theoryImage.title} (${theoryImage.term})`);
+    const theoryImageResult = await detectTheoryImageForQuery(user_query, theoryLang);
+
+    // ⭐ 배열 또는 단일 객체를 배열로 통일
+    const theoryImages = theoryImageResult
+      ? (Array.isArray(theoryImageResult) ? theoryImageResult : [theoryImageResult])
+      : [];
+
+    if (theoryImages.length > 0) {
+      console.log(`📚 이론 이미지 감지: ${theoryImages.map(t => t.term).join(', ')}`);
     }
 
     // SSE 형식으로 변환 (청크 단위로 전송)
@@ -3238,16 +3244,18 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
       })}\n\n`;
     }
 
-    // ⭐ 이론 이미지가 있으면 이미지 이벤트 전송 (가이드 이미지가 없을 때만)
-    if (theoryImage && !guideImage) {
-      sseBuffer += `data: ${JSON.stringify({
-        type: 'guide_image',
-        imageUrl: theoryImage.url,
-        title: theoryImage.title,
-        term: theoryImage.term,
-        description: theoryImage.description,
-        isTheory: true
-      })}\n\n`;
+    // ⭐ 이론 이미지가 있으면 이미지 이벤트 전송 (가이드 이미지가 없을 때만, 여러 개 지원)
+    if (theoryImages.length > 0 && !guideImage) {
+      for (const theoryImage of theoryImages) {
+        sseBuffer += `data: ${JSON.stringify({
+          type: 'guide_image',
+          imageUrl: theoryImage.url,
+          title: theoryImage.title,
+          term: theoryImage.term,
+          description: theoryImage.description,
+          isTheory: true
+        })}\n\n`;
+      }
     }
 
     sseBuffer += 'data: [DONE]\n\n';
@@ -3412,24 +3420,10 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
     return null;
   }
 
-  // ⭐ 디버그: Zone 관련 인덱스 확인
-  const zoneIndexes = indexes.filter(idx =>
-    idx.term?.toLowerCase().includes('zone') ||
-    idx.title_ko?.includes('존') ||
-    idx.keywords.some(k => k.includes('존') || k.includes('zone'))
-  );
-  console.log(`🔍 Zone 관련 인덱스 ${zoneIndexes.length}개:`);
-  zoneIndexes.slice(0, 10).forEach(z => {
-    console.log(`   - ${z.term}: keywords=[${z.keywords.slice(0, 5).join(', ')}]`);
-  });
-
   // ⭐ 커트/펌 인덱스만 필터링 (이미지가 있는 것만)
   const imageIndexes = indexes.filter(idx => {
-    // type이 'perm' 또는 빈값(커트 인덱스)인 것만 (personal_* 등 제외)
-    // personal analysis 문서들은 term이 'personal_'로 시작
     const isPersonal = idx.term && idx.term.toLowerCase().startsWith('personal');
     const isCutOrPerm = idx.type === 'perm' || idx.type === 'cut' || idx.type === '' || !idx.type;
-    // 이미지가 있는지 확인
     const hasImage = idx.images && (idx.images[language] || idx.images['ko'] || idx.images['en']);
     return !isPersonal && isCutOrPerm && hasImage;
   });
@@ -3437,11 +3431,8 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
   // ⭐ 너무 일반적인 키워드 제외 (이미지 매칭 오류 방지)
   const excludeKeywords = ['가로', '세로', '수평', '수직', '대각', '방향', '각도', '기법', '기술', '스타일'];
 
-  // 키워드 매칭으로 이론 찾기 (가장 많이 매칭되는 것 우선)
-  let bestMatch = null;
-  let bestMatchCount = 0;
-  let exactKeywordMatch = false; // 키워드 정확 매칭 여부
-  let matchedKeywords = []; // 디버깅용
+  // ⭐ 매칭되는 모든 인덱스 수집 (배열로 반환)
+  const matchedIndexes = [];
 
   for (const index of imageIndexes) {
     let matchCount = 0;
@@ -3454,7 +3445,7 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
 
       // ⭐ 너무 짧은 키워드(2글자 이하) 또는 제외 키워드는 스킵
       // 단, A존/B존/C존 같은 중요 키워드는 예외
-      const importantShortKeywords = ['a존', 'b존', 'c존', 'a zone', 'b zone', 'c zone', '에이존', '비존', '씨존'];
+      const importantShortKeywords = ['a존', 'b존', 'c존', 'a zone', 'b zone', 'c zone', '에이존', '비존', '씨존', '존'];
       const isImportantShort = importantShortKeywords.some(ik => kwLower.includes(ik) || kwLower === ik);
 
       if ((kwLower.length <= 2 && !isImportantShort) || excludeKeywords.includes(kwLower)) {
@@ -3471,33 +3462,40 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
       }
     }
 
-    // ⭐ 키워드 정확 매칭이 있을 때만 후보로 인정 (textContent 매칭 제거)
-    if (hasExactMatch && matchCount > bestMatchCount) {
-      bestMatchCount = matchCount;
-      bestMatch = index;
-      exactKeywordMatch = true;
-      matchedKeywords = currentMatched;
+    // ⭐ 키워드 정확 매칭이 있으면 후보로 추가
+    if (hasExactMatch && matchCount >= 1) {
+      const imageUrl = index.images[language] || index.images['ko'] || index.images['en'];
+      if (imageUrl) {
+        matchedIndexes.push({
+          url: imageUrl,
+          title: index.title_ko || index.term,
+          term: index.term,
+          description: index.description,
+          matchCount,
+          matchedKeywords: currentMatched
+        });
+      }
     }
   }
 
-  // ⭐ 키워드 정확 매칭이 있고, 최소 1개 이상 매칭될 때만 이미지 반환
-  if (bestMatch && exactKeywordMatch && bestMatchCount >= 1) {
-    console.log(`📚 매칭된 키워드: [${matchedKeywords.join(', ')}]`);
-    const imageUrl = bestMatch.images[language] || bestMatch.images['ko'] || bestMatch.images['en'];
+  // ⭐ 매칭 개수 기준 정렬 후 최대 3개 반환
+  if (matchedIndexes.length > 0) {
+    matchedIndexes.sort((a, b) => b.matchCount - a.matchCount);
+    const results = matchedIndexes.slice(0, 3);
+    console.log(`📚 이론 이미지 ${results.length}개 매칭:`);
+    results.forEach(r => {
+      console.log(`   - ${r.term}: [${r.matchedKeywords.join(', ')}]`);
+    });
 
-    if (imageUrl) {
-      console.log(`📚 이론 인덱스 이미지 매칭: "${bestMatch.term}" (${bestMatchCount}개 키워드 일치)`);
-      return {
-        url: imageUrl,
-        title: bestMatch.title_ko || bestMatch.term,
-        term: bestMatch.term,
-        description: bestMatch.description
-      };
+    // 1개면 단일 객체, 여러 개면 배열 반환
+    if (results.length === 1) {
+      return results[0];
     }
+    return results;
   }
 
   // 관련 없으면 이미지 없이 반환
-  console.log(`📚 이론 이미지 없음 (키워드 매칭 부족 또는 커트/펌 인덱스 아님)`);
+  console.log(`📚 이론 이미지 없음 (키워드 매칭 부족)`);
   return null;
 }
 
