@@ -3442,7 +3442,11 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
       const kwLower = keyword.toLowerCase();
 
       // ⭐ 너무 짧은 키워드(2글자 이하) 또는 제외 키워드는 스킵
-      if (kwLower.length <= 2 || excludeKeywords.includes(kwLower)) {
+      // 단, A존/B존/C존 같은 중요 키워드는 예외
+      const importantShortKeywords = ['a존', 'b존', 'c존', 'a zone', 'b zone', 'c zone', '에이존', '비존', '씨존'];
+      const isImportantShort = importantShortKeywords.some(ik => kwLower.includes(ik) || kwLower === ik);
+
+      if ((kwLower.length <= 2 && !isImportantShort) || excludeKeywords.includes(kwLower)) {
         continue;
       }
 
