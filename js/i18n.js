@@ -607,7 +607,27 @@ const HAIRGATOR_I18N = {
         integratedResult: 'Personal Analysis 종합 결과',
         customerProfile: '고객 프로필',
         desiredLength: '희망 기장',
-        selected: '선택'
+        selected: '선택',
+        // 남성용 사이드 처리
+        maleSideLabel: '🔹 사이드(옆머리) 처리 방식',
+        maleSideDesc: '귀 옆과 뒷머리 아래쪽을 어떻게 정리할지 선택하세요',
+        fadeTitle: '페이드 (Fade)',
+        fadeDesc: '아래에서 위로 자연스럽게 길어지는 그라데이션 기법. 세련된 느낌',
+        underTitle: '언더 (Undercut)',
+        underDesc: '옆머리를 클리퍼로 짧게 밀어 위와 대비를 주는 스타일. 시원한 느낌',
+        naturalSideTitle: '자연스럽게',
+        naturalSideDesc: '전체적으로 균일한 길이. 가위로 자연스럽게 커팅',
+        // 남성용 앞머리 방향
+        maleFrontLabel: '🔹 앞머리 스타일링 방향',
+        maleFrontDesc: '앞머리를 어떤 방향으로 스타일링할지 선택하세요',
+        allBackTitle: '올백',
+        allBackDesc: '앞머리를 뒤로 넘김',
+        sidePartTitle: '사이드파팅',
+        sidePartDesc: '7:3 가르마로 옆으로',
+        centerDownTitle: '센터다운',
+        centerDownDesc: '이마 방향으로 내림',
+        seeThroughTitle: '시스루',
+        seeThroughDesc: '가볍고 얇게 내림'
       },
       // Face Analysis
       faceAnalysis: {
@@ -1197,7 +1217,27 @@ const HAIRGATOR_I18N = {
         integratedResult: 'Personal Analysis Result',
         customerProfile: 'Customer Profile',
         desiredLength: 'Desired Length',
-        selected: 'Selected'
+        selected: 'Selected',
+        // Male side treatment
+        maleSideLabel: '🔹 Side (Temple) Treatment',
+        maleSideDesc: 'Choose how to trim the sides and back',
+        fadeTitle: 'Fade',
+        fadeDesc: 'Gradual gradient from short to long. Stylish look',
+        underTitle: 'Undercut',
+        underDesc: 'Clipped short on sides for contrast. Clean look',
+        naturalSideTitle: 'Natural',
+        naturalSideDesc: 'Even length overall. Scissor cut naturally',
+        // Male fringe direction
+        maleFrontLabel: '🔹 Fringe Styling Direction',
+        maleFrontDesc: 'Choose how to style your fringe',
+        allBackTitle: 'All Back',
+        allBackDesc: 'Sweep fringe back',
+        sidePartTitle: 'Side Part',
+        sidePartDesc: '7:3 part to the side',
+        centerDownTitle: 'Center Down',
+        centerDownDesc: 'Down towards forehead',
+        seeThroughTitle: 'See-through',
+        seeThroughDesc: 'Light and thin bangs'
       }
     }
   },
@@ -1774,7 +1814,27 @@ const HAIRGATOR_I18N = {
         integratedResult: 'Personal Analysis 総合結果',
         customerProfile: 'お客様プロフィール',
         desiredLength: '希望の長さ',
-        selected: '選択'
+        selected: '選択',
+        // 男性用サイド処理
+        maleSideLabel: '🔹 サイド（横）の処理方法',
+        maleSideDesc: '耳周りと後頭部下部をどう整えるか選択',
+        fadeTitle: 'フェード',
+        fadeDesc: '下から上へ自然にグラデーション。洗練された印象',
+        underTitle: 'アンダーカット',
+        underDesc: 'サイドをクリッパーで短く刈り上げてコントラスト。すっきり感',
+        naturalSideTitle: 'ナチュラル',
+        naturalSideDesc: '全体的に均一な長さ。ハサミで自然にカット',
+        // 男性用前髪の方向
+        maleFrontLabel: '🔹 前髪スタイリング方向',
+        maleFrontDesc: '前髪をどの方向にスタイリングするか選択',
+        allBackTitle: 'オールバック',
+        allBackDesc: '前髪を後ろに流す',
+        sidePartTitle: 'サイドパート',
+        sidePartDesc: '7:3分けで横に',
+        centerDownTitle: 'センターダウン',
+        centerDownDesc: 'おでこに向かって下ろす',
+        seeThroughTitle: 'シースルー',
+        seeThroughDesc: '軽く薄く下ろす'
       }
     }
   },
@@ -2356,7 +2416,27 @@ const HAIRGATOR_I18N = {
         integratedResult: 'Personal Analysis 综合结果',
         customerProfile: '客户资料',
         desiredLength: '期望长度',
-        selected: '选择'
+        selected: '选择',
+        // 男性侧边处理
+        maleSideLabel: '🔹 侧边（鬓角）处理方式',
+        maleSideDesc: '选择如何修剪耳边和后脑勺下方',
+        fadeTitle: '渐变',
+        fadeDesc: '从下到上自然渐变。时尚感',
+        underTitle: '底切',
+        underDesc: '侧边用推子剃短形成对比。清爽感',
+        naturalSideTitle: '自然',
+        naturalSideDesc: '整体均匀长度。剪刀自然修剪',
+        // 男性刘海方向
+        maleFrontLabel: '🔹 刘海造型方向',
+        maleFrontDesc: '选择刘海的造型方向',
+        allBackTitle: '全后梳',
+        allBackDesc: '刘海向后梳',
+        sidePartTitle: '侧分',
+        sidePartDesc: '7:3分向侧边',
+        centerDownTitle: '中分下垂',
+        centerDownDesc: '向额头方向下垂',
+        seeThroughTitle: '空气刘海',
+        seeThroughDesc: '轻薄下垂'
       }
     }
   },
@@ -2922,7 +3002,27 @@ const HAIRGATOR_I18N = {
         integratedResult: 'Kết quả phân tích tổng hợp',
         customerProfile: 'Hồ sơ khách hàng',
         desiredLength: 'Chiều dài mong muốn',
-        selected: 'Đã chọn'
+        selected: 'Đã chọn',
+        // Xử lý hai bên nam
+        maleSideLabel: '🔹 Cách xử lý hai bên (thái dương)',
+        maleSideDesc: 'Chọn cách cắt hai bên và phía sau',
+        fadeTitle: 'Fade',
+        fadeDesc: 'Gradient tự nhiên từ dưới lên. Phong cách',
+        underTitle: 'Undercut',
+        underDesc: 'Cắt ngắn hai bên tạo độ tương phản. Gọn gàng',
+        naturalSideTitle: 'Tự nhiên',
+        naturalSideDesc: 'Độ dài đều khắp. Cắt kéo tự nhiên',
+        // Hướng mái nam
+        maleFrontLabel: '🔹 Hướng tạo kiểu mái',
+        maleFrontDesc: 'Chọn hướng tạo kiểu cho mái',
+        allBackTitle: 'Chải ngược',
+        allBackDesc: 'Vuốt mái ra sau',
+        sidePartTitle: 'Rẽ lệch',
+        sidePartDesc: 'Chia 7:3 sang bên',
+        centerDownTitle: 'Xuống giữa',
+        centerDownDesc: 'Hạ xuống về phía trán',
+        seeThroughTitle: 'Mái thưa',
+        seeThroughDesc: 'Nhẹ và mỏng'
       }
     }
   }
