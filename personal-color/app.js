@@ -2471,7 +2471,7 @@
 
                     <!-- 헤어 시술 팁 -->
                     <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 14px; border: 1px solid #e0e0e0;">
-                        <div style="font-size: 16px; color: #7B1FA2; margin-bottom: 8px; font-weight: bold;">✂️ 시술 포인트</div>
+                        <div style="font-size: 16px; color: #7B1FA2; margin-bottom: 8px; font-weight: bold;">✂️ ${t('personalColor.result.treatmentPoints') || 'Treatment Points'}</div>
                         <div style="font-size: 16px; color: #333; line-height: 1.7;">
                             <div style="margin-bottom: 6px;"><b style="color: #9C27B0;">언더코트:</b> ${feedback.undercoatTip}</div>
                             <div><b style="color: #9C27B0;">마무리 질감:</b> ${feedback.textureTip}</div>
@@ -3209,7 +3209,7 @@
         async function performAIAnalysisSteps() {
             const steps = [
                 { id: 'ai-step-1', message: '얼굴 영역 감지 중...' },
-                { id: 'ai-step-2', message: '피부톤 색상 분석 중...' },
+                { id: 'ai-step-2', message: '${t('personalColor.aiMode.analyzingSkinTone') || 'Analyzing skin tone...'}' },
                 { id: 'ai-step-3', message: 'Delta E 2000 계산 중...' },
                 { id: 'ai-step-4', message: '최종 결과 생성 중...' }
             ];
@@ -3258,7 +3258,7 @@
                     <p>RGB(${result.skinColor.r}, ${result.skinColor.g}, ${result.skinColor.b})</p>
                 </div>
                 <div class="expert-analysis">
-                    <h5>전문가 분석</h5>
+                    <h5>${t('personalColor.result.expertAnalysis') || 'Expert Analysis'}</h5>
                     <p>${result.expertAnalysis}</p>
                 </div>
             `;
@@ -4087,7 +4087,7 @@
             }).join('');
 
             savedSection.innerHTML = `
-                <h4 style="color: #E91E63; margin: 0 0 15px 0; font-size: 18px;">🎨 저장된 색상 & 전문가 제조 가이드 (${savedColors.length}개)</h4>
+                <h4 style="color: #E91E63; margin: 0 0 15px 0; font-size: 18px;">🎨 ${t('personalColor.draping.savedColorsGuide') || 'Saved Colors & Expert Guide'} (${savedColors.length}개)</h4>
                 ${savedColorsHTML}
             `;
 
@@ -4207,7 +4207,7 @@
                 '겨울 쿨톤': ExpertKnowledge.colorMatching.cool + " 진하고 선명한 색상이 적합합니다."
             };
 
-            return analyses[season] || '전문가 분석 결과를 생성 중입니다.';
+            return analyses[season] || 'Generating expert analysis...';
         }
 
         function showToast(message, type = 'info', duration = 3000) {

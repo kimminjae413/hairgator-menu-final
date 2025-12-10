@@ -260,7 +260,8 @@ const HAIRGATOR_I18N = {
           step3Desc: '색차 측정 및 정확도 산출',
           step4: '결과 생성',
           step4Desc: '전문가 노하우 기반 최종 진단',
-          titleCompact: 'AI 분석 진행상황'
+          titleCompact: 'AI 분석 진행상황',
+          analyzingSkinTone: '피부톤 색상 분석 중...'
         },
         takePhoto: '사진을 촬영해주세요',
         takePhotoDesc: '왼쪽에서 카메라를 시작하고 얼굴을 촬영하면 AI가 분석합니다',
@@ -282,6 +283,8 @@ const HAIRGATOR_I18N = {
           lightingHigh: '좋음',
           lightingMedium: '보통',
           lightingLow: '낮음 (참고용)',
+          treatmentPoints: '시술 포인트',
+          expertAnalysis: '전문가 분석',
           matchingColors: '💄 메이크업 & 패션 컬러',
           confidence: '신뢰도'
         }
@@ -862,7 +865,8 @@ const HAIRGATOR_I18N = {
           step3Desc: 'Color difference measurement',
           step4: 'Result Generation',
           step4Desc: 'Expert-based final diagnosis',
-          titleCompact: 'AI Analysis Progress'
+          titleCompact: 'AI Analysis Progress',
+          analyzingSkinTone: 'Analyzing skin tone...'
         },
         takePhoto: 'Take a Photo',
         takePhotoDesc: 'Start the camera on the left and capture your face for AI analysis',
@@ -883,6 +887,8 @@ const HAIRGATOR_I18N = {
           lightingHigh: 'Good',
           lightingMedium: 'Medium',
           lightingLow: 'Low (Reference)',
+          treatmentPoints: 'Treatment Points',
+          expertAnalysis: 'Expert Analysis',
           matchingColors: '💄 Makeup & Fashion Colors',
           confidence: 'Confidence'
         }
@@ -930,7 +936,8 @@ const HAIRGATOR_I18N = {
         seasonSelected: 'Season color selected',
         selectColorFirst: 'Please select a color first',
         colorSaved: 'Current color saved',
-        compareAgain: 'Compare Again'
+        compareAgain: 'Compare Again',
+        savedColorsGuide: 'Saved Colors & Expert Guide'
       },
 
       undertones: {
@@ -1459,6 +1466,8 @@ const HAIRGATOR_I18N = {
           lightingHigh: '良い',
           lightingMedium: '普通',
           lightingLow: '低い（参考用）',
+          treatmentPoints: '施術ポイント',
+          expertAnalysis: '専門家分析',
           matchingColors: '💄 メイク＆ファッションカラー',
           confidence: '信頼度'
         }
@@ -2017,7 +2026,8 @@ const HAIRGATOR_I18N = {
           step3Desc: '色差测量和准确度计算',
           step4: '结果生成',
           step4Desc: '基于专家经验的最终诊断',
-          titleCompact: 'AI分析进度'
+          titleCompact: 'AI分析进度',
+          analyzingSkinTone: '正在分析肤色...'
         },
         takePhoto: '请拍照',
         takePhotoDesc: '在左侧启动相机，拍摄面部后AI将进行分析',
@@ -2038,6 +2048,8 @@ const HAIRGATOR_I18N = {
           lightingHigh: '良好',
           lightingMedium: '一般',
           lightingLow: '较低（仅供参考）',
+          treatmentPoints: '施术要点',
+          expertAnalysis: '专家分析',
           matchingColors: '💄 彩妆与时尚色彩',
           confidence: '置信度'
         }
