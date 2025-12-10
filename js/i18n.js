@@ -327,6 +327,10 @@ const HAIRGATOR_I18N = {
           optimal: '적정',
           wide: '넓음',
           currentEyebrowKeep: '현재 눈썹 모양 유지 추천',
+          eyebrowNarrowTip: '눈썹 안쪽을 정리하여 시원한 인상 연출 추천',
+          eyebrowWideTip: '눈썹 안쪽을 채워 또렷한 인상 연출 추천',
+          faceRatioLabel: '얼굴 비율',
+          eyeDistance: '눈 사이 거리',
           // 컬 추천 텍스트
           curlStraightDesc: '스트레이트로 깔끔하고 단정한 이미지 연출',
           curlCDesc: 'C컬로 자연스러운 볼륨감과 여성스러운 분위기',
@@ -335,7 +339,21 @@ const HAIRGATOR_I18N = {
           curlSSDesc: 'SS컬로 강한 컬감과 개성있는 스타일',
           curlNoneDesc: '고객 선호에 따라 다양한 컬 스타일 가능',
           // 시즌명 (통합 결과용)
-          neutralWarmDeep: '뉴트럴 웜 딥'
+          neutralWarmDeep: '뉴트럴 웜 딥',
+          // 시즌 기본명
+          springWarm: '봄 웜',
+          autumnWarm: '가을 웜',
+          summerCool: '여름 쿨',
+          winterCool: '겨울 쿨',
+          neutralWarm: '뉴트럴 웜',
+          neutralCool: '뉴트럴 쿨',
+          neutral: '뉴트럴',
+          // 서브타입
+          bright: '브라이트',
+          light: '라이트',
+          soft: '소프트',
+          muted: '뮤트',
+          deep: '딥'
         }
       },
 
@@ -1026,6 +1044,10 @@ const HAIRGATOR_I18N = {
           optimal: 'Optimal',
           wide: 'Wide',
           currentEyebrowKeep: 'Keep current eyebrow shape recommended',
+          eyebrowNarrowTip: 'Trim inner eyebrows for a refreshed look',
+          eyebrowWideTip: 'Fill in inner eyebrows for a defined look',
+          faceRatioLabel: 'Face Ratio',
+          eyeDistance: 'Eye Distance',
           // Curl recommendation text
           curlStraightDesc: 'Straight style for a neat and tidy image',
           curlCDesc: 'C-curl for natural volume and feminine vibe',
@@ -1034,7 +1056,21 @@ const HAIRGATOR_I18N = {
           curlSSDesc: 'SS-curl for strong curls and unique personality',
           curlNoneDesc: 'Various curl styles available based on preference',
           // Season name
-          neutralWarmDeep: 'Neutral Warm Deep'
+          neutralWarmDeep: 'Neutral Warm Deep',
+          // Season base names
+          springWarm: 'Spring Warm',
+          autumnWarm: 'Autumn Warm',
+          summerCool: 'Summer Cool',
+          winterCool: 'Winter Cool',
+          neutralWarm: 'Neutral Warm',
+          neutralCool: 'Neutral Cool',
+          neutral: 'Neutral',
+          // Subtypes
+          bright: 'Bright',
+          light: 'Light',
+          soft: 'Soft',
+          muted: 'Muted',
+          deep: 'Deep'
         }
       },
 
@@ -1703,6 +1739,10 @@ const HAIRGATOR_I18N = {
           optimal: '適正',
           wide: '広い',
           currentEyebrowKeep: '現在の眉毛の形を維持することをお勧めします',
+          eyebrowNarrowTip: '眉頭を整えてすっきりとした印象に',
+          eyebrowWideTip: '眉頭を埋めてはっきりとした印象に',
+          faceRatioLabel: '顔の比率',
+          eyeDistance: '目の間隔',
           // カール推奨テキスト
           curlStraightDesc: 'ストレートできれいで整ったイメージ演出',
           curlCDesc: 'Cカールで自然なボリュームと女性らしい雰囲気',
@@ -1711,7 +1751,21 @@ const HAIRGATOR_I18N = {
           curlSSDesc: 'SSカールで強いカール感と個性的なスタイル',
           curlNoneDesc: 'お客様のお好みに合わせて様々なカールスタイルが可能',
           // シーズン名
-          neutralWarmDeep: 'ニュートラルウォームディープ'
+          neutralWarmDeep: 'ニュートラルウォームディープ',
+          // シーズン基本名
+          springWarm: 'スプリングウォーム',
+          autumnWarm: 'オータムウォーム',
+          summerCool: 'サマークール',
+          winterCool: 'ウィンタークール',
+          neutralWarm: 'ニュートラルウォーム',
+          neutralCool: 'ニュートラルクール',
+          neutral: 'ニュートラル',
+          // サブタイプ
+          bright: 'ブライト',
+          light: 'ライト',
+          soft: 'ソフト',
+          muted: 'ミュート',
+          deep: 'ディープ'
         }
       },
 
@@ -2381,6 +2435,10 @@ const HAIRGATOR_I18N = {
           optimal: '适中',
           wide: '宽',
           currentEyebrowKeep: '建议保持当前眉形',
+          eyebrowNarrowTip: '修整眉头，打造清爽印象',
+          eyebrowWideTip: '填充眉头，打造立体印象',
+          faceRatioLabel: '脸部比例',
+          eyeDistance: '眼距',
           // 卷度推荐文本
           curlStraightDesc: '直发打造干净整洁的形象',
           curlCDesc: 'C卷展现自然蓬松和女性魅力',
@@ -2389,7 +2447,21 @@ const HAIRGATOR_I18N = {
           curlSSDesc: 'SS卷展现强烈卷度和独特个性',
           curlNoneDesc: '可根据客户喜好选择多种卷度风格',
           // 季节名称
-          neutralWarmDeep: '中性暖深色'
+          neutralWarmDeep: '中性暖深色',
+          // 季节基本名称
+          springWarm: '春季暖色',
+          autumnWarm: '秋季暖色',
+          summerCool: '夏季冷色',
+          winterCool: '冬季冷色',
+          neutralWarm: '中性暖色',
+          neutralCool: '中性冷色',
+          neutral: '中性色',
+          // 子类型
+          bright: '明亮',
+          light: '浅色',
+          soft: '柔和',
+          muted: '哑光',
+          deep: '深色'
         }
       },
 
@@ -3046,6 +3118,10 @@ const HAIRGATOR_I18N = {
           optimal: 'Tối ưu',
           wide: 'Rộng',
           currentEyebrowKeep: 'Nên giữ nguyên hình dáng lông mày hiện tại',
+          eyebrowNarrowTip: 'Tỉa lông mày phía trong để tạo ấn tượng tươi mới',
+          eyebrowWideTip: 'Điền đầy lông mày phía trong để tạo ấn tượng rõ ràng',
+          faceRatioLabel: 'Tỷ lệ khuôn mặt',
+          eyeDistance: 'Khoảng cách mắt',
           // Văn bản đề xuất xoăn
           curlStraightDesc: 'Tóc thẳng tạo hình ảnh gọn gàng và ngăn nắp',
           curlCDesc: 'Xoăn C tạo độ phồng tự nhiên và vẻ nữ tính',
@@ -3054,7 +3130,21 @@ const HAIRGATOR_I18N = {
           curlSSDesc: 'Xoăn SS tạo độ xoăn mạnh và cá tính riêng',
           curlNoneDesc: 'Có thể chọn nhiều kiểu xoăn theo sở thích',
           // Tên mùa
-          neutralWarmDeep: 'Trung tính ấm đậm'
+          neutralWarmDeep: 'Trung tính ấm đậm',
+          // Tên mùa cơ bản
+          springWarm: 'Xuân Ấm',
+          autumnWarm: 'Thu Ấm',
+          summerCool: 'Hạ Mát',
+          winterCool: 'Đông Mát',
+          neutralWarm: 'Trung tính Ấm',
+          neutralCool: 'Trung tính Mát',
+          neutral: 'Trung tính',
+          // Loại phụ
+          bright: 'Sáng',
+          light: 'Nhạt',
+          soft: 'Dịu',
+          muted: 'Trầm',
+          deep: 'Đậm'
         }
       },
 

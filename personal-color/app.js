@@ -107,6 +107,68 @@
         };
 
         // ========================================
+        // 🌐 다국어 시즌명 헬퍼 함수
+        // ========================================
+
+        // 시즌 기본명 변환 (spring-warm → 현재 언어로 번역)
+        function getTranslatedSeasonName(seasonBase, undertone) {
+            // seasonBase: 'spring', 'summer', 'autumn', 'winter'
+            // undertone: 'Warm', 'Cool', 'Neutral'
+            const keyMap = {
+                'spring-Warm': 'springWarm',
+                'autumn-Warm': 'autumnWarm',
+                'summer-Cool': 'summerCool',
+                'winter-Cool': 'winterCool',
+                'autumn-Neutral': 'neutralWarm',
+                'summer-Neutral': 'neutralCool',
+                'winter-Neutral': 'neutralCool'
+            };
+            const key = `${seasonBase}-${undertone}`;
+            const i18nKey = keyMap[key];
+            if (i18nKey) {
+                return t(`personalColor.aiMode.result.${i18nKey}`) || getDefaultSeasonName(seasonBase, undertone);
+            }
+            // 뉴트럴 (기본)
+            if (undertone === 'Neutral') {
+                return t('personalColor.aiMode.result.neutral') || '뉴트럴';
+            }
+            return getDefaultSeasonName(seasonBase, undertone);
+        }
+
+        function getDefaultSeasonName(seasonBase, undertone) {
+            const defaults = {
+                'spring-Warm': '봄 웜',
+                'autumn-Warm': '가을 웜',
+                'summer-Cool': '여름 쿨',
+                'winter-Cool': '겨울 쿨',
+                'autumn-Neutral': '뉴트럴 웜',
+                'summer-Neutral': '뉴트럴 쿨',
+                'winter-Neutral': '뉴트럴 쿨'
+            };
+            return defaults[`${seasonBase}-${undertone}`] || '뉴트럴';
+        }
+
+        // 서브타입 변환 (bright, light, soft, muted, deep → 현재 언어로)
+        function getTranslatedSubtype(subtype) {
+            const key = `personalColor.aiMode.result.${subtype}`;
+            const defaults = {
+                'bright': '브라이트',
+                'light': '라이트',
+                'soft': '소프트',
+                'muted': '뮤트',
+                'deep': '딥'
+            };
+            return t(key) || defaults[subtype] || subtype;
+        }
+
+        // fullSeason 다국어 생성
+        function getTranslatedFullSeason(seasonKr, subtype, season, undertone) {
+            const translatedSeason = getTranslatedSeasonName(season, undertone);
+            const translatedSubtype = getTranslatedSubtype(subtype);
+            return `${translatedSeason} ${translatedSubtype}`;
+        }
+
+        // ========================================
         // 🎯 새로운 4단계 파이프라인 시스템
         // ========================================
 
@@ -432,7 +494,8 @@
 
             const confidence = Math.min(98, Math.max(55, Math.round(baseConfidence)));
 
-            const fullSeason = `${seasonKr} ${subtype === 'bright' ? '브라이트' : subtype === 'light' ? '라이트' : subtype === 'soft' ? '소프트' : subtype === 'muted' ? '뮤트' : '딥'}`;
+            // 다국어 fullSeason 생성
+            const fullSeason = getTranslatedFullSeason(seasonKr, subtype, season, undertone);
 
             console.log('🎨 분류 결과:', {
                 undertone, labScore, rgbScore, warmScore, L: L.toFixed(1), C,
@@ -3703,14 +3766,14 @@
                 <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 14px; border-radius: 12px; border: 1px solid #dee2e6; margin-bottom: 12px;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
                         <span style="font-size: 16px;">📐</span>
-                        <span style="font-size: 13px; font-weight: 700; color: #333;">얼굴 비율 분석</span>
+                        <span style="font-size: 13px; font-weight: 700; color: #333;">${t('personalColor.aiMode.result.faceRatioAnalysis') || '얼굴 비율 분석'}</span>
                     </div>
 
                     <!-- 미간 거리 결과 -->
                     <div style="background: ${levelStyle.bg}; padding: 12px; border-radius: 10px; border: 1px solid ${levelStyle.border}; margin-bottom: 10px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <span style="font-size: 12px; font-weight: 600; color: ${levelStyle.text};">
-                                ${levelStyle.icon} 미간(눈썹간 거리)
+                                ${levelStyle.icon} ${t('personalColor.aiMode.result.eyebrowGapDistance') || '미간(눈썹간 거리)'}
                             </span>
                             <span style="font-size: 11px; background: ${levelStyle.border}; color: #fff; padding: 2px 8px; border-radius: 10px;">
                                 ${ratio.toFixed(2)} : 1
@@ -3726,25 +3789,25 @@
 
                     <!-- 비율 게이지 -->
                     <div style="background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0;">
-                        <div style="font-size: 11px; color: #666; margin-bottom: 6px;">미간:눈 비율 (1.0 = 이상적)</div>
+                        <div style="font-size: 11px; color: #666; margin-bottom: 6px;">${t('personalColor.aiMode.result.eyeToEyeRatio') || '미간:눈 비율 (1.0 = 이상적)'}</div>
                         <div style="position: relative; height: 8px; background: linear-gradient(to right, #FF9800, #4CAF50, #2196F3); border-radius: 4px;">
                             <div style="position: absolute; left: ${ratioPercent}%; top: -3px; width: 14px; height: 14px; background: #333; border-radius: 50%; border: 2px solid #fff; transform: translateX(-50%);"></div>
                         </div>
                         <div style="display: flex; justify-content: space-between; font-size: 9px; color: #999; margin-top: 4px;">
-                            <span>좁음</span>
-                            <span>적정</span>
-                            <span>넓음</span>
+                            <span>${t('personalColor.aiMode.result.narrow') || '좁음'}</span>
+                            <span>${t('personalColor.aiMode.result.optimal') || '적정'}</span>
+                            <span>${t('personalColor.aiMode.result.wide') || '넓음'}</span>
                         </div>
                     </div>
 
                     <!-- 추가 측정값 -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
                         <div style="background: #fff; padding: 8px; border-radius: 6px; border: 1px solid #e0e0e0; text-align: center;">
-                            <div style="font-size: 10px; color: #888;">얼굴 비율</div>
+                            <div style="font-size: 10px; color: #888;">${t('personalColor.aiMode.result.faceRatioLabel') || '얼굴 비율'}</div>
                             <div style="font-size: 14px; font-weight: 700; color: #333;">${faceGeometry.faceRatioPercent}%</div>
                         </div>
                         <div style="background: #fff; padding: 8px; border-radius: 6px; border: 1px solid #e0e0e0; text-align: center;">
-                            <div style="font-size: 10px; color: #888;">눈 사이 거리</div>
+                            <div style="font-size: 10px; color: #888;">${t('personalColor.aiMode.result.eyeDistance') || '눈 사이 거리'}</div>
                             <div style="font-size: 14px; font-weight: 700; color: #333;">${faceGeometry.eyeInnerDistancePercent}%</div>
                         </div>
                     </div>
@@ -4338,11 +4401,11 @@
             // 스타일 추천
             let styleRecommendation = '';
             if (eyebrowGapLevel === 'narrow') {
-                styleRecommendation = '눈썹 안쪽을 정리하여 시원한 인상 연출 추천';
+                styleRecommendation = t('personalColor.aiMode.result.eyebrowNarrowTip') || '눈썹 안쪽을 정리하여 시원한 인상 연출 추천';
             } else if (eyebrowGapLevel === 'wide') {
-                styleRecommendation = '눈썹 안쪽을 채워 또렷한 인상 연출 추천';
+                styleRecommendation = t('personalColor.aiMode.result.eyebrowWideTip') || '눈썹 안쪽을 채워 또렷한 인상 연출 추천';
             } else {
-                styleRecommendation = '현재 눈썹 모양 유지 추천';
+                styleRecommendation = t('personalColor.aiMode.result.currentEyebrowKeep') || '현재 눈썹 모양 유지 추천';
             }
 
             const result = {
