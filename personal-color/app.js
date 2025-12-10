@@ -2125,7 +2125,7 @@
 
             // 조명 품질 표시 텍스트
             const lightingQualityText = lm.lightingQuality >= 0.7 ? '좋음' :
-                                        lm.lightingQuality >= 0.5 ? '보통' : '낮음 (참고용)';
+                                        lm.lightingQuality >= 0.5 ? (t('personalColor.result.lightingMedium') || 'Medium') : (t('personalColor.result.lightingLow') || 'Low (Reference)');
             const lightingColor = lm.lightingQuality >= 0.7 ? '#4CAF50' :
                                   lm.lightingQuality >= 0.5 ? '#FF9800' : '#F44336';
 
@@ -2196,7 +2196,7 @@
 
                     <!-- ⚠️ 피해야 할 컬러 -->
                     <div style="background: rgba(244,67,54,0.1); padding: 10px; border-radius: 10px; border: 1px solid rgba(244,67,54,0.3); margin-top: 12px;">
-                        <div style="font-size: 12px; color: #F44336; margin-bottom: 6px; font-weight: bold;">⚠️ 피해야 할 컬러</div>
+                        <div style="font-size: 12px; color: #F44336; margin-bottom: 6px; font-weight: bold;">⚠️ ${t('personalColor.result.avoidColors') || 'Colors to Avoid'}</div>
                         <ul style="margin: 0; padding-left: 16px; color: #c62828; font-size: 11px; line-height: 1.6;">
                             ${hairRec.avoidRules.map(rule => `<li>${rule}</li>`).join('')}
                         </ul>
@@ -2229,7 +2229,7 @@
                             <span style="color: #333;">${resultTexts.skinTone}: ${skinToneData.hex}</span>
                         </div>
                         <div style="color: #333;">${resultTexts.undertone}: <b style="color: ${pc.color};">${undertoneText}</b></div>
-                        <div style="color: #666; font-size: 12px;">조명: ${lightingQualityText}</div>
+                        <div style="color: #666; font-size: 12px;">${t('personalColor.result.lighting') || 'Lighting'}: ${lightingQualityText}</div>
                     </div>
                 `;
             }
@@ -2464,7 +2464,7 @@
                     <!-- 섹션 C: 시술 레시피 (처방전) -->
                     ${recipeCardsHTML ? `
                     <div style="margin-bottom: 16px;">
-                        <div style="font-size: 17px; color: #00897B; margin-bottom: 12px; font-weight: bold;">💊 SECTION C: 시술 레시피</div>
+                        <div style="font-size: 17px; color: #00897B; margin-bottom: 12px; font-weight: bold;">💊 SECTION C: ${t('personalColor.result.treatmentRecipe') || 'Treatment Recipe'}</div>
                         ${recipeCardsHTML}
                     </div>
                     ` : ''}
@@ -2879,13 +2879,13 @@
             let eyebrowGapLevel = '';
 
             if (eyebrowToEyeRatio < 0.85) {
-                eyebrowGapEvaluation = '좁은 미간 - 눈 사이가 가까워 보임';
+                eyebrowGapEvaluation = t('personalColor.faceAnalysis.narrowGapDesc') || 'Narrow gap - Eyes appear close together';
                 eyebrowGapLevel = 'narrow';
             } else if (eyebrowToEyeRatio > 1.15) {
-                eyebrowGapEvaluation = '넓은 미간 - 눈 사이가 멀어 보임';
+                eyebrowGapEvaluation = t('personalColor.faceAnalysis.wideGapDesc') || 'Wide gap - Eyes appear far apart';
                 eyebrowGapLevel = 'wide';
             } else {
-                eyebrowGapEvaluation = '균형잡힌 미간 - 이상적인 비율';
+                eyebrowGapEvaluation = t('personalColor.faceAnalysis.balancedGapDesc') || 'Balanced gap - Ideal proportion';
                 eyebrowGapLevel = 'balanced';
             }
 
@@ -3713,7 +3713,7 @@
                         <span style="color: #FFAB91;">🍂 가을: ${seasonScores.autumn}점</span>
                         <span style="color: #B39DDB;">❄️ 겨울: ${seasonScores.winter}점</span>
                     </div>
-                    <button onclick="resetCompareMode()" style="padding: 12px 24px; border: none; border-radius: 8px; background: linear-gradient(135deg, #E91E63, #9C27B0); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">🔄 다시 비교하기</button>
+                    <button onclick="resetCompareMode()" style="padding: 12px 24px; border: none; border-radius: 8px; background: linear-gradient(135deg, #E91E63, #9C27B0); color: white; font-size: 15px; font-weight: bold; cursor: pointer;">🔄 ${t('personalColor.draping.compareAgain') || 'Compare Again'}</button>
                     <button onclick="toggleCompareMode()" style="margin-left: 10px; padding: 12px 24px; border: none; border-radius: 8px; background: rgba(255,255,255,0.2); color: white; font-size: 15px; cursor: pointer;">닫기</button>
                 </div>
             `;
@@ -5403,7 +5403,7 @@ function paGenerateRecommendation(profile, heightCategory, tone, isRecommended) 
   let recommendation = `【Personal Analysis 결과】\n\n`;
 
   recommendation += `📏 고객 정보\n`;
-  recommendation += `- 키: ${profile.height}cm (${heightCategory === 'short' ? '작은 편' : heightCategory === 'tall' ? '큰 편' : '보통'})\n`;
+  recommendation += `- 키: ${profile.height}cm (${heightCategory === 'short' ? (t('personalColor.personalAnalysis.heightShort') || 'Short') : heightCategory === 'tall' ? (t('personalColor.personalAnalysis.heightTall') || 'Tall') : (t('personalColor.personalAnalysis.heightMedium') || 'Medium')})\n`;
   recommendation += `- 현재 기장: ${profile.currentLength === 'short' ? '숏' : profile.currentLength === 'medium' ? '미디엄' : '롱'}\n`;
   recommendation += `- 피부 톤: ${PA_SKIN_TYPE_DATA[profile.skinType].name} (${tone})\n\n`;
 
@@ -5444,7 +5444,7 @@ function paDisplayResult(result) {
         <div class="pa-result-grid">
           <div class="pa-result-item">
             <label>키</label>
-            <span>${p.height}cm (${a.heightCategory === 'short' ? '작은 편' : a.heightCategory === 'tall' ? '큰 편' : '보통'})</span>
+            <span>${p.height}cm (${a.heightCategory === 'short' ? (t('personalColor.personalAnalysis.heightShort') || 'Short') : a.heightCategory === 'tall' ? (t('personalColor.personalAnalysis.heightTall') || 'Tall') : (t('personalColor.personalAnalysis.heightMedium') || 'Medium')})</span>
           </div>
           <div class="pa-result-item">
             <label>현재 기장</label>
@@ -5814,9 +5814,9 @@ function generateFaceGeometryIntegratedHTML(faceGeometry, themeColor) {
 
   // 눈썹간 거리 레벨에 따른 스타일
   const levelColors = {
-    narrow: { bg: '#FFF3E0', border: '#FF9800', text: '#E65100', icon: '◀️▶️', label: '좁은 미간' },
-    balanced: { bg: '#E8F5E9', border: '#4CAF50', text: '#2E7D32', icon: '✅', label: '균형 미간' },
-    wide: { bg: '#E3F2FD', border: '#1976D2', text: '#0D47A1', icon: '▶️◀️', label: '넓은 미간' }
+    narrow: { bg: '#FFF3E0', border: '#FF9800', text: '#E65100', icon: '◀️▶️', label: t('personalColor.personalAnalysis.narrowGap') || 'Narrow Gap' },
+    balanced: { bg: '#E8F5E9', border: '#4CAF50', text: '#2E7D32', icon: '✅', label: t('personalColor.personalAnalysis.balancedGap') || 'Balanced Gap' },
+    wide: { bg: '#E3F2FD', border: '#1976D2', text: '#0D47A1', icon: '▶️◀️', label: t('personalColor.personalAnalysis.wideGap') || 'Wide Gap' }
   };
   const levelStyle = levelColors[faceGeometry.eyebrowGapLevel] || levelColors.balanced;
 

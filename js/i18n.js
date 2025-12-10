@@ -273,6 +273,15 @@ const HAIRGATOR_I18N = {
           skinTone: '피부톤',
           undertone: '언더톤',
           recommendedSeason: '✨ 추천 퍼스널컬러',
+          avoidColors: '피해야 할 컬러',
+          lighting: '조명',
+          treatmentRecipe: '시술 레시피',
+          hairColorRecommend: '헤어컬러 추천',
+          expertGuide: '전문가 가이드',
+          treatmentDifficulty: '시술 난이도',
+          lightingHigh: '좋음',
+          lightingMedium: '보통',
+          lightingLow: '낮음 (참고용)',
           matchingColors: '💄 메이크업 & 패션 컬러',
           confidence: '신뢰도'
         }
@@ -597,6 +606,12 @@ const HAIRGATOR_I18N = {
         desiredLength: '희망 기장',
         selected: '선택'
       }
+      // Face Analysis
+      faceAnalysis: {
+        narrowGapDesc: '좁은 미간 - 눈 사이가 가까워 보임',
+        wideGapDesc: '넓은 미간 - 눈 사이가 멀어 보임',
+        balancedGapDesc: '균형잡힌 미간 - 이상적인 비율'
+      },
     }
   },
 
@@ -859,6 +874,15 @@ const HAIRGATOR_I18N = {
           skinTone: 'Skin Tone',
           undertone: 'Undertone',
           recommendedSeason: '✨ Recommended Personal Color',
+          avoidColors: 'Colors to Avoid',
+          lighting: 'Lighting',
+          treatmentRecipe: 'Treatment Recipe',
+          hairColorRecommend: 'Hair Color Recommendation',
+          expertGuide: 'Expert Guide',
+          treatmentDifficulty: 'Treatment Difficulty',
+          lightingHigh: 'Good',
+          lightingMedium: 'Medium',
+          lightingLow: 'Low (Reference)',
           matchingColors: '💄 Makeup & Fashion Colors',
           confidence: 'Confidence'
         }
@@ -905,7 +929,8 @@ const HAIRGATOR_I18N = {
         drapingCameraStopped: 'Draping camera stopped',
         seasonSelected: 'Season color selected',
         selectColorFirst: 'Please select a color first',
-        colorSaved: 'Current color saved'
+        colorSaved: 'Current color saved',
+        compareAgain: 'Compare Again'
       },
 
       undertones: {
@@ -1425,6 +1450,15 @@ const HAIRGATOR_I18N = {
           skinTone: '肌トーン',
           undertone: 'アンダートーン',
           recommendedSeason: '✨ おすすめパーソナルカラー',
+          avoidColors: '避けるべきカラー',
+          lighting: '照明',
+          treatmentRecipe: '施術レシピ',
+          hairColorRecommend: 'ヘアカラー推奨',
+          expertGuide: '専門家ガイド',
+          treatmentDifficulty: '施術難易度',
+          lightingHigh: '良い',
+          lightingMedium: '普通',
+          lightingLow: '低い（参考用）',
           matchingColors: '💄 メイク＆ファッションカラー',
           confidence: '信頼度'
         }
@@ -1995,6 +2029,15 @@ const HAIRGATOR_I18N = {
           skinTone: '肤色',
           undertone: '底色调',
           recommendedSeason: '✨ 推荐个人色彩',
+          avoidColors: '应避免的颜色',
+          lighting: '照明',
+          treatmentRecipe: '施术配方',
+          hairColorRecommend: '发色推荐',
+          expertGuide: '专家指南',
+          treatmentDifficulty: '施术难度',
+          lightingHigh: '良好',
+          lightingMedium: '一般',
+          lightingLow: '较低（仅供参考）',
           matchingColors: '💄 彩妆与时尚色彩',
           confidence: '置信度'
         }
