@@ -6374,35 +6374,41 @@ async function analyzeRequiredCuttingTechnique(userImageBase64, mimeType, gemini
 JSON만 출력:
 {"volume_position":"<값>","needs_layer":<true/false>,"needs_c_zone":<true/false>,"needs_disconnection":<true/false>,"complexity":"<값>","section_type":"<값>","analysis_reason":"<1문장 분석 근거>"}`;
 
+    // Vision으로 커팅 기법 분석 (gemini-2.0-flash 사용)
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ role: 'user', parts: [
-            { inline_data: { mime_type: mimeType, data: userImageBase64 } },
-            { text: prompt }
-          ]}],
-          tools: [{ fileSearch: { fileSearchStoreNames: [GEMINI_FILE_SEARCH_STORE] } }],
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: mimeType, data: userImageBase64 } },
+              { text: prompt }
+            ]
+          }],
           generationConfig: { temperature: 0.2, maxOutputTokens: 300 }
         })
       }
     );
 
     if (!response.ok) {
-      console.error('RAG 커팅 분석 API 오류:', response.status);
+      const errorText = await response.text();
+      console.error('커팅 분석 API 오류:', response.status, errorText);
       return null;
     }
 
     const data = await response.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    console.log(`🔬 커팅 분석 원문:`, text.substring(0, 150));
+
     const jsonMatch = text.match(/\{[\s\S]*?\}/);
     if (jsonMatch) {
       const result = JSON.parse(jsonMatch[0]);
-      console.log(`✅ 커팅 기법 분석 완료:`, result);
+      console.log(`✅ 커팅 기법 분석 완료:`, JSON.stringify(result));
       return result;
     }
+    console.log(`⚠️ 커팅 분석 JSON 파싱 실패`);
     return null;
   } catch (error) {
     console.error('RAG 커팅 기법 분석 오류:', error.message);
