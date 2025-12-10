@@ -165,14 +165,9 @@ function stopFacemeshAnimation() {
     }
 }
 
-// 페이지 로드 시 애니메이션 시작
+// 페이지 로드 시 준비 (카메라 시작 시 애니메이션 시작됨)
 document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-        const faceGuide = document.getElementById('ai-face-guide');
-        if (faceGuide && faceGuide.style.display !== 'none') {
-            startFacemeshAnimation();
-        }
-    }, 500);
+    console.log('FaceMesh animation module ready');
 });
 
         // 현재 언어 가져오기 (부모 창 우선, 그 다음 localStorage)
@@ -3728,6 +3723,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 document.getElementById('ai-face-guide').style.display = 'flex';
 
+                // FaceMesh 스타일 애니메이션 시작 (얼굴 감지 전까지 표시)
+                setTimeout(() => {
+                    startFacemeshAnimation();
+                }, 100);
+
             } catch (error) {
                 console.error('❌ 카메라 시작 실패:', error);
                 cleanupCameraResources();
@@ -3807,6 +3807,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!faceDetected) {
                         faceDetected = true;
                         document.getElementById('ai-face-guide').style.display = 'none';
+
+                        // FaceMesh 스타일 애니메이션 멈춤
+                        stopFacemeshAnimation();
 
                         // 촬영 버튼 표시
                         document.getElementById('capture-btn').style.display = 'inline-block';
