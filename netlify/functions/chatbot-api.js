@@ -3412,6 +3412,17 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
     return null;
   }
 
+  // ⭐ 디버그: Zone 관련 인덱스 확인
+  const zoneIndexes = indexes.filter(idx =>
+    idx.term?.toLowerCase().includes('zone') ||
+    idx.title_ko?.includes('존') ||
+    idx.keywords.some(k => k.includes('존') || k.includes('zone'))
+  );
+  console.log(`🔍 Zone 관련 인덱스 ${zoneIndexes.length}개:`);
+  zoneIndexes.slice(0, 10).forEach(z => {
+    console.log(`   - ${z.term}: keywords=[${z.keywords.slice(0, 5).join(', ')}]`);
+  });
+
   // ⭐ 커트/펌 인덱스만 필터링 (이미지가 있는 것만)
   const imageIndexes = indexes.filter(idx => {
     // type이 'perm' 또는 빈값(커트 인덱스)인 것만 (personal_* 등 제외)
