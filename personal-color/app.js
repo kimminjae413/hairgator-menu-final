@@ -51,30 +51,7 @@
             }
         }
 
-        // data-i18n 속성을 가진 요소들에 번역 적용
-        function applyTranslations(container) {
-            const root = container || document;
-
-            // data-i18n 속성이 있는 요소들 (텍스트 콘텐츠 번역)
-            root.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                const translated = t(key);
-                if (translated) {
-                    el.textContent = translated;
-                }
-            });
-
-            // data-i18n-html 속성이 있는 요소들 (HTML 콘텐츠 번역)
-            root.querySelectorAll('[data-i18n-html]').forEach(el => {
-                const key = el.getAttribute('data-i18n-html');
-                const translated = t(key);
-                if (translated) {
-                    el.innerHTML = translated;
-                }
-            });
-
-            console.log('🌐 번역 적용 완료:', getCurrentLanguage());
-        }
+        // 참고: applyTranslations 함수는 라인 4489에 통합 정의됨
 
         // 전역 변수 정의
         let currentMode = null;
@@ -4472,21 +4449,23 @@
         }
 
         // 번역 적용 함수
-        function applyTranslations() {
-            const pc = HAIRGATOR_I18N[currentLang]?.personalColor;
+        function applyTranslations(container) {
+            const root = container || document;
+            const lang = getCurrentLanguage();
+            const pc = HAIRGATOR_I18N[lang]?.personalColor;
             if (!pc) return;
 
             // data-i18n 속성으로 번역 적용
-            document.querySelectorAll('[data-i18n]').forEach(el => {
+            root.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                const text = getNestedValue(HAIRGATOR_I18N[currentLang], key);
+                const text = getNestedValue(HAIRGATOR_I18N[lang], key);
                 if (text) el.textContent = text;
             });
 
             // data-i18n-html 속성으로 HTML 번역 적용
-            document.querySelectorAll('[data-i18n-html]').forEach(el => {
+            root.querySelectorAll('[data-i18n-html]').forEach(el => {
                 const key = el.getAttribute('data-i18n-html');
-                const text = getNestedValue(HAIRGATOR_I18N[currentLang], key);
+                const text = getNestedValue(HAIRGATOR_I18N[lang], key);
                 if (text) el.innerHTML = text;
             });
 
@@ -4538,6 +4517,7 @@
 
             // Personal Analysis 모달 번역
             const pa = pc.personalAnalysis;
+            const genderTexts = HAIRGATOR_I18N[lang]?.gender;
             if (pa) {
                 // Step 제목
                 const stepTitles = document.querySelectorAll('.pa-step-title');
@@ -4545,14 +4525,48 @@
                 if (stepTitles[1]) stepTitles[1].textContent = `Step 2: ${pa.step2Title}`;
                 if (stepTitles[2]) stepTitles[2].textContent = `Step 3: ${pa.step3Title}`;
 
-                // 기장 버튼 텍스트
-                document.querySelectorAll('.pa-current-length-btn').forEach(btn => {
+                // Step 설명 (추가)
+                const stepDescs = document.querySelectorAll('[data-i18n="personalAnalysis.step1Desc"], [data-i18n="personalAnalysis.step2Desc"], [data-i18n="personalAnalysis.step3Desc"]');
+                stepDescs.forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    const descKey = key.split('.')[1]; // step1Desc, step2Desc, step3Desc
+                    if (pa[descKey]) el.textContent = pa[descKey];
+                });
+
+                // 성별 라벨 (추가)
+                const genderLabel = document.querySelector('[data-i18n="personalAnalysis.gender"]');
+                if (genderLabel && pa.gender) genderLabel.textContent = pa.gender;
+
+                // 성별 버튼 (여성/남성) (추가)
+                if (genderTexts) {
+                    const femaleBtn = document.querySelector('[data-i18n="gender.female"]');
+                    const maleBtn = document.querySelector('[data-i18n="gender.male"]');
+                    if (femaleBtn) femaleBtn.textContent = genderTexts.female;
+                    if (maleBtn) maleBtn.textContent = genderTexts.male;
+                }
+
+                // 기장 라벨 (추가)
+                const currentLengthLabel = document.querySelector('[data-i18n="personalAnalysis.currentLength"]');
+                const desiredLengthLabel = document.querySelector('[data-i18n="personalAnalysis.desiredLength"]');
+                if (currentLengthLabel && pa.currentLength) currentLengthLabel.textContent = pa.currentLength;
+                if (desiredLengthLabel && pa.desiredLength) desiredLengthLabel.textContent = pa.desiredLength;
+
+                // 기장 버튼 텍스트 (H~A)
+                document.querySelectorAll('.pa-current-length-btn, .pa-desired-length-btn').forEach(btn => {
                     const length = btn.dataset.length;
                     const textEl = btn.querySelector('div:last-child');
-                    if (textEl && pa[`length${length.charAt(0).toUpperCase() + length.slice(1)}`]) {
-                        textEl.textContent = pa[`length${length.charAt(0).toUpperCase() + length.slice(1)}`];
+                    if (textEl && length) {
+                        // 대문자 변환 (h -> H, a -> A)
+                        const lengthKey = `length${length.toUpperCase()}`;
+                        if (pa[lengthKey]) {
+                            textEl.textContent = pa[lengthKey];
+                        }
                     }
                 });
+
+                // 앞머리 라벨 (추가)
+                const fringeLabel = document.querySelector('[data-i18n="personalAnalysis.fringePreference"]');
+                if (fringeLabel && pa.fringePreference) fringeLabel.textContent = pa.fringePreference;
 
                 // 앞머리 버튼 텍스트
                 document.querySelectorAll('.pa-fringe-btn').forEach(btn => {
@@ -4560,6 +4574,10 @@
                     const key = `fringe${fringe.charAt(0).toUpperCase() + fringe.slice(1)}`;
                     if (pa[key]) btn.textContent = pa[key];
                 });
+
+                // 피부 타입 설명 (추가)
+                const skinTypeDesc = document.querySelector('[data-i18n="personalAnalysis.skinTypeDesc"]');
+                if (skinTypeDesc && pa.skinTypeDesc) skinTypeDesc.textContent = pa.skinTypeDesc;
 
                 // 피부 타입 버튼 텍스트
                 document.querySelectorAll('.pa-skin-btn').forEach(btn => {
@@ -4569,7 +4587,16 @@
                         const coolWarmText = skin === 'TP' ? '(COOL)' : skin === 'BP' ? '(WARM)' : '(NEUTRAL)';
                         labelEl.textContent = pa[`skin${skin}`].replace(/\([^)]+\)/, coolWarmText);
                     }
+                    // 피부 타입 상세 설명 (HTML)
+                    const descEl = btn.querySelector('.pa-skin-desc');
+                    const titleEl = btn.querySelector('.pa-skin-title');
+                    if (titleEl && pa[`skin${skin}Title`]) titleEl.textContent = pa[`skin${skin}Title`];
+                    if (descEl && pa[`skin${skin}Desc`]) descEl.innerHTML = pa[`skin${skin}Desc`];
                 });
+
+                // 컬 라벨 (추가)
+                const curlLabel = document.querySelector('[data-i18n="personalAnalysis.curlPreference"]');
+                if (curlLabel && pa.curlPreference) curlLabel.textContent = pa.curlPreference;
 
                 // 컬 버튼 텍스트
                 document.querySelectorAll('.pa-curl-btn').forEach(btn => {
@@ -4579,6 +4606,32 @@
                                 curl === 'none' ? 'curlNone' : `curl${curl.toUpperCase()}`;
                     if (textEl && pa[key]) textEl.textContent = pa[key];
                 });
+
+                // 네비게이션 버튼 (추가)
+                const nextBtns = document.querySelectorAll('[data-i18n="personalAnalysis.next"]');
+                const prevBtns = document.querySelectorAll('[data-i18n="personalAnalysis.prev"]');
+                const completeBtns = document.querySelectorAll('[data-i18n="personalAnalysis.complete"]');
+                nextBtns.forEach(btn => { if (pa.next) btn.textContent = pa.next; });
+                prevBtns.forEach(btn => { if (pa.prev) btn.textContent = pa.prev; });
+                completeBtns.forEach(btn => { if (pa.complete) btn.textContent = pa.complete; });
+
+                // 남성용 스타일 텍스트 (추가)
+                const maleStep2Desc = document.querySelector('[data-i18n="personalAnalysis.maleStep2Desc"]');
+                if (maleStep2Desc && pa.maleStep2Desc) maleStep2Desc.textContent = pa.maleStep2Desc;
+
+                const maleWarmLabel = document.querySelector('[data-i18n="personalAnalysis.maleWarmLabel"]');
+                const maleNeutralLabel = document.querySelector('[data-i18n="personalAnalysis.maleNeutralLabel"]');
+                const maleCoolLabel = document.querySelector('[data-i18n="personalAnalysis.maleCoolLabel"]');
+                if (maleWarmLabel && pa.maleWarmLabel) maleWarmLabel.textContent = pa.maleWarmLabel;
+                if (maleNeutralLabel && pa.maleNeutralLabel) maleNeutralLabel.textContent = pa.maleNeutralLabel;
+                if (maleCoolLabel && pa.maleCoolLabel) maleCoolLabel.textContent = pa.maleCoolLabel;
+
+                const maleWarmReason = document.querySelector('[data-i18n="personalAnalysis.maleWarmReason"]');
+                const maleNeutralReason = document.querySelector('[data-i18n="personalAnalysis.maleNeutralReason"]');
+                const maleCoolReason = document.querySelector('[data-i18n="personalAnalysis.maleCoolReason"]');
+                if (maleWarmReason && pa.maleWarmReason) maleWarmReason.textContent = pa.maleWarmReason;
+                if (maleNeutralReason && pa.maleNeutralReason) maleNeutralReason.textContent = pa.maleNeutralReason;
+                if (maleCoolReason && pa.maleCoolReason) maleCoolReason.textContent = pa.maleCoolReason;
             }
         }
 
