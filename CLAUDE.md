@@ -47,6 +47,22 @@
 - 인사말/보안 응답 메시지: 5개국어 전체 지원
 - 인사말 키워드: 안녕, hello, こんにちは, 你好, xin chào 등
 
+### 다국어 수정 시 필수 작업 순서
+1. **js/i18n.js** - 번역 키 추가 (5개국어 모두 동일한 키 추가 필수)
+   - 구조: `HAIRGATOR_I18N.{lang}.personalColor.personalAnalysis.{키}`
+   - 언어별 위치: ko(~600라인), en(~1200라인), ja(~1800라인), zh(~2400라인), vi(~3000라인)
+2. **HTML 파일** - `data-i18n` 또는 `data-i18n-html` 속성 추가
+   - 텍스트: `data-i18n="personalColor.personalAnalysis.키"`
+   - HTML 포함: `data-i18n-html="personalColor.personalAnalysis.키"`
+3. **app.js (동적 생성 텍스트)** - `t()` 함수 사용
+   - 예: `t('personalColor.personalAnalysis.labelHeight') || 'Height'`
+   - fallback 값 필수 지정
+4. **문법 검사 필수**: `node -c js/i18n.js && node -c personal-color/app.js`
+5. **주의사항**:
+   - 템플릿 리터럴(`${...}`)을 일반 문자열('')안에 넣지 말 것
+   - i18n.js에서 섹션 추가 시 앞 섹션 끝에 콤마(,) 확인
+   - 한 언어만 추가하면 안됨 - 반드시 5개국어 모두 추가
+
 ## scripts 폴더 (로컬 전용, .gitignore됨)
 - `upload-all-to-file-search.py`: Gemini File Search Store에 PDF 업로드
 - `upload-color-theory.py`: 컬러 이론 이미지 분석 후 Firestore 저장
