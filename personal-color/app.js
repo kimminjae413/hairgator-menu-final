@@ -4220,7 +4220,7 @@
             toast.className = `toast ${type}`;
             toast.textContent = message;
             toast.style.cssText = `
-                position: fixed; top: 20px; right: 20px; z-index: 10000;
+                position: fixed; top: 20px; right: 20px; z-index: 99999;
                 background: white; padding: 1rem 1.5rem; border-radius: 8px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-left: 4px solid;
                 border-left-color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#F44336' : type === 'warning' ? '#FF9800' : '#2196F3'};
@@ -5083,7 +5083,7 @@ function paValidateCurrentStep() {
     case 1:
       // 성별 필수
       if (!customerProfile.gender) {
-        showToast('성별을 선택해주세요.', 'warning');
+        showToast(t('personalColor.personalAnalysis.selectGender') || '성별을 선택해주세요.', 'warning');
         return false;
       }
       // 키 필수
@@ -5097,17 +5097,17 @@ function paValidateCurrentStep() {
       if (isMale) {
         // 남성: 스타일 필수
         if (!customerProfile.maleHairStyle) {
-          showToast('헤어 스타일을 선택해주세요.', 'warning');
+          showToast(t('personalColor.personalAnalysis.selectMaleStyle') || '헤어 스타일을 선택해주세요.', 'warning');
           return false;
         }
         // 사이드 처리 필수
         if (!customerProfile.sideProcessing) {
-          showToast('사이드 처리 방식을 선택해주세요.', 'warning');
+          showToast(t('personalColor.personalAnalysis.selectSide') || '사이드 처리 방식을 선택해주세요.', 'warning');
           return false;
         }
         // 앞머리 방향 필수
         if (!customerProfile.frontDirection) {
-          showToast('앞머리 방향을 선택해주세요.', 'warning');
+          showToast(t('personalColor.personalAnalysis.selectFront') || '앞머리 방향을 선택해주세요.', 'warning');
           return false;
         }
       } else {

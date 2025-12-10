@@ -642,7 +642,13 @@ const HAIRGATOR_I18N = {
         pushedBackTitle: '푸시드 백',
         pushedBackDesc: '전체를 뒤로 넘김',
         mohicanTitle: '모히칸',
-        mohicanDesc: '정수리 볼륨 강조'
+        mohicanDesc: '정수리 볼륨 강조',
+        // 유효성 검사 메시지
+        selectGender: '성별을 선택해주세요.',
+        selectMaleStyle: '헤어 스타일을 선택해주세요.',
+        selectSide: '사이드 처리 방식을 선택해주세요.',
+        selectFront: '앞머리 방향을 선택해주세요.',
+        inputComplete: '고객 정보 입력 완료! AI 분석을 시작합니다.'
       },
       // Face Analysis
       faceAnalysis: {
@@ -1267,7 +1273,13 @@ const HAIRGATOR_I18N = {
         pushedBackTitle: 'Pushed Back',
         pushedBackDesc: 'All swept back',
         mohicanTitle: 'Mohican',
-        mohicanDesc: 'Volume on crown'
+        mohicanDesc: 'Volume on crown',
+        // Validation messages
+        selectGender: 'Please select gender.',
+        selectMaleStyle: 'Please select a hairstyle.',
+        selectSide: 'Please select side treatment.',
+        selectFront: 'Please select fringe direction.',
+        inputComplete: 'Customer info complete! Starting AI analysis.'
       }
     }
   },
@@ -1879,7 +1891,13 @@ const HAIRGATOR_I18N = {
         pushedBackTitle: 'プッシュドバック',
         pushedBackDesc: '全体を後ろに流す',
         mohicanTitle: 'モヒカン',
-        mohicanDesc: '頭頂部にボリューム'
+        mohicanDesc: '頭頂部にボリューム',
+        // 検証メッセージ
+        selectGender: '性別を選択してください。',
+        selectMaleStyle: 'ヘアスタイルを選択してください。',
+        selectSide: 'サイドの処理方法を選択してください。',
+        selectFront: '前髪の方向を選択してください。',
+        inputComplete: 'お客様情報入力完了！AI分析を開始します。'
       }
     }
   },
@@ -2496,7 +2514,13 @@ const HAIRGATOR_I18N = {
         pushedBackTitle: '全后梳',
         pushedBackDesc: '全部向后梳',
         mohicanTitle: '莫西干',
-        mohicanDesc: '头顶蓬松'
+        mohicanDesc: '头顶蓬松',
+        // 验证消息
+        selectGender: '请选择性别。',
+        selectMaleStyle: '请选择发型。',
+        selectSide: '请选择侧边处理方式。',
+        selectFront: '请选择刘海方向。',
+        inputComplete: '客户信息输入完成！开始AI分析。'
       }
     }
   },
@@ -3097,7 +3121,13 @@ const HAIRGATOR_I18N = {
         pushedBackTitle: 'Chải ngược',
         pushedBackDesc: 'Chải hết ra sau',
         mohicanTitle: 'Mohican',
-        mohicanDesc: 'Phồng đỉnh đầu'
+        mohicanDesc: 'Phồng đỉnh đầu',
+        // Thông báo xác thực
+        selectGender: 'Vui lòng chọn giới tính.',
+        selectMaleStyle: 'Vui lòng chọn kiểu tóc.',
+        selectSide: 'Vui lòng chọn cách xử lý hai bên.',
+        selectFront: 'Vui lòng chọn hướng mái.',
+        inputComplete: 'Hoàn tất nhập thông tin! Bắt đầu phân tích AI.'
       }
     }
   }
