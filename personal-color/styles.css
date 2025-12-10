@@ -706,20 +706,150 @@ body.male-theme .nav-btn.guide-btn:hover {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 200px;
-    height: 250px;
-    border: 3px dashed var(--primary-pink);
+    width: 220px;
+    height: 280px;
+    border: none;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--primary-pink);
     font-weight: 600;
-    background: rgba(255,255,255,0.1);
+    background: transparent;
     text-align: center;
     padding: 1rem;
     font-size: 0.9rem;
     z-index: 5;
+    overflow: visible;
+}
+
+/* FaceMesh 스타일 SVG 컨테이너 */
+.face-guide .facemesh-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* 얼굴 윤곽 경로 */
+.face-guide .face-outline {
+    fill: none;
+    stroke: var(--primary-pink);
+    stroke-width: 2;
+    stroke-dasharray: 8 4;
+    animation: faceDash 2s linear infinite;
+}
+
+/* 메쉬 포인트들 */
+.face-guide .mesh-point {
+    fill: var(--primary-pink);
+    opacity: 0.8;
+    animation: pointPulse 2s ease-in-out infinite;
+}
+
+.face-guide .mesh-point:nth-child(odd) {
+    animation-delay: 0.5s;
+}
+
+.face-guide .mesh-point:nth-child(3n) {
+    animation-delay: 1s;
+}
+
+/* 메쉬 연결선 */
+.face-guide .mesh-line {
+    stroke: var(--primary-pink);
+    stroke-width: 1;
+    opacity: 0.4;
+    animation: lineFade 3s ease-in-out infinite;
+}
+
+.face-guide .mesh-line:nth-child(even) {
+    animation-delay: 1.5s;
+}
+
+/* 스캔 라인 효과 */
+.face-guide .scan-line {
+    fill: none;
+    stroke: url(#scanGradient);
+    stroke-width: 3;
+    animation: scanMove 2.5s ease-in-out infinite;
+}
+
+/* 가이드 텍스트 */
+.face-guide .guide-text {
+    position: relative;
+    z-index: 10;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    background: rgba(255,255,255,0.85);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* 애니메이션 키프레임 */
+@keyframes faceDash {
+    0% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: 24; }
+}
+
+@keyframes pointPulse {
+    0%, 100% {
+        r: 3;
+        opacity: 0.6;
+    }
+    50% {
+        r: 5;
+        opacity: 1;
+    }
+}
+
+@keyframes lineFade {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.6; }
+}
+
+@keyframes scanMove {
+    0% {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+}
+
+/* 외곽 글로우 효과 */
+.face-guide::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center,
+        transparent 60%,
+        rgba(233, 30, 99, 0.1) 80%,
+        rgba(233, 30, 99, 0.2) 100%);
+    animation: glowPulse 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes glowPulse {
+    0%, 100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
 }
 
 .camera-controls {
