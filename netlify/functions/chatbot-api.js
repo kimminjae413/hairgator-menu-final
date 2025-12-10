@@ -2589,6 +2589,25 @@ ${coreKnowledge}
 ✅ L0~L8 (Lifting 리프팅) - 각도 설명 시 사용 가능
 ✅ Zone (A존/B존/C존), Section (수평/수직/대각) 등 기본 용어 사용 가능
 
+## ⭐ External/Internal 레시피 작성 규칙 (매우 중요!)
+레시피를 작성할 때 External과 Internal을 반드시 구분하여 각 영역의 역할을 명확히 설명하세요.
+
+**External (엑스터널 / Under Zone / A,B Zone)**
+- 역할: 길이 설정, 아웃라인 형태, 하드한 질감 표현
+- 위치: 두상 바깥쪽 아랫부분 (옆머리, 뒷머리 아래, 네이프, 사이드)
+- 남자 커트: 클리퍼/페이드 작업, 아웃라인 정리, 그라데이션
+
+**Internal (인터널 / Over Zone / C Zone)**
+- 역할: 볼륨 형성, 얼굴 윤곽 조절, 율동성/방향성, 소프트한 질감
+- 위치: 두상 안쪽 윗부분 (정수리, 크라운, 탑, 프린지)
+- 남자 커트: 가위 레이어 작업, 볼륨/질감 형성, 스타일링 방향 결정
+
+**레시피 작성 시 필수 사항:**
+1. External과 Internal의 기법이 동일하더라도, 각 영역의 "목적"을 다르게 설명
+2. External: "아웃라인을 정리하고 전체 형태를 잡는다"
+3. Internal: "볼륨을 형성하고 자연스러운 흐름을 만든다"
+4. 동일한 각도/기법이라도 결과물(무게감, 볼륨, 질감)의 차이를 언급
+
 ## ⚠️ 절대 금지 - 마크다운/특수문자 사용 금지 ⚠️
 절대로 다음 문자를 사용하지 마세요:
 - ** (별표 두개) 사용 금지
@@ -2642,6 +2661,25 @@ ${coreKnowledge}
 ✅ D0~D8 (Direction) - Use when explaining cutting directions
 ✅ L0~L8 (Lifting) - Use when explaining angles
 ✅ Zone (A/B/C Zone), Section (Horizontal/Vertical/Diagonal) - Basic terms OK
+
+## ⭐ External/Internal Recipe Rules (Very Important!)
+When writing recipes, clearly distinguish External and Internal sections with their specific roles.
+
+**External (Under Zone / A,B Zone)**
+- Role: Length setting, outline shape, hard texture
+- Location: Lower outer head (sides, back lower, nape)
+- Men's cut: Clipper/fade work, outline cleanup, graduation
+
+**Internal (Over Zone / C Zone)**
+- Role: Volume creation, face contour control, movement/direction, soft texture
+- Location: Upper inner head (crown, top, fringe)
+- Men's cut: Scissor layer work, volume/texture formation, styling direction
+
+**Required when writing recipes:**
+1. Even if External and Internal techniques are similar, explain their different "purposes"
+2. External: "Create the outline and establish overall shape"
+3. Internal: "Build volume and create natural flow"
+4. Even with same angles/techniques, mention differences in results (weight, volume, texture)
 
 ## STRICTLY FORBIDDEN - No Markdown/Special Characters
 NEVER use these characters:
@@ -2697,6 +2735,25 @@ ${coreKnowledge}
 ✅ L0〜L8（リフティング）- 角度の説明に使用可
 ✅ Zone（A/B/Cゾーン）、Section（水平/垂直/斜め）などの基本用語は可
 
+## ⭐ External/Internal レシピ作成ルール（非常に重要！）
+レシピを作成する際、ExternalとInternalを必ず区別し、各領域の役割を明確に説明してください。
+
+**External（エクスターナル / Under Zone / A,Bゾーン）**
+- 役割：長さ設定、アウトライン形状、ハードな質感
+- 位置：頭の外側下部（サイド、バック下部、ネープ）
+- メンズカット：クリッパー/フェード作業、アウトライン整理、グラデーション
+
+**Internal（インターナル / Over Zone / Cゾーン）**
+- 役割：ボリューム形成、顔の輪郭調整、動き/方向性、ソフトな質感
+- 位置：頭の内側上部（クラウン、トップ、フリンジ）
+- メンズカット：シザーレイヤー作業、ボリューム/質感形成、スタイリング方向決定
+
+**レシピ作成時の必須事項：**
+1. ExternalとInternalの技法が同じでも、各領域の「目的」を異なるように説明
+2. External：「アウトラインを整え、全体の形を作る」
+3. Internal：「ボリュームを形成し、自然な流れを作る」
+4. 同じ角度/技法でも、結果（重み、ボリューム、質感）の違いに言及
+
 ## 絶対禁止 - マークダウン/特殊文字禁止
 以下の文字は絶対に使わないでください：
 - **（二重アスタリスク）禁止
@@ -2751,6 +2808,25 @@ ${coreKnowledge}
 ✅ L0~L8（Lifting提升）- 解释角度时可用
 ✅ Zone（A/B/C区）、Section（水平/垂直/对角）等基本术语可用
 
+## ⭐ External/Internal 配方规则（非常重要！）
+撰写配方时，必须区分External和Internal，明确说明各区域的作用。
+
+**External（外部 / Under Zone / A,B区）**
+- 作用：长度设定、轮廓形状、硬质感
+- 位置：头部外侧下部（两侧、后下部、颈部）
+- 男士剪发：电推剪/渐变作业、轮廓整理、层次渐变
+
+**Internal（内部 / Over Zone / C区）**
+- 作用：塑造蓬松感、脸部轮廓调整、动感/方向性、柔和质感
+- 位置：头部内侧上部（头顶、顶部、刘海）
+- 男士剪发：剪刀层次作业、蓬松/质感塑造、造型方向决定
+
+**配方撰写必须事项：**
+1. 即使External和Internal技法相同，也要说明各区域不同的"目的"
+2. External："整理轮廓，建立整体形状"
+3. Internal："塑造蓬松感，创造自然流动"
+4. 即使角度/技法相同，也要提及结果（重量、蓬松度、质感）的差异
+
 ## 严格禁止 - 禁用Markdown/特殊字符
 绝对不要使用以下字符：
 - **（双星号）禁止
@@ -2804,6 +2880,25 @@ ${coreKnowledge}
 ✅ D0~D8 (Direction) - Sử dụng khi giải thích hướng cắt
 ✅ L0~L8 (Lifting) - Sử dụng khi giải thích góc độ
 ✅ Zone (A/B/C Zone), Section (Ngang/Dọc/Chéo) - Thuật ngữ cơ bản OK
+
+## ⭐ Quy tắc công thức External/Internal (Rất quan trọng!)
+Khi viết công thức, phải phân biệt rõ External và Internal, giải thích vai trò của từng vùng.
+
+**External (Bên ngoài / Under Zone / Vùng A,B)**
+- Vai trò: Thiết lập chiều dài, hình dạng đường viền, kết cấu cứng
+- Vị trí: Phần dưới bên ngoài đầu (hai bên, phía sau dưới, gáy)
+- Cắt nam: Tông đơ/fade, chỉnh đường viền, graduation
+
+**Internal (Bên trong / Over Zone / Vùng C)**
+- Vai trò: Tạo độ phồng, điều chỉnh đường viền khuôn mặt, chuyển động/hướng, kết cấu mềm
+- Vị trí: Phần trên bên trong đầu (đỉnh đầu, top, mái)
+- Cắt nam: Cắt layer bằng kéo, tạo độ phồng/kết cấu, quyết định hướng tạo kiểu
+
+**Yêu cầu khi viết công thức:**
+1. Ngay cả khi kỹ thuật External và Internal giống nhau, hãy giải thích "mục đích" khác nhau của mỗi vùng
+2. External: "Tạo đường viền và thiết lập hình dạng tổng thể"
+3. Internal: "Tạo độ phồng và tạo dòng chảy tự nhiên"
+4. Ngay cả với cùng góc độ/kỹ thuật, hãy đề cập đến sự khác biệt về kết quả (trọng lượng, độ phồng, kết cấu)
 
 ## NGHIÊM CẤM - Không dùng Markdown/Ký tự đặc biệt
 TUYỆT ĐỐI không dùng các ký tự sau:
