@@ -849,7 +849,8 @@
         // ========== 전문가 피드백 함수 (논문 기반 감성 이미지 & 토탈 뷰티 컨설팅) ==========
         // ========== 전문가용 컬러 사이언스 데이터베이스 ==========
         // PDF 색채학 이론 + 브랜드별 레시피 정보 통합
-        const EXPERT_GUIDE_DB = {
+        // ========== 다국어 전문가 가이드 데이터베이스 ==========
+        const EXPERT_GUIDE_DB_KO = {
             'spring-bright': {
                 toneKeyword: "생기 있고 비비드한(Active/Cute) 봄의 에너지",
                 fashionVibe: "알록달록한 패턴이나 경쾌한 캐주얼 룩이 잘 어울립니다.",
@@ -1208,17 +1209,1462 @@
             }
         };
 
+        // ========== 영어 전문가 가이드 데이터베이스 ==========
+        const EXPERT_GUIDE_DB_EN = {
+            'spring-bright': {
+                toneKeyword: "Vibrant and vivid (Active/Cute) spring energy",
+                fashionVibe: "Colorful patterns and cheerful casual looks suit you best.",
+                makeupBase: "Bright ivory (shade 19-21) for radiance, coral/orange lip recommended",
+                recommendLevel: "8~10 Level (vivid reflection)",
+                undercoatTip: "Bleaching to Pale Yellow with yellow undertone needed",
+                textureTip: "Light layered cut rather than heavy lines",
+                avoidColors: ["Muddy khaki", "Heavy ash gray", "Black"],
+                seasonalAdvice: "High-saturation orange brown and gold brown maximize your vibrant image.",
+                consultingTip: "High-chroma colors that bring out your complexion are best.",
+                colorScience: {
+                    melaninType: "Pheomelanin Dominant",
+                    undercoatPrediction: "Yellow-Orange undercoat expected when bleaching",
+                    neutralizationStrategy: "Utilize yellow tones, minimize violet complement"
+                },
+                recipes: [
+                    {
+                        styleName: "Orange Gold Brown",
+                        vibe: "Radiant and lively",
+                        reason: "Maximizes the high chroma and bright skin tone of Spring Warm Bright",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "8/34 (Gold Red) : 8/03 (Natural Gold) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35min"
+                    },
+                    {
+                        styleName: "Sunset Coral",
+                        vibe: "Warm and energetic",
+                        reason: "Harmonizes with yellow-based skin for a warm coral tone",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "9-OR (Orange) : 9-BE (Beige) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30min"
+                    }
+                ]
+            },
+            'spring-light': {
+                toneKeyword: "Clear and lovely (Romantic/Clear) spring sunshine",
+                fashionVibe: "Pastel blouses and chiffon materials are perfect matches.",
+                makeupBase: "Bright base with peachy undertone (shade 17-19)",
+                recommendLevel: "9~12 Level (High Lift)",
+                undercoatTip: "Yellow base with minimal red needed",
+                textureTip: "Soft flowing waves as if blown by the wind",
+                avoidColors: ["Too dark brown", "Intense burgundy"],
+                seasonalAdvice: "Soft milk-tea beige or peach beige colors enhance your skin's transparency.",
+                consultingTip: "Avoiding dullness and maintaining 'clarity' is key.",
+                colorScience: {
+                    melaninType: "Light Pheomelanin",
+                    undercoatPrediction: "Pale Yellow undercoat, fast lifting expected",
+                    neutralizationStrategy: "Minimize red, adjust yellow with light violet"
+                },
+                recipes: [
+                    {
+                        styleName: "Milk Tea Beige",
+                        vibe: "Clear and innocent",
+                        reason: "Makes clear skin more transparent, maximizes soft impression",
+                        brand: "Milbon",
+                        line: "Ordeve Beaute",
+                        mixRatio: "10-BE (Beige) : 10-MT (Matte) = 3:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30min"
+                    },
+                    {
+                        styleName: "Peach Blonde",
+                        vibe: "Romantic and lovely",
+                        reason: "Harmonizes with peach undertone for bright yet soft impression",
+                        brand: "Wella",
+                        line: "Illumina Color",
+                        mixRatio: "10/36 (Gold Violet) : 10/05 (Natural Mahogany) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35min"
+                    }
+                ]
+            },
+            'summer-light': {
+                toneKeyword: "Pure and clean (Pure/Clean) summer waves",
+                fashionVibe: "Simple and clean looks like white shirts or light blue denim",
+                makeupBase: "Pink base to neutralize redness (shade 13-21)",
+                recommendLevel: "8~10 Level (clear without red)",
+                undercoatTip: "Need to neutralize yellow (purple shampoo) to remove lemon tones",
+                textureTip: "Sleek straight hair or C-curl to emphasize texture",
+                avoidColors: ["Strong gold yellow", "Orange", "Copper"],
+                seasonalAdvice: "Cool pastels like ash blonde or lavender ash make your skin look even whiter.",
+                consultingTip: "May look dull under yellow lighting, emphasize the transparency in natural light.",
+                colorScience: {
+                    melaninType: "Eumelanin Cool",
+                    undercoatPrediction: "Yellow undercoat when bleaching, violet complement essential",
+                    neutralizationStrategy: "Fully neutralize yellow with violet/ash"
+                },
+                recipes: [
+                    {
+                        styleName: "Lavender Ash",
+                        vibe: "Pure and mysterious",
+                        reason: "Maximizes cool-toned skin transparency, completely removes yellow",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "9-Vi (Violet) : 9-A (Ash) = 1:2",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30min"
+                    },
+                    {
+                        styleName: "Rose Brown",
+                        vibe: "Elegant and feminine",
+                        reason: "Harmonizes with pink undertone, pure without being cold",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "8/65 (Violet Mahogany) : 8/1 (Ash) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35min"
+                    }
+                ]
+            },
+            'summer-bright': {
+                toneKeyword: "Fresh and cool (Fresh/Cool) summer sea",
+                fashionVibe: "Clean white, light blue, mint colored outfits",
+                makeupBase: "Cool pink base, rose cheek and berry lip",
+                recommendLevel: "7~9 Level (cool shine)",
+                undercoatTip: "Ash to pink undertone, yellow removal essential",
+                textureTip: "Fresh and clean shine, see-through bangs",
+                avoidColors: ["Gold", "Orange", "Mustard", "Copper"],
+                seasonalAdvice: "Rose brown and cool pink brown enhance your pure image.",
+                consultingTip: "Emphasizing a fresh and clean impression is the key."
+            },
+            'summer-muted': {
+                toneKeyword: "Elegant and intellectual (Elegance/Soft) summer mist",
+                fashionVibe: "Grayish tone-on-tone color scheme, calm office look",
+                makeupBase: "Natural pink beige (shade 21-23)",
+                recommendLevel: "6~8 Level (calm mid-tone)",
+                undercoatTip: "Possible without bleaching, but suppress red",
+                textureTip: "Elegant volume like build perm or Elizabeth perm",
+                avoidColors: ["Vivid colors", "Near-black dark colors"],
+                seasonalAdvice: "Gray-tinted colors like ash brown or smoky mocha complete your elegant atmosphere.",
+                consultingTip: "You look most luxurious at 'medium brightness' - not too bright, not too dark."
+            },
+            'autumn-muted': {
+                toneKeyword: "Calm and natural (Natural/Classic) autumn mood",
+                fashionVibe: "Beige, khaki, brown knits or trench coats",
+                makeupBase: "Calm yellow base (shade 21-23), MLBB lip",
+                recommendLevel: "5~7 Level (atmospheric shadow)",
+                undercoatTip: "Can naturally utilize orange undercoat",
+                textureTip: "Hippie perm or natural waves",
+                avoidColors: ["Fluorescent pink", "Cold blue black"],
+                seasonalAdvice: "Matte brown, olive brown hide skin redness and give a calm atmosphere.",
+                consultingTip: "Soft brown that enhances hair texture is better than flashy colors.",
+                colorScience: {
+                    melaninType: "Mixed Melanin, Low Chroma",
+                    undercoatPrediction: "Orange-Yellow undercoat, needs matte complement neutralization",
+                    neutralizationStrategy: "Neutralize red with Green(matte), prevent dullness"
+                },
+                recipes: [
+                    {
+                        styleName: "Olive Matte Brown",
+                        vibe: "Calm and sophisticated",
+                        reason: "Neutralizes skin redness for a clean and calm impression",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "7-MT (Matte) : 7-NB (Natural Brown) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35min"
+                    },
+                    {
+                        styleName: "Khaki Beige",
+                        vibe: "Natural and comfortable",
+                        reason: "Natural earth tone creates a soft atmosphere",
+                        brand: "L'Oreal",
+                        line: "Majirel",
+                        mixRatio: "7.8 (Mocha) : 7.13 (Beige) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35min"
+                    }
+                ]
+            },
+            'autumn-soft': {
+                toneKeyword: "Cozy and warm (Warm/Cozy) autumn afternoon",
+                fashionVibe: "Cashmere knits, corduroy, warm earth tone outfits",
+                makeupBase: "Warm beige base (shade 21), peach/terracotta lip",
+                recommendLevel: "6~8 Level (soft warm tone)",
+                undercoatTip: "Warm beige undertone, soft gradation recommended",
+                textureTip: "Volume layered, soft wave",
+                avoidColors: ["Black", "Ash blue", "Vivid orange"],
+                seasonalAdvice: "Soft and warm colors like milk chocolate and mocha brown create a comfortable atmosphere.",
+                consultingTip: "Subtle and natural gradation is better than extreme colors.",
+                colorScience: {
+                    melaninType: "Warm Pheomelanin",
+                    undercoatPrediction: "Orange undercoat, maintain warm tone",
+                    neutralizationStrategy: "Utilize orange, soften with matte"
+                },
+                recipes: [
+                    {
+                        styleName: "Milk Choco Brown",
+                        vibe: "Cozy and warm",
+                        reason: "Soft warm tone creates comfortable and friendly image",
+                        brand: "Wella",
+                        line: "Softouch",
+                        mixRatio: "S7/37 (Gold Brown) : S7/03 (Natural Gold) = 1:1",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "30min"
+                    },
+                    {
+                        styleName: "Honey Beige",
+                        vibe: "Sweet and soft",
+                        reason: "Honey shine for healthy and radiant look",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "8-BE (Beige) : 8-GO (Gold) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30min"
+                    }
+                ]
+            },
+            'autumn-deep': {
+                toneKeyword: "Deep and luxurious (Gorgeous/Ethnic) autumn depth",
+                fashionVibe: "Gold accessories, leather jacket, ethnic patterns",
+                makeupBase: "Healthy warm beige (shade 23+), contour makeup",
+                recommendLevel: "4~6 Level (rich colors)",
+                undercoatTip: "Red-Brown undercoat works well",
+                textureTip: "Voluminous glam perm or weighted tassel cut",
+                avoidColors: ["Light pastels", "Pale ash"],
+                seasonalAdvice: "Deep warm colors like dark chocolate and copper brown make your features more defined.",
+                consultingTip: "Focus on 'shine' and 'color depth' rather than brightness.",
+                colorScience: {
+                    melaninType: "Rich Pheomelanin",
+                    undercoatPrediction: "Red-Orange undercoat, strong red reveal",
+                    neutralizationStrategy: "Utilize red with copper/gold, emphasize depth"
+                },
+                recipes: [
+                    {
+                        styleName: "Dark Chocolate",
+                        vibe: "Deep and luxurious",
+                        reason: "Contrast with skin defines features, mature charm",
+                        brand: "L'Oreal",
+                        line: "Majirel",
+                        mixRatio: "5.35 (Chocolate) : 5.52 (Mahogany) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "40min"
+                    },
+                    {
+                        styleName: "Copper Mahogany",
+                        vibe: "Rich and glamorous",
+                        reason: "Copper shine for luxurious and deep impression",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "5/43 (Red Gold) : 5/75 (Brown Mahogany) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "40min"
+                    }
+                ]
+            },
+            'winter-deep': {
+                toneKeyword: "Urban and charismatic (Modern/Chic) winter night",
+                fashionVibe: "Modern black & white look, silver accessories, suits",
+                makeupBase: "Clean and pale cool base or transparent radiance",
+                recommendLevel: "1~4 Level (strong contrast)",
+                undercoatTip: "Almost not needed, just add blue/violet reflection",
+                textureTip: "Sharp bob cut, straight, edgy short cut",
+                avoidColors: ["Ambiguous brown", "Yellow-toned warm brown"],
+                seasonalAdvice: "Cold and dark colors like blue black and dark navy maximize your charisma.",
+                consultingTip: "The stronger the 'contrast' between hair and skin, the smaller your face looks.",
+                colorScience: {
+                    melaninType: "Strong Eumelanin, High Contrast",
+                    undercoatPrediction: "Maintain natural hair or add blue-violet reflection",
+                    neutralizationStrategy: "No bleaching needed, just add blue/violet shine"
+                },
+                recipes: [
+                    {
+                        styleName: "Blue Black",
+                        vibe: "Charismatic and urban",
+                        reason: "Strong contrast with skin defines features, modern feel",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "3-NV (Navy) : 3-A (Ash) = 2:1",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "25min"
+                    },
+                    {
+                        styleName: "Dark Violet",
+                        vibe: "Mysterious and sophisticated",
+                        reason: "Deep violet for luxurious and unique charm",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "3/66 (Intense Violet) : 3/0 (Natural) = 1:2",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "30min"
+                    }
+                ]
+            },
+            'winter-bright': {
+                toneKeyword: "Glamorous and intense (Vivid/Dramatic) winter diamond",
+                fashionVibe: "Sharp contrast with black, white, vivid red",
+                makeupBase: "Clear cool base, vivid red/wine lip",
+                recommendLevel: "1~5 Level or bleach + vivid color",
+                undercoatTip: "Maintain cool tone base, complete yellow removal essential",
+                textureTip: "Clear and glossy finish, bold bangs",
+                avoidColors: ["Beige", "Gold", "Orange", "Muddy brown"],
+                seasonalAdvice: "Intense and vivid contrast with pure black, wine, dark plum is the key.",
+                consultingTip: "Capture attention with a glamorous and impactful image."
+            },
+            'winter-muted': {
+                toneKeyword: "Sophisticated and calm (Sophisticated/Urban) winter sunset",
+                fashionVibe: "Gray suit, charcoal coat, minimal monotone",
+                makeupBase: "Neutral to cool beige, natural contour",
+                recommendLevel: "4~6 Level (achromatic range)",
+                undercoatTip: "Gray to ash base, minimize saturation",
+                textureTip: "Matte and calm texture, clean one-length",
+                avoidColors: ["Gold", "Orange", "Coral"],
+                seasonalAdvice: "Achromatic colors like charcoal and dark ash complete your sophisticated atmosphere.",
+                consultingTip: "Showing restrained elegance rather than flashy colors is the point."
+            },
+            'neutral-light': {
+                toneKeyword: "Soft and versatile (Versatile/Soft) neutral harmony",
+                fashionVibe: "Both warm and cool possible, bright casual looks",
+                makeupBase: "Neutral beige (shade 19-21), natural colors",
+                recommendLevel: "7~9 Level (versatile)",
+                undercoatTip: "Neutral beige base, avoid extreme warm/cool",
+                textureTip: "Natural and soft texture, layered cut",
+                avoidColors: ["Vivid orange", "Blue black", "Neon"],
+                seasonalAdvice: "Soft mid-tones like milk tea and rose beige suit you well.",
+                consultingTip: "Various colors suit you, adjust to client's preference."
+            },
+            'neutral-muted': {
+                toneKeyword: "Comfortable and natural (Comfortable/Natural) neutral stability",
+                fashionVibe: "Earth tone, neutral color comfortable casual",
+                makeupBase: "Neutral to cool beige (shade 21-23), MLBB lip",
+                recommendLevel: "5~7 Level (calm mid-tone)",
+                undercoatTip: "Neutral to cool beige base, low saturation",
+                textureTip: "Natural and calm texture, hippie wave",
+                avoidColors: ["Vivid orange", "Neon", "Pure black"],
+                seasonalAdvice: "Calm and natural colors like gray beige and taupe create a comfortable atmosphere.",
+                consultingTip: "Aim for a sophisticated and comfortable feel."
+            },
+            'neutral-soft': {
+                toneKeyword: "Warm yet calm (Gentle/Balanced) neutral balance",
+                fashionVibe: "Romantic yet calm toned blouses, knits",
+                makeupBase: "Pink beige base (shade 21), rose lip",
+                recommendLevel: "6~8 Level (soft mid-tone)",
+                undercoatTip: "Neutral beige base, soft gradation",
+                textureTip: "Soft and natural shine, soft layered",
+                avoidColors: ["Blue black", "Vivid red", "Ash gray"],
+                seasonalAdvice: "Soft and subtle colors like milk mocha and rose brown are harmonious.",
+                consultingTip: "Create a warm yet calm atmosphere."
+            },
+            'neutral-deep': {
+                toneKeyword: "Deep and mature (Mature/Rich) neutral weight",
+                fashionVibe: "Luxurious brown, burgundy, dark color outfits",
+                makeupBase: "Warm to neutral beige (shade 23), deep color lip",
+                recommendLevel: "4~6 Level (deep tone)",
+                undercoatTip: "Neutral brown base",
+                textureTip: "Deep and natural finish, volume perm",
+                avoidColors: ["Platinum", "Ash blue", "Vivid pink"],
+                seasonalAdvice: "Deep and natural colors like chocolate and dark mocha show mature charm.",
+                consultingTip: "Create a sophisticated and mature impression."
+            }
+        };
+
+        // ========== 일본어 전문가 가이드 데이터베이스 ==========
+        const EXPERT_GUIDE_DB_JA = {
+            'spring-bright': {
+                toneKeyword: "生き生きとビビッドな(Active/Cute) 春のエネルギー",
+                fashionVibe: "カラフルなパターンや軽やかなカジュアルルックがよく似合います。",
+                makeupBase: "明るいアイボリー(19-21号)で華やかに、リップはコーラル/オレンジ推奨",
+                recommendLevel: "8~10 Level (鮮やかな反射光)",
+                undercoatTip: "黄味がかったペールイエローまでブリーチ必要",
+                textureTip: "重いラインより毛先が軽いレイヤードカット",
+                avoidColors: ["くすんだカーキ", "グレーが強いアッシュ", "ブラック"],
+                seasonalAdvice: "彩度の高いオレンジブラウン、ゴールドブラウンはお客様の活気あるイメージを最大化します。",
+                consultingTip: "顔色を活かす高彩度カラーがベストです。",
+                colorScience: {
+                    melaninType: "フェオメラニン優位 (Pheomelanin Dominant)",
+                    undercoatPrediction: "ブリーチ時 Yellow-Orange アンダーコート予想",
+                    neutralizationStrategy: "黄味を活用、バイオレット補色を最小化"
+                },
+                recipes: [
+                    {
+                        styleName: "オレンジゴールドブラウン",
+                        vibe: "華やかで生き生きとした",
+                        reason: "スプリングウォームブライトの高彩度と明るい肌トーンを最大化",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "8/34 (Gold Red) : 8/03 (Natural Gold) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35分"
+                    },
+                    {
+                        styleName: "サンセットコーラル",
+                        vibe: "温かく活力のある",
+                        reason: "黄味ベースの肌と調和する温かいコーラルトーン",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "9-OR (Orange) : 9-BE (Beige) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30分"
+                    }
+                ]
+            },
+            'spring-light': {
+                toneKeyword: "透明感があり愛らしい(Romantic/Clear) 春の陽射し",
+                fashionVibe: "パステルトーンのブラウスやシフォン素材がぴったりです。",
+                makeupBase: "ピーチトーンが感じられる明るいベース(17-19号)",
+                recommendLevel: "9~12 Level (High Lift)",
+                undercoatTip: "赤味を最小限に抑えたイエローベース必要",
+                textureTip: "風になびくような大きなウェーブパーマ",
+                avoidColors: ["暗すぎるダークブラウン", "強烈なバーガンディ"],
+                seasonalAdvice: "ミルクティーベージュやピーチベージュのような柔らかいミルキーカラーが肌の透明度を高めます。",
+                consultingTip: "くすみを避け'透明感'を維持することがポイントです。",
+                colorScience: {
+                    melaninType: "フェオメラニン優位、明るい肌 (Light Pheomelanin)",
+                    undercoatPrediction: "ブリーチ時 Pale Yellow アンダーコート、速いリフティング予想",
+                    neutralizationStrategy: "赤味最小化、薄いバイオレットで黄味調整"
+                },
+                recipes: [
+                    {
+                        styleName: "ミルクティーベージュ",
+                        vibe: "透明感があり清純な",
+                        reason: "クリアな肌トーンをより透明に、柔らかい印象を最大化",
+                        brand: "Milbon",
+                        line: "Ordeve Beaute",
+                        mixRatio: "10-BE (Beige) : 10-MT (Matte) = 3:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30分"
+                    },
+                    {
+                        styleName: "ピーチブロンド",
+                        vibe: "ロマンチックで愛らしい",
+                        reason: "ピーチアンダートーンと調和、華やかで柔らかい印象",
+                        brand: "Wella",
+                        line: "Illumina Color",
+                        mixRatio: "10/36 (Gold Violet) : 10/05 (Natural Mahogany) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35分"
+                    }
+                ]
+            },
+            'summer-light': {
+                toneKeyword: "清楚できれいな(Pure/Clean) 夏の波",
+                fashionVibe: "白いシャツやライトブルーデニムなどシンプルできれいなルック",
+                makeupBase: "赤味を抑えるピンクベース(13-21号)",
+                recommendLevel: "8~10 Level (赤味のない透明感)",
+                undercoatTip: "黄味を中和(紫シャンプー)してレモン色除去必要",
+                textureTip: "スリークなストレートやCカールで質感強調",
+                avoidColors: ["黄味が強いゴールド", "オレンジ", "銅色"],
+                seasonalAdvice: "アッシュブロンドやラベンダーアッシュのようなクールパステルが肌をより白く見せます。",
+                consultingTip: "黄色い照明下ではくすんで見える可能性があるので、自然光での透明感を強調してください。",
+                colorScience: {
+                    melaninType: "ユーメラニン優位、クール肌 (Eumelanin Cool)",
+                    undercoatPrediction: "ブリーチ時 Yellow アンダーコート、バイオレット補色必須",
+                    neutralizationStrategy: "バイオレット/アッシュで黄味完全中和"
+                },
+                recipes: [
+                    {
+                        styleName: "ラベンダーアッシュ",
+                        vibe: "清楚で神秘的な",
+                        reason: "クールトーン肌の透明感を最大化、黄味完全除去",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "9-Vi (Violet) : 9-A (Ash) = 1:2",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30分"
+                    },
+                    {
+                        styleName: "ローズブラウン",
+                        vibe: "エレガントで女性らしい",
+                        reason: "ピンクアンダートーンと調和、冷たすぎず清純な印象",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "8/65 (Violet Mahogany) : 8/1 (Ash) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35分"
+                    }
+                ]
+            },
+            'summer-bright': {
+                toneKeyword: "爽やかで清涼な(Fresh/Cool) 夏の海",
+                fashionVibe: "きれいな白、ライトブルー、ミント系の服",
+                makeupBase: "クールピンクベース、ローズチークとベリーリップ",
+                recommendLevel: "7~9 Level (清涼な艶)",
+                undercoatTip: "アッシュ〜ピンク系アンダートーン、黄味除去必須",
+                textureTip: "清涼できれいな艶感演出、シースルーバング",
+                avoidColors: ["ゴールド", "オレンジ", "マスタード", "銅色"],
+                seasonalAdvice: "ローズブラウン、クールピンクブラウンが清楚なイメージを引き立てます。",
+                consultingTip: "爽やかできれいな印象を強調することがポイントです。"
+            },
+            'summer-muted': {
+                toneKeyword: "エレガントで知的な(Elegance/Soft) 夏の霧",
+                fashionVibe: "グレイッシュなトーンオントーン配色、落ち着いたオフィスルック",
+                makeupBase: "自然なピンクベージュ(21-23号)",
+                recommendLevel: "6~8 Level (落ち着いた中明度)",
+                undercoatTip: "ブリーチなしでも可能なレベルだが、赤味は抑制必要",
+                textureTip: "ビルドパーマやエリザベスパーマのようなエレガントなボリューム",
+                avoidColors: ["派手なビビッドカラー", "黒に近い暗さ"],
+                seasonalAdvice: "アッシュブラウン、スモーキーモカのようなグレーがかったカラーがお客様のエレガントな雰囲気を完成させます。",
+                consultingTip: "明るすぎず暗すぎない'中間の明るさ'で最も上品に見えます。"
+            },
+            'autumn-muted': {
+                toneKeyword: "落ち着いて自然な(Natural/Classic) 秋の感性",
+                fashionVibe: "ベージュ、カーキ、ブラウン系のニットやトレンチコート",
+                makeupBase: "落ち着いたイエローベース(21-23号)、MLBBリップ",
+                recommendLevel: "5~7 Level (雰囲気のある陰影)",
+                undercoatTip: "オレンジ色のアンダーコートを自然に活用可能",
+                textureTip: "ヒッピーパーマやナチュラルウェーブ",
+                avoidColors: ["蛍光ピンク", "冷たいブルーブラック"],
+                seasonalAdvice: "マットブラウン、オリーブブラウンは肌の赤みを隠し、落ち着いた雰囲気を与えます。",
+                consultingTip: "派手な色より髪の質感を活かす柔らかいブラウンがおすすめです。",
+                colorScience: {
+                    melaninType: "混合型メラニン、低彩度肌 (Mixed Melanin, Low Chroma)",
+                    undercoatPrediction: "ブリーチ時 Orange-Yellow アンダーコート、マット補色で中和必要",
+                    neutralizationStrategy: "Green(マット)で赤味中和、くすみ防止"
+                },
+                recipes: [
+                    {
+                        styleName: "オリーブマットブラウン",
+                        vibe: "落ち着いて洗練された",
+                        reason: "肌の赤みを中和してきれいで落ち着いた印象演出",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "7-MT (Matte) : 7-NB (Natural Brown) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35分"
+                    },
+                    {
+                        styleName: "カーキベージュ",
+                        vibe: "ナチュラルで快適な",
+                        reason: "自然なアーストーンで柔らかい雰囲気演出",
+                        brand: "L'Oreal",
+                        line: "Majirel",
+                        mixRatio: "7.8 (Mocha) : 7.13 (Beige) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35分"
+                    }
+                ]
+            },
+            'autumn-soft': {
+                toneKeyword: "温かくて心地よい(Warm/Cozy) 秋の午後",
+                fashionVibe: "カシミアニット、コーデュロイ、温かいアーストーンの服",
+                makeupBase: "ウォームベージュベース(21号)、ピーチ/テラコッタリップ",
+                recommendLevel: "6~8 Level (柔らかいウォームトーン)",
+                undercoatTip: "ウォームベージュアンダートーン、柔らかいグラデーション推奨",
+                textureTip: "ボリュームレイヤード、ソフトウェーブ",
+                avoidColors: ["ブラック", "アッシュブルー", "ビビッドオレンジ"],
+                seasonalAdvice: "ミルクチョコ、モカブラウンのような柔らかく温かい色が快適な雰囲気を作ります。",
+                consultingTip: "極端な色より控えめで自然なグラデーションがおすすめです。",
+                colorScience: {
+                    melaninType: "フェオメラニン優位、中間肌トーン (Warm Pheomelanin)",
+                    undercoatPrediction: "ブリーチ時 Orange アンダーコート、温かいトーン維持",
+                    neutralizationStrategy: "オレンジ活用、マットで柔らかく調整"
+                },
+                recipes: [
+                    {
+                        styleName: "ミルクチョコブラウン",
+                        vibe: "温かくて心地よい",
+                        reason: "柔らかいウォームトーンで快適で親しみやすいイメージ演出",
+                        brand: "Wella",
+                        line: "Softouch",
+                        mixRatio: "S7/37 (Gold Brown) : S7/03 (Natural Gold) = 1:1",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "30分"
+                    },
+                    {
+                        styleName: "ハニーベージュ",
+                        vibe: "甘くて柔らかい",
+                        reason: "ハチミツ色の艶で健康的で華やかな印象",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "8-BE (Beige) : 8-GO (Gold) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30分"
+                    }
+                ]
+            },
+            'autumn-deep': {
+                toneKeyword: "深みがあり高級感のある(Gorgeous/Ethnic) 秋の深さ",
+                fashionVibe: "ゴールドアクセサリー、レザージャケット、エスニックパターン",
+                makeupBase: "健康的なウォームベージュ(23号以上)、陰影メイク",
+                recommendLevel: "4~6 Level (重みのあるカラー)",
+                undercoatTip: "赤茶色(Red-Brown) アンダーコート活用◎",
+                textureTip: "ボリューミーなグラムパーマや重みのあるタッセルカット",
+                avoidColors: ["軽すぎるパステルトーン", "青白いアッシュ"],
+                seasonalAdvice: "ダークチョコレート、カッパーブラウンのような深みのあるウォームカラーが目鼻立ちをはっきりさせます。",
+                consultingTip: "明るさより'艶'と'色の深み'に集中してください。",
+                colorScience: {
+                    melaninType: "フェオメラニン豊富、深い肌トーン (Rich Pheomelanin)",
+                    undercoatPrediction: "ブリーチ時 Red-Orange アンダーコート、赤味強く発現",
+                    neutralizationStrategy: "カッパー/ゴールドで赤味活用、深み強調"
+                },
+                recipes: [
+                    {
+                        styleName: "ダークチョコレート",
+                        vibe: "深くて高級感のある",
+                        reason: "肌トーンとのコントラストで目鼻立ちをはっきり、成熟した魅力",
+                        brand: "L'Oreal",
+                        line: "Majirel",
+                        mixRatio: "5.35 (Chocolate) : 5.52 (Mahogany) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "40分"
+                    },
+                    {
+                        styleName: "カッパーマホガニー",
+                        vibe: "豊かで華やかな",
+                        reason: "銅色の艶で高級感があり深みのある印象",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "5/43 (Red Gold) : 5/75 (Brown Mahogany) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "40分"
+                    }
+                ]
+            },
+            'winter-deep': {
+                toneKeyword: "都会的でカリスマのある(Modern/Chic) 冬の夜",
+                fashionVibe: "ブラック&ホワイトのモダンルック、シルバーアクセサリー、スーツ",
+                makeupBase: "きれいで青白いクールベースまたは透明な輝き",
+                recommendLevel: "1~4 Level (確実なコントラスト)",
+                undercoatTip: "ほぼ不要、ブルー/バイオレット反射光のみ追加",
+                textureTip: "シャープなボブ、ストレート、エッジのあるショートカット",
+                avoidColors: ["中途半端な茶色", "黄味がかったウォームブラウン"],
+                seasonalAdvice: "ブルーブラック、ダークネイビーのような冷たく暗いカラーがお客様のカリスマを最大化します。",
+                consultingTip: "髪色と肌色の'コントラスト'が大きいほど顔が小さく見えます。",
+                colorScience: {
+                    melaninType: "ユーメラニン優位、高コントラスト (Strong Eumelanin, High Contrast)",
+                    undercoatPrediction: "自然毛維持またはブルー-バイオレット反射光追加",
+                    neutralizationStrategy: "ブリーチ不要、ブルー/バイオレット光沢のみ追加"
+                },
+                recipes: [
+                    {
+                        styleName: "ブルーブラック",
+                        vibe: "カリスマがあり都会的な",
+                        reason: "肌との強いコントラストで目鼻立ちをはっきり、モダンな印象",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "3-NV (Navy) : 3-A (Ash) = 2:1",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "25分"
+                    },
+                    {
+                        styleName: "ダークバイオレット",
+                        vibe: "神秘的で洗練された",
+                        reason: "深い紫色で高級感があり独特の魅力演出",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "3/66 (Intense Violet) : 3/0 (Natural) = 1:2",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "30分"
+                    }
+                ]
+            },
+            'winter-bright': {
+                toneKeyword: "華やかで強烈な(Vivid/Dramatic) 冬のダイヤモンド",
+                fashionVibe: "ブラック、ホワイト、ビビッドレッドのような鮮やかなコントラスト",
+                makeupBase: "透明なクールベース、鮮やかなレッド/ワインリップ",
+                recommendLevel: "1~5 Level またはブリーチ+ビビッドカラー",
+                undercoatTip: "クールトーンベース維持、黄味完全除去必須",
+                textureTip: "鮮明で艶のある仕上げ、強烈なバング",
+                avoidColors: ["ベージュ", "ゴールド", "オレンジ", "くすんだブラウン"],
+                seasonalAdvice: "ピュアブラック、ワイン、ダークプラムのような強烈で鮮明なコントラストがポイントです。",
+                consultingTip: "華やかでインパクトのあるイメージで視線を引きつけてください。"
+            },
+            'winter-muted': {
+                toneKeyword: "洗練されて落ち着いた(Sophisticated/Urban) 冬の夕焼け",
+                fashionVibe: "グレースーツ、チャコールコート、ミニマルなモノトーン",
+                makeupBase: "ニュートラル〜クールベージュ、自然な陰影",
+                recommendLevel: "4~6 Level (無彩色系)",
+                undercoatTip: "グレー〜アッシュベース、彩度最小化",
+                textureTip: "マットで落ち着いた質感、きれいなワンレングス",
+                avoidColors: ["ゴールド", "オレンジ", "コーラル"],
+                seasonalAdvice: "チャコール、ダークアッシュのような無彩色系が洗練された雰囲気を完成させます。",
+                consultingTip: "華やかな色より節制された美しさを見せることがポイントです。"
+            },
+            'neutral-light': {
+                toneKeyword: "柔らかく多彩な(Versatile/Soft) ニュートラルの調和",
+                fashionVibe: "ウォーム/クール両方可能、明るいトーンのカジュアルルック",
+                makeupBase: "ニュートラルベージュ(19-21号)、自然なカラー",
+                recommendLevel: "7~9 Level (様々に対応可能)",
+                undercoatTip: "ニュートラルベージュベース、極端なウォーム/クールは避ける",
+                textureTip: "自然で柔らかい質感、レイヤードカット",
+                avoidColors: ["ビビッドオレンジ", "ブルーブラック", "ネオン"],
+                seasonalAdvice: "ミルクティー、ローズベージュのような中間トーンの柔らかい色が様々に似合います。",
+                consultingTip: "様々なカラーが似合うので、お客様の好みに合わせて調整してください。"
+            },
+            'neutral-muted': {
+                toneKeyword: "快適で自然な(Comfortable/Natural) ニュートラルの安定",
+                fashionVibe: "アーストーン、ニュートラルカラーの快適なカジュアル",
+                makeupBase: "ニュートラル〜クールベージュ(21-23号)、MLBBリップ",
+                recommendLevel: "5~7 Level (落ち着いた中間トーン)",
+                undercoatTip: "ニュートラル〜クールベージュベース、彩度低く",
+                textureTip: "自然で落ち着いた質感、ヒッピーウェーブ",
+                avoidColors: ["ビビッドオレンジ", "ネオン", "ピュアブラック"],
+                seasonalAdvice: "グレーベージュ、トープのような落ち着いて自然な色が快適な雰囲気を作ります。",
+                consultingTip: "洗練されて快適な印象を演出するのがおすすめです。"
+            },
+            'neutral-soft': {
+                toneKeyword: "温かいながら落ち着いた(Gentle/Balanced) ニュートラルのバランス",
+                fashionVibe: "ロマンチックながら落ち着いたトーンのブラウス、ニット",
+                makeupBase: "ピンクベージュベース(21号)、ローズリップ",
+                recommendLevel: "6~8 Level (柔らかい中間トーン)",
+                undercoatTip: "ニュートラルベージュベース、柔らかいグラデーション",
+                textureTip: "柔らかく自然な艶、ソフトレイヤード",
+                avoidColors: ["ブルーブラック", "ビビッドレッド", "アッシュグレー"],
+                seasonalAdvice: "ミルクモカ、ローズブラウンのような柔らかく控えめな色が調和します。",
+                consultingTip: "温かいながら落ち着いた雰囲気を演出してください。"
+            },
+            'neutral-deep': {
+                toneKeyword: "深みがあり成熟した(Mature/Rich) ニュートラルの重み",
+                fashionVibe: "高級感のあるブラウン、バーガンディ、ダークカラーの服",
+                makeupBase: "ウォーム〜ニュートラルベージュ(23号)、深いカラーリップ",
+                recommendLevel: "4~6 Level (深みのあるトーン)",
+                undercoatTip: "ニュートラルブラウンベース",
+                textureTip: "深みのある自然な仕上げ、ボリュームパーマ",
+                avoidColors: ["プラチナ", "アッシュブルー", "ビビッドピンク"],
+                seasonalAdvice: "チョコレート、ダークモカのような深く自然な色が成熟した魅力を見せます。",
+                consultingTip: "洗練されて成熟した印象を演出してください。"
+            }
+        };
+
+        // ========== 중국어 전문가 가이드 데이터베이스 ==========
+        const EXPERT_GUIDE_DB_ZH = {
+            'spring-bright': {
+                toneKeyword: "活力四射的(Active/Cute) 春日能量",
+                fashionVibe: "色彩缤纷的图案或轻快的休闲风格非常适合您。",
+                makeupBase: "明亮象牙色(19-21号)打造光彩，推荐珊瑚/橙色唇膏",
+                recommendLevel: "8~10 Level (鲜艳的反射光)",
+                undercoatTip: "需要漂至带黄调的浅黄色底",
+                textureTip: "比起厚重的线条，选择发尾轻盈的层次剪",
+                avoidColors: ["浑浊的卡其色", "灰调过重的灰棕", "黑色"],
+                seasonalAdvice: "高饱和度的橙棕色、金棕色能最大化您活力四射的形象。",
+                consultingTip: "能提亮肤色的高饱和度颜色是最佳选择。",
+                colorScience: {
+                    melaninType: "褐黑素优势 (Pheomelanin Dominant)",
+                    undercoatPrediction: "漂发时预计出现黄橙色底",
+                    neutralizationStrategy: "利用黄调，最小化紫色补色"
+                },
+                recipes: [
+                    {
+                        styleName: "橙金棕",
+                        vibe: "明亮有活力的",
+                        reason: "最大化春季暖色调的高饱和度和明亮肤色",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "8/34 (Gold Red) : 8/03 (Natural Gold) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35分钟"
+                    },
+                    {
+                        styleName: "落日珊瑚",
+                        vibe: "温暖有活力的",
+                        reason: "与黄调肌肤和谐搭配的温暖珊瑚色调",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "9-OR (Orange) : 9-BE (Beige) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30分钟"
+                    }
+                ]
+            },
+            'spring-light': {
+                toneKeyword: "透明可爱的(Romantic/Clear) 春日阳光",
+                fashionVibe: "柔和色调的衬衫或雪纺材质非常适合。",
+                makeupBase: "带蜜桃调的明亮底妆(17-19号)",
+                recommendLevel: "9~12 Level (High Lift)",
+                undercoatTip: "需要尽量去除红调的黄色底",
+                textureTip: "如微风吹拂般的大卷波浪",
+                avoidColors: ["过深的深棕色", "浓烈的酒红色"],
+                seasonalAdvice: "奶茶色或蜜桃米色等柔和的奶油色调能提升肌肤透明度。",
+                consultingTip: "避免暗沉，保持'清透感'是关键。",
+                colorScience: {
+                    melaninType: "褐黑素优势，浅肤色 (Light Pheomelanin)",
+                    undercoatPrediction: "漂发时浅黄色底，快速提亮",
+                    neutralizationStrategy: "最小化红调，用淡紫色调节黄调"
+                },
+                recipes: [
+                    {
+                        styleName: "奶茶米色",
+                        vibe: "透明清纯的",
+                        reason: "让透明肌肤更加清透，最大化柔和印象",
+                        brand: "Milbon",
+                        line: "Ordeve Beaute",
+                        mixRatio: "10-BE (Beige) : 10-MT (Matte) = 3:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30分钟"
+                    },
+                    {
+                        styleName: "蜜桃金",
+                        vibe: "浪漫可爱的",
+                        reason: "与蜜桃底色和谐，明亮又柔和的印象",
+                        brand: "Wella",
+                        line: "Illumina Color",
+                        mixRatio: "10/36 (Gold Violet) : 10/05 (Natural Mahogany) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35分钟"
+                    }
+                ]
+            },
+            'summer-light': {
+                toneKeyword: "清纯干净的(Pure/Clean) 夏日波浪",
+                fashionVibe: "白衬衫或浅蓝牛仔等简洁干净的造型",
+                makeupBase: "中和红调的粉色底妆(13-21号)",
+                recommendLevel: "8~10 Level (无红调的透明感)",
+                undercoatTip: "需要中和黄调(紫色洗发水)去除柠檬色",
+                textureTip: "光滑直发或C卷强调质感",
+                avoidColors: ["黄调过重的金色", "橙色", "铜色"],
+                seasonalAdvice: "灰金或薰衣草灰等冷色调粉彩让肌肤看起来更白皙。",
+                consultingTip: "在黄色灯光下可能显得暗沉，请强调自然光下的透明感。",
+                colorScience: {
+                    melaninType: "真黑素优势，冷肤色 (Eumelanin Cool)",
+                    undercoatPrediction: "漂发时黄色底，紫色补色必需",
+                    neutralizationStrategy: "用紫色/灰色完全中和黄调"
+                },
+                recipes: [
+                    {
+                        styleName: "薰衣草灰",
+                        vibe: "清纯神秘的",
+                        reason: "最大化冷色调肌肤透明感，完全去除黄调",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "9-Vi (Violet) : 9-A (Ash) = 1:2",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30分钟"
+                    },
+                    {
+                        styleName: "玫瑰棕",
+                        vibe: "优雅女性化的",
+                        reason: "与粉色底色和谐，不冷淡又清纯的印象",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "8/65 (Violet Mahogany) : 8/1 (Ash) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35分钟"
+                    }
+                ]
+            },
+            'summer-bright': {
+                toneKeyword: "清爽凉快的(Fresh/Cool) 夏日海洋",
+                fashionVibe: "干净的白色、浅蓝色、薄荷绿系服装",
+                makeupBase: "冷粉底妆，玫瑰腮红和浆果色唇膏",
+                recommendLevel: "7~9 Level (清凉光泽)",
+                undercoatTip: "灰至粉色底调，黄调去除必需",
+                textureTip: "清凉干净的光泽感，空气刘海",
+                avoidColors: ["金色", "橙色", "芥末黄", "铜色"],
+                seasonalAdvice: "玫瑰棕、冷粉棕能提升您清纯的形象。",
+                consultingTip: "强调清爽干净的印象是关键。"
+            },
+            'summer-muted': {
+                toneKeyword: "优雅知性的(Elegance/Soft) 夏日薄雾",
+                fashionVibe: "灰调的同色系搭配，沉稳的办公风格",
+                makeupBase: "自然粉米色(21-23号)",
+                recommendLevel: "6~8 Level (沉稳的中明度)",
+                undercoatTip: "不漂发也可达到，但需抑制红调",
+                textureTip: "如Build烫或Elizabeth烫般优雅的蓬松感",
+                avoidColors: ["鲜艳的高饱和色", "接近黑色的深色"],
+                seasonalAdvice: "灰棕、烟熏摩卡等带灰调的颜色能完成您优雅的氛围。",
+                consultingTip: "不太亮也不太暗的'中等亮度'看起来最高级。"
+            },
+            'autumn-muted': {
+                toneKeyword: "沉稳自然的(Natural/Classic) 秋日感性",
+                fashionVibe: "米色、卡其、棕色系的针织或风衣",
+                makeupBase: "沉稳的黄调底妆(21-23号)，MLBB唇膏",
+                recommendLevel: "5~7 Level (有氛围的阴影)",
+                undercoatTip: "可自然利用橙色底色",
+                textureTip: "嬉皮烫或自然波浪",
+                avoidColors: ["荧光粉", "冷蓝黑"],
+                seasonalAdvice: "哑光棕、橄榄棕能遮盖肌肤泛红，营造沉稳氛围。",
+                consultingTip: "比起抢眼的颜色，能提升发质质感的柔和棕色更好。",
+                colorScience: {
+                    melaninType: "混合型黑色素，低饱和肌肤 (Mixed Melanin, Low Chroma)",
+                    undercoatPrediction: "漂发时橙黄色底，需要哑光补色中和",
+                    neutralizationStrategy: "用绿色(哑光)中和红调，防止暗沉"
+                },
+                recipes: [
+                    {
+                        styleName: "橄榄哑光棕",
+                        vibe: "沉稳精致的",
+                        reason: "中和肌肤红调，打造干净沉稳的印象",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "7-MT (Matte) : 7-NB (Natural Brown) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35分钟"
+                    },
+                    {
+                        styleName: "卡其米色",
+                        vibe: "自然舒适的",
+                        reason: "自然的大地色调营造柔和氛围",
+                        brand: "L'Oreal",
+                        line: "Majirel",
+                        mixRatio: "7.8 (Mocha) : 7.13 (Beige) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35分钟"
+                    }
+                ]
+            },
+            'autumn-soft': {
+                toneKeyword: "温暖舒适的(Warm/Cozy) 秋日午后",
+                fashionVibe: "羊绒针织、灯芯绒、温暖大地色调服装",
+                makeupBase: "暖米色底妆(21号)，蜜桃/赤陶唇膏",
+                recommendLevel: "6~8 Level (柔和暖色调)",
+                undercoatTip: "暖米色底调，推荐柔和渐变",
+                textureTip: "蓬松层次、柔和波浪",
+                avoidColors: ["黑色", "灰蓝", "高饱和橙"],
+                seasonalAdvice: "牛奶巧克力、摩卡棕等柔和温暖的颜色营造舒适氛围。",
+                consultingTip: "比起极端颜色，含蓄自然的渐变更好。",
+                colorScience: {
+                    melaninType: "褐黑素优势，中等肤色 (Warm Pheomelanin)",
+                    undercoatPrediction: "漂发时橙色底，保持温暖色调",
+                    neutralizationStrategy: "利用橙色，用哑光柔和调节"
+                },
+                recipes: [
+                    {
+                        styleName: "牛奶巧克力棕",
+                        vibe: "温暖舒适的",
+                        reason: "柔和暖色调打造舒适亲切的形象",
+                        brand: "Wella",
+                        line: "Softouch",
+                        mixRatio: "S7/37 (Gold Brown) : S7/03 (Natural Gold) = 1:1",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "30分钟"
+                    },
+                    {
+                        styleName: "蜂蜜米色",
+                        vibe: "甜美柔和的",
+                        reason: "蜂蜜色光泽打造健康明亮的感觉",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "8-BE (Beige) : 8-GO (Gold) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30分钟"
+                    }
+                ]
+            },
+            'autumn-deep': {
+                toneKeyword: "深邃高级的(Gorgeous/Ethnic) 秋日深度",
+                fashionVibe: "金色配饰、皮夹克、民族风图案",
+                makeupBase: "健康的暖米色(23号以上)，修容妆",
+                recommendLevel: "4~6 Level (厚重的颜色)",
+                undercoatTip: "红棕色底色效果很好",
+                textureTip: "蓬松的华丽烫或厚重的流苏剪",
+                avoidColors: ["过于轻盈的粉彩色调", "苍白的灰棕"],
+                seasonalAdvice: "深巧克力、铜棕等有深度的暖色调能让五官更加立体。",
+                consultingTip: "比起亮度，请专注于'光泽'和'色彩深度'。",
+                colorScience: {
+                    melaninType: "褐黑素丰富，深肤色 (Rich Pheomelanin)",
+                    undercoatPrediction: "漂发时红橙色底，红调强烈显现",
+                    neutralizationStrategy: "用铜色/金色利用红调，强调深度"
+                },
+                recipes: [
+                    {
+                        styleName: "深巧克力",
+                        vibe: "深邃高级的",
+                        reason: "与肤色的对比让五官更立体，成熟魅力",
+                        brand: "L'Oreal",
+                        line: "Majirel",
+                        mixRatio: "5.35 (Chocolate) : 5.52 (Mahogany) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "40分钟"
+                    },
+                    {
+                        styleName: "铜色红木",
+                        vibe: "丰富华丽的",
+                        reason: "铜色光泽打造高级有深度的印象",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "5/43 (Red Gold) : 5/75 (Brown Mahogany) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "40分钟"
+                    }
+                ]
+            },
+            'winter-deep': {
+                toneKeyword: "都市气质的(Modern/Chic) 冬日夜晚",
+                fashionVibe: "黑白现代风格、银色配饰、西装",
+                makeupBase: "干净苍白的冷色底妆或透明光泽",
+                recommendLevel: "1~4 Level (明确的对比)",
+                undercoatTip: "几乎不需要，只需添加蓝/紫色反射光",
+                textureTip: "利落的鲍伯头、直发、有棱角的短发",
+                avoidColors: ["不明不白的棕色", "带黄调的暖棕"],
+                seasonalAdvice: "蓝黑、深海军蓝等冷而深的颜色能最大化您的气场。",
+                consultingTip: "发色与肤色的'对比'越大，脸看起来越小。",
+                colorScience: {
+                    melaninType: "真黑素优势，高对比 (Strong Eumelanin, High Contrast)",
+                    undercoatPrediction: "保持自然发色或添加蓝紫色反射光",
+                    neutralizationStrategy: "无需漂发，只需添加蓝/紫色光泽"
+                },
+                recipes: [
+                    {
+                        styleName: "蓝黑",
+                        vibe: "有气场都市感的",
+                        reason: "与肌肤的强烈对比让五官立体，现代感",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "3-NV (Navy) : 3-A (Ash) = 2:1",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "25分钟"
+                    },
+                    {
+                        styleName: "深紫",
+                        vibe: "神秘精致的",
+                        reason: "深紫色打造高级独特的魅力",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "3/66 (Intense Violet) : 3/0 (Natural) = 1:2",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "30分钟"
+                    }
+                ]
+            },
+            'winter-bright': {
+                toneKeyword: "华丽强烈的(Vivid/Dramatic) 冬日钻石",
+                fashionVibe: "黑、白、鲜红等鲜明对比",
+                makeupBase: "透明冷色底妆，鲜艳的红/酒红唇膏",
+                recommendLevel: "1~5 Level 或漂发+高饱和色",
+                undercoatTip: "保持冷色底，黄调完全去除必需",
+                textureTip: "鲜明有光泽的效果，强烈的刘海",
+                avoidColors: ["米色", "金色", "橙色", "浑浊的棕色"],
+                seasonalAdvice: "纯黑、酒红、深紫红等强烈鲜明的对比是关键。",
+                consultingTip: "用华丽有冲击力的形象吸引视线。"
+            },
+            'winter-muted': {
+                toneKeyword: "精致沉稳的(Sophisticated/Urban) 冬日夕阳",
+                fashionVibe: "灰色西装、炭灰大衣、极简单色调",
+                makeupBase: "中性至冷米色，自然修容",
+                recommendLevel: "4~6 Level (无彩色系)",
+                undercoatTip: "灰至灰棕底，饱和度最小化",
+                textureTip: "哑光沉稳的质感，干净的一长度",
+                avoidColors: ["金色", "橙色", "珊瑚色"],
+                seasonalAdvice: "炭灰、深灰棕等无彩色系能完成精致的氛围。",
+                consultingTip: "展现克制之美而非华丽颜色是关键。"
+            },
+            'neutral-light': {
+                toneKeyword: "柔和多变的(Versatile/Soft) 中性和谐",
+                fashionVibe: "暖冷皆可，明亮色调的休闲风格",
+                makeupBase: "中性米色(19-21号)，自然色调",
+                recommendLevel: "7~9 Level (多样适配)",
+                undercoatTip: "中性米色底，避免极端暖/冷",
+                textureTip: "自然柔和的质感，层次剪",
+                avoidColors: ["高饱和橙", "蓝黑", "荧光色"],
+                seasonalAdvice: "奶茶、玫瑰米色等柔和中间色调都很适合。",
+                consultingTip: "各种颜色都适合，请根据客户喜好调整。"
+            },
+            'neutral-muted': {
+                toneKeyword: "舒适自然的(Comfortable/Natural) 中性稳定",
+                fashionVibe: "大地色、中性色的舒适休闲风",
+                makeupBase: "中性至冷米色(21-23号)，MLBB唇膏",
+                recommendLevel: "5~7 Level (沉稳中间色调)",
+                undercoatTip: "中性至冷米色底，低饱和度",
+                textureTip: "自然沉稳的质感，嬉皮波浪",
+                avoidColors: ["高饱和橙", "荧光色", "纯黑"],
+                seasonalAdvice: "灰米色、驼色等沉稳自然的颜色营造舒适氛围。",
+                consultingTip: "打造精致舒适的感觉最好。"
+            },
+            'neutral-soft': {
+                toneKeyword: "温暖又沉稳的(Gentle/Balanced) 中性平衡",
+                fashionVibe: "浪漫又沉稳色调的衬衫、针织",
+                makeupBase: "粉米色底妆(21号)，玫瑰唇膏",
+                recommendLevel: "6~8 Level (柔和中间色调)",
+                undercoatTip: "中性米色底，柔和渐变",
+                textureTip: "柔和自然的光泽，柔和层次",
+                avoidColors: ["蓝黑", "高饱和红", "灰棕"],
+                seasonalAdvice: "奶茶摩卡、玫瑰棕等柔和含蓄的颜色很和谐。",
+                consultingTip: "打造温暖又沉稳的氛围。"
+            },
+            'neutral-deep': {
+                toneKeyword: "深邃成熟的(Mature/Rich) 中性厚重",
+                fashionVibe: "高级感的棕色、酒红、深色服装",
+                makeupBase: "暖至中性米色(23号)，深色唇膏",
+                recommendLevel: "4~6 Level (有深度的色调)",
+                undercoatTip: "中性棕色底",
+                textureTip: "有深度的自然效果，蓬松烫",
+                avoidColors: ["铂金", "灰蓝", "高饱和粉"],
+                seasonalAdvice: "巧克力、深摩卡等深邃自然的颜色展现成熟魅力。",
+                consultingTip: "打造精致成熟的印象。"
+            }
+        };
+
+        // ========== 베트남어 전문가 가이드 데이터베이스 ==========
+        const EXPERT_GUIDE_DB_VI = {
+            'spring-bright': {
+                toneKeyword: "Năng động và sặc sỡ (Active/Cute) năng lượng mùa xuân",
+                fashionVibe: "Họa tiết màu sắc và phong cách casual vui tươi rất phù hợp với bạn.",
+                makeupBase: "Ivory sáng (tone 19-21) cho vẻ rạng rỡ, khuyên dùng son coral/cam",
+                recommendLevel: "8~10 Level (phản chiếu rực rỡ)",
+                undercoatTip: "Cần tẩy đến Pale Yellow với tông vàng",
+                textureTip: "Cắt layer nhẹ đuôi thay vì đường nét nặng",
+                avoidColors: ["Kaki đục", "Xám tro nặng", "Đen"],
+                seasonalAdvice: "Nâu cam và nâu vàng độ bão hòa cao tối đa hóa hình ảnh năng động của bạn.",
+                consultingTip: "Màu sắc độ bão hòa cao làm nổi bật sắc mặt là tốt nhất.",
+                colorScience: {
+                    melaninType: "Pheomelanin chiếm ưu thế",
+                    undercoatPrediction: "Dự kiến undercoat vàng cam khi tẩy",
+                    neutralizationStrategy: "Tận dụng tông vàng, giảm thiểu bổ sung tím"
+                },
+                recipes: [
+                    {
+                        styleName: "Nâu Vàng Cam",
+                        vibe: "Rạng rỡ và sống động",
+                        reason: "Tối đa hóa độ bão hòa cao và tông da sáng của Spring Warm Bright",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "8/34 (Gold Red) : 8/03 (Natural Gold) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35 phút"
+                    },
+                    {
+                        styleName: "Coral Hoàng Hôn",
+                        vibe: "Ấm áp và năng động",
+                        reason: "Hài hòa với da tông vàng cho màu coral ấm",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "9-OR (Orange) : 9-BE (Beige) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30 phút"
+                    }
+                ]
+            },
+            'spring-light': {
+                toneKeyword: "Trong trẻo và đáng yêu (Romantic/Clear) ánh nắng mùa xuân",
+                fashionVibe: "Áo blouse pastel và chất liệu voan rất phù hợp.",
+                makeupBase: "Base sáng với tông đào (tone 17-19)",
+                recommendLevel: "9~12 Level (High Lift)",
+                undercoatTip: "Cần base vàng với tối thiểu đỏ",
+                textureTip: "Sóng nhẹ như gió thổi",
+                avoidColors: ["Nâu đậm quá", "Đỏ burgundy đậm"],
+                seasonalAdvice: "Beige trà sữa hoặc beige đào mềm mại nâng cao độ trong của da.",
+                consultingTip: "Tránh xỉn màu và duy trì 'sự trong trẻo' là chìa khóa.",
+                colorScience: {
+                    melaninType: "Light Pheomelanin",
+                    undercoatPrediction: "Undercoat vàng nhạt, lift nhanh",
+                    neutralizationStrategy: "Giảm thiểu đỏ, điều chỉnh vàng bằng tím nhạt"
+                },
+                recipes: [
+                    {
+                        styleName: "Beige Trà Sữa",
+                        vibe: "Trong trẻo và ngây thơ",
+                        reason: "Làm da trong trẻo hơn, tối đa hóa ấn tượng mềm mại",
+                        brand: "Milbon",
+                        line: "Ordeve Beaute",
+                        mixRatio: "10-BE (Beige) : 10-MT (Matte) = 3:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30 phút"
+                    },
+                    {
+                        styleName: "Blonde Đào",
+                        vibe: "Lãng mạn và đáng yêu",
+                        reason: "Hài hòa với undertone đào, sáng nhưng mềm mại",
+                        brand: "Wella",
+                        line: "Illumina Color",
+                        mixRatio: "10/36 (Gold Violet) : 10/05 (Natural Mahogany) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35 phút"
+                    }
+                ]
+            },
+            'summer-light': {
+                toneKeyword: "Thuần khiết và sạch sẽ (Pure/Clean) sóng mùa hè",
+                fashionVibe: "Phong cách đơn giản sạch sẽ như áo sơ mi trắng hoặc denim xanh nhạt",
+                makeupBase: "Base hồng để trung hòa đỏ (tone 13-21)",
+                recommendLevel: "8~10 Level (trong mà không có đỏ)",
+                undercoatTip: "Cần trung hòa vàng (dầu gội tím) để loại bỏ tông chanh",
+                textureTip: "Tóc thẳng mượt hoặc C-curl để nhấn mạnh kết cấu",
+                avoidColors: ["Vàng đậm", "Cam", "Đồng"],
+                seasonalAdvice: "Pastel lạnh như blonde tro hoặc tro oải hương làm da trắng hơn.",
+                consultingTip: "Có thể trông xỉn dưới ánh sáng vàng, hãy nhấn mạnh độ trong dưới ánh sáng tự nhiên.",
+                colorScience: {
+                    melaninType: "Eumelanin Cool",
+                    undercoatPrediction: "Undercoat vàng khi tẩy, bổ sung tím cần thiết",
+                    neutralizationStrategy: "Trung hòa hoàn toàn vàng bằng tím/tro"
+                },
+                recipes: [
+                    {
+                        styleName: "Tro Oải Hương",
+                        vibe: "Thuần khiết và huyền bí",
+                        reason: "Tối đa hóa độ trong của da tông lạnh, loại bỏ hoàn toàn vàng",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "9-Vi (Violet) : 9-A (Ash) = 1:2",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30 phút"
+                    },
+                    {
+                        styleName: "Nâu Hồng",
+                        vibe: "Thanh lịch và nữ tính",
+                        reason: "Hài hòa với undertone hồng, thuần khiết mà không lạnh",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "8/65 (Violet Mahogany) : 8/1 (Ash) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35 phút"
+                    }
+                ]
+            },
+            'summer-bright': {
+                toneKeyword: "Tươi mát và trong lành (Fresh/Cool) biển mùa hè",
+                fashionVibe: "Trang phục trắng sạch, xanh nhạt, màu bạc hà",
+                makeupBase: "Base hồng lạnh, má hồng rose và son berry",
+                recommendLevel: "7~9 Level (bóng mát)",
+                undercoatTip: "Undertone tro đến hồng, loại bỏ vàng cần thiết",
+                textureTip: "Bóng tươi mát sạch sẽ, mái thưa",
+                avoidColors: ["Vàng", "Cam", "Mù tạt", "Đồng"],
+                seasonalAdvice: "Nâu rose và nâu hồng lạnh nâng cao hình ảnh thuần khiết của bạn.",
+                consultingTip: "Nhấn mạnh ấn tượng tươi mát sạch sẽ là chìa khóa."
+            },
+            'summer-muted': {
+                toneKeyword: "Thanh lịch và trí thức (Elegance/Soft) sương mù mùa hè",
+                fashionVibe: "Phối màu tone-on-tone xám, phong cách văn phòng điềm đạm",
+                makeupBase: "Beige hồng tự nhiên (tone 21-23)",
+                recommendLevel: "6~8 Level (trung tính điềm đạm)",
+                undercoatTip: "Có thể không cần tẩy, nhưng kiềm chế đỏ",
+                textureTip: "Độ phồng thanh lịch như build perm hoặc Elizabeth perm",
+                avoidColors: ["Màu sặc sỡ", "Màu tối gần đen"],
+                seasonalAdvice: "Màu có tông xám như nâu tro hoặc mocha khói hoàn thiện bầu không khí thanh lịch của bạn.",
+                consultingTip: "Bạn trông sang trọng nhất ở 'độ sáng trung bình' - không quá sáng, không quá tối."
+            },
+            'autumn-muted': {
+                toneKeyword: "Điềm đạm và tự nhiên (Natural/Classic) cảm xúc mùa thu",
+                fashionVibe: "Áo len beige, kaki, nâu hoặc áo khoác trench",
+                makeupBase: "Base vàng điềm đạm (tone 21-23), son MLBB",
+                recommendLevel: "5~7 Level (bóng đổ có chiều sâu)",
+                undercoatTip: "Có thể tận dụng tự nhiên undercoat cam",
+                textureTip: "Hippie perm hoặc sóng tự nhiên",
+                avoidColors: ["Hồng huỳnh quang", "Xanh đen lạnh"],
+                seasonalAdvice: "Nâu matte, nâu olive che đỏ da và tạo bầu không khí điềm đạm.",
+                consultingTip: "Nâu mềm mại nâng cao kết cấu tóc tốt hơn màu sặc sỡ.",
+                colorScience: {
+                    melaninType: "Mixed Melanin, Low Chroma",
+                    undercoatPrediction: "Undercoat cam vàng, cần trung hòa bằng matte",
+                    neutralizationStrategy: "Trung hòa đỏ bằng xanh lá(matte), ngăn xỉn"
+                },
+                recipes: [
+                    {
+                        styleName: "Nâu Olive Matte",
+                        vibe: "Điềm đạm và tinh tế",
+                        reason: "Trung hòa đỏ da cho ấn tượng sạch sẽ điềm đạm",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "7-MT (Matte) : 7-NB (Natural Brown) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35 phút"
+                    },
+                    {
+                        styleName: "Beige Kaki",
+                        vibe: "Tự nhiên và thoải mái",
+                        reason: "Tông đất tự nhiên tạo bầu không khí mềm mại",
+                        brand: "L'Oreal",
+                        line: "Majirel",
+                        mixRatio: "7.8 (Mocha) : 7.13 (Beige) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35 phút"
+                    }
+                ]
+            },
+            'autumn-soft': {
+                toneKeyword: "Ấm áp và dễ chịu (Warm/Cozy) chiều thu",
+                fashionVibe: "Áo len cashmere, nhung kẻ, trang phục tông đất ấm",
+                makeupBase: "Base beige ấm (tone 21), son đào/terracotta",
+                recommendLevel: "6~8 Level (tông ấm mềm)",
+                undercoatTip: "Undertone beige ấm, khuyên dùng gradient mềm",
+                textureTip: "Layer phồng, sóng mềm",
+                avoidColors: ["Đen", "Xanh tro", "Cam sặc sỡ"],
+                seasonalAdvice: "Màu mềm ấm như chocolate sữa và nâu mocha tạo bầu không khí thoải mái.",
+                consultingTip: "Gradient tự nhiên tinh tế tốt hơn màu cực đoan.",
+                colorScience: {
+                    melaninType: "Warm Pheomelanin",
+                    undercoatPrediction: "Undercoat cam, giữ tông ấm",
+                    neutralizationStrategy: "Tận dụng cam, làm mềm bằng matte"
+                },
+                recipes: [
+                    {
+                        styleName: "Nâu Chocolate Sữa",
+                        vibe: "Ấm áp và dễ chịu",
+                        reason: "Tông ấm mềm tạo hình ảnh thoải mái thân thiện",
+                        brand: "Wella",
+                        line: "Softouch",
+                        mixRatio: "S7/37 (Gold Brown) : S7/03 (Natural Gold) = 1:1",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "30 phút"
+                    },
+                    {
+                        styleName: "Beige Mật Ong",
+                        vibe: "Ngọt ngào và mềm mại",
+                        reason: "Ánh mật ong cho vẻ khỏe mạnh rạng rỡ",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "8-BE (Beige) : 8-GO (Gold) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30 phút"
+                    }
+                ]
+            },
+            'autumn-deep': {
+                toneKeyword: "Sâu lắng và sang trọng (Gorgeous/Ethnic) chiều sâu mùa thu",
+                fashionVibe: "Phụ kiện vàng, áo khoác da, họa tiết dân tộc",
+                makeupBase: "Beige ấm khỏe mạnh (tone 23+), makeup tạo khối",
+                recommendLevel: "4~6 Level (màu có chiều sâu)",
+                undercoatTip: "Undercoat nâu đỏ hiệu quả tốt",
+                textureTip: "Perm glam phồng hoặc cắt tua có chiều sâu",
+                avoidColors: ["Pastel nhẹ", "Tro nhợt nhạt"],
+                seasonalAdvice: "Màu ấm sâu như chocolate đậm và nâu đồng làm đường nét khuôn mặt rõ ràng hơn.",
+                consultingTip: "Tập trung vào 'độ bóng' và 'chiều sâu màu' hơn là độ sáng.",
+                colorScience: {
+                    melaninType: "Rich Pheomelanin",
+                    undercoatPrediction: "Undercoat đỏ cam, đỏ hiện rõ",
+                    neutralizationStrategy: "Tận dụng đỏ với đồng/vàng, nhấn mạnh chiều sâu"
+                },
+                recipes: [
+                    {
+                        styleName: "Chocolate Đậm",
+                        vibe: "Sâu lắng và sang trọng",
+                        reason: "Tương phản với da làm đường nét rõ, quyến rũ trưởng thành",
+                        brand: "L'Oreal",
+                        line: "Majirel",
+                        mixRatio: "5.35 (Chocolate) : 5.52 (Mahogany) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "40 phút"
+                    },
+                    {
+                        styleName: "Mahogany Đồng",
+                        vibe: "Phong phú và lộng lẫy",
+                        reason: "Ánh đồng cho ấn tượng sang trọng có chiều sâu",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "5/43 (Red Gold) : 5/75 (Brown Mahogany) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "40 phút"
+                    }
+                ]
+            },
+            'winter-deep': {
+                toneKeyword: "Đô thị và cuốn hút (Modern/Chic) đêm đông",
+                fashionVibe: "Phong cách đen trắng hiện đại, phụ kiện bạc, vest",
+                makeupBase: "Base lạnh sạch nhợt nhạt hoặc rạng rỡ trong suốt",
+                recommendLevel: "1~4 Level (tương phản mạnh)",
+                undercoatTip: "Hầu như không cần, chỉ thêm phản chiếu xanh/tím",
+                textureTip: "Bob sắc nét, thẳng, tóc ngắn có góc cạnh",
+                avoidColors: ["Nâu mơ hồ", "Nâu ấm có tông vàng"],
+                seasonalAdvice: "Màu lạnh tối như xanh đen và navy đậm tối đa hóa khí chất của bạn.",
+                consultingTip: "'Tương phản' giữa màu tóc và da càng mạnh, mặt càng nhỏ.",
+                colorScience: {
+                    melaninType: "Strong Eumelanin, High Contrast",
+                    undercoatPrediction: "Giữ tóc tự nhiên hoặc thêm phản chiếu xanh tím",
+                    neutralizationStrategy: "Không cần tẩy, chỉ thêm bóng xanh/tím"
+                },
+                recipes: [
+                    {
+                        styleName: "Xanh Đen",
+                        vibe: "Cuốn hút và đô thị",
+                        reason: "Tương phản mạnh với da làm đường nét rõ, cảm giác hiện đại",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "3-NV (Navy) : 3-A (Ash) = 2:1",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "25 phút"
+                    },
+                    {
+                        styleName: "Tím Đậm",
+                        vibe: "Huyền bí và tinh tế",
+                        reason: "Tím sâu cho quyến rũ sang trọng độc đáo",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "3/66 (Intense Violet) : 3/0 (Natural) = 1:2",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "30 phút"
+                    }
+                ]
+            },
+            'winter-bright': {
+                toneKeyword: "Lộng lẫy và mãnh liệt (Vivid/Dramatic) kim cương mùa đông",
+                fashionVibe: "Tương phản sắc nét với đen, trắng, đỏ sặc sỡ",
+                makeupBase: "Base lạnh trong suốt, son đỏ/rượu vang sặc sỡ",
+                recommendLevel: "1~5 Level hoặc tẩy + màu sặc sỡ",
+                undercoatTip: "Giữ base tông lạnh, loại bỏ hoàn toàn vàng cần thiết",
+                textureTip: "Hoàn thiện sắc nét bóng loáng, mái mạnh mẽ",
+                avoidColors: ["Beige", "Vàng", "Cam", "Nâu đục"],
+                seasonalAdvice: "Tương phản mãnh liệt sắc nét với đen thuần, rượu vang, mận đậm là chìa khóa.",
+                consultingTip: "Thu hút sự chú ý với hình ảnh lộng lẫy có tác động."
+            },
+            'winter-muted': {
+                toneKeyword: "Tinh tế và điềm đạm (Sophisticated/Urban) hoàng hôn mùa đông",
+                fashionVibe: "Vest xám, áo khoác than, đơn sắc tối giản",
+                makeupBase: "Trung tính đến beige lạnh, tạo khối tự nhiên",
+                recommendLevel: "4~6 Level (dải vô sắc)",
+                undercoatTip: "Base xám đến tro, giảm thiểu độ bão hòa",
+                textureTip: "Kết cấu matte điềm đạm, một chiều dài sạch",
+                avoidColors: ["Vàng", "Cam", "San hô"],
+                seasonalAdvice: "Màu vô sắc như than và tro đậm hoàn thiện bầu không khí tinh tế của bạn.",
+                consultingTip: "Thể hiện sự thanh lịch kín đáo hơn là màu sắc sặc sỡ là điểm chính."
+            },
+            'neutral-light': {
+                toneKeyword: "Mềm mại và đa dạng (Versatile/Soft) hài hòa trung tính",
+                fashionVibe: "Cả ấm và lạnh đều được, phong cách casual tông sáng",
+                makeupBase: "Beige trung tính (tone 19-21), màu tự nhiên",
+                recommendLevel: "7~9 Level (đa dụng)",
+                undercoatTip: "Base beige trung tính, tránh ấm/lạnh cực đoan",
+                textureTip: "Kết cấu tự nhiên mềm mại, cắt layer",
+                avoidColors: ["Cam sặc sỡ", "Xanh đen", "Neon"],
+                seasonalAdvice: "Tông trung bình mềm như trà sữa và beige rose phù hợp với bạn.",
+                consultingTip: "Nhiều màu phù hợp, điều chỉnh theo sở thích khách hàng."
+            },
+            'neutral-muted': {
+                toneKeyword: "Thoải mái và tự nhiên (Comfortable/Natural) ổn định trung tính",
+                fashionVibe: "Tông đất, casual thoải mái màu trung tính",
+                makeupBase: "Trung tính đến beige lạnh (tone 21-23), son MLBB",
+                recommendLevel: "5~7 Level (tông trung bình điềm đạm)",
+                undercoatTip: "Base trung tính đến beige lạnh, độ bão hòa thấp",
+                textureTip: "Kết cấu tự nhiên điềm đạm, sóng hippie",
+                avoidColors: ["Cam sặc sỡ", "Neon", "Đen thuần"],
+                seasonalAdvice: "Màu điềm đạm tự nhiên như beige xám và taupe tạo bầu không khí thoải mái.",
+                consultingTip: "Hướng đến cảm giác tinh tế và thoải mái."
+            },
+            'neutral-soft': {
+                toneKeyword: "Ấm nhưng điềm đạm (Gentle/Balanced) cân bằng trung tính",
+                fashionVibe: "Áo blouse, len tông lãng mạn nhưng điềm đạm",
+                makeupBase: "Base beige hồng (tone 21), son rose",
+                recommendLevel: "6~8 Level (tông trung bình mềm)",
+                undercoatTip: "Base beige trung tính, gradient mềm",
+                textureTip: "Bóng tự nhiên mềm mại, layer mềm",
+                avoidColors: ["Xanh đen", "Đỏ sặc sỡ", "Xám tro"],
+                seasonalAdvice: "Màu mềm tinh tế như mocha sữa và nâu rose hài hòa.",
+                consultingTip: "Tạo bầu không khí ấm nhưng điềm đạm."
+            },
+            'neutral-deep': {
+                toneKeyword: "Sâu lắng và trưởng thành (Mature/Rich) độ nặng trung tính",
+                fashionVibe: "Trang phục nâu sang trọng, burgundy, màu tối",
+                makeupBase: "Ấm đến beige trung tính (tone 23), son màu sâu",
+                recommendLevel: "4~6 Level (tông sâu)",
+                undercoatTip: "Base nâu trung tính",
+                textureTip: "Hoàn thiện tự nhiên có chiều sâu, perm phồng",
+                avoidColors: ["Bạch kim", "Xanh tro", "Hồng sặc sỡ"],
+                seasonalAdvice: "Màu sâu tự nhiên như chocolate và mocha đậm thể hiện quyến rũ trưởng thành.",
+                consultingTip: "Tạo ấn tượng tinh tế và trưởng thành."
+            }
+        };
+
+        // ========== 언어에 따라 적절한 DB 선택하는 함수 ==========
+        function getExpertGuideDB() {
+            const lang = window.HAIRGATOR_LANG || 'ko';
+            switch(lang) {
+                case 'en': return EXPERT_GUIDE_DB_EN;
+                case 'ja': return EXPERT_GUIDE_DB_JA;
+                case 'zh': return EXPERT_GUIDE_DB_ZH;
+                case 'vi': return EXPERT_GUIDE_DB_VI;
+                default: return EXPERT_GUIDE_DB_KO;
+            }
+        }
+
         function generateAdvancedExpertFeedback(season, subtype, skinData) {
-            // 1. 가이드 데이터 가져오기 (fallback 로직 포함)
+            // 1. 가이드 데이터 가져오기 (fallback 로직 포함, 다국어 지원)
+            const expertDB = getExpertGuideDB();
             let key = `${season}-${subtype}`;
-            if (!EXPERT_GUIDE_DB[key]) {
+            if (!expertDB[key]) {
                 // fallback: 유사한 키로 대체
                 if (subtype === 'soft') key = `${season}-muted`;
                 else if (subtype === 'bright') key = `${season}-light`;
                 else key = `${season}-deep`;
             }
 
-            const guide = EXPERT_GUIDE_DB[key] || EXPERT_GUIDE_DB['spring-light']; // 최후의 안전장치
+            const guide = expertDB[key] || expertDB['spring-light']; // 최후의 안전장치
 
             // 2. 피부 밝기(L)에 따른 동적 조언 (다국어 지원)
             let brightnessAdvice = '';
@@ -4031,11 +5477,12 @@
                 }
             }
 
-            // 저장된 색상 카드 HTML (EXPERT_GUIDE_DB 사용)
+            // 저장된 색상 카드 HTML (다국어 EXPERT_GUIDE_DB 사용)
             const savedColorsHTML = savedColors.map((colorData, index) => {
-                // EXPERT_GUIDE_DB에서 해당 시즌의 전문가 정보 가져오기
+                // 현재 언어에 맞는 EXPERT_GUIDE_DB에서 해당 시즌의 전문가 정보 가져오기
+                const expertDB = getExpertGuideDB();
                 const expertKey = seasonToExpertKey(colorData.season);
-                const expertData = EXPERT_GUIDE_DB[expertKey] || EXPERT_GUIDE_DB['autumn-muted'];
+                const expertData = expertDB[expertKey] || expertDB['autumn-muted'];
 
                 // 첫 번째 레시피 사용 (또는 랜덤)
                 const recipe = expertData.recipes ? expertData.recipes[index % expertData.recipes.length] : null;
