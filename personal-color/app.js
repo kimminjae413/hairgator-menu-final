@@ -51,6 +51,31 @@
             }
         }
 
+        // data-i18n 속성을 가진 요소들에 번역 적용
+        function applyTranslations(container) {
+            const root = container || document;
+
+            // data-i18n 속성이 있는 요소들 (텍스트 콘텐츠 번역)
+            root.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const translated = t(key);
+                if (translated) {
+                    el.textContent = translated;
+                }
+            });
+
+            // data-i18n-html 속성이 있는 요소들 (HTML 콘텐츠 번역)
+            root.querySelectorAll('[data-i18n-html]').forEach(el => {
+                const key = el.getAttribute('data-i18n-html');
+                const translated = t(key);
+                if (translated) {
+                    el.innerHTML = translated;
+                }
+            });
+
+            console.log('🌐 번역 적용 완료:', getCurrentLanguage());
+        }
+
         // 전역 변수 정의
         let currentMode = null;
         let analysisInProgress = false;
@@ -4830,6 +4855,8 @@ function openPersonalAnalysisModal() {
     modal.style.display = 'flex';
     paCurrentStep = 1;
     paUpdateStepUI();
+    // 모달 내부 번역 적용
+    applyTranslations(modal);
     console.log('📋 Personal Analysis 모달 열림');
   }
 }
@@ -5763,37 +5790,8 @@ window.generateFaceGeometryIntegratedHTML = generateFaceGeometryIntegratedHTML;
 
 // ==================== 다국어 UI 업데이트 ====================
 function updatePALanguageUI() {
-  // 남성 스타일 톤 레이블 및 이유 업데이트
-  const warmLabel = document.getElementById('pa-male-warm-label');
-  const warmReason = document.getElementById('pa-male-warm-reason');
-  const neutralLabel = document.getElementById('pa-male-neutral-label');
-  const neutralReason = document.getElementById('pa-male-neutral-reason');
-  const coolLabel = document.getElementById('pa-male-cool-label');
-  const coolReason = document.getElementById('pa-male-cool-reason');
-
-  if (warmLabel) warmLabel.textContent = t('personalColor.personalAnalysis.maleWarmLabel') || '둥근 형태 - 각지거나 사각형 얼굴 추천';
-  if (warmReason) warmReason.textContent = t('personalColor.personalAnalysis.maleWarmReason') || '둥근 헤어 라인과 부드러운 곡선이 강한 턱 선을 중화시켜 인상을 훨씬 부드럽고 친근하게 만들어 줍니다.';
-  if (neutralLabel) neutralLabel.textContent = t('personalColor.personalAnalysis.maleNeutralLabel') || '사각 형태 - 둥글거나 계란형 얼굴 추천';
-  if (neutralReason) neutralReason.textContent = t('personalColor.personalAnalysis.maleNeutralReason') || '사각형의 실루엣이 둥근 얼굴에 각을 더해주어, 이목구비를 뚜렷하게 하고 남성적인 느낌을 줍니다.';
-  if (coolLabel) coolLabel.textContent = t('personalColor.personalAnalysis.maleCoolLabel') || '삼각 형태 - 길이가 짧거나 옆으로 넓은 얼굴 추천';
-  if (coolReason) coolReason.textContent = t('personalColor.personalAnalysis.maleCoolReason') || '위로 솟은 볼륨과 날렵한 각도가 시선을 위로 끌어올려, 얼굴을 더 길고 갸름해 보이게 하는 효과가 있습니다.';
-
-  // 컬 선호 버튼 업데이트
-  const curlBtns = document.querySelectorAll('.pa-curl-btn');
-  curlBtns.forEach(btn => {
-    const curl = btn.dataset.curl;
-    const curlTexts = {
-      straight: t('personalColor.personalAnalysis.curlStraight') || '스트레이트',
-      C: t('personalColor.personalAnalysis.curlC') || 'C컬',
-      CS: t('personalColor.personalAnalysis.curlCS') || 'CS컬',
-      S: t('personalColor.personalAnalysis.curlS') || 'S컬',
-      SS: t('personalColor.personalAnalysis.curlSS') || 'SS컬',
-      none: t('personalColor.personalAnalysis.curlNone') || '선호 없음'
-    };
-    if (curlTexts[curl]) {
-      btn.textContent = curlTexts[curl];
-    }
-  });
+  // 전체 페이지 data-i18n 속성 번역 적용
+  applyTranslations(document);
 
   console.log('🌐 PA 다국어 UI 업데이트 완료');
 }

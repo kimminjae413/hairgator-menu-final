@@ -241,28 +241,28 @@
 
             <!-- Step 1 -->
             <div id="pa-step-1" class="active" style="padding: 0 24px 20px;">
-                <div class="pa-step-title">Step 1: 기본 정보</div>
+                <div class="pa-step-title" data-i18n="personalAnalysis.step1Title">Step 1: 키 & 기장</div>
                 <p style="font-size: 12px; color: #666; margin: 0 0 16px 0; padding: 10px; background: #f8f9fa; border-radius: 8px; line-height: 1.5;">
-                    📏 <b>성별과 키</b>를 선택하면 체형에 맞는 스타일을 추천합니다.
+                    📏 <span data-i18n="personalAnalysis.step1Desc">성별과 키를 선택하면 체형에 맞는 스타일을 추천합니다.</span>
                 </p>
 
                 <!-- 성별 선택 -->
                 <div style="margin-bottom: 24px;">
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;">성별</label>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;" data-i18n="personalAnalysis.gender">성별</label>
                     <div style="display: flex; gap: 12px;">
                         <button class="pa-gender-btn" data-gender="female" onclick="paSelectGender('female')" style="flex: 1; padding: 20px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; cursor: pointer; text-align: center;">
                             <div style="font-size: 32px; margin-bottom: 6px;">👩</div>
-                            <div style="font-weight: 600; font-size: 15px;">여성</div>
+                            <div style="font-weight: 600; font-size: 15px;" data-i18n="gender.female">여성</div>
                         </button>
                         <button class="pa-gender-btn" data-gender="male" onclick="paSelectGender('male')" style="flex: 1; padding: 20px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; cursor: pointer; text-align: center;">
                             <div style="font-size: 32px; margin-bottom: 6px;">👨</div>
-                            <div style="font-weight: 600; font-size: 15px;">남성</div>
+                            <div style="font-weight: 600; font-size: 15px;" data-i18n="gender.male">남성</div>
                         </button>
                     </div>
                 </div>
 
                 <div style="margin-bottom: 24px;">
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;">키 (cm)</label>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;" data-i18n="personalAnalysis.height">키 (cm)</label>
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
                         <button class="pa-height-btn" data-height="150" onclick="paSelectHeight(150)" style="padding: 10px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">150</button>
                         <button class="pa-height-btn" data-height="155" onclick="paSelectHeight(155)" style="padding: 10px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">155</button>
@@ -279,61 +279,61 @@
 
             <!-- Step 2 -->
             <div id="pa-step-2" style="display: none; padding: 0 24px 20px;">
-                <div class="pa-step-title">Step 2: 원하는 스타일</div>
+                <div class="pa-step-title" data-i18n="personalAnalysis.step2Title">Step 2: 스타일 선호</div>
 
                 <!-- ===== 여성용: 기장 선택 ===== -->
                 <div id="pa-female-style">
                     <p style="font-size: 12px; color: #666; margin: 0 0 16px 0; padding: 10px; background: #f8f9fa; border-radius: 8px; line-height: 1.5;">
-                        ✂️ <b>희망 기장과 앞머리</b>를 선택하면 체형과의 <b>적합도</b>를 분석합니다.
+                        ✂️ <span data-i18n="personalAnalysis.step2Desc">희망 기장과 앞머리를 선택하면 체형과의 적합도를 분석합니다.</span>
                     </p>
 
                     <div style="margin-bottom: 24px;">
-                        <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;">원하는 기장</label>
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;" data-i18n="personalAnalysis.desiredLength">원하는 기장</label>
                         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
                             <button class="pa-desired-length-btn" data-length="H" onclick="paSelectDesiredLength('H')" style="padding: 12px 8px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: center;">
                                 <div style="font-size: 18px; font-weight: 700;">H</div>
-                                <div style="font-size: 11px; color: #999;">숏</div>
+                                <div style="font-size: 11px; color: #999;" data-i18n="personalAnalysis.lengthH">숏</div>
                             </button>
                             <button class="pa-desired-length-btn" data-length="G" onclick="paSelectDesiredLength('G')" style="padding: 12px 8px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: center;">
                                 <div style="font-size: 18px; font-weight: 700;">G</div>
-                                <div style="font-size: 11px; color: #999;">턱선 위</div>
+                                <div style="font-size: 11px; color: #999;" data-i18n="personalAnalysis.lengthG">턱선 위</div>
                             </button>
                             <button class="pa-desired-length-btn" data-length="F" onclick="paSelectDesiredLength('F')" style="padding: 12px 8px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: center;">
                                 <div style="font-size: 18px; font-weight: 700;">F</div>
-                                <div style="font-size: 11px; color: #999;">턱선 아래</div>
+                                <div style="font-size: 11px; color: #999;" data-i18n="personalAnalysis.lengthF">턱선 아래</div>
                             </button>
                             <button class="pa-desired-length-btn" data-length="E" onclick="paSelectDesiredLength('E')" style="padding: 12px 8px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: center;">
                                 <div style="font-size: 18px; font-weight: 700;">E</div>
-                                <div style="font-size: 11px; color: #999;">어깨 위</div>
+                                <div style="font-size: 11px; color: #999;" data-i18n="personalAnalysis.lengthE">어깨 위</div>
                             </button>
                             <button class="pa-desired-length-btn" data-length="D" onclick="paSelectDesiredLength('D')" style="padding: 12px 8px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: center;">
                                 <div style="font-size: 18px; font-weight: 700;">D</div>
-                                <div style="font-size: 11px; color: #999;">어깨선</div>
+                                <div style="font-size: 11px; color: #999;" data-i18n="personalAnalysis.lengthD">어깨선</div>
                             </button>
                             <button class="pa-desired-length-btn" data-length="C" onclick="paSelectDesiredLength('C')" style="padding: 12px 8px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: center;">
                                 <div style="font-size: 18px; font-weight: 700;">C</div>
-                                <div style="font-size: 11px; color: #999;">쇄골 아래</div>
+                                <div style="font-size: 11px; color: #999;" data-i18n="personalAnalysis.lengthC">쇄골 아래</div>
                             </button>
                             <button class="pa-desired-length-btn" data-length="B" onclick="paSelectDesiredLength('B')" style="padding: 12px 8px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: center;">
                                 <div style="font-size: 18px; font-weight: 700;">B</div>
-                                <div style="font-size: 11px; color: #999;">가슴</div>
+                                <div style="font-size: 11px; color: #999;" data-i18n="personalAnalysis.lengthB">가슴</div>
                             </button>
                             <button class="pa-desired-length-btn" data-length="A" onclick="paSelectDesiredLength('A')" style="padding: 12px 8px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; text-align: center;">
                                 <div style="font-size: 18px; font-weight: 700;">A</div>
-                                <div style="font-size: 11px; color: #999;">허리</div>
+                                <div style="font-size: 11px; color: #999;" data-i18n="personalAnalysis.lengthA">허리</div>
                             </button>
                         </div>
                     </div>
 
                     <div style="margin-bottom: 24px;">
-                        <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px;">앞머리 선호</label>
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px;" data-i18n="personalAnalysis.fringePreference">앞머리 선호</label>
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-                            <button class="pa-fringe-btn" data-fringe="forehead" onclick="paSelectFringe('forehead')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">이마선</button>
-                            <button class="pa-fringe-btn" data-fringe="eyebrow" onclick="paSelectFringe('eyebrow')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">눈썹선</button>
-                            <button class="pa-fringe-btn" data-fringe="eye" onclick="paSelectFringe('eye')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">눈선</button>
-                            <button class="pa-fringe-btn" data-fringe="cheekbone" onclick="paSelectFringe('cheekbone')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">광대선</button>
-                            <button class="pa-fringe-btn" data-fringe="lips" onclick="paSelectFringe('lips')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">입술선</button>
-                            <button class="pa-fringe-btn" data-fringe="none" onclick="paSelectFringe('none')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">없음</button>
+                            <button class="pa-fringe-btn" data-fringe="forehead" onclick="paSelectFringe('forehead')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.fringeForehead">이마선</button>
+                            <button class="pa-fringe-btn" data-fringe="eyebrow" onclick="paSelectFringe('eyebrow')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.fringeEyebrow">눈썹선</button>
+                            <button class="pa-fringe-btn" data-fringe="eye" onclick="paSelectFringe('eye')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.fringeEye">눈선</button>
+                            <button class="pa-fringe-btn" data-fringe="cheekbone" onclick="paSelectFringe('cheekbone')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.fringeCheekbone">광대선</button>
+                            <button class="pa-fringe-btn" data-fringe="lips" onclick="paSelectFringe('lips')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.fringeLips">입술선</button>
+                            <button class="pa-fringe-btn" data-fringe="none" onclick="paSelectFringe('none')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.fringeNone">없음</button>
                         </div>
                     </div>
                 </div>
@@ -341,16 +341,16 @@
                 <!-- ===== 남성용: 스타일 선택 ===== -->
                 <div id="pa-male-style" style="display: none;">
                     <p style="font-size: 12px; color: #666; margin: 0 0 16px 0; padding: 10px; background: #e3f2fd; border-radius: 8px; line-height: 1.5;">
-                        💈 <b>원하는 헤어 스타일</b>을 선택하면 체형과 톤에 맞는 <b>컬러</b>를 추천합니다.
+                        💈 <span data-i18n="personalAnalysis.maleStep2Desc">원하는 헤어 스타일을 선택하면 체형과 톤에 맞는 컬러를 추천합니다.</span>
                     </p>
 
                     <!-- WARM 톤 스타일 (둥근 형태) -->
                     <div style="margin-bottom: 16px;">
                         <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #FF8A65; margin-bottom: 6px;">
                             <span style="background: #FF8A65; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px;">WARM</span>
-                            <span id="pa-male-warm-label">둥근 형태 - 각지거나 사각형 얼굴 추천</span>
+                            <span id="pa-male-warm-label" data-i18n="personalAnalysis.maleWarmLabel">둥근 형태 - 각지거나 사각형 얼굴 추천</span>
                         </label>
-                        <p id="pa-male-warm-reason" style="font-size: 11px; color: #666; margin: 0 0 10px 0; line-height: 1.5; padding-left: 4px;">둥근 헤어 라인과 부드러운 곡선이 강한 턱 선을 중화시켜 인상을 훨씬 부드럽고 친근하게 만들어 줍니다.</p>
+                        <p id="pa-male-warm-reason" style="font-size: 11px; color: #666; margin: 0 0 10px 0; line-height: 1.5; padding-left: 4px;" data-i18n="personalAnalysis.maleWarmReason">둥근 헤어 라인과 부드러운 곡선이 강한 턱 선을 중화시켜 인상을 훨씬 부드럽고 친근하게 만들어 줍니다.</p>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
                             <button class="pa-male-style-btn" data-style="buzz" onclick="paSelectMaleStyle('buzz')" style="padding: 14px; border: 2px solid #FFCCBC; background: linear-gradient(135deg, #FFF3E0, #FFE0B2); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -377,9 +377,9 @@
                     <div style="margin-bottom: 16px;">
                         <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #78909C; margin-bottom: 6px;">
                             <span style="background: #78909C; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px;">NEUTRAL</span>
-                            <span id="pa-male-neutral-label">사각 형태 - 둥글거나 계란형 얼굴 추천</span>
+                            <span id="pa-male-neutral-label" data-i18n="personalAnalysis.maleNeutralLabel">사각 형태 - 둥글거나 계란형 얼굴 추천</span>
                         </label>
-                        <p id="pa-male-neutral-reason" style="font-size: 11px; color: #666; margin: 0 0 10px 0; line-height: 1.5; padding-left: 4px;">사각형의 실루엣이 둥근 얼굴에 각을 더해주어, 이목구비를 뚜렷하게 하고 남성적인 느낌을 줍니다.</p>
+                        <p id="pa-male-neutral-reason" style="font-size: 11px; color: #666; margin: 0 0 10px 0; line-height: 1.5; padding-left: 4px;" data-i18n="personalAnalysis.maleNeutralReason">사각형의 실루엣이 둥근 얼굴에 각을 더해주어, 이목구비를 뚜렷하게 하고 남성적인 느낌을 줍니다.</p>
                         <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
                             <button class="pa-male-style-btn" data-style="fringe-up" onclick="paSelectMaleStyle('fringe-up')" style="padding: 14px; border: 2px solid #CFD8DC; background: linear-gradient(135deg, #ECEFF1, #CFD8DC); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -397,9 +397,9 @@
                     <div style="margin-bottom: 20px;">
                         <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5C6BC0; margin-bottom: 6px;">
                             <span style="background: #5C6BC0; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px;">COOL</span>
-                            <span id="pa-male-cool-label">삼각 형태 - 길이가 짧거나 옆으로 넓은 얼굴 추천</span>
+                            <span id="pa-male-cool-label" data-i18n="personalAnalysis.maleCoolLabel">삼각 형태 - 길이가 짧거나 옆으로 넓은 얼굴 추천</span>
                         </label>
-                        <p id="pa-male-cool-reason" style="font-size: 11px; color: #666; margin: 0 0 10px 0; line-height: 1.5; padding-left: 4px;">위로 솟은 볼륨과 날렵한 각도가 시선을 위로 끌어올려, 얼굴을 더 길고 갸름해 보이게 하는 효과가 있습니다.</p>
+                        <p id="pa-male-cool-reason" style="font-size: 11px; color: #666; margin: 0 0 10px 0; line-height: 1.5; padding-left: 4px;" data-i18n="personalAnalysis.maleCoolReason">위로 솟은 볼륨과 날렵한 각도가 시선을 위로 끌어올려, 얼굴을 더 길고 갸름해 보이게 하는 효과가 있습니다.</p>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
                             <button class="pa-male-style-btn" data-style="side-fringe" onclick="paSelectMaleStyle('side-fringe')" style="padding: 14px; border: 2px solid #C5CAE9; background: linear-gradient(135deg, #E8EAF6, #C5CAE9); border-radius: 12px; text-align: left; cursor: pointer;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -491,21 +491,21 @@
 
             <!-- Step 3 -->
             <div id="pa-step-3" style="display: none; padding: 0 24px 20px;">
-                <div class="pa-step-title">Step 3: 피부 & 컬 선호</div>
+                <div class="pa-step-title" data-i18n="personalAnalysis.step3Title">Step 3: 피부 & 컬</div>
                 <p style="font-size: 12px; color: #666; margin: 0 0 16px 0; padding: 10px; background: #f8f9fa; border-radius: 8px; line-height: 1.5;">
-                    🎨 <b>피부 타입과 컬 선호도</b>는 AI 퍼스널컬러 분석과 비교하여 <b>톤 매칭 정확도</b>를 높이고, <b>헤어컬러 추천</b>에 반영됩니다.
+                    🎨 <span data-i18n="personalAnalysis.step3Desc">피부 타입과 컬 선호도는 AI 퍼스널컬러 분석과 비교하여 톤 매칭 정확도를 높이고, 헤어컬러 추천에 반영됩니다.</span>
                 </p>
 
                 <div style="margin-bottom: 24px;">
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">🎨 피부 타입</label>
-                    <p style="font-size: 11px; color: #666; margin: 0 0 12px 0; line-height: 1.5;">손목 안쪽 혈관 색상과 피부 특징을 확인하고 선택하세요</p>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;" data-i18n="personalAnalysis.skinType">🎨 피부 타입</label>
+                    <p style="font-size: 11px; color: #666; margin: 0 0 12px 0; line-height: 1.5;" data-i18n="personalAnalysis.skinTypeDesc">손목 안쪽 혈관 색상과 피부 특징을 확인하고 선택하세요</p>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <button class="pa-skin-btn" data-skin="TP" onclick="paSelectSkinType('TP')" style="padding: 14px 16px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; cursor: pointer; text-align: left;">
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                                 <span style="font-size: 16px; font-weight: 700; color: #5C6BC0;">TP</span>
-                                <span style="font-size: 14px; font-weight: 600; color: #333;">투명 피부 (쿨톤)</span>
+                                <span style="font-size: 14px; font-weight: 600; color: #333;" data-i18n="personalAnalysis.skinTPTitle">투명 피부 (쿨톤)</span>
                             </div>
-                            <div style="font-size: 12px; color: #555; line-height: 1.6; padding-left: 2px;">
+                            <div style="font-size: 12px; color: #555; line-height: 1.6; padding-left: 2px;" data-i18n-html="personalAnalysis.skinTPDesc">
                                 <div style="margin-bottom: 4px;">✓ <b>혈관 색상:</b> 파란색/보라색 계열</div>
                                 <div style="margin-bottom: 4px;">✓ <b>피부 특징:</b> 얇고 투명한 피부, 혈관이 잘 비침</div>
                                 <div>✓ <b>잘 어울리는 컬러:</b> 은색 액세서리, 핑크/블루 계열</div>
@@ -514,9 +514,9 @@
                         <button class="pa-skin-btn" data-skin="NP" onclick="paSelectSkinType('NP')" style="padding: 14px 16px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; cursor: pointer; text-align: left;">
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                                 <span style="font-size: 16px; font-weight: 700; color: #78909C;">NP</span>
-                                <span style="font-size: 14px; font-weight: 600; color: #333;">중성 피부 (뉴트럴)</span>
+                                <span style="font-size: 14px; font-weight: 600; color: #333;" data-i18n="personalAnalysis.skinNPTitle">중성 피부 (뉴트럴)</span>
                             </div>
-                            <div style="font-size: 12px; color: #555; line-height: 1.6; padding-left: 2px;">
+                            <div style="font-size: 12px; color: #555; line-height: 1.6; padding-left: 2px;" data-i18n-html="personalAnalysis.skinNPDesc">
                                 <div style="margin-bottom: 4px;">✓ <b>혈관 색상:</b> 초록색/파란색+초록색 혼합</div>
                                 <div style="margin-bottom: 4px;">✓ <b>피부 특징:</b> 올리브톤 또는 베이지, 쿨/웜 구분이 모호함</div>
                                 <div>✓ <b>잘 어울리는 컬러:</b> 금/은 모두 잘 어울림, 다양한 컬러 소화</div>
@@ -525,9 +525,9 @@
                         <button class="pa-skin-btn" data-skin="BP" onclick="paSelectSkinType('BP')" style="padding: 14px 16px; border: 2px solid #e0e0e0; background: #fff; border-radius: 12px; cursor: pointer; text-align: left;">
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                                 <span style="font-size: 16px; font-weight: 700; color: #FF8A65;">BP</span>
-                                <span style="font-size: 14px; font-weight: 600; color: #333;">베이스 피부 (웜톤)</span>
+                                <span style="font-size: 14px; font-weight: 600; color: #333;" data-i18n="personalAnalysis.skinBPTitle">베이스 피부 (웜톤)</span>
                             </div>
-                            <div style="font-size: 12px; color: #555; line-height: 1.6; padding-left: 2px;">
+                            <div style="font-size: 12px; color: #555; line-height: 1.6; padding-left: 2px;" data-i18n-html="personalAnalysis.skinBPDesc">
                                 <div style="margin-bottom: 4px;">✓ <b>혈관 색상:</b> 초록색/황록색 계열</div>
                                 <div style="margin-bottom: 4px;">✓ <b>피부 특징:</b> 노란기 있는 피부, 두꺼운 피부결</div>
                                 <div>✓ <b>잘 어울리는 컬러:</b> 금색 액세서리, 오렌지/브라운 계열</div>
@@ -537,23 +537,23 @@
                 </div>
 
                 <div style="margin-bottom: 24px;">
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px;">컬 선호</label>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 12px;" data-i18n="personalAnalysis.curlPreference">컬 선호</label>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-                        <button class="pa-curl-btn" data-curl="straight" onclick="paSelectCurl('straight')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">스트레이트</button>
-                        <button class="pa-curl-btn" data-curl="C" onclick="paSelectCurl('C')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">C컬</button>
-                        <button class="pa-curl-btn" data-curl="CS" onclick="paSelectCurl('CS')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">CS컬</button>
-                        <button class="pa-curl-btn" data-curl="S" onclick="paSelectCurl('S')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">S컬</button>
-                        <button class="pa-curl-btn" data-curl="SS" onclick="paSelectCurl('SS')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">SS컬</button>
-                        <button class="pa-curl-btn" data-curl="none" onclick="paSelectCurl('none')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;">선호 없음</button>
+                        <button class="pa-curl-btn" data-curl="straight" onclick="paSelectCurl('straight')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.curlStraight">스트레이트</button>
+                        <button class="pa-curl-btn" data-curl="C" onclick="paSelectCurl('C')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.curlC">C컬</button>
+                        <button class="pa-curl-btn" data-curl="CS" onclick="paSelectCurl('CS')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.curlCS">CS컬</button>
+                        <button class="pa-curl-btn" data-curl="S" onclick="paSelectCurl('S')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.curlS">S컬</button>
+                        <button class="pa-curl-btn" data-curl="SS" onclick="paSelectCurl('SS')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.curlSS">SS컬</button>
+                        <button class="pa-curl-btn" data-curl="none" onclick="paSelectCurl('none')" style="padding: 12px; border: 2px solid #e0e0e0; background: #fff; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.curlNone">선호 없음</button>
                     </div>
                 </div>
             </div>
 
             <!-- Navigation -->
             <div style="display: flex; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e0e0e0; background: #f9f9f9;">
-                <button id="pa-prev-btn" onclick="paPrevStep()" style="display: none; padding: 12px 20px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; cursor: pointer; font-weight: 600; color: #666;">← 이전</button>
-                <button id="pa-next-btn" class="pa-next-btn" onclick="paNextStep()">다음 →</button>
-                <button id="pa-submit-btn" onclick="paSubmitAnalysis()" style="display: none; margin-left: auto; padding: 12px 24px; background: #10b981; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">분석 완료 ✓</button>
+                <button id="pa-prev-btn" onclick="paPrevStep()" style="display: none; padding: 12px 20px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; cursor: pointer; font-weight: 600; color: #666;" data-i18n="personalAnalysis.prev">← 이전</button>
+                <button id="pa-next-btn" class="pa-next-btn" onclick="paNextStep()" data-i18n="personalAnalysis.next">다음 →</button>
+                <button id="pa-submit-btn" onclick="paSubmitAnalysis()" style="display: none; margin-left: auto; padding: 12px 24px; background: #10b981; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;" data-i18n="personalAnalysis.complete">분석 완료 ✓</button>
             </div>
         </div>
     </div>

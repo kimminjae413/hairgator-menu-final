@@ -542,7 +542,29 @@ const HAIRGATOR_I18N = {
         balancedGap: '균형 미간',
         wideGap: '넓은 미간',
         faceRatio: '얼굴 비율',
-        eyeDistance: '눈 사이 거리'
+        eyeDistance: '눈 사이 거리',
+        // 추가 키 (HTML용)
+        gender: '성별',
+        step1Desc: '성별과 키를 선택하면 체형에 맞는 스타일을 추천합니다.',
+        step2Desc: '희망 기장과 앞머리를 선택하면 체형과의 적합도를 분석합니다.',
+        step3Desc: '피부 타입과 컬 선호도는 AI 퍼스널컬러 분석과 비교하여 톤 매칭 정확도를 높이고, 헤어컬러 추천에 반영됩니다.',
+        maleStep2Desc: '원하는 헤어 스타일을 선택하면 체형과 톤에 맞는 컬러를 추천합니다.',
+        skinTypeDesc: '손목 안쪽 혈관 색상과 피부 특징을 확인하고 선택하세요',
+        skinTPTitle: '투명 피부 (쿨톤)',
+        skinTPDesc: '<div style="margin-bottom: 4px;">✓ <b>혈관 색상:</b> 파란색/보라색 계열</div><div style="margin-bottom: 4px;">✓ <b>피부 특징:</b> 얇고 투명한 피부, 혈관이 잘 비침</div><div>✓ <b>잘 어울리는 컬러:</b> 은색 액세서리, 핑크/블루 계열</div>',
+        skinNPTitle: '중성 피부 (뉴트럴)',
+        skinNPDesc: '<div style="margin-bottom: 4px;">✓ <b>혈관 색상:</b> 초록색/파란색+초록색 혼합</div><div style="margin-bottom: 4px;">✓ <b>피부 특징:</b> 올리브톤 또는 베이지, 쿨/웜 구분이 모호함</div><div>✓ <b>잘 어울리는 컬러:</b> 금/은 모두 잘 어울림, 다양한 컬러 소화</div>',
+        skinBPTitle: '베이스 피부 (웜톤)',
+        skinBPDesc: '<div style="margin-bottom: 4px;">✓ <b>혈관 색상:</b> 초록색/황록색 계열</div><div style="margin-bottom: 4px;">✓ <b>피부 특징:</b> 노란기 있는 피부, 두꺼운 피부결</div><div>✓ <b>잘 어울리는 컬러:</b> 금색 액세서리, 오렌지/브라운 계열</div>',
+        // 기장 옵션 (H~A)
+        lengthH: '숏',
+        lengthG: '턱선 위',
+        lengthF: '턱선 아래',
+        lengthE: '어깨 위',
+        lengthD: '어깨선',
+        lengthC: '쇄골 아래',
+        lengthB: '가슴',
+        lengthA: '허리'
       }
     }
   },
@@ -1060,7 +1082,29 @@ const HAIRGATOR_I18N = {
         balancedGap: 'Balanced Gap',
         wideGap: 'Wide Gap',
         faceRatio: 'Face Ratio',
-        eyeDistance: 'Eye Distance'
+        eyeDistance: 'Eye Distance',
+        // Additional keys (for HTML)
+        gender: 'Gender',
+        step1Desc: 'Select your gender and height to get style recommendations that fit your body type.',
+        step2Desc: 'Select your desired length and bangs to analyze body type compatibility.',
+        step3Desc: 'Skin type and curl preference will be compared with AI personal color analysis to improve tone matching accuracy and hair color recommendations.',
+        maleStep2Desc: 'Select your desired hairstyle to get color recommendations that match your body type and tone.',
+        skinTypeDesc: 'Check the color of veins inside your wrist and skin characteristics',
+        skinTPTitle: 'Transparent Skin (Cool Tone)',
+        skinTPDesc: '<div style="margin-bottom: 4px;">✓ <b>Vein Color:</b> Blue/Purple tones</div><div style="margin-bottom: 4px;">✓ <b>Skin Features:</b> Thin, transparent skin, visible veins</div><div>✓ <b>Best Colors:</b> Silver accessories, Pink/Blue tones</div>',
+        skinNPTitle: 'Neutral Skin',
+        skinNPDesc: '<div style="margin-bottom: 4px;">✓ <b>Vein Color:</b> Green/Blue-green mix</div><div style="margin-bottom: 4px;">✓ <b>Skin Features:</b> Olive or beige tone, ambiguous cool/warm</div><div>✓ <b>Best Colors:</b> Both gold and silver, versatile colors</div>',
+        skinBPTitle: 'Base Skin (Warm Tone)',
+        skinBPDesc: '<div style="margin-bottom: 4px;">✓ <b>Vein Color:</b> Green/Yellow-green tones</div><div style="margin-bottom: 4px;">✓ <b>Skin Features:</b> Yellow undertone, thicker skin</div><div>✓ <b>Best Colors:</b> Gold accessories, Orange/Brown tones</div>',
+        // Length options (H~A)
+        lengthH: 'Short',
+        lengthG: 'Above Chin',
+        lengthF: 'Below Chin',
+        lengthE: 'Above Shoulder',
+        lengthD: 'Shoulder',
+        lengthC: 'Below Collarbone',
+        lengthB: 'Chest',
+        lengthA: 'Waist'
       }
     }
   },
@@ -1578,7 +1622,29 @@ const HAIRGATOR_I18N = {
         balancedGap: 'バランスの取れた眉間',
         wideGap: '広い眉間',
         faceRatio: '顔の比率',
-        eyeDistance: '目の間隔'
+        eyeDistance: '目の間隔',
+        // 追加キー（HTML用）
+        gender: '性別',
+        step1Desc: '性別と身長を選択すると、体型に合ったスタイルをおすすめします。',
+        step2Desc: '希望の長さと前髪を選択すると、体型との相性を分析します。',
+        step3Desc: '肌タイプとカールの好みはAIパーソナルカラー分析と比較して、トーンマッチング精度を高め、ヘアカラー推薦に反映されます。',
+        maleStep2Desc: '希望のヘアスタイルを選択すると、体型とトーンに合ったカラーをおすすめします。',
+        skinTypeDesc: '手首の内側の血管の色と肌の特徴を確認して選択してください',
+        skinTPTitle: '透明肌（クールトーン）',
+        skinTPDesc: '<div style="margin-bottom: 4px;">✓ <b>血管の色：</b> 青/紫系</div><div style="margin-bottom: 4px;">✓ <b>肌の特徴：</b> 薄くて透明な肌、血管が見えやすい</div><div>✓ <b>似合う色：</b> シルバーアクセサリー、ピンク/ブルー系</div>',
+        skinNPTitle: '中性肌（ニュートラル）',
+        skinNPDesc: '<div style="margin-bottom: 4px;">✓ <b>血管の色：</b> 緑/青緑の混合</div><div style="margin-bottom: 4px;">✓ <b>肌の特徴：</b> オリーブまたはベージュトーン、クール/ウォームの区別があいまい</div><div>✓ <b>似合う色：</b> ゴールド/シルバー両方、様々な色</div>',
+        skinBPTitle: 'ベース肌（ウォームトーン）',
+        skinBPDesc: '<div style="margin-bottom: 4px;">✓ <b>血管の色：</b> 緑/黄緑系</div><div style="margin-bottom: 4px;">✓ <b>肌の特徴：</b> 黄みのある肌、厚みのある肌質</div><div>✓ <b>似合う色：</b> ゴールドアクセサリー、オレンジ/ブラウン系</div>',
+        // 長さオプション（H~A）
+        lengthH: 'ショート',
+        lengthG: 'あご上',
+        lengthF: 'あご下',
+        lengthE: '肩上',
+        lengthD: '肩',
+        lengthC: '鎖骨下',
+        lengthB: '胸',
+        lengthA: 'ウエスト'
       }
     }
   },
@@ -2096,7 +2162,29 @@ const HAIRGATOR_I18N = {
         balancedGap: '均衡眉间距',
         wideGap: '宽眉间距',
         faceRatio: '脸部比例',
-        eyeDistance: '眼间距'
+        eyeDistance: '眼间距',
+        // 附加键（HTML用）
+        gender: '性别',
+        step1Desc: '选择性别和身高，推荐适合您体型的发型。',
+        step2Desc: '选择期望长度和刘海，分析与体型的适合度。',
+        step3Desc: '皮肤类型和卷度偏好将与AI个人色彩分析进行对比，提高色调匹配准确度，并反映在发色推荐中。',
+        maleStep2Desc: '选择期望的发型，推荐适合您体型和色调的发色。',
+        skinTypeDesc: '请确认手腕内侧血管颜色和皮肤特征后选择',
+        skinTPTitle: '透明肌肤（冷色调）',
+        skinTPDesc: '<div style="margin-bottom: 4px;">✓ <b>血管颜色：</b> 蓝色/紫色系</div><div style="margin-bottom: 4px;">✓ <b>皮肤特征：</b> 薄而透明的皮肤，血管清晰可见</div><div>✓ <b>适合颜色：</b> 银色饰品，粉色/蓝色系</div>',
+        skinNPTitle: '中性肌肤',
+        skinNPDesc: '<div style="margin-bottom: 4px;">✓ <b>血管颜色：</b> 绿色/蓝绿混合</div><div style="margin-bottom: 4px;">✓ <b>皮肤特征：</b> 橄榄色或米色调，冷暖调区分模糊</div><div>✓ <b>适合颜色：</b> 金银皆可，可驾驭多种颜色</div>',
+        skinBPTitle: '底色肌肤（暖色调）',
+        skinBPDesc: '<div style="margin-bottom: 4px;">✓ <b>血管颜色：</b> 绿色/黄绿色系</div><div style="margin-bottom: 4px;">✓ <b>皮肤特征：</b> 带黄调的皮肤，肤质较厚</div><div>✓ <b>适合颜色：</b> 金色饰品，橙色/棕色系</div>',
+        // 长度选项（H~A）
+        lengthH: '短发',
+        lengthG: '下巴以上',
+        lengthF: '下巴以下',
+        lengthE: '肩膀以上',
+        lengthD: '肩膀',
+        lengthC: '锁骨以下',
+        lengthB: '胸部',
+        lengthA: '腰部'
       }
     }
   },
@@ -2614,7 +2702,29 @@ const HAIRGATOR_I18N = {
         balancedGap: 'Khoảng cách cân bằng',
         wideGap: 'Khoảng cách rộng',
         faceRatio: 'Tỷ lệ khuôn mặt',
-        eyeDistance: 'Khoảng cách mắt'
+        eyeDistance: 'Khoảng cách mắt',
+        // Khóa bổ sung (cho HTML)
+        gender: 'Giới tính',
+        step1Desc: 'Chọn giới tính và chiều cao để nhận gợi ý kiểu dáng phù hợp với vóc dáng của bạn.',
+        step2Desc: 'Chọn độ dài mong muốn và kiểu mái để phân tích độ phù hợp với vóc dáng.',
+        step3Desc: 'Loại da và sở thích xoăn sẽ được so sánh với phân tích màu cá nhân AI để nâng cao độ chính xác kết hợp tông màu và gợi ý màu tóc.',
+        maleStep2Desc: 'Chọn kiểu tóc mong muốn để nhận gợi ý màu phù hợp với vóc dáng và tông màu của bạn.',
+        skinTypeDesc: 'Kiểm tra màu mạch máu bên trong cổ tay và đặc điểm da',
+        skinTPTitle: 'Da trong suốt (Tông lạnh)',
+        skinTPDesc: '<div style="margin-bottom: 4px;">✓ <b>Màu mạch máu:</b> Tông xanh/tím</div><div style="margin-bottom: 4px;">✓ <b>Đặc điểm da:</b> Da mỏng, trong suốt, mạch máu dễ thấy</div><div>✓ <b>Màu phù hợp:</b> Phụ kiện bạc, tông Hồng/Xanh</div>',
+        skinNPTitle: 'Da trung tính',
+        skinNPDesc: '<div style="margin-bottom: 4px;">✓ <b>Màu mạch máu:</b> Xanh lá/Hỗn hợp xanh lá-xanh dương</div><div style="margin-bottom: 4px;">✓ <b>Đặc điểm da:</b> Tông olive hoặc be, khó phân biệt lạnh/ấm</div><div>✓ <b>Màu phù hợp:</b> Cả vàng và bạc, đa dạng màu sắc</div>',
+        skinBPTitle: 'Da nền (Tông ấm)',
+        skinBPDesc: '<div style="margin-bottom: 4px;">✓ <b>Màu mạch máu:</b> Tông xanh lá/vàng xanh</div><div style="margin-bottom: 4px;">✓ <b>Đặc điểm da:</b> Da có undertone vàng, kết cấu dày</div><div>✓ <b>Màu phù hợp:</b> Phụ kiện vàng, tông Cam/Nâu</div>',
+        // Tùy chọn độ dài (H~A)
+        lengthH: 'Ngắn',
+        lengthG: 'Trên cằm',
+        lengthF: 'Dưới cằm',
+        lengthE: 'Trên vai',
+        lengthD: 'Vai',
+        lengthC: 'Dưới xương quai xanh',
+        lengthB: 'Ngực',
+        lengthA: 'Eo'
       }
     }
   }
