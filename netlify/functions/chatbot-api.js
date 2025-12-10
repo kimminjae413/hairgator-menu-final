@@ -560,11 +560,11 @@ async function generateProfessionalResponse(payload, openaiKey, geminiKey, supab
 
   if (isSecurityQuery) {
     const securityResponse = {
-      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"\n• "헤어 길이 분류 시스템"',
-      english: 'I apologize, but that information is proprietary to the 2WAY CUT system.\n\nHow about these questions instead?\n• "Basic principles of layer cut"\n• "Recommended styles by face shape"',
-      japanese: '申し訳ございませんが、その情報は企業秘密です。',
-      chinese: '抱歉，该信息属于核心商业机密。',
-      vietnamese: 'Xin lỗi, thông tin đó là bí mật kinh doanh.'
+      korean: '죄송합니다. 해당 정보는 핵심 보안 사항입니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"\n• "헤어 길이 분류 시스템"',
+      english: 'I apologize, but that information is confidential.\n\nHow about these questions instead?\n• "Basic principles of layer cut"\n• "Recommended styles by face shape"',
+      japanese: '申し訳ございませんが、その情報は機密事項です。',
+      chinese: '抱歉，该信息属于核心保密事项。',
+      vietnamese: 'Xin lỗi, thông tin đó là thông tin bảo mật.'
     };
 
     return {
@@ -2351,8 +2351,8 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
   const isSecurityQuery = securityKeywords.some(keyword => user_query.toLowerCase().includes(keyword.toLowerCase()));
   if (isSecurityQuery) {
     const securityResponse = {
-      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"\n• "헤어 길이 분류 시스템"',
-      english: 'I apologize, but that information is proprietary to the 2WAY CUT system.\n\nHow about these questions instead?\n• "Basic principles of layer cut"\n• "Recommended styles by face shape"'
+      korean: '죄송합니다. 해당 정보는 핵심 보안 사항입니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"\n• "헤어 길이 분류 시스템"',
+      english: 'I apologize, but that information is confidential.\n\nHow about these questions instead?\n• "Basic principles of layer cut"\n• "Recommended styles by face shape"'
     };
     const msg = securityResponse[userLanguage] || securityResponse['korean'];
     return {
@@ -2977,11 +2977,11 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
 
   if (isSecurityQuery) {
     const securityMessages = {
-      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n이 내용은 정규 교육과정에서만 배울 수 있습니다.\n\n대신 이런 질문은 어떠세요?\n1. "레이어 컷의 기본 원리는?"\n2. "얼굴형별 추천 스타일"\n3. "헤어 길이 분류 시스템"',
-      english: 'I apologize, but that information is proprietary to the 2WAY CUT system.\n\nThis content is only available through official training.\n\nHow about these questions instead?\n1. "Basic principles of layer cut"\n2. "Recommended styles by face shape"\n3. "Hair length classification system"',
-      japanese: '申し訳ございませんが、その情報は2WAY CUTシステムの企業秘密です。\n\nこの内容は正規教育でのみ学べます。\n\n代わりにこのような質問はいかがですか？\n1. 「レイヤーカットの基本原理は？」\n2. 「顔型別おすすめスタイル」\n3. 「ヘアの長さ分類システム」',
-      chinese: '抱歉，该信息属于2WAY CUT系统的核心商业机密。\n\n这些内容只能通过正规培训学习。\n\n您可以问这些问题：\n1. "层次剪发的基本原理？"\n2. "各脸型推荐发型"\n3. "头发长度分类系统"',
-      vietnamese: 'Xin lỗi, thông tin đó là bí mật kinh doanh cốt lõi của hệ thống 2WAY CUT.\n\nNội dung này chỉ có trong khóa đào tạo chính thức.\n\nBạn có thể hỏi những câu này:\n1. "Nguyên tắc cơ bản của layer cut?"\n2. "Kiểu tóc phù hợp theo hình khuôn mặt"\n3. "Hệ thống phân loại độ dài tóc"'
+      korean: '죄송합니다. 해당 정보는 핵심 보안 사항입니다.\n\n대신 이런 질문은 어떠세요?\n1. "레이어 컷의 기본 원리는?"\n2. "얼굴형별 추천 스타일"\n3. "헤어 길이 분류 시스템"',
+      english: 'I apologize, but that information is confidential.\n\nHow about these questions instead?\n1. "Basic principles of layer cut"\n2. "Recommended styles by face shape"\n3. "Hair length classification system"',
+      japanese: '申し訳ございませんが、その情報は機密事項です。\n\n代わりにこのような質問はいかがですか？\n1. 「レイヤーカットの基本原理は？」\n2. 「顔型別おすすめスタイル」\n3. 「ヘアの長さ分類システム」',
+      chinese: '抱歉，该信息属于核心保密事项。\n\n您可以问这些问题：\n1. "层次剪发的基本原理？"\n2. "各脸型推荐发型"\n3. "头发长度分类系统"',
+      vietnamese: 'Xin lỗi, thông tin đó là thông tin bảo mật.\n\nBạn có thể hỏi những câu này:\n1. "Nguyên tắc cơ bản của layer cut?"\n2. "Kiểu tóc phù hợp theo hình khuôn mặt"\n3. "Hệ thống phân loại độ dài tóc"'
     };
     const msg = securityMessages[userLanguage] || securityMessages['korean'];
 
@@ -3116,11 +3116,11 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
 
   if (isSecurityQuery) {
     const securityMessages = {
-      korean: '죄송합니다. 해당 정보는 2WAY CUT 시스템의 핵심 영업 기밀입니다.\n\n이 내용은 정규 교육과정에서만 배울 수 있습니다.\n\n대신 이런 질문은 어떠세요?\n1. "레이어 컷의 기본 원리는?"\n2. "얼굴형별 추천 스타일"',
-      english: 'I apologize, but that information is proprietary to the 2WAY CUT system.\n\nThis content is only available through official training.\n\nHow about these questions instead?\n1. "Basic principles of layer cut"\n2. "Recommended styles by face shape"',
-      japanese: '申し訳ございませんが、その情報は2WAY CUTシステムの企業秘密です。\n\nこの内容は正規教育でのみ学べます。\n\n代わりにこのような質問はいかがですか？\n1. 「レイヤーカットの基本原理は？」\n2. 「顔型別おすすめスタイル」',
-      chinese: '抱歉，该信息属于2WAY CUT系统的核心商业机密。\n\n这些内容只能通过正规培训学习。\n\n您可以问这些问题：\n1. "层次剪发的基本原理？"\n2. "各脸型推荐发型"',
-      vietnamese: 'Xin lỗi, thông tin đó là bí mật kinh doanh cốt lõi của hệ thống 2WAY CUT.\n\nNội dung này chỉ có trong khóa đào tạo chính thức.\n\nBạn có thể hỏi những câu này:\n1. "Nguyên tắc cơ bản của layer cut?"\n2. "Kiểu tóc phù hợp theo hình khuôn mặt"'
+      korean: '죄송합니다. 해당 정보는 핵심 보안 사항입니다.\n\n대신 이런 질문은 어떠세요?\n1. "레이어 컷의 기본 원리는?"\n2. "얼굴형별 추천 스타일"',
+      english: 'I apologize, but that information is confidential.\n\nHow about these questions instead?\n1. "Basic principles of layer cut"\n2. "Recommended styles by face shape"',
+      japanese: '申し訳ございませんが、その情報は機密事項です。\n\n代わりにこのような質問はいかがですか？\n1. 「レイヤーカットの基本原理は？」\n2. 「顔型別おすすめスタイル」',
+      chinese: '抱歉，该信息属于核心保密事项。\n\n您可以问这些问题：\n1. "层次剪发的基本原理？"\n2. "各脸型推荐发型"',
+      vietnamese: 'Xin lỗi, thông tin đó là thông tin bảo mật.\n\nBạn có thể hỏi những câu này:\n1. "Nguyên tắc cơ bản của layer cut?"\n2. "Kiểu tóc phù hợp theo hình khuôn mặt"'
     };
     const msg = securityMessages[userLanguage] || securityMessages['korean'];
 
