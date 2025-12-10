@@ -6629,7 +6629,13 @@ JSON만: {"total_score":<0-100>,"curl_match":<true/false>,"reason":"<1문장>"}`
 
   // ⭐ RAG 기법 분석 결과 대기
   const requiredTechnique = await techniqueAnalysisPromise;
-  console.log(`\n🔬 필요 커팅 기법:`, requiredTechnique?.analysis_reason || '분석 실패');
+  console.log(`\n🔬 Vision 커팅 분석 결과:`);
+  console.log(`   complexity: ${requiredTechnique?.complexity || 'N/A'}`);
+  console.log(`   volume: ${requiredTechnique?.volume_position || 'N/A'}`);
+  console.log(`   needs_c_zone: ${requiredTechnique?.needs_c_zone}`);
+  console.log(`   needs_layer: ${requiredTechnique?.needs_layer}`);
+  console.log(`   section: ${requiredTechnique?.section_type || 'N/A'}`);
+  console.log(`   reason: ${requiredTechnique?.analysis_reason || '분석 실패'}`);
 
   // ⭐ 기법 매칭 점수 계산 및 최종 점수 계산
   const candidateStyleMap = new Map(candidateStyles.map(s => [s.styleId, s]));
