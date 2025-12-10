@@ -941,21 +941,21 @@
             const rules = [];
 
             if (undertone === 'Warm') {
-                rules.push('블루블랙, 애쉬블루 등 차가운 톤은 얼굴이 칙칙해 보일 수 있음');
+                rules.push(t('personalColor.avoidRules.coolToneWarning') || '블루블랙, 애쉬블루 등 차가운 톤은 얼굴이 칙칙해 보일 수 있음');
                 if (subtype === 'light' || subtype === 'bright') {
-                    rules.push('3레벨 이하 어두운 색상은 피부가 어두워 보일 수 있음');
+                    rules.push(t('personalColor.avoidRules.darkLevelWarning') || '3레벨 이하 어두운 색상은 피부가 어두워 보일 수 있음');
                 }
             } else if (undertone === 'Cool') {
-                rules.push('골드, 오렌지, 구리색 등 따뜻한 톤은 피부가 노랗게 보일 수 있음');
+                rules.push(t('personalColor.avoidRules.warmToneWarning') || '골드, 오렌지, 구리색 등 따뜻한 톤은 피부가 노랗게 보일 수 있음');
                 if (subtype === 'light') {
-                    rules.push('선명한 레드, 오렌지 계열은 피할 것');
+                    rules.push(t('personalColor.avoidRules.vividRedWarning') || '선명한 레드, 오렌지 계열은 피할 것');
                 }
             } else {
-                rules.push('너무 극단적인 웜/쿨 톤보다는 뉴트럴 계열 추천');
+                rules.push(t('personalColor.avoidRules.neutralRecommend') || '너무 극단적인 웜/쿨 톤보다는 뉴트럴 계열 추천');
             }
 
             if (subtype === 'muted' || subtype === 'soft') {
-                rules.push('채도가 너무 높은 비비드 컬러는 피부톤과 충돌할 수 있음');
+                rules.push(t('personalColor.avoidRules.vividColorWarning') || '채도가 너무 높은 비비드 컬러는 피부톤과 충돌할 수 있음');
             }
 
             return rules;

@@ -371,6 +371,16 @@ const HAIRGATOR_I18N = {
         }
       },
 
+      // 피해야 할 컬러 규칙
+      avoidRules: {
+        coolToneWarning: '블루블랙, 애쉬블루 등 차가운 톤은 얼굴이 칙칙해 보일 수 있음',
+        darkLevelWarning: '3레벨 이하 어두운 색상은 피부가 어두워 보일 수 있음',
+        warmToneWarning: '골드, 오렌지, 구리색 등 따뜻한 톤은 피부가 노랗게 보일 수 있음',
+        vividRedWarning: '선명한 레드, 오렌지 계열은 피할 것',
+        neutralRecommend: '너무 극단적인 웜/쿨 톤보다는 뉴트럴 계열 추천',
+        vividColorWarning: '채도가 너무 높은 비비드 컬러는 피부톤과 충돌할 수 있음'
+      },
+
       // 드래이핑 모드
       drapingMode: {
         title: '전문가 드래이핑 모드',
@@ -552,6 +562,8 @@ const HAIRGATOR_I18N = {
         title: '4계절 드래이핑 진단 가이드',
         principleTitle: '드래이핑 진단 원리',
         principleText: '드래이핑 진단은 피부 멜라닌의 언더톤(표피 멜라닌 vs 진피 헤모글로빈)에 따라 어울리는 색상의 명도/채도/색온도 범위가 달라진다는 원리를 기반으로 합니다.\n\n천 색이 피부 보색을 중화하면 피부가 맑아 보이고, 반대의 경우 피부가 칙칙하거나 붉어 보입니다.',
+        imageLabel: '이미지:',
+        attributeLabel: '속성:',
         spring: {
           title: '봄 웜톤 (Spring Warm)',
           image: '밝고 따뜻한 노란 기운',
@@ -1102,6 +1114,15 @@ const HAIRGATOR_I18N = {
         }
       },
 
+      avoidRules: {
+        coolToneWarning: 'Cool tones like blue-black or ash-blue may make your face look dull',
+        darkLevelWarning: 'Colors below level 3 may make your skin look darker',
+        warmToneWarning: 'Warm tones like gold, orange, or copper may make your skin look yellow',
+        vividRedWarning: 'Avoid vivid red or orange tones',
+        neutralRecommend: 'Neutral tones recommended rather than extreme warm/cool tones',
+        vividColorWarning: 'Highly saturated vivid colors may clash with your skin tone'
+      },
+
       drapingMode: {
         title: 'Expert Draping Mode',
         startCamera: 'Start Camera',
@@ -1276,6 +1297,8 @@ const HAIRGATOR_I18N = {
         title: '4-Season Draping Diagnosis Guide',
         principleTitle: 'Draping Diagnosis Principle',
         principleText: 'Draping diagnosis is based on the principle that the suitable brightness/saturation/color temperature range varies according to the undertone of skin melanin (epidermal melanin vs dermal hemoglobin).\n\nWhen the cloth color neutralizes the skin\'s complementary colors, the skin appears clearer; otherwise, the skin may look dull or reddish.',
+        imageLabel: 'Image:',
+        attributeLabel: 'Attribute:',
         spring: {
           title: 'Spring Warm',
           image: 'Bright and warm yellow undertone',
@@ -1811,6 +1834,15 @@ const HAIRGATOR_I18N = {
         }
       },
 
+      avoidRules: {
+        coolToneWarning: 'ブルーブラックやアッシュブルーなどのクールトーンは顔がくすんで見える可能性があります',
+        darkLevelWarning: 'レベル3以下の暗い色は肌が暗く見える可能性があります',
+        warmToneWarning: 'ゴールド、オレンジ、コッパーなどのウォームトーンは肌が黄色く見える可能性があります',
+        vividRedWarning: '鮮やかなレッドやオレンジ系は避けてください',
+        neutralRecommend: '極端なウォーム/クールトーンよりニュートラル系がおすすめ',
+        vividColorWarning: '彩度が高すぎるビビッドカラーは肌のトーンと衝突する可能性があります'
+      },
+
       drapingMode: {
         title: 'エキスパートドレーピングモード',
         startCamera: 'カメラ開始',
@@ -1983,6 +2015,8 @@ const HAIRGATOR_I18N = {
         title: '4シーズンドレーピング診断ガイド',
         principleTitle: 'ドレーピング診断の原理',
         principleText: 'ドレーピング診断は、肌のメラニンのアンダートーン（表皮メラニン vs 真皮ヘモグロビン）によって似合う色の明度/彩度/色温度の範囲が異なるという原理に基づいています。\n\n布の色が肌の補色を中和すると肌が透明に見え、逆の場合は肌がくすんだり赤く見えたりします。',
+        imageLabel: 'イメージ:',
+        attributeLabel: '属性:',
         spring: {
           title: 'スプリングウォーム',
           image: '明るく暖かい黄色のアンダートーン',
@@ -2521,6 +2555,15 @@ const HAIRGATOR_I18N = {
         }
       },
 
+      avoidRules: {
+        coolToneWarning: '蓝黑色、灰蓝色等冷色调可能让脸色显得暗沉',
+        darkLevelWarning: '3级以下的深色可能让肤色显暗',
+        warmToneWarning: '金色、橙色、铜色等暖色调可能让肤色显黄',
+        vividRedWarning: '避免鲜艳的红色或橙色系',
+        neutralRecommend: '推荐中性色调，避免过于极端的暖/冷色调',
+        vividColorWarning: '过于鲜艳的高饱和度颜色可能与肤色冲突'
+      },
+
       drapingMode: {
         title: '专家披巾测试模式',
         startCamera: '启动相机',
@@ -2693,6 +2736,8 @@ const HAIRGATOR_I18N = {
         title: '四季披巾测试诊断指南',
         principleTitle: '披巾测试诊断原理',
         principleText: '披巾测试诊断基于以下原理：根据皮肤黑色素的底色调（表皮黑色素 vs 真皮血红蛋白），适合的颜色明度/饱和度/色温范围会有所不同。\n\n当布料颜色中和皮肤的互补色时，皮肤会显得更加透亮；反之，皮肤可能看起来暗沉或泛红。',
+        imageLabel: '形象:',
+        attributeLabel: '属性:',
         spring: {
           title: '春季暖色型',
           image: '明亮温暖的黄色底色调',
@@ -3218,6 +3263,15 @@ const HAIRGATOR_I18N = {
         }
       },
 
+      avoidRules: {
+        coolToneWarning: 'Tông màu lạnh như xanh đen, xanh tro có thể làm khuôn mặt trông xỉn màu',
+        darkLevelWarning: 'Màu tối dưới mức 3 có thể làm da trông tối hơn',
+        warmToneWarning: 'Tông màu ấm như vàng, cam, đồng có thể làm da trông vàng hơn',
+        vividRedWarning: 'Tránh các tông đỏ hoặc cam rực rỡ',
+        neutralRecommend: 'Đề xuất tông trung tính thay vì tông ấm/lạnh quá cực đoan',
+        vividColorWarning: 'Màu rực rỡ độ bão hòa cao có thể xung đột với tông da'
+      },
+
       drapingMode: {
         title: 'Chế độ Draping chuyên gia',
         startCamera: 'Bắt đầu camera',
@@ -3390,6 +3444,8 @@ const HAIRGATOR_I18N = {
         title: 'Hướng dẫn chẩn đoán Draping 4 mùa',
         principleTitle: 'Nguyên lý chẩn đoán Draping',
         principleText: 'Chẩn đoán draping dựa trên nguyên lý rằng phạm vi độ sáng/độ bão hòa/nhiệt độ màu phù hợp thay đổi theo undertone của melanin da (melanin biểu bì vs hemoglobin hạ bì).\n\nKhi màu vải trung hòa màu bổ sung của da, da sẽ trông trong trẻo hơn; ngược lại, da có thể trông xỉn màu hoặc đỏ.',
+        imageLabel: 'Hình ảnh:',
+        attributeLabel: 'Thuộc tính:',
         spring: {
           title: 'Xuân Ấm',
           image: 'Undertone vàng ấm và sáng',
