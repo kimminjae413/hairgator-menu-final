@@ -3,6 +3,178 @@
 // AI 모드 + 전문가 드래이핑 모드 + Personal Analysis
 // ==========================================
 
+// ==========================================
+// FaceMesh 스타일 애니메이션 (캔버스 기반)
+// ==========================================
+let facemeshAnimationId = null;
+let facemeshStartTime = 0;
+
+function startFacemeshAnimation() {
+    const canvas = document.getElementById('facemesh-animation');
+    if (!canvas) return;
+
+    const container = canvas.parentElement;
+    canvas.width = container.offsetWidth;
+    canvas.height = container.offsetHeight;
+
+    const ctx = canvas.getContext('2d');
+    facemeshStartTime = Date.now();
+
+    function drawFrame() {
+        const elapsed = (Date.now() - facemeshStartTime) / 1000;
+        const w = canvas.width;
+        const h = canvas.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        const cx = w / 2;
+        const cy = h / 2;
+        const rx = Math.min(w, h) * 0.28;
+        const ry = rx * 1.3;
+
+        // 글로우 효과
+        const pulseAlpha = 0.15 + Math.sin(elapsed * 2) * 0.1;
+        ctx.save();
+        ctx.shadowColor = '#E91E63';
+        ctx.shadowBlur = 30 + Math.sin(elapsed * 2) * 10;
+
+        // 얼굴 윤곽 (타원)
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(233, 30, 99, ${0.6 + Math.sin(elapsed * 2) * 0.2})`;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 4]);
+        ctx.lineDashOffset = -elapsed * 20;
+        ctx.stroke();
+        ctx.restore();
+
+        // 메쉬 포인트들 (얼굴 랜드마크)
+        const points = [
+            // 이마
+            [cx, cy - ry * 0.85], [cx - rx * 0.5, cy - ry * 0.7], [cx + rx * 0.5, cy - ry * 0.7],
+            // 눈썹
+            [cx - rx * 0.6, cy - ry * 0.35], [cx - rx * 0.3, cy - ry * 0.4],
+            [cx + rx * 0.3, cy - ry * 0.4], [cx + rx * 0.6, cy - ry * 0.35],
+            // 눈
+            [cx - rx * 0.5, cy - ry * 0.2], [cx - rx * 0.25, cy - ry * 0.2],
+            [cx + rx * 0.25, cy - ry * 0.2], [cx + rx * 0.5, cy - ry * 0.2],
+            // 코
+            [cx, cy - ry * 0.1], [cx - rx * 0.15, cy + ry * 0.1], [cx + rx * 0.15, cy + ry * 0.1],
+            [cx, cy + ry * 0.15],
+            // 입
+            [cx - rx * 0.35, cy + ry * 0.35], [cx, cy + ry * 0.3], [cx + rx * 0.35, cy + ry * 0.35],
+            [cx - rx * 0.25, cy + ry * 0.45], [cx, cy + ry * 0.5], [cx + rx * 0.25, cy + ry * 0.45],
+            // 턱선
+            [cx - rx * 0.8, cy], [cx - rx * 0.7, cy + ry * 0.4],
+            [cx - rx * 0.4, cy + ry * 0.7], [cx, cy + ry * 0.85],
+            [cx + rx * 0.4, cy + ry * 0.7], [cx + rx * 0.7, cy + ry * 0.4], [cx + rx * 0.8, cy]
+        ];
+
+        // 연결선
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(233, 30, 99, ${0.2 + Math.sin(elapsed * 1.5) * 0.1})`;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([]);
+
+        // 삼각형 메쉬 연결
+        const connections = [
+            [0, 1], [0, 2], [1, 3], [2, 6], [3, 4], [5, 6],
+            [4, 7], [4, 8], [5, 9], [5, 10],
+            [8, 11], [9, 11], [11, 12], [11, 13], [12, 14], [13, 14],
+            [14, 16], [15, 16], [17, 16], [15, 18], [17, 20], [18, 19], [19, 20],
+            [1, 21], [21, 22], [22, 23], [23, 24], [24, 25], [25, 26], [26, 2]
+        ];
+
+        connections.forEach(([a, b]) => {
+            if (points[a] && points[b]) {
+                ctx.moveTo(points[a][0], points[a][1]);
+                ctx.lineTo(points[b][0], points[b][1]);
+            }
+        });
+        ctx.stroke();
+
+        // 포인트들 그리기
+        points.forEach((point, i) => {
+            const pulseOffset = Math.sin(elapsed * 3 + i * 0.3) * 0.5;
+            const radius = 3 + pulseOffset;
+            const alpha = 0.5 + Math.sin(elapsed * 2 + i * 0.2) * 0.3;
+
+            ctx.beginPath();
+            ctx.arc(point[0], point[1], radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(233, 30, 99, ${alpha})`;
+            ctx.fill();
+        });
+
+        // 스캔 라인
+        const scanY = cy - ry + ((elapsed * 0.4) % 1) * ry * 2;
+        const scanAlpha = Math.sin(((elapsed * 0.4) % 1) * Math.PI);
+
+        ctx.beginPath();
+        ctx.moveTo(cx - rx * 0.9, scanY);
+        ctx.lineTo(cx + rx * 0.9, scanY);
+
+        const gradient = ctx.createLinearGradient(cx - rx, scanY, cx + rx, scanY);
+        gradient.addColorStop(0, 'rgba(233, 30, 99, 0)');
+        gradient.addColorStop(0.2, `rgba(233, 30, 99, ${scanAlpha * 0.8})`);
+        gradient.addColorStop(0.5, `rgba(233, 30, 99, ${scanAlpha})`);
+        gradient.addColorStop(0.8, `rgba(233, 30, 99, ${scanAlpha * 0.8})`);
+        gradient.addColorStop(1, 'rgba(233, 30, 99, 0)');
+
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#E91E63';
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // 코너 마커
+        const cornerSize = 15;
+        const corners = [
+            [cx - rx - 10, cy - ry - 10, 1, 1],
+            [cx + rx + 10, cy - ry - 10, -1, 1],
+            [cx - rx - 10, cy + ry + 10, 1, -1],
+            [cx + rx + 10, cy + ry + 10, -1, -1]
+        ];
+
+        corners.forEach(([x, y, dx, dy], i) => {
+            const alpha = 0.5 + Math.sin(elapsed * 3 + i * 0.5) * 0.3;
+            ctx.strokeStyle = `rgba(233, 30, 99, ${alpha})`;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x, y + dy * cornerSize);
+            ctx.lineTo(x, y);
+            ctx.lineTo(x + dx * cornerSize, y);
+            ctx.stroke();
+        });
+
+        facemeshAnimationId = requestAnimationFrame(drawFrame);
+    }
+
+    drawFrame();
+}
+
+function stopFacemeshAnimation() {
+    if (facemeshAnimationId) {
+        cancelAnimationFrame(facemeshAnimationId);
+        facemeshAnimationId = null;
+    }
+    const canvas = document.getElementById('facemesh-animation');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
+// 페이지 로드 시 애니메이션 시작
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        const faceGuide = document.getElementById('ai-face-guide');
+        if (faceGuide && faceGuide.style.display !== 'none') {
+            startFacemeshAnimation();
+        }
+    }, 500);
+});
+
         // 현재 언어 가져오기 (부모 창 우선, 그 다음 localStorage)
         function getCurrentLanguage() {
             try {
