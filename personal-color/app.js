@@ -5652,7 +5652,7 @@ function generateIntegratedAnalysis(mediaPipeData) {
     faceGeometry: mediaPipeData?.faceGeometry || null
   };
 
-  console.log('🔗 ${t('personalColor.personalAnalysis.integratedAnalysis') || 'Integrated Analysis'} 결과:', integrated);
+  console.log('🔗 Integrated Analysis result:', integrated);
   return integrated;
 }
 
