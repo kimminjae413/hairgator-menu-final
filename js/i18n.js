@@ -251,6 +251,7 @@ const HAIRGATOR_I18N = {
         // 분석 단계
         steps: {
           title: 'AI 분석 진행상황',
+          titleShort: 'AI 분석 진행상황',
           step1: '얼굴 인식',
           step1Desc: 'MediaPipe로 얼굴 영역을 감지합니다',
           step2: '피부톤 분석',
@@ -258,8 +259,12 @@ const HAIRGATOR_I18N = {
           step3: 'Delta E 계산',
           step3Desc: '색차 측정 및 정확도 산출',
           step4: '결과 생성',
-          step4Desc: '전문가 노하우 기반 최종 진단'
+          step4Desc: '전문가 노하우 기반 최종 진단',
+          titleCompact: 'AI 분석 진행상황'
         },
+        takePhoto: '사진을 촬영해주세요',
+        takePhotoDesc: '왼쪽에서 카메라를 시작하고 얼굴을 촬영하면 AI가 분석합니다',
+        customerSummary: '고객 분석 요약',
 
         // 결과
         result: {
@@ -841,8 +846,12 @@ const HAIRGATOR_I18N = {
           step3: 'Delta E Calculation',
           step3Desc: 'Color difference measurement',
           step4: 'Result Generation',
-          step4Desc: 'Expert-based final diagnosis'
+          step4Desc: 'Expert-based final diagnosis',
+          titleCompact: 'AI Analysis Progress'
         },
+        takePhoto: 'Take a Photo',
+        takePhotoDesc: 'Start the camera on the left and capture your face for AI analysis',
+        customerSummary: 'Customer Analysis Summary',
 
         result: {
           title: '🎨 Personal Color Analysis Result',
@@ -1973,8 +1982,12 @@ const HAIRGATOR_I18N = {
           step3: 'Delta E计算',
           step3Desc: '色差测量和准确度计算',
           step4: '结果生成',
-          step4Desc: '基于专家经验的最终诊断'
+          step4Desc: '基于专家经验的最终诊断',
+          titleCompact: 'AI分析进度'
         },
+        takePhoto: '请拍照',
+        takePhotoDesc: '在左侧启动相机，拍摄面部后AI将进行分析',
+        customerSummary: '客户分析摘要',
 
         result: {
           title: '🎨 个人色彩分析结果',

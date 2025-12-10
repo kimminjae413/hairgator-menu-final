@@ -634,23 +634,23 @@
 
                             <!-- AI 분석 진행상황 (축소 버전) -->
                             <div class="analysis-steps-compact" style="margin-top: 15px; padding: 12px; background: #f8f9fa; border-radius: 10px; border: 1px solid #e0e0e0;">
-                                <div style="font-size: 13px; color: #666; margin-bottom: 10px;">📊 AI 분석 진행상황</div>
+                                <div style="font-size: 13px; color: #666; margin-bottom: 10px;" data-i18n="personalColor.aiMode.steps.titleCompact">📊 AI Analysis Progress</div>
                                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
                                     <div class="step-compact" id="ai-step-1" style="text-align: center; padding: 8px; background: #ffffff; border-radius: 8px; border: 1px solid #e0e0e0;">
                                         <div style="width: 24px; height: 24px; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); border-radius: 50%; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff;">1</div>
-                                        <div style="font-size: 10px; color: #666;">얼굴 인식</div>
+                                        <div style="font-size: 10px; color: #666;" data-i18n="personalColor.aiMode.steps.step1">Face Detection</div>
                                     </div>
                                     <div class="step-compact" id="ai-step-2" style="text-align: center; padding: 8px; background: #ffffff; border-radius: 8px; border: 1px solid #e0e0e0;">
                                         <div style="width: 24px; height: 24px; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); border-radius: 50%; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff;">2</div>
-                                        <div style="font-size: 10px; color: #666;">피부톤</div>
+                                        <div style="font-size: 10px; color: #666;" data-i18n="personalColor.aiMode.steps.step2">Skin Tone</div>
                                     </div>
                                     <div class="step-compact" id="ai-step-3" style="text-align: center; padding: 8px; background: #ffffff; border-radius: 8px; border: 1px solid #e0e0e0;">
                                         <div style="width: 24px; height: 24px; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); border-radius: 50%; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff;">3</div>
-                                        <div style="font-size: 10px; color: #666;">색차 계산</div>
+                                        <div style="font-size: 10px; color: #666;" data-i18n="personalColor.aiMode.steps.step3">Delta E</div>
                                     </div>
                                     <div class="step-compact" id="ai-step-4" style="text-align: center; padding: 8px; background: #ffffff; border-radius: 8px; border: 1px solid #e0e0e0;">
                                         <div style="width: 24px; height: 24px; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); border-radius: 50%; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff;">4</div>
-                                        <div style="font-size: 10px; color: #666;">결과 생성</div>
+                                        <div style="font-size: 10px; color: #666;" data-i18n="personalColor.aiMode.steps.step4">Result</div>
                                     </div>
                                 </div>
                             </div>
@@ -658,7 +658,7 @@
                             <!-- ===== 고객 정보 요약 (수동입력 + AI 분석) ===== -->
                             <div id="customer-summary-panel" class="pa-summary-panel" style="display: none; margin-top: 15px; padding: 15px; border-radius: 12px;">
                                 <div class="pa-summary-title" style="font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-                                    <span>📋</span> 고객 분석 요약
+                                    <span>📋</span> <span data-i18n="personalColor.aiMode.customerSummary">Customer Analysis Summary</span>
                                 </div>
                                 <div id="customer-summary-content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
                                     <!-- JS에서 동적 생성 -->
@@ -676,7 +676,7 @@
                         <!-- 분석 전 안내 -->
                         <div id="analysis-panel-guide" style="text-align: center; padding: 40px 20px;">
                             <div style="font-size: 48px; margin-bottom: 15px;">📸</div>
-                            <h3 style="color: #333; margin-bottom: 10px;">사진을 촬영해주세요</h3>
+                            <h3 style="color: #333; margin-bottom: 10px;" data-i18n="personalColor.aiMode.takePhoto">Take a Photo</h3>
                             <p style="color: #666; font-size: 14px; line-height: 1.6;">
                                 왼쪽에서 카메라를 시작하고<br>
                                 얼굴을 촬영하면 AI가 분석합니다
