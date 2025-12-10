@@ -6417,115 +6417,125 @@ JSON만 출력:
 }
 
 /**
- * 레시피 메타데이터와 필요한 커팅 기법을 매칭하여 점수 계산
- * 더 정밀한 분석: lifting_angle, section 다양성, zone 분포 활용
+ * 레시피 텍스트(caption/textRecipe)와 필요한 커팅 기법을 매칭하여 점수 계산
+ * ⭐ diagrams 메타데이터 대신 실제 레시피 텍스트 분석으로 정확도 향상
  */
 function calculateTechniqueMatchScore(requiredTechnique, recipe) {
   if (!requiredTechnique || !recipe) return 0;
   let score = 0;
-  const diagrams = recipe.diagrams || [];
   const styleId = recipe.styleId || '';
 
-  console.log(`  [\x1b[36m${styleId}\x1b[0m] 기법 매칭:`);
+  // ⭐ 레시피 텍스트 우선 사용 (textRecipe > captionText > caption)
+  const recipeText = (recipe.textRecipe || recipe.captionText || recipe.caption || '').toLowerCase();
 
-  // 1. C존(Internal) 필요 여부 체크 (25점)
-  const internalZones = diagrams.filter(d => {
-    const zone = d.zone?.toLowerCase() || '';
-    return zone.includes('crown') || zone.includes('top') || zone === 'c';
-  });
-  const hasCZone = internalZones.length > 0;
-  const cZoneRatio = diagrams.length > 0 ? internalZones.length / diagrams.length : 0;
-
-  if (requiredTechnique.needs_c_zone && hasCZone) {
-    const cZoneScore = Math.round(15 + cZoneRatio * 10);
-    score += cZoneScore;
-    console.log(`    C존 ${internalZones.length}/${diagrams.length}: +${cZoneScore}`);
-  } else if (!requiredTechnique.needs_c_zone && !hasCZone) {
-    score += 20;
-    console.log(`    External only: +20`);
-  } else if (requiredTechnique.needs_c_zone && !hasCZone) {
-    score -= 15;
-    console.log(`    C존 없음: -15`);
+  if (!recipeText) {
+    console.log(`  [\x1b[36m${styleId}\x1b[0m] 레시피 텍스트 없음`);
+    return 0;
   }
 
-  // 2. 리프팅 각도 분석 (25점)
-  const liftingAngles = diagrams.map(d => d.lifting_angle || 0).filter(a => a > 0);
-  const uniqueAngles = [...new Set(liftingAngles)];
-  const angleRange = liftingAngles.length > 0 ? Math.max(...liftingAngles) - Math.min(...liftingAngles) : 0;
-  const avgAngle = liftingAngles.length > 0 ? liftingAngles.reduce((a, b) => a + b, 0) / liftingAngles.length : 0;
+  console.log(`  [\x1b[36m${styleId}\x1b[0m] 캡션 기반 매칭:`);
+
+  // 1. C존 작업 여부 체크 (30점) - 가장 중요
+  const hasCZoneText = recipeText.includes('c존') || recipeText.includes('c zone') ||
+                       recipeText.includes('오버존') || recipeText.includes('over zone') ||
+                       recipeText.includes('internal') || recipeText.includes('인터널');
+  const hasABZoneText = recipeText.includes('a존') || recipeText.includes('b존') ||
+                        recipeText.includes('언더존') || recipeText.includes('external');
+
+  if (requiredTechnique.needs_c_zone) {
+    if (hasCZoneText) {
+      score += 30;
+      console.log(`    C존 언급 있음: +30`);
+    } else {
+      score -= 20;
+      console.log(`    C존 필요하나 없음: -20`);
+    }
+  } else {
+    if (!hasCZoneText && hasABZoneText) {
+      score += 25;
+      console.log(`    External only: +25`);
+    } else if (!hasCZoneText) {
+      score += 15;
+      console.log(`    단순 레시피: +15`);
+    }
+  }
+
+  // 2. 섹션 타입 매칭 (25점)
+  const hasPieSection = recipeText.includes('파이섹션') || recipeText.includes('pie') || recipeText.includes('피봇');
+  const hasDiagonal = recipeText.includes('대각') || recipeText.includes('diagonal') || recipeText.includes('dbs') || recipeText.includes('dfs');
+  const hasHorizontal = recipeText.includes('수평') || recipeText.includes('horizontal') || recipeText.includes('hs ');
+  const hasVertical = recipeText.includes('수직') || recipeText.includes('vertical') || recipeText.includes('vs ');
+
+  let sectionScore = 0;
+  if (requiredTechnique.section_type === 'diagonal' && (hasPieSection || hasDiagonal)) {
+    sectionScore = 25;
+  } else if (requiredTechnique.section_type === 'horizontal' && hasHorizontal) {
+    sectionScore = 25;
+  } else if (requiredTechnique.section_type === 'vertical' && hasVertical) {
+    sectionScore = 25;
+  } else if (requiredTechnique.section_type === 'mixed') {
+    const sectionTypes = [hasPieSection, hasDiagonal, hasHorizontal, hasVertical].filter(Boolean).length;
+    sectionScore = Math.min(25, sectionTypes * 10);
+  }
+
+  if (sectionScore > 0) {
+    score += sectionScore;
+    console.log(`    섹션 일치: +${sectionScore}`);
+  }
+
+  // 3. 각도 다양성/복잡도 분석 (20점)
+  const angleMatches = recipeText.match(/(\d+)\s*도/g) || [];
+  const angles = angleMatches.map(m => parseInt(m)).filter(a => a >= 0 && a <= 180);
+  const uniqueAngles = [...new Set(angles)];
+  const hasHighAngle = angles.some(a => a >= 75);
+  const hasLowAngle = angles.some(a => a <= 45);
+  const angleRange = angles.length > 0 ? Math.max(...angles) - Math.min(...angles) : 0;
 
   let recipeComplexity = 'simple';
-  if (uniqueAngles.length >= 3 || (diagrams.length >= 4 && angleRange >= 45)) {
+  if (uniqueAngles.length >= 3 && angleRange >= 30) {
     recipeComplexity = 'complex';
-  } else if (uniqueAngles.length >= 2 || diagrams.length >= 3) {
+  } else if (uniqueAngles.length >= 2 || angleRange >= 20) {
     recipeComplexity = 'medium';
   }
 
   if (requiredTechnique.complexity === recipeComplexity) {
-    score += 25;
-    console.log(`    복잡도 일치(${recipeComplexity}): +25`);
-  } else if (
-    (requiredTechnique.complexity === 'medium' && recipeComplexity === 'complex') ||
-    (requiredTechnique.complexity === 'complex' && recipeComplexity === 'medium')
-  ) {
-    score += 12;
-    console.log(`    복잡도 유사: +12`);
-  } else {
-    console.log(`    복잡도 불일치(필요:${requiredTechnique.complexity}/실제:${recipeComplexity})`);
+    score += 20;
+    console.log(`    복잡도 일치(${recipeComplexity}, 각도:${uniqueAngles.join(',')}): +20`);
+  } else if (Math.abs(['simple', 'medium', 'complex'].indexOf(requiredTechnique.complexity) -
+                      ['simple', 'medium', 'complex'].indexOf(recipeComplexity)) === 1) {
+    score += 10;
+    console.log(`    복잡도 유사: +10`);
   }
 
-  // 3. 섹션 다양성 분석 (20점)
-  const sections = diagrams.map(d => d.section?.toUpperCase() || '').filter(Boolean);
-  const uniqueSections = [...new Set(sections)];
-  const hasHS = sections.some(s => s.includes('HS'));
-  const hasVS = sections.some(s => s.includes('VS'));
-  const hasDiag = sections.some(s => s.includes('DBS') || s.includes('DFS') || s.includes('PIE') || s.includes('RS'));
+  // 4. 레이어 작업 (15점)
+  const hasLayerText = recipeText.includes('레이어') || recipeText.includes('layer') ||
+                       hasHighAngle || recipeText.includes('볼륨');
 
-  let sectionScore = 0;
-  if (requiredTechnique.section_type === 'horizontal' && hasHS) sectionScore = 20;
-  else if (requiredTechnique.section_type === 'vertical' && hasVS) sectionScore = 20;
-  else if (requiredTechnique.section_type === 'diagonal' && hasDiag) sectionScore = 20;
-  else if (requiredTechnique.section_type === 'mixed') sectionScore = Math.min(20, uniqueSections.length * 7);
-
-  if (sectionScore > 0) {
-    score += sectionScore;
-    console.log(`    섹션(${uniqueSections.join(',')}): +${sectionScore}`);
-  }
-
-  // 4. 볼륨 위치 매칭 (15점)
-  const zones = diagrams.map(d => d.zone?.toLowerCase() || '').filter(Boolean);
-  const topZ = zones.filter(z => z.includes('crown') || z.includes('top')).length;
-  const midZ = zones.filter(z => z.includes('side') || z.includes('fringe')).length;
-  const botZ = zones.filter(z => z.includes('back') || z.includes('nape') || z.includes('perimeter')).length;
-
-  let dominant = 'bottom';
-  if (topZ > midZ && topZ > botZ) dominant = 'top';
-  else if (midZ > topZ && midZ > botZ) dominant = 'middle';
-
-  if (requiredTechnique.volume_position === dominant) {
+  if (requiredTechnique.needs_layer && hasLayerText) {
     score += 15;
-    console.log(`    볼륨(${dominant}): +15`);
+    console.log(`    레이어 작업: +15`);
+  } else if (!requiredTechnique.needs_layer && !hasLayerText) {
+    score += 10;
+    console.log(`    미니멀 레이어: +10`);
+  }
+
+  // 5. 볼륨 위치 (10점)
+  const hasTopVolume = recipeText.includes('크라운') || recipeText.includes('crown') ||
+                       recipeText.includes('정수리') || recipeText.includes('탑');
+  const hasMidVolume = recipeText.includes('사이드') || recipeText.includes('측면');
+
+  if (requiredTechnique.volume_position === 'top' && hasTopVolume) {
+    score += 10;
+    console.log(`    볼륨 top: +10`);
+  } else if (requiredTechnique.volume_position === 'middle' && hasMidVolume) {
+    score += 10;
+    console.log(`    볼륨 middle: +10`);
   } else if (requiredTechnique.volume_position === 'middle') {
-    score += 7;
-    console.log(`    볼륨 유사: +7`);
-  }
-
-  // 5. 레이어 깊이 매칭 (15점)
-  const highLift = liftingAngles.filter(a => a >= 90).length;
-  const hasStrongLayer = highLift >= 2 || avgAngle >= 75;
-
-  if (requiredTechnique.needs_layer && hasStrongLayer) {
-    score += 15;
-    console.log(`    레이어(avg ${Math.round(avgAngle)}°): +15`);
-  } else if (!requiredTechnique.needs_layer && !hasStrongLayer) {
-    score += 12;
-    console.log(`    미니멀 레이어: +12`);
-  } else if (requiredTechnique.needs_layer && liftingAngles.length > 0) {
     score += 5;
-    console.log(`    약한 레이어: +5`);
+    console.log(`    볼륨 유사: +5`);
   }
 
-  console.log(`    → 기법 총점: ${Math.max(0, score)}`);
+  console.log(`    → 캡션 기법 총점: ${Math.max(0, score)}`);
   return Math.max(0, score);
 }
 
