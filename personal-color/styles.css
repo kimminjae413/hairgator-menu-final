@@ -715,11 +715,11 @@ body.male-theme .nav-btn.guide-btn:hover {
     justify-content: center;
     color: var(--primary-pink);
     font-weight: 600;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.1);
     text-align: center;
     padding: 1rem;
     font-size: 0.9rem;
-    z-index: 5;
+    z-index: 15;
     overflow: visible;
 }
 
@@ -731,6 +731,27 @@ body.male-theme .nav-btn.guide-btn:hover {
     width: 100%;
     height: 100%;
     pointer-events: none;
+    overflow: visible;
+}
+
+/* SVG 요소들 직접 스타일링 */
+.face-guide .facemesh-svg ellipse {
+    fill: none;
+    stroke: #E91E63;
+    stroke-width: 2;
+    stroke-dasharray: 8 4;
+    animation: faceDash 2s linear infinite;
+}
+
+.face-guide .facemesh-svg circle {
+    fill: #E91E63;
+    opacity: 0.8;
+}
+
+.face-guide .facemesh-svg line {
+    stroke: #E91E63;
+    stroke-width: 1;
+    opacity: 0.4;
 }
 
 /* 얼굴 윤곽 경로 */
