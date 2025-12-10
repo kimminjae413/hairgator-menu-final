@@ -3478,10 +3478,21 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
     }
   }
 
-  // ⭐ 매칭 개수 기준 정렬 후 최대 3개 반환
+  // ⭐ 매칭 개수 기준 정렬 후 최대 3개 반환 (중복 term 제거)
   if (matchedIndexes.length > 0) {
     matchedIndexes.sort((a, b) => b.matchCount - a.matchCount);
-    const results = matchedIndexes.slice(0, 3);
+
+    // ⭐ 같은 term 중복 제거 (첫 번째만 유지)
+    const seenTerms = new Set();
+    const uniqueResults = [];
+    for (const item of matchedIndexes) {
+      if (!seenTerms.has(item.term)) {
+        seenTerms.add(item.term);
+        uniqueResults.push(item);
+      }
+    }
+
+    const results = uniqueResults.slice(0, 3);
     console.log(`📚 이론 이미지 ${results.length}개 매칭:`);
     results.forEach(r => {
       console.log(`   - ${r.term}: [${r.matchedKeywords.join(', ')}]`);
