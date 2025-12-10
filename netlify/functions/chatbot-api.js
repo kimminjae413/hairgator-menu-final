@@ -5869,7 +5869,7 @@ ${recipeTexts}
 
 ## ✂️ 커팅 레시피
 
-[External] (Under Zone)
+[External] (Under Zone / A,B Zone)
 
 ### 📍 STEP 1. 아웃라인 설정
 
@@ -5891,7 +5891,7 @@ ${recipeTexts}
 
 ---
 
-[Internal] (Over Zone)
+[Internal] (Over Zone / C Zone)
 
 ### 📍 STEP 3. 인터널 레이어 (볼륨층)
 
@@ -5932,7 +5932,7 @@ ${recipeTexts}
 ---
 
 ### ⚠️ 필수 규칙:
-1. 반드시 [External] (Under Zone)과 [Internal] (Over Zone)으로 구분
+1. 반드시 [External] (Under Zone / A,B Zone)과 [Internal] (Over Zone / C Zone)으로 구분
 2. 각 STEP마다 "---" 구분선 사용
 3. 이모지(📐🔄✂️💡)로 항목 구분
 4. 모든 전문용어 뒤에 괄호()로 쉬운 설명
@@ -6510,43 +6510,43 @@ function parseFirestoreDocument(doc) {
 
 // ==================== 레시피 형식 통일 ====================
 /**
- * 레시피 텍스트를 [External] (Under Zone) / [Internal] (Over Zone) 형식으로 통일
+ * 레시피 텍스트를 [External] (Under Zone / A,B Zone) / [Internal] (Over Zone / C Zone) 형식으로 통일
  */
 function normalizeRecipeFormat(recipe) {
   if (!recipe) return recipe;
 
   let normalized = recipe;
 
-  // 다양한 형식을 [External] (Under Zone)으로 통일
+  // 다양한 형식을 [External] (Under Zone / A,B Zone)으로 통일
   normalized = normalized
-    .replace(/\[엑스터널\s*부분\]/gi, '[External] (Under Zone)')
-    .replace(/\[익스터널\s*부분\]/gi, '[External] (Under Zone)')
-    .replace(/\[External\s*부분\]/gi, '[External] (Under Zone)')
-    .replace(/\[외부\s*부분\]/gi, '[External] (Under Zone)')
-    .replace(/\[Under\s*Zone\]/gi, '[External] (Under Zone)')
-    .replace(/\[아웃라인\s*설정\]/gi, '[External] (Under Zone)')
-    .replace(/\*\*\[엑스터널\s*부분\]\*\*/gi, '**[External] (Under Zone)**')
-    .replace(/\*\*\[익스터널\s*부분\]\*\*/gi, '**[External] (Under Zone)**')
-    .replace(/\*\*엑스터널\s*부분\*\*/gi, '**[External] (Under Zone)**')
-    .replace(/\*\*익스터널\s*부분\*\*/gi, '**[External] (Under Zone)**');
+    .replace(/\[엑스터널\s*부분\]/gi, '[External] (Under Zone / A,B Zone)')
+    .replace(/\[익스터널\s*부분\]/gi, '[External] (Under Zone / A,B Zone)')
+    .replace(/\[External\s*부분\]/gi, '[External] (Under Zone / A,B Zone)')
+    .replace(/\[외부\s*부분\]/gi, '[External] (Under Zone / A,B Zone)')
+    .replace(/\[Under\s*Zone\]/gi, '[External] (Under Zone / A,B Zone)')
+    .replace(/\[아웃라인\s*설정\]/gi, '[External] (Under Zone / A,B Zone)')
+    .replace(/\*\*\[엑스터널\s*부분\]\*\*/gi, '**[External] (Under Zone / A,B Zone)**')
+    .replace(/\*\*\[익스터널\s*부분\]\*\*/gi, '**[External] (Under Zone / A,B Zone)**')
+    .replace(/\*\*엑스터널\s*부분\*\*/gi, '**[External] (Under Zone / A,B Zone)**')
+    .replace(/\*\*익스터널\s*부분\*\*/gi, '**[External] (Under Zone / A,B Zone)**');
 
-  // 다양한 형식을 [Internal] (Over Zone)으로 통일
+  // 다양한 형식을 [Internal] (Over Zone / C Zone)으로 통일
   normalized = normalized
-    .replace(/\[인터널\s*부분\]/gi, '[Internal] (Over Zone)')
-    .replace(/\[Internal\s*부분\]/gi, '[Internal] (Over Zone)')
-    .replace(/\[내부\s*부분\]/gi, '[Internal] (Over Zone)')
-    .replace(/\[Over\s*Zone\]/gi, '[Internal] (Over Zone)')
-    .replace(/\[인터널\s*레이어\]/gi, '[Internal] (Over Zone)')
-    .replace(/\*\*\[인터널\s*부분\]\*\*/gi, '**[Internal] (Over Zone)**')
-    .replace(/\*\*인터널\s*부분\*\*/gi, '**[Internal] (Over Zone)**');
+    .replace(/\[인터널\s*부분\]/gi, '[Internal] (Over Zone / C Zone)')
+    .replace(/\[Internal\s*부분\]/gi, '[Internal] (Over Zone / C Zone)')
+    .replace(/\[내부\s*부분\]/gi, '[Internal] (Over Zone / C Zone)')
+    .replace(/\[Over\s*Zone\]/gi, '[Internal] (Over Zone / C Zone)')
+    .replace(/\[인터널\s*레이어\]/gi, '[Internal] (Over Zone / C Zone)')
+    .replace(/\*\*\[인터널\s*부분\]\*\*/gi, '**[Internal] (Over Zone / C Zone)**')
+    .replace(/\*\*인터널\s*부분\*\*/gi, '**[Internal] (Over Zone / C Zone)**');
 
   // [전체 과정] 형식인 경우 External/Internal 헤더 추가
   if (!normalized.includes('[External]') && !normalized.includes('[Internal]')) {
     // D4, D8 기점 기반으로 External/Internal 구분 추가
-    normalized = '[External] (Under Zone)\n\n' + normalized;
+    normalized = '[External] (Under Zone / A,B Zone)\n\n' + normalized;
 
     // 인터널 관련 키워드가 있으면 그 앞에 Internal 헤더 삽입
-    const internalKeywords = ['인터널 부분', '파이 섹션', '스퀘어 레이어', '라운드 레이어', 'D8 ~ D4', 'D8에서 D4'];
+    const internalKeywords = ['인터널 부분', '파이 섹션', '스퀘어 레이어', '라운드 레이어', 'D8 ~ D4', 'D8에서 D4', 'C존', 'C Zone', 'C-zone', '크라운', 'Crown', '정수리'];
     for (const keyword of internalKeywords) {
       if (normalized.includes(keyword)) {
         const idx = normalized.indexOf(keyword);
@@ -6557,7 +6557,7 @@ function normalizeRecipeFormat(recipe) {
         else sentenceStart += 1;
 
         // Internal 헤더 삽입
-        normalized = normalized.slice(0, sentenceStart) + '\n\n[Internal] (Over Zone)\n\n' + normalized.slice(sentenceStart);
+        normalized = normalized.slice(0, sentenceStart) + '\n\n[Internal] (Over Zone / C Zone)\n\n' + normalized.slice(sentenceStart);
         break;
       }
     }
@@ -8152,7 +8152,7 @@ ${diagramsContext}
 
 ## ✂️ 커팅 레시피
 
-[External] (Under Zone)
+[External] (Under Zone): Nape, Side, Perimeter, Back
 
 ### 📍 STEP 1. 네이프 & 사이드 베이스
 - 📐 **섹션**: (HS/VS + 설명)
@@ -8172,7 +8172,7 @@ ${diagramsContext}
 
 ---
 
-[Internal] (Over Zone)
+[Internal] (Over Zone): Crown, Top, Fringe
 
 ### 📍 STEP 3. 탑 & 크라운 레이어
 - 📐 **섹션**:
@@ -8201,7 +8201,7 @@ ${diagramsContext}
 ---
 
 ### ⚠️ 필수 규칙:
-1. 반드시 [External] (Under Zone)과 [Internal] (Over Zone)으로 구분
+1. 반드시 [External] (Under Zone): Nape, Side, Perimeter, Back과 [Internal] (Over Zone): Crown, Top, Fringe으로 구분
 2. 각 STEP마다 "---" 구분선 사용
 3. 이모지(📐🔄✂️💡)로 항목 구분
 4. 모든 전문용어 뒤에 괄호()로 쉬운 설명
