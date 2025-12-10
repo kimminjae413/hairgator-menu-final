@@ -627,7 +627,22 @@ const HAIRGATOR_I18N = {
         centerDownTitle: '센터다운',
         centerDownDesc: '이마 방향으로 내림',
         seeThroughTitle: '시스루',
-        seeThroughDesc: '가볍고 얇게 내림'
+        seeThroughDesc: '가볍고 얇게 내림',
+        // 남성 스타일 (Step 2)
+        buzzTitle: '버즈컷 (Buzz)',
+        buzzDesc: '클리퍼로 짧게 밀기',
+        cropTitle: '크롭컷 (Crop)',
+        cropDesc: '짧은 앞머리 + 페이드',
+        fringeUpTitle: '프린지 업 (Fringe Up)',
+        fringeUpDesc: '앞머리를 위로 올림, 아이비리그컷',
+        sideFringeTitle: '사이드 프린지',
+        sideFringeDesc: '앞머리 옆으로 내림',
+        sidePartStyleTitle: '사이드 파트',
+        sidePartStyleDesc: '가르마로 나누기',
+        pushedBackTitle: '푸시드 백',
+        pushedBackDesc: '전체를 뒤로 넘김',
+        mohicanTitle: '모히칸',
+        mohicanDesc: '정수리 볼륨 강조'
       },
       // Face Analysis
       faceAnalysis: {
@@ -1237,7 +1252,22 @@ const HAIRGATOR_I18N = {
         centerDownTitle: 'Center Down',
         centerDownDesc: 'Down towards forehead',
         seeThroughTitle: 'See-through',
-        seeThroughDesc: 'Light and thin bangs'
+        seeThroughDesc: 'Light and thin bangs',
+        // Male styles (Step 2)
+        buzzTitle: 'Buzz Cut',
+        buzzDesc: 'Clipped short all over',
+        cropTitle: 'Crop Cut',
+        cropDesc: 'Short fringe + fade',
+        fringeUpTitle: 'Fringe Up',
+        fringeUpDesc: 'Fringe styled upward, Ivy League',
+        sideFringeTitle: 'Side Fringe',
+        sideFringeDesc: 'Fringe swept to the side',
+        sidePartStyleTitle: 'Side Part',
+        sidePartStyleDesc: 'Parted to one side',
+        pushedBackTitle: 'Pushed Back',
+        pushedBackDesc: 'All swept back',
+        mohicanTitle: 'Mohican',
+        mohicanDesc: 'Volume on crown'
       }
     }
   },
@@ -1834,7 +1864,22 @@ const HAIRGATOR_I18N = {
         centerDownTitle: 'センターダウン',
         centerDownDesc: 'おでこに向かって下ろす',
         seeThroughTitle: 'シースルー',
-        seeThroughDesc: '軽く薄く下ろす'
+        seeThroughDesc: '軽く薄く下ろす',
+        // 男性スタイル (Step 2)
+        buzzTitle: 'バズカット',
+        buzzDesc: 'クリッパーで短く刈る',
+        cropTitle: 'クロップカット',
+        cropDesc: '短い前髪 + フェード',
+        fringeUpTitle: 'フリンジアップ',
+        fringeUpDesc: '前髪を上に立てる、アイビーリーグ',
+        sideFringeTitle: 'サイドフリンジ',
+        sideFringeDesc: '前髪を横に流す',
+        sidePartStyleTitle: 'サイドパート',
+        sidePartStyleDesc: '分け目で分ける',
+        pushedBackTitle: 'プッシュドバック',
+        pushedBackDesc: '全体を後ろに流す',
+        mohicanTitle: 'モヒカン',
+        mohicanDesc: '頭頂部にボリューム'
       }
     }
   },
@@ -2436,7 +2481,22 @@ const HAIRGATOR_I18N = {
         centerDownTitle: '中分下垂',
         centerDownDesc: '向额头方向下垂',
         seeThroughTitle: '空气刘海',
-        seeThroughDesc: '轻薄下垂'
+        seeThroughDesc: '轻薄下垂',
+        // 男性发型 (Step 2)
+        buzzTitle: '板寸',
+        buzzDesc: '用推子剃短',
+        cropTitle: '短盖头',
+        cropDesc: '短刘海 + 渐变',
+        fringeUpTitle: '上梳刘海',
+        fringeUpDesc: '刘海向上梳，常青藤风格',
+        sideFringeTitle: '侧刘海',
+        sideFringeDesc: '刘海斜向一侧',
+        sidePartStyleTitle: '侧分',
+        sidePartStyleDesc: '发缝分开',
+        pushedBackTitle: '全后梳',
+        pushedBackDesc: '全部向后梳',
+        mohicanTitle: '莫西干',
+        mohicanDesc: '头顶蓬松'
       }
     }
   },
@@ -3022,7 +3082,22 @@ const HAIRGATOR_I18N = {
         centerDownTitle: 'Xuống giữa',
         centerDownDesc: 'Hạ xuống về phía trán',
         seeThroughTitle: 'Mái thưa',
-        seeThroughDesc: 'Nhẹ và mỏng'
+        seeThroughDesc: 'Nhẹ và mỏng',
+        // Kiểu tóc nam (Step 2)
+        buzzTitle: 'Buzz Cut',
+        buzzDesc: 'Cắt ngắn bằng tông đơ',
+        cropTitle: 'Crop Cut',
+        cropDesc: 'Mái ngắn + fade',
+        fringeUpTitle: 'Fringe Up',
+        fringeUpDesc: 'Mái vuốt lên, kiểu Ivy League',
+        sideFringeTitle: 'Mái lệch',
+        sideFringeDesc: 'Mái rủ sang bên',
+        sidePartStyleTitle: 'Ngôi lệch',
+        sidePartStyleDesc: 'Chia ngôi sang bên',
+        pushedBackTitle: 'Chải ngược',
+        pushedBackDesc: 'Chải hết ra sau',
+        mohicanTitle: 'Mohican',
+        mohicanDesc: 'Phồng đỉnh đầu'
       }
     }
   }
