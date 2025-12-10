@@ -70,6 +70,17 @@
 - `upload-personal-analysis-image.py`: Firebase Storage에 이미지 업로드
 
 ## 최근 작업 이력
+- 2024-12-10: Vision 스타일 매칭 개선 및 이론 이미지 다중 반환
+  - **Caption 기반 기법 매칭**: diagrams 메타데이터 대신 textRecipe/caption 텍스트 분석으로 변경
+    - C존 키워드 직접 검색: 'c존', 'c zone', '오버존', 'internal' 등
+    - 섹션 타입: '파이섹션', '대각', '수평', '수직' 한국어 키워드 매칭
+    - 각도 추출: 정규식으로 'XX도' 패턴 분석하여 복잡도 판단
+  - **여자 스타일**: Vision 60% + 캡션 기법 40% 가중치
+  - **남자 스타일**: Vision 70% + 캡션 기법 30% 가중치 (남자는 외형 비교가 더 중요)
+  - **이론 이미지 다중 반환**: detectTheoryImageForQuery가 최대 3개 이미지 배열 반환
+    - "존별로 설명해줘" → Zone, A Zone & V Zone 이미지 함께 표시
+    - 중복 term 제거 로직 추가
+  - **A존/B존/C존 키워드 예외**: 2글자 이하 키워드 스킵에서 중요 키워드 예외 처리
 - 2024-12-09: 5개국어 RAG 시스템 프롬프트 완전 지원 추가
   - buildGeminiSystemPrompt에 일본어/중국어/베트남어 프롬프트 추가
   - 인사말/보안 응답 메시지 5개국어 지원
@@ -83,4 +94,7 @@
 - `generateGeminiFileSearchResponseStream()`: 라인 ~2962 (스트리밍 RAG 응답)
 - `buildGeminiSystemPrompt()`: 라인 ~2500 (5개국어 시스템 프롬프트)
 - `detectLanguage()`: 라인 ~2277 (언어 감지)
-- `detectTheoryImageForQuery()`: 라인 ~3230 (이미지 매칭)
+- `detectTheoryImageForQuery()`: 라인 ~3404 (이미지 매칭, 다중 반환)
+- `calculateTechniqueMatchScore()`: 라인 ~6423 (캡션 기반 기법 매칭 점수)
+- `selectBestStyleByVision()`: 라인 ~6543 (여자 Vision 비교)
+- `selectBestMaleStyleByVision()`: 라인 ~7334 (남자 Vision 비교)
