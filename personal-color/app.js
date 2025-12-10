@@ -168,6 +168,58 @@
             return `${translatedSeason} ${translatedSubtype}`;
         }
 
+        // 헤어컬러명 다국어 변환
+        function translateHairColorName(koreanName) {
+            if (!koreanName) return koreanName;
+
+            // i18n에서 번역 조회
+            const key = `personalColor.hairColors.${koreanName.replace(/\s+/g, '_').replace(/[\/\\]/g, '_')}`;
+            const translated = t(key);
+            if (translated && translated !== key) return translated;
+
+            // 영어인 경우 현재 언어가 한국어가 아니면 영어 매핑 사용
+            const lang = window.HAIRGATOR_LANG || 'ko';
+            if (lang === 'ko') return koreanName;
+
+            // 한국어 → 영어 매핑 (fallback)
+            const koToEn = {
+                '다크 브라운': 'Dark Brown', '미디움 브라운': 'Medium Brown', '라이트 브라운': 'Light Brown',
+                '다크 블론드': 'Dark Blonde', '미디움 블론드': 'Medium Blonde', '라이트 블론드': 'Light Blonde',
+                '베리 라이트 블론드': 'Very Light Blonde', '라이트스트 블론드': 'Lightest Blonde',
+                '인텐스 레드': 'Intense Red', '인텐스 코퍼': 'Intense Copper', '인텐스 바이올렛': 'Intense Violet',
+                '라이트 골든': 'Light Golden', '베리 라이트 골든': 'Very Light Golden', '라이트스트 골든': 'Lightest Golden',
+                '라이트 애쉬': 'Light Ash', '베리 라이트 애쉬': 'Very Light Ash', '라이트스트 애쉬': 'Lightest Ash',
+                '라이트스트 인텐스 애쉬': 'Lightest Intense Ash',
+                '펄 골든': 'Pearl Golden', '라이트 펄 골든': 'Light Pearl Golden',
+                '마호가니': 'Mahogany', '마호가니 코퍼': 'Mahogany Copper', '마호가니 골든': 'Mahogany Golden',
+                '라이트 마호가니': 'Light Mahogany', '마호가니 애쉬': 'Mahogany Ash',
+                '딥 매트': 'Deep Matt', '라이트 매트': 'Light Matt', '미디움 매트': 'Medium Matt', '라이트스트 매트': 'Lightest Matt',
+                '애쉬 바이올렛': 'Ash Violet', '라이트 애쉬 바이올렛': 'Light Ash Violet',
+                '라이트 인텐스 코퍼': 'Light Intense Copper', '라이트 코퍼': 'Light Copper', '미디움 코퍼': 'Medium Copper',
+                '브라운 마호가니': 'Brown Mahogany', '브라운 골든': 'Brown Golden', '라이트 브라운 골든': 'Light Brown Golden',
+                '펄 바이올렛': 'Pearl Violet', '라이트 바이올렛': 'Light Violet', '미디움 바이올렛': 'Medium Violet',
+                '다크 애쉬': 'Dark Ash', '미디움 애쉬': 'Medium Ash',
+                '다크 골든': 'Dark Golden', '미디움 골든': 'Medium Golden',
+                '다크 내추럴': 'Dark Natural', '미디움 내추럴': 'Medium Natural', '라이트 내추럴': 'Light Natural',
+                '쿨 베이지': 'Cool Beige', '라이트 쿨 베이지': 'Light Cool Beige', '웜 베이지': 'Warm Beige',
+                '아이스 블루': 'Ice Blue', '아이스 바이올렛': 'Ice Violet',
+                '티타늄 골드': 'Titanium Gold', '코퍼 골드': 'Copper Gold',
+                '내추럴': 'Natural', '레드': 'Red', '오렌지': 'Orange', '매트': 'Matt', '브라운': 'Brown'
+            };
+
+            // 정확히 일치하는 경우
+            if (koToEn[koreanName]) return koToEn[koreanName];
+
+            // 부분 일치 시도 (숫자 포함된 이름)
+            for (const [ko, en] of Object.entries(koToEn)) {
+                if (koreanName.startsWith(ko)) {
+                    return koreanName.replace(ko, en);
+                }
+            }
+
+            return koreanName;
+        }
+
         // ========================================
         // 🎯 새로운 4단계 파이프라인 시스템
         // ========================================
@@ -3972,7 +4024,7 @@
                             <span style="position: absolute; top: -5px; right: -5px; font-size: 12px;" title="${badge.label}">${badge.icon}</span>
                         </div>
                         <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 13px; color: #333; font-weight: 600; margin-bottom: 1px;">${color.name || '컬러'}</div>
+                            <div style="font-size: 13px; color: #333; font-weight: 600; margin-bottom: 1px;">${translateHairColorName(color.name) || t('personalColor.aiMode.result.color') || '컬러'}</div>
                             <div style="font-size: 10px; color: #666;">${color.brand || ''} ${color.line || ''} ${color.code || ''}</div>
                             ${color.level ? `<div style="font-size: 9px; color: #888; margin-top: 1px;">Level ${color.level}</div>` : ''}
                         </div>
