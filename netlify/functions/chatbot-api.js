@@ -6334,9 +6334,169 @@ Return ONLY a JSON object:
   }
 }
 
-// ==================== ⭐⭐⭐ Gemini Vision 1:1 순차 비교 (정확도 향상) ====================
+// ==================== ⭐ RAG 기반 커팅 기법 분석 ====================
+/**
+ * 사용자 이미지를 분석하여 필요한 커팅 기법을 판단
+ * RAG(File Search)를 활용하여 전문적인 커팅 이론 기반 분석
+ */
+async function analyzeRequiredCuttingTechnique(userImageBase64, mimeType, geminiKey) {
+  console.log(`🔬 RAG 기반 커팅 기법 분석 시작`);
+
+  try {
+    const prompt = `당신은 헤어 커팅 전문가입니다. 이 헤어스타일 이미지를 분석하여, 이 스타일을 재현하기 위해 필요한 커팅 기법을 판단해주세요.
+
+분석 항목:
+1. 볼륨 위치 (volume_position): top/middle/bottom/none
+   - top: 머리 윗부분에 볼륨 집중 (크라운, 탑 영역)
+   - middle: 중간 높이에 볼륨 (눈~귀 높이)
+   - bottom: 아래쪽 볼륨 (끝단 무게감)
+   - none: 볼륨 없는 스트레이트
+
+2. 레이어 필요 여부 (needs_layer): true/false
+   - true: 움직임, 질감, 가벼움을 위한 레이어 필요
+   - false: 원랭스, 무게감 있는 스타일
+
+3. C존 작업 필요 (needs_c_zone): true/false
+   - true: 크라운/탑 영역에 볼륨/질감 작업 필요
+   - false: 외부 존만으로 충분
+
+4. 디스커넥션 필요 (needs_disconnection): true/false
+   - true: 언더와 오버의 분리 커팅 필요 (투블럭, 언더컷 등)
+   - false: 연결된 커팅
+
+5. 복잡도 (complexity): simple/medium/complex
+   - simple: External(A,B존)만으로 가능한 단순 커팅
+   - medium: A,B,C존 레이어 작업 필요
+   - complex: 디스커넥션, 복합 섹션, 정밀 작업 필요
+
+6. 추정 섹션 타입 (section_type): horizontal/vertical/diagonal/mixed
+
+JSON만 출력:
+{"volume_position":"<값>","needs_layer":<true/false>,"needs_c_zone":<true/false>,"needs_disconnection":<true/false>,"complexity":"<값>","section_type":"<값>","analysis_reason":"<1문장 분석 근거>"}`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [
+            { inline_data: { mime_type: mimeType, data: userImageBase64 } },
+            { text: prompt }
+          ]}],
+          tools: [{ fileSearch: { fileSearchStoreNames: [GEMINI_FILE_SEARCH_STORE] } }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 300 }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      console.error('RAG 커팅 분석 API 오류:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const jsonMatch = text.match(/\{[\s\S]*?\}/);
+    if (jsonMatch) {
+      const result = JSON.parse(jsonMatch[0]);
+      console.log(`✅ 커팅 기법 분석 완료:`, result);
+      return result;
+    }
+    return null;
+  } catch (error) {
+    console.error('RAG 커팅 기법 분석 오류:', error.message);
+    return null;
+  }
+}
+
+/**
+ * 레시피 메타데이터와 필요한 커팅 기법을 매칭하여 점수 계산
+ */
+function calculateTechniqueMatchScore(requiredTechnique, recipe) {
+  if (!requiredTechnique || !recipe) return 0;
+  let score = 0;
+  const diagrams = recipe.diagrams || [];
+
+  // 1. C존 필요 여부 체크 (30점)
+  const hasCZone = diagrams.some(d =>
+    d.zone?.toLowerCase().includes('c') ||
+    d.zone?.toLowerCase().includes('over') ||
+    d.zone?.toLowerCase().includes('crown') ||
+    d.zone?.toLowerCase().includes('top')
+  );
+
+  if (requiredTechnique.needs_c_zone && hasCZone) {
+    score += 30;
+    console.log(`  ✓ C존 매칭: +30점`);
+  } else if (!requiredTechnique.needs_c_zone && !hasCZone) {
+    score += 20;
+    console.log(`  ✓ External only 매칭: +20점`);
+  } else if (requiredTechnique.needs_c_zone && !hasCZone) {
+    score -= 20;
+    console.log(`  ✗ C존 필요하나 없음: -20점`);
+  }
+
+  // 2. 복잡도 매칭 (25점)
+  const diagramCount = diagrams.length;
+  let recipeComplexity = 'simple';
+  if (diagramCount >= 5) recipeComplexity = 'complex';
+  else if (diagramCount >= 3) recipeComplexity = 'medium';
+
+  if (requiredTechnique.complexity === recipeComplexity) {
+    score += 25;
+    console.log(`  ✓ 복잡도 일치 (${recipeComplexity}): +25점`);
+  } else if (
+    (requiredTechnique.complexity === 'medium' && recipeComplexity === 'complex') ||
+    (requiredTechnique.complexity === 'complex' && recipeComplexity === 'medium')
+  ) {
+    score += 10;
+    console.log(`  △ 복잡도 유사: +10점`);
+  }
+
+  // 3. 섹션 타입 매칭 (20점)
+  const sectionTypes = diagrams.map(d => d.section?.toLowerCase() || '').filter(Boolean);
+  const hasHorizontal = sectionTypes.some(s => s.includes('hs') || s.includes('horizontal') || s.includes('수평'));
+  const hasVertical = sectionTypes.some(s => s.includes('vs') || s.includes('vertical') || s.includes('수직'));
+  const hasDiagonal = sectionTypes.some(s => s.includes('파이') || s.includes('대각') || s.includes('diagonal'));
+
+  if (requiredTechnique.section_type === 'horizontal' && hasHorizontal) score += 20;
+  else if (requiredTechnique.section_type === 'vertical' && hasVertical) score += 20;
+  else if (requiredTechnique.section_type === 'diagonal' && hasDiagonal) score += 20;
+  else if (requiredTechnique.section_type === 'mixed' && (hasHorizontal || hasVertical || hasDiagonal)) score += 15;
+
+  // 4. 디스커넥션 매칭 (15점)
+  const hasDisconnection = diagrams.some(d =>
+    d.cutting_method?.toLowerCase().includes('disconnect') ||
+    d.notes?.toLowerCase().includes('디스커넥션') ||
+    d.notes?.toLowerCase().includes('분리')
+  );
+
+  if (requiredTechnique.needs_disconnection === hasDisconnection) {
+    score += 15;
+    console.log(`  ✓ 디스커넥션 매칭: +15점`);
+  }
+
+  // 5. 레이어 필요 여부 (10점)
+  const hasLayer = diagrams.some(d =>
+    (d.lifting_angle && d.lifting_angle > 0) ||
+    d.lifting?.includes('L') ||
+    d.cutting_method?.toLowerCase().includes('layer')
+  );
+
+  if (requiredTechnique.needs_layer === hasLayer) {
+    score += 10;
+  }
+
+  return Math.max(0, score);
+}
+
+// ==================== ⭐⭐⭐ Gemini Vision 1:1 순차 비교 (정확도 향상 + RAG 기법 매칭) ====================
 async function selectBestStyleByVision(userImageBase64, mimeType, candidateStyles, geminiKey) {
   console.log(`🔍 Vision 1:1 비교 시작: ${candidateStyles.length}개 스타일`);
+
+  // ⭐ RAG 기반 커팅 기법 분석 (병렬 처리를 위해 먼저 시작)
+  const techniqueAnalysisPromise = analyzeRequiredCuttingTechnique(userImageBase64, mimeType, geminiKey);
 
   // 각 스타일별 특징 설명 (시리즈별)
   const STYLE_FEATURES = {
@@ -6429,12 +6589,29 @@ JSON만: {"total_score":<0-100>,"curl_match":<true/false>,"reason":"<1문장>"}`
   const results = await Promise.all(candidateStyles.map(compareStyle));
   const scoreResults = results.filter(r => r !== null);
 
+  // ⭐ RAG 기법 분석 결과 대기
+  const requiredTechnique = await techniqueAnalysisPromise;
+  console.log(`\n🔬 필요 커팅 기법:`, requiredTechnique?.analysis_reason || '분석 실패');
+
+  // ⭐ 기법 매칭 점수 계산 및 최종 점수 계산
+  const candidateStyleMap = new Map(candidateStyles.map(s => [s.styleId, s]));
+
+  for (const result of scoreResults) {
+    const recipe = candidateStyleMap.get(result.styleId);
+    const techniqueScore = calculateTechniqueMatchScore(requiredTechnique, recipe);
+    result.visionScore = result.score;  // 원본 Vision 점수 보존
+    result.techniqueScore = techniqueScore;
+    // 최종 점수: Vision 60% + 기법 매칭 40%
+    result.score = Math.round(result.visionScore * 0.6 + techniqueScore * 0.4);
+    console.log(`  📊 ${result.styleId}: Vision ${result.visionScore}점 + 기법 ${techniqueScore}점 = 최종 ${result.score}점`);
+  }
+
   // 점수 기준 정렬
   scoreResults.sort((a, b) => b.score - a.score);
 
-  console.log(`\n🏆 최종 순위:`);
+  console.log(`\n🏆 최종 순위 (Vision + 기법 매칭):`);
   scoreResults.slice(0, 3).forEach((r, i) => {
-    console.log(`  ${i + 1}. ${r.styleId}: ${r.score}점`);
+    console.log(`  ${i + 1}. ${r.styleId}: ${r.score}점 (V:${r.visionScore} + T:${r.techniqueScore})`);
   });
 
   if (scoreResults.length > 0) {
@@ -6445,7 +6622,10 @@ JSON만: {"total_score":<0-100>,"curl_match":<true/false>,"reason":"<1문장>"}`
       selectedStyleId: best.styleId,
       confidence: confidence,
       score: best.score,
+      visionScore: best.visionScore,
+      techniqueScore: best.techniqueScore,
       reason: best.reason,
+      requiredTechnique: requiredTechnique,
       allScores: scoreResults.slice(0, 5)
     };
   }
