@@ -6657,6 +6657,7 @@ JSON만: {"total_score":<0-100>,"curl_match":<true/false>,"reason":"<1문장>"}`
   scoreResults.slice(0, 3).forEach((r, i) => {
     console.log(`  ${i + 1}. ${r.styleId}: ${r.score}점 (V:${r.visionScore} + T:${r.techniqueScore})`);
   });
+  console.log(`📋 Vision분석: complexity=${requiredTechnique?.complexity}, volume=${requiredTechnique?.volume_position}, c_zone=${requiredTechnique?.needs_c_zone}, layer=${requiredTechnique?.needs_layer}, section=${requiredTechnique?.section_type}`);
 
   if (scoreResults.length > 0) {
     const best = scoreResults[0];
