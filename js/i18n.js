@@ -1603,6 +1603,9 @@ const HAIRGATOR_I18N = {
           step4: '結果生成',
           step4Desc: '専門家ノウハウ基盤の最終診断'
         },
+        takePhoto: '写真を撮影してください',
+        takePhotoDesc: '左側でカメラを起動し、顔を撮影するとAIが分析します',
+        customerSummary: '顧客分析サマリー',
 
         result: {
           title: '🎨 パーソナルカラー分析結果',
@@ -2915,6 +2918,9 @@ const HAIRGATOR_I18N = {
           step4: 'Tạo kết quả',
           step4Desc: 'Chẩn đoán cuối cùng dựa trên chuyên gia'
         },
+        takePhoto: 'Hãy chụp ảnh',
+        takePhotoDesc: 'Bắt đầu camera ở bên trái, chụp khuôn mặt và AI sẽ phân tích',
+        customerSummary: 'Tóm tắt phân tích khách hàng',
 
         result: {
           title: '🎨 Kết quả phân tích màu cá nhân',
