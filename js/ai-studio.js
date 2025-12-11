@@ -2530,9 +2530,11 @@ class AIStudio {
 // ==================== Global Functions ====================
 
 function goBack() {
-  if (document.referrer && document.referrer.includes(window.location.hostname)) {
+  // 브라우저 히스토리가 있으면 뒤로가기
+  if (window.history.length > 1) {
     history.back();
   } else {
+    // 히스토리가 없으면 메인 페이지로
     window.location.href = 'index.html';
   }
 }
