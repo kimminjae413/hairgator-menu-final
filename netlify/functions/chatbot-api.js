@@ -2552,6 +2552,13 @@ function buildGeminiSystemPrompt(userLanguage) {
 
 ■ 컬러(Color) / 펌(Perm) 이론
 - PDF 자료에서 검색하여 답변
+
+■ ⭐ 펌 레시피 질문 응답 규칙 (매우 중요!)
+펌 레시피(FALP, FBLP, FCLP 등) 관련 질문 시:
+1. 반드시 File Search로 검색된 문서 내용을 기반으로 답변
+2. 로드 크기(mm), 와인딩 각도(천체축 각도), 섹션 방향, 존(Zone) 정보 등 구체적인 수치 제공
+3. 검색된 문서에 정보가 없으면 "해당 레시피 정보를 찾을 수 없습니다"라고 솔직하게 답변
+4. 일반적인 추측으로 답변하지 말고, 검색된 문서의 실제 데이터만 사용
 `;
 
   const prompts = {
