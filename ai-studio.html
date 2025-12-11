@@ -72,19 +72,19 @@
             <!-- Messages -->
             <div class="chat-messages" id="chat-messages">
                 <!-- Welcome Message -->
-                <div class="message bot">
+                <div class="message bot" id="welcome-message">
                     <div class="message-avatar bot-logo"><img src="icons/icon-72.png" alt="H"></div>
                     <div class="message-content">
-                        <p><strong>안녕하세요! HAIRGATOR AI입니다.</strong></p>
-                        <p>헤어스타일 사진을 업로드하거나 질문해주세요. 2WAY CUT 시스템 기반으로 전문적인 분석과 레시피를 제공해드립니다.</p>
+                        <p><strong data-i18n="aiStudio.welcomeTitle">안녕하세요! HAIRGATOR AI입니다.</strong></p>
+                        <p data-i18n="aiStudio.welcomeMessage">헤어스타일 사진을 업로드하거나 질문해주세요. 2WAY CUT 시스템 기반으로 전문적인 분석과 레시피를 제공해드립니다.</p>
                         <div class="message-actions">
-                            <button class="action-btn" onclick="quickAction('A Length가 뭐야?')">A Length란?</button>
-                            <button class="action-btn" onclick="quickAction('레이어와 그래쥬에이션 차이')">Layer vs Graduation</button>
-                            <button class="action-btn" onclick="quickAction('리프팅 각도 설명해줘')">Lifting 설명</button>
+                            <button class="action-btn" onclick="quickAction('A Length가 뭐야?')" data-i18n="aiStudio.quickALength">A Length란?</button>
+                            <button class="action-btn" onclick="quickAction('레이어와 그래쥬에이션 차이')" data-i18n="aiStudio.quickLayerGrad">Layer vs Graduation</button>
+                            <button class="action-btn" onclick="quickAction('리프팅 각도 설명해줘')" data-i18n="aiStudio.quickLifting">Lifting 설명</button>
                         </div>
                         <div class="message-actions" style="margin-top: 8px;">
-                            <button class="action-btn style-search-btn" onclick="searchStylesDemo('숱많은 긴머리 레이어컷')">🔍 숱많은 레이어컷</button>
-                            <button class="action-btn style-search-btn" onclick="searchStylesDemo('단발 그래쥬에이션')">🔍 단발 그래쥬에이션</button>
+                            <button class="action-btn style-search-btn" onclick="searchStylesDemo('숱많은 긴머리 레이어컷')" data-i18n="aiStudio.quickLayerSearch">🔍 숱많은 레이어컷</button>
+                            <button class="action-btn style-search-btn" onclick="searchStylesDemo('단발 그래쥬에이션')" data-i18n="aiStudio.quickBobSearch">🔍 단발 그래쥬에이션</button>
                         </div>
                     </div>
                 </div>
@@ -105,14 +105,14 @@
                     </div>
                     <!-- Gender Selection -->
                     <div class="gender-selection" id="gender-selection">
-                        <span class="gender-label">성별 선택:</span>
+                        <span class="gender-label" data-i18n="aiStudio.genderLabel">성별 선택:</span>
                         <button class="gender-btn" id="gender-female" onclick="selectGender('female')">
                             <span class="gender-icon">👩</span>
-                            <span>여자</span>
+                            <span data-i18n="aiStudio.genderFemale">여자</span>
                         </button>
                         <button class="gender-btn" id="gender-male" onclick="selectGender('male')">
                             <span class="gender-icon">👨</span>
-                            <span>남자</span>
+                            <span data-i18n="aiStudio.genderMale">남자</span>
                         </button>
                     </div>
                     <!-- Category Selection (여자: 기장, 남자: 스타일) -->
@@ -136,7 +136,7 @@
                         </svg>
                     </button>
 
-                    <input type="text" id="chat-input" placeholder="질문을 입력하세요..." autocomplete="off">
+                    <input type="text" id="chat-input" placeholder="질문을 입력하세요..." data-i18n-placeholder="aiStudio.inputPlaceholder" autocomplete="off">
                     <button class="send-btn" onclick="sendMessage()" id="send-btn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="22" y1="2" x2="11" y2="13"/>
@@ -187,8 +187,8 @@
                 <!-- Empty State (default) -->
                 <div class="canvas-empty" id="canvas-empty">
                     <div class="canvas-empty-icon">✨</div>
-                    <h2>솔루션 캔버스</h2>
-                    <p>이미지를 업로드하거나 질문하시면<br>분석 결과와 레시피가 여기에 표시됩니다.</p>
+                    <h2 data-i18n="aiStudio.canvasTitle">솔루션 캔버스</h2>
+                    <p data-i18n-html="aiStudio.canvasEmpty">이미지를 업로드하거나 질문하시면<br>분석 결과와 레시피가 여기에 표시됩니다.</p>
                 </div>
 
                 <!-- Result Container (hidden by default) -->
@@ -221,7 +221,10 @@
     <!-- Auth (불나비 유저 정보 - 챗봇 히스토리용) -->
     <script src="js/auth.js"></script>
 
+    <!-- i18n (다국어 지원) -->
+    <script src="js/i18n.js"></script>
+
     <!-- AI Studio Script -->
-    <script src="js/ai-studio.js?v=20251209-1900"></script>
+    <script src="js/ai-studio.js?v=20251211-1700"></script>
 </body>
 </html>

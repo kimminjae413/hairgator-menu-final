@@ -24,7 +24,8 @@
       "mcp__chrome-devtools__evaluate_script",
       "mcp__chrome-devtools__navigate_page",
       "WebFetch(domain:hairgator.netlify.app)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []

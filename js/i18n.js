@@ -122,6 +122,24 @@ const HAIRGATOR_I18N = {
       guest: '게스트'
     },
 
+    // ========== AI Studio 챗봇 ==========
+    aiStudio: {
+      welcomeTitle: '안녕하세요! HAIRGATOR AI입니다.',
+      welcomeMessage: '헤어스타일 사진을 업로드하거나 질문해주세요. 2WAY CUT 시스템 기반으로 전문적인 분석과 레시피를 제공해드립니다.',
+      inputPlaceholder: '질문을 입력하세요...',
+      uploadTooltip: '이미지 업로드',
+      genderLabel: '성별 선택:',
+      genderFemale: '여성',
+      genderMale: '남성',
+      quickALength: 'A Length란?',
+      quickLayerGrad: 'Layer vs Graduation',
+      quickLifting: 'Lifting 설명',
+      quickLayerSearch: '숱많은 레이어컷',
+      quickBobSearch: '단발 그래쥬에이션',
+      canvasTitle: '솔루션 캔버스',
+      canvasEmpty: '이미지를 업로드하거나 질문하시면<br>분석 결과와 레시피가 여기에 표시됩니다.'
+    },
+
     // ========== 헤어체험 ==========
     hairTry: {
       button: '헤어체험',
@@ -871,6 +889,24 @@ const HAIRGATOR_I18N = {
       guest: 'Guest'
     },
 
+    // ========== AI Studio Chatbot ==========
+    aiStudio: {
+      welcomeTitle: 'Hello! I\'m HAIRGATOR AI.',
+      welcomeMessage: 'Upload a hairstyle photo or ask a question. We provide professional analysis and recipes based on the 2WAY CUT system.',
+      inputPlaceholder: 'Enter your question...',
+      uploadTooltip: 'Upload image',
+      genderLabel: 'Select gender:',
+      genderFemale: 'Female',
+      genderMale: 'Male',
+      quickALength: 'What is A Length?',
+      quickLayerGrad: 'Layer vs Graduation',
+      quickLifting: 'Explain Lifting',
+      quickLayerSearch: 'Thick hair layer cut',
+      quickBobSearch: 'Bob graduation',
+      canvasTitle: 'Solution Canvas',
+      canvasEmpty: 'Upload an image or ask a question<br>and the analysis results and recipe will appear here.'
+    },
+
     // ========== Hair Try ==========
     hairTry: {
       button: 'Hair Try',
@@ -1593,6 +1629,24 @@ const HAIRGATOR_I18N = {
       guest: 'ゲスト'
     },
 
+    // ========== AI Studio チャットボット ==========
+    aiStudio: {
+      welcomeTitle: 'こんにちは！HAIRGATOR AIです。',
+      welcomeMessage: 'ヘアスタイルの写真をアップロードするか、質問してください。2WAY CUTシステムに基づいた専門的な分析とレシピを提供します。',
+      inputPlaceholder: '質問を入力してください...',
+      uploadTooltip: '画像をアップロード',
+      genderLabel: '性別を選択:',
+      genderFemale: '女性',
+      genderMale: '男性',
+      quickALength: 'A Lengthとは？',
+      quickLayerGrad: 'Layer vs Graduation',
+      quickLifting: 'Liftingの説明',
+      quickLayerSearch: '毛量多めレイヤー',
+      quickBobSearch: 'ボブグラデーション',
+      canvasTitle: 'ソリューションキャンバス',
+      canvasEmpty: '画像をアップロードするか質問すると<br>分析結果とレシピがここに表示されます。'
+    },
+
     // ========== ヘアトライ ==========
     hairTry: {
       button: 'ヘアトライ',
@@ -2309,6 +2363,24 @@ const HAIRGATOR_I18N = {
       credit: '积分',
       loginStatus: '登录',
       guest: '访客'
+    },
+
+    // ========== AI Studio 聊天机器人 ==========
+    aiStudio: {
+      welcomeTitle: '您好！我是HAIRGATOR AI。',
+      welcomeMessage: '请上传发型照片或提问。我们基于2WAY CUT系统提供专业分析和配方。',
+      inputPlaceholder: '请输入您的问题...',
+      uploadTooltip: '上传图片',
+      genderLabel: '选择性别:',
+      genderFemale: '女性',
+      genderMale: '男性',
+      quickALength: '什么是A Length？',
+      quickLayerGrad: 'Layer vs Graduation',
+      quickLifting: '解释Lifting',
+      quickLayerSearch: '厚发层次剪',
+      quickBobSearch: '波波头渐层',
+      canvasTitle: '解决方案画布',
+      canvasEmpty: '上传图片或提问后<br>分析结果和配方将显示在这里。'
     },
 
     // ========== 发型体验 ==========
@@ -3030,6 +3102,24 @@ const HAIRGATOR_I18N = {
       credit: 'Tín dụng',
       loginStatus: 'Đăng nhập',
       guest: 'Khách'
+    },
+
+    // ========== AI Studio Chatbot ==========
+    aiStudio: {
+      welcomeTitle: 'Xin chào! Tôi là HAIRGATOR AI.',
+      welcomeMessage: 'Tải lên ảnh kiểu tóc hoặc đặt câu hỏi. Chúng tôi cung cấp phân tích chuyên nghiệp và công thức dựa trên hệ thống 2WAY CUT.',
+      inputPlaceholder: 'Nhập câu hỏi của bạn...',
+      uploadTooltip: 'Tải ảnh lên',
+      genderLabel: 'Chọn giới tính:',
+      genderFemale: 'Nữ',
+      genderMale: 'Nam',
+      quickALength: 'A Length là gì?',
+      quickLayerGrad: 'Layer vs Graduation',
+      quickLifting: 'Giải thích Lifting',
+      quickLayerSearch: 'Cắt layer tóc dày',
+      quickBobSearch: 'Bob graduation',
+      canvasTitle: 'Canvas Giải pháp',
+      canvasEmpty: 'Tải ảnh lên hoặc đặt câu hỏi<br>và kết quả phân tích cùng công thức sẽ hiển thị ở đây.'
     },
 
     // ========== Thử kiểu tóc ==========

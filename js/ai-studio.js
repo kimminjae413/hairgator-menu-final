@@ -148,7 +148,49 @@ class AIStudio {
     // User History
     await this.initUserHistory();
 
+    // 다국어 적용 (i18n.js의 updateAllTexts 함수 사용)
+    this.applyLanguage();
+
     console.log('✅ AI Studio 초기화 완료');
+  }
+
+  // 다국어 UI 적용
+  applyLanguage() {
+    const lang = this.currentLanguage;
+    console.log(`🌐 AI Studio 언어 적용: ${lang}`);
+
+    // i18n.js의 updateAllTexts 함수가 있으면 호출
+    if (typeof updateAllTexts === 'function') {
+      updateAllTexts();
+    }
+
+    // data-i18n-placeholder 속성 처리 (input placeholder)
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      const text = this.getTranslation(key);
+      if (text) {
+        el.placeholder = text;
+      }
+    });
+  }
+
+  // 번역 텍스트 가져오기
+  getTranslation(key) {
+    try {
+      if (typeof HAIRGATOR_I18N === 'undefined') return null;
+      const keys = key.split('.');
+      let value = HAIRGATOR_I18N[this.currentLanguage];
+      for (const k of keys) {
+        if (value && value[k]) {
+          value = value[k];
+        } else {
+          return null;
+        }
+      }
+      return value;
+    } catch (e) {
+      return null;
+    }
   }
 
   setupEventListeners() {
