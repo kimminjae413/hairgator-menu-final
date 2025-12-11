@@ -3022,9 +3022,9 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
             }
           }],
           generationConfig: {
-            temperature: 0.5,
-            maxOutputTokens: 8000,  // ⬆️ 4000 → 8000 (긴 이론 설명 지원)
-            topP: 0.9
+            temperature: 0.2,       // ⬇️ 0.5 → 0.2 (RAG 결과에 더 충실)
+            maxOutputTokens: 8000,
+            topP: 0.8               // ⬇️ 0.9 → 0.8 (선택 폭 좁힘)
           }
         })
       }
@@ -3293,9 +3293,9 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
             }
           }],
           generationConfig: {
-            temperature: 0.5,
-            maxOutputTokens: 8000,  // ⬆️ 4000 → 8000 (긴 이론 설명 지원)
-            topP: 0.9
+            temperature: 0.2,       // ⬇️ 0.5 → 0.2 (RAG 결과에 더 충실)
+            maxOutputTokens: 8000,
+            topP: 0.8               // ⬇️ 0.9 → 0.8 (선택 폭 좁힘)
           }
         })
       }
