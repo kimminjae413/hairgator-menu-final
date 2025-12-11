@@ -232,11 +232,19 @@
 
         .hero-description {
             font-size: 1.05rem;
-            color: var(--theme-text, rgba(255, 255, 255, 0.95));
+            color: #ffffff;
             max-width: 600px;
             line-height: 1.9;
-            font-weight: 400;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 1px 3px rgba(0, 0, 0, 0.9);
+            font-weight: 500;
+            text-shadow:
+                0 2px 4px rgba(0, 0, 0, 0.9),
+                0 4px 8px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(0, 0, 0, 0.7);
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 80%, transparent 100%);
+            padding: 1rem 1.5rem 1rem 0;
+            border-radius: 4px;
+            position: relative;
+            z-index: 15;
         }
 
         /* Classic/Modern theme hero text shadow for readability */
@@ -247,7 +255,12 @@
 
         body.theme-classic .hero-description,
         body.theme-modern .hero-description {
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.9);
+            color: #ffffff;
+            text-shadow:
+                0 2px 4px rgba(0, 0, 0, 0.9),
+                0 4px 8px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(0, 0, 0, 0.7);
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 80%, transparent 100%);
         }
 
         /* Tags Section */
