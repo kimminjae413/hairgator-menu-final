@@ -3060,8 +3060,11 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
 
 // 스트리밍 응답
 async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
-  const { user_query, chat_history, recipe_context } = payload;
-  const userLanguage = detectLanguage(user_query);
+  const { user_query, chat_history, recipe_context, language } = payload;
+  // 클라이언트에서 보낸 언어 코드 → 서버 언어명 매핑
+  const langCodeMap = { ko: 'korean', en: 'english', ja: 'japanese', zh: 'chinese', vi: 'vietnamese' };
+  // 클라이언트에서 보낸 언어 우선, 없으면 쿼리에서 감지
+  const userLanguage = (language && langCodeMap[language]) || detectLanguage(user_query);
 
   console.log(`🔍 Gemini File Search 스트리밍: "${user_query}"`);
   console.log(`🔑 Gemini Key 앞 15자: ${geminiKey ? geminiKey.substring(0, 15) : 'MISSING'}...`);

@@ -25,7 +25,8 @@
       "mcp__chrome-devtools__navigate_page",
       "WebFetch(domain:hairgator.netlify.app)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "mcp__chrome-devtools__take_snapshot"
     ],
     "deny": [],
     "ask": []
