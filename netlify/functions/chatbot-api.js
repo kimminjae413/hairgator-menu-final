@@ -3530,7 +3530,9 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
   // ⭐ 커트/펌 인덱스만 필터링 (이미지가 있는 것만)
   const imageIndexes = indexes.filter(idx => {
     const isPersonal = idx.term && idx.term.toLowerCase().startsWith('personal');
-    const isCutOrPerm = idx.type === 'perm' || idx.type === 'cut' || idx.type === '' || !idx.type;
+    // category 또는 type 필드 확인 (펌 인덱스는 category 사용)
+    const cat = idx.category || idx.type || '';
+    const isCutOrPerm = cat === 'perm' || cat === 'cut' || cat === '' || !cat;
     const hasImage = idx.images && (idx.images[language] || idx.images['ko'] || idx.images['en']);
     return !isPersonal && isCutOrPerm && hasImage;
   });
