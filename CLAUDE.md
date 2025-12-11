@@ -5,13 +5,32 @@
 ### RAG 시스템
 - **Gemini File Search API** 사용
 - Store ID: `fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2`
-- 42개 문서, 548MB (영구 저장됨)
-- 업로드된 자료: 커트/펌/컬러/퍼스널 이론 PDF 전체 + 펌 레시피 자막
+- **43개 문서**, 524MB (영구 저장됨)
+- 업로드된 자료: 이론 PDF 38개 + 펌 레시피 자막 4개 + 커트 레시피 자막 1개(138개 병합)
 
 ### Firestore
-- 컬렉션: `theory_indexes` - 키워드 매칭 + 이미지 URL 저장
+- 컬렉션: `theory_indexes` - 키워드 매칭 + 이미지 URL 저장 (커트 164개 + 펌 46개 = 210개)
 - 컬렉션: `styles` - 레시피 도해도 이미지
 - 컬렉션: `recipe_samples` - 벡터 검색용 레시피
+
+### theory_indexes 구조 (헷갈리기 쉬움!)
+```javascript
+// 올바른 구조 (커트/펌 인덱스 공통)
+{
+  term: "Zone",
+  category: "perm" | "기초 이론" | "커팅 시스템" | ...,
+  images: {
+    ko: "https://storage.googleapis.com/.../ko/Zone_kor.png",
+    en: "https://storage.googleapis.com/.../en/Zone.png",
+    ja: "...",
+    zh: "...",
+    vi: "..."
+  },
+  keywords: ["zone", "존", ...]
+}
+```
+- **images 객체**: 언어별 이미지 URL을 하나의 객체에 저장
+- **잘못된 구조**: `imageUrl` + `lang` 별도 필드로 언어별 문서 분리 → 병합 필요
 
 ### 주요 파일
 - `netlify/functions/chatbot-api.js` - 메인 API (354KB, 매우 큼)
@@ -69,9 +88,38 @@
 - `upload-color-theory.py`: 컬러 이론 이미지 분석 후 Firestore 저장
 - `extract-personal-analysis-text.py`: 퍼스널 분석 이미지 텍스트 추출
 - `upload-personal-analysis-image.py`: Firebase Storage에 이미지 업로드
+- `merge-cut-captions.py`: 커트 자막 138개 병합 (여자 69 + 남자 69)
+- `upload-cut-captions-to-rag.py`: 병합된 커트 자막을 RAG Store에 업로드
+- `upload-perm-indexes.py`: 펌 인덱스 이미지 Firebase Storage 업로드 + Firestore 저장
+- `fix-perm-index-merge.py`: 펌 인덱스 언어별 문서를 하나로 병합
 
 ## 최근 작업 이력
-- 2024-12-11: 언어 파라미터 및 펌 레시피 RAG 검색 수정
+- 2024-12-11: 커트/펌 레시피 RAG 완전 통합 + 펌 인덱스 이미지 추가
+
+  ### RAG 커트 자막 추가 (헷갈렸던 부분!)
+  - **여자 커트 69개 + 남자 커트 69개 = 138개** 자막을 **하나의 텍스트 파일**로 병합
+  - 스크립트: `merge-cut-captions.py` → `upload-cut-captions-to-rag.py`
+  - **API 파라미터 주의**: `import_file()`에서 `file_search_store_name=STORE_NAME` (name= 아님!)
+  - RAG 문서 수: 42개 → 43개
+
+  ### 스타일 코드 노출 금지
+  - 시스템 프롬프트에 규칙 추가: FAL0001, FALP3003, SF1001 등 코드 노출 금지
+  - 대신 자연어로 표현: "가슴 하단 길이의 S컬 펌", "사이드 프린지 남자 커트"
+
+  ### 펌 인덱스 이미지 업로드 (헷갈렸던 부분!)
+  - **Firebase Storage**: `perm_index/{lang}/` 경로에 6개 언어 이미지 업로드
+  - **Firestore 구조 문제**: 처음에 언어별로 문서 분리됨 → `fix-perm-index-merge.py`로 병합
+    - 잘못: `perm_ko_Zone`, `perm_en_Zone` 별도 문서
+    - 올바름: `perm_Zone` 하나에 `images: {ko, en, ja, zh, vi, id}` 객체
+  - **detectTheoryImageForQuery 수정**: `idx.type` → `idx.category || idx.type` 체크
+    - 펌 인덱스는 `category: 'perm'` 사용, 기존 커트 인덱스는 `type` 필드 사용
+  - 최종: 46개 펌 인덱스, 각각 6개 언어 지원 (ko, en, ja, zh, vi, id)
+
+  ### 룩북 텍스트 가독성 개선
+  - `.hero-description`에 반투명 검정 그라데이션 배경 추가
+  - text-shadow 3중 강화, font-weight 500, z-index 15
+
+- 2024-12-11 (이전): 언어 파라미터 및 펌 레시피 RAG 검색 수정
   - **클라이언트 language 파라미터 우선 사용**: payload.language(ko/en/ja/zh/vi) → 서버에서 korean/english 등으로 매핑
   - **펌 레시피 RAG 검색 규칙 추가**: 시스템 프롬프트에 File Search 결과 우선 사용 지시
     - 로드 크기(mm), 와인딩 각도(천체축 각도), 섹션 방향, 존(Zone) 정보 등 구체적 수치 제공
