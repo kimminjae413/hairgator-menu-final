@@ -36,7 +36,7 @@
             <!-- Header -->
             <header class="chat-header">
                 <div class="chat-header-left">
-                    <button class="back-to-menu" onclick="goBack()" title="메뉴로 돌아가기">
+                    <button class="back-to-menu" onclick="goBack()" title="메뉴로 돌아가기" data-i18n-title="aiStudio.backToMenu">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M19 12H5M12 19l-7-7 7-7"/>
                         </svg>
@@ -50,18 +50,18 @@
                     </div>
                 </div>
                 <div class="chat-header-actions">
-                    <button class="header-btn new-chat-btn" onclick="startNewChat()" title="새 채팅">
+                    <button class="header-btn new-chat-btn" onclick="startNewChat()" title="새 채팅" data-i18n-title="aiStudio.newChat">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 5v14M5 12h14"/>
                         </svg>
                     </button>
-                    <button class="header-btn mobile-history-btn" onclick="showHistoryPanel()" title="히스토리">
+                    <button class="header-btn mobile-history-btn" onclick="showHistoryPanel()" title="히스토리" data-i18n-title="aiStudio.history">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"/>
                             <polyline points="12 6 12 12 16 14"/>
                         </svg>
                     </button>
-                    <button class="header-btn" onclick="clearChat()" title="대화 삭제">
+                    <button class="header-btn" onclick="clearChat()" title="대화 삭제" data-i18n-title="aiStudio.deleteChat">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
                         </svg>
@@ -128,7 +128,7 @@
                     <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
 
                     <!-- Upload button -->
-                    <button class="upload-btn" onclick="triggerImageUpload()" id="upload-btn" title="이미지 업로드">
+                    <button class="upload-btn" onclick="triggerImageUpload()" id="upload-btn" title="이미지 업로드" data-i18n-title="aiStudio.uploadImage">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                             <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -158,19 +158,19 @@
                         </svg>
                     </button>
                     <div class="canvas-tabs">
-                        <button class="canvas-tab active" data-tab="result">결과</button>
-                        <button class="canvas-tab" data-tab="history">히스토리</button>
+                        <button class="canvas-tab active" data-tab="result" data-i18n="aiStudio.result">결과</button>
+                        <button class="canvas-tab" data-tab="history" data-i18n="aiStudio.historyTab">히스토리</button>
                     </div>
                 </div>
                 <div class="canvas-actions">
-                    <button class="header-btn" onclick="saveResult()" title="저장">
+                    <button class="header-btn" onclick="saveResult()" title="저장" data-i18n-title="aiStudio.save">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
                             <polyline points="17 21 17 13 7 13 7 21"/>
                             <polyline points="7 3 7 8 15 8"/>
                         </svg>
                     </button>
-                    <button class="header-btn" onclick="shareResult()" title="공유">
+                    <button class="header-btn" onclick="shareResult()" title="공유" data-i18n-title="aiStudio.share">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="18" cy="5" r="3"/>
                             <circle cx="6" cy="12" r="3"/>
@@ -203,8 +203,8 @@
                     </div>
                     <div class="history-empty" id="history-empty">
                         <div class="history-empty-icon">📋</div>
-                        <p>분석 기록이 없습니다.</p>
-                        <span>이미지를 분석하면 여기에 기록됩니다.</span>
+                        <p data-i18n="aiStudio.noHistory">분석 기록이 없습니다.</p>
+                        <span data-i18n="aiStudio.noHistoryDesc">이미지를 분석하면 여기에 기록됩니다.</span>
                     </div>
                 </div>
             </div>
@@ -225,6 +225,6 @@
     <script src="js/i18n.js"></script>
 
     <!-- AI Studio Script -->
-    <script src="js/ai-studio.js?v=20251211-1900"></script>
+    <script src="js/ai-studio.js?v=20251211-2000"></script>
 </body>
 </html>

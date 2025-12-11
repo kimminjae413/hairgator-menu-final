@@ -137,7 +137,18 @@ const HAIRGATOR_I18N = {
       quickLayerSearch: '숱많은 레이어컷',
       quickBobSearch: '단발 그래쥬에이션',
       canvasTitle: '솔루션 캔버스',
-      canvasEmpty: '이미지를 업로드하거나 질문하시면<br>분석 결과와 레시피가 여기에 표시됩니다.'
+      canvasEmpty: '이미지를 업로드하거나 질문하시면<br>분석 결과와 레시피가 여기에 표시됩니다.',
+      backToMenu: '메뉴로 돌아가기',
+      newChat: '새 채팅',
+      history: '히스토리',
+      deleteChat: '대화 삭제',
+      uploadImage: '이미지 업로드',
+      result: '결과',
+      historyTab: '히스토리',
+      save: '저장',
+      share: '공유',
+      noHistory: '분석 기록이 없습니다.',
+      noHistoryDesc: '이미지를 분석하면 여기에 기록됩니다.'
     },
 
     // ========== 헤어체험 ==========
@@ -904,7 +915,18 @@ const HAIRGATOR_I18N = {
       quickLayerSearch: 'Thick hair layer cut',
       quickBobSearch: 'Bob graduation',
       canvasTitle: 'Solution Canvas',
-      canvasEmpty: 'Upload an image or ask a question<br>and the analysis results and recipe will appear here.'
+      canvasEmpty: 'Upload an image or ask a question<br>and the analysis results and recipe will appear here.',
+      backToMenu: 'Back to Menu',
+      newChat: 'New Chat',
+      history: 'History',
+      deleteChat: 'Delete Chat',
+      uploadImage: 'Upload Image',
+      result: 'Result',
+      historyTab: 'History',
+      save: 'Save',
+      share: 'Share',
+      noHistory: 'No analysis history.',
+      noHistoryDesc: 'Analyze an image and it will be recorded here.'
     },
 
     // ========== Hair Try ==========
@@ -1644,7 +1666,18 @@ const HAIRGATOR_I18N = {
       quickLayerSearch: '毛量多めレイヤー',
       quickBobSearch: 'ボブグラデーション',
       canvasTitle: 'ソリューションキャンバス',
-      canvasEmpty: '画像をアップロードするか質問すると<br>分析結果とレシピがここに表示されます。'
+      canvasEmpty: '画像をアップロードするか質問すると<br>分析結果とレシピがここに表示されます。',
+      backToMenu: 'メニューに戻る',
+      newChat: '新しいチャット',
+      history: '履歴',
+      deleteChat: 'チャット削除',
+      uploadImage: '画像アップロード',
+      result: '結果',
+      historyTab: '履歴',
+      save: '保存',
+      share: '共有',
+      noHistory: '分析履歴がありません。',
+      noHistoryDesc: '画像を分析するとここに記録されます。'
     },
 
     // ========== ヘアトライ ==========
@@ -2380,7 +2413,18 @@ const HAIRGATOR_I18N = {
       quickLayerSearch: '厚发层次剪',
       quickBobSearch: '波波头渐层',
       canvasTitle: '解决方案画布',
-      canvasEmpty: '上传图片或提问后<br>分析结果和配方将显示在这里。'
+      canvasEmpty: '上传图片或提问后<br>分析结果和配方将显示在这里。',
+      backToMenu: '返回菜单',
+      newChat: '新对话',
+      history: '历史',
+      deleteChat: '删除对话',
+      uploadImage: '上传图片',
+      result: '结果',
+      historyTab: '历史',
+      save: '保存',
+      share: '分享',
+      noHistory: '没有分析记录。',
+      noHistoryDesc: '分析图片后将记录在这里。'
     },
 
     // ========== 发型体验 ==========
@@ -3119,7 +3163,18 @@ const HAIRGATOR_I18N = {
       quickLayerSearch: 'Cắt layer tóc dày',
       quickBobSearch: 'Bob graduation',
       canvasTitle: 'Canvas Giải pháp',
-      canvasEmpty: 'Tải ảnh lên hoặc đặt câu hỏi<br>và kết quả phân tích cùng công thức sẽ hiển thị ở đây.'
+      canvasEmpty: 'Tải ảnh lên hoặc đặt câu hỏi<br>và kết quả phân tích cùng công thức sẽ hiển thị ở đây.',
+      backToMenu: 'Quay lại Menu',
+      newChat: 'Chat mới',
+      history: 'Lịch sử',
+      deleteChat: 'Xóa chat',
+      uploadImage: 'Tải ảnh lên',
+      result: 'Kết quả',
+      historyTab: 'Lịch sử',
+      save: 'Lưu',
+      share: 'Chia sẻ',
+      noHistory: 'Không có lịch sử phân tích.',
+      noHistoryDesc: 'Phân tích hình ảnh và sẽ được ghi lại ở đây.'
     },
 
     // ========== Thử kiểu tóc ==========
@@ -3802,6 +3857,15 @@ function updateAllTexts(lang = currentLanguage) {
     const text = t(key, lang);
     if (text && text !== key) {
       el.placeholder = text;
+    }
+  });
+
+  // data-i18n-title 속성 처리 (버튼 title/tooltip)
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    const text = t(key, lang);
+    if (text && text !== key) {
+      el.title = text;
     }
   });
 
