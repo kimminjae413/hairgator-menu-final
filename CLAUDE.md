@@ -5,8 +5,8 @@
 ### RAG 시스템
 - **Gemini File Search API** 사용
 - Store ID: `fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2`
-- 38개 문서, 548MB (영구 저장됨)
-- 업로드된 자료: 커트/펌/컬러/퍼스널 이론 PDF 전체
+- 42개 문서, 548MB (영구 저장됨)
+- 업로드된 자료: 커트/펌/컬러/퍼스널 이론 PDF 전체 + 펌 레시피 자막
 
 ### Firestore
 - 컬렉션: `theory_indexes` - 키워드 매칭 + 이미지 URL 저장
@@ -42,7 +42,8 @@
 
 ## 다국어 지원 (5개국어)
 - 지원 언어: 한국어(ko), 영어(en), 일본어(ja), 중국어(zh), 베트남어(vi)
-- `detectLanguage()` 함수: 사용자 입력 언어 자동 감지
+- `detectLanguage()` 함수: 사용자 입력 언어 자동 감지 (fallback용)
+- **클라이언트 language 파라미터 우선**: ai-studio.js에서 `localStorage.getItem('hairgator_language')` 값을 서버로 전송 → 서버에서 우선 사용 (ko→korean 매핑)
 - `buildGeminiSystemPrompt()`: 각 언어별 전체 시스템 프롬프트 존재
 - 인사말/보안 응답 메시지: 5개국어 전체 지원
 - 인사말 키워드: 안녕, hello, こんにちは, 你好, xin chào 등
@@ -70,6 +71,11 @@
 - `upload-personal-analysis-image.py`: Firebase Storage에 이미지 업로드
 
 ## 최근 작업 이력
+- 2024-12-11: 언어 파라미터 및 펌 레시피 RAG 검색 수정
+  - **클라이언트 language 파라미터 우선 사용**: payload.language(ko/en/ja/zh/vi) → 서버에서 korean/english 등으로 매핑
+  - **펌 레시피 RAG 검색 규칙 추가**: 시스템 프롬프트에 File Search 결과 우선 사용 지시
+    - 로드 크기(mm), 와인딩 각도(천체축 각도), 섹션 방향, 존(Zone) 정보 등 구체적 수치 제공
+    - 검색 결과 없으면 솔직하게 답변, 일반적인 추측 금지
 - 2024-12-10: Vision 스타일 매칭 개선 및 이론 이미지 다중 반환
   - **Caption 기반 기법 매칭**: diagrams 메타데이터 대신 textRecipe/caption 텍스트 분석으로 변경
     - C존 키워드 직접 검색: 'c존', 'c zone', '오버존', 'internal' 등
