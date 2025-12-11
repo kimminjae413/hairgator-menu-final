@@ -3776,6 +3776,38 @@ function translateSubcategory(subcategoryName, lang = currentLanguage) {
   return HAIRGATOR_I18N[lang]?.subcategories?.[subcategoryName] || subcategoryName;
 }
 
+// DOM 요소 텍스트 업데이트 (data-i18n, data-i18n-html 속성 처리)
+function updateAllTexts(lang = currentLanguage) {
+  // data-i18n 속성 처리 (텍스트)
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const text = t(key, lang);
+    if (text && text !== key) {
+      el.textContent = text;
+    }
+  });
+
+  // data-i18n-html 속성 처리 (HTML 포함)
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const key = el.getAttribute('data-i18n-html');
+    const html = t(key, lang);
+    if (html && html !== key) {
+      el.innerHTML = html;
+    }
+  });
+
+  // data-i18n-placeholder 속성 처리 (input placeholder)
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    const text = t(key, lang);
+    if (text && text !== key) {
+      el.placeholder = text;
+    }
+  });
+
+  console.log(`🌐 DOM 텍스트 업데이트 완료: ${lang}`);
+}
+
 // 전역 객체로 노출
 window.HAIRGATOR_I18N = HAIRGATOR_I18N;
 window.setLanguage = setLanguage;
@@ -3784,6 +3816,7 @@ window.t = t;
 window.translateCategory = translateCategory;
 window.translateDescription = translateDescription;
 window.translateSubcategory = translateSubcategory;
+window.updateAllTexts = updateAllTexts;
 
 // currentLanguage를 window에서 접근 가능하도록 getter로 노출
 Object.defineProperty(window, 'currentLanguage', {

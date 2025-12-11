@@ -159,12 +159,41 @@ class AIStudio {
     const lang = this.currentLanguage;
     console.log(`🌐 AI Studio 언어 적용: ${lang}`);
 
-    // i18n.js의 updateAllTexts 함수가 있으면 호출
-    if (typeof updateAllTexts === 'function') {
-      updateAllTexts();
+    // i18n.js의 currentLanguage도 동기화
+    if (typeof window.currentLanguage !== 'undefined') {
+      window.currentLanguage = lang;
     }
 
-    // data-i18n-placeholder 속성 처리 (input placeholder)
+    // i18n.js의 updateAllTexts 함수가 있으면 호출
+    if (typeof updateAllTexts === 'function') {
+      updateAllTexts(lang);
+    } else {
+      // fallback: 직접 DOM 업데이트
+      this.updateDOMTexts(lang);
+    }
+  }
+
+  // DOM 텍스트 직접 업데이트 (fallback)
+  updateDOMTexts(lang) {
+    // data-i18n 속성 처리
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      const text = this.getTranslation(key);
+      if (text) {
+        el.textContent = text;
+      }
+    });
+
+    // data-i18n-html 속성 처리
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const key = el.getAttribute('data-i18n-html');
+      const text = this.getTranslation(key);
+      if (text) {
+        el.innerHTML = text;
+      }
+    });
+
+    // data-i18n-placeholder 속성 처리
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
       const key = el.getAttribute('data-i18n-placeholder');
       const text = this.getTranslation(key);
