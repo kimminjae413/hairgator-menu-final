@@ -654,7 +654,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (typeof window.createSnowPiles === 'function') window.createSnowPiles();
                 if (typeof window.createChristmasTree === 'function') window.createChristmasTree();
                 // 라이트모드용
-                // if (typeof window.createSnowballFight === 'function') window.createSnowballFight(); // 눈싸움 제거
+                if (typeof window.createSnowballFight === 'function') window.createSnowballFight();
                 // if (typeof window.addRudolphDecoration === 'function') window.addRudolphDecoration(); // 루돌프 장식 제거
                 if (typeof window.createMerryChristmasText === 'function') window.createMerryChristmasText();
                 if (typeof window.createFootprints === 'function') window.createFootprints();
@@ -1315,6 +1315,7 @@ async function loadUserSettingsFromFirebase() {
                     setTimeout(() => {
                         if (targetIsLight) {
                             // 라이트모드 효과
+                            if (typeof createSnowballFight === 'function') createSnowballFight(); // 눈사람+강아지
                             if (typeof createMerryChristmasText === 'function') createMerryChristmasText();
                             if (typeof createFootprints === 'function') createFootprints();
                         } else {
@@ -1959,189 +1960,7 @@ function createSnowballFight() {
         z-index: 9999;
     `;
 
-    // 남자아이 (왼쪽) - 세련된 일러스트 스타일
-    const boy = document.createElement('div');
-    boy.className = 'snowfight-boy';
-    boy.innerHTML = `
-        <svg width="100" height="140" viewBox="0 0 100 140">
-            <defs>
-                <linearGradient id="boyCoatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#5B9BD5"/>
-                    <stop offset="100%" style="stop-color:#2E75B6"/>
-                </linearGradient>
-                <linearGradient id="skinGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#FDE7D6"/>
-                    <stop offset="100%" style="stop-color:#F5D0B9"/>
-                </linearGradient>
-                <filter id="boyShadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="2" dy="3" stdDeviation="2" flood-opacity="0.2"/>
-                </filter>
-            </defs>
-
-            <!-- 그림자 -->
-            <ellipse cx="50" cy="135" rx="25" ry="5" fill="rgba(0,0,0,0.1)"/>
-
-            <!-- 다리 -->
-            <path d="M 38 105 L 35 130 Q 35 135, 30 135 L 25 135" fill="none" stroke="#3D5A80" stroke-width="8" stroke-linecap="round"/>
-            <path d="M 62 105 L 65 130 Q 65 135, 70 135 L 75 135" fill="none" stroke="#3D5A80" stroke-width="8" stroke-linecap="round"/>
-
-            <!-- 몸통 (패딩 점퍼) -->
-            <path d="M 30 60 Q 25 80, 30 105 L 70 105 Q 75 80, 70 60 Q 65 55, 50 55 Q 35 55, 30 60" fill="url(#boyCoatGrad)" filter="url(#boyShadow)"/>
-            <!-- 패딩 주름 -->
-            <path d="M 35 70 Q 50 73, 65 70" stroke="#4A8AC7" stroke-width="1.5" fill="none" opacity="0.6"/>
-            <path d="M 33 85 Q 50 88, 67 85" stroke="#4A8AC7" stroke-width="1.5" fill="none" opacity="0.6"/>
-
-            <!-- 목도리 -->
-            <ellipse cx="50" cy="55" rx="18" ry="6" fill="#E74C3C"/>
-            <path d="M 55 58 Q 60 75, 55 90" stroke="#E74C3C" stroke-width="8" fill="none" stroke-linecap="round"/>
-
-            <!-- 던지는 팔 -->
-            <path d="M 70 65 Q 85 55, 90 45" stroke="url(#boyCoatGrad)" stroke-width="12" fill="none" stroke-linecap="round" class="boy-arm"/>
-            <!-- 장갑 -->
-            <circle cx="92" cy="42" r="8" fill="#E74C3C"/>
-
-            <!-- 머리 -->
-            <ellipse cx="50" cy="35" rx="22" ry="24" fill="url(#skinGrad)"/>
-
-            <!-- 비니 모자 -->
-            <path d="M 28 30 Q 28 12, 50 10 Q 72 12, 72 30 L 72 35 Q 50 32, 28 35 Z" fill="#2C3E50"/>
-            <ellipse cx="50" cy="35" rx="24" ry="5" fill="#2C3E50"/>
-            <!-- 비니 폼폼 -->
-            <circle cx="50" cy="8" r="6" fill="#E74C3C"/>
-
-            <!-- 머리카락 -->
-            <path d="M 30 35 Q 28 40, 32 42" stroke="#5D4037" stroke-width="3" fill="none"/>
-            <path d="M 70 35 Q 72 40, 68 42" stroke="#5D4037" stroke-width="3" fill="none"/>
-
-            <!-- 눈 -->
-            <ellipse cx="42" cy="38" rx="4" ry="5" fill="#fff"/>
-            <ellipse cx="58" cy="38" rx="4" ry="5" fill="#fff"/>
-            <circle cx="43" cy="39" r="2.5" fill="#3D2314"/>
-            <circle cx="59" cy="39" r="2.5" fill="#3D2314"/>
-            <circle cx="44" cy="38" r="1" fill="#fff"/>
-            <circle cx="60" cy="38" r="1" fill="#fff"/>
-
-            <!-- 눈썹 -->
-            <path d="M 38 33 Q 42 31, 46 33" stroke="#5D4037" stroke-width="1.5" fill="none"/>
-            <path d="M 54 33 Q 58 31, 62 33" stroke="#5D4037" stroke-width="1.5" fill="none"/>
-
-            <!-- 볼 터치 -->
-            <ellipse cx="35" cy="45" rx="5" ry="3" fill="#FFB5B5" opacity="0.5"/>
-            <ellipse cx="65" cy="45" rx="5" ry="3" fill="#FFB5B5" opacity="0.5"/>
-
-            <!-- 코 -->
-            <ellipse cx="50" cy="44" rx="2" ry="1.5" fill="#F0C0A8"/>
-
-            <!-- 입 (신난 표정) -->
-            <path d="M 44 50 Q 50 56, 56 50" stroke="#C0392B" stroke-width="2" fill="none"/>
-            <path d="M 45 50 Q 50 54, 55 50" fill="#fff"/>
-        </svg>
-    `;
-    boy.style.cssText = `
-        position: absolute;
-        left: 120px;
-        bottom: 0;
-        animation: boyThrow 2s ease-in-out infinite;
-    `;
-
-    // 여자아이 (오른쪽) - 세련된 일러스트 스타일
-    const girl = document.createElement('div');
-    girl.className = 'snowfight-girl';
-    girl.innerHTML = `
-        <svg width="100" height="140" viewBox="0 0 100 140">
-            <defs>
-                <linearGradient id="girlCoatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#FF8FAB"/>
-                    <stop offset="100%" style="stop-color:#E91E8C"/>
-                </linearGradient>
-                <linearGradient id="hairGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#8B5A2B"/>
-                    <stop offset="100%" style="stop-color:#5D4037"/>
-                </linearGradient>
-                <filter id="girlShadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="2" dy="3" stdDeviation="2" flood-opacity="0.2"/>
-                </filter>
-            </defs>
-
-            <!-- 그림자 -->
-            <ellipse cx="50" cy="135" rx="25" ry="5" fill="rgba(0,0,0,0.1)"/>
-
-            <!-- 다리 -->
-            <path d="M 38 105 L 35 130 Q 35 135, 30 135 L 25 135" fill="none" stroke="#3D5A80" stroke-width="8" stroke-linecap="round"/>
-            <path d="M 62 105 L 65 130 Q 65 135, 70 135 L 75 135" fill="none" stroke="#3D5A80" stroke-width="8" stroke-linecap="round"/>
-
-            <!-- 몸통 (패딩 점퍼) -->
-            <path d="M 30 60 Q 25 80, 30 105 L 70 105 Q 75 80, 70 60 Q 65 55, 50 55 Q 35 55, 30 60" fill="url(#girlCoatGrad)" filter="url(#girlShadow)"/>
-            <!-- 패딩 주름 -->
-            <path d="M 35 70 Q 50 73, 65 70" stroke="#E91E8C" stroke-width="1.5" fill="none" opacity="0.4"/>
-            <path d="M 33 85 Q 50 88, 67 85" stroke="#E91E8C" stroke-width="1.5" fill="none" opacity="0.4"/>
-
-            <!-- 목도리 -->
-            <ellipse cx="50" cy="55" rx="18" ry="6" fill="#9B59B6"/>
-            <path d="M 45 58 Q 40 75, 45 90" stroke="#9B59B6" stroke-width="8" fill="none" stroke-linecap="round"/>
-
-            <!-- 던지는 팔 -->
-            <path d="M 30 65 Q 15 55, 10 45" stroke="url(#girlCoatGrad)" stroke-width="12" fill="none" stroke-linecap="round" class="girl-arm"/>
-            <!-- 장갑 -->
-            <circle cx="8" cy="42" r="8" fill="#9B59B6"/>
-
-            <!-- 머리카락 (긴 머리) -->
-            <path d="M 28 35 Q 20 50, 22 75 Q 24 85, 30 85" fill="url(#hairGrad)"/>
-            <path d="M 72 35 Q 80 50, 78 75 Q 76 85, 70 85" fill="url(#hairGrad)"/>
-
-            <!-- 머리 -->
-            <ellipse cx="50" cy="35" rx="22" ry="24" fill="url(#skinGrad)"/>
-
-            <!-- 귀여운 털모자 -->
-            <path d="M 26 32 Q 26 10, 50 8 Q 74 10, 74 32 L 74 36 Q 50 33, 26 36 Z" fill="#FF69B4"/>
-            <ellipse cx="50" cy="36" rx="26" ry="6" fill="#FF69B4"/>
-            <!-- 모자 털 장식 -->
-            <circle cx="50" cy="6" r="7" fill="#fff"/>
-            <circle cx="26" cy="36" r="8" fill="#fff"/>
-            <circle cx="74" cy="36" r="8" fill="#fff"/>
-
-            <!-- 앞머리 -->
-            <path d="M 35 36 Q 40 30, 50 32 Q 60 30, 65 36" fill="url(#hairGrad)"/>
-
-            <!-- 눈 (더 큰 눈) -->
-            <ellipse cx="42" cy="38" rx="5" ry="6" fill="#fff"/>
-            <ellipse cx="58" cy="38" rx="5" ry="6" fill="#fff"/>
-            <circle cx="43" cy="39" r="3" fill="#3D2314"/>
-            <circle cx="59" cy="39" r="3" fill="#3D2314"/>
-            <circle cx="44" cy="37" r="1.2" fill="#fff"/>
-            <circle cx="60" cy="37" r="1.2" fill="#fff"/>
-
-            <!-- 속눈썹 -->
-            <path d="M 37 34 L 39 36" stroke="#3D2314" stroke-width="1.2"/>
-            <path d="M 40 33 L 41 36" stroke="#3D2314" stroke-width="1.2"/>
-            <path d="M 59 36 L 61 34" stroke="#3D2314" stroke-width="1.2"/>
-            <path d="M 59 36 L 60 33" stroke="#3D2314" stroke-width="1.2"/>
-
-            <!-- 볼 터치 -->
-            <ellipse cx="35" cy="46" rx="6" ry="4" fill="#FFB5B5" opacity="0.6"/>
-            <ellipse cx="65" cy="46" rx="6" ry="4" fill="#FFB5B5" opacity="0.6"/>
-
-            <!-- 코 -->
-            <ellipse cx="50" cy="44" rx="2" ry="1.5" fill="#F0C0A8"/>
-
-            <!-- 입 (귀여운 표정) -->
-            <path d="M 45 51 Q 50 56, 55 51" stroke="#E74C3C" stroke-width="2" fill="none"/>
-            <ellipse cx="50" cy="52" rx="4" ry="2" fill="#FFB5B5" opacity="0.3"/>
-        </svg>
-    `;
-    girl.style.cssText = `
-        position: absolute;
-        right: 120px;
-        bottom: 0;
-        transform: scaleX(-1);
-        animation: girlThrow 2s ease-in-out infinite;
-        animation-delay: 1s;
-    `;
-
-    container.appendChild(boy);
-    container.appendChild(girl);
-
-    // 눈사람 (중앙, 아이들보다 큼)
+    // 눈사람 (중앙)
     const snowman = document.createElement('div');
     snowman.className = 'snowman';
     snowman.innerHTML = `
@@ -2342,121 +2161,6 @@ function createSnowballFight() {
 
     // 오른쪽 발자국 영역 생성
     createFootprints();
-
-    // 눈덩이 던지기 애니메이션
-    function throwSnowball(fromLeft) {
-        if (!document.body.classList.contains('light-theme') || !isGenderSelectionVisible()) return;
-
-        const snowball = document.createElement('div');
-        snowball.className = 'flying-snowball';
-        snowball.style.cssText = `
-            position: absolute;
-            width: 15px;
-            height: 15px;
-            background: radial-gradient(circle at 30% 30%, #fff, #e0e0e0);
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2), inset -2px -2px 4px rgba(0,0,0,0.1);
-            z-index: 101;
-        `;
-
-        // 캐릭터 위치 기준: boy left:120px(손 ~210px), girl right:120px(손 ~290px)
-        // 컨테이너 500px 기준 - 남자 손에서 여자 몸통으로, 여자 손에서 남자 몸통으로
-        const startX = fromLeft ? 210 : 290;
-        const endX = fromLeft ? 310 : 190;
-        const startY = 110;
-
-        snowball.style.left = startX + 'px';
-        snowball.style.top = startY + 'px';
-        container.appendChild(snowball);
-
-        // 포물선 애니메이션 (더 느리게)
-        let progress = 0;
-        const duration = 2500; // 1800 → 2500ms (더 느리게)
-        const startTime = performance.now();
-
-        function animateSnowball(currentTime) {
-            progress = (currentTime - startTime) / duration;
-
-            if (progress >= 1) {
-                // 터지는 효과
-                createSnowballSplash(container, endX, startY);
-                snowball.remove();
-                return;
-            }
-
-            const x = startX + (endX - startX) * progress;
-            const y = startY - Math.sin(progress * Math.PI) * 100; // 포물선 더 높게
-
-            snowball.style.left = x + 'px';
-            snowball.style.top = y + 'px';
-            snowball.style.transform = `rotate(${progress * 360}deg)`; // 회전도 느리게
-
-            requestAnimationFrame(animateSnowball);
-        }
-
-        requestAnimationFrame(animateSnowball);
-    }
-
-    // 눈덩이 터지는 효과
-    function createSnowballSplash(parent, x, y) {
-        for (let i = 0; i < 8; i++) {
-            const particle = document.createElement('div');
-            particle.style.cssText = `
-                position: absolute;
-                width: ${Math.random() * 6 + 3}px;
-                height: ${Math.random() * 6 + 3}px;
-                background: #fff;
-                border-radius: 50%;
-                left: ${x}px;
-                top: ${y}px;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            `;
-            parent.appendChild(particle);
-
-            const angle = (Math.PI * 2 / 8) * i;
-            const speed = Math.random() * 30 + 20;
-            const vx = Math.cos(angle) * speed;
-            const vy = Math.sin(angle) * speed - 20;
-
-            let px = x, py = y, opacity = 1;
-            function animateParticle() {
-                px += vx * 0.05;
-                py += vy * 0.05 + 2; // 중력
-                opacity -= 0.03;
-
-                if (opacity <= 0) {
-                    particle.remove();
-                    return;
-                }
-
-                particle.style.left = px + 'px';
-                particle.style.top = py + 'px';
-                particle.style.opacity = opacity;
-
-                requestAnimationFrame(animateParticle);
-            }
-            requestAnimationFrame(animateParticle);
-        }
-    }
-
-    // 눈덩이 주기적으로 던지기 (간격 늘림)
-    let throwInterval = setInterval(() => {
-        if (!document.body.classList.contains('light-theme') || !isGenderSelectionVisible()) {
-            clearInterval(throwInterval);
-            return;
-        }
-        throwSnowball(true); // 남자아이가 던짐
-    }, 3500); // 2000 → 3500ms
-
-    setTimeout(() => {
-        let throwInterval2 = setInterval(() => {
-            if (!document.body.classList.contains('light-theme') || !isGenderSelectionVisible()) {
-                clearInterval(throwInterval2);
-                return;
-            }
-            throwSnowball(false); // 여자아이가 던짐
-        }, 3500); // 2000 → 3500ms
-    }, 1750); // 1000 → 1750ms (중간에 번갈아가며)
 }
 
 window.createSnowballFight = createSnowballFight;
@@ -2809,7 +2513,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(createSnowflakes, 500);      // 다크모드용
     setTimeout(createSnowPiles, 600);       // 다크모드용
     setTimeout(createChristmasTree, 700);   // 다크모드용
-    // setTimeout(createSnowballFight, 800);   // 눈싸움 제거
+    setTimeout(createSnowballFight, 800);   // 라이트모드용 (눈사람+강아지)
     // setTimeout(addRudolphDecoration, 900);  // 루돌프 장식 제거
     setTimeout(createMerryChristmasText, 950); // 라이트모드용
     setTimeout(createFootprints, 1000);     // 라이트모드용
@@ -2837,7 +2541,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (document.body.classList.contains('light-theme')) {
                         // 라이트모드 효과
-                        // createSnowballFight(); // 눈싸움 제거
+                        createSnowballFight(); // 눈사람+강아지
                         // addRudolphDecoration(); // 루돌프 장식 제거
                         createMerryChristmasText();
                         createFootprints();
