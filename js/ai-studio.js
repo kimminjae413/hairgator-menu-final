@@ -2611,16 +2611,24 @@ function showHistoryPanel() {
 // 새 채팅 시작 (기존 대화는 유지, 새로운 대화 시작)
 function startNewChat() {
   const messages = document.getElementById('chat-messages');
+
+  // 다국어 지원
+  const welcomeTitle = typeof t === 'function' ? t('aiStudio.welcomeTitle') : '안녕하세요! HAIRGATOR AI입니다.';
+  const welcomeMessage = typeof t === 'function' ? t('aiStudio.welcomeMessage') : '헤어스타일 사진을 업로드하거나 질문해주세요. 2WAY CUT 시스템 기반으로 전문적인 분석과 레시피를 제공해드립니다.';
+  const quickALength = typeof t === 'function' ? t('aiStudio.quickALength') : 'A Length란?';
+  const quickLayerGrad = typeof t === 'function' ? t('aiStudio.quickLayerGrad') : 'Layer vs Graduation';
+  const quickLifting = typeof t === 'function' ? t('aiStudio.quickLifting') : 'Lifting 설명';
+
   messages.innerHTML = `
     <div class="message bot">
       <div class="message-avatar bot-logo"><img src="icons/icon-72.png" alt="H"></div>
       <div class="message-content">
-        <p><strong>안녕하세요! HAIRGATOR AI입니다.</strong></p>
-        <p>헤어스타일 사진을 업로드하거나 질문해주세요. 2WAY CUT 시스템 기반으로 전문적인 분석과 레시피를 제공해드립니다.</p>
+        <p><strong>${welcomeTitle}</strong></p>
+        <p>${welcomeMessage}</p>
         <div class="message-actions">
-          <button class="action-btn" onclick="quickAction('A Length가 뭐야?')">A Length란?</button>
-          <button class="action-btn" onclick="quickAction('레이어와 그래쥬에이션 차이')">Layer vs Graduation</button>
-          <button class="action-btn" onclick="quickAction('리프팅 각도 설명해줘')">Lifting 설명</button>
+          <button class="action-btn" onclick="quickAction('A Length가 뭐야?')">${quickALength}</button>
+          <button class="action-btn" onclick="quickAction('레이어와 그래쥬에이션 차이')">${quickLayerGrad}</button>
+          <button class="action-btn" onclick="quickAction('리프팅 각도 설명해줘')">${quickLifting}</button>
         </div>
       </div>
     </div>
