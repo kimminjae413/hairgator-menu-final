@@ -314,19 +314,24 @@ body.ai-studio-page {
 
 .action-btn {
   padding: 8px 16px;
-  background: rgba(58, 58, 58, 0.1);
-  border: 1px solid rgba(58, 58, 58, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: var(--radius-full);
-  color: #3a3a3a;
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .action-btn:hover {
-  background: rgba(58, 58, 58, 0.2);
-  border-color: rgba(58, 58, 58, 0.4);
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
 
 /* Canvas Preview Button (in message) */
@@ -1357,14 +1362,16 @@ body.ai-studio-page {
 
 /* Style Search Button */
 .style-search-btn {
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
+  background: linear-gradient(135deg, #E91E63 0%, #ff6b9d 100%) !important;
   color: white !important;
-  border-color: #4CAF50 !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3) !important;
 }
 
 .style-search-btn:hover {
-  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%) !important;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #d81557 0%, #E91E63 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4) !important;
 }
 
 /* ==================== Custom Recipe Canvas ==================== */
