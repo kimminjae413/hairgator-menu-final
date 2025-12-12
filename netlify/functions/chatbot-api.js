@@ -6084,7 +6084,7 @@ ${recipeTexts}
           }],
           generationConfig: {
             temperature: 0.5,
-            maxOutputTokens: 4000,
+            maxOutputTokens: 8000,
             thinkingConfig: {
               thinkingBudget: 0
             }
@@ -9864,7 +9864,7 @@ QUAN TRỌNG: Người dùng đang hỏi là "nhà thiết kế tóc", KHÔNG ph
           generationConfig: {
             temperature: 0.3,
             topP: 0.85,
-            maxOutputTokens: 4000
+            maxOutputTokens: 8000
           }
         })
       }
