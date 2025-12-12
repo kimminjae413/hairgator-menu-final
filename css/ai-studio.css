@@ -436,6 +436,60 @@ body.ai-studio-page {
   background: #ff2222;
 }
 
+/* Image Action Selection (레시피 보기 / 질문하기) */
+.image-action-selection {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 8px 0;
+}
+
+.image-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.image-action-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--primary-color);
+}
+
+.image-action-btn.selected {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.image-action-btn .action-icon {
+  font-size: 16px;
+}
+
+.image-action-btn.recipe-btn:hover,
+.image-action-btn.recipe-btn.selected {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.image-action-btn.question-btn:hover,
+.image-action-btn.question-btn.selected {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: white;
+}
+
 /* Gender Selection */
 .gender-selection {
   display: flex;

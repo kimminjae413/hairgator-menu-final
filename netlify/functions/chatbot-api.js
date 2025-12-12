@@ -476,6 +476,10 @@ exports.handler = async (event, context) => {
       case 'generate_angle_views':
         return await generateAngleViews(payload);
 
+      // ⭐ 이미지 질문 모드: 멀티모달 이미지 분석 + 자유 질문
+      case 'image_question':
+        return await handleImageQuestion(payload, GEMINI_KEY);
+
       default:
         return {
           statusCode: 400,
@@ -9763,6 +9767,107 @@ The model should be the same Korean ${genderWord} from the reference photo.`;
 
   } catch (error) {
     console.error('💥 각도별 이미지 생성 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 이미지 질문 모드 (멀티모달) ====================
+async function handleImageQuestion(payload, geminiKey) {
+  const { image_base64, mime_type, question, language } = payload;
+
+  console.log('💬 이미지 질문 모드 시작');
+  console.log('   - 질문:', question);
+  console.log('   - 언어:', language);
+
+  try {
+    // 언어별 시스템 프롬프트
+    const langMap = { ko: 'korean', en: 'english', ja: 'japanese', zh: 'chinese', vi: 'vietnamese' };
+    const langName = langMap[language] || 'korean';
+
+    const systemPrompts = {
+      korean: `당신은 전문 헤어 디자이너입니다. 사용자가 업로드한 이미지를 분석하고 질문에 답변해주세요.
+- 헤어스타일 관련 질문이면 전문적인 관점에서 상세히 설명해주세요.
+- 헤어스타일이 아닌 이미지라면, 이미지 내용을 설명하고 질문에 맞게 답변해주세요.
+- 자연스럽고 친근한 톤으로 답변해주세요.
+- 마크다운 서식(**, ###, - 등)을 사용하지 마세요.`,
+
+      english: `You are a professional hair designer. Analyze the uploaded image and answer the user's question.
+- For hairstyle-related questions, provide detailed professional explanations.
+- For non-hairstyle images, describe the image content and answer accordingly.
+- Respond in a natural, friendly tone.
+- Do not use markdown formatting (**, ###, -, etc.).`,
+
+      japanese: `あなたはプロのヘアデザイナーです。アップロードされた画像を分析し、ユーザーの質問に答えてください。
+- ヘアスタイル関連の質問には、専門的な観点から詳しく説明してください。
+- ヘアスタイル以外の画像の場合は、画像の内容を説明し、質問に合わせて回答してください。
+- 自然でフレンドリーなトーンで回答してください。
+- マークダウン書式（**、###、-など）は使用しないでください。`,
+
+      chinese: `您是专业的发型设计师。请分析用户上传的图片并回答问题。
+- 对于发型相关问题，请从专业角度详细说明。
+- 对于非发型图片，请描述图片内容并相应回答。
+- 请用自然友好的语气回答。
+- 请勿使用markdown格式（**、###、-等）。`,
+
+      vietnamese: `Bạn là một nhà thiết kế tóc chuyên nghiệp. Phân tích hình ảnh được tải lên và trả lời câu hỏi của người dùng.
+- Đối với các câu hỏi liên quan đến kiểu tóc, hãy giải thích chi tiết từ góc độ chuyên môn.
+- Đối với hình ảnh không phải kiểu tóc, hãy mô tả nội dung hình ảnh và trả lời phù hợp.
+- Trả lời với giọng điệu tự nhiên, thân thiện.
+- Không sử dụng định dạng markdown (**, ###, -, v.v.).`
+    };
+
+    const systemPrompt = systemPrompts[langName] || systemPrompts.korean;
+
+    // Gemini Vision API 호출
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{
+            role: 'user',
+            parts: [
+              { inlineData: { mimeType: mime_type, data: image_base64 } },
+              { text: question }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.4,
+            topP: 0.85,
+            maxOutputTokens: 2000
+          }
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+      const answer = data.candidates[0].content.parts[0].text;
+      console.log('✅ 이미지 질문 응답 생성 완료');
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ success: true, answer })
+      };
+    } else {
+      console.error('❌ Gemini 응답 오류:', data);
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ success: false, error: 'No response from AI' })
+      };
+    }
+
+  } catch (error) {
+    console.error('💥 이미지 질문 처리 오류:', error);
     return {
       statusCode: 500,
       headers,

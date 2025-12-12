@@ -103,8 +103,19 @@
                             </svg>
                         </button>
                     </div>
-                    <!-- Gender Selection -->
-                    <div class="gender-selection" id="gender-selection">
+                    <!-- Image Action Selection (레시피 보기 / 질문하기) -->
+                    <div class="image-action-selection" id="image-action-selection">
+                        <button class="image-action-btn recipe-btn" id="action-recipe" onclick="selectImageAction('recipe')">
+                            <span class="action-icon">📋</span>
+                            <span data-i18n="aiStudio.actionRecipe">레시피 보기</span>
+                        </button>
+                        <button class="image-action-btn question-btn" id="action-question" onclick="selectImageAction('question')">
+                            <span class="action-icon">💬</span>
+                            <span data-i18n="aiStudio.actionQuestion">질문하기</span>
+                        </button>
+                    </div>
+                    <!-- Gender Selection (레시피 선택 시에만 표시) -->
+                    <div class="gender-selection" id="gender-selection" style="display: none;">
                         <span class="gender-label" data-i18n="aiStudio.genderLabel">성별 선택:</span>
                         <button class="gender-btn" id="gender-female" onclick="selectGender('female')">
                             <span class="gender-icon">👩</span>

@@ -2691,10 +2691,90 @@ function clearChat() {
 // 대기 중인 이미지 저장
 let pendingImageData = null;
 
+// 선택된 액션 타입 (recipe / question)
+let selectedImageAction = null;
+
 // 선택된 성별 저장
 let selectedGender = null;
 // 선택된 카테고리 저장
 let selectedCategory = null;
+
+// 이미지 액션 선택 (레시피 보기 / 질문하기)
+function selectImageAction(action) {
+  selectedImageAction = action;
+
+  // 버튼 UI 업데이트
+  const recipeBtn = document.getElementById('action-recipe');
+  const questionBtn = document.getElementById('action-question');
+  const genderSelection = document.getElementById('gender-selection');
+  const categorySelection = document.getElementById('category-selection');
+
+  recipeBtn.classList.remove('selected');
+  questionBtn.classList.remove('selected');
+
+  if (action === 'recipe') {
+    recipeBtn.classList.add('selected');
+    // 레시피 모드: 성별 선택 표시
+    genderSelection.style.display = 'flex';
+  } else if (action === 'question') {
+    questionBtn.classList.add('selected');
+    // 질문 모드: 성별 선택 숨기고 바로 질문 모드 시작
+    genderSelection.style.display = 'none';
+    categorySelection.style.display = 'none';
+    selectedGender = null;
+    selectedCategory = null;
+    // 질문 모드 활성화
+    startQuestionMode();
+  }
+
+  console.log(`🎯 이미지 액션 선택: ${action}`);
+}
+
+// 질문 모드 시작: 이미지를 채팅에 표시하고 안내 메시지
+async function startQuestionMode() {
+  if (!pendingImageData) return;
+
+  const imageUrl = pendingImageData.url;
+  const imageFile = pendingImageData.file;
+
+  // 미리보기 숨기기
+  document.getElementById('image-preview-area').style.display = 'none';
+
+  // 사용자 메시지로 이미지만 표시
+  window.aiStudio.addMessageToUI('user', `
+    <img src="${imageUrl}" style="max-width: 200px; border-radius: 8px;" alt="업로드된 이미지">
+  `);
+
+  // 타이핑 표시
+  window.aiStudio.showTypingIndicator();
+
+  try {
+    // Base64 변환 및 저장 (후속 질문에서 사용)
+    const base64 = await window.aiStudio.fileToBase64(imageFile);
+    window.aiStudio.pendingImageBase64 = base64;
+    window.aiStudio.pendingMimeType = imageFile.type;
+    window.aiStudio.questionModeImageUrl = imageUrl; // 질문 모드 이미지 URL 저장
+
+    // i18n 적용된 안내 메시지
+    const askMsg = typeof t === 'function'
+      ? t('aiStudio.imageQuestionPrompt')
+      : '이 이미지에 대해 어떤 점이 궁금하세요? 질문을 입력해주세요.';
+
+    window.aiStudio.hideTypingIndicator();
+    window.aiStudio.addMessageToUI('bot', `<p>${askMsg}</p>`);
+
+    // 입력창에 포커스
+    document.getElementById('chat-input').focus();
+
+  } catch (error) {
+    console.error('❌ 질문 모드 시작 실패:', error);
+    window.aiStudio.hideTypingIndicator();
+    window.aiStudio.addMessageToUI('bot', '<p>이미지 처리 중 오류가 발생했습니다.</p>');
+  }
+
+  // pendingImageData 유지 (나중에 질문 시 사용)
+  // pendingImageData = null; // 주석 처리 - 질문 모드에서는 유지
+}
 
 // 여자 기장 카테고리 (H~A) - H가 가장 짧고 A가 가장 긺
 // 상세 설명 추가: position(신체 위치), description(특징 설명)
@@ -2848,9 +2928,15 @@ function removePreviewImage() {
   previewArea.style.display = 'none';
   pendingImageData = null;
 
+  // 액션 선택 초기화
+  selectedImageAction = null;
+  document.getElementById('action-recipe').classList.remove('selected');
+  document.getElementById('action-question').classList.remove('selected');
+
   // 성별 선택 초기화
   selectedGender = null;
   selectedCategory = null;
+  document.getElementById('gender-selection').style.display = 'none';
   document.getElementById('gender-female').classList.remove('selected');
   document.getElementById('gender-male').classList.remove('selected');
   document.getElementById('category-selection').style.display = 'none';
@@ -3068,12 +3154,27 @@ ${data.customRecipe ? `\n생성된 레시피:\n${data.customRecipe}` : ''}`;
 }
 
 async function sendMessage() {
-  console.log('🔍 sendMessage 호출됨, pendingImageData:', pendingImageData);
+  console.log('🔍 sendMessage 호출됨, pendingImageData:', pendingImageData, 'selectedImageAction:', selectedImageAction);
 
-  // 이미지가 있으면 이미지와 함께 전송
-  if (pendingImageData && pendingImageData.file) {
-    console.log('📷 이미지와 함께 전송 시작');
+  // 이미지가 있고 레시피 모드가 선택된 경우
+  if (pendingImageData && pendingImageData.file && selectedImageAction === 'recipe') {
+    console.log('📷 레시피 모드: 이미지와 함께 전송 시작');
     await sendImageWithQuestion();
+    return;
+  }
+
+  // 질문 모드에서 후속 질문 처리 (이미지 base64가 저장되어 있는 경우)
+  if (window.aiStudio.pendingImageBase64) {
+    const textInput = document.getElementById('chat-input');
+    const question = textInput.value.trim();
+
+    if (!question) {
+      alert(typeof t === 'function' ? t('aiStudio.enterQuestion') || '질문을 입력해주세요.' : '질문을 입력해주세요.');
+      return;
+    }
+
+    console.log('💬 질문 모드: 이미지와 함께 질문 전송');
+    await sendQuestionWithImage(question);
     return;
   }
 
@@ -3083,6 +3184,59 @@ async function sendMessage() {
     window.aiStudio.sendMessage();
   } else {
     console.error('❌ aiStudio가 초기화되지 않았습니다');
+  }
+}
+
+// 질문 모드: 이미지와 함께 질문 전송
+async function sendQuestionWithImage(question) {
+  const textInput = document.getElementById('chat-input');
+
+  // 사용자 메시지 표시
+  window.aiStudio.addMessageToUI('user', `<p>${question}</p>`);
+  textInput.value = '';
+
+  // 타이핑 표시
+  window.aiStudio.showTypingIndicator();
+
+  try {
+    // 언어 설정
+    const lang = localStorage.getItem('hairgator_language') || 'ko';
+
+    // 서버에 이미지 + 질문 전송
+    const response = await fetch('/.netlify/functions/chatbot-api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'image_question',
+        payload: {
+          image_base64: window.aiStudio.pendingImageBase64,
+          mime_type: window.aiStudio.pendingMimeType,
+          question: question,
+          language: lang
+        }
+      })
+    });
+
+    const data = await response.json();
+
+    window.aiStudio.hideTypingIndicator();
+
+    if (data.success && data.answer) {
+      window.aiStudio.addMessageToUI('bot', `<p>${data.answer}</p>`);
+
+      // Firebase에 저장
+      if (window.aiStudio.currentUserId) {
+        window.aiStudio.saveMessageToFirebase('user', question);
+        window.aiStudio.saveMessageToFirebase('bot', data.answer);
+      }
+    } else {
+      window.aiStudio.addMessageToUI('bot', '<p>답변을 생성하지 못했습니다. 다시 시도해주세요.</p>');
+    }
+
+  } catch (error) {
+    console.error('❌ 질문 전송 실패:', error);
+    window.aiStudio.hideTypingIndicator();
+    window.aiStudio.addMessageToUI('bot', '<p>오류가 발생했습니다. 다시 시도해주세요.</p>');
   }
 }
 

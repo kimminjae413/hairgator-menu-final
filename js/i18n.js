@@ -162,7 +162,11 @@ const HAIRGATOR_I18N = {
       noHistoryDesc: '이미지를 분석하면 여기에 기록됩니다.',
       chatCleared: '대화가 초기화되었습니다.',
       enterNewQuestion: '새로운 질문을 입력해주세요.',
-      confirmClear: '대화 내용을 모두 삭제하시겠습니까?\n(히스토리도 함께 삭제됩니다)'
+      confirmClear: '대화 내용을 모두 삭제하시겠습니까?\n(히스토리도 함께 삭제됩니다)',
+      actionRecipe: '레시피 보기',
+      actionQuestion: '질문하기',
+      imageQuestionPrompt: '이 이미지에 대해 어떤 점이 궁금하세요? 질문을 입력해주세요.',
+      enterQuestion: '질문을 입력해주세요.'
     },
 
     // ========== 헤어체험 ==========
@@ -954,7 +958,11 @@ const HAIRGATOR_I18N = {
       noHistoryDesc: 'Analyze an image and it will be recorded here.',
       chatCleared: 'Chat has been cleared.',
       enterNewQuestion: 'Please enter a new question.',
-      confirmClear: 'Delete all chat history?\n(History will also be deleted)'
+      confirmClear: 'Delete all chat history?\n(History will also be deleted)',
+      actionRecipe: 'View Recipe',
+      actionQuestion: 'Ask Question',
+      imageQuestionPrompt: 'What would you like to know about this image? Please enter your question.',
+      enterQuestion: 'Please enter a question.'
     },
 
     // ========== Hair Try ==========
@@ -1719,7 +1727,11 @@ const HAIRGATOR_I18N = {
       noHistoryDesc: '画像を分析するとここに記録されます。',
       chatCleared: 'チャットが初期化されました。',
       enterNewQuestion: '新しい質問を入力してください。',
-      confirmClear: 'すべてのチャット履歴を削除しますか？\n（履歴も一緒に削除されます）'
+      confirmClear: 'すべてのチャット履歴を削除しますか？\n（履歴も一緒に削除されます）',
+      actionRecipe: 'レシピを見る',
+      actionQuestion: '質問する',
+      imageQuestionPrompt: 'この画像について何が知りたいですか？質問を入力してください。',
+      enterQuestion: '質問を入力してください。'
     },
 
     // ========== ヘアトライ ==========
@@ -2480,7 +2492,11 @@ const HAIRGATOR_I18N = {
       noHistoryDesc: '分析图片后将记录在这里。',
       chatCleared: '对话已初始化。',
       enterNewQuestion: '请输入新问题。',
-      confirmClear: '确定要删除所有对话记录吗？\n（历史记录也将被删除）'
+      confirmClear: '确定要删除所有对话记录吗？\n（历史记录也将被删除）',
+      actionRecipe: '查看配方',
+      actionQuestion: '提问',
+      imageQuestionPrompt: '您想了解这张图片的什么内容？请输入您的问题。',
+      enterQuestion: '请输入问题。'
     },
 
     // ========== 发型体验 ==========
@@ -3244,7 +3260,11 @@ const HAIRGATOR_I18N = {
       noHistoryDesc: 'Phân tích hình ảnh và sẽ được ghi lại ở đây.',
       chatCleared: 'Cuộc trò chuyện đã được đặt lại.',
       enterNewQuestion: 'Vui lòng nhập câu hỏi mới.',
-      confirmClear: 'Bạn có chắc muốn xóa tất cả lịch sử trò chuyện?\n(Lịch sử cũng sẽ bị xóa)'
+      confirmClear: 'Bạn có chắc muốn xóa tất cả lịch sử trò chuyện?\n(Lịch sử cũng sẽ bị xóa)',
+      actionRecipe: 'Xem công thức',
+      actionQuestion: 'Đặt câu hỏi',
+      imageQuestionPrompt: 'Bạn muốn biết gì về hình ảnh này? Vui lòng nhập câu hỏi.',
+      enterQuestion: 'Vui lòng nhập câu hỏi.'
     },
 
     // ========== Thử kiểu tóc ==========
