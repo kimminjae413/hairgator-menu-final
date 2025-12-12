@@ -2818,16 +2818,17 @@ function selectGender(gender) {
 
   if (gender === 'female') {
     femaleBtn.classList.add('selected');
+    // 여성: 시술 선택(컷/펌) 표시
+    document.getElementById('service-cut').classList.remove('selected');
+    document.getElementById('service-selection').style.display = 'flex';
+    document.getElementById('category-selection').style.display = 'none';
   } else if (gender === 'male') {
     maleBtn.classList.add('selected');
+    // 남성: 시술 선택 건너뛰고 바로 스타일 선택
+    selectedService = 'cut';
+    document.getElementById('service-selection').style.display = 'none';
+    showCategorySelection(gender);
   }
-
-  // 시술 선택 초기화 및 표시
-  document.getElementById('service-cut').classList.remove('selected');
-  document.getElementById('service-selection').style.display = 'flex';
-
-  // 카테고리 선택 숨기기
-  document.getElementById('category-selection').style.display = 'none';
 
   console.log(`🎯 성별 선택: ${gender}`);
 }
