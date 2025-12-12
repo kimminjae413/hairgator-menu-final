@@ -828,3 +828,314 @@ body.light-theme .styles-container::-webkit-scrollbar-thumb {
 body.light-theme .styles-container::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.25);
 }
+
+/* ========== Premium UI Enhancement 2024-12 ========== */
+
+/* === 1. 헤더 영역 럭셔리 강화 === */
+
+/* 로고 - Playfair Display 세리프 폰트로 럭셔리 느낌 */
+.logo {
+    font-family: 'Playfair Display', 'Times New Roman', serif !important;
+    font-size: 26px !important;
+    font-weight: 600 !important;
+    letter-spacing: 4px !important;
+    background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 50%, #ffffff 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    text-shadow: none !important;
+}
+
+body.light-theme .logo {
+    background: linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 50%, #1a1a1a 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* 헤더 하단 골드 악센트 라인 */
+.header {
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3) !important;
+    position: relative !important;
+}
+
+.header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.6), transparent);
+}
+
+body.light-theme .header {
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
+}
+
+/* === 2. 카드 디자인 프리미엄 업그레이드 === */
+
+/* 카드 골드 테두리 효과 (호버 시) */
+.style-card {
+    border: 1px solid transparent !important;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+.style-card:hover {
+    border-color: rgba(212, 175, 55, 0.4) !important;
+}
+
+body.light-theme .style-card:hover {
+    border-color: rgba(180, 150, 50, 0.3) !important;
+}
+
+/* 카드 하단 그라데이션 오버레이 */
+.style-image-wrapper::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 0 0 20px 20px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.style-card:hover .style-image-wrapper::before {
+    opacity: 1;
+}
+
+body.light-theme .style-image-wrapper::before {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.2) 0%, transparent 100%);
+}
+
+/* 카드 그림자 더 세련되게 */
+.style-card {
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+}
+
+.style-card:hover {
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(212, 175, 55, 0.3),
+        0 0 30px rgba(212, 175, 55, 0.1) !important;
+}
+
+body.light-theme .style-card {
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-theme .style-card:hover {
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(180, 150, 50, 0.3) !important;
+}
+
+/* === 3. 카드 로딩 스태거 애니메이션 === */
+@keyframes cardReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.style-card {
+    animation: cardReveal 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards;
+}
+
+.style-card:nth-child(1) { animation-delay: 0.05s; }
+.style-card:nth-child(2) { animation-delay: 0.1s; }
+.style-card:nth-child(3) { animation-delay: 0.15s; }
+.style-card:nth-child(4) { animation-delay: 0.2s; }
+.style-card:nth-child(5) { animation-delay: 0.25s; }
+.style-card:nth-child(6) { animation-delay: 0.3s; }
+.style-card:nth-child(7) { animation-delay: 0.35s; }
+.style-card:nth-child(8) { animation-delay: 0.4s; }
+.style-card:nth-child(9) { animation-delay: 0.45s; }
+.style-card:nth-child(10) { animation-delay: 0.5s; }
+
+/* === 4. 탭 전환 트랜지션 === */
+.category-tabs, .sub-tabs {
+    transition: all 0.4s ease !important;
+}
+
+.category-tab, .sub-tab {
+    transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+/* 탭 호버 시 미묘한 골드 틴트 */
+.category-tab:hover:not(.active) {
+    border-color: rgba(212, 175, 55, 0.2) !important;
+}
+
+body.light-theme .category-tab:hover:not(.active) {
+    border-color: rgba(180, 150, 50, 0.2) !important;
+}
+
+/* === 5. 카테고리명 럭셔리 폰트 === */
+.category-description-text .category-name {
+    font-family: 'Playfair Display', 'Times New Roman', serif !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    letter-spacing: 2px !important;
+    background: linear-gradient(135deg, currentColor 0%, currentColor 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+}
+
+/* 여성 카테고리명 골드-핑크 그라데이션 */
+body.gender-female .category-description-text .category-name {
+    background: linear-gradient(135deg, #E91E63 0%, #d4af37 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* 남성 카테고리명 골드-블루 그라데이션 */
+body.gender-male .category-description-text .category-name {
+    background: linear-gradient(135deg, #4A90E2 0%, #d4af37 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* === 6. 배경 노이즈 텍스처 === */
+.menu-container::before,
+.styles-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.015;
+    pointer-events: none;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+body.light-theme .menu-container::before,
+body.light-theme .styles-container::before {
+    opacity: 0.02;
+}
+
+/* === 7. 미묘한 배경 그라데이션 === */
+.styles-container {
+    background: linear-gradient(180deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(10, 10, 10, 0.3) 50%,
+        rgba(0, 0, 0, 0) 100%) !important;
+}
+
+body.light-theme .styles-container {
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(245, 245, 245, 0.5) 50%,
+        rgba(255, 255, 255, 0) 100%) !important;
+}
+
+/* === 8. 마우스 따라다니는 빛 효과 (CSS만으로 근사) === */
+.style-card {
+    --mouse-x: 50%;
+    --mouse-y: 50%;
+}
+
+.style-card::before {
+    background: radial-gradient(
+        600px circle at var(--mouse-x) var(--mouse-y),
+        rgba(212, 175, 55, 0.06),
+        transparent 40%
+    ) !important;
+}
+
+/* === 9. Active 탭 골드 악센트 === */
+body.gender-female .category-tab.active,
+body.gender-male .category-tab.active {
+    position: relative !important;
+}
+
+body.gender-female .category-tab.active::after,
+body.gender-male .category-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.8), transparent);
+    border-radius: 1px;
+}
+
+/* === 10. 서브탭 Active 상태 강화 === */
+.sub-tab.active {
+    position: relative !important;
+    overflow: visible !important;
+}
+
+body.gender-female .sub-tab.active::before,
+body.gender-male .sub-tab.active::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 17px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.5), transparent 60%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+/* === 11. 스크롤 시 헤더 그림자 강화 === */
+.header {
+    transition: box-shadow 0.3s ease !important;
+}
+
+.menu-container.scrolled .header {
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(212, 175, 55, 0.1);
+}
+
+body.light-theme .menu-container.scrolled .header {
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(212, 175, 55, 0.1);
+}
+
+/* === 12. 카드 코너 장식 (미묘한 골드) === */
+.style-card::after {
+    content: '' !important;
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    width: 20px !important;
+    height: 20px !important;
+    background: none !important;
+    border-top: 2px solid rgba(212, 175, 55, 0) !important;
+    border-right: 2px solid rgba(212, 175, 55, 0) !important;
+    border-radius: 0 8px 0 0 !important;
+    transition: all 0.4s ease !important;
+    transform: none !important;
+    left: auto !important;
+}
+
+.style-card:hover::after {
+    border-top-color: rgba(212, 175, 55, 0.5) !important;
+    border-right-color: rgba(212, 175, 55, 0.5) !important;
+}
+
+body.light-theme .style-card:hover::after {
+    border-top-color: rgba(180, 150, 50, 0.4) !important;
+    border-right-color: rgba(180, 150, 50, 0.4) !important;
+}
