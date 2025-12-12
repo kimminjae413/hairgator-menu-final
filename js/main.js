@@ -1,7 +1,11 @@
 // HAIRGATOR Main Application - 최종 버전 (goBack display:none 추가)
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🦎 HAIRGATOR 메인 앱 시작...');
-    
+
+    // 로그인 정보 대기 상태 추적 (모든 함수보다 먼저 선언)
+    let loginInfoPending = true;
+    let loginInfoTimeout = null;
+
     // Elements
     const backBtn = document.getElementById('backBtn');
     const menuBtn = document.getElementById('menuBtn');
@@ -9,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarClose = document.getElementById('sidebarClose');
     const genderSelection = document.getElementById('genderSelection');
     const menuContainer = document.getElementById('menuContainer');
-    
+
     // Initialize
     init();
 
@@ -216,18 +220,44 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateLoginInfo() {
         const loginStatus = document.getElementById('loginStatus');
         const creditDisplay = document.getElementById('creditDisplay');
-        
+
         const bullnabiUser = window.getBullnabiUser && window.getBullnabiUser();
         if (bullnabiUser) {
+            // 불나비 로그인 성공
+            loginInfoPending = false;
+            if (loginInfoTimeout) {
+                clearTimeout(loginInfoTimeout);
+                loginInfoTimeout = null;
+            }
             if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${bullnabiUser.name}`;
             const credit = parseFloat(bullnabiUser.remainCount) || 0;
             if (creditDisplay) creditDisplay.textContent = credit.toFixed(2);
         } else {
             const designerName = localStorage.getItem('designerName');
             if (designerName) {
+                // localStorage에서 로그인 정보 있음
+                loginInfoPending = false;
                 if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${designerName}`;
                 if (creditDisplay) creditDisplay.textContent = '∞';
+            } else if (loginInfoPending) {
+                // 아직 로그인 정보 대기 중 - 로딩 표시
+                if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ...`;
+                if (creditDisplay) creditDisplay.textContent = '-';
+
+                // 2초 후에도 로그인 정보 없으면 게스트로 표시
+                if (!loginInfoTimeout) {
+                    loginInfoTimeout = setTimeout(() => {
+                        loginInfoPending = false;
+                        const currentUser = window.getBullnabiUser && window.getBullnabiUser();
+                        const currentDesignerName = localStorage.getItem('designerName');
+                        if (!currentUser && !currentDesignerName) {
+                            if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${t('ui.guest')}`;
+                            if (creditDisplay) creditDisplay.textContent = '0';
+                        }
+                    }, 2000);
+                }
             } else {
+                // 대기 완료 후 게스트로 확정
                 if (loginStatus) loginStatus.textContent = `${t('ui.loginStatus')}: ${t('ui.guest')}`;
                 if (creditDisplay) creditDisplay.textContent = '0';
             }
@@ -580,6 +610,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.showLanguageModal = showLanguageModal;
     window.setupSidebar = setupSidebar;
     window.toggleTheme = toggleTheme;
+    window.updateLoginInfo = updateLoginInfo;
 
     // ⭐⭐⭐ 최종 수정된 goBack 함수 (불나비 자동 로그인 전용) ⭐⭐⭐
     window.goBack = function() {
@@ -623,7 +654,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (typeof window.createSnowPiles === 'function') window.createSnowPiles();
                 if (typeof window.createChristmasTree === 'function') window.createChristmasTree();
                 // 라이트모드용
-                if (typeof window.createSnowballFight === 'function') window.createSnowballFight();
+                // if (typeof window.createSnowballFight === 'function') window.createSnowballFight(); // 눈싸움 제거
                 // if (typeof window.addRudolphDecoration === 'function') window.addRudolphDecoration(); // 루돌프 장식 제거
                 if (typeof window.createMerryChristmasText === 'function') window.createMerryChristmasText();
                 if (typeof window.createFootprints === 'function') window.createFootprints();
@@ -2535,7 +2566,7 @@ function createMerryChristmasText() {
             <!-- 메인 텍스트 -->
             <text x="160" y="42"
                   text-anchor="middle"
-                  font-family="'Brush Script MT', 'Segoe Script', cursive"
+                  font-family="'Great Vibes', 'Dancing Script', cursive"
                   font-size="38"
                   font-weight="bold"
                   fill="url(#xmasGradient)"
@@ -2759,7 +2790,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(createSnowflakes, 500);      // 다크모드용
     setTimeout(createSnowPiles, 600);       // 다크모드용
     setTimeout(createChristmasTree, 700);   // 다크모드용
-    setTimeout(createSnowballFight, 800);   // 라이트모드용
+    // setTimeout(createSnowballFight, 800);   // 눈싸움 제거
     // setTimeout(addRudolphDecoration, 900);  // 루돌프 장식 제거
     setTimeout(createMerryChristmasText, 950); // 라이트모드용
     setTimeout(createFootprints, 1000);     // 라이트모드용
@@ -2787,7 +2818,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (document.body.classList.contains('light-theme')) {
                         // 라이트모드 효과
-                        createSnowballFight();
+                        // createSnowballFight(); // 눈싸움 제거
                         // addRudolphDecoration(); // 루돌프 장식 제거
                         createMerryChristmasText();
                         createFootprints();

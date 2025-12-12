@@ -1283,12 +1283,12 @@ body:not(.light-theme) .gender-selection::before {
     top: 60px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 36px;
+    font-size: 42px;
     font-weight: 400;
-    font-family: 'Brush Script MT', 'Segoe Script', cursive;
+    font-family: 'Great Vibes', 'Dancing Script', cursive;
     color: #fff;
     z-index: 9999;
-    letter-spacing: 4px;
+    letter-spacing: 2px;
     animation: neonColorChange 6s ease-in-out infinite;
 }
 

@@ -144,6 +144,11 @@ function loginWithBullnabi(userInfo) {
             updateUserInfo();
         }
 
+        // ⭐ 사이드바 로그인 정보 업데이트
+        if (typeof window.updateLoginInfo === 'function') {
+            window.updateLoginInfo();
+        }
+
         console.log('불나비 자동 로그인 완료:', userInfo.name);
 
         // ⭐ Firebase에서 사용자 설정 (테마, 언어) 로드
