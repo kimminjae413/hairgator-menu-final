@@ -89,6 +89,15 @@ const HAIRGATOR_I18N = {
       save: '저장',
       brandSaved: '상호 설정이 저장되었습니다.',
       saveFailed: '저장에 실패했습니다',
+      // 폰트 이름
+      fontDefault: '기본',
+      fontNotoSans: '노토 산스',
+      fontNanumGothic: '나눔 고딕',
+      fontSpoqa: '스포카 한 산스',
+      fontMontserrat: 'Montserrat',
+      fontPlayfair: 'Playfair',
+      fontDancing: 'Dancing Script',
+      fontBebas: 'Bebas Neue',
 
       // 프로필 사진
       profilePhoto: '📷 프로필 사진',
@@ -870,6 +879,15 @@ const HAIRGATOR_I18N = {
       save: 'Save',
       brandSaved: 'Brand settings saved.',
       saveFailed: 'Save failed',
+      // Font names
+      fontDefault: 'Default',
+      fontNotoSans: 'Noto Sans',
+      fontNanumGothic: 'Nanum Gothic',
+      fontSpoqa: 'Spoqa Han Sans',
+      fontMontserrat: 'Montserrat',
+      fontPlayfair: 'Playfair',
+      fontDancing: 'Dancing Script',
+      fontBebas: 'Bebas Neue',
 
       // Profile photo
       profilePhoto: '📷 Profile Photo',
@@ -1621,6 +1639,15 @@ const HAIRGATOR_I18N = {
       save: '保存',
       brandSaved: '店名設定が保存されました。',
       saveFailed: '保存に失敗しました',
+      // フォント名
+      fontDefault: 'デフォルト',
+      fontNotoSans: 'Noto Sans',
+      fontNanumGothic: 'Nanum Gothic',
+      fontSpoqa: 'Spoqa Han Sans',
+      fontMontserrat: 'Montserrat',
+      fontPlayfair: 'Playfair',
+      fontDancing: 'Dancing Script',
+      fontBebas: 'Bebas Neue',
 
       // プロフィール写真
       profilePhoto: '📷 プロフィール写真',
@@ -2368,6 +2395,15 @@ const HAIRGATOR_I18N = {
       save: '保存',
       brandSaved: '店名设置已保存。',
       saveFailed: '保存失败',
+      // 字体名称
+      fontDefault: '默认',
+      fontNotoSans: 'Noto Sans',
+      fontNanumGothic: 'Nanum Gothic',
+      fontSpoqa: 'Spoqa Han Sans',
+      fontMontserrat: 'Montserrat',
+      fontPlayfair: 'Playfair',
+      fontDancing: 'Dancing Script',
+      fontBebas: 'Bebas Neue',
 
       // 个人照片
       profilePhoto: '📷 个人照片',
@@ -3118,6 +3154,15 @@ const HAIRGATOR_I18N = {
       save: 'Lưu',
       brandSaved: 'Đã lưu cài đặt tên cửa hàng.',
       saveFailed: 'Lưu thất bại',
+      // Tên phông chữ
+      fontDefault: 'Mặc định',
+      fontNotoSans: 'Noto Sans',
+      fontNanumGothic: 'Nanum Gothic',
+      fontSpoqa: 'Spoqa Han Sans',
+      fontMontserrat: 'Montserrat',
+      fontPlayfair: 'Playfair',
+      fontDancing: 'Dancing Script',
+      fontBebas: 'Bebas Neue',
 
       // Ảnh hồ sơ
       profilePhoto: '📷 Ảnh hồ sơ',

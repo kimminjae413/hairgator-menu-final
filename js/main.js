@@ -731,16 +731,16 @@ window.addEventListener('load', function() {
 
 // ========== 상호 설정 기능 ==========
 
-// 폰트 옵션
+// 폰트 옵션 - i18n 키 사용
 const FONT_OPTIONS = [
-    { id: 'default', name: '기본', fontFamily: "'Pretendard', -apple-system, sans-serif", nameEn: 'Default' },
-    { id: 'noto-sans', name: '노토 산스', fontFamily: "'Noto Sans KR', sans-serif", nameEn: 'Noto Sans' },
-    { id: 'nanum-gothic', name: '나눔 고딕', fontFamily: "'Nanum Gothic', sans-serif", nameEn: 'Nanum Gothic' },
-    { id: 'spoqa', name: '스포카 한 산스', fontFamily: "'Spoqa Han Sans Neo', sans-serif", nameEn: 'Spoqa Han Sans' },
-    { id: 'montserrat', name: 'Montserrat', fontFamily: "'Montserrat', sans-serif", nameEn: 'Montserrat' },
-    { id: 'playfair', name: 'Playfair', fontFamily: "'Playfair Display', serif", nameEn: 'Playfair Display' },
-    { id: 'dancing', name: 'Dancing Script', fontFamily: "'Dancing Script', cursive", nameEn: 'Dancing Script' },
-    { id: 'bebas', name: 'Bebas Neue', fontFamily: "'Bebas Neue', sans-serif", nameEn: 'Bebas Neue' }
+    { id: 'default', i18nKey: 'fontDefault', fontFamily: "'Pretendard', -apple-system, sans-serif" },
+    { id: 'noto-sans', i18nKey: 'fontNotoSans', fontFamily: "'Noto Sans KR', sans-serif" },
+    { id: 'nanum-gothic', i18nKey: 'fontNanumGothic', fontFamily: "'Nanum Gothic', sans-serif" },
+    { id: 'spoqa', i18nKey: 'fontSpoqa', fontFamily: "'Spoqa Han Sans Neo', sans-serif" },
+    { id: 'montserrat', i18nKey: 'fontMontserrat', fontFamily: "'Montserrat', sans-serif" },
+    { id: 'playfair', i18nKey: 'fontPlayfair', fontFamily: "'Playfair Display', serif" },
+    { id: 'dancing', i18nKey: 'fontDancing', fontFamily: "'Dancing Script', cursive" },
+    { id: 'bebas', i18nKey: 'fontBebas', fontFamily: "'Bebas Neue', sans-serif" }
 ];
 
 // 색상 옵션
@@ -788,8 +788,8 @@ function showBrandSettingModal() {
     const fontOptionsHtml = FONT_OPTIONS.map(font => `
         <label class="font-option ${savedFont === font.id ? 'selected' : ''}" data-font-id="${font.id}">
             <input type="radio" name="brandFont" value="${font.id}" ${savedFont === font.id ? 'checked' : ''} style="display: none;">
-            <span class="font-preview" style="font-family: ${font.fontFamily};">Aa 가나</span>
-            <span class="font-name">${font.name}</span>
+            <span class="font-preview" style="font-family: ${font.fontFamily}; color: #fff;">Aa 가나</span>
+            <span class="font-name">${t('ui.' + font.i18nKey) || font.id}</span>
         </label>
     `).join('');
 
