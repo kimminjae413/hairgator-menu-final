@@ -2696,6 +2696,8 @@ let selectedImageAction = null;
 
 // 선택된 성별 저장
 let selectedGender = null;
+// 선택된 시술 타입 (cut / perm)
+let selectedService = null;
 // 선택된 카테고리 저장
 let selectedCategory = null;
 
@@ -2804,6 +2806,7 @@ const MALE_CATEGORIES = [
 // 성별 선택 함수
 function selectGender(gender) {
   selectedGender = gender;
+  selectedService = null; // 시술 초기화
   selectedCategory = null; // 카테고리 초기화
 
   // 버튼 UI 업데이트
@@ -2819,10 +2822,32 @@ function selectGender(gender) {
     maleBtn.classList.add('selected');
   }
 
-  // 카테고리 선택 UI 표시
-  showCategorySelection(gender);
+  // 시술 선택 초기화 및 표시
+  document.getElementById('service-cut').classList.remove('selected');
+  document.getElementById('service-selection').style.display = 'flex';
+
+  // 카테고리 선택 숨기기
+  document.getElementById('category-selection').style.display = 'none';
 
   console.log(`🎯 성별 선택: ${gender}`);
+}
+
+// 시술 선택 함수 (컷/펌)
+function selectService(service) {
+  selectedService = service;
+  selectedCategory = null; // 카테고리 초기화
+
+  // 버튼 UI 업데이트
+  const cutBtn = document.getElementById('service-cut');
+  cutBtn.classList.remove('selected');
+
+  if (service === 'cut') {
+    cutBtn.classList.add('selected');
+    // 카테고리 선택 UI 표시
+    showCategorySelection(selectedGender);
+  }
+
+  console.log(`🎯 시술 선택: ${service}`);
 }
 
 // 카테고리 선택 UI 표시
@@ -2937,10 +2962,13 @@ function removePreviewImage() {
 
   // 성별 선택 초기화
   selectedGender = null;
+  selectedService = null;
   selectedCategory = null;
   document.getElementById('gender-selection').style.display = 'none';
   document.getElementById('gender-female').classList.remove('selected');
   document.getElementById('gender-male').classList.remove('selected');
+  document.getElementById('service-selection').style.display = 'none';
+  document.getElementById('service-cut').classList.remove('selected');
   document.getElementById('category-selection').style.display = 'none';
 
   console.log('🗑️ 이미지 제거됨');

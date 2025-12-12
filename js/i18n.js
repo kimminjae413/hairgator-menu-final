@@ -167,6 +167,11 @@ const HAIRGATOR_I18N = {
       actionQuestion: '질문하기',
       imageQuestionPrompt: '이 이미지에 대해 어떤 점이 궁금하세요? 질문을 입력해주세요.',
       enterQuestion: '질문을 입력해주세요.',
+      // 시술 선택
+      serviceLabel: '시술 선택:',
+      serviceCut: '컷',
+      servicePerm: '펌',
+      comingSoon: '(준비중)',
       // 카테고리 선택
       selectLength: '기장 선택:',
       selectStyle: '스타일 선택:',
@@ -999,6 +1004,11 @@ const HAIRGATOR_I18N = {
       actionQuestion: 'Ask Question',
       imageQuestionPrompt: 'What would you like to know about this image? Please enter your question.',
       enterQuestion: 'Please enter a question.',
+      // Service selection
+      serviceLabel: 'Service:',
+      serviceCut: 'Cut',
+      servicePerm: 'Perm',
+      comingSoon: '(Coming Soon)',
       // Category selection
       selectLength: 'Select Length:',
       selectStyle: 'Select Style:',
@@ -1804,6 +1814,11 @@ const HAIRGATOR_I18N = {
       actionQuestion: '質問する',
       imageQuestionPrompt: 'この画像について何が知りたいですか？質問を入力してください。',
       enterQuestion: '質問を入力してください。',
+      // 施術選択
+      serviceLabel: '施術選択:',
+      serviceCut: 'カット',
+      servicePerm: 'パーマ',
+      comingSoon: '(準備中)',
       // カテゴリー選択
       selectLength: '長さを選択:',
       selectStyle: 'スタイルを選択:',
@@ -2605,6 +2620,11 @@ const HAIRGATOR_I18N = {
       actionQuestion: '提问',
       imageQuestionPrompt: '您想了解这张图片的什么内容？请输入您的问题。',
       enterQuestion: '请输入问题。',
+      // 服务选择
+      serviceLabel: '选择服务:',
+      serviceCut: '剪发',
+      servicePerm: '烫发',
+      comingSoon: '(即将推出)',
       // 类别选择
       selectLength: '选择长度:',
       selectStyle: '选择风格:',
@@ -3409,6 +3429,11 @@ const HAIRGATOR_I18N = {
       actionQuestion: 'Đặt câu hỏi',
       imageQuestionPrompt: 'Bạn muốn biết gì về hình ảnh này? Vui lòng nhập câu hỏi.',
       enterQuestion: 'Vui lòng nhập câu hỏi.',
+      // Chọn dịch vụ
+      serviceLabel: 'Chọn dịch vụ:',
+      serviceCut: 'Cắt',
+      servicePerm: 'Uốn',
+      comingSoon: '(Sắp ra mắt)',
       // Chọn danh mục
       selectLength: 'Chọn độ dài:',
       selectStyle: 'Chọn kiểu:',

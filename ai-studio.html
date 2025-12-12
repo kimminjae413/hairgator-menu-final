@@ -126,6 +126,19 @@
                             <span data-i18n="aiStudio.genderMale">남자</span>
                         </button>
                     </div>
+                    <!-- Service Type Selection (컷/펌) -->
+                    <div class="service-selection" id="service-selection" style="display: none;">
+                        <span class="service-label" data-i18n="aiStudio.serviceLabel">시술 선택:</span>
+                        <button class="service-btn" id="service-cut" onclick="selectService('cut')">
+                            <span class="service-icon">✂️</span>
+                            <span data-i18n="aiStudio.serviceCut">컷</span>
+                        </button>
+                        <button class="service-btn disabled" id="service-perm" disabled title="준비 중">
+                            <span class="service-icon">🌀</span>
+                            <span data-i18n="aiStudio.servicePerm">펌</span>
+                            <span class="coming-soon" data-i18n="aiStudio.comingSoon">(준비중)</span>
+                        </button>
+                    </div>
                     <!-- Category Selection (여자: 기장, 남자: 스타일) -->
                     <div class="category-selection" id="category-selection" style="display: none;">
                         <span class="category-label" id="category-label">기장 선택:</span>

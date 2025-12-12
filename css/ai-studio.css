@@ -540,6 +540,68 @@ body.ai-studio-page {
   background: linear-gradient(135deg, #E91E63, #C2185B);
 }
 
+/* Service Selection (컷/펌) */
+.service-selection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: var(--radius-md);
+}
+
+.service-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-right: 4px;
+}
+
+.service-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 2px solid transparent;
+  border-radius: 20px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.service-btn:hover:not(.disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.service-btn.selected {
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+  color: #ffffff;
+}
+
+.service-btn#service-cut.selected {
+  border-color: #4CAF50;
+  background: linear-gradient(135deg, #4CAF50, #388E3C);
+}
+
+.service-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f0f0f0;
+}
+
+.service-btn .coming-soon {
+  font-size: 10px;
+  color: #999;
+  margin-left: 2px;
+}
+
 .gender-btn#gender-male.selected {
   border-color: #4A90E2;
   background: linear-gradient(135deg, #4A90E2, #357ABD);
