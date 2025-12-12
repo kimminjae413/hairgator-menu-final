@@ -249,19 +249,20 @@ body.gender-female .sub-tab.active {
 }
 
 .style-card {
-    background: rgba(30, 30, 30, 0.7);
+    background: rgba(30, 30, 30, 0.6);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-radius: 20px;
     overflow: hidden;
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     aspect-ratio: 3/4 !important;
     position: relative;
     padding: 0;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                inset 0 0 20px rgba(255, 255, 255, 0.02);
 }
 
 .style-card:hover {
@@ -534,12 +535,13 @@ body.light-theme .styles-container {
 }
 
 body.light-theme .style-card {
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                inset 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
 body.light-theme .style-card:hover {
