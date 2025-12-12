@@ -3527,15 +3527,15 @@ async function detectTheoryImageForQuery(query, language = 'ko') {
     return null;
   }
 
-  // ⭐ 커트/펌 인덱스만 필터링 (이미지가 있는 것만)
+  // ⭐ 이론 인덱스 필터링 (이미지가 있는 것만, personal 제외)
   const imageIndexes = indexes.filter(idx => {
     const isPersonal = idx.term && idx.term.toLowerCase().startsWith('personal');
-    // category 또는 type 필드 확인 (펌 인덱스는 category 사용)
+    // category 또는 type 필드 확인
     const cat = (idx.category || idx.type || '').toLowerCase();
-    // ⭐ 'perm', 'cut', '펌', '커트', '이론', '해부' 포함 여부로 느슨하게 체크
-    const isCutOrPerm = cat.includes('perm') || cat.includes('cut') || cat.includes('펌') || cat.includes('커트') || cat.includes('이론') || cat.includes('해부') || cat === '' || !cat;
+    // ⭐ personal, color, female_length, male_style 카테고리 제외 (퍼스널컬러/스타일 매칭용)
+    const isExcludedCategory = cat.includes('personal') || cat === 'color' || cat === 'female_length' || cat === 'male_style';
     const hasImage = idx.images && (idx.images[language] || idx.images['ko'] || idx.images['en']);
-    return !isPersonal && isCutOrPerm && hasImage;
+    return !isPersonal && !isExcludedCategory && hasImage;
   });
 
   // ⭐ 너무 일반적인 키워드 제외 (이미지 매칭 오류 방지)
