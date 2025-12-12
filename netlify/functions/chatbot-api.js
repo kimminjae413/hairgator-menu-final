@@ -9832,9 +9832,9 @@ QUAN TRỌNG: Người dùng đang hỏi là "nhà thiết kế tóc", KHÔNG ph
 
     const systemPrompt = systemPrompts[langName] || systemPrompts.korean;
 
-    // Gemini Vision API 호출
+    // Gemini Vision + RAG File Search API 호출
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -9847,10 +9847,15 @@ QUAN TRỌNG: Người dùng đang hỏi là "nhà thiết kế tóc", KHÔNG ph
               { text: question }
             ]
           }],
+          tools: [{
+            fileSearch: {
+              fileSearchStoreNames: [GEMINI_FILE_SEARCH_STORE]
+            }
+          }],
           generationConfig: {
-            temperature: 0.4,
+            temperature: 0.3,
             topP: 0.85,
-            maxOutputTokens: 2000
+            maxOutputTokens: 4000
           }
         })
       }
@@ -9860,7 +9865,7 @@ QUAN TRỌNG: Người dùng đang hỏi là "nhà thiết kế tóc", KHÔNG ph
 
     if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
       const answer = data.candidates[0].content.parts[0].text;
-      console.log('✅ 이미지 질문 응답 생성 완료');
+      console.log('✅ 이미지 질문 + RAG 응답 생성 완료');
 
       return {
         statusCode: 200,
