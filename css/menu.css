@@ -564,3 +564,267 @@ body.light-theme .style-card:hover {
     font-size: 14px;
     color: #666;
 }
+
+/* ========== UI Enhancement 2024-12 ========== */
+
+/* 1. 카테고리 설명 영역 가독성 개선 */
+.category-description {
+    padding: 16px 24px !important;
+    min-height: 50px !important;
+    background: linear-gradient(180deg, rgba(10, 10, 10, 0.7) 0%, rgba(10, 10, 10, 0.5) 100%) !important;
+}
+
+body.light-theme .category-description {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.7) 100%) !important;
+}
+
+.category-description-text {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 16px !important;
+    flex-wrap: wrap !important;
+}
+
+.category-description-text .category-name {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+    position: relative !important;
+    padding-right: 16px !important;
+}
+
+/* 카테고리명 뒤 구분선 */
+.category-description-text .category-name::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.light-theme .category-description-text .category-name::after {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+/* 설명 텍스트 밝기 향상 */
+.category-description-text {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+}
+
+body.light-theme .category-description-text {
+    color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* 2. 서브 탭 시각적 계층 차별화 */
+.sub-tabs {
+    padding: 10px 15px !important;
+    gap: 8px !important;
+}
+
+.sub-tab {
+    padding: 8px 16px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    border-radius: 16px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    transition: all 0.25s ease !important;
+}
+
+body.light-theme .sub-tab {
+    background: rgba(0, 0, 0, 0.03) !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+.sub-tab:hover:not(.active):not(.disabled) {
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: translateY(-1px) !important;
+}
+
+body.light-theme .sub-tab:hover:not(.active):not(.disabled) {
+    background: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 3. 스타일 그리드 좌우 여백 균등화 */
+.styles-container {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+}
+
+.styles-grid {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+}
+
+/* 4. NEW 인디케이터 개선 - 더 눈에 띄게 */
+.category-tab .new-indicator {
+    width: 10px !important;
+    height: 10px !important;
+    top: -4px !important;
+    right: -4px !important;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a5a) !important;
+    box-shadow: 0 0 8px rgba(255, 107, 107, 0.8), 0 0 16px rgba(255, 107, 107, 0.4) !important;
+    animation: pulse-glow 1.5s ease-in-out infinite !important;
+}
+
+.sub-tab .new-indicator {
+    width: 8px !important;
+    height: 8px !important;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a5a) !important;
+    box-shadow: 0 0 6px rgba(255, 107, 107, 0.7) !important;
+    animation: pulse-glow 1.5s ease-in-out infinite !important;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 8px rgba(255, 107, 107, 0.8), 0 0 16px rgba(255, 107, 107, 0.4);
+    }
+    50% {
+        transform: scale(1.15);
+        box-shadow: 0 0 12px rgba(255, 107, 107, 1), 0 0 24px rgba(255, 107, 107, 0.6);
+    }
+}
+
+/* 5. 인터랙티브 히어로 효과 - 스타일 카드 */
+.style-card {
+    position: relative !important;
+}
+
+/* 카드 테두리 그라데이션 효과 */
+.style-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 20px;
+    padding: 2px;
+    background: linear-gradient(135deg, transparent 0%, transparent 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+body.gender-female .style-card:hover::before {
+    background: linear-gradient(135deg, rgba(233, 30, 99, 0.6) 0%, rgba(194, 24, 91, 0.3) 50%, transparent 100%);
+    opacity: 1;
+}
+
+body.gender-male .style-card:hover::before {
+    background: linear-gradient(135deg, rgba(74, 144, 226, 0.6) 0%, rgba(53, 122, 189, 0.3) 50%, transparent 100%);
+    opacity: 1;
+}
+
+/* 카드 내부 빛 반사 효과 */
+.style-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 100%
+    );
+    transform: skewX(-25deg);
+    transition: left 0.6s ease;
+    pointer-events: none;
+    z-index: 2;
+    border-radius: 20px;
+}
+
+.style-card:hover::after {
+    left: 150%;
+}
+
+/* 라이트 테마 카드 반사 효과 */
+body.light-theme .style-card::after {
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        transparent 100%
+    );
+}
+
+/* 카드 호버 시 이미지 부드러운 밝기 변화 */
+.style-card:hover .style-image {
+    filter: brightness(1.05) !important;
+}
+
+body.light-theme .style-card:hover .style-image {
+    filter: brightness(1.02) !important;
+}
+
+/* 6. 헤더 로고 미묘한 빛 효과 */
+.logo {
+    position: relative !important;
+    transition: all 0.3s ease !important;
+}
+
+.logo:hover {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.light-theme .logo:hover {
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 7. 카테고리 탭 호버 시 미묘한 빛 효과 */
+.category-tab:hover:not(.active) {
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.08) !important;
+}
+
+body.light-theme .category-tab:hover:not(.active) {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Active 탭 글로우 효과 강화 */
+body.gender-female .category-tab.active {
+    box-shadow: 0 6px 25px rgba(233, 30, 99, 0.5), 0 0 40px rgba(233, 30, 99, 0.2) !important;
+}
+
+body.gender-male .category-tab.active {
+    box-shadow: 0 6px 25px rgba(74, 144, 226, 0.5), 0 0 40px rgba(74, 144, 226, 0.2) !important;
+}
+
+/* 8. 스크롤바 커스텀 (웹킷) */
+.styles-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.styles-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.styles-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+}
+
+.styles-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+body.light-theme .styles-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+body.light-theme .styles-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+}
