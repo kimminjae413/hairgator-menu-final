@@ -1336,12 +1336,12 @@ function applyCustomBrand() {
 
         const font = FONT_OPTIONS.find(f => f.id === brandFont);
         if (font) {
-            logoElement.style.fontFamily = font.fontFamily;
+            logoElement.style.setProperty('font-family', font.fontFamily, 'important');
         }
 
         const color = COLOR_OPTIONS.find(c => c.id === currentColorId);
         if (color) {
-            logoElement.style.color = color.color;
+            logoElement.style.setProperty('color', color.color, 'important');
         }
     });
 }
