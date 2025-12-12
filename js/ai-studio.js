@@ -1772,6 +1772,11 @@ class AIStudio {
               <line x1="19" y1="5" x2="19" y2="19"></line>
             </svg>
           </button>
+          <div class="speed-control">
+            <button class="speed-btn active" onclick="window.aiStudio.setPlaybackSpeed(1)" data-speed="1" title="1x 속도">1x</button>
+            <button class="speed-btn" onclick="window.aiStudio.setPlaybackSpeed(1.5)" data-speed="1.5" title="1.5x 속도">1.5x</button>
+            <button class="speed-btn" onclick="window.aiStudio.setPlaybackSpeed(2)" data-speed="2" title="2x 속도">2x</button>
+          </div>
         </div>
 
         <!-- 썸네일 스트립 -->
@@ -1794,9 +1799,32 @@ class AIStudio {
     this.currentDiagrams = diagrams;
     this.currentDiagramIndex = 0;
     this.autoPlayInterval = null;
+    this.playbackSpeed = 1; // 기본 속도 (1x = 3초)
 
     // 초기 버튼 상태 설정
     this.updateNavButtons();
+    this.updateSpeedButtons();
+  }
+
+  // 재생 속도 설정
+  setPlaybackSpeed(speed) {
+    this.playbackSpeed = speed;
+    this.updateSpeedButtons();
+
+    // 재생 중이면 새 속도로 재시작
+    if (this.autoPlayInterval) {
+      clearInterval(this.autoPlayInterval);
+      this.startAutoPlay();
+    }
+  }
+
+  // 속도 버튼 상태 업데이트
+  updateSpeedButtons() {
+    const speedBtns = document.querySelectorAll('.speed-btn');
+    speedBtns.forEach(btn => {
+      const btnSpeed = parseFloat(btn.dataset.speed);
+      btn.classList.toggle('active', btnSpeed === this.playbackSpeed);
+    });
   }
 
   // 이전 도해도
@@ -1853,39 +1881,49 @@ class AIStudio {
     if (nextBtn) nextBtn.disabled = this.currentDiagramIndex >= this.currentDiagrams.length - 1;
   }
 
+  // 자동 재생 시작
+  startAutoPlay() {
+    const playBtn = document.getElementById('diagram-play-btn');
+    if (playBtn) {
+      playBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="4" width="4" height="16"></rect>
+          <rect x="14" y="4" width="4" height="16"></rect>
+        </svg>
+      `;
+    }
+    // 속도에 따른 간격: 1x=3초, 1.5x=2초, 2x=1.5초
+    const interval = 3000 / (this.playbackSpeed || 1);
+    this.autoPlayInterval = setInterval(() => {
+      if (this.currentDiagramIndex < this.currentDiagrams.length - 1) {
+        this.nextDiagram();
+      } else {
+        // 끝에 도달하면 처음으로
+        this.selectDiagram(0);
+      }
+    }, interval);
+  }
+
+  // 자동 재생 정지
+  stopAutoPlay() {
+    const playBtn = document.getElementById('diagram-play-btn');
+    clearInterval(this.autoPlayInterval);
+    this.autoPlayInterval = null;
+    if (playBtn) {
+      playBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+      `;
+    }
+  }
+
   // 자동 재생 토글
   toggleAutoPlay() {
-    const playBtn = document.getElementById('diagram-play-btn');
-
     if (this.autoPlayInterval) {
-      // 정지
-      clearInterval(this.autoPlayInterval);
-      this.autoPlayInterval = null;
-      if (playBtn) {
-        playBtn.innerHTML = `
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-          </svg>
-        `;
-      }
+      this.stopAutoPlay();
     } else {
-      // 재생
-      if (playBtn) {
-        playBtn.innerHTML = `
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="6" y="4" width="4" height="16"></rect>
-            <rect x="14" y="4" width="4" height="16"></rect>
-          </svg>
-        `;
-      }
-      this.autoPlayInterval = setInterval(() => {
-        if (this.currentDiagramIndex < this.currentDiagrams.length - 1) {
-          this.nextDiagram();
-        } else {
-          // 끝에 도달하면 처음으로
-          this.selectDiagram(0);
-        }
-      }, 3000); // 3초마다 전환
+      this.startAutoPlay();
     }
   }
 
