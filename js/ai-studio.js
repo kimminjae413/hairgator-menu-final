@@ -2656,15 +2656,19 @@ function startNewChat() {
 
 // 대화 내용 완전 삭제
 function clearChat() {
-  if (confirm('대화 내용을 모두 삭제하시겠습니까?\n(히스토리도 함께 삭제됩니다)')) {
+  const confirmMsg = typeof t === 'function' ? t('aiStudio.confirmClear') : '대화 내용을 모두 삭제하시겠습니까?\n(히스토리도 함께 삭제됩니다)';
+  const clearedMsg = typeof t === 'function' ? t('aiStudio.chatCleared') : '대화가 초기화되었습니다.';
+  const enterNewMsg = typeof t === 'function' ? t('aiStudio.enterNewQuestion') : '새로운 질문을 입력해주세요.';
+
+  if (confirm(confirmMsg)) {
     window.aiStudio.conversationHistory = [];
     const messages = document.getElementById('chat-messages');
     messages.innerHTML = `
       <div class="message bot">
         <div class="message-avatar bot-logo"><img src="icons/icon-72.png" alt="H"></div>
         <div class="message-content">
-          <p><strong>대화가 초기화되었습니다.</strong></p>
-          <p>새로운 질문을 입력해주세요.</p>
+          <p><strong>${clearedMsg}</strong></p>
+          <p>${enterNewMsg}</p>
         </div>
       </div>
     `;

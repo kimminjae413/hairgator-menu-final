@@ -159,7 +159,10 @@ const HAIRGATOR_I18N = {
       save: '저장',
       share: '공유',
       noHistory: '분석 기록이 없습니다.',
-      noHistoryDesc: '이미지를 분석하면 여기에 기록됩니다.'
+      noHistoryDesc: '이미지를 분석하면 여기에 기록됩니다.',
+      chatCleared: '대화가 초기화되었습니다.',
+      enterNewQuestion: '새로운 질문을 입력해주세요.',
+      confirmClear: '대화 내용을 모두 삭제하시겠습니까?\n(히스토리도 함께 삭제됩니다)'
     },
 
     // ========== 헤어체험 ==========
@@ -948,7 +951,10 @@ const HAIRGATOR_I18N = {
       save: 'Save',
       share: 'Share',
       noHistory: 'No analysis history.',
-      noHistoryDesc: 'Analyze an image and it will be recorded here.'
+      noHistoryDesc: 'Analyze an image and it will be recorded here.',
+      chatCleared: 'Chat has been cleared.',
+      enterNewQuestion: 'Please enter a new question.',
+      confirmClear: 'Delete all chat history?\n(History will also be deleted)'
     },
 
     // ========== Hair Try ==========
@@ -1710,7 +1716,10 @@ const HAIRGATOR_I18N = {
       save: '保存',
       share: '共有',
       noHistory: '分析履歴がありません。',
-      noHistoryDesc: '画像を分析するとここに記録されます。'
+      noHistoryDesc: '画像を分析するとここに記録されます。',
+      chatCleared: 'チャットが初期化されました。',
+      enterNewQuestion: '新しい質問を入力してください。',
+      confirmClear: 'すべてのチャット履歴を削除しますか？\n（履歴も一緒に削除されます）'
     },
 
     // ========== ヘアトライ ==========
@@ -2468,7 +2477,10 @@ const HAIRGATOR_I18N = {
       save: '保存',
       share: '分享',
       noHistory: '没有分析记录。',
-      noHistoryDesc: '分析图片后将记录在这里。'
+      noHistoryDesc: '分析图片后将记录在这里。',
+      chatCleared: '对话已初始化。',
+      enterNewQuestion: '请输入新问题。',
+      confirmClear: '确定要删除所有对话记录吗？\n（历史记录也将被删除）'
     },
 
     // ========== 发型体验 ==========
@@ -3229,7 +3241,10 @@ const HAIRGATOR_I18N = {
       save: 'Lưu',
       share: 'Chia sẻ',
       noHistory: 'Không có lịch sử phân tích.',
-      noHistoryDesc: 'Phân tích hình ảnh và sẽ được ghi lại ở đây.'
+      noHistoryDesc: 'Phân tích hình ảnh và sẽ được ghi lại ở đây.',
+      chatCleared: 'Cuộc trò chuyện đã được đặt lại.',
+      enterNewQuestion: 'Vui lòng nhập câu hỏi mới.',
+      confirmClear: 'Bạn có chắc muốn xóa tất cả lịch sử trò chuyện?\n(Lịch sử cũng sẽ bị xóa)'
     },
 
     // ========== Thử kiểu tóc ==========
