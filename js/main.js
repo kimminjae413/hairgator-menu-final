@@ -2573,10 +2573,6 @@ function createMerryChristmasText() {
                   filter="url(#textShadow)">
                 Merry Christmas
             </text>
-
-            <!-- 눈 결정 장식 -->
-            <text x="25" y="35" font-size="20" fill="#4a90d9" opacity="0.7">❄</text>
-            <text x="295" y="35" font-size="20" fill="#4a90d9" opacity="0.7">❄</text>
         </svg>
     `;
     textContainer.style.cssText = `
