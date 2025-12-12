@@ -98,6 +98,55 @@
 - `upload-perm-indexes.py`: 펌 인덱스 이미지 Firebase Storage 업로드 + Firestore 저장
 - `fix-perm-index-merge.py`: 펌 인덱스 언어별 문서를 하나로 병합
 
+## 크리스마스 효과 (라이트/다크 모드 전환 시 주의!)
+
+### 헷갈렸던 핵심 원인
+**`toggleTheme` 함수 래핑 타이밍 문제**
+
+다크/라이트 모드 전환 시 크리스마스 효과가 제대로 안 바뀌던 이유:
+1. **DOMContentLoaded에서 `toggleTheme`을 래핑**하는데, 원본 함수가 아직 정의되기 전에 래핑하려고 하면 실패
+2. **setTimeout(100ms)로 지연**시켜야 다른 스크립트에서 `toggleTheme`이 정의된 후 래핑 가능
+3. **효과 제거 → 재생성 순서 중요**: 테마 전환 후 기존 효과를 먼저 모두 제거하고, 300ms 뒤에 새 테마에 맞는 효과만 생성
+
+### 구조 (main.js)
+```javascript
+// DOMContentLoaded 후 toggleTheme 래핑
+setTimeout(() => {
+    const originalToggleTheme = window.toggleTheme;
+    if (typeof originalToggleTheme === 'function') {
+        window.toggleTheme = function() {
+            originalToggleTheme();  // 원본 테마 전환 실행
+
+            // 1) 모든 크리스마스 효과 제거
+            document.querySelectorAll('.snowflake, .snow-pile, .christmas-tree, ...').forEach(el => el.remove());
+
+            // 2) 300ms 후 새 테마에 맞는 효과만 생성
+            setTimeout(() => {
+                if (document.body.classList.contains('light-theme')) {
+                    createSnowballFight();  // 라이트모드용
+                    createMerryChristmasText();
+                } else {
+                    createSnowflakes();     // 다크모드용
+                    createSnowPiles();
+                    createChristmasTree();
+                }
+            }, 300);
+        };
+    }
+}, 100);  // ⚠️ 이 지연이 없으면 toggleTheme이 undefined일 수 있음!
+```
+
+### 효과 분류
+| 모드 | 효과 함수 |
+|------|-----------|
+| **다크모드** | `createSnowflakes()`, `createSnowPiles()`, `createChristmasTree()` |
+| **라이트모드** | `createSnowballFight()`, `createMerryChristmasText()`, `createFootprints()` |
+
+### 주의사항
+- 각 효과 함수 내부에서도 **현재 테마 체크** 필수 (`document.body.classList.contains('light-theme')`)
+- 성별 선택 화면에서만 표시: `isGenderSelectionVisible()` 체크
+- `snowflakeInterval` 전역 변수로 눈 생성 인터벌 관리 → 테마 변경 시 `clearInterval` 필수
+
 ## 최근 작업 이력
 - 2024-12-11: 커트/펌 레시피 RAG 완전 통합 + 펌 인덱스 이미지 추가
 

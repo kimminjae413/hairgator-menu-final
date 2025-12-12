@@ -9784,53 +9784,62 @@ async function handleImageQuestion(payload, geminiKey) {
   console.log('   - 언어:', language);
 
   try {
-    // 언어별 시스템 프롬프트
+    // 언어별 시스템 프롬프트 (일반 질문과 동일한 프롬프트 사용)
     const langMap = { ko: 'korean', en: 'english', ja: 'japanese', zh: 'chinese', vi: 'vietnamese' };
     const langName = langMap[language] || 'korean';
 
-    const systemPrompts = {
-      korean: `당신은 헤어 전문 AI 어시스턴트입니다.
+    // 일반 RAG 질문과 동일한 시스템 프롬프트 사용 + 이미지 분석 추가 지시
+    const basePrompt = buildGeminiSystemPrompt(langName);
+
+    // 이미지 분석용 추가 지시
+    const imageAnalysisAddition = {
+      korean: `
+
+## 이미지 분석 추가 규칙
 중요: 질문하는 사용자는 "헤어 디자이너"입니다. 고객이 아닙니다.
 - 동료 전문가에게 설명하듯이 기술적이고 전문적인 용어를 사용해서 답변하세요.
 - "디자이너님이 직접 시술하실 때..." 같은 표현을 사용하세요.
 - "고객님께서..." 또는 "미용실에 가시면..." 같은 표현은 절대 사용하지 마세요.
-- 헤어스타일 이미지라면 커팅 기법, 레이어 구조, 시술 포인트 등 전문적 관점에서 분석하세요.
-- 마크다운 서식(**, ###, - 등)을 사용하지 마세요.`,
+- 헤어스타일 이미지라면 커팅 기법, 레이어 구조, 시술 포인트 등 전문적 관점에서 분석하세요.`,
 
-      english: `You are a professional hair AI assistant.
+      english: `
+
+## Image Analysis Additional Rules
 IMPORTANT: The user asking questions is a "hair designer/stylist", NOT a customer.
 - Respond with technical and professional terminology as you would to a fellow professional.
 - Use expressions like "When you perform this technique..." or "As a stylist, you would..."
 - NEVER use expressions like "Your stylist will..." or "When you visit the salon..."
-- For hairstyle images, analyze from a professional perspective: cutting techniques, layer structure, styling points.
-- Do not use markdown formatting (**, ###, -, etc.).`,
+- For hairstyle images, analyze from a professional perspective: cutting techniques, layer structure, styling points.`,
 
-      japanese: `あなたはヘア専門AIアシスタントです。
+      japanese: `
+
+## 画像分析の追加ルール
 重要：質問しているユーザーは「ヘアデザイナー」です。お客様ではありません。
 - 同僚の専門家に説明するように、技術的で専門的な用語を使って回答してください。
 - 「施術される際は...」のような表現を使用してください。
 - 「お客様は...」や「美容室に行かれると...」のような表現は絶対に使用しないでください。
-- ヘアスタイル画像の場合、カット技法、レイヤー構造、施術ポイントなど専門的な観点から分析してください。
-- マークダウン書式（**、###、-など）は使用しないでください。`,
+- ヘアスタイル画像の場合、カット技法、レイヤー構造、施術ポイントなど専門的な観点から分析してください。`,
 
-      chinese: `您是专业的发型AI助手。
+      chinese: `
+
+## 图片分析附加规则
 重要：提问的用户是"发型设计师"，不是顾客。
 - 请像对同行专业人士一样，使用技术性和专业性术语回答。
 - 使用"您在操作时..."这样的表达方式。
 - 绝对不要使用"您的发型师会..."或"当您去美发店时..."这样的表达。
-- 对于发型图片，请从专业角度分析：剪裁技术、层次结构、造型要点等。
-- 请勿使用markdown格式（**、###、-等）。`,
+- 对于发型图片，请从专业角度分析：剪裁技术、层次结构、造型要点等。`,
 
-      vietnamese: `Bạn là trợ lý AI chuyên về tóc.
+      vietnamese: `
+
+## Quy tắc bổ sung cho phân tích hình ảnh
 QUAN TRỌNG: Người dùng đang hỏi là "nhà thiết kế tóc", KHÔNG phải khách hàng.
 - Trả lời với thuật ngữ kỹ thuật và chuyên nghiệp như đang nói với đồng nghiệp chuyên gia.
 - Sử dụng các cụm từ như "Khi bạn thực hiện kỹ thuật này..." hoặc "Với tư cách là stylist, bạn sẽ..."
 - TUYỆT ĐỐI KHÔNG sử dụng các cụm từ như "Stylist của bạn sẽ..." hoặc "Khi bạn đến salon..."
-- Đối với hình ảnh kiểu tóc, phân tích từ góc độ chuyên nghiệp: kỹ thuật cắt, cấu trúc layer, điểm tạo kiểu.
-- Không sử dụng định dạng markdown (**, ###, -, v.v.).`
+- Đối với hình ảnh kiểu tóc, phân tích từ góc độ chuyên nghiệp: kỹ thuật cắt, cấu trúc layer, điểm tạo kiểu.`
     };
 
-    const systemPrompt = systemPrompts[langName] || systemPrompts.korean;
+    const systemPrompt = basePrompt + (imageAnalysisAddition[langName] || imageAnalysisAddition.korean);
 
     // Gemini Vision + RAG File Search API 호출
     const response = await fetch(
