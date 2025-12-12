@@ -1767,42 +1767,82 @@ function createSnowPiles() {
     const buttons = document.querySelectorAll('.gender-btn');
 
     buttons.forEach((btn, index) => {
+        const isMale = index === 1; // 남자 버튼
+
         const pile = document.createElement('div');
         pile.className = 'snow-pile';
         pile.style.cssText = `
             position: absolute;
-            top: -8px;
+            top: ${isMale ? '-12px' : '-8px'};
             left: 0;
             right: 0;
-            height: 20px;
+            height: ${isMale ? '28px' : '20px'};
             pointer-events: none;
             z-index: 10;
         `;
 
-        // 각 버튼마다 다른 눈 더미 패턴
-        const pileCount = index === 0 ? 5 : 6;
+        if (isMale) {
+            // 남자 버튼: 더 많은 눈, 비대칭으로 오른쪽에 더 쌓임
+            const snowPieces = [
+                // 왼쪽 (적게)
+                { w: 22, h: 10, left: 2, bottom: 0 },
+                { w: 18, h: 8, left: 12, bottom: 2 },
+                // 중앙
+                { w: 28, h: 12, left: 28, bottom: 1 },
+                { w: 24, h: 10, left: 40, bottom: 3 },
+                // 오른쪽 (많이 쌓임 - 비대칭 포인트)
+                { w: 35, h: 16, left: 55, bottom: 0 },
+                { w: 30, h: 14, left: 65, bottom: 4 },
+                { w: 26, h: 12, left: 78, bottom: 2 },
+                { w: 20, h: 10, left: 88, bottom: 6 },
+                // 위에 추가 층 (오른쪽에 더 높이)
+                { w: 22, h: 10, left: 60, bottom: 12 },
+                { w: 18, h: 8, left: 72, bottom: 14 },
+                { w: 15, h: 7, left: 82, bottom: 16 },
+            ];
 
-        for (let i = 0; i < pileCount; i++) {
-            const snowBlob = document.createElement('div');
+            snowPieces.forEach(piece => {
+                const snowBlob = document.createElement('div');
+                // 약간의 랜덤성 추가
+                const randW = piece.w + (Math.random() * 6 - 3);
+                const randH = piece.h + (Math.random() * 4 - 2);
+                const randL = piece.left + (Math.random() * 4 - 2);
+                const randB = piece.bottom + (Math.random() * 2);
 
-            // 랜덤 크기와 위치
-            const width = 20 + Math.random() * 25;
-            const height = 10 + Math.random() * 8;
-            const left = (i * (100 / pileCount)) + Math.random() * 10 - 5;
-            const bottom = Math.random() * 3;
+                snowBlob.style.cssText = `
+                    position: absolute;
+                    bottom: ${randB}px;
+                    left: ${randL}%;
+                    width: ${randW}px;
+                    height: ${randH}px;
+                    background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
+                    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.12), inset 0 -2px 4px rgba(0,0,0,0.05);
+                `;
+                pile.appendChild(snowBlob);
+            });
+        } else {
+            // 여자 버튼: 기존대로 균일하게
+            const pileCount = 5;
+            for (let i = 0; i < pileCount; i++) {
+                const snowBlob = document.createElement('div');
+                const width = 20 + Math.random() * 25;
+                const height = 10 + Math.random() * 8;
+                const left = (i * (100 / pileCount)) + Math.random() * 10 - 5;
+                const bottom = Math.random() * 3;
 
-            snowBlob.style.cssText = `
-                position: absolute;
-                bottom: ${bottom}px;
-                left: ${left}%;
-                width: ${width}px;
-                height: ${height}px;
-                background: #fff;
-                border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-            `;
-
-            pile.appendChild(snowBlob);
+                snowBlob.style.cssText = `
+                    position: absolute;
+                    bottom: ${bottom}px;
+                    left: ${left}%;
+                    width: ${width}px;
+                    height: ${height}px;
+                    background: #fff;
+                    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+                `;
+                pile.appendChild(snowBlob);
+            }
         }
 
         btn.style.position = 'relative';
