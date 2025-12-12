@@ -295,6 +295,38 @@ body.gender-female .style-card:hover {
     border-radius: 20px;
 }
 
+/* 글래스 반짝임 - 빛 줄기가 지나가는 애니메이션 */
+@keyframes glassShine {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 200%;
+    }
+}
+
+/* 상단 하이라이트 (정적) + 빛 줄기 애니메이션 */
+.style-image-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.05) 30%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.05) 70%,
+        transparent 100%
+    );
+    transform: skewX(-20deg);
+    animation: glassShine 5s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 5;
+}
+
 /* 다크모드 이미지 경계 Inner Shadow */
 .style-image-wrapper::after {
     content: '';
@@ -303,9 +335,11 @@ body.gender-female .style-card:hover {
     left: 0;
     right: 0;
     bottom: 0;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
     pointer-events: none;
     border-radius: 20px;
+    z-index: 3;
 }
 
 .style-image {
@@ -923,29 +957,7 @@ body.light-theme .style-card {
     border: 1px solid rgba(255, 255, 255, 0.5) !important;
 }
 
-/* 카드 하단 그라데이션 오버레이 */
-.style-image-wrapper::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 40%;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 100%);
-    pointer-events: none;
-    z-index: 1;
-    border-radius: 0 0 20px 20px;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-}
-
-.style-card:hover .style-image-wrapper::before {
-    opacity: 1;
-}
-
-body.light-theme .style-image-wrapper::before {
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.2) 0%, transparent 100%);
-}
+/* 카드 하단 그라데이션 - ::after 사용 (::before는 반짝임 효과용) */
 
 /* 카드 그림자 더 세련되게 - 성별 컬러 글로우 */
 .style-card {
