@@ -113,7 +113,7 @@ body.ai-studio-page {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  margin-left: 40px;
+  margin-left: 50px;
 }
 
 .back-to-menu {
