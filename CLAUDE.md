@@ -5,8 +5,13 @@
 ### RAG 시스템
 - **Gemini File Search API** 사용
 - Store ID: `fileSearchStores/hairgator-theory-final-2025-kkb6n1ftfbf2`
-- **43개 문서**, 524MB (영구 저장됨)
-- 업로드된 자료: 이론 PDF 38개 + 펌 레시피 자막 4개 + 커트 레시피 자막 1개(138개 병합)
+- **45개 문서**, 524MB (영구 저장됨)
+- 업로드된 자료:
+  - 이론 PDF 38개
+  - 펌 레시피 자막 4개
+  - 커트 레시피 자막 1개(138개 병합)
+  - **헤어 용어 사전(hair_diagram_glossary.txt)**: 도해도 기호, 두상 포인트, 커트 테크닉, 펌/염색 용어
+  - **기초학 개론(hair_basic_science.txt)**: 모발학, 케미컬, 두피학, 색채학, 소독학
 
 ### Firestore
 - 컬렉션: `theory_indexes` - 키워드 매칭 + 이미지 URL 저장 (커트 164개 + 펌 46개 = 210개)
