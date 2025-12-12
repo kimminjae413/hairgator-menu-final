@@ -1183,3 +1183,304 @@ body.light-theme .menu-container.scrolled .header {
 }
 
 /* === 12. 카드 코너 장식 제거 (불필요한 골드 요소) === */
+
+/* ========== 크리스마스 눈 내리는 효과 (다크모드 전용) ========== */
+@keyframes snowfall {
+    0% {
+        transform: translateY(-10px) translateX(0);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(50vh) translateX(20px);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(100vh) translateX(-20px);
+        opacity: 0;
+    }
+}
+
+@keyframes snowfall2 {
+    0% {
+        transform: translateY(-10px) translateX(0);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translateY(50vh) translateX(-15px);
+        opacity: 0.6;
+    }
+    100% {
+        transform: translateY(100vh) translateX(15px);
+        opacity: 0;
+    }
+}
+
+@keyframes snowfall3 {
+    0% {
+        transform: translateY(-10px) translateX(0);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translateY(50vh) translateX(10px);
+        opacity: 0.4;
+    }
+    100% {
+        transform: translateY(100vh) translateX(-10px);
+        opacity: 0;
+    }
+}
+
+/* 끊김 없이 계속 내리는 눈 애니메이션 */
+@keyframes snowfallContinuous {
+    0% {
+        transform: translateY(-100%);
+    }
+    100% {
+        transform: translateY(0%);
+    }
+}
+
+/* 좌우로 흔들리며 내리는 눈 애니메이션 */
+@keyframes snowfallSway {
+    0% {
+        transform: translateY(-50%) translateX(0);
+    }
+    25% {
+        transform: translateY(-25%) translateX(15px);
+    }
+    50% {
+        transform: translateY(0%) translateX(-10px);
+    }
+    75% {
+        transform: translateY(25%) translateX(20px);
+    }
+    100% {
+        transform: translateY(50%) translateX(0);
+    }
+}
+
+/* 눈 컨테이너 - JS로 생성되는 눈송이용 (requestAnimationFrame 사용) */
+.snowflake {
+    position: fixed;
+    color: #fff;
+    font-size: 1em;
+    pointer-events: none;
+    z-index: 9999;
+    text-shadow: 0 0 5px rgba(255,255,255,0.6);
+    will-change: transform, top, left;
+}
+
+/* 성별 버튼 위에 눈 쌓인 효과 - JS로 생성 */
+body:not(.light-theme) .gender-btn {
+    position: relative;
+    overflow: visible;
+}
+
+/* Merry Christmas 텍스트 - 네온 글로우 스타일 (3색 변환) */
+body:not(.light-theme) .gender-selection::before {
+    content: 'Merry Christmas';
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 36px;
+    font-weight: 400;
+    font-family: 'Brush Script MT', 'Segoe Script', cursive;
+    color: #fff;
+    z-index: 9999;
+    letter-spacing: 4px;
+    animation: neonColorChange 6s ease-in-out infinite;
+}
+
+/* 네온 색상 변화 효과 - 핑크 → 노란색 → 초록색 */
+@keyframes neonColorChange {
+    /* 핑크 네온 */
+    0%, 5% {
+        text-shadow:
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 20px #ff1177,
+            0 0 40px #ff1177,
+            0 0 60px #ff1177,
+            0 0 80px #ff1177;
+    }
+    /* 핑크 깜빡임 */
+    6% {
+        text-shadow:
+            0 0 2px #fff,
+            0 0 5px #ff1177;
+        opacity: 0.7;
+    }
+    7%, 30% {
+        text-shadow:
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 20px #ff1177,
+            0 0 40px #ff1177,
+            0 0 60px #ff1177,
+            0 0 80px #ff1177;
+        opacity: 1;
+    }
+    /* 노란색 네온으로 전환 */
+    33%, 38% {
+        text-shadow:
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 20px #ffdd00,
+            0 0 40px #ffdd00,
+            0 0 60px #ffaa00,
+            0 0 80px #ffaa00;
+    }
+    /* 노란색 깜빡임 */
+    39% {
+        text-shadow:
+            0 0 2px #fff,
+            0 0 5px #ffdd00;
+        opacity: 0.7;
+    }
+    40%, 63% {
+        text-shadow:
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 20px #ffdd00,
+            0 0 40px #ffdd00,
+            0 0 60px #ffaa00,
+            0 0 80px #ffaa00;
+        opacity: 1;
+    }
+    /* 초록색 네온으로 전환 */
+    66%, 71% {
+        text-shadow:
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 20px #00ff88,
+            0 0 40px #00ff88,
+            0 0 60px #00cc66,
+            0 0 80px #00cc66;
+    }
+    /* 초록색 깜빡임 */
+    72% {
+        text-shadow:
+            0 0 2px #fff,
+            0 0 5px #00ff88;
+        opacity: 0.7;
+    }
+    73%, 97% {
+        text-shadow:
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 20px #00ff88,
+            0 0 40px #00ff88,
+            0 0 60px #00cc66,
+            0 0 80px #00cc66;
+        opacity: 1;
+    }
+    /* 다시 핑크로 */
+    100% {
+        text-shadow:
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 20px #ff1177,
+            0 0 40px #ff1177,
+            0 0 60px #ff1177,
+            0 0 80px #ff1177;
+    }
+}
+
+@keyframes textGlow {
+    0% {
+        text-shadow:
+            0 0 10px rgba(255, 50, 50, 0.8),
+            0 0 20px rgba(200, 30, 30, 0.5),
+            0 0 40px rgba(150, 20, 20, 0.3),
+            2px 2px 4px rgba(0, 0, 0, 0.4);
+    }
+    100% {
+        text-shadow:
+            0 0 15px rgba(255, 80, 80, 1),
+            0 0 30px rgba(220, 50, 50, 0.7),
+            0 0 50px rgba(180, 30, 30, 0.5),
+            2px 2px 4px rgba(0, 0, 0, 0.4);
+    }
+}
+
+/* ========== 화이트 모드 - 눈싸움 애니메이션 ========== */
+@keyframes boyThrow {
+    0%, 60%, 100% {
+        transform: rotate(0deg);
+    }
+    70% {
+        transform: rotate(-15deg) translateY(-5px);
+    }
+    80% {
+        transform: rotate(10deg);
+    }
+}
+
+@keyframes girlThrow {
+    0%, 60%, 100% {
+        transform: scaleX(-1) rotate(0deg);
+    }
+    70% {
+        transform: scaleX(-1) rotate(-15deg) translateY(-5px);
+    }
+    80% {
+        transform: scaleX(-1) rotate(10deg);
+    }
+}
+
+/* 강아지 뛰어다니는 애니메이션 (왼쪽 눈사람 주변) */
+@keyframes puppyRunLeft {
+    0% {
+        left: -80px;
+        transform: scaleX(1) translateY(0);
+    }
+    10% {
+        transform: scaleX(1) translateY(-8px);
+    }
+    20% {
+        left: -40px;
+        transform: scaleX(1) translateY(0);
+    }
+    30% {
+        transform: scaleX(1) translateY(-8px);
+    }
+    40% {
+        left: 10px;
+        transform: scaleX(1) translateY(0);
+    }
+    50% {
+        left: 30px;
+        transform: scaleX(-1) translateY(-5px);
+    }
+    60% {
+        transform: scaleX(-1) translateY(0);
+    }
+    70% {
+        left: -20px;
+        transform: scaleX(-1) translateY(-8px);
+    }
+    80% {
+        transform: scaleX(-1) translateY(0);
+    }
+    90% {
+        left: -60px;
+        transform: scaleX(-1) translateY(-8px);
+    }
+    100% {
+        left: -80px;
+        transform: scaleX(1) translateY(0);
+    }
+}
+
+@keyframes treeShimmer {
+    0%, 100% {
+        filter: drop-shadow(0 0 15px rgba(255, 200, 100, 0.4))
+                drop-shadow(0 0 30px rgba(255, 150, 50, 0.2));
+    }
+    50% {
+        filter: drop-shadow(0 0 25px rgba(255, 220, 120, 0.6))
+                drop-shadow(0 0 50px rgba(255, 180, 80, 0.35));
+    }
+}
+

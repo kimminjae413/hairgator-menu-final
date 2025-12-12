@@ -70,6 +70,8 @@ const HAIRGATOR_I18N = {
       // 테마
       darkMode: '다크 모드',
       lightMode: '라이트 모드',
+      switchToDark: '다크 모드로 전환',
+      switchToLight: '라이트 모드로 전환',
 
       // 사이드바
       personalColor: '퍼스널 컬러 진단',
@@ -861,6 +863,8 @@ const HAIRGATOR_I18N = {
 
       darkMode: 'Dark Mode',
       lightMode: 'Light Mode',
+      switchToDark: 'Switch to Dark Mode',
+      switchToLight: 'Switch to Light Mode',
 
       personalColor: 'Personal Color Analysis',
       personalColorDesc: 'Analysis based on 614 hair color data',
@@ -1621,6 +1625,8 @@ const HAIRGATOR_I18N = {
 
       darkMode: 'ダークモード',
       lightMode: 'ライトモード',
+      switchToDark: 'ダークモードに切替',
+      switchToLight: 'ライトモードに切替',
 
       personalColor: 'パーソナルカラー診断',
       personalColorDesc: '614個のヘアカラーデータ基盤分析',
@@ -2377,6 +2383,8 @@ const HAIRGATOR_I18N = {
 
       darkMode: '暗色模式',
       lightMode: '亮色模式',
+      switchToDark: '切换到暗色模式',
+      switchToLight: '切换到亮色模式',
 
       personalColor: '个人色彩分析',
       personalColorDesc: '基于614个染发数据的分析',
@@ -3136,6 +3144,8 @@ const HAIRGATOR_I18N = {
 
       darkMode: 'Chế độ tối',
       lightMode: 'Chế độ sáng',
+      switchToDark: 'Chuyển sang chế độ tối',
+      switchToLight: 'Chuyển sang chế độ sáng',
 
       personalColor: 'Phân tích màu cá nhân',
       personalColorDesc: 'Phân tích dựa trên 614 dữ liệu màu tóc',

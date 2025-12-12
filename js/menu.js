@@ -3165,6 +3165,9 @@ window.selectGender = function (gender) {
     currentGender = gender;
     window.currentGender = gender;
 
+    // 크리스마스 효과 제거 (다크모드 + 라이트모드 모두)
+    document.querySelectorAll('.snowflake, .snow-pile, .christmas-tree, .christmas-gifts, .snowball-fight-container, .rudolph-decoration, .merry-christmas-light, .footprints-container').forEach(el => el.remove());
+
     // 성별 선택 화면 완전히 숨기기
     const genderSelection = document.getElementById('genderSelection');
     const menuContainer = document.getElementById('menuContainer');
@@ -3282,6 +3285,13 @@ window.goBack = function () {
     currentGender = null;
     window.currentGender = null;
     console.log('✅ 성별 초기화 완료');
+
+    // 크리스마스 효과 다시 생성 (딜레이 후 실행)
+    setTimeout(() => {
+        if (typeof window.createSnowflakes === 'function') window.createSnowflakes();
+        if (typeof window.createSnowPiles === 'function') window.createSnowPiles();
+        if (typeof window.createChristmasTree === 'function') window.createChristmasTree();
+    }, 300);
 };
 
 // ========== 기존 console.log 유지 ==========
