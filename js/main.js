@@ -1298,16 +1298,39 @@ async function loadUserSettingsFromFirebase() {
             // 테마 적용
             if (data.theme) {
                 localStorage.setItem('hairgator_theme', data.theme);
-                if (data.theme === 'light') {
-                    document.body.classList.add('light-theme');
-                } else {
-                    document.body.classList.remove('light-theme');
+                const currentIsLight = document.body.classList.contains('light-theme');
+                const targetIsLight = data.theme === 'light';
+
+                // 테마가 다른 경우에만 변경
+                if (currentIsLight !== targetIsLight) {
+                    if (targetIsLight) {
+                        document.body.classList.add('light-theme');
+                    } else {
+                        document.body.classList.remove('light-theme');
+                    }
+
+                    // ⭐ 크리스마스 효과 업데이트 (테마 변경 시)
+                    document.querySelectorAll('.snowflake, .snow-pile, .christmas-tree, .christmas-gifts, .snowball-fight-container, .rudolph-decoration, .merry-christmas-light, .footprints-container').forEach(el => el.remove());
+
+                    setTimeout(() => {
+                        if (targetIsLight) {
+                            // 라이트모드 효과
+                            if (typeof createMerryChristmasText === 'function') createMerryChristmasText();
+                            if (typeof createFootprints === 'function') createFootprints();
+                        } else {
+                            // 다크모드 효과
+                            if (typeof createSnowflakes === 'function') createSnowflakes();
+                            if (typeof createSnowPiles === 'function') createSnowPiles();
+                            if (typeof createChristmasTree === 'function') createChristmasTree();
+                        }
+                    }, 300);
                 }
+
                 // 테마 아이콘/텍스트 업데이트 (현재 테마의 반대 모드로 전환 버튼 표시)
                 const themeIcon = document.getElementById('themeIcon');
                 const themeText = document.getElementById('themeText');
-                if (themeIcon) themeIcon.textContent = data.theme === 'light' ? '🌙' : '☀️';
-                if (themeText) themeText.textContent = data.theme === 'light' ? t('ui.switchToDark') : t('ui.switchToLight');
+                if (themeIcon) themeIcon.textContent = targetIsLight ? '🌙' : '☀️';
+                if (themeText) themeText.textContent = targetIsLight ? t('ui.switchToDark') : t('ui.switchToLight');
             }
 
             // 언어 적용
