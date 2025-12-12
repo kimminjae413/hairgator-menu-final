@@ -1342,6 +1342,11 @@ function applyCustomBrand() {
         const color = COLOR_OPTIONS.find(c => c.id === currentColorId);
         if (color) {
             logoElement.style.setProperty('color', color.color, 'important');
+            // CSS 그라데이션 효과 덮어쓰기
+            logoElement.style.setProperty('-webkit-text-fill-color', color.color, 'important');
+            logoElement.style.setProperty('background', 'none', 'important');
+            logoElement.style.setProperty('-webkit-background-clip', 'unset', 'important');
+            logoElement.style.setProperty('background-clip', 'unset', 'important');
         }
     });
 }
