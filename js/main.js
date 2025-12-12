@@ -1773,10 +1773,10 @@ function createSnowPiles() {
         pile.className = 'snow-pile';
         pile.style.cssText = `
             position: absolute;
-            top: ${isFemale ? '-48px' : '-8px'};
+            top: ${isFemale ? '-48px' : '-18px'};
             left: 0;
             right: 0;
-            height: ${isFemale ? '55px' : '20px'};
+            height: ${isFemale ? '55px' : '28px'};
             pointer-events: none;
             z-index: 10;
         `;
@@ -1841,27 +1841,41 @@ function createSnowPiles() {
                 pile.appendChild(snowBlob);
             });
         } else {
-            // 남자 버튼: 기존대로 균일하게
-            const pileCount = 5;
-            for (let i = 0; i < pileCount; i++) {
+            // 남자 버튼: 10개 눈덩이, 균일하게 분포
+            const snowPieces = [
+                // 1층 - 베이스
+                { w: 26, h: 11, left: 2, bottom: 0 },
+                { w: 28, h: 12, left: 14, bottom: 1 },
+                { w: 30, h: 13, left: 28, bottom: 0 },
+                { w: 28, h: 12, left: 44, bottom: 2 },
+                { w: 26, h: 11, left: 58, bottom: 0 },
+                { w: 24, h: 10, left: 72, bottom: 1 },
+                { w: 22, h: 9, left: 86, bottom: 0 },
+                // 2층 (약간만)
+                { w: 20, h: 9, left: 20, bottom: 10 },
+                { w: 22, h: 10, left: 38, bottom: 11 },
+                { w: 18, h: 8, left: 56, bottom: 9 },
+            ];
+
+            snowPieces.forEach(piece => {
                 const snowBlob = document.createElement('div');
-                const width = 20 + Math.random() * 25;
-                const height = 10 + Math.random() * 8;
-                const left = (i * (100 / pileCount)) + Math.random() * 10 - 5;
-                const bottom = Math.random() * 3;
+                const randW = piece.w + (Math.random() * 6 - 3);
+                const randH = piece.h + (Math.random() * 4 - 2);
+                const randL = piece.left + (Math.random() * 4 - 2);
+                const randB = piece.bottom + (Math.random() * 2);
 
                 snowBlob.style.cssText = `
                     position: absolute;
-                    bottom: ${bottom}px;
-                    left: ${left}%;
-                    width: ${width}px;
-                    height: ${height}px;
-                    background: #fff;
+                    bottom: ${randB}px;
+                    left: ${randL}%;
+                    width: ${randW}px;
+                    height: ${randH}px;
+                    background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
                     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.12), inset 0 -2px 4px rgba(0,0,0,0.05);
                 `;
                 pile.appendChild(snowBlob);
-            }
+            });
         }
 
         btn.style.position = 'relative';
