@@ -1773,37 +1773,51 @@ function createSnowPiles() {
         pile.className = 'snow-pile';
         pile.style.cssText = `
             position: absolute;
-            top: ${isFemale ? '-14px' : '-8px'};
+            top: ${isFemale ? '-48px' : '-8px'};
             left: 0;
             right: 0;
-            height: ${isFemale ? '32px' : '20px'};
+            height: ${isFemale ? '55px' : '20px'};
             pointer-events: none;
             z-index: 10;
         `;
 
         if (isFemale) {
-            // 여자 버튼: 더 많은 눈, 비대칭으로 왼쪽에 더 수북이 쌓임
+            // 여자 버튼: 30개 눈덩이, 비대칭으로 왼쪽에 더 수북이 쌓임
             const snowPieces = [
-                // 왼쪽 (많이 쌓임 - 비대칭 포인트)
-                { w: 32, h: 14, left: 0, bottom: 0 },
-                { w: 28, h: 12, left: 8, bottom: 3 },
-                { w: 35, h: 16, left: 18, bottom: 1 },
-                { w: 30, h: 14, left: 30, bottom: 5 },
-                // 중앙
-                { w: 26, h: 12, left: 42, bottom: 2 },
-                { w: 24, h: 11, left: 54, bottom: 4 },
-                // 오른쪽 (적게)
-                { w: 22, h: 10, left: 68, bottom: 1 },
-                { w: 20, h: 9, left: 80, bottom: 2 },
-                { w: 18, h: 8, left: 90, bottom: 0 },
-                // 2층 (왼쪽에 더 높이)
-                { w: 24, h: 11, left: 5, bottom: 12 },
-                { w: 28, h: 12, left: 15, bottom: 14 },
-                { w: 22, h: 10, left: 28, bottom: 16 },
-                { w: 18, h: 9, left: 42, bottom: 13 },
-                // 3층 (왼쪽 꼭대기)
-                { w: 18, h: 8, left: 12, bottom: 22 },
-                { w: 15, h: 7, left: 24, bottom: 24 },
+                // 1층 - 베이스 (왼쪽 많이, 오른쪽 적게)
+                { w: 30, h: 13, left: -2, bottom: 0 },
+                { w: 28, h: 12, left: 6, bottom: 2 },
+                { w: 32, h: 14, left: 14, bottom: 0 },
+                { w: 26, h: 12, left: 24, bottom: 3 },
+                { w: 30, h: 13, left: 32, bottom: 1 },
+                { w: 24, h: 11, left: 42, bottom: 2 },
+                { w: 22, h: 10, left: 52, bottom: 1 },
+                { w: 20, h: 9, left: 62, bottom: 0 },
+                { w: 18, h: 8, left: 72, bottom: 1 },
+                { w: 16, h: 7, left: 82, bottom: 0 },
+                { w: 14, h: 6, left: 92, bottom: 0 },
+                // 2층 (왼쪽에 집중)
+                { w: 26, h: 11, left: 0, bottom: 10 },
+                { w: 28, h: 12, left: 8, bottom: 12 },
+                { w: 30, h: 13, left: 18, bottom: 11 },
+                { w: 26, h: 11, left: 28, bottom: 14 },
+                { w: 24, h: 10, left: 38, bottom: 12 },
+                { w: 20, h: 9, left: 48, bottom: 10 },
+                { w: 16, h: 7, left: 58, bottom: 9 },
+                // 3층 (왼쪽에 더 집중)
+                { w: 24, h: 10, left: 2, bottom: 20 },
+                { w: 26, h: 11, left: 12, bottom: 22 },
+                { w: 24, h: 10, left: 22, bottom: 24 },
+                { w: 20, h: 9, left: 32, bottom: 21 },
+                { w: 16, h: 8, left: 42, bottom: 19 },
+                // 4층 (왼쪽 꼭대기)
+                { w: 20, h: 9, left: 5, bottom: 30 },
+                { w: 22, h: 10, left: 14, bottom: 32 },
+                { w: 18, h: 8, left: 24, bottom: 34 },
+                { w: 14, h: 7, left: 34, bottom: 30 },
+                // 5층 (정상)
+                { w: 16, h: 7, left: 10, bottom: 40 },
+                { w: 14, h: 6, left: 20, bottom: 42 },
             ];
 
             snowPieces.forEach(piece => {
