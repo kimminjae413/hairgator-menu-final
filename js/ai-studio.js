@@ -56,6 +56,7 @@ class AIStudio {
     this.userPhotoUrl = null; // 사용자 프로필 사진 URL
     this.HISTORY_EXPIRE_DAYS = 7;
     this.MAX_MESSAGES = 200;
+    this.currentSessionId = this.generateSessionId(); // 현재 대화 세션 ID
 
     // UI Elements
     this.messagesContainer = document.getElementById('chat-messages');
@@ -290,16 +291,19 @@ class AIStudio {
       historyList.style.display = 'block';
       if (historyEmpty) historyEmpty.style.display = 'none';
 
+      // 히스토리 데이터를 임시 저장 (상세보기용)
+      this.historyData = analysisHistory;
+
       historyList.innerHTML = analysisHistory.map((item, idx) => `
         <div class="history-item" onclick="window.aiStudio.showHistoryDetail(${idx})">
           <div class="history-item-thumb">
-            ${item.imageUrl ? `<img src="${item.imageUrl}" alt="분석 이미지">` : '<span>📷</span>'}
+            ${item.imageUrl ? `<img src="${item.imageUrl}" alt="분석 이미지">` : `<span>${item.hasCanvasData ? '📷' : '💬'}</span>`}
           </div>
           <div class="history-item-info">
-            <div class="history-item-title">${item.title || '이미지 분석'}</div>
+            <div class="history-item-title">${item.title}</div>
             <div class="history-item-meta">
-              <span>${item.length || ''}</span>
-              <span>${item.form || ''}</span>
+              <span>${item.messageCount}개 메시지</span>
+              ${item.hasCanvasData ? '<span>• 레시피 포함</span>' : ''}
             </div>
             <div class="history-item-date">${this.formatDate(item.timestamp)}</div>
           </div>
@@ -317,90 +321,135 @@ class AIStudio {
     }
   }
 
-  // 분석 히스토리 가져오기 (canvasData가 있는 메시지만)
+  // 대화 히스토리 가져오기 (세션 단위로 그룹화)
   async getAnalysisHistory() {
-    const history = [];
+    const sessions = {};
 
-    // conversationHistory에서 canvasData가 있는 항목 필터링
+    // conversationHistory에서 세션별로 그룹화
     this.conversationHistory.forEach((msg, idx) => {
-      if (msg.canvasData && msg.sender === 'bot') {
-        history.push({
-          index: idx,
-          imageUrl: msg.canvasData.imageUrl || null,
-          title: msg.canvasData.type === 'analysis' ? '이미지 분석' : '맞춤 레시피',
-          length: msg.canvasData.analysis?.lengthName || msg.canvasData.params?.length_category || '',
-          form: msg.canvasData.analysis?.form || msg.canvasData.params?.cut_form || '',
+      const sessionId = msg.sessionId || 'default';
+
+      if (!sessions[sessionId]) {
+        sessions[sessionId] = {
+          sessionId: sessionId,
+          messages: [],
+          firstUserMessage: null,
           timestamp: msg.timestamp,
-          canvasData: msg.canvasData
-        });
+          hasCanvasData: false,
+          canvasData: null,
+          imageUrl: null
+        };
+      }
+
+      sessions[sessionId].messages.push({ ...msg, index: idx });
+
+      // 첫 번째 사용자 메시지를 제목으로 사용
+      if (msg.sender === 'user' && !sessions[sessionId].firstUserMessage) {
+        // HTML 태그 제거하고 텍스트만 추출
+        let cleanText = msg.content.replace(/<[^>]*>/g, '').trim();
+        // 30자 이상이면 자르기
+        if (cleanText.length > 30) {
+          cleanText = cleanText.substring(0, 30) + '...';
+        }
+        sessions[sessionId].firstUserMessage = cleanText || '새 대화';
+      }
+
+      // canvasData가 있으면 저장 (이미지 분석/레시피)
+      if (msg.canvasData && msg.sender === 'bot') {
+        sessions[sessionId].hasCanvasData = true;
+        sessions[sessionId].canvasData = msg.canvasData;
+        sessions[sessionId].imageUrl = msg.canvasData.imageUrl || null;
       }
     });
 
-    return history.reverse(); // 최신순
+    // 세션 배열로 변환하고 최신순 정렬
+    const history = Object.values(sessions).map(session => ({
+      sessionId: session.sessionId,
+      title: session.firstUserMessage || '새 대화',
+      imageUrl: session.imageUrl,
+      timestamp: session.timestamp,
+      messageCount: session.messages.length,
+      hasCanvasData: session.hasCanvasData,
+      canvasData: session.canvasData,
+      messages: session.messages
+    }));
+
+    return history.sort((a, b) => b.timestamp - a.timestamp); // 최신순
   }
 
-  // 히스토리 상세 보기
+  // 히스토리 상세 보기 - 해당 세션의 대화를 채팅창에 로드
   showHistoryDetail(idx) {
-    const history = [];
-    this.conversationHistory.forEach((msg, i) => {
-      if (msg.canvasData && msg.sender === 'bot') {
-        history.push({ ...msg, originalIndex: i });
-      }
+    if (!this.historyData || !this.historyData[idx]) return;
+
+    const session = this.historyData[idx];
+
+    // 채팅창 초기화
+    const messagesContainer = document.getElementById('chat-messages');
+    messagesContainer.innerHTML = '';
+
+    // 해당 세션의 메시지들을 채팅창에 표시
+    session.messages.forEach(msg => {
+      this.addMessageToUI(msg.sender, msg.content, false, msg.canvasData || null);
     });
 
-    const reversedHistory = history.reverse();
-    const item = reversedHistory[idx];
+    // 현재 세션 ID를 해당 세션으로 변경 (이어서 대화 가능)
+    this.currentSessionId = session.sessionId;
 
-    if (item && item.canvasData) {
-      // 결과 탭으로 전환하고 해당 결과 표시
-      document.querySelectorAll('.canvas-tab').forEach(t => t.classList.remove('active'));
-      document.querySelector('.canvas-tab[data-tab="result"]')?.classList.add('active');
+    // 캔버스 패널 닫기
+    const canvasPanel = document.getElementById('canvas-panel');
+    canvasPanel.classList.remove('active');
 
-      if (item.canvasData.type === 'analysis') {
-        this.showCanvas(item.canvasData);
-      } else if (item.canvasData.customRecipe) {
-        // 맞춤 레시피 결과
-        this.showCustomRecipeCanvas(item.canvasData, item.canvasData.uploadedImageUrl || '');
+    // canvasData가 있으면 캔버스에도 표시
+    if (session.hasCanvasData && session.canvasData) {
+      if (session.canvasData.type === 'analysis') {
+        this.showCanvas(session.canvasData);
+      } else if (session.canvasData.customRecipe) {
+        this.showCustomRecipeCanvas(session.canvasData, session.canvasData.uploadedImageUrl || '');
       } else {
-        this.showCanvas(item.canvasData);
+        this.showCanvas(session.canvasData);
       }
     }
+
+    // 스크롤을 맨 아래로
+    this.scrollToBottom();
   }
 
-  // 히스토리 항목 삭제
+  // 히스토리 항목 삭제 (세션 단위)
   async deleteHistoryItem(idx) {
-    if (!confirm('이 기록을 삭제하시겠습니까?')) return;
+    if (!confirm('이 대화를 삭제하시겠습니까?')) return;
 
-    const history = [];
-    this.conversationHistory.forEach((msg, i) => {
-      if (msg.canvasData && msg.sender === 'bot') {
-        history.push({ ...msg, originalIndex: i });
+    if (!this.historyData || !this.historyData[idx]) return;
+
+    const session = this.historyData[idx];
+
+    try {
+      // 해당 세션의 모든 메시지 Firebase에서 삭제
+      const batch = window.db.batch();
+
+      for (const msg of session.messages) {
+        if (msg.id) {
+          const docRef = window.db
+            .collection('chatHistory')
+            .doc(this.currentUserId)
+            .collection('messages')
+            .doc(msg.id);
+          batch.delete(docRef);
+        }
       }
-    });
 
-    const reversedHistory = history.reverse();
-    const item = reversedHistory[idx];
+      await batch.commit();
 
-    if (item && item.id) {
-      try {
-        // Firebase에서 삭제
-        await window.db
-          .collection('chatHistory')
-          .doc(this.currentUserId)
-          .collection('messages')
-          .doc(item.id)
-          .delete();
+      // 로컬에서도 삭제
+      this.conversationHistory = this.conversationHistory.filter(
+        m => m.sessionId !== session.sessionId
+      );
 
-        // 로컬에서도 삭제
-        this.conversationHistory = this.conversationHistory.filter(m => m.id !== item.id);
+      // UI 새로고침
+      this.loadHistoryToCanvas();
 
-        // UI 새로고침
-        this.loadHistoryToCanvas();
-
-      } catch (e) {
-        console.error('❌ 삭제 실패:', e);
-        alert('삭제에 실패했습니다.');
-      }
+    } catch (e) {
+      console.error('❌ 삭제 실패:', e);
+      alert('삭제에 실패했습니다.');
     }
   }
 
@@ -427,6 +476,11 @@ class AIStudio {
     } catch (e) {
       return 'ko';
     }
+  }
+
+  // 세션 ID 생성
+  generateSessionId() {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   }
 
   // ==================== User History (Firebase) ====================
@@ -517,6 +571,7 @@ class AIStudio {
         sender: sender,
         content: content,
         timestamp: Date.now(),
+        sessionId: this.currentSessionId, // 세션 ID 추가
         canvasData: canvasData,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       };
@@ -2570,6 +2625,11 @@ function startNewChat() {
       </div>
     </div>
   `;
+
+  // 새 세션 ID 생성 (히스토리에서 구분하기 위해)
+  if (window.aiStudio) {
+    window.aiStudio.currentSessionId = window.aiStudio.generateSessionId();
+  }
 
   // 히스토리는 유지하되, 현재 세션 메모리만 초기화
   // Firebase 히스토리는 삭제하지 않음 (히스토리 탭에서 볼 수 있도록)
