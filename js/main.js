@@ -647,17 +647,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (window.currentMainTab) window.currentMainTab = null;
             if (window.currentSubTab) window.currentSubTab = null;
 
-            // 크리스마스 효과 다시 생성
+            // 크리스마스 효과 다시 생성 (눈내리기만)
             setTimeout(() => {
-                // 다크모드용
                 if (typeof window.createSnowflakes === 'function') window.createSnowflakes();
-                if (typeof window.createSnowPiles === 'function') window.createSnowPiles();
-                if (typeof window.createChristmasTree === 'function') window.createChristmasTree();
-                // 라이트모드용
-                if (typeof window.createSnowballFight === 'function') window.createSnowballFight();
-                // if (typeof window.addRudolphDecoration === 'function') window.addRudolphDecoration(); // 루돌프 장식 제거
-                if (typeof window.createMerryChristmasText === 'function') window.createMerryChristmasText();
-                if (typeof window.createFootprints === 'function') window.createFootprints();
             }, 300);
 
             console.log('✅ 메뉴 → 성별 완료');
@@ -1309,21 +1301,11 @@ async function loadUserSettingsFromFirebase() {
                         document.body.classList.remove('light-theme');
                     }
 
-                    // ⭐ 크리스마스 효과 업데이트 (테마 변경 시)
-                    document.querySelectorAll('.snowflake, .snow-pile, .christmas-tree, .christmas-gifts, .snowball-fight-container, .rudolph-decoration, .merry-christmas-light, .footprints-container').forEach(el => el.remove());
+                    // ⭐ 크리스마스 효과 업데이트 (테마 변경 시) - 눈내리기만
+                    document.querySelectorAll('.snowflake').forEach(el => el.remove());
 
                     setTimeout(() => {
-                        if (targetIsLight) {
-                            // 라이트모드 효과
-                            if (typeof createSnowballFight === 'function') createSnowballFight(); // 눈사람+강아지
-                            if (typeof createMerryChristmasText === 'function') createMerryChristmasText();
-                            if (typeof createFootprints === 'function') createFootprints();
-                        } else {
-                            // 다크모드 효과
-                            if (typeof createSnowflakes === 'function') createSnowflakes();
-                            if (typeof createSnowPiles === 'function') createSnowPiles();
-                            if (typeof createChristmasTree === 'function') createChristmasTree();
-                        }
+                        if (typeof createSnowflakes === 'function') createSnowflakes();
                     }, 300);
                 }
 
@@ -2581,52 +2563,31 @@ function createFootprints() {
 
 window.createFootprints = createFootprints;
 
-// 크리스마스 효과 시작
+// 크리스마스 효과 시작 (눈내리기만 - 다크/라이트 모드 공통)
 document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(createSnowflakes, 500);      // 다크모드용
-    setTimeout(createSnowPiles, 600);       // 다크모드용
-    setTimeout(createChristmasTree, 700);   // 다크모드용
-    setTimeout(createSnowballFight, 800);   // 라이트모드용 (눈사람+강아지)
-    // setTimeout(addRudolphDecoration, 900);  // 루돌프 장식 제거
-    setTimeout(createMerryChristmasText, 950); // 라이트모드용
-    setTimeout(createFootprints, 1000);     // 라이트모드용
+    setTimeout(createSnowflakes, 500);
 
-    // 테마 변경 시 크리스마스 효과 토글 (DOMContentLoaded 후에 래핑해야 window.toggleTheme이 존재함)
+    // 테마 변경 시 눈 효과 재시작
     setTimeout(() => {
         const originalToggleTheme = window.toggleTheme;
         if (typeof originalToggleTheme === 'function') {
             window.toggleTheme = function() {
-                // 테마 전환
                 originalToggleTheme();
 
-                // 모든 크리스마스 효과 제거
-                document.querySelectorAll('.snowflake, .snow-pile, .christmas-tree, .christmas-gifts, .snowball-fight-container, .rudolph-decoration, .merry-christmas-light, .footprints-container').forEach(el => el.remove());
-                // 눈 생성 인터벌 중지
+                // 기존 눈 제거
+                document.querySelectorAll('.snowflake').forEach(el => el.remove());
                 if (typeof snowflakeInterval !== 'undefined' && snowflakeInterval) {
                     clearInterval(snowflakeInterval);
                     snowflakeInterval = null;
                 }
 
-                // 테마 전환 후 해당 테마에 맞는 효과만 생성
+                // 눈 다시 생성
                 setTimeout(() => {
-                    // 다시 한번 제거 (안전하게)
-                    document.querySelectorAll('.snowflake, .snow-pile, .christmas-tree, .christmas-gifts, .snowball-fight-container, .rudolph-decoration, .merry-christmas-light, .footprints-container').forEach(el => el.remove());
-
-                    if (document.body.classList.contains('light-theme')) {
-                        // 라이트모드 효과
-                        createSnowballFight(); // 눈사람+강아지
-                        // addRudolphDecoration(); // 루돌프 장식 제거
-                        createMerryChristmasText();
-                        createFootprints();
-                    } else {
-                        // 다크모드 효과
-                        createSnowflakes();
-                        createSnowPiles();
-                        createChristmasTree();
-                    }
+                    document.querySelectorAll('.snowflake').forEach(el => el.remove());
+                    createSnowflakes();
                 }, 300);
             };
-            console.log('✅ toggleTheme 래핑 완료 (크리스마스 효과)');
+            console.log('✅ toggleTheme 래핑 완료 (눈 효과)');
         }
-    }, 100); // 다른 DOMContentLoaded 콜백 실행 후에 래핑
+    }, 100);
 });
