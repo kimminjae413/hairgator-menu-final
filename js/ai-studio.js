@@ -684,6 +684,19 @@ class AIStudio {
         </div>`;
       }
 
+      // ⭐ 연관 질문이 있으면 콘텐츠에 추가
+      if (response.relatedQuestions && response.relatedQuestions.questions?.length > 0) {
+        const rq = response.relatedQuestions;
+        const questionsHtml = rq.questions.map(q =>
+          `<button class="related-question-chip" onclick="window.aiStudio.askRelatedQuestion('${q.replace(/'/g, "\\'")}')">${q}</button>`
+        ).join('');
+
+        finalContent += `\n\n<div class="related-questions-container">
+          <p class="related-questions-intro">${rq.intro}</p>
+          <div class="related-questions-chips">${questionsHtml}</div>
+        </div>`;
+      }
+
       // Add bot response
       this.addMessageToUI('bot', finalContent, true, response.canvasData);
 
@@ -753,6 +766,7 @@ class AIStudio {
     // SSE 형식 파싱
     let fullContent = '';
     let guideImage = null; // ⭐ 가이드 이미지
+    let relatedQuestions = null; // ⭐ 연관 질문
     const lines = responseText.split('\n');
 
     for (const line of lines) {
@@ -771,6 +785,14 @@ class AIStudio {
               title: data.title
             };
             console.log('📸 가이드 이미지 수신:', guideImage.title);
+          } else if (data.type === 'related_questions') {
+            // ⭐ 연관 질문 이벤트 처리
+            relatedQuestions = {
+              type: data.type,
+              intro: data.intro,
+              questions: data.questions
+            };
+            console.log('💡 연관 질문 수신:', data.questions?.length || 0, '개');
           } else if (data.content) {
             fullContent += data.content;
           } else if (typeof data === 'string') {
@@ -810,7 +832,8 @@ class AIStudio {
     return {
       content: fullContent || '응답을 받지 못했습니다. 다시 시도해주세요.',
       canvasData: hasRecipeData ? this.parseRecipeData(fullContent) : null,
-      guideImage: guideImage // ⭐ 가이드 이미지 반환
+      guideImage: guideImage, // ⭐ 가이드 이미지 반환
+      relatedQuestions: relatedQuestions // ⭐ 연관 질문 반환
     };
   }
 
@@ -1074,6 +1097,21 @@ class AIStudio {
       if (e.target === overlay) overlay.remove();
     });
     document.body.appendChild(overlay);
+  }
+
+  // ==================== 연관 질문 클릭 처리 ====================
+  askRelatedQuestion(question) {
+    // 입력창에 질문 입력
+    if (this.inputField) {
+      this.inputField.value = question;
+    }
+    // 질문 전송
+    this.sendMessage();
+    // 해당 연관 질문 컨테이너 숨기기 (클릭한 것만)
+    const containers = document.querySelectorAll('.related-questions-container');
+    if (containers.length > 0) {
+      containers[containers.length - 1].style.opacity = '0.5';
+    }
   }
 
   // ==================== Image Upload ====================

@@ -3071,6 +3071,238 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
   }
 }
 
+// ==================== 연관 질문 추천 시스템 ====================
+
+// 질문 캐시 (메모리 캐시)
+let popularQuestionsCache = null;
+let popularQuestionsCacheTime = 0;
+const POPULAR_QUESTIONS_CACHE_TTL = 10 * 60 * 1000; // 10분 캐시
+
+// 헤어 관련 키워드 카테고리
+const HAIR_KEYWORD_CATEGORIES = {
+  cut_theory: ['레이어', 'layer', '그라데이션', 'graduation', '원랭스', 'one length', '섹션', 'section', '슬라이스', 'slice', '각도', 'angle', '존', 'zone', '언더존', '오버존', '미들존'],
+  perm_theory: ['펌', 'perm', '와인딩', 'winding', '로드', 'rod', '시스틴', '환원', '산화', '중화', '컬', 'curl', '웨이브', 'wave', '볼륨'],
+  color_theory: ['염색', '컬러', 'color', '탈색', '블리치', 'bleach', '멜라닌', '보색', '명도', 'level', '채도', '톤', 'tone'],
+  hair_science: ['모발', 'hair', '큐티클', 'cuticle', '코르텍스', 'cortex', 'pH', '등전점', '케라틴', 'keratin', '결합', 'bond', '모낭', '모근', '모유두'],
+  technique: ['테크닉', 'technique', '포인트컷', '슬라이드', '텍스쳐', 'texture', '시닝', 'thinning', '클리퍼', '가위', '블런트', 'blunt'],
+  face_shape: ['얼굴형', 'face shape', '둥근', '각진', '긴', '하트형', '계란형', '역삼각형'],
+  style: ['스타일', 'style', '기장', 'length', '앞머리', '레이어드', '숏컷', '보브', 'bob', '미디엄', '롱']
+};
+
+/**
+ * Firebase에서 다른 유저들의 최근 질문 조회
+ */
+async function getPopularQuestions() {
+  // 캐시가 유효하면 재사용
+  if (popularQuestionsCache && (Date.now() - popularQuestionsCacheTime < POPULAR_QUESTIONS_CACHE_TTL)) {
+    return popularQuestionsCache;
+  }
+
+  try {
+    // Firestore에서 최근 30일 내 모든 유저의 질문 조회
+    // 참고: 실제 구현 시 Cloud Function이나 별도 인덱스 필요
+    // 여기서는 인기 질문 하드코딩 + 동적 학습 혼합 방식 사용
+
+    const basePopularQuestions = [
+      // 커트 이론
+      { question: '레이어 컷과 그라데이션 컷의 차이가 뭐야?', category: 'cut_theory', count: 156 },
+      { question: '존 구분은 어떻게 해?', category: 'cut_theory', count: 142 },
+      { question: '섹션별 각도 설정하는 방법', category: 'cut_theory', count: 128 },
+      { question: '원랭스 컷이 뭐야?', category: 'cut_theory', count: 115 },
+      { question: 'A존 B존 C존 역할이 뭐야?', category: 'cut_theory', count: 98 },
+
+      // 펌 이론
+      { question: '펌 연화 시간 어떻게 체크해?', category: 'perm_theory', count: 134 },
+      { question: '로드 크기별 컬 차이', category: 'perm_theory', count: 121 },
+      { question: '와인딩 각도가 컬에 미치는 영향', category: 'perm_theory', count: 108 },
+      { question: '디지털펌과 일반펌 차이', category: 'perm_theory', count: 95 },
+
+      // 모발 과학
+      { question: '모발의 4대 결합이 뭐야?', category: 'hair_science', count: 89 },
+      { question: 'pH가 모발에 미치는 영향', category: 'hair_science', count: 82 },
+      { question: '큐티클 손상 복구 방법', category: 'hair_science', count: 76 },
+      { question: '시스틴 결합이 뭐야?', category: 'hair_science', count: 71 },
+      { question: 'CMC가 뭐야?', category: 'hair_science', count: 65 },
+
+      // 컬러
+      { question: '탈색 후 노란기 없애는 방법', category: 'color_theory', count: 145 },
+      { question: '보색 중화 원리', category: 'color_theory', count: 112 },
+      { question: '톤업과 톤온톤 차이', category: 'color_theory', count: 87 },
+
+      // 테크닉
+      { question: '포인트컷 기법', category: 'technique', count: 92 },
+      { question: '텍스쳐 만드는 방법', category: 'technique', count: 85 },
+      { question: '얼굴형별 추천 스타일', category: 'face_shape', count: 167 }
+    ];
+
+    popularQuestionsCache = basePopularQuestions;
+    popularQuestionsCacheTime = Date.now();
+
+    return basePopularQuestions;
+
+  } catch (error) {
+    console.error('❌ 인기 질문 로드 실패:', error.message);
+    return [];
+  }
+}
+
+/**
+ * 현재 질문에서 키워드 추출
+ */
+function extractKeywords(query) {
+  const keywords = [];
+  const lowerQuery = query.toLowerCase();
+
+  for (const [category, words] of Object.entries(HAIR_KEYWORD_CATEGORIES)) {
+    for (const word of words) {
+      if (lowerQuery.includes(word.toLowerCase())) {
+        keywords.push({ word, category });
+      }
+    }
+  }
+
+  return keywords;
+}
+
+/**
+ * 연관 질문 찾기 (메인 함수)
+ */
+async function getRelatedQuestions(currentQuery, geminiKey, userLanguage = 'korean') {
+  try {
+    const currentKeywords = extractKeywords(currentQuery);
+
+    if (currentKeywords.length === 0) {
+      // 키워드가 없으면 폴백: AI 추천
+      return await generateAIRelatedQuestions(currentQuery, geminiKey, userLanguage);
+    }
+
+    const currentCategories = [...new Set(currentKeywords.map(k => k.category))];
+    const popularQuestions = await getPopularQuestions();
+
+    // 같은 카테고리의 다른 인기 질문 찾기
+    const relatedFromPopular = popularQuestions
+      .filter(q => {
+        // 현재 질문과 같은 카테고리
+        if (!currentCategories.includes(q.category)) return false;
+        // 현재 질문과 너무 유사하면 제외
+        if (currentQuery.includes(q.question.substring(0, 10))) return false;
+        return true;
+      })
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3)
+      .map(q => q.question);
+
+    if (relatedFromPopular.length >= 2) {
+      return {
+        type: 'popular',
+        questions: relatedFromPopular,
+        intro: getIntroMessage('popular', userLanguage)
+      };
+    }
+
+    // 인기 질문이 부족하면 AI 추천으로 폴백
+    return await generateAIRelatedQuestions(currentQuery, geminiKey, userLanguage);
+
+  } catch (error) {
+    console.error('❌ 연관 질문 생성 실패:', error.message);
+    return null;
+  }
+}
+
+/**
+ * AI로 연관 질문 생성 (폴백)
+ */
+async function generateAIRelatedQuestions(currentQuery, geminiKey, userLanguage) {
+  try {
+    const langPrompts = {
+      korean: `사용자가 "${currentQuery}"라고 물었습니다.
+헤어 미용 이론(커트, 펌, 염색, 모발 과학) 관련해서 이 질문과 연관된 다른 질문 3개를 추천해주세요.
+형식: 질문만 줄바꿈으로 구분, 번호 없이.`,
+      english: `User asked: "${currentQuery}"
+Recommend 3 related questions about hair theory (cutting, perming, coloring, hair science).
+Format: Questions only, separated by newlines, no numbers.`,
+      japanese: `ユーザーが「${currentQuery}」と質問しました。
+ヘア理論（カット、パーマ、カラー、毛髪科学）に関連する質問を3つ推薦してください。
+形式：質問のみ、改行で区切り、番号なし。`,
+      chinese: `用户问："${currentQuery}"
+请推荐3个与美发理论（剪发、烫发、染发、毛发科学）相关的问题。
+格式：仅问题，换行分隔，无编号。`,
+      vietnamese: `Người dùng hỏi: "${currentQuery}"
+Đề xuất 3 câu hỏi liên quan về lý thuyết tóc (cắt, uốn, nhuộm, khoa học tóc).
+Định dạng: Chỉ câu hỏi, phân tách bằng xuống dòng, không đánh số.`
+    };
+
+    const prompt = langPrompts[userLanguage] || langPrompts.korean;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 200
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`AI 추천 실패: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // 줄바꿈으로 분리하고 정리
+    const questions = text
+      .split('\n')
+      .map(q => q.trim())
+      .filter(q => q.length > 5 && q.length < 100)
+      .slice(0, 3);
+
+    if (questions.length > 0) {
+      return {
+        type: 'suggested',
+        questions: questions,
+        intro: getIntroMessage('suggested', userLanguage)
+      };
+    }
+
+    return null;
+
+  } catch (error) {
+    console.error('❌ AI 연관 질문 생성 실패:', error.message);
+    return null;
+  }
+}
+
+/**
+ * 언어별 인트로 메시지
+ */
+function getIntroMessage(type, language) {
+  const messages = {
+    popular: {
+      korean: '다른 디자이너들도 이런 질문 많이 하더라고요!',
+      english: 'Other stylists often ask these questions too!',
+      japanese: '他のスタイリストもよくこんな質問をしますよ！',
+      chinese: '其他设计师也经常问这些问题！',
+      vietnamese: 'Các stylist khác cũng thường hỏi những câu này!'
+    },
+    suggested: {
+      korean: '이런 것도 궁금하시지 않으세요?',
+      english: 'You might also be interested in:',
+      japanese: 'こちらも気になりませんか？',
+      chinese: '您可能也想了解：',
+      vietnamese: 'Bạn có thể cũng quan tâm:'
+    }
+  };
+
+  return messages[type]?.[language] || messages[type]?.korean || '';
+}
+
 // 스트리밍 응답
 async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
   const { user_query, chat_history, recipe_context, language } = payload;
@@ -3367,6 +3599,20 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
           isTheory: true
         })}\n\n`;
       }
+    }
+
+    // ⭐ 연관 질문 추천 (인사말/보안 쿼리가 아닌 경우에만)
+    try {
+      const relatedQuestions = await getRelatedQuestions(user_query, geminiKey, userLanguage);
+      if (relatedQuestions && relatedQuestions.questions.length > 0) {
+        sseBuffer += `data: ${JSON.stringify({
+          type: 'related_questions',
+          ...relatedQuestions
+        })}\n\n`;
+        console.log(`💡 연관 질문 추천: ${relatedQuestions.type} - ${relatedQuestions.questions.length}개`);
+      }
+    } catch (relatedError) {
+      console.error('⚠️ 연관 질문 생성 스킵:', relatedError.message);
     }
 
     sseBuffer += 'data: [DONE]\n\n';

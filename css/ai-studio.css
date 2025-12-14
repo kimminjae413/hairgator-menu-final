@@ -3530,6 +3530,88 @@ body.ai-studio-page {
   }
 }
 
+/* ==================== 연관 질문 추천 ==================== */
+.related-questions-container {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(45, 45, 45, 0.05) 0%, rgba(85, 85, 85, 0.08) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.related-questions-intro {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 10px 0;
+  font-weight: 500;
+}
+
+.related-questions-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.related-question-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.related-question-chip:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.related-question-chip:active {
+  transform: translateY(0);
+}
+
+/* 다크모드 */
+body.dark-mode .related-questions-container {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.08) 100%);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .related-questions-intro {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body.dark-mode .related-question-chip {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+body.dark-mode .related-question-chip:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .related-questions-container {
+    padding: 10px 12px;
+  }
+
+  .related-question-chip {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
 /* ==================== Utilities ==================== */
 .hidden { display: none !important; }
 .sr-only {
