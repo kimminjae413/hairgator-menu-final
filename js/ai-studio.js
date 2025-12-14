@@ -788,11 +788,11 @@ class AIStudio {
           } else if (data.type === 'related_questions') {
             // ⭐ 연관 질문 이벤트 처리
             relatedQuestions = {
-              type: data.type,
+              questionType: data.questionType,  // popular 또는 suggested
               intro: data.intro,
               questions: data.questions
             };
-            console.log('💡 연관 질문 수신:', data.questions?.length || 0, '개');
+            console.log('💡 연관 질문 수신:', data.questionType, data.questions?.length || 0, '개');
           } else if (data.content) {
             fullContent += data.content;
           } else if (typeof data === 'string') {

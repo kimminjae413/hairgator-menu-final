@@ -3607,7 +3607,9 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
       if (relatedQuestions && relatedQuestions.questions.length > 0) {
         sseBuffer += `data: ${JSON.stringify({
           type: 'related_questions',
-          ...relatedQuestions
+          questionType: relatedQuestions.type,  // popular 또는 suggested
+          intro: relatedQuestions.intro,
+          questions: relatedQuestions.questions
         })}\n\n`;
         console.log(`💡 연관 질문 추천: ${relatedQuestions.type} - ${relatedQuestions.questions.length}개`);
       }
