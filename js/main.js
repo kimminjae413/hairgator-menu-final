@@ -2306,67 +2306,10 @@ function addRudolphDecoration() {
 
 window.addRudolphDecoration = addRudolphDecoration;
 
-// ========== 라이트 모드 - 메리 크리스마스 텍스트 ==========
+// ========== 메리 크리스마스 텍스트 (비활성화됨 - 요소 제거만 수행) ==========
 function createMerryChristmasText() {
-    // 기존 텍스트 제거
+    // 항상 기존 텍스트 제거만 수행 (효과 비활성화됨)
     document.querySelectorAll('.merry-christmas-light').forEach(el => el.remove());
-
-    // 라이트 모드 + 성별 선택 화면에서만 표시
-    if (!document.body.classList.contains('light-theme') || !isGenderSelectionVisible()) {
-        return;
-    }
-
-    const textContainer = document.createElement('div');
-    textContainer.className = 'merry-christmas-light';
-    textContainer.innerHTML = `
-        <svg width="320" height="60" viewBox="0 0 320 60">
-            <defs>
-                <!-- 크리스마스 그라데이션 -->
-                <linearGradient id="xmasGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style="stop-color:#c41e3a">
-                        <animate attributeName="stop-color"
-                            values="#c41e3a;#228B22;#c41e3a"
-                            dur="3s" repeatCount="indefinite"/>
-                    </stop>
-                    <stop offset="50%" style="stop-color:#228B22">
-                        <animate attributeName="stop-color"
-                            values="#228B22;#c41e3a;#228B22"
-                            dur="3s" repeatCount="indefinite"/>
-                    </stop>
-                    <stop offset="100%" style="stop-color:#c41e3a">
-                        <animate attributeName="stop-color"
-                            values="#c41e3a;#228B22;#c41e3a"
-                            dur="3s" repeatCount="indefinite"/>
-                    </stop>
-                </linearGradient>
-                <!-- 텍스트 그림자 -->
-                <filter id="textShadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="2" dy="2" stdDeviation="1" flood-color="#000" flood-opacity="0.2"/>
-                </filter>
-            </defs>
-
-            <!-- 메인 텍스트 -->
-            <text x="160" y="42"
-                  text-anchor="middle"
-                  font-family="'Great Vibes', 'Dancing Script', cursive"
-                  font-size="38"
-                  font-weight="bold"
-                  fill="url(#xmasGradient)"
-                  filter="url(#textShadow)">
-                Merry Christmas
-            </text>
-        </svg>
-    `;
-    textContainer.style.cssText = `
-        position: fixed;
-        top: 80px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 9999;
-        pointer-events: none;
-    `;
-
-    document.body.appendChild(textContainer);
 }
 
 window.createMerryChristmasText = createMerryChristmasText;
@@ -2563,8 +2506,11 @@ function createFootprints() {
 
 window.createFootprints = createFootprints;
 
-// 크리스마스 효과 시작 (눈내리기만 - 다크/라이트 모드 공통)
+// 크리스마스 효과 시작 (눈내리기만 - 다크모드 전용)
 document.addEventListener('DOMContentLoaded', () => {
+    // 이전 캐시에서 생성된 크리스마스 효과 요소들 제거
+    document.querySelectorAll('.merry-christmas-light, .christmas-tree, .christmas-gifts, .footprints-container').forEach(el => el.remove());
+
     setTimeout(createSnowflakes, 500);
 
     // 테마 변경 시 눈 효과 재시작

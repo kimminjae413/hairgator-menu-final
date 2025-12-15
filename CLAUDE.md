@@ -98,56 +98,31 @@
 - `upload-perm-indexes.py`: 펌 인덱스 이미지 Firebase Storage 업로드 + Firestore 저장
 - `fix-perm-index-merge.py`: 펌 인덱스 언어별 문서를 하나로 병합
 
-## 크리스마스 효과 (라이트/다크 모드 전환 시 주의!)
+## 크리스마스 효과 (간소화됨 - 2025-12-14)
 
-### 헷갈렸던 핵심 원인
-**`toggleTheme` 함수 래핑 타이밍 문제**
+### 현재 상태: 눈내리기만 유지
+- 다크모드에서만 눈내리기 효과 표시
+- 라이트모드에서는 효과 없음
+- **제거된 효과들**: 트리, 선물, 메리크리스마스 텍스트, 발자국, 눈사람, 버튼 눈쌓임
 
-다크/라이트 모드 전환 시 크리스마스 효과가 제대로 안 바뀌던 이유:
-1. **DOMContentLoaded에서 `toggleTheme`을 래핑**하는데, 원본 함수가 아직 정의되기 전에 래핑하려고 하면 실패
-2. **setTimeout(100ms)로 지연**시켜야 다른 스크립트에서 `toggleTheme`이 정의된 후 래핑 가능
-3. **효과 제거 → 재생성 순서 중요**: 테마 전환 후 기존 효과를 먼저 모두 제거하고, 300ms 뒤에 새 테마에 맞는 효과만 생성
+### 핵심 함수
+- `createSnowflakes()`: 눈내리기 효과 (main.js)
+- `snowflakeInterval`: 전역 변수로 인터벌 관리
 
-### 구조 (main.js)
-```javascript
-// DOMContentLoaded 후 toggleTheme 래핑
-setTimeout(() => {
-    const originalToggleTheme = window.toggleTheme;
-    if (typeof originalToggleTheme === 'function') {
-        window.toggleTheme = function() {
-            originalToggleTheme();  // 원본 테마 전환 실행
-
-            // 1) 모든 크리스마스 효과 제거
-            document.querySelectorAll('.snowflake, .snow-pile, .christmas-tree, ...').forEach(el => el.remove());
-
-            // 2) 300ms 후 새 테마에 맞는 효과만 생성
-            setTimeout(() => {
-                if (document.body.classList.contains('light-theme')) {
-                    createSnowballFight();  // 라이트모드용
-                    createMerryChristmasText();
-                } else {
-                    createSnowflakes();     // 다크모드용
-                    createSnowPiles();
-                    createChristmasTree();
-                }
-            }, 300);
-        };
-    }
-}, 100);  // ⚠️ 이 지연이 없으면 toggleTheme이 undefined일 수 있음!
-```
-
-### 효과 분류
-| 모드 | 효과 함수 |
-|------|-----------|
-| **다크모드** | `createSnowflakes()`, `createSnowPiles()`, `createChristmasTree()` |
-| **라이트모드** | `createSnowballFight()`, `createMerryChristmasText()`, `createFootprints()` |
-
-### 주의사항
-- 각 효과 함수 내부에서도 **현재 테마 체크** 필수 (`document.body.classList.contains('light-theme')`)
-- 성별 선택 화면에서만 표시: `isGenderSelectionVisible()` 체크
-- `snowflakeInterval` 전역 변수로 눈 생성 인터벌 관리 → 테마 변경 시 `clearInterval` 필수
+### 조건
+- `isGenderSelectionVisible()`: 성별 선택 화면에서만 표시
+- `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
+- 2025-12-15: 메리 크리스마스 텍스트 완전 비활성화
+  - `createMerryChristmasText()` 함수: 요소 제거만 수행하도록 변경
+  - DOMContentLoaded에서 이전 캐시로 생성된 크리스마스 효과 요소들 일괄 제거
+
+- 2025-12-14: 연관 질문 추천 기능 + 크리스마스 효과 간소화
+  - **연관 질문 추천**: 답변 후 관련 질문 3개 제안 (5개국어 지원)
+  - **type 필드 충돌 버그 수정**: spread 연산자로 덮어쓰기 문제 → `questionType`으로 분리
+  - **크리스마스 효과 간소화**: 눈내리기만 유지, 트리/선물/텍스트/발자국/눈사람/버튼눈쌓임 제거
+
 - 2024-12-11: 커트/펌 레시피 RAG 완전 통합 + 펌 인덱스 이미지 추가
 
   ### RAG 커트 자막 추가 (헷갈렸던 부분!)
