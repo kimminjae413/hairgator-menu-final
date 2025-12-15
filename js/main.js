@@ -1704,24 +1704,15 @@ function createSnowflakes() {
             ? Math.random() * 2 + 1.5  // 모바일: 더 빠르게 (1.5~3.5)
             : Math.random() * 1.5 + 0.5; // PC: 기존 속도 (0.5~2)
 
-        // 라이트모드: 은은한 네온 글로우 효과
+        // 라이트모드: 간단한 네온 효과 (성능 최적화)
         if (currentIsLight) {
-            const opacity = Math.random() * 0.3 + 0.7;
-            // 네온 컬러 팔레트 (파스텔 네온) - 모바일은 글로우 간소화
-            const neonColors = [
-                { color: '#7dd3fc', glow: '0, 180, 255' },    // 스카이 블루 네온
-                { color: '#a5b4fc', glow: '139, 92, 246' },   // 라벤더 네온
-                { color: '#99f6e4', glow: '20, 184, 166' },   // 민트 네온
-                { color: '#fda4af', glow: '244, 63, 94' },    // 로즈 네온
-                { color: '#c4b5fd', glow: '167, 139, 250' },  // 퍼플 네온
-            ];
-            const neon = neonColors[Math.floor(Math.random() * neonColors.length)];
-
-            snowflake.style.color = neon.color;
-            // 모바일: 글로우 효과 간소화 (성능 최적화)
-            snowflake.style.textShadow = isMobile
-                ? `0 0 8px rgba(${neon.glow}, 0.7)`
-                : `0 0 5px rgba(${neon.glow}, 0.8), 0 0 10px rgba(${neon.glow}, 0.6), 0 0 20px rgba(${neon.glow}, 0.4), 0 0 30px rgba(${neon.glow}, 0.2)`;
+            const opacity = Math.random() * 0.4 + 0.6;
+            // 네온 컬러 - 단순화
+            const neonColors = ['#7dd3fc', '#a5b4fc', '#99f6e4', '#fda4af', '#c4b5fd'];
+            const color = neonColors[Math.floor(Math.random() * neonColors.length)];
+            snowflake.style.color = color;
+            // 모바일/PC 모두 간단한 글로우만
+            snowflake.style.textShadow = `0 0 6px ${color}`;
             snowflake.style.opacity = opacity;
         } else {
             // 다크모드: 기존 흰색 눈송이
