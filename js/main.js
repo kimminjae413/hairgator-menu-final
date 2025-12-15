@@ -1670,9 +1670,9 @@ function createSnowflakes() {
     // 모바일/앱 감지 - 성능 최적화
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
                      || window.innerWidth < 768;
-    const maxSnowflakes = isMobile ? 20 : 50;  // 모바일: 최대 20개, PC: 최대 50개
-    const initialCount = isMobile ? 10 : 25;   // 초기 생성 수
-    const spawnInterval = isMobile ? 1000 : 600; // 생성 간격 (ms)
+    const maxSnowflakes = isMobile ? 8 : 40;   // 모바일: 최대 8개, PC: 최대 40개
+    const initialCount = isMobile ? 4 : 20;    // 초기 생성 수
+    const spawnInterval = isMobile ? 2500 : 700; // 생성 간격 (ms)
 
     const snowContainer = document.body;
     const isLightTheme = document.body.classList.contains('light-theme');
