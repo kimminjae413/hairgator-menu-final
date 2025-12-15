@@ -1667,17 +1667,27 @@ function createSnowflakes() {
         return;
     }
 
+    // 모바일/앱 감지 - 성능 최적화
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                     || window.innerWidth < 768;
+    const maxSnowflakes = isMobile ? 20 : 50;  // 모바일: 최대 20개, PC: 최대 50개
+    const initialCount = isMobile ? 10 : 25;   // 초기 생성 수
+    const spawnInterval = isMobile ? 1000 : 600; // 생성 간격 (ms)
+
     const snowContainer = document.body;
     const isLightTheme = document.body.classList.contains('light-theme');
 
-    // 다크모드: 흰색 눈송이, 라이트모드: 얼음 결정 느낌의 블루/실버 톤
+    // 다크모드: 흰색 눈송이, 라이트모드: 네온 눈송이
     const darkModeSnowflakes = ['❄', '❅', '❆', '•', '∘'];
     const lightModeSnowflakes = ['❄', '❅', '❆', '✧', '✦'];
-    const snowflakes = isLightTheme ? lightModeSnowflakes : darkModeSnowflakes;
 
     function createSnowflake() {
         // 성별 선택 화면이 아니면 생성 안함
         if (!isGenderSelectionVisible()) return;
+
+        // 최대 개수 제한
+        const currentCount = document.querySelectorAll('.snowflake').length;
+        if (currentCount >= maxSnowflakes) return;
 
         const currentIsLight = document.body.classList.contains('light-theme');
         const snowflake = document.createElement('div');
@@ -1690,44 +1700,50 @@ function createSnowflakes() {
         let posX = Math.random() * window.innerWidth;
         let posY = -20;
         const size = Math.random() * 10 + 8; // 8px ~ 18px
-        const fallSpeed = Math.random() * 1.5 + 0.5; // 0.5 ~ 2 픽셀/프레임
+        const fallSpeed = isMobile
+            ? Math.random() * 2 + 1.5  // 모바일: 더 빠르게 (1.5~3.5)
+            : Math.random() * 1.5 + 0.5; // PC: 기존 속도 (0.5~2)
 
-        // 라이트모드: 블루/실버 톤의 반투명 눈송이 + 그림자
+        // 라이트모드: 은은한 네온 글로우 효과
         if (currentIsLight) {
-            const opacity = Math.random() * 0.4 + 0.3; // 0.3 ~ 0.7
-            // 얼음 결정 색상 팔레트 (하늘색, 라벤더, 실버)
-            const iceColors = [
-                'rgba(135, 206, 235, 0.8)',   // 스카이 블루
-                'rgba(176, 196, 222, 0.8)',   // 라이트 스틸 블루
-                'rgba(173, 216, 230, 0.8)',   // 라이트 블루
-                'rgba(230, 230, 250, 0.8)',   // 라벤더
-                'rgba(192, 192, 192, 0.7)',   // 실버
+            const opacity = Math.random() * 0.3 + 0.7;
+            // 네온 컬러 팔레트 (파스텔 네온) - 모바일은 글로우 간소화
+            const neonColors = [
+                { color: '#7dd3fc', glow: '0, 180, 255' },    // 스카이 블루 네온
+                { color: '#a5b4fc', glow: '139, 92, 246' },   // 라벤더 네온
+                { color: '#99f6e4', glow: '20, 184, 166' },   // 민트 네온
+                { color: '#fda4af', glow: '244, 63, 94' },    // 로즈 네온
+                { color: '#c4b5fd', glow: '167, 139, 250' },  // 퍼플 네온
             ];
-            const randomColor = iceColors[Math.floor(Math.random() * iceColors.length)];
+            const neon = neonColors[Math.floor(Math.random() * neonColors.length)];
 
-            snowflake.style.color = randomColor;
-            snowflake.style.textShadow = `
-                0 0 3px rgba(100, 149, 237, 0.6),
-                0 2px 4px rgba(0, 0, 0, 0.15),
-                0 0 8px rgba(135, 206, 235, 0.4)
-            `;
+            snowflake.style.color = neon.color;
+            // 모바일: 글로우 효과 간소화 (성능 최적화)
+            snowflake.style.textShadow = isMobile
+                ? `0 0 8px rgba(${neon.glow}, 0.7)`
+                : `0 0 5px rgba(${neon.glow}, 0.8), 0 0 10px rgba(${neon.glow}, 0.6), 0 0 20px rgba(${neon.glow}, 0.4), 0 0 30px rgba(${neon.glow}, 0.2)`;
             snowflake.style.opacity = opacity;
-            snowflake.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))';
         } else {
             // 다크모드: 기존 흰색 눈송이
             const opacity = Math.random() * 0.5 + 0.3;
             snowflake.style.opacity = opacity;
         }
 
-        // 각 눈송이마다 다른 흔들림 설정
-        const swayAmplitude = Math.random() * 80 + 30; // 30px ~ 110px 폭
-        const swaySpeed = Math.random() * 0.02 + 0.01; // 흔들림 속도
-        let swayOffset = Math.random() * Math.PI * 2; // 시작 위상 (랜덤)
-        const windDrift = (Math.random() - 0.5) * 0.5; // -0.25 ~ 0.25 바람 효과
+        // 각 눈송이마다 다른 흔들림 설정 - 모바일은 간소화
+        const swayAmplitude = isMobile ? Math.random() * 40 + 20 : Math.random() * 80 + 30;
+        const swaySpeed = Math.random() * 0.02 + 0.01;
+        let swayOffset = Math.random() * Math.PI * 2;
+        const windDrift = (Math.random() - 0.5) * 0.3;
 
-        snowflake.style.left = posX + 'px';
-        snowflake.style.top = posY + 'px';
+        // GPU 가속을 위한 초기 스타일
+        snowflake.style.position = 'fixed';
+        snowflake.style.left = '0';
+        snowflake.style.top = '0';
         snowflake.style.fontSize = size + 'px';
+        snowflake.style.willChange = 'transform';
+        snowflake.style.pointerEvents = 'none';
+        snowflake.style.zIndex = '9999';
+        snowflake.style.transform = `translate3d(${posX}px, ${posY}px, 0)`;
 
         snowContainer.appendChild(snowflake);
 
@@ -1743,13 +1759,12 @@ function createSnowflakes() {
             posY += fallSpeed;
             swayOffset += swaySpeed;
 
-            // sin 곡선으로 자연스러운 좌우 흔들림 + 바람 드리프트
+            // sin 곡선으로 자연스러운 좌우 흔들림
             const swayX = Math.sin(swayOffset) * swayAmplitude;
             const currentX = posX + swayX + (posY * windDrift);
 
-            snowflake.style.top = posY + 'px';
-            snowflake.style.left = currentX + 'px';
-            snowflake.style.transform = `rotate(${posY * 0.5}deg)`;
+            // GPU 가속 사용 (translate3d)
+            snowflake.style.transform = `translate3d(${currentX}px, ${posY}px, 0) rotate(${posY * 0.3}deg)`;
 
             animationId = requestAnimationFrame(animate);
         }
@@ -1758,8 +1773,8 @@ function createSnowflakes() {
     }
 
     // 초기 눈송이 생성 (화면에 분산)
-    for (let i = 0; i < 35; i++) {
-        setTimeout(() => createSnowflake(), i * 150);
+    for (let i = 0; i < initialCount; i++) {
+        setTimeout(() => createSnowflake(), i * 200);
     }
 
     // 주기적으로 새 눈송이 생성
@@ -1768,7 +1783,7 @@ function createSnowflakes() {
         if (isGenderSelectionVisible()) {
             createSnowflake();
         }
-    }, 500);
+    }, spawnInterval);
 }
 
 // 전역 노출 (menu.js에서 접근 가능하게)
