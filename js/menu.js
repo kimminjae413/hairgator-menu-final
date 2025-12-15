@@ -3286,11 +3286,9 @@ window.goBack = function () {
     window.currentGender = null;
     console.log('✅ 성별 초기화 완료');
 
-    // 크리스마스 효과 다시 생성 (딜레이 후 실행)
+    // 크리스마스 효과 다시 생성 (눈내리기만)
     setTimeout(() => {
         if (typeof window.createSnowflakes === 'function') window.createSnowflakes();
-        if (typeof window.createSnowPiles === 'function') window.createSnowPiles();
-        if (typeof window.createChristmasTree === 'function') window.createChristmasTree();
     }, 300);
 };
 

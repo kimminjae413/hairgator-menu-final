@@ -1656,8 +1656,8 @@ function isGenderSelectionVisible() {
 }
 
 function createSnowflakes() {
-    // 라이트 테마거나 성별 선택 화면이 아니면 눈 제거
-    if (document.body.classList.contains('light-theme') || !isGenderSelectionVisible()) {
+    // 성별 선택 화면이 아니면 눈 제거
+    if (!isGenderSelectionVisible()) {
         const existing = document.querySelectorAll('.snowflake');
         existing.forEach(s => s.remove());
         if (snowflakeInterval) {
@@ -1668,22 +1668,56 @@ function createSnowflakes() {
     }
 
     const snowContainer = document.body;
-    const snowflakes = ['❄', '❅', '❆', '•', '∘'];
+    const isLightTheme = document.body.classList.contains('light-theme');
+
+    // 다크모드: 흰색 눈송이, 라이트모드: 얼음 결정 느낌의 블루/실버 톤
+    const darkModeSnowflakes = ['❄', '❅', '❆', '•', '∘'];
+    const lightModeSnowflakes = ['❄', '❅', '❆', '✧', '✦'];
+    const snowflakes = isLightTheme ? lightModeSnowflakes : darkModeSnowflakes;
 
     function createSnowflake() {
-        // 라이트 테마거나 성별 선택 화면이 아니면 생성 안함
-        if (document.body.classList.contains('light-theme') || !isGenderSelectionVisible()) return;
+        // 성별 선택 화면이 아니면 생성 안함
+        if (!isGenderSelectionVisible()) return;
 
+        const currentIsLight = document.body.classList.contains('light-theme');
         const snowflake = document.createElement('div');
         snowflake.className = 'snowflake';
-        snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
+
+        const currentSnowflakes = currentIsLight ? lightModeSnowflakes : darkModeSnowflakes;
+        snowflake.textContent = currentSnowflakes[Math.floor(Math.random() * currentSnowflakes.length)];
 
         // 랜덤 시작 위치, 크기, 속도
         let posX = Math.random() * window.innerWidth;
         let posY = -20;
         const size = Math.random() * 10 + 8; // 8px ~ 18px
         const fallSpeed = Math.random() * 1.5 + 0.5; // 0.5 ~ 2 픽셀/프레임
-        const opacity = Math.random() * 0.5 + 0.3;
+
+        // 라이트모드: 블루/실버 톤의 반투명 눈송이 + 그림자
+        if (currentIsLight) {
+            const opacity = Math.random() * 0.4 + 0.3; // 0.3 ~ 0.7
+            // 얼음 결정 색상 팔레트 (하늘색, 라벤더, 실버)
+            const iceColors = [
+                'rgba(135, 206, 235, 0.8)',   // 스카이 블루
+                'rgba(176, 196, 222, 0.8)',   // 라이트 스틸 블루
+                'rgba(173, 216, 230, 0.8)',   // 라이트 블루
+                'rgba(230, 230, 250, 0.8)',   // 라벤더
+                'rgba(192, 192, 192, 0.7)',   // 실버
+            ];
+            const randomColor = iceColors[Math.floor(Math.random() * iceColors.length)];
+
+            snowflake.style.color = randomColor;
+            snowflake.style.textShadow = `
+                0 0 3px rgba(100, 149, 237, 0.6),
+                0 2px 4px rgba(0, 0, 0, 0.15),
+                0 0 8px rgba(135, 206, 235, 0.4)
+            `;
+            snowflake.style.opacity = opacity;
+            snowflake.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))';
+        } else {
+            // 다크모드: 기존 흰색 눈송이
+            const opacity = Math.random() * 0.5 + 0.3;
+            snowflake.style.opacity = opacity;
+        }
 
         // 각 눈송이마다 다른 흔들림 설정
         const swayAmplitude = Math.random() * 80 + 30; // 30px ~ 110px 폭
@@ -1694,14 +1728,13 @@ function createSnowflakes() {
         snowflake.style.left = posX + 'px';
         snowflake.style.top = posY + 'px';
         snowflake.style.fontSize = size + 'px';
-        snowflake.style.opacity = opacity;
 
         snowContainer.appendChild(snowflake);
 
         // requestAnimationFrame으로 부드러운 애니메이션
         let animationId;
         function animate() {
-            if (document.body.classList.contains('light-theme') || posY > window.innerHeight + 20) {
+            if (posY > window.innerHeight + 20) {
                 cancelAnimationFrame(animationId);
                 if (snowflake.parentNode) snowflake.remove();
                 return;
@@ -1729,787 +1762,41 @@ function createSnowflakes() {
         setTimeout(() => createSnowflake(), i * 150);
     }
 
-    // 주기적으로 새 눈송이 생성 (더 자주)
+    // 주기적으로 새 눈송이 생성
     if (snowflakeInterval) clearInterval(snowflakeInterval);
     snowflakeInterval = setInterval(() => {
-        if (!document.body.classList.contains('light-theme')) {
+        if (isGenderSelectionVisible()) {
             createSnowflake();
         }
     }, 500);
 }
 
-// 버튼 위에 눈 쌓인 효과 생성
-function createSnowPiles() {
-    // 기존 눈더미 제거
-    document.querySelectorAll('.snow-pile').forEach(el => el.remove());
-
-    // 라이트 테마거나 성별 선택 화면이 아니면 생성 안함
-    if (document.body.classList.contains('light-theme') || !isGenderSelectionVisible()) return;
-
-    const buttons = document.querySelectorAll('.gender-btn');
-
-    buttons.forEach((btn, index) => {
-        const isFemale = index === 1; // 여자 버튼 (오른쪽)
-
-        const pile = document.createElement('div');
-        pile.className = 'snow-pile';
-        pile.style.cssText = `
-            position: absolute;
-            top: ${isFemale ? '-48px' : '-18px'};
-            left: 0;
-            right: 0;
-            height: ${isFemale ? '55px' : '28px'};
-            pointer-events: none;
-            z-index: 10;
-        `;
-
-        if (isFemale) {
-            // 여자 버튼: 30개 눈덩이, 비대칭으로 왼쪽에 더 수북이 쌓임
-            const snowPieces = [
-                // 1층 - 베이스 (왼쪽 많이, 오른쪽 적게)
-                { w: 30, h: 13, left: -2, bottom: 0 },
-                { w: 28, h: 12, left: 6, bottom: 2 },
-                { w: 32, h: 14, left: 14, bottom: 0 },
-                { w: 26, h: 12, left: 24, bottom: 3 },
-                { w: 30, h: 13, left: 32, bottom: 1 },
-                { w: 24, h: 11, left: 42, bottom: 2 },
-                { w: 22, h: 10, left: 52, bottom: 1 },
-                { w: 20, h: 9, left: 62, bottom: 0 },
-                { w: 18, h: 8, left: 72, bottom: 1 },
-                { w: 16, h: 7, left: 82, bottom: 0 },
-                { w: 14, h: 6, left: 92, bottom: 0 },
-                // 2층 (왼쪽에 집중)
-                { w: 26, h: 11, left: 0, bottom: 10 },
-                { w: 28, h: 12, left: 8, bottom: 12 },
-                { w: 30, h: 13, left: 18, bottom: 11 },
-                { w: 26, h: 11, left: 28, bottom: 14 },
-                { w: 24, h: 10, left: 38, bottom: 12 },
-                { w: 20, h: 9, left: 48, bottom: 10 },
-                { w: 16, h: 7, left: 58, bottom: 9 },
-                // 3층 (왼쪽에 더 집중)
-                { w: 24, h: 10, left: 2, bottom: 20 },
-                { w: 26, h: 11, left: 12, bottom: 22 },
-                { w: 24, h: 10, left: 22, bottom: 24 },
-                { w: 20, h: 9, left: 32, bottom: 21 },
-                { w: 16, h: 8, left: 42, bottom: 19 },
-                // 4층 (왼쪽 꼭대기)
-                { w: 20, h: 9, left: 5, bottom: 30 },
-                { w: 22, h: 10, left: 14, bottom: 32 },
-                { w: 18, h: 8, left: 24, bottom: 34 },
-                { w: 14, h: 7, left: 34, bottom: 30 },
-                // 5층 (정상)
-                { w: 16, h: 7, left: 10, bottom: 40 },
-                { w: 14, h: 6, left: 20, bottom: 42 },
-            ];
-
-            snowPieces.forEach(piece => {
-                const snowBlob = document.createElement('div');
-                // 약간의 랜덤성 추가
-                const randW = piece.w + (Math.random() * 6 - 3);
-                const randH = piece.h + (Math.random() * 4 - 2);
-                const randL = piece.left + (Math.random() * 4 - 2);
-                const randB = piece.bottom + (Math.random() * 2);
-
-                snowBlob.style.cssText = `
-                    position: absolute;
-                    bottom: ${randB}px;
-                    left: ${randL}%;
-                    width: ${randW}px;
-                    height: ${randH}px;
-                    background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
-                    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.12), inset 0 -2px 4px rgba(0,0,0,0.05);
-                `;
-                pile.appendChild(snowBlob);
-            });
-        } else {
-            // 남자 버튼: 10개 눈덩이, 균일하게 분포
-            const snowPieces = [
-                // 1층 - 베이스
-                { w: 26, h: 11, left: 2, bottom: 0 },
-                { w: 28, h: 12, left: 14, bottom: 1 },
-                { w: 30, h: 13, left: 28, bottom: 0 },
-                { w: 28, h: 12, left: 44, bottom: 2 },
-                { w: 26, h: 11, left: 58, bottom: 0 },
-                { w: 24, h: 10, left: 72, bottom: 1 },
-                { w: 22, h: 9, left: 86, bottom: 0 },
-                // 2층 (약간만)
-                { w: 20, h: 9, left: 20, bottom: 10 },
-                { w: 22, h: 10, left: 38, bottom: 11 },
-                { w: 18, h: 8, left: 56, bottom: 9 },
-            ];
-
-            snowPieces.forEach(piece => {
-                const snowBlob = document.createElement('div');
-                const randW = piece.w + (Math.random() * 6 - 3);
-                const randH = piece.h + (Math.random() * 4 - 2);
-                const randL = piece.left + (Math.random() * 4 - 2);
-                const randB = piece.bottom + (Math.random() * 2);
-
-                snowBlob.style.cssText = `
-                    position: absolute;
-                    bottom: ${randB}px;
-                    left: ${randL}%;
-                    width: ${randW}px;
-                    height: ${randH}px;
-                    background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
-                    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.12), inset 0 -2px 4px rgba(0,0,0,0.05);
-                `;
-                pile.appendChild(snowBlob);
-            });
-        }
-
-        btn.style.position = 'relative';
-        btn.style.overflow = 'visible';
-        btn.appendChild(pile);
-    });
-}
-
-// 크리스마스 트리 생성 (고급 PNG 이미지)
-function createChristmasTree() {
-    // 기존 트리 및 선물 제거
-    document.querySelectorAll('.christmas-tree, .christmas-gifts').forEach(el => el.remove());
-
-    // 라이트 테마거나 성별 선택 화면이 아니면 생성 안함
-    if (document.body.classList.contains('light-theme') || !isGenderSelectionVisible()) return;
-
-    const tree = document.createElement('div');
-    tree.className = 'christmas-tree';
-    tree.style.cssText = `
-        position: fixed;
-        bottom: 10px;
-        left: 15px;
-        z-index: 9998;
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.5s ease;
-    `;
-
-    const img = document.createElement('img');
-    img.src = 'https://www.freeiconspng.com/uploads/christmas-tree-png-4.png';
-    img.alt = 'Christmas Tree';
-    img.style.cssText = `
-        width: 280px;
-        height: auto;
-        filter: drop-shadow(0 0 20px rgba(255, 200, 100, 0.4))
-                drop-shadow(0 0 40px rgba(255, 150, 50, 0.2));
-        animation: treeShimmer 3s ease-in-out infinite;
-    `;
-
-    // 이미지 완전히 로드된 후 표시
-    img.onload = function() {
-        tree.style.opacity = '1';
-    };
-
-    tree.appendChild(img);
-    document.body.appendChild(tree);
-
-    // 선물상자들 추가
-    createGiftBoxes();
-}
-
-// 선물상자 생성
-function createGiftBoxes() {
-    const gifts = document.createElement('div');
-    gifts.className = 'christmas-gifts';
-    gifts.style.cssText = `
-        position: fixed;
-        bottom: 15px;
-        left: 180px;
-        z-index: 9997;
-        pointer-events: none;
-        display: flex;
-        gap: 8px;
-        align-items: flex-end;
-    `;
-
-    // 선물상자 데이터 (색상, 크기, 리본색)
-    const giftData = [
-        { bg: '#e63946', ribbon: '#ffd700', size: 45, offsetY: 0 },
-        { bg: '#2a9d8f', ribbon: '#ff6b6b', size: 35, offsetY: 5 },
-        { bg: '#ffd700', ribbon: '#e63946', size: 40, offsetY: 2 },
-    ];
-
-    giftData.forEach((gift, i) => {
-        const box = document.createElement('div');
-        box.style.cssText = `
-            width: ${gift.size}px;
-            height: ${gift.size}px;
-            background: ${gift.bg};
-            border-radius: 4px;
-            position: relative;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            margin-bottom: ${gift.offsetY}px;
-        `;
-
-        // 세로 리본
-        const ribbonV = document.createElement('div');
-        ribbonV.style.cssText = `
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 8px;
-            height: 100%;
-            background: ${gift.ribbon};
-        `;
-
-        // 가로 리본
-        const ribbonH = document.createElement('div');
-        ribbonH.style.cssText = `
-            position: absolute;
-            top: 50%;
-            left: 0;
-            transform: translateY(-50%);
-            width: 100%;
-            height: 8px;
-            background: ${gift.ribbon};
-        `;
-
-        // 리본 매듭
-        const bow = document.createElement('div');
-        bow.style.cssText = `
-            position: absolute;
-            top: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 16px;
-        `;
-        bow.textContent = '🎀';
-
-        box.appendChild(ribbonV);
-        box.appendChild(ribbonH);
-        box.appendChild(bow);
-        gifts.appendChild(box);
-    });
-
-    document.body.appendChild(gifts);
-}
-
 // 전역 노출 (menu.js에서 접근 가능하게)
 window.createSnowflakes = createSnowflakes;
-window.createSnowPiles = createSnowPiles;
-window.createChristmasTree = createChristmasTree;
 
-// ========== 화이트 모드 - 눈싸움 애니메이션 ==========
-function createSnowballFight() {
-    // 기존 요소 제거
-    document.querySelectorAll('.snowball-fight-container').forEach(el => el.remove());
 
-    // 라이트 모드 + 성별선택 화면에서만 표시
-    if (!document.body.classList.contains('light-theme') || !isGenderSelectionVisible()) {
-        return;
-    }
+// ========== 제거된 크리스마스 효과들 (비활성화됨) ==========
+// createSnowPiles, createChristmasTree, createSnowballFight,
+// addRudolphDecoration, createMerryChristmasText, createFootprints 제거됨
 
-    const container = document.createElement('div');
-    container.className = 'snowball-fight-container';
-    container.style.cssText = `
-        position: fixed;
-        bottom: 100px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 500px;
-        height: 250px;
-        pointer-events: none;
-        z-index: 9999;
-    `;
-
-    // 눈사람 (중앙)
-    const snowman = document.createElement('div');
-    snowman.className = 'snowman';
-    snowman.innerHTML = `
-        <svg width="120" height="180" viewBox="0 0 120 180">
-            <defs>
-                <linearGradient id="snowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#FFFFFF"/>
-                    <stop offset="100%" style="stop-color:#E8E8E8"/>
-                </linearGradient>
-                <filter id="snowShadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="3" dy="4" stdDeviation="3" flood-opacity="0.15"/>
-                </filter>
-            </defs>
-
-            <!-- 그림자 -->
-            <ellipse cx="60" cy="175" rx="45" ry="8" fill="rgba(0,0,0,0.1)"/>
-
-            <!-- 몸통 (아래 큰 눈덩이) -->
-            <circle cx="60" cy="140" r="40" fill="url(#snowGrad)" filter="url(#snowShadow)"/>
-            <!-- 몸통 하이라이트 -->
-            <ellipse cx="45" cy="125" rx="15" ry="10" fill="#fff" opacity="0.6"/>
-
-            <!-- 중간 눈덩이 -->
-            <circle cx="60" cy="85" r="32" fill="url(#snowGrad)" filter="url(#snowShadow)"/>
-            <!-- 중간 하이라이트 -->
-            <ellipse cx="48" cy="72" rx="12" ry="8" fill="#fff" opacity="0.6"/>
-
-            <!-- 단추 -->
-            <circle cx="60" cy="80" r="4" fill="#2C3E50"/>
-            <circle cx="60" cy="95" r="4" fill="#2C3E50"/>
-            <circle cx="60" cy="110" r="4" fill="#2C3E50"/>
-
-            <!-- 머리 -->
-            <circle cx="60" cy="42" r="26" fill="url(#snowGrad)" filter="url(#snowShadow)"/>
-            <!-- 머리 하이라이트 -->
-            <ellipse cx="50" cy="32" rx="10" ry="7" fill="#fff" opacity="0.6"/>
-
-            <!-- 모자 -->
-            <rect x="35" y="8" width="50" height="8" rx="2" fill="#2C3E50"/>
-            <rect x="42" y="-15" width="36" height="25" rx="3" fill="#2C3E50"/>
-            <!-- 모자 리본 -->
-            <rect x="42" y="5" width="36" height="6" fill="#E74C3C"/>
-
-            <!-- 눈 -->
-            <circle cx="50" cy="38" r="4" fill="#2C3E50"/>
-            <circle cx="70" cy="38" r="4" fill="#2C3E50"/>
-            <circle cx="51" cy="37" r="1.5" fill="#fff"/>
-            <circle cx="71" cy="37" r="1.5" fill="#fff"/>
-
-            <!-- 당근 코 -->
-            <polygon points="60,45 60,50 78,48" fill="#E67E22"/>
-            <polygon points="60,46 60,49 75,47.5" fill="#D35400"/>
-
-            <!-- 입 (조약돌) -->
-            <circle cx="50" cy="55" r="2" fill="#2C3E50"/>
-            <circle cx="55" cy="57" r="2" fill="#2C3E50"/>
-            <circle cx="60" cy="58" r="2" fill="#2C3E50"/>
-            <circle cx="65" cy="57" r="2" fill="#2C3E50"/>
-            <circle cx="70" cy="55" r="2" fill="#2C3E50"/>
-
-            <!-- 목도리 -->
-            <ellipse cx="60" cy="65" rx="28" ry="8" fill="#E74C3C"/>
-            <path d="M 75 68 Q 80 90, 75 110" stroke="#E74C3C" stroke-width="10" fill="none" stroke-linecap="round"/>
-            <path d="M 78 68 Q 85 85, 82 100" stroke="#C0392B" stroke-width="2" fill="none" opacity="0.3"/>
-
-            <!-- 팔 (나뭇가지) -->
-            <path d="M 20 85 L 35 80" stroke="#8B4513" stroke-width="4" stroke-linecap="round"/>
-            <path d="M 25 82 L 20 75" stroke="#8B4513" stroke-width="3" stroke-linecap="round"/>
-            <path d="M 28 81 L 25 72" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
-
-            <path d="M 100 85 L 85 80" stroke="#8B4513" stroke-width="4" stroke-linecap="round"/>
-            <path d="M 95 82 L 100 75" stroke="#8B4513" stroke-width="3" stroke-linecap="round"/>
-            <path d="M 92 81 L 95 72" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-    `;
-    snowman.style.cssText = `
-        position: absolute;
-        left: -220px;
-        bottom: -10px;
-        z-index: 99;
-    `;
-
-    // 강아지 (눈사람 주변을 뛰어다님) - 입체감 있는 디자인
-    const puppy = document.createElement('div');
-    puppy.className = 'puppy';
-    puppy.innerHTML = `
-        <svg width="70" height="55" viewBox="0 0 70 55">
-            <defs>
-                <linearGradient id="puppyBody" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#C4956A"/>
-                    <stop offset="50%" style="stop-color:#A67B5B"/>
-                    <stop offset="100%" style="stop-color:#8B6914"/>
-                </linearGradient>
-                <linearGradient id="puppyHead" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#D4A574"/>
-                    <stop offset="100%" style="stop-color:#B8956E"/>
-                </linearGradient>
-                <linearGradient id="puppyEar" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:#A67B5B"/>
-                    <stop offset="100%" style="stop-color:#8B6914"/>
-                </linearGradient>
-                <filter id="puppyShadow" x="-30%" y="-30%" width="160%" height="160%">
-                    <feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-opacity="0.25"/>
-                </filter>
-            </defs>
-
-            <!-- 그림자 -->
-            <ellipse cx="35" cy="52" rx="22" ry="4" fill="rgba(0,0,0,0.15)"/>
-
-            <!-- 꼬리 (흔들리는) -->
-            <path d="M 58 28 Q 68 18, 65 30 Q 62 38, 56 32" fill="url(#puppyEar)" filter="url(#puppyShadow)">
-                <animateTransform attributeName="transform" type="rotate" values="-10 58 32; 15 58 32; -10 58 32" dur="0.4s" repeatCount="indefinite"/>
-            </path>
-
-            <!-- 뒷다리 (뒤쪽) -->
-            <path d="M 48 38 Q 50 45, 48 50 Q 47 52, 45 52 L 43 52 Q 42 50, 44 48 Q 46 42, 46 38" fill="url(#puppyBody)" filter="url(#puppyShadow)"/>
-
-            <!-- 몸통 -->
-            <ellipse cx="38" cy="34" rx="20" ry="14" fill="url(#puppyBody)" filter="url(#puppyShadow)"/>
-            <!-- 몸통 하이라이트 -->
-            <ellipse cx="32" cy="28" rx="10" ry="6" fill="#D4A574" opacity="0.5"/>
-            <!-- 배 -->
-            <ellipse cx="35" cy="40" rx="12" ry="6" fill="#E8D4BC"/>
-
-            <!-- 뒷다리 (앞쪽) -->
-            <path d="M 52 36 Q 54 44, 52 50 Q 51 52, 49 52 L 47 52 Q 46 50, 48 46 Q 50 40, 50 36" fill="url(#puppyBody)" filter="url(#puppyShadow)"/>
-
-            <!-- 앞다리 (뒤쪽) -->
-            <path d="M 22 38 Q 20 46, 22 50 Q 22 52, 20 52 L 18 52 Q 17 50, 19 46 Q 21 40, 22 38" fill="url(#puppyBody)" filter="url(#puppyShadow)"/>
-
-            <!-- 앞다리 (앞쪽) -->
-            <path d="M 28 36 Q 26 44, 28 50 Q 28 52, 26 52 L 24 52 Q 23 50, 25 46 Q 27 40, 28 36" fill="url(#puppyBody)" filter="url(#puppyShadow)"/>
-
-            <!-- 목 -->
-            <ellipse cx="22" cy="30" rx="10" ry="12" fill="url(#puppyHead)" filter="url(#puppyShadow)"/>
-
-            <!-- 머리 -->
-            <ellipse cx="14" cy="22" rx="14" ry="13" fill="url(#puppyHead)" filter="url(#puppyShadow)"/>
-            <!-- 머리 하이라이트 -->
-            <ellipse cx="10" cy="16" rx="6" ry="4" fill="#E8D4BC" opacity="0.4"/>
-
-            <!-- 귀 (뒤쪽) -->
-            <ellipse cx="24" cy="12" rx="6" ry="10" fill="url(#puppyEar)" filter="url(#puppyShadow)"/>
-            <!-- 귀 (앞쪽) -->
-            <ellipse cx="6" cy="12" rx="6" ry="10" fill="url(#puppyEar)" filter="url(#puppyShadow)"/>
-            <!-- 귀 안쪽 -->
-            <ellipse cx="6" cy="14" rx="3" ry="5" fill="#D4A574" opacity="0.6"/>
-
-            <!-- 얼굴 무늬 -->
-            <ellipse cx="14" cy="26" rx="7" ry="6" fill="#F5E6D3"/>
-            <!-- 이마 무늬 -->
-            <ellipse cx="14" cy="18" rx="4" ry="3" fill="#E8D4BC" opacity="0.5"/>
-
-            <!-- 눈 -->
-            <ellipse cx="9" cy="20" rx="4" ry="4.5" fill="#fff" filter="url(#puppyShadow)"/>
-            <ellipse cx="19" cy="20" rx="4" ry="4.5" fill="#fff" filter="url(#puppyShadow)"/>
-            <!-- 눈동자 -->
-            <circle cx="10" cy="21" r="2.5" fill="#2C1810"/>
-            <circle cx="20" cy="21" r="2.5" fill="#2C1810"/>
-            <!-- 눈 하이라이트 -->
-            <circle cx="11" cy="19.5" r="1.2" fill="#fff"/>
-            <circle cx="21" cy="19.5" r="1.2" fill="#fff"/>
-
-            <!-- 눈썹 -->
-            <ellipse cx="9" cy="16" rx="3" ry="1" fill="#A67B5B"/>
-            <ellipse cx="19" cy="16" rx="3" ry="1" fill="#A67B5B"/>
-
-            <!-- 코 -->
-            <ellipse cx="14" cy="27" rx="4" ry="3" fill="#2C1810" filter="url(#puppyShadow)"/>
-            <!-- 코 하이라이트 -->
-            <ellipse cx="13" cy="26" rx="1.5" ry="1" fill="#4A3728"/>
-
-            <!-- 입 -->
-            <path d="M 10 30 Q 14 34, 18 30" stroke="#2C1810" stroke-width="1.5" fill="none"/>
-
-            <!-- 혀 -->
-            <ellipse cx="14" cy="33" rx="3" ry="4" fill="#FF8A9B"/>
-            <ellipse cx="14" cy="32" rx="2" ry="2" fill="#FFB5B5" opacity="0.5"/>
-
-            <!-- 목걸이 -->
-            <path d="M 12 35 Q 22 38, 30 34" stroke="#E74C3C" stroke-width="4" fill="none" stroke-linecap="round"/>
-            <!-- 목걸이 태그 -->
-            <circle cx="20" cy="38" r="4" fill="#FFD700" filter="url(#puppyShadow)"/>
-            <circle cx="20" cy="38" r="2" fill="#FFA500"/>
-        </svg>
-    `;
-    puppy.style.cssText = `
-        position: absolute;
-        bottom: 0px;
-        left: -40px;
-        z-index: 100;
-        animation: puppyRunLeft 4s ease-in-out infinite;
-    `;
-
-    container.appendChild(snowman);
-    container.appendChild(puppy);
-    document.body.appendChild(container);
-
-    // 오른쪽 발자국 영역 생성
-    createFootprints();
+// 레거시 호환성을 위한 빈 함수들 (호출 시 요소 제거만 수행)
+function cleanupChristmasElements() {
+    document.querySelectorAll('.snow-pile, .christmas-tree, .christmas-gifts, .snowball-fight-container, .rudolph-decoration, .merry-christmas-light, .footprints-container').forEach(el => el.remove());
 }
 
-window.createSnowballFight = createSnowballFight;
+// 레거시 호환성을 위한 전역 함수들 (빈 함수)
+window.createSnowPiles = cleanupChristmasElements;
+window.createChristmasTree = cleanupChristmasElements;
+window.createSnowballFight = cleanupChristmasElements;
+window.addRudolphDecoration = cleanupChristmasElements;
+window.createMerryChristmasText = cleanupChristmasElements;
+window.createFootprints = cleanupChristmasElements;
 
-// ========== 성별 버튼 루돌프 장식 ==========
-function addRudolphDecoration() {
-    // 기존 루돌프 장식 제거
-    document.querySelectorAll('.rudolph-decoration').forEach(el => el.remove());
 
-    // 라이트 모드 + 성별 선택 화면에서만 표시
-    if (!document.body.classList.contains('light-theme') || !isGenderSelectionVisible()) return;
-
-    const maleBtn = document.querySelector('.gender-btn.male');
-    const femaleBtn = document.querySelector('.gender-btn.female');
-
-    if (!maleBtn || !femaleBtn) return;
-
-    // 루돌프 장식 추가 함수
-    function addRudolph(btn) {
-        btn.style.position = 'relative';
-        btn.style.overflow = 'visible';
-
-        const rudolph = document.createElement('div');
-        rudolph.className = 'rudolph-decoration';
-        rudolph.innerHTML = `
-            <svg width="240" height="280" viewBox="0 0 240 280" style="position:absolute; top:-70px; left:50%; transform:translateX(-50%);">
-                <defs>
-                    <linearGradient id="antlerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#8B4513"/>
-                        <stop offset="100%" style="stop-color:#5D3A1A"/>
-                    </linearGradient>
-                </defs>
-
-                <!-- 왼쪽 뿔 (버튼 위로) - 작게 -->
-                <g transform="translate(55, 25) scale(0.7)">
-                    <path d="M 40 70 Q 35 45, 25 25 Q 18 12, 12 18 Q 6 24, 15 32 Q 22 40, 32 52"
-                          stroke="url(#antlerGrad)" stroke-width="7" fill="none" stroke-linecap="round"/>
-                    <path d="M 30 45 Q 18 35, 10 42 Q 2 50, 12 52"
-                          stroke="url(#antlerGrad)" stroke-width="5" fill="none" stroke-linecap="round"/>
-                    <path d="M 35 58 Q 22 52, 18 62 Q 14 72, 25 68"
-                          stroke="url(#antlerGrad)" stroke-width="4" fill="none" stroke-linecap="round"/>
-                </g>
-
-                <!-- 오른쪽 뿔 (버튼 위로) - 작게 -->
-                <g transform="translate(100, 25) scale(0.7)">
-                    <path d="M 40 70 Q 45 45, 55 25 Q 62 12, 68 18 Q 74 24, 65 32 Q 58 40, 48 52"
-                          stroke="url(#antlerGrad)" stroke-width="7" fill="none" stroke-linecap="round"/>
-                    <path d="M 50 45 Q 62 35, 70 42 Q 78 50, 68 52"
-                          stroke="url(#antlerGrad)" stroke-width="5" fill="none" stroke-linecap="round"/>
-                    <path d="M 45 58 Q 58 52, 62 62 Q 66 72, 55 68"
-                          stroke="url(#antlerGrad)" stroke-width="4" fill="none" stroke-linecap="round"/>
-                </g>
-
-                <!-- 왼쪽 귀 (버튼 왼쪽에 붙임) -->
-                <ellipse cx="35" cy="110" rx="12" ry="18" fill="#8B6914" transform="rotate(-15, 35, 110)"/>
-                <ellipse cx="37" cy="110" rx="7" ry="11" fill="#D4A574" transform="rotate(-15, 37, 110)"/>
-
-                <!-- 오른쪽 귀 (버튼 오른쪽에 붙임) -->
-                <ellipse cx="205" cy="110" rx="12" ry="18" fill="#8B6914" transform="rotate(15, 205, 110)"/>
-                <ellipse cx="203" cy="110" rx="7" ry="11" fill="#D4A574" transform="rotate(15, 203, 110)"/>
-
-                <!-- 눈 (왼쪽) - 버튼 상단 위로 -->
-                <ellipse cx="85" cy="95" rx="14" ry="16" fill="#1a1a1a"/>
-                <ellipse cx="82" cy="91" rx="5" ry="6" fill="#fff" opacity="0.8"/>
-
-                <!-- 눈 (오른쪽) - 버튼 상단 위로 -->
-                <ellipse cx="155" cy="95" rx="14" ry="16" fill="#1a1a1a"/>
-                <ellipse cx="152" cy="91" rx="5" ry="6" fill="#fff" opacity="0.8"/>
-            </svg>
-        `;
-        rudolph.style.cssText = `
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10;
-            overflow: visible;
-        `;
-
-        btn.appendChild(rudolph);
-    }
-
-    addRudolph(maleBtn);
-    addRudolph(femaleBtn);
-}
-
-window.addRudolphDecoration = addRudolphDecoration;
-
-// ========== 메리 크리스마스 텍스트 (비활성화됨 - 요소 제거만 수행) ==========
-function createMerryChristmasText() {
-    // 항상 기존 텍스트 제거만 수행 (효과 비활성화됨)
-    document.querySelectorAll('.merry-christmas-light').forEach(el => el.remove());
-}
-
-window.createMerryChristmasText = createMerryChristmasText;
-
-// ========== 화이트 모드 - 눈밭 발자국 애니메이션 ==========
-function createFootprints() {
-    // 기존 발자국 영역 제거
-    document.querySelectorAll('.footprints-container').forEach(el => el.remove());
-
-    if (!document.body.classList.contains('light-theme') || !isGenderSelectionVisible()) {
-        return;
-    }
-
-    // 화면 전체를 덮는 컨테이너
-    const container = document.createElement('div');
-    container.className = 'footprints-container';
-    container.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        pointer-events: none;
-        z-index: 9990;
-        overflow: hidden;
-    `;
-
-    document.body.appendChild(container);
-
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-
-    // 사람 발자국 SVG (신발 자국 - 운동화/부츠 형태) - 더 연한 회색
-    function createHumanFootprint(isLeft) {
-        return `
-            <svg width="30" height="65" viewBox="0 0 22 50" style="transform: ${isLeft ? 'scaleX(-1)' : 'scaleX(1)'}">
-                <!-- 신발 자국 외곽 그림자 -->
-                <path d="M 3 8 Q 1 15, 2 25 Q 1 35, 4 45 Q 11 50, 18 45 Q 21 35, 20 25 Q 21 15, 19 8 Q 11 3, 3 8"
-                      fill="rgba(180,195,210,0.2)"/>
-                <!-- 신발 자국 메인 -->
-                <path d="M 4 9 Q 2 15, 3 25 Q 2 35, 5 44 Q 11 48, 17 44 Q 20 35, 19 25 Q 20 15, 18 9 Q 11 5, 4 9"
-                      fill="rgba(170,185,200,0.3)"/>
-                <!-- 신발 밑창 패턴 - 가로줄 -->
-                <line x1="5" y1="15" x2="17" y2="15" stroke="rgba(160,175,190,0.25)" stroke-width="2"/>
-                <line x1="4" y1="22" x2="18" y2="22" stroke="rgba(160,175,190,0.25)" stroke-width="2"/>
-                <line x1="4" y1="29" x2="18" y2="29" stroke="rgba(160,175,190,0.25)" stroke-width="2"/>
-                <line x1="5" y1="36" x2="17" y2="36" stroke="rgba(160,175,190,0.25)" stroke-width="2"/>
-                <!-- 발뒤꿈치 부분 -->
-                <ellipse cx="11" cy="43" rx="5" ry="3" fill="rgba(160,175,190,0.2)"/>
-            </svg>
-        `;
-    }
-
-    // 강아지 발자국 SVG - 더 연한 회색
-    function createDogFootprint() {
-        return `
-            <svg width="40" height="44" viewBox="0 0 26 28">
-                <!-- 발바닥 외곽 그림자 -->
-                <ellipse cx="13" cy="20" rx="9" ry="10" fill="rgba(180,195,210,0.2)"/>
-                <!-- 발바닥 패드 -->
-                <ellipse cx="13" cy="19" rx="7" ry="8" fill="rgba(170,185,200,0.3)"/>
-                <!-- 발가락 패드들 -->
-                <ellipse cx="5" cy="7" rx="4" ry="5" fill="rgba(170,185,200,0.3)"/>
-                <ellipse cx="13" cy="4" rx="4" ry="5" fill="rgba(170,185,200,0.3)"/>
-                <ellipse cx="21" cy="7" rx="4" ry="5" fill="rgba(170,185,200,0.3)"/>
-            </svg>
-        `;
-    }
-
-    // 랜덤 발자국 생성 (화면 전체에 흩어지게, 몰리지 않게)
-    const footprints = [];
-
-    // 버튼 영역 정의 (화면 중앙)
-    const buttonAreaLeft = screenWidth * 0.35;
-    const buttonAreaRight = screenWidth * 0.65;
-    const buttonAreaTop = screenHeight * 0.28;
-    const buttonAreaBottom = screenHeight * 0.62;
-
-    // 버튼 영역 피하는 함수
-    function isInButtonArea(x, y) {
-        return x > buttonAreaLeft && x < buttonAreaRight &&
-               y > buttonAreaTop && y < buttonAreaBottom;
-    }
-
-    // 사람 발자국 - 완전 랜덤 위치에 개별적으로 찍히게
-    const humanFootprintCount = 15 + Math.floor(Math.random() * 8); // 15~22개
-    let humanAdded = 0;
-    let humanAttempts = 0;
-    while (humanAdded < humanFootprintCount && humanAttempts < 100) {
-        humanAttempts++;
-        // 화면 전체에서 랜덤 위치
-        const x = Math.random() * (screenWidth - 80) + 30;
-        const y = Math.random() * (screenHeight - 100) + 20;
-
-        // 버튼 영역이면 스킵
-        if (isInButtonArea(x, y)) continue;
-
-        // 완전 랜덤 방향
-        const angle = Math.random() * 360;
-
-        footprints.push({
-            type: 'human',
-            x: x,
-            y: y,
-            isLeft: Math.random() < 0.5,
-            angle: angle,
-            delay: humanAdded * 1500 + Math.random() * 800  // 1.5초 간격으로 더 천천히
-        });
-        humanAdded++;
-    }
-
-    // 강아지 발자국 - 완전 랜덤 위치에 개별적으로 찍히게
-    const dogFootprintCount = 20 + Math.floor(Math.random() * 10); // 20~29개
-    let dogAdded = 0;
-    let dogAttempts = 0;
-    while (dogAdded < dogFootprintCount && dogAttempts < 100) {
-        dogAttempts++;
-        // 화면 전체에서 랜덤 위치
-        const x = Math.random() * (screenWidth - 60) + 20;
-        const y = Math.random() * (screenHeight - 80) + 15;
-
-        // 버튼 영역이면 스킵
-        if (isInButtonArea(x, y)) continue;
-
-        // 완전 랜덤 방향
-        const angle = Math.random() * 360;
-
-        footprints.push({
-            type: 'dog',
-            x: x,
-            y: y,
-            angle: angle,
-            delay: 800 + dogAdded * 1200 + Math.random() * 600  // 1.2초 간격으로 더 천천히
-        });
-        dogAdded++;
-    }
-
-    // 발자국 DOM 생성 및 애니메이션
-    footprints.forEach((fp) => {
-        const footprint = document.createElement('div');
-        footprint.className = 'footprint';
-
-        if (fp.type === 'human') {
-            footprint.innerHTML = createHumanFootprint(fp.isLeft);
-            footprint.style.cssText = `
-                position: absolute;
-                left: ${fp.x}px;
-                top: ${fp.y}px;
-                opacity: 0;
-                transform: rotate(${fp.angle + (fp.isLeft ? -10 : 10)}deg) scale(0.5);
-                transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-            `;
-        } else {
-            footprint.innerHTML = createDogFootprint();
-            footprint.style.cssText = `
-                position: absolute;
-                left: ${fp.x}px;
-                top: ${fp.y}px;
-                opacity: 0;
-                transform: rotate(${fp.angle}deg) scale(0.5);
-                transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-            `;
-        }
-
-        container.appendChild(footprint);
-
-        // 발자국 나타나는 애니메이션 (눈밭에 쿡 찍히는 느낌)
-        setTimeout(() => {
-            if (!document.body.classList.contains('light-theme')) return;
-            footprint.style.opacity = '1';
-            footprint.style.transform = footprint.style.transform.replace('scale(0.5)', 'scale(1)');
-        }, fp.delay);
-    });
-
-    // 발자국이 다 나타나면 천천히 사라지고 다시 시작
-    const maxDelay = Math.max(...footprints.map(fp => fp.delay)) + 2000;
-
-    setTimeout(() => {
-        // 모든 발자국 페이드 아웃
-        container.querySelectorAll('.footprint').forEach((fp, idx) => {
-            setTimeout(() => {
-                fp.style.opacity = '0';
-            }, idx * 50);
-        });
-
-        // 다시 새로운 발자국 생성
-        setTimeout(() => {
-            if (document.body.classList.contains('light-theme') && isGenderSelectionVisible()) {
-                createFootprints();
-            }
-        }, 2000);
-    }, maxDelay);
-}
-
-window.createFootprints = createFootprints;
-
-// 크리스마스 효과 시작 (눈내리기만 - 다크모드 전용)
+// 크리스마스 효과 시작 (눈내리기 - 다크/라이트 모드 모두 지원)
 document.addEventListener('DOMContentLoaded', () => {
     // 이전 캐시에서 생성된 크리스마스 효과 요소들 제거
-    document.querySelectorAll('.merry-christmas-light, .christmas-tree, .christmas-gifts, .footprints-container').forEach(el => el.remove());
+    cleanupChristmasElements();
 
     setTimeout(createSnowflakes, 500);
 
