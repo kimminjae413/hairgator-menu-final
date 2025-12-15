@@ -713,6 +713,15 @@ class AIStudio {
       if (response.canvasData) {
         this.showCanvas(response.canvasData);
       }
+      // ⭐ guideImage가 있으면 캔버스에 가이드 카드 표시
+      else if (response.guideImage) {
+        this.showCanvas({
+          type: 'guide',
+          title: response.guideImage.title,
+          imageUrl: response.guideImage.url,
+          content: '' // 응답 내용은 채팅창에 이미 표시됨
+        });
+      }
 
     } catch (error) {
       this.hideTypingIndicator();
@@ -986,6 +995,8 @@ class AIStudio {
       this.canvasResult.innerHTML = this.generateRecipeCard(canvasData);
     } else if (canvasData.type === 'analysis') {
       this.canvasResult.innerHTML = this.generateAnalysisCard(canvasData);
+    } else if (canvasData.type === 'guide') {
+      this.canvasResult.innerHTML = this.generateGuideCard(canvasData);
     }
 
     // Mobile: Show canvas panel
@@ -1079,6 +1090,39 @@ class AIStudio {
 
   hideCanvas() {
     this.canvasPanel.classList.remove('active');
+  }
+
+  // ==================== 가이드 이미지 캔버스 카드 ====================
+  generateGuideCard(data) {
+    const t = window.t || ((key) => key);
+    return `
+      <div class="guide-card">
+        <div class="guide-card-header">
+          <h2>📚 ${data.title || '이론 가이드'}</h2>
+        </div>
+
+        ${data.imageUrl ? `
+        <div class="guide-card-image">
+          <img src="${data.imageUrl}" alt="${data.title}" onclick="window.aiStudio.showFullImage('${data.imageUrl}', '${data.title}')">
+        </div>
+        ` : ''}
+
+        ${data.content ? `
+        <div class="guide-card-content">
+          <div class="guide-text">${data.content}</div>
+        </div>
+        ` : ''}
+
+        ${data.relatedTerms && data.relatedTerms.length > 0 ? `
+        <div class="guide-card-terms">
+          <h3>🔗 관련 용어</h3>
+          <div class="terms-chips">
+            ${data.relatedTerms.map(term => `<span class="term-chip">${term}</span>`).join('')}
+          </div>
+        </div>
+        ` : ''}
+      </div>
+    `;
   }
 
   // ==================== 가이드 이미지 전체화면 ====================

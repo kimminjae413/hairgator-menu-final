@@ -3612,6 +3612,113 @@ body.dark-mode .related-question-chip:hover {
   }
 }
 
+/* ==================== Guide Card (이론 가이드 캔버스) ==================== */
+.guide-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.guide-card-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+}
+
+.guide-card-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.guide-card-image {
+  padding: 20px;
+  background: white;
+  text-align: center;
+}
+
+.guide-card-image img {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.guide-card-image img:hover {
+  transform: scale(1.02);
+}
+
+.guide-card-content {
+  padding: 20px 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.guide-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #475569;
+}
+
+.guide-card-terms {
+  padding: 16px 24px 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.guide-card-terms h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.terms-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.term-chip {
+  padding: 6px 14px;
+  background: #e0f2fe;
+  color: #0369a1;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 다크모드 */
+body.dark-mode .guide-card {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+body.dark-mode .guide-card-image {
+  background: #1e293b;
+}
+
+body.dark-mode .guide-card-content {
+  border-color: #334155;
+}
+
+body.dark-mode .guide-text {
+  color: #cbd5e1;
+}
+
+body.dark-mode .guide-card-terms {
+  border-color: #334155;
+}
+
+body.dark-mode .guide-card-terms h3 {
+  color: #94a3b8;
+}
+
+body.dark-mode .term-chip {
+  background: #1e40af;
+  color: #bfdbfe;
+}
+
 /* ==================== Utilities ==================== */
 .hidden { display: none !important; }
 .sr-only {
