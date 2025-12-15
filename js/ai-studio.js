@@ -1101,9 +1101,10 @@ class AIStudio {
 
   // ==================== 연관 질문 클릭 처리 ====================
   askRelatedQuestion(question) {
+    console.log('💡 연관 질문 클릭:', question);
     // 입력창에 질문 입력
-    if (this.inputField) {
-      this.inputField.value = question;
+    if (this.chatInput) {
+      this.chatInput.value = question;
     }
     // 질문 전송
     this.sendMessage();
