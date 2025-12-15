@@ -1704,15 +1704,11 @@ function createSnowflakes() {
             ? Math.random() * 2 + 1.5  // 모바일: 더 빠르게 (1.5~3.5)
             : Math.random() * 1.5 + 0.5; // PC: 기존 속도 (0.5~2)
 
-        // 라이트모드: 간단한 네온 효과 (성능 최적화)
+        // 라이트모드: 아이스 블루 단일 색상
         if (currentIsLight) {
-            const opacity = Math.random() * 0.4 + 0.6;
-            // 네온 컬러 - 단순화
-            const neonColors = ['#7dd3fc', '#a5b4fc', '#99f6e4', '#fda4af', '#c4b5fd'];
-            const color = neonColors[Math.floor(Math.random() * neonColors.length)];
-            snowflake.style.color = color;
-            // 모바일/PC 모두 간단한 글로우만
-            snowflake.style.textShadow = `0 0 6px ${color}`;
+            const opacity = Math.random() * 0.4 + 0.5;
+            snowflake.style.color = '#87CEEB';
+            snowflake.style.textShadow = '0 0 4px rgba(135, 206, 235, 0.6)';
             snowflake.style.opacity = opacity;
         } else {
             // 다크모드: 기존 흰색 눈송이
