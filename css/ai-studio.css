@@ -2804,6 +2804,112 @@ body.light-theme .recipe-formatted .recipe-tip {
   color: #fff;
 }
 
+/* ==================== 커트 레시피 링크 (펌에서 커트로) ==================== */
+.cut-recipe-link-section {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.cut-recipe-link-btn {
+  background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%);
+  color: #fff;
+  border: none;
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cut-recipe-link-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.cut-recipe-link-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.cut-link-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* 커트 레시피 캔버스 (펌에서 연결) */
+.cut-from-perm .recipe-header.cut-header {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.cut-header-info h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+}
+
+.back-to-perm-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-to-perm-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text-primary);
+}
+
+.cut-perm-link-info {
+  background: rgba(59, 130, 246, 0.08);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--space-md);
+  font-size: 13px;
+}
+
+.cut-perm-link-info .link-label {
+  color: var(--text-muted);
+}
+
+.cut-perm-link-info .link-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.tag.cut-type {
+  background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%);
+  color: #fff;
+}
+
 /* 모바일 대응 */
 @media (max-width: 768px) {
   .perm-recipe-link-section {
@@ -2823,6 +2929,27 @@ body.light-theme .recipe-formatted .recipe-tip {
   }
 
   .back-to-cut-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .cut-recipe-link-section {
+    padding: var(--space-sm);
+  }
+
+  .cut-recipe-link-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  .cut-from-perm .recipe-header.cut-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .back-to-perm-btn {
     width: 100%;
     text-align: center;
   }

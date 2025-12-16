@@ -1543,6 +1543,14 @@ class AIStudio {
             </button>
           </div>
         </div>
+
+        <!-- ⭐ 이 스타일 커트 레시피 보기 버튼 (펌인 경우에만) -->
+        <div class="cut-recipe-link-section">
+          <button class="cut-recipe-link-btn" onclick="window.aiStudio.showMatchingCutRecipe('${referenceStyles && referenceStyles[0] ? referenceStyles[0].styleId : ''}')">
+            ✂️ 이 스타일 커트 레시피 보기
+          </button>
+          <span class="cut-link-hint">동일 기장의 커트 레시피를 확인하세요</span>
+        </div>
         ` : `
         <!-- 커트 재분석 섹션 (기존) -->
         <div class="style-correction-section female">
@@ -2863,6 +2871,128 @@ class AIStudio {
       this.showCustomRecipeCanvas(this.currentFemaleAnalysis.data, this.currentFemaleAnalysis.uploadedImageUrl);
     } else {
       console.warn('저장된 커트 분석 데이터가 없습니다.');
+    }
+  }
+
+  // ⭐ 펌 레시피로 돌아가기
+  backToPermRecipe() {
+    if (this.currentFemaleAnalysis) {
+      this.showCustomRecipeCanvas(this.currentFemaleAnalysis.data, this.currentFemaleAnalysis.uploadedImageUrl);
+    } else {
+      console.warn('저장된 펌 분석 데이터가 없습니다.');
+    }
+  }
+
+  // ⭐ 펌 스타일의 매칭 커트 레시피 보기
+  async showMatchingCutRecipe(permStyleId) {
+    if (!permStyleId) {
+      alert('스타일 정보가 없습니다.');
+      return;
+    }
+
+    // 펌 styleId → 커트 styleId 변환 (FALP0001 → FAL0001)
+    // 패턴: F{A-H}LP{숫자} → F{A-H}L{숫자}
+    const cutStyleId = permStyleId.replace(/^(F[A-H])LP(\d+)$/, '$1L$2');
+    console.log(`✂️ 커트 레시피 조회: ${permStyleId} → ${cutStyleId}`);
+
+    // 로딩 표시
+    const btn = document.querySelector('.cut-recipe-link-btn');
+    if (btn) {
+      btn.innerHTML = '⏳ 로딩 중...';
+      btn.disabled = true;
+    }
+
+    try {
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'get_cut_recipe_by_style',
+          payload: {
+            cut_style_id: cutStyleId,
+            perm_style_id: permStyleId
+          }
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        // 커트 레시피 캔버스 표시
+        this.showCutRecipeFromPerm(result.data, cutStyleId, permStyleId);
+      } else {
+        throw new Error(result.error || '커트 레시피를 찾을 수 없습니다.');
+      }
+    } catch (error) {
+      console.error('커트 레시피 조회 오류:', error);
+      alert('커트 레시피 조회 중 오류가 발생했습니다: ' + error.message);
+
+      if (btn) {
+        btn.innerHTML = '✂️ 이 스타일 커트 레시피 보기';
+        btn.disabled = false;
+      }
+    }
+  }
+
+  // ⭐ 펌에서 연결된 커트 레시피 캔버스 표시
+  showCutRecipeFromPerm(cutData, cutStyleId, permStyleId) {
+    this.canvasEmpty.classList.add('hidden');
+    this.canvasResult.classList.remove('hidden');
+
+    const { textRecipe, diagrams, seriesName } = cutData;
+
+    // 기장 추출 (FAL → A Length)
+    const lengthMatch = cutStyleId.match(/F([A-H])L/);
+    const lengthCode = lengthMatch ? lengthMatch[1] : '';
+    const lengthName = lengthCode ? `${lengthCode} Length` : '';
+
+    this.canvasResult.innerHTML = `
+      <div class="custom-recipe-canvas cut-from-perm">
+        <!-- 헤더 -->
+        <div class="recipe-header compact cut-header">
+          <div class="cut-header-info">
+            <h2>✂️ 커트 레시피</h2>
+            <div class="analysis-tags">
+              <span class="tag primary">${lengthName}</span>
+            </div>
+          </div>
+          <button class="back-to-perm-btn" onclick="window.aiStudio.backToPermRecipe()">
+            ← 펌 레시피로 돌아가기
+          </button>
+        </div>
+
+        <!-- 연결 정보 -->
+        <div class="cut-perm-link-info">
+          <span class="link-label">🌀 연결된 펌:</span>
+          <span class="link-value">${permStyleId.replace(/^F([A-H])LP(\d+)$/, '$1 Length 펌 스타일')}</span>
+        </div>
+
+        <!-- 도해도 뷰어 -->
+        ${diagrams && diagrams.length > 0 ? `
+        <div class="diagrams-section large">
+          <h3>📐 커트 도해도 (${diagrams.length}장)</h3>
+          ${this.generateDiagramViewer(diagrams)}
+        </div>
+        ` : ''}
+
+        <!-- 커트 레시피 텍스트 -->
+        <div class="custom-recipe-section">
+          <h3>✨ 커트 레시피</h3>
+          <div class="recipe-content">
+            ${this.formatRecipeContent(textRecipe || '레시피 정보가 없습니다.')}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 도해도 뷰어 초기화
+    if (diagrams && diagrams.length > 0) {
+      this.initDiagramViewer(diagrams);
+    }
+
+    // Mobile: Show canvas panel
+    if (window.innerWidth <= 1024) {
+      this.canvasPanel.classList.add('active');
     }
   }
 
