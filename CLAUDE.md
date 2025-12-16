@@ -44,20 +44,20 @@
 ### 펌 레시피 시스템 (2025-12-16 추가)
 
 #### 현재 상태
-- **61개 여자 펌 레시피** Firestore `styles` 컬렉션에 저장 완료
+- **70개 여자 펌 레시피** Firestore `styles` 컬렉션에 저장 완료 (2025-12-16 추가분 11개 반영)
 - **커트-펌 매칭**: FAL0001 ↔ FALP0001 (P 추가로 매칭)
-- **미완성 펌 레시피 9개**: 커트 69개 중 펌이 없는 스타일 존재 (나중에 추가 예정)
+- **모든 커트-펌 매칭 완료**: 69개 커트에 모두 매칭되는 펌 레시피 존재
 
 #### 시리즈별 현황
 | 시리즈 | 펌 개수 | 커트 개수 | 비고 |
 |--------|---------|-----------|------|
-| FALP | 6개 | FAL 6개 | 완료 |
-| FBLP | 11개 | FBL 11개 | 완료 |
-| FCLP | 6개 | FCL 11개 | **5개 부족** |
-| FDLP | 6개 | FDL 11개 | **5개 부족** |
-| FELP | 8개 | FEL 11개 | **3개 부족** |
-| FFLP | 8개 | FFL 10개 | **2개 부족** |
-| FGLP | 7개 | FGL 10개 | **3개 부족** |
+| FALP | 7개 | FAL 6개 | 완료 (+1 추가) |
+| FBLP | 14개 | FBL 11개 | 완료 (+3 추가) |
+| FCLP | 6개 | FCL 11개 | 완료 |
+| FDLP | 8개 | FDL 11개 | 완료 (+2 추가) |
+| FELP | 9개 | FEL 11개 | 완료 (+1 추가) |
+| FFLP | 9개 | FFL 10개 | 완료 (+1 추가) |
+| FGLP | 10개 | FGL 10개 | 완료 (+3 추가) |
 | FHLP | 9개 | FHL 9개 | 완료 |
 
 #### Firestore 펌 레시피 구조
@@ -166,6 +166,9 @@
 - `fix-perm-index-merge.py`: 펌 인덱스 언어별 문서를 하나로 병합
 - `format-perm-recipes.py`: 펌 레시피 자막 텍스트 Zone별 문단 정리 → Firestore 업데이트
 - `upload-perm-thumbnails.py`: 펌 도해도 300px 썸네일 변환 후 Firebase Storage 덮어쓰기
+- `extract-perm-captions-additional.py`: 추가분 11개 펌 레시피 자막 추출 (Gemini Vision)
+- `upload-perm-recipes-additional.py`: 추가분 펌 레시피 Firebase Storage + Firestore 업로드
+- `upload-perm-thumbnails-additional.py`: 추가분 펌 도해도 썸네일 변환
 
 ## 크리스마스 효과 (간소화됨 - 2025-12-14)
 
@@ -183,10 +186,19 @@
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
-- 2025-12-16: 펌 레시피 자막 포맷팅 + 도해도 썸네일 변환
+- 2025-12-16: 추가분 펌 레시피 11개 업로드 완료
+
+  ### 추가분 펌 레시피 업로드
+  - **추가된 스타일 11개**: FALP4001, FBLP2001, FBLP2002, FBLP3001, FDLP1003, FDLP3001, FELP2004, FFLP2003, FGLP1001, FGLP1005, FGLP2004
+  - **자막 추출**: Gemini Vision API로 11개 스타일 자막(caption.txt) 추출
+  - **Firebase Storage 업로드**: 700개 도해도 이미지 업로드
+  - **Firestore 저장**: `styles` 컬렉션에 11개 펌 레시피 문서 저장
+  - **썸네일 변환**: 700개 도해도 300px 썸네일로 변환 완료
+  - **최종 결과**: 61개 → 70개 펌 레시피 (새로 9개 추가, 2개 업데이트)
+  - **커트-펌 매칭**: 모든 69개 커트에 대응하는 펌 레시피 완비
 
   ### 펌 레시피 자막 텍스트 정리
-  - **format-perm-recipes.py** 스크립트로 61개 펌 레시피 자막 Zone별 포맷팅
+  - **format-perm-recipes.py** 스크립트로 펌 레시피 자막 Zone별 포맷팅
   - Zone 구분: 네이프, 센터 백, 백 사이드, 사이드, 프린지, 프론트 톱
   - 파라미터 추출: 천체축 각도, 다이렉션(D0~D8), 로드/셋팅롤, 베이스 유형, 와인딩/프레스
   - CSS 스타일 추가: `.recipe-zone-header`, `.recipe-warning`, `.recipe-tip`
@@ -205,9 +217,8 @@
   ### 펌 도해도 썸네일 변환
   - **upload-perm-thumbnails.py** 스크립트로 고해상도 이미지 → 300px 썸네일 변환
   - **설정**: 너비 300px, JPEG 85% 품질
-  - **결과**: 61개 스타일, 4110개 썸네일 완료
+  - **결과**: 61개 + 11개 = 72개 스타일, 4810개 썸네일 완료
   - **목적**: 도해도 로딩 속도 개선 (한 스타일당 100개+ 이미지)
-  - **FBLP2001**: 도해도 없음으로 스킵 (원본 데이터 오류)
 
   ### 펌 레시피 재분석 기능 추가
   - **기장 + 펌타입 수정 UI**: 커트와 동일한 방식으로 재분석 지원
@@ -220,9 +231,6 @@
   - **클라이언트**: `reanalyzePermWithStyle()` 함수 (ai-studio.js)
   - **서버**: `regeneratePermRecipeWithStyle()` 함수 (chatbot-api.js)
   - **action**: `regenerate_perm_recipe`
-
-  ### 내일 작업 예정
-  - 부족한 펌 레시피 추가 (FCLP 5개, FDLP 5개, FELP 3개, FFLP 2개, FGLP 3개)
 
 - 2025-12-15: 2026 살롱 트렌드 기반 고객 응대 코칭 프롬프트 추가
   - **5개국어 시스템 프롬프트에 융합**: 기존 프롬프트 유지 + 새 섹션 추가
