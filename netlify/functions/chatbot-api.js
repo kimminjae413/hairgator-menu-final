@@ -4043,6 +4043,8 @@ async function getFirestoreStyles() {
           styleId: styleId,
           series: fields.series?.stringValue || '',
           seriesName: fields.seriesName?.stringValue || '',
+          type: fields.type?.stringValue || null,  // ⭐ 펌/커트 구분 (perm/null)
+          matchingCutStyle: fields.matchingCutStyle?.stringValue || null,  // ⭐ 펌의 매칭 커트
           resultImage: fields.resultImage?.stringValue || null,
           diagrams: diagrams,
           diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
@@ -7248,11 +7250,13 @@ function parseFirestoreDocument(doc) {
       styleId: styleId,
       series: fields.series?.stringValue || '',
       seriesName: fields.seriesName?.stringValue || '',
+      type: fields.type?.stringValue || null,  // ⭐ 펌/커트 구분
+      matchingCutStyle: fields.matchingCutStyle?.stringValue || null,
       resultImage: fields.resultImage?.stringValue || null,
       diagrams: diagrams,
       diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
       captionUrl: fields.captionUrl?.stringValue || null,
-      textRecipe: fields.textRecipe?.stringValue || null,  // ⭐ 텍스트 레시피 추가
+      textRecipe: fields.textRecipe?.stringValue || null,
       embedding: embedding
     };
   } catch (error) {
@@ -8307,6 +8311,7 @@ async function regenerateFemaleRecipeWithStyle(payload, geminiKey) {
         styleId,
         series: fields.series?.stringValue || '',
         seriesName: fields.seriesName?.stringValue || '',
+        type: fields.type?.stringValue || null,  // ⭐ 펌/커트 구분
         resultImage: fields.resultImage?.stringValue || null,
         captionUrl: fields.captionUrl?.stringValue || null,
         textRecipe: fields.textRecipe?.stringValue || null,
@@ -8471,6 +8476,7 @@ async function regenerateMaleRecipeWithStyle(payload, geminiKey) {
         styleId,
         series: fields.series?.stringValue || '',
         seriesName: fields.seriesName?.stringValue || '',
+        type: fields.type?.stringValue || null,  // ⭐ 펌/커트 구분
         resultImage: fields.resultImage?.stringValue || null,
         diagrams,
         diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
