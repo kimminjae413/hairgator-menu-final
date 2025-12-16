@@ -1683,16 +1683,16 @@ class AIStudio {
         ${service === 'perm' ? `
         <div class="cut-recipe-link-section">
           <button class="cut-recipe-link-btn" onclick="window.aiStudio.showMatchingCutRecipe('${referenceStyles && referenceStyles[0] ? referenceStyles[0].styleId : ''}')">
-            ✂️ 이 스타일 커트 레시피 보기
+            ${t('aiStudio.viewCutRecipe') || '✂️ 이 스타일 커트 레시피 보기'}
           </button>
-          <span class="cut-link-hint">동일 스타일의 커트 레시피를 확인하세요</span>
+          <span class="cut-link-hint">${t('aiStudio.cutRecipeHint') || '동일 스타일의 커트 레시피를 확인하세요'}</span>
         </div>
         ` : `
         <div class="perm-recipe-link-section">
           <button class="perm-recipe-link-btn" onclick="window.aiStudio.showMatchingPermRecipe('${referenceStyles && referenceStyles[0] ? referenceStyles[0].styleId : ''}')">
-            🌀 이 스타일 펌 레시피 보기
+            ${t('aiStudio.viewPermRecipe') || '🌀 이 스타일 펌 레시피 보기'}
           </button>
-          <span class="perm-link-hint">동일 스타일의 펌 레시피를 확인하세요</span>
+          <span class="perm-link-hint">${t('aiStudio.permRecipeHint') || '동일 스타일의 펌 레시피를 확인하세요'}</span>
         </div>
         `}
       </div>
@@ -2793,7 +2793,7 @@ class AIStudio {
       alert('펌 레시피 조회 중 오류가 발생했습니다: ' + error.message);
 
       if (btn) {
-        btn.innerHTML = '🌀 이 스타일 펌 레시피 보기';
+        btn.innerHTML = t('aiStudio.viewPermRecipe') || '🌀 이 스타일 펌 레시피 보기';
         btn.disabled = false;
       }
     }
@@ -2931,7 +2931,7 @@ class AIStudio {
       alert('커트 레시피 조회 중 오류가 발생했습니다: ' + error.message);
 
       if (btn) {
-        btn.innerHTML = '✂️ 이 스타일 커트 레시피 보기';
+        btn.innerHTML = t('aiStudio.viewCutRecipe') || '✂️ 이 스타일 커트 레시피 보기';
         btn.disabled = false;
       }
     }
