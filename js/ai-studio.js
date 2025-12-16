@@ -1680,7 +1680,7 @@ class AIStudio {
         </div>
 
         <!-- ⭐ 이 스타일 펌/커트 레시피 보기 버튼 (맨 아래) -->
-        ${service === 'perm' ? `
+        ${isPerm ? `
         <div class="cut-recipe-link-section">
           <button class="cut-recipe-link-btn" onclick="window.aiStudio.showMatchingCutRecipe('${referenceStyles && referenceStyles[0] ? referenceStyles[0].styleId : ''}')">
             ${t('aiStudio.viewCutRecipe') || '✂️ 이 스타일 커트 레시피 보기'}
