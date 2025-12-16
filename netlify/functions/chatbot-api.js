@@ -6566,12 +6566,13 @@ function analyzeDifferences(userParams, matchedStyle) {
 }
 
 async function analyzeAndMatchRecipe(payload, geminiKey) {
-  const { image_base64, mime_type, gender, category, series } = payload;
+  const { image_base64, mime_type, gender, category, series, service } = payload;
   const startTime = Date.now();
+  const serviceType = service || 'cut';  // ⭐ 기본값: 커트
 
-  console.log(`🎯 이미지 분석 + 맞춤 레시피 생성 시작 (성별: ${gender || 'female'}, 카테고리: ${category || 'auto'}, 시리즈: ${series || 'auto'})...`);
+  console.log(`🎯 이미지 분석 + 맞춤 레시피 생성 시작 (성별: ${gender || 'female'}, 시술: ${serviceType}, 카테고리: ${category || 'auto'}, 시리즈: ${series || 'auto'})...`);
 
-  // 남자 스타일인 경우 별도 처리
+  // 남자 스타일인 경우 별도 처리 (펌은 아직 미지원)
   if (gender === 'male') {
     return await analyzeAndMatchMaleRecipe(payload, geminiKey);
   }
@@ -6580,25 +6581,30 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
   try {
     // 1. 사용자가 선택한 시리즈 사용 (기장 분석 생략)
     const t1 = Date.now();
-    console.log(`🔍 [DEBUG] 수신된 category: "${category}", series: "${series}"`);
+    console.log(`🔍 [DEBUG] 수신된 category: "${category}", series: "${series}", service: "${serviceType}"`);
     const lengthCode = category || 'D'; // 사용자가 선택한 기장
-    const targetSeriesCode = series || `F${lengthCode}L`;
-    console.log(`⏱️ [1] 사용자 선택 시리즈: ${targetSeriesCode}, 기장코드: ${lengthCode} (${Date.now() - t1}ms)`);
+    // ⭐ 시술 타입에 따라 시리즈 코드 결정 (cut: FAL, perm: FALP)
+    const targetSeriesCode = serviceType === 'perm' ? `F${lengthCode}LP` : (series || `F${lengthCode}L`);
+    console.log(`⏱️ [1] 사용자 선택 시리즈: ${targetSeriesCode}, 기장코드: ${lengthCode}, 시술: ${serviceType} (${Date.now() - t1}ms)`);
 
     // 2. Firestore에서 해당 시리즈 스타일만 가져오기
     const t2 = Date.now();
     const allStyles = await getFirestoreStyles();
 
-    // 해당 시리즈 스타일 필터링
-    const seriesStylesAll = allStyles.filter(s =>
-      s.series === targetSeriesCode || s.styleId.startsWith(targetSeriesCode)
-    );
+    // 해당 시리즈 스타일 필터링 (펌은 type='perm' 추가 필터)
+    const seriesStylesAll = allStyles.filter(s => {
+      const matchesSeries = s.series === targetSeriesCode || s.styleId.startsWith(targetSeriesCode);
+      if (serviceType === 'perm') {
+        return matchesSeries && s.type === 'perm';
+      }
+      return matchesSeries && s.type !== 'perm';  // 커트는 perm 타입 제외
+    });
 
-    // 대표이미지가 있는 스타일
+    // 대표이미지가 있는 스타일 (펌은 대표이미지 없을 수 있음)
     const seriesStylesWithImage = seriesStylesAll.filter(s => s.resultImage);
 
     console.log(`⏱️ [2] Firestore 조회: ${Date.now() - t2}ms`);
-    console.log(`📚 ${targetSeriesCode} 시리즈: 전체 ${seriesStylesAll.length}개, 대표이미지 ${seriesStylesWithImage.length}개`);
+    console.log(`📚 ${targetSeriesCode} 시리즈 (${serviceType}): 전체 ${seriesStylesAll.length}개, 대표이미지 ${seriesStylesWithImage.length}개`);
 
     if (seriesStylesAll.length === 0) {
       throw new Error(`${targetSeriesCode} 시리즈에 스타일이 없습니다`);
@@ -6684,13 +6690,16 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
 
     // 7. 결과 구성 - Top-1 레시피 그대로 반환
     const result = {
+      // ⭐ 시술 타입 (cut/perm)
+      service: serviceType,
+
       // 스타일 파라미터 전체
       params56: params56,
 
       // 대상 시리즈 정보
       targetSeries: {
         code: targetSeriesCode,
-        name: `${lengthCode} Length Series`,
+        name: serviceType === 'perm' ? `${lengthCode} Length Perm` : `${lengthCode} Length Series`,
         totalStyles: seriesStylesAll.length
       },
 
@@ -6724,6 +6733,8 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
         resultImage: top1.resultImage,
         diagrams: top1.diagrams,
         diagramCount: top1.diagramCount,
+        // ⭐ 펌의 경우 매칭 커트 스타일 포함
+        matchingCutStyle: top1.matchingCutStyle || null,
         // Vision 선택 정보
         visionConfidence: visionResult.confidence,
         visionReason: visionResult.reason

@@ -2961,12 +2961,24 @@ function selectService(service) {
 
   // 버튼 UI 업데이트
   const cutBtn = document.getElementById('service-cut');
+  const permBtn = document.getElementById('service-perm');
   cutBtn.classList.remove('selected');
+  permBtn.classList.remove('selected');
 
   if (service === 'cut') {
     cutBtn.classList.add('selected');
-    // 카테고리 선택 UI 표시
+  } else if (service === 'perm') {
+    permBtn.classList.add('selected');
+  }
+
+  // 카테고리 선택 UI 표시 (여자만 펌 레시피 지원)
+  if (selectedGender === 'female' || service === 'cut') {
     showCategorySelection(selectedGender);
+  } else {
+    // 남자 펌은 아직 미지원 - 메시지 표시
+    alert('남자 펌 레시피는 준비 중입니다.');
+    selectedService = null;
+    permBtn.classList.remove('selected');
   }
 
   console.log(`🎯 시술 선택: ${service}`);
@@ -3148,6 +3160,7 @@ async function sendImageWithQuestion() {
     // ⭐⭐⭐ 전송 데이터 로그 (디버깅용)
     console.log(`📤 맞춤 레시피 생성 API 호출...`);
     console.log(`   - 성별: ${selectedGender}`);
+    console.log(`   - 시술: ${selectedService || 'cut'}`);
     console.log(`   - category (기장코드): ${selectedCategory.code}`);
     console.log(`   - series: ${selectedCategory.series}`);
 
@@ -3157,6 +3170,7 @@ async function sendImageWithQuestion() {
         image_base64: base64,
         mime_type: pendingImageData.file.type,
         gender: selectedGender,
+        service: selectedService || 'cut',  // ⭐ 시술 타입 (cut/perm)
         category: selectedCategory.code,
         series: selectedCategory.series
       }
