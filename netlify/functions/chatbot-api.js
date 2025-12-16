@@ -6605,13 +6605,13 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     const t2 = Date.now();
     const allStyles = await getFirestoreStyles();
 
-    // 해당 시리즈 스타일 필터링 (펌은 type='perm' 추가 필터)
+    // 해당 시리즈 스타일 필터링 (커트: type='cut', 펌: type='perm')
     const seriesStylesAll = allStyles.filter(s => {
       const matchesSeries = s.series === targetSeriesCode || s.styleId.startsWith(targetSeriesCode);
       if (serviceType === 'perm') {
         return matchesSeries && s.type === 'perm';
       }
-      return matchesSeries && s.type !== 'perm';  // 커트는 perm 타입 제외
+      return matchesSeries && s.type === 'cut';  // 커트는 type='cut'만
     });
 
     // 대표이미지가 있는 스타일 (펌은 대표이미지 없을 수 있음)
