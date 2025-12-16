@@ -164,6 +164,8 @@
 - `upload-cut-captions-to-rag.py`: 병합된 커트 자막을 RAG Store에 업로드
 - `upload-perm-indexes.py`: 펌 인덱스 이미지 Firebase Storage 업로드 + Firestore 저장
 - `fix-perm-index-merge.py`: 펌 인덱스 언어별 문서를 하나로 병합
+- `format-perm-recipes.py`: 펌 레시피 자막 텍스트 Zone별 문단 정리 → Firestore 업데이트
+- `upload-perm-thumbnails.py`: 펌 도해도 300px 썸네일 변환 후 Firebase Storage 덮어쓰기
 
 ## 크리스마스 효과 (간소화됨 - 2025-12-14)
 
@@ -181,6 +183,35 @@
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
+- 2025-12-16: 펌 레시피 자막 포맷팅 + 도해도 썸네일 변환
+
+  ### 펌 레시피 자막 텍스트 정리
+  - **format-perm-recipes.py** 스크립트로 61개 펌 레시피 자막 Zone별 포맷팅
+  - Zone 구분: 네이프, 센터 백, 백 사이드, 사이드, 프린지, 프론트 톱
+  - 파라미터 추출: 천체축 각도, 다이렉션(D0~D8), 로드/셋팅롤, 베이스 유형, 와인딩/프레스
+  - CSS 스타일 추가: `.recipe-zone-header`, `.recipe-warning`, `.recipe-tip`
+
+  ### Firestore 페이지네이션 버그 수정 (중요!)
+  - **문제**: Firestore REST API 기본 100개 문서 제한 → FHLP 시리즈 누락
+  - **원인**: 커트 69개 + 펌 61개 = 130개인데 100개만 로드됨
+  - **해결**: `getFirestoreStyles()` 함수에 `pageSize=300` + `nextPageToken` 페이지네이션 추가
+  - **위치**: chatbot-api.js 라인 ~3998-4064
+
+  ### 레시피 줄바꿈 버그 수정
+  - **문제**: `\s{2,}` 정규식이 줄바꿈(\n)까지 제거 → 레시피가 한 줄로 표시됨
+  - **해결**: `/ {2,}/` (리터럴 스페이스만)으로 변경
+  - **위치**: chatbot-api.js 라인 ~6684, ~7697
+
+  ### 펌 도해도 썸네일 변환
+  - **upload-perm-thumbnails.py** 스크립트로 고해상도 이미지 → 300px 썸네일 변환
+  - **설정**: 너비 300px, JPEG 85% 품질
+  - **결과**: 61개 스타일, 4110개 썸네일 완료
+  - **목적**: 도해도 로딩 속도 개선 (한 스타일당 100개+ 이미지)
+  - **FBLP2001**: 도해도 없음으로 스킵 (원본 데이터 오류)
+
+  ### 내일 작업 예정
+  - 부족한 펌 레시피 추가 (FCLP 5개, FDLP 5개, FELP 3개, FFLP 2개, FGLP 3개)
+
 - 2025-12-15: 2026 살롱 트렌드 기반 고객 응대 코칭 프롬프트 추가
   - **5개국어 시스템 프롬프트에 융합**: 기존 프롬프트 유지 + 새 섹션 추가
   - **핵심 트렌드 5가지**:
