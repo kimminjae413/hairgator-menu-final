@@ -1423,12 +1423,25 @@ class AIStudio {
     // 현재 분석 데이터 저장 (재분석용)
     this.currentFemaleAnalysis = { data, uploadedImageUrl };
 
+    // ⭐ 펌/커트 구분
+    const isPerm = data.service === 'perm';
+
     // 42포뮬러 핵심 파라미터 추출
     const liftingStr = Array.isArray(analysis.liftingRange) ? analysis.liftingRange.join(', ') : (analysis.liftingRange || 'L4');
 
     // Length 코드 추출 (A~H)
     const currentLengthCode = analysis.lengthName ? analysis.lengthName.charAt(0) : 'E';
     const currentForm = analysis.form || 'Layer';
+
+    // ⭐ 펌 타입 추출 (styleId에서: FALP0001 → 0, FCLP1001 → 1)
+    let currentPermType = '2'; // 기본값: 로드(S컬)
+    if (isPerm && referenceStyles && referenceStyles[0]) {
+      const styleId = referenceStyles[0].styleId || '';
+      const match = styleId.match(/F[A-H]LP(\d)/);
+      if (match) {
+        currentPermType = match[1];
+      }
+    }
 
     this.canvasResult.innerHTML = `
       <div class="custom-recipe-canvas">
@@ -1467,6 +1480,71 @@ class AIStudio {
         </div>
 
         <!-- 스타일 수정 섹션 -->
+        ${isPerm ? `
+        <!-- ⭐ 펌 재분석 섹션 -->
+        <div class="style-correction-section female perm">
+          <div class="correction-header">
+            <span class="correction-icon">⚠️</span>
+            <span>AI 분석이 틀렸나요? 기장/펌타입을 수정하세요</span>
+          </div>
+
+          <div class="correction-controls female">
+            <!-- 기장 드롭다운 -->
+            <div class="custom-length-dropdown" style="position: relative; flex: 1;">
+              <button type="button" id="length-dropdown-btn" class="style-select"
+                      style="width: 100%; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                <span id="length-dropdown-text">${currentLengthCode ? currentLengthCode + ' Length' : '기장 선택...'}</span>
+                <span>▼</span>
+              </button>
+              <input type="hidden" id="length-correction-select" value="${currentLengthCode || ''}">
+
+              <div id="length-dropdown-content" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-height: 400px; overflow-y: auto;">
+                <div style="padding: 10px; border-bottom: 1px solid #eee; text-align: center; background: #f9f9f9;">
+                  <img src="${window.location.origin}/images/length-guide.png" alt="기장 가이드" style="max-width: 100%; height: auto; border-radius: 4px;" onerror="this.parentElement.style.display='none'">
+                </div>
+                <div class="length-option" data-value="H" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #FF9500;">H</strong> - 후두부/목덜미 (Short)
+                </div>
+                <div class="length-option" data-value="G" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #FFCC00;">G</strong> - 목 상단 (Bob)
+                </div>
+                <div class="length-option" data-value="F" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #4CD964;">F</strong> - 목 하단 (Bob)
+                </div>
+                <div class="length-option" data-value="E" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #5AC8FA;">E</strong> - 어깨선 상단 (Medium)
+                </div>
+                <div class="length-option" data-value="D" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #007AFF;">D</strong> - 어깨선 하단 (Medium)
+                </div>
+                <div class="length-option" data-value="C" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #5856D6;">C</strong> - 겨드랑이 (Semi Long)
+                </div>
+                <div class="length-option" data-value="B" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #AF52DE;">B</strong> - 가슴 중간 (Long)
+                </div>
+                <div class="length-option" data-value="A" style="padding: 10px 15px; cursor: pointer;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fff'">
+                  <strong style="color: #FF2D55;">A</strong> - 가슴 하단/허리 (Long)
+                </div>
+              </div>
+            </div>
+
+            <!-- 펌 타입 드롭다운 -->
+            <select id="perm-type-select" class="style-select">
+              <option value="" disabled>펌 타입 선택...</option>
+              <option value="0" ${currentPermType === '0' ? 'selected' : ''}>매직 (프레스)</option>
+              <option value="1" ${currentPermType === '1' ? 'selected' : ''}>셋팅롤 (C컬)</option>
+              <option value="2" ${currentPermType === '2' ? 'selected' : ''}>로드 (S컬)</option>
+              <option value="3" ${currentPermType === '3' ? 'selected' : ''}>볼륨 웨이브</option>
+              <option value="4" ${currentPermType === '4' ? 'selected' : ''}>트위스트</option>
+            </select>
+            <button class="correction-btn perm-btn" onclick="window.aiStudio.reanalyzePermWithStyle()">
+              🔄 재분석
+            </button>
+          </div>
+        </div>
+        ` : `
+        <!-- 커트 재분석 섹션 (기존) -->
         <div class="style-correction-section female">
           <div class="correction-header">
             <span class="correction-icon">⚠️</span>
@@ -1527,6 +1605,7 @@ class AIStudio {
             </button>
           </div>
         </div>
+        `}
 
         <!-- 이미지 주요 분석 -->
         <div class="formula-params-section">
@@ -2580,6 +2659,71 @@ class AIStudio {
     } catch (error) {
       console.error('여자 스타일 재분석 오류:', error);
       alert('재분석 중 오류가 발생했습니다: ' + error.message);
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  }
+
+  // ⭐ 펌 스타일 재분석 (기장/펌타입 수정)
+  async reanalyzePermWithStyle() {
+    const lengthSelect = document.getElementById('length-correction-select');
+    const permTypeSelect = document.getElementById('perm-type-select');
+
+    if (!lengthSelect || !permTypeSelect) return;
+
+    const newLengthCode = lengthSelect.value;
+    const newPermType = permTypeSelect.value;
+
+    if (!newLengthCode || newPermType === '') {
+      alert('기장과 펌 타입을 모두 선택해주세요.');
+      return;
+    }
+
+    // 현재 분석 데이터가 없으면 리턴
+    if (!this.currentFemaleAnalysis || !this.pendingImageBase64) {
+      alert('재분석할 이미지 데이터가 없습니다. 이미지를 다시 업로드해주세요.');
+      return;
+    }
+
+    // 버튼 로딩 상태
+    const btn = document.querySelector('.style-correction-section.perm .correction-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ 재분석 중...';
+    btn.disabled = true;
+
+    try {
+      // 수정된 기장/펌타입으로 레시피 재생성 요청
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'regenerate_perm_recipe',
+          payload: {
+            length_code: newLengthCode,
+            perm_type: newPermType,
+            image_base64: this.pendingImageBase64,
+            mime_type: this.pendingMimeType || 'image/jpeg',
+            original_analysis: this.currentFemaleAnalysis.data.analysis
+          }
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        console.log('📦 펌 재분석 서버 응답:', result.data);
+
+        // 새 데이터로 캔버스 업데이트
+        this.showCustomRecipeCanvas(result.data, this.currentFemaleAnalysis.uploadedImageUrl);
+
+        const permTypeNames = { '0': '매직', '1': '셋팅롤', '2': '로드', '3': '볼륨웨이브', '4': '트위스트' };
+        console.log(`✅ ${newLengthCode} Length + ${permTypeNames[newPermType]}로 펌 재분석 완료!`);
+      } else {
+        throw new Error(result.error || '펌 재분석 실패');
+      }
+    } catch (error) {
+      console.error('펌 스타일 재분석 오류:', error);
+      alert('펌 재분석 중 오류가 발생했습니다: ' + error.message);
       btn.innerHTML = originalText;
       btn.disabled = false;
     }

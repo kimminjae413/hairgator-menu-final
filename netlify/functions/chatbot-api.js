@@ -441,6 +441,10 @@ exports.handler = async (event, context) => {
       case 'regenerate_female_recipe':
         return await regenerateFemaleRecipeWithStyle(payload, GEMINI_KEY);
 
+      // ⭐ 펌 스타일 수정 재분석 (사용자가 기장/펌타입 변경)
+      case 'regenerate_perm_recipe':
+        return await regeneratePermRecipeWithStyle(payload, GEMINI_KEY);
+
       // ⭐ 파라미터 기반 커스텀 레시피 생성 (Firebase 기반)
       case 'generate_custom_recipe':
         return await generateCustomRecipeFromParams(payload, GEMINI_KEY);
@@ -8419,6 +8423,189 @@ async function regenerateFemaleRecipeWithStyle(payload, geminiKey) {
 
   } catch (error) {
     console.error('❌ 여자 스타일 재분석 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: error.message
+      })
+    };
+  }
+}
+
+// ==================== 펌 스타일 수정 재분석 ====================
+async function regeneratePermRecipeWithStyle(payload, geminiKey) {
+  const { length_code, perm_type, original_analysis } = payload;
+  const startTime = Date.now();
+
+  // 펌 타입별 이름
+  const permTypeNames = {
+    '0': { name: '매직 (프레스)', method: 'press' },
+    '1': { name: '셋팅롤 (C컬)', method: 'settingRoll' },
+    '2': { name: '로드 (S컬)', method: 'rod' },
+    '3': { name: '볼륨 웨이브', method: 'volumeWave' },
+    '4': { name: '트위스트', method: 'twist' }
+  };
+
+  const permInfo = permTypeNames[perm_type] || permTypeNames['2'];
+  console.log(`🔄 펌 스타일 재분석 시작 - 기장: ${length_code}, 펌타입: ${permInfo.name}`);
+
+  try {
+    // 1. 새 기장/펌타입으로 분석 데이터 수정
+    const lengthDescriptions = {
+      'H': 'Very Short - 귀/목덜미',
+      'G': 'Short Bob - 턱선',
+      'F': 'Bob - 턱~어깨',
+      'E': 'Medium - 어깨선',
+      'D': 'Semi-Long - 어깨~겨드랑이',
+      'C': 'Long - 겨드랑이/가슴',
+      'B': 'Very Long - 가슴 중간',
+      'A': 'Super Long - 가슴 아래/허리'
+    };
+
+    const lengthName = `${length_code} Length`;
+
+    // 펌 타입에 따른 params 수정
+    const params56 = {
+      ...original_analysis,
+      length_category: lengthName,
+      perm_type: permInfo.name,
+      perm_method: permInfo.method
+    };
+
+    // 2. 펌 시리즈 코드 생성 (예: FALP, FBLP)
+    const targetSeries = `F${length_code}LP`;
+
+    // 3. Firestore에서 펌 스타일 가져오기 (페이지네이션 포함)
+    const baseUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles`;
+    const allStyles = [];
+    let nextPageToken = null;
+
+    do {
+      const url = nextPageToken
+        ? `${baseUrl}?pageSize=300&pageToken=${nextPageToken}`
+        : `${baseUrl}?pageSize=300`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.documents) {
+        for (const doc of data.documents) {
+          const fields = doc.fields;
+          const styleId = doc.name.split('/').pop();
+          const type = fields.type?.stringValue || null;
+
+          // 펌 타입만 필터링
+          if (type !== 'perm') continue;
+
+          let diagrams = [];
+          if (fields.diagrams?.arrayValue?.values) {
+            diagrams = fields.diagrams.arrayValue.values.map(v => {
+              const map = v.mapValue?.fields || {};
+              return {
+                step: parseInt(map.step?.integerValue || 0),
+                url: map.url?.stringValue || ''
+              };
+            });
+          }
+
+          allStyles.push({
+            styleId,
+            series: fields.series?.stringValue || '',
+            seriesName: fields.seriesName?.stringValue || '',
+            type,
+            resultImage: fields.resultImage?.stringValue || null,
+            textRecipe: fields.textRecipe?.stringValue || null,
+            diagrams,
+            diagramCount: parseInt(fields.diagramCount?.integerValue || 0)
+          });
+        }
+      }
+      nextPageToken = data.nextPageToken;
+    } while (nextPageToken);
+
+    console.log(`📁 전체 펌 스타일: ${allStyles.length}개`);
+
+    // 4. 시리즈 + 펌타입으로 필터링
+    // styleId 패턴: F{Length}LP{PermType}xxx (예: FALP0001 → 0번대, FCLP1001 → 1번대)
+    const filteredStyles = allStyles.filter(s => {
+      const matchesSeries = s.series === targetSeries || s.styleId.startsWith(targetSeries);
+      if (!matchesSeries) return false;
+
+      // 펌 타입 매칭 (styleId에서 4번째 문자 이후 숫자 추출)
+      const match = s.styleId.match(/F[A-H]LP(\d)/);
+      if (match) {
+        return match[1] === perm_type;
+      }
+      return true; // 매칭 실패시 포함
+    });
+
+    console.log(`🎯 ${targetSeries} + 펌타입 ${perm_type}: ${filteredStyles.length}개`);
+
+    // 필터된 스타일이 없으면 시리즈 전체 사용
+    const targetStyles = filteredStyles.length > 0
+      ? filteredStyles
+      : allStyles.filter(s => s.series === targetSeries || s.styleId.startsWith(targetSeries));
+
+    if (targetStyles.length === 0) {
+      throw new Error(`${targetSeries} 시리즈에 펌 레시피가 없습니다.`);
+    }
+
+    // 5. 첫 번째 스타일을 기준으로 레시피 및 도해도 가져오기
+    const bestStyle = targetStyles[0];
+    console.log(`🎯 선택된 펌 스타일: ${bestStyle.styleId}`);
+
+    // 레시피 포맷팅
+    let recipeText = bestStyle.textRecipe || '';
+    if (recipeText) {
+      recipeText = formatPermRecipe(recipeText);
+    }
+
+    // 6. 결과 반환
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          gender: 'female',
+          service: 'perm',  // ⭐ 펌 표시
+          params56: params56,
+          analysis: {
+            length: length_code,
+            lengthName: lengthName,
+            form: permInfo.name,  // 펌 타입을 form에 표시
+            hasBangs: original_analysis?.fringe_type !== 'No Fringe',
+            bangsType: original_analysis?.fringe_type || 'No Fringe',
+            volumePosition: original_analysis?.volume_zone || 'Medium',
+            silhouette: original_analysis?.silhouette || 'Round',
+            liftingRange: ['Perm'],
+            sectionPrimary: original_analysis?.section_primary || 'Horizontal'
+          },
+          targetSeries: {
+            code: targetSeries,
+            name: `${lengthName} Perm`,
+            totalStyles: targetStyles.length
+          },
+          referenceStyles: targetStyles.slice(0, 3).map(s => ({
+            styleId: s.styleId,
+            series: s.series,
+            diagrams: s.diagrams.slice(0, 5),
+            diagramCount: s.diagramCount
+          })),
+          customRecipe: recipeText,
+          mainDiagrams: bestStyle.diagrams.map((d, idx) => ({
+            step: d.step || idx + 1,
+            url: d.url,
+            styleId: bestStyle.styleId
+          })),
+          processingTime: Date.now() - startTime
+        }
+      })
+    };
+
+  } catch (error) {
+    console.error('❌ 펌 스타일 재분석 오류:', error);
     return {
       statusCode: 500,
       headers,
