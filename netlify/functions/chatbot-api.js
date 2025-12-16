@@ -7305,10 +7305,10 @@ function formatPermRecipe(recipe) {
   formatted = formatted.replace(/^주의[_\s]*(.+)$/gm, '⚠️ **주의**: $1');
   formatted = formatted.replace(/^참고[_\s]*(.+)$/gm, '💡 **참고**: $1');
 
-  // 4. 존별 섹션 헤더 추가 (Zone 기반 그룹핑)
+  // 4. 영역별 섹션 헤더 추가 (Zone + 부위 기반 그룹핑)
   const lines = formatted.split('\n');
   const groupedLines = [];
-  let currentZone = '';
+  let currentSection = '';
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -7317,20 +7317,47 @@ function formatPermRecipe(recipe) {
       continue;
     }
 
-    // Zone 감지 (A1 존, A2 존, B1 존, B2 존, C존, 사이드 등)
-    const zoneMatch = trimmed.match(/(사이드|A[12]?\s*존|B[12]?\s*존|C\s*존)/i);
-    if (zoneMatch) {
-      const zone = zoneMatch[1].replace(/\s+/g, '').toUpperCase();
-      if (zone !== currentZone) {
-        currentZone = zone;
-        // Zone 헤더 추가
-        let zoneLabel = zone;
-        if (zone === '사이드' || zone === 'SIDE') zoneLabel = '📍 사이드 (Side)';
-        else if (zone.includes('A')) zoneLabel = `📍 ${zone} (Under Zone)`;
-        else if (zone.includes('B')) zoneLabel = `📍 ${zone} (Mid Zone)`;
-        else if (zone.includes('C')) zoneLabel = `📍 ${zone} (Over Zone)`;
-        groupedLines.push(`\n**[${zoneLabel}]**`);
-      }
+    // 부위/Zone 감지 (사이드, 백 사이드, 센터 백, 네이프, 프린지, 크라운, 탑 등)
+    let detectedSection = '';
+    let sectionLabel = '';
+
+    // 부위명 감지 (순서 중요: 긴 것 먼저)
+    if (/센터\s*백|Center\s*Back/i.test(trimmed)) {
+      detectedSection = 'CENTER_BACK';
+      sectionLabel = '📍 센터 백 (Center Back)';
+    } else if (/백\s*사이드|Back\s*Side/i.test(trimmed)) {
+      detectedSection = 'BACK_SIDE';
+      sectionLabel = '📍 백 사이드 (Back Side)';
+    } else if (/네이프|Nape/i.test(trimmed)) {
+      detectedSection = 'NAPE';
+      sectionLabel = '📍 네이프 (Nape)';
+    } else if (/프린지|Fringe|뱅|앞머리/i.test(trimmed)) {
+      detectedSection = 'FRINGE';
+      sectionLabel = '📍 프린지 (Fringe)';
+    } else if (/크라운|Crown/i.test(trimmed)) {
+      detectedSection = 'CROWN';
+      sectionLabel = '📍 크라운 (Crown)';
+    } else if (/탑\s*섹션|Top\s*Section|탑\s*부분/i.test(trimmed)) {
+      detectedSection = 'TOP';
+      sectionLabel = '📍 탑 (Top)';
+    } else if (/사이드|Side/i.test(trimmed) && !/백\s*사이드|Back\s*Side/i.test(trimmed)) {
+      detectedSection = 'SIDE';
+      sectionLabel = '📍 사이드 (Side)';
+    } else if (/A[12]?\s*존/i.test(trimmed)) {
+      detectedSection = trimmed.match(/A[12]?\s*존/i)[0].replace(/\s+/g, '').toUpperCase();
+      sectionLabel = `📍 ${detectedSection} (Under Zone)`;
+    } else if (/B[12]?\s*존/i.test(trimmed)) {
+      detectedSection = trimmed.match(/B[12]?\s*존/i)[0].replace(/\s+/g, '').toUpperCase();
+      sectionLabel = `📍 ${detectedSection} (Mid Zone)`;
+    } else if (/C\s*존/i.test(trimmed)) {
+      detectedSection = 'C존';
+      sectionLabel = '📍 C존 (Over Zone)';
+    }
+
+    // 새로운 섹션이면 헤더 추가
+    if (detectedSection && detectedSection !== currentSection) {
+      currentSection = detectedSection;
+      groupedLines.push(`\n**[${sectionLabel}]**`);
     }
 
     // 펌 기술 키워드 강조
