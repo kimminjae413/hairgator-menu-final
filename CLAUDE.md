@@ -186,7 +186,32 @@
 - `document.body.classList.contains('light-theme')`: 다크모드 체크
 
 ## 최근 작업 이력
-- 2025-12-16: 추가분 펌 레시피 11개 업로드 완료
+- 2025-12-16: 커트↔펌 양방향 연결 + Vision 매칭 활성화
+
+  ### 커트↔펌 레시피 양방향 연결 버튼
+  - **커트 레시피 → 펌 레시피 연결**: "🌀 이 스타일 펌 레시피 보기" 버튼
+  - **펌 레시피 → 커트 레시피 연결**: "✂️ 이 스타일 커트 레시피 보기" 버튼
+  - **스타일ID 변환**: FAL0001 ↔ FALP0001 (L 뒤에 P 추가/제거)
+  - **버튼 위치**: 레시피 캔버스 맨 아래 (AI 생성 맞춤 레시피 다음)
+  - **5개국어 지원**: viewPermRecipe, viewCutRecipe, permRecipeHint, cutRecipeHint 번역 키 추가
+  - **API 엔드포인트**: `get_perm_recipe_by_style`, `get_cut_recipe_by_style`
+  - **함수 위치**: ai-studio.js의 `showMatchingPermRecipe()`, `showMatchingCutRecipe()`, `showPermRecipeFromCut()`, `showCutRecipeFromPerm()`
+
+  ### Vision 매칭 활성화 (resultImage 필드 추가)
+  - **문제**: Firestore `styles` 컬렉션에 `resultImage` 필드가 없어서 Vision 매칭이 안 됨
+  - **해결**: 140개 스타일 모두에 `resultImage` 필드 추가
+    - Storage에서 `styles/{styleId}/result.png` 또는 `styles/{series}/{styleId}/result.png` URL 수집
+    - 커트 70개: 각자 자체 result.png 사용
+    - 펌 70개: 매칭되는 커트의 result.png 사용 (FALP0001 → FAL0001/result.png)
+  - **코드 위치**: chatbot-api.js의 `seriesStylesWithImage.filter(s => s.resultImage)`
+
+  ### 펌 레시피 섹션 헤더 자동 분리 개선
+  - **기존**: Zone(A존, B존, C존, 사이드)만 감지
+  - **개선**: 사이드, 백 사이드, 센터 백, 네이프, 프린지, 크라운, 탑 등 부위별 자동 감지
+  - **함수 위치**: chatbot-api.js `formatPermRecipe()` 라인 ~7308
+  - **표시 형식**: `**[📍 센터 백 (Center Back)]**`
+
+  ### 추가분 펌 레시피 11개 업로드 완료 (이전 작업)
 
   ### 추가분 펌 레시피 업로드
   - **추가된 스타일 11개**: FALP4001, FBLP2001, FBLP2002, FBLP3001, FDLP1003, FDLP3001, FELP2004, FFLP2003, FGLP1001, FGLP1005, FGLP2004
