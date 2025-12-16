@@ -6669,12 +6669,18 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     let originalRecipe = top1.textRecipe || '';
     // 스타일ID 언급 제거 (사용자에게 보이지 않도록)
     originalRecipe = originalRecipe
-      .replace(/\[?[FM]?[A-Z]{2,3}\d{4}\]?/g, '')  // 스타일ID 제거 (괄호 포함)
+      .replace(/\[?[FM]?[A-Z]{2,3}P?\d{4}\]?/g, '')  // 스타일ID 제거 (FALP0001 포함)
       .replace(/\[\s*\]/g, '')  // 빈 괄호 [] 제거
       .replace(/\s{2,}/g, ' ')  // 연속 공백 정리
       .trim();
-    // ⭐ External/Internal 형식으로 통일
-    originalRecipe = normalizeRecipeFormat(originalRecipe);
+
+    // ⭐ 펌 레시피 전처리 (OCR 아티팩트 제거 및 포맷팅)
+    if (serviceType === 'perm') {
+      originalRecipe = formatPermRecipe(originalRecipe);
+    } else {
+      // ⭐ External/Internal 형식으로 통일 (커트만)
+      originalRecipe = normalizeRecipeFormat(originalRecipe);
+    }
 
     // ⭐⭐⭐ Top-1 스타일의 도해도에서 실제 레시피 파라미터 추출 (애니메이션용)
     const top1Params = extractRecipeParamsFromStyle(top1);
@@ -7256,6 +7262,75 @@ function parseFirestoreDocument(doc) {
 }
 
 // ==================== 레시피 형식 통일 ====================
+/**
+ * 펌 레시피 텍스트 전처리 (OCR 아티팩트 제거 및 포맷팅)
+ */
+function formatPermRecipe(recipe) {
+  if (!recipe) return recipe;
+
+  let formatted = recipe;
+
+  // 1. "상세설명 텍스트" OCR 아티팩트 제거
+  formatted = formatted.replace(/상세설명\s*텍스트\s*/g, '');
+
+  // 2. 연속 줄바꿈 정리
+  formatted = formatted.replace(/\n{3,}/g, '\n\n');
+
+  // 3. 주의/참고 섹션 강조
+  formatted = formatted.replace(/^주의[_\s]*(.+)$/gm, '⚠️ **주의**: $1');
+  formatted = formatted.replace(/^참고[_\s]*(.+)$/gm, '💡 **참고**: $1');
+
+  // 4. 존별 섹션 헤더 추가 (Zone 기반 그룹핑)
+  const lines = formatted.split('\n');
+  const groupedLines = [];
+  let currentZone = '';
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      groupedLines.push('');
+      continue;
+    }
+
+    // Zone 감지 (A1 존, A2 존, B1 존, B2 존, C존, 사이드 등)
+    const zoneMatch = trimmed.match(/(사이드|A[12]?\s*존|B[12]?\s*존|C\s*존)/i);
+    if (zoneMatch) {
+      const zone = zoneMatch[1].replace(/\s+/g, '').toUpperCase();
+      if (zone !== currentZone) {
+        currentZone = zone;
+        // Zone 헤더 추가
+        let zoneLabel = zone;
+        if (zone === '사이드' || zone === 'SIDE') zoneLabel = '📍 사이드 (Side)';
+        else if (zone.includes('A')) zoneLabel = `📍 ${zone} (Under Zone)`;
+        else if (zone.includes('B')) zoneLabel = `📍 ${zone} (Mid Zone)`;
+        else if (zone.includes('C')) zoneLabel = `📍 ${zone} (Over Zone)`;
+        groupedLines.push(`\n**[${zoneLabel}]**`);
+      }
+    }
+
+    // 펌 기술 키워드 강조
+    let processedLine = trimmed
+      .replace(/천체축\s*각도\s*(\d+(?:\.\d+)?)\s*도/g, '**천체축 $1°**')
+      .replace(/다이렉션\s*(D\d)/gi, '**다이렉션 $1**')
+      .replace(/다이랙션\s*(D\d)/gi, '**다이렉션 $1**')
+      .replace(/가로\s*섹션/g, '**가로 섹션**')
+      .replace(/세로\s*섹션/g, '**세로 섹션**')
+      .replace(/(\d+)\s*차\s*프레스/g, '**$1차 프레스**')
+      .replace(/연화\s*후/g, '연화 후');
+
+    groupedLines.push(processedLine);
+  }
+
+  formatted = groupedLines.join('\n').trim();
+
+  // 5. 레시피 시작 안내 추가
+  if (!formatted.startsWith('[') && !formatted.startsWith('**[')) {
+    formatted = '**[🌀 펌 레시피]**\n\n' + formatted;
+  }
+
+  return formatted;
+}
+
 /**
  * 레시피 텍스트를 [External] (Under Zone / A,B Zone) / [Internal] (Over Zone / C Zone) 형식으로 통일
  */
