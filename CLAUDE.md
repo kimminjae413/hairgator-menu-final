@@ -209,6 +209,18 @@
   - **목적**: 도해도 로딩 속도 개선 (한 스타일당 100개+ 이미지)
   - **FBLP2001**: 도해도 없음으로 스킵 (원본 데이터 오류)
 
+  ### 펌 레시피 재분석 기능 추가
+  - **기장 + 펌타입 수정 UI**: 커트와 동일한 방식으로 재분석 지원
+  - **펌 타입 분류** (styleId 번호대 기준):
+    - 0번대: 매직 (프레스) - FALP0001, FBLP0001
+    - 1번대: 셋팅롤 (C컬) - FCLP1001, FELP1001
+    - 2번대: 로드 (S컬) - FBLP2003, FCLP2002
+    - 3번대: 볼륨 웨이브 - FALP3001, FGLP3001
+    - 4번대: 트위스트 - FBLP4002
+  - **클라이언트**: `reanalyzePermWithStyle()` 함수 (ai-studio.js)
+  - **서버**: `regeneratePermRecipeWithStyle()` 함수 (chatbot-api.js)
+  - **action**: `regenerate_perm_recipe`
+
   ### 내일 작업 예정
   - 부족한 펌 레시피 추가 (FCLP 5개, FDLP 5개, FELP 3개, FFLP 2개, FGLP 3개)
 
