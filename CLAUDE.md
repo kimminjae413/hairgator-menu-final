@@ -41,6 +41,65 @@
 - `netlify/functions/chatbot-api.js` - 메인 API (354KB, 매우 큼)
 - `netlify/functions/lib/schemas.js` - 2WAY CUT 스키마
 
+### 펌 레시피 시스템 (2025-12-16 추가)
+
+#### 현재 상태
+- **61개 여자 펌 레시피** Firestore `styles` 컬렉션에 저장 완료
+- **커트-펌 매칭**: FAL0001 ↔ FALP0001 (P 추가로 매칭)
+- **미완성 펌 레시피 9개**: 커트 69개 중 펌이 없는 스타일 존재 (나중에 추가 예정)
+
+#### 시리즈별 현황
+| 시리즈 | 펌 개수 | 커트 개수 | 비고 |
+|--------|---------|-----------|------|
+| FALP | 6개 | FAL 6개 | 완료 |
+| FBLP | 11개 | FBL 11개 | 완료 |
+| FCLP | 6개 | FCL 11개 | **5개 부족** |
+| FDLP | 6개 | FDL 11개 | **5개 부족** |
+| FELP | 8개 | FEL 11개 | **3개 부족** |
+| FFLP | 8개 | FFL 10개 | **2개 부족** |
+| FGLP | 7개 | FGL 10개 | **3개 부족** |
+| FHLP | 9개 | FHL 9개 | 완료 |
+
+#### Firestore 펌 레시피 구조
+```javascript
+{
+  styleId: "FALP0001",
+  series: "FALP",
+  seriesName: "A Length Perm",
+  gender: "female",
+  type: "perm",  // ⭐ 펌/커트 구분 (필수!)
+  matchingCutStyle: "FAL0001",  // ⭐ 매칭되는 커트 스타일
+  diagrams: [{step: 1, url: "..."}, ...],
+  diagramCount: 100,
+  textRecipe: "연화 후 사이드 부분은...",
+  createdAt: Timestamp,
+  updatedAt: Timestamp
+}
+```
+
+#### 도해도 파일명 패턴 (2가지 지원)
+1. `{styleId}_001.png` 형식: FALP0001_001.png (FALP 시리즈)
+2. `001.png` 형식: 순수 숫자 3자리 (FELP, FCLP 등)
+
+#### 업로드 스크립트
+- **경로**: `scripts/upload-perm-recipes.py`
+- **원본 폴더**: `C:\Users\김민재\Desktop\2. 헤어게이터_이론-20251105T045428Z-1-001\women_perm_recipe\`
+- **자막 추출**: `scripts/extract-perm-captions.py` (Gemini Vision API)
+
+#### 서버 처리 흐름 (chatbot-api.js)
+1. 클라이언트에서 `service: 'perm'` 파라미터 전송
+2. 시리즈 코드 변환: `F${lengthCode}L` → `F${lengthCode}LP` (예: FEL → FELP)
+3. Firestore 조회 시 `type === 'perm'` 필터 적용
+4. `formatPermRecipe()` 함수로 텍스트 전처리:
+   - "상세설명 텍스트" OCR 아티팩트 제거
+   - Zone별 섹션 헤더 자동 생성
+   - 천체축/다이렉션/프레스 키워드 강조
+
+#### 주의사항
+- `getFirestoreStyles()` 함수에서 `type` 필드 반드시 포함해야 펌 필터링 가능
+- 도해도 없는 펌 레시피도 textRecipe(자막)는 모두 있음
+- 남자 펌 레시피는 아직 미지원
+
 ## 금지 사항
 
 ### 시스템 프롬프트에서
