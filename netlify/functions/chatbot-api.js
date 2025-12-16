@@ -3996,64 +3996,72 @@ const FIREBASE_PROJECT_ID = 'hairgatormenu-4a43e';
  * Firestore REST API로 모든 스타일 가져오기
  */
 async function getFirestoreStyles() {
-  const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles`;
+  const baseUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/styles`;
+  const styles = [];
+  let nextPageToken = null;
 
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Firestore API Error: ${response.status}`);
-    }
+    // 페이지네이션으로 모든 스타일 가져오기
+    do {
+      const url = nextPageToken
+        ? `${baseUrl}?pageSize=300&pageToken=${nextPageToken}`
+        : `${baseUrl}?pageSize=300`;
 
-    const data = await response.json();
-    const styles = [];
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Firestore API Error: ${response.status}`);
+      }
 
-    if (data.documents) {
-      for (const doc of data.documents) {
-        const fields = doc.fields;
-        const styleId = doc.name.split('/').pop();
+      const data = await response.json();
+      nextPageToken = data.nextPageToken || null;
 
-        // 임베딩 배열 추출
-        let embedding = null;
-        if (fields.embedding && fields.embedding.arrayValue && fields.embedding.arrayValue.values) {
-          embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
-        }
+      if (data.documents) {
+        for (const doc of data.documents) {
+          const fields = doc.fields;
+          const styleId = doc.name.split('/').pop();
 
-        // 도해도 배열 추출 (메타데이터 포함)
-        let diagrams = [];
-        if (fields.diagrams && fields.diagrams.arrayValue && fields.diagrams.arrayValue.values) {
-          diagrams = fields.diagrams.arrayValue.values.map(v => {
-            const mapValue = v.mapValue?.fields || {};
-            return {
-              step: parseInt(mapValue.step?.integerValue || 0),
-              url: mapValue.url?.stringValue || '',
-              // ⭐ 도해도 메타데이터 추가
-              lifting: mapValue.lifting?.stringValue || null,
-              lifting_angle: parseInt(mapValue.lifting_angle?.integerValue || 0),
-              direction: mapValue.direction?.stringValue || null,
-              section: mapValue.section?.stringValue || null,
-              zone: mapValue.zone?.stringValue || null,
-              cutting_method: mapValue.cutting_method?.stringValue || null,
-              over_direction: mapValue.over_direction?.booleanValue || false,
-              notes: mapValue.notes?.stringValue || null
-            };
+          // 임베딩 배열 추출
+          let embedding = null;
+          if (fields.embedding && fields.embedding.arrayValue && fields.embedding.arrayValue.values) {
+            embedding = fields.embedding.arrayValue.values.map(v => parseFloat(v.doubleValue || 0));
+          }
+
+          // 도해도 배열 추출 (메타데이터 포함)
+          let diagrams = [];
+          if (fields.diagrams && fields.diagrams.arrayValue && fields.diagrams.arrayValue.values) {
+            diagrams = fields.diagrams.arrayValue.values.map(v => {
+              const mapValue = v.mapValue?.fields || {};
+              return {
+                step: parseInt(mapValue.step?.integerValue || 0),
+                url: mapValue.url?.stringValue || '',
+                lifting: mapValue.lifting?.stringValue || null,
+                lifting_angle: parseInt(mapValue.lifting_angle?.integerValue || 0),
+                direction: mapValue.direction?.stringValue || null,
+                section: mapValue.section?.stringValue || null,
+                zone: mapValue.zone?.stringValue || null,
+                cutting_method: mapValue.cutting_method?.stringValue || null,
+                over_direction: mapValue.over_direction?.booleanValue || false,
+                notes: mapValue.notes?.stringValue || null
+              };
+            });
+          }
+
+          styles.push({
+            styleId: styleId,
+            series: fields.series?.stringValue || '',
+            seriesName: fields.seriesName?.stringValue || '',
+            type: fields.type?.stringValue || null,
+            matchingCutStyle: fields.matchingCutStyle?.stringValue || null,
+            resultImage: fields.resultImage?.stringValue || null,
+            diagrams: diagrams,
+            diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
+            captionUrl: fields.captionUrl?.stringValue || null,
+            textRecipe: fields.textRecipe?.stringValue || null,
+            embedding: embedding
           });
         }
-
-        styles.push({
-          styleId: styleId,
-          series: fields.series?.stringValue || '',
-          seriesName: fields.seriesName?.stringValue || '',
-          type: fields.type?.stringValue || null,  // ⭐ 펌/커트 구분 (perm/null)
-          matchingCutStyle: fields.matchingCutStyle?.stringValue || null,  // ⭐ 펌의 매칭 커트
-          resultImage: fields.resultImage?.stringValue || null,
-          diagrams: diagrams,
-          diagramCount: parseInt(fields.diagramCount?.integerValue || 0),
-          captionUrl: fields.captionUrl?.stringValue || null,
-          textRecipe: fields.textRecipe?.stringValue || null,
-          embedding: embedding
-        });
       }
-    }
+    } while (nextPageToken);
 
     console.log(`📚 Firestore에서 ${styles.length}개 스타일 로드`);
     return styles;
