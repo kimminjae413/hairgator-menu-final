@@ -1544,13 +1544,6 @@ class AIStudio {
           </div>
         </div>
 
-        <!-- ⭐ 이 스타일 커트 레시피 보기 버튼 (펌인 경우에만) -->
-        <div class="cut-recipe-link-section">
-          <button class="cut-recipe-link-btn" onclick="window.aiStudio.showMatchingCutRecipe('${referenceStyles && referenceStyles[0] ? referenceStyles[0].styleId : ''}')">
-            ✂️ 이 스타일 커트 레시피 보기
-          </button>
-          <span class="cut-link-hint">동일 기장의 커트 레시피를 확인하세요</span>
-        </div>
         ` : `
         <!-- 커트 재분석 섹션 (기존) -->
         <div class="style-correction-section female">
@@ -1614,13 +1607,6 @@ class AIStudio {
           </div>
         </div>
 
-        <!-- ⭐ 이 스타일 펌 레시피 보기 버튼 (커트인 경우에만) -->
-        <div class="perm-recipe-link-section">
-          <button class="perm-recipe-link-btn" onclick="window.aiStudio.showMatchingPermRecipe('${referenceStyles && referenceStyles[0] ? referenceStyles[0].styleId : ''}')">
-            🌀 이 스타일 펌 레시피 보기
-          </button>
-          <span class="perm-link-hint">동일 기장의 펌 레시피를 확인하세요</span>
-        </div>
         `}
 
         <!-- 이미지 주요 분석 -->
@@ -1692,6 +1678,23 @@ class AIStudio {
             ${this.formatRecipeContent(customRecipe)}
           </div>
         </div>
+
+        <!-- ⭐ 이 스타일 펌/커트 레시피 보기 버튼 (맨 아래) -->
+        ${service === 'perm' ? `
+        <div class="cut-recipe-link-section">
+          <button class="cut-recipe-link-btn" onclick="window.aiStudio.showMatchingCutRecipe('${referenceStyles && referenceStyles[0] ? referenceStyles[0].styleId : ''}')">
+            ✂️ 이 스타일 커트 레시피 보기
+          </button>
+          <span class="cut-link-hint">동일 스타일의 커트 레시피를 확인하세요</span>
+        </div>
+        ` : `
+        <div class="perm-recipe-link-section">
+          <button class="perm-recipe-link-btn" onclick="window.aiStudio.showMatchingPermRecipe('${referenceStyles && referenceStyles[0] ? referenceStyles[0].styleId : ''}')">
+            🌀 이 스타일 펌 레시피 보기
+          </button>
+          <span class="perm-link-hint">동일 스타일의 펌 레시피를 확인하세요</span>
+        </div>
+        `}
       </div>
     `;
 
