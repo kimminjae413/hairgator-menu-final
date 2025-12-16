@@ -2616,8 +2616,17 @@ class AIStudio {
       .replace(/^##\s*(.+)$/gm, '<h3 class="recipe-h3">$1</h3>')
       .replace(/^#\s*(.+)$/gm, '<h2 class="recipe-h2">$1</h2>');
 
+    // ⭐ 펌 레시피 Zone 헤더 처리 (◆ 네이프, ◆ 센터 백 등)
+    formatted = formatted.replace(/^◆\s*(.+)$/gm, '<div class="recipe-zone-header"><span class="zone-icon">◆</span><span class="zone-name">$1</span></div>');
+
+    // ⭐ 펌 레시피 구분선 처리
+    formatted = formatted.replace(/^─+$/gm, '<hr class="recipe-divider perm-divider">');
+
+    // ⭐ 펌 레시피 주의/참고 사항 처리
+    formatted = formatted.replace(/^⚠️\s*(.+)$/gm, '<div class="recipe-warning"><span class="warning-icon">⚠️</span><span class="warning-text">$1</span></div>');
+
     // 💡 초보자 설명 처리 (전문용어 뒤의 쉬운 설명)
-    formatted = formatted.replace(/^💡\s*(.+)$/gm, '<span class="beginner-tip">💡 $1</span>');
+    formatted = formatted.replace(/^💡\s*(.+)$/gm, '<div class="recipe-tip"><span class="tip-icon">💡</span><span class="tip-text">$1</span></div>');
     formatted = formatted.replace(/\s*💡\s*([^<\n]+)/g, '<span class="beginner-tip">💡 $1</span>');
 
     // ⭐ 키워드 강조: 섹션, 다이렉션, 천체축, 리프팅, 디자인라인 등
@@ -2658,12 +2667,13 @@ class AIStudio {
           result.push('</ul>');
           inList = false;
         }
-        // 섹션, hr, h태그, beginner-tip, keyword는 그대로 유지
+        // 섹션, hr, h태그, beginner-tip, keyword, zone-header, warning, tip은 그대로 유지
         if (trimmed &&
             !trimmed.startsWith('<h') &&
             !trimmed.startsWith('<hr') &&
             !trimmed.startsWith('<div class="recipe-') &&
-            !trimmed.startsWith('<span class="beginner-tip">')) {
+            !trimmed.startsWith('<span class="beginner-tip">') &&
+            !trimmed.startsWith('<span class="tip-')) {
           // 빈 문장이 아니면 p로 감싸기
           if (trimmed.length > 0) {
             result.push(`<p class="recipe-para">${trimmed}</p>`);

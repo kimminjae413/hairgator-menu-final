@@ -2315,6 +2315,91 @@ body.ai-studio-page {
   background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
 }
 
+/* ==================== 펌 레시피 Zone 스타일 ==================== */
+.recipe-formatted .recipe-zone-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 8px 0;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+}
+
+.recipe-formatted .recipe-zone-header .zone-icon {
+  font-size: 14px;
+}
+
+.recipe-formatted .recipe-zone-header .zone-name {
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+/* 펌 레시피 주의/참고 스타일 */
+.recipe-formatted .recipe-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border-left: 4px solid #ff9800;
+  border-radius: 0 8px 8px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.recipe-formatted .recipe-warning .warning-icon {
+  flex-shrink: 0;
+}
+
+.recipe-formatted .recipe-warning .warning-text {
+  color: #e65100;
+}
+
+.recipe-formatted .recipe-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-left: 4px solid #4caf50;
+  border-radius: 0 8px 8px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.recipe-formatted .recipe-tip .tip-icon {
+  flex-shrink: 0;
+}
+
+.recipe-formatted .recipe-tip .tip-text {
+  color: #2e7d32;
+}
+
+/* 펌 레시피 구분선 */
+.recipe-formatted .perm-divider {
+  margin: 16px 0;
+  border: none;
+  border-top: 2px dashed #ccc;
+}
+
+/* 라이트 모드 펌 레시피 */
+body.light-theme .recipe-formatted .recipe-zone-header {
+  background: linear-gradient(135deg, #5c6bc0 0%, #7e57c2 100%);
+}
+
+body.light-theme .recipe-formatted .recipe-warning {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+}
+
+body.light-theme .recipe-formatted .recipe-tip {
+  background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
+}
+
 /* ==================== History Tab ==================== */
 #canvas-history {
   height: 100%;
