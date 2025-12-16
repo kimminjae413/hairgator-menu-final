@@ -6681,7 +6681,7 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
     originalRecipe = originalRecipe
       .replace(/\[?[FM]?[A-Z]{2,3}P?\d{4}\]?/g, '')  // 스타일ID 제거 (FALP0001 포함)
       .replace(/\[\s*\]/g, '')  // 빈 괄호 [] 제거
-      .replace(/\s{2,}/g, ' ')  // 연속 공백 정리
+      .replace(/ {2,}/g, ' ')  // 연속 공백 정리 (줄바꿈 제외)
       .trim();
 
     // ⭐ 펌 레시피 전처리 (OCR 아티팩트 제거 및 포맷팅)
@@ -7694,7 +7694,7 @@ async function analyzeAndMatchMaleRecipe(payload, geminiKey) {
     originalRecipe = originalRecipe
       .replace(/\[?[FM]?[A-Z]{2,3}\d{4}\]?/g, '')  // 스타일ID 제거 (괄호 포함)
       .replace(/\[\s*\]/g, '')  // 빈 괄호 [] 제거
-      .replace(/\s{2,}/g, ' ')  // 연속 공백 정리
+      .replace(/ {2,}/g, ' ')  // 연속 공백 정리 (줄바꿈 제외)
       .trim();
     // ⭐ External/Internal 형식으로 통일
     originalRecipe = normalizeRecipeFormat(originalRecipe);
