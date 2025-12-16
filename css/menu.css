@@ -285,37 +285,7 @@ body.gender-female .style-card:hover {
     border-radius: 20px;
 }
 
-/* 글래스 반짝임 - 빛 줄기가 지나가는 애니메이션 */
-@keyframes glassShine {
-    0% {
-        left: -100%;
-    }
-    100% {
-        left: 200%;
-    }
-}
-
-/* 상단 하이라이트 (정적) + 빛 줄기 애니메이션 */
-.style-image-wrapper::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.05) 30%,
-        rgba(255, 255, 255, 0.15) 50%,
-        rgba(255, 255, 255, 0.05) 70%,
-        transparent 100%
-    );
-    transform: skewX(-20deg);
-    animation: glassShine 5s ease-in-out infinite;
-    pointer-events: none;
-    z-index: 5;
-}
+/* 글래스 반짝임 효과 - 제거됨 */
 
 /* 다크모드 이미지 경계 Inner Shadow */
 .style-image-wrapper::after {
