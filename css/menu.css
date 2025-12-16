@@ -762,40 +762,7 @@ body.gender-male .style-card:hover::before {
     opacity: 1;
 }
 
-/* 카드 내부 빛 반사 효과 */
-.style-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        transparent 100%
-    );
-    transform: skewX(-25deg);
-    transition: left 0.6s ease;
-    pointer-events: none;
-    z-index: 2;
-    border-radius: 20px;
-}
-
-.style-card:hover::after {
-    left: 150%;
-}
-
-/* 라이트 테마 카드 반사 효과 */
-body.light-theme .style-card::after {
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.4) 50%,
-        transparent 100%
-    );
-}
+/* 카드 내부 빛 반사 효과 - 제거됨 */
 
 /* 카드 호버 시 이미지 부드러운 밝기 변화 */
 .style-card:hover .style-image {
