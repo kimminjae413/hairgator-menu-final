@@ -6698,8 +6698,9 @@ async function analyzeAndMatchRecipe(payload, geminiKey) {
 
     // 7. 결과 구성 - Top-1 레시피 그대로 반환
     const result = {
-      // ⭐ 시술 타입 (cut/perm)
-      service: serviceType,
+      // ⭐ 성별 및 시술 타입
+      gender: 'female',  // 여자 펌/커트
+      service: serviceType,  // cut/perm
 
       // 스타일 파라미터 전체
       params56: params56,
