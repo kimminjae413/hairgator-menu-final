@@ -445,6 +445,10 @@ exports.handler = async (event, context) => {
       case 'regenerate_perm_recipe':
         return await regeneratePermRecipeWithStyle(payload, GEMINI_KEY);
 
+      // ⭐ 커트 스타일에서 매칭 펌 레시피 조회
+      case 'get_perm_recipe_by_style':
+        return await getPermRecipeByStyle(payload);
+
       // ⭐ 파라미터 기반 커스텀 레시피 생성 (Firebase 기반)
       case 'generate_custom_recipe':
         return await generateCustomRecipeFromParams(payload, GEMINI_KEY);
@@ -8613,6 +8617,115 @@ async function regeneratePermRecipeWithStyle(payload, geminiKey) {
         success: false,
         error: error.message
       })
+    };
+  }
+}
+
+// ==================== 커트에서 매칭 펌 레시피 조회 ====================
+async function getPermRecipeByStyle(payload) {
+  const { perm_style_id, cut_style_id } = payload;
+
+  console.log(`🌀 펌 레시피 조회: ${perm_style_id} (커트: ${cut_style_id})`);
+
+  try {
+    // Firestore에서 해당 펌 스타일 조회
+    const docUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles/${perm_style_id}`;
+    const response = await fetch(docUrl);
+
+    if (!response.ok) {
+      // 문서가 없으면 같은 시리즈의 첫 번째 펌 스타일 검색
+      console.log(`⚠️ ${perm_style_id} 없음, 대체 펌 레시피 검색...`);
+
+      // 시리즈 추출 (FALP0001 → FALP)
+      const seriesMatch = perm_style_id.match(/^(F[A-H]LP)/);
+      if (!seriesMatch) {
+        return {
+          statusCode: 404,
+          body: JSON.stringify({ success: false, error: '유효하지 않은 스타일 ID입니다.' })
+        };
+      }
+
+      const targetSeries = seriesMatch[1];
+
+      // 해당 시리즈의 펌 스타일 검색
+      const searchUrl = `https://firestore.googleapis.com/v1/projects/hairgatormenu-4a43e/databases/(default)/documents/styles?pageSize=50`;
+      const searchResponse = await fetch(searchUrl);
+      const searchData = await searchResponse.json();
+
+      const permStyle = (searchData.documents || []).find(doc => {
+        const fields = doc.fields;
+        const styleId = doc.name.split('/').pop();
+        const type = fields.type?.stringValue;
+        const series = fields.series?.stringValue;
+        return type === 'perm' && (series === targetSeries || styleId.startsWith(targetSeries));
+      });
+
+      if (!permStyle) {
+        return {
+          statusCode: 404,
+          body: JSON.stringify({ success: false, error: `${targetSeries} 시리즈의 펌 레시피를 찾을 수 없습니다.` })
+        };
+      }
+
+      // 대체 펌 스타일 데이터 추출
+      const fields = permStyle.fields;
+      const diagrams = (fields.diagrams?.arrayValue?.values || []).map(v => {
+        const map = v.mapValue?.fields || {};
+        return {
+          step: parseInt(map.step?.integerValue || 0),
+          url: map.url?.stringValue || ''
+        };
+      }).sort((a, b) => a.step - b.step);
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          success: true,
+          data: {
+            styleId: permStyle.name.split('/').pop(),
+            seriesName: fields.seriesName?.stringValue || '',
+            textRecipe: fields.textRecipe?.stringValue || '',
+            diagrams: diagrams,
+            diagramCount: diagrams.length,
+            isAlternative: true  // 대체 레시피임을 표시
+          }
+        })
+      };
+    }
+
+    const docData = await response.json();
+    const fields = docData.fields;
+
+    // 도해도 배열 추출
+    const diagrams = (fields.diagrams?.arrayValue?.values || []).map(v => {
+      const map = v.mapValue?.fields || {};
+      return {
+        step: parseInt(map.step?.integerValue || 0),
+        url: map.url?.stringValue || ''
+      };
+    }).sort((a, b) => a.step - b.step);
+
+    console.log(`✅ 펌 레시피 조회 성공: ${perm_style_id}, 도해도 ${diagrams.length}개`);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        success: true,
+        data: {
+          styleId: perm_style_id,
+          seriesName: fields.seriesName?.stringValue || '',
+          textRecipe: fields.textRecipe?.stringValue || '',
+          diagrams: diagrams,
+          diagramCount: diagrams.length
+        }
+      })
+    };
+
+  } catch (error) {
+    console.error('❌ 펌 레시피 조회 오류:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ success: false, error: error.message })
     };
   }
 }

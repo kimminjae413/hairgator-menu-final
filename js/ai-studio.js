@@ -1605,6 +1605,14 @@ class AIStudio {
             </button>
           </div>
         </div>
+
+        <!-- ⭐ 이 스타일 펌 레시피 보기 버튼 (커트인 경우에만) -->
+        <div class="perm-recipe-link-section">
+          <button class="perm-recipe-link-btn" onclick="window.aiStudio.showMatchingPermRecipe('${referenceStyles && referenceStyles[0] ? referenceStyles[0].styleId : ''}')">
+            🌀 이 스타일 펌 레시피 보기
+          </button>
+          <span class="perm-link-hint">동일 기장의 펌 레시피를 확인하세요</span>
+        </div>
         `}
 
         <!-- 이미지 주요 분석 -->
@@ -2726,6 +2734,135 @@ class AIStudio {
       alert('펌 재분석 중 오류가 발생했습니다: ' + error.message);
       btn.innerHTML = originalText;
       btn.disabled = false;
+    }
+  }
+
+  // ⭐ 커트 스타일의 매칭 펌 레시피 보기
+  async showMatchingPermRecipe(cutStyleId) {
+    if (!cutStyleId) {
+      alert('스타일 정보가 없습니다.');
+      return;
+    }
+
+    // 커트 styleId → 펌 styleId 변환 (FAL0001 → FALP0001)
+    // 패턴: F{A-H}L{숫자} → F{A-H}LP{숫자}
+    const permStyleId = cutStyleId.replace(/^(F[A-H])L(\d+)$/, '$1LP$2');
+    console.log(`🌀 펌 레시피 조회: ${cutStyleId} → ${permStyleId}`);
+
+    // 로딩 표시
+    const btn = document.querySelector('.perm-recipe-link-btn');
+    if (btn) {
+      btn.innerHTML = '⏳ 로딩 중...';
+      btn.disabled = true;
+    }
+
+    try {
+      const response = await fetch(this.apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'get_perm_recipe_by_style',
+          payload: {
+            perm_style_id: permStyleId,
+            cut_style_id: cutStyleId
+          }
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        // 펌 레시피 캔버스 표시
+        this.showPermRecipeFromCut(result.data, permStyleId, cutStyleId);
+      } else {
+        throw new Error(result.error || '펌 레시피를 찾을 수 없습니다.');
+      }
+    } catch (error) {
+      console.error('펌 레시피 조회 오류:', error);
+      alert('펌 레시피 조회 중 오류가 발생했습니다: ' + error.message);
+
+      if (btn) {
+        btn.innerHTML = '🌀 이 스타일 펌 레시피 보기';
+        btn.disabled = false;
+      }
+    }
+  }
+
+  // ⭐ 커트에서 연결된 펌 레시피 캔버스 표시
+  showPermRecipeFromCut(permData, permStyleId, cutStyleId) {
+    this.canvasEmpty.classList.add('hidden');
+    this.canvasResult.classList.remove('hidden');
+
+    const { textRecipe, diagrams, seriesName } = permData;
+
+    // 펌 타입 추출 (FALP0001 → 0 = 매직, FBLP2003 → 2 = 로드)
+    const permTypeMatch = permStyleId.match(/F[A-H]LP(\d)/);
+    const permTypeCode = permTypeMatch ? permTypeMatch[1] : '2';
+    const permTypeNames = { '0': '매직 (프레스)', '1': '셋팅롤 (C컬)', '2': '로드 (S컬)', '3': '볼륨 웨이브', '4': '트위스트' };
+    const permTypeName = permTypeNames[permTypeCode] || '펌';
+
+    // 기장 추출 (FALP → A Length)
+    const lengthMatch = permStyleId.match(/F([A-H])LP/);
+    const lengthCode = lengthMatch ? lengthMatch[1] : '';
+    const lengthName = lengthCode ? `${lengthCode} Length` : '';
+
+    this.canvasResult.innerHTML = `
+      <div class="custom-recipe-canvas perm-from-cut">
+        <!-- 헤더 -->
+        <div class="recipe-header compact perm-header">
+          <div class="perm-header-info">
+            <h2>🌀 펌 레시피</h2>
+            <div class="analysis-tags">
+              <span class="tag primary">${lengthName}</span>
+              <span class="tag perm-type">${permTypeName}</span>
+            </div>
+          </div>
+          <button class="back-to-cut-btn" onclick="window.aiStudio.backToCutRecipe()">
+            ← 커트 레시피로 돌아가기
+          </button>
+        </div>
+
+        <!-- 연결 정보 -->
+        <div class="perm-cut-link-info">
+          <span class="link-label">✂️ 연결된 커트:</span>
+          <span class="link-value">${cutStyleId.replace(/^F([A-H])L(\d+)$/, '$1 Length 스타일')}</span>
+        </div>
+
+        <!-- 도해도 뷰어 -->
+        ${diagrams && diagrams.length > 0 ? `
+        <div class="diagrams-section large">
+          <h3>📐 펌 도해도 (${diagrams.length}장)</h3>
+          ${this.generateDiagramViewer(diagrams)}
+        </div>
+        ` : ''}
+
+        <!-- 펌 레시피 텍스트 -->
+        <div class="custom-recipe-section">
+          <h3>✨ ${permTypeName} 레시피</h3>
+          <div class="recipe-content">
+            ${this.formatRecipeContent(textRecipe || '레시피 정보가 없습니다.')}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 도해도 뷰어 초기화
+    if (diagrams && diagrams.length > 0) {
+      this.initDiagramViewer(diagrams);
+    }
+
+    // Mobile: Show canvas panel
+    if (window.innerWidth <= 1024) {
+      this.canvasPanel.classList.add('active');
+    }
+  }
+
+  // ⭐ 커트 레시피로 돌아가기
+  backToCutRecipe() {
+    if (this.currentFemaleAnalysis) {
+      this.showCustomRecipeCanvas(this.currentFemaleAnalysis.data, this.currentFemaleAnalysis.uploadedImageUrl);
+    } else {
+      console.warn('저장된 커트 분석 데이터가 없습니다.');
     }
   }
 
