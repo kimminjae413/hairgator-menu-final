@@ -7196,8 +7196,8 @@ JSON만: {"total_score":<0-100>,"curl_match":<true/false>,"reason":"<1문장>"}`
     const techniqueScore = calculateTechniqueMatchScore(requiredTechnique, recipe);
     result.visionScore = result.score;  // 원본 Vision 점수 보존
     result.techniqueScore = techniqueScore;
-    // 최종 점수: Vision 60% + 기법 매칭 40%
-    result.score = Math.round(result.visionScore * 0.6 + techniqueScore * 0.4);
+    // 최종 점수: Vision 70% + 기법 매칭 30% (Vision 가중치 상향)
+    result.score = Math.round(result.visionScore * 0.7 + techniqueScore * 0.3);
     console.log(`  📊 ${result.styleId}: Vision ${result.visionScore}점 + 기법 ${techniqueScore}점 = 최종 ${result.score}점`);
   }
 
