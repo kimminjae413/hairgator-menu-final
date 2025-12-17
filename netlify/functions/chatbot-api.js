@@ -480,7 +480,15 @@ exports.handler = async (event, context) => {
       case 'generate_cardnews_keywords':
         return await generateCardNewsKeywords(payload);
 
-      // ⭐ 어드민: Veo 3.1 영상 생성
+      // ⭐ 어드민: Veo 영상 생성 시작 (operation ID 반환)
+      case 'generate_video_start':
+        return await generateVideoStart(payload);
+
+      // ⭐ 어드민: Veo 영상 생성 상태 확인
+      case 'generate_video_status':
+        return await generateVideoStatus(payload);
+
+      // ⭐ 어드민: Veo 3.1 영상 생성 (레거시 - 타임아웃 발생 가능)
       case 'generate_video':
         return await generateVideo(payload);
 
@@ -11048,7 +11056,191 @@ async function generateCardNewsKeywords(payload) {
   }
 }
 
-// ==================== 어드민: Veo 3.1 영상 생성 ====================
+// ==================== 어드민: Veo 영상 생성 시작 (비동기) ====================
+async function generateVideoStart(payload) {
+  const { prompt, duration, aspect_ratio, reference_images } = payload;
+
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
+
+  console.log('🎬 영상 생성 시작 요청:', { prompt: prompt?.substring(0, 50), duration, aspect_ratio });
+
+  if (!ADMIN_GEMINI_KEY) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: 'GEMINI_API_KEY not configured' })
+    };
+  }
+
+  if (!prompt) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ success: false, error: '영상 설명을 입력해주세요' })
+    };
+  }
+
+  try {
+    // HAIRGATOR 브랜드 스타일 프롬프트 강화
+    const enhancedPrompt = `Professional hair salon video for HAIRGATOR brand. ${prompt}.
+Style: Premium, professional Korean hair salon atmosphere. Clean, modern interior with soft lighting.
+Target audience: Professional hair designers and stylists.`;
+
+    // Veo 2.0 API 요청 구성 (3.1은 제한된 프리뷰)
+    const requestBody = {
+      instances: [{
+        prompt: enhancedPrompt
+      }],
+      parameters: {
+        aspectRatio: aspect_ratio || '9:16',
+        durationSeconds: parseInt(duration) || 8
+      }
+    };
+
+    // 참고 이미지가 있으면 추가 (최대 3개)
+    if (reference_images && reference_images.length > 0) {
+      requestBody.instances[0].referenceImages = reference_images.slice(0, 3).map(img => ({
+        image: {
+          bytesBase64Encoded: img.data,
+          mimeType: img.mimeType || 'image/jpeg'
+        }
+      }));
+    }
+
+    // Veo 2.0 Long Running Operation 시작
+    const startResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/veo-2.0-generate-001:predictLongRunning?key=${ADMIN_GEMINI_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      }
+    );
+
+    if (!startResponse.ok) {
+      const errorText = await startResponse.text();
+      console.error('Veo API 시작 오류:', startResponse.status, errorText);
+      throw new Error(`Veo API 오류 (${startResponse.status}): ${errorText.substring(0, 200)}`);
+    }
+
+    const operationData = await startResponse.json();
+    const operationName = operationData.name;
+
+    console.log('✅ 영상 생성 작업 시작됨:', operationName);
+
+    // operation ID 즉시 반환 (타임아웃 방지)
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        operationName: operationName,
+        message: '영상 생성이 시작되었습니다. 1-3분 소요됩니다.'
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 영상 생성 시작 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 어드민: Veo 영상 생성 상태 확인 ====================
+async function generateVideoStatus(payload) {
+  const { operationName } = payload;
+
+  const ADMIN_GEMINI_KEY = process.env.GEMINI_API_KEY_ADMIN || process.env.GEMINI_API_KEY;
+
+  if (!operationName) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ success: false, error: 'operationName이 필요합니다' })
+    };
+  }
+
+  try {
+    const pollResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/${operationName}?key=${ADMIN_GEMINI_KEY}`,
+      { method: 'GET' }
+    );
+
+    if (!pollResponse.ok) {
+      const errorText = await pollResponse.text();
+      console.error('상태 확인 오류:', pollResponse.status, errorText);
+      throw new Error(`상태 확인 오류 (${pollResponse.status})`);
+    }
+
+    const pollData = await pollResponse.json();
+
+    if (pollData.done) {
+      console.log('✅ 영상 생성 완료!');
+
+      if (pollData.error) {
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            success: false,
+            done: true,
+            error: pollData.error.message || '영상 생성 실패'
+          })
+        };
+      }
+
+      // 생성된 비디오 URL 추출
+      const videoData = pollData.response?.generatedVideos?.[0];
+      if (!videoData) {
+        throw new Error('생성된 영상이 없습니다');
+      }
+
+      // base64 비디오 데이터를 data URL로 변환
+      let videoUrl;
+      if (videoData.video?.uri) {
+        videoUrl = videoData.video.uri;
+      } else if (videoData.video?.bytesBase64Encoded) {
+        videoUrl = `data:video/mp4;base64,${videoData.video.bytesBase64Encoded}`;
+      } else {
+        throw new Error('비디오 데이터를 찾을 수 없습니다');
+      }
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          done: true,
+          data: { video_url: videoUrl }
+        })
+      };
+    }
+
+    // 아직 처리 중
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        done: false,
+        message: '영상 생성 중...'
+      })
+    };
+
+  } catch (error) {
+    console.error('💥 상태 확인 오류:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ success: false, error: error.message })
+    };
+  }
+}
+
+// ==================== 어드민: Veo 3.1 영상 생성 (레거시) ====================
 async function generateVideo(payload) {
   const { prompt, duration, aspect_ratio, reference_images } = payload;
 

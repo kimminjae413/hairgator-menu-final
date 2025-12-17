@@ -4354,7 +4354,7 @@
 
             const btn = document.getElementById('generateVideoBtn');
             btn.disabled = true;
-            btn.innerHTML = '<span class="loading-spinner"></span>영상 생성 중... (약 1-3분 소요)';
+            btn.innerHTML = '<span class="loading-spinner"></span>영상 생성 시작 중...';
 
             const duration = document.getElementById('videoDuration').value;
             const aspectRatio = document.getElementById('videoAspectRatio').value;
@@ -4374,24 +4374,61 @@
                     }));
                 }
 
-                const response = await fetch('/.netlify/functions/chatbot-api', {
+                // 1단계: 영상 생성 시작
+                const startResponse = await fetch('/.netlify/functions/chatbot-api', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'generate_video',
+                        action: 'generate_video_start',
                         payload: payload
                     })
                 });
 
-                const result = await response.json();
+                const startResult = await startResponse.json();
 
-                if (result.success && result.data) {
-                    displayVideoResult(result.data);
-                    saveVideoHistory(prompt, result.data);
-                    showToast('영상 생성 완료!');
-                } else {
-                    throw new Error(result.error || '영상 생성 실패');
+                if (!startResult.success || !startResult.operationName) {
+                    throw new Error(startResult.error || '영상 생성 시작 실패');
                 }
+
+                const operationName = startResult.operationName;
+                console.log('영상 생성 시작:', operationName);
+
+                // 2단계: 상태 확인 폴링 (최대 5분)
+                const maxAttempts = 60;  // 5초 * 60 = 5분
+                const pollInterval = 5000;  // 5초
+
+                for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                    btn.innerHTML = `<span class="loading-spinner"></span>영상 생성 중... (${attempt * 5}초 경과)`;
+
+                    await new Promise(resolve => setTimeout(resolve, pollInterval));
+
+                    const statusResponse = await fetch('/.netlify/functions/chatbot-api', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'generate_video_status',
+                            payload: { operationName: operationName }
+                        })
+                    });
+
+                    const statusResult = await statusResponse.json();
+
+                    if (statusResult.done) {
+                        if (statusResult.success && statusResult.data) {
+                            displayVideoResult(statusResult.data);
+                            saveVideoHistory(prompt, statusResult.data);
+                            showToast('영상 생성 완료!');
+                            return;
+                        } else {
+                            throw new Error(statusResult.error || '영상 생성 실패');
+                        }
+                    }
+
+                    console.log(`영상 생성 진행 중... (${attempt + 1}/${maxAttempts})`);
+                }
+
+                throw new Error('영상 생성 시간 초과 (5분)');
+
             } catch (error) {
                 console.error('영상 생성 오류:', error);
                 showToast('생성 실패: ' + error.message);
