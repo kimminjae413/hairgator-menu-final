@@ -1340,12 +1340,6 @@ async function openStyleModal(style) {
         btnHairTry.onclick = async function (e) {
             e.stopPropagation();
 
-            // 남자만 헤어체험 활성화 (여자는 개발 중)
-            if (window.currentGender !== 'male') {
-                alert('개발중입니다');
-                return;
-            }
-
             // 크레딧 체크
             if (!hasEnoughCredits()) {
                 const currentCredits = getUserCredits();
@@ -1396,12 +1390,6 @@ function openAIPhotoModal(styleId, styleName, styleImageUrl) {
         gender: window.currentGender,
         status: 'ACTIVE'
     });
-
-    // 남자만 헤어체험 활성화 (여자는 개발 중)
-    if (window.currentGender !== 'male') {
-        alert('개발중입니다');
-        return;
-    }
 
     // 현재 선택된 스타일 정보 저장 (기존 변수명 유지)
     window.currentAIStyleImage = styleImageUrl;
