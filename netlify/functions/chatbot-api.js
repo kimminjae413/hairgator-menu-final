@@ -2336,6 +2336,11 @@ function detectLanguage(text) {
   const chineseRegex = /[\u4E00-\u9FFF]/;
   if (chineseRegex.test(text)) return 'chinese';
 
+  // 스페인어 감지 (¿¡ñü 및 특수 악센트)
+  const spanishRegex = /[¿¡ñüáéíóú]/i;
+  const spanishKeywords = /\b(hola|gracias|por favor|qué|cómo|cuál|dónde|cabello|corte|peinado|flequillo|capas)\b/i;
+  if (spanishRegex.test(text) || spanishKeywords.test(text)) return 'spanish';
+
   return 'english';
 }
 
@@ -2372,8 +2377,8 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
     .replace(/레이어|layer/gi, 'Layer')
     .replace(/그래쥬에이션|그라데이션|graduation/gi, 'Graduation');
 
-  // 간단한 인사말 처리
-  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워', '여보세요'];
+  // 간단한 인사말 처리 (7개국어)
+  const simpleGreetings = ['안녕', 'hi', 'hello', '헬로', '하이', '반가워', '여보세요', 'hola', 'buenos días'];
   const isGreeting = simpleGreetings.some(g => {
     const query = user_query.toLowerCase().trim();
     return query === g || query === g + '하세요' || query === g + '!' || query === g + '?';
@@ -2386,7 +2391,8 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
       japanese: 'こんにちは！ヘアスタイルについて何でも聞いてください。😊',
       chinese: '你好！请随便问关于发型的问题。😊',
       vietnamese: 'Xin chào! Hỏi gì về kiểu tóc cũng được. 😊',
-      indonesian: 'Halo! Silakan tanyakan apa saja tentang gaya rambut. 😊'
+      indonesian: 'Halo! Silakan tanyakan apa saja tentang gaya rambut. 😊',
+      spanish: '¡Hola! Pregunta lo que quieras sobre peinados. 😊\n\nEjemplos:\n• "Explica las categorías de longitud"\n• "¿Qué es el corte en capas?"\n• "Recomienda estilos para mi forma de rostro"'
     };
     const msg = greetingResponses[userLanguage] || greetingResponses['korean'];
     return {
@@ -2402,7 +2408,8 @@ async function generateProfessionalResponseStream(payload, openaiKey, geminiKey,
   if (isSecurityQuery) {
     const securityResponse = {
       korean: '죄송합니다. 해당 정보는 핵심 보안 사항입니다.\n\n대신 이런 질문은 어떠세요?\n• "레이어 컷의 기본 원리는?"\n• "얼굴형별 추천 스타일"\n• "헤어 길이 분류 시스템"',
-      english: 'I apologize, but that information is confidential.\n\nHow about these questions instead?\n• "Basic principles of layer cut"\n• "Recommended styles by face shape"'
+      english: 'I apologize, but that information is confidential.\n\nHow about these questions instead?\n• "Basic principles of layer cut"\n• "Recommended styles by face shape"',
+      spanish: 'Lo siento, esa información es confidencial.\n\n¿Qué tal estas preguntas?\n• "Principios básicos del corte en capas"\n• "Estilos recomendados según forma de rostro"'
     };
     const msg = securityResponse[userLanguage] || securityResponse['korean'];
     return {
@@ -3189,7 +3196,103 @@ Ketika desainer bertanya "Apa yang harus saya katakan ketika pelanggan berkata ~
 [Pertahankan Pendekatan yang Ada]
 Untuk pertanyaan teori/teknis, pencarian resep, permintaan info sederhana, berikan jawaban inti langsung.
 
-Gunakan semua pengetahuan profesional secara internal, tetapi jelaskan kepada pengguna dengan bahasa yang ramah dan sederhana.`
+Gunakan semua pengetahuan profesional secara internal, tetapi jelaskan kepada pengguna dengan bahasa yang ramah dan sederhana.`,
+
+    spanish: `Eres una IA de cabello que comprende completamente el sistema CHRISKI 2WAY CUT.
+
+## Procesamiento Interno (NUNCA exponer a los usuarios)
+${coreKnowledge}
+
+## Expresión Externa (Mostrar a los usuarios)
+- Usa español natural y amigable
+- Metáforas visuales ("de adelante hacia atrás", "centrado en la coronilla")
+- Explicaciones simples ("cortar recto", "añadir capas")
+
+## Guía de Respuesta
+
+### Cuando se sube una imagen
+1. Interno: Analizar con 89 términos + 42 fórmulas
+2. Externo: Lenguaje natural como "un bob limpio a la altura del mentón"
+3. Coincidencia: Recomendaciones Top-3 de estilos
+4. Receta: Guía de 4 pasos en lenguaje natural
+
+### Cuando es una pregunta de texto
+- "Recomienda cabello corto" → "Bob liso fácil de mantener" (NO: H1SQ_DB1)
+- "¿Bueno para cara redonda?" → "Contorno angular para enfatizar líneas verticales" (NO: 70.Section Vertical)
+
+## Prohibido (Protección de Propiedad Intelectual)
+❌ Códigos de fórmula/estilo como "H1SQ_DB1_V6", "FAL0001", "FBL0002"
+❌ Códigos de combinación de sección como "HS NO.1(SQUARE)", "DBS NO.2", "VS NO.6"
+❌ Nombres de sistema como "CHRISKI", "sistema 2WAY CUT"
+❌ Nunca mencionar fuentes - explica naturalmente como un experto
+
+## Permitido (Términos Técnicos Educativos)
+✅ D0~D8 (Direction) - Usar al explicar direcciones de corte
+✅ L0~L8 (Lifting) - Usar al explicar ángulos
+✅ Zone (Zona A/B/C), Section (Horizontal/Vertical/Diagonal) - Términos básicos OK
+
+## ⭐ Reglas de Receta External/Internal (¡Muy Importante!)
+Al escribir recetas, distingue claramente External e Internal, explicando el rol de cada área.
+
+**External (Exterior / Under Zone / Zona A,B)**
+- Rol: Configuración de longitud, forma del contorno, textura dura
+- Ubicación: Parte inferior exterior de la cabeza (lados, parte trasera inferior, nuca)
+- Corte masculino: Trabajo de clipper/degradado, limpieza de contorno, graduación
+
+**Internal (Interior / Over Zone / Zona C)**
+- Rol: Creación de volumen, control del contorno facial, movimiento/dirección, textura suave
+- Ubicación: Parte superior interior de la cabeza (coronilla, parte superior, flequillo)
+- Corte masculino: Trabajo de capas con tijera, formación de volumen/textura, determinación de dirección de estilizado
+
+**Requisitos al escribir recetas:**
+1. Incluso si las técnicas External e Internal son similares, explica sus diferentes "propósitos"
+2. External: "Crear el contorno y establecer la forma general"
+3. Internal: "Construir volumen y crear flujo natural"
+4. Incluso con los mismos ángulos/técnicas, menciona diferencias en resultados (peso, volumen, textura)
+
+## ESTRICTAMENTE PROHIBIDO - Sin Markdown/Caracteres Especiales
+NUNCA uses estos caracteres:
+- ** (doble asterisco) PROHIBIDO
+- * (asterisco) PROHIBIDO
+- ### ## # (símbolos de hash) PROHIBIDO
+- - (listas con guiones) PROHIBIDO
+- [ ] (corchetes) PROHIBIDO
+
+Usa SOLO texto plano.
+Solo se permite numeración "1.", "2.", "3.".
+Usa comillas ("") o paréntesis () para énfasis.
+
+## Ejemplo de Formato de Respuesta
+Escribe oraciones naturales para responder preguntas.
+
+1. Da la respuesta principal primero
+2. Continúa con detalles
+3. Añade consejos si es necesario
+
+## Coaching de Servicio al Cliente Basado en Tendencias 2026
+
+Tus usuarios son diseñadores de cabello.
+Cuando los diseñadores pregunten sobre consulta/servicio al cliente, proporciona "guías de servicio al cliente" que reflejen las tendencias de salón 2026.
+
+[Puntos Clave de Tendencias de Salón 2026]
+1. Hiper-Personalización: Diseñar "lo que le queda a ESTE cliente" importa más que "estilos de moda"
+2. Basado en Evidencia: Explicar "por qué es bueno" científicamente para ganar confianza del cliente
+3. Transparencia: "Déjelo en mis manos" genera desconfianza; muestra el proceso
+4. Experiencia Ritual: Sugiere planes de cuidado a largo plazo, no tratamientos únicos, para visitas de retorno
+5. Hospitalidad Emocional: Aliviar la ansiedad del cliente determina las visitas de retorno más que las habilidades
+
+[Estructura de Respuesta para Preguntas de Servicio al Cliente]
+Cuando los diseñadores preguntan "¿Qué debo decir cuando un cliente dice ~?":
+1. (Análisis de Situación) Analiza qué quiere realmente el cliente
+2. (Preguntas de Diagnóstico) Proporciona ejemplos de preguntas para hacer al cliente primero
+3. (Guión de Explicación) Ejemplo de explicación basada en evidencia para el cliente
+4. (Guía de Rutina) Ejemplos de cuidado en casa post-tratamiento + programa de visitas de retorno
+5. (Palabras a Evitar) Señala expresiones que reducen la confianza
+
+[Mantener el Enfoque Existente]
+Para preguntas de teoría/técnica, búsqueda de recetas, solicitudes de información simple, proporciona respuestas directas al punto.
+
+Usa todo el conocimiento profesional internamente, pero explica a los usuarios en términos amigables y simples.`
   };
 
   return prompts[userLanguage] || prompts['korean'];
@@ -3202,13 +3305,14 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
 
   console.log(`🔍 Gemini File Search 응답: "${user_query}"`);
 
-  // 간단한 인사말 처리 (5개국어)
+  // 간단한 인사말 처리 (7개국어)
   const simpleGreetings = [
     '안녕', 'hi', 'hello', '헬로', '하이', '반가워',
     'こんにちは', 'おはよう', 'konnichiwa',  // 일본어
     '你好', '您好', 'nihao',  // 중국어
     'xin chào', 'chào',  // 베트남어
-    'halo', 'selamat'  // 인도네시아어
+    'halo', 'selamat',  // 인도네시아어
+    'hola', 'buenos días', 'buenas tardes'  // 스페인어
   ];
   const isGreeting = simpleGreetings.some(g => {
     const query = user_query.toLowerCase().trim();
@@ -3222,7 +3326,8 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
       japanese: 'こんにちは！ヘアスタイルについて何でも聞いてください。\n\n例：\n1. 「A Lengthとは？」\n2. 「ゾーン分けを説明して」\n3. 「レイヤーとグラデーションの違いは？」',
       chinese: '你好！请随便问关于发型的问题。\n\n例子：\n1. "A Length是什么？"\n2. "解释一下Zone分区"\n3. "Layer和Graduation有什么区别？"',
       vietnamese: 'Xin chào! Hãy hỏi bất cứ điều gì về kiểu tóc.\n\nVí dụ:\n1. "A Length là gì?"\n2. "Giải thích phân vùng Zone"\n3. "Sự khác biệt giữa Layer và Graduation?"',
-      indonesian: 'Halo! Silakan tanyakan apa saja tentang gaya rambut.\n\nContoh:\n1. "Apa itu A Length?"\n2. "Jelaskan pembagian Zone"\n3. "Perbedaan antara Layer dan Graduation?"'
+      indonesian: 'Halo! Silakan tanyakan apa saja tentang gaya rambut.\n\nContoh:\n1. "Apa itu A Length?"\n2. "Jelaskan pembagian Zone"\n3. "Perbedaan antara Layer dan Graduation?"',
+      spanish: '¡Hola! Pregunta lo que quieras sobre peinados.\n\nEjemplos:\n1. "¿Qué es A Length?"\n2. "Explica la división de Zonas"\n3. "¿Diferencia entre Layer y Graduation?"'
     };
     const msg = greetingMessages[userLanguage] || greetingMessages['korean'];
 
@@ -3254,7 +3359,8 @@ async function generateGeminiFileSearchResponse(payload, geminiKey) {
       japanese: '申し訳ございませんが、その情報は機密事項です。\n\n代わりにこのような質問はいかがですか？\n1. 「レイヤーカットの基本原理は？」\n2. 「顔型別おすすめスタイル」\n3. 「ヘアの長さ分類システム」',
       chinese: '抱歉，该信息属于核心保密事项。\n\n您可以问这些问题：\n1. "层次剪发的基本原理？"\n2. "各脸型推荐发型"\n3. "头发长度分类系统"',
       vietnamese: 'Xin lỗi, thông tin đó là thông tin bảo mật.\n\nBạn có thể hỏi những câu này:\n1. "Nguyên tắc cơ bản của layer cut?"\n2. "Kiểu tóc phù hợp theo hình khuôn mặt"\n3. "Hệ thống phân loại độ dài tóc"',
-      indonesian: 'Maaf, informasi tersebut adalah informasi keamanan inti.\n\nBagaimana dengan pertanyaan ini?\n1. "Prinsip dasar layer cut?"\n2. "Gaya yang direkomendasikan berdasarkan bentuk wajah"\n3. "Sistem klasifikasi panjang rambut"'
+      indonesian: 'Maaf, informasi tersebut adalah informasi keamanan inti.\n\nBagaimana dengan pertanyaan ini?\n1. "Prinsip dasar layer cut?"\n2. "Gaya yang direkomendasikan berdasarkan bentuk wajah"\n3. "Sistem klasifikasi panjang rambut"',
+      spanish: 'Lo siento, esa información es confidencial.\n\n¿Qué tal estas preguntas?\n1. "¿Principios básicos del corte en capas?"\n2. "Estilos recomendados según forma de rostro"\n3. "Sistema de clasificación de longitud de cabello"'
     };
     const msg = securityMessages[userLanguage] || securityMessages['korean'];
 
@@ -3572,7 +3678,7 @@ function getIntroMessage(type, language) {
 async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
   const { user_query, chat_history, recipe_context, language } = payload;
   // 클라이언트에서 보낸 언어 코드 → 서버 언어명 매핑
-  const langCodeMap = { ko: 'korean', en: 'english', ja: 'japanese', zh: 'chinese', vi: 'vietnamese', id: 'indonesian' };
+  const langCodeMap = { ko: 'korean', en: 'english', ja: 'japanese', zh: 'chinese', vi: 'vietnamese', id: 'indonesian', es: 'spanish' };
   // 클라이언트에서 보낸 언어 우선, 없으면 쿼리에서 감지
   const userLanguage = (language && langCodeMap[language]) || detectLanguage(user_query);
 
@@ -3584,13 +3690,14 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     console.log(`📋 레시피 컨텍스트 있음:`, recipe_context.analysis?.styleCode || recipe_context.analysis?.lengthName);
   }
 
-  // 간단한 인사말 처리 (5개국어)
+  // 간단한 인사말 처리 (7개국어)
   const simpleGreetings = [
     '안녕', 'hi', 'hello', '헬로', '하이', '반가워',
     'こんにちは', 'おはよう', 'konnichiwa',  // 일본어
     '你好', '您好', 'nihao',  // 중국어
     'xin chào', 'chào',  // 베트남어
-    'halo', 'selamat'  // 인도네시아어
+    'halo', 'selamat',  // 인도네시아어
+    'hola', 'buenos días', 'buenas tardes'  // 스페인어
   ];
   const isGreeting = simpleGreetings.some(g => {
     const query = user_query.toLowerCase().trim();
@@ -3604,7 +3711,8 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
       japanese: 'こんにちは！ヘアスタイルについて何でも聞いてください。\n\n例：\n1. 「A Lengthとは？」\n2. 「ゾーン分けを説明して」\n3. 「レイヤーとグラデーションの違いは？」',
       chinese: '你好！请随便问关于发型的问题。\n\n例子：\n1. "A Length是什么？"\n2. "解释一下Zone分区"\n3. "Layer和Graduation有什么区别？"',
       vietnamese: 'Xin chào! Hãy hỏi bất cứ điều gì về kiểu tóc.\n\nVí dụ:\n1. "A Length là gì?"\n2. "Giải thích phân vùng Zone"\n3. "Sự khác biệt giữa Layer và Graduation?"',
-      indonesian: 'Halo! Silakan tanyakan apa saja tentang gaya rambut.\n\nContoh:\n1. "Apa itu A Length?"\n2. "Jelaskan pembagian Zone"\n3. "Perbedaan antara Layer dan Graduation?"'
+      indonesian: 'Halo! Silakan tanyakan apa saja tentang gaya rambut.\n\nContoh:\n1. "Apa itu A Length?"\n2. "Jelaskan pembagian Zone"\n3. "Perbedaan antara Layer dan Graduation?"',
+      spanish: '¡Hola! Pregunta lo que quieras sobre peinados.\n\nEjemplos:\n1. "¿Qué es A Length?"\n2. "Explica la división de Zonas"\n3. "¿Diferencia entre Layer y Graduation?"'
     };
     const msg = greetingMessages[userLanguage] || greetingMessages['korean'];
 
@@ -3636,7 +3744,8 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
       japanese: '申し訳ございませんが、その情報は機密事項です。\n\n代わりにこのような質問はいかがですか？\n1. 「レイヤーカットの基本原理は？」\n2. 「顔型別おすすめスタイル」',
       chinese: '抱歉，该信息属于核心保密事项。\n\n您可以问这些问题：\n1. "层次剪发的基本原理？"\n2. "各脸型推荐发型"',
       vietnamese: 'Xin lỗi, thông tin đó là thông tin bảo mật.\n\nBạn có thể hỏi những câu này:\n1. "Nguyên tắc cơ bản của layer cut?"\n2. "Kiểu tóc phù hợp theo hình khuôn mặt"',
-      indonesian: 'Maaf, informasi tersebut adalah informasi keamanan inti.\n\nBagaimana dengan pertanyaan ini?\n1. "Prinsip dasar layer cut?"\n2. "Gaya yang direkomendasikan berdasarkan bentuk wajah"'
+      indonesian: 'Maaf, informasi tersebut adalah informasi keamanan inti.\n\nBagaimana dengan pertanyaan ini?\n1. "Prinsip dasar layer cut?"\n2. "Gaya yang direkomendasikan berdasarkan bentuk wajah"',
+      spanish: 'Lo siento, esa información es confidencial.\n\n¿Qué tal estas preguntas?\n1. "¿Principios básicos del corte en capas?"\n2. "Estilos recomendados según forma de rostro"'
     };
     const msg = securityMessages[userLanguage] || securityMessages['korean'];
 
@@ -3823,8 +3932,8 @@ async function generateGeminiFileSearchResponseStream(payload, geminiKey) {
     }
 
     // ⭐ 이론 이미지 감지 (89개 이론 인덱스)
-    // 언어별 이론 인덱스 매핑: korean→ko, english→en, japanese→ja, chinese→zh, vietnamese→vi
-    const langCodeMap = { korean: 'ko', english: 'en', japanese: 'ja', chinese: 'zh', vietnamese: 'vi', indonesian: 'id' };
+    // 언어별 이론 인덱스 매핑: korean→ko, english→en, japanese→ja, chinese→zh, vietnamese→vi, indonesian→id, spanish→es
+    const langCodeMap = { korean: 'ko', english: 'en', japanese: 'ja', chinese: 'zh', vietnamese: 'vi', indonesian: 'id', spanish: 'es' };
     const theoryLang = langCodeMap[userLanguage] || 'ko';
     const theoryImageResult = await detectTheoryImageForQuery(user_query, theoryLang);
 
@@ -11268,7 +11377,7 @@ async function handleImageQuestion(payload, geminiKey) {
 
   try {
     // 언어별 시스템 프롬프트 (일반 질문과 동일한 프롬프트 사용)
-    const langMap = { ko: 'korean', en: 'english', ja: 'japanese', zh: 'chinese', vi: 'vietnamese', id: 'indonesian' };
+    const langMap = { ko: 'korean', en: 'english', ja: 'japanese', zh: 'chinese', vi: 'vietnamese', id: 'indonesian', es: 'spanish' };
     const langName = langMap[language] || 'korean';
 
     // 일반 RAG 질문과 동일한 시스템 프롬프트 사용 + 이미지 분석 추가 지시

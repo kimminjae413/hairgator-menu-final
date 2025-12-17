@@ -34,7 +34,9 @@
       "Bash(python scripts/upload-fcl1001.py:*)",
       "Bash(python scripts/upload-perm-thumbnails.py:*)",
       "Bash(dir:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(dir \"C:\\Users\\김민재\\Desktop\\Hairgator_chatbot\\indexes\" /b)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
