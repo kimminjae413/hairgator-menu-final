@@ -15,10 +15,9 @@ const headers = {
 // AI Hairstyle 모델 버전 ID
 const HAIR_SWAP_VERSION = '5c0440717a995b0bbd93377bd65dbb4fe360f67967c506aa6bd8f6b660733a7e';
 
-// Gemini 이미지 생성 모델
-// gemini-2.0-flash-preview-image-generation: 빠른 이미지 생성
-// 실패 시 gemini-2.5-flash-image 또는 imagen-3.0-generate-001 시도
-const GEMINI_IMAGE_MODEL = 'gemini-2.0-flash-preview-image-generation';
+// Gemini 이미지 생성 모델 (Nano Banana Pro)
+// gemini-3-pro-image-preview: 고품질 이미지 생성/편집 (최대 4K)
+const GEMINI_IMAGE_MODEL = 'gemini-3-pro-image-preview';
 
 exports.handler = async (event) => {
     // CORS preflight
