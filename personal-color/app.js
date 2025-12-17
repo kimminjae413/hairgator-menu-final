@@ -2756,6 +2756,364 @@
             }
         };
 
+        // ========== 인도네시아어 전문가 가이드 데이터베이스 ==========
+        const EXPERT_GUIDE_DB_ID = {
+            'spring-bright': {
+                toneKeyword: "Dinamis dan cerah (Active/Cute) energi musim semi",
+                fashionVibe: "Pola berwarna-warni dan gaya kasual ceria sangat cocok untuk Anda.",
+                makeupBase: "Ivory cerah (tone 19-21) untuk tampilan bersinar, lipstik coral/oranye direkomendasikan",
+                recommendLevel: "8~10 Level (refleksi cemerlang)",
+                undercoatTip: "Perlu bleaching sampai Pale Yellow dengan tone kuning",
+                textureTip: "Layer ringan di ujung daripada garis berat",
+                avoidColors: ["Khaki kusam", "Abu-abu berat", "Hitam"],
+                seasonalAdvice: "Cokelat oranye dan cokelat kuning saturasi tinggi memaksimalkan citra dinamis Anda.",
+                consultingTip: "Warna saturasi tinggi yang menonjolkan warna kulit adalah yang terbaik.",
+                colorScience: {
+                    melaninType: "Pheomelanin dominan",
+                    undercoatPrediction: "Diprediksi undercoat kuning oranye saat bleaching",
+                    neutralizationStrategy: "Manfaatkan tone kuning, minimalkan penambahan ungu"
+                },
+                recipes: [
+                    {
+                        styleName: "Cokelat Kuning Oranye",
+                        vibe: "Cerah dan hidup",
+                        reason: "Memaksimalkan saturasi tinggi dan kulit cerah Spring Warm Bright",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "8/34 (Gold Red) : 8/03 (Natural Gold) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35 menit"
+                    },
+                    {
+                        styleName: "Coral Sunset",
+                        vibe: "Hangat dan dinamis",
+                        reason: "Harmonis dengan kulit tone kuning untuk coral hangat",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "9-OR (Orange) : 9-BE (Beige) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30 menit"
+                    }
+                ]
+            },
+            'spring-light': {
+                toneKeyword: "Jernih dan manis (Romantic/Clear) sinar matahari musim semi",
+                fashionVibe: "Blus pastel dan bahan sifon sangat cocok.",
+                makeupBase: "Base cerah dengan tone peach (tone 17-19)",
+                recommendLevel: "9~12 Level (High Lift)",
+                undercoatTip: "Butuh base kuning dengan minimal merah",
+                textureTip: "Gelombang ringan seperti tiupan angin",
+                avoidColors: ["Cokelat terlalu gelap", "Burgundy merah gelap"],
+                seasonalAdvice: "Beige milk tea atau beige peach lembut meningkatkan kejernihan kulit.",
+                consultingTip: "Hindari warna kusam dan pertahankan 'kejernihan' adalah kuncinya.",
+                colorScience: {
+                    melaninType: "Light Pheomelanin",
+                    undercoatPrediction: "Undercoat kuning muda, lift cepat",
+                    neutralizationStrategy: "Minimalkan merah, sesuaikan kuning dengan ungu muda"
+                },
+                recipes: [
+                    {
+                        styleName: "Beige Milk Tea",
+                        vibe: "Jernih dan polos",
+                        reason: "Membuat kulit lebih jernih, memaksimalkan kesan lembut",
+                        brand: "Milbon",
+                        line: "Ordeve Beaute",
+                        mixRatio: "10-BE (Beige) : 10-MT (Matte) = 3:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30 menit"
+                    },
+                    {
+                        styleName: "Blonde Peach",
+                        vibe: "Romantis dan manis",
+                        reason: "Harmonis dengan undertone peach, terang tapi lembut",
+                        brand: "Wella",
+                        line: "Illumina Color",
+                        mixRatio: "10/36 (Gold Violet) : 10/05 (Natural Mahogany) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35 menit"
+                    }
+                ]
+            },
+            'summer-light': {
+                toneKeyword: "Murni dan bersih (Pure/Clean) ombak musim panas",
+                fashionVibe: "Gaya sederhana bersih seperti kemeja putih atau denim biru muda",
+                makeupBase: "Base pink untuk menetralkan merah (tone 13-21)",
+                recommendLevel: "8~10 Level (jernih tanpa merah)",
+                undercoatTip: "Butuh netralisasi kuning (sampo ungu) untuk menghilangkan tone lemon",
+                textureTip: "Rambut lurus halus atau C-curl untuk menekankan tekstur",
+                avoidColors: ["Kuning pekat", "Oranye", "Tembaga"],
+                seasonalAdvice: "Pastel dingin seperti blonde ash atau lavender ash membuat kulit lebih cerah.",
+                consultingTip: "Bisa terlihat kusam di bawah cahaya kuning, tekankan kejernihan di bawah cahaya alami.",
+                colorScience: {
+                    melaninType: "Eumelanin Cool",
+                    undercoatPrediction: "Undercoat kuning saat bleaching, penambahan ungu diperlukan",
+                    neutralizationStrategy: "Netralisasi kuning sepenuhnya dengan ungu/ash"
+                },
+                recipes: [
+                    {
+                        styleName: "Ash Lavender",
+                        vibe: "Murni dan misterius",
+                        reason: "Memaksimalkan kejernihan kulit tone dingin, menghilangkan kuning sepenuhnya",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "9-Vi (Violet) : 9-A (Ash) = 1:2",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30 menit"
+                    },
+                    {
+                        styleName: "Cokelat Pink",
+                        vibe: "Elegan dan feminin",
+                        reason: "Harmonis dengan undertone pink, murni tapi tidak dingin",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "8/65 (Violet Mahogany) : 8/1 (Ash) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35 menit"
+                    }
+                ]
+            },
+            'summer-bright': {
+                toneKeyword: "Segar dan sejuk (Fresh/Cool) laut musim panas",
+                fashionVibe: "Pakaian putih bersih, biru muda, warna mint",
+                makeupBase: "Base pink dingin, blush rose dan lipstik berry",
+                recommendLevel: "7~9 Level (kilau sejuk)",
+                undercoatTip: "Undertone ash ke pink, penghilangan kuning diperlukan",
+                textureTip: "Kilau segar bersih, poni tipis",
+                avoidColors: ["Kuning", "Oranye", "Mustard", "Tembaga"],
+                seasonalAdvice: "Cokelat rose dan cokelat pink dingin meningkatkan citra murni Anda.",
+                consultingTip: "Menekankan kesan segar bersih adalah kuncinya."
+            },
+            'summer-muted': {
+                toneKeyword: "Elegan dan intelektual (Elegance/Soft) kabut musim panas",
+                fashionVibe: "Koordinasi tone-on-tone abu-abu, gaya kantor yang tenang",
+                makeupBase: "Beige pink alami (tone 21-23)",
+                recommendLevel: "6~8 Level (netral tenang)",
+                undercoatTip: "Bisa tanpa bleaching, tapi kendalikan merah",
+                textureTip: "Volume elegan seperti build perm atau Elizabeth perm",
+                avoidColors: ["Warna cerah mencolok", "Warna gelap mendekati hitam"],
+                seasonalAdvice: "Warna dengan tone abu-abu seperti cokelat ash atau mocha smoke melengkapi suasana elegan Anda.",
+                consultingTip: "Anda terlihat paling berkelas di 'kecerahan sedang' - tidak terlalu terang, tidak terlalu gelap."
+            },
+            'autumn-muted': {
+                toneKeyword: "Tenang dan alami (Natural/Classic) perasaan musim gugur",
+                fashionVibe: "Sweater beige, khaki, cokelat atau trench coat",
+                makeupBase: "Base kuning tenang (tone 21-23), lipstik MLBB",
+                recommendLevel: "5~7 Level (kilau bayangan dengan kedalaman)",
+                undercoatTip: "Bisa memanfaatkan undercoat oranye alami",
+                textureTip: "Hippie perm atau gelombang alami",
+                avoidColors: ["Pink fluoresen", "Biru hitam dingin"],
+                seasonalAdvice: "Cokelat matte, cokelat olive menutupi kemerahan kulit dan menciptakan suasana tenang.",
+                consultingTip: "Cokelat lembut meningkatkan tekstur rambut lebih baik dari warna cerah.",
+                colorScience: {
+                    melaninType: "Mixed Melanin, Low Chroma",
+                    undercoatPrediction: "Undercoat oranye kuning, perlu netralisasi dengan matte",
+                    neutralizationStrategy: "Netralisasi merah dengan hijau(matte), cegah kusam"
+                },
+                recipes: [
+                    {
+                        styleName: "Cokelat Olive Matte",
+                        vibe: "Tenang dan halus",
+                        reason: "Netralisasi kemerahan kulit untuk kesan bersih tenang",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "7-MT (Matte) : 7-NB (Natural Brown) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35 menit"
+                    },
+                    {
+                        styleName: "Beige Khaki",
+                        vibe: "Alami dan nyaman",
+                        reason: "Tone tanah alami menciptakan suasana lembut",
+                        brand: "L'Oreal",
+                        line: "Majirel",
+                        mixRatio: "7.8 (Mocha) : 7.13 (Beige) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "35 menit"
+                    }
+                ]
+            },
+            'autumn-soft': {
+                toneKeyword: "Hangat dan nyaman (Warm/Cozy) sore musim gugur",
+                fashionVibe: "Sweater cashmere, velvet kotak-kotak, pakaian tone tanah hangat",
+                makeupBase: "Base beige hangat (tone 21), lipstik peach/terracotta",
+                recommendLevel: "6~8 Level (tone hangat lembut)",
+                undercoatTip: "Undertone beige hangat, gradien lembut direkomendasikan",
+                textureTip: "Layer bervolume, gelombang lembut",
+                avoidColors: ["Hitam", "Biru ash", "Oranye cerah"],
+                seasonalAdvice: "Warna hangat lembut seperti chocolate susu dan cokelat mocha menciptakan suasana nyaman.",
+                consultingTip: "Gradien alami halus lebih baik dari warna ekstrem.",
+                colorScience: {
+                    melaninType: "Warm Pheomelanin",
+                    undercoatPrediction: "Undercoat oranye, pertahankan tone hangat",
+                    neutralizationStrategy: "Manfaatkan oranye, lembutkan dengan matte"
+                },
+                recipes: [
+                    {
+                        styleName: "Cokelat Chocolate Susu",
+                        vibe: "Hangat dan nyaman",
+                        reason: "Tone hangat lembut menciptakan citra nyaman ramah",
+                        brand: "Wella",
+                        line: "Softouch",
+                        mixRatio: "S7/37 (Gold Brown) : S7/03 (Natural Gold) = 1:1",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "30 menit"
+                    },
+                    {
+                        styleName: "Beige Madu",
+                        vibe: "Manis dan lembut",
+                        reason: "Kilau madu untuk tampilan sehat bercahaya",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "8-BE (Beige) : 8-GO (Gold) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "30 menit"
+                    }
+                ]
+            },
+            'autumn-deep': {
+                toneKeyword: "Dalam dan mewah (Gorgeous/Ethnic) kedalaman musim gugur",
+                fashionVibe: "Aksesori emas, jaket kulit, pola etnik",
+                makeupBase: "Beige hangat sehat (tone 23+), makeup kontur",
+                recommendLevel: "4~6 Level (warna dengan kedalaman)",
+                undercoatTip: "Undercoat cokelat merah efektif",
+                textureTip: "Perm glam bervolume atau potongan tekstur dengan kedalaman",
+                avoidColors: ["Pastel terang", "Ash pucat"],
+                seasonalAdvice: "Warna hangat dalam seperti chocolate gelap dan cokelat tembaga membuat garis wajah lebih jelas.",
+                consultingTip: "Fokus pada 'kilau' dan 'kedalaman warna' daripada kecerahan.",
+                colorScience: {
+                    melaninType: "Rich Pheomelanin",
+                    undercoatPrediction: "Undercoat merah oranye, merah terlihat jelas",
+                    neutralizationStrategy: "Manfaatkan merah dengan tembaga/kuning, tekankan kedalaman"
+                },
+                recipes: [
+                    {
+                        styleName: "Chocolate Gelap",
+                        vibe: "Dalam dan mewah",
+                        reason: "Kontras dengan kulit membuat garis jelas, pesona dewasa",
+                        brand: "L'Oreal",
+                        line: "Majirel",
+                        mixRatio: "5.35 (Chocolate) : 5.52 (Mahogany) = 2:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "40 menit"
+                    },
+                    {
+                        styleName: "Mahogany Tembaga",
+                        vibe: "Kaya dan megah",
+                        reason: "Kilau tembaga untuk kesan mewah dengan kedalaman",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "5/43 (Red Gold) : 5/75 (Brown Mahogany) = 1:1",
+                        oxidant: "6% (Vol.20)",
+                        processingTime: "40 menit"
+                    }
+                ]
+            },
+            'winter-deep': {
+                toneKeyword: "Urban dan memikat (Modern/Chic) malam musim dingin",
+                fashionVibe: "Gaya hitam putih modern, aksesori perak, jas",
+                makeupBase: "Base dingin bersih pucat atau bercahaya transparan",
+                recommendLevel: "1~4 Level (kontras kuat)",
+                undercoatTip: "Hampir tidak perlu, hanya tambahkan refleksi biru/ungu",
+                textureTip: "Bob tajam, lurus, rambut pendek bersudut",
+                avoidColors: ["Cokelat samar", "Cokelat hangat dengan tone kuning"],
+                seasonalAdvice: "Warna dingin gelap seperti biru hitam dan navy gelap memaksimalkan aura Anda.",
+                consultingTip: "'Kontras' antara warna rambut dan kulit semakin kuat, wajah semakin kecil.",
+                colorScience: {
+                    melaninType: "Strong Eumelanin, High Contrast",
+                    undercoatPrediction: "Pertahankan rambut alami atau tambah refleksi biru ungu",
+                    neutralizationStrategy: "Tidak perlu bleaching, hanya tambah kilau biru/ungu"
+                },
+                recipes: [
+                    {
+                        styleName: "Biru Hitam",
+                        vibe: "Memikat dan urban",
+                        reason: "Kontras kuat dengan kulit membuat garis jelas, nuansa modern",
+                        brand: "Milbon",
+                        line: "Ordeve",
+                        mixRatio: "3-NV (Navy) : 3-A (Ash) = 2:1",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "25 menit"
+                    },
+                    {
+                        styleName: "Ungu Gelap",
+                        vibe: "Misterius dan halus",
+                        reason: "Ungu dalam untuk pesona mewah unik",
+                        brand: "Wella",
+                        line: "Koleston Perfect",
+                        mixRatio: "3/66 (Intense Violet) : 3/0 (Natural) = 1:2",
+                        oxidant: "3% (Vol.10)",
+                        processingTime: "30 menit"
+                    }
+                ]
+            },
+            'winter-bright': {
+                toneKeyword: "Megah dan intens (Vivid/Dramatic) berlian musim dingin",
+                fashionVibe: "Kontras tajam dengan hitam, putih, merah cerah",
+                makeupBase: "Base dingin transparan, lipstik merah/wine cerah",
+                recommendLevel: "1~5 Level atau bleaching + warna cerah",
+                undercoatTip: "Pertahankan base tone dingin, penghilangan kuning total diperlukan",
+                textureTip: "Finishing tajam mengkilap, poni kuat",
+                avoidColors: ["Beige", "Kuning", "Oranye", "Cokelat kusam"],
+                seasonalAdvice: "Kontras intens tajam dengan hitam murni, wine, plum gelap adalah kuncinya.",
+                consultingTip: "Tarik perhatian dengan citra megah berdampak."
+            },
+            'winter-muted': {
+                toneKeyword: "Halus dan tenang (Sophisticated/Urban) senja musim dingin",
+                fashionVibe: "Jas abu-abu, mantel arang, monokrom minimalis",
+                makeupBase: "Netral ke beige dingin, kontur alami",
+                recommendLevel: "4~6 Level (rentang akromatik)",
+                undercoatTip: "Base abu-abu ke ash, minimalkan saturasi",
+                textureTip: "Tekstur matte tenang, satu panjang bersih",
+                avoidColors: ["Kuning", "Oranye", "Coral"],
+                seasonalAdvice: "Warna akromatik seperti arang dan ash gelap melengkapi suasana halus Anda.",
+                consultingTip: "Menampilkan keeleganan tersembunyi daripada warna cerah adalah poin utama."
+            },
+            'neutral-light': {
+                toneKeyword: "Lembut dan serbaguna (Versatile/Soft) harmoni netral",
+                fashionVibe: "Baik hangat maupun dingin cocok, gaya kasual tone terang",
+                makeupBase: "Beige netral (tone 19-21), warna alami",
+                recommendLevel: "7~9 Level (serbaguna)",
+                undercoatTip: "Base beige netral, hindari hangat/dingin ekstrem",
+                textureTip: "Tekstur alami lembut, potongan layer",
+                avoidColors: ["Oranye cerah", "Biru hitam", "Neon"],
+                seasonalAdvice: "Tone sedang lembut seperti milk tea dan beige rose cocok untuk Anda.",
+                consultingTip: "Banyak warna cocok, sesuaikan dengan preferensi pelanggan."
+            },
+            'neutral-muted': {
+                toneKeyword: "Nyaman dan alami (Comfortable/Natural) stabilitas netral",
+                fashionVibe: "Tone tanah, kasual nyaman warna netral",
+                makeupBase: "Netral ke beige dingin (tone 21-23), lipstik MLBB",
+                recommendLevel: "5~7 Level (tone sedang tenang)",
+                undercoatTip: "Base netral ke beige dingin, saturasi rendah",
+                textureTip: "Tekstur alami tenang, gelombang hippie",
+                avoidColors: ["Oranye cerah", "Neon", "Hitam murni"],
+                seasonalAdvice: "Warna tenang alami seperti beige abu-abu dan taupe menciptakan suasana nyaman.",
+                consultingTip: "Tujukan nuansa halus dan nyaman."
+            },
+            'neutral-soft': {
+                toneKeyword: "Hangat tapi tenang (Gentle/Balanced) keseimbangan netral",
+                fashionVibe: "Blus, sweater tone romantis tapi tenang",
+                makeupBase: "Base beige pink (tone 21), lipstik rose",
+                recommendLevel: "6~8 Level (tone sedang lembut)",
+                undercoatTip: "Base beige netral, gradien lembut",
+                textureTip: "Kilau alami lembut, layer lembut",
+                avoidColors: ["Biru hitam", "Merah cerah", "Abu-abu ash"],
+                seasonalAdvice: "Warna lembut halus seperti mocha susu dan cokelat rose harmonis.",
+                consultingTip: "Ciptakan suasana hangat tapi tenang."
+            },
+            'neutral-deep': {
+                toneKeyword: "Dalam dan dewasa (Mature/Rich) bobot netral",
+                fashionVibe: "Pakaian cokelat mewah, burgundy, warna gelap",
+                makeupBase: "Hangat ke beige netral (tone 23), lipstik warna dalam",
+                recommendLevel: "4~6 Level (tone dalam)",
+                undercoatTip: "Base cokelat netral",
+                textureTip: "Finishing alami dengan kedalaman, perm bervolume",
+                avoidColors: ["Platinum", "Biru ash", "Pink cerah"],
+                seasonalAdvice: "Warna dalam alami seperti chocolate dan mocha gelap menampilkan pesona dewasa.",
+                consultingTip: "Ciptakan kesan halus dan dewasa."
+            }
+        };
+
         // ========== 언어에 따라 적절한 DB 선택하는 함수 ==========
         function getExpertGuideDB() {
             const lang = window.currentLanguage || window.HAIRGATOR_LANG || 'ko';
@@ -2765,6 +3123,7 @@
                 case 'ja': return EXPERT_GUIDE_DB_JA;
                 case 'zh': return EXPERT_GUIDE_DB_ZH;
                 case 'vi': return EXPERT_GUIDE_DB_VI;
+                case 'id': return EXPERT_GUIDE_DB_ID;
                 default: return EXPERT_GUIDE_DB_KO;
             }
         }
@@ -2974,7 +3333,39 @@
             "Màu rực rỡ": "#FF00FF",
             "Gần đen": "#1A1A2E",
             "Nâu quá đậm": "#3D2914",
-            "Pastel quá nhạt": "#FFE4E1"
+            "Pastel quá nhạt": "#FFE4E1",
+            // 인도네시아어 (Indonesian)
+            "Emas": "#D4AF37",
+            "Kuning Emas": "#FFD700",
+            "Oranye": "#FF8C00",
+            "Oranye Cerah": "#FF6600",
+            "Tembaga": "#B87333",
+            "Coral": "#FF7F50",
+            "Mustard": "#E1AD01",
+            "Beige": "#D2B48C",
+            "Cokelat Kusam": "#8B7355",
+            "Khaki Kusam": "#8B8860",
+            "Cokelat Samar": "#A67B5B",
+            "Cokelat Hangat Kekuningan": "#9E7B4F",
+            "Hitam": "#1A1A1A",
+            "Hitam Pekat": "#000000",
+            "Biru Hitam": "#0D0D3D",
+            "Biru Ash": "#7B98B2",
+            "Abu-abu Ash": "#8E9AA0",
+            "Abu-abu Pekat": "#9EA5AB",
+            "Ash Muda": "#C0C5C9",
+            "Ash Gelap": "#4A4E52",
+            "Pink Fluoresen": "#FF69B4",
+            "Biru Hitam Dingin": "#1C2331",
+            "Merah Cerah": "#FF0033",
+            "Pink Cerah": "#FF1493",
+            "Wine Gelap": "#800020",
+            "Neon": "#39FF14",
+            "Platinum": "#E5E4E2",
+            "Warna Cerah": "#FF00FF",
+            "Mendekati Hitam": "#1A1A2E",
+            "Cokelat Terlalu Gelap": "#3D2914",
+            "Pastel Terlalu Terang": "#FFE4E1"
         };
 
         // 색상 이름으로 HEX 가져오기 (없으면 기본색 반환)
