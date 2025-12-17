@@ -158,31 +158,38 @@ async function enhanceWithGemini(imageUrl, gender, apiKey) {
 
         // 성별에 따른 프롬프트 조정
         const genderSpecificPrompt = gender === 'female'
-            ? `- CRITICAL: The hair ends must be sharp, clear, and well-defined - NOT blurry, smudged, or faded
-- Each individual strand of hair should be visible and distinct, especially at the tips
-- Long hair should have natural flow and movement with crisp, detailed ends
-- Fix any fuzzy or pixelated areas in the hair`
-            : `- Ensure clean, sharp edges around the hairline and sideburns
-- Short hair should have natural texture, volume, and defined styling`;
+            ? `- For long hair: ensure hair ends are sharp and clear, not blurry or smudged
+- Each strand should be distinct, especially at the tips`
+            : `- For short hair: ensure clean edges around the hairline and sideburns`;
 
-        // 후처리 프롬프트
-        const prompt = `Enhance and retouch this AI-generated hair swap photo to look completely natural and photorealistic.
+        // 후처리 프롬프트 (헤어 변형 금지 + 얼굴-헤어 조화 최우선)
+        const prompt = `You are a photo retouching expert. Your task is to make this hair swap photo look natural.
 
-CRITICAL REQUIREMENTS:
-1. HAIR-FACE BLENDING: Make the hair blend seamlessly with the face, skin tone, and lighting
-2. REALISTIC HAIR TEXTURE: The hair must look like real human hair with natural shine, highlights, and shadows
-3. CONSISTENT LIGHTING: Match the lighting and shadows between hair and face perfectly
-4. SHARP DETAILS: All hair must be crisp, sharp, and well-defined - remove any artificial blur or fuzziness
-5. NATURAL HAIRLINE: The hairline where hair meets forehead/face must look completely natural
+#1 PRIORITY - HAIR-FACE HARMONY (MOST IMPORTANT):
+- Make the hair blend NATURALLY with the face and skin tone
+- Adjust the lighting and shadows so hair and face look like one unified photo
+- The hairline where hair meets forehead/skin must look completely seamless
+- Match the color temperature between hair and face
+
+#2 PRIORITY - DO NOT MODIFY THE HAIRSTYLE:
+- Keep the EXACT same hairstyle shape, length, and style
+- Do NOT change the hair color
+- Do NOT change the hair volume or direction
+- Do NOT add or remove any hair
+
+#3 PRIORITY - Natural Realism:
+- Hair texture should look like real human hair
+- Remove any artificial/AI-generated artifacts
+- Ensure consistent lighting across the entire image
 ${genderSpecificPrompt}
 
-PRESERVE (DO NOT CHANGE):
-- The person's face, facial features, and expression
-- The overall hairstyle shape and style
+ABSOLUTELY DO NOT CHANGE:
+- The person's face, facial features, expression
+- The hairstyle shape, length, color, volume
 - The background
-- The person's clothing
+- The clothing
 
-OUTPUT: A single enhanced photo that looks like a professional photograph, not AI-generated.`;
+OUTPUT: The same photo with improved hair-face integration. The hair must look like it naturally belongs to this person.`;
 
         // Gemini REST API 호출 (이미지 생성 모델)
         console.log('🤖 Gemini API 호출 중...');
