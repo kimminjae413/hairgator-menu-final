@@ -7570,6 +7570,94 @@ function parseFirestoreDocument(doc) {
 
 
 // ==================== 레시피 형식 통일 ====================
+
+/**
+ * ⭐ 간략 형식 → 서술형 변환
+ * 예: "1. 각도 30° / D7 / Rod 18mm / 오프베이스 / 와인딩"
+ * → "천체축 각도(Celestial Axis) 30도, 다이렉션 D7 기점, 로드(Rod) 18mm를 활용하여 오프 베이스(Off Base)로 와인딩한다."
+ */
+function convertToNarrativeFormat(line, zoneName) {
+  // 이미 서술형이면 그대로 반환 (부분은, 활용하여, 와인딩한다 등이 있으면 서술형)
+  if (/부분은|활용하여|와인딩한다|프레스한다/.test(line)) {
+    // 기존 서술형 정리만
+    return line
+      .replace(/천체축\s*각도\s*\(Celestial\s*Axis\)\s*/gi, '천체축 각도 ')
+      .replace(/다이렉션\s*(D\d)/gi, '다이렉션 $1')
+      .replace(/다이랙션\s*(D\d)/gi, '다이렉션 $1')
+      .replace(/로드\s*\(Rod\)\s*/gi, '로드 ')
+      .replace(/(\d+)\s*차\s*프레스/g, '$1차 프레스')
+      .replace(/연화\s*후/g, '연화 후');
+  }
+
+  // 간략 형식 파싱: "1. 각도 30° / D7 / Rod 18mm / 오프베이스 / 와인딩"
+  // 또는: "각도 45° / D8 / Rod 20mm / 오프베이스 / 와인딩"
+  const shortPattern = /(\d+\.\s*)?각도\s*([\d.]+)[°도]?\s*\/\s*(D\d+(?:~D\d+)?)\s*\/\s*(?:Rod\s*|로드\s*)?([\d]+)\s*(?:mm|호)\s*\/\s*([^\/]+)\s*\/\s*([^\/\n]+)/i;
+  const match = line.match(shortPattern);
+
+  if (match) {
+    const angle = match[2];
+    const direction = match[3];
+    const rodSize = match[4];
+    const baseType = match[5].trim();
+    const windingType = match[6].trim();
+
+    // 부위명 처리
+    const zoneKorEng = {
+      '네이프': '네이프(Nape)',
+      '센터 백': '센터 백(Center Back)',
+      '백 사이드': '백 사이드(Back Side)',
+      '사이드': '사이드(Side)',
+      '프린지': '프린지(Fringe)',
+      '크라운': '크라운(Crown)',
+      '탑': '탑(Top)',
+      'A존': 'A 존(A Zone)',
+      'B존': 'B 존(B Zone)',
+      'C존': 'C 존(C Zone)'
+    };
+    const zoneDisplay = zoneKorEng[zoneName] || (zoneName ? `${zoneName}` : '해당 부분');
+
+    // 베이스 타입 변환
+    let baseTypeDisplay = baseType;
+    if (/온\s*베이스|온베이스/i.test(baseType)) {
+      baseTypeDisplay = '온 베이스(On Base)';
+    } else if (/오프\s*베이스|오프베이스/i.test(baseType)) {
+      baseTypeDisplay = '오프 베이스(Off Base)';
+    } else if (/하프\s*오프|하프오프/i.test(baseType)) {
+      baseTypeDisplay = '하프 오프 베이스(Half Off Base)';
+    }
+
+    // 와인딩/프레스 타입 변환
+    let windingDisplay = windingType;
+    if (/트위스트/i.test(windingType)) {
+      windingDisplay = '트위스트(Twist) 와인딩';
+    } else if (/와인딩/i.test(windingType)) {
+      windingDisplay = '와인딩';
+    } else if (/프레스/i.test(windingType)) {
+      windingDisplay = '프레스';
+    }
+
+    // 로드 단위 (mm vs 호)
+    const rodUnit = line.includes('호') ? '호' : 'mm';
+    const rodDisplay = rodUnit === '호' ? `일반 로드(Rod) ${rodSize}호` : `로드(Rod) ${rodSize}mm`;
+
+    // 서술형 문장 생성
+    if (/프레스/i.test(windingType)) {
+      return `${zoneDisplay} 부분은 천체축 각도(Celestial Axis) ${angle}도, 다이렉션 ${direction} 기점에서 ${windingDisplay}한다.`;
+    } else {
+      return `${zoneDisplay} 부분은 천체축 각도(Celestial Axis) ${angle}도, 다이렉션 ${direction} 기점, ${rodDisplay}를 활용하여 ${baseTypeDisplay}로 ${windingDisplay}한다.`;
+    }
+  }
+
+  // 패턴 매칭 실패 시 기존 정리만 수행
+  return line
+    .replace(/^\d+\.\s*/, '')  // 앞의 숫자 제거
+    .replace(/천체축\s*각도\s*(\d+(?:\.\d+)?)\s*도/g, '천체축 각도 $1도')
+    .replace(/다이렉션\s*(D\d)/gi, '다이렉션 $1')
+    .replace(/다이랙션\s*(D\d)/gi, '다이렉션 $1')
+    .replace(/(\d+)\s*차\s*프레스/g, '$1차 프레스')
+    .replace(/연화\s*후/g, '연화 후');
+}
+
 /**
  * 펌 레시피 텍스트 전처리
  * ⭐ AI 생성 레시피: 부위명만 있는 줄 기준으로 단계 묶음 (여러 줄 → 한 단계)
@@ -7709,12 +7797,8 @@ function formatPermRecipe(recipe) {
         stepNumber++;
         const zoneName = detectZoneName(trimmed);
 
-        let processedLine = trimmed
-          .replace(/천체축\s*각도\s*(\d+(?:\.\d+)?)\s*도/g, '천체축 $1도')
-          .replace(/다이렉션\s*(D\d)/gi, '다이렉션 $1')
-          .replace(/다이랙션\s*(D\d)/gi, '다이렉션 $1')
-          .replace(/(\d+)\s*차\s*프레스/g, '$1차 프레스')
-          .replace(/연화\s*후/g, '연화 후');
+        // ⭐ 간략 형식을 서술형으로 변환 (예: "1. 각도 30° / D7 / Rod 18mm / 오프베이스 / 와인딩")
+        let processedLine = convertToNarrativeFormat(trimmed, zoneName);
 
         if (zoneName) {
           resultLines.push(`**${stepNumber}단계 [${zoneName}]**: ${processedLine}`);
