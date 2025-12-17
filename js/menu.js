@@ -2284,7 +2284,7 @@ function createHairTryLoadingOverlay() {
     return overlay;
 }
 
-// 헤어체험 결과 모달 표시
+// 헤어체험 결과 모달 표시 (전/후 비교)
 function showHairTryResult(resultImageUrl, styleName) {
     // 기존 결과 모달 제거
     const existingModal = document.querySelector('.hair-try-result-modal');
@@ -2293,6 +2293,11 @@ function showHairTryResult(resultImageUrl, styleName) {
     }
 
     const disclaimerText = t('hairTry.disclaimer') || '가상 결과입니다. 헤어 느낌을 미리 파악해보는 정도의 의미로만 사용해 주세요. 실제와 다를 수 있습니다.';
+    const beforeText = t('hairTry.before') || 'BEFORE';
+    const afterText = t('hairTry.after') || 'AFTER';
+
+    // 원본 사진 가져오기
+    const originalPhoto = window.uploadedCustomerPhoto || '';
 
     const modal = document.createElement('div');
     modal.className = 'hair-try-result-modal';
@@ -2305,7 +2310,21 @@ function showHairTryResult(resultImageUrl, styleName) {
             </div>
 
             <div class="hair-try-result-body">
-                <img src="${resultImageUrl}" alt="Hair Try Result" class="result-image">
+                <!-- 전/후 비교 컨테이너 -->
+                <div class="hair-try-comparison">
+                    <div class="comparison-before">
+                        <span class="comparison-label">${beforeText}</span>
+                        <img src="${originalPhoto}" alt="Before" class="comparison-image">
+                    </div>
+                    <div class="comparison-divider">
+                        <span class="divider-arrow">→</span>
+                    </div>
+                    <div class="comparison-after">
+                        <span class="comparison-label">${afterText}</span>
+                        <img src="${resultImageUrl}" alt="After" class="comparison-image">
+                    </div>
+                </div>
+
                 <div class="hair-try-disclaimer">
                     <span class="disclaimer-icon">ℹ️</span>
                     <span>${disclaimerText}</span>
@@ -2337,7 +2356,7 @@ function showHairTryResult(resultImageUrl, styleName) {
         modal.classList.add('active');
     }, 10);
 
-    console.log('💇 헤어체험 결과 표시 완료');
+    console.log('💇 헤어체험 결과 표시 완료 (전/후 비교)');
 }
 
 // 헤어체험 결과 모달 닫기
@@ -2471,6 +2490,72 @@ function addHairTryResultStyles() {
             gap: 15px;
         }
 
+        /* 전/후 비교 컨테이너 */
+        .hair-try-comparison {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .comparison-before,
+        .comparison-after {
+            position: relative;
+            flex: 1;
+            max-width: 280px;
+        }
+
+        .comparison-label {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            z-index: 2;
+        }
+
+        .comparison-before .comparison-label {
+            background: rgba(100, 100, 100, 0.8);
+        }
+
+        .comparison-after .comparison-label {
+            background: linear-gradient(135deg, #7C4DFF 0%, #651FFF 100%);
+        }
+
+        .comparison-image {
+            width: 100%;
+            height: auto;
+            max-height: 50vh;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .comparison-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .divider-arrow {
+            font-size: 24px;
+            color: #7C4DFF;
+            animation: pulseArrow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseArrow {
+            0%, 100% { opacity: 0.5; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(5px); }
+        }
+
         .hair-try-disclaimer {
             display: flex;
             align-items: flex-start;
@@ -2545,6 +2630,36 @@ function addHairTryResultStyles() {
             .hair-try-result-content {
                 max-width: 95vw;
                 margin: 10px;
+            }
+
+            /* 모바일: 전/후 비교 세로 배치 */
+            .hair-try-comparison {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .comparison-before,
+            .comparison-after {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .comparison-image {
+                max-height: 35vh;
+            }
+
+            .comparison-divider {
+                padding: 5px 0;
+            }
+
+            .divider-arrow {
+                font-size: 20px;
+                transform: rotate(90deg);
+            }
+
+            @keyframes pulseArrow {
+                0%, 100% { opacity: 0.5; transform: rotate(90deg) translateX(0); }
+                50% { opacity: 1; transform: rotate(90deg) translateX(5px); }
             }
 
             .hair-try-result-actions {
