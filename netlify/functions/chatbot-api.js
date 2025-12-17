@@ -7473,8 +7473,12 @@ JSON만: {"total_score":<0-100>,"curl_match":<true/false>,"reason":"<1문장>"}`
     console.log(`  📊 ${result.styleId}: Vision ${result.visionScore}점 + 기법 ${techniqueScore}점 = 최종 ${result.score}점`);
   }
 
-  // 점수 기준 정렬
-  scoreResults.sort((a, b) => b.score - a.score);
+  // 점수 기준 정렬 (동점 시 Vision 점수 우선, 그래도 동점이면 styleId 내림차순)
+  scoreResults.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;  // 1. 최종 점수
+    if (b.visionScore !== a.visionScore) return b.visionScore - a.visionScore;  // 2. Vision 점수
+    return b.styleId.localeCompare(a.styleId);  // 3. styleId 내림차순 (숫자 큰 게 최신)
+  });
 
   console.log(`\n🏆 최종 순위 (Vision + 기법 매칭):`);
   scoreResults.slice(0, 3).forEach((r, i) => {
