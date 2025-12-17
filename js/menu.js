@@ -1407,51 +1407,51 @@ function openAIPhotoModal(styleId, styleName, styleImageUrl) {
     modal.innerHTML = `
         <div class="hair-upload-content">
             <div class="hair-upload-header">
-                <h3>✨ 헤어체험하기</h3>
-                <p>선택한 스타일: <strong>${styleName}</strong></p>
+                <h3>✨ ${t('hairTry.title') || '헤어체험'}</h3>
+                <p>${t('hairTry.selectedStyle') || '선택한 스타일'}: <strong>${styleName}</strong></p>
                 <button class="close-upload-btn" onclick="closePhotoUploadModal()">×</button>
             </div>
-            
+
             <div class="hair-upload-body">
                 <div class="style-preview">
                     <img src="${styleImageUrl}" alt="${styleName}" class="style-preview-image">
-                    <p>적용할 스타일</p>
+                    <p>${t('hairTry.styleToApply') || '적용할 스타일'}</p>
                 </div>
-                
+
                 <div class="upload-arrow">→</div>
-                
+
                 <div class="customer-photo-section">
                     <!-- 2개 버튼 옵션 (태블릿 최적화) -->
                     <div class="photo-options">
                         <button class="photo-option-btn upload-btn" onclick="selectPhotoFromGallery()">
                             <span class="option-icon">📁</span>
-                            <span>갤러리에서 선택</span>
+                            <span>${t('hairTry.selectFromGallery') || '갤러리에서 선택'}</span>
                         </button>
                         <button class="photo-option-btn camera-btn" onclick="takePhotoWithCamera()">
                             <span class="option-icon">📷</span>
-                            <span>카메라로 촬영</span>
+                            <span>${t('hairTry.takePhoto') || '카메라로 촬영'}</span>
                         </button>
                     </div>
-                    
+
                     <!-- 숨겨진 input들 -->
                     <input type="file" id="customerPhotoUpload" accept="image/*" style="display: none;">
                     <input type="file" id="customerPhotoCamera" accept="image/*" capture="environment" style="display: none;">
-                    
+
                     <!-- 미리보기 영역 -->
                     <div class="customer-preview" id="customerPreview" style="display: none;">
-                        <img id="customerPreviewImage" alt="고객 사진">
-                        <button class="change-photo-btn" onclick="changeCustomerPhoto()">사진 변경</button>
+                        <img id="customerPreviewImage" alt="${t('hairTry.uploadPhoto') || '고객 사진'}">
+                        <button class="change-photo-btn" onclick="changeCustomerPhoto()">${t('hairTry.changePhoto') || '사진 변경'}</button>
                     </div>
                 </div>
             </div>
-            
+
             <div class="hair-upload-actions">
                 <button class="upload-action-btn cancel-btn" onclick="closePhotoUploadModal()">
-                    취소
+                    ${t('hairTry.cancelButton') || '취소'}
                 </button>
                 <button class="upload-action-btn process-btn" id="processBtn" disabled onclick="processAIFaceSwap()">
                     <span class="ai-icon">✨</span>
-                    <span>헤어체험 시작</span>
+                    <span>${t('hairTry.startButton') || '헤어체험 시작'}</span>
                 </button>
             </div>
         </div>
